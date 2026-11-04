@@ -1,0 +1,170 @@
+# #/homebrew ~ tabs as gm3
+# route: #/homebrew
+# why: the picker pressed: the sheet with the four tabs, their counts and «39 предметов из 100»
+# as: gm3
+
+## ru :: tree
+RootWebArea "Мои предметы - Генератор лута Daggerheart" [url=/homebrew?as=gm3]
+  dialog "Мои предметы: Предметы" [modal=true]
+    heading "Мои предметы" [level=2]
+    button "Закрыть" [focused=true]
+    link "Предметы 39" [url=/homebrew]
+      StaticText "Предметы"
+      StaticText "39"
+    link "Источники 0" [url=/homebrew/sources]
+      StaticText "Источники"
+      StaticText "0"
+    link "Комплекты 1" [url=/homebrew/sets]
+      StaticText "Комплекты"
+      StaticText "1"
+    link "Карты правил 0" [url=/homebrew/rules]
+      StaticText "Карты правил"
+      StaticText "0"
+    StaticText "39 предметов из 100"
+
+## ru :: controls
+EN
+RU
+daggerheart.com
+Аккаунт: gm3@example.test
+Бросок
+Выбрать
+Ещё
+Закрыть
+Источники 0
+К содержимому
+Карты правил 0
+Комплекты 1
+Конфиденциальность
+ЛутDaggerheart
+Мешок спокойных сновПредметСпальный мешок для долгой дороги.Полу... [namelen=103 namehash=5a2e05d6]
+Мои предметы: Предметы
+Найти предмет
+Новый предмет
+Подушка из мхаПредметСвёрнутая постель для ночёвки в пути.
+Поиск
+Походный пледПредметСвёрнутая постель для ночёвки в пути.
+Предметы 39
+Святой ВенецПредметЧасть убранства святого.
+Святой ПоясПредметЧасть убранства святого.
+Святые ПерчаткиПредметЧасть убранства святого.
+Святые СапогиПредметЧасть убранства святого.
+Скатка путникаПредметСвёрнутая постель для ночёвки в пути.Улучша... [namelen=94 namehash=b9303232]
+Скатка следопытаПредметСвёрнутая постель для ночёвки в пути.Полу... [namelen=128 namehash=f6e81c88]
+Скатка стражаПредметСвёрнутая постель для ночёвки в пути.Получае... [namelen=93 namehash=ff8d5201]
+Спальный мешок дозорногоПредметСпальный мешок для долгой дороги.... [namelen=107 namehash=ea9b1fe2]
+Спальный мешок долгой дороги через перевал, болота, пустоши и ст... [namelen=203 namehash=dff2fb7a]
+Спальный мешок из пеплаПредметСпальный мешок для долгой дороги.П... [namelen=106 namehash=7958bec5]
+Спальный мешок кочевникаПредметСпальный мешок для долгой дороги.... [namelen=107 namehash=785c5818]
+Спальный мешок лекаряПредметСпальный мешок для долгой дороги.Пол... [namelen=104 namehash=8f264cb1]
+Спальный мешок ловца сновПредметСпальный мешок для долгой дороги... [namelen=108 namehash=779feea9]
+Спальный мешок отшельникаПредметСпальный мешок для долгой дороги... [namelen=108 namehash=f9ab787d]
+Спальный мешок пилигримаПредметСпальный мешок для долгой дороги.... [namelen=107 namehash=0d349412]
+Спальный мешок следопытаПредметСпальный мешок для долгой дороги.... [namelen=107 namehash=6e0f04b6]
+Спальный мешок стражаПредметСпальный мешок для долгой дороги.Пол... [namelen=104 namehash=a91fad3c]
+Спальный мешок странникаПредметСпальный мешок для долгой дороги.... [namelen=107 namehash=e0356c9b]
+Спальный мешок тишиныПредметСпальный мешок для долгой дороги.Пол... [namelen=104 namehash=01e6c487]
+Спальный мешок у костраПредметСпальный мешок для долгой дороги.П... [namelen=106 namehash=c26d390c]
+Таблицы
+Тёплый спальный мешокПредметСпальный мешок для долгой дороги.Пол... [namelen=104 namehash=5e2fce50]
+Условия использования
+Установить как приложение
+Учебный палаш 10Основное оружиеРанг 3 · Физическое · Проворность... [namelen=130 namehash=50e312b4]
+Учебный палаш 11Основное оружиеРанг 3 · Физическое · Проворность... [namelen=130 namehash=c9c3b7ab]
+Учебный палаш 12Основное оружиеРанг 3 · Физическое · Проворность... [namelen=130 namehash=69abbced]
+Учебный палаш 13Основное оружиеРанг 4 · Физическое · Проворность... [namelen=130 namehash=0ee39abe]
+Учебный палаш 14Основное оружиеРанг 4 · Физическое · Проворность... [namelen=130 namehash=d322c25d]
+Учебный палаш 15Основное оружиеРанг 4 · Физическое · Проворность... [namelen=130 namehash=7a5990f4]
+Учебный палаш 1Основное оружиеРанг 1 · Физическое · Проворность ... [namelen=129 namehash=eed9a7c8]
+Учебный палаш 2Основное оружиеРанг 1 · Физическое · Проворность ... [namelen=129 namehash=4eeac298]
+Учебный палаш 3Основное оружиеРанг 1 · Физическое · Проворность ... [namelen=129 namehash=7e361f42]
+Учебный палаш 4Основное оружиеРанг 2 · Физическое · Проворность ... [namelen=129 namehash=b0f405ad]
+Учебный палаш 5Основное оружиеРанг 2 · Физическое · Проворность ... [namelen=129 namehash=96be15f1]
+Учебный палаш 6Основное оружиеРанг 2 · Физическое · Проворность ... [namelen=129 namehash=dd41422d]
+Учебный палаш 7Основное оружиеРанг 2 · Физическое · Проворность ... [namelen=129 namehash=0b98c50a]
+Учебный палаш 8Основное оружиеРанг 2 · Физическое · Проворность ... [namelen=129 namehash=bf15a568]
+Учебный палаш 9Основное оружиеРанг 3 · Физическое · Проворность ... [namelen=129 namehash=c10ea06a]
+Фильтры
+
+## en :: tree
+RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm3]
+  dialog "My items: Items" [modal=true]
+    heading "My items" [level=2]
+    button "Close" [focused=true]
+    link "Items 39" [url=/en/homebrew]
+      StaticText "Items"
+      StaticText "39"
+    link "Sources 0" [url=/en/homebrew/sources]
+      StaticText "Sources"
+      StaticText "0"
+    link "Sets 1" [url=/en/homebrew/sets]
+      StaticText "Sets"
+      StaticText "1"
+    link "Rule cards 0" [url=/en/homebrew/rules]
+      StaticText "Rule cards"
+      StaticText "0"
+    StaticText "39 items of 100"
+
+## en :: controls
+Account: gm3@example.test
+Ash BedrollItemA bedroll for a long road.Made from: Premium Bedr... [namelen=67 namehash=38ee047f]
+Bedroll of SilenceItemA bedroll for a long road.Made from: Premi... [namelen=74 namehash=2532614b]
+Bedroll of the long road over the pass, through the marshes, the... [namelen=176 namehash=823e9fcf]
+Camp BlanketItemA rolled bed for a night on the road.
+Campfire BedrollItemA bedroll for a long road.Made from: Premium... [namelen=72 namehash=328cf69e]
+Close
+Dreamcatcher's BedrollItemA bedroll for a long road.Made from: P... [namelen=78 namehash=c68dc549]
+EN
+Filters
+Find an item
+Healer's BedrollItemA bedroll for a long road.Made from: Premium... [namelen=72 namehash=5a9df96a]
+Hermit's BedrollItemA bedroll for a long road.Made from: Premium... [namelen=72 namehash=478eb1d6]
+Install as an app
+Items 39
+LootDaggerheart
+More
+Moss PillowItemA rolled bed for a night on the road.
+My items: Items
+New item
+Nomad's BedrollItemA bedroll for a long road.Made from: Premium ... [namelen=71 namehash=570439ed]
+Pilgrim's BedrollItemA bedroll for a long road.Made from: Premiu... [namelen=73 namehash=84f90787]
+Practice Broadsword 10Primary weaponTier 3 · Physical · Agility ... [namelen=121 namehash=0e8ad8da]
+Practice Broadsword 11Primary weaponTier 3 · Physical · Agility ... [namelen=121 namehash=686e2abc]
+Practice Broadsword 12Primary weaponTier 3 · Physical · Agility ... [namelen=121 namehash=0b4342a6]
+Practice Broadsword 13Primary weaponTier 4 · Physical · Agility ... [namelen=121 namehash=6c3f834d]
+Practice Broadsword 14Primary weaponTier 4 · Physical · Agility ... [namelen=121 namehash=a7b880d4]
+Practice Broadsword 15Primary weaponTier 4 · Physical · Agility ... [namelen=121 namehash=3efb0750]
+Practice Broadsword 1Primary weaponTier 1 · Physical · Agility ·... [namelen=120 namehash=d6caa277]
+Practice Broadsword 2Primary weaponTier 1 · Physical · Agility ·... [namelen=120 namehash=fef00b32]
+Practice Broadsword 3Primary weaponTier 1 · Physical · Agility ·... [namelen=120 namehash=370b9f88]
+Practice Broadsword 4Primary weaponTier 2 · Physical · Agility ·... [namelen=120 namehash=c98d6c87]
+Practice Broadsword 5Primary weaponTier 2 · Physical · Agility ·... [namelen=120 namehash=83009d23]
+Practice Broadsword 6Primary weaponTier 2 · Physical · Agility ·... [namelen=120 namehash=0aee95a6]
+Practice Broadsword 7Primary weaponTier 2 · Physical · Agility ·... [namelen=120 namehash=cd472a20]
+Practice Broadsword 8Primary weaponTier 2 · Physical · Agility ·... [namelen=120 namehash=56aa2096]
+Practice Broadsword 9Primary weaponTier 3 · Physical · Agility ·... [namelen=120 namehash=96fc1a1d]
+Privacy
+RU
+Ranger's RollItemA rolled bed for a night on the road.Made from:... [namelen=118 namehash=99691f93]
+Roll
+Rule cards 0
+Sack of Quiet DreamsItemA bedroll for a long road.Made from: Pre... [namelen=76 namehash=a4147c40]
+Saintly BeltItemA piece of a saint's ensemble.
+Saintly BootsItemA piece of a saint's ensemble.
+Saintly CircletItemA piece of a saint's ensemble.
+Saintly GlovesItemA piece of a saint's ensemble.
+Search
+Select
+Sentry's BedrollItemA bedroll for a long road.Made from: Premium... [namelen=72 namehash=e9b4b9fe]
+Sentry's RollItemA rolled bed for a night on the road.Made from:... [namelen=83 namehash=01973e24]
+Sets 1
+Skip to content
+Sources 0
+Tables
+Terms of use
+Tracker's BedrollItemA bedroll for a long road.Made from: Premiu... [namelen=73 namehash=faf4ebae]
+Traveller's RollItemA rolled bed for a night on the road.Upgrade... [namelen=88 namehash=4ceeec41]
+Wanderer's BedrollItemA bedroll for a long road.Made from: Premi... [namelen=74 namehash=8c1c35f7]
+Warden's BedrollItemA bedroll for a long road.Made from: Premium... [namelen=72 namehash=aebec638]
+Warm BedrollItemA bedroll for a long road.Made from: Premium Bed... [namelen=68 namehash=59d3d69d]
+daggerheart.com

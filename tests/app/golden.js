@@ -427,7 +427,7 @@ if (require.main === module) {
   const captureState = async (state) => {
     if (!state.timed) {
       const { ctx, page, d } = await fresh({
-        width: WIDTH,
+        width: state.width ?? WIDTH,
         height: HEIGHT,
         storage: state.storage
       });
@@ -446,6 +446,8 @@ if (require.main === module) {
         await d.addressSettled();
         const ru = await captureLang(page, d);
         await d.click('EN');
+        /* The press on «EN» is a click outside, which closes an open `Menu`. */
+        if (state.again) await state.again(d);
         await d.addressSettled();
         const en = await captureLang(page, d);
         return render(state, ru, en);
@@ -456,7 +458,7 @@ if (require.main === module) {
 
     const oneLang = async (lang) => {
       const { ctx, page, d } = await fresh({
-        width: WIDTH,
+        width: state.width ?? WIDTH,
         height: HEIGHT,
         storage: state.storage
       });

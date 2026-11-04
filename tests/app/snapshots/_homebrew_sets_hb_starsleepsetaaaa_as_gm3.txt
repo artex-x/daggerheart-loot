@@ -20,16 +20,23 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
   main ""
     heading "Мои предметы" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
-    StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
-    button "Импорт из файла" [expanded=false]
     navigation "Мои предметы"
-      link "Предметы" [url=/homebrew]
-      link "Источники" [url=/homebrew/sources]
-      link "Комплекты" [url=/homebrew/sets]
-      link "Карты правил" [url=/homebrew/rules]
+      link "Предметы 39" [url=/homebrew]
+        StaticText "Предметы"
+        StaticText "39"
+      link "Источники 0" [url=/homebrew/sources]
+        StaticText "Источники"
+        StaticText "0"
+      link "Комплекты 1" [url=/homebrew/sets]
+        StaticText "Комплекты"
+        StaticText "1"
+      link "Карты правил 0" [url=/homebrew/rules]
+        StaticText "Карты правил"
+        StaticText "0"
+    StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
     button "Новый комплект"
     StaticText "1 комплект · 1 карта из 100"
+    button "Импорт из файла" [expanded=false]
     button "Сон под звёздами" [expanded=true]
     StaticText "3 предмета"
     button "Изменить"
@@ -49,7 +56,6 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-?Справка
 EN
 RU
 daggerheart.com
@@ -58,10 +64,10 @@ daggerheart.com
 Добавить предмет
 Изменить
 Импорт из файла
-Источники
+Источники 0
 К содержимому
-Карты правил
-Комплекты
+Карты правил 0
+Комплекты 1
 Конфиденциальность
 ЛутDaggerheart
 Новый комплект
@@ -69,7 +75,7 @@ daggerheart.com
 Подушка из мха
 Поиск
 Походный плед
-Предметы
+Предметы 39
 Скатка следопыта
 Сон под звёздами
 Таблицы
@@ -97,16 +103,23 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew/sets/hb_st
   main ""
     heading "My items" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
-    StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
-    button "Import from file" [expanded=false]
     navigation "My items"
-      link "Items" [url=/en/homebrew]
-      link "Sources" [url=/en/homebrew/sources]
-      link "Sets" [url=/en/homebrew/sets]
-      link "Rule cards" [url=/en/homebrew/rules]
+      link "Items 39" [url=/en/homebrew]
+        StaticText "Items"
+        StaticText "39"
+      link "Sources 0" [url=/en/homebrew/sources]
+        StaticText "Sources"
+        StaticText "0"
+      link "Sets 1" [url=/en/homebrew/sets]
+        StaticText "Sets"
+        StaticText "1"
+      link "Rule cards 0" [url=/en/homebrew/rules]
+        StaticText "Rule cards"
+        StaticText "0"
+    StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
     button "New set"
     StaticText "1 set · 1 card of 100"
+    button "Import from file" [expanded=false]
     button "Sleep Under the Stars" [expanded=true]
     StaticText "3 items"
     button "Edit"
@@ -126,7 +139,6 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew/sets/hb_st
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-?Help
 Account: gm3@example.test
 Add an item
 Camp Blanket
@@ -135,7 +147,7 @@ EN
 Edit
 Import from file
 Install as an app
-Items
+Items 39
 LootDaggerheart
 Moss Pillow
 New set
@@ -147,12 +159,12 @@ Remove: Camp Blanket
 Remove: Moss Pillow
 Remove: Ranger's Roll
 Roll
-Rule cards
+Rule cards 0
 Search
-Sets
+Sets 1
 Skip to content
 Sleep Under the Stars
-Sources
+Sources 0
 Tables
 Terms of use
 daggerheart.com

@@ -665,14 +665,21 @@
 {/snippet}
 
 <Field label={t.hbImportHead}>
-  <ImportFile
-    {t}
-    name="homebrew.json"
-    onpick={() => {
-      view = { kind: 'empty' };
-    }}
-    {onread}
-  />
+  <div class="filerow">
+    <ImportFile
+      {t}
+      name="homebrew.json"
+      onpick={() => {
+        view = { kind: 'empty' };
+      }}
+      {onread}
+    />
+    <span class="links">
+      <a href="/schema/homebrew-v2.json" target="_blank" rel="noopener">{t.hbImportFormat}</a>
+      <a href="/llms.txt" target="_blank" rel="noopener">llms.txt</a>
+    </span>
+  </div>
+  <p class="hint">{t.hbImportFits}</p>
 
   {#if view.kind === 'refused'}
     {@const version = view.version ?? ''}
@@ -781,6 +788,7 @@
           onchange={(v) => {
             update = v === 'update';
           }}
+          neutral
         />
         {#each heldLines as l (l.id)}
           {@render nameLine(
@@ -824,13 +832,6 @@
       {@render cancel()}
     </Actions>
   {/if}
-
-  <p class="hint">
-    {t.hbImportHintBefore}<a href="/schema/homebrew-v2.json" target="_blank" rel="noopener"
-      >{t.hbImportSchema}</a
-    >{t.importHintMid}<a href="/llms.txt" target="_blank" rel="noopener">{t.importLlms}</a
-    >{t.hbImportHintAfter}
-  </p>
 </Field>
 
 <!-- eslint-enable @typescript-eslint/no-confusing-void-expression -->
@@ -965,5 +966,20 @@
     margin: 10px 0 0;
     font-size: var(--t-data);
     color: var(--muted);
+  }
+
+  /* The chooser's row: the two links at its right end, under it when it wraps. */
+  .filerow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 14px;
+  }
+
+  .links {
+    display: flex;
+    gap: 14px;
+    margin-left: auto;
+    font-size: var(--t-data);
   }
 </style>

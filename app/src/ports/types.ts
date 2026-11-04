@@ -200,6 +200,8 @@ export interface DragHandlers {
 export interface DragPort {
   /** Binds a container whose children carry `data-index`. Returns an unbind. */
   bind(container: HTMLElement, handlers: DragHandlers): () => void;
+  /** Whether a drag is live now: its edge scroll is not the reader's. */
+  active(): boolean;
 }
 
 /* ---------- everything at once ---------- */
@@ -251,6 +253,32 @@ export interface MotionPort {
   /** Whether the reader asked for less motion; read per call, the setting
    *  can change while the page is open. */
   reduced(): boolean;
+}
+
+/** The layout band: `narrow` up to 760 px, `mid` 761-999 px, `wide` from 1000 px. */
+export type Band = 'narrow' | 'mid' | 'wide';
+
+export interface ViewportPort {
+  /** Returns the band the window is in now. */
+  band(): Band;
+  /** Calls `cb` with the new band on each change; returns the unsubscribe. */
+  onchange(cb: (band: Band) => void): () => void;
+}
+
+/** The page's vertical scroll. */
+export interface ScrollPort {
+  /** Returns the offset, clamped to 0..max: an overscroll bounce reads as the edge. */
+  y(): number;
+  /** Returns the furthest offset the page reaches now. */
+  max(): number;
+  /** Calls `fn` at most once per frame while the page scrolls. Returns an unsubscribe. */
+  onscroll(fn: () => void): () => void;
+  /** Scrolls `el` into view; `busy()` answers true until the scroll settles. */
+  into(el: Element, options: ScrollIntoViewOptions): void;
+  /** Marks the page as moved by the app or the browser, until the scroll settles. */
+  settle(): void;
+  /** Whether a scroll that no reader asked for is still running. */
+  busy(): boolean;
 }
 
 /**
@@ -706,6 +734,8 @@ export interface Env {
   dialog: DialogPort;
   pwa: PwaPort;
   motion: MotionPort;
+  viewport: ViewportPort;
+  scroll: ScrollPort;
   page: PagePort;
   clock: ClockPort;
   /** null in an unconfigured build: no cloud control is drawn. */

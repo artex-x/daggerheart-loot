@@ -2376,14 +2376,14 @@ the database's part. `docs/DECISIONS.md`, 2026-09-30, "The list_entries
 touch and limit triggers run once per statement".
 
 **The configured bundle budget.** `tools/bundle-budget.mjs` has two limits:
-253 kB for the unconfigured build and 311 kB for the configured one, which
+264 kB for the unconfigured build and 321 kB for the configured one, which
 carries the account client chunk. A batch whose total passes a budget raises
 it to the measured total rounded up to the next whole kB (a printed 250.3
 gives 251; the tool compares the unrounded total, so a printed whole number
 such as 251.0 can pass 251: add 1 kB), never past 350 kB configured and 270 kB
 unconfigured (owner, 2026-10-22: "we can increase it up to 270
 defensively"). `npm run check:built` builds `dist/`
-unconfigured and so measures only the 253 kB limit. The 311 kB limit runs in
+unconfigured and so measures only the 264 kB limit. The 321 kB limit runs in
 CI's `e2e` job, after `npm run e2e` leaves the configured build in `dist/`,
 and in `deploy`. The lists release passed `check:built` locally and failed
 this step in CI (run 36228323330). A batch that adds code to the app or to
@@ -2395,14 +2395,17 @@ drops every `E2E_*` name, the secret key included, before the build:
 node --env-file=.env.test.local --input-type=module -e "import { buildEnv } from './tests/e2e/lib.mjs'; import { spawnSync } from 'node:child_process'; process.exit(spawnSync('npm run build && npm run budget', { shell: true, stdio: 'inherit', env: buildEnv(process.env) }).status ?? 1);"
 ```
 
-Expected: `within the 311 kB budget (with the account client chunk)`; 310.6 kB
+Expected: `within the 321 kB budget (with the account client chunk)`; 320.7 kB
+locally on 2026-11-04 at task 57 batch 7 (search, account and the error pages), 263.3 kB
+unconfigured; 318.92 kB the same day (the editor's focus fallback and the bar at 320 px), and
+CI's 0.1 kB more passes 319, so the limit is 320; 261.6 kB unconfigured; 318.8 kB the same day
+(the homebrew head, the bar's actions, the editor),
+261.5 kB unconfigured, from 258.0 before it; 311.1 kB
+the same day (the header that hides on a scroll), 253.6 kB unconfigured, from 252.8 before it; 310.6 kB
 on 2026-10-22 at `persist-review` (the homebrew pages' folds, focus and long
 names, five new strings and four changed in two languages), 252.6 kB
 unconfigured, from 308.5 and 250.7 before it; 308.5 kB the same day (the print
-sheet's screen scale and two print headings), 250.7 kB unconfigured; 308.1 kB the same day (the requests
-panel's load line, the
-unknown list row, the index's save status, five strings in two languages),
-250.3 kB unconfigured, from 307.0 and 249.0 before it; 306.0 kB on 2026-10-21
+sheet's screen scale and two print headings), 250.7 kB unconfigured; 306.0 kB on 2026-10-21
 at `debt-cleanup` (the folded print vectors, the Items tab's
 filter, the status regions, the page help, the six-tab header), 248.0 kB
 unconfigured; 296.8 kB on 2026-10-16 at `debt-cleanup` (the account client from

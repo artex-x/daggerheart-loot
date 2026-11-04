@@ -179,7 +179,8 @@ another account's key narrows to nothing, as any unknown value does.
 
 A filter panel offers only the values the drawn rows answer (`FEATURES.md`, "Tables and
 search"); the address is read as above: a picked value no drawn row answers still narrows a
-table to nothing, and draws its pill where the panel lists the value.
+table to nothing, and draws its chip pressed where the panel lists the value (a pill on the
+share link and the Items tab).
 
 On a share link (`#/s/<token>`, below) `kind` takes `item`, `consumable`,
 `weapon`, `secondary` and `armor` where a table takes `equip`: a list mixes the
@@ -316,7 +317,7 @@ bare address and an anchor are kept as written; an address with a second
 a section of the chosen source is rewritten once to the chosen chip.
 
 An own item opens at `#/i/<key>` for its author only: any other reader,
-signed out included, gets «Предмет не найден». A key lives in one account,
+signed out included, gets the not-found page. A key lives in one account,
 so an agent cannot build one (`FEATURES.md`, "Homebrew").
 
 ## Fallback

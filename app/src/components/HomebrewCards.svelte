@@ -12,7 +12,7 @@
      card draws the first 20 and a fold; a member's «Убрать» toasts «Вернуть»; a removal
      or a closed form hands the focus on (docs/specs/FEATURES.md, "Homebrew", "Cards",
      rules 10, 12 and 20). */
-  import { tick, untrack } from 'svelte';
+  import { tick, untrack, type Snippet } from 'svelte';
   import { SvelteSet } from 'svelte/reactivity';
   import Button from './Button.svelte';
   import CardForm from './CardForm.svelte';
@@ -57,9 +57,11 @@
     kind: CardKind;
     /** The card the address opens and scrolls to; another key opens nothing. */
     openKey: string | null;
+    /** The right end of the counter's row (the import button from 761 px). */
+    tools?: Snippet | undefined;
   }
 
-  const { app, store, kind, openKey }: Props = $props();
+  const { app, store, kind, openKey, tools }: Props = $props();
 
   const t = $derived(app.t);
   const lang = $derived(app.lang);
@@ -158,7 +160,8 @@
       open.add(c.id);
     });
     void tick().then(() => {
-      document.getElementById('hb-card-' + c.id)?.scrollIntoView({ block: 'start' });
+      const card = document.getElementById('hb-card-' + c.id);
+      if (card) app.env.scroll.into(card, { block: 'start' });
     });
   });
 
@@ -415,28 +418,37 @@
 </script>
 
 <div class="hbtab" bind:this={root}>
-  <div class="add">
-    {#if editing === 'new'}
-      <CardForm
-        {app}
-        {store}
-        id={'hb-card-new-' + kind}
-        {kind}
-        card={null}
-        bookId={null}
-        withBook
-        guard
-        onsaved={close}
-        oncancel={close}
-      />
-    {:else}
-      <Button
-        variant="primary"
-        bind:el={newButton}
-        onclick={() => {
-          editing = 'new';
-        }}><Icon name="plus" />{kind === 'set' ? t.hbNewSet : t.hbNewCard}</Button
-      >
+  <div class="headrow">
+    <div class="add">
+      {#if editing === 'new'}
+        <CardForm
+          {app}
+          {store}
+          id={'hb-card-new-' + kind}
+          {kind}
+          card={null}
+          bookId={null}
+          withBook
+          guard
+          onsaved={close}
+          oncancel={close}
+        />
+      {:else}
+        <Button
+          variant="primary"
+          size={app.band === 'narrow' ? 'sm' : 'md'}
+          bind:el={newButton}
+          onclick={() => {
+            editing = 'new';
+          }}><Icon name="plus" />{kind === 'set' ? t.hbNewSet : t.hbNewCard}</Button
+        >
+      {/if}
+    </div>
+    {#if store.cardLimit !== null || store.cards.length || tools}
+      <div class="cline">
+        {#if store.cardLimit !== null || store.cards.length}<p class="note">{count}</p>{/if}
+        {#if tools}<span class="end">{@render tools()}</span>{/if}
+      </div>
     {/if}
   </div>
   {#if filtering}
@@ -450,11 +462,10 @@
       />
     </div>
   {/if}
-  {#if store.cardLimit !== null || store.cards.length}
-    <p class="note">{count}</p>
-  {/if}
   {#if !cards.length}
-    <Empty>{kind === 'set' ? t.hbNoSets : t.hbNoRefs}</Empty>
+    <Empty title={kind === 'set' ? t.hbNoSets : t.hbNoRefs} glyph="kindItem"
+      >{kind === 'set' ? t.hbNoSetsSub : t.hbNoRefsSub}</Empty
+    >
   {:else if !shown.length}
     <Empty>{t.nothing}</Empty>
   {:else}
@@ -591,18 +602,54 @@
 </div>
 
 <style>
+  /* The create button and the counter share a row: the first card row stays inside the
+     first screen at 360 px (DESIGN.md, "The First-Screen Rule"). An open form takes the row. */
+  .headrow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    margin-bottom: 10px;
+  }
+
   .add {
-    margin-bottom: 18px;
+    max-width: 100%;
+  }
+
+  .add:has(:global(input)) {
+    flex: 1 1 100%;
+  }
+
+  .add :global(.btn.sm) {
+    height: 40px;
   }
 
   .find {
     margin-bottom: 12px;
   }
 
+  .cline {
+    display: flex;
+    flex: 1 1 120px;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 10px;
+    min-width: 0;
+  }
+
   .note {
-    margin: 0 0 10px;
-    font-size: var(--t-small);
+    margin: 0;
+    font-size: var(--t-data);
     color: var(--muted);
+  }
+
+  .end {
+    display: flex;
+    margin-left: auto;
+  }
+
+  .end :global(.btn.sm) {
+    height: 40px;
   }
 
   .cards,
@@ -614,11 +661,12 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  /* The address key scrolls its card under the sticky top bar (`--anchor-top`). */
+  /* The address key scrolls its card under the sticky top bar: `--anchor-gap` on top of
+     the page's scroll padding. */
   .cards > li {
     padding: 8px 0;
     border-top: 1px solid var(--line);
-    scroll-margin-top: var(--anchor-top);
+    scroll-margin-top: var(--anchor-gap);
   }
 
   .cards > li:first-child {

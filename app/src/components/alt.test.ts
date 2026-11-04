@@ -7,15 +7,25 @@
 
 import { cleanup, render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
-import { fakeClipboard, fakeData, fakeEnv, memoryRouter, noData } from '../ports/index.js';
+import {
+  fakeClipboard,
+  fakeData,
+  fakeEnv,
+  fakeViewport,
+  memoryRouter,
+  noData
+} from '../ports/index.js';
 import type { Env } from '../ports/index.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 import type { Loot } from '../lib/data.js';
 import type { Record_ } from '../lib/types.js';
 
 afterEach(cleanup);
+
+/* jsdom does not implement scrollIntoView: «Ещё» calls it once open. */
+Element.prototype.scrollIntoView = vi.fn();
 
 const row = (kind: 'item' | 'consumable', i: number): Record_ => ({
   id: `${kind[0] ?? ''}${String(i)}`,
@@ -61,7 +71,7 @@ const at = (over: Partial<Env> = {}): Env =>
   fakeEnv({ router: memoryRouter('#/roll/alt'), data: fakeData(LOOT), ...over });
 
 const options = (): string[] =>
-  screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent.trim());
+  screen.queryAllByRole('article').map((a) => a.querySelector('h2')?.textContent.trim() ?? '');
 
 const press = (name: string | RegExp): Promise<void> =>
   userEvent.click(screen.getByRole('button', { name }));
@@ -133,6 +143,40 @@ describe('a roll of two dice', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     await press('Закрыть');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+});
+
+describe('the rarity and the two dice', () => {
+  it('draws the rarity as neutral chips with no tier line from 761 px', () => {
+    const { container } = render(App, { env: at() });
+    const chip = screen.getByRole('button', { name: 'Обычная' });
+    expect(chip).toHaveAttribute('aria-pressed', 'true');
+    expect(chip.className).toContain('neutral');
+    expect(container.querySelector('.chip small')).toBeNull();
+    expect(screen.queryByRole('combobox', { name: 'Редкость' })).not.toBeInTheDocument();
+  });
+
+  it('draws the rarity as a select beside the roll button up to 760 px', async () => {
+    render(App, { env: at({ viewport: fakeViewport('narrow') }) });
+    const select = screen.getByRole('combobox', { name: 'Редкость' });
+    await userEvent.selectOptions(select, 'uncommon');
+    expect(options()).toEqual(['предмет 13', 'предмет 2', 'расходник 13', 'расходник 2']);
+    expect(screen.queryByRole('button', { name: 'Необычная' })).not.toBeInTheDocument();
+  });
+
+  it('gives each die field a letter badge beside its word, not a hue alone', () => {
+    const { container } = render(App, { env: at() });
+    expect([...container.querySelectorAll('.dielbl')].map((l) => l.textContent)).toEqual([
+      'НКость Надежды',
+      'СКость Страха'
+    ]);
+    expect(container.querySelector('.dv.h')).toHaveTextContent('Н');
+    expect(container.querySelector('.dv.f')).toHaveTextContent('С');
+  });
+
+  it('reads both faces in the heading', () => {
+    render(App, { env: at() });
+    expect(screen.getByRole('heading', { level: 2, name: 'Бросок 1 и 2' })).toBeInTheDocument();
   });
 });
 
@@ -210,8 +254,9 @@ describe('handing the roll over', () => {
   it('reports a copied name from a card, which the panel announces', async () => {
     const clip = fakeClipboard();
     render(App, { env: at({ clipboard: clip }) });
-    const copy = screen.getAllByRole('button', { name: 'Скопировать название' })[0];
-    if (copy) await userEvent.click(copy);
+    const more = screen.getAllByRole('button', { name: 'Ещё' })[0];
+    if (more) await userEvent.click(more);
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Скопировать название' }));
     expect(clip.last.text).toBe('предмет 1');
     expect(screen.getByText('Название скопировано')).toBeInTheDocument();
   });
@@ -255,7 +300,7 @@ describe('a rarity the data has no columns for', () => {
        find; nothing may invent one. */
     render(App, { env: at() });
     await press(/Редкая/);
-    expect(screen.queryAllByRole('heading', { level: 2 })).toHaveLength(0);
+    expect(options()).toHaveLength(0);
   });
 });
 
@@ -265,30 +310,27 @@ describe('a dataset that did not load', () => {
     expect(
       screen.getByRole('heading', { level: 1, name: 'Альтернативные таблицы' })
     ).toBeInTheDocument();
-    expect(screen.queryAllByRole('heading', { level: 2 })).toHaveLength(0);
+    expect(options()).toHaveLength(0);
   });
 });
 
 describe('the help', () => {
   it('explains what the two columns mean', async () => {
     render(App, { env: at() });
-    await press('Справка');
+    await press('Об этих таблицах');
     expect(screen.getByText(/по смыслу/)).toBeInTheDocument();
   });
 });
 
 describe('accessibility', () => {
-  it('marks the results as a live region, so a re-roll is announced without moving focus', () => {
-    /* The rewrite dropped this - app.js draws role="status" aria-live="polite"
-       on every .results container it writes, and nothing but the qa.js
-       deletes (23c00a6, R0c) asserted it (docs/specs/COVERAGE.md, the `qa`
-       row). Gripped by
-       .results rather than the role alone - Toast.svelte can carry
-       role="status" too. */
+  it('names the roll in a hidden status, and the results are no live region', () => {
+    /* A menu opens inside the results: a live region there would read the card again. */
     const { container } = render(App, { env: at() });
     const results = container.querySelector('.results');
-    expect(results).toHaveAttribute('role', 'status');
-    expect(results).toHaveAttribute('aria-live', 'polite');
+    expect(results).not.toHaveAttribute('role');
+    expect(results).not.toHaveAttribute('aria-live');
+    const said = container.querySelector('.said[role="status"]');
+    expect(said?.textContent).not.toBe('');
   });
 
   it('has no axe violations on the page', async () => {

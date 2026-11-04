@@ -1,6 +1,6 @@
 # #/search ~ nothing found
 # route: #/search
-# why: "Ничего не найдено", and no reset button - unlike the tables
+# why: «Ничего не найдено», the cause naming the query, and «Очистить поиск»
 
 ## ru :: tree
 RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search]
@@ -21,11 +21,13 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search]
     button "Открывать при запуске" [pressed=false]
     StaticText "Поиск сразу по 1459 позициям - добыча, расходники и снаряжение, ..." [namelen=91 namehash=d415684b]
     searchbox "Поиск по названию или описанию..." [value=zzzqqqxx123 focused=true]
-    StaticText "ТИП"
-    button "Предметы" [pressed=true]
-    button "Расходники" [pressed=true]
-    button "Снаряжение" [pressed=true]
+    button "Все" [pressed=true]
+    button "Предметы" [pressed=false]
+    button "Расходники" [pressed=false]
+    button "Снаряжение" [pressed=false]
     StaticText "Ничего не найдено"
+    StaticText "Нет совпадений с «zzzqqqxx123» в названиях и описаниях."
+    button "Очистить поиск"
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -39,11 +41,14 @@ RU
 daggerheart.com
 Бросок
 Войти
+Все
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
 Открывать при запуске
+Очистить поиск
 Поиск
+Поиск по названию или описанию...
 Предметы
 Расходники
 Снаряжение
@@ -70,11 +75,13 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search]
     button "Open on start" [pressed=false]
     StaticText "Search all 1459 entries at once - loot, consumables and equipmen..." [namelen=90 namehash=c7b98fa7]
     searchbox "Search by name or description..." [value=zzzqqqxx123 focused=true]
-    StaticText "TYPE"
-    button "Items" [pressed=true]
-    button "Consumables" [pressed=true]
-    button "Equipment" [pressed=true]
+    button "All" [pressed=true]
+    button "Items" [pressed=false]
+    button "Consumables" [pressed=false]
+    button "Equipment" [pressed=false]
     StaticText "Nothing found"
+    StaticText "No match for "zzzqqqxx123" in names and descriptions."
+    button "Clear the search"
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -83,6 +90,8 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
+All
+Clear the search
 Consumables
 EN
 Equipment
@@ -94,6 +103,7 @@ Privacy
 RU
 Roll
 Search
+Search by name or description...
 Sign in
 Skip to content
 Tables

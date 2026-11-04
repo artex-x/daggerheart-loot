@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Feedback mock F1, F2</title>
+    <link rel="stylesheet" href="../9/base.css" />
+    <style>
+      .idx {
+        width: min(1180px, 100% - 32px);
+        margin: 0 auto;
+        padding: 26px 0 60px;
+      }
+      .idx h1 {
+        margin: 0 0 8px;
+        font-size: 30px;
+      }
+      .idx h2 {
+        font-size: 23px;
+        margin: 34px 0 8px;
+      }
+      .idx h3 {
+        font-size: 18px;
+        margin: 22px 0 6px;
+      }
+      .idx p,
+      .idx li {
+        font-size: 15px;
+        color: var(--muted);
+        max-width: 92ch;
+      }
+      .idx code {
+        font: 13px var(--mono);
+        color: var(--txt);
+      }
+      .tw {
+        overflow-x: auto;
+      }
+      table.fs {
+        border-collapse: collapse;
+        font-size: 14px;
+        min-width: 620px;
+      }
+      table.fs th,
+      table.fs td {
+        border: 1px solid var(--line2);
+        padding: 6px 10px;
+        text-align: left;
+        vertical-align: top;
+        color: var(--muted);
+      }
+      table.fs th {
+        color: var(--txt);
+      }
+      table.fs td.n {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+      table.fs tr.rec td {
+        background: rgb(255 255 255 / 4%);
+        color: var(--txt);
+      }
+      .ok {
+        color: var(--txt) !important;
+      }
+      .bad {
+        color: var(--danger-text) !important;
+      }
+      .frames {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        align-items: flex-start;
+        margin: 10px 0 6px;
+      }
+      figure {
+        margin: 0;
+        width: 240px;
+      }
+      figure.w {
+        width: 480px;
+      }
+      figure img {
+        display: block;
+        width: 100%;
+        border: 1px solid var(--line2);
+        border-radius: 8px;
+      }
+      figcaption {
+        font-size: 13px;
+        color: var(--muted);
+        padding-top: 6px;
+      }
+      figcaption b {
+        color: var(--txt);
+      }
+      figcaption a {
+        margin-right: 8px;
+      }
+      .rec-tag {
+        display: inline-block;
+        padding: 0 6px;
+        border: 1px solid var(--muted2);
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 650;
+        color: var(--txt);
+      }
+    </style>
+  </head>
+  <body>
+    <main class="idx">
+      <p><a href="../index.html">Back to the mocks</a></p>
+      <h1>Feedback round: F1 and F2</h1>
+      <p>
+        This page draws the answer to two pieces of end-user feedback (owner, 2026-11-03). The
+        reasons, the costs and the owner questions are in <code>issues/57/feedback.md</code>.
+        The frames are first screens at a phone size, not tall pages, so the rows per screen are
+        visible. Records and pictures are real. Impeccable <code>critique</code> has not run:
+        the orchestrator runs it on this folder.
+      </p>
+
+      <h2>Recommended set</h2>
+      <ul>
+        <li>
+          <b>A, the title and its buttons:</b> batch 5 is the answer. No roll page draws the
+          buttons beside a title up to 760 px. No extra rule.
+        </li>
+        <li>
+          <b>B, the header:</b> the brand row scrolls away and the three jobs stay sticky, up to
+          760 px. CSS only. No hide-and-show logic.
+        </li>
+        <li>
+          <b>C, the rows:</b> C1b, one compact row, 77 px, with one clamped line of effect or
+          stat, on <code>/lists/&lt;uuid&gt;</code> and <code>/s/</code> up to 760 px. A press
+          unfolds the full row. Nothing is stored. C1 is the same row with no text line.
+        </li>
+        <li>
+          <b>D, search and filter:</b> the search row from 8 entries on the owner's page, the
+          filter sheet at every width, the filter in memory.
+        </li>
+      </ul>
+
+      <h2>Rows per screen</h2>
+      <p>
+        Rows in view with the list scrolled, on a page of ordinary rows. At 360x640 the C1 and B
+        figures are the renders of <code>rows.json</code>. At 390x844 the 14-entry mock ends
+        first, so the figure is the screen less the sticky part, divided by the row height.
+      </p>
+      <div class="tw">
+        <table class="fs">
+          <thead>
+            <tr>
+              <th>Row</th>
+              <th>Height</th>
+              <th>Header</th>
+              <th>360x640</th>
+              <th>390x844</th>
+              <th>At scroll 0, 360x640</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Live today</td>
+              <td class="n">about 280</td>
+              <td>111 px sticky</td>
+              <td class="n">1.9</td>
+              <td class="n">2.6</td>
+              <td class="n">0.6</td>
+            </tr>
+            <tr>
+              <td>Batch 9 as drawn (mock 9)</td>
+              <td class="n">about 220-254</td>
+              <td>111 px sticky</td>
+              <td class="n">1.9</td>
+              <td class="n">2.8-3.0</td>
+              <td class="n">1.5</td>
+            </tr>
+            <tr>
+              <td>C2, clamped full row</td>
+              <td class="n">122</td>
+              <td>111 px sticky</td>
+              <td class="n">4.3</td>
+              <td class="n">6.0</td>
+              <td class="n">3.2</td>
+            </tr>
+            <tr>
+              <td>C1, compact row</td>
+              <td class="n">57</td>
+              <td>111 px sticky</td>
+              <td class="n">9.2</td>
+              <td class="n">12.7</td>
+              <td class="n">6.4-6.7</td>
+            </tr>
+            <tr>
+              <td>C1b, compact row, one text line</td>
+              <td class="n">77</td>
+              <td>111 px sticky</td>
+              <td class="n">6.8</td>
+              <td class="n">9.5</td>
+              <td class="n">4.8-5.0</td>
+            </tr>
+            <tr class="rec">
+              <td>C1b with B1 (recommended)</td>
+              <td class="n">77</td>
+              <td>45 px sticky</td>
+              <td class="n">7.7</td>
+              <td class="n">10.3</td>
+              <td class="n">4.8-5.0</td>
+            </tr>
+            <tr>
+              <td>C1 with B1</td>
+              <td class="n">57</td>
+              <td>45 px sticky</td>
+              <td class="n">10.3</td>
+              <td class="n">13.9</td>
+              <td class="n">6.4-6.7</td>
+            </tr>
+            <tr>
+              <td>C1 with B2, header hidden</td>
+              <td class="n">57</td>
+              <td>0 px while going down</td>
+              <td class="n">11.1</td>
+              <td class="n">14.7</td>
+              <td class="n">6.4-6.7</td>
+            </tr>
+            <tr>
+              <td>C3, stored mode, no picture</td>
+              <td class="n">44</td>
+              <td>111 px sticky</td>
+              <td class="n">12.0</td>
+              <td class="n">16.7</td>
+              <td class="n">7.8</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>First-screen offsets</h2>
+      <p>
+        <code>node issues/57/mocks/measure.mjs F</code>: the top of the first entry below the
+        top of the header, RU and EN alike. The limit is 256 at 640, 338 at 844 and 288 at 720.
+        The design target is 240 and 270.
+      </p>
+      <div class="tw">
+        <table class="fs">
+          <thead>
+            <tr>
+              <th>State</th>
+              <th>360x640</th>
+              <th>390x844</th>
+              <th>1180x720</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>c1-seven</code>: 7 entries, no search row, actions in «Ещё»</td>
+              <td class="n ok">200</td>
+              <td class="n ok">200</td>
+              <td class="n ok">159</td>
+            </tr>
+            <tr class="rec">
+              <td><code>c1</code>: 14 entries, search row, actions in «Ещё»</td>
+              <td class="n ok">252</td>
+              <td class="n ok">252</td>
+              <td class="n ok">163</td>
+            </tr>
+            <tr>
+              <td><code>c1b</code>: the same head, one text line</td>
+              <td class="n ok">252</td>
+              <td class="n ok">252</td>
+              <td class="n ok">163</td>
+            </tr>
+            <tr>
+              <td><code>d-keepact</code>: 14 entries, search row, action row kept</td>
+              <td class="n bad">300</td>
+              <td class="n ok">300</td>
+              <td class="n ok">163</td>
+            </tr>
+            <tr>
+              <td><code>d-filtered</code>: one filter in force</td>
+              <td class="n ok">252</td>
+              <td class="n ok">252</td>
+              <td class="n ok">163</td>
+            </tr>
+            <tr>
+              <td><code>c1-shared</code>: <code>/s/</code>, 13 entries, search row</td>
+              <td class="n bad">286</td>
+              <td class="n ok">286</td>
+              <td class="n ok">258</td>
+            </tr>
+            <tr>
+              <td><code>c1b-shared</code>: <code>/s/</code>, one text line</td>
+              <td class="n bad">286</td>
+              <td class="n ok">286</td>
+              <td class="n ok">258</td>
+            </tr>
+            <tr>
+              <td><code>c3-inv</code>: stored mode with its switch</td>
+              <td class="n bad">298</td>
+              <td class="n ok">298</td>
+              <td class="n ok">209</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        <code>/s/</code> at 286 is not new: mock 9 measured only <code>shared-player</code> with
+        six entries, so the search row of a long shared list was never measured.
+      </p>
+
+      <h2>A. The title and its buttons (F1)</h2>
+      <p>
+        The live build wraps the help button alone on <code>/roll/alt</code> in Russian up to
+        400 px, and on <code>/roll/wondrous_environments</code> up to 375 px. Mock 5 hides the
+        title and moves both buttons up to 760 px, so a 390-430 px phone is covered.
+      </p>
+      <div class="frames" data-set="a"></div>
+
+      <h2>B. The header (F2-1)</h2>
+      <p>The same scrolled list at 330 px down, three header behaviors.</p>
+      <div class="frames" data-set="b"></div>
+
+      <h2>C. The rows (F2-2)</h2>
+      <p>
+        Revised after the critique. The owner's row has no sign. The body is the button and a 20
+        px chevron ends it. The quantity is a 42x44 px field apart at the far right, so two
+        targets read as two. The row stays 57 px, and C1b is 77 px.
+      </p>
+      <div class="frames" data-set="c"></div>
+      <h3>C1 or C1b</h3>
+      <p>
+        C1b adds one line for the comparison a player makes. A weapon leads with damage and
+        range. In Russian at 360 px one line holds 5% of the record texts whole, so a long item
+        text still needs a press. Recommended: C1b on both pages, because players choose by
+        effect and it still shows four times today's rows. The trade-off: 2.6 fewer rows than C1
+        at 360x640 with B1.
+      </p>
+      <div class="frames" data-set="cb"></div>
+      <h3>The row in its states (drawn on C1; C1b adds its line)</h3>
+      <div class="frames" data-set="c1"></div>
+      <h3>The row on the shared page</h3>
+      <div class="frames" data-set="c1s"></div>
+
+      <h2>D. Search and filter on the owner's page (F2-3)</h2>
+      <div class="frames" data-set="d"></div>
+      <h3>From 761 px</h3>
+      <p>
+        The side column holds the list's controls, so the filter opens in the sheet at every
+        width. The rows keep mock 9's full row. While a filter is in force the grip goes and the
+        position field stays.
+      </p>
+      <div class="frames" data-set="dw"></div>
+    </main>
+    <script>
+      const F = (name, size, title, note, o = {}) => ({ name, size, title, note, ...o });
+      const SETS = {
+        a: [
+          F('a-today', '360x640', 'Live today, 360', 'The «?» wraps alone.'),
+          F('a-today', '390x844', 'Live today, 390', 'The same at 390.'),
+          F('a1', '390x844', 'A1, batch 5, 390', 'Recommended. First result at 245.', {
+            rec: 1
+          }),
+          F('a1', '430x932', 'A1, batch 5, 430', 'The same up to 760.', { rec: 1 }),
+          F(
+            'a2',
+            '360x640',
+            'A2, title kept, 360',
+            'First result at 320 in RU: past the limit.'
+          ),
+          F('a2', '390x844', 'A2, title kept, 390', 'First result at 297.')
+        ],
+        b: [
+          F('b-sticky', '360x640', 'Today: 111 px sticky', '9.2 rows.'),
+          F('b-collapse', '360x640', 'B1: the jobs stay', '10.3 rows. CSS only.', { rec: 1 }),
+          F('b-hide', '360x640', 'B2: all hidden', '11.1 rows while going down.'),
+          F('b-collapse', '390x844', 'B1 at 390', '13.9 rows on a long list.', { rec: 1 })
+        ],
+        c: [
+          F('plan9', '360x640', 'Batch 9 as drawn', '1.5 rows at scroll 0.'),
+          F('c1b', '360x640', 'C1b, one text line', '4.8 rows at scroll 0.', { rec: 1 }),
+          F('c1', '360x640', 'C1, compact row', '6.4 rows at scroll 0.'),
+          F('c2', '360x640', 'C2, clamped row', '3.2 rows at scroll 0.'),
+          F('c3-inv', '360x640', 'C3, «Инвентарь»', 'Stored mode, no picture.'),
+          F('c3-shop', '360x640', 'C3, «Лавка»', 'Stored mode with prices.')
+        ],
+        cb: [
+          F('c1b', '390x844', 'C1b, owner, 390', '7.4 rows at scroll 0.', { rec: 1 }),
+          F('c1', '390x844', 'C1, owner, 390', '10 rows at scroll 0.'),
+          F('c1b-shared', '360x640', 'C1b, /s/, 360', '4.4 rows at scroll 0.', { rec: 1 }),
+          F('c1b-shared', '390x844', 'C1b, /s/, 390', '7.3 rows at scroll 0.', { rec: 1 }),
+          F('c1b-b1', '360x640', 'C1b with B1, 360', '7.7 rows scrolled.', { rec: 1 }),
+          F('c1b-b1', '390x844', 'C1b with B1, 390', '10.3 rows scrolled.', { rec: 1 }),
+          F('c1b-inv', '360x640', 'C1b, no prices', 'The source takes the price place.')
+        ],
+        c1: [
+          F('c1-inv', '360x640', 'No prices (inventory)', 'The source takes the price place.'),
+          F('c1-book', '360x640', 'Book units', 'The longest price wraps; it is never cut.'),
+          F('c1-seven', '360x640', 'Below 8 entries', '«Выбрать» on the title row.'),
+          F('c1-open', '390x844', 'One row open', 'Position, price, note, «Ещё».'),
+          F('c1-note', '360x640', 'A row with a note', 'The note mark, then the note.'),
+          F('c1-select', '360x640', 'Selection mode', 'The tick, the quantity as text.')
+        ],
+        c1s: [
+          F('c1-shared', '360x640', '/s/, C1', 'The quantity is text; 1 draws nothing.'),
+          F('c1-shared', '390x844', '/s/, C1 at 390', '9.8 rows at scroll 0.'),
+          F('c1-shared-open', '360x640', '/s/, a row open', 'The note and the card link.'),
+          F('c1-shared-select', '360x640', '/s/, selection', 'Bar of 213 px in RU, as mock 9.')
+        ],
+        d: [
+          F('c1', '360x640', 'D1, the search row', 'At 252: passes.', { rec: 1 }),
+          F('d-keepact', '360x640', 'Action row kept', 'At 300: a named exception.'),
+          F('d-more', '360x640', '«Ещё» open', 'Share, print and roll inside.', { rec: 1 }),
+          F('d-filtered', '360x640', 'One filter in force', 'True numbers 3, 7, 13.', {
+            rec: 1
+          }),
+          F('d-sheet', '360x640', 'The filter sheet', 'No filter link on this page.', {
+            rec: 1
+          }),
+          F('d-query', '360x640', 'A search', 'The count on the meta line, the clear control.'),
+          F('d-empty', '360x640', 'No match', '«Ничего не найдено», «Сбросить всё».')
+        ],
+        dw: [
+          F('c1', '1180x720', '1180, search row', 'At 163.', { w: 1 }),
+          F('d-filtered', '1180x720', '1180, filter in force', 'No grip while narrowed.', {
+            w: 1
+          }),
+          F('d-sheet', '1180x720', '1180, the sheet', '560 px, centered.', { w: 1 }),
+          F('c1-shared', '1180x720', '1180, /s/', 'Unchanged from mock 9.', { w: 1 })
+        ]
+      };
+      for (const box of document.querySelectorAll('[data-set]')) {
+        for (const f of SETS[box.dataset.set]) {
+          const ru = `${f.name}__${f.size}__ru.png`;
+          const en = `${f.name}__${f.size}__en.png`;
+          const fig = document.createElement('figure');
+          if (f.w) fig.className = 'w';
+          fig.innerHTML = `<a href="${ru}"><img src="${ru}" alt="${f.title}" loading="lazy"></a>
+            <figcaption><b>${f.title}</b> ${f.rec ? '<span class="rec-tag">recommended</span>' : ''}<br>${f.note}<br><a href="${ru}">RU</a><a href="${en}">EN</a></figcaption>`;
+          box.append(fig);
+        }
+      }
+    </script>
+  </body>
+</html>

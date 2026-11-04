@@ -1,6 +1,6 @@
 # #/i/ci1 ~ print signed out
 # route: #/i/ci1
-# why: «Печать» pressed signed out: the boxed sign-in prompt under the pick row and its «Сохранить себе» group, «Войдите, чтобы печатать карточки.»
+# why: «Печать» pressed signed out: the boxed sign-in prompt under the action row, «Войдите, чтобы печатать карточки.»
 
 ## ru :: tree
 RootWebArea "Первоклассный Спальный Мешок - Генератор лута Daggerheart" [url=/i/ci1?v=<v>]
@@ -17,21 +17,16 @@ RootWebArea "Первоклассный Спальный Мешок - Генер
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
+    button "Страница"
+    StaticText "ПРЕДМЕТ"
     heading "Первоклассный Спальный Мешок" [level=1]
     StaticText "Core · Предметы · номер 1 "
     link "показать в таблице" [url=/tables/core_item/ci1]
-    button "Страница"
-    StaticText "1"
-    ... StaticText x4 of 8 same-shape siblings elided
-    button "Скопировать название" [description=Скопировать название]
-    button "Скопировать ссылку" [description=Скопировать ссылку]
-    button "Отправить"
-    button "Скопировать изображение" [description=Скопировать изображение]
-    button "Скопировать текст" [description=Скопировать текст]
-    button "Добавить в список" [expanded=false]
+    StaticText "Во время отдыха вы автоматически очищаете Стресс."
+    button "В список" [expanded=false]
+    button "Поделиться"
     button "Печать" [description=Собрать карточки для печати: девять на лист A4 expanded=true]
-    button "Сохранить себе" [description=Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с оригиналом. expanded=false]
-    StaticText "Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с ор..." [namelen=73 namehash=76f4ba3e]
+    button "Ещё" [expanded=false haspopup=menu]
     StaticText "Войдите, чтобы печатать карточки."
     button "Войти"
   contentinfo ""
@@ -46,19 +41,15 @@ EN
 RU
 daggerheart.com
 Бросок
+В список
 Войти
-Добавить в список
+Ещё
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
-Отправить
 Печать
+Поделиться
 Поиск
-Скопировать изображение
-Скопировать название
-Скопировать ссылку
-Скопировать текст
-Сохранить себе
 Страница
 Таблицы
 Условия использования
@@ -80,21 +71,16 @@ RootWebArea "Premium Bedroll - Daggerheart Loot Generator" [url=/i/en/ci1?v=<v>]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
+    button "Page"
+    StaticText "ITEM"
     heading "Premium Bedroll" [level=1]
     StaticText "Core · Items · roll 1 "
     link "show in the table" [url=/en/tables/core_item/ci1]
-    button "Page"
-    StaticText "1"
-    ... StaticText x4 of 8 same-shape siblings elided
-    button "Copy name" [description=Copy name]
-    button "Copy link" [description=Copy link]
-    button "Share"
-    button "Copy image" [description=Copy image]
-    button "Copy text" [description=Copy text]
+    StaticText "During downtime, you automatically clear a Stress."
     button "Add to list" [expanded=false]
+    button "Share"
     button "Print" [description=Lay these out for printing: nine to an A4 sheet expanded=true]
-    button "Save to my items" [description=The copy goes to "Homebrew" and no longer changes with the original. expanded=false]
-    StaticText "The copy goes to "Homebrew" and no longer changes with the origi..." [namelen=68 namehash=82c4f1ca]
+    button "More" [expanded=false haspopup=menu]
     StaticText "Sign in to print cards."
     button "Sign in"
   contentinfo ""
@@ -106,19 +92,15 @@ RootWebArea "Premium Bedroll - Daggerheart Loot Generator" [url=/i/en/ci1?v=<v>]
 
 ## en :: controls
 Add to list
-Copy image
-Copy link
-Copy name
-Copy text
 EN
 Install as an app
 LootDaggerheart
+More
 Page
 Print
 Privacy
 RU
 Roll
-Save to my items
 Search
 Share
 Sign in

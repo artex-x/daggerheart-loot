@@ -67,11 +67,13 @@ export function page(
  *  and returns the tab's content; the Items tab has no root of its own and returns the
  *  page's main element. */
 export async function tab(label: string): Promise<HTMLElement> {
-  const link = await screen.findByRole('link', { name: label });
+  /* A tab's name ends with its count. */
+  const named = new RegExp('^' + label + ' \\d+$');
+  const link = await screen.findByRole('link', { name: named });
   const href = link.getAttribute('href') ?? '';
   router?.click(href);
   return waitFor(() => {
-    const on = screen.getByRole('link', { name: label });
+    const on = screen.getByRole('link', { name: named });
     const root =
       href === '/homebrew'
         ? document.querySelector<HTMLElement>('main')

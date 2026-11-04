@@ -14,6 +14,12 @@ deleted.
 
 ## Index
 
+- 2026-11-04 - [Search and account follow the list head and the error page](decisions/2026-11-04-search-and-account-follow-the-list-head-and-the-error-page.md)
+- 2026-11-04 - [The homebrew pages share the list head and one selection bar](decisions/2026-11-04-the-homebrew-pages-share-the-list-head-and-one-selection-bar.md)
+- 2026-11-04 - [The record page is a dossier, the actions are one row, and «Ещё» is a menu](decisions/2026-11-04-the-record-page-is-a-dossier-with-one-more-menu.md)
+- 2026-11-04 - [The roll pages share one layout, and a result is a card face with its own row](decisions/2026-11-04-the-roll-pages-share-one-layout-and-results-draw-the-card-face.md)
+- 2026-11-03 - [Up to 760 px the header hides on scroll down and returns on scroll up](decisions/2026-11-03-the-header-hides-on-scroll-down-up-to-760-px.md)
+- 2026-10-30 - [List pages share one head and one selection bar](decisions/2026-10-30-list-pages-share-one-head-and-one-selection-bar.md)
 - 2026-10-29 - [A new purchase request toasts on every page](decisions/2026-10-29-a-new-purchase-request-toasts-on-every-page.md)
 - 2026-10-29 - [A resume past the prompt-cache lifetime is replaced by a fresh dispatch](decisions/2026-10-29-a-resume-past-the-prompt-cache-lifetime-is-replaced-by-a-fresh-dispatch.md)
 - 2026-10-29 - [A run outside main replays the deploy's steps before its first secret](decisions/2026-10-29-a-run-outside-main-replays-the-deploys-steps.md)
@@ -110,7 +116,7 @@ deleted.
 - 2026-10-02 - [A list's frozen copies hold up to 1048576 bytes together](decisions/2026-10-02-a-lists-frozen-copies-hold-up-to-1048576-bytes.md) - superseded in part
 - 2026-10-02 - [A shared page re-read names its revision; an unchanged list answers unchanged](decisions/2026-10-02-a-shared-page-re-read-names-its-revision.md)
 - 2026-10-02 - [E2E case L passes the 5 MB import on success or a whole tooSlow refusal](decisions/2026-10-02-e2e-case-l-passes-the-5-mb-import-on-success-or-a-whole-tooslow.md)
-- 2026-10-02 - [Field help is a «?» by the label; every input has its own visible label](decisions/2026-10-02-field-help-is-a-by-the-label-every.md)
+- 2026-10-02 - [Field help is a «?» by the label; every input has its own visible label](decisions/2026-10-02-field-help-is-a-by-the-label-every.md) - superseded in part
 - 2026-10-02 - [Homebrew import and the bulk move are each one all-or-nothing call](decisions/2026-10-02-homebrew-import-and-the-bulk-move-are-one-call-each.md)
 - 2026-10-02 - [The account re-read fetches only the lists whose revision moved](decisions/2026-10-02-the-account-re-read-fetches-only-lists-whose-revision-moved.md)
 - 2026-10-02 - [The bundle ceilings rise to 300 kB configured and 250 unconfigured](decisions/2026-10-02-the-bundle-ceilings-rise-to-300-kb-configured.md)
@@ -140,7 +146,7 @@ deleted.
 - 2026-09-30 - [The account reads its own effective limit through `my_limit()`](decisions/2026-09-30-the-account-reads-its-own-effective-limit.md)
 - 2026-09-30 - [The bundle budget steps up per batch to 250 kB configured and 190 unconfigured](decisions/2026-09-30-the-bundle-budget-steps-up-per-batch-to.md)
 - 2026-09-30 - [The configured bundle budget is 210 kB; the unconfigured stays 150 kB](decisions/2026-09-30-the-configured-bundle-budget-is-210-kb.md)
-- 2026-09-30 - [The homebrew editor keeps its save button, with a guard and a revision check](decisions/2026-09-30-the-homebrew-editor-keeps-its-save-button-with-a-guard.md)
+- 2026-09-30 - [The homebrew editor keeps its save button, with a guard and a revision check](decisions/2026-09-30-the-homebrew-editor-keeps-its-save-button-with-a-guard.md) - superseded in part
 - 2026-09-30 - [The list_entries touch and limit triggers run once per statement](decisions/2026-09-30-the-list-entries-triggers-run-once-per-statement.md)
 - 2026-09-30 - [The take count sits between Min and Max in one control; no stepper](decisions/2026-09-30-the-take-count-sits-between-min-and-max-in-one-control.md)
 - 2026-09-29 - [A roll mode starts at its first row on each visit; no number crosses tabs](decisions/2026-09-29-a-roll-mode-starts-at-its-first-row-on-each-visit.md)

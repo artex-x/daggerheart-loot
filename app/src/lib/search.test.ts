@@ -1,13 +1,15 @@
 /* Against the real catalog, because the point of search is that it finds
    things in it. */
 import { describe, expect, it } from 'vitest';
-import { buildIndex } from './data.js';
+import { buildIndex, kindOf } from './data.js';
 import { dict } from './dict.js';
 import { eqLine } from './i18n.js';
 import { isFrameRecord } from './label.js';
 import {
   foldQuery,
   hayFor,
+  highlightRanges,
+  markRuns,
   matches,
   parseQuery,
   rankHits,
@@ -580,5 +582,88 @@ describe('ranking', () => {
       hits.indexOf(mine[1] as Record_)
     );
     expect(hits).toHaveLength(contiguous('меч').length + 300);
+  });
+});
+
+describe('the search highlight', () => {
+  const marks = (name: string, q: string): [number, number][] =>
+    highlightRanges(name, parseQuery(q));
+
+  it('marks a word start in any case, and reads ё as е', () => {
+    expect(marks('Длинный Меч', 'меч')).toEqual([[8, 11]]);
+    expect(marks('Тёмный Плащ', 'темн')).toEqual([[0, 4]]);
+  });
+
+  it('marks a phrase and two terms, and merges an overlap', () => {
+    expect(marks('Ring of Fire', '"ring of"')).toEqual([[0, 7]]);
+    expect(marks('Ring of Fire', 'fire ring')).toEqual([
+      [0, 4],
+      [8, 12]
+    ]);
+    expect(marks('Ring of Fire', 'ring "ring of"')).toEqual([[0, 7]]);
+  });
+
+  it('marks nothing inside a word or without a match', () => {
+    expect(marks('Палаш', 'лаш')).toEqual([]);
+    expect(marks('Палаш', 'меч')).toEqual([]);
+  });
+
+  it('marks nothing where folding changes the length', () => {
+    /* A combining mark folds away, so the folded offsets would not be the name's. */
+    expect(marks('Zweihänder', 'zwei')).toEqual([]);
+  });
+});
+
+describe('markRuns', () => {
+  const runs = (name: string, q: string): { text: string; mark: boolean }[] =>
+    markRuns(name, parseQuery(q));
+
+  it('marks a word in the middle and keeps the text around it', () => {
+    expect(runs('Длинный Меч Огня', 'меч')).toEqual([
+      { text: 'Длинный ', mark: false },
+      { text: 'Меч', mark: true },
+      { text: ' Огня', mark: false }
+    ]);
+  });
+
+  it('marks two ranges', () => {
+    expect(runs('Ring of Fire', 'fire ring')).toEqual([
+      { text: 'Ring', mark: true },
+      { text: ' of ', mark: false },
+      { text: 'Fire', mark: true }
+    ]);
+  });
+
+  it('leaves a stem match unmarked', () => {
+    expect(runs('Зелья лечения', 'зелье')).toEqual([{ text: 'Зелья лечения', mark: false }]);
+  });
+
+  it('gives one unmarked run for no terms, and none for an empty name', () => {
+    expect(markRuns('Палаш', [])).toEqual([{ text: 'Палаш', mark: false }]);
+    expect(markRuns('', parseQuery('меч'))).toEqual([]);
+  });
+});
+
+describe('ranking then filtering by kind', () => {
+  const hay = hayFor(statLine);
+
+  it('gives the order of ranking the filtered pool, over the catalog', () => {
+    const terms = parseQuery('меч');
+    const ranked = rankHits(index.searchable, terms, statLine, hay);
+    for (const kind of ['item', 'consumable', 'equip'] as const) {
+      const pool = index.searchable.filter((it) => kindOf(it) === kind);
+      const after = ranked.filter((it) => kindOf(it) === kind);
+      expect(after).toEqual(rankHits(pool, terms, statLine, hay));
+    }
+  });
+
+  it('keeps a tie in the given order across three kinds', () => {
+    const a: Record_ = { ...own('hb_tkaaaaaaaaaaaaaa', 'Меч'), kind: 'consumable' };
+    const b = own('hb_tkbbbbbbbbbbbbbb', 'Меч');
+    const c: Record_ = { ...own('hb_tkcccccccccccccc', 'Меч'), kind: 'consumable' };
+    const terms = parseQuery('меч');
+    const ranked = rankHits([a, b, c], terms).filter((it) => kindOf(it) === 'consumable');
+    expect(ranked).toEqual(rankHits([a, c], terms));
+    expect(ranked).toEqual([a, c]);
   });
 });

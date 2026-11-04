@@ -356,7 +356,8 @@ Each card shows the picture, the site's card head (badges, name, stat chips,
 description) in RU or EN, then the image date, the asset, the record id and
 the position. A shared picture is one card under its first record, with the
 other records named. Beside the card (under it below 900 px) the same
-picture is drawn at the sizes the site uses: tile 168, list card 132, phone
+picture is drawn at the sizes the site uses: tile 168, roll card face 380 (a 4:3
+crop on the site; the review draws the whole picture), list card 132, phone
 card 96 (`img/`), row 60 and lists 40 (`img/thumb/`).
 
 ### Keys

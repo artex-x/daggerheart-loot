@@ -1,6 +1,6 @@
 # #/tables/homebrew ~ section fold as gm1
 # route: #/tables/homebrew
-# why: the homebrew table on «Мастерская Ольхи» with its 22 sections: the panel open, «Раздел» folded after 10 with «и ещё 12»; no table, filter or section link
+# why: the homebrew table on «Мастерская Ольхи» with its 22 sections: the column, «Раздел» folded after 10 with «и ещё 12»; no table, filter or section link
 # as: gm1
 
 ## ru :: tree
@@ -20,8 +20,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
   main ""
     heading "Таблицы" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
-    StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
+    button "Об этих данных" [expanded=false]
     navigation "Таблицы"
       link "Core" [url=/tables/core_item]
       link "Hope & Fear" [url=/tables/hope_and_fear_item]
@@ -33,27 +32,30 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Мастерская Ольхи" [url=/tables/homebrew/f_src-hb_alderworkshopaaa]
       link "Хоумбрю" [url=/tables/homebrew/f_src-hb]
     searchbox "Поиск по названию или описанию..."
-    button "Списком" [pressed=false]
-    button "Сеткой" [pressed=true]
-    button "Фильтры" [expanded=true]
-    StaticText "43"
-    ... StaticText x48 of 52 same-shape siblings elided
-    ... button x10 of 14 same-shape siblings elided
-    button "Раздел 08" [pressed=false]
-    button "Раздел 09" [pressed=false]
-    button "и ещё 12" [expanded=false]
-    checkbox "Выбрать все (1)" [checked=false]
-    checkbox "Предмет 002" [checked=false]
-    button "Предмет 002 Item 002"
-    ... checkbox x62 of 66 same-shape siblings elided
-    button "Ранг 2 Топор Тлеющих Углей Ember Axe"
-    ... button x39 of 43 same-shape siblings elided
-    StaticText "БЕЗ РАЗДЕЛА"
-    StaticText "Выбрать все (21)"
-    checkbox "Предмет 058" [checked=false]
-    button "Предмет 058 Item 058"
-    checkbox "Предмет 061" [checked=false]
-    button "Предмет 061 Item 061"
+    button "Список" [pressed=false]
+    button "Сетка" [pressed=true]
+    button "Выбрать"
+    complementary "Фильтры"
+      heading "Фильтры" [level=2]
+      StaticText "ТИП"
+      button "Все" [pressed=true]
+      button "Предметы" [pressed=false]
+      button "Снаряжение" [pressed=false]
+      StaticText "РАЗДЕЛ"
+      button "Все" [pressed=true]
+      ... button x8 of 12 same-shape siblings elided
+      button "Раздел 08" [pressed=false]
+      button "Раздел 09" [pressed=false]
+      button "и ещё 12" [expanded=false]
+    heading "Пистоли" [level=2]
+    button "ПРЕДМЕТ Предмет 002 Item 002"
+    heading "Холодное оружие" [level=2]
+    ... button x40 of 44 same-shape siblings elided
+    ... heading x19 of 23 same-shape siblings elided
+    heading "Раздел 20" [level=2]
+    heading "Без раздела" [level=2]
+    button "ПРЕДМЕТ Предмет 058 Item 058"
+    button "ПРЕДМЕТ Предмет 061 Item 061"
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -62,7 +64,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-?Справка
+?Об этих данных
 Core
 EN
 Hope & Fear
@@ -71,6 +73,8 @@ daggerheart.com
 Аккаунт: gm1@example.test
 Альт. таблицы
 Бросок
+Все
+Выбрать
 Дополнения
 К содержимому
 Конфиденциальность
@@ -79,90 +83,49 @@ daggerheart.com
 Открывать при запуске
 Пистоли
 Поиск
-Предмет 001
-Предмет 001Item 001
-Предмет 002
-Предмет 002Item 002
-Предмет 004
-Предмет 004Item 004
-Предмет 005
-Предмет 005Item 005
-Предмет 007
-Предмет 007Item 007
-Предмет 008
-Предмет 008Item 008
-Предмет 010
-Предмет 010Item 010
-Предмет 011
-Предмет 011Item 011
-Предмет 013
-Предмет 013Item 013
-Предмет 014
-Предмет 014Item 014
-Предмет 016
-Предмет 016Item 016
-Предмет 017
-Предмет 017Item 017
-Предмет 019
-Предмет 019Item 019
-Предмет 020
-Предмет 020Item 020
-Предмет 022
-Предмет 022Item 022
-Предмет 023
-Предмет 023Item 023
-Предмет 025
-Предмет 025Item 025
-Предмет 026
-Предмет 026Item 026
-Предмет 028
-Предмет 028Item 028
-Предмет 029
-Предмет 029Item 029
-Предмет 031
-Предмет 031Item 031
-Предмет 032
-Предмет 032Item 032
-Предмет 034
-Предмет 034Item 034
-Предмет 035
-Предмет 035Item 035
-Предмет 037
-Предмет 037Item 037
-Предмет 038
-Предмет 038Item 038
-Предмет 040
-Предмет 040Item 040
-Предмет 041
-Предмет 041Item 041
-Предмет 043
-Предмет 043Item 043
-Предмет 044
-Предмет 044Item 044
-Предмет 046
-Предмет 046Item 046
-Предмет 047
-Предмет 047Item 047
-Предмет 049
-Предмет 049Item 049
-Предмет 050
-Предмет 050Item 050
-Предмет 052
-Предмет 052Item 052
-Предмет 053
-Предмет 053Item 053
-Предмет 055
-Предмет 055Item 055
-Предмет 056
-Предмет 056Item 056
-Предмет 058
-Предмет 058Item 058
-Предмет 059
-Предмет 059Item 059
-Предмет 061
-Предмет 061Item 061
-Предмет 062
-Предмет 062Item 062
+Поиск по названию или описанию...
+ПредметПредмет 001Item 001
+ПредметПредмет 002Item 002
+ПредметПредмет 004Item 004
+ПредметПредмет 005Item 005
+ПредметПредмет 007Item 007
+ПредметПредмет 008Item 008
+ПредметПредмет 010Item 010
+ПредметПредмет 011Item 011
+ПредметПредмет 013Item 013
+ПредметПредмет 014Item 014
+ПредметПредмет 016Item 016
+ПредметПредмет 017Item 017
+ПредметПредмет 019Item 019
+ПредметПредмет 020Item 020
+ПредметПредмет 022Item 022
+ПредметПредмет 023Item 023
+ПредметПредмет 025Item 025
+ПредметПредмет 026Item 026
+ПредметПредмет 028Item 028
+ПредметПредмет 029Item 029
+ПредметПредмет 031Item 031
+ПредметПредмет 032Item 032
+ПредметПредмет 034Item 034
+ПредметПредмет 035Item 035
+ПредметПредмет 037Item 037
+ПредметПредмет 038Item 038
+ПредметПредмет 040Item 040
+ПредметПредмет 041Item 041
+ПредметПредмет 043Item 043
+ПредметПредмет 044Item 044
+ПредметПредмет 046Item 046
+ПредметПредмет 047Item 047
+ПредметПредмет 049Item 049
+ПредметПредмет 050Item 050
+ПредметПредмет 052Item 052
+ПредметПредмет 053Item 053
+ПредметПредмет 055Item 055
+ПредметПредмет 056Item 056
+ПредметПредмет 058Item 058
+ПредметПредмет 059Item 059
+ПредметПредмет 061Item 061
+ПредметПредмет 062Item 062
 Предметы
 Прочее
 Раздел 01
@@ -174,15 +137,13 @@ daggerheart.com
 Раздел 07
 Раздел 08
 Раздел 09
-Ранг 2Топор Тлеющих УглейEmber Axe
-Сеткой
+Ранг 2Основное оружиеТопор Тлеющих УглейМагическое · Характерист... [namelen=114 namehash=622526a3]
+Сетка
 Снаряжение
-Списком
+Список
 Таблицы
-Топор Тлеющих Углей
 Условия использования
 Установить как приложение
-Фильтры
 Хоумбрю
 и ещё 12
 
@@ -203,8 +164,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/homebrew?as=gm
   main ""
     heading "Tables" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
-    StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
+    button "About this data" [expanded=false]
     navigation "Tables"
       link "Core" [url=/en/tables/core_item]
       link "Hope & Fear" [url=/en/tables/hope_and_fear_item]
@@ -218,25 +178,28 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/homebrew?as=gm
     searchbox "Search by name or description..."
     button "List" [pressed=false]
     button "Grid" [pressed=true]
-    button "Filters" [expanded=true]
-    StaticText "43"
-    ... StaticText x48 of 52 same-shape siblings elided
-    ... button x10 of 14 same-shape siblings elided
-    button "Section 07" [pressed=false]
-    button "Section 08" [pressed=false]
-    button "and 12 more" [expanded=false]
-    checkbox "Select all (1)" [checked=false]
-    checkbox "Item 002" [checked=false]
-    button "Item 002 Предмет 002"
-    ... checkbox x62 of 66 same-shape siblings elided
-    button "Tier 2 Ember Axe Топор Тлеющих Углей"
-    ... button x39 of 43 same-shape siblings elided
-    StaticText "NO SECTION"
-    StaticText "Select all (21)"
-    checkbox "Item 058" [checked=false]
-    button "Item 058 Предмет 058"
-    checkbox "Item 061" [checked=false]
-    button "Item 061 Предмет 061"
+    button "Select"
+    complementary "Filters"
+      heading "Filters" [level=2]
+      StaticText "TYPE"
+      button "All" [pressed=true]
+      button "Items" [pressed=false]
+      button "Equipment" [pressed=false]
+      StaticText "SECTION"
+      button "All" [pressed=true]
+      ... button x8 of 12 same-shape siblings elided
+      button "Section 07" [pressed=false]
+      button "Section 08" [pressed=false]
+      button "and 12 more" [expanded=false]
+    heading "Pistols" [level=2]
+    button "ITEM Item 002 Предмет 002"
+    heading "Blades" [level=2]
+    ... button x40 of 44 same-shape siblings elided
+    ... heading x19 of 23 same-shape siblings elided
+    heading "Section 20" [level=2]
+    heading "No section" [level=2]
+    button "ITEM Item 058 Предмет 058"
+    button "ITEM Item 061 Предмет 061"
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -245,104 +208,61 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/homebrew?as=gm
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-?Help
+?About this data
 Account: gm1@example.test
 Alder Workshop
+All
 Alt. tables
 Blades
 Core
 EN
-Ember Axe
 Equipment
-Filters
 Grid
 Homebrew
 Hope & Fear
 Install as an app
-Item 001
-Item 001Предмет 001
-Item 002
-Item 002Предмет 002
-Item 004
-Item 004Предмет 004
-Item 005
-Item 005Предмет 005
-Item 007
-Item 007Предмет 007
-Item 008
-Item 008Предмет 008
-Item 010
-Item 010Предмет 010
-Item 011
-Item 011Предмет 011
-Item 013
-Item 013Предмет 013
-Item 014
-Item 014Предмет 014
-Item 016
-Item 016Предмет 016
-Item 017
-Item 017Предмет 017
-Item 019
-Item 019Предмет 019
-Item 020
-Item 020Предмет 020
-Item 022
-Item 022Предмет 022
-Item 023
-Item 023Предмет 023
-Item 025
-Item 025Предмет 025
-Item 026
-Item 026Предмет 026
-Item 028
-Item 028Предмет 028
-Item 029
-Item 029Предмет 029
-Item 031
-Item 031Предмет 031
-Item 032
-Item 032Предмет 032
-Item 034
-Item 034Предмет 034
-Item 035
-Item 035Предмет 035
-Item 037
-Item 037Предмет 037
-Item 038
-Item 038Предмет 038
-Item 040
-Item 040Предмет 040
-Item 041
-Item 041Предмет 041
-Item 043
-Item 043Предмет 043
-Item 044
-Item 044Предмет 044
-Item 046
-Item 046Предмет 046
-Item 047
-Item 047Предмет 047
-Item 049
-Item 049Предмет 049
-Item 050
-Item 050Предмет 050
-Item 052
-Item 052Предмет 052
-Item 053
-Item 053Предмет 053
-Item 055
-Item 055Предмет 055
-Item 056
-Item 056Предмет 056
-Item 058
-Item 058Предмет 058
-Item 059
-Item 059Предмет 059
-Item 061
-Item 061Предмет 061
-Item 062
-Item 062Предмет 062
+ItemItem 001Предмет 001
+ItemItem 002Предмет 002
+ItemItem 004Предмет 004
+ItemItem 005Предмет 005
+ItemItem 007Предмет 007
+ItemItem 008Предмет 008
+ItemItem 010Предмет 010
+ItemItem 011Предмет 011
+ItemItem 013Предмет 013
+ItemItem 014Предмет 014
+ItemItem 016Предмет 016
+ItemItem 017Предмет 017
+ItemItem 019Предмет 019
+ItemItem 020Предмет 020
+ItemItem 022Предмет 022
+ItemItem 023Предмет 023
+ItemItem 025Предмет 025
+ItemItem 026Предмет 026
+ItemItem 028Предмет 028
+ItemItem 029Предмет 029
+ItemItem 031Предмет 031
+ItemItem 032Предмет 032
+ItemItem 034Предмет 034
+ItemItem 035Предмет 035
+ItemItem 037Предмет 037
+ItemItem 038Предмет 038
+ItemItem 040Предмет 040
+ItemItem 041Предмет 041
+ItemItem 043Предмет 043
+ItemItem 044Предмет 044
+ItemItem 046Предмет 046
+ItemItem 047Предмет 047
+ItemItem 049Предмет 049
+ItemItem 050Предмет 050
+ItemItem 052Предмет 052
+ItemItem 053Предмет 053
+ItemItem 055Предмет 055
+ItemItem 056Предмет 056
+ItemItem 058Предмет 058
+ItemItem 059Предмет 059
+ItemItem 061Предмет 061
+ItemItem 062Предмет 062
 Items
 List
 LootDaggerheart
@@ -353,6 +273,7 @@ Privacy
 RU
 Roll
 Search
+Search by name or description...
 Section 01
 Section 02
 Section 03
@@ -361,10 +282,11 @@ Section 05
 Section 06
 Section 07
 Section 08
+Select
 Skip to content
 Supplements
 Tables
 Terms of use
-Tier 2Ember AxeТопор Тлеющих Углей
+Tier 2Primary weaponEmber AxeMagic · Spellcast · Melee · d10+2 m... [namelen=79 namehash=d8837485]
 and 12 more
 daggerheart.com

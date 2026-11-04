@@ -1,0 +1,166 @@
+# #/homebrew/sources ~ menu as gm1
+# route: #/homebrew/sources
+# why: a source's «Ещё» pressed: «Переименовать», «Скачать JSON», a separator and «Удалить»
+# as: gm1
+
+## ru :: tree
+RootWebArea "Мои предметы - Генератор лута Daggerheart" [url=/homebrew/sources?as=gm1]
+  link "К содержимому" [url=/homebrew/sources?as=gm1#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    button "Аккаунт: gm1@example.test" [expanded=false haspopup=menu]
+    navigation "Разделы"
+      link "Бросок" [url=/roll/std]
+      link "Таблицы" [url=/tables]
+      link "Поиск" [url=/search]
+  main ""
+    heading "Мои предметы" [level=1]
+    button "Открывать при запуске" [pressed=false]
+    navigation "Мои предметы"
+      link "Предметы 4" [url=/homebrew]
+        StaticText "Предметы"
+        StaticText "4"
+      link "Источники 1" [url=/homebrew/sources]
+        StaticText "Источники"
+        StaticText "1"
+      link "Комплекты 1" [url=/homebrew/sets]
+        StaticText "Комплекты"
+        StaticText "1"
+      link "Карты правил 1" [url=/homebrew/rules]
+        StaticText "Карты правил"
+        StaticText "1"
+    StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
+    button "Новый источник"
+    StaticText "1 источник из 20"
+    button "Импорт из файла" [expanded=false]
+    link "Мастерская Ольхи" [url=/tables/homebrew/f_src-hb_alderworkshopaaa]
+    StaticText "1 предмет"
+    StaticText " · 2 раздела из 30"
+    button "Разделы" [expanded=false]
+    button "Ещё" [expanded=true haspopup=menu]
+    menu "Ещё" [orientation=vertical]
+      menuitem "Переименовать" [focused=true]
+      menuitem "Скачать JSON"
+      menuitem "Удалить"
+    link "Хоумбрю" [url=/tables/homebrew/f_src-hb]
+    StaticText "3 предмета"
+    button "Скачать JSON"
+  contentinfo ""
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=/pages/install.html]
+      link "Конфиденциальность" [url=/pages/privacy.html]
+      link "Условия использования" [url=/pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+
+## ru :: controls
+EN
+RU
+daggerheart.com
+Аккаунт: gm1@example.test
+Бросок
+Ещё
+Импорт из файла
+Источники 1
+К содержимому
+Карты правил 1
+Комплекты 1
+Конфиденциальность
+ЛутDaggerheart
+Мастерская Ольхи
+Новый источник
+Открывать при запуске
+Переименовать
+Поиск
+Предметы 4
+Разделы
+Скачать JSON
+Таблицы
+Удалить
+Условия использования
+Установить как приложение
+Хоумбрю
+
+## en :: tree
+RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew/sources?as=gm1]
+  link "Skip to content" [url=/en/homebrew/sources?as=gm1#main]
+  banner ""
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    button "Account: gm1@example.test" [expanded=false haspopup=menu]
+    navigation "Sections"
+      link "Roll" [url=/en/roll/std]
+      link "Tables" [url=/en/tables]
+      link "Search" [url=/en/search]
+  main ""
+    heading "My items" [level=1]
+    button "Open on start" [pressed=false]
+    navigation "My items"
+      link "Items 4" [url=/en/homebrew]
+        StaticText "Items"
+        StaticText "4"
+      link "Sources 1" [url=/en/homebrew/sources]
+        StaticText "Sources"
+        StaticText "1"
+      link "Sets 1" [url=/en/homebrew/sets]
+        StaticText "Sets"
+        StaticText "1"
+      link "Rule cards 1" [url=/en/homebrew/rules]
+        StaticText "Rule cards"
+        StaticText "1"
+    StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
+    button "New source"
+    StaticText "1 source of 20"
+    button "Import from file" [expanded=false]
+    link "Alder Workshop" [url=/en/tables/homebrew/f_src-hb_alderworkshopaaa]
+    StaticText "1 item"
+    StaticText " · 2 sections of 30"
+    button "Sections" [expanded=false]
+    button "More" [expanded=true haspopup=menu]
+    menu "More" [orientation=vertical]
+      menuitem "Rename" [focused=true]
+      menuitem "Download JSON"
+      menuitem "Delete"
+    link "Homebrew" [url=/en/tables/homebrew/f_src-hb]
+    StaticText "3 items"
+    button "Download JSON"
+  contentinfo ""
+    navigation "Site pages"
+      link "Install as an app" [url=/pages/en/install.html]
+      link "Privacy" [url=/pages/en/privacy.html]
+      link "Terms of use" [url=/pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
+
+## en :: controls
+Account: gm1@example.test
+Alder Workshop
+Delete
+Download JSON
+EN
+Homebrew
+Import from file
+Install as an app
+Items 4
+LootDaggerheart
+More
+New source
+Open on start
+Privacy
+RU
+Rename
+Roll
+Rule cards 1
+Search
+Sections
+Sets 1
+Skip to content
+Sources 1
+Tables
+Terms of use
+daggerheart.com

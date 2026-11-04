@@ -99,7 +99,7 @@ route of `routes.json` is covered and that the worker takes no rewritten path.
   after it is dropped, the address kept); a malformed or unknown id draws the
   record page's not-found page, never home; it opens from `<site>#/h/<uuid>`
   and `<site>en/#/h/<uuid>` alike. A relation and a list row link to this
-  address; «Скопировать ссылку» and «Отправить» hand out the preview host's
+  address; «Скопировать ссылку» and «Поделиться» hand out the preview host's
   address (section 5); `#/i/<key>` keeps opening the author's own item
 
 ## 2. Record ids

@@ -10,7 +10,9 @@ RootWebArea "Новый предмет - Генератор лута Daggerheart
     StaticText "Перетащите картинку, чтобы выбрать квадрат. Стрелки двигают её, ..." [namelen=85 namehash=0d5e8fc6]
     group "Кадр: перетащите или двигайте стрелками" [description=Перетащите картинку, чтобы выбрать квадрат. Стрелки двигают её, + и - меняют масштаб. focused=true]
     StaticText "Масштаб"
+    button "Меньше" [disabled=true]
     slider "Масштаб" [value=1 valuetext=1 valuemin=1 valuemax=4 orientation=horizontal]
+    button "Больше"
     button "Готово"
     button "Отмена"
 
@@ -26,29 +28,25 @@ RU - пусто
 daggerheart.com
 Аккаунт: gm1@example.test
 Без ранга
+Больше
 Бросок
 Выбрать из предметов
 Выбрать файл
 Готово
 Жирный
-К моим предметам
 К содержимому
 Карты правил
 Конфиденциальность
 Курсив
 ЛутDaggerheart
+Меньше
+Мои предметы
 На печати
 На экране
 НетПылающие близнецыУбранство СвятогоКомплект Ольхи (HB)+ Новый ... [namelen=75 namehash=aca7e35f]
 Новая карта правил
 Нумерованный список
 Отмена
-Подсказка: Источник
-Подсказка: Карты правил
-Подсказка: Комплект
-Подсказка: Описание
-Подсказка: Получается из
-Подсказка: Улучшается до
 Поиск
 Получается из
 Предмет
@@ -71,7 +69,9 @@ RootWebArea "New item - Daggerheart Loot Generator" [url=/en/homebrew/new?as=gm1
     StaticText "Drag the picture to choose the square. Arrow keys move it; + and..." [namelen=72 namehash=f7b3964e]
     group "Frame: drag it or move it with the arrow keys" [description=Drag the picture to choose the square. Arrow keys move it; + and - zoom. focused=true]
     StaticText "Zoom"
+    button "Zoom out" [disabled=true]
     slider "Zoom" [value=1 valuetext=1 valuemin=1 valuemax=4 orientation=horizontal]
+    button "Zoom in"
     button "Done"
     button "Cancel"
 
@@ -91,12 +91,6 @@ Done
 EN
 EN - empty
 Equipment
-Help: Description
-Help: Made from
-Help: Rule cards
-Help: Set
-Help: Source
-Help: Upgrades to
 HomebrewAlder Workshop+ New source...
 In print
 Install as an app
@@ -104,6 +98,7 @@ Italic
 Item
 LootDaggerheart
 Made from
+My items
 New rule card
 No tier
 NoneBlazing TwinsSaint's EnsembleAlder Set (HB)+ New set...
@@ -120,7 +115,8 @@ Skip to content
 Table
 Tables
 Terms of use
-To my items
 Upgrades to
+Zoom in
+Zoom out
 daggerheart.com
 Страница

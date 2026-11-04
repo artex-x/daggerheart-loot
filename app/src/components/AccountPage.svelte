@@ -1,10 +1,11 @@
 <script lang="ts">
-  /* `#/account`: the display settings, who is signed in, the providers they
-     sign in with, the account's data export, signing out, and deleting the
-     account - or, signed out, the way in. Drawn only in a build with sign-in
-     configured; `App.svelte` shows the not-found page otherwise
-     (docs/specs/FEATURES.md, "Account"). */
+  /* `#/account`: the display defaults, the providers they sign in with (the one in use
+     marked), the account's data export, signing out, and deleting the account - or,
+     signed out, the way in. Two columns from 1000 px, in the DOM order of the one column.
+     Drawn only in a build with sign-in configured; `App.svelte` shows the not-found page
+     otherwise (docs/specs/FEATURES.md, "Account"). */
   import { tick } from 'svelte';
+  import Badge from './Badge.svelte';
   import Button from './Button.svelte';
   import Field from './Field.svelte';
   import LoadState from './LoadState.svelte';
@@ -14,6 +15,7 @@
   import Seg from './Seg.svelte';
   import TextInput from './TextInput.svelte';
   import { sectionLabel } from '../lib/dict.js';
+  import { plural } from '../lib/plural.js';
   import { HOMEBREW_HASH, parseHash, sectionHash, tablesHash } from '../lib/hash.js';
   import type { NotifyGm } from '../lib/prefs.js';
   import { BARE_TABLE, SECTIONS, type Lang, type Section } from '../lib/types.js';
@@ -50,6 +52,7 @@
   let confirming = $state(false);
   let typed = $state('');
   let typedEl = $state<HTMLInputElement | undefined>(undefined);
+  let deleteOpener = $state<HTMLButtonElement | undefined>(undefined);
   /* «Скачать мои данные (ZIP)» while its zip is built. */
   let exporting = $state(false);
 
@@ -76,6 +79,36 @@
     { value: 'color' as const, label: t.printColor },
     { value: 'bw' as const, label: t.printBW }
   ]);
+  const sizes = $derived([
+    { value: 'std' as const, label: t.printStd },
+    { value: 'compact' as const, label: t.printCompact }
+  ]);
+
+  /* What the delete takes, from the stores already read: a count never read is never
+     drawn, and a count of zero is left out. */
+  const goes = $derived.by(() => {
+    const out: string[] = [];
+    const cl = app.cloudLists;
+    if (cl?.status === 'ready' && cl.lists.length > 0) {
+      out.push(plural(cl.lists.length, t.listsN, app.lang));
+    }
+    const hb = app.homebrew;
+    if (hb?.status === 'ready') {
+      const own = [
+        [hb.items.length, t.hbItemsN],
+        [hb.books.length, t.hbSourcesN],
+        [hb.cards.filter((c) => c.kind === 'set').length, t.hbSetsN],
+        [hb.cards.filter((c) => c.kind === 'ref').length, t.hbRefsN]
+      ] as const;
+      const line = own
+        .filter(([n]) => n > 0)
+        .map(([n, forms]) => plural(n, forms, app.lang))
+        .join(', ');
+      if (line) out.push(line);
+    }
+    out.push(t.deleteGoesRest);
+    return out;
+  });
   const notify = $derived<{ value: NotifyGm; label: string }[]>([
     { value: 'ask', label: t.notifyAsk },
     { value: 'always', label: t.notifyAlways },
@@ -205,6 +238,12 @@
     confirming = false;
     typed = '';
   }
+
+  /* «Отмена» leaves with the confirm, so the focus returns to its opener (rule 20). */
+  function cancelConfirm(): void {
+    closeConfirm();
+    deleteOpener?.focus();
+  }
 </script>
 
 <!-- A `{@render}` tag reads as a void expression to this rule wherever it
@@ -241,6 +280,7 @@
   <div class="col">
     {#if app.user === undefined}
       <PageTitle title={t.account} sub="" />
+      <LoadState {t} failed={false} text="" onretry={() => undefined} />
     {:else if app.user === null}
       <PageTitle title={t.account} sub={t.signInLead} />
       <Panel style={PANEL} primary>
@@ -268,227 +308,249 @@
       </Panel>
     {:else}
       {@const session = app.user}
-      <PageTitle title={t.account} sub={t.accountSub} />
+      <!-- No sub signed in: the section headings name what the page holds. The empty
+           line keeps the spacing of the loading state. -->
+      <PageTitle title={t.account} sub="" />
 
-      <Panel style={PANEL} primary>
-        <Field label={t.displayHead} heading>
-          <p class="hint lead">{t.displayLead}</p>
-          <div class="set">
-            <span class="setname">{t.langLabel}</span>
-            <Seg
-              options={LANGS}
-              value={app.lang}
-              label={t.langLabel}
-              onchange={(l: Lang) => {
-                app.setLang(l);
-              }}
-            />
-          </div>
-          <div class="set">
-            <label class="setname" for="display-home">{t.displayHome}</label>
-            <select id="display-home" value={homeValue} onchange={setHome}>
-              {#each SECTIONS as s (s)}
-                <option value={optionOf(s)}>{sectionLabel(s, t)}</option>
-              {/each}
-              <option value={HOMEBREW_HASH}>{t.myItems}</option>
-            </select>
-          </div>
-          <div class="set">
-            <span class="setname">{t.tables}</span>
-            <Seg
-              options={views}
-              value={app.tablesView}
-              label={t.tables}
-              onchange={(v: 'list' | 'grid') => {
-                app.setTablesView(v);
-              }}
-            />
-          </div>
-          <div class="set">
-            <span class="setname">{t.print}</span>
-            <Seg
-              options={art}
-              value={app.printBW ? 'bw' : 'color'}
-              label={t.print}
-              onchange={(v: 'color' | 'bw') => {
-                app.setPrintBW(v === 'bw');
-              }}
-            />
-            <label class="chk"
-              ><input
-                type="checkbox"
-                checked={app.printCompact}
-                onchange={(e) => {
-                  app.setPrintCompact(e.currentTarget.checked);
-                }}
-              />{t.printCompactBox}</label
-            >
-          </div>
-          <!-- A select at every width: three answers of the owner's length do not
-               fit a segmented control at 360 px. -->
-          <div class="set">
-            <label class="setname" for="display-notify">{t.displayNotify}</label>
-            <select
-              id="display-notify"
-              value={app.notifyGm}
-              aria-describedby="display-notify-hint"
-              onchange={setNotify}
-            >
-              {#each notify as o (o.value)}
-                <option value={o.value}>{o.label}</option>
-              {/each}
-            </select>
-            <p id="display-notify-hint" class="hint sethint">{t.notifyHint}</p>
-          </div>
-        </Field>
-      </Panel>
-
-      <Panel style={PANEL}>
-        <Field label={t.signedInAs} heading>
-          <div class="who">
-            {#if session.email}<b>{session.email}</b>{/if}
-            {#if session.provider}
-              <span class="via"
-                >{@render logo(session.provider)}{t.via.replace(
-                  '%s',
-                  PROVIDER_NAME[session.provider]
-                )}</span
-              >
-            {/if}
-          </div>
-        </Field>
-      </Panel>
-
-      <Panel style={PANEL}>
-        <Field label={t.providers} heading>
-          {#if ids}
-            <ul class="ids">
-              {#each PROVIDERS as p (p)}
-                {@const identity = ids.find((i) => i.provider === p)}
-                <li>
-                  <span class="pv"
-                    >{@render logo(p)}<span
-                      ><b>{PROVIDER_NAME[p]}</b><small
-                        >{identity ? identity.email : t.notConnected}</small
-                      ></span
-                    ></span
-                  >
-                  {#if identity && ids.length > 1}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      disabled={busy}
-                      label={`${t.disconnect} ${PROVIDER_NAME[p]}`}
-                      onclick={() => {
-                        disconnect(identity.id);
-                      }}>{t.disconnect}</Button
-                    >
-                  {:else if !identity}
-                    <Button
-                      size="sm"
-                      disabled={busy}
-                      onclick={() => {
-                        leave(p, () => cloud.auth.link(p));
-                      }}
-                      >{(going === p ? t.redirecting : t.connect).replace(
-                        '%s',
-                        PROVIDER_NAME[p]
-                      )}</Button
-                    >
-                  {/if}
-                  {#if app.alreadyLinked === p}
-                    <p class="err" role="alert">
-                      {t.alreadyLinked.replace('%s', PROVIDER_NAME[p])}
-                    </p>
-                  {/if}
-                </li>
-              {/each}
-            </ul>
-            {#if ids.length === 1 && ids[0]}
-              <p class="hint">{t.onlyMethod.replace('%s', PROVIDER_NAME[ids[0].provider])}</p>
-            {/if}
-          {:else if idsFailed}
-            <p class="err" role="alert">{t.accountFailed}</p>
-          {/if}
-        </Field>
-      </Panel>
-
-      <Panel style={PANEL}>
-        <Field label={t.yourData} heading>
-          <p class="hint lead">{t.yourDataHint}</p>
-          {#if app.homebrew?.items.some((r) => r.art)}
-            <p class="hint lead">{t.zipNoArt}</p>
-          {/if}
-          <div class="row-btns">
-            <Button
-              disabled={exporting || app.cloudLists?.status !== 'ready'}
-              onclick={() => void exportData()}>{t.exportData}</Button
-            >
-          </div>
-          {#if app.cloudLists?.status === 'error'}
-            <div style="margin-top:10px">
-              <LoadState
-                {t}
-                failed
-                text={t.cloudLoadFailed}
-                onretry={() => void app.retryLists()}
-              />
-            </div>
-          {/if}
-        </Field>
-      </Panel>
-
-      <Panel style={PANEL}>
-        <Field label={t.signOutHead} heading>
-          <div class="row-btns">
-            <Button
-              disabled={busy}
-              onclick={() => {
-                signOut('local');
-              }}>{t.signOut}</Button
-            >
-            <Button
-              variant="ghost"
-              disabled={busy}
-              onclick={() => {
-                signOut('global');
-              }}>{t.signOutAll}</Button
-            >
-          </div>
-          <p class="hint">{t.signOutAllHint}</p>
-        </Field>
-      </Panel>
-
-      <Panel style={PANEL}>
-        <Field label={t.deleteHead} heading>
-          <p class="hint lead">{t.deleteHint}</p>
-          <Button
-            variant="danger"
-            expanded={confirming}
-            disabled={busy}
-            onclick={() => void toggleConfirm()}>{t.deleteOpen}</Button
-          >
-          {#if confirming}
-            <div class="confirm">
-              <label for="account-delete-word">{t.deleteTypeWord} <b>{t.deleteWord}</b></label>
-              <NumRow>
-                <div class="grow">
-                  <TextInput
-                    id="account-delete-word"
-                    autocomplete="off"
-                    bind:value={typed}
-                    bind:el={typedEl}
+      <div class="acc">
+        <div class="colA">
+          <Panel style={PANEL} primary>
+            <Field label={t.displayHead} heading>
+              <div class="set">
+                <span class="setname">{t.langLabel}</span>
+                <Seg
+                  neutral
+                  options={LANGS}
+                  value={app.lang}
+                  label={t.langLabel}
+                  onchange={(l: Lang) => {
+                    app.setLang(l);
+                  }}
+                />
+              </div>
+              <div class="set">
+                <label class="setname" for="display-home">{t.displayHome}</label>
+                <select id="display-home" value={homeValue} onchange={setHome}>
+                  {#each SECTIONS as s (s)}
+                    <option value={optionOf(s)}>{sectionLabel(s, t)}</option>
+                  {/each}
+                  <option value={HOMEBREW_HASH}>{t.myItems}</option>
+                </select>
+              </div>
+              <div class="set">
+                <span class="setname">{t.defaultTablesView}</span>
+                <Seg
+                  neutral
+                  options={views}
+                  value={app.tablesView}
+                  label={t.defaultTablesView}
+                  onchange={(v: 'list' | 'grid') => {
+                    app.setTablesView(v);
+                  }}
+                />
+              </div>
+              <div class="set">
+                <span class="setname">{t.defaultPrint}</span>
+                <div class="wb">
+                  <Seg
+                    neutral
+                    small
+                    options={art}
+                    value={app.printBW ? 'bw' : 'color'}
+                    label={t.defaultPrint}
+                    onchange={(v: 'color' | 'bw') => {
+                      app.setPrintBW(v === 'bw');
+                    }}
+                  />
+                  <Seg
+                    neutral
+                    small
+                    options={sizes}
+                    value={app.printCompact ? 'compact' : 'std'}
+                    label={t.printSize}
+                    onchange={(v: 'std' | 'compact') => {
+                      app.setPrintCompact(v === 'compact');
+                    }}
                   />
                 </div>
-                <Button variant="danger" disabled={busy || !typedOk} onclick={deleteAccount}
-                  >{deleting ? t.deleting : t.deleteFinal}</Button
+              </div>
+              <!-- A select at every width: three answers of the owner's length do not
+                   fit a segmented control at 360 px. -->
+              <div class="set">
+                <label class="setname" for="display-notify">{t.displayNotify}</label>
+                <select id="display-notify" value={app.notifyGm} onchange={setNotify}>
+                  {#each notify as o (o.value)}
+                    <option value={o.value}>{o.label}</option>
+                  {/each}
+                </select>
+              </div>
+            </Field>
+          </Panel>
+
+          <Panel style={PANEL}>
+            <Field label={t.providers} heading>
+              <!-- The session says who is signed in until a row can: while the identities are
+                   unread, and for a sign-in no row names (an email link). -->
+              {#if !ids || !ids.some((i) => i.provider === session.provider)}
+                <div class="who">
+                  {#if session.email}<b>{session.email}</b>{/if}
+                  {#if session.provider}
+                    <span class="via"
+                      >{@render logo(session.provider)}{t.via.replace(
+                        '%s',
+                        PROVIDER_NAME[session.provider]
+                      )}</span
+                    >
+                  {/if}
+                </div>
+              {/if}
+              {#if ids}
+                <ul class="ids">
+                  {#each PROVIDERS as p (p)}
+                    {@const identity = ids.find((i) => i.provider === p)}
+                    <li>
+                      <span class="pv"
+                        >{@render logo(p)}<span
+                          ><span class="pvname"
+                            ><b>{PROVIDER_NAME[p]}</b
+                            >{#if identity && session.provider === p}<Badge cls="tier"
+                                >{t.signedInNow}</Badge
+                              >{/if}</span
+                          ><small>{identity ? identity.email : t.notConnected}</small></span
+                        ></span
+                      >
+                      {#if identity && ids.length > 1}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={busy}
+                          label={`${t.disconnect} ${PROVIDER_NAME[p]}`}
+                          onclick={() => {
+                            disconnect(identity.id);
+                          }}>{t.disconnect}</Button
+                        >
+                      {:else if !identity}
+                        <Button
+                          size="sm"
+                          disabled={busy}
+                          onclick={() => {
+                            leave(p, () => cloud.auth.link(p));
+                          }}
+                          >{(going === p ? t.redirecting : t.connect).replace(
+                            '%s',
+                            PROVIDER_NAME[p]
+                          )}</Button
+                        >
+                      {/if}
+                      {#if app.alreadyLinked === p}
+                        <p class="err" role="alert">
+                          {t.alreadyLinked.replace('%s', PROVIDER_NAME[p])}
+                        </p>
+                      {/if}
+                    </li>
+                  {/each}
+                </ul>
+                {#if ids.length === 1 && ids[0]}
+                  <p class="hint">
+                    {t.onlyMethod.replace('%s', PROVIDER_NAME[ids[0].provider])}
+                  </p>
+                {/if}
+              {:else if idsFailed}
+                <p class="err" role="alert">{t.accountFailed}</p>
+              {/if}
+            </Field>
+          </Panel>
+        </div>
+
+        <div class="colB">
+          <Panel style={PANEL}>
+            <Field label={t.yourData} heading>
+              <p class="hint lead">{t.yourDataHint}</p>
+              {#if app.homebrew?.items.some((r) => r.art)}
+                <p class="hint lead">{t.zipNoArt}</p>
+              {/if}
+              <div class="row-btns">
+                <Button
+                  disabled={exporting || app.cloudLists?.status !== 'ready'}
+                  onclick={() => void exportData()}>{t.exportData}</Button
                 >
-                <Button variant="ghost" onclick={closeConfirm}>{t.cancel}</Button>
-              </NumRow>
-            </div>
-          {/if}
-        </Field>
-      </Panel>
+              </div>
+              {#if app.cloudLists?.status === 'error'}
+                <div style="margin-top:10px">
+                  <LoadState
+                    {t}
+                    failed
+                    text={t.cloudLoadFailed}
+                    onretry={() => void app.retryLists()}
+                  />
+                </div>
+              {/if}
+            </Field>
+          </Panel>
+
+          <Panel style={PANEL}>
+            <Field label={t.signOutHead} heading>
+              <div class="row-btns">
+                <Button
+                  disabled={busy}
+                  onclick={() => {
+                    signOut('local');
+                  }}>{t.signOut}</Button
+                >
+                <Button
+                  variant="ghost"
+                  disabled={busy}
+                  onclick={() => {
+                    signOut('global');
+                  }}>{t.signOutAll}</Button
+                >
+              </div>
+            </Field>
+          </Panel>
+
+          <Panel style={PANEL}>
+            <Field label={t.deleteHead} heading>
+              <p class="hint lead">{t.deleteHint}</p>
+              <Button
+                variant="danger"
+                expanded={confirming}
+                disabled={busy}
+                bind:el={deleteOpener}
+                onclick={() => void toggleConfirm()}>{t.deleteOpen}</Button
+              >
+              {#if confirming}
+                <div class="confirm">
+                  <div>
+                    <p class="goes">{t.deleteGoes}</p>
+                    <ul class="goes">
+                      {#each goes as line (line)}<li>{line}</li>{/each}
+                    </ul>
+                  </div>
+                  <label for="account-delete-word"
+                    >{t.deleteTypeWord} <b>{t.deleteWord}</b></label
+                  >
+                  <NumRow>
+                    <div class="grow">
+                      <TextInput
+                        id="account-delete-word"
+                        autocomplete="off"
+                        bind:value={typed}
+                        bind:el={typedEl}
+                      />
+                    </div>
+                    <Button
+                      variant="danger-fill"
+                      disabled={busy || !typedOk}
+                      onclick={deleteAccount}>{deleting ? t.deleting : t.deleteFinal}</Button
+                    >
+                    <Button variant="ghost" onclick={cancelConfirm}>{t.cancel}</Button>
+                  </NumRow>
+                </div>
+              {/if}
+            </Field>
+          </Panel>
+        </div>
+      </div>
     {/if}
   </div>
 {/if}
@@ -496,9 +558,23 @@
 <!-- eslint-enable @typescript-eslint/no-confusing-void-expression -->
 
 <style>
-  /* The page reads as one column at `.page-sub`'s own measure. */
+  /* The page reads as one column at `.page-sub`'s own measure; signed in, two columns
+     from 1000 px, the left one first in the DOM, so the tab order reads as the page. */
   .col {
     max-width: 70ch;
+  }
+
+  @media (min-width: 1000px) {
+    .col:has(.acc) {
+      max-width: 1100px;
+    }
+
+    .acc {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0 16px;
+      align-items: start;
+    }
   }
 
   .hint {
@@ -511,12 +587,6 @@
     margin: 0 0 12px;
   }
 
-  /* A hint under a row's control, on a line of its own. */
-  .sethint {
-    flex: 1 1 100%;
-    margin: 0;
-  }
-
   .row-btns {
     display: flex;
     flex-wrap: wrap;
@@ -524,6 +594,7 @@
   }
 
   .who {
+    margin-bottom: 4px;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -596,20 +667,11 @@
     box-shadow: 0 0 0 3px rgb(216 171 94 / 14%);
   }
 
-  .chk {
-    display: inline-flex;
-    align-items: center;
+  /* The two print defaults wrap inside 360 px. */
+  .wb {
+    display: flex;
+    flex-wrap: wrap;
     gap: 8px;
-    font-size: var(--t-small);
-  }
-
-  /* TableRows.svelte's row checkbox. */
-  .chk input {
-    accent-color: var(--gold);
-    width: 17px;
-    height: 17px;
-    margin: 0;
-    cursor: pointer;
   }
 
   @media (max-width: 600px) {
@@ -639,6 +701,13 @@
     min-width: 0;
   }
 
+  .pvname {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+  }
+
   /* A long address wraps; it is never cut short. */
   .pv small {
     font-size: var(--t-data);
@@ -661,6 +730,16 @@
 
   .confirm label {
     font-size: var(--t-small);
+  }
+
+  .goes {
+    margin: 0 0 6px;
+    font-size: var(--t-small);
+    color: var(--muted);
+  }
+
+  ul.goes {
+    padding-left: 20px;
   }
 
   .grow {

@@ -1,0 +1,116 @@
+# #/homebrew/new ~ preview sheet as gm1
+# route: #/homebrew/new
+# why: «Предпросмотр» pressed: the sheet with the screen and print switch and the card
+# as: gm1
+
+## ru :: tree
+RootWebArea "Новый предмет - Генератор лута Daggerheart" [url=/homebrew/new?as=gm1]
+  dialog "Предпросмотр" [modal=true]
+    heading "Предпросмотр" [level=2]
+    button "Закрыть" [focused=true]
+    button "На экране" [pressed=true]
+    button "На печати" [pressed=false]
+    button "Страница"
+    StaticText "ПРЕДМЕТ"
+    StaticText "ХОУМБРЮ"
+    heading "Новый предмет" [level=2]
+
+## ru :: controls
+1
+2
+3
+4
+EN
+EN - пусто
+RU
+RU - пусто
+daggerheart.com
+Аккаунт: gm1@example.test
+Без ранга
+Бросок
+Выбрать из предметов
+Выбрать файл
+Жирный
+Закрыть
+К содержимому
+Карты правил
+Конфиденциальность
+Курсив
+ЛутDaggerheart
+Мои предметы
+На печати
+На экране
+НетПылающие близнецыУбранство СвятогоКомплект Ольхи (HB)+ Новый ... [namelen=75 namehash=aca7e35f]
+Новая карта правил
+Нумерованный список
+Поиск
+Получается из
+Предмет
+Предпросмотр
+Расходник
+Снаряжение
+Сохранить
+Список
+Страница
+Таблица
+Таблицы
+Улучшается до
+Условия использования
+Установить как приложение
+ХоумбрюМастерская Ольхи+ Новый источник...
+
+## en :: tree
+RootWebArea "New item - Daggerheart Loot Generator" [url=/en/homebrew/new?as=gm1]
+  dialog "Preview" [modal=true]
+    heading "Preview" [level=2]
+    button "Close" [focused=true]
+    button "On screen" [pressed=true]
+    button "In print" [pressed=false]
+    button "Страница"
+    StaticText "ПРЕДМЕТ"
+    StaticText "ХОУМБРЮ"
+    heading "Новый предмет" [level=2]
+
+## en :: controls
+1
+2
+3
+4
+Account: gm1@example.test
+Bold
+Bulleted list
+Choose a file
+Choose from items
+Close
+Consumable
+EN
+EN - empty
+Equipment
+HomebrewAlder Workshop+ New source...
+In print
+Install as an app
+Italic
+Item
+LootDaggerheart
+Made from
+My items
+New rule card
+No tier
+NoneBlazing TwinsSaint's EnsembleAlder Set (HB)+ New set...
+Numbered list
+On screen
+Preview
+Privacy
+RU
+RU - empty
+Roll
+Rule cards
+Save
+Search
+Skip to content
+Table
+Tables
+Terms of use
+Upgrades to
+daggerheart.com
+Страница

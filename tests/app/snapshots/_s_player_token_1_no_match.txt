@@ -34,7 +34,7 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/player-token-1/f_k
     button "Броня" [pressed=true]
     button "2" [pressed=true]
     StaticText "любое"
-    button "Улучшаемые" [pressed=false]
+    button "Есть улучшение" [pressed=false]
     button "Уникальные" [pressed=false]
     StaticText "Ничего не найдено"
     button "Сбросить всё"
@@ -67,6 +67,7 @@ daggerheart.com
 Вплотную
 Далеко
 Двуручное
+Есть улучшение
 Знание
 Инстинкт
 Искусность
@@ -88,7 +89,6 @@ daggerheart.com
 Средне
 Ссылка на фильтры
 Таблицы
-Улучшаемые
 Уникальные
 Условия использования
 Установить как приложение

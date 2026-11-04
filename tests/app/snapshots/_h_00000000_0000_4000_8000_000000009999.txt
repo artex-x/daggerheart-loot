@@ -1,6 +1,6 @@
 # #/h/00000000-0000-4000-8000-000000009999
 # route: #/h/00000000-0000-4000-8000-000000009999
-# why: an id no item has, after the read: «Предмет не найден», its sub and «На главную», the address kept
+# why: an id no item has, after the read: «Предмета по этому адресу нет», the address in the sentence, «Найти предмет» and «Открыть таблицы»
 
 ## ru :: tree
 RootWebArea "Генератор лута Daggerheart" [url=/h/00000000-0000-4000-8000-000000009999]
@@ -17,9 +17,14 @@ RootWebArea "Генератор лута Daggerheart" [url=/h/00000000-0000-4000
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
-    heading "Предмет не найден" [level=1]
-    StaticText "Возможно, ссылка устарела или данные были изменены."
-    link "На главную" [url=/roll/std]
+    heading "Предмета по этому адресу нет" [level=1]
+    StaticText "Адрес "
+    StaticText "/h/00000000-0000-4000-8000-000000009999"
+    StaticText " не ведёт ни к одному предмету. Ссылка могла устареть или быть н..." [namelen=81 namehash=3c7558ef]
+    link "Найти предмет" [url=/search]
+    link "Открыть таблицы" [url=/tables]
+    status ""
+      StaticText "Предмета по этому адресу нет"
     status ""
   contentinfo ""
     navigation "Страницы сайта"
@@ -37,7 +42,8 @@ daggerheart.com
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
-На главную
+Найти предмет
+Открыть таблицы
 Поиск
 Таблицы
 Условия использования
@@ -58,9 +64,14 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/h/00000000-0000-4000-8000-0000
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
-    heading "Item not found" [level=1]
-    StaticText "The link may be out of date, or the data has changed."
-    link "Home" [url=/en/roll/std]
+    heading "No item at this address" [level=1]
+    StaticText "The address "
+    StaticText "/en/h/00000000-0000-4000-8000-000000009999"
+    StaticText " leads to no item. The link may be old or mistyped."
+    link "Find the item" [url=/en/search]
+    link "Open the tables" [url=/en/tables]
+    status ""
+      StaticText "No item at this address"
     status ""
   contentinfo ""
     navigation "Site pages"
@@ -71,9 +82,10 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/h/00000000-0000-4000-8000-0000
 
 ## en :: controls
 EN
-Home
+Find the item
 Install as an app
 LootDaggerheart
+Open the tables
 Privacy
 RU
 Roll

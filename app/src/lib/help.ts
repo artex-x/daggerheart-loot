@@ -1,14 +1,8 @@
 /* What each roll page explains about itself, off the `help` block in app.js.
  *
  * The live app keeps these as HTML strings and injects them. Here a paragraph
- * is a shape instead: a run of text, links, bold words and line breaks.
- * Nothing has to be injected to render it.
- *
- * The shape started as text plus links plus a bold lead-in, which covered the
- * four sections ported first and quietly failed on the fifth: the Core rules
- * paragraph that lists where each rarity fits is one paragraph with four
- * `<br><b>Word</b>` lines inside it, and it shipped showing those tags as
- * words. Nothing looked at it, because no parity state opened that panel.
+ * is a shape instead: a run of text, links and bold words. Nothing has to be
+ * injected to render it.
  *
  * This is the product's own text, so it is Russian and English rather than
  * source prose, and the em dashes in it are the ones the live app prints.
@@ -21,17 +15,13 @@ export interface HelpLink {
   label: string;
 }
 
-/** A line break inside a paragraph, where the live text has one. */
-export const BR = { br: true } as const;
-export type HelpBreak = typeof BR;
-
 /** A word in bold partway through a run, rather than opening one. */
 export interface HelpBold {
   b: string;
 }
 
-/** A run of a paragraph: plain text, a link, a bold word, or a break. */
-export type HelpPart = string | HelpLink | HelpBold | HelpBreak;
+/** A run of a paragraph: plain text, a link or a bold word. */
+export type HelpPart = string | HelpLink | HelpBold;
 
 export interface HelpPara {
   /** The bold opening of a paragraph, where the live text has one. */
@@ -40,26 +30,23 @@ export interface HelpPara {
 }
 
 export interface Help {
+  /** The name of the help's button, where it is not «Справка» (the Same Label Rule). */
+  button?: string;
   paragraphs: HelpPara[];
 }
 
 /** A paragraph of plain text, which is most of them. */
 const p = (text: string): HelpPara => ({ parts: [text] });
 
-/**
- * One of the "where this rarity fits" lines in the Core rules help: a break, a
- * rarity in bold, and the places it belongs. Four of them hang off the end of
- * one paragraph rather than standing as paragraphs of their own, which is how
- * the live text is written and how it measures.
- */
-const rarityLine = (word: string, where: string): HelpPart[] => [
-  BR,
-  { b: word },
-  ` - ${where}`
-];
+/** One of the Core rules help's four placement lines: the rarity in bold, then its places. */
+const rarityLine = (word: string, where: string): HelpPara => ({
+  lead: word,
+  parts: [` - ${where}`]
+});
 
 const WONDROUS: Record<Lang, Help> = {
   ru: {
+    button: 'Об этой таблице',
     paragraphs: [
       p(
         'В таблице 119 позиций, а не 100 - столько предметов описано в самом дополнении. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно. Если бросаете d100 за столом, введите выпавшее число в поле «Результат броска».'
@@ -86,6 +73,7 @@ const WONDROUS: Record<Lang, Help> = {
     ]
   },
   en: {
+    button: 'About this table',
     paragraphs: [
       p(
         'The table holds 119 entries rather than 100 - that is how many items the supplement actually describes. No die covers that range, so the button picks an entry at random. If you roll d100 at the table, type the number into the Roll result field.'
@@ -115,6 +103,7 @@ const WONDROUS: Record<Lang, Help> = {
 
 const DREAD: Record<Lang, Help> = {
   ru: {
+    button: 'Об этой книге',
     paragraphs: [
       p(
         'В таблице 29 позиций - столько предметов описано в дополнении. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно.'
@@ -141,6 +130,7 @@ const DREAD: Record<Lang, Help> = {
     ]
   },
   en: {
+    button: 'About this book',
     paragraphs: [
       p(
         'The table has 29 entries, which is how many the supplement describes. No die covers that range, so the button picks an entry at random.'
@@ -192,6 +182,7 @@ const voaSource = (before: string): HelpPara => ({
 
 const VOA: Record<Lang, Help> = {
   ru: {
+    button: 'Об этой книге',
     paragraphs: [
       p(
         'Четыре тома одного автора: 144 карточки, разложенные по рангам. Своей таблицы броска у книги нет, поэтому и разделов шесть - четыре ранга плюс артефакты и проклятые предметы, ровно как в самих томах. Бросок идёт внутри выбранного раздела: ранг 1 и артефакт - награды разного веса, и на одной кости им не место.'
@@ -220,6 +211,7 @@ const VOA: Record<Lang, Help> = {
     ]
   },
   en: {
+    button: 'About this book',
     paragraphs: [
       p(
         'Four volumes by one author: 144 cards sorted by tier. The book has no roll table of its own, so there are six sections here - four tiers plus artifacts and cursed objects, exactly as the volumes are laid out. The roll happens inside the section you pick: a tier 1 item and an artifact are rewards of a different weight and do not belong on one die.'
@@ -256,6 +248,7 @@ const DV_LINK: HelpLink = {
 
 const DV: Record<Lang, Help> = {
   ru: {
+    button: 'Об этой книге',
     paragraphs: [
       p(
         'В таблице 145 позиций - 68 предметов, 9 расходников и 68 единиц оружия и брони. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно.'
@@ -270,6 +263,7 @@ const DV: Record<Lang, Help> = {
     ]
   },
   en: {
+    button: 'About this book',
     paragraphs: [
       p(
         'The table holds 145 entries - 68 items, 9 consumables and 68 weapons and armor. No die covers that range, so the button picks an entry at random.'
@@ -292,6 +286,7 @@ const ARAZO_LINK: HelpLink = {
 
 const ARAZO: Record<Lang, Help> = {
   ru: {
+    button: 'Об этой книге',
     paragraphs: [
       p(
         'В таблице 78 позиций - 10 предметов и 68 единиц оружия и брони, в порядке книги. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно.'
@@ -306,6 +301,7 @@ const ARAZO: Record<Lang, Help> = {
     ]
   },
   en: {
+    button: 'About this book',
     paragraphs: [
       p(
         "The table holds 78 entries - 10 items and 68 weapons and armor, in the book's own order. No die covers that range, so the button picks an entry at random."
@@ -328,6 +324,7 @@ const COMMUNITY_LINK: HelpLink = {
 
 const COMMUNITY: Record<Lang, Help> = {
   ru: {
+    button: 'Об этих предметах',
     paragraphs: [
       p(
         'Предметы каждого сообщества перечислены по возрастанию редкости: 1 - самый простой, 10 - самый сильный.'
@@ -339,6 +336,7 @@ const COMMUNITY: Record<Lang, Help> = {
     ]
   },
   en: {
+    button: 'About these items',
     paragraphs: [
       p(
         'Each community lists its items in ascending order of rarity: 1 is the humblest, 10 the most powerful.'
@@ -378,6 +376,7 @@ const MWT_DROME: HelpLink = {
 
 const MWT: Record<Lang, Help> = {
   ru: {
+    button: 'Об этой книге',
     paragraphs: [
       p(
         'В разделе шесть миров Many Worlds Tavern, у каждого своя колода: Спорополис - 20 карточек, Лес Пари - 20, Воюющие Норы - 21, Долина Богов - 20, Оплот Шершней - 11, Дром - 17. Сначала выберите мир, потом бросьте кость: в колоде из 20 карточек это d20. На 11, 17 и 21 карточку кости не бывает, поэтому там кнопка выбирает позицию случайно.'
@@ -408,6 +407,7 @@ const MWT: Record<Lang, Help> = {
     ]
   },
   en: {
+    button: 'About this book',
     paragraphs: [
       p(
         "This section holds the six realms of Many Worlds Tavern, each with its own deck: Sporopolis has 20 cards, Wagerwood 20, Warrin' Warrens 21, Godsvale 20, Hornet Hold 11 and The Drome 17. Pick a realm, then roll: a 20-card deck rolls a d20. No die covers 11, 17 or 21, so there the button picks an entry at random."
@@ -441,58 +441,32 @@ const MWT: Record<Lang, Help> = {
 
 const STD: Record<Lang, Help> = {
   ru: {
+    button: 'Где какая редкость',
     paragraphs: [
-      p(
-        'Бросьте d12 и сложите результаты - сумма и есть номер в таблице. Одно и то же число есть и в таблице предметов, и в таблице расходников, поэтому на один бросок приходится несколько вариантов, а игрок выбирает один.'
+      rarityLine('Обычная', 'заброшенный лагерь, обычная лавка.'),
+      rarityLine('Необычная', 'ограниченный товар в лавке, тайник в лагере, часть награды.'),
+      rarityLine(
+        'Редкая',
+        'под замком в лавке, единственная награда за работу, вещи сильного НИП.'
       ),
-      {
-        parts: [
-          'Сколько костей брать, решает редкость добычи - она подписана под каждой кнопкой. Где какая редкость уместна:',
-          ...rarityLine('Обычная', 'заброшенный лагерь, обычная лавка.'),
-          ...rarityLine(
-            'Необычная',
-            'ограниченный товар в лавке, тайник в лагере, часть награды.'
-          ),
-          ...rarityLine(
-            'Редкая',
-            'под замком в лавке, единственная награда за работу, вещи сильного НИП.'
-          ),
-          ...rarityLine(
-            'Легендарная',
-            'единственная в своём роде, награда за смертельно опасное дело, сокровище могущественного противника.'
-          )
-        ]
-      },
-      p(
-        'Ранги у редкостей - рекомендация, а не ограничение. Мастер вправе выдать снаряжение любой редкости на любом уровне, если это уместно за столом.'
+      rarityLine(
+        'Легендарная',
+        'единственная в своём роде, награда за смертельно опасное дело, сокровище могущественного противника.'
       )
     ]
   },
   en: {
+    button: 'Where each rarity is',
     paragraphs: [
-      p(
-        'Roll d12 and add them up - the total is the row number. The same number exists in both the item and the consumable table, so one roll yields several options and the player takes one.'
+      rarityLine('Common', 'an abandoned camp, a local shop.'),
+      rarityLine('Uncommon', 'limited stock in a shop, a stash in a camp, part of a reward.'),
+      rarityLine(
+        'Rare',
+        "under lock and key, the sole reward for a job, a powerful NPC's possessions."
       ),
-      {
-        parts: [
-          'How many dice you take depends on the rarity you are after - each button is captioned with the rarities it covers. Where each one fits:',
-          ...rarityLine('Common', 'an abandoned camp, a local shop.'),
-          ...rarityLine(
-            'Uncommon',
-            'limited stock in a shop, a stash in a camp, part of a reward.'
-          ),
-          ...rarityLine(
-            'Rare',
-            "under lock and key, the sole reward for a job, a powerful NPC's possessions."
-          ),
-          ...rarityLine(
-            'Legendary',
-            "the only one of its kind, a reward for a deadly job, a powerful adversary's treasure."
-          )
-        ]
-      },
-      p(
-        'Tiers attached to rarities are a recommendation, not a limit. The GM may hand out any rarity at any level if it suits the table.'
+      rarityLine(
+        'Legendary',
+        "the only one of its kind, a reward for a deadly job, a powerful adversary's treasure."
       )
     ]
   }
@@ -509,6 +483,7 @@ const ALT_POST: HelpLink = {
 
 const ALT: Record<Lang, Help> = {
   ru: {
+    button: 'Об этих таблицах',
     paragraphs: [
       p(
         'Предметы разнесены по колонкам «Надежда» и «Страх» по смыслу: в «Надежде» то, что помогает, защищает и решает задачи, в «Страхе» - то, что вредит, обманывает и работает исподтишка.'
@@ -532,6 +507,7 @@ const ALT: Record<Lang, Help> = {
     ]
   },
   en: {
+    button: 'About these tables',
     paragraphs: [
       p(
         'Items are split between the Hope and Fear columns by theme: Hope holds what aids, protects and solves problems, Fear holds what harms, deceives and works by stealth.'
@@ -554,105 +530,59 @@ const DAGGERHEART_SU: HelpLink = {
 };
 
 /**
- * The tables screen's help. Two paragraphs carry a bold word at the very
- * start - the `lead` shape - and one carries two bold words mid-sentence,
- * which is why a paragraph is a run of parts rather than a lead plus plain
- * text: "Улучшаемые" and "Уникальные" both sit inside the same sentence as
- * plain prose, not at its head.
+ * The tables screen's data notes, «Об этих данных» (owner, 2026-10-29): where the data
+ * comes from and the two facts a filter cannot show. How the page works is said
+ * by its own controls, so no paragraph describes them.
  */
 const TABLES: Record<Lang, Help> = {
   ru: {
+    button: 'Об этих данных',
     paragraphs: [
-      p(
-        "Здесь лежат все таблицы целиком. В верхнем ряду - корник, Hope & Fear, «Альт. таблицы», «Дополнения», «Снаряжение» и «Прочее», а ряд под ним выбирает книгу или раздел группы, если внутри есть из чего выбирать. В «Дополнениях» семь книг: Wondrous Environments, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Arazo's Artifacts, предметы сообществ и Many Worlds Tavern. В «Прочем» сначала стартовый инвентарь, по которому не бросают, потом фреймы. Отдельно стоят «Снаряжение» и «Альт. таблицы»: это не книги, а срезы через все книги сразу. После входа в аккаунт последней в ряду появляется группа «Хоумбрю» - ваши собственные предметы: ряд под ней выбирает источник, если их несколько, а внутри предметы лежат по разделам; своё снаряжение лежит ещё и в «Снаряжении», после книжного."
-      ),
       {
-        lead: 'Снаряжение',
+        lead: 'Источники.',
         parts: [
-          " собрано из всех источников, а не только из корника и Hope & Fear: оружие и броня есть ещё в Wondrous Environments, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Arazo's Artifacts, Many Worlds Tavern и фреймах. Отобрать нужную книгу можно фильтром «Источник»."
-        ]
-      },
-      p(
-        "Снаряжение устроено иначе, чем добыча: вне Wondrous Environments, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Arazo's Artifacts и Many Worlds Tavern у него нет номера в таблице, зато есть характеристика, дистанция, урон, хват или пороги с Показателем Брони. Всё это видно в строке и уезжает вместе с предметом при копировании."
-      ),
-      p(
-        'Порядок и разбивка взяты из книг: внутри каждого ранга сначала физическое оружие корника, потом магическое, затем то же для Hope & Fear.'
-      ),
-      p(
-        'Ранг есть у всего снаряжения, включая Wondrous Environments. Рядом с вещью он там не напечатан, но книга привязывает добычу к локации таблицей «Loot items by environment», а у локации ранг указан: Посох Шепчущего Архива найден в Могиле Смотрителя, у неё ранг 2 - значит, и у посоха ранг 2. Это не оценка по характеристикам, а то же самое место в книге, просто на страницу раньше.'
-      ),
-      {
-        lead: 'Класс',
-        parts: [
-          ' - это раздел книги, а не тип урона. Магическому оружию нужна Характеристика Заклинателя, даже если урон оно наносит физический: Призрачный Клинок магический, а урон у него «физ/маг». Поэтому класс и урон показаны отдельно, а оружие с уроном «физ/маг» попадает в оба фильтра сразу.'
-        ]
-      },
-      {
-        parts: [
-          'Фильтр «Линейка» делит снаряжение надвое. ',
-          { b: 'Улучшаемые' },
-          ' - вещи, у которых есть версии повыше: Улучшенная, Продвинутая и Легендарная Катана - это одна и та же катана на четырёх рангах. ',
-          { b: 'Уникальные' },
-          ' - то, что существует в единственном виде и не улучшается.'
-        ]
-      },
-      p(
-        'Панель фильтров одна на все таблицы и стоит под поиском: у снаряжения в ней семь строк, у Vault of Ages вид и ранг, у фреймов вид и фрейм, у сообществ - сообщество, у Many Worlds Tavern вид и мир, у «Хоумбрю» тип и раздел, а источник выбирается в ряду над таблицей. Где отбирать нечего, панели нет вовсе. В фильтрах ничего не выбрано по умолчанию - строка без выбора значит «любое». Клик выбирает значение, поэтому «только ранг 2» - это один клик, а не выключение трёх остальных. Внутри строки значения складываются по «или», строки сужают друг друга. Выбранное показано плашками рядом с кнопкой: крестик снимает одно значение, «Сбросить всё» - сразу все, а кнопка со звеном отдаёт ссылку на текущий набор. Всё это остаётся под рукой и со свёрнутой панелью. Адрес страницы едет за фильтром, так что ссылкой можно поделиться и прямо из строки браузера.'
-      ),
-      p(
-        "Оружие и броня из Wondrous Environments, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Arazo's Artifacts и Many Worlds Tavern лежат в двух местах: в таблице своей книги, с номером броска, и здесь."
-      ),
-      {
-        parts: [
-          'Источники: Daggerheart Core Set и Hope & Fear. Русские названия и формулировки - перевод ',
+          ' Daggerheart Core Set и Hope & Fear, с учётом эрраты. Русские названия - перевод ',
           DAGGERHEART_SU,
-          ', для Hope & Fear - таблица сообщества. Значения даны с учётом эрраты.'
+          ', для Hope & Fear - таблица сообщества.'
+        ]
+      },
+      {
+        lead: 'Ранг в Wondrous Environments.',
+        parts: [
+          ' Книга не печатает ранг рядом с вещью: он взят у локации из таблицы «Loot items by environment».'
+        ]
+      },
+      {
+        lead: 'Класс и урон.',
+        parts: [
+          ' Класс - раздел книги, а не тип урона: оружие с уроном «физ/маг» есть в обоих фильтрах.'
         ]
       }
     ]
   },
   en: {
+    button: 'About this data',
     paragraphs: [
-      p(
-        'Every table in full. The top row holds the core set, Hope & Fear, "Alt. tables", "Supplements", "Equipment" and "Other", and the row under it picks a book or a section of that group, when there is more than one. "Supplements" holds seven books: Wondrous Environments, the Dread GM Toolbox, Vault of Ages, The Dragon\'s Vault, Arazo\'s Artifacts, community items and Many Worlds Tavern. Other starts with non-rollable starting inventory, then campaign frames. "Equipment" and "Alt. tables" stand apart: they are cuts across every book rather than books of their own. Signed in, the row ends with one more group, "Homebrew": your own items, where the row under it picks a source when there are several, and the items sit by section; your own equipment also sits in "Equipment", after the books\'.'
-      ),
       {
-        lead: 'Equipment',
+        lead: 'Sources.',
         parts: [
-          ' is gathered from every source, not only the core set and Hope & Fear: there are weapons and armor in Wondrous Environments, Dread GM Toolbox, Vault of Ages, The Dragon\'s Vault, Arazo\'s Artifacts, Many Worlds Tavern and the campaign frames too. Narrow it to one book with the "Source" filter.'
-        ]
-      },
-      p(
-        "Equipment works differently from loot: outside Wondrous Environments, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Arazo's Artifacts and Many Worlds Tavern it has no roll number, but it does have a trait, a range, damage and burden - or thresholds and an Armor Score. All of it shows in the row and travels with the entry when you copy it."
-      ),
-      p(
-        'The order follows the books: inside each tier, Core physical weapons first, then Core magic, then the same for Hope & Fear.'
-      ),
-      p(
-        'Every piece of equipment has a tier, Wondrous Environments included. The book does not print it next to the item, but it binds each piece of loot to a location in the "Loot items by environment" table, and every location has a tier: the Staff of the Whispering Archive comes from The Watcher\'s Grave, which is tier 2, so the staff is tier 2. This is not an estimate from the stats - it is the same book, one page earlier.'
-      ),
-      {
-        lead: 'Class',
-        parts: [
-          ' is the table the book prints the weapon in, not the damage it deals. A magic weapon needs a Spellcast trait even when its damage is physical: the Ghostblade is a magic weapon dealing "phy or mag". So class and damage are shown apart, and a weapon that can deal either belongs to both filters.'
+          ' The Daggerheart Core Set and Hope & Fear, with the errata applied. Russian names: the ',
+          DAGGERHEART_SU,
+          ' translation, and the community table for Hope & Fear.'
         ]
       },
       {
+        lead: 'Tier in Wondrous Environments.',
         parts: [
-          'The "Line" filter splits equipment in two. ',
-          { b: 'Upgradable' },
-          ' means the piece has higher versions: Improved, Advanced and Legendary Katana are the same katana across four tiers. ',
-          { b: 'Unique' },
-          ' means it exists in one form only.'
+          ' The book does not print the tier next to the item: it comes from the location in the "Loot items by environment" table.'
         ]
       },
-      p(
-        'One filter panel serves every table and sits under the search box: seven rows for equipment, kind and tier for Vault of Ages, kind and frame for Other, community for the community items, kind and realm for Many Worlds Tavern, and type and section for Homebrew, where the row above the table picks the source. Where there is nothing to narrow, there is no panel. Nothing is picked to begin with, and a row with no pick means "any". Clicking picks a value, so "tier 2 only" is one click rather than switching three others off. Values in a row combine with "or", rows narrow each other. What is picked shows as chips beside the button: the cross drops one value, "Reset all" drops the lot, and the link button hands out the current set. All of it stays reachable with the panel folded. The address follows the filter too, so the link in the address bar is the one to share.'
-      ),
-      p(
-        "The weapons and armor of Wondrous Environments, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Arazo's Artifacts and Many Worlds Tavern sit in two places: in their book's table, with a roll number, and here."
-      ),
-      p('Sources: the Daggerheart Core Set and Hope & Fear, with the errata applied.')
+      {
+        lead: 'Class and damage.',
+        parts: [
+          ' Class is the table the book prints the weapon in, not its damage: a weapon that deals "phy or mag" is in both filters.'
+        ]
+      }
     ]
   }
 };
@@ -660,14 +590,13 @@ const TABLES: Record<Lang, Help> = {
 /**
  * The lists index's help. Paragraph 3 carries two bold words and
  * paragraph 4 one, mid-sentence rather than a `lead` - each sits inside
- * running prose, not at the paragraph's head, so each is a run of parts like
- * `TABLES`'s "Линейка" one.
+ * running prose, not at the paragraph's head, so each is a run of parts.
  */
 const LISTS: Record<Lang, Help> = {
   ru: {
     paragraphs: [
       p(
-        'Соберите список: отметьте нужное галочками в «Таблицах» или «Поиске» и нажмите «Добавить в список». То же самое можно сделать прямо с карточки предмета - меню остаётся открытым, поэтому один предмет легко положить сразу в несколько списков.'
+        'Соберите список: отметьте нужное галочками в «Таблицах» или «Поиске» и нажмите «В список». То же самое можно сделать прямо с карточки предмета - меню остаётся открытым, поэтому один предмет легко положить сразу в несколько списков.'
       ),
       p(
         'Войдите - и списки будут храниться в аккаунте: они сохраняются сами и открываются на любом устройстве.'
@@ -777,78 +706,6 @@ export function moneyHelpFor(lang: Lang): Help {
   return MONEY[lang];
 }
 
-/** «Мои предметы» (`#/homebrew`): one help for every tab, as one pin serves them. */
-const HOMEBREW: Record<Lang, Help> = {
-  ru: {
-    paragraphs: [
-      {
-        lead: 'Предметы.',
-        parts: [
-          ' «Новый предмет» открывает форму, а рядом с ней карточку: «На экране» - как на сайте, «На печати» - как на листе печати. Свои предметы находятся в «Поиске» вместе с каталогом, видны в «Таблицах» и добавляются в списки. С восьмого предмета появляются поиск и фильтры; отмеченные предметы можно переместить, скачать файлом или удалить.'
-        ]
-      },
-      {
-        lead: 'Источники.',
-        parts: [
-          ' Источник - книга, дополнение или сеттинг, откуда ваши предметы; в нём может быть до 30 разделов. Предмет без источника лежит в «Хоумбрю».'
-        ]
-      },
-      {
-        lead: 'Комплекты.',
-        parts: [
-          ' Карта комплекта хранит бонус предметов, которые в него входят. В комплект можно добавить и предметы из книг: бонус на них видите только вы.'
-        ]
-      },
-      {
-        lead: 'Карты правил.',
-        parts: [
-          ' Карта правил хранит правило, на которое ссылаются предметы, например свойство оружия. Её тоже можно дать предметам из книг.'
-        ]
-      },
-      {
-        lead: 'Импорт из файла.',
-        parts: [
-          ' Принимает файл из «Скачать JSON», архив из «Скачать мои данные» или файл, собранный по описанию в llms.txt. Предметы, которые уже есть, можно пропустить или обновить.'
-        ]
-      }
-    ]
-  },
-  en: {
-    paragraphs: [
-      {
-        lead: 'Items.',
-        parts: [
-          ' "New item" opens the form with the card beside it: "On screen" as on the site, "In print" as on the print sheet. Your items show up in "Search" with the catalog, in "Tables" and in lists. From the eighth item a search box and filters appear; ticked items can be moved, downloaded as a file or deleted.'
-        ]
-      },
-      {
-        lead: 'Sources.',
-        parts: [
-          ' A source is the book, supplement or setting your items come from; it can hold up to 30 sections. An item with no source is in "Homebrew".'
-        ]
-      },
-      {
-        lead: 'Sets.',
-        parts: [
-          ' A set card holds the bonus of the items in the set. Book items can join a set too: only you see the bonus on them.'
-        ]
-      },
-      {
-        lead: 'Rule cards.',
-        parts: [
-          ' A rule card holds a rule items refer to, such as a weapon feature. Book items can take it too.'
-        ]
-      },
-      {
-        lead: 'Import from file.',
-        parts: [
-          ' Takes a file from "Download JSON", the archive from "Download my data", or a file written to the description in llms.txt. Items you already have can be skipped or updated.'
-        ]
-      }
-    ]
-  }
-};
-
 const HELP: Record<string, Record<Lang, Help>> = {
   std: STD,
   alt: ALT,
@@ -860,8 +717,7 @@ const HELP: Record<string, Record<Lang, Help>> = {
   community: COMMUNITY,
   mwt: MWT,
   tables: TABLES,
-  lists: LISTS,
-  homebrew: HOMEBREW
+  lists: LISTS
 };
 
 /** What this section explains about itself, or null where nothing is written. */
@@ -877,9 +733,4 @@ export function isLink(part: HelpPart): part is HelpLink {
 /** Whether it is a word set in bold partway through the run. */
 export function isBold(part: HelpPart): part is HelpBold {
   return typeof part !== 'string' && 'b' in part;
-}
-
-/** Whether it is a line break. */
-export function isBreak(part: HelpPart): part is HelpBreak {
-  return typeof part !== 'string' && 'br' in part;
 }

@@ -74,7 +74,7 @@ export const EQ_CLS: Record<EquipClass, Pair> = {
 };
 
 export const EQ_LINE: Record<string, Pair> = {
-  line: ['Улучшаемые', 'Upgradable'],
+  line: ['Есть улучшение', 'Upgradable'],
   uniq: ['Уникальные', 'Unique']
 };
 

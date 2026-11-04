@@ -17,24 +17,19 @@ RootWebArea "Мицелиевый Плащ - Генератор лута Daggerh
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
+    button "Страница"
+    StaticText "ПРЕДМЕТ"
     heading "Мицелиевый Плащ" [level=1]
     StaticText "Many Worlds Tavern · Спорополис · номер 9 "
     link "показать в таблице" [url=/tables/many_worlds_tavern/mw9]
-    button "Страница"
-    StaticText "9"
-    ... StaticText x4 of 8 same-shape siblings elided
-    button "Скопировать название" [description=Скопировать название]
-    button "Скопировать ссылку" [description=Скопировать ссылку]
+    StaticText "Пока вы носите этот плащ, вы получаете преимущество на Бросок Ин..." [namelen=128 namehash=36fdddc8]
     DisclosureTriangle "Сеть фангрилов ФАНГРИЛ · СВОЙСТВО РОДОСЛОВНОЙ" [expanded=true]
     StaticText "Совершите Бросок Инстинкта (12), чтобы использовать сеть мицелия..." [namelen=173 namehash=24611cfc]
     link "daggerheart.su" [url=https://ru.daggerheart.su/ancestry/fungril]
-    button "Отправить"
-    button "Скопировать изображение" [description=Скопировать изображение]
-    button "Скопировать текст" [description=Скопировать текст]
-    button "Добавить в список" [expanded=false]
+    button "В список" [expanded=false]
+    button "Поделиться"
     button "Печать" [description=Собрать карточки для печати: девять на лист A4 expanded=false]
-    button "Сохранить себе" [description=Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с оригиналом. expanded=false]
-    StaticText "Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с ор..." [namelen=73 namehash=76f4ba3e]
+    button "Ещё" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -48,19 +43,15 @@ RU
 daggerheart.com
 daggerheart.su
 Бросок
+В список
 Войти
-Добавить в список
+Ещё
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
-Отправить
 Печать
+Поделиться
 Поиск
-Скопировать изображение
-Скопировать название
-Скопировать ссылку
-Скопировать текст
-Сохранить себе
 Страница
 Таблицы
 Условия использования
@@ -82,24 +73,19 @@ RootWebArea "Mycelial Cloak - Daggerheart Loot Generator" [url=/i/en/mw9?v=<v>]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
+    button "Page"
+    StaticText "ITEM"
     heading "Mycelial Cloak" [level=1]
     StaticText "Many Worlds Tavern · Sporopolis · roll 9 "
     link "show in the table" [url=/en/tables/many_worlds_tavern/mw9]
-    button "Page"
-    StaticText "9"
-    ... StaticText x4 of 8 same-shape siblings elided
-    button "Copy name" [description=Copy name]
-    button "Copy link" [description=Copy link]
+    StaticText "While wearing this, gain advantage on your Instinct Roll to use ..." [namelen=104 namehash=41090fcb]
     DisclosureTriangle "Fungril Network FUNGRIL · ANCESTRY FEATURE" [expanded=true]
     StaticText "Make an Instinct Roll (12) to use your mycelial array to speak w..." [namelen=147 namehash=10076352]
     link "daggerheart.su" [url=https://en.daggerheart.su/ancestry/fungril]
-    button "Share"
-    button "Copy image" [description=Copy image]
-    button "Copy text" [description=Copy text]
     button "Add to list" [expanded=false]
+    button "Share"
     button "Print" [description=Lay these out for printing: nine to an A4 sheet expanded=false]
-    button "Save to my items" [description=The copy goes to "Homebrew" and no longer changes with the original. expanded=false]
-    StaticText "The copy goes to "Homebrew" and no longer changes with the origi..." [namelen=68 namehash=82c4f1ca]
+    button "More" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -109,19 +95,15 @@ RootWebArea "Mycelial Cloak - Daggerheart Loot Generator" [url=/i/en/mw9?v=<v>]
 
 ## en :: controls
 Add to list
-Copy image
-Copy link
-Copy name
-Copy text
 EN
 Install as an app
 LootDaggerheart
+More
 Page
 Print
 Privacy
 RU
 Roll
-Save to my items
 Search
 Share
 Sign in

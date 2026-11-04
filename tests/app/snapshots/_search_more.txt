@@ -1,0 +1,113 @@
+# #/search ~ more
+# route: #/search
+# why: «Ещё» open on the h1 row: the pin as its one item
+
+## ru :: tree
+RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search]
+  link "К содержимому" [url=/search#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    link "Войти" [url=/account]
+    navigation "Разделы"
+      link "Бросок" [url=/roll/std]
+      link "Таблицы" [url=/tables]
+      link "Поиск" [url=/search]
+  main ""
+    heading "Поиск" [level=1]
+    button "Ещё" [expanded=true haspopup=menu]
+    menu "Ещё" [orientation=vertical]
+      menuitem "Открывать при запуске" [focused=true]
+    StaticText "Поиск сразу по 1459 позициям - добыча, расходники и снаряжение, ..." [namelen=91 namehash=d415684b]
+    searchbox "Поиск по названию или описанию..."
+    button "Фильтры" [expanded=false]
+    StaticText "Что ищем?"
+    StaticText "Ищет по названиям и описаниям, по-русски и по-английски сразу."
+    button "зелье" [pressed=false]
+    button "меч" [pressed=false]
+    button "лечения зелья" [pressed=false]
+  contentinfo ""
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=/pages/install.html]
+      link "Конфиденциальность" [url=/pages/privacy.html]
+      link "Условия использования" [url=/pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+
+## ru :: controls
+EN
+RU
+daggerheart.com
+Бросок
+Войти
+Ещё
+К содержимому
+Конфиденциальность
+ЛутDaggerheart
+Открывать при запуске
+Поиск
+Поиск по названию или описанию...
+Таблицы
+Условия использования
+Установить как приложение
+Фильтры
+зелье
+лечения зелья
+меч
+
+## en :: tree
+RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search]
+  link "Skip to content" [url=/en/search#main]
+  banner ""
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    link "Sign in" [url=/en/account]
+    navigation "Sections"
+      link "Roll" [url=/en/roll/std]
+      link "Tables" [url=/en/tables]
+      link "Search" [url=/en/search]
+  main ""
+    heading "Search" [level=1]
+    button "More" [expanded=true haspopup=menu]
+    menu "More" [orientation=vertical]
+      menuitem "Open on start" [focused=true]
+    StaticText "Search all 1459 entries at once - loot, consumables and equipmen..." [namelen=90 namehash=c7b98fa7]
+    searchbox "Search by name or description..."
+    button "Filters" [expanded=false]
+    StaticText "What are you looking for?"
+    StaticText "Searches names and text in Russian and English at once."
+    button "potion" [pressed=false]
+    button "sword" [pressed=false]
+    button "healing potions" [pressed=false]
+  contentinfo ""
+    navigation "Site pages"
+      link "Install as an app" [url=/pages/en/install.html]
+      link "Privacy" [url=/pages/en/privacy.html]
+      link "Terms of use" [url=/pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
+
+## en :: controls
+EN
+Filters
+Install as an app
+LootDaggerheart
+More
+Open on start
+Privacy
+RU
+Roll
+Search
+Search by name or description...
+Sign in
+Skip to content
+Tables
+Terms of use
+daggerheart.com
+healing potions
+potion
+sword

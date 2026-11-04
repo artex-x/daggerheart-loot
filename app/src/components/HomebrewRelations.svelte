@@ -23,7 +23,9 @@
     type ItemDraft,
     type PickOption
   } from '../lib/homebrewForm.js';
+  import { markupText } from '../lib/markup.js';
   import { hayFor, parseQuery, rankHits, statLineFor } from '../lib/search.js';
+  import type { Lang } from '../lib/types.js';
   import type { AppState } from '../state/app.svelte.js';
   import type { Homebrew } from '../state/homebrew.svelte.js';
 
@@ -34,6 +36,8 @@
     draft: ItemDraft;
     /** The item's key: never offered to itself. */
     selfKey: string;
+    /** The language of the editor's text boxes: the set's bonus line follows it. */
+    textLang: Lang;
     errText: (field: FieldId) => string | undefined;
     errId: (field: FieldId) => string | undefined;
     set: <K extends keyof ItemDraft>(k: K, v: ItemDraft[K], field: FieldId) => void;
@@ -46,6 +50,7 @@
     store,
     draft,
     selfKey,
+    textLang,
     errText,
     errId,
     set,
@@ -160,6 +165,14 @@
       !mySets.some((s) => s.key === draft.set)
   );
 
+  /* The chosen set's bonus, a fact the author needs before keeping the choice. */
+  const setBonus = $derived.by(() => {
+    const own = ownSets.find((c) => c.key === draft.set)?.content;
+    const s = own ?? catalog?.sets[draft.set];
+    if (!s) return '';
+    return markupText((textLang === 'ru' ? s.rud || s.ende : s.ende || s.rud) ?? '');
+  });
+
   const LINE_MODES = $derived([
     { value: 'unique' as const, label: t.hbLineUnique },
     { value: 'in' as const, label: t.hbLineIn },
@@ -177,9 +190,9 @@
   {#if draft.kind === 'equip'}
     <FormField
       label={t.hbLine}
+      optional={t.hbOptional}
       error={errText('hb-line')}
       errorId={errId('hb-line')}
-      help={{ id: 'hb-line-help', text: t.hbLineHelp, lang }}
     >
       <Seg
         id="hb-line"
@@ -190,7 +203,9 @@
         onchange={(v: ItemDraft['lineMode']) => {
           set('lineMode', v, 'hb-line');
         }}
+        neutral
       />
+      <p class="hint">{t.hbLineCap}</p>
       {#if draft.lineMode === 'in'}
         <ItemPicker
           id="hb-line-pick"
@@ -216,9 +231,9 @@
   <FormField
     label={t.craftInto}
     for="hb-craft"
+    optional={t.hbOptional}
     error={errText('hb-craft')}
     errorId={errId('hb-craft')}
-    help={{ id: 'hb-craft-help', text: t.hbCraftIntoHelp, lang }}
   >
     <ItemPicker
       id="hb-craft"
@@ -249,9 +264,9 @@
   <FormField
     label={t.craftFrom}
     for="hb-craft-from"
+    optional={t.hbOptional}
     error={errText('hb-craft-from')}
     errorId={errId('hb-craft-from')}
-    help={{ id: 'hb-craft-from-help', text: t.hbCraftFromHelp, lang }}
   >
     <ItemPicker
       id="hb-craft-from"
@@ -282,9 +297,9 @@
   <FormField
     label={t.setLabel}
     for={adding === 'set' ? undefined : 'hb-set'}
+    optional={t.hbOptional}
     error={errText('hb-set')}
     errorId={errId('hb-set')}
-    help={{ id: 'hb-set-help', text: t.hbSetHelp, lang }}
   >
     {#if adding === 'set'}
       <CardForm
@@ -334,15 +349,18 @@
         {/if}
         <option value="__new">{t.hbSetNew}</option>
       </select>
+      {#if setBonus}
+        <p class="hint">{t.hbSetBonusOf.replace('%s', () => setBonus)}</p>
+      {/if}
     {/if}
   </FormField>
 
   <FormField
-    label={t.hbRefs}
+    label={t.hbRefsUpTo}
     for="hb-refs"
+    optional={t.hbOptional}
     error={errText('hb-refs')}
     errorId={errId('hb-refs')}
-    help={{ id: 'hb-refs-help', text: t.hbRefsHelp, lang }}
   >
     <ItemPicker
       id="hb-refs"
@@ -394,7 +412,6 @@
         >
       </div>
     {/if}
-    <p class="hint">{t.hbRefsHint}</p>
   </FormField>
 </div>
 
@@ -408,6 +425,7 @@
     margin: 0;
     font-size: var(--t-data);
     color: var(--muted2);
+    overflow-wrap: anywhere;
   }
 
   select {

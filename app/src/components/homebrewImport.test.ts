@@ -47,17 +47,18 @@ describe('the import panel', () => {
     const toggle = screen.getByRole('button', { name: 'Импорт из файла' });
     expect(toggle).toHaveAttribute('aria-expanded', 'true');
     expect(screen.getByRole('button', { name: 'Выбрать файл...' })).toBeInTheDocument();
-    const schema = screen.getByRole('link', { name: 'схеме homebrew-v2' });
+    const schema = screen.getByRole('link', { name: 'Формат файла' });
     expect(schema).toHaveAttribute('href', '/schema/homebrew-v2.json');
     expect(schema).toHaveAttribute('target', '_blank');
     expect(schema).toHaveAttribute('rel', 'noopener');
     expect(container.querySelector('a[href="/schema/homebrew-v1.json"]')).toBeNull();
-    expect(screen.getByRole('link', { name: 'описание для ИИ-помощников' })).toHaveAttribute(
-      'href',
-      '/llms.txt'
+    expect(screen.getByRole('link', { name: 'llms.txt' })).toHaveAttribute('href', '/llms.txt');
+    /* Both links sit on the file row, and one line under it says what fits. */
+    expect(schema.closest('.filerow')).toBe(
+      screen.getByRole('link', { name: 'llms.txt' }).closest('.filerow')
     );
-    expect(container.querySelector('.hint')?.textContent.replace(/\s+/g, ' ').trim()).toBe(
-      'Файл, сохранённый кнопкой «Скачать JSON» или собранный по схеме homebrew-v2 (описание для ИИ-помощников), или архив ZIP из «Скачать мои данные». Предметы, которые уже есть, можно пропустить или обновить.'
+    expect(container.querySelector('.hint')?.textContent).toBe(
+      'Подходит файл из «Скачать JSON», архив из «Скачать мои данные» или файл по описанию в llms.txt.'
     );
     await expectNoA11yViolations(container);
   });
@@ -87,9 +88,7 @@ describe('the import panel', () => {
     ]);
     /* Each row's name is its select's label. */
     expect(screen.getByLabelText(/Без источника/)).toBe(none!.querySelector('select'));
-    expect(
-      screen.queryByRole('group', { name: 'Предметы, карты и источники, которые уже есть' })
-    ).toBeNull();
+    expect(screen.queryByRole('group', { name: 'Если уже есть:' })).toBeNull();
     await expectNoA11yViolations(container);
   });
 
@@ -165,9 +164,7 @@ describe('the import panel', () => {
     choose(container, fixture('example-edited.json'));
     await importButton(7);
     expect(selected(rowsOf(container)[0]!)).toBe('В «Мастерская Ольхи»');
-    expect(
-      screen.getByRole('group', { name: 'Предметы, карты и источники, которые уже есть' })
-    ).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Если уже есть:' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Пропустить' })).toHaveAttribute(
       'aria-pressed',
       'true'
@@ -289,7 +286,7 @@ describe('the import panel', () => {
     await expectNoA11yViolations(container);
   });
 
-  it("reads a zip's homebrew.json and names its lists.json with its page, not as a file it does not read", async () => {
+  it("reads a zip's homebrew.json and says its lists.json goes next on its page, not as a file it does not read", async () => {
     const { container } = await opened('gm2');
     const at = new Date('2026-10-01T12:00:00Z');
     choose(
@@ -306,7 +303,7 @@ describe('the import panel', () => {
     await importButton(5);
     expect(previews(container)).toEqual([
       'Источников: 1, разделов: 2, карт: 2, предметов: 3.',
-      'Файл lists.json из архива импортируется на странице «Мои списки».'
+      'Затем импортируйте файл lists.json из архива на странице «Мои списки».'
     ]);
   });
 
@@ -463,13 +460,13 @@ describe("a card's book items on «Обновить»", () => {
     if (lang === 'en') {
       await userEvent.click(screen.getByRole('button', { name: 'EN' }));
       await screen.findByText('Import items from a JSON file');
-      const schema = screen.getByRole('link', { name: 'homebrew-v2 schema' });
+      const schema = screen.getByRole('link', { name: 'File format' });
       expect(schema).toHaveAttribute('href', '/schema/homebrew-v2.json');
       expect(schema).toHaveAttribute('target', '_blank');
       expect(schema).toHaveAttribute('rel', 'noopener');
       expect(container.querySelector('a[href="/schema/homebrew-v1.json"]')).toBeNull();
-      expect(container.querySelector('.hint')?.textContent.replace(/\s+/g, ' ').trim()).toBe(
-        'A file saved with "Download JSON" or written to the homebrew-v2 schema (a description for AI assistants), or the ZIP archive from "Download my data". Items you already hold can be skipped or updated.'
+      expect(container.querySelector('.hint')?.textContent).toBe(
+        'Takes a file from "Download JSON", the archive from "Download my data", or a file written to llms.txt.'
       );
     }
     const [update, go] =
@@ -938,9 +935,7 @@ describe('the keys of another account', () => {
     const imp = vi.spyOn(cloud.homebrew, 'import');
     choose(container, fixture('export.json'));
     const first = await importButton(6);
-    expect(
-      screen.queryByRole('group', { name: 'Предметы, карты и источники, которые уже есть' })
-    ).toBeNull();
+    expect(screen.queryByRole('group', { name: 'Если уже есть:' })).toBeNull();
     await expectNoA11yViolations(container);
     await userEvent.click(first);
     await screen.findByText(/^Импортировано предметов: 4/);

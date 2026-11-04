@@ -36,7 +36,7 @@ RootWebArea "Трофеи - Генератор лута Daggerheart" [url=/lists
     generic ""
     checkbox "Палаш" [checked=false]
     spinbutton "Позиция в списке" [value=1 valuetext=1 required=false valuemin=1 valuemax=2]
-    button "Палаш Ранг 1 · Физическое · Проворность · Вплотную · d8 физ · Од..." [namelen=122 namehash=a6db75ac]
+    button "Палаш ОСНОВНОЕ ОРУЖИЕ CORE Ранг 1 · Физическое · Проворность · В..." [namelen=122 namehash=96f30456]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
@@ -44,7 +44,7 @@ RootWebArea "Трофеи - Генератор лута Daggerheart" [url=/lists
     button "Убрать из списка" [description=Убрать из списка]
     checkbox "Первоклассный Спальный Мешок" [checked=false]
     spinbutton "Позиция в списке" [value=2 valuetext=2 required=false valuemin=1 valuemax=2]
-    button "Первоклассный Спальный Мешок Во время отдыха вы автоматически оч..." [namelen=91 namehash=0ad88f78]
+    button "Первоклассный Спальный Мешок ПРЕДМЕТ CORE Во время отдыха вы авт..." [namelen=91 namehash=05be9147]
     StaticText "КОЛ-ВО"
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     StaticText "ЦЕНА"
@@ -69,6 +69,7 @@ EN
 RU
 daggerheart.com
 Аккаунт: gm1@example.test
+Бросить 1-2
 Бросок
 Выбрать все
 Жирный
@@ -82,9 +83,9 @@ daggerheart.com
 Название списка
 Нумерованный список
 Палаш
-ПалашРанг 1 · Физическое · Проворность · Вплотную · d8 физ · Одн... [namelen=118 namehash=b8b1e490]
+ПалашОсновное оружиеCoreРанг 1 · Физическое · Проворность · Впло... [namelen=118 namehash=5597138b]
 Первоклассный Спальный Мешок
-Первоклассный Спальный МешокВо время отдыха вы автоматически очи... [namelen=88 namehash=8149dafd]
+Первоклассный Спальный МешокПредметCoreВо время отдыха вы автома... [namelen=88 namehash=9d8413c2]
 Печать
 Поделиться
 Подсказка: Для игроков
@@ -97,7 +98,6 @@ daggerheart.com
 Скачать JSON
 Скопировать
 Скопировать текст
-Случайно 1–2
 Список
 Таблицы
 Только для мастера: Палаш
@@ -142,7 +142,7 @@ RootWebArea "Трофеи - Daggerheart Loot Generator" [url=/en/lists/00000000-
     generic ""
     checkbox "Broadsword" [checked=false]
     spinbutton "Position in the list" [value=1 valuetext=1 required=false valuemin=1 valuemax=2]
-    button "Broadsword Tier 1 · Physical · Agility · Melee · d8 phy · One-Ha..." [namelen=117 namehash=ebbe60cf]
+    button "Broadsword PRIMARY WEAPON CORE Tier 1 · Physical · Agility · Mel..." [namelen=117 namehash=4d6f47fc]
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
@@ -150,7 +150,7 @@ RootWebArea "Трофеи - Daggerheart Loot Generator" [url=/en/lists/00000000-
     button "Remove from the list" [description=Remove from the list]
     checkbox "Premium Bedroll" [checked=false]
     spinbutton "Position in the list" [value=2 valuetext=2 required=false valuemin=1 valuemax=2]
-    button "Premium Bedroll During downtime, you automatically clear a Stres..." [namelen=76 namehash=b4b015ab]
+    button "Premium Bedroll ITEM CORE During downtime, you automatically cle..." [namelen=76 namehash=de202579]
     StaticText "QTY"
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     StaticText "PRICE"
@@ -174,7 +174,7 @@ RootWebArea "Трофеи - Daggerheart Loot Generator" [url=/en/lists/00000000-
 Account: gm1@example.test
 Bold
 Broadsword
-BroadswordTier 1 · Physical · Agility · Melee · d8 phy · One-Han... [namelen=113 namehash=553c5db2]
+BroadswordPrimary weaponCoreTier 1 · Physical · Agility · Melee ... [namelen=113 namehash=26515266]
 Bulleted list
 Copy
 Copy text
@@ -197,15 +197,15 @@ One lower
 Own item
 Position in the list
 Premium Bedroll
-Premium BedrollDuring downtime, you automatically clear a Stress... [namelen=73 namehash=385f1196]
+Premium BedrollItemCoreDuring downtime, you automatically clear ... [namelen=73 namehash=3b2ba4b6]
 Preview
 Price
 Print
 Privacy
 RU
-Random 1–2
 Remove from the list
 Roll
+Roll 1-2
 Roll result
 Search
 Select all

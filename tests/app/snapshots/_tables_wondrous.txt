@@ -1,6 +1,6 @@
 # #/tables/wondrous
 # route: #/tables/wondrous_environments
-# why: the first table with a filter: the strip folded, nothing picked
+# why: the first table with a filter: the column open, «Все» pressed, nothing picked
 
 ## ru :: tree
 RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tables/wondrous_environments]
@@ -19,8 +19,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
   main ""
     heading "Таблицы" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
-    StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
+    button "Об этих данных" [expanded=false]
     navigation "Таблицы"
       link "Core" [url=/tables/core_item]
       link "Hope & Fear" [url=/tables/hope_and_fear_item]
@@ -36,21 +35,20 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Предметы сообществ" [url=/tables/community_items]
       link "Many Worlds Tavern" [url=/tables/many_worlds_tavern]
     searchbox "Поиск по названию или описанию..."
+    button "Список" [pressed=true]
+    button "Сетка" [pressed=false]
     button "Ссылка на таблицу"
-    button "Списком" [pressed=true]
-    button "Сеткой" [pressed=false]
-    button "Фильтры" [expanded=false]
-    StaticText "119"
-    checkbox "Выбрать все (119)" [checked=false]
-    StaticText "Выбрать все (119)"
-    checkbox "Смола Бездны" [checked=false]
-    button "1 Смола Бездны Вы можете бросить флакон этой смолы в цель в пред..." [namelen=174 namehash=379d8671]
-    ... checkbox x116 of 120 same-shape siblings elided
-    ... button x116 of 120 same-shape siblings elided
-    checkbox "Шкура Йети" [checked=false]
-    button "118 Шкура Йети Пока вы носите эту шкуру, вы получаете половину у..." [namelen=295 namehash=e7794b22]
-    checkbox "Пески Ифанга" [checked=false]
-    button "119 Пески Ифанга Когда этот чёрный порошок загорается или испыты..." [namelen=334 namehash=7c791c01]
+    button "Выбрать"
+    complementary "Фильтры"
+      heading "Фильтры" [level=2]
+      StaticText "ТИП"
+      button "Все" [pressed=true]
+      button "Предметы" [pressed=false]
+      button "Расходники" [pressed=false]
+      button "Снаряжение" [pressed=false]
+    ... button x117 of 121 same-shape siblings elided
+    button "118 Шкура Йети ПРЕДМЕТ Пока вы носите эту шкуру, вы получаете по..." [namelen=273 namehash=68aaf92a]
+    button "119 Пески Ифанга РАСХОДНИК Когда этот чёрный порошок загорается ..." [namelen=312 namehash=75e49924]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -59,126 +57,126 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-100Семя Цветка ТроицыУпотребление этого семени дарует мудрость Т... [namelen=169 namehash=803c6e90]
-101Сыворотка Истинного ЗренияНа время сцены вас нельзя обмануть ... [namelen=304 namehash=b4ed0bdc]
-102Искажённая ЛинзаКогда вы смотрите через эту линзу, вы можете ... [namelen=262 namehash=630477b7]
-103Лепестки ТенелилииПосле поедания лепестка на время сцены вы м... [namelen=237 namehash=91c0618f]
-104Сумеречное ЗельеДо следующего продолжительного отдыха вы може... [namelen=236 namehash=703f2498]
-105Плащ-ЗавесаПока вы носите этот плащ, вы получаете преимуществ... [namelen=332 namehash=efa0b766]
-106Капюшон Туманного ПокроваПока вы носите этот плащ, вы получае... [namelen=304 namehash=cde449d7]
-107Флакон Кристальных ВодВыпейте эти воды, чтобы заменить карту ... [namelen=147 namehash=8eb6864c]
-108Нектар Обетного ЦветкаВы очищаете 1d4 Стресса, но в следующий... [namelen=272 namehash=be14b3ab]
-109Сигил Бога ВойныВы можете перенести этот узор на броню без св... [namelen=217 namehash=8eadda0c]
-10Челюсти Астрального ТермитаС помощью этих челюстей вы можете п... [namelen=174 namehash=fbc23c1b]
-110Охранный ОберегПока вы носите этот кулон, вы можете автоматич... [namelen=385 namehash=79697ca4]
-111Вино БеседКогда одно или несколько существ ведут беседу, разд... [namelen=200 namehash=8d6c6997]
-112Плащ Зимнего ВолкаПока вы носите этот плащ, когда вы вынуждае... [namelen=259 namehash=7c54b223]
-113Оберег Вянущего КорняОдин раз за продолжительный отдых вы мож... [namelen=276 namehash=c925ee88]
-114Ихор Вянущего КорняОтметьте 1d4 Ран и навсегда потеряйте 1 яч... [namelen=281 namehash=e642e9d6]
-115Тоник Вянущего КорняСледующее заклинание, произнесённое вами ... [namelen=215 namehash=56da32af]
-116Подвеска Волчьего ДругаПока вы носите этот предмет, собаки и ... [namelen=259 namehash=46a343af]
-117ПризракоуловительЭта шкатулка может вмещать до трёх духов неж... [namelen=304 namehash=f0cf08ca]
-118Шкура ЙетиПока вы носите эту шкуру, вы получаете половину уро... [namelen=291 namehash=9fef894b]
-119Пески ИфангаКогда этот чёрный порошок загорается или испытыва... [namelen=330 namehash=1ae31911]
-11Камень ВозвратаВы можете проглотить этот камень и потратить вс... [namelen=283 namehash=a142390b]
-12Отвадитель ЖуковОдин раз до следующего отдыха наведите эту ант... [namelen=297 namehash=0891f9ba]
-13Кровь КайдзюКогда вы выпиваете эту кровь, ваша Кость Надежды с... [namelen=184 namehash=20004bdf]
-14Лепесток Цветочной ВуалиДо следующего короткого или продолжите... [namelen=212 namehash=eeca2104]
-15Тростник Трясинного СтеклаОдин раз до следующего отдыха, держа... [namelen=160 namehash=45f53aa5]
-16Книга БеспамятстваКогда вы читаете эту книгу, она рассказывает... [namelen=256 namehash=cf619622]
-17Варенье из ГрохотягодБанка содержит 5 порций. Одна порция сост... [namelen=321 namehash=726b2a1d]
-18ГрохотягодаДвух ягод достаточно для полноценного обеда, но есл... [namelen=220 namehash=05ee18ef]
-19Монета-БумПотратьте Надежду, чтобы активировать монету и запус... [namelen=329 namehash=1cbc73fe]
-1Смола БездныВы можете бросить флакон этой смолы в цель в предел... [namelen=170 namehash=7380c1b3]
-20Песня в БутылкеОткрытие бутылки высвобождает прекрасную мелоди... [namelen=159 namehash=747a2873]
-21Пузырная ПалочкаОдин раз за продолжительный отдых вы можете ак... [namelen=272 namehash=9ef655bc]
-22Щит Охотника на ЖуковРанг 2 · Физическое · Сила · Вплотную · d... [namelen=256 namehash=2f4f76fe]
-23Усмиряющее КадилоЭто приспособление рассеивает дым, успокаиваю... [namelen=256 namehash=8b6d5fc3]
-24Яйцо КатартоидаВ качестве Предсмертного Хода вы можете разбить... [namelen=262 namehash=1c28092d]
-25Когти ИфангаРанг 4 · Магическое · Влияние · Далеко · d8+4 маг ... [namelen=318 namehash=3c11ef3f]
-26Кувшинка-ПифияВ качестве Хода Отдыха вы можете медитировать на... [namelen=253 namehash=e06a3f40]
-27Кристаллы ИномирьяЭти лазурные камни содержат сущность иных ми... [namelen=207 namehash=0276b34c]
-28Тёмный КаменьЕсли этот ониксовый камень подвергается воздейств... [namelen=257 namehash=33f3b4a3]
-29Желчь Демонической ЖабыКогда эта жидкость контактирует с возду... [namelen=238 namehash=11392a5b]
-2Чай ЭфироцветаДо следующего отдыха вы можете обнаруживать прису... [namelen=200 namehash=b2be7892]
-30РасстроительОдин раз за продолжительный отдых вы можете потрат... [namelen=306 namehash=eff08a57]
-31Молот Инфернального КузнецаРанг 3 · Магическое · Сила · Вплотн... [namelen=311 namehash=9602ae6b]
-32Зелье Судного ДняБросьте d12 за каждую ячейку Надежды по очере... [namelen=411 namehash=21478a3a]
-33Сапоги Жуткого ПлетенияПока вы носите эти сапоги, вы получаете... [namelen=163 namehash=0a6d573a]
-34Осколок СновидцаВо время продолжительного отдыха вы можете исп... [namelen=355 namehash=7889522a]
-35Пыль Отражённой ТишиныКогда вы рассыпаете эту пыль, пространст... [namelen=275 namehash=f834d47a]
-36Чёрная НитьВы можете разматывать эту нить до 150 метров в пути... [namelen=242 namehash=e195928d]
-37Лепесток Эхо-ОрхидеиУпотребление лепестка при взгляде на сущес... [namelen=237 namehash=8ba92502]
-38Эфирный ЯкорьПока вы несёте этот якорь, вы можете отметить 2 С... [namelen=220 namehash=38b7087a]
-39Дыхательный КлубеньЕсли держать этот корень во рту, он обеспеч... [namelen=198 namehash=b01e85bb]
-3ЭфироцветЭтот цветок чувствителен к магии и указывает в направл... [namelen=238 namehash=590f51d2]
-40МерцацветПока вы несёте этот цветок, вы получаете преимущество... [namelen=199 namehash=d6f26a20]
-41Гравитационная ПривязьПока вы носите этот пояс, вы получаете п... [namelen=239 namehash=25949517]
-42Порошок ПечалекорняКогда вы вдыхаете этот порошок, вы добавляе... [namelen=399 namehash=5e0b3aa9]
-43Вихревая ШляпкаЗаваренные в чай в качестве Хода Отдыха, эти гр... [namelen=240 namehash=b2b8966b]
-44Сахар ГенриНа время этой сцены вы можете отметить Стресс, чтоб... [namelen=149 namehash=fd500091]
-45Порошок ГерояКогда вы вдыхаете этот порошок, вы можете добавит... [namelen=330 namehash=7808d9d4]
-46Полотенце ПутешественникаПока вы знаете, где находится это пол... [namelen=302 namehash=6804add2]
-47Ледяные РукавицыКогда вы берёте снег в эти рукавицы, вы можете... [namelen=185 namehash=83c6644b]
-48Мел ЗаклинателяВы можете начертить заклинание из вашей Руки на... [namelen=274 namehash=b514b1e3]
-49Стопорный КлючПри успешном Броске Искусности вставьте этот инс... [namelen=368 namehash=73df351e]
-4Алконитовый КристаллВы можете использовать энергию этого криста... [namelen=262 namehash=9f6f11c9]
-50Фонарь ТенейПока вы используете этот фонарь, вы можете распозн... [namelen=279 namehash=6768bd86]
-51Гарпун ЛевиафанаРанг 2 · Физическое · Искусность · Далеко · d8... [namelen=374 namehash=6d0b2dd3]
-52Погибель ЛжецовПосле того как вы разжуёте эти листья, на время... [namelen=283 namehash=95e48782]
-53Маяк Жизненной СилыПотратьте Надежду, чтобы активировать этот ... [namelen=305 namehash=42b334ae]
-54Жезл ЖизниРанг 3 · Магическое · Знание · Далеко · d6+4 маг · О... [namelen=312 namehash=c6205075]
-55Громовой СкарабейКогда вы получаете электрический урон, вы мож... [namelen=262 namehash=8cc25ddd]
-56Жуки-ВлюблённыеПоместите одного из этих керамических жуков в л... [namelen=234 namehash=d37bd2e7]
-57Кандальные БоласРанг 2 · Физическое · Искусность · Средне · d4... [namelen=289 namehash=08f66a4f]
-58Трава МученикаВ качестве Хода Отдыха вы можете посадить веточк... [namelen=219 namehash=da40fbf7]
-59Маска ПодражателяПока вы носите эту маску, один раз за сцену в... [namelen=356 namehash=ec29197c]
-5Удерживающий КрюкКогда вы совершаете Бросок Реакции, чтобы избе... [namelen=238 namehash=d7df9fd2]
-60Слизь СкользкостиВы можете нанести эту слизь на тело в качеств... [namelen=221 namehash=f12bfb45]
-61Игольный КлючКогда вы вонзаете эту иглу в палец, до следующего... [namelen=269 namehash=bc0da8f2]
-62Целебная СмолаНанесите на существо, чтобы очистить 1d4 Ран, 1d... [namelen=123 namehash=3f55d133]
-63Согревающие ПирожкиКорзина содержит 1d4 пирожков. Когда вы съе... [namelen=181 namehash=e43f4121]
-64Гроссбух ПервопроходцаЕсли вы записываете свой путь в эту книг... [namelen=261 namehash=5511160e]
-65Побеги Призрачного ПапоротникаСъеденные в сыром виде, эти побе... [namelen=278 namehash=040f4288]
-66Чай из Призрачного ПапоротникаУстраняет действие большинства я... [namelen=143 namehash=f6efe2e7]
-67Межпланарная ДревесинаПри создании магического оружия из этой ... [namelen=271 namehash=27960ef7]
-68Зелье Открытых ПутейВыпив это зелье при взгляде на существо, в... [namelen=297 namehash=0704abfe]
-69Зелье Спирального ЗренияОдин раз за сцену до следующего отдыха... [namelen=388 namehash=26cd35be]
-6Древний Рунный КаменьОбведите пальцем эту забытую руну и потрат... [namelen=244 namehash=f7cb5f6b]
-70Призматическая ВодаПитьё этой воды имеет непредсказуемые эффек... [namelen=333 namehash=59918124]
-71Ласты ЛужелуточкиПока вы носите эти ласты, вы должны отметить ... [namelen=280 namehash=b2a24d54]
-72Чистый КристаллОдин раз за сессию, когда вы используете свойст... [namelen=155 namehash=1562c7f0]
-73Перо ПамятиВы можете написать до ста слов этим пером в качеств... [namelen=261 namehash=9c5c80c1]
-74Лучезарный ОсколокКогда вы разбиваете этот осколок планарной э... [namelen=305 namehash=9fe47b17]
-75Красный Нос НадеждыПока вы носите этот нос, вы получаете преим... [namelen=267 namehash=a126f74d]
-76Перчатка КорнерезаВы получаете преимущество на атаки и Броски ... [namelen=211 namehash=059fbfc8]
-77Опорная ПаутинаКогда конструкция в пределах Близкой дистанции ... [namelen=296 namehash=8f8b9131]
-78Оберег МореплавателяЭтот символ переносится на корпус лодки пр... [namelen=208 namehash=216ab842]
-79Лук ИскателяРанг 2 · Физическое · Искусность · Далеко · d6+4 ф... [namelen=385 namehash=1533ad21]
-7Арканный СкальпельРанг 3 · Магическое · Искусность · Далеко · d... [namelen=210 namehash=c6b11936]
-80Приманка Теневого УдильщикаАктивация этой приманки заставляет ... [namelen=257 namehash=91b14c24]
-81Камень СиреныЕсли вы помещаете этот выщербленный, покрытый рак... [namelen=376 namehash=027ebf41]
-82Снежный КлинокРанг 2 · Магическое · Проворность · Вплотную · d... [namelen=259 namehash=22bf4d52]
-83Факел ДушиЭтот факел горит холодным магическим огнём, пока вы ... [namelen=226 namehash=addee74b]
-84Душетканый ПлащПока вы носите этот плащ, один раз за продолжит... [namelen=362 namehash=7fc7f59e]
-85Паучье ЖалоРанг 2 · Магическое · Сила · Вплотную · d8+3 маг · ... [namelen=241 namehash=1708c83c]
-86Искатель ДуховВытяните этот ивовый жезл и потратьте Надежду, ч... [namelen=200 namehash=69c325a4]
-87Тоник Споровой МыслиДо следующего отдыха вы получаете преимуще... [namelen=221 namehash=d9c118dd]
-88Посох Шепчущего АрхиваРанг 2 · Магическое · Знание · Далеко · ... [namelen=322 namehash=efeec339]
-89Робы ЖалозащитыПока вы носите эту одежду, защищающую от насеко... [namelen=251 namehash=5d9a0279]
-8Арканная НабивкаКогда вы набиваете мёртвое существо этими пропи... [namelen=229 namehash=67de9855]
-90Буря в БутылкеКогда эта бутылка открывается или разбивается, в... [namelen=294 namehash=1070c33c]
-91Превосходный Алконитовый КристаллВы можете использовать энерги... [namelen=354 namehash=39d2fd7b]
-92Сухожилие ТарраскаКогда вы натягиваете лук этой мощной тетивой... [namelen=235 namehash=a62efb0d]
-93Сумочка КассираКошель может вместить горсть золота. Когда вы и... [namelen=221 namehash=09be0e54]
-94ВремястеклоОдин раз за сессию вы можете смотреть в эту подзорн... [namelen=234 namehash=6c5d3a7c]
-95Настойка Укреплённых МыслейВы очищаете 1d4 Стресса и получаете... [namelen=322 namehash=7d608c78]
-96Фолиант Древних ЗнанийВ рамках работы над проектом вы можете п... [namelen=211 namehash=ba29a59b]
-97Рог ЧерепахиЕсли вы используете этот костяной фрагмент как нав... [namelen=265 namehash=1313472c]
-98Луковица ЯдолилииЭту луковицу можно разделить на 1d4 дольки, к... [namelen=211 namehash=6858a5c3]
-99Лепестки Цветка ТроицыЗаварите эти лепестки в чай, который мог... [namelen=236 namehash=c3977278]
-9Архивная ГнильНа время сцены вы получаете преимущество ко всем ... [namelen=203 namehash=afaa2150]
-?Справка
+100Семя Цветка ТроицыРасходникУпотребление этого семени дарует м... [namelen=148 namehash=41afb8d9]
+101Сыворотка Истинного ЗренияРасходникНа время сцены вас нельзя ... [namelen=283 namehash=21ad41ee]
+102Искажённая ЛинзаПредметКогда вы смотрите через эту линзу, вы ... [namelen=241 namehash=e41539b7]
+103Лепестки ТенелилииРасходникПосле поедания лепестка на время с... [namelen=216 namehash=535eb8b5]
+104Сумеречное ЗельеРасходникДо следующего продолжительного отдых... [namelen=215 namehash=0566955e]
+105Плащ-ЗавесаПредметПока вы носите этот плащ, вы получаете преи... [namelen=311 namehash=d7bd4db5]
+106Капюшон Туманного ПокроваПредметПока вы носите этот плащ, вы ... [namelen=283 namehash=21afcd81]
+107Флакон Кристальных ВодРасходникВыпейте эти воды, чтобы замени... [namelen=126 namehash=5954ab76]
+108Нектар Обетного ЦветкаРасходникВы очищаете 1d4 Стресса, но в ... [namelen=251 namehash=efbc7b23]
+109Сигил Бога ВойныПредметВы можете перенести этот узор на броню... [namelen=196 namehash=7dd209a4]
+10Челюсти Астрального ТермитаРасходникС помощью этих челюстей вы... [namelen=153 namehash=5894a24e]
+110Охранный ОберегРасходникПока вы носите этот кулон, вы можете ... [namelen=364 namehash=223d2a96]
+111Вино БеседРасходникКогда одно или несколько существ ведут бес... [namelen=179 namehash=1f971800]
+112Плащ Зимнего ВолкаПредметПока вы носите этот плащ, когда вы в... [namelen=238 namehash=65cc1f27]
+113Оберег Вянущего КорняПредметОдин раз за продолжительный отдых... [namelen=255 namehash=cbe54575]
+114Ихор Вянущего КорняРасходникОтметьте 1d4 Ран и навсегда потер... [namelen=260 namehash=ee5e7adb]
+115Тоник Вянущего КорняРасходникСледующее заклинание, произнесён... [namelen=194 namehash=f5920e26]
+116Подвеска Волчьего ДругаПредметПока вы носите этот предмет, со... [namelen=238 namehash=959438fc]
+117ПризракоуловительПредметЭта шкатулка может вмещать до трёх ду... [namelen=283 namehash=c432640b]
+118Шкура ЙетиПредметПока вы носите эту шкуру, вы получаете полов... [namelen=270 namehash=f505f92d]
+119Пески ИфангаРасходникКогда этот чёрный порошок загорается или... [namelen=309 namehash=e3fba4be]
+11Камень ВозвратаРасходникВы можете проглотить этот камень и пот... [namelen=262 namehash=b95e87f4]
+12Отвадитель ЖуковПредметОдин раз до следующего отдыха наведите ... [namelen=276 namehash=d74e7dc2]
+13Кровь КайдзюРасходникКогда вы выпиваете эту кровь, ваша Кость ... [namelen=163 namehash=121d4876]
+14Лепесток Цветочной ВуалиРасходникДо следующего короткого или п... [namelen=191 namehash=2140a75c]
+15Тростник Трясинного СтеклаПредметОдин раз до следующего отдыха... [namelen=139 namehash=2223ae28]
+16Книга БеспамятстваРасходникКогда вы читаете эту книгу, она рас... [namelen=235 namehash=e1c497c1]
+17Варенье из ГрохотягодРасходникБанка содержит 5 порций. Одна по... [namelen=300 namehash=b91cbb39]
+18ГрохотягодаРасходникДвух ягод достаточно для полноценного обед... [namelen=199 namehash=583717aa]
+19Монета-БумРасходникПотратьте Надежду, чтобы активировать монет... [namelen=308 namehash=463b6894]
+1Смола БездныРасходникВы можете бросить флакон этой смолы в цель... [namelen=149 namehash=05e1d390]
+20Песня в БутылкеРасходникОткрытие бутылки высвобождает прекрасн... [namelen=138 namehash=b9b15ae5]
+21Пузырная ПалочкаПредметОдин раз за продолжительный отдых вы мо... [namelen=251 namehash=ef50ea5f]
+22Щит Охотника на ЖуковВторичное оружиеУникальноеРанг 2 · Физиче... [namelen=235 namehash=c2cd7497]
+23Усмиряющее КадилоПредметЭто приспособление рассеивает дым, усп... [namelen=235 namehash=e6225e1e]
+24Яйцо КатартоидаРасходникВ качестве Предсмертного Хода вы может... [namelen=241 namehash=6d680ee9]
+25Когти ИфангаОсновное оружиеУникальноеРанг 4 · Магическое · Вли... [namelen=297 namehash=48ae3d82]
+26Кувшинка-ПифияПредметВ качестве Хода Отдыха вы можете медитиро... [namelen=232 namehash=f8350ab8]
+27Кристаллы ИномирьяРасходникЭти лазурные камни содержат сущност... [namelen=186 namehash=3faa66b0]
+28Тёмный КаменьРасходникЕсли этот ониксовый камень подвергается ... [namelen=236 namehash=62041050]
+29Желчь Демонической ЖабыРасходникКогда эта жидкость контактируе... [namelen=217 namehash=44739444]
+2Чай ЭфироцветаРасходникДо следующего отдыха вы можете обнаружив... [namelen=179 namehash=131d1f74]
+30РасстроительПредметОдин раз за продолжительный отдых вы можете... [namelen=285 namehash=5412330d]
+31Молот Инфернального КузнецаОсновное оружиеУникальноеРанг 3 · М... [namelen=290 namehash=059720cd]
+32Зелье Судного ДняРасходникБросьте d12 за каждую ячейку Надежды... [namelen=390 namehash=70d3ed11]
+33Сапоги Жуткого ПлетенияПредметПока вы носите эти сапоги, вы по... [namelen=142 namehash=c84f0500]
+34Осколок СновидцаПредметВо время продолжительного отдыха вы мож... [namelen=334 namehash=7485a180]
+35Пыль Отражённой ТишиныРасходникКогда вы рассыпаете эту пыль, п... [namelen=254 namehash=ab21ed62]
+36Чёрная НитьПредметВы можете разматывать эту нить до 150 метров... [namelen=221 namehash=069b4c0e]
+37Лепесток Эхо-ОрхидеиРасходникУпотребление лепестка при взгляде... [namelen=216 namehash=a2ea30f6]
+38Эфирный ЯкорьПредметПока вы несёте этот якорь, вы можете отмет... [namelen=199 namehash=54593df8]
+39Дыхательный КлубеньРасходникЕсли держать этот корень во рту, о... [namelen=177 namehash=4fb837c8]
+3ЭфироцветПредметЭтот цветок чувствителен к магии и указывает в ... [namelen=217 namehash=b9d8307b]
+40МерцацветПредметПока вы несёте этот цветок, вы получаете преим... [namelen=178 namehash=cae92593]
+41Гравитационная ПривязьПредметПока вы носите этот пояс, вы полу... [namelen=218 namehash=cc141852]
+42Порошок ПечалекорняРасходникКогда вы вдыхаете этот порошок, вы... [namelen=378 namehash=cb20af2d]
+43Вихревая ШляпкаРасходникЗаваренные в чай в качестве Хода Отдых... [namelen=219 namehash=ff49ddb1]
+44Сахар ГенриРасходникНа время этой сцены вы можете отметить Стр... [namelen=128 namehash=2782b31f]
+45Порошок ГерояРасходникКогда вы вдыхаете этот порошок, вы может... [namelen=309 namehash=951edbcf]
+46Полотенце ПутешественникаПредметПока вы знаете, где находится ... [namelen=281 namehash=7d0db8e4]
+47Ледяные РукавицыПредметКогда вы берёте снег в эти рукавицы, вы... [namelen=164 namehash=f7ff84e6]
+48Мел ЗаклинателяПредметВы можете начертить заклинание из вашей ... [namelen=253 namehash=c0134c24]
+49Стопорный КлючПредметПри успешном Броске Искусности вставьте э... [namelen=347 namehash=043ccb5b]
+4Алконитовый КристаллПредметВы можете использовать энергию этого... [namelen=241 namehash=8f1a0c64]
+50Фонарь ТенейПредметПока вы используете этот фонарь, вы можете ... [namelen=258 namehash=5e4e5120]
+51Гарпун ЛевиафанаОсновное оружиеУникальноеРанг 2 · Физическое ·... [namelen=353 namehash=ca91ef73]
+52Погибель ЛжецовРасходникПосле того как вы разжуёте эти листья,... [namelen=262 namehash=75fa4757]
+53Маяк Жизненной СилыРасходникПотратьте Надежду, чтобы активиров... [namelen=284 namehash=cc8a8763]
+54Жезл ЖизниОсновное оружиеУникальноеРанг 3 · Магическое · Знани... [namelen=291 namehash=00d0bb12]
+55Громовой СкарабейПредметКогда вы получаете электрический урон,... [namelen=241 namehash=a3896808]
+56Жуки-ВлюблённыеПредметПоместите одного из этих керамических жу... [namelen=213 namehash=2b6e8f16]
+57Кандальные БоласВторичное оружиеУникальноеРанг 2 · Физическое ... [namelen=268 namehash=70952725]
+58Трава МученикаРасходникВ качестве Хода Отдыха вы можете посади... [namelen=198 namehash=edb1e249]
+59Маска ПодражателяПредметПока вы носите эту маску, один раз за ... [namelen=335 namehash=c081262f]
+5Удерживающий КрюкПредметКогда вы совершаете Бросок Реакции, что... [namelen=217 namehash=364ada49]
+60Слизь СкользкостиРасходникВы можете нанести эту слизь на тело ... [namelen=200 namehash=a6709d5e]
+61Игольный КлючРасходникКогда вы вонзаете эту иглу в палец, до с... [namelen=248 namehash=37365fab]
+62Целебная СмолаРасходникНанесите на существо, чтобы очистить 1d... [namelen=102 namehash=9f55f04f]
+63Согревающие ПирожкиРасходникКорзина содержит 1d4 пирожков. Ког... [namelen=160 namehash=70ea10b0]
+64Гроссбух ПервопроходцаПредметЕсли вы записываете свой путь в э... [namelen=240 namehash=d08895ae]
+65Побеги Призрачного ПапоротникаРасходникСъеденные в сыром виде,... [namelen=257 namehash=c4900dcb]
+66Чай из Призрачного ПапоротникаРасходникУстраняет действие боль... [namelen=122 namehash=ad3542cd]
+67Межпланарная ДревесинаРасходникПри создании магического оружия... [namelen=250 namehash=0606bd4a]
+68Зелье Открытых ПутейРасходникВыпив это зелье при взгляде на су... [namelen=276 namehash=d3a32f20]
+69Зелье Спирального ЗренияРасходникОдин раз за сцену до следующе... [namelen=367 namehash=5a5e1973]
+6Древний Рунный КаменьПредметОбведите пальцем эту забытую руну и... [namelen=223 namehash=0b4a4c82]
+70Призматическая ВодаРасходникПитьё этой воды имеет непредсказуе... [namelen=312 namehash=f6ed9225]
+71Ласты ЛужелуточкиПредметПока вы носите эти ласты, вы должны от... [namelen=259 namehash=a259d08b]
+72Чистый КристаллПредметОдин раз за сессию, когда вы используете... [namelen=134 namehash=b0626ac0]
+73Перо ПамятиПредметВы можете написать до ста слов этим пером в ... [namelen=240 namehash=b3afc7ba]
+74Лучезарный ОсколокРасходникКогда вы разбиваете этот осколок пл... [namelen=284 namehash=6881169b]
+75Красный Нос НадеждыПредметПока вы носите этот нос, вы получает... [namelen=246 namehash=78e2665a]
+76Перчатка КорнерезаПредметВы получаете преимущество на атаки и ... [namelen=190 namehash=0d523254]
+77Опорная ПаутинаРасходникКогда конструкция в пределах Близкой д... [namelen=275 namehash=f156cd8b]
+78Оберег МореплавателяРасходникЭтот символ переносится на корпус... [namelen=187 namehash=8b1f2ddb]
+79Лук ИскателяОсновное оружиеУникальноеРанг 2 · Физическое · Иск... [namelen=364 namehash=1e797907]
+7Арканный СкальпельВторичное оружиеУникальноеРанг 3 · Магическое... [namelen=189 namehash=6e0701d3]
+80Приманка Теневого УдильщикаРасходникАктивация этой приманки за... [namelen=236 namehash=d769b161]
+81Камень СиреныПредметЕсли вы помещаете этот выщербленный, покры... [namelen=355 namehash=075b0929]
+82Снежный КлинокОсновное оружиеУникальноеРанг 2 · Магическое · П... [namelen=238 namehash=7748b1d4]
+83Факел ДушиПредметЭтот факел горит холодным магическим огнём, п... [namelen=205 namehash=747a3b8b]
+84Душетканый ПлащПредметПока вы носите этот плащ, один раз за пр... [namelen=341 namehash=88efca4f]
+85Паучье ЖалоОсновное оружиеУникальноеРанг 2 · Магическое · Сила... [namelen=220 namehash=fc80dacf]
+86Искатель ДуховПредметВытяните этот ивовый жезл и потратьте Над... [namelen=179 namehash=4af2ccfd]
+87Тоник Споровой МыслиРасходникДо следующего отдыха вы получаете... [namelen=200 namehash=bb7d2f4a]
+88Посох Шепчущего АрхиваОсновное оружиеУникальноеРанг 2 · Магиче... [namelen=301 namehash=3fd972b4]
+89Робы ЖалозащитыПредметПока вы носите эту одежду, защищающую от... [namelen=230 namehash=997db3a6]
+8Арканная НабивкаРасходникКогда вы набиваете мёртвое существо эт... [namelen=208 namehash=b344a3be]
+90Буря в БутылкеРасходникКогда эта бутылка открывается или разби... [namelen=273 namehash=75be480a]
+91Превосходный Алконитовый КристаллПредметВы можете использовать... [namelen=333 namehash=2d3bf66c]
+92Сухожилие ТарраскаПредметКогда вы натягиваете лук этой мощной ... [namelen=214 namehash=b9d61a6d]
+93Сумочка КассираПредметКошель может вместить горсть золота. Ког... [namelen=200 namehash=bf919018]
+94ВремястеклоПредметОдин раз за сессию вы можете смотреть в эту ... [namelen=213 namehash=678d44ea]
+95Настойка Укреплённых МыслейРасходникВы очищаете 1d4 Стресса и ... [namelen=301 namehash=7e3aa7be]
+96Фолиант Древних ЗнанийРасходникВ рамках работы над проектом вы... [namelen=190 namehash=b315d3dd]
+97Рог ЧерепахиПредметЕсли вы используете этот костяной фрагмент ... [namelen=244 namehash=361e11be]
+98Луковица ЯдолилииРасходникЭту луковицу можно разделить на 1d4 ... [namelen=190 namehash=fadc012f]
+99Лепестки Цветка ТроицыРасходникЗаварите эти лепестки в чай, ко... [namelen=215 namehash=435d1bf9]
+9Архивная ГнильРасходникНа время сцены вы получаете преимущество... [namelen=182 namehash=6969316d]
+?Об этих данных
 Arazo's Artifacts
 Core
 Dread GM Toolbox
@@ -190,144 +188,29 @@ The Dragon's Vault
 Vault of Ages
 Wondrous Environments
 daggerheart.com
-Алконитовый Кристалл
 Альт. таблицы
-Арканная Набивка
-Арканный Скальпель
-Архивная Гниль
 Бросок
-Буря в Бутылке
-Варенье из Грохотягод
-Вино Бесед
-Вихревая Шляпка
 Войти
-Времястекло
-Гарпун Левиафана
-Гравитационная Привязь
-Громовой Скарабей
-Гроссбух Первопроходца
-Грохотягода
+Все
+Выбрать
 Дополнения
-Древний Рунный Камень
-Душетканый Плащ
-Дыхательный Клубень
-Жезл Жизни
-Желчь Демонической Жабы
-Жуки-Влюблённые
-Зелье Открытых Путей
-Зелье Спирального Зрения
-Зелье Судного Дня
-Игольный Ключ
-Искажённая Линза
-Искатель Духов
-Ихор Вянущего Корня
 К содержимому
-Камень Возврата
-Камень Сирены
-Кандальные Болас
-Капюшон Туманного Покрова
-Книга Беспамятства
-Когти Ифанга
 Конфиденциальность
-Красный Нос Надежды
-Кристаллы Иномирья
-Кровь Кайдзю
-Кувшинка-Пифия
-Ласты Лужелуточки
-Ледяные Рукавицы
-Лепестки Тенелилии
-Лепестки Цветка Троицы
-Лепесток Цветочной Вуали
-Лепесток Эхо-Орхидеи
-Лук Искателя
-Луковица Ядолилии
 ЛутDaggerheart
-Лучезарный Осколок
-Маска Подражателя
-Маяк Жизненной Силы
-Межпланарная Древесина
-Мел Заклинателя
-Мерцацвет
-Молот Инфернального Кузнеца
-Монета-Бум
-Настойка Укреплённых Мыслей
-Нектар Обетного Цветка
-Оберег Вянущего Корня
-Оберег Мореплавателя
-Опорная Паутина
-Осколок Сновидца
-Отвадитель Жуков
 Открывать при запуске
-Охранный Оберег
-Паучье Жало
-Перо Памяти
-Перчатка Корнереза
-Пески Ифанга
-Песня в Бутылке
-Плащ Зимнего Волка
-Плащ-Завеса
-Побеги Призрачного Папоротника
-Погибель Лжецов
-Подвеска Волчьего Друга
 Поиск
-Полотенце Путешественника
-Порошок Героя
-Порошок Печалекорня
-Посох Шепчущего Архива
-Превосходный Алконитовый Кристалл
+Поиск по названию или описанию...
+Предметы
 Предметы сообществ
-Призматическая Вода
-Призракоуловитель
-Приманка Теневого Удильщика
 Прочее
-Пузырная Палочка
-Пыль Отражённой Тишины
-Расстроитель
-Робы Жалозащиты
-Рог Черепахи
-Сапоги Жуткого Плетения
-Сахар Генри
-Семя Цветка Троицы
-Сеткой
-Сигил Бога Войны
-Слизь Скользкости
-Смола Бездны
+Расходники
+Сетка
 Снаряжение
-Снежный Клинок
-Согревающие Пирожки
-Списком
+Список
 Ссылка на таблицу
-Стопорный Ключ
-Сумеречное Зелье
-Сумочка Кассира
-Сухожилие Тарраска
-Сыворотка Истинного Зрения
 Таблицы
-Тоник Вянущего Корня
-Тоник Споровой Мысли
-Трава Мученика
-Тростник Трясинного Стекла
-Тёмный Камень
-Удерживающий Крюк
 Условия использования
-Усмиряющее Кадило
 Установить как приложение
-Факел Души
-Фильтры
-Флакон Кристальных Вод
-Фолиант Древних Знаний
-Фонарь Теней
-Целебная Смола
-Чай Эфироцвета
-Чай из Призрачного Папоротника
-Челюсти Астрального Термита
-Чистый Кристалл
-Чёрная Нить
-Шкура Йети
-Щит Охотника на Жуков
-Эфирный Якорь
-Эфироцвет
-Яйцо Катартоида
 
 ## en :: tree
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/wondrous_environments]
@@ -346,8 +229,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/wondrous_envir
   main ""
     heading "Tables" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
-    StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
+    button "About this data" [expanded=false]
     navigation "Tables"
       link "Core" [url=/en/tables/core_item]
       link "Hope & Fear" [url=/en/tables/hope_and_fear_item]
@@ -363,21 +245,20 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/wondrous_envir
       link "Community items" [url=/en/tables/community_items]
       link "Many Worlds Tavern" [url=/en/tables/many_worlds_tavern]
     searchbox "Search by name or description..."
-    button "Link to this table"
     button "List" [pressed=true]
     button "Grid" [pressed=false]
-    button "Filters" [expanded=false]
-    StaticText "119"
-    checkbox "Select all (119)" [checked=false]
-    StaticText "Select all (119)"
-    checkbox "Abyssal Sap" [checked=false]
-    button "1 Abyssal Sap You can throw a vial of this sap at a target withi..." [namelen=158 namehash=4275dfad]
-    ... checkbox x116 of 120 same-shape siblings elided
-    ... button x116 of 120 same-shape siblings elided
-    checkbox "Yeti Coat" [checked=false]
-    button "118 Yeti Coat While wearing this coat you take half damage from ..." [namelen=252 namehash=f9dcdaaa]
-    checkbox "Yifang Sands" [checked=false]
-    button "119 Yifang Sands When this black powder catches fire or experien..." [namelen=315 namehash=b27dba1d]
+    button "Link to this table"
+    button "Select"
+    complementary "Filters"
+      heading "Filters" [level=2]
+      StaticText "TYPE"
+      button "All" [pressed=true]
+      button "Items" [pressed=false]
+      button "Consumables" [pressed=false]
+      button "Equipment" [pressed=false]
+    ... button x117 of 121 same-shape siblings elided
+    button "118 Yeti Coat ITEM While wearing this coat you take half damage ..." [namelen=230 namehash=9baa234a]
+    button "119 Yifang Sands CONSUMABLE When this black powder catches fire ..." [namelen=293 namehash=169245a2]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -386,272 +267,157 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/wondrous_envir
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-100Trinity Flower SeedEating this seed grants the wisdom of the ... [namelen=166 namehash=cab879a3]
-101True Vision SerumFor the scene, you can't be fooled by lies, ... [namelen=267 namehash=6226a0ed]
-102Twisted LensWhen you look through this lens, you can see into... [namelen=244 namehash=1cfbf84d]
-103Umbra Lily PetalsAfter eating a petal, for this scene you can... [namelen=197 namehash=d82f2335]
-104Umbral PotionUntil your next long rest you can spend a Hope t... [namelen=182 namehash=af85fdf1]
-105VeilcloakWhile wearing this, you have advantage on Finesse Ro... [namelen=275 namehash=8ba30d70]
-106Veilshroud HoodWhile wearing this cloak you have advantage on... [namelen=302 namehash=b300a95e]
-107Vial of Crystal WatersDrink these waters to switch out a doma... [namelen=150 namehash=9ac09fe0]
-108Votive Bloom NectarYou clear 1d4 Stress, but the next time yo... [namelen=256 namehash=2fd6ee26]
-109War God's SigilYou can transfer this design onto armor that d... [namelen=237 namehash=8ccaf297]
-10Astral Termite JawsUsing these jaws, you can chew into any wal... [namelen=149 namehash=a2871620]
-110Wardstone CharmWhile wearing this pendant, you can automatica... [namelen=352 namehash=8fdd02d0]
-111Wine of DiscourseWhen one or more creatures share a conversat... [namelen=221 namehash=d6836466]
-112Winter Wolf CloakWhile wearing this cloak, when you cause an ... [namelen=236 namehash=fb1fa6eb]
-113Witherroot CharmOnce per long rest, you can ignore all damage... [namelen=236 namehash=8ea5daf8]
-114Witherroot IchorMark 1d4 HP and permanently lose 1 HP slot. T... [namelen=237 namehash=b5a5aa9f]
-115Witherroot TonicThe next spell you cast this scene that deals... [namelen=179 namehash=fe84561f]
-116Wolffriend PendantWhile wearing this item, dogs and wolves wi... [namelen=210 namehash=1c38363d]
-117Wraith TrapThis box can hold up to three undead spirits. You ... [namelen=294 namehash=9f32d99c]
-118Yeti CoatWhile wearing this coat you take half damage from ex... [namelen=248 namehash=71c71c2f]
-119Yifang SandsWhen this black powder catches fire or experience... [namelen=311 namehash=dbb9185c]
-11Backsies StoneYou can swallow this stone and spend all your Ho... [namelen=258 namehash=01306d71]
-12Big Bug BegoneOnce per rest, point this giant beetle antenna a... [namelen=266 namehash=80f0be0a]
-13Blood of the KaijuWhen you drink this ichor, your Hope Die bec... [namelen=185 namehash=fb2fbb51]
-14Blossomveil PetalYou have advantage on your next Presence Reac... [namelen=168 namehash=a51c4ba6]
-15Bogglass ReedOnce per rest, while holding this reed, you can t... [namelen=133 namehash=357ebeb9]
-16Book of No HistoryWhen you read this book, it tells your own b... [namelen=247 namehash=2bcd3bdd]
-17Boomberry JamA jar of this jam contains 5 portions. A single p... [namelen=319 namehash=169c5587]
-18BoomberryTwo of these berries will suffice for a full meal, bu... [namelen=218 namehash=6bfe6b34]
-19BoomcoinSpend a Hope to activate the coin and start a Countdow... [namelen=307 namehash=cc91bee6]
-1Abyssal SapYou can throw a vial of this sap at a target within ... [namelen=154 namehash=db3e8105]
-20Bottled SongOpening the bottle releases a beautiful melody. Al... [namelen=146 namehash=c21ef063]
-21Bubble WandOnce per long rest, you can activate this wand with... [namelen=243 namehash=9920cd02]
-22Bug Hunter's AegisTier 2 · Physical · Strength · Melee · d4 ph... [namelen=240 namehash=ea525cf1]
-23Calming CenserThis contraption disperses smoke that calms inse... [namelen=237 namehash=f3d46744]
-24Cathartoid EggAs a death move, you can break this egg. You ris... [namelen=235 namehash=f3aad287]
-25Claws of YifangTier 4 · Magic · Presence · Far · d8+4 mag · On... [namelen=295 namehash=55ff1e04]
-26Croakroot PadAs a downtime move you can meditate on this pad t... [namelen=231 namehash=c4d9172f]
-27Crystals from BeyondThese azure stones contain the essence of ... [namelen=212 namehash=e0e04629]
-28DarkstoneIf this onyx stone is exposed to magical light, it ex... [namelen=214 namehash=87af5473]
-29Demon Toad BileWhen this liquid is exposed to air, start a Cou... [namelen=214 namehash=f9aa7291]
-2Aetherflower TeaUntil your next rest, you can detect the presen... [namelen=193 namehash=4c8abb9d]
-30DetunerOnce per long rest, you can spend a Hope to activate th... [namelen=243 namehash=4f9d92c2]
-31Devil's Smithing HammerTier 3 · Magic · Strength · Melee · d6+... [namelen=275 namehash=5accda74]
-32Doomsday PotionRoll a d12 for each of your Hope Slots in turn.... [namelen=435 namehash=1f60e34f]
-33Dread-Weave BootsWhile wearing these boots, you have resistanc... [namelen=148 namehash=a50c1d14]
-34Dreamer's ShardDuring a long rest, you can use this crystal to... [namelen=299 namehash=9fa16860]
-35Dust of Echoed SilenceWhen you scatter this dust, the area wit... [namelen=245 namehash=70e144e6]
-36Ebony ThreadYou can unspool this thread up to 500 feet as you ... [namelen=246 namehash=2cade7d7]
-37Echo Orchid PetalConsuming a petal while looking at a creature... [namelen=255 namehash=36317529]
-38Etheric AnchorWhile carrying this anchor you can mark 2 Stress... [namelen=204 namehash=deacc19b]
-39Flare TuberIf you hold one of these roots in your mouth, it pr... [namelen=180 namehash=47152437]
-3AetherflowerThis flower is sensitive to magic, and will point i... [namelen=253 namehash=e9e2312f]
-40FlickerbloomWhile carrying this flower, you have advantage on ... [namelen=190 namehash=e72f42e4]
-41Gravitic TetherWhile wearing this belt, you take half damage f... [namelen=218 namehash=59674903]
-42Griefroot PowderWhen you inhale this powder, you add a d8 to y... [namelen=369 namehash=e832e030]
-43Gyre CapBrewed into a tea as a downtime move, these mushrooms ... [namelen=236 namehash=c657bfa2]
-44Henry's SugarFor this scene, you can mark a Stress to see thro... [namelen=134 namehash=17c48b1f]
-45Hero's PowderWhen you inhale this powder, you can add a d4 to ... [namelen=280 namehash=ca649dad]
-46Hitcher's TowelAs long as you know where this towel is, your H... [namelen=256 namehash=7517a6e5]
-47Ice GlovesWhen you pick up snow with these gloves you can form... [namelen=167 namehash=9bad71ec]
-48Incantor's ChalkYou can inscribe a spell in your loadout onto ... [namelen=254 namehash=14a785bc]
-49Jamming SpannerMake a successful Finesse Roll to place this to... [namelen=348 namehash=870c7b7b]
-4Alconite CrystalYou can expend the energy in this crystal to ga... [namelen=232 namehash=8c31dd88]
-50Lantern of ShadowsWhile using this lantern, you can determine ... [namelen=261 namehash=9a5a50d1]
-51Leviathan HarpoonTier 2 · Physical · Finesse · Far · d8+3 phy ... [namelen=356 namehash=c727d6d7]
-52Liar's BaneAfter you chew these leaves, for the scene you have... [namelen=249 namehash=0297529a]
-53Life Force BeaconSpend a Hope to activate this orb. For the sc... [namelen=272 namehash=d679af27]
-54Life WandTier 3 · Magic · Knowledge · Far · d6+4 mag · One-Han... [namelen=301 namehash=87966e6e]
-55Lightning ScarabWhen you're hit by electrical damage, you can ... [namelen=268 namehash=0f94fe35]
-56LovebugsPlace one of these ceramic bugs in any location. When ... [namelen=211 namehash=d366d762]
-57Manacle BolasTier 2 · Physical · Finesse · Close · d4+1 phy · ... [namelen=258 namehash=a9e17e3f]
-58Martyr's GrassAs a downtime move, you can plant a sprig of thi... [namelen=208 namehash=b126d878]
-59Mimicry MaskWhile wearing this mask, once per scene you can mi... [namelen=326 namehash=62e157fd]
-5Anchoring HookWhen you make a reaction roll to avoid being move... [namelen=224 namehash=156785c2]
-60Mucin of SlipperinessYou can apply this slime to your body as ... [namelen=209 namehash=b2292291]
-61Needle KeyWhen you embed this needle in your finger, until you... [namelen=251 namehash=dde605b0]
-62Nursewood SapRub onto a creature to clear 1d4 HP, 1d4 Stress, ... [namelen=112 namehash=07307df4]
-63Pastries of WarmthA basket contains 1d4 pastries. When you con... [namelen=190 namehash=581a49af]
-64Pathfinder's LedgerIf you scribe your path into this book as y... [namelen=257 namehash=26e6de24]
-65Phantom Fern ShootsEaten raw, these shoots remove the effect o... [namelen=232 namehash=dfdfd9d9]
-66Phantom Fern TeaRemove the effect of most poisons.Made from: P... [namelen=113 namehash=107ae1f5]
-67Planar WoodWhen crafting a magic weapon from this infused wood... [namelen=252 namehash=9b622841]
-68Potion of Revealed PathsDrinking this potion while looking at ... [namelen=279 namehash=1a304605]
-69Potion of Spiraling VisionOnce per scene until your next rest,... [namelen=352 namehash=7a00dad0]
-6Ancient RunestoneTrace this forgotten rune with your finger and... [namelen=230 namehash=cff25f4a]
-70Prismatic WaterDrinking this water has unpredictable effects. ... [namelen=312 namehash=74b9ff07]
-71Puddleduck's FinsWhile wearing these fins on your feet, you mu... [namelen=289 namehash=f7f4f494]
-72Pure CrystalOnce per session, when you use a feature that rest... [namelen=138 namehash=909efecf]
-73Quill of MemoryYou can write up to a hundred words with this q... [namelen=250 namehash=c2abacfa]
-74Radiant ShardWhen you shatter this shard of planar energy, it ... [namelen=264 namehash=0daa3315]
-75Red Nose of HopeWhile wearing this nose you have advantage on ... [namelen=224 namehash=3bd6d1e5]
-76Rootslicer GauntletYou have advantage on attacks and Reaction ... [namelen=190 namehash=5ac77a70]
-77Scaffold WebWhen a structure within Very Close range of you is... [namelen=244 namehash=40707c36]
-78Seaworthy CharmThis symbol will transfer itself onto the body ... [namelen=211 namehash=d4025b3a]
-79Seeker's BowTier 2 · Physical · Finesse · Far · d6+4 phy · Two... [namelen=370 namehash=8342d4b4]
-7Arcane ScalpelTier 3 · Magic · Finesse · Far · d6+2 mag · One-H... [namelen=209 namehash=2b432800]
-80Shadowangler LureActivating this lure causes it to glow. Any c... [namelen=209 namehash=6aee4180]
-81Siren's RockIf you place this weathered and barnacle-laden sto... [namelen=323 namehash=bd5ca7a6]
-82SnowbladeTier 2 · Magic · Agility · Melee · d8+6 mag · One-Han... [namelen=243 namehash=25424d98]
-83Soul TorchThis torch burns with a cold, magical fire whenever ... [namelen=219 namehash=2ba787eb]
-84Soulweave CloakWhile wearing this cloak, once per long rest yo... [namelen=342 namehash=02faaa45]
-85Spider's StingTier 2 · Magic · Strength · Melee · d8+3 mag · O... [namelen=228 namehash=b41dd938]
-86Spirit SeekerHold out this willow wand and spend a Hope to sen... [namelen=179 namehash=4eb8b3cd]
-87Sporemind TonicUntil your next rest you have advantage on all ... [namelen=199 namehash=1f1d6175]
-88Staff of the Whispering ArchiveTier 2 · Magic · Knowledge · Fa... [namelen=304 namehash=0f0bcf5c]
-89Stingshield RobesWhile wearing these bug-resistant clothes, un... [namelen=253 namehash=642a1711]
-8Arcane StuffingWhen you stuff a dead creature with this magic-i... [namelen=215 namehash=eddb7040]
-90Storm in a BottleWhen this bottle is opened or broken, all cre... [namelen=260 namehash=3772b127]
-91Superior Alconite CrystalYou can use the energy in this crysta... [namelen=293 namehash=1ada5c70]
-92Tarrasque SinewWhen you string a bow with this powerful cord, ... [namelen=225 namehash=783c1946]
-93Ticket Master's PouchThe pouch can hold a handful of gold. Whe... [namelen=235 namehash=70871981]
-94TimeglassOnce per session, you can look through this spyglass ... [namelen=222 namehash=9d78142e]
-95Tincture of Fortified ThoughtsYou clear 1d4 Stress and have ad... [namelen=302 namehash=561a9b6d]
-96Tome of Ancient KnowledgeAs a downtime project you can read th... [namelen=204 namehash=f18df535]
-97Tortoise HornIf you use this bony fragment as a pommel for a w... [namelen=293 namehash=b5f1aa2c]
-98Toxilily BulbThis bulb can be broken into 1d4 cloves, each of ... [namelen=211 namehash=a6c54b19]
-99Trinity Flower PetalsBrew these petals into a tea that can be ... [namelen=219 namehash=7c07a5c1]
-9Archivist's RotFor the scene, you have advantage on all Instinc... [namelen=184 namehash=06dbf807]
-?Help
-Abyssal Sap
-Aetherflower
-Aetherflower Tea
-Alconite Crystal
+100Trinity Flower SeedConsumableEating this seed grants the wisd... [namelen=145 namehash=6574db01]
+101True Vision SerumConsumableFor the scene, you can't be fooled... [namelen=246 namehash=4f9f7bb4]
+102Twisted LensItemWhen you look through this lens, you can see ... [namelen=223 namehash=d2ae2e8a]
+103Umbra Lily PetalsConsumableAfter eating a petal, for this sce... [namelen=176 namehash=9ec4e3ca]
+104Umbral PotionConsumableUntil your next long rest you can spen... [namelen=161 namehash=77adfad0]
+105VeilcloakItemWhile wearing this, you have advantage on Finess... [namelen=254 namehash=c0f06b81]
+106Veilshroud HoodItemWhile wearing this cloak you have advantag... [namelen=281 namehash=7c2eaf89]
+107Vial of Crystal WatersConsumableDrink these waters to switch ... [namelen=129 namehash=9318dd87]
+108Votive Bloom NectarConsumableYou clear 1d4 Stress, but the ne... [namelen=235 namehash=cc096631]
+109War God's SigilItemYou can transfer this design onto armor th... [namelen=216 namehash=c9fe93f9]
+10Astral Termite JawsConsumableUsing these jaws, you can chew in... [namelen=128 namehash=b0910194]
+110Wardstone CharmConsumableWhile wearing this pendant, you can ... [namelen=331 namehash=6bdfb046]
+111Wine of DiscourseConsumableWhen one or more creatures share a... [namelen=200 namehash=c5ee6aee]
+112Winter Wolf CloakItemWhile wearing this cloak, when you cause... [namelen=215 namehash=3159e784]
+113Witherroot CharmItemOnce per long rest, you can ignore all da... [namelen=215 namehash=f2c222b3]
+114Witherroot IchorConsumableMark 1d4 HP and permanently lose 1 ... [namelen=216 namehash=6f205964]
+115Witherroot TonicConsumableThe next spell you cast this scene ... [namelen=158 namehash=f87c8472]
+116Wolffriend PendantItemWhile wearing this item, dogs and wolve... [namelen=189 namehash=d362cf81]
+117Wraith TrapItemThis box can hold up to three undead spirits. ... [namelen=273 namehash=528fd332]
+118Yeti CoatItemWhile wearing this coat you take half damage fro... [namelen=227 namehash=02ee1281]
+119Yifang SandsConsumableWhen this black powder catches fire or ... [namelen=290 namehash=cd7428af]
+11Backsies StoneConsumableYou can swallow this stone and spend a... [namelen=237 namehash=50f06adc]
+12Big Bug BegoneItemOnce per rest, point this giant beetle anten... [namelen=245 namehash=f620976d]
+13Blood of the KaijuConsumableWhen you drink this ichor, your Ho... [namelen=164 namehash=5df5b446]
+14Blossomveil PetalConsumableYou have advantage on your next Pre... [namelen=147 namehash=0c0284e6]
+15Bogglass ReedItemOnce per rest, while holding this reed, you c... [namelen=112 namehash=2d09d931]
+16Book of No HistoryConsumableWhen you read this book, it tells ... [namelen=226 namehash=2247094e]
+17Boomberry JamConsumableA jar of this jam contains 5 portions. ... [namelen=298 namehash=d7546008]
+18BoomberryConsumableTwo of these berries will suffice for a ful... [namelen=197 namehash=16d34f33]
+19BoomcoinConsumableSpend a Hope to activate the coin and start ... [namelen=286 namehash=02c26daf]
+1Abyssal SapConsumableYou can throw a vial of this sap at a targ... [namelen=133 namehash=b2b36e56]
+20Bottled SongConsumableOpening the bottle releases a beautiful ... [namelen=125 namehash=d0995878]
+21Bubble WandItemOnce per long rest, you can activate this wand ... [namelen=222 namehash=e347b242]
+22Bug Hunter's AegisSecondary weaponUniqueTier 2 · Physical · St... [namelen=219 namehash=78adb623]
+23Calming CenserItemThis contraption disperses smoke that calms ... [namelen=216 namehash=651201f3]
+24Cathartoid EggConsumableAs a death move, you can break this eg... [namelen=214 namehash=5374f741]
+25Claws of YifangPrimary weaponUniqueTier 4 · Magic · Presence ·... [namelen=274 namehash=6e79e6b2]
+26Croakroot PadItemAs a downtime move you can meditate on this p... [namelen=210 namehash=128550fd]
+27Crystals from BeyondConsumableThese azure stones contain the e... [namelen=191 namehash=5e66fcbc]
+28DarkstoneConsumableIf this onyx stone is exposed to magical li... [namelen=193 namehash=7776a830]
+29Demon Toad BileConsumableWhen this liquid is exposed to air, s... [namelen=193 namehash=d38ad546]
+2Aetherflower TeaConsumableUntil your next rest, you can detect ... [namelen=172 namehash=3e1adf0d]
+30DetunerItemOnce per long rest, you can spend a Hope to activat... [namelen=222 namehash=3f8a8a65]
+31Devil's Smithing HammerPrimary weaponUniqueTier 3 · Magic · St... [namelen=254 namehash=c496c992]
+32Doomsday PotionConsumableRoll a d12 for each of your Hope Slot... [namelen=414 namehash=f1af3d22]
+33Dread-Weave BootsItemWhile wearing these boots, you have resis... [namelen=127 namehash=891455ba]
+34Dreamer's ShardItemDuring a long rest, you can use this crysta... [namelen=278 namehash=ba1aa4d9]
+35Dust of Echoed SilenceConsumableWhen you scatter this dust, th... [namelen=224 namehash=4967d909]
+36Ebony ThreadItemYou can unspool this thread up to 500 feet as ... [namelen=225 namehash=da850cba]
+37Echo Orchid PetalConsumableConsuming a petal while looking at ... [namelen=234 namehash=b2896bc7]
+38Etheric AnchorItemWhile carrying this anchor you can mark 2 St... [namelen=183 namehash=67ff566f]
+39Flare TuberConsumableIf you hold one of these roots in your mo... [namelen=159 namehash=70a3dcac]
+3AetherflowerItemThis flower is sensitive to magic, and will poi... [namelen=232 namehash=29279fb9]
+40FlickerbloomItemWhile carrying this flower, you have advantage... [namelen=169 namehash=baa6df3f]
+41Gravitic TetherItemWhile wearing this belt, you take half dama... [namelen=197 namehash=802fef38]
+42Griefroot PowderConsumableWhen you inhale this powder, you add... [namelen=348 namehash=4e17ea7e]
+43Gyre CapConsumableBrewed into a tea as a downtime move, these ... [namelen=215 namehash=4cfb892b]
+44Henry's SugarConsumableFor this scene, you can mark a Stress t... [namelen=113 namehash=bb07c4ca]
+45Hero's PowderConsumableWhen you inhale this powder, you can ad... [namelen=259 namehash=332d3d1c]
+46Hitcher's TowelItemAs long as you know where this towel is, yo... [namelen=235 namehash=c1bbcae1]
+47Ice GlovesItemWhen you pick up snow with these gloves you can ... [namelen=146 namehash=4d5848f7]
+48Incantor's ChalkItemYou can inscribe a spell in your loadout o... [namelen=233 namehash=b036a796]
+49Jamming SpannerItemMake a successful Finesse Roll to place thi... [namelen=327 namehash=9e9e0a03]
+4Alconite CrystalItemYou can expend the energy in this crystal t... [namelen=211 namehash=45f54724]
+50Lantern of ShadowsItemWhile using this lantern, you can determ... [namelen=240 namehash=7c46fa9d]
+51Leviathan HarpoonPrimary weaponUniqueTier 2 · Physical · Fines... [namelen=335 namehash=098b4085]
+52Liar's BaneConsumableAfter you chew these leaves, for the scen... [namelen=228 namehash=76d1d127]
+53Life Force BeaconConsumableSpend a Hope to activate this orb. ... [namelen=251 namehash=0b477c70]
+54Life WandPrimary weaponUniqueTier 3 · Magic · Knowledge · Far ... [namelen=280 namehash=7cd80274]
+55Lightning ScarabItemWhen you're hit by electrical damage, you ... [namelen=247 namehash=08d13b18]
+56LovebugsItemPlace one of these ceramic bugs in any location. W... [namelen=190 namehash=8d82793b]
+57Manacle BolasSecondary weaponUniqueTier 2 · Physical · Finesse... [namelen=237 namehash=19a9e9a7]
+58Martyr's GrassConsumableAs a downtime move, you can plant a sp... [namelen=187 namehash=9c0c4678]
+59Mimicry MaskItemWhile wearing this mask, once per scene you ca... [namelen=305 namehash=23f39e44]
+5Anchoring HookItemWhen you make a reaction roll to avoid being ... [namelen=203 namehash=49b7a913]
+60Mucin of SlipperinessConsumableYou can apply this slime to you... [namelen=188 namehash=29451381]
+61Needle KeyConsumableWhen you embed this needle in your finger,... [namelen=230 namehash=436396b9]
+62Nursewood SapConsumableRub onto a creature to clear 1d4 HP, 1d... [namelen=91 namehash=bcdbf53a]
+63Pastries of WarmthConsumableA basket contains 1d4 pastries. Wh... [namelen=169 namehash=6279caa8]
+64Pathfinder's LedgerItemIf you scribe your path into this book ... [namelen=236 namehash=61469def]
+65Phantom Fern ShootsConsumableEaten raw, these shoots remove th... [namelen=211 namehash=95bda62c]
+66Phantom Fern TeaConsumableRemove the effect of most poisons.Ma... [namelen=92 namehash=f19a68a9]
+67Planar WoodConsumableWhen crafting a magic weapon from this in... [namelen=231 namehash=7e29d9bf]
+68Potion of Revealed PathsConsumableDrinking this potion while l... [namelen=258 namehash=933235bf]
+69Potion of Spiraling VisionConsumableOnce per scene until your ... [namelen=331 namehash=2d04f7ff]
+6Ancient RunestoneItemTrace this forgotten rune with your finger... [namelen=209 namehash=a21ea00e]
+70Prismatic WaterConsumableDrinking this water has unpredictable... [namelen=291 namehash=e2f5f1db]
+71Puddleduck's FinsItemWhile wearing these fins on your feet, yo... [namelen=268 namehash=17dbcd47]
+72Pure CrystalItemOnce per session, when you use a feature that ... [namelen=117 namehash=15714994]
+73Quill of MemoryItemYou can write up to a hundred words with th... [namelen=229 namehash=5133b37f]
+74Radiant ShardConsumableWhen you shatter this shard of planar e... [namelen=243 namehash=e3d68f68]
+75Red Nose of HopeItemWhile wearing this nose you have advantage... [namelen=203 namehash=17d105f9]
+76Rootslicer GauntletItemYou have advantage on attacks and React... [namelen=169 namehash=61b837fb]
+77Scaffold WebConsumableWhen a structure within Very Close range... [namelen=223 namehash=c3054104]
+78Seaworthy CharmConsumableThis symbol will transfer itself onto... [namelen=190 namehash=89cd127c]
+79Seeker's BowPrimary weaponUniqueTier 2 · Physical · Finesse · ... [namelen=349 namehash=6580c63c]
+7Arcane ScalpelSecondary weaponUniqueTier 3 · Magic · Finesse · ... [namelen=188 namehash=9c79e4e8]
+80Shadowangler LureConsumableActivating this lure causes it to g... [namelen=188 namehash=da6e0369]
+81Siren's RockItemIf you place this weathered and barnacle-laden... [namelen=302 namehash=122ee004]
+82SnowbladePrimary weaponUniqueTier 2 · Magic · Agility · Melee ... [namelen=222 namehash=d238f5bd]
+83Soul TorchItemThis torch burns with a cold, magical fire whene... [namelen=198 namehash=f40ee972]
+84Soulweave CloakItemWhile wearing this cloak, once per long res... [namelen=321 namehash=89507ef9]
+85Spider's StingPrimary weaponUniqueTier 2 · Magic · Strength · ... [namelen=207 namehash=2bcaf414]
+86Spirit SeekerItemHold out this willow wand and spend a Hope to... [namelen=158 namehash=c47038e7]
+87Sporemind TonicConsumableUntil your next rest you have advanta... [namelen=178 namehash=c76892a7]
+88Staff of the Whispering ArchivePrimary weaponUniqueTier 2 · Ma... [namelen=283 namehash=27313038]
+89Stingshield RobesItemWhile wearing these bug-resistant clothes... [namelen=232 namehash=44ae3b84]
+8Arcane StuffingConsumableWhen you stuff a dead creature with th... [namelen=194 namehash=f5eaf122]
+90Storm in a BottleConsumableWhen this bottle is opened or broke... [namelen=239 namehash=8a5aa515]
+91Superior Alconite CrystalItemYou can use the energy in this cr... [namelen=272 namehash=06641b92]
+92Tarrasque SinewItemWhen you string a bow with this powerful co... [namelen=204 namehash=9015f4b5]
+93Ticket Master's PouchItemThe pouch can hold a handful of gold.... [namelen=214 namehash=451f7816]
+94TimeglassItemOnce per session, you can look through this spygl... [namelen=201 namehash=6be03b5c]
+95Tincture of Fortified ThoughtsConsumableYou clear 1d4 Stress a... [namelen=281 namehash=5cbebd32]
+96Tome of Ancient KnowledgeConsumableAs a downtime project you c... [namelen=183 namehash=b939a4af]
+97Tortoise HornItemIf you use this bony fragment as a pommel for... [namelen=272 namehash=eceec3a0]
+98Toxilily BulbConsumableThis bulb can be broken into 1d4 cloves... [namelen=190 namehash=902903f7]
+99Trinity Flower PetalsConsumableBrew these petals into a tea th... [namelen=198 namehash=11ad9142]
+9Archivist's RotConsumableFor the scene, you have advantage on a... [namelen=163 namehash=db0fb600]
+?About this data
+All
 Alt. tables
-Anchoring Hook
-Ancient Runestone
 Arazo's Artifacts
-Arcane Scalpel
-Arcane Stuffing
-Archivist's Rot
-Astral Termite Jaws
-Backsies Stone
-Big Bug Begone
-Blood of the Kaiju
-Blossomveil Petal
-Bogglass Reed
-Book of No History
-Boomberry
-Boomberry Jam
-Boomcoin
-Bottled Song
-Bubble Wand
-Bug Hunter's Aegis
-Calming Censer
-Cathartoid Egg
-Claws of Yifang
 Community items
+Consumables
 Core
-Croakroot Pad
-Crystals from Beyond
-Darkstone
-Demon Toad Bile
-Detuner
-Devil's Smithing Hammer
-Doomsday Potion
 Dread GM Toolbox
-Dread-Weave Boots
-Dreamer's Shard
-Dust of Echoed Silence
 EN
-Ebony Thread
-Echo Orchid Petal
 Equipment
-Etheric Anchor
-Filters
-Flare Tuber
-Flickerbloom
-Gravitic Tether
 Grid
-Griefroot Powder
-Gyre Cap
-Henry's Sugar
-Hero's Powder
-Hitcher's Towel
 Hope & Fear
-Ice Gloves
-Incantor's Chalk
 Install as an app
-Jamming Spanner
-Lantern of Shadows
-Leviathan Harpoon
-Liar's Bane
-Life Force Beacon
-Life Wand
-Lightning Scarab
+Items
 Link to this table
 List
 LootDaggerheart
-Lovebugs
-Manacle Bolas
 Many Worlds Tavern
-Martyr's Grass
-Mimicry Mask
-Mucin of Slipperiness
-Needle Key
-Nursewood Sap
 Open on start
 Other
-Pastries of Warmth
-Pathfinder's Ledger
-Phantom Fern Shoots
-Phantom Fern Tea
-Planar Wood
-Potion of Revealed Paths
-Potion of Spiraling Vision
-Prismatic Water
 Privacy
-Puddleduck's Fins
-Pure Crystal
-Quill of Memory
 RU
-Radiant Shard
-Red Nose of Hope
 Roll
-Rootslicer Gauntlet
-Scaffold Web
 Search
-Seaworthy Charm
-Seeker's Bow
-Shadowangler Lure
+Search by name or description...
+Select
 Sign in
-Siren's Rock
 Skip to content
-Snowblade
-Soul Torch
-Soulweave Cloak
-Spider's Sting
-Spirit Seeker
-Sporemind Tonic
-Staff of the Whispering Archive
-Stingshield Robes
-Storm in a Bottle
-Superior Alconite Crystal
 Supplements
 Tables
-Tarrasque Sinew
 Terms of use
 The Dragon's Vault
-Ticket Master's Pouch
-Timeglass
-Tincture of Fortified Thoughts
-Tome of Ancient Knowledge
-Tortoise Horn
-Toxilily Bulb
-Trinity Flower Petals
-Trinity Flower Seed
-True Vision Serum
-Twisted Lens
-Umbra Lily Petals
-Umbral Potion
 Vault of Ages
-Veilcloak
-Veilshroud Hood
-Vial of Crystal Waters
-Votive Bloom Nectar
-War God's Sigil
-Wardstone Charm
-Wine of Discourse
-Winter Wolf Cloak
-Witherroot Charm
-Witherroot Ichor
-Witherroot Tonic
-Wolffriend Pendant
 Wondrous Environments
-Wraith Trap
-Yeti Coat
-Yifang Sands
 daggerheart.com

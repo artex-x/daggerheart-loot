@@ -43,7 +43,7 @@ function openShop(options: FakeCloudOptions = {}) {
 
 async function openPanel(): Promise<HTMLElement> {
   await userEvent.click(await screen.findByRole('button', { name: 'Свой предмет' }));
-  return screen.getByRole('textbox', { name: 'Название*' });
+  return screen.getByRole('textbox', { name: 'Название' });
 }
 
 /* The items the account holds with `name` in Russian. */
@@ -67,7 +67,7 @@ describe('the own-item panel', () => {
     expect(screen.getByText(/Предмет сохранится в «Мои предметы»/)).toBeInTheDocument();
     await expectNoA11yViolations(container);
     await userEvent.keyboard('{Escape}');
-    expect(screen.queryByRole('textbox', { name: 'Название*' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: 'Название' })).not.toBeInTheDocument();
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'Свой предмет' })).toHaveFocus();
     });

@@ -16,8 +16,10 @@ import {
   fakeMedia,
   fakePage,
   fakePicture,
+  fakeViewport,
   memoryRouter,
   memoryStorage,
+  type Band,
   type FakeMedia
 } from '../ports/index.js';
 import { AppState } from '../state/app.svelte.js';
@@ -53,6 +55,8 @@ export async function editor(
     real?: boolean;
     /* The picture field's decode and encode. */
     media?: FakeMedia;
+    /* The layout band; wide by default. */
+    band?: Band;
   } = {}
 ): Promise<EditorView> {
   const as = opts.as === undefined ? 'gm1' : opts.as;
@@ -66,7 +70,10 @@ export async function editor(
   const storage = memoryStorage(opts.lang ? { 'dhloot.lang.v1': opts.lang } : {});
   const data = opts.real ? { data: fakeData(REAL) } : {};
   const media = opts.media ?? fakeMedia();
-  const app = new AppState(fakeEnv({ cloud, router, dialog, page, storage, media, ...data }));
+  const viewport = opts.band ? { viewport: fakeViewport(opts.band) } : {};
+  const app = new AppState(
+    fakeEnv({ cloud, router, dialog, page, storage, media, ...data, ...viewport })
+  );
   app.start();
   await flush();
   /* The owner feed's join asks for one coalesced read; it lands before a test acts as
@@ -96,8 +103,6 @@ export const group = (name: string): HTMLElement => screen.getByRole('group', { 
 export const press = async (groupName: string, option: string): Promise<void> => {
   await userEvent.click(within(group(groupName)).getByRole('button', { name: option }));
 };
-export const helpButton = (label: string): HTMLElement =>
-  screen.getByRole('button', { name: t.fieldHelp.replace('%s', label) });
 export const save = (): Promise<void> =>
   userEvent.click(screen.getByRole('button', { name: t.save }));
 export const stored = async (

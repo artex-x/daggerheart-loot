@@ -6,7 +6,7 @@
 
 import { cleanup, render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import {
   brokenStorage,
@@ -25,6 +25,9 @@ import type { Record_ } from '../lib/types.js';
 import { readLoot } from '../test/loot.js';
 
 afterEach(cleanup);
+
+/* jsdom does not implement scrollIntoView: the record's menu calls it once open. */
+Element.prototype.scrollIntoView = vi.fn();
 
 const row = (i: number, src: string): Record_ => ({
   id: `${src}${String(i)}`,
@@ -70,13 +73,10 @@ describe('rolling on a table', () => {
     expect(screen.getByRole('button', { name: 'Бросить d20' })).toBeInTheDocument();
   });
 
-  it('says "random" where the range is not a die', () => {
-    /* 29 is not a die, and calling it one would be a lie a player acts on.
-       The dash is an en dash, as the live app printed it: the parity harness
-       compared the two apps character for character and caught a hyphen
-       here. */
+  it('names the range where the range is not a die', () => {
+    /* 29 is not a die, and calling it one would be a lie a player acts on. */
     render(App, { env: at('#/roll/dread') });
-    expect(screen.getByRole('button', { name: 'Случайно 1–29' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Бросить 1-29' })).toBeInTheDocument();
   });
 
   it('lands on the row the dice chose', async () => {
@@ -87,7 +87,7 @@ describe('rolling on a table', () => {
 
   it('rolls on its own table and not on a neighbor', async () => {
     render(App, { env: at('#/roll/dread', { random: lands(3, 29) }) });
-    await userEvent.click(screen.getByRole('button', { name: 'Случайно 1–29' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Бросить 1-29' }));
     expect(screen.getByRole('heading', { level: 2, name: 'd вещь 3' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'w вещь 3' })).not.toBeInTheDocument();
   });
@@ -106,9 +106,11 @@ describe('rolling on a table', () => {
     }
   });
 
-  it('says so when the dataset did not load', () => {
-    render(App, { env: at('#/roll/wondrous', { data: noData() }) });
+  it('says so when the dataset did not load, under the heading and nothing else', () => {
+    const { container } = render(App, { env: at('#/roll/wondrous', { data: noData() }) });
     expect(screen.getByText('Данные не загрузились. Обновите страницу.')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+    expect(container.querySelector('.rp')).toBeNull();
   });
 });
 
@@ -186,7 +188,7 @@ describe("The Dragon's Vault over the real data", () => {
 
   it('names the whole range on the button', () => {
     render(App, { env: fakeEnv({ router: memoryRouter('#/roll/dv'), data: fakeData(REAL) }) });
-    expect(screen.getByRole('button', { name: 'Случайно 1–145' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Бросить 1-145' })).toBeInTheDocument();
   });
 
   it('draws the first piece of equipment, stat line and all, at 78', async () => {
@@ -223,7 +225,7 @@ describe("Arazo's Artifacts over the real data", () => {
     render(App, {
       env: fakeEnv({ router: memoryRouter('#/roll/arazo'), data: fakeData(REAL) })
     });
-    expect(screen.getByRole('button', { name: 'Случайно 1–78' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Бросить 1-78' })).toBeInTheDocument();
   });
 
   it('draws an upgrade rung, stat line and all, at 20', async () => {
@@ -274,7 +276,7 @@ describe('pinning the section', () => {
 });
 
 describe('the help panel', () => {
-  const help = (): HTMLElement => screen.getByRole('button', { name: 'Справка' });
+  const help = (name = 'Об этой таблице'): HTMLElement => screen.getByRole('button', { name });
 
   it('is folded until it is asked for', () => {
     render(App, { env: at('#/roll/wondrous') });
@@ -292,7 +294,7 @@ describe('the help panel', () => {
 
   it('credits the book it came from, as a link', async () => {
     render(App, { env: at('#/roll/dread') });
-    await userEvent.click(help());
+    await userEvent.click(help('Об этой книге'));
     expect(
       screen.getByRole('link', { name: 'Dread GM Toolbox for Daggerheart' })
     ).toHaveAttribute('href', expect.stringContaining('drivethrurpg.com'));
@@ -365,14 +367,33 @@ describe('the record over the page', () => {
        now. */
     await openFirst();
     const dialog = screen.getByRole('dialog');
-    for (const name of [
-      'Скопировать название',
-      'Скопировать ссылку',
-      'Отправить',
-      'Скопировать текст'
-    ]) {
-      expect(within(dialog).getByRole('button', { name }), name).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Поделиться' })).toBeInTheDocument();
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Ещё' }));
+    for (const name of ['Скопировать название', 'Скопировать ссылку', 'Скопировать текст']) {
+      expect(within(dialog).getByRole('menuitem', { name }), name).toBeInTheDocument();
     }
+  });
+});
+
+describe('a picker of parts', () => {
+  const PARTS: Loot = {
+    items: {
+      voa: [
+        ...Array.from({ length: 3 }, (_, i) => ({ ...row(i + 1, 'v'), tier: 1 as const })),
+        ...Array.from({ length: 2 }, (_, i) => ({ ...row(i + 1, 'x'), tier: 2 as const }))
+      ]
+    }
+  };
+
+  it('puts the roll back to one when the part changes', async () => {
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/roll/voa'), data: fakeData(PARTS) })
+    });
+    const select = screen.getByRole('combobox', { name: 'Раздел книги' });
+    await userEvent.click(screen.getByRole('button', { name: 'На единицу больше' }));
+    expect(screen.getByRole('heading', { level: 2, name: 'Бросок 2' })).toBeInTheDocument();
+    await userEvent.selectOptions(select, '2');
+    expect(screen.getByRole('heading', { level: 2, name: 'Бросок 1' })).toBeInTheDocument();
   });
 });
 
@@ -398,16 +419,13 @@ describe('the mode row on a roll page', () => {
 });
 
 describe('accessibility', () => {
-  it('marks the results as a live region, so a re-roll is announced without moving focus', () => {
-    /* The rewrite dropped this - app.js draws role="status" aria-live="polite"
-       on every .results container it writes, and nothing but the qa.js R0c
-       deletes asserted it (docs/specs/COVERAGE.md, the `qa` row). Gripped by
-       .results rather than the role alone - Toast.svelte can carry
-       role="status" too. */
+  it('names the roll in a hidden status, and the results are no live region', () => {
+    /* A menu opens inside the results: a live region there would read the card again. */
     const { container } = render(App, { env: at('#/roll/wondrous') });
     const results = container.querySelector('.results');
-    expect(results).toHaveAttribute('role', 'status');
-    expect(results).toHaveAttribute('aria-live', 'polite');
+    expect(results).not.toHaveAttribute('role');
+    expect(results).not.toHaveAttribute('aria-live');
+    expect(container.querySelector('.said[role="status"]')?.textContent).not.toBe('');
   });
 
   it('has no axe violations on an untouched roll page', async () => {
@@ -417,7 +435,7 @@ describe('accessibility', () => {
 
   it('has no axe violations once something has come up', async () => {
     const { container } = render(App, { env: at('#/roll/dread', { random: lands(2, 29) }) });
-    await userEvent.click(screen.getByRole('button', { name: 'Случайно 1–29' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Бросить 1-29' }));
     await expectNoA11yViolations(container);
   });
 });

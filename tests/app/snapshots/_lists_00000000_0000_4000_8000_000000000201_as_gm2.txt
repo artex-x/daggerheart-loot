@@ -44,7 +44,7 @@ RootWebArea "Список второго ГМа - Генератор лута Da
     generic ""
     checkbox "Скипетр" [checked=false]
     spinbutton "Позиция в списке" [value=1 valuetext=1 required=false valuemin=1 valuemax=2]
-    button "Скипетр Ранг 1 · Магическое · Влияние · Далеко · d6 маг · Двуруч..." [namelen=194 namehash=5790d5c3]
+    button "Скипетр ОСНОВНОЕ ОРУЖИЕ CORE Ранг 1 · Магическое · Влияние · Дал..." [namelen=194 namehash=38903faa]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
@@ -52,7 +52,7 @@ RootWebArea "Список второго ГМа - Генератор лута Da
     button "Убрать из списка" [description=Убрать из списка]
     checkbox "Топор Тлеющих Углей" [checked=false]
     spinbutton "Позиция в списке" [value=2 valuetext=2 required=false valuemin=1 valuemax=2]
-    button "Топор Тлеющих Углей Ранг 2 · Магическое · Характеристика Заклина..." [namelen=189 namehash=3ef50bde]
+    button "Топор Тлеющих Углей ОСНОВНОЕ ОРУЖИЕ УНИКАЛЬНОЕ МАСТЕРСКАЯ ОЛЬХИ ..." [namelen=189 namehash=ae240a3a]
     StaticText "КОЛ-ВО"
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     StaticText "ЦЕНА"
@@ -75,6 +75,7 @@ EN
 RU
 daggerheart.com
 Аккаунт: gm2@example.test
+Бросить 1-2
 Бросок
 Выбрать все
 Жирный
@@ -99,18 +100,17 @@ daggerheart.com
 Свой предмет
 Скачать JSON
 Скипетр
-СкипетрРанг 1 · Магическое · Влияние · Далеко · d6 маг · Двуручн... [namelen=190 namehash=ebb3ab94]
+СкипетрОсновное оружиеCoreРанг 1 · Магическое · Влияние · Далеко... [namelen=190 namehash=de098217]
 Скопировать текст
 Скрыть изменение «Спальный мешок долгой дороги через перевал, бо... [namelen=139 namehash=028772a7]
 Скрыть изменение «Топор Тлеющих Углей»
 Скрыть изменения
-Случайно 1–2
 Список
 Таблицы
 Только для мастера: Скипетр
 Только для мастера: Топор Тлеющих Углей
 Топор Тлеющих Углей
-Топор Тлеющих УглейРанг 2 · Магическое · Характеристика Заклинат... [namelen=184 namehash=b8cdac53]
+Топор Тлеющих УглейОсновное оружиеУникальноеМастерская Ольхи (HB... [namelen=184 namehash=e7c9f22c]
 Убрать из списка
 Удалить
 Условия использования
@@ -158,7 +158,7 @@ RootWebArea "Список второго ГМа - Daggerheart Loot Generator" [u
     generic ""
     checkbox "Scepter" [checked=false]
     spinbutton "Position in the list" [value=1 valuetext=1 required=false valuemin=1 valuemax=2]
-    button "Scepter Tier 1 · Magic · Presence · Far · d6 mag · Two-Handed Ve..." [namelen=164 namehash=04ac40ab]
+    button "Scepter PRIMARY WEAPON CORE Tier 1 · Magic · Presence · Far · d6..." [namelen=164 namehash=e817f492]
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
@@ -166,7 +166,7 @@ RootWebArea "Список второго ГМа - Daggerheart Loot Generator" [u
     button "Remove from the list" [description=Remove from the list]
     checkbox "Ember Axe" [checked=false]
     spinbutton "Position in the list" [value=2 valuetext=2 required=false valuemin=1 valuemax=2]
-    button "Ember Axe Tier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-H..." [namelen=164 namehash=0697f87b]
+    button "Ember Axe PRIMARY WEAPON UNIQUE ALDER WORKSHOP (HB) Tier 2 · Mag..." [namelen=164 namehash=412bbe09]
     StaticText "QTY"
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     StaticText "PRICE"
@@ -193,7 +193,7 @@ Delete
 Download JSON
 EN
 Ember Axe
-Ember AxeTier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-Ha... [namelen=159 namehash=68dd762d]
+Ember AxePrimary weaponUniqueAlder Workshop (HB)Tier 2 · Magic ·... [namelen=159 namehash=ea056220]
 GM only: Ember Axe
 GM only: Scepter
 Help: For players
@@ -217,12 +217,12 @@ Price
 Print
 Privacy
 RU
-Random 1–2
 Remove from the list
 Roll
+Roll 1-2
 Roll result
 Scepter
-ScepterTier 1 · Magic · Presence · Far · d6 mag · Two-HandedVers... [namelen=160 namehash=a32a0f66]
+ScepterPrimary weaponCoreTier 1 · Magic · Presence · Far · d6 ma... [namelen=160 namehash=9977457f]
 Search
 Select all
 Share

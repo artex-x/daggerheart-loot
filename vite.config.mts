@@ -319,7 +319,7 @@ export default defineConfig(({ command, mode }) => {
           /* Every component except the ones named below. A threshold glob does
              not override a wider one - both are applied - so the exception has to
              be carved out of the pattern rather than layered on top of it. */
-          'src/**/!(Button|DiceBar|Badge).svelte': {
+          'src/**/!(Button|RollSelect|Badge).svelte': {
             lines: 85,
             functions: 80,
             branches: 75,
@@ -328,13 +328,13 @@ export default defineConfig(({ command, mode }) => {
           /* Three components carry their own exception, a file rather than a
              rule - each named here rather than lowering the bar for every
              component to suit one (see CLAUDE.md). */
-          /* Five buttons built from three props and nothing else: every branch
-           Svelte generates for it is an attribute update path, and even a test
-           that switches the language cannot reach them all. */
-          'src/components/DiceBar.svelte': {
+          /* A native select: Svelte compiles `value` on the select and on each keyed option
+             into a `?? ''` on a string and an update path the key never takes, and no
+             prop can reach them. */
+          'src/components/RollSelect.svelte': {
             lines: 85,
             functions: 80,
-            branches: 55,
+            branches: 50,
             statements: 85
           },
           /* Svelte compiles every attribute into an update path; Button is

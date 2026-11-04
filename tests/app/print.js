@@ -1608,6 +1608,7 @@ const { ok } = rep;
      nowhere to return to except browser history. */
   console.log('the way back');
   await d.open('#/tables/core_item', { as: 'gm2' });
+  await d.click('Выбрать');
   await page.click('.rows .row .selbox input');
   await d.settle();
   await d.click(PRINT);
@@ -1643,6 +1644,7 @@ const { ok } = rep;
   );
 
   await d.open('#/tables/core_item', { as: 'gm2' });
+  await d.click('Выбрать');
   await page.click('.rows .row .selbox input');
   await d.settle();
   const acts = await page.$$eval('.selbarwrap .selacts > *', (e) =>
@@ -1687,7 +1689,7 @@ const { ok } = rep;
   await d.open('#/print/nosuchid');
   ok(!(await page.$('.psheet')), 'a retired print address assembled a sheet');
   ok(
-    (await page.$eval('.page-h', (e) => e.textContent)) ===
+    (await page.$eval('main h1', (e) => e.textContent)) ===
       'Такие ссылки на печать больше не открываются.',
     'a retired print address does not draw the retired page'
   );
@@ -3068,7 +3070,7 @@ const { ok } = rep;
     /* (b) A 3000-character description: cut off, and the warning after the pause. */
     const editorCut = async (name, desc, layout) => {
       await d.open('#/homebrew/new', { as: 'gm1' });
-      await d.type('Название*', name);
+      await d.type('Название', name);
       if (desc) await d.type('Описание', desc);
       await d.click('На печати');
       for (const label of layout) await d.click(label);

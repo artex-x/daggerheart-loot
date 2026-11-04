@@ -18,6 +18,7 @@ RootWebArea "Новый предмет - Генератор лута Daggerheart
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
+    link "Мои предметы" [url=/homebrew]
     heading "Новый предмет" [level=1]
     StaticText "Хоумбрю"
     form ""
@@ -26,85 +27,94 @@ RootWebArea "Новый предмет - Генератор лута Daggerheart
         button "Название - введите название."
         button "Ранг - выберите ранг от 1 до 4."
         ... button x4 of 8 same-shape siblings elided
-        button "Тип урона - выберите значение."
-        button "Хват - выберите значение."
+        button "Тип урона - выберите тип урона."
+        button "Хват - выберите хват."
       status ""
-      StaticText "* - обязательное поле. Остальное можно заполнить позже."
-      group "Вид"
-        button "Предмет" [pressed=false]
-        button "Расходник" [pressed=false]
-        button "Снаряжение" [pressed=true]
-      group "Тип снаряжения"
-        button "Основное оружие" [pressed=true]
-        button "Вторичное оружие" [pressed=false]
-        button "Броня" [pressed=false]
-      StaticText "Источник"
-      button "Подсказка: Источник" [expanded=false]
-      combobox "Источник" [value=Хоумбрю expanded=false haspopup=menu]
-        option "Хоумбрю" [selected=true]
-        option "Мастерская Ольхи" [selected=false]
-        option "+ Новый источник..." [selected=false]
-      button "RU - пусто" [pressed=true]
-      button "EN - пусто" [pressed=false]
-      ... StaticText x12 of 16 same-shape siblings elided
-      textbox "Название*" [description=Введите название. multiline=false readonly=false required=true invalid=true]
-      button "Подсказка: Описание" [expanded=false]
-      toolbar "Оформление: Описание" [orientation=horizontal]
-        button "Жирный" [keyshortcuts=Control+B Meta+B]
-        button "Курсив" [keyshortcuts=Control+I Meta+I]
-        button "Список"
-        button "Нумерованный список"
-        button "Таблица"
-      textbox "Описание" [multiline=true readonly=false required=false]
-      button "Выбрать файл"
-      button "Выбрать из предметов" [expanded=false]
-      group "Ранг" [description=Выберите ранг от 1 до 4.]
-        button "1" [pressed=false]
-        button "2" [pressed=false]
-        button "3" [pressed=false]
-        button "4" [pressed=false]
-      group "Класс" [description=Выберите значение.]
-        button "Физическое" [pressed=false]
-        button "Магическое" [pressed=false]
-      group "Характеристика" [description=Выберите значение.]
-        button "Проворность" [pressed=false]
-        button "Сила" [pressed=false]
-        ... button x4 of 8 same-shape siblings elided
-        button "Характеристика Заклинателя" [pressed=false]
-        button "Любая" [pressed=false]
-      group "Дистанция" [description=Выберите значение.]
-        button "Вплотную" [pressed=false]
-        button "Близко" [pressed=false]
-        button "Средне" [pressed=false]
-        button "Далеко" [pressed=false]
-        button "Очень далеко" [pressed=false]
-      combobox "Кость урона" [value=Кость description=Выберите кость d4-d20; бонус, если нужен, - целое число от 1 до 99. expanded=false haspopup=menu invalid=true]
-        option "Кость" [selected=true]
-        option "d4" [selected=false]
-        option "d6" [selected=false]
-        ... option x2 of 6 same-shape siblings elided
-        option "d12" [selected=false]
-        option "d20" [selected=false]
-      textbox "Бонус к урону" [description=Выберите кость d4-d20; бонус, если нужен, - целое число от 1 до 99. multiline=false readonly=false required=false invalid=true]
-      group "Тип урона" [description=Выберите значение.]
-        button "физ" [pressed=false]
-        button "маг" [pressed=false]
-        button "физ/маг" [pressed=false]
-      StaticText "Выберите значение."
-      group "Хват" [description=Выберите значение.]
-        button "Одноручное" [pressed=false]
-        button "Двуручное" [pressed=false]
-        button "Одноручное/двуручное" [pressed=false]
-      StaticText "Выберите значение."
-      button "Второй набор характеристик" [expanded=false]
-      button "Подсказка: Второй набор характеристик" [expanded=false]
+      region "Предмет"
+        heading "Предмет" [level=2]
+        group "Вид"
+          button "Предмет" [pressed=false]
+          button "Расходник" [pressed=false]
+          button "Снаряжение" [pressed=true]
+        group "Тип снаряжения"
+          button "Основное оружие" [pressed=true]
+          button "Вторичное оружие" [pressed=false]
+          button "Броня" [pressed=false]
+        button "RU - пусто" [pressed=true]
+        button "EN - пусто" [pressed=false]
+        StaticText "Название"
+        textbox "Название" [description=Введите название. multiline=false readonly=false required=true invalid=true]
+        StaticText "Введите название."
+        StaticText "Описание"
+        StaticText "необязательно"
+        toolbar "Оформление: Описание" [orientation=horizontal]
+          button "Жирный" [keyshortcuts=Control+B Meta+B]
+          button "Курсив" [keyshortcuts=Control+I Meta+I]
+          button "Список"
+          button "Нумерованный список"
+          button "Таблица"
+        textbox "Описание" [multiline=true readonly=false required=false]
+        button "Выбрать файл"
+        button "Выбрать из предметов" [expanded=false]
+        StaticText "Квадрат 640x640 из файла PNG, JPEG или WebP до 20 МБ. Картинка з..." [namelen=89 namehash=d79a0cd0]
+      region "Характеристики"
+        heading "Характеристики" [level=2]
+        group "Ранг" [description=Выберите ранг от 1 до 4.]
+          button "1" [pressed=false]
+          button "2" [pressed=false]
+          button "3" [pressed=false]
+          button "4" [pressed=false]
+        StaticText "Выберите ранг от 1 до 4."
+        group "Класс" [description=Выберите класс: физическое или магическое.]
+          button "Физическое" [pressed=false]
+          button "Магическое" [pressed=false]
+        StaticText "Выберите класс: физическое или магическое."
+        group "Характеристика" [description=Выберите характеристику.]
+          button "Проворность" [pressed=false]
+          button "Сила" [pressed=false]
+          ... button x4 of 8 same-shape siblings elided
+          button "Характеристика Заклинателя" [pressed=false]
+          button "Любая" [pressed=false]
+        ... StaticText x5 of 9 same-shape siblings elided
+        group "Дистанция" [description=Выберите дистанцию.]
+          button "Вплотную" [pressed=false]
+          button "Близко" [pressed=false]
+          button "Средне" [pressed=false]
+          button "Далеко" [pressed=false]
+          button "Очень далеко" [pressed=false]
+        combobox "Кость урона" [value=Кость description=Выберите кость d4-d20; бонус - число от 1 до 99. expanded=false haspopup=menu invalid=true]
+          option "Кость" [selected=true]
+          option "d4" [selected=false]
+          option "d6" [selected=false]
+          ... option x2 of 6 same-shape siblings elided
+          option "d12" [selected=false]
+          option "d20" [selected=false]
+        textbox "Бонус к урону" [description=Выберите кость d4-d20; бонус - число от 1 до 99. multiline=false readonly=false required=false invalid=true]
+        group "Тип урона" [description=Выберите тип урона.]
+          button "Физический" [pressed=false]
+          button "Магический" [pressed=false]
+          button "Оба" [pressed=false]
+        StaticText "Выберите тип урона."
+        group "Хват" [description=Выберите хват.]
+          button "Одноручное" [pressed=false]
+          button "Двуручное" [pressed=false]
+          button "Одноручное/двуручное" [pressed=false]
+        StaticText "Выберите хват."
+        button "Второй набор характеристик" [expanded=false]
+      region "Где лежит"
+        heading "Где лежит" [level=2]
+        StaticText "Источник"
+        combobox "Источник" [value=Хоумбрю description=Без источника предмет лежит в «Хоумбрю». expanded=false haspopup=menu]
+          option "Хоумбрю" [selected=true]
+          option "Мастерская Ольхи" [selected=false]
+          option "+ Новый источник..." [selected=false]
+        StaticText "Без источника предмет лежит в «Хоумбрю»."
       DisclosureTriangle "Связи" [expanded=false]
       button "Сохранить"
-      link "К моим предметам" [url=/homebrew]
     button "На экране" [pressed=true]
     button "На печати" [pressed=false]
     button "Страница"
-    StaticText "ПРЕДМЕТ"
+    StaticText "ОСНОВНОЕ ОРУЖИЕ"
     StaticText "ХОУМБРЮ"
     heading "Новый предмет" [level=2]
   contentinfo ""
@@ -137,21 +147,22 @@ daggerheart.com
 Выбрать файл
 Далеко
 Двуручное
-Дистанция - выберите значение.
+Дистанция - выберите дистанцию.
 Жирный
 Знание
 Инстинкт
 Искусность
-К моим предметам
 К содержимому
 Карты правил
-Класс - выберите значение.
+Класс - выберите класс: физическое или магическое.
 Конфиденциальность
 Костьd4d6d8d10d12d20
 Курсив
 ЛутDaggerheart
 Любая
+Магический
 Магическое
+Мои предметы
 На печати
 На экране
 Название - введите название.
@@ -159,18 +170,11 @@ daggerheart.com
 Новая карта правил
 Новая линия
 Нумерованный список
+Оба
 Одноручное
 Одноручное/двуручное
 Основное оружие
 Очень далеко
-Подсказка: Второй набор характеристик
-Подсказка: Источник
-Подсказка: Карты правил
-Подсказка: Комплект
-Подсказка: Линия улучшений
-Подсказка: Описание
-Подсказка: Получается из
-Подсказка: Улучшается до
 Поиск
 Получается из
 Предмет
@@ -185,20 +189,18 @@ daggerheart.com
 Страница
 Таблица
 Таблицы
-Тип урона - выберите значение.
+Тип урона - выберите тип урона.
 Улучшается до
 Уникальный
-Урон - выберите кость d4-d20; бонус, если нужен, - целое число о... [namelen=74 namehash=0ee85a8e]
+Урон - выберите кость d4-d20; бонус - число от 1 до 99.
 Условия использования
 Установить как приложение
+Физический
 Физическое
-Характеристика - выберите значение.
+Характеристика - выберите характеристику.
 Характеристика Заклинателя
-Хват - выберите значение.
+Хват - выберите хват.
 ХоумбрюМастерская Ольхи+ Новый источник...
-маг
-физ
-физ/маг
 
 ## en :: tree
 RootWebArea "New item - Daggerheart Loot Generator" [url=/en/homebrew/new?as=gm1]
@@ -215,6 +217,7 @@ RootWebArea "New item - Daggerheart Loot Generator" [url=/en/homebrew/new?as=gm1
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
+    link "My items" [url=/en/homebrew]
     heading "New item" [level=1]
     StaticText "Homebrew"
     form ""
@@ -223,85 +226,94 @@ RootWebArea "New item - Daggerheart Loot Generator" [url=/en/homebrew/new?as=gm1
         button "Name - enter a name."
         button "Tier - choose a tier from 1 to 4."
         ... button x4 of 8 same-shape siblings elided
-        button "Damage type - choose a value."
-        button "Burden - choose a value."
+        button "Damage type - choose a damage type."
+        button "Burden - choose a grip."
       status ""
-      StaticText "* - required field. The rest can be filled in later."
-      group "Kind"
-        button "Item" [pressed=false]
-        button "Consumable" [pressed=false]
-        button "Equipment" [pressed=true]
-      group "Equipment type"
-        button "Primary weapon" [pressed=true]
-        button "Secondary weapon" [pressed=false]
-        button "Armor" [pressed=false]
-      StaticText "Source"
-      button "Help: Source" [expanded=false]
-      combobox "Source" [value=Homebrew expanded=false haspopup=menu]
-        option "Homebrew" [selected=true]
-        option "Alder Workshop" [selected=false]
-        option "+ New source..." [selected=false]
-      button "RU - empty" [pressed=true]
-      button "EN - empty" [pressed=false]
-      ... StaticText x12 of 16 same-shape siblings elided
-      textbox "Name*" [description=Enter a name. multiline=false readonly=false required=true invalid=true]
-      button "Help: Description" [expanded=false]
-      toolbar "Formatting: Description" [orientation=horizontal]
-        button "Bold" [keyshortcuts=Control+B Meta+B]
-        button "Italic" [keyshortcuts=Control+I Meta+I]
-        button "Bulleted list"
-        button "Numbered list"
-        button "Table"
-      textbox "Description" [multiline=true readonly=false required=false]
-      button "Choose a file"
-      button "Choose from items" [expanded=false]
-      group "Tier" [description=Choose a tier from 1 to 4.]
-        button "1" [pressed=false]
-        button "2" [pressed=false]
-        button "3" [pressed=false]
-        button "4" [pressed=false]
-      group "Class" [description=Choose a value.]
-        button "Physical" [pressed=false]
-        button "Magic" [pressed=false]
-      group "Trait" [description=Choose a value.]
-        button "Agility" [pressed=false]
-        button "Strength" [pressed=false]
-        ... button x4 of 8 same-shape siblings elided
-        button "Spellcast" [pressed=false]
-        button "Any" [pressed=false]
-      group "Range" [description=Choose a value.]
-        button "Melee" [pressed=false]
-        button "Very Close" [pressed=false]
-        button "Close" [pressed=false]
-        button "Far" [pressed=false]
-        button "Very Far" [pressed=false]
-      combobox "Damage die" [value=Die description=Choose a die d4-d20; a bonus, if any, is a whole number from 1 to 99. expanded=false haspopup=menu invalid=true]
-        option "Die" [selected=true]
-        option "d4" [selected=false]
-        option "d6" [selected=false]
-        ... option x2 of 6 same-shape siblings elided
-        option "d12" [selected=false]
-        option "d20" [selected=false]
-      textbox "Damage bonus" [description=Choose a die d4-d20; a bonus, if any, is a whole number from 1 to 99. multiline=false readonly=false required=false invalid=true]
-      group "Damage type" [description=Choose a value.]
-        button "phy" [pressed=false]
-        button "mag" [pressed=false]
-        button "phy/mag" [pressed=false]
-      StaticText "Choose a value."
-      group "Burden" [description=Choose a value.]
-        button "One-Handed" [pressed=false]
-        button "Two-Handed" [pressed=false]
-        button "One/Two-Handed" [pressed=false]
-      StaticText "Choose a value."
-      button "Second stat set" [expanded=false]
-      button "Help: Second stat set" [expanded=false]
+      region "Item"
+        heading "Item" [level=2]
+        group "Kind"
+          button "Item" [pressed=false]
+          button "Consumable" [pressed=false]
+          button "Equipment" [pressed=true]
+        group "Equipment type"
+          button "Primary weapon" [pressed=true]
+          button "Secondary weapon" [pressed=false]
+          button "Armor" [pressed=false]
+        button "RU - empty" [pressed=true]
+        button "EN - empty" [pressed=false]
+        StaticText "Name"
+        textbox "Name" [description=Enter a name. multiline=false readonly=false required=true invalid=true]
+        StaticText "Enter a name."
+        StaticText "Description"
+        StaticText "optional"
+        toolbar "Formatting: Description" [orientation=horizontal]
+          button "Bold" [keyshortcuts=Control+B Meta+B]
+          button "Italic" [keyshortcuts=Control+I Meta+I]
+          button "Bulleted list"
+          button "Numbered list"
+          button "Table"
+        textbox "Description" [multiline=true readonly=false required=false]
+        button "Choose a file"
+        button "Choose from items" [expanded=false]
+        StaticText "A 640x640 square from a PNG, JPEG or WebP file up to 20 MB. The ..." [namelen=94 namehash=d7d2d695]
+      region "Stats"
+        heading "Stats" [level=2]
+        group "Tier" [description=Choose a tier from 1 to 4.]
+          button "1" [pressed=false]
+          button "2" [pressed=false]
+          button "3" [pressed=false]
+          button "4" [pressed=false]
+        StaticText "Choose a tier from 1 to 4."
+        group "Class" [description=Choose a class: physical or magic.]
+          button "Physical" [pressed=false]
+          button "Magic" [pressed=false]
+        StaticText "Choose a class: physical or magic."
+        group "Trait" [description=Choose a trait.]
+          button "Agility" [pressed=false]
+          button "Strength" [pressed=false]
+          ... button x4 of 8 same-shape siblings elided
+          button "Spellcast" [pressed=false]
+          button "Any" [pressed=false]
+        ... StaticText x5 of 9 same-shape siblings elided
+        group "Range" [description=Choose a range.]
+          button "Melee" [pressed=false]
+          button "Very Close" [pressed=false]
+          button "Close" [pressed=false]
+          button "Far" [pressed=false]
+          button "Very Far" [pressed=false]
+        combobox "Damage die" [value=Die description=Choose a die (d4-d20); a bonus is 1-99. expanded=false haspopup=menu invalid=true]
+          option "Die" [selected=true]
+          option "d4" [selected=false]
+          option "d6" [selected=false]
+          ... option x2 of 6 same-shape siblings elided
+          option "d12" [selected=false]
+          option "d20" [selected=false]
+        textbox "Damage bonus" [description=Choose a die (d4-d20); a bonus is 1-99. multiline=false readonly=false required=false invalid=true]
+        group "Damage type" [description=Choose a damage type.]
+          button "Physical" [pressed=false]
+          button "Magic" [pressed=false]
+          button "Both" [pressed=false]
+        StaticText "Choose a damage type."
+        group "Burden" [description=Choose a grip.]
+          button "One-Handed" [pressed=false]
+          button "Two-Handed" [pressed=false]
+          button "One/Two-Handed" [pressed=false]
+        StaticText "Choose a grip."
+        button "Second stat set" [expanded=false]
+      region "Where it goes"
+        heading "Where it goes" [level=2]
+        StaticText "Source"
+        combobox "Source" [value=Homebrew description=With no source the item goes to Homebrew. expanded=false haspopup=menu]
+          option "Homebrew" [selected=true]
+          option "Alder Workshop" [selected=false]
+          option "+ New source..." [selected=false]
+        StaticText "With no source the item goes to Homebrew."
       DisclosureTriangle "Relations" [expanded=false]
       button "Save"
-      link "To my items" [url=/en/homebrew]
     button "On screen" [pressed=true]
     button "In print" [pressed=false]
     button "Страница"
-    StaticText "ПРЕДМЕТ"
+    StaticText "ОСНОВНОЕ ОРУЖИЕ"
     StaticText "ХОУМБРЮ"
     heading "Новый предмет" [level=2]
   contentinfo ""
@@ -321,29 +333,22 @@ Agility
 Any
 Armor
 Bold
+Both
 Bulleted list
-Burden - choose a value.
+Burden - choose a grip.
 Choose a file
 Choose from items
-Class - choose a value.
+Class - choose a class: physical or magic.
 Close
 Consumable
-Damage - choose a die d4-d20; a bonus, if any, is a whole number... [namelen=78 namehash=28c28ee8]
-Damage type - choose a value.
+Damage - choose a die (d4-d20); a bonus is 1-99.
+Damage type - choose a damage type.
 Died4d6d8d10d12d20
 EN
 EN - empty
 Equipment
 Far
 Finesse
-Help: Description
-Help: Made from
-Help: Rule cards
-Help: Second stat set
-Help: Set
-Help: Source
-Help: Upgrade line
-Help: Upgrades to
 HomebrewAlder Workshop+ New source...
 In a line
 In print
@@ -356,6 +361,7 @@ LootDaggerheart
 Made from
 Magic
 Melee
+My items
 Name - enter a name.
 New line
 New rule card
@@ -370,7 +376,7 @@ Primary weapon
 Privacy
 RU
 RU - empty
-Range - choose a value.
+Range - choose a range.
 Roll
 Rule cards
 Save
@@ -384,15 +390,11 @@ Table
 Tables
 Terms of use
 Tier - choose a tier from 1 to 4.
-To my items
-Trait - choose a value.
+Trait - choose a trait.
 Two-Handed
 Unique
 Upgrades to
 Very Close
 Very Far
 daggerheart.com
-mag
-phy
-phy/mag
 Страница

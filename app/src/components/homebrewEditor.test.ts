@@ -10,6 +10,7 @@ import App from '../App.svelte';
 import HomebrewEditor from './HomebrewEditor.svelte';
 import { dict } from '../lib/dict.js';
 import { canonJson, type HomebrewContent } from '../lib/homebrew.js';
+import { ICONS } from '../lib/icons.js';
 import { fakeCloud, type FakeCloud } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
 import { fakeEnv, memoryRouter, memoryStorage } from '../ports/index.js';
@@ -22,7 +23,6 @@ import {
   fileInput,
   flush,
   group,
-  helpButton,
   openRel,
   picker,
   png,
@@ -60,10 +60,10 @@ const said = (): string =>
   document.querySelector('.hbform .said[role="status"]')?.textContent.trim() ?? '';
 
 describe('the form', () => {
-  it('draws a new loot item: the legend, the marks, the default source and a preview', async () => {
+  it('draws a new loot item: the marks, the default source and a preview', async () => {
     const { container } = await editor(null);
     expect(screen.getByRole('heading', { level: 1, name: t.hbNewItem })).toBeInTheDocument();
-    expect(screen.getByText(t.hbLegend)).toBeInTheDocument();
+    expect(document.querySelector('.hbform')?.textContent).not.toContain('*');
     expect(screen.getByLabelText(/Название/)).toHaveAttribute('aria-required', 'true');
     expect(screen.getByLabelText(t.hbSource)).toHaveValue('');
     expect(within(group(t.hbKind)).getByRole('button', { name: t.item })).toHaveAttribute(
@@ -129,6 +129,28 @@ describe('the form', () => {
     expect(dieBox()).toHaveValue('d10');
     expect(bonusBox()).toHaveValue('2');
     await expectNoA11yViolations(container);
+  });
+
+  it('follows the kind and the type at once, with no stat block until a tier is chosen', async () => {
+    await editor(null);
+    const card = (): HTMLElement => document.querySelector('.preview') as HTMLElement;
+    const glyph = (): string | null | undefined =>
+      card().querySelector('.well path')?.getAttribute('d');
+    await press(t.hbKind, t.fEquip);
+    const badge = card().querySelector('.badge.eq-weapon');
+    expect(badge).toHaveTextContent('Основное оружие');
+    expect(card().querySelector('.badge.item')).toBeNull();
+    expect(glyph()).toBe(ICONS.kindWeapon.d);
+    expect(card().querySelector('.badge.uniq')).toBeNull();
+    expect(card().querySelector('.stats')).toBeNull();
+    expect(within(card()).queryByText(/Ранг/)).toBeNull();
+    await press(t.hbType, 'Броня');
+    expect(card().querySelector('.badge.eq-armor')).toHaveTextContent('Броня');
+    expect(glyph()).toBe(ICONS.kindArmor.d);
+    expect(card().querySelector('.stats')).toBeNull();
+    await press(t.hbKind, t.cons);
+    expect(card().querySelector('.badge.cons')).toHaveTextContent(t.cons);
+    expect(glyph()).toBe(ICONS.kindConsumable.d);
   });
 
   it('draws no stat block in the preview until a tier is chosen', async () => {
@@ -373,6 +395,10 @@ describe('another device', () => {
     /* The box is no live region; the form's region, there before it, says it once. */
     expect(screen.getByText(t.hbConflict, BOX).closest('.box')).not.toHaveAttribute('role');
     expect(said()).toBe(t.hbConflict);
+    /* The primary does not overwrite the other device; «Сохранить» waits for a choice. */
+    expect(screen.getByRole('button', { name: t.hbShowNew })).toHaveClass('primary');
+    expect(screen.getByRole('button', { name: t.hbSaveMine })).toHaveClass('danger');
+    expect(screen.getByRole('button', { name: t.save })).toBeDisabled();
     await userEvent.click(screen.getByRole('button', { name: t.hbSaveMine }));
     await waitFor(async () => {
       expect((await stored(cloud, AXE))?.ru).toBe('Топор Тлеющих Углей!');
@@ -468,10 +494,12 @@ describe('another device', () => {
     await save();
     expect(await screen.findByText(t.hbGone, BOX)).toBeInTheDocument();
     expect(said()).toBe(t.hbGone);
-    /* The banner's way back and the button row's: the same name, the same place. */
-    const back = screen.getAllByRole('link', { name: t.hbToMyItems });
-    expect(back).toHaveLength(2);
-    for (const a of back) expect(a).toHaveAttribute('href', '/homebrew');
+    /* The banner's way back and the breadcrumb: the same place. */
+    expect(screen.getByRole('link', { name: t.hbToMyItems })).toHaveAttribute(
+      'href',
+      '/homebrew'
+    );
+    expect(document.querySelector('.crumb .back')).toHaveAttribute('href', '/homebrew');
   });
 
   it('reloads a clean form when a read brings a newer row', async () => {
@@ -494,17 +522,15 @@ describe('another device', () => {
 });
 
 describe('the guard', () => {
-  it('names the way back «К моим предметам» clean and dirty, links it to #/homebrew, and asks before that navigation drops edits', async () => {
+  it('draws the breadcrumb as the way back clean and dirty, and asks before that navigation drops edits', async () => {
     const { app, dialog } = await editor(RING, { answer: false });
     const row = (): string[] =>
-      [...document.querySelectorAll('.buttons > *')].map((b) => b.textContent.trim());
-    expect(row()).toEqual([t.save, t.hbToMyItems, t.del]);
+      [...document.querySelectorAll('.ebar > *')].map((b) => b.textContent.trim());
+    expect(row()).toEqual([t.save, t.del]);
     await userEvent.type(screen.getByLabelText(/Название/), '!');
-    expect(row()).toEqual([t.save, t.hbToMyItems, t.del]);
-    expect(screen.getByRole('link', { name: t.hbToMyItems })).toHaveAttribute(
-      'href',
-      '/homebrew'
-    );
+    expect(row()).toEqual([t.save, t.del]);
+    expect(screen.getByRole('link', { name: t.myItems })).toHaveAttribute('href', '/homebrew');
+    expect(screen.queryByRole('link', { name: t.hbToMyItems })).toBeNull();
     /* The memory router sees no link press, so the test makes the link's navigation. */
     app.go('#/homebrew');
     expect(dialog.asked).toEqual([t.leaveUnsaved]);
@@ -513,8 +539,8 @@ describe('the guard', () => {
 
   it('draws no «Удалить» on a new item', async () => {
     await editor(null);
-    const row = [...document.querySelectorAll('.buttons > *')].map((b) => b.textContent.trim());
-    expect(row).toEqual([t.save, t.hbToMyItems]);
+    const row = [...document.querySelectorAll('.ebar > *')].map((b) => b.textContent.trim());
+    expect(row).toEqual([t.save]);
   });
 
   it('asks on an in-app navigation and on unload while dirty, never after a save', async () => {
@@ -644,7 +670,7 @@ describe('both languages', () => {
     expect(desc).toHaveValue('The blade smoulders and does not go out in the rain.');
     expect(desc).toHaveAttribute('lang', 'en');
     /* The labels stay in the interface language. */
-    expect(screen.getByText(t.hbLegend)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: t.hbGroupItem })).toBeInTheDocument();
     await expectNoA11yViolations(container);
   });
 
@@ -738,17 +764,6 @@ describe('both languages', () => {
     const bar = screen.getByRole('toolbar', { name: 'Оформление: Описание' });
     expect(within(bar).getAllByRole('button')).toHaveLength(5);
     expect(screen.queryByRole('button', { name: t.mdPreview })).toBeNull();
-  });
-
-  it('opensTheDescriptionHint', async () => {
-    const { container } = await editor(null);
-    const help = helpButton(t.hbDesc);
-    await userEvent.click(help);
-    const hint = document.getElementById('hb-desc-help');
-    expect(hint).toBeVisible();
-    expect(hint?.textContent).toBe(t.mdHelp.replace('%n', '3000'));
-    expect(hint?.textContent.split('\n')).toHaveLength(3);
-    await expectNoA11yViolations(container);
   });
 });
 
@@ -899,18 +914,10 @@ describe('the second set', () => {
   const pressedIn = (name: string): HTMLElement =>
     within(group(name)).getByRole('button', { pressed: true });
 
-  it('opens with its hint behind its «?»; a second press unpresses a choice of the set, never a main one', async () => {
+  it('a second press unpresses a choice of the set, never a main one', async () => {
     const { container } = await editor(null);
     await press(t.hbKind, t.fEquip);
     await userEvent.click(altButton());
-    const hint = screen.getByText(t.hbAltHint);
-    expect(hint).toHaveAttribute('id', 'hb-alt-help');
-    expect(hint).not.toBeVisible();
-    const help = helpButton(t.hbAlt);
-    expect(help).toHaveAttribute('aria-controls', 'hb-alt-help');
-    await userEvent.click(help);
-    expect(help).toHaveAttribute('aria-expanded', 'true');
-    expect(hint).toBeVisible();
     await expectNoA11yViolations(container);
     expect(screen.queryByRole('button', { name: t.hbAltClear })).toBeNull();
     await press(ALT_TRAIT, 'Сила');
@@ -984,7 +991,7 @@ describe('the second set', () => {
       screen.getByRole('combobox', { name: t.hbAlt + ': ' + t.hbDmgDie }),
       'd6'
     );
-    await press(t.hbAlt + ': ' + t.hbDt, 'физ');
+    await press(t.hbAlt + ': ' + t.hbDt, t.hbDtPhy);
     await expectNoA11yViolations(container);
     await save();
     await waitFor(async () => {
@@ -1097,40 +1104,178 @@ describe('the tier', () => {
   });
 });
 
-describe('the «?» of a field', () => {
-  it('toggles with Enter and Space', async () => {
+describe('the groups and the marks', () => {
+  const heads = (): string[] =>
+    [...document.querySelectorAll('.grp h2')].map((h) => h.textContent);
+
+  it('heads the fields of an item in two groups, and of equipment in three', async () => {
     await editor(null);
-    const button = helpButton(t.hbSource);
-    button.focus();
-    await userEvent.keyboard('{Enter}');
-    expect(button).toHaveAttribute('aria-expanded', 'true');
-    await userEvent.keyboard(' ');
-    expect(button).toHaveAttribute('aria-expanded', 'false');
+    expect(heads()).toEqual([t.hbGroupItem, t.hbGroupWhere]);
+    await press(t.hbKind, t.fEquip);
+    expect(heads()).toEqual([t.hbGroupItem, t.hbGroupStats, t.hbGroupWhere]);
   });
 
-  it('draws no «?» on «Ранг», a self-explanatory field or «Пороги урона»', async () => {
+  it('marks the optional fields with the word, and no required field', async () => {
+    await editor(RING);
+    await openRel();
+    const marked = [...document.querySelectorAll('.fhead')]
+      .filter((h) => h.querySelector('.opt'))
+      .map((h) => h.querySelector('.flabel')?.textContent);
+    expect(marked).toEqual(
+      expect.arrayContaining([t.hbDesc, t.hbArt, t.tier, t.craftInto, t.craftFrom, t.setLabel])
+    );
+    expect(marked).not.toContain(t.hbName);
+    expect(screen.getByLabelText(/Название/)).toBeRequired();
+  });
+
+  it('hides the word from a reader where the caption is hidden, and keeps it by a label', async () => {
+    await editor(RING);
+    const heads = [...document.querySelectorAll('.fhead')].filter((h) =>
+      h.querySelector('.opt')
+    );
+    const word = (caption: string): Element | null | undefined =>
+      heads
+        .find((h) => h.querySelector('.flabel')?.textContent === caption)
+        ?.querySelector('.opt');
+    expect(word(t.hbArt)).toHaveAttribute('aria-hidden', 'true');
+    expect(word(t.tier)).toHaveAttribute('aria-hidden', 'true');
+    expect(word(t.hbDesc)).not.toHaveAttribute('aria-hidden');
+  });
+
+  it('presses the neutral option with a check and no gold', async () => {
     await editor(null);
-    for (const label of [t.tier, t.hbKind, t.hbName, t.hbTh, t.hbTextLang]) {
+    const on = within(group(t.hbKind)).getByRole('button', { pressed: true });
+    expect(on.querySelector('svg')).toBeInTheDocument();
+    expect(on.closest('.seg')).toHaveClass('neutral');
+  });
+
+  it('names the damage types in full words', async () => {
+    await editor(null);
+    await press(t.hbKind, t.fEquip);
+    expect(
+      within(group(t.hbDt))
+        .getAllByRole('button')
+        .map((b) => b.textContent.trim())
+    ).toEqual([t.hbDtPhy, t.hbDtMag, t.hbDtAny]);
+  });
+
+  it('gives each choice of a failed save its own message', async () => {
+    await editor(null);
+    await press(t.hbKind, t.fEquip);
+    await save();
+    for (const id of ['hb-cls', 'hb-tr', 'hb-rg', 'hb-dt', 'hb-bu']) {
+      expect(document.getElementById(id + '-err')).toBeInTheDocument();
+    }
+    const texts = ['hb-cls', 'hb-tr', 'hb-rg', 'hb-dt', 'hb-bu'].map(
+      (id) => document.getElementById(id + '-err')?.textContent
+    );
+    expect(new Set(texts).size).toBe(5);
+  });
+});
+
+describe('the bar and the preview sheet up to 760 px', () => {
+  it('draws «Сохранить» and «Предпросмотр» on a new item, and no card behind them', async () => {
+    const { container } = await editor(null, { band: 'narrow' });
+    expect(
+      [...document.querySelectorAll('.ebar > *')].map((b) => b.textContent.trim())
+    ).toEqual([t.save, t.hbPreview]);
+    expect(container.querySelector('.preview')).toBeNull();
+    expect(container.querySelector('.card')).toBeNull();
+    await expectNoA11yViolations(container);
+  });
+
+  it('opens the card in a sheet, and returns the focus to «Предпросмотр»', async () => {
+    await editor(null, { band: 'narrow' });
+    const open = screen.getByRole('button', { name: t.hbPreview });
+    await userEvent.click(open);
+    const sheet = screen.getByRole('dialog', { name: t.hbPreview });
+    expect(sheet.querySelectorAll('.card')).toHaveLength(1);
+    await expectNoA11yViolations(document.body);
+    await userEvent.click(within(sheet).getByRole('button', { name: t.close }));
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).toBeNull();
+    });
+    expect(open).toHaveFocus();
+  });
+
+  it('holds «Удалить» of a stored item in the upward «Ещё»', async () => {
+    const { container, dialog } = await editor(RING, { band: 'narrow', answer: false });
+    await userEvent.click(screen.getByRole('button', { name: t.moreMenu }));
+    expect(document.getElementById('hb-bar-more')).toHaveClass('up');
+    await expectNoA11yViolations(container);
+    await userEvent.click(screen.getByRole('menuitem', { name: t.del }));
+    expect(dialog.asked.at(-1)).toContain('Кольцо');
+  });
+
+  it('closes the sheet when the band leaves narrow', async () => {
+    const { app } = await editor(null, { band: 'narrow' });
+    const main = document.body.appendChild(document.createElement('main'));
+    main.id = 'main';
+    main.tabIndex = -1;
+    await userEvent.click(screen.getByRole('button', { name: t.hbPreview }));
+    app.band = 'wide';
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).toBeNull();
+    });
+    expect(document.querySelectorAll('.preview .card')).toHaveLength(1);
+    /* The bar's «Предпросмотр» left with the band, so the focus goes to the main region. */
+    await waitFor(() => {
+      expect(main).toHaveFocus();
+    });
+    main.remove();
+  });
+});
+
+describe('no «?» on a field', () => {
+  it('draws none of the eight, and the three captions say what the site needs said', async () => {
+    const { container } = await editor(AXE);
+    await openRel();
+    expect(container.querySelector('.hbform .helpbtn')).toBeNull();
+    for (const label of [
+      t.hbSource,
+      t.hbDesc,
+      t.hbAlt,
+      t.hbLine,
+      t.craftInto,
+      t.craftFrom,
+      t.setLabel,
+      t.hbRefs,
+      t.tier,
+      t.hbTh
+    ]) {
       expect(
         screen.queryByRole('button', { name: t.fieldHelp.replace('%s', label) })
       ).toBeNull();
     }
+    expect(screen.getByText(t.hbSourceCap)).toBeInTheDocument();
+    expect(screen.getByText(t.hbLineCap)).toBeInTheDocument();
+    expect(screen.getByLabelText(t.hbSource)).toHaveAccessibleDescription(t.hbSourceCap);
+    expect(screen.getByText(t.hbRefsUpTo)).toBeInTheDocument();
+  });
+
+  it('names the chosen set bonus under «Комплект» in the language of the text', async () => {
+    await editor(AXE);
+    await openRel();
+    const set = screen.getByRole('combobox', { name: t.setLabel });
+    await userEvent.selectOptions(set, 'hb_aldersetaaaaaaaa');
+    const bonus = await screen.findByText(/^Бонус комплекта: /);
+    expect(bonus.textContent.length).toBeGreaterThan('Бонус комплекта: '.length);
   });
 });
 
-describe('«Добавить в список» in the preview', () => {
+describe('«В список» in the preview', () => {
   it('is absent on a new item before its first save and drawn after it', async () => {
     await editor(null);
     await userEvent.type(screen.getByLabelText(/Название/), 'Рог');
-    expect(screen.queryByRole('button', { name: t.addToList })).toBeNull();
+    expect(screen.queryByRole('button', { name: t.toList })).toBeNull();
     await save();
     await toastSays('Предмет «Рог» создан');
-    expect(await screen.findByRole('button', { name: t.addToList })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: t.toList })).toBeInTheDocument();
   });
 
   it('puts the saved item into a list as a link', async () => {
     const { cloud, page, container } = await editor(AXE);
-    await userEvent.click(screen.getByRole('button', { name: t.addToList }));
+    await userEvent.click(screen.getByRole('button', { name: t.toList }));
     await expectNoA11yViolations(container);
     await userEvent.click(await screen.findByRole('button', { name: 'Пустой список' }));
     await toastSays(t.addedTo.replace('%s', 'Пустой список'));
@@ -1272,7 +1417,7 @@ describe('the fold «Связи»', () => {
     expect((await stored(cloud, AXE))?.eq?.line).toBe(AXE);
     cleanup();
     const fresh = await editor(null, { real: true });
-    await userEvent.type(screen.getByLabelText(/^Название\*$/), 'Латы');
+    await userEvent.type(screen.getByLabelText(/^Название$/), 'Латы');
     await press(t.hbKind, t.fEquip);
     await press(t.hbType, 'Броня');
     await press(t.tier, '1');
@@ -1371,7 +1516,7 @@ describe('the fold «Связи»', () => {
       t.hbSetNew
     ]);
     expect(screen.getByLabelText(t.setLabel)).toHaveValue('hb_gonesetaaaaaaaaa');
-    await userEvent.type(screen.getByLabelText(/^Название\*$/), '!');
+    await userEvent.type(screen.getByLabelText(/^Название$/), '!');
     await save();
     await toastSays(/^Сохранено/);
     expect((await stored(cloud, RING))?.set).toBe('hb_gonesetaaaaaaaaa');
@@ -1436,7 +1581,7 @@ describe('the fold «Связи»', () => {
     await userEvent.click(screen.getByRole('button', { name: t.hbNewCard }));
     await userEvent.click(relSummary());
     expect(relFold().open).toBe(false);
-    await userEvent.type(screen.getByLabelText(/^Название\*$/), '!');
+    await userEvent.type(screen.getByLabelText(/^Название$/), '!');
     await save();
     expect(relFold().open).toBe(true);
     const link = screen.getByRole('button', {

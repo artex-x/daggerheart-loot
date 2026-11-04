@@ -5,8 +5,10 @@
    * live markup writes a bare `h1`+`p`, no pin, no help. */
   import Actions from './Actions.svelte';
   import Button from './Button.svelte';
+  import ErrorPage from './ErrorPage.svelte';
   import Icon from './Icon.svelte';
   import KeepNote from './KeepNote.svelte';
+  import { tick } from 'svelte';
   import { SvelteMap } from 'svelte/reactivity';
   import LoadState from './LoadState.svelte';
   import NoData from './NoData.svelte';
@@ -108,6 +110,12 @@
     else app.go(sectionHash('roll/std'));
   }
 
+  /* The press takes «Повторить» out of the DOM, so the focus goes to `#main` (rule 20). */
+  function retry(): void {
+    attempt++;
+    void tick().then(() => document.getElementById('main')?.focus());
+  }
+
   function print(): void {
     app.env.dialog.print();
   }
@@ -138,16 +146,17 @@
       app.askSignIn({ hash: app.hash });
     }}>{t.signIn}</Button
   >
-{:else if read === 'loading' || read === 'failed'}
+{:else if read === 'failed'}
+  <!-- The failure replaces the page (docs/specs/FEATURES.md, rule 6). -->
+  <ErrorPage title={t.printLoadFailedTitle} said>
+    {t.printLoadFailed}
+    {#snippet actions()}
+      <Button variant="primary" onclick={retry}>{t.retry}</Button>
+    {/snippet}
+  </ErrorPage>
+{:else if read === 'loading'}
   <PageTitle title={t.printTitle} />
-  <LoadState
-    {t}
-    failed={read === 'failed'}
-    text={t.printLoadFailed}
-    onretry={() => {
-      attempt++;
-    }}
-  />
+  <LoadState {t} failed={false} text={t.printLoadFailed} onretry={retry} />
 {:else if read === 'gone'}
   <PageTitle title={t.printTitle} sub={t.printSetGone} />
   <Button variant="primary" href={app.href(sectionHash('roll/std'))} sameTab>{t.toStart}</Button

@@ -406,6 +406,14 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
      * whatever else on the row shares its name.
      */
     async tick(name, nth = 0) {
+      /* The catalog draws its ticks in the selection mode only: «Выбрать» opens it. */
+      const opened = await page.evaluate(() => {
+        const mode = document.querySelector('button.selmode');
+        if (!mode) return false;
+        mode.click();
+        return true;
+      });
+      if (opened) await settle(page);
       const ok = await page.evaluate(
         (n, idx, nameSrc) => {
           const nameOf = eval(nameSrc);
@@ -504,6 +512,58 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
       return true;
     },
 
+    /** Opens the «Ещё» menu `more` selects, by default the record's: of the open dialog,
+     *  else of the page; on a roll page the results line's. */
+    async openMore(more = '.cardpick [aria-haspopup="menu"], .reshead [aria-haspopup="menu"]') {
+      const handle = await page.evaluateHandle(
+        (sel) => document.querySelector('dialog[open] ' + sel) ?? document.querySelector(sel),
+        more
+      );
+      const el = handle.asElement();
+      if (!el) {
+        await handle.dispose();
+        throw new Error(`${target}: no «Ещё» on the record`);
+      }
+      await el.click();
+      await handle.dispose();
+      await page.waitForSelector('[role="menu"]', { timeout: 5000 });
+      await settle(page);
+    },
+
+    /** Opens the selection mode and answers the names of the drawn rows' boxes. */
+    async tickNames() {
+      await page.evaluate(() => {
+        document.querySelector('button.selmode')?.click();
+      });
+      await settle(page);
+      return page.evaluate((nameSrc) => {
+        const nameOf = eval(nameSrc);
+        return [...document.querySelectorAll('[data-row] input[type="checkbox"]')].map(nameOf);
+      }, NAME_FN);
+    },
+
+    /** Opens the «Ещё» menu of the open dialog, else of the page, then presses `name` in it
+     *  once it is enabled: a save item waits for the account's items, and a hosted sign-in
+     *  needs a longer `wait`. */
+    async more(name, wait = { timeout: 5000 }) {
+      await d.openMore();
+      const handle = await page.waitForFunction(
+        (n, nameSrc) => {
+          const nameOf = eval(nameSrc);
+          return [...document.querySelectorAll('[role="menu"] [role="menuitem"]')].find(
+            (e) => nameOf(e) === n && !e.disabled
+          );
+        },
+        wait,
+        name,
+        NAME_FN
+      );
+      await handle.asElement().click();
+      await handle.dispose();
+      d.pressed.add(name);
+      await settle(page);
+    },
+
     /** Waits for whatever is in flight - a resize, or a press. */
     settle() {
       return settle(page);
@@ -521,12 +581,49 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
       return true;
     },
 
+    /** Chooses the option that reads `text` in a roll page's picker, then settles. */
+    async part(text) {
+      const value = await page.$eval(
+        '.pick select',
+        (select, wanted) =>
+          [...select.options].find((o) => o.textContent.trim() === wanted)?.value ?? null,
+        text
+      );
+      if (value === null) throw new Error(`${target}: no part "${text}" in the picker`);
+      return d.choose('.pick select', value);
+    },
+
+    /** Opens «Ещё» of the first roll result. */
+    async openCardMore() {
+      await page.click('.resacts .morewrap > .btn');
+      await page.waitForSelector('.resacts [role="menu"]', { timeout: 5000 });
+      await settle(page);
+    },
+
+    /** Opens the add-to-list menu of the first roll result. */
+    async openCardList() {
+      await page.click('.resacts .seldrop > .btn');
+      await page.waitForSelector('.resacts .dropmenu', { timeout: 5000 });
+      await settle(page);
+    },
+
     /** Navigates in the page, as a pasted old `#/` link does, which the app turns into
      *  its path form, then settles. */
     async go(hash) {
       await page.evaluate((h) => {
         location.hash = h;
       }, hash);
+      await settle(page);
+    },
+
+    /** Scrolls the page to `y` as a reader does, then settles. The wait first is the
+     *  `scroll` port's quiet window plus a frame: a scroll inside that window reads as
+     *  the arrival's own and moves no header. */
+    async scrollPage(y) {
+      await new Promise((r) => setTimeout(r, 200));
+      await page.evaluate((to) => {
+        window.scrollTo(0, to);
+      }, y);
       await settle(page);
     },
 

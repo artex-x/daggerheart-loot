@@ -320,3 +320,56 @@ export function search(
   if (!terms.length) return [];
   return records.filter((it) => matches(it, terms, statLine));
 }
+
+/**
+ * Returns a name in runs, each run that the terms match at a word start marked, for the
+ * search highlight of a row or a tile.
+ *
+ * @param name The name as drawn.
+ * @param terms The parsed query; none gives one unmarked run.
+ * @returns The runs in order; an empty name gives none.
+ */
+export function markRuns(
+  name: string,
+  terms: readonly Term[]
+): { text: string; mark: boolean }[] {
+  const ranges = terms.length ? highlightRanges(name, terms) : [];
+  const out: { text: string; mark: boolean }[] = [];
+  let at = 0;
+  for (const [a, b] of ranges) {
+    if (a > at) out.push({ text: name.slice(at, a), mark: false });
+    out.push({ text: name.slice(a, b), mark: true });
+    at = b;
+  }
+  if (at < name.length) out.push({ text: name.slice(at), mark: false });
+  return out;
+}
+
+/**
+ * Returns the `[start, end)` ranges of `name` that the terms match at a word start,
+ * merged and in order, for the search highlight. A stem match is not marked. Acts only
+ * where folding keeps the length, so a range in the folded text is one in `name`.
+ */
+export function highlightRanges(name: string, terms: readonly Term[]): [number, number][] {
+  const folded = foldQuery(name);
+  if (folded.length !== name.length) return [];
+  const found: [number, number][] = [];
+  for (const term of terms) {
+    if (!term.text) continue;
+    let at = folded.indexOf(term.text);
+    while (at >= 0) {
+      if (at === 0 || !/[\p{L}\p{N}]/u.test(folded.charAt(at - 1))) {
+        found.push([at, at + term.text.length]);
+      }
+      at = folded.indexOf(term.text, at + 1);
+    }
+  }
+  found.sort((a, b) => a[0] - b[0]);
+  const out: [number, number][] = [];
+  for (const r of found) {
+    const last = out[out.length - 1];
+    if (last && r[0] <= last[1]) last[1] = Math.max(last[1], r[1]);
+    else out.push([r[0], r[1]]);
+  }
+  return out;
+}

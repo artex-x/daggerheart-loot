@@ -23,26 +23,24 @@ RootWebArea "Dread GM Toolbox - Генератор лута Daggerheart" [url=/r
   main ""
     heading "Dread GM Toolbox" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
+    button "Об этой книге" [expanded=false]
     StaticText "Введите результат броска или получите случайную позицию."
-    StaticText "РЕЗУЛЬТАТ БРОСКА (1–29)"
+    button "Бросить 1-29"
+    StaticText "РЕЗУЛЬТАТ БРОСКА (1-29)"
     button "На единицу меньше" [disabled=true]
     textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
     button "На единицу больше"
-    button "Случайно 1–29"
+    heading "Бросок 1" [level=2]
     status ""
-      button "Страница"
-      StaticText "1"
-      StaticText "ОСНОВНОЕ ОРУЖИЕ"
-      ... StaticText x8 of 12 same-shape siblings elided
-      link "Эфирная Винтовка" [description=Страница url=/i/di1]
-      button "Скопировать название" [description=Скопировать название]
-      button "Скопировать ссылку" [description=Скопировать ссылку]
-      StaticText "Неестественное:"
-      StaticText " Биологически живые стрелки должны отмечать Стресс каждый раз, к..." [namelen=171 namehash=1386cde3]
-      button "Отправить"
-      button "Скопировать изображение" [description=Скопировать изображение]
-      button "Скопировать текст" [description=Скопировать текст]
+      StaticText "Эфирная Винтовка"
+    button "Страница"
+    ... StaticText x10 of 14 same-shape siblings elided
+    link "Эфирная Винтовка" [description=Страница url=/i/di1]
+    StaticText "Неестественное:"
+    StaticText " Биологически живые стрелки должны отмечать Стресс каждый раз, к..." [namelen=171 namehash=1386cde3]
+    button "В список" [expanded=false]
+    button "Поделиться"
+    button "Ещё" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -51,14 +49,17 @@ RootWebArea "Dread GM Toolbox - Генератор лута Daggerheart" [url=/r
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-?Справка
+?Об этой книге
 Dread GM Toolbox
 EN
 RU
 daggerheart.com
 Альтернативные таблицы
+Бросить 1-29
 Бросок
+В список
 Войти
+Ещё
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
@@ -66,14 +67,9 @@ daggerheart.com
 На единицу меньше
 Обычные правила
 Открывать при запуске
-Отправить
+Поделиться
 Поиск
 Результат броска
-Скопировать изображение
-Скопировать название
-Скопировать ссылку
-Скопировать текст
-Случайно 1–29
 Страница
 Таблицы
 Условия использования
@@ -101,26 +97,24 @@ RootWebArea "Dread GM Toolbox - Daggerheart Loot Generator" [url=/en/roll/dread_
   main ""
     heading "Dread GM Toolbox" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
+    button "About this book" [expanded=false]
     StaticText "Enter your roll result, or pick a random entry."
-    StaticText "ROLL RESULT (1–29)"
+    button "Roll 1-29"
+    StaticText "ROLL RESULT (1-29)"
     button "One lower" [disabled=true]
     textbox "Roll result" [value=1 multiline=false readonly=false required=false]
     button "One higher"
-    button "Random 1–29"
+    heading "Roll 1" [level=2]
     status ""
-      button "Page"
-      StaticText "1"
-      StaticText "PRIMARY WEAPON"
-      ... StaticText x8 of 12 same-shape siblings elided
-      link "Aether Rifle" [description=Page url=/i/en/di1]
-      button "Copy name" [description=Copy name]
-      button "Copy link" [description=Copy link]
-      StaticText "Uncanny:"
-      StaticText " Shooters who are biologically alive must mark a Stress each tim..." [namelen=164 namehash=b75ef83a]
-      button "Share"
-      button "Copy image" [description=Copy image]
-      button "Copy text" [description=Copy text]
+      StaticText "Aether Rifle"
+    button "Page"
+    ... StaticText x10 of 14 same-shape siblings elided
+    link "Aether Rifle" [description=Page url=/i/en/di1]
+    StaticText "Uncanny:"
+    StaticText " Shooters who are biologically alive must mark a Stress each tim..." [namelen=164 namehash=b75ef83a]
+    button "Add to list" [expanded=false]
+    button "Share"
+    button "More" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -129,25 +123,23 @@ RootWebArea "Dread GM Toolbox - Daggerheart Loot Generator" [url=/en/roll/dread_
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-?Help
+?About this book
+Add to list
 Aether Rifle
 Alternate tables
-Copy image
-Copy link
-Copy name
-Copy text
 Dread GM Toolbox
 EN
 Install as an app
 LootDaggerheart
+More
 One higher
 One lower
 Open on start
 Page
 Privacy
 RU
-Random 1–29
 Roll
+Roll 1-29
 Roll result
 Search
 Share

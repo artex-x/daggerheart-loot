@@ -13,7 +13,7 @@
 
   interface Props {
     /** The variant - `item`, `cons`, `eq-weapon`, `eq-secondary`, `eq-armor`,
-     *  `uniq`, `tier`, `src`, `num`, `hope` or `fear` - appended to `badge`
+     *  `uniq`, `tier`, `src`, `num`, `hb`, `hope` or `fear` - appended to `badge`
      *  as a second class. */
     cls: string;
     /** A hover explanation, where the live app gives one. */
@@ -94,6 +94,11 @@
     letter-spacing: 0;
     color: var(--txt);
     border-color: var(--line2);
+  }
+
+  /* A homebrew record in a relation line. */
+  .badge.hb {
+    color: var(--txt);
   }
 
   /* The two duality columns, in the colors the dice are named for - the

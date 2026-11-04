@@ -107,20 +107,26 @@
      either, chosen against `--gold` specifically. */
   --ink-on-gold: #1a1206;
 
-  /* Where a section, row or card anchor lands: about 12-20 px under the sticky
-     header, which is 63 px from 761 px and two rows below (111 px at 360). */
-  --anchor-top: 75px;
+  /* The header's height, for the first paint: `Shell.svelte` sets the measured one
+     once it is mounted, because a narrow window can wrap the brand row. */
+  --sticky-h: 63px;
+
+  /* The space between the header and a linked section, row or card. */
+  --anchor-gap: 12px;
+
+  /* Where the filter column rests. */
+  --anchor-top: calc(var(--sticky-h) + var(--anchor-gap));
 }
 
 @media (max-width: 760px) {
   :root {
-    --anchor-top: 118px;
+    --sticky-h: 105px;
   }
 }
 
 @media (max-width: 600px) {
   :root {
-    --anchor-top: 132px;
+    --sticky-h: 111px;
   }
 }
 
@@ -139,6 +145,19 @@ html {
   padding: 0;
   -webkit-text-size-adjust: 100%;
   scrollbar-gutter: stable;
+  /* A focused control and a linked target stop clear of the header at its full height,
+     whether it is shown or hidden (WCAG 2.4.11). */
+  scroll-padding-top: var(--sticky-h);
+  /* A focused control scrolls clear of the sticky selection bar and the editor's bar
+     (`SelectionBar.svelte` and `HomebrewEditor.svelte` set the heights while mounted). */
+  scroll-padding-bottom: calc(var(--selbar-h, 0px) + var(--ebar-h, 0px));
+}
+
+/* Under 481 px of height the editor's bar stays in the flow (`HomebrewEditor.svelte`). */
+@media (max-height: 480px) {
+  html {
+    scroll-padding-bottom: var(--selbar-h, 0px);
+  }
 }
 
 body {

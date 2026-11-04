@@ -109,18 +109,20 @@ const rowIds = (root: ParentNode = document): (string | null)[] =>
 const headings = (): (string | null)[] =>
   [...document.querySelectorAll('.tsec-head .lbl')].map((el) => el.textContent);
 
-/* One field of the open filter panel, by the label it starts with. */
+/* One row of the filter column, by its label. */
 function field(label: string): HTMLElement {
-  const found = [...document.querySelectorAll<HTMLElement>('.ffilter .field')].find((f) =>
-    f.querySelector('.lbl')?.textContent.startsWith(label)
+  const found = [...document.querySelectorAll<HTMLElement>('.fcol .frow')].find(
+    (f) => f.querySelector('.lbl')?.textContent === label
   );
-  if (!found) throw new Error(`No filter field «${label}». Open the filter panel first.`);
+  if (!found) throw new Error(`No filter row «${label}».`);
   return found;
 }
 
+/* A row's values, after its «Все». */
 const values = (label: string): string[] =>
   within(field(label))
     .getAllByRole('button')
+    .filter((b) => b.hasAttribute('data-fval'))
     .map((b) => b.textContent);
 
 /* The elements `scrollIntoView` was called on. */
@@ -134,16 +136,16 @@ function scrolls(): Element[] {
 
 const ownSwitch = (): HTMLElement => screen.getByRole('switch', { name: t.ownSwitch });
 
-/* The one picked value's pill beside the filter button. */
+/* The one picked value's chip in the filter column. */
 const pill = (): HTMLElement => {
-  const found = document.querySelector<HTMLElement>('.fpill');
-  if (!found) throw new Error('No filter pill. Pick a value first.');
+  const found = document.querySelector<HTMLElement>('[data-fval][aria-pressed="true"]');
+  if (!found) throw new Error('No picked filter chip. Pick a value first.');
   return found;
 };
 
-/* The source chips: the links of the table nav's second row. */
+/* The source tabs: the links of the table nav's second level. */
 const chips = (): HTMLAnchorElement[] => [
-  ...document.querySelectorAll<HTMLAnchorElement>('.tablenav .subchips a')
+  ...document.querySelectorAll<HTMLAnchorElement>('.tablenav .tabs a')
 ];
 const chipOn = (): string | null | undefined =>
   chips().find((a) => a.getAttribute('aria-current') === 'page')?.textContent;
@@ -190,11 +192,12 @@ describe('#/tables/homebrew', () => {
     expect(headings()).toEqual(['Холодное оружие']);
     expect(rowIds()).toEqual([AXE]);
     expect(router.hash()).toBe('#/tables/homebrew');
-    expect(screen.getByPlaceholderText(t.searchPh)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(t.searchShort)).toBeInTheDocument();
     expect(screen.queryByRole('switch')).toBeNull();
     expect(chips().every((a) => !a.textContent.match(/\d/))).toBe(true);
     await userEvent.click(screen.getByRole('button', { name: t.viewList }));
-    expect(screen.getByText('Мастерская Ольхи (HB)')).toBeInTheDocument();
+    /* The chosen tab names the source, so the row repeats no source tag (rowTags.ts). */
+    expect(screen.queryByText('Мастерская Ольхи (HB)')).toBeNull();
     await expectNoA11yViolations(container);
   });
 
@@ -265,8 +268,7 @@ describe('#/tables/homebrew', () => {
     const { container } = page('#/tables/homebrew');
     await screen.findByText('Топор Тлеющих Углей');
     expect(chipOn()).toBe('Мастерская Ольхи');
-    expect(screen.queryByRole('button', { name: /^Фильтры/ })).toBeNull();
-    expect(document.querySelector('.fbar')).toBeNull();
+    expect(screen.queryByRole('complementary', { name: t.filters })).toBeNull();
     await expectNoA11yViolations(container);
   });
 
@@ -275,7 +277,6 @@ describe('#/tables/homebrew', () => {
     await waitFor(() => {
       expect(rowIds()).toHaveLength(3);
     });
-    await userEvent.click(screen.getByRole('button', { name: t.filters }));
     expect(values(t.kindF)).toEqual([t.fItems, t.fCons]);
     expect(() => field(t.source)).toThrow();
     expect(() => field(t.hbSection)).toThrow();
@@ -300,14 +301,14 @@ describe('#/tables/homebrew', () => {
     expect(chipOn()).toBe('Мастерская Ольхи');
     expect(values(t.kindF)).toEqual([t.fItems, t.fEquip]);
     expect(pill()).toHaveTextContent(t.fItems);
-    expect(document.querySelector('.fcount')).toHaveTextContent('0 из 1');
+    expect(document.querySelector('.count')).toHaveTextContent('Показано 0 из 1');
     expect(rowIds()).toEqual([]);
-    expect(screen.getAllByRole('button', { name: t.resetAll }).length).toBeGreaterThan(0);
+    expect(screen.getByRole('button', { name: t.resetFilters })).toBeInTheDocument();
     await expectNoA11yViolations(container);
     await userEvent.click(pill());
     expect(router.hash()).toBe('#/tables/homebrew/f_src-hb_alderworkshopaaa');
     expect(rowIds()).toEqual([AXE]);
-    expect(document.querySelector('.fbar')).toBeNull();
+    expect(document.querySelector('.count')).toBeNull();
   });
 
   it('keeps the chip of an anchor on a kind pick', async () => {
@@ -316,8 +317,9 @@ describe('#/tables/homebrew', () => {
     await waitFor(() => {
       expect(chipOn()).toBe('Хоумбрю');
     });
-    await userEvent.click(screen.getByRole('button', { name: t.filters }));
-    const [first] = within(field(t.kindF)).getAllByRole('button');
+    const [first] = within(field(t.kindF))
+      .getAllByRole('button')
+      .filter((b) => b.hasAttribute('data-fval'));
     if (!first) throw new Error('The kind row has no value.');
     await userEvent.click(first);
     expect(router.hash()).toMatch(/^#\/tables\/homebrew\/f_kind-[a-z]+\.src-hb$/);
@@ -331,24 +333,22 @@ describe('#/tables/homebrew', () => {
     await userEvent.click(pill());
     expect(router.hash()).toBe('#/tables/homebrew/f_src-hb_alderworkshopaaa');
     router.navigate('#/tables/homebrew/f_sect-hb_sectbladesaaaaaa');
-    await userEvent.click(await screen.findByRole('button', { name: t.resetAll }));
+    await userEvent.click(await screen.findByRole('button', { name: t.reset }));
     expect(router.hash()).toBe('#/tables/homebrew/f_src-hb_alderworkshopaaa');
     expect(chipOn()).toBe('Мастерская Ольхи');
   });
 
-  it('keeps a folded panel folded on a chip press and on a pill drop', async () => {
+  it('keeps the column on a picked chip drop and on a source tab press', async () => {
     const { router } = page('#/tables/homebrew/f_sect-hb_sectbladesaaaaaa');
     await screen.findByText('Топор Тлеющих Углей');
-    expect(document.querySelector('.ffilter')).not.toBeNull();
-    await userEvent.click(screen.getByRole('button', { name: /^Фильтры/ }));
-    expect(document.querySelector('.ffilter')).toBeNull();
+    expect(document.querySelector('.fcol')).not.toBeNull();
     await userEvent.click(pill());
-    expect(document.querySelector('.ffilter')).toBeNull();
+    expect(router.hash()).toBe('#/tables/homebrew/f_src-hb_alderworkshopaaa');
     router.click(chip('Хоумбрю').getAttribute('href') ?? '');
     await waitFor(() => {
       expect(chipOn()).toBe('Хоумбрю');
     });
-    expect(document.querySelector('.ffilter')).toBeNull();
+    expect(document.querySelector('.fcol')).not.toBeNull();
   });
 
   it('keeps two ticked rows across a chip press and back', async () => {
@@ -359,6 +359,7 @@ describe('#/tables/homebrew', () => {
     const boxes = (): HTMLInputElement[] => [
       ...document.querySelectorAll<HTMLInputElement>('[data-row] input[type="checkbox"]')
     ];
+    await userEvent.click(screen.getByRole('button', { name: t.selectMode }));
     await userEvent.click(boxes()[0] as HTMLElement);
     await userEvent.click(boxes()[1] as HTMLElement);
     router.click(chip('Мастерская Ольхи').getAttribute('href') ?? '');
@@ -409,7 +410,6 @@ describe('#/tables/homebrew', () => {
       'Хоумбрю'
     ]);
     expect(headings()).toEqual(['Луки', 'Щиты', t.hbNoSection]);
-    await userEvent.click(screen.getByRole('button', { name: t.filters }));
     expect(values(t.hbSection)).toEqual(['Луки', 'Щиты']);
     router.navigate('#/tables/homebrew/f_sect-' + GUILD_A);
     await waitFor(() => {
@@ -581,7 +581,7 @@ describe('#/tables/homebrew', () => {
       null
     );
     expect(await screen.findByText('Топор Пепла')).toBeInTheDocument();
-    const box = screen.getByPlaceholderText(t.searchPh);
+    const box = screen.getByPlaceholderText(t.searchShort);
     await userEvent.type(box, 'Пепла');
     expect(rowIds()).toEqual([AXE]);
     await userEvent.clear(box);
@@ -601,13 +601,14 @@ describe('#/tables/homebrew', () => {
 
   it('draws not found with no sign-in configured, and keeps the address', () => {
     const { router } = page('#/tables/homebrew', { cloud: null });
-    expect(screen.getByRole('heading', { name: t.notFound })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: t.nowhereTitle })).toBeInTheDocument();
     expect(router.hash()).toBe('#/tables/homebrew');
   });
 
-  it('draws the empty state with «Новый предмет» for an account with no item', async () => {
+  it('draws the empty state with its title and a primary «Новый предмет» for an account with no item', async () => {
     const { container } = page('#/tables/homebrew', { as: 'gm2' });
-    expect(await screen.findByText(t.hbEmptyTable)).toBeInTheDocument();
+    expect(await screen.findByText(t.hbEmptyTitle)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: t.hbNewItem })).toHaveClass('primary');
     expect(screen.getByRole('link', { name: t.hbNewItem })).toHaveAttribute(
       'href',
       '/homebrew/new'
@@ -635,7 +636,6 @@ describe('own equipment in the equipment tables', () => {
     expect(ownSwitch()).toBeChecked();
     expect(ownSwitch()).not.toHaveAttribute('title');
     expect(screen.queryByRole('button', { name: t.srcHomebrew })).toBeNull();
-    await userEvent.click(screen.getByRole('button', { name: t.filters }));
     expect(values(t.source)).toEqual(['Core', 'Мастерская Ольхи']);
     await expectNoA11yViolations(container);
 
@@ -653,7 +653,6 @@ describe('own equipment in the equipment tables', () => {
   it('drops the own sources from the filter when the switch hides the own items, and keeps the rest', async () => {
     const { router } = page('#/tables/eq_weapon');
     await screen.findByText('Топор Тлеющих Углей');
-    await userEvent.click(screen.getByRole('button', { name: t.filters }));
     await userEvent.click(within(field(t.source)).getByRole('button', { name: 'Core' }));
     const coreOnly = router.hash();
     await userEvent.click(
@@ -686,7 +685,7 @@ describe('search with own items', () => {
     expect(
       await screen.findByText(t.subSearch + ' ' + 'И 4 ваших предмета.')
     ).toBeInTheDocument();
-    await userEvent.type(screen.getByPlaceholderText(t.searchPh), 'топор');
+    await userEvent.type(screen.getByRole('searchbox', { name: t.searchPh }), 'топор');
     /* Two names at a word start tie, the catalog first; the axe's name ranks above
        the catalog's description hit */
     expect(rowIds()).toEqual(['w2', AXE, 'ci2']);
@@ -710,32 +709,35 @@ describe('search with own items', () => {
     expect(screen.queryByRole('switch')).toBeNull();
   });
 
-  it('holds the three kinds in the kind row, the switch under it, and refuses the last kind either way', async () => {
+  it('holds «Все» and the three kinds in the kind row, the switch after them, either way', async () => {
     const { container } = page('#/search');
     await screen.findByText(t.subSearch + ' И 4 ваших предмета.');
-    const kinds = document.querySelector('.panel .chips') as HTMLElement;
+    const row = document.querySelector('.kindrow') as HTMLElement;
+    const kinds = row.querySelector('.chips') as HTMLElement;
     expect(
       within(kinds)
         .getAllByRole('button')
         .map((b) => b.textContent)
-    ).toEqual([t.fItems, t.fCons, t.fEquip]);
+    ).toEqual([t.allShort, t.fItems, t.fCons, t.fEquip]);
     expect(kinds.contains(ownSwitch())).toBe(false);
+    expect(row.contains(ownSwitch())).toBe(true);
     for (const on of [true, false]) {
       if (!on) await userEvent.click(ownSwitch());
       expect((ownSwitch() as HTMLInputElement).checked).toBe(on);
-      await userEvent.click(within(kinds).getByRole('button', { name: t.fItems }));
-      await userEvent.click(within(kinds).getByRole('button', { name: t.fCons }));
-      expect(within(kinds).getByRole('button', { name: t.fEquip })).toHaveAttribute(
-        'title',
-        t.keepOneKind
-      );
       await userEvent.click(within(kinds).getByRole('button', { name: t.fEquip }));
       expect(within(kinds).getByRole('button', { name: t.fEquip })).toHaveAttribute(
         'aria-pressed',
         'true'
       );
-      await userEvent.click(within(kinds).getByRole('button', { name: t.fItems }));
-      await userEvent.click(within(kinds).getByRole('button', { name: t.fCons }));
+      expect(within(kinds).getByRole('button', { name: t.allShort })).toHaveAttribute(
+        'aria-pressed',
+        'false'
+      );
+      await userEvent.click(within(kinds).getByRole('button', { name: t.allShort }));
+      expect(within(kinds).getByRole('button', { name: t.allShort })).toHaveAttribute(
+        'aria-pressed',
+        'true'
+      );
     }
     await expectNoA11yViolations(container);
   });
@@ -759,7 +761,7 @@ describe("the author's own relations on catalog rows and cards", () => {
   it("keeps a catalog row's own relations while the switch hides the own items", async () => {
     const { container } = page('#/search', { as: 'gm3' });
     await screen.findByText(t.subSearch + ' И 39 ваших предметов.');
-    await userEvent.type(screen.getByPlaceholderText(t.searchPh), 'кольцо');
+    await userEvent.type(screen.getByRole('searchbox', { name: t.searchPh }), 'кольцо');
     expect(relation('ci1')).toBe('Улучшается до: Мешок спокойных снов (HB) и ещё 14');
     await userEvent.click(ownSwitch());
     expect(ownSwitch()).not.toBeChecked();

@@ -180,7 +180,7 @@ export async function runFlows({ env, admin, member, browser, base }) {
       member.email
     );
     await d.open('#/account');
-    await waitText(page, 'F2', 'Вы вошли как');
+    await waitText(page, 'F2', 'Способы входа');
     await waitControl(page, 'F2', 'Подключить Google');
     await waitControl(page, 'F2', 'Подключить Discord');
     await expectInPage(
@@ -320,8 +320,8 @@ export async function runFlows({ env, admin, member, browser, base }) {
       const [made] = await mine();
 
       await d.open('#/i/ci1');
-      await waitControl(page, 'F7', 'Добавить в список');
-      await d.press('Добавить в список');
+      await waitControl(page, 'F7', 'В список');
+      await d.press('В список');
       await waitControl(page, 'F7', 'E2E список');
       await d.press('E2E список');
       await until('F7: ci1 did not reach the list', async () => {
@@ -389,8 +389,8 @@ export async function runFlows({ env, admin, member, browser, base }) {
       listId = (await mine())[0].id;
 
       await d.open('#/i/ci1');
-      await waitControl(page, 'F8', 'Добавить в список');
-      await d.press('Добавить в список');
+      await waitControl(page, 'F8', 'В список');
+      await d.press('В список');
       await waitControl(page, 'F8', 'E2E ссылки');
       await d.press('E2E ссылки');
       await until('F8: ci1 did not reach the list', async () => {
@@ -822,7 +822,7 @@ export async function runFlows({ env, admin, member, browser, base }) {
       await pick('hb-rg', 'Вплотную');
       await d.choose('#hb-dmg', 'd8');
       await page.type('#hb-dmg-bonus', '25');
-      await pick('hb-dt', 'физ');
+      await pick('hb-dt', 'Физический');
       await pick('hb-bu', 'Одноручное');
       await d.press('Сохранить');
       await until('F14: the item did not reach the account', async () => {
@@ -879,8 +879,8 @@ export async function runFlows({ env, admin, member, browser, base }) {
       const key = item.key;
 
       await d.open('#/i/' + key);
-      await waitControl(page, 'F15', 'Добавить в список');
-      await d.press('Добавить в список');
+      await waitControl(page, 'F15', 'В список');
+      await d.press('В список');
       await d.press('+ Новый список');
       await d.type('Например: клад дракона', 'F15');
       await d.press('Создать');
@@ -917,7 +917,7 @@ export async function runFlows({ env, admin, member, browser, base }) {
       await d.open('#/lists/' + listId);
       await waitText(page, 'F15', 'Сохранено');
       await d.press('Свой предмет');
-      await d.type('Название*', 'Свеча F15');
+      await d.type('Название', 'Свеча F15');
       await d.press('Добавить в список');
       await until(
         'F15: the own item made on the list page, or its link, is missing',
@@ -946,15 +946,15 @@ export async function runFlows({ env, admin, member, browser, base }) {
     await withPage(ctx, await mint(env, admin, member.email), async (page, d) => {
       await d.open('#/homebrew/new');
       await waitControl(page, 'F16', 'Сохранить');
-      await d.type('Название*', 'Плащ F16');
+      await d.type('Название', 'Плащ F16');
       await d.press('Связи');
       await d.type('Улучшается до', 'Первоклассный Спальный');
       await d.click('Первоклассный Спальный Мешок');
       await d.type('Получается из', 'Пронзительная Свирель');
       await d.click('Пронзительная Свирель');
       await d.press('Новая карта правил');
-      await d.type('Название карты*', 'Клеймо F16');
-      await d.type('Текст карты*', 'Раз за отдых: перебросьте одну кость урона.');
+      await d.type('Название карты', 'Клеймо F16');
+      await d.type('Текст карты', 'Раз за отдых: перебросьте одну кость урона.');
       await d.press('Создать карту');
       await until('F16: the rule card did not reach the account', async () => {
         const { cards } = await mine();
@@ -1153,7 +1153,11 @@ export async function runFlows({ env, admin, member, browser, base }) {
       await d.open('#/h/' + item.id);
       await waitText(page, 'F18', 'Фонарь F18');
       await waitText(page, 'F18', 'Предмет другого игрока');
-      await waitControl(page, 'F18', 'Сохранить себе');
+      await waitControl(page, 'F18', 'Ещё');
+      /* Signed out the item has a second line, so only the driver's name reads it; the press
+         opens the sign-in prompt, which is the offer. */
+      await d.more('Сохранить себе', WAIT);
+      await waitText(page, 'F18', 'Войдите, и копия предмета сохранится');
       await expectInPage(
         page,
         'F18',
@@ -1336,8 +1340,8 @@ export async function runFlows({ env, admin, member, browser, base }) {
     await withPage(ctx, await mint(env, admin, saver.email), async (page, d) => {
       await d.open('#/h/' + lamp.id);
       await waitText(page, 'F20', 'Фонарь F20');
-      await waitControl(page, 'F20', 'Сохранить себе');
-      await d.press('Сохранить себе');
+      await waitControl(page, 'F20', 'Ещё');
+      await d.more('Сохранить себе', WAIT);
       await until("F20: the reader's copy did not get a picture of its own", async () => {
         const items = await itemsOf(saver.id);
         copy = items[0]?.art ?? null;

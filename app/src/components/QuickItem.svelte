@@ -146,7 +146,6 @@
     <FormField
       label={t.hbName}
       for="qi-name"
-      required
       error={nameProblem && problemText(nameProblem, t)}
       errorId="qi-name-err"
     >
@@ -167,6 +166,7 @@
     <FormField
       label={t.hbDesc}
       for="qi-desc"
+      optional={t.hbOptional}
       error={descProblem && problemText(descProblem, t)}
       errorId="qi-desc-err"
       help={{

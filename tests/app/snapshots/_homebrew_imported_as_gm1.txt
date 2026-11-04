@@ -20,32 +20,31 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
   main ""
     heading "Мои предметы" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
-    StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
-    button "Импорт из файла" [expanded=false focused=true]
     navigation "Мои предметы"
-      link "Предметы" [url=/homebrew]
-      link "Источники" [url=/homebrew/sources]
-      link "Комплекты" [url=/homebrew/sets]
-      link "Карты правил" [url=/homebrew/rules]
+      link "Предметы 7" [url=/homebrew]
+        StaticText "Предметы"
+        StaticText "7"
+      link "Источники 1" [url=/homebrew/sources]
+        StaticText "Источники"
+        StaticText "1"
+      link "Комплекты 2" [url=/homebrew/sets]
+        StaticText "Комплекты"
+        StaticText "2"
+      link "Карты правил 2" [url=/homebrew/rules]
+        StaticText "Карты правил"
+        StaticText "2"
     link "Новый предмет" [url=/homebrew/new]
-    status ""
+    StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
     StaticText "7 предметов из 100"
-    checkbox "Выбрать все" [checked=false]
-    StaticText "ВЫБРАТЬ ВСЕ"
-    generic ""
+    button "Импорт из файла" [expanded=false focused=true]
+    button "Выбрать"
     heading "Мастерская Ольхи · Пистоли 2" [level=2]
-    checkbox "Двуствольный пистоль" [checked=false]
-    button "Двуствольный пистоль Ранг 2 · Физическое · Искусность · Далеко ·..." [namelen=200 namehash=d2d9c2df]
-    ... checkbox x4 of 8 same-shape siblings elided
-    button "Кремнёвый пистоль Ранг 1 · Физическое · Искусность · Далеко · d8..." [namelen=179 namehash=2ccc53d9]
+    button "Двуствольный пистоль ОСНОВНОЕ ОРУЖИЕ Ранг 2 · Физическое · Искус..." [namelen=178 namehash=af12353b]
+    ... button x4 of 8 same-shape siblings elided
     heading "Мастерская Ольхи · Холодное оружие 1" [level=2]
-    ... button x3 of 7 same-shape siblings elided
     heading "Хоумбрю 4" [level=2]
-    checkbox "Настой кузнеца" [checked=false]
-    button "Настой кузнеца Выпейте перед работой у горна: до конца сцены вы ..." [namelen=110 namehash=fe1ee452]
-    checkbox "Whispering Cap" [checked=false]
-    button "Whispering Cap Once per rest, hear one sentence spoken within Fa..." [namelen=88 namehash=4553c982]
+    button "Настой кузнеца РАСХОДНИК Выпейте перед работой у горна: до конца..." [namelen=102 namehash=89c3700d]
+    button "Whispering Cap ПРЕДМЕТ EN Once per rest, hear one sentence spoke..." [namelen=83 namehash=7f2993e0]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -56,39 +55,31 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
     StaticText "Импортировано предметов: 3, новых карт: 2"
 
 ## ru :: controls
-?Справка
 EN
 RU
-Whispering Cap
-Whispering CapOnce per rest, hear one sentence spoken within Far... [namelen=85 namehash=a5156865]
+Whispering CapПредметENOnce per rest, hear one sentence spoken w... [namelen=80 namehash=dcd56acc]
 daggerheart.com
 Аккаунт: gm1@example.test
 Бросок
-Выбрать все
-Двуствольный пистоль
-Двуствольный пистольРанг 2 · Физическое · Искусность · Далеко · ... [namelen=196 namehash=2d5c8011]
+Выбрать
+Двуствольный пистольОсновное оружиеРанг 2 · Физическое · Искусно... [namelen=175 namehash=4e79cd09]
 Импорт из файла
-Источники
+Источники 1
 К содержимому
-Карты правил
-Кольцо с гравировкой
-Кольцо с гравировкойНадпись на неизвестном языке. Тёплое на ощуп... [namelen=80 namehash=8401f492]
-Комплекты
+Карты правил 2
+Кольцо с гравировкойПредметНадпись на неизвестном языке. Тёплое ... [namelen=73 namehash=222b1397]
+Комплекты 2
 Конфиденциальность
-Кремнёвый пистоль
-Кремнёвый пистольРанг 1 · Физическое · Искусность · Далеко · d8+... [namelen=175 namehash=3f47f340]
-Лоскутный спальник
-Лоскутный спальникСшит из Первоклассного Спального Мешка и Одеял... [namelen=229 namehash=49e0f0d1]
+Кремнёвый пистольОсновное оружиеРанг 1 · Физическое · Искусность... [namelen=154 namehash=0ac80d0b]
+Лоскутный спальникПредметСшит из Первоклассного Спального Мешка ... [namelen=222 namehash=f37d3f28]
 ЛутDaggerheart
-Настой кузнеца
-Настой кузнецаВыпейте перед работой у горна: до конца сцены вы н... [namelen=107 namehash=0d337734]
+Настой кузнецаРасходникВыпейте перед работой у горна: до конца с... [namelen=100 namehash=a6f81fe6]
 Новый предмет
 Открывать при запуске
 Поиск
-Предметы
+Предметы 7
 Таблицы
-Топор Тлеющих Углей
-Топор Тлеющих УглейРанг 2 · Магическое · Характеристика Заклинат... [namelen=184 namehash=b8cdac53]
+Топор Тлеющих УглейОсновное оружиеУникальноеРанг 2 · Магическое ... [namelen=163 namehash=a5051659]
 Условия использования
 Установить как приложение
 
@@ -109,32 +100,31 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm1]
   main ""
     heading "My items" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
-    StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
-    button "Import from file" [expanded=false focused=true]
     navigation "My items"
-      link "Items" [url=/en/homebrew]
-      link "Sources" [url=/en/homebrew/sources]
-      link "Sets" [url=/en/homebrew/sets]
-      link "Rule cards" [url=/en/homebrew/rules]
+      link "Items 7" [url=/en/homebrew]
+        StaticText "Items"
+        StaticText "7"
+      link "Sources 1" [url=/en/homebrew/sources]
+        StaticText "Sources"
+        StaticText "1"
+      link "Sets 2" [url=/en/homebrew/sets]
+        StaticText "Sets"
+        StaticText "2"
+      link "Rule cards 2" [url=/en/homebrew/rules]
+        StaticText "Rule cards"
+        StaticText "2"
     link "New item" [url=/en/homebrew/new]
-    status ""
+    StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
     StaticText "7 items of 100"
-    checkbox "Select all" [checked=false]
-    StaticText "SELECT ALL"
-    generic ""
+    button "Import from file" [expanded=false focused=true]
+    button "Select"
     heading "Alder Workshop · Pistols 2" [level=2]
-    checkbox "Double-Barrelled Pistol" [checked=false]
-    button "Double-Barrelled Pistol Tier 2 · Physical · Finesse · Far · d10+..." [namelen=189 namehash=32d50d4f]
-    ... checkbox x4 of 8 same-shape siblings elided
-    button "Flintlock Pistol Tier 1 · Physical · Finesse · Far · d8+1 phy · ..." [namelen=157 namehash=af741289]
+    button "Double-Barrelled Pistol PRIMARY WEAPON Tier 2 · Physical · Fines..." [namelen=169 namehash=dffbc8a4]
+    ... button x4 of 8 same-shape siblings elided
     heading "Alder Workshop · Blades 1" [level=2]
-    ... button x3 of 7 same-shape siblings elided
     heading "Homebrew 4" [level=2]
-    checkbox "Кольцо с гравировкой" [checked=false]
-    button "Кольцо с гравировкой Надпись на неизвестном языке. Тёплое на ощу..." [namelen=81 namehash=01a2fff3]
-    checkbox "Настой кузнеца" [checked=false]
-    button "Настой кузнеца Выпейте перед работой у горна: до конца сцены вы ..." [namelen=112 namehash=02806db1]
+    button "Кольцо с гравировкой ITEM RU Надпись на неизвестном языке. Тёпло..." [namelen=75 namehash=577a9a41]
+    button "Настой кузнеца CONSUMABLE RU Выпейте перед работой у горна: до к..." [namelen=106 namehash=5da704eb]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -145,38 +135,30 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm1]
     StaticText "Items imported: 3, new cards: 2"
 
 ## en :: controls
-?Help
 Account: gm1@example.test
-Double-Barrelled Pistol
-Double-Barrelled PistolTier 2 · Physical · Finesse · Far · d10+2... [namelen=185 namehash=dd8f983b]
+Double-Barrelled PistolPrimary weaponTier 2 · Physical · Finesse... [namelen=166 namehash=6680c668]
 EN
-Ember Axe
-Ember AxeTier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-Ha... [namelen=159 namehash=68dd762d]
-Flintlock Pistol
-Flintlock PistolTier 1 · Physical · Finesse · Far · d8+1 phy · O... [namelen=153 namehash=d974f2b3]
+Ember AxePrimary weaponUniqueTier 2 · Magic · Spellcast · Melee ... [namelen=140 namehash=269142bb]
+Flintlock PistolPrimary weaponTier 1 · Physical · Finesse · Far ... [namelen=134 namehash=89dfaca6]
 Import from file
 Install as an app
-Items
+Items 7
 LootDaggerheart
 New item
 Open on start
-Patchwork Bedroll
-Patchwork BedrollSewn from a Premium Bedroll and a Ghostproof Bl... [namelen=188 namehash=e920bc4e]
+Patchwork BedrollItemSewn from a Premium Bedroll and a Ghostproo... [namelen=180 namehash=62b9fa3d]
 Privacy
 RU
 Roll
-Rule cards
+Rule cards 2
 Search
-Select all
-Sets
+Select
+Sets 2
 Skip to content
-Sources
+Sources 1
 Tables
 Terms of use
-Whispering Cap
-Whispering CapOnce per rest, hear one sentence spoken within Far... [namelen=83 namehash=aa657f18]
+Whispering CapItemOnce per rest, hear one sentence spoken within... [namelen=75 namehash=4fea364a]
 daggerheart.com
-Кольцо с гравировкой
-Кольцо с гравировкойНадпись на неизвестном языке. Тёплое на ощуп... [namelen=78 namehash=e26f914f]
-Настой кузнеца
-Настой кузнецаВыпейте перед работой у горна: до конца сцены вы н... [namelen=109 namehash=d549c2a7]
+Кольцо с гравировкойItemRUНадпись на неизвестном языке. Тёплое н... [namelen=72 namehash=6421c4be]
+Настой кузнецаConsumableRUВыпейте перед работой у горна: до конц... [namelen=103 namehash=d39eaaae]

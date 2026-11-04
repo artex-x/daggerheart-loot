@@ -16,6 +16,17 @@ afterEach(cleanup);
 const label = createRawSnippet(() => ({ render: () => '<span>Press</span>' }));
 
 describe('the shared button', () => {
+  it('names a menu it opens, and claims none otherwise', () => {
+    render(Button, { haspopup: true, onclick: () => undefined, children: label });
+    expect(screen.getByRole('button', { name: 'Press' })).toHaveAttribute(
+      'aria-haspopup',
+      'menu'
+    );
+    cleanup();
+    render(Button, { onclick: () => undefined, children: label });
+    expect(screen.getByRole('button', { name: 'Press' })).not.toHaveAttribute('aria-haspopup');
+  });
+
   it('is a button that does not submit anything', () => {
     render(Button, { onclick: () => undefined, children: label });
     expect(screen.getByRole('button', { name: 'Press' })).toHaveAttribute('type', 'button');
@@ -124,6 +135,11 @@ describe('the shared button', () => {
       children: label
     });
     expect(screen.getByRole('button', { name: 'Press' })).toHaveClass('btn', 'danger', 'sm');
+  });
+
+  it('carries the danger-fill variant, for the one irreversible press of a confirm', () => {
+    render(Button, { variant: 'danger-fill', onclick: () => undefined, children: label });
+    expect(screen.getByRole('button', { name: 'Press' })).toHaveClass('btn', 'danger-fill');
   });
 
   it('carries the pressed look with `on`, without changing its variant', () => {

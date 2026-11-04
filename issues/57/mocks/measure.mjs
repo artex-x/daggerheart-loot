@@ -17,15 +17,23 @@ const STATES = [
   ['7', 'print-preview', 'img.sheetimg, .sheet', 'the sheet'],
   ['8', 'lists-index', 'article.lcard', 'first list card'],
   ['9', 'list', '.lrow', 'first list entry'],
-  ['9', 'shared-player', '.rl', 'first list entry']
+  ['9', 'shared-player', '.rl', 'first list entry'],
+  ['F', 'c1-seven', '.crow, .lrow', 'first entry, 7 entries, no search row'],
+  ['F', 'c1', '.crow, .lrow', 'first entry, 14 entries, search row, actions in «Ещё»'],
+  ['F', 'c1b', '.crow, .lrow', 'first entry, C1b, 14 entries, search row'],
+  ['F', 'c1b-shared', '.crow, .rl', 'first shared entry, C1b, search row'],
+  ['F', 'd-keepact', '.crow, .lrow', 'first entry, 14 entries, search row, action row kept'],
+  ['F', 'd-filtered', '.crow, .lrow', 'first entry, one filter in force'],
+  ['F', 'c1-shared', '.crow, .rl', 'first shared entry, search row'],
+  ['F', 'c3-inv', '.trow, .lrow', 'first entry, stored mode']
 ];
-const VIEWS = [
-  [360, 640],
-  [1180, 720]
-];
+/* `node measure.mjs F` measures one folder; a folder adds the 390x844 phone. */
+const only = process.argv[2];
+const VIEWS = [[360, 640], ...(only ? [[390, 844]] : []), [1180, 720]];
 const browser = await puppeteer.launch({ headless: true });
 const rows = [];
 for (const [folder, state, sel, what] of STATES) {
+  if (only && folder !== only) continue;
   for (const [w, h] of VIEWS) {
     for (const lang of ['ru', 'en']) {
       const page = await browser.newPage();

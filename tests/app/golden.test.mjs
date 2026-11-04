@@ -209,8 +209,8 @@ describe('held states - the `hold` field and the golden header agree', () => {
       if (s.hold) {
         assert.match(
           s.hold,
-          /^(lines|items|rows):(stall|fail)(,(lines|items|rows):(stall|fail))*$/,
-          `"${s.id}": hold is not <lines|items|rows>:<stall|fail>`
+          /^(lines|items|rows|item|own|print):(stall|fail)(,(lines|items|rows|item|own|print):(stall|fail))*$/,
+          `"${s.id}": hold is not <lines|items|rows|item|own|print>:<stall|fail>`
         );
         assert.ok(header.includes('# hold: ' + s.hold), `"${s.id}": no # hold: line`);
       } else {

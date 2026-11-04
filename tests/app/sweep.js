@@ -73,8 +73,8 @@ const pressPrint = (d) => either(d, 'click', 'Печать', 'Print');
 async function longSet(d) {
   const ru = (await d.text()).includes('Новый комплект');
   await d.click(ru ? 'Новый комплект' : 'New set');
-  await d.type(ru ? 'Название комплекта*' : 'Set name*', 'Ж'.repeat(80));
-  await d.type(ru ? 'Бонус комплекта*' : 'Set bonus*', 'Бонус.');
+  await d.type(ru ? 'Название комплекта' : 'Set name', 'Ж'.repeat(80));
+  await d.type(ru ? 'Бонус комплекта' : 'Set bonus', 'Бонус.');
   await d.choose('#hb-card-new-set-book', '00000000-0000-4000-8000-000000000451');
   await d.click(ru ? 'Создать комплект' : 'Create set');
   for (let i = 0; i < 40 && !/Комплект «Ж|Set "Ж/.test(await d.text()); i++) await d.settle();
@@ -94,7 +94,7 @@ async function printed(d) {
  * not stop short of what the real-input layer opens. */
 const PAGES = [
   ['#/roll/std', 'бросок d12'],
-  ['#/roll/alt', 'альт. таблицы'],
+  ['#/roll/alt', 'альтернативные таблицы'],
   ['#/roll/wondrous_environments', 'wondrous environments'],
   ['#/roll/dread_gm_toolbox', 'dread gm toolbox'],
   ['#/roll/vault_of_ages', 'vault of ages'],
@@ -184,12 +184,16 @@ const PAGES = [
     ['#/tables/eq_weapon', 'таблица снаряжения со своими предметами', 'gm1'],
     ['#/search', 'поиск со своими предметами', 'gm1'],
     ['#/homebrew/hb_emberaxeaaaaaaaa', 'редактор своего предмета', 'gm1'],
-    /* The print view: the switches wrap and the printed-size card stays in the column. */
+    /* The print view: the switches wrap and the printed-size card stays in the column, or
+       up to 760 px in the preview sheet, which the editor's bar opens. */
     [
       '#/homebrew/hb_emberaxeaaaaaaaa',
       'редактор своего предмета: вид на печати',
       'gm1',
-      (d) => either(d, 'click', 'На печати', 'In print')
+      async (d) => {
+        if (!(await d.count('.preview'))) await either(d, 'click', 'Предпросмотр', 'Preview');
+        await either(d, 'click', 'На печати', 'In print');
+      }
     ],
     ['#/lists/00000000-0000-4000-8000-000000000101', 'список аккаунта', 'gm1'],
     ['#/lists/00000000-0000-4000-8000-000000000102', 'пустой список аккаунта', 'gm1'],
@@ -203,20 +207,11 @@ const PAGES = [
       '#/homebrew',
       'импорт предметов: названия тех, что уже есть',
       'gm3',
-      /* gm3 has no stored language, so the English pass draws English labels. */
+      /* gm3 has no stored language, so the English pass draws English labels. The panel's
+         caption is uppercase in `innerText`, so the page's `lang` names the language. */
       async (d) => {
-        const en = (await d.text()).includes('Import from file');
-        if (en) {
-          await d.click('Import from file');
-          for (
-            let i = 0;
-            i < 40 && !(await d.text()).includes('Import items from a JSON file');
-            i++
-          )
-            await d.settle();
-        } else {
-          await hbImportOpen(d);
-        }
+        await hbImportOpen(d);
+        const en = (await d.count('html[lang="en"]')) > 0;
         await d.upload(heldNamesFile());
         const go = en ? 'Import (12)' : 'Импортировать (12)';
         for (let i = 0; i < 40 && !(await d.text()).includes(go); i++) await d.settle();
@@ -254,6 +249,8 @@ const PAGES = [
       async (d) => {
         for (const name of ['Настой кузнеца', 'Whispering Cap', 'Кольцо с гравировкой'])
           await d.tick(name);
+        const more = '.selbarwrap [aria-haspopup="menu"]';
+        if (await d.count(more)) await d.openMore(more);
         await either(d, 'click', 'Переместить (3)', 'Move (3)');
       }
     ],
@@ -276,7 +273,7 @@ const PAGES = [
       'фильтры своих предметов: раздел развёрнут',
       'gm1',
       async (d) => {
-        await either(d, 'click', 'Фильтры', 'Filters');
+        if ((await d.count('.fcol')) === 0) await either(d, 'click', 'Фильтры', 'Filters');
         await either(d, 'click', 'и ещё 12', 'and 12 more');
       },
       { items: 66, sections: 20 }
@@ -285,14 +282,11 @@ const PAGES = [
       '#/tables/homebrew',
       'таблица своих предметов: длинный ряд разделов',
       'gm1',
-      (d) => either(d, 'click', 'Фильтры', 'Filters'),
+      /* Below 1000 px the rows are in the sheet; from 1000 px the column shows them. */
+      async (d) => {
+        if ((await d.count('.fcol')) === 0) await either(d, 'click', 'Фильтры', 'Filters');
+      },
       { items: 66, sections: 20 }
-    ],
-    [
-      '#/homebrew',
-      'мои предметы: подсказка раздела',
-      'gm1',
-      (d) => either(d, 'click', 'Справка', 'Help')
     ],
     /* Rule 16 at 360 on the homebrew pages: an 80-character source and an unbroken set
        name. */
@@ -315,15 +309,10 @@ const PAGES = [
   ]);
 
 /* Six addresses, RU only, at 1180 alone - a round trip a stop, so this
- * alone would cost minutes if it ran everywhere. `filterOpen` presses the
- * one control that needs a click before the walk starts. */
+ * alone would cost minutes if it ran everywhere. */
 const FOCUS_WALK = [
   { hash: '#/roll/std', label: 'бросок d12' },
-  {
-    hash: '#/tables/eq_weapon',
-    label: 'таблица с открытой панелью фильтров',
-    filterOpen: true
-  },
+  { hash: '#/tables/eq_weapon', label: 'таблица с колонкой фильтров' },
   { hash: '#/lists', label: 'списки', as: 'gm1' },
   { hash: '#/lists/00000000-0000-4000-8000-000000000101', label: 'список', as: 'gm1' },
   { hash: '#/i/ci1', label: 'карточка' },
@@ -475,10 +464,20 @@ async function landedUnderHeader(page, id) {
   }, id);
 }
 
-/** Returns the tables strip's height cap at `width` (docs/specs/FEATURES.md, "Rolling";
- *  the bands follow the layout measured 2026-10-28). */
-function stripCap(width) {
-  return width < 500 ? 300 : width < 768 ? 210 : width < 1000 ? 150 : 130;
+/** Returns the catalog head's measure at the current width: the picker row below 761 px,
+ *  else the group chips and the tabs (docs/specs/FEATURES.md, "Tables and search"). */
+function headHeight(page) {
+  return page.evaluate(() => {
+    const el = document.querySelector('.pickrow') ?? document.querySelector('.tablenav');
+    return el ? Math.round(el.getBoundingClientRect().height) : 0;
+  });
+}
+
+/** Returns the head's cap at `width`: 64 px for the picker row; for the two levels 140 px
+ *  below 1000 px, where the seven supplement tabs take two lines (130 px at 768,
+ *  measured 2026-10-30), and 110 px from 1000 px. */
+function headCap(width) {
+  return width <= 760 ? 64 : width < 1000 ? 140 : 110;
 }
 
 (async () => {
@@ -560,14 +559,15 @@ function stripCap(width) {
 
           document
             .querySelectorAll(
-              '.card-name a, .card-name span, .badge, .chip, .fpill, .btn, .lbl, .rnum, ' +
+              '.card-name a, .card-name span, .badge, .chip, .fpill, .btn, .lbl, .rnum, .tab, ' +
                 '.craft, .rcraft, .dicebar, .numrow'
             )
             .forEach((e) => {
-              if (
-                e.scrollWidth > e.clientWidth + 1 &&
-                getComputedStyle(e).overflow !== 'visible'
-              )
+              const style = getComputedStyle(e);
+              /* A visually hidden label (`.vh`, or its rule under a media query) has no box
+                 to clip in. */
+              if (style.clipPath === 'inset(50%)') return;
+              if (e.scrollWidth > e.clientWidth + 1 && style.overflow !== 'visible')
                 out.clipped.push(
                   (e.className || e.tagName) + ': ' + e.textContent.trim().slice(0, 28)
                 );
@@ -641,17 +641,10 @@ function stripCap(width) {
         if (width >= 768)
           ok(rep2.tabRows <= 1, where + ': the header tabs wrap to ' + rep2.tabRows + ' rows');
 
-        if (/^таблица/.test(label)) {
-          const strip = await page.evaluate(() => {
-            const c = document.querySelectorAll('.tablenav .chips');
-            return c.length
-              ? Math.round([...c].reduce((h, x) => h + x.getBoundingClientRect().height, 0))
-              : 0;
-          });
-          /* Six group chips, seven signed in, and a second row of seven books: 283, 118 and
-             79 px at 360, 768 and 1180 (2026-10-21); docs/specs/FEATURES.md, "Rolling". */
-          const cap = stripCap(width);
-          ok(strip <= cap, where + ': section strip ' + strip + 'px, cap ' + cap);
+        if (/^таблица /.test(label)) {
+          const head = await headHeight(page);
+          const cap = headCap(width);
+          ok(head > 0 && head <= cap, where + ': the catalog head ' + head + 'px, cap ' + cap);
         }
 
         const broken = await page.evaluate(() =>
@@ -701,62 +694,21 @@ function stripCap(width) {
             at.header
         );
       }
-      /* Three supplement chips of the tables book row show a short form under 640 px and
-         the full name from 641 px; the accessible name is the full name at every width
-         (docs/decisions/2026-10-21-source-names-follow-the-source-product.md). The roll
-         pages draw no chip panel since the mode row (FEATURES.md, "Rolling"). */
-      const SHORT = [
-        ['Wondrous Environments', 'Wondrous'],
-        ['Dread GM Toolbox', 'Dread'],
-        ["The Dragon's Vault", "Dragon's Vault"]
-      ];
-      for (const [hash, rows] of [
-        ['#/tables/wondrous_environments', '.tablenav a.chip[aria-label]']
-      ]) {
-        const where = 'короткие чипы ' + hash + ' @' + width + ' ' + lang;
-        await d.open(hash);
-        const chips = await page.evaluate(
-          (sel) =>
-            [...document.querySelectorAll(sel)].map((a) => ({
-              name: a.getAttribute('aria-label'),
-              text: a.innerText.trim()
-            })),
-          rows
-        );
-        for (const [full, short] of SHORT) {
-          const chip = chips.find((c) => c.name === full);
-          ok(!!chip, where + ': no chip named ' + full);
-          if (!chip) continue;
-          const want = width <= 640 ? short : full;
-          ok(
-            chip.text === want,
-            where + ': ' + full + ' shows "' + chip.text + '", not "' + want + '"'
-          );
-        }
-      }
-      /* The strip at the mid widths no run width reaches, as gm2 (the seventh group chip
-         drawn, the worst case); each height printed. Measured 2026-10-28: 201 px at 500,
-         162 px to about 700; docs/specs/FEATURES.md, "Rolling". */
+      /* The head at the narrow widths no run width reaches, as gm2 (the seventh group chip
+         drawn, the worst case): the picker row; each height printed. */
       if (width === 768) {
         for (const w of [500, 600, 700]) {
           await d.viewport(w, 900);
           for (const t of ['many_worlds_tavern', 'core_item', 'eq_weapon']) {
-            const where = 'полоса таблиц #/tables/' + t + ' @' + w + ' ' + lang;
+            const where = 'шапка таблиц #/tables/' + t + ' @' + w + ' ' + lang;
             await d.open('#/tables/' + t, { as: 'gm2', lang });
             await d.settled(where);
-            const strip = await page.evaluate(() =>
-              Math.round(
-                [...document.querySelectorAll('.tablenav .chips')].reduce(
-                  (h, x) => h + x.getBoundingClientRect().height,
-                  0
-                )
-              )
-            );
-            console.log('  strip ' + t + ' @' + w + ' ' + lang + ': ' + strip + ' px');
-            ok(strip > 0, where + ': no section strip');
+            const head = await headHeight(page);
+            console.log('  head ' + t + ' @' + w + ' ' + lang + ': ' + head + ' px');
+            ok(head > 0, where + ': no catalog head');
             ok(
-              strip <= stripCap(w),
-              where + ': section strip ' + strip + 'px, cap ' + stripCap(w)
+              head <= headCap(w),
+              where + ': the catalog head ' + head + 'px, cap ' + headCap(w)
             );
           }
         }
@@ -771,11 +723,10 @@ function stripCap(width) {
      * the viewport. */
     if (width === 1180 && LANGS.includes('ru')) {
       const { ctx, page, d } = await fresh({ width, height: 900, lang: 'ru' });
-      for (const { hash, label, filterOpen, as } of FOCUS_WALK) {
+      for (const { hash, label, as } of FOCUS_WALK) {
         const where = label + ' @' + width + ' ru, focus';
         await d.open(hash, as ? { as, lang: 'ru' } : {});
         if (as) await d.settled(where);
-        if (filterOpen) await d.click('Фильтры');
         await focusWalk(page, where);
       }
       await ctx.close();

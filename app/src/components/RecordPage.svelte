@@ -1,20 +1,18 @@
 <script lang="ts">
-  /* The page at #/i/<id>, reproduced from `itemPage()` in app.js: a heading, a
-     line saying where the record is from, and the card.
+  /* The page at #/i/<id>: the record as a dossier, its name the page's `h1` and a line
+     under it saying where the record is from.
      Three states, and two of them happen - a link to a record that has been
      renumbered, and a deploy where data.js did not load. */
-  import Button from './Button.svelte';
   import LoadState from './LoadState.svelte';
   import NoData from './NoData.svelte';
+  import NoItem from './NoItem.svelte';
   import PageTitle from './PageTitle.svelte';
   import PickRow from './PickRow.svelte';
-  import RecordActions from './RecordActions.svelte';
   import RecordCard from './RecordCard.svelte';
   import RecordHost from './RecordHost.svelte';
   import TableLink from './TableLink.svelte';
   import { isHomebrewKey } from '../lib/homebrew.js';
-  import { sectionHash, tablesHash } from '../lib/hash.js';
-  import { nameOf } from '../lib/i18n.js';
+  import { tablesHash } from '../lib/hash.js';
   import { tableOf, whereFrom } from '../lib/label.js';
   import type { AppState } from '../state/app.svelte.js';
 
@@ -28,8 +26,8 @@
   const t = $derived(app.t);
   const index = $derived(app.index);
   const it = $derived(index?.byId.get(id));
-  /* An own item's key waits for the session and the author's items: neither «Предмет не
-     найден» nor the item flashes (docs/specs/FEATURES.md, "Records"). */
+  /* An own item's key waits for the session and the author's items: neither the not-found
+     page nor the item flashes (docs/specs/FEATURES.md, "Records"). */
   const waiting = $derived(
     isHomebrewKey(id) &&
       (app.user === undefined ||
@@ -67,29 +65,31 @@
     {:else if waiting}
       <LoadState {t} failed={false} text={t.hbLoadFailed} onretry={retry} />
     {:else if failed}
-      <!-- The author's items did not load: the item may exist, so no «Предмет не найден». -->
-      <LoadState {t} failed text={t.hbLoadFailed} onretry={retry} />
+      <!-- The author's items did not load: the item may exist, so no not-found page. -->
+      <PageTitle title={t.hbLoadFailedTitle} />
+      <LoadState {t} failed page text={t.hbLoadFailed} onretry={retry} />
     {:else if !it}
       <!-- A link to a record that is no longer in the data: an old share, or an id
            that was renumbered. Saying which is kinder than an empty page. -->
-      <PageTitle title={t.notFound} sub={t.notFoundSub} />
-      <Button variant="primary" href={app.href(sectionHash('roll/std'))} sameTab
-        >{t.toStart}</Button
-      >
+      <NoItem {app} />
     {:else}
       {#snippet sub()}
-        {where}
-        {#if table}
-          <TableLink
-            href={app.href(tablesHash(table, { anchor: it.id }))}
-            label={t.showInTable}
-          />
-        {/if}
+        <p class="subline">
+          {where}
+          {#if table}
+            <TableLink
+              href={app.href(tablesHash(table, { anchor: it.id }))}
+              label={t.showInTable}
+            />
+          {/if}
+        </p>
       {/snippet}
-      <PageTitle title={nameOf(it, app.lang)} {sub} />
 
       <div class="itempage" data-primary>
         <RecordCard
+          dossier
+          heading="h1"
+          {sub}
           {it}
           {index}
           lang={app.lang}
@@ -100,25 +100,11 @@
           onopen={openRecord}
           manage={isHomebrewKey(it.id)}
         >
-          {#snippet nameActions()}
-            <RecordActions {app} {index} {it} row="name" />
-          {/snippet}
-          {#snippet actions()}
-            <RecordActions {app} {index} {it} row="card" />
-          {/snippet}
           {#snippet pick()}
-            <PickRow {app} {it} />
+            <PickRow {app} {it} {index} />
           {/snippet}
         </RecordCard>
       </div>
     {/if}
   {/snippet}
 </RecordHost>
-
-<style>
-  /* `.page-h`/`.page-sub` moved to `PageTitle.svelte`, `.miss` to
-     `NoData.svelte`. */
-  .itempage {
-    max-width: 520px;
-  }
-</style>

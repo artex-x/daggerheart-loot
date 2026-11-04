@@ -48,11 +48,12 @@ Core and Hope & Fear are the same Nd12 roll against the same 1-60 table, so they
 share one mode with a source switch. Rarity there only sets how many dice you
 roll, so each button is labeled with both the dice count and the rarities that
 count covers. Where a range is not a real die - 119 in Wondrous Environments, 29 in Dread GM Toolbox -
-the button reads "Random 1-N" instead of naming a die that does not exist.
+the button reads "Roll 1-N" instead of naming a die that does not exist.
 
-The **?** button beside a heading explains the mode: how the Hope and Fear
-columns are laid out, which rarity turns up where, and why the tiers printed
-next to rarities are a recommendation rather than a limit.
+The help of each mode explains it: how the Hope and Fear columns are laid out,
+which rarity turns up where, and why the tiers are a recommendation rather than
+a limit. From 761 px it is a labeled button in the page head; below that it is
+an item of the "More" menu.
 
 ## Tables, search and filters
 
@@ -248,7 +249,7 @@ in the address, to be shared rather than carried between sessions. Settings are
 read as untrusted data: an unusable value falls back to the default, broken JSON
 is ignored whole.
 
-The app opens on Core rules. The house icon beside a heading pins the current
+The app opens on Core rules. The "Open on start" control pins the current
 section as the starting one; pressing it again restores the default. Any of the
 twelve sections works, as does any table by name. An item card or a list cannot be
 pinned - it is a snapshot that drifts away from the data.

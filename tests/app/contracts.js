@@ -30,7 +30,10 @@ const { ok } = rep;
         h1: document.querySelector('main h1')?.textContent?.trim() ?? null,
         bar: location.pathname + location.hash
       }));
-      ok(seen.h1 === 'Предмет не найден', hash + ': the heading is ' + JSON.stringify(seen.h1));
+      ok(
+        seen.h1 === 'Страницы по этому адресу нет',
+        hash + ': the heading is ' + JSON.stringify(seen.h1)
+      );
       ok(seen.bar === pathOf(hash, 'ru'), hash + ': the address became ' + seen.bar);
     }
     await ctx.close();
@@ -72,7 +75,14 @@ const { ok } = rep;
               : [];
           })
         ),
-        picked: [...document.querySelectorAll('.fpill')].map((e) => e.dataset.val),
+        /* Two forms while `FilterBar` lives: the shared page's pills and the
+           catalog's pressed chips (its column is open at this suite's width). */
+        picked: [
+          ...[...document.querySelectorAll('.fpill')].map((e) => e.dataset.val),
+          ...[...document.querySelectorAll('[data-fval][aria-pressed="true"]')].map(
+            (e) => e.dataset.fval
+          )
+        ],
         source: srcBtns.length
           ? srcBtns.map(
               (e) =>
@@ -307,7 +317,7 @@ const { ok } = rep;
     for (const id of Object.values(firstOf)) {
       await d.open('#/i/' + id);
       const where = await page.evaluate(() => {
-        const sub = document.querySelector('.page-sub');
+        const sub = document.querySelector('.card-sub .subline');
         return sub
           ? [...sub.childNodes]
               .filter((n) => n.nodeType === 3)

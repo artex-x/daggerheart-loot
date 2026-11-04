@@ -183,7 +183,7 @@
   }
 </script>
 
-<FormField label={t.hbArt}>
+<FormField label={t.hbArt} optional={t.hbOptional}>
   <div class="artfield" role="group" aria-label={t.hbArt}>
     <span class="th">
       <ArtWell {glyph}>

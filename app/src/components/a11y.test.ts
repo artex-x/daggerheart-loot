@@ -174,14 +174,14 @@ const STATES: {
     cloud: () => fakeCloud(seedWith({ gm4: TWO_LISTS }), 'gm4'),
     enter: async () => {
       await screen.findByRole('button', { name: 'Аккаунт: gm4@example.test' });
-      await press('Добавить в список');
+      await press('В список');
       await screen.findByRole('button', { name: 'Клад дракона' });
     }
   },
   {
     what: 'the help panel, unfolded',
     route: '#/roll/wondrous',
-    enter: () => press('Справка')
+    enter: () => press('Об этой таблице')
   },
   {
     what: 'the section pinned as the one to open on',
@@ -201,7 +201,7 @@ const STATES: {
   {
     what: 'Core rules with the help panel unfolded',
     route: '#/roll/std',
-    enter: () => press('Справка')
+    enter: () => press('Где какая редкость')
   },
   {
     what: 'the alternate tables on a critical success, which raises the box',
@@ -212,12 +212,12 @@ const STATES: {
   {
     what: 'the alternate tables with the help panel unfolded',
     route: '#/roll/alt',
-    enter: () => press('Справка')
+    enter: () => press('Об этих таблицах')
   },
   {
     what: 'a division of Vault of Ages that is not a tier',
     route: '#/roll/voa',
-    enter: () => press('Артефакты')
+    enter: () => userEvent.selectOptions(screen.getByRole('combobox'), 'Артефакты')
   },
   {
     what: 'Vault of Ages in English',
@@ -237,28 +237,17 @@ const STATES: {
   {
     what: 'the grid view of a table',
     route: '#/tables',
-    enter: () => press('Сеткой')
+    enter: () => press('Сетка')
   },
   {
-    what: 'the table filter panel, open with a value picked',
+    what: 'the table filter column with a value picked',
     route: '#/tables/wondrous',
-    enter: async () => {
-      await press('Фильтры');
-      await press('Предметы');
-    }
+    enter: () => press('Предметы')
   },
   {
-    what: 'a sectioned table with its filter panel open - two fields, not one',
-    route: '#/tables/voa',
-    enter: () => press('Фильтры')
-  },
-  {
-    what: 'the equipment table with its widest panel open and a bare-number value pressed',
+    what: 'the equipment table with its widest column and a bare-number value pressed',
     route: '#/tables/eq_weapon',
-    enter: async () => {
-      await press('Фильтры');
-      await press('1');
-    }
+    enter: () => press('1')
   },
   {
     what: 'the selection bar with its menu open',
@@ -270,10 +259,11 @@ const STATES: {
        "Выбрать все (N)" by its wrapping `<label>`). */
     enter: async () => {
       await screen.findByRole('button', { name: 'Аккаунт: gm4@example.test' });
+      await press('Выбрать');
       await userEvent.click(
         screen.getAllByRole('checkbox').filter((cb) => !cb.closest('.selall'))[0] as HTMLElement
       );
-      await press('Добавить в список');
+      await press('В список');
       await screen.findByRole('button', { name: 'Клад дракона' });
     }
   },
@@ -324,16 +314,16 @@ const STATES: {
   },
   {
     /* "вещь" is the word this file's own LOOT gives w1 ("Первая вещь") and
-       w2 ("Вторая вещь"), so this state carries two rows of two kinds with
-       the third chip switched off. */
-    what: 'the search page with a query typed and a kind switched off',
+       w2 ("Вторая вещь"), so this state carries the rows of one picked kind and the
+       count line. */
+    what: 'the search page with a query typed and a kind picked',
     route: '#/search',
     enter: async () => {
       await userEvent.type(
-        screen.getByPlaceholderText('Поиск по названию или описанию...'),
+        screen.getByRole('searchbox', { name: 'Поиск по названию или описанию...' }),
         'вещь'
       );
-      await press('Снаряжение');
+      await press('Предметы');
     }
   },
   /* The sheet's layouts are printPage.test.ts's axe cases. */
@@ -463,7 +453,7 @@ const STATES: {
     cloud: () => fakeCloud(SEED, 'gm1'),
     enter: async () => {
       await userEvent.click(await screen.findByRole('button', { name: 'Свой предмет' }));
-      await userEvent.type(screen.getByRole('textbox', { name: 'Название*' }), 'Фляга{Enter}');
+      await userEvent.type(screen.getByRole('textbox', { name: 'Название' }), 'Фляга{Enter}');
       await screen.findByRole('link', { name: 'Изменить' });
     }
   },
@@ -553,6 +543,11 @@ const COVERED: Record<string, string> = {
     'accountPage.test.ts in every state, the delete confirmation open and «Ваши данные» above',
   'Actions.svelte': 'the card actions on every record state above, and record.test.ts',
   'AddToList.svelte': 'the add-to-list menu, in the state above',
+  'DialogClose.svelte': 'sheet.test.ts and recordHost.test.ts, both dialogs open',
+  'ErrorPage.svelte':
+    'itemPage.test.ts and record.test.ts, every error state; printPage.test.ts and shell.test.ts, the print, not-found and boundary pages',
+  'NoItem.svelte': 'itemPage.test.ts and record.test.ts, the not-found page',
+  'NoPage.svelte': 'shell.test.ts, the not-found page of an address with no page',
   'Toast.svelte':
     'the toast the add-to-list press raises, in the state above, and shell.test.ts',
   'DiceBar.svelte': 'the Core rules panel - std.test.ts and the state below',
@@ -563,6 +558,9 @@ const COVERED: Record<string, string> = {
   'HelpBox.svelte': "PageHead's help panel states above",
   'HomebrewEditor.svelte':
     'homebrewEditor.test.ts in every kind, the problems and the banners; the failed save above',
+  'HomebrewBulk.svelte':
+    "homebrewBulk.test.ts: the bar's menu and the move sheet up to 760 px; homebrewPage.test.ts: the buttons from 761 px",
+  'HomebrewTabs.svelte': 'homebrewTabs.test.ts: the links, the picker and its sheet',
   'HomebrewImport.svelte':
     'homebrewImport.test.ts: the panel empty, a preview with every row note, a refused file, the update chosen',
   'HomebrewPage.svelte':
@@ -582,6 +580,12 @@ const COVERED: Record<string, string> = {
   'CropDialog.svelte': 'cropDialog.test.ts decoding, ready and busy',
   'NameField.svelte':
     'the new source field above, and homebrewEditor.test.ts with its inline source',
+  'MoreMenu.svelte': 'rollPage.test.ts and rollResult.test.ts with the menu open, and PickRow',
+  'PinItem.svelte': 'rollPage.test.ts with «Ещё» open, and tables.test.ts',
+  'HelpItem.svelte': 'rollPage.test.ts with «Ещё» open, and tables.test.ts',
+  'RollPage.svelte': 'rollPage.test.ts in both bands, with «Настроить» and «Ещё» open',
+  'RollResult.svelte': 'rollResult.test.ts closed and with «Ещё» open',
+  'RollSelect.svelte': 'rollSelect.test.ts, and the pickers in sections.test.ts',
   'PickRow.svelte': 'record.test.ts on a catalog and an own record, and inside the modal above',
   'QuickItem.svelte': 'quickItem.test.ts, and the refused own-item panel above',
   'FormField.svelte':
@@ -597,7 +601,7 @@ const COVERED: Record<string, string> = {
   'StdPanel.svelte': 'std.test.ts, and both pressed states below',
   'Button.svelte':
     'the roll button and the card actions, on every roll page; the second set disclosure in homebrewEditor.test.ts',
-  'Chip.svelte': 'the Vault of Ages, community and realm pickers - sections.test.ts and above',
+  'Chip.svelte': 'the source and kind rows of std.test.ts and the rarity row of alt.test.ts',
   'AltPanel.svelte': 'alt.test.ts, and the critical-success state below',
   'BatchBar.svelte':
     'batchBar.test.ts idle, some and all ticked; the lists index with two ticked above; listPage.test.ts',
@@ -606,13 +610,21 @@ const COVERED: Record<string, string> = {
   'ArtWell.svelte':
     'artWell.test.ts with the glyph alone and under a picture, and its callers in record.test.ts, tables.test.ts, listsPage.test.ts and artField.test.ts',
   'Badge.svelte': 'badge.test.ts, record.test.ts, tables.test.ts, and the lists index above',
-  'ChipRow.svelte': 'the same two pickers',
+  'ChipRow.svelte': 'the same rows',
   'Die.svelte': 'the roll button on every roll page',
-  'Empty.svelte': "tables.test.ts's nothing-found states, and the lists index above",
-  'Field.svelte': 'the number row on every roll page, and both pickers',
+  'Empty.svelte':
+    "tables.test.ts's nothing-found plates with the glyph, and the lists index above",
+  'FilterPanel.svelte':
+    'filterPanel.test.ts as the column and as the sheet, and the filter column states above',
+  'SelectionBar.svelte':
+    'selectionBar.test.ts with none, some and all ticked, and the selection bar state above',
+  'Sheet.svelte':
+    'sheet.test.ts open with its head and foot, and the filter and picker sheets in tables.test.ts',
+  'TableNav.svelte':
+    'tableNav.test.ts in the three bands with the picker sheet open, and tables.test.ts',
+  'Field.svelte': 'the number field on every roll page, and the rows above it',
   'Icon.svelte': 'the card actions and the pin toggle',
-  'KeepNote.svelte':
-    'the note under the print bar in printPage.test.ts, and under the toolbar in tables.test.ts',
+  'KeepNote.svelte': 'the note under the print bar in printPage.test.ts',
   'ListsPage.svelte': 'listsPage.test.ts, and the state above',
   'LoadState.svelte':
     'the loading and failed account reads above; homebrewCatalog.test.ts failed, with axe; homebrewPage.test.ts, homebrewEditor.test.ts and record.test.ts loading and failed',
@@ -658,7 +670,7 @@ const COVERED: Record<string, string> = {
     "tables.test.ts's sectioned-body axe check, both list-page states below, and a GM-only row in listPage.test.ts",
   'SearchBox.svelte':
     "the tables toolbar in tables.test.ts, and the search page's own box below",
-  'SearchPage.svelte': 'searchPage.test.ts, and the searched state with a kind off below',
+  'SearchPage.svelte': 'searchPage.test.ts, and the searched state with a kind picked below',
   'SectionHead.svelte':
     "tables.test.ts's sectioned-body axe check; homebrewCatalog.test.ts with no copy button",
   'SelBar.svelte': 'the state above, and tables.test.ts',
@@ -667,6 +679,7 @@ const COVERED: Record<string, string> = {
   'SharedListPage.svelte':
     'sharedListPage.test.ts in both modes, and the shared list and both share links above',
   'SharePanel.svelte': 'sharePanel.test.ts open, with a deleted link, and with a failed read',
+  'Marked.svelte': 'searchPage.test.ts and tables.test.ts, the marked rows and tiles',
   'Markup.svelte': 'markup.test.ts: every block, a lead, and markup characters as text',
   'Menu.svelte': 'accountMenu.test.ts and modeRow.test.ts with each menu open',
   'ModeRow.svelte': 'modeRow.test.ts on the nine roll sections, the menu closed and open',

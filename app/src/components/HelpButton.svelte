@@ -17,7 +17,7 @@
      *  specificity keeping it there even inside the 600px override. */
     size?: 'sm';
     /** The name; a field's «?» names its field. */
-    label?: string;
+    label?: string | undefined;
     /** The id of the hint this button shows. */
     controls?: string;
     /** The page help beside an H1 (`PageHead.svelte`): its name is visible from 761 px. */

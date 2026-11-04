@@ -1,13 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
-  CHIP_SHORT,
   SUB_LABEL,
   TABLE_GROUPS,
   TABLE_NAV,
   groupOf,
   navGroupOf,
-  navSubLabel
+  navSubLabel,
+  pickerLabel
 } from './tables.js';
+import { dict } from './dict.js';
 import { TABLE_IDS, type TableId } from './types.js';
 
 describe('the thirteen groups', () => {
@@ -118,8 +119,11 @@ describe('the second-row caption on the tables page', () => {
     expect(navSubLabel('mwt')).toBe('mwt');
   });
 
-  it('gives a short form under 640 px only where the short word is part of the name', () => {
-    expect(CHIP_SHORT).toEqual({ wondrous: 'wondrous', dread: 'dread', dv: 'dv' });
+  it('names the book in the picker where the caption alone names none', () => {
+    expect(pickerLabel('core_item', dict('ru'))).toBe('Core · Предметы');
+    expect(pickerLabel('hnf_consumable', dict('en'))).toBe('Hope & Fear · Consumables');
+    expect(pickerLabel('eq_weapon', dict('ru'))).toBe('Оружие');
+    expect(pickerLabel('voa', dict('en'))).toBe('Vault of Ages');
   });
 
   it('keeps the short sub-table word where one exists', () => {

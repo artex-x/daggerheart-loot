@@ -118,7 +118,7 @@ describe('ranges that are not a die', () => {
   });
 
   it('know which counts have a die of their own', () => {
-    /* This is what decides between "d12" and "Random 1-N" on the button */
+    /* This is what decides between "d12" and "Roll 1-N" on the button */
     expect(hasRealDie(12)).toBe(true);
     expect(hasRealDie(100)).toBe(true);
     expect(hasRealDie(119)).toBe(false);
@@ -133,8 +133,8 @@ describe('rollLabel', () => {
   });
 
   it('says "random 1-N" with an en dash for a range that is not a die', () => {
-    expect(rollLabel(119, dict('ru'))).toBe('Случайно 1–119');
-    expect(rollLabel(29, dict('en'))).toBe('Random 1–29');
+    expect(rollLabel(119, dict('ru'))).toBe('Бросить 1-119');
+    expect(rollLabel(29, dict('en'))).toBe('Roll 1-29');
   });
 });
 

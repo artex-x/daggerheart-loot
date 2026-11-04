@@ -32,8 +32,7 @@ const ru = {
   /* The first job of the header: a group of nine roll pages with no heading of its own. */
   jobRoll: 'Бросок',
 
-  /* The sections, in `SECTIONS` order. `wondrous`, `dread` and `dv` are also the short
-     form of their book chip under 640 px (`tables.ts` `CHIP_SHORT`). */
+  /* The sections, in `SECTIONS` order. */
   alt: 'Альт. таблицы',
   wondrous: 'Wondrous',
   dread: 'Dread',
@@ -98,8 +97,10 @@ const ru = {
 
   /* Rolling */
   roll: 'Бросить',
-  randomIn: 'Случайно',
   rollResult: 'Результат броска',
+  rollHead: 'Бросок %s',
+  rollPair: '%a и %b',
+  setUp: 'Настроить',
   stepDown: 'На единицу меньше',
   stepUp: 'На единицу больше',
 
@@ -157,6 +158,8 @@ const ru = {
   rarity: 'Редкость',
   hopeDie: 'Кость Надежды',
   fearDie: 'Кость Страха',
+  hopeLetter: 'Н',
+  fearLetter: 'С',
   rollDuality: 'Бросить кости',
   hope: 'Надежда',
   fear: 'Страх',
@@ -198,6 +201,9 @@ const ru = {
 
   notFound: 'Предмет не найден',
   notFoundSub: 'Возможно, ссылка устарела или данные были изменены.',
+  /* The page of an address no route draws; %s is the address. */
+  nowhereTitle: 'Страницы по этому адресу нет',
+  nowhereSub: 'Адрес %s не открывается. Ссылка могла устареть или быть набрана с ошибкой.',
   noData: 'Данные не загрузились. Обновите страницу.',
   /* The smallest error boundary: a page that throws mid-render draws
      this instead of leaving a blank middle under a working tab bar. */
@@ -213,7 +219,7 @@ const ru = {
   eqTrait: 'Характеристика',
   eqRange: 'Дистанция',
   eqBurden: 'Хват',
-  eqLineF: 'Линейка',
+  eqLineF: 'Улучшения и уникальные',
 
   /* The print card's own stat-strip labels: shorter than the interface's,
      because 63mm has no room for "Характеристика" - the layout says "Черта". */
@@ -240,8 +246,6 @@ const ru = {
   subSecondary: 'Вторичное',
   subArmor: 'Броня',
 
-  subTables:
-    'Все таблицы целиком, включая оружие и броню, - можно листать, фильтровать и открывать карточки.',
   subLists: 'Соберите добычу в список и отправьте игрокам одной ссылкой.',
   /* "по всем N позициям" needs "всем" to agree with the numeral, so the
      sentence leaves it out and reads for any count. */
@@ -250,14 +254,31 @@ const ru = {
   subSearchOwn: 'И %n ваш предмет.|И %n ваших предмета.|И %n ваших предметов.',
 
   searchPh: 'Поиск по названию или описанию...',
+  /* The visible placeholder of a list head's search; `searchPh` stays its name. */
+  searchShort: 'Поиск',
+  /* The catalog's list head: the table picker below 761 px and the two levels of the
+     navigation, named for assistive technology. */
+  tablePick: 'Таблица: %s',
+  groupLabel: 'Группа',
+  sourceLabel: 'Источник',
+  /* The three-dot menu of a page's rare actions (the icon and the word). */
+  moreMenu: 'Ещё',
   tableLink: 'Ссылка на таблицу',
   tableLinkCopied: 'Ссылка на таблицу скопирована',
   view: 'Вид',
-  viewList: 'Списком',
-  viewGrid: 'Сеткой',
+  viewList: 'Список',
+  viewGrid: 'Сетка',
   nothing: 'Ничего не найдено',
-  startTyping:
-    'Начните вводить запрос. Несколько слов ищутся в любом порядке, «фраза в кавычках» - дословно.',
+  /* The search page's start state: three queries that each find a record. */
+  searchWhat: 'Что ищем?',
+  searchStartSub: 'Ищет по названиям и описаниям, по-русски и по-английски сразу.',
+  searchEx1: 'зелье',
+  searchEx2: 'меч',
+  searchEx3: 'лечения зелья',
+  emptySearch: 'Нет совпадений с «%q» в названиях и описаниях.',
+  clearSearch: 'Очистить поиск',
+  /* A search row's roll number: no table names the number there. */
+  rowNo: '№ %n',
   selectAll: 'Выбрать все',
   selected: 'Выбрано',
   /* A `|` string is a form set for `plural()` (I18N.md, "Rules"). */
@@ -267,6 +288,10 @@ const ru = {
   /* `%s` is a counted plural, `%m` the account's limit. */
   ofLimit: '%s из %m',
   clearSel: 'Снять выделение',
+  /* The selection mode: «Выбрать» opens it; the bar's tri-state box reads «Все». */
+  selectMode: 'Выбрать',
+  allShort: 'Все',
+  selCount: 'Выбрано: %n',
   selRegion: 'Выбранные записи',
   copySel: 'Скопировать',
   selCopied: 'Выбранное скопировано',
@@ -274,6 +299,17 @@ const ru = {
   /* The table filter: the strip, the panel it folds open, and the link that
      hands the picked state to somebody else. */
   filters: 'Фильтры',
+  filtersN: 'Фильтры · %n',
+  /* The count line of a narrowed list: the total is a number, so no plural form. */
+  shownOf: 'Показано %n из %m',
+  showN: 'Показать %n',
+  reset: 'Сбросить',
+  resetFilters: 'Сбросить фильтры',
+  /* The empty state's cause: `%q` is the query, `%v` the chosen values. No table noun,
+     which would need a genitive plural per table. */
+  emptyBoth: 'Нет совпадений с «%q» среди фильтров: %v.',
+  emptyQuery: 'Нет совпадений с «%q» в названиях и описаниях этой таблицы.',
+  emptyFilters: 'Ничего не подходит под фильтры: %v.',
   kindF: 'Тип',
   frameF: 'Сеттинг',
   commF: 'Сообщество',
@@ -290,12 +326,13 @@ const ru = {
 
   /* A section heading's own link, off `sectionHead` in app.js - the table
      link button's sibling, one level down. */
-  copySection: 'Скопировать ссылку на этот раздел',
+  copySection: 'Ссылка на раздел',
   sectionLinkCopied: 'Ссылка на раздел скопирована',
 
   /* The add-to-list row every full card draws, and the toast it and the pin
      button both raise - `git show 23c00a6^:app.js`. */
   addToList: 'Добавить в список',
+  toList: 'В список',
   addTo: 'Добавить в',
   inLists: 'Лежит в списках',
   newList: 'Новый список',
@@ -357,7 +394,7 @@ const ru = {
   rename: 'Название списка',
   listCopied: 'Список скопирован',
   listEmptyHint:
-    'Пока пусто. Откройте «Таблицы» или «Поиск», отметьте нужное галочками и нажмите «Добавить в список» - или сделайте это прямо с карточки предмета.',
+    'Пока пусто. Откройте «Таблицы» или «Поиск», отметьте нужное галочками и нажмите «В список» - или сделайте это прямо с карточки предмета.',
   itemNotLoaded: 'Предмет не загружен',
   listNotFound: 'Список не найден',
   listNotFoundSub: 'Возможно, он удалён или открыт в другом браузере.',
@@ -431,23 +468,19 @@ const ru = {
      "Rules"). `%s` is a provider name, Google or Discord, never translated. */
   account: 'Аккаунт',
   signIn: 'Войти',
-  accountSub: 'Отображение, способы входа, выход и ваши данные.',
   menuLabel: 'Меню аккаунта',
   menuLists: 'Мои списки',
-  displayHead: 'Отображение',
-  displayLead:
-    'Эти настройки действуют на всех ваших устройствах. Вид таблиц и печать, выбранные на их страницах, сохраняются только до перезагрузки.',
+  displayHead: 'Отображение на всех устройствах',
+  defaultTablesView: 'Вид таблиц по умолчанию',
+  defaultPrint: 'Печать по умолчанию',
   keepBefore: 'Только до перезагрузки. Чтобы сохранить, измените в ',
   keepLink: 'настройках аккаунта',
   keepAfter: '.',
   displayHome: 'Раздел при запуске',
-  printCompactBox: 'Компактный лист',
-  displayNotify: 'Добавление из чужого списка',
+  displayNotify: 'Когда беру из чужого списка',
   notifyAsk: 'Спрашивать',
   notifyAlways: 'Сообщать владельцу',
   notifyNever: 'Не сообщать',
-  notifyHint:
-    'Когда вы добавляете предметы из чужого списка в свой, сообщить об этом его владельцу?',
   signInLead:
     'Войдите, чтобы ваши данные были доступны на всех устройствах. Всё остальное работает и без входа.',
   signInWith: 'Войти через %s',
@@ -456,8 +489,8 @@ const ru = {
   consentMid: ' и ',
   consentPrivacy: 'политику конфиденциальности',
   consentAfter: '.',
-  signedInAs: 'Вы вошли как',
   via: 'через %s',
+  signedInNow: 'Сейчас',
   providers: 'Способы входа',
   notConnected: 'не подключён',
   connect: 'Подключить %s',
@@ -469,13 +502,13 @@ const ru = {
   signOutHead: 'Выход',
   signOut: 'Выйти',
   signOutAll: 'Выйти на всех устройствах',
-  signOutAllHint:
-    '«Выйти на всех устройствах» завершает вход и на других телефонах и компьютерах.',
   deleteHead: 'Удаление аккаунта',
   deleteHint: 'Аккаунт и все связанные с ним данные будут удалены навсегда.',
   deleteOpen: 'Удалить аккаунт...',
   deleteTypeWord: 'Чтобы подтвердить, введите слово',
   deleteWord: 'удалить',
+  deleteGoes: 'Будут удалены:',
+  deleteGoesRest: 'Ссылки на списки и запросы на покупку.',
   deleteFinal: 'Удалить навсегда',
   deleting: 'Удаляем...',
   signedOut: 'Вы вышли из аккаунта.',
@@ -483,8 +516,7 @@ const ru = {
   accountFailed: 'Не получилось. Проверьте соединение и попробуйте ещё раз.',
   /* The account's data export (docs/specs/FEATURES.md, "Account"). */
   yourData: 'Ваши данные',
-  yourDataHint:
-    'Всё, что хранится в аккаунте, одним архивом ZIP: файл lists.json со списками и, если есть свои предметы, homebrew.json с ними, их источниками и картами. Чтобы перенести всё в другой аккаунт, импортируйте архив сначала на странице «Мои предметы», затем на странице «Мои списки»: за один раз - до 1000 списков и до 1000 своих предметов.',
+  yourDataHint: 'Списки и свои предметы одним архивом ZIP.',
   exportData: 'Скачать мои данные (ZIP)',
   zipNoArt: 'Картинок в архиве нет: после переноса добавьте их заново.',
 
@@ -541,13 +573,12 @@ const ru = {
   hbPreviewPrint: 'На печати',
   hbPrintClipped:
     'Текст не помещается на карточку при печати: его конец не напечатается. Можно сократить название или описание.',
-  hbEmpty: 'Своих предметов пока нет - создайте первый выше или импортируйте файл.',
-  /* The tables' empty state: its button follows the line. */
-  hbEmptyTable: 'Своих предметов пока нет.',
+  hbEmpty: 'Свой предмет ищется вместе с книгами, виден в «Таблицах» и попадает в списки.',
   hbSignIn: 'Войдите, чтобы создавать свои предметы.',
   hbTablesSignIn: 'Войдите, чтобы видеть свои предметы в таблицах.',
   ownSwitch: 'Свои предметы',
   hbLoadFailed: 'Не получилось загрузить ваши предметы.',
+  hbLoadFailedTitle: 'Не получилось загрузить ваши предметы',
   edit: 'Изменить',
   hbNotAdded: 'Свой предмет нельзя добавить в этот список.',
   hbNotReady: 'Ваши предметы ещё загружаются - это может занять минуту. Повторите чуть позже.',
@@ -560,12 +591,37 @@ const ru = {
   quickFailed: 'Не получилось создать предмет. Проверьте соединение - текст остался в форме.',
   listEmptyHintOwn: 'Свой предмет можно создать здесь же, кнопкой ниже.',
   hbErrBookGone: 'Этот источник удалили - выберите другой.',
-  hbLegend: '* - обязательное поле. Остальное можно заполнить позже.',
+  hbOptional: 'необязательно',
+  hbGroupItem: 'Предмет',
+  hbGroupStats: 'Характеристики',
+  hbGroupWhere: 'Где лежит',
+  hbPreview: 'Предпросмотр',
+  hbTabPick: 'Мои предметы: %s',
+  hbSourceCap: 'Без источника предмет лежит в «Хоумбрю».',
+  hbCardSourceCap: 'Без источника карта лежит в «Хоумбрю».',
+  hbLineCap: 'Одно снаряжение на рангах 1-4: карточка рисует лесенку рангов.',
+  hbSetBonusOf: 'Бонус комплекта: %s',
+  hbRefsUpTo: 'Карты правил, до 3',
+  hbErrCls: 'Выберите класс: физическое или магическое.',
+  hbErrTr: 'Выберите характеристику.',
+  hbErrRg: 'Выберите дистанцию.',
+  hbErrDt: 'Выберите тип урона.',
+  hbErrBu: 'Выберите хват.',
+  hbDtPhy: 'Физический',
+  hbDtMag: 'Магический',
+  hbDtAny: 'Оба',
+  hbEmptyTitle: 'Своих предметов пока нет',
+  hbNoSetsSub: 'Комплект - предметы с общим бонусом: бонус виден на карточке каждого из них.',
+  hbNoRefsSub:
+    'Карта правил - правило, на которое ссылается предмет: заклинание, черта, противник.',
+  hbImportFits:
+    'Подходит файл из «Скачать JSON», архив из «Скачать мои данные» или файл по описанию в llms.txt.',
+  hbImportFormat: 'Формат файла',
+  cropLess: 'Меньше',
+  cropMore: 'Больше',
   hbKind: 'Вид',
   hbType: 'Тип снаряжения',
   hbSource: 'Источник',
-  hbSourceHelp:
-    'Источник - ваша книга или сборник: по нему предметы группируются на странице «Мои предметы» и в таблицах. Предмет без источника лежит в «Хоумбрю». В источнике можно завести разделы.',
   hbSourceNew: '+ Новый источник...',
   hbSection: 'Раздел',
   hbSectionNew: '+ Новый раздел...',
@@ -602,8 +658,6 @@ const ru = {
   hbDt: 'Тип урона',
   hbBurden: 'Хват',
   hbAlt: 'Второй набор характеристик',
-  hbAltHint:
-    'Для оружия, которое по своему свойству переходит на другие характеристики - например, «Универсальное». Заполните все четыре поля или оставьте набор пустым. Когда набор действует, напишите в описании; на печатной карте он идёт второй полосой урона.',
   hbAltClear: 'Очистить второй набор',
   hbAs: 'Показатель брони',
   hbTh: 'Пороги урона',
@@ -616,7 +670,7 @@ const ru = {
   hbErrControl: 'Уберите служебные символы.',
   hbErrTier: 'Выберите ранг от 1 до 4.',
   hbErrPick: 'Выберите значение.',
-  hbErrDmg: 'Выберите кость d4-d20; бонус, если нужен, - целое число от 1 до 99.',
+  hbErrDmg: 'Выберите кость d4-d20; бонус - число от 1 до 99.',
   hbErrAs: 'Целое число от 0 до 12.',
   hbErrTh: 'Два целых числа от 1 до 99.',
   hbErrThOrder: 'Порог Тяжёлого урона должен быть больше порога Ощутимого урона.',
@@ -704,16 +758,6 @@ const ru = {
     'Не получилось загрузить окно обрезки. Проверьте соединение и попробуйте ещё раз.',
   hbRelations: 'Связи',
   hbLine: 'Линия улучшений',
-  hbLineHelp:
-    'Линия улучшений - одно снаряжение на разных рангах, например меч рангов 1-4; карточка рисует лесенку рангов. «Уникальный» - предмет вне линии; «В линии» - предмет встаёт ступенью в линию снаряжения того же типа; «Новая линия» - предмет начинает свою линию, в которую могут встать другие ваши предметы.',
-  hbCraftIntoHelp:
-    'Предметы, которые делают из этого: например, пробуждённое оружие из спящего. Это не ступени одной линии - для них «Линия улучшений». У выбранного предмета эта связь показывается в «Получается из».',
-  hbCraftFromHelp:
-    'Предметы, из которых делают этот. У выбранного предмета эта связь показывается в «Улучшается до».',
-  hbSetHelp:
-    'Комплект - предметы с общим бонусом. Карточка каждого предмета комплекта называет остальные и показывает бонус. Выберите комплект из книги или свой, или создайте новый пунктом «+ Новый комплект...».',
-  hbRefsHelp:
-    'Карта правил - правило, на которое ссылается предмет: заклинание, черта, противник. Карточка предмета показывает её свёрнутым блоком. Выберите карту из каталога или свою, или создайте новую кнопкой «Новая карта правил».',
   hbLineUnique: 'Уникальный',
   hbLineIn: 'В линии',
   hbLineNew: 'Новая линия',
@@ -730,7 +774,6 @@ const ru = {
   hbRemove: 'Убрать: %s',
   hbUpTo8: 'До 8 предметов.',
   hbRefs: 'Карты правил',
-  hbRefsHint: 'До 3 карт.',
   hbGoneItem: 'Предмета больше нет',
   hbGoneCard: 'Карты больше нет',
   hbSetNew: '+ Новый комплект...',
@@ -740,12 +783,10 @@ const ru = {
   hbSetBonus: 'Бонус комплекта',
   hbCardName: 'Название карты',
   hbCardSub: 'Подзаголовок',
-  hbCardSubHint: 'Необязательно. Например: Мудрость · Уровень 1 · Заклинание.',
+  hbCardSubHint: 'Например: Мудрость · Уровень 1 · Заклинание.',
   hbCardText: 'Текст карты',
   hbCardUrl: 'Ссылка',
-  hbCardUrlHint: 'Необязательно: страница с полным текстом правила.',
-  hbCardSourceHelp:
-    'Источник карты - ваша книга или сборник: карта скачивается вместе с ним кнопкой «Скачать JSON», а её строка на вкладке называет источник. Карта без источника лежит в «Хоумбрю».',
+  hbCardUrlHint: 'Страница с полным текстом правила.',
   hbCreateSet: 'Создать комплект',
   hbCreateCard: 'Создать карту',
   hbSetInlineHint:
@@ -774,8 +815,8 @@ const ru = {
   hbSetsN: '%n комплект|%n комплекта|%n комплектов',
   hbRefsN: '%n карта правил|%n карты правил|%n карт правил',
   hbCardsN: '%n карта|%n карты|%n карт',
-  hbNoSets: 'Комплектов пока нет.',
-  hbNoRefs: 'Карт правил пока нет.',
+  hbNoSets: 'Комплектов пока нет',
+  hbNoRefs: 'Карт правил пока нет',
   hbItems: 'Предметы',
   hbFindOwn: 'Найти предмет',
   hbFindSets: 'Найти комплект',
@@ -808,10 +849,6 @@ const ru = {
   hbImportHeldKeep: '%k. Уже есть - останутся как есть:',
   hbImportHeldReplace: '%k. Уже есть - заменятся из файла:',
   hbImportSameNamed: 'Новые с тем же названием, что у ваших:',
-  hbImportHintBefore: 'Файл, сохранённый кнопкой «Скачать JSON» или собранный по ',
-  hbImportSchema: 'схеме homebrew-v2',
-  hbImportHintAfter:
-    '), или архив ZIP из «Скачать мои данные». Предметы, которые уже есть, можно пропустить или обновить.',
   hbImportCounts: 'Источников: %b, разделов: %s, карт: %c, предметов: %i.',
   hbImportWhere: 'Куда положить предметы',
   hbImportNoBook: 'Без источника',
@@ -830,7 +867,7 @@ const ru = {
   hbImportOverLimit:
     'Импорт не поместится: в аккаунте %c, файл добавит %k. Удалите свои предметы или разделите файл.',
   hbImportMoreRows: 'и ещё %n источник|и ещё %n источника|и ещё %n источников',
-  hbImportHeldLabel: 'Предметы, карты и источники, которые уже есть',
+  hbImportHeldLabel: 'Если уже есть:',
   hbImportSkip: 'Пропустить',
   hbImportUpdate: 'Обновить',
   hbImportSkipNote: 'Существующие предметы и карты (%n) останутся как есть; новые добавятся.',
@@ -876,7 +913,7 @@ const ru = {
   hbImportZipNone: 'В архиве нет файла homebrew.json.',
   hbImportZipMany: 'В архиве несколько файлов homebrew.json: распакуйте его и выберите нужный.',
   hbImportZipPacked: 'Архив сжат другой программой: распакуйте его и выберите homebrew.json.',
-  hbImportZipLists: 'Файл lists.json из архива импортируется на странице «Мои списки».',
+  hbImportZipLists: 'Затем импортируйте файл lists.json из архива на странице «Мои списки».',
   hbImportDone: 'Импортировано предметов: %n',
   hbImportDoneUpdated: 'обновлено: %n',
   hbImportDoneSkipped: 'пропущено: %n',
@@ -954,7 +991,8 @@ const ru = {
   importZipNoLists: 'В архиве нет файла lists.json.',
   importZipManyLists: 'В архиве несколько файлов lists.json: распакуйте его и выберите нужный.',
   importZipPacked: 'Архив сжат другой программой: распакуйте его и выберите lists.json.',
-  importZipHomebrew: 'Файл homebrew.json из архива импортируется на странице «Мои предметы».',
+  importZipHomebrew:
+    'Сначала импортируйте файл homebrew.json из архива на странице «Мои предметы»: тогда списки свяжутся с этими предметами, а не с копиями.',
   importRefused:
     'Сервер не принял файл: данные в аккаунте изменились. Нажмите «Импортировать» ещё раз.',
   importFrozenN:
@@ -1083,8 +1121,13 @@ const ru = {
     'Не получилось скрыть изменения. Проверьте соединение и попробуйте ещё раз.',
   itemFrom: 'Предмет другого игрока',
   itemFailed: 'Предмет не загрузился',
+  noItem: 'Предмета по этому адресу нет',
+  noItemSub:
+    'Адрес %s не ведёт ни к одному предмету. Ссылка могла устареть или быть набрана с ошибкой.',
+  findItem: 'Найти предмет',
+  openTables: 'Открыть таблицы',
   saveItem: 'Сохранить себе',
-  saveItemNote: 'Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с оригиналом.',
+  saveItemSignIn: 'Сначала вход в аккаунт',
   saveItemNoteList:
     'Копия попадёт в «Хоумбрю», а строки ваших списков с этим предметом будут вести на неё.',
   signInToSaveItem: 'Войдите, и копия предмета сохранится в «Мои предметы».',
@@ -1102,10 +1145,11 @@ const ru = {
   quoted: '«%s»',
   printLinkRetired: 'Такие ссылки на печать больше не открываются.',
   printLinkRetiredSub:
-    'Попросите у отправителя новую ссылку вида /#/p/ или войдите и соберите карточки сами.',
+    'Попросите у отправителя новую ссылку вида /p/ или войдите и соберите карточки сами.',
   signInToPrint: 'Войдите, чтобы печатать карточки.',
   printSetGone: 'Набор не найден: ссылку не открывали 90 дней, или в адресе ошибка.',
   printSetMissing: 'Удалены автором и не попали на лист: %d.',
+  printLoadFailedTitle: 'Набор не загрузился',
   printLoadFailed: 'Не получилось загрузить карточки.',
   printSetFailed: 'Не получилось подготовить печать. Проверьте соединение и попробуйте ещё раз.'
 } as const;
@@ -1175,8 +1219,10 @@ const en: Dict = {
   imgFailed: 'Could not save the image',
 
   roll: 'Roll',
-  randomIn: 'Random',
   rollResult: 'Roll result',
+  rollHead: 'Roll %s',
+  rollPair: '%a and %b',
+  setUp: 'Set up',
   stepDown: 'One lower',
   stepUp: 'One higher',
 
@@ -1223,6 +1269,8 @@ const en: Dict = {
   rarity: 'Rarity',
   hopeDie: 'Hope Die',
   fearDie: 'Fear Die',
+  hopeLetter: 'H',
+  fearLetter: 'F',
   rollDuality: 'Roll the dice',
   hope: 'Hope',
   fear: 'Fear',
@@ -1254,6 +1302,8 @@ const en: Dict = {
 
   notFound: 'Item not found',
   notFoundSub: 'The link may be out of date, or the data has changed.',
+  nowhereTitle: 'No page at this address',
+  nowhereSub: 'The address %s does not open. The link may be old or mistyped.',
   noData: 'The data did not load. Reload the page.',
   pageError: 'Something went wrong on this page.',
   reloadPage: 'Reload the page',
@@ -1265,7 +1315,7 @@ const en: Dict = {
   eqTrait: 'Trait',
   eqRange: 'Range',
   eqBurden: 'Burden',
-  eqLineF: 'Line',
+  eqLineF: 'Upgrades and uniques',
 
   pcDmg: 'Damage',
   pcTrait: 'Trait',
@@ -1284,21 +1334,31 @@ const en: Dict = {
   subSecondary: 'Secondary',
   subArmor: 'Armor',
 
-  subTables: 'Every table in full, weapons and armor included - browse, filter and open cards.',
   subLists: 'Collect loot into a list and send it to your players as a single link.',
   subSearch:
     'Search all 1459 entries at once - loot, consumables and equipment, in Russian and English.',
   subSearchOwn: 'And %n item of your own.|And %n items of your own.',
 
   searchPh: 'Search by name or description...',
+  searchShort: 'Search',
+  tablePick: 'Table: %s',
+  groupLabel: 'Group',
+  sourceLabel: 'Source',
+  moreMenu: 'More',
   tableLink: 'Link to this table',
   tableLinkCopied: 'Table link copied',
   view: 'View',
   viewList: 'List',
   viewGrid: 'Grid',
   nothing: 'Nothing found',
-  startTyping:
-    'Start typing. Several words match in any order; "a phrase in quotes" matches exactly.',
+  searchWhat: 'What are you looking for?',
+  searchStartSub: 'Searches names and text in Russian and English at once.',
+  searchEx1: 'potion',
+  searchEx2: 'sword',
+  searchEx3: 'healing potions',
+  emptySearch: 'No match for "%q" in names and descriptions.',
+  clearSearch: 'Clear the search',
+  rowNo: 'No. %n',
   selectAll: 'Select all',
   selected: 'Selected',
   selectedN: 'Selected %n item|Selected %n items',
@@ -1306,11 +1366,22 @@ const en: Dict = {
   listsN: '%n list|%n lists',
   ofLimit: '%s of %m',
   clearSel: 'Clear selection',
+  selectMode: 'Select',
+  allShort: 'All',
+  selCount: '%n selected',
   selRegion: 'Selected records',
   copySel: 'Copy',
   selCopied: 'Selection copied',
 
   filters: 'Filters',
+  filtersN: 'Filters · %n',
+  shownOf: '%n of %m shown',
+  showN: 'Show %n',
+  reset: 'Reset',
+  resetFilters: 'Reset the filters',
+  emptyBoth: 'No match for "%q" with these filters: %v.',
+  emptyQuery: 'No match for "%q" in the names and text of this table.',
+  emptyFilters: 'Nothing fits these filters: %v.',
   kindF: 'Type',
   frameF: 'Frame',
   commF: 'Community',
@@ -1324,10 +1395,11 @@ const en: Dict = {
   gmFilterLinkCopied:
     'Filter link copied - it is the GM\'s link: it carries the "GM only" notes and items',
 
-  copySection: 'Copy a link to this section',
+  copySection: 'Link to this section',
   sectionLinkCopied: 'Section link copied',
 
   addToList: 'Add to list',
+  toList: 'Add to list',
   addTo: 'Add to',
   inLists: 'Sits in lists',
   newList: 'New list',
@@ -1449,22 +1521,19 @@ const en: Dict = {
   /* The account */
   account: 'Account',
   signIn: 'Sign in',
-  accountSub: 'Display, sign-in methods, signing out and your data.',
   menuLabel: 'Account menu',
   menuLists: 'My lists',
-  displayHead: 'Display',
-  displayLead:
-    'These settings apply on all your devices. A tables view or a print layout picked on its own page is kept only until the page reloads.',
+  displayHead: 'Display on all your devices',
+  defaultTablesView: 'Default table view',
+  defaultPrint: 'Default print',
   keepBefore: 'Only until the page reloads. To keep it, change it in ',
   keepLink: 'your account settings',
   keepAfter: '.',
   displayHome: 'Section on start',
-  printCompactBox: 'Compact sheet',
-  displayNotify: "Adding from someone else's list",
+  displayNotify: "When I take from someone else's list",
   notifyAsk: 'Ask',
   notifyAlways: 'Notify the owner',
   notifyNever: "Don't notify",
-  notifyHint: "When you add items from someone else's list to yours, notify its owner?",
   signInLead:
     'Sign in to have your data on all your devices. Everything else works without signing in.',
   signInWith: 'Sign in with %s',
@@ -1473,8 +1542,8 @@ const en: Dict = {
   consentMid: ' and the ',
   consentPrivacy: 'privacy policy',
   consentAfter: '.',
-  signedInAs: 'Signed in as',
   via: 'with %s',
+  signedInNow: 'Current',
   providers: 'Sign-in methods',
   notConnected: 'not connected',
   connect: 'Connect %s',
@@ -1486,21 +1555,20 @@ const en: Dict = {
   signOutHead: 'Sign out',
   signOut: 'Sign out',
   signOutAll: 'Sign out everywhere',
-  signOutAllHint:
-    '"Sign out everywhere" also ends the session on your other phones and computers.',
   deleteHead: 'Delete account',
   deleteHint: 'The account and all the data linked to it will be deleted for good.',
   deleteOpen: 'Delete account...',
   deleteTypeWord: 'To confirm, type the word',
   deleteWord: 'delete',
+  deleteGoes: 'This deletes:',
+  deleteGoesRest: 'List links and purchase requests.',
   deleteFinal: 'Delete for good',
   deleting: 'Deleting...',
   signedOut: 'You are signed out.',
   accountDeleted: 'The account is deleted.',
   accountFailed: 'That did not work. Check the connection and try again.',
   yourData: 'Your data',
-  yourDataHint:
-    'Everything your account holds, in one ZIP archive: lists.json with your lists and, when you have items of your own, homebrew.json with them, their sources and cards. To move everything into another account, import the archive on the My items page first, then on the My lists page: up to 1000 lists and 1000 own items at a time.',
+  yourDataHint: 'Your lists and items in one ZIP archive.',
   exportData: 'Download my data (ZIP)',
   zipNoArt: 'The archive holds no pictures: add them again after the move.',
 
@@ -1553,12 +1621,12 @@ const en: Dict = {
   hbPreviewPrint: 'In print',
   hbPrintClipped:
     'The text does not fit the card in print: its end does not print. You can shorten the name or the description.',
-  hbEmpty: 'No items of your own yet - create the first one above or import a file.',
-  hbEmptyTable: 'No items of your own yet.',
+  hbEmpty: 'Your own item is found with the books, shows in Tables and goes into lists.',
   hbSignIn: 'Sign in to create your own items.',
   hbTablesSignIn: 'Sign in to see your own items in the tables.',
   ownSwitch: 'Own items',
   hbLoadFailed: 'Could not load your items.',
+  hbLoadFailedTitle: 'Could not load your items',
   edit: 'Edit',
   hbNotAdded: 'Your own item cannot go into this list.',
   hbNotReady: 'Your items are still loading - this can take a minute. Try again shortly.',
@@ -1571,12 +1639,37 @@ const en: Dict = {
   quickFailed: 'Could not create the item. Check the connection - the text stays in the form.',
   listEmptyHintOwn: 'You can also make an item of your own here, with the button below.',
   hbErrBookGone: 'This source was deleted - choose another one.',
-  hbLegend: '* - required field. The rest can be filled in later.',
+  hbOptional: 'optional',
+  hbGroupItem: 'Item',
+  hbGroupStats: 'Stats',
+  hbGroupWhere: 'Where it goes',
+  hbPreview: 'Preview',
+  hbTabPick: 'My items: %s',
+  hbSourceCap: 'With no source the item goes to Homebrew.',
+  hbCardSourceCap: 'With no source the card goes to Homebrew.',
+  hbLineCap: 'One piece of equipment at tiers 1-4: the card draws a ladder of tiers.',
+  hbSetBonusOf: 'Set bonus: %s',
+  hbRefsUpTo: 'Rule cards, up to 3',
+  hbErrCls: 'Choose a class: physical or magic.',
+  hbErrTr: 'Choose a trait.',
+  hbErrRg: 'Choose a range.',
+  hbErrDt: 'Choose a damage type.',
+  hbErrBu: 'Choose a grip.',
+  hbDtPhy: 'Physical',
+  hbDtMag: 'Magic',
+  hbDtAny: 'Both',
+  hbEmptyTitle: 'No items of your own yet',
+  hbNoSetsSub:
+    'A set is items with a shared bonus: the bonus shows on the card of each of them.',
+  hbNoRefsSub: 'A rule card is a rule an item points to: a spell, a feature, an adversary.',
+  hbImportFits:
+    'Takes a file from "Download JSON", the archive from "Download my data", or a file written to llms.txt.',
+  hbImportFormat: 'File format',
+  cropLess: 'Zoom out',
+  cropMore: 'Zoom in',
   hbKind: 'Kind',
   hbType: 'Equipment type',
   hbSource: 'Source',
-  hbSourceHelp:
-    'A source is your own book or collection: "My items" and the tables group items by it. An item with no source is kept under "Homebrew". A source can hold sections.',
   hbSourceNew: '+ New source...',
   hbSection: 'Section',
   hbSectionNew: '+ New section...',
@@ -1613,8 +1706,6 @@ const en: Dict = {
   hbDt: 'Damage type',
   hbBurden: 'Burden',
   hbAlt: 'Second stat set',
-  hbAltHint:
-    'For a weapon whose feature switches it to other stats, for example Versatile. Fill in all four fields or leave the set empty. Say in the description when the set applies; the print card shows it as a second damage strip.',
   hbAltClear: 'Clear the second set',
   hbAs: 'Armor Score',
   hbTh: 'Damage thresholds',
@@ -1626,7 +1717,7 @@ const en: Dict = {
   hbErrControl: 'Remove the control characters.',
   hbErrTier: 'Choose a tier from 1 to 4.',
   hbErrPick: 'Choose a value.',
-  hbErrDmg: 'Choose a die d4-d20; a bonus, if any, is a whole number from 1 to 99.',
+  hbErrDmg: 'Choose a die (d4-d20); a bonus is 1-99.',
   hbErrAs: 'A whole number from 0 to 12.',
   hbErrTh: 'Two whole numbers from 1 to 99.',
   hbErrThOrder: 'The Severe threshold must be greater than the Major threshold.',
@@ -1710,16 +1801,6 @@ const en: Dict = {
   hbArtChunkFailed: 'Could not load the crop window. Check the connection and try again.',
   hbRelations: 'Relations',
   hbLine: 'Upgrade line',
-  hbLineHelp:
-    'An upgrade line is one piece of equipment across tiers, for example a sword at tiers 1-4; the card draws a ladder of the tiers. "Unique" keeps the item out of a line; "In a line" adds the item as a rung of a line of the same equipment type; "New line" starts a line that your other items can join.',
-  hbCraftIntoHelp:
-    'Items that are made from this one: for example, an awakened weapon from a dormant one. These are not rungs of one line - use "Upgrade line" for those. The chosen item shows the link under "Made from".',
-  hbCraftFromHelp:
-    'Items this one is made from. The chosen item shows the link under "Upgrades to".',
-  hbSetHelp:
-    'A set is a group of items with a shared bonus. The card of each item in the set names the others and shows the bonus. Choose a set from the books or one of your own, or make one with "+ New set...".',
-  hbRefsHelp:
-    'A rule card is a rule the item refers to: a spell, a feature, an adversary. The item\'s card shows it as a folded block. Choose a card from the catalog or one of your own, or make one with "New rule card".',
   hbLineUnique: 'Unique',
   hbLineIn: 'In a line',
   hbLineNew: 'New line',
@@ -1736,7 +1817,6 @@ const en: Dict = {
   hbRemove: 'Remove: %s',
   hbUpTo8: 'Up to 8 items.',
   hbRefs: 'Rule cards',
-  hbRefsHint: 'Up to 3 cards.',
   hbGoneItem: 'This item no longer exists',
   hbGoneCard: 'This card no longer exists',
   hbSetNew: '+ New set...',
@@ -1746,12 +1826,10 @@ const en: Dict = {
   hbSetBonus: 'Set bonus',
   hbCardName: 'Card name',
   hbCardSub: 'Subtitle',
-  hbCardSubHint: 'Optional. For example: Sage · Level 1 · Spell.',
+  hbCardSubHint: 'For example: Sage · Level 1 · Spell.',
   hbCardText: 'Card text',
   hbCardUrl: 'Link',
-  hbCardUrlHint: 'Optional: a page with the full text of the rule.',
-  hbCardSourceHelp:
-    'The card\'s source is your own book or collection: "Download JSON" on the source takes the card along, and the card\'s row names its source. A card with no source is kept under "Homebrew".',
+  hbCardUrlHint: 'A page with the full text of the rule.',
   hbCreateSet: 'Create set',
   hbCreateCard: 'Create card',
   hbSetInlineHint:
@@ -1780,8 +1858,8 @@ const en: Dict = {
   hbSetsN: '%n set|%n sets',
   hbRefsN: '%n rule card|%n rule cards',
   hbCardsN: '%n card|%n cards',
-  hbNoSets: 'No sets yet.',
-  hbNoRefs: 'No rule cards yet.',
+  hbNoSets: 'No sets yet',
+  hbNoRefs: 'No rule cards yet',
   hbItems: 'Items',
   hbFindOwn: 'Find an item',
   hbFindSets: 'Find a set',
@@ -1812,10 +1890,6 @@ const en: Dict = {
   hbImportHeldKeep: '%k. Already held - they stay as they are:',
   hbImportHeldReplace: '%k. Already held - replaced from the file:',
   hbImportSameNamed: 'New, with the same name as yours:',
-  hbImportHintBefore: 'A file saved with "Download JSON" or written to the ',
-  hbImportSchema: 'homebrew-v2 schema',
-  hbImportHintAfter:
-    '), or the ZIP archive from "Download my data". Items you already hold can be skipped or updated.',
   hbImportCounts: 'Sources: %b, sections: %s, cards: %c, items: %i.',
   hbImportWhere: 'Where the items go',
   hbImportNoBook: 'No source',
@@ -1834,7 +1908,7 @@ const en: Dict = {
   hbImportOverLimit:
     'The import does not fit: your account holds %c and the file adds %k. Delete some of your items or split the file.',
   hbImportMoreRows: 'and %n more source|and %n more sources',
-  hbImportHeldLabel: 'Items, cards and sources you already hold',
+  hbImportHeldLabel: 'If you already have it:',
   hbImportSkip: 'Skip',
   hbImportUpdate: 'Update',
   hbImportSkipNote: 'The items and cards you hold (%n) stay as they are; new ones are added.',
@@ -1880,7 +1954,7 @@ const en: Dict = {
   hbImportZipMany: 'The archive holds several homebrew.json files: unzip it and choose one.',
   hbImportZipPacked:
     'Another program compressed this archive: unzip it and choose homebrew.json.',
-  hbImportZipLists: "The archive's lists.json is imported on the My lists page.",
+  hbImportZipLists: "Then import the archive's lists.json on the My lists page.",
   hbImportDone: 'Items imported: %n',
   hbImportDoneUpdated: 'updated: %n',
   hbImportDoneSkipped: 'skipped: %n',
@@ -1956,7 +2030,8 @@ const en: Dict = {
   importZipManyLists:
     'The archive holds more than one lists.json: unzip it and choose the one you need.',
   importZipPacked: 'Another program compressed this archive: unzip it and choose lists.json.',
-  importZipHomebrew: "The archive's homebrew.json is imported on the My items page.",
+  importZipHomebrew:
+    "Import the archive's homebrew.json on the My items page first: then the lists link those items, not copies.",
   importRefused:
     'The server refused the file: your account\'s data changed. Press "Import" again.',
   importFrozenN:
@@ -2077,8 +2152,12 @@ const en: Dict = {
   noticeHideFailed: 'Could not hide the changes. Check the connection and try again.',
   itemFrom: "Another player's item",
   itemFailed: 'The item did not load',
-  saveItem: 'Save to my items',
-  saveItemNote: 'The copy goes to "Homebrew" and no longer changes with the original.',
+  noItem: 'No item at this address',
+  noItemSub: 'The address %s leads to no item. The link may be old or mistyped.',
+  findItem: 'Find the item',
+  openTables: 'Open the tables',
+  saveItem: 'Save to My items',
+  saveItemSignIn: 'Signs you in first',
   saveItemNoteList:
     'The copy goes to "Homebrew", and the rows of your lists that hold this item will point to it.',
   signInToSaveItem: 'Sign in and a copy of the item is saved to My items.',
@@ -2086,17 +2165,18 @@ const en: Dict = {
   saveItemRelinked: 'Item "%s" saved to My items; the rows of your lists now point to the copy',
   saveItemFailed: 'Could not save the item to your items. Check the connection and try again.',
   saveItemRefused:
-    'The server did not accept the copy: the data in your account changed. Press "Save to my items" again.',
+    'The server did not accept the copy: the data in your account changed. Press "Save to My items" again.',
   copyArtFailed: 'Could not copy the picture - the copy was saved without it.',
   requestsWaitN: '%n request waits for an answer|%n requests wait for an answer',
 
   quoted: '"%s"',
   printLinkRetired: 'Print links of this kind no longer open.',
   printLinkRetiredSub:
-    'Ask the sender for a new /#/p/ link, or sign in and pick the cards yourself.',
+    'Ask the sender for a new /p/ link, or sign in and pick the cards yourself.',
   signInToPrint: 'Sign in to print cards.',
   printSetGone: 'Set not found: nobody opened the link for 90 days, or the address is wrong.',
   printSetMissing: 'Deleted by their author, not on the sheet: %d.',
+  printLoadFailedTitle: 'The set did not load',
   printLoadFailed: 'Could not load the cards.',
   printSetFailed: 'Could not prepare the print. Check the connection and try again.'
 };
@@ -2113,7 +2193,7 @@ export function dict(lang: Lang): Dict {
  *  section name its word here. */
 export const SECTION_LABEL: Record<Section, keyof Dict> = {
   'roll/std': 'pageStd',
-  'roll/alt': 'alt',
+  'roll/alt': 'pageAlt',
   'roll/wondrous': 'pageWondrous',
   'roll/dread': 'pageDread',
   'roll/voa': 'voa',

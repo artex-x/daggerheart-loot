@@ -28,7 +28,7 @@ import type { Record_ } from './types.js';
 export const RARITIES: readonly Rarity[] = RARITY_ORDER;
 
 /**
- * The tiers each rarity is a recommendation for, as the chip captions read
+ * The tiers each rarity is a recommendation for, as `rarityLine` reads
  * them. The book attaches these to rarities rather than to items, and the help
  * says in as many words that they are advice - so they are a caption here and
  * nothing filters on them.

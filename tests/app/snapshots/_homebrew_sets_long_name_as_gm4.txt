@@ -20,16 +20,23 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
   main ""
     heading "Мои предметы" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
-    StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
-    button "Импорт из файла" [expanded=false]
     navigation "Мои предметы"
-      link "Предметы" [url=/homebrew]
-      link "Источники" [url=/homebrew/sources]
-      link "Комплекты" [url=/homebrew/sets]
-      link "Карты правил" [url=/homebrew/rules]
+      link "Предметы 3" [url=/homebrew]
+        StaticText "Предметы"
+        StaticText "3"
+      link "Источники 1" [url=/homebrew/sources]
+        StaticText "Источники"
+        StaticText "1"
+      link "Комплекты 1" [url=/homebrew/sets]
+        StaticText "Комплекты"
+        StaticText "1"
+      link "Карты правил 0" [url=/homebrew/rules]
+        StaticText "Карты правил"
+        StaticText "0"
+    StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
     button "Новый комплект" [focused=true]
     StaticText "1 комплект · 1 карта из 100"
+    button "Импорт из файла" [expanded=false]
     button "ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ..." [expanded=false namelen=80 namehash=e8b304a6]
     StaticText "0 предметов"
     StaticText " · Мастерская старого оружейника из долины туманов за перевалом ..." [namelen=83 namehash=5e5f1c3c]
@@ -45,7 +52,6 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
     StaticText "Комплект «ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ..." [namelen=98 namehash=50b3a409]
 
 ## ru :: controls
-?Справка
 EN
 RU
 daggerheart.com
@@ -54,16 +60,16 @@ daggerheart.com
 ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ... [namelen=80 namehash=e8b304a6]
 Изменить
 Импорт из файла
-Источники
+Источники 1
 К содержимому
-Карты правил
-Комплекты
+Карты правил 0
+Комплекты 1
 Конфиденциальность
 ЛутDaggerheart
 Новый комплект
 Открывать при запуске
 Поиск
-Предметы
+Предметы 3
 Таблицы
 Удалить
 Условия использования
@@ -86,16 +92,23 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew/sets?as=gm
   main ""
     heading "My items" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
-    StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
-    button "Import from file" [expanded=false]
     navigation "My items"
-      link "Items" [url=/en/homebrew]
-      link "Sources" [url=/en/homebrew/sources]
-      link "Sets" [url=/en/homebrew/sets]
-      link "Rule cards" [url=/en/homebrew/rules]
+      link "Items 3" [url=/en/homebrew]
+        StaticText "Items"
+        StaticText "3"
+      link "Sources 1" [url=/en/homebrew/sources]
+        StaticText "Sources"
+        StaticText "1"
+      link "Sets 1" [url=/en/homebrew/sets]
+        StaticText "Sets"
+        StaticText "1"
+      link "Rule cards 0" [url=/en/homebrew/rules]
+        StaticText "Rule cards"
+        StaticText "0"
+    StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
     button "New set" [focused=true]
     StaticText "1 set · 1 card of 100"
+    button "Import from file" [expanded=false]
     button "ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ..." [expanded=false namelen=80 namehash=e8b304a6]
     StaticText "0 items"
     StaticText " · Workshop of the old armourer from the valley of mists past th..." [namelen=83 namehash=877b8252]
@@ -111,25 +124,24 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew/sets?as=gm
     StaticText "Set "ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ..." [namelen=94 namehash=a1011f78]
 
 ## en :: controls
-?Help
 Account: gm4@example.test
 Delete
 EN
 Edit
 Import from file
 Install as an app
-Items
+Items 3
 LootDaggerheart
 New set
 Open on start
 Privacy
 RU
 Roll
-Rule cards
+Rule cards 0
 Search
-Sets
+Sets 1
 Skip to content
-Sources
+Sources 1
 Tables
 Terms of use
 daggerheart.com

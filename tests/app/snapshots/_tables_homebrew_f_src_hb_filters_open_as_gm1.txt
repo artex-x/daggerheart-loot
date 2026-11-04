@@ -1,6 +1,6 @@
 # #/tables/homebrew/f_src-hb ~ filters open as gm1
 # route: #/tables/homebrew/f_src-hb
-# why: «Фильтры» pressed on the «Хоумбрю» chip: «Тип» with the chip's two kinds «Предметы» and «Расходники», no «Снаряжение», no «Раздел»
+# why: the column on the «Хоумбрю» tab: «Тип» with the tab's two kinds «Предметы» and «Расходники», no «Снаряжение», no «Раздел»
 # as: gm1
 
 ## ru :: tree
@@ -20,8 +20,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
   main ""
     heading "Таблицы" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
-    StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
+    button "Об этих данных" [expanded=false]
     navigation "Таблицы"
       link "Core" [url=/tables/core_item]
       link "Hope & Fear" [url=/tables/hope_and_fear_item]
@@ -33,22 +32,19 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Мастерская Ольхи" [url=/tables/homebrew/f_src-hb_alderworkshopaaa]
       link "Хоумбрю" [url=/tables/homebrew/f_src-hb]
     searchbox "Поиск по названию или описанию..."
-    button "Списком" [pressed=false]
-    button "Сеткой" [pressed=true]
-    button "Фильтры" [expanded=true]
-    StaticText "3"
-    ... StaticText x2 of 6 same-shape siblings elided
-    button "Предметы" [pressed=false]
-    button "Расходники" [pressed=false]
-    StaticText "ХОУМБРЮ"
-    checkbox "Выбрать все (3)" [checked=false]
-    StaticText "Выбрать все (3)"
-    checkbox "Кольцо с гравировкой" [checked=false]
-    button "Кольцо с гравировкой Кольцо с гравировкой"
-    checkbox "Настой кузнеца" [checked=false]
-    button "Настой кузнеца Настой кузнеца"
-    checkbox "Whispering Cap" [checked=false]
-    button "Whispering Cap Whispering Cap"
+    button "Список" [pressed=false]
+    button "Сетка" [pressed=true]
+    button "Выбрать"
+    complementary "Фильтры"
+      heading "Фильтры" [level=2]
+      StaticText "ТИП"
+      button "Все" [pressed=true]
+      button "Предметы" [pressed=false]
+      button "Расходники" [pressed=false]
+    heading "Хоумбрю" [level=2]
+    button "ПРЕДМЕТ Кольцо с гравировкой Кольцо с гравировкой"
+    button "РАСХОДНИК Настой кузнеца Настой кузнеца"
+    button "ПРЕДМЕТ Whispering Cap Whispering Cap"
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -57,38 +53,37 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-?Справка
+?Об этих данных
 Core
 EN
 Hope & Fear
 RU
-Whispering Cap
-Whispering CapWhispering Cap
 daggerheart.com
 Аккаунт: gm1@example.test
 Альт. таблицы
 Бросок
+Все
+Выбрать
 Дополнения
 К содержимому
-Кольцо с гравировкой
-Кольцо с гравировкойКольцо с гравировкой
 Конфиденциальность
 ЛутDaggerheart
 Мастерская Ольхи
-Настой кузнеца
-Настой кузнецаНастой кузнеца
 Открывать при запуске
 Поиск
+Поиск по названию или описанию...
+ПредметWhispering CapWhispering Cap
+ПредметКольцо с гравировкойКольцо с гравировкой
 Предметы
 Прочее
+РасходникНастой кузнецаНастой кузнеца
 Расходники
-Сеткой
+Сетка
 Снаряжение
-Списком
+Список
 Таблицы
 Условия использования
 Установить как приложение
-Фильтры
 Хоумбрю
 
 ## en :: tree
@@ -108,8 +103,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/homebrew/f_src
   main ""
     heading "Tables" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
-    StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
+    button "About this data" [expanded=false]
     navigation "Tables"
       link "Core" [url=/en/tables/core_item]
       link "Hope & Fear" [url=/en/tables/hope_and_fear_item]
@@ -123,20 +117,17 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/homebrew/f_src
     searchbox "Search by name or description..."
     button "List" [pressed=false]
     button "Grid" [pressed=true]
-    button "Filters" [expanded=true]
-    StaticText "3"
-    ... StaticText x2 of 6 same-shape siblings elided
-    button "Items" [pressed=false]
-    button "Consumables" [pressed=false]
-    StaticText "HOMEBREW"
-    checkbox "Select all (3)" [checked=false]
-    StaticText "Select all (3)"
-    checkbox "Whispering Cap" [checked=false]
-    button "Whispering Cap Whispering Cap"
-    checkbox "Кольцо с гравировкой" [checked=false]
-    button "Кольцо с гравировкой Кольцо с гравировкой"
-    checkbox "Настой кузнеца" [checked=false]
-    button "Настой кузнеца Настой кузнеца"
+    button "Select"
+    complementary "Filters"
+      heading "Filters" [level=2]
+      StaticText "TYPE"
+      button "All" [pressed=true]
+      button "Items" [pressed=false]
+      button "Consumables" [pressed=false]
+    heading "Homebrew" [level=2]
+    button "ITEM Whispering Cap Whispering Cap"
+    button "ITEM Кольцо с гравировкой Кольцо с гравировкой"
+    button "CONSUMABLE Настой кузнеца Настой кузнеца"
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -145,20 +136,23 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/homebrew/f_src
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-?Help
+?About this data
 Account: gm1@example.test
 Alder Workshop
+All
 Alt. tables
 Consumables
+ConsumableНастой кузнецаНастой кузнеца
 Core
 EN
 Equipment
-Filters
 Grid
 Homebrew
 Hope & Fear
 Install as an app
+ItemWhispering CapWhispering Cap
 Items
+ItemКольцо с гравировкойКольцо с гравировкой
 List
 LootDaggerheart
 Open on start
@@ -167,14 +161,10 @@ Privacy
 RU
 Roll
 Search
+Search by name or description...
+Select
 Skip to content
 Supplements
 Tables
 Terms of use
-Whispering Cap
-Whispering CapWhispering Cap
 daggerheart.com
-Кольцо с гравировкой
-Кольцо с гравировкойКольцо с гравировкой
-Настой кузнеца
-Настой кузнецаНастой кузнеца

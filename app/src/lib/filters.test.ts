@@ -11,6 +11,7 @@ import { describe, expect, it } from 'vitest';
 import { equipFacets } from './data.js';
 import {
   chosenCount,
+  chosenLabels,
   decodeFilter,
   encodeFilter,
   EQ_GROUPS,
@@ -280,5 +281,34 @@ describe('how many are picked', () => {
     /* This number is what the reset button reads: counting an invisible group
        would offer a reset that appears to do nothing. */
     expect(chosenCount({ tier: ['1'], burden: ['2'] }, ['tier'])).toBe(1);
+  });
+});
+
+describe('the chosen values, named', () => {
+  const rows = [
+    {
+      group: 'tier',
+      label: 'Ранг',
+      values: [
+        { value: '1', label: '1' },
+        { value: '2', label: '2' }
+      ]
+    },
+    {
+      group: 'burden',
+      label: 'Хват',
+      values: [
+        { value: '1', label: 'Одноручное' },
+        { value: '2', label: 'Двуручное' }
+      ]
+    }
+  ];
+
+  it('names a bare number by its row and a word by itself, in row order', () => {
+    expect(chosenLabels(rows, { burden: ['2'], tier: ['1'] })).toEqual([
+      { group: 'tier', value: '1', label: 'Ранг 1' },
+      { group: 'burden', value: '2', label: 'Двуручное' }
+    ]);
+    expect(chosenLabels(rows, {})).toEqual([]);
   });
 });

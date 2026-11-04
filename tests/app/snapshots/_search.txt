@@ -1,6 +1,6 @@
 # #/search
 # route: #/search
-# why: the page as opened: head, sub, the box focused with its ring painted, three chips on, the hint
+# why: the page as opened: the head with the lead and the labeled pin, the box focused, «Все» pressed and three kinds unpressed, the start plate «Что ищем?» with three examples
 
 ## ru :: tree
 RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search]
@@ -21,11 +21,13 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search]
     button "Открывать при запуске" [pressed=false]
     StaticText "Поиск сразу по 1459 позициям - добыча, расходники и снаряжение, ..." [namelen=91 namehash=d415684b]
     searchbox "Поиск по названию или описанию..." [focused=true]
-    StaticText "ТИП"
-    button "Предметы" [pressed=true]
-    button "Расходники" [pressed=true]
-    button "Снаряжение" [pressed=true]
-    StaticText "Начните вводить запрос. Несколько слов ищутся в любом порядке, «..." [namelen=93 namehash=7235fc45]
+    button "Все" [pressed=true]
+    button "Предметы" [pressed=false]
+    ... button x3 of 7 same-shape siblings elided
+    StaticText "Что ищем?"
+    StaticText "Ищет по названиям и описаниям, по-русски и по-английски сразу."
+    button "меч" [pressed=false]
+    button "лечения зелья" [pressed=false]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -39,17 +41,22 @@ RU
 daggerheart.com
 Бросок
 Войти
+Все
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
 Открывать при запуске
 Поиск
+Поиск по названию или описанию...
 Предметы
 Расходники
 Снаряжение
 Таблицы
 Условия использования
 Установить как приложение
+зелье
+лечения зелья
+меч
 
 ## en :: tree
 RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search]
@@ -70,11 +77,13 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search]
     button "Open on start" [pressed=false]
     StaticText "Search all 1459 entries at once - loot, consumables and equipmen..." [namelen=90 namehash=c7b98fa7]
     searchbox "Search by name or description..." [focused=true]
-    StaticText "TYPE"
-    button "Items" [pressed=true]
-    button "Consumables" [pressed=true]
-    button "Equipment" [pressed=true]
-    StaticText "Start typing. Several words match in any order; "a phrase in quo..." [namelen=85 namehash=fc509637]
+    button "All" [pressed=true]
+    button "Items" [pressed=false]
+    ... button x3 of 7 same-shape siblings elided
+    StaticText "What are you looking for?"
+    StaticText "Searches names and text in Russian and English at once."
+    button "sword" [pressed=false]
+    button "healing potions" [pressed=false]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -83,6 +92,7 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
+All
 Consumables
 EN
 Equipment
@@ -94,8 +104,12 @@ Privacy
 RU
 Roll
 Search
+Search by name or description...
 Sign in
 Skip to content
 Tables
 Terms of use
 daggerheart.com
+healing potions
+potion
+sword

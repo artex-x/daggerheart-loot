@@ -1,5 +1,6 @@
 # 2026-09-30 - The homebrew editor keeps its save button, with a guard and a revision check
 
+- Superseded in part by "The homebrew pages share the list head and one selection bar" (2026-11-04): a required field has no red mark; the optional fields carry a word.
 - Task: `persist-7-homebrew` (the owner asked on 2026-09-28 and answered Q8 on 2026-09-30; planner).
 - Decision: the editor saves on «Сохранить», one awaited write, and checks on submit only: a focused
   error summary with a link per problem, a line under each field, a red mark on each required field;

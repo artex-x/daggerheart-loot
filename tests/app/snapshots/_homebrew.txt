@@ -19,7 +19,6 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
   main ""
     heading "Мои предметы" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
     StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
     StaticText "Войдите, чтобы создавать свои предметы."
     button "Войти"
@@ -31,7 +30,6 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-?Справка
 EN
 RU
 daggerheart.com
@@ -63,7 +61,6 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew]
   main ""
     heading "My items" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
     StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
     StaticText "Sign in to create your own items."
     button "Sign in"
@@ -75,7 +72,6 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-?Help
 EN
 Install as an app
 LootDaggerheart

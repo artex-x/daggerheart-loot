@@ -1,12 +1,9 @@
 /* What a roll page explains about itself. */
 
 import { describe, expect, it } from 'vitest';
-import { helpFor, isBold, isBreak, isLink, moneyHelpFor } from './help.js';
-import { SECTION_LABEL, dict } from './dict.js';
-import { SUPPLEMENTS } from './nav.js';
+import { helpFor, isBold, isLink, moneyHelpFor } from './help.js';
 import type { Help, HelpLink, HelpPart } from './help.js';
 import type { Lang } from './types.js';
-import { readLoot } from '../test/loot.js';
 
 const LANGS: Lang[] = ['ru', 'en'];
 const SECTIONS = ['std', 'alt', 'wondrous', 'dread', 'voa', 'dv', 'arazo', 'community', 'mwt'];
@@ -15,7 +12,6 @@ const SECTIONS = ['std', 'alt', 'wondrous', 'dread', 'voa', 'dv', 'arazo', 'comm
 const partText = (part: HelpPart): string => {
   if (isLink(part)) return part.label;
   if (isBold(part)) return part.b;
-  if (isBreak(part)) return '\n';
   return part;
 };
 
@@ -74,32 +70,38 @@ describe('the help for a section', () => {
     expect(textOf(helpFor('voa', 'ru'), 0)).toContain('Своей таблицы броска у книги нет');
   });
 
-  it('carries markup as shape rather than as text', () => {
-    /* The Core rules paragraph that lists where each rarity fits is one
-       paragraph with four bold lines inside it. It was ported as a string with
-       the tags still in it and shipped showing "<br><b>Common</b>" as words,
-       because nothing rendered that panel and no parity state opened it. */
+  it('holds the four placement lines of the book and nothing else on the Core rules page', () => {
+    const leads = {
+      ru: ['Обычная', 'Необычная', 'Редкая', 'Легендарная'],
+      en: ['Common', 'Uncommon', 'Rare', 'Legendary']
+    };
     for (const lang of LANGS) {
-      for (const para of helpFor('std', lang)?.paragraphs ?? []) {
+      const paragraphs = helpFor('std', lang)?.paragraphs ?? [];
+      expect(paragraphs.map((p) => p.lead)).toEqual(leads[lang]);
+      for (const para of paragraphs) {
         for (const part of para.parts) {
           if (typeof part === 'string') expect(part, lang).not.toMatch(/[<>]/);
         }
       }
     }
+  });
 
-    const ru = helpFor('std', 'ru')?.paragraphs[1];
-    expect(ru?.parts.filter(isBreak)).toHaveLength(4);
-    expect(ru?.parts.filter(isBold).map((b) => b.b)).toEqual([
-      'Обычная',
-      'Необычная',
-      'Редкая',
-      'Легендарная'
-    ]);
-    expect(
-      helpFor('std', 'en')
-        ?.paragraphs[1]?.parts.filter(isBold)
-        .map((b) => b.b)
-    ).toEqual(['Common', 'Uncommon', 'Rare', 'Legendary']);
+  it('names each roll help button after its panel, in both languages', () => {
+    const names: Record<string, [string, string]> = {
+      std: ['Где какая редкость', 'Where each rarity is'],
+      alt: ['Об этих таблицах', 'About these tables'],
+      wondrous: ['Об этой таблице', 'About this table'],
+      dread: ['Об этой книге', 'About this book'],
+      voa: ['Об этой книге', 'About this book'],
+      dv: ['Об этой книге', 'About this book'],
+      arazo: ['Об этой книге', 'About this book'],
+      mwt: ['Об этой книге', 'About this book'],
+      community: ['Об этих предметах', 'About these items']
+    };
+    for (const section of SECTIONS) {
+      expect(helpFor(section, 'ru')?.button, section).toBe(names[section]?.[0]);
+      expect(helpFor(section, 'en')?.button, section).toBe(names[section]?.[1]);
+    }
   });
 
   it('credits the alternate tables to the person who wrote them', () => {
@@ -133,30 +135,8 @@ describe('the help for a section', () => {
     expect(textOf(helpFor('mwt', 'en'), 0)).toContain('Hornet Hold 11 and The Drome 17');
   });
 
-  it('writes «Мои предметы» five paragraphs in each language, each with a bold lead', () => {
-    const ru = helpFor('homebrew', 'ru');
-    const en = helpFor('homebrew', 'en');
-    expect(ru?.paragraphs.map((p) => p.lead)).toEqual([
-      'Предметы.',
-      'Источники.',
-      'Комплекты.',
-      'Карты правил.',
-      'Импорт из файла.'
-    ]);
-    expect(en?.paragraphs.map((p) => p.lead)).toEqual([
-      'Items.',
-      'Sources.',
-      'Sets.',
-      'Rule cards.',
-      'Import from file.'
-    ]);
-    for (const p of [...(ru?.paragraphs ?? []), ...(en?.paragraphs ?? [])]) {
-      /* Plain text after the lead, as every lead's paragraph is written. */
-      const text = p.parts.filter((x): x is string => typeof x === 'string');
-      expect(text).toHaveLength(p.parts.length);
-      expect(text[0]).toMatch(/^ \S/);
-      expect(text.join('')).not.toMatch(/[\u2013\u2014\u2018\u2019\u201c\u201d]/);
-    }
+  it('writes no help for «Мои предметы»', () => {
+    for (const lang of LANGS) expect(helpFor('homebrew', lang)).toBeNull();
   });
 
   it('has nothing to say about a section nobody wrote one for', () => {
@@ -246,75 +226,16 @@ describe('the help for a section', () => {
   });
 });
 
-describe('the tables help against the data', () => {
-  /* Every book whose equipment also rolls on its own table is named where the
-     help says so; Vault of Ages was once left out of that list. */
-  const LOOT = readLoot();
-  const BOOK: Record<string, string> = {
-    wondrous: 'Wondrous Environments',
-    dread: 'Dread GM Toolbox',
-    voa: 'Vault of Ages',
-    dv: "The Dragon's Vault",
-    arazo: "Arazo's Artifacts",
-    mwt: 'Many Worlds Tavern'
-  };
-  const rolled = [
-    ...new Set(
-      Object.values(LOOT.items)
-        .flat()
-        .filter((it) => it.eq && it.roll != null)
-        .map((it) => it.src)
-    )
-  ].sort();
-
-  it('knows every book with rolled equipment', () => {
-    expect(rolled).toEqual(Object.keys(BOOK).sort());
-  });
-
-  it.each([
-    ['ru', /номер/],
-    ['en', /roll number/]
-  ] as const)('names each of them wherever %s mentions a roll number', (lang, mark) => {
+describe('the tables help, «Об этих данных»', () => {
+  it.each(LANGS)('holds three data notes, each with a bold lead, in %s', (lang) => {
     const help = helpFor('tables', lang);
-    const paras = (help?.paragraphs ?? [])
-      .map((_, i) => textOf(help, i))
-      .filter((text) => mark.test(text) && text.includes('Wondrous Environments'));
-    expect(paras.length).toBe(2);
-    for (const text of paras) {
-      for (const src of rolled) expect(text, src).toContain(BOOK[src]);
-    }
+    expect(help?.paragraphs).toHaveLength(3);
+    expect(help?.paragraphs.every((para) => !!para.lead)).toBe(true);
+    expect(help?.button).toBe(lang === 'ru' ? 'Об этих данных' : 'About this data');
+    expect(linksOf(help).map((l) => l.label)).toEqual(['daggerheart.su']);
   });
-});
 
-describe('the tables help for a signed-in author', () => {
-  it('names the «Хоумбрю» group, its source chip and its two filters in both languages', () => {
-    const ru = helpFor('tables', 'ru');
-    const en = helpFor('tables', 'en');
-    expect(textOf(ru, 0)).toContain('группа «Хоумбрю» - ваши собственные предметы');
-    expect(textOf(ru, 7)).toContain(
-      'у «Хоумбрю» тип и раздел, а источник выбирается в ряду над таблицей.'
-    );
-    expect(textOf(en, 0)).toContain('one more group, "Homebrew": your own items');
-    expect(textOf(en, 7)).toContain(
-      'and type and section for Homebrew, where the row above the table picks the source.'
-    );
-  });
-});
-
-describe('the tables help on the supplements group', () => {
-  it.each(LANGS)('names the seven books in panel order and the realm filter in %s', (lang) => {
-    const help = helpFor('tables', lang);
-    const first = textOf(help, 0);
-    const t = dict(lang);
-    /* The panel chips' own words, in lowercase where the sentence runs on. */
-    const names: Record<string, string> = {
-      'roll/community': lang === 'ru' ? 'предметы сообществ' : 'community items'
-    };
-    const at = SUPPLEMENTS.map((s) => first.indexOf(names[s] ?? t[SECTION_LABEL[s]]));
-    expect(at.every((i) => i >= 0)).toBe(true);
-    expect([...at].sort((a, b) => a - b)).toEqual(at);
-    expect(textOf(help, 7)).toContain(
-      lang === 'ru' ? 'у Many Worlds Tavern вид и мир' : 'kind and realm for Many Worlds Tavern'
-    );
+  it('leaves the list help on the default button name', () => {
+    for (const lang of LANGS) expect(helpFor('lists', lang)?.button).toBeUndefined();
   });
 });

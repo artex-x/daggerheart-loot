@@ -1,6 +1,6 @@
 # #/account ~ delete confirmation as gm1
 # route: #/account
-# why: the typed confirmation open, the word typed and the final button enabled; the English half types the Russian word, so there its final button stays disabled; «Ваши данные» above it
+# why: the typed confirmation open: «Будут удалены:» with the counts read and the fixed line, the word of each language typed and the filled final button enabled
 # as: gm1
 
 ## ru :: tree
@@ -19,32 +19,33 @@ RootWebArea "Аккаунт - Генератор лута Daggerheart" [url=/acc
       link "Поиск" [url=/search]
   main ""
     heading "Аккаунт" [level=1]
-    StaticText "Отображение, способы входа, выход и ваши данные."
-    heading "ОТОБРАЖЕНИЕ" [level=2]
-    StaticText "Эти настройки действуют на всех ваших устройствах. Вид таблиц и ..." [namelen=134 namehash=00161fc6]
-    ... StaticText x16 of 20 same-shape siblings elided
+    heading "ОТОБРАЖЕНИЕ НА ВСЕХ УСТРОЙСТВАХ" [level=2]
+    StaticText "Язык"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
+    StaticText "Раздел при запуске"
     combobox "Раздел при запуске" [value=Обычные правила expanded=false haspopup=menu]
       option "Обычные правила" [selected=true]
-      option "Альт. таблицы" [selected=false]
+      option "Альтернативные таблицы" [selected=false]
       option "Wondrous Environments" [selected=false]
       ... option x8 of 12 same-shape siblings elided
       option "Поиск" [selected=false]
       option "Мои предметы" [selected=false]
-    button "Списком" [pressed=false]
-    button "Сеткой" [pressed=true]
+    ... StaticText x15 of 19 same-shape siblings elided
+    button "Список" [pressed=false]
+    button "Сетка" [pressed=true]
     button "Цветная" [pressed=false]
     button "Чёрно-белая" [pressed=true]
-    checkbox "Компактный лист" [checked=true]
-    combobox "Добавление из чужого списка" [value=Спрашивать description=Когда вы добавляете предметы из чужого списка в свой, сообщить об этом его владельцу? expanded=false haspopup=menu]
+    button "Обычная" [pressed=false]
+    button "Компактная" [pressed=true]
+    combobox "Когда беру из чужого списка" [value=Спрашивать expanded=false haspopup=menu]
       option "Спрашивать" [selected=true]
       option "Сообщать владельцу" [selected=false]
       option "Не сообщать" [selected=false]
-    heading "ВЫ ВОШЛИ КАК" [level=2]
-    ... heading x2 of 6 same-shape siblings elided
+    heading "СПОСОБЫ ВХОДА" [level=2]
     button "Отключить Google"
     button "Отключить Discord"
+    heading "ВАШИ ДАННЫЕ" [level=2]
     ... button x3 of 7 same-shape siblings elided
     heading "ВЫХОД" [level=2]
     heading "УДАЛЕНИЕ АККАУНТА" [level=2]
@@ -70,16 +71,18 @@ daggerheart.com
 Выйти
 Выйти на всех устройствах
 К содержимому
+Компактная
 Конфиденциальность
 ЛутDaggerheart
-Обычные правилаАльт. таблицыWondrous EnvironmentsDread GM Toolbo... [namelen=183 namehash=b3f24d5b]
+Обычная
+Обычные правилаАльтернативные таблицыWondrous EnvironmentsDread ... [namelen=192 namehash=5e7c637f]
 Отключить Discord
 Отключить Google
 Отмена
 Поиск
-Сеткой
+Сетка
 Скачать мои данные (ZIP)
-Списком
+Список
 СпрашиватьСообщать владельцуНе сообщать
 Таблицы
 Удалить аккаунт...
@@ -105,41 +108,41 @@ RootWebArea "Account - Daggerheart Loot Generator" [url=/en/account?as=gm1]
       link "Search" [url=/en/search]
   main ""
     heading "Account" [level=1]
-    StaticText "Display, sign-in methods, signing out and your data."
-    heading "DISPLAY" [level=2]
-    StaticText "These settings apply on all your devices. A tables view or a pri..." [namelen=133 namehash=30d49185]
-    ... StaticText x16 of 20 same-shape siblings elided
+    heading "DISPLAY ON ALL YOUR DEVICES" [level=2]
+    StaticText "Language"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
+    StaticText "Section on start"
     combobox "Section on start" [value=Standard rules expanded=false haspopup=menu]
       option "Standard rules" [selected=true]
-      option "Alt. tables" [selected=false]
+      option "Alternate tables" [selected=false]
       option "Wondrous Environments" [selected=false]
       ... option x8 of 12 same-shape siblings elided
       option "Search" [selected=false]
       option "My items" [selected=false]
+    ... StaticText x15 of 19 same-shape siblings elided
     button "List" [pressed=false]
     button "Grid" [pressed=true]
     button "Color" [pressed=false]
     button "Black and white" [pressed=true]
-    checkbox "Compact sheet" [checked=true]
-    combobox "Adding from someone else's list" [value=Ask description=When you add items from someone else's list to yours, notify its owner? expanded=false haspopup=menu]
+    button "Standard" [pressed=false]
+    button "Compact" [pressed=true]
+    combobox "When I take from someone else's list" [value=Ask expanded=false haspopup=menu]
       option "Ask" [selected=true]
       option "Notify the owner" [selected=false]
       option "Don't notify" [selected=false]
-    heading "SIGNED IN AS" [level=2]
-    ... heading x2 of 6 same-shape siblings elided
+    heading "SIGN-IN METHODS" [level=2]
     button "Disconnect Google"
     button "Disconnect Discord"
-    ... button x2 of 6 same-shape siblings elided
+    heading "YOUR DATA" [level=2]
+    ... button x3 of 7 same-shape siblings elided
     heading "SIGN OUT" [level=2]
-    button "Sign out everywhere"
     heading "DELETE ACCOUNT" [level=2]
     button "Delete account..." [expanded=true]
     StaticText "To confirm, type the word "
     StaticText "delete"
-    textbox "To confirm, type the word delete" [value=удалить focused=true multiline=false readonly=false required=false]
-    button "Delete for good" [disabled=true]
+    textbox "To confirm, type the word delete" [value=delete focused=true multiline=false readonly=false required=false]
+    button "Delete for good"
     button "Cancel"
   contentinfo ""
     navigation "Site pages"
@@ -154,6 +157,7 @@ AskNotify the ownerDon't notify
 Black and white
 Cancel
 Color
+Compact
 Delete account...
 Delete for good
 Disconnect Discord
@@ -171,7 +175,8 @@ Search
 Sign out
 Sign out everywhere
 Skip to content
-Standard rulesAlt. tablesWondrous EnvironmentsDread GM ToolboxVa... [namelen=171 namehash=01cdfeab]
+Standard
+Standard rulesAlternate tablesWondrous EnvironmentsDread GM Tool... [namelen=176 namehash=1c0e3b5e]
 Tables
 Terms of use
 daggerheart.com

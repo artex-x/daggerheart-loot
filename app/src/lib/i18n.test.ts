@@ -173,6 +173,59 @@ describe('the interface words', () => {
     expect(Object.keys(SECTION_LABEL)).toHaveLength(12);
     expect(sectionLabel('lists', dict('ru'))).toBe('Мои списки');
     expect(sectionLabel('lists', dict('en'))).toBe('My lists');
+    expect(sectionLabel('roll/alt', dict('ru'))).toBe('Альтернативные таблицы');
+    expect(sectionLabel('roll/alt', dict('en'))).toBe('Alternate tables');
+  });
+
+  it('keeps the search, account and error-page words in both languages, the old hints gone', () => {
+    const NEW = [
+      'searchWhat',
+      'searchStartSub',
+      'searchEx1',
+      'searchEx2',
+      'searchEx3',
+      'emptySearch',
+      'clearSearch',
+      'rowNo',
+      'nowhereTitle',
+      'nowhereSub',
+      'printLoadFailedTitle',
+      'defaultTablesView',
+      'defaultPrint',
+      'signedInNow',
+      'deleteGoes',
+      'deleteGoesRest'
+    ];
+    const GONE = [
+      'startTyping',
+      'displayLead',
+      'notifyHint',
+      'signOutAllHint',
+      'signedInAs',
+      'accountSub',
+      'printCompactBox',
+      'hbEmptyTable'
+    ];
+    for (const lang of ['ru', 'en'] as const) {
+      const t: Record<string, string> = dict(lang);
+      for (const k of NEW) expect(t[k], `${lang} ${k}`).toBeTruthy();
+      for (const k of GONE) expect(k in t, `${lang} ${k}`).toBe(false);
+      expect(t['printLinkRetiredSub']).toContain('/p/');
+      expect(t['printLinkRetiredSub']).not.toContain('/#/p/');
+    }
+    expect(dict('ru').rowNo.replace('%n', '89')).toBe('№ 89');
+    expect(dict('en').rowNo.replace('%n', '89')).toBe('No. 89');
+  });
+
+  it('gives the order of an account move in the zip lines of both import panels', () => {
+    expect(dict('en').importZipHomebrew).toBe(
+      "Import the archive's homebrew.json on the My items page first: then the lists link those items, not copies."
+    );
+    expect(dict('en').hbImportZipLists).toBe(
+      "Then import the archive's lists.json on the My lists page."
+    );
+    expect(dict('ru').importZipHomebrew).toMatch(/^Сначала /);
+    expect(dict('ru').hbImportZipLists).toMatch(/^Затем /);
   });
 
   it('holds no ellipsis character in either language', () => {

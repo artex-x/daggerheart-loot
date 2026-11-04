@@ -19,9 +19,11 @@
     /** Whether this box takes focus as soon as it mounts. Default false: the
      *  tables toolbar's own box never has, and only search does. */
     focus?: boolean;
+    /** The accessible name, where the placeholder is a short form of it. */
+    label?: string | undefined;
   }
 
-  const { value, placeholder, oninput, focus = false }: Props = $props();
+  const { value, placeholder, oninput, focus = false, label }: Props = $props();
 
   let el = $state<HTMLInputElement | undefined>(undefined);
 
@@ -35,6 +37,7 @@
   type="search"
   {value}
   {placeholder}
+  aria-label={label}
   oninput={(e) => {
     oninput(e.currentTarget.value);
   }}

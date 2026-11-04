@@ -1022,6 +1022,22 @@ describe('installFakeCloud', () => {
     expect((await one.port.requests.lines(one.ids)).ok).toBe(true);
     expect(await one.port.lists.items([AXE_ID])).toEqual({ ok: false });
   });
+
+  it('holds the read of one item and of the own items with ?hold=', async () => {
+    const failed = installFakeCloud('?as=gm1&hold=item:fail,own:fail');
+    expect(await failed.lists.item(uuid(511))).toEqual({ ok: false });
+    expect(await failed.homebrew.load()).toEqual({ ok: false });
+    const free = installFakeCloud('?as=gm1');
+    expect((await free.lists.item(uuid(511))).ok).toBe(true);
+    expect((await free.homebrew.load()).ok).toBe(true);
+  });
+
+  it('holds the read of a print set with ?hold=print:fail', async () => {
+    const failed = installFakeCloud('?as=gm2&hold=print:fail');
+    expect(await failed.prints.read('set-twocards')).toEqual({ ok: false });
+    const free = installFakeCloud('?as=gm2');
+    expect((await free.prints.read('set-twocards')).ok).toBe(true);
+  });
 });
 
 describe('fillItems', () => {

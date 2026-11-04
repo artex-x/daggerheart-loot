@@ -1,6 +1,6 @@
 <script lang="ts">
-  /* The header's menu box: the account menu and the supplements menu
-     (docs/specs/FEATURES.md, "Chrome", rule 11). The first item takes the focus; Up,
+  /* The menu box: the account menu, the supplements menu, the catalog's and the record's
+     «Ещё» (docs/specs/FEATURES.md, "Chrome", rule 11). The first item takes the focus; Up,
      Down, Home and End move it; Escape and a click outside close the menu. */
   import type { Snippet } from 'svelte';
 
@@ -12,20 +12,38 @@
     onclose: () => void;
     /** The caller's class, which the browser suites read. */
     cls: string;
+    /** Sits in the record dialog's scroll box: it opens up where the room is only above. */
+    flip?: boolean;
     children: Snippet;
   }
 
-  const { control, label, id, onclose, cls, children }: Props = $props();
+  const { control, label, id, onclose, cls, flip = false, children }: Props = $props();
+
+  /* The caps of `.menu.up` below, and its distance from the control. */
+  const UP_SHARE = 0.6;
+  const UP_MAX = 360;
+  const GAP = 8;
 
   let menu = $state<HTMLDivElement | undefined>(undefined);
 
   const items = (): HTMLElement[] =>
-    menu ? [...menu.querySelectorAll<HTMLElement>('[role="menuitem"]')] : [];
+    menu ? [...menu.querySelectorAll<HTMLElement>('[role="menuitem"]:not(:disabled)')] : [];
 
   const inside = (n: EventTarget | null): boolean =>
     n instanceof Node && (!!menu?.contains(n) || control.contains(n));
 
+  /* Decides the side before the focus, which would scroll the box to the first item. A
+     class, not state: the box must not move after the measure. */
+  function place(box: HTMLElement): void {
+    const room = box.closest('.modal-card')?.getBoundingClientRect();
+    if (!room) return;
+    const at = (box.offsetParent ?? control).getBoundingClientRect();
+    const need = Math.min(box.offsetHeight, window.innerHeight * UP_SHARE, UP_MAX) + GAP;
+    box.classList.toggle('up', room.bottom - at.bottom < need && at.top - room.top >= need);
+  }
+
   $effect(() => {
+    if (flip && menu) place(menu);
     items()[0]?.focus();
   });
 
@@ -122,5 +140,13 @@
     .menu :global([role='menuitem']) {
       min-height: 44px;
     }
+  }
+
+  .menu:global(.up) {
+    top: auto;
+    bottom: calc(100% + 8px);
+    max-height: min(60dvh, 360px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 </style>

@@ -1,7 +1,6 @@
 /* OrGrid.svelte on its own - the shared instrument three of the four roll
- * call sites route their cards through (StdPanel.svelte:157, AltPanel.svelte:228,
- * ListPage.svelte:676; RollPanel's own single card is its own component's
- * problem, not this one's).
+ * call sites route their cards through (`StdPanel`, `AltPanel`, `ListPage`;
+ * `RollPanel`'s own single card is its own component's problem, not this one's).
  *
  * `{#key cell.it}` keys a cell on the item itself rather than on its slot, so
  * a different record at the same position gets a new DOM node - the live app
@@ -32,8 +31,20 @@ interface Item {
  *  assignable there - a snippet's parameter is contravariant, so one that
  *  only accepts `Item` cannot stand in for one that must accept anything. */
 const card = createRawSnippet<[unknown]>((getIt) => ({
-  render: () => `<img data-id="${(getIt() as Item).id}">`
+  render: () => `<img src="a.webp" alt="" data-id="${(getIt() as Item).id}">`
 }));
+
+describe('the separators', () => {
+  it('stands one between two cards and three among four, and none beside one', async () => {
+    const items = [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }];
+    const { container, rerender } = render(OrGrid, { or: 'или', items, card });
+    expect(container.querySelectorAll('.ordiv')).toHaveLength(3);
+    await rerender({ or: 'или', items: items.slice(0, 2), card });
+    expect(container.querySelectorAll('.ordiv')).toHaveLength(1);
+    await rerender({ or: 'или', items: items.slice(0, 1), card });
+    expect(container.querySelectorAll('.ordiv')).toHaveLength(0);
+  });
+});
 
 describe('a cell keyed on the item it holds', () => {
   it('gets a new node when a different record lands in the same slot', async () => {

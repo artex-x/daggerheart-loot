@@ -13,6 +13,7 @@ import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
+import KeepNote from './KeepNote.svelte';
 import PrintCard from './PrintCard.svelte';
 import type { Loot } from '../lib/data.js';
 import { dict } from '../lib/dict.js';
@@ -31,6 +32,7 @@ import {
 import type { Env } from '../ports/index.js';
 import { fakeCloud, type FakeCloud } from '../ports/fake-cloud.js';
 import { SEED, uuid, type Seed } from '../ports/fake-cloud-seed.js';
+import { AppState } from '../state/app.svelte.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 import { emptyRanges, fakeLayout } from '../test/layout.js';
 
@@ -783,6 +785,11 @@ describe('black and white', () => {
 
 describe('the note under the bar', () => {
   const note = (): Element | null => document.querySelector('.keepnote');
+
+  it('draws nothing in a build without sign-in, which has no place to set a default', () => {
+    render(KeepNote, { app: new AppState(fakeEnv()) });
+    expect(note()).toBeNull();
+  });
 
   it('links the account while either switch differs from the default, and goes when both are back', async () => {
     const { container } = render(App, { env: await atSet('ci1-q1') });
@@ -1598,16 +1605,29 @@ describe('the states of #/p/', () => {
     expect(screen.getByRole('heading', { name: 'Печать карточек' })).toBeInTheDocument();
   });
 
-  it('says a failed read, and «Повторить» reads again', async () => {
+  it('draws a failed read as the error page, and its primary «Повторить» reads again', async () => {
     const cloud = fakeCloud(SEED, 'gm2');
     const env = await atSet('ci1-q1', { port: cloud });
     cloud.setOffline(true);
-    render(App, { env });
-    expect(await screen.findByText(ru.printLoadFailed)).toBeInTheDocument();
+    const { container } = render(App, { env });
+    expect(
+      await screen.findByRole('heading', { level: 1, name: ru.printLoadFailedTitle })
+    ).toBeInTheDocument();
+    expect(screen.getByText(ru.printLoadFailed)).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Печать карточек' })).toBeNull();
+    const retry = screen.getByRole('button', { name: 'Повторить' });
+    expect(retry).toHaveClass('primary');
+    await waitFor(() => {
+      expect(container.querySelector('[role="status"].said')).toHaveTextContent(
+        ru.printLoadFailedTitle
+      );
+    });
+    await expectNoA11yViolations(container);
     cloud.setOffline(false);
-    await userEvent.click(screen.getByRole('button', { name: 'Повторить' }));
+    await userEvent.click(retry);
     await opened();
     expect(document.querySelectorAll('.pcard[data-pid]')).toHaveLength(2);
+    expect(document.getElementById('main')).toHaveFocus();
   });
 
   it('draws the gone state for an unknown and an expired id', async () => {
@@ -1653,16 +1673,20 @@ describe('the states of #/p/', () => {
 
   it('draws the not-found page with no sign-in configured', () => {
     render(App, { env: at('#/p/set-twocards') });
-    expect(screen.getByRole('heading', { name: ru.notFound })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: ru.nowhereTitle })).toBeInTheDocument();
   });
 
   it('draws the retired page for an old long link in both builds, the address kept', () => {
     for (const cloud of [null, fakeCloud(SEED, 'gm2')]) {
       const env = at('#/print/ci1-q1', { cloud });
       const { unmount } = render(App, { env });
-      expect(screen.getByRole('heading', { name: ru.printLinkRetired })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { level: 1, name: ru.printLinkRetired })).toHaveClass(
+        'errtitle'
+      );
       expect(screen.getByText(ru.printLinkRetiredSub)).toBeInTheDocument();
       expect(home()).toHaveAttribute('href', '/roll/std');
+      expect(home()).toHaveClass('primary');
+      expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
       expect(env.router.hash()).toBe('#/print/ci1-q1');
       expect(document.querySelector('.psheet')).toBeNull();
       unmount();

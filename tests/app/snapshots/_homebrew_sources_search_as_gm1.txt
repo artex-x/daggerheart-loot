@@ -20,23 +20,28 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
   main ""
     heading "Мои предметы" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
-    StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
-    button "Импорт из файла" [expanded=false]
     navigation "Мои предметы"
-      link "Предметы" [url=/homebrew]
-      link "Источники" [url=/homebrew/sources]
-      link "Комплекты" [url=/homebrew/sets]
-      link "Карты правил" [url=/homebrew/rules]
+      link "Предметы 66" [url=/homebrew]
+        StaticText "Предметы"
+        StaticText "66"
+      link "Источники 15" [url=/homebrew/sources]
+        StaticText "Источники"
+        StaticText "15"
+      link "Комплекты 1" [url=/homebrew/sets]
+        StaticText "Комплекты"
+        StaticText "1"
+      link "Карты правил 1" [url=/homebrew/rules]
+        StaticText "Карты правил"
+        StaticText "1"
+    StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
     button "Новый источник"
-    searchbox "Найти источник" [value=07 focused=true]
     StaticText "15 источников из 20"
+    button "Импорт из файла" [expanded=false]
+    searchbox "Найти источник" [value=07 focused=true]
     link "Источник 07" [url=/tables/homebrew/f_src-hb_srcsaaaaaaaaaaag]
     StaticText "1 предмет"
     button "Разделы" [expanded=false]
-    button "Переименовать"
-    button "Скачать JSON"
-    button "Удалить"
+    button "Ещё" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -45,29 +50,26 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-?Справка
 EN
 RU
 daggerheart.com
 Аккаунт: gm1@example.test
 Бросок
+Ещё
 Импорт из файла
 Источник 07
-Источники
+Источники 15
 К содержимому
-Карты правил
-Комплекты
+Карты правил 1
+Комплекты 1
 Конфиденциальность
 ЛутDaggerheart
 Новый источник
 Открывать при запуске
-Переименовать
 Поиск
-Предметы
+Предметы 66
 Разделы
-Скачать JSON
 Таблицы
-Удалить
 Условия использования
 Установить как приложение
 
@@ -88,23 +90,28 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew/sources?as
   main ""
     heading "My items" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
-    StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
-    button "Import from file" [expanded=false]
     navigation "My items"
-      link "Items" [url=/en/homebrew]
-      link "Sources" [url=/en/homebrew/sources]
-      link "Sets" [url=/en/homebrew/sets]
-      link "Rule cards" [url=/en/homebrew/rules]
+      link "Items 66" [url=/en/homebrew]
+        StaticText "Items"
+        StaticText "66"
+      link "Sources 15" [url=/en/homebrew/sources]
+        StaticText "Sources"
+        StaticText "15"
+      link "Sets 1" [url=/en/homebrew/sets]
+        StaticText "Sets"
+        StaticText "1"
+      link "Rule cards 1" [url=/en/homebrew/rules]
+        StaticText "Rule cards"
+        StaticText "1"
+    StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
     button "New source"
-    searchbox "Find a source" [value=07 focused=true]
     StaticText "15 sources of 20"
+    button "Import from file" [expanded=false]
+    searchbox "Find a source" [value=07 focused=true]
     link "Source 07" [url=/en/tables/homebrew/f_src-hb_srcsaaaaaaaaaaag]
     StaticText "1 item"
     button "Sections" [expanded=false]
-    button "Rename"
-    button "Download JSON"
-    button "Delete"
+    button "More" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -113,28 +120,25 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew/sources?as
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-?Help
 Account: gm1@example.test
-Delete
-Download JSON
 EN
 Import from file
 Install as an app
-Items
+Items 66
 LootDaggerheart
+More
 New source
 Open on start
 Privacy
 RU
-Rename
 Roll
-Rule cards
+Rule cards 1
 Search
 Sections
-Sets
+Sets 1
 Skip to content
 Source 07
-Sources
+Sources 15
 Tables
 Terms of use
 daggerheart.com

@@ -81,10 +81,11 @@ export interface Badge {
 export function cardBadges(it: Record_, lang: Lang, t: Dict): Badge[] {
   const out: Badge[] = [];
 
-  if (it.eq) {
-    out.push({ cls: `eq-${it.eq.t}`, text: eqWord(EQ_TYPE, it.eq.t, lang) });
+  const type = it.eq?.t ?? it.eqType;
+  if (type) {
+    out.push({ cls: `eq-${type}`, text: eqWord(EQ_TYPE, type, lang) });
     /* A named thing rather than a rung on a ladder. */
-    if (!it.eq.line) out.push({ cls: 'uniq', text: t.unique, title: t.uniqueHint });
+    if (it.eq && !it.eq.line) out.push({ cls: 'uniq', text: t.unique, title: t.uniqueHint });
   } else {
     out.push({ cls: badgeKind(it), text: it.kind === 'consumable' ? t.cons : t.item });
   }

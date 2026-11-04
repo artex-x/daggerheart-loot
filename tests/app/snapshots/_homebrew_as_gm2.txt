@@ -1,6 +1,6 @@
 # #/homebrew as gm2
 # route: #/homebrew
-# why: an account with no homebrew: the Items tab with «Новый предмет», «0 предметов из 100», «Своих предметов пока нет - создайте первый выше или импортируйте файл.»
+# why: an account with no homebrew: the Items tab with «Новый предмет», «Импорт из файла» alone in the tool row, and the plate «Своих предметов пока нет» with its sentence and no button
 # as: gm2
 
 ## ru :: tree
@@ -20,18 +20,24 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
   main ""
     heading "Мои предметы" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
+    navigation "Мои предметы"
+      link "Предметы 0" [url=/homebrew]
+        StaticText "Предметы"
+        StaticText "0"
+      link "Источники 0" [url=/homebrew/sources]
+        StaticText "Источники"
+        StaticText "0"
+      link "Комплекты 0" [url=/homebrew/sets]
+        StaticText "Комплекты"
+        StaticText "0"
+      link "Карты правил 0" [url=/homebrew/rules]
+        StaticText "Карты правил"
+        StaticText "0"
+    link "Новый предмет" [url=/homebrew/new]
     StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
     button "Импорт из файла" [expanded=false]
-    navigation "Мои предметы"
-      link "Предметы" [url=/homebrew]
-      link "Источники" [url=/homebrew/sources]
-      link "Комплекты" [url=/homebrew/sets]
-      link "Карты правил" [url=/homebrew/rules]
-    link "Новый предмет" [url=/homebrew/new]
-    status ""
-    StaticText "0 предметов из 100"
-    StaticText "Своих предметов пока нет - создайте первый выше или импортируйте..." [namelen=70 namehash=e9719360]
+    StaticText "Своих предметов пока нет"
+    StaticText "Свой предмет ищется вместе с книгами, виден в «Таблицах» и попад..." [namelen=77 namehash=6006c615]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -40,23 +46,22 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-?Справка
 EN
 RU
 daggerheart.com
 Аккаунт: gm2@example.test
 Бросок
 Импорт из файла
-Источники
+Источники 0
 К содержимому
-Карты правил
-Комплекты
+Карты правил 0
+Комплекты 0
 Конфиденциальность
 ЛутDaggerheart
 Новый предмет
 Открывать при запуске
 Поиск
-Предметы
+Предметы 0
 Таблицы
 Условия использования
 Установить как приложение
@@ -78,18 +83,24 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm2]
   main ""
     heading "My items" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
+    navigation "My items"
+      link "Items 0" [url=/en/homebrew]
+        StaticText "Items"
+        StaticText "0"
+      link "Sources 0" [url=/en/homebrew/sources]
+        StaticText "Sources"
+        StaticText "0"
+      link "Sets 0" [url=/en/homebrew/sets]
+        StaticText "Sets"
+        StaticText "0"
+      link "Rule cards 0" [url=/en/homebrew/rules]
+        StaticText "Rule cards"
+        StaticText "0"
+    link "New item" [url=/en/homebrew/new]
     StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
     button "Import from file" [expanded=false]
-    navigation "My items"
-      link "Items" [url=/en/homebrew]
-      link "Sources" [url=/en/homebrew/sources]
-      link "Sets" [url=/en/homebrew/sets]
-      link "Rule cards" [url=/en/homebrew/rules]
-    link "New item" [url=/en/homebrew/new]
-    status ""
-    StaticText "0 items of 100"
-    StaticText "No items of your own yet - create the first one above or import ..." [namelen=71 namehash=f1a6f970]
+    StaticText "No items of your own yet"
+    StaticText "Your own item is found with the books, shows in Tables and goes ..." [namelen=75 namehash=e6f4f4a6]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -98,23 +109,22 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm2]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-?Help
 Account: gm2@example.test
 EN
 Import from file
 Install as an app
-Items
+Items 0
 LootDaggerheart
 New item
 Open on start
 Privacy
 RU
 Roll
-Rule cards
+Rule cards 0
 Search
-Sets
+Sets 0
 Skip to content
-Sources
+Sources 0
 Tables
 Terms of use
 daggerheart.com

@@ -248,7 +248,11 @@ describe('fieldOf and problemText', () => {
     [{ path: 'en', rule: 'pattern' }, 'hb-name', t.hbErrControl],
     [{ path: 'book', rule: 'gone' }, 'hb-book', t.hbErrBookGone],
     [{ path: 'eq.tier', rule: 'required' }, 'hb-eqtier', t.hbErrTier],
-    [{ path: 'eq.cls', rule: 'required' }, 'hb-cls', t.hbErrPick],
+    [{ path: 'eq.cls', rule: 'required' }, 'hb-cls', t.hbErrCls],
+    [{ path: 'eq.tr', rule: 'required' }, 'hb-tr', t.hbErrTr],
+    [{ path: 'eq.rg', rule: 'required' }, 'hb-rg', t.hbErrRg],
+    [{ path: 'eq.dt', rule: 'required' }, 'hb-dt', t.hbErrDt],
+    [{ path: 'eq.bu', rule: 'required' }, 'hb-bu', t.hbErrBu],
     [{ path: 'eq.dmg', rule: 'pattern' }, 'hb-dmg', t.hbErrDmg],
     [{ path: 'eq.as', rule: 'range' }, 'hb-as', t.hbErrAs],
     [{ path: 'eq.th', rule: 'type' }, 'hb-th', t.hbErrTh],
@@ -264,6 +268,15 @@ describe('fieldOf and problemText', () => {
 });
 
 describe('previewOf', () => {
+  it('keeps the type of an equipment draft with no tier, and sets no type with one', () => {
+    const none = previewOf('hb_x', { ...draftOf(AXE), eqTier: '' as const, t: 'armor' }, null);
+    expect(none.eq).toBeUndefined();
+    expect(none.eqType).toBe('armor');
+    const tiered = previewOf('hb_x', draftOf(AXE), null);
+    expect(tiered.eq).toBeDefined();
+    expect(tiered.eqType).toBeUndefined();
+  });
+
   it('draws no stat block until the author chose a tier', () => {
     const d = { ...draftOf(AXE), eqTier: '' as const };
     expect(previewOf(AXE.key, d, null).eq).toBeUndefined();

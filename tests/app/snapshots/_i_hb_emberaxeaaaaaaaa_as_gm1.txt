@@ -1,6 +1,6 @@
 # #/i/hb_emberaxeaaaaaaaa as gm1
 # route: #/i/hb_emberaxeaaaaaaaa
-# why: an own item on its page: the path line, the tag «Мастерская Ольхи (HB)», no «Скопировать ссылку», «Изменить» after the print link
+# why: an own item on its page: the path line, the tag «Мастерская Ольхи (HB)», «Изменить» after «Печать»
 # as: gm1
 
 ## ru :: tree
@@ -18,22 +18,19 @@ RootWebArea "Топор Тлеющих Углей - Генератор лута 
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
-    heading "Топор Тлеющих Углей" [level=1]
-    StaticText "Хоумбрю · Мастерская Ольхи · Холодное оружие · Ранг 2 "
-    link "показать в таблице" [url=/tables/homebrew/hb_emberaxeaaaaaaaa]
     button "Страница"
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
-    ... StaticText x8 of 12 same-shape siblings elided
-    button "Скопировать название" [description=Скопировать название]
-    button "Скопировать ссылку" [description=Скопировать ссылку]
+    StaticText "УНИКАЛЬНОЕ"
+    heading "Топор Тлеющих Углей" [level=1]
+    ... StaticText x6 of 10 same-shape siblings elided
+    link "показать в таблице" [url=/tables/homebrew/hb_emberaxeaaaaaaaa]
     StaticText "Двуручное"
     StaticText "Лезвие тлеет и не гаснет под дождём."
-    button "Отправить"
-    button "Скопировать изображение" [description=Скопировать изображение]
-    button "Скопировать текст" [description=Скопировать текст]
-    button "Добавить в список" [expanded=false]
+    button "В список" [expanded=false]
+    button "Поделиться"
     button "Печать" [description=Собрать карточки для печати: девять на лист A4]
     link "Изменить" [url=/homebrew/hb_emberaxeaaaaaaaa]
+    button "Ещё" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -47,18 +44,15 @@ RU
 daggerheart.com
 Аккаунт: gm1@example.test
 Бросок
-Добавить в список
+В список
+Ещё
 Изменить
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
-Отправить
 Печать
+Поделиться
 Поиск
-Скопировать изображение
-Скопировать название
-Скопировать ссылку
-Скопировать текст
 Страница
 Таблицы
 Условия использования
@@ -80,22 +74,19 @@ RootWebArea "Ember Axe - Daggerheart Loot Generator" [url=/i/en/hb_emberaxeaaaaa
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
-    heading "Ember Axe" [level=1]
-    StaticText "Homebrew · Alder Workshop · Blades · Tier 2 "
-    link "show in the table" [url=/en/tables/homebrew/hb_emberaxeaaaaaaaa]
     button "Page"
     StaticText "PRIMARY WEAPON"
-    ... StaticText x8 of 12 same-shape siblings elided
-    button "Copy name" [description=Copy name]
-    button "Copy link" [description=Copy link]
+    StaticText "UNIQUE"
+    heading "Ember Axe" [level=1]
+    ... StaticText x6 of 10 same-shape siblings elided
+    link "show in the table" [url=/en/tables/homebrew/hb_emberaxeaaaaaaaa]
     StaticText "Two-Handed"
     StaticText "The blade smoulders and does not go out in the rain."
-    button "Share"
-    button "Copy image" [description=Copy image]
-    button "Copy text" [description=Copy text]
     button "Add to list" [expanded=false]
+    button "Share"
     button "Print" [description=Lay these out for printing: nine to an A4 sheet]
     link "Edit" [url=/en/homebrew/hb_emberaxeaaaaaaaa]
+    button "More" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -106,14 +97,11 @@ RootWebArea "Ember Axe - Daggerheart Loot Generator" [url=/i/en/hb_emberaxeaaaaa
 ## en :: controls
 Account: gm1@example.test
 Add to list
-Copy image
-Copy link
-Copy name
-Copy text
 EN
 Edit
 Install as an app
 LootDaggerheart
+More
 Page
 Print
 Privacy

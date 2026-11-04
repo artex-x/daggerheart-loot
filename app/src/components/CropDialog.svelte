@@ -1,6 +1,6 @@
 <script lang="ts">
   /* «Обрезать картинку» (m41): the square crop of a chosen file. It decodes the file itself
-     and closes the decoded picture when it goes, so no bitmap outlives it; a drag, the
+     and closes the decoded picture when it goes, so no bitmap outlives it; a drag, a tap, the
      arrow keys and «Масштаб» move and zoom the square; «Готово» encodes the 640 px and the
      160 px file of the same square. It loads as a lazy chunk from ArtField.svelte, and it
      sits inside the editor's form, so it stops its keys: the editor saves on Enter in an
@@ -37,6 +37,9 @@
   const STEP = 0.02;
   const STEP_BIG = 0.1;
   const ZOOM_STEP = 0.1;
+  /* The steps of the two buttons, and the movement under which a press is a tap. */
+  const ZOOM_PRESS = 0.25;
+  const TAP_PX = 4;
 
   let dialog = $state<HTMLDialogElement | null>(null);
   let stage = $state<HTMLDivElement | undefined>(undefined);
@@ -48,7 +51,14 @@
   let zoom = $state(1);
   let cx = $state(0);
   let cy = $state(0);
-  let drag: { x: number; y: number; cx: number; cy: number; scale: number } | null = null;
+  let drag: {
+    x: number;
+    y: number;
+    cx: number;
+    cy: number;
+    scale: number;
+    moved: boolean;
+  } | null = null;
   /* Set once an answer went to the field: a late `close` event changes nothing then. */
   let answered = false;
 
@@ -162,19 +172,29 @@
     if ('setPointerCapture' in el) el.setPointerCapture(e.pointerId);
     /* Source pixels per screen pixel. */
     const scale = rect.side / (width * (1 - 2 * INSET));
-    drag = { x: e.clientX, y: e.clientY, cx, cy, scale };
+    drag = { x: e.clientX, y: e.clientY, cx, cy, scale, moved: false };
   }
 
   function onmove(e: PointerEvent): void {
     if (!drag) return;
+    if (Math.hypot(e.clientX - drag.x, e.clientY - drag.y) >= TAP_PX) drag.moved = true;
+    if (!drag.moved) return;
     moveTo(
       drag.cx - (e.clientX - drag.x) * drag.scale,
       drag.cy - (e.clientY - drag.y) * drag.scale
     );
   }
 
-  function onup(): void {
+  /* A tap centers the frame on the point: the one-pointer way to move it (WCAG 2.5.7). */
+  function onup(e: PointerEvent): void {
+    const was = drag;
     drag = null;
+    if (!was || was.moved || e.type !== 'pointerup') return;
+    const box = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    moveTo(
+      was.cx + (e.clientX - box.left - box.width / 2) * was.scale,
+      was.cy + (e.clientY - box.top - box.height / 2) * was.scale
+    );
   }
 
   async function done(): Promise<void> {
@@ -225,7 +245,7 @@
   <div class="box">
     <h2 id="hb-crop-title">{t.hbArtCrop}</h2>
     {#if image}
-      <p class="hint" id="hb-crop-hint">{t.hbArtCropHint}</p>
+      <p class="vh" id="hb-crop-hint">{t.hbArtCropHint}</p>
       <!-- The stage takes the arrow keys and + and -: no native control moves a square in
          two directions, so the group itself holds the focus. -->
       <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
@@ -248,7 +268,13 @@
       <div class="zoom">
         <label for="hb-crop-zoom">{t.hbArtZoom}</label>
         <div class="range">
-          <span aria-hidden="true">&minus;</span>
+          <Button
+            label={t.cropLess}
+            disabled={busy || zoom <= 1}
+            onclick={() => {
+              moveTo(cx, cy, zoom - ZOOM_PRESS);
+            }}>&minus;</Button
+          >
           <input
             id="hb-crop-zoom"
             type="range"
@@ -261,7 +287,13 @@
               moveTo(cx, cy, Number(e.currentTarget.value));
             }}
           />
-          <span aria-hidden="true">+</span>
+          <Button
+            label={t.cropMore}
+            disabled={busy || zoom >= ZOOM_MAX}
+            onclick={() => {
+              moveTo(cx, cy, zoom + ZOOM_PRESS);
+            }}>+</Button
+          >
         </div>
       </div>
       {#if busy}
@@ -311,12 +343,6 @@
     font-size: var(--t-title);
   }
 
-  .hint {
-    margin: 0;
-    font-size: var(--t-data);
-    color: var(--muted);
-  }
-
   /* off m41's `.cropstage`: never wider than a landscape phone's height can show. */
   .stage {
     position: relative;
@@ -351,12 +377,21 @@
     pointer-events: none;
   }
 
-  .sq::before {
+  .sq::before,
+  .sq::after {
     content: '';
     position: absolute;
+    border: 0 solid rgb(255 255 255 / 22%);
+  }
+
+  .sq::before {
     inset: 33.3% 0;
-    border-top: 1px solid rgb(255 255 255 / 22%);
-    border-bottom: 1px solid rgb(255 255 255 / 22%);
+    border-width: 1px 0;
+  }
+
+  .sq::after {
+    inset: 0 33.3%;
+    border-width: 0 1px;
   }
 
   .zoom {
@@ -380,7 +415,52 @@
   .range input {
     flex: 1;
     min-width: 0;
-    accent-color: var(--gold);
+  }
+
+  .range :global(.btn) {
+    flex: none;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  /* A thumb a finger can hold (WCAG 2.5.8): the browser's own draws at 16 px and takes no
+     size, so the track and the thumb are drawn here. */
+  .range input {
+    appearance: none;
+    height: 44px;
+    background: none;
+  }
+
+  .range input::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: var(--r-sm);
+    background: var(--line2);
+  }
+
+  .range input::-moz-range-track {
+    height: 4px;
+    border-radius: var(--r-sm);
+    background: var(--line2);
+  }
+
+  .range input::-webkit-slider-thumb {
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    margin-top: -10px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--gold);
+  }
+
+  .range input::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--gold);
   }
 
   .acts {

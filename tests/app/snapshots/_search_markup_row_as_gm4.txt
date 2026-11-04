@@ -22,16 +22,14 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search?
     button "Открывать при запуске" [pressed=false]
     StaticText "Поиск сразу по 1459 позициям - добыча, расходники и снаряжение, ..." [namelen=111 namehash=fac0a146]
     searchbox "Поиск по названию или описанию..." [value=узоролист focused=true]
-    StaticText "ТИП"
-    button "Предметы" [pressed=true]
-    button "Расходники" [pressed=true]
-    button "Снаряжение" [pressed=true]
+    button "Выбрать"
+    button "Все" [pressed=true]
+    button "Предметы" [pressed=false]
+    button "Расходники" [pressed=false]
+    button "Снаряжение" [pressed=false]
     switch "Свои предметы" [checked=true]
     StaticText "Свои предметы"
-    checkbox "Выбрать все (1)" [checked=false]
-    StaticText "Выбрать все (1)"
-    checkbox "Свиток Узоролиста" [checked=false]
-    button "Свиток Узоролиста Раз за отдых: разверните свиток, и узор ответи..." [namelen=202 namehash=94a247ca]
+    button "Свиток Узоролиста РАСХОДНИК ХОУМБРЮ Раз за отдых: разверните сви..." [namelen=202 namehash=a4fd3903]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -45,15 +43,17 @@ RU
 daggerheart.com
 Аккаунт: gm4@example.test
 Бросок
+Все
+Выбрать
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
 Открывать при запуске
 Поиск
+Поиск по названию или описанию...
 Предметы
 Расходники
-Свиток Узоролиста
-Свиток УзоролистаРаз за отдых: разверните свиток, и узор ответит... [namelen=192 namehash=d7a67899]
+Свиток УзоролистаРасходникХоумбрюРаз за отдых: разверните свиток... [namelen=192 namehash=6a3beded]
 Снаряжение
 Таблицы
 Условия использования
@@ -78,16 +78,14 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search?as=gm4]
     button "Open on start" [pressed=false]
     StaticText "Search all 1459 entries at once - loot, consumables and equipmen..." [namelen=115 namehash=764fdaa6]
     searchbox "Search by name or description..." [value=узоролист focused=true]
-    StaticText "TYPE"
-    button "Items" [pressed=true]
-    button "Consumables" [pressed=true]
-    button "Equipment" [pressed=true]
+    button "Select"
+    button "All" [pressed=true]
+    button "Items" [pressed=false]
+    button "Consumables" [pressed=false]
+    button "Equipment" [pressed=false]
     switch "Own items" [checked=true]
     StaticText "Own items"
-    checkbox "Select all (1)" [checked=false]
-    StaticText "Select all (1)"
-    checkbox "Patternleaf Scroll" [checked=false]
-    button "Patternleaf Scroll Once per rest: unroll the scroll, and the pat..." [namelen=228 namehash=8da1d6a3]
+    button "Patternleaf Scroll CONSUMABLE HOMEBREW Once per rest: unroll the..." [namelen=228 namehash=3dd26ad7]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -97,6 +95,7 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search?as=gm4]
 
 ## en :: controls
 Account: gm4@example.test
+All
 Consumables
 EN
 Equipment
@@ -104,12 +103,13 @@ Install as an app
 Items
 LootDaggerheart
 Open on start
-Patternleaf Scroll
-Patternleaf ScrollOnce per rest: unroll the scroll, and the patt... [namelen=218 namehash=257bc437]
+Patternleaf ScrollConsumableHomebrewOnce per rest: unroll the sc... [namelen=218 namehash=33b12bea]
 Privacy
 RU
 Roll
 Search
+Search by name or description...
+Select
 Skip to content
 Tables
 Terms of use

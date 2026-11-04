@@ -6,8 +6,8 @@
  * and every legacy suite uses - because a handful of real defects only show
  * up on the far side of a browser's own microtask checkpoint (the
  * `isConnected` guard) or need a real network, a real clipboard stub, or a
- * real second tab to mean anything at all. Seventy-one cases in
- * seventy runs (4 and 5 share one), no ancestor. Like every suite here it drives
+ * real second tab to mean anything at all. Eighty-five cases in
+ * eighty-four runs (4 and 5 share one), no ancestor. Like every suite here it drives
  * dist-test/, the test build (docs/specs/COVERAGE.md, "Test layers"): signed
  * out it draws the sign-in prompt where a list would be made, so the cases
  * that make one open as the seed's `gm2`. */
@@ -89,7 +89,7 @@ function inside(a, b) {
 async function newListFromCard() {
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/i/ci1', { as: 'gm2' });
-  await d.press('Добавить в список');
+  await d.press('В список');
   await d.press('+ Новый список');
   const box = await newListInputBox(page);
   ok(!!box, '1 (card): the new-list form did not open');
@@ -103,7 +103,7 @@ async function newListFromBar() {
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/tables', { as: 'gm2' });
   await d.tick('Первоклассный Спальный Мешок'); // ticking a row is not this case's point
-  await d.press('Добавить в список');
+  await d.press('В список');
   await d.press('+ Новый список');
   const box = await newListInputBox(page);
   ok(!!box, '2 (selection bar): the new-list form did not open');
@@ -117,8 +117,8 @@ async function newListFromModal() {
   const { ctx, page, d } = await fresh({ width: 1100, height: 900 });
   await d.open('#/tables', { as: 'gm2' });
   await d.press('Самоцвет Чутья');
-  ok(await d.has('Добавить в список'), '3 (modal): the modal did not open');
-  await d.press('Добавить в список');
+  ok(await d.has('В список'), '3 (modal): the modal did not open');
+  await d.press('В список');
   await d.press('+ Новый список');
   const box = await newListInputBox(page);
   ok(!!box, '3 (modal): the new-list form did not open');
@@ -147,8 +147,8 @@ async function addToListMenuStaysInModal() {
   const { ctx, page, d } = await fresh({ width: 1100, height: 900 });
   await d.open('#/tables', { as: 'gm2' });
   await d.press('Кольцо Тишины');
-  ok(await d.has('Добавить в список'), '23 (menu in the modal): the modal did not open');
-  await d.press('Добавить в список');
+  ok(await d.has('В список'), '23 (menu in the modal): the modal did not open');
+  await d.press('В список');
 
   /* `.card` is `overflow: clip` (RecordCard.svelte), which creates no
      scroll container, so a `.card.scrollTop` reading would be 0 regardless
@@ -196,7 +196,6 @@ async function addToListMenuStaysInModal() {
 async function twoFramesPicked() {
   const { ctx, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/tables/other_frames');
-  await d.press('Фильтры');
   await d.press('Пир зверей');
   await d.press('Колоссы Сухоземья');
   const hash1 = await d.hash();
@@ -206,27 +205,16 @@ async function twoFramesPicked() {
   );
   const rows1 = await d.count('.rows .row[data-row]');
   ok(rows1 === 57, '4 (two frames): ' + rows1 + ' rows instead of 57');
-  const pills1 = await d.count('.fpill');
-  ok(pills1 === 2, '4 (two frames): ' + pills1 + ' pills instead of 2');
+  const pills1 = await d.count('[data-fval][aria-pressed="true"]');
+  ok(pills1 === 2, '4 (two frames): ' + pills1 + ' pressed chips instead of 2');
   await ctx.close();
 
-  const { ctx: ctx2, page: page2, d: d2 } = await fresh({ width: 1180, height: 900 });
+  const { ctx: ctx2, d: d2 } = await fresh({ width: 1180, height: 900 });
   await d2.open('#/tables/other_frames/f_frame-beast_feast-colossus');
   const rows2 = await d2.count('.rows .row[data-row]');
   ok(rows2 === 57, '5 (link arriving fresh): ' + rows2 + ' rows instead of 57');
-  const pills2 = await d2.count('.fpill');
-  ok(pills2 === 2, '5 (link arriving fresh): ' + pills2 + ' pills instead of 2');
-  /* A one-line pill keeps the strip's 32px, beside «Сбросить всё»; only a long
-     name wraps it taller (docs/specs/FEATURES.md, rule 16). */
-  const heights = await page2.evaluate(() =>
-    [...document.querySelectorAll('.fpill, .fclear')].map(
-      (e) => e.getBoundingClientRect().height
-    )
-  );
-  ok(
-    heights.length === 3 && heights.every((h) => h === 32),
-    '5 (link arriving fresh): pill and reset heights ' + heights.join(', ') + ', expected 32'
-  );
+  const pills2 = await d2.count('[data-fval][aria-pressed="true"]');
+  ok(pills2 === 2, '5 (link arriving fresh): ' + pills2 + ' pressed chips instead of 2');
   await ctx2.close();
 }
 
@@ -294,7 +282,7 @@ async function dialogSemantics() {
 async function copyTextThroughClipboard() {
   const { ctx, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/i/ci1');
-  await d.press('Скопировать текст');
+  await d.more('Скопировать текст');
   const clip = await d.clipboard();
   ok(!!clip?.text, '9 (copy text): text/plain did not reach the clipboard');
   ok(!!clip?.html, '9 (copy text): text/html did not reach the clipboard');
@@ -308,7 +296,7 @@ async function copyTextThroughClipboard() {
 async function copyImage() {
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/i/ci1');
-  await d.press('Скопировать изображение');
+  await d.more('Скопировать изображение');
   /* The canvas loads, draws and encodes the picture after the press
      returns; the clipboard write or the fallback toast marks the outcome. */
   await page
@@ -360,6 +348,7 @@ async function brokenArtPath() {
     await page.evaluate(glyphOnly, '.card-media'),
     '11 (no picture): the card well does not show the kind glyph alone'
   );
+  await d.openMore();
   ok(
     await d.has('Скопировать текст'),
     '11 (no picture): the text button disappeared along with the picture'
@@ -415,7 +404,7 @@ async function focusSurvivesKeystroke() {
     (ph) =>
       document.activeElement instanceof HTMLInputElement &&
       document.activeElement.placeholder === ph,
-    'Поиск по названию или описанию...'
+    'Поиск'
   );
   ok(stillFocused, '12 (focus survives input): focus left the search box after the redraw');
   await ctx.close();
@@ -540,7 +529,7 @@ async function rollReplacesCardImg() {
     '14 (roll card): the original <img> was not found - was .results .card-media img renamed?'
   );
   const rollName = await page.evaluate(() => {
-    const btn = document.querySelector('.numrow button.primary');
+    const btn = document.querySelector('.rp-ctrl button.primary');
     return btn ? (btn.textContent || '').replace(/\s+/g, ' ').trim() : '';
   });
   ok(!!rollName, '14 (roll card): the roll button was not found');
@@ -572,7 +561,7 @@ async function historyBackForward() {
   await page.goBack();
   await d.settle();
   const chip = await page.evaluate(
-    () => document.querySelector('.subchips .chip.on')?.textContent
+    () => document.querySelector('.tablenav .tabs [aria-current="page"]')?.textContent
   );
   ok(chip === 'Броня', '15 (navigation): back returned the wrong table - ' + chip);
   await page.goForward();
@@ -615,6 +604,45 @@ async function selectionBarGeometry() {
   }, 360);
   ok(spill.length === 0, '16 (selection bar, 360px): ' + spill.join('; '));
   await ctx2.close();
+}
+
+/** 84. The filter column stuck under the header ends above the selection bar, so its last
+ *  chip clears the bar: it scrolls inside itself, out of the page's scroll padding. */
+async function filterColumnClearsTheBar() {
+  const { ctx, page, d } = await fresh({ width: 1180, height: 720 });
+  await d.open('#/tables/eq_weapon');
+  await d.press('Выбрать');
+  const m = await page.evaluate(async () => {
+    window.scrollTo(0, 900);
+    const col = document.querySelector('.fcol');
+    await new Promise((r) => requestAnimationFrame(r));
+    col.scrollTop = col.scrollHeight;
+    await new Promise((r) => requestAnimationFrame(r));
+    const barTop = document.querySelector('.selbarwrap').getBoundingClientRect().top;
+    return {
+      barTop,
+      colBottom: col.getBoundingClientRect().bottom,
+      chipBottom: [...col.querySelectorAll('.chip')].at(-1).getBoundingClientRect().bottom
+    };
+  });
+  ok(
+    m.colBottom <= m.barTop && m.chipBottom <= m.barTop,
+    '84 (filter column): the bar covers the column - ' + JSON.stringify(m)
+  );
+  await ctx.close();
+}
+
+/** 85. The shared page's tallest action row stays under 45% of a landscape phone. */
+async function selectionBarInLandscape() {
+  const { ctx, page, d } = await fresh({ width: 640, height: 360 });
+  await d.open('#/s/player-token-1', { as: 'gm2' });
+  await waitIn(page, bodyHas, 'Лавка кузнеца');
+  await d.tick('Первоклассный Спальный Мешок');
+  const h = await page.evaluate(
+    () => document.querySelector('.selbarwrap').getBoundingClientRect().height
+  );
+  ok(h <= 360 * 0.45, '85 (selection bar in landscape): the bar is ' + h + ' px tall');
+  await ctx.close();
 }
 
 /** 17. A real HTML5 drag reorder, ported from the legacy `lists2.js`. */
@@ -1054,7 +1082,9 @@ async function tileGeometryNoArt() {
   await page.goto('about:blank');
   await page.goto(TARGETS.next + '#/tables/eq_weapon', { waitUntil: 'domcontentloaded' });
   await ready(page);
-  await d.press('Сеткой');
+  await d.press('Сетка');
+  /* The tile's box shows in the selection mode only. */
+  await d.press('Выбрать');
   await new Promise((r) => setTimeout(r, 700));
   const widths = await page.$$eval('.tilewrap .tile', (e) => [
     ...new Set(e.map((x) => Math.round(x.getBoundingClientRect().width)))
@@ -1147,7 +1177,7 @@ async function moneyHelpAndPressedPicker() {
   const { ctx: ctx2, page: page2, d: d2 } = await fresh({ width: 1180, height: 900 });
   await d2.open('#/tables/wondrous');
   await d2.open('#/i/w3');
-  await d2.press('Добавить в список');
+  await d2.press('В список');
   const btn = await page2.evaluate(() => {
     const b = document.querySelector('.cardpick .btn');
     return b ? { on: b.classList.contains('on'), color: getComputedStyle(b).color } : null;
@@ -1291,7 +1321,7 @@ async function listMenuKeepsItsControlsInView() {
     await d.open('#/i/ci1', { as: 'gm2' });
     await d.settled(at);
     await d.accountLists(specs);
-    await d.press('Добавить в список');
+    await d.press('В список');
     await d.settle();
 
     const m = await page.evaluate(() => {
@@ -1831,7 +1861,7 @@ async function cardMediaRingVisible() {
     await ctx.close();
   }
   await ringAt('#/i/ci1', '.card.full .card-media', 'full', true);
-  await ringAt('#/roll/wondrous', '.card.compact .card-media', 'compact', false);
+  await ringAt('#/roll/wondrous', '.card.face .card-media', 'face', false);
 }
 
 /** 32. The undo toast an action inside the record dialog raises is drawn
@@ -1852,7 +1882,7 @@ async function undoToastInRecordDialog() {
   /* The menu stays open after a pick, so a second removal presses the chip only. */
   const remove = async () => {
     if (!(await page.evaluate(() => !!document.querySelector('dialog[open] .dropmenu')))) {
-      await d.press('Добавить в список');
+      await d.press('В список');
     }
     await d.press('Клад дракона');
     await d.settle();
@@ -2195,7 +2225,7 @@ async function signInFromTheBar() {
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/tables');
   await d.tick('Первоклассный Спальный Мешок');
-  await d.press('Добавить в список');
+  await d.press('В список');
   await d.press('+ Новый список');
   ok(
     (await page.evaluate(() => document.body.innerText)).includes(
@@ -2233,7 +2263,7 @@ async function signInFromTheBar() {
   const again = await fresh({ width: 1180, height: 900 });
   await again.d.open('#/tables');
   await again.d.tick('Первоклассный Спальный Мешок');
-  await again.d.press('Добавить в список');
+  await again.d.press('В список');
   await again.d.press('+ Новый список');
   await pressPromptSignIn(again.page);
   await again.d.press('Поиск');
@@ -2262,12 +2292,12 @@ async function printAfterSignIn() {
   const text = () => page.evaluate(() => document.body.innerText);
   ok(
     (await text()).includes('Войдите, чтобы печатать карточки.') &&
-      !(await page.$('.selbarwrap .selacts')),
+      !(await page.$('.selbarwrap .selacts .seldrop')),
     at + "the prompt did not take the bar's action row"
   );
   await d.press('Отмена');
   ok(
-    !!(await page.$('.selbarwrap .selacts')),
+    !!(await page.$('.selbarwrap .selacts .seldrop')),
     at + '«Отмена» did not bring the action row back'
   );
   await d.press('Печать');
@@ -2392,7 +2422,7 @@ async function promptInDialogMenuAt360() {
   const { ctx, page, d } = await fresh({ width: 360, height: 740 });
   await d.open('#/tables');
   await d.press('Кольцо Тишины');
-  await d.press('Добавить в список');
+  await d.press('В список');
   await d.press('+ Новый список');
   await d.settle();
   const m = await page.evaluate(() => {
@@ -2881,7 +2911,7 @@ async function notifyAlways() {
   await d.go('#/s/player-token-1');
   await waitIn(page, bodyHas, 'Лавка кузнеца');
   await d.tick('Первоклассный Спальный Мешок');
-  await d.press('Добавить в список');
+  await d.press('В список');
   await d.press('Список второго ГМа');
   ok(
     await waitIn(page, bodyHas, 'Добавлено в «Список второго ГМа». Владелец получил запрос.'),
@@ -3483,15 +3513,23 @@ async function relationFolds() {
       await waitIn(page, () => !!document.querySelector('.hbtab .head .name button')),
       at + 'the #/homebrew/sets card folds did not draw'
     );
-    const heights = await page.evaluate(() =>
-      [
-        ...document.querySelectorAll('nav a.chip'),
-        ...document.querySelectorAll('.hbtab .head .name button')
-      ].map((e) => [e.textContent.trim(), e.getBoundingClientRect().height])
-    );
+    /* Up to 760 px the tabs are the picker and the links of its sheet. */
+    const measure = (sel) =>
+      page.evaluate(
+        (s) =>
+          [...document.querySelectorAll(s)].map((e) => [
+            e.textContent.trim(),
+            e.getBoundingClientRect().height
+          ]),
+        sel
+      );
+    const heights = await measure('.hbtabs .picker, .hbtab .head .name button');
+    await d.press('Мои предметы: Комплекты');
+    await waitIn(page, () => document.querySelectorAll('dialog[open] .tab').length > 0);
+    heights.push(...(await measure('dialog[open] .tab')));
     ok(
-      heights.length === 5 && heights.every(([, h]) => h >= 24),
-      at + 'a tab chip or a card fold is under 24 px - ' + JSON.stringify(heights)
+      heights.length === 6 && heights.every(([, h]) => h >= 24),
+      at + 'a tab control or a card fold is under 24 px - ' + JSON.stringify(heights)
     );
     await ctx.close();
   }
@@ -3550,14 +3588,14 @@ async function relationFolds() {
     ok(
       await waitIn(page, () =>
         [...document.querySelectorAll('.preview button')].some(
-          (b) => b.textContent.trim() === 'Добавить в список'
+          (b) => b.textContent.trim() === 'В список'
         )
       ),
-      at + 'the preview does not draw «Добавить в список»'
+      at + 'the preview does not draw «В список»'
     );
     const add = await page.evaluateHandle(() =>
       [...document.querySelectorAll('.preview button')].find(
-        (b) => b.textContent.trim() === 'Добавить в список'
+        (b) => b.textContent.trim() === 'В список'
       )
     );
     await add.asElement()?.click();
@@ -3824,7 +3862,7 @@ async function longListName() {
  *  labels and boxes lie inside 0..360; nothing scrolls sideways (docs/specs/FEATURES.md,
  *  "Consistency rules", rule 15). */
 async function fieldHelpAt360() {
-  const at = '67 (field help and threshold labels at 360): ';
+  const at = '67 (no field help and the threshold labels at 360): ';
   const { ctx, page, d } = await fresh({ width: 360, height: 640 });
   const sideways = () => page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
   await d.open('#/homebrew/hb_emberaxeaaaaaaaa', { as: 'gm1' });
@@ -3833,28 +3871,11 @@ async function fieldHelpAt360() {
     at + 'the axe editor did not draw'
   );
   await d.click('Связи');
-  await d.click('Подсказка: Комплект');
-  const help = await page.evaluate(() => {
-    const button = document.querySelector('button[aria-controls="hb-set-help"]');
-    const hint = document.getElementById('hb-set-help');
-    const label = document.querySelector('label[for="hb-set"]');
-    const h = hint?.getBoundingClientRect();
-    const l = label?.getBoundingClientRect();
-    return {
-      expanded: button?.getAttribute('aria-expanded') ?? null,
-      left: h?.left ?? -1,
-      right: h?.right ?? 999,
-      height: h?.height ?? 0,
-      under: !!h && !!l && h.top >= l.bottom
-    };
-  });
-  ok(help.expanded === 'true', at + 'the «?» is not expanded - ' + JSON.stringify(help));
   ok(
-    help.height > 0 && help.left >= 0 && help.right <= 360,
-    at + 'the hint lies outside 0..360 - ' + JSON.stringify(help)
+    !(await page.$('.hbform button[aria-label^="Подсказка"]')),
+    at + 'the editor still draws a field «?»'
   );
-  ok(help.under, at + 'the hint is not under its label - ' + JSON.stringify(help));
-  ok(!(await sideways()), at + 'the open hint scrolls the editor sideways');
+  ok(!(await sideways()), at + 'the open fold scrolls the editor sideways');
   await page.evaluate(() => {
     location.hash = '#/homebrew/new';
   });
@@ -4576,48 +4597,30 @@ async function sharedRowTickColumn() {
 }
 
 /** 78. «Сохранить себе» on a catalog record as `gm1`: at 360x740 on `#/i/cm26`, the longest
- *  catalog name, the group inside 0..360 and its button as tall as «Печать», nothing
- *  sideways; two presses, and the second toast names «... (2)» with its «Изменить» inside
- *  0..360; at 1180x900 the group under the other pick buttons (docs/specs/FEATURES.md,
+ *  catalog name, the `h1` wraps inside 0..360 and nothing goes sideways; two presses in
+ *  «Ещё», and the second toast names «... (2)» with its «Изменить» inside 0..360; at
+ *  1180x900 the menu opens under «Ещё», inside the window (docs/specs/FEATURES.md,
  *  "Records"). */
 async function catalogCopyPerPress() {
   const at = '78 (a copy per press of a catalog record): ';
   const NAME = 'Стрелы и Болты с Метеоритными Наконечниками';
-  const measure = (page) =>
-    page.evaluate(() => {
-      const group = document.querySelector('.savegroup');
-      const save = group?.querySelector('button');
-      const print = [...document.querySelectorAll('button')].find(
-        (b) => b.textContent.trim() === 'Печать'
-      );
-      const g = group?.getBoundingClientRect();
-      const s = save?.getBoundingClientRect();
-      const p = print?.getBoundingClientRect();
-      return {
-        group: g ? { left: g.left, right: g.right, top: g.top } : null,
-        save: s ? s.height : null,
-        print: p ? { height: p.height, bottom: p.bottom } : null,
-        sideways: document.documentElement.scrollWidth > innerWidth
-      };
-    });
   {
     const { ctx, page, d } = await fresh({ width: 360, height: 740 });
     await d.open('#/i/cm26', { as: 'gm1' });
+    const narrow = await page.evaluate(() => {
+      const r = document.querySelector('h1').getBoundingClientRect();
+      return {
+        left: r.left,
+        right: r.right,
+        sideways: document.documentElement.scrollWidth > innerWidth
+      };
+    });
     ok(
-      await waitIn(page, () => !!document.querySelector('.savegroup button')),
-      at + 'the group «Сохранить себе» did not draw'
-    );
-    const narrow = await measure(page);
-    ok(
-      !!narrow.group && narrow.group.left >= 0 && narrow.group.right <= 360,
-      at + 'the group lies outside 0..360 - ' + JSON.stringify(narrow)
-    );
-    ok(
-      narrow.save !== null && narrow.print !== null && narrow.save === narrow.print.height,
-      at + 'the button is not as tall as «Печать» - ' + JSON.stringify(narrow)
+      narrow.left >= 0 && narrow.right <= 360,
+      at + 'the heading lies outside 0..360 - ' + JSON.stringify(narrow)
     );
     ok(!narrow.sideways, at + 'the page scrolls sideways at 360');
-    await d.press('Сохранить себе');
+    await d.more('Сохранить себе');
     ok(
       await waitIn(
         page,
@@ -4626,7 +4629,10 @@ async function catalogCopyPerPress() {
       ),
       at + 'the first press raised no toast with the name'
     );
-    await d.press('Сохранить себе');
+    /* By keys: the first toast covers the end of the menu, and the focus is on «Ещё». */
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('End');
+    await page.keyboard.press('Enter');
     ok(
       await waitIn(
         page,
@@ -4650,17 +4656,210 @@ async function catalogCopyPerPress() {
   {
     const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
     await d.open('#/i/cm26', { as: 'gm1' });
+    await d.openMore();
+    const wide = await page.evaluate(() => {
+      const m = document.querySelector('[role="menu"]').getBoundingClientRect();
+      const b = document
+        .querySelector('.cardpick [aria-haspopup="menu"]')
+        .getBoundingClientRect();
+      return { top: m.top, right: m.right, under: b.bottom, view: innerWidth };
+    });
     ok(
-      await waitIn(page, () => !!document.querySelector('.savegroup button')),
-      at + 'the group did not draw at 1180'
-    );
-    const wide = await measure(page);
-    ok(
-      !!wide.group && !!wide.print && wide.group.top >= wide.print.bottom,
-      at + 'the group is not under the other pick buttons - ' + JSON.stringify(wide)
+      wide.top >= wide.under && wide.right <= wide.view,
+      at + 'the menu is not under «Ещё» inside the window - ' + JSON.stringify(wide)
     );
     await ctx.close();
   }
+}
+
+/** 88. The action row and the dialog's dock at every width. On the record page at 360, 320
+ *  and 1180, RU and EN, signed out, signed in and as the author: every control inside the
+ *  window and uncut, at most three lines, «В список» the only gold primary, and «Ещё» opens
+ *  a menu inside the window with 44 px items at 360. In the dialog at 360x640, 640x360 and
+ *  1180x720: the dock holds the card's bottom, or joins the scroll below 481 px of height and
+ *  from 761 px, takes at most 0.45 of the window, «Ещё» opens up from the dock, or down from
+ *  the row, inside the card, and a toast leaves the dock in place; a prompt leaves «Ещё»'s
+ *  menu under the button, and a rule card draws its chevron; with 150 lists the add menu scrolls inside the window with its search and
+ *  «+ Новый список» in view (docs/specs/FEATURES.md, "Records"). */
+async function recordActionsFit() {
+  const at = '88 (the record actions fit): ';
+  for (const lang of ['ru', 'en']) {
+    for (const [width, height] of [
+      [360, 640],
+      [320, 568],
+      [1180, 720]
+    ]) {
+      const { ctx, page, d } = await fresh({ width, height, lang });
+      for (const [route, as] of [
+        ['#/i/ci1', undefined],
+        ['#/i/ci1', 'gm3'],
+        ['#/i/hb_emberaxeaaaaaaaa', 'gm1']
+      ]) {
+        const where = [route, as ?? 'signed out', lang, width].join(' ') + ': ';
+        await d.open(route, { as, lang });
+        const row = await page.evaluate(() => {
+          const controls = [
+            ...document.querySelectorAll(
+              '.cardpick > .btn, .cardpick .seldrop > .btn, .cardpick .morewrap > .btn'
+            )
+          ];
+          return {
+            count: controls.length,
+            lines: new Set(controls.map((c) => Math.round(c.getBoundingClientRect().top))).size,
+            out: controls
+              .filter((c) => {
+                const r = c.getBoundingClientRect();
+                return r.left < 0 || r.right > innerWidth || c.scrollWidth > c.clientWidth;
+              })
+              .map((c) => c.textContent),
+            primaries: document.querySelectorAll('main .btn.primary').length
+          };
+        });
+        ok(row.count >= 4, at + where + 'the row draws ' + row.count + ' controls');
+        ok(row.lines <= 3, at + where + 'the row takes ' + row.lines + ' lines');
+        ok(
+          width !== 360 || row.count > 4 || row.lines === 2,
+          at + where + 'four controls take ' + row.lines + ' lines'
+        );
+        ok(!row.out.length, at + where + 'cut or outside - ' + JSON.stringify(row.out));
+        ok(row.primaries === 1, at + where + row.primaries + ' gold primaries');
+        await d.openMore();
+        const menu = await page.evaluate(() => {
+          const m = document.querySelector('[role="menu"]').getBoundingClientRect();
+          return {
+            box: { x: m.x, y: m.y, w: m.width, h: m.height },
+            view: { x: 0, y: 0, w: innerWidth, h: innerHeight },
+            least: Math.min(
+              ...[...document.querySelectorAll('[role="menuitem"]')].map(
+                (i) => i.getBoundingClientRect().height
+              )
+            )
+          };
+        });
+        ok(
+          inside(menu.box, menu.view),
+          at + where + 'the menu leaves the window - ' + JSON.stringify(menu)
+        );
+        ok(
+          width > 600 || menu.least >= 44,
+          at + where + 'an item is ' + menu.least + ' px tall'
+        );
+      }
+      await ctx.close();
+    }
+
+    for (const [width, height] of [
+      [360, 640],
+      [640, 360],
+      [1180, 720]
+    ]) {
+      const where = 'the dialog ' + lang + ' ' + width + 'x' + height + ': ';
+      const { ctx, page, d } = await fresh({ width, height, lang });
+      await d.open('#/tables/eq_weapon', { lang });
+      await d.click(lang === 'ru' ? 'Палаш' : 'Broadsword');
+      await waitIn(page, () => !!document.querySelector('dialog[open] .cardpick'));
+      const dock = async () =>
+        page.evaluate(() => {
+          const card = document.querySelector('.modal-card');
+          const el = card.querySelector('.cardpick');
+          const r = el.getBoundingClientRect();
+          return {
+            sticky: getComputedStyle(el).position === 'sticky',
+            height: r.height,
+            gap: card.getBoundingClientRect().bottom - r.bottom
+          };
+        });
+      const first = await dock();
+      ok(
+        first.sticky === (width <= 760 && height > 480),
+        at + where + 'sticky is ' + first.sticky
+      );
+      ok(first.height <= 0.45 * height, at + where + 'the dock is ' + first.height + ' px');
+      if (first.sticky) ok(Math.abs(first.gap) <= 1.5, at + where + 'gap ' + first.gap);
+      await page.evaluate(() => {
+        const card = document.querySelector('.modal-card');
+        card.scrollTop = card.scrollHeight;
+      });
+      await d.settle();
+      await d.openMore();
+      const menu = await page.evaluate(() => {
+        const box = (r) => ({ x: r.x, y: r.y, w: r.width, h: r.height });
+        const m = document.querySelector('[role="menu"]');
+        const card = document.querySelector('.modal-card').getBoundingClientRect();
+        return {
+          up: m.classList.contains('up'),
+          box: box(m.getBoundingClientRect()),
+          card: box(card),
+          view: { x: 0, y: 0, w: innerWidth, h: innerHeight }
+        };
+      });
+      ok(menu.up === first.sticky, at + where + 'the menu opens up: ' + menu.up);
+      ok(
+        inside(menu.box, menu.card),
+        at + where + 'menu outside the card ' + JSON.stringify(menu)
+      );
+      ok(inside(menu.box, menu.view), at + where + 'menu outside the window');
+      await d.press(lang === 'ru' ? 'Скопировать название' : 'Copy name');
+      ok(
+        await waitIn(page, () => !!document.querySelector('dialog[open] .toast')),
+        at + where + 'the copy raised no toast'
+      );
+      ok(
+        await page.evaluate(() => !!document.querySelector('dialog[open] .cardpick')),
+        at + where + 'the toast took the dock away'
+      );
+      await ctx.close();
+    }
+  }
+
+  const phone = await fresh({ width: 360, height: 640 });
+  await phone.d.open('#/i/ci1');
+  await phone.d.press('Печать');
+  await phone.d.openMore();
+  const under = await phone.page.evaluate(
+    () =>
+      document.querySelector('[role="menu"]').getBoundingClientRect().top -
+      document.querySelector('.morewrap > .btn').getBoundingClientRect().bottom
+  );
+  ok(Math.abs(under - 8) <= 1, at + 'a prompt moves the menu ' + under + ' px off «Ещё»');
+  await phone.d.open('#/i/mw9');
+  const chevron = await phone.page.evaluate(
+    () => getComputedStyle(document.querySelector('.refs summary'), '::after').content
+  );
+  ok(chevron !== 'none', at + 'the rule card draws no chevron');
+  await phone.ctx.close();
+
+  const { ctx, page, d } = await fresh({ width: 360, height: 640 });
+  await d.open('#/tables/eq_weapon', { as: 'gm2' });
+  await d.accountLists(
+    Array.from({ length: 150 }, (_, i) => ({ n: i + 1, name: 'Список ' + i, ids: ['ci1'] }))
+  );
+  await d.click('Палаш');
+  await waitIn(page, () => !!document.querySelector('dialog[open] .cardpick'));
+  await page.click('dialog[open] .seldrop > .btn');
+  await d.settle();
+  const add = await page.evaluate(() => {
+    const box = (el) => {
+      const r = el.getBoundingClientRect();
+      return { x: r.x, y: r.y, w: r.width, h: r.height };
+    };
+    const menu = document.querySelector('.dropmenu');
+    const chips = menu.querySelector('.pickchips');
+    return {
+      menu: box(menu),
+      search: box(menu.querySelector('.pickq')),
+      add: box(menu.querySelector(':scope > .chip') ?? menu.lastElementChild),
+      scrolls: chips.scrollHeight > chips.clientHeight,
+      view: { x: 0, y: 0, w: innerWidth, h: innerHeight }
+    };
+  });
+  ok(add.scrolls, at + 'the 150 lists do not scroll');
+  for (const name of ['menu', 'search', 'add']) {
+    ok(inside(add[name], add.view), at + 'the add menu: ' + name + ' leaves the window');
+  }
+  ok(inside(add.search, add.menu), at + 'the search leaves the add menu');
+  ok(inside(add.add, add.menu), at + '«+ Новый список» leaves the add menu');
+  await ctx.close();
 }
 
 /** 79: on a 360x480 window (an 800 px phone less a 320 px keyboard) each `ItemPicker`
@@ -4873,7 +5072,7 @@ async function addressBarPathForm() {
       record.path === '/i/ci1' && record.search === '?v=' + VERSIONS.ci1,
       at + 'the record bar does not carry its card version - ' + JSON.stringify(record)
     );
-    await d.press('Скопировать ссылку');
+    await d.more('Скопировать ссылку');
     await copiedIs('a record');
     await d.press('Таблицы', 0);
     await d.settle();
@@ -4901,7 +5100,7 @@ async function addressBarPathForm() {
       await waitIn(page, () => /^\?v=[0-9a-z]+$/.test(location.search)),
       at + 'the item bar did not take its card version after the read'
     );
-    await d.press('Скопировать ссылку');
+    await d.more('Скопировать ссылку');
     await copiedIs('an item');
 
     await d.open('#/p/set-twocards', { as: 'gm2' });
@@ -4939,27 +5138,24 @@ async function homebrewItemsFilterAddress() {
     page.evaluate(() => ({
       path: location.pathname,
       n: history.length,
-      open: document
-        .querySelector('.fbar button[aria-expanded]')
-        ?.getAttribute('aria-expanded'),
-      pills: [...document.querySelectorAll('.fpill')].map((p) =>
-        p.textContent.replace('×', '').trim()
-      ),
-      count: document.querySelector('.fcount')?.textContent.trim() ?? '',
+      picks: [...document.querySelectorAll('.fcol .frow [aria-pressed="true"]')]
+        .map((p) => p.textContent.trim())
+        .filter((v) => v !== 'Все'),
+      count: [...document.querySelectorAll('.tools .count')]
+        .map((c) => c.textContent.trim())
+        .join(' '),
       rows: document.querySelectorAll('[data-row]').length
     }));
   const FILTERED = '/homebrew/f_src-hb_alderworkshopaaa';
   const isFiltered = (v) =>
     v.path === FILTERED &&
-    v.open === 'true' &&
-    JSON.stringify(v.pills) === JSON.stringify(['Мастерская Ольхи']) &&
-    v.count.includes('7 из 12') &&
+    JSON.stringify(v.picks) === JSON.stringify(['Мастерская Ольхи']) &&
+    v.count.includes('Показано 7 из 12') &&
     v.rows === 7;
   try {
     await d.open('#/homebrew', { as: 'gm1', items: 12 });
     await waitIn(page, () => document.querySelectorAll('[data-row]').length === 12);
     const start = await view();
-    await d.press('Фильтры');
     await d.press('Мастерская Ольхи');
     const picked = await view();
     ok(
@@ -4984,7 +5180,7 @@ async function homebrewItemsFilterAddress() {
     await waitIn(page, () => document.querySelectorAll('[data-row]').length === 12);
     const cleared = await view();
     ok(
-      cleared.path === '/homebrew' && cleared.open === 'false' && cleared.pills.length === 0,
+      cleared.path === '/homebrew' && cleared.picks.length === 0,
       at + 'a tab press and back kept the filter - ' + JSON.stringify(cleared)
     );
   } finally {
@@ -4992,20 +5188,403 @@ async function homebrewItemsFilterAddress() {
   }
 }
 
+/** 91. The list head of `#/homebrew` (docs/specs/FEATURES.md, "`#/homebrew` and its tabs"):
+ *  up to 760 px the read-only heading, the picker row and «Ещё», the sheet and the one bar;
+ *  from 761 px the head with the tab links; the 300-item page. */
+async function homebrewHeadAndBar() {
+  const at = '91 (the homebrew head, tabs and bar): ';
+  const sideways = (page) =>
+    page.evaluate(
+      () => document.documentElement.scrollWidth > document.documentElement.clientWidth
+    );
+  const opened = (page) =>
+    waitIn(page, () => document.querySelectorAll('[data-row]').length > 0);
+  for (const [width, height] of [
+    [760, 800],
+    [390, 844],
+    [360, 640],
+    [320, 568]
+  ]) {
+    const { ctx, page, d } = await fresh({ width, height });
+    try {
+      await d.open('#/homebrew', { as: 'gm3' });
+      await opened(page);
+      const m = await page.evaluate(() => {
+        const h1 = document.querySelector('main h1, h1');
+        const row = document.querySelector('.pickrow');
+        const picker = row?.querySelector('.picker');
+        const kids = row ? [...row.children] : [];
+        const rects = kids.map((k) => k.getBoundingClientRect());
+        return {
+          h1: h1?.getBoundingClientRect().width ?? 99,
+          pin: !!document.querySelector('main .homebtn'),
+          name: picker?.getAttribute('aria-label') ?? '',
+          inside: rects.every((r) => r.left >= 0 && r.right <= innerWidth),
+          kids: kids.length,
+          lines: new Set(rects.map((r) => Math.round(r.top + r.height / 2))).size,
+          plus: !!row?.querySelector('.btn.primary svg')
+        };
+      });
+      ok(m.h1 <= 1, at + width + ': the heading is drawn - ' + JSON.stringify(m));
+      ok(!m.pin, at + width + ': the round pin is drawn');
+      ok(m.name === 'Мои предметы: Предметы', at + width + ': the picker name - ' + m.name);
+      ok(
+        m.kids === 3 && m.inside,
+        at + width + ': the row leaves the window - ' + JSON.stringify(m)
+      );
+      ok(m.lines <= 2, at + width + ': the row takes ' + m.lines + ' lines');
+      ok(!m.plus, at + width + ': the primary draws a plus');
+      ok(!(await sideways(page)), at + width + ': the page scrolls sideways');
+    } finally {
+      await ctx.close();
+    }
+  }
+
+  for (const lang of ['ru', 'en']) {
+    const { ctx, page, d } = await fresh({ width: 761, height: 768, lang });
+    try {
+      await d.open('#/homebrew', { as: 'gm1', lang });
+      await opened(page);
+      const m = await page.evaluate(() => ({
+        tabs: [...document.querySelectorAll('.hbtabs .tab')].map((a) => a.offsetTop),
+        current: document.querySelectorAll('.hbtabs [aria-current="page"]').length,
+        broken: [...document.querySelectorAll('.hbtabs .tab')].some(
+          (a) => a.scrollWidth > a.clientWidth
+        )
+      }));
+      ok(
+        m.tabs.length === 4 && m.current === 1,
+        at + '761 ' + lang + ': the tab links - ' + JSON.stringify(m)
+      );
+      ok(!m.broken, at + '761 ' + lang + ': a tab is cut');
+    } finally {
+      await ctx.close();
+    }
+  }
+
+  {
+    const { ctx, page, d } = await fresh({ width: 1180, height: 720 });
+    try {
+      await d.open('#/homebrew', { as: 'gm3' });
+      await opened(page);
+      const m = await page.evaluate(() => {
+        const h1 = document.querySelector('h1').getBoundingClientRect();
+        const go = document.querySelector('.headnew .btn')?.getBoundingClientRect();
+        return {
+          same: !!go && go.top < h1.bottom && go.bottom > h1.top,
+          plus: !!document.querySelector('.headnew svg')
+        };
+      });
+      ok(
+        m.same && m.plus,
+        at + '1180: the primary is not on the heading line - ' + JSON.stringify(m)
+      );
+      for (const name of await d.tickNames().then((n) => n.slice(0, 2))) await d.tick(name);
+      const bar = await page.evaluate(() => ({
+        bars: document.querySelectorAll('.selbarwrap').length,
+        strip: document.querySelectorAll('main .batch').length,
+        acts: document.querySelectorAll('.selbarwrap .selacts .btn').length,
+        menu: !!document.querySelector('.selbarwrap [aria-haspopup="menu"]:not(.seldrop *)')
+      }));
+      ok(bar.bars === 1 && bar.strip === 0, at + '1180: not one bar - ' + JSON.stringify(bar));
+      ok(
+        bar.acts >= 6 && !bar.menu,
+        at + '1180: the bar does not hold the six actions - ' + JSON.stringify(bar)
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+
+  const { ctx, page, d } = await fresh({ width: 360, height: 640 });
+  try {
+    await d.open('#/homebrew', { as: 'gm3' });
+    await opened(page);
+    const MORE = '.pickrow [aria-haspopup="menu"]';
+    await d.openMore(MORE);
+    const items = await page.$$eval('#hb-more [role="menuitem"]', (e) => e.length);
+    ok(items === 2, at + '«Ещё» holds ' + items + ' items');
+    await page.keyboard.press('Escape');
+    await d.settle();
+    ok(!(await page.$('#hb-more')), at + 'Escape left the menu open');
+    ok(
+      await page.evaluate((m) => document.activeElement === document.querySelector(m), MORE),
+      at + 'Escape did not return the focus to «Ещё»'
+    );
+    await d.openMore(MORE);
+    await d.press('Импорт из файла');
+    /* The panel's caption is uppercase, and `innerText` reads it so. */
+    ok(
+      await waitIn(page, () => /Импорт предметов из файла JSON/i.test(document.body.innerText)),
+      at + 'the import did not open'
+    );
+    await d.press('Отмена').catch(() => {});
+
+    await d.press('Мои предметы: Предметы');
+    const sheet = await page.evaluate(() => ({
+      tabs: document.querySelectorAll('dialog[open] .tab').length,
+      limit: document.querySelector('dialog[open] .limit')?.textContent ?? ''
+    }));
+    ok(
+      sheet.tabs === 4 && sheet.limit.includes('39'),
+      at + 'the tabs sheet - ' + JSON.stringify(sheet)
+    );
+    await page.keyboard.press('Escape');
+    await d.settle();
+
+    for (const name of await d.tickNames().then((n) => n.slice(0, 2))) await d.tick(name);
+    const bar = await page.evaluate(() => {
+      const r = document.querySelector('.selbarwrap').getBoundingClientRect();
+      const inside = [...document.querySelectorAll('.selbarwrap .selacts .btn')].every((b) => {
+        const x = b.getBoundingClientRect();
+        return x.left >= 0 && x.right <= 360;
+      });
+      return { h: r.height, inside, n: document.querySelectorAll('.selbarwrap').length };
+    });
+    ok(bar.n === 1 && bar.inside, at + 'the bar at 360 - ' + JSON.stringify(bar));
+    ok(bar.h <= 150, at + 'the bar is ' + bar.h + ' px high');
+    const BAR = '.selbarwrap [aria-haspopup="menu"]';
+    await d.openMore(BAR);
+    const menu = await page.evaluate(() => {
+      const m = document.getElementById('hb-bulk');
+      const r = m?.getBoundingClientRect();
+      return {
+        n: m?.querySelectorAll('[role="menuitem"]').length ?? 0,
+        inside: !!r && r.top >= 0 && r.left >= 0 && r.right <= 360,
+        up:
+          !!r && r.bottom <= document.querySelector('.bulkmore').getBoundingClientRect().top + 1
+      };
+    });
+    ok(
+      menu.n === 4 && menu.inside && menu.up,
+      at + "the bar's «Ещё» - " + JSON.stringify(menu)
+    );
+    await d.press('Переместить (2)');
+    ok(!!(await page.$('dialog[open] #hb-move')), at + 'the move sheet did not open');
+    await page.keyboard.press('Escape');
+    await d.settle();
+    ok(
+      await page.evaluate((m) => document.activeElement === document.querySelector(m), BAR),
+      at + 'the move sheet did not return the focus to «Ещё»'
+    );
+  } finally {
+    await ctx.close();
+  }
+
+  {
+    const { ctx, page, d } = await fresh({ width: 360, height: 640 });
+    try {
+      await d.open('#/homebrew', { as: 'gm1', items: 300 });
+      await waitIn(page, () => document.querySelectorAll('[data-row]').length >= 300);
+      ok(!(await sideways(page)), at + '300 items scroll the page sideways');
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
+/** 92. The editor (docs/specs/FEATURES.md, "The editor"): the three groups, no «?» and no star,
+ *  the sticky bar and the preview sheet up to 760 px, the stored item's bar at 320 px, the
+ *  pairs from 1000 px, the sticky column from 800 px, the long name, one message per field. */
+async function editorLayoutAndSheet() {
+  const at = '92 (the editor): ';
+  for (const lang of ['ru', 'en']) {
+    const w = (ru, en) => (lang === 'ru' ? ru : en);
+    for (const [width, height] of [
+      [360, 640],
+      [1180, 720]
+    ]) {
+      for (const hash of ['#/homebrew/new', '#/homebrew/hb_emberaxeaaaaaaaa']) {
+        const where = at + width + ' ' + lang + ' ' + hash + ': ';
+        const { ctx, page, d } = await fresh({ width, height, lang });
+        try {
+          await d.open(hash, { as: 'gm1', lang });
+          await waitIn(page, () => !!document.querySelector('#hb-name'));
+          const m = await page.evaluate(() => ({
+            heads: [...document.querySelectorAll('.grp h2')].map((h) => h.textContent.trim()),
+            help: document.querySelectorAll('.hbform .helpbtn').length,
+            star: document.querySelector('.hbform').textContent.includes('*'),
+            cards: document.querySelectorAll('.preview .card').length
+          }));
+          ok(m.heads.length >= 2, where + 'the groups - ' + JSON.stringify(m));
+          ok(m.heads[0] === w('Предмет', 'Item'), where + 'the first group - ' + m.heads[0]);
+          ok(
+            m.heads.at(-1) === w('Где лежит', 'Where it goes'),
+            where + 'the last group - ' + m.heads.at(-1)
+          );
+          ok(m.help === 0 && !m.star, where + 'a «?» or a star - ' + JSON.stringify(m));
+          if (width === 360) {
+            const bar = await page.evaluate(() => {
+              const el = document.querySelector('.ebar');
+              const r = el.getBoundingClientRect();
+              const kids = [...el.querySelectorAll('.btn')].map((b) =>
+                b.getBoundingClientRect()
+              );
+              return {
+                pos: getComputedStyle(el).position,
+                bottom: Math.round(r.bottom),
+                h: innerHeight,
+                n: kids.length,
+                inside: kids.every((k) => k.left >= 0 && k.right <= innerWidth)
+              };
+            });
+            ok(
+              bar.pos === 'sticky' && bar.bottom === bar.h && bar.inside,
+              where + 'the bar - ' + JSON.stringify(bar)
+            );
+            ok(bar.n === (hash.endsWith('new') ? 2 : 3), where + 'the bar holds ' + bar.n);
+            ok(m.cards === 0, where + 'a card behind the sheet');
+            await d.press(w('Предпросмотр', 'Preview'));
+            const inSheet = await page.$$eval('dialog[open] .card', (c) => c.length);
+            ok(inSheet === 1, where + 'the sheet holds ' + inSheet + ' cards');
+            await page.keyboard.press('Escape');
+            await d.settle();
+            ok(
+              await page.evaluate(
+                () => document.activeElement === document.querySelectorAll('.ebar .btn')[1]
+              ),
+              where + 'the sheet did not return the focus'
+            );
+          } else {
+            ok(m.cards === 1, where + 'the column holds ' + m.cards + ' cards');
+            const col = await page.evaluate(
+              () => getComputedStyle(document.querySelector('.preview')).position
+            );
+            ok(col === 'sticky', where + 'the column is ' + col);
+          }
+        } finally {
+          await ctx.close();
+        }
+      }
+    }
+  }
+
+  /* The three buttons of a stored item at 320 in RU, the longest bar: inside the bar's own
+     box, not only the window, and no word cut. */
+  {
+    const { ctx, page, d } = await fresh({ width: 320, height: 568 });
+    try {
+      await d.open('#/homebrew/hb_emberaxeaaaaaaaa', { as: 'gm1' });
+      await waitIn(page, () => !!document.querySelector('#hb-name'));
+      const bar = await page.evaluate(() => {
+        const el = document.querySelector('.ebar');
+        const r = el.getBoundingClientRect();
+        const btns = [...el.querySelectorAll('.btn')];
+        return {
+          n: btns.length,
+          inside: btns.every((b) => {
+            const x = b.getBoundingClientRect();
+            return x.left >= r.left && x.right <= r.right && x.right <= innerWidth;
+          }),
+          cut: btns.some((b) => b.scrollWidth > b.clientWidth),
+          sideways: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+          rects: btns.map((b) => Math.round(b.getBoundingClientRect().right)),
+          right: Math.round(r.right)
+        };
+      });
+      ok(
+        bar.n === 3 && bar.inside && !bar.cut && !bar.sideways,
+        at + '320 ru: the bar of a stored item - ' + JSON.stringify(bar)
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+
+  const lines = (page) =>
+    page.evaluate(() => {
+      const h = document.querySelector('.ttl');
+      return Math.round(
+        h.getBoundingClientRect().height / parseFloat(getComputedStyle(h).lineHeight)
+      );
+    });
+  for (const [width, most] of [
+    [360, 1],
+    [1180, 3]
+  ]) {
+    const { ctx, page, d } = await fresh({ width, height: 720 });
+    try {
+      await d.open('#/homebrew/hb_emberaxeaaaaaaaa', { as: 'gm1' });
+      await waitIn(page, () => !!document.querySelector('#hb-name'));
+      await page.$eval('#hb-name', (el) => {
+        el.value = 'Очень длинное название предмета '.repeat(4).slice(0, 120);
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+      await d.settle();
+      const n = await lines(page);
+      ok(n <= most, at + width + ': the title takes ' + n + ' lines');
+    } finally {
+      await ctx.close();
+    }
+  }
+
+  {
+    const { ctx, page, d } = await fresh({ width: 1180, height: 720 });
+    try {
+      await d.open('#/homebrew/hb_emberaxeaaaaaaaa', { as: 'gm1' });
+      await waitIn(page, () => !!document.querySelector('#hb-name'));
+      const m = await page.evaluate(() => {
+        const top = (id) =>
+          document.getElementById(id).closest('.fld').getBoundingClientRect().top;
+        return Math.abs(top('hb-eqtier') - top('hb-cls'));
+      });
+      ok(m <= 2, at + 'the pair «Ранг» and «Класс» is ' + m + ' px apart');
+    } finally {
+      await ctx.close();
+    }
+  }
+
+  {
+    const { ctx, page, d } = await fresh({ width: 360, height: 640, lang: 'en' });
+    try {
+      await d.open('#/homebrew/new', { as: 'gm1', lang: 'en' });
+      await waitIn(page, () => !!document.querySelector('#hb-name'));
+      await d.press('Equipment');
+      await d.press('Save');
+      await waitIn(page, () => !!document.querySelector('.errs'));
+      const m = await page.evaluate(() => {
+        const texts = ['hb-cls', 'hb-tr', 'hb-rg', 'hb-dt', 'hb-bu'].map(
+          (id) => document.getElementById(id + '-err')?.textContent.trim() ?? ''
+        );
+        const dmg = document.getElementById('hb-dmg-err');
+        const lh = dmg ? parseFloat(getComputedStyle(dmg).lineHeight) || 18 : 18;
+        return { texts, dmgLines: dmg ? Math.round(dmg.offsetHeight / lh) : 0 };
+      });
+      ok(
+        new Set(m.texts).size === 5 && m.texts.every(Boolean),
+        at + 'two fields share a message - ' + JSON.stringify(m)
+      );
+      ok(m.dmgLines <= 2, at + 'the damage message takes ' + m.dmgLines + ' lines at 360');
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
 /** The route families of DESIGN.md, "The First-Screen Rule": the inventory state that
  *  opens each. A row whose surface is not yet under the rule is measured and logged,
- *  not asserted (`shipped: false`). A roll page draws its result for the number
+ *  not asserted (`shipped: false`). `exception` is a named limit at 360 px, in px; `wideOnly`
+ *  measures the row at 1180 px alone. A roll page draws its result for the number
  *  field's first value, so no roll is made and the offset is deterministic. */
 const FIRST_SCREEN = [
-  { state: '#/roll/std', shipped: false },
-  { state: '#/tables/eq_weapon', shipped: false },
-  { state: '#/i/ci1', shipped: false },
-  { state: '#/search ~ searched', shipped: false },
-  { state: '#/account as gm1', shipped: false },
+  { state: '#/roll/std', shipped: true, exception: 325 },
+  { state: '#/roll/alt', shipped: true },
+  { state: '#/roll/alt ~ crit', shipped: true },
+  { state: '#/roll/voa', shipped: true },
+  { state: '#/roll/wondrous', shipped: true },
+  { state: '#/tables/eq_weapon', shipped: true },
+  { state: '#/tables/eq_weapon ~ two filters', shipped: true },
+  { state: '#/i/ci1', shipped: true },
+  { state: '#/h/00000000-0000-4000-8000-000000000513 as gm1', shipped: true },
+  { state: '#/search ~ searched', shipped: true },
+  /* Its enter presses a kind chip, which draws from 761 px only. */
+  { state: '#/search ~ kind picked', shipped: true, wideOnly: true },
+  { state: '#/account as gm1', shipped: true },
   { state: '#/p/set-emberaxe as gm2', shipped: false },
-  { state: '#/homebrew as gm3', shipped: false },
-  { state: '#/homebrew/sets ~ long name as gm4', shipped: false },
-  { state: '#/homebrew/new as gm1', shipped: false },
+  { state: '#/homebrew as gm3', shipped: true },
+  { state: '#/homebrew/sets ~ long name as gm4', shipped: true },
+  { state: '#/homebrew/new as gm1', shipped: true },
+  { state: '#/homebrew/hb_longsrcaaaaaaaaa as gm4', shipped: true },
   { state: '#/lists as gm1', shipped: false },
   { state: '#/lists/00000000-0000-4000-8000-000000008001 as gm4', shipped: false },
   { state: '#/s/player-token-1', shipped: false }
@@ -5025,6 +5604,318 @@ async function primaryTop(page) {
   });
 }
 
+/** 93. The search page from 320 to 1180 px (docs/specs/FEATURES.md, "Tables and search"): up
+ *  to 760 px the `h1` with «Ещё» on one row, the search row on one line with «Фильтры» and
+ *  «Выбрать»; from 761 px the page head, the kind chips and «Выбрать» last; the pin menu,
+ *  the kind sheet, the selection mode and the 300 cap. */
+async function searchHeadAndRows() {
+  const at = '93 (the search page): ';
+  const typed = async (d, page, q, lang = 'ru') => {
+    await d.type(
+      lang === 'en' ? 'Search by name or description...' : 'Поиск по названию или описанию...',
+      q
+    );
+    return waitIn(page, () => document.querySelectorAll('[data-row]').length > 0);
+  };
+  const sideways = (page) =>
+    page.evaluate(
+      () => document.documentElement.scrollWidth > document.documentElement.clientWidth
+    );
+  for (const lang of ['ru', 'en']) {
+    for (const [width, height] of [
+      [760, 800],
+      [390, 844],
+      [360, 640],
+      [320, 568]
+    ]) {
+      const where = width + ' ' + lang;
+      const { ctx, page, d } = await fresh({ width, height, lang });
+      try {
+        await d.open('#/search', { lang });
+        await typed(d, page, 'меч', lang);
+        const m = await page.evaluate(() => {
+          const h1 = document.querySelector('main h1');
+          const row = h1?.closest('.headrow');
+          const more = row?.querySelector('button[aria-haspopup="menu"]');
+          const sr = document.querySelector('.searchrow');
+          const kids = sr ? [...sr.children] : [];
+          const rects = kids.map((k) => k.getBoundingClientRect());
+          const box = sr?.querySelector('input[type="search"]')?.getBoundingClientRect();
+          return {
+            h1: (h1?.getBoundingClientRect().width ?? 0) > 1,
+            more: !!more,
+            kids: kids.length,
+            inside: rects.every((r) => r.left >= 0 && r.right <= innerWidth),
+            lines: new Set(rects.map((r) => Math.round(r.top + r.height / 2))).size,
+            box: box?.width ?? 0,
+            last: kids.at(-1)?.classList.contains('selmode') ?? false
+          };
+        });
+        ok(m.h1 && m.more, at + where + ': the h1 row - ' + JSON.stringify(m));
+        ok(
+          m.kids === 3 && m.inside && m.lines === 1 && m.last,
+          at + where + ': the search row - ' + JSON.stringify(m)
+        );
+        ok(m.box >= (width === 320 ? 112 : 140), at + where + ': the box is ' + m.box + ' px');
+        ok(!(await sideways(page)), at + where + ': the page scrolls sideways');
+        /* A picked kind lengthens «Фильтры» to «Фильтры · 1»: the row still holds one line
+           inside the row, the box as wide as above. */
+        await d.press(lang === 'en' ? 'Filters' : 'Фильтры');
+        await d.click(lang === 'en' ? 'Equipment' : 'Снаряжение');
+        await page.keyboard.press('Escape');
+        await d.settle();
+        const p = await page.evaluate(() => {
+          const sr = document.querySelector('.searchrow');
+          const rects = sr ? [...sr.children].map((k) => k.getBoundingClientRect()) : [];
+          return {
+            inside: rects.every(
+              (r) => r.left >= 0 && r.right <= sr.getBoundingClientRect().right + 0.5
+            ),
+            lines: new Set(rects.map((r) => Math.round(r.top + r.height / 2))).size,
+            box: sr?.querySelector('input[type="search"]')?.getBoundingClientRect().width ?? 0,
+            count: !!document.querySelector('.count')
+          };
+        });
+        ok(
+          p.inside && p.lines === 1 && p.box >= (width === 320 ? 112 : 140) && p.count,
+          at + where + ': the search row with a kind picked - ' + JSON.stringify(p)
+        );
+      } finally {
+        await ctx.close();
+      }
+    }
+    for (const [width, height] of [
+      [761, 768],
+      [1180, 720]
+    ]) {
+      const where = width + ' ' + lang;
+      const { ctx, page, d } = await fresh({ width, height, lang });
+      try {
+        await d.open('#/search', { lang });
+        await typed(d, page, 'меч', lang);
+        const m = await page.evaluate(() => {
+          const chips = [...document.querySelectorAll('.kindrow .chips .chip')];
+          const tops = new Set(chips.map((c) => Math.round(c.getBoundingClientRect().top)));
+          const sr = document.querySelector('.searchrow');
+          return {
+            head: !!document.querySelector('main .page-head h1'),
+            pin: !!document.querySelector('main .page-head .homebtn'),
+            chips: chips.length,
+            rows: tops.size,
+            filters: !!sr?.querySelector('.btn.sm'),
+            last: sr?.lastElementChild?.classList.contains('selmode') ?? false
+          };
+        });
+        ok(m.head && m.pin, at + where + ': the page head - ' + JSON.stringify(m));
+        ok(
+          m.chips === 4 && m.rows === 1,
+          at + where + ': the kind chips - ' + JSON.stringify(m)
+        );
+        ok(!m.filters && m.last, at + where + ': the search row - ' + JSON.stringify(m));
+        /* From 761 px the count line ends the kind row, so a pick adds no line. */
+        await d.click(lang === 'en' ? 'Equipment' : 'Снаряжение');
+        await d.settle();
+        const c = await page.evaluate(() => {
+          const row = document.querySelector('.kindrow')?.getBoundingClientRect();
+          const count = document.querySelector('.kindhead > .count')?.getBoundingClientRect();
+          return {
+            count: !!count,
+            oneLine:
+              !!row &&
+              !!count &&
+              Math.abs(count.top + count.height / 2 - (row.top + row.height / 2)) < 2,
+            inside: !!count && count.right <= document.documentElement.clientWidth
+          };
+        });
+        ok(
+          c.count && c.oneLine && c.inside,
+          at + where + ': the count line at the end of the kind row - ' + JSON.stringify(c)
+        );
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+
+  {
+    const { ctx, page, d } = await fresh({ width: 360, height: 640 });
+    try {
+      await d.open('#/search', { as: 'gm1' });
+      await d.press('Ещё');
+      ok(
+        await waitIn(page, () => !!document.querySelector('[role="menu"] [role="menuitem"]')),
+        at + '360: «Ещё» opens no menu'
+      );
+      await page.keyboard.press('Escape');
+      ok(
+        await waitIn(page, () => document.activeElement?.textContent?.trim() === 'Ещё'),
+        at + '360: Escape does not return the focus to «Ещё»'
+      );
+      await typed(d, page, 'меч');
+      await d.press('Фильтры');
+      const sheet = await page.evaluate(() => {
+        const dlg = document.querySelector('dialog[open]');
+        const rows = dlg ? [...dlg.querySelectorAll('.frow')] : [];
+        return {
+          own: rows[0]?.classList.contains('own') ?? false,
+          kind: rows[1]?.querySelector('.lbl')?.textContent ?? ''
+        };
+      });
+      ok(
+        sheet.own && sheet.kind === 'Тип',
+        at + '360: the sheet rows - ' + JSON.stringify(sheet)
+      );
+      await d.click('Снаряжение');
+      await page.keyboard.press('Escape');
+      ok(
+        await waitIn(page, () => document.activeElement?.textContent?.trim() === 'Фильтры · 1'),
+        at + '360: Escape does not return the focus to «Фильтры · 1»'
+      );
+      ok(
+        (
+          await page.evaluate(() => document.querySelector('main .count')?.textContent ?? '')
+        ).includes('Снаряжение'),
+        at + '360: the count line does not name the kind'
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+
+  {
+    const { ctx, page, d } = await fresh({ width: 1180, height: 720 });
+    try {
+      await d.open('#/search');
+      await typed(d, page, 'меч');
+      await d.press('Выбрать');
+      ok(
+        await waitIn(page, () => !!document.activeElement?.closest('.selbarwrap .selall')),
+        at + "1180: «Выбрать» does not focus the bar's «Все»"
+      );
+      await page.evaluate(() => document.activeElement.click());
+      const drawn = await page.evaluate(() => ({
+        rows: document.querySelectorAll('main [data-row]').length,
+        ticked: document.querySelectorAll('main [data-row].sel').length,
+        strip: !!document.querySelector('main .selall')
+      }));
+      ok(
+        drawn.rows > 0 && drawn.rows === drawn.ticked && !drawn.strip,
+        at + '1180: «Все» did not tick the found rows - ' + JSON.stringify(drawn)
+      );
+      await d.press('Снять выделение');
+      ok(
+        await waitIn(
+          page,
+          () => document.activeElement?.classList.contains('selmode') ?? false
+        ),
+        at + '1180: «Снять выделение» does not return the focus to «Выбрать»'
+      );
+      await d.type('Поиск по названию или описанию...', 'а');
+      ok(
+        await waitIn(page, () => document.querySelectorAll('main [data-row]').length === 300),
+        at + 'the cap does not draw 300 rows'
+      );
+      ok(
+        /^Показано 300 из \d+$/.test(
+          await page.evaluate(
+            () => document.querySelector('main .count')?.textContent?.trim() ?? ''
+          )
+        ),
+        at + 'the count line does not say «Показано 300 из N»'
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
+/** 94. The account holds its layout and its delete confirm (docs/specs/FEATURES.md,
+ *  "Account"): one column at 360, two from 1000 px, the print row inside the window, the
+ *  filled final button and the focus of the confirm. */
+async function accountLayoutAndConfirm() {
+  const at = '94 (the account layout and confirm): ';
+  for (const lang of ['ru', 'en']) {
+    for (const [width, height] of [
+      [360, 640],
+      [1180, 720]
+    ]) {
+      const where = width + ' ' + lang;
+      const { ctx, page, d } = await fresh({ width, height, lang });
+      try {
+        await d.open('#/account', { as: 'gm1', lang });
+        await waitIn(page, () => !!document.querySelector('.acc .ids li'));
+        const m = await page.evaluate(() => {
+          const segs = [...document.querySelectorAll('.wb .seg')].map((s) =>
+            s.getBoundingClientRect()
+          );
+          const a = document.querySelector('.colA')?.getBoundingClientRect();
+          const b = document.querySelector('.colB')?.getBoundingClientRect();
+          return {
+            chk: !!document.querySelector('main input[type="checkbox"]'),
+            segs: segs.length,
+            inside: segs.every((r) => r.left >= 0 && r.right <= innerWidth),
+            heads: [...document.querySelectorAll('main h2')].map((h) => h.textContent),
+            tops: a && b ? Math.abs(a.top - b.top) : 999,
+            sideways:
+              document.documentElement.scrollWidth > document.documentElement.clientWidth
+          };
+        });
+        ok(!m.chk, at + where + ': a checkbox is drawn');
+        ok(m.segs === 2 && m.inside, at + where + ': the print row - ' + JSON.stringify(m));
+        ok(
+          !m.heads.some((h) => /Вы вошли как|Signed in as/.test(h)),
+          at + where + ': a «Вы вошли как» panel is drawn'
+        );
+        if (width === 1180)
+          ok(m.tops <= 2, at + where + ': the column tops differ by ' + m.tops);
+        ok(!m.sideways, at + where + ': the page scrolls sideways');
+
+        const open = lang === 'en' ? 'Delete account...' : 'Удалить аккаунт...';
+        const word = lang === 'en' ? 'delete' : 'удалить';
+        const final = lang === 'en' ? 'Delete for good' : 'Удалить навсегда';
+        await d.press(open);
+        ok(
+          await waitIn(page, () => document.activeElement?.id === 'account-delete-word'),
+          at + where + ': the field does not take the focus'
+        );
+        const c = await page.evaluate((f) => {
+          const btn = [...document.querySelectorAll('button')].find(
+            (b) => b.textContent.trim() === f
+          );
+          return {
+            goes: !!document.querySelector('p.goes'),
+            disabled: btn?.disabled ?? false,
+            fill: btn ? getComputedStyle(btn).backgroundColor : ''
+          };
+        }, final);
+        ok(
+          c.goes && c.disabled && c.fill !== 'rgba(0, 0, 0, 0)' && c.fill !== '',
+          at + where + ': the confirm - ' + JSON.stringify(c)
+        );
+        await d.type('', word);
+        ok(
+          await waitIn(
+            page,
+            (f) =>
+              [...document.querySelectorAll('button')].some(
+                (b) => b.textContent.trim() === f && !b.disabled
+              ),
+            final
+          ),
+          at + where + ': the typed word does not enable the final button'
+        );
+        await d.press(lang === 'en' ? 'Cancel' : 'Отмена');
+        ok(
+          await waitIn(page, (o) => document.activeElement?.textContent?.trim() === o, open),
+          at + where + ': «Отмена» does not return the focus to the opener'
+        );
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+}
+
 /** 83. The primary content of each route family starts within 40% of the viewport
  *  height at 360x640 and 1180x720, in Russian and in English (DESIGN.md, "The
  *  First-Screen Rule"). */
@@ -5038,6 +5929,7 @@ async function primaryContentInFirstScreen() {
       [360, 640],
       [1180, 720]
     ]) {
+      if (row.wideOnly && width < 761) continue;
       for (const lang of ['ru', 'en']) {
         const { ctx, page, d } = await fresh({ width, height, storage: state.storage });
         try {
@@ -5056,7 +5948,7 @@ async function primaryContentInFirstScreen() {
           const where = row.state + ' ' + width + 'x' + height + ' ' + lang;
           ok(!!got, '83 (first screen): ' + where + ' marks no [data-primary] with a height');
           if (!got) continue;
-          const limit = 0.4 * got.vh;
+          const limit = width === 360 && row.exception ? row.exception : 0.4 * got.vh;
           const pass = got.top <= limit;
           fs.writeSync(
             1,
@@ -5066,6 +5958,7 @@ async function primaryContentInFirstScreen() {
               got.top.toFixed(0) +
               ' / ' +
               limit.toFixed(0) +
+              (width === 360 && row.exception ? ' (exception)' : '') +
               (pass ? ' pass' : ' over') +
               (row.shipped ? '' : ' (logged)') +
               '\n'
@@ -5076,6 +5969,668 @@ async function primaryContentInFirstScreen() {
         }
       }
     }
+  }
+}
+
+/** Returns the header's top and bottom edges in the window. */
+function headerEdges(page) {
+  return page.evaluate(() => {
+    const r = document.querySelector('.topbar').getBoundingClientRect();
+    return { top: r.top, bottom: r.bottom };
+  });
+}
+
+/** 86. Up to 760 px the header leaves on a scroll down and returns on a scroll up, and each
+ *  guard of DESIGN.md, "The Hidden Header Rule", holds; from 761 px it stays. Geometry only:
+ *  the suite forces reduced motion, so the one timing read relaxes it and restores it. */
+async function headerHidesAndReturns() {
+  const at = '86 (the hidden header): ';
+  const { ctx, page, d } = await fresh({ width: 360, height: 640 });
+  const hiddenNow = async (what) => {
+    const e = await headerEdges(page);
+    ok(
+      e.bottom <= 0,
+      at + what + ': the header is not out of the window, ' + JSON.stringify(e)
+    );
+  };
+  const shownNow = async (what) => {
+    const e = await headerEdges(page);
+    ok(e.top === 0, at + what + ': the header is not at the top, ' + JSON.stringify(e));
+  };
+  const by = async (dy) => {
+    await page.evaluate((n) => {
+      window.scrollBy(0, n);
+    }, dy);
+    await d.settle();
+  };
+  const home = async () => {
+    await page.evaluate(() => {
+      window.scrollTo(0, 0);
+    });
+    await d.settle();
+  };
+  const primary = () =>
+    page.evaluate(() => document.querySelector('[data-primary]').getBoundingClientRect().top);
+  const height = () => page.evaluate(() => document.documentElement.scrollHeight);
+
+  await d.open('#/tables/eq_weapon');
+  const firstPrimary = await primary();
+
+  await d.scrollPage(800);
+  await hiddenNow('a scroll down');
+  const tall = await height();
+  await by(-20);
+  await shownNow('a scroll up');
+  ok((await height()) === tall, at + 'the page height moved with the header');
+
+  await by(40);
+  await hiddenNow('a scroll down again');
+  await by(-5);
+  await hiddenNow('5 px up, inside the dead zone');
+
+  await home();
+  await shownNow('scroll 0');
+  ok((await primary()) === firstPrimary, at + 'the primary content moved at scroll 0');
+
+  await d.scrollPage(800);
+  await hiddenNow('before the focus');
+  await page.focus('.topbar .seg button');
+  await shownNow('a focus in the header');
+  const hit = await page.evaluate(() => {
+    const b = document.querySelector('.topbar .seg button');
+    const r = b.getBoundingClientRect();
+    return b.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2));
+  });
+  ok(hit, at + 'the focused header control is not hit at its center');
+  await page.evaluate(() => {
+    document.activeElement.blur();
+  });
+
+  await home();
+  await page.click('nav.tabs a[data-job="tables"]');
+  await d.settle();
+  await d.scrollPage(800);
+  await hiddenNow('a scroll down after a click on a job link');
+
+  await page.focus('main input[type="search"]');
+  for (let i = 0; i < 12; i += 1) {
+    if (await page.evaluate(() => !!document.activeElement?.closest('.topbar'))) break;
+    await page.keyboard.down('Shift');
+    await page.keyboard.press('Tab');
+    await page.keyboard.up('Shift');
+  }
+  ok(
+    await page.evaluate(() => !!document.activeElement?.closest('.topbar')),
+    at + 'Shift+Tab did not reach the header'
+  );
+  await shownNow('a Shift+Tab into the header');
+  await page.evaluate(() => {
+    document.activeElement.blur();
+  });
+
+  await home();
+  await page.focus('main input[type="search"]');
+  await d.scrollPage(800);
+  await shownNow('a scroll with a text field in focus');
+  await page.evaluate(() => {
+    document.activeElement.blur();
+  });
+  await by(100);
+  await hiddenNow('a scroll down after the blur');
+
+  await home();
+  await d.click('Ещё');
+  await d.scrollPage(800);
+  await shownNow('a scroll behind an open menu');
+  await page.keyboard.press('Escape');
+  await d.settle();
+
+  await home();
+  await d.click('Фильтры');
+  await d.scrollPage(800);
+  await shownNow('a scroll behind the filter sheet');
+  await d.click('Закрыть');
+  await d.scrollPage(1000);
+  await hiddenNow('a scroll down after the sheet');
+
+  await home();
+  await page.evaluate(() => {
+    document.querySelector('[data-row] button').click();
+  });
+  await waitIn(page, () => !!document.querySelector('dialog[open]'));
+  await d.scrollPage(800);
+  await shownNow('a scroll behind the record dialog');
+  await page.keyboard.press('Escape');
+  await d.settle();
+  await d.scrollPage(1000);
+  await hiddenNow('a scroll down after the dialog');
+
+  await d.go('#/roll/std');
+  await shownNow('a navigation');
+  await page.goBack();
+  await d.settle();
+  await new Promise((r) => setTimeout(r, 200));
+  await shownNow('Back');
+  await page.goForward();
+  await d.settle();
+  await new Promise((r) => setTimeout(r, 200));
+  await shownNow('Forward');
+  await page.reload();
+  await d.settle();
+  await new Promise((r) => setTimeout(r, 200));
+  await shownNow('a reload');
+  await d.go('#/tables/eq_weapon');
+
+  await d.scrollPage(1500);
+  await by(100);
+  await hiddenNow('before the anchor');
+  await d.go('#/tables/vault_of_ages/tA');
+  await waitIn(page, () => document.getElementById('sec-tA') !== null);
+  await new Promise((r) => setTimeout(r, 300));
+  await shownNow('a linked section');
+  const landed = await page.evaluate(() => {
+    const sec = document.getElementById('sec-tA').getBoundingClientRect().top;
+    return { sec, header: document.querySelector('.topbar').getBoundingClientRect().bottom };
+  });
+  ok(
+    landed.sec >= landed.header - 1 && landed.sec <= landed.header + 40,
+    at + 'the section is not within 40 px under the header, ' + JSON.stringify(landed)
+  );
+
+  await d.go('#/i/nope');
+  await d.scrollPage(10000);
+  await shownNow('a short page');
+
+  await d.go('#/tables/eq_weapon');
+  await d.scrollPage(800);
+  await by(100);
+  await hiddenNow('before the print');
+  const before = await headerEdges(page);
+  await d.media('print');
+  const shown = await d.computed('.topbar', ['display']);
+  ok(shown?.display === 'none', at + 'the header prints: ' + JSON.stringify(shown));
+  await d.media(undefined);
+  await d.settle();
+  const after = await headerEdges(page);
+  ok(
+    after.top === before.top && after.bottom === before.bottom,
+    at + 'the header moved across a print: ' + JSON.stringify({ before, after })
+  );
+
+  await home();
+  const declared = () => d.computed('.topbar', ['transition-duration', 'transition-property']);
+  try {
+    await page.emulateMediaFeatures([
+      { name: 'prefers-reduced-motion', value: 'no-preference' }
+    ]);
+    const motion = await declared();
+    ok(
+      motion?.['transition-duration'] === '0.2s' &&
+        motion['transition-property'] === 'transform',
+      at + 'the slide is not declared: ' + JSON.stringify(motion)
+    );
+    const ended = page.evaluate(
+      () =>
+        new Promise((done) => {
+          /* A link's or a button's own `transition: all` (a hover that the slide moves)
+             bubbles a `transitionend` too, which can arrive while the header is mid-way. */
+          const bar = document.querySelector('.topbar');
+          bar.addEventListener('transitionend', (e) => {
+            if (e.target === bar && e.propertyName === 'transform') done(true);
+          });
+          setTimeout(() => done(false), 3000);
+        })
+    );
+    await d.scrollPage(800);
+    ok(await ended, at + 'the slide did not end');
+    await hiddenNow('after the slide');
+  } finally {
+    await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+  }
+  const still = await declared();
+  ok(
+    still?.['transition-duration'] === '0s',
+    at + 'reduced motion keeps a slide: ' + JSON.stringify(still)
+  );
+  await ctx.close();
+
+  const wide = await fresh({ width: 1180, height: 720 });
+  await wide.d.open('#/tables/eq_weapon');
+  await wide.d.scrollPage(800);
+  const edges = await headerEdges(wide.page);
+  ok(edges.top === 0, at + 'the header moved at 1180: ' + JSON.stringify(edges));
+  ok((await wide.d.count('.topbar.away')) === 0, at + 'the header is marked away at 1180');
+  await wide.ctx.close();
+}
+
+/** 87. A backward Tab never lands under the header (WCAG 2.4.11): 30 stops up from row 120,
+ *  and the page's scroll padding is the header's measured height at each width. */
+async function backwardTabClearsTheHeader() {
+  const at = '87 (backward Tab): ';
+  for (const [width, height] of [
+    [360, 640],
+    [1180, 720]
+  ]) {
+    const { ctx, page, d } = await fresh({ width, height });
+    await d.open('#/tables/eq_weapon');
+    await page.evaluate(() => {
+      document.querySelectorAll('[data-row]')[119].querySelector('button').focus();
+    });
+    await d.settle();
+    let covered = 0;
+    for (let i = 0; i < 30; i++) {
+      await page.keyboard.down('Shift');
+      await page.keyboard.press('Tab');
+      await page.keyboard.up('Shift');
+      await new Promise((r) => setTimeout(r, 40));
+      const stop = await page.evaluate(() => {
+        const el = document.activeElement;
+        const r = el.getBoundingClientRect();
+        const head = document.querySelector('.topbar').getBoundingClientRect();
+        const hit = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+        return {
+          name: el.tagName + ' ' + (el.textContent ?? '').trim().slice(0, 30),
+          top: r.top,
+          headBottom: head.bottom,
+          inside: el.contains(hit)
+        };
+      });
+      if (stop.top < stop.headBottom - 1 || !stop.inside) {
+        covered++;
+        fs.writeSync(1, '  covered stop: ' + JSON.stringify(stop) + '\n');
+      }
+    }
+    fs.writeSync(1, '  backward Tab at ' + width + ': ' + covered + ' of 30 covered\n');
+    ok(covered === 0, at + covered + ' of 30 stops covered at ' + width);
+    await ctx.close();
+  }
+  for (const [width, lang] of [
+    [320, 'en'],
+    [360, 'ru'],
+    [768, 'ru'],
+    [1180, 'ru']
+  ]) {
+    const { ctx, page, d } = await fresh({ width, height: 640, lang });
+    await d.open('#/tables/eq_weapon');
+    await d.settle();
+    const m = await page.evaluate(() => ({
+      padding: getComputedStyle(document.documentElement).scrollPaddingTop,
+      header: document.querySelector('.topbar').offsetHeight
+    }));
+    fs.writeSync(1, '  header at ' + width + ' ' + lang + ': ' + m.header + ' px\n');
+    ok(
+      m.padding === m.header + 'px',
+      at + 'the scroll padding at ' + width + ': ' + JSON.stringify(m)
+    );
+    await ctx.close();
+  }
+}
+
+/** Returns the window's box for `inside`. */
+const viewBox = (page) => page.evaluate(() => ({ x: 0, y: 0, w: innerWidth, h: innerHeight }));
+
+/** Answers the words of the result's name that a line break cuts. */
+const brokenWords = (page) =>
+  page.evaluate(() => {
+    const name = document.querySelector('.card-name a');
+    return name.textContent
+      .trim()
+      .split(/\s+/)
+      .filter((word) => {
+        const range = document.createRange();
+        const node = name.firstChild;
+        const from = node.textContent.indexOf(word);
+        range.setStart(node, from);
+        range.setEnd(node, from + word.length);
+        return range.getClientRects().length > 1;
+      });
+  });
+
+/** Draws the longest record name of the picker's `parts` on the result card, by stepping the
+ *  number field through each part; answers the name. */
+async function showLongestTitle(page, d, parts) {
+  await page.click('.reshead > .btn');
+  await page.waitForSelector('.numbox input');
+  let best = { name: '' };
+  for (const part of parts) {
+    await d.choose('.pick select', part);
+    const top = await page.evaluate(async () => {
+      const up = document.querySelectorAll('.numbox button')[1];
+      const found = { name: '', n: 1 };
+      for (let n = 1; ; n++) {
+        const name = document.querySelector('.card-name a').textContent.trim();
+        if (name.length > found.name.length) Object.assign(found, { name, n });
+        if (up.disabled) return found;
+        up.click();
+        await new Promise(requestAnimationFrame);
+      }
+    });
+    if (top.name.length > best.name.length) best = { ...top, part };
+  }
+  await d.choose('.pick select', best.part);
+  await page.$eval('.numbox input', (field) => {
+    field.focus();
+    field.select();
+  });
+  await page.keyboard.type(String(best.n));
+  await page.keyboard.press('Tab');
+  await d.settle();
+  return best.name;
+}
+
+/** 89. The nine roll pages share one layout (docs/specs/FEATURES.md, "Rolling"): at 761 px the
+ *  heading, the pin and the help share one line; up to 760 px the heading is read, not drawn,
+ *  and the results line holds its three parts; «Ещё» holds the pin and the help; the dice are
+ *  two rows at 360; the card flips at 600/601 px; a picker never cuts the roll button; the
+ *  longest title of «Проклятые предметы» and of Many Worlds Tavern breaks no word. */
+async function rollPageLayout() {
+  const at = '89 (the roll page layout): ';
+  for (const lang of ['ru', 'en']) {
+    const wide = await fresh({ width: 761, height: 768, lang });
+    for (const route of ['#/roll/alt', '#/roll/std', '#/roll/vault_of_ages']) {
+      await wide.d.open(route, { lang });
+      const head = await wide.page.evaluate(() => {
+        const top = (s) => document.querySelector('main ' + s)?.getBoundingClientRect().top;
+        const mid = (s) => {
+          const r = document.querySelector('main ' + s)?.getBoundingClientRect();
+          return r ? r.top + r.height / 2 : null;
+        };
+        return {
+          h1: mid('h1'),
+          pin: mid('.homebtn'),
+          help: mid('.helpbtn'),
+          tops: [top('h1'), top('.homebtn'), top('.helpbtn')],
+          wide: document.documentElement.scrollWidth <= document.documentElement.clientWidth
+        };
+      });
+      const where = route + ' ' + lang + ' 761: ';
+      ok(
+        Math.abs(head.h1 - head.pin) <= 8 && Math.abs(head.h1 - head.help) <= 8,
+        at + where + 'the head is not one line - ' + JSON.stringify(head)
+      );
+      ok(head.wide, at + where + 'the page scrolls sideways');
+    }
+    await wide.ctx.close();
+
+    for (const [width, height] of [
+      [760, 800],
+      [390, 844],
+      [360, 640],
+      [320, 568]
+    ]) {
+      const { ctx, page, d } = await fresh({ width, height, lang });
+      for (const route of ['#/roll/alt', '#/roll/std', '#/roll/vault_of_ages']) {
+        const where = route + ' ' + lang + ' ' + width + ': ';
+        await d.open(route, { lang });
+        const line = await page.evaluate(() => {
+          const parts = [
+            ...document.querySelectorAll(
+              '.reshead h2, .reshead > .btn, .reshead .morewrap > .btn'
+            )
+          ].map((e) => e.getBoundingClientRect());
+          return {
+            h1: document.querySelector('main h1').getBoundingClientRect().width,
+            round: document.querySelectorAll('main .homebtn, main .helpbtn').length,
+            count: parts.length,
+            lines: new Set(parts.map((r) => Math.round(r.top + r.height / 2))).size,
+            out: parts.filter((r) => r.left < 0 || r.right > innerWidth).length,
+            sideways:
+              document.documentElement.scrollWidth > document.documentElement.clientWidth
+          };
+        });
+        ok(line.h1 <= 1, at + where + 'the h1 is drawn, ' + line.h1 + ' px wide');
+        ok(line.round === 0, at + where + 'the head buttons are drawn');
+        ok(line.count === 3, at + where + 'the results line holds ' + line.count + ' parts');
+        ok(!line.out, at + where + 'a part of the results line leaves the window');
+        ok(
+          line.lines === 1 || (width === 320 && line.lines === 2),
+          at + where + 'the results line takes ' + line.lines + ' lines'
+        );
+        ok(!line.sideways, at + where + 'the page scrolls sideways');
+      }
+
+      if (width === 360) {
+        await d.open('#/roll/alt', { lang });
+        await d.openMore();
+        const items = await page.$$eval('[role="menuitem"]', (els) => els.length);
+        ok(items === 3, at + lang + ': «Ещё» on /roll/alt holds ' + items + ' items');
+        await page.keyboard.press('Escape');
+        ok(
+          await waitIn(
+            page,
+            () =>
+              !document.querySelector('[role="menu"]') &&
+              document.activeElement === document.querySelector('.reshead .morewrap > .btn')
+          ),
+          at + lang + ': Escape did not close «Ещё» onto its button'
+        );
+        await d.openMore();
+        await page.click('[role="menuitem"]:last-of-type');
+        ok(
+          await waitIn(
+            page,
+            () =>
+              !document.querySelector('[role="menu"]') &&
+              document.activeElement === document.querySelector('.reshead .morewrap > .btn') &&
+              !!document.querySelector('.helpbox')
+          ),
+          at + lang + ': the help item did not open the box and return the focus'
+        );
+      }
+
+      if (width === 360 || width === 320) {
+        await d.open('#/roll/std', { lang });
+        const dice = await page.$$eval('.dicebar button', (els) =>
+          els.map((e) => {
+            const r = e.getBoundingClientRect();
+            const c = e.querySelector('small');
+            return {
+              top: r.top,
+              left: r.left,
+              right: r.right,
+              h: r.height,
+              cut: c.scrollWidth > c.clientWidth
+            };
+          })
+        );
+        ok(dice[3].top > dice[0].top, at + lang + ' ' + width + ': the dice are one row');
+        ok(
+          dice[2].top === dice[0].top,
+          at + lang + ' ' + width + ': the first row is not three'
+        );
+        ok(
+          dice[4].top === dice[3].top,
+          at + lang + ' ' + width + ': the second row is not two'
+        );
+        for (const die of dice) {
+          ok(die.h >= 44, at + lang + ' ' + width + ': a die is ' + die.h + ' px tall');
+          ok(
+            die.left >= 0 && die.right <= width && !die.cut,
+            at + lang + ' ' + width + ': a die leaves the window or cuts its caption'
+          );
+        }
+
+        for (const route of ['#/roll/many_worlds_tavern', '#/roll/vault_of_ages']) {
+          await d.open(route, { lang });
+          const longest = await page.$eval(
+            '.pick select',
+            (s) =>
+              [...s.options]
+                .map((o) => o.textContent.trim())
+                .sort((a, b) => b.length - a.length)[0]
+          );
+          await d.part(longest);
+          const row = await page.evaluate(() => {
+            const r = (s) => document.querySelector(s).getBoundingClientRect();
+            const btn = document.querySelector('.rp-ctrl .btn.primary');
+            return {
+              pick: r('.pick').bottom,
+              roll: btn.getBoundingClientRect().right,
+              cut: btn.scrollWidth > btn.clientWidth,
+              line: r('.reshead').bottom
+            };
+          });
+          const where = route + ' ' + lang + ' ' + width + ' «' + longest + '»: ';
+          ok(row.roll <= width && !row.cut, at + where + 'the roll button is cut');
+          ok(
+            width !== 360 || row.line <= 256,
+            at + where + 'the results line ends at ' + row.line
+          );
+
+          const parts =
+            route === '#/roll/vault_of_ages'
+              ? ['C']
+              : await page.$eval('.pick select', (s) => [...s.options].map((o) => o.value));
+          const title = await showLongestTitle(page, d, parts);
+          const broken = await brokenWords(page);
+          ok(
+            !broken.length,
+            at + route + ' ' + lang + ' ' + width + ' «' + title + '»: a word breaks: ' + broken
+          );
+        }
+      }
+      await ctx.close();
+    }
+  }
+
+  const flip = await fresh({ width: 600, height: 800 });
+  await flip.d.open('#/roll/wondrous');
+  const read = () =>
+    flip.page.evaluate(() => {
+      const media = document.querySelector('.card.face .card-media').getBoundingClientRect();
+      const card = document.querySelector('.card.face').getBoundingClientRect();
+      const badge = document.querySelector('.card.face .badge.num');
+      const b = badge.getBoundingClientRect();
+      return {
+        w: media.width,
+        h: media.height,
+        card: card.width,
+        shown: getComputedStyle(badge).display !== 'none',
+        over:
+          b.top >= media.top && b.right <= media.right && b.left > media.left + media.width / 2
+      };
+    });
+  const phone = await read();
+  ok(phone.w === 96, at + 'the picture is ' + phone.w + ' px at 600');
+  ok(!phone.shown, at + 'the number badge is drawn at 600');
+  await flip.d.viewport(601, 800);
+  await flip.d.settle();
+  const face = await read();
+  ok(Math.abs(face.w - face.card) <= 2, at + 'the picture does not fill the card at 601');
+  ok(Math.abs(face.w / face.h - 4 / 3) < 0.02, at + 'the picture is not 4:3 at 601');
+  ok(
+    face.shown && face.over,
+    at + 'the badge is not over the picture - ' + JSON.stringify(face)
+  );
+  await flip.ctx.close();
+}
+
+/** 90. A result's row at 360x640 and 1180x720: three labeled controls inside the card's width;
+ *  its «Ещё» holds the copies inside the window and a copy returns the focus to it; the
+ *  add-to-list menu stays in the window, under the header, and with 150 lists scrolls with
+ *  «+ Новый список» in view; the dialog over the result opens its own add menu
+ *  (docs/specs/FEATURES.md, "Records"). */
+async function resultRowAndMenus() {
+  const at = '90 (the result row): ';
+  for (const [width, height] of [
+    [360, 640],
+    [1180, 720]
+  ]) {
+    const { ctx, page, d } = await fresh({ width, height });
+    const where = at + width + ': ';
+    await d.open('#/roll/std', { as: 'gm4' });
+    const row = await page.evaluate(() => {
+      const card = document.querySelector('.card.face').getBoundingClientRect();
+      const row = document.querySelector('.resacts');
+      const controls = [...row.querySelectorAll('.btn')];
+      return {
+        names: controls.filter((c) => c.textContent.trim().length > 0).length,
+        count: controls.length,
+        out: controls.filter((c) => {
+          const r = c.getBoundingClientRect();
+          return r.left < card.left - 1 || r.right > card.right + 1;
+        }).length,
+        below: row.getBoundingClientRect().top >= card.bottom
+      };
+    });
+    ok(row.count === 3 && row.names === 3, where + 'the row is not three labeled controls');
+    ok(!row.out, where + 'a control leaves the card width');
+    ok(row.below, where + 'the row is not under the plate');
+
+    await page.evaluate(() => {
+      document.querySelector('.resacts').scrollIntoView({ block: 'center' });
+    });
+    await d.openCardMore();
+    const menu = await page.evaluate(() => {
+      const m = document.querySelector('.resacts [role="menu"]').getBoundingClientRect();
+      return { x: m.x, y: m.y, w: m.width, h: m.height };
+    });
+    ok(inside(menu, await viewBox(page)), where + 'the menu leaves the window');
+    await d.press('Скопировать название');
+    ok(
+      await waitIn(
+        page,
+        () =>
+          !document.querySelector('[role="menu"]') &&
+          document.activeElement === document.querySelector('.resacts .morewrap > .btn')
+      ),
+      where + 'a copy did not return the focus to «Ещё»'
+    );
+
+    await d.accountLists(
+      Array.from({ length: 150 }, (_, i) => ({ n: i + 1, name: 'Список ' + i, ids: ['ci1'] }))
+    );
+    await page.evaluate(() => {
+      document.querySelector('.resacts').scrollIntoView({ block: 'center' });
+    });
+    /* `pop` runs only with motion on, and its offset is what the menu's scroll margin answers. */
+    let add;
+    try {
+      await page.emulateMediaFeatures([
+        { name: 'prefers-reduced-motion', value: 'no-preference' }
+      ]);
+      await d.openCardList();
+      add = await page.evaluate(async () => {
+        const box = (el) => {
+          const r = el.getBoundingClientRect();
+          return { x: r.x, y: r.y, w: r.width, h: r.height };
+        };
+        const list = document.querySelector('.resacts .dropmenu');
+        await Promise.all(list.getAnimations().map((a) => a.finished));
+        const chips = list.querySelector('.pickchips');
+        return {
+          menu: box(list),
+          add: box(list.querySelector(':scope > .chip') ?? list.lastElementChild),
+          scrolls: chips.scrollHeight > chips.clientHeight,
+          header: document.querySelector('.topbar').getBoundingClientRect().bottom
+        };
+      });
+    } finally {
+      await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+    }
+    ok(add.scrolls, where + 'the 150 lists do not scroll');
+    ok(inside(add.menu, await viewBox(page)), where + 'the add menu leaves the window');
+    ok(inside(add.add, add.menu), where + '«+ Новый список» leaves the add menu');
+    ok(add.menu.y >= add.header, where + 'the add menu slides under the header');
+
+    await page.keyboard.press('Escape');
+    await page.click('.card.face .card-media');
+    await page.waitForSelector('dialog[open] .seldrop > .btn', { timeout: 5000 });
+    await d.settle();
+    await page.click('dialog[open] .seldrop > .btn');
+    await d.settle();
+    const dialog = await page.evaluate(() => ({
+      expanded: document
+        .querySelector('dialog[open] .seldrop > .btn')
+        .getAttribute('aria-expanded'),
+      inside: document.querySelectorAll('dialog[open] .dropmenu').length,
+      behind: document.querySelectorAll('.resacts .dropmenu').length
+    }));
+    ok(
+      dialog.expanded === 'true' && dialog.inside === 1 && dialog.behind === 0,
+      where + 'the dialog over a result does not open its add menu - ' + JSON.stringify(dialog)
+    );
+    await ctx.close();
   }
 }
 
@@ -5139,7 +6694,7 @@ const CASES = [
   ['64 (the own-item row and a row note box)', ownItemRowAndNoteBox],
   ['65 (the requests panel folds at 360)', requestsPanelFolds],
   ['66 (a 200-character list name at 360)', longListName],
-  ['67 (field help and threshold labels at 360)', fieldHelpAt360],
+  ['67 (no field help and the threshold labels at 360)', fieldHelpAt360],
   ['68 (#/homebrew at 300 items)', homebrewAt300],
   ['69 (the GM-only toggle at 1180 and 360)', gmOnlyToggle],
   ['70 (a picture: choose, crop, save)', pictureChooseCropSave],
@@ -5155,7 +6710,18 @@ const CASES = [
   ['80 (the homebrew refusals take the error look)', homebrewRefusalLook],
   ['81 (the address bar)', addressBarPathForm],
   ['82 (the Items tab filter address)', homebrewItemsFilterAddress],
-  ['83 (primary content starts in the first screen)', primaryContentInFirstScreen]
+  ['83 (primary content starts in the first screen)', primaryContentInFirstScreen],
+  ['84 (filter column clears the selection bar)', filterColumnClearsTheBar],
+  ['85 (selection bar in landscape)', selectionBarInLandscape],
+  ['86 (the header hides and returns up to 760 px)', headerHidesAndReturns],
+  ['87 (a backward Tab never lands under the header)', backwardTabClearsTheHeader],
+  ['88 (the record actions fit at 360, 320 and 1180)', recordActionsFit],
+  ['89 (the roll page layout holds at 320 to 1180 px)', rollPageLayout],
+  ['90 (the result row and its menus)', resultRowAndMenus],
+  ['91 (the homebrew head, tabs and bar from 320 to 1180 px)', homebrewHeadAndBar],
+  ['92 (the editor holds its layout and the preview sheet)', editorLayoutAndSheet],
+  ['93 (the search page holds from 320 to 1180 px)', searchHeadAndRows],
+  ['94 (the account holds its layout and its confirm)', accountLayoutAndConfirm]
 ];
 
 (async () => {

@@ -1,14 +1,15 @@
 <script lang="ts">
   /* One choice in a row of them, off `.chip` in style.css.
 
-     Extracted on the second use, not before: the Vault of Ages section picker
-     and the community picker are both a row of these, and the source, kind and
-     rarity rows of the other two roll modes will be the third and fourth.
+     Extracted on the second use, not before: the source, kind and rarity rows of
+     the roll pages and the filter rows are all rows of these.
 
      The `href` form is the table navigation's second use: the live app writes
      those chips as `<a>` rather than `<button>`, so middle-click and
      open-in-new-tab work on them for free - the same reason the tab bar is
      real links rather than buttons with a click handler. */
+
+  import Icon from './Icon.svelte';
 
   interface Base {
     label: string;
@@ -24,14 +25,6 @@
      * needs to tell them apart without reading the language-dependent text.
      */
     value?: string | undefined;
-    /**
-     * A second line under the label, smaller and quieter.
-     *
-     * The rarity chips carry the tiers each rarity is a recommendation for.
-     * The dice buttons on Core rules do the same thing the other way round -
-     * the count above, the rarities under it.
-     */
-    sub?: string | undefined;
     /** `sm` is the table nav's second row - a book's own sections, quieter
      *  than the row of books above them. */
     size?: 'md' | 'sm';
@@ -44,17 +37,21 @@
       | {
           href: string;
           onclick?: never;
-          /** The chip's text under 640 px; the label stays its accessible name. */
-          short?: string | undefined;
           busy?: never;
+          neutral?: never;
+          filter?: never;
         }
       | {
           href?: never;
           onclick: () => void;
-          short?: never;
           /** A choice whose read runs: dimmed, announced busy, and a press does nothing; the
            *  focus stays on it. */
           busy?: boolean | undefined;
+          /** The neutral pressed default (DESIGN.md, "Chips"): a check and a lit ground,
+           *  never gold. A filter row's «Все» is its caller. */
+          neutral?: boolean | undefined;
+          /** A filter value, `<group>:<value>`, as `data-fval` for the browser suites. */
+          filter?: string | undefined;
         }
     );
 
@@ -62,13 +59,13 @@
     label,
     on,
     title,
-    sub,
     size = 'md',
     href,
     onclick,
     value,
     busy,
-    short
+    neutral,
+    filter
   }: Props = $props();
 </script>
 
@@ -79,12 +76,8 @@
     class:sm={size === 'sm'}
     aria-current={on ? 'page' : undefined}
     data-val={value}
-    aria-label={short ? label : undefined}
     {title}
-    {href}
-    >{#if short}<span class="full">{label}</span><span class="short" aria-hidden="true"
-        >{short}</span
-      >{:else}{label}{/if}{#if sub}<small>{sub}</small>{/if}</a
+    {href}>{label}</a
   >
 {:else}
   <button
@@ -92,15 +85,17 @@
     class="chip"
     class:on
     class:sm={size === 'sm'}
+    class:neutral
     aria-pressed={on}
     data-val={value}
+    data-fval={filter}
     aria-busy={busy ? 'true' : undefined}
     aria-disabled={busy ? 'true' : undefined}
     {title}
     onclick={() => {
       if (!busy) onclick?.();
     }}
-    >{label}{#if sub}<small>{sub}</small>{/if}</button
+    >{#if neutral && on}<Icon name="check" />{/if}{label}</button
   >
 {/if}
 
@@ -123,13 +118,6 @@
     overflow-wrap: anywhere;
   }
 
-  .chip small {
-    display: block;
-    font-size: var(--t-badge);
-    font-weight: 500;
-    letter-spacing: 0.02em;
-  }
-
   .chip:hover:not([aria-disabled='true']) {
     border-color: var(--gold);
     color: var(--txt);
@@ -147,20 +135,15 @@
     font-weight: 650;
   }
 
-  /* A short form is part of its full name (WCAG 2.5.3); 640 px is the system
-     breakpoint (DESIGN.md), and a media query cannot read a token. */
-  .short {
-    display: none;
-  }
-
-  @media (max-width: 640px) {
-    .full {
-      display: none;
-    }
-
-    .short {
-      display: inline;
-    }
+  /* The neutral pressed default: the check and the label share one center. */
+  .chip.neutral.on {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface2);
+    border-color: var(--muted2);
+    color: var(--txt);
+    font-weight: 600;
   }
 
   /* off `.chip.sm` in style.css */

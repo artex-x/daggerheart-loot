@@ -1,21 +1,16 @@
 <script lang="ts">
-  /* A record over the page it was opened from, reproduced from the live app.
+  /* A record over the page it was opened from: the same dossier the record page draws,
+     actions and all, centered from 761 px and a bottom sheet with a sticky action dock up
+     to 760 px (DESIGN.md, "The Dossier Rule"). It is one element at every width, so a window
+     that crosses 760 px remounts nothing.
 
-     The markup is `#modal` in index.html and the styles are `.modal`,
-     `.modal-back`, `.modal-card` and `.modal-x` in style.css. What is inside is
-     `cardHTML(it, {full:true})` - the same card the record page draws, actions
-     and all. The rewrite drew a bare card here for a while, at four times the
-     width, and no route-level check could see it: a modal is a state, not a
-     URL. `tests/app/states.js` and `tests/app/golden.js` both visit it now.
+     A modal is a state, not a URL, so no route-level check can see it:
+     `tests/app/states.js` and `tests/app/golden.js` both visit it.
 
-     The one deliberate deviation is the element. The live app was a div with
-     role="dialog" and hand-written Escape handling, which left the page
-     behind it reachable by Tab and by a screen reader; a native <dialog> opened
-     with showModal() gets the focus trap, the inert background and Escape from
-     the browser. An accessibility improvement, not a regression, and it
-     changes nothing about how the thing looks. */
+     A native <dialog> opened with showModal() gets the focus trap, the inert
+     background and Escape from the browser. */
+  import DialogClose from './DialogClose.svelte';
   import PickRow from './PickRow.svelte';
-  import RecordActions from './RecordActions.svelte';
   import RecordCard from './RecordCard.svelte';
   import Toast from './Toast.svelte';
   import { isHomebrewRecord } from '../lib/homebrew.js';
@@ -62,7 +57,7 @@
   $effect(() => {
     if (!dialog) return;
     dialog.showModal();
-    dialog.querySelector<HTMLElement>('.modal-x')?.focus();
+    dialog.querySelector<HTMLElement>('.dlg-x')?.focus();
     app.dialogOpen = true;
     return () => {
       app.dialogOpen = false;
@@ -96,18 +91,19 @@
   <div class="modal-card">
     <!-- close() rather than a method="dialog" form: it is the same thing to a
          browser, and it is one call rather than a submission nobody submits.
-         Escape reaches the same place, because the browser fires `close`. -->
-    <button
-      type="button"
-      class="modal-x"
-      title={app.t.close}
-      aria-label={app.t.close}
-      onclick={() => {
-        dialog?.close();
-      }}>&times;</button
-    >
+         Escape reaches the same place, because the browser fires `close`. It stays the
+         dialog's first button: `Toast` returns the focus there. -->
+    <div class="modal-head">
+      <DialogClose
+        label={app.t.close}
+        onclick={() => {
+          dialog?.close();
+        }}
+      />
+    </div>
 
     <RecordCard
+      dossier
       {it}
       {index}
       lang={app.lang}
@@ -118,16 +114,10 @@
       }}
       manage={own}
     >
-      {#snippet nameActions()}
-        <!-- RecordActions toasts through `app.say`; the toast is drawn
-             inside this dialog while it is open (Toast.svelte). -->
-        <RecordActions {app} {index} {it} row="name" />
-      {/snippet}
-      {#snippet actions()}
-        <RecordActions {app} {index} {it} row="card" {extra} />
-      {/snippet}
       {#snippet pick()}
-        <PickRow {app} {it} inModal />
+        <!-- The row toasts through `app.say`; the toast is drawn inside this dialog while
+             it is open (Toast.svelte). -->
+        <PickRow {app} {it} {index} {extra} inModal />
       {/snippet}
     </RecordCard>
   </div>
@@ -160,14 +150,17 @@
     backdrop-filter: blur(5px);
   }
 
-  /* off `.modal-card` */
   .modal-card {
     position: relative;
     z-index: 2;
-    width: min(440px, 100%);
+    width: min(980px, 100%);
     max-height: 88vh;
+    padding: 24px;
     overflow: auto;
+    background: linear-gradient(180deg, var(--surface2), var(--surface));
+    border: 1px solid var(--line);
     border-radius: var(--r);
+    box-shadow: var(--shadow);
     animation: pop 0.22s cubic-bezier(0.2, 0.8, 0.3, 1) both;
   }
 
@@ -188,26 +181,103 @@
     }
   }
 
-  /* off `.modal-x` */
-  .modal-x {
-    position: absolute;
-    right: 10px;
-    top: 10px;
-    z-index: 5;
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    border: 1px solid var(--line2);
-    background: rgb(10 8 16 / 80%);
-    color: var(--txt);
-    font-size: var(--t-section);
-    line-height: 1;
-    backdrop-filter: blur(6px);
+  /* No height, so the card starts under the padding; sticky, so a long text does not take
+     the close away. `top` counts from the card's content box: 12 px under its edge. */
+  .modal-head {
+    position: sticky;
+    top: -12px;
+    z-index: 3;
+    display: flex;
+    justify-content: flex-end;
+    height: 0;
+    margin: -12px -12px 12px 0;
   }
 
-  .modal-x:hover {
-    border-color: var(--gold);
-    color: var(--gold);
+  .modal-head :global(.dlg-x) {
+    background: var(--surface);
+  }
+
+  .modal-card :global(.card-name) {
+    padding-right: 112px;
+  }
+
+  /* The bottom sheet and its dock, which anchors both menus. */
+  @media (max-width: 760px) {
+    dialog[open] {
+      padding: 0;
+      align-items: flex-end;
+    }
+
+    .modal-card {
+      width: 100%;
+      max-height: min(92dvh, 100%);
+      padding: 0;
+      background: var(--surface);
+      border-width: 1px 0 0;
+      border-radius: var(--r) var(--r) 0 0;
+    }
+
+    .modal-head {
+      top: 0;
+      height: auto;
+      margin: 0;
+      padding: 8px 16px;
+      background: var(--surface);
+    }
+
+    .modal-card :global(.card-name) {
+      padding-right: 0;
+    }
+
+    .modal-card :global(.card.dossier) {
+      padding: 0 16px;
+    }
+
+    .modal-card :global(.card.dossier .cardpick) {
+      position: sticky;
+      bottom: 0;
+      z-index: 3;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 12px -16px 0;
+      padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+      background: var(--surface);
+      border-top: 1px solid var(--line);
+    }
+
+    .modal-card :global(.cardpick > .btn),
+    .modal-card :global(.cardpick .morewrap),
+    .modal-card :global(.cardpick .morewrap > .btn) {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .modal-card :global(.cardpick > :last-child:nth-child(odd)) {
+      grid-column: 1 / -1;
+    }
+
+    .modal-card :global(.card.dossier .cardpick .seldrop) {
+      position: static;
+    }
+
+    .modal-card :global(.cardpick .dropmenu) {
+      top: auto;
+      right: 0;
+      bottom: calc(100% + 8px);
+      left: 0;
+    }
+  }
+
+  /* A dock of two rows would take almost half of a window this short, so it joins the
+     scroll; `relative` keeps it the menus' anchor. */
+  @media (max-width: 760px) and (max-height: 480px) {
+    .modal-card :global(.card.dossier .cardpick) {
+      position: relative;
+      margin: 12px 0 16px;
+      padding: 0;
+      border-top: 0;
+    }
   }
 
   /* The live app hid `#modal` unconditionally under print

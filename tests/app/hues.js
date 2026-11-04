@@ -15,13 +15,16 @@ const { fresh, reporter, closeBrowser } = require('./lib.js');
 /* One route per badge class - the first row of each table carries it -
  * plus `.badge.src`, which every row on every table carries, so any of them
  * will do for that one. */
+/* A one-kind or one-book table hides the tag its page already says (`rowTags.ts`), so
+   the kinds are read on a table of all five and the source on the equipment table,
+   whose rows from other books keep theirs. */
 const ROUTES = {
-  item: '#/tables/core_item',
-  cons: '#/tables/core_consumable',
-  'eq-weapon': '#/tables/eq_weapon',
-  'eq-secondary': '#/tables/eq_secondary',
-  'eq-armor': '#/tables/eq_armor',
-  src: '#/tables/core_item'
+  item: '#/tables/dragons_vault',
+  cons: '#/tables/dragons_vault',
+  'eq-weapon': '#/tables/dragons_vault',
+  'eq-secondary': '#/tables/dragons_vault',
+  'eq-armor': '#/tables/dragons_vault',
+  src: '#/tables/eq_weapon'
 };
 
 const MIN_HUE = 40; // degrees between two colorful badges
@@ -113,7 +116,8 @@ const gap = (a, b) => {
     }
   }
 
-  /* The roll button is the same control everywhere: gold, with a die on it.
+  /* A roll button with a die is gold, one to a page; the five dice of the Core rules are an
+   * action each, and plain (DESIGN.md, "The Seal Rule").
    * `:has()` is Chrome's, and this only ever runs in Chrome. */
   console.log('roll buttons match');
   const rollLook = async (hash) => {
@@ -126,15 +130,30 @@ const gap = (a, b) => {
     );
   };
   const std = await rollLook('#/roll/std');
-  ok(std.length >= 4, 'fewer than four roll buttons: ' + std.length);
+  ok(std.length === 0, 'a gold roll button on the Core rules page: ' + std.length);
+  const dice = await page.$$eval('.dicebar button', (els) =>
+    els.map((x) => {
+      const s = getComputedStyle(x);
+      return {
+        look: s.backgroundImage + '|' + s.backgroundColor + '|' + s.color,
+        fill: s.backgroundImage + '|' + s.backgroundColor
+      };
+    })
+  );
+  const plainFill = await page.$eval('.resacts .morewrap > .btn', (x) => {
+    const s = getComputedStyle(x);
+    return s.backgroundImage + '|' + s.backgroundColor;
+  });
+  ok(dice.length === 5, 'not five dice: ' + dice.length);
   ok(
-    std.every((x) => x.die),
-    'not every roll button has a die'
+    dice.every((x) => x.fill === plainFill),
+    'a die is not filled as a plain button: ' + dice[0]?.fill + ' against ' + plainFill
   );
   ok(
-    new Set(std.map((x) => x.look)).size === 1,
-    'roll dice look different: ' + [...new Set(std.map((x) => x.look))].join(' / ')
+    new Set(dice.map((x) => x.look)).size === 1,
+    'the dice look different: ' + [...new Set(dice.map((x) => x.look))].join(' / ')
   );
+  let rollButton = null;
   for (const h of [
     '#/roll/alt',
     '#/roll/wondrous_environments',
@@ -146,11 +165,68 @@ const gap = (a, b) => {
     const one = await rollLook(h);
     ok(one.length === 1, h + ': not exactly one roll button');
     ok(!!one[0]?.die, h + ': the roll button has no die');
-    ok(
-      one[0]?.look === std[0]?.look,
-      h + ': the roll button looks different than on the ordinary tables'
-    );
+    rollButton ??= one[0]?.look;
+    ok(one[0]?.look === rollButton, h + ': the roll button looks different than on /roll/alt');
   }
+
+  /* The editor's choices are the neutral pressed state: a check and no gold; the gold is
+   * «Сохранить» alone (DESIGN.md, "Segmented control"). */
+  console.log('the editor keeps gold for its save');
+  await d.open('#/homebrew/new', { as: 'gm1' });
+  const gold = await page.evaluate(() => {
+    const probe = document.createElement('i');
+    probe.style.color = 'var(--gold)';
+    document.body.append(probe);
+    const c = getComputedStyle(probe).color;
+    probe.remove();
+    return c;
+  });
+  const pressed = await page.$$eval('.hbform .seg [aria-pressed="true"]', (els) =>
+    els.map((x) => ({ color: getComputedStyle(x).color, check: !!x.querySelector('svg') }))
+  );
+  ok(pressed.length >= 2, 'the editor draws ' + pressed.length + ' pressed options');
+  ok(
+    pressed.every((x) => x.check && x.color !== gold),
+    'an editor choice is gold or has no check: ' + JSON.stringify(pressed)
+  );
+  const golden = await page.$$eval('.hbform .btn.primary', (els) => els.length);
+  ok(golden === 1, 'the editor draws ' + golden + ' gold buttons');
+
+  /* The account's pickers are neutral too, and its one fill is the delete confirm's final
+   * button (DESIGN.md, "Buttons"). */
+  console.log('the account keeps its pickers neutral');
+  await d.open('#/account', { as: 'gm1' });
+  await page.waitForSelector('.acc .seg');
+  const accPressed = await page.$$eval('main .seg [aria-pressed="true"]', (els) =>
+    els.map((x) => ({ color: getComputedStyle(x).color, check: !!x.querySelector('svg') }))
+  );
+  ok(accPressed.length === 4, 'the account draws ' + accPressed.length + ' pressed options');
+  ok(
+    accPressed.every((x) => x.check && x.color !== gold),
+    'an account choice is gold or has no check: ' + JSON.stringify(accPressed)
+  );
+
+  /* Search lights a kind chip only once it narrows: «Все» is the neutral default. */
+  console.log('search lights a picked kind only');
+  await d.open('#/search');
+  const lit = () =>
+    page.$$eval('.kindrow .chip', (els) => els.map((x) => getComputedStyle(x).backgroundColor));
+  const before = await lit();
+  await d.click('Снаряжение');
+  const after = await lit();
+  const goldBg = await page.evaluate(() => {
+    const probe = document.createElement('i');
+    probe.style.backgroundColor = 'var(--gold)';
+    document.body.append(probe);
+    const c = getComputedStyle(probe).backgroundColor;
+    probe.remove();
+    return c;
+  });
+  ok(!before.includes(goldBg), 'search lights a kind chip before a pick: ' + before.join(', '));
+  ok(
+    after.filter((c) => c === goldBg).length === 1,
+    'search does not light exactly the picked kind: ' + after.join(', ')
+  );
 
   /* Equipment's stat line keeps one tone everywhere across the three
    * equipment tables - the kind is told by the badge, not by a second color
@@ -175,20 +251,20 @@ const gap = (a, b) => {
    * app as it stands today. */
   console.log('selected tile fill');
   await d.open('#/tables/eq_weapon');
-  await d.press('Сеткой');
+  await d.press('Сетка');
   await d.tick('Палаш');
   const selFill = await page.evaluate(() => {
     const el = document.querySelector('.tilewrap.sel .tile');
     return el ? getComputedStyle(el).backgroundColor : null;
   });
-  const plainFill = await page.evaluate(() => {
+  const tileFill = await page.evaluate(() => {
     const el = document.querySelector('.tilewrap:not(.sel) .tile');
     return el ? getComputedStyle(el).backgroundColor : null;
   });
   ok(!!selFill, 'selected tile: .tilewrap.sel .tile not found');
   ok(
-    !!plainFill && selFill !== plainFill,
-    'the selected tile does not differ in its fill: ' + selFill + ' vs ' + plainFill
+    !!tileFill && selFill !== tileFill,
+    'the selected tile does not differ in its fill: ' + selFill + ' vs ' + tileFill
   );
 
   await ctx.close();

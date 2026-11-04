@@ -1,6 +1,6 @@
 # #/print/ci1-q1
 # route: #/print/ci1-q1
-# why: an old long print link: the retired page, the address kept
+# why: an old long print link: the error page «Такие ссылки на печать больше не открываются.», its sentence and «На главную»; the address kept
 
 ## ru :: tree
 RootWebArea "Генератор лута Daggerheart" [url=/print/ci1-q1]
@@ -18,8 +18,10 @@ RootWebArea "Генератор лута Daggerheart" [url=/print/ci1-q1]
       link "Поиск" [url=/search]
   main ""
     heading "Такие ссылки на печать больше не открываются." [level=1]
-    StaticText "Попросите у отправителя новую ссылку вида /#/p/ или войдите и со..." [namelen=85 namehash=3f475e47]
+    StaticText "Попросите у отправителя новую ссылку вида /p/ или войдите и собе..." [namelen=83 namehash=e919ff38]
     link "На главную" [url=/roll/std]
+    status ""
+      StaticText "Такие ссылки на печать больше не открываются."
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -58,8 +60,10 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/print/ci1-q1]
       link "Search" [url=/en/search]
   main ""
     heading "Print links of this kind no longer open." [level=1]
-    StaticText "Ask the sender for a new /#/p/ link, or sign in and pick the car..." [namelen=76 namehash=2a3863ec]
+    StaticText "Ask the sender for a new /p/ link, or sign in and pick the cards..." [namelen=74 namehash=b6ecc1ce]
     link "Home" [url=/en/roll/std]
+    status ""
+      StaticText "Print links of this kind no longer open."
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]

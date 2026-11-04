@@ -19,6 +19,13 @@ export function pathOf(hash: string, lang: Lang): string {
   return '/en/' + rest;
 }
 
+/** Returns the path form of `hash` in `lang`, cut to `max` characters and `...` when
+ *  longer, so that an error page can quote a long address inside a sentence. */
+export function shortPath(hash: string, lang: Lang, max = 80): string {
+  const path = pathOf(hash, lang);
+  return path.length > max ? path.slice(0, max) + '...' : path;
+}
+
 const EN_ROOT = /^\/en(?:\/(?:index\.html)?)?$/;
 
 /**

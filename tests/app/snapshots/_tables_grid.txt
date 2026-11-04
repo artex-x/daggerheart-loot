@@ -1,6 +1,6 @@
 # #/tables ~ grid
 # route: #/tables
-# why: the grid view, a different body entirely; the note under the toolbar
+# why: the grid view, a different body entirely: two columns at 360, no kind badge on a one-kind table
 
 ## ru :: tree
 RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tables]
@@ -19,8 +19,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
   main ""
     heading "Таблицы" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
-    StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
+    button "Об этих данных" [expanded=false]
     navigation "Таблицы"
       link "Core" [url=/tables/core_item]
       link "Hope & Fear" [url=/tables/hope_and_fear_item]
@@ -31,21 +30,12 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Предметы" [url=/tables/core_item]
       link "Расходники" [url=/tables/core_consumable]
     searchbox "Поиск по названию или описанию..."
+    button "Список" [pressed=false]
+    button "Сетка" [pressed=true]
     button "Ссылка на таблицу"
-    button "Списком" [pressed=false]
-    button "Сеткой" [pressed=true]
-    StaticText "Только до перезагрузки. Чтобы сохранить, измените в "
-    link "настройках аккаунта" [url=/account]
-    StaticText "."
-    checkbox "Выбрать все (60)" [checked=false]
-    StaticText "Выбрать все (60)"
-    checkbox "Первоклассный Спальный Мешок" [checked=false]
-    button "1 Первоклассный Спальный Мешок Premium Bedroll"
-    ... checkbox x57 of 61 same-shape siblings elided
-    ... button x57 of 61 same-shape siblings elided
-    checkbox "Кольцо Несокрушимой Решимости" [checked=false]
+    button "Выбрать"
+    ... button x58 of 62 same-shape siblings elided
     button "59 Кольцо Несокрушимой Решимости Ring of Unbreakable Resolve"
-    checkbox "Пояс Единства" [checked=false]
     button "60 Пояс Единства Belt of Unity"
   contentinfo ""
     navigation "Страницы сайта"
@@ -115,92 +105,33 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 7Мистический ПлащArcane Cloak
 8Плетёная СетьWoven Net
 9Банка с ОгнёмFire Jar
-?Справка
+?Об этих данных
 Core
 EN
 Hope & Fear
 RU
 daggerheart.com
 Альт. таблицы
-Амулет Воздушного Клинка
-Амулет Скрытности
-Банка с Огнём
-Бездонная Сумка
-Ботинки Хождения по Воде
 Бросок
 Войти
-Глиняный Спутник
-Двойная Фляга
+Выбрать
 Дополнения
-Заряжающий Колчан
-Исправляющий Дух
 К содержимому
-Камень Доблести
-Камень Облика
-Кольцо Несокрушимой Решимости
-Кольцо Сопротивления
-Кольцо Тишины
-Компасы Связи
 Конфиденциальность
-Коробка Многих Вещей
-Кровавый Камень
-Кулон Светлячка
 ЛутDaggerheart
-Магическая Призма
-Медальон Хранения Надежд
-Мешочек Своенравного Песка
-Мистический Плащ
-Наручники
-Осколок Памяти
 Открывать при запуске
-Парашют
-Первоклассный Спальный Мешок
-Перо Феникса
-Перчатки Геккона
-Плетёная Сеть
-Подвешенный Жезл
 Поиск
-Пояс Единства
+Поиск по названию или описанию...
 Предметы
-Пронзающие Стрелы
-Пронзительная Свирель
 Прочее
-Пустой Сундук
-Разговаривающие Сферы
 Расходники
-Реликвия Баланса
-Реликвия Быстрого Шага
-Реликвия Гармонии
-Реликвия Наставления
-Реликвия Очарования
-Реликвия Прозрения
-Реликвия Усиления
-Рецепт Малого Зелья Выносливости
-Рецепт Малого Зелья Лечения
-Рецепт Мифической Пыли
-Рецепт Флакона с Чёрным Дымом
-Самоцвет Великана
-Самоцвет Дерзости
-Самоцвет Мощи
-Самоцвет Проворства
-Самоцвет Рассудительности
-Самоцвет Точности
-Самоцвет Чутья
-Семя Портала
-Сеткой
-Скелетный Ключ
+Сетка
 Снаряжение
-Списком
+Список
 Ссылка на таблицу
 Таблицы
 Условия использования
-Успокаивающий Кулон
 Установить как приложение
-Факел Алистера
-Футляр для Компаньона
-Хранитель Знаний
-Цепь Парагона
-настройках аккаунта
 
 ## en :: tree
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables]
@@ -219,8 +150,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables]
   main ""
     heading "Tables" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
-    StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
+    button "About this data" [expanded=false]
     navigation "Tables"
       link "Core" [url=/en/tables/core_item]
       link "Hope & Fear" [url=/en/tables/hope_and_fear_item]
@@ -231,21 +161,12 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables]
       link "Items" [url=/en/tables/core_item]
       link "Consumables" [url=/en/tables/core_consumable]
     searchbox "Search by name or description..."
-    button "Link to this table"
     button "List" [pressed=false]
     button "Grid" [pressed=true]
-    StaticText "Only until the page reloads. To keep it, change it in "
-    link "your account settings" [url=/en/account]
-    StaticText "."
-    checkbox "Select all (60)" [checked=false]
-    StaticText "Select all (60)"
-    checkbox "Premium Bedroll" [checked=false]
-    button "1 Premium Bedroll Первоклассный Спальный Мешок"
-    ... checkbox x57 of 61 same-shape siblings elided
-    ... button x57 of 61 same-shape siblings elided
-    checkbox "Ring of Unbreakable Resolve" [checked=false]
+    button "Link to this table"
+    button "Select"
+    ... button x58 of 62 same-shape siblings elided
     button "59 Ring of Unbreakable Resolve Кольцо Несокрушимой Решимости"
-    checkbox "Belt of Unity" [checked=false]
     button "60 Belt of Unity Пояс Единства"
   contentinfo ""
     navigation "Site pages"
@@ -315,89 +236,30 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables]
 7Arcane CloakМистический Плащ
 8Woven NetПлетёная Сеть
 9Fire JarБанка с Огнём
-?Help
-Airblade Charm
-Alistair's Torch
+?About this data
 Alt. tables
-Arcane Cloak
-Arcane Prism
-Attune Relic
-Bag of Ficklesand
-Belt of Unity
-Bloodstone
-Bolster Relic
-Box of Many Goods
-Calming Pendant
-Charging Quiver
-Charm Relic
-Clay Companion
-Companion Case
 Consumables
-Control Relic
 Core
-Corrector Sprite
-Dual Flask
 EN
-Elusive Amulet
-Empty Chest
-Enlighten Relic
 Equipment
-Fire Jar
-Flickerfly Pendant
-Gecko Gloves
-Gem of Alacrity
-Gem of Audacity
-Gem of Insight
-Gem of Might
-Gem of Precision
-Gem of Sagacity
-Glamour Stone
-Glider
-Greatstone
 Grid
-Homing Compasses
-Honing Relic
 Hope & Fear
-Hopekeeper Locket
-Infinite Bag
 Install as an app
 Items
-Lakestrider Boots
 Link to this table
 List
 LootDaggerheart
-Lorekeeper
-Manacles
-Minor Health Potion Recipe
-Minor Stamina Potion Recipe
-Mythic Dust Recipe
 Open on start
 Other
-Paragon's Chain
-Phoenix Feather
-Piercing Arrows
-Piper Whistle
-Portal Seed
-Premium Bedroll
 Privacy
 RU
-Ring of Resistance
-Ring of Silence
-Ring of Unbreakable Resolve
 Roll
 Search
-Shard of Memory
+Search by name or description...
+Select
 Sign in
-Skeleton Key
 Skip to content
-Speaking Orbs
-Stride Relic
 Supplements
-Suspended Rod
 Tables
 Terms of use
-Valorstone
-Vial of Darksmoke Recipe
-Woven Net
 daggerheart.com
-your account settings

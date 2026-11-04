@@ -23,6 +23,7 @@ import {
   fakeEnv,
   fakeImage,
   fakePage,
+  fakeViewport,
   fixedClock,
   memoryRouter,
   memoryStorage,
@@ -48,6 +49,19 @@ const sources = (): Promise<HTMLElement> => tab(t.hbSources);
 const sets = (): Promise<HTMLElement> => tab(t.hbSets);
 const rules = (): Promise<HTMLElement> => tab(t.hbRefs);
 
+/* «Выбрать» opens the mode when it is off; a row's box and «Все» draw in it. */
+async function tickRow(name: string): Promise<void> {
+  const mode = screen.queryByRole('button', { name: t.selectMode });
+  if (mode) await userEvent.click(mode);
+  await userEvent.click(screen.getByRole('checkbox', { name }));
+}
+
+/* A press on an item of a source's «Ещё». */
+async function sourceMenu(row: HTMLElement, item: string): Promise<void> {
+  await userEvent.click(within(row).getByRole('button', { name: t.moreMenu }));
+  await userEvent.click(screen.getByRole('menuitem', { name: item }));
+}
+
 async function typeInto(label: string, text: string): Promise<void> {
   const box = screen.getByLabelText(label);
   await userEvent.clear(box);
@@ -55,7 +69,7 @@ async function typeInto(label: string, text: string): Promise<void> {
 }
 
 describe('#/homebrew', () => {
-  it('draws the import, the tab row, the count and the items under their source and section', async () => {
+  it('draws the head, the tab links with counts, the count and the items under their source and section', async () => {
     const { container } = page();
     expect(await screen.findByText('4 предмета из 100')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: t.myItems })).toBeInTheDocument();
@@ -67,10 +81,10 @@ describe('#/homebrew', () => {
     const nav = screen.getByRole('navigation', { name: t.myItems });
     const links = within(nav).getAllByRole('link');
     expect(links.map((a) => [a.textContent, a.getAttribute('href')])).toEqual([
-      ['Предметы', '/homebrew'],
-      ['Источники', '/homebrew/sources'],
-      ['Комплекты', '/homebrew/sets'],
-      ['Карты правил', '/homebrew/rules']
+      ['Предметы 4', '/homebrew'],
+      ['Источники 1', '/homebrew/sources'],
+      ['Комплекты 1', '/homebrew/sets'],
+      ['Карты правил 1', '/homebrew/rules']
     ]);
     expect(links.map((a) => a.getAttribute('aria-current'))).toEqual([
       'page',
@@ -78,18 +92,11 @@ describe('#/homebrew', () => {
       null,
       null
     ]);
-    /* The import comes first, above the tab row; «Новый предмет» first under it. */
-    const order = [...container.querySelectorAll('.stack button, .stack a')].map((e) =>
-      e.textContent.trim()
-    );
-    expect(order.slice(0, 6)).toEqual([
-      t.importOpen,
-      'Предметы',
-      'Источники',
-      'Комплекты',
-      'Карты правил',
-      t.hbNewItem
-    ]);
+    /* The primary is in the head; the tool row ends with the import and «Выбрать». */
+    expect(container.querySelector('.headnew a')).toHaveTextContent(t.hbNewItem);
+    expect(
+      [...container.querySelectorAll('.tools button')].map((e) => e.textContent.trim())
+    ).toEqual([t.importOpen, t.selectMode]);
     const heads = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent);
     expect(heads).toEqual(['Мастерская Ольхи · Холодное оружие 1', 'Хоумбрю 3']);
     expect(container.querySelector('.stack details')).toBeNull();
@@ -98,10 +105,9 @@ describe('#/homebrew', () => {
       'href',
       '/homebrew/new'
     );
-    expect(screen.getByText('Мастерская Ольхи (HB)')).toBeInTheDocument();
     await expectNoA11yViolations(container);
     const panel = await sources();
-    expect(screen.getByRole('link', { name: 'Источники' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Источники 1' })).toHaveAttribute(
       'aria-current',
       'page'
     );
@@ -119,7 +125,12 @@ describe('#/homebrew', () => {
     const order = [...panel.querySelectorAll('button, a, .note')].map((e) =>
       e.textContent.trim()
     );
-    expect(order.slice(0, 3)).toEqual([t.hbNewSource, '1 источник из 20', 'Мастерская Ольхи']);
+    expect(order.slice(0, 4)).toEqual([
+      t.hbNewSource,
+      '1 источник из 20',
+      t.importOpen,
+      'Мастерская Ольхи'
+    ]);
     const names = [...panel.querySelectorAll('.books > li > .head > .name')];
     expect(names.map((a) => [a.textContent.trim(), a.getAttribute('href')])).toEqual([
       ['Мастерская Ольхи', '/tables/homebrew/f_src-hb_alderworkshopaaa'],
@@ -219,7 +230,7 @@ describe('#/homebrew', () => {
   it('renames a source and refuses a name another source holds', async () => {
     page();
     const panel = await sources();
-    await userEvent.click(within(panel).getByRole('button', { name: t.hbRename }));
+    await sourceMenu(panel, t.hbRename);
     const box = screen.getByLabelText(t.hbRename);
     expect(box).toHaveValue('Мастерская Ольхи');
     await typeInto(t.hbRename, 'Homebrew');
@@ -243,7 +254,7 @@ describe('#/homebrew', () => {
     /* The owner feed's join asks for one coalesced read; it lands before the change. */
     await new Promise((r) => setTimeout(r, COALESCE_MS + 50));
     await cloud?.homebrew.updateBook(ALDER, { ru: 'Ольха', en: 'Alder' }, null);
-    await userEvent.click(within(panel).getByRole('button', { name: t.hbRename }));
+    await sourceMenu(panel, t.hbRename);
     await typeInto(t.hbRename, 'Ольха 2');
     await userEvent.keyboard('{Enter}');
     expect(await screen.findByText(t.hbBookChanged)).toBeInTheDocument();
@@ -282,7 +293,7 @@ describe('#/homebrew', () => {
     await userEvent.keyboard('{Enter}');
     expect(await within(panel).findByText('Арбалеты')).toBeInTheDocument();
     const dels = within(panel).getAllByRole('button', { name: t.del });
-    await userEvent.click(dels[2] as HTMLElement);
+    await userEvent.click(dels[1] as HTMLElement);
     expect(dialog.asked.at(-1)).toBe(
       'Удалить раздел «Холодное оружие»? Его 1 предмет останется в источнике без раздела. Отменить удаление нельзя.'
     );
@@ -290,7 +301,7 @@ describe('#/homebrew', () => {
       expect(within(panel).queryByText('Холодное оружие')).not.toBeInTheDocument();
     });
     await userEvent.click(
-      within(panel).getAllByRole('button', { name: t.del })[1] as HTMLElement
+      within(panel).getAllByRole('button', { name: t.del })[0] as HTMLElement
     );
     expect(dialog.asked.at(-1)).toBe('Удалить раздел «Пистоли»? Отменить удаление нельзя.');
   });
@@ -316,7 +327,7 @@ describe('#/homebrew', () => {
   it('deletes a source after its confirm, and keeps it on a no', async () => {
     const { dialog } = page('gm1', { answer: false });
     const panel = await sources();
-    await userEvent.click(within(panel).getByRole('button', { name: t.del }));
+    await sourceMenu(panel, t.del);
     expect(dialog.asked).toEqual([
       'Удалить источник «Мастерская Ольхи»? Его 1 предмет останется в «Хоумбрю». Отменить удаление нельзя.'
     ]);
@@ -324,7 +335,7 @@ describe('#/homebrew', () => {
     cleanup();
     const yes = page('gm1');
     const again = await sources();
-    await userEvent.click(within(again).getByRole('button', { name: t.del }));
+    await sourceMenu(again, t.del);
     await waitFor(() => {
       expect(within(again).queryByText('Мастерская Ольхи')).not.toBeInTheDocument();
     });
@@ -338,7 +349,8 @@ describe('#/homebrew', () => {
     await userEvent.click(within(panel).getByRole('button', { name: t.hbNewSource }));
     await typeInto(t.hbNewSource, 'Пустой');
     await userEvent.keyboard('{Enter}');
-    await userEvent.click(await within(panel).findByRole('button', { name: t.del }));
+    await within(panel).findByRole('button', { name: t.moreMenu });
+    await sourceMenu(panel, t.del);
     expect(dialog.asked).toEqual(['Удалить источник «Пустой»? Отменить удаление нельзя.']);
   });
 
@@ -346,7 +358,7 @@ describe('#/homebrew', () => {
     const { cloud } = page();
     const panel = await sources();
     (cloud as ReturnType<typeof fakeCloud>).setOffline(true);
-    await userEvent.click(within(panel).getByRole('button', { name: t.del }));
+    await sourceMenu(panel, t.del);
     expect(await screen.findByText(t.hbDeleteFailed)).toBeInTheDocument();
   });
 
@@ -379,11 +391,9 @@ describe('#/homebrew', () => {
     const panel = await sources();
     await userEvent.click(within(panel).getByRole('button', { name: t.hbSectionsBtn }));
     const dels = within(panel).getAllByRole('button', { name: t.del });
-    await userEvent.click(dels[1] as HTMLElement);
+    await userEvent.click(dels[0] as HTMLElement);
     expect(await screen.findByText('Раздел «Пистоли» удалён')).toBeInTheDocument();
-    await userEvent.click(
-      within(panel).getAllByRole('button', { name: t.del })[0] as HTMLElement
-    );
+    await sourceMenu(panel, t.del);
     expect(await screen.findByText('Источник «Мастерская Ольхи» удалён')).toBeInTheDocument();
   });
 
@@ -404,12 +414,15 @@ describe('#/homebrew', () => {
     };
     const { dialog, container } = page('gm1', { cloud });
     await screen.findByText('4 предмета из 100');
-    await userEvent.click(screen.getByRole('checkbox', { name: 'Кольцо с гравировкой' }));
-    await userEvent.click(screen.getByRole('checkbox', { name: 'Настой кузнеца' }));
+    await tickRow('Кольцо с гравировкой');
+    await tickRow('Настой кузнеца');
     const del = screen.getByRole('button', { name: 'Удалить (2)' });
     await userEvent.click(del);
-    /* The visible line; the status region says it once. */
-    const line = (): Element | null => container.querySelector('.note.progress');
+    /* The status region says it once. */
+    const line = (): Element | null =>
+      [...container.ownerDocument.querySelectorAll('.selbarwrap .said')].find((r) =>
+        r.textContent.includes('Удаляем')
+      ) ?? null;
     await waitFor(() => {
       expect(line()).toHaveTextContent('Удаляем предметы (2)...');
     });
@@ -439,7 +452,7 @@ describe('#/homebrew', () => {
     await screen.findByText('4 предмета из 100');
     const names = ['Кольцо с гравировкой', 'Настой кузнеца', 'Топор Тлеющих Углей'];
     for (const name of names) {
-      await userEvent.click(screen.getByRole('checkbox', { name }));
+      await tickRow(name);
     }
     await userEvent.click(screen.getByRole('button', { name: 'Удалить (3)' }));
     expect(await screen.findByText(t.hbDeleteFailed)).toBeInTheDocument();
@@ -468,7 +481,7 @@ describe('#/homebrew', () => {
     };
     page('gm1', { cloud });
     await screen.findByText('120 предметов из 120');
-    await userEvent.click(screen.getByRole('checkbox', { name: t.pickAll }));
+    await tickRow(t.pickAll);
     await userEvent.click(screen.getByRole('button', { name: 'Удалить (120)' }));
     expect(
       await screen.findByText(`Удалено предметов: ${String(DELETE_CHUNK)}. ${t.hbDeleteFailed}`)
@@ -483,11 +496,19 @@ describe('#/homebrew', () => {
   it('draws the empty page', async () => {
     const { container } = page('gm2');
     expect(await screen.findByText(t.hbEmpty)).toBeInTheDocument();
-    expect(screen.getByText('0 предметов из 100')).toBeInTheDocument();
-    expect(screen.queryByRole('checkbox', { name: t.pickAll })).toBeNull();
-    expect(within(await sets()).getByText(t.hbNoSets)).toBeInTheDocument();
+    expect(screen.getByText(t.hbEmptyTitle)).toBeInTheDocument();
+    expect(document.querySelector('.empty .btn')).toBeNull();
+    expect(screen.queryByRole('button', { name: t.selectMode })).toBeNull();
+    expect(
+      [...document.querySelectorAll('.tools button')].map((b) => b.textContent.trim())
+    ).toEqual([t.importOpen]);
+    const setTab = await sets();
+    expect(within(setTab).getByText(t.hbNoSets)).toBeInTheDocument();
+    expect(within(setTab).getByText(t.hbNoSetsSub)).toBeInTheDocument();
     await expectNoA11yViolations(container);
-    expect(within(await rules()).getByText(t.hbNoRefs)).toBeInTheDocument();
+    const ruleTab = await rules();
+    expect(within(ruleTab).getByText(t.hbNoRefs)).toBeInTheDocument();
+    expect(within(ruleTab).getByText(t.hbNoRefsSub)).toBeInTheDocument();
     await expectNoA11yViolations(container);
   });
 
@@ -497,7 +518,7 @@ describe('#/homebrew', () => {
     await expectNoA11yViolations(container);
     cleanup();
     const none = page(null, { cloud: null });
-    expect(screen.getByRole('heading', { name: t.notFound })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: t.nowhereTitle })).toBeInTheDocument();
     expect(none.router.hash()).toBe('#/homebrew');
     expect(router.hash()).toBe('#/homebrew');
   });
@@ -540,8 +561,8 @@ describe('#/homebrew', () => {
   it('deletes the ticked items after one confirm', async () => {
     const { dialog } = page();
     await screen.findByText('4 предмета из 100');
-    await userEvent.click(screen.getByRole('checkbox', { name: 'Кольцо с гравировкой' }));
-    await userEvent.click(screen.getByRole('checkbox', { name: 'Настой кузнеца' }));
+    await tickRow('Кольцо с гравировкой');
+    await tickRow('Настой кузнеца');
     await userEvent.click(screen.getByRole('button', { name: 'Удалить (2)' }));
     expect(dialog.asked).toEqual([
       'Удалить предметы (2)? Они пропадут и из ваших списков. Если эти предметы есть в списках других игроков, строки пропадут и там - с количеством, ценой и заметками; владельцы списков увидят, что предметы удалены. Отменить удаление нельзя.'
@@ -554,8 +575,8 @@ describe('#/homebrew', () => {
   it('puts a ticked item into a list as a link from the selection bar', async () => {
     const { cloud, pagePort, container } = page();
     await screen.findByText('4 предмета из 100');
-    await userEvent.click(screen.getByRole('checkbox', { name: 'Топор Тлеющих Углей' }));
-    await userEvent.click(screen.getByRole('button', { name: t.addToList }));
+    await tickRow('Топор Тлеющих Углей');
+    await userEvent.click(screen.getByRole('button', { name: t.toList }));
     await expectNoA11yViolations(container);
     await userEvent.click(await screen.findByRole('button', { name: 'Пустой список' }));
     expect(
@@ -575,10 +596,10 @@ describe('#/homebrew', () => {
     });
   });
 
-  it('ticks every item from the strip', async () => {
+  it('ticks every item from the bar', async () => {
     page();
     await screen.findByText('4 предмета из 100');
-    await userEvent.click(screen.getByRole('checkbox', { name: t.pickAll }));
+    await tickRow(t.pickAll);
     expect(screen.getByRole('button', { name: 'Удалить (4)' })).toBeInTheDocument();
   });
 
@@ -618,6 +639,7 @@ describe('the Sets and Rules tabs', () => {
     expect(order).toEqual([
       t.hbNewSet,
       '1 комплект · 2 карты из 100',
+      t.importOpen,
       'Комплект Ольхи',
       t.edit,
       t.del
@@ -629,7 +651,14 @@ describe('the Sets and Rules tabs', () => {
     await expectNoA11yViolations(container);
     const ref = await rules();
     expect([...ref.querySelectorAll('button, .note')].map((e) => e.textContent.trim())).toEqual(
-      [t.hbNewCard, '1 карта правил · 2 карты из 100', 'Клеймо Ольхи', t.edit, t.del]
+      [
+        t.hbNewCard,
+        '1 карта правил · 2 карты из 100',
+        t.importOpen,
+        'Клеймо Ольхи',
+        t.edit,
+        t.del
+      ]
     );
     expect(within(ref).getByText('0 предметов')).toBeInTheDocument();
     await expectNoA11yViolations(container);
@@ -1587,6 +1616,134 @@ describe('the card form on a tab', () => {
   });
 });
 
+describe('the head up to 760 px', () => {
+  const narrow = { env: { viewport: fakeViewport('narrow') } };
+
+  it('reads the heading, and draws the picker, the primary with no plus and «Ещё»', async () => {
+    const { container } = page('gm1', narrow);
+    const picker = await screen.findByRole('button', { name: 'Мои предметы: Предметы' });
+    const h1 = screen.getByRole('heading', { level: 1, name: t.myItems });
+    expect(h1).toHaveClass('vh');
+    expect(screen.queryByRole('button', { name: t.homeHint })).toBeNull();
+    const row = container.querySelector('.pickrow') as HTMLElement;
+    expect(row).toContainElement(picker);
+    const primary = within(row).getByRole('link', { name: t.hbNewItem });
+    expect(primary.querySelector('svg')).toBeNull();
+    await expectNoA11yViolations(container);
+  });
+
+  it('holds the import and the pin in «Ещё»; the closed panel returns the focus to it', async () => {
+    const { container } = page('gm1', narrow);
+    await screen.findByRole('button', { name: 'Мои предметы: Предметы' });
+    const more = within(container.querySelector('.pickrow') as HTMLElement).getByRole(
+      'button',
+      { name: t.moreMenu }
+    );
+    await userEvent.click(more);
+    const menu = within(screen.getByRole('menu', { name: t.moreMenu }));
+    expect(menu.getAllByRole('menuitem').map((i) => i.textContent.trim())).toEqual([
+      t.importOpen,
+      t.homeHint
+    ]);
+    await expectNoA11yViolations(container);
+    await userEvent.click(menu.getByRole('menuitem', { name: t.importOpen }));
+    expect(await screen.findByText(t.hbImportHead)).toBeInTheDocument();
+    await userEvent.click(more);
+    await userEvent.click(screen.getByRole('menuitem', { name: t.importOpen }));
+    await waitFor(() => {
+      expect(screen.queryByText(t.hbImportHead)).toBeNull();
+    });
+    expect(more).toHaveFocus();
+  });
+
+  it('draws the heading and no tabs on a failed read', async () => {
+    page('gm1', { ...narrow, cloud: fakeCloud(SEED, 'gm1', { offline: true }) });
+    await screen.findByText(t.hbLoadFailed);
+    expect(screen.getByRole('heading', { level: 1, name: t.myItems })).not.toHaveClass('vh');
+    expect(screen.queryByRole('navigation', { name: t.myItems })).toBeNull();
+  });
+
+  it('draws the count line while narrowed and the filter sheet behind «Фильтры · N»', async () => {
+    const { container } = page('gm1', {
+      ...narrow,
+      fake: { fillItems: 12 },
+      route: '#/homebrew/f_src-hb_alderworkshopaaa'
+    });
+    await screen.findByRole('button', { name: 'Мои предметы: Предметы' });
+    /* The address opened the sheet. */
+    const sheet = await screen.findByRole('dialog', { name: t.filters });
+    await userEvent.click(within(sheet).getByRole('button', { name: t.close }));
+    const toggle = await screen.findByRole('button', { name: 'Фильтры · 1' });
+    await waitFor(() => {
+      expect(toggle).toHaveFocus();
+    });
+    expect(container.querySelector('.countline')).toHaveTextContent('Показано 7 из 12');
+    expect(container.querySelector('.countline')).toHaveTextContent('Мастерская Ольхи');
+  });
+
+  it('draws the limit line at the limit', async () => {
+    const { container } = page('gm1', { ...narrow, fake: { fillItems: 12 } });
+    await screen.findByRole('button', { name: 'Мои предметы: Предметы' });
+    expect(container.querySelector('.countline.over')).toHaveTextContent('12 предметов из 12');
+  });
+});
+
+describe('the selection mode', () => {
+  it('draws no tick outside the mode; «Выбрать» opens it and «Снять выделение» leaves it', async () => {
+    page();
+    const mode = await screen.findByRole('button', { name: t.selectMode });
+    expect(screen.queryByRole('checkbox', { name: 'Настой кузнеца' })).toBeNull();
+    await userEvent.click(mode);
+    expect(screen.getByRole('checkbox', { name: 'Настой кузнеца' })).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole('checkbox', { name: t.selectAll })).toHaveFocus();
+    });
+    await userEvent.click(screen.getByRole('button', { name: t.clearSel }));
+    expect(screen.queryByRole('checkbox', { name: 'Настой кузнеца' })).toBeNull();
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: t.selectMode })).toHaveFocus();
+    });
+  });
+
+  it('draws one bar, and a tab with no ticks leaves an empty mode', async () => {
+    const { container } = page();
+    await screen.findByText('4 предмета из 100');
+    await tickRow('Настой кузнеца');
+    expect(document.querySelectorAll('.selbarwrap')).toHaveLength(1);
+    expect(container.querySelector('main .batch')).toBeNull();
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Настой кузнеца' }));
+    await sources();
+    expect(document.querySelector('.selbarwrap')).toBeNull();
+  });
+
+  it('tags an own item written in the other language, and no item in this one', async () => {
+    page();
+    const cap = await screen.findByRole('button', { name: /Whispering Cap/ });
+    expect(cap.querySelector('.lt')).toHaveTextContent('EN');
+    expect(cap.querySelector('.lt')).toHaveAttribute('lang', 'en');
+    const potion = screen.getByRole('button', { name: /Настой кузнеца/ });
+    expect(potion.querySelector('.lt')).toBeNull();
+  });
+
+  it("opens a source's «Ещё» with its three items, and a canceled rename returns to it", async () => {
+    const { container } = page();
+    const panel = await sources();
+    const more = within(panel).getByRole('button', { name: t.moreMenu });
+    await userEvent.click(more);
+    expect(
+      within(screen.getByRole('menu'))
+        .getAllByRole('menuitem')
+        .map((i) => i.textContent)
+    ).toEqual([t.hbRename, t.exportJson, t.del]);
+    await expectNoA11yViolations(container);
+    await userEvent.click(screen.getByRole('menuitem', { name: t.hbRename }));
+    await userEvent.click(within(panel).getByRole('button', { name: t.cancel }));
+    await waitFor(() => {
+      expect(within(panel).getByRole('button', { name: t.moreMenu })).toHaveFocus();
+    });
+  });
+});
+
 describe('the Items tab search', () => {
   it('draws no box at seven items and the box at eight', async () => {
     page('gm1', { fake: { fillItems: 7 } });
@@ -1596,8 +1753,9 @@ describe('the Items tab search', () => {
     const { container } = page('gm1', { fake: { fillItems: 8 } });
     expect(await screen.findByText('8 предметов из 8')).toBeInTheDocument();
     const box = screen.getByRole('searchbox');
-    expect(box).toHaveAttribute('placeholder', t.hbFindOwn);
-    /* The box, then the count, then the strip. */
+    expect(box).toHaveAttribute('placeholder', t.searchShort);
+    expect(box).toHaveAccessibleName(t.hbFindOwn);
+    /* The box, then the count. */
     const count = screen.getByText('8 предметов из 8');
     expect(box.compareDocumentPosition(count) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     await expectNoA11yViolations(container);
@@ -1623,11 +1781,11 @@ describe('the Items tab search', () => {
   it('ticks the drawn rows only, and drops a tick the query hides', async () => {
     const { dialog } = page('gm1', { fake: { fillItems: 8 } });
     const box = await screen.findByRole('searchbox');
-    await userEvent.click(screen.getByRole('checkbox', { name: 'Настой кузнеца' }));
+    await tickRow('Настой кузнеца');
     expect(screen.getByRole('button', { name: 'Удалить (1)' })).toBeInTheDocument();
     await userEvent.type(box, 'кольцо');
-    expect(screen.queryByRole('button', { name: /^Удалить/ })).toBeNull();
-    await userEvent.click(screen.getByRole('checkbox', { name: t.pickAll }));
+    expect(screen.getByRole('button', { name: 'Удалить (0)' })).toBeDisabled();
+    await tickRow(t.pickAll);
     expect(screen.getByRole('button', { name: 'Скачать JSON (1)' })).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Удалить (1)' }));
     expect(dialog.asked).toHaveLength(1);
@@ -1636,6 +1794,7 @@ describe('the Items tab search', () => {
        use); cleared, every row is drawn again, the hidden tick dropped. */
     expect(screen.getByRole('searchbox')).toHaveValue('кольцо');
     await userEvent.clear(screen.getByRole('searchbox'));
+    await userEvent.click(screen.getByRole('button', { name: t.selectMode }));
     expect(screen.getByRole('checkbox', { name: 'Настой кузнеца' })).not.toBeChecked();
     expect(screen.getByText('7 предметов из 8')).toBeInTheDocument();
     await sources();
@@ -1658,7 +1817,7 @@ describe('the ticks across the tabs', () => {
     page('gm1');
     await screen.findByText('4 предмета из 100');
     for (const name of ['Кольцо с гравировкой', 'Настой кузнеца']) {
-      await userEvent.click(screen.getByRole('checkbox', { name }));
+      await tickRow(name);
     }
     const panel = await sources();
     await userEvent.click(within(panel).getByRole('button', { name: t.hbNewSource }));
@@ -1696,22 +1855,31 @@ describe('the bulk move', () => {
   async function moving(cloud = fakeCloud(SEED, 'gm1')) {
     const view = page('gm1', { cloud });
     await screen.findByText('4 предмета из 100');
-    for (const name of HOME) await userEvent.click(screen.getByRole('checkbox', { name }));
+    for (const name of HOME) await tickRow(name);
     await userEvent.click(screen.getByRole('button', { name: 'Переместить (3)' }));
     return view;
   }
   const go = (): HTMLElement => screen.getByRole('button', { name: 'Переместить' });
 
-  it('opens under the strip with the source and section selects, nothing to move at first', async () => {
+  it('opens a sheet with the source and section selects, nothing to move at first', async () => {
     const { container } = await moving();
     expect(screen.getByRole('button', { name: 'Переместить (3)' })).toHaveAttribute(
       'aria-expanded',
       'true'
     );
-    const strip = container.querySelector('.batch');
     expect(
-      [...strip!.querySelectorAll('.batch-acts button')].map((b) => b.textContent.trim())
-    ).toEqual(['Переместить (3)', 'Скачать JSON (3)', 'Удалить (3)']);
+      [...document.querySelectorAll('.selbarwrap .selacts .btn:not(dialog *)')].map((b) =>
+        b.textContent.trim()
+      )
+    ).toEqual([
+      t.toList,
+      t.print,
+      t.copyText,
+      'Переместить (3)',
+      'Скачать JSON (3)',
+      'Удалить (3)'
+    ]);
+    expect(container.querySelector('.batch')).toBeNull();
     const source = screen.getByLabelText('Источник');
     expect([...source.querySelectorAll('option')].map((o) => o.textContent)).toEqual([
       'Хоумбрю',
@@ -1730,8 +1898,11 @@ describe('the bulk move', () => {
     ]);
     expect(go()).toBeEnabled();
     await expectNoA11yViolations(container);
-    await userEvent.click(screen.getByRole('button', { name: 'Переместить (3)' }));
-    expect(screen.queryByLabelText('Источник')).toBeNull();
+    await userEvent.click(screen.getByRole('button', { name: t.cancel }));
+    await waitFor(() => {
+      expect(screen.queryByLabelText('Источник')).toBeNull();
+    });
+    expect(screen.getByRole('button', { name: 'Переместить (3)' })).toHaveFocus();
   });
 
   it('moves the ticked items in one call, toasts, clears the selection and closes the panel', async () => {
@@ -1767,7 +1938,7 @@ describe('the bulk move', () => {
     page('gm1', { cloud });
     await screen.findByText('4 предмета из 100');
     for (const name of ['Топор Тлеющих Углей', 'Настой кузнеца']) {
-      await userEvent.click(screen.getByRole('checkbox', { name }));
+      await tickRow(name);
     }
     await userEvent.click(screen.getByRole('button', { name: 'Переместить (2)' }));
     await userEvent.selectOptions(screen.getByLabelText('Источник'), 'Мастерская Ольхи');
@@ -1839,7 +2010,7 @@ describe('the bulk move', () => {
     const move = vi.spyOn(cloud.homebrew, 'moveItems');
     page('gm2', { cloud });
     await screen.findByText('300 предметов из 300');
-    await userEvent.click(screen.getByRole('checkbox', { name: t.pickAll }));
+    await tickRow(t.pickAll);
     await userEvent.click(screen.getByRole('button', { name: 'Переместить (300)' }));
     await userEvent.selectOptions(screen.getByLabelText('Источник'), 'Склад');
     await userEvent.click(go());
@@ -1855,12 +2026,10 @@ describe('the downloads', () => {
     page('gm1', { env: { clock: fixedClock(Date.UTC(2026, 9, 2, 12)), image } });
     await screen.findByText('4 предмета из 100');
     const panel = await sources();
-    const buttons = within(panel).getAllByRole('button', { name: 'Скачать JSON' });
-    expect(buttons).toHaveLength(2);
-    await userEvent.click(buttons[1]!);
-    await userEvent.click(buttons[0]!);
+    await userEvent.click(within(panel).getByRole('button', { name: 'Скачать JSON' }));
+    await sourceMenu(panel, 'Скачать JSON');
     await items();
-    await userEvent.click(screen.getByRole('checkbox', { name: 'Настой кузнеца' }));
+    await tickRow('Настой кузнеца');
     await userEvent.click(screen.getByRole('button', { name: 'Скачать JSON (1)' }));
     await waitFor(() => {
       expect(image.downloaded.map((d) => d.filename)).toEqual([
@@ -1887,7 +2056,7 @@ describe('a rename in the language that names it', () => {
     page('gm1', { cloud });
     const panel = await sources();
     const row = within(panel).getByText('Old Forge').closest('li')!;
-    await userEvent.click(within(row).getByRole('button', { name: 'Переименовать' }));
+    await sourceMenu(row, 'Переименовать');
     const box = within(row).getByRole('textbox');
     await userEvent.clear(box);
     await userEvent.type(box, 'New Forge');
@@ -1916,51 +2085,52 @@ describe('a rename in the language that names it', () => {
 
 /* One field of the Items tab's open filter panel, by the label it starts with. */
 function facet(label: string): HTMLElement {
-  const found = [...document.querySelectorAll<HTMLElement>('.ffilter .field')].find((f) =>
+  const found = [...document.querySelectorAll<HTMLElement>('.fcol .frow')].find((f) =>
     f.querySelector('.lbl')?.textContent.startsWith(label)
   );
-  if (!found) throw new Error(`No filter field «${label}». Open the filter panel first.`);
+  if (!found) throw new Error(`No filter row «${label}». The tab draws no filter column.`);
   return found;
 }
 const facetValues = (label: string): string[] =>
   within(facet(label))
     .getAllByRole('button')
-    .map((b) => b.textContent.trim());
+    .map((b) => b.textContent.trim())
+    .filter((v) => v !== t.allShort);
 const pickIn = (label: string, value: string): Promise<void> =>
   userEvent.click(within(facet(label)).getByRole('button', { name: value }));
 const rowNames = (): string[] =>
   [...document.querySelectorAll<HTMLElement>('[data-row]')].map(
     (r) => r.querySelector('.rt')?.textContent.trim() ?? ''
   );
-const resetStrip = (): Promise<void> =>
-  userEvent.click(document.querySelector('.fbar .fclear') as HTMLElement);
-/* «Фильтры», with the count of picked values after it once one is in force. */
-const filtersBtn = (): HTMLElement =>
-  screen.getByRole('button', {
-    name: new RegExp('^' + t.filters + String.raw`(?: \(\d+\))?$`)
-  });
-const pills = (): string[] =>
-  [...document.querySelectorAll('.fpill')].map((p) => p.textContent.replace('×', '').trim());
+/* The column's «Сбросить». */
+const resetColumn = (): Promise<void> =>
+  userEvent.click(
+    within(document.querySelector('.fcol') as HTMLElement).getByRole('button', {
+      name: t.reset
+    })
+  );
+/* The values picked in the column. */
+const picks = (): string[] =>
+  [...document.querySelectorAll('.fcol .frow [aria-pressed="true"]')]
+    .map((p) => p.textContent.trim())
+    .filter((v) => v !== t.allShort);
+const shownCount = (): string =>
+  [...document.querySelectorAll('.tools .count')].map((c) => c.textContent.trim()).join(' ');
 
 describe('the Items tab filter', () => {
   /* gm1 filled to twelve: the axe in «Мастерская Ольхи · Холодное оружие», generated items
      in the source, in its «Пистоли» and in «Хоумбрю», and the seeded three in «Хоумбрю». */
   const twelve = () => page('gm1', { fake: { fillItems: 12 } });
 
-  it('draws no strip at seven items, and the strip under the search box at eight, with no link', async () => {
+  it('draws no filter at seven items, and the column at eight, with no link', async () => {
     page('gm1', { fake: { fillItems: 7 } });
     await screen.findByText('7 предметов из 7');
-    expect(screen.queryByRole('button', { name: t.filters })).toBeNull();
+    expect(document.querySelector('.fcol')).toBeNull();
     cleanup();
     const { container } = page('gm1', { fake: { fillItems: 8 } });
     await screen.findByText('8 предметов из 8');
-    const toggle = screen.getByRole('button', { name: t.filters });
-    const box = screen.getByRole('searchbox');
-    expect(box.compareDocumentPosition(toggle) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(
-      toggle.compareDocumentPosition(screen.getByText('8 предметов из 8')) &
-        Node.DOCUMENT_POSITION_FOLLOWING
-    ).toBeTruthy();
+    expect(document.querySelector('.fcol')).toBeInTheDocument();
+    expect(document.querySelector('.fpill')).toBeNull();
     expect(screen.queryByRole('button', { name: t.filterLink })).toBeNull();
     await expectNoA11yViolations(container);
   });
@@ -1968,71 +2138,72 @@ describe('the Items tab filter', () => {
   it('filters by kind, source and the picked source sections, with the offer rule', async () => {
     const { container } = twelve();
     await screen.findByText('12 предметов из 12');
-    await userEvent.click(screen.getByRole('button', { name: t.filters }));
     expect(facetValues(t.kindF)).toEqual([t.fItems, t.fCons, t.fEquip]);
     expect(facetValues(t.source)).toEqual([t.srcHomebrew, 'Мастерская Ольхи']);
     expect(facetValues(t.hbSection)).toEqual(['Пистоли', 'Холодное оружие']);
     await expectNoA11yViolations(container);
     await pickIn(t.source, 'Мастерская Ольхи');
     expect(rowNames()).toHaveLength(7);
-    expect(container.querySelector('.fcount')).toHaveTextContent('7 из 12');
+    expect(shownCount()).toContain('Показано 7 из 12');
     await pickIn(t.hbSection, 'Холодное оружие');
     expect(rowNames()).toHaveLength(1);
     expect(document.querySelector('[data-row]')).toHaveAttribute(
       'data-row',
       'hb_emberaxeaaaaaaaa'
     );
-    expect(pills()).toEqual(['Мастерская Ольхи', 'Холодное оружие']);
+    expect(picks()).toEqual(['Мастерская Ольхи', 'Холодное оружие']);
     /* «Хоумбрю» holds no section: picked, the section leaves force with its row. */
     await pickIn(t.source, 'Мастерская Ольхи');
     await pickIn(t.source, t.srcHomebrew);
-    expect(pills()).toEqual([t.srcHomebrew]);
+    expect(picks()).toEqual([t.srcHomebrew]);
     expect(() => facet(t.hbSection)).toThrow();
     expect(rowNames()).toHaveLength(5);
     await expectNoA11yViolations(container);
   });
 
-  it('draws «Ничего не найдено» with «Сбросить всё» for a pick that draws no row, the count kept', async () => {
+  it('draws «Ничего не найдено» with «Сбросить фильтры» for a pick that draws no row, the count kept', async () => {
     const { container, router } = twelve();
     await screen.findByText('12 предметов из 12');
-    await userEvent.click(screen.getByRole('button', { name: t.filters }));
     await pickIn(t.kindF, t.fEquip);
     await pickIn(t.source, t.srcHomebrew);
     const empty = screen.getByText(t.nothing).closest('.empty') as HTMLElement;
     expect(screen.getByText('12 предметов из 12')).toBeInTheDocument();
     expect(screen.queryByRole('checkbox', { name: t.pickAll })).toBeNull();
     await expectNoA11yViolations(container);
-    await userEvent.click(within(empty).getByRole('button', { name: t.resetAll }));
+    await userEvent.click(within(empty).getByRole('button', { name: t.resetFilters }));
     expect(router.hash()).toBe('#/homebrew');
     expect(rowNames()).toHaveLength(12);
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: t.filters })).toHaveFocus();
+      expect(document.querySelector('.fcol .frow .chip')).toHaveFocus();
     });
   });
 
   it('drops a tick that a pick hides, and deletes and moves the drawn ticked rows only', async () => {
     const { dialog } = twelve();
     await screen.findByText('12 предметов из 12');
-    await userEvent.click(screen.getByRole('checkbox', { name: 'Кольцо с гравировкой' }));
-    await userEvent.click(screen.getByRole('checkbox', { name: 'Топор Тлеющих Углей' }));
-    await userEvent.click(screen.getByRole('button', { name: t.filters }));
+    await tickRow('Кольцо с гравировкой');
+    await tickRow('Топор Тлеющих Углей');
     await pickIn(t.source, 'Мастерская Ольхи');
     expect(screen.getByRole('button', { name: 'Удалить (1)' })).toBeInTheDocument();
     await pickIn(t.source, 'Мастерская Ольхи');
     expect(screen.getByRole('checkbox', { name: 'Кольцо с гравировкой' })).not.toBeChecked();
     await pickIn(t.source, 'Мастерская Ольхи');
     await userEvent.click(screen.getByRole('button', { name: 'Переместить (1)' }));
-    await userEvent.selectOptions(screen.getByLabelText('Источник'), t.srcHomebrew);
+    await userEvent.selectOptions(
+      screen.getByRole('combobox', { name: 'Источник' }),
+      t.srcHomebrew
+    );
     await userEvent.click(screen.getByRole('button', { name: 'Переместить' }));
     expect(await screen.findByText('Перемещено предметов: 1')).toBeInTheDocument();
-    await resetStrip();
-    await userEvent.click(screen.getByRole('checkbox', { name: 'Кольцо с гравировкой' }));
-    await userEvent.click(screen.getByRole('checkbox', { name: 'Настой кузнеца' }));
+    await resetColumn();
+    await tickRow('Кольцо с гравировкой');
+    await tickRow('Настой кузнеца');
     await pickIn(t.kindF, t.fCons);
     await userEvent.click(screen.getByRole('button', { name: 'Удалить (1)' }));
     expect(dialog.asked.at(-1)).toMatch(/^Удалить предмет/);
     expect(await screen.findByText('Удалено предметов: 1')).toBeInTheDocument();
-    await resetStrip();
+    await resetColumn();
+    await userEvent.click(screen.getByRole('button', { name: t.selectMode }));
     expect(screen.getByRole('checkbox', { name: 'Кольцо с гравировкой' })).toBeInTheDocument();
     expect(screen.queryByRole('checkbox', { name: 'Настой кузнеца' })).toBeNull();
   });
@@ -2040,26 +2211,20 @@ describe('the Items tab filter', () => {
   it('starts empty each time the tab opens', async () => {
     const { router } = twelve();
     await screen.findByText('12 предметов из 12');
-    await userEvent.click(screen.getByRole('button', { name: t.filters }));
     await pickIn(t.kindF, t.fEquip);
-    expect(pills()).toEqual([t.fEquip]);
+    expect(picks()).toEqual([t.fEquip]);
     await sources();
     expect(router.hash()).toBe('#/homebrew/sources');
     await items();
     expect(router.hash()).toBe('#/homebrew');
-    expect(pills()).toEqual([]);
-    expect(screen.getByRole('button', { name: t.filters })).toHaveAttribute(
-      'aria-expanded',
-      'false'
-    );
+    expect(picks()).toEqual([]);
     expect(rowNames()).toHaveLength(12);
   });
 
   it('writes a pick into the address in place, the ticks kept', async () => {
     const { container, router } = twelve();
     await screen.findByText('12 предметов из 12');
-    await userEvent.click(screen.getByRole('checkbox', { name: 'Настой кузнеца' }));
-    await userEvent.click(filtersBtn());
+    await tickRow('Настой кузнеца');
     await pickIn(t.kindF, t.fCons);
     expect(router.hash()).toBe('#/homebrew/f_kind-consumable');
     expect(router.stack).toHaveLength(1);
@@ -2067,28 +2232,26 @@ describe('the Items tab filter', () => {
     await pickIn(t.source, t.srcHomebrew);
     expect(router.hash()).toBe('#/homebrew/f_kind-consumable.src-hb');
     expect(router.stack).toHaveLength(1);
-    expect(filtersBtn()).toHaveAttribute('aria-expanded', 'true');
     await expectNoA11yViolations(container);
   });
 
-  it('opens the panel on a filter address and draws its pills; a fold then a pill drop stays folded', async () => {
+  it('draws the picks of a filter address, and «Сбросить» writes the bare address', async () => {
     const { container, router } = page('gm1', {
       fake: { fillItems: 12 },
       route: '#/homebrew/f_src-hb_alderworkshopaaa'
     });
     await screen.findByText('12 предметов из 12');
-    const toggle = filtersBtn();
-    expect(toggle).toHaveAttribute('aria-expanded', 'true');
-    expect(pills()).toEqual(['Мастерская Ольхи']);
+    expect(picks()).toEqual(['Мастерская Ольхи']);
     expect(rowNames()).toHaveLength(7);
-    expect(container.querySelector('.fcount')).toHaveTextContent('7 из 12');
+    expect(shownCount()).toContain('Показано 7 из 12');
+    /* The filter says the source: a head names the section alone. */
+    expect(screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)).toContain(
+      'Холодное оружие 1'
+    );
     await expectNoA11yViolations(container);
-    await userEvent.click(toggle);
-    expect(toggle).toHaveAttribute('aria-expanded', 'false');
-    await userEvent.click(container.querySelector('.fpill') as HTMLElement);
+    await resetColumn();
     expect(router.hash()).toBe('#/homebrew');
-    expect(pills()).toEqual([]);
-    expect(filtersBtn()).toHaveAttribute('aria-expanded', 'false');
+    expect(picks()).toEqual([]);
     expect(rowNames()).toHaveLength(12);
   });
 
@@ -2098,44 +2261,40 @@ describe('the Items tab filter', () => {
       route: '#/homebrew/f_kind-item.src-hb_otheraccountaaaa'
     });
     await screen.findByText('12 предметов из 12');
-    expect(pills()).toEqual([t.fItems]);
+    expect(picks()).toEqual([t.fItems]);
     expect(router.hash()).toBe('#/homebrew/f_kind-item.src-hb_otheraccountaaaa');
     expect(rowNames().length).toBeLessThan(12);
     await pickIn(t.source, t.srcHomebrew);
     expect(router.hash()).toBe('#/homebrew/f_kind-item.src-hb');
   });
 
-  it('draws the strip and narrows on a filter address with four items, and no strip without one', async () => {
+  it('draws the filter and narrows on a filter address with four items, and none without one', async () => {
     const { container } = page('gm1', { route: '#/homebrew/f_src-hb' });
     await screen.findByText('4 предмета из 100');
-    expect(filtersBtn()).toHaveAttribute('aria-expanded', 'true');
-    expect(pills()).toEqual([t.srcHomebrew]);
+    expect(picks()).toEqual([t.srcHomebrew]);
     expect(rowNames()).toHaveLength(3);
     await expectNoA11yViolations(container);
-    /* The strip stays after its last pill goes: it holds the focus. */
-    await resetStrip();
+    /* The column stays after its last pick goes: it holds the focus. */
+    await resetColumn();
     expect(rowNames()).toHaveLength(4);
-    expect(filtersBtn()).toBeInTheDocument();
+    expect(document.querySelector('.fcol')).toBeInTheDocument();
     cleanup();
     page('gm1');
     await screen.findByText('4 предмета из 100');
-    expect(screen.queryByRole('button', { name: t.filters })).toBeNull();
+    expect(document.querySelector('.fcol')).toBeNull();
     expect(screen.queryByRole('searchbox')).toBeNull();
   });
 
-  it('steps to the bare #/homebrew on «Предметы» with a filter in force: no pill, the panel open', async () => {
+  it('steps to the bare #/homebrew on «Предметы» with a filter in force', async () => {
     const { router } = page('gm1', {
       fake: { fillItems: 12 },
       route: '#/homebrew/f_kind-equip'
     });
     await screen.findByText('12 предметов из 12');
-    await userEvent.click(filtersBtn());
-    expect(filtersBtn()).toHaveAttribute('aria-expanded', 'false');
     await items();
     expect(router.hash()).toBe('#/homebrew');
-    expect(pills()).toEqual([]);
+    expect(picks()).toEqual([]);
     expect(rowNames()).toHaveLength(12);
-    expect(filtersBtn()).toHaveAttribute('aria-expanded', 'true');
   });
 
   it('pins #/homebrew from a filter address and reads it pressed', async () => {
@@ -2213,7 +2372,6 @@ describe('the Items tab filter', () => {
   it('folds a section row of 22 values after 10', async () => {
     const { container } = page('gm1', { fake: { fillItems: 66, fillSections: 20 } });
     await screen.findByText('66 предметов из 66');
-    await userEvent.click(screen.getByRole('button', { name: t.filters }));
     const fold = within(facet(t.hbSection)).getByRole('button', { name: 'и ещё 12' });
     await userEvent.click(fold);
     expect(fold).toHaveAccessibleName(t.relLess);
@@ -2231,58 +2389,54 @@ describe('the bulk delete status and the focus after a press removes itself', ()
       await new Promise<void>((go) => gates.push(go));
       return removeMany(ids);
     };
-    const { container } = page('gm1', { cloud });
+    page('gm1', { cloud });
     await screen.findByText('4 предмета из 100');
     for (const name of ['Кольцо с гравировкой', 'Настой кузнеца', 'Whispering Cap']) {
-      await userEvent.click(screen.getByRole('checkbox', { name }));
+      await tickRow(name);
     }
     const region = (): string =>
-      [...container.querySelectorAll('.said[role="status"]')]
+      [...document.querySelectorAll('.selbarwrap .said[role="status"]')]
         .map((r) => r.textContent.trim())
         .join('|');
     expect(region()).toBe('');
     await userEvent.click(screen.getByRole('button', { name: 'Удалить (3)' }));
-    const line = (): Element | null => container.querySelector('.note.progress');
     await waitFor(() => {
-      expect(line()).toHaveTextContent('Удаляем предметы (3)...');
+      expect(region()).toBe('Удаляем предметы (3)...');
     });
-    expect(line()).not.toHaveAttribute('role');
-    expect(region()).toBe('Удаляем предметы (3)...');
     expect(screen.getByRole('checkbox', { name: t.pickAll })).toHaveFocus();
     await vi.waitFor(() => {
       expect(gates).toHaveLength(1);
     });
     gates.shift()?.();
     expect(await screen.findByText('Удалено предметов: 3')).toBeInTheDocument();
-    expect(region()).toBe('');
-    /* A row is left: focus is back on «Выбрать все». */
+    /* A row is left and the bar went with the ticks: focus is on «Выбрать». */
     await waitFor(() => {
-      expect(screen.getByRole('checkbox', { name: t.pickAll })).toHaveFocus();
+      expect(screen.getByRole('button', { name: t.selectMode })).toHaveFocus();
     });
   });
 
-  it('hands focus to «Новый предмет» when the delete leaves no row (rule 20)', async () => {
+  it('hands focus to #main when the delete leaves no row (rule 20)', async () => {
     const { container } = page();
     await screen.findByText('4 предмета из 100');
-    await userEvent.click(screen.getByRole('checkbox', { name: t.pickAll }));
+    await tickRow(t.pickAll);
     await userEvent.click(screen.getByRole('button', { name: 'Удалить (4)' }));
     expect(await screen.findByText(t.hbEmpty)).toBeInTheDocument();
     await waitFor(() => {
-      expect(screen.getByRole('link', { name: t.hbNewItem })).toHaveFocus();
+      expect(document.getElementById('main')).toHaveFocus();
     });
     await expectNoA11yViolations(container);
   });
 
-  it('hands focus to «Выбрать все» after a move that folds the panel', async () => {
+  it('hands focus to «Выбрать» after a move, the mode left', async () => {
     page();
     await screen.findByText('4 предмета из 100');
-    await userEvent.click(screen.getByRole('checkbox', { name: 'Настой кузнеца' }));
+    await tickRow('Настой кузнеца');
     await userEvent.click(screen.getByRole('button', { name: 'Переместить (1)' }));
     await userEvent.selectOptions(screen.getByLabelText('Источник'), 'Мастерская Ольхи');
     await userEvent.click(screen.getByRole('button', { name: 'Переместить' }));
     expect(await screen.findByText('Перемещено предметов: 1')).toBeInTheDocument();
     await waitFor(() => {
-      expect(screen.getByRole('checkbox', { name: t.pickAll })).toHaveFocus();
+      expect(screen.getByRole('button', { name: t.selectMode })).toHaveFocus();
     });
   });
 });
@@ -2290,15 +2444,15 @@ describe('the bulk delete status and the focus after a press removes itself', ()
 describe('the page head', () => {
   const homeOff = (): HTMLElement => screen.getByRole('button', { name: t.homeHint });
 
-  it('draws the home button and «?» on every tab, signed out and on a failed load', async () => {
+  it('draws the pin and no help on every tab, signed out and on a failed load', async () => {
     page();
     await screen.findByText('4 предмета из 100');
     expect(homeOff()).toHaveAttribute('aria-pressed', 'false');
-    expect(screen.getByRole('button', { name: t.helpHint })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: t.helpHint })).toBeNull();
     for (const open of [sources, sets, rules]) {
       await open();
       expect(homeOff()).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: t.helpHint })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: t.helpHint })).toBeNull();
     }
     cleanup();
     page(null);
@@ -2308,6 +2462,7 @@ describe('the page head', () => {
     page('gm1', { cloud: fakeCloud(SEED, 'gm1', { offline: true }) });
     await screen.findByText(t.hbLoadFailed);
     expect(homeOff()).toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: t.myItems })).toBeNull();
   });
 
   it('pins #/homebrew from any tab, and a second press unpins it', async () => {
@@ -2326,21 +2481,6 @@ describe('the page head', () => {
     await userEvent.click(screen.getByRole('button', { name: t.homeOn }));
     expect(homeOff()).toHaveAttribute('aria-pressed', 'false');
   });
-
-  it('opens the help in both languages, five paragraphs with bold leads', async () => {
-    const { container } = page();
-    await screen.findByText('4 предмета из 100');
-    await userEvent.click(screen.getByRole('button', { name: t.helpHint }));
-    const leads = [...container.querySelectorAll('.helpbox p b')].map((b) => b.textContent);
-    expect(leads).toEqual([
-      'Предметы.',
-      'Источники.',
-      'Комплекты.',
-      'Карты правил.',
-      'Импорт из файла.'
-    ]);
-    await expectNoA11yViolations(container);
-  });
 });
 
 describe('the focus, the undo, the search and the folds on the homebrew tabs', () => {
@@ -2358,18 +2498,22 @@ describe('the focus, the undo, the search and the folds on the homebrew tabs', (
   }
   const delsOf = (panel: HTMLElement): HTMLElement[] =>
     within(panel).getAllByRole('button', { name: t.del });
+  const moresOf = (panel: HTMLElement): HTMLElement[] =>
+    within(panel).getAllByRole('button', { name: t.moreMenu });
 
-  it("hands focus after a source's delete to the next row's «Удалить», then to «Новый источник»", async () => {
+  it("hands focus after a source's delete to the next row's «Ещё», then to «Новый источник»", async () => {
     page('gm2', { cloud: await withSources(2) });
     const panel = await sources();
-    await userEvent.click(delsOf(panel)[0] as HTMLElement);
+    await userEvent.click(moresOf(panel)[0] as HTMLElement);
+    await userEvent.click(screen.getByRole('menuitem', { name: t.del }));
     await waitFor(() => {
       expect(within(panel).queryByText('Источник 01')).toBeNull();
     });
     await waitFor(() => {
-      expect(delsOf(panel)[0]).toHaveFocus();
+      expect(moresOf(panel)[0]).toHaveFocus();
     });
-    await userEvent.click(delsOf(panel)[0] as HTMLElement);
+    await userEvent.click(moresOf(panel)[0] as HTMLElement);
+    await userEvent.click(screen.getByRole('menuitem', { name: t.del }));
     await waitFor(() => {
       expect(within(panel).getByRole('button', { name: t.hbNewSource })).toHaveFocus();
     });
@@ -2402,15 +2546,16 @@ describe('the focus, the undo, the search and the folds on the homebrew tabs', (
       expect(within(panel).getByRole('button', { name: t.hbNewSource })).toHaveFocus();
     });
     const book = (): HTMLElement => document.getElementById('hb-book-' + ALDER)!;
-    const renameOf = (): HTMLElement =>
+    const moreOf = (): HTMLElement =>
       within(book().querySelector<HTMLElement>(':scope > .head')!).getByRole('button', {
-        name: t.hbRename
+        name: t.moreMenu
       });
-    await userEvent.click(renameOf());
+    await userEvent.click(moreOf());
+    await userEvent.click(screen.getByRole('menuitem', { name: t.hbRename }));
     await typeInto(t.hbRename, 'Мастерская Ивы');
     await userEvent.keyboard('{Enter}');
     await waitFor(() => {
-      expect(renameOf()).toHaveFocus();
+      expect(moreOf()).toHaveFocus();
     });
     await userEvent.click(within(panel).getByRole('button', { name: t.hbSectionsBtn }));
     await userEvent.click(within(panel).getByRole('button', { name: t.hbNewSection }));
@@ -2486,13 +2631,13 @@ describe('the focus, the undo, the search and the folds on the homebrew tabs', (
     );
     const book = (n: number): HTMLElement => document.getElementById(books[n]!)!;
     const headOf = (li: HTMLElement): HTMLElement => li.querySelector<HTMLElement>('.head')!;
-    await userEvent.click(within(headOf(book(0))).getByRole('button', { name: t.hbRename }));
-    await userEvent.click(within(headOf(book(1))).getByRole('button', { name: t.del }));
+    await sourceMenu(headOf(book(0)), t.hbRename);
+    await sourceMenu(headOf(book(1)), t.del);
     await waitFor(() => {
       expect(document.getElementById(books[1]!)).toBeNull();
     });
     await waitFor(() => {
-      expect(within(headOf(book(2))).getByRole('button', { name: t.del })).toHaveFocus();
+      expect(within(headOf(book(2))).getByRole('button', { name: t.moreMenu })).toHaveFocus();
     });
   });
 
@@ -2533,21 +2678,20 @@ describe('the focus, the undo, the search and the folds on the homebrew tabs', (
     });
   });
 
-  it('draws the «?» of «Источник» on both card forms with the hint for a card', async () => {
+  it('draws no «?» on the card forms, and a caption under «Источник»', async () => {
     const { container } = page();
     const panel = await sets();
     await userEvent.click(within(panel).getByRole('button', { name: t.hbNewSet }));
-    const help = within(panel).getByRole('button', {
-      name: t.fieldHelp.replace('%s', t.hbSource)
-    });
-    await userEvent.click(help);
-    expect(within(panel).getByText(t.hbCardSourceHelp)).toBeVisible();
+    expect(panel.querySelector('.helpbtn')).toBeNull();
+    expect(within(panel).getByText(t.hbCardSourceCap)).toBeVisible();
+    expect(panel.textContent).not.toContain('*');
     await expectNoA11yViolations(container);
     const ref = await rules();
     await userEvent.click(within(ref).getByRole('button', { name: t.edit }));
-    expect(
-      within(ref).getByRole('button', { name: t.fieldHelp.replace('%s', t.hbSource) })
-    ).toBeInTheDocument();
+    expect(ref.querySelector('.helpbtn')).toBeNull();
+    expect(within(ref).getAllByText(t.hbOptional)).toHaveLength(2);
+    expect(within(ref).getByText(t.hbCardSubHint)).toBeInTheDocument();
+    expect(t.hbCardSubHint).not.toContain('Необязательно');
   });
 
   it("toasts «Вернуть» after a member's «Убрать», adds it back, and moves the focus on", async () => {
@@ -2632,7 +2776,7 @@ describe('the focus, the undo, the search and the folds on the homebrew tabs', (
     expect(within(panel).getByText('15 источников из 20')).toBeInTheDocument();
     await userEvent.clear(box);
     const book = document.getElementById('hb-book-' + uuid(7802))!;
-    await userEvent.click(within(book).getByRole('button', { name: t.hbRename }));
+    await sourceMenu(book, t.hbRename);
     await userEvent.type(box, 'кузня');
     expect(document.getElementById('hb-book-' + uuid(7802))).not.toBeNull();
     expect(within(panel).queryByText(t.nothing)).toBeNull();

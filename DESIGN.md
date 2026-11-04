@@ -124,6 +124,12 @@ components:
     rounded: "{rounded.sm}"
     padding: "0 18px"
     height: "46px"
+  button-danger-fill:
+    backgroundColor: "{colors.alarm-red}"
+    textColor: "{colors.ink-on-gold}"
+    rounded: "{rounded.sm}"
+    padding: "0 18px"
+    height: "46px"
   chip:
     backgroundColor: "{colors.vault-wall}"
     textColor: "{colors.ash-violet}"
@@ -301,11 +307,12 @@ ordinary item.
 the tab they are on, the control they focused, the main action of the panel they
 are in. Gold on something nobody selected is wrong. The budget: a gold fill goes
 to one primary action per panel, to a choice that narrows the view, and to the
-current place. A pressed default (such as «Все»), a mode toggle and a selection
-are neutral: a check and a lit `--muted2` border, no gold. The unique tag is
+current place. A pressed default (such as «Все» or a chip row with every chip on), a
+mode toggle and a selection are neutral: a check and a lit `--muted2` border, no gold. A die
+is an action and plain: no gold, no check, no lit border. The unique tag is
 neutral and dashed, the roll number is Chalk on a seam border, and footer links
 are Ash Violet and underlined. The site share cards spend gold on the star
-alone.
+alone. Seal Gold Soft on a link in prose is text, outside the fill budget.
 
 **The Tag Rule.** The five kind hues live on the badge and nowhere else. A stat
 line stays secondary text. A row does not take a kind color, and neither does a
@@ -386,7 +393,8 @@ keeps the selection bar clear of a display cutout.
 
 The page is a vertical stack: a sticky translucent header (`rgb(14 12 21 / 86%)`
 over a 14px backdrop blur) that holds the brand row and the three jobs (63px from
-761px, 111px at 360px), the mode row on the nine roll pages (53px, scrolling with
+761px, 111px at 360px; up to 760px it leaves on a scroll down and returns on a
+scroll up), the mode row on the nine roll pages (53px, scrolling with
 the page), the content, then the footer. `main`
 carries 26px of top padding, 48px of bottom padding, and a 60vh minimum so a
 short route does not collapse. `scrollbar-gutter: stable` on `html` reserves the
@@ -408,31 +416,75 @@ From 761px the brand, the three jobs, the language switch and the account
 control share one row, and the page head's pin and «Справка» show their labels;
 the sticky header is 63px. Up to 760px the jobs take a second row and the
 header is 111px at 360px in both languages (at most 112px). A linked section,
-row or card lands under the header by `--anchor-top`, set at the same two
-steps: 75px, 118px up to 760px and 132px up to 600px. At 600px touch
+row or card lands `--anchor-gap` (12px) under the header; `--sticky-h`, the
+header's measured height, is the page's `scroll-padding-top`, so a focused
+control stops clear of it. At 600px touch
 targets grow: segment padding to 8px 14px, the section copy-link button from
 about 20px to a 36px hit area, row actions onto their own line, the mode row's
-controls 40px tall. Every other media query in the code belongs to one
-component and its own measured problem. Do not add another system breakpoint.
+controls 40px tall, and the roll card turns from a row into the face at 601px. The catalog adds one step, 1000px: from it the filter
+column sits beside the rows; from 761px it draws the wide head (the `h1`, the
+labeled pin, «Об этих данных», the group chips and the tabs) with the filters
+in the bottom sheet; below 761px the picker row, the sheet and «··· Ещё»
+replace them. The `viewport` port (`app/src/ports/viewport.ts`) is the one place
+that reads the width in code; CSS reads the same two numbers. Every other media
+query in the code belongs to one component and its own measured problem. Do
+not add another system breakpoint. `/account` signed in uses the 1000px step too:
+one column below it, two from it, in the DOM order of the one column.
+
+**The Roll Page Rule.** The nine roll pages share one layout. Up to 760px: a read-only
+`h1`, the controls, one results line («Бросок N», «Настроить», «Ещё»); the pin, the
+help and the copy of every option are items of «Ещё». From 761px: the head with the
+labeled pin and help, a 320px control pane, the results. The roller has one gold
+primary at most, and a die is plain.
+
+**The Search Head Rule.** `/search` takes the list head of the catalog with one
+difference: up to 760px no picker fills the head row, so the `h1` «Поиск» stays
+visible with «Ещё» (the pin, its one item) on its row. The search row follows on one
+line: the box, «Фильтры», «Выбрать» last. From 761px the page head with the lead and
+the labeled pin, then the search row and a row of kind chips that ends in the count
+line, so a picked kind adds no line above the first result.
+
+**The Dossier Rule.** A record page and the record dialog are one dossier: the
+picture beside the text from 761px and 4:3 above it below, no plate on a page. The
+name is drawn once. The dialog is a bottom sheet with a sticky dock up to 760px, not
+sticky in a window shorter than 481px, where two rows would take almost half of the
+height: a component rule, not a breakpoint. «В список», «Поделиться», «Печать» and
+«Ещё» are the same four labeled controls on every record surface at every width;
+«Изменить» joins for the author. One exception: a roll result holds three controls, no
+«Печать», and a plain «В список», because the page's gold primary is the roll. The
+copies and «Сохранить себе» live in «Ещё», a `Menu` that opens down on a page and, in
+the dialog, up where the room is only above, so from the dock. «В список» is the one
+gold primary; an open «Ещё» is not drawn pressed, because gold marks a choice. A label
+never gives way to an icon (The Same Label Rule).
+
+**The Hidden Header Rule.** Up to 760px the whole header leaves on a scroll down
+and returns on a scroll up, on every page, because a phone reader needs the rows
+more than the jobs. It slides in 0.2s, or appears at once under reduced motion. It
+is shown at the top of a page, on a short page and after a navigation; a menu, a
+sheet, a dialog, a text field or a drag freezes it; a keyboard focus inside brings it back.
+It never leaves the tab order.
 
 **The Same Label Rule.** A label does not change with the width, and a control
 is never only an icon where its label fits: the three jobs keep their labels at
 360px, the signed-out account control keeps «Войти» / "Sign in" at every width,
 and the pin and the help are labeled buttons («Открывать при запуске» /
-"Open on start", «Справка» / "Help"). The one interim exception: up to 760px
-the pin and the help stay round buttons with the same names until their page's
-batch moves them into «Ещё» or «Настроить» (the tables, the roller, homebrew,
-search and the account, and the lists).
+"Open on start", «Справка» / "Help"; the catalog's help is named for its
+panel, «Об этих данных» / "About this data"). The one interim exception: up to
+760px the pin and the help stay round buttons with the same names until their
+page's batch moves them into «Ещё» (the lists); the catalog's, the roller's,
+`/homebrew`'s and `/search`'s are in «Ещё». The account page draws neither.
 
 **The First-Screen Rule.** At 360x640 and at 1180x720, in Russian and in
 English, at scroll 0, the primary content of a route starts no lower than 40%
 of the viewport height (256px at 640, 288px at 720); the header counts as a
-control above it. A design aims at 240px and 270px, so a small face or
+control above it. One named exception: `/roll/std` at 360x640 starts at 325px, for
+the rarities on the dice (owner, 2026-10-29). A design aims at 240px and 270px, so a small face or
 line-box difference does not fail the rule. The primary content is the first
 roll result on a roll page, the table on `/tables/*`, the item on `/i/` and
 `/h/`, the first result on `/search`, the first settings panel on `/account`,
-the sheet on `/p/`, the first item row on a `/homebrew` tab, the first form
-field in the editor, the first list card on `/lists`, and the first entry on
+the sheet on `/p/`, the first group head on `/homebrew`, the first card row on
+its Sets and Rules tabs, the form in the editor, the first list card on
+`/lists`, and the first entry on
 `/lists/<uuid>` and `/s/<token>`. Each page marks that element with
 `data-primary`, and `tests/app/states.js` ("primary content starts in the
 first screen") measures it.
@@ -480,11 +532,16 @@ icon button), 6px for a tag, and 999px for anything that is one choice in a row
 
 Borders are one pixel and a seam color, except where a border states something:
 a gold-tinted border marks a filter that has a value, a dashed border marks a
-property rather than a category (the unique tag), and a border at about 45 per
-cent alpha echoes its own tag's hue.
+property rather than a category (the unique tag) and the empty-state plate,
+and a border at about 45 per cent alpha echoes its own tag's hue.
 
-Artwork is square. A record image is `aspect-ratio: 1` with `object-fit: cover`:
-132px beside a compact card, full width and up to 420px on a full card, 60px in
+A ticked row or tile is lit and neutral: the Vault Wall Lit ground, the
+`--muted2` border and the checked box. Never gold, never a one-side stripe (The
+Seal Rule: nobody chose a value there, the reader picked a row).
+
+Artwork is square, except the record page and the dialog up to 760px and the roll
+card face from 601px, which crop it to 4:3. A record image is `aspect-ratio: 1` with `object-fit: cover`:
+132px beside a compact card, full width and up to 420px on a plate card, 60px in
 a table row, always over the art well (`--art-well`, `#0a0810`) so a
 transparent PNG keeps a ground.
 
@@ -511,7 +568,10 @@ means "a thing". Do not round a card to a pill or square a chip.
 - **Toggle:** gold label on a 45 per cent gold border with no fill. This is the
   filter button once a filter holds a value.
 - **Ghost and Danger:** a transparent fill beside a primary action; an Alarm Red
-  border with Alarm Red Text for a destructive one.
+  border with Alarm Red Text for a destructive one, the outlined default.
+- **Danger fill (`danger-fill`):** the one irreversible press of a confirm: an
+  Alarm Red fill and border with an Ink on Gold label (the error toast's pair,
+  about 5.6:1). Its one caller is the account delete's «Удалить навсегда».
 - **Icons:** every icon inside a button renders at 15px whatever its own
   attributes say. Dice are the single exception and keep their own silhouette,
   because squaring them makes a d4 look heavier than a d20.
@@ -524,12 +584,19 @@ means "a thing". Do not round a card to a pill or square a chip.
 ### Chips
 
 - **Style:** pill, Vault Wall fill, Seam Lit border, Ash Violet label at 13px
-  weight 540. An optional second line sits under the label at 11.5px.
+  weight 540.
 - **Chosen:** Seal Gold fill, Ink on Gold label at weight 650, for a choice
   that narrows the view.
 - **Pressed default:** a chip that stands for no narrowing («Все») takes the
   neutral pressed state of the segmented control below, not gold (The Seal
   Rule).
+- **Dice:** plain buttons, none gold and none lit, because a die is an action:
+  two lines in a 3 + 2 grid up to 760px, a list of 46px rows from 761px.
+- **A row with every chip on:** each chip takes the neutral pressed state; a row
+  narrowed draws the chips left on in gold.
+- **A filter row:** «Все» neutral pressed, then the values; a press from «Все»
+  picks one value, the last pick off returns to «Все». This is the model of every
+  filter row, the catalog's and search's three kinds included.
 - **Hover:** border to Seal Gold, label to Chalk.
 - **Semantics:** a chip that navigates is an anchor carrying `aria-current`; a
   chip that toggles is a button carrying `aria-pressed`. Middle-click keeps
@@ -537,6 +604,14 @@ means "a thing". Do not round a card to a pill or square a chip.
 - **Mode row:** the roll pages' three mode controls take the chip's look; at
   600px and below they share the row, 40px tall, and a long name takes two
   lines.
+- **Neutral pressed (`Chip neutral`):** the `check` icon before the label, the
+  Vault Wall Lit fill, a Chalk label at weight 600 and a lit `--muted2`
+  border, the icon and the label on one center. A filter row's «Все» is its
+  caller; a picked value chip stays gold.
+- **Two-level navigation:** the catalog's group chips (links), then the book
+  or section of the group as underlined tabs: Ash Violet text, the current tab
+  gold text on a 2px gold underline. Each level is a group named for
+  assistive technology («Группа», the group's name, «Источник»).
 
 ### Segmented control
 
@@ -547,7 +622,10 @@ means "a thing". Do not round a card to a pill or square a chip.
 - **Neutral pressed:** a mode toggle (the language switch, the tables list or
   grid switch, the print color or black-and-white switch) passes `neutral`:
   the pressed button takes the `check` icon before its label, a Vault Wall Lit
-  fill, a Chalk label and a lit `--muted2` border, and no gold.
+  fill, a Chalk label and a lit `--muted2` border, and no gold. It is the picker
+  of a form field too (the homebrew editor, the import's «Если уже есть:», every
+  picker of the account's Display section); gold stays for a choice that narrows a
+  view.
 - Every button carries `aria-pressed`, including the ones whose original did
   not.
 
@@ -557,8 +635,18 @@ means "a thing". Do not round a card to a pill or square a chip.
   the contents.
 - **Background:** the plate gradient, a Seam border, the Plate shadow.
 - **Padding:** 13px 15px 14px, with 8px between rows of content.
-- **Layout:** `full` stacks the image above the body; `compact` puts a 132px
-  square image beside it.
+- **Layout:** `full` stacks the image above the body, or, as a dossier, sets it
+  beside the text (The Dossier Rule); `compact` puts a 132px square image beside it,
+  and `ListPage` keeps it until its batch moves the roll panel; `face` is a roll
+  result: the picture 4:3 with a fade, the body drawn over its foot, and 96px beside
+  the text up to 600px. Its action row sits under the plate, because a popover
+  cannot leave a clipped plate.
+- **Relation lines:** a homebrew record's name draws the plain bordered badge
+  «Хоумбрю» after it; a catalog record draws none.
+- **Grid tile:** two columns up to 600px; the art, the name and a second line
+  (the stat line, else the other-language name). A table of more than one
+  kind labels the tile with its kind badge where the colored dot used to be;
+  hue lives on a labeled badge (The Tag Rule).
 - **Art well:** every screen picture (card, row, table tile, list cover, editor
   thumbnail) sits in `ArtWell`: the `--art-well` square with the glyph of the
   record's kind at 42% of the well in Seam Lit, hidden from assistive
@@ -580,7 +668,11 @@ means "a thing". Do not round a card to a pill or square a chip.
 - **Variants:** the five kind hues, plus tier, source, roll number (the UI
   face's tabular figures, Chalk on a Seam Lit border), unique (dashed, Ash
   Violet on Seam Lit), and the Hope and Fear pair. Neither the roll number nor
-  the unique tag is gold: nobody chose them (The Seal Rule).
+  the unique tag is gold: nobody chose them (The Seal Rule). An own item written
+  in the other language than the interface draws a small language tag («EN», «RU»)
+  after its row's tags: a hairline box, no fill, no capitals rule. On a roll card face the
+  roll number is drawn over the picture from 601px and hidden up to 600px, where the
+  results line names the roll.
 
 ### Inputs
 
@@ -618,12 +710,83 @@ means "a thing". Do not round a card to a pill or square a chip.
   (the account, the lists and «Мои предметы»), where no job is lit, and while
   its menu is open.
 
-### Filter pills
+- **List head:** `/homebrew` draws the catalog's: up to 760px the picker row with
+  the `h1` read, not drawn; from 761px the head with the pin, the tabs and the
+  primary.
 
-- **Style:** 32px tall, 8px radius, a 12 per cent gold wash inside a 45 per cent
-  gold border, a Seal Gold Soft label at 13px weight 600, and a dismiss glyph.
-- Chosen values stay visible outside the folded panel, beside a text reset and a
-  32px copy-link button.
+### Filter chips and the count line
+
+- **Catalog:** the filters are a 250px column beside the rows from 1000px,
+  sticky under the header and scrolling inside itself, and a bottom sheet
+  below it. Each row is «Все» (the neutral pressed default) and the value
+  chips; a picked value is gold. No pill row at 360px or in the mid band: the
+  count line under the search row names the chosen values in text, cut to one
+  line, and the count, never cut.
+- **Own items:** `/homebrew` draws the catalog's column and sheet and no pill row
+  at any width.
+- **Pills (the shared page, until its batch):** 32px
+  tall, 8px radius, a 12 per cent gold wash inside a 45 per cent gold border,
+  a Seal Gold Soft label at 13px weight 600, and a dismiss glyph, beside a
+  text reset and a 32px copy-link button.
+
+### Bottom sheet
+
+- `Sheet`: a native `<dialog>` opened with `showModal()`, attached to the
+  bottom, `min(100%, 560px)` wide and centered, top corners at the plate
+  radius, at most `min(85dvh, 640px)` tall. Its head (the title, the caller's
+  controls, «Закрыть» with the close icon) and its foot stay; the body
+  scrolls. No grab handle: nothing drags it. Its callers: the filter sheet, the
+  table and tab pickers, the bulk move and the editor's preview.
+- The record dialog has the sheet's look up to 760px and is not a `Sheet`: one
+  element at every width, so a window that crosses 760px remounts nothing. «Ещё» is
+  a `Menu` at every width, in the dialog too. Both close with `DialogClose`.
+
+### Selection bar
+
+- `SelectionBar`: one shape on every list page, pinned to the bottom of the
+  screen, a Vault Wall ground under a `--muted2` top border and a blur; no
+  gold. «Все» is a tri-state box with its label always visible, then the
+  polite summary («Выбрано: N»), the page's actions and «Снять выделение»
+  last. Below 761px the box, the summary and the clear are one row and the
+  actions the next. Zero ticks: the actions off, the clear on.
+
+### Forms
+
+- A field is `FormField`: its caption, the control, its error line. An optional
+  field carries the muted word «необязательно» after the caption, outside the
+  `<label>`; a required field carries no mark, and no legend explains marks.
+- A field's error is its own sentence that names the fix. The summary at the top
+  of a form names the field first.
+- A field has no «?» unless it states a constraint of the site and has no room
+  for a caption (`FEATURES.md`, rule 15). A caption under a field states a fact
+  the person must know before typing, at the data size in Ash Violet.
+- The editor's sticky bar: up to 760px the buttons of a long form stick to the
+  bottom of the window on the Vault Wall ground under a Seam top border, with
+  the safe-area padding; a window under 481px leaves them in the flow. It holds
+  one gold button. A menu may hold a single danger action where the bar has no
+  room: a danger button in a sticky bar invites a mis-tap.
+- The preview sheet: up to 760px the live card moves from the column into a
+  `Sheet`. The card draws in one place per band, never twice.
+
+### Empty state
+
+- `Empty`: a dashed plate. The catalog adds the kind glyph in its art well (the
+  only picture), the heading «Ничего не найдено», one cause sentence and a
+  primary reset while a filter is chosen.
+- A search's start state: the glyph, a title («Что ищем?»), one sentence and example
+  queries as chips; the syntax lives in the examples, not in an instruction.
+- A search's nothing-found state: the cause (the query, the picked kinds or both) and
+  one reset («Сбросить фильтры» or «Очистить поиск»). A plate holds one primary at most.
+
+### Error page
+
+- `ErrorPage`: the cause as the page's `h1`, one sentence that names the address or
+  the way out, the actions with the primary first. No icon and no plate: the heading
+  already says what happened.
+- It covers every page-level failure: an unknown address of this build
+  (`NoPage`), a missing record (`NoItem`), a retired print link, a failed print set
+  read (primary «Повторить»), the editor's missing item and a page that threw. The
+  page's name stays in the tab title.
 
 ### Toast
 
@@ -699,7 +862,8 @@ a transform.
   gradient text, no colored drop shadow. The ground is violet, which makes this
   a short slide, and the palette's restraint is what keeps 1459 records legible.
 - **Don't** drift toward a SaaS dashboard: no generic blue accent, no oversized
-  rounded cards, no illustrated empty states, no marketing gradient. The density
+  rounded cards, no illustrated empty states (the only picture an empty state
+  draws is the kind glyph in its art well), no marketing gradient. The density
   these tables need is the opposite of that language.
 - **Don't** add a second shadow step, a third system breakpoint, or a sixth
   radius.
@@ -708,5 +872,7 @@ a transform.
 - **Don't** link a font service or load a font from another origin. The one
   UI face comes from the build's own `/assets/`.
 - **Don't** put a kind color on a row, a card border, or body text.
+- **Don't** translate a book name: «Core» and «Hope & Fear» stay Latin in
+  Russian, on chips, tabs and tags.
 - **Don't** set white text on a gold fill. Ink on Gold is the only text color
   there.

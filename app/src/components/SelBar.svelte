@@ -1,20 +1,18 @@
 <script lang="ts">
-  /* The selection bar - ticking any row on a table raises it at the bottom of
-     the window: a count, on a list page a total, a cross that clears
-     everything, and three actions on the right. Reproduced from `renderSelBar` (`git show 23c00a6^:app.js`)
-     and `#selBar` in index.html, right after `</footer>` and before the
-     modal - `Shell.svelte` keeps that order.
+  /* The selection bar's logic for the catalog, search, the own items and the shared page: add
+     to a list, print, copy, the shared page's total and its send line. `SelectionBar.svelte`
+     draws it (one bar shape on every list page). `Shell.svelte` keeps it after the
+     footer, before the modal, as `#selBar` in the live index.html.
 
-     `{#if n}` is the honest equivalent of the live app's `hidden` plus an
-     emptied `innerHTML`: it unmounts the bar's own `AddToList` and its
-     document click listener when nothing is ticked, rather than leaving them
-     idle for no reason. The shared page keeps the bar mounted, visually
-     hidden while empty, so its live region exists before the first tick
-     and announces it. */
+     It mounts while a row is ticked or the catalog's selection mode is on. The shared
+     page keeps it mounted, visually hidden while empty, so its live region exists
+     before the first tick and announces it. */
   import { tick } from 'svelte';
   import AddToList from './AddToList.svelte';
   import Button from './Button.svelte';
+  import HomebrewBulk from './HomebrewBulk.svelte';
   import Icon from './Icon.svelte';
+  import SelectionBar from './SelectionBar.svelte';
   import SignInPrompt from './SignInPrompt.svelte';
   import type { ListEntryMeta } from '../lib/lists.js';
   import { selCountText } from '../lib/i18n.js';
@@ -43,6 +41,10 @@
      total, the copy and the add-to-list; a table or search selection
      carries none of them. */
   const shared = $derived(app.shared);
+  /* The Items tab of «Мои предметы» adds its move, download and delete. */
+  const hb = $derived(
+    app.route.kind === 'homebrew' && app.route.tab === 'items' ? app.homebrew : null
+  );
   const metaOf = (id: string): ListEntryMeta => shared?.meta?.[id] ?? {};
   const takenOf = (id: string): number => takenQty(metaOf(id), app.picked.get(id));
   const taken = $derived(shared ? takenTotal(ids, metaOf, takenOf) : null);
@@ -52,8 +54,31 @@
   /* A list page names entries and pieces apart; a table or search selection
      has no stock, so it keeps the bare count. */
   const countText = $derived(
-    taken ? selCountText(n, taken.pieces, app.lang, t) : `${t.selected} ${String(n)}`
+    taken ? selCountText(n, taken.pieces, app.lang, t) : t.selCount.replace('%n', String(n))
   );
+  /* «Все» ticks the rows the page draws (`app.selectable`), every section. */
+  const drawn = $derived(app.selectable);
+  const drawnPicked = $derived(drawn.filter((id) => app.sel.has(id)).length);
+
+  function all(checked: boolean): void {
+    for (const id of drawn) {
+      if (checked) app.sel.add(id);
+      else {
+        app.sel.delete(id);
+        app.picked.delete(id);
+      }
+    }
+  }
+
+  /* Rule 20: «Снять выделение» leaves the mode; the focus returns to «Выбрать», else
+     `#main` (the bar has left). */
+  async function clear(): Promise<void> {
+    app.clearSel();
+    await tick();
+    (
+      document.querySelector<HTMLElement>('button.selmode') ?? document.getElementById('main')
+    )?.focus();
+  }
   /* On a list page the taken counts print; a table or search selection prints one each. */
   const printCounts = $derived(
     shared ? Object.fromEntries(ids.map((id) => [id, takenOf(id)])) : undefined
@@ -77,7 +102,6 @@
     sender?.asking && token !== null && sender.asking.token === token ? sender.asking : null
   );
   let remember = $state(false);
-  let bar = $state<HTMLDivElement | undefined>(undefined);
   let question = $state<HTMLParagraphElement | undefined>(undefined);
   /* Signed out, «Печать» replaces the action row with the sign-in prompt, as the notify
      question replaces it; an empty bar forgets it. */
@@ -107,7 +131,7 @@
   }
 
   /* The question replaces the row that held the focused menu, so the focus
-     moves to it, and back to «Добавить в список» after the answer. */
+     moves to it, and back to «В список» after the answer. */
   $effect(() => {
     if (asking) question?.focus();
   });
@@ -116,7 +140,7 @@
     sender?.answer(send, remember);
     remember = false;
     void tick().then(() => {
-      bar?.querySelector<HTMLElement>('.seldrop > .btn')?.focus();
+      document.querySelector<HTMLElement>('.selbarwrap .seldrop > .btn')?.focus();
     });
   }
 
@@ -134,144 +158,103 @@
   }
 </script>
 
-{#if n || shared}
-  <!-- A labeled region: the bar sits after the footer, outside every other landmark. -->
-  <section class="selbarwrap" class:idle={!n} class:vh={!n} aria-label={t.selRegion}>
-    <div class="selbar" bind:this={bar}>
-      <span class="selsumm" aria-live={shared ? 'polite' : undefined}
-        >{#if n}<span class="selcount">{countText}</span>&#32;{#if total}<span class="seltotal"
-              >{total.label} <b>{total.value}</b>&#32;{#if total.unpriced}
-                <span class="np">{total.unpriced}</span>{/if}</span
-            >{/if}{/if}</span
-      >{#if n}<button
-          type="button"
-          class="selx"
-          title={t.clearSel}
-          aria-label={t.clearSel}
-          onclick={() => {
-            app.clearSel();
-          }}>&times;</button
+{#if n || shared || app.selecting}
+  <SelectionBar
+    label={t.selRegion}
+    total={drawn.length}
+    picked={drawnPicked}
+    allLabel={t.selectAll}
+    allText={t.allShort}
+    count={countText}
+    clearText={t.clearSel}
+    onall={all}
+    onclear={() => void clear()}
+    idle={!n && !app.selecting}
+  >
+    {#snippet summary()}
+      {#if n && total}
+        <span class="seltotal"
+          >{total.label} <b>{total.value}</b>&#32;{#if total.unpriced}
+            <span class="np">{total.unpriced}</span>{/if}</span
         >
-        {#if asking}
-          <div class="notifyq" role="group" aria-labelledby="notifyq-text">
-            <p id="notifyq-text" tabindex="-1" bind:this={question}>{t.notifyQuestion}</p>
-            <Button
+      {/if}
+    {/snippet}
+    {#snippet actions()}
+      {#if asking}
+        <div class="notifyq" role="group" aria-labelledby="notifyq-text">
+          <p id="notifyq-text" tabindex="-1" bind:this={question}>{t.notifyQuestion}</p>
+          <Button
+            size="sm"
+            variant="primary"
+            onclick={() => {
+              answer(true);
+            }}>{t.notifyYes}</Button
+          >
+          <Button
+            size="sm"
+            onclick={() => {
+              answer(false);
+            }}>{t.notifyNever}</Button
+          >
+          <label><input type="checkbox" bind:checked={remember} />{t.notifyRemember}</label>
+        </div>
+      {:else if printAsking && app.printTarget === 'prompt'}
+        <div class="printq" bind:this={printPrompt}>
+          <SignInPrompt
+            {app}
+            compact
+            lead={t.signInToPrint}
+            after={{
+              hash: app.hash,
+              action: printAction(app.printEntriesOf(ids, printCounts))
+            }}
+            oncancel={cancelPrint}
+          />
+        </div>
+      {:else}
+        <AddToList {app} key="sel" {ids} meta={takenMeta} primary disabled={!n} />
+        {#if app.printTarget !== 'none'}
+          <Button
+            size="sm"
+            title={t.printHint}
+            disabled={!n || app.printing || app.printTarget === 'wait'}
+            bind:el={printButton}
+            onclick={pressPrint}><Icon name="print" />{t.print}</Button
+          >
+        {/if}
+        {#if !hb || app.band !== 'narrow'}
+          <Button size="sm" disabled={!n} onclick={() => void copySel()}
+            ><Icon name="copy" />{t.copyText}</Button
+          >
+        {/if}
+        {#if hb}
+          <HomebrewBulk {app} store={hb} {ids} copy={() => void copySel()} />
+        {/if}
+        {#if token !== null && sender}
+          <span class="notify"
+            ><Button
               size="sm"
-              variant="primary"
-              onclick={() => {
-                answer(true);
-              }}>{t.notifyYes}</Button
-            >
-            <Button
-              size="sm"
-              onclick={() => {
-                answer(false);
-              }}>{t.notifyNever}</Button
-            >
-            <label><input type="checkbox" bind:checked={remember} />{t.notifyRemember}</label>
-          </div>
-        {:else if printAsking && app.printTarget === 'prompt'}
-          <div class="printq" bind:this={printPrompt}>
-            <SignInPrompt
-              {app}
-              compact
-              lead={t.signInToPrint}
-              after={{
-                hash: app.hash,
-                action: printAction(app.printEntriesOf(ids, printCounts))
-              }}
-              oncancel={cancelPrint}
-            />
-          </div>
-        {:else}
-          <div class="selacts">
-            <AddToList {app} key="sel" {ids} meta={takenMeta} primary />
-            {#if app.printTarget !== 'none'}
-              <Button
-                size="sm"
-                title={t.printHint}
-                disabled={app.printing || app.printTarget === 'wait'}
-                bind:el={printButton}
-                onclick={pressPrint}><Icon name="print" />{t.print}</Button
-              >
-            {/if}
-            <Button size="sm" onclick={() => void copySel()}
-              ><Icon name="copy" />{t.copySel}</Button
-            >
-            {#if token !== null && sender}
-              <span class="notify"
-                ><Button
-                  size="sm"
-                  disabled={sender.sending || sent}
-                  onclick={() => void sender.send(token, lines)}
-                  >{sent
-                    ? t.requestSentDone
-                    : sender.sending
-                      ? t.requestSending
-                      : t.requestSend}</Button
-                ></span
-              >
-            {/if}
-          </div>
-          {#if sentLine}
-            <p class="sentline">{sentLine(t, app.lang)}</p>
-          {/if}
-        {/if}{/if}
-    </div>
-  </section>
+              disabled={!n || sender.sending || sent}
+              onclick={() => void sender.send(token, lines)}
+              >{sent
+                ? t.requestSentDone
+                : sender.sending
+                  ? t.requestSending
+                  : t.requestSend}</Button
+            ></span
+          >
+        {/if}
+      {/if}
+    {/snippet}
+    {#snippet below()}
+      {#if n && sentLine && !asking && !printAsking}
+        <p class="sentline">{sentLine(t, app.lang)}</p>
+      {/if}
+    {/snippet}
+  </SelectionBar>
 {/if}
 
 <style>
-  /* off `.selbarwrap` in style.css - declared twice, at line 54 (the safe-area
-     padding, which applies everywhere the bar can appear) and at 799 (the
-     sticky block, above the sticky topbar so the menu can open upward and
-     never slide under it, the gradient, the gold top border and the blur).
-     Both are merged into the one rule here. */
-  .selbarwrap {
-    padding-bottom: env(safe-area-inset-bottom);
-    position: sticky;
-    bottom: 0;
-    z-index: 45;
-    background: linear-gradient(180deg, rgb(20 17 30 / 86%), rgb(16 14 24 / 98%));
-    border-top: 1px solid rgb(216 171 94 / 35%);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-  }
-
-  /* off `.selbar` plus `.wrap` (`git show 23c00a6^:style.css`) - the rewrite has no global
-     `.wrap` class; every frame element composes the same four properties off
-     `--wrap` instead, as `Shell.svelte`'s `.foot` and `TabBar` already do. */
-  .selbar {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-    padding: 10px 0;
-    width: var(--wrap);
-    margin-inline: auto;
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
-  }
-
-  /* On a list page, a live region: a changed taken count re-reads the
-     count and the total. A table keeps its old tree; the clear button stays
-     outside the region. */
-  .selsumm {
-    display: inline-flex;
-    flex-wrap: wrap;
-    align-items: center;
-    column-gap: 12px;
-    row-gap: 6px;
-    font-size: var(--t-small);
-    line-height: 1.3;
-    color: var(--gold-soft);
-  }
-
-  .selcount {
-    font-weight: 650;
-    white-space: nowrap;
-  }
-
   .seltotal b {
     font-weight: 650;
   }
@@ -280,56 +263,12 @@
     color: var(--muted);
   }
 
-  .selx {
-    width: 26px;
-    height: 26px;
-    flex: none;
-    border-radius: 7px;
-    border: 1px solid rgb(216 171 94 / 35%);
-    background: transparent;
-    color: var(--gold-soft);
-    font-size: var(--t-title);
-    line-height: 1;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    transition: 0.15s;
-    position: relative;
-  }
-
-  .selx:hover {
-    background: rgb(216 171 94 / 16%);
-    border-color: var(--gold);
-  }
-
-  /* P12: 26px of paint, 44px of target - the same `PageHead.svelte`
-     `.homebtn::after` shape. */
-  .selx::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 44px;
-    height: 44px;
-    transform: translate(-50%, -50%);
-  }
-
-  .selacts {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-left: auto;
-  }
-
   .notify {
     display: flex;
   }
 
   /* Information under the action row, not a warning (rule 19). */
   .sentline {
-    flex: 1 1 100%;
     margin: 0;
     font-size: var(--t-data);
     color: var(--muted);
@@ -364,55 +303,24 @@
     color: var(--muted);
   }
 
-  /* TableRows.svelte's row checkbox. */
   .notifyq input {
-    accent-color: var(--gold);
+    accent-color: var(--txt);
     width: 17px;
     height: 17px;
     margin: 0;
     cursor: pointer;
   }
 
-  @media (max-width: 600px) {
-    /* The summary wraps inside itself, so the clear button keeps its line. */
-    .selsumm {
-      flex: 1 1 0;
-      min-width: 0;
-    }
-
-    .selx {
-      width: 32px;
-      height: 32px;
-    }
-
-    .selacts {
-      width: 100%;
-      margin-left: 0;
-    }
-
-    .selacts :global(.seldrop),
+  @media (max-width: 760px) and (min-height: 481px) {
     .notify {
       flex: 1 1 100%;
     }
+  }
 
+  @media (max-width: 760px) {
     .notifyq :global(.btn) {
       flex: 1 1 0;
       justify-content: center;
-    }
-
-    .selacts :global(.btn) {
-      flex: 1 1 0;
-      min-width: 0;
-      width: 100%;
-      justify-content: center;
-      overflow: hidden;
-    }
-  }
-
-  /* off `#selBar` in the live `@media print` block (`git show 23c00a6^:style.css`) */
-  @media print {
-    .selbarwrap {
-      display: none;
     }
   }
 </style>

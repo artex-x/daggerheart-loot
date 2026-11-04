@@ -8,6 +8,7 @@
 import { cleanup, render, screen } from '@testing-library/svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import Chip from './Chip.svelte';
+import { expectNoA11yViolations } from '../test/a11y.js';
 
 afterEach(cleanup);
 
@@ -19,11 +20,6 @@ describe('the button form', () => {
     expect(btn).toHaveAttribute('aria-pressed', 'true');
     btn.click();
     expect(onclick).toHaveBeenCalledOnce();
-  });
-
-  it('carries a second, quieter line when given one', () => {
-    render(Chip, { label: 'Обычная', on: false, sub: 'Ранг 1', onclick: vi.fn() });
-    expect(screen.getByText('Ранг 1')).toBeInTheDocument();
   });
 });
 
@@ -47,13 +43,46 @@ describe('the link form', () => {
     expect(screen.getByRole('link', { name: 'Предметы' }).className).toContain('sm');
   });
 
-  it('can carry a second line too, since the shape is shared with the button form', () => {
-    render(Chip, { label: 'Core', on: false, href: '#/tables/core_item', sub: 'Предметы' });
-    expect(screen.getByText('Предметы')).toBeInTheDocument();
-  });
-
   it('can carry a title, same as the button form', () => {
     render(Chip, { label: 'Core', on: false, href: '#/tables/core_item', title: 'Core' });
     expect(screen.getByRole('link', { name: 'Core' })).toHaveAttribute('title', 'Core');
+  });
+});
+
+describe('the neutral pressed default', () => {
+  it('draws a check while pressed and carries its filter value', async () => {
+    const { container } = render(Chip, {
+      label: 'Все',
+      on: true,
+      neutral: true,
+      onclick: vi.fn()
+    });
+    const btn = screen.getByRole('button', { name: 'Все' });
+    expect(btn).toHaveAttribute('aria-pressed', 'true');
+    expect(btn.className).toContain('neutral');
+    expect(btn.querySelector('svg')).not.toBeNull();
+    await expectNoA11yViolations(container);
+  });
+
+  it('draws no check while not pressed', async () => {
+    const { container } = render(Chip, {
+      label: 'Все',
+      on: false,
+      neutral: true,
+      onclick: vi.fn()
+    });
+    expect(screen.getByRole('button', { name: 'Все' }).querySelector('svg')).toBeNull();
+    await expectNoA11yViolations(container);
+  });
+
+  it('marks a filter value for the browser suites', async () => {
+    const { container } = render(Chip, {
+      label: '1',
+      on: true,
+      filter: 'tier:1',
+      onclick: vi.fn()
+    });
+    expect(screen.getByRole('button', { name: '1' })).toHaveAttribute('data-fval', 'tier:1');
+    await expectNoA11yViolations(container);
   });
 });

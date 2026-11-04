@@ -158,6 +158,8 @@ export interface Record_ {
   /** Keys into `refs`: the Core cards a description points at. */
   refs?: string[];
   eq?: Equip;
+  /** The type of an editor draft that has no tier yet; only `previewOf` sets it. */
+  eqType?: EquipKind;
   /** Vault of Ages section, or `'A'` beside an artifact's `eq.tier` - not equipment tier, which lives on
    * `eq.tier` and is required there. The two overlap on 1-4 by coincidence
    * of range, not by meaning: never read this field where `eq.tier` is

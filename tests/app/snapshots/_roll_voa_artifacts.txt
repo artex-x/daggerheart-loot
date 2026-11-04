@@ -23,32 +23,31 @@ RootWebArea "Vault of Ages - Генератор лута Daggerheart" [url=/roll
   main ""
     heading "Vault of Ages" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
+    button "Об этой книге" [expanded=false]
     StaticText "Выберите раздел книги и бросьте кость по нему."
-    StaticText "РАЗДЕЛ КНИГИ"
-    button "Ранг 1" [pressed=false]
-    ... button x2 of 6 same-shape siblings elided
-    button "Ранг 4" [pressed=false]
-    button "Артефакты" [pressed=true]
-    button "Проклятые предметы" [pressed=false]
-    StaticText "РЕЗУЛЬТАТ БРОСКА (1–9)"
+    combobox "Раздел книги" [value=Артефакты expanded=false haspopup=menu]
+      option "Ранг 1" [selected=false]
+      option "Ранг 2" [selected=false]
+      option "Ранг 3" [selected=false]
+      option "Ранг 4" [selected=false]
+      option "Артефакты" [selected=true]
+      option "Проклятые предметы" [selected=false]
+    button "Бросить 1-9"
+    StaticText "РЕЗУЛЬТАТ БРОСКА (1-9)"
     button "На единицу меньше" [disabled=true]
     textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
     button "На единицу больше"
-    button "Случайно 1–9"
+    heading "Бросок 1" [level=2]
     status ""
-      button "Страница"
-      StaticText "1"
-      StaticText "ПРЕДМЕТ"
-      ... StaticText x13 of 17 same-shape siblings elided
-      link "Узы Души" [description=Страница url=/i/voa2_a1]
-      button "Скопировать название" [description=Скопировать название]
-      button "Скопировать ссылку" [description=Скопировать ссылку]
-      StaticText "потратить Надежду"
-      StaticText ", чтобы освободить душу. Она немедленно возвращается к владельцу..." [namelen=131 namehash=171fc9e9]
-      button "Отправить"
-      button "Скопировать изображение" [description=Скопировать изображение]
-      button "Скопировать текст" [description=Скопировать текст]
+      StaticText "Узы Души"
+    button "Страница"
+    ... StaticText x15 of 19 same-shape siblings elided
+    link "Узы Души" [description=Страница url=/i/voa2_a1]
+    StaticText "потратить Надежду"
+    StaticText ", чтобы освободить душу. Она немедленно возвращается к владельцу..." [namelen=131 namehash=171fc9e9]
+    button "В список" [expanded=false]
+    button "Поделиться"
+    button "Ещё" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -57,15 +56,17 @@ RootWebArea "Vault of Ages - Генератор лута Daggerheart" [url=/roll
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-?Справка
+?Об этой книге
 EN
 RU
 Vault of Ages
 daggerheart.com
 Альтернативные таблицы
-Артефакты
+Бросить 1-9
 Бросок
+В список
 Войти
+Ещё
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
@@ -73,19 +74,10 @@ daggerheart.com
 На единицу меньше
 Обычные правила
 Открывать при запуске
-Отправить
+Поделиться
 Поиск
-Проклятые предметы
-Ранг 1
-Ранг 2
-Ранг 3
-Ранг 4
+Раздел книги
 Результат броска
-Скопировать изображение
-Скопировать название
-Скопировать ссылку
-Скопировать текст
-Случайно 1–9
 Страница
 Таблицы
 Узы Души
@@ -113,32 +105,31 @@ RootWebArea "Vault of Ages - Daggerheart Loot Generator" [url=/en/roll/vault_of_
   main ""
     heading "Vault of Ages" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
+    button "About this book" [expanded=false]
     StaticText "Pick a section of the book and roll within it."
-    StaticText "SECTION"
-    button "Tier 1" [pressed=false]
-    ... button x2 of 6 same-shape siblings elided
-    button "Tier 4" [pressed=false]
-    button "Artifacts" [pressed=true]
-    button "Cursed objects" [pressed=false]
-    StaticText "ROLL RESULT (1–9)"
+    combobox "Section" [value=Artifacts expanded=false haspopup=menu]
+      option "Tier 1" [selected=false]
+      option "Tier 2" [selected=false]
+      option "Tier 3" [selected=false]
+      option "Tier 4" [selected=false]
+      option "Artifacts" [selected=true]
+      option "Cursed objects" [selected=false]
+    button "Roll 1-9"
+    StaticText "ROLL RESULT (1-9)"
     button "One lower" [disabled=true]
     textbox "Roll result" [value=1 multiline=false readonly=false required=false]
     button "One higher"
-    button "Random 1–9"
+    heading "Roll 1" [level=2]
     status ""
-      button "Page"
-      StaticText "1"
-      StaticText "ITEM"
-      ... StaticText x13 of 17 same-shape siblings elided
-      link "Anima Colligationem" [description=Page url=/i/en/voa2_a1]
-      button "Copy name" [description=Copy name]
-      button "Copy link" [description=Copy link]
-      StaticText "spend a Hope"
-      StaticText " to free the soul. It returns to the owner immediately, regardle..." [namelen=116 namehash=b9bbbffb]
-      button "Share"
-      button "Copy image" [description=Copy image]
-      button "Copy text" [description=Copy text]
+      StaticText "Anima Colligationem"
+    button "Page"
+    ... StaticText x15 of 19 same-shape siblings elided
+    link "Anima Colligationem" [description=Page url=/i/en/voa2_a1]
+    StaticText "spend a Hope"
+    StaticText " to free the soul. It returns to the owner immediately, regardle..." [namelen=116 namehash=b9bbbffb]
+    button "Add to list" [expanded=false]
+    button "Share"
+    button "More" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -147,37 +138,30 @@ RootWebArea "Vault of Ages - Daggerheart Loot Generator" [url=/en/roll/vault_of_
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-?Help
+?About this book
+Add to list
 Alternate tables
 Anima Colligationem
-Artifacts
-Copy image
-Copy link
-Copy name
-Copy text
-Cursed objects
 EN
 Install as an app
 LootDaggerheart
+More
 One higher
 One lower
 Open on start
 Page
 Privacy
 RU
-Random 1–9
 Roll
+Roll 1-9
 Roll result
 Search
+Section
 Share
 Sign in
 Skip to content
 Standard rules
 Tables
 Terms of use
-Tier 1
-Tier 2
-Tier 3
-Tier 4
 Vault of Ages
 daggerheart.com

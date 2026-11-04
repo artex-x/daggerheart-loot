@@ -52,7 +52,7 @@
 | 1-N1..N5, N7 | nit | local | fixed 1-fix | See `reviews/1.md`, "Nits" |
 | 1-N6 | nit | deferred-scope | fixed 1b (`fce4a9f8`) | `PrintCard.svelte` literal `#0a0810` for the art block; `--art-well` names it |
 | 1b | - | - | approve, no finding | `reviews/1b.md`: no blocker, risk or nit; five deviations accepted (the `_none` removal record, the EN pictures counter, the light-well loop, the taller one-line well, the `DECISIONS.md` regeneration) |
-| 2-R1 | risk | deferred-scope | deferred (owner-AFK log; post-release Impeccable audit) | S12.1 ran a manual polish and harden pass, not the Impeccable skill |
+| 2-R1 | risk | deferred-scope | fixed plan for batch 3 on (`plan.md` section 10, "Impeccable": the orchestrator runs `polish` and `harden`, the manual pass is the named fallback); batch 2's own pass stays deferred to the post-release Impeccable audit | S12.1 ran a manual polish and harden pass, not the Impeccable skill |
 | 2-R2 | risk | local | fixed 2-fix | The handoff did not say how the batch 2 commit passed rule 2e after the last edits |
 | 2-R3 | risk | deferred-scope | deferred (batch 10 audit) | From 761 px the header's visual order differs from its DOM order (jobs last) |
 | 2-N1 | nit | local | fixed 2-fix | "labelled" in `FEATURES.md` "Chrome" and `DESIGN.md` "Layout" |
@@ -61,3 +61,42 @@
 | 2-N4 | nit | local | fixed 2-fix | S12.2 (C34, A15) had no outcome in the handoff |
 | 2-N5 | nit | deferred-scope | deferred (batch 5) | `SECTION_LABEL['roll/alt']` reads «Альт. таблицы», not the page heading |
 | 2-N6 | nit | deferred-scope | deferred (batch 10) | "until their page's batch moves them" is task-plan wording in `DESIGN.md` and `FEATURES.md` |
+| 3-B1 | blocker | local | fixed 3-fix | Alternate tables lost their source tag: `MANY_BOOKS` omits `alt_item`, `alt_consumable` |
+| 3-B2 | blocker | local | fixed 3-fix | `/s/` has an invisible tab stop: `SelectionBar` draws «Все» inside the idle `.vh` bar |
+| 3-B3 | blocker | local | fixed 3-fix | Search highlight splits names: `<mark>` in a flex `b` with an 8 px gap |
+| 3-B4 | blocker | local | fixed 3-fix (named departure: two lines at `--t-small`, the book over the table; `--t-body` still cut 8 of 18 RU captions) | The picker cuts most table names at 360 |
+| 3-B5 | blocker | local | fixed 3-fix (reproduced: 53 px of the column and 38 px of the last chip under the bar) | The selection bar covers the bottom of the filter column (`.fcol` max-height ignores `--selbar-h`) |
+| 3-R1 | risk | local | fixed 3-fix (reproduced) | A press on an «Ещё» item drops the focus |
+| 3-R2 | risk | local | fixed 3-fix (`filterOpen` and `moreOpen` reproduced; `picking` did not survive, `TableNav` remounts; the lost focus reproduced for all three) | `filterOpen`, `moreOpen`, `picking` survive a band change |
+| 3-R3 | risk | local | fixed 3-fix (reproduced) | «Выбрать» on an empty table drops the focus |
+| 3-R4 | risk | local | fixed 3-fix (reproduced) | Empty state prints an empty value list for a picked value no row offers |
+| 3-R5 | risk | local | fixed 3-fix (189 px at 640x360, cap 162; one action line in landscape instead of a scroll) | The bar has no `max-height: 45dvh`; overflow on the wrap would clip the `AddToList` menu |
+| 3-R6 | risk | local | fixed 3-fix (both cases added; the 458 case in `selectionBar.test.ts`, the 300 case in `tables.test.ts`) | The 458-id and 300-item scale fixtures do not exist |
+| 3-R7 | risk | local | fixed 3-fix (values below `wide` only; the search row position kept, named in the handoff) | Two mock departures at 1180 are not named |
+| 3-N1..N6, N8 | nit | local | fixed 3-fix | See `reviews/3.md`, Nits |
+| 3-N7 | nit | deferred-scope | deferred (batch 7) | See `reviews/3.md`, Nits |
+| 3-CI | blocker | local | fixed 3-fix | CI of `ef44bb5d`: `KeepNote.svelte` branch coverage 50%, its table caller gone |
+| 3b-B1 | blocker | local | fixed 3b-fix | A tap in the header stops it hiding: `:not(:focus-within)` answers any focus |
+| 3b-R1 | risk | local | fixed 3b-fix | The popup query walks the page on each scroll frame; `head` gets a new object each frame |
+| 3b-R2 | risk | local | fixed 3b-fix | `FIELD` holds `select`, which has no on-screen keyboard |
+| 3b-N1..N3 | nit | local | fixed 3b-fix | See `reviews/3b.md`, Nits |
+| 4-B1 | blocker | local | fixed 4-fix | `tests/e2e/flows.mjs` calls `d.more('Сохранить себе')` on `/s/`, which keeps its own button; CI `e2e` red |
+| 4-R1 | risk | deferred-scope | deferred (wave 2 blind review; `handoff.md` Deferred holds the three options) | «В список» is inside 640 px on 21 of 98 sampled records at 360x640 |
+| 4-R2 | risk | local | accepted (brief; no change, the batch 8 sheet decision names it) | The toast covers part of the dock at 360 |
+| 4-R3 | risk | local | fixed 4-fix (`d.more` takes a wait; F20 passes `WAIT`) | `d.more` waits 5 s where F20 waited 20 s |
+| 4-N1..N9 | nit | local | fixed 4-fix (N1 accepted with its goldens; N3 by the `top` from the button, because the dock's grid reads the row's children; N8's CI budget figure waits for the re-run) | See `reviews/4.md`, Nits |
+| 5-B1 | blocker | local | fixed 5-fix (confirmed in the built app first: `aria-expanded` false, no menu, at 1180 and 360; `menuScope`, not `slot`, a Svelte attribute) | «В список» in the record dialog does nothing over a roll result: two `AddToList` share one `menuFor` key |
+| 5-CI | blocker | local | fixed 5-fix (sweep: the label is the `.vh` rule under a media query, so `sweep.js` skips `clip-path: inset(50%)`; `select` takes `font: inherit`; case 31 was a real defect: the body's badges cover the sunk picture's ring, so the card repeats it on top) | CI 41790682272: `.lbl` clipped in the sweep at 360 and 390; `RollSelect` select in Arial; case 31 focus ring on the face |
+| 5-R1 | risk | local | fixed 5-fix (`returnToRecord`, the old `inModal`; a stale `menuFor` after a roll also cleared on destroy) | A signed-out sign-in from a result returns to `/roll/std`; `menuFor` stays set |
+| 5-R2 | risk | deferred-scope | deferred (batch 6) | `.results` atomic status may re-read cards when a menu opens inside it |
+| 5-N1..N9 | nit | local | fixed 5-fix (N1 merged the Action Vocabulary Rule into the Dossier Rule, not the pair the review named; N9's `polish` and `harden` line says no outcome is recorded) | See `reviews/5.md`, Nits |
+| 5-N10 | nit | deferred-scope | deferred (batch 6) | En dash in «(1-30)» beside «Бросить 1-30» |
+| 6-CI | blocker | local | fixed 6-fix (all five stale tests or sweep script; the app was right) | CI 41813328286 of `96710fe3`: sweep (editor print view "In print", import "Обновить"), states 63 and 91, e2e F14; see handoff "Next batch" step 1 |
+| 6-R1 | risk | local | fixed 6-fix (measured 26 px past the bar at 320 RU; insets cut up to 380 px; case 92 pass) | No test measures the editor sticky bar at 320 RU on a stored item; estimated 15-30 px overflow, not measured. Probe first, then add a 320x568 RU pass to case 92 |
+| 6-R2 | risk | local | fixed 6-fix | The decision file reverses two recorded decisions (field-help «?»; save button with guard) with no "Supersedes in part" lines either way |
+| 6-N1 | nit | local | deferred (next batch's re-seed) | Deviation 22 holds at 360 only; at 1180 a 120-character name may move the first-screen offset (about 240 of 288, unmeasured); rides the next re-seed |
+| 6-N2..N9 | nit | local | fixed 6-fix (N2 confirmed first; N7 in CSS; N9's figure for `96710fe3` is not recoverable) | `.errlink` bullet (verify, `vertical-align: top`); stale editor shots; case 92 comment; aria-hidden captions read «необязательно» alone; focus after widening with the sheet open; `--ebar-h` below 481 px height; `inventory.js` comment over the wrong function; handoff lacks the `check:fast` result. See `reviews/6.md` |
+| 7-B1 | blocker | local | fixed 7-fix (test failed at `2c3f3833`) | No text gives the order for moving to another account (`homebrew.json` first); J10 removed the ZIP manual on a false claim. Reword `importZipHomebrew` and `hbImportZipLists`, both languages, FEATURES lines, test, targeted re-seed, drop the Deferred entry |
+| 7-CI | blocker | local | fixed 7-fix (all three stale: the decision file's status line order and length, `print.js` read `.page-h`, case 86 took a bubbled `transitionend`) | CI 41845174864 of `2c3f3833`: `derived`/`check`, `app/print`, `app/states` 86 |
+| 7-R1 | risk | local | fixed 7-fix (279.4 px with a kind picked at 1180; 320 px overflow found and fixed) | `/search` with a kind picked: first row at 301 px at 1180x720 (limit 288). Recommended: from 761 px the count line goes to the end of `.kindrow` |
+| 7-N1..N7 | nit | local | fixed 7-fix (all seven; N2 an AFK default in the decision file) | COVERAGE.md row corrupted (N1); `accountSub` should not draw signed in (N2, re-seed); count-line separator spacing (N3, re-seed); FEATURES says NoItem passes `said` (N4); boundary «Обновить страницу» focus (N5); plan citations in FEATURES and decision Task line (N6); SearchPage comment 281 vs 279.4 (N7). See `reviews/7.md` |

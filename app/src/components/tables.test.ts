@@ -7,7 +7,7 @@
 
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { tick } from 'svelte';
+import { flushSync, tick } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import FilterBar from './FilterBar.svelte';
@@ -19,6 +19,7 @@ import {
   fakeData,
   fakeEnv,
   fakeMotion,
+  fakeViewport,
   memoryRouter,
   memoryStorage,
   noData
@@ -185,10 +186,21 @@ const rows = (): HTMLElement[] =>
 
 /** Every row's own tick checkbox, in document order - each one is named
  *  after its own record instead of the generic "Выбрано", so the group is
- *  found by elimination: every checkbox except select-all's own (which
- *  keeps a name, "Выбрать все (N)", from its wrapping `<label>`). */
-const rowCheckboxes = (): HTMLElement[] =>
-  screen.getAllByRole('checkbox').filter((cb) => !cb.closest('.selall'));
+ *  found by elimination: every checkbox except the selection bar's «Все». */
+const rowCheckboxes = (): HTMLElement[] => {
+  /* The catalog draws its ticks in the selection mode: «Выбрать» opens it. */
+  const mode = screen.queryByRole('button', { name: 'Выбрать' });
+  if (mode) {
+    mode.click();
+    flushSync();
+  }
+  return screen.getAllByRole('checkbox').filter((cb) => !cb.closest('.selall'));
+};
+
+/** Opens the selection mode, as «Выбрать» does. */
+const selectMode = (): void => {
+  rowCheckboxes();
+};
 
 describe('the index', () => {
   it('opens on core_item, with the book chip on and its two sub-chips shown', () => {
@@ -204,6 +216,8 @@ describe('the index', () => {
   it('lists every row of the table, each carrying its roll number', () => {
     render(App, { env: at() });
     expect(rows()).toHaveLength(6);
+    /* The language tag is an own item's: no catalog row draws it. */
+    expect(document.querySelector('.row-main .lt')).toBeNull();
     expect(screen.getByText('1')).toBeInTheDocument();
   });
 
@@ -286,7 +300,7 @@ describe('the index', () => {
     };
     const { container } = render(App, { env: at({ data: fakeData(FORMATTED) }) });
     const run = container.querySelector(
-      '[data-row="ci1"] .rt > span:not(.rstats):not(.rcraft)'
+      '[data-row="ci1"] .rt > span:not(.rh):not(.rstats):not(.rcraft)'
     );
     expect(run?.innerHTML.replace(/<!---->/g, '')).toBe(
       '<b>Раз:</b> тихо.<br>2. Один<br>3. Два<br>А | Б<br>1 | <i>2</i>'
@@ -312,20 +326,39 @@ describe('a second table', () => {
 describe('search', () => {
   it('narrows the table to what matches', async () => {
     render(App, { env: at() });
-    await userEvent.type(
-      screen.getByPlaceholderText('Поиск по названию или описанию...'),
-      'тишины'
-    );
+    await userEvent.type(screen.getByPlaceholderText('Поиск'), 'тишины');
     expect(rows()).toHaveLength(1);
-    expect(screen.getByText('Кольцо Тишины')).toBeInTheDocument();
+    /* The match is marked in the name, with more than color (WCAG 1.4.1). */
+    const mark = document.querySelector('[data-row="ci1"] mark');
+    expect(mark).toHaveTextContent('Тишины');
+    /* One parent for every run: the name line is flex, and a run of its own is a flex
+       item with a gap around it. */
+    expect(mark?.parentElement).toHaveClass('rname');
+    expect(mark?.parentElement).toHaveTextContent('Кольцо Тишины');
+    /* A table names its numbers, so a row draws the bare number. */
+    expect(document.querySelector('[data-row="ci1"] .rnum')?.textContent).toMatch(/^\d+$/);
+  });
+
+  it('a grid tile marks the queried words of its name', async () => {
+    render(App, { env: at() });
+    await userEvent.click(screen.getByRole('button', { name: 'Сетка' }));
+    await userEvent.type(screen.getByPlaceholderText('Поиск'), 'тишины');
+    const name = document.querySelector('[data-row="ci1"] .tile-b b');
+    expect(name?.querySelector('mark')).toHaveTextContent('Тишины');
+    expect(name).toHaveTextContent('Кольцо Тишины');
+  });
+
+  it('draws a row with no query the same as before: no mark, the name whole', () => {
+    render(App, { env: at() });
+    const name = document.querySelector('[data-row="ci1"] .rname');
+    expect(name?.querySelector('mark')).toBeNull();
+    expect(name?.children).toHaveLength(0);
+    expect(name?.textContent).toBe('Кольцо Тишины');
   });
 
   it('shows the empty state with no reset button of its own', async () => {
     render(App, { env: at() });
-    await userEvent.type(
-      screen.getByPlaceholderText('Поиск по названию или описанию...'),
-      'нет такого'
-    );
+    await userEvent.type(screen.getByPlaceholderText('Поиск'), 'нет такого');
     expect(screen.getByText('Ничего не найдено')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Сбросить всё' })).not.toBeInTheDocument();
   });
@@ -334,10 +367,10 @@ describe('search', () => {
 describe('the view switch', () => {
   it('draws tiles instead of rows, and keeps the same names', async () => {
     render(App, { env: at() });
-    await userEvent.click(screen.getByRole('button', { name: 'Сеткой' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Сетка' }));
     expect(screen.getByText('Кольцо Тишины')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Списком' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Сеткой' })).toHaveAttribute(
+    expect(screen.queryByRole('button', { name: 'Список' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Сетка' })).toHaveAttribute(
       'aria-pressed',
       'true'
     );
@@ -345,25 +378,26 @@ describe('the view switch', () => {
 
   it("carries a tile's own tier where there is no roll and no stat block", async () => {
     render(App, { env: at() });
-    await userEvent.click(screen.getByRole('button', { name: 'Сеткой' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Сетка' }));
     const tile = screen.getByText('Осколок Легенды').closest('.tilewrap');
     expect(tile?.querySelector('.tile-n')).toHaveTextContent('A');
   });
 
   it("carries equipment's own tier where there is no roll but there is a stat block", async () => {
     render(App, { env: at() });
-    await userEvent.click(screen.getByRole('button', { name: 'Сеткой' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Сетка' }));
     const tile = screen.getByText('Клинок Эха').closest('.tilewrap');
     expect(tile?.querySelector('.tile-n')).toHaveTextContent('Ранг 1');
-    expect(tile?.querySelector('.tile-k')).toHaveClass('eq-weapon');
+    /* One kind of table: the kind is the page's, so the tile draws no kind badge. */
+    expect(tile?.querySelector('.tile-k')).toBeNull();
   });
 
   it('leaves the tile bare when there is neither a roll nor a tier of any kind', async () => {
     render(App, { env: at() });
-    await userEvent.click(screen.getByRole('button', { name: 'Сеткой' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Сетка' }));
     const tile = screen.getByText('Пыль').closest('.tilewrap');
     expect(tile?.querySelector('.tile-n')).toBeNull();
-    expect(tile?.querySelector('.tile-k')).toHaveClass('cons');
+    expect(tile?.querySelector('.tile-k')).toBeNull();
   });
 
   it('draws the kind glyph and no picture in a row and on a tile of a record with no art', async () => {
@@ -371,7 +405,7 @@ describe('the view switch', () => {
     const rowEl = screen.getByText('Кольцо Тишины').closest('[data-row]');
     expect(rowEl?.querySelector('img')).toBeNull();
     expect(rowEl?.querySelector('.ra svg path')).toHaveAttribute('d', ICONS.kindItem.d);
-    await userEvent.click(screen.getByRole('button', { name: 'Сеткой' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Сетка' }));
     const tile = screen.getByText('Кольцо Тишины').closest('.tilewrap');
     expect(tile?.querySelector('img')).toBeNull();
     expect(tile?.querySelector('.tile-img svg path')).toHaveAttribute('d', ICONS.kindItem.d);
@@ -381,26 +415,37 @@ describe('the view switch', () => {
   it('changes the view for this visit and stores nothing', async () => {
     const env = at();
     render(App, { env });
-    await userEvent.click(screen.getByRole('button', { name: 'Сеткой' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Сетка' }));
     expect(document.querySelector('.tilewrap')).toBeInTheDocument();
     expect(env.storage.get('dhloot.prefs.v1')).toBeNull();
     expect(document.querySelector('.keepnote')).toBeNull();
   });
 
-  it('links the account while the view differs from the default, in a build with sign-in', async () => {
+  it('draws no note under the view switch, which carries the choice alone', async () => {
     const { container } = render(App, { env: at({ cloud: fakeCloud(SEED) }) });
+    await userEvent.click(screen.getByRole('button', { name: 'Сетка' }));
     expect(document.querySelector('.keepnote')).toBeNull();
-    await userEvent.click(screen.getByRole('button', { name: 'Сеткой' }));
-    expect(document.querySelector('.keepnote')).toHaveTextContent(
-      'Только до перезагрузки. Чтобы сохранить, измените в настройках аккаунта.'
-    );
-    expect(screen.getByRole('link', { name: 'настройках аккаунта' })).toHaveAttribute(
-      'href',
-      '/account'
-    );
     await expectNoA11yViolations(container);
-    await userEvent.click(screen.getByRole('button', { name: 'Списком' }));
-    expect(document.querySelector('.keepnote')).toBeNull();
+  });
+
+  it('labels a tile of a table of two kinds with its kind, and draws its stat line second', async () => {
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/wondrous'), data: fakeData(LOOT) })
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Сетка' }));
+    const tile = screen.getByText('Зелье Ветра').closest('.tilewrap');
+    expect(tile?.querySelector('.tile-k .badge')).toHaveTextContent('Расходник');
+    expect(tile?.querySelector('.tile-n')).toHaveTextContent('2');
+  });
+
+  it('reads the English name first on an English tile, and the other name second', async () => {
+    render(App, {
+      env: at({ storage: memoryStorage({ 'dhloot.lang.v1': 'en' }) })
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Grid' }));
+    const tile = document.querySelector('[data-row="ci1"] .tile-b');
+    expect(tile?.querySelector('b')).toHaveTextContent('Thing');
+    expect(tile?.querySelector('span')).toHaveTextContent('Кольцо Тишины');
   });
 });
 
@@ -410,7 +455,7 @@ describe('selection', () => {
     const boxes = rowCheckboxes();
     await userEvent.click(boxes[0] as HTMLElement);
     expect(boxes[0]).toBeChecked();
-    await userEvent.click(screen.getByRole('checkbox', { name: /Выбрать все/ }));
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все' }));
     for (const b of boxes) expect(b).toBeChecked();
   });
 
@@ -425,11 +470,12 @@ describe('selection', () => {
 
   it('select-all drops every tick when everything is already selected', async () => {
     render(App, { env: at() });
-    const all = screen.getByRole('checkbox', { name: /Выбрать все/ });
+    selectMode();
+    const all = screen.getByRole('checkbox', { name: 'Выбрать все' });
     await userEvent.click(all);
     const boxes = rowCheckboxes();
     for (const b of boxes) expect(b).toBeChecked();
-    await userEvent.click(screen.getByRole('checkbox', { name: /Выбрать все/ }));
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все' }));
     for (const b of boxes) expect(b).not.toBeChecked();
   });
 
@@ -458,9 +504,9 @@ async function openBar(lists: SeedList[] = TWO_LISTS) {
   return { ...view, cloud, page };
 }
 
-/** Presses «Добавить в список» and waits for the menu's newest chip. */
+/** Presses «В список» and waits for the menu's newest chip. */
 async function openBarMenu(first = 'Лавка в порту'): Promise<void> {
-  await userEvent.click(screen.getByRole('button', { name: 'Добавить в список' }));
+  await userEvent.click(screen.getByRole('button', { name: 'В список' }));
   await screen.findByRole('button', { name: first });
 }
 
@@ -476,24 +522,24 @@ describe('the selection bar', () => {
     const boxes = rowCheckboxes();
     await userEvent.click(boxes[0] as HTMLElement);
 
-    expect(container.querySelector('.selcount')).toHaveTextContent(/^Выбрано 1$/);
-    expect(container.querySelector('.selsumm')).not.toHaveAttribute('aria-live');
+    expect(container.querySelector('.selcount')).toHaveTextContent(/^Выбрано: 1$/);
+    expect(container.querySelector('.selsumm')).toHaveAttribute('aria-live', 'polite');
     expect(container.querySelector('.seltotal')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Снять выделение' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Добавить в список' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: 'В список' })).toHaveAttribute(
       'aria-expanded',
       'false'
     );
     const print = screen.getByRole('button', { name: 'Печать' });
     expect(print).toHaveAttribute('title', 'Собрать карточки для печати: девять на лист A4');
-    expect(screen.getByRole('button', { name: 'Скопировать' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Скопировать текст' })).toBeInTheDocument();
   });
 
   it('draws no print control with no sign-in configured', async () => {
     render(App, { env: at() });
     await userEvent.click(rowCheckboxes()[0] as HTMLElement);
     expect(screen.queryByRole('button', { name: 'Печать' })).toBeNull();
-    expect(screen.getByRole('button', { name: 'Скопировать' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Скопировать текст' })).toBeInTheDocument();
   });
 
   it('replaces the action row with the sign-in prompt signed out, and «Отмена» brings it back', async () => {
@@ -505,14 +551,14 @@ describe('the selection bar', () => {
     });
     await userEvent.click(print);
     expect(screen.getByText('Войдите, чтобы печатать карточки.')).toBeInTheDocument();
-    expect(container.querySelector('.selacts')).toBeNull();
+    expect(container.querySelector('.selacts .seldrop')).toBeNull();
     expect(container.querySelector('.printq .signin.compact')).toBeInTheDocument();
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'Войти' })).toHaveFocus();
     });
     await expectNoA11yViolations(container);
     await userEvent.click(screen.getByRole('button', { name: 'Отмена' }));
-    expect(container.querySelector('.selacts')).toBeInTheDocument();
+    expect(container.querySelector('.selacts .seldrop')).toBeInTheDocument();
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'Печать' })).toHaveFocus();
     });
@@ -537,7 +583,7 @@ describe('the selection bar', () => {
     expect(read).toMatchObject({ ok: true, set: { entries: [{ k: 'ci2' }, { k: 'ci1' }] } });
   });
 
-  it('the cross clears every tick and folds the bar', async () => {
+  it('«Снять выделение» clears every tick, leaves the mode and returns the focus to «Выбрать»', async () => {
     const { container } = render(App, { env: at() });
     const boxes = rowCheckboxes();
     await userEvent.click(boxes[0] as HTMLElement);
@@ -545,13 +591,49 @@ describe('the selection bar', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Снять выделение' }));
 
     expect(container.querySelector('.selcount')).not.toBeInTheDocument();
-    for (const b of boxes) expect(b).not.toBeChecked();
+    expect(screen.queryAllByRole('checkbox')).toHaveLength(0);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Выбрать' })).toHaveFocus();
+    });
+  });
+
+  it('«Выбрать» opens the mode with zero ticks: the actions off, the clear on, the focus on «Все»', async () => {
+    const { container } = render(App, { env: at({ cloud: fakeCloud(SEED) }) });
+    await userEvent.click(screen.getByRole('button', { name: 'Выбрать' }));
+    expect(screen.queryByRole('button', { name: 'Выбрать' })).toBeNull();
+    const all = screen.getByRole('checkbox', { name: 'Выбрать все' });
+    await waitFor(() => {
+      expect(all).toHaveFocus();
+    });
+    expect(container.querySelector('.selcount')).toHaveTextContent('Выбрано: 0');
+    expect(screen.getByRole('button', { name: 'В список' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Скопировать текст' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Снять выделение' })).toBeEnabled();
+    await expectNoA11yViolations(container);
+    await userEvent.click(screen.getByRole('button', { name: 'Снять выделение' }));
+    expect(screen.getByRole('button', { name: 'Выбрать' })).toBeInTheDocument();
+  });
+
+  it('«Все» ticks every row of every section, and reads mixed while some are ticked', async () => {
+    const { container } = render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/eq_weapon'), data: fakeData(LOOT) })
+    });
+    const boxes = rowCheckboxes();
+    await userEvent.click(boxes[0] as HTMLElement);
+    const all = screen.getByRole<HTMLInputElement>('checkbox', { name: 'Выбрать все' });
+    expect(all.indeterminate).toBe(true);
+    await userEvent.click(all);
+    expect(container.querySelector('.selcount')).toHaveTextContent(
+      `Выбрано: ${String(boxes.length)}`
+    );
+    for (const b of boxes) expect(b).toBeChecked();
   });
 
   it("select-all's count reaches the bar too", async () => {
     const { container } = render(App, { env: at() });
-    await userEvent.click(screen.getByRole('checkbox', { name: /Выбрать все/ }));
-    expect(container.querySelector('.selcount')).toHaveTextContent('Выбрано 6');
+    selectMode();
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все' }));
+    expect(container.querySelector('.selcount')).toHaveTextContent('Выбрано: 6');
   });
 
   it('the menu names a single ticked record "лежит в списках"', async () => {
@@ -604,7 +686,7 @@ describe('the selection bar', () => {
     const boxes = rowCheckboxes();
     await userEvent.click(boxes[0] as HTMLElement);
     await userEvent.click(boxes[1] as HTMLElement);
-    await userEvent.click(screen.getByRole('button', { name: 'Скопировать' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Скопировать текст' }));
 
     const rich = clip.last.rich;
     expect(rich?.plain).toContain('Кольцо Тишины');
@@ -616,7 +698,7 @@ describe('the selection bar', () => {
   it('toasts an alert when the clipboard refuses', async () => {
     render(App, { env: at({ clipboard: fakeClipboard({ fail: true }) }) });
     await userEvent.click(rowCheckboxes()[0] as HTMLElement);
-    await userEvent.click(screen.getByRole('button', { name: 'Скопировать' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Скопировать текст' }));
     expect(screen.getByRole('alert')).toHaveTextContent('Не удалось скопировать');
   });
 
@@ -629,7 +711,7 @@ describe('the selection bar', () => {
     const app = new AppState(at({ clipboard: clip }));
     app.toggleSel('nope');
     render(SelBar, { app });
-    await userEvent.click(screen.getByRole('button', { name: 'Скопировать' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Скопировать текст' }));
     expect(clip.last.rich).toBeUndefined();
     expect(clip.last.text).toBeUndefined();
     expect(app.toast).toBeNull();
@@ -705,7 +787,6 @@ describe('the table link', () => {
         preview: ORIGIN
       })
     });
-    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
     await userEvent.click(screen.getByRole('button', { name: 'Предметы' }));
     await userEvent.click(screen.getByRole('button', { name: 'Ссылка на фильтры' }));
     expect(filter.last.text).toBe(ORIGIN + '/tables/wondrous_environments/f_kind-item');
@@ -720,7 +801,7 @@ describe('the table link', () => {
       })
     });
     const [, artifactSection] = screen.getAllByRole('button', {
-      name: 'Скопировать ссылку на этот раздел'
+      name: 'Ссылка на раздел'
     });
     await userEvent.click(artifactSection as HTMLElement);
     expect(block.last.text).toBe(ORIGIN + '/tables/vault_of_ages/tA');
@@ -728,8 +809,8 @@ describe('the table link', () => {
 });
 
 describe('the filter', () => {
-  const wond = (): Env =>
-    fakeEnv({ router: memoryRouter('#/tables/wondrous'), data: fakeData(LOOT) });
+  const wond = (over: Partial<Env> = {}): Env =>
+    fakeEnv({ router: memoryRouter('#/tables/wondrous'), data: fakeData(LOOT), ...over });
 
   it('draws no link button without a copy action, and the pills and the reset still', async () => {
     const t = dict('ru');
@@ -757,141 +838,165 @@ describe('the filter', () => {
     expect(screen.getByRole('button', { name: t.filterLink })).toBeInTheDocument();
   });
 
-  it('draws the strip folded, with nothing picked and the plain total', () => {
+  it('draws the column from 1000 px with «Все» pressed, and no count line', async () => {
     const { container } = render(App, { env: wond() });
-    expect(screen.getByRole('button', { name: 'Фильтры' })).toHaveAttribute(
-      'aria-expanded',
+    const column = within(screen.getByRole('complementary', { name: 'Фильтры' }));
+    expect(column.getByRole('heading', { name: 'Фильтры' })).toBeInTheDocument();
+    expect(column.getByRole('button', { name: 'Все' })).toHaveAttribute('aria-pressed', 'true');
+    expect(column.getByRole('button', { name: 'Предметы' })).toHaveAttribute(
+      'aria-pressed',
       'false'
     );
-    expect(container.querySelector('.fcount')).toHaveTextContent('2');
-    expect(screen.queryByRole('button', { name: 'Предметы' })).not.toBeInTheDocument();
+    expect(container.querySelector('.count')).toBeNull();
+    expect(container.querySelector('.fcol .lbl')?.textContent).toBe('Тип');
+    expect(screen.queryByRole('button', { name: 'Сбросить' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Ссылка на фильтры' })).toBeNull();
+    await expectNoA11yViolations(container);
   });
 
-  it('unfolds on the toggle, and folds again on a second press', async () => {
-    render(App, { env: wond() });
-    const toggle = screen.getByRole('button', { name: 'Фильтры' });
-    await userEvent.click(toggle);
-    expect(toggle).toHaveAttribute('aria-expanded', 'true');
-    expect(screen.getByRole('button', { name: 'Предметы' })).toBeInTheDocument();
-    await userEvent.click(toggle);
-    expect(toggle).toHaveAttribute('aria-expanded', 'false');
-  });
-
-  it('renders the field label with a real space before "any", lost once picked', async () => {
+  it('narrows the table on a chip, presses it, and names the pick in the count line', async () => {
     const { container } = render(App, { env: wond() });
-    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
-    expect(container.querySelector('.field .lbl')?.textContent).toBe('Тип любое');
-    await userEvent.click(screen.getByRole('button', { name: 'Предметы' }));
-    expect(container.querySelector('.field .lbl')?.textContent).toBe('Тип');
-  });
-
-  it('narrows the table on a chip, names the pick and the shown/of count', async () => {
-    render(App, { env: wond() });
-    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
     await userEvent.click(screen.getByRole('button', { name: 'Предметы' }));
     expect(screen.getByText('Плащ Ветра')).toBeInTheDocument();
     expect(screen.queryByText('Зелье Ветра')).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Фильтры (1)' })).toBeInTheDocument();
-    expect(screen.getByText('1 из 2')).toBeInTheDocument();
-  });
-
-  it('drops the same value from its pill', async () => {
-    const { container } = render(App, { env: wond() });
-    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
-    await userEvent.click(screen.getByRole('button', { name: 'Предметы' }));
-    const pill = container.querySelector('.fpill');
-    expect(pill).toHaveAttribute('title', 'Убрать из фильтра');
-    await userEvent.click(pill as HTMLElement);
-    expect(screen.getByText('Зелье Ветра')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Фильтры' })).toBeInTheDocument();
-  });
-
-  it('resets from the strip once something is picked', async () => {
-    const env = wond();
-    render(App, { env });
-    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
-    await userEvent.click(screen.getByRole('button', { name: 'Предметы' }));
-    expect(env.router.hash()).not.toBe('#/tables/wondrous_environments');
-    await userEvent.click(screen.getByRole('button', { name: 'Сбросить всё' }));
-    expect(screen.getByText('Зелье Ветра')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Сбросить всё' })).not.toBeInTheDocument();
-    /* The strip's reset clears the filter in memory (proven above by the
-       empty-state assertions) and must also clear the address a reload or a
-       shared link would read back - not just the panel state. */
-    expect(env.router.hash()).toBe('#/tables/wondrous_environments');
-  });
-
-  it('hides reset and the copy-link button while the filter is empty, and keeps both reachable with the panel folded', async () => {
-    render(App, { env: wond() });
-    expect(screen.queryByRole('button', { name: 'Сбросить всё' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Ссылка на фильтры' })).not.toBeInTheDocument();
-
-    const toggle = screen.getByRole('button', { name: 'Фильтры' });
-    await userEvent.click(toggle);
-    await userEvent.click(screen.getByRole('button', { name: 'Предметы' }));
-    expect(screen.getByRole('button', { name: 'Сбросить всё' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Ссылка на фильтры' })).toBeInTheDocument();
-
-    /* Ported from tests/eqtest.js:104,116-119: the point of drawing .fclear
-       and .flink outside FilterBar's {#if open} block is that folding the
-       panel does not take them with it. */
-    await userEvent.click(toggle);
-    /* Role level, not a class probe: the pill above the panel also reads
-       "Предметы" now that the pill fix hid the pill's own "×" from its
-       accessible name, and the pill is the one control here that is
-       supposed to survive the fold - so one match, not zero, is what proves
-       the panel's own copy is gone. */
-    expect(screen.queryAllByRole('button', { name: 'Предметы' })).toHaveLength(1);
-    expect(screen.getByRole('button', { name: 'Сбросить всё' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Ссылка на фильтры' })).toBeInTheDocument();
-  });
-
-  it('grows its own reset button in the empty state', async () => {
-    render(App, { env: wond() });
-    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
-    await userEvent.click(screen.getByRole('button', { name: 'Предметы' }));
-    await userEvent.type(
-      screen.getByPlaceholderText('Поиск по названию или описанию...'),
-      'нет такого'
+    const chip = screen.getByRole('button', { name: 'Предметы' });
+    expect(chip).toHaveAttribute('aria-pressed', 'true');
+    expect(chip).toHaveAttribute('data-fval', 'kind:item');
+    expect(screen.getByRole('button', { name: 'Все' })).toHaveAttribute(
+      'aria-pressed',
+      'false'
     );
-    const empty = screen.getByText('Ничего не найдено').closest('.empty');
-    expect(
-      within(empty as HTMLElement).getByRole('button', { name: 'Сбросить всё' })
-    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Фильтры · 1' })).toBeInTheDocument();
+    /* The column shows the pick, so the row repeats the count alone. */
+    expect(container.querySelector('.count')?.textContent.trim()).toBe('Показано 1 из 2');
   });
 
-  it('arriving at a filter link opens the panel with that value picked', () => {
+  it('names the pick in the search row at the mid band, where no column shows it', () => {
     const { container } = render(App, {
       env: fakeEnv({
         router: memoryRouter('#/tables/wondrous/f_kind-item'),
+        data: fakeData(LOOT),
+        viewport: fakeViewport('mid')
+      })
+    });
+    expect(container.querySelector('.searchrow .count')).toHaveTextContent(
+      'Предметы · Показано 1 из 2'
+    );
+  });
+
+  it('a search alone shows the count too, without values', async () => {
+    const { container } = render(App, { env: wond() });
+    await userEvent.type(screen.getByPlaceholderText('Поиск'), 'плащ');
+    expect(container.querySelector('.count')).toHaveTextContent('Показано 1 из 2');
+  });
+
+  it('resets from the column once something is picked, and clears the address', async () => {
+    const env = wond();
+    render(App, { env });
+    await userEvent.click(screen.getByRole('button', { name: 'Предметы' }));
+    expect(env.router.hash()).not.toBe('#/tables/wondrous_environments');
+    expect(screen.getByRole('button', { name: 'Ссылка на фильтры' })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Сбросить' }));
+    expect(screen.getByText('Зелье Ветра')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Сбросить' })).not.toBeInTheDocument();
+    expect(env.router.hash()).toBe('#/tables/wondrous_environments');
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Все' })).toHaveFocus();
+    });
+  });
+
+  it('grows a primary reset in the empty state, and the cause names the query and the value', async () => {
+    const { container } = render(App, { env: wond() });
+    await userEvent.click(screen.getByRole('button', { name: 'Предметы' }));
+    await userEvent.type(screen.getByPlaceholderText('Поиск'), 'нет такого');
+    const empty = screen.getByText('Ничего не найдено').closest('.empty') as HTMLElement;
+    expect(empty).toHaveTextContent('Нет совпадений с «нет такого» среди фильтров: Предметы.');
+    expect(empty.querySelector('.glyph svg')).not.toBeNull();
+    const reset = within(empty).getByRole('button', { name: 'Сбросить фильтры' });
+    expect(reset).toHaveClass('primary');
+    await expectNoA11yViolations(container);
+  });
+
+  it('shows the plate with no reset when only a search narrows', async () => {
+    render(App, { env: wond() });
+    await userEvent.type(screen.getByPlaceholderText('Поиск'), 'нет такого');
+    const empty = screen.getByText('Ничего не найдено').closest('.empty') as HTMLElement;
+    expect(empty).toHaveTextContent(
+      'Нет совпадений с «нет такого» в названиях и описаниях этой таблицы.'
+    );
+    expect(within(empty).queryByRole('button')).toBeNull();
+  });
+
+  it('keeps a query with replacement patterns as text in the cause', async () => {
+    render(App, { env: wond() });
+    await userEvent.click(screen.getByRole('button', { name: 'Предметы' }));
+    await userEvent.type(screen.getByPlaceholderText('Поиск'), '%v $&');
+    expect(screen.getByText('Ничего не найдено').closest('.empty')).toHaveTextContent(
+      'Нет совпадений с «%v $&» среди фильтров: Предметы.'
+    );
+  });
+
+  it('draws no cause for a picked value that no row offers, and keeps the reset', () => {
+    const { container } = render(App, {
+      env: fakeEnv({
+        router: memoryRouter('#/tables/eq_weapon/f_tier-9'),
         data: fakeData(LOOT)
       })
     });
-    expect(screen.getByRole('button', { name: 'Фильтры (1)' })).toHaveAttribute(
-      'aria-expanded',
-      'true'
-    );
-    /* Scoped to the panel: the pill above it also reads "Предметы" now that
-       the pill fix hid the pill's own "×" from its accessible name. */
-    expect(
-      within(container.querySelector('.ffilter') as HTMLElement).getByRole('button', {
-        name: 'Предметы'
-      })
-    ).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByText('Ничего не найдено')).toBeInTheDocument();
+    expect(container.querySelector('.cause')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Сбросить фильтры' })).toBeInTheDocument();
   });
 
-  it('changing table clears the filter and folds the panel', async () => {
+  it('draws no «Выбрать» while no row is drawn, and draws it again with the rows', async () => {
+    render(App, { env: wond() });
+    const box = screen.getByPlaceholderText('Поиск');
+    await userEvent.type(box, 'нет такого');
+    expect(screen.queryByRole('button', { name: 'Выбрать' })).toBeNull();
+    await userEvent.clear(box);
+    expect(screen.getByRole('button', { name: 'Выбрать' })).toBeInTheDocument();
+  });
+
+  it('below 1000 px opens no sheet on a filter link; «Фильтры · 1» opens it and «Закрыть» returns', async () => {
     const env = fakeEnv({
       router: memoryRouter('#/tables/wondrous/f_kind-item'),
-      data: fakeData(LOOT)
+      data: fakeData(LOOT),
+      viewport: fakeViewport('narrow')
     });
-    render(App, { env });
-    env.router.navigate('#/tables/dread', 'ru');
-    await tick();
-    expect(screen.getByRole('button', { name: 'Фильтры' })).toHaveAttribute(
-      'aria-expanded',
-      'false'
+    const { container } = render(App, { env });
+    expect(screen.queryByRole('dialog')).toBeNull();
+    const line = container.querySelector('p.count.line');
+    expect(line?.querySelector('.vals')).toHaveTextContent('Предметы');
+    expect(line?.querySelector('.n')).toHaveTextContent('Показано 1 из 2');
+    expect(line?.textContent).not.toContain('·');
+    const toggle = screen.getByRole('button', { name: 'Фильтры · 1' });
+    expect(toggle).toHaveClass('toggle');
+    await userEvent.click(toggle);
+    const sheet = within(screen.getByRole('dialog', { name: 'Фильтры' }));
+    expect(sheet.getByRole('button', { name: 'Предметы' })).toHaveAttribute(
+      'aria-pressed',
+      'true'
     );
+    expect(sheet.getByRole('button', { name: 'Показать 1' })).toBeInTheDocument();
+    expect(sheet.getByRole('button', { name: 'Ссылка на фильтры' })).toBeInTheDocument();
+    await expectNoA11yViolations(document.body);
+    await userEvent.click(sheet.getByRole('button', { name: 'Сбросить' }));
+    await waitFor(() => {
+      expect(sheet.getByRole('button', { name: 'Закрыть' })).toHaveFocus();
+    });
+    expect(sheet.getByRole('button', { name: 'Показать 2' })).toBeInTheDocument();
+    await userEvent.click(sheet.getByRole('button', { name: 'Закрыть' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Фильтры' })).toHaveFocus();
+  });
+
+  it('draws the head of the mid band: the visible heading, the labeled pin and the sheet toggle', () => {
+    render(App, { env: wond({ viewport: fakeViewport('mid') }) });
+    expect(screen.getByRole('heading', { level: 1, name: 'Таблицы' })).not.toHaveClass('vh');
+    expect(screen.getByRole('button', { name: 'Открывать при запуске' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Об этих данных' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Фильтры' })).toBeInTheDocument();
+    expect(screen.queryByRole('complementary', { name: 'Фильтры' })).toBeNull();
   });
 
   it('keeps the selection (and the bar) on a filter pick, and drops both on a navigation', async () => {
@@ -900,28 +1005,23 @@ describe('the filter', () => {
     const box = rowCheckboxes()[0] as HTMLElement;
     await userEvent.click(box);
     expect(box).toBeChecked();
-    expect(container.querySelector('.selcount')).toHaveTextContent('Выбрано 1');
+    expect(container.querySelector('.selcount')).toHaveTextContent('Выбрано: 1');
 
-    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
     await userEvent.click(screen.getByRole('button', { name: 'Предметы' }));
     expect(rowCheckboxes()[0]).toBeChecked();
-    expect(container.querySelector('.selcount')).toHaveTextContent('Выбрано 1');
+    expect(container.querySelector('.selcount')).toHaveTextContent('Выбрано: 1');
 
     env.router.navigate('#/tables/wondrous', 'ru');
     await tick();
-    expect(rowCheckboxes()[0]).not.toBeChecked();
     expect(container.querySelector('.selcount')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Выбрать' })).toBeInTheDocument();
   });
 
-  it('closes the modal on a navigation, but a filter pick leaves it alone', async () => {
+  it('closes the modal on a navigation', async () => {
     const env = wond();
     render(App, { env });
     await userEvent.click(screen.getByRole('button', { name: /Плащ Ветра/ }));
     expect(screen.getByRole('dialog')).toBeInTheDocument();
-
-    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
-
     env.router.navigate('#/tables/dread', 'ru');
     await tick();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -929,14 +1029,7 @@ describe('the filter', () => {
 
   it('copies the filter link, with the picked value in the address', async () => {
     const clip = fakeClipboard();
-    render(App, {
-      env: fakeEnv({
-        router: memoryRouter('#/tables/wondrous'),
-        data: fakeData(LOOT),
-        clipboard: clip
-      })
-    });
-    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
+    render(App, { env: wond({ clipboard: clip }) });
     await userEvent.click(screen.getByRole('button', { name: 'Предметы' }));
     await userEvent.click(screen.getByRole('button', { name: 'Ссылка на фильтры' }));
     expect(clip.last.text).toBe(
@@ -1002,26 +1095,24 @@ describe('the equipment tables', () => {
     expect(document.getElementById('sec-t4')).toBeNull();
   });
 
-  it('reads the whole pool in .fcount with nothing picked', () => {
+  it('draws no count line with nothing picked, and names the pool once narrowed', async () => {
     const { container } = render(App, {
       env: fakeEnv({ router: memoryRouter('#/tables/eq_weapon'), data: fakeData(LOOT) })
     });
-    /* The pool is every weapon in the catalog, not only `eq`: `ci4` under
-       `core_item` carries a weapon stat block too, so the count is one more
-       than `eq`'s own four weapon rows. */
-    expect(container.querySelector('.fcount')).toHaveTextContent('5');
+    expect(container.querySelector('.count')).toBeNull();
+    await userEvent.click(screen.getByRole('button', { name: 'Магическое' }));
+    /* `core_item` carries a weapon stat block too, so the pool is one more than `eq`'s
+       own four weapon rows. */
+    expect(container.querySelector('.count')?.textContent.trim()).toBe('Показано 2 из 5');
   });
 
-  it('draws only the fields the rows can narrow: six on weapons, two on armor, none on one secondary', async () => {
+  it('draws only the fields the rows can narrow: six on weapons, two on armor, none on one secondary', () => {
     render(App, {
       env: fakeEnv({ router: memoryRouter('#/tables/eq_weapon'), data: fakeData(LOOT) })
     });
-    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
     /* Every weapon here is unique, so «Линейка» cannot narrow. */
     const labels = (): (string | undefined)[] =>
-      [...document.querySelectorAll('.field .lbl')].map((el) =>
-        el.firstChild?.textContent?.trim()
-      );
+      [...document.querySelectorAll('.frow .lbl')].map((el) => el.textContent.trim());
     expect(labels()).toEqual([
       'Ранг',
       'Источник',
@@ -1035,14 +1126,13 @@ describe('the equipment tables', () => {
     render(App, {
       env: fakeEnv({ router: memoryRouter('#/tables/eq_armor'), data: fakeData(LOOT) })
     });
-    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
     expect(labels()).toEqual(['Ранг', 'Источник']);
 
     cleanup();
     render(App, {
       env: fakeEnv({ router: memoryRouter('#/tables/eq_secondary'), data: fakeData(LOOT) })
     });
-    expect(screen.queryByRole('button', { name: /^Фильтры/ })).toBeNull();
+    expect(screen.queryByRole('complementary', { name: 'Фильтры' })).toBeNull();
   });
 
   /* A second secondary weapon of the other class, so the class row can narrow. */
@@ -1054,25 +1144,24 @@ describe('the equipment tables', () => {
     ]
   };
 
-  it('reads a tier no secondary weapon has as before: no pill, no row, «Сбросить всё»', async () => {
+  it('reads a tier no secondary weapon has as before: no chip, no row, «Сбросить фильтры»', async () => {
     const { container } = render(App, {
       env: fakeEnv({
         router: memoryRouter('#/tables/eq_secondary/f_tier-A'),
         data: fakeData(twoSecondaries)
       })
     });
-    expect(container.querySelector('.fpill')).toBeNull();
+    expect(container.querySelector('[data-fval][aria-pressed="true"]')).toBeNull();
     expect(container.querySelector('[data-row]')).toBeNull();
     expect(screen.getByText('Ничего не найдено', { exact: false })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Сбросить всё' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Сбросить фильтры' })).toBeInTheDocument();
     await expectNoA11yViolations(container);
   });
 
-  it('labels the class row Класс on every weapon kind', async () => {
+  it('labels the class row Класс on every weapon kind', () => {
     render(App, {
       env: fakeEnv({ router: memoryRouter('#/tables/eq_weapon'), data: fakeData(LOOT) })
     });
-    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
     expect(screen.getByText('Класс')).toBeInTheDocument();
 
     cleanup();
@@ -1082,87 +1171,59 @@ describe('the equipment tables', () => {
         data: fakeData(twoSecondaries)
       })
     });
-    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
     expect(screen.getByText('Класс')).toBeInTheDocument();
   });
 
-  it('a tier pick reads "Ранг 1" and a burden pick reads "Двуручное" - the pill rule fix', async () => {
+  it('a tier pick reads "Ранг 1" and a burden pick reads "Двуручное" in the count line', async () => {
     const { container } = render(App, {
-      env: fakeEnv({ router: memoryRouter('#/tables/eq_weapon'), data: fakeData(LOOT) })
+      env: fakeEnv({
+        router: memoryRouter('#/tables/eq_weapon'),
+        data: fakeData(LOOT),
+        viewport: fakeViewport('mid')
+      })
     });
     await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
     await userEvent.click(screen.getByRole('button', { name: '1' }));
     await userEvent.click(screen.getByRole('button', { name: 'Двуручное' }));
-    /* This pins text-node structure, not an accessible name: `.fpill i` is
-       `display:flex`, so Chrome's real accessible-name computation inserts a
-       space at the block boundary ("Ранг 1 ×", tests/app/snapshots/
-       _tables_eq_weapon_filtered.txt:46) and reads `title` as the
-       description, not the name - the reverse of what a bare `textContent`
-       comparison would suggest. */
-    const pills = [...container.querySelectorAll('.fpill')].map((p) =>
-      [...p.childNodes].map((n) => n.textContent)
+    expect(container.querySelector('.count')?.textContent.replace(/\s+/g, ' ').trim()).toMatch(
+      /^Ранг 1, Двуручное · Показано \d+ из \d+$/
     );
-    expect(pills).toContainEqual(['Ранг 1', '×']);
-    expect(pills).toContainEqual(['Двуручное', '×']);
   });
 
   it('a mag pick drops physical weapons', async () => {
     render(App, {
       env: fakeEnv({ router: memoryRouter('#/tables/eq_weapon'), data: fakeData(LOOT) })
     });
-    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
     await userEvent.click(screen.getByRole('button', { name: 'Магическое' }));
     expect(screen.queryByText('Меч Рассвета')).not.toBeInTheDocument();
     expect(screen.getByText('Посох Бури')).toBeInTheDocument();
   });
 
-  it('a filter link arrives with the panel open and both chips pressed', () => {
+  it('a filter link arrives with both chips pressed in the column', () => {
     const { container } = render(App, {
       env: fakeEnv({
         router: memoryRouter('#/tables/eq_weapon/f_tier-2.cls-mag'),
         data: fakeData(LOOT)
       })
     });
-    expect(screen.getByRole('button', { name: /Фильтры/ })).toHaveAttribute(
-      'aria-expanded',
-      'true'
-    );
-    /* Scoped to the filter panel: the pill above it also reads "Магическое"
-       now that the pill fix hid the pill's own "×" from its accessible
-       name, so the bare name is ambiguous over the whole screen. */
-    const panel = within(container.querySelector('.ffilter') as HTMLElement);
-    expect(panel.getByRole('button', { name: '2' })).toHaveAttribute('aria-pressed', 'true');
-    expect(panel.getByRole('button', { name: 'Магическое' })).toHaveAttribute(
+    const column = within(container.querySelector('.fcol') as HTMLElement);
+    expect(column.getByRole('button', { name: '2' })).toHaveAttribute('aria-pressed', 'true');
+    expect(column.getByRole('button', { name: 'Магическое' })).toHaveAttribute(
       'aria-pressed',
       'true'
     );
+    expect(column.getByRole('heading', { name: 'Фильтры · 2' })).toBeInTheDocument();
   });
 
-  it('a fold survives a pick, and a pill dropped while folded is not snapped back to the link', async () => {
-    /* Ported from tests/eqtest.js:167-184. The panel used to reopen on every
-       render because an address change caused by our own pick looked, from
-       the effect's point of view, exactly like a fresh filter link arriving
-       (TablesPage.svelte's seenSeg mirror is the fix). A pill stays drawn
-       outside FilterBar's {#if open} block, so dropping it while folded must
-       both leave the panel folded and actually narrow the filter - not
-       revert to what the link said. */
+  it('a second press on a picked chip drops it from the address', async () => {
     const env = fakeEnv({
       router: memoryRouter('#/tables/eq_weapon/f_tier-2.cls-mag'),
       data: fakeData(LOOT)
     });
-    const { container } = render(App, { env });
-    const toggle = screen.getByRole('button', { name: /Фильтры/ });
-    expect(toggle).toHaveAttribute('aria-expanded', 'true');
-
-    await userEvent.click(toggle);
-    expect(toggle).toHaveAttribute('aria-expanded', 'false');
-
-    const pill = container.querySelector('.fpill[data-val="cls:mag"]');
-    expect(pill).toBeInTheDocument();
-    await userEvent.click(pill as HTMLElement);
-    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    render(App, { env });
+    await userEvent.click(screen.getByRole('button', { name: 'Магическое' }));
     expect(env.router.hash()).toBe('#/tables/eq_weapon/f_tier-2');
-    expect(screen.getByRole('button', { name: /Фильтры \(1\)/ })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Фильтры · 1' })).toBeInTheDocument();
   });
 
   it('a group the table does not offer leaves it whole - burden on armor', () => {
@@ -1176,61 +1237,54 @@ describe('the equipment tables', () => {
     expect(screen.getByText('Доспех Зверя')).toBeInTheDocument();
   });
 
-  it('the empty state grows its own reset button', async () => {
+  it('the empty state names the values and grows its own reset button', async () => {
     render(App, {
       env: fakeEnv({ router: memoryRouter('#/tables/eq_weapon'), data: fakeData(LOOT) })
     });
-    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
     await userEvent.click(screen.getByRole('button', { name: 'Магическое' }));
     await userEvent.click(screen.getByRole('button', { name: 'Одноручное' }));
     const empty = screen.getByText('Ничего не найдено').closest('.empty');
+    expect(empty).toHaveTextContent('Ничего не подходит под фильтры: Магическое, Одноручное.');
     expect(
-      within(empty as HTMLElement).getByRole('button', { name: 'Сбросить всё' })
+      within(empty as HTMLElement).getByRole('button', { name: 'Сбросить фильтры' })
     ).toBeInTheDocument();
   });
 
-  it('hands focus to the next pill, the previous one, then «Фильтры» as pills drop (rule 20)', async () => {
+  it('a press on «Все» clears its row and keeps the focus on it', async () => {
     const env = fakeEnv({
       router: memoryRouter('#/tables/eq_weapon/f_tier-1-2.cls-mag'),
       data: fakeData(LOOT)
     });
     const { container } = render(App, { env });
-    const pill = (val: string): HTMLElement =>
-      container.querySelector<HTMLElement>(`.fpill[data-val="${val}"]`) as HTMLElement;
-    await userEvent.click(pill('cls:mag'));
-    await waitFor(() => {
-      expect(pill('tier:2')).toHaveFocus();
-    });
-    await userEvent.click(pill('tier:1'));
-    await waitFor(() => {
-      expect(pill('tier:2')).toHaveFocus();
-    });
-    await userEvent.click(pill('tier:2'));
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Фильтры' })).toHaveFocus();
-    });
-    expect(env.router.hash()).toBe('#/tables/eq_weapon');
+    const tierRow = within(screen.getByRole('group', { name: 'Ранг' }));
+    const all = tierRow.getByRole('button', { name: 'Все' });
+    expect(all).toHaveAttribute('aria-pressed', 'false');
+    await userEvent.click(all);
+    expect(env.router.hash()).toBe('#/tables/eq_weapon/f_cls-mag');
+    expect(all).toHaveAttribute('aria-pressed', 'true');
+    expect(all).toHaveFocus();
     await expectNoA11yViolations(container);
   });
 
-  it('hands focus to «Фильтры» after «Сбросить всё», in the strip and in the empty state', async () => {
+  it('hands the focus to the first «Все» after «Сбросить», in the column and in the empty state', async () => {
     render(App, {
       env: fakeEnv({
         router: memoryRouter('#/tables/eq_weapon/f_tier-2'),
         data: fakeData(LOOT)
       })
     });
-    await userEvent.click(screen.getByRole('button', { name: 'Сбросить всё' }));
+    const firstAll = (): HTMLElement =>
+      within(screen.getByRole('group', { name: 'Ранг' })).getByRole('button', { name: 'Все' });
+    await userEvent.click(screen.getByRole('button', { name: 'Сбросить' }));
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Фильтры' })).toHaveFocus();
+      expect(firstAll()).toHaveFocus();
     });
-    /* The link opened the panel, and the reset leaves it open. */
     await userEvent.click(screen.getByRole('button', { name: 'Магическое' }));
     await userEvent.click(screen.getByRole('button', { name: 'Одноручное' }));
     const empty = screen.getByText('Ничего не найдено').closest('.empty') as HTMLElement;
-    await userEvent.click(within(empty).getByRole('button', { name: 'Сбросить всё' }));
+    await userEvent.click(within(empty).getByRole('button', { name: 'Сбросить фильтры' }));
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Фильтры' })).toHaveFocus();
+      expect(firstAll()).toHaveFocus();
     });
   });
 
@@ -1252,10 +1306,7 @@ describe('the equipment tables', () => {
     render(App, {
       env: fakeEnv({ router: memoryRouter('#/tables/eq_weapon'), data: fakeData(LOOT) })
     });
-    await userEvent.type(
-      screen.getByPlaceholderText('Поиск по названию или описанию...'),
-      'основное'
-    );
+    await userEvent.type(screen.getByPlaceholderText('Поиск'), 'основное');
     expect(screen.getByText('Меч Рассвета')).toBeInTheDocument();
     expect(screen.getByText('Посох Бури')).toBeInTheDocument();
     expect(screen.getByText('Копьё Ранга')).toBeInTheDocument();
@@ -1285,10 +1336,10 @@ describe('the equipment tables', () => {
 
 describe('the chip nav', () => {
   const groupChips = (): string[] => {
-    const nav = document.querySelector('.tablenav > .chips:not(.subchips)') as HTMLElement;
+    const nav = screen.getByRole('group', { name: 'Группа' });
     return [...nav.querySelectorAll('a')].map((a) => a.textContent);
   };
-  const bookRow = (): HTMLElement | null => document.querySelector('.tablenav .subchips');
+  const bookRow = (): HTMLElement | null => document.querySelector('.tablenav .tabs');
 
   it('draws six group chips signed out, the supplements under one', () => {
     render(App, {
@@ -1367,19 +1418,7 @@ describe('the chip nav', () => {
         'Many Worlds Tavern'
       ];
       expect(books).toEqual(names.map((name) => within(row).getByRole('link', { name })));
-      /* The three chips with a short form under 640 px carry the full name as their label. */
-      expect(books.map((a) => a.getAttribute('aria-label'))).toEqual([
-        'Wondrous Environments',
-        'Dread GM Toolbox',
-        null,
-        "The Dragon's Vault",
-        null,
-        null,
-        null
-      ]);
-      expect(
-        books.map((a) => a.querySelector('.short')?.getAttribute('aria-hidden') ?? null)
-      ).toEqual(['true', 'true', null, 'true', null, null, null]);
+      expect(row).toHaveAttribute('aria-label', 'Дополнения');
       expect(
         books
           .filter((a) => a.getAttribute('aria-current') === 'page')
@@ -1412,11 +1451,12 @@ describe('a sectioned body: Vault of Ages by tier', () => {
     render(App, {
       env: fakeEnv({ router: memoryRouter('#/tables/voa'), data: fakeData(LOOT) })
     });
-    expect(screen.getByText('Ранг 1')).toBeInTheDocument();
-    expect(screen.getByText('Артефакты')).toBeInTheDocument();
+    const heads = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent);
+    expect(heads).toContain('Ранг 1');
+    expect(heads).toContain('Артефакты');
     /* Nothing at all in tier 2, 3, 4 or the cursed-objects division. */
-    expect(screen.queryByText('Ранг 2')).not.toBeInTheDocument();
-    expect(screen.queryByText('Проклятые предметы')).not.toBeInTheDocument();
+    expect(heads).not.toContain('Ранг 2');
+    expect(heads).not.toContain('Проклятые предметы');
   });
 
   it('copies a direct link to one section, off its own link button', async () => {
@@ -1429,20 +1469,22 @@ describe('a sectioned body: Vault of Ages by tier', () => {
       })
     });
     const [, artifactSection] = screen.getAllByRole('button', {
-      name: 'Скопировать ссылку на этот раздел'
+      name: 'Ссылка на раздел'
     });
     await userEvent.click(artifactSection as HTMLElement);
     expect(clip.last.text).toBe('https://example.test/tables/vault_of_ages/tA');
     expect(screen.getByText('Ссылка на раздел скопирована')).toBeInTheDocument();
   });
 
-  it('gives each section its own select-all, scoped to its own rows only', () => {
-    render(App, {
+  it("draws no select-all per section: the bar's «Все» is the one control of the mode", () => {
+    const { container } = render(App, {
       env: fakeEnv({ router: memoryRouter('#/tables/voa'), data: fakeData(LOOT) })
     });
-    const boxes = screen.getAllByText(/Выбрать все/);
-    expect(boxes).toHaveLength(2);
-    expect(boxes[0]).toHaveTextContent('Выбрать все (1)');
+    expect(container.querySelectorAll('.tsection').length).toBeGreaterThan(1);
+    selectMode();
+    expect(screen.getAllByRole('checkbox', { name: /Выбрать все/ })).toHaveLength(1);
+    expect(screen.queryByText(/Выбрать все/)).toBeNull();
+    expect(document.querySelector('.tsection .selall')).toBeNull();
   });
 });
 
@@ -1516,11 +1558,13 @@ describe('the alternate tables', () => {
     expect(screen.getByText('Страх')).toBeInTheDocument();
   });
 
-  it('draws no select-all bar - the live app never wraps these rows in one', () => {
+  it("ticks both columns through the bar's «Все»", async () => {
     render(App, {
       env: fakeEnv({ router: memoryRouter('#/tables/alt_item'), data: fakeData(LOOT) })
     });
-    expect(screen.queryByText(/Выбрать все/)).not.toBeInTheDocument();
+    const boxes = rowCheckboxes();
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все' }));
+    for (const b of boxes) expect(b).toBeChecked();
   });
 
   it("reads the source badge as the frame's own name, not its raw id", () => {
@@ -1528,9 +1572,10 @@ describe('the alternate tables', () => {
       env: fakeEnv({ router: memoryRouter('#/tables/other_frames'), data: fakeData(LOOT) })
     });
     const row = screen.getByRole('button', { name: /Пирог Зверя/ });
-    /* A tag never carries a path: the badge names the setting alone, the same
-       leaf the section heading above the row already carries. */
-    expect(within(row).getByText('Пир зверей')).toBeInTheDocument();
+    /* The section heading above the row names the setting, so the row repeats no
+       source tag (rowTags.ts). */
+    expect(within(row).queryByText('Пир зверей')).toBeNull();
+    expect(screen.getByRole('heading', { level: 2, name: 'Пир зверей' })).toBeInTheDocument();
   });
 });
 
@@ -1603,7 +1648,7 @@ describe('the row and section anchor', () => {
       await tick();
       await Promise.resolve();
       expect(document.querySelector('[data-row="ci2"]')).toHaveClass('flash');
-      await fireEvent.click(screen.getByRole('button', { name: 'Сеткой' }));
+      await fireEvent.click(screen.getByRole('button', { name: 'Сетка' }));
       await tick();
       const tile = document.querySelector('[data-row="ci2"]');
       expect(tile).toHaveClass('tilewrap');
@@ -1646,7 +1691,7 @@ describe('the row and section anchor', () => {
     await waitFor(() => {
       expect(scroll).toHaveBeenCalledTimes(1);
     });
-    await userEvent.type(screen.getByPlaceholderText('Поиск по названию или описанию...'), 'а');
+    await userEvent.type(screen.getByPlaceholderText('Поиск'), 'а');
     expect(scroll).toHaveBeenCalledTimes(1);
   });
 
@@ -1681,11 +1726,180 @@ describe('a dataset that did not load', () => {
   });
 });
 
+describe('the head below 761 px', () => {
+  const narrow = (over: Partial<Env> = {}): Env =>
+    fakeEnv({
+      router: memoryRouter('#/tables/eq_weapon'),
+      data: fakeData(LOOT),
+      viewport: fakeViewport('narrow'),
+      ...over
+    });
+
+  it('reads the page name, draws the picker, the view switch and «Ещё», and no column', async () => {
+    const { container } = render(App, { env: narrow() });
+    expect(screen.getByRole('heading', { level: 1, name: 'Таблицы' })).toHaveClass('vh');
+    expect(screen.getByRole('button', { name: 'Таблица: Оружие' })).toHaveTextContent('Оружие');
+    expect(screen.getByRole('button', { name: 'Список' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Ещё' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Открывать при запуске' })).toBeNull();
+    expect(screen.queryByRole('complementary', { name: 'Фильтры' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Фильтры' })).toBeInTheDocument();
+    expect(document.querySelector('.page-sub')).toBeNull();
+    await expectNoA11yViolations(container);
+  });
+
+  it('names the book in the picker where the caption alone names none', () => {
+    render(App, { env: narrow({ router: memoryRouter('#/tables/core_item') }) });
+    expect(
+      screen.getByRole('button', { name: 'Таблица: Core · Предметы' })
+    ).toBeInTheDocument();
+  });
+
+  it("reaches another group's table in three taps through the picker sheet", async () => {
+    const env = narrow();
+    render(App, { env });
+    await userEvent.click(screen.getByRole('button', { name: 'Таблица: Оружие' }));
+    const sheet = within(screen.getByRole('dialog', { name: 'Таблица: Оружие' }));
+    expect(sheet.getByRole('group', { name: 'Группа' })).toBeInTheDocument();
+    expect(sheet.getByRole('link', { name: 'Оружие' })).toHaveAttribute('aria-current', 'page');
+    await expectNoA11yViolations(document.body);
+    await userEvent.click(sheet.getByRole('button', { name: 'Hope & Fear' }));
+    const link = sheet.getByRole('link', { name: 'Расходники' });
+    expect(link).toHaveAttribute('href', '/tables/hope_and_fear_consumable');
+    await userEvent.click(link);
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('holds the table link, the pin and «Об этих данных» in «Ещё»', async () => {
+    const clip = fakeClipboard();
+    const { container } = render(App, { env: narrow({ clipboard: clip }) });
+    await userEvent.click(screen.getByRole('button', { name: 'Ещё' }));
+    const items = screen.getAllByRole('menuitem').map((m) => m.textContent);
+    expect(items).toEqual(['Ссылка на таблицу', 'Открывать при запуске', 'Об этих данных']);
+    await expectNoA11yViolations(container);
+    const more = screen.getByRole('button', { name: 'Ещё' });
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Ссылка на таблицу' }));
+    expect(clip.last.text).toBe('https://example.test/tables/eq_weapon');
+    expect(more).toHaveFocus();
+    await userEvent.click(more);
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Открывать при запуске' }));
+    expect(
+      screen.getByText('Приложение будет открываться на этом разделе')
+    ).toBeInTheDocument();
+    expect(more).toHaveFocus();
+    await userEvent.click(more);
+    expect(
+      screen.getByRole('menuitem', { name: 'Открывается при запуске' })
+    ).toBeInTheDocument();
+    const about = screen.getByRole('menuitem', { name: 'Об этих данных' });
+    expect(about.querySelector('svg')).not.toBeNull();
+    await userEvent.click(about);
+    expect(screen.getByText(/Класс - раздел книги, а не тип урона/)).toBeInTheDocument();
+    expect(more).toHaveFocus();
+  });
+
+  it('closes «Ещё» for good on a band change, and places the focus', async () => {
+    const viewport = fakeViewport('narrow');
+    render(App, { env: narrow({ viewport }) });
+    await userEvent.click(screen.getByRole('button', { name: 'Ещё' }));
+    viewport.set('mid');
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Фильтры' })).toHaveFocus();
+    });
+    viewport.set('narrow');
+    await tick();
+    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Ещё' })).toHaveAttribute(
+      'aria-expanded',
+      'false'
+    );
+  });
+
+  it('closes the picker for good on a band change, and places the focus', async () => {
+    const viewport = fakeViewport('narrow');
+    render(App, { env: narrow({ viewport }) });
+    await userEvent.click(screen.getByRole('button', { name: 'Таблица: Оружие' }));
+    viewport.set('mid');
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Фильтры' })).toHaveFocus();
+    });
+    viewport.set('narrow');
+    await tick();
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('closes the filter sheet for good when the column takes over, and focuses its «Все»', async () => {
+    const viewport = fakeViewport('mid');
+    render(App, { env: narrow({ viewport }) });
+    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
+    viewport.set('wide');
+    const column = await screen.findByRole('complementary', { name: 'Фильтры' });
+    await waitFor(() => {
+      expect(within(column).getAllByRole('button', { name: 'Все' })[0]).toHaveFocus();
+    });
+    expect(screen.queryByRole('dialog')).toBeNull();
+    viewport.set('mid');
+    await tick();
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('keeps the filter sheet open between the two bands that draw it', async () => {
+    const viewport = fakeViewport('mid');
+    render(App, { env: narrow({ viewport }) });
+    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
+    viewport.set('narrow');
+    await tick();
+    expect(screen.getByRole('dialog', { name: 'Фильтры' })).toBeInTheDocument();
+  });
+
+  it('draws «Свои предметы» once at the mid band: in the search row, not in the sheet', async () => {
+    render(App, {
+      env: narrow({ viewport: fakeViewport('mid'), cloud: fakeCloud(SEED, 'gm1') })
+    });
+    await screen.findByRole('switch', { name: 'Свои предметы' });
+    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
+    const sheet = within(screen.getByRole('dialog', { name: 'Фильтры' }));
+    expect(sheet.queryByRole('switch')).toBeNull();
+  });
+
+  it('draws no table link in «Ещё» on the own items table (rule 17)', async () => {
+    render(App, {
+      env: narrow({ router: memoryRouter('#/tables/homebrew'), cloud: fakeCloud(SEED, 'gm1') })
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Ещё' }));
+    expect(screen.queryByRole('menuitem', { name: 'Ссылка на таблицу' })).toBeNull();
+  });
+});
+
+describe('the own items table at scale', () => {
+  it('draws 300 own items, and «Все» ticks the rows a search leaves', async () => {
+    const env = fakeEnv({
+      router: memoryRouter('#/tables/homebrew'),
+      data: fakeData(LOOT),
+      cloud: fakeCloud(SEED, 'gm1', { fillItems: 300 })
+    });
+    const { container } = render(App, { env });
+    await waitFor(() => {
+      /* The first source tab holds the most of the 300. */
+      expect(container.querySelectorAll('[data-row]').length).toBeGreaterThan(100);
+    });
+    await userEvent.type(screen.getByPlaceholderText('Поиск'), '001');
+    const left = container.querySelectorAll('[data-row]').length;
+    expect(left).toBeLessThan(100);
+    await userEvent.click(screen.getByRole('button', { name: 'Выбрать' }));
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все' }));
+    expect(container.parentElement?.querySelector('.selcount')).toHaveTextContent(
+      `Выбрано: ${String(left)}`
+    );
+  });
+});
+
 describe('the help', () => {
-  it('explains the two things that stand apart from the books', async () => {
+  it('is «Об этих данных», the three data notes, named on its button', async () => {
     render(App, { env: at() });
-    await userEvent.click(screen.getByRole('button', { name: 'Справка' }));
-    expect(screen.getByText(/срезы через все книги сразу/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Об этих данных' }));
+    expect(screen.getByText(/Класс - раздел книги, а не тип урона/)).toBeInTheDocument();
+    expect(screen.queryByText(/срезы через все книги сразу/)).toBeNull();
   });
 });
 

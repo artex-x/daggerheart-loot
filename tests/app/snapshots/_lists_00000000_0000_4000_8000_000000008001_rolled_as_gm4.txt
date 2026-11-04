@@ -100,7 +100,7 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
     spinbutton "Позиция в списке" [value=5 valuetext=5 required=false valuemin=1 valuemax=7]
     checkbox "Наручники" [checked=false]
     spinbutton "Позиция в списке" [value=6 valuetext=6 required=false valuemin=1 valuemax=7]
-    button "Наручники Эта пара наручников с замком поставляется с ключом. ПР..." [namelen=74 namehash=9df2647c]
+    button "Наручники ПРЕДМЕТ CORE Эта пара наручников с замком поставляется..." [namelen=74 namehash=bf18d937]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
@@ -108,7 +108,7 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
     button "Убрать из списка" [description=Убрать из списка]
     checkbox "Мистический Плащ" [checked=false]
     spinbutton "Позиция в списке" [value=7 valuetext=7 required=false valuemin=1 valuemax=7]
-    button "Мистический Плащ Существо с Характеристикой Заклинателя, носящее..." [namelen=150 namehash=e6d5f2f2]
+    button "Мистический Плащ ПРЕДМЕТ CORE Существо с Характеристикой Заклина..." [namelen=150 namehash=e89efca5]
     StaticText "КОЛ-ВО"
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     StaticText "ЦЕНА"
@@ -131,30 +131,31 @@ EN
 RU
 daggerheart.com
 Аккаунт: gm4@example.test
+Бросить 1-7
 Бросок
 Выбрать все
 Жирный
 Заметка
 Заряжающий Колчан
-Заряжающий КолчанКогда вы успешно наносите удар стрелой из этого... [namelen=145 namehash=1018b4bd]
+Заряжающий КолчанПредметCoreКогда вы успешно наносите удар стрел... [namelen=145 namehash=07c24a19]
 К содержимому
 Как в книге
 Конфиденциальность
 Курсив
 ЛутDaggerheart
 Мистический Плащ
-Мистический ПлащСущество с Характеристикой Заклинателя, носящее ... [namelen=147 namehash=0cc59311]
+Мистический ПлащПредметCoreСущество с Характеристикой Заклинател... [namelen=147 namehash=bb0c30a0]
 Монетами
 На единицу больше
 На единицу меньше
 Название списка
 Наручники
-НаручникиЭта пара наручников с замком поставляется с ключом.Пред... [namelen=71 namehash=de6825cb]
+НаручникиПредметCoreЭта пара наручников с замком поставляется с ... [namelen=71 namehash=ef7bfccf]
 Нумерованный список
 Отправить
 Очистить заметку
 Первоклассный Спальный Мешок
-Первоклассный Спальный МешокВо время отдыха вы автоматически очи... [namelen=88 namehash=8149dafd]
+Первоклассный Спальный МешокПредметCoreВо время отдыха вы автома... [namelen=88 namehash=9d8413c2]
 Печать
 Поделиться
 Подсказка: Для игроков
@@ -163,10 +164,10 @@ daggerheart.com
 Позиция в списке
 Поиск
 Пронзительная Свирель
-Пронзительная СвирельЭта свирель ручной работы имеет характерный... [namelen=165 namehash=9d32035b]
+Пронзительная СвирельПредметCoreЭта свирель ручной работы имеет ... [namelen=165 namehash=a6824246]
 Просмотр
 Разговаривающие Сферы
-Разговаривающие СферыЭта пара сфер позволяет существам, которые ... [namelen=129 namehash=ce76c23a]
+Разговаривающие СферыПредметCoreЭта пара сфер позволяет существа... [namelen=129 namehash=8304053d]
 Результат броска
 Сбросить
 Свой предмет
@@ -175,7 +176,6 @@ daggerheart.com
 Скопировать название
 Скопировать ссылку
 Скопировать текст
-Случайно 1–7
 Список
 Справка
 Страница
@@ -192,7 +192,7 @@ daggerheart.com
 Условия использования
 Установить как приложение
 Факел Алистера
-Факел АлистераВы можете зажигать этот магический факел по желани... [namelen=193 namehash=dd2e26d8]
+Факел АлистераПредметCoreВы можете зажигать этот магический факе... [namelen=193 namehash=3e61bd96]
 Цена
 
 ## en :: tree
@@ -292,7 +292,7 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
     spinbutton "Position in the list" [value=5 valuetext=5 required=false valuemin=1 valuemax=7]
     checkbox "Manacles" [checked=false]
     spinbutton "Position in the list" [value=6 valuetext=6 required=false valuemin=1 valuemax=7]
-    button "Manacles This pair of locking cuffs comes with a key. ITEM CORE"
+    button "Manacles ITEM CORE This pair of locking cuffs comes with a key."
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
@@ -300,7 +300,7 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
     button "Remove from the list" [description=Remove from the list]
     checkbox "Arcane Cloak" [checked=false]
     spinbutton "Position in the list" [value=7 valuetext=7 required=false valuemin=1 valuemax=7]
-    button "Arcane Cloak A creature with a Spellcast trait wearing this cloa..." [namelen=124 namehash=e33646cf]
+    button "Arcane Cloak ITEM CORE A creature with a Spellcast trait wearing..." [namelen=124 namehash=5c2a0422]
     StaticText "QTY"
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     StaticText "PRICE"
@@ -321,14 +321,14 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
 ## en :: controls
 Account: gm4@example.test
 Alistair's Torch
-Alistair's TorchYou can light this magic torch at will. The flam... [namelen=166 namehash=963dcc04]
+Alistair's TorchItemCoreYou can light this magic torch at will. ... [namelen=166 namehash=3483f36b]
 Arcane Cloak
-Arcane CloakA creature with a Spellcast trait wearing this cloak... [namelen=121 namehash=cdd85626]
+Arcane CloakItemCoreA creature with a Spellcast trait wearing th... [namelen=121 namehash=f0e29c44]
 As in the book
 Bold
 Bulleted list
 Charging Quiver
-Charging QuiverWhen you succeed on an attack with an arrow store... [namelen=149 namehash=2b36c062]
+Charging QuiverItemCoreWhen you succeed on an attack with an arr... [namelen=149 namehash=9c234b1b]
 Clear
 Clear the note
 Copy image
@@ -355,7 +355,7 @@ Italic
 List name
 LootDaggerheart
 Manacles
-ManaclesThis pair of locking cuffs comes with a key.ItemCore
+ManaclesItemCoreThis pair of locking cuffs comes with a key.
 Note
 Numbered list
 One higher
@@ -363,25 +363,25 @@ One lower
 Own item
 Page
 Piper Whistle
-Piper WhistleThis handcrafted whistle has a distinctive sound. W... [namelen=153 namehash=f3fe23c1]
+Piper WhistleItemCoreThis handcrafted whistle has a distinctive ... [namelen=153 namehash=3ba17275]
 Position in the list
 Premium Bedroll
-Premium BedrollDuring downtime, you automatically clear a Stress... [namelen=73 namehash=385f1196]
+Premium BedrollItemCoreDuring downtime, you automatically clear ... [namelen=73 namehash=3b2ba4b6]
 Preview
 Price
 Print
 Privacy
 RU
-Random 1–7
 Remove from the list
 Roll
+Roll 1-7
 Roll result
 Search
 Select all
 Share
 Skip to content
 Speaking Orbs
-Speaking OrbsThis pair of orbs allows any creatures holding them... [namelen=124 namehash=d726691b]
+Speaking OrbsItemCoreThis pair of orbs allows any creatures hold... [namelen=124 namehash=e46caeac]
 Tables
 Terms of use
 daggerheart.com

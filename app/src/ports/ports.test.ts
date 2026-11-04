@@ -6,8 +6,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { browserClipboard, fakeClipboard } from './clipboard.js';
 import { browserClock, fixedClock, queryClock, TEST_NOW } from './clock.js';
 import { browserDialog, fakeDialog } from './dialog.js';
-import { edgeSpeed, nativeDrag } from './drag.js';
+import { edgeSpeed, fakeDrag, nativeDrag, noDrag } from './drag.js';
 import { browserMotion, fakeMotion } from './motion.js';
+import { browserScroll, fakeScroll } from './scroll.js';
+import { browserViewport, fakeViewport } from './viewport.js';
 import { browserPage, fakePage } from './page.js';
 import { memoryRouter, pathRouter } from './router.js';
 import { browserShare } from './share.js';
@@ -505,6 +507,40 @@ describe('dragging', () => {
     bindDrag(box, { onDrop });
     drag(box, 4, 1);
     expect(onDrop).toHaveBeenCalledWith(4, 1);
+  });
+
+  it('reads as active only from a grip dragstart to its dragend', () => {
+    const box = rows(3);
+    const port = nativeDrag();
+    unbinds.push(port.bind(box, { onDrop: vi.fn() }));
+    expect(port.active()).toBe(false);
+    fire(bodyOf(box, 0), 'dragstart');
+    expect(port.active()).toBe(false);
+    fire(gripOf(box, 0), 'dragstart');
+    expect(port.active()).toBe(true);
+    fire(gripOf(box, 0), 'dragend');
+    expect(port.active()).toBe(false);
+  });
+
+  it('reads as inactive after a drop, and after an unbind in the middle of a drag', () => {
+    const box = rows(3);
+    const port = nativeDrag();
+    const unbind = port.bind(box, { onDrop: vi.fn() });
+    unbinds.push(unbind);
+    dragAt(box, 0, 96);
+    expect(port.active()).toBe(false);
+    fire(gripOf(box, 0), 'dragstart');
+    expect(port.active()).toBe(true);
+    unbind();
+    expect(port.active()).toBe(false);
+  });
+
+  it('never reads as active with no drag port, and follows the fake', () => {
+    expect(noDrag().active()).toBe(false);
+    const port = fakeDrag();
+    expect(port.active()).toBe(false);
+    port.live = true;
+    expect(port.active()).toBe(true);
   });
 
   it('says nothing when an entry is dropped where it started', () => {
@@ -1603,5 +1639,167 @@ describe('the clock', () => {
     expect(queryClock('?as=gm1&toasts=held', 2).now()).toBe(2);
     expect(queryClock('?toasts=yes', 2).holdsToasts?.()).toBeUndefined();
     expect('holdsToasts' in browserClock()).toBe(false);
+  });
+});
+
+describe('the scroll port', () => {
+  /* jsdom scrolls nothing: the offset and the page's height are stubbed. */
+  const page = (y: number, scrollHeight: number): void => {
+    vi.spyOn(window, 'scrollY', 'get').mockReturnValue(y);
+    vi.spyOn(document.documentElement, 'scrollHeight', 'get').mockReturnValue(scrollHeight);
+    vi.spyOn(window, 'innerHeight', 'get').mockReturnValue(640);
+  };
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
+  });
+
+  it('clamps an overscroll bounce to the edges', () => {
+    page(-40, 2640);
+    expect(browserScroll().y()).toBe(0);
+    page(2060, 2640);
+    expect(browserScroll().y()).toBe(2000);
+    page(700, 2640);
+    expect(browserScroll().y()).toBe(700);
+  });
+
+  it('reads no negative furthest offset on a page shorter than the window', () => {
+    page(0, 300);
+    expect(browserScroll().max()).toBe(0);
+  });
+
+  it('calls a listener once per frame and stops at the unsubscribe', () => {
+    const frames: FrameRequestCallback[] = [];
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => frames.push(cb));
+    vi.stubGlobal('cancelAnimationFrame', () => undefined);
+    const fn = vi.fn();
+    const stop = browserScroll().onscroll(fn);
+    window.dispatchEvent(new Event('scroll'));
+    window.dispatchEvent(new Event('scroll'));
+    expect(frames).toHaveLength(1);
+    frames[0]?.(0);
+    expect(fn).toHaveBeenCalledTimes(1);
+    stop();
+    window.dispatchEvent(new Event('scroll'));
+    expect(frames).toHaveLength(1);
+  });
+
+  it('scrolls an element with its options and stays busy until the page goes quiet', () => {
+    vi.useFakeTimers();
+    const port = browserScroll();
+    const el = document.createElement('div');
+    const moved = vi.fn();
+    el.scrollIntoView = moved;
+    expect(port.busy()).toBe(false);
+    port.into(el, { block: 'start' });
+    expect(moved).toHaveBeenCalledWith({ block: 'start' });
+    expect(port.busy()).toBe(true);
+    vi.advanceTimersByTime(100);
+    window.dispatchEvent(new Event('scroll'));
+    vi.advanceTimersByTime(149);
+    expect(port.busy()).toBe(true);
+    vi.advanceTimersByTime(1);
+    expect(port.busy()).toBe(false);
+  });
+
+  it('ends a settling that never goes quiet at the cap', () => {
+    vi.useFakeTimers();
+    const port = browserScroll();
+    port.settle();
+    for (let t = 0; t < 1900; t += 100) {
+      vi.advanceTimersByTime(100);
+      window.dispatchEvent(new Event('scroll'));
+    }
+    expect(port.busy()).toBe(true);
+    vi.advanceTimersByTime(100);
+    expect(port.busy()).toBe(false);
+  });
+
+  it('restarts the cap on a second settling', () => {
+    vi.useFakeTimers();
+    const port = browserScroll();
+    port.settle();
+    vi.advanceTimersByTime(100);
+    port.settle();
+    vi.advanceTimersByTime(149);
+    expect(port.busy()).toBe(true);
+    vi.advanceTimersByTime(1);
+    expect(port.busy()).toBe(false);
+  });
+
+  it('has a fake that moves when told, holds until quiet and lets a listener go', () => {
+    const port = fakeScroll();
+    const fn = vi.fn();
+    const stop = port.onscroll(fn);
+    port.to(300, 900);
+    expect([port.y(), port.max()]).toEqual([300, 900]);
+    port.to(310);
+    expect(port.max()).toBe(900);
+    expect(fn).toHaveBeenCalledTimes(2);
+    stop();
+    port.to(0);
+    expect(fn).toHaveBeenCalledTimes(2);
+    port.settle();
+    expect(port.busy()).toBe(true);
+    port.quiet();
+    expect(port.busy()).toBe(false);
+    const el = document.createElement('div');
+    const moved = vi.fn();
+    el.scrollIntoView = moved;
+    port.into(el, { block: 'start' });
+    expect(moved).toHaveBeenCalledWith({ block: 'start' });
+    expect(port.busy()).toBe(true);
+  });
+});
+
+describe('the viewport port', () => {
+  it('reads the band from two media queries and follows their changes', () => {
+    const state = { narrow: true, wide: false };
+    const listeners: (() => void)[] = [];
+    try {
+      vi.stubGlobal('matchMedia', (q: string) => ({
+        get matches() {
+          return q === '(max-width: 760px)' ? state.narrow : state.wide;
+        },
+        addEventListener: (_: string, cb: () => void) => listeners.push(cb),
+        removeEventListener: (_: string, cb: () => void) =>
+          listeners.splice(listeners.indexOf(cb), 1)
+      }));
+      const port = browserViewport();
+      expect(port.band()).toBe('narrow');
+      const seen: string[] = [];
+      const stop = port.onchange((b) => seen.push(b));
+      state.narrow = false;
+      listeners[0]?.();
+      state.wide = true;
+      listeners[1]?.();
+      expect(seen).toEqual(['mid', 'wide']);
+      stop();
+      expect(listeners).toHaveLength(0);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('answers wide without matchMedia', () => {
+    try {
+      vi.stubGlobal('matchMedia', undefined);
+      expect(browserViewport().band()).toBe('wide');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('has a fake that moves when told and tells its listeners', () => {
+    const port = fakeViewport('narrow');
+    const seen: string[] = [];
+    const stop = port.onchange((b) => seen.push(b));
+    port.set('mid');
+    stop();
+    port.set('wide');
+    expect(port.band()).toBe('wide');
+    expect(seen).toEqual(['mid']);
   });
 });

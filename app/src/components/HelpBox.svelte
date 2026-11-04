@@ -5,7 +5,7 @@
    * Extracted on its second use: the page-level help panel and the money
    * picker's own box (`ListPage.svelte`) draw the same shape, the
    * second one narrower and in a different slot - hence `class`. */
-  import { isBold, isBreak, isLink } from '../lib/help.js';
+  import { isBold, isLink } from '../lib/help.js';
   import type { Help } from '../lib/help.js';
 
   interface Props {
@@ -27,8 +27,7 @@
             href={part.href}
             target="_blank"
             rel="noopener">{part.label}</a
-          >{:else if isBold(part)}<b>{part.b}</b>{:else if isBreak(part)}<br
-          />{:else}{part}{/if}{/each}
+          >{:else if isBold(part)}<b>{part.b}</b>{:else}{part}{/if}{/each}
     </p>
   {/each}
 </div>
