@@ -115,10 +115,16 @@ export interface FakeCloudOptions {
    *  stored preferences keeps none. */
   lang?: Lang;
   /** A read of this repository never answers (`stall`), or answers `{ ok: false }`
-   *  (`fail`): the requests' lines, the linked homebrew items and the lists read whole
-   *  (`rows`). The test build's `?hold=lines:fail`, a loading or failed state that a golden
-   *  can capture. */
-  hold?: { lines?: HoldMode; items?: HoldMode; rows?: HoldMode };
+   *  (`fail`): the requests' lines, the linked homebrew items, the lists read whole
+   *  (`rows`), one item by its id (`item`) and the account's own items (`own`). The test
+   *  build's `?hold=lines:fail`, a loading or failed state that a golden can capture. */
+  hold?: {
+    lines?: HoldMode;
+    items?: HoldMode;
+    rows?: HoldMode;
+    item?: HoldMode;
+    own?: HoldMode;
+  };
 }
 
 /** How `FakeCloudOptions.hold` holds a read. */
@@ -1147,6 +1153,8 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     /* `get_homebrew_item`, signed out too. */
     item(id) {
       if (offline) return Promise.resolve({ ok: false });
+      const held = heldAnswer(options.hold?.item);
+      if (held) return held;
       return Promise.resolve({ ok: true, item: itemAnswer(id) });
     }
   };
@@ -1659,6 +1667,8 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     /* With `known`, a row at the revision held answers in `kept`, as `list(known)` does;
        past 50 changed rows of a table, that table answers whole. */
     load(known) {
+      const held = heldAnswer(options.hold?.own);
+      if (held) return held;
       const mine = ownHomebrew();
       if (!mine) return Promise.resolve({ ok: false });
       const whole =
@@ -2301,8 +2311,8 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
 /** Builds the port from `?as=<user>` (signed out without it), `?items=<n>` (1-1000,
  *  `fillItems`), `?sections=<n>` (1-30, `fillSections`, with `items` only),
  *  `?sources=<n>` (1-20, `fillSources`, with `items` only),
- *  `?lang=<ru|en>` (`lang`) and `?hold=<name>:<mode>,...` (`hold`: `lines`, `items` or
- *  `rows`, `stall` or `fail`) and exposes it
+ *  `?lang=<ru|en>` (`lang`) and `?hold=<name>:<mode>,...` (`hold`: `lines`, `items`,
+ *  `rows`, `item` or `own`, `stall` or `fail`) and exposes it
  *  as `window.__dhlootFake` for the browser suites. The query stays in the
  *  address, so a reload keeps the session. */
 export function installFakeCloud(search: string = window.location.search): FakeCloud {
@@ -2316,7 +2326,11 @@ export function installFakeCloud(search: string = window.location.search): FakeC
   for (const pair of (query.get('hold') ?? '').split(',')) {
     const [name, mode] = pair.split(':');
     if (
-      (name === 'lines' || name === 'items' || name === 'rows') &&
+      (name === 'lines' ||
+        name === 'items' ||
+        name === 'rows' ||
+        name === 'item' ||
+        name === 'own') &&
       (mode === 'stall' || mode === 'fail')
     ) {
       hold[name] = mode;
@@ -2332,7 +2346,7 @@ export function installFakeCloud(search: string = window.location.search): FakeC
       ? { fillSources: sources }
       : {}),
     ...(lang === 'ru' || lang === 'en' ? { lang } : {}),
-    ...(hold.lines || hold.items || hold.rows ? { hold } : {})
+    ...(Object.keys(hold).length ? { hold } : {})
   });
   window.__dhlootFake = { marker: MARKER, ...port };
   return port;

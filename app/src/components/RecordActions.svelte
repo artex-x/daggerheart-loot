@@ -1,14 +1,15 @@
 <script lang="ts" module>
   /** Which row of the card a button belongs to, as the live app splits them. */
-  export type ActionRow = 'name' | 'card';
+  export type ActionRow = 'name' | 'card' | 'share' | 'menu';
 </script>
 
 <script lang="ts">
-  /* Everything a person does with one record, in the two rows the live app
-     puts them in: two icon buttons beside the name - copy the name, copy the
-     link - and a labeled row under the description: send, picture, text.
+  /* Everything a person does with one record. A compact card draws two icon buttons
+     beside the name - copy the name, copy the link - and a labeled row under the
+     description: send, picture, text. The record page and the dialog draw «Поделиться»
+     on the action row and the four copies as items of its «Ещё» menu.
 
-     One component renders either row, because the handlers are shared and
+     One component renders every row, because the handlers are shared and
      splitting them would mean two copies of the clipboard logic.
 
      It takes the record and the index rather than reading them off `app`, so
@@ -22,6 +23,7 @@
   import { imageFileName, share, shareName, type ShareBlock } from '../lib/share.js';
   import type { AppState } from '../state/app.svelte.js';
   import type { Index } from '../lib/data.js';
+  import type { IconName } from '../lib/icons.js';
   import type { Record_ } from '../lib/types.js';
 
   interface Props {
@@ -34,9 +36,12 @@
      *  in rather than looked up here - this component does not know what a
      *  list is. */
     extra?: readonly ShareBlock[] | undefined;
+    /** Row `menu`: called first in each item, so the menu closes and the focus returns
+     *  before the clipboard call. */
+    onpicked?: (() => void) | undefined;
   }
 
-  const { app, index, it, row, extra }: Props = $props();
+  const { app, index, it, row, extra, onpicked }: Props = $props();
 
   const t = $derived(app.t);
   /* A homebrew item's link is its preview link (its `#/h/` address in a build with no
@@ -45,6 +50,8 @@
   const linked = $derived(
     !isHomebrewKey(it.id) || typeof (it as { hid?: unknown }).hid === 'string'
   );
+
+  const hasImage = $derived(!!it.img && !app.artBroken(it.id));
 
   async function copyName(): Promise<void> {
     await app.copied(
@@ -154,11 +161,39 @@
        an item with no link sends its text there. */
     if (r === 'unsupported' || r === 'failed') await (linked ? copyLink() : copyText());
   }
+
+  interface MenuItem {
+    icon: IconName;
+    label: string;
+    run: () => Promise<void>;
+  }
+
+  const menuItems = $derived<MenuItem[]>([
+    { icon: 'copy', label: t.copyText, run: copyText },
+    { icon: 'copy', label: t.copyName, run: copyName },
+    ...(hasImage ? [{ icon: 'image' as const, label: t.copyImg, run: copyImage }] : []),
+    ...(linked ? [{ icon: 'link' as const, label: t.copyLink, run: copyLink }] : [])
+  ]);
 </script>
 
-{#if row === 'name'}
+{#if row === 'share'}
+  <Button onclick={() => void send()}><Icon name="share" />{t.share}</Button>
+{:else if row === 'menu'}
+  {#each menuItems as m (m.label)}
+    <button
+      type="button"
+      role="menuitem"
+      tabindex="-1"
+      onclick={() => {
+        onpicked?.();
+        void m.run();
+      }}><Icon name={m.icon} />{m.label}</button
+    >
+  {/each}
+{:else if row === 'name'}
   <button
     type="button"
+    class="iconbtn"
     title={t.copyName}
     aria-label={t.copyName}
     onclick={() => void copyName()}
@@ -168,6 +203,7 @@
   {#if linked}
     <button
       type="button"
+      class="iconbtn"
       title={t.copyLink}
       aria-label={t.copyLink}
       onclick={() => void copyLink()}
@@ -185,7 +221,7 @@
   >
     <Icon name="share" /><span class="btn-lbl">{t.sendAll}</span>
   </Button>
-  {#if it.img && !app.artBroken(it.id)}
+  {#if hasImage}
     <!-- A record with no art has nothing to copy, so the live app leaves the
          button out rather than offering a placeholder - and it drops the
          button again once that art fails to load (app.js hasImage). -->
@@ -200,7 +236,7 @@
 
 <style>
   /* The icon pair beside the name, off `.card-name button` in style.css. */
-  button {
+  .iconbtn {
     border: 0;
     background: transparent;
     padding: 3px;
@@ -212,7 +248,7 @@
     cursor: pointer;
   }
 
-  button:hover {
+  .iconbtn:hover {
     color: var(--gold);
     background: var(--surface2);
   }
@@ -220,7 +256,7 @@
   /* Bare icon buttons came out at about 20px, too small to hit reliably on a
      phone - off the mobile block in style.css. */
   @media (max-width: 600px) {
-    button {
+    .iconbtn {
       padding: 11px;
       margin-bottom: 2px;
     }

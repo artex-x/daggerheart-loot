@@ -554,7 +554,7 @@ across.
   landmark, pinned to the bottom of the screen. It is one shape on the
   catalog, `/search` and the shared page (`SelectionBar`): «Все» (a tri-state
   box named «Выбрать все», its label always visible, ticking every row the
-  page draws, all sections), the summary, the actions («Добавить в список»,
+  page draws, all sections), the summary, the actions («В список» / "Add to list",
   «Печать», «Скопировать текст», the shared page's send line), then «Снять
   выделение» last. Below 761 px the box, the summary and the clear are one
   row and the actions the next. With zero ticks in the catalog's selection
@@ -708,7 +708,7 @@ address kept, and no add-to-list control is drawn.
   key: an own key links the own item, another homebrew key links the item of
   the record the page holds (the open share's first, then the account's
   lists), and a key with neither is not written. While the account's items
-  are still read, no homebrew entry is written, and «Добавить в список» says
+  are still read, no homebrew entry is written, and «В список» says
   «Ваши предметы ещё загружаются - это может занять минуту. Повторите чуть позже.», or «Не
   получилось загрузить ваши предметы.» after a failed read. «Сохранить себе»
   on another user's link copies its links. An undo of a removed entry, from
@@ -988,7 +988,7 @@ address kept, and no add-to-list control is drawn.
   decides: «Спрашивать» replaces the bar's actions with «Сообщить владельцу
   списка, что вы взяли эти предметы?», «Сообщить», «Не сообщать» and
   «Запомнить ответ», the ticks kept, and the question takes the focus; after an
-  answer the focus returns to «Добавить в список». «Сообщить» sends every
+  answer the focus returns to «В список». «Сообщить» sends every
   ticked entry with its taken count, one the reader's list already held
   included, and the toast becomes «Добавлено в «...». Владелец получил
   запрос.»; «Запомнить ответ» saves the answer as «Сообщать владельцу» or «Не
@@ -1178,19 +1178,33 @@ address kept, and no add-to-list control is drawn.
 ## Records
 
 - Card in a modal from a table row, or a full page at `#/i/<id>`.
+- **The item page and the dialog.** `#/i/<id>`, `#/h/<uuid>` and the record dialog
+  draw one dossier: no plate, the picture beside the text from 761 px and above
+  it, cropped to 4:3, up to 760 px; the art file is not touched. The name is drawn
+  once, the page's `h1` under the badge row, with the path line under it; in the
+  dialog it is an `h2` with no path line and no «показать в таблице». The action
+  row is the same at every width, in this order: «В список» / "Add to list" (the
+  one gold primary, on a line of its own up to 760 px), «Поделиться», «Печать»,
+  «Изменить» (the author only) and «Ещё». «Ещё» is a menu of «Скопировать текст»,
+  «Скопировать название», «Скопировать изображение» (with a picture only),
+  «Скопировать ссылку» (with a link only) and «Сохранить себе» with its second
+  line; a pressed item and Escape return the focus to «Ещё», and in the dialog
+  Escape closes only the menu. The menu opens down on a page; in the dialog it
+  opens up where the room is only above, so from the dock.
 - An own homebrew item opens at `#/i/<key>` for its author only; any other
-  reader, signed out included, gets «Предмет не найден», and «Загружаем...»
+  reader, signed out included, gets the not-found page, and «Загружаем...»
   draws until the session and the author's items are known. Its path reads
   «Хоумбрю · <source> · <section>», its tag «<source> (HB)» (the Latin mark
   in both languages) or «Хоумбрю», with «показать в таблице» to its row on
-  `#/tables/homebrew`, and the pick row adds «Изменить» (to
+  `#/tables/homebrew`, and the action row adds «Изменить» (to
   `#/homebrew/<key>`) after «Печать». Its link is its preview link:
-  «Скопировать ссылку» copies it and «Отправить» carries it, in the language
+  «Скопировать ссылку» copies it and «Поделиться» carries it, in the language
   on screen (`https://daggerheart-loot.pages.dev/h/<uuid>?v=<v>`, `/en/h/` in
   English; `CONTRACTS.md` section 5), and a build with no preview host hands
   out the item address `<site>[en/]#/h/<uuid>`. While
-  the author's items fail to load, the page says «Не получилось загрузить
-  ваши предметы.» with «Повторить», not «Предмет не найден».
+  the author's items fail to load, the page keeps the heading «Не получилось
+  загрузить ваши предметы» over the alert «Не получилось загрузить ваши
+  предметы.» and a primary «Повторить», not the not-found page.
 - **The item page `#/h/<uuid>`** draws one homebrew item for everyone, signed
   out too, in the record page's shape, with the author's relation lines: the
   item's own record and the author's related items (made from, upgrades to,
@@ -1198,11 +1212,11 @@ address kept, and no add-to-list control is drawn.
   key the reader also holds, so the reader and the author see the same
   «Получается из», «Улучшается до», «Комплект» and set bonus. A relation, a
   tier rung and a list row link to this address; «Скопировать ссылку» and
-  «Отправить» of an own or a linked item hand out its preview link (above). A rung or
+  «Поделиться» of an own or a linked item hand out its preview link (above). A rung or
   a relation of the author's item opens its own page; a catalog record opens
   over the page. A reader's line under the heading starts with «Предмет
-  другого игрока» / "Another player's item", then the path; the pick row
-  offers «Добавить в список», «Сохранить себе» and «Печать», and no
+  другого игрока» / "Another player's item", then the path; the action row
+  offers «В список», «Поделиться», «Печать» and «Ещё» with «Сохранить себе», and no
   «Изменить» and no «показать в таблице»; a reader's «Печать» makes a set and
   opens `#/p/<id>`, and signed out it shows the sign-in prompt ("Print"). The author sees the own record's controls: «Печать»,
   «Изменить», «показать в таблице», and no «Предмет другого игрока». The page
@@ -1212,7 +1226,7 @@ address kept, and no add-to-list control is drawn.
   «Проверьте соединение и нажмите «Повторить».» and a primary «Повторить» (the
   `#/s/` failure's shape); a malformed id (read with no request), an unknown
   id, an item deleted meanwhile, and a build with no sign-in configured draw
-  the record page's «Предмет не найден», the address kept. The page re-reads
+  the record page's not-found page, the address kept. The page re-reads
   every 45 s, signed out too, and when the tab is shown again; it has no
   Realtime topic, so an author's edit shows within 45 s. A re-read that fails
   keeps what is shown, an unchanged one redraws nothing, and an older answer
@@ -1221,9 +1235,9 @@ address kept, and no add-to-list control is drawn.
   edit of the item, its source and its named cards, and moves with the 45 s
   clock; an answer with no edit time draws no line. A visually hidden status
   says «Предмет обновлён» / "The item was updated" once per re-read that
-  meets a new revision of the drawn item, and «Предмет не найден» once when a
+  meets a new revision of the drawn item, and «Предмета по этому адресу нет» once when a
   drawn item goes; a first read that finds nothing says nothing.
-- **«Сохранить себе» / "Save to my items"** on another account's item - on
+- **«Сохранить себе» / "Save to My items"**, an item of «Ещё», on another account's item - on
   `#/h/` and in the record modal of a list row that links it - and on a
   catalog record - on `#/i/<id>` and in its record modal - makes an ordinary
   own item in «Хоумбрю» (no source, no section) from what the reader sees,
@@ -1245,23 +1259,21 @@ address kept, and no add-to-list control is drawn.
   item holds that name, it takes the smallest free number from 2, «Меч (2)»,
   «Меч (3)», "Sword (2)", each language on its own; a long base is cut so
   the name fits 120 characters, and a «(N)» in the source's name is not
-  read. The copy no longer changes with the original. The button and its
-  note form one group on a line of their own under the other pick buttons,
-  the note beside the button where it fits, else under it, and the button's
-  `aria-describedby` names the note, which says
-  «Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с
-  оригиналом.», or, while one of the reader's account lists links another
-  account's item, «Копия попадёт в «Хоумбрю», а строки ваших списков с этим
-  предметом будут вести на неё.»: the press relinks in place every such row
+  read. The copy no longer changes with the original. The item's
+  second line, named by its `aria-describedby`, says, while one of the
+  reader's account lists links another account's item, «Копия попадёт в
+  «Хоумбрю», а строки ваших списков с этим предметом будут вести на неё.»,
+  and signed out «Сначала вход в аккаунт» / "Signs you in first"; otherwise
+  the item has no second line. The press relinks in place every such row
   to the copy, each keeping its position, quantity, price, both notes and
   the «Только для мастера» mark, and toasts «Предмет «%s» сохранён в «Мои
   предметы», строки ваших списков ведут на копию», else «Предмет «%s»
   сохранён в «Мои предметы»», with the copy's name, each with «Изменить» to
   the copy's `#/homebrew/<key>` in a new tab; each relinked row's key
   becomes the copy's. A catalog record's list rows stay on the record, and
-  its record modal stays open. After each press the button reads «Сохранить
-  себе» again with its note; it is disabled only while a copy is written.
-  The group draws signed out, and signed in once the reader's items are
+  its record modal stays open. The press closes the menu; the item is
+  disabled only while a copy is written.
+  The item draws signed out, and signed in once the reader's items are
   read. A pending purchase request line of a relinked row's old key draws the
   raw key and reads short. Signed out the press opens a boxed sign-in prompt
   under the row, «Войдите, и копия предмета сохранится в «Мои предметы».»;
@@ -1316,9 +1328,11 @@ address kept, and no add-to-list control is drawn.
 - Every weapon's stat line - record card, table row, copied text, share
   stub - names its class, secondary weapons too; the print card's class tag
   says the same (`docs/DECISIONS.md`, 2026-09-24).
-- `#/i/<id>` for an id the data does not know draws "Предмет не найден", the
-  sub line and a "На главную" button to `#/roll/std` (the live
-  `renderItemPage` shape) and keeps the plain tab title, the same as any
+- `#/i/<id>` for an id the data does not know draws the not-found page of the
+  item routes: the title «Предмета по этому адресу нет» / "No item at this
+  address", a sentence that names the address in `<code>` (cut at 80 characters
+  with `...`), the primary «Найти предмет» to `#/search` and «Открыть таблицы»
+  to `#/tables`. It keeps the plain tab title, the same as any
   other route with nothing of its own to name. A record that is found, a
   section, and an account list each title the tab with their own name ahead of
   the app's - `<name> - <docTitle>` (the live app wrote the name and then
@@ -1467,7 +1481,8 @@ address kept, and no add-to-list control is drawn.
   set every member past the third folds, catalog records included, the
   catalog ones in catalog order, then the own ones by name; the record page,
   print and the copied text alike. A homebrew name reads «<name> (HB)» and a homebrew rung «<tier>
-  HB», titled and named «<name> (HB)», with the ordinary border. Each line
+  HB», titled and named «<name> (HB)», with the ordinary border; on the card, the three
+  relation lines draw the name with the badge «Хоумбрю» / "Homebrew" instead of the suffix. Each line
   and the ladder draw every catalog record, the record itself and three
   homebrew records - catalog records in their order, then homebrew ones by
   name, the ladder in tier order - then «и ещё N» (`aria-expanded`), which
@@ -1503,11 +1518,13 @@ address kept, and no add-to-list control is drawn.
   the row draws that picture and nothing is remembered as failed
   (`META.md` section 9).
 - The record modal is a native `<dialog>` opened with `showModal()`, so it is
-  modal, the page behind it is inert, and focus moves to its close button on
-  open, also when the card scrolls, and returns to the opener on close - a deliberate improvement over the live
-  app, whose card the keyboard never actually enters. The one visible
-  consequence is that the modal's close button carries a focus ring the live
-  app's does not.
+  modal, the page behind it is inert, and focus moves to its labeled «Закрыть» on
+  open, also when the card scrolls, and returns to the opener on close. From 761 px it
+  is a centered card up to 980 px wide, «Закрыть» staying in view while the card
+  scrolls. Up to 760 px it is a bottom sheet with a sticky head and a sticky action
+  dock of two columns, the last control spanning both when the count is odd; in a
+  window shorter than 481 px the dock joins the scroll, because it would take almost
+  half of the height.
 - The modal leaves the address bar as it is (owner, 2026-10-28): opening and
   closing it writes nothing, and its copy button hands out the record's link
   while the bar shows the page under it (rule 17 of "Consistency rules").
@@ -1793,7 +1810,7 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   set and its lines, keeps the rest of the form and focuses the set's
   button. The card draws no stat block until a tier is chosen: a tier is
   never shown that the author did not choose. The card of a saved item has
-  «Добавить в список»: it adds the stored item as a link, so unsaved
+  «В список»: it adds the stored item as a link, so unsaved
   edits reach the list with «Сохранить»; a new item has none before its
   first save. The type and the weapon values stay in the form while another
   kind or type is chosen.
@@ -1806,7 +1823,7 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   `pt` value of its stylesheet by it (the rest is in `cqw`), never a transform,
   so the fit and the clip verdict are the print page's. It keeps the set line
   and the text language of the form, in place of the screen card and its
-  «Добавить в список». The print bar's two switches sit beside the view
+  «В список». The print bar's two switches sit beside the view
   switch and are its visit pick: a pick here is the print page's, and the
   reverse; the editor draws no note about the default. The switches wrap and
   speak the interface language. While the print card still cuts off text
@@ -2132,7 +2149,7 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
 ## Print
 
 - Every print needs an account (owner, 2026-10-08). Three controls print, each
-  «Печать» with the print icon and the same hint: the pick row (the record
+  «Печать» with the print icon and the same hint: the action row (the record
   page, the record modal and `#/h/`, for its author and for a reader), the
   selection bar (tables, search, «Мои предметы», `#/s/` with the taken
   counts) and the list toolbar (with the list's counts). Signed in, a
@@ -2140,7 +2157,7 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   account and opens its address `#/p/<id>`; the control is disabled while the
   set is made and while the session is unknown, and a build with no sign-in
   configured draws none. Signed out, the press shows the sign-in prompt in the
-  control's slot - boxed under the pick row and the list toolbar, compact with
+  control's slot - boxed under the action row and the list toolbar, compact with
   «Отмена» in place of the selection bar's action row - with «Войдите, чтобы
   печатать карточки.», so the reader learns why before leaving the page, as
   «Сохранить себе» says it. After the sign-in the app makes the set of the
@@ -2699,7 +2716,8 @@ Each rule keeps its number: a review cites it by number.
   «Создать карту»); a select option reads «+ Новый <noun>...». Departures:
   the add-to-list chip «+ Новый список», because a chip has no icon; and
   the row «Свой предмет» / "Own item" after an account list's entries (plus
-  icon), whose panel's submit reads «Добавить в список» / "Add to list":
+  icon), whose panel's submit reads «Добавить в список» / "Add to list", because
+  the short «В список» says nothing on a submit:
   one press makes the item and adds it to the list
   (`docs/decisions/2026-09-30-a-list-page-makes-a-plain-homebrew-item-in-one-press.md`);
   and the homebrew import's «Куда» option «Новый источник «<name>»», which

@@ -1,9 +1,9 @@
 <script lang="ts">
-  /* The card's pick row on the record page, in the record modal and on `#/h/`: add to a
-     list, print, «Изменить» on an own item, and «Сохранить себе» on another account's item
-     and on a catalog record, in a group of its own with the note saying what the copy does,
-     tied to the button by `aria-describedby`; each press makes one more copy
-     (docs/specs/FEATURES.md, "Records").
+  /* The action row on the record page, in the record dialog and on `#/h/`: «В список»,
+     «Поделиться», «Печать», «Изменить» on an own item, and «Ещё», which holds the copies and
+     «Сохранить себе» on another account's item and on a catalog record; its second line
+     names what changes, tied to the item by `aria-describedby`; each press makes one more
+     copy (docs/specs/FEATURES.md, "Records").
      Signed out the press opens the sign-in prompt under the row, and the copy is made once
      the sign-in comes back and the account's items are read. «Печать» makes a print set
      and opens `#/p/<id>`; signed out it opens its own sign-in prompt under the row, and the
@@ -11,23 +11,30 @@
   import AddToList from './AddToList.svelte';
   import Button from './Button.svelte';
   import Icon from './Icon.svelte';
+  import Menu from './Menu.svelte';
+  import RecordActions from './RecordActions.svelte';
   import SignInPrompt from './SignInPrompt.svelte';
   import { homebrewItemHash, itemHash, recordHref } from '../lib/hash.js';
   import { isHomebrewRecord } from '../lib/homebrew.js';
   import { printAction } from '../lib/pending.js';
+  import type { Index } from '../lib/data.js';
+  import type { ShareBlock } from '../lib/share.js';
   import type { Record_ } from '../lib/types.js';
   import type { AppState } from '../state/app.svelte.js';
 
   interface Props {
     app: AppState;
     it: Record_;
+    index: Index;
+    /** The list entry's note, carried into a copy made in the record modal. */
+    extra?: readonly ShareBlock[] | undefined;
     /** The add-to-list menu opens inside the record modal. */
     inModal?: boolean;
     /** On `#/h/`, whether the reader is the item's author; undefined elsewhere. */
     owner?: boolean | undefined;
   }
 
-  const { app, it, inModal = false, owner }: Props = $props();
+  const { app, it, index, extra, inModal = false, owner }: Props = $props();
 
   const t = $derived(app.t);
   const hid = $derived(isHomebrewRecord(it) ? it.hid : undefined);
@@ -42,8 +49,25 @@
   const toLists = $derived(offered && app.relinkTargets(it).length > 0);
   /* The page can draw the row twice (the page and the record modal over it). */
   const noteId = $derived(`savenote-${inModal ? 'm' : 'p'}-${ref}`);
+  const menuId = $derived(`rec-more-${inModal ? 'm' : 'p'}-${ref}`);
+  const second = $derived(
+    toLists ? t.saveItemNoteList : app.newListTarget === 'prompt' ? t.saveItemSignIn : ''
+  );
   let asking = $state(false);
   let printAsking = $state(false);
+  let moreOpen = $state(false);
+  let moreButton = $state<HTMLButtonElement | undefined>(undefined);
+
+  /* The row can sit at the window's bottom, and the menu opens past it. */
+  $effect(() => {
+    if (moreOpen) document.getElementById(menuId)?.scrollIntoView({ block: 'nearest' });
+  });
+
+  /* A pressed item leaves the DOM, so the focus goes back to «Ещё» (rule 20). */
+  function closeMore(): void {
+    moreOpen = false;
+    moreButton?.focus();
+  }
 
   function pressPrint(): void {
     const target = app.printTarget;
@@ -72,10 +96,10 @@
   });
 </script>
 
-<AddToList {app} key={it.id} ids={[it.id]} primary {inModal} />
+<AddToList {app} key={it.id} ids={[it.id]} primary size="md" {inModal} />
+<RecordActions {app} {index} {it} row="share" {extra} />
 {#if app.printTarget !== 'none'}
   <Button
-    size="sm"
     title={t.printHint}
     disabled={app.printing || app.printTarget === 'wait'}
     expanded={app.printTarget === 'prompt' ? printAsking : undefined}
@@ -83,32 +107,66 @@
   >
 {/if}
 {#if app.homebrew?.has(it.id) && !foreign}
-  <Button size="sm" href={app.href(homebrewItemHash(it.id))} sameTab>{t.edit}</Button>
+  <Button href={app.href(homebrewItemHash(it.id))} sameTab><Icon name="note" />{t.edit}</Button>
 {/if}
-{#if offered}
-  <div class="savegroup">
-    <Button
-      size="sm"
-      disabled={app.savingItem === ref || app.newListTarget === 'wait'}
-      expanded={app.newListTarget === 'prompt' ? asking : undefined}
-      describedby={noteId}
-      onclick={press}>{t.saveItem}</Button
+<span class="morewrap">
+  <Button
+    haspopup
+    expanded={moreOpen}
+    controls={moreOpen ? menuId : undefined}
+    bind:el={moreButton}
+    onclick={() => {
+      moreOpen = !moreOpen;
+    }}><Icon name="more" />{t.moreMenu}</Button
+  >
+  {#if moreOpen && moreButton}
+    <Menu
+      control={moreButton}
+      label={t.moreMenu}
+      id={menuId}
+      cls="recmenu"
+      up={inModal}
+      onclose={() => {
+        moreOpen = false;
+      }}
     >
-    <p class="savenote" id={noteId}>{toLists ? t.saveItemNoteList : t.saveItemNote}</p>
-  </div>
-  {#if asking && app.newListTarget === 'prompt'}
-    <div class="saveprompt">
-      <SignInPrompt
-        {app}
-        lead={t.signInToSaveItem}
-        after={{
-          hash: inModal ? (hid ? itemHash(hid) : recordHref(it)) : app.hash,
-          action: hid ? { do: 'saveItem', hid } : { do: 'saveItem', id: it.id }
-        }}
-        boxed
-      />
-    </div>
+      <RecordActions {app} {index} {it} row="menu" {extra} onpicked={closeMore} />
+      {#if offered}
+        <div role="separator" class="msep"></div>
+        <button
+          type="button"
+          role="menuitem"
+          tabindex="-1"
+          disabled={app.savingItem === ref || app.newListTarget === 'wait'}
+          aria-labelledby="{noteId}-l"
+          aria-describedby={second ? noteId : undefined}
+          onclick={() => {
+            closeMore();
+            press();
+          }}
+        >
+          <Icon name="plus" />
+          <span class="mit">
+            <span id="{noteId}-l">{t.saveItem}</span>
+            {#if second}<small id={noteId}>{second}</small>{/if}
+          </span>
+        </button>
+      {/if}
+    </Menu>
   {/if}
+</span>
+{#if offered && asking && app.newListTarget === 'prompt'}
+  <div class="saveprompt">
+    <SignInPrompt
+      {app}
+      lead={t.signInToSaveItem}
+      after={{
+        hash: inModal ? (hid ? itemHash(hid) : recordHref(it)) : app.hash,
+        action: hid ? { do: 'saveItem', hid } : { do: 'saveItem', id: it.id }
+      }}
+      boxed
+    />
+  </div>
 {/if}
 {#if printAsking && app.printTarget === 'prompt'}
   <div class="saveprompt">
@@ -125,25 +183,46 @@
 {/if}
 
 <style>
-  /* A line of its own under the other pick buttons; the note beside the button where at
-     least 16em fit, else under it. */
-  .savegroup {
-    flex-basis: 100%;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    align-items: center;
+  .morewrap {
+    position: relative;
+    display: inline-flex;
   }
 
-  .savenote {
-    flex: 1 1 16em;
-    margin: 0;
+  /* Up to 760 px «Ещё» can wrap to the row's left, and the menu is wider than the button:
+     the row anchors it, so it stays inside the window. */
+  @media (max-width: 760px) {
+    .morewrap {
+      position: static;
+    }
+  }
+
+  .msep {
+    height: 1px;
+    margin: 4px 0;
+    background: var(--line);
+  }
+
+  .mit small {
+    display: block;
+    max-width: 28ch;
     font-size: var(--t-data);
+    font-weight: 400;
     color: var(--muted2);
+  }
+
+  /* The wrap is as narrow as the button, and the menu's width must not follow it. */
+  .morewrap :global(.recmenu) {
+    width: max-content;
+  }
+
+  .morewrap :global(.recmenu [role='menuitem']:disabled) {
+    opacity: 0.5;
+    cursor: default;
   }
 
   .saveprompt {
     flex-basis: 100%;
+    grid-column: 1 / -1;
   }
 
   .saveprompt :global(.signin.boxed) {

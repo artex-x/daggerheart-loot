@@ -109,7 +109,7 @@ RootWebArea "Топор Тлеющих Углей - Генератор лута 
     heading "Ember Axe" [level=2]
     StaticText "Two-Handed"
     StaticText "The blade smoulders and does not go out in the rain."
-    button "Добавить в список" [expanded=false]
+    button "В список" [expanded=false]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -132,13 +132,13 @@ daggerheart.com
 Броня
 Бросок
 В линии
+В список
 Влияние
 Вплотную
 Вторичное оружие
 Второй набор характеристик
 Далеко
 Двуручное
-Добавить в список
 Жирный
 Заменить
 Знание

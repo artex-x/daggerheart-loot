@@ -47,7 +47,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     checkbox "Выбрать все" [focused=true checked=mixed]
     generic ""
       StaticText "Выбрано: 1"
-    button "Добавить в список" [expanded=false]
+    button "В список" [expanded=false]
     button "Печать" [description=Собрать карточки для печати: девять на лист A4]
     button "Скопировать текст"
     button "Снять выделение"
@@ -132,11 +132,11 @@ daggerheart.com
 Бездонная Сумка
 Ботинки Хождения по Воде
 Бросок
+В список
 Войти
 Выбрать все
 Глиняный Спутник
 Двойная Фляга
-Добавить в список
 Дополнения
 Заряжающий Колчан
 Исправляющий Дух

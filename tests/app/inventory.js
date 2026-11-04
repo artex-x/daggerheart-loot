@@ -8,6 +8,8 @@
  * tests/app/golden.js is the only reader; tests/app/lib.js's `fresh()` and
  * `makeDriver` do the rest.
  *
+ * A state with `again` runs it after the press on «EN», which closes an open `Menu`.
+ *
  * A state marked `timed: true` raises a toast that lives 1600-7000ms.
  * golden.js arrives at it fresh per language instead of reusing one arrival
  * for both (`captureState`): a 50-120ms snapshot ahead of the EN press would
@@ -121,7 +123,7 @@ const NAME = {
     copyImage: 'Скопировать изображение',
     copyLink: 'Скопировать ссылку',
     send: 'Отправить',
-    addToList: 'Добавить в список',
+    addToList: 'В список',
     stepDown: 'На единицу меньше',
     stepUp: 'На единицу больше',
     pinSection: 'Открывать при запуске',
@@ -435,7 +437,22 @@ const STATES = [
     id: '#/i/nope',
     // The old form: the host answers /i/nope, an id with no file, with 404.html.
     route: '/#/i/nope',
-    why: 'the not-found record page: "Предмет не найден", the sub line, the "На главную" button'
+    why: 'the not-found record page: «Предмета по этому адресу нет», the address in the sentence, «Найти предмет» and «Открыть таблицы»'
+  },
+  {
+    id: '#/i/ci1 ~ actions menu',
+    route: '#/i/ci1',
+    why: '«Ещё» open signed out: the four copies, then «Сохранить себе» with the second line «Сначала вход в аккаунт»',
+    enter: (d) => d.openMore(),
+    again: (d) => d.openMore()
+  },
+  {
+    id: '#/i/ci1 ~ actions menu as gm1',
+    route: '#/i/ci1',
+    as: 'gm1',
+    why: '«Ещё» open signed in: the four copies, then «Сохранить себе» with no second line (no list links the record)',
+    enter: (d) => d.openMore(),
+    again: (d) => d.openMore()
   },
   {
     id: '#/roll/wondrous',
@@ -524,7 +541,7 @@ const STATES = [
     route: '#/i/ci1',
     why: 'what the app says after a copy',
     enter: async (d) => {
-      await d.click('Скопировать название');
+      await d.more('Скопировать название');
     },
     /* a 1600ms toast; arrived at afresh per language - see this file's header */
     timed: true
@@ -539,7 +556,7 @@ const STATES = [
     why: 'the search box, once there are more lists than fit without one',
     enter: async (d) => {
       await onAccount(d, EIGHT_SPECS, false);
-      await d.click('Добавить в список');
+      await d.click('В список');
       await d.type('Найти список', 'порту');
     }
   },
@@ -548,7 +565,7 @@ const STATES = [
     route: '#/i/ci1',
     why: 'signed out: the sign-in prompt in the new-list slot - one line, «Войти» and «Отмена», no provider buttons',
     enter: async (d) => {
-      await d.click('Добавить в список');
+      await d.click('В список');
       await d.click('+ Новый список');
     }
   },
@@ -559,7 +576,7 @@ const STATES = [
     why: "signed in: the inline form, focused, over gm2's account lists",
     enter: async (d) => {
       await d.settled();
-      await d.click('Добавить в список');
+      await d.click('В список');
       await d.click('+ Новый список');
     }
   },
@@ -570,7 +587,7 @@ const STATES = [
     why: "one plain menu: gm1's lists holding the record first and lit («Лавка кузнеца», «Трофеи»), then the rest",
     enter: async (d) => {
       await d.settled();
-      await d.click('Добавить в список');
+      await d.click('В список');
     }
   },
   {
@@ -580,7 +597,7 @@ const STATES = [
     why: 'the three lists holding the record first, lit; the label, search and new-list chip pinned over the scrolling chips',
     enter: async (d) => {
       await onAccount(d, TWELVE_SPECS, false);
-      await d.click('Добавить в список');
+      await d.click('В список');
     }
   },
   {
@@ -590,7 +607,7 @@ const STATES = [
     why: 'the new-list form started with the query nothing matched, over twelve account lists',
     enter: async (d) => {
       await onAccount(d, TWELVE_SPECS, false);
-      await d.click('Добавить в список');
+      await d.click('В список');
       await d.type('Найти список', 'Шкатулка');
       await d.click('+ Новый список');
     }
@@ -853,6 +870,26 @@ const STATES = [
     }
   },
   {
+    id: '#/tables/eq_weapon ~ a row opened',
+    route: '#/tables/eq_weapon',
+    width: 360,
+    why: 'the record dialog as a bottom sheet at 360: «Закрыть» first, the dossier, then the dock of four controls',
+    enter: async (d) => {
+      await d.click('Палаш');
+    }
+  },
+  {
+    id: '#/tables/eq_weapon ~ a row opened, actions menu',
+    route: '#/tables/eq_weapon',
+    width: 360,
+    why: 'the same sheet with «Ещё» open above the dock, inside the card',
+    enter: async (d) => {
+      await d.click('Палаш');
+      await d.openMore();
+    },
+    again: (d) => d.openMore()
+  },
+  {
     id: '#/tables ~ a row opened, list menu as gm4',
     route: '#/tables',
     as: 'gm4',
@@ -860,7 +897,7 @@ const STATES = [
     enter: async (d) => {
       await onAccount(d, TWO_SPECS, false);
       await d.click('Кольцо Тишины');
-      await d.click('Добавить в список');
+      await d.click('В список');
     }
   },
   {
@@ -873,7 +910,7 @@ const STATES = [
     why: "signed out: the sign-in prompt in the new-list slot of the modal's menu, and which side the menu keeps when it grows - the rewrite re-measured from the flipped side and sent it under the card's edge",
     enter: async (d) => {
       await d.click('Самоцвет Чутья');
-      await d.click('Добавить в список');
+      await d.click('В список');
       await d.click('+ Новый список');
     }
   },
@@ -885,7 +922,7 @@ const STATES = [
     enter: async (d) => {
       await onAccount(d, RING_SPECS, false);
       await d.click('Кольцо Тишины');
-      await d.click('Добавить в список');
+      await d.click('В список');
       await d.click('Клад дракона');
     },
     /* a 7000ms toast; arrived at afresh per language - this file's header */
@@ -900,7 +937,7 @@ const STATES = [
     enter: async (d) => {
       await onAccount(d, RING_SPECS, false);
       await d.click('Кольцо Тишины');
-      await d.click('Добавить в список');
+      await d.click('В список');
       await d.click('Клад дракона');
     }
   },
@@ -921,7 +958,7 @@ const STATES = [
       await onAccount(d, TWO_SPECS, false);
       await d.tick(ROW1_CI1);
       await d.tick(ROW2_CI2);
-      await d.click('Добавить в список');
+      await d.click('В список');
     }
   },
   {
@@ -1215,12 +1252,12 @@ const STATES = [
     id: '#/i/dve19 ~ saved twice as gm1',
     route: '#/i/dve19',
     as: 'gm1',
-    why: '«Сохранить себе» on a catalog record pressed twice: the button «Сохранить себе» with its note «Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с оригиналом.», the toast «Предмет «Уголёк (2)» сохранён в «Мои предметы»» with «Изменить»; the set line «Уголёк, Искра» names no copy',
+    why: '«Сохранить себе» on a catalog record pressed twice in «Ещё»: the toast «Предмет «Уголёк (2)» сохранён в «Мои предметы»» with «Изменить»; the set line «Уголёк, Искра» names no copy',
     enter: async (d) => {
-      await d.click('Сохранить себе');
+      await d.more('Сохранить себе');
       for (let i = 0; i < 40 && !(await d.text()).includes('«Уголёк» сохранён'); i++)
         await d.settle();
-      await d.click('Сохранить себе');
+      await d.more('Сохранить себе');
       for (let i = 0; i < 40 && !(await d.text()).includes('«Уголёк (2)» сохранён'); i++)
         await d.settle();
     },
@@ -1513,7 +1550,7 @@ const STATES = [
     id: SHOP + ' ~ own item as gm1',
     route: SHOP,
     as: 'gm1',
-    why: 'the row «Свой предмет» after the entries pressed and expanded: the panel «Свой предмет в этот список» under it with «Название» *, «Описание», «Добавить в список», «Отмена» and the note on «Мои предметы»',
+    why: 'the row «Свой предмет» after the entries pressed and expanded: the panel «Свой предмет в этот список» under it with «Название» *, «Описание», «В список», «Отмена» and the note on «Мои предметы»',
     enter: async (d) => {
       await d.click('Свой предмет');
     }
@@ -1576,7 +1613,7 @@ const STATES = [
     id: GM2_LIST + ' ~ axe opened as gm2',
     route: GM2_LIST,
     as: 'gm2',
-    why: "gm1's axe opened from its row: the modal with «Добавить в список», «Печать», «Сохранить себе» and under it «Копия попадёт в «Хоумбрю», а строки ваших списков с этим предметом будут вести на неё.»",
+    why: "gm1's axe opened from its row: the dialog with «В список», «Поделиться», «Печать» and «Ещё», the relink line now inside «Ещё»",
     enter: async (d) => {
       await d.click('Лезвие тлеет');
     }
@@ -1588,7 +1625,7 @@ const STATES = [
     why: "«Сохранить себе» pressed in the axe's modal: the row moves to the copy's new key, so the modal closes and the list page draws the row of the copy, with the toast «Предмет «Топор Тлеющих Углей» сохранён в «Мои предметы», строки ваших списков ведут на копию» and its «Изменить» (app/src/state/app.test.ts reads the relinked row)",
     enter: async (d) => {
       await d.click('Лезвие тлеет');
-      await d.click('Сохранить себе');
+      await d.more('Сохранить себе');
       for (let i = 0; i < 40 && !(await d.text()).includes('ведут на копию'); i++)
         await d.settle();
     },
@@ -1605,13 +1642,13 @@ const STATES = [
   {
     id: ITEM_H,
     route: ITEM_H,
-    why: 'signed out: «Скатка следопыта», the sub «Предмет другого игрока · Хоумбрю», «Получается из» «Скатка путника», «Улучшается до» «Скатка стража», «Комплект» «Походный плед», «Подушка из мха», «Скатка следопыта» (current), the bonus «Сон под звёздами»; «Добавить в список» and «Сохранить себе» with its note, no «Печать», no «Изменить», no table link'
+    why: 'signed out: «Скатка следопыта», the sub «Предмет другого игрока · Хоумбрю», «Получается из» «Скатка путника», «Улучшается до» «Скатка стража», «Комплект» «Походный плед», «Подушка из мха», «Скатка следопыта» (current), the bonus «Сон под звёздами»; the action row with no «Изменить» and no table link'
   },
   {
     id: ITEM_H + ' as gm2',
     route: ITEM_H,
     as: 'gm2',
-    why: 'another player signed in: the same three relation lines and the bonus, every link an item address; «Сохранить себе» and «Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с оригиналом.»'
+    why: 'another player signed in: the same three relation lines and the bonus, every link an item address'
   },
   {
     id: ITEM_H + ' as gm3',
@@ -1622,18 +1659,18 @@ const STATES = [
   {
     id: ITEM_H + ' ~ sign-in prompt',
     route: ITEM_H,
-    why: 'signed out, «Сохранить себе» pressed: the button expanded and under it the boxed «Войдите, и копия предмета сохранится в «Мои предметы».» with «Войти»',
+    why: 'signed out, «Сохранить себе» pressed: the boxed «Войдите, и копия предмета сохранится в «Мои предметы».» with «Войти»',
     enter: async (d) => {
-      await d.click('Сохранить себе');
+      await d.more('Сохранить себе');
     }
   },
   {
     id: ITEM_H + ' ~ saved as gm2',
     route: ITEM_H,
     as: 'gm2',
-    why: '«Сохранить себе» pressed: the button «Сохранить себе» again with its note, the toast «Предмет «Скатка следопыта» сохранён в «Мои предметы»» with «Изменить»',
+    why: '«Сохранить себе» pressed in «Ещё»: the toast «Предмет «Скатка следопыта» сохранён в «Мои предметы»» with «Изменить»',
     enter: async (d) => {
-      await d.click('Сохранить себе');
+      await d.more('Сохранить себе');
       for (let i = 0; i < 40 && !(await d.text()).includes('сохранён в «Мои'); i++)
         await d.settle();
     },
@@ -1647,9 +1684,23 @@ const STATES = [
     why: "gm3's item at the 120-code-point name, wrapped in the heading; «Получается из» «Первоклассный Спальный Мешок», a catalog record"
   },
   {
+    id: ITEM_H + ' ~ read failed',
+    route: ITEM_H,
+    hold: 'item:fail',
+    why: 'the read of the item failed: the title «Предмет не загрузился», the sentence and the primary «Повторить»'
+  },
+  {
+    id: '#/h/' + HB_AXE_ID + ' ~ actions menu as gm2',
+    route: '#/h/' + HB_AXE_ID,
+    as: 'gm2',
+    why: "gm1's axe, which gm2's list links: «Ещё» open, «Сохранить себе» with the relink line as its second line",
+    enter: (d) => d.openMore(),
+    again: (d) => d.openMore()
+  },
+  {
     id: ITEM_NONE,
     route: ITEM_NONE,
-    why: 'an id no item has, after the read: «Предмет не найден», its sub and «На главную», the address kept'
+    why: 'an id no item has, after the read: «Предмета по этому адресу нет», the address in the sentence, «Найти предмет» and «Открыть таблицы»'
   },
   {
     id: SHOP + ' ~ share as gm1',
@@ -2140,7 +2191,7 @@ const STATES = [
   {
     id: '#/s/player-token-1 ~ ticked',
     route: '#/s/player-token-1',
-    why: 'signed out, ci1 and cc1 ticked: the bar with «Добавить в список», «Печать», «Скопировать» and «Сообщить владельцу» last (its own line at 600 px or less)',
+    why: 'signed out, ci1 and cc1 ticked: the bar with «В список», «Печать», «Скопировать» and «Сообщить владельцу» last (its own line at 600 px or less)',
     enter: async (d) => {
       await d.tick('Первоклассный Спальный Мешок');
       await d.tick('Зелье Быстрого Шага');
@@ -2259,7 +2310,7 @@ const STATES = [
     enter: async (d) => {
       await d.tick('Первоклассный Спальный Мешок');
       await d.tick('Зелье Быстрого Шага');
-      await d.click('Добавить в список');
+      await d.click('В список');
       await d.click('Список второго ГМа');
     },
     /* a 1600ms toast; arrived at afresh per language - see this file's header */
@@ -2579,7 +2630,7 @@ const STATES = [
   {
     id: '#/i/ci1 ~ print signed out',
     route: '#/i/ci1',
-    why: '«Печать» pressed signed out: the boxed sign-in prompt under the pick row and its «Сохранить себе» group, «Войдите, чтобы печатать карточки.»',
+    why: '«Печать» pressed signed out: the boxed sign-in prompt under the action row, «Войдите, чтобы печатать карточки.»',
     enter: async (d) => {
       await d.click(PRINT);
     }
@@ -2587,9 +2638,9 @@ const STATES = [
   {
     id: '#/i/ci1 ~ save signed out',
     route: '#/i/ci1',
-    why: '«Сохранить себе» on a catalog record pressed signed out: the button expanded and under its group the boxed «Войдите, и копия предмета сохранится в «Мои предметы».» with «Войти»',
+    why: '«Сохранить себе» on a catalog record pressed signed out: the boxed «Войдите, и копия предмета сохранится в «Мои предметы».» with «Войти»',
     enter: async (d) => {
-      await d.click('Сохранить себе');
+      await d.more('Сохранить себе');
     }
   },
   {
@@ -3270,19 +3321,19 @@ const STATES = [
     id: '#/homebrew ~ add to list as gm1',
     route: '#/homebrew',
     as: 'gm1',
-    why: "the axe ticked: the selection bar «Выбрано 1» with its «Добавить в список» menu open on gm1's lists",
+    why: "the axe ticked: the selection bar «Выбрано 1» with its «В список» menu open on gm1's lists",
     enter: async (d) => {
       await d.tick('Топор Тлеющих Углей');
-      await d.click('Добавить в список');
+      await d.click('В список');
     }
   },
   {
     id: '#/homebrew/' + HB_AXE + ' ~ add to list as gm1',
     route: '#/homebrew/' + HB_AXE,
     as: 'gm1',
-    why: "the preview card's «Добавить в список» pressed: its menu open on gm1's lists, the form unchanged",
+    why: "the preview card's «В список» pressed: its menu open on gm1's lists, the form unchanged",
     enter: async (d) => {
-      await d.click('Добавить в список');
+      await d.click('В список');
     }
   },
   {
@@ -3333,12 +3384,19 @@ const STATES = [
     id: '#/i/' + HB_AXE + ' as gm1',
     route: '#/i/' + HB_AXE,
     as: 'gm1',
-    why: 'an own item on its page: the path line, the tag «Мастерская Ольхи (HB)», no «Скопировать ссылку», «Изменить» after the print link'
+    why: 'an own item on its page: the path line, the tag «Мастерская Ольхи (HB)», «Изменить» after «Печать»'
+  },
+  {
+    id: '#/i/' + HB_AXE + ' ~ read failed as gm1',
+    route: '#/i/' + HB_AXE,
+    as: 'gm1',
+    hold: 'own:fail',
+    why: "the author's items did not load: the title «Не получилось загрузить ваши предметы», the alert and the primary «Повторить», no not-found page"
   },
   {
     id: '#/i/' + HB_AXE,
     route: '#/i/' + HB_AXE,
-    why: 'the same key signed out: «Предмет не найден», the address kept'
+    why: 'the same key signed out: «Предмета по этому адресу нет», the address in the sentence'
   },
   {
     id: '#/tables/homebrew as gm1',
@@ -3615,7 +3673,7 @@ const STATES = [
     id: '#/homebrew/' + HB_AXE + ' ~ print preview as gm1',
     route: '#/homebrew/' + HB_AXE,
     as: 'gm1',
-    why: '«На печати» of «Показать карточку» pressed: the print groups on «Чёрно-белая» and «Компактная», the 44x63 mm black-and-white print card in place of the screen card, no «Добавить в список», no warning',
+    why: '«На печати» of «Показать карточку» pressed: the print groups on «Чёрно-белая» and «Компактная», the 44x63 mm black-and-white print card in place of the screen card, no «В список», no warning',
     enter: async (d) => {
       await d.click('На печати');
     }

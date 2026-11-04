@@ -14,3 +14,4 @@
   marker; the owner chose one, 2026-09-30); «ХБ» in Russian (it reads as х/б); a second relation
   line per origin (two labels for one arrow); drawing a viewer's frozen copies on catalog cards
   (the owner's item 6).
+- Later: the card's relation lines draw the badge «Хоумбрю»: `docs/decisions/2026-11-04-the-record-page-is-a-dossier-with-one-more-menu.md`.

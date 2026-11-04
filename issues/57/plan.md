@@ -18,8 +18,9 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
   1 landed on `main` as `d83384b4`; `claude/57` merged it at the batch 3
   refresh (2026-10-30). Batch 3 is implemented (section 10; `handoff.md` has
   its commit, gates and deviations), waiting for the orchestrator's `polish`
-  and `harden` and its batch review. Batches 4-10 and P are outlines; each
-  one's refresh expands it.
+  and `harden` and its batch review. Batches 3b and 4 are implemented
+  (`plan-3b.md`, `plan-4.md`; `handoff.md` has their gates and deviations).
+  Batches 5-10 and P are outlines; each one's refresh expands it.
 - Release (owner, 2026-10-29, `context.md` "Release in three waves" and its
   "Reviews" paragraph; "Batch 9 split"): three waves - 1, 1b, 2; then 3, 3b, 4,
   5, 6, 7, 9a; then 8, 9b, P, 10 -
@@ -755,6 +756,7 @@ Batch 9b (wave 3, after batch 8; mock 9):
 
 Batch 10:
 
+- P5 (from `plan-4.md`, K11): `rollNo` changes in `dict.ts` and `tools/share-card.mjs` together, then `node tools/build.js` regenerates the stubs; a plan review runs first. Batch 10 takes code for it.
 - `ignoreValues` is empty and `impeccable detect --json --no-inline-ignores
   app/src` reports nothing: each intended literal becomes a DESIGN.md
   frontmatter entry (32 of `PrintCard.svelte`'s 33 advisories are print

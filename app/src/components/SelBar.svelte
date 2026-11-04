@@ -126,7 +126,7 @@
   }
 
   /* The question replaces the row that held the focused menu, so the focus
-     moves to it, and back to «Добавить в список» after the answer. */
+     moves to it, and back to «В список» after the answer. */
   $effect(() => {
     if (asking) question?.focus();
   });

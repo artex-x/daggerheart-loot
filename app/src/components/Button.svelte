@@ -23,6 +23,8 @@
     label?: string;
     /** `aria-expanded`, for a button that folds a panel open. */
     expanded?: boolean | undefined;
+    /** `aria-haspopup="menu"`, for a button that opens a `Menu`. */
+    haspopup?: boolean;
     /** `aria-controls`: the region a disclosure button shows. */
     controls?: string | undefined;
     /** `aria-describedby`: the id of a note that tells what the button does. */
@@ -66,6 +68,7 @@
     title,
     label,
     expanded,
+    haspopup,
     controls,
     describedby,
     el = $bindable(),
@@ -99,6 +102,7 @@
     {title}
     aria-label={label}
     aria-expanded={expanded}
+    aria-haspopup={haspopup ? 'menu' : undefined}
     aria-controls={controls}
     aria-describedby={describedby}
     bind:this={el}

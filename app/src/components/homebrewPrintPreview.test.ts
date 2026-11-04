@@ -43,7 +43,7 @@ describe('the view switch', () => {
     expect(pressed(t.hbPreviewShow, t.hbPreviewScreen)).toBe('true');
     expect(pressed(t.hbPreviewShow, t.hbPreviewPrint)).toBe('false');
     expect(container.querySelector('.preview article.card')).not.toBeNull();
-    expect(screen.getByRole('button', { name: t.addToList })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: t.toList })).toBeInTheDocument();
     expect(printCard()).toBeNull();
     expect(screen.queryByRole('group', { name: t.printTitle })).toBeNull();
     await expectNoA11yViolations(container);
@@ -60,7 +60,7 @@ describe('the view switch', () => {
     expect(printCard()).toHaveClass('bw');
     expect(container.querySelector('.preview .pframe')).toHaveClass('compact');
     expect(container.querySelector('.preview article.card')).toBeNull();
-    expect(screen.queryByRole('button', { name: t.addToList })).toBeNull();
+    expect(screen.queryByRole('button', { name: t.toList })).toBeNull();
     expect(container.querySelector('.keepnote')).toBeNull();
     expect(printCard()?.querySelector('.pc-name')).toHaveTextContent('Топор Тлеющих Углей');
     /* The first draw takes the draft at once. */

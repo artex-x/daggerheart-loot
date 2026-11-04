@@ -21,7 +21,7 @@ RootWebArea "Мои списки - Генератор лута Daggerheart" [url
     button "Открывать при запуске" [pressed=false]
     button "Справка" [expanded=true]
     StaticText "Соберите добычу в список и отправьте игрокам одной ссылкой."
-    StaticText "Соберите список: отметьте нужное галочками в «Таблицах» или «Пои..." [namelen=240 namehash=abd374d0]
+    StaticText "Соберите список: отметьте нужное галочками в «Таблицах» или «Пои..." [namelen=231 namehash=cb7db4f7]
     ... StaticText x9 of 13 same-shape siblings elided
     StaticText "Списки аккаунта можно отметить и скачать файлом JSON или удалить..." [namelen=223 namehash=f9d62407]
     heading "НОВЫЙ СПИСОК" [level=2]

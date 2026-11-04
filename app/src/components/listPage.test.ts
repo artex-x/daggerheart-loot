@@ -1054,8 +1054,9 @@ describe('a row’s modal', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument();
 
     await userEvent.click(
-      within(screen.getByRole('dialog')).getByRole('button', { name: 'Скопировать текст' })
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'Ещё' })
     );
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Скопировать текст' }));
     expect(clip.last.text ?? '').toContain('Светится в темноте');
   });
 
@@ -1067,8 +1068,9 @@ describe('a row’s modal', () => {
     await openA({ clipboard: clip });
     await userEvent.click(screen.getByRole('button', { name: /^Зелье/ }));
     await userEvent.click(
-      within(screen.getByRole('dialog')).getByRole('button', { name: 'Скопировать текст' })
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'Ещё' })
     );
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Скопировать текст' }));
     const text = clip.last.text ?? '';
     expect(text).not.toContain('Проклят');
     expect(text).not.toContain('750');
@@ -1843,7 +1845,7 @@ describe('homebrew entries', () => {
     await same();
     await userEvent.click(screen.getByRole('button', { name: /^Топор Тлеющих Углей/ }));
     const dialog = screen.getByRole('dialog');
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Добавить в список' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'В список' }));
     await userEvent.click(within(dialog).getByRole('button', { name: 'Список второго ГМа' }));
     /* The record left the page with its row, so its modal closes; the undo stays. */
     await waitFor(() => {

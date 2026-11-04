@@ -19,6 +19,9 @@ import { expectNoA11yViolations } from '../test/a11y.js';
 
 afterEach(cleanup);
 
+/* jsdom does not implement scrollIntoView: the record's menu calls it once open. */
+Element.prototype.scrollIntoView = vi.fn();
+
 const t = dict('ru');
 const ROLL_B = uuid(662);
 const SWORD_1 = uuid(621);
@@ -55,7 +58,7 @@ function page(hash: string, as: 'gm1' | 'gm2' | 'gm3' | null, cloud?: FakeCloud)
   return { ...view, cloud: c, router };
 }
 
-const sub = (): string => document.querySelector('.page-sub')?.textContent ?? '';
+const sub = (): string => document.querySelector('.subline')?.textContent ?? '';
 
 describe('the item page', () => {
   it('draws not found for a malformed id, with no read', async () => {
@@ -63,9 +66,11 @@ describe('the item page', () => {
     const read = vi.spyOn(cloud.lists, 'item');
     const { container } = page('#/h/not-a-uuid', null, cloud);
     expect(
-      await screen.findByRole('heading', { level: 1, name: t.notFound })
+      await screen.findByRole('heading', { level: 1, name: t.noItem })
     ).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: t.toStart })).toBeInTheDocument();
+    expect(container.querySelector('.errtext code')).toHaveTextContent('/h/not-a-uuid');
+    expect(screen.getByRole('link', { name: t.findItem })).toHaveAttribute('href', '/search');
+    expect(screen.getByRole('link', { name: t.openTables })).toHaveAttribute('href', '/tables');
     expect(read).not.toHaveBeenCalled();
     await expectNoA11yViolations(container);
   });
@@ -98,7 +103,8 @@ describe('the item page', () => {
     expect(
       await screen.findByRole('heading', { level: 1, name: t.itemFailed })
     ).toBeInTheDocument();
-    expect(sub()).toBe(t.sharedFailedSub);
+    expect(container.querySelector('.errtext')).toHaveTextContent(t.sharedFailedSub);
+    expect(screen.getByRole('button', { name: t.retry }).className).toContain('primary');
     await expectNoA11yViolations(container);
     cloud.setOffline(false);
     await userEvent.click(screen.getByRole('button', { name: t.retry }));
@@ -110,9 +116,19 @@ describe('the item page', () => {
   it('draws not found for an id no item has, the address kept', async () => {
     const { router } = page('#/h/' + uuid(9999), null);
     expect(
-      await screen.findByRole('heading', { level: 1, name: t.notFound })
+      await screen.findByRole('heading', { level: 1, name: t.noItem })
     ).toBeInTheDocument();
     expect(router.hash()).toBe('#/h/' + uuid(9999));
+  });
+
+  it('cuts an address past 80 characters and wraps it', async () => {
+    const long = 'x'.repeat(500);
+    const { container } = page('#/h/' + long, null);
+    await screen.findByRole('heading', { level: 1, name: t.noItem });
+    expect(container.querySelector('.errtext code')).toHaveTextContent(
+      new RegExp('^/h/x{77}\\.\\.\\.$')
+    );
+    await expectNoA11yViolations(container);
   });
 
   it("draws a reader's page signed out: «Предмет другого игрока», «Сохранить себе», print, no edit, no table link", async () => {
@@ -123,13 +139,24 @@ describe('the item page', () => {
     expect(sub().startsWith(t.itemFrom + ' · ')).toBe(true);
     expect(document.title).toBe('Скатка следопыта - ' + t.docTitle);
     const pick = container.querySelector('.cardpick') as HTMLElement;
-    expect(within(pick).getByRole('button', { name: t.addToList })).toBeInTheDocument();
-    expect(within(pick).getByRole('button', { name: t.saveItem })).toBeInTheDocument();
-    expect(within(pick).getByText(t.saveItemNote)).toBeInTheDocument();
+    expect(within(pick).getByRole('button', { name: t.toList })).toBeInTheDocument();
     expect(within(pick).getByRole('button', { name: t.print })).toBeEnabled();
     expect(within(pick).queryByRole('link', { name: t.edit })).toBeNull();
     expect(screen.queryByRole('link', { name: t.showInTable })).toBeNull();
+    await userEvent.click(await screen.findByRole('button', { name: t.moreMenu }));
+    expect(await screen.findByRole('menuitem', { name: t.saveItem })).toBeInTheDocument();
+    expect(screen.getByText(t.saveItemSignIn)).toBeInTheDocument();
     await expectNoA11yViolations(container);
+  });
+
+  it('draws the name once, as the `h1`, with the path and the updated line under it', async () => {
+    const { container } = page('#/h/' + ROLL_B, null);
+    await screen.findByRole('heading', { level: 1, name: 'Скатка следопыта' });
+    expect(
+      screen.getAllByText('Скатка следопыта', { selector: 'h1 span, h2 span' })
+    ).toHaveLength(1);
+    expect(container.querySelector('.card-sub .subline')).toHaveTextContent(t.itemFrom);
+    expect(container.querySelector('.card.dossier')).not.toBeNull();
   });
 
   it("writes the item's card version into the bar once read", async () => {
@@ -151,9 +178,6 @@ describe('the item page', () => {
     expect(craft.textContent).toContain('Два предмета комплекта');
     const hrefs = [...craft.querySelectorAll('a')].map((a) => a.getAttribute('href'));
     expect(hrefs.sort()).toEqual([661, 663, 664, 665].map((n) => '/h/' + uuid(n)).sort());
-    expect(
-      within(container.querySelector('.cardpick') as HTMLElement).getByText(t.saveItemNote)
-    ).toBeInTheDocument();
     await expectNoA11yViolations(container);
   });
 
@@ -172,7 +196,8 @@ describe('the item page', () => {
       'href',
       '/tables/homebrew/hb_rangerrollaaaaaa'
     );
-    expect(screen.queryByRole('button', { name: t.saveItem })).toBeNull();
+    await userEvent.click(screen.getByRole('button', { name: t.moreMenu }));
+    expect(screen.queryByRole('menuitem', { name: t.saveItem })).toBeNull();
     await expectNoA11yViolations(container);
   });
 
@@ -222,7 +247,7 @@ describe('the copy a sign-in left on the item page', () => {
 
   it('is forgotten when the item is gone', async () => {
     const { app } = await mounted('#/h/' + uuid(9999), 'gm2');
-    await screen.findByRole('heading', { level: 1, name: t.notFound });
+    await screen.findByRole('heading', { level: 1, name: t.noItem });
     await waitFor(() => {
       expect(app.saveItemFor).toBeNull();
     });
@@ -275,7 +300,7 @@ describe('the item page re-read', () => {
     const at = app.itemView?.updatedAt ?? '';
     const line = view.container.querySelector('.updated');
     expect(line?.textContent.trim()).toBe(agoText(Date.parse(at), app.now, 'ru', t, 'updated'));
-    expect(line?.previousElementSibling?.classList.contains('page-sub')).toBe(true);
+    expect(line?.previousElementSibling?.classList.contains('subline')).toBe(true);
     await expectNoA11yViolations(view.container);
     app.stop();
   });
@@ -289,7 +314,7 @@ describe('the item page re-read', () => {
     app.stop();
   });
 
-  it('says «Предмет обновлён» once per changed re-read, and «Предмет не найден» once the drawn item goes', async () => {
+  it('says «Предмет обновлён» once per changed re-read, and the not-found title once the drawn item goes', async () => {
     const cloud = fakeCloud(SEED, 'gm3');
     const { app, view } = await mounted(ROLL_B, cloud);
     await screen.findByRole('heading', { level: 1, name: 'Скатка следопыта' });
@@ -314,16 +339,16 @@ describe('the item page re-read', () => {
     await cloud.homebrew.removeItem(ROLL_B);
     await item.refresh();
     expect(
-      await screen.findByRole('heading', { level: 1, name: t.notFound })
+      await screen.findByRole('heading', { level: 1, name: t.noItem })
     ).toBeInTheDocument();
-    expect(said()).toBe(t.notFound);
+    expect(said()).toBe(t.noItem);
     await expectNoA11yViolations(view.container);
     app.stop();
   });
 
   it('says nothing on a first read that finds nothing', async () => {
     const { app, view } = await mounted(uuid(9999), fakeCloud(SEED));
-    await screen.findByRole('heading', { level: 1, name: t.notFound });
+    await screen.findByRole('heading', { level: 1, name: t.noItem });
     expect(view.container.querySelector('.said')).not.toBeNull();
     expect(said()).toBe('');
     await expectNoA11yViolations(view.container);

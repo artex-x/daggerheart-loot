@@ -28,7 +28,7 @@ RootWebArea "Пустой список - Генератор лута Daggerheart
     button "Удалить"
     status ""
     DisclosureTriangle "ЗАМЕТКИ" [expanded=false]
-    StaticText "Пока пусто. Откройте «Таблицы» или «Поиск», отметьте нужное гало..." [namelen=145 namehash=cb078e66]
+    StaticText "Пока пусто. Откройте «Таблицы» или «Поиск», отметьте нужное гало..." [namelen=136 namehash=e00354fc]
     StaticText " Свой предмет можно создать здесь же, кнопкой ниже."
     button "Свой предмет" [expanded=false]
     status ""

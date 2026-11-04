@@ -317,6 +317,7 @@ const ru = {
   /* The add-to-list row every full card draws, and the toast it and the pin
      button both raise - `git show 23c00a6^:app.js`. */
   addToList: 'Добавить в список',
+  toList: 'В список',
   addTo: 'Добавить в',
   inLists: 'Лежит в списках',
   newList: 'Новый список',
@@ -378,7 +379,7 @@ const ru = {
   rename: 'Название списка',
   listCopied: 'Список скопирован',
   listEmptyHint:
-    'Пока пусто. Откройте «Таблицы» или «Поиск», отметьте нужное галочками и нажмите «Добавить в список» - или сделайте это прямо с карточки предмета.',
+    'Пока пусто. Откройте «Таблицы» или «Поиск», отметьте нужное галочками и нажмите «В список» - или сделайте это прямо с карточки предмета.',
   itemNotLoaded: 'Предмет не загружен',
   listNotFound: 'Список не найден',
   listNotFoundSub: 'Возможно, он удалён или открыт в другом браузере.',
@@ -569,6 +570,7 @@ const ru = {
   hbTablesSignIn: 'Войдите, чтобы видеть свои предметы в таблицах.',
   ownSwitch: 'Свои предметы',
   hbLoadFailed: 'Не получилось загрузить ваши предметы.',
+  hbLoadFailedTitle: 'Не получилось загрузить ваши предметы',
   edit: 'Изменить',
   hbNotAdded: 'Свой предмет нельзя добавить в этот список.',
   hbNotReady: 'Ваши предметы ещё загружаются - это может занять минуту. Повторите чуть позже.',
@@ -1104,8 +1106,13 @@ const ru = {
     'Не получилось скрыть изменения. Проверьте соединение и попробуйте ещё раз.',
   itemFrom: 'Предмет другого игрока',
   itemFailed: 'Предмет не загрузился',
+  noItem: 'Предмета по этому адресу нет',
+  noItemSub:
+    'Адрес %s не ведёт ни к одному предмету. Ссылка могла устареть или быть набрана с ошибкой.',
+  findItem: 'Найти предмет',
+  openTables: 'Открыть таблицы',
   saveItem: 'Сохранить себе',
-  saveItemNote: 'Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с оригиналом.',
+  saveItemSignIn: 'Сначала вход в аккаунт',
   saveItemNoteList:
     'Копия попадёт в «Хоумбрю», а строки ваших списков с этим предметом будут вести на неё.',
   signInToSaveItem: 'Войдите, и копия предмета сохранится в «Мои предметы».',
@@ -1364,6 +1371,7 @@ const en: Dict = {
   sectionLinkCopied: 'Section link copied',
 
   addToList: 'Add to list',
+  toList: 'Add to list',
   addTo: 'Add to',
   inLists: 'Sits in lists',
   newList: 'New list',
@@ -1595,6 +1603,7 @@ const en: Dict = {
   hbTablesSignIn: 'Sign in to see your own items in the tables.',
   ownSwitch: 'Own items',
   hbLoadFailed: 'Could not load your items.',
+  hbLoadFailedTitle: 'Could not load your items',
   edit: 'Edit',
   hbNotAdded: 'Your own item cannot go into this list.',
   hbNotReady: 'Your items are still loading - this can take a minute. Try again shortly.',
@@ -2113,8 +2122,12 @@ const en: Dict = {
   noticeHideFailed: 'Could not hide the changes. Check the connection and try again.',
   itemFrom: "Another player's item",
   itemFailed: 'The item did not load',
-  saveItem: 'Save to my items',
-  saveItemNote: 'The copy goes to "Homebrew" and no longer changes with the original.',
+  noItem: 'No item at this address',
+  noItemSub: 'The address %s leads to no item. The link may be old or mistyped.',
+  findItem: 'Find the item',
+  openTables: 'Open the tables',
+  saveItem: 'Save to My items',
+  saveItemSignIn: 'Signs you in first',
   saveItemNoteList:
     'The copy goes to "Homebrew", and the rows of your lists that hold this item will point to it.',
   signInToSaveItem: 'Sign in and a copy of the item is saved to My items.',
@@ -2122,7 +2135,7 @@ const en: Dict = {
   saveItemRelinked: 'Item "%s" saved to My items; the rows of your lists now point to the copy',
   saveItemFailed: 'Could not save the item to your items. Check the connection and try again.',
   saveItemRefused:
-    'The server did not accept the copy: the data in your account changed. Press "Save to my items" again.',
+    'The server did not accept the copy: the data in your account changed. Press "Save to My items" again.',
   copyArtFailed: 'Could not copy the picture - the copy was saved without it.',
   requestsWaitN: '%n request waits for an answer|%n requests wait for an answer',
 

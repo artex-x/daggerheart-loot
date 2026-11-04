@@ -73,7 +73,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     checkbox "Выбрать все" [focused=true checked=false]
     generic ""
       StaticText "Выбрано: 0"
-    button "Добавить в список" [disabled=true expanded=false]
+    button "В список" [disabled=true expanded=false]
     button "Печать" [description=Собрать карточки для печати: девять на лист A4 disabled=true]
     button "Скопировать текст" [disabled=true]
     button "Снять выделение"
@@ -309,6 +309,7 @@ daggerheart.com
 Булава
 Булава Скверны
 БулаваФизическое · Сила · Вплотную · d8+1 физ · Одноручное
+В список
 Веер из Лезвий
 Веер из ЛезвийФизическое · Влияние · Вплотную · d8+3 физ · Однор... [namelen=69 namehash=dd5b48c7]
 Венчик
@@ -368,7 +369,6 @@ daggerheart.com
 Длинный ЛукФизическое · Проворность · Очень далеко · d8+3 физ · ... [namelen=73 namehash=1901d32c]
 Длинный Меч
 Длинный МечФизическое · Проворность · Вплотную · d10+3 физ · Дву... [namelen=70 namehash=2773aef6]
-Добавить в список
 Дополнения
 Дочь Зелени
 Драконий Клык

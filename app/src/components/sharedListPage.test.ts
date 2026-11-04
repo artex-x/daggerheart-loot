@@ -183,7 +183,7 @@ describe('heading and sub', () => {
     expect(screen.getByRole('button', { name: 'Сохранить себе' })).not.toHaveAttribute(
       'aria-expanded'
     );
-    expect(screen.queryByRole('button', { name: 'Добавить в список' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'В список' })).not.toBeInTheDocument();
     /* Printing a shared list used to mean ticking every row by
        hand - `ontoggleall` now reaches the shared `AppState.toggleAllIn`,
        the same one the tables and search pages already used. */
@@ -205,7 +205,7 @@ describe('with a row ticked', () => {
     const box = rowCheckboxes()[0] as HTMLElement;
     await userEvent.click(box);
 
-    const addButtons = screen.getAllByRole('button', { name: 'Добавить в список' });
+    const addButtons = screen.getAllByRole('button', { name: 'В список' });
     expect(addButtons).toHaveLength(1);
     const bar = container.querySelector('.selbarwrap') as HTMLElement;
     expect(bar).toContainElement(addButtons[0] ?? null);
@@ -367,7 +367,7 @@ describe('adding to an existing list', () => {
     await userEvent.click(rowCheckbox);
 
     const bar = document.querySelector('.selbarwrap') as HTMLElement;
-    await userEvent.click(within(bar).getByRole('button', { name: 'Добавить в список' }));
+    await userEvent.click(within(bar).getByRole('button', { name: 'В список' }));
     await userEvent.click(await within(bar).findByRole('button', { name: 'Клад дракона' }));
 
     const a = await readList(cloud, page, DRAGON);
@@ -381,7 +381,7 @@ describe('adding to an existing list', () => {
 
     await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все (3)' }));
     const bar = document.querySelector('.selbarwrap') as HTMLElement;
-    await userEvent.click(within(bar).getByRole('button', { name: 'Добавить в список' }));
+    await userEvent.click(within(bar).getByRole('button', { name: 'В список' }));
     await userEvent.click(await within(bar).findByRole('button', { name: 'Клад дракона' }));
 
     const a = await readList(cloud, page, DRAGON);
@@ -408,7 +408,7 @@ describe('adding to an existing list', () => {
 
     await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все (2)' }));
     const bar = document.querySelector('.selbarwrap') as HTMLElement;
-    await userEvent.click(within(bar).getByRole('button', { name: 'Добавить в список' }));
+    await userEvent.click(within(bar).getByRole('button', { name: 'В список' }));
     await userEvent.click(await within(bar).findByRole('button', { name: 'Клад дракона' }));
 
     const a = await readList(cloud, page, DRAGON);
@@ -429,7 +429,7 @@ describe('adding to an existing list', () => {
     await userEvent.click(rowCheckbox);
 
     const bar = document.querySelector('.selbarwrap') as HTMLElement;
-    await userEvent.click(within(bar).getByRole('button', { name: 'Добавить в список' }));
+    await userEvent.click(within(bar).getByRole('button', { name: 'В список' }));
     await userEvent.click(await within(bar).findByRole('button', { name: '+ Новый список' }));
 
     const input = screen.getByPlaceholderText('Например: клад дракона');
@@ -626,7 +626,7 @@ describe('the taken count and the total', () => {
     await tickAllAndTakeTwo();
 
     const bar = document.querySelector('.selbarwrap') as HTMLElement;
-    await userEvent.click(within(bar).getByRole('button', { name: 'Добавить в список' }));
+    await userEvent.click(within(bar).getByRole('button', { name: 'В список' }));
     await userEvent.click(await within(bar).findByRole('button', { name: 'Клад дракона' }));
 
     const a = await readList(cloud, page, DRAGON);
@@ -1071,7 +1071,7 @@ describe('accessibility', () => {
     const box = rowCheckboxes()[0] as HTMLElement;
     await userEvent.click(box);
     const bar = container.querySelector('.selbarwrap') as HTMLElement;
-    await userEvent.click(within(bar).getByRole('button', { name: 'Добавить в список' }));
+    await userEvent.click(within(bar).getByRole('button', { name: 'В список' }));
     await userEvent.click(await within(bar).findByRole('button', { name: '+ Новый список' }));
     expect(screen.getByPlaceholderText('Например: клад дракона')).toBeInTheDocument();
     await expectNoA11yViolations(container);
@@ -1312,9 +1312,9 @@ describe('a purchase request', () => {
 
   describe('flow b', () => {
     const addButton = (): HTMLElement =>
-      within(bar()).getByRole('button', { name: 'Добавить в список' });
+      within(bar()).getByRole('button', { name: 'В список' });
     const addToOwn = async (): Promise<void> => {
-      await userEvent.click(within(bar()).getByRole('button', { name: 'Добавить в список' }));
+      await userEvent.click(within(bar()).getByRole('button', { name: 'В список' }));
       await userEvent.click(within(bar()).getByRole('button', { name: 'Список второго ГМа' }));
     };
     const signedIn = async (notifyGm?: 'always' | 'never') => {
@@ -1332,7 +1332,7 @@ describe('a purchase request', () => {
       const q = within(bar()).getByRole('group', {
         name: 'Сообщить владельцу списка, что вы взяли эти предметы?'
       });
-      expect(within(bar()).queryByRole('button', { name: 'Добавить в список' })).toBeNull();
+      expect(within(bar()).queryByRole('button', { name: 'В список' })).toBeNull();
       await waitFor(() => {
         expect(document.activeElement?.id).toBe('notifyq-text');
       });
@@ -1412,7 +1412,7 @@ describe('a purchase request', () => {
       await userEvent.click(within(bar()).getByRole('button', { name: 'Снять выделение' }));
       await userEvent.click(screen.getByRole('button', { name: /Спальный мешок/ }));
       const dialog = screen.getByRole('dialog');
-      await userEvent.click(within(dialog).getByRole('button', { name: 'Добавить в список' }));
+      await userEvent.click(within(dialog).getByRole('button', { name: 'В список' }));
       await userEvent.click(within(dialog).getByRole('button', { name: 'Список второго ГМа' }));
       expect(await screen.findByText('Добавлено в «Список второго ГМа»')).toBeInTheDocument();
       expect(document.querySelector('.notifyq')).toBeNull();

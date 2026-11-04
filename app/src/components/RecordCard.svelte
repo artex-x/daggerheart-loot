@@ -51,11 +51,18 @@
 
   interface Props {
     /**
-     * `full` is the record's own page: the picture on top, at full width.
+     * `full` is the whole record: the picture on top, at full width, on a plate.
      * `compact` is a result or a table row: the picture beside the text at
      * 132px, and the name is a link to the page rather than a heading of it.
      */
     variant?: 'full' | 'compact';
+    /** The record page and the dialog: no plate, the picture beside the text from 761 px
+     *  and 4:3 above it below (DESIGN.md, "The Dossier Rule"). */
+    dossier?: boolean;
+    /** `h1` where the card is the page. */
+    heading?: 'h1' | 'h2';
+    /** The lines under the name: where the record is from, when it changed. */
+    sub?: Snippet | undefined;
     it: Record_;
     index: Index;
     lang: Lang;
@@ -82,12 +89,12 @@
      * opens a different rung of the same upgrade line.
      */
     onopen?: ((r: Record_) => void) | undefined;
-    /** The two icon buttons beside the name: copy the name, copy the link. */
+    /** The two icon buttons beside the name on a compact card: copy the name, copy the link. */
     nameActions?: Snippet;
     /** The labeled row under the description: send, picture, text. */
     actions?: Snippet;
-    /** The add-to-list control and the print link, off `listPicker` in app.js -
-     *  only the full card draws it, the same as `actions`. */
+    /** The action row, or the add-to-list control in the editor's preview - only the full
+     *  card draws it, the same as `actions`. */
     pick?: Snippet | undefined;
     /** The viewer is the author: an own set's name and each own rule card link to their
      *  tabs on «Мои предметы». The account's own card on a catalog record links there too. */
@@ -96,6 +103,9 @@
 
   const {
     variant = 'full',
+    dossier = false,
+    heading = 'h2',
+    sub,
     it,
     index,
     lang,
@@ -226,7 +236,13 @@
 <!-- eslint-disable @typescript-eslint/no-confusing-void-expression, svelte/no-useless-mustaches --
      a `{@render}` tag reads as a void expression to the first rule; `{' '}` keeps the space
      before a fold button, which a block's edge would trim. -->
-<article class="card {variant}" data-id={it.id}>
+<!-- A homebrew record's mark in a relation line. The text outside the card keeps «(HB)»
+     (`relName`). -->
+{#snippet hbBadge(r: Record_)}
+  {#if isHomebrewRecord(r)}{' '}<Badge cls="hb">{t.srcHomebrew}</Badge>{/if}
+{/snippet}
+
+<article class="card {variant}" class:dossier data-id={it.id}>
   <!-- A button rather than a figure: on a table row it opens the record, and
        the full card keeps the element so the two stay one component. -->
   <button type="button" class="card-media" aria-label={t.openPage} onclick={() => onopen?.(it)}>
@@ -259,7 +275,7 @@
       <Badge cls="src">{srcLabel(it, lang)}</Badge>
     </div>
 
-    <h2 class="card-name">
+    <svelte:element this={heading} class="card-name">
       {#if variant === 'compact'}
         <!-- A link, because from a result the name is the way to the page. -->
         <a href={pathOf(recordHref(it), hrefLang)} title={t.openPage}>{name}</a>
@@ -269,7 +285,10 @@
       {#if nameActions}
         <span class="card-name-acts">{@render nameActions()}</span>
       {/if}
-    </h2>
+    </svelte:element>
+    {#if sub}
+      <div class="card-sub">{@render sub()}</div>
+    {/if}
 
     {#if stats.length}
       <div class="eqstats">
@@ -330,8 +349,8 @@
             <span class="craft-l">{t.craftFrom}</span>
             <span
               >{#each fromFold.shown as r, i (r.id)}{i > 0 ? ', ' : ''}<a
-                  href={pathOf(recordHref(r), hrefLang)}>{relName(r, lang)}</a
-                >{/each}{#if fromFold.more}{' '}{@render moreButton(
+                  href={pathOf(recordHref(r), hrefLang)}>{nameOf(r, lang)}</a
+                >{@render hbBadge(r)}{/each}{#if fromFold.more}{' '}{@render moreButton(
                   'from',
                   fromFold.more
                 )}{/if}</span
@@ -344,8 +363,8 @@
             <span class="craft-l">{t.craftInto}</span>
             <span
               >{#each intoFold.shown as r, i (r.id)}{i > 0 ? ', ' : ''}<a
-                  href={pathOf(recordHref(r), hrefLang)}>{relName(r, lang)}</a
-                >{/each}{#if intoFold.more}{' '}{@render moreButton(
+                  href={pathOf(recordHref(r), hrefLang)}>{nameOf(r, lang)}</a
+                >{@render hbBadge(r)}{/each}{#if intoFold.more}{' '}{@render moreButton(
                   'into',
                   intoFold.more
                 )}{/if}</span
@@ -366,10 +385,12 @@
               >{#each setFold.shown as member, i (member.id)}{i > 0
                   ? ', '
                   : ''}{#if member.id === it.id}<span aria-current="true"
-                    >{relName(member, lang)}</span
+                    >{nameOf(member, lang)}</span
                   >{:else}<a href={pathOf(recordHref(member), hrefLang)}
-                    >{relName(member, lang)}</a
-                  >{/if}{/each}{#if setFold.more}{' '}{@render moreButton(
+                    >{nameOf(member, lang)}</a
+                  >{/if}{@render hbBadge(
+                  member
+                )}{/each}{#if setFold.more}{' '}{@render moreButton(
                   'set',
                   setFold.more
                 )}{/if}</span
@@ -834,6 +855,22 @@
     display: none;
   }
 
+  /* The fold's own mark, the look of `Button`'s caret: the box would read as a button
+     without it. */
+  .refs summary::after {
+    content: '';
+    margin-left: auto;
+    border: 4px solid transparent;
+    border-top-color: var(--muted2);
+    transform: translateY(2px);
+  }
+
+  .refs details[open] summary::after {
+    border-top-color: transparent;
+    border-bottom-color: var(--muted2);
+    transform: translateY(-2px);
+  }
+
   .refs summary :global(svg) {
     fill: var(--muted2);
   }
@@ -919,6 +956,85 @@
     .card :global(.card-acts .btn.sm:has(.btn-lbl)) {
       padding: 0 10px;
       gap: 0;
+    }
+  }
+
+  /* ---------- the dossier ----------
+     Last: these override the card's base and phone rules of equal specificity. */
+  .card.dossier {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+    background: none;
+    border: 0;
+    box-shadow: none;
+    overflow: visible;
+    animation: none;
+  }
+
+  .card.dossier .card-media {
+    max-height: none;
+    aspect-ratio: 4 / 3;
+    border-radius: var(--r);
+  }
+
+  .card.dossier .card-body {
+    padding: 0;
+  }
+
+  .card.dossier .card-name {
+    font-size: var(--t-page);
+    font-weight: var(--h-page-weight);
+    letter-spacing: var(--h-page-spacing);
+  }
+
+  .card-sub {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .card-sub :global(.subline) {
+    margin: 0;
+    font-size: var(--t-small);
+    color: var(--muted);
+    overflow-wrap: anywhere;
+  }
+
+  .card-sub :global(.updated) {
+    margin: 0;
+  }
+
+  /* `position` anchors «Ещё» up to 760 px (PickRow.svelte). */
+  .card.dossier .cardpick {
+    position: relative;
+    gap: 8px;
+    margin-top: 6px;
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  @media (max-width: 760px) {
+    .card.dossier .cardpick :global(.seldrop) {
+      flex: 1 0 100%;
+    }
+
+    .card.dossier .cardpick :global(.seldrop > .btn) {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  @media (min-width: 761px) {
+    .card.dossier {
+      grid-template-columns: clamp(260px, 40%, 460px) minmax(0, 1fr);
+      gap: 32px;
+      align-items: start;
+    }
+
+    .card.dossier .card-media {
+      aspect-ratio: 1;
     }
   }
 </style>

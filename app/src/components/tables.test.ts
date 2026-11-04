@@ -483,9 +483,9 @@ async function openBar(lists: SeedList[] = TWO_LISTS) {
   return { ...view, cloud, page };
 }
 
-/** Presses «Добавить в список» and waits for the menu's newest chip. */
+/** Presses «В список» and waits for the menu's newest chip. */
 async function openBarMenu(first = 'Лавка в порту'): Promise<void> {
-  await userEvent.click(screen.getByRole('button', { name: 'Добавить в список' }));
+  await userEvent.click(screen.getByRole('button', { name: 'В список' }));
   await screen.findByRole('button', { name: first });
 }
 
@@ -505,7 +505,7 @@ describe('the selection bar', () => {
     expect(container.querySelector('.selsumm')).toHaveAttribute('aria-live', 'polite');
     expect(container.querySelector('.seltotal')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Снять выделение' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Добавить в список' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: 'В список' })).toHaveAttribute(
       'aria-expanded',
       'false'
     );
@@ -585,7 +585,7 @@ describe('the selection bar', () => {
       expect(all).toHaveFocus();
     });
     expect(container.querySelector('.selcount')).toHaveTextContent('Выбрано: 0');
-    expect(screen.getByRole('button', { name: 'Добавить в список' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'В список' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Скопировать текст' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Снять выделение' })).toBeEnabled();
     await expectNoA11yViolations(container);

@@ -1,0 +1,6 @@
+# 2026-11-04 - The record page is a dossier, the actions are one row, and «Ещё» is a menu
+
+- Task: `57` (the owner's mock 4 and its reviews, 2026-10-29; the AFK defaults of the batch 4 refresh).
+- Decision: `/i/`, `/h/` and the record dialog draw one dossier (`RecordCard` `dossier`); the actions are «В список» (the one gold primary), «Поделиться», «Печать», «Изменить» and «Ещё», which holds the four copies and «Сохранить себе» with a second line; «Ещё» is the shipped `Menu` at every width; the error pages of the two item routes use `ErrorPage`.
+- Rejected: «Ещё» as a bottom sheet at 360 (a `Sheet` nested in a modal dialog resets `app.dialogOpen` and draws two toasts; batch 8 decides it with the add-to-list menu); the record dialog built on `Sheet` (a remount at 761 px); the name above the badge row (the artwork review pins the head order); the mock's short path line (the spec writes the complete path); a skeleton for `/h/` (a new state and motion rule); changing `rollNo` (it rewrites the share stubs; batch 10).
+- Accepted trade-off: at 360 «Ещё» is a popover, not a thumb-height sheet; the `h1` sits under the badge row; «(HB)» stays in text outside the card while the card draws a badge.

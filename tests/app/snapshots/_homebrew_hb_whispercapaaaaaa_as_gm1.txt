@@ -66,7 +66,7 @@ RootWebArea "Whispering Cap - Генератор лута Daggerheart" [url=/hom
     StaticText "HOMEBREW"
     heading "Whispering Cap" [level=2]
     StaticText "Once per rest, hear one sentence spoken within Far range."
-    button "Добавить в список" [expanded=false]
+    button "В список" [expanded=false]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -87,9 +87,9 @@ daggerheart.com
 Аккаунт: gm1@example.test
 Без ранга
 Бросок
+В список
 Выбрать из предметов
 Выбрать файл
-Добавить в список
 Жирный
 К моим предметам
 К содержимому

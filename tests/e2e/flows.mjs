@@ -320,8 +320,8 @@ export async function runFlows({ env, admin, member, browser, base }) {
       const [made] = await mine();
 
       await d.open('#/i/ci1');
-      await waitControl(page, 'F7', 'Добавить в список');
-      await d.press('Добавить в список');
+      await waitControl(page, 'F7', 'В список');
+      await d.press('В список');
       await waitControl(page, 'F7', 'E2E список');
       await d.press('E2E список');
       await until('F7: ci1 did not reach the list', async () => {
@@ -389,8 +389,8 @@ export async function runFlows({ env, admin, member, browser, base }) {
       listId = (await mine())[0].id;
 
       await d.open('#/i/ci1');
-      await waitControl(page, 'F8', 'Добавить в список');
-      await d.press('Добавить в список');
+      await waitControl(page, 'F8', 'В список');
+      await d.press('В список');
       await waitControl(page, 'F8', 'E2E ссылки');
       await d.press('E2E ссылки');
       await until('F8: ci1 did not reach the list', async () => {
@@ -483,7 +483,7 @@ export async function runFlows({ env, admin, member, browser, base }) {
             ?.getAttribute('aria-label')
             ?.startsWith('Аккаунт: ') ?? false
       );
-      await d.press('Сохранить себе');
+      await d.more('Сохранить себе');
       await waitFor(
         page,
         'e2e F8: «Сохранить себе» did not open the copy',
@@ -879,8 +879,8 @@ export async function runFlows({ env, admin, member, browser, base }) {
       const key = item.key;
 
       await d.open('#/i/' + key);
-      await waitControl(page, 'F15', 'Добавить в список');
-      await d.press('Добавить в список');
+      await waitControl(page, 'F15', 'В список');
+      await d.press('В список');
       await d.press('+ Новый список');
       await d.type('Например: клад дракона', 'F15');
       await d.press('Создать');
@@ -1153,6 +1153,8 @@ export async function runFlows({ env, admin, member, browser, base }) {
       await d.open('#/h/' + item.id);
       await waitText(page, 'F18', 'Фонарь F18');
       await waitText(page, 'F18', 'Предмет другого игрока');
+      await waitControl(page, 'F18', 'Ещё');
+      await d.openMore();
       await waitControl(page, 'F18', 'Сохранить себе');
       await expectInPage(
         page,
@@ -1336,8 +1338,8 @@ export async function runFlows({ env, admin, member, browser, base }) {
     await withPage(ctx, await mint(env, admin, saver.email), async (page, d) => {
       await d.open('#/h/' + lamp.id);
       await waitText(page, 'F20', 'Фонарь F20');
-      await waitControl(page, 'F20', 'Сохранить себе');
-      await d.press('Сохранить себе');
+      await waitControl(page, 'F20', 'Ещё');
+      await d.more('Сохранить себе');
       await until("F20: the reader's copy did not get a picture of its own", async () => {
         const items = await itemsOf(saver.id);
         copy = items[0]?.art ?? null;

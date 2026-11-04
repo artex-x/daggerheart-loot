@@ -317,7 +317,7 @@ bare address and an anchor are kept as written; an address with a second
 a section of the chosen source is rewritten once to the chosen chip.
 
 An own item opens at `#/i/<key>` for its author only: any other reader,
-signed out included, gets «Предмет не найден». A key lives in one account,
+signed out included, gets the not-found page. A key lives in one account,
 so an agent cannot build one (`FEATURES.md`, "Homebrew").
 
 ## Fallback

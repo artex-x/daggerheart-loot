@@ -1,6 +1,6 @@
 # #/h/00000000-0000-4000-8000-000000000662
 # route: #/h/00000000-0000-4000-8000-000000000662
-# why: signed out: «Скатка следопыта», the sub «Предмет другого игрока · Хоумбрю», «Получается из» «Скатка путника», «Улучшается до» «Скатка стража», «Комплект» «Походный плед», «Подушка из мха», «Скатка следопыта» (current), the bonus «Сон под звёздами»; «Добавить в список» and «Сохранить себе» with its note, no «Печать», no «Изменить», no table link
+# why: signed out: «Скатка следопыта», the sub «Предмет другого игрока · Хоумбрю», «Получается из» «Скатка путника», «Улучшается до» «Скатка стража», «Комплект» «Походный плед», «Подушка из мха», «Скатка следопыта» (current), the bonus «Сон под звёздами»; the action row with no «Изменить» and no table link
 
 ## ru :: tree
 RootWebArea "Скатка следопыта - Генератор лута Daggerheart" [url=/h/00000000-0000-4000-8000-000000000662?v=<v>]
@@ -17,25 +17,21 @@ RootWebArea "Скатка следопыта - Генератор лута Dagge
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
-    heading "Скатка следопыта" [level=1]
-    StaticText "Предмет другого игрока · Хоумбрю"
-    StaticText "Обновлено 11 часов назад"
     button "Страница"
-    ... StaticText x11 of 15 same-shape siblings elided
-    button "Скопировать название" [description=Скопировать название]
-    button "Скопировать ссылку" [description=Скопировать ссылку]
-    link "Скатка путника (HB)" [url=/h/00000000-0000-4000-8000-000000000661]
-    link "Скатка стража (HB)" [url=/h/00000000-0000-4000-8000-000000000663]
-    link "Подушка из мха (HB)" [url=/h/00000000-0000-4000-8000-000000000664]
-    link "Походный плед (HB)" [url=/h/00000000-0000-4000-8000-000000000665]
+    StaticText "ПРЕДМЕТ"
+    StaticText "ХОУМБРЮ"
+    heading "Скатка следопыта" [level=1]
+    ... StaticText x14 of 18 same-shape siblings elided
+    link "Скатка путника" [url=/h/00000000-0000-4000-8000-000000000661]
+    link "Скатка стража" [url=/h/00000000-0000-4000-8000-000000000663]
+    link "Подушка из мха" [url=/h/00000000-0000-4000-8000-000000000664]
+    link "Походный плед" [url=/h/00000000-0000-4000-8000-000000000665]
+    StaticText "Сон под звёздами:"
     StaticText " Два предмета комплекта: вы просыпаетесь отдохнувшим даже на гол..." [namelen=73 namehash=d14a4e49]
-    button "Отправить"
-    button "Скопировать изображение" [description=Скопировать изображение]
-    button "Скопировать текст" [description=Скопировать текст]
-    button "Добавить в список" [expanded=false]
+    button "В список" [expanded=false]
+    button "Поделиться"
     button "Печать" [description=Собрать карточки для печати: девять на лист A4 expanded=false]
-    button "Сохранить себе" [description=Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с оригиналом. expanded=false]
-    StaticText "Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с ор..." [namelen=73 namehash=76f4ba3e]
+    button "Ещё" [expanded=false haspopup=menu]
     status ""
   contentinfo ""
     navigation "Страницы сайта"
@@ -49,23 +45,19 @@ EN
 RU
 daggerheart.com
 Бросок
+В список
 Войти
-Добавить в список
+Ещё
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
-Отправить
 Печать
-Подушка из мха (HB)
+Поделиться
+Подушка из мха
 Поиск
-Походный плед (HB)
-Скатка путника (HB)
-Скатка стража (HB)
-Скопировать изображение
-Скопировать название
-Скопировать ссылку
-Скопировать текст
-Сохранить себе
+Походный плед
+Скатка путника
+Скатка стража
 Страница
 Таблицы
 Условия использования
@@ -86,25 +78,21 @@ RootWebArea "Ranger's Roll - Daggerheart Loot Generator" [url=/en/h/00000000-000
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
-    heading "Ranger's Roll" [level=1]
-    StaticText "Another player's item · Homebrew"
-    StaticText "Updated 11 hours ago"
     button "Page"
-    ... StaticText x11 of 15 same-shape siblings elided
-    button "Copy name" [description=Copy name]
-    button "Copy link" [description=Copy link]
-    link "Traveller's Roll (HB)" [url=/en/h/00000000-0000-4000-8000-000000000661]
-    link "Sentry's Roll (HB)" [url=/en/h/00000000-0000-4000-8000-000000000663]
-    link "Camp Blanket (HB)" [url=/en/h/00000000-0000-4000-8000-000000000665]
-    link "Moss Pillow (HB)" [url=/en/h/00000000-0000-4000-8000-000000000664]
+    StaticText "ITEM"
+    StaticText "HOMEBREW"
+    heading "Ranger's Roll" [level=1]
+    ... StaticText x14 of 18 same-shape siblings elided
+    link "Traveller's Roll" [url=/en/h/00000000-0000-4000-8000-000000000661]
+    link "Sentry's Roll" [url=/en/h/00000000-0000-4000-8000-000000000663]
+    link "Camp Blanket" [url=/en/h/00000000-0000-4000-8000-000000000665]
+    link "Moss Pillow" [url=/en/h/00000000-0000-4000-8000-000000000664]
+    StaticText "Sleep Under the Stars:"
     StaticText " Two pieces of the set: you wake rested even on bare ground."
-    button "Share"
-    button "Copy image" [description=Copy image]
-    button "Copy text" [description=Copy text]
     button "Add to list" [expanded=false]
+    button "Share"
     button "Print" [description=Lay these out for printing: nine to an A4 sheet expanded=false]
-    button "Save to my items" [description=The copy goes to "Homebrew" and no longer changes with the original. expanded=false]
-    StaticText "The copy goes to "Homebrew" and no longer changes with the origi..." [namelen=68 namehash=82c4f1ca]
+    button "More" [expanded=false haspopup=menu]
     status ""
   contentinfo ""
     navigation "Site pages"
@@ -115,27 +103,23 @@ RootWebArea "Ranger's Roll - Daggerheart Loot Generator" [url=/en/h/00000000-000
 
 ## en :: controls
 Add to list
-Camp Blanket (HB)
-Copy image
-Copy link
-Copy name
-Copy text
+Camp Blanket
 EN
 Install as an app
 LootDaggerheart
-Moss Pillow (HB)
+More
+Moss Pillow
 Page
 Print
 Privacy
 RU
 Roll
-Save to my items
 Search
-Sentry's Roll (HB)
+Sentry's Roll
 Share
 Sign in
 Skip to content
 Tables
 Terms of use
-Traveller's Roll (HB)
+Traveller's Roll
 daggerheart.com

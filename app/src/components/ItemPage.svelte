@@ -1,26 +1,25 @@
 <script lang="ts">
   /* The page at #/h/<uuid>: one homebrew item by its id, for everyone, in the record page's
      shape. A reader sees «Предмет другого игрока» first in the line under the heading, and
-     «Сохранить себе» instead of «Печать» and «Изменить»; the author sees the own record's
+     «Сохранить себе» in «Ещё» instead of «Изменить»; the author sees the own record's
      controls. A related item of the author opens its own page; a catalog record opens over
      this one. The page draws the item's latest edit, and says a changed re-read and an item
      that goes while drawn (docs/specs/FEATURES.md, "Records"). */
   import { onDestroy, untrack } from 'svelte';
   import Button from './Button.svelte';
+  import ErrorPage from './ErrorPage.svelte';
   import LoadState from './LoadState.svelte';
   import NoData from './NoData.svelte';
-  import PageTitle from './PageTitle.svelte';
+  import NoItem from './NoItem.svelte';
   import PickRow from './PickRow.svelte';
-  import RecordActions from './RecordActions.svelte';
   import RecordCard from './RecordCard.svelte';
   import RecordHost from './RecordHost.svelte';
   import StatusRegion from './StatusRegion.svelte';
   import TableLink from './TableLink.svelte';
   import UpdatedLine from './UpdatedLine.svelte';
   import { isCloudId } from '../lib/cloudLists.js';
-  import { cardVersion, itemHash, sectionHash, tablesHash } from '../lib/hash.js';
+  import { cardVersion, itemHash, tablesHash } from '../lib/hash.js';
   import { isHomebrewRecord } from '../lib/homebrew.js';
-  import { nameOf } from '../lib/i18n.js';
   import { tableOf, whereFrom } from '../lib/label.js';
   import type { Record_ } from '../lib/types.js';
   import type { AppState } from '../state/app.svelte.js';
@@ -105,30 +104,35 @@
     {#if !app.catalog}
       <NoData>{t.noData}</NoData>
     {:else if !readable || view?.status === 'gone'}
-      <PageTitle title={t.notFound} sub={t.notFoundSub} />
-      <Button variant="primary" href={app.href(sectionHash('roll/std'))} sameTab
-        >{t.toStart}</Button
-      >
+      <NoItem {app} />
     {:else if view?.status === 'error'}
-      <PageTitle title={t.itemFailed} sub={t.sharedFailedSub} />
-      <Button variant="primary" onclick={() => void view.retry()}>{t.retry}</Button>
+      <ErrorPage title={t.itemFailed}>
+        {t.sharedFailedSub}
+        {#snippet actions()}
+          <Button variant="primary" onclick={() => void view.retry()}>{t.retry}</Button>
+        {/snippet}
+      </ErrorPage>
     {:else if !it || !index}
       <LoadState {t} failed={false} text={t.itemFailed} onretry={() => void view?.retry()} />
     {:else}
       {#snippet sub()}
-        {where}
-        {#if table}
-          <TableLink
-            href={app.href(tablesHash(table, { anchor: it.id }))}
-            label={t.showInTable}
-          />
-        {/if}
+        <p class="subline">
+          {where}
+          {#if table}
+            <TableLink
+              href={app.href(tablesHash(table, { anchor: it.id }))}
+              label={t.showInTable}
+            />
+          {/if}
+        </p>
+        {#if view?.updatedAt}<UpdatedLine {app} at={view.updatedAt} />{/if}
       {/snippet}
-      <PageTitle title={nameOf(it, app.lang)} {sub} />
-      {#if view?.updatedAt}<UpdatedLine {app} at={view.updatedAt} />{/if}
 
       <div class="itempage" data-primary>
         <RecordCard
+          dossier
+          heading="h1"
+          {sub}
           {it}
           {index}
           lang={app.lang}
@@ -139,14 +143,8 @@
           onopen={opener(openRecord)}
           manage={view?.mine ?? false}
         >
-          {#snippet nameActions()}
-            <RecordActions {app} {index} {it} row="name" />
-          {/snippet}
-          {#snippet actions()}
-            <RecordActions {app} {index} {it} row="card" />
-          {/snippet}
           {#snippet pick()}
-            <PickRow {app} {it} owner={view?.mine ?? false} />
+            <PickRow {app} {it} {index} owner={view?.mine ?? false} />
           {/snippet}
         </RecordCard>
       </div>
@@ -155,15 +153,9 @@
       <!-- Mounted across the ready, gone and error branches; keyed, so a second change
            is said again. -->
       <StatusRegion
-        text={lost ? t.notFound : view?.changes ? t.itemUpdated : ''}
+        text={lost ? t.noItem : view?.changes ? t.itemUpdated : ''}
         key={lost ? -1 : view?.changes}
       />
     {/if}
   {/snippet}
 </RecordHost>
-
-<style>
-  .itempage {
-    max-width: 520px;
-  }
-</style>

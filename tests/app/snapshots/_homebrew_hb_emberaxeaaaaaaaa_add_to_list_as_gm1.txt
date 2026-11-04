@@ -1,6 +1,6 @@
 # #/homebrew/hb_emberaxeaaaaaaaa ~ add to list as gm1
 # route: #/homebrew/hb_emberaxeaaaaaaaa
-# why: the preview card's «Добавить в список» pressed: its menu open on gm1's lists, the form unchanged
+# why: the preview card's «В список» pressed: its menu open on gm1's lists, the form unchanged
 # as: gm1
 
 ## ru :: tree
@@ -108,7 +108,7 @@ RootWebArea "Топор Тлеющих Углей - Генератор лута 
     ... StaticText x8 of 12 same-shape siblings elided
     heading "Топор Тлеющих Углей" [level=2]
     StaticText "Лезвие тлеет и не гаснет под дождём."
-    button "Добавить в список" [expanded=true]
+    button "В список" [expanded=true]
     StaticText "ЛЕЖИТ В СПИСКАХ"
     button "Лавка кузнеца" [pressed=true]
     button "Пустой список" [pressed=false]
@@ -136,13 +136,13 @@ daggerheart.com
 Броня
 Бросок
 В линии
+В список
 Влияние
 Вплотную
 Вторичное оружие
 Второй набор характеристик
 Далеко
 Двуручное
-Добавить в список
 Жирный
 Заменить
 Знание

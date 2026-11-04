@@ -6,7 +6,7 @@
 
 import { cleanup, render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import {
   brokenStorage,
@@ -25,6 +25,9 @@ import type { Record_ } from '../lib/types.js';
 import { readLoot } from '../test/loot.js';
 
 afterEach(cleanup);
+
+/* jsdom does not implement scrollIntoView: the record's menu calls it once open. */
+Element.prototype.scrollIntoView = vi.fn();
 
 const row = (i: number, src: string): Record_ => ({
   id: `${src}${String(i)}`,
@@ -365,13 +368,10 @@ describe('the record over the page', () => {
        now. */
     await openFirst();
     const dialog = screen.getByRole('dialog');
-    for (const name of [
-      'Скопировать название',
-      'Скопировать ссылку',
-      'Отправить',
-      'Скопировать текст'
-    ]) {
-      expect(within(dialog).getByRole('button', { name }), name).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Поделиться' })).toBeInTheDocument();
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Ещё' }));
+    for (const name of ['Скопировать название', 'Скопировать ссылку', 'Скопировать текст']) {
+      expect(within(dialog).getByRole('menuitem', { name }), name).toBeInTheDocument();
     }
   });
 });

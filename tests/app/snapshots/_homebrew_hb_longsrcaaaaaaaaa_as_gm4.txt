@@ -69,7 +69,7 @@ RootWebArea "Фляга туманов - Генератор лута Daggerheart
     StaticText "МАСТЕРСКАЯ СТАРОГО ОРУЖЕЙНИКА ИЗ ДОЛИНЫ ТУМАНОВ ЗА ПЕРЕВАЛОМ У С..." [namelen=85 namehash=1aec063f]
     heading "Фляга туманов" [level=2]
     StaticText "Туман из фляги скрывает вас до конца сцены."
-    button "Добавить в список" [expanded=false]
+    button "В список" [expanded=false]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -89,9 +89,9 @@ daggerheart.com
 Без раздела+ Новый раздел...
 Без ранга
 Бросок
+В список
 Выбрать из предметов
 Выбрать файл
-Добавить в список
 Жирный
 К моим предметам
 К содержимому

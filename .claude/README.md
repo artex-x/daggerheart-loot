@@ -2376,14 +2376,14 @@ the database's part. `docs/DECISIONS.md`, 2026-09-30, "The list_entries
 touch and limit triggers run once per statement".
 
 **The configured bundle budget.** `tools/bundle-budget.mjs` has two limits:
-254 kB for the unconfigured build and 312 kB for the configured one, which
+256 kB for the unconfigured build and 314 kB for the configured one, which
 carries the account client chunk. A batch whose total passes a budget raises
 it to the measured total rounded up to the next whole kB (a printed 250.3
 gives 251; the tool compares the unrounded total, so a printed whole number
 such as 251.0 can pass 251: add 1 kB), never past 350 kB configured and 270 kB
 unconfigured (owner, 2026-10-22: "we can increase it up to 270
 defensively"). `npm run check:built` builds `dist/`
-unconfigured and so measures only the 254 kB limit. The 312 kB limit runs in
+unconfigured and so measures only the 256 kB limit. The 314 kB limit runs in
 CI's `e2e` job, after `npm run e2e` leaves the configured build in `dist/`,
 and in `deploy`. The lists release passed `check:built` locally and failed
 this step in CI (run 36228323330). A batch that adds code to the app or to
@@ -2395,8 +2395,10 @@ drops every `E2E_*` name, the secret key included, before the build:
 node --env-file=.env.test.local --input-type=module -e "import { buildEnv } from './tests/e2e/lib.mjs'; import { spawnSync } from 'node:child_process'; process.exit(spawnSync('npm run build && npm run budget', { shell: true, stdio: 'inherit', env: buildEnv(process.env) }).status ?? 1);"
 ```
 
-Expected: `within the 312 kB budget (with the account client chunk)`; 311.1 kB
-on 2026-11-04 at task 57 (the header that hides on a scroll), 253.6 kB unconfigured, from 252.8 before it; 310.6 kB
+Expected: `within the 314 kB budget (with the account client chunk)`; 312.9 kB
+locally on 2026-11-04 at task 57 (the record dossier, the action row and its menu),
+255.5 kB unconfigured, from 253.6 before it; 311.1 kB
+the same day (the header that hides on a scroll), 253.6 kB unconfigured, from 252.8 before it; 310.6 kB
 on 2026-10-22 at `persist-review` (the homebrew pages' folds, focus and long
 names, five new strings and four changed in two languages), 252.6 kB
 unconfigured, from 308.5 and 250.7 before it; 308.5 kB the same day (the print

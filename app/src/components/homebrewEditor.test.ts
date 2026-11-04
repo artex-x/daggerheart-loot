@@ -1118,19 +1118,19 @@ describe('the «?» of a field', () => {
   });
 });
 
-describe('«Добавить в список» in the preview', () => {
+describe('«В список» in the preview', () => {
   it('is absent on a new item before its first save and drawn after it', async () => {
     await editor(null);
     await userEvent.type(screen.getByLabelText(/Название/), 'Рог');
-    expect(screen.queryByRole('button', { name: t.addToList })).toBeNull();
+    expect(screen.queryByRole('button', { name: t.toList })).toBeNull();
     await save();
     await toastSays('Предмет «Рог» создан');
-    expect(await screen.findByRole('button', { name: t.addToList })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: t.toList })).toBeInTheDocument();
   });
 
   it('puts the saved item into a list as a link', async () => {
     const { cloud, page, container } = await editor(AXE);
-    await userEvent.click(screen.getByRole('button', { name: t.addToList }));
+    await userEvent.click(screen.getByRole('button', { name: t.toList }));
     await expectNoA11yViolations(container);
     await userEvent.click(await screen.findByRole('button', { name: 'Пустой список' }));
     await toastSays(t.addedTo.replace('%s', 'Пустой список'));

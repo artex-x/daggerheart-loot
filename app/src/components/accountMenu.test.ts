@@ -2,9 +2,11 @@
    keys, and every way it closes. docs/specs/FEATURES.md, "Chrome". */
 import { cleanup, render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
+import { createRawSnippet } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import AccountMenu from './AccountMenu.svelte';
+import Menu from './Menu.svelte';
 import { fakeCloud } from '../ports/fake-cloud.js';
 import { SEED } from '../ports/fake-cloud-seed.js';
 import { fakeEnv, memoryRouter, memoryStorage } from '../ports/index.js';
@@ -173,6 +175,59 @@ describe('the account menu', () => {
     expect(screen.getByRole('button', { name: CONTROL })).toBeInTheDocument();
     /* Rule 20: «Выйти» left with the menu; the account button stays and takes focus. */
     expect(screen.getByRole('button', { name: CONTROL })).toHaveFocus();
+  });
+});
+
+describe('a menu in the record dialog', () => {
+  const rect = (top: number, bottom: number): DOMRect =>
+    ({ top, bottom, left: 0, right: 0, width: 0, height: bottom - top }) as DOMRect;
+
+  /* A control at `at` in a card from 100 to 600, and a menu of 200 px. */
+  function open(at: number, up = true): HTMLElement {
+    const card = document.createElement('div');
+    card.className = 'modal-card';
+    document.body.append(card);
+    const control = document.createElement('button');
+    card.append(control);
+    card.getBoundingClientRect = () => rect(100, 600);
+    control.getBoundingClientRect = () => rect(at, at + 40);
+    vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(200);
+    render(Menu, {
+      target: card,
+      props: {
+        control,
+        label: 'Ещё',
+        id: 'm',
+        cls: 'recmenu',
+        up,
+        onclose: () => undefined,
+        children: createRawSnippet(() => ({
+          render: () => '<button role="menuitem" tabindex="-1">Один</button>'
+        }))
+      }
+    });
+    return screen.getByRole('menu');
+  }
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    document.querySelector('.modal-card')?.remove();
+  });
+
+  it('opens up where the room is only above', () => {
+    expect(open(540)).toHaveClass('up');
+  });
+
+  it('opens down where the room below is enough', () => {
+    expect(open(200)).not.toHaveClass('up');
+  });
+
+  it('opens down where neither side has the room, as the box scrolls down', () => {
+    expect(open(160)).not.toHaveClass('up');
+  });
+
+  it('opens down without the prop', () => {
+    expect(open(540, false)).not.toHaveClass('up');
   });
 });
 

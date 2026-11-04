@@ -6,8 +6,8 @@
  * and every legacy suite uses - because a handful of real defects only show
  * up on the far side of a browser's own microtask checkpoint (the
  * `isConnected` guard) or need a real network, a real clipboard stub, or a
- * real second tab to mean anything at all. Seventy-eight cases in
- * seventy-seven runs (4 and 5 share one), no ancestor. Like every suite here it drives
+ * real second tab to mean anything at all. Seventy-nine cases in
+ * seventy-eight runs (4 and 5 share one), no ancestor. Like every suite here it drives
  * dist-test/, the test build (docs/specs/COVERAGE.md, "Test layers"): signed
  * out it draws the sign-in prompt where a list would be made, so the cases
  * that make one open as the seed's `gm2`. */
@@ -89,7 +89,7 @@ function inside(a, b) {
 async function newListFromCard() {
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/i/ci1', { as: 'gm2' });
-  await d.press('Добавить в список');
+  await d.press('В список');
   await d.press('+ Новый список');
   const box = await newListInputBox(page);
   ok(!!box, '1 (card): the new-list form did not open');
@@ -103,7 +103,7 @@ async function newListFromBar() {
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/tables', { as: 'gm2' });
   await d.tick('Первоклассный Спальный Мешок'); // ticking a row is not this case's point
-  await d.press('Добавить в список');
+  await d.press('В список');
   await d.press('+ Новый список');
   const box = await newListInputBox(page);
   ok(!!box, '2 (selection bar): the new-list form did not open');
@@ -117,8 +117,8 @@ async function newListFromModal() {
   const { ctx, page, d } = await fresh({ width: 1100, height: 900 });
   await d.open('#/tables', { as: 'gm2' });
   await d.press('Самоцвет Чутья');
-  ok(await d.has('Добавить в список'), '3 (modal): the modal did not open');
-  await d.press('Добавить в список');
+  ok(await d.has('В список'), '3 (modal): the modal did not open');
+  await d.press('В список');
   await d.press('+ Новый список');
   const box = await newListInputBox(page);
   ok(!!box, '3 (modal): the new-list form did not open');
@@ -147,8 +147,8 @@ async function addToListMenuStaysInModal() {
   const { ctx, page, d } = await fresh({ width: 1100, height: 900 });
   await d.open('#/tables', { as: 'gm2' });
   await d.press('Кольцо Тишины');
-  ok(await d.has('Добавить в список'), '23 (menu in the modal): the modal did not open');
-  await d.press('Добавить в список');
+  ok(await d.has('В список'), '23 (menu in the modal): the modal did not open');
+  await d.press('В список');
 
   /* `.card` is `overflow: clip` (RecordCard.svelte), which creates no
      scroll container, so a `.card.scrollTop` reading would be 0 regardless
@@ -282,7 +282,7 @@ async function dialogSemantics() {
 async function copyTextThroughClipboard() {
   const { ctx, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/i/ci1');
-  await d.press('Скопировать текст');
+  await d.more('Скопировать текст');
   const clip = await d.clipboard();
   ok(!!clip?.text, '9 (copy text): text/plain did not reach the clipboard');
   ok(!!clip?.html, '9 (copy text): text/html did not reach the clipboard');
@@ -296,7 +296,7 @@ async function copyTextThroughClipboard() {
 async function copyImage() {
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/i/ci1');
-  await d.press('Скопировать изображение');
+  await d.more('Скопировать изображение');
   /* The canvas loads, draws and encodes the picture after the press
      returns; the clipboard write or the fallback toast marks the outcome. */
   await page
@@ -348,6 +348,7 @@ async function brokenArtPath() {
     await page.evaluate(glyphOnly, '.card-media'),
     '11 (no picture): the card well does not show the kind glyph alone'
   );
+  await d.openMore();
   ok(
     await d.has('Скопировать текст'),
     '11 (no picture): the text button disappeared along with the picture'
@@ -1176,7 +1177,7 @@ async function moneyHelpAndPressedPicker() {
   const { ctx: ctx2, page: page2, d: d2 } = await fresh({ width: 1180, height: 900 });
   await d2.open('#/tables/wondrous');
   await d2.open('#/i/w3');
-  await d2.press('Добавить в список');
+  await d2.press('В список');
   const btn = await page2.evaluate(() => {
     const b = document.querySelector('.cardpick .btn');
     return b ? { on: b.classList.contains('on'), color: getComputedStyle(b).color } : null;
@@ -1320,7 +1321,7 @@ async function listMenuKeepsItsControlsInView() {
     await d.open('#/i/ci1', { as: 'gm2' });
     await d.settled(at);
     await d.accountLists(specs);
-    await d.press('Добавить в список');
+    await d.press('В список');
     await d.settle();
 
     const m = await page.evaluate(() => {
@@ -1881,7 +1882,7 @@ async function undoToastInRecordDialog() {
   /* The menu stays open after a pick, so a second removal presses the chip only. */
   const remove = async () => {
     if (!(await page.evaluate(() => !!document.querySelector('dialog[open] .dropmenu')))) {
-      await d.press('Добавить в список');
+      await d.press('В список');
     }
     await d.press('Клад дракона');
     await d.settle();
@@ -2224,7 +2225,7 @@ async function signInFromTheBar() {
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/tables');
   await d.tick('Первоклассный Спальный Мешок');
-  await d.press('Добавить в список');
+  await d.press('В список');
   await d.press('+ Новый список');
   ok(
     (await page.evaluate(() => document.body.innerText)).includes(
@@ -2262,7 +2263,7 @@ async function signInFromTheBar() {
   const again = await fresh({ width: 1180, height: 900 });
   await again.d.open('#/tables');
   await again.d.tick('Первоклассный Спальный Мешок');
-  await again.d.press('Добавить в список');
+  await again.d.press('В список');
   await again.d.press('+ Новый список');
   await pressPromptSignIn(again.page);
   await again.d.press('Поиск');
@@ -2421,7 +2422,7 @@ async function promptInDialogMenuAt360() {
   const { ctx, page, d } = await fresh({ width: 360, height: 740 });
   await d.open('#/tables');
   await d.press('Кольцо Тишины');
-  await d.press('Добавить в список');
+  await d.press('В список');
   await d.press('+ Новый список');
   await d.settle();
   const m = await page.evaluate(() => {
@@ -2910,7 +2911,7 @@ async function notifyAlways() {
   await d.go('#/s/player-token-1');
   await waitIn(page, bodyHas, 'Лавка кузнеца');
   await d.tick('Первоклассный Спальный Мешок');
-  await d.press('Добавить в список');
+  await d.press('В список');
   await d.press('Список второго ГМа');
   ok(
     await waitIn(page, bodyHas, 'Добавлено в «Список второго ГМа». Владелец получил запрос.'),
@@ -3579,14 +3580,14 @@ async function relationFolds() {
     ok(
       await waitIn(page, () =>
         [...document.querySelectorAll('.preview button')].some(
-          (b) => b.textContent.trim() === 'Добавить в список'
+          (b) => b.textContent.trim() === 'В список'
         )
       ),
-      at + 'the preview does not draw «Добавить в список»'
+      at + 'the preview does not draw «В список»'
     );
     const add = await page.evaluateHandle(() =>
       [...document.querySelectorAll('.preview button')].find(
-        (b) => b.textContent.trim() === 'Добавить в список'
+        (b) => b.textContent.trim() === 'В список'
       )
     );
     await add.asElement()?.click();
@@ -4605,48 +4606,30 @@ async function sharedRowTickColumn() {
 }
 
 /** 78. «Сохранить себе» on a catalog record as `gm1`: at 360x740 on `#/i/cm26`, the longest
- *  catalog name, the group inside 0..360 and its button as tall as «Печать», nothing
- *  sideways; two presses, and the second toast names «... (2)» with its «Изменить» inside
- *  0..360; at 1180x900 the group under the other pick buttons (docs/specs/FEATURES.md,
+ *  catalog name, the `h1` wraps inside 0..360 and nothing goes sideways; two presses in
+ *  «Ещё», and the second toast names «... (2)» with its «Изменить» inside 0..360; at
+ *  1180x900 the menu opens under «Ещё», inside the window (docs/specs/FEATURES.md,
  *  "Records"). */
 async function catalogCopyPerPress() {
   const at = '78 (a copy per press of a catalog record): ';
   const NAME = 'Стрелы и Болты с Метеоритными Наконечниками';
-  const measure = (page) =>
-    page.evaluate(() => {
-      const group = document.querySelector('.savegroup');
-      const save = group?.querySelector('button');
-      const print = [...document.querySelectorAll('button')].find(
-        (b) => b.textContent.trim() === 'Печать'
-      );
-      const g = group?.getBoundingClientRect();
-      const s = save?.getBoundingClientRect();
-      const p = print?.getBoundingClientRect();
-      return {
-        group: g ? { left: g.left, right: g.right, top: g.top } : null,
-        save: s ? s.height : null,
-        print: p ? { height: p.height, bottom: p.bottom } : null,
-        sideways: document.documentElement.scrollWidth > innerWidth
-      };
-    });
   {
     const { ctx, page, d } = await fresh({ width: 360, height: 740 });
     await d.open('#/i/cm26', { as: 'gm1' });
+    const narrow = await page.evaluate(() => {
+      const r = document.querySelector('h1').getBoundingClientRect();
+      return {
+        left: r.left,
+        right: r.right,
+        sideways: document.documentElement.scrollWidth > innerWidth
+      };
+    });
     ok(
-      await waitIn(page, () => !!document.querySelector('.savegroup button')),
-      at + 'the group «Сохранить себе» did not draw'
-    );
-    const narrow = await measure(page);
-    ok(
-      !!narrow.group && narrow.group.left >= 0 && narrow.group.right <= 360,
-      at + 'the group lies outside 0..360 - ' + JSON.stringify(narrow)
-    );
-    ok(
-      narrow.save !== null && narrow.print !== null && narrow.save === narrow.print.height,
-      at + 'the button is not as tall as «Печать» - ' + JSON.stringify(narrow)
+      narrow.left >= 0 && narrow.right <= 360,
+      at + 'the heading lies outside 0..360 - ' + JSON.stringify(narrow)
     );
     ok(!narrow.sideways, at + 'the page scrolls sideways at 360');
-    await d.press('Сохранить себе');
+    await d.more('Сохранить себе');
     ok(
       await waitIn(
         page,
@@ -4655,7 +4638,10 @@ async function catalogCopyPerPress() {
       ),
       at + 'the first press raised no toast with the name'
     );
-    await d.press('Сохранить себе');
+    /* By keys: the first toast covers the end of the menu, and the focus is on «Ещё». */
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('End');
+    await page.keyboard.press('Enter');
     ok(
       await waitIn(
         page,
@@ -4679,17 +4665,184 @@ async function catalogCopyPerPress() {
   {
     const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
     await d.open('#/i/cm26', { as: 'gm1' });
+    await d.openMore();
+    const wide = await page.evaluate(() => {
+      const m = document.querySelector('[role="menu"]').getBoundingClientRect();
+      const b = document
+        .querySelector('.cardpick [aria-haspopup="menu"]')
+        .getBoundingClientRect();
+      return { top: m.top, right: m.right, under: b.bottom, view: innerWidth };
+    });
     ok(
-      await waitIn(page, () => !!document.querySelector('.savegroup button')),
-      at + 'the group did not draw at 1180'
-    );
-    const wide = await measure(page);
-    ok(
-      !!wide.group && !!wide.print && wide.group.top >= wide.print.bottom,
-      at + 'the group is not under the other pick buttons - ' + JSON.stringify(wide)
+      wide.top >= wide.under && wide.right <= wide.view,
+      at + 'the menu is not under «Ещё» inside the window - ' + JSON.stringify(wide)
     );
     await ctx.close();
   }
+}
+
+/** 88. The action row and the dialog's dock at every width. On the record page at 360, 320
+ *  and 1180, RU and EN, signed out, signed in and as the author: every control inside the
+ *  window and uncut, at most three lines, «В список» the only gold primary, and «Ещё» opens
+ *  a menu inside the window with 44 px items at 360. In the dialog at 360x640 and 640x360:
+ *  the dock holds the card's bottom, or joins the scroll below 481 px of height, takes at
+ *  most 0.45 of the window, «Ещё» opens up from the dock, or down in that short window,
+ *  inside the card, and a toast leaves the dock in place; with 150 lists the add menu scrolls inside the window with its search and
+ *  «+ Новый список» in view (docs/specs/FEATURES.md, "Records"). */
+async function recordActionsFit() {
+  const at = '88 (the record actions fit): ';
+  for (const lang of ['ru', 'en']) {
+    for (const [width, height] of [
+      [360, 640],
+      [320, 568],
+      [1180, 720]
+    ]) {
+      const { ctx, page, d } = await fresh({ width, height, lang });
+      for (const [route, as] of [
+        ['#/i/ci1', undefined],
+        ['#/i/ci1', 'gm3'],
+        ['#/i/hb_emberaxeaaaaaaaa', 'gm1']
+      ]) {
+        const where = [route, as ?? 'signed out', lang, width].join(' ') + ': ';
+        await d.open(route, { as, lang });
+        const row = await page.evaluate(() => {
+          const controls = [
+            ...document.querySelectorAll(
+              '.cardpick > .btn, .cardpick .seldrop > .btn, .cardpick .morewrap > .btn'
+            )
+          ];
+          return {
+            count: controls.length,
+            lines: new Set(controls.map((c) => Math.round(c.getBoundingClientRect().top))).size,
+            out: controls
+              .filter((c) => {
+                const r = c.getBoundingClientRect();
+                return r.left < 0 || r.right > innerWidth || c.scrollWidth > c.clientWidth;
+              })
+              .map((c) => c.textContent),
+            primaries: document.querySelectorAll('main .btn.primary').length
+          };
+        });
+        ok(row.count >= 4, at + where + 'the row draws ' + row.count + ' controls');
+        ok(row.lines <= 3, at + where + 'the row takes ' + row.lines + ' lines');
+        ok(!row.out.length, at + where + 'cut or outside - ' + JSON.stringify(row.out));
+        ok(row.primaries === 1, at + where + row.primaries + ' gold primaries');
+        await d.openMore();
+        const menu = await page.evaluate(() => {
+          const m = document.querySelector('[role="menu"]').getBoundingClientRect();
+          return {
+            box: { x: m.x, y: m.y, w: m.width, h: m.height },
+            view: { x: 0, y: 0, w: innerWidth, h: innerHeight },
+            least: Math.min(
+              ...[...document.querySelectorAll('[role="menuitem"]')].map(
+                (i) => i.getBoundingClientRect().height
+              )
+            )
+          };
+        });
+        ok(
+          inside(menu.box, menu.view),
+          at + where + 'the menu leaves the window - ' + JSON.stringify(menu)
+        );
+        ok(
+          width > 600 || menu.least >= 44,
+          at + where + 'an item is ' + menu.least + ' px tall'
+        );
+      }
+      await ctx.close();
+    }
+
+    for (const [width, height] of [
+      [360, 640],
+      [640, 360]
+    ]) {
+      const where = 'the dialog ' + lang + ' ' + width + 'x' + height + ': ';
+      const { ctx, page, d } = await fresh({ width, height, lang });
+      await d.open('#/tables/eq_weapon', { lang });
+      await d.click(lang === 'ru' ? 'Палаш' : 'Broadsword');
+      await waitIn(page, () => !!document.querySelector('dialog[open] .cardpick'));
+      const dock = async () =>
+        page.evaluate(() => {
+          const card = document.querySelector('.modal-card');
+          const el = card.querySelector('.cardpick');
+          const r = el.getBoundingClientRect();
+          return {
+            sticky: getComputedStyle(el).position === 'sticky',
+            height: r.height,
+            gap: card.getBoundingClientRect().bottom - r.bottom
+          };
+        });
+      const first = await dock();
+      ok(first.sticky === height > 480, at + where + 'sticky is ' + first.sticky);
+      ok(first.height <= 0.45 * height, at + where + 'the dock is ' + first.height + ' px');
+      if (first.sticky) ok(Math.abs(first.gap) <= 1.5, at + where + 'gap ' + first.gap);
+      await page.evaluate(() => {
+        const card = document.querySelector('.modal-card');
+        card.scrollTop = card.scrollHeight;
+      });
+      await d.settle();
+      await d.openMore();
+      const menu = await page.evaluate(() => {
+        const box = (r) => ({ x: r.x, y: r.y, w: r.width, h: r.height });
+        const m = document.querySelector('[role="menu"]');
+        const card = document.querySelector('.modal-card').getBoundingClientRect();
+        return {
+          up: m.classList.contains('up'),
+          box: box(m.getBoundingClientRect()),
+          card: box(card),
+          view: { x: 0, y: 0, w: innerWidth, h: innerHeight }
+        };
+      });
+      ok(menu.up === first.sticky, at + where + 'the menu opens up: ' + menu.up);
+      ok(
+        inside(menu.box, menu.card),
+        at + where + 'menu outside the card ' + JSON.stringify(menu)
+      );
+      ok(inside(menu.box, menu.view), at + where + 'menu outside the window');
+      await d.press(lang === 'ru' ? 'Скопировать название' : 'Copy name');
+      ok(
+        await waitIn(page, () => !!document.querySelector('dialog[open] .toast')),
+        at + where + 'the copy raised no toast'
+      );
+      ok(
+        await page.evaluate(() => !!document.querySelector('dialog[open] .cardpick')),
+        at + where + 'the toast took the dock away'
+      );
+      await ctx.close();
+    }
+  }
+
+  const { ctx, page, d } = await fresh({ width: 360, height: 640 });
+  await d.open('#/tables/eq_weapon', { as: 'gm2' });
+  await d.accountLists(
+    Array.from({ length: 150 }, (_, i) => ({ n: i + 1, name: 'Список ' + i, ids: ['ci1'] }))
+  );
+  await d.click('Палаш');
+  await waitIn(page, () => !!document.querySelector('dialog[open] .cardpick'));
+  await page.click('dialog[open] .seldrop > .btn');
+  await d.settle();
+  const add = await page.evaluate(() => {
+    const box = (el) => {
+      const r = el.getBoundingClientRect();
+      return { x: r.x, y: r.y, w: r.width, h: r.height };
+    };
+    const menu = document.querySelector('.dropmenu');
+    const chips = menu.querySelector('.pickchips');
+    return {
+      menu: box(menu),
+      search: box(menu.querySelector('.pickq')),
+      add: box(menu.querySelector(':scope > .chip') ?? menu.lastElementChild),
+      scrolls: chips.scrollHeight > chips.clientHeight,
+      view: { x: 0, y: 0, w: innerWidth, h: innerHeight }
+    };
+  });
+  ok(add.scrolls, at + 'the 150 lists do not scroll');
+  for (const name of ['menu', 'search', 'add']) {
+    ok(inside(add[name], add.view), at + 'the add menu: ' + name + ' leaves the window');
+  }
+  ok(inside(add.search, add.menu), at + 'the search leaves the add menu');
+  ok(inside(add.add, add.menu), at + '«+ Новый список» leaves the add menu');
+  await ctx.close();
 }
 
 /** 79: on a 360x480 window (an 800 px phone less a 320 px keyboard) each `ItemPicker`
@@ -4902,7 +5055,7 @@ async function addressBarPathForm() {
       record.path === '/i/ci1' && record.search === '?v=' + VERSIONS.ci1,
       at + 'the record bar does not carry its card version - ' + JSON.stringify(record)
     );
-    await d.press('Скопировать ссылку');
+    await d.more('Скопировать ссылку');
     await copiedIs('a record');
     await d.press('Таблицы', 0);
     await d.settle();
@@ -4930,7 +5083,7 @@ async function addressBarPathForm() {
       await waitIn(page, () => /^\?v=[0-9a-z]+$/.test(location.search)),
       at + 'the item bar did not take its card version after the read'
     );
-    await d.press('Скопировать ссылку');
+    await d.more('Скопировать ссылку');
     await copiedIs('an item');
 
     await d.open('#/p/set-twocards', { as: 'gm2' });
@@ -5029,7 +5182,8 @@ const FIRST_SCREEN = [
   { state: '#/roll/std', shipped: false },
   { state: '#/tables/eq_weapon', shipped: true },
   { state: '#/tables/eq_weapon ~ two filters', shipped: true },
-  { state: '#/i/ci1', shipped: false },
+  { state: '#/i/ci1', shipped: true },
+  { state: '#/h/00000000-0000-4000-8000-000000000513 as gm1', shipped: true },
   { state: '#/search ~ searched', shipped: false },
   { state: '#/account as gm1', shipped: false },
   { state: '#/p/set-emberaxe as gm2', shipped: false },
@@ -5479,7 +5633,8 @@ const CASES = [
   ['84 (filter column clears the selection bar)', filterColumnClearsTheBar],
   ['85 (selection bar in landscape)', selectionBarInLandscape],
   ['86 (the header hides and returns up to 760 px)', headerHidesAndReturns],
-  ['87 (a backward Tab never lands under the header)', backwardTabClearsTheHeader]
+  ['87 (a backward Tab never lands under the header)', backwardTabClearsTheHeader],
+  ['88 (the record actions fit at 360, 320 and 1180)', recordActionsFit]
 ];
 
 (async () => {

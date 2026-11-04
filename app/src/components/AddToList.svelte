@@ -39,9 +39,20 @@
     inModal?: boolean;
     /** The selection bar's control while nothing is ticked. */
     disabled?: boolean;
+    /** `md` on the record's action row; the bar and the editor's preview keep `sm`. */
+    size?: 'md' | 'sm';
   }
 
-  const { app, key, ids, primary, meta, inModal = false, disabled = false }: Props = $props();
+  const {
+    app,
+    key,
+    ids,
+    primary,
+    meta,
+    inModal = false,
+    disabled = false,
+    size = 'sm'
+  }: Props = $props();
 
   const t = $derived(app.t);
   const open = $derived(app.menuFor === key);
@@ -280,7 +291,7 @@
          `:scope >` makes the intent explicit rather than relying on order. */
       const btn = root.querySelector<HTMLElement>(':scope > .btn');
       if (!menu || !btn) return;
-      /* Measured against the tightest clipping box - the
+      /* Measured against the tightest clipping box - a plate
          record card (`overflow: clip` in RecordCard.svelte), the modal's own
          card, the window - rather than always against the window, which let
          `scrollIntoView` look for room past the modal's edge and drag the
@@ -289,7 +300,7 @@
       const from = root;
       const clipBottom = Math.min(
         window.innerHeight,
-        ...['.card', '.modal-card'].map(
+        ...['.card:not(.dossier)', '.modal-card'].map(
           (sel) => from.closest(sel)?.getBoundingClientRect().bottom ?? Infinity
         )
       );
@@ -375,13 +386,13 @@
 {#if target !== 'none'}
   <div class="seldrop" bind:this={root}>
     <Button
-      size="sm"
+      {size}
       variant={primary ? 'primary' : 'plain'}
       on={open}
       expanded={open}
       caret
       {disabled}
-      onclick={toggle}><Icon name="plus" />{t.addToList}</Button
+      onclick={toggle}><Icon name="plus" />{t.toList}</Button
     >
     {#if open}
       <div class="dropmenu" class:long={showSearch} class:up>

@@ -68,7 +68,7 @@ RootWebArea "Свиток долгой ночи - Генератор лута Da
     StaticText "ХОУМБРЮ"
     heading "Свиток долгой ночи" [level=2]
     StaticText "Раз за отдых вы можете развернуть свиток и прочитать его вслух д..." [namelen=3000 namehash=22b79c07]
-    button "Добавить в список" [expanded=false]
+    button "В список" [expanded=false]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -87,9 +87,9 @@ daggerheart.com
 Аккаунт: gm4@example.test
 Без ранга
 Бросок
+В список
 Выбрать из предметов
 Выбрать файл
-Добавить в список
 Жирный
 К моим предметам
 К содержимому

@@ -314,7 +314,7 @@ const { ok } = rep;
     for (const id of Object.values(firstOf)) {
       await d.open('#/i/' + id);
       const where = await page.evaluate(() => {
-        const sub = document.querySelector('.page-sub');
+        const sub = document.querySelector('.card-sub .subline');
         return sub
           ? [...sub.childNodes]
               .filter((n) => n.nodeType === 3)

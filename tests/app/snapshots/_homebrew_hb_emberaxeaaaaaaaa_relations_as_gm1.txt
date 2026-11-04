@@ -121,7 +121,7 @@ RootWebArea "Топор Тлеющих Углей - Генератор лута 
     button "На печати" [pressed=false]
     button "Страница"
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
-    ... StaticText x20 of 24 same-shape siblings elided
+    ... StaticText x21 of 25 same-shape siblings elided
     heading "Топор Тлеющих Углей" [level=2]
     button "Палаш" [description=Палаш]
     button "Улучшенный Палаш" [description=Улучшенный Палаш]
@@ -135,7 +135,7 @@ RootWebArea "Топор Тлеющих Углей - Генератор лута 
     StaticText ", она должна отметить 1 Рану во время своей активации."
     DisclosureTriangle "Клеймо Ольхи СВОЙСТВО ОРУЖИЯ" [expanded=false]
     DisclosureTriangle "Медленный ОГРОМНАЯ ЗЕЛЁНАЯ СЛИЗЬ · СВОЙСТВО ПРОТИВНИКА · ПАССИВН..." [expanded=false namelen=66 namehash=48799063]
-    button "Добавить в список" [expanded=false]
+    button "В список" [expanded=false]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -157,6 +157,7 @@ daggerheart.com
 Броня
 Бросок
 В линии
+В список
 Влияние
 Вплотную
 Вторичное оружие
@@ -164,7 +165,6 @@ daggerheart.com
 Далеко
 Двуручное
 Длинный Меч
-Добавить в список
 Жирный
 Заменить
 Знание
@@ -353,7 +353,7 @@ RootWebArea "Ember Axe - Daggerheart Loot Generator" [url=/en/homebrew/hb_embera
     button "In print" [pressed=false]
     button "Страница"
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
-    ... StaticText x20 of 24 same-shape siblings elided
+    ... StaticText x21 of 25 same-shape siblings elided
     heading "Топор Тлеющих Углей" [level=2]
     button "Палаш" [description=Палаш]
     button "Улучшенный Палаш" [description=Улучшенный Палаш]

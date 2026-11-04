@@ -71,7 +71,7 @@
     const target =
       band === 'wide'
         ? column?.querySelector<HTMLElement>('.frow .chip')
-        : document.querySelector<HTMLElement>('dialog.sheet .sheet-x');
+        : document.querySelector<HTMLElement>('dialog.sheet .dlg-x');
     target?.focus();
   }
 </script>

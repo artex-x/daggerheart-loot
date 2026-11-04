@@ -18,21 +18,19 @@ RootWebArea "Whispering Cap - Генератор лута Daggerheart" [url=/h/0
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
-    heading "Whispering Cap" [level=1]
-    StaticText "Хоумбрю "
-    link "показать в таблице" [url=/tables/homebrew/hb_whispercapaaaaaa]
-    StaticText "Обновлено 6 дней назад"
     button "Страница"
-    ... StaticText x3 of 7 same-shape siblings elided
-    button "Скопировать название" [description=Скопировать название]
-    button "Скопировать ссылку" [description=Скопировать ссылку]
+    StaticText "ПРЕДМЕТ"
+    StaticText "ХОУМБРЮ"
+    heading "Whispering Cap" [level=1]
+    ... StaticText x2 of 6 same-shape siblings elided
+    link "показать в таблице" [url=/tables/homebrew/hb_whispercapaaaaaa]
     StaticText "Текст только на английском"
     StaticText "Once per rest, hear one sentence spoken within Far range."
-    button "Отправить"
-    button "Скопировать текст" [description=Скопировать текст]
-    button "Добавить в список" [expanded=false]
+    button "В список" [expanded=false]
+    button "Поделиться"
     button "Печать" [description=Собрать карточки для печати: девять на лист A4]
     link "Изменить" [url=/homebrew/hb_whispercapaaaaaa]
+    button "Ещё" [expanded=false haspopup=menu]
     status ""
   contentinfo ""
     navigation "Страницы сайта"
@@ -47,17 +45,15 @@ RU
 daggerheart.com
 Аккаунт: gm1@example.test
 Бросок
-Добавить в список
+В список
+Ещё
 Изменить
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
-Отправить
 Печать
+Поделиться
 Поиск
-Скопировать название
-Скопировать ссылку
-Скопировать текст
 Страница
 Таблицы
 Условия использования
@@ -79,21 +75,19 @@ RootWebArea "Whispering Cap - Daggerheart Loot Generator" [url=/en/h/00000000-00
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
+    button "Page"
+    StaticText "ITEM"
+    StaticText "HOMEBREW"
     heading "Whispering Cap" [level=1]
     StaticText "Homebrew "
     link "show in the table" [url=/en/tables/homebrew/hb_whispercapaaaaaa]
     StaticText "Updated 6 days ago"
-    button "Page"
-    ... StaticText x2 of 6 same-shape siblings elided
-    StaticText "Whispering Cap"
-    button "Copy name" [description=Copy name]
-    button "Copy link" [description=Copy link]
     StaticText "Once per rest, hear one sentence spoken within Far range."
-    button "Share"
-    button "Copy text" [description=Copy text]
     button "Add to list" [expanded=false]
+    button "Share"
     button "Print" [description=Lay these out for printing: nine to an A4 sheet]
     link "Edit" [url=/en/homebrew/hb_whispercapaaaaaa]
+    button "More" [expanded=false haspopup=menu]
     status ""
   contentinfo ""
     navigation "Site pages"
@@ -105,13 +99,11 @@ RootWebArea "Whispering Cap - Daggerheart Loot Generator" [url=/en/h/00000000-00
 ## en :: controls
 Account: gm1@example.test
 Add to list
-Copy link
-Copy name
-Copy text
 EN
 Edit
 Install as an app
 LootDaggerheart
+More
 Page
 Print
 Privacy

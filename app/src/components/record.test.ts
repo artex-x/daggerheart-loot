@@ -10,7 +10,7 @@
 
 import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { tick } from 'svelte';
+import { createRawSnippet, tick } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import RecordCard from './RecordCard.svelte';
@@ -330,6 +330,58 @@ const LOOT: Loot = {
 const at = (id: string, over: Partial<Env> = {}): Env =>
   fakeEnv({ router: memoryRouter(`#/i/${id}`), data: fakeData(LOOT), ...over });
 
+const openMore = async (more = 'Ещё'): Promise<void> => {
+  await userEvent.click(await screen.findByRole('button', { name: more }));
+};
+
+const pressMore = async (name: string, more = 'Ещё'): Promise<void> => {
+  await openMore(more);
+  await userEvent.click(await screen.findByRole('menuitem', { name }));
+};
+
+describe('the dossier', () => {
+  it("draws the name once, as the page's `h1`, the path line under it, and no icon pair", () => {
+    const { container } = render(App, { env: at('ci1') });
+    const card = container.querySelector('.card.dossier') as HTMLElement;
+    expect(card).toHaveClass('full');
+    expect(card.querySelector('h1.card-name')).not.toBeNull();
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
+    expect(card.querySelector('h2')).toBeNull();
+    expect(card.querySelector('.card-name + .card-sub .subline')).not.toBeNull();
+    expect(card.querySelector('.card-name-acts')).toBeNull();
+    expect(card.querySelector('.card-acts')).toBeNull();
+  });
+
+  it('draws the name as an `h2` in the dialog, with no path line', async () => {
+    render(App, { env: at('ci1') });
+    await userEvent.click(screen.getByRole('button', { name: 'Страница' }));
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByRole('heading', { level: 2 })).toHaveClass('card-name');
+    expect(within(dialog).queryByRole('heading', { level: 1 })).toBeNull();
+    expect(dialog.querySelector('.card-sub')).toBeNull();
+  });
+
+  it('keeps the icon pair and the labeled row on a compact card', () => {
+    const app = new AppState(at('ci1'));
+    app.start();
+    const slot = (html: string) => createRawSnippet(() => ({ render: () => html }));
+    const { container } = render(RecordCard, {
+      variant: 'compact',
+      it: app.recordFor('ci1') as NonNullable<ReturnType<AppState['recordFor']>>,
+      index: app.index as Index,
+      lang: 'ru',
+      artBroken: false,
+      onartfail: () => undefined,
+      nameActions: slot('<button type="button">a</button>'),
+      actions: slot('<button type="button">b</button>')
+    });
+    expect(container.querySelector('.card.dossier')).toBeNull();
+    expect(container.querySelector('.card-name-acts')).not.toBeNull();
+    expect(container.querySelector('.card-acts')).not.toBeNull();
+    app.stop();
+  });
+});
+
 describe('a record on its own page', () => {
   it('leads with the name', () => {
     render(App, { env: at('ci1') });
@@ -477,28 +529,32 @@ describe('a record on its own page', () => {
     );
   });
 
-  it('offers no copy-image button for a record with no art at all', () => {
+  it('offers no copy-image item for a record with no art at all', async () => {
     /* Ported from tests/noart.js:39. `odd` carries no `img` field at all -
        distinct from ci1's real-load-failure case below, which is a
        different record shape. */
     render(App, { env: at('odd') });
+    await openMore();
     expect(
-      screen.queryByRole('button', { name: 'Скопировать изображение' })
+      screen.queryByRole('menuitem', { name: 'Скопировать изображение' })
     ).not.toBeInTheDocument();
   });
 
-  it('drops the copy-image button once the picture fails to load, restoring the live gate', async () => {
-    /* RecordActions.svelte used to gate the copy-image button on `it.img`
+  it('drops the copy-image item once the picture fails to load, restoring the live gate', async () => {
+    /* RecordActions.svelte used to gate the copy-image item on `it.img`
        alone; the live app gates on hasImage(it) = !!it.img &&
-       !brokenArt[it.id]. `ci1` carries an `img` field, so the button starts
+       !brokenArt[it.id]. `ci1` carries an `img` field, so the item starts
        present and only the load failure should take it away. */
     const { container } = render(App, { env: at('ci1') });
-    expect(screen.getByRole('button', { name: 'Скопировать изображение' })).toBeInTheDocument();
+    await openMore();
+    expect(
+      screen.getByRole('menuitem', { name: 'Скопировать изображение' })
+    ).toBeInTheDocument();
 
     container.querySelector('img')?.dispatchEvent(new Event('error'));
     await Promise.resolve();
     expect(
-      screen.queryByRole('button', { name: 'Скопировать изображение' })
+      screen.queryByRole('menuitem', { name: 'Скопировать изображение' })
     ).not.toBeInTheDocument();
   });
 
@@ -524,7 +580,7 @@ describe('a record on its own page', () => {
 describe('the path at the top of the page, and the tag on the badge', () => {
   it('completes the path with the community, the leaf the table is sectioned by', () => {
     const { container } = render(App, { env: at('cm1') });
-    const sub = container.querySelector('p.page-sub');
+    const sub = container.querySelector('p.subline');
     // childNodes[0] is positional on purpose: it isolates the path's own
     // text node from the badges that follow it in the same element.
     expect(sub?.childNodes[0]?.textContent?.trim()).toBe('Предметы сообществ · Великородное');
@@ -537,7 +593,7 @@ describe('the path at the top of the page, and the tag on the badge', () => {
 
   it('carries the artifact word in the path line, not only on a badge', () => {
     const { container } = render(App, { env: at('voa_a1') });
-    const sub = container.querySelector('p.page-sub');
+    const sub = container.querySelector('p.subline');
     // childNodes[0] is positional on purpose: it isolates the path's own
     // text node from the badges that follow it in the same element.
     expect(sub?.childNodes[0]?.textContent?.trim()).toBe('Vault of Ages · Артефакт');
@@ -545,7 +601,7 @@ describe('the path at the top of the page, and the tag on the badge', () => {
 
   it('carries the cursed-object word in the path line', () => {
     const { container } = render(App, { env: at('voa_c1') });
-    const sub = container.querySelector('p.page-sub');
+    const sub = container.querySelector('p.subline');
     // childNodes[0] is positional on purpose: it isolates the path's own
     // text node from the badges that follow it in the same element.
     expect(sub?.childNodes[0]?.textContent?.trim()).toBe('Vault of Ages · Проклятый предмет');
@@ -553,7 +609,7 @@ describe('the path at the top of the page, and the tag on the badge', () => {
 
   it('names an artifact weapon an artifact on the badge, the path and the stat row', async () => {
     const { container } = render(App, { env: at('voa_a3') });
-    const sub = container.querySelector('p.page-sub');
+    const sub = container.querySelector('p.subline');
     expect(sub?.childNodes[0]?.textContent?.trim()).toBe('Vault of Ages · Артефакт');
     const stats = [...container.querySelectorAll('.eqstats span')].map((el) => el.textContent);
     expect(stats[0]).toBe('Артефакт');
@@ -565,7 +621,7 @@ describe('the path at the top of the page, and the tag on the badge', () => {
 
   it('prints the tier for campaign-frame equipment, and the frame as a tag', () => {
     const { container } = render(App, { env: at('f1') });
-    const sub = container.querySelector('p.page-sub');
+    const sub = container.querySelector('p.subline');
     expect(sub?.childNodes[0]?.textContent?.trim()).toBe(
       'Прочее · Сеттинги · Пир зверей · Ранг 1'
     );
@@ -585,16 +641,20 @@ describe('a link that no longer resolves', () => {
   it('draws the not-found page for an id the data does not know', async () => {
     const { container } = render(App, { env: at('nope') });
     expect(
-      screen.getByRole('heading', { level: 1, name: 'Предмет не найден' })
+      screen.getByRole('heading', { level: 1, name: 'Предмета по этому адресу нет' })
     ).toBeInTheDocument();
-    expect(container.querySelector('p.page-sub')?.textContent).toBe(
-      'Возможно, ссылка устарела или данные были изменены.'
+    expect(container.querySelector('.errtext')?.textContent).toBe(
+      'Адрес /i/nope не ведёт ни к одному предмету. Ссылка могла устареть или быть набрана с ошибкой.'
     );
+    expect(container.querySelector('.errtext code')).toHaveTextContent('/i/nope');
     expect(container.querySelector('.miss')).toBeNull();
-    const link = screen.getByRole('link', { name: 'На главную' });
-    expect(link).toHaveAttribute('href', '/roll/std');
-    expect(link.className).toContain('btn');
-    expect(link.className).toContain('primary');
+    const find = screen.getByRole('link', { name: 'Найти предмет' });
+    expect(find).toHaveAttribute('href', '/search');
+    expect(find.className).toContain('primary');
+    expect(screen.getByRole('link', { name: 'Открыть таблицы' })).toHaveAttribute(
+      'href',
+      '/tables'
+    );
     await expectNoA11yViolations(container);
   });
 
@@ -614,14 +674,14 @@ describe('taking a record somewhere else', () => {
   it('copies the name with the consumable spelled out', async () => {
     const { env, clip } = withClip();
     render(App, { env });
-    await userEvent.click(screen.getByRole('button', { name: 'Скопировать название' }));
+    await pressMore('Скопировать название');
     expect(clip.last.text).toBe('Зелье выносливости (расходник)');
   });
 
   it('copies the text in both flavors', async () => {
     const { env, clip } = withClip();
     render(App, { env });
-    await userEvent.click(screen.getByRole('button', { name: 'Скопировать текст' }));
+    await pressMore('Скопировать текст');
     expect(clip.last.rich?.plain).toContain('Очистите 1d4 Стресса.');
     expect(clip.last.rich?.html).toContain('<b>Зелье выносливости (расходник)</b>');
   });
@@ -629,7 +689,7 @@ describe('taking a record somewhere else', () => {
   it('copies a link to the stub page, not to the app', async () => {
     const { env, clip } = withClip();
     render(App, { env });
-    await userEvent.click(screen.getByRole('button', { name: 'Скопировать ссылку' }));
+    await pressMore('Скопировать ссылку');
     expect(clip.last.text).toBe('https://example.test/i/cc1');
   });
 
@@ -638,7 +698,7 @@ describe('taking a record somewhere else', () => {
     render(App, {
       env: at('cc1', { clipboard: clip, data: fakeData(LOOT, { cc1: 'k3x9a1' }) })
     });
-    await userEvent.click(screen.getByRole('button', { name: 'Скопировать ссылку' }));
+    await pressMore('Скопировать ссылку');
     expect(clip.last.text).toBe('https://example.test/i/cc1?v=k3x9a1');
   });
 
@@ -650,7 +710,7 @@ describe('taking a record somewhere else', () => {
       data: fakeData(LOOT, { cc1: 'k3x9a1' })
     });
     const { container } = render(App, { env });
-    await userEvent.click(screen.getByRole('button', { name: 'Copy link' }));
+    await pressMore('Copy link', 'More');
     expect(clip.last.text).toBe('https://example.test/i/en/cc1?v=k3x9a1');
     await expectNoA11yViolations(container);
   });
@@ -658,7 +718,7 @@ describe('taking a record somewhere else', () => {
   it('says what happened, in a region a screen reader is told about', async () => {
     const { env } = withClip();
     render(App, { env });
-    await userEvent.click(screen.getByRole('button', { name: 'Скопировать название' }));
+    await pressMore('Скопировать название');
     expect(screen.getByText('Название скопировано')).toBeInTheDocument();
   });
 
@@ -666,7 +726,7 @@ describe('taking a record somewhere else', () => {
     /* Copying is refused outside a secure context, and a button that lies about
        it leaves somebody pasting nothing into a chat. */
     render(App, { env: at('cc1', { clipboard: fakeClipboard({ fail: true }) }) });
-    await userEvent.click(screen.getByRole('button', { name: 'Скопировать название' }));
+    await pressMore('Скопировать название');
     expect(screen.getByText('Не удалось скопировать')).toBeInTheDocument();
   });
 
@@ -678,14 +738,14 @@ describe('taking a record somewhere else', () => {
     render(App, {
       env: at('cc1', { share: fakeShare({ available: false }), clipboard: clip })
     });
-    await userEvent.click(screen.getByRole('button', { name: 'Отправить' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Поделиться' }));
     expect(clip.last.text).toBe('https://example.test/i/cc1');
   });
 
   it('shares the full text, not just the name', async () => {
     const share = fakeShare();
     render(App, { env: at('cc1', { share }) });
-    await userEvent.click(screen.getByRole('button', { name: 'Отправить' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Поделиться' }));
     expect(share.last.title).toBe('Зелье выносливости (расходник)');
     expect(share.last.text).toContain('Очистите 1d4 Стресса.');
     expect(share.last.text).not.toBe('Зелье выносливости (расходник)');
@@ -694,14 +754,14 @@ describe('taking a record somewhere else', () => {
   it('attaches no file for a record with no art', async () => {
     const share = fakeShare();
     render(App, { env: at('cc1', { share }) });
-    await userEvent.click(screen.getByRole('button', { name: 'Отправить' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Поделиться' }));
     expect(share.last.hasFile).toBe(false);
   });
 
   it('attaches the picture where there is art', async () => {
     const share = fakeShare();
     render(App, { env: at('ci1', { share }) });
-    await userEvent.click(screen.getByRole('button', { name: 'Отправить' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Поделиться' }));
     expect(share.last.hasFile).toBe(true);
     const file = await share.last.file?.();
     expect(file?.name).toBe('Спальный мешок.png');
@@ -711,7 +771,7 @@ describe('taking a record somewhere else', () => {
   it('copies the picture, which the clipboard will only take as a PNG', async () => {
     const clip = fakeClipboard();
     render(App, { env: at('ci1', { clipboard: clip }) });
-    await userEvent.click(screen.getByRole('button', { name: 'Скопировать изображение' }));
+    await pressMore('Скопировать изображение');
     expect(clip.last.image).toBe(true);
     expect(screen.getByText('Картинка скопирована')).toBeInTheDocument();
   });
@@ -725,7 +785,7 @@ describe('taking a record somewhere else', () => {
       download: () => Promise.resolve()
     };
     render(App, { env: at('ci1', { clipboard: clip, image }) });
-    await userEvent.click(screen.getByRole('button', { name: 'Скопировать изображение' }));
+    await pressMore('Скопировать изображение');
     expect(clip.last.image).toBeUndefined();
     expect(clip.last.rich?.plain).toContain('Спальный мешок');
     expect(
@@ -737,7 +797,7 @@ describe('taking a record somewhere else', () => {
     const clip = fakeClipboard({ fail: true });
     const image = fakeImage();
     render(App, { env: at('ci1', { clipboard: clip, image }) });
-    await userEvent.click(screen.getByRole('button', { name: 'Скопировать изображение' }));
+    await pressMore('Скопировать изображение');
     expect(image.downloaded).toHaveLength(1);
     expect(image.downloaded[0]?.filename).toBe('Спальный мешок.png');
     expect(screen.getByText('Картинка сохранена')).toBeInTheDocument();
@@ -747,7 +807,7 @@ describe('taking a record somewhere else', () => {
     const clip = fakeClipboard({ fail: true });
     const image = fakeImage({ failDownload: true });
     render(App, { env: at('ci1', { clipboard: clip, image }) });
-    await userEvent.click(screen.getByRole('button', { name: 'Скопировать изображение' }));
+    await pressMore('Скопировать изображение');
     expect(screen.getByText('Не удалось сохранить картинку')).toBeInTheDocument();
     expect(screen.queryByText('Не удалось скопировать')).not.toBeInTheDocument();
   });
@@ -755,7 +815,7 @@ describe('taking a record somewhere else', () => {
   it('says nothing when somebody dismisses their own share sheet', async () => {
     /* Changing your mind is not an error, and reporting it would be nagging. */
     render(App, { env: at('cc1', { share: fakeShare({ result: 'dismissed' }) }) });
-    await userEvent.click(screen.getByRole('button', { name: 'Отправить' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Поделиться' }));
     expect(screen.queryByText('Не удалось скопировать')).not.toBeInTheDocument();
     expect(screen.queryByText('Ссылка скопирована')).not.toBeInTheDocument();
   });
@@ -765,7 +825,7 @@ describe('taking a record somewhere else', () => {
     render(App, {
       env: at('cc1', { share: fakeShare({ result: 'failed' }), clipboard: clip })
     });
-    await userEvent.click(screen.getByRole('button', { name: 'Отправить' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Поделиться' }));
     expect(clip.last.text).toBe('https://example.test/i/cc1');
   });
 
@@ -775,9 +835,9 @@ describe('taking a record somewhere else', () => {
     render(App, {
       env: at('cc1', { clipboard: clip, share, preview: 'https://daggerheart-loot.pages.dev' })
     });
-    await userEvent.click(screen.getByRole('button', { name: 'Скопировать ссылку' }));
+    await pressMore('Скопировать ссылку');
     expect(clip.last.text).toBe('https://example.test/i/cc1');
-    await userEvent.click(screen.getByRole('button', { name: 'Отправить' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Поделиться' }));
     expect(share.last.url).toBe('https://example.test/i/cc1');
   });
 });
@@ -851,7 +911,7 @@ describe('the tier ladder', () => {
     render(App, { env: at('q1', { cloud: fakeCloud(SEED) }) });
     await userEvent.click(screen.getByRole('button', { name: 'Улучшенный Палаш' }));
     await userEvent.click(
-      within(screen.getByRole('dialog')).getByRole('button', { name: 'Добавить в список' })
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'В список' })
     );
     expect(screen.getByRole('button', { name: '+ Новый список' })).toBeInTheDocument();
 
@@ -860,7 +920,7 @@ describe('the tier ladder', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Улучшенный Палаш' }));
     const reopened = screen.getByRole('dialog');
-    expect(within(reopened).getByRole('button', { name: 'Добавить в список' })).toHaveAttribute(
+    expect(within(reopened).getByRole('button', { name: 'В список' })).toHaveAttribute(
       'aria-expanded',
       'false'
     );
@@ -871,7 +931,7 @@ describe('the tier ladder', () => {
     render(App, { env: at('q1', { cloud: fakeCloud(SEED) }) });
     await userEvent.click(screen.getByRole('button', { name: 'Улучшенный Палаш' }));
     await userEvent.click(
-      within(screen.getByRole('dialog')).getByRole('button', { name: 'Добавить в список' })
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'В список' })
     );
     expect(screen.getByRole('button', { name: '+ Новый список' })).toBeInTheDocument();
 
@@ -880,7 +940,7 @@ describe('the tier ladder', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Улучшенный Палаш' }));
     const reopened = screen.getByRole('dialog');
-    expect(within(reopened).getByRole('button', { name: 'Добавить в список' })).toHaveAttribute(
+    expect(within(reopened).getByRole('button', { name: 'В список' })).toHaveAttribute(
       'aria-expanded',
       'false'
     );
@@ -907,7 +967,7 @@ describe('the tier ladder', () => {
     render(App, { env: at('q1', { cloud: fakeCloud(SEED) }) });
     await userEvent.click(screen.getByRole('button', { name: 'Улучшенный Палаш' }));
     const toggle = within(screen.getByRole('dialog')).getByRole('button', {
-      name: 'Добавить в список'
+      name: 'В список'
     });
     await userEvent.click(toggle);
     expect(screen.getByRole('button', { name: '+ Новый список' })).toBeInTheDocument();
@@ -934,7 +994,7 @@ describe('the undo toast while the record dialog is open', () => {
     await screen.findByRole('button', { name: 'Аккаунт: gm4@example.test' });
     await userEvent.click(screen.getByRole('button', { name: 'Улучшенный Палаш' }));
     const dialog = screen.getByRole('dialog');
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Добавить в список' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'В список' }));
     await userEvent.click(await within(dialog).findByRole('button', { name: 'Клад' }));
     return dialog;
   };
@@ -1229,9 +1289,12 @@ describe('an own homebrew item', () => {
       'href',
       '/homebrew/' + AXE
     );
-    expect(screen.getByRole('button', { name: 'Скопировать ссылку' })).toBeInTheDocument();
+    await openMore();
+    expect(screen.getByRole('menuitem', { name: 'Скопировать ссылку' })).toBeInTheDocument();
     /* The seeded axe carries the catalog picture ci1.webp. */
-    expect(screen.getByRole('button', { name: 'Скопировать изображение' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('menuitem', { name: 'Скопировать изображение' })
+    ).toBeInTheDocument();
     expect(screen.getByText('Мастерская Ольхи (HB)')).toBeInTheDocument();
     await expectNoA11yViolations(container);
   });
@@ -1390,17 +1453,17 @@ describe('an own homebrew item', () => {
       /^https:\/\/example\.test\/h\/00000000-0000-4000-8000-000000000511\?v=[0-9a-z]+$/;
     const share = fakeShare();
     render(App, { env: own({ share }) });
-    await userEvent.click(await screen.findByRole('button', { name: 'Отправить' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Поделиться' }));
     expect(share.last.url).toMatch(ITEM_URL);
     expect(share.last.text).toContain('Топор Тлеющих Углей');
     cleanup();
     const clip = fakeClipboard();
     render(App, { env: own({ share: fakeShare({ available: false }), clipboard: clip }) });
-    await userEvent.click(await screen.findByRole('button', { name: 'Отправить' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Поделиться' }));
     expect(clip.last.text).toMatch(ITEM_URL);
   });
 
-  it("hands out the preview link with the record's version from «Отправить» and the link button", async () => {
+  it("hands out the preview link with the record's version from «Поделиться» and the link item", async () => {
     const ORIGIN = 'https://daggerheart-loot.pages.dev';
     const LINK = new RegExp(
       '^' +
@@ -1410,9 +1473,9 @@ describe('an own homebrew item', () => {
     const share = fakeShare();
     const clip = fakeClipboard();
     render(App, { env: own({ share, clipboard: clip, preview: ORIGIN }) });
-    await userEvent.click(await screen.findByRole('button', { name: 'Отправить' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Поделиться' }));
     expect(share.last.url).toMatch(LINK);
-    await userEvent.click(screen.getByRole('button', { name: 'Скопировать ссылку' }));
+    await pressMore('Скопировать ссылку');
     expect(clip.last.text).toBe(share.last.url);
     expect(screen.getByText('Ссылка скопирована')).toBeInTheDocument();
   });
@@ -1430,20 +1493,27 @@ describe('an own homebrew item', () => {
     cloud.auth.onChange = () => () => {};
     render(App, { env: at(AXE, { cloud, storage: memoryStorage() }) });
     expect(screen.getByText('Загружаем...')).toBeInTheDocument();
-    expect(screen.queryByText('Предмет не найден')).toBeNull();
+    expect(screen.queryByText('Предмета по этому адресу нет')).toBeNull();
     (answer as unknown as () => void)();
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Топор Тлеющих Углей' })
     ).toBeInTheDocument();
   });
 
-  it('draws a failed read of the own items, not «Предмет не найден», and reads again', async () => {
+  it('draws a failed read of the own items under a heading, no not-found page, and reads again', async () => {
     const cloud = fakeCloud(SEED, 'gm1', { offline: true });
     render(App, { env: at(AXE, { cloud, storage: memoryStorage() }) });
     expect(
-      await screen.findByText('Не получилось загрузить ваши предметы.')
+      await screen.findByRole('heading', {
+        level: 1,
+        name: 'Не получилось загрузить ваши предметы'
+      })
     ).toBeInTheDocument();
-    expect(screen.queryByText('Предмет не найден')).toBeNull();
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Не получилось загрузить ваши предметы.'
+    );
+    expect(screen.getByRole('button', { name: 'Повторить' }).className).toContain('primary');
+    expect(screen.queryByText('Предмета по этому адресу нет')).toBeNull();
     cloud.setOffline(false);
     await userEvent.click(screen.getByRole('button', { name: 'Повторить' }));
     expect(
@@ -1451,23 +1521,23 @@ describe('an own homebrew item', () => {
     ).toBeInTheDocument();
   });
 
-  it('reads «Предмет не найден» for another account and signed out', async () => {
+  it('draws the not-found page for another account and signed out', async () => {
     render(App, { env: own({}, 'gm2') });
     await flush();
-    expect(await screen.findByText('Предмет не найден')).toBeInTheDocument();
+    expect(await screen.findByText('Предмета по этому адресу нет')).toBeInTheDocument();
     cleanup();
     render(App, { env: own({}, null) });
-    expect(await screen.findByText('Предмет не найден')).toBeInTheDocument();
+    expect(await screen.findByText('Предмета по этому адресу нет')).toBeInTheDocument();
     cleanup();
     render(App, { env: at(AXE) });
-    expect(screen.getByText('Предмет не найден')).toBeInTheDocument();
+    expect(screen.getByText('Предмета по этому адресу нет')).toBeInTheDocument();
   });
 
-  it('puts the item into a list as a link from «Добавить в список»', async () => {
+  it('puts the item into a list as a link from «В список»', async () => {
     const cloud = fakeCloud(SEED, 'gm1');
     const page = fakePage();
     const { container } = render(App, { env: own({ cloud, page }) });
-    await userEvent.click(await screen.findByRole('button', { name: 'Добавить в список' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'В список' }));
     await expectNoA11yViolations(container);
     await userEvent.click(await screen.findByRole('button', { name: 'Пустой список' }));
     expect(await screen.findByText('Добавлено в «Пустой список»')).toBeInTheDocument();
@@ -1579,14 +1649,13 @@ describe("the author's own relations on a catalog card", () => {
   const rungs = (container: HTMLElement): string[] =>
     [...container.querySelectorAll('.steps .step')].map((e) => e.textContent);
 
-  it('marks each homebrew upgrade with (HB) and folds those past the third behind «и ещё 12»', async () => {
+  it('marks each homebrew upgrade with the badge and folds those past the third behind «и ещё 12»', async () => {
     const { container } = card('ci1');
     const into = lineOf(container, 'Улучшается до');
-    expect(linkNames(into)).toEqual([
-      'Мешок спокойных снов (HB)',
-      'Спальный мешок дозорного (HB)',
-      LONG + ' (HB)'
-    ]);
+    expect(linkNames(into)).toEqual(['Мешок спокойных снов', 'Спальный мешок дозорного', LONG]);
+    expect(into.querySelectorAll('.badge.hb')).toHaveLength(3);
+    expect(into.querySelector('.badge.hb')).toHaveTextContent('Хоумбрю');
+    expect(into).not.toHaveTextContent('(HB)');
     const more = within(into).getByRole('button', { name: 'и ещё 12' });
     expect(more).toHaveAttribute('aria-expanded', 'false');
     await expectNoA11yViolations(container);
@@ -1601,7 +1670,7 @@ describe("the author's own relations on a catalog card", () => {
     expect(document.activeElement).toBe(less);
     const names = linkNames(into);
     expect(names).toHaveLength(15);
-    expect(names.every((n) => n.endsWith(' (HB)'))).toBe(true);
+    expect(into.querySelectorAll('.badge.hb')).toHaveLength(15);
     await expectNoA11yViolations(container);
     await userEvent.click(less);
     expect(linkNames(into)).toHaveLength(3);
@@ -1636,16 +1705,16 @@ describe("the author's own relations on a catalog card", () => {
     const { container } = card('voa4_t3d');
     const set = lineOf(container, 'Комплект');
     expect(set.textContent.replace(/\s+/g, ' ').trim()).toBe(
-      'Комплект Святой Щит, Святой Клинок, Святое Облачение, Святой Венец (HB), Святой Пояс (HB), Святые Перчатки (HB) и ещё 1'
+      'Комплект Святой Щит, Святой Клинок, Святое Облачение, Святой Венец Хоумбрю, Святой Пояс Хоумбрю, Святые Перчатки Хоумбрю и ещё 1'
     );
+    /* A catalog member draws no badge. */
+    expect(set.querySelectorAll('.badge.hb')).toHaveLength(3);
     expect(within(set).getByText('Святой Щит')).toHaveAttribute('aria-current', 'true');
     expect(screen.getByText('Убранство Святого:')).toBeInTheDocument();
     await expectNoA11yViolations(container);
     cleanup();
     const own = lineOf(card('hb_saintpiececaaaaa').container, 'Комплект');
-    expect(own.querySelector('[aria-current="true"]')).toHaveTextContent(
-      /^Святой Венец \(HB\)$/
-    );
+    expect(own.querySelector('[aria-current="true"]')).toHaveTextContent(/^Святой Венец$/);
   });
 
   it('starts closed for another record drawn in the same card', async () => {

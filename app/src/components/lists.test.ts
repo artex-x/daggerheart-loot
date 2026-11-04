@@ -49,7 +49,7 @@ const at = (over: Partial<Env> = {}): Env =>
   fakeEnv({ router: memoryRouter('#/i/ci1'), data: fakeData(LOOT), ...over });
 
 const openMenu = (): Promise<void> =>
-  userEvent.click(screen.getByRole('button', { name: 'Добавить в список' }));
+  userEvent.click(screen.getByRole('button', { name: 'В список' }));
 
 /** Renders the card as gm4, who holds `lists`, and waits for the account. */
 async function openCard(lists: SeedList[]) {
@@ -90,14 +90,14 @@ describe('the row under a full card', () => {
     expect(
       screen.getByRole('heading', { level: 1, name: 'Спальный мешок' })
     ).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Добавить в список' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'В список' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Печать' })).toBeNull();
     expect(document.querySelector('.seldrop')).toBeNull();
   });
 
   it('draws the button folded, and the print control, with sign-in configured', async () => {
     render(App, { env: at({ cloud: fakeCloud(SEED) }) });
-    expect(screen.getByRole('button', { name: 'Добавить в список' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: 'В список' })).toHaveAttribute(
       'aria-expanded',
       'false'
     );
@@ -115,7 +115,7 @@ describe('the row under a full card', () => {
     expect(screen.getByText('Лежит в списках')).toBeInTheDocument();
     const chips = screen.getAllByRole('button', { name: /Лавка в порту|Клад дракона/ });
     expect(chips.map((c) => c.textContent)).toEqual(['Лавка в порту', 'Клад дракона']);
-    expect(screen.getByRole('button', { name: 'Добавить в список' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: 'В список' })).toHaveAttribute(
       'aria-expanded',
       'true'
     );
@@ -127,7 +127,7 @@ describe('the row under a full card', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Клад дракона' }));
     expect(screen.getByRole('button', { name: 'Клад дракона' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Добавить в список' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: 'В список' })).toHaveAttribute(
       'aria-expanded',
       'true'
     );
@@ -525,7 +525,7 @@ describe('with sign-in configured', () => {
       await screen.findByRole('link', { name: signIn });
       await userEvent.click(
         screen.getByRole('button', {
-          name: lang === 'ru' ? 'Добавить в список' : 'Add to list'
+          name: lang === 'ru' ? 'В список' : 'Add to list'
         })
       );
       const menu = container.querySelector('.dropmenu') as HTMLElement;
@@ -587,7 +587,7 @@ describe('with sign-in configured', () => {
     await screen.findByRole('link', { name: 'Войти' });
     await userEvent.click(screen.getByRole('button', { name: /Спальный мешок/ }));
     const dialog = screen.getByRole('dialog');
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Добавить в список' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'В список' }));
     await userEvent.click(within(dialog).getByRole('button', { name: '+ Новый список' }));
     await userEvent.click(within(dialog).getByRole('button', { name: 'Войти' }));
     expect(router.hash()).toBe('#/account');
@@ -665,7 +665,7 @@ describe('with sign-in configured', () => {
         await screen.findByRole('button', { name: /^Топор Тлеющих Углей/ })
       );
       const dialog = screen.getByRole('dialog');
-      await userEvent.click(within(dialog).getByRole('button', { name: 'Добавить в список' }));
+      await userEvent.click(within(dialog).getByRole('button', { name: 'В список' }));
       await userEvent.click(within(dialog).getByRole('button', { name: '+ Новый список' }));
       await userEvent.type(within(dialog).getByPlaceholderText('Например: клад дракона'), 'Т');
       await userEvent.click(within(dialog).getByRole('button', { name: 'Создать' }));

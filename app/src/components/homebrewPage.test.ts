@@ -555,7 +555,7 @@ describe('#/homebrew', () => {
     const { cloud, pagePort, container } = page();
     await screen.findByText('4 предмета из 100');
     await userEvent.click(screen.getByRole('checkbox', { name: 'Топор Тлеющих Углей' }));
-    await userEvent.click(screen.getByRole('button', { name: t.addToList }));
+    await userEvent.click(screen.getByRole('button', { name: t.toList }));
     await expectNoA11yViolations(container);
     await userEvent.click(await screen.findByRole('button', { name: 'Пустой список' }));
     expect(

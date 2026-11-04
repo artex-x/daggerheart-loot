@@ -6,24 +6,21 @@
 ## ru :: tree
 RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tables?as=gm4]
   dialog "Кольцо Тишины" [modal=true]
-    button "Закрыть" [description=Закрыть]
+    button "Закрыть"
     button "Страница"
     StaticText "28"
     StaticText "ПРЕДМЕТ"
-    ... StaticText x4 of 8 same-shape siblings elided
-    button "Скопировать название" [description=Скопировать название]
-    button "Скопировать ссылку" [description=Скопировать ссылку]
-    button "Отправить"
-    button "Скопировать изображение" [description=Скопировать изображение]
-    button "Скопировать текст" [description=Скопировать текст]
-    button "Добавить в список" [expanded=true]
+    ... StaticText x2 of 6 same-shape siblings elided
+    heading "Кольцо Тишины" [level=2]
+    StaticText ", чтобы активировать это кольцо. Ваши шаги будут бесшумными до с..." [namelen=81 namehash=29328dad]
+    button "В список" [expanded=true]
     StaticText "ЛЕЖИТ В СПИСКАХ"
     button "Клад дракона" [pressed=false]
     button "Лавка в порту" [pressed=false]
     button "+ Новый список" [pressed=false]
+    button "Поделиться"
     button "Печать" [description=Собрать карточки для печати: девять на лист A4]
-    button "Сохранить себе" [description=Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с оригиналом.]
-    StaticText "Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с ор..." [namelen=73 namehash=76f4ba3e]
+    button "Ещё" [expanded=false haspopup=menu]
     status ""
       StaticText "Убрано из «Клад дракона»"
       button "Вернуть" [focused=true]
@@ -99,10 +96,11 @@ daggerheart.com
 Аккаунт: gm4@example.test
 Альт. таблицы
 Бросок
+В список
 Вернуть
 Выбрать
-Добавить в список
 Дополнения
+Ещё
 Закрыть
 К содержимому
 Клад дракона
@@ -110,20 +108,15 @@ daggerheart.com
 Лавка в порту
 ЛутDaggerheart
 Открывать при запуске
-Отправить
 Печать
+Поделиться
 Поиск
 Поиск по названию или описанию...
 Предметы
 Прочее
 Расходники
 Сетка
-Скопировать изображение
-Скопировать название
-Скопировать ссылку
-Скопировать текст
 Снаряжение
-Сохранить себе
 Список
 Ссылка на таблицу
 Страница
@@ -135,21 +128,18 @@ daggerheart.com
 ## en :: tree
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables?as=gm4]
   dialog "Ring of Silence" [modal=true]
-    button "Close" [description=Close]
+    button "Close"
     button "Page"
     StaticText "28"
     StaticText "ITEM"
-    ... StaticText x3 of 7 same-shape siblings elided
-    button "Copy name" [description=Copy name]
-    button "Copy link" [description=Copy link]
+    StaticText "CORE"
+    heading "Ring of Silence" [level=2]
+    StaticText "Spend a Hope"
     StaticText " to activate this ring. Your footsteps are silent until your nex..." [namelen=71 namehash=01eb3998]
-    button "Share"
-    button "Copy image" [description=Copy image]
-    button "Copy text" [description=Copy text]
     button "Add to list" [expanded=false]
+    button "Share"
     button "Print" [description=Lay these out for printing: nine to an A4 sheet]
-    button "Save to my items" [description=The copy goes to "Homebrew" and no longer changes with the original.]
-    StaticText "The copy goes to "Homebrew" and no longer changes with the origi..." [namelen=68 namehash=82c4f1ca]
+    button "More" [expanded=false haspopup=menu]
     status ""
       StaticText "Removed from "Клад дракона""
       button "Undo" [focused=true]
@@ -221,10 +211,6 @@ Add to list
 Alt. tables
 Close
 Consumables
-Copy image
-Copy link
-Copy name
-Copy text
 Core
 EN
 Equipment
@@ -236,6 +222,7 @@ Items
 Link to this table
 List
 LootDaggerheart
+More
 Open on start
 Other
 Page
@@ -243,7 +230,6 @@ Print
 Privacy
 RU
 Roll
-Save to my items
 Search
 Search by name or description...
 Select

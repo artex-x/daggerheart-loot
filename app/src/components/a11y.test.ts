@@ -174,7 +174,7 @@ const STATES: {
     cloud: () => fakeCloud(seedWith({ gm4: TWO_LISTS }), 'gm4'),
     enter: async () => {
       await screen.findByRole('button', { name: 'Аккаунт: gm4@example.test' });
-      await press('Добавить в список');
+      await press('В список');
       await screen.findByRole('button', { name: 'Клад дракона' });
     }
   },
@@ -263,7 +263,7 @@ const STATES: {
       await userEvent.click(
         screen.getAllByRole('checkbox').filter((cb) => !cb.closest('.selall'))[0] as HTMLElement
       );
-      await press('Добавить в список');
+      await press('В список');
       await screen.findByRole('button', { name: 'Клад дракона' });
     }
   },
@@ -543,6 +543,9 @@ const COVERED: Record<string, string> = {
     'accountPage.test.ts in every state, the delete confirmation open and «Ваши данные» above',
   'Actions.svelte': 'the card actions on every record state above, and record.test.ts',
   'AddToList.svelte': 'the add-to-list menu, in the state above',
+  'DialogClose.svelte': 'sheet.test.ts and recordHost.test.ts, both dialogs open',
+  'ErrorPage.svelte': 'itemPage.test.ts and record.test.ts, every error state',
+  'NoItem.svelte': 'itemPage.test.ts and record.test.ts, the not-found page',
   'Toast.svelte':
     'the toast the add-to-list press raises, in the state above, and shell.test.ts',
   'DiceBar.svelte': 'the Core rules panel - std.test.ts and the state below',

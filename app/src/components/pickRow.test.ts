@@ -1,7 +1,7 @@
-/* «Сохранить себе» in the pick row over the fake cloud, the details of the owner's answers:
+/* The action row, then «Сохранить себе» in its «Ещё» menu over the fake cloud, the details of the owner's answers:
  * (a) signed out the prompt, the copy after the sign-in, and a modal's return to the item's
  * page; (b) each press makes one more copy, numbered by name, and the button never turns
- * into «Сохранено»; (c) the note when a list links the item, and the relinked toast;
+ * into «Сохранено»; (c) the second line when a list links the item, and the relinked toast;
  * (d) «Изменить» on the toast; (e) `hbNotReady` while the own items or the lists load,
  * `cloudLoadFailed` after a failed lists read, `hbLoadFailed` after a failed own-items read
  * that a sign-in left a copy for; (f) the relink keeps each entry (state/app.test.ts reads
@@ -60,8 +60,17 @@ function page(hash: string, cloud: FakeCloud) {
   return { ...view, router };
 }
 
-const saveButton = async (): Promise<HTMLElement> =>
-  screen.findByRole('button', { name: t.saveItem });
+/* Opens «Ещё» of the dialog while one is open, else of the page. */
+const openMore = async (more = t.moreMenu): Promise<void> => {
+  const scope = screen.queryByRole('dialog') ?? document.body;
+  await userEvent.click(await within(scope).findByRole('button', { name: more }));
+};
+
+/* The save item: a press closes the menu, so the next read opens it again. */
+const saveButton = async (): Promise<HTMLElement> => {
+  if (!screen.queryByRole('menu')) await openMore();
+  return screen.findByRole('menuitem', { name: t.saveItem });
+};
 
 const ownKeys = async (cloud: FakeCloud): Promise<string[]> => {
   const r = await cloud.homebrew.load();
@@ -75,13 +84,131 @@ const toastKey = (text: string): string => {
   return href.replace('/homebrew/', '');
 };
 
+describe('the action row', () => {
+  const started = async (cloud: FakeCloud): Promise<AppState> => {
+    const app = new AppState(
+      fakeEnv({
+        cloud,
+        router: memoryRouter('#/i/q23'),
+        storage: memoryStorage(),
+        data: fakeData(LOOT)
+      })
+    );
+    app.start();
+    await waitFor(() => {
+      expect(app.user).not.toBeUndefined();
+    });
+    return app;
+  };
+  const rope = (app: AppState) =>
+    app.recordFor('q23') as NonNullable<ReturnType<AppState['recordFor']>>;
+  const names = (): string[] =>
+    screen.getAllByRole('button').map((b) => b.textContent.replace(/\s+/g, ' ').trim());
+
+  it('draws «В список», «Поделиться», «Печать», «Ещё» in this order, with one primary', async () => {
+    const app = await started(fakeCloud(SEED));
+    const { container } = render(PickRow, { app, index: app.index!, it: rope(app) });
+    expect(names()).toEqual([t.toList, t.share, t.print, t.moreMenu]);
+    expect(container.querySelectorAll('.btn.primary')).toHaveLength(1);
+    const more = screen.getByRole('button', { name: t.moreMenu });
+    expect(more).toHaveAttribute('aria-haspopup', 'menu');
+    expect(more).toHaveAttribute('aria-expanded', 'false');
+    app.stop();
+  });
+
+  it('draws «Изменить» before «Ещё» for the author', async () => {
+    const { container } = page('#/i/' + AXE_KEY, fakeCloud(SEED, 'gm1'));
+    const edit = await screen.findByRole('link', { name: t.edit });
+    const row = container.querySelector('.cardpick') as HTMLElement;
+    const controls = [...row.querySelectorAll('.btn')];
+    expect(controls.at(-2)).toBe(edit);
+    expect(controls.at(-1)).toHaveAccessibleName(t.moreMenu);
+  });
+
+  it('opens a menu of the copies, then the save item, with no image item for a record with no art', async () => {
+    const app = await started(fakeCloud(SEED));
+    const { container } = render(PickRow, { app, index: app.index!, it: rope(app) });
+    await openMore();
+    const menu = screen.getByRole('menu', { name: t.moreMenu });
+    const items = within(menu).getAllByRole('menuitem');
+    expect(items.slice(0, 3).map((i) => i.textContent.trim())).toEqual([
+      t.copyText,
+      t.copyName,
+      t.copyLink
+    ]);
+    expect(items).toHaveLength(4);
+    expect(items[3]).toHaveAccessibleName(t.saveItem);
+    expect(screen.getByRole('button', { name: t.moreMenu })).toHaveAttribute(
+      'aria-expanded',
+      'true'
+    );
+    expect(document.activeElement).toHaveAccessibleName(t.copyText);
+    await expectNoA11yViolations(container);
+    app.stop();
+  });
+
+  it('adds the image item for a record with art', async () => {
+    const app = await started(fakeCloud(SEED));
+    render(PickRow, { app, index: app.index!, it: { ...rope(app), img: 'q23.webp' } });
+    await openMore();
+    expect(screen.getByRole('menuitem', { name: t.copyImg })).toBeInTheDocument();
+    app.stop();
+  });
+
+  it('says «Сначала вход в аккаунт» signed out, tied to the item, and opens the prompt only at the press', async () => {
+    const app = await started(fakeCloud(SEED));
+    render(PickRow, { app, index: app.index!, it: rope(app) });
+    const save = await saveButton();
+    expect(save).toHaveAccessibleName(t.saveItem);
+    expect(save).toHaveAccessibleDescription(t.saveItemSignIn);
+    expect(screen.queryByText(t.signInToSaveItem)).toBeNull();
+    await userEvent.click(save);
+    expect(screen.getByText(t.signInToSaveItem)).toBeInTheDocument();
+    app.stop();
+  });
+
+  it('closes on a pressed item and returns the focus to «Ещё»', async () => {
+    const app = await started(fakeCloud(SEED));
+    render(PickRow, { app, index: app.index!, it: rope(app) });
+    await openMore();
+    await userEvent.click(screen.getByRole('menuitem', { name: t.copyName }));
+    expect(screen.queryByRole('menu')).toBeNull();
+    expect(document.activeElement).toHaveAccessibleName(t.moreMenu);
+    app.stop();
+  });
+
+  it('closes on Escape and returns the focus to «Ещё»', async () => {
+    const app = await started(fakeCloud(SEED));
+    render(PickRow, { app, index: app.index!, it: rope(app) });
+    await openMore();
+    await userEvent.keyboard('{Escape}');
+    expect(screen.queryByRole('menu')).toBeNull();
+    expect(document.activeElement).toHaveAccessibleName(t.moreMenu);
+    app.stop();
+  });
+
+  it("carries a list entry's note into the text a menu item copies", async () => {
+    const app = await started(fakeCloud(SEED));
+    const write = vi.spyOn(app.env.clipboard, 'writeRich');
+    render(PickRow, {
+      app,
+      index: app.index!,
+      it: rope(app),
+      extra: [{ head: 'Заметка', body: 'для мастера' }]
+    });
+    await openMore();
+    await userEvent.click(screen.getByRole('menuitem', { name: t.copyText }));
+    expect(write.mock.calls[0]?.[0].plain).toContain('для мастера');
+    app.stop();
+  });
+});
+
 describe('«Сохранить себе»', () => {
   it('(a) asks a signed-out reader to sign in, then makes the copy after the sign-in', async () => {
     const world = fakeCloud({ ...SEED, defaultUser: 'gm2' });
     const { container, router } = page('#/h/' + ROLL_B, world);
     await userEvent.click(await saveButton());
     expect(screen.getByText(t.signInToSaveItem)).toBeInTheDocument();
-    expect(await saveButton()).toHaveAttribute('aria-expanded', 'true');
     await expectNoA11yViolations(container);
     await userEvent.click(screen.getByRole('button', { name: t.signIn }));
     expect(router.hash()).toBe('#/account');
@@ -112,8 +239,8 @@ describe('«Сохранить себе»', () => {
       ...recordOf(AXE_KEY, { kind: 'item', ru: 'Топор' }, null),
       hid: AXE_ID
     };
-    render(PickRow, { app, it, inModal: true });
-    await userEvent.click(screen.getByRole('button', { name: t.saveItem }));
+    render(PickRow, { app, index: app.index!, it, inModal: true });
+    await userEvent.click(await saveButton());
     await userEvent.click(screen.getByRole('button', { name: t.signIn }));
     expect(app.signInFor).toEqual({
       hash: '#/h/' + AXE_ID,
@@ -137,26 +264,24 @@ describe('«Сохранить себе»', () => {
     expect(imported).not.toHaveBeenCalled();
   });
 
-  it('ties the note to its button in a group of their own, under the other pick buttons, before and after a press', async () => {
+  it('ties the relink line to the item as its second line, and draws no line once nothing links it', async () => {
     const world = fakeCloud(SEED, 'gm2');
-    const { container } = page('#/h/' + ROLL_B, world);
+    const { container } = page('#/h/' + AXE_ID, world);
     const save = await saveButton();
-    const note = screen.getByText(t.saveItemNote);
-    const group = save.parentElement;
-    expect(group).toHaveClass('savegroup');
-    expect(note.parentElement).toBe(group);
-    expect([...(group?.children ?? [])]).toEqual([save, note]);
-    expect(note.id).toBe('savenote-p-' + ROLL_B);
+    const note = await screen.findByText(t.saveItemNoteList);
+    expect(note.id).toBe('savenote-p-' + AXE_ID);
+    /* The label alone names it, so a press by name finds it. */
+    expect(save).toHaveAccessibleName(t.saveItem);
     expect(save).toHaveAttribute('aria-describedby', note.id);
-    expect(save).toHaveAccessibleDescription(t.saveItemNote);
-    /* «Добавить в список» and «Печать» stay outside the group. */
-    expect(within(group!).queryByRole('button', { name: t.print })).toBeNull();
+    expect(save).toHaveAccessibleDescription(t.saveItemNoteList);
     await expectNoA11yViolations(container);
     await userEvent.click(save);
-    await screen.findByText(t.saveItemSaved.replace('%s', 'Скатка следопыта'));
+    await screen.findByText(t.saveItemRelinked.replace('%s', 'Топор Тлеющих Углей'));
     const again = await saveButton();
-    expect(again).toBeEnabled();
-    expect(again).toHaveAccessibleDescription(t.saveItemNote);
+    await waitFor(() => {
+      expect(again).toBeEnabled();
+    });
+    expect(again).not.toHaveAttribute('aria-describedby');
     expect(screen.queryByText('Сохранено')).toBeNull();
     await expectNoA11yViolations(container);
   });
@@ -221,10 +346,10 @@ describe('«Сохранить себе»', () => {
   it('(b, c) relinks every linking row at the first press and none at the second', async () => {
     const world = fakeCloud(SEED, 'gm2');
     const { container } = page('#/h/' + AXE_ID, world);
+    await saveButton();
     expect(await screen.findByText(t.saveItemNoteList)).toBeInTheDocument();
     await userEvent.click(await saveButton());
     await screen.findByText(t.saveItemRelinked.replace('%s', 'Топор Тлеющих Углей'));
-    expect(await screen.findByText(t.saveItemNote)).toBeInTheDocument();
     const applied = vi.spyOn(world.lists, 'apply');
     await userEvent.click(await saveButton());
     expect(
@@ -239,6 +364,7 @@ describe('«Сохранить себе»', () => {
   it('(c, d) says the list rows follow the copy, and the toast says they did, with «Изменить»', async () => {
     const world = fakeCloud(SEED, 'gm2');
     const { container } = page('#/h/' + AXE_ID, world);
+    await saveButton();
     expect(await screen.findByText(t.saveItemNoteList)).toBeInTheDocument();
     await userEvent.click(await saveButton());
     const text = t.saveItemRelinked.replace('%s', 'Топор Тлеющих Углей');
@@ -247,13 +373,13 @@ describe('«Сохранить себе»', () => {
     await expectNoA11yViolations(container);
   });
 
-  it('(c) draws the list note in the modal of a list row that links the item', async () => {
+  it('(c) draws the relink line in the modal of a list row that links the item', async () => {
     const world = fakeCloud(SEED, 'gm2');
     const { container } = page('#/lists/' + GM2_LIST, world);
     await userEvent.click(await screen.findByRole('button', { name: /^Топор Тлеющих Углей/ }));
     const dialog = await screen.findByRole('dialog');
-    expect(within(dialog).getByRole('button', { name: t.saveItem })).toBeInTheDocument();
-    expect(within(dialog).getByText(t.saveItemNoteList)).toBeInTheDocument();
+    await saveButton();
+    expect(await within(dialog).findByText(t.saveItemNoteList)).toBeInTheDocument();
     expect(within(dialog).getByRole('button', { name: t.print })).toBeInTheDocument();
     await expectNoA11yViolations(container);
   });
@@ -262,8 +388,8 @@ describe('«Сохранить себе»', () => {
     const world = fakeCloud(SEED, 'gm2');
     page('#/lists/' + GM2_LIST, world);
     await userEvent.click(await screen.findByRole('button', { name: /^Топор Тлеющих Углей/ }));
-    const dialog = await screen.findByRole('dialog');
-    await userEvent.click(within(dialog).getByRole('button', { name: t.saveItem }));
+    await screen.findByRole('dialog');
+    await userEvent.click(await saveButton());
     expect(
       await screen.findByText(t.saveItemRelinked.replace('%s', 'Топор Тлеющих Углей'))
     ).toBeInTheDocument();
@@ -272,7 +398,8 @@ describe('«Сохранить себе»', () => {
     });
     await userEvent.click(await screen.findByRole('button', { name: /^Топор Тлеющих Углей/ }));
     const copy = await screen.findByRole('dialog');
-    expect(within(copy).queryByRole('button', { name: t.saveItem })).toBeNull();
+    await openMore();
+    expect(within(copy).queryByRole('menuitem', { name: t.saveItem })).toBeNull();
     expect(copy.querySelector('article')).toHaveAttribute('data-id', (await ownKeys(world))[0]);
   });
 
@@ -384,9 +511,13 @@ describe('«Сохранить себе» on a catalog record', () => {
     if (!it) throw new Error('no record');
     return it;
   };
-  const group = (): Element | null => document.querySelector('.savegroup');
+  /* Opens «Ещё» and reads the save item. */
+  const group = async (): Promise<Element | null> => {
+    await userEvent.click(screen.getByRole('button', { name: t.moreMenu }));
+    return screen.queryByRole('menuitem', { name: t.saveItem });
+  };
 
-  it('(h) draws the button and its note on the record page, disabled while it writes, and both stay after each press', async () => {
+  it('(h) draws the item on the record page, disabled while it writes, and it stays after each press', async () => {
     const world = fakeCloud(SEED, 'gm2');
     const real = world.homebrew.import.bind(world.homebrew);
     let release: () => void = () => undefined;
@@ -398,22 +529,22 @@ describe('«Сохранить себе» on a catalog record', () => {
     };
     const { container } = page('#/i/q23', world);
     const save = await saveButton();
-    expect(save).toHaveAccessibleDescription(t.saveItemNote);
-    expect(save.closest('.savegroup')).not.toBeNull();
+    expect(save).not.toHaveAttribute('aria-describedby');
     await expectNoA11yViolations(container);
     await userEvent.click(save);
+    const busy = await saveButton();
     await waitFor(() => {
-      expect(save).toBeDisabled();
+      expect(busy).toBeDisabled();
     });
     release();
     await screen.findByText(t.saveItemSaved.replace('%s', 'Верёвка'));
     await waitFor(() => {
-      expect(save).toBeEnabled();
+      expect(busy).toBeEnabled();
     });
-    expect(save).toHaveAccessibleDescription(t.saveItemNote);
-    await userEvent.click(save);
+    await userEvent.click(busy);
+    const again = await saveButton();
     await waitFor(() => {
-      expect(save).toBeDisabled();
+      expect(again).toBeDisabled();
     });
     release();
     expect(
@@ -424,11 +555,11 @@ describe('«Сохранить себе» on a catalog record', () => {
     await expectNoA11yViolations(container);
   });
 
-  it('(h) draws no group with no sign-in configured, while the session is unknown, while the own items load or after they failed', async () => {
+  it('(h) draws no save item with no sign-in configured, while the session is unknown, while the own items load or after they failed', async () => {
     const none = new AppState(env(null));
     none.start();
-    render(PickRow, { app: none, it: rope(none) });
-    expect(group()).toBeNull();
+    render(PickRow, { app: none, index: none.index!, it: rope(none) });
+    expect(await group()).toBeNull();
     none.stop();
     cleanup();
 
@@ -436,8 +567,8 @@ describe('«Сохранить себе» on a catalog record', () => {
     unknown.auth.session = () => new Promise(() => undefined);
     const a = new AppState(env(unknown));
     a.start();
-    render(PickRow, { app: a, it: rope(a) });
-    expect(group()).toBeNull();
+    render(PickRow, { app: a, index: a.index!, it: rope(a) });
+    expect(await group()).toBeNull();
     a.stop();
     cleanup();
 
@@ -452,9 +583,9 @@ describe('«Сохранить себе» on a catalog record', () => {
       await waitFor(() => {
         expect(app.user).toBeTruthy();
       });
-      render(PickRow, { app, it: rope(app) });
+      render(PickRow, { app, index: app.index!, it: rope(app) });
       await new Promise((r) => setTimeout(r, 20));
-      expect(group()).toBeNull();
+      expect(await group()).toBeNull();
       app.stop();
       cleanup();
     }
@@ -466,9 +597,14 @@ describe('«Сохранить себе» on a catalog record', () => {
     await waitFor(() => {
       expect(app.user).toBeNull();
     });
-    const { container } = render(PickRow, { app, it: rope(app), inModal: true });
-    expect(group()).not.toBeNull();
-    await userEvent.click(screen.getByRole('button', { name: t.saveItem }));
+    const { container } = render(PickRow, {
+      app,
+      index: app.index!,
+      it: rope(app),
+      inModal: true
+    });
+    expect(screen.queryByText(t.signInToSaveItem)).toBeNull();
+    await userEvent.click(await saveButton());
     expect(screen.getByText(t.signInToSaveItem)).toBeInTheDocument();
     await expectNoA11yViolations(container);
     await userEvent.click(screen.getByRole('button', { name: t.signIn }));
@@ -492,7 +628,7 @@ describe('«Сохранить себе» on a catalog record', () => {
     expect(await ownKeys(world)).toHaveLength(1);
   });
 
-  it('(h) says "Save to my items", its note and the numbered copy in English', async () => {
+  it('(h) says "Save to My items" and the numbered copy in English', async () => {
     const en = dict('en');
     const world = fakeCloud(SEED, 'gm2');
     const app = new AppState(env(world));
@@ -501,14 +637,14 @@ describe('«Сохранить себе» on a catalog record', () => {
     await waitFor(() => {
       expect(app.catalogCopyOffered).toBe(true);
     });
-    const { container } = render(PickRow, { app, it: rope(app) });
-    const save = screen.getByRole('button', { name: en.saveItem });
-    expect(save).toHaveAccessibleDescription(en.saveItemNote);
-    await userEvent.click(save);
+    const { container } = render(PickRow, { app, index: app.index!, it: rope(app) });
+    await openMore(en.moreMenu);
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Save to My items' }));
     await waitFor(() => {
       expect(app.toast?.msg).toBe(en.saveItemSaved.replace('%s', 'Rope'));
     });
-    await userEvent.click(save);
+    await openMore(en.moreMenu);
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Save to My items' }));
     await waitFor(() => {
       expect(app.toast?.msg).toBe(en.saveItemSaved.replace('%s', 'Rope (2)'));
     });
@@ -544,7 +680,7 @@ describe('«Печать»', () => {
 
   it('is not drawn with no sign-in configured, and is disabled while the session is unknown', async () => {
     const none = await started(null);
-    render(PickRow, { app: none, it: record(none) });
+    render(PickRow, { app: none, index: none.index!, it: record(none) });
     expect(printButton()).toBeNull();
     none.stop();
     cleanup();
@@ -553,14 +689,14 @@ describe('«Печать»', () => {
     cloud.auth.session = () => new Promise(() => undefined);
     const app = new AppState(env(cloud, '#/i/q23'));
     app.start();
-    render(PickRow, { app, it: record(app) });
+    render(PickRow, { app, index: app.index!, it: record(app) });
     expect(printButton()).toBeDisabled();
     app.stop();
   });
 
   it('opens the sign-in prompt signed out, and its action makes the set of the card', async () => {
     const app = await started(fakeCloud(SEED));
-    const { container } = render(PickRow, { app, it: record(app) });
+    const { container } = render(PickRow, { app, index: app.index!, it: record(app) });
     const button = printButton() as HTMLElement;
     expect(button).toHaveAttribute('aria-expanded', 'false');
     expect(button).toHaveAttribute('title', t.printHint);
@@ -578,7 +714,7 @@ describe('«Печать»', () => {
 
   it("returns a modal's sign-in to the record's own address, and a second press closes it", async () => {
     const app = await started(fakeCloud(SEED), '#/tables/core_item');
-    render(PickRow, { app, it: record(app), inModal: true });
+    render(PickRow, { app, index: app.index!, it: record(app), inModal: true });
     const button = printButton() as HTMLElement;
     await userEvent.click(button);
     await userEvent.click(button);
@@ -592,7 +728,7 @@ describe('«Печать»', () => {
   it('makes the set signed in and opens it, disabled while it runs', async () => {
     const cloud = fakeCloud(SEED, 'gm2');
     const app = await started(cloud);
-    const { container } = render(PickRow, { app, it: record(app) });
+    const { container } = render(PickRow, { app, index: app.index!, it: record(app) });
     app.printing = true;
     await waitFor(() => {
       expect(printButton()).toBeDisabled();

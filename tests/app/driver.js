@@ -512,6 +512,44 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
       return true;
     },
 
+    /** Opens the record's «Ещё» menu: of the open dialog, else of the page. */
+    async openMore() {
+      const handle = await page.evaluateHandle(() => {
+        const more = '.cardpick [aria-haspopup="menu"]';
+        return document.querySelector('dialog[open] ' + more) ?? document.querySelector(more);
+      });
+      const el = handle.asElement();
+      if (!el) {
+        await handle.dispose();
+        throw new Error(`${target}: no «Ещё» on the record`);
+      }
+      await el.click();
+      await handle.dispose();
+      await page.waitForSelector('[role="menu"]', { timeout: 5000 });
+      await settle(page);
+    },
+
+    /** Opens the «Ещё» menu of the open dialog, else of the page, then presses `name` in it
+     *  once it is enabled: a save item waits for the account's items. */
+    async more(name) {
+      await d.openMore();
+      const handle = await page.waitForFunction(
+        (n, nameSrc) => {
+          const nameOf = eval(nameSrc);
+          return [...document.querySelectorAll('[role="menu"] [role="menuitem"]')].find(
+            (e) => nameOf(e) === n && !e.disabled
+          );
+        },
+        { timeout: 5000 },
+        name,
+        NAME_FN
+      );
+      await handle.asElement().click();
+      await handle.dispose();
+      d.pressed.add(name);
+      await settle(page);
+    },
+
     /** Waits for whatever is in flight - a resize, or a press. */
     settle() {
       return settle(page);

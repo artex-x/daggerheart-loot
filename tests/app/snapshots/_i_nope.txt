@@ -1,6 +1,6 @@
 # #/i/nope
 # route: /#/i/nope
-# why: the not-found record page: "Предмет не найден", the sub line, the "На главную" button
+# why: the not-found record page: «Предмета по этому адресу нет», the address in the sentence, «Найти предмет» and «Открыть таблицы»
 
 ## ru :: tree
 RootWebArea "Генератор лута Daggerheart" [url=/i/nope]
@@ -17,9 +17,12 @@ RootWebArea "Генератор лута Daggerheart" [url=/i/nope]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
-    heading "Предмет не найден" [level=1]
-    StaticText "Возможно, ссылка устарела или данные были изменены."
-    link "На главную" [url=/roll/std]
+    heading "Предмета по этому адресу нет" [level=1]
+    StaticText "Адрес "
+    StaticText "/i/nope"
+    StaticText " не ведёт ни к одному предмету. Ссылка могла устареть или быть н..." [namelen=81 namehash=3c7558ef]
+    link "Найти предмет" [url=/search]
+    link "Открыть таблицы" [url=/tables]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -36,7 +39,8 @@ daggerheart.com
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
-На главную
+Найти предмет
+Открыть таблицы
 Поиск
 Таблицы
 Условия использования
@@ -57,9 +61,12 @@ RootWebArea "Daggerheart Loot Generator" [url=/i/en/nope]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
-    heading "Item not found" [level=1]
-    StaticText "The link may be out of date, or the data has changed."
-    link "Home" [url=/en/roll/std]
+    heading "No item at this address" [level=1]
+    StaticText "The address "
+    StaticText "/i/en/nope"
+    StaticText " leads to no item. The link may be old or mistyped."
+    link "Find the item" [url=/en/search]
+    link "Open the tables" [url=/en/tables]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -69,9 +76,10 @@ RootWebArea "Daggerheart Loot Generator" [url=/i/en/nope]
 
 ## en :: controls
 EN
-Home
+Find the item
 Install as an app
 LootDaggerheart
+Open the tables
 Privacy
 RU
 Roll

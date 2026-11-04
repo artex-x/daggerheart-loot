@@ -115,7 +115,7 @@ RootWebArea "Топор Тлеющих Углей - Генератор лута 
     heading "Топор Тлеющих Углей" [level=2]
     StaticText "4-6"
     StaticText "Пламя"
-    button "Добавить в список" [expanded=false]
+    button "В список" [expanded=false]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -137,13 +137,13 @@ daggerheart.com
 Броня
 Бросок
 В линии
+В список
 Влияние
 Вплотную
 Вторичное оружие
 Второй набор характеристик
 Далеко
 Двуручное
-Добавить в список
 Жирный
 Заменить
 Знание

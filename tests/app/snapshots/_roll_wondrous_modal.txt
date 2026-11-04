@@ -5,22 +5,18 @@
 ## ru :: tree
 RootWebArea "Wondrous Environments - Генератор лута Daggerheart" [url=/roll/wondrous_environments]
   dialog "Смола Бездны" [modal=true]
-    button "Закрыть" [description=Закрыть focused=true]
+    button "Закрыть" [focused=true]
     button "Страница"
     StaticText "1"
     StaticText "РАСХОДНИК"
-    ... StaticText x2 of 6 same-shape siblings elided
-    button "Скопировать название" [description=Скопировать название]
-    button "Скопировать ссылку" [description=Скопировать ссылку]
+    StaticText "WONDROUS ENVIRONMENTS"
+    heading "Смола Бездны" [level=2]
     StaticText "Вы можете бросить флакон этой смолы в цель в пределах Далекой ди..." [namelen=127 namehash=0130265a]
     DisclosureTriangle "Неистовое опутывание МУДРОСТЬ · УРОВЕНЬ 1 · ЗАКЛИНАНИЕ" [expanded=false]
-    button "Отправить"
-    button "Скопировать изображение" [description=Скопировать изображение]
-    button "Скопировать текст" [description=Скопировать текст]
-    button "Добавить в список" [expanded=false]
+    button "В список" [expanded=false]
+    button "Поделиться"
     button "Печать" [description=Собрать карточки для печати: девять на лист A4 expanded=false]
-    button "Сохранить себе" [description=Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с оригиналом. expanded=false]
-    StaticText "Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с ор..." [namelen=73 namehash=76f4ba3e]
+    button "Ещё" [expanded=false haspopup=menu]
 
 ## ru :: controls
 ?Справка
@@ -30,8 +26,9 @@ Wondrous Environments
 daggerheart.com
 Альтернативные таблицы
 Бросок
+В список
 Войти
-Добавить в список
+Ещё
 Закрыть
 К содержимому
 Конфиденциальность
@@ -42,6 +39,7 @@ daggerheart.com
 Открывать при запуске
 Отправить
 Печать
+Поделиться
 Поиск
 Результат броска
 Скопировать изображение
@@ -50,7 +48,6 @@ daggerheart.com
 Скопировать текст
 Случайно 1–119
 Смола Бездны
-Сохранить себе
 Страница
 Таблицы
 Условия использования
@@ -59,22 +56,18 @@ daggerheart.com
 ## en :: tree
 RootWebArea "Wondrous Environments - Daggerheart Loot Generator" [url=/en/roll/wondrous_environments]
   dialog "Abyssal Sap" [modal=true]
-    button "Close" [description=Close focused=true]
+    button "Close" [focused=true]
     button "Page"
     StaticText "1"
     StaticText "CONSUMABLE"
-    ... StaticText x2 of 6 same-shape siblings elided
-    button "Copy name" [description=Copy name]
-    button "Copy link" [description=Copy link]
+    StaticText "WONDROUS ENVIRONMENTS"
+    heading "Abyssal Sap" [level=2]
     StaticText "You can throw a vial of this sap at a target within Far range to..." [namelen=111 namehash=8af0f270]
     DisclosureTriangle "Vicious Entangle SAGE · LEVEL 1 · SPELL" [expanded=false]
-    button "Share"
-    button "Copy image" [description=Copy image]
-    button "Copy text" [description=Copy text]
     button "Add to list" [expanded=false]
+    button "Share"
     button "Print" [description=Lay these out for printing: nine to an A4 sheet expanded=false]
-    button "Save to my items" [description=The copy goes to "Homebrew" and no longer changes with the original. expanded=false]
-    StaticText "The copy goes to "Homebrew" and no longer changes with the origi..." [namelen=68 namehash=82c4f1ca]
+    button "More" [expanded=false haspopup=menu]
 
 ## en :: controls
 ?Help
@@ -89,6 +82,7 @@ Copy text
 EN
 Install as an app
 LootDaggerheart
+More
 One higher
 One lower
 Open on start
@@ -99,7 +93,6 @@ RU
 Random 1–119
 Roll
 Roll result
-Save to my items
 Search
 Share
 Sign in

@@ -423,6 +423,19 @@ that reads the width in code; CSS reads the same two numbers. Every other media
 query in the code belongs to one component and its own measured problem. Do
 not add another system breakpoint.
 
+**The Action Vocabulary Rule.** «В список», «Поделиться», «Печать» and «Ещё» are
+the same four labeled controls on every record surface at every width; «Изменить»
+joins for the author. The copies and «Сохранить себе» live in «Ещё», a `Menu` that
+opens down on a page and, in the dialog, up where the room is only above, so from the
+dock. «В список» is the one gold primary; an open «Ещё» is not drawn pressed, because
+gold marks a choice. A label never gives way to an icon (The Same Label Rule).
+
+**The Dossier Rule.** A record page and the record dialog are one dossier: the
+picture beside the text from 761px and 4:3 above it below, no plate on a page. The
+name is drawn once. The dialog is a bottom sheet with a sticky dock up to 760px, not
+sticky in a window shorter than 481px, where two rows would take almost half of the
+height: a component rule, not a breakpoint.
+
 **The Hidden Header Rule.** Up to 760px the whole header leaves on a scroll down
 and returns on a scroll up, on every page, because a phone reader needs the rows
 more than the jobs. It slides in 0.2s, or appears at once under reduced motion. It
@@ -503,8 +516,9 @@ A ticked row or tile is lit and neutral: the Vault Wall Lit ground, the
 `--muted2` border and the checked box. Never gold, never a one-side stripe (The
 Seal Rule: nobody chose a value there, the reader picked a row).
 
-Artwork is square. A record image is `aspect-ratio: 1` with `object-fit: cover`:
-132px beside a compact card, full width and up to 420px on a full card, 60px in
+Artwork is square, except the record page and the dialog up to 760px, which crop it
+to 4:3. A record image is `aspect-ratio: 1` with `object-fit: cover`:
+132px beside a compact card, full width and up to 420px on a plate card, 60px in
 a table row, always over the art well (`--art-well`, `#0a0810`) so a
 transparent PNG keeps a ground.
 
@@ -585,8 +599,10 @@ means "a thing". Do not round a card to a pill or square a chip.
   the contents.
 - **Background:** the plate gradient, a Seam border, the Plate shadow.
 - **Padding:** 13px 15px 14px, with 8px between rows of content.
-- **Layout:** `full` stacks the image above the body; `compact` puts a 132px
-  square image beside it.
+- **Layout:** `full` stacks the image above the body, or, as a dossier, sets it
+  beside the text (The Dossier Rule); `compact` puts a 132px square image beside it.
+- **Relation lines:** a homebrew record's name draws the plain bordered badge
+  «Хоумбрю» after it; a catalog record draws none.
 - **Grid tile:** two columns up to 600px; the art, the name and a second line
   (the stat line, else the other-language name). A table of more than one
   kind labels the tile with its kind badge where the colored dot used to be;
@@ -671,6 +687,9 @@ means "a thing". Do not round a card to a pill or square a chip.
   controls, «Закрыть» with the close icon) and its foot stay; the body
   scrolls. No grab handle: nothing drags it. The filter sheet and the table
   picker are its callers.
+- The record dialog has the sheet's look up to 760px and is not a `Sheet`: one
+  element at every width, so a window that crosses 760px remounts nothing. «Ещё» is
+  a `Menu` at every width, in the dialog too. Both close with `DialogClose`.
 
 ### Selection bar
 
@@ -686,6 +705,12 @@ means "a thing". Do not round a card to a pill or square a chip.
 - `Empty`: a dashed plate. The catalog adds the kind glyph in its art well (the
   only picture), the heading «Ничего не найдено», one cause sentence and a
   primary reset while a filter is chosen.
+
+### Error page
+
+- `ErrorPage`: the cause as the page's `h1`, one sentence that names the address or
+  the way out, the actions with the primary first. No icon and no plate: the heading
+  already says what happened.
 
 ### Toast
 

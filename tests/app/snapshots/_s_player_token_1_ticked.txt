@@ -1,6 +1,6 @@
 # #/s/player-token-1 ~ ticked
 # route: #/s/player-token-1
-# why: signed out, ci1 and cc1 ticked: the bar with «Добавить в список», «Печать», «Скопировать» and «Сообщить владельцу» last (its own line at 600 px or less)
+# why: signed out, ci1 and cc1 ticked: the bar with «В список», «Печать», «Скопировать» and «Сообщить владельцу» last (its own line at 600 px or less)
 
 ## ru :: tree
 RootWebArea "Генератор лута Daggerheart" [url=/s/player-token-1?v=<v>]
@@ -48,7 +48,7 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/player-token-1?v=<
       StaticText "Выбрано 2 позиции · 7 шт."
       StaticText "Итого: "
       StaticText "400 зол."
-    button "Добавить в список" [expanded=false]
+    button "В список" [expanded=false]
     button "Печать" [description=Собрать карточки для печати: девять на лист A4]
     button "Скопировать текст"
     button "Сообщить владельцу"
@@ -71,12 +71,12 @@ RU
 daggerheart.com
 Бросок
 Брошюра по Истории Искусства
+В список
 Взять: Зелье Быстрого Шага
 Взять: Первоклассный Спальный Мешок
 Войти
 Выбрать все
 Гарпун Левиафана
-Добавить в список
 Зелье Быстрого Шага
 К содержимому
 Колдующий Кинжал

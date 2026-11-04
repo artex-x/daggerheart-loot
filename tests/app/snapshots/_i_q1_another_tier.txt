@@ -5,47 +5,40 @@
 ## ru :: tree
 RootWebArea "Палаш - Генератор лута Daggerheart" [url=/i/q1?v=<v>]
   dialog "Улучшенный Палаш" [modal=true]
-    button "Закрыть" [description=Закрыть focused=true]
+    button "Закрыть" [focused=true]
     button "Страница"
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
     StaticText "CORE"
-    ... StaticText x10 of 14 same-shape siblings elided
-    button "Скопировать название" [description=Скопировать название]
-    button "Скопировать ссылку" [description=Скопировать ссылку]
+    heading "Улучшенный Палаш" [level=2]
+    ... StaticText x8 of 12 same-shape siblings elided
+    StaticText "РАНГ"
     button "Палаш" [description=Палаш]
     StaticText "2"
     button "Продвинутый Палаш" [description=Продвинутый Палаш]
     button "Легендарный Палаш" [description=Легендарный Палаш]
-    button "Отправить"
-    button "Скопировать изображение" [description=Скопировать изображение]
-    button "Скопировать текст" [description=Скопировать текст]
-    button "Добавить в список" [expanded=false]
+    button "В список" [expanded=false]
+    button "Поделиться"
     button "Печать" [description=Собрать карточки для печати: девять на лист A4 expanded=false]
-    button "Сохранить себе" [description=Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с оригиналом. expanded=false]
-    StaticText "Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с ор..." [namelen=73 namehash=76f4ba3e]
+    button "Ещё" [expanded=false haspopup=menu]
 
 ## ru :: controls
 EN
 RU
 daggerheart.com
 Бросок
+В список
 Войти
-Добавить в список
+Ещё
 Закрыть
 К содержимому
 Конфиденциальность
 Легендарный Палаш
 ЛутDaggerheart
-Отправить
 Палаш
 Печать
+Поделиться
 Поиск
 Продвинутый Палаш
-Скопировать изображение
-Скопировать название
-Скопировать ссылку
-Скопировать текст
-Сохранить себе
 Страница
 Таблицы
 Улучшенный Палаш
@@ -56,45 +49,38 @@ daggerheart.com
 ## en :: tree
 RootWebArea "Broadsword - Daggerheart Loot Generator" [url=/i/en/q1?v=<v>]
   dialog "Improved Broadsword" [modal=true]
-    button "Close" [description=Close focused=true]
+    button "Close" [focused=true]
     button "Page"
     StaticText "PRIMARY WEAPON"
     StaticText "CORE"
-    ... StaticText x10 of 14 same-shape siblings elided
-    button "Copy name" [description=Copy name]
-    button "Copy link" [description=Copy link]
+    heading "Improved Broadsword" [level=2]
+    ... StaticText x8 of 12 same-shape siblings elided
+    StaticText "TIER"
     button "Broadsword" [description=Broadsword]
     StaticText "2"
     button "Advanced Broadsword" [description=Advanced Broadsword]
     button "Legendary Broadsword" [description=Legendary Broadsword]
-    button "Share"
-    button "Copy image" [description=Copy image]
-    button "Copy text" [description=Copy text]
     button "Add to list" [expanded=false]
+    button "Share"
     button "Print" [description=Lay these out for printing: nine to an A4 sheet expanded=false]
-    button "Save to my items" [description=The copy goes to "Homebrew" and no longer changes with the original. expanded=false]
-    StaticText "The copy goes to "Homebrew" and no longer changes with the origi..." [namelen=68 namehash=82c4f1ca]
+    button "More" [expanded=false haspopup=menu]
 
 ## en :: controls
 Add to list
 Advanced Broadsword
 Broadsword
 Close
-Copy image
-Copy link
-Copy name
-Copy text
 EN
 Improved Broadsword
 Install as an app
 Legendary Broadsword
 LootDaggerheart
+More
 Page
 Print
 Privacy
 RU
 Roll
-Save to my items
 Search
 Share
 Sign in

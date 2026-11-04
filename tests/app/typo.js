@@ -138,7 +138,7 @@ const EXPECTED = {
  * table cannot itself repeat it. */
 const LABELS = {
   filters: { ru: 'Фильтры', en: 'Filters' },
-  addToList: { ru: 'Добавить в список', en: 'Add to list' },
+  addToList: { ru: 'В список', en: 'Add to list' },
   note: { ru: 'Заметка', en: 'Note' }
 };
 

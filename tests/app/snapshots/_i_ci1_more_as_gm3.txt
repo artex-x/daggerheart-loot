@@ -18,38 +18,34 @@ RootWebArea "Первоклассный Спальный Мешок - Генер
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
-    heading "Первоклассный Спальный Мешок" [level=1]
-    StaticText "Core · Предметы · номер 1 "
-    link "показать в таблице" [url=/tables/core_item/ci1]
     button "Страница"
     StaticText "1"
-    ... StaticText x18 of 22 same-shape siblings elided
-    button "Скопировать название" [description=Скопировать название]
-    button "Скопировать ссылку" [description=Скопировать ссылку]
-    link "Мешок спокойных снов (HB)" [url=/h/00000000-0000-4000-8000-000000000609]
-    link "Спальный мешок дозорного (HB)" [url=/h/00000000-0000-4000-8000-000000000606]
-    link "Спальный мешок долгой дороги через перевал, болота, пустоши и ст..." [url=/h/00000000-0000-4000-8000-000000000615 namelen=125 namehash=a16051fb]
-    link "Спальный мешок из пепла (HB)" [url=/h/00000000-0000-4000-8000-000000000604]
-    link "Спальный мешок кочевника (HB)" [url=/h/00000000-0000-4000-8000-000000000610]
-    link "Спальный мешок лекаря (HB)" [url=/h/00000000-0000-4000-8000-000000000607]
-    link "Спальный мешок ловца снов (HB)" [url=/h/00000000-0000-4000-8000-000000000614]
-    link "Спальный мешок отшельника (HB)" [url=/h/00000000-0000-4000-8000-000000000612]
-    link "Спальный мешок пилигрима (HB)" [url=/h/00000000-0000-4000-8000-000000000608]
-    link "Спальный мешок следопыта (HB)" [url=/h/00000000-0000-4000-8000-000000000602]
-    link "Спальный мешок стража (HB)" [url=/h/00000000-0000-4000-8000-000000000613]
-    link "Спальный мешок странника (HB)" [url=/h/00000000-0000-4000-8000-000000000601]
-    link "Спальный мешок тишины (HB)" [url=/h/00000000-0000-4000-8000-000000000603]
-    link "Спальный мешок у костра (HB)" [url=/h/00000000-0000-4000-8000-000000000611]
+    StaticText "ПРЕДМЕТ"
+    ... StaticText x31 of 35 same-shape siblings elided
+    heading "Первоклассный Спальный Мешок" [level=1]
+    link "показать в таблице" [url=/tables/core_item/ci1]
+    link "Мешок спокойных снов" [url=/h/00000000-0000-4000-8000-000000000609]
+    link "Спальный мешок дозорного" [url=/h/00000000-0000-4000-8000-000000000606]
+    link "Спальный мешок долгой дороги через перевал, болота, пустоши и ст..." [url=/h/00000000-0000-4000-8000-000000000615 namelen=120 namehash=084a20d9]
+    link "Спальный мешок из пепла" [url=/h/00000000-0000-4000-8000-000000000604]
+    link "Спальный мешок кочевника" [url=/h/00000000-0000-4000-8000-000000000610]
+    link "Спальный мешок лекаря" [url=/h/00000000-0000-4000-8000-000000000607]
+    link "Спальный мешок ловца снов" [url=/h/00000000-0000-4000-8000-000000000614]
+    link "Спальный мешок отшельника" [url=/h/00000000-0000-4000-8000-000000000612]
+    link "Спальный мешок пилигрима" [url=/h/00000000-0000-4000-8000-000000000608]
+    link "Спальный мешок следопыта" [url=/h/00000000-0000-4000-8000-000000000602]
+    link "Спальный мешок стража" [url=/h/00000000-0000-4000-8000-000000000613]
+    link "Спальный мешок странника" [url=/h/00000000-0000-4000-8000-000000000601]
+    link "Спальный мешок тишины" [url=/h/00000000-0000-4000-8000-000000000603]
+    link "Спальный мешок у костра" [url=/h/00000000-0000-4000-8000-000000000611]
     StaticText ", "
-    link "Тёплый спальный мешок (HB)" [url=/h/00000000-0000-4000-8000-000000000605]
+    link "Тёплый спальный мешок" [url=/h/00000000-0000-4000-8000-000000000605]
+    StaticText "ХОУМБРЮ"
     button "свернуть" [expanded=true]
-    button "Отправить"
-    button "Скопировать изображение" [description=Скопировать изображение]
-    button "Скопировать текст" [description=Скопировать текст]
-    button "Добавить в список" [expanded=false]
+    button "В список" [expanded=false]
+    button "Поделиться"
     button "Печать" [description=Собрать карточки для печати: девять на лист A4]
-    button "Сохранить себе" [description=Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с оригиналом.]
-    StaticText "Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с ор..." [namelen=73 namehash=76f4ba3e]
+    button "Ещё" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -63,35 +59,31 @@ RU
 daggerheart.com
 Аккаунт: gm3@example.test
 Бросок
-Добавить в список
+В список
+Ещё
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
-Мешок спокойных снов (HB)
-Отправить
+Мешок спокойных снов
 Печать
+Поделиться
 Поиск
-Скопировать изображение
-Скопировать название
-Скопировать ссылку
-Скопировать текст
-Сохранить себе
-Спальный мешок дозорного (HB)
-Спальный мешок долгой дороги через перевал, болота, пустоши и ст... [namelen=125 namehash=a16051fb]
-Спальный мешок из пепла (HB)
-Спальный мешок кочевника (HB)
-Спальный мешок лекаря (HB)
-Спальный мешок ловца снов (HB)
-Спальный мешок отшельника (HB)
-Спальный мешок пилигрима (HB)
-Спальный мешок следопыта (HB)
-Спальный мешок стража (HB)
-Спальный мешок странника (HB)
-Спальный мешок тишины (HB)
-Спальный мешок у костра (HB)
+Спальный мешок дозорного
+Спальный мешок долгой дороги через перевал, болота, пустоши и ст... [namelen=120 namehash=084a20d9]
+Спальный мешок из пепла
+Спальный мешок кочевника
+Спальный мешок лекаря
+Спальный мешок ловца снов
+Спальный мешок отшельника
+Спальный мешок пилигрима
+Спальный мешок следопыта
+Спальный мешок стража
+Спальный мешок странника
+Спальный мешок тишины
+Спальный мешок у костра
 Страница
 Таблицы
-Тёплый спальный мешок (HB)
+Тёплый спальный мешок
 Условия использования
 Установить как приложение
 показать в таблице
@@ -112,38 +104,34 @@ RootWebArea "Premium Bedroll - Daggerheart Loot Generator" [url=/i/en/ci1?as=gm3
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
-    heading "Premium Bedroll" [level=1]
-    StaticText "Core · Items · roll 1 "
-    link "show in the table" [url=/en/tables/core_item/ci1]
     button "Page"
     StaticText "1"
-    ... StaticText x18 of 22 same-shape siblings elided
-    button "Copy name" [description=Copy name]
-    button "Copy link" [description=Copy link]
-    link "Ash Bedroll (HB)" [url=/en/h/00000000-0000-4000-8000-000000000604]
-    link "Bedroll of Silence (HB)" [url=/en/h/00000000-0000-4000-8000-000000000603]
-    link "Bedroll of the long road over the pass, through the marshes, the..." [url=/en/h/00000000-0000-4000-8000-000000000615 namelen=125 namehash=8e210070]
-    link "Campfire Bedroll (HB)" [url=/en/h/00000000-0000-4000-8000-000000000611]
-    link "Dreamcatcher's Bedroll (HB)" [url=/en/h/00000000-0000-4000-8000-000000000614]
-    link "Healer's Bedroll (HB)" [url=/en/h/00000000-0000-4000-8000-000000000607]
-    link "Hermit's Bedroll (HB)" [url=/en/h/00000000-0000-4000-8000-000000000612]
-    link "Nomad's Bedroll (HB)" [url=/en/h/00000000-0000-4000-8000-000000000610]
-    link "Pilgrim's Bedroll (HB)" [url=/en/h/00000000-0000-4000-8000-000000000608]
-    link "Sack of Quiet Dreams (HB)" [url=/en/h/00000000-0000-4000-8000-000000000609]
-    link "Sentry's Bedroll (HB)" [url=/en/h/00000000-0000-4000-8000-000000000606]
-    link "Tracker's Bedroll (HB)" [url=/en/h/00000000-0000-4000-8000-000000000602]
-    link "Wanderer's Bedroll (HB)" [url=/en/h/00000000-0000-4000-8000-000000000601]
-    link "Warden's Bedroll (HB)" [url=/en/h/00000000-0000-4000-8000-000000000613]
+    StaticText "ITEM"
+    ... StaticText x31 of 35 same-shape siblings elided
+    heading "Premium Bedroll" [level=1]
+    link "show in the table" [url=/en/tables/core_item/ci1]
+    link "Ash Bedroll" [url=/en/h/00000000-0000-4000-8000-000000000604]
+    link "Bedroll of Silence" [url=/en/h/00000000-0000-4000-8000-000000000603]
+    link "Bedroll of the long road over the pass, through the marshes, the..." [url=/en/h/00000000-0000-4000-8000-000000000615 namelen=120 namehash=bbb6ed09]
+    link "Campfire Bedroll" [url=/en/h/00000000-0000-4000-8000-000000000611]
+    link "Dreamcatcher's Bedroll" [url=/en/h/00000000-0000-4000-8000-000000000614]
+    link "Healer's Bedroll" [url=/en/h/00000000-0000-4000-8000-000000000607]
+    link "Hermit's Bedroll" [url=/en/h/00000000-0000-4000-8000-000000000612]
+    link "Nomad's Bedroll" [url=/en/h/00000000-0000-4000-8000-000000000610]
+    link "Pilgrim's Bedroll" [url=/en/h/00000000-0000-4000-8000-000000000608]
+    link "Sack of Quiet Dreams" [url=/en/h/00000000-0000-4000-8000-000000000609]
+    link "Sentry's Bedroll" [url=/en/h/00000000-0000-4000-8000-000000000606]
+    link "Tracker's Bedroll" [url=/en/h/00000000-0000-4000-8000-000000000602]
+    link "Wanderer's Bedroll" [url=/en/h/00000000-0000-4000-8000-000000000601]
+    link "Warden's Bedroll" [url=/en/h/00000000-0000-4000-8000-000000000613]
     StaticText ", "
-    link "Warm Bedroll (HB)" [url=/en/h/00000000-0000-4000-8000-000000000605]
+    link "Warm Bedroll" [url=/en/h/00000000-0000-4000-8000-000000000605]
+    StaticText "HOMEBREW"
     button "show less" [expanded=true]
-    button "Share"
-    button "Copy image" [description=Copy image]
-    button "Copy text" [description=Copy text]
     button "Add to list" [expanded=false]
+    button "Share"
     button "Print" [description=Lay these out for printing: nine to an A4 sheet]
-    button "Save to my items" [description=The copy goes to "Homebrew" and no longer changes with the original.]
-    StaticText "The copy goes to "Homebrew" and no longer changes with the origi..." [namelen=68 namehash=82c4f1ca]
+    button "More" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -154,39 +142,35 @@ RootWebArea "Premium Bedroll - Daggerheart Loot Generator" [url=/i/en/ci1?as=gm3
 ## en :: controls
 Account: gm3@example.test
 Add to list
-Ash Bedroll (HB)
-Bedroll of Silence (HB)
-Bedroll of the long road over the pass, through the marshes, the... [namelen=125 namehash=8e210070]
-Campfire Bedroll (HB)
-Copy image
-Copy link
-Copy name
-Copy text
-Dreamcatcher's Bedroll (HB)
+Ash Bedroll
+Bedroll of Silence
+Bedroll of the long road over the pass, through the marshes, the... [namelen=120 namehash=bbb6ed09]
+Campfire Bedroll
+Dreamcatcher's Bedroll
 EN
-Healer's Bedroll (HB)
-Hermit's Bedroll (HB)
+Healer's Bedroll
+Hermit's Bedroll
 Install as an app
 LootDaggerheart
-Nomad's Bedroll (HB)
+More
+Nomad's Bedroll
 Page
-Pilgrim's Bedroll (HB)
+Pilgrim's Bedroll
 Print
 Privacy
 RU
 Roll
-Sack of Quiet Dreams (HB)
-Save to my items
+Sack of Quiet Dreams
 Search
-Sentry's Bedroll (HB)
+Sentry's Bedroll
 Share
 Skip to content
 Tables
 Terms of use
-Tracker's Bedroll (HB)
-Wanderer's Bedroll (HB)
-Warden's Bedroll (HB)
-Warm Bedroll (HB)
+Tracker's Bedroll
+Wanderer's Bedroll
+Warden's Bedroll
+Warm Bedroll
 daggerheart.com
 show in the table
 show less

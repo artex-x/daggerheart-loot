@@ -6,7 +6,7 @@
      Opened with `showModal()` for the focus trap, the inert page and Escape, as
      `RecordModal.svelte` is; the toast is drawn inside it while it is open. */
   import type { Snippet } from 'svelte';
-  import Icon from './Icon.svelte';
+  import DialogClose from './DialogClose.svelte';
   import Toast from './Toast.svelte';
   import type { AppState } from '../state/app.svelte.js';
 
@@ -32,7 +32,7 @@
   $effect(() => {
     if (!dialog) return;
     dialog.showModal();
-    dialog.querySelector<HTMLElement>('.sheet-x')?.focus();
+    dialog.querySelector<HTMLElement>('.dlg-x')?.focus();
     app.dialogOpen = true;
     return () => {
       app.dialogOpen = false;
@@ -54,13 +54,12 @@
     <div class="sheet-head">
       <h2>{title}</h2>
       {@render head?.()}
-      <button
-        type="button"
-        class="sheet-x"
+      <DialogClose
+        label={app.t.close}
         onclick={() => {
           dialog?.close();
-        }}><Icon name="close" /><span>{app.t.close}</span></button
-      >
+        }}
+      />
     </div>
     <div class="sheet-body">{@render children()}</div>
     {#if foot}<div class="sheet-foot">{@render foot()}</div>{/if}
@@ -112,23 +111,6 @@
     margin: 0;
     font-size: var(--t-body);
     font-weight: 650;
-  }
-
-  .sheet-x {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    min-height: 40px;
-    padding: 0 12px;
-    border: 1px solid var(--line2);
-    border-radius: 8px;
-    background: transparent;
-    color: var(--txt);
-    font: 600 var(--t-data) / 1 var(--ui);
-  }
-
-  .sheet-x:hover {
-    border-color: var(--muted2);
   }
 
   .sheet-body {

@@ -2,14 +2,13 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (wave 1 is on `main`; batches 3 and 3b are on `claude/57`;
-  batch 3b's `polish`, `harden`, batch review and CI are the orchestrator's)
-- Last agent: implementer (batch 3b, 2026-11-04)
+- Task status: in_progress (wave 1 is on `main`; batches 3, 3b and 4 are on `claude/57`;
+  batch 4's `polish`, `harden`, batch review and CI are the orchestrator's)
+- Last agent: implementer (batch 4, 2026-11-04)
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
-- Previous sha: `38767ca4` (batch 3b; its remediation pass `3b-fix` is the commit after it;
-  `origin/main` `d83384b4` is merged)
-- Pushed: yes, the batch 3b commit, with this handoff; its sha is in the implementer's
+- Previous sha: `ed7d353a` (batch 3b's remediation; `origin/main` `d83384b4` is merged)
+- Pushed: the batch 4 commit holds this handoff; its sha and push state are in the implementer's
   report (`git log -1 --grep="Task: 57"`).
 
 ## Completed
@@ -140,12 +139,98 @@
   6. The two new browser cases ran locally once, through an in-memory loader, outside the
      dispatch's list: both passed.
   No departure from mock F: the header draws as in mock 2, in or out of the window.
+- Batch 4 - record card, actions, item page, dialog, `/h/` (`plan-4.md`). New: `DialogClose`,
+  `ErrorPage`, `NoItem`, decision file `2026-11-04-the-record-page-is-a-dossier-with-one-more-menu.md`,
+  `d.more`, `d.openMore`, the golden `again` field, fake-cloud holds `item` and `own`. Acceptance:
+
+  | Line | Outcome |
+  |---|---|
+  | New states with entry, golden, axe | Done: seven new states (below); axe in `pickRow`, `recordHost`, `itemPage` tests |
+  | C63, the backdrop covers the window | Done: `dialog[open]` fills the window (345x640 and 1165x720: the headless scrollbar takes 15 px; `::backdrop` covers all), shots `dialog__*` with the page behind |
+  | Clarity N11 | Done: `pickRow.test.ts`, `#/i/ci1 ~ save signed out` |
+  | Action row, nothing cut at 360, 320 | Done: case 88 |
+  | No neutral `Button` variant; «Ещё» not pressed | Done |
+  | No «Daggerheart» on the screen card | Verified: `git grep Daggerheart -- app/src/components/RecordCard.svelte` is empty |
+  | M4-2 | Done: `dict.ts`, `FEATURES.md`, `pickRow.test.ts` |
+  | M4-3 | Done, deviation 3: `ITEM_H ~ read failed`, `#/i/<HB_AXE> ~ read failed as gm1`, `#/i/<HB_AXE> as gm1` |
+  | M4-4 | Done: `RecordCard` CSS, DESIGN "Shapes" |
+  | The bar's label | Done: `t.toList` in `AddToList`, bar goldens; `QuickItem` keeps `addToList` |
+  | N0-2, `ErrorPage` | Done: `itemPage.test.ts`, `record.test.ts` |
+  | `/i/nope`, `/h/` not found | Done; old list links keep `notFound` |
+  | C17, C18, C19, A23, C20, P4, C44, C22, C46, A24, P6 | Done: `record.test.ts`, `pickRow.test.ts`, case 88. C22 and C46 are CSS only, seen in no suite: the review reads the shot |
+  | P5 not changed | Done: Deferred; `plan.md` batch 10 has its line |
+  | Focus, Escape, first button | Done: `pickRow.test.ts`, `recordHost.test.ts` |
+  | Header frozen by the menu and dialog | No change; case 86 passed alone (see Verification) |
+  | Dock | Done: case 88 |
+  | `FIRST_SCREEN` | Rows `shipped: true`; figures under Verification come from CI's case 83 |
+  | Artwork guard | Done: `CARD_HEAD_SHA256` set after reading `renderCard`, which builds the compact head by hand and needs no edit. The full card's size is not a `REVIEW_ART_SIZES` row |
+  | New components with axe rows | Done: `COVERED`, three rows |
+  | Specs, DESIGN, decision, pointer | Done |
+  | Detector, spelling, shots, `routes.json` | See Verification; `polish` and `harden` are the orchestrator's |
+  | Budget | See Verification |
+  | CI green on the tip | The orchestrator's wait |
+
+- Batch 4 departures and deviations:
+  1. New `NoItem.svelte`, not in K6: the not-found page has two callers, so it is extracted
+     (`CLAUDE.md`), and `ErrorPage` stays generic.
+  2. Menu side, departure from K1 and S2: `up` does not force the menu up. In the dialog it opens up
+     only where the room is only above. Reason: from 761 px the row can sit near the card's top, and
+     a menu opened up leaves the scroll box and cannot be reached; a scroll box grows only downward.
+     So the dock at 360x640 opens up, and at 640x360 the menu opens down from the row (not up, as
+     case 88's brief text read). Measured against `offsetParent`, the menu's anchor.
+  3. M4-3: no `/h/` failed state existed, and `items:fail` does not reach the `/h/` read or the own
+     items read. The fake gains holds `item` and `own`; two new states, not re-seeded ones.
+  4. Golden `again` field: the press on «EN» is a click outside and closes a `Menu`, so the EN half
+     of a menu state reopens it. Without it the EN golden holds no menu.
+  5. Up to 760 px `.morewrap` is static and the row anchors the menu: a wrapped «Ещё» at the row's
+     left would push a right-aligned menu off the window (author's row at 360 and 320).
+  6. `.recmenu { width: max-content }`: the wrap is as narrow as the button, and items wrapped.
+     `align-items: flex-start` of S6 is not built: the icons sat too high on one-line items.
+  7. The dialog's close from 761 px is sticky (height 0), not absolute: a long text keeps it in view.
+     `top: -12px` because Chromium counts sticky `top` from the content box of a padded scroller.
+  8. The short dock stays `position: relative`, not `static` (K16): it remains the menus' anchor.
+  9. `PickRow` scrolls the open menu into view (`block: nearest`): at the window's bottom it opened
+     past the fold. `AddToList` measures `.card:not(.dossier)`: a dossier does not clip.
+  10. `Menu` skips disabled items in its arrow keys: a disabled save item stopped the focus.
+  11. Case 78's second press goes by keys: the first toast covers the end of the menu at 360, so a
+      click lands on the toast. Accepted for the toast's 7 s, as the toast over the selection bar.
+  12. `ErrorPage` text and `.subline` CSS live where one copy serves both pages (`RecordCard`).
+  13. Outside the dispatch's gates: cases 3, 9, 10, 11, 22, 23, 42, 78, 86, 88 ran once through an
+      in-memory loader, because 78 and 88 are new and could not otherwise be checked before CI. They
+      found three defects, fixed here. The rest of `app/states` was not run.
+  `plan-5.md`, `plan-6.md`, `plan-7.md` appeared untracked during this batch; they are not this
+  batch's and stay out of the commit.
 - Review: done, `issues/57/reviews/3.md`, verdict fix-then-continue; the one remediation
   pass is this commit. No second review is needed: the picker fix leaves the first-screen
   rows unmoved (234 at 360).
 - Plan review: not required for batch 3 (`plan.md` Status, no trigger fired).
 
 ## Verification
+- Batch 4, 2026-11-04, on the final tree:
+  - `npx vitest run` of the twenty files of `plan-4.md` plus `accountMenu`, `fake-cloud`: pass after the fixes.
+  - `npm run lint:untyped`, `npm run lint:typed`: exit 0. `node --test tools/artwork/lib.test.mjs`: pass after the hash.
+  - `npm run build:test`, then `node tests/app/golden.js --update --shard=n/4`, n = 1 to 4, one at a
+    time: exit 0. 82 goldens moved, 7 new, all in the families of `plan-4.md` (two more are bar states:
+    `~ own items hidden`, `~ selection copied`). 363 states.
+  - `node tools/decisions.js`: 301 decisions.
+  - `npm run check:built`: exit 0, 255.5 kB within 256 (253.6 before); `dist/` carries no fake cloud.
+  - Configured: `npm run build` with placeholder `VITE_SUPABASE_*`, `node tools/bundle-budget.mjs`:
+    312.9 kB. The limit is 314, not 313: CI's `e2e` read 0.1 kB above this host at batch 3b, and 313.0
+    can pass 313. Correct it if CI's figure says otherwise.
+  - Detector, `impeccable detect --json --no-inline-ignores app/src`: 69 findings, unchanged; in touched
+    files only `design-system-*` advisories (`AddToList`, `Button`, `RecordCard`), none in a new file.
+    `git grep -n impeccable-disable -- app/src`: nothing.
+  - Spelling over added lines: only `aria-labelledby`.
+  - First screen, measured in the built app (top of `[data-primary]`, RU and EN equal): `/i/ci1` and
+    `/h/<513> as gm1` 137 at 360x640 (limit 256), 89 at 1180x720 (limit 288).
+  - `node issues/57/mocks/4/built/shoot.js`: the set at 360 and 1180, RU and EN, in `mocks/4/built/`.
+  - Cases through the in-memory loader (deviation 13): 3, 9, 10, 11, 22, 23, 42, 78, 88 pass. Case 86
+    failed once on «after the slide» with two other cases loading the host, and passed alone: a timing
+    read, no code of this batch moves it.
+  - `git grep` of each moved control over `tests/`: the left presses are the `/s/` page, the list page
+    and the selection bar, which keep their buttons. F8, F18, F20 of `flows.mjs` go through `d.more`.
+  - `rtk npm run check:fast`: exit 0 in 812 s, 3033 tests with coverage, 255.5 kB within 256.
+  - Not run locally (CI's): the rest of `app/states`, `app/contracts`, `app/print`, `app/typo`, `sweep.js`, `e2e`.
 - Batch 3b remediation (`3b-fix`, review `reviews/3b.md`):
   - B1: `.topbar.away:not(:has(:focus-visible))`; case 86 gains a trusted click on the tables
     job link then a scroll (hidden), a real Shift+Tab into the header (shown), Forward and a
@@ -229,9 +314,7 @@
 - Spelling scan over added lines and new files: only `aria-labelledby`.
 
 ## Next batch (implement-ready)
-- Name: Batch 4, after batch 3b's `polish`, `harden`, review and CI. Its refresh adds an
-  acceptance line for the bar's label (batch 3, deviation 2). The bundle has about 0.4 kB of
-  headroom under 254 kB and 0.9 kB under 312 kB (311.1 on CI).
+- Name: Batch 5, after batch 4's `polish`, `harden`, review and CI.
 - Risks / do-nots: `FilterBar` stays until batches 6 and 9a remove it, and `BatchBar`
   until batch 8; a golden is re-seeded, never edited.
 
@@ -239,6 +322,12 @@
 - None.
 
 ## Deferred
+- P5 (batch 4, K11): `rollNo` («номер» / "roll") stays; batch 10 changes it with `tools/share-card.mjs`
+  and the stubs after a plan review (`plan.md`, batch 10).
+- Toast over «Ещё» (batch 4): at 360 an action toast covers the end of the menu for its 7 s; a second
+  save by touch waits for it. Named for the batch 8 sheet decision.
+- `RecordCard`'s dialog art at 500-760 px wide and 481-560 px tall: a 4:3 picture can fill the card, so
+  the dock is not in view until a scroll (sticky holds inside `.card-body`). No phone portrait reaches it.
 - Focus jump (batch 3b, measured facts item 3): a `focus()` on a header control moves the page up
   (scroll 1500 to 1199 at 320 px, to 1115 at 1180 px; 900 to 558 at 360 px with the fix). An
   existing defect, harmless for the hide: the upward move shows the header.

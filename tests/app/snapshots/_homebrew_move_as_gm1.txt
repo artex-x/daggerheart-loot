@@ -58,7 +58,7 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
   region "Выбранные записи"
     generic ""
       StaticText "Выбрано: 3"
-    button "Добавить в список" [expanded=false]
+    button "В список" [expanded=false]
     button "Печать" [description=Собрать карточки для печати: девять на лист A4]
     button "Скопировать текст"
     button "Снять выделение"
@@ -79,8 +79,8 @@ daggerheart.com
 Аккаунт: gm1@example.test
 Без разделаПистолиХолодное оружие
 Бросок
+В список
 Выбрать все
-Добавить в список
 Импорт из файла
 Источники
 К содержимому

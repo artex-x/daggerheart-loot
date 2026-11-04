@@ -14,6 +14,7 @@ deleted.
 
 ## Index
 
+- 2026-11-04 - [The record page is a dossier, the actions are one row, and «Ещё» is a menu](decisions/2026-11-04-the-record-page-is-a-dossier-with-one-more-menu.md)
 - 2026-11-03 - [Up to 760 px the header hides on scroll down and returns on scroll up](decisions/2026-11-03-the-header-hides-on-scroll-down-up-to-760-px.md)
 - 2026-10-30 - [List pages share one head and one selection bar](decisions/2026-10-30-list-pages-share-one-head-and-one-selection-bar.md)
 - 2026-10-29 - [A new purchase request toasts on every page](decisions/2026-10-29-a-new-purchase-request-toasts-on-every-page.md)

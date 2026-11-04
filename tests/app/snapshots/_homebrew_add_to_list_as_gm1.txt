@@ -1,6 +1,6 @@
 # #/homebrew ~ add to list as gm1
 # route: #/homebrew
-# why: the axe ticked: the selection bar «Выбрано 1» with its «Добавить в список» menu open on gm1's lists
+# why: the axe ticked: the selection bar «Выбрано 1» with its «В список» menu open on gm1's lists
 # as: gm1
 
 ## ru :: tree
@@ -49,7 +49,7 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
   region "Выбранные записи"
     generic ""
       StaticText "Выбрано: 1"
-    button "Добавить в список" [expanded=true]
+    button "В список" [expanded=true]
     StaticText "ЛЕЖИТ В СПИСКАХ"
     button "Лавка кузнеца" [pressed=true]
     button "Пустой список" [pressed=false]
@@ -75,8 +75,8 @@ Whispering CapПредметХоумбрюOnce per rest, hear one sentence spo..
 daggerheart.com
 Аккаунт: gm1@example.test
 Бросок
+В список
 Выбрать все
-Добавить в список
 Импорт из файла
 Источники
 К содержимому

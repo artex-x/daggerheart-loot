@@ -1,6 +1,6 @@
 # #/homebrew/hb_emberaxeaaaaaaaa ~ print preview as gm1
 # route: #/homebrew/hb_emberaxeaaaaaaaa
-# why: «На печати» of «Показать карточку» pressed: the print groups on «Чёрно-белая» and «Компактная», the 44x63 mm black-and-white print card in place of the screen card, no «Добавить в список», no warning
+# why: «На печати» of «Показать карточку» pressed: the print groups on «Чёрно-белая» and «Компактная», the 44x63 mm black-and-white print card in place of the screen card, no «В список», no warning
 # as: gm1
 
 ## ru :: tree
