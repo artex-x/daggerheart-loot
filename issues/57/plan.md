@@ -10,7 +10,8 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
 - Refresh against `main` (2026-10-29): done. `claude/57` merged `main` at
   `9112c4ed`; every `audit.md` row is re-checked (`audit.md`, "Re-check
   against main"); every address in this plan is a path.
-- Phase 3: fourteen batches in the order 1, 1b, 2, 3, 3b, 4-7, 9a, 8, 9b, P, 10 (9a is in wave 3 since 2026-11-04)
+- Phase 3: fifteen batches in the order 1, 1b, 2, 3, 3b, 4-7, 7b, 9a, 8, 9b, P, 10 (9a is in wave 3 since 2026-11-04;
+  7b is its own wave 2b since 2026-11-04)
   (section 7; the waves of section 16 moved P from after 1b into wave 3, and the
   owner's 2026-11-03 answers added 3b and split 9). Batches 1
   (`9a31aede`, `80872b35`), 1b (`fce4a9f8`, `3e5f6301`; `reviews/1b.md`) and 2
@@ -23,7 +24,7 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
   Batches 5-10 and P are outlines; each one's refresh expands it.
 - Release (owner, 2026-10-29, `context.md` "Release in three waves" and its
   "Reviews" paragraph; "Batch 9 split"): three waves - 1, 1b, 2; then 3, 3b, 4,
-  5, 6, 7; then 9a, 8, 9b, P, 10 (owner, 2026-11-04: 9a moved to wave 3) -
+  5, 6, 7; then 7b alone (wave 2b, owner, 2026-11-04); then 9a, 8, 9b, P, 10 (owner, 2026-11-04: 9a moved to wave 3) -
   each squashed onto `main` after its last batch's review and green CI, with
   no owner screenshot gate. After wave 2's green deploy a blind review of waves 1
   and 2 runs on production, and after wave 3's a blind review of wave 3; each
@@ -65,8 +66,8 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
   logged there; two need the owner's later yes (section 13: Q3-S, Q3-T). The
   Impeccable fallback of `reviews/2.md` R1 is named in section 10, "Impeccable".
   Section 10 is now collapsed to D1-D13 and "Impeccable" (see the fold line below).
-- Tags and relation lines (owner's phone feedback, 2026-11-04): `plan-tags.md` is the brief, folded into batch 9a
-  (steps T1-T8 before 9a's S1; its acceptance lines are in `plan-9a.md`, "Folded from `plan-tags.md`").
+- Batch 7b (owner's phone and desktop feedback, 2026-11-04): `plan-tags.md` is the brief (one tag rule, one-box
+  badges, a steady table head); batch 7b runs after the post-wave-2 remediation, then wave 2b, then 9a on a clean `main`.
 - Fold of the placed items (2026-11-04, done): the open "Placed items" of `plan-4.md`
   to `plan-7.md` are in sections 7 and 8 (batches 8, 9a, 9b, P and 10); the briefs keep their
   text. Section 10 is collapsed to its pointer, D1-D13 and "Impeccable".
@@ -378,14 +379,15 @@ evidence for the batch review, not an owner gate (owner, 2026-10-29,
 | 5 | Roller pages and the card face on results | C23, C24, C25, C26, C36, C38 (panel renamed «Где какая редкость»), C39, C41, C43, C49, P10, P11, N2 | `R/roller`, `R/roller-alt-crit`, `R/roller-mwt` | none: the mode row in the mock is R's; batch 2 ships it | a different route and filter set (`/roll/*`) |
 | 6 | Homebrew editor, homebrew pages and imports (old 5 + 6, owner merge) | A6, A7, A8, A9 (verify), A11 (artefact, close), A12, A13, A27 (panel removed, Q6.1), A28, A29, A30, A38, A40 (homebrew), D5, D14 (verify), D15, D16, editor clarity rows | `R/editor*`, `R/homebrew-*` | none: the refresh adds the Items-tab filter strip of `f74eae09` to `R/homebrew-items` | a different route and filter set (`/homebrew`, `/homebrew/<id>`) |
 | 7 | Search, account, empty and error states | C13, C14, C15, C16, C32, C60, A31, A32, A33, A34, D7, D8 (verify) | `R/search-*`, `R/account-*`, `R/pattern-*` | none | different routes (`/search`, `/account`, the error pages) |
+| 7b | Tags and relation lines on one rule, badges as one box, a steady head on `/tables/*` (`plan-tags.md`; owner's feedback of 2026-11-04) | owner feedback items 1-3 and 5 (`context.md`, "Phone feedback") | none: the surfaces keep their R states | none: mocks 4, 5, 7 and `F` drew the surfaces; the rule is the owner's | the owner's wish to ship the fix before wave 3 and to start wave 3 on a clean `main` (wave 2b); it shares `RowMain`, `TableRows` and the list goldens with 9a, so those goldens are re-seeded twice (accepted) |
 | 8 | Lists page `/lists`, list cards, lists import, add-to-list menu | A14, A16, A18, C35, C61, C62, D6, D20, D116 | `R/lists-*`, `R/item-listmenu` | none | a different route and filter set (`/lists`, and the add-to-list menu that the item pages open) |
 | 9a | `/lists/<uuid>` and `/s/<token>` for the phone: the C1b compact row, search and filter on the owner's page, the actions into «Ещё», the list «Ещё» menu, the selection bar on both pages | F2 (C1b, D1, D-head 1), A2 (row actions), A19, A20, A21, A40 (list rows, `/s/`), A41, D2, list row clarity rows | `R/list`, `R/list-picked`, `R/shared-*` | none: `mocks/F/` replaces mock 9 for the row and the head up to 760 px; every other mock 9 state stands | the owner's wish to ship the F2 fix in wave 2 ("Batch 9 split"); split from 8 by a different route and filter set |
 | 9b | The list panels: the note switch, the side column, the share, roll and requests panels, the price switch, A1 at 640-900 px, the «?» removal, the drop mark, E4 | A1, A2 (note area), A3, A4, A5, A22, A42, N1, E2 (the drop mark), E4, list panel clarity rows | `R/list-note`, `R/list-share`, `R/list-roll`, `R/list-prices`, `R/list-requests` | 9a: it draws on the 9a head and rows | the same split as 9a; wave 3, after batch 8 |
 | 10 | Lock: DESIGN.md "Notes", detector at zero, `design.json`, re-audit, closeout | E5, E6, E8, E9 (record), E7, E11, N3 (rest), every row re-checked | none | no mock | docs and closeout, unless the re-audit finds a defect |
 
 Run order (owner, 2026-10-29, "Release in three waves"; 2026-11-03, "Header
-batch", "Batch 9 split"; owner, 2026-11-04, "9a moves to wave 3"): 1, 1b, 2 (wave 1); 3,
-3b, 4, 5, 6, 7 (wave 2); 9a, 8, 9b, P, 10 (wave 3). The table keeps the old row
+batch", "Batch 9 split"; owner, 2026-11-04, "9a moves to wave 3", "wave 2b"): 1, 1b, 2 (wave 1); 3,
+3b, 4, 5, 6, 7 (wave 2); 7b (wave 2b); 9a, 8, 9b, P, 10 (wave 3). The table keeps the old row
 order; section 16 gives the waves.
 
 The list page and the shared page stay one pair (owner, 2026-10-29): 10 of the 15
@@ -619,6 +621,23 @@ Batch 7:
 - M2-2 (from batch 2): on `/search` below 760 px the pin takes the place
   mock 7 draws; batch 2's interim round button goes.
 
+Batch 7b (wave 2b, after the post-wave-2 remediation; the brief is `plan-tags.md`; owner's feedback of 2026-11-04,
+`context.md`, "Phone feedback"; opus; no mock):
+
+- R1: «Получается из», «Улучшается до», the set line with its bonus and the tier ladder draw on the full record
+  card only (`variant="full"`: the record page, `/h/`, the dialog, the editor preview); a roll result, a list's
+  roll result, a row and a tile draw none, at every width.
+- R2: «Core» is unmarked on every compact surface and named on the full card; `isCoreBook` replaces the `core`
+  flag of `hiddenTags`. R3 and R4: another book's tag and the homebrew tag draw as today.
+- R5: a badge is one box (`inline-block`, U+00A0 before a relation badge, 2 px around it); a tile's weapon kind
+  badge is one pill.
+- R6 (design choice HD1, default option A): the head of `/tables/*` is a function of the band, not of the table;
+  the measurement comes first. A browser case holds it, and the `FIRST_SCREEN` limits stay.
+- New state `#/search ~ relations, dialog as gm3`; two decision files and the `Supersedes` pointer; prose in
+  `FEATURES.md` and `DESIGN.md`; 70-120 goldens in one re-seed. `RowMain` and `TableRows` lose `index`.
+- Gate cost 80-105 min (section 8). The wave 2b squash follows its review and the green CI run of its tip
+  (section 16); batch 9a then builds its compact row on the rule (`plan-9a.md`, "Dispatch preflight").
+
 Batch 8:
 
 - D116 (section 6).
@@ -718,9 +737,8 @@ Batch 9a (wave 3, first, after wave 2; `mocks/F/` up to 760 px, mock 9 elsewhere
   `routes.json` and `llms.txt` do not change.
 - DESIGN.md (section 4, departures): the neutral selection (`FEATURES.md` "Lists")
   and the bottom sheet are checked.
-- The owner's phone feedback (2026-11-04, `context.md`, "Phone feedback"): every acceptance line of
-  `plan-tags.md` (R1-R5: relation lines, the set and «Core» on the full record card only; the homebrew tag as today;
-  the upgrade-line spacing; the tile pill), copied into `plan-9a.md`, "Folded from `plan-tags.md`".
+- From batch 7b: relation lines and the «Core» tag are gone from compact rows when 9a starts; `RowMain full`
+  builds no relation line, and the compact row's meta line never draws «Core» (`plan-9a.md`, "Dispatch preflight").
 
 Batch 9b (wave 3, after batch 8; mock 9):
 
@@ -867,10 +885,11 @@ code batch.
 | 3b | `build:test` and one golden pair (about 5); `check:built`, both lints, decisions and the detector (about 5); `polish` and `harden` (5-10); the browser suites, the sweep and the focus-fix proof run on CI | 15-20 |
 | 4, 5, 6, 7 (done) | spent (planned extra gates 30-35, 32-40, 38-49 and 32-43 min, each with `npm run check:built`) | - |
 | 8, 9a, 9b | `npm run check:built` where `dist` assets change (1) | 1 each |
-| 9a | the new 360 px goldens, the axe cases and the `check:fast` growth of C1b (10-15); the new goldens and `lists.test.ts` cases of D1 (5-10); `plan-tags.md` folded in (15-20, no extra run) | 30-45 |
+| 7b | `plan-tags.md`: the vitest files of T1-T6 and T9 (about 15 files, 8-10); artwork test, both lints, decisions, the detector (4-5); `build:test` and the four golden shards (70-120 goldens, 15-20); `check:built` and the configured build (3-4); the head probe and its failing run at HEAD (T9.1, T9.3, 8-12); `polish` and `harden` (5-10); the screenshot set (about 3). One golden re-seed, one `check:fast`, one CI run, one batch review and by habit one fix cycle: 4-6 runs. Its wave 2b squash adds 15-20 (section 16) | 80-105 |
+| 9a | the new 360 px goldens, the axe cases and the `check:fast` growth of C1b (10-15); the new goldens and `lists.test.ts` cases of D1 (5-10) | 15-25 |
 | 9b | `node tests/app/sweep.js 768` for A1 (about 8) | 8 |
 | 10 | docs only: one `check:fast` and one docs-only CI run (no `e2e`) | about 20 in all |
-| waves (section 16) | per wave: the merge of `origin/main`, the squash in the main checkout, the `main` CI run with the deploy (10.5-11.5) and the merge back (about 2); three waves | 37-41 |
+| waves (section 16) | per wave: the merge of `origin/main`, the squash in the main checkout, the `main` CI run with the deploy (10.5-11.5) and the merge back (about 2); three waves, plus the small wave 2b (15-20, in the 7b row) | 37-41 |
 | blind reviews, post-release check and closeout (section 16) | the three blind production reviews, after wave 2, after wave 3 and of the whole app, each with its remediation batch (the whole-app one about 45-60, the owner's print not counted; the two wave reviews and their fix batches are not in the totals below), then the closeout commit and its docs-only CI run and the last squash (about 20) | 65-80 |
 
 Total at the batch 3b refresh (2026-11-03), counted as at the batch 3 refresh
@@ -899,6 +918,7 @@ for the orchestrator's dispatch, not a model choice):
 | 5 | no | yes: goldens | none |
 | 6 | no | yes: goldens | none |
 | 7 | no | yes: goldens | none |
+| 7b | no | yes: 70-120 goldens in one re-seed; badge, tile and head layouts. Test 1 is yes: the head choice HD1 has a default (option A) that blocks nothing | none (`plan-tags.md`) |
 | 8 | no | yes: goldens | none |
 | 9a | no: no stored state, route or contract changes (D1 keeps the filter in memory) | yes: the list goldens, the compact row at 360 px | none |
 | 9b | yes: `.prettierignore` (E4) and `.impeccable/config.json` (E2), configuration every session runs under | yes: the list goldens again | its refresh checks the note switch's pending-edit save for possible data loss |
@@ -1505,10 +1525,15 @@ review as a gate; the batches still save their screenshot sets as evidence.
 |---|---|---|---|
 | 1 | 1, 1b, 2 | batch 2's review and the green CI run of its tip | the new face, ramp, glyph, mark and shell; gold default chips beside the neutral switches (accepted; batch 3 and the surface batches make them neutral); `FIRST_SCREEN` rows logged |
 | 2 | 3, 3b, 4, 5, 6, 7 | batch 7's review and the green CI run of its tip | the new catalog, item, roller, homebrew, search and account pages; the hide-and-show header and the focus fix; `/lists/<uuid>`, `/s/`, the list panels, `/lists` and print as wave 1 left them (old rows, `FilterBar` and `BatchBar` stay) |
+| 2b | 7b | batch 7b's review and the green CI run of its tip | wave 2's pages with the tag rule (relation lines and «Core» on the full record card only), one-box badges and a steady table head; the list rows, `FilterBar` and `BatchBar` as wave 2 left them |
 | 3 | 9a, 8, 9b, P, 10 | batch 10's review and the green CI run of its tip | the finished task |
 
+Wave 2b is a small squash of one batch (owner, 2026-11-04, `context.md`, "Wave split"): it ships the tag
+fix sooner and starts wave 3 on a clean `main`.
+
 Each wave lands by `orchestrate.prompt.md`, "Task closeout and cleanup", step
-8, with these changes (owner, "Wave squash content"):
+8, with these changes (owner, "Wave squash content"); wave 2b follows the same steps, with one Conventional
+Commits subject of its own (for example `fix(ui): land task 57 wave 2b, one tag rule and a steady table head`):
 
 1. `claude/57` merges the latest `origin/main`; push; the CI credit for the
    tip.
@@ -1521,7 +1546,7 @@ Each wave lands by `orchestrate.prompt.md`, "Task closeout and cleanup", step
    `feat(ui): land task 57 wave 1, the system, the mark and the shell`, the
    issue in the footer), push `main`, watch its run deploy with one
    background `gh run watch <id> --exit-status`.
-4. Waves 1 and 2 keep the remote branch, the worktree and its
+4. Waves 1, 2 and 2b keep the remote branch, the worktree and its
    `.env.test.local`: step 8's last sentence applies after wave 3 only.
 5. `claude/57` merges `origin/main` (the squash commit) and the next batch
    starts. The merge is clean: the squash holds the same changes as the
@@ -1542,7 +1567,9 @@ no plan and no handoff, and checks production only:
 
 - After wave 2's green deploy: a blind review of the scope of waves 1 and 2.
   Report: `issues/57/reviews/post-wave-2.md`.
-- After wave 3's green deploy: a blind review of the scope of wave 3. Report:
+- Wave 2b has no blind review of its own: the owner's wave reviews do not require a read-only reviewer of the
+  wave 2b scope on production, and the review after wave 3 covers it.
+- After wave 3's green deploy: a blind review of the scope of wave 3 and of wave 2b. Report:
   `issues/57/reviews/post-wave-3.md`.
 - Then the whole-app blind review, step 1 below. Report:
   `issues/57/reviews/post-release.md`.

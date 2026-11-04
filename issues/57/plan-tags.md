@@ -1,23 +1,50 @@
-# Tags and relation lines - one rule for every surface (implement-ready, folded into batch 9a)
+# Batch 7b - One tag rule, one-box badges and a steady table head (implement-ready, wave 2b)
 
-This brief is the implementer's whole input for the owner's phone feedback of 2026-11-04 (`context.md`, "Phone
-feedback", items 1-3, the lean, the refinement, the answer and the confirmation). It is not a batch of its own:
-it rides batch 9a (see "Placement"), and `plan-9a.md`, "Folded from `plan-tags.md`", holds its acceptance lines
-as 9a lines. Run steps T1-T8 first, before 9a's S1: 9a's S3 and S6 then build on the files as T leaves them.
-Section numbers ("section 7") are those of `plan.md`. The code facts were read on `10a47edc`; the post-wave-2
-remediation runs on `claude/57` now and edits `RecordCard`, `TableRows` and `TablesPage`, so read the shipped
-files at dispatch.
+This brief is the implementer's whole input for batch 7b: the owner's phone feedback of 2026-11-04
+(`context.md`, "Phone feedback", items 1-3, the lean, the refinement, the answer and the confirmation) and the
+desktop feedback of the same day about a table head that jumps (item 5, step T9). Batch 7b is its own batch with
+its own small squash onto `main`, "wave 2b" (`plan.md`, sections 7 and 16). It runs right after the post-wave-2
+remediation and before batch 9a. Section numbers ("section 7") are those of `plan.md`. The code facts were read
+on `10a47edc`. The post-wave-2 remediation edited `RecordCard`, `TableRows` and `TablesPage` after that, so the
+dispatch re-reads every file this brief names (see "Dispatch preflight").
+
+## Owner decision
+
+Owner, chat, 2026-11-04: the owner asked whether the tag batch can come "in post-wave-2 remediation next batch,
+to start wave 3 clean". Orchestrator's reading, taken as the decision: batch 7b runs right after the post-wave-2
+remediation, a wave 2b squash puts it on `main`, and batch 9a then starts on a clean `main`. This replaces the
+earlier plan to fold the brief into batch 9a. Batch 7b writes its own decision file and its own `Supersedes`
+lines (T8). Batch 9a builds on the rule and no longer carries any of it (`plan-9a.md`, "From batch 7b").
+
+## Dispatch preflight
+
+- `git fetch origin`; merge `origin/main` into `claude/57` if it moved (a merge, never a rebase).
+- Batch 7 and the post-wave-2 remediation are on the branch. Read `git log --oneline -12`, then `git diff 10a47edc
+  HEAD -- app/src/components/RecordCard.svelte app/src/components/RowMain.svelte
+  app/src/components/TableRows.svelte app/src/components/TablesPage.svelte app/src/components/TableNav.svelte
+  app/src/components/PageHead.svelte app/src/components/Badge.svelte app/src/lib/rowTags.ts app/src/lib/label.ts
+  tests/app/states.js tests/app/inventory.js`. Line numbers in this brief ("about line 246") are approximate. A
+  line that no longer matches is the implementer's to adapt, and `handoff.md` names the change.
+- No mock: the rule changes surfaces that mocks 4, 5, 7 and `F` already drew, and the owner confirmed it in chat.
+  The screenshot set (T11) is evidence for the batch review.
+- Impeccable cannot run from a subagent. The orchestrator runs `polish` and `harden` after T9 on `RecordCard`,
+  `RowMain`, `TableRows`, `TablesPage`, `TableNav` and `Badge`, from the built app at 360 and 1180 px; fallback
+  `impeccable:impeccable-finish-reviewer`.
+- Tier: `opus` (writer tests 1 and 3 below). Steps are T1 to T11. The line "Session end partial progress" in
+  `handoff.md` names the last finished step.
 
 ## Objective
 
 A reader sees the relation lines and the default book's tag where they help, on the full record card, and
-nowhere else; every badge draws as one clean box. Concretely: «Получается из», «Улучшается до», the set line
-«Комплект» with its bonus, and the tier ladder «Ранг» draw only on the full record card. The «Core» tag draws
-only there too. Another book's tag and every homebrew tag draw where they draw today. A badge never splits into
-fragments: the «Хоумбрю» badge in a relation line keeps clear of the lines around it and stays on its name's
-line, and a grid tile's «ОСНОВНОЕ ОРУЖИЕ» is one pill.
+nowhere else; every badge draws as one clean box; and the table head stays where it is when the reader moves
+between tables. Concretely: «Получается из», «Улучшается до», the set line «Комплект» with its bonus, and the tier
+ladder «Ранг» draw only on the full record card. The «Core» tag draws only there too. Another book's tag and every
+homebrew tag draw where they draw today. A badge never splits into fragments: the «Хоумбрю» badge in a relation
+line keeps clear of the lines around it and stays on its name's line, and a grid tile's «ОСНОВНОЕ ОРУЖИЕ» is one
+pill. On `/tables/*` the title row, the group chips, the second-level tabs, the toolbar and the first list row
+start at the same Y on every table of the same band.
 
-## The rule (stated once; the decision file and DESIGN.md take this text)
+## The rule (stated once; the decision files and DESIGN.md take this text)
 
 Owner, 2026-11-04: "consistency first"; "on record card dialog we also can show them, don't show only on compact
 representation"; "yeah let's make it consistent".
@@ -27,8 +54,9 @@ representation"; "yeah let's make it consistent".
   and the homebrew editor's preview (`HomebrewEditor`, not `dossier`). **A compact representation** is every
   other record surface: a roll result (`RecordCard variant="face"`, `RollResult`), the list page's roll result
   (`variant="compact"`, `ListPage` until 9b moves it to `face`), a row (`RowMain`: tables, search, `/homebrew`,
-  `/lists/<uuid>`, `/s/`; 9a's `CompactRow` and its unfolded `RowMain full`), and a grid tile (`TableRows`
-  grid). Print, the copied text and the share stubs are not screen surfaces and do not change.
+  `/lists/<uuid>`, `/s/`), a grid tile (`TableRows` grid) and, when batch 9a adds it, the compact row of a list
+  (`CompactRow`) with its unfolded `RowMain full`. Print, the copied text and the share stubs are not screen
+  surfaces and do not change.
 - **R1. Relations** - «Получается из», «Улучшается до», the set line «Комплект», the set bonus and the tier
   ladder «Ранг» - draw on the full record card only, at every width. A compact representation draws none of
   them, and nothing in their place.
@@ -45,6 +73,8 @@ representation"; "yeah let's make it consistent".
 - **R5. A badge is one box.** It never splits into fragments across lines. A label longer than its room wraps
   inside its own border. In running text it stays on the line of the word before it and keeps at least 2 px from
   the boxes of the lines above and below.
+- **R6. The table head is steady** (step T9; owner, 2026-11-04, about 19:10). On `/tables/*` the geometry of the
+  head is a function of the viewport band only, never of the table.
 
 Reason: the owner judged the relation lines and the default book's tag not valuable enough on a compact
 representation at any width, and asked for one consistent rule. The full record card is one press away on every
@@ -68,9 +98,10 @@ set bonus and the ladder.
 | Table rows (`RowMain` via `TableRows`, `/tables/*`) | the text line «Получается из: X · Улучшается до: Y (HB) и ещё N»; «Core» hidden on equipment tables only, shown on `alt_item`, `alt_consumable`, `other_starting` | no relation line; no «Core» on any table | the relation names on the row; one press opens the dialog with them |
 | Search rows (`/search`) | the relation line; «Core» on every Core row | no relation line; no «Core» | the same |
 | `/homebrew` rows (gm3 holds 34 items with relations) | the relation line; the source tag hidden | no relation line | the same |
-| `/lists/<uuid>` rows (`ListPage` `RowMain`; 9a `CompactRow` up to 760 px) | the relation line; «Core» | no relation line; no «Core»; 9a's meta line draws the price, else another book's tag, else nothing | the same |
+| `/lists/<uuid>` rows (`ListPage` `RowMain`) | the relation line; «Core» | no relation line; no «Core». Batch 9a's compact row follows the same rule when it lands | the same |
 | `/s/<token>` rows (`TableRows`) | the relation line; «Core» | no relation line; no «Core» | the same |
 | Grid tiles (`TableRows` grid) | the kind badge; no source tag, no relation | the kind badge is one pill (R5, T5) | nothing |
+| `/tables/*` head | moves between tables (T9) | one structure per band | nothing |
 | Print, copied text, share stubs | the set label, the relation blocks, «Core» on the print card | unchanged | nothing |
 
 The trade-off accepted: a GM who deals a Core item on a phone no longer sees on the result what it upgrades to
@@ -115,6 +146,18 @@ from an unmarked row of an unknown book: none exists, because every other book i
    12»; the owner's screenshot is this line on a roll result), `#/i/q1 as gm3` (the ladder with HB rungs),
    `#/i/voa4_t3d as gm3` (the set line and the bonus), `#/search ~ relations as gm3` (rows with relation lines).
    `data.js`: 31 records carry `craft`, 5 carry `set`, 356 an `eq.line`.
+9. The table head (read for T9; the causes are candidates, not measured). Bands: narrow up to 760 px, mid 761-999
+   px, wide from 1000 px (`app.band`). From 761 px `TablesPage` draws `PageHead` with `extra={nav}`, so `TableNav`
+   (the group chips `.groups`, the second-level `.tabs` of the active group) sits in the title row's `extra` slot
+   and takes the title's row or its own, by the width of what it holds. Below 761 px it draws `.pickrow`: the
+   `TableNav` picker button, the view switch and «Ещё». Under the head, `.searchrow` holds `SearchBox`, then by
+   band «Фильтры», the view switch, the `Switch` «Свои предметы» (only while `eqKind` and the account has own
+   records), the table-link button (only while `linkable`), the count (only while `narrowed`) and «Выбрать»
+   (only while a row is drawn). `.body.withcol` draws the filter column only while `facRows.length`. The
+   `TablesPage` comment at the band effect says "`TableNav` remounts". The owner's recording shows the head
+   re-flowing between tables on production: the group chips beside the title on `alt_item` and `eq_weapon`,
+   below it on `wondrous_environments`; the second-level tabs moving with them; the first row starting at about
+   125 px on one table and 143 px on another.
 
 ## Decisions of this pass (owner-confirmed rule; planner defaults for the parts the owner did not name)
 
@@ -124,41 +167,36 @@ from an unmarked row of an unknown book: none exists, because every other book i
 | K2 | The editor preview keeps R1's lines. | It previews the record page; its author edits «Улучшается до», «Получается из» and «Комплект» in the same form and needs to see the result. |
 | K3 | The set bonus goes with the set line on a compact card (default). | The owner said "sets"; the bonus holds only with the whole set, and its lead names the set. Accepted: a roll result of a set piece does not show the bonus. See "Feedback to batch here", F1. |
 | K4 | The tier ladder goes with the relation lines on a compact card (default). | The ladder is the upgrade line (`eq.line`, «Линия улучшений» in the editor), the same relation as «Улучшается до». See F2. |
-| K5 | R2 moves out of `hiddenTags`: the `core` flag goes, and a pure `isCoreBook(it)` in `lib/label.ts` serves `RowMain`, `RecordCard` and 9a's `CompactRow`. `hiddenTags` keeps kind, tier and source, which depend on the page. | R2 no longer depends on the table; one predicate in `lib/` for three callers. `rowTags.ts` keeps its "repeats what the page says" scope. |
+| K5 | R2 moves out of `hiddenTags`: the `core` flag goes, and a pure `isCoreBook(it)` in `lib/label.ts` serves `RowMain` and `RecordCard` (batch 9a's `CompactRow` reads it later). `hiddenTags` keeps kind, tier and source, which depend on the page. | R2 no longer depends on the table; one predicate in `lib/` for every caller. `rowTags.ts` keeps its "repeats what the page says" scope. |
 | K6 | `RowMain` loses `span.rcraft`, its CSS, its `index` prop and the imports only it used; `TableRows` loses `index`; every caller drops it. | An unused prop fails the lint; `index` fed only the relation line (fact 2). |
 | K7 | R5 at the root: `.badge` becomes `display: inline-block`. In a relation run the space before the badge is U+00A0, and `.craft :global(.badge)` takes `margin-block: 2px`. | An atomic inline box never splits, wraps inside its border, and its margin box enters the line box, so lines with a badge open by the badge's height plus 4 px. One change fixes both defects (fact 4); flex-item badges do not move (fact 6). |
 | K8 | The tile's kind badge keeps the full term: `.tile-k` takes `max-width: calc(100% - 14px)` and `text-align: right`, and `calc(100% - 44px)` only while the tick box draws (`ticks`). Below 360 px or in the selection mode a weapon label wraps inside its one pill (`text-wrap: balance`). | One name for one thing: rows, cards and filters say «Основное оружие». Precedent: the owner kept the full «Альтернативные таблицы» on a two-line chip at 360 (2026-10-23, B5-2) over a short label. Accepted: in the selection mode at 360-412 a weapon pill is two lines tall over the picture's top-right corner. Rejected: a tile-only short label («Основное», "Primary"; a second name and four strings), `white-space: nowrap` alone (the tile clips the label), `box-decoration-break: clone` (two pills for one tag). See F3. |
 | K9 | No placeholder replaces the lines on a compact card. | The owner: nothing. The name link and the row press already lead to the full card. |
 | K10 | `#/search ~ relations as gm3` keeps its id with a new `why` (the own bedrolls ranked with the catalog ones; no row draws a relation line); a new state `#/search ~ relations, dialog as gm3` opens `ci1`'s row and proves the dialog keeps the line. | The dialog was not seeded with own relations; the rule's "dialog keeps" half needs a golden. |
-| K11 | The decision file below records R1-R5 and what was rejected. | The rule outlives the task and reverses a line of a recorded decision. |
+| K11 | Two decision files: one for R1-R5 (the rule and what was rejected), one for R6 (the head). Batch 7b writes both and the `Supersedes` lines. | The tag rule outlives the task and reverses a line of a recorded decision; the head rule is a separate decision with its own rejected option. |
+| K12 | **Open design question HD1 (table head), default option A.** A: one head structure for all tables, chosen by the band only. B: keep the per-table head and only reserve space for late content. See T9.2. | The owner asked "is there a better way?". A removes the cause; B hides the symptom in part. Cost and trade-off in T9.2. |
+| K13 | Batch 7b is its own batch with its own squash, wave 2b. | The owner's decision (see "Owner decision"). Split criterion: the owner's wish to ship the fix before wave 3 and to start wave 3 on a clean `main`, as for batch 9a ("Batch 9 split"). The batch shares `RowMain`, `TableRows` and the list and `/s/` goldens with 9a; accepted: those goldens are re-seeded twice (here and in 9a). |
 
-## Placement
+## Batch, squash and cost
 
-**Recommended: fold T1-T8 into batch 9a**, run before 9a's S1, with no batch of its own.
-
-| Option | Extra gate runs | Extra minutes | Lands on production |
-|---|---|---|---|
-| Fold into 9a (recommended) | none: 9a's one re-seed, one `check:fast`, one CI run and one review carry it | 15-20 (the extra vitest files, a larger re-seed diff to read, about 10 more review minutes, three more shots) | with wave 3 |
-| Batch T of its own before 9a | +1 golden re-seed (four shards), +1 `check:fast`, +1 CI run, +1 batch review, and by habit one fix cycle (+1 `check:fast`, +1 CI): 4-6 runs | 65-85 | with wave 3, the same day as the fold |
-| Batch T and its own squash onto `main` before 9a (a new wave 2b) | T's runs, plus one `main` CI run with the deploy and the merge back | 80-100 | about five batches (9a, 8, 9b, P, 10) sooner; it changes the owner's three-wave plan, so it is the owner's call |
-
-Criterion (`CLAUDE.md`, "Size a batch by its gates"): T shares `RowMain`, `TableRows`, the list and `/s/` goldens
-and the one golden re-seed with 9a, and it changes no public contract. The one split criterion that could apply,
-"a different route and filter set", does not hold: T changes two components and one badge rule, not a route's
-filter set, and its moved goldens ride 9a's re-seed. A split with no criterion is a merge. Folding also avoids
-rework: 9a's S3 would otherwise build `RowMain full` with the relation line that T removes. The owner asked for
-speed (the fewer gate runs), and the separate batch reaches production no sooner unless it takes its own
-squash. Owner feedback that arrives before 9a's dispatch rides this fold ("Feedback to batch here"); feedback
-after it goes to batch 8's refresh or the post-wave-3 remediation.
+| Item | Value |
+|---|---|
+| Batch | 7b: `polish`, `harden`, batch review, fix cycle, CI of the tip |
+| Squash | wave 2b: the same steps as waves 1 and 2 (`plan.md` section 16, "Wave squash content"); lands after batch 7b's review and the green CI run of its tip |
+| Gate cost | 80-105 min, 4-6 runs: one golden re-seed (four shards), one `check:fast`, one CI run, one batch review, by habit one fix cycle (a second `check:fast` and CI run). T9 adds 15-20 to the 65-85 of T1-T8 |
+| Squash cost | 15-20 min (one `main` CI run with the deploy, the merge back, the `origin/main` merge) |
+| Blind review | none of its own: a read-only reviewer of the wave 2b scope on production is not required by the owner's wave reviews. The wave 3 blind review covers it |
+| Lands on production | about five batches (9a, 8, 9b, P, 10) sooner than wave 3 |
 
 ## In scope
 
 - R1-R5 on every surface of the table above; the spacing defect (item 1) on the full record card, where the
-  line still draws; the tile pill (item 3); the roll result's «CORE» badge.
+  line still draws; the tile pill (item 3); the roll result's «CORE» badge; R6 on `/tables/*` (T9).
 - Changed: `lib/label.ts` (`isCoreBook`), `lib/rowTags.ts`, `RecordCard.svelte`, `RowMain.svelte`,
-  `TableRows.svelte`, `Badge.svelte`, the callers that pass `index` (`TablesPage`, `SearchPage`,
-  `SharedListPage`, `HomebrewPage`, `ListPage`), their tests, `tests/app/states.js`, `tests/app/inventory.js`,
-  the goldens, `tools/artwork/review/review.mjs` and `lib.test.mjs` if the head hash moves, the prose of T8.
+  `TableRows.svelte`, `Badge.svelte`, `TablesPage.svelte`, `TableNav.svelte`, `PageHead.svelte` if it holds the
+  head row (T9), the callers that pass `index` (`TablesPage`, `SearchPage`, `SharedListPage`, `HomebrewPage`,
+  `ListPage`), their tests, `tests/app/states.js`, `tests/app/inventory.js`, the goldens,
+  `tools/artwork/review/review.mjs` and `lib.test.mjs` if the head hash moves, the prose of T8.
 
 ## Out of scope
 
@@ -166,19 +204,24 @@ after it goes to batch 8's refresh or the post-wave-3 remediation.
   `relText` (print and share still read it), `catalog.csv`, `llms.txt`, `routes.json`, `CONTRACTS.md`.
 - Another book's tag on a single-book roll page (`/roll/voa` repeats «Vault of Ages»): F4, not changed.
 - The tile's roll number, the row tags other than «Core», the `.lt` language mark.
+- The head of `/search`, `/homebrew`, `/lists` and the other pages: T9 touches `/tables/*` only. A like jump on
+  another page goes to the next refresh.
 
 ## Files expected
 
 | Step | Files |
 |---|---|
 | T1 | `app/src/lib/label.ts`, `label.test.ts`, `rowTags.ts`, `rowTags.test.ts` |
-| T2 | `RowMain.svelte`, `TableRows.svelte`, `TablesPage.svelte`, `SearchPage.svelte`, `SharedListPage.svelte`, `HomebrewPage.svelte`, `ListPage.svelte`, `tables.test.ts`, `homebrewCatalog.test.ts` |
+| T2 | `RowMain.svelte`, `TableRows.svelte`, `TablesPage.svelte`, `SearchPage.svelte`, `SharedListPage.svelte`, `HomebrewPage.svelte`, `ListPage.svelte`, `tables.test.ts`, `homebrewCatalog.test.ts`, and each test that names `.rcraft` or passes `index` (`git grep -n -E "rcraft|index=|\{index\}" -- app/src`: `listPage.test.ts`, `sharedListPage.test.ts`, `searchPage.test.ts`) |
 | T3 | `RecordCard.svelte`, `record.test.ts`, `rollResult.test.ts`, `itemPage.test.ts` (unchanged expectations), `recordHost.test.ts` or `pickRow.test.ts` (the dialog keeps the lines) |
 | T4 | `Badge.svelte`, `badge.test.ts` |
 | T5 | `TableRows.svelte` (the tile rules) |
 | T6 | `tests/app/states.js` (one new case), `tests/app/inventory.js` |
 | T7 | `tools/artwork/review/review.mjs`, `tools/artwork/lib.test.mjs` (only if the hash moves) |
-| T8 | `docs/specs/FEATURES.md`, `DESIGN.md`, `docs/specs/COVERAGE.md`, a new decision file, `docs/decisions/2026-09-30-hb-marks-homebrew-a-relation-shows-only-to-its-author.md`, `docs/DECISIONS.md` |
+| T8 | `docs/specs/FEATURES.md`, `DESIGN.md`, `docs/specs/COVERAGE.md`, two new decision files, `docs/decisions/2026-09-30-hb-marks-homebrew-a-relation-shows-only-to-its-author.md`, `docs/DECISIONS.md` |
+| T9 | `TablesPage.svelte`, `TableNav.svelte`, `PageHead.svelte` (if it holds the head row), `TableRows.svelte` (picture aspect), their tests, `tests/app/states.js` (one more case), `issues/57/mocks/7b/built/head-probe.js` |
+| T10 | `handoff.md` (the Impeccable outcome) |
+| T11 | `issues/57/mocks/7b/built/`, `handoff.md` |
 
 ## Steps
 
@@ -205,7 +248,8 @@ after it goes to batch 8's refresh or the post-wave-3 remediation.
   line" (`[data-row="ci2"] .rcraft` is null and the row's text holds neither `t.craftInto` nor `t.craftFrom`);
   the selector at about line 303 drops `:not(.rcraft)`; the `RowMain` case at about line 1961 asserts no
   `.rcraft`. Add: on `/tables/alt_item` (or `other_starting`) a Core row draws no «Core» tag and a Hope & Fear
-  row keeps «Hope & Fear»; a search row of a Core record draws no «Core».
+  row keeps «Hope & Fear»; a search row of a Core record draws no «Core»; a list row (`ListPage`) and a `/s/`
+  row draw no relation line and no «Core».
 - `homebrewCatalog.test.ts` (about line 759, "the own relations kept on a catalog row while the switch hides the
   own items"): the row reads no relation line; the case opens `ci1`'s dialog and reads the own names there, with
   the switch off and on.
@@ -218,7 +262,7 @@ after it goes to batch 8's refresh or the post-wave-3 remediation.
   setBonus)}` on `.craft`.
 - The badge row: `{#if !sub && (whole || !isCoreBook(it))}` on the source badge. The number and the column
   badges do not change.
-- `hbBadge`: `{' '}<Badge cls="hb">` in place of `{' '}` (keep the eslint comment above it accurate).
+- `hbBadge`: `{' '}<Badge cls="hb">` in place of `{' '}` (keep the eslint comment above it accurate).
 - CSS: `.craft :global(.badge) { margin-block: 2px; }` with a comment: an atomic badge's margin enters the line
   box, so the lines around it keep 2 px (DESIGN.md, "Badges").
 - `record.test.ts`: `face` and `compact` draw no `.steps`, no `.craft` and no «Core» source badge, and keep a
@@ -242,8 +286,9 @@ after it goes to batch 8's refresh or the post-wave-3 remediation.
 
 ### T6. The browser case and the states
 
-- `tests/app/states.js`, the next free case number after 9a's 97 (check the list): "a badge is one box and keeps
-  clear of the lines around it", RU and EN:
+- `tests/app/states.js`, the next free case number (95 if the list ends at 94; check it, and name it in
+  `handoff.md`, because batch 9a takes the next three): "a badge is one box and keeps clear of the lines around
+  it", RU and EN:
   1. `#/i/ci1 as gm3` at 360x640 and 1180x720: each `.craft .badge.hb` has one client rect; it overlaps its
      name's last rect vertically (the same line); between any two boxes on adjacent lines of `.craft p` (badge,
      link, fold button) the vertical gap is at least 2 px, and no badge rect intersects another box.
@@ -265,7 +310,9 @@ after it goes to batch 8's refresh or the post-wave-3 remediation.
   `tools/artwork/review/review.mjs`: the review page draws a catalog card head, so it drops a «Core» source
   badge only if it draws the `face` head; set the hash by `docs/artwork.md`, "The card follows the site's card".
 
-### T8. Prose, in 9a's commit
+### T8. Prose and decisions, in the batch's commit
+
+Run it after T9, so the head prose is true.
 
 - `FEATURES.md`, "Tables and search" (the row line): "and the «Core» source tag on an equipment table (a row from
   another book keeps its name)" becomes "and the «Core» source tag on every row: the default book is unmarked; a
@@ -276,18 +323,24 @@ after it goes to batch 8's refresh or the post-wave-3 remediation.
   list's roll result, a row and a tile draw none (owner, 2026-11-04)." The roll result line and the dialog line
   ("the dialog draws both as badges") gain: a roll result draws no «Core» badge.
 - `FEATURES.md`, "Tables and search", the grid line: "a table of more than one kind labels the tile with a kind
-  badge" gains "one pill: a long label wraps inside its border".
+  badge" gains "one pill: a long label wraps inside its border". The head line gains the T9 rule: "The head
+  draws the same rows on every table of a band: the title row, the group chips, the second-level tabs, the
+  toolbar and the list start at the same place (owner, 2026-11-04)." (Adapt to option A or B as built.)
 - `DESIGN.md`, "Cards": the "Relation lines" bullet becomes "**Relation lines:** «Получается из», «Улучшается
   до», the set line and its bonus, and the tier ladder draw on the full record card only (`full`: the record
-  page, `/h/`, the dialog, the editor preview); `face`, `compact`, rows and tiles draw none. A homebrew name draws
-  the plain bordered badge «Хоумбрю» after it on the same line; a catalog name draws none."
+  page, `/h/`, the dialog, the editor preview); `face`, `compact`, rows and tiles draw none. A homebrew name
+  draws the plain bordered badge «Хоумбрю» after it on the same line; a catalog name draws none."
 - `DESIGN.md`, "Badges": add "**One box:** a badge is an inline block: it never splits across lines, a long
   label wraps inside its border, and in running text it keeps 2 px from the lines around it. **The default
   book:** «Core» draws on the full record card only; every other source keeps its tag."
+- `DESIGN.md`, "Layout": add "**A steady head:** a page whose content switches under a fixed head draws the
+  head's geometry from the viewport band only, never from the content; a row that some contents lack keeps its
+  reserved space, and late content (a picture, a count) reserves its box." Cite `/tables/*` as the first user.
 - `COVERAGE.md`: the `homebrewCatalog.test.ts` entry ("the own relations kept on a catalog row") reads "the own
   relations in the dialog of a catalog row"; the `tables.test.ts`, `record.test.ts`, `rollResult.test.ts` and
-  `rowTags.test.ts` entries name the new cases; the new `states.js` case and the state count.
-- Decision file `docs/decisions/2026-11-04-relations-and-the-core-tag-draw-on-the-full-card-only.md`:
+  `rowTags.test.ts` entries name the new cases; the two new `states.js` cases and the state count.
+- Decision file 1, `docs/decisions/2026-11-04-relations-and-the-core-tag-draw-on-the-full-card-only.md`
+  (template `.claude/templates/decision.template.md`):
 
   ```markdown
   # 2026-11-04 - Relations and the Core tag draw on the full record card only
@@ -299,25 +352,109 @@ after it goes to batch 8's refresh or the post-wave-3 remediation.
   - Accepted trade-off: a roll result of a Core item no longer shows what it upgrades to, its set or its bonus; one press shows them.
   ```
 
-  In the 2026-09-30 file, above "- Task": `- Superseded in part by "Relations and the Core tag draw on the full
+- Decision file 2, `docs/decisions/2026-11-04-the-table-head-is-set-by-the-band-not-the-table.md`: Task `57` (owner,
+  2026-11-04, chat: "I also don't like much that some divs are jumping during navigation, is there a better way?");
+  Decision: the option built in T9.2 with the measured causes; Rejected: the other option, and a per-table
+  `min-height` patch with no structure (it hides the symptom on one table); Accepted trade-off: the cost of
+  option A (a reserved strip) or of option B (the head still differs by table). It supersedes no earlier file.
+- In the 2026-09-30 file, above "- Task": `- Superseded in part by "Relations and the Core tag draw on the full
   record card only" (2026-11-04): a row draws no relation line.` Then `node tools/decisions.js`.
+
+### T9. The table head stays put (owner, 2026-11-04, about 19:10; design choice HD1)
+
+Owner, chat, a desktop screen recording (1862x852, 4.6 s) of production while clicking through the group chips
+«Core / Hope & Fear / Альт. таблицы / Дополнения / Снаряжение / Прочее / Хоумбрю»: "I also don't like much that some
+divs are jumping during navigation, is there a better way?" The orchestrator's reading of 4 of 16 decoded frames:
+when the table changes, the page head re-flows. The group chips sit at the right of the «Таблицы» title on the
+same row on some tables (`alt_item`, `eq_weapon`) and wrap to their own row below the title on others
+(`wondrous_environments`); the second-level tabs move with them; the toolbar row changes content (the «Свои
+предметы» switch appears only on equipment); the filter column appears or changes width; the first list row starts
+at about 125 px on one table and 143 px on another. This is not proven: no measurement exists yet.
+
+**T9.1 Measure first, before any CSS edit.** Write `issues/57/mocks/7b/built/head-probe.js` (evidence, not a
+gate) and run it on the built app (`npm run build:test`) the way batch 3b ran cases 86 and 87 (an in-memory loader
+on `dist-test/`; `handoff.md`, "Completed", "Batch 3b"). For every table that the picker lists, in every group
+(read the list from `TableNav`), as `gm3` (so «Хоумбрю» and «Свои предметы» draw), at 1180x720, 1050x720 (the wide
+band's low end, where the chip row switches beside or below the title), 900x720 (mid), 760x720, 390x844 and
+360x640, in RU and EN, moving from table to table with the same window: record the top (Y) and left (X) of the
+title row, `.groups`, `.tabs` (or its absence), `.searchrow` and each item in it, the count line, `.body` with its
+column, the top of `.rowscol` and the first `[data-row]` or tile; also `documentElement.clientWidth` against
+`innerWidth` (a scrollbar gutter) and the scroll position. Log in `handoff.md` a table per width: the least and
+the greatest Y per block across the tables, and for each block that differs, the CSS cause with file, selector and
+property. Candidate causes, read from the code (fact 9), to confirm or reject: a `flex-wrap` in `PageHead`'s
+`extra` slot that depends on the chips' content width; a toolbar item that exists only on some tables (the
+«Свои предметы» `Switch`, the table-link button, the count, «Выбрать»); a filter column that mounts after the rows
+(`facRows.length`); pictures or counts that load late; a scrollbar gutter that changes the width between a short
+and a long table; the `TableNav` remount on a table switch; second-level tabs that exist on some groups only.
+
+**T9.2 Fix principle: the head geometry is a function of the band only.**
+
+- **Option A (recommended): one head structure for all tables.**
+  - The title row holds the title. The group chips are one row that draws in the same place, and scrolls or wraps
+    the same way, for every table of the band. Decide beside or below the title per band from the widest chip row
+    in either language, never per table.
+  - The second-level tabs are their own row with a reserved `min-height` at the bands that draw it (from 761 px);
+    a table with none keeps the empty strip.
+  - The toolbar row's slots are always present: an item that some tables lack keeps its slot (hidden with
+    `visibility`, not `display`, or an empty box of the same size) while the row is wide enough to hold it.
+  - Late content reserves its box: `aspect-ratio` on row pictures, a fixed-height count line or a placeholder, and
+    the filter column drawn with the table, not after it.
+  - `TableNav` stays mounted across a table switch: the switch changes `table`, not the component's identity (no
+    `{#key}` on the table, no band-effect remount on a table change).
+  - Cost: more goldens than B. Every `_tables_*` golden whose head gains a reserved strip or slot moves; planner's
+    estimate 25-50, overlapping the 12-20 that T1-T8 already move, so about 25-40 extra (not counted: the number
+    follows the measurement). Trade-off accepted: a table with no second-level tabs draws a reserved strip (the
+    height of one tab row, about 36-44 px, not measured) from 761 px; the first screen has that much less there.
+    The narrow band is not affected: its picker button holds the table, and the tabs live in its sheet.
+- **Option B: keep the per-table head and reserve space only for late content** (picture aspect, count
+  placeholder, the filter column's width). Cost: 10-20 goldens. Trade-off: the chips still sit beside the title on
+  one table and below it on another, so the main jump the owner filmed stays. Not recommended.
+
+  The default is A. The owner can overrule it with a yes to B; nothing blocks on it (the owner is on autonomy,
+  `context.md`, "Autonomy"). If the measurement shows that A pushes a table past a `FIRST_SCREEN` limit by the
+  reserved strip, stop at that table, log the numbers in `handoff.md`, and take B for that band only.
+
+**T9.3 The browser case.** `tests/app/states.js`, the next free number after T6's, "the table head holds still
+between tables", in the shape of case 83 (it reads geometry and asserts per row): visit every table of the picker
+as `gm3` at 1180x720, 1050x720, 760x720 and 390x844, RU and EN; for each band read the Y (rounded to 0.5 px) of
+the title row, `.groups` and `.tabs` (when it exists, as its reserved box), `.searchrow`, `.rowscol` (the primary
+region, not the first row: an alt table opens with a section head), and fail when the Y of any of them differs
+by more than 1 px between two tables of the same band; also fail when the X of the group chips differs. Prove the
+case first: run it at HEAD (before the T9.2 edit) through the in-memory loader of T9.1; it must fail, with the
+numbers logged in `handoff.md`; then it passes after the edit. Add a unit test that `TableNav`'s root element is
+the same node after a table switch (`tables.test.ts` or `tableNav.test.ts`, whichever renders the page with a
+router).
+
+**T9.4** `FIRST_SCREEN` (section 14): the limits stay. Case 83 passes with no limit loosened and no row moved to
+an exception. A measured miss is logged as section 14 says; do not move a limit without the log.
+
+### T10. Impeccable
+
+The orchestrator runs `polish` and `harden` on `RecordCard`, `RowMain`, `TableRows`, `TablesPage`, `TableNav` and
+`Badge` at 360 and 1180 px after T9; `handoff.md` gives the outcome. Fallback:
+`impeccable:impeccable-finish-reviewer`.
+
+### T11. Evidence
+
+`issues/57/mocks/7b/built/shoot.js`, from `mocks/7/built/shoot.js`: at 360x640 and 1180x720, RU and EN: `#/i/ci1 as
+gm3`, `/roll/std` with `ci1`, `#/search ~ relations, dialog as gm3`, a grid table with weapon tiles (also in the
+selection mode), `/tables/alt_item`, `/account` (the «Сейчас» badge), and the head at three tables of one band
+side by side. The set is evidence, not a gate.
 
 ## Acceptance criteria
 
-Each line is its own line in `plan-9a.md`, "Folded from `plan-tags.md`".
+Each line is observable in a suite, a unit case or the built app.
 
 - R1: `face` and `compact` cards draw no «Получается из», «Улучшается до», set line, set bonus or tier ladder;
   `full` cards (page, `/h/`, dialog, editor preview) draw all of them as today (`record.test.ts`, T6.3).
-- R1: no row draws a relation line - tables, search, `/homebrew`, `/lists/<uuid>` (full row and 9a's compact and
-  unfolded rows), `/s/` (`tables.test.ts`, `homebrewCatalog.test.ts`, `listPage.test.ts`, `sharedListPage.test.ts`).
+- R1: no row draws a relation line - tables, search, `/homebrew`, `/lists/<uuid>`, `/s/` (`tables.test.ts`,
+  `homebrewCatalog.test.ts`, `listPage.test.ts`, `sharedListPage.test.ts`).
 - R1: the dialog of a row keeps the own relation lines with their «Хоумбрю» badges (`#/search ~ relations,
   dialog as gm3`, the T3 dialog case).
 - R2: the roll result's «CORE» badge is gone: a Core result on `/roll/std` draws no source badge at 360 and 1180
   (`rollResult.test.ts`, T6.3, the `_roll_std*` goldens).
 - R2: no row draws «Core» on any table, search or list page; the dialog's badge row keeps «Core»; the record
   page's path line keeps «Core · ...» (`tables.test.ts`, `record.test.ts`, goldens).
-- R2 in 9a: the compact row's meta line draws the price, else another book's tag, else nothing; never «Core»
-  (`compactRow.test.ts`).
 - R3: a Hope & Fear row on `alt_item` keeps «Hope & Fear»; a Hope & Fear roll result keeps its badge
   (`tables.test.ts`, `record.test.ts`).
 - R4: the homebrew source tag draws on rows (not on `/homebrew`) and cards as today; `homebrewPage.test.ts` and
@@ -328,15 +465,25 @@ Each line is its own line in `plan-9a.md`, "Folded from `plan-tags.md`".
 - R5, item 3 (the tile pill): every grid kind badge is one box inside its picture at 360, 390, 412 and 768, RU
   and EN; one line outside the selection mode («ОСНОВНОЕ ОРУЖИЕ», «ВТОРИЧНОЕ ОРУЖИЕ», "PRIMARY WEAPON", "SECONDARY
   WEAPON"); in the mode one box, which may wrap inside its border (T6.2). A measured miss at 360 is logged (F3).
+- R6, item 5, the measurement: `handoff.md` holds the T9.1 table per width and names the CSS cause of each
+  block that jumps.
+- R6, the head: on every table of the picker, at 1180, 1050, 760 and 390, RU and EN, the Y of the title row, the
+  group chips, the second-level row, the toolbar and the primary region differs by at most 1 px between tables of
+  the same band (the T9.3 case), and that case failed at HEAD with the numbers logged.
+- R6: `TableNav` is the same node after a table switch (a unit test); late content reserves its box (picture
+  aspect, count line, filter column) so that nothing under the head moves when it arrives.
+- R6: the `FIRST_SCREEN` limits stay; case 83 passes with no limit loosened (T9.4).
 - `hiddenTags` has no `core` flag; `isCoreBook` is the one predicate; `RowMain` and `TableRows` have no `index`
   prop (`git grep -n -E "hide\?\.core|core: !!EQ_TABLE"` is empty).
 - Print, the copied text and the share stubs do not change: `node tests/run-all.js app/print` is CI's;
   `lib/print.ts`, `lib/share.ts` and `tools/build.js` have no diff.
 - New state `#/search ~ relations, dialog as gm3` with its RU and EN golden and an axe case; `#/search ~
   relations as gm3` has its new `why`.
-- T8's prose, the decision file, its pointer in the 2026-09-30 file and `node tools/decisions.js` with 0 problems,
-  in the same commit.
+- T8's prose, both decision files, the pointer in the 2026-09-30 file and `node tools/decisions.js` with 0
+  problems, in the same commit.
 - `node --test tools/artwork/lib.test.mjs` passes (T7).
+- From "Each of batches 2-9": the detector line, American spelling in new prose, `mocks/7b/built/`, the `polish`
+  and `harden` outcome, no `verify` row open, the writer's local gates. CI is green on the pushed tip.
 
 ## Standing checks
 
@@ -351,41 +498,46 @@ Each line is its own line in `plan-9a.md`, "Folded from `plan-tags.md`".
    | Longest own name (120 code points) with its badge | the name wraps; the badge stays on its last line (U+00A0) at 360 | T6.1 |
    | Longest badge: an 80-character source tag on a row | one box that wraps inside its border; a flex item, as today | unchanged |
    | Longest kind badge on a tile | «ВТОРИЧНОЕ ОРУЖИЕ» / "SECONDARY WEAPON": one line at 360-768 outside the mode | T6.2 |
-   | 360 and 1180 | each row above | T6, goldens |
+   | Table head: the table with the most chips, tabs and toolbar items against the one with the fewest | the same Y for each block | T9.3 |
+   | Table head: the longest group chip row (RU) at the narrowest wide width | the same structure on every table | T9.3 at 1050 |
+   | 360 and 1180 | each row above | T6, T9.3, goldens |
 
    Row order, the primary action, folds, popups and sticky regions do not change. A roll result and a row get
-   shorter (fewer lines); no `FIRST_SCREEN` offset moves, because the first result and the first row start where
-   they did.
+   shorter (fewer lines); no `FIRST_SCREEN` offset moves on a roll result or a row, because the first result and
+   the first row start where they did. On `/tables/*` from 761 px the first row may start lower by the reserved
+   strip on a table with no second-level tabs (option A); the limit is the rule's and case 83 holds it.
 2. Error scenarios: not applicable to stored data - no write path or stored shape changes. Loading, a failed
    read, offline and a stale tab draw what they draw today; a record named by a relation and deleted drops out of
-   the full card's line as today. A revert to the previous frontend draws the lines on every surface again; no
-   data moves.
+   the full card's line as today. The head holds still while a table loads (the late-content rule). A revert to
+   the previous frontend draws the lines on every surface and the old head again; no data moves.
 3. Consistency. `FEATURES.md`, "Consistency rules": one name for one thing (the tile keeps «Основное оружие»;
    K8); the row rule "a row hides the tags that repeat what the page already says" is extended, not departed
    from. Siblings: every compact surface (rows on five pages, tiles, two roll results) now draws the same set of
    tags and no relation; the three dossier surfaces and the editor preview draw the same full card. Named
    differences: print and the copied text keep the relation blocks, the set label and «Core» (out of scope; a
    printed card and a pasted message have no surrounding page); a single-book roll page still repeats its book
-   tag (F4).
-4. RU/EN parity: no string is added, changed or removed. The goldens and T6 run in both languages; the EN tile
-   labels are the longer ones.
+   tag (F4); only `/tables/*` has the steady head so far (the other pages have one content set under their head).
+4. RU/EN parity: no string is added, changed or removed. The goldens, T6 and T9.3 run in both languages; the EN
+   tile labels are the longer ones and the RU chip row is the wider one.
 
 ## Goldens expected to move
 
-Golden width is 1100. In addition to 9a's own list and `/s/` families (whose rows lose the relation line and
-«Core» in the same re-seed):
+Golden width is 1100. Seed with the four shards; never edit a golden by hand.
 
 - `_search*` (about 12): rows lose «Core» and the relation line.
 - `_roll_std*` (about 10) and any `_roll_*` result of a Core record, an upgrade, a set piece or a laddered
   weapon (`_roll_voa*` holds ladders): the result loses «Core», the relation lines and the ladder.
 - `_tables_*` of mixed books (`alt_item`, `alt_consumable`, `other_starting`) and every table golden that holds a
-  row with a relation (`_tables_alt_consumable` holds 11): rows lose «Core» or the relation line.
+  row with a relation (`_tables_alt_consumable` holds 11): rows lose «Core» or the relation line. With option A,
+  also every `_tables_*` whose head gains a reserved strip or slot (T9).
 - `_homebrew_*` list states as gm3 (`_homebrew_as_gm3`, `~ bar more`, `~ filter sheet`, `~ import held names*`,
   `~ more`, `~ narrow`, `~ search`, `~ select*`, `~ tabs`): rows lose the relation line.
+- The list and `/s/` families with a Core row or a relation line (`_lists_*0101*`, `LIST_A*`, `_s_*`): rows lose
+  «Core» and the relation line. About 30-50. Batch 9a re-seeds them again for the compact row (accepted, K13).
 - Not expected to move: `_i_*`, `_h_*`, every dialog state, the editor states, `_p_*`. A move there is a defect
   to read.
 
-Estimate: 40-70 goldens beyond 9a's. Seed with the four shards; never edit a golden by hand.
+Estimate: 70-120 goldens in all. The new state adds two files (RU and EN).
 
 ## Tests
 
@@ -396,16 +548,34 @@ Estimate: 40-70 goldens beyond 9a's. Seed with the four shards; never edit a gol
 | `record.test.ts` | R1 and R2 per variant; U+00A0 before `.badge.hb` |
 | `rollResult.test.ts` | no «Core», no `.craft` |
 | `recordHost.test.ts` or `pickRow.test.ts` | the dialog keeps the own relation line; axe |
-| `tables.test.ts` | no `.rcraft`; no «Core» on a mixed table and on search; another book kept |
+| `tables.test.ts` | no `.rcraft`; no «Core» on a mixed table and on search; another book kept; `TableNav` keeps its node on a table switch |
+| `listPage.test.ts`, `sharedListPage.test.ts` | a row draws no relation line and no «Core» |
 | `homebrewCatalog.test.ts` | the own relations in the dialog, not on the row |
-| `tests/app/states.js` | the new case (T6) |
+| `tests/app/states.js` | the badge case (T6) and the head case (T9.3) |
 
 ## Verification
 
-Inside 9a's order (`plan-9a.md`, "Verification"): the T test files join step 1's vitest list (`label`, `rowTags`,
-`record`, `rollResult`, `recordHost` or `pickRow`, `tables`, `homebrewCatalog`); step 2 reads T7; step 3's `git
-diff --stat tests/app/snapshots` expects the families above too; step 4 rebuilds `docs/DECISIONS.md`. The bundle
-shrinks by about 0.2 kB (the row's relation line and its CSS). The new case and the sweeps run on CI.
+In this order, after T8. One command per call. A browser suite does not run locally (section 7, the writer's
+local gates).
+
+1. While editing: `npx vitest run` with `app/src/lib/label.test.ts`, `rowTags.test.ts`,
+   `app/src/components/record.test.ts`, `rollResult.test.ts`, `recordHost.test.ts` or `pickRow.test.ts`,
+   `tables.test.ts`, `homebrewCatalog.test.ts`, `homebrewPage.test.ts`, `searchPage.test.ts`, `listPage.test.ts`,
+   `sharedListPage.test.ts`, `itemPage.test.ts`, `badge.test.ts`, `a11y.test.ts`, then `npm run lint:untyped` and
+   `npm run lint:typed`. `git ls-files -- "app/src/**/*.test.ts"` gives a right name.
+2. `node --test tools/artwork/lib.test.mjs` (T7).
+3. `npm run build:test`, then `node tests/app/golden.js --update --shard=n/4` for n = 1 to 4, one at a time. Then
+   `git diff --stat tests/app/snapshots`: only the families above and the new files.
+4. `node tools/decisions.js`: 0 problems; `docs/DECISIONS.md` rebuilt.
+5. `npm run check:built` (the unconfigured budget). The bundle shrinks by about 0.2 kB (the row's relation line
+   and its CSS); T9 may add 0.1 kB. Then the configured build with placeholder `VITE_SUPABASE_*` values and `node
+   tools/bundle-budget.mjs`. Raise a limit only by the standing rule.
+6. `impeccable detect --json --no-inline-ignores app/src`, and the spelling grep of batch 2's word list over the
+   touched files and the new prose.
+7. `rtk npm run check:fast` (Bash timeout 600000), last.
+8. Commit, push, the CI credit. CI's `app/states` (the two new cases and case 83), `app/print`, `app/hues`,
+   `app/typo`, `sweep.js` and the `e2e` flows are the browser proof. The batch review follows (trigger: new or
+   changed UI; `tests/app/` changed). The wave 2b squash waits for it and for the green CI run of the tip.
 
 ## Risks and do-nots
 
@@ -416,8 +586,14 @@ shrinks by about 0.2 kB (the row's relation line and its CSS). The new case and 
 - Keep the badge's `overflow-wrap: anywhere`: without it an 80-character homebrew source tag pushes a row wide.
 - A `face` card that loses its lines must keep its `flex: 1 1 auto` height in the roll grid (`RollResult`'s
   `.dealt`): two results in a row stay the same height.
-- Review order inside 9a: `RecordCard.svelte`, `Badge.svelte`, `RowMain.svelte`, `TableRows.svelte`,
-  `lib/label.ts`, `lib/rowTags.ts`, the states case, the prose - after 9a's own list.
+- T9: do not patch one table with a `min-height`; measure first (T9.1) and fix the cause. A reserved box must not
+  draw a visible empty frame or a focusable element. A hidden toolbar slot is out of the tab order and the
+  accessibility tree (`visibility: hidden` or `inert`), and the Tab order of the head does not change.
+- T9: the `FIELD` guard of `Shell` and the header that hides on scroll (batch 3b) read the head's height; a
+  reserved strip changes `--sticky-h` consumers only through the header, not through the page head. Check `sweep.js
+  360` and `768` on CI.
+- Review order: `RecordCard.svelte`, `Badge.svelte`, `RowMain.svelte`, `TableRows.svelte`, `TablesPage.svelte`,
+  `TableNav.svelte`, `lib/label.ts`, `lib/rowTags.ts`, the states cases, the prose.
 
 ## Writer tests
 
@@ -425,21 +601,22 @@ Facts for the orchestrator's dispatch, not a model choice.
 
 | Test | Answer |
 |---|---|
-| 1 (a step asks for a choice, or an `Open design question:`) | no: the rule is the owner's; K3, K4 and K8 have defaults that block nothing |
+| 1 (a step asks for a choice, or an `Open design question:`) | yes: HD1 (T9.2) has a default (option A) that blocks nothing; the tag rule is the owner's; K3, K4 and K8 have defaults that block nothing |
 | 2 (public contract, route, stored state, product law, migration, hook, configuration) | no: no contract, route or stored state; print is untouched; `CARD_HEAD_SHA256` is a test constant |
-| 3 (visual judgment: print fitting, a golden re-seed, parity with a design node) | yes: 40-70 more goldens in 9a's re-seed and the badge and tile layouts; 9a already answers yes |
+| 3 (visual judgment: print fitting, a golden re-seed, parity with a design node) | yes: 70-120 goldens in one re-seed, and the badge, tile and head layouts rest on visual judgment; no design node |
 
 ## Plan review
 
 Not required (no trigger fired): no migration or SECURITY DEFINER function, no public contract
 (`routes.json`, `ROUTES.md`, `CONTRACTS.md`, `llms.txt`, `tests/contracts.js` and `docs/fixtures/` do not
-change), no stored data or `localStorage` key, no write or sync protocol. 9a's batch review covers it.
+change), no stored data or `localStorage` key, no write or sync protocol. A batch review is required after the
+implementer (trigger: new or changed UI; `tests/app/` changed).
 
 ## Feedback to batch here
 
-The owner may send more phone feedback. Until 9a's dispatch, each new item joins this brief as a T line and a
-`plan-9a.md` acceptance line; after it, batch 8's refresh or the post-wave-3 remediation takes it. Open, each
-with its default:
+The owner may send more phone or desktop feedback. Until 7b's dispatch, each new item joins this brief as a T
+line and an acceptance line; after it, the next refresh (batch 9a) or the post-wave-3 remediation takes it.
+Open, each with its default:
 
 - F1 (K3). The set bonus on a compact card. Default: it goes with the set line. Alternative: keep the bonus text
   on roll results (it is the piece's rules text) and drop only the member names.
@@ -450,5 +627,6 @@ with its default:
   the type.
 - F4. A single-book roll page (`/roll/voa`, the supplements) repeats the book's tag on each result. Default:
   unchanged (R3). Alternative: hide a tag that the page's book already says, as rows do.
-- F5. Placement. Default: folded into 9a, live with wave 3. Alternative: its own batch and squash before 9a
-  (wave 2b), live about five batches sooner, for 80-100 more minutes and a change to the three-wave plan.
+- F5. Closed: placement is decided (owner, 2026-11-04): batch 7b with wave 2b.
+- F6 (HD1, K12). The table head. Default: option A. Alternative: option B. Another page with a like jump (a
+  head that changes with its content): default, not in this batch.

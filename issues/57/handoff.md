@@ -814,12 +814,21 @@ In order:
    "Placed items" of `plan-4.md` to `plan-7.md` are in `plan.md` section 7 (batches 8, 9a, 9b, P, 10) and section 8; the
    gate-cost, `FIRST_SCREEN` and P5 entries were already done or present. Section 10 is a pointer plus D1-D13 and
    "Impeccable" (last full text: `git show 5ecca692:issues/57/plan.md`). `plan-9a.md` stays a brief until its batch.
-6. Wave 2 squash (owner, 2026-11-04: 9a moved to wave 3, so wave 2 is 3, 3b, 4, 5, 6, 7; `plan.md` section 16;
-   `orchestrate.prompt.md` closeout step 8): run `ci-credit.mjs` on the tip with a clean tree. Then the blind review
-   of waves 1 and 2 on production, with its remediation at once.
-7. Wave 3 in this order: 9a (brief `plan-9a.md`, with `plan-tags.md` folded in: the owner's phone feedback of
-   2026-11-04, steps T1-T8 first; `opus`; its `FIRST_SCREEN`, `selectAll` and `sendAll` corrections
-   are in "Placed items"; production still holds the old list rows, so the interim mix is wave 2's), then refresh and
+6. Done: the wave 2 squash (`dbd3cf73` on `main`, merged back into `claude/57`; 3, 3b, 4, 5, 6, 7) and the blind
+   review of waves 1 and 2 on production (`reviews/post-wave-2.md`).
+7. Running: the post-wave-2 remediation on `claude/57`, at once, nits included. It edits `RecordCard`, `TableRows`
+   and `TablesPage`, so batch 7b's dispatch re-reads them.
+8. Batch 7b (owner, 2026-11-04: the tag fix is its own batch and wave, "to start wave 3 clean"; brief `plan-tags.md`;
+   `opus`): one tag rule, one-box badges and a steady table head on `/tables/*` (T1-T11; design choice HD1, default
+   option A). Then `polish`, `harden`, the batch review, its fix cycle and CI of the tip. 7b writes its two decision
+   files and the `Supersedes` pointer itself.
+9. The wave 2b squash (`plan.md` section 16; `orchestrate.prompt.md` closeout step 8): after 7b's review and the green
+   CI run of its tip, `ci-credit.mjs` on the tip with a clean tree, the squash onto `main`, the deploy, the merge
+   back. A read-only reviewer of the wave 2b scope on production is not required by the owner's wave reviews: it is
+   skipped, and the wave 3 blind review covers it.
+10. Wave 3 in this order: 9a (brief `plan-9a.md`; `opus`; its `FIRST_SCREEN`, `selectAll` and `sendAll` corrections
+   are in "Placed items"; it starts on a clean `main`, builds its compact row on 7b's rule and reads cases 95-97 as the
+   next three free numbers; production still holds the old list rows, so the interim mix is wave 2's), then refresh and
    run 8, 9b, P, 10; the wave 3 blind review; the whole-app blind review; closeout.
 
 Facts for the dispatches:
