@@ -8,7 +8,7 @@ orchestrator logs each one in the owner-AFK decisions file. A mock is direction 
 departures are named in "Decisions", and none of them reopens a decision of the owner. Section numbers
 ("section 7") are those of `plan.md`.
 
-Batch 9a is the last batch of wave 2. It runs after batch 7's `polish`, `harden`, review and CI.
+Batch 9a is the first batch of wave 3. It runs after batch 7b and the wave 2b squash, on a clean `main`.
 
 ## Objective
 
@@ -32,6 +32,11 @@ Both pages take the selection mode and the one selection bar of batch 3. `/s/` l
   `Marked`), `HomebrewBulk` (the bar's narrow «Ещё»), `SelBar` with its `hb` branch, case 83 with its
   `exception` limit (`plan-5.md` S10). A line that no longer matches is the implementer's to adapt, and
   `handoff.md` names the change.
+- From batch 7b (`plan-tags.md`, on the branch and on `main` after wave 2b): relation lines and the «Core» tag are
+  already gone from compact rows, so `RowMain` and `TableRows` have no `index` prop, `RowMain full` builds no relation
+  line, and the compact row's meta line draws the price, else another book's tag via `isCoreBook(it)`, else nothing.
+  Batch 7b takes the next free `states.js` case number (95): read this brief's cases 95, 96 and 97 as the next three
+  free numbers, and `handoff.md` names them.
 - The code facts below were read on `91bdcc55` while a fix pass ran in this tree. They are not a substitute
   for reading the shipped file.
 - The mock is `mocks/F/`, re-checked against the code. The departures are G3, G5, G9, G10, G12 and G14. The
@@ -50,7 +55,7 @@ Both pages take the selection mode and the one selection bar of batch 3. `/s/` l
 | G3 | The GM-only mark on the meta line is `Icon eyeOff`, the app's one sign for that state, with the hidden text `, Только для мастера`. It draws wherever the entry is GM-only, so also on a GM's `/s/` link. **Departures:** the mock draws a lock (no such icon in `icons.ts`), and draws it on the owner's page only. | One sign for one meaning; `.gm-only` already draws on the GM link, and a dashed row with no mark would need a legend. |
 | G4 | The note mark is `Icon note` plus a hidden `t.note` inside the body button, drawn when `m.note \|\| m.hnote`. A players' link never holds `hnote`, so no projection rule is added. The note boxes and `HitNote`s draw only inside the unfolded part up to 760 px. `boxHidden` keeps its default, so an open row with a note shows it. | A mark by color alone fails WCAG 1.4.1. `noteInput` writes on each `input`, so a fold loses nothing. |
 | G5 | The line of an entry (`rowLine`): armor and weapons take their stats, in the order of `feedback.md`. A record whose stats are empty (a homebrew equipment entry can have `eq` undefined) falls to its text. The text is the first non-empty line of `markupText(descOf(it, lang))`, so no `**` shows. **No text and no stats: no line and no empty box; the row is about 57 px.** Weapon class stays in the unfolded stats. **Departure:** the mock's `effect()` passes raw HTML through a strip; the app has a markup parser. | An empty line would be 20 px of nothing. `markupText` already exists. |
-| G6 | The meta line: the first `cardBadges` badge (a record with no `eq` draws the item or consumable badge), then the price, else `srcLabel`. The source is one line with an ellipsis (`BOOK_NAME_MAX` is 80, so a homebrew source can fill the row); the price wraps and is never cut. A not-loaded row draws the key as its name, `itemNotLoaded` on the meta line, the item glyph, no line. An own picture goes through `artSrc(it.img, false, 'thumb')`, as `RowMain`. | A homebrew entry and an entry with no text are the two edge rows. A homebrew axe (`AXE_KEY`) and a long-source item (`LONG_SRC_ITEM_KEY`) are already seeded. |
+| G6 | The meta line: the first `cardBadges` badge (a record with no `eq` draws the item or consumable badge), then the price, else `srcLabel` unless `isCoreBook(it)` (batch 7b's predicate; never «Core»), else nothing. The source is one line with an ellipsis (`BOOK_NAME_MAX` is 80, so a homebrew source can fill the row); the price wraps and is never cut. A not-loaded row draws the key as its name, `itemNotLoaded` on the meta line, the item glyph, no line. An own picture goes through `artSrc(it.img, false, 'thumb')`, as `RowMain`. | A homebrew entry and an entry with no text are the two edge rows. A homebrew axe (`AXE_KEY`) and a long-source item (`LONG_SRC_ITEM_KEY`) are already seeded. |
 | G7 | The live quantity is the existing path: the field calls the existing `setQty`, which writes `cloud.setMeta(...,'qty',...)` on `input`. No component buffer, no second field per row, no stepper. The store's write buffer (key `entry:<row>:qty`, 2 s quiet) keeps one write for a run of keys. `data-qty` stays. `max` reads `QTY_MAX`. A focus writes nothing. Spinners are off (`appearance: textfield`): they do not fit 42 px; the arrow keys still step. | The orchestrator's check. Case 49 proves one write for ten keys at 1180; case 95 proves it on the compact field. |
 | G8 | Position numbers: on the owner's page the true `at + 1` of `narrowEntries`, also in `setPos`, `removeEntry`, `data-index` and `dropGap`. On `/s/` the place in `shared.ids` (a `Map` built once), also while filtered. **Accepted:** a players' link numbers the rest from 0 (`FEATURES.md`), so with a GM-only entry a player's numbers can differ from the owner's. | The server sends no owner position. Only the list page rolls by number. |
 | G9 | `/s/` lead line (added to 9a: `FIRST_SCREEN` needs it). At every width the `h1`, then one line: the count, «Обновлено ...», then the buttons «Заметка» (`shared.note`) and «Заметка мастера» (`shared.hnote`), each opening its `HitNote` in place, closed on arrival. `t.sharedList` leaves the line and the dictionary. The `h1` takes one line with an ellipsis up to 760 px and three lines from 761 px. **Departures:** the mock lower-cases «обновлён»; this keeps `updated` text, so cases 45 and 52 do not move. The GM link's two buttons take a second line in RU: about 306 px at 360, not asserted (no `FIRST_SCREEN` row; a GM reads on a laptop 80% of the time). | Section 14's row `9 / shared-player` assumes this fold, and section 7's 9a list omits it. Without it `/s/` cannot reach 286. |
@@ -193,7 +198,7 @@ In both languages of `dict.ts`, same keys, ASCII punctuation, «ёлочки» i
 
 ### S3. `CompactRow` and `RowMain` `full`
 
-`CompactRow.svelte` props: `it: Record_ | null`, `id`, `no: number`, `index`, `lang`, `artBroken`, `onartfail`,
+`CompactRow.svelte` props: `it: Record_ | null`, `id`, `no: number`, `lang`, `artBroken`, `onartfail`,
 `open: boolean`, `ontoggle`, `price?: string`, `note?: boolean`, `gmOnly?: boolean`, `qtyText?: string`,
 `field?: Snippet`, `children?: Snippet` (the unfolded part, drawn while `open`).
 
@@ -219,8 +224,8 @@ In both languages of `dict.ts`, same keys, ASCII punctuation, «ёлочки» i
   .row:has(.crow)) { border-width: 0 0 1px; border-radius: 0; background: none }`, so 77 px holds. `.gm-only`
   keeps the dashed box with `margin: 2px 0` and `padding-inline: 6px`. `.sel` keeps `--surface2`. The focus ring
   sits inside (`outline-offset: -2px`): `.row` clips.
-- `RowMain` gains `full?: boolean`: a `div.row-main.full` with no art, no name, no click, the tags, stats, text and
-  craft lines unclamped, through one local snippet for the text column, so the button's DOM does not change.
+- `RowMain` gains `full?: boolean`: a `div.row-main.full` with no art, no name, no click, the tags, stats and text
+  unclamped (no relation line: batch 7b removed it), through one local snippet for the text column, so the button's DOM does not change.
 
 ### S4. `SelMode` and `ListFind`
 
@@ -283,13 +288,13 @@ Drop the stale `.selall` filters in the test helpers that still name the strip.
 
 ```svelte
 {#if app.selecting}<label class="lrow-pick">...</label>{/if}
-<CompactRow {it} {id} no={row.at + 1} {index} lang={app.lang} {artBroken} {onartfail}
+<CompactRow {it} {id} no={row.at + 1} lang={app.lang} {artBroken} {onartfail}
   open={openRows.has(id)} ontoggle={() => flipRow(id)}
   price={(m.gold ?? 0) > 0 ? priceText(m.gold ?? 0, mode, app.lang) : undefined}
   note={hasNote} gmOnly={!!m.gmOnly}
   qtyText={app.selecting && (m.qty ?? 0) > 1 ? '×' + String(m.qty) : undefined}
   field={app.selecting ? undefined : qtyField}>
-  {#if it}<RowMain full {it} {index} lang={app.lang} ... />{/if}
+  {#if it}<RowMain full {it} lang={app.lang} ... />{/if}
   <div class="cfields"> position, price, grip, «Заметка», row «Ещё» </div>
   {#if goldHint}...{/if}
   {#if !boxHidden(id, m)}<div class="rnote">...</div>{/if}
@@ -416,6 +421,7 @@ Each line is observable in a suite, a unit case or the built app. Section 7's li
 - An entry with no effect text draws no line and no empty box; a homebrew entry draws its source or price, its own picture, its stats or text with no
   markup; an 80-character source is cut, a price never is; a not-loaded row draws its key and «Предмет не загружен» (`compactRow.test.ts`, the `uuid(301)`
   golden).
+- The compact row's meta line draws the price, else another book's tag, else nothing; never «Core» (`compactRow.test.ts`).
 - Keyboard order (G2): tick, body button, quantity field, unfolded controls; the press keeps the focus; a 24 px target at the least; `aria-controls` only
   while open (case 95, `compactRow.test.ts`).
 - Open rows are page memory: `openRows` keyed by entry id, cleared when the list changes, pruned when an entry leaves. Nothing is stored (`listPage.test.ts`;
@@ -560,7 +566,7 @@ In this order, after S12. One command per call. A browser suite does not run loc
 7. `impeccable detect --json --no-inline-ignores app/src`, and the spelling grep of batch 2's word list over the touched files and the new prose.
 8. `rtk npm run check:fast` (Bash timeout 600000), last.
 9. Commit, push, the CI credit. CI's `app/states` (cases 83, 95 to 97 and the adapted ones), `app/contracts`, `app/hues`, `app/typo`, `sweep.js` at 360, 390, 768 and 1180 and the `e2e` flows are the browser proof. A failing
-   case there is a case to read against this brief. The batch review follows (trigger: new or changed UI; `tests/app/` changed). Wave 2's squash waits for it.
+   case there is a case to read against this brief. The batch review follows (trigger: new or changed UI; `tests/app/` changed). Wave 3 continues with batch 8 after it.
 
 ## Risks and do-nots
 
