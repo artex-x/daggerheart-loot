@@ -2641,6 +2641,8 @@ right, so the tab order and the reading order agree
 
 - The page column is the window less 16 px a side, up to 1440 px, and centered above that
   (DESIGN.md, "Layout"). 320 px is the narrowest width a page is built for.
+- The roll page's lone result counter is at most 240 px wide at every window width; the
+  alt roll's two die counters fill their blocks (DESIGN.md, "The One Width Rule").
 - Language switch, the three jobs, skip link, starting-section pin (eleven sections
   pin as their own hash; `#/tables` pins as whichever table is on screen;
   «Мои предметы» pins `#/homebrew` from any tab once its items are read; never a

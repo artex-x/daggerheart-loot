@@ -291,6 +291,12 @@
     min-width: 0;
   }
 
+  /* Each box fills its block: the 240px cap is the single counter's (`NumberField`), and in the
+     phone settings panel a block is wider than that. */
+  .dieblock :global(.numbox) {
+    max-width: none;
+  }
+
   .dielbl {
     display: flex;
     align-items: center;

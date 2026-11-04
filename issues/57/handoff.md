@@ -2,14 +2,14 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (waves 1 and 2 are on `main`; batch 7b, wave 2b, is implemented on `claude/57`; next
-  are its `polish`, `harden`, review, fix cycle and CI, then the wave 2b squash, then batch 9a)
-- Last agent: orchestrator (session pause at the owner's request, 2026-11-04 21:55 UTC, after the batch 7b implementer)
+- Task status: in_progress (waves 1 and 2 are on `main`; batch 7b and its fix pass (`4874ed63`) are done and CI-green;
+  batch W is committed at `8b1bc021` and its fix pass is the commit on top of it; next are the W8/W9 leftovers, CI of
+  the tip, the CI credit, the wave 2b squash, then batch 9a (cases 98-100))
+- Last agent: implementer (batch W fix pass, 2026-11-05)
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
-- Tip: `d10ffa41` (batch 7b, pushed; previous `377d0981`; `cd32174d` CI green). CI run 41919930060 of `d10ffa41` was in
-  progress at the pause. A docs commit of this pause may sit on top, unpushed.
-- Pushed: yes (`d10ffa41`).
+- Tip: `8b1bc021` (batch W, pushed; CI run 41930985566 was in progress); the W fix pass is one commit on top, not pushed.
+- Pushed: yes (`8b1bc021`); the fix pass: no.
 
 ## Completed
 - Batch 1 - foundation: `9a31aede`, review fix `80872b35` (`reviews/1.md`).
@@ -564,7 +564,7 @@
   | Line | Outcome |
   |---|---|
   | `main` 1440 px and centered at 1920 and 3840; client less 32 px at 1366 | Done: case 101 (main 1319 at 1366, 1440 at 1920 and 3840; sides 16/16, 233/233, 1193/1193) |
-  | Up to 1212 px nothing moves but the record page dossier from 1013 px | Local: tops equal the 1180 baseline in case 101; goldens, `FIRST_SCREEN` and sweep are CI's |
+  | Up to 1212 px nothing moves but the record page dossier from 1013 px | Local: tops equal the 1180 baseline in case 101; goldens, `FIRST_SCREEN` and sweep are CI's. Corrected by the fix pass: also the editor form (from about a 1206 px window) and the lone counter (240 px at every width), deviation 6 |
   | Dossier at most 980 px, at the column's left edge; the dialog reads `--dossier-w` | Done: case 101 (980 and 930 in the dialog) |
   | Editor form at most 720 px from 1100 px beside a 420 px preview | Done: case 101 (form 682, preview 420) |
   | Account, sheets, filter column, roll pane, print sheet keep their widths | Done: case 101 (account at most 1100.5, print sheet unscaled and equal to its baseline) |
@@ -584,6 +584,16 @@
   3. The case adds `#/roll/alt` to the plan's state list, for the owner's counter measurement.
   4. Case 101 compares each language's top with its own 1180 baseline (RU and EN).
   5. `FEATURES.md` "Records" and "Homebrew" and `DESIGN.md` carry the W caps; `FEATURES.md` "Chrome" names 320 px.
+  6. (fix pass, W-B1) The 240 px counter cap is not a wide-window rule: it applies at every width and changes
+     `/roll/std` from 282 to 240 px from 761 px and in the phone settings panel (275 at 360, 675 at 760 before).
+     Measured on the built app (RU, headless 15 px gutter), box / block: `/roll/alt` with the cap left at 600 px
+     240/253, 700 px 240/303, 760 px 240/333 (short by 13-93 px); 530 px and below 218/218, 133/133. Decision: the cap
+     stays for the lone counter at every width (owner's request); the alt pair opts out (`AltPanel`
+     `.dieblock :global(.numbox) { max-width: none }`), so alt is as before W: 253/253, 303/303, 333/333, 136/136
+     from 761 px. `DESIGN.md` "Layout", "The One Width Rule", `FEATURES.md` "Chrome", `COVERAGE.md` and the decision
+     file say so; the editor claim reads about a 1206 px window. The phone settings panel of `/roll/std` changes
+     (the box is 240 px of 275 at 360) with no golden or case moving by it; case 101 reads the alt pair at 360 and
+     700 px.
 
 - Review: done, `issues/57/reviews/3.md`, verdict fix-then-continue; the one remediation
   pass is this commit. No second review is needed: the picker fix leaves the first-screen
@@ -1070,16 +1080,10 @@
 - Spelling scan over added lines and new files: only `aria-labelledby`.
 
 ## Next batch (implement-ready)
-SESSION PAUSE (owner, 2026-11-04 ~21:50 UTC, reboot): the next session starts at step 8's "Next:". No subagent was
-running at the pause; the usage tick cron was deleted (a new session creates its own at its first dispatch). First
-actions: `ListAgents`, `git rev-parse HEAD`, `git status --short`, then `gh run view 41919930060 --repo
-artex-x/daggerheart-loot` (CI of `d10ffa41`). Read its failures with `--log-failed` once it concluded; a red job is
-the first item of the batch 7b fix pass. The reviewer's brief: scope batch 7b, diff base `cd32174d`, HEAD `d10ffa41`,
-brief `plan-tags.md`, report `reviews/7b.md`, with the CI failures; the batch 7b implementer's 6 departures and 3
-HD1 deviations are in Completed, "Batch 7b". Open facts from its report: at 761-800 px RU the `eq_*` toolbar wraps
-(Deferred); cases 89, 95, 96, 97 ran once locally, and case 83, `sweep.js` 360 and 768, `app/print`, e2e run only on
-CI. Do the batch 7b fix pass at once (nits ride it: the owner wants nits included for reviews of waves, and a re-seed
-is paid), then CI credit, then the wave 2b squash, then 9a (it takes cases 98-100).
+Batch 7b and its fix pass (`4874ed63`) are done and CI-green. Batch W is committed at `8b1bc021` (CI run 41930985566
+in progress when its fix pass was written); the fix pass (`reviews/W.md`, W-B1 to W-N5, W8, W9) is the next commit and is
+not pushed. Next: push, then CI of the tip (watch `app/states` cases 83, 97, 101, `app/golden`, `sweep.js`,
+`app/print`, `contracts` at 1280, `e2e`), the CI credit, the wave 2b squash, then 9a (cases 98-100).
 Scratch to retire at closeout, not before: the worktree `.claude/worktrees/57-fold` (branch `claude/57-fold`, merged
 into `claude/57`; the orchestrator may remove both: `git worktree remove`, `git branch -d`, at the next
 quiet moment), `C:\Users\Ignat\AppData\Local\Temp\claude\...\scratchpad` (frames and perf scripts).
@@ -1135,6 +1139,8 @@ Facts for the dispatches:
 - None.
 
 ## Deferred
+- W-N4 (batch W review): the `tests/run-all.js` weight for `app/states` (179.3 s) is stale; case 101 opens 74
+  contexts, up to 3840x2160. Re-measure it from the CI run of the tip.
 - `/tables/eq_*` at 761-about 800 px in RU (batch 7b probe): the toolbar's five controls wrap to two lines, so the rows
   start at 381.5 px against 333.5 on the other tables. Case 96 reads 760 and 1050, not 761. Not fixed: the hidden
   toolbar slots were not built (Completed, "Batch 7b", deviation 3).
@@ -1208,6 +1214,17 @@ Facts for the dispatches:
   `.money-l`), HelpButton, `.steps-l` (RecordCard).
 
 ## Notes
+- Impeccable `polish` and `harden` of batch W (implementer, 2026-11-05, orchestrator fallback, on the built app with
+  the fix pass): shots in `mocks/W/built/` (`shoot.js`): roll std and voa, core_item, eq_weapon, voa, `/search` with
+  «меч», the dialog, `/i/ci1`, `/homebrew`, the editor, `/account`, a print page, `#/i/nope` at 1920 and 3840 RU,
+  the roll and core_item at 1920 EN, the counter at 360 and 700 (`/roll/std`, `/roll/alt`, settings open), the editor
+  at 360, 1180, 1440 and 1920. Looked at: roll std 1920, counter alt 700 and std 360, editor 1920, dialog 1920,
+  core_item 3840. Found: the alt boxes short of their blocks at 600-760 px (fixed, W-B1); nothing else to fix. The
+  editor at 1920 leaves its right third empty beside the 420 px preview (the accepted trade-off of the decision file);
+  the std counter's number sits left of center in its 240 px box beside the buttons (the owner's counter request).
+  Not looked at: the other shots were produced and not opened (print, account, homebrew list, nope, EN, the rest of the
+  3840 set). `impeccable detect --json --no-inline-ignores app/src`: 67 findings (67 before), none in `AltPanel` or
+  `NumberField`; `tokens.css` two, as before. Spelling: the added lines of this pass read, nothing found.
 - Impeccable `polish` and `harden` of batch 7 (orchestrator, 2026-11-04, on `2c3f3833`, from the shots `search-searched`,
   `account`, `account-delete` at 360 RU; no live pass): one item to check. `account__360__ru.png` draws a lead line
   under «Аккаунт» («Отображение, способы входа, выход и ваши данные.»), while the batch report says the page has

@@ -7086,7 +7086,8 @@ async function rollFitsByCount() {
 
 /** 101. The page column grows with the window to 1440 px and stays centered past it; a reading
  *  surface keeps its measure at the column's left edge (DESIGN.md, "The One Width Rule"). The
- *  roll pages' number box keeps at most 240 px (DESIGN.md, "Layout"). */
+ *  single counter of the roll pages keeps at most 240 px, the alt roll's two boxes fill their
+ *  blocks (DESIGN.md, "Layout"). */
 const WIDE_STATES = [
   '#/roll/std',
   '#/roll/alt',
@@ -7123,7 +7124,18 @@ function measureWide() {
   });
   const widths = (s) =>
     [...document.querySelectorAll(s)].map((e) => e.getBoundingClientRect().width);
+  const lefts = (s) =>
+    [...document.querySelectorAll(s)].map((e) => e.getBoundingClientRect().left);
   return {
+    /* Not the dialog's card, which is centered in the window by design; and the form's panel,
+       since the form sits inside the panel's padding. */
+    dossierL: [...document.querySelectorAll('.card.dossier')]
+      .filter((e) => !e.closest('dialog'))
+      .map((e) => e.getBoundingClientRect().left),
+    formL: [...document.querySelectorAll('.hbform')].map(
+      (e) => e.parentElement.getBoundingClientRect().left
+    ),
+    accountL: lefts('.col:has(.acc)'),
     client,
     scrollW: document.documentElement.scrollWidth,
     mainW: main.width,
@@ -7278,6 +7290,35 @@ async function pageColumnOnWideWindows() {
         m.numbox.every((w) => w <= 240.5),
         where + 'the number box is wider than 240 px'
       );
+      /* Each of the three surfaces starts at the column's left edge, so none is centered. */
+      for (const key of ['dossierL', 'formL', 'accountL'])
+        ok(
+          m[key].every((x) => Math.abs(x - m.mainL) <= 1),
+          where + key + ' is off the column edge: ' + JSON.stringify(m[key]) + ' vs ' + m.mainL
+        );
+    }
+  }
+  /* The cap is the single-box counter's; the two die boxes of the alt roll fill their blocks at
+     every width, also in the phone settings panel where a block is wider than 240 px. */
+  for (const width of [360, 700]) {
+    const where = at + '#/roll/alt ' + width + ' ru, settings open: ';
+    const { ctx, page, d } = await openState('#/roll/alt', width, 800, 'ru');
+    try {
+      await d.click('Настроить');
+      await d.settle();
+      const boxes = await page.evaluate(() =>
+        [...document.querySelectorAll('.numbox')].map((n) => [
+          n.getBoundingClientRect().width,
+          n.parentElement.getBoundingClientRect().width
+        ])
+      );
+      ok(boxes.length === 2, where + 'expected two number boxes, found ' + boxes.length);
+      ok(
+        boxes.every(([box, block]) => Math.abs(box - block) <= 1),
+        where + 'a number box does not fill its block: ' + JSON.stringify(boxes)
+      );
+    } finally {
+      await ctx.close();
     }
   }
   for (const id of ['#/roll/std', '#/search ~ searched']) {

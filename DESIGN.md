@@ -391,7 +391,10 @@ viewport. The 32px
 subtraction is the gutter, and `viewport-fit=cover` plus `env(safe-area-inset-*)`
 keeps the selection bar clear of a display cutout. The column grows with the
 window from 1213px to 1472px, where it reaches 1440px, and stays 1440px and
-centered above that; every window up to 1212px draws as it did at 1180px.
+centered above that. A window up to 1212px draws as it did at 1180px, with three
+exceptions: the record page's dossier is at most 980px from a 1013px window, the
+editor's form is at most 720px from about a 1206px window, and the roll pane's lone
+counter is at most 240px at every width (The One Width Rule).
 320px is the narrowest width a page is built for (WCAG 1.4.10 reflow is defined
 at 320); a 280px window scrolls sideways.
 
@@ -416,9 +419,11 @@ so a one-field panel has no trailing gap.
 full-width element does not invent its own container or its own gutter. From
 1472px the column stays 1440px and centered; a reading surface keeps its measure
 at the column's left edge: the dossier at most 980px (`--dossier-w`), the
-editor's form at most 720px, the account at most 1100px, prose at most 78ch, and
-a number field at most 240px (`NumberField`: past that the number floats between
-two far buttons; the roll pane's column is 282px).
+editor's form at most 720px (it bites from about a 1206px window), the account at
+most 1100px and prose at most 78ch. One cap is not a wide-window rule: a lone
+number field is at most 240px at every width (`NumberField`: past that the number
+floats between two far buttons; the roll pane's column is 282px, and wider in the
+phone settings panel). The alt roll's two boxes opt out and fill their blocks.
 
 **The Two Breakpoints Rule.** The system has two, and a third step for the header.
 From 761px the brand, the three jobs, the language switch and the account

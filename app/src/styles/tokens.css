@@ -98,7 +98,7 @@
   --wrap: min(1440px, 100% - 32px);
 
   /* The record dialog's card and the record page's dossier: one width for one
-     dossier (DESIGN.md, "The Dossier Rule"). */
+     dossier; its width is stated in DESIGN.md, "The One Width Rule". */
   --dossier-w: 980px;
 
   /* The page heading's weight and tracking; its size is `--t-page`. */
