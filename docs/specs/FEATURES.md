@@ -92,9 +92,11 @@ across.
   roll pages draw no supplements panel. The catalog's tabs draw each book by
   its full name at every width; below 761 px the books are in the picker's
   sheet.
-- The consumable/item kind filter is one toggle shared by Core rules, the
-  alternate tables and search (`AppState.kinds`, memory only) - switching
-  consumables off on one switches them off everywhere, not per page.
+- The consumable/item kind filter is one toggle shared by Core rules and the
+  alternate tables (`AppState.kinds`, memory only) - switching consumables off
+  on one switches them off on the other, not per page. Search keeps its own
+  kinds (`AppState.searchKinds`): a search narrowed to equipment leaves the
+  roll pages' loot kinds on.
 - A critical success in the alternate tables - the two dice showing the same
   face - hands over the whole rarity rather than a row: a link into each table
   that is switched on, at that rarity, plus a button that steps the rarity up
@@ -186,8 +188,9 @@ across.
   section, pick its filter value, then «Все» (owner, 2026-10-30). Ticks that arrive
   with the page (a sign-in that returns with them) open the mode. «Снять
   выделение» clears the ticks, leaves the mode, also with zero ticks, and
-  returns the focus to «Выбрать» (rule 20). `/search` and the shared page keep
-  their ticks and their «Выбрать все (N)» strip until their batches.
+  returns the focus to «Выбрать» (rule 20). `/search` has the same mode and
+  bar, with no strip. The shared page keeps its ticks and its «Выбрать все (N)»
+  strip until its batch.
 - A row reads its name, then its tags after it, then the stat line, then the
   description; the text holds at 70 characters a line and a separator never
   starts a line. A row hides the tags that repeat what the page already says
@@ -197,8 +200,9 @@ across.
   and the «Core» source tag on an equipment table (a row from another book
   keeps its name). A ticked row or tile is lit and neutral: the `--surface2`
   ground, the `--muted2` border and the checked box, never gold. A search
-  marks the matched words of a name with `<mark>`: a lit ground and an
-  underline, not color alone; a stem match is not marked.
+  marks the matched words of a name with `<mark>`, on a row and on a grid
+  tile (`Marked`): a lit ground and an underline, not color alone; a stem
+  match is not marked.
 - The grid draws two columns up to 600 px. A tile is the art, the name and a
   second line: the stat line for equipment, else the other-language name
   (English first in English). Its roll number is a neutral badge; a table of
@@ -210,15 +214,40 @@ across.
   «Сбросить фильтры» / "Reset the filters" while a filter is chosen.
 - Search covers all 1459 records: names, descriptions and stat lines, both
   languages at once; `#/search` shows the first 300 matches - the cap is that
-  page's alone, a table's own box is not capped. Once a query exceeds 300
-  hits, a "300 из <n>" line - the same shown-of-total wording the table
-  filter strip's own count already uses - says so above the rows; under the
-  cap nothing is said, because the count on screen already
-  is the whole answer. A signed-in author's own items rank with the
-  catalog's matches, the catalog's record first on a tie, and the 300 cap
-  counts both. While the account holds items the
-  intro adds «И N ваших предметов.» / "And N items of your own." after the
-  catalog count, whatever the chip below.
+  page's alone, a table's own box is not capped. A signed-in author's own items
+  rank with the catalog's matches, the catalog's record first on a tie, and the
+  300 cap counts both. While the account holds items the intro adds «И N ваших
+  предметов.» / "And N items of your own." after the catalog count, whatever
+  the kind picked.
+- **The `#/search` head** (`docs/decisions/2026-11-04-search-and-account-follow-the-list-head-and-the-error-page.md`).
+  Up to 760 px one row holds the visible `h1` «Поиск» and «Ещё», whose menu
+  holds the pin; the intro is read, not drawn (no picker fills the row, so the
+  heading stays visible). From 761 px the page head: the `h1`, the intro and
+  the labeled pin, no help. The search row follows: the search (placeholder
+  «Поиск», named by `searchPh`, focused on arrival, at least 140 px at 320),
+  «Фильтры» up to 760 px and «Выбрать» last, one line at every width.
+- **The kinds of search**: «Все», «Предметы», «Расходники», «Снаряжение». From
+  761 px they are a chip row under the search row, then the «Свои предметы»
+  switch; up to 760 px «Фильтры» opens the sheet (`FilterPanel`) with the row
+  «Тип» and, while the account holds an item, the switch as its first row. «Все»
+  is the neutral pressed default; a picked kind is gold. A press from «Все»
+  picks that kind alone, a press on another adds or removes it, and the last
+  pick off returns to «Все» (`pickKinds`). The count line, «<picked kinds> ·
+  Показано N из M», draws under the search row while a kind is picked or the
+  matches pass 300: M counts the matches over all kinds, N the rows drawn.
+- **A search row** draws the roll number as «№ 89» / "No. 89" in its number
+  box: no table is named on this page. A table row keeps the bare number.
+- **The start state** of `#/search` (no query): the plate with the item glyph,
+  «Что ищем?» / "What are you looking for?", one sentence (search reads names
+  and descriptions in both languages at once) and three example queries as
+  chips («зелье», «меч», «лечения зелья»; "potion", "sword", "healing
+  potions"), each of which finds a record. A press fills the box and the box
+  keeps the focus.
+- **Nothing found** on `#/search`: the plate, «Ничего не найдено», one cause
+  naming the query («Нет совпадений с «%q» в названиях и описаниях.»), or the
+  query and the picked kinds, and one primary: «Сбросить фильтры» while a kind
+  is picked (the focus then goes to «Фильтры» or the first chip), else «Очистить
+  поиск» / "Clear the search" (the focus goes to the box).
 - Search folds case, `ё`/`е`, typographic apostrophes (U+2019, U+02BC), Latin
   diacritics (`ä`/`ö` etc., NFD-stripped - Cyrillic is excluded so `й` never
   merges into `и`) and the Unicode minus sign (U+2212 -> `-`) on both the
@@ -313,16 +342,16 @@ across.
   draws the sign-in prompt «Войдите, чтобы видеть свои предметы в таблицах.»
   and no toolbar; while the session or the items load, «Загружаем...»; a
   failed read, «Не получилось загрузить ваши предметы.» and «Повторить»; no
-  own item, «Своих предметов пока нет.» and «Новый предмет»; a build with no sign-in
+  own item, the plate «Своих предметов пока нет» with the item glyph and a primary
+  «Новый предмет»; a build with no sign-in
   configured, the not-found page with the address kept. A pin may hold it.
-- **The «Свои предметы» switch** / "Own items": on `#/search` (under the
-  kind row, apart from the filter chips) and on the equipment tables (in the
+- **The «Свои предметы» switch** / "Own items": on `#/search` (after the
+  kind chips from 761 px, the first row of the kind sheet below it) and on the equipment tables (in the
   search row after the view switch from 761 px, the first row of the filter
   sheet below it), drawn only while the account holds an item. It is
   a labeled switch (`role="switch"`, Space toggles it, the gold focus ring).
   It is on by default; off, it removes the own records and their `src` values
-  from those pages for the visit. The kind row's «Нужен хотя бы один тип»
-  applies to the three kinds only. A record dialog, a list, `#/i/<key>`,
+  from those pages for the visit. A record dialog, a list, `#/i/<key>`,
   `#/tables/homebrew` and the relation lines of a catalog card or row still
   draw them. It is memory only (`STATE.md`).
 - The catalog's filters (`FilterPanel`) are a column beside the rows from
@@ -628,8 +657,9 @@ A build with sign-in configured keeps a signed-in reader's lists in the
 account (`docs/specs/META.md` section 3). Browser lists, their move into the
 account and the `#/l/` link left the app at R10; the browser keeps what an older
 build stored, unread (`STATE.md`, "localStorage keys"). In every build a `#/l/`
-address, plain or packed, draws the not-found page («Предмет не найден», its sub,
-«На главную»), the address kept and the payload never read. A build with no sign-in
+address, plain or packed, draws the not-found page (the error page «Страницы по этому
+адресу нет», the address in code and «На главную», "Chrome"), the address kept and the
+payload never read. A build with no sign-in
 configured has no lists: `#/lists` and `#/lists/<id>` draw the not-found page, the
 address kept, and no add-to-list control is drawn.
 
@@ -2248,23 +2278,27 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   is not known, the heading alone; when the data did not load, «Данные не
   загрузились. Обновите страницу.» under it; signed out, the sub «Войдите,
   чтобы печатать карточки.» and one «Войти», which returns here;
-  while it reads, «Загружаем...»; a failed read, «Не получилось загрузить
-  карточки.» and the small «Повторить»; an unknown, expired or malformed id
+  while it reads, «Загружаем...»; an unknown, expired or malformed id
   (a malformed one signed out too, with no read), «Набор не найден: ссылку не
   открывали 90 дней, или в адресе ошибка.» and «На главную»; a set with no
   card left, «Печатать нечего: в наборе не осталось карточек.», the deleted
-  note and «На главную». A build with no sign-in configured draws the
-  not-found page. «Ссылка на набор» copies the set's preview link
+  note and «На главную». A failed read replaces the page with the error page
+  «Набор не загрузился» / "The set did not load", «Не получилось загрузить
+  карточки.» and the primary «Повторить», which reads the set again from the
+  address (rule 6). A build with no sign-in configured draws the not-found
+  page. The unknown and expired set keep the heading «Печать карточек» and the
+  sub: `docs/fixtures/urls/routes.json` names them, and batch P owns that page.
+  «Ссылка на набор» copies the set's preview link
   `https://daggerheart-loot.pages.dev[/en]/p/<id>`, with no `v`
   (`<site>[en/]#/p/<id>` in a build with no preview host). The link opens in
   the browser, not in the installed app, and a reader may need to sign in
   there. Its card is generic - «Печать карточек», «Войдите, чтобы печатать
   карточки.» and the site picture - and shows nothing of the set.
 - Every address under `#/print/` - the long print links retired on 2026-10-08
-  - draws «Такие ссылки на печать больше не открываются.» with «Попросите у
-  отправителя новую ссылку вида /#/p/ или войдите и соберите карточки сами.»
-  and «На главную», the address kept and nothing read from it: the layout of
-  the not-found page
+  - draws the error page «Такие ссылки на печать больше не открываются.» with
+  «Попросите у отправителя новую ссылку вида /p/ или войдите и соберите
+  карточки сами.» and the primary «На главную», the address kept and nothing
+  read from it
   (`docs/decisions/2026-10-08-every-print-is-a-stored-set-long-print.md`).
 - Nine cards to an A4 page at 63x88 mm, or sixteen at 44x63 mm on the opt-in
   compact sheet; up to 180 cards either way. The cap is a render bound, not
@@ -2441,11 +2475,17 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
 
 `#/account`, drawn by `AccountPage.svelte` in a build with sign-in
 configured (the two `VITE_SUPABASE_*` values, `docs/specs/META.md` section
-3). Sign-in is optional: everything else works without it. The page is one
-column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккаунт -
-<docTitle>`), and each section is a panel headed by an `h2`.
+3). Sign-in is optional: everything else works without it. The page is titled
+«Аккаунт» / "Account" (the tab reads `Аккаунт - <docTitle>`), and each section
+is a panel headed by an `h2`. Signed out it is one column at 70ch; signed in it
+is one column below 1000 px and two columns from 1000 px (up to 1100 px wide):
+the left holds «Отображение на всех устройствах» and «Способы входа», the right
+«Ваши данные», «Выход» and «Удаление аккаунта». The DOM order is left then
+right, so the tab order and the reading order agree
+(`docs/decisions/2026-11-04-search-and-account-follow-the-list-head-and-the-error-page.md`).
 
-- **Unknown session**: only the title, while the cloud has not answered.
+- **Unknown session**: the title and the loading line «Загружаем...», while the
+  cloud has not answered.
 - **Signed out**: the lead «Войдите, чтобы ваши данные были доступны на всех
   устройствах. Всё остальное работает и без входа.» and one panel, «Войти»:
   «Войти через Google» and «Войти через Discord» (each with the provider's
@@ -2453,31 +2493,40 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   the language on screen.
 - **Signed in**, the subtitle «Отображение, способы входа, выход и ваши
   данные.» / "Display, sign-in methods, signing out and your data.", then,
-  in this order: «Отображение» (below); «Вы вошли как» (the email in bold, then the
-  first provider's logo and «через <provider>»; the provider alone when an
-  account has no email); «Способы входа» - a row for Google, then Discord:
-  a connected one shows its identity's email and, while two or more are
-  connected, «Отключить»; a missing one says «не подключён» and offers
-  «Подключить <provider>»; with exactly one connected, a hint says it cannot
-  be disconnected until another is connected; «Ваши данные» / "Your data" -
-  the hint «Всё, что хранится в аккаунте, одним архивом ZIP: файл lists.json
-  со списками и, если есть свои предметы, homebrew.json с ними, их
-  источниками и картами. Чтобы перенести всё в другой аккаунт, импортируйте
-  архив сначала на странице «Мои предметы», затем на странице «Мои списки»:
-  за один раз - до 1000 списков и до 1000 своих предметов.», then, only
+  in this order: «Отображение на всех устройствах» (below); «Способы входа» - a row
+  for Google, then Discord: a connected one shows its identity's email once and,
+  while two or more are connected, «Отключить»; the row of the provider the
+  session signed in with carries the neutral badge «Сейчас» / "Current"; a
+  missing one says «не подключён» and offers «Подключить <provider>»; with
+  exactly one connected, a hint says it cannot be disconnected until another is
+  connected. While the identities are unread or failed, and for a session whose
+  provider no row names (an email link), the panel draws the session's line
+  above the rows: the email in bold, then the provider's logo and «через
+  <provider>». No «Вы вошли как» panel is drawn. «Ваши данные» / "Your data" -
+  the one sentence «Списки и свои предметы одним архивом ZIP.» / "Your lists and
+  items in one ZIP archive." (the two import panels say where each file of the
+  archive is imported, and the 1000 limit), then, only
   while the account holds an item with a picture, «Картинок в архиве нет:
   после переноса добавьте их заново.» (the files never carry a picture), and «Скачать
   мои данные (ZIP)» ("Account
   and browser lists", "Exports"), disabled until the account's lists are
   read and while its zip is built, with «Не получилось загрузить списки
   аккаунта.» and «Повторить» when the read failed; «Выход» - «Выйти» and «Выйти на
-  всех устройствах», which also ends the session on the reader's other
-  devices at their next token refresh; «Удаление аккаунта» - the hint
-  «Аккаунт и все связанные с ним данные будут удалены навсегда.» and
-  «Удалить аккаунт...», which opens an inline confirmation: the word
-  «удалить» / "delete" typed (trimmed, any case) enables «Удалить навсегда»,
-  which reads «Удаляем...» / "Deleting..." while the delete runs; «Отмена»
-  folds it and forgets the word.
+  всех устройствах» with no note («Выйти на всех устройствах» also ends the
+  session on the reader's other devices at their next token refresh);
+  «Удаление аккаунта» - the hint «Аккаунт и все связанные с ним данные будут
+  удалены навсегда.» and «Удалить аккаунт...», which opens an inline
+  confirmation: «Будут удалены:» / "This deletes:" and a list of what goes -
+  the number of lists, while the lists are read; one line of own items,
+  sources, sets and rule cards, while the own items are read, a count of zero
+  left out; then «Ссылки на списки и запросы на покупку.» - a count the page
+  never read is never drawn, and the page reads nothing again to draw it; then
+  the word «удалить» / "delete" typed (trimmed, any case, in the interface
+  language at the moment of typing) enables «Удалить навсегда», the one
+  filled danger button (`danger-fill`), which reads «Удаляем...» / "Deleting..."
+  while the delete runs; «Отмена» folds it, forgets the word and returns the
+  focus to «Удалить аккаунт...». The list can undercount when another device
+  wrote since the last read; it never overcounts.
 - An identity email of any length wraps; it is never cut short.
 - Every action disables the page's buttons while it runs. Sign-in and
   Connect say «Переходим в <provider>...» on the pressed button, record
@@ -2506,23 +2555,21 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   the session and shows the error toast; a later press finishes the delete.
 - The texts describe what an account is for in general terms, true in
   every release (`I18N.md`, "Rules").
-- A build with no sign-in configured draws the not-found page on
-  `#/account`, keeps the address, and draws no account control.
+- A build with no sign-in configured draws the not-found page («Страницы по
+  этому адресу нет», "Chrome") on `#/account`, keeps the address, and draws no
+  account control.
 - Signed in, the language, starting section, and the default tables view
   and print layout follow the account on every device (`STATE.md`,
   "Account preferences"). The page first draws this browser's values and
   switches once the account answers.
-- **The Display section** «Отображение» / "Display", signed in only and
-  first, is the place the tables view and print layout defaults are set;
-  a switch on the tables or print page changes only that visit ("Tables
-  and search", "Print"). The language row and the header RU/EN switch are
-  one setting, and so are the starting-section select and the pin
-  ("Chrome"). The section opens with the lead line «Эти настройки действуют
-  на всех ваших устройствах. Вид таблиц и печать, выбранные на их
-  страницах, сохраняются только до перезагрузки.» / "These settings apply
-  on all your devices. A tables view or a print layout picked on its own
-  page is kept only until the page reloads.", then five rows with six
-  controls, each saving the account row: «Язык» (the RU/EN switch); «Раздел при
+- **The Display section** «Отображение на всех устройствах» / "Display on all
+  your devices", signed in only and first, is the place the tables view and
+  print layout defaults are set; a switch on the tables or print page changes
+  only that visit ("Tables and search", "Print"), and this page says nothing
+  about it. The language row and the header RU/EN switch are one setting, and so
+  are the starting-section select and the pin ("Chrome"). The section has no
+  lead line and no hint: five rows with six controls, each saving the account
+  row, every segmented control neutral: «Язык» (the RU/EN switch); «Раздел при
   запуске» / "Section on start" (a select over the twelve sections and «Мои
   предметы» last, which pins `#/homebrew`; choosing
   «Таблицы» pins `#/tables/core_item`, the table a bare `#/tables` opens
@@ -2530,14 +2577,13 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   table, or an older bare `#/tables` pin, shows as «Таблицы» and keeps its
   address until another section is chosen; an old section name shows as
   the section it opens; a refused write says the save-failed error toast
-  and the select shows the section kept); «Таблицы» («Списком» / «Сеткой»); «Печать»
-  («Цветная» / «Чёрно-белая») and the checkbox «Компактный лист» /
-  "Compact sheet"; «Добавление из чужого списка» / "Adding from someone
-  else's list", a select at every width («Спрашивать» / «Сообщать владельцу»
-  / «Не сообщать», "Ask" / "Notify the owner" / "Don't notify") with the hint
-  «Когда вы добавляете предметы из чужого списка в свой, сообщить об этом
-  его владельцу?» / "When you add items from someone else's list to yours,
-  notify its owner?" on a line of its own under it: the remembered answer of
+  and the select shows the section kept); «Вид таблиц по умолчанию» / "Default
+  table view" («Список» / «Сетка»); «Печать по умолчанию» / "Default print", two
+  small segmented controls that wrap inside 360 px: the color («Цветная» /
+  «Чёрно-белая») and the card size («Обычная» / «Компактная», named «Размер
+  карты»); «Когда беру из чужого списка» / "When I take from someone else's
+  list", a select at every width («Спрашивать» / «Сообщать владельцу» / «Не
+  сообщать», "Ask" / "Notify the owner" / "Don't notify"), no hint: the remembered answer of
   flow b ("Account and browser lists", "Purchase requests: flow b"), kept in
   the account only and «Спрашивать» by default. The page's account actions
   do not disable these controls.
@@ -2569,7 +2615,19 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   with the check of the neutral pressed state (`Seg`), never a gold fill. From
   761 px it is a labeled button; up to 760 px a round button with the same
   name until its page's batch moves it into «Ещё»; on the roll pages, the
-  catalog and `/homebrew` it is an item of «Ещё».
+  catalog, `/homebrew` and `/search` it is an item of «Ещё».
+- **The error page** (`ErrorPage`, DESIGN.md "Error page"): every page-level
+  failure draws its cause as the `h1`, one sentence and its actions with the
+  primary first, no icon and no plate; a status region says the title once
+  after the page arrives. The pages: the not-found page of an address this
+  build reads but draws nothing for (an old list link, `#/account`, `#/lists`,
+  `#/lists/<id>`, `#/p/<id>`, `#/homebrew` and `#/tables/homebrew` with no sign-in;
+  «Страницы по этому адресу нет» / "No page at this address", the address in
+  code cut at 80 characters, «На главную» and «Открыть таблицы»); the retired
+  print link; a failed `#/p/` read; the editor's missing item («Предмет не
+  найден», «К моим предметам»); a page that threw («Что-то пошло не так на этой
+  странице.», the message, «Обновить страницу»); and the record pages of
+  "Records".
 - A removal the app can write back (an entry, its notes, a reprice) toasts with
   an undo, «Вернуть»; a server delete that cannot be undone (an
   account list, an own item, a source, a section, a card) asks the browser's
@@ -2751,7 +2809,9 @@ Each rule keeps its number: a review cites it by number.
   with «Отменить удаление нельзя.» / "This cannot be undone.", after its
   consequence sentence («Его 3 предмета останутся в «Хоумбрю».»). Departure:
   the account delete asks for the typed word instead of the browser's
-  confirm; its hint says «будут удалены навсегда» (owner, 2026-10-22).
+  confirm; its hint says «будут удалены навсегда» (owner, 2026-10-22), and its
+  confirm lists what goes («Будут удалены:») and ends in the one filled danger
+  button.
 - **4. One name**: the menu item, the page heading and the tab name a page
   the same way: `#/lists` is «Мои списки» / "My lists" in the menu, the heading,
   the tab title, the start-section option and the buttons to it; `/roll/alt` is
@@ -2781,9 +2841,13 @@ Each rule keeps its number: a review cites it by number.
   («Список не загрузился» / "The list did not load"), small everywhere else:
   the requests panel's slot on an account list's page, and an account list's
   address while the account or the list's entries are read (no heading: the
-  list's name is the heading, as on `#/s/`).
+  list's name is the heading, as on `#/s/`). A failed `#/p/` read is the
+  primary kind: the error page «Набор не загрузился».
 - **7. Headings**: a page with a fixed heading draws it in every state,
-  loading and failed included.
+  loading and failed included. Departure: an error page (`ErrorPage`, "Chrome")
+  draws its cause as the `h1` («Страницы по этому адресу нет», «Набор не
+  загрузился», «Что-то пошло не так на этой странице.»), and the page's name
+  stays in the tab title; a page draws exactly one `h1`.
 - **8. Create**: a button that opens a create form reads «Новый <noun>» /
   "New <noun>" with the plus icon («Новый предмет», «Новый источник»,
   «Новый раздел», «Новый комплект», «Новая карта правил»); the form's
@@ -2864,6 +2928,10 @@ Each rule keeps its number: a review cites it by number.
   boxes (a search is no form field); the second set draws no hint, and a save
   names the fix in each field's line («Заполните все четыре поля или оставьте
   набор пустым»).
+  (g) A row label that says its condition needs no question hint: the
+  account's «Когда беру из чужого списка» replaced the select's hint, and
+  «Вид таблиц по умолчанию» and «Печать по умолчанию» replaced the Display
+  section's lead line.
 - **16. Long names**: a name of any allowed length wraps inside its box at
   360 px (`overflow-wrap: anywhere` on the list card, the page heading, the
   toast, the chip, the filter pill, the source and card rows and their count

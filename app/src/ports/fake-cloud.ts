@@ -116,7 +116,8 @@ export interface FakeCloudOptions {
   lang?: Lang;
   /** A read of this repository never answers (`stall`), or answers `{ ok: false }`
    *  (`fail`): the requests' lines, the linked homebrew items, the lists read whole
-   *  (`rows`), one item by its id (`item`) and the account's own items (`own`). The test
+   *  (`rows`), one item by its id (`item`), the account's own items (`own`) and a print set
+   *  (`print`). The test
    *  build's `?hold=lines:fail`, a loading or failed state that a golden can capture. */
   hold?: {
     lines?: HoldMode;
@@ -124,6 +125,7 @@ export interface FakeCloudOptions {
     rows?: HoldMode;
     item?: HoldMode;
     own?: HoldMode;
+    print?: HoldMode;
   };
 }
 
@@ -2166,6 +2168,8 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
       /* Signed out the real port answers before any call, so offline does not matter. */
       if (current === null) return Promise.resolve({ ok: true, set: null });
       if (offline) return Promise.resolve({ ok: false });
+      const held = heldAnswer(options.hold?.print);
+      if (held) return held;
       const now = Date.now();
       const p = PRINT_SET_ID.test(id) ? printSets.get(id) : undefined;
       if (!p || p.openedAt < now - PRINT_SET_DAYS * DAY_MS) {
@@ -2312,7 +2316,7 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
  *  `fillItems`), `?sections=<n>` (1-30, `fillSections`, with `items` only),
  *  `?sources=<n>` (1-20, `fillSources`, with `items` only),
  *  `?lang=<ru|en>` (`lang`) and `?hold=<name>:<mode>,...` (`hold`: `lines`, `items`,
- *  `rows`, `item` or `own`, `stall` or `fail`) and exposes it
+ *  `rows`, `item`, `own` or `print`, `stall` or `fail`) and exposes it
  *  as `window.__dhlootFake` for the browser suites. The query stays in the
  *  address, so a reload keeps the session. */
 export function installFakeCloud(search: string = window.location.search): FakeCloud {
@@ -2330,7 +2334,8 @@ export function installFakeCloud(search: string = window.location.search): FakeC
         name === 'items' ||
         name === 'rows' ||
         name === 'item' ||
-        name === 'own') &&
+        name === 'own' ||
+        name === 'print') &&
       (mode === 'stall' || mode === 'fail')
     ) {
       hold[name] = mode;

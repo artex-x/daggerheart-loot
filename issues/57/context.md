@@ -137,6 +137,12 @@
     to the next whole kB, with the reason in the same commit, under the 270
     and 350 kB ceilings. Home: `tools/bundle-budget.mjs` and its decision
     file, written by batch 1.
+  - Bundle budget ceiling (owner, 2026-11-04, chat: "we can increase budget up to 300"):
+    read as the unconfigured ceiling 270 -> 300 kB; the configured ceiling stays 350 kB
+    unless a measurement passes it (then stop and ask). Raises under the 300 kB ceiling
+    follow the standing rule (measured total rounded up, reason in the commit). The
+    batch that first passes 270 writes the new ceiling into `tools/bundle-budget.mjs`,
+    `.claude/README.md` and its decision file.
   - Site share cards (owner, 2026-10-29, chat: "Yes, batch 1"): batch 1
     re-renders both cards in the new system with the font change. Home:
     `docs/artwork.md`, "The site share cards", written by batch 1. Facts:

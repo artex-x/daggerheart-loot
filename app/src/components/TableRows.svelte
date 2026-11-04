@@ -13,14 +13,15 @@
      component, called the way every other one in this codebase already is,
      does not trip it.
 
-     `ontoggleall` draws the «Выбрать все (N)» strip for `/search` and the shared page. The
-     catalog passes none: its selection bar's «Все» is the one select-all control.
+     `ontoggleall` draws the «Выбрать все (N)» strip for the shared page. The catalog and
+     search pass none: their selection bar's «Все» is the one select-all control.
 
      `ticks` false (the catalog outside its selection mode) draws no tick column and no
      tile box. */
   import type { Snippet } from 'svelte';
   import ArtWell from './ArtWell.svelte';
   import Badge from './Badge.svelte';
+  import Marked from './Marked.svelte';
   import RowMain from './RowMain.svelte';
   import { artSrc } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
@@ -73,6 +74,8 @@
     hide?: HiddenTags | undefined;
     /** The search terms the names mark. */
     terms?: readonly Term[] | undefined;
+    /** A row's number reads «№ 89» (`RowMain`); a tile keeps its bare badge. */
+    numLabeled?: boolean | undefined;
   }
 
   const {
@@ -91,7 +94,8 @@
     primary = false,
     ticks = true,
     hide,
-    terms
+    terms,
+    numLabeled
   }: Props = $props();
 
   const t = $derived(dict(lang));
@@ -173,6 +177,7 @@
           gmOnly={entry.gmOnly}
           {hide}
           {terms}
+          {numLabeled}
         />
         {#if inside}{@render inside(it)}{/if}
       </div>
@@ -216,7 +221,7 @@
               />{/if}</ArtWell
             ></div
           ><div class="tile-b"
-            ><b>{nameOf(it, lang)}</b>{#if sub}<span>{sub}</span>{/if}</div
+            ><b><Marked text={nameOf(it, lang)} {terms} /></b>{#if sub}<span>{sub}</span>{/if}</div
           ></button
         >
       </div>

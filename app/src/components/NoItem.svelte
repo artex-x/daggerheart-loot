@@ -4,11 +4,9 @@
      "Records"). */
   import Button from './Button.svelte';
   import ErrorPage from './ErrorPage.svelte';
-  import { pathOf } from '../lib/address.js';
+  import { shortPath } from '../lib/address.js';
   import { sectionHash } from '../lib/hash.js';
   import type { AppState } from '../state/app.svelte.js';
-
-  const ADDRESS_MAX = 80;
 
   interface Props {
     app: AppState;
@@ -17,10 +15,7 @@
   const { app }: Props = $props();
 
   const t = $derived(app.t);
-  const address = $derived.by(() => {
-    const path = pathOf(app.hash, app.lang);
-    return path.length > ADDRESS_MAX ? path.slice(0, ADDRESS_MAX) + '...' : path;
-  });
+  const address = $derived(shortPath(app.hash, app.lang));
   const parts = $derived(t.noItemSub.split('%s'));
 </script>
 

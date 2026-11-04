@@ -794,9 +794,10 @@
         />
       </div>
     {:else if table === 'homebrew' && !rows.length}
-      <Empty>
-        {t.hbEmptyTable}
-        <Button href={app.href(homebrewItemHash(null))} sameTab>{t.hbNewItem}</Button>
+      <Empty title={t.hbEmptyTitle} glyph="kindItem">
+        <Button variant="primary" href={app.href(homebrewItemHash(null))} sameTab
+          ><Icon name="plus" />{t.hbNewItem}</Button
+        >
       </Empty>
     {:else}
       {@const own = eqKind && (app.homebrew?.records.length ?? 0) > 0}

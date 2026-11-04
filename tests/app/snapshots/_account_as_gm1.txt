@@ -1,6 +1,6 @@
 # #/account as gm1
 # route: #/account
-# why: two identities: the six sections in order, the Display section first with its lead line, a Disconnect on each, «Ваши данные» between «Способы входа» and «Выход»
+# why: two identities: the five sections in order, «Отображение на всех устройствах» first with no lead line and two print segments, Google marked «Сейчас», a Disconnect on each, «Ваши данные» between «Способы входа» and «Выход»
 # as: gm1
 
 ## ru :: tree
@@ -20,11 +20,11 @@ RootWebArea "Аккаунт - Генератор лута Daggerheart" [url=/acc
   main ""
     heading "Аккаунт" [level=1]
     StaticText "Отображение, способы входа, выход и ваши данные."
-    heading "ОТОБРАЖЕНИЕ" [level=2]
-    StaticText "Эти настройки действуют на всех ваших устройствах. Вид таблиц и ..." [namelen=134 namehash=00161fc6]
-    ... StaticText x14 of 18 same-shape siblings elided
+    heading "ОТОБРАЖЕНИЕ НА ВСЕХ УСТРОЙСТВАХ" [level=2]
+    StaticText "Язык"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
+    ... StaticText x10 of 14 same-shape siblings elided
     combobox "Раздел при запуске" [value=Обычные правила expanded=false haspopup=menu]
       option "Обычные правила" [selected=true]
       option "Альтернативные таблицы" [selected=false]
@@ -36,20 +36,21 @@ RootWebArea "Аккаунт - Генератор лута Daggerheart" [url=/acc
     button "Сетка" [pressed=true]
     button "Цветная" [pressed=false]
     button "Чёрно-белая" [pressed=true]
-    checkbox "Компактный лист" [checked=true]
-    combobox "Добавление из чужого списка" [value=Спрашивать description=Когда вы добавляете предметы из чужого списка в свой, сообщить об этом его владельцу? expanded=false haspopup=menu]
+    button "Обычная" [pressed=false]
+    button "Компактная" [pressed=true]
+    combobox "Когда беру из чужого списка" [value=Спрашивать expanded=false haspopup=menu]
       option "Спрашивать" [selected=true]
       option "Сообщать владельцу" [selected=false]
       option "Не сообщать" [selected=false]
-    heading "ВЫ ВОШЛИ КАК" [level=2]
-    ... heading x2 of 6 same-shape siblings elided
+    heading "СПОСОБЫ ВХОДА" [level=2]
     button "Отключить Google"
     button "Отключить Discord"
+    heading "ВАШИ ДАННЫЕ" [level=2]
+    StaticText "Картинок в архиве нет: после переноса добавьте их заново."
     button "Скачать мои данные (ZIP)"
     heading "ВЫХОД" [level=2]
     button "Выйти"
     button "Выйти на всех устройствах"
-    StaticText "«Выйти на всех устройствах» завершает вход и на других телефонах..." [namelen=79 namehash=1735104d]
     heading "УДАЛЕНИЕ АККАУНТА" [level=2]
     StaticText "Аккаунт и все связанные с ним данные будут удалены навсегда."
     button "Удалить аккаунт..." [expanded=false]
@@ -69,8 +70,10 @@ daggerheart.com
 Выйти
 Выйти на всех устройствах
 К содержимому
+Компактная
 Конфиденциальность
 ЛутDaggerheart
+Обычная
 Обычные правилаАльтернативные таблицыWondrous EnvironmentsDread ... [namelen=192 namehash=5e7c637f]
 Отключить Discord
 Отключить Google
@@ -103,11 +106,11 @@ RootWebArea "Account - Daggerheart Loot Generator" [url=/en/account?as=gm1]
   main ""
     heading "Account" [level=1]
     StaticText "Display, sign-in methods, signing out and your data."
-    heading "DISPLAY" [level=2]
-    StaticText "These settings apply on all your devices. A tables view or a pri..." [namelen=133 namehash=30d49185]
-    ... StaticText x14 of 18 same-shape siblings elided
+    heading "DISPLAY ON ALL YOUR DEVICES" [level=2]
+    StaticText "Language"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
+    ... StaticText x10 of 14 same-shape siblings elided
     combobox "Section on start" [value=Standard rules expanded=false haspopup=menu]
       option "Standard rules" [selected=true]
       option "Alternate tables" [selected=false]
@@ -119,20 +122,21 @@ RootWebArea "Account - Daggerheart Loot Generator" [url=/en/account?as=gm1]
     button "Grid" [pressed=true]
     button "Color" [pressed=false]
     button "Black and white" [pressed=true]
-    checkbox "Compact sheet" [checked=true]
-    combobox "Adding from someone else's list" [value=Ask description=When you add items from someone else's list to yours, notify its owner? expanded=false haspopup=menu]
+    button "Standard" [pressed=false]
+    button "Compact" [pressed=true]
+    combobox "When I take from someone else's list" [value=Ask expanded=false haspopup=menu]
       option "Ask" [selected=true]
       option "Notify the owner" [selected=false]
       option "Don't notify" [selected=false]
-    heading "SIGNED IN AS" [level=2]
-    ... heading x2 of 6 same-shape siblings elided
+    heading "SIGN-IN METHODS" [level=2]
     button "Disconnect Google"
     button "Disconnect Discord"
+    heading "YOUR DATA" [level=2]
+    StaticText "The archive holds no pictures: add them again after the move."
     button "Download my data (ZIP)"
     heading "SIGN OUT" [level=2]
     button "Sign out"
     button "Sign out everywhere"
-    StaticText ""Sign out everywhere" also ends the session on your other phones..." [namelen=79 namehash=669cc4e6]
     heading "DELETE ACCOUNT" [level=2]
     StaticText "The account and all the data linked to it will be deleted for go..." [namelen=67 namehash=04586c07]
     button "Delete account..." [expanded=false]
@@ -148,6 +152,7 @@ Account: gm1@example.test
 AskNotify the ownerDon't notify
 Black and white
 Color
+Compact
 Delete account...
 Disconnect Discord
 Disconnect Google
@@ -164,6 +169,7 @@ Search
 Sign out
 Sign out everywhere
 Skip to content
+Standard
 Standard rulesAlternate tablesWondrous EnvironmentsDread GM Tool... [namelen=176 namehash=1c0e3b5e]
 Tables
 Terms of use

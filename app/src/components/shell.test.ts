@@ -1150,7 +1150,9 @@ describe('the account control', () => {
   it('draws the not-found page on #/account there, and keeps the address', () => {
     const env = at('#/account');
     render(App, { env });
-    expect(screen.getByRole('heading', { name: 'Предмет не найден', level: 1 })).toBeVisible();
+    expect(
+      screen.getByRole('heading', { name: 'Страницы по этому адресу нет', level: 1 })
+    ).toBeVisible();
     expect(env.router.hash()).toBe('#/account');
     expect(document.title).toBe('Генератор лута Daggerheart');
   });
@@ -1340,13 +1342,83 @@ describe('the three jobs and the lists in every build', () => {
       const env = at(hash, { data: fakeData(LOOT) });
       render(App, { env });
       expect(
-        screen.getByRole('heading', { name: 'Предмет не найден', level: 1 })
+        screen.getByRole('heading', { name: 'Страницы по этому адресу нет', level: 1 })
       ).toBeVisible();
-      expect(screen.getByRole('link', { name: 'На главную' })).toBeVisible();
+      expect(screen.getByRole('link', { name: 'На главную' })).toHaveClass('primary');
       expect(env.router.hash()).toBe(hash);
       expect(document.title).toBe('Генератор лута Daggerheart');
     }
   );
+});
+
+describe('the page of an address with no page', () => {
+  it('quotes the address in code, offers home first and the tables, and says the title', async () => {
+    const env = at('#/l/abc', { data: fakeData(LOOT) });
+    const { container } = render(App, { env });
+    const code = container.querySelector('.errtext code');
+    expect(code).toHaveTextContent('/l/abc');
+    expect(container.querySelector('.errtext')).toHaveTextContent(
+      'Адрес /l/abc не открывается. Ссылка могла устареть или быть набрана с ошибкой.'
+    );
+    const links = within(container.querySelector('.erracts') as HTMLElement).getAllByRole(
+      'link'
+    );
+    expect(links.map((a) => a.textContent.trim())).toEqual(['На главную', 'Открыть таблицы']);
+    expect(links[0]).toHaveAttribute('href', '/roll/std');
+    expect(links[1]).toHaveAttribute('href', '/tables');
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
+    await waitFor(() => {
+      expect(container.querySelector('[role="status"].said')).toHaveTextContent(
+        'Страницы по этому адресу нет'
+      );
+    });
+    await expectNoA11yViolations(container);
+  });
+
+  it('cuts a long address at 80 characters, in English too', async () => {
+    const env = at('#/l/' + 'x'.repeat(300), { data: fakeData(LOOT) });
+    const { container } = render(App, { env });
+    expect(container.querySelector('.errtext code')?.textContent).toBe(
+      '/l/' + 'x'.repeat(77) + '...'
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'EN' }));
+    expect(
+      screen.getByRole('heading', { name: 'No page at this address', level: 1 })
+    ).toBeVisible();
+    expect(container.querySelector('.errtext code')?.textContent).toBe(
+      '/en/l/' + 'x'.repeat(74) + '...'
+    );
+  });
+});
+
+describe('a page that throws', () => {
+  it('draws the error page with the message, and «Обновить страницу» draws the page again', async () => {
+    const broken = vi
+      .spyOn(AppState.prototype, 'shownTablesView', 'get')
+      .mockImplementation(() => {
+        throw new Error('boom');
+      });
+    try {
+      const { container } = render(App, {
+        env: at('#/tables/core_item', { data: fakeData(LOOT) })
+      });
+      expect(
+        await screen.findByRole('heading', {
+          name: 'Что-то пошло не так на этой странице.',
+          level: 1
+        })
+      ).toBeVisible();
+      expect(container.querySelector('.errtext')).toHaveTextContent('boom');
+      await expectNoA11yViolations(container);
+      broken.mockRestore();
+      await userEvent.click(screen.getByRole('button', { name: 'Обновить страницу' }));
+      expect(
+        await screen.findByRole('heading', { name: 'Таблицы', level: 1 })
+      ).toBeInTheDocument();
+    } finally {
+      broken.mockRestore();
+    }
+  });
 });
 
 describe('accessibility', () => {

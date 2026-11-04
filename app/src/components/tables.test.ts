@@ -335,6 +335,25 @@ describe('search', () => {
        item with a gap around it. */
     expect(mark?.parentElement).toHaveClass('rname');
     expect(mark?.parentElement).toHaveTextContent('Кольцо Тишины');
+    /* A table names its numbers, so a row draws the bare number. */
+    expect(document.querySelector('[data-row="ci1"] .rnum')?.textContent).toMatch(/^\d+$/);
+  });
+
+  it('a grid tile marks the queried words of its name', async () => {
+    render(App, { env: at() });
+    await userEvent.click(screen.getByRole('button', { name: 'Сетка' }));
+    await userEvent.type(screen.getByPlaceholderText('Поиск'), 'тишины');
+    const name = document.querySelector('[data-row="ci1"] .tile-b b');
+    expect(name?.querySelector('mark')).toHaveTextContent('Тишины');
+    expect(name).toHaveTextContent('Кольцо Тишины');
+  });
+
+  it('draws a row with no query the same as before: no mark, the name whole', () => {
+    render(App, { env: at() });
+    const name = document.querySelector('[data-row="ci1"] .rname');
+    expect(name?.querySelector('mark')).toBeNull();
+    expect(name?.children).toHaveLength(0);
+    expect(name?.textContent).toBe('Кольцо Тишины');
   });
 
   it('shows the empty state with no reset button of its own', async () => {

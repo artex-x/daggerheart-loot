@@ -137,6 +137,11 @@ describe('the shared button', () => {
     expect(screen.getByRole('button', { name: 'Press' })).toHaveClass('btn', 'danger', 'sm');
   });
 
+  it('carries the danger-fill variant, for the one irreversible press of a confirm', () => {
+    render(Button, { variant: 'danger-fill', onclick: () => undefined, children: label });
+    expect(screen.getByRole('button', { name: 'Press' })).toHaveClass('btn', 'danger-fill');
+  });
+
   it('carries the pressed look with `on`, without changing its variant', () => {
     render(Button, {
       variant: 'primary',

@@ -322,6 +322,30 @@ export function search(
 }
 
 /**
+ * Returns a name in runs, each run that the terms match at a word start marked, for the
+ * search highlight of a row or a tile.
+ *
+ * @param name The name as drawn.
+ * @param terms The parsed query; none gives one unmarked run.
+ * @returns The runs in order; an empty name gives none.
+ */
+export function markRuns(
+  name: string,
+  terms: readonly Term[]
+): { text: string; mark: boolean }[] {
+  const ranges = terms.length ? highlightRanges(name, terms) : [];
+  const out: { text: string; mark: boolean }[] = [];
+  let at = 0;
+  for (const [a, b] of ranges) {
+    if (a > at) out.push({ text: name.slice(at, a), mark: false });
+    out.push({ text: name.slice(a, b), mark: true });
+    at = b;
+  }
+  if (at < name.length) out.push({ text: name.slice(at), mark: false });
+  return out;
+}
+
+/**
  * Returns the `[start, end)` ranges of `name` that the terms match at a word start,
  * merged and in order, for the search highlight. A stem match is not marked. Acts only
  * where folding keeps the length, so a range in the folded text is one in `name`.

@@ -18,6 +18,7 @@
   import AddToList from './AddToList.svelte';
   import ArtField from './ArtField.svelte';
   import Button from './Button.svelte';
+  import ErrorPage from './ErrorPage.svelte';
   import FormField from './FormField.svelte';
   import HomebrewRelations from './HomebrewRelations.svelte';
   import Icon from './Icon.svelte';
@@ -957,8 +958,12 @@
   <PageTitle title={t.myItems} sub={t.subHomebrew} />
   <LoadState {t} failed={false} text={t.hbLoadFailed} onretry={() => void store.load()} />
 {:else if missing}
-  <PageTitle title={t.notFound} sub={t.notFoundSub} />
-  <Button variant="primary" href={app.href(HOMEBREW_HASH)} sameTab>{t.hbToMyItems}</Button>
+  <ErrorPage title={t.notFound} said>
+    {t.notFoundSub}
+    {#snippet actions()}
+      <Button variant="primary" href={app.href(HOMEBREW_HASH)} sameTab>{t.hbToMyItems}</Button>
+    {/snippet}
+  </ErrorPage>
 {:else}
   <div class="crumb">
     <a class="back" href={app.href(HOMEBREW_HASH)}><Icon name="back" />{t.myItems}</a>

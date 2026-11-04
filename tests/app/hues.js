@@ -192,6 +192,42 @@ const gap = (a, b) => {
   const golden = await page.$$eval('.hbform .btn.primary', (els) => els.length);
   ok(golden === 1, 'the editor draws ' + golden + ' gold buttons');
 
+  /* The account's pickers are neutral too, and its one fill is the delete confirm's final
+   * button (DESIGN.md, "Buttons"). */
+  console.log('the account keeps its pickers neutral');
+  await d.open('#/account', { as: 'gm1' });
+  await page.waitForSelector('.acc .seg');
+  const accPressed = await page.$$eval('main .seg [aria-pressed="true"]', (els) =>
+    els.map((x) => ({ color: getComputedStyle(x).color, check: !!x.querySelector('svg') }))
+  );
+  ok(accPressed.length === 4, 'the account draws ' + accPressed.length + ' pressed options');
+  ok(
+    accPressed.every((x) => x.check && x.color !== gold),
+    'an account choice is gold or has no check: ' + JSON.stringify(accPressed)
+  );
+
+  /* Search lights a kind chip only once it narrows: «Все» is the neutral default. */
+  console.log('search lights a picked kind only');
+  await d.open('#/search');
+  const lit = () =>
+    page.$$eval('.kindrow .chip', (els) => els.map((x) => getComputedStyle(x).backgroundColor));
+  const before = await lit();
+  await d.click('Снаряжение');
+  const after = await lit();
+  const goldBg = await page.evaluate(() => {
+    const probe = document.createElement('i');
+    probe.style.backgroundColor = 'var(--gold)';
+    document.body.append(probe);
+    const c = getComputedStyle(probe).backgroundColor;
+    probe.remove();
+    return c;
+  });
+  ok(!before.includes(goldBg), 'search lights a kind chip before a pick: ' + before.join(', '));
+  ok(
+    after.filter((c) => c === goldBg).length === 1,
+    'search does not light exactly the picked kind: ' + after.join(', ')
+  );
+
   /* Equipment's stat line keeps one tone everywhere across the three
    * equipment tables - the kind is told by the badge, not by a second color
    * on the numbers, the same rule the legacy `eqtest.js` enforced. */

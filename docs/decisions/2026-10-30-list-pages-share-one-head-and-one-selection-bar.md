@@ -15,3 +15,4 @@
   modal over a page just opened).
 - Accepted trade-off: two filter forms and two bars until wave 3; `/search` and `/s/` keep always-on ticks until batches 7 and 9; ticking exactly one section takes two taps (its filter value, then «Все»).
 - Amends "Source names follow the source product, in labels and URL ids" (2026-10-21): no short chip forms; the tabs show full names from 761 px and the picker's sheet below it.
+- Amended by "Search and account follow the list head and the error page" (2026-11-04): `/search` takes the head, the selection mode and the bar; only `/s/` keeps the strip.

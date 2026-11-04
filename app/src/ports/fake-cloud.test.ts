@@ -1031,6 +1031,13 @@ describe('installFakeCloud', () => {
     expect((await free.lists.item(uuid(511))).ok).toBe(true);
     expect((await free.homebrew.load()).ok).toBe(true);
   });
+
+  it('holds the read of a print set with ?hold=print:fail', async () => {
+    const failed = installFakeCloud('?as=gm2&hold=print:fail');
+    expect(await failed.prints.read('set-twocards')).toEqual({ ok: false });
+    const free = installFakeCloud('?as=gm2');
+    expect((await free.prints.read('set-twocards')).ok).toBe(true);
+  });
 });
 
 describe('fillItems', () => {

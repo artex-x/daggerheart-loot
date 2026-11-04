@@ -3,7 +3,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { addressOf, pathOf } from './address.js';
+import { addressOf, pathOf, shortPath } from './address.js';
 import { parseHash, recordUrl } from './hash.js';
 import type { Lang } from './types.js';
 
@@ -68,5 +68,18 @@ describe('the round trip', () => {
     for (const c of PREVIEW.build) {
       expect(PREVIEW.origin + pathOf(c.hash, c.lang) + (c.v ? '?v=' + c.v : '')).toBe(c.url);
     }
+  });
+});
+
+describe('shortPath', () => {
+  it('keeps a short address whole', () => {
+    expect(shortPath('#/zzz-nowhere', 'ru')).toBe('/zzz-nowhere');
+    expect(shortPath('#/zzz-nowhere', 'en')).toBe('/en/zzz-nowhere');
+  });
+
+  it('cuts a long address at 80 characters and adds three dots', () => {
+    const long = shortPath('#/' + 'a'.repeat(300), 'ru');
+    expect(long).toBe('/' + 'a'.repeat(79) + '...');
+    expect(shortPath('#/abcdef', 'ru', 4)).toBe('/abc...');
   });
 });

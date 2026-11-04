@@ -1,15 +1,30 @@
 <script lang="ts">
   /* A page that failed: the cause as the title, one sentence, the way out. No icon and no
      plate (DESIGN.md, "Error page"). */
-  import type { Snippet } from 'svelte';
+  import { onMount, type Snippet } from 'svelte';
+  import StatusRegion from './StatusRegion.svelte';
 
   interface Props {
     title: string;
     children: Snippet;
     actions: Snippet;
+    /** Says the title once through a status region after the page arrives; for a page
+     *  with no region of its own (docs/specs/FEATURES.md, rule 19). */
+    said?: boolean | undefined;
   }
 
-  const { title, children, actions }: Props = $props();
+  const { title, children, actions, said = false }: Props = $props();
+
+  /* A region inserted with its text is not announced, so the text follows the mount. */
+  let arrived = $state(false);
+  onMount(() => {
+    const timer = setTimeout(() => {
+      arrived = true;
+    }, 0);
+    return () => {
+      clearTimeout(timer);
+    };
+  });
 </script>
 
 <!-- eslint-disable @typescript-eslint/no-confusing-void-expression --
@@ -19,6 +34,7 @@
   <p class="errtext">{@render children()}</p>
   <div class="erracts">{@render actions()}</div>
 </div>
+{#if said}<StatusRegion text={arrived ? title : ''} />{/if}
 
 <style>
   .errtitle {

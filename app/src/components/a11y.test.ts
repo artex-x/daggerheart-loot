@@ -314,16 +314,16 @@ const STATES: {
   },
   {
     /* "вещь" is the word this file's own LOOT gives w1 ("Первая вещь") and
-       w2 ("Вторая вещь"), so this state carries two rows of two kinds with
-       the third chip switched off. */
-    what: 'the search page with a query typed and a kind switched off',
+       w2 ("Вторая вещь"), so this state carries the rows of one picked kind and the
+       count line. */
+    what: 'the search page with a query typed and a kind picked',
     route: '#/search',
     enter: async () => {
       await userEvent.type(
-        screen.getByPlaceholderText('Поиск по названию или описанию...'),
+        screen.getByRole('searchbox', { name: 'Поиск по названию или описанию...' }),
         'вещь'
       );
-      await press('Снаряжение');
+      await press('Предметы');
     }
   },
   /* The sheet's layouts are printPage.test.ts's axe cases. */
@@ -544,8 +544,10 @@ const COVERED: Record<string, string> = {
   'Actions.svelte': 'the card actions on every record state above, and record.test.ts',
   'AddToList.svelte': 'the add-to-list menu, in the state above',
   'DialogClose.svelte': 'sheet.test.ts and recordHost.test.ts, both dialogs open',
-  'ErrorPage.svelte': 'itemPage.test.ts and record.test.ts, every error state',
+  'ErrorPage.svelte':
+    'itemPage.test.ts and record.test.ts, every error state; printPage.test.ts and shell.test.ts, the print, not-found and boundary pages',
   'NoItem.svelte': 'itemPage.test.ts and record.test.ts, the not-found page',
+  'NoPage.svelte': 'shell.test.ts, the not-found page of an address with no page',
   'Toast.svelte':
     'the toast the add-to-list press raises, in the state above, and shell.test.ts',
   'DiceBar.svelte': 'the Core rules panel - std.test.ts and the state below',
@@ -668,7 +670,7 @@ const COVERED: Record<string, string> = {
     "tables.test.ts's sectioned-body axe check, both list-page states below, and a GM-only row in listPage.test.ts",
   'SearchBox.svelte':
     "the tables toolbar in tables.test.ts, and the search page's own box below",
-  'SearchPage.svelte': 'searchPage.test.ts, and the searched state with a kind off below',
+  'SearchPage.svelte': 'searchPage.test.ts, and the searched state with a kind picked below',
   'SectionHead.svelte':
     "tables.test.ts's sectioned-body axe check; homebrewCatalog.test.ts with no copy button",
   'SelBar.svelte': 'the state above, and tables.test.ts',
@@ -677,6 +679,7 @@ const COVERED: Record<string, string> = {
   'SharedListPage.svelte':
     'sharedListPage.test.ts in both modes, and the shared list and both share links above',
   'SharePanel.svelte': 'sharePanel.test.ts open, with a deleted link, and with a failed read',
+  'Marked.svelte': 'searchPage.test.ts and tables.test.ts, the marked rows and tiles',
   'Markup.svelte': 'markup.test.ts: every block, a lead, and markup characters as text',
   'Menu.svelte': 'accountMenu.test.ts and modeRow.test.ts with each menu open',
   'ModeRow.svelte': 'modeRow.test.ts on the nine roll sections, the menu closed and open',

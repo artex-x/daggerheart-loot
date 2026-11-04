@@ -1,0 +1,383 @@
+# #/tables/eq_weapon ~ grid searched
+# route: #/tables/eq_weapon
+# why: the grid view with «меч» typed: the tiles whose names hold the word, the word marked
+
+## ru :: tree
+RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tables/eq_weapon]
+  link "К содержимому" [url=/tables/eq_weapon#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    link "Войти" [url=/account]
+    navigation "Разделы"
+      link "Бросок" [url=/roll/std]
+      link "Таблицы" [url=/tables]
+      link "Поиск" [url=/search]
+  main ""
+    heading "Таблицы" [level=1]
+    button "Открывать при запуске" [pressed=false]
+    button "Об этих данных" [expanded=false]
+    navigation "Таблицы"
+      link "Core" [url=/tables/core_item]
+      link "Hope & Fear" [url=/tables/hope_and_fear_item]
+      link "Альт. таблицы" [url=/tables/alt_item]
+      link "Дополнения" [url=/tables/wondrous_environments]
+      link "Снаряжение" [url=/tables/eq_weapon]
+      link "Прочее" [url=/tables/other_starting]
+      link "Оружие" [url=/tables/eq_weapon]
+      link "Вторичное" [url=/tables/eq_secondary]
+      link "Броня" [url=/tables/eq_armor]
+    searchbox "Поиск по названию или описанию..." [value=меч focused=true]
+    button "Список" [pressed=false]
+    button "Сетка" [pressed=true]
+    button "Ссылка на таблицу"
+    StaticText "Показано 61 из 458"
+    button "Выбрать"
+    complementary "Фильтры"
+      heading "Фильтры" [level=2]
+      StaticText "РАНГ"
+      button "Все" [pressed=true]
+      button "1" [pressed=false]
+      button "2" [pressed=false]
+      ... button x29 of 33 same-shape siblings elided
+      StaticText "ИСТОЧНИК"
+      button "Все" [pressed=true]
+      ... StaticText x3 of 7 same-shape siblings elided
+      ... button x3 of 7 same-shape siblings elided
+      StaticText "ХВАТ"
+      button "Все" [pressed=true]
+      StaticText "УЛУЧШЕНИЯ И УНИКАЛЬНЫЕ"
+      button "Все" [pressed=true]
+      button "Есть улучшение" [pressed=false]
+      button "Уникальные" [pressed=false]
+    heading "Ранг 1" [level=2]
+    ... button x64 of 68 same-shape siblings elided
+    heading "Ранг 2" [level=2]
+    heading "Ранг 3" [level=2]
+    heading "Ранг 4" [level=2]
+    heading "Артефакты" [level=2]
+    button "Ссылка на раздел"
+    button "9 Клятва Равновесия Магическое · Инстинкт · Далеко · d12+12 маг ..." [namelen=75 namehash=043d67d9]
+  contentinfo ""
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=/pages/install.html]
+      link "Конфиденциальность" [url=/pages/privacy.html]
+      link "Условия использования" [url=/pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+
+## ru :: controls
+1
+102Фроствирд (Пробуждённый)Физическое · Сила · Вплотную · d10+10... [namelen=80 namehash=508fe208]
+103Фроствирд (Возвышенный)Физическое · Сила · Вплотную · d10+10 ... [namelen=79 namehash=f9cc2798]
+104Студенистый МолотФизическое · Сила · Вплотную · d10+6 физ · Д... [namelen=72 namehash=9e5ae1a4]
+105Меч Призрачного КасанияФизическое · Проворность · Вплотную · ... [namelen=85 namehash=0e906969]
+108Меч Адского ПламениМагическое · Сила · Вплотную · d10+12 маг ... [namelen=75 namehash=fb0eba5e]
+113Кинетическое ЛезвиеФизическое · Проворность · Вплотную · d8+4... [namelen=81 namehash=a0936314]
+114Рукавицы УбийцыФизическое · Сила · Вплотную · d10+4 физ · Дву... [namelen=70 namehash=66f1b837]
+116Неугомонное ВозмездиеФизическое · Сила · Вплотную · d10+11 ма... [namelen=77 namehash=42c6dcc1]
+11Кортик МёртвыхФизическое · Искусность · Вплотную · d6+2 физ · ... [namelen=74 namehash=01ef7ea9]
+121Меч-РазрушительФизическое · Проворность · Вплотную · d10+5 фи... [namelen=78 namehash=f57a96cc]
+12Улучшенный Кортик МёртвыхФизическое · Искусность · Вплотную · ... [namelen=85 namehash=eb8ce5d7]
+133Меч АнгеловФизическое · Проворность · Вплотную · d10+4 физ · ... [namelen=73 namehash=de4a444b]
+134Меч НежитиФизическое · Проворность · Вплотную · d8 физ · Одно... [namelen=70 namehash=15261d36]
+138Двуручный Меч ВайатыФизическое · Сила · Вплотную · d10+6 физ ... [namelen=75 namehash=39cd178e]
+13Продвинутый Кортик МёртвыхФизическое · Искусность · Вплотную ·... [namelen=87 namehash=acd9650d]
+13ХаррокливФизическое · Сила · Вплотную · d12+7 физ · Двуручное
+14Легендарный Кортик МёртвыхФизическое · Искусность · Вплотную ·... [namelen=87 namehash=12be9a45]
+1Эфирная ВинтовкаМагическое · Инстинкт · Очень далеко · d8+8 маг... [namelen=76 namehash=10d5613e]
+2
+27Посох Чёрной ДырыМагическое · Знание · Далеко · d20+7 маг · Дв... [namelen=71 namehash=ed6b0408]
+2Клинок ЖивущихМагическое · Сила · Вплотную · d10+11 маг · Двуру... [namelen=68 namehash=b8e7f927]
+3
+33Ярость ЗантакаФизическое · Сила · Вплотную · d10+9 физ · Двуру... [namelen=68 namehash=57a42a63]
+34Дочь ЗелениФизическое · Проворность · Очень далеко · d8+12 физ... [namelen=76 namehash=3eb06c41]
+4
+6Последний РубежФизическое · Искусность · Близко · d10+5 физ · Д... [namelen=72 namehash=b4d7ab19]
+74Кнут из Хвоста ВиверныФизическое · Проворность · Близко · d10 ... [namelen=80 namehash=ed8c8847]
+75Улучшенный Кнут из Хвоста ВиверныФизическое · Проворность · Бл... [namelen=93 namehash=80e8a20e]
+76Продвинутый Кнут из Хвоста ВиверныФизическое · Проворность · Б... [namelen=94 namehash=298fbc18]
+77Легендарный Кнут из Хвоста ВиверныФизическое · Проворность · Б... [namelen=94 namehash=c66b1788]
+79Лук ИскателяФизическое · Искусность · Далеко · d6+4 физ · Двур... [namelen=69 namehash=a325b6f2]
+84Топор Чёрной ПорчиФизическое · Влияние · Близко · d10+12 физ ·... [namelen=74 namehash=9290529a]
+85КровоглотФизическое · Сила · Вплотную · d10+6 физ · Двуручное
+89Меч Хрустального ДухаФизическое · Искусность · Вплотную · d10+... [namelen=82 namehash=7043a9ca]
+94Сумеречное КрылоФизическое · Сила · Вплотную · d10+6 физ · Дву... [namelen=70 namehash=e5eb8c1a]
+95Стихийный Длинный ЛукФизическое · Проворность · Очень далеко ·... [namelen=85 namehash=df85b976]
+9Клятва РавновесияМагическое · Инстинкт · Далеко · d12+12 маг · ... [namelen=73 namehash=8fc135fd]
+?Об этих данных
+Arazo's Artifacts
+Core
+Dread GM Toolbox
+EN
+Hope & Fear
+Many Worlds Tavern
+RU
+The Dragon's Vault
+Vault of Ages
+Wondrous Environments
+daggerheart.com
+Альт. таблицы
+Артефакты
+Близко
+Броня
+Бросок
+Влияние
+Войти
+Вплотную
+Все
+Вторичное
+Выбрать
+Далеко
+Двуручное
+Двуручный МечФизическое · Сила · Вплотную · d10+3 физ · Двуручно... [namelen=65 namehash=2e3fdfac]
+Длинный МечФизическое · Проворность · Вплотную · d10+3 физ · Дву... [namelen=70 namehash=2773aef6]
+Дополнения
+Есть улучшение
+Знание
+Инстинкт
+Искусность
+К содержимому
+Колдующий МечМагическое · Сила · Вплотную · d10+4 маг · Двуручно... [namelen=65 namehash=9aeffaff]
+Колоссы Сухоземья
+Конфиденциальность
+Легендарный Двуручный МечФизическое · Сила · Вплотную · d10+12 ф... [namelen=78 namehash=b8252127]
+Легендарный Длинный мечФизическое · Проворность · Вплотную · d10... [namelen=83 namehash=bc19b689]
+Легендарный Меч СветаМагическое · Сила · Вплотную · d10+12 маг ·... [namelen=74 namehash=271bf177]
+Легендарный Меч ТьмыМагическое · Влияние · Вплотную · d8+9 физ/м... [namelen=79 namehash=5158af43]
+Легендарный Меч-ХлыстФизическое · Искусность · Близко · d8+9 физ... [namelen=77 namehash=3d996a28]
+ЛутDaggerheart
+Магическое
+Меч СветаМагическое · Сила · Вплотную · d10+3 маг · Двуручное
+Меч ТьмыМагическое · Влияние · Вплотную · d8 физ/маг · Одноручно... [namelen=65 namehash=62361007]
+Меч ХрабростиФизическое · Сила · Вплотную · d12+7 физ · Двуручно... [namelen=65 namehash=76dfc7e4]
+Меч-ТростьФизическое · Искусность · Вплотную · d8+4 физ · Однору... [namelen=68 namehash=caa3ecce]
+Меч-ХлыстФизическое · Искусность · Близко · d8 физ · Одноручное
+Обоюдоострый МечФизическое · Проворность · Вплотную · d10+9 физ ... [namelen=75 namehash=3ceaf541]
+Одноручное
+Оружие
+Открывать при запуске
+Очень далеко
+Пир зверей
+Поиск
+Поиск по названию или описанию...
+Поющий МечФизическое · Влияние · Близко · d8+5 физ · Одноручное
+Проворность
+Продвинутый Двуручный МечФизическое · Сила · Вплотную · d10+9 фи... [namelen=77 namehash=36b293b8]
+Продвинутый Длинный МечФизическое · Проворность · Вплотную · d10... [namelen=82 namehash=4e1483c3]
+Продвинутый Меч СветаМагическое · Сила · Вплотную · d10+9 маг · ... [namelen=73 namehash=59f8711c]
+Продвинутый Меч ТьмыМагическое · Влияние · Вплотную · d8+6 физ/м... [namelen=79 namehash=c1081f6f]
+Продвинутый Меч-ХлыстФизическое · Искусность · Близко · d8+6 физ... [namelen=77 namehash=b1a6c5e4]
+Прочее
+Сетка
+Сила
+Скипетр ИнеяМагическое · Знание · Средне · d8+6 маг · Одноручное
+Снаряжение
+Список
+Средне
+Ссылка на раздел
+Ссылка на таблицу
+Таблицы
+Тёмное сердце Андалурии
+Улучшенный Двуручный МечФизическое · Сила · Вплотную · d10+6 физ... [namelen=76 namehash=6a4b81dc]
+Улучшенный Длинный МечФизическое · Проворность · Вплотную · d10+... [namelen=81 namehash=5cc8d7b3]
+Улучшенный Меч СветаМагическое · Сила · Вплотную · d10+6 маг · Д... [namelen=72 namehash=59f0f97b]
+Улучшенный Меч ТьмыМагическое · Влияние · Вплотную · d8+3 физ/ма... [namelen=78 namehash=a3d276a2]
+Улучшенный Меч-ХлыстФизическое · Искусность · Близко · d8+3 физ ... [namelen=76 namehash=cd93f4f6]
+Уникальные
+Условия использования
+Установить как приложение
+Физическое
+Эфирный Двуручный МечМагическое · Инстинкт · Близко · d10+9 маг ... [namelen=75 namehash=55121bb3]
+
+## en :: tree
+RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon]
+  link "Skip to content" [url=/en/tables/eq_weapon#main]
+  banner ""
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    link "Sign in" [url=/en/account]
+    navigation "Sections"
+      link "Roll" [url=/en/roll/std]
+      link "Tables" [url=/en/tables]
+      link "Search" [url=/en/search]
+  main ""
+    heading "Tables" [level=1]
+    button "Open on start" [pressed=false]
+    button "About this data" [expanded=false]
+    navigation "Tables"
+      link "Core" [url=/en/tables/core_item]
+      link "Hope & Fear" [url=/en/tables/hope_and_fear_item]
+      link "Alt. tables" [url=/en/tables/alt_item]
+      link "Supplements" [url=/en/tables/wondrous_environments]
+      link "Equipment" [url=/en/tables/eq_weapon]
+      link "Other" [url=/en/tables/other_starting]
+      link "Weapons" [url=/en/tables/eq_weapon]
+      link "Secondary" [url=/en/tables/eq_secondary]
+      link "Armor" [url=/en/tables/eq_armor]
+    searchbox "Search by name or description..." [value=меч focused=true]
+    button "List" [pressed=false]
+    button "Grid" [pressed=true]
+    button "Link to this table"
+    StaticText "61 of 458 shown"
+    button "Select"
+    complementary "Filters"
+      heading "Filters" [level=2]
+      StaticText "TIER"
+      button "All" [pressed=true]
+      button "1" [pressed=false]
+      button "2" [pressed=false]
+      ... button x29 of 33 same-shape siblings elided
+      StaticText "SOURCE"
+      button "All" [pressed=true]
+      ... StaticText x3 of 7 same-shape siblings elided
+      ... button x3 of 7 same-shape siblings elided
+      StaticText "BURDEN"
+      button "All" [pressed=true]
+      StaticText "UPGRADES AND UNIQUES"
+      button "All" [pressed=true]
+      button "Upgradable" [pressed=false]
+      button "Unique" [pressed=false]
+    heading "Tier 1" [level=2]
+    ... button x64 of 68 same-shape siblings elided
+    heading "Tier 2" [level=2]
+    heading "Tier 3" [level=2]
+    heading "Tier 4" [level=2]
+    heading "Artifacts" [level=2]
+    button "Link to this section"
+    button "9 Oath of Balance Magic · Instinct · Far · d12+12 mag · Two-Hand..." [namelen=66 namehash=a03c92b4]
+  contentinfo ""
+    navigation "Site pages"
+      link "Install as an app" [url=/pages/en/install.html]
+      link "Privacy" [url=/pages/en/privacy.html]
+      link "Terms of use" [url=/pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
+
+## en :: controls
+1
+102Frostwyrd (Awakened)Physical · Strength · Melee · d10+10 phy ... [namelen=76 namehash=150194c5]
+103Frostwyrd (Exalted)Physical · Strength · Melee · d10+10 phy ·... [namelen=75 namehash=f9bb8769]
+104Gelatinous HammerPhysical · Strength · Melee · d10+6 phy · Tw... [namelen=72 namehash=402a46d1]
+105Ghost Touch SwordPhysical · Agility · Melee · d8+3 phy · One-... [namelen=70 namehash=49a679b1]
+108Hellfire SwordMagic · Strength · Melee · d10+12 mag · Two-Han... [namelen=67 namehash=71bf8d4a]
+113Kinetic EdgePhysical · Agility · Melee · d8+4 phy · One-Hande... [namelen=65 namehash=cad68357]
+114Murderer's GauntletsPhysical · Strength · Melee · d10+4 phy ·... [namelen=75 namehash=03d78c90]
+116Restless VengeancePhysical · Strength · Melee · d10+11 mag · ... [namelen=74 namehash=7d4b1566]
+11Dirk of the DeadPhysical · Finesse · Melee · d6+2 phy · One-Ha... [namelen=68 namehash=3aca5e29]
+121ShatterswordPhysical · Agility · Melee · d10+5 phy · One-Hand... [namelen=66 namehash=ce70e640]
+12Improved Dirk of the DeadPhysical · Finesse · Melee · d6+6 phy... [namelen=77 namehash=1eddbc8a]
+133Sword of AngelsPhysical · Agility · Melee · d10+4 phy · Two-H... [namelen=69 namehash=dae1baf0]
+134Sword of UndeathPhysical · Agility · Melee · d8 phy · One-Han... [namelen=67 namehash=dbcd6bee]
+138Waiata GreatswordPhysical · Strength · Melee · d10+6 phy · Tw... [namelen=72 namehash=b4cf4f2c]
+13Advanced Dirk of the DeadPhysical · Finesse · Melee · d6+10 ph... [namelen=78 namehash=48637f45]
+13HarrowcleavePhysical · Strength · Melee · d12+7 phy · Two-Hand... [namelen=66 namehash=973bbb56]
+14Legendary Dirk of the DeadPhysical · Finesse · Melee · d6+14 p... [namelen=79 namehash=b4deabd3]
+1Aether RifleMagic · Instinct · Very Far · d8+8 mag · Two-Handed
+2
+27Black Hole StaffMagic · Knowledge · Far · d20+7 mag · Two-Hand... [namelen=66 namehash=a2b4f465]
+2Blade of the LivingMagic · Strength · Melee · d10+11 mag · Two-... [namelen=70 namehash=1b4ac40a]
+3
+33Zanthak's RagePhysical · Strength · Melee · d10+9 phy · Two-Ha... [namelen=68 namehash=fb7b490a]
+34Verdant DaughterPhysical · Agility · Very Far · d8+12 phy · Tw... [namelen=72 namehash=9a964031]
+4
+6Last StandPhysical · Finesse · Very Close · d10+5 phy · Two-Han... [namelen=67 namehash=7b0ebbd6]
+74Wyverntail WhipPhysical · Agility · Very Close · d10 phy · One... [namelen=71 namehash=c3dae450]
+75Improved Wyverntail WhipPhysical · Agility · Very Close · d10+... [namelen=82 namehash=c2f943b3]
+76Advanced Wyverntail WhipPhysical · Agility · Very Close · d10+... [namelen=82 namehash=b5240d9b]
+77Legendary Wyverntail WhipPhysical · Agility · Very Close · d10... [namelen=83 namehash=bbebc224]
+79Seeker's BowPhysical · Finesse · Far · d6+4 phy · Two-Handed
+84Black Corruption AxePhysical · Presence · Very Close · d10+12 ... [namelen=80 namehash=24663de9]
+85BloodgorgerPhysical · Strength · Melee · d10+6 phy · Two-Hande... [namelen=65 namehash=c9ddecdd]
+89Crystal Spirit SwordPhysical · Finesse · Melee · d10+10 phy · ... [namelen=74 namehash=ae5a6712]
+94Dusk WingPhysical · Strength · Melee · d10+6 phy · Two-Handed
+95Elemental LongbowPhysical · Agility · Very Far · d6+8 phy · Tw... [namelen=72 namehash=bae78698]
+9Oath of BalanceMagic · Instinct · Far · d12+12 mag · Two-Handed
+?About this data
+Advanced BrightswordMagic · Strength · Melee · d10+9 mag · Two-H... [namelen=69 namehash=6c666e56]
+Advanced GreatswordPhysical · Strength · Melee · d10+9 phy · Two... [namelen=71 namehash=6ca97316]
+Advanced LongswordPhysical · Agility · Melee · d10+9 phy · Two-H... [namelen=69 namehash=e8f79085]
+Advanced ShadowbladeMagic · Presence · Melee · d8+6 phy/mag · On... [namelen=72 namehash=91228ba6]
+Advanced WhipswordPhysical · Finesse · Very Close · d8+6 phy · O... [namelen=73 namehash=502f67e3]
+Agility
+All
+Alt. tables
+Arazo's Artifacts
+Armor
+Artifacts
+Beast Feast
+BraveswordPhysical · Strength · Melee · d12+7 phy · Two-Handed
+BrightswordMagic · Strength · Melee · d10+3 mag · Two-Handed
+Cane SwordPhysical · Finesse · Melee · d8+4 phy · One-Handed
+Casting SwordMagic · Strength · Melee · d10+4 mag · Two-Handed
+Close
+Colossus of the Drylands
+Core
+Dark Heart of Andaluria
+Dread GM Toolbox
+Dual-Ended SwordPhysical · Agility · Melee · d10+9 phy · Two-Han... [namelen=67 namehash=1c782d42]
+EN
+Equipment
+Ethereal ZweihänderMagic · Instinct · Very Close · d10+9 mag · T... [namelen=73 namehash=969112ad]
+Far
+Finesse
+GreatswordPhysical · Strength · Melee · d10+3 phy · Two-Handed
+Grid
+Hope & Fear
+Improved BrightswordMagic · Strength · Melee · d10+6 mag · Two-H... [namelen=69 namehash=f6f03f43]
+Improved GreatswordPhysical · Strength · Melee · d10+6 phy · Two... [namelen=71 namehash=71f109e6]
+Improved LongswordPhysical · Agility · Melee · d10+6 phy · Two-H... [namelen=69 namehash=3b3d9139]
+Improved ShadowbladeMagic · Presence · Melee · d8+3 phy/mag · On... [namelen=72 namehash=d50acddb]
+Improved WhipswordPhysical · Finesse · Very Close · d8+3 phy · O... [namelen=73 namehash=9dc1ed89]
+Install as an app
+Instinct
+Knowledge
+Legendary BrightswordMagic · Strength · Melee · d10+12 mag · Two... [namelen=71 namehash=924b5836]
+Legendary GreatswordPhysical · Strength · Melee · d10+12 phy · T... [namelen=73 namehash=dd0c6212]
+Legendary LongswordPhysical · Agility · Melee · d10+12 phy · Two... [namelen=71 namehash=a0c2e24d]
+Legendary ShadowbladeMagic · Presence · Melee · d8+9 phy/mag · O... [namelen=73 namehash=32d9a300]
+Legendary WhipswordPhysical · Finesse · Very Close · d8+9 phy · ... [namelen=74 namehash=0b9b5988]
+Link to this section
+Link to this table
+List
+LongswordPhysical · Agility · Melee · d10+3 phy · Two-Handed
+LootDaggerheart
+Magic
+Many Worlds Tavern
+Melee
+One-Handed
+Open on start
+Other
+Physical
+Presence
+Privacy
+RU
+Rime ScepterMagic · Knowledge · Close · d8+6 mag · One-Handed
+Roll
+Search
+Search by name or description...
+Secondary
+Select
+ShadowbladeMagic · Presence · Melee · d8 phy/mag · One-Handed
+Sign in
+Singing SwordPhysical · Presence · Very Close · d8+5 phy · One-H... [namelen=69 namehash=67701df7]
+Skip to content
+Strength
+Supplements
+Tables
+Terms of use
+The Dragon's Vault
+Two-Handed
+Unique
+Upgradable
+Vault of Ages
+Very Close
+Very Far
+Weapons
+WhipswordPhysical · Finesse · Very Close · d8 phy · One-Handed
+Wondrous Environments
+daggerheart.com

@@ -11,6 +11,7 @@
   import ArtWell from './ArtWell.svelte';
   import Badge from './Badge.svelte';
   import Icon from './Icon.svelte';
+  import Marked from './Marked.svelte';
   import MarkupInline from './MarkupInline.svelte';
   import { artSrc, descBlocks } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
@@ -20,7 +21,7 @@
   import { isHomebrewRecord, oneLangOf } from '../lib/homebrew.js';
   import type { Index } from '../lib/data.js';
   import type { HiddenTags } from '../lib/rowTags.js';
-  import { highlightRanges, type Term } from '../lib/search.js';
+  import type { Term } from '../lib/search.js';
   import type { Equip, Lang, Record_ } from '../lib/types.js';
 
   interface Props {
@@ -43,6 +44,8 @@
     hide?: HiddenTags | undefined;
     /** The search terms whose matches the name marks. */
     terms?: readonly Term[] | undefined;
+    /** The number reads «№ 89»: a page that names no table (search). */
+    numLabeled?: boolean | undefined;
   }
 
   const {
@@ -56,7 +59,8 @@
     tail,
     gmOnly,
     hide,
-    terms
+    terms,
+    numLabeled
   }: Props = $props();
 
   const t = $derived(dict(lang));
@@ -96,21 +100,6 @@
         ).join('\u00a0· ')
       : ''
   );
-
-  /* The name in runs, a matched run marked (the search highlight). */
-  const nameRuns = $derived.by(() => {
-    const name = nameOf(it, lang);
-    const ranges = terms?.length ? highlightRanges(name, terms) : [];
-    const out: { text: string; mark: boolean }[] = [];
-    let at = 0;
-    for (const [a, b] of ranges) {
-      if (a > at) out.push({ text: name.slice(at, a), mark: false });
-      out.push({ text: name.slice(a, b), mark: true });
-      at = b;
-    }
-    if (at < name.length) out.push({ text: name.slice(at), mark: false });
-    return out;
-  });
 </script>
 
 <!-- No aria-label: the live app left this button's name to its content, so
@@ -140,9 +129,9 @@
   <span class="rt"
     ><span class="rh"
       ><b
-        >{#if num}<span class="rnum">{num}</span>{/if}<span class="rname"
-          >{#each nameRuns as r, i (i)}{#if r.mark}<mark>{r.text}</mark
-              >{:else}{r.text}{/if}{/each}</span
+        >{#if num}<span class="rnum"
+            >{numLabeled ? t.rowNo.replace('%n', String(num)) : num}</span
+          >{/if}<span class="rname"><Marked text={nameOf(it, lang)} {terms} /></span
         >{#if gmOnly}<span class="gmstate vh">{', ' + t.noteHid}</span>{/if}{#if tail}<i
             class="rtail">{tail}</i
           >{/if}</b
@@ -229,14 +218,6 @@
     gap: 8px;
     font-size: var(--t-small);
     font-weight: 620;
-  }
-
-  /* The search highlight: a lit ground and an underline, not color alone (WCAG 1.4.1). */
-  .row-main mark {
-    background: var(--surface2);
-    color: inherit;
-    text-decoration: underline;
-    text-underline-offset: 3px;
   }
 
   .row-main .rt .lt {

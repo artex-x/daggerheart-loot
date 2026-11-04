@@ -29,7 +29,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Снаряжение" [url=/tables/eq_weapon]
       link "Прочее" [url=/tables/other_starting]
       link "Хоумбрю" [url=/tables/homebrew]
-    StaticText "Своих предметов пока нет."
+    StaticText "Своих предметов пока нет"
     link "Новый предмет" [url=/homebrew/new]
   contentinfo ""
     navigation "Страницы сайта"
@@ -88,7 +88,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/homebrew?as=gm
       link "Equipment" [url=/en/tables/eq_weapon]
       link "Other" [url=/en/tables/other_starting]
       link "Homebrew" [url=/en/tables/homebrew]
-    StaticText "No items of your own yet."
+    StaticText "No items of your own yet"
     link "New item" [url=/en/homebrew/new]
   contentinfo ""
     navigation "Site pages"

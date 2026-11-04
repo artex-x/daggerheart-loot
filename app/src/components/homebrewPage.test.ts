@@ -518,7 +518,7 @@ describe('#/homebrew', () => {
     await expectNoA11yViolations(container);
     cleanup();
     const none = page(null, { cloud: null });
-    expect(screen.getByRole('heading', { name: t.notFound })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: t.nowhereTitle })).toBeInTheDocument();
     expect(none.router.hash()).toBe('#/homebrew');
     expect(router.hash()).toBe('#/homebrew');
   });

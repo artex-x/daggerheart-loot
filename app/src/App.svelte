@@ -68,13 +68,14 @@
   import AccountPage from './components/AccountPage.svelte';
   import AltPanel from './components/AltPanel.svelte';
   import Button from './components/Button.svelte';
+  import ErrorPage from './components/ErrorPage.svelte';
   import HomebrewEditor from './components/HomebrewEditor.svelte';
   import HomebrewPage from './components/HomebrewPage.svelte';
   import ItemPage from './components/ItemPage.svelte';
   import ListPage from './components/ListPage.svelte';
   import ListsPage from './components/ListsPage.svelte';
   import NoData from './components/NoData.svelte';
-  import PageTitle from './components/PageTitle.svelte';
+  import NoPage from './components/NoPage.svelte';
   import PickerRollPanel from './components/PickerRollPanel.svelte';
   import PrintPage from './components/PrintPage.svelte';
   import RecordPage from './components/RecordPage.svelte';
@@ -146,8 +147,7 @@
         <ListsPage {app} />
       {:else if app.route.section === 'lists'}
         <!-- A build with no sign-in has no lists (docs/specs/ROUTES.md). -->
-        <!-- eslint-disable-next-line @typescript-eslint/no-confusing-void-expression -->
-        {@render notFound()}
+        <NoPage {app} />
       {:else if app.route.section === 'search'}
         <SearchPage {app} />
       {/if}
@@ -177,10 +177,14 @@
     {:else if app.route.kind === 'printRetired'}
       <!-- Every `#/print/...` address since 2026-10-08: nothing is read from it
            (docs/specs/ROUTES.md). -->
-      <PageTitle title={app.t.printLinkRetired} sub={app.t.printLinkRetiredSub} />
-      <Button variant="primary" href={app.href(sectionHash('roll/std'))} sameTab
-        >{app.t.toStart}</Button
-      >
+      <ErrorPage title={app.t.printLinkRetired} said>
+        {app.t.printLinkRetiredSub}
+        {#snippet actions()}
+          <Button variant="primary" href={app.href(sectionHash('roll/std'))} sameTab
+            >{app.t.toStart}</Button
+          >
+        {/snippet}
+      </ErrorPage>
     {:else if app.route.kind === 'account' && app.env.cloud}
       <AccountPage {app} />
     {:else if app.route.kind === 'homebrew' && app.homebrew}
@@ -192,25 +196,17 @@
         <HomebrewEditor {app} store={app.homebrew} key={app.route.key} />
       {/key}
     {:else}
-      <!-- eslint-disable-next-line @typescript-eslint/no-confusing-void-expression -->
-      {@render notFound()}
+      <!-- An old list link, and a route that needs sign-in in a build without it
+           (docs/specs/ROUTES.md). The address is kept. -->
+      <NoPage {app} />
     {/if}
     {#snippet failed(error, reset)}
-      <PageTitle
-        title={app.t.pageError}
-        sub={error instanceof Error ? error.message : String(error)}
-      />
-      <Button variant="primary" onclick={reset}>{app.t.reloadPage}</Button>
+      <ErrorPage title={app.t.pageError} said>
+        {error instanceof Error ? error.message : String(error)}
+        {#snippet actions()}
+          <Button variant="primary" onclick={reset}>{app.t.reloadPage}</Button>
+        {/snippet}
+      </ErrorPage>
     {/snippet}
   </svelte:boundary>
 </Shell>
-
-<!-- The not-found page for an address this build reads but has no page for: an old list
-     link (`listRetired`), and a route that needs sign-in in a build without it
-     (docs/specs/ROUTES.md). The address is kept. -->
-{#snippet notFound()}
-  <PageTitle title={app.t.notFound} sub={app.t.notFoundSub} />
-  <Button variant="primary" href={app.href(sectionHash('roll/std'))} sameTab
-    >{app.t.toStart}</Button
-  >
-{/snippet}

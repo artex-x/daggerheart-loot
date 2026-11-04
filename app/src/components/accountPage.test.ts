@@ -1,4 +1,4 @@
-/* `#/account` over the fake cloud: the chooser signed out, the four
+/* `#/account` over the fake cloud: the chooser signed out, the five
    sections signed in, and what every action says. docs/specs/FEATURES.md,
    "Account". */
 import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
@@ -71,11 +71,14 @@ describe('signed out', () => {
     await expectNoA11yViolations(container);
   });
 
-  it('signs in with Google and becomes the account page of gm1', async () => {
+  it('signs in with Google and becomes the account page of gm1, Google marked current', async () => {
     const { container } = open(as());
     await press('Войти через Google');
-    expect(await screen.findByText('gm1@example.test', { selector: 'b' })).toBeInTheDocument();
-    expect(screen.getByText('через Google')).toBeInTheDocument();
+    await screen.findByRole('button', { name: 'Отключить Discord' });
+    expect(within(rows()[0]!).getByText('gm1@example.test')).toBeInTheDocument();
+    expect(within(rows()[0]!).getByText('Сейчас')).toBeInTheDocument();
+    expect(within(rows()[1]!).queryByText('Сейчас')).toBeNull();
+    expect(screen.queryByText('через Google')).toBeNull();
     await expectNoA11yViolations(container);
   });
 
@@ -114,28 +117,36 @@ describe('signed out', () => {
     expect(screen.getByRole('button', { name: 'Войти через Discord' })).toBeEnabled();
   });
 
-  it('draws only the title until the session is known', async () => {
+  it('draws the title and the loading line until the session is known', async () => {
     const cloud = as();
     cloud.auth.session = () => new Promise(() => undefined);
     const { container } = open(cloud);
     expect(screen.getByRole('heading', { name: 'Аккаунт', level: 1 })).toBeInTheDocument();
+    expect(screen.getByText('Загружаем...')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Войти через/ })).not.toBeInTheDocument();
     await expectNoA11yViolations(container);
   });
 });
 
 describe('signed in as gm1', () => {
-  it('draws the six sections in order, with a Disconnect on each identity', async () => {
+  it('draws the five sections in two columns of the page order, with a Disconnect on each identity', async () => {
     const { container } = open(as('gm1'));
     await screen.findByRole('button', { name: 'Отключить Discord' });
     expect(screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)).toEqual([
-      'Отображение',
-      'Вы вошли как',
+      'Отображение на всех устройствах',
       'Способы входа',
       'Ваши данные',
       'Выход',
       'Удаление аккаунта'
     ]);
+    const colA = container.querySelector('.acc > .colA') as HTMLElement;
+    const colB = container.querySelector('.acc > .colB') as HTMLElement;
+    expect(colA.nextElementSibling).toBe(colB);
+    expect(within(colA).getAllByRole('heading', { level: 2 })).toHaveLength(2);
+    expect(within(colB).getAllByRole('heading', { level: 2 })).toHaveLength(3);
+    expect(colA.querySelector('[data-primary]')).not.toBeNull();
+    expect(container.querySelector('input[type="checkbox"]')).toBeNull();
+    expect(screen.queryByText(/завершает вход/)).toBeNull();
     expect(
       screen.getByText('Отображение, способы входа, выход и ваши данные.')
     ).toBeInTheDocument();
@@ -209,6 +220,7 @@ describe('signed in as gm1', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Не получилось. Проверьте соединение и попробуйте ещё раз.'
     );
+    expect(screen.getByText('через Google')).toBeInTheDocument();
     expect(screen.queryByRole('list')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Подключить/ })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Выйти' })).toBeInTheDocument();
@@ -252,11 +264,7 @@ describe('your data', () => {
     await waitFor(() => {
       expect(button).toBeEnabled();
     });
-    expect(
-      screen.getByText(
-        'Всё, что хранится в аккаунте, одним архивом ZIP: файл lists.json со списками и, если есть свои предметы, homebrew.json с ними, их источниками и картами. Чтобы перенести всё в другой аккаунт, импортируйте архив сначала на странице «Мои предметы», затем на странице «Мои списки»: за один раз - до 1000 списков и до 1000 своих предметов.'
-      )
-    ).toBeInTheDocument();
+    expect(screen.getByText('Списки и свои предметы одним архивом ZIP.')).toBeInTheDocument();
     await userEvent.click(button);
     await waitFor(() => {
       expect(image.downloaded.map((d) => d.filename)).toEqual([
@@ -328,6 +336,8 @@ describe('deleting the account', () => {
     expect(box).toHaveFocus();
     const final = screen.getByRole('button', { name: 'Удалить навсегда' });
     expect(final).toBeDisabled();
+    expect(final).toHaveClass('danger-fill');
+    expect(screen.getByText('Будут удалены:')).toBeInTheDocument();
     await userEvent.type(box, 'удали');
     expect(final).toBeDisabled();
     await expectNoA11yViolations(container);
@@ -339,12 +349,13 @@ describe('deleting the account', () => {
     expect(screen.getByText('Аккаунт удалён.')).toBeInTheDocument();
   });
 
-  it('cancels, which folds the confirmation and forgets the word', async () => {
+  it('cancels, which folds the confirmation, forgets the word and returns the focus', async () => {
     open(as('gm1'));
     await press('Удалить аккаунт...');
     await userEvent.type(screen.getByRole('textbox'), 'удалить');
     await press('Отмена');
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Удалить аккаунт...' })).toHaveFocus();
     await press('Удалить аккаунт...');
     expect(screen.getByRole('textbox')).toHaveValue('');
     await press('Удалить аккаунт...');
@@ -439,18 +450,23 @@ describe('signed in as gm2', () => {
     expect(
       screen.getByText('Display, sign-in methods, signing out and your data.')
     ).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Display', level: 2 })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Display on all your devices', level: 2 })
+    ).toBeInTheDocument();
     expect(screen.getByLabelText('Section on start')).toBeInTheDocument();
-    const notify = screen.getByLabelText<HTMLSelectElement>("Adding from someone else's list");
+    expect(screen.getByRole('group', { name: 'Default table view' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Default print' })).toBeInTheDocument();
+    const notify = screen.getByLabelText<HTMLSelectElement>(
+      "When I take from someone else's list"
+    );
     expect([...notify.options].map((o) => o.textContent)).toEqual([
       'Ask',
       'Notify the owner',
       "Don't notify"
     ]);
-    expect(notify).toHaveAccessibleDescription(
-      "When you add items from someone else's list to yours, notify its owner?"
-    );
-    expect(screen.getByText('with Google')).toBeInTheDocument();
+    expect(notify).not.toHaveAttribute('aria-describedby');
+    expect(within(rows()[0]!).getByText('Current')).toBeInTheDocument();
+    expect(screen.getByText('Your lists and items in one ZIP archive.')).toBeInTheDocument();
     expect(screen.getByText('not connected')).toBeInTheDocument();
     expect(
       screen.getByText(
@@ -472,15 +488,27 @@ describe('an account with no Google or Discord identity', () => {
     open(cloud);
     expect(await screen.findByRole('button', { name: 'Подключить Google' })).toBeVisible();
     expect(screen.getByRole('button', { name: 'Подключить Discord' })).toBeVisible();
+    expect(screen.getByText('e2e@example.test', { selector: 'b' })).toBeInTheDocument();
     expect(screen.queryByText(/через/)).not.toBeInTheDocument();
     expect(screen.queryByText(/единственный способ/)).not.toBeInTheDocument();
   });
 
-  it('shows the provider alone when there is no email', async () => {
+  it('marks no row current when the session names no provider', async () => {
     const cloud = as('gm2');
-    cloud.auth.session = () => Promise.resolve({ userId: 'u', email: '', provider: 'discord' });
+    cloud.auth.session = () => Promise.resolve({ userId: 'u', email: '', provider: null });
     open(cloud);
-    expect(await screen.findByText('через Discord')).toBeInTheDocument();
+    await screen.findByRole('button', { name: 'Подключить Discord' });
+    expect(screen.queryByText('Сейчас')).toBeNull();
+  });
+
+  it('says who is signed in, the provider beside the email, while the identities are unread', async () => {
+    const cloud = as('gm1');
+    cloud.auth.identities = () => new Promise(() => undefined);
+    const { container } = open(cloud);
+    expect(await screen.findByText('gm1@example.test', { selector: 'b' })).toBeInTheDocument();
+    expect(screen.getByText('через Google')).toBeInTheDocument();
+    expect(screen.queryByRole('list')).toBeNull();
+    await expectNoA11yViolations(container);
   });
 });
 
@@ -519,7 +547,7 @@ describe('the Display section', () => {
   const scopeOf = (el: HTMLElement) => within(el);
   type Scope = ReturnType<typeof scopeOf>;
 
-  const section = async (name = 'Отображение'): Promise<Scope> =>
+  const section = async (name = 'Отображение на всех устройствах'): Promise<Scope> =>
     scopeOf((await screen.findByRole('heading', { name, level: 2 })).parentElement!);
 
   const pressed = (scope: Scope, group: string): string | undefined =>
@@ -533,21 +561,28 @@ describe('the Display section', () => {
     const d = await section();
     /* gm1's row: grid, black and white, compact. */
     await waitFor(() => {
-      expect(pressed(d, 'Таблицы')).toBe('Сетка');
+      expect(pressed(d, 'Вид таблиц по умолчанию')).toBe('Сетка');
     });
     expect(pressed(d, 'Язык')).toBe('RU');
-    expect(pressed(d, 'Печать')).toBe('Чёрно-белая');
-    const notify = d.getByLabelText<HTMLSelectElement>('Добавление из чужого списка');
+    expect(pressed(d, 'Печать по умолчанию')).toBe('Чёрно-белая');
+    expect(pressed(d, 'Размер карты')).toBe('Компактная');
+    for (const g of [
+      'Язык',
+      'Вид таблиц по умолчанию',
+      'Печать по умолчанию',
+      'Размер карты'
+    ]) {
+      expect(d.getByRole('group', { name: g })).toHaveClass('neutral');
+    }
+    const notify = d.getByLabelText<HTMLSelectElement>('Когда беру из чужого списка');
     expect(notify.selectedOptions[0]?.textContent).toBe('Спрашивать');
     expect([...notify.options].map((o) => o.textContent)).toEqual([
       'Спрашивать',
       'Сообщать владельцу',
       'Не сообщать'
     ]);
-    expect(notify).toHaveAccessibleDescription(
-      'Когда вы добавляете предметы из чужого списка в свой, сообщить об этом его владельцу?'
-    );
-    expect(d.getByRole('checkbox', { name: 'Компактный лист' })).toBeChecked();
+    expect(notify).not.toHaveAttribute('aria-describedby');
+    expect(d.queryByRole('checkbox')).toBeNull();
     const select = d.getByLabelText<HTMLSelectElement>('Раздел при запуске');
     expect(select.value).toBe('#/roll/std');
     expect([...select.options].map((o) => o.textContent)).toHaveLength(13);
@@ -559,7 +594,7 @@ describe('the Display section', () => {
     expect(storage.get(HOME_KEY)).toBe('#/search');
     await userEvent.click(d.getByRole('button', { name: 'Список' }));
     await userEvent.click(d.getByRole('button', { name: 'Цветная' }));
-    await userEvent.click(d.getByRole('checkbox', { name: 'Компактный лист' }));
+    await userEvent.click(d.getByRole('button', { name: 'Обычная' }));
     expect(storage.get(PREFS_KEY)).toBe('{"view":"list","printBw":false,"printCompact":false}');
     await userEvent.selectOptions(notify, 'always');
     expect(notify.value).toBe('always');
@@ -582,23 +617,22 @@ describe('the Display section', () => {
     await expectNoA11yViolations(container);
   });
 
-  it('opens with the lead line, in either language', async () => {
+  it('opens with no lead line and no hint, in either language', async () => {
     openWith(as('gm1'));
-    const heading = await screen.findByRole('heading', { name: 'Отображение', level: 2 });
-    const lead = heading.parentElement?.querySelector('p');
-    expect(lead).toHaveTextContent(
-      'Эти настройки действуют на всех ваших устройствах. Вид таблиц и печать, выбранные на их страницах, сохраняются только до перезагрузки.'
-    );
-    expect(lead?.previousElementSibling).toBe(heading);
+    const heading = await screen.findByRole('heading', {
+      name: 'Отображение на всех устройствах',
+      level: 2
+    });
+    expect(heading.parentElement?.querySelector('p')).toBeNull();
     cleanup();
     /* gm2 has no row, so the stored English stays. */
     open(as('gm2'), 'en');
-    await screen.findByRole('heading', { name: 'Display', level: 2 });
-    expect(
-      screen.getByText(
-        'These settings apply on all your devices. A tables view or a print layout picked on its own page is kept only until the page reloads.'
-      )
-    ).toBeInTheDocument();
+    const en = await screen.findByRole('heading', {
+      name: 'Display on all your devices',
+      level: 2
+    });
+    expect(en.parentElement?.querySelector('p')).toBeNull();
+    expect(screen.queryByText(/kept only until the page reloads/)).toBeNull();
   });
 
   it("drops a page's print pick when the default is set here", async () => {
@@ -679,13 +713,13 @@ describe('the Display section', () => {
   it('is not drawn signed out, nor while the session is unknown', async () => {
     open(as());
     await screen.findByRole('button', { name: 'Войти через Google' });
-    expect(screen.queryByRole('heading', { name: 'Отображение' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /Отображение/ })).not.toBeInTheDocument();
     cleanup();
     const cloud = as('gm1');
     cloud.auth.session = () => new Promise(() => undefined);
     open(cloud);
     expect(screen.getByRole('heading', { name: 'Аккаунт', level: 1 })).toBeInTheDocument();
-    expect(screen.queryByRole('heading', { name: 'Отображение' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /Отображение/ })).not.toBeInTheDocument();
   });
 
   it('keeps its controls working while an account action is under way', async () => {
@@ -699,13 +733,41 @@ describe('the Display section', () => {
     expect(select).toBeEnabled();
     await userEvent.selectOptions(select, 'Поиск');
     expect(storage.get(HOME_KEY)).toBe('#/search');
-    const notify = d.getByLabelText<HTMLSelectElement>('Добавление из чужого списка');
+    const notify = d.getByLabelText<HTMLSelectElement>('Когда беру из чужого списка');
     await userEvent.selectOptions(notify, 'never');
     expect(notify.selectedOptions[0]?.textContent).toBe('Не сообщать');
     await waitFor(async () => {
       const read = await cloud.prefs.load();
       expect(read.ok && read.prefs?.notifyGm).toBe('never');
     });
+  });
+});
+
+describe('what the delete confirm lists', () => {
+  const goes = (): string[] =>
+    [...document.querySelectorAll('ul.goes li')].map((li) => li.textContent);
+
+  it('lists the counts the page read, a zero left out, then the fixed line', async () => {
+    const { container } = open(as('gm1'));
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Скачать мои данные (ZIP)' })).toBeEnabled();
+    });
+    await screen.findByText('Картинок в архиве нет: после переноса добавьте их заново.');
+    await press('Удалить аккаунт...');
+    const lines = goes();
+    expect(lines.at(-1)).toBe('Ссылки на списки и запросы на покупку.');
+    expect(lines[0]).toMatch(/^\d+ спис/);
+    expect(lines[1]).toMatch(/^\d+ предмет/);
+    expect(lines.join(' ')).not.toMatch(/(^|\D)0 /);
+    await expectNoA11yViolations(container);
+  });
+
+  it('draws no count it never read', async () => {
+    const cloud = as('gm2');
+    cloud.lists.list = () => new Promise(() => undefined);
+    open(cloud);
+    await press('Удалить аккаунт...');
+    expect(goes()).toEqual(['Ссылки на списки и запросы на покупку.']);
   });
 });
 

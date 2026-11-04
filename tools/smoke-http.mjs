@@ -140,7 +140,7 @@ if (!process.env.VITE_SUPABASE_URL) {
     control: !!document.querySelector('header a[href="/account"]')
   }));
   ok(
-    account.heading === 'Предмет не найден',
+    account.heading === 'Страницы по этому адресу нет',
     'an unconfigured /account does not draw the not-found page: ' + account.heading
   );
   ok(account.path === '/account', 'an unconfigured /account moved to ' + account.path);

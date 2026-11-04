@@ -85,8 +85,8 @@ import {
   type PrintSetEntry,
   type PrintSetRow
 } from '../lib/printSet.js';
-import { isLastOn, type Chosen } from '../lib/std.js';
-import type { Kind, Lang, Record_, Section } from '../lib/types.js';
+import { isLastOn, pickKinds, type Chosen } from '../lib/std.js';
+import { KINDS, type Kind, type Lang, type Record_, type Section } from '../lib/types.js';
 import type {
   AuthResult,
   Band,
@@ -292,14 +292,20 @@ export class AppState {
   source = $state<{ core: boolean; hnf: boolean }>({ core: true, hnf: true });
 
   /**
-   * Which kinds a page's rows are narrowed to - the live `S.kind` (app.js
-   * 60): one object shared by Core rules, the alternate tables and search,
-   * never written to storage and left alone by `go()`, `onChange` and
-   * `replace()` the way the live `hashchange` listener leaves it - a person
-   * who switches consumables off on one screen expects them still off on
-   * the next.
+   * Which kinds a roll draws - the live `S.kind` (app.js 60): one object shared by
+   * Core rules and the alternate tables, never written to storage and left alone by
+   * `go()`, `onChange` and `replace()` the way the live `hashchange` listener leaves
+   * it - a person who switches consumables off on one screen expects them still off
+   * on the next.
    */
   kinds = $state<Chosen<Kind>>({ item: true, consumable: true, equip: true });
+
+  /**
+   * The kinds search is narrowed to; every kind on is «Все». Its own object, not
+   * `kinds`: a pick of «Снаряжение» turns both loot kinds off, and a roll page would
+   * then draw nothing. Memory only, kept across pages like `kinds`.
+   */
+  searchKinds = $state<Chosen<Kind>>({ item: true, consumable: true, equip: true });
 
   /**
    * How many times somebody has actually gone somewhere, as opposed to the
@@ -2184,9 +2190,8 @@ export class AppState {
    * Switches one kind chip - refusing to turn off the last one on, and
    * saying why rather than doing nothing (the live app's `keepOneKind`
    * toast). `among` is the row the chip sits in - `LOOT_KINDS` on a roll
-   * page, `KINDS` on search - because "the last one on" is judged among the
-   * chips a person can actually see, the way the live `kindChips(list)`
-   * judges it.
+   * page - because "the last one on" is judged among the chips a person can
+   * actually see, the way the live `kindChips(list)` judges it.
    */
   toggleKind(kind: Kind, among: readonly Kind[]): void {
     if (isLastOn(this.kinds, among, kind)) {
@@ -2194,6 +2199,17 @@ export class AppState {
       return;
     }
     this.kinds = { ...this.kinds, [kind]: !this.kinds[kind] };
+  }
+
+  /** Presses one kind chip of search: from «Все» it picks that kind alone, and the last
+   *  pick off returns to «Все» (`pickKinds`). The roll pages' `kinds` stay as they are. */
+  pickKind(kind: Kind): void {
+    this.searchKinds = pickKinds(this.searchKinds, KINDS, kind);
+  }
+
+  /** Returns search to «Все». */
+  resetKinds(): void {
+    this.searchKinds = { item: true, consumable: true, equip: true };
   }
 
   /** Switches «Свои предметы»: the own items in search and the equipment tables. */

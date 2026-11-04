@@ -201,6 +201,9 @@ const ru = {
 
   notFound: 'Предмет не найден',
   notFoundSub: 'Возможно, ссылка устарела или данные были изменены.',
+  /* The page of an address no route draws; %s is the address. */
+  nowhereTitle: 'Страницы по этому адресу нет',
+  nowhereSub: 'Адрес %s не открывается. Ссылка могла устареть или быть набрана с ошибкой.',
   noData: 'Данные не загрузились. Обновите страницу.',
   /* The smallest error boundary: a page that throws mid-render draws
      this instead of leaving a blank middle under a working tab bar. */
@@ -266,8 +269,16 @@ const ru = {
   viewList: 'Список',
   viewGrid: 'Сетка',
   nothing: 'Ничего не найдено',
-  startTyping:
-    'Начните вводить запрос. Несколько слов ищутся в любом порядке, «фраза в кавычках» - дословно.',
+  /* The search page's start state: three queries that each find a record. */
+  searchWhat: 'Что ищем?',
+  searchStartSub: 'Ищет по названиям и описаниям, по-русски и по-английски сразу.',
+  searchEx1: 'зелье',
+  searchEx2: 'меч',
+  searchEx3: 'лечения зелья',
+  emptySearch: 'Нет совпадений с «%q» в названиях и описаниях.',
+  clearSearch: 'Очистить поиск',
+  /* A search row's roll number: no table names the number there. */
+  rowNo: '№ %n',
   selectAll: 'Выбрать все',
   selected: 'Выбрано',
   /* A `|` string is a form set for `plural()` (I18N.md, "Rules"). */
@@ -460,20 +471,17 @@ const ru = {
   accountSub: 'Отображение, способы входа, выход и ваши данные.',
   menuLabel: 'Меню аккаунта',
   menuLists: 'Мои списки',
-  displayHead: 'Отображение',
-  displayLead:
-    'Эти настройки действуют на всех ваших устройствах. Вид таблиц и печать, выбранные на их страницах, сохраняются только до перезагрузки.',
+  displayHead: 'Отображение на всех устройствах',
+  defaultTablesView: 'Вид таблиц по умолчанию',
+  defaultPrint: 'Печать по умолчанию',
   keepBefore: 'Только до перезагрузки. Чтобы сохранить, измените в ',
   keepLink: 'настройках аккаунта',
   keepAfter: '.',
   displayHome: 'Раздел при запуске',
-  printCompactBox: 'Компактный лист',
-  displayNotify: 'Добавление из чужого списка',
+  displayNotify: 'Когда беру из чужого списка',
   notifyAsk: 'Спрашивать',
   notifyAlways: 'Сообщать владельцу',
   notifyNever: 'Не сообщать',
-  notifyHint:
-    'Когда вы добавляете предметы из чужого списка в свой, сообщить об этом его владельцу?',
   signInLead:
     'Войдите, чтобы ваши данные были доступны на всех устройствах. Всё остальное работает и без входа.',
   signInWith: 'Войти через %s',
@@ -482,8 +490,8 @@ const ru = {
   consentMid: ' и ',
   consentPrivacy: 'политику конфиденциальности',
   consentAfter: '.',
-  signedInAs: 'Вы вошли как',
   via: 'через %s',
+  signedInNow: 'Сейчас',
   providers: 'Способы входа',
   notConnected: 'не подключён',
   connect: 'Подключить %s',
@@ -495,13 +503,13 @@ const ru = {
   signOutHead: 'Выход',
   signOut: 'Выйти',
   signOutAll: 'Выйти на всех устройствах',
-  signOutAllHint:
-    '«Выйти на всех устройствах» завершает вход и на других телефонах и компьютерах.',
   deleteHead: 'Удаление аккаунта',
   deleteHint: 'Аккаунт и все связанные с ним данные будут удалены навсегда.',
   deleteOpen: 'Удалить аккаунт...',
   deleteTypeWord: 'Чтобы подтвердить, введите слово',
   deleteWord: 'удалить',
+  deleteGoes: 'Будут удалены:',
+  deleteGoesRest: 'Ссылки на списки и запросы на покупку.',
   deleteFinal: 'Удалить навсегда',
   deleting: 'Удаляем...',
   signedOut: 'Вы вышли из аккаунта.',
@@ -509,8 +517,7 @@ const ru = {
   accountFailed: 'Не получилось. Проверьте соединение и попробуйте ещё раз.',
   /* The account's data export (docs/specs/FEATURES.md, "Account"). */
   yourData: 'Ваши данные',
-  yourDataHint:
-    'Всё, что хранится в аккаунте, одним архивом ZIP: файл lists.json со списками и, если есть свои предметы, homebrew.json с ними, их источниками и картами. Чтобы перенести всё в другой аккаунт, импортируйте архив сначала на странице «Мои предметы», затем на странице «Мои списки»: за один раз - до 1000 списков и до 1000 своих предметов.',
+  yourDataHint: 'Списки и свои предметы одним архивом ZIP.',
   exportData: 'Скачать мои данные (ZIP)',
   zipNoArt: 'Картинок в архиве нет: после переноса добавьте их заново.',
 
@@ -568,8 +575,6 @@ const ru = {
   hbPrintClipped:
     'Текст не помещается на карточку при печати: его конец не напечатается. Можно сократить название или описание.',
   hbEmpty: 'Свой предмет ищется вместе с книгами, виден в «Таблицах» и попадает в списки.',
-  /* The tables' empty state: its button follows the line. */
-  hbEmptyTable: 'Своих предметов пока нет.',
   hbSignIn: 'Войдите, чтобы создавать свои предметы.',
   hbTablesSignIn: 'Войдите, чтобы видеть свои предметы в таблицах.',
   ownSwitch: 'Свои предметы',
@@ -1140,10 +1145,11 @@ const ru = {
   quoted: '«%s»',
   printLinkRetired: 'Такие ссылки на печать больше не открываются.',
   printLinkRetiredSub:
-    'Попросите у отправителя новую ссылку вида /#/p/ или войдите и соберите карточки сами.',
+    'Попросите у отправителя новую ссылку вида /p/ или войдите и соберите карточки сами.',
   signInToPrint: 'Войдите, чтобы печатать карточки.',
   printSetGone: 'Набор не найден: ссылку не открывали 90 дней, или в адресе ошибка.',
   printSetMissing: 'Удалены автором и не попали на лист: %d.',
+  printLoadFailedTitle: 'Набор не загрузился',
   printLoadFailed: 'Не получилось загрузить карточки.',
   printSetFailed: 'Не получилось подготовить печать. Проверьте соединение и попробуйте ещё раз.'
 } as const;
@@ -1296,6 +1302,8 @@ const en: Dict = {
 
   notFound: 'Item not found',
   notFoundSub: 'The link may be out of date, or the data has changed.',
+  nowhereTitle: 'No page at this address',
+  nowhereSub: 'The address %s does not open. The link may be old or mistyped.',
   noData: 'The data did not load. Reload the page.',
   pageError: 'Something went wrong on this page.',
   reloadPage: 'Reload the page',
@@ -1343,8 +1351,14 @@ const en: Dict = {
   viewList: 'List',
   viewGrid: 'Grid',
   nothing: 'Nothing found',
-  startTyping:
-    'Start typing. Several words match in any order; "a phrase in quotes" matches exactly.',
+  searchWhat: 'What are you looking for?',
+  searchStartSub: 'Searches names and text in Russian and English at once.',
+  searchEx1: 'potion',
+  searchEx2: 'sword',
+  searchEx3: 'healing potions',
+  emptySearch: 'No match for "%q" in names and descriptions.',
+  clearSearch: 'Clear the search',
+  rowNo: 'No. %n',
   selectAll: 'Select all',
   selected: 'Selected',
   selectedN: 'Selected %n item|Selected %n items',
@@ -1510,19 +1524,17 @@ const en: Dict = {
   accountSub: 'Display, sign-in methods, signing out and your data.',
   menuLabel: 'Account menu',
   menuLists: 'My lists',
-  displayHead: 'Display',
-  displayLead:
-    'These settings apply on all your devices. A tables view or a print layout picked on its own page is kept only until the page reloads.',
+  displayHead: 'Display on all your devices',
+  defaultTablesView: 'Default table view',
+  defaultPrint: 'Default print',
   keepBefore: 'Only until the page reloads. To keep it, change it in ',
   keepLink: 'your account settings',
   keepAfter: '.',
   displayHome: 'Section on start',
-  printCompactBox: 'Compact sheet',
-  displayNotify: "Adding from someone else's list",
+  displayNotify: "When I take from someone else's list",
   notifyAsk: 'Ask',
   notifyAlways: 'Notify the owner',
   notifyNever: "Don't notify",
-  notifyHint: "When you add items from someone else's list to yours, notify its owner?",
   signInLead:
     'Sign in to have your data on all your devices. Everything else works without signing in.',
   signInWith: 'Sign in with %s',
@@ -1531,8 +1543,8 @@ const en: Dict = {
   consentMid: ' and the ',
   consentPrivacy: 'privacy policy',
   consentAfter: '.',
-  signedInAs: 'Signed in as',
   via: 'with %s',
+  signedInNow: 'Current',
   providers: 'Sign-in methods',
   notConnected: 'not connected',
   connect: 'Connect %s',
@@ -1544,21 +1556,20 @@ const en: Dict = {
   signOutHead: 'Sign out',
   signOut: 'Sign out',
   signOutAll: 'Sign out everywhere',
-  signOutAllHint:
-    '"Sign out everywhere" also ends the session on your other phones and computers.',
   deleteHead: 'Delete account',
   deleteHint: 'The account and all the data linked to it will be deleted for good.',
   deleteOpen: 'Delete account...',
   deleteTypeWord: 'To confirm, type the word',
   deleteWord: 'delete',
+  deleteGoes: 'This deletes:',
+  deleteGoesRest: 'List links and purchase requests.',
   deleteFinal: 'Delete for good',
   deleting: 'Deleting...',
   signedOut: 'You are signed out.',
   accountDeleted: 'The account is deleted.',
   accountFailed: 'That did not work. Check the connection and try again.',
   yourData: 'Your data',
-  yourDataHint:
-    'Everything your account holds, in one ZIP archive: lists.json with your lists and, when you have items of your own, homebrew.json with them, their sources and cards. To move everything into another account, import the archive on the My items page first, then on the My lists page: up to 1000 lists and 1000 own items at a time.',
+  yourDataHint: 'Your lists and items in one ZIP archive.',
   exportData: 'Download my data (ZIP)',
   zipNoArt: 'The archive holds no pictures: add them again after the move.',
 
@@ -1612,7 +1623,6 @@ const en: Dict = {
   hbPrintClipped:
     'The text does not fit the card in print: its end does not print. You can shorten the name or the description.',
   hbEmpty: 'Your own item is found with the books, shows in Tables and goes into lists.',
-  hbEmptyTable: 'No items of your own yet.',
   hbSignIn: 'Sign in to create your own items.',
   hbTablesSignIn: 'Sign in to see your own items in the tables.',
   ownSwitch: 'Own items',
@@ -2162,10 +2172,11 @@ const en: Dict = {
   quoted: '"%s"',
   printLinkRetired: 'Print links of this kind no longer open.',
   printLinkRetiredSub:
-    'Ask the sender for a new /#/p/ link, or sign in and pick the cards yourself.',
+    'Ask the sender for a new /p/ link, or sign in and pick the cards yourself.',
   signInToPrint: 'Sign in to print cards.',
   printSetGone: 'Set not found: nobody opened the link for 90 days, or the address is wrong.',
   printSetMissing: 'Deleted by their author, not on the sheet: %d.',
+  printLoadFailedTitle: 'The set did not load',
   printLoadFailed: 'Could not load the cards.',
   printSetFailed: 'Could not prepare the print. Check the connection and try again.'
 };

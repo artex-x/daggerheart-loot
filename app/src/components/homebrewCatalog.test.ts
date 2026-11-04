@@ -601,13 +601,14 @@ describe('#/tables/homebrew', () => {
 
   it('draws not found with no sign-in configured, and keeps the address', () => {
     const { router } = page('#/tables/homebrew', { cloud: null });
-    expect(screen.getByRole('heading', { name: t.notFound })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: t.nowhereTitle })).toBeInTheDocument();
     expect(router.hash()).toBe('#/tables/homebrew');
   });
 
-  it('draws the empty state with «Новый предмет» for an account with no item', async () => {
+  it('draws the empty state with its title and a primary «Новый предмет» for an account with no item', async () => {
     const { container } = page('#/tables/homebrew', { as: 'gm2' });
-    expect(await screen.findByText(t.hbEmptyTable)).toBeInTheDocument();
+    expect(await screen.findByText(t.hbEmptyTitle)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: t.hbNewItem })).toHaveClass('primary');
     expect(screen.getByRole('link', { name: t.hbNewItem })).toHaveAttribute(
       'href',
       '/homebrew/new'
@@ -684,7 +685,7 @@ describe('search with own items', () => {
     expect(
       await screen.findByText(t.subSearch + ' ' + 'И 4 ваших предмета.')
     ).toBeInTheDocument();
-    await userEvent.type(screen.getByPlaceholderText(t.searchPh), 'топор');
+    await userEvent.type(screen.getByRole('searchbox', { name: t.searchPh }), 'топор');
     /* Two names at a word start tie, the catalog first; the axe's name ranks above
        the catalog's description hit */
     expect(rowIds()).toEqual(['w2', AXE, 'ci2']);
@@ -708,32 +709,35 @@ describe('search with own items', () => {
     expect(screen.queryByRole('switch')).toBeNull();
   });
 
-  it('holds the three kinds in the kind row, the switch under it, and refuses the last kind either way', async () => {
+  it('holds «Все» and the three kinds in the kind row, the switch after them, either way', async () => {
     const { container } = page('#/search');
     await screen.findByText(t.subSearch + ' И 4 ваших предмета.');
-    const kinds = document.querySelector('.panel .chips') as HTMLElement;
+    const row = document.querySelector('.kindrow') as HTMLElement;
+    const kinds = row.querySelector('.chips') as HTMLElement;
     expect(
       within(kinds)
         .getAllByRole('button')
         .map((b) => b.textContent)
-    ).toEqual([t.fItems, t.fCons, t.fEquip]);
+    ).toEqual([t.allShort, t.fItems, t.fCons, t.fEquip]);
     expect(kinds.contains(ownSwitch())).toBe(false);
+    expect(row.contains(ownSwitch())).toBe(true);
     for (const on of [true, false]) {
       if (!on) await userEvent.click(ownSwitch());
       expect((ownSwitch() as HTMLInputElement).checked).toBe(on);
-      await userEvent.click(within(kinds).getByRole('button', { name: t.fItems }));
-      await userEvent.click(within(kinds).getByRole('button', { name: t.fCons }));
-      expect(within(kinds).getByRole('button', { name: t.fEquip })).toHaveAttribute(
-        'title',
-        t.keepOneKind
-      );
       await userEvent.click(within(kinds).getByRole('button', { name: t.fEquip }));
       expect(within(kinds).getByRole('button', { name: t.fEquip })).toHaveAttribute(
         'aria-pressed',
         'true'
       );
-      await userEvent.click(within(kinds).getByRole('button', { name: t.fItems }));
-      await userEvent.click(within(kinds).getByRole('button', { name: t.fCons }));
+      expect(within(kinds).getByRole('button', { name: t.allShort })).toHaveAttribute(
+        'aria-pressed',
+        'false'
+      );
+      await userEvent.click(within(kinds).getByRole('button', { name: t.allShort }));
+      expect(within(kinds).getByRole('button', { name: t.allShort })).toHaveAttribute(
+        'aria-pressed',
+        'true'
+      );
     }
     await expectNoA11yViolations(container);
   });
@@ -757,7 +761,7 @@ describe("the author's own relations on catalog rows and cards", () => {
   it("keeps a catalog row's own relations while the switch hides the own items", async () => {
     const { container } = page('#/search', { as: 'gm3' });
     await screen.findByText(t.subSearch + ' И 39 ваших предметов.');
-    await userEvent.type(screen.getByPlaceholderText(t.searchPh), 'кольцо');
+    await userEvent.type(screen.getByRole('searchbox', { name: t.searchPh }), 'кольцо');
     expect(relation('ci1')).toBe('Улучшается до: Мешок спокойных снов (HB) и ещё 14');
     await userEvent.click(ownSwitch());
     expect(ownSwitch()).not.toBeChecked();

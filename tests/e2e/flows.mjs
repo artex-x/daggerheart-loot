@@ -180,7 +180,7 @@ export async function runFlows({ env, admin, member, browser, base }) {
       member.email
     );
     await d.open('#/account');
-    await waitText(page, 'F2', 'Вы вошли как');
+    await waitText(page, 'F2', 'Способы входа');
     await waitControl(page, 'F2', 'Подключить Google');
     await waitControl(page, 'F2', 'Подключить Discord');
     await expectInPage(

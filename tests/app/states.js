@@ -6,8 +6,8 @@
  * and every legacy suite uses - because a handful of real defects only show
  * up on the far side of a browser's own microtask checkpoint (the
  * `isConnected` guard) or need a real network, a real clipboard stub, or a
- * real second tab to mean anything at all. Eighty-three cases in
- * eighty-two runs (4 and 5 share one), no ancestor. Like every suite here it drives
+ * real second tab to mean anything at all. Eighty-five cases in
+ * eighty-four runs (4 and 5 share one), no ancestor. Like every suite here it drives
  * dist-test/, the test build (docs/specs/COVERAGE.md, "Test layers"): signed
  * out it draws the sign-in prompt where a list would be made, so the cases
  * that make one open as the seed's `gm2`. */
@@ -5575,8 +5575,8 @@ const FIRST_SCREEN = [
   { state: '#/tables/eq_weapon ~ two filters', shipped: true },
   { state: '#/i/ci1', shipped: true },
   { state: '#/h/00000000-0000-4000-8000-000000000513 as gm1', shipped: true },
-  { state: '#/search ~ searched', shipped: false },
-  { state: '#/account as gm1', shipped: false },
+  { state: '#/search ~ searched', shipped: true },
+  { state: '#/account as gm1', shipped: true },
   { state: '#/p/set-emberaxe as gm2', shipped: false },
   { state: '#/homebrew as gm3', shipped: true },
   { state: '#/homebrew/sets ~ long name as gm4', shipped: true },
@@ -5599,6 +5599,277 @@ async function primaryTop(page) {
     );
     return el ? { top: el.getBoundingClientRect().top, vh: innerHeight } : null;
   });
+}
+
+/** 93. The search page from 320 to 1180 px (docs/specs/FEATURES.md, "Tables and search"): up
+ *  to 760 px the `h1` with «Ещё» on one row, the search row on one line with «Фильтры» and
+ *  «Выбрать»; from 761 px the page head, the kind chips and «Выбрать» last; the pin menu,
+ *  the kind sheet, the selection mode and the 300 cap. */
+async function searchHeadAndRows() {
+  const at = '93 (the search page): ';
+  const typed = async (d, page, q, lang = 'ru') => {
+    await d.type(
+      lang === 'en' ? 'Search by name or description...' : 'Поиск по названию или описанию...',
+      q
+    );
+    return waitIn(page, () => document.querySelectorAll('[data-row]').length > 0);
+  };
+  const sideways = (page) =>
+    page.evaluate(
+      () => document.documentElement.scrollWidth > document.documentElement.clientWidth
+    );
+  for (const lang of ['ru', 'en']) {
+    for (const [width, height] of [
+      [760, 800],
+      [390, 844],
+      [360, 640],
+      [320, 568]
+    ]) {
+      const where = width + ' ' + lang;
+      const { ctx, page, d } = await fresh({ width, height, lang });
+      try {
+        await d.open('#/search', { lang });
+        await typed(d, page, 'меч', lang);
+        const m = await page.evaluate(() => {
+          const h1 = document.querySelector('main h1');
+          const row = h1?.closest('.headrow');
+          const more = row?.querySelector('button[aria-haspopup="menu"]');
+          const sr = document.querySelector('.searchrow');
+          const kids = sr ? [...sr.children] : [];
+          const rects = kids.map((k) => k.getBoundingClientRect());
+          const box = sr?.querySelector('input[type="search"]')?.getBoundingClientRect();
+          return {
+            h1: (h1?.getBoundingClientRect().width ?? 0) > 1,
+            more: !!more,
+            kids: kids.length,
+            inside: rects.every((r) => r.left >= 0 && r.right <= innerWidth),
+            lines: new Set(rects.map((r) => Math.round(r.top + r.height / 2))).size,
+            box: box?.width ?? 0,
+            last: kids.at(-1)?.classList.contains('selmode') ?? false
+          };
+        });
+        ok(m.h1 && m.more, at + where + ': the h1 row - ' + JSON.stringify(m));
+        ok(
+          m.kids === 3 && m.inside && m.lines === 1 && m.last,
+          at + where + ': the search row - ' + JSON.stringify(m)
+        );
+        ok(m.box >= 140, at + where + ': the box is ' + m.box + ' px');
+        ok(!(await sideways(page)), at + where + ': the page scrolls sideways');
+      } finally {
+        await ctx.close();
+      }
+    }
+    for (const [width, height] of [
+      [761, 768],
+      [1180, 720]
+    ]) {
+      const where = width + ' ' + lang;
+      const { ctx, page, d } = await fresh({ width, height, lang });
+      try {
+        await d.open('#/search', { lang });
+        await typed(d, page, 'меч', lang);
+        const m = await page.evaluate(() => {
+          const chips = [...document.querySelectorAll('.kindrow .chips .chip')];
+          const tops = new Set(chips.map((c) => Math.round(c.getBoundingClientRect().top)));
+          const sr = document.querySelector('.searchrow');
+          return {
+            head: !!document.querySelector('main .page-head h1'),
+            pin: !!document.querySelector('main .page-head .homebtn'),
+            chips: chips.length,
+            rows: tops.size,
+            filters: !!sr?.querySelector('.btn.sm'),
+            last: sr?.lastElementChild?.classList.contains('selmode') ?? false
+          };
+        });
+        ok(m.head && m.pin, at + where + ': the page head - ' + JSON.stringify(m));
+        ok(
+          m.chips === 4 && m.rows === 1,
+          at + where + ': the kind chips - ' + JSON.stringify(m)
+        );
+        ok(!m.filters && m.last, at + where + ': the search row - ' + JSON.stringify(m));
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+
+  {
+    const { ctx, page, d } = await fresh({ width: 360, height: 640 });
+    try {
+      await d.open('#/search', { as: 'gm1' });
+      await d.press('Ещё');
+      ok(
+        await waitIn(page, () => !!document.querySelector('[role="menu"] [role="menuitem"]')),
+        at + '360: «Ещё» opens no menu'
+      );
+      await page.keyboard.press('Escape');
+      ok(
+        await waitIn(page, () => document.activeElement?.textContent?.trim() === 'Ещё'),
+        at + '360: Escape does not return the focus to «Ещё»'
+      );
+      await typed(d, page, 'меч');
+      await d.press('Фильтры');
+      const sheet = await page.evaluate(() => {
+        const dlg = document.querySelector('dialog[open]');
+        const rows = dlg ? [...dlg.querySelectorAll('.frow')] : [];
+        return {
+          own: rows[0]?.classList.contains('own') ?? false,
+          kind: rows[1]?.querySelector('.lbl')?.textContent ?? ''
+        };
+      });
+      ok(
+        sheet.own && sheet.kind === 'Тип',
+        at + '360: the sheet rows - ' + JSON.stringify(sheet)
+      );
+      await d.click('Снаряжение');
+      await page.keyboard.press('Escape');
+      ok(
+        await waitIn(page, () => document.activeElement?.textContent?.trim() === 'Фильтры · 1'),
+        at + '360: Escape does not return the focus to «Фильтры · 1»'
+      );
+      ok(
+        (
+          await page.evaluate(() => document.querySelector('main .count')?.textContent ?? '')
+        ).includes('Снаряжение'),
+        at + '360: the count line does not name the kind'
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+
+  {
+    const { ctx, page, d } = await fresh({ width: 1180, height: 720 });
+    try {
+      await d.open('#/search');
+      await typed(d, page, 'меч');
+      await d.press('Выбрать');
+      ok(
+        await waitIn(page, () => !!document.activeElement?.closest('.selbarwrap .selall')),
+        at + "1180: «Выбрать» does not focus the bar's «Все»"
+      );
+      await page.evaluate(() => document.activeElement.click());
+      const drawn = await page.evaluate(() => ({
+        rows: document.querySelectorAll('main [data-row]').length,
+        ticked: document.querySelectorAll('main [data-row].sel').length,
+        strip: !!document.querySelector('main .selall')
+      }));
+      ok(
+        drawn.rows > 0 && drawn.rows === drawn.ticked && !drawn.strip,
+        at + '1180: «Все» did not tick the found rows - ' + JSON.stringify(drawn)
+      );
+      await d.press('Снять выделение');
+      ok(
+        await waitIn(
+          page,
+          () => document.activeElement?.classList.contains('selmode') ?? false
+        ),
+        at + '1180: «Снять выделение» does not return the focus to «Выбрать»'
+      );
+      await d.type('Поиск по названию или описанию...', 'а');
+      ok(
+        await waitIn(page, () => document.querySelectorAll('main [data-row]').length === 300),
+        at + 'the cap does not draw 300 rows'
+      );
+      ok(
+        /^Показано 300 из \d+$/.test(
+          await page.evaluate(
+            () => document.querySelector('main .count')?.textContent?.trim() ?? ''
+          )
+        ),
+        at + 'the count line does not say «Показано 300 из N»'
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
+/** 94. The account holds its layout and its delete confirm (docs/specs/FEATURES.md,
+ *  "Account"): one column at 360, two from 1000 px, the print row inside the window, the
+ *  filled final button and the focus of the confirm. */
+async function accountLayoutAndConfirm() {
+  const at = '94 (the account layout and confirm): ';
+  for (const lang of ['ru', 'en']) {
+    for (const [width, height] of [
+      [360, 640],
+      [1180, 720]
+    ]) {
+      const where = width + ' ' + lang;
+      const { ctx, page, d } = await fresh({ width, height, lang });
+      try {
+        await d.open('#/account', { as: 'gm1', lang });
+        await waitIn(page, () => !!document.querySelector('.acc .ids li'));
+        const m = await page.evaluate(() => {
+          const segs = [...document.querySelectorAll('.wb .seg')].map((s) =>
+            s.getBoundingClientRect()
+          );
+          const a = document.querySelector('.colA')?.getBoundingClientRect();
+          const b = document.querySelector('.colB')?.getBoundingClientRect();
+          return {
+            chk: !!document.querySelector('main input[type="checkbox"]'),
+            segs: segs.length,
+            inside: segs.every((r) => r.left >= 0 && r.right <= innerWidth),
+            heads: [...document.querySelectorAll('main h2')].map((h) => h.textContent),
+            tops: a && b ? Math.abs(a.top - b.top) : 999,
+            sideways:
+              document.documentElement.scrollWidth > document.documentElement.clientWidth
+          };
+        });
+        ok(!m.chk, at + where + ': a checkbox is drawn');
+        ok(m.segs === 2 && m.inside, at + where + ': the print row - ' + JSON.stringify(m));
+        ok(
+          !m.heads.some((h) => /Вы вошли как|Signed in as/.test(h)),
+          at + where + ': a «Вы вошли как» panel is drawn'
+        );
+        if (width === 1180)
+          ok(m.tops <= 2, at + where + ': the column tops differ by ' + m.tops);
+        ok(!m.sideways, at + where + ': the page scrolls sideways');
+
+        const open = lang === 'en' ? 'Delete account...' : 'Удалить аккаунт...';
+        const word = lang === 'en' ? 'delete' : 'удалить';
+        const final = lang === 'en' ? 'Delete for good' : 'Удалить навсегда';
+        await d.press(open);
+        ok(
+          await waitIn(page, () => document.activeElement?.id === 'account-delete-word'),
+          at + where + ': the field does not take the focus'
+        );
+        const c = await page.evaluate((f) => {
+          const btn = [...document.querySelectorAll('button')].find(
+            (b) => b.textContent.trim() === f
+          );
+          return {
+            goes: !!document.querySelector('p.goes'),
+            disabled: btn?.disabled ?? false,
+            fill: btn ? getComputedStyle(btn).backgroundColor : ''
+          };
+        }, final);
+        ok(
+          c.goes && c.disabled && c.fill !== 'rgba(0, 0, 0, 0)' && c.fill !== '',
+          at + where + ': the confirm - ' + JSON.stringify(c)
+        );
+        await d.type('', word);
+        ok(
+          await waitIn(
+            page,
+            (f) =>
+              [...document.querySelectorAll('button')].some(
+                (b) => b.textContent.trim() === f && !b.disabled
+              ),
+            final
+          ),
+          at + where + ': the typed word does not enable the final button'
+        );
+        await d.press(lang === 'en' ? 'Cancel' : 'Отмена');
+        ok(
+          await waitIn(page, (o) => document.activeElement?.textContent?.trim() === o, open),
+          at + where + ': «Отмена» does not return the focus to the opener'
+        );
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
 }
 
 /** 83. The primary content of each route family starts within 40% of the viewport
@@ -6399,7 +6670,9 @@ const CASES = [
   ['89 (the roll page layout holds at 320 to 1180 px)', rollPageLayout],
   ['90 (the result row and its menus)', resultRowAndMenus],
   ['91 (the homebrew head, tabs and bar from 320 to 1180 px)', homebrewHeadAndBar],
-  ['92 (the editor holds its layout and the preview sheet)', editorLayoutAndSheet]
+  ['92 (the editor holds its layout and the preview sheet)', editorLayoutAndSheet],
+  ['93 (the search page holds from 320 to 1180 px)', searchHeadAndRows],
+  ['94 (the account holds its layout and its confirm)', accountLayoutAndConfirm]
 ];
 
 (async () => {

@@ -2,13 +2,13 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (wave 1 is on `main`; batches 3, 3b, 4, 5 and 6 are on `claude/57`; batches 3-5 are
-  reviewed with green CI; batch 6 is reviewed, its remediation pass awaits CI)
-- Last agent: implementer (batch 6 remediation, 2026-11-04)
+- Task status: in_progress (wave 1 is on `main`; batches 3, 3b, 4, 5, 6 and 7 are on `claude/57`; batches 3-6 are
+  reviewed with green CI; batch 7 awaits `polish`, `harden`, its review and CI)
+- Last agent: implementer (batch 7, 2026-11-04)
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
-- Previous sha: `4857babc` (the docs commit on top of batch 6, `96710fe3`)
-- Pushed: the remediation commit and `4857babc` go in this push; the sha is in the implementer's report.
+- Previous sha: `0a43491f` (batch 6's last docs commit, CI credit passed)
+- Pushed: the batch 7 commit; the sha is in the implementer's report.
 
 ## Completed
 - Batch 1 - foundation: `9a31aede`, review fix `80872b35` (`reviews/1.md`).
@@ -383,12 +383,111 @@
 
   CI run 41820770364 of `bbda9dca` failed only on `node tools/decisions.js` (a status line after "- Task" in the 2026-10-02 field-help and 2026-09-30 save-button files). Fix: both "Superseded in part by" lines moved above "- Task"; the validator reports 0 problems.
 
+- Batch 7 - search, account, empty and error states (`plan-7.md`). New: `Marked`, `NoPage`, `pickKinds`,
+  `markRuns`, `shortPath`, `AppState.searchKinds`, `pickKind`, `resetKinds`, `Button` `danger-fill`, `ErrorPage`'s
+  `said`, the fake's `print` hold, cases 93 and 94, the decision file
+  `2026-11-04-search-and-account-follow-the-list-head-and-the-error-page.md`. Acceptance:
+
+  | Line | Outcome |
+  |---|---|
+  | Section 7, line 1 (`/p/` page rows) | Not this batch: batch P |
+  | Section 7, line 2 (error-page pattern) | Done for five of the six S7 states, deviation 1: `NoPage`, retired link, failed `/p/` read, boundary, editor's missing item; `printPage`, `shell`, `homebrewEditor` tests with axe; the status region says the title (`ErrorPage` `said`) |
+  | Section 7, line 3 (account clarity) | Done: `accountPage.test.ts`; the account goldens re-seeded |
+  | Section 7, line 4 (`/p/` not-found and retired) | Partly, deviation 1: the retired link and the failed read draw `ErrorPage`; the unknown, expired and malformed set keep `PageTitle` (a contract) |
+  | Section 7, line 5 (`danger-fill`) | Done: `button.test.ts`, `accountPage.test.ts`, DESIGN "Buttons"; the plate and the sheet checked against `/search` |
+  | Section 7, line 6 (M2-2, pin on `/search`) | Done: `searchPage.test.ts`, case 93 |
+  | C13 | Done: `searchPage.test.ts`, `std.test.ts`, `app.test.ts`, `hues.js` (new read), goldens; `toggleKind` unchanged |
+  | Orchestrator line: a search pick leaves the roller's kinds on | Done, deviation 2: `AppState.searchKinds`. The test «leaves the roll pages' kinds on» failed at `0a43491f` in a detached worktree (`aria-pressed` false on the roller) and passes now; `app.test.ts` holds the state |
+  | C14 | Done: no instruction sentence; three examples hit in RU and EN over `data.json`; a press fills the box, the box keeps the focus |
+  | C15 (J8) | Done: «№ 89» / "No. 89" on `/search` rows, the bare number on a table row |
+  | C16, C60 | Done: the cause, the two resets and their focus (`searchPage.test.ts`); the own-items plate with its title and a primary «Новый предмет» (`homebrewCatalog.test.ts`) |
+  | Q3-S | Done: no strip on `/search`, ticks only in the mode, the bar's «Все» ticks the found rows, «Снять выделение» back to «Выбрать»; `TableRows` keeps the strip for `/s/` |
+  | N7 (J7) | Done: `markRuns` and `Marked`; `RowMain` has no `nameRuns`; `tables.test.ts`, `searchPage.test.ts`, `search.test.ts` |
+  | Deferred "Display note and default-view wording" | Done: no lead, "по умолчанию" rows; `FEATURES.md` "Account", "Tables and search" |
+  | A31, A32 | Done: case 94, `accountPage.test.ts`, deviation 3 |
+  | D7, N7-2 | Done: two `Seg`s, no checkbox, `printCompactBox` gone |
+  | A34, D8 | Done: the list, the fill, the typed word, both focus rules; D8 probe under Verification |
+  | J13 account loading | Done: the heading and «Загружаем...» |
+  | Seg rule | Done: every account `Seg` `neutral`; `hues.js` reads it (CI's) |
+  | New states: entry, golden, axe | Done: 9 new entries, `~ kind off` retired (deviation 4), axe in the component tests; the unknown session in `accountPage.test.ts` |
+  | Specs, DESIGN, decision, COVERAGE | Done |
+  | `FIRST_SCREEN` | Rows `shipped: true`; offsets under Verification; assertion is CI's case 83 |
+  | Axe rows, artwork guard | Done: `COVERED` gains `Marked` and `NoPage`; `CARD_HEAD_SHA256` did not move |
+  | Detector, spelling, shots, `routes.json` | See Verification; `routes.json` unchanged; `polish` and `harden` are the orchestrator's |
+  | Budget | See Verification |
+  | Inherited 6-N1 | Not measured: the re-seed passes no editor state with a 120-character name, and the editor's layout did not change in this batch (its missing state only); stays Deferred |
+  | Placed items of `plan-7.md` | The orchestrator's to fold into `plan.md` (this batch cannot edit it): section 8 gate cost, section 14 rows `shipped: true` (done in `states.js`), the batch 8 and 9a acceptance lines, batch P's shared print labels, batch 10 nothing new |
+  | CI green on the tip | The orchestrator's wait |
+
+- Batch 7 departures and deviations:
+  1. `/p/` unknown, expired and malformed sets keep `PageTitle` «Печать карточек» and the sub `printSetGone`:
+     `docs/fixtures/urls/routes.json` (`#/p/short`) names that heading and sub, and the preview Worker
+     quotes `printSetGone`, so the S7 row would change a public contract. `printSetGoneTitle` is not added; the
+     retired link and the failed read do draw `ErrorPage`. Batch P can take it with a contract change.
+  2. Search has its own kinds, `AppState.searchKinds` (the orchestrator's line), not `app.kinds` as J3 said. A
+     roller kind switch no longer reaches search; `FEATURES.md` "Rolling" and `STATE.md` say so.
+  3. The account panel draws the session's line (email, «через <provider>») also when no row names the
+     session's provider, an email-link account: without it such an account showed its email nowhere. e2e F2
+     waits for «Способы входа» in place of «Вы вошли как».
+  4. `#/zzz-nowhere` is not an inventory entry: an unreadable address goes home (`routes.json` `#/nonsense`), so
+     `NoPage` shows on `#/l/ ~ retired` and `#/l/~AAAA`, which re-seed.
+  5. `ErrorPage` gains `said`: the brief's "as batch 4's `NoItem` does" was not true (`ItemPage` says only a lost
+     item), so a status region fills after the mount on the new error pages.
+  6. The search head's count line sits under the kind row from 761 px, and the account keeps `accountSub`.
+  7. DESIGN.md gains "The Search Head Rule" in "Layout" (nine named rules there now).
+
 - Review: done, `issues/57/reviews/3.md`, verdict fix-then-continue; the one remediation
   pass is this commit. No second review is needed: the picker fix leaves the first-screen
   rows unmoved (234 at 360).
 - Plan review: not required for batch 3 (`plan.md` Status, no trigger fired).
 
 ## Verification
+- Batch 7, 2026-11-04, on the final tree (diff base `0a43491f`):
+  - `npx vitest run` of `searchPage`, `accountPage`, `printPage`, `shell`, `tables`, `button`, `itemPage`, `record`,
+    `homebrewEditor`, `homebrewPage`, `homebrewCatalog`, `listPage`, `sharedListPage`, `a11y`, `fake-cloud`,
+    `app/src/lib`, `state/app`: pass after the fixes (searchPage 31, accountPage 46). Kinds proof: the case «leaves the
+    roll pages' kinds on» in a detached worktree at `0a43491f`: 1 failed (`aria-pressed="false"` on the roller's chip).
+  - `npx svelte-check`: 0 errors. `npm run lint:untyped`, `npm run lint:typed`: exit 0.
+  - `node --test tools/artwork/lib.test.mjs`: 77 pass; `CARD_HEAD_SHA256` did not move.
+  - `npm run build:test`, then `node tests/app/golden.js --update --shard=n/4`, n = 1 to 4. Deviation: the inventory
+    gained two entries while shards 1 and 2 ran, which moved the index partition, so `--update --only=` re-seeded the
+    `search`, `#/account`, `#/l/`, `#/print/`, `load failed`, `grid searched` and `homebrew as gm2` families on the final
+    inventory; then `node tests/app/golden.js --shard=1/4` and `--shard=2/4` compared: 97 and 97 states, unchanged (shards
+    3 and 4 had run on the final inventory). Moved: 11 `_search*`, 4 `_account*`, `_l_retired`, `_l_AAAA`,
+    `_print_ci1_q1`, `_tables_homebrew_as_gm2`; new: 9; deleted: `_search_kind_off`. `_p_bad`, `_p_set_expired1_as_gm2`
+    and `_account` did not move (deviation 1). 388 states.
+  - `node tools/decisions.js`: 304 decisions.
+  - `npm run check:built`: 263.3 kB, past 262, so the limit is 264 (the standing rule; under 266, no removal needed).
+    `smoke-http.mjs` read the old not-found heading: its line now reads «Страницы по этому адресу нет».
+  - Configured: `vite build` with placeholder `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`,
+    `node tools/bundle-budget.mjs`: 320.7 kB, past 320, so the limit is 321 (CI's 0.1 kB more stays under it).
+    `tools/bundle-budget.mjs` and `.claude/README.md` carry both. The 270 kB ceiling is not reached, so the owner's 300 kB
+    ceiling (orchestrator message, 2026-11-04) is not written anywhere yet.
+  - Detector, `impeccable detect --json --no-inline-ignores app/src`: 67 findings (67 before); in touched files only the
+    `design-system-*` advisories of `Button`, `PrintPage` and `TableRows`, none in a new file.
+  - Spelling over added lines and new files: no hit.
+  - Cases 83, 93 and 94 once through a scratch loader of `states.js` on `dist-test/`: all passed after two fixes (case
+    93's English box name; the search head at 1180 first measured 289.4 > 288, see below).
+  - First screen, measured in the built app (top of `[data-primary]`):
+
+    | Row | 360x640 (limit 256) | 1180x720 (limit 288) |
+    |---|---|---|
+    | `#/search ~ searched` | 230 RU, 230 EN | 279 RU, 279 EN |
+    | `#/search`, a kind picked (not a row) | 252 | 301 |
+    | `#/account as gm1` | 241 RU, 218 EN | 186 RU, 186 EN |
+
+    At 1180 the lead takes two lines; the search row and the kind row margins were tightened from 289.4 to 279.4. The
+    named fix if a host passes 288: hide the lead from 761 px (removes visible text; the orchestrator logs it).
+  - D8 probe (built app, `issues/57/mocks/7/built/shoot.js`): EN page, «delete» typed, «Delete for good» enabled at 360
+    and 1180; RU with «удалить» the same. The typed word follows the interface language; the old D8 capture was an
+    artefact of the golden typing the Russian word on the English half. The golden now types «delete» there (`again`).
+  - `node issues/57/mocks/7/built/shoot.js`: the set in `mocks/7/built/`, 360 and 1180, RU and EN, and `/search` at 761.
+  - 6-N1: not measured (no editor state in this re-seed has a 120-character name; the editor's layout did not change).
+  - `rtk npm run check:fast`, last: exit 0 in 553 s, 4101 tests with coverage, 263.3 kB within 264; gate credit armed.
+    Its first two runs failed: `golden.test.mjs` refused the id `#/account as gm1 ~ narrow` (now `#/account ~ narrow as
+    gm1`) and the hold `print` (its pattern gains `print`); then the 300-row selection case timed out under coverage
+    (one `fireEvent` per press, a 60 s limit).
+  - Not run locally (CI's): `app/states` whole, `app/contracts`, `app/hues`, `app/typo`, `app/print`, `sweep.js`, `e2e`.
 - Batch 6 remediation, 2026-11-04 (diff base `4857babc`):
   - `gh run view 41813328286 --repo artex-x/daggerheart-loot --log-failed`: the five failures of step 1 of the old
     "Next batch" list (sweep 360, 390, 768, 1180 en; states 63, 91; e2e F14).
@@ -637,21 +736,19 @@ Session pause, 2026-11-04 (owner restart). The next session continues from here.
 `C:\Users\Ignat\.dhloot\notes\owner-afk-2026-11-03\decisions.md` (items 1-11 so far).
 
 In order:
-1. Done: CI run 41813328286 read, `polish` and `harden` of batch 6 (Notes), the review (`reviews/6.md`) and its
-   remediation pass (Completed, "Batch 6 remediation").
-2. The orchestrator waits on the CI of the remediation push (`ci-credit.mjs` is the orchestrator's). F14-F20 of
-   `e2e` ran only up to F14 on `96710fe3`, so F15-F20 run for the first time on this push.
-3. No second review unless CI fails: the fix moves no layout of `/homebrew`, and the editor's bar only up to 380 px.
-4. Batch 7, brief `plan-7.md`, `opus` (writer test 3). Add to its dispatch: `app.kinds` is shared with the
-   roller, so a search pick must not leave the roller's kinds off; fix it here, not Deferred. Then polish,
-   harden, review, fix, CI.
-5. Batch 9a, brief `plan-9a.md`, `opus`, the same cycle. Its `FIRST_SCREEN`, `selectAll` and `sendAll`
+1. Done: batch 6 with its remediation (CI credit passed on `0a43491f`) and batch 7 (Completed, "Batch 7").
+2. The orchestrator: `polish` and `harden` of batch 7 (S11) on `SearchPage`, `AccountPage`, `NoPage` and the `/p/`
+   error branches at 360 and 1180 px; the review (trigger: new or changed UI, `tests/app/` changed); CI of the push.
+   Cases 93 and 94, the new `hues.js` reads and the e2e F2 line run for the first time on CI.
+3. Batch 9a, brief `plan-9a.md`, `opus`, the same cycle. Its `FIRST_SCREEN`, `selectAll` and `sendAll`
    corrections are in the brief's "Placed items".
-6. Fold each brief's "Placed items" into `plan.md` (`plan-4.md` to `plan-9a.md`; P5 is already in batch 10); collapse
+4. Fold each brief's "Placed items" into `plan.md` (`plan-4.md` to `plan-9a.md`; P5 is already in batch 10); collapse
    section 10 to a pointer (`plan.md` is over its 150 KB line). Reviewer probes go in batch 10 (`context.md`).
-7. Wave 2 squash (`plan.md` section 16; `orchestrate.prompt.md` closeout step 8): run `ci-credit.mjs` on the
+   Batch P gets one more line from batch 7: the unknown, expired and malformed `/p/` set may move to `ErrorPage`
+   only with a `routes.json` contract change (`#/p/short` names the heading and the sub).
+5. Wave 2 squash (`plan.md` section 16; `orchestrate.prompt.md` closeout step 8): run `ci-credit.mjs` on the
    tip with a clean tree. Then the blind review of waves 1 and 2 on production, with its remediation at once.
-8. Refresh and run 8, 9b, P, 10 (wave 3), the wave 3 blind review, then the whole-app blind review, closeout.
+6. Refresh and run 8, 9b, P, 10 (wave 3), the wave 3 blind review, then the whole-app blind review, closeout.
 
 Facts for the dispatches:
 - Local gates: affected vitest files, both lints after the last edit, the golden re-seed when goldens move
@@ -718,8 +815,10 @@ Facts for the dispatches:
   the owner says yes; one added item with its own mock check.
 - N0-2 of `reviews/mocks-2.md` (batch 4): the error-page pattern's circled icon
   is a template shape; keep the heading, the cause and the action.
-- The Account page's Display note and its default-view wording (batch 7, mock
-  3's C57 answer); `KeepNote.svelte` leaves with batch P.
+- `KeepNote.svelte` leaves with batch P (the Account page's Display note left with batch 7).
+- Batch 7 (S6 check): the import panels say where each file of the data archive is imported (`hbImportZipLists`,
+  `importZipHomebrew`) and the 1000 limit, but not the order (own items first, then lists) the old account hint
+  gave. Named for the review; no line added here.
 - `FilterBar.svelte`, `BatchBar.svelte`, `anyValue` and the shared page's
   `.fpill` reader in `tests/app/contracts.js` leave with their last callers
   (batches 8, 9).
@@ -757,4 +856,6 @@ Facts for the dispatches:
 - Session end partial progress (if any): none
 - Durable items written to their homes this batch: `FEATURES.md`, `COVERAGE.md`, `STATE.md`,
   `DESIGN.md`, `.claude/README.md` (the budgets), the decision file named under Completed. The placed
-  items of `plan-6.md` are the orchestrator's to fold into `plan.md`.
+  items of `plan-7.md` are the orchestrator's to fold into `plan.md` (batch 7: `FEATURES.md` "Rolling", "Tables and
+  search", "Lists", "Print", "Account", "Chrome" and rules 3, 6, 7, 15; `STATE.md`; `DESIGN.md`; the decision file;
+  `tools/smoke-http.mjs`).

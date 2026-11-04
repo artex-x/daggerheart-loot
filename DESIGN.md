@@ -124,6 +124,12 @@ components:
     rounded: "{rounded.sm}"
     padding: "0 18px"
     height: "46px"
+  button-danger-fill:
+    backgroundColor: "{colors.alarm-red}"
+    textColor: "{colors.ink-on-gold}"
+    rounded: "{rounded.sm}"
+    padding: "0 18px"
+    height: "46px"
   chip:
     backgroundColor: "{colors.vault-wall}"
     textColor: "{colors.ash-violet}"
@@ -422,13 +428,20 @@ in the bottom sheet; below 761px the picker row, the sheet and «··· Ещё»
 replace them. The `viewport` port (`app/src/ports/viewport.ts`) is the one place
 that reads the width in code; CSS reads the same two numbers. Every other media
 query in the code belongs to one component and its own measured problem. Do
-not add another system breakpoint.
+not add another system breakpoint. `/account` signed in uses the 1000px step too:
+one column below it, two from it, in the DOM order of the one column.
 
 **The Roll Page Rule.** The nine roll pages share one layout. Up to 760px: a read-only
 `h1`, the controls, one results line («Бросок N», «Настроить», «Ещё»); the pin, the
 help and the copy of every option are items of «Ещё». From 761px: the head with the
 labeled pin and help, a 320px control pane, the results. The roller has one gold
 primary at most, and a die is plain.
+
+**The Search Head Rule.** `/search` takes the list head of the catalog with one
+difference: up to 760px no picker fills the head row, so the `h1` «Поиск» stays
+visible with «Ещё» (the pin, its one item) on its row. The search row follows on one
+line: the box, «Фильтры», «Выбрать» last. From 761px the page head with the lead and
+the labeled pin, then the search row and a row of kind chips.
 
 **The Dossier Rule.** A record page and the record dialog are one dossier: the
 picture beside the text from 761px and 4:3 above it below, no plate on a page. The
@@ -457,8 +470,8 @@ and the pin and the help are labeled buttons («Открывать при зап
 "Open on start", «Справка» / "Help"; the catalog's help is named for its
 panel, «Об этих данных» / "About this data"). The one interim exception: up to
 760px the pin and the help stay round buttons with the same names until their
-page's batch moves them into «Ещё» (search and the account, and the lists); the
-catalog's, the roller's and `/homebrew`'s are in «Ещё».
+page's batch moves them into «Ещё» (the lists); the catalog's, the roller's,
+`/homebrew`'s and `/search`'s are in «Ещё». The account page draws neither.
 
 **The First-Screen Rule.** At 360x640 and at 1180x720, in Russian and in
 English, at scroll 0, the primary content of a route starts no lower than 40%
@@ -554,7 +567,10 @@ means "a thing". Do not round a card to a pill or square a chip.
 - **Toggle:** gold label on a 45 per cent gold border with no fill. This is the
   filter button once a filter holds a value.
 - **Ghost and Danger:** a transparent fill beside a primary action; an Alarm Red
-  border with Alarm Red Text for a destructive one.
+  border with Alarm Red Text for a destructive one, the outlined default.
+- **Danger fill (`danger-fill`):** the one irreversible press of a confirm: an
+  Alarm Red fill and border with an Ink on Gold label (the error toast's pair,
+  about 5.6:1). Its one caller is the account delete's «Удалить навсегда».
 - **Icons:** every icon inside a button renders at 15px whatever its own
   attributes say. Dice are the single exception and keep their own silhouette,
   because squaring them makes a d4 look heavier than a d20.
@@ -577,6 +593,9 @@ means "a thing". Do not round a card to a pill or square a chip.
   two lines in a 3 + 2 grid up to 760px, a list of 46px rows from 761px.
 - **A row with every chip on:** each chip takes the neutral pressed state; a row
   narrowed draws the chips left on in gold.
+- **A filter row:** «Все» neutral pressed, then the values; a press from «Все»
+  picks one value, the last pick off returns to «Все». This is the model of every
+  filter row, the catalog's and search's three kinds included.
 - **Hover:** border to Seal Gold, label to Chalk.
 - **Semantics:** a chip that navigates is an anchor carrying `aria-current`; a
   chip that toggles is a button carrying `aria-pressed`. Middle-click keeps
@@ -603,8 +622,9 @@ means "a thing". Do not round a card to a pill or square a chip.
   grid switch, the print color or black-and-white switch) passes `neutral`:
   the pressed button takes the `check` icon before its label, a Vault Wall Lit
   fill, a Chalk label and a lit `--muted2` border, and no gold. It is the picker
-  of a form field too (the homebrew editor, the import's «Если уже есть:»); gold
-  stays for a choice that narrows a view.
+  of a form field too (the homebrew editor, the import's «Если уже есть:», every
+  picker of the account's Display section); gold stays for a choice that narrows a
+  view.
 - Every button carries `aria-pressed`, including the ones whose original did
   not.
 
@@ -752,12 +772,20 @@ means "a thing". Do not round a card to a pill or square a chip.
 - `Empty`: a dashed plate. The catalog adds the kind glyph in its art well (the
   only picture), the heading «Ничего не найдено», one cause sentence and a
   primary reset while a filter is chosen.
+- A search's start state: the glyph, a title («Что ищем?»), one sentence and example
+  queries as chips; the syntax lives in the examples, not in an instruction.
+- A search's nothing-found state: the cause (the query, the picked kinds or both) and
+  one reset («Сбросить фильтры» or «Очистить поиск»). A plate holds one primary at most.
 
 ### Error page
 
 - `ErrorPage`: the cause as the page's `h1`, one sentence that names the address or
   the way out, the actions with the primary first. No icon and no plate: the heading
   already says what happened.
+- It covers every page-level failure: an unknown address of this build
+  (`NoPage`), a missing record (`NoItem`), a retired print link, a failed print set
+  read (primary «Повторить»), the editor's missing item and a page that threw. The
+  page's name stays in the tab title.
 
 ### Toast
 

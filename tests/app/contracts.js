@@ -30,7 +30,10 @@ const { ok } = rep;
         h1: document.querySelector('main h1')?.textContent?.trim() ?? null,
         bar: location.pathname + location.hash
       }));
-      ok(seen.h1 === 'Предмет не найден', hash + ': the heading is ' + JSON.stringify(seen.h1));
+      ok(
+        seen.h1 === 'Страницы по этому адресу нет',
+        hash + ': the heading is ' + JSON.stringify(seen.h1)
+      );
       ok(seen.bar === pathOf(hash, 'ru'), hash + ': the address became ' + seen.bar);
     }
     await ctx.close();

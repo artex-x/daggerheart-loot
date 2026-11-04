@@ -95,6 +95,29 @@ export function isLastOn<K extends string>(
 }
 
 /**
+ * Returns the picks after a press on one value of a filter row whose default is «Все».
+ *
+ * From «Все» (every key on) a press picks that key alone; otherwise it flips the key, and
+ * the last pick off returns to «Все» (DESIGN.md, "Chips").
+ *
+ * @param chosen The picks before the press.
+ * @param keys Every key of the row.
+ * @param key The pressed key.
+ * @returns The new picks.
+ */
+export function pickKinds<K extends string>(
+  chosen: Chosen<K>,
+  keys: readonly K[],
+  key: K
+): Chosen<K> {
+  const all = keys.every((k) => chosen[k]);
+  const next = { ...chosen };
+  for (const k of keys) next[k] = all ? k === key : k === key ? !chosen[k] : chosen[k];
+  if (!keys.some((k) => next[k])) for (const k of keys) next[k] = true;
+  return next;
+}
+
+/**
  * What the closed «Настроить» reads while a row is narrowed: the value left on, or the word
  * and the count of narrowed rows. Empty while every row is whole.
  *

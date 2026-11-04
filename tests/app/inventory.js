@@ -72,6 +72,8 @@ const HB_AXE_RENAMED = {
  * (`app/src/ports/fake-cloud-seed.ts`, `PRINT_SETS`): `gm4` made them, and a state
  * reads one as `gm2`, which has no print layout of its own, or as `gm1`. */
 const TWO = '#/p/set-twocards';
+/* «Ещё» on the h1 row of `#/search` up to 760 px. */
+const SEARCH_MORE = '.headrow [aria-haspopup="menu"]';
 const COUNTED = '#/p/set-counted1';
 /* Every card shape on one sheet; `tests/app/print.js`'s own `NINE`. */
 const NINE = '#/p/set-ninecard';
@@ -97,10 +99,10 @@ const CLIPPED_TEXT =
 /** The print controls' name: the driver names a titled button by its text. */
 const PRINT = 'Печать';
 
-/** Waits until a `#/p/` page has left «Загружаем...»: its sheet, or its sub. */
+/** Waits until a `#/p/` page has left «Загружаем...»: its sheet, its sub or its error page. */
 async function sheet(d) {
   for (let i = 0; i < 200; i++) {
-    if ((await d.count('.printbar, .page-sub')) > 0) return;
+    if ((await d.count('.printbar, .page-sub, .errpage')) > 0) return;
     await new Promise((r) => setTimeout(r, 50));
   }
   throw new Error('a #/p/ state never left its loading line');
@@ -915,6 +917,15 @@ const STATES = [
     why: 'the grid view, a different body entirely: two columns at 360, no kind badge on a one-kind table',
     enter: async (d) => {
       await d.click('Сетка');
+    }
+  },
+  {
+    id: '#/tables/eq_weapon ~ grid searched',
+    route: '#/tables/eq_weapon',
+    why: 'the grid view with «меч» typed: the tiles whose names hold the word, the word marked',
+    enter: async (d) => {
+      await d.click('Сетка');
+      await d.type('Поиск', 'меч');
     }
   },
   {
@@ -2178,12 +2189,12 @@ const STATES = [
        2026-10-26 carries it (`git show 0b73fd5c:docs/fixtures/lists/qty-and-price.json`). */
     id: '#/l/ ~ retired',
     route: '#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKjIsY2MyMSo1KjUwLHEzMzcqMSoxMg',
-    why: 'an old list link draws the not-found page: «Предмет не найден», its sub, «На главную»; the address kept, nothing decoded'
+    why: 'an old list link draws the page of an address with no page: «Страницы по этому адресу нет», the address in code, «На главную» and «Открыть таблицы»; the address kept, nothing decoded'
   },
   {
     id: '#/l/~AAAA',
     route: '#/l/~AAAA',
-    why: 'a packed old list link: the same not-found page, the address kept'
+    why: 'a packed old list link: the same page of an address with no page, the address kept'
   },
 
   /* An account list's share link, `#/s/<token>`: read-only for everyone, the
@@ -2408,20 +2419,64 @@ const STATES = [
   {
     id: '#/search',
     route: '#/search',
-    why: 'the page as opened: head, sub, the box focused with its ring painted, three chips on, the hint'
+    why: 'the page as opened: the head with the lead and the labeled pin, the box focused, «Все» pressed and three kinds unpressed, the start plate «Что ищем?» with three examples'
+  },
+  {
+    id: '#/search ~ narrow',
+    route: '#/search',
+    width: 360,
+    why: 'up to 760 px: the h1 and «Ещё» on one row, the lead read only, the search row with «Фильтры», the start plate with three examples'
+  },
+  {
+    id: '#/search ~ more',
+    route: '#/search',
+    width: 360,
+    why: '«Ещё» open on the h1 row: the pin as its one item',
+    enter: (d) => d.openMore(SEARCH_MORE),
+    again: (d) => d.openMore(SEARCH_MORE)
+  },
+  {
+    id: '#/search ~ filter sheet as gm1',
+    route: '#/search',
+    as: 'gm1',
+    width: 360,
+    why: '«меч» typed, «Фильтры» pressed: the sheet with «Свои предметы» first and the row «Тип» with «Все» pressed',
+    enter: async (d) => {
+      await d.type('Поиск по названию или описанию...', 'меч');
+      await d.click('Фильтры');
+    }
+  },
+  {
+    id: '#/search ~ selecting',
+    route: '#/search',
+    why: '«меч» typed, «Выбрать» pressed and one row ticked: the ticks in the rows, the bar with «Выбрано: 1», no select-all strip',
+    enter: async (d) => {
+      await d.type('Поиск по названию или описанию...', 'меч');
+      await d.click('Выбрать');
+      await d.tick('Меч Хрустального Духа');
+    }
+  },
+  {
+    id: '#/search ~ nothing found, kind picked',
+    route: '#/search',
+    why: 'a query with no hit and «Расходники» picked: «Ничего не найдено», the cause naming the query and the kind, «Сбросить фильтры»',
+    enter: async (d) => {
+      await d.type('Поиск по названию или описанию...', 'zzzqqqxx123');
+      await d.click('Расходники');
+    }
   },
   {
     id: '#/search ~ searched',
     route: '#/search',
-    why: '121 rows of loot and gear together, ranked: the names with «меч» at a word start first, then the rest; "Выбрать все (121)"',
+    why: '139 rows of loot and gear together, ranked: the names with «меч» at a word start first and marked, «№ N» on the rolled rows; no ticks and no select-all strip',
     enter: async (d) => {
       await d.type('Поиск по названию или описанию...', 'меч');
     }
   },
   {
-    id: '#/search ~ kind off',
+    id: '#/search ~ kind picked',
     route: '#/search',
-    why: '43 rows, no equipment badge left, the chip off',
+    why: '«Снаряжение» picked from «Все»: the gear rows alone, the chip lit, the count line «Снаряжение · Показано 91 из 139»',
     enter: async (d) => {
       await d.type('Поиск по названию или описанию...', 'меч');
       await d.click('Снаряжение');
@@ -2439,7 +2494,7 @@ const STATES = [
   {
     id: '#/search ~ capped',
     route: '#/search',
-    why: 'the 300 cap: "Выбрать все (300)" over the first 300, and the new "300 из <n>" line above it',
+    why: 'the 300 cap: the first 300 rows and the count line «Показано 300 из <n>»',
     enter: async (d) => {
       await d.type('Поиск по названию или описанию...', 'а');
     }
@@ -2455,7 +2510,7 @@ const STATES = [
   {
     id: '#/search ~ nothing found',
     route: '#/search',
-    why: '"Ничего не найдено", and no reset button - unlike the tables',
+    why: '«Ничего не найдено», the cause naming the query, and «Очистить поиск»',
     enter: async (d) => {
       await d.type('Поиск по названию или описанию...', 'zzzqqqxx123');
     }
@@ -2463,7 +2518,7 @@ const STATES = [
   {
     id: '#/search ~ a row ticked',
     route: '#/search',
-    why: 'the bar over search',
+    why: 'the bar over search: «Выбрать» opens the mode, one row ticked',
     enter: async (d) => {
       await d.type('Поиск по названию или описанию...', 'меч');
       /* The first ranked hit for "меч" - computed against `data.json` through
@@ -2474,7 +2529,7 @@ const STATES = [
   {
     id: '#/print/ci1-q1',
     route: '#/print/ci1-q1',
-    why: 'an old long print link: the retired page, the address kept'
+    why: 'an old long print link: the error page «Такие ссылки на печать больше не открываются.», its sentence and «На главную»; the address kept'
   },
   {
     id: TWO,
@@ -2492,6 +2547,14 @@ const STATES = [
     route: '#/p/set-expired1',
     as: 'gm2',
     why: 'a set no one opened for 90 days: the set-not-found sub and «На главную», the address kept',
+    enter: sheet
+  },
+  {
+    id: TWO + ' ~ load failed as gm2',
+    route: TWO,
+    as: 'gm2',
+    hold: 'print:fail',
+    why: 'the set read fails: the error page «Набор не загрузился», its sentence and the primary «Повторить»',
     enter: sheet
   },
   {
@@ -2739,19 +2802,28 @@ const STATES = [
     id: '#/account as gm1',
     route: '#/account',
     as: 'gm1',
-    why: 'two identities: the six sections in order, the Display section first with its lead line, a Disconnect on each, «Ваши данные» between «Способы входа» and «Выход»'
+    why: 'two identities: the five sections in order, «Отображение на всех устройствах» first with no lead line and two print segments, Google marked «Сейчас», a Disconnect on each, «Ваши данные» between «Способы входа» and «Выход»'
+  },
+  {
+    id: '#/account ~ narrow as gm1',
+    route: '#/account',
+    as: 'gm1',
+    width: 360,
+    why: 'one column at 360: the print row with its two segments wrapped, the sign-in methods under the Display section'
   },
   {
     id: '#/account ~ delete confirmation as gm1',
     route: '#/account',
     as: 'gm1',
-    why: 'the typed confirmation open, the word typed and the final button enabled; the English half types the Russian word, so there its final button stays disabled; «Ваши данные» above it',
+    why: 'the typed confirmation open: «Будут удалены:» with the counts read and the fixed line, the word of each language typed and the filled final button enabled',
     enter: async (d) => {
       await d.click('Удалить аккаунт...');
       /* The only text box on the page; it is named by its <label>, which the
          driver's name lookup does not read, and has no placeholder. */
       await d.type('', 'удалить');
-    }
+    },
+    /* The English half types the English word: the word follows the interface language. */
+    again: (d) => d.type('', 'delete')
   },
   {
     id: '#/roll/std as gm1',
@@ -3620,7 +3692,7 @@ const STATES = [
     id: '#/search ~ own items as gm1',
     route: '#/search',
     as: 'gm1',
-    why: '«топор» typed: the axe ranked with the 13 catalog matches; the intro ends «И 4 ваших предмета.»; the three kinds in the kind row and the switch «Свои предметы» on under it',
+    why: '«топор» typed: the axe ranked with the 13 catalog matches; the intro ends «И 4 ваших предмета.»; «Все» and the three kinds in the kind row and the switch «Свои предметы» on after them',
     enter: async (d) => {
       await d.type('Поиск по названию или описанию...', 'топор');
     }

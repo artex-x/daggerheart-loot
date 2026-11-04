@@ -1198,6 +1198,31 @@ describe('the kind filter', () => {
     expect(app.toast?.msg).toBe('Нужен хотя бы один тип');
   });
 
+  it('pickKind picks one kind for search, and the last pick off returns to all three', () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/search') }));
+    app.pickKind('equip');
+    expect(app.searchKinds).toEqual({ item: false, consumable: false, equip: true });
+    app.pickKind('item');
+    expect(app.searchKinds).toEqual({ item: true, consumable: false, equip: true });
+    app.pickKind('item');
+    app.pickKind('equip');
+    expect(app.searchKinds).toEqual({ item: true, consumable: true, equip: true });
+    expect(app.toast).toBeNull();
+  });
+
+  it('resetKinds returns search to all three', () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/search') }));
+    app.pickKind('consumable');
+    app.resetKinds();
+    expect(app.searchKinds).toEqual({ item: true, consumable: true, equip: true });
+  });
+
+  it("leaves the roll pages' kinds on when search picks equipment", () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/search') }));
+    app.pickKind('equip');
+    expect(app.kinds).toEqual({ item: true, consumable: true, equip: true });
+  });
+
   it('is left alone by go() and by a navigation the router announces', () => {
     const router = memoryRouter('#/roll/std');
     const app = new AppState(fakeEnv({ router }));

@@ -21,24 +21,31 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search?
     heading "Поиск" [level=1]
     button "Открывать при запуске" [pressed=false]
     StaticText "Поиск сразу по 1459 позициям - добыча, расходники и снаряжение, ..." [namelen=111 namehash=09cf3b8f]
-    searchbox "Поиск по названию или описанию..." [value=топор focused=true]
-    StaticText "ТИП"
-    button "Предметы" [pressed=true]
-    button "Расходники" [pressed=true]
-    button "Снаряжение" [pressed=true]
+    searchbox "Поиск по названию или описанию..." [value=топор]
+    button "Все" [pressed=true]
+    button "Предметы" [pressed=false]
+    button "Расходники" [pressed=false]
+    button "Снаряжение" [pressed=false]
     switch "Свои предметы" [checked=false]
     StaticText "Свои предметы"
-    checkbox "Выбрать все (17)" [checked=false]
-    StaticText "Выбрать все (17)"
     checkbox "Топор-Пила Лесоруба" [checked=false]
-    button "10 Топор-Пила Лесоруба ПРЕДМЕТ ГОРНОЕ Этот массивный гибридный и..." [namelen=231 namehash=e2d189e6]
-    ... checkbox x14 of 18 same-shape siblings elided
-    button "4 Топор Лесного Стража ПРЕДМЕТ ЛЕСНОЕ Этот внешне обычный топор ..." [namelen=232 namehash=1cb2d3f3]
+    button "№ 10 Топор-Пила Лесоруба ПРЕДМЕТ ГОРНОЕ Этот массивный гибридный..." [namelen=233 namehash=f5686d56]
+    checkbox "Топор Лесного Стража" [checked=false]
+    button "№ 4 Топор Лесного Стража ПРЕДМЕТ ЛЕСНОЕ Этот внешне обычный топо..." [namelen=234 namehash=5ba52574]
+    ... checkbox x13 of 17 same-shape siblings elided
     ... button x13 of 17 same-shape siblings elided
     checkbox "Стопорный Ключ" [checked=false]
-    button "49 Стопорный Ключ ПРЕДМЕТ WONDROUS ENVIRONMENTS При успешном Бро..." [namelen=372 namehash=7a4102ba]
+    button "№ 49 Стопорный Ключ ПРЕДМЕТ WONDROUS ENVIRONMENTS При успешном Б..." [namelen=374 namehash=e6b79b6d]
     checkbox "Неугомонное Возмездие" [checked=false]
-    button "116 Неугомонное Возмездие ОСНОВНОЕ ОРУЖИЕ УНИКАЛЬНОЕ THE DRAGON'..." [namelen=465 namehash=5976e86f]
+    button "№ 116 Неугомонное Возмездие ОСНОВНОЕ ОРУЖИЕ УНИКАЛЬНОЕ THE DRAGO..." [namelen=467 namehash=dd052ef7]
+  region "Выбранные записи"
+    checkbox "Выбрать все" [focused=true checked=false]
+    generic ""
+      StaticText "Выбрано: 0"
+    button "В список" [disabled=true expanded=false]
+    button "Печать" [description=Собрать карточки для печати: девять на лист A4 disabled=true]
+    button "Скопировать текст" [disabled=true]
+    button "Снять выделение"
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -47,22 +54,16 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search?
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-10Топор-Пила ЛесорубаПредметГорноеЭтот массивный гибридный инстр... [namelen=227 namehash=4acc533d]
-116Неугомонное ВозмездиеОсновное оружиеУникальноеThe Dragon's Va... [namelen=458 namehash=cef1b169]
-49Стопорный КлючПредметWondrous EnvironmentsПри успешном Броске ... [namelen=368 namehash=2d682c91]
-4Топор Лесного СтражаПредметЛесноеЭтот внешне обычный топор несё... [namelen=228 namehash=f6be394b]
-5Топор РассветаОсновное оружиеArazo's ArtifactsРанг 1 · Физическ... [namelen=309 namehash=b970f9d3]
-6Улучшенный Топор РассветаОсновное оружиеArazo's ArtifactsРанг 2... [namelen=320 namehash=072238f0]
-7Продвинутый Топор РассветаОсновное оружиеArazo's ArtifactsРанг ... [namelen=321 namehash=3b232dfb]
-84Топор Чёрной ПорчиОсновное оружиеУникальноеThe Dragon's VaultР... [namelen=472 namehash=6854197b]
-8Легендарный Топор РассветаОсновное оружиеArazo's ArtifactsРанг ... [namelen=321 namehash=00ac25b9]
 EN
 RU
 daggerheart.com
 Аккаунт: gm1@example.test
 Бросок
+В список
 Возвращающийся Топор
 Возвращающийся ТопорВторичное оружиеУникальноеCoreРанг 2 · Физич... [namelen=225 namehash=b89af8ff]
+Все
+Выбрать все
 К содержимому
 Конфиденциальность
 Легендарный Священный Топор
@@ -73,7 +74,9 @@ daggerheart.com
 Мясницкий ТопорОсновное оружиеУникальноеПир зверейРанг 1 · Физич... [namelen=134 namehash=30faa1f8]
 Неугомонное Возмездие
 Открывать при запуске
+Печать
 Поиск
+Поиск по названию или описанию...
 Предметы
 Продвинутый Священный Топор
 Продвинутый Священный ТопорОсновное оружиеCoreРанг 3 · Магическо... [namelen=107 namehash=87afbd6f]
@@ -81,7 +84,9 @@ daggerheart.com
 Расходники
 Священный Топор
 Священный ТопорОсновное оружиеCoreРанг 1 · Магическое · Сила · В... [namelen=95 namehash=59b6d44a]
+Скопировать текст
 Снаряжение
+Снять выделение
 Стопорный Ключ
 Таблицы
 Топор Лабрис
@@ -97,6 +102,15 @@ daggerheart.com
 Улучшенный Топор Рассвета
 Условия использования
 Установить как приложение
+№ 10Топор-Пила ЛесорубаПредметГорноеЭтот массивный гибридный инс... [namelen=229 namehash=5452ed42]
+№ 116Неугомонное ВозмездиеОсновное оружиеУникальноеThe Dragon's ... [namelen=460 namehash=c9b67a02]
+№ 49Стопорный КлючПредметWondrous EnvironmentsПри успешном Броск... [namelen=370 namehash=339de642]
+№ 4Топор Лесного СтражаПредметЛесноеЭтот внешне обычный топор не... [namelen=230 namehash=80cb2373]
+№ 5Топор РассветаОсновное оружиеArazo's ArtifactsРанг 1 · Физиче... [namelen=311 namehash=30ee32c9]
+№ 6Улучшенный Топор РассветаОсновное оружиеArazo's ArtifactsРанг... [namelen=322 namehash=25405803]
+№ 7Продвинутый Топор РассветаОсновное оружиеArazo's ArtifactsРан... [namelen=323 namehash=16dda3b3]
+№ 84Топор Чёрной ПорчиОсновное оружиеУникальноеThe Dragon's Vaul... [namelen=474 namehash=d01d1d3f]
+№ 8Легендарный Топор РассветаОсновное оружиеArazo's ArtifactsРан... [namelen=323 namehash=67afa496]
 
 ## en :: tree
 RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search?as=gm1]
@@ -116,24 +130,31 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search?as=gm1]
     heading "Search" [level=1]
     button "Open on start" [pressed=false]
     StaticText "Search all 1459 entries at once - loot, consumables and equipmen..." [namelen=115 namehash=a1849572]
-    searchbox "Search by name or description..." [value=топор focused=true]
-    StaticText "TYPE"
-    button "Items" [pressed=true]
-    button "Consumables" [pressed=true]
-    button "Equipment" [pressed=true]
+    searchbox "Search by name or description..." [value=топор]
+    button "All" [pressed=true]
+    button "Items" [pressed=false]
+    button "Consumables" [pressed=false]
+    button "Equipment" [pressed=false]
     switch "Own items" [checked=false]
     StaticText "Own items"
-    checkbox "Select all (17)" [checked=false]
-    StaticText "Select all (17)"
     checkbox "Felling Axe-Saw" [checked=false]
-    button "10 Felling Axe-Saw ITEM RIDGEBORNE This massive hybrid tool cuts..." [namelen=234 namehash=1841393a]
-    ... checkbox x14 of 18 same-shape siblings elided
-    button "4 Forestwarden's Axe ITEM WILDBORNE This seemingly ordinary axe ..." [namelen=200 namehash=639a4f55]
+    button "No. 10 Felling Axe-Saw ITEM RIDGEBORNE This massive hybrid tool ..." [namelen=238 namehash=2023cb75]
+    checkbox "Forestwarden's Axe" [checked=false]
+    button "No. 4 Forestwarden's Axe ITEM WILDBORNE This seemingly ordinary ..." [namelen=204 namehash=397b8327]
+    ... checkbox x13 of 17 same-shape siblings elided
     ... button x13 of 17 same-shape siblings elided
     checkbox "Jamming Spanner" [checked=false]
-    button "49 Jamming Spanner ITEM WONDROUS ENVIRONMENTS Make a successful ..." [namelen=352 namehash=60dcab6e]
+    button "No. 49 Jamming Spanner ITEM WONDROUS ENVIRONMENTS Make a success..." [namelen=356 namehash=b4a195b2]
     checkbox "Restless Vengeance" [checked=false]
-    button "116 Restless Vengeance PRIMARY WEAPON UNIQUE THE DRAGON'S VAULT ..." [namelen=473 namehash=21f3369d]
+    button "No. 116 Restless Vengeance PRIMARY WEAPON UNIQUE THE DRAGON'S VA..." [namelen=477 namehash=978882c7]
+  region "Selected records"
+    checkbox "Select all" [focused=true checked=false]
+    generic ""
+      StaticText "0 selected"
+    button "Add to list" [disabled=true expanded=false]
+    button "Print" [description=Lay these out for printing: nine to an A4 sheet disabled=true]
+    button "Copy text" [disabled=true]
+    button "Clear selection"
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -142,24 +163,19 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search?as=gm1]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-10Felling Axe-SawItemRidgeborneThis massive hybrid tool cuts thr... [namelen=230 namehash=db9064a7]
-116Restless VengeancePrimary weaponUniqueThe Dragon's VaultTier ... [namelen=466 namehash=8efa6a20]
-49Jamming SpannerItemWondrous EnvironmentsMake a successful Fine... [namelen=348 namehash=b8db9aa6]
-4Forestwarden's AxeItemWildborneThis seemingly ordinary axe carr... [namelen=196 namehash=51c54fd7]
-5Axe of the DawnPrimary weaponArazo's ArtifactsTier 1 · Physical... [namelen=266 namehash=05ca6289]
-6Improved Axe of the DawnPrimary weaponArazo's ArtifactsTier 2 ·... [namelen=275 namehash=319a3126]
-7Advanced Axe of the DawnPrimary weaponArazo's ArtifactsTier 3 ·... [namelen=275 namehash=c5fc1d6f]
-84Black Corruption AxePrimary weaponUniqueThe Dragon's VaultTier... [namelen=456 namehash=20d0083b]
-8Legendary Axe of the DawnPrimary weaponArazo's ArtifactsTier 4 ... [namelen=276 namehash=b5960d09]
 Account: gm1@example.test
+Add to list
 Advanced Axe of the Dawn
 Advanced Hallowed Axe
 Advanced Hallowed AxePrimary weaponCoreTier 3 · Magic · Strength... [namelen=96 namehash=9e092780]
+All
 Axe of the Dawn
 Black Corruption Axe
 Butcher's Axe
 Butcher's AxePrimary weaponUniqueBeast FeastTier 1 · Physical · ... [namelen=125 namehash=c3ecf03a]
+Clear selection
 Consumables
+Copy text
 EN
 Equipment
 Felling Axe-Saw
@@ -178,7 +194,17 @@ Legendary Axe of the Dawn
 Legendary Hallowed Axe
 Legendary Hallowed AxePrimary weaponCoreTier 4 · Magic · Strengt... [namelen=98 namehash=fef9eb68]
 LootDaggerheart
+No. 10Felling Axe-SawItemRidgeborneThis massive hybrid tool cuts... [namelen=234 namehash=ac3afa6c]
+No. 116Restless VengeancePrimary weaponUniqueThe Dragon's VaultT... [namelen=470 namehash=3605c1f4]
+No. 49Jamming SpannerItemWondrous EnvironmentsMake a successful ... [namelen=352 namehash=5bd388b3]
+No. 4Forestwarden's AxeItemWildborneThis seemingly ordinary axe ... [namelen=200 namehash=317c298c]
+No. 5Axe of the DawnPrimary weaponArazo's ArtifactsTier 1 · Phys... [namelen=270 namehash=7d1546d3]
+No. 6Improved Axe of the DawnPrimary weaponArazo's ArtifactsTier... [namelen=279 namehash=832440db]
+No. 7Advanced Axe of the DawnPrimary weaponArazo's ArtifactsTier... [namelen=279 namehash=2c1197e8]
+No. 84Black Corruption AxePrimary weaponUniqueThe Dragon's Vault... [namelen=460 namehash=18ffe1d4]
+No. 8Legendary Axe of the DawnPrimary weaponArazo's ArtifactsTie... [namelen=280 namehash=308e2a0d]
 Open on start
+Print
 Privacy
 RU
 Restless Vengeance
@@ -188,6 +214,8 @@ Ricochet Axes
 Ricochet AxesPrimary weaponUniqueCoreTier 4 · Physical · Agility... [namelen=175 namehash=1cbe4556]
 Roll
 Search
+Search by name or description...
+Select all
 Skip to content
 Tables
 Terms of use

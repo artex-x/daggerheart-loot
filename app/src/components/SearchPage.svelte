@@ -1,29 +1,36 @@
 <script lang="ts">
-  /* Search, `#/search` - reproduced from `renderSearch` (`git show 23c00a6^:app.js`).
-     Both languages at once, over loot and gear together: the head, one panel
-     holding the box (focused on arrival) and the three kind chips, then the
-     hint, up to 300 rows ranked best first, or "nothing found". A signed-in
-     author's own items rank with the catalog's, the catalog's record first
-     on a tie, and the «Свои предметы» switch under the kind chips hides them for the visit. */
-  import { onDestroy, untrack } from 'svelte';
-  import Empty from './Empty.svelte';
-  import Field from './Field.svelte';
-  import ChipRow from './ChipRow.svelte';
+  /* Search, `#/search`: both languages at once, over loot and gear together, in the list
+     head of the catalog (docs/specs/FEATURES.md, "Tables and search"). Up to 760 px a
+     visible `h1` row with «Ещё», then the search row with «Фильтры» and «Выбрать»; from
+     761 px the page head, the search row and a row of kind chips. Then up to 300 rows
+     ranked best first, the start state with example queries, or the nothing-found state.
+     A signed-in author's own items rank with the catalog's, the catalog's record first on
+     a tie, and the «Свои предметы» switch hides them for the visit. The kinds are search's
+     own (`AppState.searchKinds`), apart from the roll pages'. */
+  import { onDestroy, tick, untrack } from 'svelte';
+  import Button from './Button.svelte';
   import Chip from './Chip.svelte';
+  import ChipRow from './ChipRow.svelte';
+  import Empty from './Empty.svelte';
+  import FilterPanel from './FilterPanel.svelte';
+  import MoreMenu from './MoreMenu.svelte';
   import NoData from './NoData.svelte';
   import PageHead from './PageHead.svelte';
-  import Panel from './Panel.svelte';
+  import PinItem from './PinItem.svelte';
   import RecordHost from './RecordHost.svelte';
   import SearchBox from './SearchBox.svelte';
   import Switch from './Switch.svelte';
   import TableRows from './TableRows.svelte';
   import { kindOf } from '../lib/data.js';
+  import type { FacetRow } from '../lib/facets.js';
+  import type { FilterState } from '../lib/filters.js';
+  import { kindGlyph } from '../lib/label.js';
   import { hayFor, parseQuery, rankHits, statLineFor } from '../lib/search.js';
   import { plural } from '../lib/plural.js';
-  import { isLastOn } from '../lib/std.js';
   import { KINDS } from '../lib/types.js';
   import type { Dict } from '../lib/dict.js';
   import type { Kind } from '../lib/types.js';
+  import type { Band } from '../ports/index.js';
   import type { AppState } from '../state/app.svelte.js';
 
   interface Props {
@@ -32,7 +39,17 @@
 
   const { app }: Props = $props();
 
+  /* The results a page draws at most; the count line says the rest. */
+  const CAP = 300;
+
+  const KIND_LABEL: Record<Kind, keyof Dict> = {
+    item: 'fItems',
+    consumable: 'fCons',
+    equip: 'fEquip'
+  };
+
   const t = $derived(app.t);
+  const band = $derived(app.band);
   const index = $derived(app.index);
   /* The row pool only: `RecordHost` and `TableRows` keep `index`. */
   const browse = $derived(app.browse);
@@ -42,30 +59,43 @@
     own > 0 ? t.subSearch + ' ' + plural(own, t.subSearchOwn, app.lang) : t.subSearch
   );
 
-  /* Page memory only, the same as `TablesPage`'s own `q` - `docs/specs/
-     STATE.md` is explicit that what was asked on a page is not remembered,
-     and search follows the live `S.search.q`'s own rule. */
+  /* Page memory only, the same as `TablesPage`'s own `q` - `docs/specs/STATE.md` is
+     explicit that what was asked on a page is not remembered. */
   let q = $state('');
 
   const terms = $derived(parseQuery(q));
   const statLine = $derived(statLineFor(app.lang, t));
   const hay = $derived(hayFor(statLine));
-  /* The unsliced match count, kept so a broad query can say "these are
-     the first 300 of N" instead of stopping at 300 with nothing on screen to
-     tell that apart from "this is all of them" - the same shown-of-total
-     line the table filter strip already prints (`FilterBar.svelte`'s
-     `.fcount`, `t.outOf`). */
-  const matched = $derived.by(() =>
-    !browse || !terms.length
-      ? []
-      : rankHits(
-          browse.searchable.filter((it) => app.kinds[kindOf(it)]),
-          terms,
-          statLine,
-          hay
-        )
+  /* Ranked once over every kind, then filtered: the rank is per record, so the order is
+     the order of ranking the filtered pool, and the count line can name the whole. */
+  const all = $derived(
+    !browse || !terms.length ? [] : rankHits(browse.searchable, terms, statLine, hay)
   );
-  const found = $derived(matched.slice(0, 300));
+  const matched = $derived(all.filter((it) => app.searchKinds[kindOf(it)]));
+  const found = $derived(matched.slice(0, CAP));
+
+  const picked = $derived(KINDS.filter((k) => app.searchKinds[k]));
+  const narrowed = $derived(picked.length < KINDS.length);
+  const kindState = $derived<FilterState>(narrowed ? { kind: picked } : {});
+  const rows = $derived<FacetRow[]>([
+    {
+      group: 'kind',
+      label: t.kindF,
+      values: KINDS.map((k) => ({ value: k, label: t[KIND_LABEL[k]] }))
+    }
+  ]);
+  const values = $derived(narrowed ? picked.map((k) => t[KIND_LABEL[k]]).join(', ') : '');
+  const countText = $derived(
+    t.shownOf.replace('%n', String(found.length)).replace('%m', String(all.length))
+  );
+
+  /* The nothing-found cause names the query, the picked kinds or both. One pass with a
+     function: `$&` or `%v` in a query stays text. */
+  const emptyCause = $derived(
+    (narrowed ? t.emptyBoth : t.emptySearch).replace(/%[qv]/g, (m) =>
+      m === '%q' ? q.trim() : values
+    )
+  );
 
   /* The selection bar's «Все» ticks the rows drawn here. */
   $effect(() => {
@@ -78,72 +108,218 @@
     app.setSelectable([]);
   });
 
-  const KIND_LABEL: Record<Kind, keyof Dict> = {
-    item: 'fItems',
-    consumable: 'fCons',
-    equip: 'fEquip'
-  };
+  /* Ticks that arrive with the page (a sign-in that returns with them) open the mode. */
+  $effect(() => {
+    if (app.sel.size > 0 && !app.selecting) {
+      untrack(() => {
+        app.selecting = true;
+      });
+    }
+  });
+
+  /* «Выбрать» opens the selection mode; the focus moves to the bar's «Все». */
+  async function startSelecting(): Promise<void> {
+    app.selecting = true;
+    await tick();
+    document.querySelector<HTMLElement>('.selbarwrap .selall input')?.focus();
+  }
+
+  /* The kind sheet up to 760 px: page memory, closed when the band leaves `narrow`. */
+  let filterOpen = $state(false);
+  let filterToggle = $state<HTMLButtonElement | undefined>(undefined);
+  let seenBand: Band | null = null;
+  $effect.pre(() => {
+    const now = band;
+    untrack(() => {
+      const moved = seenBand !== null && seenBand !== now;
+      seenBand = now;
+      if (moved && now !== 'narrow') filterOpen = false;
+    });
+  });
+
+  const searchBox = (): HTMLElement | null =>
+    document.querySelector<HTMLElement>('.searchrow input[type="search"]');
+
+  /* An example fills the box; the box keeps the focus. */
+  async function tryExample(text: string): Promise<void> {
+    q = text;
+    await tick();
+    searchBox()?.focus();
+  }
+
+  /* Rule 20: the plate's button leaves with the plate. After a kind reset the focus goes
+     to «Фильтры» or the first kind chip; after a cleared query, to the search box. */
+  async function resetFromEmpty(): Promise<void> {
+    const kinds = narrowed;
+    if (kinds) app.resetKinds();
+    else q = '';
+    await tick();
+    const target = kinds
+      ? ((filterToggle?.isConnected ? filterToggle : null) ??
+        document.querySelector<HTMLElement>('.kindrow .chip'))
+      : searchBox();
+    (target ?? document.getElementById('main'))?.focus();
+  }
 </script>
 
-<PageHead {app} title={t.search} sub={intro} help={null} />
+<!-- eslint-disable @typescript-eslint/no-confusing-void-expression -- a `{@render}` tag of a
+     local snippet reads as a void expression to this rule. -->
+{#snippet ownSwitch()}
+  <Switch
+    label={t.ownSwitch}
+    on={app.homebrewShown}
+    onchange={() => {
+      app.toggleHomebrew();
+    }}
+  />
+{/snippet}
+
+<!-- The list head (docs/specs/FEATURES.md, "Tables and search"): up to 760 px no picker
+     fills the row, so the `h1` stays visible beside «Ещё». -->
+{#if band === 'narrow'}
+  <div class="headrow">
+    <h1 class="page-h">{t.search}</h1>
+    <MoreMenu {app} id="search-more" size="sm">
+      {#snippet children(close)}
+        <PinItem {app} onpicked={close} />
+      {/snippet}
+    </MoreMenu>
+  </div>
+  <p class="vh">{intro}</p>
+{:else}
+  <PageHead {app} title={t.search} sub={intro} help={null} />
+{/if}
 
 <RecordHost {app} {index}>
   {#snippet children(openRecord)}
     {#if !index}
       <NoData>{t.noData}</NoData>
     {:else}
-      <Panel style="margin-bottom:16px">
-        <Field>
+      <div class="searchrow">
+        <div class="grow">
           <SearchBox
             value={q}
-            placeholder={t.searchPh}
+            placeholder={t.searchShort}
+            label={t.searchPh}
             focus
             oninput={(v: string) => {
               q = v;
             }}
           />
-        </Field>
-        <Field label={t.filter}>
+        </div>
+        {#if band === 'narrow'}
+          <Button
+            size="sm"
+            variant={narrowed ? 'toggle' : 'plain'}
+            expanded={filterOpen}
+            bind:el={filterToggle}
+            onclick={() => {
+              filterOpen = true;
+            }}>{narrowed ? t.filtersN.replace('%n', String(picked.length)) : t.filters}</Button
+          >
+        {/if}
+        {#if !app.selecting && found.length > 0}
+          <button
+            type="button"
+            class="selmode"
+            onclick={() => {
+              void startSelecting();
+            }}>{t.selectMode}</button
+          >
+        {/if}
+      </div>
+
+      {#if band !== 'narrow'}
+        <div class="kindrow" role="group" aria-label={t.kindF}>
           <ChipRow>
+            <Chip
+              label={t.allShort}
+              neutral
+              on={!narrowed}
+              onclick={() => {
+                app.resetKinds();
+              }}
+            />
             {#each KINDS as kind (kind)}
               <Chip
                 label={t[KIND_LABEL[kind]]}
-                on={app.kinds[kind]}
-                title={isLastOn(app.kinds, KINDS, kind) ? t.keepOneKind : undefined}
+                filter={'kind:' + kind}
+                on={narrowed && app.searchKinds[kind]}
                 onclick={() => {
-                  app.toggleKind(kind, KINDS);
+                  app.pickKind(kind);
                 }}
               />
             {/each}
           </ChipRow>
-          {#if own > 0}
-            <div class="own">
-              <Switch
-                label={t.ownSwitch}
-                on={app.homebrewShown}
-                onchange={() => {
+          {#if own > 0}{@render ownSwitch()}{/if}
+        </div>
+      {:else}
+        <FilterPanel
+          {app}
+          {rows}
+          picked={kindState}
+          shown={found.length}
+          {band}
+          open={filterOpen}
+          onclose={() => {
+            filterOpen = false;
+            filterToggle?.focus();
+          }}
+          onpick={(_g: string, v: string) => {
+            app.pickKind(v as Kind);
+          }}
+          onclear={() => {
+            app.resetKinds();
+          }}
+          onreset={() => {
+            app.resetKinds();
+          }}
+          own={own > 0
+            ? {
+                on: app.homebrewShown,
+                onchange: () => {
                   app.toggleHomebrew();
-                }}
-              />
-            </div>
-          {/if}
-        </Field>
-      </Panel>
+                }
+              }
+            : undefined}
+        />
+      {/if}
+
+      {#if terms.length && (narrowed || all.length > CAP)}
+        <p class="count">
+          {#if values}<span class="vals">{values}</span><span>&nbsp;·&nbsp;</span>{/if}<span
+            class="n">{countText}</span
+          >
+        </p>
+      {/if}
 
       {#if !terms.length}
-        <Empty>{t.startTyping}</Empty>
+        <Empty title={t.searchWhat} glyph={kindGlyph('item', undefined)}>
+          <p class="cause">{t.searchStartSub}</p>
+          <ChipRow>
+            {#each [t.searchEx1, t.searchEx2, t.searchEx3] as ex (ex)}
+              <Chip label={ex} neutral on={false} onclick={() => void tryExample(ex)} />
+            {/each}
+          </ChipRow>
+        </Empty>
       {:else if !found.length}
-        <Empty>{t.nothing}</Empty>
+        <Empty title={t.nothing} glyph={kindGlyph('item', undefined)}>
+          <p class="cause">{emptyCause}</p>
+          <Button variant="primary" onclick={() => void resetFromEmpty()}
+            >{narrowed ? t.resetFilters : t.clearSearch}</Button
+          >
+        </Empty>
       {:else}
-        {#if matched.length > found.length}
-          <p class="scount">{found.length} {t.outOf} {matched.length}</p>
-        {/if}
+        <!-- The first row is the page's primary content: no section head comes before it. -->
         <TableRows
           primary
           entries={found.map((it) => ({ it }))}
           view="list"
           {index}
           lang={app.lang}
+          ticks={app.selecting}
+          {terms}
+          numLabeled
           selected={(id: string) => app.sel.has(id)}
           artBroken={(id: string) => app.artBroken(id)}
           ontoggle={(id: string) => {
@@ -153,28 +329,119 @@
             app.markArtBroken(id);
           }}
           onopen={openRecord}
-          ontoggleall={(toggled: string[]) => {
-            app.toggleAllIn(toggled);
-          }}
         />
       {/if}
     {/if}
   {/snippet}
 </RecordHost>
 
-<!-- `.miss` moved to `NoData.svelte`, `.panel` to `Panel.svelte` - the
-     16px margin-bottom is the live inline attribute, passed as `style`. -->
-
 <style>
-  .own {
-    margin-top: 10px;
+  /* Up to 760 px: the visible `h1` and «Ещё» on one row. The row anchors the menu: up to
+     760 px `MoreMenu`'s wrap is static. */
+  .headrow {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
   }
 
-  /* Off `FilterBar.svelte`'s `.fcount`, the shown-of-total line the
-     table filter strip already had: same font, same muted color. */
-  .scount {
+  /* `PageHead`'s heading type. */
+  .page-h {
+    margin: 0;
+    min-width: 0;
+    font-size: var(--t-page);
+    font-weight: var(--h-page-weight);
+    letter-spacing: var(--h-page-spacing);
+    overflow-wrap: anywhere;
+  }
+
+  /* The search row: the box first, «Выбрать» last, every control at one height; one
+     line at every width. */
+  /* From 761 px the page head (its lead on two lines), this row and the kind row put the
+     first result at 281 px of the 288 px limit at 1180x720 (measured 2026-11-04). */
+  .searchrow {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin: 12px 0 6px;
+  }
+
+  .searchrow :global(input[type='search']),
+  .searchrow :global(.btn.sm),
+  .selmode {
+    height: 40px;
+  }
+
+  .searchrow .grow {
+    flex: 1 1 140px;
+    min-width: 140px;
+  }
+
+  .selmode {
+    flex: none;
+    padding: 0 11px;
+    border: 1px solid var(--line2);
+    border-radius: var(--r-sm);
+    background: var(--surface);
+    color: var(--txt);
+    font: 600 var(--t-data) / 1 var(--ui);
+  }
+
+  .selmode:hover {
+    border-color: var(--muted2);
+  }
+
+  /* From 761 px: the kinds and the own-items switch, wrapped whole. */
+  .kindrow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
+    margin: 0 0 4px;
+  }
+
+  /* The count line: the picked kinds cut to one line, the count never cut. */
+  .count {
+    display: flex;
+    align-items: baseline;
+    min-width: 0;
+    max-width: 100%;
     margin: 0 0 10px;
-    font: 600 var(--t-label)/1 var(--mono);
-    color: var(--muted2);
+    line-height: 16px;
+    font-size: var(--t-data);
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .count .vals {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .count .n {
+    flex: none;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .cause {
+    margin: 0;
+    max-width: 60ch;
+    overflow-wrap: anywhere;
+  }
+
+  @media (max-width: 760px) {
+    .searchrow {
+      margin: 0 0 8px;
+      gap: 5px;
+    }
+
+    .searchrow :global(input[type='search']),
+    .searchrow :global(.btn.sm),
+    .selmode {
+      padding: 0 9px;
+    }
   }
 </style>

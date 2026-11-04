@@ -138,7 +138,7 @@ describe('the address', () => {
         env: at(hash, { router, cloud: fakeCloud(SEED) })
       });
       expect(
-        screen.getByRole('heading', { level: 1, name: 'Предмет не найден' })
+        screen.getByRole('heading', { level: 1, name: 'Страницы по этому адресу нет' })
       ).toBeInTheDocument();
       expect(screen.getByRole('link', { name: 'На главную' })).toHaveAttribute(
         'href',

@@ -14,8 +14,10 @@
      *  on a gold-tinted border rather than a fill, and only once it has
      *  something picked. `ghost` is `.btn.ghost` - a transparent fill, the
      *  cancel button beside a primary one. `bare` is text alone, no box - the
-     *  requests panel's fold of decided requests. */
-    variant?: 'plain' | 'primary' | 'toggle' | 'ghost' | 'danger' | 'bare';
+     *  requests panel's fold of decided requests. `danger` is the outlined delete;
+     *  `danger-fill` is the one irreversible press of a confirm, the account's
+     *  «Удалить навсегда» (DESIGN.md, "Buttons"). */
+    variant?: 'plain' | 'primary' | 'toggle' | 'ghost' | 'danger' | 'danger-fill' | 'bare';
     /** `sm` is the 32px row on a card; the default 46px is the panel's. */
     size?: 'md' | 'sm';
     title?: string;
@@ -209,6 +211,18 @@
   .btn.danger:hover {
     border-color: var(--danger);
     background: rgb(224 104 95 / 12%);
+  }
+
+  /* The error toast's pair, about 5.6:1. */
+  .btn.danger-fill {
+    background: var(--danger);
+    border-color: var(--danger);
+    color: var(--ink-on-gold);
+  }
+
+  .btn.danger-fill:hover {
+    background: var(--danger);
+    border-color: var(--danger-text);
   }
 
   /* Text alone, after `.btn.sm` so it wins: the requests panel's fold of decided
