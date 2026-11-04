@@ -381,6 +381,8 @@
 
   The two new unit tests failed at `4857babc` in a detached worktree (2 failed, 96 passed).
 
+  CI run 41820770364 of `bbda9dca` failed only on `node tools/decisions.js` (a status line after "- Task" in the 2026-10-02 field-help and 2026-09-30 save-button files). Fix: both "Superseded in part by" lines moved above "- Task"; the validator reports 0 problems.
+
 - Review: done, `issues/57/reviews/3.md`, verdict fix-then-continue; the one remediation
   pass is this commit. No second review is needed: the picker fix leaves the first-screen
   rows unmoved (234 at 360).

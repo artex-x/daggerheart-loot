@@ -1,5 +1,6 @@
 # 2026-10-02 - Field help is a «?» by the label; every input has its own visible label
 
+- Superseded in part by "The homebrew pages share the list head and one selection bar" (2026-11-04): the editor and the card forms have no «?», and the second stat set's disclosure has no «?» beside it.
 - Task: `persist-7f-consistency` (owner's editor feedback and help rules of 2026-10-02; the field review's rows taken as recommended while the owner was away).
 - Decision: rule 15 "Labels and help" of `docs/specs/FEATURES.md`, "Chrome",
   "Consistency rules": every input has a visible label in the game's own
@@ -14,4 +15,3 @@
   help box per field (wider than a field); short visible threshold labels
   with the full term in `aria-label` (the name would not contain the visible
   words, WCAG 2.5.3); a separate help document or a review prompt change.
-- Superseded in part by "The homebrew pages share the list head and one selection bar" (2026-11-04): the editor and the card forms have no «?», and the second stat set's disclosure has no «?» beside it.
