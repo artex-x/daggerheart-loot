@@ -284,7 +284,7 @@
      in style.css - the row anchor's own target, unused until now, wired up
      here for the first time. */
   :global([data-row]) {
-    scroll-margin-top: var(--anchor-top);
+    scroll-margin-top: var(--anchor-gap);
   }
 
   @media (max-width: 600px) {

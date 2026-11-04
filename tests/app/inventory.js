@@ -991,6 +991,15 @@ const STATES = [
     }
   },
   {
+    id: '#/tables/eq_weapon ~ header hidden',
+    route: '#/tables/eq_weapon',
+    width: 360,
+    why: 'the header out of sight after a scroll down: it stays in the tree and the tab order',
+    enter: async (d) => {
+      await d.scrollPage(800);
+    }
+  },
+  {
     id: '#/tables/eq_weapon ~ table picker',
     route: '#/tables/eq_weapon',
     width: 360,

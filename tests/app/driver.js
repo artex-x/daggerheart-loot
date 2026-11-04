@@ -538,6 +538,17 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
       await settle(page);
     },
 
+    /** Scrolls the page to `y` as a reader does, then settles. The wait first is the
+     *  `scroll` port's quiet window plus a frame: a scroll inside that window reads as
+     *  the arrival's own and moves no header. */
+    async scrollPage(y) {
+      await new Promise((r) => setTimeout(r, 200));
+      await page.evaluate((to) => {
+        window.scrollTo(0, to);
+      }, y);
+      await settle(page);
+    },
+
     /** Fires the page's shown-again signal (`visibilitychange` while visible),
      *  then settles. */
     async shownAgain() {

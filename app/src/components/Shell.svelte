@@ -10,8 +10,10 @@
   import Toast from './Toast.svelte';
   import { sectionLabel } from '../lib/dict.js';
   import { ACCOUNT_HASH } from '../lib/hash.js';
+  import { headerAt, nextHeader } from '../lib/headerScroll.js';
   import { nameOf } from '../lib/i18n.js';
   import { modeOf } from '../lib/nav.js';
+  import { untrack } from 'svelte';
   import type { Snippet } from 'svelte';
   import type { AppState } from '../state/app.svelte.js';
   import type { Lang } from '../lib/types.js';
@@ -139,6 +141,66 @@
     return it ? nameOf(it, app.lang) : app.t.hbNewItem;
   }
 
+  let topbar = $state<HTMLElement | undefined>(undefined);
+  let head = $state.raw(headerAt(0));
+
+  /* A text field: the on-screen keyboard moves the page without the reader. */
+  const FIELD =
+    'input:not([type="checkbox"], [type="radio"], [type="button"], [type="submit"], [type="file"], [type="range"]), textarea, select, [contenteditable]';
+
+  /* Every popup is a `Menu`, the add-to-list menu or a modal `<dialog>`; while one is open,
+     a page movement is not the reader's. */
+  function held(): boolean {
+    const { scroll, drag } = app.env;
+    return (
+      scroll.busy() ||
+      drag.active() ||
+      app.menuFor !== '' ||
+      document.querySelector('[role="menu"], dialog[open]') !== null ||
+      document.activeElement?.matches(FIELD) === true
+    );
+  }
+
+  /* The header hides up to 760 px only (DESIGN.md, "The Hidden Header Rule"). */
+  $effect(() => {
+    if (app.band !== 'narrow') return;
+    const scroll = app.env.scroll;
+    return scroll.onscroll(() => {
+      head = nextHeader(head, {
+        y: scroll.y(),
+        max: scroll.max(),
+        height: topbar?.offsetHeight ?? 0,
+        held: held()
+      });
+    });
+  });
+
+  /* An arrival shows the header and waits out the scroll that comes with it: a linked
+     target, the browser's restore on Back or a reload, a shorter page. */
+  $effect(() => {
+    void app.navigations;
+    void app.band;
+    untrack(() => {
+      app.env.scroll.settle();
+      head = headerAt(app.env.scroll.y());
+    });
+  });
+
+  /* The focus fix reads the header's real height: a narrow window wraps the brand row. */
+  $effect(() => {
+    const el = topbar;
+    if (!el || typeof ResizeObserver !== 'function') return;
+    const root = document.documentElement;
+    const watch = new ResizeObserver(() => {
+      root.style.setProperty('--sticky-h', `${String(el.offsetHeight)}px`);
+    });
+    watch.observe(el);
+    return () => {
+      watch.disconnect();
+      root.style.removeProperty('--sticky-h');
+    };
+  });
+
   /** The skip link's own activation, off `#skip` in the live stylesheet's
    *  overlay shape - `href="#main"` stays for a client with no script, but a
    *  browser fragment jump would add `#main` to the address and a history
@@ -153,7 +215,7 @@
 
 <a class="skip" href="#main" onclick={skip}>{app.t.skipToContent}</a>
 
-<header class="topbar">
+<header class="topbar" class:away={!head.shown} bind:this={topbar}>
   <div class="topbar-in">
     <a class="brand" href={app.href('#/roll/std')}>
       <!-- The vault die (docs/artwork.md, "Icons"): the same drawing as
@@ -331,7 +393,8 @@
   }
 
   /* off `.topbar` in style.css. Sticky and translucent: the tabs stay reachable
-     while a long table scrolls under them. */
+     while a long table scrolls under them; up to 760 px the header leaves on a scroll
+     down and returns on a scroll up. */
   .topbar {
     position: sticky;
     top: 0;
@@ -372,6 +435,15 @@
       order: 3;
       flex-basis: 100%;
       margin-right: 0;
+    }
+
+    .topbar {
+      transition: transform 0.2s ease-out;
+    }
+
+    /* A focus inside the header brings it back, so a Tab never lands out of sight. */
+    .topbar.away:not(:focus-within) {
+      transform: translateY(-100%);
     }
   }
 

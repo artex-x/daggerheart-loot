@@ -386,7 +386,8 @@ keeps the selection bar clear of a display cutout.
 
 The page is a vertical stack: a sticky translucent header (`rgb(14 12 21 / 86%)`
 over a 14px backdrop blur) that holds the brand row and the three jobs (63px from
-761px, 111px at 360px), the mode row on the nine roll pages (53px, scrolling with
+761px, 111px at 360px; up to 760px it leaves on a scroll down and returns on a
+scroll up), the mode row on the nine roll pages (53px, scrolling with
 the page), the content, then the footer. `main`
 carries 26px of top padding, 48px of bottom padding, and a 60vh minimum so a
 short route does not collapse. `scrollbar-gutter: stable` on `html` reserves the
@@ -408,8 +409,9 @@ From 761px the brand, the three jobs, the language switch and the account
 control share one row, and the page head's pin and «Справка» show their labels;
 the sticky header is 63px. Up to 760px the jobs take a second row and the
 header is 111px at 360px in both languages (at most 112px). A linked section,
-row or card lands under the header by `--anchor-top`, set at the same two
-steps: 75px, 118px up to 760px and 132px up to 600px. At 600px touch
+row or card lands `--anchor-gap` (12px) under the header; `--sticky-h`, the
+header's measured height, is the page's `scroll-padding-top`, so a focused
+control stops clear of it. At 600px touch
 targets grow: segment padding to 8px 14px, the section copy-link button from
 about 20px to a 36px hit area, row actions onto their own line, the mode row's
 controls 40px tall. The catalog adds one step, 1000px: from it the filter
@@ -420,6 +422,13 @@ replace them. The `viewport` port (`app/src/ports/viewport.ts`) is the one place
 that reads the width in code; CSS reads the same two numbers. Every other media
 query in the code belongs to one component and its own measured problem. Do
 not add another system breakpoint.
+
+**The Hidden Header Rule.** Up to 760px the whole header leaves on a scroll down
+and returns on a scroll up, on every page, because a phone reader needs the rows
+more than the jobs. It slides in 0.2s, or appears at once under reduced motion. It
+is shown at the top of a page, on a short page and after a navigation; a menu, a
+sheet, a dialog, a text field or a drag freezes it; a focus inside brings it back.
+It never leaves the tab order.
 
 **The Same Label Rule.** A label does not change with the width, and a control
 is never only an icon where its label fits: the three jobs keep their labels at

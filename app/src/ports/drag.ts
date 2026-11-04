@@ -51,7 +51,9 @@ export function edgeSpeed(y: number, innerHeight: number): number {
 }
 
 export function nativeDrag(): DragPort {
+  let live = false;
   return {
+    active: () => live,
     bind(container, handlers: DragHandlers) {
       let from = -1;
       let gap = -1;
@@ -152,6 +154,7 @@ export function nativeDrag(): DragPort {
         document.removeEventListener('dragstart', onDocStart, true);
         source?.removeEventListener('dragend', onDragEnd);
         source = null;
+        live = false;
         stopScroll();
       };
 
@@ -178,6 +181,7 @@ export function nativeDrag(): DragPort {
       const onStart = (e: Event): void => {
         const grip = (e.target as HTMLElement).closest('[data-drag]');
         if (!grip) return;
+        live = true;
         const row = grip.closest('[data-index]');
         from = indexOf(row);
         gap = -1;
@@ -232,7 +236,7 @@ export function nativeDrag(): DragPort {
 
 /** Binds nothing. For tests, and for anywhere dragging makes no sense. */
 export function noDrag(): DragPort {
-  return { bind: () => () => undefined };
+  return { bind: () => () => undefined, active: () => false };
 }
 
 /**
@@ -243,9 +247,11 @@ export function noDrag(): DragPort {
  * call, which this lets a test prove by invoking `.handlers.onDrop(from, to)`
  * itself once the component has mounted and bound it.
  */
-export function fakeDrag(): DragPort & { handlers: DragHandlers | null } {
-  const port: DragPort & { handlers: DragHandlers | null } = {
+export function fakeDrag(): DragPort & { handlers: DragHandlers | null; live: boolean } {
+  const port: DragPort & { handlers: DragHandlers | null; live: boolean } = {
     handlers: null,
+    live: false,
+    active: () => port.live,
     bind(_container, handlers) {
       port.handlers = handlers;
       return () => {

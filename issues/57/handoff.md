@@ -2,16 +2,14 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (wave 1 is on `main`; batch 3 and its one remediation pass are
-  on `claude/57`; `polish`, `harden` and the batch review are done; CI of the tip is the
-  orchestrator's wait)
-- Last agent: implementer (batch 3 fix pass, 2026-11-04)
-- NEEDS_HUMAN_CONFIRMATION: no (Q3-S answered: the strip goes; Q3-T takes its default)
+- Task status: in_progress (wave 1 is on `main`; batches 3 and 3b are on `claude/57`;
+  batch 3b's `polish`, `harden`, batch review and CI are the orchestrator's)
+- Last agent: implementer (batch 3b, 2026-11-04)
+- NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
-- Base / starting commit: `f150d7fd` (the batch 3 plan refresh, on top of the merge
-  `51370bf8` of `origin/main` `d83384b4`)
-- Pushed: yes, the fix commit, with this handoff; its sha is in the implementer's report
-  (`git log -1 --grep="Task: 57"`).
+- Previous sha: `cd36b52f` (batch 3's fix pass; `origin/main` `d83384b4` is merged)
+- Pushed: yes, the batch 3b commit, with this handoff; its sha is in the implementer's
+  report (`git log -1 --grep="Task: 57"`).
 
 ## Completed
 - Batch 1 - foundation: `9a31aede`, review fix `80872b35` (`reviews/1.md`).
@@ -99,6 +97,49 @@
   coverage only on changed sources (`--coverage.include`, `tools/check/fast.mjs`), and
   `KeepNote.svelte` was not changed: a file that loses reach through its caller shows only
   in CI's whole run.
+- Batch 3b - the hide-and-show header and the focus fix (`plan-3b.md`). New: `lib/headerScroll.ts`,
+  `ports/scroll.ts`, the decision file `2026-11-03-the-header-hides-on-scroll-down-up-to-760-px.md`,
+  `DragPort.active()`, `--sticky-h`, `--anchor-gap`. Acceptance lines:
+
+  | Line | Outcome |
+  |---|---|
+  | Hides past its height and 10 px down, returns 10 px up, no layout move; nothing hides from 761 px | Done: `headerScroll.test.ts`, `shell.test.ts`, case 86 |
+  | Anchors land at most 40 px under a shown header | Done: case 86 at 360; `sweep.js` at 360, 390, 768 is CI's |
+  | Focus into the header: top 0, hit at center | Done: case 86 |
+  | Text field freezes it; a checkbox does not | Done: `shell.test.ts`, case 86 |
+  | Menu, sheet, dialog freeze it; the first scroll after a close does not jump | Done: `shell.test.ts` (menu role, `dialog[open]`, `app.menuFor`), case 86 («Ещё», the sheet, the record dialog) |
+  | Drag auto-scroll freezes it | Done: `ports.test.ts`, `shell.test.ts` |
+  | iOS bounce clamped | Done: `ports.test.ts`, `headerScroll.test.ts`; a real device is not verified, the post-release check owns it |
+  | Reduced motion | Done: case 86, `0.2s` and `transitionend` relaxed, `0s` restored |
+  | Short pages | Done: `headerScroll.test.ts`, case 86 on `#/i/nope` |
+  | Navigation reset, band change | Done: `shell.test.ts`, case 86 (`d.go`, Back). A reload shares the same mount path; no case of its own |
+  | Print | Done: case 86 |
+  | Port reached by tests; no `scrollY` outside `app/src/ports/` | Done: `ports.test.ts`; `git grep` for `scrollY` and `pageYOffset` hits only `ports/` |
+  | Focus fix, 0 covered in 30 stops, fails without the fix | Done: case 87 and the probe under Verification |
+  | Hidden state: inventory entry, RU and EN golden, axe | Done: `~ header hidden`; `shell.test.ts` ends in `expectNoA11yViolations` |
+  | No other golden moves | Done: `git status` shows one new file |
+  | `FIRST_SCREEN` unchanged | Unchanged in code; case 83 is CI's |
+  | Specs, DESIGN rules, decision file | Done: S8 texts as written in the brief |
+  | Detector, spelling, screenshots | Done, see Verification; `polish` and `harden` are the orchestrator's after this commit |
+  | Deferred names the focus jump | Done |
+  | Gates pass, CI green on the tip | Local gates pass; CI of the tip is the orchestrator's wait |
+
+- Batch 3b deviations:
+  1. The new browser cases are 86 and 87: batch 3's fix pass took 84 and 85.
+  2. The golden is one file, not the brief's two: a state keeps both languages in one file.
+     Confirmed: `_tables_eq_weapon_header_hidden.txt` holds `## ru` and `## en` sections.
+  3. `live = false` sits in `drag.ts`'s `unlisten`, not `reset`: an unbind in the middle of a
+     drag would otherwise leave the header frozen.
+  4. `COVERAGE.md` and the header of `states.js` give the real count, 78 cases in 77 runs, not
+     71 + 2, and `COVERAGE.md` gains the missing cases 84 and 85.
+  5. Budget (orchestrator's decision, under the owner's standing rule): `tools/bundle-budget.mjs`
+     rises to 254 kB unconfigured and 312 kB configured. Measured 253.6 (from 252.8 at `cd36b52f`)
+     and 311.0 kB; 311.0 is over by under 0.05 kB, so the configured limit rises too.
+     `.claude/README.md` follows. The configured figure used placeholder public values, because
+     this worktree has no `.env.test.local`; CI's `e2e` job reads the real figure.
+  6. The two new browser cases ran locally once, through an in-memory loader, outside the
+     dispatch's list: both passed.
+  No departure from mock F: the header draws as in mock 2, in or out of the window.
 - Review: done, `issues/57/reviews/3.md`, verdict fix-then-continue; the one remediation
   pass is this commit. No second review is needed: the picker fix leaves the first-screen
   rows unmoved (234 at 360).
@@ -151,6 +192,25 @@
 - Not run locally in the fix pass (the orchestrator dropped them; CI covers them):
   `sweep.js` at 390 and 1180, `npm run check:built` (the `check:fast` budget step runs the
   bundle budget).
+- Batch 3b, 2026-11-04, on the final tree:
+  - `npx vitest run app/src/lib/headerScroll.test.ts app/src/ports/ports.test.ts app/src/components/shell.test.ts app/src/components/tables.test.ts app/src/components/listPage.test.ts`: 501 passed.
+  - `npm run lint:untyped`, `npm run lint:typed`: exit 0.
+  - `npm run build:test`, then `node tests/app/golden.js --update --only="header hidden"`: one new file.
+  - `node tools/decisions.js`: 300 decisions.
+  - `npm run check:built`: exit 0, 253.6 kB within 254; `dist/` carries no fake cloud.
+  - Configured: `npm run build` with placeholder `VITE_SUPABASE_*`, `node tools/bundle-budget.mjs`: 311.0 kB within 312.
+  - `impeccable detect --json --no-inline-ignores app/src`: 69 findings, unchanged; in touched
+    files only `design-system-*` advisories (`Shell`, `TableRows`, `tokens.css`).
+    `git grep -n impeccable-disable -- app/src`: nothing.
+  - Spelling, the `tests/derived.js` pattern over added lines and new files: 0 hits.
+  - Shift+Tab probe, 30 stops from row 120, page scroll padding removed by injected CSS, then
+    with the fix: 320 EN 17 then 0, 360 RU 16 then 0, 1180 RU 10 then 0. Header: 152 px at 320
+    EN, 111 at 360, 63 at 768 and 1180.
+  - Cases 86, 87 through an in-memory loader on `dist-test/`: both passed.
+  - `node issues/57/mocks/3b/built/shoot.js`: ten shots; hidden bottom 0 at scroll 800, back at
+    top 0 at 780, focused at top 0 (the page moved to 558: the deferred focus jump).
+  - `rtk npm run check:fast`: exit 0 in 783 s, 2138 tests with coverage, 253.6 kB within 254.
+  - Not run locally (CI's): `app/states`, `app/contracts`, `sweep.js`.
 - Detector, `impeccable detect --json --no-inline-ignores app/src`: 69 findings (72
   on 2026-10-30); in touched files only `design-system-*` advisories (`AddToList`,
   `FilterBar`, `TableRows`, `tokens.css`), which batch 10 records.
@@ -158,15 +218,22 @@
 - Spelling scan over added lines and new files: only `aria-labelledby`.
 
 ## Next batch (implement-ready)
-- Name: batch 3b (the hide-and-show header), after its refresh; batch 4 follows. Batch 4's
-  refresh adds an acceptance line for the bar's label (deviation 2).
-- Risks / do-nots: `FilterBar` and `BatchBar` stay for batches 6, 8 and 9; a golden
-  is re-seeded, never edited.
+- Name: Batch 4, after batch 3b's `polish`, `harden`, review and CI. Its refresh adds an
+  acceptance line for the bar's label (batch 3, deviation 2). The bundle has about 0.4 kB of
+  headroom under 254 kB and 1 kB under 312 kB.
+- Risks / do-nots: `FilterBar` stays until batches 6 and 9a remove it, and `BatchBar`
+  until batch 8; a golden is re-seeded, never edited.
 
 ## Blockers
 - None.
 
 ## Deferred
+- Focus jump (batch 3b, measured facts item 3): a `focus()` on a header control moves the page up
+  (scroll 1500 to 1199 at 320 px, to 1115 at 1180 px; 900 to 558 at 360 px with the fix). An
+  existing defect, harmless for the hide: the upward move shows the header.
+  `{ preventScroll: true }` fits only a control always in view, and `Menu` also serves controls
+  that scroll away, so the fix needs its own look. At closeout it goes to `docs/specs/DEBT.md`
+  unless a later batch fixes it.
 - 2-R1 (answered for batch 3 on): the orchestrator-run `polish` and `harden`
   of section 10, "Impeccable". The batch 2 shell components still had a manual
   pass only; the post-release Impeccable audit is the backstop (with the C34 and
@@ -205,7 +272,7 @@
 - Impeccable `polish` and `harden` (orchestrator, 2026-11-03, on `ef44bb5d`): outcomes are
   under Completed and in `reviews/3.md`. Clean: `Sheet` focus, scrim and Escape; `viewport`
   listener cleanup.
-- Mocks path: `issues/57/mocks/<N>/`; batch 3's evidence is `issues/57/mocks/3/built/`.
+- Mocks path: `issues/57/mocks/<N>/`; evidence: `issues/57/mocks/3/built/`, `mocks/3b/built/`.
 - Planner defaults D1-D13 of batch 3: `plan.md` section 10, "Decisions of this refresh".
 - The owner answered the feedback (`context.md`, "Feedback answers", "Header batch"). Next
   step: the batch 3b refresh.
@@ -216,5 +283,5 @@
   `issues/57/mocks/measure.mjs` stays until closeout. Print evidence and the
   mock P worktree stay at `C:\Users\Ignat\.dhloot\notes\57\`.
 - Session end partial progress (if any): none
-- Durable items written to their homes this batch: `FEATURES.md`, `ROUTES.md`,
-  `COVERAGE.md`, `STATE.md`, `DESIGN.md`, the decision file named under Completed.
+- Durable items written to their homes this batch: `FEATURES.md`, `COVERAGE.md`, `STATE.md`,
+  `DESIGN.md`, `.claude/README.md` (the budgets), the decision file named under Completed.

@@ -647,10 +647,12 @@
           document.querySelector<HTMLElement>(`[data-row="${anchor}"]`);
         /* A call-site `behavior` overrides tokens.css's reduced-motion
            `scroll-behavior` rule, so the choice is made here. */
-        target?.scrollIntoView({
-          behavior: app.env.motion.reduced() ? 'auto' : 'smooth',
-          block: 'start'
-        });
+        if (target) {
+          app.env.scroll.into(target, {
+            behavior: app.env.motion.reduced() ? 'auto' : 'smooth',
+            block: 'start'
+          });
+        }
       });
     });
   });
@@ -1148,7 +1150,7 @@
      row/tile anchor's outline (`.row.flash`, `.tilewrap.flash`) is
      `TableRows.svelte`'s. This is only the section anchor's. */
   .tsection {
-    scroll-margin-top: var(--anchor-top);
+    scroll-margin-top: var(--anchor-gap);
     border-radius: var(--r);
   }
 

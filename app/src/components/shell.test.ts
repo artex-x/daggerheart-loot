@@ -5,9 +5,10 @@
  * whole argument for Phase 3 in one file. */
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { tick } from 'svelte';
+import { createRawSnippet, tick } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
+import Shell from './Shell.svelte';
 import Toast from './Toast.svelte';
 import { expectNoA11yViolations } from '../test/a11y.js';
 import { ICONS } from '../lib/icons.js';
@@ -15,8 +16,11 @@ import { dict } from '../lib/dict.js';
 import {
   brokenStorage,
   fakeData,
+  fakeDrag,
   fakeEnv,
   fakePwa,
+  fakeScroll,
+  fakeViewport,
   memoryRouter,
   memoryStorage
 } from '../ports/index.js';
@@ -132,6 +136,193 @@ describe('the frame', () => {
        record - "Standard rules - Daggerheart Loot Generator", not the plain
        title alone. */
     expect(document.title).toBe('Standard rules - Daggerheart Loot Generator');
+  });
+});
+
+describe('the header on a scroll up to 760 px', () => {
+  const header = (container: Element): Element => {
+    const el = container.querySelector('.topbar');
+    if (!el) throw new Error('no header');
+    return el;
+  };
+
+  /* The app on a narrow band with the arrival's hold over, at 300 past a shown header. */
+  const narrow = async (over: Partial<Env> = {}) => {
+    const scroll = fakeScroll();
+    const viewport = fakeViewport('narrow');
+    const drag = fakeDrag();
+    const env = at('#/roll/std', { scroll, viewport, drag, ...over });
+    const { container } = render(App, { env });
+    await tick();
+    scroll.quiet();
+    scroll.to(300);
+    await tick();
+    return { container, scroll, viewport, drag, top: header(container) };
+  };
+
+  /* The shell alone, for a test that reaches `AppState`. */
+  const shell = async () => {
+    const scroll = fakeScroll();
+    const app = new AppState(at('#/roll/std', { scroll, viewport: fakeViewport('narrow') }));
+    const children = createRawSnippet(() => ({ render: () => '<p>page</p>' }));
+    const { container } = render(Shell, { app, children });
+    await tick();
+    scroll.quiet();
+    return { app, container, scroll };
+  };
+
+  const down = async (scroll: ReturnType<typeof fakeScroll>): Promise<void> => {
+    scroll.to(scroll.y() + 100);
+    await tick();
+  };
+
+  /* Each hold, set on an open page: the next scroll down leaves a shown header shown. */
+  const box = (html: string): (() => void) => {
+    const el = document.createElement('div');
+    el.innerHTML = html;
+    document.body.appendChild(el);
+    return () => {
+      el.remove();
+    };
+  };
+
+  it('leaves on a scroll down and returns on a scroll up', async () => {
+    const { scroll, top } = await narrow();
+    expect(top).toHaveClass('away');
+    scroll.to(280);
+    await tick();
+    expect(top).not.toHaveClass('away');
+  });
+
+  it('stays from 761 px', async () => {
+    const { scroll, top } = await narrow({ viewport: fakeViewport('wide') });
+    await down(scroll);
+    expect(top).not.toHaveClass('away');
+  });
+
+  it('returns and stops answering when the band leaves narrow', async () => {
+    const { scroll, viewport, top } = await narrow();
+    expect(top).toHaveClass('away');
+    viewport.set('wide');
+    await tick();
+    expect(top).not.toHaveClass('away');
+    scroll.quiet();
+    await down(scroll);
+    expect(top).not.toHaveClass('away');
+  });
+
+  it('returns on a navigation and holds until the page settles', async () => {
+    const { app, container, scroll } = await shell();
+    scroll.to(300);
+    await tick();
+    expect(header(container)).toHaveClass('away');
+    app.go('#/tables/eq_weapon');
+    await tick();
+    expect(header(container)).not.toHaveClass('away');
+    expect(scroll.busy()).toBe(true);
+    await down(scroll);
+    expect(header(container)).not.toHaveClass('away');
+  });
+
+  it.each([
+    ['a menu in the page', '<div role="menu"></div>'],
+    ['an open dialog', '<dialog open></dialog>']
+  ])('freezes under %s, and the first scroll after it does not jump', async (_name, html) => {
+    const { scroll, top } = await narrow();
+    scroll.to(250);
+    await tick();
+    expect(top).not.toHaveClass('away');
+    const close = box(html);
+    await down(scroll);
+    expect(top).not.toHaveClass('away');
+    close();
+    scroll.to(scroll.y() + 5);
+    await tick();
+    expect(top).not.toHaveClass('away');
+    scroll.to(scroll.y() + 5);
+    await tick();
+    expect(top).toHaveClass('away');
+  });
+
+  it('freezes a hidden header too, under a scroll up behind a popup', async () => {
+    const { scroll, top } = await narrow();
+    const close = box('<div role="menu"></div>');
+    scroll.to(200);
+    await tick();
+    expect(top).toHaveClass('away');
+    close();
+  });
+
+  it('freezes while a text field holds the focus, and a checkbox does not count', async () => {
+    const { scroll, top } = await narrow();
+    scroll.to(250);
+    await tick();
+    const close = box('<input type="text" id="f" /><input type="checkbox" id="c" />');
+    document.getElementById('f')?.focus();
+    await down(scroll);
+    expect(top).not.toHaveClass('away');
+    document.getElementById('c')?.focus();
+    await down(scroll);
+    expect(top).toHaveClass('away');
+    close();
+  });
+
+  it('freezes during a drag and while the app scrolls the page', async () => {
+    const { scroll, drag, top } = await narrow();
+    scroll.to(250);
+    await tick();
+    drag.live = true;
+    await down(scroll);
+    expect(top).not.toHaveClass('away');
+    drag.live = false;
+    scroll.settle();
+    await down(scroll);
+    expect(top).not.toHaveClass('away');
+    scroll.quiet();
+    await down(scroll);
+    expect(top).toHaveClass('away');
+  });
+
+  it('freezes while the add-to-list menu is open by its app field', async () => {
+    const { app, container, scroll } = await shell();
+    app.menuFor = 'ci1';
+    await down(scroll);
+    await down(scroll);
+    await down(scroll);
+    expect(header(container)).not.toHaveClass('away');
+  });
+
+  it('sets the measured height while mounted and takes it back', () => {
+    let fire = (): void => undefined;
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(cb: () => void) {
+          fire = cb;
+        }
+        observe(): void {
+          fire();
+        }
+        disconnect(): void {}
+      }
+    );
+    try {
+      const { unmount } = render(App, { env: at('#/roll/std') });
+      expect(document.documentElement.style.getPropertyValue('--sticky-h')).toBe('0px');
+      unmount();
+      expect(document.documentElement.style.getPropertyValue('--sticky-h')).toBe('');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('keeps the hidden header in the tree with its controls', async () => {
+    const { container, top } = await narrow();
+    expect(top).toHaveClass('away');
+    expect(
+      within(top as HTMLElement).getByRole('navigation', { name: 'Разделы' })
+    ).toBeVisible();
+    await expectNoA11yViolations(container);
   });
 });
 

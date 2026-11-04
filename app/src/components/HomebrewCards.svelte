@@ -158,7 +158,8 @@
       open.add(c.id);
     });
     void tick().then(() => {
-      document.getElementById('hb-card-' + c.id)?.scrollIntoView({ block: 'start' });
+      const card = document.getElementById('hb-card-' + c.id);
+      if (card) app.env.scroll.into(card, { block: 'start' });
     });
   });
 
@@ -614,11 +615,12 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  /* The address key scrolls its card under the sticky top bar (`--anchor-top`). */
+  /* The address key scrolls its card under the sticky top bar: `--anchor-gap` on top of
+     the page's scroll padding. */
   .cards > li {
     padding: 8px 0;
     border-top: 1px solid var(--line);
-    scroll-margin-top: var(--anchor-top);
+    scroll-margin-top: var(--anchor-gap);
   }
 
   .cards > li:first-child {

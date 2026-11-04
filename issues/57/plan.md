@@ -10,8 +10,9 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
 - Refresh against `main` (2026-10-29): done. `claude/57` merged `main` at
   `9112c4ed`; every `audit.md` row is re-checked (`audit.md`, "Re-check
   against main"); every address in this plan is a path.
-- Phase 3: twelve batches in the order 1, 1b, 2, 3-7, 8, 9, P, 10 (section 7;
-  the waves of section 16 moved P from after 1b into wave 3). Batches 1
+- Phase 3: fourteen batches in the order 1, 1b, 2, 3, 3b, 4-7, 9a, 8, 9b, P, 10
+  (section 7; the waves of section 16 moved P from after 1b into wave 3, and the
+  owner's 2026-11-03 answers added 3b and split 9). Batches 1
   (`9a31aede`, `80872b35`), 1b (`fce4a9f8`, `3e5f6301`; `reviews/1b.md`) and 2
   (`30de6bf5`, fix pass `65829261`; `reviews/2.md` approve) are done, and wave
   1 landed on `main` as `d83384b4`; `claude/57` merged it at the batch 3
@@ -20,17 +21,20 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
   and `harden` and its batch review. Batches 4-10 and P are outlines; each
   one's refresh expands it.
 - Release (owner, 2026-10-29, `context.md` "Release in three waves" and its
-  "Reviews" paragraph): three waves - 1, 1b, 2; then 3-7; then 8, 9, P, 10 -
+  "Reviews" paragraph; "Batch 9 split"): three waves - 1, 1b, 2; then 3, 3b, 4,
+  5, 6, 7, 9a; then 8, 9b, P, 10 -
   each squashed onto `main` after its last batch's review and green CI, with
-  no owner screenshot gate; one post-release live check after wave 3, then the
-  closeout (section 16). This replaces "one squash at closeout" and "no batch
+  no owner screenshot gate. After wave 2's green deploy a blind review of waves 1
+  and 2 runs on production, and after wave 3's a blind review of wave 3; each
+  remediates at once in a fix batch on `claude/57` (owner, `context.md`, "Wave
+  reviews"). Then the whole-app blind review and the closeout (section 16). This replaces "one squash at closeout" and "no batch
   lands on `main` before the owner has seen its screenshots".
 - Mocks: every batch mock from 1 to 9 is drawn ahead (section 9); the owner
   confirms each one before its implementer starts. Mock P is drawn (2026-10-29,
   owner) from the pre-batch-1 build; its no-picture well follows mock 1b.
 - Print review (owner, 2026-10-29, `context.md` "Print review", "Print feel"):
   the print audit is `audit.md`, "Print audit (2026-10-29)"; batch P (section
-  15) runs in wave 3, after batch 9, and takes the `/p/` page rows C29, C30
+  15) runs in wave 3, after batch 9b, and takes the `/p/` page rows C29, C30
   and C31 from batch 7.
   Batch P fires no plan-review trigger: it changes no public contract (the
   four burden files of `card/` keep their paths and take the Figma node's
@@ -59,6 +63,16 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
   re-checked against `main` and stands. Thirteen planner defaults D1-D13 are
   logged there; two need the owner's later yes (section 13: Q3-S, Q3-T). The
   Impeccable fallback of `reviews/2.md` R1 is named in section 10, "Impeccable".
+- Batch 3b implemented (2026-11-04), on `claude/57`; `handoff.md` has its outcomes and its
+  departures. `polish`, `harden`, the batch review and CI follow, then batch 4's refresh.
+- Batch 3b refresh (2026-11-03): `plan-3b.md` is batch 3b's brief, in the shape of
+  section 10. The owner's answers Q1-Q4 are folded into sections 7, 8, 14 and 16;
+  batch 9 is split into 9a (wave 2) and 9b (wave 3). The owner is AFK: the defaults
+  are in `plan-3b.md`, "Decisions of this refresh", and the orchestrator logs them.
+- Plan review coverage at the batch 3b refresh (2026-11-03): no new plan review is
+  required (no trigger fired). Batch 3b changes no public contract, stores nothing
+  and adds no write or sync protocol. Batches 9a and 9b take theirs at their own
+  refreshes: their outlines carry no plan-review line.
 - NEEDS_HUMAN_CONFIRMATION: no. Q3-T takes its default (deferred). Q3-S is
   answered (owner, 2026-10-30, `context.md`): the per-section «Выбрать все
   (N)» strip goes. Every other question of section 13 is answered; Q-W1 took the
@@ -266,21 +280,22 @@ its own surface. Each batch's share is its own line in section 7.
 |---|---|---|---|
 | Navigation, "Tabs" | three jobs with icons, a mode row of three controls, the «Дополнения ▾» menu | 2 | - |
 | Navigation, "Brand" | the EN wordmark «Loot»; the mark (candidate B) for the gold star | 2 | - |
-| The Two Breakpoints Rule | new steps at 760 px (the pin; a menu or a sheet; the `/p/` cards) and 1000 px (the side column) | 2 (the 760 pin), 3 (the sheet and picker below 761 px; the 1000 px filter column; the `viewport` port) | 4 (menu or sheet), P (print cards), 9 (1000 side column) |
+| The Two Breakpoints Rule | new steps at 760 px (the pin; a menu or a sheet; the `/p/` cards) and 1000 px (the side column) | 2 (the 760 pin), 3 (the sheet and picker below 761 px; the 1000 px filter column; the `viewport` port), 3b (the `--anchor-top` sentence, `--sticky-h`) | 4 (menu or sheet), P (print cards), 9b (1000 side column) |
+| The Hidden Header Rule | new: up to 760 px the header leaves on a scroll down and returns on a scroll up | 3b | - |
 | Layout (header 106 / 112 px) | 111 px sticky at 360, the mode row scrolls | 2 | - |
 | Toast | a plate with the Float shadow; the error toast in dark ink on the alarm fill | 2 | - |
 | Chips (7px 12px) | 40 px mode chips and dice at 360 | 2 (mode chips) | 5 (dice) |
 | Filter pills | no pill row at 360; the count line names the chosen values | 3 | 6 (none at any width on `/homebrew`) |
 | Shapes (dashed border = a property) | a dashed plate for every empty state | 3 | 7, 8 |
 | Don'ts (no illustrated empty states) | a kind-glyph tile in the empty state | 3, unless it takes `reviews/mocks-2.md` N0-2 (drop the tile) and keeps the Don't | - |
-| Seal Rule (selection neutral) and `FEATURES.md` "ticked card gold border" | ticked rows and cards lit, neutral | 3 | 6, 8, 9 (`FEATURES.md` "Lists") |
+| Seal Rule (selection neutral) and `FEATURES.md` "ticked card gold border" | ticked rows and cards lit, neutral | 3 | 6, 8, 9a (`FEATURES.md` "Lists") |
 | Components (no sheet) | bottom sheets at 360 for menus, filters, the dialog, the delete confirm | 3 (the filter sheet) | 4, 7, 8 |
 | Shapes, artwork (square, 420 px full card) | a 4:3 crop window on the item page, the dialog and roll cards | 4 | 5 |
 | Cards, compact (132 px image) | a 96 px image at 360 | 5 | - |
 | Badges (roll number) | the roll number at 1180 only; the rarity badge at 360 | 5 | - |
 | Segmented control (neutral for mode toggles only) | segments with the neutral check as form-field pickers | 6 | - |
 | Buttons, danger | a filled alarm red with dark text in the delete confirm | 7 | - |
-| Seal Rule (gold budget) | the gold-bordered «Новое в списке (3)» chip | 8 | 9 |
+| Seal Rule (gold budget) | the gold-bordered «Новое в списке (3)» chip | 8 | 9b |
 | Signature component: the print card (art region) | the light well `#ebe7f0` with the glyph `#3a3350` | 1b | P |
 | Signature component: the print card | 63.5x88.9 mm, 7.75 / 13.15 mm, Source Sans 3, 4.0 / 4.6cqw, no «Daggerheart» on the bottom line | P | - |
 
@@ -292,9 +307,9 @@ Inventory on `main` `c8243ba6` (`git grep -i impeccable`, `.impeccable/`,
 | # | Exception | Where | Plan | Batch |
 |---|---|---|---|---|
 | E1 | `ignoreValues` `overused-font: inter` | `.impeccable/config.json` | remove: the ignore is already stale (`impeccable detect --json --no-config app/src` reports no `overused-font` while `--ui` still starts with 'Inter', plan review N1), so its removal proves nothing about the font; the font proof is `typo.js` | 1 |
-| E2 | `ignoreValues` `side-tab` for `ListPage.svelte` (`value: "*"`) | `.impeccable/config.json` | its three findings are the reorder drop mark (`.lrow.drop-before`, `.lrow.drop-after`, `.lrow.drop-after .rnote`: an inset 3 px gold shadow), not the notes (plan review B2). Remove when batch 9 redraws the mark as a 2 px gold line drawn by a gap element between the rows, with every `FEATURES.md` "Lists" drop rule kept; `HitNote.svelte`'s unignored `side-tab` (N1) goes in the same batch. If no form passes the detector, a value-scoped ignore stays and batch 10 names it to the owner | 9 |
+| E2 | `ignoreValues` `side-tab` for `ListPage.svelte` (`value: "*"`) | `.impeccable/config.json` | its three findings are the reorder drop mark (`.lrow.drop-before`, `.lrow.drop-after`, `.lrow.drop-after .rnote`: an inset 3 px gold shadow), not the notes (plan review B2). Remove when batch 9b redraws the mark as a 2 px gold line drawn by a gap element between the rows, with every `FEATURES.md` "Lists" drop rule kept; `HitNote.svelte`'s unignored `side-tab` (N1) goes in the same batch. If no form passes the detector, a value-scoped ignore stays and batch 10 names it to the owner | 9b |
 | E3 | `.prettierignore`: `hook.cache.json`, `hook.pending.json`, `config.local.json` | `.prettierignore` | remove: `.gitignore` lists all three (E5, E6 stay) and Prettier 3 reads `.gitignore` by default; `prettier --file-info <path>` proves `"ignored": true` | 1 |
-| E4 | `.prettierignore`: `.impeccable/config.json` | `.prettierignore` | remove once `ignoreValues` is empty, after a proof that the hook does not rewrite the file in an ordinary session (plan review R8): one edit with the hook live and one `impeccable detect` run leave `config.json` byte-identical and `npx prettier --check .impeccable/config.json` passes. Then format the file with Prettier, or delete it if `impeccable detect` runs without it; a later `impeccable hooks ignore-value` reddens `format:check`, which makes a new exception visible. No proof: E4 stays with that reason | 9 |
+| E4 | `.prettierignore`: `.impeccable/config.json` | `.prettierignore` | remove once `ignoreValues` is empty, after a proof that the hook does not rewrite the file in an ordinary session (plan review R8): one edit with the hook live and one `impeccable detect` run leave `config.json` byte-identical and `npx prettier --check .impeccable/config.json` passes. Then format the file with Prettier, or delete it if `impeccable detect` runs without it; a later `impeccable hooks ignore-value` reddens `format:check`, which makes a new exception visible. No proof: E4 stays with that reason | 9b |
 | E5 | `.gitignore`: `hook.cache.json`, `hook.pending.json` | `.gitignore` | keep (owner, 2026-10-29, plan review B1): Prettier reads `.gitignore` but not `.git/info/exclude`, so these tracked lines are what let E3 go; without them `format:check` fails in every session where the hook writes the files | kept |
 | E6 | `.gitignore`: `config.local.json` | `.gitignore` | keep (owner, Q4): a local config with no tracked ignore is how a credential gets committed (the `.gitignore` comment) | kept |
 | E7 | detector advisories (N3) and the two warnings (N1, N2) | `app/src` | not exceptions yet; each batch leaves no detector finding in the files it touches; batch 10 reaches zero with no `ignoreValues` | 1-10 |
@@ -351,35 +366,32 @@ evidence for the batch review, not an owner gate (owner, 2026-10-29,
 | P | Print: the card's rules-text base, floors and markers, the print face and its fit, the line pitch, the card size if the owner says yes; the `/p/` page (bar, switches, notes, the preview at 360, the first screen) | PR1-PR10, PR12 (`audit.md`, "Print audit"), C29, C30, C31 (from batch 7) | `R/print-preview` (screen); the print card has no R state, so mock P draws it at print resolution | 1b: mock P draws the light well as the owner confirmed it at mock 1b | split from 1b by 1b's public contract change (`CONTRACTS.md` asset paths), which P does not carry. Merged into P: the `/p/` rows of batch 7, because they share `PrintPage.svelte`, its seed sets and the `app/print` gate (`CLAUDE.md`, "merge work that shares a component, seed and filter") |
 | 2 | Shell: header, three jobs with icons, the mode row and the supplements menu, the account control, the wordmark, the pin and «Справка» labels, the toast; the American-spelling sweep across the repository (owner: no batch 2b) | C6, C27, C34 (verify), C37, C47, C48, C52, A15 (verify), A27 (icons), A35, A36, A37, P7, P9, D9, D10, D11, N4, D121 | `R/header`, `R/shell-*`, `R/roller-supmenu` | none: R draws the header; the refresh adds the request toast and `/en/` | public contract changes (`routes.json` `tab`, `llms.txt`) and public spec changes (`ROUTES.md`, `FEATURES.md` "Chrome", `I18N.md`); it needs a batch review (contracts, `.claude/hooks/`, prompts and agents changed) |
 | 3 | Catalog tables and filters | C1 (panel renamed «Об этих данных»), C2 («Все»), C3, C4, C5, C7, C8, C10, C12 (verify), C53, C54, C56, C57, C58, C59, A25, A40 (tables), P1, P13, P14, P15 | `R/catalog`, `R/catalog-*`, `R/pattern-empty` | none | a different route and filter set (`/tables/*`) |
+| 3b | The header hides on scroll down and returns on scroll up up to 760 px, on every page; the `--sticky-h` / `--anchor-gap` focus fix at every width | F2 (B2, owner Q2), WCAG 2.4.11 (`feedback.md`, "New defect found") | none | none: `mocks/F/` draws the two positions | a different route set: the header is on every route and has no filter set; the owner ordered it as its own batch ("Header batch") |
 | 4 | Record card, actions, item page, dialog, `/h/` | C17, C18, C19, C20, C21, C22, C40, C44 (verify), C45, C46, C63 (artefact, close), A23, A24, P4, P5, P6 | `R/item`, `R/item-dialog`, `R/item-nope`, `R/item-save-signedout`, `R/h-item`, `R/pattern-error` | none | a different component group and route (`/i/`, `/h/`, the dialog) |
 | 5 | Roller pages and the card face on results | C23, C24, C25, C26, C36, C38 (panel renamed «Где какая редкость»), C39, C41, C43, C49, P10, P11, N2 | `R/roller`, `R/roller-alt-crit`, `R/roller-mwt` | none: the mode row in the mock is R's; batch 2 ships it | a different route and filter set (`/roll/*`) |
 | 6 | Homebrew editor, homebrew pages and imports (old 5 + 6, owner merge) | A6, A7, A8, A9 (verify), A11 (artefact, close), A12, A13, A27 (panel removed, Q6.1), A28, A29, A30, A38, A40 (homebrew), D5, D14 (verify), D15, D16, editor clarity rows | `R/editor*`, `R/homebrew-*` | none: the refresh adds the Items-tab filter strip of `f74eae09` to `R/homebrew-items` | a different route and filter set (`/homebrew`, `/homebrew/<id>`) |
 | 7 | Search, account, empty and error states | C13, C14, C15, C16, C32, C60, A31, A32, A33, A34, D7, D8 (verify) | `R/search-*`, `R/account-*`, `R/pattern-*` | none | different routes (`/search`, `/account`, the error pages) |
 | 8 | Lists page `/lists`, list cards, lists import, add-to-list menu | A14, A16, A18, C35, C61, C62, D6, D20, D116 | `R/lists-*`, `R/item-listmenu` | none | a different route and filter set (`/lists`, and the add-to-list menu that the item pages open) |
-| 9 | Account list page `/lists/<uuid>` and shared list page `/s/<token>` (old 9a + 10, owner merge) | A1, A2, A3, A4, A5, A19, A20, A21, A22, A40 (list rows, `/s/`), A41, A42, D2, N1, E2 (the drop mark), E4, list clarity rows | `R/list`, `R/list-*`, `R/shared-*` | none | a review that cannot be held in one pass is accepted by the owner's merge; split from 8 by a different route and filter set |
+| 9a | `/lists/<uuid>` and `/s/<token>` for the phone: the C1b compact row, search and filter on the owner's page, the actions into «Ещё», the list «Ещё» menu, the selection bar on both pages | F2 (C1b, D1, D-head 1), A2 (row actions), A19, A20, A21, A40 (list rows, `/s/`), A41, D2, list row clarity rows | `R/list`, `R/list-picked`, `R/shared-*` | none: `mocks/F/` replaces mock 9 for the row and the head up to 760 px; every other mock 9 state stands | the owner's wish to ship the F2 fix in wave 2 ("Batch 9 split"); split from 8 by a different route and filter set |
+| 9b | The list panels: the note switch, the side column, the share, roll and requests panels, the price switch, A1 at 640-900 px, the «?» removal, the drop mark, E4 | A1, A2 (note area), A3, A4, A5, A22, A42, N1, E2 (the drop mark), E4, list panel clarity rows | `R/list-note`, `R/list-share`, `R/list-roll`, `R/list-prices`, `R/list-requests` | 9a: it draws on the 9a head and rows | the same split as 9a; wave 3, after batch 8 |
 | 10 | Lock: DESIGN.md "Notes", detector at zero, `design.json`, re-audit, closeout | E5, E6, E8, E9 (record), E7, E11, N3 (rest), every row re-checked | none | no mock | docs and closeout, unless the re-audit finds a defect |
 
-Run order (owner, 2026-10-29, "Release in three waves"): 1, 1b, 2 (wave 1);
-3, 4, 5, 6, 7 (wave 2); 8, 9, P, 10 (wave 3). The table keeps the old row
-order; section 16 gives the waves.
+Run order (owner, 2026-10-29, "Release in three waves"; 2026-11-03, "Header
+batch", "Batch 9 split"): 1, 1b, 2 (wave 1); 3, 3b, 4, 5, 6, 7, 9a (wave 2); 8,
+9b, P, 10 (wave 3). The table keeps the old row order; section 16 gives the waves.
 
-Merge evidence for batch 9 (owner, 2026-10-29: 9b+10, or 9a+10 if the
-evidence says so). `SharedListPage.svelte` imports 15 components; 10 of them
-are `ListPage.svelte`'s (`Actions`, `Button`, `Empty`, `HitNote`, `Icon`,
-`LoadState`, `PageTitle`, `PickQty`, `RecordHost`, `StatusRegion`), and 6 are
-`ListsPage.svelte`'s, all generic (`Actions`, `Button`, `Empty`, `LoadState`,
-`SearchBox`, `SignInPrompt`). Four design decisions are the same on both pages:
-the note display and its GM-only style (A5, A22, N1), the row anatomy and the
-selection mode (A40, A19), the price display (list-prices, A19), and the
-requests (the owner's `RequestsPanel`, the sender's sent line). So batch 9 is
-9a + 10. Trade-off: it is the largest batch (`ListPage.svelte` about 2200
-lines, `SharedListPage.svelte`); the batch review reads the diff, not the
-whole files.
+The list page and the shared page stay one pair (owner, 2026-10-29): 10 of the 15
+components of `SharedListPage.svelte` are `ListPage.svelte`'s, and the note display,
+the row anatomy and selection mode, the price display and the requests are the same
+design on both. The owner's split of 2026-11-03 cuts across the work, not across the
+pages: 9a takes the row, the head, search and filter and the selection bar on both
+pages; 9b takes the panels on both pages. Accepted ("Batch 9 split"): about 45-60
+min more, the list goldens re-seeded twice, an interim mix between the waves.
 
 Rows cited only inside other rows go with their parent: C36, C41, C43 (5);
 C40, C45, C46 (4); C47, C52, A36, A37 (2); C50, C64, A26 (1); C60 (7); C62
 (8). A40 is done per surface: tables in 3, homebrew rows in 6, list rows and
-`/s/` in 9.
+`/s/` in 9a.
 
 ### Inherited acceptance lines (each is its own line in its batch)
 
@@ -473,9 +485,13 @@ takes the neutral pressed variant, «Все» is its first caller). The empty st
 draws no "?" pedestal: its file went in batch 1b. The selected row is a lit
 border and a check, never a one-side accent (R's `.rl.sel` is a `side-tab`).
 The earlier text of this block is at `git show 65829261:issues/57/plan.md`,
-section 7. Batches 6, 8 and 9 take the selection bar as `SelectionBar.svelte`
-(`BatchBar.svelte` goes with its last caller, batch 9) and the list head from
-batch 3's decision file.
+section 7. Batches 6, 9a and 8 take the selection bar as `SelectionBar.svelte`
+(`BatchBar.svelte` goes with its last caller, `/lists` in batch 8) and the list
+head from batch 3's decision file.
+
+Batch 3b: its implement-ready brief and acceptance lines are `plan-3b.md`
+(mock `mocks/F/`, the two header positions). The owner's answers it carries: Q2 B2
+(the whole header, up to 760 px), "Header batch" (its own batch, with the focus fix).
 
 DESIGN.md (section 4, departures): the rewrites batch 3 owes are listed in
 section 10, "DESIGN.md rules this batch writes".
@@ -521,9 +537,20 @@ Batch 5:
 - N2-2 (owner, round 2): the Vault of Ages panel stays; its button takes the
   panel's name (the Same Label Rule), which mock 5 gives from its content.
 - The roll cards drop «Daggerheart» from their bottom line (batch 4's card).
-- M2-2 and R2-1 (from batch 2): on the nine roll pages below 760 px the pin
+- M2-2 and R2-1 (from batch 2): on the nine roll pages up to 760 px the pin
   and the panel button move into «Настроить» and «··· Ещё» (mock 5), and the
-  H1 is visually hidden at 360; batch 2's interim round buttons go there.
+  H1 is visually hidden up to 760 px, not "at 360" (owner Q1 A1; mock 5's rule is
+  `@media (max-width: 760px)`); batch 2's interim round buttons go there.
+- Up to 760 px no roll page draws the H1 visibly, the pin or the panel button in
+  the head.
+- From 761 px the H1, the pin and the panel button of the longest pair
+  («Альтернативные таблицы», «Где какая редкость» class of labels) share one
+  line at 761 px in RU and EN: a geometry line in the batch's states case.
+- `FEATURES.md` "Chrome" names the visually hidden H1 range.
+- 2-N5 (from `handoff.md` Deferred): `SECTION_LABEL['roll/alt']` becomes `pageAlt`,
+  so the `/roll/alt` tab title and its `/account` start-section option read as the
+  heading; `alt` stays for the tables group chip; the `/roll/alt` and `/account`
+  goldens are re-seeded.
 - DESIGN.md (section 4, departures): "Cards" (the 96 px compact image at 360),
   "Badges" (the roll number at 1180 only) and the dice in "Chips" are
   rewritten; "Shapes" (batch 4's crop window) is checked on the roll cards.
@@ -550,6 +577,12 @@ Batch 6:
   `/homebrew`) and the neutral selection are checked.
 - M2-2 (from batch 2): on `/homebrew` below 760 px the pin moves into the head
   row's «Ещё» (mock 6); batch 2's interim round button goes there.
+- Owner-reported bug (2026-10-30, `context.md`): in the homebrew editor, «Вид» =
+  «Снаряжение» leaves the preview card as an item (badge «ПРЕДМЕТ», the item glyph)
+  until the tier is chosen; «Расходник» changes it at once. Reproduce it first. After
+  the fix the preview follows «Вид» immediately, and a component test in
+  `homebrewEditor.test.ts` holds it. The likely cause is not verified: the preview
+  builds the equipment record only once its `eq` fields exist.
 
 Batch 7:
 
@@ -586,8 +619,82 @@ Batch 8:
 - M2-2 (from batch 2): on `/lists` below 760 px the pin moves into «Ещё»
   (mock 8); batch 2's interim round button goes, and with it the Same Label
   Rule's interim note in DESIGN.md (the last page that draws it).
+- `BatchBar.svelte` is deleted: `/lists` is its last caller, because 9a runs first.
 
-Batch 9:
+Batch 9a (wave 2, after batch 7; `mocks/F/` up to 760 px, mock 9 elsewhere):
+
+- The compact row, C1b (owner Q3): on `/lists/<uuid>` and `/s/` while `app.band ===
+  'narrow'`, a 77 px row: art 44 px with the position number on a plate, the name on
+  up to 2 lines, the meta line (the short kind badge, the price or else the source,
+  the note mark, the lock of a GM-only entry), one clamped 13 px line (an item's
+  effect; a weapon's damage, range, burden and trait in that order; armor's
+  thresholds and score). The whole body is one `<button aria-expanded>` with a 20 px
+  chevron, and a press unfolds the full row. From 761 px the full row stays.
+- Open rows are page memory (`openRows`, keyed by entry id, dropped when the list
+  changes). Nothing is stored.
+- Quantity: a separate target at the far right, never inside the button. On the
+  owner's page a live number field, 42x44 px, named «Кол-во: <name>» / "Qty: <name>",
+  through the write buffer, with `touch-action: manipulation` and no stepper. On
+  `/s/` the text «×2». A quantity of 1 draws nothing on `/s/`.
+- In the unfolded row: the price edit, the position field (it stays, one tap away:
+  WCAG 2.5.7), the drag grip on hover devices only, the note, «Скрыть от игроков»,
+  «Открыть карточку» and «Убрать из списка» in the row's «··· Ещё». No remove control
+  on the compact row. The drop mark also draws on the compact row.
+- The position numbers are the true list numbers (3, 7, 13), also while narrowed, so
+  the list roll still matches.
+- In selection mode a tick column draws at the left and the quantity turns to the
+  text «×2».
+- D1, search and filter on the owner's page, at every width: `LIST_SEARCH_AT` = 8,
+  latched per list as on `/s/`; `SearchBox`, «Фильтры · N» and «Выбрать» last, in a
+  new `ListFind.svelte` that both pages share (extract on the second use);
+  `listFacetRows` and `LIST_GROUPS`; `FilterPanel` as a sheet at every width; the
+  filter in page memory, with no address.
+- While narrowed, the meta line reads «Показано 3 из 14 · сохранено». No match draws
+  «Ничего не найдено» and «Сбросить всё».
+- While narrowed the grip goes and the position field stays live. A hidden tick
+  leaves the selection, and «Все» ticks the drawn rows only. «Свой предмет» clears
+  the query and the filter, so the new row shows. Copy, print, download and roll keep
+  the whole list. A not-loaded row has no facets: a picked value hides it and the
+  meta line counts it.
+- D-head 1 (owner Q4, reverses M9-1): up to 760 px «Поделиться», «Печать» and
+  «Бросить по списку» sit in «··· Ещё» on `/lists/<uuid>` at every list size. The
+  inline rename in the `h1` stays. From 761 px «Печать» stays on the action row.
+- N9-2 (owner, round 2): on `/lists/<uuid>` at 360 «Цены» goes into «Ещё» and
+  «Заметки» sits on the meta line. 9b rewrites the switch itself.
+- A3, in part: «Удалить» moves to the list «Ещё» menu.
+- The selection bar of batch 3 on both pages. `FEATURES.md` "Lists": "A ticked row
+  takes the gold selected style" becomes the neutral selection of theme 1 (a lit
+  border and a check, no gold), in the same commit (mock unit B, 2026-10-29).
+- Round 3, unit B (owner): on `/s/` at 360 «Печать» moves into «Выбрать» (it stays
+  on the row at 1180); a 200-character list name is cut to one line at 360.
+- A2, in part: row actions are 24 px targets at the least.
+- A19: no bare count and no always-on tick on `/s/`. A20: the filter draws only from
+  8 entries. A21: the `/s/` unknown-token title keeps its gutter. A41: «Добавить свой
+  предмет» replaces the explainer.
+- `FilterBar.svelte`, `anyValue` and the shared page's `.fpill` reader in
+  `tests/app/contracts.js` go: `/s/` is the last caller.
+- The list rows drop «Daggerheart» from the bottom line where they reuse batch 4's
+  card.
+- `FIRST_SCREEN` at 360 (section 14): `LIST_A as gm4` is `shipped: 360` at about 200
+  px; a new row of 8 or more entries is asserted at the rule (about 252 px);
+  `#/s/player-token-1` is `shipped: 360`; a new `/s/` row of 8 or more entries has an
+  `exception` of 286 px at 360 (owner Q4).
+- DESIGN.md "The First-Screen Rule" lists the `/s/` exception of 286 px with the
+  owner's date.
+- New states, each with its RU and EN golden and an axe case: `LIST_A ~ compact`
+  (360), `~ compact, row open` (360), `~ many`, `~ filter sheet` (360), `~ narrowed`,
+  `~ no match`, `#/s/player-token-1 ~ compact` (360), the list «Ещё» menu, the `/s/`
+  selection mode.
+- Text in the same commit: `FEATURES.md` "Lists", "Account and browser lists" (the
+  sentence "has no filter" goes), "Chrome"; `STATE.md` (Filters and UI rows: the list
+  page's query, picks and `openRows`); DESIGN.md "Layout"; `COVERAGE.md`; one file
+  under `docs/decisions/` (the compact row, no stored mode, the filter in memory, and
+  what was rejected: C1, C2, C3, D2, D-head 2). `ROUTES.md`, `CONTRACTS.md`,
+  `routes.json` and `llms.txt` do not change.
+- DESIGN.md (section 4, departures): the neutral selection (`FEATURES.md` "Lists")
+  and the bottom sheet are checked.
+
+Batch 9b (wave 3, after batch 8; mock 9):
 
 - E2 (plan review B2): the reorder drop mark is redrawn so the detector does
   not flag it. Recommended form: a 2 px gold line drawn by a gap element
@@ -615,22 +722,17 @@ Batch 9:
   notes, the price field) go; the money, price and note help states of
   `inventory.js` (`LIST_A ~ money help`, `~ price help`, `~ note help`) leave
   with their goldens; `FEATURES.md` rule 15 (c) changes in the same commit.
-- `FEATURES.md` "Lists": "A ticked row takes the gold selected style" becomes
-  the neutral selection of theme 1 (a lit border and a check, no gold), in the
-  same commit (mock unit B, 2026-10-29).
-- The row keeps its position field and its drag grip: the position field is
-  the non-drag way to reorder (WCAG 2.5.7), although R's mocks drop both; the
-  batch mock draws them (mock unit B, 2026-10-29).
-- Icon-and-label controls share one vertical centre in the note switch and the
+- Icon-and-label controls share one vertical center in the note switch and the
   list controls, at 360 and 1180 (owner review, 2026-10-23); the batch 1
   browser check covers the new controls.
-- A2: row actions are 24 px targets at the least; one note area with a «Для
-  игроков» / «Только для мастера» switch replaces the two editors per row
-  (`R/list-note`).
-- A3: the list controls sit in the side column; «Удалить» moves to «Ещё»; the
-  share panel is two labelled link rows (`R/list-share`).
+- A2, the rest: one note area with a «Для игроков» / «Только для мастера» switch
+  replaces the two editors per row (`R/list-note`).
+- A3, the rest: the list controls sit in the side column; the share panel is two
+  labeled link rows (`R/list-share`). A4: one gold «Скопировать» per panel at most.
+- A5: short note labels; the border style carries the difference.
 - A42: «Бросить по списку» is a real button that opens the roll panel; the
-  result shows as the card face with both notes (`R/list-roll`).
+  result shows as the card face with both notes (`R/list-roll`). Up to 760 px it
+  opens from «Ещё» (9a).
 - Price toggle: the switch reads «Цены:» «Как в книге» / «Монетами», shows an
   example under it, and every price on the page follows it, rows, totals and
   the roll result included (`R/list-prices`, `R/list-picked`).
@@ -639,23 +741,17 @@ Batch 9:
   цен: 1)» (`R/list-requests`).
 - The GM view of `/s/` draws the GM-only note in the same style as the owner's
   editor (A22).
-- New states: the note switch, the list «Ещё» menu, the `/s/` selection mode.
+- New state: the note switch.
 - The requests panel on `/lists/<uuid>` (owner, round 6 and R9-1) folds to its
-  head («Новое в списке (3)», «Открыть») at every width. At 360 the page with
-  requests is a named exception to the First-Screen Rule (about 292 px); the
-  page without requests passes (section 14).
-- M9-1 (owner): on `/lists/<uuid>` «Печать» stays on the action row; the
-  inline rename in the `h1` stays.
-- Round 3, unit B (owner): on `/s/` at 360 «Печать» moves into «Выбрать»
-  (it stays on the row at 1180); a 200-character list name is cut to one line
-  at 360.
-- N9-2 (owner, round 2): on `/lists/<uuid>` at 360 «Цены» goes into «Ещё» and
-  «Заметки» sits on the meta line.
-- The selection bar of batch 3 on both pages; the list rows drop
-  «Daggerheart» from the bottom line where they reuse batch 4's card.
+  head («Новое в списке (3)», «Открыть») at every width. Under D-head 1 the page
+  with requests and fewer than 8 entries passes at 360 (about 244 px); with 8 or
+  more entries it is a named exception at about 296 px, past the owner's 292 px, so
+  the batch logs the measured value as a default and sets the limit to it (section
+  14).
+- `FIRST_SCREEN`: `LIST_A as gm4` and `#/s/player-token-1` move from `shipped: 360`
+  to `shipped: true`, with the side column at 1180.
 - DESIGN.md (section 4, departures): The Two Breakpoints Rule takes the 1000 px
-  side-column step; the gold budget, the neutral selection (`FEATURES.md`
-  "Lists") and the bottom sheet are checked.
+  side-column step; the gold budget is checked.
 
 Batch 10:
 
@@ -680,12 +776,12 @@ Batch 10:
   that owes it and batch 10 stays docs only; or batch 10 fixes it in code and
   pays the full code gate (section 8).
 - Wave 3 lands after batch 10's review and green CI; then the closing steps of
-  section 16 run in order: the post-release live check, its findings to
-  `DEBT.md` or a named follow-up task, the closeout commit that deletes
+  section 16 run in order: the wave 3 blind review with its remediation, the
+  whole-app blind review with its remediation, the closeout commit that deletes
   `issues/57/`, and the last squash. The task directory is retired only after
-  the post-release check.
+  the whole-app blind review.
 
-Each of batches 2-9:
+Each of batches 2-9 (3b, 9a and 9b included):
 
 - Each new open or pressed state has its `tests/app/inventory.js` entry, a
   golden in RU and EN and an axe case (`expectNoA11yViolations`) in the same
@@ -705,6 +801,9 @@ Each of batches 2-9:
   fix section 14 recommends or the one the owner confirmed at the mock; a
   named exception of section 14 is asserted against its own limit.
 - Its screenshot set is in `issues/57/mocks/<N>/built/`.
+- A writer's local gates are the affected vitest files, both lints, the golden
+  re-seed when goldens move, and `rtk npm run check:fast` last. Browser suites and
+  sweeps run on CI (owner, `context.md`, "Local gates").
 
 ## 8. Gate cost
 
@@ -722,21 +821,27 @@ code batch.
 | P | `node tests/run-all.js app/print,app/states,stub` (6-8); `npm run check:built` (1); the catalog fit measure for the `FEATURES.md` figures (`issues/57/mocks/P/tools/print-measure.cjs` and `print-analyse.cjs`, RU and EN, four layouts, about 12); the burden export through the owner's Chrome (about 5); the print-resolution screenshot set (about 5); the batch review of the Figma departures in its fix cycle (about 5) | 30-35 |
 | 2 (done) | spent (planned 65-75 min of extra gates: `check:db`, the golden re-seed, the sweep, the selftest, the mark) | - |
 | 3 | `node tests/run-all.js app/contracts,app/states,app/typo,app/hues,app/print,contracts,dataint,derived,stub` (15-18); `node tests/app/sweep.js 360` and `768` (about 16); the golden re-seed, `build:test` and four `--update` shards (11-12; about 56 catalog states plus the Account, search and shared states whose text or bar moves); `npm run check:built` (1); both lints (2); `node tools/decisions.js` and the detector (2); the orchestrator's Impeccable `polish` and `harden` run (about 10, section 10) | 55-65 |
-| 4-9 | `npm run check:built` where `dist` assets change (1) | 1 each |
+| 3b | `build:test` and one golden pair (about 5); `check:built`, both lints, decisions and the detector (about 5); `polish` and `harden` (5-10); the browser suites, the sweep and the focus-fix proof run on CI | 15-20 |
+| 4-8, 9a, 9b | `npm run check:built` where `dist` assets change (1) | 1 each |
+| 9a | the new 360 px goldens, the axe cases and the `check:fast` growth of C1b (10-15); the new goldens and `lists.test.ts` cases of D1 (5-10) | 15-25 |
+| 9b | `node tests/app/sweep.js 768` for A1 (about 8) | 8 |
 | 10 | docs only: one `check:fast` and one docs-only CI run (no `e2e`) | about 20 in all |
 | waves (section 16) | per wave: the merge of `origin/main`, the squash in the main checkout, the `main` CI run with the deploy (10.5-11.5) and the merge back (about 2); three waves | 37-41 |
-| post-release check and closeout (section 16) | the blind production review (about 45-60, the owner's print not counted), then the closeout commit and its docs-only CI run and the last squash (about 20) | 65-80 |
+| blind reviews, post-release check and closeout (section 16) | the three blind production reviews, after wave 2, after wave 3 and of the whole app, each with its remediation batch (the whole-app one about 45-60, the owner's print not counted; the two wave reviews and their fix batches are not in the totals below), then the closeout commit and its docs-only CI run and the last squash (about 20) | 65-80 |
 
-Remaining total at the batch 3 refresh (batches 1, 1b, 2 and wave 1 spent):
-eight code batches (3-9, P) at 45-60 min (360-480), plus 91-106 min of extra
-gates (3: 55-65; P: 30-35; 4-9: 6), plus batch 10 at about 20, plus the two
-waves that are left (25-28) and the post-release check and closeout (65-80):
-about 561-714 min, so about 9.4-11.9 hours. If batch 10 takes code, add 25-35
-min. Batch P adds 75-95 min of its own gates and measures. The owner's merges
-saved two batches (about 90-120 min); keeping the spelling sweep in batch 2
-saved one CI run and one review (about 30 min), and batch 1b cost one batch
-because its contract and print change split from batch 1. Mock drawing (section
-9) runs no gate.
+Total at the batch 3b refresh (2026-11-03), counted as at the batch 3 refresh
+(batches 1, 1b, 2 and wave 1 spent): ten code batches (3, 3b, 4, 5, 6, 7, 9a, 8, 9b,
+P) at 45-60 min (450-600), plus 130-160 min of extra gates (3: 55-65; 3b: 15-20; P:
+30-35; 9a: 15-25; 9b: 8; 4-8, 9a, 9b: 7), plus batch 10 at about 20, plus the two
+waves that are left (25-28) and the post-release check and closeout (65-80): about
+690-888 min, so about 11.5-14.8 hours. Batch 3's own run is spent, except its review
+fix cycle (about 20-25 min), so the time left is about 610-788 min, 10.2-13.1 hours.
+Feedback item A adds no gate. If batch 10 takes code, add 25-35 min. Batch P adds
+75-95 min of its own gates and measures. The owner's 2026-10-29 merges saved two
+batches (about 90-120 min); keeping the spelling sweep in batch 2 saved one CI run
+and one review (about 30 min). Batch 1b cost one batch for its contract and print
+change, 3b one for the header, and the 9a and 9b split one for the F2 fix in wave 2.
+Mock drawing (section 9) runs no gate.
 
 Writer tests per remaining batch (`orchestrate.prompt.md`, "Writer tier"; facts
 for the orchestrator's dispatch, not a model choice):
@@ -745,12 +850,14 @@ for the orchestrator's dispatch, not a model choice):
 |---|---|---|---|
 | P | yes: the product law's card size (QP.2, `CLAUDE.md`) | yes: print fitting; parity with Figma nodes `714-42387` and `3773-90792` (the burden export) | none |
 | 3 | no (no contract, route or stored state changes; `tests/app/contracts.js` only reads a second form of the same fixture value) | yes: about 56 catalog goldens re-seeded, the first-screen offsets and the sheet, bar and column layouts rest on visual judgment | none (section 10) |
+| 3b | no | one new golden pair, seeded with `--only`; no re-seed of other states and no design node | none (`plan-3b.md`) |
 | 4 | no | yes: new states and their goldens | none |
 | 5 | no | yes: goldens | none |
 | 6 | no | yes: goldens | none |
 | 7 | no | yes: goldens | none |
 | 8 | no | yes: goldens | none |
-| 9 | yes: `.prettierignore` (E4) and `.impeccable/config.json` (E2), configuration every session runs under | yes: goldens | its refresh checks the note switch's pending-edit save for possible data loss |
+| 9a | no: no stored state, route or contract changes (D1 keeps the filter in memory) | yes: the list goldens, the compact row at 360 px | none |
+| 9b | yes: `.prettierignore` (E4) and `.impeccable/config.json` (E2), configuration every session runs under | yes: the list goldens again | its refresh checks the note switch's pending-edit save for possible data loss |
 | 10 | no, unless it edits `.impeccable/config.json` again | no, unless it takes code | none |
 
 ## 9. Mock schedule
@@ -1483,7 +1590,7 @@ batch. Wave 2 lands after batch 7 (section 16), not after this batch.
    (`R/roller-supmenu__360__ru.png`).
 2. Error scenarios: the redesign adds no write path. Batch 2 keeps the toast
    priority rules of `FEATURES.md` "Chrome" and fixes D121; batch 6 keeps the
-   conflict state (A30); batch 9 keeps the list save, undo, limit and request
+   conflict state (A30); batches 9a and 9b keep the list save, undo, limit and request
    states; each batch names load, failed read, failed write, offline, conflict,
    deleted record, stale tab and revert for its screen. The last roll section
    (batch 2) is memory per tab and loses nothing.
@@ -1502,8 +1609,9 @@ batch. Wave 2 lands after batch 7 (section 16), not after this batch.
    with its chevron and its lit state; batch 3, the neutral pressed `Chip`
    («Все»), the filter sheet, the table picker, the «Ещё» menu, the 768 px mid
    band and the selection mode; batch 4, the «Ещё» menu and the bottom sheet; batch P, the `/p/` «Ещё» menu and the one-card-per-row preview at 360 (QP.6); batch 8, the
-   add-to-list menu; batch 9, the note switch, the list «Ещё» menu and the
-   `/s/` selection mode.
+   add-to-list menu; batch 9a, the list «Ещё» menu, the compact row, the filter
+   sheet and the `/s/` selection mode; batch 9b, the note switch; batch 3b, the
+   hidden header.
 
 ## 12. Risks, assumptions, deferred
 
@@ -1512,8 +1620,11 @@ batch. Wave 2 lands after batch 7 (section 16), not after this batch.
 - Risk: the font CSS passes the bundle budget; batch 1 step 8.
 - Risk: the navigation change confuses returning users; both rule sets stay one
   click away, each supplement two, and every address works.
-- Risk: batch 9 is the largest batch; its refresh lists the review order (the
-  list page, then the shared page) for the batch review.
+- Risk: 9a and 9b re-seed the list goldens twice, and between the waves the list
+  page has the new rows beside the old panels (owner, "Batch 9 split"). Each refresh
+  lists the review order (the list page, then the shared page).
+- Risk: batch 3b's header is not verified on a real iOS device; section 16 places
+  the check.
 - Risk: the owner's mock notes move a batch's scope; a change stays in the
   batch that owns the screen; only a public-contract change or a new route and
   filter set adds a batch.
@@ -1542,7 +1653,7 @@ batch. Wave 2 lands after batch 7 (section 16), not after this batch.
 - Risk: a usage wrap-up stops batch 3 mid-batch; the step ids S1-S15 of
   section 10 let a fresh implementer continue from the progress line.
 - Risk: between waves 2 and 3 two filter forms (`FilterPanel`, `FilterBar`) and
-  two selection bars (`SelectionBar`, `BatchBar`) exist; batches 6, 8 and 9
+  two selection bars (`SelectionBar`, `BatchBar`) exist; batches 6, 9a and 8
   remove the old ones (decisions D2 and D3, accepted by the interim-mix rule).
 
 ## 13. Owner questions
@@ -1639,9 +1750,13 @@ Open, with a default taken while the owner is away (batch 3 refresh,
   laptop view does not compare weapons by column. If the owner says yes it is
   one added item with its own mock check.
 
-Settled, not asked again: the batch 9 merge is 9a + 10 (section 7, the
-evidence); the shell is batch 2 (foundations first); D121 is batch 2 and D116
-batch 8.
+Settled, not asked again: the list page and the shared page stay one pair, split
+by work into 9a and 9b (section 7); the shell is batch 2 (foundations first); D121
+is batch 2 and D116 batch 8.
+
+Feedback answers (owner, 2026-11-03, `feedback.md`): Q1 A1, Q2 B2 (not the
+recommended B1), Q3 C1b, Q4 D-head 1 with the `/s/` exception at 286 px. Defaults
+kept: D1, a hidden tick leaves the selection, the grip goes while narrowed.
 
 ## 14. First-screen rule
 
@@ -1699,21 +1814,27 @@ The check (batch 1 adds it):
   `main` would carry, `reviews/1.md` N7). A row with `shipped: false` is
   measured and logged, not asserted; the batch that brings a route under the
   rule (the batch list below) sets its row to `shipped: true`, and batch 10
-  leaves no `shipped: false` row. Waves 1 and 2 reach `main` with logged rows;
+  leaves no `shipped: false` row. A row may read `shipped: 360`, asserted at 360x640 and logged at 1180x720: 9a brings
+  the list page and `/s/` under the rule at 360, and their 1180 px figures (377 and 481
+  px on the built page) wait for 9b's side column. Case 83 asserts when `row.shipped
+  === true || row.shipped === width`. Waves 1 and 2 reach `main` with logged rows;
   that is accepted (owner, "Interim mix between waves"), because the later
   batches assert them.
-- Named exceptions (owner, 2026-10-29): `/roll/std` at 360 (variant A, the
-  first result at about 325 px; batch 5) and `/lists/<uuid>` with requests at
-  360 (the folded requests strip, about 292 px; batch 9). Each is a row with an
+- Named exceptions (owner, 2026-10-29 and 2026-11-03): `/roll/std` at 360 (variant
+  A, the first result at about 325 px; batch 5), `/lists/<uuid>` with requests and 8
+  or more entries at 360 (the folded requests strip and the search row, about 296 px;
+  batch 9b) and `/s/` with a search row at 360 (286 px; batch 9a). Each is a row with an
   `exception` limit in px at 360 only, set from the owner's figure; the row
   is asserted against that limit at 360 and against the 0.4 rule at 1180, and
-  DESIGN.md "The First-Screen Rule" lists both exceptions with the owner's
+  DESIGN.md "The First-Screen Rule" lists each exception with the owner's
   date. If the built page measures past the owner's figure, the batch names
   the measured value to the owner before it moves the limit. Batch 5 adds a
   second roll row in another mode (asserted at the rule; the `AltPanel` or
   `RollPanel` deterministic first result is that refresh's choice,
-  `reviews/1.md` "Deviations"); batch 9 adds the row with requests beside the
-  `LIST_A as gm4` row without them.
+  `reviews/1.md` "Deviations"); batch 9a adds the row of 8 or more entries beside
+  `LIST_A as gm4`, and the `/s/` row of 8 or more entries; batch 9b adds the rows
+  with requests. With the owner away, a value past the owner's figure is logged in
+  the AFK decisions file and the limit takes it.
 - Cost: about 50 page loads, about 70-100 s added to `app/states`.
 - The mock step measures each batch mock the same way with
   `issues/57/mocks/measure.mjs` (plan review N6: the top of the primary
@@ -1757,6 +1878,12 @@ RU / EN; limit 256 at 640 and 288 at 720):
 | 9 / `list` | first entry | fail, 514 / 514 | pass, 159 / 159 | At 360 the side column becomes a head: the name, «Поделиться» and «Ещё» (Печать, notes, delete) on one row, the meta line, one row with «Бросить по списку» / "Roll from the list"; the entries' head holds the count and «Выбрать» (R3); the price switch and the list notes move under the entries. About 256 before the R3 places, at the limit; re-folded at mock 9 to the 240 target (R2). (9) |
 | 9 / `shared-player` | first entry | fail, 413 / 413 | pass, 287 / 287 | At 360 «Копия в мои списки» / "Copy to my lists" keeps its own row; the entries' head holds the count and «Выбрать» (R3); the player note becomes a «Заметка для игроков ▾» / "Note for players ▾" link on the lead line that opens it in place. About 247 before the R3 places; re-measured at mock 9 against the 240 target. At 1180 it passes by 1 px; the same fold gives margin. (9) |
 
+Feedback answers (owner, 2026-11-03): at 360 the rows `9 / list` and
+`9 / shared-player` are replaced by `mocks/F/`. `/lists/<uuid>`: 200 px below 8
+entries, 252 px from 8. `/s/`: 286 px with a search row, a named exception. No row of
+this table moves for batch 3b: the rule is measured at scroll 0, where the header is
+shown and takes the same layout (`plan-3b.md`, "First-screen row").
+
 The estimates are sums of the mocks' own row heights and gaps; each batch
 mock re-renders with its fix and is measured again before the owner sees it.
 The re-renders that follow from this table: `mocks/3/` (`catalog` and its
@@ -1766,13 +1893,13 @@ states), `mocks/5/` (`roller`), `mocks/6/` (`homebrew-items`, `editor`),
 
 FIRST_SCREEN batches: roll pages 5 (the header part 2), tables 3, item 4,
 search and account 7, print P, homebrew and the editor 6, `/lists` 8,
-`/lists/<uuid>` and `/s/` 9.
+`/lists/<uuid>` and `/s/` 9a at 360 and 9b at 1180.
 
 ## 15. Batch P - Print (outline)
 
 Owner, 2026-10-29 (`context.md`, "Print review" and "Print feel"): a print
 audit, then a print mock the owner confirms, then this batch with the print
-checks (after 1b by its mock; in wave 3, after batch 9, by the release
+checks (after 1b by its mock; in wave 3, after batch 9b, by the release
 order). The product law holds: nine cards on A4 or sixteen on the
 compact sheet, colour and black-and-white as two layouts, the fit measured in
 the browser. Inside the card, fonts, type sizes, spacing, art and stat blocks
@@ -1961,8 +2088,8 @@ review as a gate; the batches still save their screenshot sets as evidence.
 | Wave | Batches | Lands after | Production until the next wave |
 |---|---|---|---|
 | 1 | 1, 1b, 2 | batch 2's review and the green CI run of its tip | the new face, ramp, glyph, mark and shell; gold default chips beside the neutral switches (accepted; batch 3 and the surface batches make them neutral); `FIRST_SCREEN` rows logged |
-| 2 | 3, 4, 5, 6, 7 | batch 7's review and the green CI run of its tip | the new catalog, item, roller, homebrew, search and account pages; the list and print pages as wave 1 left them |
-| 3 | 8, 9, P, 10 | batch 10's review and the green CI run of its tip | the finished task |
+| 2 | 3, 3b, 4, 5, 6, 7, 9a | batch 9a's review and the green CI run of its tip | the new catalog, item, roller, homebrew, search and account pages; the hide-and-show header and the focus fix; the compact rows, search and filter on `/lists/<uuid>` and `/s/`; the list panels, `/lists` and print as wave 1 left them |
+| 3 | 8, 9b, P, 10 | batch 10's review and the green CI run of its tip | the finished task |
 
 Each wave lands by `orchestrate.prompt.md`, "Task closeout and cleanup", step
 8, with these changes (owner, "Wave squash content"):
@@ -1994,19 +2121,37 @@ task.
 No owner screenshot review gates a wave; the owner checks the live site after
 each release.
 
-After wave 3, in order (batch 10's last lines):
+Blind reviews on production (owner, `context.md`, "Wave reviews"). Each runs with
+no plan and no handoff, and checks production only:
 
-1. The post-release check. A fresh blind reviewer, with no plan and no
+- After wave 2's green deploy: a blind review of the scope of waves 1 and 2.
+  Report: `issues/57/reviews/post-wave-2.md`.
+- After wave 3's green deploy: a blind review of the scope of wave 3. Report:
+  `issues/57/reviews/post-wave-3.md`.
+- Then the whole-app blind review, step 1 below. Report:
+  `issues/57/reviews/post-release.md`.
+
+Each of the three runs its own remediation at once, nits included, in a fix batch
+on `claude/57`, with no wait for the owner and no entry in `DEBT.md`. A finding
+goes to the owner only under a stop rule: a product law, a feature loss, or a gate
+red after the one remediation cycle.
+
+After wave 3 and its blind review, in order (batch 10's last lines):
+
+1. The whole-app blind review. A fresh blind reviewer, with no plan and no
    handoff, checks production only: Source Sans 3 loads from the site (no
    fallback face); the First-Screen and Phone-First Rules on the live site at
    360 and 1180, RU and EN; Impeccable `audit` and the detector on
    production; axe on the main routes; the PWA install icon and the favicon
    (the mark); link previews in Telegram and Discord (old cached cards are
    expected for a while); one printed A4 sheet of each layout on paper (the
-   owner prints). Report: `issues/57/reviews/post-release.md`. It covers all
-   three waves; there is no check per wave.
-2. Each finding goes to `docs/specs/DEBT.md` under the task that owes it, or
-   to a named follow-up task.
+   owner prints).
+   The owner also tries the header on a real iPhone (`plan-3b.md`: the bounce at both
+   ends of a long list, the on-screen keyboard, VoiceOver into the hidden header);
+   headless Chrome cannot show these. Report: `issues/57/reviews/post-release.md`.
+   It covers the whole app.
+2. Its findings are remediated at once, nits included, in a fix batch on
+   `claude/57` (the remediation rule above).
 3. The closeout (`/handoff`): the audit, the durable moves, `git rm -r
    issues/57` in the closeout commit, push, a docs-only CI run, and a last
    squash onto `main` with the `DEBT.md` lines and the durable moves; that

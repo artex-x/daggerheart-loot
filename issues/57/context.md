@@ -443,7 +443,7 @@
     exception at 286 px. Defaults kept: D1 filter in page memory, a hidden
     tick leaves the selection, the grip goes while narrowed. Homes: the
     batch 5 and 9 refreshes; DESIGN.md, FEATURES.md, STATE.md and one
-    decision file, written by batch 9.
+    decision file, written by batch 9; the header's by 3b, the rest by 9a.
   - Header batch (owner, 2026-11-03, chat): the hide-and-show header (Q2 B2)
     is its own batch, 3b, right after batch 3 and in wave 2 ("the earlier we
     implement it the better"); this replaces "batch 9" for it above. Batch 3b
@@ -639,6 +639,15 @@
 - Impeccable skills cannot run from a subagent (`reviews/2.md` R1). The
   orchestrator session has the Skill tool; `impeccable:impeccable-finish-reviewer`
   is a read-only agent type that returns fixes.
+
+## Facts measured at the batch 3b refresh (2026-11-03, production)
+- `.topbar` is 111 px at 345 and 360 px, 63 px at 1180 px, and 152 px at 320 px in EN
+  signed out, where «Sign in» wraps the brand row.
+- A `focus()` on a header control moves the page up (scroll 1500 to 1199 at 320 px,
+  to 1115 at 1180 px), with or without `scroll-padding-top`; `{ preventScroll: true }`
+  stops it. An existing defect, in `handoff.md` Deferred after batch 3b.
+- 30 backward `focus()` stops at 320 px EN: 8 covered today, 0 with
+  `scroll-padding-top` at the measured height.
 
 ## Command costs
 | Command | Wall clock | Fits one call? |

@@ -6,8 +6,8 @@
  * and every legacy suite uses - because a handful of real defects only show
  * up on the far side of a browser's own microtask checkpoint (the
  * `isConnected` guard) or need a real network, a real clipboard stub, or a
- * real second tab to mean anything at all. Seventy-one cases in
- * seventy runs (4 and 5 share one), no ancestor. Like every suite here it drives
+ * real second tab to mean anything at all. Seventy-eight cases in
+ * seventy-seven runs (4 and 5 share one), no ancestor. Like every suite here it drives
  * dist-test/, the test build (docs/specs/COVERAGE.md, "Test layers"): signed
  * out it draws the sign-in prompt where a list would be made, so the cases
  * that make one open as the seed's `gm2`. */
@@ -5109,6 +5109,265 @@ async function primaryContentInFirstScreen() {
   }
 }
 
+/** Returns the header's top and bottom edges in the window. */
+function headerEdges(page) {
+  return page.evaluate(() => {
+    const r = document.querySelector('.topbar').getBoundingClientRect();
+    return { top: r.top, bottom: r.bottom };
+  });
+}
+
+/** 86. Up to 760 px the header leaves on a scroll down and returns on a scroll up, and each
+ *  guard of DESIGN.md, "The Hidden Header Rule", holds; from 761 px it stays. Geometry only:
+ *  the suite forces reduced motion, so the one timing read relaxes it and restores it. */
+async function headerHidesAndReturns() {
+  const at = '86 (the hidden header): ';
+  const { ctx, page, d } = await fresh({ width: 360, height: 640 });
+  const hiddenNow = async (what) => {
+    const e = await headerEdges(page);
+    ok(
+      e.bottom <= 0,
+      at + what + ': the header is not out of the window, ' + JSON.stringify(e)
+    );
+  };
+  const shownNow = async (what) => {
+    const e = await headerEdges(page);
+    ok(e.top === 0, at + what + ': the header is not at the top, ' + JSON.stringify(e));
+  };
+  const by = async (dy) => {
+    await page.evaluate((n) => {
+      window.scrollBy(0, n);
+    }, dy);
+    await d.settle();
+  };
+  const home = async () => {
+    await page.evaluate(() => {
+      window.scrollTo(0, 0);
+    });
+    await d.settle();
+  };
+  const primary = () =>
+    page.evaluate(() => document.querySelector('[data-primary]').getBoundingClientRect().top);
+  const height = () => page.evaluate(() => document.documentElement.scrollHeight);
+
+  await d.open('#/tables/eq_weapon');
+  const firstPrimary = await primary();
+
+  await d.scrollPage(800);
+  await hiddenNow('a scroll down');
+  const tall = await height();
+  await by(-20);
+  await shownNow('a scroll up');
+  ok((await height()) === tall, at + 'the page height moved with the header');
+
+  await by(40);
+  await hiddenNow('a scroll down again');
+  await by(-5);
+  await hiddenNow('5 px up, inside the dead zone');
+
+  await home();
+  await shownNow('scroll 0');
+  ok((await primary()) === firstPrimary, at + 'the primary content moved at scroll 0');
+
+  await d.scrollPage(800);
+  await hiddenNow('before the focus');
+  await page.focus('.topbar .seg button');
+  await shownNow('a focus in the header');
+  const hit = await page.evaluate(() => {
+    const b = document.querySelector('.topbar .seg button');
+    const r = b.getBoundingClientRect();
+    return b.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2));
+  });
+  ok(hit, at + 'the focused header control is not hit at its center');
+  await page.evaluate(() => {
+    document.activeElement.blur();
+  });
+
+  await home();
+  await page.focus('main input[type="search"]');
+  await d.scrollPage(800);
+  await shownNow('a scroll with a text field in focus');
+  await page.evaluate(() => {
+    document.activeElement.blur();
+  });
+  await by(100);
+  await hiddenNow('a scroll down after the blur');
+
+  await home();
+  await d.click('Ещё');
+  await d.scrollPage(800);
+  await shownNow('a scroll behind an open menu');
+  await page.keyboard.press('Escape');
+  await d.settle();
+
+  await home();
+  await d.click('Фильтры');
+  await d.scrollPage(800);
+  await shownNow('a scroll behind the filter sheet');
+  await d.click('Закрыть');
+  await d.scrollPage(1000);
+  await hiddenNow('a scroll down after the sheet');
+
+  await home();
+  await page.evaluate(() => {
+    document.querySelector('[data-row] button').click();
+  });
+  await waitIn(page, () => !!document.querySelector('dialog[open]'));
+  await d.scrollPage(800);
+  await shownNow('a scroll behind the record dialog');
+  await page.keyboard.press('Escape');
+  await d.settle();
+  await d.scrollPage(1000);
+  await hiddenNow('a scroll down after the dialog');
+
+  await d.go('#/roll/std');
+  await shownNow('a navigation');
+  await page.goBack();
+  await d.settle();
+  await new Promise((r) => setTimeout(r, 200));
+  await shownNow('Back');
+
+  await d.scrollPage(1500);
+  await by(100);
+  await hiddenNow('before the anchor');
+  await d.go('#/tables/vault_of_ages/tA');
+  await waitIn(page, () => document.getElementById('sec-tA') !== null);
+  await new Promise((r) => setTimeout(r, 300));
+  await shownNow('a linked section');
+  const landed = await page.evaluate(() => {
+    const sec = document.getElementById('sec-tA').getBoundingClientRect().top;
+    return { sec, header: document.querySelector('.topbar').getBoundingClientRect().bottom };
+  });
+  ok(
+    landed.sec >= landed.header - 1 && landed.sec <= landed.header + 40,
+    at + 'the section is not within 40 px under the header, ' + JSON.stringify(landed)
+  );
+
+  await d.go('#/i/nope');
+  await d.scrollPage(10000);
+  await shownNow('a short page');
+
+  await d.go('#/tables/eq_weapon');
+  await d.scrollPage(800);
+  await by(100);
+  await hiddenNow('before the print');
+  const before = await headerEdges(page);
+  await d.media('print');
+  const shown = await d.computed('.topbar', ['display']);
+  ok(shown?.display === 'none', at + 'the header prints: ' + JSON.stringify(shown));
+  await d.media(undefined);
+  await d.settle();
+  const after = await headerEdges(page);
+  ok(
+    after.top === before.top && after.bottom === before.bottom,
+    at + 'the header moved across a print: ' + JSON.stringify({ before, after })
+  );
+
+  await home();
+  const declared = () => d.computed('.topbar', ['transition-duration', 'transition-property']);
+  try {
+    await page.emulateMediaFeatures([
+      { name: 'prefers-reduced-motion', value: 'no-preference' }
+    ]);
+    const motion = await declared();
+    ok(
+      motion?.['transition-duration'] === '0.2s' &&
+        motion['transition-property'] === 'transform',
+      at + 'the slide is not declared: ' + JSON.stringify(motion)
+    );
+    const ended = page.evaluate(
+      () =>
+        new Promise((done) => {
+          const bar = document.querySelector('.topbar');
+          bar.addEventListener('transitionend', () => done(true), { once: true });
+          setTimeout(() => done(false), 3000);
+        })
+    );
+    await d.scrollPage(800);
+    ok(await ended, at + 'the slide did not end');
+    await hiddenNow('after the slide');
+  } finally {
+    await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+  }
+  const still = await declared();
+  ok(
+    still?.['transition-duration'] === '0s',
+    at + 'reduced motion keeps a slide: ' + JSON.stringify(still)
+  );
+  await ctx.close();
+
+  const wide = await fresh({ width: 1180, height: 720 });
+  await wide.d.open('#/tables/eq_weapon');
+  await wide.d.scrollPage(800);
+  const edges = await headerEdges(wide.page);
+  ok(edges.top === 0, at + 'the header moved at 1180: ' + JSON.stringify(edges));
+  ok((await wide.d.count('.topbar.away')) === 0, at + 'the header is marked away at 1180');
+  await wide.ctx.close();
+}
+
+/** 87. A backward Tab never lands under the header (WCAG 2.4.11): 30 stops up from row 120,
+ *  and the page's scroll padding is the header's measured height at each width. */
+async function backwardTabClearsTheHeader() {
+  const at = '87 (backward Tab): ';
+  for (const [width, height] of [
+    [360, 640],
+    [1180, 720]
+  ]) {
+    const { ctx, page, d } = await fresh({ width, height });
+    await d.open('#/tables/eq_weapon');
+    await page.evaluate(() => {
+      document.querySelectorAll('[data-row]')[119].querySelector('button').focus();
+    });
+    await d.settle();
+    let covered = 0;
+    for (let i = 0; i < 30; i++) {
+      await page.keyboard.down('Shift');
+      await page.keyboard.press('Tab');
+      await page.keyboard.up('Shift');
+      await new Promise((r) => setTimeout(r, 40));
+      const stop = await page.evaluate(() => {
+        const el = document.activeElement;
+        const r = el.getBoundingClientRect();
+        const head = document.querySelector('.topbar').getBoundingClientRect();
+        const hit = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+        return {
+          name: el.tagName + ' ' + (el.textContent ?? '').trim().slice(0, 30),
+          top: r.top,
+          headBottom: head.bottom,
+          inside: el.contains(hit)
+        };
+      });
+      if (stop.top < stop.headBottom - 1 || !stop.inside) {
+        covered++;
+        fs.writeSync(1, '  covered stop: ' + JSON.stringify(stop) + '\n');
+      }
+    }
+    fs.writeSync(1, '  backward Tab at ' + width + ': ' + covered + ' of 30 covered\n');
+    ok(covered === 0, at + covered + ' of 30 stops covered at ' + width);
+    await ctx.close();
+  }
+  for (const [width, lang] of [
+    [320, 'en'],
+    [360, 'ru'],
+    [768, 'ru'],
+    [1180, 'ru']
+  ]) {
+    const { ctx, page, d } = await fresh({ width, height: 640, lang });
+    await d.open('#/tables/eq_weapon');
+    await d.settle();
+    const m = await page.evaluate(() => ({
+      padding: getComputedStyle(document.documentElement).scrollPaddingTop,
+      header: document.querySelector('.topbar').offsetHeight
+    }));
+    fs.writeSync(1, '  header at ' + width + ' ' + lang + ': ' + m.header + ' px\n');
+    ok(
+      m.padding === m.header + 'px',
+      at + 'the scroll padding at ' + width + ': ' + JSON.stringify(m)
+    );
+    await ctx.close();
+  }
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -5187,7 +5446,9 @@ const CASES = [
   ['82 (the Items tab filter address)', homebrewItemsFilterAddress],
   ['83 (primary content starts in the first screen)', primaryContentInFirstScreen],
   ['84 (filter column clears the selection bar)', filterColumnClearsTheBar],
-  ['85 (selection bar in landscape)', selectionBarInLandscape]
+  ['85 (selection bar in landscape)', selectionBarInLandscape],
+  ['86 (the header hides and returns up to 760 px)', headerHidesAndReturns],
+  ['87 (a backward Tab never lands under the header)', backwardTabClearsTheHeader]
 ];
 
 (async () => {

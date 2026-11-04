@@ -2585,6 +2585,11 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   share one row and the sticky header is 63 px tall; up to 760 px the jobs take
   a second row and the header is 111 px at 360 px in both languages (measured
   2026-10-30 in the built app, 313 px of row with a classic scrollbar).
+- Up to 760 px the whole header leaves on a scroll down and returns on a scroll
+  up, on every page, past a 10 px dead zone. It stays at the top of the page, on a
+  short page, after a navigation and while a menu, a sheet, a dialog, a text field
+  or a drag owns the page; a focus inside it brings it back. A focused control and
+  a linked target stop clear of its full height, so a Tab never lands under it.
 - The nine roll sections draw the mode row under the sticky header; it
   scrolls with the page. It holds three controls: «Обычные правила» /
   "Standard rules", «Альтернативные таблицы» / "Alternate tables" (the page
@@ -2603,7 +2608,8 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   moving and waits out no delay - a blanket kill (`tokens.css`), not the live
   app's own two named exceptions - including the table page's scroll to a
   linked row or section, which jumps instead of easing (`Env.motion`: a
-  call-site `behavior` is out of CSS's reach).
+  call-site `behavior` is out of CSS's reach), and the header's slide, which
+  then appears at once.
 - Every focusable control gets the same gold keyboard-focus ring, at the
   control's own border-radius where a component sets one and `--r-sm`
   otherwise (a scoped rule always outranks the unscoped global one - `.seg
