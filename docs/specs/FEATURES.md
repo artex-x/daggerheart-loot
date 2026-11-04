@@ -2588,7 +2588,7 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
 - Up to 760 px the whole header leaves on a scroll down and returns on a scroll
   up, on every page, past a 10 px dead zone. It stays at the top of the page, on a
   short page, after a navigation and while a menu, a sheet, a dialog, a text field
-  or a drag owns the page; a focus inside it brings it back. A focused control and
+  or a drag owns the page; a keyboard focus inside it brings it back. A focused control and
   a linked target stop clear of its full height, so a Tab never lands under it.
 - The nine roll sections draw the mode row under the sticky header; it
   scrolls with the page. It holds three controls: «Обычные правила» /

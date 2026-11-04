@@ -76,3 +76,7 @@
 | 3-N1..N6, N8 | nit | local | fixed 3-fix | See `reviews/3.md`, Nits |
 | 3-N7 | nit | deferred-scope | deferred (batch 7) | See `reviews/3.md`, Nits |
 | 3-CI | blocker | local | fixed 3-fix | CI of `ef44bb5d`: `KeepNote.svelte` branch coverage 50%, its table caller gone |
+| 3b-B1 | blocker | local | fixed 3b-fix | A tap in the header stops it hiding: `:not(:focus-within)` answers any focus |
+| 3b-R1 | risk | local | fixed 3b-fix | The popup query walks the page on each scroll frame; `head` gets a new object each frame |
+| 3b-R2 | risk | local | fixed 3b-fix | `FIELD` holds `select`, which has no on-screen keyboard |
+| 3b-N1..N3 | nit | local | fixed 3b-fix | See `reviews/3b.md`, Nits |

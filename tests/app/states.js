@@ -5184,6 +5184,28 @@ async function headerHidesAndReturns() {
   });
 
   await home();
+  await page.click('nav.tabs a[data-job="tables"]');
+  await d.settle();
+  await d.scrollPage(800);
+  await hiddenNow('a scroll down after a click on a job link');
+
+  await page.focus('main input[type="search"]');
+  for (let i = 0; i < 12; i += 1) {
+    if (await page.evaluate(() => !!document.activeElement?.closest('.topbar'))) break;
+    await page.keyboard.down('Shift');
+    await page.keyboard.press('Tab');
+    await page.keyboard.up('Shift');
+  }
+  ok(
+    await page.evaluate(() => !!document.activeElement?.closest('.topbar')),
+    at + 'Shift+Tab did not reach the header'
+  );
+  await shownNow('a Shift+Tab into the header');
+  await page.evaluate(() => {
+    document.activeElement.blur();
+  });
+
+  await home();
   await page.focus('main input[type="search"]');
   await d.scrollPage(800);
   await shownNow('a scroll with a text field in focus');
@@ -5226,6 +5248,15 @@ async function headerHidesAndReturns() {
   await d.settle();
   await new Promise((r) => setTimeout(r, 200));
   await shownNow('Back');
+  await page.goForward();
+  await d.settle();
+  await new Promise((r) => setTimeout(r, 200));
+  await shownNow('Forward');
+  await page.reload();
+  await d.settle();
+  await new Promise((r) => setTimeout(r, 200));
+  await shownNow('a reload');
+  await d.go('#/tables/eq_weapon');
 
   await d.scrollPage(1500);
   await by(100);

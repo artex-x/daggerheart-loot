@@ -8,7 +8,7 @@ const read = (y: number, over: Partial<ScrollRead> = {}): ScrollRead => ({
   y,
   max: 5000,
   height: HEIGHT,
-  held: false,
+  held: () => false,
   ...over
 });
 
@@ -31,13 +31,13 @@ describe('the header on a scroll', () => {
     [
       'a held scroll keeps it shown and moves the turn',
       shown(500),
-      read(900, { held: true }),
+      read(900, { held: () => true }),
       shown(900)
     ],
     [
       'a held scroll keeps it hidden and moves the turn',
       hidden(900),
-      read(500, { held: true }),
+      read(500, { held: () => true }),
       hidden(500)
     ],
     [
@@ -52,8 +52,18 @@ describe('the header on a scroll', () => {
       read(200, { max: 222 }),
       hidden(200)
     ],
-    ['the top of the page beats a hold', hidden(900), read(40, { held: true }), shown(40)],
-    ['a short page beats a hold', hidden(900), read(200, { max: 100, held: true }), shown(200)]
+    [
+      'the top of the page beats a hold',
+      hidden(900),
+      read(40, { held: () => true }),
+      shown(40)
+    ],
+    [
+      'a short page beats a hold',
+      hidden(900),
+      read(200, { max: 100, held: () => true }),
+      shown(200)
+    ]
   ])('%s', (_title, state, scroll, next) => {
     expect(nextHeader(state, scroll)).toEqual(next);
   });
@@ -62,6 +72,29 @@ describe('the header on a scroll', () => {
     const atEnd = nextHeader(hidden(4900), read(5000));
     expect(atEnd).toEqual(hidden(5000));
     expect(nextHeader(atEnd, read(5000))).toEqual(hidden(5000));
+  });
+
+  it('asks whether a popup holds the page only on a read that would flip the header', () => {
+    let asked = 0;
+    const held = () => {
+      asked += 1;
+      return false;
+    };
+    nextHeader(shown(500), read(505, { held }));
+    nextHeader(hidden(500), read(495, { held }));
+    nextHeader(shown(0), read(50, { held }));
+    expect(asked).toBe(0);
+    nextHeader(shown(500), read(520, { held }));
+    expect(asked).toBe(1);
+  });
+
+  it('returns the same state object when a read changes nothing', () => {
+    const a = shown(500);
+    const b = hidden(500);
+    const top = shown(40);
+    expect(nextHeader(a, read(505))).toBe(a);
+    expect(nextHeader(b, read(495))).toBe(b);
+    expect(nextHeader(top, read(40))).toBe(top);
   });
 
   it('answers a move of exactly the dead zone in both directions', () => {

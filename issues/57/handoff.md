@@ -7,7 +7,8 @@
 - Last agent: implementer (batch 3b, 2026-11-04)
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
-- Previous sha: `cd36b52f` (batch 3's fix pass; `origin/main` `d83384b4` is merged)
+- Previous sha: `38767ca4` (batch 3b; its remediation pass `3b-fix` is the commit after it;
+  `origin/main` `d83384b4` is merged)
 - Pushed: yes, the batch 3b commit, with this handoff; its sha is in the implementer's
   report (`git log -1 --grep="Task: 57"`).
 
@@ -112,7 +113,7 @@
   | iOS bounce clamped | Done: `ports.test.ts`, `headerScroll.test.ts`; a real device is not verified, the post-release check owns it |
   | Reduced motion | Done: case 86, `0.2s` and `transitionend` relaxed, `0s` restored |
   | Short pages | Done: `headerScroll.test.ts`, case 86 on `#/i/nope` |
-  | Navigation reset, band change | Done: `shell.test.ts`, case 86 (`d.go`, Back). A reload shares the same mount path; no case of its own |
+  | Navigation reset, band change | Done: `shell.test.ts`, case 86 (`d.go`, Back). Forward and a reload: case 86 |
   | Print | Done: case 86 |
   | Port reached by tests; no `scrollY` outside `app/src/ports/` | Done: `ports.test.ts`; `git grep` for `scrollY` and `pageYOffset` hits only `ports/` |
   | Focus fix, 0 covered in 30 stops, fails without the fix | Done: case 87 and the probe under Verification |
@@ -134,9 +135,8 @@
      71 + 2, and `COVERAGE.md` gains the missing cases 84 and 85.
   5. Budget (orchestrator's decision, under the owner's standing rule): `tools/bundle-budget.mjs`
      rises to 254 kB unconfigured and 312 kB configured. Measured 253.6 (from 252.8 at `cd36b52f`)
-     and 311.0 kB; 311.0 is over by under 0.05 kB, so the configured limit rises too.
-     `.claude/README.md` follows. The configured figure used placeholder public values, because
-     this worktree has no `.env.test.local`; CI's `e2e` job reads the real figure.
+     and 311.0 kB; 311.1 on CI's `e2e` job passes 311 by 0.1 kB, so the configured limit rises too.
+     `.claude/README.md` follows.
   6. The two new browser cases ran locally once, through an in-memory loader, outside the
      dispatch's list: both passed.
   No departure from mock F: the header draws as in mock 2, in or out of the window.
@@ -146,6 +146,17 @@
 - Plan review: not required for batch 3 (`plan.md` Status, no trigger fired).
 
 ## Verification
+- Batch 3b remediation (`3b-fix`, review `reviews/3b.md`):
+  - B1: `.topbar.away:not(:has(:focus-visible))`; case 86 gains a trusted click on the tables
+    job link then a scroll (hidden), a real Shift+Tab into the header (shown), Forward and a
+    reload (N3). Run through the in-memory loader on `dist-test/`: 86 and 87 pass. With the
+    built CSS patched back to `:not(:focus-within)`, 86 fails on the click line (top 0).
+  - R1: `ScrollRead.held` is a function, called only on a read that would flip the header;
+    `nextHeader` returns `s` when nothing changes; two new unit tests.
+  - R2: `select` removed from `FIELD`. N1: 311.1 kB in the budget comment and README. N2: 356
+    states in `COVERAGE.md`.
+  - `npx vitest run` of `headerScroll` and `shell` tests: pass. Both lints: exit 0.
+  - `npm run check:built`: 253.6 kB within 254.
 - Batch 2 and its fix pass: exact lines in `git show 65829261:issues/57/handoff.md`.
 - First-screen offsets after batch 3 (case 83, RU, EN; these two rows are asserted):
 
@@ -220,7 +231,7 @@
 ## Next batch (implement-ready)
 - Name: Batch 4, after batch 3b's `polish`, `harden`, review and CI. Its refresh adds an
   acceptance line for the bar's label (batch 3, deviation 2). The bundle has about 0.4 kB of
-  headroom under 254 kB and 1 kB under 312 kB.
+  headroom under 254 kB and 0.9 kB under 312 kB (311.1 on CI).
 - Risks / do-nots: `FilterBar` stays until batches 6 and 9a remove it, and `BatchBar`
   until batch 8; a golden is re-seeded, never edited.
 
@@ -269,6 +280,10 @@
   `.money-l`), HelpButton, `.steps-l` (RecordCard).
 
 ## Notes
+- Impeccable `polish` and `harden` of batch 3b (orchestrator, 2026-11-04, on `38767ca4`,
+  from the `Shell` and `tokens.css` diff, `lib/headerScroll.ts` and the shots; no live
+  pass): no finding. To check in the review: `onscroll` runs `held()`, a document query,
+  on each scroll event unless the port throttles it.
 - Impeccable `polish` and `harden` (orchestrator, 2026-11-03, on `ef44bb5d`): outcomes are
   under Completed and in `reviews/3.md`. Clean: `Sheet` focus, scrim and Escape; `viewport`
   listener cleanup.

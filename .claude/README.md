@@ -2395,16 +2395,12 @@ drops every `E2E_*` name, the secret key included, before the build:
 node --env-file=.env.test.local --input-type=module -e "import { buildEnv } from './tests/e2e/lib.mjs'; import { spawnSync } from 'node:child_process'; process.exit(spawnSync('npm run build && npm run budget', { shell: true, stdio: 'inherit', env: buildEnv(process.env) }).status ?? 1);"
 ```
 
-Expected: `within the 312 kB budget (with the account client chunk)`; 311.0 kB
-on 2026-11-04 at task 57 (the header that hides on a scroll; measured with
-placeholder public values), 253.6 kB unconfigured, from 252.8 before it; 310.6 kB
+Expected: `within the 312 kB budget (with the account client chunk)`; 311.1 kB
+on 2026-11-04 at task 57 (the header that hides on a scroll), 253.6 kB unconfigured, from 252.8 before it; 310.6 kB
 on 2026-10-22 at `persist-review` (the homebrew pages' folds, focus and long
 names, five new strings and four changed in two languages), 252.6 kB
 unconfigured, from 308.5 and 250.7 before it; 308.5 kB the same day (the print
-sheet's screen scale and two print headings), 250.7 kB unconfigured; 308.1 kB the same day (the requests
-panel's load line, the
-unknown list row, the index's save status, five strings in two languages),
-250.3 kB unconfigured, from 307.0 and 249.0 before it; 306.0 kB on 2026-10-21
+sheet's screen scale and two print headings), 250.7 kB unconfigured; 306.0 kB on 2026-10-21
 at `debt-cleanup` (the folded print vectors, the Items tab's
 filter, the status regions, the page help, the six-tab header), 248.0 kB
 unconfigured; 296.8 kB on 2026-10-16 at `debt-cleanup` (the account client from

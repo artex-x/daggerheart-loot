@@ -427,7 +427,7 @@ not add another system breakpoint.
 and returns on a scroll up, on every page, because a phone reader needs the rows
 more than the jobs. It slides in 0.2s, or appears at once under reduced motion. It
 is shown at the top of a page, on a short page and after a navigation; a menu, a
-sheet, a dialog, a text field or a drag freezes it; a focus inside brings it back.
+sheet, a dialog, a text field or a drag freezes it; a keyboard focus inside brings it back.
 It never leaves the tab order.
 
 **The Same Label Rule.** A label does not change with the width, and a control

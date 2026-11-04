@@ -146,7 +146,7 @@
 
   /* A text field: the on-screen keyboard moves the page without the reader. */
   const FIELD =
-    'input:not([type="checkbox"], [type="radio"], [type="button"], [type="submit"], [type="file"], [type="range"]), textarea, select, [contenteditable]';
+    'input:not([type="checkbox"], [type="radio"], [type="button"], [type="submit"], [type="file"], [type="range"]), textarea, [contenteditable]';
 
   /* Every popup is a `Menu`, the add-to-list menu or a modal `<dialog>`; while one is open,
      a page movement is not the reader's. */
@@ -170,7 +170,7 @@
         y: scroll.y(),
         max: scroll.max(),
         height: topbar?.offsetHeight ?? 0,
-        held: held()
+        held
       });
     });
   });
@@ -441,8 +441,9 @@
       transition: transform 0.2s ease-out;
     }
 
-    /* A focus inside the header brings it back, so a Tab never lands out of sight. */
-    .topbar.away:not(:focus-within) {
+    /* A keyboard focus inside the header brings it back, so a Tab never lands out of
+       sight. `:focus-within` would also answer a tap, which leaves the focus there. */
+    .topbar.away:not(:has(:focus-visible)) {
       transform: translateY(-100%);
     }
   }
