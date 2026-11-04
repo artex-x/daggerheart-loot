@@ -48,7 +48,7 @@ Core and Hope & Fear are the same Nd12 roll against the same 1-60 table, so they
 share one mode with a source switch. Rarity there only sets how many dice you
 roll, so each button is labeled with both the dice count and the rarities that
 count covers. Where a range is not a real die - 119 in Wondrous Environments, 29 in Dread GM Toolbox -
-the button reads "Random 1-N" instead of naming a die that does not exist.
+the button reads "Roll 1-N" instead of naming a die that does not exist.
 
 The **?** button beside a heading explains the mode: how the Hope and Fear
 columns are laid out, which rarity turns up where, and why the tiers printed

@@ -27,11 +27,13 @@
   import Empty from './Empty.svelte';
   import FilterPanel from './FilterPanel.svelte';
   import HelpBox from './HelpBox.svelte';
+  import HelpItem from './HelpItem.svelte';
   import Icon from './Icon.svelte';
   import LoadState from './LoadState.svelte';
   import Menu from './Menu.svelte';
   import NoData from './NoData.svelte';
   import PageHead from './PageHead.svelte';
+  import PinItem from './PinItem.svelte';
   import RecordHost from './RecordHost.svelte';
   import SearchBox from './SearchBox.svelte';
   import SectionHead from './SectionHead.svelte';
@@ -60,7 +62,7 @@
   } from '../lib/filters.js';
   import { FRAME_ORDER, frameName } from '../lib/frames.js';
   import { REALM_ORDER, realmName } from '../lib/realms.js';
-  import { canonicalHash, homebrewItemHash, tablesHash } from '../lib/hash.js';
+  import { homebrewItemHash, tablesHash } from '../lib/hash.js';
   import { helpFor } from '../lib/help.js';
   import {
     groupsOf,
@@ -347,7 +349,6 @@
   let moreOpen = $state(false);
   let moreButton = $state<HTMLButtonElement | undefined>(undefined);
   const home = $derived(tablesHash(table));
-  const pinned = $derived(app.home === canonicalHash(home));
 
   /* Rule 20: the pressed item leaves with the menu, so the focus returns to «Ещё». */
   function closeMore(): void {
@@ -748,26 +749,17 @@
               }}><Icon name="link" />{t.tableLink}</button
             >
           {/if}
-          <button
-            type="button"
-            role="menuitem"
-            tabindex="-1"
-            onclick={() => {
-              closeMore();
-              app.pinHome(home);
-            }}><Icon name={pinned ? 'check' : 'home'} />{pinned ? t.homeOn : t.homeHint}</button
-          >
+          <PinItem {app} {home} onpicked={closeMore} />
           {#if help}
-            <button
-              type="button"
-              role="menuitem"
-              tabindex="-1"
-              aria-expanded={helpOpen}
-              onclick={() => {
-                closeMore();
+            <HelpItem
+              {t}
+              {help}
+              open={helpOpen}
+              onpicked={closeMore}
+              ontoggle={() => {
                 helpOpen = !helpOpen;
-              }}><Icon name="help" />{help.button ?? t.helpHint}</button
-            >
+              }}
+            />
           {/if}
         </Menu>
       {/if}

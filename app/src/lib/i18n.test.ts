@@ -173,6 +173,8 @@ describe('the interface words', () => {
     expect(Object.keys(SECTION_LABEL)).toHaveLength(12);
     expect(sectionLabel('lists', dict('ru'))).toBe('Мои списки');
     expect(sectionLabel('lists', dict('en'))).toBe('My lists');
+    expect(sectionLabel('roll/alt', dict('ru'))).toBe('Альтернативные таблицы');
+    expect(sectionLabel('roll/alt', dict('en'))).toBe('Alternate tables');
   });
 
   it('holds no ellipsis character in either language', () => {

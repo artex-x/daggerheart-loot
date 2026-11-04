@@ -181,7 +181,7 @@ const STATES: {
   {
     what: 'the help panel, unfolded',
     route: '#/roll/wondrous',
-    enter: () => press('Справка')
+    enter: () => press('Об этой таблице')
   },
   {
     what: 'the section pinned as the one to open on',
@@ -201,7 +201,7 @@ const STATES: {
   {
     what: 'Core rules with the help panel unfolded',
     route: '#/roll/std',
-    enter: () => press('Справка')
+    enter: () => press('Где какая редкость')
   },
   {
     what: 'the alternate tables on a critical success, which raises the box',
@@ -212,12 +212,12 @@ const STATES: {
   {
     what: 'the alternate tables with the help panel unfolded',
     route: '#/roll/alt',
-    enter: () => press('Справка')
+    enter: () => press('Об этих таблицах')
   },
   {
     what: 'a division of Vault of Ages that is not a tier',
     route: '#/roll/voa',
-    enter: () => press('Артефакты')
+    enter: () => userEvent.selectOptions(screen.getByRole('combobox'), 'Артефакты')
   },
   {
     what: 'Vault of Ages in English',
@@ -575,6 +575,12 @@ const COVERED: Record<string, string> = {
   'CropDialog.svelte': 'cropDialog.test.ts decoding, ready and busy',
   'NameField.svelte':
     'the new source field above, and homebrewEditor.test.ts with its inline source',
+  'MoreMenu.svelte': 'rollPage.test.ts and rollResult.test.ts with the menu open, and PickRow',
+  'PinItem.svelte': 'rollPage.test.ts with «Ещё» open, and tables.test.ts',
+  'HelpItem.svelte': 'rollPage.test.ts with «Ещё» open, and tables.test.ts',
+  'RollPage.svelte': 'rollPage.test.ts in both bands, with «Настроить» and «Ещё» open',
+  'RollResult.svelte': 'rollResult.test.ts closed and with «Ещё» open',
+  'RollSelect.svelte': 'rollSelect.test.ts, and the pickers in sections.test.ts',
   'PickRow.svelte': 'record.test.ts on a catalog and an own record, and inside the modal above',
   'QuickItem.svelte': 'quickItem.test.ts, and the refused own-item panel above',
   'FormField.svelte':
@@ -590,7 +596,7 @@ const COVERED: Record<string, string> = {
   'StdPanel.svelte': 'std.test.ts, and both pressed states below',
   'Button.svelte':
     'the roll button and the card actions, on every roll page; the second set disclosure in homebrewEditor.test.ts',
-  'Chip.svelte': 'the Vault of Ages, community and realm pickers - sections.test.ts and above',
+  'Chip.svelte': 'the source and kind rows of std.test.ts and the rarity row of alt.test.ts',
   'AltPanel.svelte': 'alt.test.ts, and the critical-success state below',
   'BatchBar.svelte':
     'batchBar.test.ts idle, some and all ticked; the lists index with two ticked above; listPage.test.ts',
@@ -599,7 +605,7 @@ const COVERED: Record<string, string> = {
   'ArtWell.svelte':
     'artWell.test.ts with the glyph alone and under a picture, and its callers in record.test.ts, tables.test.ts, listsPage.test.ts and artField.test.ts',
   'Badge.svelte': 'badge.test.ts, record.test.ts, tables.test.ts, and the lists index above',
-  'ChipRow.svelte': 'the same two pickers',
+  'ChipRow.svelte': 'the same rows',
   'Die.svelte': 'the roll button on every roll page',
   'Empty.svelte':
     "tables.test.ts's nothing-found plates with the glyph, and the lists index above",
@@ -611,7 +617,7 @@ const COVERED: Record<string, string> = {
     'sheet.test.ts open with its head and foot, and the filter and picker sheets in tables.test.ts',
   'TableNav.svelte':
     'tableNav.test.ts in the three bands with the picker sheet open, and tables.test.ts',
-  'Field.svelte': 'the number row on every roll page, and both pickers',
+  'Field.svelte': 'the number field on every roll page, and the rows above it',
   'Icon.svelte': 'the card actions and the pin toggle',
   'KeepNote.svelte': 'the note under the print bar in printPage.test.ts',
   'ListsPage.svelte': 'listsPage.test.ts, and the state above',

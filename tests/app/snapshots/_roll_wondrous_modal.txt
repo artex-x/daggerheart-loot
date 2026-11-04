@@ -19,12 +19,13 @@ RootWebArea "Wondrous Environments - Генератор лута Daggerheart" [u
     button "Ещё" [expanded=false haspopup=menu]
 
 ## ru :: controls
-?Справка
+?Об этой таблице
 EN
 RU
 Wondrous Environments
 daggerheart.com
 Альтернативные таблицы
+Бросить 1-119
 Бросок
 В список
 Войти
@@ -37,16 +38,10 @@ daggerheart.com
 На единицу меньше
 Обычные правила
 Открывать при запуске
-Отправить
 Печать
 Поделиться
 Поиск
 Результат броска
-Скопировать изображение
-Скопировать название
-Скопировать ссылку
-Скопировать текст
-Случайно 1–119
 Смола Бездны
 Страница
 Таблицы
@@ -70,15 +65,11 @@ RootWebArea "Wondrous Environments - Daggerheart Loot Generator" [url=/en/roll/w
     button "More" [expanded=false haspopup=menu]
 
 ## en :: controls
-?Help
+?About this table
 Abyssal Sap
 Add to list
 Alternate tables
 Close
-Copy image
-Copy link
-Copy name
-Copy text
 EN
 Install as an app
 LootDaggerheart
@@ -90,8 +81,8 @@ Page
 Print
 Privacy
 RU
-Random 1–119
 Roll
+Roll 1-119
 Roll result
 Search
 Share

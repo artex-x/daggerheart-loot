@@ -93,3 +93,20 @@ export function isLastOn<K extends string>(
 ): boolean {
   return chosen[key] && keys.filter((k) => chosen[k]).length === 1;
 }
+
+/**
+ * What the closed «Настроить» reads while a row is narrowed: the value left on, or the word
+ * and the count of narrowed rows. Empty while every row is whole.
+ *
+ * @param rows Each row's labels left on, and how many it has.
+ * @param setUp The control's own word.
+ * @returns The text, or `''`.
+ */
+export function narrowedLabel(
+  rows: readonly { left: readonly string[]; of: number }[],
+  setUp: string
+): string {
+  const narrowed = rows.filter((r) => r.left.length < r.of);
+  if (narrowed.length > 1) return `${setUp} · ${String(narrowed.length)}`;
+  return narrowed[0]?.left.join(', ') ?? '';
+}

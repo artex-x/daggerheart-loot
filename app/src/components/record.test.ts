@@ -382,6 +382,39 @@ describe('the dossier', () => {
   });
 });
 
+describe('the roll card face', () => {
+  const draw = (variant: 'face' | 'compact') => {
+    const app = new AppState(at('ci1'));
+    app.start();
+    const view = render(RecordCard, {
+      variant,
+      it: app.recordFor('ci1') as NonNullable<ReturnType<AppState['recordFor']>>,
+      index: app.index as Index,
+      lang: 'ru',
+      artBroken: false,
+      onartfail: () => undefined
+    });
+    const html = view.container.querySelector('.card-body')?.innerHTML ?? '';
+    const name = view.container.querySelector('.card-name a');
+    const media = view.container.querySelector('.card-media');
+    const row = view.container.querySelector('.card-acts');
+    view.unmount();
+    app.stop();
+    return { html, name, media, row };
+  };
+
+  it('draws the head and the body of the compact card, the name a link', () => {
+    const face = draw('face');
+    expect(face.html).toBe(draw('compact').html);
+    expect(face.name).toHaveAttribute('href', '/i/ci1');
+    expect(face.media).toHaveAttribute('aria-label', 'Страница');
+  });
+
+  it('draws no action row without the snippet', () => {
+    expect(draw('face').row).toBeNull();
+  });
+});
+
 describe('a record on its own page', () => {
   it('leads with the name', () => {
     render(App, { env: at('ci1') });

@@ -158,6 +158,7 @@ EN
 RU
 daggerheart.com
 Аккаунт: gm1@example.test
+Бросить 1-11
 Бросок
 Брошюра по Истории Искусства
 Брошюра по Истории ИскусстваПредметDread GM ToolboxЭто прекрасно... [namelen=621 namehash=989c4e8f]
@@ -204,7 +205,6 @@ daggerheart.com
 Скипетр
 СкипетрОсновное оружиеCoreРанг 1 · Магическое · Влияние · Далеко... [namelen=190 namehash=de098217]
 Скопировать текст
-Случайно 1–11
 Список
 Справка
 Стеганый Доспех
@@ -439,9 +439,9 @@ Price
 Print
 Privacy
 RU
-Random 1–11
 Remove from the list
 Roll
+Roll 1-11
 Roll result
 Scepter
 ScepterPrimary weaponCoreTier 1 · Magic · Presence · Far · d6 ma... [namelen=160 namehash=9977457f]

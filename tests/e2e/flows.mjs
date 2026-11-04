@@ -1154,8 +1154,10 @@ export async function runFlows({ env, admin, member, browser, base }) {
       await waitText(page, 'F18', 'Фонарь F18');
       await waitText(page, 'F18', 'Предмет другого игрока');
       await waitControl(page, 'F18', 'Ещё');
-      await d.openMore();
-      await waitControl(page, 'F18', 'Сохранить себе');
+      /* Signed out the item has a second line, so only the driver's name reads it; the press
+         opens the sign-in prompt, which is the offer. */
+      await d.more('Сохранить себе', WAIT);
+      await waitText(page, 'F18', 'Войдите, и копия предмета сохранится');
       await expectInPage(
         page,
         'F18',

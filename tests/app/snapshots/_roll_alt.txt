@@ -3,7 +3,7 @@
 # why: the alternate tables
 
 ## ru :: tree
-RootWebArea "Альт. таблицы - Генератор лута Daggerheart" [url=/roll/alt]
+RootWebArea "Альтернативные таблицы - Генератор лута Daggerheart" [url=/roll/alt]
   link "К содержимому" [url=/roll/alt#main]
   banner ""
     link "Лут DAGGERHEART" [url=/roll/std]
@@ -23,26 +23,27 @@ RootWebArea "Альт. таблицы - Генератор лута Daggerheart"
   main ""
     heading "Альтернативные таблицы" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
+    button "Об этих таблицах" [expanded=false]
     StaticText "Бросок Костей Дуальности по объединённым таблицам обеих книг."
     StaticText "РЕДКОСТЬ"
-    button "Обычная Ранг 1–2" [pressed=true]
-    button "Необычная Ранг 1–2" [pressed=false]
-    button "Редкая Ранг 2–3" [pressed=false]
-    button "Очень редкая Ранг 3–4" [pressed=false]
-    button "Легендарная Ранг 3–4" [pressed=false]
+    button "Обычная" [pressed=true]
+    button "Необычная" [pressed=false]
+    button "Редкая" [pressed=false]
+    button "Очень редкая" [pressed=false]
+    button "Легендарная" [pressed=false]
+    button "Бросить кости"
     ... StaticText x2 of 6 same-shape siblings elided
     button "Кость Надежды: На единицу меньше" [disabled=true]
     textbox "Кость Надежды: Результат броска" [value=1 multiline=false readonly=false required=false]
     button "Кость Надежды: На единицу больше"
-    StaticText "КОСТЬ СТРАХА"
+    StaticText "Кость Страха"
     button "Кость Страха: На единицу меньше"
     textbox "Кость Страха: Результат броска" [value=2 multiline=false readonly=false required=false]
     button "Кость Страха: На единицу больше"
-    button "Бросить кости"
     StaticText "ТИП"
     button "Предметы" [pressed=true]
     button "Расходники" [pressed=true]
+    heading "Бросок 1 и 2" [level=2]
     button "Скопировать все варианты"
     status ""
       button "Страница"
@@ -50,32 +51,24 @@ RootWebArea "Альт. таблицы - Генератор лута Daggerheart"
       StaticText "НАДЕЖДА"
       ... StaticText x20 of 24 same-shape siblings elided
       link "Крюк-Кошка" [description=Страница url=/i/hi2]
-      button "Скопировать название" [description=Скопировать название]
-      button "Скопировать ссылку" [description=Скопировать ссылку]
-      button "Отправить"
-      button "Скопировать изображение" [description=Скопировать изображение]
-      button "Скопировать текст" [description=Скопировать текст]
+      button "В список" [expanded=false]
+      button "Поделиться"
+      button "Ещё" [expanded=false haspopup=menu]
       ... button x4 of 8 same-shape siblings elided
       link "Металлические Шарики" [description=Страница url=/i/hi3]
-      button "Скопировать название" [description=Скопировать название]
-      button "Скопировать ссылку" [description=Скопировать ссылку]
-      button "Скопировать изображение" [description=Скопировать изображение]
-      button "Скопировать текст" [description=Скопировать текст]
+      button "В список" [expanded=false]
+      button "Ещё" [expanded=false haspopup=menu]
       link "Зелье Быстрого Шага" [description=Страница url=/i/cc1]
-      button "Скопировать название" [description=Скопировать название]
-      button "Скопировать ссылку" [description=Скопировать ссылку]
       link "Большое Зелье Быстрого Шага" [url=/i/cc25]
-      button "Скопировать изображение" [description=Скопировать изображение]
-      button "Скопировать текст" [description=Скопировать текст]
+      button "В список" [expanded=false]
+      button "Ещё" [expanded=false haspopup=menu]
       button "Страница"
       StaticText "HOPE & FEAR"
       link "Семя Вергласа" [description=Страница url=/i/hc3]
-      button "Скопировать название" [description=Скопировать название]
-      button "Скопировать ссылку" [description=Скопировать ссылку]
       StaticText "Этим осколком льда можно мгновенно заморозить участок воды в пре..." [namelen=88 namehash=0c7b50a5]
-      button "Отправить"
-      button "Скопировать изображение" [description=Скопировать изображение]
-      button "Скопировать текст" [description=Скопировать текст]
+      button "В список" [expanded=false]
+      button "Поделиться"
+      button "Ещё" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -84,7 +77,7 @@ RootWebArea "Альт. таблицы - Генератор лута Daggerheart"
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-?Справка
+?Об этих таблицах
 EN
 RU
 daggerheart.com
@@ -92,8 +85,10 @@ daggerheart.com
 Большое Зелье Быстрого Шага
 Бросить кости
 Бросок
+В список
 Войти
 Дополнения
+Ещё
 Зелье Быстрого Шага
 К содержимому
 Конфиденциальность
@@ -104,32 +99,28 @@ daggerheart.com
 Кость Страха: На единицу меньше
 Кость Страха: Результат броска
 Крюк-Кошка
-ЛегендарнаяРанг 3–4
+Легендарная
 ЛутDaggerheart
 Металлические Шарики
-НеобычнаяРанг 1–2
-ОбычнаяРанг 1–2
+Необычная
+Обычная
 Обычные правила
 Открывать при запуске
-Отправить
-Очень редкаяРанг 3–4
+Очень редкая
+Поделиться
 Поиск
 Предметы
 Расходники
-РедкаяРанг 2–3
+Редкая
 Семя Вергласа
 Скопировать все варианты
-Скопировать изображение
-Скопировать название
-Скопировать ссылку
-Скопировать текст
 Страница
 Таблицы
 Условия использования
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Alt. tables - Daggerheart Loot Generator" [url=/en/roll/alt]
+RootWebArea "Alternate tables - Daggerheart Loot Generator" [url=/en/roll/alt]
   link "Skip to content" [url=/en/roll/alt#main]
   banner ""
     link "Loot DAGGERHEART" [url=/en/roll/std]
@@ -149,26 +140,27 @@ RootWebArea "Alt. tables - Daggerheart Loot Generator" [url=/en/roll/alt]
   main ""
     heading "Alternate tables" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
+    button "About these tables" [expanded=false]
     StaticText "A Duality Dice roll over both books merged into one set of table..." [namelen=66 namehash=f9462005]
     StaticText "RARITY"
-    button "Common Tier 1–2" [pressed=true]
-    button "Uncommon Tier 1–2" [pressed=false]
-    button "Rare Tier 2–3" [pressed=false]
-    button "Very rare Tier 3–4" [pressed=false]
-    button "Legendary Tier 3–4" [pressed=false]
+    button "Common" [pressed=true]
+    button "Uncommon" [pressed=false]
+    button "Rare" [pressed=false]
+    button "Very rare" [pressed=false]
+    button "Legendary" [pressed=false]
+    button "Roll the dice"
     ... StaticText x2 of 6 same-shape siblings elided
     button "Hope Die: One lower" [disabled=true]
     textbox "Hope Die: Roll result" [value=1 multiline=false readonly=false required=false]
     button "Hope Die: One higher"
-    StaticText "FEAR DIE"
+    StaticText "Fear Die"
     button "Fear Die: One lower"
     textbox "Fear Die: Roll result" [value=2 multiline=false readonly=false required=false]
     button "Fear Die: One higher"
-    button "Roll the dice"
     StaticText "TYPE"
     button "Items" [pressed=true]
     button "Consumables" [pressed=true]
+    heading "Roll 1 and 2" [level=2]
     button "Copy every option"
     status ""
       button "Page"
@@ -176,32 +168,24 @@ RootWebArea "Alt. tables - Daggerheart Loot Generator" [url=/en/roll/alt]
       StaticText "HOPE"
       ... StaticText x20 of 24 same-shape siblings elided
       link "Grapnel" [description=Page url=/i/en/hi2]
-      button "Copy name" [description=Copy name]
-      button "Copy link" [description=Copy link]
+      button "Add to list" [expanded=false]
       button "Share"
-      button "Copy image" [description=Copy image]
-      button "Copy text" [description=Copy text]
+      button "More" [expanded=false haspopup=menu]
       ... button x4 of 8 same-shape siblings elided
       link "Ball Bearings" [description=Page url=/i/en/hi3]
-      button "Copy name" [description=Copy name]
-      button "Copy link" [description=Copy link]
-      button "Copy image" [description=Copy image]
-      button "Copy text" [description=Copy text]
+      button "Add to list" [expanded=false]
+      button "More" [expanded=false haspopup=menu]
       link "Stride Potion" [description=Page url=/i/en/cc1]
-      button "Copy name" [description=Copy name]
-      button "Copy link" [description=Copy link]
       link "Major Stride Potion" [url=/i/en/cc25]
-      button "Copy image" [description=Copy image]
-      button "Copy text" [description=Copy text]
+      button "Add to list" [expanded=false]
+      button "More" [expanded=false haspopup=menu]
       button "Page"
       StaticText "HOPE & FEAR"
       link "Verglasian Seed" [description=Page url=/i/en/hc3]
-      button "Copy name" [description=Copy name]
-      button "Copy link" [description=Copy link]
       StaticText "You can use this ice shard to instantly freeze an area of water ..." [namelen=82 namehash=7b271c85]
+      button "Add to list" [expanded=false]
       button "Share"
-      button "Copy image" [description=Copy image]
-      button "Copy text" [description=Copy text]
+      button "More" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -210,16 +194,13 @@ RootWebArea "Alt. tables - Daggerheart Loot Generator" [url=/en/roll/alt]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-?Help
+?About these tables
+Add to list
 Alternate tables
 Ball Bearings
-CommonTier 1–2
+Common
 Consumables
 Copy every option
-Copy image
-Copy link
-Copy name
-Copy text
 EN
 Fear Die: One higher
 Fear Die: One lower
@@ -230,14 +211,15 @@ Hope Die: One lower
 Hope Die: Roll result
 Install as an app
 Items
-LegendaryTier 3–4
+Legendary
 LootDaggerheart
 Major Stride Potion
+More
 Open on start
 Page
 Privacy
 RU
-RareTier 2–3
+Rare
 Roll
 Roll the dice
 Search
@@ -249,7 +231,7 @@ Stride Potion
 Supplements
 Tables
 Terms of use
-UncommonTier 1–2
+Uncommon
 Verglasian Seed
-Very rareTier 3–4
+Very rare
 daggerheart.com

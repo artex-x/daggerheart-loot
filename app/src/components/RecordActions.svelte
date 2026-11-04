@@ -6,8 +6,8 @@
 <script lang="ts">
   /* Everything a person does with one record. A compact card draws two icon buttons
      beside the name - copy the name, copy the link - and a labeled row under the
-     description: send, picture, text. The record page and the dialog draw «Поделиться»
-     on the action row and the four copies as items of its «Ещё» menu.
+     description: send, picture, text. The record page, the dialog and a roll result draw
+     «Поделиться» on the action row and the four copies as items of its «Ещё» menu.
 
      One component renders every row, because the handlers are shared and
      splitting them would mean two copies of the clipboard logic.
@@ -39,9 +39,11 @@
     /** Row `menu`: called first in each item, so the menu closes and the focus returns
      *  before the clipboard call. */
     onpicked?: (() => void) | undefined;
+    /** Row `share`: `sm` on a roll result's row. */
+    size?: 'md' | 'sm';
   }
 
-  const { app, index, it, row, extra, onpicked }: Props = $props();
+  const { app, index, it, row, extra, onpicked, size = 'md' }: Props = $props();
 
   const t = $derived(app.t);
   /* A homebrew item's link is its preview link (its `#/h/` address in a build with no
@@ -177,7 +179,7 @@
 </script>
 
 {#if row === 'share'}
-  <Button onclick={() => void send()}><Icon name="share" />{t.share}</Button>
+  <Button {size} onclick={() => void send()}><Icon name="share" />{t.share}</Button>
 {:else if row === 'menu'}
   {#each menuItems as m (m.label)}
     <button

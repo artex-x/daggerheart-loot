@@ -2,13 +2,13 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (wave 1 is on `main`; batches 3, 3b and 4 with its remediation are on
-  `claude/57`; CI of the tip is the orchestrator's wait)
-- Last agent: implementer (batch 4 remediation, 2026-11-04)
+- Task status: in_progress (wave 1 is on `main`; batches 3, 3b, 4 and 5 are on `claude/57`; `polish`,
+  `harden`, the review and CI of the tip are the orchestrator's)
+- Last agent: implementer (batch 5, 2026-11-04)
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
-- Previous sha: `91bdcc55` (batch 4; `origin/main` `d83384b4` is merged)
-- Pushed: the batch 4 remediation commit holds this handoff; its sha and push state are in the implementer's
+- Previous sha: `4cfe9d91` (batch 4 remediation; `origin/main` `d83384b4` is merged)
+- Pushed: the batch 5 commit holds this handoff; its sha and push state are in the implementer's
   report (`git log -1 --grep="Task: 57"`).
 
 ## Completed
@@ -217,12 +217,107 @@
   | N9 | Fixed: `ErrorPage` cites "Error page" |
 
   `plan-5.md`, `plan-6.md`, `plan-7.md`, `reviews/4.md` and `reviews.md` go into this commit.
+- Batch 5 - the roll pages and the card face (`plan-5.md`). New: `RollPage`, `RollResult`, `RollSelect`,
+  `MoreMenu`, `PinItem`, `HelpItem`, `narrowedLabel`, `d.part`, `d.openCardMore`, `d.openCardList`, the
+  decision file `2026-11-04-the-roll-pages-share-one-layout-and-results-draw-the-card-face.md`. Acceptance:
+
+  | Line | Outcome |
+  |---|---|
+  | Q5.1, four placement lines | Done: `help.test.ts`, `std.test.ts`, `~ help` golden |
+  | N2, `<img src>` in `orGrid.test.ts` | Done; detector below |
+  | Dice at 360 and from 761 px, none gold or lit | Done: `std.test.ts`, case 89, `hues.js` |
+  | `/roll/std` exception 325; four new `FIRST_SCREEN` rows | Done: rows `shipped: true`, offsets below; assertion is CI's case 83 |
+  | M5-7 face at 601 px, 96 px below | Done: `record.test.ts`, case 89, DESIGN "Cards" |
+  | N2-2 nine help names | Done: `help.test.ts`, goldens |
+  | No «Daggerheart» on the roll cards | Verified: `git grep -n Daggerheart -- app/src/components/RecordCard.svelte app/src/components/RollResult.svelte` is empty |
+  | M2-2, R2-1, the read-only `h1` on nine pages | Done: `rollPage.test.ts` (`it.each` over the nine), case 89 |
+  | F1 head on one line at 761 | Done: measured below; `PageHead` needs no change; case 89 |
+  | `FEATURES.md` "Chrome" names the read-only `h1` | Done |
+  | 2-N5 | Done: `i18n.test.ts`, `_roll_alt*` and `_account*` goldens; the group chip keeps `alt` |
+  | C23, C25, C26, C36, C38, C39, C41, C43, C49, P10, P11 | Done: `alt.test.ts`, `std.test.ts`, `orGrid.test.ts`, case 89 |
+  | C24 | Done with deviation 4 |
+  | M5-4 crit links | Unchanged code; `alt.test.ts`, `~ crit` goldens |
+  | M5-6 lit «Настроить» | Done: `std.test.ts`, `~ items only, set up` |
+  | N5-2 «Бросить 1-30» | Done: `roll.test.ts`, deviation 1 |
+  | New states: entry, golden, axe | Done: seven states; axe in `rollPage`, `rollResult`, `rollSelect`, `a11y` tests |
+  | Focus rule 20, Escape | Done: `rollPage.test.ts`, `rollResult.test.ts`, cases 89, 90; case 86 is CI's |
+  | Error states | Done: `roll.test.ts`, `rollResult.test.ts` (a failed copy) |
+  | Three extractions leave the DOM alone | Done: no `_tables_*` or `_i_*` golden moved for them |
+  | Axe rows, reached by a test | Done: `COVERED`, six rows |
+  | Artwork guard | Done: the new row; `CARD_HEAD_SHA256` set, because the name link's condition moved to `variant !== 'full'`; `renderCard` builds the compact head by hand and needs no edit. The review page draws the whole picture at 380 px, so it overstates the height |
+  | Specs, DESIGN, decision | Done |
+  | Detector, spelling, shots, `routes.json` | See Verification; `polish` and `harden` are the orchestrator's |
+  | Budget | See Verification |
+  | CI green on the tip | The orchestrator's wait |
+  | Inherited: F18 of CI run 41778683447 (`4cfe9d91`, job `e2e`) | Fixed: signed out the item carries a second line, so `waitControl`'s `textContent` read never equals «Сохранить себе». F18 presses it with `d.more(name, WAIT)` and reads the sign-in prompt. F19 touches no moved control; F20 already uses `d.more`. Not runnable here: CI's `e2e` is the proof |
+
+- Batch 5 departures and deviations:
+  1. `rollLabel` has two callers, so `ListPage`'s roll button reads «Бросить 1-N» too, against the brief's
+     "no list golden moves": about 30 `_lists_*` goldens move by that one line. One action keeps one
+     label, and the other way needs a second function and `randomIn` until 9b.
+  2. The picture of the face sits at `z-index: -1` in the card's own stacking context, and the body is
+     not positioned. The brief's positioned body anchors the number badge to the body, not the card.
+     The fade goes while the picture has the focus: it would take the ring's bottom edge (case 31).
+  3. The add menu of a result opens down, and up where the window has no room (`.cardpick`'s rules),
+     against "nothing is added": the base rule opens up only, and a long list then passes under the
+     header. Up to 600 px the row anchors it, so it takes the row's width.
+  4. C24: the rarity comes before the roll button in the DOM, as in the mock; it is the button's input.
+     The roll button is the first action, the manual entry is in the settings.
+  5. `MoreMenu` has `flip`, not `up`, and carries `underMore` and the `scrollIntoView` effect from
+     `PickRow` (batch 4's landing). It has no `label` prop: nothing needs one.
+  6. `RollPage` draws the shared `Panel`, not a `.plate` copy. `RollSelect`'s `select` carries
+     `aria-label`, and its two text lines are `aria-hidden`, so a reader hears the name once.
+  7. `rarityLine` stays as the helper of the four paragraphs. `BR`, `HelpBreak` and `isBreak` went, with
+     `randomIn` and `Chip`'s `sub`. `RARITY_TIERS` stays: `rarityLabel` reads it.
+  8. `#/roll/alt ~ crit` opens «Настроить» around its press when it runs narrow: case 83 enters it at 360.
+  9. Coverage: `DiceBar` lost its carve-out (its text now goes through functions, so it has no branch
+     left), and `RollSelect` takes one at 50 for its `value` paths: `?? ''` on a string and an update a
+     keyed option never takes. `vite.config.mts` and `COVERAGE.md` name it.
+  10. The label over the Vault of Ages select stays the existing «Раздел книги», not the mock's «Раздел».
 - Review: done, `issues/57/reviews/3.md`, verdict fix-then-continue; the one remediation
   pass is this commit. No second review is needed: the picker fix leaves the first-screen
   rows unmoved (234 at 360).
 - Plan review: not required for batch 3 (`plan.md` Status, no trigger fired).
 
 ## Verification
+- Batch 5, 2026-11-04, on the final tree:
+  - `npx vitest run` of 22 files (the plan's list, plus `sections`, `chip`, `listPage`): 888 passed, then
+    `app/src/lib/std.test.ts`: 3 passed; `check:fast` ran them again with the later tests. `npx svelte-check`: 0 errors.
+  - `node --test tools/artwork/lib.test.mjs`: 77 pass, with the new size row and `CARD_HEAD_SHA256`.
+  - `npm run build:test`, then `node tests/app/golden.js --update --shard=n/4`, n = 1 to 4, one at a time:
+    exit 0, 93 states a shard, 370 states. 60 goldens moved, 7 new: 33 `_roll_*`, 4 `_account*`, 23
+    `_lists_*` (the one line of deviation 1, read in the diff), none under `_tables_*` or `_i_*`.
+    Two later CSS lines (the 96 px square, the menu's scroll margin) change no tree.
+  - `node tools/decisions.js`: 302 decisions.
+  - `npm run check:built`: exit 0, 257.8 kB within 258 (255.7 before); `dist/` carries no fake cloud.
+  - Configured: `npm run build` with placeholder `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`,
+    `node tools/bundle-budget.mjs`: 315.2 kB, so the limit is 316 with CI's 0.1 kB. `tools/bundle-budget.mjs`
+    and `.claude/README.md` carry both. The unconfigured total is under 266, 12.2 kB below the 270 ceiling.
+  - Detector, `impeccable detect --json --no-inline-ignores app/src`: 67 findings (69 before; `broken-image`
+    in `orGrid.test.ts` is gone); in touched files only `RecordCard`'s three `design-system-*` advisories,
+    none in a new file. `git grep -n impeccable-disable -- app/src`: nothing.
+  - Spelling over added lines: only `aria-labelledby`.
+  - First screen, measured in the built app (top of `[data-primary]`, RU and EN equal):
+
+    | Row | 360x640 | 1180x720 |
+    |---|---|---|
+    | `#/roll/std` | 323 (exception 325) | 267 (limit 288) |
+    | `#/roll/alt`, `#/roll/voa`, `#/roll/wondrous`, mwt | 251 (limit 256) | 267 |
+
+    The lead line stays, and 1180 still passes the 270 target. The crit's offset equals `#/roll/alt`'s:
+    the plate is the first child of the marked block.
+  - A measuring script on the built page (`plan-5.md`, "Risks", not a suite): the head on one line at 761
+    (all three middles 161, RU and EN); the results line on one line at 760, 390, 360 and 320, except
+    `/roll/alt` RU at 320, which wraps once with «Ещё» in view; the dice 3 + 2 and uncut; the card's flip at
+    600/601; the add menu with 150 lists under the header. It found two defects, fixed: the 96 px
+    picture was 72 px tall, and the add menu's top sat 12 px under the header.
+  - `git grep` of each moved control over `tests/`: `flows.mjs` (F18), `states.js` (14, 31, 83), `inventory.js`,
+    `hues.js`, `sweep.js`, `driver.js`; `typo.js` runs at 1180, where `.helpbtn` stays; `contracts.js` reads
+    no moved control. `app/states` cases 89 and 90 are written, not run: CI's.
+  - `node issues/57/mocks/5/built/shoot.js`: the set in `mocks/5/built/`, 360 and 1180, RU and EN, and `alt` at 761.
+  - `npm run lint:untyped`, `npm run lint:typed`: exit 0. `rtk npm run check:fast`, last: exit 0. Its first run
+    failed on branch coverage of `HelpItem`, `RollSelect` and `DiceBar`: two tests and deviation 9 closed it.
+  - Not run locally (CI's): `app/states`, `app/contracts`, `app/print`, `app/typo`, `app/hues`, `sweep.js`, `e2e`.
 - Batch 4 remediation, 2026-11-04, on the final tree:
   - `npx vitest run` of `record`, `itemPage`, `pickRow`, `recordHost`, `homebrewEditor`, `badge` tests: pass
     after two stale `record.test.ts` assertions moved to the dialog and the path line.
@@ -350,7 +445,7 @@
 - Spelling scan over added lines and new files: only `aria-labelledby`.
 
 ## Next batch (implement-ready)
-- Name: Batch 5, after CI of the batch 4 remediation. The brief is `issues/57/plan-5.md`.
+- Name: `polish`, `harden` and the review of batch 5, then batch 6 (`plan-6.md`).
 - Risks / do-nots: `FilterBar` stays until batches 6 and 9a remove it, and `BatchBar`
   until batch 8; a golden is re-seeded, never edited.
 
@@ -388,10 +483,6 @@
   account while the DOM order is brand, language, account, jobs (WCAG 2.4.3).
   Recommended: name the trade-off in DESIGN.md "Navigation", "Header", and let
   the audit decide.
-- 2-N5 (batch 5): `SECTION_LABEL['roll/alt']` is `alt` «Альт. таблицы», so the
-  `/roll/alt` tab title and its `/account` start-section option differ from the
-  heading «Альтернативные таблицы». Fix: `'roll/alt': 'pageAlt'` and re-seed the
-  `/roll/alt` and `/account` goldens; `alt` stays for the tables group chip.
 - 2-N6 (batch 10): DESIGN.md "The Same Label Rule" and FEATURES.md "Chrome" say
   "until their page's batch moves them"; batch 10's lock removes it.
 - R5 of `reviews/plan-1-3.md` (deferred-scope): `review.prompt.md` names a third

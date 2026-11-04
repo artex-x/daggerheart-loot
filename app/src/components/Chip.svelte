@@ -1,9 +1,8 @@
 <script lang="ts">
   /* One choice in a row of them, off `.chip` in style.css.
 
-     Extracted on the second use, not before: the Vault of Ages section picker
-     and the community picker are both a row of these, and the source, kind and
-     rarity rows of the other two roll modes will be the third and fourth.
+     Extracted on the second use, not before: the source, kind and rarity rows of
+     the roll pages and the filter rows are all rows of these.
 
      The `href` form is the table navigation's second use: the live app writes
      those chips as `<a>` rather than `<button>`, so middle-click and
@@ -26,14 +25,6 @@
      * needs to tell them apart without reading the language-dependent text.
      */
     value?: string | undefined;
-    /**
-     * A second line under the label, smaller and quieter.
-     *
-     * The rarity chips carry the tiers each rarity is a recommendation for.
-     * The dice buttons on Core rules do the same thing the other way round -
-     * the count above, the rarities under it.
-     */
-    sub?: string | undefined;
     /** `sm` is the table nav's second row - a book's own sections, quieter
      *  than the row of books above them. */
     size?: 'md' | 'sm';
@@ -68,7 +59,6 @@
     label,
     on,
     title,
-    sub,
     size = 'md',
     href,
     onclick,
@@ -87,8 +77,7 @@
     aria-current={on ? 'page' : undefined}
     data-val={value}
     {title}
-    {href}
-    >{label}{#if sub}<small>{sub}</small>{/if}</a
+    {href}>{label}</a
   >
 {:else}
   <button
@@ -106,8 +95,7 @@
     onclick={() => {
       if (!busy) onclick?.();
     }}
-    >{#if neutral && on}<Icon name="check" />{/if}{label}{#if sub}<small>{sub}</small
-      >{/if}</button
+    >{#if neutral && on}<Icon name="check" />{/if}{label}</button
   >
 {/if}
 
@@ -128,13 +116,6 @@
     font-weight: 540;
     transition: 0.15s;
     overflow-wrap: anywhere;
-  }
-
-  .chip small {
-    display: block;
-    font-size: var(--t-badge);
-    font-weight: 500;
-    letter-spacing: 0.02em;
   }
 
   .chip:hover:not([aria-disabled='true']) {

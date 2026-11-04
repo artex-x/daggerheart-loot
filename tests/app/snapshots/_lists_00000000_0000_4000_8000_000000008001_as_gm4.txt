@@ -87,6 +87,7 @@ EN
 RU
 daggerheart.com
 Аккаунт: gm4@example.test
+Бросить 1-7
 Бросок
 Выбрать все
 Жирный
@@ -122,7 +123,6 @@ daggerheart.com
 Свой предмет
 Скачать JSON
 Скопировать текст
-Случайно 1–7
 Список
 Таблицы
 Только для мастера: Заряжающий Колчан
@@ -263,9 +263,9 @@ Price
 Print
 Privacy
 RU
-Random 1–7
 Remove from the list
 Roll
+Roll 1-7
 Roll result
 Search
 Select all

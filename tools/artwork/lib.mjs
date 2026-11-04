@@ -802,6 +802,15 @@ export const REVIEW_ART_SIZES = [
     declarations: ['minmax(168px, 1fr)']
   },
   {
+    label: 'roll card face',
+    px: 380,
+    dir: 'img/',
+    radius: 0,
+    file: COMPONENTS + 'RecordCard.svelte',
+    selector: '.card.face .card-media',
+    declarations: ['aspect-ratio: 4 / 3']
+  },
+  {
     label: 'list card 132',
     px: 132,
     dir: 'img/',

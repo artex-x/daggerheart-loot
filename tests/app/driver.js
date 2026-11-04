@@ -512,10 +512,11 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
       return true;
     },
 
-    /** Opens the record's «Ещё» menu: of the open dialog, else of the page. */
+    /** Opens the record's «Ещё» menu: of the open dialog, else of the page; on a roll page
+     *  the results line's. */
     async openMore() {
       const handle = await page.evaluateHandle(() => {
-        const more = '.cardpick [aria-haspopup="menu"]';
+        const more = '.cardpick [aria-haspopup="menu"], .reshead [aria-haspopup="menu"]';
         return document.querySelector('dialog[open] ' + more) ?? document.querySelector(more);
       });
       const el = handle.asElement();
@@ -566,6 +567,32 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
       d.pressed.add(`choose:${selector}`);
       await settle(page);
       return true;
+    },
+
+    /** Chooses the option that reads `text` in a roll page's picker, then settles. */
+    async part(text) {
+      const value = await page.$eval(
+        '.pick select',
+        (select, wanted) =>
+          [...select.options].find((o) => o.textContent.trim() === wanted)?.value ?? null,
+        text
+      );
+      if (value === null) throw new Error(`${target}: no part "${text}" in the picker`);
+      return d.choose('.pick select', value);
+    },
+
+    /** Opens «Ещё» of the first roll result. */
+    async openCardMore() {
+      await page.click('.resacts .morewrap > .btn');
+      await page.waitForSelector('.resacts [role="menu"]', { timeout: 5000 });
+      await settle(page);
+    },
+
+    /** Opens the add-to-list menu of the first roll result. */
+    async openCardList() {
+      await page.click('.resacts .seldrop > .btn');
+      await page.waitForSelector('.resacts .dropmenu', { timeout: 5000 });
+      await settle(page);
     },
 
     /** Navigates in the page, as a pasted old `#/` link does, which the app turns into

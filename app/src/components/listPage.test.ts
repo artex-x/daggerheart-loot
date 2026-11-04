@@ -404,7 +404,7 @@ describe('the roll panel', () => {
   it('rolls entry 1 with a fixed random source, and Сбросить empties the field without folding', async () => {
     const { container } = await openA({ random: () => 0 });
     await userEvent.click(screen.getByText('Бросок по списку'));
-    await userEvent.click(screen.getByRole('button', { name: /Случайно/ }));
+    await userEvent.click(screen.getByRole('button', { name: /Бросить 1-/ }));
     expect(screen.getAllByText('Спальный мешок').length).toBeGreaterThanOrEqual(2);
 
     await userEvent.click(screen.getByRole('button', { name: 'Сбросить' }));

@@ -301,8 +301,8 @@ ordinary item.
 the tab they are on, the control they focused, the main action of the panel they
 are in. Gold on something nobody selected is wrong. The budget: a gold fill goes
 to one primary action per panel, to a choice that narrows the view, and to the
-current place. A pressed default (such as «Все»), a mode toggle and a selection
-are neutral: a check and a lit `--muted2` border, no gold. The unique tag is
+current place. A pressed default (such as «Все» or a chip row with every chip on), a
+mode toggle, a die and a selection are neutral: a check and a lit `--muted2` border, no gold. The unique tag is
 neutral and dashed, the roll number is Chalk on a seam border, and footer links
 are Ash Violet and underlined. The site share cards spend gold on the star
 alone. Seal Gold Soft on a link in prose is text, outside the fill budget.
@@ -414,7 +414,7 @@ header's measured height, is the page's `scroll-padding-top`, so a focused
 control stops clear of it. At 600px touch
 targets grow: segment padding to 8px 14px, the section copy-link button from
 about 20px to a 36px hit area, row actions onto their own line, the mode row's
-controls 40px tall. The catalog adds one step, 1000px: from it the filter
+controls 40px tall, and the roll card turns from a row into the face at 601px. The catalog adds one step, 1000px: from it the filter
 column sits beside the rows; from 761px it draws the wide head (the `h1`, the
 labeled pin, «Об этих данных», the group chips and the tabs) with the filters
 in the bottom sheet; below 761px the picker row, the sheet and «··· Ещё»
@@ -422,6 +422,12 @@ replace them. The `viewport` port (`app/src/ports/viewport.ts`) is the one place
 that reads the width in code; CSS reads the same two numbers. Every other media
 query in the code belongs to one component and its own measured problem. Do
 not add another system breakpoint.
+
+**The Roll Page Rule.** The nine roll pages share one layout. Up to 760px: a read-only
+`h1`, the controls, one results line («Бросок N», «Настроить», «Ещё»); the pin, the
+help and the copy of every option are items of «Ещё». From 761px: the head with the
+labeled pin and help, a 320px control pane, the results. The roller has one gold
+primary at most, and a die is plain.
 
 **The Action Vocabulary Rule.** «В список», «Поделиться», «Печать» and «Ещё» are
 the same four labeled controls on every record surface at every width; «Изменить»
@@ -450,13 +456,14 @@ and the pin and the help are labeled buttons («Открывать при зап
 "Open on start", «Справка» / "Help"; the catalog's help is named for its
 panel, «Об этих данных» / "About this data"). The one interim exception: up to
 760px the pin and the help stay round buttons with the same names until their
-page's batch moves them into «Ещё» or «Настроить» (the roller, homebrew, search
-and the account, and the lists); the catalog's are in «Ещё».
+page's batch moves them into «Ещё» (homebrew, search and the account, and the
+lists); the catalog's and the roller's are in «Ещё».
 
 **The First-Screen Rule.** At 360x640 and at 1180x720, in Russian and in
 English, at scroll 0, the primary content of a route starts no lower than 40%
 of the viewport height (256px at 640, 288px at 720); the header counts as a
-control above it. A design aims at 240px and 270px, so a small face or
+control above it. One named exception: `/roll/std` at 360x640 starts at 325px, for
+the rarities on the dice (owner, 2026-10-29). A design aims at 240px and 270px, so a small face or
 line-box difference does not fail the rule. The primary content is the first
 roll result on a roll page, the table on `/tables/*`, the item on `/i/` and
 `/h/`, the first result on `/search`, the first settings panel on `/account`,
@@ -516,8 +523,8 @@ A ticked row or tile is lit and neutral: the Vault Wall Lit ground, the
 `--muted2` border and the checked box. Never gold, never a one-side stripe (The
 Seal Rule: nobody chose a value there, the reader picked a row).
 
-Artwork is square, except the record page and the dialog up to 760px, which crop it
-to 4:3. A record image is `aspect-ratio: 1` with `object-fit: cover`:
+Artwork is square, except the record page and the dialog up to 760px and the roll
+card face from 601px, which crop it to 4:3. A record image is `aspect-ratio: 1` with `object-fit: cover`:
 132px beside a compact card, full width and up to 420px on a plate card, 60px in
 a table row, always over the art well (`--art-well`, `#0a0810`) so a
 transparent PNG keeps a ground.
@@ -558,12 +565,16 @@ means "a thing". Do not round a card to a pill or square a chip.
 ### Chips
 
 - **Style:** pill, Vault Wall fill, Seam Lit border, Ash Violet label at 13px
-  weight 540. An optional second line sits under the label at 11.5px.
+  weight 540.
 - **Chosen:** Seal Gold fill, Ink on Gold label at weight 650, for a choice
   that narrows the view.
 - **Pressed default:** a chip that stands for no narrowing («Все») takes the
   neutral pressed state of the segmented control below, not gold (The Seal
   Rule).
+- **Dice:** plain buttons, none gold and none lit, because a die is an action:
+  two lines in a 3 + 2 grid up to 760px, a list of 46px rows from 761px.
+- **A row with every chip on:** each chip takes the neutral pressed state; a row
+  narrowed draws the chips left on in gold.
 - **Hover:** border to Seal Gold, label to Chalk.
 - **Semantics:** a chip that navigates is an anchor carrying `aria-current`; a
   chip that toggles is a button carrying `aria-pressed`. Middle-click keeps
@@ -600,7 +611,11 @@ means "a thing". Do not round a card to a pill or square a chip.
 - **Background:** the plate gradient, a Seam border, the Plate shadow.
 - **Padding:** 13px 15px 14px, with 8px between rows of content.
 - **Layout:** `full` stacks the image above the body, or, as a dossier, sets it
-  beside the text (The Dossier Rule); `compact` puts a 132px square image beside it.
+  beside the text (The Dossier Rule); `compact` puts a 132px square image beside it,
+  and `ListPage` keeps it until its batch moves the roll panel; `face` is a roll
+  result: the picture 4:3 with a fade, the body drawn over its foot, and 96px beside
+  the text up to 600px. Its action row sits under the plate, because a popover
+  cannot leave a clipped plate.
 - **Relation lines:** a homebrew record's name draws the plain bordered badge
   «Хоумбрю» after it; a catalog record draws none.
 - **Grid tile:** two columns up to 600px; the art, the name and a second line
@@ -628,7 +643,9 @@ means "a thing". Do not round a card to a pill or square a chip.
 - **Variants:** the five kind hues, plus tier, source, roll number (the UI
   face's tabular figures, Chalk on a Seam Lit border), unique (dashed, Ash
   Violet on Seam Lit), and the Hope and Fear pair. Neither the roll number nor
-  the unique tag is gold: nobody chose them (The Seal Rule).
+  the unique tag is gold: nobody chose them (The Seal Rule). On a roll card face the
+  roll number is drawn over the picture from 601px and hidden up to 600px, where the
+  results line names the roll.
 
 ### Inputs
 

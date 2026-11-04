@@ -1,14 +1,8 @@
 /* What each roll page explains about itself, off the `help` block in app.js.
  *
  * The live app keeps these as HTML strings and injects them. Here a paragraph
- * is a shape instead: a run of text, links, bold words and line breaks.
- * Nothing has to be injected to render it.
- *
- * The shape started as text plus links plus a bold lead-in, which covered the
- * four sections ported first and quietly failed on the fifth: the Core rules
- * paragraph that lists where each rarity fits is one paragraph with four
- * `<br><b>Word</b>` lines inside it, and it shipped showing those tags as
- * words. Nothing looked at it, because no parity state opened that panel.
+ * is a shape instead: a run of text, links and bold words. Nothing has to be
+ * injected to render it.
  *
  * This is the product's own text, so it is Russian and English rather than
  * source prose, and the em dashes in it are the ones the live app prints.
@@ -21,17 +15,13 @@ export interface HelpLink {
   label: string;
 }
 
-/** A line break inside a paragraph, where the live text has one. */
-export const BR = { br: true } as const;
-export type HelpBreak = typeof BR;
-
 /** A word in bold partway through a run, rather than opening one. */
 export interface HelpBold {
   b: string;
 }
 
-/** A run of a paragraph: plain text, a link, a bold word, or a break. */
-export type HelpPart = string | HelpLink | HelpBold | HelpBreak;
+/** A run of a paragraph: plain text, a link or a bold word. */
+export type HelpPart = string | HelpLink | HelpBold;
 
 export interface HelpPara {
   /** The bold opening of a paragraph, where the live text has one. */
@@ -48,20 +38,15 @@ export interface Help {
 /** A paragraph of plain text, which is most of them. */
 const p = (text: string): HelpPara => ({ parts: [text] });
 
-/**
- * One of the "where this rarity fits" lines in the Core rules help: a break, a
- * rarity in bold, and the places it belongs. Four of them hang off the end of
- * one paragraph rather than standing as paragraphs of their own, which is how
- * the live text is written and how it measures.
- */
-const rarityLine = (word: string, where: string): HelpPart[] => [
-  BR,
-  { b: word },
-  ` - ${where}`
-];
+/** One of the Core rules help's four placement lines: the rarity in bold, then its places. */
+const rarityLine = (word: string, where: string): HelpPara => ({
+  lead: word,
+  parts: [` - ${where}`]
+});
 
 const WONDROUS: Record<Lang, Help> = {
   ru: {
+    button: 'Об этой таблице',
     paragraphs: [
       p(
         'В таблице 119 позиций, а не 100 - столько предметов описано в самом дополнении. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно. Если бросаете d100 за столом, введите выпавшее число в поле «Результат броска».'
@@ -88,6 +73,7 @@ const WONDROUS: Record<Lang, Help> = {
     ]
   },
   en: {
+    button: 'About this table',
     paragraphs: [
       p(
         'The table holds 119 entries rather than 100 - that is how many items the supplement actually describes. No die covers that range, so the button picks an entry at random. If you roll d100 at the table, type the number into the Roll result field.'
@@ -117,6 +103,7 @@ const WONDROUS: Record<Lang, Help> = {
 
 const DREAD: Record<Lang, Help> = {
   ru: {
+    button: 'Об этой книге',
     paragraphs: [
       p(
         'В таблице 29 позиций - столько предметов описано в дополнении. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно.'
@@ -143,6 +130,7 @@ const DREAD: Record<Lang, Help> = {
     ]
   },
   en: {
+    button: 'About this book',
     paragraphs: [
       p(
         'The table has 29 entries, which is how many the supplement describes. No die covers that range, so the button picks an entry at random.'
@@ -194,6 +182,7 @@ const voaSource = (before: string): HelpPara => ({
 
 const VOA: Record<Lang, Help> = {
   ru: {
+    button: 'Об этой книге',
     paragraphs: [
       p(
         'Четыре тома одного автора: 144 карточки, разложенные по рангам. Своей таблицы броска у книги нет, поэтому и разделов шесть - четыре ранга плюс артефакты и проклятые предметы, ровно как в самих томах. Бросок идёт внутри выбранного раздела: ранг 1 и артефакт - награды разного веса, и на одной кости им не место.'
@@ -222,6 +211,7 @@ const VOA: Record<Lang, Help> = {
     ]
   },
   en: {
+    button: 'About this book',
     paragraphs: [
       p(
         'Four volumes by one author: 144 cards sorted by tier. The book has no roll table of its own, so there are six sections here - four tiers plus artifacts and cursed objects, exactly as the volumes are laid out. The roll happens inside the section you pick: a tier 1 item and an artifact are rewards of a different weight and do not belong on one die.'
@@ -258,6 +248,7 @@ const DV_LINK: HelpLink = {
 
 const DV: Record<Lang, Help> = {
   ru: {
+    button: 'Об этой книге',
     paragraphs: [
       p(
         'В таблице 145 позиций - 68 предметов, 9 расходников и 68 единиц оружия и брони. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно.'
@@ -272,6 +263,7 @@ const DV: Record<Lang, Help> = {
     ]
   },
   en: {
+    button: 'About this book',
     paragraphs: [
       p(
         'The table holds 145 entries - 68 items, 9 consumables and 68 weapons and armor. No die covers that range, so the button picks an entry at random.'
@@ -294,6 +286,7 @@ const ARAZO_LINK: HelpLink = {
 
 const ARAZO: Record<Lang, Help> = {
   ru: {
+    button: 'Об этой книге',
     paragraphs: [
       p(
         'В таблице 78 позиций - 10 предметов и 68 единиц оружия и брони, в порядке книги. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно.'
@@ -308,6 +301,7 @@ const ARAZO: Record<Lang, Help> = {
     ]
   },
   en: {
+    button: 'About this book',
     paragraphs: [
       p(
         "The table holds 78 entries - 10 items and 68 weapons and armor, in the book's own order. No die covers that range, so the button picks an entry at random."
@@ -330,6 +324,7 @@ const COMMUNITY_LINK: HelpLink = {
 
 const COMMUNITY: Record<Lang, Help> = {
   ru: {
+    button: 'Об этих предметах',
     paragraphs: [
       p(
         'Предметы каждого сообщества перечислены по возрастанию редкости: 1 - самый простой, 10 - самый сильный.'
@@ -341,6 +336,7 @@ const COMMUNITY: Record<Lang, Help> = {
     ]
   },
   en: {
+    button: 'About these items',
     paragraphs: [
       p(
         'Each community lists its items in ascending order of rarity: 1 is the humblest, 10 the most powerful.'
@@ -380,6 +376,7 @@ const MWT_DROME: HelpLink = {
 
 const MWT: Record<Lang, Help> = {
   ru: {
+    button: 'Об этой книге',
     paragraphs: [
       p(
         'В разделе шесть миров Many Worlds Tavern, у каждого своя колода: Спорополис - 20 карточек, Лес Пари - 20, Воюющие Норы - 21, Долина Богов - 20, Оплот Шершней - 11, Дром - 17. Сначала выберите мир, потом бросьте кость: в колоде из 20 карточек это d20. На 11, 17 и 21 карточку кости не бывает, поэтому там кнопка выбирает позицию случайно.'
@@ -410,6 +407,7 @@ const MWT: Record<Lang, Help> = {
     ]
   },
   en: {
+    button: 'About this book',
     paragraphs: [
       p(
         "This section holds the six realms of Many Worlds Tavern, each with its own deck: Sporopolis has 20 cards, Wagerwood 20, Warrin' Warrens 21, Godsvale 20, Hornet Hold 11 and The Drome 17. Pick a realm, then roll: a 20-card deck rolls a d20. No die covers 11, 17 or 21, so there the button picks an entry at random."
@@ -443,58 +441,32 @@ const MWT: Record<Lang, Help> = {
 
 const STD: Record<Lang, Help> = {
   ru: {
+    button: 'Где какая редкость',
     paragraphs: [
-      p(
-        'Бросьте d12 и сложите результаты - сумма и есть номер в таблице. Одно и то же число есть и в таблице предметов, и в таблице расходников, поэтому на один бросок приходится несколько вариантов, а игрок выбирает один.'
+      rarityLine('Обычная', 'заброшенный лагерь, обычная лавка.'),
+      rarityLine('Необычная', 'ограниченный товар в лавке, тайник в лагере, часть награды.'),
+      rarityLine(
+        'Редкая',
+        'под замком в лавке, единственная награда за работу, вещи сильного НИП.'
       ),
-      {
-        parts: [
-          'Сколько костей брать, решает редкость добычи - она подписана под каждой кнопкой. Где какая редкость уместна:',
-          ...rarityLine('Обычная', 'заброшенный лагерь, обычная лавка.'),
-          ...rarityLine(
-            'Необычная',
-            'ограниченный товар в лавке, тайник в лагере, часть награды.'
-          ),
-          ...rarityLine(
-            'Редкая',
-            'под замком в лавке, единственная награда за работу, вещи сильного НИП.'
-          ),
-          ...rarityLine(
-            'Легендарная',
-            'единственная в своём роде, награда за смертельно опасное дело, сокровище могущественного противника.'
-          )
-        ]
-      },
-      p(
-        'Ранги у редкостей - рекомендация, а не ограничение. Мастер вправе выдать снаряжение любой редкости на любом уровне, если это уместно за столом.'
+      rarityLine(
+        'Легендарная',
+        'единственная в своём роде, награда за смертельно опасное дело, сокровище могущественного противника.'
       )
     ]
   },
   en: {
+    button: 'Where each rarity is',
     paragraphs: [
-      p(
-        'Roll d12 and add them up - the total is the row number. The same number exists in both the item and the consumable table, so one roll yields several options and the player takes one.'
+      rarityLine('Common', 'an abandoned camp, a local shop.'),
+      rarityLine('Uncommon', 'limited stock in a shop, a stash in a camp, part of a reward.'),
+      rarityLine(
+        'Rare',
+        "under lock and key, the sole reward for a job, a powerful NPC's possessions."
       ),
-      {
-        parts: [
-          'How many dice you take depends on the rarity you are after - each button is captioned with the rarities it covers. Where each one fits:',
-          ...rarityLine('Common', 'an abandoned camp, a local shop.'),
-          ...rarityLine(
-            'Uncommon',
-            'limited stock in a shop, a stash in a camp, part of a reward.'
-          ),
-          ...rarityLine(
-            'Rare',
-            "under lock and key, the sole reward for a job, a powerful NPC's possessions."
-          ),
-          ...rarityLine(
-            'Legendary',
-            "the only one of its kind, a reward for a deadly job, a powerful adversary's treasure."
-          )
-        ]
-      },
-      p(
-        'Tiers attached to rarities are a recommendation, not a limit. The GM may hand out any rarity at any level if it suits the table.'
+      rarityLine(
+        'Legendary',
+        "the only one of its kind, a reward for a deadly job, a powerful adversary's treasure."
       )
     ]
   }
@@ -511,6 +483,7 @@ const ALT_POST: HelpLink = {
 
 const ALT: Record<Lang, Help> = {
   ru: {
+    button: 'Об этих таблицах',
     paragraphs: [
       p(
         'Предметы разнесены по колонкам «Надежда» и «Страх» по смыслу: в «Надежде» то, что помогает, защищает и решает задачи, в «Страхе» - то, что вредит, обманывает и работает исподтишка.'
@@ -534,6 +507,7 @@ const ALT: Record<Lang, Help> = {
     ]
   },
   en: {
+    button: 'About these tables',
     paragraphs: [
       p(
         'Items are split between the Hope and Fear columns by theme: Hope holds what aids, protects and solves problems, Fear holds what harms, deceives and works by stealth.'
@@ -832,9 +806,4 @@ export function isLink(part: HelpPart): part is HelpLink {
 /** Whether it is a word set in bold partway through the run. */
 export function isBold(part: HelpPart): part is HelpBold {
   return typeof part !== 'string' && 'b' in part;
-}
-
-/** Whether it is a line break. */
-export function isBreak(part: HelpPart): part is HelpBreak {
-  return typeof part !== 'string' && 'br' in part;
 }

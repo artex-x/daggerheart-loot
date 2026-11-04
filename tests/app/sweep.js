@@ -94,7 +94,7 @@ async function printed(d) {
  * not stop short of what the real-input layer opens. */
 const PAGES = [
   ['#/roll/std', 'бросок d12'],
-  ['#/roll/alt', 'альт. таблицы'],
+  ['#/roll/alt', 'альтернативные таблицы'],
   ['#/roll/wondrous_environments', 'wondrous environments'],
   ['#/roll/dread_gm_toolbox', 'dread gm toolbox'],
   ['#/roll/vault_of_ages', 'vault of ages'],

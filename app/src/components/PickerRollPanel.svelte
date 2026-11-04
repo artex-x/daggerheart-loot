@@ -7,10 +7,8 @@
      Community items roll a d10 inside one community, whose records run from
      the plainest to the strongest. Many Worlds Tavern rolls inside one realm's
      deck. The parts and their rows come from the caller; see lib/sections.ts. */
-  import Chip from './Chip.svelte';
-  import ChipRow from './ChipRow.svelte';
-  import Field from './Field.svelte';
   import RollPanel from './RollPanel.svelte';
+  import RollSelect from './RollSelect.svelte';
   import type { AppState } from '../state/app.svelte.js';
   import type { Part } from '../lib/sections.js';
   import type { Record_ } from '../lib/types.js';
@@ -41,18 +39,13 @@
 
 <RollPanel {app} {section} {title} {sub} {rows} pickerValue={current}>
   {#snippet picker()}
-    <Field {label}>
-      <ChipRow>
-        {#each parts as p (p.id)}
-          <Chip
-            label={p.label}
-            on={p.id === current}
-            onclick={() => {
-              chosen = p.id;
-            }}
-          />
-        {/each}
-      </ChipRow>
-    </Field>
+    <RollSelect
+      {label}
+      value={current}
+      options={parts}
+      onchange={(id: string) => {
+        chosen = id;
+      }}
+    />
   {/snippet}
 </RollPanel>

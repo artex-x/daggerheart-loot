@@ -116,7 +116,8 @@ const gap = (a, b) => {
     }
   }
 
-  /* The roll button is the same control everywhere: gold, with a die on it.
+  /* A roll button with a die is gold, one to a page; the five dice of the Core rules are an
+   * action each, and plain (DESIGN.md, "The Seal Rule").
    * `:has()` is Chrome's, and this only ever runs in Chrome. */
   console.log('roll buttons match');
   const rollLook = async (hash) => {
@@ -129,15 +130,23 @@ const gap = (a, b) => {
     );
   };
   const std = await rollLook('#/roll/std');
-  ok(std.length >= 4, 'fewer than four roll buttons: ' + std.length);
-  ok(
-    std.every((x) => x.die),
-    'not every roll button has a die'
+  ok(std.length === 0, 'a gold roll button on the Core rules page: ' + std.length);
+  const dice = await page.$$eval('.dicebar button', (els) =>
+    els.map((x) => {
+      const s = getComputedStyle(x);
+      return {
+        look: s.backgroundImage + '|' + s.backgroundColor + '|' + s.color,
+        primary: x.classList.contains('primary')
+      };
+    })
   );
+  ok(dice.length === 5, 'not five dice: ' + dice.length);
+  ok(!dice.some((x) => x.primary), 'a die is primary');
   ok(
-    new Set(std.map((x) => x.look)).size === 1,
-    'roll dice look different: ' + [...new Set(std.map((x) => x.look))].join(' / ')
+    new Set(dice.map((x) => x.look)).size === 1,
+    'the dice look different: ' + [...new Set(dice.map((x) => x.look))].join(' / ')
   );
+  let rollButton = null;
   for (const h of [
     '#/roll/alt',
     '#/roll/wondrous_environments',
@@ -149,10 +158,8 @@ const gap = (a, b) => {
     const one = await rollLook(h);
     ok(one.length === 1, h + ': not exactly one roll button');
     ok(!!one[0]?.die, h + ': the roll button has no die');
-    ok(
-      one[0]?.look === std[0]?.look,
-      h + ': the roll button looks different than on the ordinary tables'
-    );
+    rollButton ??= one[0]?.look;
+    ok(one[0]?.look === rollButton, h + ': the roll button looks different than on /roll/alt');
   }
 
   /* Equipment's stat line keeps one tone everywhere across the three

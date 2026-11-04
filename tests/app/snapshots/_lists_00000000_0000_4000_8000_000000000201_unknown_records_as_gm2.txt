@@ -76,6 +76,7 @@ RU
 daggerheart.com
 hb_emberaxeaaaaaaaa
 Аккаунт: gm2@example.test
+Бросить 1-2
 Бросок
 Выбрать все
 Жирный
@@ -105,7 +106,6 @@ hb_emberaxeaaaaaaaa
 Скрыть изменение «Спальный мешок долгой дороги через перевал, бо... [namelen=139 namehash=028772a7]
 Скрыть изменение «Топор Тлеющих Углей»
 Скрыть изменения
-Случайно 1–2
 Список
 Таблицы
 Только для мастера: hb_emberaxeaaaaaaaa
@@ -213,9 +213,9 @@ Price
 Print
 Privacy
 RU
-Random 1–2
 Remove from the list
 Roll
+Roll 1-2
 Roll result
 Scepter
 ScepterPrimary weaponCoreTier 1 · Magic · Presence · Far · d6 ma... [namelen=160 namehash=9977457f]

@@ -15,19 +15,17 @@
   import NumberField from './NumberField.svelte';
   import NumRow from './NumRow.svelte';
   import OrGrid from './OrGrid.svelte';
-  import PageHead from './PageHead.svelte';
-  import Panel from './Panel.svelte';
-  import RecordActions from './RecordActions.svelte';
-  import RecordCard from './RecordCard.svelte';
-  import RecordHost from './RecordHost.svelte';
-  import { RARITIES, RARITY_TIERS, altPicks, altTables, bumpUp } from '../lib/alt.js';
+  import RollPage from './RollPage.svelte';
+  import RollResult from './RollResult.svelte';
+  import RollSelect from './RollSelect.svelte';
+  import { RARITIES, altPicks, altTables, bumpUp } from '../lib/alt.js';
   import type { AltPick } from '../lib/alt.js';
   import { helpFor } from '../lib/help.js';
   import { tablesHash } from '../lib/hash.js';
   import { isCrit, rollDuality } from '../lib/roll.js';
   import { rarityKey } from '../lib/label.js';
   import { shareRoll } from '../lib/share.js';
-  import { LOOT_KINDS, isLastOn } from '../lib/std.js';
+  import { LOOT_KINDS, isLastOn, narrowedLabel } from '../lib/std.js';
   import type { LootKind } from '../lib/std.js';
   import type { AppState } from '../state/app.svelte.js';
   import type { Index } from '../lib/data.js';
@@ -73,10 +71,25 @@
   const hopeNames = $derived(names(t.hopeDie));
   const fearNames = $derived(names(t.fearDie));
 
-  /** The tiers a rarity is a recommendation for, as the chip caption reads. */
-  const tierCaption = (r: Rarity): string => `${t.tier} ${RARITY_TIERS[r]}`;
-
   const help = $derived(helpFor('alt', app.lang));
+
+  /* Both kinds on is the neutral default; a kind narrowed is what lights gold. */
+  const allKinds = $derived(LOOT_KINDS.every((kind) => app.kinds[kind]));
+  const lit = $derived(
+    narrowedLabel(
+      [
+        {
+          left: LOOT_KINDS.filter((kind) => app.kinds[kind]).map((k) => t[KIND_LABEL[k]]),
+          of: LOOT_KINDS.length
+        }
+      ],
+      t.setUp
+    )
+  );
+  const rolled = $derived(
+    t.rollPair.replace('%a', String(roll.hope)).replace('%b', String(roll.fear))
+  );
+  const rarityOptions = $derived(RARITIES.map((r) => ({ id: r, label: t[rarityKey(r)] })));
 
   /* The roll and the index together, and only where there is a choice to hand
      over: one card is a result rather than a set of options. */
@@ -94,100 +107,114 @@
   }
 </script>
 
-<PageHead {app} title={t.pageAlt} sub={t.subAlt} {help} />
+<RollPage
+  {app}
+  {index}
+  title={t.pageAlt}
+  sub={t.subAlt}
+  {help}
+  {rolled}
+  {lit}
+  copy={choice ? () => void copyRoll(choice) : undefined}
+>
+  {#snippet controls()}
+    <div class="altctrl" class:row={app.band === 'narrow'}>
+      {#if app.band === 'narrow'}
+        <RollSelect
+          label={t.rarity}
+          value={rarity}
+          options={rarityOptions}
+          onchange={(id: string) => {
+            rarity = id as Rarity;
+          }}
+        />
+      {:else}
+        <Field label={t.rarity}>
+          <ChipRow>
+            {#each RARITIES as r (r)}
+              <Chip
+                label={t[rarityKey(r)]}
+                on={r === rarity}
+                neutral
+                onclick={() => {
+                  rarity = r;
+                }}
+              />
+            {/each}
+          </ChipRow>
+        </Field>
+      {/if}
+      <Button
+        variant="primary"
+        onclick={() => {
+          roll = rollDuality(app.env.random);
+        }}
+      >
+        <Die faces={12} />{t.rollDuality}
+      </Button>
+    </div>
+  {/snippet}
 
-<RecordHost {app} {index}>
-  {#snippet children(openRecord)}
-    <Panel>
-      <Field label={t.rarity}>
-        <ChipRow>
-          {#each RARITIES as r (r)}
-            <Chip
-              label={t[rarityKey(r)]}
-              sub={tierCaption(r)}
-              on={r === rarity}
-              onclick={() => {
-                rarity = r;
-              }}
-            />
-          {/each}
-        </ChipRow>
-      </Field>
+  {#snippet settings()}
+    <Field label={t.rollResult}>
+      <NumRow>
+        <!-- Each die is labeled, because which one found a card is half of what the card
+             says. The letter and the word carry it, not the hue alone. -->
+        <div class="dieblock">
+          <span class="dielbl"
+            ><span class="dv h" aria-hidden="true">{t.hopeLetter}</span>{t.hopeDie}</span
+          >
+          <NumberField
+            value={roll.hope}
+            min={1}
+            max={12}
+            label={hopeNames.label}
+            stepDownLabel={hopeNames.down}
+            stepUpLabel={hopeNames.up}
+            tone="hope"
+            onchange={(n: number) => {
+              roll = { ...roll, hope: n };
+            }}
+          />
+        </div>
+        <div class="dieblock">
+          <span class="dielbl"
+            ><span class="dv f" aria-hidden="true">{t.fearLetter}</span>{t.fearDie}</span
+          >
+          <NumberField
+            value={roll.fear}
+            min={1}
+            max={12}
+            label={fearNames.label}
+            stepDownLabel={fearNames.down}
+            stepUpLabel={fearNames.up}
+            tone="fear"
+            onchange={(n: number) => {
+              roll = { ...roll, fear: n };
+            }}
+          />
+        </div>
+      </NumRow>
+    </Field>
 
-      <Field label={t.rollResult}>
-        <NumRow>
-          <!-- Each die is labeled, because which one found a card is half of what
-           the card says. The label is above the field rather than beside it:
-           two named fields side by side need the names to line up. -->
-          <div class="dieblock">
-            <span class="dielbl h">{t.hopeDie}</span>
-            <NumberField
-              value={roll.hope}
-              min={1}
-              max={12}
-              label={hopeNames.label}
-              stepDownLabel={hopeNames.down}
-              stepUpLabel={hopeNames.up}
-              tone="hope"
-              onchange={(n: number) => {
-                roll = { ...roll, hope: n };
-              }}
-            />
-          </div>
-          <div class="dieblock">
-            <span class="dielbl f">{t.fearDie}</span>
-            <NumberField
-              value={roll.fear}
-              min={1}
-              max={12}
-              label={fearNames.label}
-              stepDownLabel={fearNames.down}
-              stepUpLabel={fearNames.up}
-              tone="fear"
-              onchange={(n: number) => {
-                roll = { ...roll, fear: n };
-              }}
-            />
-          </div>
-          <!-- Bottom-aligned: the labels above the fields make this column taller
-           than the button, and the button belongs on the fields' line. -->
-          <div class="rollcell">
-            <Button
-              variant="primary"
-              onclick={() => {
-                roll = rollDuality(app.env.random);
-              }}
-            >
-              <Die faces={12} />{t.rollDuality}
-            </Button>
-          </div>
-        </NumRow>
-      </Field>
+    <Field label={t.filter}>
+      <ChipRow>
+        {#each LOOT_KINDS as kind (kind)}
+          <Chip
+            label={t[KIND_LABEL[kind]]}
+            on={app.kinds[kind]}
+            neutral={allKinds}
+            title={isLastOn(app.kinds, LOOT_KINDS, kind) ? t.keepOneKind : undefined}
+            onclick={() => {
+              app.toggleKind(kind, LOOT_KINDS);
+            }}
+          />
+        {/each}
+      </ChipRow>
+    </Field>
+  {/snippet}
 
-      <Field label={t.filter}>
-        <ChipRow>
-          {#each LOOT_KINDS as kind (kind)}
-            <Chip
-              label={t[KIND_LABEL[kind]]}
-              on={app.kinds[kind]}
-              title={isLastOn(app.kinds, LOOT_KINDS, kind) ? t.keepOneKind : undefined}
-              onclick={() => {
-                app.toggleKind(kind, LOOT_KINDS);
-              }}
-            />
-          {/each}
-        </ChipRow>
-      </Field>
-    </Panel>
-
-    {#if choice}
-      <div class="resbar">
-        <Button size="sm" label={t.copyRoll} onclick={() => void copyRoll(choice)}>
-          <Icon name="copy" />{t.copyRoll}
-        </Button>
-      </div>
-    {/if}
-
+  {#snippet results(openRecord)}
     {#if index && picks.length}
       <div class="results" data-primary role="status" aria-live="polite">
         {#if crit}
@@ -227,80 +254,70 @@
 
     {#snippet cardOf(pick: AltPick)}
       {#if index}
-        <!-- Near-identical to StdPanel.svelte's own `cardOf` and to
-             RollPanel.svelte's single-result card - the extraction this
-             invites, and why it is not done, is written down at
-             StdPanel.svelte's copy rather than three times over. -->
-        <RecordCard
-          variant="compact"
-          it={pick.it}
+        <RollResult
+          {app}
           {index}
-          lang={app.lang}
+          it={pick.it}
           col={pick.col}
           rollLabel={pick.n}
-          artBroken={app.artBroken(pick.it.id)}
-          onartfail={(bad: string) => {
-            app.markArtBroken(bad);
-          }}
           onopen={openRecord}
-        >
-          {#snippet nameActions()}
-            <RecordActions {app} {index} it={pick.it} row="name" />
-          {/snippet}
-          {#snippet actions()}
-            <RecordActions {app} {index} it={pick.it} row="card" />
-          {/snippet}
-        </RecordCard>
+        />
       {/if}
     {/snippet}
   {/snippet}
-</RecordHost>
+</RollPage>
 
 <style>
-  /* off `.dieblock`, `.dielbl`, `.crit` and `.results` in style.css -
-     `.numrow` moved to `NumRow.svelte`, `.panel` to `Panel.svelte` */
+  .altctrl {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .altctrl :global(.btn.primary) {
+    justify-content: center;
+  }
+
+  .altctrl.row {
+    flex-direction: row;
+    gap: 8px;
+  }
+
   .dieblock {
-    flex: 0 0 auto;
+    flex: 1 1 0;
+    min-width: 0;
   }
 
   .dielbl {
-    font-size: var(--t-label);
-    font-weight: 650;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 6px;
     margin-bottom: 6px;
-    display: block;
+    font-size: var(--t-data);
+    font-weight: 600;
+    white-space: nowrap;
   }
 
-  .dielbl.h {
+  .dv {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 22px;
+    height: 22px;
+    border: 1px solid currentcolor;
+    border-radius: 50%;
+    font-size: var(--t-label);
+    font-weight: 700;
+  }
+
+  .dv.h {
     color: var(--hope);
   }
 
-  .dielbl.f {
+  .dv.f {
     color: var(--fear);
-  }
-
-  /* The live app writes this one inline; it is the same two declarations. */
-  .rollcell {
-    display: flex;
-    align-items: flex-end;
-  }
-
-  /* Three lines, duplicated in `RollPanel.svelte`/`StdPanel.svelte` - too
-     small to be worth a component of its own. */
-  .results {
-    margin-top: 26px;
-  }
-
-  /* off `.resbar` in style.css */
-  .resbar {
-    display: flex;
-    justify-content: flex-end;
-    margin: 22px 0 0;
-  }
-
-  .resbar + .results {
-    margin-top: 10px;
   }
 
   .crit {

@@ -1,7 +1,7 @@
 /* What a roll page explains about itself. */
 
 import { describe, expect, it } from 'vitest';
-import { helpFor, isBold, isBreak, isLink, moneyHelpFor } from './help.js';
+import { helpFor, isBold, isLink, moneyHelpFor } from './help.js';
 import type { Help, HelpLink, HelpPart } from './help.js';
 import type { Lang } from './types.js';
 
@@ -12,7 +12,6 @@ const SECTIONS = ['std', 'alt', 'wondrous', 'dread', 'voa', 'dv', 'arazo', 'comm
 const partText = (part: HelpPart): string => {
   if (isLink(part)) return part.label;
   if (isBold(part)) return part.b;
-  if (isBreak(part)) return '\n';
   return part;
 };
 
@@ -71,32 +70,38 @@ describe('the help for a section', () => {
     expect(textOf(helpFor('voa', 'ru'), 0)).toContain('Своей таблицы броска у книги нет');
   });
 
-  it('carries markup as shape rather than as text', () => {
-    /* The Core rules paragraph that lists where each rarity fits is one
-       paragraph with four bold lines inside it. It was ported as a string with
-       the tags still in it and shipped showing "<br><b>Common</b>" as words,
-       because nothing rendered that panel and no parity state opened it. */
+  it('holds the four placement lines of the book and nothing else on the Core rules page', () => {
+    const leads = {
+      ru: ['Обычная', 'Необычная', 'Редкая', 'Легендарная'],
+      en: ['Common', 'Uncommon', 'Rare', 'Legendary']
+    };
     for (const lang of LANGS) {
-      for (const para of helpFor('std', lang)?.paragraphs ?? []) {
+      const paragraphs = helpFor('std', lang)?.paragraphs ?? [];
+      expect(paragraphs.map((p) => p.lead)).toEqual(leads[lang]);
+      for (const para of paragraphs) {
         for (const part of para.parts) {
           if (typeof part === 'string') expect(part, lang).not.toMatch(/[<>]/);
         }
       }
     }
+  });
 
-    const ru = helpFor('std', 'ru')?.paragraphs[1];
-    expect(ru?.parts.filter(isBreak)).toHaveLength(4);
-    expect(ru?.parts.filter(isBold).map((b) => b.b)).toEqual([
-      'Обычная',
-      'Необычная',
-      'Редкая',
-      'Легендарная'
-    ]);
-    expect(
-      helpFor('std', 'en')
-        ?.paragraphs[1]?.parts.filter(isBold)
-        .map((b) => b.b)
-    ).toEqual(['Common', 'Uncommon', 'Rare', 'Legendary']);
+  it('names each roll help button after its panel, in both languages', () => {
+    const names: Record<string, [string, string]> = {
+      std: ['Где какая редкость', 'Where each rarity is'],
+      alt: ['Об этих таблицах', 'About these tables'],
+      wondrous: ['Об этой таблице', 'About this table'],
+      dread: ['Об этой книге', 'About this book'],
+      voa: ['Об этой книге', 'About this book'],
+      dv: ['Об этой книге', 'About this book'],
+      arazo: ['Об этой книге', 'About this book'],
+      mwt: ['Об этой книге', 'About this book'],
+      community: ['Об этих предметах', 'About these items']
+    };
+    for (const section of SECTIONS) {
+      expect(helpFor(section, 'ru')?.button, section).toBe(names[section]?.[0]);
+      expect(helpFor(section, 'en')?.button, section).toBe(names[section]?.[1]);
+    }
   });
 
   it('credits the alternate tables to the person who wrote them', () => {
@@ -252,8 +257,8 @@ describe('the tables help, «Об этих данных»', () => {
     expect(linksOf(help).map((l) => l.label)).toEqual(['daggerheart.su']);
   });
 
-  it('is the only help that names its own button', () => {
-    for (const section of [...SECTIONS, 'lists', 'homebrew']) {
+  it('leaves the two list helps on the default button name', () => {
+    for (const section of ['lists', 'homebrew']) {
       for (const lang of LANGS) expect(helpFor(section, lang)?.button, section).toBeUndefined();
     }
   });

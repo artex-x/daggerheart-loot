@@ -1,8 +1,8 @@
 /* The three roll pages that choose a part of their book first.
  *
  * Driven through App, which is what covers the picker components with them:
- * a chip is a button with a label and a pressed state, and a test that asserts
- * that in isolation would assert nothing the parent does not already need. */
+ * a select with a name and a value, and a test that asserts that in isolation
+ * would assert nothing the parent does not already need. */
 
 import { cleanup, render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
@@ -90,16 +90,19 @@ const at = (route: string, over: Partial<Env> = {}): Env =>
 const field = (): HTMLInputElement =>
   screen.getByRole<HTMLInputElement>('textbox', { name: 'Результат броска' });
 
+const pick = (part: string): Promise<void> =>
+  userEvent.selectOptions(screen.getByRole('combobox'), part);
+
+const chosen = (name: string): HTMLElement =>
+  screen.getByRole('option', { name, selected: true });
+
 describe('Vault of Ages', () => {
   it('opens on the first tier and shows what is in it', () => {
     render(App, { env: at('#/roll/voa') });
     expect(
       screen.getByRole('heading', { level: 1, name: 'Vault of Ages' })
     ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Ранг 1' })).toHaveAttribute(
-      'aria-pressed',
-      'true'
-    );
+    expect(chosen('Ранг 1')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Камень первого ранга' })).toBeInTheDocument();
   });
 
@@ -109,7 +112,7 @@ describe('Vault of Ages', () => {
     render(App, { env: at('#/roll/voa') });
     expect(screen.getByText('Результат броска (1–2)')).toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole('button', { name: 'Артефакты' }));
+    await pick('Артефакты');
     expect(screen.getByText('Результат броска (1–1)')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Узы Души' })).toBeInTheDocument();
   });
@@ -121,7 +124,7 @@ describe('Vault of Ages', () => {
     await userEvent.click(screen.getByRole('button', { name: 'На единицу больше' }));
     expect(field().value).toBe('2');
 
-    await userEvent.click(screen.getByRole('button', { name: 'Проклятые предметы' }));
+    await pick('Проклятые предметы');
     expect(field().value).toBe('1');
     expect(screen.getByRole('link', { name: 'Проклятый венец' })).toBeInTheDocument();
   });
@@ -129,13 +132,13 @@ describe('Vault of Ages', () => {
   it('marks an artifact as one on the card', async () => {
     /* A category that exists nowhere else in the data, so it is worth a badge. */
     render(App, { env: at('#/roll/voa') });
-    await userEvent.click(screen.getByRole('button', { name: 'Артефакты' }));
+    await pick('Артефакты');
     expect(screen.getByText('Артефакт')).toHaveClass('badge');
   });
 
   it('explains why the book has sections rather than one die', async () => {
     render(App, { env: at('#/roll/voa') });
-    await userEvent.click(screen.getByRole('button', { name: 'Справка' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Об этой книге' }));
     expect(screen.getByText(/Своей таблицы броска у книги нет/)).toBeInTheDocument();
     /* All four volumes, not just the first. */
     expect(screen.getByRole('link', { name: 'Volume 4' })).toBeInTheDocument();
@@ -148,16 +151,13 @@ describe('community items', () => {
     expect(
       screen.getByRole('heading', { level: 1, name: 'Предметы сообществ' })
     ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Научное' })).toHaveAttribute(
-      'aria-pressed',
-      'true'
-    );
+    expect(chosen('Научное')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Первое научное' })).toBeInTheDocument();
   });
 
   it('rolls inside the community that was picked', async () => {
     render(App, { env: at('#/roll/community') });
-    await userEvent.click(screen.getByRole('button', { name: 'Горное' }));
+    await pick('Горное');
     expect(screen.getByRole('link', { name: 'Первое горное' })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Первое научное' })).not.toBeInTheDocument();
   });
@@ -165,15 +165,15 @@ describe('community items', () => {
   it('names the communities in the language on screen', async () => {
     render(App, { env: at('#/roll/community') });
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
-    expect(screen.getByRole('button', { name: 'Loreborne' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Loreborne' })).toBeInTheDocument();
     expect(
       screen.getByRole('heading', { level: 1, name: 'Community items' })
     ).toBeInTheDocument();
   });
 
   it('labels the picker with the singular, not the book’s name', () => {
-    /* The chip names the book, «Предметы сообществ»; the label above the
-       picker asks for one community. */
+    /* The mode chip names the book, «Предметы сообществ»; the name over the
+       value asks for one community. */
     render(App, { env: at('#/roll/community') });
     const main = screen.getByRole('main');
     expect(within(main).getByText('Сообщество')).toBeInTheDocument();
@@ -181,7 +181,7 @@ describe('community items', () => {
 });
 
 describe('Many Worlds Tavern', () => {
-  it('opens on the first realm and draws the six realm chips', () => {
+  it('opens on the first realm and offers the six realms', () => {
     render(App, { env: at('#/roll/mwt') });
     expect(
       screen.getByRole('heading', { level: 1, name: 'Many Worlds Tavern' })
@@ -194,11 +194,8 @@ describe('Many Worlds Tavern', () => {
       'Оплот Шершней',
       'Дром'
     ])
-      expect(screen.getByRole('button', { name })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Спорополис' })).toHaveAttribute(
-      'aria-pressed',
-      'true'
-    );
+      expect(screen.getByRole('option', { name })).toBeInTheDocument();
+    expect(chosen('Спорополис')).toBeInTheDocument();
     expect(within(screen.getByRole('main')).getByText('Мир')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Первый спорополисский' })).toBeInTheDocument();
   });
@@ -215,20 +212,20 @@ describe('Many Worlds Tavern', () => {
   it("picks 1-21 at random in Warrin' Warrens, where no die covers the deck", async () => {
     /* random() just under 1 is the top face: the last card of the deck. */
     render(App, { env: at('#/roll/mwt', { random: () => 0.999 }) });
-    await userEvent.click(screen.getByRole('button', { name: 'Воюющие Норы' }));
+    await pick('Воюющие Норы');
     expect(screen.getByText('Результат броска (1–21)')).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: /Случайно 1–21/ }));
+    await userEvent.click(screen.getByRole('button', { name: /Бросить 1-21/ }));
     expect(field().value).toBe('21');
     expect(screen.getByRole('link', { name: 'Норный 21' })).toBeInTheDocument();
   });
 
   it('puts a held 21 back to one in a shorter realm', async () => {
     render(App, { env: at('#/roll/mwt', { random: () => 0.999 }) });
-    await userEvent.click(screen.getByRole('button', { name: 'Воюющие Норы' }));
-    await userEvent.click(screen.getByRole('button', { name: /Случайно 1–21/ }));
+    await pick('Воюющие Норы');
+    await userEvent.click(screen.getByRole('button', { name: /Бросить 1-21/ }));
     expect(field().value).toBe('21');
 
-    await userEvent.click(screen.getByRole('button', { name: 'Спорополис' }));
+    await pick('Спорополис');
     expect(field().value).toBe('1');
     expect(screen.getByText('Результат броска (1–2)')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Первый спорополисский' })).toBeInTheDocument();
@@ -236,12 +233,12 @@ describe('Many Worlds Tavern', () => {
 
   it('puts a held roll back to one when The Drome gives way to Hornet Hold', async () => {
     render(App, { env: at('#/roll/mwt') });
-    await userEvent.click(screen.getByRole('button', { name: 'Дром' }));
+    await pick('Дром');
     await userEvent.click(screen.getByRole('button', { name: 'На единицу больше' }));
     expect(field().value).toBe('2');
     expect(screen.getByRole('link', { name: 'Второй дромовый' })).toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole('button', { name: 'Оплот Шершней' }));
+    await pick('Оплот Шершней');
     expect(field().value).toBe('1');
     expect(screen.getByText('Результат броска (1–2)')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Первый шершневый' })).toBeInTheDocument();
@@ -250,7 +247,7 @@ describe('Many Worlds Tavern', () => {
   it('names the realms in the language on screen', async () => {
     render(App, { env: at('#/roll/mwt') });
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
-    expect(screen.getByRole('button', { name: "Warrin' Warrens" })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: "Warrin' Warrens" })).toBeInTheDocument();
     expect(within(screen.getByRole('main')).getByText('Realm')).toBeInTheDocument();
     expect(screen.getByText('Pick a realm and roll within it.')).toBeInTheDocument();
   });
@@ -302,7 +299,7 @@ describe('accessibility', () => {
 
   it('has no axe violations on Many Worlds Tavern with a realm pressed', async () => {
     const { container } = render(App, { env: at('#/roll/mwt') });
-    await userEvent.click(screen.getByRole('button', { name: 'Воюющие Норы' }));
+    await pick('Воюющие Норы');
     await expectNoA11yViolations(container);
   });
 });

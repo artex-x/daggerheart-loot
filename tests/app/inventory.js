@@ -483,7 +483,7 @@ const STATES = [
     route: '#/roll/wondrous_environments',
     why: 'the help panel, unfolded',
     enter: async (d) => {
-      await d.click('Справка');
+      await d.click('Об этой таблице');
     }
   },
 
@@ -634,9 +634,9 @@ const STATES = [
   {
     id: '#/roll/std ~ help',
     route: '#/roll/std',
-    why: 'the help panel with bold lines inside a paragraph',
+    why: '«Где какая редкость»: the four placement lines of the book, each with a bold rarity',
     enter: async (d) => {
-      await d.click('Справка');
+      await d.click('Где какая редкость');
     }
   },
 
@@ -651,6 +651,58 @@ const STATES = [
     }
   },
   { id: '#/roll/alt', route: '#/roll/alt', why: 'the alternate tables' },
+  {
+    id: '#/roll/alt ~ narrow',
+    route: '#/roll/alt',
+    width: 360,
+    why: 'up to 760 px: the rarity select and the primary on one row, the results line, the 96 px cards'
+  },
+
+  /* The roll pages up to 760 px: the settings behind «Настроить» and the rest of the page's
+     controls in «Ещё»; the golden width draws the two panes. */
+  {
+    id: '#/roll/std ~ set up',
+    route: '#/roll/std',
+    width: 360,
+    why: '«Настроить» open: the manual entry, the source and the type in a plate over the results',
+    enter: async (d) => {
+      await d.click('Настроить');
+    }
+  },
+  {
+    id: '#/roll/std ~ more',
+    route: '#/roll/std',
+    width: 360,
+    why: '«Ещё» of the results line open: the copy of every option, the pin, the help',
+    enter: (d) => d.openMore(),
+    again: (d) => d.openMore()
+  },
+  {
+    id: '#/roll/std ~ items only, set up',
+    route: '#/roll/std',
+    width: 360,
+    why: 'consumables off and «Настроить» closed: the control is lit and names «Предметы»',
+    enter: async (d) => {
+      await d.click('Настроить');
+      await d.click('Расходники');
+      await d.click('Предметы');
+    }
+  },
+  {
+    id: '#/roll/std ~ card more',
+    route: '#/roll/std',
+    why: '«Ещё» of the first result open: the four copies',
+    enter: (d) => d.openCardMore(),
+    again: (d) => d.openCardMore()
+  },
+  {
+    id: '#/roll/std ~ list menu as gm4',
+    route: '#/roll/std',
+    as: 'gm4',
+    why: '«В список» of the first result open, with the account lists',
+    enter: (d) => d.openCardList(),
+    again: (d) => d.openCardList()
+  },
 
   /* The critical-success box, which no route draws: the page opens on Hope 1
      and Fear 2, and stepping Hope up puts the two dice level. It carries the
@@ -661,7 +713,11 @@ const STATES = [
     route: '#/roll/alt',
     why: 'the two dice agreeing, which is the offer of a whole rarity',
     enter: async (d) => {
+      /* Up to 760 px the steppers are in «Настроить»: case 83 enters this state at 360. */
+      const narrow = (await d.count('.reshead .morewrap')) > 0;
+      if (narrow) await d.click('Настроить');
       await d.click('На единицу больше');
+      if (narrow) await d.click('Настроить');
     }
   },
 
@@ -701,7 +757,7 @@ const STATES = [
     route: '#/roll/dragons_vault',
     why: 'the help panel, unfolded: why the table has no die, and where the equipment half lives',
     enter: async (d) => {
-      await d.click('Справка');
+      await d.click('Об этой книге');
     }
   },
   {
@@ -714,10 +770,16 @@ const STATES = [
     route: '#/roll/arazos_artifacts',
     why: 'the help panel, unfolded: Destiny instead of a roll table, and the four versions of every piece of equipment',
     enter: async (d) => {
-      await d.click('Справка');
+      await d.click('Об этой книге');
     }
   },
   { id: '#/roll/community', route: '#/roll/community_items', why: 'communities' },
+  {
+    id: '#/roll/wondrous ~ narrow',
+    route: '#/roll/wondrous_environments',
+    width: 360,
+    why: 'one result up to 760 px: the 96 px card with the row under it'
+  },
 
   /* The picker is the whole point of these two, and it is a state: the length
      of the roll, the die on the button and the card underneath all change with
@@ -729,7 +791,7 @@ const STATES = [
     route: '#/roll/vault_of_ages',
     why: 'a division of the book that is not a tier',
     enter: async (d) => {
-      await d.click('Артефакты');
+      await d.part('Артефакты');
     }
   },
   {
@@ -737,7 +799,7 @@ const STATES = [
     route: '#/roll/community_items',
     why: 'a community other than the one it opens on',
     enter: async (d) => {
-      await d.click('Научное');
+      await d.part('Научное');
     }
   },
 
@@ -754,7 +816,7 @@ const STATES = [
     route: '#/roll/many_worlds_tavern',
     why: 'the second realm, Wagerwood',
     enter: async (d) => {
-      await d.click('Лес Пари');
+      await d.part('Лес Пари');
     }
   },
   {
@@ -762,7 +824,7 @@ const STATES = [
     route: '#/roll/many_worlds_tavern',
     why: "the third realm, Warrin' Warrens: 21 cards, the button picks 1-21 at random",
     enter: async (d) => {
-      await d.click('Воюющие Норы');
+      await d.part('Воюющие Норы');
     }
   },
   {
@@ -770,7 +832,7 @@ const STATES = [
     route: '#/roll/many_worlds_tavern',
     why: 'the fourth realm, Godsvale',
     enter: async (d) => {
-      await d.click('Долина Богов');
+      await d.part('Долина Богов');
     }
   },
   {
@@ -778,7 +840,7 @@ const STATES = [
     route: '#/roll/many_worlds_tavern',
     why: 'the fifth realm, Hornet Hold: 11 cards, the button picks 1-11 at random',
     enter: async (d) => {
-      await d.click('Оплот Шершней');
+      await d.part('Оплот Шершней');
     }
   },
   {
@@ -786,7 +848,7 @@ const STATES = [
     route: '#/roll/many_worlds_tavern',
     why: 'the sixth realm, The Drome: 17 cards, the button picks 1-17 at random',
     enter: async (d) => {
-      await d.click('Дром');
+      await d.part('Дром');
     }
   },
   {
@@ -794,7 +856,7 @@ const STATES = [
     route: '#/roll/many_worlds_tavern',
     why: 'the help panel, unfolded: the six decks, the die, no domain cards and no rarity, one link per realm',
     enter: async (d) => {
-      await d.click('Справка');
+      await d.click('Об этой книге');
     }
   },
   {
@@ -1940,7 +2002,7 @@ const STATES = [
     id: LIST_A + ' ~ roll panel as gm4',
     route: '#/lists',
     as: 'gm4',
-    why: 'the panel open: empty numbox, "Случайно 1-7", the hint',
+    why: 'the panel open: empty numbox, "Бросить 1-7", the hint',
     enter: async (d) => {
       await onAccount(d, SEVEN_SPECS);
       await d.click(NAME.ru.rollBy);

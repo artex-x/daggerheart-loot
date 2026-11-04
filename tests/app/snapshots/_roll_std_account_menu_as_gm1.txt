@@ -29,23 +29,25 @@ RootWebArea "Обычные правила - Генератор лута Daggerh
   main ""
     heading "Обычные правила" [level=1]
     button "Открывается при запуске" [pressed=true]
-    button "Справка" [expanded=false]
+    button "Где какая редкость" [expanded=false]
     StaticText "Бросок по таблицам корника и дополнения Hope & Fear."
+    StaticText "БРОСИТЬ"
+    button "1d12 Обычная" [description=Бросить 1d12 - Обычная]
+    button "2d12 Обычная - Необычная" [description=Бросить 2d12 - Обычная - Необычная]
+    button "3d12 Необычная - Редкая" [description=Бросить 3d12 - Необычная - Редкая]
+    button "4d12 Редкая - Легендарная" [description=Бросить 4d12 - Редкая - Легендарная]
+    button "5d12 Легендарная" [description=Бросить 5d12 - Легендарная]
     StaticText "РЕЗУЛЬТАТ БРОСКА (1–60)"
     button "На единицу меньше" [disabled=true]
     textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
     button "На единицу больше"
-    button "Бросить 1d12 ОБЫЧНАЯ" [description=Бросить 1d12 - Обычная]
-    button "2d12 ОБЫЧНАЯ / НЕОБЫЧНАЯ" [description=Бросить 2d12 - Обычная / Необычная]
-    button "3d12 НЕОБЫЧНАЯ / РЕДКАЯ" [description=Бросить 3d12 - Необычная / Редкая]
-    button "4d12 РЕДКАЯ / ЛЕГЕНДАРНАЯ" [description=Бросить 4d12 - Редкая / Легендарная]
-    button "5d12 ЛЕГЕНДАРНАЯ" [description=Бросить 5d12 - Легендарная]
     StaticText "ИСТОЧНИК"
     button "Core" [pressed=true]
     button "Hope & Fear" [pressed=true]
     StaticText "ТИП"
     button "Предметы" [pressed=true]
     button "Расходники" [pressed=true]
+    heading "Бросок 1" [level=2]
     button "Скопировать все варианты"
     status ""
       button "Страница"
@@ -53,32 +55,24 @@ RootWebArea "Обычные правила - Генератор лута Daggerh
       StaticText "ПРЕДМЕТ"
       ... StaticText x16 of 20 same-shape siblings elided
       link "Первоклассный Спальный Мешок" [description=Страница url=/i/ci1]
-      button "Скопировать название" [description=Скопировать название]
-      button "Скопировать ссылку" [description=Скопировать ссылку]
-      button "Отправить"
-      button "Скопировать изображение" [description=Скопировать изображение]
-      button "Скопировать текст" [description=Скопировать текст]
+      button "В список" [expanded=false]
+      button "Поделиться"
+      button "Ещё" [expanded=false haspopup=menu]
       ... button x4 of 8 same-shape siblings elided
       link "Зелье Быстрого Шага" [description=Страница url=/i/cc1]
-      button "Скопировать название" [description=Скопировать название]
-      button "Скопировать ссылку" [description=Скопировать ссылку]
       link "Большое Зелье Быстрого Шага" [url=/i/cc25]
-      button "Скопировать изображение" [description=Скопировать изображение]
-      button "Скопировать текст" [description=Скопировать текст]
+      button "В список" [expanded=false]
+      button "Ещё" [expanded=false haspopup=menu]
       link "Шипы" [description=Страница url=/i/hi1]
-      button "Скопировать название" [description=Скопировать название]
-      button "Скопировать ссылку" [description=Скопировать ссылку]
-      button "Скопировать изображение" [description=Скопировать изображение]
-      button "Скопировать текст" [description=Скопировать текст]
+      button "В список" [expanded=false]
+      button "Ещё" [expanded=false haspopup=menu]
       button "Страница"
       StaticText "HOPE & FEAR"
       link "Оберегающая Свеча" [description=Страница url=/i/hc1]
-      button "Скопировать название" [description=Скопировать название]
-      button "Скопировать ссылку" [description=Скопировать ссылку]
       StaticText "Зажгите эту свечу, и в пределах Средней дистанции разольётся оре..." [namelen=186 namehash=62be8214]
-      button "Отправить"
-      button "Скопировать изображение" [description=Скопировать изображение]
-      button "Скопировать текст" [description=Скопировать текст]
+      button "В список" [expanded=false]
+      button "Поделиться"
+      button "Ещё" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -87,11 +81,12 @@ RootWebArea "Обычные правила - Генератор лута Daggerh
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-2d12 Обычная / Необычная
-3d12 Необычная / Редкая
-4d12 Редкая / Легендарная
+1d12 Обычная
+2d12 Обычная - Необычная
+3d12 Необычная - Редкая
+4d12 Редкая - Легендарная
 5d12 Легендарная
-?Справка
+?Где какая редкость
 Core
 EN
 Hope & Fear
@@ -101,10 +96,11 @@ daggerheart.com
 Аккаунт: gm1@example.test
 Альтернативные таблицы
 Большое Зелье Быстрого Шага
-Бросить 1d12 Обычная
 Бросок
+В список
 Выйти
 Дополнения
+Ещё
 Зелье Быстрого Шага
 К содержимому
 Конфиденциальность
@@ -116,17 +112,13 @@ daggerheart.com
 Оберегающая Свеча
 Обычные правила
 Открывается при запуске
-Отправить
 Первоклассный Спальный Мешок
+Поделиться
 Поиск
 Предметы
 Расходники
 Результат броска
 Скопировать все варианты
-Скопировать изображение
-Скопировать название
-Скопировать ссылку
-Скопировать текст
 Страница
 Таблицы
 Условия использования
@@ -154,23 +146,25 @@ RootWebArea "Standard rules - Daggerheart Loot Generator" [url=/en/roll/std?as=g
   main ""
     heading "Standard rules" [level=1]
     button "Opens on start" [pressed=true]
-    button "Help" [expanded=false]
+    button "Where each rarity is" [expanded=false]
     StaticText "A roll over the core book and the Hope & Fear tables."
+    StaticText "ROLL"
+    button "1d12 Common" [description=Roll 1d12 - Common]
+    button "2d12 Common - Uncommon" [description=Roll 2d12 - Common - Uncommon]
+    button "3d12 Uncommon - Rare" [description=Roll 3d12 - Uncommon - Rare]
+    button "4d12 Rare - Legendary" [description=Roll 4d12 - Rare - Legendary]
+    button "5d12 Legendary" [description=Roll 5d12 - Legendary]
     StaticText "ROLL RESULT (1–60)"
     button "One lower" [disabled=true]
     textbox "Roll result" [value=1 multiline=false readonly=false required=false]
     button "One higher"
-    button "Roll 1d12 COMMON" [description=Roll 1d12 - Common]
-    button "2d12 COMMON / UNCOMMON" [description=Roll 2d12 - Common / Uncommon]
-    button "3d12 UNCOMMON / RARE" [description=Roll 3d12 - Uncommon / Rare]
-    button "4d12 RARE / LEGENDARY" [description=Roll 4d12 - Rare / Legendary]
-    button "5d12 LEGENDARY" [description=Roll 5d12 - Legendary]
     StaticText "SOURCE"
     button "Core" [pressed=true]
     button "Hope & Fear" [pressed=true]
     StaticText "TYPE"
     button "Items" [pressed=true]
     button "Consumables" [pressed=true]
+    heading "Roll 1" [level=2]
     button "Copy every option"
     status ""
       button "Page"
@@ -178,32 +172,24 @@ RootWebArea "Standard rules - Daggerheart Loot Generator" [url=/en/roll/std?as=g
       StaticText "ITEM"
       ... StaticText x16 of 20 same-shape siblings elided
       link "Premium Bedroll" [description=Page url=/i/en/ci1]
-      button "Copy name" [description=Copy name]
-      button "Copy link" [description=Copy link]
+      button "Add to list" [expanded=false]
       button "Share"
-      button "Copy image" [description=Copy image]
-      button "Copy text" [description=Copy text]
+      button "More" [expanded=false haspopup=menu]
       ... button x4 of 8 same-shape siblings elided
       link "Stride Potion" [description=Page url=/i/en/cc1]
-      button "Copy name" [description=Copy name]
-      button "Copy link" [description=Copy link]
       link "Major Stride Potion" [url=/i/en/cc25]
-      button "Copy image" [description=Copy image]
-      button "Copy text" [description=Copy text]
+      button "Add to list" [expanded=false]
+      button "More" [expanded=false haspopup=menu]
       link "Caltrops" [description=Page url=/i/en/hi1]
-      button "Copy name" [description=Copy name]
-      button "Copy link" [description=Copy link]
-      button "Copy image" [description=Copy image]
-      button "Copy text" [description=Copy text]
+      button "Add to list" [expanded=false]
+      button "More" [expanded=false haspopup=menu]
       button "Page"
       StaticText "HOPE & FEAR"
       link "Warding Candle" [description=Page url=/i/en/hc1]
-      button "Copy name" [description=Copy name]
-      button "Copy link" [description=Copy link]
       StaticText "You can light this candle to fill an area within Close range wit..." [namelen=208 namehash=88ca1325]
+      button "Add to list" [expanded=false]
       button "Share"
-      button "Copy image" [description=Copy image]
-      button "Copy text" [description=Copy text]
+      button "More" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -212,20 +198,18 @@ RootWebArea "Standard rules - Daggerheart Loot Generator" [url=/en/roll/std?as=g
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-2d12 Common / Uncommon
-3d12 Uncommon / Rare
-4d12 Rare / Legendary
+1d12 Common
+2d12 Common - Uncommon
+3d12 Uncommon - Rare
+4d12 Rare - Legendary
 5d12 Legendary
-?Help
+?Where each rarity is
 Account: gm1@example.test
+Add to list
 Alternate tables
 Caltrops
 Consumables
 Copy every option
-Copy image
-Copy link
-Copy name
-Copy text
 Core
 EN
 Hope & Fear
@@ -233,6 +217,7 @@ Install as an app
 Items
 LootDaggerheart
 Major Stride Potion
+More
 One higher
 One lower
 Opens on start
@@ -241,7 +226,6 @@ Premium Bedroll
 Privacy
 RU
 Roll
-Roll 1d12 Common
 Roll result
 Search
 Share

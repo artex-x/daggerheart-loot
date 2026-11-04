@@ -10,21 +10,15 @@
   import ChipRow from './ChipRow.svelte';
   import DiceBar from './DiceBar.svelte';
   import Field from './Field.svelte';
-  import Icon from './Icon.svelte';
   import NumberField from './NumberField.svelte';
-  import NumRow from './NumRow.svelte';
   import OrGrid from './OrGrid.svelte';
-  import PageHead from './PageHead.svelte';
-  import Panel from './Panel.svelte';
-  import RecordActions from './RecordActions.svelte';
-  import RecordCard from './RecordCard.svelte';
-  import RecordHost from './RecordHost.svelte';
-  import Button from './Button.svelte';
+  import RollPage from './RollPage.svelte';
+  import RollResult from './RollResult.svelte';
   import { helpFor } from '../lib/help.js';
   import { rarityKey } from '../lib/label.js';
   import { CORE_MAX, coreRoll } from '../lib/roll.js';
   import { shareRoll } from '../lib/share.js';
-  import { LOOT_KINDS, NDICE, SOURCES, isLastOn, poolFor } from '../lib/std.js';
+  import { LOOT_KINDS, NDICE, SOURCES, isLastOn, narrowedLabel, poolFor } from '../lib/std.js';
   import type { LootKind, Source } from '../lib/std.js';
   import type { AppState } from '../state/app.svelte.js';
   import type { Dict } from '../lib/dict.js';
@@ -50,6 +44,25 @@
   const rarityName = (key: string): string => t[rarityKey(key)];
 
   const help = $derived(helpFor('std', app.lang));
+
+  /* Every chip of a row on is the neutral default; a row narrowed is what lights gold. */
+  const allSources = $derived(SOURCES.every((src) => app.source[src]));
+  const allKinds = $derived(LOOT_KINDS.every((kind) => app.kinds[kind]));
+  const lit = $derived(
+    narrowedLabel(
+      [
+        {
+          left: SOURCES.filter((src) => app.source[src]).map((src) => t[SOURCE_LABEL[src]]),
+          of: SOURCES.length
+        },
+        {
+          left: LOOT_KINDS.filter((kind) => app.kinds[kind]).map((k) => t[KIND_LABEL[k]]),
+          of: LOOT_KINDS.length
+        }
+      ],
+      t.setUp
+    )
+  );
 
   /* The roll and the index together, and only where there is an actual choice
      to hand over: one card is a result rather than a set of options, and the
@@ -84,68 +97,68 @@
   }
 </script>
 
-<PageHead {app} title={t.pageStd} sub={t.subStd} {help} />
+<RollPage
+  {app}
+  {index}
+  title={t.pageStd}
+  sub={t.subStd}
+  {help}
+  rolled={String(n)}
+  {lit}
+  copy={choice ? () => void copyRoll(choice) : undefined}
+>
+  {#snippet controls()}
+    <DiceBar dice={NDICE} {rarityName} rollWord={t.roll} onroll={roll} />
+  {/snippet}
 
-<RecordHost {app} {index}>
-  {#snippet children(openRecord)}
-    <Panel>
-      <Field label="{t.rollResult} (1–{CORE_MAX})">
-        <NumRow>
-          <NumberField
-            value={n}
-            min={1}
-            max={CORE_MAX}
-            label={t.rollResult}
-            stepDownLabel={t.stepDown}
-            stepUpLabel={t.stepUp}
-            onchange={setN}
+  {#snippet settings()}
+    <Field label="{t.rollResult} (1–{CORE_MAX})">
+      <NumberField
+        value={n}
+        min={1}
+        max={CORE_MAX}
+        label={t.rollResult}
+        stepDownLabel={t.stepDown}
+        stepUpLabel={t.stepUp}
+        onchange={setN}
+      />
+    </Field>
+
+    <Field label={t.source}>
+      <ChipRow>
+        {#each SOURCES as src (src)}
+          <Chip
+            label={t[SOURCE_LABEL[src]]}
+            on={app.source[src]}
+            neutral={allSources}
+            value={src}
+            title={isLastOn(app.source, SOURCES, src) ? t.keepOneSource : undefined}
+            onclick={() => {
+              toggleSource(src);
+            }}
           />
-          <DiceBar dice={NDICE} {rarityName} rollWord={t.roll} onroll={roll} />
-        </NumRow>
-      </Field>
+        {/each}
+      </ChipRow>
+    </Field>
 
-      <Field label={t.source}>
-        <ChipRow>
-          {#each SOURCES as src (src)}
-            <Chip
-              label={t[SOURCE_LABEL[src]]}
-              on={app.source[src]}
-              value={src}
-              title={isLastOn(app.source, SOURCES, src) ? t.keepOneSource : undefined}
-              onclick={() => {
-                toggleSource(src);
-              }}
-            />
-          {/each}
-        </ChipRow>
-      </Field>
+    <Field label={t.filter}>
+      <ChipRow>
+        {#each LOOT_KINDS as kind (kind)}
+          <Chip
+            label={t[KIND_LABEL[kind]]}
+            on={app.kinds[kind]}
+            neutral={allKinds}
+            title={isLastOn(app.kinds, LOOT_KINDS, kind) ? t.keepOneKind : undefined}
+            onclick={() => {
+              app.toggleKind(kind, LOOT_KINDS);
+            }}
+          />
+        {/each}
+      </ChipRow>
+    </Field>
+  {/snippet}
 
-      <Field label={t.filter}>
-        <ChipRow>
-          {#each LOOT_KINDS as kind (kind)}
-            <Chip
-              label={t[KIND_LABEL[kind]]}
-              on={app.kinds[kind]}
-              title={isLastOn(app.kinds, LOOT_KINDS, kind) ? t.keepOneKind : undefined}
-              onclick={() => {
-                app.toggleKind(kind, LOOT_KINDS);
-              }}
-            />
-          {/each}
-        </ChipRow>
-      </Field>
-    </Panel>
-
-    {#if choice}
-      <!-- The whole roll as one message, with the OR spelled out: the GM pastes
-           the options together rather than sending them one at a time. -->
-      <div class="resbar">
-        <Button size="sm" label={t.copyRoll} onclick={() => void copyRoll(choice)}>
-          <Icon name="copy" />{t.copyRoll}
-        </Button>
-      </div>
-    {/if}
-
+  {#snippet results(openRecord)}
     {#if index && pool.length}
       <div class="results" data-primary role="status" aria-live="polite">
         <OrGrid or={t.or} items={pool} card={cardOf} />
@@ -154,60 +167,8 @@
 
     {#snippet cardOf(it: Record_)}
       {#if index}
-        <!-- This snippet and AltPanel.svelte's own `cardOf` are
-             byte-identical apart from `it`/`col`/`rollLabel` - this panel's
-             pool has neither a die column nor a die face to caption a card
-             with, `AltPanel`'s does. `RollPanel.svelte` is the third
-             near-copy, but a different shape: it draws exactly one result,
-             `{#key shown.it}` wrapping the card directly rather than an
-             `OrGrid` snippet passed a whole pool, `index={shown.index}`
-             instead of this file's own panel-level `{index}`. Considered
-             extracting all three (`CLAUDE.md`'s "second real use" is long
-             past): rejected - the two real props that vary (`col`, `rollLabel`) plus
-             `RollPanel`'s different wrapper shape would make the extraction's
-             own prop list about as long as just forwarding `RecordCard`
-             directly, for three call sites that read fine side by side. -->
-        <RecordCard
-          variant="compact"
-          {it}
-          {index}
-          lang={app.lang}
-          artBroken={app.artBroken(it.id)}
-          onartfail={(bad: string) => {
-            app.markArtBroken(bad);
-          }}
-          onopen={openRecord}
-        >
-          {#snippet nameActions()}
-            <RecordActions {app} {index} {it} row="name" />
-          {/snippet}
-          {#snippet actions()}
-            <RecordActions {app} {index} {it} row="card" />
-          {/snippet}
-        </RecordCard>
+        <RollResult {app} {index} {it} onopen={openRecord} />
       {/if}
     {/snippet}
   {/snippet}
-</RecordHost>
-
-<style>
-  /* off `.results` in style.css - `.numrow` moved to `NumRow.svelte`,
-     `.panel` to `Panel.svelte` */
-  /* Three lines, duplicated in `AltPanel.svelte`/`RollPanel.svelte` - too
-     small to be worth a component of its own. */
-  .results {
-    margin-top: 26px;
-  }
-
-  /* off `.resbar` in style.css: the roll-copy button sits above the cards, and
-     tightens the gap under itself so it reads as belonging to them. */
-  .resbar {
-    display: flex;
-    justify-content: flex-end;
-    margin: 22px 0 0;
-  }
-
-  .resbar + .results {
-    margin-top: 10px;
-  }
-</style>
+</RollPage>

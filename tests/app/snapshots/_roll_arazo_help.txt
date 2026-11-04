@@ -23,33 +23,32 @@ RootWebArea "Arazo's Artifacts - Генератор лута Daggerheart" [url=/
   main ""
     heading "The Guide to Arazo's Artifacts" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=true]
+    button "Об этой книге" [expanded=true]
     StaticText "Введите результат броска или получите случайную позицию."
     StaticText "В таблице 78 позиций - 10 предметов и 68 единиц оружия и брони, ..." [namelen=157 namehash=cce2a6c7]
     ... StaticText x3 of 7 same-shape siblings elided
     link "The Guide to Arazo's Artifacts" [url=https://www.drivethrurpg.com/en/product/581640/the-guide-to-arazo-s-artifacts]
     StaticText "."
+    button "Бросить 1-78"
     StaticText "РЕЗУЛЬТАТ БРОСКА (1–78)"
     button "На единицу меньше" [disabled=true]
     textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
     button "На единицу больше"
-    button "Случайно 1–78"
+    heading "Бросок 1" [level=2]
     status ""
       button "Страница"
       StaticText "1"
       StaticText "ОСНОВНОЕ ОРУЖИЕ"
       ... StaticText x13 of 17 same-shape siblings elided
       link "Нестареющее Око Зверя" [description=Страница url=/i/aa1]
-      button "Скопировать название" [description=Скопировать название]
-      button "Скопировать ссылку" [description=Скопировать ссылку]
       StaticText "РАНГ"
       StaticText "1"
       button "Улучшенное Нестареющее Око Зверя" [description=Улучшенное Нестареющее Око Зверя]
       button "Продвинутое Нестареющее Око Зверя" [description=Продвинутое Нестареющее Око Зверя]
       button "Легендарное Нестареющее Око Зверя" [description=Легендарное Нестареющее Око Зверя]
-      button "Отправить"
-      button "Скопировать изображение" [description=Скопировать изображение]
-      button "Скопировать текст" [description=Скопировать текст]
+      button "В список" [expanded=false]
+      button "Поделиться"
+      button "Ещё" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -58,15 +57,18 @@ RootWebArea "Arazo's Artifacts - Генератор лута Daggerheart" [url=/
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-?Справка
+?Об этой книге
 Arazo's Artifacts
 EN
 RU
 The Guide to Arazo's Artifacts
 daggerheart.com
 Альтернативные таблицы
+Бросить 1-78
 Бросок
+В список
 Войти
+Ещё
 К содержимому
 Конфиденциальность
 Легендарное Нестареющее Око Зверя
@@ -76,15 +78,10 @@ daggerheart.com
 Нестареющее Око Зверя
 Обычные правила
 Открывать при запуске
-Отправить
+Поделиться
 Поиск
 Продвинутое Нестареющее Око Зверя
 Результат броска
-Скопировать изображение
-Скопировать название
-Скопировать ссылку
-Скопировать текст
-Случайно 1–78
 Страница
 Таблицы
 Улучшенное Нестареющее Око Зверя
@@ -112,33 +109,32 @@ RootWebArea "Arazo's Artifacts - Daggerheart Loot Generator" [url=/en/roll/arazo
   main ""
     heading "The Guide to Arazo's Artifacts" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=true]
+    button "About this book" [expanded=true]
     StaticText "Enter your roll result, or pick a random entry."
     StaticText "The table holds 78 entries - 10 items and 68 weapons and armor, ..." [namelen=154 namehash=80f65c5e]
     ... StaticText x3 of 7 same-shape siblings elided
     link "The Guide to Arazo's Artifacts" [url=https://www.drivethrurpg.com/en/product/581640/the-guide-to-arazo-s-artifacts]
     StaticText " supplement."
+    button "Roll 1-78"
     StaticText "ROLL RESULT (1–78)"
     button "One lower" [disabled=true]
     textbox "Roll result" [value=1 multiline=false readonly=false required=false]
     button "One higher"
-    button "Random 1–78"
+    heading "Roll 1" [level=2]
     status ""
       button "Page"
       StaticText "1"
       StaticText "PRIMARY WEAPON"
       ... StaticText x13 of 17 same-shape siblings elided
       link "The Ageless Eye of the Beast" [description=Page url=/i/en/aa1]
-      button "Copy name" [description=Copy name]
-      button "Copy link" [description=Copy link]
       StaticText "TIER"
       StaticText "1"
       button "Improved Ageless Eye of the Beast" [description=Improved Ageless Eye of the Beast]
       button "Advanced Ageless Eye of the Beast" [description=Advanced Ageless Eye of the Beast]
       button "Legendary Ageless Eye of the Beast" [description=Legendary Ageless Eye of the Beast]
+      button "Add to list" [expanded=false]
       button "Share"
-      button "Copy image" [description=Copy image]
-      button "Copy text" [description=Copy text]
+      button "More" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -147,27 +143,25 @@ RootWebArea "Arazo's Artifacts - Daggerheart Loot Generator" [url=/en/roll/arazo
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-?Help
+?About this book
+Add to list
 Advanced Ageless Eye of the Beast
 Alternate tables
 Arazo's Artifacts
-Copy image
-Copy link
-Copy name
-Copy text
 EN
 Improved Ageless Eye of the Beast
 Install as an app
 Legendary Ageless Eye of the Beast
 LootDaggerheart
+More
 One higher
 One lower
 Open on start
 Page
 Privacy
 RU
-Random 1–78
 Roll
+Roll 1-78
 Roll result
 Search
 Share

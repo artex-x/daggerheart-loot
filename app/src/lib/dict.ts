@@ -97,8 +97,10 @@ const ru = {
 
   /* Rolling */
   roll: 'Бросить',
-  randomIn: 'Случайно',
   rollResult: 'Результат броска',
+  rollHead: 'Бросок %s',
+  rollPair: '%a и %b',
+  setUp: 'Настроить',
   stepDown: 'На единицу меньше',
   stepUp: 'На единицу больше',
 
@@ -156,6 +158,8 @@ const ru = {
   rarity: 'Редкость',
   hopeDie: 'Кость Надежды',
   fearDie: 'Кость Страха',
+  hopeLetter: 'Н',
+  fearLetter: 'С',
   rollDuality: 'Бросить кости',
   hope: 'Надежда',
   fear: 'Страх',
@@ -1203,8 +1207,10 @@ const en: Dict = {
   imgFailed: 'Could not save the image',
 
   roll: 'Roll',
-  randomIn: 'Random',
   rollResult: 'Roll result',
+  rollHead: 'Roll %s',
+  rollPair: '%a and %b',
+  setUp: 'Set up',
   stepDown: 'One lower',
   stepUp: 'One higher',
 
@@ -1251,6 +1257,8 @@ const en: Dict = {
   rarity: 'Rarity',
   hopeDie: 'Hope Die',
   fearDie: 'Fear Die',
+  hopeLetter: 'H',
+  fearLetter: 'F',
   rollDuality: 'Roll the dice',
   hope: 'Hope',
   fear: 'Fear',
@@ -2162,7 +2170,7 @@ export function dict(lang: Lang): Dict {
  *  section name its word here. */
 export const SECTION_LABEL: Record<Section, keyof Dict> = {
   'roll/std': 'pageStd',
-  'roll/alt': 'alt',
+  'roll/alt': 'pageAlt',
   'roll/wondrous': 'pageWondrous',
   'roll/dread': 'pageDread',
   'roll/voa': 'voa',

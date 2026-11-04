@@ -48,37 +48,43 @@
 </script>
 
 {#if items.length}
-  <div class="orgrid" class:c2={items.length === 2} class:c4={items.length > 2}>
-    {#each cells as cell, i (i)}
-      {#if cell.kind === 'card'}
-        <!-- Keyed on the item itself, not the slot: the live app rebuilds
-             #view.innerHTML on every roll, so a new record's <img> always
-             paints empty and fills. Positional keying let Svelte patch the
-             existing node's src in place instead, and the previous artwork
-             sat on screen until the new one decoded - invisible to a settled
-             screenshot, which is why no parity state caught it. Object
-             identity is the only key this generic
-             component has - AltPanel's AltPick wrappers are a new object per
-             roll, which matches. Rolling the *same* record twice is the one
-             case this still keeps the node for (the image is identical, so
-             nothing visible differs) - not a DEBT.md entry, since it is a
-             divergence from live that parity never measured. -->
-        <div>
-          {#key cell.it}{@render card(cell.it)}{/key}
-        </div>
-      {:else if cell.kind === 'or'}
-        <div class="ordiv"><i>{or}</i></div>
-      {:else}
-        <div class="wide">
-          <div class="ordiv h"><i>{or}</i></div>
-        </div>
-      {/if}
-    {/each}
+  <div class="orwrap">
+    <div class="orgrid" class:c2={items.length === 2} class:c4={items.length > 2}>
+      {#each cells as cell, i (i)}
+        {#if cell.kind === 'card'}
+          <!-- Keyed on the item itself, not the slot: the live app rebuilds
+               #view.innerHTML on every roll, so a new record's <img> always
+               paints empty and fills. Positional keying let Svelte patch the
+               existing node's src in place instead, and the previous artwork
+               sat on screen until the new one decoded - invisible to a settled
+               screenshot, which is why no parity state caught it. Object
+               identity is the only key this generic
+               component has - AltPanel's AltPick wrappers are a new object per
+               roll, which matches. Rolling the *same* record twice is the one
+               case this still keeps the node for (the image is identical, so
+               nothing visible differs) - not a DEBT.md entry, since it is a
+               divergence from live that parity never measured. -->
+          <div>
+            {#key cell.it}{@render card(cell.it)}{/key}
+          </div>
+        {:else if cell.kind === 'or'}
+          <div class="ordiv"><i>{or}</i></div>
+        {:else}
+          <div class="wide">
+            <div class="ordiv h"><i>{or}</i></div>
+          </div>
+        {/if}
+      {/each}
+    </div>
   </div>
 {/if}
 
 <style>
   /* off `.orgrid` and `.ordiv` in style.css */
+  .orwrap {
+    container-type: inline-size;
+  }
+
   .orgrid {
     display: grid;
     gap: 0;
@@ -138,9 +144,10 @@
     margin: 0 14px;
   }
 
-  /* On a narrow screen the columns stack, so the separator becomes a rule
-     across the width rather than a pill between two columns. */
-  @media (max-width: 860px) {
+  /* On a narrow pane the columns stack, so the separator becomes a rule across the width
+     rather than a pill between two columns. The pane's own width: between 761 and 999 px the
+     two-pane roll page leaves it 387-600 px, which a window rule cannot read. */
+  @container (max-width: 640px) {
     .orgrid.c2,
     .orgrid.c4 {
       grid-template-columns: 1fr;

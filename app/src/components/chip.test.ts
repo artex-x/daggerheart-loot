@@ -21,11 +21,6 @@ describe('the button form', () => {
     btn.click();
     expect(onclick).toHaveBeenCalledOnce();
   });
-
-  it('carries a second, quieter line when given one', () => {
-    render(Chip, { label: 'Обычная', on: false, sub: 'Ранг 1', onclick: vi.fn() });
-    expect(screen.getByText('Ранг 1')).toBeInTheDocument();
-  });
 });
 
 describe('the link form', () => {
@@ -46,11 +41,6 @@ describe('the link form', () => {
   it('takes the small size the table nav’s second row uses', () => {
     render(Chip, { label: 'Предметы', on: false, href: '#/tables/core_item', size: 'sm' });
     expect(screen.getByRole('link', { name: 'Предметы' }).className).toContain('sm');
-  });
-
-  it('can carry a second line too, since the shape is shared with the button form', () => {
-    render(Chip, { label: 'Core', on: false, href: '#/tables/core_item', sub: 'Предметы' });
-    expect(screen.getByText('Предметы')).toBeInTheDocument();
   });
 
   it('can carry a title, same as the button form', () => {

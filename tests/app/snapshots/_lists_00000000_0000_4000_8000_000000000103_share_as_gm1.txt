@@ -69,6 +69,7 @@ EN
 RU
 daggerheart.com
 Аккаунт: gm1@example.test
+Бросить 1-2
 Бросок
 Выбрать все
 Жирный
@@ -97,7 +98,6 @@ daggerheart.com
 Скачать JSON
 Скопировать
 Скопировать текст
-Случайно 1–2
 Список
 Таблицы
 Только для мастера: Палаш
@@ -203,9 +203,9 @@ Price
 Print
 Privacy
 RU
-Random 1–2
 Remove from the list
 Roll
+Roll 1-2
 Roll result
 Search
 Select all

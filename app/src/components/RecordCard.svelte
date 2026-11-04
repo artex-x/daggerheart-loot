@@ -54,8 +54,10 @@
      * `full` is the whole record: the picture on top, at full width, on a plate.
      * `compact` is a result or a table row: the picture beside the text at
      * 132px, and the name is a link to the page rather than a heading of it.
+     * `face` is a roll result: the picture 4:3 above the text with a fade from 601 px, 96px
+     * beside it below (DESIGN.md, "Cards"); the name is a link as on `compact`.
      */
-    variant?: 'full' | 'compact';
+    variant?: 'full' | 'compact' | 'face';
     /** The record page and the dialog: no plate, the picture beside the text from 761 px
      *  and 4:3 above it below (DESIGN.md, "The Dossier Rule"). */
     dossier?: boolean;
@@ -78,9 +80,9 @@
      * number it has in the book it was printed in - so the badge has to say
      * which face found it, not where it sits in Core.
      */
-    rollLabel?: number;
+    rollLabel?: number | undefined;
     /** Which duality column found it, badged in that column's color. */
-    col?: AltCol;
+    col?: AltCol | undefined;
     onartfail: (id: string) => void;
     /**
      * Opens a record over whatever is on screen.
@@ -279,7 +281,7 @@
     </div>
 
     <svelte:element this={heading} class="card-name">
-      {#if variant === 'compact'}
+      {#if variant !== 'full'}
         <!-- A link, because from a result the name is the way to the page. -->
         <a href={pathOf(recordHref(it), hrefLang)} title={t.openPage}>{name}</a>
       {:else}
@@ -539,7 +541,8 @@
   }
 
   @media (hover: hover) {
-    .card.compact .card-media:hover img {
+    .card.compact .card-media:hover img,
+    .card.face .card-media:hover img {
       transform: scale(1.05);
     }
   }
@@ -959,6 +962,66 @@
     .card :global(.card-acts .btn.sm:has(.btn-lbl)) {
       padding: 0 10px;
       gap: 0;
+    }
+  }
+
+  /* ---------- the roll card face ----------
+     The body is not positioned, so the number badge anchors to the card. The picture sits at
+     `z-index: -1` inside the card's own stacking context: a mask would paint it over the
+     body's foot otherwise. */
+  .card.face {
+    position: relative;
+    flex-direction: column;
+    isolation: isolate;
+  }
+
+  .card.face .card-media {
+    z-index: -1;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    mask-image: linear-gradient(180deg, #000 72%, transparent);
+  }
+
+  /* The fade would take the ring's bottom edge with it. */
+  .card.face .card-media:focus-visible {
+    mask-image: none;
+  }
+
+  .card.face .card-body {
+    margin-top: -26px;
+    padding: 0 14px 12px;
+    gap: 7px;
+  }
+
+  .card.face :global(.badge.num) {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
+
+  @media (max-width: 600px) {
+    .card.face {
+      flex-direction: row;
+      align-items: flex-start;
+    }
+
+    .card.face .card-media {
+      z-index: auto;
+      width: 96px;
+      aspect-ratio: 1;
+      margin: 10px 0 10px 10px;
+      border-radius: 8px;
+      mask-image: none;
+    }
+
+    .card.face .card-body {
+      margin-top: 0;
+      padding: 10px 12px;
+      gap: 4px;
+    }
+
+    .card.face :global(.badge.num) {
+      display: none;
     }
   }
 

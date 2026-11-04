@@ -1,6 +1,6 @@
 # #/lists/00000000-0000-4000-8000-000000008001 ~ roll panel as gm4
 # route: #/lists
-# why: the panel open: empty numbox, "Случайно 1-7", the hint
+# why: the panel open: empty numbox, "Бросить 1-7", the hint
 # as: gm4
 
 ## ru :: tree
@@ -89,6 +89,7 @@ EN
 RU
 daggerheart.com
 Аккаунт: gm4@example.test
+Бросить 1-7
 Бросок
 Выбрать все
 Жирный
@@ -124,7 +125,6 @@ daggerheart.com
 Свой предмет
 Скачать JSON
 Скопировать текст
-Случайно 1–7
 Список
 Таблицы
 Только для мастера: Заряжающий Колчан
@@ -267,9 +267,9 @@ Price
 Print
 Privacy
 RU
-Random 1–7
 Remove from the list
 Roll
+Roll 1-7
 Roll result
 Search
 Select all

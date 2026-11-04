@@ -23,32 +23,32 @@ RootWebArea "Many Worlds Tavern - Генератор лута Daggerheart" [url=
   main ""
     heading "Many Worlds Tavern" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
+    button "Об этой книге" [expanded=false]
     StaticText "Выберите мир и бросьте кость по нему."
-    StaticText "МИР"
-    button "Спорополис" [pressed=false]
-    ... button x2 of 6 same-shape siblings elided
-    button "Долина Богов" [pressed=false]
-    button "Оплот Шершней" [pressed=true]
-    button "Дром" [pressed=false]
+    combobox "Мир" [value=Оплот Шершней expanded=false haspopup=menu]
+      option "Спорополис" [selected=false]
+      option "Лес Пари" [selected=false]
+      option "Воюющие Норы" [selected=false]
+      option "Долина Богов" [selected=false]
+      option "Оплот Шершней" [selected=true]
+      option "Дром" [selected=false]
+    button "Бросить 1-11"
     StaticText "РЕЗУЛЬТАТ БРОСКА (1–11)"
     button "На единицу меньше" [disabled=true]
     textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
     button "На единицу больше"
-    button "Случайно 1–11"
+    heading "Бросок 1" [level=2]
     status ""
       button "Страница"
       StaticText "1"
       StaticText "ОСНОВНОЕ ОРУЖИЕ"
       ... StaticText x8 of 12 same-shape siblings elided
       link "Одолженная Лапа" [description=Страница url=/i/mw82]
-      button "Скопировать название" [description=Скопировать название]
-      button "Скопировать ссылку" [description=Скопировать ссылку]
       StaticText "Полезное:"
       StaticText " Когда вы участвуете в Командном Броске, бросайте d20 в качестве..." [namelen=79 namehash=5ea860d6]
-      button "Отправить"
-      button "Скопировать изображение" [description=Скопировать изображение]
-      button "Скопировать текст" [description=Скопировать текст]
+      button "В список" [expanded=false]
+      button "Поделиться"
+      button "Ещё" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -57,36 +57,29 @@ RootWebArea "Many Worlds Tavern - Генератор лута Daggerheart" [url=
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-?Справка
+?Об этой книге
 EN
 Many Worlds Tavern
 RU
 daggerheart.com
 Альтернативные таблицы
+Бросить 1-11
 Бросок
+В список
 Войти
-Воюющие Норы
-Долина Богов
-Дром
+Ещё
 К содержимому
 Конфиденциальность
-Лес Пари
 ЛутDaggerheart
+Мир
 На единицу больше
 На единицу меньше
 Обычные правила
 Одолженная Лапа
-Оплот Шершней
 Открывать при запуске
-Отправить
+Поделиться
 Поиск
 Результат броска
-Скопировать изображение
-Скопировать название
-Скопировать ссылку
-Скопировать текст
-Случайно 1–11
-Спорополис
 Страница
 Таблицы
 Условия использования
@@ -113,32 +106,32 @@ RootWebArea "Many Worlds Tavern - Daggerheart Loot Generator" [url=/en/roll/many
   main ""
     heading "Many Worlds Tavern" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
+    button "About this book" [expanded=false]
     StaticText "Pick a realm and roll within it."
-    StaticText "REALM"
-    button "Sporopolis" [pressed=false]
-    ... button x2 of 6 same-shape siblings elided
-    button "Godsvale" [pressed=false]
-    button "Hornet Hold" [pressed=true]
-    button "The Drome" [pressed=false]
+    combobox "Realm" [value=Hornet Hold expanded=false haspopup=menu]
+      option "Sporopolis" [selected=false]
+      option "Wagerwood" [selected=false]
+      option "Warrin' Warrens" [selected=false]
+      option "Godsvale" [selected=false]
+      option "Hornet Hold" [selected=true]
+      option "The Drome" [selected=false]
+    button "Roll 1-11"
     StaticText "ROLL RESULT (1–11)"
     button "One lower" [disabled=true]
     textbox "Roll result" [value=1 multiline=false readonly=false required=false]
     button "One higher"
-    button "Random 1–11"
+    heading "Roll 1" [level=2]
     status ""
       button "Page"
       StaticText "1"
       StaticText "PRIMARY WEAPON"
       ... StaticText x8 of 12 same-shape siblings elided
       link "Lent Leg" [description=Page url=/i/en/mw82]
-      button "Copy name" [description=Copy name]
-      button "Copy link" [description=Copy link]
       StaticText "Helpful:"
       StaticText " When you're part of a Tag Team roll, roll a d20 as your Hope di..." [namelen=66 namehash=1ac3f27a]
+      button "Add to list" [expanded=false]
       button "Share"
-      button "Copy image" [description=Copy image]
-      button "Copy text" [description=Copy text]
+      button "More" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -147,37 +140,30 @@ RootWebArea "Many Worlds Tavern - Daggerheart Loot Generator" [url=/en/roll/many
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-?Help
+?About this book
+Add to list
 Alternate tables
-Copy image
-Copy link
-Copy name
-Copy text
 EN
-Godsvale
-Hornet Hold
 Install as an app
 Lent Leg
 LootDaggerheart
 Many Worlds Tavern
+More
 One higher
 One lower
 Open on start
 Page
 Privacy
 RU
-Random 1–11
+Realm
 Roll
+Roll 1-11
 Roll result
 Search
 Share
 Sign in
 Skip to content
-Sporopolis
 Standard rules
 Tables
 Terms of use
-The Drome
-Wagerwood
-Warrin' Warrens
 daggerheart.com

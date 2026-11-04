@@ -11,7 +11,7 @@
   import AddToList from './AddToList.svelte';
   import Button from './Button.svelte';
   import Icon from './Icon.svelte';
-  import Menu from './Menu.svelte';
+  import MoreMenu from './MoreMenu.svelte';
   import RecordActions from './RecordActions.svelte';
   import SignInPrompt from './SignInPrompt.svelte';
   import { homebrewItemHash, itemHash, recordHref } from '../lib/hash.js';
@@ -53,36 +53,8 @@
   const second = $derived(
     toLists ? t.saveItemNoteList : app.newListTarget === 'prompt' ? t.saveItemSignIn : ''
   );
-  /* `.menu`'s distance from its control. */
-  const MENU_GAP = 8;
   let asking = $state(false);
   let printAsking = $state(false);
-  let moreOpen = $state(false);
-  let moreButton = $state<HTMLButtonElement | undefined>(undefined);
-
-  /* Up to 760 px the row anchors the menu, and a prompt under the row would push it away
-     from «Ещё». A menu opened up already sits above the row. */
-  function underMore(box: HTMLElement): void {
-    const row = box.offsetParent;
-    if (!row || !moreButton || row === moreButton.parentElement) return;
-    if (box.classList.contains('up')) return;
-    const top = moreButton.getBoundingClientRect().bottom - row.getBoundingClientRect().top;
-    box.style.top = `${String(top + MENU_GAP)}px`;
-  }
-
-  /* The row can sit at the window's bottom, and the menu opens past it. */
-  $effect(() => {
-    const box = moreOpen ? document.getElementById(menuId) : null;
-    if (!box) return;
-    underMore(box);
-    box.scrollIntoView({ block: 'nearest' });
-  });
-
-  /* A pressed item leaves the DOM, so the focus goes back to «Ещё» (rule 20). */
-  function closeMore(): void {
-    moreOpen = false;
-    moreButton?.focus();
-  }
 
   function pressPrint(): void {
     const target = app.printTarget;
@@ -124,52 +96,32 @@
 {#if app.homebrew?.has(it.id) && !foreign}
   <Button href={app.href(homebrewItemHash(it.id))} sameTab><Icon name="note" />{t.edit}</Button>
 {/if}
-<span class="morewrap">
-  <Button
-    haspopup
-    expanded={moreOpen}
-    controls={moreOpen ? menuId : undefined}
-    bind:el={moreButton}
-    onclick={() => {
-      moreOpen = !moreOpen;
-    }}><Icon name="more" />{t.moreMenu}</Button
-  >
-  {#if moreOpen && moreButton}
-    <Menu
-      control={moreButton}
-      label={t.moreMenu}
-      id={menuId}
-      cls="recmenu"
-      flip={inModal}
-      onclose={() => {
-        moreOpen = false;
-      }}
-    >
-      <RecordActions {app} {index} {it} row="menu" {extra} onpicked={closeMore} />
-      {#if offered}
-        <div role="separator" class="msep"></div>
-        <button
-          type="button"
-          role="menuitem"
-          tabindex="-1"
-          disabled={app.savingItem === ref || app.newListTarget === 'wait'}
-          aria-labelledby="{noteId}-l"
-          aria-describedby={second ? noteId : undefined}
-          onclick={() => {
-            closeMore();
-            press();
-          }}
-        >
-          <Icon name="plus" />
-          <span class="mit">
-            <span id="{noteId}-l">{t.saveItem}</span>
-            {#if second}<small id={noteId}>{second}</small>{/if}
-          </span>
-        </button>
-      {/if}
-    </Menu>
-  {/if}
-</span>
+<MoreMenu {app} id={menuId} flip={inModal}>
+  {#snippet children(close: () => void)}
+    <RecordActions {app} {index} {it} row="menu" {extra} onpicked={close} />
+    {#if offered}
+      <div role="separator" class="msep"></div>
+      <button
+        type="button"
+        role="menuitem"
+        tabindex="-1"
+        disabled={app.savingItem === ref || app.newListTarget === 'wait'}
+        aria-labelledby="{noteId}-l"
+        aria-describedby={second ? noteId : undefined}
+        onclick={() => {
+          close();
+          press();
+        }}
+      >
+        <Icon name="plus" />
+        <span class="mit">
+          <span id="{noteId}-l">{t.saveItem}</span>
+          {#if second}<small id={noteId}>{second}</small>{/if}
+        </span>
+      </button>
+    {/if}
+  {/snippet}
+</MoreMenu>
 {#if offered && asking && app.newListTarget === 'prompt'}
   <div class="saveprompt">
     <SignInPrompt
@@ -198,19 +150,6 @@
 {/if}
 
 <style>
-  .morewrap {
-    position: relative;
-    display: inline-flex;
-  }
-
-  /* Up to 760 px «Ещё» can wrap to the row's left, and the menu is wider than the button:
-     the row anchors it, so it stays inside the window. */
-  @media (max-width: 760px) {
-    .morewrap {
-      position: static;
-    }
-  }
-
   .msep {
     height: 1px;
     margin: 4px 0;
@@ -223,16 +162,6 @@
     font-size: var(--t-data);
     font-weight: 400;
     color: var(--muted2);
-  }
-
-  /* The wrap is as narrow as the button, and the menu's width must not follow it. */
-  .morewrap :global(.recmenu) {
-    width: max-content;
-  }
-
-  .morewrap :global(.recmenu [role='menuitem']:disabled) {
-    opacity: 0.5;
-    cursor: default;
   }
 
   .saveprompt {

@@ -22,6 +22,38 @@ across.
 | Community items | community + 1-10 | 1 | `comm {c, n}` |
 | Many Worlds Tavern | realm + a roll inside it (1-11 to 1-21) | 1 | `mwt {r, n}` |
 
+- The nine roll pages share one layout (`RollPage`). Up to 760 px the `h1` and
+  the lead are read, not drawn; the roll controls sit under the mode row; one
+  results line holds «Бросок N» / "Roll N", «Настроить» / "Set up" and «Ещё».
+  «Настроить» opens the settings over the results: the manual entry and, on the
+  two own modes, the source and type rows. «Ещё» holds «Скопировать все варианты»
+  (where the roll is a choice), the pin and the help. From 761 px the head holds
+  the `h1`, the labeled pin and help, and the lead; a 320 px pane holds the roll
+  controls and the settings, and the results line beside it holds «Бросок N» and
+  the copy button. «Бросок N» reads the two faces on the alternate tables, the
+  Hope die first; the line carries no instruction.
+- A result is the card face, `RecordCard variant="face"`: from 601 px the picture
+  is 4:3 and fades into the plate, with the roll number over its top right; up to
+  600 px it is 96 px beside the text and the number is not drawn (the results line
+  names the roll). Under the plate sits a row of «В список», «Поделиться» and
+  «Ещё», which holds the copies. One result is at most 380 px wide.
+- The five dice of Core rules are plain buttons, none gold and none lit: a die is
+  an action, not a choice. Each names the rarities it covers: up to 760 px two
+  rows, three over two, with the count over the rarities; from 761 px a list under
+  the group label «Бросить». The other modes have one gold roll button.
+- A choice among parts is a native select with the name over the value: Vault of
+  Ages, Community items and Many Worlds Tavern at every width, the rarity on the
+  alternate tables up to 760 px. From 761 px the rarity is a row of neutral chips
+  with no tier line.
+- The source and type chips toggle; a row with every chip on draws each neutral
+  pressed, and a row narrowed draws the chips left on in gold. The closed
+  «Настроить» is lit while a row is narrowed and names the value left on
+  («Расходники»); with two rows narrowed it reads «Настроить · 2».
+- A help button carries its panel's name: «Где какая редкость» / "Where each
+  rarity is" on Core rules, which holds the book's four placement lines and nothing
+  else, «Об этих таблицах» / "About these tables", «Об этой таблице» / "About
+  this table" on Wondrous Environments, «Об этих предметах» / "About these items"
+  on Community items, and «Об этой книге» / "About this book" on the rest.
 - The source switch on Core rules cannot be emptied - unticking the last one is
   refused.
 - Rarity on Core rules only sets the dice count, so there is no rarity picker;
@@ -30,7 +62,7 @@ across.
   alternate tables have a fifth, `very_rare`, that Core rolls never reach -
   intentional, per the Core book, not a gap.
 - The roll button uses a real die where the range is one, and reads
-  "Random 1-N" where it is not (119, 29, a list of arbitrary length).
+  «Бросить 1-N» / "Roll 1-N" where it is not (119, 29, a list of arbitrary length).
 - Other is two browsable tables, not a rolling mode: Starting items
   (`other_starting`) holds the non-rollable starting inventory as a plain
   list, and Frame items (`other_frames`) holds campaign-frame equipment
@@ -1193,6 +1225,9 @@ address kept, and no add-to-list control is drawn.
   line; a pressed item and Escape return the focus to «Ещё», and in the dialog
   Escape closes only the menu. The menu opens down on a page; in the dialog it
   opens up where the room is only above, so from the dock.
+- A roll result has the add control, «Поделиться» and «Ещё» under its plate, and no
+  «Печать»; the copies are in «Ещё», without «Сохранить себе». The add menu opens
+  down, and up where the window has no room below.
 - An own homebrew item opens at `#/i/<key>` for its author only; any other
   reader, signed out included, gets the not-found page, and «Загружаем...»
   draws until the session and the author's items are known. Its path reads
@@ -1417,7 +1452,7 @@ address kept, and no add-to-list control is drawn.
   text-copied message.
 - Consumables get a "(consumable)" suffix outside the app, where the badge is
   not visible.
-- A compact card's art zooms slightly on hover, guarded by `@media
+- A compact card's and a roll card face's art zooms slightly on hover, guarded by `@media
   (hover:hover)` so no touch device triggers it on tap; a full-page record's
   art never zooms.
 - Upgrade chains render both directions; the reverse is computed at load.
@@ -2491,15 +2526,18 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   the money chips and the two view switches (tables list/grid, print color/
   black-and-white) gained it in the rewrite, where the live app wrote
   nothing for the money chips and `aria-current="true"` for the menu chips.
-- Help panels behind «Справка» / "Help" per section, folded by default, fold
-  state remembered for the session only. From 761 px the button beside the H1
-  shows its label after a `?`; up to 760 px it is a round `?` button with the
-  same name until its page's batch moves it.
+- Help panels behind «Справка» / "Help" per section, or the panel's own name,
+  folded by default, fold state remembered for the session only. From 761 px the
+  button beside the H1 shows its label after a `?`; up to 760 px it is a round `?`
+  button with the same name until its page's batch moves it. On the roll pages
+  and the catalog it is an item of «Ещё» up to 760 px, and there the `h1` is read,
+  not drawn.
 - The pin beside the H1 reads «Открывать при запуске» / "Open on start" with
   the home icon; pinned it reads «Открывается при запуске» / "Opens on start"
   with the check of the neutral pressed state (`Seg`), never a gold fill. From
   761 px it is a labeled button; up to 760 px a round button with the same
-  name until its page's batch moves it into «Ещё» or «Настроить».
+  name until its page's batch moves it into «Ещё»; on the roll pages and the
+  catalog it is an item of «Ещё».
 - A removal the app can write back (an entry, its notes, a reprice) toasts with
   an undo, «Вернуть»; a server delete that cannot be undone (an
   account list, an own item, a source, a section, a card) asks the browser's
@@ -2683,7 +2721,9 @@ Each rule keeps its number: a review cites it by number.
   confirm; its hint says «будут удалены навсегда» (owner, 2026-10-22).
 - **4. One name**: the menu item, the page heading and the tab name a page
   the same way: `#/lists` is «Мои списки» / "My lists" in the menu, the heading,
-  the tab title, the start-section option and the buttons to it.
+  the tab title, the start-section option and the buttons to it; `/roll/alt` is
+  «Альтернативные таблицы» / "Alternate tables" in the lit mode chip, the heading,
+  the tab title and the start-section option.
   The lit control of the mode row reads its page's heading. Departures: the job
   «Бросок» / "Roll" names a group of nine roll pages and has no heading of its
   own; the menu button «Дополнения» / "Supplements" names the seven supplement

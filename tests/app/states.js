@@ -6,8 +6,8 @@
  * and every legacy suite uses - because a handful of real defects only show
  * up on the far side of a browser's own microtask checkpoint (the
  * `isConnected` guard) or need a real network, a real clipboard stub, or a
- * real second tab to mean anything at all. Seventy-nine cases in
- * seventy-eight runs (4 and 5 share one), no ancestor. Like every suite here it drives
+ * real second tab to mean anything at all. Eighty-one cases in
+ * eighty runs (4 and 5 share one), no ancestor. Like every suite here it drives
  * dist-test/, the test build (docs/specs/COVERAGE.md, "Test layers"): signed
  * out it draws the sign-in prompt where a list would be made, so the cases
  * that make one open as the seed's `gm2`. */
@@ -529,7 +529,7 @@ async function rollReplacesCardImg() {
     '14 (roll card): the original <img> was not found - was .results .card-media img renamed?'
   );
   const rollName = await page.evaluate(() => {
-    const btn = document.querySelector('.numrow button.primary');
+    const btn = document.querySelector('.rp-ctrl button.primary');
     return btn ? (btn.textContent || '').replace(/\s+/g, ' ').trim() : '';
   });
   ok(!!rollName, '14 (roll card): the roll button was not found');
@@ -1861,7 +1861,7 @@ async function cardMediaRingVisible() {
     await ctx.close();
   }
   await ringAt('#/i/ci1', '.card.full .card-media', 'full', true);
-  await ringAt('#/roll/wondrous', '.card.compact .card-media', 'compact', false);
+  await ringAt('#/roll/wondrous', '.card.face .card-media', 'face', false);
 }
 
 /** 32. The undo toast an action inside the record dialog raises is drawn
@@ -5202,10 +5202,14 @@ async function homebrewItemsFilterAddress() {
 
 /** The route families of DESIGN.md, "The First-Screen Rule": the inventory state that
  *  opens each. A row whose surface is not yet under the rule is measured and logged,
- *  not asserted (`shipped: false`). A roll page draws its result for the number
+ *  not asserted (`shipped: false`). `exception` is a named limit at 360 px, in px. A roll page draws its result for the number
  *  field's first value, so no roll is made and the offset is deterministic. */
 const FIRST_SCREEN = [
-  { state: '#/roll/std', shipped: false },
+  { state: '#/roll/std', shipped: true, exception: 325 },
+  { state: '#/roll/alt', shipped: true },
+  { state: '#/roll/alt ~ crit', shipped: true },
+  { state: '#/roll/voa', shipped: true },
+  { state: '#/roll/wondrous', shipped: true },
   { state: '#/tables/eq_weapon', shipped: true },
   { state: '#/tables/eq_weapon ~ two filters', shipped: true },
   { state: '#/i/ci1', shipped: true },
@@ -5266,7 +5270,7 @@ async function primaryContentInFirstScreen() {
           const where = row.state + ' ' + width + 'x' + height + ' ' + lang;
           ok(!!got, '83 (first screen): ' + where + ' marks no [data-primary] with a height');
           if (!got) continue;
-          const limit = 0.4 * got.vh;
+          const limit = width === 360 && row.exception ? row.exception : 0.4 * got.vh;
           const pass = got.top <= limit;
           fs.writeSync(
             1,
@@ -5276,6 +5280,7 @@ async function primaryContentInFirstScreen() {
               got.top.toFixed(0) +
               ' / ' +
               limit.toFixed(0) +
+              (width === 360 && row.exception ? ' (exception)' : '') +
               (pass ? ' pass' : ' over') +
               (row.shipped ? '' : ' (logged)') +
               '\n'
@@ -5579,6 +5584,298 @@ async function backwardTabClearsTheHeader() {
   }
 }
 
+/** Returns the window's box for `inside`. */
+const viewBox = (page) => page.evaluate(() => ({ x: 0, y: 0, w: innerWidth, h: innerHeight }));
+
+/** 89. The nine roll pages share one layout (docs/specs/FEATURES.md, "Rolling"): at 761 px the
+ *  heading, the pin and the help share one line; up to 760 px the heading is read, not drawn,
+ *  and the results line holds its three parts; «Ещё» holds the pin and the help; the dice are
+ *  two rows at 360; the card flips at 600/601 px; a picker never cuts the roll button. */
+async function rollPageLayout() {
+  const at = '89 (the roll page layout): ';
+  for (const lang of ['ru', 'en']) {
+    const wide = await fresh({ width: 761, height: 768, lang });
+    for (const route of ['#/roll/alt', '#/roll/std', '#/roll/vault_of_ages']) {
+      await wide.d.open(route, { lang });
+      const head = await wide.page.evaluate(() => {
+        const top = (s) => document.querySelector('main ' + s)?.getBoundingClientRect().top;
+        const mid = (s) => {
+          const r = document.querySelector('main ' + s)?.getBoundingClientRect();
+          return r ? r.top + r.height / 2 : null;
+        };
+        return {
+          h1: mid('h1'),
+          pin: mid('.homebtn'),
+          help: mid('.helpbtn'),
+          tops: [top('h1'), top('.homebtn'), top('.helpbtn')],
+          wide: document.documentElement.scrollWidth <= document.documentElement.clientWidth
+        };
+      });
+      const where = route + ' ' + lang + ' 761: ';
+      ok(
+        Math.abs(head.h1 - head.pin) <= 8 && Math.abs(head.h1 - head.help) <= 8,
+        at + where + 'the head is not one line - ' + JSON.stringify(head)
+      );
+      ok(head.wide, at + where + 'the page scrolls sideways');
+    }
+    await wide.ctx.close();
+
+    for (const [width, height] of [
+      [760, 800],
+      [390, 844],
+      [360, 640],
+      [320, 568]
+    ]) {
+      const { ctx, page, d } = await fresh({ width, height, lang });
+      for (const route of ['#/roll/alt', '#/roll/std', '#/roll/vault_of_ages']) {
+        const where = route + ' ' + lang + ' ' + width + ': ';
+        await d.open(route, { lang });
+        const line = await page.evaluate(() => {
+          const parts = [
+            ...document.querySelectorAll(
+              '.reshead h2, .reshead > .btn, .reshead .morewrap > .btn'
+            )
+          ].map((e) => e.getBoundingClientRect());
+          return {
+            h1: document.querySelector('main h1').getBoundingClientRect().width,
+            round: document.querySelectorAll('main .homebtn, main .helpbtn').length,
+            count: parts.length,
+            lines: new Set(parts.map((r) => Math.round(r.top + r.height / 2))).size,
+            out: parts.filter((r) => r.left < 0 || r.right > innerWidth).length,
+            sideways:
+              document.documentElement.scrollWidth > document.documentElement.clientWidth
+          };
+        });
+        ok(line.h1 <= 1, at + where + 'the h1 is drawn, ' + line.h1 + ' px wide');
+        ok(line.round === 0, at + where + 'the head buttons are drawn');
+        ok(line.count === 3, at + where + 'the results line holds ' + line.count + ' parts');
+        ok(!line.out, at + where + 'a part of the results line leaves the window');
+        ok(
+          line.lines === 1 || (width === 320 && line.lines === 2),
+          at + where + 'the results line takes ' + line.lines + ' lines'
+        );
+        ok(!line.sideways, at + where + 'the page scrolls sideways');
+      }
+
+      if (width === 360) {
+        await d.open('#/roll/alt', { lang });
+        await d.openMore();
+        const items = await page.$$eval('[role="menuitem"]', (els) => els.length);
+        ok(items === 3, at + lang + ': «Ещё» on /roll/alt holds ' + items + ' items');
+        await page.keyboard.press('Escape');
+        ok(
+          await waitIn(
+            page,
+            () =>
+              !document.querySelector('[role="menu"]') &&
+              document.activeElement === document.querySelector('.reshead .morewrap > .btn')
+          ),
+          at + lang + ': Escape did not close «Ещё» onto its button'
+        );
+        await d.openMore();
+        await page.click('[role="menuitem"]:last-of-type');
+        ok(
+          await waitIn(
+            page,
+            () =>
+              !document.querySelector('[role="menu"]') &&
+              document.activeElement === document.querySelector('.reshead .morewrap > .btn') &&
+              !!document.querySelector('.helpbox')
+          ),
+          at + lang + ': the help item did not open the box and return the focus'
+        );
+      }
+
+      if (width === 360 || width === 320) {
+        await d.open('#/roll/std', { lang });
+        const dice = await page.$$eval('.dicebar button', (els) =>
+          els.map((e) => {
+            const r = e.getBoundingClientRect();
+            const c = e.querySelector('small');
+            return {
+              top: r.top,
+              left: r.left,
+              right: r.right,
+              h: r.height,
+              cut: c.scrollWidth > c.clientWidth
+            };
+          })
+        );
+        ok(dice[3].top > dice[0].top, at + lang + ' ' + width + ': the dice are one row');
+        ok(
+          dice[2].top === dice[0].top,
+          at + lang + ' ' + width + ': the first row is not three'
+        );
+        ok(
+          dice[4].top === dice[3].top,
+          at + lang + ' ' + width + ': the second row is not two'
+        );
+        for (const die of dice) {
+          ok(die.h >= 44, at + lang + ' ' + width + ': a die is ' + die.h + ' px tall');
+          ok(
+            die.left >= 0 && die.right <= width && !die.cut,
+            at + lang + ' ' + width + ': a die leaves the window or cuts its caption'
+          );
+        }
+
+        for (const route of ['#/roll/many_worlds_tavern', '#/roll/vault_of_ages']) {
+          await d.open(route, { lang });
+          const longest = await page.$eval(
+            '.pick select',
+            (s) =>
+              [...s.options]
+                .map((o) => o.textContent.trim())
+                .sort((a, b) => b.length - a.length)[0]
+          );
+          await d.part(longest);
+          const row = await page.evaluate(() => {
+            const r = (s) => document.querySelector(s).getBoundingClientRect();
+            const btn = document.querySelector('.rp-ctrl .btn.primary');
+            const name = document.querySelector('.card-name a');
+            const broken = name.textContent
+              .trim()
+              .split(/\s+/)
+              .filter((word) => {
+                const range = document.createRange();
+                const node = name.firstChild;
+                const from = node.textContent.indexOf(word);
+                range.setStart(node, from);
+                range.setEnd(node, from + word.length);
+                return range.getClientRects().length > 1;
+              });
+            return {
+              pick: r('.pick').bottom,
+              roll: btn.getBoundingClientRect().right,
+              cut: btn.scrollWidth > btn.clientWidth,
+              line: r('.reshead').bottom,
+              broken
+            };
+          });
+          const where = route + ' ' + lang + ' ' + width + ' «' + longest + '»: ';
+          ok(row.roll <= width && !row.cut, at + where + 'the roll button is cut');
+          ok(
+            width !== 360 || row.line <= 256,
+            at + where + 'the results line ends at ' + row.line
+          );
+          ok(!row.broken.length, at + where + 'a word breaks: ' + row.broken.join(' '));
+        }
+      }
+      await ctx.close();
+    }
+  }
+
+  const flip = await fresh({ width: 600, height: 800 });
+  await flip.d.open('#/roll/wondrous');
+  const read = () =>
+    flip.page.evaluate(() => {
+      const media = document.querySelector('.card.face .card-media').getBoundingClientRect();
+      const card = document.querySelector('.card.face').getBoundingClientRect();
+      const badge = document.querySelector('.card.face .badge.num');
+      const b = badge.getBoundingClientRect();
+      return {
+        w: media.width,
+        h: media.height,
+        card: card.width,
+        shown: getComputedStyle(badge).display !== 'none',
+        over:
+          b.top >= media.top && b.right <= media.right && b.left > media.left + media.width / 2
+      };
+    });
+  const phone = await read();
+  ok(phone.w === 96, at + 'the picture is ' + phone.w + ' px at 600');
+  ok(!phone.shown, at + 'the number badge is drawn at 600');
+  await flip.d.viewport(601, 800);
+  await flip.d.settle();
+  const face = await read();
+  ok(Math.abs(face.w - face.card) <= 2, at + 'the picture does not fill the card at 601');
+  ok(Math.abs(face.w / face.h - 4 / 3) < 0.02, at + 'the picture is not 4:3 at 601');
+  ok(
+    face.shown && face.over,
+    at + 'the badge is not over the picture - ' + JSON.stringify(face)
+  );
+  await flip.ctx.close();
+}
+
+/** 90. A result's row at 360x640 and 1180x720: three labeled controls inside the card's width;
+ *  its «Ещё» holds the copies inside the window and a copy returns the focus to it; the
+ *  add-to-list menu stays in the window, under the header, and with 150 lists scrolls with
+ *  «+ Новый список» in view (docs/specs/FEATURES.md, "Records"). */
+async function resultRowAndMenus() {
+  const at = '90 (the result row): ';
+  for (const [width, height] of [
+    [360, 640],
+    [1180, 720]
+  ]) {
+    const { ctx, page, d } = await fresh({ width, height });
+    const where = at + width + ': ';
+    await d.open('#/roll/std', { as: 'gm4' });
+    const row = await page.evaluate(() => {
+      const card = document.querySelector('.card.face').getBoundingClientRect();
+      const row = document.querySelector('.resacts');
+      const controls = [...row.querySelectorAll('.btn')];
+      return {
+        names: controls.filter((c) => c.textContent.trim().length > 0).length,
+        count: controls.length,
+        out: controls.filter((c) => {
+          const r = c.getBoundingClientRect();
+          return r.left < card.left - 1 || r.right > card.right + 1;
+        }).length,
+        below: row.getBoundingClientRect().top >= card.bottom
+      };
+    });
+    ok(row.count === 3 && row.names === 3, where + 'the row is not three labeled controls');
+    ok(!row.out, where + 'a control leaves the card width');
+    ok(row.below, where + 'the row is not under the plate');
+
+    await page.evaluate(() => {
+      document.querySelector('.resacts').scrollIntoView({ block: 'center' });
+    });
+    await d.openCardMore();
+    const menu = await page.evaluate(() => {
+      const m = document.querySelector('.resacts [role="menu"]').getBoundingClientRect();
+      return { x: m.x, y: m.y, w: m.width, h: m.height };
+    });
+    ok(inside(menu, await viewBox(page)), where + 'the menu leaves the window');
+    await d.press('Скопировать название');
+    ok(
+      await waitIn(
+        page,
+        () =>
+          !document.querySelector('[role="menu"]') &&
+          document.activeElement === document.querySelector('.resacts .morewrap > .btn')
+      ),
+      where + 'a copy did not return the focus to «Ещё»'
+    );
+
+    await d.accountLists(
+      Array.from({ length: 150 }, (_, i) => ({ n: i + 1, name: 'Список ' + i, ids: ['ci1'] }))
+    );
+    await page.evaluate(() => {
+      document.querySelector('.resacts').scrollIntoView({ block: 'center' });
+    });
+    await d.openCardList();
+    const add = await page.evaluate(() => {
+      const box = (el) => {
+        const r = el.getBoundingClientRect();
+        return { x: r.x, y: r.y, w: r.width, h: r.height };
+      };
+      const list = document.querySelector('.resacts .dropmenu');
+      const chips = list.querySelector('.pickchips');
+      return {
+        menu: box(list),
+        add: box(list.querySelector(':scope > .chip') ?? list.lastElementChild),
+        scrolls: chips.scrollHeight > chips.clientHeight,
+        header: document.querySelector('.topbar').getBoundingClientRect().bottom
+      };
+    });
+    ok(add.scrolls, where + 'the 150 lists do not scroll');
+    ok(inside(add.menu, await viewBox(page)), where + 'the add menu leaves the window');
+    ok(inside(add.add, add.menu), where + '«+ Новый список» leaves the add menu');
+    ok(add.menu.y >= add.header, where + 'the add menu slides under the header');
+    await ctx.close();
+  }
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -5660,7 +5957,9 @@ const CASES = [
   ['85 (selection bar in landscape)', selectionBarInLandscape],
   ['86 (the header hides and returns up to 760 px)', headerHidesAndReturns],
   ['87 (a backward Tab never lands under the header)', backwardTabClearsTheHeader],
-  ['88 (the record actions fit at 360, 320 and 1180)', recordActionsFit]
+  ['88 (the record actions fit at 360, 320 and 1180)', recordActionsFit],
+  ['89 (the roll page layout holds at 320 to 1180 px)', rollPageLayout],
+  ['90 (the result row and its menus)', resultRowAndMenus]
 ];
 
 (async () => {

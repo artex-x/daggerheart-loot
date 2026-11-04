@@ -6,15 +6,26 @@
 
 import { cleanup, render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
-import { fakeClipboard, fakeData, fakeEnv, memoryRouter, noData } from '../ports/index.js';
+import DiceBar from './DiceBar.svelte';
+import {
+  fakeClipboard,
+  fakeData,
+  fakeEnv,
+  fakeViewport,
+  memoryRouter,
+  noData
+} from '../ports/index.js';
 import type { Env } from '../ports/index.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 import type { Loot } from '../lib/data.js';
 import type { Record_ } from '../lib/types.js';
 
 afterEach(cleanup);
+
+/* jsdom does not implement scrollIntoView: «Ещё» calls it once open. */
+Element.prototype.scrollIntoView = vi.fn();
 
 const row = (src: string, kind: 'item' | 'consumable', i: number): Record_ => ({
   id: `${src}${kind[0] ?? ''}${String(i)}`,
@@ -46,7 +57,7 @@ const at = (over: Partial<Env> = {}): Env =>
 
 /** Card headings, which is how many options the roll is offering. */
 const options = (): string[] =>
-  screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent.trim());
+  screen.queryAllByRole('article').map((a) => a.querySelector('h2')?.textContent.trim() ?? '');
 
 describe('a roll over both books', () => {
   it('offers one from each table, which is four', () => {
@@ -79,8 +90,88 @@ describe('a roll over both books', () => {
   it('says which rarity each dice button covers', () => {
     render(App, { env: at() });
     expect(screen.getByRole('button', { name: /2d12/ })).toHaveAccessibleName(
-      /Обычная \/ Необычная/
+      /Обычная - Необычная/
     );
+  });
+});
+
+describe('the five dice', () => {
+  it('are plain buttons with their rarities, under one group name', () => {
+    const { container } = render(App, { env: at() });
+    const dice = within(screen.getByRole('group', { name: 'Бросить' })).getAllByRole('button');
+    expect(dice.map((d) => d.querySelector('small')?.textContent)).toEqual([
+      'Обычная',
+      'Обычная - Необычная',
+      'Необычная - Редкая',
+      'Редкая - Легендарная',
+      'Легендарная'
+    ]);
+    expect(container.querySelector('.dicebar .primary')).toBeNull();
+  });
+
+  it('put what came up in the heading and the number field', async () => {
+    render(App, { env: at({ random: () => 11 / 12 }) });
+    await userEvent.click(screen.getByRole('button', { name: /1d12/ }));
+    expect(screen.getByRole('heading', { level: 2, name: 'Бросок 12' })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Результат броска' })).toHaveValue('12');
+  });
+});
+
+describe('the dice of another set', () => {
+  it('redraw their counts and captions in place', async () => {
+    const props = {
+      dice: [{ n: 1, rarities: ['common'] }],
+      rarityName: (key: string): string => key,
+      rollWord: 'Roll',
+      onroll: vi.fn()
+    };
+    const { rerender } = render(DiceBar, props);
+    await rerender({ ...props, dice: [{ n: 1, rarities: ['rare', 'legendary'] }] });
+    expect(screen.getByRole('button', { name: /1d12/ })).toHaveAccessibleName(
+      '1d12 rare - legendary'
+    );
+    await rerender({ ...props, rollWord: 'Бросить' });
+    expect(screen.getByRole('group', { name: 'Бросить' })).toBeInTheDocument();
+  });
+});
+
+describe('the chips of a row', () => {
+  const chip = (name: string): HTMLElement => screen.getByRole('button', { name });
+
+  it('are neutral while every chip of the row is on', () => {
+    render(App, { env: at() });
+    for (const name of ['Core', 'Hope & Fear', 'Предметы', 'Расходники']) {
+      expect(chip(name).className, name).toContain('neutral');
+    }
+  });
+
+  it('turn gold in the narrowed row only', async () => {
+    render(App, { env: at() });
+    await userEvent.click(chip('Расходники'));
+    expect(chip('Предметы').className).not.toContain('neutral');
+    expect(chip('Core').className).toContain('neutral');
+  });
+
+  it('keep the separator on a pool of two', async () => {
+    render(App, { env: at() });
+    await userEvent.click(chip('Hope & Fear'));
+    expect(screen.getAllByText('ИЛИ')).toHaveLength(1);
+  });
+});
+
+describe('the closed «Настроить» at a phone width', () => {
+  const narrow = (): Env => at({ viewport: fakeViewport('narrow') });
+  const setUp = (name: string | RegExp): HTMLElement => screen.getByRole('button', { name });
+
+  it('names the value left on and is lit, then counts two narrowed rows', async () => {
+    render(App, { env: narrow() });
+    expect(setUp('Настроить').className).not.toContain('toggle');
+    await userEvent.click(setUp('Настроить'));
+    await userEvent.click(screen.getByRole('button', { name: 'Расходники' }));
+    const lit = screen.getByRole('button', { expanded: true, name: 'Предметы' });
+    expect(lit.className).toContain('toggle');
+    await userEvent.click(screen.getByRole('button', { name: 'Hope & Fear' }));
+    expect(setUp('Настроить · 2')).toHaveAttribute('aria-expanded', 'true');
   });
 });
 
@@ -154,11 +245,11 @@ describe('the other language', () => {
     render(App, { env: at() });
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
     expect(screen.getByRole('button', { name: /2d12/ })).toHaveAccessibleName(
-      /Common \/ Uncommon/
+      /Common - Uncommon/
     );
-    /* And the word "Roll" is still written once, on the first button only. */
-    expect(screen.getByRole('button', { name: /Roll 1d12/ })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /Roll 2d12/ })).not.toBeInTheDocument();
+    /* The word "Roll" names the group, not a button. */
+    expect(screen.getByRole('group', { name: 'Roll' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Roll 1d12/ })).not.toBeInTheDocument();
   });
 });
 
@@ -168,7 +259,7 @@ describe('a dataset that did not load', () => {
     expect(
       screen.getByRole('heading', { level: 1, name: 'Обычные правила' })
     ).toBeInTheDocument();
-    expect(screen.queryAllByRole('heading', { level: 2 })).toHaveLength(0);
+    expect(options()).toHaveLength(0);
     expect(
       screen.queryByRole('button', { name: 'Скопировать все варианты' })
     ).not.toBeInTheDocument();
@@ -176,11 +267,16 @@ describe('a dataset that did not load', () => {
 });
 
 describe('the help', () => {
-  it('explains what the dice are for', async () => {
-    render(App, { env: at() });
-    await userEvent.click(screen.getByRole('button', { name: 'Справка' }));
-    const main = screen.getByRole('main');
-    expect(within(main).getAllByText(/d12/).length).toBeGreaterThan(0);
+  it('names its button after the panel and holds the four placement lines', async () => {
+    const { container } = render(App, { env: at() });
+    await userEvent.click(screen.getByRole('button', { name: 'Где какая редкость' }));
+    const lines = container.querySelectorAll('.helpbox p');
+    expect([...lines].map((p) => p.querySelector('b')?.textContent)).toEqual([
+      'Обычная',
+      'Необычная',
+      'Редкая',
+      'Легендарная'
+    ]);
   });
 });
 

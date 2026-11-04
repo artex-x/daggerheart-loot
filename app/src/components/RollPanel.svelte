@@ -4,11 +4,10 @@
 
      This is the shape five sections share. Wondrous, Dread and The Dragon's
      Vault roll over a whole table; Vault of Ages and Communities roll inside
-     a part of one, and pass a `picker` row that chooses which part. Core
+     a part of one, and pass a `picker` that chooses which part. Core
      rules and the alternate tables roll several cards at once and get their
      own panels; what they share with this one is the number field and the
-     result card. Every caller is a supplement, so each draws the supplements
-     panel under its heading.
+     result card.
 
      The rows are a prop rather than a table name, because two of the five
      callers do not have a table name to give - their rows are a slice. */
@@ -16,14 +15,9 @@
   import Button from './Button.svelte';
   import Die from './Die.svelte';
   import Field from './Field.svelte';
-  import NoData from './NoData.svelte';
   import NumberField from './NumberField.svelte';
-  import NumRow from './NumRow.svelte';
-  import PageHead from './PageHead.svelte';
-  import Panel from './Panel.svelte';
-  import RecordActions from './RecordActions.svelte';
-  import RecordCard from './RecordCard.svelte';
-  import RecordHost from './RecordHost.svelte';
+  import RollPage from './RollPage.svelte';
+  import RollResult from './RollResult.svelte';
   import { helpFor } from '../lib/help.js';
   import { pick, rollLabel as rollLabelFor } from '../lib/roll.js';
   import type { AppState } from '../state/app.svelte.js';
@@ -39,7 +33,7 @@
     sub: string;
     /** What this roll picks from, already narrowed by any picker above. */
     rows: readonly Record_[];
-    /** A row of choices above the number field, where the section has one. */
+    /** The choice beside the roll button, where the section has one. */
     picker?: Snippet;
     /**
      * What the picker chose. Changing it puts the roll back to one, because
@@ -76,8 +70,6 @@
      that once instead of asking twice. */
   const shown = $derived(index && result ? { index, it: result } : null);
 
-  /* A real die where the range has one, and "Random 1-N" where it does not -
-     119 and 29 are not dice anybody owns. */
   const help = $derived(helpFor(section, app.lang));
 
   const rollLabel = $derived(rollLabelFor(max, t));
@@ -91,85 +83,63 @@
   }
 </script>
 
-<PageHead {app} {title} {sub} {help} />
+<RollPage
+  {app}
+  {index}
+  {title}
+  {sub}
+  {help}
+  rolled={String(n)}
+  empty={max === 0 ? t.noData : undefined}
+>
+  {#snippet controls()}
+    <!-- The picker comes first, because it decides what the number means: on Vault of Ages
+         the range is the chosen section's length, not the book's. -->
+    {@render picker?.()}
+    <Button variant="primary" onclick={roll}>
+      <Die faces={max} />{rollLabel}
+    </Button>
+  {/snippet}
 
-<RecordHost {app} {index}>
-  {#snippet children(openRecord)}
-    {#if max === 0}
-      <NoData>{t.noData}</NoData>
-    {:else}
-      <Panel>
-        <!-- The picker comes first, because it decides what the number means: on
-             Vault of Ages the range is the chosen section's length, not the book's. -->
-        {@render picker?.()}
-        <Field label="{t.rollLabelFor} (1–{max})">
-          <NumRow>
-            <NumberField
-              value={n}
-              min={1}
-              {max}
-              label={t.rollResult}
-              stepDownLabel={t.stepDown}
-              stepUpLabel={t.stepUp}
-              onchange={setN}
-            />
-            <Button variant="primary" onclick={roll}>
-              <Die faces={max} />{rollLabel}
-            </Button>
-          </NumRow>
-        </Field>
-      </Panel>
+  {#snippet settings()}
+    <Field label="{t.rollLabelFor} (1–{max})">
+      <NumberField
+        value={n}
+        min={1}
+        {max}
+        label={t.rollResult}
+        stepDownLabel={t.stepDown}
+        stepUpLabel={t.stepUp}
+        onchange={setN}
+      />
+    </Field>
+  {/snippet}
 
-      {#if shown}
-        <!-- The result is the record card itself, as the live app draws it: a roll
-             that produced a name and nothing else would send the reader to another
-             page to find out what they got. -->
-        <div class="results" data-primary role="status" aria-live="polite">
-          <!-- Keyed on the record, not the panel: without this Svelte patches the
-               existing card in place on every roll, and the previous artwork sits
-               on screen until the new <img> decodes - live rebuilds #view.innerHTML
-               every time, so its <img> is always brand new. Rolling the
-               *same* record twice is the one case this
-               still keeps the node for; the image is identical, so nothing
-               visible differs. -->
-          {#key shown.it}
-            <!-- The third near-copy of StdPanel.svelte's and
-                 AltPanel.svelte's own `RecordCard` wrapping, a different
-                 enough shape (one result, not a pool through `OrGrid`) that
-                 the case for extracting all three - and against it - is
-                 written down once, at StdPanel.svelte's copy. -->
-            <RecordCard
-              variant="compact"
-              it={shown.it}
-              index={shown.index}
-              lang={app.lang}
-              artBroken={app.artBroken(shown.it.id)}
-              onartfail={(bad: string) => {
-                app.markArtBroken(bad);
-              }}
-              onopen={openRecord}
-            >
-              {#snippet nameActions()}
-                <RecordActions {app} index={shown.index} it={shown.it} row="name" />
-              {/snippet}
-              {#snippet actions()}
-                <RecordActions {app} index={shown.index} it={shown.it} row="card" />
-              {/snippet}
-            </RecordCard>
-          {/key}
-        </div>
-      {/if}
+  {#snippet results(openRecord)}
+    {#if shown}
+      <!-- The result is the record card itself, as the live app draws it: a roll
+           that produced a name and nothing else would send the reader to another
+           page to find out what they got. -->
+      <div class="results" data-primary role="status" aria-live="polite">
+        <!-- Keyed on the record, not the panel: without this Svelte patches the
+             existing card in place on every roll, and the previous artwork sits
+             on screen until the new <img> decodes - live rebuilds #view.innerHTML
+             every time, so its <img> is always brand new. Rolling the
+             *same* record twice is the one case this
+             still keeps the node for; the image is identical, so nothing
+             visible differs. -->
+        {#key shown.it}
+          <RollResult {app} index={shown.index} it={shown.it} onopen={openRecord} />
+        {/key}
+      </div>
     {/if}
   {/snippet}
-</RecordHost>
+</RollPage>
 
 <style>
-  /* off `.field`, `.lbl` and `.btn` in style.css - `.numrow` moved to
-     `NumRow.svelte`, `.panel` to `Panel.svelte`, `.miss` to `NoData.svelte` */
-  /* off `.results` in style.css - three lines, duplicated in
-     `AltPanel.svelte`/`StdPanel.svelte`, too small to be worth a component
-     of its own. */
+  /* One card keeps the width of one of a pair. */
   .results {
-    margin-top: 26px;
+    display: grid;
+    grid-template-columns: minmax(0, 380px);
   }
 </style>
