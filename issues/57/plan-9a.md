@@ -88,6 +88,43 @@ Both pages take the selection mode and the one selection bar of batch 3. `/s/` l
 - `plan-7.md`, "Placed items", says the `selectAll` key goes. It stays: `SelBar` reads it as the name of «Все».
 - Plan review: not required for batch 9a (see the end of this file).
 
+## Folded from `plan-tags.md` (owner's phone feedback, 2026-11-04)
+
+Batch 9a carries `plan-tags.md` (the tag and relation-line rule R1-R5, the upgrade-line spacing, the tile pill).
+Run its steps T1-T8 first, then S1. Amendments to this brief:
+
+- S3: `RowMain full` draws the tags, stats and text unclamped, and no relation line (R1). `CompactRow` and `RowMain`
+  take no `index` prop (T2).
+- G6 and S3: the compact row's meta line draws the price, else `srcLabel` unless `isCoreBook(it)`, else nothing (R2).
+- S6: `TableRows` has no `index` prop when its `row` snippet is added (T2).
+- Verification 1 adds T's test files; Verification 3's `git diff --stat` expects T's golden families too
+  (`plan-tags.md`, "Goldens expected to move"). Gate cost: 15-20 more minutes, no extra run.
+- Review order: T's files after this brief's list.
+
+Acceptance lines of this batch, from `plan-tags.md` (each is its own line):
+
+- R1: `face` and `compact` cards draw no «Получается из», «Улучшается до», set line, set bonus or tier ladder; `full`
+  cards (page, `/h/`, dialog, editor preview) draw all of them as today.
+- R1: no row draws a relation line: tables, search, `/homebrew`, `/lists/<uuid>` (full, compact and unfolded rows),
+  `/s/`.
+- R1: the dialog of a row keeps the own relation lines with their «Хоумбрю» badges (`#/search ~ relations, dialog as gm3`).
+- R2: a Core roll result on `/roll/std` draws no «Core» badge at 360 and 1180.
+- R2: no row draws «Core» on any table, search or list page; the dialog's badge row and the record page's path line
+  keep it.
+- R2: the compact row's meta line never draws «Core».
+- R3: another book's tag stays on rows and roll results as today.
+- R4: the homebrew source tag draws on rows (not on `/homebrew`) and cards as today.
+- R5, the upgrade-line spacing: on `#/i/ci1 as gm3` at 360 and 1180, RU and EN, each «Хоумбрю» badge is one box on its
+  name's line, at least 2 px from every box on the adjacent lines.
+- R5, the tile pill: every grid kind badge is one box inside its picture at 360, 390, 412 and 768, RU and EN; one line
+  outside the selection mode; a measured miss at 360 is logged.
+- `hiddenTags` has no `core` flag; `isCoreBook` is the one predicate; `RowMain` and `TableRows` have no `index` prop.
+- Print, the copied text and the share stubs do not change.
+- The new state `#/search ~ relations, dialog as gm3` with its RU and EN golden and an axe case; the new `why` of
+  `#/search ~ relations as gm3`.
+- `plan-tags.md` T8's prose, the decision file and its pointer in the 2026-09-30 file, in the same commit;
+  `node tools/decisions.js` and `node --test tools/artwork/lib.test.mjs` pass.
+
 ## In scope
 
 - The outline of section 7, "Batch 9a", every line, and the placed lines of `plan-6.md` and `plan-7.md`.

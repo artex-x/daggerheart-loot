@@ -65,6 +65,8 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
   logged there; two need the owner's later yes (section 13: Q3-S, Q3-T). The
   Impeccable fallback of `reviews/2.md` R1 is named in section 10, "Impeccable".
   Section 10 is now collapsed to D1-D13 and "Impeccable" (see the fold line below).
+- Tags and relation lines (owner's phone feedback, 2026-11-04): `plan-tags.md` is the brief, folded into batch 9a
+  (steps T1-T8 before 9a's S1; its acceptance lines are in `plan-9a.md`, "Folded from `plan-tags.md`").
 - Fold of the placed items (2026-11-04, done): the open "Placed items" of `plan-4.md`
   to `plan-7.md` are in sections 7 and 8 (batches 8, 9a, 9b, P and 10); the briefs keep their
   text. Section 10 is collapsed to its pointer, D1-D13 and "Impeccable".
@@ -716,6 +718,9 @@ Batch 9a (wave 3, first, after wave 2; `mocks/F/` up to 760 px, mock 9 elsewhere
   `routes.json` and `llms.txt` do not change.
 - DESIGN.md (section 4, departures): the neutral selection (`FEATURES.md` "Lists")
   and the bottom sheet are checked.
+- The owner's phone feedback (2026-11-04, `context.md`, "Phone feedback"): every acceptance line of
+  `plan-tags.md` (R1-R5: relation lines, the set and «Core» on the full record card only; the homebrew tag as today;
+  the upgrade-line spacing; the tile pill), copied into `plan-9a.md`, "Folded from `plan-tags.md`".
 
 Batch 9b (wave 3, after batch 8; mock 9):
 
@@ -862,7 +867,7 @@ code batch.
 | 3b | `build:test` and one golden pair (about 5); `check:built`, both lints, decisions and the detector (about 5); `polish` and `harden` (5-10); the browser suites, the sweep and the focus-fix proof run on CI | 15-20 |
 | 4, 5, 6, 7 (done) | spent (planned extra gates 30-35, 32-40, 38-49 and 32-43 min, each with `npm run check:built`) | - |
 | 8, 9a, 9b | `npm run check:built` where `dist` assets change (1) | 1 each |
-| 9a | the new 360 px goldens, the axe cases and the `check:fast` growth of C1b (10-15); the new goldens and `lists.test.ts` cases of D1 (5-10) | 15-25 |
+| 9a | the new 360 px goldens, the axe cases and the `check:fast` growth of C1b (10-15); the new goldens and `lists.test.ts` cases of D1 (5-10); `plan-tags.md` folded in (15-20, no extra run) | 30-45 |
 | 9b | `node tests/app/sweep.js 768` for A1 (about 8) | 8 |
 | 10 | docs only: one `check:fast` and one docs-only CI run (no `e2e`) | about 20 in all |
 | waves (section 16) | per wave: the merge of `origin/main`, the squash in the main checkout, the `main` CI run with the deploy (10.5-11.5) and the merge back (about 2); three waves | 37-41 |

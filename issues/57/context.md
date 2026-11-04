@@ -148,6 +148,28 @@
     `NEEDS_HUMAN_CONFIRMATION: yes`, a `fable` dispatch, an effort exception, a gate still
     red after the one remediation cycle and a `replan` from a second look still stop for
     the owner.
+  - Phone feedback (owner, 2026-11-04, 18:46, chat with a screenshot of `/roll` on a phone, 1 roll result with
+    an upgrade line; more feedback follows later): (1) defect: the «Хоумбрю» source tags in the «Улучшается до»
+    line sit too close, they touch the line above and each other. (2) the owner does not think the homebrew
+    tags, and the set tags, are valuable enough to show everywhere on every resolution. Routing: (1) is a local
+    fix; (2) is a design change (where a source tag draws), so the planner decides it with the owner's later
+    feedback batched in, then one fix batch. Status: planned in `plan-tags.md` (2026-11-04), folded into batch 9a.
+    - Owner's lean (chat, 2026-11-04): option 2, consistency first.
+    - Refinement (chat, 2026-11-04): "even not to hide homebrew but upgrade lines and sets, make them visible only
+      on the item page": the homebrew tag stays as today; the upgrade and relation lines and the set draw only on
+      the item page.
+    - Answer (chat, 2026-11-04): "on record card dialog we also can show them, don't show only on compact
+      representation": the relation lines and the set draw on the full record card (`/i/<id>`, `/h/<uuid>`, the
+      record dialog) and on no compact representation (rows, tiles, roll results, `/s/` rows; all widths).
+    - Confirmation (chat, 2026-11-04: "yeah let's make it consistent"): one tag rule for every surface - «Core»
+      draws only on the full record card (the dialog's badge, the page's path line); another book's tag draws
+      where it draws today; the homebrew tag stays; relation lines and the set only on the full record card.
+    - (3) defect (2026-11-04 18:55, three phone screenshots, RU, the two-column grid at about 412 px): on grid
+      tiles the kind badges «ОСНОВНОЕ ОРУЖИЕ» and «ВТОРИЧНОЕ ОРУЖИЕ» wrap; the right border is cut and the
+      second word is a separate fragment over the picture; one-word badges draw as one pill ("weapon tags look
+      weird"). Cause: `Badge` is an inline `span`, so a wrapped label splits into two border fragments
+      (`plan-tags.md`, fact 4). Home of the rule: `DESIGN.md` "Badges" and "Cards", `FEATURES.md`, one decision
+      file, written by batch 9a.
   - Bundle budget ceiling (owner, 2026-11-04, chat: "we can increase budget up to 300"):
     read as the unconfigured ceiling 270 -> 300 kB; the configured ceiling stays 350 kB
     unless a measurement passes it (then stop and ask). Raises under the 300 kB ceiling

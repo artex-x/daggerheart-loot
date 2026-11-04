@@ -813,10 +813,12 @@ In order:
 5. Done (commit `docs(57): fold the placed items of batches 4-7 into the plan`, branch `claude/57-fold`, 2026-11-04): the open
    "Placed items" of `plan-4.md` to `plan-7.md` are in `plan.md` section 7 (batches 8, 9a, 9b, P, 10) and section 8; the
    gate-cost, `FIRST_SCREEN` and P5 entries were already done or present. Section 10 is a pointer plus D1-D13 and
-   "Impeccable" (last full text: `git show 5ecca692:issues/57/plan.md`). `plan-9a.md` stays a brief until its batch.6. Wave 2 squash (owner, 2026-11-04: 9a moved to wave 3, so wave 2 is 3, 3b, 4, 5, 6, 7; `plan.md` section 16;
+   "Impeccable" (last full text: `git show 5ecca692:issues/57/plan.md`). `plan-9a.md` stays a brief until its batch.
+6. Wave 2 squash (owner, 2026-11-04: 9a moved to wave 3, so wave 2 is 3, 3b, 4, 5, 6, 7; `plan.md` section 16;
    `orchestrate.prompt.md` closeout step 8): run `ci-credit.mjs` on the tip with a clean tree. Then the blind review
    of waves 1 and 2 on production, with its remediation at once.
-7. Wave 3 in this order: 9a (brief `plan-9a.md`, `opus`; its `FIRST_SCREEN`, `selectAll` and `sendAll` corrections
+7. Wave 3 in this order: 9a (brief `plan-9a.md`, with `plan-tags.md` folded in: the owner's phone feedback of
+   2026-11-04, steps T1-T8 first; `opus`; its `FIRST_SCREEN`, `selectAll` and `sendAll` corrections
    are in "Placed items"; production still holds the old list rows, so the interim mix is wave 2's), then refresh and
    run 8, 9b, P, 10; the wave 3 blind review; the whole-app blind review; closeout.
 
