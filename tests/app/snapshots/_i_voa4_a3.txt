@@ -18,9 +18,9 @@ RootWebArea "Клятва Равновесия - Генератор лута Dag
       link "Поиск" [url=/search]
   main ""
     button "Страница"
-    StaticText "9"
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
-    ... StaticText x20 of 24 same-shape siblings elided
+    StaticText "УНИКАЛЬНОЕ"
+    ... StaticText x18 of 22 same-shape siblings elided
     heading "Клятва Равновесия" [level=1]
     link "показать в таблице" [url=/tables/vault_of_ages/voa4_a3]
     StaticText "отметить Рану"
@@ -72,9 +72,9 @@ RootWebArea "Oath of Balance - Daggerheart Loot Generator" [url=/i/en/voa4_a3?v=
       link "Search" [url=/en/search]
   main ""
     button "Page"
-    StaticText "9"
     StaticText "PRIMARY WEAPON"
-    ... StaticText x20 of 24 same-shape siblings elided
+    StaticText "UNIQUE"
+    ... StaticText x18 of 22 same-shape siblings elided
     heading "Oath of Balance" [level=1]
     link "show in the table" [url=/en/tables/vault_of_ages/voa4_a3]
     StaticText "mark a Hit Point"

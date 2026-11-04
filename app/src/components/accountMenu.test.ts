@@ -183,7 +183,7 @@ describe('a menu in the record dialog', () => {
     ({ top, bottom, left: 0, right: 0, width: 0, height: bottom - top }) as DOMRect;
 
   /* A control at `at` in a card from 100 to 600, and a menu of 200 px. */
-  function open(at: number, up = true): HTMLElement {
+  function open(at: number, flip = true): HTMLElement {
     const card = document.createElement('div');
     card.className = 'modal-card';
     document.body.append(card);
@@ -199,7 +199,7 @@ describe('a menu in the record dialog', () => {
         label: 'Ещё',
         id: 'm',
         cls: 'recmenu',
-        up,
+        flip,
         onclose: () => undefined,
         children: createRawSnippet(() => ({
           render: () => '<button role="menuitem" tabindex="-1">Один</button>'

@@ -18,10 +18,10 @@ RootWebArea "Контракт Нарвиков - Генератор лута Dag
       link "Поиск" [url=/search]
   main ""
     button "Страница"
-    StaticText "8"
     StaticText "РАСХОДНИК"
-    ... StaticText x8 of 12 same-shape siblings elided
+    StaticText "АРТЕФАКТ"
     heading "Контракт Нарвиков" [level=1]
+    ... StaticText x6 of 10 same-shape siblings elided
     link "показать в таблице" [url=/tables/vault_of_ages/voa4_a2]
     StaticText "Проклятие Нарвиков:"
     StaticText " «Запретное Знание» заканчивается после вашей активации. Вместо ..." [namelen=117 namehash=8f80c1e0]
@@ -72,10 +72,10 @@ RootWebArea "Narvik Contract - Daggerheart Loot Generator" [url=/i/en/voa4_a2?v=
       link "Search" [url=/en/search]
   main ""
     button "Page"
-    StaticText "8"
     StaticText "CONSUMABLE"
-    ... StaticText x8 of 12 same-shape siblings elided
+    StaticText "ARTIFACT"
     heading "Narvik Contract" [level=1]
+    ... StaticText x6 of 10 same-shape siblings elided
     link "show in the table" [url=/en/tables/vault_of_ages/voa4_a2]
     StaticText "Narvik Curse:"
     StaticText " Forbidden Knowledge ends after your spotlight. Rather than cost..." [namelen=117 namehash=a2f3c6a9]

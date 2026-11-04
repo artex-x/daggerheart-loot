@@ -305,7 +305,7 @@ current place. A pressed default (such as «Все»), a mode toggle and a selec
 are neutral: a check and a lit `--muted2` border, no gold. The unique tag is
 neutral and dashed, the roll number is Chalk on a seam border, and footer links
 are Ash Violet and underlined. The site share cards spend gold on the star
-alone.
+alone. Seal Gold Soft on a link in prose is text, outside the fill budget.
 
 **The Tag Rule.** The five kind hues live on the badge and nowhere else. A stat
 line stays secondary text. A row does not take a kind color, and neither does a

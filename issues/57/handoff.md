@@ -2,13 +2,13 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (wave 1 is on `main`; batches 3, 3b and 4 are on `claude/57`;
-  batch 4's `polish`, `harden`, batch review and CI are the orchestrator's)
-- Last agent: implementer (batch 4, 2026-11-04)
+- Task status: in_progress (wave 1 is on `main`; batches 3, 3b and 4 with its remediation are on
+  `claude/57`; CI of the tip is the orchestrator's wait)
+- Last agent: implementer (batch 4 remediation, 2026-11-04)
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
-- Previous sha: `ed7d353a` (batch 3b's remediation; `origin/main` `d83384b4` is merged)
-- Pushed: the batch 4 commit holds this handoff; its sha and push state are in the implementer's
+- Previous sha: `91bdcc55` (batch 4; `origin/main` `d83384b4` is merged)
+- Pushed: the batch 4 remediation commit holds this handoff; its sha and push state are in the implementer's
   report (`git log -1 --grep="Task: 57"`).
 
 ## Completed
@@ -157,7 +157,7 @@
   | The bar's label | Done: `t.toList` in `AddToList`, bar goldens; `QuickItem` keeps `addToList` |
   | N0-2, `ErrorPage` | Done: `itemPage.test.ts`, `record.test.ts` |
   | `/i/nope`, `/h/` not found | Done; old list links keep `notFound` |
-  | C17, C18, C19, A23, C20, P4, C44, C22, C46, A24, P6 | Done: `record.test.ts`, `pickRow.test.ts`, case 88. C22 and C46 are CSS only, seen in no suite: the review reads the shot |
+  | C17, C18, C19, A23, C20, P4, C44, C22, C46, A24, P6 | Done: `record.test.ts`, `pickRow.test.ts`, case 88. C22 and C46: case 88 reads the chevron, shots `rule-card` and `rule-card-open` show it |
   | P5 not changed | Done: Deferred; `plan.md` batch 10 has its line |
   | Focus, Escape, first button | Done: `pickRow.test.ts`, `recordHost.test.ts` |
   | Header frozen by the menu and dialog | No change; case 86 passed alone (see Verification) |
@@ -198,14 +198,49 @@
   13. Outside the dispatch's gates: cases 3, 9, 10, 11, 22, 23, 42, 78, 86, 88 ran once through an
       in-memory loader, because 78 and 88 are new and could not otherwise be checked before CI. They
       found three defects, fixed here. The rest of `app/states` was not run.
-  `plan-5.md`, `plan-6.md`, `plan-7.md` appeared untracked during this batch; they are not this
-  batch's and stay out of the commit.
+- Batch 4 remediation (`reviews/4.md`, verdict fix-then-continue). Outcomes:
+
+  | Finding | Outcome |
+  |---|---|
+  | B1 | Fixed: F8 presses «Сохранить себе» with `d.press` on `/s/` |
+  | R1 | Deferred, with its three options (Deferred below) |
+  | R2 | Accepted, no change |
+  | R3 | Fixed: `d.more(name, wait)`; F20 passes `WAIT` (20 s) |
+  | N1 | Fixed: `RecordCard` draws `.badge.num` and `.badge.src` only without `sub`; `FEATURES.md`, goldens, `CARD_HEAD_SHA256`. `renderCard` needs no edit: the compact head keeps both |
+  | N2 | Fixed: padding 11 px and gap 6 px up to 760 px, the insets of `.btn.sm`. The review's 5 px a side left 5.6 px over in the headless window's 313 px row; case 88 holds two lines at 360 |
+  | N3 | Fixed: `PickRow` sets the menu's `top` from the button. The wrapper is not built: the dock's grid reads the row's children. `pickRow.test.ts`, case 88 |
+  | N4 | Fixed: `#/i/mw9` closed and open in `shoot.js`, the chevron assertion in case 88 |
+  | N5 | Fixed: `up` is `flip`; case 88 runs the dialog at 1180x720, `sticky` false |
+  | N6 | Fixed: `ItemPage` sends the focus to `#main` after the press; `itemPage.test.ts` |
+  | N7 | Fixed: the clause is in "The Seal Rule" |
+  | N8 | Fixed, except the CI figure of the configured budget, which waits for the re-run |
+  | N9 | Fixed: `ErrorPage` cites "Error page" |
+
+  `plan-5.md`, `plan-6.md`, `plan-7.md`, `reviews/4.md` and `reviews.md` go into this commit.
 - Review: done, `issues/57/reviews/3.md`, verdict fix-then-continue; the one remediation
   pass is this commit. No second review is needed: the picker fix leaves the first-screen
   rows unmoved (234 at 360).
 - Plan review: not required for batch 3 (`plan.md` Status, no trigger fired).
 
 ## Verification
+- Batch 4 remediation, 2026-11-04, on the final tree:
+  - `npx vitest run` of `record`, `itemPage`, `pickRow`, `recordHost`, `homebrewEditor`, `badge` tests: pass
+    after two stale `record.test.ts` assertions moved to the dialog and the path line.
+  - `npm run lint:untyped`, `npm run lint:typed`: exit 0.
+  - `node --test tools/artwork/lib.test.mjs`: 77 pass, with the new `CARD_HEAD_SHA256`.
+  - `npm run build:test`, then `node tests/app/golden.js --update --shard=n/4`, n = 1 to 4: exit 0, 45
+    goldens moved, all `/i/` and `/h/`, none new. Deviation: the tool moved each shard to the background
+    at 180 s, so the four shards overlapped, against "one at a time". A full
+    `node tests/app/golden.js` then ran alone: 363 states, unchanged, exit 0.
+  - Cases 3, 9, 10, 11, 22, 78, 88 through an in-memory loader: pass. The first run of 88 failed two
+    lines at 360 RU with 12 px insets, which set N2's 11 px and 6 px gap.
+  - `node issues/57/mocks/4/built/shoot.js`: the set again, with `rule-card` and `rule-card-open`. The
+    chevron reads at the row's right end at 360 and 1180, and it turns up when open.
+  - `npm run check:built`: exit 0, 255.7 kB within 256; `dist/` carries no fake cloud.
+  - `rtk npm run check:fast`: exit 0 in 714 s, 1471 tests with coverage, 255.7 kB within 256. Its first
+    run found `accountMenu.test.ts` still passing `up`; the test now passes `flip`.
+  - Not run locally (CI's): the rest of `app/states`, `app/contracts`, `app/print`, `app/typo`,
+    `sweep.js`, `e2e` with F9 to F20, the configured budget (limit 314; 255.7 is 0.2 kB up on batch 4).
 - Batch 4, 2026-11-04, on the final tree:
   - `npx vitest run` of the twenty files of `plan-4.md` plus `accountMenu`, `fake-cloud`: pass after the fixes.
   - `npm run lint:untyped`, `npm run lint:typed`: exit 0. `node --test tools/artwork/lib.test.mjs`: pass after the hash.
@@ -228,7 +263,8 @@
     failed once on «after the slide» with two other cases loading the host, and passed alone: a timing
     read, no code of this batch moves it.
   - `git grep` of each moved control over `tests/`: the left presses are the `/s/` page, the list page
-    and the selection bar, which keep their buttons. F8, F18, F20 of `flows.mjs` go through `d.more`.
+    and the selection bar, which keep their buttons. F18 and F20 of `flows.mjs` go through `d.more`
+    or `d.openMore`; F8 stays on `d.press`, because `/s/` keeps its own button.
   - `rtk npm run check:fast`: exit 0 in 812 s, 3033 tests with coverage, 255.5 kB within 256.
   - Not run locally (CI's): the rest of `app/states`, `app/contracts`, `app/print`, `app/typo`, `sweep.js`, `e2e`.
 - Batch 3b remediation (`3b-fix`, review `reviews/3b.md`):
@@ -314,7 +350,7 @@
 - Spelling scan over added lines and new files: only `aria-labelledby`.
 
 ## Next batch (implement-ready)
-- Name: Batch 5, after batch 4's `polish`, `harden`, review and CI.
+- Name: Batch 5, after CI of the batch 4 remediation. The brief is `issues/57/plan-5.md`.
 - Risks / do-nots: `FilterBar` stays until batches 6 and 9a remove it, and `BatchBar`
   until batch 8; a golden is re-seeded, never edited.
 
@@ -322,6 +358,16 @@
 - None.
 
 ## Deferred
+- 4-R1 (wave 2 blind review; the owner's choice): at 360x640 «В список» ends inside the first screen
+  on 21 of 98 sampled records at the 4:3 crop (median bottom 693 px, worst 908 px). No device above
+  760 px is affected. Current behavior: on a phone the primary is below the fold on most records.
+  1. Recommended: keep the page, and let a reader scroll. The text starts in the first screen on
+     almost every record. Trade-off: adding to a list from a long record takes a scroll.
+  2. A sticky «В список» on the page up to 760 px, like the dock. Trade-off: it covers about 62 px of
+     text on every record, and it adds a new surface rule.
+  3. 16:9 up to 760 px. Trade-off: it reaches half of the records, and it changes M4-4.
+- `SharedListPage`'s failed branch (batch 9): «Повторить» drops the focus to `body`, as `ItemPage` did
+  before 4-N6.
 - P5 (batch 4, K11): `rollNo` («номер» / "roll") stays; batch 10 changes it with `tools/share-card.mjs`
   and the stubs after a plan review (`plan.md`, batch 10).
 - Toast over «Ещё» (batch 4): at 360 an action toast covers the end of the menu for its 7 s; a second

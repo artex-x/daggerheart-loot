@@ -21,8 +21,8 @@ RootWebArea "Топор Тлеющих Углей - Генератор лута 
     button "Страница"
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
     StaticText "УНИКАЛЬНОЕ"
-    ... StaticText x8 of 12 same-shape siblings elided
     heading "Топор Тлеющих Углей" [level=1]
+    ... StaticText x7 of 11 same-shape siblings elided
     StaticText "Двуручное"
     StaticText "Лезвие тлеет и не гаснет под дождём."
     button "В список" [expanded=false]
@@ -85,8 +85,8 @@ RootWebArea "Ember Axe - Daggerheart Loot Generator" [url=/en/h/00000000-0000-40
     button "Page"
     StaticText "PRIMARY WEAPON"
     StaticText "UNIQUE"
-    ... StaticText x8 of 12 same-shape siblings elided
     heading "Ember Axe" [level=1]
+    ... StaticText x7 of 11 same-shape siblings elided
     StaticText "Two-Handed"
     StaticText "The blade smoulders and does not go out in the rain."
     button "Add to list" [expanded=false]

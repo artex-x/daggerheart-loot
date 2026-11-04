@@ -19,10 +19,10 @@ RootWebArea "Палаш - Генератор лута Daggerheart" [url=/i/q1?v=
   main ""
     button "Страница"
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
-    StaticText "CORE"
     heading "Палаш" [level=1]
-    ... StaticText x9 of 13 same-shape siblings elided
+    StaticText "Снаряжение · Оружие · Ранг 1 "
     link "показать в таблице" [url=/tables/eq_weapon/q1]
+    ... StaticText x8 of 12 same-shape siblings elided
     StaticText "РАНГ"
     StaticText "1"
     button "Улучшенный Палаш" [description=Улучшенный Палаш]
@@ -79,10 +79,10 @@ RootWebArea "Broadsword - Daggerheart Loot Generator" [url=/i/en/q1?v=<v>]
   main ""
     button "Page"
     StaticText "PRIMARY WEAPON"
-    StaticText "CORE"
     heading "Broadsword" [level=1]
-    ... StaticText x9 of 13 same-shape siblings elided
+    StaticText "Equipment · Weapons · Tier 1 "
     link "show in the table" [url=/en/tables/eq_weapon/q1]
+    ... StaticText x8 of 12 same-shape siblings elided
     StaticText "TIER"
     StaticText "1"
     button "Improved Broadsword" [description=Improved Broadsword]

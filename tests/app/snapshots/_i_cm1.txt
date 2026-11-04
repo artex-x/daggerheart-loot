@@ -18,9 +18,7 @@ RootWebArea "Королевская Брошь - Генератор лута Dag
       link "Поиск" [url=/search]
   main ""
     button "Страница"
-    StaticText "1"
     StaticText "ПРЕДМЕТ"
-    StaticText "ВЕЛИКОРОДНОЕ"
     heading "Королевская Брошь" [level=1]
     StaticText "Предметы сообществ · Великородное · номер 1 "
     link "показать в таблице" [url=/tables/community_items/cm1]
@@ -72,9 +70,7 @@ RootWebArea "Royal Brooch - Daggerheart Loot Generator" [url=/i/en/cm1?v=<v>]
       link "Search" [url=/en/search]
   main ""
     button "Page"
-    StaticText "1"
     StaticText "ITEM"
-    StaticText "HIGHBORNE"
     heading "Royal Brooch" [level=1]
     StaticText "Community items · Highborne · roll 1 "
     link "show in the table" [url=/en/tables/community_items/cm1]

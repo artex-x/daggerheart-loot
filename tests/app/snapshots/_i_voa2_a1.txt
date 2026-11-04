@@ -18,10 +18,10 @@ RootWebArea "Узы Души - Генератор лута Daggerheart" [url=/i/
       link "Поиск" [url=/search]
   main ""
     button "Страница"
-    StaticText "1"
     StaticText "ПРЕДМЕТ"
-    ... StaticText x14 of 18 same-shape siblings elided
+    StaticText "АРТЕФАКТ"
     heading "Узы Души" [level=1]
+    ... StaticText x12 of 16 same-shape siblings elided
     link "показать в таблице" [url=/tables/vault_of_ages/voa2_a1]
     StaticText "потратить Надежду"
     StaticText ", чтобы освободить душу. Она немедленно возвращается к владельцу..." [namelen=131 namehash=171fc9e9]
@@ -72,10 +72,10 @@ RootWebArea "Anima Colligationem - Daggerheart Loot Generator" [url=/i/en/voa2_a
       link "Search" [url=/en/search]
   main ""
     button "Page"
-    StaticText "1"
     StaticText "ITEM"
-    ... StaticText x14 of 18 same-shape siblings elided
+    StaticText "ARTIFACT"
     heading "Anima Colligationem" [level=1]
+    ... StaticText x12 of 16 same-shape siblings elided
     link "show in the table" [url=/en/tables/vault_of_ages/voa2_a1]
     StaticText "spend a Hope"
     StaticText " to free the soul. It returns to the owner immediately, regardle..." [namelen=116 namehash=b9bbbffb]

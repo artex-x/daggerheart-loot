@@ -1182,7 +1182,9 @@ address kept, and no add-to-list control is drawn.
   draw one dossier: no plate, the picture beside the text from 761 px and above
   it, cropped to 4:3, up to 760 px; the art file is not touched. The name is drawn
   once, the page's `h1` under the badge row, with the path line under it; in the
-  dialog it is an `h2` with no path line and no «показать в таблице». The action
+  dialog it is an `h2` with no path line and no «показать в таблице». The path line
+  gives the source and the number, so the page's badge row draws neither; the dialog
+  draws both as badges. The action
   row is the same at every width, in this order: «В список» / "Add to list" (the
   one gold primary, on a line of its own up to 760 px), «Поделиться», «Печать»,
   «Изменить» (the author only) and «Ещё». «Ещё» is a menu of «Скопировать текст»,
@@ -1194,8 +1196,8 @@ address kept, and no add-to-list control is drawn.
 - An own homebrew item opens at `#/i/<key>` for its author only; any other
   reader, signed out included, gets the not-found page, and «Загружаем...»
   draws until the session and the author's items are known. Its path reads
-  «Хоумбрю · <source> · <section>», its tag «<source> (HB)» (the Latin mark
-  in both languages) or «Хоумбрю», with «показать в таблице» to its row on
+  «Хоумбрю · <source> · <section>», its tag in the dialog and on a row
+  «<source> (HB)» (the Latin mark in both languages) or «Хоумбрю», with «показать в таблице» to its row on
   `#/tables/homebrew`, and the action row adds «Изменить» (to
   `#/homebrew/<key>`) after «Печать». Its link is its preview link:
   «Скопировать ссылку» copies it and «Поделиться» carries it, in the language
@@ -1320,7 +1322,7 @@ address kept, and no add-to-list control is drawn.
   it is sectioned by a value the record itself carries, or, for Vault of
   Ages, by the book's own tiers; extending the rule to every table was
   rejected.
-- The `.badge src` chip on a record card, a table row, a Search result, a list
+- The `.badge src` chip on a compact card, a table row, a Search result, a list
   row, or a modal card is a tag, not a path: one leaf naming the book, the
   community, or the setting - never a breadcrumb. It carries no path segment
   because every place it is drawn already shows the surrounding context (a

@@ -20,8 +20,8 @@ RootWebArea "Тесак - Генератор лута Daggerheart" [url=/i/f1?v=
     button "Страница"
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
     StaticText "УНИКАЛЬНОЕ"
-    ... StaticText x8 of 12 same-shape siblings elided
     heading "Тесак" [level=1]
+    ... StaticText x7 of 11 same-shape siblings elided
     link "показать в таблице" [url=/tables/other_frames/f1]
     StaticText "Надёжное:"
     StaticText " +1 к Броскам Атаки"
@@ -74,8 +74,8 @@ RootWebArea "Cleaver - Daggerheart Loot Generator" [url=/i/en/f1?v=<v>]
     button "Page"
     StaticText "PRIMARY WEAPON"
     StaticText "UNIQUE"
-    ... StaticText x8 of 12 same-shape siblings elided
     heading "Cleaver" [level=1]
+    ... StaticText x7 of 11 same-shape siblings elided
     link "show in the table" [url=/en/tables/other_frames/f1]
     StaticText "Reliable:"
     StaticText " +1 to attack rolls"

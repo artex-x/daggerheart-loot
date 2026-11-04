@@ -483,7 +483,7 @@ export async function runFlows({ env, admin, member, browser, base }) {
             ?.getAttribute('aria-label')
             ?.startsWith('Аккаунт: ') ?? false
       );
-      await d.more('Сохранить себе');
+      await d.press('Сохранить себе');
       await waitFor(
         page,
         'e2e F8: «Сохранить себе» did not open the copy',
@@ -1339,7 +1339,7 @@ export async function runFlows({ env, admin, member, browser, base }) {
       await d.open('#/h/' + lamp.id);
       await waitText(page, 'F20', 'Фонарь F20');
       await waitControl(page, 'F20', 'Ещё');
-      await d.more('Сохранить себе');
+      await d.more('Сохранить себе', WAIT);
       await until("F20: the reader's copy did not get a picture of its own", async () => {
         const items = await itemsOf(saver.id);
         copy = items[0]?.art ?? null;

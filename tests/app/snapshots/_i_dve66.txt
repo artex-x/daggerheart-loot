@@ -18,10 +18,10 @@ RootWebArea "Ночной Покров - Генератор лута Daggerheart
       link "Поиск" [url=/search]
   main ""
     button "Страница"
-    StaticText "143"
     StaticText "БРОНЯ"
-    ... StaticText x12 of 16 same-shape siblings elided
+    StaticText "УНИКАЛЬНОЕ"
     heading "Ночной Покров" [level=1]
+    ... StaticText x10 of 14 same-shape siblings elided
     link "показать в таблице" [url=/tables/dragons_vault/dve66]
     StaticText "Замедлен"
     StaticText ", у него есть пассивное свойство «Медленный»."
@@ -73,10 +73,10 @@ RootWebArea "Nightshroud - Daggerheart Loot Generator" [url=/i/en/dve66?v=<v>]
       link "Search" [url=/en/search]
   main ""
     button "Page"
-    StaticText "143"
     StaticText "ARMOR"
-    ... StaticText x12 of 16 same-shape siblings elided
+    StaticText "UNIQUE"
     heading "Nightshroud" [level=1]
+    ... StaticText x10 of 14 same-shape siblings elided
     link "show in the table" [url=/en/tables/dragons_vault/dve66]
     StaticText "Slowed"
     StaticText ", they have the "Slow" passive feature."

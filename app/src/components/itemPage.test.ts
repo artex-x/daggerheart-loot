@@ -97,6 +97,16 @@ describe('the item page', () => {
     ).toBeInTheDocument();
   });
 
+  it('sends the focus to the main region when «Повторить» leaves the page', async () => {
+    const cloud = fakeCloud(SEED, undefined, { offline: true });
+    page('#/h/' + ROLL_B, null, cloud);
+    await screen.findByRole('heading', { level: 1, name: t.itemFailed });
+    cloud.setOffline(false);
+    await userEvent.click(screen.getByRole('button', { name: t.retry }));
+    await screen.findByRole('heading', { level: 1, name: 'Скатка следопыта' });
+    expect(document.activeElement).toBe(document.getElementById('main'));
+  });
+
   it('draws a failed read with «Повторить», which reads again', async () => {
     const cloud = fakeCloud(SEED, undefined, { offline: true });
     const { container } = page('#/h/' + ROLL_B, null, cloud);

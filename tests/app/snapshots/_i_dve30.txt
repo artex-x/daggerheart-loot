@@ -18,10 +18,10 @@ RootWebArea "Молот Грифона - Генератор лута Daggerheart
       link "Поиск" [url=/search]
   main ""
     button "Страница"
-    StaticText "107"
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
-    ... StaticText x9 of 13 same-shape siblings elided
+    StaticText "УНИКАЛЬНОЕ"
     heading "Молот Грифона" [level=1]
+    ... StaticText x7 of 11 same-shape siblings elided
     link "показать в таблице" [url=/tables/dragons_vault/dve30]
     StaticText "Адаптивное:"
     StaticText " При использовании одной рукой вы получаете бонус +1 к Уклонению..." [namelen=181 namehash=da2adb1c]
@@ -72,10 +72,10 @@ RootWebArea "Gryphon Hammer - Daggerheart Loot Generator" [url=/i/en/dve30?v=<v>
       link "Search" [url=/en/search]
   main ""
     button "Page"
-    StaticText "107"
     StaticText "PRIMARY WEAPON"
-    ... StaticText x9 of 13 same-shape siblings elided
+    StaticText "UNIQUE"
     heading "Gryphon Hammer" [level=1]
+    ... StaticText x7 of 11 same-shape siblings elided
     link "show in the table" [url=/en/tables/dragons_vault/dve30]
     StaticText "Adaptable:"
     StaticText " When wielded One-handed, +1 to Evasion. When wielded Two-handed..." [namelen=129 namehash=462ca6b7]

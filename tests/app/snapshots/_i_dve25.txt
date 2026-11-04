@@ -18,10 +18,10 @@ RootWebArea "Фроствирд (Пробуждённый) - Генератор 
       link "Поиск" [url=/search]
   main ""
     button "Страница"
-    StaticText "102"
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
-    ... StaticText x15 of 19 same-shape siblings elided
+    StaticText "УНИКАЛЬНОЕ"
     heading "Фроствирд (Пробуждённый)" [level=1]
+    ... StaticText x13 of 17 same-shape siblings elided
     link "показать в таблице" [url=/tables/dragons_vault/dve25]
     StaticText "ПОЛУЧАЕТСЯ ИЗ"
     link "Фроствирд (Дремлющий)" [url=/i/dve24]
@@ -76,10 +76,10 @@ RootWebArea "Frostwyrd (Awakened) - Daggerheart Loot Generator" [url=/i/en/dve25
       link "Search" [url=/en/search]
   main ""
     button "Page"
-    StaticText "102"
     StaticText "PRIMARY WEAPON"
-    ... StaticText x15 of 19 same-shape siblings elided
+    StaticText "UNIQUE"
     heading "Frostwyrd (Awakened)" [level=1]
+    ... StaticText x13 of 17 same-shape siblings elided
     link "show in the table" [url=/en/tables/dragons_vault/dve25]
     StaticText "MADE FROM"
     link "Frostwyrd (Dormant)" [url=/i/en/dve24]

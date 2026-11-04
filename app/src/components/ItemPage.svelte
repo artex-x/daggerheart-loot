@@ -5,7 +5,7 @@
      controls. A related item of the author opens its own page; a catalog record opens over
      this one. The page draws the item's latest edit, and says a changed re-read and an item
      that goes while drawn (docs/specs/FEATURES.md, "Records"). */
-  import { onDestroy, untrack } from 'svelte';
+  import { onDestroy, tick, untrack } from 'svelte';
   import Button from './Button.svelte';
   import ErrorPage from './ErrorPage.svelte';
   import LoadState from './LoadState.svelte';
@@ -88,6 +88,12 @@
     return bits.join(' · ');
   });
 
+  /* The press takes «Повторить» out of the DOM, so the focus goes to `#main` (rule 20). */
+  function retry(): void {
+    void view?.retry();
+    void tick().then(() => document.getElementById('main')?.focus());
+  }
+
   /* A rung or a picture of the author's item opens its own page; a catalog record opens
      over this page. */
   function opener(openRecord: (r: Record_) => void): (r: Record_) => void {
@@ -109,7 +115,7 @@
       <ErrorPage title={t.itemFailed}>
         {t.sharedFailedSub}
         {#snippet actions()}
-          <Button variant="primary" onclick={() => void view.retry()}>{t.retry}</Button>
+          <Button variant="primary" onclick={retry}>{t.retry}</Button>
         {/snippet}
       </ErrorPage>
     {:else if !it || !index}

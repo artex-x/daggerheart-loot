@@ -80,3 +80,8 @@
 | 3b-R1 | risk | local | fixed 3b-fix | The popup query walks the page on each scroll frame; `head` gets a new object each frame |
 | 3b-R2 | risk | local | fixed 3b-fix | `FIELD` holds `select`, which has no on-screen keyboard |
 | 3b-N1..N3 | nit | local | fixed 3b-fix | See `reviews/3b.md`, Nits |
+| 4-B1 | blocker | local | fixed 4-fix | `tests/e2e/flows.mjs` calls `d.more('Сохранить себе')` on `/s/`, which keeps its own button; CI `e2e` red |
+| 4-R1 | risk | deferred-scope | deferred (wave 2 blind review; `handoff.md` Deferred holds the three options) | «В список» is inside 640 px on 21 of 98 sampled records at 360x640 |
+| 4-R2 | risk | local | accepted (brief; no change, the batch 8 sheet decision names it) | The toast covers part of the dock at 360 |
+| 4-R3 | risk | local | fixed 4-fix (`d.more` takes a wait; F20 passes `WAIT`) | `d.more` waits 5 s where F20 waited 20 s |
+| 4-N1..N9 | nit | local | fixed 4-fix (N1 accepted with its goldens; N3 by the `top` from the button, because the dock's grid reads the row's children; N8's CI budget figure waits for the re-run) | See `reviews/4.md`, Nits |

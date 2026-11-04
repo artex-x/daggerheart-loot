@@ -18,10 +18,10 @@ RootWebArea "Губитель из Сухостоя - Генератор лут�
       link "Поиск" [url=/search]
   main ""
     button "Страница"
-    StaticText "26"
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
-    ... StaticText x13 of 17 same-shape siblings elided
+    StaticText "УНИКАЛЬНОЕ"
     heading "Губитель из Сухостоя" [level=1]
+    ... StaticText x11 of 15 same-shape siblings elided
     link "показать в таблице" [url=/tables/vault_of_ages/voa4_t1b]
     StaticText "потратить Надежду"
     StaticText ", чтобы поднять его как Гнилого Зомби под вашим контролем. Он ос..." [namelen=452 namehash=16d591e3]
@@ -73,10 +73,10 @@ RootWebArea "Deadwood Slayer - Daggerheart Loot Generator" [url=/i/en/voa4_t1b?v
       link "Search" [url=/en/search]
   main ""
     button "Page"
-    StaticText "26"
     StaticText "PRIMARY WEAPON"
-    ... StaticText x13 of 17 same-shape siblings elided
+    StaticText "UNIQUE"
     heading "Deadwood Slayer" [level=1]
+    ... StaticText x11 of 15 same-shape siblings elided
     link "show in the table" [url=/en/tables/vault_of_ages/voa4_t1b]
     StaticText "spend a Hope"
     StaticText " to revive it as a Rotted Zombie under your control. It stays wi..." [namelen=390 namehash=77a68e25]

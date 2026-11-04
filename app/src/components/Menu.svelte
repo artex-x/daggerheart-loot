@@ -13,11 +13,11 @@
     /** The caller's class, which the browser suites read. */
     cls: string;
     /** Sits in the record dialog's scroll box: it opens up where the room is only above. */
-    up?: boolean;
+    flip?: boolean;
     children: Snippet;
   }
 
-  const { control, label, id, onclose, cls, up = false, children }: Props = $props();
+  const { control, label, id, onclose, cls, flip = false, children }: Props = $props();
 
   /* The caps of `.menu.up` below, and its distance from the control. */
   const UP_SHARE = 0.6;
@@ -43,7 +43,7 @@
   }
 
   $effect(() => {
-    if (up && menu) place(menu);
+    if (flip && menu) place(menu);
     items()[0]?.focus();
   });
 

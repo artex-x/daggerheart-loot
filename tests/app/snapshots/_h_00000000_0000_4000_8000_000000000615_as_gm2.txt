@@ -20,9 +20,9 @@ RootWebArea "Спальный мешок долгой дороги через п
   main ""
     button "Страница"
     StaticText "ПРЕДМЕТ"
-    StaticText "ХОУМБРЮ"
     heading "Спальный мешок долгой дороги через перевал, болота, пустоши и ст..." [level=1 namelen=120 namehash=084a20d9]
-    ... StaticText x2 of 6 same-shape siblings elided
+    StaticText "Предмет другого игрока · Хоумбрю"
+    StaticText "Обновлено вчера"
     StaticText "Спальный мешок для долгой дороги."
     StaticText "ПОЛУЧАЕТСЯ ИЗ"
     link "Первоклассный Спальный Мешок" [url=/i/ci1]
@@ -75,9 +75,9 @@ RootWebArea "Bedroll of the long road over the pass, through the marshes, the...
   main ""
     button "Page"
     StaticText "ITEM"
-    StaticText "HOMEBREW"
     heading "Bedroll of the long road over the pass, through the marshes, the..." [level=1 namelen=120 namehash=bbb6ed09]
-    ... StaticText x2 of 6 same-shape siblings elided
+    StaticText "Another player's item · Homebrew"
+    StaticText "Updated yesterday"
     StaticText "A bedroll for a long road."
     StaticText "MADE FROM"
     link "Premium Bedroll" [url=/i/en/ci1]

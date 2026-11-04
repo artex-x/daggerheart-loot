@@ -20,10 +20,10 @@ RootWebArea "Свиток Узоролиста - Генератор лута Dag
   main ""
     button "Страница"
     StaticText "РАСХОДНИК"
-    StaticText "ХОУМБРЮ"
     heading "Свиток Узоролиста" [level=1]
-    ... StaticText x16 of 20 same-shape siblings elided
+    StaticText "Хоумбрю "
     link "показать в таблице" [url=/tables/homebrew/hb_markupscrollaaaa]
+    ... StaticText x15 of 19 same-shape siblings elided
     StaticText "4-6"
     StaticText "Да"
     button "В список" [expanded=false]
@@ -77,10 +77,10 @@ RootWebArea "Patternleaf Scroll - Daggerheart Loot Generator" [url=/en/h/0000000
   main ""
     button "Page"
     StaticText "CONSUMABLE"
-    StaticText "HOMEBREW"
     heading "Patternleaf Scroll" [level=1]
-    ... StaticText x17 of 21 same-shape siblings elided
+    StaticText "Homebrew "
     link "show in the table" [url=/en/tables/homebrew/hb_markupscrollaaaa]
+    ... StaticText x16 of 20 same-shape siblings elided
     StaticText "4-6"
     StaticText "Yes"
     button "Add to list" [expanded=false]

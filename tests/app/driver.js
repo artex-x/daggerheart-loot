@@ -530,8 +530,9 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
     },
 
     /** Opens the «Ещё» menu of the open dialog, else of the page, then presses `name` in it
-     *  once it is enabled: a save item waits for the account's items. */
-    async more(name) {
+     *  once it is enabled: a save item waits for the account's items, and a hosted sign-in
+     *  needs a longer `wait`. */
+    async more(name, wait = { timeout: 5000 }) {
       await d.openMore();
       const handle = await page.waitForFunction(
         (n, nameSrc) => {
@@ -540,7 +541,7 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
             (e) => nameOf(e) === n && !e.disabled
           );
         },
-        { timeout: 5000 },
+        wait,
         name,
         NAME_FN
       );

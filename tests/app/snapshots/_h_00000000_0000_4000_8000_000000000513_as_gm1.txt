@@ -20,10 +20,10 @@ RootWebArea "Whispering Cap - Генератор лута Daggerheart" [url=/h/0
   main ""
     button "Страница"
     StaticText "ПРЕДМЕТ"
-    StaticText "ХОУМБРЮ"
     heading "Whispering Cap" [level=1]
-    ... StaticText x2 of 6 same-shape siblings elided
+    StaticText "Хоумбрю "
     link "показать в таблице" [url=/tables/homebrew/hb_whispercapaaaaaa]
+    StaticText "Обновлено 6 дней назад"
     StaticText "Текст только на английском"
     StaticText "Once per rest, hear one sentence spoken within Far range."
     button "В список" [expanded=false]
@@ -77,7 +77,6 @@ RootWebArea "Whispering Cap - Daggerheart Loot Generator" [url=/en/h/00000000-00
   main ""
     button "Page"
     StaticText "ITEM"
-    StaticText "HOMEBREW"
     heading "Whispering Cap" [level=1]
     StaticText "Homebrew "
     link "show in the table" [url=/en/tables/homebrew/hb_whispercapaaaaaa]

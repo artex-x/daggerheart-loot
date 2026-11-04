@@ -262,8 +262,9 @@
   </button>
 
   <div class="card-body">
+    <!-- The path line under the name already gives the number and the source. -->
     <div class="card-meta">
-      {#if it.roll}
+      {#if it.roll && !sub}
         <Badge cls="num">{rollLabel ?? it.roll}</Badge>
       {/if}
       {#if col}
@@ -272,7 +273,9 @@
       {#each badges as b, i (i)}
         <Badge cls={b.cls} title={b.title}>{b.text}</Badge>
       {/each}
-      <Badge cls="src">{srcLabel(it, lang)}</Badge>
+      {#if !sub}
+        <Badge cls="src">{srcLabel(it, lang)}</Badge>
+      {/if}
     </div>
 
     <svelte:element this={heading} class="card-name">
@@ -1023,6 +1026,13 @@
     .card.dossier .cardpick :global(.seldrop > .btn) {
       width: 100%;
       justify-content: center;
+    }
+
+    /* `.btn.sm`'s insets: «Поделиться», «Печать» and «Ещё» share one line at 360 in RU. */
+    .card.dossier .cardpick > :global(.btn),
+    .card.dossier .cardpick :global(.morewrap > .btn) {
+      padding: 0 11px;
+      gap: 6px;
     }
   }
 

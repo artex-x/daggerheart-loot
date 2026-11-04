@@ -18,10 +18,10 @@ RootWebArea "Табельный Секач - Генератор лута Daggerh
       link "Поиск" [url=/search]
   main ""
     button "Страница"
-    StaticText "7"
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
-    ... StaticText x9 of 13 same-shape siblings elided
+    StaticText "УНИКАЛЬНОЕ"
     heading "Табельный Секач" [level=1]
+    ... StaticText x7 of 11 same-shape siblings elided
     link "показать в таблице" [url=/tables/many_worlds_tavern/mw47]
     StaticText "Один за Всех:"
     StaticText " Используйте любую характеристику, когда атакуете этим оружием."
@@ -72,10 +72,10 @@ RootWebArea "Standard Issue Slicer - Daggerheart Loot Generator" [url=/i/en/mw47
       link "Search" [url=/en/search]
   main ""
     button "Page"
-    StaticText "7"
     StaticText "PRIMARY WEAPON"
-    ... StaticText x9 of 13 same-shape siblings elided
+    StaticText "UNIQUE"
     heading "Standard Issue Slicer" [level=1]
+    ... StaticText x7 of 11 same-shape siblings elided
     link "show in the table" [url=/en/tables/many_worlds_tavern/mw47]
     StaticText "One-For-All:"
     StaticText " Use any trait when attacking with this."

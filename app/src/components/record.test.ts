@@ -587,8 +587,34 @@ describe('the path at the top of the page, and the tag on the badge', () => {
   });
 
   it('names the community alone on the badge, with no path in it', () => {
-    render(App, { env: at('cm1') });
+    const app = new AppState(at('cm1'));
+    app.start();
+    const index = app.index as Index;
+    const cm1 = app.recordFor('cm1') as NonNullable<ReturnType<AppState['recordFor']>>;
+    render(RecordModal, { app, index, it: cm1, onclose: () => {} });
     expect(screen.getByText('Великородное').closest('.badge')).toHaveClass('src');
+    app.stop();
+  });
+
+  it('gives the source and the number once on the page: in the path line, not as badges', () => {
+    const { container } = render(App, { env: at('ci1') });
+    expect(container.querySelector('.card-sub .subline')).toHaveTextContent('Core');
+    expect(container.querySelector('.card-meta .badge.src')).toBeNull();
+    expect(container.querySelector('.card-meta .badge.num')).toBeNull();
+    expect(container.querySelectorAll('.card-meta .badge').length).toBeGreaterThan(0);
+  });
+
+  it('keeps the source and the number as badges in the dialog, which has no path line', () => {
+    const app = new AppState(at('ci1'));
+    app.start();
+    const index = app.index as Index;
+    const ci1 = app.recordFor('ci1') as NonNullable<ReturnType<AppState['recordFor']>>;
+    render(RecordModal, { app, index, it: ci1, onclose: () => {} });
+    const meta = document.querySelector('.card-meta') as HTMLElement;
+    expect(meta.querySelector('.badge.src')).toHaveTextContent('Core');
+    expect(meta.querySelector('.badge.num')).toHaveTextContent('1');
+    expect(document.querySelector('.card-sub')).toBeNull();
+    app.stop();
   });
 
   it('carries the artifact word in the path line, not only on a badge', () => {
@@ -1295,7 +1321,7 @@ describe('an own homebrew item', () => {
     expect(
       screen.getByRole('menuitem', { name: 'Скопировать изображение' })
     ).toBeInTheDocument();
-    expect(screen.getByText('Мастерская Ольхи (HB)')).toBeInTheDocument();
+    expect(container.querySelector('.subline')).toHaveTextContent('Мастерская Ольхи');
     await expectNoA11yViolations(container);
   });
 

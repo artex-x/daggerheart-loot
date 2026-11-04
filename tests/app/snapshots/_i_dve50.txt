@@ -18,10 +18,10 @@ RootWebArea "Заклинательный Клинок - Генератор лу
       link "Поиск" [url=/search]
   main ""
     button "Страница"
-    StaticText "127"
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
-    ... StaticText x9 of 13 same-shape siblings elided
+    StaticText "УНИКАЛЬНОЕ"
     heading "Заклинательный Клинок" [level=1]
+    ... StaticText x7 of 11 same-shape siblings elided
     link "показать в таблице" [url=/tables/dragons_vault/dve50]
     StaticText "Призвать клинок:"
     StaticText " У этого оружия нет лезвия. Совершите Бросок Заклинания (12), чт..." [namelen=232 namehash=c7165f3d]
@@ -72,10 +72,10 @@ RootWebArea "Spellblade - Daggerheart Loot Generator" [url=/i/en/dve50?v=<v>]
       link "Search" [url=/en/search]
   main ""
     button "Page"
-    StaticText "127"
     StaticText "PRIMARY WEAPON"
-    ... StaticText x9 of 13 same-shape siblings elided
+    StaticText "UNIQUE"
     heading "Spellblade" [level=1]
+    ... StaticText x7 of 11 same-shape siblings elided
     link "show in the table" [url=/en/tables/dragons_vault/dve50]
     StaticText "Emblade:"
     StaticText " This weapon has no blade. You can make a Spellcast Roll (12) to..." [namelen=223 namehash=f9839c1a]

@@ -57,6 +57,12 @@ const SIZES = [
       });
       measures.push({ state: 'backdrop', width, lang, ...backdrop });
 
+      await d.open('#/i/mw9', { lang });
+      await page.evaluate(() => document.querySelector('.refs').scrollIntoView());
+      await shot('rule-card');
+      await page.click('.refs summary');
+      await shot('rule-card-open');
+
       await d.open('/#/i/nope', { lang });
       await shot('item-nope');
 

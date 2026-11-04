@@ -4684,10 +4684,11 @@ async function catalogCopyPerPress() {
 /** 88. The action row and the dialog's dock at every width. On the record page at 360, 320
  *  and 1180, RU and EN, signed out, signed in and as the author: every control inside the
  *  window and uncut, at most three lines, «В список» the only gold primary, and «Ещё» opens
- *  a menu inside the window with 44 px items at 360. In the dialog at 360x640 and 640x360:
- *  the dock holds the card's bottom, or joins the scroll below 481 px of height, takes at
- *  most 0.45 of the window, «Ещё» opens up from the dock, or down in that short window,
- *  inside the card, and a toast leaves the dock in place; with 150 lists the add menu scrolls inside the window with its search and
+ *  a menu inside the window with 44 px items at 360. In the dialog at 360x640, 640x360 and
+ *  1180x720: the dock holds the card's bottom, or joins the scroll below 481 px of height and
+ *  from 761 px, takes at most 0.45 of the window, «Ещё» opens up from the dock, or down from
+ *  the row, inside the card, and a toast leaves the dock in place; a prompt leaves «Ещё»'s
+ *  menu under the button, and a rule card draws its chevron; with 150 lists the add menu scrolls inside the window with its search and
  *  «+ Новый список» in view (docs/specs/FEATURES.md, "Records"). */
 async function recordActionsFit() {
   const at = '88 (the record actions fit): ';
@@ -4725,6 +4726,10 @@ async function recordActionsFit() {
         });
         ok(row.count >= 4, at + where + 'the row draws ' + row.count + ' controls');
         ok(row.lines <= 3, at + where + 'the row takes ' + row.lines + ' lines');
+        ok(
+          width !== 360 || row.count > 4 || row.lines === 2,
+          at + where + 'four controls take ' + row.lines + ' lines'
+        );
         ok(!row.out.length, at + where + 'cut or outside - ' + JSON.stringify(row.out));
         ok(row.primaries === 1, at + where + row.primaries + ' gold primaries');
         await d.openMore();
@@ -4754,7 +4759,8 @@ async function recordActionsFit() {
 
     for (const [width, height] of [
       [360, 640],
-      [640, 360]
+      [640, 360],
+      [1180, 720]
     ]) {
       const where = 'the dialog ' + lang + ' ' + width + 'x' + height + ': ';
       const { ctx, page, d } = await fresh({ width, height, lang });
@@ -4773,7 +4779,10 @@ async function recordActionsFit() {
           };
         });
       const first = await dock();
-      ok(first.sticky === height > 480, at + where + 'sticky is ' + first.sticky);
+      ok(
+        first.sticky === (width <= 760 && height > 480),
+        at + where + 'sticky is ' + first.sticky
+      );
       ok(first.height <= 0.45 * height, at + where + 'the dock is ' + first.height + ' px');
       if (first.sticky) ok(Math.abs(first.gap) <= 1.5, at + where + 'gap ' + first.gap);
       await page.evaluate(() => {
@@ -4811,6 +4820,23 @@ async function recordActionsFit() {
       await ctx.close();
     }
   }
+
+  const phone = await fresh({ width: 360, height: 640 });
+  await phone.d.open('#/i/ci1');
+  await phone.d.press('Печать');
+  await phone.d.openMore();
+  const under = await phone.page.evaluate(
+    () =>
+      document.querySelector('[role="menu"]').getBoundingClientRect().top -
+      document.querySelector('.morewrap > .btn').getBoundingClientRect().bottom
+  );
+  ok(Math.abs(under - 8) <= 1, at + 'a prompt moves the menu ' + under + ' px off «Ещё»');
+  await phone.d.open('#/i/mw9');
+  const chevron = await phone.page.evaluate(
+    () => getComputedStyle(document.querySelector('.refs summary'), '::after').content
+  );
+  ok(chevron !== 'none', at + 'the rule card draws no chevron');
+  await phone.ctx.close();
 
   const { ctx, page, d } = await fresh({ width: 360, height: 640 });
   await d.open('#/tables/eq_weapon', { as: 'gm2' });

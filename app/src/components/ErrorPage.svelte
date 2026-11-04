@@ -1,6 +1,6 @@
 <script lang="ts">
   /* A page that failed: the cause as the title, one sentence, the way out. No icon and no
-     plate (DESIGN.md, "The error-page pattern"). */
+     plate (DESIGN.md, "Error page"). */
   import type { Snippet } from 'svelte';
 
   interface Props {

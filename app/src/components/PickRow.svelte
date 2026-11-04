@@ -53,14 +53,29 @@
   const second = $derived(
     toLists ? t.saveItemNoteList : app.newListTarget === 'prompt' ? t.saveItemSignIn : ''
   );
+  /* `.menu`'s distance from its control. */
+  const MENU_GAP = 8;
   let asking = $state(false);
   let printAsking = $state(false);
   let moreOpen = $state(false);
   let moreButton = $state<HTMLButtonElement | undefined>(undefined);
 
+  /* Up to 760 px the row anchors the menu, and a prompt under the row would push it away
+     from «Ещё». A menu opened up already sits above the row. */
+  function underMore(box: HTMLElement): void {
+    const row = box.offsetParent;
+    if (!row || !moreButton || row === moreButton.parentElement) return;
+    if (box.classList.contains('up')) return;
+    const top = moreButton.getBoundingClientRect().bottom - row.getBoundingClientRect().top;
+    box.style.top = `${String(top + MENU_GAP)}px`;
+  }
+
   /* The row can sit at the window's bottom, and the menu opens past it. */
   $effect(() => {
-    if (moreOpen) document.getElementById(menuId)?.scrollIntoView({ block: 'nearest' });
+    const box = moreOpen ? document.getElementById(menuId) : null;
+    if (!box) return;
+    underMore(box);
+    box.scrollIntoView({ block: 'nearest' });
   });
 
   /* A pressed item leaves the DOM, so the focus goes back to «Ещё» (rule 20). */
@@ -125,7 +140,7 @@
       label={t.moreMenu}
       id={menuId}
       cls="recmenu"
-      up={inModal}
+      flip={inModal}
       onclose={() => {
         moreOpen = false;
       }}

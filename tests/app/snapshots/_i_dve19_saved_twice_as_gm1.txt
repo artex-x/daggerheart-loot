@@ -19,10 +19,10 @@ RootWebArea "Уголёк - Генератор лута Daggerheart" [url=/i/dve
       link "Поиск" [url=/search]
   main ""
     button "Страница"
-    StaticText "96"
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
-    ... StaticText x19 of 23 same-shape siblings elided
+    StaticText "УНИКАЛЬНОЕ"
     heading "Уголёк" [level=1]
+    ... StaticText x17 of 21 same-shape siblings elided
     link "показать в таблице" [url=/tables/dragons_vault/dve19]
     link "Искра" [url=/i/dve20]
     StaticText "Пылает"
@@ -79,10 +79,10 @@ RootWebArea "Ember - Daggerheart Loot Generator" [url=/i/en/dve19?as=gm1&v=<v>]
       link "Search" [url=/en/search]
   main ""
     button "Page"
-    StaticText "96"
     StaticText "PRIMARY WEAPON"
-    ... StaticText x19 of 23 same-shape siblings elided
+    StaticText "UNIQUE"
     heading "Ember" [level=1]
+    ... StaticText x17 of 21 same-shape siblings elided
     link "show in the table" [url=/en/tables/dragons_vault/dve19]
     link "Spark" [url=/i/en/dve20]
     StaticText "Ablaze"

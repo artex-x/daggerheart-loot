@@ -409,7 +409,7 @@ const RULE = 'docs/artwork.md, "The card follows the site\'s card"';
 
 // The pinned hash of RecordCard.svelte's card head (docs/artwork.md, "The card
 // follows the site's card").
-const CARD_HEAD_SHA256 = 'd5e92c773df93e954300d02ff71a3c5dccd604e6d89b0af5438adb634f0e6a07';
+const CARD_HEAD_SHA256 = '6eb29508ec985fd0be10c735d1021e3b3bc254d3a8b6660badcd15b6b3122775';
 
 const CARD_FILES = ['RecordCard', 'Badge', 'Seg', 'Markup'].map(
   (n) => `app/src/components/${n}.svelte`

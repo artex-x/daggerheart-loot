@@ -18,10 +18,10 @@ RootWebArea "Святой Щит - Генератор лута Daggerheart" [url
       link "Поиск" [url=/search]
   main ""
     button "Страница"
-    StaticText "28"
     StaticText "ВТОРИЧНОЕ ОРУЖИЕ"
-    ... StaticText x19 of 23 same-shape siblings elided
+    StaticText "УНИКАЛЬНОЕ"
     heading "Святой Щит" [level=1]
+    ... StaticText x17 of 21 same-shape siblings elided
     link "показать в таблице" [url=/tables/vault_of_ages/voa4_t3d]
     link "Святой Клинок" [url=/i/voa4_t3e]
     link "Святое Облачение" [url=/i/voa4_t3f]
@@ -76,10 +76,10 @@ RootWebArea "Saintly Guard - Daggerheart Loot Generator" [url=/i/en/voa4_t3d?v=<
       link "Search" [url=/en/search]
   main ""
     button "Page"
-    StaticText "28"
     StaticText "SECONDARY WEAPON"
-    ... StaticText x19 of 23 same-shape siblings elided
+    StaticText "UNIQUE"
     heading "Saintly Guard" [level=1]
+    ... StaticText x17 of 21 same-shape siblings elided
     link "show in the table" [url=/en/tables/vault_of_ages/voa4_t3d]
     link "Saintly Blade" [url=/i/en/voa4_t3e]
     link "Saintly Vestments" [url=/i/en/voa4_t3f]
