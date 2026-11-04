@@ -14,3 +14,4 @@
   help box per field (wider than a field); short visible threshold labels
   with the full term in `aria-label` (the name would not contain the visible
   words, WCAG 2.5.3); a separate help document or a review prompt change.
+- Superseded in part by "The homebrew pages share the list head and one selection bar" (2026-11-04): the editor and the card forms have no «?», and the second stat set's disclosure has no «?» beside it.

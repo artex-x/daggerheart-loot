@@ -3513,15 +3513,23 @@ async function relationFolds() {
       await waitIn(page, () => !!document.querySelector('.hbtab .head .name button')),
       at + 'the #/homebrew/sets card folds did not draw'
     );
-    const heights = await page.evaluate(() =>
-      [
-        ...document.querySelectorAll('nav a.chip'),
-        ...document.querySelectorAll('.hbtab .head .name button')
-      ].map((e) => [e.textContent.trim(), e.getBoundingClientRect().height])
-    );
+    /* Up to 760 px the tabs are the picker and the links of its sheet. */
+    const measure = (sel) =>
+      page.evaluate(
+        (s) =>
+          [...document.querySelectorAll(s)].map((e) => [
+            e.textContent.trim(),
+            e.getBoundingClientRect().height
+          ]),
+        sel
+      );
+    const heights = await measure('.hbtabs .picker, .hbtab .head .name button');
+    await d.press('Мои предметы: Комплекты');
+    await waitIn(page, () => document.querySelectorAll('dialog[open] .tab').length > 0);
+    heights.push(...(await measure('dialog[open] .tab')));
     ok(
-      heights.length === 5 && heights.every(([, h]) => h >= 24),
-      at + 'a tab chip or a card fold is under 24 px - ' + JSON.stringify(heights)
+      heights.length === 6 && heights.every(([, h]) => h >= 24),
+      at + 'a tab control or a card fold is under 24 px - ' + JSON.stringify(heights)
     );
     await ctx.close();
   }
@@ -5305,8 +5313,9 @@ async function homebrewHeadAndBar() {
     );
     await d.openMore(MORE);
     await d.press('Импорт из файла');
+    /* The panel's caption is uppercase, and `innerText` reads it so. */
     ok(
-      await waitIn(page, bodyHas, 'Импорт предметов из файла JSON'),
+      await waitIn(page, () => /Импорт предметов из файла JSON/i.test(document.body.innerText)),
       at + 'the import did not open'
     );
     await d.press('Отмена').catch(() => {});
@@ -5375,8 +5384,8 @@ async function homebrewHeadAndBar() {
 }
 
 /** 92. The editor (docs/specs/FEATURES.md, "The editor"): the three groups, no «?» and no star,
- *  the sticky bar and the preview sheet up to 760 px, the pairs from 1000 px, the sticky
- *  column from 800 px, the long name, one message per field, the conflict's primary. */
+ *  the sticky bar and the preview sheet up to 760 px, the stored item's bar at 320 px, the
+ *  pairs from 1000 px, the sticky column from 800 px, the long name, one message per field. */
 async function editorLayoutAndSheet() {
   const at = '92 (the editor): ';
   for (const lang of ['ru', 'en']) {
@@ -5447,6 +5456,38 @@ async function editorLayoutAndSheet() {
           await ctx.close();
         }
       }
+    }
+  }
+
+  /* The three buttons of a stored item at 320 in RU, the longest bar: inside the bar's own
+     box, not only the window, and no word cut. */
+  {
+    const { ctx, page, d } = await fresh({ width: 320, height: 568 });
+    try {
+      await d.open('#/homebrew/hb_emberaxeaaaaaaaa', { as: 'gm1' });
+      await waitIn(page, () => !!document.querySelector('#hb-name'));
+      const bar = await page.evaluate(() => {
+        const el = document.querySelector('.ebar');
+        const r = el.getBoundingClientRect();
+        const btns = [...el.querySelectorAll('.btn')];
+        return {
+          n: btns.length,
+          inside: btns.every((b) => {
+            const x = b.getBoundingClientRect();
+            return x.left >= r.left && x.right <= r.right && x.right <= innerWidth;
+          }),
+          cut: btns.some((b) => b.scrollWidth > b.clientWidth),
+          sideways: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+          rects: btns.map((b) => Math.round(b.getBoundingClientRect().right)),
+          right: Math.round(r.right)
+        };
+      });
+      ok(
+        bar.n === 3 && bar.inside && !bar.cut && !bar.sideways,
+        at + '320 ru: the bar of a stored item - ' + JSON.stringify(bar)
+      );
+    } finally {
+      await ctx.close();
     }
   }
 

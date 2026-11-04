@@ -153,6 +153,13 @@ html {
   scroll-padding-bottom: calc(var(--selbar-h, 0px) + var(--ebar-h, 0px));
 }
 
+/* Under 481 px of height the editor's bar stays in the flow (`HomebrewEditor.svelte`). */
+@media (max-height: 480px) {
+  html {
+    scroll-padding-bottom: var(--selbar-h, 0px);
+  }
+}
+
 body {
   margin: 0;
   /* The one page ground (DESIGN.md, "Overview"): it scrolls with the page. */

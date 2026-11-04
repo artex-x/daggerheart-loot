@@ -52,7 +52,6 @@ RootWebArea "Топор Тлеющих Углей - Генератор лута 
 |---|---|
 | 1-3 | Искры |
 | 4-6 | Пламя | focused=true multiline=true readonly=false required=false]
-        StaticText "необязательно"
         button "Заменить"
         button "Убрать картинку"
         StaticText "Квадрат 640x640 из файла PNG, JPEG или WebP до 20 МБ. Картинка з..." [namelen=89 namehash=d79a0cd0]
@@ -253,7 +252,6 @@ RootWebArea "Ember Axe - Daggerheart Loot Generator" [url=/en/homebrew/hb_embera
 |---|---|
 | 1-3 | Искры |
 | 4-6 | Пламя | focused=true multiline=true readonly=false required=false]
-        StaticText "optional"
         button "Replace"
         button "Remove the picture"
         StaticText "A 640x640 square from a PNG, JPEG or WebP file up to 20 MB. The ..." [namelen=94 namehash=d7d2d695]

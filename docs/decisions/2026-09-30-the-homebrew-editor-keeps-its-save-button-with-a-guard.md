@@ -14,3 +14,4 @@
   creations on «Сохранить» (a partial failure to undo); a save with no revision check (two tabs
   overwrite each other without a word).
 - Amends "A homebrew save is a form submit, not the account lists' optimistic queue" (2026-09-25): the guard and the revision check.
+- Superseded in part by "The homebrew pages share the list head and one selection bar" (2026-11-04): a required field has no red mark; the optional fields carry a word.

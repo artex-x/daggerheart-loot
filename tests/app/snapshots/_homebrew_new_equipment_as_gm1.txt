@@ -46,7 +46,6 @@ RootWebArea "Новый предмет - Генератор лута Daggerheart
           button "Нумерованный список"
           button "Таблица"
         textbox "Описание" [multiline=true readonly=false required=false]
-        StaticText "необязательно"
         button "Выбрать файл"
         button "Выбрать из предметов" [expanded=false]
         StaticText "Квадрат 640x640 из файла PNG, JPEG или WebP до 20 МБ. Картинка з..." [namelen=89 namehash=d79a0cd0]
@@ -227,7 +226,6 @@ RootWebArea "New item - Daggerheart Loot Generator" [url=/en/homebrew/new?as=gm1
           button "Numbered list"
           button "Table"
         textbox "Description" [multiline=true readonly=false required=false]
-        StaticText "optional"
         button "Choose a file"
         button "Choose from items" [expanded=false]
         StaticText "A 640x640 square from a PNG, JPEG or WebP file up to 20 MB. The ..." [namelen=94 namehash=d7d2d695]

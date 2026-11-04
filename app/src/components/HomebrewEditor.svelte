@@ -793,7 +793,10 @@
     if (!previewing) return;
     previewing = false;
     clipped = false;
-    previewButton?.focus();
+    /* A band change takes the button away too, and the focus must not drop to `body`. */
+    void tick().then(() => {
+      (previewButton?.isConnected ? previewButton : document.getElementById('main'))?.focus();
+    });
   }
 
   $effect(() => {
@@ -1789,6 +1792,19 @@
     }
   }
 
+  /* The three buttons of a stored item need 279 px at the usual insets, and the bar holds
+     235 px at 320 (measured 2026-11-04, RU): no button breaks its word. */
+  @media (max-width: 380px) {
+    .ebar {
+      gap: 4px;
+      padding-inline: 10px;
+    }
+
+    .ebar :global(.btn.sm) {
+      padding: 0 6px;
+    }
+  }
+
   @media (max-width: 760px) and (min-height: 481px) {
     .ebar {
       position: sticky;
@@ -1820,9 +1836,11 @@
     padding-left: 18px;
   }
 
-  /* Inline: a wrapped line keeps the list's bullet on its first line. */
+  /* A button draws as an inline block, whose baseline is its last line: `top` keeps the
+     list's bullet on the first line of a wrapped entry. */
   .errlink {
     display: inline;
+    vertical-align: top;
     border: 0;
     padding: 0;
     background: none;

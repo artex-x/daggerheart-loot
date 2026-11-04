@@ -822,7 +822,7 @@ export async function runFlows({ env, admin, member, browser, base }) {
       await pick('hb-rg', 'Вплотную');
       await d.choose('#hb-dmg', 'd8');
       await page.type('#hb-dmg-bonus', '25');
-      await pick('hb-dt', 'физ');
+      await pick('hb-dt', 'Физический');
       await pick('hb-bu', 'Одноручное');
       await d.press('Сохранить');
       await until('F14: the item did not reach the account', async () => {

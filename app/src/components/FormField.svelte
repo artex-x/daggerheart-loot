@@ -44,7 +44,9 @@
   {#if label && (help || optional)}
     <div class="fhead">
       {@render caption()}
-      {#if optional}<span class="opt">{optional}</span>{/if}
+      <!-- A hidden caption hides its word too: alone it reads as a stray "optional". -->
+      {#if optional}<span class="opt" aria-hidden={forId ? undefined : 'true'}>{optional}</span
+        >{/if}
       {#if help}
         <HelpButton
           lang={help.lang}

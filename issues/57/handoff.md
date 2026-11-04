@@ -2,13 +2,13 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress, paused for the owner's restart (wave 1 is on `main`; batches 3, 3b, 4, 5 and 6 are
-  on `claude/57`; batches 3-5 are reviewed with green CI; batch 6 awaits CI, polish, harden and its review)
-- Last agent: orchestrator (session pause, 2026-11-04)
+- Task status: in_progress (wave 1 is on `main`; batches 3, 3b, 4, 5 and 6 are on `claude/57`; batches 3-5 are
+  reviewed with green CI; batch 6 is reviewed, its remediation pass awaits CI)
+- Last agent: implementer (batch 6 remediation, 2026-11-04)
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
-- Previous sha: `da96cbf3` (batch 5 remediation; `origin/main` `d83384b4` is merged)
-- Pushed: yes, `96710fe3` (batch 6). The docs commit of this pause is local until the next push.
+- Previous sha: `4857babc` (the docs commit on top of batch 6, `96710fe3`)
+- Pushed: the remediation commit and `4857babc` go in this push; the sha is in the implementer's report.
 
 ## Completed
 - Batch 1 - foundation: `9a31aede`, review fix `80872b35` (`reviews/1.md`).
@@ -356,12 +356,64 @@
   21. A local fix: a wrapped link of the error summary (`.errlink`) is inline, so its bullet stays on the first line (shot `editor-errors` at 360 EN).
   22. The fourth first-screen row is `hb_longsrcaaaaaaaaa`: its name is short and its path, the 80-character source, is the long part; a 120-character name is cut to one line at 360, so it moves no offset (case 92 holds the cut).
 
+- Batch 6 remediation (`reviews/6.md`, verdict fix-then-continue; CI run 41813328286 of `96710fe3`). Each CI
+  failure was reproduced first on `dist-test/` of `4857babc` (scratch loaders over `states.js` and `sweep.js`, and
+  probes). All five were stale tests or a stale sweep script; the app was right in each:
+
+  | Finding | Outcome |
+  |---|---|
+  | 6-CI sweep «вид на печати» (360, 390) | Stale script. Up to 760 px the print switch is in the preview sheet (A6), so the entry opens «Предпросмотр» first where no `.preview` column draws |
+  | 6-CI sweep «названия тех, что уже есть» (EN) | Stale script. The import's caption is `.lbl` (`text-transform: uppercase`), and `innerText` reads «IMPORT ITEMS...», so the EN run took the RU names. The entry reads `html[lang]`; `hbImportOpen` matches the caption case-insensitively |
+  | 6-CI states 63 | Stale case: up to 760 px the four tab chips are the picker (A28), so only the fold (25.6 px) was found against a count of 5. The case measures the picker, the fold and the four links of the picker's sheet |
+  | 6-CI states 91 | Stale case, the same uppercase read: the panel opened. The check is case-insensitive |
+  | 6-CI e2e F14 | Stale flow: D15 names the damage types in full words, so «физ» is «Физический». F15-F20 read against batch 6's labels: no other moved name. Not runnable here: CI's `e2e` is the proof |
+  | 6-R1 | Fixed. Probe at 320x568 RU on `hb_emberaxeaaaaaaaa`: the bar box 17-288, «Ещё» ended at 314 (at 360, 4 px into the padding). Up to 380 px the bar's insets are 10 px, the gap 4 px and `.btn.sm` 6 px: «Ещё» ends at 278. Case 92 gains the 320 RU pass (inside the bar's box, no cut word, no sideways scroll) |
+  | 6-R2 | Fixed: "Supersedes in part" in the new file, "Superseded in part by" in the 2026-10-02 and 2026-09-30 files |
+  | 6-N1 | Deferred to the next batch's re-seed (Deferred) |
+  | 6-N2 | Confirmed in the built app (one rect 39 px high, the bullet on «1-99.»), fixed with `vertical-align: top` |
+  | 6-N3 | Fixed: the editor shots re-taken on the final build |
+  | 6-N4 | Fixed: the clause leaves case 92's comment; `homebrewEditor.test.ts` holds the conflict |
+  | 6-N5 | Fixed: `.opt` takes `aria-hidden` when the caption is hidden; a new `homebrewEditor.test.ts` case. Goldens of `homebrew` re-seeded |
+  | 6-N6 | Fixed: the focus goes to «Предпросмотр» after a tick, else to `#main`; the band test asserts it |
+  | 6-N7 | Fixed in CSS: under 481 px of height `scroll-padding-bottom` leaves `--ebar-h` out, the bar's own query |
+  | 6-N8 | Fixed: the comment is back over `hbImportOpen` |
+  | 6-N9 | Fixed: the `check:fast` result of this pass is under Verification. The figure of `96710fe3` was not recorded and is not recoverable |
+
+  The two new unit tests failed at `4857babc` in a detached worktree (2 failed, 96 passed).
+
 - Review: done, `issues/57/reviews/3.md`, verdict fix-then-continue; the one remediation
   pass is this commit. No second review is needed: the picker fix leaves the first-screen
   rows unmoved (234 at 360).
 - Plan review: not required for batch 3 (`plan.md` Status, no trigger fired).
 
 ## Verification
+- Batch 6 remediation, 2026-11-04 (diff base `4857babc`):
+  - `gh run view 41813328286 --repo artex-x/daggerheart-loot --log-failed`: the five failures of step 1 of the old
+    "Next batch" list (sweep 360, 390, 768, 1180 en; states 63, 91; e2e F14).
+  - `npm run build:test` on `4857babc`, then a scratch loader of `states.js` filtered to 63 and 91: both failed as on
+    CI. A probe found the import open and its caption read «ИМПОРТ ПРЕДМЕТОВ ИЗ ФАЙЛА JSON» by `innerText`.
+  - A scratch loader of `sweep.js` filtered to the two entries, at 360, 390, 768 and 1180, RU and EN, after the test
+    fix: `page sweep (dist-test/): clean`. A probe of F14's seven `pick` calls at 1180 on `#/homebrew/new as gm1`:
+    all found, «Физический» included.
+  - Probes on the built app: 6-R1 at 320x568 RU, «Ещё» 245-314 in a bar of 17-288 before, 219-278 after (EN 215-278,
+    360 RU 259-318 in 17-328). 6-N2 at 360 EN: the damage entry one rect of 39 px with the bullet on «1-99.» before,
+    on the first line after (shot read).
+  - `npx vitest run app/src/components/homebrewEditor.test.ts app/src/components/homebrewPage.test.ts
+    app/src/components/markupField.test.ts`: 247 passed. The two new `homebrewEditor` cases at `4857babc` in a
+    detached worktree: 2 failed, 96 passed.
+  - Scratch loader of `states.js`, cases 63, 72, 85, 91 and 92 on the final build: all passed.
+  - `node tools/decisions.js`: 303 decisions.
+  - `node tests/app/golden.js --update --only=homebrew` (87 states): exit 0, 27 `_homebrew_*` goldens moved, each
+    only by the `StaticText` «необязательно» / "optional" that left a hidden caption (6-N5), and the elision counts
+    around it. No other family renders `FormField`'s word without `for`.
+  - `node issues/57/mocks/6/built/shoot.js`: the editor and card-form shots re-taken; the first-screen tops did not
+    move (243, 223, 246, 241 at 360; 254, 175, 198, 252 at 1180).
+  - `npx prettier --write` over the touched files; `npm run lint:untyped`, `npm run lint:typed`: exit 0.
+  - `npm run check:built`: exit 0, 261.6 kB within 262.
+  - Configured: `vite build` with placeholder `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`,
+    `node tools/bundle-budget.mjs`: 318.92 kB, within 319, but CI's 0.1 kB more passes 319, so the limit rises to
+    320 (`tools/bundle-budget.mjs`, `.claude/README.md`).
+  - Not run locally (CI's): `app/states` whole, `app/sweep`, `app/hues`, `app/typo`, `app/print`, `e2e`.
 - Batch 6, 2026-11-04, on the final tree:
   - `npx vitest run` of the affected files (`homebrewPage`, `homebrewEditor`, `homebrewImport`, `homebrewTabs`,
     `homebrewBulk`, `homebrewCatalog`, `homebrewPrintPreview`, the three `timed` files, `cropDialog`, `record`,
@@ -580,16 +632,12 @@ Session pause, 2026-11-04 (owner restart). The next session continues from here.
 (`context.md`, "Owner AFK", "Wave reviews", "Local gates", "Mocks are direction"); defaults go to
 `C:\Users\Ignat\.dhloot\notes\owner-afk-2026-11-03\decisions.md` (items 1-11 so far).
 
-Tree at the pause: `claude/57` tip `96710fe3` pushed; a docs commit may sit on top, unpushed (it holds
-only `context.md` and this file; it rides the next push). CI run 41813328286 of `96710fe3` was in progress.
-
 In order:
-1. Read run 41813328286 (`gh run view 41813328286`). Its failures go to step 3's fix pass.
-2. `polish` and `harden` of batch 6 (the Impeccable skill, `reference/polish.md`, `harden.md`): the orchestrator
-   reads `issues/57/mocks/6/built/`, then writes the outcome in Notes.
-3. Reviewer: scope batch 6, diff base `da96cbf3`, HEAD `96710fe3`, report `reviews/6.md`, brief `plan-6.md` (its
-   22 deviations are in Completed), then one remediation pass for blockers and CI failures. A nit that needs a
-   golden re-seed rides the next batch.
+1. Done: CI run 41813328286 read, `polish` and `harden` of batch 6 (Notes), the review (`reviews/6.md`) and its
+   remediation pass (Completed, "Batch 6 remediation").
+2. The orchestrator waits on the CI of the remediation push (`ci-credit.mjs` is the orchestrator's). F14-F20 of
+   `e2e` ran only up to F14 on `96710fe3`, so F15-F20 run for the first time on this push.
+3. No second review unless CI fails: the fix moves no layout of `/homebrew`, and the editor's bar only up to 380 px.
 4. Batch 7, brief `plan-7.md`, `opus` (writer test 3). Add to its dispatch: `app.kinds` is shared with the
    roller, so a search pick must not leave the roller's kinds off; fix it here, not Deferred. Then polish,
    harden, review, fix, CI.
@@ -608,7 +656,7 @@ Facts for the dispatches:
 - `ci-credit.mjs` refuses when a writer's edits are in the tree: while a batch runs, read the run with
   `gh run watch <id> --exit-status` in the background instead. Each writer checks its predecessor's run before
   it pushes. A pushed run must have concluded before the next push.
-- Budget: 261.5 of 262 kB unconfigured (ceiling 270), 318.8 of 319 kB configured (ceiling 350). Raises follow the
+- Budget: 261.6 of 262 kB unconfigured (ceiling 270), 318.92 of 320 kB configured (ceiling 350). Raises follow the
   standing rule. Batch 7 and 9a add about 1-2 kB each, and wave 3 is not sized: past 266 kB, look for removals
   first; passing 270 stops for the owner.
 - The owner must keep Chrome open and signed in to Figma for batch P's burden export.
@@ -618,6 +666,10 @@ Facts for the dispatches:
 - None.
 
 ## Deferred
+- 6-N1 (the next batch with a golden re-seed): add an editor entry with a 120-character name as the fourth
+  `FIRST_SCREEN` row, or log its 1180 offset from one probe. From 761 px the `h1` takes three lines, so the
+  offset at 1180 is unmeasured (about 240 of 288 by the review's estimate).
+- `reviews/6.md`, "Checks still needed", item 3: the homebrew selection bar at 640x360 and at 768x1024.
 - `reviews/5.md`, "Checks still needed", items 3 to 5 (not measured here): the first `/roll/alt` card's
   menu at 360x640 with 7 or more lists at scroll 0; a right-column card's menu at about 1015-1075 px with
   a long list name; Tab and Enter on the nine routes at 360.
@@ -677,6 +729,8 @@ Facts for the dispatches:
   `.money-l`), HelpButton, `.steps-l` (RecordCard).
 
 ## Notes
+- Impeccable `polish` and `harden` of batch 6 (orchestrator, 2026-11-04, on `96710fe3`, from the shots
+  `homebrew`, `editor-new` at 360 RU and `homebrew` at 1180 RU; no live pass): no finding.
 - Impeccable `polish` and `harden` of batch 5 (orchestrator, 2026-11-04, on `9d4f47ec`, from the shots of
   `/roll/alt` and `/roll/std` at 360 and `/roll/alt` at 761; no live pass): no finding.
 - Impeccable `polish` and `harden` of batch 3b (orchestrator, 2026-11-04, on `38767ca4`,

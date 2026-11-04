@@ -46,7 +46,6 @@ RootWebArea "Топор Тлеющих Углей - Генератор лута 
           button "Нумерованный список"
           button "Таблица"
         textbox "Описание" [value=Лезвие тлеет и не гаснет под дождём. multiline=true readonly=false required=false]
-        StaticText "необязательно"
         button "Заменить"
         button "Убрать картинку"
         StaticText "Квадрат 640x640 из файла PNG, JPEG или WebP до 20 МБ. Картинка з..." [namelen=89 namehash=d79a0cd0]
@@ -243,7 +242,6 @@ RootWebArea "Ember Axe - Daggerheart Loot Generator" [url=/en/homebrew/hb_embera
           button "Numbered list"
           button "Table"
         textbox "Description" [value=Лезвие тлеет и не гаснет под дождём. multiline=true readonly=false required=false]
-        StaticText "optional"
         button "Replace"
         button "Remove the picture"
         StaticText "A 640x640 square from a PNG, JPEG or WebP file up to 20 MB. The ..." [namelen=94 namehash=d7d2d695]

@@ -6,3 +6,5 @@
 - Rejected: the mock's open card rows (the spec's closed fold stands); a popover for the move (a new clipped geometry over a blurred bar); a legend for required marks (a defect by the Clarity Rule); the preview card drawn twice and hidden per band (a duplicate id and two axe hits); corner handles on the crop frame that do not resize (a false affordance); a lit filter pill row on `/homebrew` (batch 3 removed pills from list pages).
 - Accepted trade-off: a bottom sheet for the move on a laptop; a menu with one danger item on a phone editor; about 35 lines of tab and picker CSS copied from `TableNav.svelte`.
 - Accepted: the screen card draws the shown language (D14 closes as by design).
+- Supersedes in part "Field help is a «?» by the label; every input has its own visible label" (2026-10-02): the editor and the card forms have no «?», and the second stat set's disclosure has no «?» beside it.
+- Supersedes in part "The homebrew editor keeps its save button, with a guard and a revision check" (2026-09-30): a required field has no red mark; the optional fields carry a word.

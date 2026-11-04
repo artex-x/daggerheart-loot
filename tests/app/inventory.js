@@ -278,13 +278,14 @@ async function clickEither(d, ru, en) {
   else await d.click(en);
 }
 
-/* «Импорт из файла» open on «Мои предметы», its lazy chunk loaded. */
 /* Ticks two of gm3's rows: the mode opens with the first tick. */
 async function hbTickTwo(d) {
   const names = await d.tickNames();
   for (const name of names.slice(0, 2)) await d.tick(name);
 }
 
+/* «Импорт из файла» open on «Мои предметы», its lazy chunk loaded. The panel's caption is
+   uppercase, and `innerText` reads it so. */
 async function hbImportOpen(d) {
   /* Up to 760 px the import is an item of the head's «Ещё». */
   const more = '.pickrow [aria-haspopup="menu"]';
@@ -293,7 +294,7 @@ async function hbImportOpen(d) {
   for (
     let i = 0;
     i < 40 &&
-    !/Импорт предметов из файла JSON|Import items from a JSON file/.test(await d.text());
+    !/Импорт предметов из файла JSON|Import items from a JSON file/i.test(await d.text());
     i++
   )
     await d.settle();

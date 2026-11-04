@@ -1128,6 +1128,20 @@ describe('the groups and the marks', () => {
     expect(screen.getByLabelText(/Название/)).toBeRequired();
   });
 
+  it('hides the word from a reader where the caption is hidden, and keeps it by a label', async () => {
+    await editor(RING);
+    const heads = [...document.querySelectorAll('.fhead')].filter((h) =>
+      h.querySelector('.opt')
+    );
+    const word = (caption: string): Element | null | undefined =>
+      heads
+        .find((h) => h.querySelector('.flabel')?.textContent === caption)
+        ?.querySelector('.opt');
+    expect(word(t.hbArt)).toHaveAttribute('aria-hidden', 'true');
+    expect(word(t.tier)).toHaveAttribute('aria-hidden', 'true');
+    expect(word(t.hbDesc)).not.toHaveAttribute('aria-hidden');
+  });
+
   it('presses the neutral option with a check and no gold', async () => {
     await editor(null);
     const on = within(group(t.hbKind)).getByRole('button', { pressed: true });
@@ -1195,12 +1209,20 @@ describe('the bar and the preview sheet up to 760 px', () => {
 
   it('closes the sheet when the band leaves narrow', async () => {
     const { app } = await editor(null, { band: 'narrow' });
+    const main = document.body.appendChild(document.createElement('main'));
+    main.id = 'main';
+    main.tabIndex = -1;
     await userEvent.click(screen.getByRole('button', { name: t.hbPreview }));
     app.band = 'wide';
     await waitFor(() => {
       expect(screen.queryByRole('dialog')).toBeNull();
     });
     expect(document.querySelectorAll('.preview .card')).toHaveLength(1);
+    /* The bar's «Предпросмотр» left with the band, so the focus goes to the main region. */
+    await waitFor(() => {
+      expect(main).toHaveFocus();
+    });
+    main.remove();
   });
 });
 

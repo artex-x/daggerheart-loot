@@ -184,12 +184,16 @@ const PAGES = [
     ['#/tables/eq_weapon', 'таблица снаряжения со своими предметами', 'gm1'],
     ['#/search', 'поиск со своими предметами', 'gm1'],
     ['#/homebrew/hb_emberaxeaaaaaaaa', 'редактор своего предмета', 'gm1'],
-    /* The print view: the switches wrap and the printed-size card stays in the column. */
+    /* The print view: the switches wrap and the printed-size card stays in the column, or
+       up to 760 px in the preview sheet, which the editor's bar opens. */
     [
       '#/homebrew/hb_emberaxeaaaaaaaa',
       'редактор своего предмета: вид на печати',
       'gm1',
-      (d) => either(d, 'click', 'На печати', 'In print')
+      async (d) => {
+        if (!(await d.count('.preview'))) await either(d, 'click', 'Предпросмотр', 'Preview');
+        await either(d, 'click', 'На печати', 'In print');
+      }
     ],
     ['#/lists/00000000-0000-4000-8000-000000000101', 'список аккаунта', 'gm1'],
     ['#/lists/00000000-0000-4000-8000-000000000102', 'пустой список аккаунта', 'gm1'],
@@ -203,10 +207,11 @@ const PAGES = [
       '#/homebrew',
       'импорт предметов: названия тех, что уже есть',
       'gm3',
-      /* gm3 has no stored language, so the English pass draws English labels. */
+      /* gm3 has no stored language, so the English pass draws English labels. The panel's
+         caption is uppercase in `innerText`, so the page's `lang` names the language. */
       async (d) => {
         await hbImportOpen(d);
-        const en = (await d.text()).includes('Import items from a JSON file');
+        const en = (await d.count('html[lang="en"]')) > 0;
         await d.upload(heldNamesFile());
         const go = en ? 'Import (12)' : 'Импортировать (12)';
         for (let i = 0; i < 40 && !(await d.text()).includes(go); i++) await d.settle();
