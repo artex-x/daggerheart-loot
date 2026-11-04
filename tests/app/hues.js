@@ -136,12 +136,19 @@ const gap = (a, b) => {
       const s = getComputedStyle(x);
       return {
         look: s.backgroundImage + '|' + s.backgroundColor + '|' + s.color,
-        primary: x.classList.contains('primary')
+        fill: s.backgroundImage + '|' + s.backgroundColor
       };
     })
   );
+  const plainFill = await page.$eval('.resacts .morewrap > .btn', (x) => {
+    const s = getComputedStyle(x);
+    return s.backgroundImage + '|' + s.backgroundColor;
+  });
   ok(dice.length === 5, 'not five dice: ' + dice.length);
-  ok(!dice.some((x) => x.primary), 'a die is primary');
+  ok(
+    dice.every((x) => x.fill === plainFill),
+    'a die is not filled as a plain button: ' + dice[0]?.fill + ' against ' + plainFill
+  );
   ok(
     new Set(dice.map((x) => x.look)).size === 1,
     'the dice look different: ' + [...new Set(dice.map((x) => x.look))].join(' / ')
@@ -191,14 +198,14 @@ const gap = (a, b) => {
     const el = document.querySelector('.tilewrap.sel .tile');
     return el ? getComputedStyle(el).backgroundColor : null;
   });
-  const plainFill = await page.evaluate(() => {
+  const tileFill = await page.evaluate(() => {
     const el = document.querySelector('.tilewrap:not(.sel) .tile');
     return el ? getComputedStyle(el).backgroundColor : null;
   });
   ok(!!selFill, 'selected tile: .tilewrap.sel .tile not found');
   ok(
-    !!plainFill && selFill !== plainFill,
-    'the selected tile does not differ in its fill: ' + selFill + ' vs ' + plainFill
+    !!tileFill && selFill !== tileFill,
+    'the selected tile does not differ in its fill: ' + selFill + ' vs ' + tileFill
   );
 
   await ctx.close();

@@ -88,6 +88,7 @@
     inset: 0;
     width: 100%;
     opacity: 0;
+    font: inherit;
     font-size: 16px;
     cursor: pointer;
   }

@@ -479,6 +479,13 @@
     vitest files, both lints, the golden re-seed when goldens move, and
     `rtk npm run check:fast` last; browser suites and sweeps run on CI, which
     is the full gate (`orchestrate.prompt.md`, "name the local checks").
+  - Answers of 2026-11-04 (owner, interactive): 4-R1, keep `/i/` as built up to
+    760 px (no sticky «В список», no 16:9), so the wave 2 blind review does not
+    reopen it. Q6-1, remove both `CardForm` «?» in batch 6: a short caption on
+    «Источник», as the editor gets, and no markup help; this is the owner's yes
+    to that visible change. Nits that need a golden re-seed ride the next
+    batch's re-seed; a fix pass carries blockers only (orchestrator, after the
+    owner's question on run time).
   - Owner AFK from 2026-11-03 (chat): release the whole task - wave 2, wave
     3, the post-delivery review - with the recommended option at each
     choice, logged in `C:\Users\Ignat\.dhloot\notes\owner-afk-2026-11-03\decisions.md`.

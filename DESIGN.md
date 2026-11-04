@@ -302,7 +302,8 @@ the tab they are on, the control they focused, the main action of the panel they
 are in. Gold on something nobody selected is wrong. The budget: a gold fill goes
 to one primary action per panel, to a choice that narrows the view, and to the
 current place. A pressed default (such as «Все» or a chip row with every chip on), a
-mode toggle, a die and a selection are neutral: a check and a lit `--muted2` border, no gold. The unique tag is
+mode toggle and a selection are neutral: a check and a lit `--muted2` border, no gold. A die
+is an action and plain: no gold, no check, no lit border. The unique tag is
 neutral and dashed, the roll number is Chalk on a seam border, and footer links
 are Ash Violet and underlined. The site share cards spend gold on the star
 alone. Seal Gold Soft on a link in prose is text, outside the fill budget.
@@ -429,18 +430,18 @@ help and the copy of every option are items of «Ещё». From 761px: the head 
 labeled pin and help, a 320px control pane, the results. The roller has one gold
 primary at most, and a die is plain.
 
-**The Action Vocabulary Rule.** «В список», «Поделиться», «Печать» and «Ещё» are
-the same four labeled controls on every record surface at every width; «Изменить»
-joins for the author. The copies and «Сохранить себе» live in «Ещё», a `Menu` that
-opens down on a page and, in the dialog, up where the room is only above, so from the
-dock. «В список» is the one gold primary; an open «Ещё» is not drawn pressed, because
-gold marks a choice. A label never gives way to an icon (The Same Label Rule).
-
 **The Dossier Rule.** A record page and the record dialog are one dossier: the
 picture beside the text from 761px and 4:3 above it below, no plate on a page. The
 name is drawn once. The dialog is a bottom sheet with a sticky dock up to 760px, not
 sticky in a window shorter than 481px, where two rows would take almost half of the
-height: a component rule, not a breakpoint.
+height: a component rule, not a breakpoint. «В список», «Поделиться», «Печать» and
+«Ещё» are the same four labeled controls on every record surface at every width;
+«Изменить» joins for the author. One exception: a roll result holds three controls, no
+«Печать», and a plain «В список», because the page's gold primary is the roll. The
+copies and «Сохранить себе» live in «Ещё», a `Menu` that opens down on a page and, in
+the dialog, up where the room is only above, so from the dock. «В список» is the one
+gold primary; an open «Ещё» is not drawn pressed, because gold marks a choice. A label
+never gives way to an icon (The Same Label Rule).
 
 **The Hidden Header Rule.** Up to 760px the whole header leaves on a scroll down
 and returns on a scroll up, on every page, because a phone reader needs the rows

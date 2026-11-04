@@ -987,6 +987,20 @@
     mask-image: none;
   }
 
+  /* The body's badges paint over the sunk picture's own ring, so the card repeats it on top. */
+  @media (min-width: 601px) {
+    .card.face:has(.card-media:focus-visible)::after {
+      content: '';
+      position: absolute;
+      inset: 0 0 auto;
+      aspect-ratio: 4 / 3;
+      box-sizing: border-box;
+      border: 2px solid var(--gold);
+      border-radius: var(--r-sm);
+      pointer-events: none;
+    }
+  }
+
   .card.face .card-body {
     margin-top: -26px;
     padding: 0 14px 12px;

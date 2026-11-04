@@ -39,9 +39,17 @@
     {onopen}
   />
   <div class="resacts" role="group" aria-label={nameOf(it, app.lang)}>
-    <AddToList {app} key={it.id} ids={[it.id]} size="sm" />
+    <!-- A roll is page memory, and the dialog over this card holds the same record. -->
+    <AddToList
+      {app}
+      key={it.id}
+      menuScope="roll-{col ?? 0}"
+      ids={[it.id]}
+      size="sm"
+      returnToRecord
+    />
     <RecordActions {app} {index} {it} row="share" size="sm" />
-    <!-- The same record can come up in both columns of the alternate tables. -->
+    <!-- A column in the id: two results must never share a name, whatever the data holds. -->
     <MoreMenu {app} id="roll-more-{it.id}-{col ?? 0}" size="sm">
       {#snippet children(close: () => void)}
         <RecordActions {app} {index} {it} row="menu" onpicked={close} />

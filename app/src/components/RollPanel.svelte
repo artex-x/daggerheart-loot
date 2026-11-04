@@ -137,9 +137,16 @@
 </RollPage>
 
 <style>
-  /* One card keeps the width of one of a pair. */
+  /* One card keeps the width of one of a pair; up to 600 px the card is a row and takes the
+     line, as on `/roll/std`. */
   .results {
     display: grid;
-    grid-template-columns: minmax(0, 380px);
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  @media (min-width: 601px) {
+    .results {
+      grid-template-columns: minmax(0, 380px);
+    }
   }
 </style>

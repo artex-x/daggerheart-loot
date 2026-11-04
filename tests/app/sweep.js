@@ -572,10 +572,11 @@ function headCap(width) {
                 '.craft, .rcraft, .dicebar, .numrow'
             )
             .forEach((e) => {
-              if (
-                e.scrollWidth > e.clientWidth + 1 &&
-                getComputedStyle(e).overflow !== 'visible'
-              )
+              const style = getComputedStyle(e);
+              /* A visually hidden label (`.vh`, or its rule under a media query) has no box
+                 to clip in. */
+              if (style.clipPath === 'inset(50%)') return;
+              if (e.scrollWidth > e.clientWidth + 1 && style.overflow !== 'visible')
                 out.clipped.push(
                   (e.className || e.tagName) + ': ' + e.textContent.trim().slice(0, 28)
                 );

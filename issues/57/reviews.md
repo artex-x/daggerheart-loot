@@ -85,3 +85,9 @@
 | 4-R2 | risk | local | accepted (brief; no change, the batch 8 sheet decision names it) | The toast covers part of the dock at 360 |
 | 4-R3 | risk | local | fixed 4-fix (`d.more` takes a wait; F20 passes `WAIT`) | `d.more` waits 5 s where F20 waited 20 s |
 | 4-N1..N9 | nit | local | fixed 4-fix (N1 accepted with its goldens; N3 by the `top` from the button, because the dock's grid reads the row's children; N8's CI budget figure waits for the re-run) | See `reviews/4.md`, Nits |
+| 5-B1 | blocker | local | fixed 5-fix (confirmed in the built app first: `aria-expanded` false, no menu, at 1180 and 360; `menuScope`, not `slot`, a Svelte attribute) | «В список» in the record dialog does nothing over a roll result: two `AddToList` share one `menuFor` key |
+| 5-CI | blocker | local | fixed 5-fix (sweep: the label is the `.vh` rule under a media query, so `sweep.js` skips `clip-path: inset(50%)`; `select` takes `font: inherit`; case 31 was a real defect: the body's badges cover the sunk picture's ring, so the card repeats it on top) | CI 41790682272: `.lbl` clipped in the sweep at 360 and 390; `RollSelect` select in Arial; case 31 focus ring on the face |
+| 5-R1 | risk | local | fixed 5-fix (`returnToRecord`, the old `inModal`; a stale `menuFor` after a roll also cleared on destroy) | A signed-out sign-in from a result returns to `/roll/std`; `menuFor` stays set |
+| 5-R2 | risk | deferred-scope | deferred (batch 6) | `.results` atomic status may re-read cards when a menu opens inside it |
+| 5-N1..N9 | nit | local | fixed 5-fix (N1 merged the Action Vocabulary Rule into the Dossier Rule, not the pair the review named; N9's `polish` and `harden` line says no outcome is recorded) | See `reviews/5.md`, Nits |
+| 5-N10 | nit | deferred-scope | deferred (batch 6) | En dash in «(1-30)» beside «Бросить 1-30» |

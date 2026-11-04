@@ -4,6 +4,7 @@ import { cleanup, render, screen, waitFor, within } from '@testing-library/svelt
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
+import RollResult from './RollResult.svelte';
 import { fakeCloud } from '../ports/fake-cloud.js';
 import { SEED } from '../ports/fake-cloud-seed.js';
 import {
@@ -14,6 +15,7 @@ import {
   memoryStorage
 } from '../ports/index.js';
 import type { Env } from '../ports/index.js';
+import { AppState } from '../state/app.svelte.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 import type { Loot } from '../lib/data.js';
 import type { Record_ } from '../lib/types.js';
@@ -121,6 +123,57 @@ describe('the row of a result', () => {
     await userEvent.click(add);
     expect(add).toHaveAttribute('aria-expanded', 'true');
     expect(container.querySelector('.resacts .dropmenu')).not.toBeNull();
+  });
+
+  it('leaves the dialog over the result its own menu, though both hold the same record', async () => {
+    const { container } = render(App, { env: at() });
+    await within(group()).findByRole('button', { name: 'В список' });
+    await userEvent.click(container.querySelector('.card.face .card-media') as HTMLElement);
+    const dialog = await screen.findByRole('dialog');
+    const add = within(dialog).getByRole('button', { name: 'В список' });
+    await userEvent.click(add);
+    expect(add).toHaveAttribute('aria-expanded', 'true');
+    expect(dialog.querySelectorAll('.dropmenu')).toHaveLength(1);
+    expect(container.querySelector('.resacts .dropmenu')).toBeNull();
+    await expectNoA11yViolations(dialog);
+  });
+
+  it('returns a sign-in to the record page, because a roll is not in the address', async () => {
+    const app = new AppState(at());
+    app.start();
+    await waitFor(() => {
+      expect(app.user).toBeNull();
+    });
+    render(RollResult, {
+      app,
+      index: app.index!,
+      it: app.recordFor('w1') as Record_,
+      onopen: vi.fn()
+    });
+    await userEvent.click(within(group()).getByRole('button', { name: 'В список' }));
+    await userEvent.click(screen.getByRole('button', { name: '+ Новый список' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Войти' }));
+    expect(app.signInFor).toEqual({
+      hash: '#/i/w1',
+      action: { do: 'addToList', key: 'w1', ids: ['w1'] }
+    });
+    app.stop();
+  });
+
+  it('gives up an open menu when a new roll replaces the card', async () => {
+    const app = new AppState(at());
+    app.start();
+    const { unmount } = render(RollResult, {
+      app,
+      index: app.index!,
+      it: app.recordFor('w1') as Record_,
+      onopen: vi.fn()
+    });
+    await userEvent.click(await within(group()).findByRole('button', { name: 'В список' }));
+    expect(app.menuFor).not.toBe('');
+    unmount();
+    expect(app.menuFor).toBe('');
+    app.stop();
   });
 
   it('has no axe violations closed and with «Ещё» open', async () => {

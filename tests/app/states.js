@@ -5587,10 +5587,60 @@ async function backwardTabClearsTheHeader() {
 /** Returns the window's box for `inside`. */
 const viewBox = (page) => page.evaluate(() => ({ x: 0, y: 0, w: innerWidth, h: innerHeight }));
 
+/** Answers the words of the result's name that a line break cuts. */
+const brokenWords = (page) =>
+  page.evaluate(() => {
+    const name = document.querySelector('.card-name a');
+    return name.textContent
+      .trim()
+      .split(/\s+/)
+      .filter((word) => {
+        const range = document.createRange();
+        const node = name.firstChild;
+        const from = node.textContent.indexOf(word);
+        range.setStart(node, from);
+        range.setEnd(node, from + word.length);
+        return range.getClientRects().length > 1;
+      });
+  });
+
+/** Draws the longest record name of the picker's `parts` on the result card, by stepping the
+ *  number field through each part; answers the name. */
+async function showLongestTitle(page, d, parts) {
+  await page.click('.reshead > .btn');
+  await page.waitForSelector('.numbox input');
+  let best = { name: '' };
+  for (const part of parts) {
+    await d.choose('.pick select', part);
+    const top = await page.evaluate(async () => {
+      const up = document.querySelectorAll('.numbox button')[1];
+      const found = { name: '', n: 1 };
+      for (let n = 1; ; n++) {
+        const name = document.querySelector('.card-name a').textContent.trim();
+        if (name.length > found.name.length) Object.assign(found, { name, n });
+        if (up.disabled) return found;
+        up.click();
+        await new Promise(requestAnimationFrame);
+      }
+    });
+    if (top.name.length > best.name.length) best = { ...top, part };
+  }
+  await d.choose('.pick select', best.part);
+  await page.$eval('.numbox input', (field) => {
+    field.focus();
+    field.select();
+  });
+  await page.keyboard.type(String(best.n));
+  await page.keyboard.press('Tab');
+  await d.settle();
+  return best.name;
+}
+
 /** 89. The nine roll pages share one layout (docs/specs/FEATURES.md, "Rolling"): at 761 px the
  *  heading, the pin and the help share one line; up to 760 px the heading is read, not drawn,
  *  and the results line holds its three parts; «Ещё» holds the pin and the help; the dice are
- *  two rows at 360; the card flips at 600/601 px; a picker never cuts the roll button. */
+ *  two rows at 360; the card flips at 600/601 px; a picker never cuts the roll button; the
+ *  longest title of «Проклятые предметы» and of Many Worlds Tavern breaks no word. */
 async function rollPageLayout() {
   const at = '89 (the roll page layout): ';
   for (const lang of ['ru', 'en']) {
@@ -5731,24 +5781,11 @@ async function rollPageLayout() {
           const row = await page.evaluate(() => {
             const r = (s) => document.querySelector(s).getBoundingClientRect();
             const btn = document.querySelector('.rp-ctrl .btn.primary');
-            const name = document.querySelector('.card-name a');
-            const broken = name.textContent
-              .trim()
-              .split(/\s+/)
-              .filter((word) => {
-                const range = document.createRange();
-                const node = name.firstChild;
-                const from = node.textContent.indexOf(word);
-                range.setStart(node, from);
-                range.setEnd(node, from + word.length);
-                return range.getClientRects().length > 1;
-              });
             return {
               pick: r('.pick').bottom,
               roll: btn.getBoundingClientRect().right,
               cut: btn.scrollWidth > btn.clientWidth,
-              line: r('.reshead').bottom,
-              broken
+              line: r('.reshead').bottom
             };
           });
           const where = route + ' ' + lang + ' ' + width + ' «' + longest + '»: ';
@@ -5757,7 +5794,17 @@ async function rollPageLayout() {
             width !== 360 || row.line <= 256,
             at + where + 'the results line ends at ' + row.line
           );
-          ok(!row.broken.length, at + where + 'a word breaks: ' + row.broken.join(' '));
+
+          const parts =
+            route === '#/roll/vault_of_ages'
+              ? ['C']
+              : await page.$eval('.pick select', (s) => [...s.options].map((o) => o.value));
+          const title = await showLongestTitle(page, d, parts);
+          const broken = await brokenWords(page);
+          ok(
+            !broken.length,
+            at + route + ' ' + lang + ' ' + width + ' «' + title + '»: a word breaks: ' + broken
+          );
         }
       }
       await ctx.close();
@@ -5799,7 +5846,8 @@ async function rollPageLayout() {
 /** 90. A result's row at 360x640 and 1180x720: three labeled controls inside the card's width;
  *  its «Ещё» holds the copies inside the window and a copy returns the focus to it; the
  *  add-to-list menu stays in the window, under the header, and with 150 lists scrolls with
- *  «+ Новый список» in view (docs/specs/FEATURES.md, "Records"). */
+ *  «+ Новый список» in view; the dialog over the result opens its own add menu
+ *  (docs/specs/FEATURES.md, "Records"). */
 async function resultRowAndMenus() {
   const at = '90 (the result row): ';
   for (const [width, height] of [
@@ -5853,25 +5901,53 @@ async function resultRowAndMenus() {
     await page.evaluate(() => {
       document.querySelector('.resacts').scrollIntoView({ block: 'center' });
     });
-    await d.openCardList();
-    const add = await page.evaluate(() => {
-      const box = (el) => {
-        const r = el.getBoundingClientRect();
-        return { x: r.x, y: r.y, w: r.width, h: r.height };
-      };
-      const list = document.querySelector('.resacts .dropmenu');
-      const chips = list.querySelector('.pickchips');
-      return {
-        menu: box(list),
-        add: box(list.querySelector(':scope > .chip') ?? list.lastElementChild),
-        scrolls: chips.scrollHeight > chips.clientHeight,
-        header: document.querySelector('.topbar').getBoundingClientRect().bottom
-      };
-    });
+    /* `pop` runs only with motion on, and its offset is what the menu's scroll margin answers. */
+    let add;
+    try {
+      await page.emulateMediaFeatures([
+        { name: 'prefers-reduced-motion', value: 'no-preference' }
+      ]);
+      await d.openCardList();
+      add = await page.evaluate(async () => {
+        const box = (el) => {
+          const r = el.getBoundingClientRect();
+          return { x: r.x, y: r.y, w: r.width, h: r.height };
+        };
+        const list = document.querySelector('.resacts .dropmenu');
+        await Promise.all(list.getAnimations().map((a) => a.finished));
+        const chips = list.querySelector('.pickchips');
+        return {
+          menu: box(list),
+          add: box(list.querySelector(':scope > .chip') ?? list.lastElementChild),
+          scrolls: chips.scrollHeight > chips.clientHeight,
+          header: document.querySelector('.topbar').getBoundingClientRect().bottom
+        };
+      });
+    } finally {
+      await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+    }
     ok(add.scrolls, where + 'the 150 lists do not scroll');
     ok(inside(add.menu, await viewBox(page)), where + 'the add menu leaves the window');
     ok(inside(add.add, add.menu), where + '«+ Новый список» leaves the add menu');
     ok(add.menu.y >= add.header, where + 'the add menu slides under the header');
+
+    await page.keyboard.press('Escape');
+    await page.click('.card.face .card-media');
+    await page.waitForSelector('dialog[open] .seldrop > .btn', { timeout: 5000 });
+    await d.settle();
+    await page.click('dialog[open] .seldrop > .btn');
+    await d.settle();
+    const dialog = await page.evaluate(() => ({
+      expanded: document
+        .querySelector('dialog[open] .seldrop > .btn')
+        .getAttribute('aria-expanded'),
+      inside: document.querySelectorAll('dialog[open] .dropmenu').length,
+      behind: document.querySelectorAll('.resacts .dropmenu').length
+    }));
+    ok(
+      dialog.expanded === 'true' && dialog.inside === 1 && dialog.behind === 0,
+      where + 'the dialog over a result does not open its add menu - ' + JSON.stringify(dialog)
+    );
     await ctx.close();
   }
 }

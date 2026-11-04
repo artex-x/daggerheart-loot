@@ -4,12 +4,12 @@
 ## Status
 - Task status: in_progress (wave 1 is on `main`; batches 3, 3b, 4 and 5 are on `claude/57`; `polish`,
   `harden`, the review and CI of the tip are the orchestrator's)
-- Last agent: implementer (batch 5, 2026-11-04)
+- Last agent: implementer (batch 5 remediation, 2026-11-04)
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
-- Previous sha: `4cfe9d91` (batch 4 remediation; `origin/main` `d83384b4` is merged)
-- Pushed: the batch 5 commit holds this handoff; its sha and push state are in the implementer's
-  report (`git log -1 --grep="Task: 57"`).
+- Previous sha: `9d4f47ec` (batch 5; `origin/main` `d83384b4` is merged)
+- Pushed: the batch 5 remediation commit holds this handoff; its sha and push state are in the
+  implementer's report (`git log -1 --grep="Task: 57"`).
 
 ## Completed
 - Batch 1 - foundation: `9a31aede`, review fix `80872b35` (`reviews/1.md`).
@@ -251,9 +251,33 @@
   | CI green on the tip | The orchestrator's wait |
   | Inherited: F18 of CI run 41778683447 (`4cfe9d91`, job `e2e`) | Fixed: signed out the item carries a second line, so `waitControl`'s `textContent` read never equals «Сохранить себе». F18 presses it with `d.more(name, WAIT)` and reads the sign-in prompt. F19 touches no moved control; F20 already uses `d.more`. Not runnable here: CI's `e2e` is the proof |
 
+- Batch 5 remediation (`reviews/5.md`, verdict fix-then-continue; CI run 41790682272):
+  - B1, confirmed in the built app on `9d4f47ec` (`/roll/wondrous_environments` as gm4, 1180 and 360:
+    `aria-expanded` false, no `.dropmenu`). `AddToList` takes `menuScope`, which prefixes the open
+    menu's name; `RollResult` passes `roll-{col ?? 0}`. Two departures from the review's text: `slot` is
+    a Svelte attribute, and a whole-name prop (`roll-{it.id}-...`) is a derived in the parent that reads
+    `it` while a part change empties the result, which `sections.test.ts` caught.
+  - R1: `inModal` on `AddToList` is now `returnToRecord`; `RollResult` sets it. One more local defect:
+    a roll with the menu open left `menuFor` set, because the card leaves before the click reaches the
+    document, so the header stopped hiding (measured at 360). `AddToList` clears its name on destroy.
+  - CI: `.lbl` is the `.vh` rule under a media query, with no real clip, so `sweep.js` skips
+    `clip-path: inset(50%)`. `RollSelect`'s `select` takes `font: inherit`. Case 31 was a real defect,
+    against the review's deviation 2: the badge row ends on the picture's bottom edge and covers the ring.
+    From 601 px `.card.face` repeats the ring above the body; the case is unchanged.
+  - N1: "The Action Vocabulary Rule" is merged into "The Dossier Rule", because the rule has no
+    citation and both name the record surfaces; "Layout" holds 8 rules. The pair the review named is
+    not merged: the Same Label Rule has code citations and another subject.
+  - N2, N3 in `DESIGN.md`; N4 in `hues.js` (a die's fill equals «Ещё»'s); N5 and the B1 press in case 90;
+    N6 in case 89 (`showLongestTitle` steps the number field to the row, then `brokenWords`); N7 in
+    `RollPanel` and `FEATURES.md`; N8 in `COVERAGE.md`, both READMEs (the pin's wording too), `alt.ts`,
+    `RollResult`; N9 below.
+  - Tests: three new `rollResult.test.ts` cases, all three failing at `9d4f47ec` in a detached worktree.
+  - `polish` and `harden` of batch 5 (S13): no outcome is recorded in `reviews/5.md` or in this
+    repository, and a subagent cannot run Impeccable. The line stays open for the orchestrator.
+
 - Batch 5 departures and deviations:
   1. `rollLabel` has two callers, so `ListPage`'s roll button reads «Бросить 1-N» too, against the brief's
-     "no list golden moves": about 30 `_lists_*` goldens move by that one line. One action keeps one
+     "no list golden moves": 23 `_lists_*` goldens move by that one line. One action keeps one
      label, and the other way needs a second function and `randomIn` until 9b.
   2. The picture of the face sits at `z-index: -1` in the card's own stacking context, and the body is
      not positioned. The brief's positioned body anchors the number badge to the body, not the card.
@@ -280,6 +304,14 @@
 - Plan review: not required for batch 3 (`plan.md` Status, no trigger fired).
 
 ## Verification
+- Batch 5 remediation, 2026-11-04, on the final tree:
+  - `npx vitest run` of `rollResult`, `pickRow`, `rollSelect`, `record`, `sections`, `a11y`, `selectionBar`
+    and `app`: 533 passed. The three new `rollResult` cases failed at `9d4f47ec` (3 failed, 9 passed).
+  - `node tests/run-all.js app/typo`: ok, 187.9 s. `npm run lint:untyped`, `npm run lint:typed`: exit 0.
+  - `npm run check:built`: exit 0, 258.0 kB within 258 (257.8 before): the budget has no room left.
+  - Cases 31, 89 and 90 from a scratch copy of `states.js`, filtered to the three, on `dist-test/`: all
+    passed. `app/states` itself, `app/sweep`, `app/hues` and the goldens are CI's. No golden was re-seeded.
+  - `rtk npm run check:fast`: run last; its result is in the implementer's report.
 - Batch 5, 2026-11-04, on the final tree:
   - `npx vitest run` of 22 files (the plan's list, plus `sections`, `chip`, `listPage`): 888 passed, then
     `app/src/lib/std.test.ts`: 3 passed; `check:fast` ran them again with the later tests. `npx svelte-check`: 0 errors.
@@ -445,7 +477,8 @@
 - Spelling scan over added lines and new files: only `aria-labelledby`.
 
 ## Next batch (implement-ready)
-- Name: `polish`, `harden` and the review of batch 5, then batch 6 (`plan-6.md`).
+- Name: CI of the remediation tip (`browser (1)` to `(3)` decide cases 31, 89, 90 and the sweep), the
+  orchestrator's `polish` and `harden` line of batch 5, then batch 6 (`plan-6.md`).
 - Risks / do-nots: `FilterBar` stays until batches 6 and 9a remove it, and `BatchBar`
   until batch 8; a golden is re-seeded, never edited.
 
@@ -453,6 +486,14 @@
 - None.
 
 ## Deferred
+- 5-R2 (batch 6 acceptance, rides its re-seed): `.results` is an atomic `role="status"`, and a menu
+  opens inside it. Recommended: a visually hidden status that names the rolled records, no `role`
+  on `.results`; about 40 `_roll_*` goldens move.
+- 5-N10 (batch 6 acceptance, rides its re-seed): the same page reads «Бросить 1-30» with a hyphen and
+  «Результат броска (1–30)» with an en dash (`StdPanel`, `RollPanel`); use one dash.
+- `reviews/5.md`, "Checks still needed", items 3 to 5 (not measured here): the first `/roll/alt` card's
+  menu at 360x640 with 7 or more lists at scroll 0; a right-column card's menu at about 1015-1075 px with
+  a long list name; Tab and Enter on the nine routes at 360.
 - 4-R1 (wave 2 blind review; the owner's choice): at 360x640 «В список» ends inside the first screen
   on 21 of 98 sampled records at the 4:3 crop (median bottom 693 px, worst 908 px). No device above
   760 px is affected. Current behavior: on a phone the primary is below the fold on most records.

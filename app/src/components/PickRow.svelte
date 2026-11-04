@@ -83,7 +83,7 @@
   });
 </script>
 
-<AddToList {app} key={it.id} ids={[it.id]} primary size="md" {inModal} />
+<AddToList {app} key={it.id} ids={[it.id]} primary size="md" returnToRecord={inModal} />
 <RecordActions {app} {index} {it} row="share" {extra} />
 {#if app.printTarget !== 'none'}
   <Button

@@ -36,7 +36,9 @@ across.
   is 4:3 and fades into the plate, with the roll number over its top right; up to
   600 px it is 96 px beside the text and the number is not drawn (the results line
   names the roll). Under the plate sits a row of «В список», «Поделиться» and
-  «Ещё», which holds the copies. One result is at most 380 px wide.
+  «Ещё», which holds the copies. From 601 px one result is at most 380 px wide; up
+  to 600 px it takes the line. A roll is page memory, so a sign-in from the row's
+  «В список» returns to the record's own page, with the menu open there.
 - The five dice of Core rules are plain buttons, none gold and none lit: a die is
   an action, not a choice. Each names the rarities it covers: up to 760 px two
   rows, three over two, with the count over the rarities; from 761 px a list under
