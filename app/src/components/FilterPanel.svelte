@@ -181,7 +181,7 @@
     width: 250px;
     flex: none;
     align-self: flex-start;
-    max-height: calc(100dvh - var(--anchor-top) - 16px);
+    max-height: calc(100dvh - var(--anchor-top) - var(--selbar-h, 0px) - 16px);
     overflow: auto;
     overscroll-behavior: contain;
     padding: 14px;

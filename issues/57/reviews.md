@@ -61,3 +61,18 @@
 | 2-N4 | nit | local | fixed 2-fix | S12.2 (C34, A15) had no outcome in the handoff |
 | 2-N5 | nit | deferred-scope | deferred (batch 5) | `SECTION_LABEL['roll/alt']` reads «Альт. таблицы», not the page heading |
 | 2-N6 | nit | deferred-scope | deferred (batch 10) | "until their page's batch moves them" is task-plan wording in `DESIGN.md` and `FEATURES.md` |
+| 3-B1 | blocker | local | fixed 3-fix | Alternate tables lost their source tag: `MANY_BOOKS` omits `alt_item`, `alt_consumable` |
+| 3-B2 | blocker | local | fixed 3-fix | `/s/` has an invisible tab stop: `SelectionBar` draws «Все» inside the idle `.vh` bar |
+| 3-B3 | blocker | local | fixed 3-fix | Search highlight splits names: `<mark>` in a flex `b` with an 8 px gap |
+| 3-B4 | blocker | local | fixed 3-fix (named departure: two lines at `--t-small`, the book over the table; `--t-body` still cut 8 of 18 RU captions) | The picker cuts most table names at 360 |
+| 3-B5 | blocker | local | fixed 3-fix (reproduced: 53 px of the column and 38 px of the last chip under the bar) | The selection bar covers the bottom of the filter column (`.fcol` max-height ignores `--selbar-h`) |
+| 3-R1 | risk | local | fixed 3-fix (reproduced) | A press on an «Ещё» item drops the focus |
+| 3-R2 | risk | local | fixed 3-fix (`filterOpen` and `moreOpen` reproduced; `picking` did not survive, `TableNav` remounts; the lost focus reproduced for all three) | `filterOpen`, `moreOpen`, `picking` survive a band change |
+| 3-R3 | risk | local | fixed 3-fix (reproduced) | «Выбрать» on an empty table drops the focus |
+| 3-R4 | risk | local | fixed 3-fix (reproduced) | Empty state prints an empty value list for a picked value no row offers |
+| 3-R5 | risk | local | fixed 3-fix (189 px at 640x360, cap 162; one action line in landscape instead of a scroll) | The bar has no `max-height: 45dvh`; overflow on the wrap would clip the `AddToList` menu |
+| 3-R6 | risk | local | fixed 3-fix (both cases added; the 458 case in `selectionBar.test.ts`, the 300 case in `tables.test.ts`) | The 458-id and 300-item scale fixtures do not exist |
+| 3-R7 | risk | local | fixed 3-fix (values below `wide` only; the search row position kept, named in the handoff) | Two mock departures at 1180 are not named |
+| 3-N1..N6, N8 | nit | local | fixed 3-fix | See `reviews/3.md`, Nits |
+| 3-N7 | nit | deferred-scope | deferred (batch 7) | See `reviews/3.md`, Nits |
+| 3-CI | blocker | local | fixed 3-fix | CI of `ef44bb5d`: `KeepNote.svelte` branch coverage 50%, its table caller gone |

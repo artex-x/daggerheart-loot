@@ -1,5 +1,5 @@
 <script lang="ts">
-  /* The plain table: chip nav, a toolbar, rows or tiles, selection, and a row
+  /* The plain table: the list head, the filters, rows or tiles, selection, and a row
      opening the record modal. Reproduced from `renderTables()` in app.js.
 
      One component holds every table - each `TableId` draws a real body, and
@@ -77,6 +77,7 @@
   import { hiddenTags } from '../lib/rowTags.js';
   import { hayFor, matches, parseQuery, statLineFor } from '../lib/search.js';
   import { communities, communityName, voaSectionName, VOA_SECTIONS } from '../lib/sections.js';
+  import type { Band } from '../ports/index.js';
   import type { AppState } from '../state/app.svelte.js';
   import { BARE_TABLE, type Record_, type TableId } from '../lib/types.js';
 
@@ -214,13 +215,16 @@
   /* Rule 20: the empty state's «Сбросить фильтры» goes with the empty state; the focus
      goes to the first «Все» of the column, or to «Фильтры», else `#main`. */
   let filterToggle = $state<HTMLButtonElement | undefined>(undefined);
-  async function resetFromEmpty(): Promise<void> {
-    resetFacets();
-    await tick();
+  function focusFilters(): void {
     const first = document.querySelector<HTMLElement>('.fcol .frow .chip');
     (
       first ?? (filterToggle?.isConnected ? filterToggle : document.getElementById('main'))
     )?.focus();
+  }
+  async function resetFromEmpty(): Promise<void> {
+    resetFacets();
+    await tick();
+    focusFilters();
   }
 
   /* The homebrew table hands out no link: its address opens nothing for anyone else
@@ -274,7 +278,7 @@
     return shownRows.filter((it) => passes(facetState, facetGroups, (g) => valueOf(it, g)));
   });
   /* The panel offers the values the shown rows answer (the chosen chip's on `homebrew`);
-     a picked value stays offered, so its pill stays (docs/specs/FEATURES.md, "Tables and search"). */
+     a picked value stays offered, so its chip stays (docs/specs/FEATURES.md, "Tables and search"). */
   const facRows = $derived(
     browse
       ? narrowRows(
@@ -305,14 +309,14 @@
   );
   const values = $derived(chosen.map((c) => c.label).join(', '));
 
-  /* The empty state's cause names the query, the values, or both. */
-  const emptyCause = $derived(
-    chosen.length && terms.length
-      ? t.emptyBoth.replace('%q', q.trim()).replace('%v', values)
-      : chosen.length
-        ? t.emptyFilters.replace('%v', values)
-        : t.emptyQuery.replace('%q', q.trim())
-  );
+  /* The empty state's cause names the query, the values, or both; none for a picked value
+     that no row offers. One pass with a function: `$&` or `%v` in a query stays text. */
+  const emptyCause = $derived.by(() => {
+    const fill = (s: string): string =>
+      s.replace(/%[qv]/g, (m) => (m === '%q' ? q.trim() : values));
+    if (chosen.length) return fill(terms.length ? t.emptyBoth : t.emptyFilters);
+    return terms.length ? fill(t.emptyQuery) : '';
+  });
   const emptyGlyph = $derived(
     eqKind === 'armor'
       ? 'kindArmor'
@@ -344,6 +348,32 @@
   let moreButton = $state<HTMLButtonElement | undefined>(undefined);
   const home = $derived(tablesHash(table));
   const pinned = $derived(app.home === canonicalHash(home));
+
+  /* Rule 20: the pressed item leaves with the menu, so the focus returns to «Ещё». */
+  function closeMore(): void {
+    moreOpen = false;
+    moreButton?.focus();
+  }
+
+  /* A band change takes the menu or a sheet away with no `close` event, so its flag is
+     reset here and a lost focus is placed. `TableNav` remounts, which resets the picker;
+     the filter sheet lives through a move between `narrow` and `mid`. */
+  let seenBand: Band | null = null;
+  $effect.pre(() => {
+    const now = band;
+    untrack(() => {
+      const moved = seenBand !== null && seenBand !== now;
+      seenBand = now;
+      if (!moved) return;
+      const open = moreOpen || filterOpen || app.dialogOpen;
+      if (now !== 'narrow') moreOpen = false;
+      if (now === 'wide') filterOpen = false;
+      if (!open) return;
+      void tick().then(() => {
+        if (document.activeElement === document.body) focusFilters();
+      });
+    });
+  });
 
   /* Ticks that arrive with the page (a sign-in that returns with them) open the mode. */
   $effect(() => {
@@ -666,6 +696,16 @@
   <TableNav {app} {table} sources={hbSources} source={hbSource} filter={filterState} />
 {/snippet}
 
+<!-- From 1000 px the column shows the picks, so the line is the count alone. -->
+{#snippet countLine()}
+  <p class="count" class:line={band === 'narrow'}>
+    {#if band !== 'wide'}<span class="vals">{values}</span
+      >{/if}{#if values && band === 'mid'}<span>&nbsp;·&#32;</span>{/if}<span class="n"
+      >{countText}</span
+    >
+  </p>
+{/snippet}
+
 <!-- The list head (docs/specs/FEATURES.md, "Tables and search"): below 761 px the page
      name is read, not drawn, and the picker row holds the table, the view and «Ещё». -->
 {#if band === 'narrow'}
@@ -701,7 +741,7 @@
               role="menuitem"
               tabindex="-1"
               onclick={() => {
-                moreOpen = false;
+                closeMore();
                 void copyTableLink();
               }}><Icon name="link" />{t.tableLink}</button
             >
@@ -711,7 +751,7 @@
             role="menuitem"
             tabindex="-1"
             onclick={() => {
-              moreOpen = false;
+              closeMore();
               app.pinHome(home);
             }}><Icon name={pinned ? 'check' : 'home'} />{pinned ? t.homeOn : t.homeHint}</button
           >
@@ -722,9 +762,9 @@
               tabindex="-1"
               aria-expanded={helpOpen}
               onclick={() => {
-                moreOpen = false;
+                closeMore();
                 helpOpen = !helpOpen;
-              }}>{help.button ?? t.helpHint}</button
+              }}><Icon name="help" />{help.button ?? t.helpHint}</button
             >
           {/if}
         </Menu>
@@ -797,17 +837,13 @@
             <Switch label={t.ownSwitch} on={app.homebrewShown} onchange={toggleOwn} />
           {/if}
           {#if linkable}
-            <Button title={t.tableLink} onclick={() => void copyTableLink()}>
+            <Button size="sm" title={t.tableLink} onclick={() => void copyTableLink()}>
               <Icon name="link" /><span>{t.tableLink}</span>
             </Button>
           {/if}
-          {#if narrowed}<span class="count"
-              ><span class="vals">{values}</span>{#if values}<span>&nbsp;·&#32;</span>{/if}<span
-                class="n">{countText}</span
-              ></span
-            >{/if}
+          {#if narrowed}{@render countLine()}{/if}
         {/if}
-        {#if !app.selecting}
+        {#if !app.selecting && drawnIds.length > 0}
           <button
             type="button"
             class="selmode"
@@ -817,13 +853,7 @@
           >
         {/if}
       </div>
-      {#if band === 'narrow' && narrowed}
-        <p class="count line">
-          <span class="vals">{values}</span>{#if values}<span>&nbsp;·&#32;</span>{/if}<span
-            class="n">{countText}</span
-          >
-        </p>
-      {/if}
+      {#if band === 'narrow' && narrowed}{@render countLine()}{/if}
 
       <div class="body" class:withcol={band === 'wide' && facRows.length > 0}>
         {#if facRows.length}
@@ -842,7 +872,7 @@
             onclear={clearFacet}
             onreset={resetFacets}
             oncopylink={linkable ? () => void copyFilterLink() : undefined}
-            own={own && band !== 'wide'
+            own={own && band === 'narrow'
               ? { on: app.homebrewShown, onchange: toggleOwn }
               : undefined}
           />
@@ -853,7 +883,7 @@
           {#if bodyKind === 'alt'}
             {#if altSections.length === 0}
               <Empty title={t.nothing} glyph={emptyGlyph}>
-                <p class="cause">{emptyCause}</p>
+                {#if emptyCause}<p class="cause">{emptyCause}</p>{/if}
               </Empty>
             {:else}
               {#each altSections as s (s.key)}
@@ -894,7 +924,7 @@
             {/if}
           {:else if filtered.length === 0}
             <Empty title={t.nothing} glyph={emptyGlyph}>
-              <p class="cause">{emptyCause}</p>
+              {#if emptyCause}<p class="cause">{emptyCause}</p>{/if}
               {#if chosenCount(facetState, facetGroups) > 0}
                 <Button variant="primary" onclick={() => void resetFromEmpty()}
                   >{t.resetFilters}</Button
@@ -975,7 +1005,7 @@
   .pickrow {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
     margin-bottom: 6px;
   }
 
@@ -992,9 +1022,9 @@
   .morebtn {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
     min-height: 40px;
-    padding: 0 10px;
+    padding: 0 7px;
     border: 1px solid var(--line2);
     border-radius: var(--r-sm);
     background: var(--surface);
@@ -1006,7 +1036,7 @@
     border-color: var(--muted2);
   }
 
-  /* The search row: the search first, «Выбрать» last. */
+  /* The search row: the search first, «Выбрать» last, every control at one height. */
   .searchrow {
     display: flex;
     gap: 8px 10px;
@@ -1015,13 +1045,23 @@
     margin: 16px 0 12px;
   }
 
+  .searchrow :global(input[type='search']),
+  .searchrow :global(.btn.sm),
+  .searchrow :global(.switch),
+  .selmode {
+    height: 40px;
+  }
+
+  .searchrow :global(.seg.small button) {
+    font-size: var(--t-data);
+  }
+
   .searchrow .grow {
     flex: 1 1 140px;
     min-width: 140px;
   }
 
   .selmode {
-    height: 32px;
     padding: 0 11px;
     border: 1px solid var(--line2);
     border-radius: var(--r-sm);
@@ -1039,6 +1079,7 @@
     display: flex;
     align-items: baseline;
     min-width: 0;
+    margin: 0;
     max-width: 100%;
     font-size: var(--t-data);
     color: var(--muted);
@@ -1063,7 +1104,7 @@
     line-height: 16px;
   }
 
-  /* Below 761 px the search row is one 40 px line: the search, «Фильтры», «Выбрать». */
+  /* Below 761 px the search row is one line: the search, «Фильтры», «Выбрать». */
   @media (max-width: 760px) {
     .searchrow {
       margin: 0 0 8px;
@@ -1073,7 +1114,6 @@
     .searchrow :global(input[type='search']),
     .searchrow :global(.btn.sm),
     .selmode {
-      height: 40px;
       padding: 0 9px;
     }
   }

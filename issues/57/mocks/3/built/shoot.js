@@ -16,6 +16,10 @@ const STATES = [
     narrow: T('Таблица: Оружие', 'Table: Weapons')
   },
   { id: 'catalog-more', route: '#/tables/eq_weapon', narrow: T('Ещё', 'More') },
+  { id: 'picker-alt-cons', route: '#/tables/alt_consumable', only: 360 },
+  { id: 'picker-hnf-cons', route: '#/tables/hope_and_fear_consumable', only: 360 },
+  { id: 'picker-wondrous', route: '#/tables/wondrous_environments', only: 360 },
+  { id: 'catalog-alt', route: '#/tables/alt_item', only: 360 },
   { id: 'catalog-grid', route: '#/tables/wondrous_environments', press: T('Сетка', 'Grid') },
   { id: 'catalog-selecting', route: '#/tables/eq_weapon', press: T('Выбрать', 'Select') },
   { id: 'catalog-searched', route: '#/tables/eq_weapon', type: 'меч' },
@@ -33,6 +37,7 @@ const STATES = [
     for (const lang of ['ru', 'en']) {
       for (const s of STATES) {
         if (width === 768 && s.id !== 'catalog' && s.id !== 'catalog-sheet') continue;
+        if (s.only && s.only !== width) continue;
         if (s.narrow && width === 1180) continue;
         if (s.wide && width === 360) continue;
         const { ctx, page, d } = await fresh({

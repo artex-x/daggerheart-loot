@@ -34,8 +34,6 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     button "Список" [pressed=true]
     button "Сетка" [pressed=false]
     button "Ссылка на таблицу"
-    StaticText "Ранг 1, Двуручное"
-    StaticText " ·"
     StaticText "Показано 48 из 458"
     button "Выбрать"
     complementary "Фильтры"
@@ -213,8 +211,6 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_ti
     button "List" [pressed=true]
     button "Grid" [pressed=false]
     button "Link to this table"
-    StaticText "Tier 1, Two-Handed"
-    StaticText " ·"
     StaticText "48 of 458 shown"
     button "Select"
     complementary "Filters"

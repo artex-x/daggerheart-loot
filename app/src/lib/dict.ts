@@ -256,7 +256,6 @@ const ru = {
   sourceLabel: 'Источник',
   /* The three-dot menu of a page's rare actions (the icon and the word). */
   moreMenu: 'Ещё',
-  aboutData: 'Об этих данных',
   tableLink: 'Ссылка на таблицу',
   tableLinkCopied: 'Ссылка на таблицу скопирована',
   view: 'Вид',
@@ -1317,7 +1316,6 @@ const en: Dict = {
   groupLabel: 'Group',
   sourceLabel: 'Source',
   moreMenu: 'More',
-  aboutData: 'About this data',
   tableLink: 'Link to this table',
   tableLinkCopied: 'Table link copied',
   view: 'View',

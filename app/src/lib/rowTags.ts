@@ -22,7 +22,9 @@ const MANY_BOOKS: readonly TableId[] = [
   'eq_weapon',
   'eq_secondary',
   'eq_armor',
-  'other_starting'
+  'other_starting',
+  'alt_item',
+  'alt_consumable'
 ];
 
 /** Returns the tags a row of `table` hides under `filter`; `underTier` is a tier heading. */

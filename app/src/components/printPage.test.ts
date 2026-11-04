@@ -13,6 +13,7 @@ import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
+import KeepNote from './KeepNote.svelte';
 import PrintCard from './PrintCard.svelte';
 import type { Loot } from '../lib/data.js';
 import { dict } from '../lib/dict.js';
@@ -31,6 +32,7 @@ import {
 import type { Env } from '../ports/index.js';
 import { fakeCloud, type FakeCloud } from '../ports/fake-cloud.js';
 import { SEED, uuid, type Seed } from '../ports/fake-cloud-seed.js';
+import { AppState } from '../state/app.svelte.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 import { emptyRanges, fakeLayout } from '../test/layout.js';
 
@@ -783,6 +785,11 @@ describe('black and white', () => {
 
 describe('the note under the bar', () => {
   const note = (): Element | null => document.querySelector('.keepnote');
+
+  it('draws nothing in a build without sign-in, which has no place to set a default', () => {
+    render(KeepNote, { app: new AppState(fakeEnv()) });
+    expect(note()).toBeNull();
+  });
 
   it('links the account while either switch differs from the default, and goes when both are back', async () => {
     const { container } = render(App, { env: await atSet('ci1-q1') });

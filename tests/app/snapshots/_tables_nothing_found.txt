@@ -34,7 +34,6 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     button "Сетка" [pressed=false]
     button "Ссылка на таблицу"
     StaticText "Показано 0 из 60"
-    button "Выбрать"
     StaticText "Ничего не найдено"
     StaticText "Нет совпадений с «zzzqqqxx123» в названиях и описаниях этой табл..." [namelen=68 namehash=094b6c5b]
   contentinfo ""
@@ -54,7 +53,6 @@ daggerheart.com
 Альт. таблицы
 Бросок
 Войти
-Выбрать
 Дополнения
 К содержимому
 Конфиденциальность
@@ -105,7 +103,6 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables]
     button "Grid" [pressed=false]
     button "Link to this table"
     StaticText "0 of 60 shown"
-    button "Select"
     StaticText "Nothing found"
     StaticText "No match for "zzzqqqxx123" in the names and text of this table."
   contentinfo ""
@@ -136,7 +133,6 @@ RU
 Roll
 Search
 Search by name or description...
-Select
 Sign in
 Skip to content
 Supplements

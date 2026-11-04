@@ -17,6 +17,7 @@
     navGroupOf,
     navSubLabel,
     pickerLabel,
+    pickerParts,
     type TableGroup
   } from '../lib/tables.js';
   import type { TableId } from '../lib/types.js';
@@ -54,6 +55,7 @@
     );
 
   const picker = $derived(pickerLabel(table, t));
+  const parts = $derived(pickerParts(table, t));
 </script>
 
 <!-- eslint-disable @typescript-eslint/no-confusing-void-expression -- a `{@render}` tag of a
@@ -111,7 +113,10 @@
       onclick={() => {
         sheetGroup = null;
         picking = true;
-      }}><span class="picker-t">{picker}</span><Icon name="chevron" /></button
+      }}
+      ><span class="picker-t"
+        >{#if parts.book}<span class="picker-book">{parts.book}</span>{/if}{parts.name}</span
+      ><Icon name="chevron" /></button
     >
     {#if picking}
       <Sheet
@@ -197,23 +202,34 @@
   .picker {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: 2px;
     max-width: 100%;
     min-height: 40px;
     padding: 0;
     border: 0;
     background: none;
     color: var(--txt);
-    font: var(--h-page-weight) var(--t-section) / 1.2 var(--ui);
+    font: var(--h-page-weight) var(--t-small) / 1.2 var(--ui);
     letter-spacing: var(--h-page-spacing);
     text-align: left;
   }
 
+  /* Two lines fit the row's 40 px. The Russian row leaves 94 px at 360 (measured
+     2026-11-03): a larger face cuts «Расходники» and «Environments». */
   .picker-t {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
     min-width: 0;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
+  }
+
+  .picker-book {
+    display: block;
+    color: var(--muted);
+    font-weight: 600;
   }
 
   .narrow {

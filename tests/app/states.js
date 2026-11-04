@@ -605,6 +605,45 @@ async function selectionBarGeometry() {
   await ctx2.close();
 }
 
+/** 84. The filter column stuck under the header ends above the selection bar, so its last
+ *  chip clears the bar: it scrolls inside itself, out of the page's scroll padding. */
+async function filterColumnClearsTheBar() {
+  const { ctx, page, d } = await fresh({ width: 1180, height: 720 });
+  await d.open('#/tables/eq_weapon');
+  await d.press('Выбрать');
+  const m = await page.evaluate(async () => {
+    window.scrollTo(0, 900);
+    const col = document.querySelector('.fcol');
+    await new Promise((r) => requestAnimationFrame(r));
+    col.scrollTop = col.scrollHeight;
+    await new Promise((r) => requestAnimationFrame(r));
+    const barTop = document.querySelector('.selbarwrap').getBoundingClientRect().top;
+    return {
+      barTop,
+      colBottom: col.getBoundingClientRect().bottom,
+      chipBottom: [...col.querySelectorAll('.chip')].at(-1).getBoundingClientRect().bottom
+    };
+  });
+  ok(
+    m.colBottom <= m.barTop && m.chipBottom <= m.barTop,
+    '84 (filter column): the bar covers the column - ' + JSON.stringify(m)
+  );
+  await ctx.close();
+}
+
+/** 85. The shared page's tallest action row stays under 45% of a landscape phone. */
+async function selectionBarInLandscape() {
+  const { ctx, page, d } = await fresh({ width: 640, height: 360 });
+  await d.open('#/s/player-token-1', { as: 'gm2' });
+  await waitIn(page, bodyHas, 'Лавка кузнеца');
+  await d.tick('Первоклассный Спальный Мешок');
+  const h = await page.evaluate(
+    () => document.querySelector('.selbarwrap').getBoundingClientRect().height
+  );
+  ok(h <= 360 * 0.45, '85 (selection bar in landscape): the bar is ' + h + ' px tall');
+  await ctx.close();
+}
+
 /** 17. A real HTML5 drag reorder, ported from the legacy `lists2.js`. */
 async function dragReorder() {
   const seedIds = ['ci1', 'ci2', 'ci3', 'ci4'];
@@ -5146,7 +5185,9 @@ const CASES = [
   ['80 (the homebrew refusals take the error look)', homebrewRefusalLook],
   ['81 (the address bar)', addressBarPathForm],
   ['82 (the Items tab filter address)', homebrewItemsFilterAddress],
-  ['83 (primary content starts in the first screen)', primaryContentInFirstScreen]
+  ['83 (primary content starts in the first screen)', primaryContentInFirstScreen],
+  ['84 (filter column clears the selection bar)', filterColumnClearsTheBar],
+  ['85 (selection bar in landscape)', selectionBarInLandscape]
 ];
 
 (async () => {

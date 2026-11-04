@@ -31,7 +31,6 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/player-token-1?v=<
     button "Колдующий Кинжал ОСНОВНОЕ ОРУЖИЕ HOPE & FEAR Ранг 1 · Магическое..." [namelen=217 namehash=26fb60d0]
     status ""
   region "Выбранные записи"
-    checkbox "Выбрать все" [checked=false]
     generic ""
   contentinfo ""
     navigation "Страницы сайта"
@@ -46,7 +45,6 @@ RU
 daggerheart.com
 Бросок
 Войти
-Выбрать все
 К содержимому
 Колдующий Кинжал
 Колдующий КинжалОсновное оружиеHope & FearРанг 1 · Магическое · ... [namelen=213 namehash=9cd182eb]
@@ -88,7 +86,6 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-1?v=<v>]
     button "Casting Dagger PRIMARY WEAPON HOPE & FEAR Tier 1 · Magic · Insti..." [namelen=180 namehash=610850d0]
     status ""
   region "Selected records"
-    checkbox "Select all" [checked=false]
     generic ""
   contentinfo ""
     navigation "Site pages"
@@ -109,7 +106,6 @@ RU
 Roll
 Save to my lists
 Search
-Select all
 Sign in
 Skip to content
 Tables

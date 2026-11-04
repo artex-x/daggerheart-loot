@@ -329,6 +329,9 @@ describe('search', () => {
     /* The match is marked in the name, with more than color (WCAG 1.4.1). */
     const mark = document.querySelector('[data-row="ci1"] mark');
     expect(mark).toHaveTextContent('Тишины');
+    /* One parent for every run: the name line is flex, and a run of its own is a flex
+       item with a gap around it. */
+    expect(mark?.parentElement).toHaveClass('rname');
     expect(mark?.parentElement).toHaveTextContent('Кольцо Тишины');
   });
 
@@ -397,7 +400,7 @@ describe('the view switch', () => {
     expect(document.querySelector('.keepnote')).toBeNull();
   });
 
-  it('draws no note under the view switch, which carries the choice alone (Q3.2)', async () => {
+  it('draws no note under the view switch, which carries the choice alone', async () => {
     const { container } = render(App, { env: at({ cloud: fakeCloud(SEED) }) });
     await userEvent.click(screen.getByRole('button', { name: 'Сетка' }));
     expect(document.querySelector('.keepnote')).toBeNull();
@@ -843,7 +846,21 @@ describe('the filter', () => {
       'false'
     );
     expect(screen.getByRole('heading', { name: 'Фильтры · 1' })).toBeInTheDocument();
-    expect(container.querySelector('.count')).toHaveTextContent('Предметы · Показано 1 из 2');
+    /* The column shows the pick, so the row repeats the count alone. */
+    expect(container.querySelector('.count')?.textContent.trim()).toBe('Показано 1 из 2');
+  });
+
+  it('names the pick in the search row at the mid band, where no column shows it', () => {
+    const { container } = render(App, {
+      env: fakeEnv({
+        router: memoryRouter('#/tables/wondrous/f_kind-item'),
+        data: fakeData(LOOT),
+        viewport: fakeViewport('mid')
+      })
+    });
+    expect(container.querySelector('.searchrow .count')).toHaveTextContent(
+      'Предметы · Показано 1 из 2'
+    );
   });
 
   it('a search alone shows the count too, without values', async () => {
@@ -889,6 +906,36 @@ describe('the filter', () => {
     expect(within(empty).queryByRole('button')).toBeNull();
   });
 
+  it('keeps a query with replacement patterns as text in the cause', async () => {
+    render(App, { env: wond() });
+    await userEvent.click(screen.getByRole('button', { name: 'Предметы' }));
+    await userEvent.type(screen.getByPlaceholderText('Поиск'), '%v $&');
+    expect(screen.getByText('Ничего не найдено').closest('.empty')).toHaveTextContent(
+      'Нет совпадений с «%v $&» среди фильтров: Предметы.'
+    );
+  });
+
+  it('draws no cause for a picked value that no row offers, and keeps the reset', () => {
+    const { container } = render(App, {
+      env: fakeEnv({
+        router: memoryRouter('#/tables/eq_weapon/f_tier-9'),
+        data: fakeData(LOOT)
+      })
+    });
+    expect(screen.getByText('Ничего не найдено')).toBeInTheDocument();
+    expect(container.querySelector('.cause')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Сбросить фильтры' })).toBeInTheDocument();
+  });
+
+  it('draws no «Выбрать» while no row is drawn, and draws it again with the rows', async () => {
+    render(App, { env: wond() });
+    const box = screen.getByPlaceholderText('Поиск');
+    await userEvent.type(box, 'нет такого');
+    expect(screen.queryByRole('button', { name: 'Выбрать' })).toBeNull();
+    await userEvent.clear(box);
+    expect(screen.getByRole('button', { name: 'Выбрать' })).toBeInTheDocument();
+  });
+
   it('below 1000 px opens no sheet on a filter link; «Фильтры · 1» opens it and «Закрыть» returns', async () => {
     const env = fakeEnv({
       router: memoryRouter('#/tables/wondrous/f_kind-item'),
@@ -897,7 +944,10 @@ describe('the filter', () => {
     });
     const { container } = render(App, { env });
     expect(screen.queryByRole('dialog')).toBeNull();
-    expect(container.querySelector('p.count')).toHaveTextContent('Предметы · Показано 1 из 2');
+    const line = container.querySelector('p.count.line');
+    expect(line?.querySelector('.vals')).toHaveTextContent('Предметы');
+    expect(line?.querySelector('.n')).toHaveTextContent('Показано 1 из 2');
+    expect(line?.textContent).not.toContain('·');
     const toggle = screen.getByRole('button', { name: 'Фильтры · 1' });
     expect(toggle).toHaveClass('toggle');
     await userEvent.click(toggle);
@@ -1032,7 +1082,7 @@ describe('the equipment tables', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Магическое' }));
     /* `core_item` carries a weapon stat block too, so the pool is one more than `eq`'s
        own four weapon rows. */
-    expect(container.querySelector('.count')).toHaveTextContent('Магическое · Показано 2 из 5');
+    expect(container.querySelector('.count')?.textContent.trim()).toBe('Показано 2 из 5');
   });
 
   it('draws only the fields the rows can narrow: six on weapons, two on armor, none on one secondary', () => {
@@ -1105,11 +1155,16 @@ describe('the equipment tables', () => {
 
   it('a tier pick reads "Ранг 1" and a burden pick reads "Двуручное" in the count line', async () => {
     const { container } = render(App, {
-      env: fakeEnv({ router: memoryRouter('#/tables/eq_weapon'), data: fakeData(LOOT) })
+      env: fakeEnv({
+        router: memoryRouter('#/tables/eq_weapon'),
+        data: fakeData(LOOT),
+        viewport: fakeViewport('mid')
+      })
     });
+    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
     await userEvent.click(screen.getByRole('button', { name: '1' }));
     await userEvent.click(screen.getByRole('button', { name: 'Двуручное' }));
-    expect(container.querySelector('.count')?.textContent.replace(/\s+/g, ' ')).toMatch(
+    expect(container.querySelector('.count')?.textContent.replace(/\s+/g, ' ').trim()).toMatch(
       /^Ранг 1, Двуручное · Показано \d+ из \d+$/
     );
   });
@@ -1701,19 +1756,89 @@ describe('the head below 761 px', () => {
     const items = screen.getAllByRole('menuitem').map((m) => m.textContent);
     expect(items).toEqual(['Ссылка на таблицу', 'Открывать при запуске', 'Об этих данных']);
     await expectNoA11yViolations(container);
+    const more = screen.getByRole('button', { name: 'Ещё' });
     await userEvent.click(screen.getByRole('menuitem', { name: 'Ссылка на таблицу' }));
     expect(clip.last.text).toBe('https://example.test/tables/eq_weapon');
-    await userEvent.click(screen.getByRole('button', { name: 'Ещё' }));
+    expect(more).toHaveFocus();
+    await userEvent.click(more);
     await userEvent.click(screen.getByRole('menuitem', { name: 'Открывать при запуске' }));
     expect(
       screen.getByText('Приложение будет открываться на этом разделе')
     ).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Ещё' }));
+    expect(more).toHaveFocus();
+    await userEvent.click(more);
     expect(
       screen.getByRole('menuitem', { name: 'Открывается при запуске' })
     ).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('menuitem', { name: 'Об этих данных' }));
+    const about = screen.getByRole('menuitem', { name: 'Об этих данных' });
+    expect(about.querySelector('svg')).not.toBeNull();
+    await userEvent.click(about);
     expect(screen.getByText(/Класс - раздел книги, а не тип урона/)).toBeInTheDocument();
+    expect(more).toHaveFocus();
+  });
+
+  it('closes «Ещё» for good on a band change, and places the focus', async () => {
+    const viewport = fakeViewport('narrow');
+    render(App, { env: narrow({ viewport }) });
+    await userEvent.click(screen.getByRole('button', { name: 'Ещё' }));
+    viewport.set('mid');
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Фильтры' })).toHaveFocus();
+    });
+    viewport.set('narrow');
+    await tick();
+    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Ещё' })).toHaveAttribute(
+      'aria-expanded',
+      'false'
+    );
+  });
+
+  it('closes the picker for good on a band change, and places the focus', async () => {
+    const viewport = fakeViewport('narrow');
+    render(App, { env: narrow({ viewport }) });
+    await userEvent.click(screen.getByRole('button', { name: 'Таблица: Оружие' }));
+    viewport.set('mid');
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Фильтры' })).toHaveFocus();
+    });
+    viewport.set('narrow');
+    await tick();
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('closes the filter sheet for good when the column takes over, and focuses its «Все»', async () => {
+    const viewport = fakeViewport('mid');
+    render(App, { env: narrow({ viewport }) });
+    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
+    viewport.set('wide');
+    const column = await screen.findByRole('complementary', { name: 'Фильтры' });
+    await waitFor(() => {
+      expect(within(column).getAllByRole('button', { name: 'Все' })[0]).toHaveFocus();
+    });
+    expect(screen.queryByRole('dialog')).toBeNull();
+    viewport.set('mid');
+    await tick();
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('keeps the filter sheet open between the two bands that draw it', async () => {
+    const viewport = fakeViewport('mid');
+    render(App, { env: narrow({ viewport }) });
+    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
+    viewport.set('narrow');
+    await tick();
+    expect(screen.getByRole('dialog', { name: 'Фильтры' })).toBeInTheDocument();
+  });
+
+  it('draws «Свои предметы» once at the mid band: in the search row, not in the sheet', async () => {
+    render(App, {
+      env: narrow({ viewport: fakeViewport('mid'), cloud: fakeCloud(SEED, 'gm1') })
+    });
+    await screen.findByRole('switch', { name: 'Свои предметы' });
+    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
+    const sheet = within(screen.getByRole('dialog', { name: 'Фильтры' }));
+    expect(sheet.queryByRole('switch')).toBeNull();
   });
 
   it('draws no table link in «Ещё» on the own items table (rule 17)', async () => {
@@ -1722,6 +1847,29 @@ describe('the head below 761 px', () => {
     });
     await userEvent.click(screen.getByRole('button', { name: 'Ещё' }));
     expect(screen.queryByRole('menuitem', { name: 'Ссылка на таблицу' })).toBeNull();
+  });
+});
+
+describe('the own items table at scale', () => {
+  it('draws 300 own items, and «Все» ticks the rows a search leaves', async () => {
+    const env = fakeEnv({
+      router: memoryRouter('#/tables/homebrew'),
+      data: fakeData(LOOT),
+      cloud: fakeCloud(SEED, 'gm1', { fillItems: 300 })
+    });
+    const { container } = render(App, { env });
+    await waitFor(() => {
+      /* The first source tab holds the most of the 300. */
+      expect(container.querySelectorAll('[data-row]').length).toBeGreaterThan(100);
+    });
+    await userEvent.type(screen.getByPlaceholderText('Поиск'), '001');
+    const left = container.querySelectorAll('[data-row]').length;
+    expect(left).toBeLessThan(100);
+    await userEvent.click(screen.getByRole('button', { name: 'Выбрать' }));
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все' }));
+    expect(container.parentElement?.querySelector('.selcount')).toHaveTextContent(
+      `Выбрано: ${String(left)}`
+    );
   });
 });
 

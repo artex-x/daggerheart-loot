@@ -1,5 +1,5 @@
 <script lang="ts">
-  /* The line under the print bar or the tables toolbar while a page switch
+  /* The line under the print bar while a page switch
    * differs from its default: the pick lasts until a reload, and the default
    * is set on `#/account` (docs/specs/FEATURES.md, "Account"). A build
    * without sign-in has no place to set a default, so it draws nothing. */

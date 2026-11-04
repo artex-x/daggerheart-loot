@@ -34,10 +34,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     button "Список" [pressed=true]
     button "Сетка" [pressed=false]
     button "Ссылка на таблицу"
-    StaticText "Уникальные"
-    StaticText " ·"
     StaticText "Показано 0 из 114"
-    button "Выбрать"
     complementary "Фильтры"
       heading "Фильтры · 1" [level=2]
       button "Сбросить"
@@ -84,7 +81,6 @@ daggerheart.com
 Войти
 Все
 Вторичное
-Выбрать
 Дополнения
 Есть улучшение
 К содержимому
@@ -141,10 +137,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_armor/f_lin
     button "List" [pressed=true]
     button "Grid" [pressed=false]
     button "Link to this table"
-    StaticText "Unique"
-    StaticText " ·"
     StaticText "0 of 114 shown"
-    button "Select"
     complementary "Filters"
       heading "Filters · 1" [level=2]
       button "Reset"
@@ -203,7 +196,6 @@ Roll
 Search
 Search by name or description...
 Secondary
-Select
 Sign in
 Skip to content
 Supplements

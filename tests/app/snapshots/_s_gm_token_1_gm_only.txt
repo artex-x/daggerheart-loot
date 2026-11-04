@@ -38,7 +38,6 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/gm-token-1?v=<v>]
     status ""
       StaticText "Список обновлён"
   region "Выбранные записи"
-    checkbox "Выбрать все" [checked=false]
     generic ""
   contentinfo ""
     navigation "Страницы сайта"
@@ -59,7 +58,6 @@ daggerheart.com
 Бросок
 Брошюра по Истории Искусства
 Войти
-Выбрать все
 Гарпун Левиафана
 Зелье Быстрого Шага
 К содержимому
@@ -120,7 +118,6 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/gm-token-1?v=<v>]
     status ""
       StaticText "The list was updated"
   region "Selected records"
-    checkbox "Select all" [checked=false]
     generic ""
   contentinfo ""
     navigation "Site pages"
@@ -157,7 +154,6 @@ Save to my lists
 Scepter
 ScepterPrimary weaponCoreTier 1 · Magic · Presence · Far · d6 ma... [namelen=160 namehash=9977457f]
 Search
-Select all
 Sign in
 Skip to content
 Stride Potion

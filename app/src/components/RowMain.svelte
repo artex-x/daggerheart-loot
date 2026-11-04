@@ -133,11 +133,12 @@
   <span class="rt"
     ><span class="rh"
       ><b
-        >{#if num}<span class="rnum">{num}</span
-          >{/if}{#each nameRuns as r, i (i)}{#if r.mark}<mark>{r.text}</mark
-            >{:else}{r.text}{/if}{/each}{#if gmOnly}<span class="gmstate vh"
-            >{', ' + t.noteHid}</span
-          >{/if}{#if tail}<i class="rtail">{tail}</i>{/if}</b
+        >{#if num}<span class="rnum">{num}</span>{/if}<span class="rname"
+          >{#each nameRuns as r, i (i)}{#if r.mark}<mark>{r.text}</mark
+              >{:else}{r.text}{/if}{/each}</span
+        >{#if gmOnly}<span class="gmstate vh">{', ' + t.noteHid}</span>{/if}{#if tail}<i
+            class="rtail">{tail}</i
+          >{/if}</b
       >{#each tags as b, i (i)}<Badge cls={b.cls} title={b.title}>{b.text}</Badge>{/each}</span
     >{#if it.eq && stats}<span class="rstats {eqClass(it.eq)}">{stats}</span
       >{/if}{#if descOf(it, lang)}{@const blocks = descBlocks(it, lang)}<span
@@ -212,6 +213,7 @@
     gap: 4px 8px;
   }
 
+  /* `.rname` keeps the name's runs one flex item: the gap is for the number and the tail. */
   .row-main .rt b {
     display: flex;
     align-items: center;

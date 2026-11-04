@@ -301,7 +301,7 @@ describe('#/tables/homebrew', () => {
     expect(chipOn()).toBe('Мастерская Ольхи');
     expect(values(t.kindF)).toEqual([t.fItems, t.fEquip]);
     expect(pill()).toHaveTextContent(t.fItems);
-    expect(document.querySelector('.count')).toHaveTextContent(`${t.fItems} · Показано 0 из 1`);
+    expect(document.querySelector('.count')).toHaveTextContent('Показано 0 из 1');
     expect(rowIds()).toEqual([]);
     expect(screen.getByRole('button', { name: t.resetFilters })).toBeInTheDocument();
     await expectNoA11yViolations(container);

@@ -139,6 +139,10 @@
     padding: 12px 16px;
   }
 
+  .sheet-body:last-child {
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  }
+
   .sheet-foot {
     display: flex;
     gap: 8px;

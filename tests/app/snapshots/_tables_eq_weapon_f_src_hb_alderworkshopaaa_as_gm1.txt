@@ -38,8 +38,6 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     switch "Свои предметы" [checked=true]
     StaticText "Свои предметы"
     button "Ссылка на таблицу"
-    StaticText "Мастерская Ольхи"
-    StaticText " ·"
     StaticText "Показано 1 из 459"
     button "Выбрать"
     complementary "Фильтры"
@@ -174,8 +172,6 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_sr
     switch "Own items" [checked=true]
     StaticText "Own items"
     button "Link to this table"
-    StaticText "Alder Workshop"
-    StaticText " ·"
     StaticText "1 of 459 shown"
     button "Select"
     complementary "Filters"

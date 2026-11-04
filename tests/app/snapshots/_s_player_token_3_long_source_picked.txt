@@ -40,7 +40,6 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/player-token-3/f_s
     button "Фляга туманов ПРЕДМЕТ МАСТЕРСКАЯ СТАРОГО ОРУЖЕЙНИКА ИЗ ДОЛИНЫ ТУ..." [namelen=151 namehash=cc1c5d71]
     status ""
   region "Выбранные записи"
-    checkbox "Выбрать все" [checked=false]
     generic ""
   contentinfo ""
     navigation "Страницы сайта"
@@ -62,7 +61,6 @@ daggerheart.com
 Влияние
 Войти
 Вплотную
-Выбрать все
 Далеко
 Двуручное
 Есть улучшение
@@ -130,7 +128,6 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-3/f_src-hb_long
     button "Mist Flask ITEM WORKSHOP OF THE OLD ARMOURER FROM THE VALLEY OF ..." [namelen=163 namehash=a23f8606]
     status ""
   region "Selected records"
-    checkbox "Select all" [checked=false]
     generic ""
   contentinfo ""
     navigation "Site pages"
@@ -168,7 +165,6 @@ Reset all
 Roll
 Save to my lists
 Search
-Select all
 Sign in
 Skip to content
 Tables

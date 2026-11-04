@@ -2,15 +2,16 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (wave 1 is on `main`; batch 3 is committed on `claude/57`,
-  waiting for the orchestrator's `polish` and `harden` and the batch review)
-- Last agent: implementer (batch 3, resumed 2026-11-03)
+- Task status: in_progress (wave 1 is on `main`; batch 3 and its one remediation pass are
+  on `claude/57`; `polish`, `harden` and the batch review are done; CI of the tip is the
+  orchestrator's wait)
+- Last agent: implementer (batch 3 fix pass, 2026-11-04)
 - NEEDS_HUMAN_CONFIRMATION: no (Q3-S answered: the strip goes; Q3-T takes its default)
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
 - Base / starting commit: `f150d7fd` (the batch 3 plan refresh, on top of the merge
   `51370bf8` of `origin/main` `d83384b4`)
-- Pushed: yes, the batch 3 commit, with this handoff; its sha is in the implementer's
-  report (`git log -1 --grep="Task: 57"`).
+- Pushed: yes, the fix commit, with this handoff; its sha is in the implementer's report
+  (`git log -1 --grep="Task: 57"`).
 
 ## Completed
 - Batch 1 - foundation: `9a31aede`, review fix `80872b35` (`reviews/1.md`).
@@ -31,7 +32,13 @@
   the empty-state plate. New: `viewport` port, `Sheet`, `SelectionBar`,
   `FilterPanel`, `TableNav`, `rowTags.ts`, the decision file
   `2026-10-30-list-pages-share-one-head-and-one-selection-bar.md`.
-- Previous sha (batch diff base): `f150d7fd`; a reviewer reads `git diff f150d7fd HEAD`.
+- Batch 3 fix pass (`reviews/3.md`, verdict fix-then-continue): B1-B5, R1-R7, N1-N6, N8,
+  polish and harden items 1-3, and the CI coverage failure of `ef44bb5d`. Files changed:
+  `rowTags.ts`, `tables.ts`, `icons.ts`, `dict.ts`, `help.ts`, `TablesPage`, `TableNav`,
+  `SelectionBar`, `SelBar`, `FilterPanel`, `RowMain`, `Sheet`, `KeepNote` (comment),
+  their tests, `tests/app/states.js` (cases 84, 85), `tests/app/contracts.js` (comment),
+  `FEATURES.md`, `COVERAGE.md`, 30 goldens.
+- Previous sha (fix pass diff base): `ef44bb5d`; batch 3's own base was `f150d7fd`.
 - Acceptance lines of `plan.md` section 10:
 
   | Line | Outcome |
@@ -54,25 +61,47 @@
   | Each new state has an entry, a golden and an axe case | Done: nine new goldens, four retired |
   | Inherited: N1 and N3 hold; 2-R1; 2-N5 and 2-N6 | N1, N3 hold (no "labelled" in `DESIGN.md`, `FEATURES.md`); 2-R1 answered by the orchestrator's run; 2-N5, 2-N6 stay deferred to batches 5 and 10 |
   | `FIRST_SCREEN` rows `shipped: true`; DESIGN rules; detector; spelling; screenshots | Done, see Verification |
-  | `polish` and `harden` outcome | Not run: the orchestrator's, after this commit |
-  | Gates pass and CI green on the tip | Local gates pass; CI is the orchestrator's wait |
+  | `polish` and `harden` outcome | Run by the orchestrator; items 1-3 fixed as `reviews/3.md` amended them, item 4 replaced by R2 |
+  | Gates pass and CI green on the tip | Local gates pass; CI of the fix commit is the orchestrator's wait |
 
 - Q3-S (owner, `context.md`): the catalog's per-section «Выбрать все (N)» strip is
   removed; the bar's «Все» is the one select-all control there. `/search` and
   `/s/` keep their strip until batches 7 and 9 (`ontoggleall`).
 - Deviations and rationale:
   1. `data-primary` sits on the table column, section heads included, not on each
-     `TableRows`: the first section head is where the table starts.
-  2. The bar keeps «Добавить в список»: batch 4 owns «В список».
+     `TableRows`: the first section head is where the table starts. Accepted, and
+     load-bearing: the first row itself starts near 270 and 288 at 360, past the 256 limit.
+  2. The bar keeps «Добавить в список»: batch 4 owns «В список». Accepted under the interim
+     rule. Plan lines 947 and 1242 stay unmet in batch 3, so batch 4's refresh gives the
+     bar's label its own acceptance line.
   3. `hiddenTags` returns a fourth flag, `core`.
   4. The bar draws no «Все» on a page that registers no rows (`/homebrew`, lists).
   5. The mid-band head cap in `sweep.js` is 140 px, not 110: measured 130 px.
      `FEATURES.md` says the same.
-  6. Added at S15: the evidence showed the picker cut to «О...» at 360 RU. The
-     picker is `--t-section`, the picker row's view switch has 6 px side padding
-     and «Ещё» 10 px, so «Оружие» reads whole, as in the mock.
-- Review: required (trigger: new or changed UI; `tests/app/` and a public contract
-  reader changed), report `issues/57/reviews/3.md`, after `polish` and `harden`.
+  6. Added at S15: the picker CSS. Accepted as CSS, but it did not close the defect: B4
+     did, in the fix pass (deviation 7).
+  7. B4, named departure from mock 3 and from the review's option: the picker is two lines
+     at `--t-small`, the book in `--muted` over the table (`pickerParts`). Reason: the
+     review's two lines at `--t-body` were built and measured, and 8 of 18 RU captions still
+     cut («Расходники» and «Environments» broke inside the word in 80 px). The row now
+     leaves 94 px (gap 4 px, «Ещё» padding 7 px). No caption cuts at 360 in RU or EN, and the
+     offset stays 234. Accepted: the only visible page name below 761 px is 14 px, not 20.
+  8. R5, departure from plan section 10, standing check 1: no `max-height: 45dvh` and no
+     scroll. Measured 189 px at 640x360 against a cap of 162. A scroll would clip the add
+     menu, so below 481 px of height the actions share one line. Case 85 holds it.
+  9. R7: the search row stays across the page above the column, not in the rows column as
+     in mock 3 (offset 244 against 269). From 1000 px the row draws the count alone.
+  10. R6: the 300-item row's fixture draws 199 rows in its first source tab, because
+     `fillItems` spreads the items over the sources. The test asserts that tab.
+- CI of `ef44bb5d` failed on coverage only: `KeepNote.svelte` branches 50%, because batch 3
+  removed its table caller and left the no-cloud branch unreached. Fixed with a test in
+  `printPage.test.ts`; no threshold changed. `check:fast` missed it because it measures
+  coverage only on changed sources (`--coverage.include`, `tools/check/fast.mjs`), and
+  `KeepNote.svelte` was not changed: a file that loses reach through its caller shows only
+  in CI's whole run.
+- Review: done, `issues/57/reviews/3.md`, verdict fix-then-continue; the one remediation
+  pass is this commit. No second review is needed: the picker fix leaves the first-screen
+  rows unmoved (234 at 360).
 - Plan review: not required for batch 3 (`plan.md` Status, no trigger fired).
 
 ## Verification
@@ -81,8 +110,8 @@
 
   | Route | 360x640 | 1180x720 | Limit |
   |---|---|---|---|
-  | `/tables/eq_weapon` | 234, 234 | 250, 250 | 256 / 288 |
-  | `/tables/eq_weapon` two filters | 252, 252 | 250, 250 | 256 / 288 |
+  | `/tables/eq_weapon` | 234, 234 | 244, 244 | 256 / 288 |
+  | `/tables/eq_weapon` two filters | 252, 252 | 244, 244 | 256 / 288 |
 
   The other routes, measured after batch 2 and logged only (360 RU, EN; 1180 RU, EN):
 
@@ -100,30 +129,28 @@
   | `LIST_A` gm4 | 464, 464 | 377, 377 | 9 |
   | `/s/player-token-1` | 529, 529 | 481, 481 | 9 |
 
-- Evidence: `issues/57/mocks/3/built/`, 36 PNG files, 360, 768 and 1180, RU and EN
-  (`node issues/57/mocks/3/built/shoot.js`): no sideways overflow in any state;
-  the selection bar is 149 px at 360 and 69 px at 1180.
-- Commands on the final tree (2026-11-03):
-  - `npx vitest run app/src`: 4451 passed, 0 failed (no coverage: the per-file coverage step of `check:fast` has not run).
+- Evidence: `issues/57/mocks/3/built/`, 360, 768 and 1180, RU and EN
+  (`node issues/57/mocks/3/built/shoot.js`), with `picker-*` and `catalog-alt` at 360 added.
+- Fix pass, confirmed in the built app of `ef44bb5d` before the fix (one puppeteer probe):
+  B5 53 px of the column and 38 px of the last chip under the bar at 1180x720; R1 focus on
+  `body` after the link and the pin; R2 sheet and menu reopen on return, focus on `body`,
+  while the picker does not reopen (`TableNav` remounts); R3 focus on `body`; R4 «Нет
+  совпадений с «»». The same probe on the fixed build: each is gone.
+- Failing direction: a detached worktree at `ef44bb5d` with the new tests: 14 failed, 132
+  passed (`tables`, `selectionBar`, `rowTags`). B5 and R5 are CSS: cases 84, 85 of `app/states`.
+- Commands on the fix pass (2026-11-04):
+  - `npm run build:test`, then `node tests/app/golden.js --update --shard=n/4`, n = 1 to 4,
+    one at a time: exit 0, 89, 89, 89, 88 states. 30 goldens moved: the alternate tables, idle
+    `/s/`, the wide search row's values, «Выбрать» on empty tables. `~ searched` did not move.
+  - `rtk node tests/run-all.js app/contracts,app/states,app/typo,app/hues,app/print,contracts,dataint,derived,stub`: all suites passed in 797 s.
+  - `rtk node tests/app/sweep.js 360`: clean (RU, EN); `rtk node tests/app/sweep.js 768`: clean (RU, EN).
+  - `npx vitest run app/src/components app/src/lib/rowTags.test.ts app/src/lib/tables.test.ts`:
+    1646 passed, 1 stale count assertion, fixed; `homebrewCatalog.test.ts` re-run in `check:fast`.
   - `npm run lint:typed`, `npm run lint:untyped`: exit 0.
-  - `npm run check:built`: exit 0, 252.4 of 253 kB.
-  - `npm run build:test`, then `rtk node tests/run-all.js app/contracts,app/states`:
-    all suites passed in 603 s.
-  - `rtk node tests/app/sweep.js 360`: clean (RU, EN).
-  - `node tools/decisions.js`: 299 decisions.
-  - `node tools/check/run.mjs --only=typecheck,test:golden`: 0 errors, 0 warnings.
-  - `rtk npm run check:fast`: exit 0, run last on this tree. Two earlier runs stopped
-    at Prettier on the mock F files, which the orchestrator then formatted.
-- Goldens were not compared again after the picker CSS: a golden is accessibility-tree
-  text, and that change is CSS only (`--t-section`, side padding), so it moves no golden.
-- Before the strip removal (2026-10-30, not re-run, not touched by it):
-  `node tests/run-all.js contracts,dataint,derived`, `app/typo`, `app/hues`,
-  `app/print`, `stub`, `node tests/app/sweep.js 768`, `node tools/decisions.js`:
-  all pass.
-- `node tests/app/golden.js --update --shard=n/4`, n = 1 to 4: exit 0, 89, 89, 89,
-  88 states. `git diff --stat tests/app/snapshots` read: 154 modified, 4 deleted, 9
-  new; only `tables`, `search`, `s`, `lists`, `homebrew`, `account`. The `lists`,
-  `homebrew` and `s` lines are the row's tags after the name and the bar.
+  - `rtk npm run check:fast`: exit 0 on the final tree, 2726 tests with coverage, within the 253 kB budget.
+- Not run locally in the fix pass (the orchestrator dropped them; CI covers them):
+  `sweep.js` at 390 and 1180, `npm run check:built` (the `check:fast` budget step runs the
+  bundle budget).
 - Detector, `impeccable detect --json --no-inline-ignores app/src`: 69 findings (72
   on 2026-10-30); in touched files only `design-system-*` advisories (`AddToList`,
   `FilterBar`, `TableRows`, `tokens.css`), which batch 10 records.
@@ -131,9 +158,8 @@
 - Spelling scan over added lines and new files: only `aria-labelledby`.
 
 ## Next batch (implement-ready)
-- Name: not an implementer batch yet. The orchestrator runs `polish` and `harden`
-  on the changed surfaces (`plan.md` section 10, "Impeccable"), then the batch 3
-  review; batch 4 needs its planner refresh after that.
+- Name: batch 3b (the hide-and-show header), after its refresh; batch 4 follows. Batch 4's
+  refresh adds an acceptance line for the bar's label (deviation 2).
 - Risks / do-nots: `FilterBar` and `BatchBar` stay for batches 6, 8 and 9; a golden
   is re-seeded, never edited.
 
@@ -176,11 +202,13 @@
   `.money-l`), HelpButton, `.steps-l` (RecordCard).
 
 ## Notes
+- Impeccable `polish` and `harden` (orchestrator, 2026-11-03, on `ef44bb5d`): outcomes are
+  under Completed and in `reviews/3.md`. Clean: `Sheet` focus, scrim and Escape; `viewport`
+  listener cleanup.
 - Mocks path: `issues/57/mocks/<N>/`; batch 3's evidence is `issues/57/mocks/3/built/`.
 - Planner defaults D1-D13 of batch 3: `plan.md` section 10, "Decisions of this refresh".
 - The owner answered the feedback (`context.md`, "Feedback answers", "Header batch"). Next
-  steps: the orchestrator's `polish` and `harden`, the batch 3 review, then the batch 3b
-  refresh.
+  step: the batch 3b refresh.
 - Cleanup performed / retained artifacts: `plan.md` Status collapsed the two
   "findings applied" sub-bullet lists and the earlier-refresh bullets (the file
   was at the 150 KB line); the last pre-collapse commit is `65829261`

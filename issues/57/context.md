@@ -458,6 +458,27 @@
     Accepted: about 45-60 min more, the list goldens re-seeded twice, an
     interim mix between waves. Run order: wave 2 = 3, 3b, 4, 5, 6, 7, 9a;
     wave 3 = 8, 9b, P, 10.
+  - Mocks are direction (owner, 2026-11-03, chat): a mock is not the absolute
+    source of truth for any batch. A planner or implementer who finds a
+    problem or a better option considers it, takes it when it is clearly
+    better, and names the departure with its reason in the handoff.
+  - Wave reviews (owner, 2026-11-03, chat): two more blind reviews. After
+    wave 2: a blind review of the scope of waves 1 and 2. After wave 3: a
+    blind review of the scope of wave 3. The blind review of the whole app
+    after wave 3 stays ("Post-release review"). This replaces "one
+    post-release live check". Orchestrator default (owner AFK): each runs on
+    production after the wave's green deploy, with no plan and no handoff;
+    a blocker or a real defect is fixed before the next step, in a fix batch
+    on `claude/57`. Remediation (owner, same day): each of the three reviews
+    runs its own remediation at once, nits included, without waiting for the
+    owner and without recording findings in `DEBT.md`. This replaces
+    "findings go to `DEBT.md` or a named follow-up task". A finding goes to
+    the owner only under a stop rule (a product law, a feature loss, a gate
+    red after the one remediation cycle).
+  - Local gates (owner question, 2026-11-04): a writer runs only the affected
+    vitest files, both lints, the golden re-seed when goldens move, and
+    `rtk npm run check:fast` last; browser suites and sweeps run on CI, which
+    is the full gate (`orchestrate.prompt.md`, "name the local checks").
   - Owner AFK from 2026-11-03 (chat): release the whole task - wave 2, wave
     3, the post-delivery review - with the recommended option at each
     choice, logged in `C:\Users\Ignat\.dhloot\notes\owner-afk-2026-11-03\decisions.md`.

@@ -39,7 +39,6 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/player-token-1?as=
     button "Топор Тлеющих Углей 800 зол. ОСНОВНОЕ ОРУЖИЕ УНИКАЛЬНОЕ МАСТЕРСК..." [namelen=198 namehash=61329d72]
     status ""
   region "Выбранные записи"
-    checkbox "Выбрать все" [checked=false]
     generic ""
   contentinfo ""
     navigation "Страницы сайта"
@@ -60,7 +59,6 @@ daggerheart.com
 Аккаунт: gm1@example.test
 Бросок
 Брошюра по Истории Искусства
-Выбрать все
 Гарпун Левиафана
 Зелье Быстрого Шага
 К содержимому
@@ -122,7 +120,6 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-1?as=gm1&v=<v>]
     button "Ember Axe 800 gp PRIMARY WEAPON UNIQUE ALDER WORKSHOP (HB) Tier ..." [namelen=171 namehash=8de947c8]
     status ""
   region "Selected records"
-    checkbox "Select all" [checked=false]
     generic ""
   contentinfo ""
     navigation "Site pages"
@@ -161,7 +158,6 @@ Save to my lists
 Scepter
 ScepterPrimary weaponCoreTier 1 · Magic · Presence · Far · d6 ma... [namelen=160 namehash=9977457f]
 Search
-Select all
 Skip to content
 Stride Potion
 Tables

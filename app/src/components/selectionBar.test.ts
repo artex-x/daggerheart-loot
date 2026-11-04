@@ -11,7 +11,7 @@ afterEach(cleanup);
 
 const html = (s: string) => createRawSnippet(() => ({ render: () => s }));
 
-function bar(picked: number, total = 3) {
+function bar(picked: number, total = 3, idle = false) {
   const onall = vi.fn();
   const onclear = vi.fn();
   const view = render(SelectionBar, {
@@ -24,6 +24,7 @@ function bar(picked: number, total = 3) {
     clearText: 'Снять выделение',
     onall,
     onclear,
+    idle,
     actions: html('<button type="button">Печать</button>')
   });
   const all = screen.queryByRole('checkbox', { name: 'Выбрать все' }) as HTMLInputElement;
@@ -67,7 +68,20 @@ describe('the selection bar', () => {
     expect(screen.queryByRole('checkbox')).toBeNull();
   });
 
-  it('sets the page scroll padding to its height while mounted (C12)', () => {
+  it('holds no tab stop while idle, and keeps its live region for the first tick', () => {
+    const { container } = bar(0, 3, true);
+    expect(container.querySelector('input, button, a')).toBeNull();
+    expect(container.querySelector('.selsumm')).toHaveAttribute('aria-live', 'polite');
+  });
+
+  it('reads the largest table: every one of 458 ids ticked, the box checked', () => {
+    const { all, container } = bar(458, 458);
+    expect(all.checked).toBe(true);
+    expect(all.indeterminate).toBe(false);
+    expect(container.querySelector('.selcount')).toHaveTextContent('Выбрано: 458');
+  });
+
+  it('sets the page scroll padding to its height while mounted', () => {
     let fire = (): void => undefined;
     vi.stubGlobal(
       'ResizeObserver',

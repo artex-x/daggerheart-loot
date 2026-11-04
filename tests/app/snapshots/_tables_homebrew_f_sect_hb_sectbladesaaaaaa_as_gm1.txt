@@ -34,8 +34,6 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     searchbox "Поиск по названию или описанию..."
     button "Список" [pressed=false]
     button "Сетка" [pressed=true]
-    StaticText "Холодное оружие"
-    StaticText " ·"
     StaticText "Показано 1 из 1"
     button "Выбрать"
     complementary "Фильтры"
@@ -116,8 +114,6 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/homebrew/f_sec
     searchbox "Search by name or description..."
     button "List" [pressed=false]
     button "Grid" [pressed=true]
-    StaticText "Blades"
-    StaticText " ·"
     StaticText "1 of 1 shown"
     button "Select"
     complementary "Filters"

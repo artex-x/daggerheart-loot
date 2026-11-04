@@ -556,7 +556,7 @@ const DAGGERHEART_SU: HelpLink = {
 };
 
 /**
- * The tables screen's data notes, «Об этих данных» (owner, Q3.1): where the data
+ * The tables screen's data notes, «Об этих данных» (owner, 2026-10-29): where the data
  * comes from and the two facts a filter cannot show. How the page works is said
  * by its own controls, so no paragraph describes them.
  */

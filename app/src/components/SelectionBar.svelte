@@ -30,11 +30,9 @@
     below?: Snippet | undefined;
     /** Visually hidden while nothing is ticked: the shared page keeps the region mounted. */
     idle?: boolean;
-    /** The «Все» box, for the caller that moves the focus to it. */
-    allBox?: HTMLInputElement | undefined;
   }
 
-  let {
+  const {
     label,
     total,
     picked,
@@ -47,14 +45,13 @@
     summary,
     actions,
     below,
-    idle = false,
-    allBox = $bindable()
+    idle = false
   }: Props = $props();
 
   let wrap = $state<HTMLElement | undefined>(undefined);
 
   /* The page's scroll padding follows the bar's height, so a tab stop under it scrolls
-     into view (C12). */
+     into view (WCAG 2.4.11). */
   $effect(() => {
     const el = wrap;
     if (!el || typeof ResizeObserver !== 'function') return;
@@ -74,12 +71,12 @@
 <section class="selbarwrap" class:idle class:vh={idle} aria-label={label} bind:this={wrap}>
   <div class="selbar">
     <!-- A page that registers no drawn rows (the own items and list pages, which keep
-         their own strip until their batches) draws no «Все». -->
-    {#if total > 0}
+         their own strip until their batches) draws no «Все». An idle bar is only clipped,
+         so a control in it would be a tab stop nobody sees. -->
+    {#if total > 0 && !idle}
       <label class="selall"
         ><input
           type="checkbox"
-          bind:this={allBox}
           aria-label={allLabel}
           checked={picked >= total}
           indeterminate={picked > 0 && picked < total}
@@ -197,16 +194,21 @@
       justify-content: stretch;
     }
 
-    .selacts :global(.seldrop) {
-      flex: 1 1 100%;
-    }
-
     .selacts :global(.btn) {
       flex: 1 1 0;
       min-width: 0;
       width: 100%;
       justify-content: center;
       overflow: hidden;
+    }
+  }
+
+  /* On a phone held upright the add control has its own line; in landscape the actions
+     share one, which holds the bar under 45% of the height with no scroll: a scroll here
+     would clip the add menu that opens upward (189 px at 640x360, measured 2026-11-03). */
+  @media (max-width: 760px) and (min-height: 481px) {
+    .selacts :global(.seldrop) {
+      flex: 1 1 100%;
     }
   }
 

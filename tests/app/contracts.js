@@ -72,7 +72,7 @@ const { ok } = rep;
               : [];
           })
         ),
-        /* Two forms until batch 9 removes `FilterBar`: the shared page's pills and the
+        /* Two forms while `FilterBar` lives: the shared page's pills and the
            catalog's pressed chips (its column is open at this suite's width). */
         picked: [
           ...[...document.querySelectorAll('.fpill')].map((e) => e.dataset.val),

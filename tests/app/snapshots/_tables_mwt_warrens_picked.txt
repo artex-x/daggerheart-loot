@@ -38,8 +38,6 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     button "Список" [pressed=true]
     button "Сетка" [pressed=false]
     button "Ссылка на таблицу"
-    StaticText "Воюющие Норы"
-    StaticText " ·"
     StaticText "Показано 21 из 109"
     button "Выбрать"
     complementary "Фильтры"
@@ -169,8 +167,6 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/many_worlds_ta
     button "List" [pressed=true]
     button "Grid" [pressed=false]
     button "Link to this table"
-    StaticText "Warrin' Warrens"
-    StaticText " ·"
     StaticText "21 of 109 shown"
     button "Select"
     complementary "Filters"

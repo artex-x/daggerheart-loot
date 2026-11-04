@@ -46,7 +46,6 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/player-token-1/f_k
     button "Колдующий Кинжал ОСНОВНОЕ ОРУЖИЕ HOPE & FEAR Ранг 1 · Магическое..." [namelen=217 namehash=26fb60d0]
     status ""
   region "Выбранные записи"
-    checkbox "Выбрать все" [checked=false]
     generic ""
   contentinfo ""
     navigation "Страницы сайта"
@@ -71,7 +70,6 @@ daggerheart.com
 Влияние
 Войти
 Вплотную
-Выбрать все
 Далеко
 Двуручное
 Есть улучшение
@@ -153,7 +151,6 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-1/f_kind-weapon
     button "Casting Dagger PRIMARY WEAPON HOPE & FEAR Tier 1 · Magic · Insti..." [namelen=180 namehash=610850d0]
     status ""
   region "Selected records"
-    checkbox "Select all" [checked=false]
     generic ""
   contentinfo ""
     navigation "Site pages"
@@ -200,7 +197,6 @@ Save to my lists
 Scepter
 ScepterPrimary weaponCoreTier 1 · Magic · Presence · Far · d6 ma... [namelen=160 namehash=9977457f]
 Search
-Select all
 Sign in
 Skip to content
 Strength

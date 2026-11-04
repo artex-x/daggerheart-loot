@@ -117,12 +117,12 @@ across.
   (`whereFrom`, the stubs under `i/`) keeps the book and never says
   «Дополнения». Below 761 px both levels are the table picker's bottom sheet:
   the picker button, named «Таблица: <name>» / "Table: <name>", reads the
-  tab's caption, or «<Book> · Предметы» / «<Book> · Расходники» where the
-  caption names no book (`pickerLabel`); the sheet holds the group chips and
+  tab's caption, or the book over «Предметы» / «Расходники» on two lines where
+  the caption names no book (`pickerParts`, its name `pickerLabel`); the sheet holds the group chips and
   the chosen group's tables, three taps to another group's table.
   The view switch («Список» / «Сетка», "List" / "Grid") changes the view
   until the page reloads; the default is the Display section's «Таблицы» row
-  ("Account"), and the switch carries no note (owner, Q3.2).
+  ("Account"), and the switch carries no note (owner, 2026-10-29).
 - The list head (`docs/decisions/2026-10-30-list-pages-share-one-head-and-one-selection-bar.md`).
   The page name «Таблицы» is the `h1` at every width; below 761 px it is read,
   not drawn, and the head is the picker row: the picker, the view switch and
@@ -136,18 +136,20 @@ across.
   the «Свои предметы» switch and «Ссылка на таблицу», then «Выбрать» last.
 - The count line, «<chosen values> · Показано N из M» / "<chosen values> · N of
   M shown", draws only while a filter or a query narrows the view: under the
-  search row below 761 px, in the row from 761 px. The values are the chosen
+  search row below 761 px, the values left and the count right with no
+  separator; in the row from 761 px. From 1000 px the row draws the count
+  alone, because the filter column shows the picks. The values are the chosen
   values in text, joined with a comma («Ранг 1, Вплотную»), cut to one line
-  with an ellipsis; the count is never cut (owner, R3-1). A query alone draws
-  the count alone.
-- «Об этих данных» / "About this data" (owner, Q3.1) opens three data notes:
+  with an ellipsis; the count is never cut (owner, 2026-10-29). A query alone
+  draws the count alone.
+- «Об этих данных» / "About this data" (owner, 2026-10-29) opens three data notes:
   the sources and the translation credit, the tier in Wondrous Environments,
   and class against damage. Its button carries the panel's name.
 - The selection mode (`AppState.selecting`, memory only): the catalog draws no
   tick column until «Выбрать» / "Select" is pressed. Then the ticks and the
   selection bar show, «Выбрать» hides and the focus moves to the bar's «Все».
   The bar's «Все» is the one select-all control of the catalog; to tick one
-  section, pick its filter value, then «Все» (owner, Q3-S). Ticks that arrive
+  section, pick its filter value, then «Все» (owner, 2026-10-30). Ticks that arrive
   with the page (a sign-in that returns with them) open the mode. «Снять
   выделение» clears the ticks, leaves the mode, also with zero ticks, and
   returns the focus to «Выбрать» (rule 20). `/search` and the shared page keep
@@ -2771,8 +2773,8 @@ Each rule keeps its number: a review cites it by number.
   Departure: an account list's name is an `<input>` inside its `h1` (rule 15),
   one line that scrolls inside its box (owner, 2026-10-22); the `h1` also
   holds the name as visually hidden text. Departure: the catalog's count line
-  and its table picker cut to one line with an ellipsis, the full text still
-  read (owner, R3-1, 2026-10-30); a source tab wraps inside its box.
+  cuts to one line with an ellipsis and its table picker to two lines, the full
+  text still read (owner, 2026-10-29); a source tab wraps inside its box.
 - **17. Handed-out links** (owner, 2026-10-14), on every page: a control
   that copies or sends a link hands out the preview host's link with its own
   card - an item, a shared list, a print set, a catalog table; a catalog

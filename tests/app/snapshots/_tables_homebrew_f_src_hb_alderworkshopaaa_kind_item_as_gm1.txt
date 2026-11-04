@@ -34,10 +34,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     searchbox "Поиск по названию или описанию..."
     button "Список" [pressed=false]
     button "Сетка" [pressed=true]
-    StaticText "Предметы"
-    StaticText " ·"
     StaticText "Показано 0 из 1"
-    button "Выбрать"
     complementary "Фильтры"
       heading "Фильтры · 1" [level=2]
       button "Сбросить"
@@ -66,7 +63,6 @@ daggerheart.com
 Альт. таблицы
 Бросок
 Все
-Выбрать
 Дополнения
 К содержимому
 Конфиденциальность
@@ -118,10 +114,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/homebrew/f_src
     searchbox "Search by name or description..."
     button "List" [pressed=false]
     button "Grid" [pressed=true]
-    StaticText "Items"
-    StaticText " ·"
     StaticText "0 of 1 shown"
-    button "Select"
     complementary "Filters"
       heading "Filters · 1" [level=2]
       button "Reset"
@@ -164,7 +157,6 @@ Reset the filters
 Roll
 Search
 Search by name or description...
-Select
 Skip to content
 Supplements
 Tables

@@ -27,6 +27,11 @@ describe('the tags a catalog row hides', () => {
     });
   });
 
+  it('keeps the source on the alternate tables, which mix two books in every column', () => {
+    expect(hiddenTags('alt_item', {}, false).src).toBe(false);
+    expect(hiddenTags('alt_consumable', {}, false).src).toBe(false);
+  });
+
   it('keeps the kind on a mixed table until one kind is picked', () => {
     expect(hiddenTags('wondrous', {}, false).kind).toBe(false);
     expect(hiddenTags('wondrous', { kind: ['item'] }, false).kind).toBe(true);

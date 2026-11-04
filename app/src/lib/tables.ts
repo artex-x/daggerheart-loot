@@ -128,11 +128,18 @@ export function navSubLabel(table: TableId): keyof Dict {
 }
 
 /**
- * Returns the table picker's text below 761 px: the second-row caption, or «<Book> ·
- * <caption>» where the caption alone names no book («Предметы», «Расходники»).
+ * Returns the table picker's two parts below 761 px: the second-row caption, and the book
+ * where the caption alone names none («Предметы», «Расходники»).
  */
-export function pickerLabel(table: TableId, t: Dict): string {
+export function pickerParts(table: TableId, t: Dict): { book: string | null; name: string } {
   const sub = SUB_LABEL[table];
-  if (sub === 'fItems' || sub === 'fCons') return `${t[groupOf(table).label]} · ${t[sub]}`;
-  return t[navSubLabel(table)];
+  if (sub === 'fItems' || sub === 'fCons')
+    return { book: t[groupOf(table).label], name: t[sub] };
+  return { book: null, name: t[navSubLabel(table)] };
+}
+
+/** Returns the table picker's name as one text: «<Book> · <caption>», or the caption. */
+export function pickerLabel(table: TableId, t: Dict): string {
+  const { book, name } = pickerParts(table, t);
+  return book ? `${book} · ${name}` : name;
 }

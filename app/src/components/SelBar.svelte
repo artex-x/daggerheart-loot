@@ -301,11 +301,13 @@
     cursor: pointer;
   }
 
-  @media (max-width: 760px) {
+  @media (max-width: 760px) and (min-height: 481px) {
     .notify {
       flex: 1 1 100%;
     }
+  }
 
+  @media (max-width: 760px) {
     .notifyq :global(.btn) {
       flex: 1 1 0;
       justify-content: center;
