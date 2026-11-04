@@ -17,7 +17,6 @@ RootWebArea "Клятва Равновесия - Генератор лута Dag
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
-    button "Страница"
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
     StaticText "УНИКАЛЬНОЕ"
     ... StaticText x18 of 22 same-shape siblings elided
@@ -50,7 +49,6 @@ daggerheart.com
 Печать
 Поделиться
 Поиск
-Страница
 Таблицы
 Условия использования
 Установить как приложение
@@ -71,7 +69,6 @@ RootWebArea "Oath of Balance - Daggerheart Loot Generator" [url=/i/en/voa4_a3?v=
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
-    button "Page"
     StaticText "PRIMARY WEAPON"
     StaticText "UNIQUE"
     ... StaticText x18 of 22 same-shape siblings elided
@@ -96,7 +93,6 @@ EN
 Install as an app
 LootDaggerheart
 More
-Page
 Print
 Privacy
 RU

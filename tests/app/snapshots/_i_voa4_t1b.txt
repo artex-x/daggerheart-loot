@@ -17,7 +17,6 @@ RootWebArea "Губитель из Сухостоя - Генератор лут�
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
-    button "Страница"
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
     StaticText "УНИКАЛЬНОЕ"
     heading "Губитель из Сухостоя" [level=1]
@@ -51,7 +50,6 @@ daggerheart.com
 Печать
 Поделиться
 Поиск
-Страница
 Таблицы
 Условия использования
 Установить как приложение
@@ -72,7 +70,6 @@ RootWebArea "Deadwood Slayer - Daggerheart Loot Generator" [url=/i/en/voa4_t1b?v
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
-    button "Page"
     StaticText "PRIMARY WEAPON"
     StaticText "UNIQUE"
     heading "Deadwood Slayer" [level=1]
@@ -98,7 +95,6 @@ EN
 Install as an app
 LootDaggerheart
 More
-Page
 Print
 Privacy
 RU

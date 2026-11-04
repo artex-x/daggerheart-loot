@@ -122,7 +122,8 @@
             ? undefined
             : route.kind === 'account'
               ? app.t.account
-              : route.kind === 'homebrew'
+              : route.kind === 'homebrew' ||
+                  (route.kind === 'homebrewItem' && app.user === null)
                 ? app.t.myItems
                 : route.kind === 'homebrewItem'
                   ? homebrewTitle(route.key)
@@ -134,7 +135,8 @@
     document.title = unread > 0 ? `(${String(unread)}) ${title}` : title;
   });
 
-  /* The editor's tab: the item's stored name, or «Новый предмет». */
+  /* The editor's tab: the item's stored name, or «Новый предмет». Signed out the page is
+     the «Мои предметы» sign-in prompt, and the tab says that (rule 4). */
   function homebrewTitle(key: string | null): string {
     const row = key === null ? undefined : app.homebrew?.item(key);
     const it = row ? app.index?.byId.get(row.key) : undefined;

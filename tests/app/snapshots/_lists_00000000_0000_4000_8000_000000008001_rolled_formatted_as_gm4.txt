@@ -51,7 +51,7 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
     textbox "ТОЛЬКО ДЛЯ МАСТЕРА" [description=останется у вас multiline=true readonly=false required=false]
     DisclosureTriangle "БРОСОК ПО СПИСКУ" [expanded=true]
     textbox "Результат броска" [value=2 multiline=false readonly=false required=false]
-    link "Пронзительная Свирель" [description=Страница url=/i/ci2]
+    link "Пронзительная Свирель" [description=Открыть страницу url=/i/ci2]
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
     button "Скопировать изображение" [description=Скопировать изображение]
@@ -155,6 +155,7 @@ daggerheart.com
 Наручники
 НаручникиПредметCoreЭта пара наручников с замком поставляется с ... [namelen=71 namehash=ef7bfccf]
 Нумерованный список
+Открыть карточку
 Отправить
 Очистить заметку
 Первоклассный Спальный Мешок
@@ -181,7 +182,6 @@ daggerheart.com
 Скопировать текст
 Список
 Справка
-Страница
 Таблицы
 Только для мастера: Заряжающий Колчан
 Только для мастера: Мистический Плащ
@@ -246,7 +246,7 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
     textbox "GM ONLY" [description=stays with you multiline=true readonly=false required=false]
     DisclosureTriangle "ROLL ON THIS LIST" [expanded=true]
     textbox "Roll result" [value=2 multiline=false readonly=false required=false]
-    link "Piper Whistle" [description=Page url=/i/en/ci2]
+    link "Piper Whistle" [description=Open page url=/i/en/ci2]
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]
     button "Copy image" [description=Copy image]
@@ -366,8 +366,8 @@ Note
 Numbered list
 One higher
 One lower
+Open card
 Own item
-Page
 Piper Whistle
 Piper WhistleItemCoreThis handcrafted whistle has a distinctive ... [namelen=153 namehash=3ba17275]
 Position in the list

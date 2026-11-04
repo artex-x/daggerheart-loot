@@ -44,18 +44,18 @@ RootWebArea "Альтернативные таблицы - Генератор л
       StaticText "Глиняный Спутник, Самоцвет Проворства, Усыпляющий Сок, Квинтэссе..." [namelen=85 namehash=9b0357b3]
     link "Таблица предметов" [url=/tables/alt_item/legendary]
     link "Таблица расходников" [url=/tables/alt_consumable/legendary]
-    link "Глиняный Спутник" [description=Страница url=/i/ci50]
+    link "Глиняный Спутник" [description=Открыть страницу url=/i/ci50]
     button "В список" [expanded=false]
     button "Ещё" [expanded=false haspopup=menu]
-    link "Самоцвет Проворства" [description=Страница url=/i/ci53]
+    link "Самоцвет Проворства" [description=Открыть страницу url=/i/ci53]
     button "В список" [expanded=false]
     button "Ещё" [expanded=false haspopup=menu]
-    link "Усыпляющий Сок" [description=Страница url=/i/cc50]
+    link "Усыпляющий Сок" [description=Открыть страницу url=/i/cc50]
     button "В список" [expanded=false]
     button "Ещё" [expanded=false haspopup=menu]
-    button "Страница"
+    button "Открыть карточку"
     StaticText "HOPE & FEAR"
-    link "Квинтэссенциальный Разделитель" [description=Страница url=/i/hc53]
+    link "Квинтэссенциальный Разделитель" [description=Открыть страницу url=/i/hc53]
     StaticText "Этим магическим клинком можно разрубить одну магическую или мета..." [namelen=162 namehash=9ca03761]
     button "В список" [expanded=false]
     button "Поделиться"
@@ -95,6 +95,7 @@ daggerheart.com
 Обычная
 Обычные правила
 Открывать при запуске
+Открыть карточку
 Очень редкая
 Поделиться
 Поиск
@@ -103,7 +104,6 @@ daggerheart.com
 Редкая
 Самоцвет Проворства
 Скопировать все варианты
-Страница
 Таблица предметов
 Таблица расходников
 Таблицы
@@ -153,18 +153,18 @@ RootWebArea "Alternate tables - Daggerheart Loot Generator" [url=/en/roll/alt]
       StaticText "Clay Companion, Gem of Alacrity, Sleeping Sap, Quintessential Se..." [namelen=70 namehash=425bd9e6]
     link "Items table" [url=/en/tables/alt_item/legendary]
     link "Consumables table" [url=/en/tables/alt_consumable/legendary]
-    link "Clay Companion" [description=Page url=/i/en/ci50]
+    link "Clay Companion" [description=Open page url=/i/en/ci50]
     button "Add to list" [expanded=false]
     button "More" [expanded=false haspopup=menu]
-    link "Gem of Alacrity" [description=Page url=/i/en/ci53]
+    link "Gem of Alacrity" [description=Open page url=/i/en/ci53]
     button "Add to list" [expanded=false]
     button "More" [expanded=false haspopup=menu]
-    link "Sleeping Sap" [description=Page url=/i/en/cc50]
+    link "Sleeping Sap" [description=Open page url=/i/en/cc50]
     button "Add to list" [expanded=false]
     button "More" [expanded=false haspopup=menu]
-    button "Page"
+    button "Open card"
     StaticText "HOPE & FEAR"
-    link "Quintessential Severant" [description=Page url=/i/en/hc53]
+    link "Quintessential Severant" [description=Open page url=/i/en/hc53]
     StaticText "You can use this magic blade to cut one magical or metaphysical ..." [namelen=168 namehash=d436046a]
     button "Add to list" [expanded=false]
     button "Share"
@@ -199,8 +199,8 @@ Items table
 Legendary
 LootDaggerheart
 More
+Open card
 Open on start
-Page
 Privacy
 Quintessential Severant
 RU

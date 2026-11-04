@@ -133,7 +133,6 @@ RootWebArea "Топор Тлеющих Углей - Генератор лута 
       StaticText "Предмет есть в 1 списке: изменения появятся в нём сразу, в том ч..." [namelen=89 namehash=99b77b9e]
     button "На экране" [pressed=true]
     button "На печати" [pressed=false]
-    button "Страница"
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
     ... StaticText x21 of 25 same-shape siblings elided
     heading "Топор Тлеющих Углей" [level=2]
@@ -220,7 +219,6 @@ daggerheart.com
 Сохранить
 Список
 Средне
-Страница
 Таблица
 Таблицы
 Убрать картинку
@@ -371,7 +369,6 @@ RootWebArea "Ember Axe - Daggerheart Loot Generator" [url=/en/homebrew/hb_embera
       StaticText "The item is in 1 list: changes appear there at once, for players..." [namelen=81 namehash=cd6f853a]
     button "On screen" [pressed=true]
     button "In print" [pressed=false]
-    button "Страница"
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
     ... StaticText x21 of 25 same-shape siblings elided
     heading "Топор Тлеющих Углей" [level=2]
@@ -473,6 +470,5 @@ daggerheart.com
 Палаш
 Первоклассный Спальный Мешок
 Продвинутый Палаш
-Страница
 Уголёк
 Улучшенный Палаш

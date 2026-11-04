@@ -91,6 +91,8 @@
      * opens a different rung of the same upgrade line.
      */
     onopen?: ((r: Record_) => void) | undefined;
+    /** The record dialog: the picture links to the record's page. */
+    pageLink?: boolean;
     /** The two icon buttons beside the name on a compact card: copy the name, copy the link. */
     nameActions?: Snippet;
     /** The labeled row under the description: send, picture, text. */
@@ -117,6 +119,7 @@
     col,
     onartfail,
     onopen,
+    pageLink = false,
     nameActions,
     actions,
     pick,
@@ -244,24 +247,42 @@
   {#if isHomebrewRecord(r)}{' '}<Badge cls="hb">{t.srcHomebrew}</Badge>{/if}
 {/snippet}
 
+{#snippet picture()}
+  <ArtWell glyph={kindGlyph(it.kind, it.eq?.t ?? it.eqType)}>
+    {#if art}
+      <img
+        src={art}
+        alt=""
+        loading="lazy"
+        decoding="async"
+        onerror={() => {
+          onartfail(it.id);
+        }}
+      />
+    {/if}
+  </ArtWell>
+{/snippet}
+
 <article class="card {variant}" class:dossier data-id={it.id}>
-  <!-- A button rather than a figure: on a table row it opens the record, and
-       the full card keeps the element so the two stay one component. -->
-  <button type="button" class="card-media" aria-label={t.openPage} onclick={() => onopen?.(it)}>
-    <ArtWell glyph={kindGlyph(it.kind, it.eq?.t ?? it.eqType)}>
-      {#if art}
-        <img
-          src={art}
-          alt=""
-          loading="lazy"
-          decoding="async"
-          onerror={() => {
-            onartfail(it.id);
-          }}
-        />
-      {/if}
-    </ArtWell>
-  </button>
+  <!-- The picture goes one step deeper than where it is drawn: a result opens the dialog,
+       the dialog links to the page, and on the page or the editor's preview it is a
+       picture only (docs/specs/FEATURES.md, "Records"). -->
+  {#if pageLink}
+    <a class="card-media" href={pathOf(recordHref(it), hrefLang)} aria-label={t.openPage}
+      >{@render picture()}</a
+    >
+  {:else if onopen && variant !== 'full'}
+    <button
+      type="button"
+      class="card-media"
+      aria-label={t.openCard}
+      onclick={() => {
+        onopen(it);
+      }}>{@render picture()}</button
+    >
+  {:else}
+    <div class="card-media">{@render picture()}</div>
+  {/if}
 
   <div class="card-body">
     <!-- The path line under the name already gives the number and the source. -->
@@ -525,6 +546,10 @@
     border: 0;
     padding: 0;
     display: block;
+  }
+
+  /* It opens the record's dialog, whose picture is larger. */
+  button.card-media {
     cursor: zoom-in;
   }
 
@@ -532,7 +557,6 @@
     width: 100%;
     aspect-ratio: 1;
     max-height: 420px;
-    cursor: default;
   }
 
   .card.compact .card-media {
@@ -556,7 +580,7 @@
   }
 
   /* Mostly paid off, but this one override was not a no-op: `.card-media`
-     is a real button flush against `.card`, and `.card` is `overflow: clip`.
+     is a real control flush against `.card`, and `.card` is `overflow: clip`.
      The global rule's `+2px` offset (tokens.css) draws the ring outside this
      button's border box, which is outside `.card`'s padding box, so it is
      clipped on three sides and survives as a single line on one interior

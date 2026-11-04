@@ -50,19 +50,19 @@ RootWebArea "Обычные правила - Генератор лута Daggerh
     status ""
       StaticText "Первоклассный Спальный Мешок, Зелье Быстрого Шага, Шипы, Оберега..." [namelen=74 namehash=92c425c9]
     ... button x6 of 10 same-shape siblings elided
-    link "Первоклассный Спальный Мешок" [description=Страница url=/i/ci1]
+    link "Первоклассный Спальный Мешок" [description=Открыть страницу url=/i/ci1]
     button "В список" [expanded=false]
     button "Ещё" [expanded=false haspopup=menu]
-    link "Зелье Быстрого Шага" [description=Страница url=/i/cc1]
+    link "Зелье Быстрого Шага" [description=Открыть страницу url=/i/cc1]
     link "Большое Зелье Быстрого Шага" [url=/i/cc25]
     button "В список" [expanded=false]
     button "Ещё" [expanded=false haspopup=menu]
-    link "Шипы" [description=Страница url=/i/hi1]
+    link "Шипы" [description=Открыть страницу url=/i/hi1]
     button "В список" [expanded=false]
     button "Ещё" [expanded=false haspopup=menu]
-    button "Страница"
+    button "Открыть карточку"
     StaticText "HOPE & FEAR"
-    link "Оберегающая Свеча" [description=Страница url=/i/hc1]
+    link "Оберегающая Свеча" [description=Открыть страницу url=/i/hc1]
     StaticText "Зажгите эту свечу, и в пределах Средней дистанции разольётся оре..." [namelen=186 namehash=62be8214]
     button "В список" [expanded=false]
     button "Поделиться"
@@ -106,6 +106,7 @@ daggerheart.com
 Оберегающая Свеча
 Обычные правила
 Открывается при запуске
+Открыть карточку
 Первоклассный Спальный Мешок
 Поделиться
 Поиск
@@ -113,7 +114,6 @@ daggerheart.com
 Расходники
 Результат броска
 Скопировать все варианты
-Страница
 Таблицы
 Условия использования
 Установить как приложение
@@ -161,19 +161,19 @@ RootWebArea "Standard rules - Daggerheart Loot Generator" [url=/en/roll/std?as=g
     status ""
       StaticText "Premium Bedroll, Stride Potion, Caltrops, Warding Candle"
     ... button x6 of 10 same-shape siblings elided
-    link "Premium Bedroll" [description=Page url=/i/en/ci1]
+    link "Premium Bedroll" [description=Open page url=/i/en/ci1]
     button "Add to list" [expanded=false]
     button "More" [expanded=false haspopup=menu]
-    link "Stride Potion" [description=Page url=/i/en/cc1]
+    link "Stride Potion" [description=Open page url=/i/en/cc1]
     link "Major Stride Potion" [url=/i/en/cc25]
     button "Add to list" [expanded=false]
     button "More" [expanded=false haspopup=menu]
-    link "Caltrops" [description=Page url=/i/en/hi1]
+    link "Caltrops" [description=Open page url=/i/en/hi1]
     button "Add to list" [expanded=false]
     button "More" [expanded=false haspopup=menu]
-    button "Page"
+    button "Open card"
     StaticText "HOPE & FEAR"
-    link "Warding Candle" [description=Page url=/i/en/hc1]
+    link "Warding Candle" [description=Open page url=/i/en/hc1]
     StaticText "You can light this candle to fill an area within Close range wit..." [namelen=208 namehash=88ca1325]
     button "Add to list" [expanded=false]
     button "Share"
@@ -208,8 +208,8 @@ Major Stride Potion
 More
 One higher
 One lower
+Open card
 Opens on start
-Page
 Premium Bedroll
 Privacy
 RU

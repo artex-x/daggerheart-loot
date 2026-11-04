@@ -772,6 +772,27 @@ describe('«Печать»', () => {
     app.stop();
   });
 
+  it('answers each signed-out press with one prompt: the focus on «Войти», «Отмена» back to the opener', async () => {
+    const app = await started(fakeCloud(SEED));
+    const { container } = render(PickRow, { app, index: app.index!, it: record(app) });
+    const button = printButton() as HTMLElement;
+    await userEvent.click(button);
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: t.signIn }));
+    await expectNoA11yViolations(container);
+    await userEvent.click(screen.getByRole('button', { name: t.cancel }));
+    expect(screen.queryByText(t.signInToPrint)).toBeNull();
+    expect(document.activeElement).toBe(button);
+
+    await userEvent.click(screen.getByRole('button', { name: t.moreMenu }));
+    await userEvent.click(await screen.findByRole('menuitem', { name: t.saveItem }));
+    expect(screen.getByText(t.signInToSaveItem)).toBeInTheDocument();
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: t.signIn }));
+    await userEvent.click(screen.getByRole('button', { name: t.cancel }));
+    expect(screen.queryByText(t.signInToSaveItem)).toBeNull();
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: t.moreMenu }));
+    app.stop();
+  });
+
   it("returns a modal's sign-in to the record's own address, and a second press closes it", async () => {
     const app = await started(fakeCloud(SEED), '#/tables/core_item');
     render(PickRow, { app, index: app.index!, it: record(app), inModal: true });

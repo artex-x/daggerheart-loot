@@ -183,6 +183,17 @@ describe('the results line up to 760 px', () => {
     expect(container.querySelector('.helpbox')).toBeNull();
   });
 
+  it('closes the help box with its «Закрыть», the focus back on «Ещё»', async () => {
+    const { container } = render(App, { env: at('#/roll/std') });
+    await userEvent.click(more());
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Где какая редкость' }));
+    const box = container.querySelector('.helpbox') as HTMLElement;
+    await expectNoA11yViolations(container);
+    await userEvent.click(within(box).getByRole('button', { name: 'Закрыть' }));
+    expect(container.querySelector('.helpbox')).toBeNull();
+    expect(more()).toHaveFocus();
+  });
+
   it('has no axe violations closed, with «Настроить» open and with «Ещё» open', async () => {
     const { container } = render(App, { env: at('#/roll/std') });
     await expectNoA11yViolations(container);

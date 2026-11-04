@@ -109,6 +109,7 @@
       lang={app.lang}
       artBroken={app.artBroken(it.id)}
       {onopen}
+      pageLink
       onartfail={(bad: string) => {
         app.markArtBroken(bad);
       }}

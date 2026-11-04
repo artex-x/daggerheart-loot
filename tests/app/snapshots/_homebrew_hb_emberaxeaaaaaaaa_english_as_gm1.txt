@@ -112,7 +112,6 @@ RootWebArea "Топор Тлеющих Углей - Генератор лута 
       StaticText "Предмет есть в 1 списке: изменения появятся в нём сразу, в том ч..." [namelen=89 namehash=99b77b9e]
     button "На экране" [pressed=true]
     button "На печати" [pressed=false]
-    button "Page"
     StaticText "PRIMARY WEAPON"
     ... StaticText x7 of 11 same-shape siblings elided
     heading "Ember Axe" [level=2]
@@ -132,7 +131,6 @@ RootWebArea "Топор Тлеющих Углей - Генератор лута 
 3
 4
 EN
-Page
 RU
 daggerheart.com
 Аккаунт: gm1@example.test
@@ -306,7 +304,6 @@ RootWebArea "Ember Axe - Daggerheart Loot Generator" [url=/en/homebrew/hb_embera
       StaticText "The item is in 1 list: changes appear there at once, for players..." [namelen=81 namehash=cd6f853a]
     button "On screen" [pressed=true]
     button "In print" [pressed=false]
-    button "Page"
     StaticText "PRIMARY WEAPON"
     ... StaticText x7 of 11 same-shape siblings elided
     heading "Ember Axe" [level=2]
@@ -362,7 +359,6 @@ Numbered list
 On screen
 One-Handed
 One/Two-Handed
-Page
 Physical
 Presence
 Primary weapon

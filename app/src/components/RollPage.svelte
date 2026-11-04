@@ -163,7 +163,19 @@
               <Button size="sm" onclick={copy}><Icon name="copy" />{t.copyRoll}</Button>
             {/if}
           </div>
-          {#if narrow && help && helpOpen}<HelpBox {help} />{/if}
+          {#if narrow && help && helpOpen}
+            <!-- «Закрыть» returns the focus to «Ещё», which held the item (rule 20). -->
+            <HelpBox
+              {help}
+              close={{
+                label: t.close,
+                onclose: () => {
+                  helpOpen = false;
+                  root?.querySelector<HTMLElement>('.reshead .morewrap > .btn')?.focus();
+                }
+              }}
+            />
+          {/if}
           {#if narrow && cfgOpen}
             <div id="rp-set" class="rp-open"><Panel>{@render settings()}</Panel></div>
           {/if}

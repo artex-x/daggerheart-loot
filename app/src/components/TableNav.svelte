@@ -4,6 +4,7 @@
      levels are the table picker's sheet: the picker, a group, a table - three taps to
      another group's table. On `#/tables/homebrew` with two sources or more the tabs are
      the sources, folded past `CHIP_FOLD_AT` (rule 12). */
+  import { tick } from 'svelte';
   import Chip from './Chip.svelte';
   import FoldButton from './FoldButton.svelte';
   import Icon from './Icon.svelte';
@@ -46,6 +47,16 @@
   let picking = $state(false);
   let sheetGroup = $state<TableGroup | null>(null);
   const shownGroup = $derived(sheetGroup ?? group);
+  let pickerButton = $state<HTMLButtonElement | undefined>(undefined);
+
+  /* Rule 20: a pick closes the sheet with no `close` event, and the pressed link leaves
+     with it, so the focus returns to the picker once the sheet is gone. */
+  function picked(): void {
+    picking = false;
+    void tick().then(() => {
+      pickerButton?.focus();
+    });
+  }
 
   const srcHref = (key: string): string =>
     app.href(
@@ -106,6 +117,7 @@
 <nav class="tablenav" class:narrow={app.band === 'narrow'} aria-label={t.tables}>
   {#if app.band === 'narrow'}
     <button
+      bind:this={pickerButton}
       type="button"
       class="picker"
       aria-haspopup="dialog"
@@ -138,9 +150,7 @@
             />
           {/each}
         </div>
-        {@render tabs(shownGroup, () => {
-          picking = false;
-        })}
+        {@render tabs(shownGroup, picked)}
       </Sheet>
     {/if}
   {:else}

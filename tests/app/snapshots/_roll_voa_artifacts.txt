@@ -40,9 +40,9 @@ RootWebArea "Vault of Ages - Генератор лута Daggerheart" [url=/roll
     heading "Бросок 1" [level=2]
     status ""
       StaticText "Узы Души"
-    button "Страница"
+    button "Открыть карточку"
     ... StaticText x15 of 19 same-shape siblings elided
-    link "Узы Души" [description=Страница url=/i/voa2_a1]
+    link "Узы Души" [description=Открыть страницу url=/i/voa2_a1]
     StaticText "потратить Надежду"
     StaticText ", чтобы освободить душу. Она немедленно возвращается к владельцу..." [namelen=131 namehash=171fc9e9]
     button "В список" [expanded=false]
@@ -74,11 +74,11 @@ daggerheart.com
 На единицу меньше
 Обычные правила
 Открывать при запуске
+Открыть карточку
 Поделиться
 Поиск
 Раздел книги
 Результат броска
-Страница
 Таблицы
 Узы Души
 Условия использования
@@ -122,9 +122,9 @@ RootWebArea "Vault of Ages - Daggerheart Loot Generator" [url=/en/roll/vault_of_
     heading "Roll 1" [level=2]
     status ""
       StaticText "Anima Colligationem"
-    button "Page"
+    button "Open card"
     ... StaticText x15 of 19 same-shape siblings elided
-    link "Anima Colligationem" [description=Page url=/i/en/voa2_a1]
+    link "Anima Colligationem" [description=Open page url=/i/en/voa2_a1]
     StaticText "spend a Hope"
     StaticText " to free the soul. It returns to the owner immediately, regardle..." [namelen=116 namehash=b9bbbffb]
     button "Add to list" [expanded=false]
@@ -148,8 +148,8 @@ LootDaggerheart
 More
 One higher
 One lower
+Open card
 Open on start
-Page
 Privacy
 RU
 Roll

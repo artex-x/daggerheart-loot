@@ -64,7 +64,6 @@ RootWebArea "Whispering Cap - Генератор лута Daggerheart" [url=/hom
       button "Удалить"
     button "На экране" [pressed=true]
     button "На печати" [pressed=false]
-    button "Page"
     StaticText "ITEM"
     StaticText "HOMEBREW"
     heading "Whispering Cap" [level=2]
@@ -83,7 +82,6 @@ RootWebArea "Whispering Cap - Генератор лута Daggerheart" [url=/hom
 3
 4
 EN
-Page
 RU
 RU - пусто
 daggerheart.com
@@ -181,7 +179,6 @@ RootWebArea "Whispering Cap - Daggerheart Loot Generator" [url=/en/homebrew/hb_w
       button "Delete"
     button "On screen" [pressed=true]
     button "In print" [pressed=false]
-    button "Page"
     StaticText "ITEM"
     StaticText "HOMEBREW"
     heading "Whispering Cap" [level=2]
@@ -222,7 +219,6 @@ No tier
 NoneBlazing TwinsSaint's EnsembleAlder Set (HB)+ New set...
 Numbered list
 On screen
-Page
 Privacy
 RU
 RU - empty

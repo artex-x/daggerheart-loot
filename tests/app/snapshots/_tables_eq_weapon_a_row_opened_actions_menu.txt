@@ -6,7 +6,7 @@
 RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tables/eq_weapon]
   dialog "Палаш" [modal=true]
     button "Закрыть"
-    button "Страница"
+    link "Открыть страницу" [url=/i/q1]
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
     StaticText "CORE"
     heading "Палаш" [level=2]
@@ -349,6 +349,7 @@ daggerheart.com
 Мясницкий ТопорУникальноеПир зверейФизическое · Сила · Вплотную ... [namelen=110 namehash=7cfccd3a]
 Наручные РуныМагическое · Инстинкт · Близко · d10 маг · Одноручн... [namelen=66 namehash=f74718fb]
 Обоюдоострый МечУникальноеФизическое · Проворность · Вплотную · ... [namelen=207 namehash=cecad2c1]
+Открыть страницу
 Палаш УрокаУникальноеФизическое · Искусность · Вплотную · d8+3 ф... [namelen=170 namehash=b94a9b3c]
 ПалашФизическое · Проворность · Вплотную · d8 физ · ОдноручноеНа... [namelen=90 namehash=c9de5a1e]
 Палочка ОчарованияУникальноеМагическое · Влияние · Далеко · d6+4... [namelen=199 namehash=4e655d36]
@@ -454,7 +455,6 @@ daggerheart.com
 Список
 Ссылка на раздел
 Стальная АлебардаУникальноеФизическое · Сила · Близко · d8+4 физ... [namelen=136 namehash=03502bf3]
-Страница
 СюрикенУникальноеHope & FearФизическое · Знание · Средне · d8+7 ... [namelen=200 namehash=e50a4e6e]
 Таблица: Оружие
 Таблицы
@@ -524,7 +524,7 @@ daggerheart.com
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon]
   dialog "Broadsword" [modal=true]
     button "Close"
-    button "Page"
+    link "Open page" [url=/i/en/q1]
     StaticText "PRIMARY WEAPON"
     StaticText "CORE"
     heading "Broadsword" [level=2]
@@ -963,7 +963,7 @@ Magus RevolverUniqueMagic · Finesse · Very Far · d6+13 mag · One... [namelen
 Meridian CutlassUniquePhysical · Presence · Melee · d10+5 phy · ... [namelen=199 namehash=d192a958]
 Midas ScytheUniqueMagic · Knowledge · Melee · d10+9 mag · Two-Ha... [namelen=156 namehash=9c887ffe]
 More
-Page
+Open page
 PitchforkUniqueBeast FeastPhysical · Strength · Melee · d10+3 ph... [namelen=78 namehash=d6e51167]
 Platinum EstocUniqueHope & FearPhysical · Finesse · Melee · d8+7... [namelen=180 namehash=add647b5]
 Print

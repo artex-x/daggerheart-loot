@@ -55,17 +55,37 @@ describe('SignInPrompt', () => {
     expect(oncancel).toHaveBeenCalledOnce();
   });
 
-  it('draws the boxed form with no «Отмена»', async () => {
+  it('takes the focus to «Войти» in the boxed form, and «Отмена» returns it to the opener', async () => {
     const { app } = made();
+    const opener = document.createElement('button');
+    opener.textContent = 'Печать';
+    document.body.append(opener);
+    opener.focus();
+    const oncancel = vi.fn();
     const { container } = render(SignInPrompt, {
       app,
       lead: 'Войдите, и список сохранится в ваш аккаунт.',
       after: { hash: '#/l/abc', action: { do: 'saveList' } },
       boxed: true,
-      oncancel: vi.fn()
+      oncancel
     });
     expect(container.querySelector('.signin.boxed')).not.toBeNull();
-    expect(screen.queryByRole('button', { name: 'Отмена' })).not.toBeInTheDocument();
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Войти' }));
     await expectNoA11yViolations(container);
+    await userEvent.click(screen.getByRole('button', { name: 'Отмена' }));
+    expect(oncancel).toHaveBeenCalledOnce();
+    expect(document.activeElement).toBe(opener);
+    opener.remove();
+  });
+
+  it('leaves the focus where it is with no «Отмена»: a page-level prompt', () => {
+    const { app } = made();
+    const before = document.createElement('button');
+    document.body.append(before);
+    before.focus();
+    render(SignInPrompt, { app, lead: LEAD, after: { hash: '#/lists' } });
+    expect(document.activeElement).toBe(before);
+    expect(screen.queryByRole('button', { name: 'Отмена' })).toBeNull();
+    before.remove();
   });
 });

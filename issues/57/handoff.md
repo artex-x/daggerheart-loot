@@ -2,12 +2,12 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (wave 1 is on `main`; batches 3, 3b, 4, 5, 6 and 7 are on `claude/57`; batches 3-7 are
-  reviewed; batch 7's remediation awaits the CI of its push)
-- Last agent: implementer (batch 7 remediation, 2026-11-04)
+- Task status: in_progress (waves 1 and 2 are on `main`; the blind review after wave 2 is remediated on `claude/57`;
+  next is batch 9a, wave 3)
+- Last agent: implementer (post-wave-2 remediation, 2026-11-04)
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
-- Previous sha: `2c3f3833` (batch 7; its CI run 41845174864 failed on three stale checks, fixed in the remediation)
+- Previous sha: `10a47edc` (its CI run 41870701968 green)
 - Pushed: the remediation commit; the sha is in the implementer's report.
 
 ## Completed
@@ -465,12 +465,71 @@
   section 14 fold takes it); the 112 px box at 320 moves a spec number (named above); the shots in
   `mocks/7/built/` were not re-taken, so `account*` and `search-kind*` show the batch 7 build.
 
+- Post-wave-2 remediation (`reviews/post-wave-2.md`, verdict fix-then-continue; diff base `10a47edc`), every
+  finding taken, nits included. Each fix's test failed at `10a47edc` in a detached worktree outside the repo
+  (19 tests, listed under Verification), and the worktree is removed:
+
+  | Finding | Outcome |
+  |---|---|
+  | pw2-R1 | Fixed. The picture goes one step deeper: on a roll result and a list's roll hit it is the button «Открыть карточку» / "Open card" (the record dialog); in the dialog the link «Открыть страницу» / "Open page"; on `/i/`, `/h/` and the editor's preview a `div` with no control. `RecordCard` `pageLink`, passed by `RecordModal`; `openPage` reads «Открыть страницу», `openCard` is new. Deviation from the dispatch ("a roll result must open the page"): a roll is page memory, so the page would drop the roll, and the picture is the dialog's only way in over a result (`inventory.js` `#/roll/wondrous ~ modal`); the decision file `2026-11-04-the-record-picture-goes-one-step-deeper.md` names it. Case 31 reads the face ring only (the page picture has none); `FEATURES.md` "Records", `COVERAGE.md` |
+  | pw2-R2 | Fixed: `TableNav`'s pick closes the sheet and focuses the picker after `tick()`; Escape (native restore) and the inline tabs from 761 px are unchanged. `tableNav.test.ts` |
+  | pw2-R3 | Baseline first: the wave made it worse, so fixed. Numbers under Verification (median first paint 13.9 s before wave 1, 17.1 s at `10a47edc`, 6.3 s now; longest task 12.7, 12.7, 5.2 s). `TableRows` draws 60 rows in the mounting task, shared by the sections that mount in it, then 60 per task; later rows and an anchored table (`whole`, from `TablesPage`'s route anchor) draw at once; counts, «Все» and print read data; `data-drawing` marks the wait, and `tests/app/driver.js` `ready()` and `settle()` wait for it. `content-visibility` was measured and rejected. Decision file `2026-11-04-a-long-table-draws-its-rows-over-several-tasks.md`, `FEATURES.md` "Tables and search", `tableRows.test.ts` |
+  | pw2-N1 | Fixed: `404.html` is hand-written (no generator); title «Страницы по этому адресу нет / No page at this address - Daggerheart Loot», one `h1` (the English half an `h2`), the app's cause line and actions «На главную» / «Открыть таблицы» (`/roll/std`, `/tables`, `/en/...`). The system font and no die mark stay (the reviewer's deferred-scope part). `tests/derived.js` checks the links, one `h1` and no dash; `META.md` section 7 |
+  | pw2-N2 | Followed the newest spec: `FEATURES.md` "Homebrew" and `STATE.md` `dhloot.home.v1` (`eb899604`, 2026-10-21, owner 2026-10-19) let a pin hold `#/homebrew`; `ROUTES.md` "Homebrew" (`057405ee`, 2026-09-30) said it may not and now agrees. No behavior change: `FEATURES.md` "Homebrew" draws the narrow non-ready head (signed out, loading, failed) as the heading only, so the pin there is from 761 px; no decision file, since a source decides it |
+  | pw2-N3 | Fixed: signed out, `/homebrew/new` and `/homebrew/<key>` title the tab «Мои предметы», the `h1` (`Shell.svelte`); `shell.test.ts` |
+  | pw2-N4 | Unified at one seam, `SignInPrompt`: a prompt given `oncancel` focuses «Войти» on open and its «Отмена» closes it and returns the focus to the control that had it. `PickRow`'s «Печать» and «Сохранить себе» and the shared page's «Сохранить себе» pass it; the menu and the selection bar already did. Page-level prompts keep no «Отмена». `/p/<id>`'s «Войти» under its lead is a page-level prompt and stays. `FEATURES.md` "Where a list is made"; `signInPrompt.test.ts`, `pickRow.test.ts` |
+  | pw2-N5 | No change: Cloudflare's pretty URLs answer `/pages/*.html` with one 308 to the path without `.html`; every link resolves |
+  | pw2-N6 | Fixed: `HelpItem` draws a check for its icon while the panel is open (the pin item's mark; `aria-expanded` already); `HelpBox` takes `close`, and the narrow tables and roll panels start with «Закрыть», which folds the panel and focuses «Ещё». New inventory state `#/tables/eq_weapon ~ data notes from more` (360); `FEATURES.md` "Tables and search"; `tables.test.ts`, `rollPage.test.ts` |
+
+  Not committed with this change: the orchestrator's later edit of `context.md` ("Phone feedback", 2026-11-04 18:46),
+  which arrived in the tree during the session.
+
 - Review: done, `issues/57/reviews/3.md`, verdict fix-then-continue; the one remediation
   pass is this commit. No second review is needed: the picker fix leaves the first-screen
   rows unmoved (234 at 360).
 - Plan review: not required for batch 3 (`plan.md` Status, no trigger fired).
 
 ## Verification
+- Post-wave-2 remediation, 2026-11-04 (diff base `10a47edc`; its CI run 41870701968 green):
+  - R3 baseline, `scratchpad/perf/measure.mjs` (puppeteer, 390x844, 4x CPU throttle, warm HTTP cache, the service
+    worker bypassed; first contentful paint, `longtask` entries), each build served from its own `dist/`: the build
+    before wave 1 from `git worktree add --detach E:/dev/dhl-base d83384b4~1` (`eea84371`), wave 2 from a detached
+    `10a47edc`, both on the task tree's `node_modules` through a junction, then removed. Four interleaved rounds on a
+    loaded host (`rounds.sh`), first paint / longest task / long-task sum, medians: `eea84371` 13.9 / 12.7 / 13.0 s
+    (7103 nodes); `10a47edc` 17.1 / 12.7 / 16.8 s (8315 nodes, a second long task of 2.6-5.4 s); the fix 6.3 / 5.2 /
+    10.4 s (first task, then 11-13 tasks of 0.05-1.2 s). Earlier single runs agreed (`eea84371` 8.5-9.1 s first paint,
+    `10a47edc` 11.5-11.9 s). `content-visibility: auto` injected on `.row`: 8.6-10.3 s first paint, longest 8.0-9.7 s,
+    no gain. A CPU profile at 1x: `(program)` 482 against 228 ms; the JS self time is about equal.
+  - Tests that failed at `10a47edc` (the new and changed test files copied into a detached worktree,
+    `npx vitest run ... --reporter=json`), 19: `record.test.ts` 3 (the page's picture, the dialog's link, the face's
+    picture without `onopen`), `roll.test.ts` 6 («Открыть карточку», the dialog's link), `tableNav.test.ts` 1,
+    `tableRows.test.ts` 2, `shell.test.ts` 2, `signInPrompt.test.ts` 2, `pickRow.test.ts` 1, `tables.test.ts` 1,
+    `rollPage.test.ts` 1; `node tests/derived.js` 4 FAIL on the old `404.html`. All pass on the fix.
+  - Focused vitest: `record`, `roll`, `rollResult`, `alt`, `a11y`, `homebrewEditor`, `tableNav`, `tableRows`,
+    `tables`, `search`, `sharedListPage`, `homebrewCatalog`, `selectionBar`, `homebrewPage`, `listPage`, `shell`,
+    `pickRow`, `signInPrompt`, `itemPage`, `lists`, `listsPage`, `rollPage`, `help`, `std`: all pass.
+  - `npx eslint` over the changed files: no issues; `npm run typecheck`: 0 errors, 0 warnings.
+  - `node tests/derived.js`: everything matches; `node tests/contracts.js`: contracts match the fixtures;
+    `node tools/decisions.js`: 306 decisions.
+  - `npm run build:test`, then `node tests/app/golden.js --update --shard=n/4` for n = 1..4 (98, 97, 97, 97 states):
+    122 goldens moved and one new (`_tables_eq_weapon_data_notes_from_more.txt`); every changed line read: the picture
+    button gone from the page, «Открыть карточку» / "Open card" on results, the dialog's link «Открыть страницу»,
+    the name links' description «Открыть страницу», the boxed prompts' «Войти» focused with «Отмена», «Ещё» no
+    longer focused after «Сохранить себе»; nothing else.
+  - `npm run check:built`: first FAIL, 264.1 kB over 264; raised to 265 and 322 by the standing rule (reason in
+    `tools/bundle-budget.mjs`, `.claude/README.md`, the commit); configured build with placeholder
+    `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY`, `node tools/bundle-budget.mjs`: 321.4 kB within 322.
+  - `npm run check:built` again: exit 0, 264.1 kB within 265, `dist/` carries no fake cloud.
+  - `impeccable detect --json --no-inline-ignores app/src`: 67 findings (69 before); in touched files only
+    `design-system-*` advisories (`HelpBox`, `RecordCard`, `Shell`, `TableRows`). `git grep -n impeccable-disable -- app/src`: nothing.
+  - `npm run lint:untyped`, `npm run lint:typed`: no output (clean).
+  - `rtk npm run check:fast`, first run: FAIL at vitest, three tests: `searchPage.test.ts` "shows 300 of 305" read the
+    rows in the first task (now `waitFor` the 300), and `tableRows.test.ts` timed out at 30 s under coverage with 458
+    rows and axe over them (now 150 rows, axe on the 80-row table, a fresh task before each test).
+  - `rtk npm run check:fast` (after the fixes above and the escapes in `tests/derived.js`): PASS in 587 s, 2845 tests
+    with coverage, 264.1 kB within 265; gate credit armed.
+  - Browser cases changed (`states.js` 31, `inventory.js` modal entry, `print.js` D20, `driver.js` waits): not run
+    locally (CI's); the golden run exercised the new `ready()` / `settle()` wait over `dist-test/` in every state.
 - Batch 7 remediation, 2026-11-04 (diff base `2c3f3833`):
   - `gh run view 41845174864 --repo artex-x/daggerheart-loot --log-failed` (concluded, failure): `derived` and `check`
     (the 2026-10-30 decision file), `app/print` (`.page-h`), `app/states` 86 ("after the slide"). `e2e` passed.
@@ -800,7 +859,8 @@
 - Spelling scan over added lines and new files: only `aria-labelledby`.
 
 ## Next batch (implement-ready)
-Session pause, 2026-11-04 (owner restart). The next session continues from here. Owner AFK rules hold
+Wave 2's blind review is done and remediated (step 6). Next: batch 9a (step 7), after the CI of the remediation's
+push. Owner AFK rules hold
 (`context.md`, "Owner AFK", "Wave reviews", "Local gates", "Mocks are direction"); defaults go to
 `C:\Users\Ignat\.dhloot\notes\owner-afk-2026-11-03\decisions.md` (items 1-11 so far).
 
@@ -815,8 +875,10 @@ In order:
    gate-cost, `FIRST_SCREEN` and P5 entries were already done or present. Section 10 is a pointer plus D1-D13 and
    "Impeccable" (last full text: `git show 5ecca692:issues/57/plan.md`). `plan-9a.md` stays a brief until its batch.6. Wave 2 squash (owner, 2026-11-04: 9a moved to wave 3, so wave 2 is 3, 3b, 4, 5, 6, 7; `plan.md` section 16;
    `orchestrate.prompt.md` closeout step 8): run `ci-credit.mjs` on the tip with a clean tree. Then the blind review
-   of waves 1 and 2 on production, with its remediation at once.
-7. Wave 3 in this order: 9a (brief `plan-9a.md`, `opus`; its `FIRST_SCREEN`, `selectAll` and `sendAll` corrections
+   of waves 1 and 2 on production, with its remediation at once. Done: wave 2 is on `main` as `dbd3cf73`; the blind
+   review is `reviews/post-wave-2.md`, and its remediation is Completed, "Post-wave-2 remediation". The orchestrator
+   waits on the CI of its push.
+7. Next: batch 9a. Wave 3 in this order: 9a (brief `plan-9a.md`, `opus`; its `FIRST_SCREEN`, `selectAll` and `sendAll` corrections
    are in "Placed items"; production still holds the old list rows, so the interim mix is wave 2's), then refresh and
    run 8, 9b, P, 10; the wave 3 blind review; the whole-app blind review; closeout.
 
@@ -827,7 +889,7 @@ Facts for the dispatches:
 - `ci-credit.mjs` refuses when a writer's edits are in the tree: while a batch runs, read the run with
   `gh run watch <id> --exit-status` in the background instead. Each writer checks its predecessor's run before
   it pushes. A pushed run must have concluded before the next push.
-- Budget: 263.4 of 264 kB unconfigured, 320.8 of 321 kB configured (ceiling 350). The owner raised the unconfigured
+- Budget: 264.1 of 265 kB unconfigured, 321.4 of 322 kB configured (ceiling 350; raised by the post-wave-2 remediation). The owner raised the unconfigured
   ceiling to 300 kB (`context.md`); the batch that first passes 270 writes it. Raises follow the standing rule.
 - The owner must keep Chrome open and signed in to Figma for batch P's burden export.
 - `FilterBar` stays until batch 9a removes it, and `BatchBar` until batch 8; a golden is re-seeded, never edited.
@@ -836,6 +898,9 @@ Facts for the dispatches:
 - None.
 
 ## Deferred
+- `404.html`'s look (pw2-N1, the reviewer's deferred-scope half): it keeps the system font and draws no die mark;
+  the words, the `h1` and the actions now match the app. A self-hosted font on a script-free host page needs its own
+  `@font-face` path; batch 10's lock is the place to decide it.
 - `/search` at 320x568 RU (batch 7 remediation probe): after a kind is picked in the sheet and the sheet closes,
   `scrollWidth` is 313 against a `clientWidth` of 305, and a probe that hides one element at a time finds the
   header's tab links. Case 93 checks no sideways scroll before the sheet opens, where it passes. Not investigated.

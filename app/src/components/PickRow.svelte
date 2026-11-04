@@ -132,6 +132,9 @@
         action: hid ? { do: 'saveItem', hid } : { do: 'saveItem', id: it.id }
       }}
       boxed
+      oncancel={() => {
+        asking = false;
+      }}
     />
   </div>
 {/if}
@@ -145,6 +148,9 @@
         action: printAction(app.printEntriesOf([it.id]))
       }}
       boxed
+      oncancel={() => {
+        printAsking = false;
+      }}
     />
   </div>
 {/if}

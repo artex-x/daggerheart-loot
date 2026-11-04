@@ -484,7 +484,7 @@ const STATES = [
     route: '#/roll/wondrous_environments',
     why: 'the card opened over the roll',
     enter: async (d) => {
-      await d.click('Страница');
+      await d.click('Открыть карточку');
     }
   },
 
@@ -1134,6 +1134,17 @@ const STATES = [
     width: 360,
     why: '«Ещё» open: the table link, the pin and «Об этих данных»',
     enter: async (d) => {
+      await d.click('Ещё');
+    }
+  },
+  {
+    id: '#/tables/eq_weapon ~ data notes from more',
+    route: '#/tables/eq_weapon',
+    width: 360,
+    why: '«Об этих данных» opened from «Ещё»: the panel with «Закрыть» first, and «Ещё» open again with the item checked',
+    enter: async (d) => {
+      await d.click('Ещё');
+      await d.click('Об этих данных');
       await d.click('Ещё');
     }
   },

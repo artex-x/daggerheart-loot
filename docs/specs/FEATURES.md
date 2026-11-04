@@ -163,13 +163,21 @@ across.
   The page name «Таблицы» is the `h1` at every width; below 761 px it is read,
   not drawn, and the head is the picker row: the picker, the view switch and
   «··· Ещё» / "··· More" (the three-dot icon and the word), whose menu holds
-  «Ссылка на таблицу» (not on `homebrew`), the pin and «Об этих данных». From
+  «Ссылка на таблицу» (not on `homebrew`), the pin and «Об этих данных». That item
+  opens and folds the panel under the head; while it is open the item draws a check
+  for its icon (the pin item's mark) and reads `aria-expanded="true"`, and the panel
+  starts with «Закрыть», which folds it and returns the focus to «Ещё». The roll pages'
+  help item and panel up to 760 px behave the same way. From
   761 px the head is the `h1`, the labeled pin, «Об этих данных» and the two
   navigation levels. The search row follows: the search first (placeholder
   «Поиск» / "Search", named by the long `searchPh`, at least 140 px at 360),
   «Фильтры» below 1000 px (plain at no pick, «Фильтры · N» lit while a value
   is picked: a gold label on a 45% gold border), from 761 px the view switch,
   the «Свои предметы» switch and «Ссылка на таблицу», then «Выбрать» last.
+- A long table paints before all of it is built: the first 60 rows of the page draw in
+  the first task and 60 more in each task after it; rows that arrive later (a filter
+  cleared) and an anchored table draw at once. The counts, «Все» and the selection read
+  the data, not the drawn rows (`docs/decisions/2026-11-04-a-long-table-draws-its-rows-over-several-tasks.md`).
 - The count line, «<chosen values> · Показано N из M» / "<chosen values> · N of
   M shown", draws only while a filter or a query narrows the view: under the
   search row below 761 px, the values left and the count right with no
@@ -677,7 +685,13 @@ address kept, and no add-to-list control is drawn.
   «+ Новый список»; «Войти» takes the focus); on a shared page «Сохранить
   себе» reads pressed and opens the prompt under it, and a second press folds
   it. While the session is still unknown none of them is drawn, so a
-  signed-in reader never sees a prompt flash.
+  signed-in reader never sees a prompt flash. Every prompt that answers a press
+  behaves the same way: the menu's slot, the selection bar's «Печать», and the
+  boxed prompt under a pressed control (the shared page's «Сохранить себе», the
+  record's «Печать» and «Сохранить себе») give «Войти» the focus and offer
+  «Отмена», which closes the prompt and returns the focus to the control that had
+  it. A page-level prompt (`#/lists`, «Мои предметы», `#/p/<id>`) leaves the focus
+  where it is and has no «Отмена».
 - **The return after sign-in**: «Войти» opens `#/account` and remembers the
   page and the started action; the account page's sign-in carries both
   through the provider redirect (`STATE.md`, `dhloot.auth.return`). Back on
@@ -1247,6 +1261,11 @@ address kept, and no add-to-list control is drawn.
 ## Records
 
 - Card in a modal from a table row, or a full page at `#/i/<id>`.
+- The picture goes one step deeper than where it is drawn. On a roll result and on a
+  list's roll hit it is the button «Открыть карточку» / "Open card", which opens the
+  record dialog over the page; in the dialog it is the link «Открыть страницу» / "Open
+  page" to the record's page; on the record page and in the editor's preview it is a
+  picture only, no control.
 - **The item page and the dialog.** `#/i/<id>`, `#/h/<uuid>` and the record dialog
   draw one dossier: no plate, the picture beside the text from 761 px and above
   it, cropped to 4:3, up to 760 px; the art file is not touched. The name is drawn

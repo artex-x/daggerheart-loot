@@ -35,8 +35,8 @@ RootWebArea "Arazo's Artifacts - Генератор лута Daggerheart" [url=/
     heading "Бросок 1" [level=2]
     status ""
       StaticText "Нестареющее Око Зверя"
-    button "Страница"
-    link "Нестареющее Око Зверя" [description=Страница url=/i/aa1]
+    button "Открыть карточку"
+    link "Нестареющее Око Зверя" [description=Открыть страницу url=/i/aa1]
     StaticText "РАНГ"
     StaticText "1"
     button "Улучшенное Нестареющее Око Зверя" [description=Улучшенное Нестареющее Око Зверя]
@@ -74,11 +74,11 @@ daggerheart.com
 Нестареющее Око Зверя
 Обычные правила
 Открывать при запуске
+Открыть карточку
 Поделиться
 Поиск
 Продвинутое Нестареющее Око Зверя
 Результат броска
-Страница
 Таблицы
 Улучшенное Нестареющее Око Зверя
 Условия использования
@@ -117,8 +117,8 @@ RootWebArea "Arazo's Artifacts - Daggerheart Loot Generator" [url=/en/roll/arazo
     heading "Roll 1" [level=2]
     status ""
       StaticText "The Ageless Eye of the Beast"
-    button "Page"
-    link "The Ageless Eye of the Beast" [description=Page url=/i/en/aa1]
+    button "Open card"
+    link "The Ageless Eye of the Beast" [description=Open page url=/i/en/aa1]
     StaticText "TIER"
     StaticText "1"
     button "Improved Ageless Eye of the Beast" [description=Improved Ageless Eye of the Beast]
@@ -148,8 +148,8 @@ LootDaggerheart
 More
 One higher
 One lower
+Open card
 Open on start
-Page
 Privacy
 RU
 Roll

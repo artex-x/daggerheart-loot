@@ -1261,6 +1261,18 @@ describe('the account control', () => {
     expect(document.title).toBe('Генератор лута Daggerheart');
   });
 
+  it.each(['#/homebrew/new', '#/homebrew/hb_emberaxeaaaaaaaa'])(
+    'titles the tab of %s as its heading signed out',
+    async (hash) => {
+      const { container } = render(App, { env: at(hash, { cloud: fakeCloud(SEED) }) });
+      expect(
+        await screen.findByRole('heading', { level: 1, name: 'Мои предметы' })
+      ).toBeInTheDocument();
+      expect(document.title).toBe('Мои предметы - Генератор лута Daggerheart');
+      await expectNoA11yViolations(container);
+    }
+  );
+
   it.each([
     '#/account',
     '#/lists',

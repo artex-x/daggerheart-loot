@@ -1,0 +1,7 @@
+# 2026-11-04 - A long table draws its first 60 rows in the first task and the rest after it
+
+- Task: `57` (the blind review after wave 2, its finding on the 458-row weapons table).
+- Decision: `TableRows` draws at most 60 rows in the task that mounts it, shared by every table that mounts in that task, then 60 more per task until all are drawn; rows that arrive after the first draw, and every row of an anchored table, draw at once. The rows container carries `data-drawing` until it is whole, and the browser suites' `ready()` and `settle()` wait for it.
+- Rejected: `content-visibility: auto` on the rows (no gain in the same measurement: the cost is building the rows, not laying them out); a virtual list (search in the page, print, anchors and the selection would need their own paths); fewer nodes per row (each part of the row is a decided part of the list head's design, `docs/decisions/2026-10-30-list-pages-share-one-head-and-one-selection-bar.md`).
+- Evidence: measured 2026-11-04 on this host, `/tables/eq_weapon`, 390 px, 4x CPU throttle, warm cache, four interleaved rounds (medians): the build before wave 1 (`eea84371`) first paint 13.9 s, longest task 12.7 s; wave 2 (`10a47edc`) 17.1 s and 12.7 s, plus a second long task of 2.6-5.4 s; this change 6.3 s and 5.2 s, the rest in tasks of 0.1-1.2 s.
+- Accepted trade-off: for about a second after a long table opens, its last rows are not in the page yet; the browser's find-in-page misses them in that time.

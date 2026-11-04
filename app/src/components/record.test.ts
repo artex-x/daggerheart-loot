@@ -352,13 +352,51 @@ describe('the dossier', () => {
     expect(card.querySelector('.card-acts')).toBeNull();
   });
 
-  it('draws the name as an `h2` in the dialog, with no path line', async () => {
-    render(App, { env: at('ci1') });
-    await userEvent.click(screen.getByRole('button', { name: 'Страница' }));
-    const dialog = await screen.findByRole('dialog');
+  it('draws the name as an `h2` in the dialog, with no path line', () => {
+    const app = new AppState(at('ci1'));
+    app.start();
+    const ci1 = app.index?.byId.get('ci1');
+    if (!app.index || !ci1) throw new Error('The test data has no ci1.');
+    render(RecordModal, { app, index: app.index, it: ci1, onclose: () => {} });
+    const dialog = screen.getByRole('dialog');
     expect(within(dialog).getByRole('heading', { level: 2 })).toHaveClass('card-name');
     expect(within(dialog).queryByRole('heading', { level: 1 })).toBeNull();
     expect(dialog.querySelector('.card-sub')).toBeNull();
+    app.stop();
+  });
+
+  it('draws the picture as no control on the record page, and a press opens nothing', async () => {
+    const { container } = render(App, { env: at('ci1') });
+    const media = container.querySelector('.card.dossier .card-media') as HTMLElement;
+    expect(media.tagName).toBe('DIV');
+    expect(media).not.toHaveAttribute('aria-label');
+    expect(media.querySelector('img')).not.toBeNull();
+    expect(screen.queryByRole('button', { name: /Страница|Открыть/ })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Открыть страницу' })).toBeNull();
+    await userEvent.click(media);
+    expect(screen.queryByRole('dialog')).toBeNull();
+    await expectNoA11yViolations(container);
+  });
+
+  it("links the dialog's picture to the record's page", async () => {
+    const app = new AppState(at('ci1'));
+    app.start();
+    const ci1 = app.index?.byId.get('ci1');
+    if (!app.index || !ci1) throw new Error('The test data has no ci1.');
+    const { container } = render(RecordModal, {
+      app,
+      index: app.index,
+      it: ci1,
+      onclose: () => {}
+    });
+    const link = within(screen.getByRole('dialog')).getByRole('link', {
+      name: 'Открыть страницу'
+    });
+    expect(link).toHaveClass('card-media');
+    expect(link).toHaveAttribute('href', '/i/ci1');
+    expect(screen.queryByRole('button', { name: /Страница|Открыть/ })).toBeNull();
+    await expectNoA11yViolations(container);
+    app.stop();
   });
 
   it('keeps the icon pair and the labeled row on a compact card', () => {
@@ -407,7 +445,8 @@ describe('the roll card face', () => {
     const face = draw('face');
     expect(face.html).toBe(draw('compact').html);
     expect(face.name).toHaveAttribute('href', '/i/ci1');
-    expect(face.media).toHaveAttribute('aria-label', 'Страница');
+    /* No `onopen`: nothing to open, so the picture is no control. */
+    expect(face.media?.tagName).toBe('DIV');
   });
 
   it('draws no action row without the snippet', () => {

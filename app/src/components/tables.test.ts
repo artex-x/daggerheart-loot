@@ -1798,6 +1798,29 @@ describe('the head below 761 px', () => {
     expect(more).toHaveFocus();
   });
 
+  it('marks «Об этих данных» open in «Ещё», and closes its panel with «Закрыть»', async () => {
+    const { container } = render(App, { env: narrow() });
+    const more = screen.getByRole('button', { name: 'Ещё' });
+    await userEvent.click(more);
+    const closed = screen.getByRole('menuitem', { name: 'Об этих данных' });
+    expect(closed).toHaveAttribute('aria-expanded', 'false');
+    const helpPath = closed.querySelector('svg path')?.getAttribute('d');
+    await userEvent.click(closed);
+    const panel = screen.getByText(/Класс - раздел книги, а не тип урона/).closest('.helpbox');
+    expect(panel).not.toBeNull();
+    await userEvent.click(more);
+    const open = screen.getByRole('menuitem', { name: 'Об этих данных' });
+    expect(open).toHaveAttribute('aria-expanded', 'true');
+    expect(open.querySelector('svg path')?.getAttribute('d')).not.toBe(helpPath);
+    await expectNoA11yViolations(container);
+    await userEvent.keyboard('{Escape}');
+    await userEvent.click(
+      within(panel as HTMLElement).getByRole('button', { name: 'Закрыть' })
+    );
+    expect(screen.queryByText(/Класс - раздел книги, а не тип урона/)).toBeNull();
+    expect(more).toHaveFocus();
+  });
+
   it('closes «Ещё» for good on a band change, and places the focus', async () => {
     const viewport = fakeViewport('narrow');
     render(App, { env: narrow({ viewport }) });

@@ -364,6 +364,9 @@
           lead={t.signInToSave}
           after={{ hash: app.hash, action: { do: 'saveList' } }}
           boxed
+          oncancel={() => {
+            prompting = false;
+          }}
         />
       {/if}
       {#if shared.note || shared.hnote}

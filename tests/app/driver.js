@@ -43,12 +43,20 @@ function pageUrl(root, route, search) {
    write went in R10, so no app write needs it now (docs/specs/COVERAGE.md). */
 const URL_DEBOUNCE_MS = 150;
 
+/** Waits until no table draws its rows in later tasks (`TableRows.svelte`). */
+async function drawn(page) {
+  await page.waitForFunction(() => !document.querySelector('[data-drawing]'), {
+    timeout: 20000
+  });
+}
+
 /** Waits until the app has drawn something. */
 async function ready(page) {
   await page.waitForFunction(() => {
     const root = document.querySelector('#app');
     return !!root && root.children.length > 0;
   });
+  await drawn(page);
 
   /* And until the artwork has arrived. A card is mostly its picture, so a
      screenshot that races it reports a blank square as a five percent
@@ -120,6 +128,7 @@ async function settle(page) {
   });
   /* One frame for the paint that follows the last effect. */
   await new Promise((r) => setTimeout(r, 80));
+  await drawn(page);
 }
 
 /**

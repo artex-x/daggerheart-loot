@@ -6,7 +6,7 @@
 <!-- kept out of search results, same as every other page - docs/specs/META.md
      section 1 -->
 <meta name="robots" content="noindex, nofollow">
-<title>Страница не найдена / Page not found — Daggerheart Loot</title>
+<title>Страницы по этому адресу нет / No page at this address - Daggerheart Loot</title>
 <link rel="icon" type="image/svg+xml" href="https://daggerheart-loot.pages.dev/icons/favicon.svg">
 <!--
   Authored and tracked at the repository root, not generated: it carries no
@@ -24,7 +24,7 @@
   body{background:#0e0c15;color:#ece8f6;font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
        margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
   .w{max-width:420px;text-align:center}
-  h1{font-size:22px;margin:0 0 6px}
+  h1,h2{font-size:22px;margin:0 0 6px}
   p{color:#cfc8e0;margin:0 0 20px}
   hr{border:none;border-top:1px solid #2a2438;margin:24px 0}
   a{color:#d8ab5e}
@@ -32,16 +32,18 @@
 </head>
 <body>
   <div class="w" id="app-404">
-    <h1>Страница не найдена</h1>
-    <p>Такой ссылки больше нет - возможно, она устарела или введена неверно.
-       Можно открыть <a href="https://daggerheart-loot.pages.dev/roll/std">генератор</a>
-       или <a href="https://daggerheart-loot.pages.dev/search">поиск</a>.</p>
+    <!-- The app's own not-found page in both languages (`NoPage.svelte`): its heading,
+         its cause and its two actions. One `h1`; the English half is its `h2`. -->
+    <h1>Страницы по этому адресу нет</h1>
+    <p>Ссылка могла устареть или быть набрана с ошибкой.</p>
+    <p><a href="https://daggerheart-loot.pages.dev/roll/std">На главную</a>
+       · <a href="https://daggerheart-loot.pages.dev/tables">Открыть таблицы</a></p>
     <hr>
     <div lang="en">
-      <h1>Page not found</h1>
-      <p>This link no longer exists - it may be outdated or mistyped.
-         Try the <a href="https://daggerheart-loot.pages.dev/en/roll/std">generator</a>
-         or <a href="https://daggerheart-loot.pages.dev/en/search">search</a>.</p>
+      <h2>No page at this address</h2>
+      <p>The link may be old or mistyped.</p>
+      <p><a href="https://daggerheart-loot.pages.dev/en/roll/std">Home</a>
+         · <a href="https://daggerheart-loot.pages.dev/en/tables">Open the tables</a></p>
     </div>
   </div>
 </body>

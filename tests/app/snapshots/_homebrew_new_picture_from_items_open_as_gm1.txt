@@ -66,7 +66,6 @@ RootWebArea "Новый предмет - Генератор лута Daggerheart
       button "Сохранить"
     button "На экране" [pressed=true]
     button "На печати" [pressed=false]
-    button "Страница"
     StaticText "ПРЕДМЕТ"
     StaticText "ХОУМБРЮ"
     heading "Новый предмет" [level=2]
@@ -112,7 +111,6 @@ daggerheart.com
 Снаряжение
 Сохранить
 Список
-Страница
 Таблица
 Таблицы
 Улучшается до
@@ -183,7 +181,6 @@ RootWebArea "New item - Daggerheart Loot Generator" [url=/en/homebrew/new?as=gm1
       button "Save"
     button "On screen" [pressed=true]
     button "In print" [pressed=false]
-    button "Страница"
     StaticText "ПРЕДМЕТ"
     StaticText "ХОУМБРЮ"
     heading "Новый предмет" [level=2]
@@ -235,4 +232,3 @@ Tables
 Terms of use
 Upgrades to
 daggerheart.com
-Страница

@@ -6,7 +6,7 @@
 RootWebArea "Wondrous Environments - Генератор лута Daggerheart" [url=/roll/wondrous_environments]
   dialog "Смола Бездны" [modal=true]
     button "Закрыть" [focused=true]
-    button "Страница"
+    link "Открыть страницу" [url=/i/w1]
     StaticText "1"
     StaticText "РАСХОДНИК"
     StaticText "WONDROUS ENVIRONMENTS"
@@ -38,12 +38,13 @@ daggerheart.com
 На единицу меньше
 Обычные правила
 Открывать при запуске
+Открыть карточку
+Открыть страницу
 Печать
 Поделиться
 Поиск
 Результат броска
 Смола Бездны
-Страница
 Таблицы
 Условия использования
 Установить как приложение
@@ -52,7 +53,7 @@ daggerheart.com
 RootWebArea "Wondrous Environments - Daggerheart Loot Generator" [url=/en/roll/wondrous_environments]
   dialog "Abyssal Sap" [modal=true]
     button "Close" [focused=true]
-    button "Page"
+    link "Open page" [url=/i/en/w1]
     StaticText "1"
     StaticText "CONSUMABLE"
     StaticText "WONDROUS ENVIRONMENTS"
@@ -76,8 +77,9 @@ LootDaggerheart
 More
 One higher
 One lower
+Open card
 Open on start
-Page
+Open page
 Print
 Privacy
 RU

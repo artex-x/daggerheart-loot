@@ -7,7 +7,7 @@
 RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tables?as=gm4]
   dialog "Кольцо Тишины" [modal=true]
     button "Закрыть"
-    button "Страница"
+    link "Открыть страницу" [url=/i/ci28]
     StaticText "28"
     StaticText "ПРЕДМЕТ"
     ... StaticText x2 of 6 same-shape siblings elided
@@ -108,6 +108,7 @@ daggerheart.com
 Лавка в порту
 ЛутDaggerheart
 Открывать при запуске
+Открыть страницу
 Печать
 Поделиться
 Поиск
@@ -119,7 +120,6 @@ daggerheart.com
 Снаряжение
 Список
 Ссылка на таблицу
-Страница
 Таблицы
 Условия использования
 Установить как приложение
@@ -129,7 +129,7 @@ daggerheart.com
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables?as=gm4]
   dialog "Ring of Silence" [modal=true]
     button "Close"
-    button "Page"
+    link "Open page" [url=/i/en/ci28]
     StaticText "28"
     StaticText "ITEM"
     StaticText "CORE"
@@ -224,8 +224,8 @@ List
 LootDaggerheart
 More
 Open on start
+Open page
 Other
-Page
 Print
 Privacy
 RU

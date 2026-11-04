@@ -32,17 +32,17 @@ const code = walk(DIST).filter(
 /* Two limits by what was built: the configured build (`deploy`'s, and the
    one `npm run e2e` leaves) adds the account client (auth-js,
    postgrest-js, realtime-js and storage-js) as a chunk loaded after first
-   paint - 320.7 kB in all here and about 0.1 kB more on CI's `e2e` job, so
-   under 321 - while the unconfigured one `check:built` measures, 263.3 kB,
-   must stay under 264 (measured 2026-11-04: the search head, kind row, sheet and
-   empty states, the account's columns, sign-in panel and delete list, the error
-   pages, `Marked`, `danger-fill`, about 20 strings net). A batch
+   paint - 321.4 kB in all here and about 0.1 kB more on CI's `e2e` job, so
+   under 322 - while the unconfigured one `check:built` measures, 264.1 kB,
+   must stay under 265 (measured 2026-11-04 after the blind review of wave 2: the
+   chunked first draw of a long table, the picture's three forms, the prompts'
+   «Отмена» and the help panel's «Закрыть»; 263.3 kB before them). A batch
    whose total passes a budget raises it to its measured total rounded up
    to the next whole kB, never past 350 configured and 270 unconfigured
    (owner, 2026-10-22; decisions "The configured bundle ceiling rises to
    350 kB" and "The unconfigured bundle ceiling rises to 270 kB"). */
 const withAccount = code.some((f) => /[\\/]assets[\\/]supabase-[^\\/]*\.js$/.test(f));
-const BUDGET_KB = withAccount ? 321 : 264; // gzip, code only
+const BUDGET_KB = withAccount ? 322 : 265; // gzip, code only
 const WHICH = withAccount ? 'with the account client chunk' : 'no account client chunk';
 
 let total = 0;

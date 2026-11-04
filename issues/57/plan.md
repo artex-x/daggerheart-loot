@@ -1536,7 +1536,9 @@ Blind reviews on production (owner, `context.md`, "Wave reviews"). Each runs wit
 no plan and no handoff, and checks production only:
 
 - After wave 2's green deploy: a blind review of the scope of waves 1 and 2.
-  Report: `issues/57/reviews/post-wave-2.md`.
+  Report: `issues/57/reviews/post-wave-2.md`. Done 2026-11-04 (fix-then-continue); its remediation is
+  `handoff.md` Completed, "Post-wave-2 remediation" (R1 kept the dialog over a roll result: a feature-loss
+  stop rule avoided, named there).
 - After wave 3's green deploy: a blind review of the scope of wave 3. Report:
   `issues/57/reviews/post-wave-3.md`.
 - Then the whole-app blind review, step 1 below. Report:

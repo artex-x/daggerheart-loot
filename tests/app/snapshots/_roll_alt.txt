@@ -43,19 +43,19 @@ RootWebArea "Альтернативные таблицы - Генератор л
     heading "Бросок 1 и 2" [level=2]
     status ""
       StaticText "Крюк-Кошка, Металлические Шарики, Зелье Быстрого Шага, Семя Верг..." [namelen=68 namehash=3f6f8db6]
-    link "Крюк-Кошка" [description=Страница url=/i/hi2]
+    link "Крюк-Кошка" [description=Открыть страницу url=/i/hi2]
     button "В список" [expanded=false]
     button "Ещё" [expanded=false haspopup=menu]
-    link "Металлические Шарики" [description=Страница url=/i/hi3]
+    link "Металлические Шарики" [description=Открыть страницу url=/i/hi3]
     button "В список" [expanded=false]
     button "Ещё" [expanded=false haspopup=menu]
-    link "Зелье Быстрого Шага" [description=Страница url=/i/cc1]
+    link "Зелье Быстрого Шага" [description=Открыть страницу url=/i/cc1]
     link "Большое Зелье Быстрого Шага" [url=/i/cc25]
     button "В список" [expanded=false]
     button "Ещё" [expanded=false haspopup=menu]
-    button "Страница"
+    button "Открыть карточку"
     StaticText "HOPE & FEAR"
-    link "Семя Вергласа" [description=Страница url=/i/hc3]
+    link "Семя Вергласа" [description=Открыть страницу url=/i/hc3]
     StaticText "Этим осколком льда можно мгновенно заморозить участок воды в пре..." [namelen=88 namehash=0c7b50a5]
     button "В список" [expanded=false]
     button "Поделиться"
@@ -97,6 +97,7 @@ daggerheart.com
 Обычная
 Обычные правила
 Открывать при запуске
+Открыть карточку
 Очень редкая
 Поделиться
 Поиск
@@ -105,7 +106,6 @@ daggerheart.com
 Редкая
 Семя Вергласа
 Скопировать все варианты
-Страница
 Таблицы
 Условия использования
 Установить как приложение
@@ -151,19 +151,19 @@ RootWebArea "Alternate tables - Daggerheart Loot Generator" [url=/en/roll/alt]
     heading "Roll 1 and 2" [level=2]
     status ""
       StaticText "Grapnel, Ball Bearings, Stride Potion, Verglasian Seed"
-    link "Grapnel" [description=Page url=/i/en/hi2]
+    link "Grapnel" [description=Open page url=/i/en/hi2]
     button "Add to list" [expanded=false]
     button "More" [expanded=false haspopup=menu]
-    link "Ball Bearings" [description=Page url=/i/en/hi3]
+    link "Ball Bearings" [description=Open page url=/i/en/hi3]
     button "Add to list" [expanded=false]
     button "More" [expanded=false haspopup=menu]
-    link "Stride Potion" [description=Page url=/i/en/cc1]
+    link "Stride Potion" [description=Open page url=/i/en/cc1]
     link "Major Stride Potion" [url=/i/en/cc25]
     button "Add to list" [expanded=false]
     button "More" [expanded=false haspopup=menu]
-    button "Page"
+    button "Open card"
     StaticText "HOPE & FEAR"
-    link "Verglasian Seed" [description=Page url=/i/en/hc3]
+    link "Verglasian Seed" [description=Open page url=/i/en/hc3]
     StaticText "You can use this ice shard to instantly freeze an area of water ..." [namelen=82 namehash=7b271c85]
     button "Add to list" [expanded=false]
     button "Share"
@@ -197,8 +197,8 @@ Legendary
 LootDaggerheart
 Major Stride Potion
 More
+Open card
 Open on start
-Page
 Privacy
 RU
 Rare

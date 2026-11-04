@@ -33,9 +33,9 @@ RootWebArea "Dread GM Toolbox - Генератор лута Daggerheart" [url=/r
     heading "Бросок 1" [level=2]
     status ""
       StaticText "Эфирная Винтовка"
-    button "Страница"
+    button "Открыть карточку"
     ... StaticText x10 of 14 same-shape siblings elided
-    link "Эфирная Винтовка" [description=Страница url=/i/di1]
+    link "Эфирная Винтовка" [description=Открыть страницу url=/i/di1]
     StaticText "Неестественное:"
     StaticText " Биологически живые стрелки должны отмечать Стресс каждый раз, к..." [namelen=171 namehash=1386cde3]
     button "В список" [expanded=false]
@@ -67,10 +67,10 @@ daggerheart.com
 На единицу меньше
 Обычные правила
 Открывать при запуске
+Открыть карточку
 Поделиться
 Поиск
 Результат броска
-Страница
 Таблицы
 Условия использования
 Установить как приложение
@@ -107,9 +107,9 @@ RootWebArea "Dread GM Toolbox - Daggerheart Loot Generator" [url=/en/roll/dread_
     heading "Roll 1" [level=2]
     status ""
       StaticText "Aether Rifle"
-    button "Page"
+    button "Open card"
     ... StaticText x10 of 14 same-shape siblings elided
-    link "Aether Rifle" [description=Page url=/i/en/di1]
+    link "Aether Rifle" [description=Open page url=/i/en/di1]
     StaticText "Uncanny:"
     StaticText " Shooters who are biologically alive must mark a Stress each tim..." [namelen=164 namehash=b75ef83a]
     button "Add to list" [expanded=false]
@@ -134,8 +134,8 @@ LootDaggerheart
 More
 One higher
 One lower
+Open card
 Open on start
-Page
 Privacy
 RU
 Roll

@@ -1771,11 +1771,10 @@ async function noteClearTargetYieldsToTheToolbar() {
   await ctx.close();
 }
 
-/** 31. The card image's focus ring is drawn, not clipped by the card, at
- *  both card sizes: a pixel read of a 3px band inside each edge of the
- *  focused `.card-media`, against the ring's own color. At 520 px the full
- *  card scrolls the page under the 63 px header, and the case asserts it, so
- *  the clip's scroll offset stays tested. */
+/** 31. The card image's focus ring is drawn, not clipped by the card, on a roll
+ *  result: a pixel read of a 3px band inside each edge of the focused
+ *  `.card-media`, against the ring's own color. The record page draws its
+ *  picture as no control, so it has no ring to read. */
 async function cardMediaRingVisible() {
   async function ringAt(route, selector, label, mustScroll) {
     const { ctx, page, d } = await fresh({ width: 1180, height: 520 });
@@ -1860,7 +1859,6 @@ async function cardMediaRingVisible() {
     }
     await ctx.close();
   }
-  await ringAt('#/i/ci1', '.card.full .card-media', 'full', true);
   await ringAt('#/roll/wondrous', '.card.face .card-media', 'face', false);
 }
 

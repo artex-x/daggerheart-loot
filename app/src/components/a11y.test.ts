@@ -166,7 +166,7 @@ const STATES: {
   {
     what: 'the record over the page, which has the focus trap',
     route: '#/roll/wondrous',
-    enter: () => press('Страница')
+    enter: () => press('Открыть карточку')
   },
   {
     what: 'the add-to-list menu, with two lists to choose from',
@@ -699,7 +699,8 @@ const COVERED: Record<string, string> = {
   'TextInput.svelte':
     'the lists index above, and the delete confirmation open above (accountPage.test.ts)',
   'TableLink.svelte': "record.test.ts and itemPage.test.ts: the author's table link",
-  'TableRows.svelte': "tables.test.ts's sectioned-body axe check, and the plain table above",
+  'TableRows.svelte':
+    "tables.test.ts's sectioned-body axe check, the plain table above, and tableRows.test.ts's long table",
   'TablesPage.svelte': 'tables.test.ts, and the pressed states below',
   'UpdatedLine.svelte':
     'itemPage.test.ts just now, minutes and days, and the share links in sharedListPage.test.ts'

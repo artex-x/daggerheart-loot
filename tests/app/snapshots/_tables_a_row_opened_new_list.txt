@@ -6,7 +6,7 @@
 RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tables]
   dialog "Самоцвет Чутья" [modal=true]
     button "Закрыть"
-    button "Страница"
+    link "Открыть страницу" [url=/i/ci56]
     StaticText "56"
     StaticText "ПРЕДМЕТ"
     StaticText "CORE"
@@ -99,6 +99,7 @@ daggerheart.com
 Конфиденциальность
 ЛутDaggerheart
 Открывать при запуске
+Открыть страницу
 Отмена
 Печать
 Поделиться
@@ -111,7 +112,6 @@ daggerheart.com
 Снаряжение
 Список
 Ссылка на таблицу
-Страница
 Таблицы
 Условия использования
 Установить как приложение
@@ -120,7 +120,7 @@ daggerheart.com
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables]
   dialog "Gem of Insight" [modal=true]
     button "Close"
-    button "Page"
+    link "Open page" [url=/i/en/ci56]
     StaticText "56"
     StaticText "ITEM"
     StaticText "CORE"
@@ -209,8 +209,8 @@ List
 LootDaggerheart
 More
 Open on start
+Open page
 Other
-Page
 Print
 Privacy
 RU

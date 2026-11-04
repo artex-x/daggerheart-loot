@@ -40,10 +40,10 @@ RootWebArea "Предметы сообществ - Генератор лута D
     heading "Бросок 1" [level=2]
     status ""
       StaticText "Королевская Брошь"
-    button "Страница"
+    button "Открыть карточку"
     ... StaticText x2 of 6 same-shape siblings elided
     StaticText "ВЕЛИКОРОДНОЕ"
-    link "Королевская Брошь" [description=Страница url=/i/cm1]
+    link "Королевская Брошь" [description=Открыть страницу url=/i/cm1]
     StaticText "Пока вы открыто носите эту брошь во владениях или поселении Вели..." [namelen=187 namehash=d75660e2]
     button "В список" [expanded=false]
     button "Поделиться"
@@ -74,12 +74,12 @@ daggerheart.com
 На единицу меньше
 Обычные правила
 Открывать при запуске
+Открыть карточку
 Поделиться
 Поиск
 Предметы сообществ
 Результат броска
 Сообщество
-Страница
 Таблицы
 Условия использования
 Установить как приложение
@@ -122,10 +122,10 @@ RootWebArea "Community items - Daggerheart Loot Generator" [url=/en/roll/communi
     heading "Roll 1" [level=2]
     status ""
       StaticText "Royal Brooch"
-    button "Page"
+    button "Open card"
     ... StaticText x2 of 6 same-shape siblings elided
     StaticText "HIGHBORNE"
-    link "Royal Brooch" [description=Page url=/i/en/cm1]
+    link "Royal Brooch" [description=Open page url=/i/en/cm1]
     StaticText "Wearing this brooch openly while within a Highborne domain or se..." [namelen=155 namehash=642af9c6]
     button "Add to list" [expanded=false]
     button "Share"
@@ -149,8 +149,8 @@ LootDaggerheart
 More
 One higher
 One lower
+Open card
 Open on start
-Page
 Privacy
 RU
 Roll

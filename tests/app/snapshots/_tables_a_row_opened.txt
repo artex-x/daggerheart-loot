@@ -6,7 +6,7 @@
 RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tables]
   dialog "Кольцо Тишины" [modal=true]
     button "Закрыть" [focused=true]
-    button "Страница"
+    link "Открыть страницу" [url=/i/ci28]
     StaticText "28"
     StaticText "ПРЕДМЕТ"
     StaticText "CORE"
@@ -97,6 +97,7 @@ daggerheart.com
 Конфиденциальность
 ЛутDaggerheart
 Открывать при запуске
+Открыть страницу
 Печать
 Поделиться
 Поиск
@@ -108,7 +109,6 @@ daggerheart.com
 Снаряжение
 Список
 Ссылка на таблицу
-Страница
 Таблицы
 Условия использования
 Установить как приложение
@@ -117,7 +117,7 @@ daggerheart.com
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables]
   dialog "Ring of Silence" [modal=true]
     button "Close" [focused=true]
-    button "Page"
+    link "Open page" [url=/i/en/ci28]
     StaticText "28"
     StaticText "ITEM"
     StaticText "CORE"
@@ -207,8 +207,8 @@ List
 LootDaggerheart
 More
 Open on start
+Open page
 Other
-Page
 Print
 Privacy
 RU

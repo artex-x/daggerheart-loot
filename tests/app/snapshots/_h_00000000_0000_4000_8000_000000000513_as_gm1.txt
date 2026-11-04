@@ -18,7 +18,6 @@ RootWebArea "Whispering Cap - Генератор лута Daggerheart" [url=/h/0
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
-    button "Страница"
     StaticText "ПРЕДМЕТ"
     heading "Whispering Cap" [level=1]
     StaticText "Хоумбрю "
@@ -54,7 +53,6 @@ daggerheart.com
 Печать
 Поделиться
 Поиск
-Страница
 Таблицы
 Условия использования
 Установить как приложение
@@ -75,7 +73,6 @@ RootWebArea "Whispering Cap - Daggerheart Loot Generator" [url=/en/h/00000000-00
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
-    button "Page"
     StaticText "ITEM"
     heading "Whispering Cap" [level=1]
     StaticText "Homebrew "
@@ -103,7 +100,6 @@ Edit
 Install as an app
 LootDaggerheart
 More
-Page
 Print
 Privacy
 RU

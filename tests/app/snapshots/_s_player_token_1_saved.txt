@@ -22,7 +22,8 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/player-token-1?v=<
     StaticText "Обновлено 3 дня назад"
     button "Сохранить себе" [expanded=true]
     ... StaticText x5 of 9 same-shape siblings elided
-    button "Войти"
+    button "Войти" [focused=true]
+    button "Отмена"
     searchbox "Поиск по названию или описанию..."
     button "Фильтры" [expanded=false]
     checkbox "Выбрать все (10)" [checked=false]
@@ -66,6 +67,7 @@ daggerheart.com
 Колода Сумерек
 Конфиденциальность
 ЛутDaggerheart
+Отмена
 Палаш
 ПалашОсновное оружиеCoreРанг 1 · Физическое · Проворность · Впло... [namelen=118 namehash=5597138b]
 Первоклассный Спальный Мешок
@@ -102,7 +104,8 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-1?v=<v>]
     StaticText "Updated 3 days ago"
     button "Save to my lists" [expanded=true]
     ... StaticText x5 of 9 same-shape siblings elided
-    button "Sign in"
+    button "Sign in" [focused=true]
+    button "Cancel"
     searchbox "Search by name or description..."
     button "Filters" [expanded=false]
     checkbox "Select all (10)" [checked=false]
@@ -135,6 +138,7 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-1?v=<v>]
 Art History Booklet
 Broadsword
 BroadswordPrimary weaponCoreTier 1 · Physical · Agility · Melee ... [namelen=113 namehash=26515266]
+Cancel
 Casting Dagger
 Casting DaggerPrimary weaponHope & FearTier 1 · Magic · Instinct... [namelen=176 namehash=08dad18c]
 EN

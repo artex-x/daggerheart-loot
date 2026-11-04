@@ -44,11 +44,11 @@ RootWebArea "Обычные правила - Генератор лута Daggerh
     status ""
       StaticText "Первоклассный Спальный Мешок, Зелье Быстрого Шага"
     ... button x2 of 6 same-shape siblings elided
-    link "Первоклассный Спальный Мешок" [description=Страница url=/i/ci1]
+    link "Первоклассный Спальный Мешок" [description=Открыть страницу url=/i/ci1]
     button "В список" [expanded=false]
     button "Ещё" [expanded=false haspopup=menu]
-    button "Страница"
-    link "Зелье Быстрого Шага" [description=Страница url=/i/cc1]
+    button "Открыть карточку"
+    link "Зелье Быстрого Шага" [description=Открыть страницу url=/i/cc1]
     StaticText "Вы получаете бонус +1 к следующему Броску Проворности."
     StaticText "УЛУЧШАЕТСЯ ДО"
     link "Большое Зелье Быстрого Шага" [url=/i/cc25]
@@ -89,6 +89,7 @@ daggerheart.com
 На единицу меньше
 Обычные правила
 Открывается при запуске
+Открыть карточку
 Первоклассный Спальный Мешок
 Поделиться
 Поиск
@@ -96,7 +97,6 @@ daggerheart.com
 Расходники
 Результат броска
 Скопировать все варианты
-Страница
 Таблицы
 Условия использования
 Установить как приложение
@@ -143,11 +143,11 @@ RootWebArea "Standard rules - Daggerheart Loot Generator" [url=/en/roll/std]
     status ""
       StaticText "Premium Bedroll, Stride Potion"
     ... button x2 of 6 same-shape siblings elided
-    link "Premium Bedroll" [description=Page url=/i/en/ci1]
+    link "Premium Bedroll" [description=Open page url=/i/en/ci1]
     button "Add to list" [expanded=false]
     button "More" [expanded=false haspopup=menu]
-    button "Page"
-    link "Stride Potion" [description=Page url=/i/en/cc1]
+    button "Open card"
+    link "Stride Potion" [description=Open page url=/i/en/cc1]
     StaticText "You gain a +1 bonus to your next Agility Roll."
     StaticText "UPGRADES TO"
     link "Major Stride Potion" [url=/i/en/cc25]
@@ -182,8 +182,8 @@ Major Stride Potion
 More
 One higher
 One lower
+Open card
 Opens on start
-Page
 Premium Bedroll
 Privacy
 RU

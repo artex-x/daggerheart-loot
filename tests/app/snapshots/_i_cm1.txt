@@ -17,7 +17,6 @@ RootWebArea "Королевская Брошь - Генератор лута Dag
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
-    button "Страница"
     StaticText "ПРЕДМЕТ"
     heading "Королевская Брошь" [level=1]
     StaticText "Предметы сообществ · Великородное · номер 1 "
@@ -48,7 +47,6 @@ daggerheart.com
 Печать
 Поделиться
 Поиск
-Страница
 Таблицы
 Условия использования
 Установить как приложение
@@ -69,7 +67,6 @@ RootWebArea "Royal Brooch - Daggerheart Loot Generator" [url=/i/en/cm1?v=<v>]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
-    button "Page"
     StaticText "ITEM"
     heading "Royal Brooch" [level=1]
     StaticText "Community items · Highborne · roll 1 "
@@ -92,7 +89,6 @@ EN
 Install as an app
 LootDaggerheart
 More
-Page
 Print
 Privacy
 RU

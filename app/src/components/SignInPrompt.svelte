@@ -3,7 +3,9 @@
      line and one «Войти» that opens `#/account`, where the providers are
      listed (docs/DECISIONS.md, 2026-09-25, "A sign-in prompt opens the
      account page ..."). `compact` is the add-to-list menu's form, `boxed` the
-     shared page's, under its button. */
+     form under a pressed button. A prompt with «Отмена» answers a press: it takes the
+     focus to «Войти», and «Отмена» returns it to what had it (rule 20). */
+  import { untrack } from 'svelte';
   import Button from './Button.svelte';
   import type { SignInAfter } from '../lib/pending.js';
   import type { AppState } from '../state/app.svelte.js';
@@ -15,13 +17,30 @@
     after: SignInAfter;
     compact?: boolean;
     boxed?: boolean;
-    /** The compact form's «Отмена», back to the control it replaced. */
+    /** «Отмена», which closes the prompt. */
     oncancel?: (() => void) | undefined;
   }
 
   const { app, lead, after, compact = false, boxed = false, oncancel }: Props = $props();
 
   const t = $derived(app.t);
+  let signInButton = $state<HTMLButtonElement | undefined>(undefined);
+  let opener: HTMLElement | null = null;
+
+  $effect(() => {
+    const button = signInButton;
+    if (!button) return;
+    untrack(() => {
+      if (!oncancel) return;
+      opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      button.focus();
+    });
+  });
+
+  function cancel(): void {
+    oncancel?.();
+    if (opener?.isConnected) opener.focus();
+  }
 </script>
 
 <div class="signin" class:compact class:boxed>
@@ -30,12 +49,15 @@
     <Button
       variant="primary"
       size={compact || boxed ? 'sm' : 'md'}
+      bind:el={signInButton}
       onclick={() => {
         app.askSignIn(after);
       }}>{t.signIn}</Button
     >
-    {#if compact && oncancel}
-      <Button size="sm" variant="ghost" onclick={oncancel}>{t.cancel}</Button>
+    {#if oncancel}
+      <Button size={compact || boxed ? 'sm' : 'md'} variant="ghost" onclick={cancel}
+        >{t.cancel}</Button
+      >
     {/if}
   </div>
 </div>

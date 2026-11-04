@@ -599,6 +599,8 @@
      `document.fonts` does not exist in jsdom, so component tests fall through
      to an already-resolved promise. */
   let flashKey = $state('');
+  /* An anchor's target and every row above it draw in the first task (`TableRows`). */
+  const anchored = $derived(app.route.kind === 'tables' && !!app.route.anchor);
   let played = '';
   let flashTimer: ReturnType<typeof setTimeout> | undefined;
   $effect(() => {
@@ -766,7 +768,16 @@
     </div>
   </div>
   {#if help && helpOpen}
-    <HelpBox {help} />
+    <HelpBox
+      {help}
+      close={{
+        label: t.close,
+        onclose: () => {
+          helpOpen = false;
+          moreButton?.focus();
+        }
+      }}
+    />
   {/if}
 {:else}
   <PageHead {app} title={t.tables} sub="" {help} {home} extra={nav} />
@@ -900,6 +911,7 @@
                       {index}
                       lang={app.lang}
                       flash={flashKey}
+                      whole={anchored}
                       ticks={app.selecting}
                       {hide}
                       {terms}
@@ -944,6 +956,7 @@
                   {index}
                   lang={app.lang}
                   flash={flashKey}
+                  whole={anchored}
                   ticks={app.selecting}
                   {hide}
                   {terms}
@@ -966,6 +979,7 @@
               {index}
               lang={app.lang}
               flash={flashKey}
+              whole={anchored}
               ticks={app.selecting}
               {hide}
               {terms}

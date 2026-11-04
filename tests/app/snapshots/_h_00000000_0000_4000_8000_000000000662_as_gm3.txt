@@ -18,7 +18,6 @@ RootWebArea "Скатка следопыта - Генератор лута Dagge
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
-    button "Страница"
     StaticText "ПРЕДМЕТ"
     heading "Скатка следопыта" [level=1]
     StaticText "Хоумбрю "
@@ -64,7 +63,6 @@ daggerheart.com
 Скатка путника
 Скатка стража
 Сон под звёздами
-Страница
 Таблицы
 Условия использования
 Установить как приложение
@@ -85,7 +83,6 @@ RootWebArea "Ranger's Roll - Daggerheart Loot Generator" [url=/en/h/00000000-000
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
-    button "Page"
     StaticText "ITEM"
     heading "Ranger's Roll" [level=1]
     StaticText "Homebrew "
@@ -121,7 +118,6 @@ Install as an app
 LootDaggerheart
 More
 Moss Pillow
-Page
 Print
 Privacy
 RU

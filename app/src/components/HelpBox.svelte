@@ -5,6 +5,7 @@
    * Extracted on its second use: the page-level help panel and the money
    * picker's own box (`ListPage.svelte`) draw the same shape, the
    * second one narrower and in a different slot - hence `class`. */
+  import DialogClose from './DialogClose.svelte';
   import { isBold, isLink } from '../lib/help.js';
   import type { Help } from '../lib/help.js';
 
@@ -14,12 +15,17 @@
      *  rule reaching in - `.money > :global(.money-help)` on the money
      *  picker's box. */
     class?: string;
+    /** «Закрыть» in the box: a panel opened from a menu item, whose opener is gone. */
+    close?: { label: string; onclose: () => void } | undefined;
   }
 
-  const { help, class: extraClass }: Props = $props();
+  const { help, class: extraClass, close }: Props = $props();
 </script>
 
 <div class={extraClass ? `helpbox ${extraClass}` : 'helpbox'}>
+  {#if close}
+    <div class="helpbox-x"><DialogClose label={close.label} onclick={close.onclose} /></div>
+  {/if}
   {#each help.paragraphs as para, i (i)}
     <p>
       {#if para.lead}<b>{para.lead}</b
@@ -62,6 +68,13 @@
       opacity: 1;
       transform: none;
     }
+  }
+
+  /* Above the text, at its end, so it never covers a line. */
+  .helpbox-x {
+    display: flex;
+    justify-content: flex-end;
+    margin: -6px -8px 6px 0;
   }
 
   .helpbox p {

@@ -59,6 +59,25 @@ describe('the table navigation', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
+  it('returns the focus to the picker after a pick closes the sheet', async () => {
+    nav('eq_weapon', 'narrow');
+    const picker = screen.getByRole('button', { name: 'Таблица: Оружие' });
+    await userEvent.click(picker);
+    const sheet = within(screen.getByRole('dialog'));
+    await userEvent.click(sheet.getByRole('link', { name: 'Броня' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(document.activeElement).toBe(picker);
+    await userEvent.click(picker);
+    await userEvent.click(
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'Core' })
+    );
+    await userEvent.click(
+      within(screen.getByRole('dialog')).getByRole('link', { name: 'Предметы' })
+    );
+    expect(document.activeElement).toBe(picker);
+    await expectNoA11yViolations(document.body);
+  });
+
   it('names a one-table group by its book in the picker', () => {
     nav('voa', 'narrow');
     expect(screen.getByRole('button', { name: 'Таблица: Vault of Ages' })).toBeInTheDocument();

@@ -17,7 +17,6 @@ RootWebArea "Первоклассный Спальный Мешок - Генер
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
-    button "Страница"
     StaticText "ПРЕДМЕТ"
     heading "Первоклассный Спальный Мешок" [level=1]
     StaticText "Core · Предметы · номер 1 "
@@ -48,7 +47,6 @@ daggerheart.com
 Печать
 Поделиться
 Поиск
-Страница
 Таблицы
 Условия использования
 Установить как приложение
@@ -69,7 +67,6 @@ RootWebArea "Premium Bedroll - Daggerheart Loot Generator" [url=/i/en/ci1?v=<v>]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
-    button "Page"
     StaticText "ITEM"
     heading "Premium Bedroll" [level=1]
     StaticText "Core · Items · roll 1 "
@@ -92,7 +89,6 @@ EN
 Install as an app
 LootDaggerheart
 More
-Page
 Print
 Privacy
 RU

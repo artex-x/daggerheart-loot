@@ -7,7 +7,7 @@
 RootWebArea "Список второго ГМа - Генератор лута Daggerheart" [url=/lists/00000000-0000-4000-8000-000000000201?as=gm2]
   dialog "Топор Тлеющих Углей" [modal=true]
     button "Закрыть" [focused=true]
-    button "Страница"
+    link "Открыть страницу" [url=/h/00000000-0000-4000-8000-000000000511]
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
     StaticText "УНИКАЛЬНОЕ"
     ... StaticText x6 of 10 same-shape siblings elided
@@ -41,6 +41,7 @@ daggerheart.com
 Название списка
 Нумерованный список
 Открыть
+Открыть страницу
 Печать
 Поделиться
 Подсказка: Для игроков
@@ -58,7 +59,6 @@ daggerheart.com
 Скрыть изменение «Топор Тлеющих Углей»
 Скрыть изменения
 Список
-Страница
 Таблицы
 Только для мастера: Скипетр
 Только для мастера: Топор Тлеющих Углей
@@ -74,7 +74,7 @@ daggerheart.com
 RootWebArea "Список второго ГМа - Daggerheart Loot Generator" [url=/en/lists/00000000-0000-4000-8000-000000000201?as=gm2]
   dialog "Ember Axe" [modal=true]
     button "Close" [focused=true]
-    button "Page"
+    link "Open page" [url=/en/h/00000000-0000-4000-8000-000000000511]
     StaticText "PRIMARY WEAPON"
     StaticText "UNIQUE"
     ... StaticText x6 of 10 same-shape siblings elided
@@ -115,8 +115,8 @@ Numbered list
 One higher
 One lower
 Open
+Open page
 Own item
-Page
 Position in the list
 Preview
 Price

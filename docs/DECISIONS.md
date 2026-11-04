@@ -14,9 +14,11 @@ deleted.
 
 ## Index
 
+- 2026-11-04 - [A long table draws its first 60 rows in the first task and the rest after it](decisions/2026-11-04-a-long-table-draws-its-rows-over-several-tasks.md)
 - 2026-11-04 - [Search and account follow the list head and the error page](decisions/2026-11-04-search-and-account-follow-the-list-head-and-the-error-page.md)
 - 2026-11-04 - [The homebrew pages share the list head and one selection bar](decisions/2026-11-04-the-homebrew-pages-share-the-list-head-and-one-selection-bar.md)
 - 2026-11-04 - [The record page is a dossier, the actions are one row, and «Ещё» is a menu](decisions/2026-11-04-the-record-page-is-a-dossier-with-one-more-menu.md)
+- 2026-11-04 - [The record picture goes one step deeper than where it is drawn](decisions/2026-11-04-the-record-picture-goes-one-step-deeper.md)
 - 2026-11-04 - [The roll pages share one layout, and a result is a card face with its own row](decisions/2026-11-04-the-roll-pages-share-one-layout-and-results-draw-the-card-face.md)
 - 2026-11-03 - [Up to 760 px the header hides on scroll down and returns on scroll up](decisions/2026-11-03-the-header-hides-on-scroll-down-up-to-760-px.md)
 - 2026-10-30 - [List pages share one head and one selection bar](decisions/2026-10-30-list-pages-share-one-head-and-one-selection-bar.md)

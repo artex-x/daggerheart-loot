@@ -40,10 +40,10 @@ RootWebArea "Предметы сообществ - Генератор лута D
     heading "Бросок 1" [level=2]
     status ""
       StaticText "Вечная Свеча"
-    button "Страница"
+    button "Открыть карточку"
     ... StaticText x2 of 6 same-shape siblings elided
     StaticText "НАУЧНОЕ"
-    link "Вечная Свеча" [description=Страница url=/i/cm11]
+    link "Вечная Свеча" [description=Открыть страницу url=/i/cm11]
     StaticText "Когда эта свеча горит, она создаёт ауру в пределах Средней диста..." [namelen=206 namehash=e8ef12ea]
     button "В список" [expanded=false]
     button "Поделиться"
@@ -74,12 +74,12 @@ daggerheart.com
 На единицу меньше
 Обычные правила
 Открывать при запуске
+Открыть карточку
 Поделиться
 Поиск
 Предметы сообществ
 Результат броска
 Сообщество
-Страница
 Таблицы
 Условия использования
 Установить как приложение
@@ -122,10 +122,10 @@ RootWebArea "Community items - Daggerheart Loot Generator" [url=/en/roll/communi
     heading "Roll 1" [level=2]
     status ""
       StaticText "Everlasting Candle"
-    button "Page"
+    button "Open card"
     ... StaticText x2 of 6 same-shape siblings elided
     StaticText "LOREBORNE"
-    link "Everlasting Candle" [description=Page url=/i/en/cm11]
+    link "Everlasting Candle" [description=Open page url=/i/en/cm11]
     StaticText "When lit, this candle creates an aura within Close range. Creatu..." [namelen=201 namehash=cc0855de]
     button "Add to list" [expanded=false]
     button "Share"
@@ -150,8 +150,8 @@ LootDaggerheart
 More
 One higher
 One lower
+Open card
 Open on start
-Page
 Privacy
 RU
 Roll

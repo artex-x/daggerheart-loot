@@ -33,10 +33,10 @@ RootWebArea "Wondrous Environments - Генератор лута Daggerheart" [u
     heading "Бросок 1" [level=2]
     status ""
       StaticText "Смола Бездны"
-    button "Страница"
+    button "Открыть карточку"
     ... StaticText x2 of 6 same-shape siblings elided
     StaticText "WONDROUS ENVIRONMENTS"
-    link "Смола Бездны" [description=Страница url=/i/w1]
+    link "Смола Бездны" [description=Открыть страницу url=/i/w1]
     StaticText "Вы можете бросить флакон этой смолы в цель в пределах Далекой ди..." [namelen=127 namehash=0130265a]
     DisclosureTriangle "Неистовое опутывание МУДРОСТЬ · УРОВЕНЬ 1 · ЗАКЛИНАНИЕ" [expanded=false]
     button "В список" [expanded=false]
@@ -70,11 +70,11 @@ daggerheart.com
 На единицу меньше
 Обычные правила
 Открывается при запуске
+Открыть карточку
 Поделиться
 Поиск
 Результат броска
 Смола Бездны
-Страница
 Таблицы
 Условия использования
 Установить как приложение
@@ -110,10 +110,10 @@ RootWebArea "Wondrous Environments - Daggerheart Loot Generator" [url=/en/roll/w
     heading "Roll 1" [level=2]
     status ""
       StaticText "Abyssal Sap"
-    button "Page"
+    button "Open card"
     ... StaticText x2 of 6 same-shape siblings elided
     StaticText "WONDROUS ENVIRONMENTS"
-    link "Abyssal Sap" [description=Page url=/i/en/w1]
+    link "Abyssal Sap" [description=Open page url=/i/en/w1]
     StaticText "You can throw a vial of this sap at a target within Far range to..." [namelen=111 namehash=8af0f270]
     DisclosureTriangle "Vicious Entangle SAGE · LEVEL 1 · SPELL" [expanded=false]
     button "Add to list" [expanded=false]
@@ -139,8 +139,8 @@ LootDaggerheart
 More
 One higher
 One lower
+Open card
 Opens on start
-Page
 Privacy
 RU
 Roll

@@ -58,7 +58,8 @@ const ru = {
   copyImg: 'Скопировать изображение',
   sImg: 'Картинка',
   sText: 'Текст',
-  openPage: 'Страница',
+  openPage: 'Открыть страницу',
+  openCard: 'Открыть карточку',
   showInTable: 'показать в таблице',
   rollNo: 'номер',
 
@@ -1192,7 +1193,8 @@ const en: Dict = {
   copyImg: 'Copy image',
   sImg: 'Image',
   sText: 'Text',
-  openPage: 'Page',
+  openPage: 'Open page',
+  openCard: 'Open card',
   showInTable: 'show in the table',
   rollNo: 'roll',
 

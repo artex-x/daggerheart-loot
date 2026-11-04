@@ -138,7 +138,7 @@ describe('a roll of two dice', () => {
        replacing the roll behind it. */
     render(App, { env: at() });
     /* Four cards, four pictures: the first one is as good as any. */
-    const first = screen.getAllByRole('button', { name: 'Страница' })[0];
+    const first = screen.getAllByRole('button', { name: 'Открыть карточку' })[0];
     if (first) await userEvent.click(first);
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     await press('Закрыть');

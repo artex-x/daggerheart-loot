@@ -399,8 +399,11 @@ describe('the cap and the selection mode', () => {
     });
     await fireEvent.input(box(), { target: { value: 'Много' } });
     await tick();
-    expect(container.querySelectorAll('[data-row]')).toHaveLength(300);
     expect(count()).toBe('Показано 300 из 305');
+    /* A long result draws its first 60 rows first (`TableRows.svelte`). */
+    await waitFor(() => {
+      expect(container.querySelectorAll('[data-row]')).toHaveLength(300);
+    });
     /* One event each: a typed press re-renders 300 rows several times under coverage. */
     await fireEvent.click(screen.getByRole('button', { name: ru.selectMode }));
     const all = screen.getByRole('checkbox', { name: 'Выбрать все' });
