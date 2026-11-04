@@ -142,12 +142,60 @@
     callers in order, and batch 8 follows it). Wave 2 lands after batch 7's review and the
     green CI run of its tip. Until wave 3, production keeps the old rows, `FilterBar` and
     `BatchBar` on `/lists/<uuid>` and `/s/`. Home: `plan.md` sections 16 and 7.
+    - Wave 2b (owner, 2026-11-04, chat: asked whether the tag batch can come "in post-wave-2 remediation next batch,
+      to start wave 3 clean"; orchestrator's reading, taken as the decision): batch 7b (`plan-tags.md`) runs right
+      after the post-wave-2 remediation, a small wave 2b squash puts it on `main`, then 9a starts on a clean
+      `main`. It replaces the fold into 9a. No blind review of wave 2b of its own; the wave 3 review covers it.
   - Autonomy (owner, 2026-11-04, chat: "don't wait proceed autonomously"): the wave squashes,
     the pushes to `main` and the closeout landing proceed without the owner, after the green
     CI credit of the tip and the wave's review. The deletion of a branch or worktree, a
     `NEEDS_HUMAN_CONFIRMATION: yes`, a `fable` dispatch, an effort exception, a gate still
     red after the one remediation cycle and a `replan` from a second look still stop for
     the owner.
+  - Phone feedback (owner, 2026-11-04, 18:46, chat with a screenshot of `/roll` on a phone, 1 roll result with
+    an upgrade line; more feedback follows later): (1) defect: the «Хоумбрю» source tags in the «Улучшается до»
+    line sit too close, they touch the line above and each other. (2) the owner does not think the homebrew
+    tags, and the set tags, are valuable enough to show everywhere on every resolution. Routing: (1) is a local
+    fix; (2) is a design change (where a source tag draws), so the planner decides it with the owner's later
+    feedback batched in, then one fix batch. Status: planned in `plan-tags.md` (2026-11-04) as batch 7b, with its own
+    wave 2b squash (see "Wave split"); items 5 and 6 joined it the same day.
+    - Owner's lean (chat, 2026-11-04): option 2, consistency first.
+    - Refinement (chat, 2026-11-04): "even not to hide homebrew but upgrade lines and sets, make them visible only
+      on the item page": the homebrew tag stays as today; the upgrade and relation lines and the set draw only on
+      the item page.
+    - Answer (chat, 2026-11-04): "on record card dialog we also can show them, don't show only on compact
+      representation": the relation lines and the set draw on the full record card (`/i/<id>`, `/h/<uuid>`, the
+      record dialog) and on no compact representation (rows, tiles, roll results, `/s/` rows; all widths).
+    - Confirmation (chat, 2026-11-04: "yeah let's make it consistent"): one tag rule for every surface - «Core»
+      draws only on the full record card (the dialog's badge, the page's path line); another book's tag draws
+      where it draws today; the homebrew tag stays; relation lines and the set only on the full record card.
+    - (3) defect (2026-11-04 18:55, three phone screenshots, RU, the two-column grid at about 412 px): on grid
+      tiles the kind badges «ОСНОВНОЕ ОРУЖИЕ» and «ВТОРИЧНОЕ ОРУЖИЕ» wrap; the right border is cut and the
+      second word is a separate fragment over the picture; one-word badges draw as one pill ("weapon tags look
+      weird"). Cause: `Badge` is an inline `span`, so a wrapped label splits into two border fragments
+      (`plan-tags.md`, fact 4). Home of the rule: `DESIGN.md` "Badges" and "Cards", `FEATURES.md`, one decision
+      file, written by batch 7b.
+    - (5) defect (2026-11-04, about 19:10, a desktop screen recording, 1862x852, 4.6 s, of production while clicking
+      through the table-group chips «Core / Hope & Fear / Альт. таблицы / Дополнения / Снаряжение / Прочее /
+      Хоумбрю»): "I also don't like much that some divs are jumping during navigation, is there a better way?" The
+      orchestrator's reading of 4 of 16 decoded frames, not measured: between tables the head re-flows (the group
+      chips beside the title on `alt_item` and `eq_weapon`, below it on `wondrous_environments`; the second-level
+      tabs move with them; the toolbar changes content; the filter column appears or changes width; the first row
+      starts at about 125 px on one table and 143 px on another). Routing: a design choice (HD1) with the planner's
+      default, option A (one head structure for all tables, set by the band only), planned in `plan-tags.md` step
+      T9 (measure first, a browser case that fails at HEAD, `FIRST_SCREEN` limits stay), in batch 7b.
+    - (6) (2026-11-04, about 19:30, three desktop screenshots of production `/roll/std`, RU, a 1919x980 window): "also
+      for classic and alternative rolls page look good only when 2 items are visible, for 4 or 1 it doesn't fit to
+      the screen fully, can we show more compact view?" Measured on production by the planner's read-only probe
+      (2026-11-04, RU): from 1015 px two results end at 688-727 px; four results start their second row at 750-789
+      px; one result on `/roll/std` is 791-838 px wide with a 592-627 px picture, because `OrGrid` draws one card
+      at the column's width (`FEATURES.md` "Rolling" says at most 380 px, which only `RollPanel` keeps); from 761 to
+      1014 px every count stacks in one column of tall faces (four results: 2125-2883 px of page). Both pages
+      default to four results. Routing: a design choice (RC1) with the planner's default, option B (the row face
+      whenever the tall face does not fit one line), planned in `plan-tags.md` step T12, in batch 7b.
+  - Homebrew pin (owner, 2026-11-04, chat: "recommended makes sense", on the blind review's N2): the pin
+    draws only when `/homebrew` is ready (signed in, items read), at every width; absent signed out, loading
+    and failed. Home: batch 7b, step T13 of `plan-tags.md`; `FEATURES.md` "Homebrew".
   - Bundle budget ceiling (owner, 2026-11-04, chat: "we can increase budget up to 300"):
     read as the unconfigured ceiling 270 -> 300 kB; the configured ceiling stays 350 kB
     unless a measurement passes it (then stop and ask). Raises under the 300 kB ceiling
