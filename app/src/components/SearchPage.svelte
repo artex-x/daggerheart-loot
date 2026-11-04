@@ -174,6 +174,17 @@
   />
 {/snippet}
 
+<!-- Up to 760 px its own line under the search row; from 761 px the end of the kind row. -->
+{#snippet countLine()}
+  {#if terms.length && (narrowed || all.length > CAP)}
+    <p class="count">
+      {#if values}<span class="vals">{values}</span><span>&nbsp;·&nbsp;</span>{/if}<span
+        class="n">{countText}</span
+      >
+    </p>
+  {/if}
+{/snippet}
+
 <!-- The list head (docs/specs/FEATURES.md, "Tables and search"): up to 760 px no picker
      fills the row, so the `h1` stays visible beside «Ещё». -->
 {#if band === 'narrow'}
@@ -230,28 +241,31 @@
       </div>
 
       {#if band !== 'narrow'}
-        <div class="kindrow" role="group" aria-label={t.kindF}>
-          <ChipRow>
-            <Chip
-              label={t.allShort}
-              neutral
-              on={!narrowed}
-              onclick={() => {
-                app.resetKinds();
-              }}
-            />
-            {#each KINDS as kind (kind)}
+        <div class="kindhead">
+          <div class="kindrow" role="group" aria-label={t.kindF}>
+            <ChipRow>
               <Chip
-                label={t[KIND_LABEL[kind]]}
-                filter={'kind:' + kind}
-                on={narrowed && app.searchKinds[kind]}
+                label={t.allShort}
+                neutral
+                on={!narrowed}
                 onclick={() => {
-                  app.pickKind(kind);
+                  app.resetKinds();
                 }}
               />
-            {/each}
-          </ChipRow>
-          {#if own > 0}{@render ownSwitch()}{/if}
+              {#each KINDS as kind (kind)}
+                <Chip
+                  label={t[KIND_LABEL[kind]]}
+                  filter={'kind:' + kind}
+                  on={narrowed && app.searchKinds[kind]}
+                  onclick={() => {
+                    app.pickKind(kind);
+                  }}
+                />
+              {/each}
+            </ChipRow>
+            {#if own > 0}{@render ownSwitch()}{/if}
+          </div>
+          {@render countLine()}
         </div>
       {:else}
         <FilterPanel
@@ -283,14 +297,7 @@
               }
             : undefined}
         />
-      {/if}
-
-      {#if terms.length && (narrowed || all.length > CAP)}
-        <p class="count">
-          {#if values}<span class="vals">{values}</span><span>&nbsp;·&nbsp;</span>{/if}<span
-            class="n">{countText}</span
-          >
-        </p>
+        {@render countLine()}
       {/if}
 
       {#if !terms.length}
@@ -360,7 +367,8 @@
   /* The search row: the box first, «Выбрать» last, every control at one height; one
      line at every width. */
   /* From 761 px the page head (its lead on two lines), this row and the kind row put the
-     first result at 281 px of the 288 px limit at 1180x720 (measured 2026-11-04). */
+     first result at 279.4 px of the 288 px limit at 1180x720, with a kind picked or not
+     (measured 2026-11-04). */
   .searchrow {
     display: flex;
     gap: 10px;
@@ -393,13 +401,26 @@
     border-color: var(--muted2);
   }
 
-  /* From 761 px: the kinds and the own-items switch, wrapped whole. */
-  .kindrow {
+  /* From 761 px: the kinds and the own-items switch, wrapped whole, then the count line at
+     the row's end; a long count line takes its own line. */
+  .kindhead {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 8px 16px;
     margin: 0 0 4px;
+  }
+
+  .kindrow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
+    min-width: 0;
+  }
+
+  .kindhead .count {
+    margin: 0 0 0 auto;
   }
 
   /* The count line: the picked kinds cut to one line, the count never cut. */
@@ -442,6 +463,25 @@
     .searchrow :global(.btn.sm),
     .selmode {
       padding: 0 9px;
+    }
+  }
+
+  /* At 320 px «Фильтры · 1» and «Выбрать» passed the window by 36 px with the box at
+     140 px (measured 2026-11-04): the insets of the selection bar's buttons, and a smaller
+     box. */
+  @media (max-width: 380px) {
+    .searchrow {
+      gap: 4px;
+    }
+
+    .searchrow :global(.btn.sm),
+    .selmode {
+      padding: 0 6px;
+    }
+
+    .searchrow .grow {
+      flex-basis: 112px;
+      min-width: 112px;
     }
   }
 </style>

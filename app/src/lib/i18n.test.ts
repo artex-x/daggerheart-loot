@@ -202,6 +202,7 @@ describe('the interface words', () => {
       'notifyHint',
       'signOutAllHint',
       'signedInAs',
+      'accountSub',
       'printCompactBox',
       'hbEmptyTable'
     ];
@@ -214,6 +215,17 @@ describe('the interface words', () => {
     }
     expect(dict('ru').rowNo.replace('%n', '89')).toBe('№ 89');
     expect(dict('en').rowNo.replace('%n', '89')).toBe('No. 89');
+  });
+
+  it('gives the order of an account move in the zip lines of both import panels', () => {
+    expect(dict('en').importZipHomebrew).toBe(
+      "Import the archive's homebrew.json on the My items page first: then the lists link those items, not copies."
+    );
+    expect(dict('en').hbImportZipLists).toBe(
+      "Then import the archive's lists.json on the My lists page."
+    );
+    expect(dict('ru').importZipHomebrew).toMatch(/^Сначала /);
+    expect(dict('ru').hbImportZipLists).toMatch(/^Затем /);
   });
 
   it('holds no ellipsis character in either language', () => {

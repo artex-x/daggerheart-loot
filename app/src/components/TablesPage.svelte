@@ -703,7 +703,7 @@
 {#snippet countLine()}
   <p class="count" class:line={band === 'narrow'}>
     {#if band !== 'wide'}<span class="vals">{values}</span
-      >{/if}{#if values && band === 'mid'}<span>&nbsp;·&#32;</span>{/if}<span class="n"
+      >{/if}{#if values && band === 'mid'}<span>&nbsp;·&nbsp;</span>{/if}<span class="n"
       >{countText}</span
     >
   </p>

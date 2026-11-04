@@ -468,7 +468,6 @@ const ru = {
      "Rules"). `%s` is a provider name, Google or Discord, never translated. */
   account: 'Аккаунт',
   signIn: 'Войти',
-  accountSub: 'Отображение, способы входа, выход и ваши данные.',
   menuLabel: 'Меню аккаунта',
   menuLists: 'Мои списки',
   displayHead: 'Отображение на всех устройствах',
@@ -914,7 +913,7 @@ const ru = {
   hbImportZipNone: 'В архиве нет файла homebrew.json.',
   hbImportZipMany: 'В архиве несколько файлов homebrew.json: распакуйте его и выберите нужный.',
   hbImportZipPacked: 'Архив сжат другой программой: распакуйте его и выберите homebrew.json.',
-  hbImportZipLists: 'Файл lists.json из архива импортируется на странице «Мои списки».',
+  hbImportZipLists: 'Затем импортируйте файл lists.json из архива на странице «Мои списки».',
   hbImportDone: 'Импортировано предметов: %n',
   hbImportDoneUpdated: 'обновлено: %n',
   hbImportDoneSkipped: 'пропущено: %n',
@@ -992,7 +991,8 @@ const ru = {
   importZipNoLists: 'В архиве нет файла lists.json.',
   importZipManyLists: 'В архиве несколько файлов lists.json: распакуйте его и выберите нужный.',
   importZipPacked: 'Архив сжат другой программой: распакуйте его и выберите lists.json.',
-  importZipHomebrew: 'Файл homebrew.json из архива импортируется на странице «Мои предметы».',
+  importZipHomebrew:
+    'Сначала импортируйте файл homebrew.json из архива на странице «Мои предметы»: тогда списки свяжутся с этими предметами, а не с копиями.',
   importRefused:
     'Сервер не принял файл: данные в аккаунте изменились. Нажмите «Импортировать» ещё раз.',
   importFrozenN:
@@ -1521,7 +1521,6 @@ const en: Dict = {
   /* The account */
   account: 'Account',
   signIn: 'Sign in',
-  accountSub: 'Display, sign-in methods, signing out and your data.',
   menuLabel: 'Account menu',
   menuLists: 'My lists',
   displayHead: 'Display on all your devices',
@@ -1955,7 +1954,7 @@ const en: Dict = {
   hbImportZipMany: 'The archive holds several homebrew.json files: unzip it and choose one.',
   hbImportZipPacked:
     'Another program compressed this archive: unzip it and choose homebrew.json.',
-  hbImportZipLists: "The archive's lists.json is imported on the My lists page.",
+  hbImportZipLists: "Then import the archive's lists.json on the My lists page.",
   hbImportDone: 'Items imported: %n',
   hbImportDoneUpdated: 'updated: %n',
   hbImportDoneSkipped: 'skipped: %n',
@@ -2031,7 +2030,8 @@ const en: Dict = {
   importZipManyLists:
     'The archive holds more than one lists.json: unzip it and choose the one you need.',
   importZipPacked: 'Another program compressed this archive: unzip it and choose lists.json.',
-  importZipHomebrew: "The archive's homebrew.json is imported on the My items page.",
+  importZipHomebrew:
+    "Import the archive's homebrew.json on the My items page first: then the lists link those items, not copies.",
   importRefused:
     'The server refused the file: your account\'s data changed. Press "Import" again.',
   importFrozenN:

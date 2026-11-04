@@ -2,13 +2,13 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (wave 1 is on `main`; batches 3, 3b, 4, 5, 6 and 7 are on `claude/57`; batches 3-6 are
-  reviewed with green CI; batch 7 awaits `polish`, `harden`, its review and CI)
-- Last agent: implementer (batch 7, 2026-11-04)
+- Task status: in_progress (wave 1 is on `main`; batches 3, 3b, 4, 5, 6 and 7 are on `claude/57`; batches 3-7 are
+  reviewed; batch 7's remediation awaits the CI of its push)
+- Last agent: implementer (batch 7 remediation, 2026-11-04)
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
-- Previous sha: `0a43491f` (batch 6's last docs commit, CI credit passed)
-- Pushed: the batch 7 commit; the sha is in the implementer's report.
+- Previous sha: `2c3f3833` (batch 7; its CI run 41845174864 failed on three stale checks, fixed in the remediation)
+- Pushed: the remediation commit; the sha is in the implementer's report.
 
 ## Completed
 - Batch 1 - foundation: `9a31aede`, review fix `80872b35` (`reviews/1.md`).
@@ -436,12 +436,81 @@
   6. The search head's count line sits under the kind row from 761 px, and the account keeps `accountSub`.
   7. DESIGN.md gains "The Search Head Rule" in "Layout" (nine named rules there now).
 
+- Batch 7 remediation (`reviews/7.md`, verdict fix-then-continue; CI run 41845174864 of `2c3f3833`). Diff base
+  `2c3f3833`. Every finding is taken; no nit is skipped:
+
+  | Finding | Outcome |
+  |---|---|
+  | 7-B1 | Fixed: `importZipHomebrew` «Сначала импортируйте файл homebrew.json ...: тогда списки свяжутся с этими предметами, а не с копиями.» and `hbImportZipLists` «Затем импортируйте файл lists.json ...», EN the review's text; `FEATURES.md` "Lists" (zip line), "Homebrew" (zip line) and "Account" give the order. Tests: `importPanel`, `homebrewImport` (the RU lines), `i18n` (EN and the RU first words); all three failed at `2c3f3833` in a detached worktree. No golden draws a zip preview, so none moved. The Deferred entry is gone |
+  | 7-R1 | Fixed as the review recommended: from 761 px the count line is the last flex item of a new `.kindhead` wrapper after the `role="group"` kind row (`margin-left: auto`), so the DOM order and the goldens stay. Measured in the built app: 279.4 px with a kind picked at 1180 and 761 (was 301), RU and EN, the same as `~ searched`, so its 8.6 px margin holds. New `FIRST_SCREEN` row `#/search ~ kind picked` (1180 only, `wideOnly`: its enter presses a chip); case 93 gains the pick at every width |
+  | 7-R1, found at 320 | The review's check "the box at least 140 px beside «Фильтры · 1»": at 320x568 RU with a pick «Выбрать» ended at 324.8 px, past the window (EN 290.8 in a 289 px row). Up to 380 px the two buttons take 6 px insets and the gap 4 px (the selection bar's precedent), and the box may narrow to 112 px: RU 118.3 px with a pick, 133.7 without; EN 152.2 and 167.6. `FEATURES.md` "Tables and search", case 93 and `COVERAGE.md` say 112 px at 320 |
+  | 7-N1 | Fixed: the `searchPage.test.ts` row is written once |
+  | 7-N2 | Fixed: signed in, `/account` draws no subtitle (an empty `.page-sub`, as the loading state, keeps the spacing); `accountSub` left `dict.ts`; `FEATURES.md` "Account"; the decision file's Accepted line names it as a default taken while the owner was away. Five `_account*` goldens moved by that one line. The signed-out `signInLead` stays |
+  | 7-N3 | Confirmed in the built page: `&nbsp;·&nbsp;` draws 2.6 px both sides on `/search`; `TablesPage`'s `&nbsp;·&#32;` draws 0 px after the dot, because a flex item drops its trailing space. Both pages now use `&nbsp;·&nbsp;`. The mid band has no golden with a filter, so none moved |
+  | 7-N4 | Fixed in code: `NoItem` says its title (`said`, on by default); `ItemPage` passes `said={!lost}`, so a lost item is said once by its own region, and its failed page passes `said`. `FEATURES.md` "Chrome" names both. Tests in `itemPage`, `record`; four goldens (`_i_nope`, `_i_hb_emberaxe...`, two `_h_`) gain the status line |
+  | 7-N5 | Fixed: `App.svelte`'s boundary sends the focus to `#main` after `tick()`; `shell.test.ts` |
+  | 7-N6 | Fixed: "batch P" left `FEATURES.md` "Print"; "J1-J17" and "for batch P" left the 2026-11-04 decision file; "D1-D13" left the 2026-10-30 one |
+  | 7-N7 | Fixed: the comment says 279.4 px with a kind picked or not, measured 2026-11-04 |
+
+  CI run 41845174864 failed on three suites, each reproduced first and each a stale test or file, none a weakened check:
+  - `derived` (and the `check` job): the 2026-10-30 decision file had its "Amended by" line after "- Task" and 16
+    body lines. The line moved above "- Task" and the Rejected bullet is one line: `validate()` reports nothing.
+  - `app/print`: the retired print address reads `.page-h`, which `ErrorPage` no longer draws; it reads `main h1`.
+    Reproduced locally (`failed to find element matching selector ".page-h"`).
+  - `app/states` 86, "after the slide": a probe showed `transitionend` events of the tab links (`transition: all`,
+    `color`) bubbling to `.topbar`; the first one ended the wait while the header was mid-way (CI: bottom 56.8). The
+    wait now takes only the header's own `transform` event.
+
+  Deviations: `FIRST_SCREEN` gains a row (`plan-7.md` "Placed items" said "No row is added"; the orchestrator's
+  section 14 fold takes it); the 112 px box at 320 moves a spec number (named above); the shots in
+  `mocks/7/built/` were not re-taken, so `account*` and `search-kind*` show the batch 7 build.
+
 - Review: done, `issues/57/reviews/3.md`, verdict fix-then-continue; the one remediation
   pass is this commit. No second review is needed: the picker fix leaves the first-screen
   rows unmoved (234 at 360).
 - Plan review: not required for batch 3 (`plan.md` Status, no trigger fired).
 
 ## Verification
+- Batch 7 remediation, 2026-11-04 (diff base `2c3f3833`):
+  - `gh run view 41845174864 --repo artex-x/daggerheart-loot --log-failed` (concluded, failure): `derived` and `check`
+    (the 2026-10-30 decision file), `app/print` (`.page-h`), `app/states` 86 ("after the slide"). `e2e` passed.
+  - Reproduced: `node -e` over `tools/decisions.js` `validate()`: the two problems; `node tests/run-all.js app/print`
+    on the remediation build before its test fix: FAIL, `failed to find element matching selector ".page-h"`; a probe
+    of case 86's slide (`scratchpad/probe86.js`, three runs): `transitionend` from `A` (`color`) reaches `.topbar`.
+  - Failing direction: a detached worktree at `2c3f3833` with the new tests copied in: `npx vitest run` of
+    `homebrewImport`, `importPanel`, `i18n` filtered to "zip": 3 failed; then `itemPage`, `record`, `shell`,
+    `accountPage`, `i18n`: 8 failed (each new or changed assertion), 349 passed. The worktree is removed.
+  - `npx vitest run` of `homebrewImport`, `importPanel`, `i18n`, `searchPage`, `tables`, `itemPage`, `record`, `shell`,
+    `accountPage`, `a11y`: 665 passed.
+  - `npm run lint:untyped`, `npm run lint:typed`: exit 0 (after typing the boundary snippet's `reset`). `npx svelte-check
+    --fail-on-warnings`: 0 errors, 0 warnings.
+  - Probes on the built app (`scratchpad/probe7.js`, `probe7w.js`, `probe7sep.js`), top of `[data-primary]`:
+
+    | State | 320x568 | 360x640 (limit 256) | 761x768 | 1180x720 (limit 288) |
+    |---|---|---|---|---|
+    | `~ searched` RU, EN | 271.2 | 230 | 279.4 | 279.4 |
+    | a kind picked RU, EN | 297.2 | 256 | 279.4 | 279.4 (was 301) |
+
+    Search box at 320 with a pick: RU 118.3 px, EN 152.2 (before: RU «Выбрать» to 324.8 px, past the window). The
+    count line at 1180 RU «Снаряжение · Показано 91 из 139» 960.6-1149 px on the kind row; two kinds 890.1-1149. The
+    separator: 2.6 px both sides with `&nbsp;·&nbsp;`, 0 px after the dot with `&nbsp;·&#32;`.
+  - `npm run build:test`, then `node tests/app/golden.js --update --only=` per family, one at a time (with
+    `MSYS_NO_PATHCONV=1`): `#/account` 6 states, 5 moved (the subtitle line and the elision shift); `#/h/` 11 states,
+    2 moved (the status line); `#/i/` 40 states, 2 moved (the status line); `search` 24 states, none moved. Each diff
+    read.
+  - Scratch loader of `states.js` on `dist-test/`: cases 83 and 93 passed (`~ kind picked` 279 / 288 RU and EN), then
+    86, 93 and 94 passed. `rtk node tests/run-all.js app/print`: ok, 609.6 s. `node tests/derived.js`: everything
+    matches.
+  - `node tools/decisions.js`: 304 decisions.
+  - `npm run check:built`: exit 0, 263.4 kB within 264. Configured (`vite build` with placeholder
+    `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`, `node tools/bundle-budget.mjs`): 320.8 kB within 321
+    (CI's 0.1 kB more stays under it); no limit moved. `dist/` rebuilt unconfigured after.
+  - Detector, `npx impeccable detect --json --no-inline-ignores app/src`: 67 findings (67 before).
+  - `origin/main` (`d83384b4`) is already in the branch: no merge commit.
+  - `rtk npm run check:fast`, last: exit 0 in 675 s, 76 files and 2831 tests with coverage, 263.4 kB within 264;
+    gate credit armed.
+  - Not run locally (CI's): `app/states` whole, `app/contracts`, `app/hues`, `app/typo`, `sweep.js`, `e2e`, the
+    whole golden set.
 - Batch 7, 2026-11-04, on the final tree (diff base `0a43491f`):
   - `npx vitest run` of `searchPage`, `accountPage`, `printPage`, `shell`, `tables`, `button`, `itemPage`, `record`,
     `homebrewEditor`, `homebrewPage`, `homebrewCatalog`, `listPage`, `sharedListPage`, `a11y`, `fake-cloud`,
@@ -737,18 +806,19 @@ Session pause, 2026-11-04 (owner restart). The next session continues from here.
 
 In order:
 1. Done: batch 6 with its remediation (CI credit passed on `0a43491f`) and batch 7 (Completed, "Batch 7").
-2. The orchestrator: `polish` and `harden` of batch 7 (S11) on `SearchPage`, `AccountPage`, `NoPage` and the `/p/`
-   error branches at 360 and 1180 px; the review (trigger: new or changed UI, `tests/app/` changed); CI of the push.
-   Cases 93 and 94, the new `hues.js` reads and the e2e F2 line run for the first time on CI.
-3. Batch 9a, brief `plan-9a.md`, `opus`, the same cycle. Its `FIRST_SCREEN`, `selectAll` and `sendAll`
+2. Done: `polish` and `harden` of batch 7 (Notes) and its review (`reviews/7.md`).
+3. Done: CI run 41845174864 of `2c3f3833` read; its three failures are fixed in step 4.
+4. Done: the batch 7 remediation (Completed, "Batch 7 remediation"). The orchestrator waits on the CI of its push:
+   cases 83 (the new `~ kind picked` row), 86, 93 and 94, `app/print`, `derived`, e2e F2.
+5. Batch 9a, brief `plan-9a.md`, `opus`, the same cycle. Its `FIRST_SCREEN`, `selectAll` and `sendAll`
    corrections are in the brief's "Placed items".
-4. Fold each brief's "Placed items" into `plan.md` (`plan-4.md` to `plan-9a.md`; P5 is already in batch 10); collapse
+6. Fold each brief's "Placed items" into `plan.md` (`plan-4.md` to `plan-9a.md`; P5 is already in batch 10); collapse
    section 10 to a pointer (`plan.md` is over its 150 KB line). Reviewer probes go in batch 10 (`context.md`).
    Batch P gets one more line from batch 7: the unknown, expired and malformed `/p/` set may move to `ErrorPage`
    only with a `routes.json` contract change (`#/p/short` names the heading and the sub).
-5. Wave 2 squash (`plan.md` section 16; `orchestrate.prompt.md` closeout step 8): run `ci-credit.mjs` on the
+7. Wave 2 squash (`plan.md` section 16; `orchestrate.prompt.md` closeout step 8): run `ci-credit.mjs` on the
    tip with a clean tree. Then the blind review of waves 1 and 2 on production, with its remediation at once.
-6. Refresh and run 8, 9b, P, 10 (wave 3), the wave 3 blind review, then the whole-app blind review, closeout.
+8. Refresh and run 8, 9b, P, 10 (wave 3), the wave 3 blind review, then the whole-app blind review, closeout.
 
 Facts for the dispatches:
 - Local gates: affected vitest files, both lints after the last edit, the golden re-seed when goldens move
@@ -757,9 +827,8 @@ Facts for the dispatches:
 - `ci-credit.mjs` refuses when a writer's edits are in the tree: while a batch runs, read the run with
   `gh run watch <id> --exit-status` in the background instead. Each writer checks its predecessor's run before
   it pushes. A pushed run must have concluded before the next push.
-- Budget: 261.6 of 262 kB unconfigured (ceiling 270), 318.92 of 320 kB configured (ceiling 350). Raises follow the
-  standing rule. Batch 7 and 9a add about 1-2 kB each, and wave 3 is not sized: past 266 kB, look for removals
-  first; passing 270 stops for the owner.
+- Budget: 263.4 of 264 kB unconfigured, 320.8 of 321 kB configured (ceiling 350). The owner raised the unconfigured
+  ceiling to 300 kB (`context.md`); the batch that first passes 270 writes it. Raises follow the standing rule.
 - The owner must keep Chrome open and signed in to Figma for batch P's burden export.
 - `FilterBar` stays until batch 9a removes it, and `BatchBar` until batch 8; a golden is re-seeded, never edited.
 
@@ -767,6 +836,9 @@ Facts for the dispatches:
 - None.
 
 ## Deferred
+- `/search` at 320x568 RU (batch 7 remediation probe): after a kind is picked in the sheet and the sheet closes,
+  `scrollWidth` is 313 against a `clientWidth` of 305, and a probe that hides one element at a time finds the
+  header's tab links. Case 93 checks no sideways scroll before the sheet opens, where it passes. Not investigated.
 - 6-N1 (the next batch with a golden re-seed): add an editor entry with a 120-character name as the fourth
   `FIRST_SCREEN` row, or log its 1180 offset from one probe. From 761 px the `h1` takes three lines, so the
   offset at 1180 is unmeasured (about 240 of 288 by the review's estimate).
@@ -816,9 +888,6 @@ Facts for the dispatches:
 - N0-2 of `reviews/mocks-2.md` (batch 4): the error-page pattern's circled icon
   is a template shape; keep the heading, the cause and the action.
 - `KeepNote.svelte` leaves with batch P (the Account page's Display note left with batch 7).
-- Batch 7 (S6 check): the import panels say where each file of the data archive is imported (`hbImportZipLists`,
-  `importZipHomebrew`) and the 1000 limit, but not the order (own items first, then lists) the old account hint
-  gave. Named for the review; no line added here.
 - `FilterBar.svelte`, `BatchBar.svelte`, `anyValue` and the shared page's
   `.fpill` reader in `tests/app/contracts.js` leave with their last callers
   (batches 8, 9).
@@ -832,6 +901,10 @@ Facts for the dispatches:
   `.money-l`), HelpButton, `.steps-l` (RecordCard).
 
 ## Notes
+- Impeccable `polish` and `harden` of batch 7 (orchestrator, 2026-11-04, on `2c3f3833`, from the shots `search-searched`,
+  `account`, `account-delete` at 360 RU; no live pass): one item to check. `account__360__ru.png` draws a lead line
+  under «Аккаунт» («Отображение, способы входа, выход и ваши данные.»), while the batch report says the page has
+  no lead line. It may be the page-head sub of the plan, or a stale shot. Sent to the reviewer.
 - Impeccable `polish` and `harden` of batch 6 (orchestrator, 2026-11-04, on `96710fe3`, from the shots
   `homebrew`, `editor-new` at 360 RU and `homebrew` at 1180 RU; no live pass): no finding.
 - Impeccable `polish` and `harden` of batch 5 (orchestrator, 2026-11-04, on `9d4f47ec`, from the shots of

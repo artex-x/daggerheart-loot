@@ -24,6 +24,8 @@ RootWebArea "Генератор лута Daggerheart" [url=/h/00000000-0000-4000
     link "Найти предмет" [url=/search]
     link "Открыть таблицы" [url=/tables]
     status ""
+      StaticText "Предмета по этому адресу нет"
+    status ""
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -68,6 +70,8 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/h/00000000-0000-4000-8000-0000
     StaticText " leads to no item. The link may be old or mistyped."
     link "Find the item" [url=/en/search]
     link "Open the tables" [url=/en/tables]
+    status ""
+      StaticText "No item at this address"
     status ""
   contentinfo ""
     navigation "Site pages"

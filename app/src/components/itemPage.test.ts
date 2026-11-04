@@ -115,6 +115,9 @@ describe('the item page', () => {
     ).toBeInTheDocument();
     expect(container.querySelector('.errtext')).toHaveTextContent(t.sharedFailedSub);
     expect(screen.getByRole('button', { name: t.retry }).className).toContain('primary');
+    await waitFor(() => {
+      expect(container.querySelector('.errpage + .said')).toHaveTextContent(t.itemFailed);
+    });
     await expectNoA11yViolations(container);
     cloud.setOffline(false);
     await userEvent.click(screen.getByRole('button', { name: t.retry }));
@@ -268,6 +271,9 @@ describe('the copy a sign-in left on the item page', () => {
 describe('the item page re-read', () => {
   const flush = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
   const said = (): string => document.querySelector('.said')?.textContent.trim() ?? '';
+  /* The texts of every status region that holds one. */
+  const saying = (): string[] =>
+    [...document.querySelectorAll('.said')].map((e) => e.textContent.trim()).filter(Boolean);
 
   async function mounted(id: string, cloud: FakeCloud) {
     const app = new AppState(
@@ -352,15 +358,17 @@ describe('the item page re-read', () => {
       await screen.findByRole('heading', { level: 1, name: t.noItem })
     ).toBeInTheDocument();
     expect(said()).toBe(t.noItem);
+    expect(saying()).toEqual([t.noItem]);
     await expectNoA11yViolations(view.container);
     app.stop();
   });
 
-  it('says nothing on a first read that finds nothing', async () => {
+  it('says the not-found title once on a first read that finds nothing', async () => {
     const { app, view } = await mounted(uuid(9999), fakeCloud(SEED));
     await screen.findByRole('heading', { level: 1, name: t.noItem });
-    expect(view.container.querySelector('.said')).not.toBeNull();
-    expect(said()).toBe('');
+    await waitFor(() => {
+      expect(saying()).toEqual([t.noItem]);
+    });
     await expectNoA11yViolations(view.container);
     app.stop();
   });

@@ -19,12 +19,11 @@ RootWebArea "Аккаунт - Генератор лута Daggerheart" [url=/acc
       link "Поиск" [url=/search]
   main ""
     heading "Аккаунт" [level=1]
-    StaticText "Отображение, способы входа, выход и ваши данные."
     heading "ОТОБРАЖЕНИЕ НА ВСЕХ УСТРОЙСТВАХ" [level=2]
     StaticText "Язык"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
-    ... StaticText x10 of 14 same-shape siblings elided
+    StaticText "Раздел при запуске"
     combobox "Раздел при запуске" [value=Обычные правила expanded=false haspopup=menu]
       option "Обычные правила" [selected=true]
       option "Альтернативные таблицы" [selected=false]
@@ -32,6 +31,7 @@ RootWebArea "Аккаунт - Генератор лута Daggerheart" [url=/acc
       ... option x8 of 12 same-shape siblings elided
       option "Поиск" [selected=false]
       option "Мои предметы" [selected=false]
+    ... StaticText x9 of 13 same-shape siblings elided
     button "Список" [pressed=true]
     button "Сетка" [pressed=false]
     button "Цветная" [pressed=true]
@@ -103,12 +103,11 @@ RootWebArea "Account - Daggerheart Loot Generator" [url=/en/account?as=gm2]
       link "Search" [url=/en/search]
   main ""
     heading "Account" [level=1]
-    StaticText "Display, sign-in methods, signing out and your data."
     heading "DISPLAY ON ALL YOUR DEVICES" [level=2]
     StaticText "Language"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
-    ... StaticText x10 of 14 same-shape siblings elided
+    StaticText "Section on start"
     combobox "Section on start" [value=Standard rules expanded=false haspopup=menu]
       option "Standard rules" [selected=true]
       option "Alternate tables" [selected=false]
@@ -116,6 +115,7 @@ RootWebArea "Account - Daggerheart Loot Generator" [url=/en/account?as=gm2]
       ... option x8 of 12 same-shape siblings elided
       option "Search" [selected=false]
       option "My items" [selected=false]
+    ... StaticText x9 of 13 same-shape siblings elided
     button "List" [pressed=true]
     button "Grid" [pressed=false]
     button "Color" [pressed=true]

@@ -308,7 +308,9 @@
       </Panel>
     {:else}
       {@const session = app.user}
-      <PageTitle title={t.account} sub={t.accountSub} />
+      <!-- No sub signed in: the section headings name what the page holds. The empty
+           line keeps the spacing of the loading state. -->
+      <PageTitle title={t.account} sub="" />
 
       <div class="acc">
         <div class="colA">

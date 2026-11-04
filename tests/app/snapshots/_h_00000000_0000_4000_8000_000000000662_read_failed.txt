@@ -22,6 +22,8 @@ RootWebArea "Генератор лута Daggerheart" [url=/h/00000000-0000-4000
     StaticText "Проверьте соединение и нажмите «Повторить»."
     button "Повторить"
     status ""
+      StaticText "Предмет не загрузился"
+    status ""
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -62,6 +64,8 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/h/00000000-0000-4000-8000-0000
     heading "The item did not load" [level=1]
     StaticText "Check the connection and press "Retry"."
     button "Retry"
+    status ""
+      StaticText "The item did not load"
     status ""
   contentinfo ""
     navigation "Site pages"

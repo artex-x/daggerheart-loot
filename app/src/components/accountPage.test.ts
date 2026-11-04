@@ -147,9 +147,7 @@ describe('signed in as gm1', () => {
     expect(colA.querySelector('[data-primary]')).not.toBeNull();
     expect(container.querySelector('input[type="checkbox"]')).toBeNull();
     expect(screen.queryByText(/завершает вход/)).toBeNull();
-    expect(
-      screen.getByText('Отображение, способы входа, выход и ваши данные.')
-    ).toBeInTheDocument();
+    expect(container.querySelector('.page-sub')?.textContent).toBe('');
     expect(rows()).toHaveLength(2);
     expect(within(rows()[1]!).getByText('gm1.discord@example.test')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Отключить Google' })).toBeInTheDocument();
@@ -447,9 +445,7 @@ describe('signed in as gm2', () => {
     const { container } = open(as('gm2'), 'en');
     expect(await screen.findByRole('button', { name: 'Connect Discord' })).toBeVisible();
     await screen.findByText('not connected');
-    expect(
-      screen.getByText('Display, sign-in methods, signing out and your data.')
-    ).toBeInTheDocument();
+    expect(container.querySelector('.page-sub')?.textContent).toBe('');
     expect(
       screen.getByRole('heading', { name: 'Display on all your devices', level: 2 })
     ).toBeInTheDocument();

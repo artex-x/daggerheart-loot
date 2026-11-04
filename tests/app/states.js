@@ -5563,7 +5563,8 @@ async function editorLayoutAndSheet() {
 
 /** The route families of DESIGN.md, "The First-Screen Rule": the inventory state that
  *  opens each. A row whose surface is not yet under the rule is measured and logged,
- *  not asserted (`shipped: false`). `exception` is a named limit at 360 px, in px. A roll page draws its result for the number
+ *  not asserted (`shipped: false`). `exception` is a named limit at 360 px, in px; `wideOnly`
+ *  measures the row at 1180 px alone. A roll page draws its result for the number
  *  field's first value, so no roll is made and the offset is deterministic. */
 const FIRST_SCREEN = [
   { state: '#/roll/std', shipped: true, exception: 325 },
@@ -5576,6 +5577,8 @@ const FIRST_SCREEN = [
   { state: '#/i/ci1', shipped: true },
   { state: '#/h/00000000-0000-4000-8000-000000000513 as gm1', shipped: true },
   { state: '#/search ~ searched', shipped: true },
+  /* Its enter presses a kind chip, which draws from 761 px only. */
+  { state: '#/search ~ kind picked', shipped: true, wideOnly: true },
   { state: '#/account as gm1', shipped: true },
   { state: '#/p/set-emberaxe as gm2', shipped: false },
   { state: '#/homebrew as gm3', shipped: true },
@@ -5653,8 +5656,30 @@ async function searchHeadAndRows() {
           m.kids === 3 && m.inside && m.lines === 1 && m.last,
           at + where + ': the search row - ' + JSON.stringify(m)
         );
-        ok(m.box >= 140, at + where + ': the box is ' + m.box + ' px');
+        ok(m.box >= (width === 320 ? 112 : 140), at + where + ': the box is ' + m.box + ' px');
         ok(!(await sideways(page)), at + where + ': the page scrolls sideways');
+        /* A picked kind lengthens «Фильтры» to «Фильтры · 1»: the row still holds one line
+           inside the row, the box as wide as above. */
+        await d.press(lang === 'en' ? 'Filters' : 'Фильтры');
+        await d.click(lang === 'en' ? 'Equipment' : 'Снаряжение');
+        await page.keyboard.press('Escape');
+        await d.settle();
+        const p = await page.evaluate(() => {
+          const sr = document.querySelector('.searchrow');
+          const rects = sr ? [...sr.children].map((k) => k.getBoundingClientRect()) : [];
+          return {
+            inside: rects.every(
+              (r) => r.left >= 0 && r.right <= sr.getBoundingClientRect().right + 0.5
+            ),
+            lines: new Set(rects.map((r) => Math.round(r.top + r.height / 2))).size,
+            box: sr?.querySelector('input[type="search"]')?.getBoundingClientRect().width ?? 0,
+            count: !!document.querySelector('.count')
+          };
+        });
+        ok(
+          p.inside && p.lines === 1 && p.box >= (width === 320 ? 112 : 140) && p.count,
+          at + where + ': the search row with a kind picked - ' + JSON.stringify(p)
+        );
       } finally {
         await ctx.close();
       }
@@ -5687,6 +5712,25 @@ async function searchHeadAndRows() {
           at + where + ': the kind chips - ' + JSON.stringify(m)
         );
         ok(!m.filters && m.last, at + where + ': the search row - ' + JSON.stringify(m));
+        /* From 761 px the count line ends the kind row, so a pick adds no line. */
+        await d.click(lang === 'en' ? 'Equipment' : 'Снаряжение');
+        await d.settle();
+        const c = await page.evaluate(() => {
+          const row = document.querySelector('.kindrow')?.getBoundingClientRect();
+          const count = document.querySelector('.kindhead > .count')?.getBoundingClientRect();
+          return {
+            count: !!count,
+            oneLine:
+              !!row &&
+              !!count &&
+              Math.abs(count.top + count.height / 2 - (row.top + row.height / 2)) < 2,
+            inside: !!count && count.right <= document.documentElement.clientWidth
+          };
+        });
+        ok(
+          c.count && c.oneLine && c.inside,
+          at + where + ': the count line at the end of the kind row - ' + JSON.stringify(c)
+        );
       } finally {
         await ctx.close();
       }
@@ -5885,6 +5929,7 @@ async function primaryContentInFirstScreen() {
       [360, 640],
       [1180, 720]
     ]) {
+      if (row.wideOnly && width < 761) continue;
       for (const lang of ['ru', 'en']) {
         const { ctx, page, d } = await fresh({ width, height, storage: state.storage });
         try {
@@ -6127,8 +6172,12 @@ async function headerHidesAndReturns() {
     const ended = page.evaluate(
       () =>
         new Promise((done) => {
+          /* A link's or a button's own `transition: all` (a hover that the slide moves)
+             bubbles a `transitionend` too, which can arrive while the header is mid-way. */
           const bar = document.querySelector('.topbar');
-          bar.addEventListener('transitionend', () => done(true), { once: true });
+          bar.addEventListener('transitionend', (e) => {
+            if (e.target === bar && e.propertyName === 'transform') done(true);
+          });
           setTimeout(() => done(false), 3000);
         })
     );

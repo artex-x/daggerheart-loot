@@ -110,9 +110,9 @@
     {#if !app.catalog}
       <NoData>{t.noData}</NoData>
     {:else if !readable || view?.status === 'gone'}
-      <NoItem {app} />
+      <NoItem {app} said={!lost} />
     {:else if view?.status === 'error'}
-      <ErrorPage title={t.itemFailed}>
+      <ErrorPage title={t.itemFailed} said>
         {t.sharedFailedSub}
         {#snippet actions()}
           <Button variant="primary" onclick={retry}>{t.retry}</Button>

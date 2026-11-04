@@ -224,7 +224,8 @@ across.
   holds the pin; the intro is read, not drawn (no picker fills the row, so the
   heading stays visible). From 761 px the page head: the `h1`, the intro and
   the labeled pin, no help. The search row follows: the search (placeholder
-  «Поиск», named by `searchPh`, focused on arrival, at least 140 px at 320),
+  «Поиск», named by `searchPh`, focused on arrival, at least 140 px from 360 px
+  and 112 px at 320, where «Фильтры · 1» takes the room),
   «Фильтры» up to 760 px and «Выбрать» last, one line at every width.
 - **The kinds of search**: «Все», «Предметы», «Расходники», «Снаряжение». From
   761 px they are a chip row under the search row, then the «Свои предметы»
@@ -233,8 +234,10 @@ across.
   is the neutral pressed default; a picked kind is gold. A press from «Все»
   picks that kind alone, a press on another adds or removes it, and the last
   pick off returns to «Все» (`pickKinds`). The count line, «<picked kinds> ·
-  Показано N из M», draws under the search row while a kind is picked or the
-  matches pass 300: M counts the matches over all kinds, N the rows drawn.
+  Показано N из M», draws while a kind is picked or the matches pass 300: up
+  to 760 px on its own line under the search row, from 761 px at the end of the
+  kind row, where a long line takes a line of its own. M counts the matches
+  over all kinds, N the rows drawn.
 - **A search row** draws the roll number as «№ 89» / "No. 89" in its number
   box: no table is named on this page. A table row keeps the bare number.
 - **The start state** of `#/search` (no query): the plate with the item glyph,
@@ -545,8 +548,10 @@ across.
   entry: a later entry of its key is read as if the skipped one were absent.
   The report draws the first 20 list blocks, then «и ещё N списков» /
   «свернуть» (rule 12); the skips are grouped by list once, so 1000 lists of
-  skips draw at once. A zip's `homebrew.json` draws one line, «Файл
-  homebrew.json из архива импортируется на странице «Мои предметы».»; its other
+  skips draw at once. A zip's `homebrew.json` draws one line, «Сначала
+  импортируйте файл homebrew.json из архива на странице «Мои предметы»: тогда
+  списки свяжутся с этими предметами, а не с копиями.» (the order of "Moving to
+  another account"); its other
   files are named under the preview (the first five, then «и ещё N»), and its
   lists import. «Импортировать (N)» and «Отмена» are disabled while the import
   runs; success folds the field, draws the new lists first and toasts
@@ -2150,8 +2155,9 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   same file chosen again finds its keys held
   (`docs/decisions/2026-10-10-a-key-the-account-does-not-hold-becomes-a-derived-key.md`).
   A file whose derived key equals another of its keys draws the error report. A
-  zip's `lists.json` draws «Файл lists.json из архива импортируется на странице
-  «Мои списки».». A file the app refuses whole says why in one alert line (not
+  zip's `lists.json` draws «Затем импортируйте файл lists.json из архива на
+  странице «Мои списки».» (the second step of "Moving to another account"). A
+  file the app refuses whole says why in one alert line (not
   JSON, not an items file, another version or none, nothing in it, not a data
   archive, a zip with no `homebrew.json`, with two at one depth, or compressed
   by another program); a file with errors draws «В файле ошибки - ничего не
@@ -2287,7 +2293,8 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   карточки.» and the primary «Повторить», which reads the set again from the
   address (rule 6). A build with no sign-in configured draws the not-found
   page. The unknown and expired set keep the heading «Печать карточек» and the
-  sub: `docs/fixtures/urls/routes.json` names them, and batch P owns that page.
+  sub: `docs/fixtures/urls/routes.json` names them, so the error page there
+  waits for a contract change.
   «Ссылка на набор» copies the set's preview link
   `https://daggerheart-loot.pages.dev[/en]/p/<id>`, with no `v`
   (`<site>[en/]#/p/<id>` in a build with no preview host). The link opens in
@@ -2491,9 +2498,8 @@ right, so the tab order and the reading order agree
   «Войти через Google» and «Войти через Discord» (each with the provider's
   own logo), then the consent line linking the terms and privacy pages of
   the language on screen.
-- **Signed in**, the subtitle «Отображение, способы входа, выход и ваши
-  данные.» / "Display, sign-in methods, signing out and your data.", then,
-  in this order: «Отображение на всех устройствах» (below); «Способы входа» - a row
+- **Signed in**, no subtitle (the section headings name what the page
+  holds), then, in this order: «Отображение на всех устройствах» (below); «Способы входа» - a row
   for Google, then Discord: a connected one shows its identity's email once and,
   while two or more are connected, «Отключить»; the row of the provider the
   session signed in with carries the neutral badge «Сейчас» / "Current"; a
@@ -2504,8 +2510,9 @@ right, so the tab order and the reading order agree
   above the rows: the email in bold, then the provider's logo and «через
   <provider>». No «Вы вошли как» panel is drawn. «Ваши данные» / "Your data" -
   the one sentence «Списки и свои предметы одним архивом ZIP.» / "Your lists and
-  items in one ZIP archive." (the two import panels say where each file of the
-  archive is imported, and the 1000 limit), then, only
+  items in one ZIP archive." (the two import panels give the order, the
+  archive's `homebrew.json` on «Мои предметы» first, then its `lists.json` on
+  «Мои списки», and the 1000 limit), then, only
   while the account holds an item with a picture, «Картинок в архиве нет:
   после переноса добавьте их заново.» (the files never carry a picture), and «Скачать
   мои данные (ZIP)» ("Account
@@ -2627,7 +2634,8 @@ right, so the tab order and the reading order agree
   print link; a failed `#/p/` read; the editor's missing item («Предмет не
   найден», «К моим предметам»); a page that threw («Что-то пошло не так на этой
   странице.», the message, «Обновить страницу»); and the record pages of
-  "Records".
+  "Records": the not-found page and a failed read (an item lost while its
+  page is open is said once, by that page's own region).
 - A removal the app can write back (an entry, its notes, a reprice) toasts with
   an undo, «Вернуть»; a server delete that cannot be undone (an
   account list, an own item, a source, a section, a card) asks the browser's

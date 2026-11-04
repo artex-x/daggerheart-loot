@@ -1415,6 +1415,9 @@ describe('a page that throws', () => {
       expect(
         await screen.findByRole('heading', { name: 'Таблицы', level: 1 })
       ).toBeInTheDocument();
+      await waitFor(() => {
+        expect(document.getElementById('main')).toHaveFocus();
+      });
     } finally {
       broken.mockRestore();
     }

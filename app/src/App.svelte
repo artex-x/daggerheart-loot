@@ -64,7 +64,7 @@
 <script lang="ts">
   /* The application. Routes are matched here and nowhere else; every branch
      below will become its own component as the phases go on. */
-  import { untrack } from 'svelte';
+  import { tick, untrack } from 'svelte';
   import AccountPage from './components/AccountPage.svelte';
   import AltPanel from './components/AltPanel.svelte';
   import Button from './components/Button.svelte';
@@ -100,6 +100,13 @@
   const app = new AppState(untrack(() => env));
 
   $effect(() => app.start());
+
+  /* The press takes «Обновить страницу» out of the DOM, so the focus goes to `#main`
+     (rule 20). */
+  function resetPage(reset: () => void): void {
+    reset();
+    void tick().then(() => document.getElementById('main')?.focus());
+  }
 </script>
 
 <Shell {app}>
@@ -200,11 +207,16 @@
            (docs/specs/ROUTES.md). The address is kept. -->
       <NoPage {app} />
     {/if}
-    {#snippet failed(error, reset)}
+    {#snippet failed(error: unknown, reset: () => void)}
       <ErrorPage title={app.t.pageError} said>
         {error instanceof Error ? error.message : String(error)}
         {#snippet actions()}
-          <Button variant="primary" onclick={reset}>{app.t.reloadPage}</Button>
+          <Button
+            variant="primary"
+            onclick={() => {
+              resetPage(reset);
+            }}>{app.t.reloadPage}</Button
+          >
         {/snippet}
       </ErrorPage>
     {/snippet}

@@ -321,7 +321,7 @@ describe('the import field', () => {
     await expectNoA11yViolations(container);
   });
 
-  it("names a zip's homebrew.json with its page, and the files it does not read", async () => {
+  it("says a zip's homebrew.json goes first on its page, and names the files it does not read", async () => {
     const { container } = await opened();
     const at = new Date('2026-10-01T12:00:00Z');
     choose(
@@ -340,7 +340,7 @@ describe('the import field', () => {
       [...container.querySelectorAll('.preview')].map((p) => p.textContent.trim())
     ).toEqual([
       'Списков: 1, позиций: 3.',
-      'Файл homebrew.json из архива импортируется на странице «Мои предметы».',
+      'Сначала импортируйте файл homebrew.json из архива на странице «Мои предметы»: тогда списки свяжутся с этими предметами, а не с копиями.',
       'В архиве есть файлы, которые эта версия не читает: notes.txt.'
     ]);
   });

@@ -1689,7 +1689,7 @@ const { ok } = rep;
   await d.open('#/print/nosuchid');
   ok(!(await page.$('.psheet')), 'a retired print address assembled a sheet');
   ok(
-    (await page.$eval('.page-h', (e) => e.textContent)) ===
+    (await page.$eval('main h1', (e) => e.textContent)) ===
       'Такие ссылки на печать больше не открываются.',
     'a retired print address does not draw the retired page'
   );

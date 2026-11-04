@@ -441,7 +441,8 @@ primary at most, and a die is plain.
 difference: up to 760px no picker fills the head row, so the `h1` «Поиск» stays
 visible with «Ещё» (the pin, its one item) on its row. The search row follows on one
 line: the box, «Фильтры», «Выбрать» last. From 761px the page head with the lead and
-the labeled pin, then the search row and a row of kind chips.
+the labeled pin, then the search row and a row of kind chips that ends in the count
+line, so a picked kind adds no line above the first result.
 
 **The Dossier Rule.** A record page and the record dialog are one dossier: the
 picture beside the text from 761px and 4:3 above it below, no plate on a page. The

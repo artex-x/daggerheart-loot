@@ -286,7 +286,7 @@ describe('the import panel', () => {
     await expectNoA11yViolations(container);
   });
 
-  it("reads a zip's homebrew.json and names its lists.json with its page, not as a file it does not read", async () => {
+  it("reads a zip's homebrew.json and says its lists.json goes next on its page, not as a file it does not read", async () => {
     const { container } = await opened('gm2');
     const at = new Date('2026-10-01T12:00:00Z');
     choose(
@@ -303,7 +303,7 @@ describe('the import panel', () => {
     await importButton(5);
     expect(previews(container)).toEqual([
       'Источников: 1, разделов: 2, карт: 2, предметов: 3.',
-      'Файл lists.json из архива импортируется на странице «Мои списки».'
+      'Затем импортируйте файл lists.json из архива на странице «Мои списки».'
     ]);
   });
 

@@ -10,16 +10,19 @@
 
   interface Props {
     app: AppState;
+    /** Says the title through its own status region; off where the page's region says
+     *  it, as for an item lost while open. */
+    said?: boolean | undefined;
   }
 
-  const { app }: Props = $props();
+  const { app, said = true }: Props = $props();
 
   const t = $derived(app.t);
   const address = $derived(shortPath(app.hash, app.lang));
   const parts = $derived(t.noItemSub.split('%s'));
 </script>
 
-<ErrorPage title={t.noItem}>
+<ErrorPage title={t.noItem} {said}>
   {parts[0]}<code>{address}</code>{parts[1]}
   {#snippet actions()}
     <Button variant="primary" href={app.href(sectionHash('search'))} sameTab

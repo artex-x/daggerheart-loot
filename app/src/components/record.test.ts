@@ -714,6 +714,11 @@ describe('a link that no longer resolves', () => {
       'href',
       '/tables'
     );
+    await waitFor(() => {
+      expect(container.querySelector('.errpage + .said')).toHaveTextContent(
+        'Предмета по этому адресу нет'
+      );
+    });
     await expectNoA11yViolations(container);
   });
 
