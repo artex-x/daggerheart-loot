@@ -1,8 +1,9 @@
 # Batch 7b - One tag rule, one-box badges and a steady table head (implement-ready, wave 2b)
 
 This brief is the implementer's whole input for batch 7b: the owner's phone feedback of 2026-11-04
-(`context.md`, "Phone feedback", items 1-3, the lean, the refinement, the answer and the confirmation) and the
-desktop feedback of the same day about a table head that jumps (item 5, step T9). Batch 7b is its own batch with
+(`context.md`, "Phone feedback", items 1-3, the lean, the refinement, the answer and the confirmation), the
+desktop feedback of the same day about a table head that jumps (item 5, step T9) and the desktop feedback about
+roll results that do not fit the screen (item 6, step T12). Batch 7b is its own batch with
 its own small squash onto `main`, "wave 2b" (`plan.md`, sections 7 and 16). It runs right after the post-wave-2
 remediation and before batch 9a. Section numbers ("section 7") are those of `plan.md`. The code facts were read
 on `10a47edc`. The post-wave-2 remediation edited `RecordCard`, `TableRows` and `TablesPage` after that, so the
@@ -30,8 +31,12 @@ lines (T8). Batch 9a builds on the rule and no longer carries any of it (`plan-9
 - Impeccable cannot run from a subagent. The orchestrator runs `polish` and `harden` after T9 on `RecordCard`,
   `RowMain`, `TableRows`, `TablesPage`, `TableNav` and `Badge`, from the built app at 360 and 1180 px; fallback
   `impeccable:impeccable-finish-reviewer`.
-- Tier: `opus` (writer tests 1 and 3 below). Steps are T1 to T11. The line "Session end partial progress" in
+- Tier: `opus` (writer tests 1 and 3 below). Steps are T1 to T12, run in the order T1-T7, T9, T12, T8, T10, T11
+  (T8's prose and decisions describe what T9 and T12 built). The line "Session end partial progress" in
   `handoff.md` names the last finished step.
+- The post-wave-2 remediation may also touch `RollResult`, `OrGrid`, `RollPanel` or `RecordCard`'s face rules: add
+  `app/src/components/RollResult.svelte app/src/components/OrGrid.svelte app/src/components/RollPanel.svelte` to the
+  `git diff` above before T12.
 
 ## Objective
 
@@ -42,7 +47,8 @@ ladder «Ранг» draw only on the full record card. The «Core» tag draws on
 homebrew tag draw where they draw today. A badge never splits into fragments: the «Хоумбрю» badge in a relation
 line keeps clear of the lines around it and stays on its name's line, and a grid tile's «ОСНОВНОЕ ОРУЖИЕ» is one
 pill. On `/tables/*` the title row, the group chips, the second-level tabs, the toolbar and the first list row
-start at the same Y on every table of the same band.
+start at the same Y on every table of the same band. On the roll pages a roll of one, two or four results shows
+every result's name in the first screen at 1180x720, and the whole roll on the owner's 1919x980 window (T12).
 
 ## The rule (stated once; the decision files and DESIGN.md take this text)
 
@@ -75,6 +81,10 @@ representation"; "yeah let's make it consistent".
   the boxes of the lines above and below.
 - **R6. The table head is steady** (step T9; owner, 2026-11-04, about 19:10). On `/tables/*` the geometry of the
   head is a function of the viewport band only, never of the table.
+- **R7. A roll result is as tall as its line allows** (step T12; owner, 2026-11-04, about 19:30). A result draws the
+  tall face (the 4:3 picture above the text) only while the whole roll sits on one line: one result, at most 380 px
+  wide, or two side by side, in a results column of at least 641 px. Otherwise every result of the roll draws the
+  row face, the picture beside the text, which phones draw today. Up to 600 px nothing changes.
 
 Reason: the owner judged the relation lines and the default book's tag not valuable enough on a compact
 representation at any width, and asked for one consistent rule. The full record card is one press away on every
@@ -102,6 +112,7 @@ set bonus and the ladder.
 | `/s/<token>` rows (`TableRows`) | the relation line; «Core» | no relation line; no «Core» | the same |
 | Grid tiles (`TableRows` grid) | the kind badge; no source tag, no relation | the kind badge is one pill (R5, T5) | nothing |
 | `/tables/*` head | moves between tables (T9) | one structure per band | nothing |
+| Roll results from 601 px (`RollResult` in `OrGrid` or `RollPanel`; T12, R7) | the tall face at every count; one result on `/roll/std` at the column's width (592-627 px picture); four results in two rows of tall faces; from 761 to 1014 px every count stacked as tall faces | one result: the tall face, at most 380 px wide, in a column of 641 px or more; two: two tall faces side by side there; otherwise (four results, or a column under 641 px) the row face, 96 px picture beside the text, no number badge | on a four-result roll and in the mid band: the large picture and the roll number on the card (the results line names the roll); the picture opens at full size with one press as today |
 | Print, copied text, share stubs | the set label, the relation blocks, «Core» on the print card | unchanged | nothing |
 
 The trade-off accepted: a GM who deals a Core item on a phone no longer sees on the result what it upgrades to
@@ -173,9 +184,11 @@ from an unmarked row of an unknown book: none exists, because every other book i
 | K8 | The tile's kind badge keeps the full term: `.tile-k` takes `max-width: calc(100% - 14px)` and `text-align: right`, and `calc(100% - 44px)` only while the tick box draws (`ticks`). Below 360 px or in the selection mode a weapon label wraps inside its one pill (`text-wrap: balance`). | One name for one thing: rows, cards and filters say «Основное оружие». Precedent: the owner kept the full «Альтернативные таблицы» on a two-line chip at 360 (2026-10-23, B5-2) over a short label. Accepted: in the selection mode at 360-412 a weapon pill is two lines tall over the picture's top-right corner. Rejected: a tile-only short label («Основное», "Primary"; a second name and four strings), `white-space: nowrap` alone (the tile clips the label), `box-decoration-break: clone` (two pills for one tag). See F3. |
 | K9 | No placeholder replaces the lines on a compact card. | The owner: nothing. The name link and the row press already lead to the full card. |
 | K10 | `#/search ~ relations as gm3` keeps its id with a new `why` (the own bedrolls ranked with the catalog ones; no row draws a relation line); a new state `#/search ~ relations, dialog as gm3` opens `ci1`'s row and proves the dialog keeps the line. | The dialog was not seeded with own relations; the rule's "dialog keeps" half needs a golden. |
-| K11 | Two decision files: one for R1-R5 (the rule and what was rejected), one for R6 (the head). Batch 7b writes both and the `Supersedes` lines. | The tag rule outlives the task and reverses a line of a recorded decision; the head rule is a separate decision with its own rejected option. |
+| K11 | Three decision files: one for R1-R5 (the rule and what was rejected), one for R6 (the head), one for R7 (the roll results, T12). Batch 7b writes all three and the `Supersedes` and `Amends` lines. | The tag rule outlives the task and reverses a line of a recorded decision; the head rule is a separate decision with its own rejected option. |
 | K12 | **Open design question HD1 (table head), default option A.** A: one head structure for all tables, chosen by the band only. B: keep the per-table head and only reserve space for late content. See T9.2. | The owner asked "is there a better way?". A removes the cause; B hides the symptom in part. Cost and trade-off in T9.2. |
 | K13 | Batch 7b is its own batch with its own squash, wave 2b. | The owner's decision (see "Owner decision"). Split criterion: the owner's wish to ship the fix before wave 3 and to start wave 3 on a clean `main`, as for batch 9a ("Batch 9 split"). The batch shares `RowMain`, `TableRows` and the list and `/s/` goldens with 9a; accepted: those goldens are re-seeded twice (here and in 9a). |
+| K14 | **Open design question RC1 (compact roll results), default option B**: a result is the tall face only while it fits one line (one result, or two side by side, in a results column of at least 641 px); otherwise it is the row face that phones draw today. See T12.1-T12.2. | Consistency (one more place for the face the phone already has, no new control) and the measured fit; A crops square art to a strip and still leaves row 2 below the fold at 1180x720; C adds a control and a stored key. |
+| K15 | T12 folds into batch 7b, not its own batch. | `CLAUDE.md`, "Size a batch by its gates": it shares a component (`RecordCard`, whose face T3 already edits, and `RollResult`), a seed and a filter (the `_roll_std*` and `_roll_alt*` goldens that R2 already moves), and the route (`/roll/*`, already in T6.3). No split criterion holds: no public contract, no other route or filter set, nothing the harness cannot reach. Own batch: about 50-65 min more (a `check:fast`, a CI run, a re-seed of the same goldens, a review); fold: 20-30 min. |
 
 ## Batch, squash and cost
 
@@ -183,7 +196,7 @@ from an unmarked row of an unknown book: none exists, because every other book i
 |---|---|
 | Batch | 7b: `polish`, `harden`, batch review, fix cycle, CI of the tip |
 | Squash | wave 2b: the same steps as waves 1 and 2 (`plan.md` section 16, "Wave squash content"); lands after batch 7b's review and the green CI run of its tip |
-| Gate cost | 80-105 min, 4-6 runs: one golden re-seed (four shards), one `check:fast`, one CI run, one batch review, by habit one fix cycle (a second `check:fast` and CI run). T9 adds 15-20 to the 65-85 of T1-T8 |
+| Gate cost | 100-135 min, 4-6 runs: one golden re-seed (four shards), one `check:fast`, one CI run, one batch review, by habit one fix cycle (a second `check:fast` and CI run). T9 adds 15-20 and T12 20-30 to the 65-85 of T1-T8 (T12: the probe at HEAD and after, 8-10; the CSS and the two-file move, 5-8; the new state and its golden pair inside the one re-seed, 2-3; the browser case written, run on CI, 3-5; the prose, 2-4) |
 | Squash cost | 15-20 min (one `main` CI run with the deploy, the merge back, the `origin/main` merge) |
 | Blind review | none of its own: a read-only reviewer of the wave 2b scope on production is not required by the owner's wave reviews. The wave 3 blind review covers it |
 | Lands on production | about five batches (9a, 8, 9b, P, 10) sooner than wave 3 |
@@ -191,7 +204,12 @@ from an unmarked row of an unknown book: none exists, because every other book i
 ## In scope
 
 - R1-R5 on every surface of the table above; the spacing defect (item 1) on the full record card, where the
-  line still draws; the tile pill (item 3); the roll result's «CORE» badge; R6 on `/tables/*` (T9).
+  line still draws; the tile pill (item 3); the roll result's «CORE» badge; R6 on `/tables/*` (T9); R7, the
+  compact roll results on the nine roll pages from 601 px (item 6, T12), and the one-result width defect of
+  `/roll/std` against `FEATURES.md` "Rolling".
+- Changed by T12: `RecordCard.svelte` (the face's CSS only), `RollResult.svelte`, `OrGrid.svelte`,
+  `RollPanel.svelte`, `tests/app/states.js` (one case), `tests/app/inventory.js` (one state), the goldens,
+  `FEATURES.md` "Rolling", `DESIGN.md` "Layout" and "Cards" and "Badges", one decision file.
 - Changed: `lib/label.ts` (`isCoreBook`), `lib/rowTags.ts`, `RecordCard.svelte`, `RowMain.svelte`,
   `TableRows.svelte`, `Badge.svelte`, `TablesPage.svelte`, `TableNav.svelte`, `PageHead.svelte` if it holds the
   head row (T9), the callers that pass `index` (`TablesPage`, `SearchPage`, `SharedListPage`, `HomebrewPage`,
@@ -206,6 +224,8 @@ from an unmarked row of an unknown book: none exists, because every other book i
 - The tile's roll number, the row tags other than «Core», the `.lt` language mark.
 - The head of `/search`, `/homebrew`, `/lists` and the other pages: T9 touches `/tables/*` only. A like jump on
   another page goes to the next refresh.
+- T12: the phone face up to 600 px, the control pane (its height, a sticky pane), the page head of the roll pages,
+  the list page's roll result (`compact`, until 9b) and `OrGrid`'s use there, a density switch (option C).
 
 ## Files expected
 
@@ -220,6 +240,7 @@ from an unmarked row of an unknown book: none exists, because every other book i
 | T7 | `tools/artwork/review/review.mjs`, `tools/artwork/lib.test.mjs` (only if the hash moves) |
 | T8 | `docs/specs/FEATURES.md`, `DESIGN.md`, `docs/specs/COVERAGE.md`, two new decision files, `docs/decisions/2026-09-30-hb-marks-homebrew-a-relation-shows-only-to-its-author.md`, `docs/DECISIONS.md` |
 | T9 | `TablesPage.svelte`, `TableNav.svelte`, `PageHead.svelte` (if it holds the head row), `TableRows.svelte` (picture aspect), their tests, `tests/app/states.js` (one more case), `issues/57/mocks/7b/built/head-probe.js` |
+| T12 | `RecordCard.svelte` (face CSS), `RollResult.svelte`, `OrGrid.svelte`, `RollPanel.svelte`, `orGrid.test.ts`, `rollResult.test.ts`, `tests/app/states.js` (one case), `tests/app/inventory.js` (one state), `issues/57/mocks/7b/roll-probe.cjs` (run it, adapt it), the T8 prose below |
 | T10 | `handoff.md` (the Impeccable outcome) |
 | T11 | `issues/57/mocks/7b/built/`, `handoff.md` |
 
@@ -338,7 +359,8 @@ Run it after T9, so the head prose is true.
   reserved space, and late content (a picture, a count) reserves its box." Cite `/tables/*` as the first user.
 - `COVERAGE.md`: the `homebrewCatalog.test.ts` entry ("the own relations kept on a catalog row") reads "the own
   relations in the dialog of a catalog row"; the `tables.test.ts`, `record.test.ts`, `rollResult.test.ts` and
-  `rowTags.test.ts` entries name the new cases; the two new `states.js` cases and the state count.
+  `rowTags.test.ts` entries name the new cases; the three new `states.js` cases (T6, T9.3, T12.4), case 89's
+  moved flip, `orGrid.test.ts`'s container class and the state count.
 - Decision file 1, `docs/decisions/2026-11-04-relations-and-the-core-tag-draw-on-the-full-card-only.md`
   (template `.claude/templates/decision.template.md`):
 
@@ -357,6 +379,32 @@ Run it after T9, so the head prose is true.
   Decision: the option built in T9.2 with the measured causes; Rejected: the other option, and a per-table
   `min-height` patch with no structure (it hides the symptom on one table); Accepted trade-off: the cost of
   option A (a reserved strip) or of option B (the head still differs by table). It supersedes no earlier file.
+- T12's prose (R7):
+  - `FEATURES.md`, "Rolling", the result bullet: "from 601 px the picture is 4:3 ... up to 600 px it is 96 px beside
+    the text ... From 601 px one result is at most 380 px wide; up to 600 px it takes the line." becomes: "A result
+    is the tall face - the picture 4:3 fading into the plate, the roll number over its top right - only while the
+    whole roll sits on one line: one result, at most 380 px wide, or two side by side, in a results column of at
+    least 641 px. Otherwise each result is the row face: the picture 96 px beside the text, no number (the results
+    line names the roll). Up to 600 px that is every roll; from 761 px a four-result roll and every roll in a
+    results column under 641 px (owner, 2026-11-04)."
+  - `DESIGN.md`, "Layout", The Two Breakpoints Rule: "and the roll card turns from a row into the face at 601px"
+    becomes "and a roll card can be the tall face from 601px (The Roll Page Rule)"; The Roll Page Rule gains: "A
+    result is the tall face only while the roll sits on one line in a results column of at least 641px; otherwise
+    the row face, so a four-result roll shows every name in the first screen at 1180x720."
+  - `DESIGN.md`, "Cards", the `face` bullet: "and 96px beside the text up to 600px" becomes "and the row face, 96px
+    beside the text, wherever the roll does not sit on one line (The Roll Page Rule)". "Badges": "On a roll card
+    face the roll number is drawn over the picture from 601px and hidden up to 600px" becomes "drawn over the
+    picture of the tall face and hidden on the row face".
+  - Decision file 3, `docs/decisions/2026-11-04-a-roll-result-is-the-tall-face-only-when-the-roll-fits-one-line.md`:
+    title "2026-11-04 - A roll result is the tall face only when the roll fits one line"; first bullet `- Amends "The
+    roll pages share one layout, and a result is a card face with its own row" (2026-11-04)`; Task `57` (owner,
+    2026-11-04, chat: "also for classic and alternative rolls page look good only when 2 items are
+    visible, for 4 or 1 it doesn't fit to the screen fully, can we show more compact view?"); Decision: R7 with the
+    measured numbers of T12.0 and after; Rejected: option A (the picture cropped by the count) and option C (a
+    «Компактно» switch), each with the reason of T12.1; Accepted trade-off: T12.2's. In the file
+    `2026-11-04-the-roll-pages-share-one-layout-and-results-draw-the-card-face.md`, above "- Task": `- Amended by "A
+    roll result is the tall face only when the roll fits one line" (2026-11-04): a roll that does not fit one line
+    draws row faces.`
 - In the 2026-09-30 file, above "- Task": `- Superseded in part by "Relations and the Core tag draw on the full
   record card only" (2026-11-04): a row draws no relation line.` Then `node tools/decisions.js`.
 
@@ -428,6 +476,168 @@ router).
 **T9.4** `FIRST_SCREEN` (section 14): the limits stay. Case 83 passes with no limit loosened and no row moved to
 an exception. A measured miss is logged as section 14 says; do not move a limit without the log.
 
+### T12. Compact roll results (owner, 2026-11-04, about 19:30; design choice RC1)
+
+Owner, chat, three desktop screenshots of production `/roll/std`, RU, a 1919x980 window: "also for classic and
+alternative rolls page look good only when 2 items are visible, for 4 or 1 it doesn't fit to the screen fully, can
+we show more compact view?" The screenshots: two results (two faces side by side with the «ИЛИ» pill) fit whole;
+one result fills the column, its picture about 600 px tall, the name and the text below the fold; four results form
+two rows of two, and the second row starts below the fold. The same on `/roll/alt`.
+
+**T12.0 Current behavior (measured by the planner on production, 2026-11-04, read-only probe, RU; EN within a
+few px).** From 761 px the head ends and the results start at 267 px at every width (`[data-primary]`). The control
+pane is 570 px tall on `/roll/std` and 401 px on `/roll/alt`, and it is not sticky. A count is 1, 2 or 4: `poolFor`
+gives one record per picked source and kind, `altPicks` one per kind and die; 3 needs a table without the row (none
+found at n = 1, 13, 30, 45, 60); the dice count and the manual number pick the row, not the count. Both pages open
+with four results.
+
+| Width x height | 1 result (`/roll/std`, Core, items) | 2 results | 4 results (both pages' default) |
+|---|---|---|---|
+| 1919x980 (the owner's) | card 838 px wide, picture 627; name at 903; action row ends 1009-1030 | two faces 376 px; whole roll ends 705-727 | row 2 starts 767-789; its names at 1056-1078; ends 1205-1249 |
+| 1180x720 | card 791, picture 592; name at 868; ends 973-995 | two faces 352 px; ends 688-709 | row 2 starts 750-771 (below the fold); ends 1170-1214 |
+| 1015x720, 1000x720 | one column (the results column is 640 px or less, so `OrGrid` stacks): card 611-626, picture 457-468; ends 838-871 | stacked; the second face starts 896-929; ends 1489-1537 | stacked; ends 2794-2883 |
+| 900x720 | card 511, picture 382; ends 763-785 | stacked; ends 1339-1382 | stacked; ends 2516-2559 |
+| 761x720 | card 372, picture 278; ends 659-724 | stacked; ends 1152-1221 | stacked; ends 2125-2251 |
+
+Causes, read from the code: (1) `OrGrid` draws one card at the column's width, but `FEATURES.md`, "Rolling", says
+"From 601 px one result is at most 380 px wide", which only `RollPanel`'s `.results` keeps: a defect on `/roll/std`
+(one result) against the spec. (2) The face's picture is 4:3 at the card's full width, so the card's height grows
+with its width. (3) From 761 to 1014 px the results column is 387-640 px, `OrGrid`'s `@container (max-width:
+640px)` stacks every count in one column, and each face takes the column's width. (4) The «ИЛИ» rule between rows
+takes 58-62 px. The narrow band above the phone face has the same causes: at 601x800 four results end at 2692 px
+and one at 839 px (T12 measurements).
+
+**T12.1 Options.** The owner prefers consistency and fewer controls.
+
+Each candidate was injected as CSS into production in the planner's local browser and measured the same way (RU;
+"names" is the bottom of the last result's name, "whole" the bottom of the last action row; the fold is 720 or
+980). All three options fix cause 1 (one result at most 380 px wide).
+
+| | A. The picture cropped by the count | B. The row face when the roll does not fit one line (recommended) | C. A «Компактно» switch per device |
+|---|---|---|---|
+| What changes | The tall face stays at every count; from three results, and in a column under 641 px, the picture's window is 2:1 (175-312 px tall), the «ИЛИ» rule between rows 6 px | The tall face stays for one result (380 px) and for two side by side in a column of 641 px or more; otherwise each result is the row face that phones draw (96 px picture beside the text, no number badge); the «ИЛИ» rule between the two rows of a 2x2 6 px | A switch in the results line, stored per device (`localStorage`); on, every result is the row face; off, today's faces |
+| 1 result, 1180x720 | whole 665 | whole 665 | whole 665 with the fix of cause 1 |
+| 4 results, 1180x720 | names 832-858, whole 944-1005: row 2 still below the fold | names 562-645 (627 at n = 45), whole 747-855: every name in the first screen; the last action row 27-135 px below it | off: as today; on: as B |
+| 4 results, 1919x980 | names 838-881, whole 946-1028 | whole 725-811 | as B when on |
+| 2 results, 900x720 (mid band) | names 981, whole 1089 | whole 649 | as B when on |
+| 4 results, 761-1000x720 | names 1848-2100 | names 998-1154, whole 1096-1361: two results whole, the third starts | as B when on |
+| What the reader loses | most of each square picture (a 2:1 band of it); still a scroll for a four-result roll | the big picture and the card's roll number on a four-result roll and in a results column under 641 px (761-1014 px, and 601 to about 688 px); one press opens the picture | nothing by default, but a control to find and a setting to remember; the default still fails the owner's case |
+| Consistency | one face, a crop window the item page never uses | the two faces that exist, chosen by one rule; the phone's face reused | a second display mode beside the rule; a new stored key (`STATE.md`) |
+| Cost | CSS in `RecordCard` and `OrGrid`; the same case | CSS in `RecordCard`, `OrGrid`, `RollResult`, `RollPanel`; the same case; about 3 more goldens (the number badge leaves the tree on four-result states) | B's work plus a `Switch`, a `prefs` key, `STATE.md`, two strings, a state per mode |
+
+**T12.2 Decision: option B (RC1 default).** B is the only option that puts every result's name of the default
+four-result roll in the first screen at 1180x720 and the whole roll on the owner's window, with no new control and
+no new card form: the row face is the phone's own. A crops the fixed square art to a strip and still scrolls; C
+leaves the default as it is and adds a control the owner did not ask for. Accepted trade-offs: a four-result roll
+and every roll between 761 and 1014 px lose the large picture (96 px instead of 263-468) and the number badge on the
+card; at 1180x720 the last action row of a four-result roll ends 27-135 px below the fold (every name is above
+it), and on a crit the last name too (744 px in RU); between 761 and 1014 px a four-result roll shows two results
+whole and the third starting; a lone result in that band is a row, not the 380 px tall face (a long Vault of Ages
+text then fits: 563 px against 844 today).
+The owner can overrule with A or C; nothing blocks on it (autonomy). The probe shows 96 and 120 px pictures within
+about 60 px of each other; 96 px keeps one size with the phone.
+
+**T12.3 The edit (option B).** CSS and one class binding; no markup, prop, string or stored value changes.
+
+1. Measure first. `node issues/57/mocks/7b/roll-probe.cjs --base=<the built app>` (no `--inject`) on the build
+   before the edit, then with `--inject` (the planner's CSS model of this step), into `handoff.md`. The script
+   names the sizes, states and languages; serve `dist-test/` the way batch 3b ran cases 86 and 87, or read
+   production. The planner's runs on production are in "T12 measurements" below.
+2. `RecordCard.svelte`, the face block ("the roll card face"): the row face becomes the base and the tall face
+   moves into one named container query. Delete the face rules of `@media (max-width: 600px)` and `@media
+   (min-width: 601px)` (the ring) and write:
+   - base: `.card.face { position: relative; flex-direction: row; align-items: flex-start; isolation: isolate; }`;
+     `.card.face .card-media { width: 96px; aspect-ratio: 1; margin: 10px 0 10px 10px; border-radius: 8px; }`;
+     `.card.face .card-body { padding: 10px 12px; gap: 4px; }`; `.card.face :global(.badge.num) { display: none; }`.
+   - `@container faces (min-width: 641px)`: `.card.face { flex-direction: column; align-items: stretch; }`;
+     `.card.face .card-media { z-index: -1; width: 100%; aspect-ratio: 4 / 3; margin: 0; border-radius: 0;
+     mask-image: linear-gradient(180deg, #000 72%, transparent); }`; `.card.face .card-media:focus-visible {
+     mask-image: none; }`; the `::after` ring rule as it is; `.card.face .card-body { margin-top: -26px; padding: 0
+     14px 12px; gap: 7px; }`; `.card.face :global(.badge.num) { display: inline-block; position: absolute; top:
+     10px; right: 10px; }` (`inline-block` is `.badge`'s own display after T4).
+   - The comment above the block: the row face is the base; the tall face needs a `faces` container of 641 px,
+     which a roll provides only while it sits on one line (DESIGN.md, "The Roll Page Rule"). Up to 600 px no
+     container is that wide, so the phone keeps the row face.
+3. `OrGrid.svelte`: `class:faces={items.length <= 2}` on `.orwrap`, and `.orwrap.faces { container-name: faces; }`
+   (the `container-type` stays on every `.orwrap`: the grid's own `@container (max-width: 640px)` reads it). Add
+   `@container (min-width: 641px) { .ordiv.h { padding: 6px 0; } }`: the rule between the two rows of a four-result
+   roll (the row faces) takes 42 px instead of 62. The stacked separators below 641 px keep 14 px, so the phone's
+   separators do not move. Update the file's top comment: four make a 2x2 of row faces. `ListPage`'s `OrGrid`
+   (one `compact` card) is not a face and does not change.
+4. `RollPanel.svelte`: `.results` becomes `container: faces / inline-size;` and loses its `@media (min-width:
+   601px)` 380 px column; update its comment.
+5. `RollResult.svelte`: `@container faces (min-width: 641px) { .dealt { max-width: 380px; } }` with a comment:
+   a tall face is at most 380 px wide (`FEATURES.md`, "Rolling"); it fixes the one-result width on `/roll/std` and
+   replaces `RollPanel`'s copy.
+6. Unit cases (jsdom draws no container query, so they hold the classes, not the geometry): `orGrid.test.ts` -
+   one and two items draw `.orwrap.faces`, four draw `.orwrap` without it; `rollResult.test.ts` keeps its cases
+   (the markup does not change).
+7. `tests/app/inventory.js`: new state `#/roll/std ~ one result` after `#/roll/std ~ items only`, `why`: "Core rules
+   with Hope & Fear and consumables off: one result, the tall face at most 380 px wide (R7)", `enter` presses
+   «Hope & Fear» and «Расходники». Its RU and EN golden come from the one re-seed. `#/roll/std` keeps its `why`
+   with "four results draw row faces from 601 px" added.
+8. Run the probe again on the edited build (no `--inject`): the numbers match the model within a few px, or
+   `handoff.md` names each difference.
+
+**T12.4 The browser case.** `tests/app/states.js`, the next free number after T9.3's: "a roll fits the first screen
+by its count" (DESIGN.md, "The Roll Page Rule"). Beside `FIRST_SCREEN`, a table `ROLL_FIT` of inventory states and
+sizes, read the way case 83 reads its rows (`d.open` with the state's fields, `enter`, `d.settled`, «EN» for the EN
+pass, `scrollTo(0, 0)`, `document.fonts.ready`, two frames). Per `.dealt`: the bottom of `.card-name`, the bottom of
+`.resacts`, the width of `.card-media` and of `.dealt`, and whether `.badge.num` is displayed. RU and EN:
+
+| State | Size | Asserts |
+|---|---|---|
+| `#/roll/std` (4), `#/roll/alt` (4) | 1180x720 | every name's bottom at most 720; every picture at most 100 px wide; no number drawn |
+| `#/roll/std ~ one source` (2) | 1180x720 | every action row's bottom at most 720; both pictures at least 300 px wide (tall); the number drawn |
+| `#/roll/std ~ one result` (1) | 1180x720 | the action row's bottom at most 720; `.dealt` at most 380.5 px wide; the picture at least 300 px wide |
+| `#/roll/voa` (1, a long Vault of Ages text) | 1180x720 | the name's bottom at most 720; `.dealt` at most 380.5 px wide; the picture at least 300 px wide (its action row ends at 844 px today and after: the text, not the layout) |
+| `#/roll/std`, `#/roll/alt`, `#/roll/alt ~ crit`, `~ one source`, `~ one result`, `#/roll/voa` | 1919x980 | every action row's bottom at most 980 |
+| `#/roll/std` (4), `~ one source` (2), `~ one result` (1) | 1000x720 | every picture at most 100 px wide (a column under 641 px); the first two action rows' bottoms at most 720 |
+| `#/roll/std` (4), `~ one result` (1) | 360x640 | every picture 96 px wide and no number drawn (the phone as today) |
+
+`#/roll/alt ~ crit` at 1180x720 is logged, not asserted: the crit box puts its last name at 744 px in RU (T12
+measurements). Prove the case first: run it through the in-memory loader at HEAD; the 1180x720 rows of `#/roll/std`
+and `~ one result` and the 1000x720 rows must fail, with the numbers in `handoff.md`; then it passes after the
+edit.
+
+Case 89 ("the card flips at 600/601 px", `#/roll/wondrous`): the flip is no longer a window step. It reads the row
+face at 600x800 as today, then the tall face at 720x800 (a `.results` container of at least 641 px with the
+scrollbar's gutter), and adds the row face at 640x800; its title and comment change to "the card is the tall face
+from a 641 px results column". Case 31 (`#/roll/wondrous` at 1180x520) keeps the tall face and passes unchanged.
+
+`plan.md` section 14 gains one line: `ROLL_FIT` is the roll pages' fit check beside `FIRST_SCREEN`; the first
+result's offset rows stay as they are.
+
+**T12 measurements (planner, 2026-11-04, production, `roll-probe.cjs` without and with `--inject`, RU; the EN
+texts are shorter and end 0-60 px higher; at 1180x720 EN the four-result `/roll/alt` fits whole, 690 px).** "name" is the last result's name bottom, "whole" the last action
+row's bottom, "k/n" how many action rows end inside the window. The first result starts at 267 px from 761 px,
+310 px (std) or 244 px (alt, voa) from 601 to 760 px, as today in both columns.
+
+| State | Size | Today: name / whole | Option B model: name / whole |
+|---|---|---|---|
+| std, 4 (n = 1; n = 45) | 1919x980 | 1084 / 1231, 2/4 | 580 / 765, 4/4 (604 / 811 at n = 45) |
+| std, 4 | 1366x768 | 1084 / 1231, 2/4 | 580 / 765, 4/4 (604 / 811, 2/4 at n = 45) |
+| std, 4 | 1180x720 | 1049 / 1196, 2/4 | 580 / 765, 2/4 (627 / 855 at n = 45) |
+| std, 4 | 1000x720 | 2695 / 2820, 0/4 | 1020 / 1140, 2/4 |
+| std, 4 | 761x720 | 2021 / 2168, 1/4 | 1132 / 1317, 2/4 |
+| std, 4 | 601x800 | 2567 / 2692, 0/4 | 1063 / 1183, 2/4 |
+| std, 2 | 1180x720 | 563 / 692, 2/2 (tall) | the same (tall) |
+| std, 2 | 1000x720 | 1386 / 1493, 0/2 | 549 / 649, 2/2 |
+| std, 1 | 1919x980 | 927 / 1009, 0/1 (838 px wide) | 583 / 665, 1/1 (380 px, tall) |
+| std, 1 | 1180x720 | 892 / 973, 0/1 (791 px wide) | 583 / 665, 1/1 (380 px, tall) |
+| std, 1 | 1000x720 | 757 / 838, 0/1 | 333 / 426, 1/1 (row) |
+| alt, 4 | 1919x980 | 1059 / 1188, 2/4 | 592 / 732, 4/4 |
+| alt, 4 | 1180x720 | 1023 / 1153, 2/4 | 645 / 787, 2/4 |
+| alt, crit | 1919x980 | 1197 / 1305, 2/4 | 700 / 840, 4/4 |
+| alt, crit | 1180x720 | 1166 / 1274, 0/4 | 744 / 886, 2/4 (logged) |
+| voa, 1 | 1180x720 | 583 / 844, 0/1 (tall) | the same (tall) |
+| voa, 1 | 900x720 | 583 / 844, 0/1 (tall) | 333 / 563, 1/1 (row) |
+| any | 360x640 | std 4: 1247 / 1443 | the same at every state: the phone does not move |
+
+The flip: with the page's scrollbar gutter a results column reaches 641 px at a window of about 688 px, so 673
+and 672 px both draw the row face; case 89 reads 720 px for the tall face. At 700x400 (a phone on its side) a lone
+result is the tall face and overflows a 400 px window, today and after; not in scope (F7).
+
 ### T10. Impeccable
 
 The orchestrator runs `polish` and `harden` on `RecordCard`, `RowMain`, `TableRows`, `TablesPage`, `TableNav` and
@@ -479,8 +689,28 @@ Each line is observable in a suite, a unit case or the built app.
   `lib/print.ts`, `lib/share.ts` and `tools/build.js` have no diff.
 - New state `#/search ~ relations, dialog as gm3` with its RU and EN golden and an axe case; `#/search ~
   relations as gm3` has its new `why`.
-- T8's prose, both decision files, the pointer in the 2026-09-30 file and `node tools/decisions.js` with 0
-  problems, in the same commit.
+- T8's prose, the three decision files, the pointer in the 2026-09-30 file, the `Amended by` line in the roll
+  pages' file and `node tools/decisions.js` with 0 problems, in the same commit.
+- R7, item 6, the measurement: `handoff.md` holds T12.3's probe table at HEAD and after the edit (1919x980,
+  1180x720, 1000x720, 900x720, 761x720, 700x360; 1, 2 and 4 results; RU and EN).
+- R7, the rule: at 1180x720, RU and EN, on `/roll/std` with one, two and four results, on `/roll/alt` with four and
+  on `/roll/voa`, every result's name ends inside the first screen; on `/roll/std` with one and two results the
+  whole roll ends inside it, the action row included (the T12.4 case). `/roll/alt ~ crit` at 1180x720 is logged
+  (last name at 744 px in RU), not asserted.
+- R7, the owner's window: at 1919x980, RU and EN, the whole roll ends inside the first screen at every count, the
+  action rows included (the T12.4 case).
+- R7, one result: from 601 px a lone result on `/roll/std` is at most 380 px wide, as `FEATURES.md` "Rolling" already
+  says (the defect of T12.0, cause 1); `/roll/voa` and the other single-result pages keep their width (the T12.4
+  case).
+- R7, the row face from 601 px: a four-result roll at 1180, and every roll in a results column under 641 px,
+  draws each card with its picture beside the text and no number badge; two results at 1180 keep the tall face
+  with the number (the T12.4 case, `_roll_std ~ one source` golden unchanged).
+- R7, the phone: up to 600 px nothing moves - `sweep.js 360` and `390`, the 360 px goldens and case 89 pass
+  unchanged.
+- R7: new state `#/roll/std ~ one result` (Core only, items only) with its RU and EN golden and an axe case (the
+  existing `rollResult.test.ts` axe case covers the card; the state's own is its golden).
+- R7: the `FIRST_SCREEN` rows of the roll pages keep their limits and offsets (267 at 1180x720; 323 and 251 at
+  360x640).
 - `node --test tools/artwork/lib.test.mjs` passes (T7).
 - From "Each of batches 2-9": the detector line, American spelling in new prose, `mocks/7b/built/`, the `polish`
   and `harden` outcome, no `verify` row open, the writer's local gates. CI is green on the pushed tip.
@@ -501,6 +731,17 @@ Each line is observable in a suite, a unit case or the built app.
    | Table head: the table with the most chips, tabs and toolbar items against the one with the fewest | the same Y for each block | T9.3 |
    | Table head: the longest group chip row (RU) at the narrowest wide width | the same structure on every table | T9.3 at 1050 |
    | 360 and 1180 | each row above | T6, T9.3, goldens |
+   | Roll results: none (an empty table, `empty`) | `NoData` as today | unchanged |
+   | Roll results: one (`/roll/std ~ one result`, every single-result page) | from a 641 px column the tall face, at most 380 px wide; under it the row face | T12.4, new golden |
+   | Roll results: two | side by side as tall faces from a 641 px column; stacked row faces under it | T12.4, `~ one source` golden |
+   | Roll results: three (a table without the row; not reached by the shipped data) | `OrGrid`'s `c4` layout, row faces, as four | `orGrid.test.ts` (class only) |
+   | Roll results: four, the limit (`poolFor`, `altPicks`: two sources or dice by two kinds; no 3x row, the count is a code constant) | row faces in a 2x2 from a 641 px column, stacked under it; the alt crit box above them | T12.4 |
+   | Roll results: the longest name and text (`n = 45` and `60` on `/roll/std`, RU) | the row face grows with the text; the name stays above the fold at 1180x720 | T12.4 |
+   | Roll results at 360 and 1180 | 360: unchanged row faces; 1180: as the rows above | T12.4, case 89, `sweep.js 360` |
+
+   Roll pages (T12): the row order (the results in `poolFor` and `altPicks` order), the primary action (the dice or
+   the roll button in the pane, unchanged) and the result's action row (under each plate) do not move. The pane is
+   not sticky and does not grow. The first result starts at 267 px from 761 px as today.
 
    Row order, the primary action, folds, popups and sticky regions do not change. A roll result and a row get
    shorter (fewer lines); no `FIRST_SCREEN` offset moves on a roll result or a row, because the first result and
@@ -509,7 +750,9 @@ Each line is observable in a suite, a unit case or the built app.
 2. Error scenarios: not applicable to stored data - no write path or stored shape changes. Loading, a failed
    read, offline and a stale tab draw what they draw today; a record named by a relation and deleted drops out of
    the full card's line as today. The head holds still while a table loads (the late-content rule). A revert to
-   the previous frontend draws the lines on every surface and the old head again; no data moves.
+   the previous frontend draws the lines on every surface and the old head again; no data moves. T12 is CSS only:
+   a picture that fails draws the glyph in the 96 px well, as on the phone; a stale tab draws the old faces until
+   it reloads; a revert draws the tall faces at every count again.
 3. Consistency. `FEATURES.md`, "Consistency rules": one name for one thing (the tile keeps «Основное оружие»;
    K8); the row rule "a row hides the tags that repeat what the page already says" is extended, not departed
    from. Siblings: every compact surface (rows on five pages, tiles, two roll results) now draws the same set of
@@ -517,8 +760,12 @@ Each line is observable in a suite, a unit case or the built app.
    differences: print and the copied text keep the relation blocks, the set label and «Core» (out of scope; a
    printed card and a pasted message have no surrounding page); a single-book roll page still repeats its book
    tag (F4); only `/tables/*` has the steady head so far (the other pages have one content set under their head).
-4. RU/EN parity: no string is added, changed or removed. The goldens, T6 and T9.3 run in both languages; the EN
-   tile labels are the longer ones and the RU chip row is the wider one.
+   T12: the nine roll pages draw one result rule (The Roll Page Rule); the row face is the phone's, so a roll looks
+   the same in a narrow column at any width. Named difference: the list page's roll result stays `compact` until
+   9b moves it to `face`, and then takes R7 with it.
+4. RU/EN parity: no string is added, changed or removed. The goldens, T6, T9.3 and T12.4 run in both languages; the
+   EN tile labels are the longer ones, the RU chip row is the wider one, and the RU result texts are the taller
+   ones (T12 measurements).
 
 ## Goldens expected to move
 
@@ -534,10 +781,16 @@ Golden width is 1100. Seed with the four shards; never edit a golden by hand.
   `~ more`, `~ narrow`, `~ search`, `~ select*`, `~ tabs`): rows lose the relation line.
 - The list and `/s/` families with a Core row or a relation line (`_lists_*0101*`, `LIST_A*`, `_s_*`): rows lose
   «Core» and the relation line. About 30-50. Batch 9a re-seeds them again for the compact row (accepted, K13).
+- T12, at the golden width of 1100 (a 726 px results column): every four-result roll state loses the number badge
+  from the tree (the row face hides it): `_roll_std`, `~ help`, `~ set up`, `~ more`, `~ card more`, `~ list menu
+  as gm4`, `~ request arrived as gm1`, `as gm1`, `~ account menu as gm1` (all moved by R2 already), and
+  `_roll_alt`, `_roll_alt_crit`, `_roll_alt_legendary_crit` (about 3 more). Two-result states (`~ one source`, `~
+  items only`, `~ crit, items only`) and single-result pages keep their tall face: no T12 move.
 - Not expected to move: `_i_*`, `_h_*`, every dialog state, the editor states, `_p_*`. A move there is a defect
   to read.
 
-Estimate: 70-120 goldens in all. The new state adds two files (RU and EN).
+Estimate: 75-125 goldens in all. The new states add four files (`#/search ~ relations, dialog as gm3` and
+`#/roll/std ~ one result`, RU and EN).
 
 ## Tests
 
@@ -551,7 +804,8 @@ Estimate: 70-120 goldens in all. The new state adds two files (RU and EN).
 | `tables.test.ts` | no `.rcraft`; no «Core» on a mixed table and on search; another book kept; `TableNav` keeps its node on a table switch |
 | `listPage.test.ts`, `sharedListPage.test.ts` | a row draws no relation line and no «Core» |
 | `homebrewCatalog.test.ts` | the own relations in the dialog, not on the row |
-| `tests/app/states.js` | the badge case (T6) and the head case (T9.3) |
+| `orGrid.test.ts` | `.orwrap.faces` for one and two items, not for four (T12) |
+| `tests/app/states.js` | the badge case (T6), the head case (T9.3), the roll fit case (T12.4) and case 89's moved flip |
 
 ## Verification
 
@@ -561,7 +815,8 @@ local gates).
 1. While editing: `npx vitest run` with `app/src/lib/label.test.ts`, `rowTags.test.ts`,
    `app/src/components/record.test.ts`, `rollResult.test.ts`, `recordHost.test.ts` or `pickRow.test.ts`,
    `tables.test.ts`, `homebrewCatalog.test.ts`, `homebrewPage.test.ts`, `searchPage.test.ts`, `listPage.test.ts`,
-   `sharedListPage.test.ts`, `itemPage.test.ts`, `badge.test.ts`, `a11y.test.ts`, then `npm run lint:untyped` and
+   `sharedListPage.test.ts`, `itemPage.test.ts`, `badge.test.ts`, `a11y.test.ts`, `orGrid.test.ts`, `std.test.ts`,
+   `alt.test.ts` (components), then `npm run lint:untyped` and
    `npm run lint:typed`. `git ls-files -- "app/src/**/*.test.ts"` gives a right name.
 2. `node --test tools/artwork/lib.test.mjs` (T7).
 3. `npm run build:test`, then `node tests/app/golden.js --update --shard=n/4` for n = 1 to 4, one at a time. Then
@@ -573,7 +828,7 @@ local gates).
 6. `impeccable detect --json --no-inline-ignores app/src`, and the spelling grep of batch 2's word list over the
    touched files and the new prose.
 7. `rtk npm run check:fast` (Bash timeout 600000), last.
-8. Commit, push, the CI credit. CI's `app/states` (the two new cases and case 83), `app/print`, `app/hues`,
+8. Commit, push, the CI credit. CI's `app/states` (the three new cases, case 83 and case 89), `app/print`, `app/hues`,
    `app/typo`, `sweep.js` and the `e2e` flows are the browser proof. The batch review follows (trigger: new or
    changed UI; `tests/app/` changed). The wave 2b squash waits for it and for the green CI run of the tip.
 
@@ -592,6 +847,12 @@ local gates).
 - T9: the `FIELD` guard of `Shell` and the header that hides on scroll (batch 3b) read the head's height; a
   reserved strip changes `--sticky-h` consumers only through the header, not through the page head. Check `sweep.js
   360` and `768` on CI.
+- T12: the phone must not move. The row face becomes the base of `.card.face` with the same values as today's
+  `@media (max-width: 600px)` block; read the 360 px shots of `mocks/5/built/` against T11's. Do not add a
+  breakpoint to the viewport port, and do not write the face rules twice (a media copy and a container copy):
+  the named container is the one switch. `.dealt { height: 100% }` stays, so two tall faces keep one height.
+- T12: a container query needs a container in every caller of `RollResult`. `OrGrid` and `RollPanel` are the two;
+  a third caller (9b's list roll result) names its container or draws the row face.
 - Review order: `RecordCard.svelte`, `Badge.svelte`, `RowMain.svelte`, `TableRows.svelte`, `TablesPage.svelte`,
   `TableNav.svelte`, `lib/label.ts`, `lib/rowTags.ts`, the states cases, the prose.
 
@@ -601,7 +862,7 @@ Facts for the orchestrator's dispatch, not a model choice.
 
 | Test | Answer |
 |---|---|
-| 1 (a step asks for a choice, or an `Open design question:`) | yes: HD1 (T9.2) has a default (option A) that blocks nothing; the tag rule is the owner's; K3, K4 and K8 have defaults that block nothing |
+| 1 (a step asks for a choice, or an `Open design question:`) | yes: HD1 (T9.2) and RC1 (T12.2) have defaults (option A, option B) that block nothing; the tag rule is the owner's; K3, K4 and K8 have defaults that block nothing |
 | 2 (public contract, route, stored state, product law, migration, hook, configuration) | no: no contract, route or stored state; print is untouched; `CARD_HEAD_SHA256` is a test constant |
 | 3 (visual judgment: print fitting, a golden re-seed, parity with a design node) | yes: 70-120 goldens in one re-seed, and the badge, tile and head layouts rest on visual judgment; no design node |
 
@@ -630,3 +891,6 @@ Open, each with its default:
 - F5. Closed: placement is decided (owner, 2026-11-04): batch 7b with wave 2b.
 - F6 (HD1, K12). The table head. Default: option A. Alternative: option B. Another page with a like jump (a
   head that changes with its content): default, not in this batch.
+- F7 (RC1, K14). Compact roll results. Default: option B. Alternatives: option A (the picture cropped by the
+  count) or option C (a «Компактно» switch). Not in this batch, by default: a sticky control pane, a shorter page
+  head on the roll pages, the 601-760 px band beyond what R7 gives it.

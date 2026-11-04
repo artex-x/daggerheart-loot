@@ -158,7 +158,7 @@
     tags, and the set tags, are valuable enough to show everywhere on every resolution. Routing: (1) is a local
     fix; (2) is a design change (where a source tag draws), so the planner decides it with the owner's later
     feedback batched in, then one fix batch. Status: planned in `plan-tags.md` (2026-11-04) as batch 7b, with its own
-    wave 2b squash (see "Wave split").
+    wave 2b squash (see "Wave split"); items 5 and 6 joined it the same day.
     - Owner's lean (chat, 2026-11-04): option 2, consistency first.
     - Refinement (chat, 2026-11-04): "even not to hide homebrew but upgrade lines and sets, make them visible only
       on the item page": the homebrew tag stays as today; the upgrade and relation lines and the set draw only on
@@ -184,6 +184,15 @@
       starts at about 125 px on one table and 143 px on another). Routing: a design choice (HD1) with the planner's
       default, option A (one head structure for all tables, set by the band only), planned in `plan-tags.md` step
       T9 (measure first, a browser case that fails at HEAD, `FIRST_SCREEN` limits stay), in batch 7b.
+    - (6) (2026-11-04, about 19:30, three desktop screenshots of production `/roll/std`, RU, a 1919x980 window): "also
+      for classic and alternative rolls page look good only when 2 items are visible, for 4 or 1 it doesn't fit to
+      the screen fully, can we show more compact view?" Measured on production by the planner's read-only probe
+      (2026-11-04, RU): from 1015 px two results end at 688-727 px; four results start their second row at 750-789
+      px; one result on `/roll/std` is 791-838 px wide with a 592-627 px picture, because `OrGrid` draws one card
+      at the column's width (`FEATURES.md` "Rolling" says at most 380 px, which only `RollPanel` keeps); from 761 to
+      1014 px every count stacks in one column of tall faces (four results: 2125-2883 px of page). Both pages
+      default to four results. Routing: a design choice (RC1) with the planner's default, option B (the row face
+      whenever the tall face does not fit one line), planned in `plan-tags.md` step T12, in batch 7b.
   - Bundle budget ceiling (owner, 2026-11-04, chat: "we can increase budget up to 300"):
     read as the unconfigured ceiling 270 -> 300 kB; the configured ceiling stays 350 kB
     unless a measurement passes it (then stop and ask). Raises under the 300 kB ceiling

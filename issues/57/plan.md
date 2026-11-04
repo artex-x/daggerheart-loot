@@ -67,7 +67,7 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
   Impeccable fallback of `reviews/2.md` R1 is named in section 10, "Impeccable".
   Section 10 is now collapsed to D1-D13 and "Impeccable" (see the fold line below).
 - Batch 7b (owner's phone and desktop feedback, 2026-11-04): `plan-tags.md` is the brief (one tag rule, one-box
-  badges, a steady table head); batch 7b runs after the post-wave-2 remediation, then wave 2b, then 9a on a clean `main`.
+  badges, a steady table head, compact roll results - item 6, T12, folded in the same day); batch 7b runs after the post-wave-2 remediation, then wave 2b, then 9a on a clean `main`.
 - Fold of the placed items (2026-11-04, done): the open "Placed items" of `plan-4.md`
   to `plan-7.md` are in sections 7 and 8 (batches 8, 9a, 9b, P and 10); the briefs keep their
   text. Section 10 is collapsed to its pointer, D1-D13 and "Impeccable".
@@ -379,7 +379,7 @@ evidence for the batch review, not an owner gate (owner, 2026-10-29,
 | 5 | Roller pages and the card face on results | C23, C24, C25, C26, C36, C38 (panel renamed «Где какая редкость»), C39, C41, C43, C49, P10, P11, N2 | `R/roller`, `R/roller-alt-crit`, `R/roller-mwt` | none: the mode row in the mock is R's; batch 2 ships it | a different route and filter set (`/roll/*`) |
 | 6 | Homebrew editor, homebrew pages and imports (old 5 + 6, owner merge) | A6, A7, A8, A9 (verify), A11 (artefact, close), A12, A13, A27 (panel removed, Q6.1), A28, A29, A30, A38, A40 (homebrew), D5, D14 (verify), D15, D16, editor clarity rows | `R/editor*`, `R/homebrew-*` | none: the refresh adds the Items-tab filter strip of `f74eae09` to `R/homebrew-items` | a different route and filter set (`/homebrew`, `/homebrew/<id>`) |
 | 7 | Search, account, empty and error states | C13, C14, C15, C16, C32, C60, A31, A32, A33, A34, D7, D8 (verify) | `R/search-*`, `R/account-*`, `R/pattern-*` | none | different routes (`/search`, `/account`, the error pages) |
-| 7b | Tags and relation lines on one rule, badges as one box, a steady head on `/tables/*` (`plan-tags.md`; owner's feedback of 2026-11-04) | owner feedback items 1-3 and 5 (`context.md`, "Phone feedback") | none: the surfaces keep their R states | none: mocks 4, 5, 7 and `F` drew the surfaces; the rule is the owner's | the owner's wish to ship the fix before wave 3 and to start wave 3 on a clean `main` (wave 2b); it shares `RowMain`, `TableRows` and the list goldens with 9a, so those goldens are re-seeded twice (accepted) |
+| 7b | Tags and relation lines on one rule, badges as one box, a steady head on `/tables/*`, compact roll results (`plan-tags.md`; owner's feedback of 2026-11-04) | owner feedback items 1-3, 5 and 6 (`context.md`, "Phone feedback") | none: the surfaces keep their R states | none: mocks 4, 5, 7 and `F` drew the surfaces; the rule is the owner's | the owner's wish to ship the fix before wave 3 and to start wave 3 on a clean `main` (wave 2b); it shares `RowMain`, `TableRows` and the list goldens with 9a, so those goldens are re-seeded twice (accepted) |
 | 8 | Lists page `/lists`, list cards, lists import, add-to-list menu | A14, A16, A18, C35, C61, C62, D6, D20, D116 | `R/lists-*`, `R/item-listmenu` | none | a different route and filter set (`/lists`, and the add-to-list menu that the item pages open) |
 | 9a | `/lists/<uuid>` and `/s/<token>` for the phone: the C1b compact row, search and filter on the owner's page, the actions into «Ещё», the list «Ещё» menu, the selection bar on both pages | F2 (C1b, D1, D-head 1), A2 (row actions), A19, A20, A21, A40 (list rows, `/s/`), A41, D2, list row clarity rows | `R/list`, `R/list-picked`, `R/shared-*` | none: `mocks/F/` replaces mock 9 for the row and the head up to 760 px; every other mock 9 state stands | the owner's wish to ship the F2 fix in wave 2 ("Batch 9 split"); split from 8 by a different route and filter set |
 | 9b | The list panels: the note switch, the side column, the share, roll and requests panels, the price switch, A1 at 640-900 px, the «?» removal, the drop mark, E4 | A1, A2 (note area), A3, A4, A5, A22, A42, N1, E2 (the drop mark), E4, list panel clarity rows | `R/list-note`, `R/list-share`, `R/list-roll`, `R/list-prices`, `R/list-requests` | 9a: it draws on the 9a head and rows | the same split as 9a; wave 3, after batch 8 |
@@ -633,9 +633,15 @@ Batch 7b (wave 2b, after the post-wave-2 remediation; the brief is `plan-tags.md
   badge is one pill.
 - R6 (design choice HD1, default option A): the head of `/tables/*` is a function of the band, not of the table;
   the measurement comes first. A browser case holds it, and the `FIRST_SCREEN` limits stay.
-- New state `#/search ~ relations, dialog as gm3`; two decision files and the `Supersedes` pointer; prose in
-  `FEATURES.md` and `DESIGN.md`; 70-120 goldens in one re-seed. `RowMain` and `TableRows` lose `index`.
-- Gate cost 80-105 min (section 8). The wave 2b squash follows its review and the green CI run of its tip
+- R7 (item 6, design choice RC1, default option B; `plan-tags.md` T12): a roll result is the tall face only while
+  the roll sits on one line in a results column of at least 641 px (one result at most 380 px wide, or two side by
+  side); otherwise every result is the row face, as on the phone. A one-, two- and four-result roll shows every
+  name in the first screen at 1180x720 and the whole roll at 1919x980; a browser case holds it; the phone does not
+  move; the one-result width on `/roll/std` meets `FEATURES.md` "Rolling".
+- New states `#/search ~ relations, dialog as gm3` and `#/roll/std ~ one result`; three decision files, the
+  `Supersedes` pointer and the `Amended by` line; prose in `FEATURES.md` and `DESIGN.md`; 75-125 goldens in one
+  re-seed. `RowMain` and `TableRows` lose `index`.
+- Gate cost 100-135 min (section 8). The wave 2b squash follows its review and the green CI run of its tip
   (section 16); batch 9a then builds its compact row on the rule (`plan-9a.md`, "Dispatch preflight").
 
 Batch 8:
@@ -885,7 +891,7 @@ code batch.
 | 3b | `build:test` and one golden pair (about 5); `check:built`, both lints, decisions and the detector (about 5); `polish` and `harden` (5-10); the browser suites, the sweep and the focus-fix proof run on CI | 15-20 |
 | 4, 5, 6, 7 (done) | spent (planned extra gates 30-35, 32-40, 38-49 and 32-43 min, each with `npm run check:built`) | - |
 | 8, 9a, 9b | `npm run check:built` where `dist` assets change (1) | 1 each |
-| 7b | `plan-tags.md`: the vitest files of T1-T6 and T9 (about 15 files, 8-10); artwork test, both lints, decisions, the detector (4-5); `build:test` and the four golden shards (70-120 goldens, 15-20); `check:built` and the configured build (3-4); the head probe and its failing run at HEAD (T9.1, T9.3, 8-12); `polish` and `harden` (5-10); the screenshot set (about 3). One golden re-seed, one `check:fast`, one CI run, one batch review and by habit one fix cycle: 4-6 runs. Its wave 2b squash adds 15-20 (section 16) | 80-105 |
+| 7b | `plan-tags.md`: the vitest files of T1-T6 and T9 (about 15 files, 8-10); artwork test, both lints, decisions, the detector (4-5); `build:test` and the four golden shards (70-120 goldens, 15-20); `check:built` and the configured build (3-4); the head probe and its failing run at HEAD (T9.1, T9.3, 8-12); the roll probe before and after and the roll results CSS (T12, 20-30; folded in by `CLAUDE.md` "Size a batch by its gates": the same `RecordCard`, `RollResult` and `_roll_*` goldens; its own batch would cost 50-65); `polish` and `harden` (5-10); the screenshot set (about 3). One golden re-seed, one `check:fast`, one CI run, one batch review and by habit one fix cycle: 4-6 runs. Its wave 2b squash adds 15-20 (section 16) | 100-135 |
 | 9a | the new 360 px goldens, the axe cases and the `check:fast` growth of C1b (10-15); the new goldens and `lists.test.ts` cases of D1 (5-10) | 15-25 |
 | 9b | `node tests/app/sweep.js 768` for A1 (about 8) | 8 |
 | 10 | docs only: one `check:fast` and one docs-only CI run (no `e2e`) | about 20 in all |
@@ -918,7 +924,7 @@ for the orchestrator's dispatch, not a model choice):
 | 5 | no | yes: goldens | none |
 | 6 | no | yes: goldens | none |
 | 7 | no | yes: goldens | none |
-| 7b | no | yes: 70-120 goldens in one re-seed; badge, tile and head layouts. Test 1 is yes: the head choice HD1 has a default (option A) that blocks nothing | none (`plan-tags.md`) |
+| 7b | no | yes: 75-125 goldens in one re-seed; badge, tile, head and roll result layouts. Test 1 is yes: the head choice HD1 and the roll choice RC1 have defaults (options A and B) that block nothing | none (`plan-tags.md`) |
 | 8 | no | yes: goldens | none |
 | 9a | no: no stored state, route or contract changes (D1 keeps the filter in memory) | yes: the list goldens, the compact row at 360 px | none |
 | 9b | yes: `.prettierignore` (E4) and `.impeccable/config.json` (E2), configuration every session runs under | yes: the list goldens again | its refresh checks the note switch's pending-edit save for possible data loss |
@@ -1256,6 +1262,10 @@ The check (batch 1 adds it):
   === true || row.shipped === width`. Waves 1 and 2 reach `main` with logged rows;
   that is accepted (owner, "Interim mix between waves"), because the later
   batches assert them.
+- Roll results (owner, 2026-11-04, item 6; batch 7b, `plan-tags.md` T12.4): beside `FIRST_SCREEN`, a table
+  `ROLL_FIT` asserts how much of a roll the first screen holds - every name of a four-result roll and the whole of
+  a one- or two-result roll at 1180x720, the whole roll at 1919x980, the first two results at 1000x720. The roll
+  rows of `FIRST_SCREEN` keep their limits.
 - Named exceptions (owner, 2026-10-29 and 2026-11-03): `/roll/std` at 360 (variant
   A, the first result at about 325 px; batch 5), `/lists/<uuid>` with requests and 8
   or more entries at 360 (the folded requests strip and the search row, about 296 px;
