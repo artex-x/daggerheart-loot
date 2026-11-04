@@ -413,6 +413,8 @@
   - Configured: `vite build` with placeholder `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`,
     `node tools/bundle-budget.mjs`: 318.92 kB, within 319, but CI's 0.1 kB more passes 319, so the limit rises to
     320 (`tools/bundle-budget.mjs`, `.claude/README.md`).
+  - `rtk npm run check:fast`, last: exit 0 in 561 s, 40 files and 1557 tests with coverage, 261.6 kB within 262;
+    gate credit armed. The fix commit is `3e0106c8`.
   - Not run locally (CI's): `app/states` whole, `app/sweep`, `app/hues`, `app/typo`, `app/print`, `e2e`.
 - Batch 6, 2026-11-04, on the final tree:
   - `npx vitest run` of the affected files (`homebrewPage`, `homebrewEditor`, `homebrewImport`, `homebrewTabs`,
