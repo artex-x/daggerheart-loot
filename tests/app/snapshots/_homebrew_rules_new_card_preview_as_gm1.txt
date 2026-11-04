@@ -20,21 +20,26 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
   main ""
     heading "Мои предметы" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
-    StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
-    button "Импорт из файла" [expanded=false]
     navigation "Мои предметы"
-      link "Предметы" [url=/homebrew]
-      link "Источники" [url=/homebrew/sources]
-      link "Комплекты" [url=/homebrew/sets]
-      link "Карты правил" [url=/homebrew/rules]
+      link "Предметы 4" [url=/homebrew]
+        StaticText "Предметы"
+        StaticText "4"
+      link "Источники 1" [url=/homebrew/sources]
+        StaticText "Источники"
+        StaticText "1"
+      link "Комплекты 1" [url=/homebrew/sets]
+        StaticText "Комплекты"
+        StaticText "1"
+      link "Карты правил 1" [url=/homebrew/rules]
+        StaticText "Карты правил"
+        StaticText "1"
+    StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
     button "RU" [pressed=true]
     button "EN - пусто" [pressed=false]
     StaticText "Название карты"
-    ... StaticText x8 of 12 same-shape siblings elided
-    textbox "Название карты*" [value=Почта из пергамента multiline=false readonly=false required=true]
-    textbox "Подзаголовок" [description=Необязательно. Например: Мудрость · Уровень 1 · Заклинание. multiline=false readonly=false required=false]
-    button "Подсказка: Текст карты" [expanded=false]
+    textbox "Название карты" [value=Почта из пергамента multiline=false readonly=false required=true]
+    ... StaticText x9 of 13 same-shape siblings elided
+    textbox "Подзаголовок" [description=Например: Мудрость · Уровень 1 · Заклинание. multiline=false readonly=false required=false]
     toolbar "Оформление: Текст карты" [orientation=horizontal]
       button "Жирный" [keyshortcuts=Control+B Meta+B disabled=true]
       button "Курсив" [keyshortcuts=Control+I Meta+I disabled=true]
@@ -48,14 +53,14 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
       ... StaticText x4 of 8 same-shape siblings elided
       StaticText "ответить"
       StaticText " на обороте."
-    textbox "Ссылка" [description=Необязательно: страница с полным текстом правила. multiline=false readonly=false required=false]
-    button "Подсказка: Источник" [expanded=false]
-    combobox "Источник" [value=Хоумбрю expanded=false haspopup=menu]
+    textbox "Ссылка" [description=Страница с полным текстом правила. multiline=false readonly=false required=false]
+    combobox "Источник" [value=Хоумбрю description=Без источника карта лежит в «Хоумбрю». expanded=false haspopup=menu]
       option "Хоумбрю" [selected=true]
       option "Мастерская Ольхи" [selected=false]
     button "Создать карту"
     button "Отмена"
     StaticText "1 карта правил · 2 карты из 100"
+    button "Импорт из файла" [expanded=false]
     button "Клеймо Ольхи" [expanded=false]
     StaticText "0 предметов"
     button "Изменить"
@@ -68,7 +73,6 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-?Справка
 EN
 EN - пусто
 RU
@@ -78,21 +82,19 @@ daggerheart.com
 Жирный
 Изменить
 Импорт из файла
-Источники
+Источники 1
 К содержимому
-Карты правил
+Карты правил 1
 Клеймо Ольхи
-Комплекты
+Комплекты 1
 Конфиденциальность
 Курсив
 ЛутDaggerheart
 Нумерованный список
 Открывать при запуске
 Отмена
-Подсказка: Источник
-Подсказка: Текст карты
 Поиск
-Предметы
+Предметы 4
 Просмотр
 Создать карту
 Список
@@ -120,21 +122,26 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew/rules?as=g
   main ""
     heading "My items" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
-    StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
-    button "Import from file" [expanded=false]
     navigation "My items"
-      link "Items" [url=/en/homebrew]
-      link "Sources" [url=/en/homebrew/sources]
-      link "Sets" [url=/en/homebrew/sets]
-      link "Rule cards" [url=/en/homebrew/rules]
+      link "Items 4" [url=/en/homebrew]
+        StaticText "Items"
+        StaticText "4"
+      link "Sources 1" [url=/en/homebrew/sources]
+        StaticText "Sources"
+        StaticText "1"
+      link "Sets 1" [url=/en/homebrew/sets]
+        StaticText "Sets"
+        StaticText "1"
+      link "Rule cards 1" [url=/en/homebrew/rules]
+        StaticText "Rule cards"
+        StaticText "1"
+    StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
     button "RU" [pressed=true]
     button "EN - empty" [pressed=false]
     StaticText "Card name"
-    ... StaticText x8 of 12 same-shape siblings elided
-    textbox "Card name*" [value=Почта из пергамента multiline=false readonly=false required=true]
-    textbox "Subtitle" [description=Optional. For example: Sage · Level 1 · Spell. multiline=false readonly=false required=false]
-    button "Help: Card text" [expanded=false]
+    textbox "Card name" [value=Почта из пергамента multiline=false readonly=false required=true]
+    ... StaticText x9 of 13 same-shape siblings elided
+    textbox "Subtitle" [description=For example: Sage · Level 1 · Spell. multiline=false readonly=false required=false]
     toolbar "Formatting: Card text" [orientation=horizontal]
       button "Bold" [keyshortcuts=Control+B Meta+B disabled=true]
       button "Italic" [keyshortcuts=Control+I Meta+I disabled=true]
@@ -148,14 +155,14 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew/rules?as=g
       ... StaticText x4 of 8 same-shape siblings elided
       StaticText "ответить"
       StaticText " на обороте."
-    textbox "Link" [description=Optional: a page with the full text of the rule. multiline=false readonly=false required=false]
-    button "Help: Source" [expanded=false]
-    combobox "Source" [value=Homebrew expanded=false haspopup=menu]
+    textbox "Link" [description=A page with the full text of the rule. multiline=false readonly=false required=false]
+    combobox "Source" [value=Homebrew description=With no source the card goes to Homebrew. expanded=false haspopup=menu]
       option "Homebrew" [selected=true]
       option "Alder Workshop" [selected=false]
     button "Create card"
     button "Cancel"
     StaticText "1 rule card · 2 cards of 100"
+    button "Import from file" [expanded=false]
     button "Alder Brand" [expanded=false]
     StaticText "0 items"
     button "Edit"
@@ -168,7 +175,6 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew/rules?as=g
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-?Help
 Account: gm1@example.test
 Alder Brand
 Bold
@@ -179,13 +185,11 @@ Delete
 EN
 EN - empty
 Edit
-Help: Card text
-Help: Source
 HomebrewAlder Workshop
 Import from file
 Install as an app
 Italic
-Items
+Items 4
 LootDaggerheart
 Numbered list
 Open on start
@@ -193,11 +197,11 @@ Preview
 Privacy
 RU
 Roll
-Rule cards
+Rule cards 1
 Search
-Sets
+Sets 1
 Skip to content
-Sources
+Sources 1
 Table
 Tables
 Terms of use

@@ -26,23 +26,22 @@ RootWebArea "Wondrous Environments - Генератор лута Daggerheart" [u
     button "Об этой таблице" [expanded=false]
     StaticText "Введите результат броска или получите случайную позицию."
     button "Бросить 1-119"
-    StaticText "РЕЗУЛЬТАТ БРОСКА (1–119)"
+    StaticText "РЕЗУЛЬТАТ БРОСКА (1-119)"
     button "На единицу меньше"
     textbox "Результат броска" [value=3 multiline=false readonly=false required=false]
     button "На единицу больше"
     heading "Бросок 3" [level=2]
     status ""
-      button "Страница"
-      StaticText "3"
-      StaticText "ПРЕДМЕТ"
-      StaticText "WONDROUS ENVIRONMENTS"
-      link "Эфироцвет" [description=Страница url=/i/w3]
-      StaticText "Этот цветок чувствителен к магии и указывает в направлении сильн..." [namelen=171 namehash=72f58938]
-      StaticText "УЛУЧШАЕТСЯ ДО"
-      link "Чай Эфироцвета" [url=/i/w2]
-      button "В список" [expanded=false]
-      button "Поделиться"
-      button "Ещё" [expanded=false haspopup=menu]
+      StaticText "Эфироцвет"
+    button "Страница"
+    ... StaticText x3 of 7 same-shape siblings elided
+    link "Эфироцвет" [description=Страница url=/i/w3]
+    StaticText "Этот цветок чувствителен к магии и указывает в направлении сильн..." [namelen=171 namehash=72f58938]
+    StaticText "УЛУЧШАЕТСЯ ДО"
+    link "Чай Эфироцвета" [url=/i/w2]
+    button "В список" [expanded=false]
+    button "Поделиться"
+    button "Ещё" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -103,23 +102,22 @@ RootWebArea "Wondrous Environments - Daggerheart Loot Generator" [url=/en/roll/w
     button "About this table" [expanded=false]
     StaticText "Enter your roll result, or pick a random entry."
     button "Roll 1-119"
-    StaticText "ROLL RESULT (1–119)"
+    StaticText "ROLL RESULT (1-119)"
     button "One lower"
     textbox "Roll result" [value=3 multiline=false readonly=false required=false]
     button "One higher"
     heading "Roll 3" [level=2]
     status ""
-      button "Page"
-      StaticText "3"
-      StaticText "ITEM"
-      StaticText "WONDROUS ENVIRONMENTS"
-      link "Aetherflower" [description=Page url=/i/en/w3]
-      StaticText "This flower is sensitive to magic, and will point in the directi..." [namelen=186 namehash=f75955ca]
-      StaticText "UPGRADES TO"
-      link "Aetherflower Tea" [url=/i/en/w2]
-      button "Add to list" [expanded=false]
-      button "Share"
-      button "More" [expanded=false haspopup=menu]
+      StaticText "Aetherflower"
+    button "Page"
+    ... StaticText x3 of 7 same-shape siblings elided
+    link "Aetherflower" [description=Page url=/i/en/w3]
+    StaticText "This flower is sensitive to magic, and will point in the directi..." [namelen=186 namehash=f75955ca]
+    StaticText "UPGRADES TO"
+    link "Aetherflower Tea" [url=/i/en/w2]
+    button "Add to list" [expanded=false]
+    button "Share"
+    button "More" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]

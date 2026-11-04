@@ -7,10 +7,12 @@
 
 import { describe, expect, it } from 'vitest';
 import { buildIndex } from './data.js';
+import { dict } from './dict.js';
 import { recordOf, type BookRef } from './homebrew.js';
 import {
   FOLD_OWN,
   badgeKind,
+  cardBadges,
   foldOwn,
   kindGlyph,
   printSrc,
@@ -422,6 +424,22 @@ describe('a relation of a catalog record to homebrew records', () => {
     expect(foldOwn(list, FOLD_OWN, undefined, setFolds('saints-ensemble')).more).toBe(0);
     expect(foldOwn(list, FOLD_OWN, undefined, setFolds(undefined)).more).toBe(0);
     expect(relText(list, 'ru', 1, undefined, () => true)).toBe(`${cat('q1').ru} и ещё 4`);
+  });
+});
+
+describe('cardBadges on a draft with no tier', () => {
+  it('draws the type badge and no «Уникальное» from `eqType`', () => {
+    const it0 = {
+      id: 'x',
+      src: 'hb',
+      kind: 'equip',
+      en: '',
+      ende: '',
+      ru: '',
+      rud: ''
+    } as const;
+    const badges = cardBadges({ ...it0, eqType: 'armor' }, 'ru', dict('ru'));
+    expect(badges.map((b) => b.cls)).toEqual(['eq-armor']);
   });
 });
 

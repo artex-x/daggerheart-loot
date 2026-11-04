@@ -32,44 +32,35 @@ RootWebArea "Альтернативные таблицы - Генератор л
     button "Очень редкая" [pressed=false]
     button "Легендарная" [pressed=false]
     button "Бросить кости"
-    ... StaticText x2 of 6 same-shape siblings elided
+    ... StaticText x28 of 32 same-shape siblings elided
     button "Кость Надежды: На единицу меньше"
     textbox "Кость Надежды: Результат броска" [value=2 multiline=false readonly=false required=false]
-    ... button x2 of 6 same-shape siblings elided
-    StaticText "Кость Страха"
+    ... button x11 of 15 same-shape siblings elided
     textbox "Кость Страха: Результат броска" [value=2 multiline=false readonly=false required=false]
-    button "Кость Страха: На единицу больше"
-    StaticText "ТИП"
     button "Предметы" [pressed=true]
     button "Расходники" [pressed=true]
     heading "Бросок 2 и 2" [level=2]
-    button "Скопировать все варианты"
     status ""
-      StaticText "Критический успех!"
-      StaticText "Игрок берёт любую позицию из таблицы этой редкости. Мастер может..." [namelen=101 namehash=dce9aa7a]
-      link "Таблица предметов" [url=/tables/alt_item/common]
-      link "Таблица расходников" [url=/tables/alt_consumable/common]
-      button "Поднять до Необычной"
-      button "Страница"
-      ... StaticText x22 of 26 same-shape siblings elided
-      link "Первоклассный Спальный Мешок" [description=Страница url=/i/ci1]
-      button "В список" [expanded=false]
-      ... button x5 of 9 same-shape siblings elided
-      button "Ещё" [expanded=false haspopup=menu]
-      link "Металлические Шарики" [description=Страница url=/i/hi3]
-      button "В список" [expanded=false]
-      button "Ещё" [expanded=false haspopup=menu]
-      link "Зелье Усиления" [description=Страница url=/i/cc2]
-      link "Большое Зелье Усиления" [url=/i/cc26]
-      button "В список" [expanded=false]
-      button "Ещё" [expanded=false haspopup=menu]
-      button "Страница"
-      StaticText "HOPE & FEAR"
-      link "Семя Вергласа" [description=Страница url=/i/hc3]
-      StaticText "Этим осколком льда можно мгновенно заморозить участок воды в пре..." [namelen=88 namehash=0c7b50a5]
-      button "В список" [expanded=false]
-      button "Поделиться"
-      button "Ещё" [expanded=false haspopup=menu]
+      StaticText "Первоклассный Спальный Мешок, Металлические Шарики, Зелье Усилен..." [namelen=81 namehash=ddc7a5d9]
+    link "Таблица предметов" [url=/tables/alt_item/common]
+    link "Таблица расходников" [url=/tables/alt_consumable/common]
+    link "Первоклассный Спальный Мешок" [description=Страница url=/i/ci1]
+    button "В список" [expanded=false]
+    button "Ещё" [expanded=false haspopup=menu]
+    link "Металлические Шарики" [description=Страница url=/i/hi3]
+    button "В список" [expanded=false]
+    button "Ещё" [expanded=false haspopup=menu]
+    link "Зелье Усиления" [description=Страница url=/i/cc2]
+    link "Большое Зелье Усиления" [url=/i/cc26]
+    button "В список" [expanded=false]
+    button "Ещё" [expanded=false haspopup=menu]
+    button "Страница"
+    StaticText "HOPE & FEAR"
+    link "Семя Вергласа" [description=Страница url=/i/hc3]
+    StaticText "Этим осколком льда можно мгновенно заморозить участок воды в пре..." [namelen=88 namehash=0c7b50a5]
+    button "В список" [expanded=false]
+    button "Поделиться"
+    button "Ещё" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -153,44 +144,35 @@ RootWebArea "Alternate tables - Daggerheart Loot Generator" [url=/en/roll/alt]
     button "Very rare" [pressed=false]
     button "Legendary" [pressed=false]
     button "Roll the dice"
-    ... StaticText x2 of 6 same-shape siblings elided
+    ... StaticText x28 of 32 same-shape siblings elided
     button "Hope Die: One lower"
     textbox "Hope Die: Roll result" [value=2 multiline=false readonly=false required=false]
-    ... button x2 of 6 same-shape siblings elided
-    StaticText "Fear Die"
+    ... button x11 of 15 same-shape siblings elided
     textbox "Fear Die: Roll result" [value=2 multiline=false readonly=false required=false]
-    button "Fear Die: One higher"
-    StaticText "TYPE"
     button "Items" [pressed=true]
     button "Consumables" [pressed=true]
     heading "Roll 2 and 2" [level=2]
-    button "Copy every option"
     status ""
-      StaticText "Critical success!"
-      StaticText "The player takes any entry from this rarity table. The GM may al..." [namelen=90 namehash=b03eb0f9]
-      link "Items table" [url=/en/tables/alt_item/common]
-      link "Consumables table" [url=/en/tables/alt_consumable/common]
-      button "Bump to Uncommon"
-      button "Page"
-      ... StaticText x22 of 26 same-shape siblings elided
-      link "Premium Bedroll" [description=Page url=/i/en/ci1]
-      button "Add to list" [expanded=false]
-      ... button x5 of 9 same-shape siblings elided
-      button "More" [expanded=false haspopup=menu]
-      link "Ball Bearings" [description=Page url=/i/en/hi3]
-      button "Add to list" [expanded=false]
-      button "More" [expanded=false haspopup=menu]
-      link "Bolster Potion" [description=Page url=/i/en/cc2]
-      link "Major Bolster Potion" [url=/i/en/cc26]
-      button "Add to list" [expanded=false]
-      button "More" [expanded=false haspopup=menu]
-      button "Page"
-      StaticText "HOPE & FEAR"
-      link "Verglasian Seed" [description=Page url=/i/en/hc3]
-      StaticText "You can use this ice shard to instantly freeze an area of water ..." [namelen=82 namehash=7b271c85]
-      button "Add to list" [expanded=false]
-      button "Share"
-      button "More" [expanded=false haspopup=menu]
+      StaticText "Premium Bedroll, Ball Bearings, Bolster Potion, Verglasian Seed"
+    link "Items table" [url=/en/tables/alt_item/common]
+    link "Consumables table" [url=/en/tables/alt_consumable/common]
+    link "Premium Bedroll" [description=Page url=/i/en/ci1]
+    button "Add to list" [expanded=false]
+    button "More" [expanded=false haspopup=menu]
+    link "Ball Bearings" [description=Page url=/i/en/hi3]
+    button "Add to list" [expanded=false]
+    button "More" [expanded=false haspopup=menu]
+    link "Bolster Potion" [description=Page url=/i/en/cc2]
+    link "Major Bolster Potion" [url=/i/en/cc26]
+    button "Add to list" [expanded=false]
+    button "More" [expanded=false haspopup=menu]
+    button "Page"
+    StaticText "HOPE & FEAR"
+    link "Verglasian Seed" [description=Page url=/i/en/hc3]
+    StaticText "You can use this ice shard to instantly freeze an area of water ..." [namelen=82 namehash=7b271c85]
+    button "Add to list" [expanded=false]
+    button "Share"
+    button "More" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]

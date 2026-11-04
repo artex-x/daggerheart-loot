@@ -104,6 +104,7 @@
   sub={t.subStd}
   {help}
   rolled={String(n)}
+  said={pool}
   {lit}
   copy={choice ? () => void copyRoll(choice) : undefined}
 >
@@ -112,7 +113,7 @@
   {/snippet}
 
   {#snippet settings()}
-    <Field label="{t.rollResult} (1–{CORE_MAX})">
+    <Field label="{t.rollResult} (1-{CORE_MAX})">
       <NumberField
         value={n}
         min={1}
@@ -160,7 +161,7 @@
 
   {#snippet results(openRecord)}
     {#if index && pool.length}
-      <div class="results" data-primary role="status" aria-live="polite">
+      <div class="results" data-primary>
         <OrGrid or={t.or} items={pool} card={cardOf} />
       </div>
     {/if}

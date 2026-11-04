@@ -1,6 +1,7 @@
 <script lang="ts">
   /* `#/homebrew/new` and `#/homebrew/<key>`: the editor of one own item (m04, m05,
-     m18-m20 and m13's last line in the homebrew mocks), the form beside a live preview.
+     m18-m20 and m13's last line in the homebrew mocks), the form in three groups beside a
+     live preview; up to 760 px the buttons are a sticky bar and the preview is a sheet.
 
      The form checks on «Сохранить» only, with the database's own rules; a failed save
      keeps the form, the draft and the guard. «Язык текста» shows the name and the
@@ -18,10 +19,11 @@
   import ArtField from './ArtField.svelte';
   import Button from './Button.svelte';
   import FormField from './FormField.svelte';
-  import HelpButton from './HelpButton.svelte';
   import HomebrewRelations from './HomebrewRelations.svelte';
+  import Icon from './Icon.svelte';
   import LoadState from './LoadState.svelte';
   import MarkupField from './MarkupField.svelte';
+  import MoreMenu from './MoreMenu.svelte';
   import NameField from './NameField.svelte';
   import NoticeBox from './NoticeBox.svelte';
   import PageTitle from './PageTitle.svelte';
@@ -30,6 +32,7 @@
   import PrintSwitches from './PrintSwitches.svelte';
   import RecordCard from './RecordCard.svelte';
   import Seg from './Seg.svelte';
+  import Sheet from './Sheet.svelte';
   import SignInPrompt from './SignInPrompt.svelte';
   import StatusRegion from './StatusRegion.svelte';
   import TextInput from './TextInput.svelte';
@@ -69,15 +72,7 @@
     type FieldId,
     type ItemDraft
   } from '../lib/homebrewForm.js';
-  import {
-    EQ_BURDEN,
-    EQ_CLS,
-    EQ_DT,
-    EQ_RANGE,
-    EQ_TRAIT,
-    EQ_TYPE,
-    nameOf
-  } from '../lib/i18n.js';
+  import { EQ_BURDEN, EQ_CLS, EQ_RANGE, EQ_TRAIT, EQ_TYPE, nameOf } from '../lib/i18n.js';
   import { kindGlyph, whereFrom } from '../lib/label.js';
   import type { MarkupTool } from '../lib/markupEdit.js';
   import { plural } from '../lib/plural.js';
@@ -145,6 +140,11 @@
      It starts on the screen card at each mount. */
   let view = $state<'screen' | 'print'>('screen');
   let clipped = $state(false);
+  /* The preview sheet up to 760 px, its opener and the bar whose height the page's scroll
+     padding follows (WCAG 2.4.11). */
+  let previewing = $state(false);
+  let previewButton = $state<HTMLButtonElement | undefined>(undefined);
+  let ebar = $state<HTMLDivElement | undefined>(undefined);
   let summary = $state<HTMLDivElement | undefined>(undefined);
   let formEl = $state<HTMLFormElement | undefined>(undefined);
 
@@ -371,7 +371,6 @@
   }
 
   let altOpen = $state(false);
-  let altHelp = $state(false);
   let altSummary = $state<HTMLButtonElement | undefined>(undefined);
   /* The second set is written when any of its four fields holds a value. */
   const altFilled = $derived(
@@ -767,7 +766,11 @@
   const CLASSES = $derived(pair(EQ_CLS) as { value: ItemDraft['cls']; label: string }[]);
   const TRAITS = $derived(pair(EQ_TRAIT) as { value: ItemDraft['tr']; label: string }[]);
   const RANGES = $derived(pair(EQ_RANGE) as { value: ItemDraft['rg']; label: string }[]);
-  const DAMAGE = $derived(pair(EQ_DT) as { value: ItemDraft['dt']; label: string }[]);
+  const DAMAGE = $derived<{ value: ItemDraft['dt']; label: string }[]>([
+    { value: 'phy', label: t.hbDtPhy },
+    { value: 'mag', label: t.hbDtMag },
+    { value: 'any', label: t.hbDtAny }
+  ]);
   const BURDEN = $derived(pair(EQ_BURDEN) as { value: ItemDraft['bu']; label: string }[]);
   const descKey = $derived(editIn === 'ru' ? 'rud' : 'ende');
   const descLength = $derived(Array.from(draft[descKey]).length);
@@ -777,6 +780,35 @@
     { value: 'screen' as const, label: t.hbPreviewScreen },
     { value: 'print' as const, label: t.hbPreviewPrint }
   ]);
+  const narrow = $derived(app.band === 'narrow');
+  const stored = $derived(rowKey !== null && !!row);
+
+  /* A band change takes the sheet away with no `close` event. */
+  $effect.pre(() => {
+    if (!narrow) untrack(closePreview);
+  });
+
+  /* The print card is the only one that reports a cut, and the sheet takes it away. */
+  function closePreview(): void {
+    if (!previewing) return;
+    previewing = false;
+    clipped = false;
+    previewButton?.focus();
+  }
+
+  $effect(() => {
+    const el = ebar;
+    if (!el || !narrow || typeof ResizeObserver !== 'function') return;
+    const root = document.documentElement;
+    const watch = new ResizeObserver(() => {
+      root.style.setProperty('--ebar-h', `${String(el.offsetHeight)}px`);
+    });
+    watch.observe(el);
+    return () => {
+      watch.disconnect();
+      root.style.removeProperty('--ebar-h');
+    };
+  });
 </script>
 
 <!-- eslint-disable @typescript-eslint/no-confusing-void-expression -- a `{@render}` tag
@@ -787,10 +819,9 @@
   options: readonly { value: T; label: string }[],
   value: T,
   onchange: (v: T) => void,
-  required: boolean,
   none: T | undefined
 )}
-  <FormField {label} {required} error={errText(field)} errorId={errId(field)}>
+  <FormField {label} error={errText(field)} errorId={errId(field)}>
     <Seg
       id={field}
       label={LABELS[field]}
@@ -799,6 +830,7 @@
       describedby={errId(field)}
       {none}
       {onchange}
+      neutral
     />
   </FormField>
 {/snippet}
@@ -859,6 +891,55 @@
   {/if}
 {/snippet}
 
+<!-- The preview's body: the card draws in one place per band, the column or the sheet. -->
+{#snippet previewBody()}
+  {#if app.index}
+    <!-- The switches speak the interface language, whatever the card's. -->
+    <div class="pviews" lang={app.lang}>
+      <Seg
+        small
+        neutral
+        options={VIEWS}
+        value={view}
+        label={t.hbPreviewShow}
+        onchange={(v: 'screen' | 'print') => {
+          view = v;
+          if (v === 'screen') clipped = false;
+        }}
+      />
+      {#if view === 'print'}<PrintSwitches {app} />{/if}
+    </div>
+    {#if view === 'print'}
+      <PrintPreview
+        it={card}
+        index={previewIndex ?? app.index}
+        lang={editIn}
+        bw={app.shownPrintBW}
+        compact={app.shownPrintCompact}
+        artBroken={previewBroken}
+        onartfail={() => {
+          previewBroken = true;
+        }}
+        onclipped={(c: boolean) => {
+          clipped = c;
+        }}
+      />
+    {:else}
+      <RecordCard
+        it={card}
+        index={previewIndex ?? app.index}
+        lang={editIn}
+        linkLang={app.lang}
+        artBroken={previewBroken}
+        onartfail={() => {
+          previewBroken = true;
+        }}
+        pick={rowKey !== null && row ? addPick : undefined}
+      />
+    {/if}
+  {/if}
+{/snippet}
+
 <svelte:window {onkeydown} />
 
 {#if app.user === null}
@@ -876,7 +957,11 @@
   <PageTitle title={t.notFound} sub={t.notFoundSub} />
   <Button variant="primary" href={app.href(HOMEBREW_HASH)} sameTab>{t.hbToMyItems}</Button>
 {:else}
-  <PageTitle {title} {sub} />
+  <div class="crumb">
+    <a class="back" href={app.href(HOMEBREW_HASH)}><Icon name="back" />{t.myItems}</a>
+    <h1 class="ttl" {title}>{title}</h1>
+  </div>
+  <p class="esub">{sub}</p>
   <div class="hbedit">
     <Panel>
       <form
@@ -925,12 +1010,14 @@
             {#snippet actions()}
               <Button
                 size="sm"
-                variant="primary"
+                variant="danger"
                 onclick={() => {
                   void saveMine();
                 }}>{t.hbSaveMine}</Button
               >
-              <Button size="sm" onclick={() => void showNew()}>{t.hbShowNew}</Button>
+              <Button size="sm" variant="primary" onclick={() => void showNew()}
+                >{t.hbShowNew}</Button
+              >
             {/snippet}
           </NoticeBox>
         {:else if banner === 'gone'}
@@ -947,406 +1034,389 @@
             {/snippet}
           </NoticeBox>
         {/if}
-        <p class="legend">{t.hbLegend}</p>
-
-        {@render choice(
-          'hb-kind',
-          t.hbKind,
-          KINDS,
-          draft.kind,
-          (v) => {
-            set('kind', v, 'hb-kind');
-          },
-          false,
-          undefined
-        )}
-        {#if draft.kind === 'equip'}
+        <section class="grp" aria-labelledby="g-item">
+          <h2 id="g-item">{t.hbGroupItem}</h2>
           {@render choice(
-            'hb-type',
-            t.hbType,
-            TYPES,
-            draft.t,
+            'hb-kind',
+            t.hbKind,
+            KINDS,
+            draft.kind,
             (v) => {
-              set('t', v, 'hb-type');
+              set('kind', v, 'hb-kind');
             },
-            false,
             undefined
           )}
+          {#if draft.kind === 'equip'}
+            {@render choice(
+              'hb-type',
+              t.hbType,
+              TYPES,
+              draft.t,
+              (v) => {
+                set('t', v, 'hb-type');
+              },
+              undefined
+            )}
+          {/if}
+
+          <FormField label={t.hbTextLang}>
+            <Seg
+              label={t.hbTextLang}
+              options={langOptions('item', draft, t)}
+              value={editIn}
+              onchange={(v: Lang) => {
+                editIn = v;
+              }}
+              neutral
+            />
+          </FormField>
+          <FormField
+            label={t.hbName}
+            for="hb-name"
+            error={errText('hb-name')}
+            errorId={errId('hb-name')}
+          >
+            <TextInput
+              id="hb-name"
+              bind:value={draft[editIn]}
+              lang={editIn}
+              maxlength={NAME_MAX}
+              required
+              invalid={!!problemOf('hb-name')}
+              describedby={errId('hb-name')}
+              autocomplete="off"
+              oninput={() => {
+                clear('hb-name');
+              }}
+            />
+          </FormField>
+          <FormField
+            label={t.hbDesc}
+            for="hb-desc"
+            optional={t.hbOptional}
+            error={errText('hb-desc')}
+            errorId={errId('hb-desc')}
+          >
+            <MarkupField
+              id="hb-desc"
+              rows={5}
+              bind:value={draft[descKey]}
+              maxlength={DESC_MAX}
+              invalid={!!problemOf('hb-desc')}
+              describedby={errId('hb-desc')}
+              oninput={() => {
+                clear('hb-desc');
+              }}
+              label={t.hbDesc}
+              tools={DESC_TOOLS}
+              {t}
+              textLang={editIn}
+            />
+            {#if descLength > counterFrom(DESC_MAX)}
+              <span class="counter">{descLength} / {DESC_MAX}</span>
+            {/if}
+            {#if view === 'print' && clipped}
+              <NoticeBox>{t.hbPrintClipped}</NoticeBox>
+            {/if}
+          </FormField>
+          <ArtField
+            {app}
+            {store}
+            {selfKey}
+            saved={loadedArt}
+            bind:value={art}
+            line={artLine?.(t, lang) ?? null}
+            glyph={kindGlyph(preview.kind, preview.eq?.t ?? preview.eqType)}
+          />
+
+          {#if draft.kind !== 'equip'}
+            <FormField
+              label={t.tier}
+              optional={t.hbOptional}
+              error={errText('hb-tier')}
+              errorId={errId('hb-tier')}
+            >
+              <Seg
+                id="hb-tier"
+                label={t.tier}
+                options={TIERS}
+                value={draft.tier}
+                describedby={errId('hb-tier')}
+                neutral
+                onchange={(v: ItemDraft['tier']) => {
+                  set('tier', v, 'hb-tier');
+                }}
+              />
+            </FormField>
+          {/if}
+        </section>
+
+        {#if draft.kind === 'equip'}
+          <section class="grp pairs" aria-labelledby="g-stats">
+            <h2 id="g-stats">{t.hbGroupStats}</h2>
+            <FormField label={t.tier} error={errText('hb-eqtier')} errorId={errId('hb-eqtier')}>
+              <Seg
+                id="hb-eqtier"
+                label={t.tier}
+                options={EQ_TIERS}
+                value={draft.eqTier}
+                describedby={errId('hb-eqtier')}
+                neutral
+                onchange={(v: ItemDraft['eqTier']) => {
+                  set('eqTier', v, 'hb-eqtier');
+                }}
+              />
+            </FormField>
+            {#if weapon}
+              {@render choice(
+                'hb-cls',
+                t.hbCls,
+                CLASSES,
+                draft.cls,
+                (v) => {
+                  set('cls', v, 'hb-cls');
+                },
+                undefined
+              )}
+              <div class="full">
+                {@render choice(
+                  'hb-tr',
+                  t.hbTrait,
+                  TRAITS,
+                  draft.tr,
+                  (v) => {
+                    set('tr', v, 'hb-tr');
+                  },
+                  undefined
+                )}
+              </div>
+              <div class="full">
+                {@render choice(
+                  'hb-rg',
+                  t.hbRange,
+                  RANGES,
+                  draft.rg,
+                  (v) => {
+                    set('rg', v, 'hb-rg');
+                  },
+                  undefined
+                )}
+              </div>
+              <FormField label={t.hbDmg} error={errText('hb-dmg')} errorId={errId('hb-dmg')}>
+                {@render damage('hb-dmg', 'dmgDie', 'dmgBonus', true)}
+              </FormField>
+              {@render choice(
+                'hb-dt',
+                t.hbDt,
+                DAMAGE,
+                draft.dt,
+                (v) => {
+                  set('dt', v, 'hb-dt');
+                },
+                undefined
+              )}
+              {@render choice(
+                'hb-bu',
+                t.hbBurden,
+                BURDEN,
+                draft.bu,
+                (v) => {
+                  set('bu', v, 'hb-bu');
+                },
+                undefined
+              )}
+              <div class="alt full">
+                <div class="althead">
+                  <Button
+                    variant="bare"
+                    size="sm"
+                    caret
+                    expanded={altOpen}
+                    controls="hb-alt-body"
+                    bind:el={altSummary}
+                    onclick={() => {
+                      altOpen = !altOpen;
+                    }}>{t.hbAlt}</Button
+                  >
+                </div>
+                <div class="altbody" id="hb-alt-body" hidden={!altOpen}>
+                  {@render choice(
+                    'hb-alt-tr',
+                    t.hbTrait,
+                    TRAITS,
+                    draft.altTr,
+                    (v) => {
+                      set('altTr', v, 'hb-alt-tr');
+                    },
+                    ''
+                  )}
+                  {@render choice(
+                    'hb-alt-rg',
+                    t.hbRange,
+                    RANGES,
+                    draft.altRg,
+                    (v) => {
+                      set('altRg', v, 'hb-alt-rg');
+                    },
+                    ''
+                  )}
+                  <FormField
+                    label={t.hbDmg}
+                    error={errText('hb-alt-dmg')}
+                    errorId={errId('hb-alt-dmg')}
+                  >
+                    {@render damage('hb-alt-dmg', 'altDmgDie', 'altDmgBonus', false)}
+                  </FormField>
+                  {@render choice(
+                    'hb-alt-dt',
+                    t.hbDt,
+                    DAMAGE,
+                    draft.altDt,
+                    (v) => {
+                      set('altDt', v, 'hb-alt-dt');
+                    },
+                    ''
+                  )}
+                  {#if altFilled}
+                    <Button size="sm" onclick={() => void clearAlt()}>{t.hbAltClear}</Button>
+                  {/if}
+                </div>
+              </div>
+            {:else}
+              <FormField
+                label={t.hbAs}
+                for="hb-as"
+                error={errText('hb-as')}
+                errorId={errId('hb-as')}
+              >
+                <TextInput
+                  id="hb-as"
+                  bind:value={draft.as}
+                  inputmode="numeric"
+                  required
+                  invalid={!!problemOf('hb-as')}
+                  describedby={errId('hb-as')}
+                  autocomplete="off"
+                  oninput={() => {
+                    clear('hb-as');
+                  }}
+                />
+              </FormField>
+              <FormField label={t.hbTh} error={errText('hb-th')} errorId={errId('hb-th')}>
+                <div class="pair" role="group" aria-label={t.hbTh}>
+                  <div class="col">
+                    <label class="sub" for="hb-th0">{t.hbThMajor}</label>
+                    <TextInput
+                      id="hb-th0"
+                      bind:value={draft.th0}
+                      inputmode="numeric"
+                      required
+                      invalid={!!problemOf('hb-th')}
+                      describedby={errId('hb-th')}
+                      autocomplete="off"
+                      oninput={() => {
+                        clear('hb-th');
+                      }}
+                    />
+                  </div>
+                  <div class="col">
+                    <label class="sub" for="hb-th1">{t.hbThSevere}</label>
+                    <TextInput
+                      id="hb-th1"
+                      bind:value={draft.th1}
+                      inputmode="numeric"
+                      required
+                      invalid={!!problemOf('hb-th')}
+                      describedby={errId('hb-th')}
+                      autocomplete="off"
+                      oninput={() => {
+                        clear('hb-th');
+                      }}
+                    />
+                  </div>
+                </div>
+              </FormField>
+            {/if}
+          </section>
         {/if}
 
-        <FormField
-          label={adding === 'book' ? undefined : t.hbSource}
-          for="hb-book"
-          error={adding === 'book' ? undefined : errText('hb-book')}
-          errorId={errId('hb-book')}
-          help={{ id: 'hb-book-help', text: t.hbSourceHelp, lang }}
-        >
-          {#if adding === 'book'}
-            <NameField
-              id="hb-book-new"
-              label={t.hbNewSource}
-              submit={t.create}
-              cancel={t.cancel}
-              onsubmit={createSource}
-              oncancel={closeAdd}
-              maxlength={BOOK_NAME_MAX}
-            />
-          {:else}
-            <select
-              id="hb-book"
-              value={draft.bookId ?? ''}
-              aria-invalid={problemOf('hb-book') ? true : undefined}
-              aria-describedby={errId('hb-book')}
-              onchange={(e) => {
-                pickBook(e.currentTarget.value);
-              }}
-            >
-              <option value="">{t.srcHomebrew}</option>
-              {#each books as b (b.id)}
-                <option value={b.id}>{named(b.content)}</option>
-              {/each}
-              {#if draft.bookId !== null && !book}
-                <option value={draft.bookId}>?</option>
-              {/if}
-              <option value="__new">{t.hbSourceNew}</option>
-            </select>
-          {/if}
-        </FormField>
-        {#if book}
+        <section class="grp pairs" aria-labelledby="g-where">
+          <h2 id="g-where">{t.hbGroupWhere}</h2>
           <FormField
-            label={adding === 'section' ? undefined : t.hbSection}
-            for="hb-section"
-            error={adding === 'section' ? undefined : errText('hb-section')}
-            errorId={errId('hb-section')}
+            label={adding === 'book' ? undefined : t.hbSource}
+            for="hb-book"
+            error={adding === 'book' ? undefined : errText('hb-book')}
+            errorId={errId('hb-book')}
           >
-            {#if adding === 'section'}
+            {#if adding === 'book'}
               <NameField
-                id="hb-section-new"
-                label={t.hbNewSection}
+                id="hb-book-new"
+                label={t.hbNewSource}
                 submit={t.create}
                 cancel={t.cancel}
-                onsubmit={createSection}
+                onsubmit={createSource}
                 oncancel={closeAdd}
                 maxlength={BOOK_NAME_MAX}
               />
             {:else}
               <select
-                id="hb-section"
-                value={draft.section ?? ''}
-                aria-describedby={errId('hb-section')}
+                id="hb-book"
+                value={draft.bookId ?? ''}
+                aria-invalid={problemOf('hb-book') ? true : undefined}
+                aria-describedby={errId('hb-book') ?? 'hb-book-cap'}
                 onchange={(e) => {
-                  pickSection(e.currentTarget.value);
+                  pickBook(e.currentTarget.value);
                 }}
               >
-                <option value="">{t.hbNoSection}</option>
-                {#each book.content.sections ?? [] as s (s.key)}
-                  <option value={s.key}>{named(s)}</option>
+                <option value="">{t.srcHomebrew}</option>
+                {#each books as b (b.id)}
+                  <option value={b.id}>{named(b.content)}</option>
                 {/each}
-                <option value="__new">{t.hbSectionNew}</option>
+                {#if draft.bookId !== null && !book}
+                  <option value={draft.bookId}>?</option>
+                {/if}
+                <option value="__new">{t.hbSourceNew}</option>
               </select>
+              <p class="cap" id="hb-book-cap">{t.hbSourceCap}</p>
             {/if}
           </FormField>
-        {/if}
-
-        <FormField label={t.hbTextLang}>
-          <Seg
-            label={t.hbTextLang}
-            options={langOptions('item', draft, t)}
-            value={editIn}
-            onchange={(v: Lang) => {
-              editIn = v;
-            }}
-          />
-        </FormField>
-        <FormField
-          label={t.hbName}
-          for="hb-name"
-          required
-          error={errText('hb-name')}
-          errorId={errId('hb-name')}
-        >
-          <TextInput
-            id="hb-name"
-            bind:value={draft[editIn]}
-            lang={editIn}
-            maxlength={NAME_MAX}
-            required
-            invalid={!!problemOf('hb-name')}
-            describedby={errId('hb-name')}
-            autocomplete="off"
-            oninput={() => {
-              clear('hb-name');
-            }}
-          />
-        </FormField>
-        <FormField
-          label={t.hbDesc}
-          for="hb-desc"
-          error={errText('hb-desc')}
-          errorId={errId('hb-desc')}
-          help={{ id: 'hb-desc-help', text: t.mdHelp.replace('%n', String(DESC_MAX)), lang }}
-        >
-          <MarkupField
-            id="hb-desc"
-            rows={5}
-            bind:value={draft[descKey]}
-            maxlength={DESC_MAX}
-            invalid={!!problemOf('hb-desc')}
-            describedby={errId('hb-desc')}
-            oninput={() => {
-              clear('hb-desc');
-            }}
-            label={t.hbDesc}
-            tools={DESC_TOOLS}
-            {t}
-            textLang={editIn}
-          />
-          {#if descLength > counterFrom(DESC_MAX)}
-            <span class="counter">{descLength} / {DESC_MAX}</span>
-          {/if}
-          {#if view === 'print' && clipped}
-            <NoticeBox>{t.hbPrintClipped}</NoticeBox>
-          {/if}
-        </FormField>
-        <ArtField
-          {app}
-          {store}
-          {selfKey}
-          saved={loadedArt}
-          bind:value={art}
-          line={artLine?.(t, lang) ?? null}
-          glyph={kindGlyph(preview.kind, preview.eq?.t)}
-        />
-
-        {#if draft.kind !== 'equip'}
-          <FormField label={t.tier} error={errText('hb-tier')} errorId={errId('hb-tier')}>
-            <Seg
-              id="hb-tier"
-              label={t.tier}
-              options={TIERS}
-              value={draft.tier}
-              describedby={errId('hb-tier')}
-              onchange={(v: ItemDraft['tier']) => {
-                set('tier', v, 'hb-tier');
-              }}
-            />
-          </FormField>
-        {:else}
-          <FormField
-            label={t.tier}
-            required
-            error={errText('hb-eqtier')}
-            errorId={errId('hb-eqtier')}
-          >
-            <Seg
-              id="hb-eqtier"
-              label={t.tier}
-              options={EQ_TIERS}
-              value={draft.eqTier}
-              describedby={errId('hb-eqtier')}
-              onchange={(v: ItemDraft['eqTier']) => {
-                set('eqTier', v, 'hb-eqtier');
-              }}
-            />
-          </FormField>
-          {#if weapon}
-            {@render choice(
-              'hb-cls',
-              t.hbCls,
-              CLASSES,
-              draft.cls,
-              (v) => {
-                set('cls', v, 'hb-cls');
-              },
-              true,
-              undefined
-            )}
-            {@render choice(
-              'hb-tr',
-              t.hbTrait,
-              TRAITS,
-              draft.tr,
-              (v) => {
-                set('tr', v, 'hb-tr');
-              },
-              true,
-              undefined
-            )}
-            {@render choice(
-              'hb-rg',
-              t.hbRange,
-              RANGES,
-              draft.rg,
-              (v) => {
-                set('rg', v, 'hb-rg');
-              },
-              true,
-              undefined
-            )}
+          {#if book}
             <FormField
-              label={t.hbDmg}
-              required
-              error={errText('hb-dmg')}
-              errorId={errId('hb-dmg')}
+              label={adding === 'section' ? undefined : t.hbSection}
+              for="hb-section"
+              optional={t.hbOptional}
+              error={adding === 'section' ? undefined : errText('hb-section')}
+              errorId={errId('hb-section')}
             >
-              {@render damage('hb-dmg', 'dmgDie', 'dmgBonus', true)}
-            </FormField>
-            {@render choice(
-              'hb-dt',
-              t.hbDt,
-              DAMAGE,
-              draft.dt,
-              (v) => {
-                set('dt', v, 'hb-dt');
-              },
-              true,
-              undefined
-            )}
-            {@render choice(
-              'hb-bu',
-              t.hbBurden,
-              BURDEN,
-              draft.bu,
-              (v) => {
-                set('bu', v, 'hb-bu');
-              },
-              true,
-              undefined
-            )}
-            <!-- A disclosure, not a <details>: its «?» cannot sit inside a <summary>. -->
-            <div class="alt">
-              <div class="althead">
-                <Button
-                  variant="bare"
-                  size="sm"
-                  caret
-                  expanded={altOpen}
-                  controls="hb-alt-body"
-                  bind:el={altSummary}
-                  onclick={() => {
-                    altOpen = !altOpen;
-                  }}>{t.hbAlt}</Button
-                >
-                <HelpButton
-                  {lang}
-                  size="sm"
-                  open={altHelp}
-                  label={t.fieldHelp.replace('%s', t.hbAlt)}
-                  controls="hb-alt-help"
-                  onclick={() => {
-                    altHelp = !altHelp;
-                  }}
+              {#if adding === 'section'}
+                <NameField
+                  id="hb-section-new"
+                  label={t.hbNewSection}
+                  submit={t.create}
+                  cancel={t.cancel}
+                  onsubmit={createSection}
+                  oncancel={closeAdd}
+                  maxlength={BOOK_NAME_MAX}
                 />
-              </div>
-              <p class="hint" id="hb-alt-help" hidden={!altHelp}>{t.hbAltHint}</p>
-              <div class="altbody" id="hb-alt-body" hidden={!altOpen}>
-                {@render choice(
-                  'hb-alt-tr',
-                  t.hbTrait,
-                  TRAITS,
-                  draft.altTr,
-                  (v) => {
-                    set('altTr', v, 'hb-alt-tr');
-                  },
-                  false,
-                  ''
-                )}
-                {@render choice(
-                  'hb-alt-rg',
-                  t.hbRange,
-                  RANGES,
-                  draft.altRg,
-                  (v) => {
-                    set('altRg', v, 'hb-alt-rg');
-                  },
-                  false,
-                  ''
-                )}
-                <FormField
-                  label={t.hbDmg}
-                  error={errText('hb-alt-dmg')}
-                  errorId={errId('hb-alt-dmg')}
+              {:else}
+                <select
+                  id="hb-section"
+                  value={draft.section ?? ''}
+                  aria-describedby={errId('hb-section')}
+                  onchange={(e) => {
+                    pickSection(e.currentTarget.value);
+                  }}
                 >
-                  {@render damage('hb-alt-dmg', 'altDmgDie', 'altDmgBonus', false)}
-                </FormField>
-                {@render choice(
-                  'hb-alt-dt',
-                  t.hbDt,
-                  DAMAGE,
-                  draft.altDt,
-                  (v) => {
-                    set('altDt', v, 'hb-alt-dt');
-                  },
-                  false,
-                  ''
-                )}
-                {#if altFilled}
-                  <Button size="sm" onclick={() => void clearAlt()}>{t.hbAltClear}</Button>
-                {/if}
-              </div>
-            </div>
-          {:else}
-            <FormField
-              label={t.hbAs}
-              for="hb-as"
-              required
-              error={errText('hb-as')}
-              errorId={errId('hb-as')}
-            >
-              <TextInput
-                id="hb-as"
-                bind:value={draft.as}
-                inputmode="numeric"
-                required
-                invalid={!!problemOf('hb-as')}
-                describedby={errId('hb-as')}
-                autocomplete="off"
-                oninput={() => {
-                  clear('hb-as');
-                }}
-              />
-            </FormField>
-            <FormField
-              label={t.hbTh}
-              required
-              error={errText('hb-th')}
-              errorId={errId('hb-th')}
-            >
-              <div class="pair" role="group" aria-label={t.hbTh}>
-                <div class="col">
-                  <label class="sub" for="hb-th0">{t.hbThMajor}</label>
-                  <TextInput
-                    id="hb-th0"
-                    bind:value={draft.th0}
-                    inputmode="numeric"
-                    required
-                    invalid={!!problemOf('hb-th')}
-                    describedby={errId('hb-th')}
-                    autocomplete="off"
-                    oninput={() => {
-                      clear('hb-th');
-                    }}
-                  />
-                </div>
-                <div class="col">
-                  <label class="sub" for="hb-th1">{t.hbThSevere}</label>
-                  <TextInput
-                    id="hb-th1"
-                    bind:value={draft.th1}
-                    inputmode="numeric"
-                    required
-                    invalid={!!problemOf('hb-th')}
-                    describedby={errId('hb-th')}
-                    autocomplete="off"
-                    oninput={() => {
-                      clear('hb-th');
-                    }}
-                  />
-                </div>
-              </div>
+                  <option value="">{t.hbNoSection}</option>
+                  {#each book.content.sections ?? [] as s (s.key)}
+                    <option value={s.key}>{named(s)}</option>
+                  {/each}
+                  <option value="__new">{t.hbSectionNew}</option>
+                </select>
+              {/if}
             </FormField>
           {/if}
-        {/if}
+        </section>
 
         <details class="rel" bind:open={relOpen}>
           <summary
@@ -1358,6 +1428,7 @@
             {store}
             {draft}
             {selfKey}
+            textLang={editIn}
             {errText}
             {errId}
             {set}
@@ -1365,12 +1436,40 @@
           />
         </details>
 
-        <div class="buttons">
-          <Button variant="primary" disabled={busy} onclick={() => void save()}>{t.save}</Button
+        <div class="ebar" bind:this={ebar}>
+          <Button
+            variant="primary"
+            size={narrow ? 'sm' : 'md'}
+            disabled={busy || banner === 'conflict'}
+            onclick={() => void save()}>{t.save}</Button
           >
-          <Button variant="ghost" href={app.href(HOMEBREW_HASH)} sameTab>{t.hbToMyItems}</Button
-          >
-          {#if rowKey !== null && row}
+          {#if narrow}
+            <Button
+              size="sm"
+              bind:el={previewButton}
+              onclick={() => {
+                previewing = true;
+              }}>{t.hbPreview}</Button
+            >
+            {#if stored}
+              <span class="barmore">
+                <MoreMenu {app} id="hb-bar-more" up size="sm">
+                  {#snippet children(close: () => void)}
+                    <button
+                      type="button"
+                      role="menuitem"
+                      class="danger"
+                      tabindex="-1"
+                      onclick={() => {
+                        close();
+                        void remove();
+                      }}>{t.del}</button
+                    >
+                  {/snippet}
+                </MoreMenu>
+              </span>
+            {/if}
+          {:else if stored}
             <Button variant="danger" onclick={() => void remove()}>{t.del}</Button>
           {/if}
         </div>
@@ -1385,56 +1484,75 @@
         {/if}
       </form>
     </Panel>
-    <div class="preview" lang={editIn === app.lang ? undefined : editIn}>
-      {#if app.index}
-        <!-- The switches speak the interface language, whatever the card's. -->
-        <div class="pviews" lang={app.lang}>
-          <Seg
-            small
-            options={VIEWS}
-            value={view}
-            label={t.hbPreviewShow}
-            onchange={(v: 'screen' | 'print') => {
-              view = v;
-              if (v === 'screen') clipped = false;
-            }}
-          />
-          {#if view === 'print'}<PrintSwitches {app} />{/if}
-        </div>
-        {#if view === 'print'}
-          <PrintPreview
-            it={card}
-            index={previewIndex ?? app.index}
-            lang={editIn}
-            bw={app.shownPrintBW}
-            compact={app.shownPrintCompact}
-            artBroken={previewBroken}
-            onartfail={() => {
-              previewBroken = true;
-            }}
-            onclipped={(c: boolean) => {
-              clipped = c;
-            }}
-          />
-        {:else}
-          <RecordCard
-            it={card}
-            index={previewIndex ?? app.index}
-            lang={editIn}
-            linkLang={app.lang}
-            artBroken={previewBroken}
-            onartfail={() => {
-              previewBroken = true;
-            }}
-            pick={rowKey !== null && row ? addPick : undefined}
-          />
-        {/if}
-      {/if}
-    </div>
+    {#if !narrow}
+      <div class="preview" lang={editIn === app.lang ? undefined : editIn}>
+        {@render previewBody()}
+      </div>
+    {/if}
   </div>
+  {#if previewing && narrow}
+    <Sheet {app} label={t.hbPreview} title={t.hbPreview} onclose={closePreview}>
+      <div lang={editIn === app.lang ? undefined : editIn}>{@render previewBody()}</div>
+    </Sheet>
+  {/if}
 {/if}
 
 <style>
+  /* The way back and the item's name on one row (`.page-h`, `.page-sub`). */
+  .crumb {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    min-width: 0;
+    margin-bottom: 4px;
+  }
+
+  .back {
+    display: inline-flex;
+    align-items: center;
+    flex: none;
+    gap: 4px;
+    min-height: 24px;
+    color: var(--muted);
+    font-size: var(--t-small);
+    text-decoration: none;
+  }
+
+  .back:hover {
+    color: var(--txt);
+  }
+
+  .ttl {
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    font-size: var(--t-page);
+    font-weight: var(--h-page-weight);
+    letter-spacing: var(--h-page-spacing);
+    line-height: 1.25;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  @media (min-width: 761px) {
+    .ttl {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+      line-clamp: 3;
+      overflow-wrap: anywhere;
+      white-space: normal;
+    }
+  }
+
+  .esub {
+    margin: 0 0 12px;
+    color: var(--muted);
+    font-size: var(--t-small);
+    max-width: 70ch;
+    overflow-wrap: anywhere;
+  }
+
   .hbedit {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -1465,10 +1583,42 @@
     }
   }
 
+  /* A column, not a grid: a sticky grid item cannot leave its own row, and `.ebar` must. */
   .hbform {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .grp {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 16px;
+  }
+
+  .grp + .grp {
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+  }
+
+  .grp h2 {
+    margin: 0;
+    font-size: var(--t-title);
+    font-weight: 650;
+  }
+
+  /* From 1000 px the short choices pair up. */
+  @media (min-width: 1000px) {
+    .pairs {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px 20px;
+      align-items: start;
+    }
+
+    .pairs h2,
+    .full {
+      grid-column: 1 / -1;
+    }
   }
 
   .pviews {
@@ -1486,7 +1636,7 @@
     border-radius: var(--r-sm);
   }
 
-  .legend,
+  .cap,
   .hint,
   .counter {
     margin: 0;
@@ -1581,7 +1731,7 @@
   }
 
   .althead :global(.btn.bare) {
-    color: var(--gold-soft);
+    color: var(--muted);
   }
 
   .altbody > :global(.btn) {
@@ -1590,13 +1740,14 @@
 
   .rel summary {
     cursor: pointer;
-    font-size: var(--t-small);
-    color: var(--gold-soft);
+    font-size: var(--t-title);
+    font-weight: 650;
     width: fit-content;
   }
 
   .rel summary .n {
     color: var(--muted2);
+    font-size: var(--t-data);
     font-weight: 500;
   }
 
@@ -1604,10 +1755,46 @@
     margin-bottom: 12px;
   }
 
-  .buttons {
+  .ebar {
     display: flex;
     flex-wrap: wrap;
     gap: var(--gap-sm);
+  }
+
+  /* The form's bar up to 760 px, on the ground of `Sheet.svelte`'s foot. A keyboard leaves no
+     room for it on a short window. */
+  @media (max-width: 760px) {
+    .ebar {
+      flex-wrap: nowrap;
+      margin: 0 -18px;
+      padding: 10px 18px calc(10px + env(safe-area-inset-bottom));
+      background: var(--surface);
+      border-top: 1px solid var(--line);
+    }
+
+    .ebar :global(.btn.sm) {
+      height: 44px;
+    }
+
+    .ebar > :global(.btn) {
+      flex: 1 1 auto;
+      justify-content: center;
+    }
+
+    /* The bar's button sits at the window's edge: this box anchors the menu. */
+    .barmore {
+      position: relative;
+      display: flex;
+      flex: none;
+    }
+  }
+
+  @media (max-width: 760px) and (min-height: 481px) {
+    .ebar {
+      position: sticky;
+      bottom: 0;
+      z-index: 3;
+    }
   }
 
   /* A refusal: the error look of docs/specs/FEATURES.md, rule 19 - the danger border and
@@ -1633,7 +1820,9 @@
     padding-left: 18px;
   }
 
+  /* Inline: a wrapped line keeps the list's bullet on its first line. */
   .errlink {
+    display: inline;
     border: 0;
     padding: 0;
     background: none;

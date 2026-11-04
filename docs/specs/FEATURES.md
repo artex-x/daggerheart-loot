@@ -132,9 +132,9 @@ across.
   same string and all four steppers the same two strings, so a screen reader
   could not tell which die was being changed. A deliberate accessibility
   improvement, not a drift.
-- The results container on every roll mode is an announced live region
-  (`role="status" aria-live="polite"`), so a re-roll is read out without
-  moving focus off the controls.
+- A hidden status region on every roll mode names the rolled records
+  (`role="status"`), so a re-roll is read out without moving focus off the
+  controls. The results themselves are no live region: a menu opens inside them.
 
 ## Tables and search
 
@@ -327,8 +327,8 @@ across.
   draw them. It is memory only (`STATE.md`).
 - The catalog's filters (`FilterPanel`) are a column beside the rows from
   1000 px, sticky under the header and scrolling inside itself, and a bottom
-  sheet below it; the shared list page and the Items tab keep the strip and
-  its pills ("Lists", "Homebrew") until their batches. Where a table has
+  sheet below it; the Items tab of «Мои предметы» draws them too ("Homebrew");
+  the shared list page keeps the strip and its pills ("Lists") until its batch. Where a table has
   nothing to filter by, there is neither. A row offers only values the drawn
   rows answer and shows only when it can narrow; a picked value stays offered
   (owner, 2026-10-08). On `#/tables/homebrew` the drawn rows are the chosen
@@ -1405,7 +1405,7 @@ address kept, and no add-to-list control is drawn.
 - **Catalog style**: every catalog record, set bonus and rule card text
   follows the SRD 2.0 card style; `tools/desc-style.mjs` writes it from the
   plain text and `tests/dataint.js` holds it ("catalog style"); for homebrew
-  text it is advice in the «?» of rule 18, never enforced.
+  text it is advice, never enforced.
 
   | # | What | EN | RU |
   |---|---|---|---|
@@ -1583,77 +1583,98 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
 "My items". Homebrew items live in the account only
 (`docs/decisions/2026-09-30-a-homebrew-item-carries-the-whole-catalog-shape.md`).
 
-- **`#/homebrew` and its tabs**: the heading «Мои предметы» with the home
-  button and the page «?» beside it (as `#/lists`), on every tab and in every
-  state, signed out and on a failed read included, and its lead line (search
-  finds the items with the catalog, they appear in the tables and go into
-  lists). The home button pins `#/homebrew` from any tab, one pin for the page
-  (pressed: «Открывается при запуске», the toast «Приложение будет открываться
-  на этом разделе»; a second press unpins it). The «?» opens five paragraphs,
-  each with a bold lead: «Предметы.», «Источники.», «Комплекты.», «Карты
-  правил.», «Импорт из файла.» / "Items.", "Sources.", "Sets.", "Rule
-  cards.", "Import from file.". Then «Импорт из файла» ("Import"), shared by the
-  four tabs, then the tab row «Предметы», «Источники», «Комплекты», «Карты
-  правил» / "Items", "Sources", "Sets", "Rule cards": links to `#/homebrew`,
-  `#/homebrew/sources`, `#/homebrew/sets` and `#/homebrew/rules`, the current
-  one pressed (`aria-current="page"`, the tables' group chips pattern). A tab
-  press keeps the import panel open with its file, and keeps the ticks of the
-  Items tab, so items ticked there move into a source made on the Sources tab;
-  a source chip press on `#/tables/homebrew` keeps them too; every other
-  navigation clears the ticks. Each tab's create button is the
-  first control under the tab row.
-- **The Items tab** (`#/homebrew`, `#/homebrew/f_<filter>` with a filter): «Новый
-  предмет» (to `#/homebrew/new`), then from the eighth own item, or when a
-  filter value is in force, the search box «Найти предмет» / "Find an item"
+- **`#/homebrew` and its tabs**: the list head of the catalog ("Tables and
+  search"), on every tab. Up to 760 px, once the items are read, the heading
+  «Мои предметы» and its lead line are read, not drawn; one row holds the tab
+  picker (named «Мои предметы: Предметы» / "My items: Items"), on the Items tab
+  «Новый предмет» with no plus icon, and «Ещё» («Импорт из файла» and the pin).
+  The picker opens a sheet with the four tabs, their counts and the limit
+  counter; a tab press closes it. From 761 px the head holds the heading, the
+  labeled pin, the tab links with their counts and, on the Items tab, «Новый
+  предмет» with the plus icon, then the lead line (search finds the items with
+  the catalog, they appear in the tables and go into lists). Signed out, while
+  the items load and on a failed read the head draws the heading «Мои предметы»
+  at every width, with no tabs and no import: up to 760 px the heading is
+  visible there, and from 761 px the pin and the lead line stay. The pin pins
+  `#/homebrew` from any tab, one pin for the page (pressed: «Открывается при
+  запуске», the toast «Приложение будет открываться на этом разделе»; a second
+  press unpins it). The page has no help panel (owner, Q6.1, 2026-10-29): each
+  fact sits where it applies. The tabs «Предметы», «Источники», «Комплекты»,
+  «Карты правил» / "Items", "Sources", "Sets", "Rule cards" are links to
+  `#/homebrew`, `#/homebrew/sources`, `#/homebrew/sets` and `#/homebrew/rules`,
+  the current one marked (`aria-current="page"`), each with its count: the own
+  items, the sources, the set cards and the rule cards. From 761 px «Импорт из
+  файла» is a toggle with a caret at the right end of each tab's first tool
+  row; the panel opens under the head, above the tab's body, at every width. A
+  tab press keeps the import panel open with its file, and keeps the ticks of
+  the Items tab, so items ticked there move into a source made on the Sources
+  tab; a source chip press on `#/tables/homebrew` keeps them too; every other
+  navigation clears the ticks. On the Sources, Sets and Rules tabs the create
+  button is the first control under the head.
+- **The Items tab** (`#/homebrew`, `#/homebrew/f_<filter>` with a filter): the
+  primary «Новый предмет» (to `#/homebrew/new`) is in the head. The tool row:
+  from the eighth own item, or when a filter value is in force, the search box
+  with the placeholder «Поиск» and the name «Найти предмет» / "Find an item"
   (either language of the name holds the query as search folds it; page
-  memory, empty each time the tab opens) and, 12 px under it, the filter strip
-  of the shared list page: «Фильтры» with the rows «Тип» (Предметы,
-  Расходники, Снаряжение), «Источник» («Хоумбрю», then each source by name)
-  and «Раздел» (the sections of the picked sources, every source's with none
-  picked; two sections of one name each take their source's name in
-  brackets), by the offer rule over the search's matches, the count «N из M»
-  of the matches, and no link button. The box and the strip, once drawn, stay
-  until the tab is left (the shared page's latch). The picked values are the
-  address (`ROUTES.md`, "Homebrew"): a pick or a pill drop rewrites it in
-  place, and Back, Forward and a reload keep the filter; a filter the page did
-  not write (a filter address, Back from the editor, a press on «Предметы»)
-  opens the panel; a tab press clears the filter, and so do the editor's own
-  ways back - «К моим предметам», the delete and the not-found page - which
-  open the bare `#/homebrew`, where the browser's Back keeps it. The panel's
-  fold is page memory. A picked value no row offers (a section of a source no
-  longer picked, a source a re-read removed, another account's key) leaves
-  force: no pill and no narrowing; the address keeps it until the next pick,
-  which writes only the values in force. A pick that draws no row: «Ничего не
-  найдено» with a small «Сбросить всё», the count kept and no selection strip.
-  Then the count «3 предмета из 100» /
+  memory, empty each time the tab opens) and, up to 999 px, «Фильтры · N», lit
+  while a value is in force; from 761 px the limit counter «3 предмета из 100» /
   "3 items of 100" (every item, not the matches; the limit from the database,
-  an override's own number; «3 предмета» when the limit read failed), then the
-  items as table rows under one heading per source and section: each named
-  source by its creation, its sections in the author's order, then its items
-  with no section under the source name, «Хоумбрю» / "Homebrew" last, empty
-  headings and headings with no match left out, the items by name. A query
-  with no match draws «Ничего не найдено» with the count kept and no strip. A
-  row opens the editor; its tick feeds the selection bar (add to a list,
-  print, copy) and the strip above the rows; «Выбрать все» and the strip act
-  on the drawn rows only, and a tick the search or the filter hides is
-  dropped, so a delete or a move never touches a row out of sight. The strip:
-  «Переместить (N)» ("The bulk move"), «Скачать JSON (N)» ("Downloads") and
-  «Удалить (N)», which asks
+  an override's own number; «3 предмета» when the limit read failed; red at the
+  limit), the count «Показано 7 из 12» while a filter or a query narrows the
+  list, and «Импорт из файла»; «Выбрать» last, while a row is drawn and the mode
+  is off. With no item the row holds the import alone, and up to 760 px there
+  is no row. Up to 760 px the count line under the row names the chosen values
+  and «Показано N из M» while the list is narrowed, and the limit line draws red
+  at the limit; the limit counter is otherwise in the picker's sheet. The filter
+  is the catalog's: a column from 1000 px and a sheet below it, with the rows
+  «Тип» (Предметы, Расходники, Снаряжение), «Источник» («Хоумбрю», then each
+  source by name) and «Раздел» (the sections of the picked sources, every
+  source's with none picked; two sections of one name each take their source's
+  name in brackets), by the offer rule over the search's matches, and no link
+  button. No pill row draws at any width. The box and the filter, once drawn,
+  stay until the tab is left (the shared page's latch). The picked values are
+  the address (`ROUTES.md`, "Homebrew"): a pick rewrites it in place, and Back,
+  Forward and a reload keep the filter; a filter the page did not write (a
+  filter address, Back from the editor, a press on «Предметы») opens the sheet
+  below 1000 px; a tab press clears the filter, and so do the editor's own
+  ways back - the breadcrumb, the delete and the not-found page - which open
+  the bare `#/homebrew`, where the browser's Back keeps it. The sheet is page
+  memory. A picked value no row offers (a section of a source no longer picked,
+  a source a re-read removed, another account's key) leaves force: no narrowing;
+  the address keeps it until the next pick, which writes only the values in
+  force. Then the items as table rows under one heading per source and section:
+  each named source by its creation, its sections in the author's order, then
+  its items with no section under the source name, «Хоумбрю» / "Homebrew" last,
+  empty headings and headings with no match left out, the items by name. Under
+  a filter of one source a heading drops the source name. Group headings stay
+  at every width. A row draws the tags the page does not already say, and an
+  own item whose two names are equal and written in the other language than the
+  interface draws a small language tag («EN» / «RU»). No match draws «Ничего не
+  найдено» with the cause line and, while a value is in force, «Сбросить
+  фильтры». A row opens the editor. The ticks draw only in the selection mode:
+  «Выбрать» opens it and the focus moves to the bar's «Все»; «Снять выделение»
+  leaves it and returns the focus to «Выбрать». The one selection bar holds
+  «Все», «В список», «Печать», then from 761 px «Скопировать текст», «Переместить
+  (N)» ("The bulk move"), «Скачать JSON (N)» ("Downloads") and «Удалить (N)»; up
+  to 760 px these four are the items of the bar's «Ещё», which opens upward.
+  «Все» and the actions act on the drawn rows only, and a tick the search or
+  the filter hides is dropped, so a delete or a move never touches a row out of
+  sight. «Удалить (N)» asks
   «Удалить предметы (N)? Они пропадут и из ваших списков. Если эти предметы
   есть в списках других игроков, строки пропадут и там - с количеством, ценой
   и заметками; владельцы списков увидят, что предметы удалены. Отменить
   удаление нельзя.». The delete sends one request per 50 ticked items, in
   order, each of which deletes all of its items or none: while it runs the
-  button is disabled and focus waits on «Выбрать все», a line under the
-  strip says «Удаляем предметы
-  (40)...», the status region says the same once, and a second press sends
-  nothing; then the toast «Удалено предметов: N» and the ticks cleared, or «Не
-  получилось удалить. Проверьте соединение и попробуйте ещё раз.» (assertive;
-  after an earlier request deleted rows, «Удалено предметов: N. » comes first
-  with that count) with every row not yet deleted and its tick kept for a
-  second press, which deletes the rest, and focus on «Выбрать
-  все», or on «Новый предмет» when no row is left (rule 20). No items:
-  «Своих предметов пока нет - создайте первый выше или импортируйте файл.».
+  bar's move and delete are disabled, focus waits on «Все», the status region
+  says «Удаляем предметы (40)...» once, and a second press sends nothing; then
+  the toast «Удалено предметов: N» and the ticks cleared, or «Не получилось
+  удалить. Проверьте соединение и попробуйте ещё раз.» (assertive; after an
+  earlier request deleted rows, «Удалено предметов: N. » comes first with that
+  count) with every row not yet deleted and its tick kept for a second press,
+  which deletes the rest, and focus on «Все», or on «Выбрать», else `#main`,
+  when the bar left (rule 20). No items: the plate «Своих предметов пока нет»
+  with the sentence «Свой предмет ищется вместе с книгами, виден в «Таблицах» и
+  попадает в списки.» and no button (the head holds the primary).
   Signed out: the head and the
   sign-in prompt «Войдите, чтобы создавать свои предметы.». A failed read: «Не
   получилось загрузить ваши предметы.» and a small «Повторить». A pin may hold
@@ -1663,19 +1684,19 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
 - **The Sources tab** (`#/homebrew/sources`): «Новый источник» with the plus
   icon first, which opens the field «Новый источник» in its place, then the
   count («2 источника из 20» with the source limit known, «0 источников из 20»
-  too; «2 источника» with none, nothing at 0), then the named sources by
-  creation and the default source «Хоумбрю» last. From the eighth named
-  source the search box «Найти источник» / "Find a source" sits under the
-  create button (either language of the name holds the query as search folds
+  too; «2 источника» with none, nothing at 0; from 761 px with «Импорт из файла»
+  at the row's right end), then the named sources by
+  creation and the default source «Хоумбрю» last. The create button and the
+  count share a row. From the eighth named
+  source the search box «Найти источник» / "Find a source" sits under that
+  row (either language of the name holds the query as search folds
   it; page memory, empty each time the tab opens): it draws the named sources
   it matches and «Хоумбрю» when its name matches, an open name field always;
-  no match draws «Ничего не найдено» with the count kept. At 360 px a named
-  source's row is about 150 px high, its name, count and four buttons on four
-  lines (60 rows: 8998 px, measured 2026-10-22). The default source holds every item
+  no match draws «Ничего не найдено» with the count kept. The default source holds every item
   with no named source; its row shows the count and «Скачать JSON». A named
   source shows its name in the language on screen (the other language when
   it has none), «N предметов · M разделов из 30» (the sections only from
-  one), «Разделы», «Переименовать», «Скачать JSON» and
+  one), «Разделы» and «Ещё» with «Переименовать», «Скачать JSON», a separator and
   «Удалить». While a source holds an item, its name links to its items on
   `#/tables/homebrew` through the `src` filter (`f_src-<key>`; «Хоумбрю»
   `f_src-hb`), its sections included, which picks its source chip; an empty
@@ -1710,19 +1731,23 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
 - **Cards**: the Sets tab (`#/homebrew/sets`) and the Rules tab
   (`#/homebrew/rules`). Each draws its create button first («Новый комплект»
   / «Новая карта правил», with the plus icon, which opens the card form in
-  its place), then from the eighth card of the kind the search box «Найти
-  комплект» / «Найти карту правил» ("Find a set" / "Find a rule card"; the
-  name or the subtitle in either language holds the query), then the count:
-  the tab's own kind, then every card against the shared card limit («1
-  комплект · 2 карты из 100», «1 карта правил · 2 карты из 100»; with no
-  limit known «1 комплект · 2 карты»), then the cards by name. A card is a
+  its place), beside it the count: the tab's own kind, then every card against
+  the shared card limit («1 комплект · 2 карты из 100», «1 карта правил · 2 карты
+  из 100»; with no limit known «1 комплект · 2 карты»), from 761 px with «Импорт
+  из файла» at the row's right end; then from the eighth card of the kind the
+  search box «Найти комплект» / «Найти карту правил» ("Find a set" / "Find a
+  rule card"; the name or the subtitle in either language holds the query), then
+  the cards by name. A card is a
   fold named by the card, closed by default: its head shows «N предметов»
   (the own items that name it and the book items it holds) with its source,
   «Изменить» and «Удалить».
   `#/homebrew/sets/<key>` and `#/homebrew/rules/<key>` open that card's fold
   and scroll to it; an unknown key or a key of the other kind opens nothing
   and keeps the address; a press on a fold does not write the address. An
-  empty tab reads «Комплектов пока нет.» / «Карт правил пока нет.», a query
+  empty tab draws the plate «Комплектов пока нет» with «Комплект - предметы с общим
+  бонусом: бонус виден на карточке каждого из них.», or «Карт правил пока нет» with
+  «Карта правил - правило, на которое ссылается предмет: заклинание, черта,
+  противник.», and no button; a query
   with no match «Ничего не найдено». Open, a card shows its text (a set's
   bonus; a rule card's subtitle in italics, its text and its link), then the
   field «Добавить предмет» / "Add an item" (an item picker over the own and
@@ -1765,13 +1790,12 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   navigation and on a closed browser tab, as the editor's guard does. A card delete
   toasts «Комплект «%s» удалён» / «Карта правил «%s» удалена». Each card form, inline or on a tab,
   opens with «Язык текста». The set form
-  holds «Название комплекта» * and «Бонус комплекта» *; the rule card form
-  «Название карты» *, «Подзаголовок», «Текст карты» * and «Ссылка» (empty,
-  or `https://` in Latin characters with no spaces); on the tabs both hold
-  «Источник» with a «?» whose hint says what a card's source is (the card
-  goes with the source's «Скачать JSON», its row names the source; a card
-  with no source is kept under «Хоумбрю»). The bonus and the card text are boxes of rule 18 with «Просмотр»
-  and a «?» (the bonus: bold, italic and a list; the card text: all five). The name stops at 80 characters, the subtitle at 60, the
+  holds «Название комплекта» and «Бонус комплекта»; the rule card form
+  «Название карты», «Подзаголовок» (optional), «Текст карты» and «Ссылка»
+  (optional; empty, or `https://` in Latin characters with no spaces); on the
+  tabs both hold «Источник» with the caption «Без источника карта лежит в
+  «Хоумбрю».». The bonus and the card text are boxes of rule 18 with «Просмотр»
+  (the bonus: bold, italic and a list; the card text: all five). The name stops at 80 characters, the subtitle at 60, the
   text or bonus at 1500 (with the counter «N / 1500» past 1250) and the link
   at 300. An edit saved toasts «Сохранено: «%s»». A form sends on its button
   or Enter in a one-line field and
@@ -1798,27 +1822,32 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   item names; the items keep its key and draw nothing for it, and an editor
   save keeps that key.
 - **The editor** (`#/homebrew/new`, `#/homebrew/<key>`): the form beside a
-  live full card of the item from 800 px, the card under the form below; an
-  item with no name yet reads «Новый предмет» on it. While the items load
-  the page draws the heading «Мои предметы» and «Загружаем...».
-  The heading is the item's name, or «Новый предмет»; the line under it is
-  the item's path, with the tier of chosen equipment. The legend «* -
-  обязательное поле. Остальное можно заполнить позже.» heads the form. The
-  fields: «Вид» (item, consumable, equipment), for equipment «Тип
-  снаряжения», «Источник» (with «+ Новый источник...», which makes the
-  source at once and selects it), for a named source «Раздел» (with «+
-  Новый раздел...»; a source change resets it), «Название» * (at most 120
-  characters; «Язык текста» sits right above it), «Описание» (at most 3000,
-  a counter past 2500; a box of rule 18 with all five buttons and no
-  «Просмотр»: the card beside it is the preview, live on every input; in
-  the print view, a warning after its counter, below; typing it rebuilds no
-  relation of the card, which no relation line draws),
-  «Картинка»
-  (below), for loot and
-  consumables «Ранг» («Без ранга», 1-4), for equipment «Ранг» * (1-4, no
-  default), for weapons «Класс», «Характеристика», «Дистанция», «Урон»,
-  «Тип урона», «Хват», each *, and the disclosure «Второй набор
-  характеристик», for armor «Показатель брони» * and «Пороги урона» *.
+  live full card of the item from 800 px; 761-799 px the card under the form; up
+  to 760 px the card is in the sheet «Предпросмотр». An item with no name yet
+  reads «Новый предмет» on it. While the items load the page draws the heading
+  «Мои предметы» and «Загружаем...». The heading row is a breadcrumb: the link
+  «Мои предметы» (the way back at every width, under the guard), then the item's
+  name, or «Новый предмет», as the `h1`, cut to one line up to 760 px and to
+  three lines from 761 px with the whole name in `title`; the line under it is
+  the item's path, with the tier of chosen equipment. Optional fields carry the
+  word «необязательно» / "optional" after the caption; required ones carry no
+  mark, and the controls keep `required` and `aria-required`. The fields stand
+  in three headed groups: «Предмет» / "Item" («Вид» (item, consumable,
+  equipment), for equipment «Тип снаряжения», «Язык текста», «Название» (at most
+  120 characters), «Описание» (at most 3000, a counter past 2500; a box of rule
+  18 with all five buttons and no «Просмотр»: the card is the preview, live on
+  every input; in the print view, a warning after its counter, below; typing it
+  rebuilds no relation of the card, which no relation line draws), «Картинка»
+  (below), and for loot and consumables «Ранг» («Без ранга», 1-4)); for
+  equipment «Характеристики» / "Stats" («Ранг» (1-4, no default), for weapons
+  «Класс», «Характеристика», «Дистанция», «Урон», «Тип урона» («Физический»,
+  «Магический», «Оба» / "Physical", "Magic", "Both"), «Хват» and the disclosure
+  «Второй набор характеристик», for armor «Показатель брони» and «Пороги
+  урона»); «Где лежит» / "Where it goes" («Источник» (with «+ Новый
+  источник...», which makes the source at once and selects it) and the caption
+  «Без источника предмет лежит в «Хоумбрю».», for a named source «Раздел» (with
+  «+ Новый раздел...»; a source change resets it)). From 1000 px the short
+  choices of the last two groups pair in two columns.
   «Характеристика» and the second set's offer the six traits, «Характеристика
   Заклинателя» and «Любая» / "Any" (`any`, the weapon takes any trait, as the
   catalog's mw47 does; owner, 2026-10-21).
@@ -1835,20 +1864,16 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   «Порог Тяжёлого урона должен быть больше порога Ощутимого урона.». «Урон»
   is a die select «Кость урона» («Кость», d4-d20) and «Бонус к урону»
   (empty for none), each with its own label, in the main stats and in the
-  second set. Among the main fields «Источник» and «Описание» carry a «?»
-  (rule 15 of "Consistency rules"): «Подсказка: <поле>» opens a hint under
-  the label - what a source is, and the markup of rule 18. «Второй набор характеристик» is
-  a button that shows and hides the set (the fields stay in the form while
-  hidden; a save problem inside it opens it), with its own «?», whose hint reads «Для оружия, которое по
-  своему свойству переходит на другие характеристики - например,
-  «Универсальное». Заполните все четыре поля или оставьте набор пустым.
-  Когда набор действует, напишите в описании; на печатной карте он идёт
-  второй полосой урона.»; a second press on a pressed choice of the set
-  unpresses it (a pressed choice of the main stats stays pressed), and
-  «Очистить второй набор», drawn while the set holds a value, empties the
-  set and its lines, keeps the rest of the form and focuses the set's
-  button. The card draws no stat block until a tier is chosen: a tier is
-  never shown that the author did not choose. The card of a saved item has
+  second set. A field of the editor draws no «?» (owner, Q6.2, 2026-10-29).
+  «Второй набор характеристик» is a button that shows and hides the set (the
+  fields stay in the form while hidden; a save problem inside it opens it); a
+  second press on a pressed choice of the set unpresses it (a pressed choice of
+  the main stats stays pressed), and «Очистить второй набор», drawn while the
+  set holds a value, empties the set and its lines, keeps the rest of the form
+  and focuses the set's
+  button. The card follows «Вид» and «Тип снаряжения» at once: the type's badge
+  and glyph draw with no tier. It draws no stat block until a tier is chosen: a
+  tier is never shown that the author did not choose. The card of a saved item has
   «В список»: it adds the stored item as a link, so unsaved
   edits reach the list with «Сохранить»; a new item has none before its
   first save. The type and the weapon values stay in the form while another
@@ -1885,16 +1910,15 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   default, «В линии», «Новая линия»): «В линии» picks equipment of the same
   type in an upgrade line, catalog or own, and draws the line's lowest rung
   with «линия из N рангов»; «Новая линия» starts a line at this item, which
-  other own items of the type can join, and shows no note under the
-  choice; its «?» explains it.
-  «Линия улучшений», «Улучшается до», «Получается из», «Комплект» and
-  «Карты правил» each carry a «?» whose hint says what the relation does
-  and how it differs from its neighbor (a line is rungs of one item; a
-  craft link is another item made from this one). «Улучшается до» and «Получается из»
+  other own items of the type can join. The caption under the choice reads
+  «Одно снаряжение на рангах 1-4: карточка рисует лесенку рангов.». Every
+  relation is optional and draws no «?». «Улучшается до» and «Получается из»
   hold up to 8 items each, catalog or own; the item itself is never offered.
   «Комплект» is a select of the catalog's sets and the own ones («<name>
   (HB)»), with «+ Новый комплект...», which opens the set form in its place
-  and selects the set it makes. «Карты правил» holds up to 3 cards, the
+  and selects the set it makes; a chosen set draws «Бонус комплекта: <text>»
+  under the select, in the language of the text boxes. «Карты правил, до 3» /
+  "Rule cards, up to 3" holds up to 3 cards, the
   catalog's and the own ones, with «Новая карта правил» and the plus icon,
   which opens the
   rule card form and adds the card it makes. A card made here goes into the
@@ -1976,11 +2000,13 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   saves. The browser never deletes a file: the database deletes a file no
   item names (`META.md` section 3).
 - **Saving**: «Сохранить», Ctrl+S or Cmd+S, or Enter in any one-line field
-  of the form saves. The button row reads «Сохранить», «К моим предметам» /
-  "To my items" (a link to `#/homebrew`, the same words as the missing and
-  gone states; on a dirty form the guard asks before it leaves) and, on a
-  stored item, «Удалить»: the way back never reads «Отмена», which would say
-  that a save is undone. A refusal line under the buttons redraws in the
+  of the form saves. From 761 px the button row reads «Сохранить» and, on a
+  stored item, «Удалить». Up to 760 px it is a bar stuck to the bottom of the
+  window: «Сохранить», «Предпросмотр» (opens a sheet with the view switch, the
+  print switches and the card; the focus returns to it) and, on a stored item,
+  «Ещё», which opens upward with «Удалить»; a window shorter than 481 px leaves
+  the bar in the flow. The way back is the breadcrumb and never reads «Отмена»,
+  which would say that a save is undone. A refusal line under the buttons redraws in the
   language on screen after a switch. A new item's save replaces the address with
   `#/homebrew/<key>` and keeps the form and the focus; an edit writes over
   the revision the form loaded. A create toasts «Предмет «%s» создан», an
@@ -1990,11 +2016,12 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   попробуйте ещё раз. Правки остались в форме.» (rule 2); both keep the form. An
   item changed on another device draws «Этот предмет изменили на другом
   устройстве, пока форма была открыта. Ваши правки не сохранены.» with
-  «Сохранить мою версию» (reads the account again, then writes over it; a
-  language the author did not change keeps the other device's write) and
-  «Показать новую версию» (asks «Ваши правки пропадут. Показать новую версию?» while the form is
+  «Сохранить мою версию» (danger; reads the account again, then writes over it;
+  a language the author did not change keeps the other device's write) and the
+  primary «Показать новую версию» (asks «Ваши правки пропадут. Показать новую версию?» while the form is
   dirty, then reloads; a read that fails keeps the form and says «Не
-  получилось сохранить: ...»). An item deleted on another device draws «Этот
+  получилось сохранить: ...»); «Сохранить» is disabled while the banner shows, so
+  no plain press overwrites the other device. An item deleted on another device draws «Этот
   предмет удалили на другом устройстве.» with «Сохранить как новый» (a new
   key; the address moves) and «К моим предметам». A read that removes the
   item under a dirty form keeps the typed text and draws that banner; a
@@ -2078,8 +2105,10 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   and «Не получилось загрузить импорт.» with a small «Повторить» after a failed
   load. The field takes a `homebrew-v1` or `homebrew-v2` file or the data zip's
   `homebrew.json` (the file field, the 5 MB bound, the zip and the text rules
-  of «Импорт из файла», "Lists"); its hint links `schema/homebrew-v2.json`
-  and `llms.txt`, and the field still takes a `homebrew-v1` file. «Обновить»
+  of «Импорт из файла», "Lists"); the file row holds the links «Формат файла»
+  (`schema/homebrew-v2.json`) and `llms.txt`, and one line under it says what
+  fits: «Подходит файл из «Скачать JSON», архив из «Скачать мои данные» или файл
+  по описанию в llms.txt.». The field still takes a `homebrew-v1` file. «Обновить»
   with a version 1 file keeps a held card's book items; a version 2 file
   states them, so a card without `items` loses the held ones
   (`docs/decisions/2026-10-21-on-a-homebrew-v2-file-states-each-cards.md`). A key the
@@ -2150,16 +2179,16 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   toggle are disabled while the call runs; «Отмена» folds the panel, drops the
   file and focuses the toggle. A retry after a lost answer ends with the same
   account (held keys then), only the counts differ.
-- **The bulk move** (m24): «Переместить (N)», a toggle with a caret first in
-  the strip (the list page's «Цены» is the sibling; the owner's «Переместить...»
-  takes the caret for the ellipsis), opens a panel in the strip: «Источник»
-  («Хоумбрю», then the named sources by creation) and, for a named source,
-  «Раздел» («Без раздела», then its sections; a source change resets it),
-  then «Переместить». It sends only the ticked items whose place differs, in
+- **The bulk move** (m24): «Переместить (N)» in the bar (from 761 px a button
+  with a caret, up to 760 px an item of «Ещё») opens a sheet at every width:
+  «Источник» («Хоумбрю», then the named sources by creation) and, for a named
+  source, «Раздел» («Без раздела», then its sections; a source change resets
+  it), then «Отмена» and «Переместить». Closing the sheet returns the focus to
+  what opened it. It sends only the ticked items whose place differs, in
   one call with the revision of each; none differs: the button is disabled
   with «Отмеченные предметы уже здесь.». While it runs it reads
   «Перемещаем...». Success toasts «Перемещено предметов: N», clears the
-  selection, closes the panel and moves focus to «Выбрать все» (rule 20);
+  selection, closes the sheet and moves focus to «Выбрать», else `#main` (rule 20);
   every item keeps its key, so list links stay live. A source or section deleted on another device draws
   «Этого источника больше нет - его удалили на другом устройстве. Выберите
   другой источник.» / the section's twin under the selects; an item changed
@@ -2168,12 +2197,12 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   Проверьте соединение и попробуйте ещё раз.», a refusal (a timeout
   included) «Сервер не принял перемещение. Обновите страницу и попробуйте
   ещё раз.». Every answer reads the items again; a failure keeps the
-  selection and the panel, and a retry sends the revisions of that read.
+  selection and the sheet, and a retry sends the revisions of that read.
 - **Downloads**: «Скачать JSON» on a source's row downloads that source, its
   items and the own cards that belong to it or that its items name, as
   `<source name>.json` (the name in the language on screen, the lists' rule
   for unsafe characters; «Хоумбрю.json» for the default source);
-  «Скачать JSON (N)» in the strip downloads the ticked items, their sources
+  «Скачать JSON (N)» in the bar downloads the ticked items, their sources
   and the cards they name as `daggerheart-loot-homebrew-<YYYY-MM-DD>.json`.
   Each is a `homebrew-v2` file (`CONTRACTS.md` section 4), whose items keep
   only a section their source holds. While the items load, or after their
@@ -2533,13 +2562,14 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   button beside the H1 shows its label after a `?`; up to 760 px it is a round `?`
   button with the same name until its page's batch moves it. On the roll pages
   and the catalog it is an item of «Ещё» up to 760 px, and there the `h1` is read,
-  not drawn.
+  not drawn; `/homebrew` has no help, and its `h1` is read, not drawn, once its
+  items are read. The editor's heading is the breadcrumb row.
 - The pin beside the H1 reads «Открывать при запуске» / "Open on start" with
   the home icon; pinned it reads «Открывается при запуске» / "Opens on start"
   with the check of the neutral pressed state (`Seg`), never a gold fill. From
   761 px it is a labeled button; up to 760 px a round button with the same
-  name until its page's batch moves it into «Ещё»; on the roll pages and the
-  catalog it is an item of «Ещё».
+  name until its page's batch moves it into «Ещё»; on the roll pages, the
+  catalog and `/homebrew` it is an item of «Ещё».
 - A removal the app can write back (an entry, its notes, a reprice) toasts with
   an undo, «Вернуть»; a server delete that cannot be undone (an
   account list, an own item, a source, a section, a card) asks the browser's
@@ -2697,7 +2727,8 @@ Each rule keeps its number: a review cites it by number.
 - **1. Counters**: a limited collection shows «N <plural> из M» / "N
   <plural> of M" in one place: the account group of `#/lists` («3 списка из
   50»), an account list's sub («10 позиций из 100 · Сохранено»), the Items
-  tab's «3 предмета из 100», the Sources tab's «2 источника из 20», the Sets
+  tab's «3 предмета из 100» (the tool row from 761 px, the picker's sheet up to
+  760 px), the Sources tab's «2 источника из 20», the Sets
   tab's «1 комплект · 2 карты из 100», the Rules tab's «1 карта правил · 2
   карты из 100» and a source's row («4 раздела из 30»). The limit comes
   from `my_limit()`, read with the account's first read, and again only after
@@ -2768,8 +2799,9 @@ Each rule keeps its number: a review cites it by number.
   names the source the press makes from the file, so it carries the name and
   no «+» (its custom option is the rule's «+ Новый источник...»).
 - **9. The primary action** is the first control under the lead, before any
-  management panel. Departures: «Мои предметы» draws «Импорт из файла» above
-  its tab row, shared by the four tabs; each tab's create button is the
+  management panel. Departures: the Items tab of «Мои предметы» draws its
+  primary in the head; the import is the last control of each tab's tool row
+  or an item of «Ещё»; on the other tabs the create button is the
   first control under the tab row; an account list's page makes an own
   item from the row after its entries; the print bar of `#/p/<id>` puts
   «Назад» before «Отправить на печать», the way back first (owner,
@@ -2784,7 +2816,7 @@ Each rule keeps its number: a review cites it by number.
   «Закрыть» / "Close" folds a panel and keeps what it holds; a read-only
   panel or dialog says «Закрыть». A toggle with a caret folds its panel the
   same way: the homebrew import's toggle drops the file as «Отмена» does,
-  the bulk move's keeps the chosen place, as the list page's «Цены».
+  the bulk move's sheet says «Отмена», which discards the chosen place.
 - **12. Folds**: a fold that names a group keeps its name and turns its
   caret («Решённые в этот раз (2)», a card's fold on the Sets tab «Комплект
   Ольхи»); a fold that shows
@@ -2812,14 +2844,16 @@ Each rule keeps its number: a review cites it by number.
   (c) A «?» next to the label shows a hint of one to three sentences under
   the label; it explains what the site does with the field or a constraint
   of the site, never a basic game term: a player knows the Daggerheart rules
-  (owner, 2026-10-02) («Линия улучшений», «Второй набор характеристик»,
-  «Источник» on the item form and on both card forms, and the markup of each formatted text box, rule 18). The «?» is a button named «Подсказка: <label>» / "Help:
+  (owner, 2026-10-02) (the markup of the formatted text boxes that keep it, rule
+  18, and the list page's fields). The item and card forms have none (owner,
+  Q6.2 and Q6-1): a fact of the site they must state is a caption of (d). The «?» is a button named «Подсказка: <label>» / "Help:
   <label>" with `aria-expanded`; the hint is closed when the form opens. A
   self-explanatory field has no «?».
   (d) A line always visible under a field holds only what the person must
   know before typing or pressing: a limit («До 8 предметов.»), a format
-  («Необязательно. Например: ...»), fields that go together, or what a
-  press does at once («Комплект создаётся сразу...»); one short line.
+  («Например: ...»), fields that go together, a fact of the site («Без источника
+  предмет лежит в «Хоумбрю».»), or what a press does at once («Комплект создаётся
+  сразу...»); one short line.
   (e) A capped text follows rule 13.
   (f) An error under a field states the fix («Два целых числа от 1 до
   99.»); the summary at the top of a form names the field first («Пороги
@@ -2827,10 +2861,9 @@ Each rule keeps its number: a review cites it by number.
   Departures: the list page's heading input (the heading is its label); a
   row's position box and the add-to-list menu's new-list box (an
   `aria-label` in a row or a menu with no room for a caption); the search
-  boxes (a search is no form field); the second set's «Заполните все
-  четыре поля или оставьте набор пустым» stays behind its «?» (owner,
-  2026-10-02), and a save names the fix in each field's line; the bulk
-  move's «Источник» has no «?» (its one select explains itself).
+  boxes (a search is no form field); the second set draws no hint, and a save
+  names the fix in each field's line («Заполните все четыре поля или оставьте
+  набор пустым»).
 - **16. Long names**: a name of any allowed length wraps inside its box at
   360 px (`overflow-wrap: anywhere` on the list card, the page heading, the
   toast, the chip, the filter pill, the source and card rows and their count
@@ -2860,7 +2893,8 @@ Each rule keeps its number: a review cites it by number.
   "Formatted text") is one control: the toolbar «Оформление: <поле>» /
   "Formatting: <field>" (one tab stop, the arrow keys move), the box, and a
   «?» on the label with the markup and the catalog style in three lines and
-  "Markup counts toward the N characters.". The buttons, by `aria-label`: «Жирный», «Курсив»
+  "Markup counts toward the N characters.". Departure: the editor's «Описание»
+  and the card forms' boxes have no «?» (owner, Q6.2 and Q6-1). The buttons, by `aria-label`: «Жирный», «Курсив»
   (Ctrl+B / Cmd+B and Ctrl+I / Cmd+I in the box), «Список», «Нумерованный
   список», «Таблица» (wide fields only); each wraps or unwraps the
   selection, or prefixes the selected lines, and an edit past the cap does
@@ -2896,15 +2930,16 @@ Each rule keeps its number: a review cites it by number.
   «Фильтры», else `#main`; «Снять выделение» - «Выбрать», else `#main`;
   «Удалить (N)» on `#/lists` - «Выбрать все», or «Новый список» with no card
   left; a card's own «Удалить» - the next card's, the previous card's, «Новый
-  список»; the homebrew «Удалить (N)» and a move that folds its panel -
-  «Выбрать все», or «Новый предмет» with no row left; «Принять», «Принять
+  список»; the homebrew «Удалить (N)» and a move - «Все» while ticks remain, then
+  «Выбрать», else `#main`; a closed move, preview or tabs sheet - what opened it;
+  «Импорт из файла» closed - the toggle in view, else «Ещё»; «Принять», «Принять
   доступное» and «Отклонить» - the first button of the request now at their
   place, of the one before it, the panel head, `#main`; a load line's
   «Повторить» when it leaves - the group's lead control («Новый список» on
   `#/lists`, the panel head in the requests panel), else `#main`; on the
-  homebrew tabs a source's or a section's «Удалить» - the next row's
-  «Удалить», the one before, «Новый источник» or that source's «Новый
-  раздел»; a card's «Удалить» - the next card's, the previous card's, the
+  homebrew tabs a source's «Удалить» - the next row's «Ещё», the one before,
+  «Новый источник»; a section's «Удалить» - the next row's «Удалить», the one
+  before, that source's «Новый раздел»; a card's «Удалить» - the next card's, the previous card's, the
   tab's create button; a member's «Убрать» - the next member's «Убрать», the
   one before, the card's «Добавить предмет»; a name field or a card form that
   closes, sent or cancelled - the button that opened it

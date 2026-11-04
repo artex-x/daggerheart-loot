@@ -126,10 +126,10 @@ RootWebArea "Лавка кузнеца - Генератор лута Daggerheart
     region "Свой предмет в этот список"
       heading "Свой предмет в этот список" [level=2]
       StaticText "Название"
-      StaticText "*"
-      textbox "Название*" [description=Введите название. focused=true multiline=false readonly=false required=true invalid=true]
+      textbox "Название" [description=Введите название. focused=true multiline=false readonly=false required=true invalid=true]
       StaticText "Введите название."
       StaticText "Описание"
+      StaticText "необязательно"
       button "Подсказка: Описание" [expanded=false]
       toolbar "Оформление: Описание" [orientation=horizontal]
         button "Жирный" [keyshortcuts=Control+B Meta+B]
@@ -347,10 +347,10 @@ RootWebArea "Лавка кузнеца - Daggerheart Loot Generator" [url=/en/li
     region "An own item for this list"
       heading "An own item for this list" [level=2]
       StaticText "Name"
-      StaticText "*"
-      textbox "Name*" [description=Enter a name. focused=true multiline=false readonly=false required=true invalid=true]
+      textbox "Name" [description=Enter a name. focused=true multiline=false readonly=false required=true invalid=true]
       StaticText "Enter a name."
       StaticText "Description"
+      StaticText "optional"
       button "Help: Description" [expanded=false]
       toolbar "Formatting: Description" [orientation=horizontal]
         button "Bold" [keyshortcuts=Control+B Meta+B]

@@ -34,29 +34,28 @@ RootWebArea "Альтернативные таблицы - Генератор л
     button "Настроить" [expanded=false]
     button "Ещё" [expanded=false haspopup=menu]
     status ""
-      button "Страница"
-      StaticText "НАДЕЖДА"
-      StaticText "ПРЕДМЕТ"
-      ... StaticText x16 of 20 same-shape siblings elided
-      link "Крюк-Кошка" [description=Страница url=/i/hi2]
-      button "В список" [expanded=false]
-      button "Поделиться"
-      button "Ещё" [expanded=false haspopup=menu]
-      ... button x4 of 8 same-shape siblings elided
-      link "Металлические Шарики" [description=Страница url=/i/hi3]
-      button "В список" [expanded=false]
-      button "Ещё" [expanded=false haspopup=menu]
-      link "Зелье Быстрого Шага" [description=Страница url=/i/cc1]
-      link "Большое Зелье Быстрого Шага" [url=/i/cc25]
-      button "В список" [expanded=false]
-      button "Ещё" [expanded=false haspopup=menu]
-      button "Страница"
-      StaticText "HOPE & FEAR"
-      link "Семя Вергласа" [description=Страница url=/i/hc3]
-      StaticText "Этим осколком льда можно мгновенно заморозить участок воды в пре..." [namelen=88 namehash=0c7b50a5]
-      button "В список" [expanded=false]
-      button "Поделиться"
-      button "Ещё" [expanded=false haspopup=menu]
+      StaticText "Крюк-Кошка, Металлические Шарики, Зелье Быстрого Шага, Семя Верг..." [namelen=68 namehash=3f6f8db6]
+    button "Страница"
+    StaticText "НАДЕЖДА"
+    ... StaticText x17 of 21 same-shape siblings elided
+    link "Крюк-Кошка" [description=Страница url=/i/hi2]
+    button "В список" [expanded=false]
+    ... button x5 of 9 same-shape siblings elided
+    button "Ещё" [expanded=false haspopup=menu]
+    link "Металлические Шарики" [description=Страница url=/i/hi3]
+    button "В список" [expanded=false]
+    button "Ещё" [expanded=false haspopup=menu]
+    link "Зелье Быстрого Шага" [description=Страница url=/i/cc1]
+    link "Большое Зелье Быстрого Шага" [url=/i/cc25]
+    button "В список" [expanded=false]
+    button "Ещё" [expanded=false haspopup=menu]
+    button "Страница"
+    StaticText "HOPE & FEAR"
+    link "Семя Вергласа" [description=Страница url=/i/hc3]
+    StaticText "Этим осколком льда можно мгновенно заморозить участок воды в пре..." [namelen=88 namehash=0c7b50a5]
+    button "В список" [expanded=false]
+    button "Поделиться"
+    button "Ещё" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -125,29 +124,28 @@ RootWebArea "Alternate tables - Daggerheart Loot Generator" [url=/en/roll/alt]
     button "Set up" [expanded=false]
     button "More" [expanded=false haspopup=menu]
     status ""
-      button "Page"
-      StaticText "HOPE"
-      StaticText "ITEM"
-      ... StaticText x16 of 20 same-shape siblings elided
-      link "Grapnel" [description=Page url=/i/en/hi2]
-      button "Add to list" [expanded=false]
-      button "Share"
-      button "More" [expanded=false haspopup=menu]
-      ... button x4 of 8 same-shape siblings elided
-      link "Ball Bearings" [description=Page url=/i/en/hi3]
-      button "Add to list" [expanded=false]
-      button "More" [expanded=false haspopup=menu]
-      link "Stride Potion" [description=Page url=/i/en/cc1]
-      link "Major Stride Potion" [url=/i/en/cc25]
-      button "Add to list" [expanded=false]
-      button "More" [expanded=false haspopup=menu]
-      button "Page"
-      StaticText "HOPE & FEAR"
-      link "Verglasian Seed" [description=Page url=/i/en/hc3]
-      StaticText "You can use this ice shard to instantly freeze an area of water ..." [namelen=82 namehash=7b271c85]
-      button "Add to list" [expanded=false]
-      button "Share"
-      button "More" [expanded=false haspopup=menu]
+      StaticText "Grapnel, Ball Bearings, Stride Potion, Verglasian Seed"
+    button "Page"
+    StaticText "HOPE"
+    ... StaticText x17 of 21 same-shape siblings elided
+    link "Grapnel" [description=Page url=/i/en/hi2]
+    button "Add to list" [expanded=false]
+    ... button x5 of 9 same-shape siblings elided
+    button "More" [expanded=false haspopup=menu]
+    link "Ball Bearings" [description=Page url=/i/en/hi3]
+    button "Add to list" [expanded=false]
+    button "More" [expanded=false haspopup=menu]
+    link "Stride Potion" [description=Page url=/i/en/cc1]
+    link "Major Stride Potion" [url=/i/en/cc25]
+    button "Add to list" [expanded=false]
+    button "More" [expanded=false haspopup=menu]
+    button "Page"
+    StaticText "HOPE & FEAR"
+    link "Verglasian Seed" [description=Page url=/i/en/hc3]
+    StaticText "You can use this ice shard to instantly freeze an area of water ..." [namelen=82 namehash=7b271c85]
+    button "Add to list" [expanded=false]
+    button "Share"
+    button "More" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]

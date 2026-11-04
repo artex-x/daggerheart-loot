@@ -110,10 +110,10 @@ describe('Vault of Ages', () => {
     /* Two records at tier 1, one artifact - so the range says which is chosen
        even before the card underneath does. */
     render(App, { env: at('#/roll/voa') });
-    expect(screen.getByText('Результат броска (1–2)')).toBeInTheDocument();
+    expect(screen.getByText('Результат броска (1-2)')).toBeInTheDocument();
 
     await pick('Артефакты');
-    expect(screen.getByText('Результат броска (1–1)')).toBeInTheDocument();
+    expect(screen.getByText('Результат броска (1-1)')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Узы Души' })).toBeInTheDocument();
   });
 
@@ -213,7 +213,7 @@ describe('Many Worlds Tavern', () => {
     /* random() just under 1 is the top face: the last card of the deck. */
     render(App, { env: at('#/roll/mwt', { random: () => 0.999 }) });
     await pick('Воюющие Норы');
-    expect(screen.getByText('Результат броска (1–21)')).toBeInTheDocument();
+    expect(screen.getByText('Результат броска (1-21)')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: /Бросить 1-21/ }));
     expect(field().value).toBe('21');
     expect(screen.getByRole('link', { name: 'Норный 21' })).toBeInTheDocument();
@@ -227,7 +227,7 @@ describe('Many Worlds Tavern', () => {
 
     await pick('Спорополис');
     expect(field().value).toBe('1');
-    expect(screen.getByText('Результат броска (1–2)')).toBeInTheDocument();
+    expect(screen.getByText('Результат броска (1-2)')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Первый спорополисский' })).toBeInTheDocument();
   });
 
@@ -240,7 +240,7 @@ describe('Many Worlds Tavern', () => {
 
     await pick('Оплот Шершней');
     expect(field().value).toBe('1');
-    expect(screen.getByText('Результат броска (1–2)')).toBeInTheDocument();
+    expect(screen.getByText('Результат броска (1-2)')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Первый шершневый' })).toBeInTheDocument();
   });
 

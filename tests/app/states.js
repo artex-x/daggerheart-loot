@@ -6,8 +6,8 @@
  * and every legacy suite uses - because a handful of real defects only show
  * up on the far side of a browser's own microtask checkpoint (the
  * `isConnected` guard) or need a real network, a real clipboard stub, or a
- * real second tab to mean anything at all. Eighty-one cases in
- * eighty runs (4 and 5 share one), no ancestor. Like every suite here it drives
+ * real second tab to mean anything at all. Eighty-three cases in
+ * eighty-two runs (4 and 5 share one), no ancestor. Like every suite here it drives
  * dist-test/, the test build (docs/specs/COVERAGE.md, "Test layers"): signed
  * out it draws the sign-in prompt where a list would be made, so the cases
  * that make one open as the seed's `gm2`. */
@@ -3854,7 +3854,7 @@ async function longListName() {
  *  labels and boxes lie inside 0..360; nothing scrolls sideways (docs/specs/FEATURES.md,
  *  "Consistency rules", rule 15). */
 async function fieldHelpAt360() {
-  const at = '67 (field help and threshold labels at 360): ';
+  const at = '67 (no field help and the threshold labels at 360): ';
   const { ctx, page, d } = await fresh({ width: 360, height: 640 });
   const sideways = () => page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
   await d.open('#/homebrew/hb_emberaxeaaaaaaaa', { as: 'gm1' });
@@ -3863,28 +3863,11 @@ async function fieldHelpAt360() {
     at + 'the axe editor did not draw'
   );
   await d.click('Связи');
-  await d.click('Подсказка: Комплект');
-  const help = await page.evaluate(() => {
-    const button = document.querySelector('button[aria-controls="hb-set-help"]');
-    const hint = document.getElementById('hb-set-help');
-    const label = document.querySelector('label[for="hb-set"]');
-    const h = hint?.getBoundingClientRect();
-    const l = label?.getBoundingClientRect();
-    return {
-      expanded: button?.getAttribute('aria-expanded') ?? null,
-      left: h?.left ?? -1,
-      right: h?.right ?? 999,
-      height: h?.height ?? 0,
-      under: !!h && !!l && h.top >= l.bottom
-    };
-  });
-  ok(help.expanded === 'true', at + 'the «?» is not expanded - ' + JSON.stringify(help));
   ok(
-    help.height > 0 && help.left >= 0 && help.right <= 360,
-    at + 'the hint lies outside 0..360 - ' + JSON.stringify(help)
+    !(await page.$('.hbform button[aria-label^="Подсказка"]')),
+    at + 'the editor still draws a field «?»'
   );
-  ok(help.under, at + 'the hint is not under its label - ' + JSON.stringify(help));
-  ok(!(await sideways()), at + 'the open hint scrolls the editor sideways');
+  ok(!(await sideways()), at + 'the open fold scrolls the editor sideways');
   await page.evaluate(() => {
     location.hash = '#/homebrew/new';
   });
@@ -5147,27 +5130,24 @@ async function homebrewItemsFilterAddress() {
     page.evaluate(() => ({
       path: location.pathname,
       n: history.length,
-      open: document
-        .querySelector('.fbar button[aria-expanded]')
-        ?.getAttribute('aria-expanded'),
-      pills: [...document.querySelectorAll('.fpill')].map((p) =>
-        p.textContent.replace('×', '').trim()
-      ),
-      count: document.querySelector('.fcount')?.textContent.trim() ?? '',
+      picks: [...document.querySelectorAll('.fcol .frow [aria-pressed="true"]')]
+        .map((p) => p.textContent.trim())
+        .filter((v) => v !== 'Все'),
+      count: [...document.querySelectorAll('.tools .count')]
+        .map((c) => c.textContent.trim())
+        .join(' '),
       rows: document.querySelectorAll('[data-row]').length
     }));
   const FILTERED = '/homebrew/f_src-hb_alderworkshopaaa';
   const isFiltered = (v) =>
     v.path === FILTERED &&
-    v.open === 'true' &&
-    JSON.stringify(v.pills) === JSON.stringify(['Мастерская Ольхи']) &&
-    v.count.includes('7 из 12') &&
+    JSON.stringify(v.picks) === JSON.stringify(['Мастерская Ольхи']) &&
+    v.count.includes('Показано 7 из 12') &&
     v.rows === 7;
   try {
     await d.open('#/homebrew', { as: 'gm1', items: 12 });
     await waitIn(page, () => document.querySelectorAll('[data-row]').length === 12);
     const start = await view();
-    await d.press('Фильтры');
     await d.press('Мастерская Ольхи');
     const picked = await view();
     ok(
@@ -5192,11 +5172,351 @@ async function homebrewItemsFilterAddress() {
     await waitIn(page, () => document.querySelectorAll('[data-row]').length === 12);
     const cleared = await view();
     ok(
-      cleared.path === '/homebrew' && cleared.open === 'false' && cleared.pills.length === 0,
+      cleared.path === '/homebrew' && cleared.picks.length === 0,
       at + 'a tab press and back kept the filter - ' + JSON.stringify(cleared)
     );
   } finally {
     await ctx.close();
+  }
+}
+
+/** 91. The list head of `#/homebrew` (docs/specs/FEATURES.md, "`#/homebrew` and its tabs"):
+ *  up to 760 px the read-only heading, the picker row and «Ещё», the sheet and the one bar;
+ *  from 761 px the head with the tab links; the 300-item page. */
+async function homebrewHeadAndBar() {
+  const at = '91 (the homebrew head, tabs and bar): ';
+  const sideways = (page) =>
+    page.evaluate(
+      () => document.documentElement.scrollWidth > document.documentElement.clientWidth
+    );
+  const opened = (page) =>
+    waitIn(page, () => document.querySelectorAll('[data-row]').length > 0);
+  for (const [width, height] of [
+    [760, 800],
+    [390, 844],
+    [360, 640],
+    [320, 568]
+  ]) {
+    const { ctx, page, d } = await fresh({ width, height });
+    try {
+      await d.open('#/homebrew', { as: 'gm3' });
+      await opened(page);
+      const m = await page.evaluate(() => {
+        const h1 = document.querySelector('main h1, h1');
+        const row = document.querySelector('.pickrow');
+        const picker = row?.querySelector('.picker');
+        const kids = row ? [...row.children] : [];
+        const rects = kids.map((k) => k.getBoundingClientRect());
+        return {
+          h1: h1?.getBoundingClientRect().width ?? 99,
+          pin: !!document.querySelector('main .homebtn'),
+          name: picker?.getAttribute('aria-label') ?? '',
+          inside: rects.every((r) => r.left >= 0 && r.right <= innerWidth),
+          kids: kids.length,
+          lines: new Set(rects.map((r) => Math.round(r.top + r.height / 2))).size,
+          plus: !!row?.querySelector('.btn.primary svg')
+        };
+      });
+      ok(m.h1 <= 1, at + width + ': the heading is drawn - ' + JSON.stringify(m));
+      ok(!m.pin, at + width + ': the round pin is drawn');
+      ok(m.name === 'Мои предметы: Предметы', at + width + ': the picker name - ' + m.name);
+      ok(
+        m.kids === 3 && m.inside,
+        at + width + ': the row leaves the window - ' + JSON.stringify(m)
+      );
+      ok(m.lines <= 2, at + width + ': the row takes ' + m.lines + ' lines');
+      ok(!m.plus, at + width + ': the primary draws a plus');
+      ok(!(await sideways(page)), at + width + ': the page scrolls sideways');
+    } finally {
+      await ctx.close();
+    }
+  }
+
+  for (const lang of ['ru', 'en']) {
+    const { ctx, page, d } = await fresh({ width: 761, height: 768, lang });
+    try {
+      await d.open('#/homebrew', { as: 'gm1', lang });
+      await opened(page);
+      const m = await page.evaluate(() => ({
+        tabs: [...document.querySelectorAll('.hbtabs .tab')].map((a) => a.offsetTop),
+        current: document.querySelectorAll('.hbtabs [aria-current="page"]').length,
+        broken: [...document.querySelectorAll('.hbtabs .tab')].some(
+          (a) => a.scrollWidth > a.clientWidth
+        )
+      }));
+      ok(
+        m.tabs.length === 4 && m.current === 1,
+        at + '761 ' + lang + ': the tab links - ' + JSON.stringify(m)
+      );
+      ok(!m.broken, at + '761 ' + lang + ': a tab is cut');
+    } finally {
+      await ctx.close();
+    }
+  }
+
+  {
+    const { ctx, page, d } = await fresh({ width: 1180, height: 720 });
+    try {
+      await d.open('#/homebrew', { as: 'gm3' });
+      await opened(page);
+      const m = await page.evaluate(() => {
+        const h1 = document.querySelector('h1').getBoundingClientRect();
+        const go = document.querySelector('.headnew .btn')?.getBoundingClientRect();
+        return {
+          same: !!go && go.top < h1.bottom && go.bottom > h1.top,
+          plus: !!document.querySelector('.headnew svg')
+        };
+      });
+      ok(
+        m.same && m.plus,
+        at + '1180: the primary is not on the heading line - ' + JSON.stringify(m)
+      );
+      for (const name of await d.tickNames().then((n) => n.slice(0, 2))) await d.tick(name);
+      const bar = await page.evaluate(() => ({
+        bars: document.querySelectorAll('.selbarwrap').length,
+        strip: document.querySelectorAll('main .batch').length,
+        acts: document.querySelectorAll('.selbarwrap .selacts .btn').length,
+        menu: !!document.querySelector('.selbarwrap [aria-haspopup="menu"]:not(.seldrop *)')
+      }));
+      ok(bar.bars === 1 && bar.strip === 0, at + '1180: not one bar - ' + JSON.stringify(bar));
+      ok(
+        bar.acts >= 6 && !bar.menu,
+        at + '1180: the bar does not hold the six actions - ' + JSON.stringify(bar)
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+
+  const { ctx, page, d } = await fresh({ width: 360, height: 640 });
+  try {
+    await d.open('#/homebrew', { as: 'gm3' });
+    await opened(page);
+    const MORE = '.pickrow [aria-haspopup="menu"]';
+    await d.openMore(MORE);
+    const items = await page.$$eval('#hb-more [role="menuitem"]', (e) => e.length);
+    ok(items === 2, at + '«Ещё» holds ' + items + ' items');
+    await page.keyboard.press('Escape');
+    await d.settle();
+    ok(!(await page.$('#hb-more')), at + 'Escape left the menu open');
+    ok(
+      await page.evaluate((m) => document.activeElement === document.querySelector(m), MORE),
+      at + 'Escape did not return the focus to «Ещё»'
+    );
+    await d.openMore(MORE);
+    await d.press('Импорт из файла');
+    ok(
+      await waitIn(page, bodyHas, 'Импорт предметов из файла JSON'),
+      at + 'the import did not open'
+    );
+    await d.press('Отмена').catch(() => {});
+
+    await d.press('Мои предметы: Предметы');
+    const sheet = await page.evaluate(() => ({
+      tabs: document.querySelectorAll('dialog[open] .tab').length,
+      limit: document.querySelector('dialog[open] .limit')?.textContent ?? ''
+    }));
+    ok(
+      sheet.tabs === 4 && sheet.limit.includes('39'),
+      at + 'the tabs sheet - ' + JSON.stringify(sheet)
+    );
+    await page.keyboard.press('Escape');
+    await d.settle();
+
+    for (const name of await d.tickNames().then((n) => n.slice(0, 2))) await d.tick(name);
+    const bar = await page.evaluate(() => {
+      const r = document.querySelector('.selbarwrap').getBoundingClientRect();
+      const inside = [...document.querySelectorAll('.selbarwrap .selacts .btn')].every((b) => {
+        const x = b.getBoundingClientRect();
+        return x.left >= 0 && x.right <= 360;
+      });
+      return { h: r.height, inside, n: document.querySelectorAll('.selbarwrap').length };
+    });
+    ok(bar.n === 1 && bar.inside, at + 'the bar at 360 - ' + JSON.stringify(bar));
+    ok(bar.h <= 150, at + 'the bar is ' + bar.h + ' px high');
+    const BAR = '.selbarwrap [aria-haspopup="menu"]';
+    await d.openMore(BAR);
+    const menu = await page.evaluate(() => {
+      const m = document.getElementById('hb-bulk');
+      const r = m?.getBoundingClientRect();
+      return {
+        n: m?.querySelectorAll('[role="menuitem"]').length ?? 0,
+        inside: !!r && r.top >= 0 && r.left >= 0 && r.right <= 360,
+        up:
+          !!r && r.bottom <= document.querySelector('.bulkmore').getBoundingClientRect().top + 1
+      };
+    });
+    ok(
+      menu.n === 4 && menu.inside && menu.up,
+      at + "the bar's «Ещё» - " + JSON.stringify(menu)
+    );
+    await d.press('Переместить (2)');
+    ok(!!(await page.$('dialog[open] #hb-move')), at + 'the move sheet did not open');
+    await page.keyboard.press('Escape');
+    await d.settle();
+    ok(
+      await page.evaluate((m) => document.activeElement === document.querySelector(m), BAR),
+      at + 'the move sheet did not return the focus to «Ещё»'
+    );
+  } finally {
+    await ctx.close();
+  }
+
+  {
+    const { ctx, page, d } = await fresh({ width: 360, height: 640 });
+    try {
+      await d.open('#/homebrew', { as: 'gm1', items: 300 });
+      await waitIn(page, () => document.querySelectorAll('[data-row]').length >= 300);
+      ok(!(await sideways(page)), at + '300 items scroll the page sideways');
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
+/** 92. The editor (docs/specs/FEATURES.md, "The editor"): the three groups, no «?» and no star,
+ *  the sticky bar and the preview sheet up to 760 px, the pairs from 1000 px, the sticky
+ *  column from 800 px, the long name, one message per field, the conflict's primary. */
+async function editorLayoutAndSheet() {
+  const at = '92 (the editor): ';
+  for (const lang of ['ru', 'en']) {
+    const w = (ru, en) => (lang === 'ru' ? ru : en);
+    for (const [width, height] of [
+      [360, 640],
+      [1180, 720]
+    ]) {
+      for (const hash of ['#/homebrew/new', '#/homebrew/hb_emberaxeaaaaaaaa']) {
+        const where = at + width + ' ' + lang + ' ' + hash + ': ';
+        const { ctx, page, d } = await fresh({ width, height, lang });
+        try {
+          await d.open(hash, { as: 'gm1', lang });
+          await waitIn(page, () => !!document.querySelector('#hb-name'));
+          const m = await page.evaluate(() => ({
+            heads: [...document.querySelectorAll('.grp h2')].map((h) => h.textContent.trim()),
+            help: document.querySelectorAll('.hbform .helpbtn').length,
+            star: document.querySelector('.hbform').textContent.includes('*'),
+            cards: document.querySelectorAll('.preview .card').length
+          }));
+          ok(m.heads.length >= 2, where + 'the groups - ' + JSON.stringify(m));
+          ok(m.heads[0] === w('Предмет', 'Item'), where + 'the first group - ' + m.heads[0]);
+          ok(
+            m.heads.at(-1) === w('Где лежит', 'Where it goes'),
+            where + 'the last group - ' + m.heads.at(-1)
+          );
+          ok(m.help === 0 && !m.star, where + 'a «?» or a star - ' + JSON.stringify(m));
+          if (width === 360) {
+            const bar = await page.evaluate(() => {
+              const el = document.querySelector('.ebar');
+              const r = el.getBoundingClientRect();
+              const kids = [...el.querySelectorAll('.btn')].map((b) =>
+                b.getBoundingClientRect()
+              );
+              return {
+                pos: getComputedStyle(el).position,
+                bottom: Math.round(r.bottom),
+                h: innerHeight,
+                n: kids.length,
+                inside: kids.every((k) => k.left >= 0 && k.right <= innerWidth)
+              };
+            });
+            ok(
+              bar.pos === 'sticky' && bar.bottom === bar.h && bar.inside,
+              where + 'the bar - ' + JSON.stringify(bar)
+            );
+            ok(bar.n === (hash.endsWith('new') ? 2 : 3), where + 'the bar holds ' + bar.n);
+            ok(m.cards === 0, where + 'a card behind the sheet');
+            await d.press(w('Предпросмотр', 'Preview'));
+            const inSheet = await page.$$eval('dialog[open] .card', (c) => c.length);
+            ok(inSheet === 1, where + 'the sheet holds ' + inSheet + ' cards');
+            await page.keyboard.press('Escape');
+            await d.settle();
+            ok(
+              await page.evaluate(
+                () => document.activeElement === document.querySelectorAll('.ebar .btn')[1]
+              ),
+              where + 'the sheet did not return the focus'
+            );
+          } else {
+            ok(m.cards === 1, where + 'the column holds ' + m.cards + ' cards');
+            const col = await page.evaluate(
+              () => getComputedStyle(document.querySelector('.preview')).position
+            );
+            ok(col === 'sticky', where + 'the column is ' + col);
+          }
+        } finally {
+          await ctx.close();
+        }
+      }
+    }
+  }
+
+  const lines = (page) =>
+    page.evaluate(() => {
+      const h = document.querySelector('.ttl');
+      return Math.round(
+        h.getBoundingClientRect().height / parseFloat(getComputedStyle(h).lineHeight)
+      );
+    });
+  for (const [width, most] of [
+    [360, 1],
+    [1180, 3]
+  ]) {
+    const { ctx, page, d } = await fresh({ width, height: 720 });
+    try {
+      await d.open('#/homebrew/hb_emberaxeaaaaaaaa', { as: 'gm1' });
+      await waitIn(page, () => !!document.querySelector('#hb-name'));
+      await page.$eval('#hb-name', (el) => {
+        el.value = 'Очень длинное название предмета '.repeat(4).slice(0, 120);
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+      await d.settle();
+      const n = await lines(page);
+      ok(n <= most, at + width + ': the title takes ' + n + ' lines');
+    } finally {
+      await ctx.close();
+    }
+  }
+
+  {
+    const { ctx, page, d } = await fresh({ width: 1180, height: 720 });
+    try {
+      await d.open('#/homebrew/hb_emberaxeaaaaaaaa', { as: 'gm1' });
+      await waitIn(page, () => !!document.querySelector('#hb-name'));
+      const m = await page.evaluate(() => {
+        const top = (id) =>
+          document.getElementById(id).closest('.fld').getBoundingClientRect().top;
+        return Math.abs(top('hb-eqtier') - top('hb-cls'));
+      });
+      ok(m <= 2, at + 'the pair «Ранг» and «Класс» is ' + m + ' px apart');
+    } finally {
+      await ctx.close();
+    }
+  }
+
+  {
+    const { ctx, page, d } = await fresh({ width: 360, height: 640, lang: 'en' });
+    try {
+      await d.open('#/homebrew/new', { as: 'gm1', lang: 'en' });
+      await waitIn(page, () => !!document.querySelector('#hb-name'));
+      await d.press('Equipment');
+      await d.press('Save');
+      await waitIn(page, () => !!document.querySelector('.errs'));
+      const m = await page.evaluate(() => {
+        const texts = ['hb-cls', 'hb-tr', 'hb-rg', 'hb-dt', 'hb-bu'].map(
+          (id) => document.getElementById(id + '-err')?.textContent.trim() ?? ''
+        );
+        const dmg = document.getElementById('hb-dmg-err');
+        const lh = dmg ? parseFloat(getComputedStyle(dmg).lineHeight) || 18 : 18;
+        return { texts, dmgLines: dmg ? Math.round(dmg.offsetHeight / lh) : 0 };
+      });
+      ok(
+        new Set(m.texts).size === 5 && m.texts.every(Boolean),
+        at + 'two fields share a message - ' + JSON.stringify(m)
+      );
+      ok(m.dmgLines <= 2, at + 'the damage message takes ' + m.dmgLines + ' lines at 360');
+    } finally {
+      await ctx.close();
+    }
   }
 }
 
@@ -5217,9 +5537,10 @@ const FIRST_SCREEN = [
   { state: '#/search ~ searched', shipped: false },
   { state: '#/account as gm1', shipped: false },
   { state: '#/p/set-emberaxe as gm2', shipped: false },
-  { state: '#/homebrew as gm3', shipped: false },
-  { state: '#/homebrew/sets ~ long name as gm4', shipped: false },
-  { state: '#/homebrew/new as gm1', shipped: false },
+  { state: '#/homebrew as gm3', shipped: true },
+  { state: '#/homebrew/sets ~ long name as gm4', shipped: true },
+  { state: '#/homebrew/new as gm1', shipped: true },
+  { state: '#/homebrew/hb_longsrcaaaaaaaaa as gm4', shipped: true },
   { state: '#/lists as gm1', shipped: false },
   { state: '#/lists/00000000-0000-4000-8000-000000008001 as gm4', shipped: false },
   { state: '#/s/player-token-1', shipped: false }
@@ -6012,7 +6333,7 @@ const CASES = [
   ['64 (the own-item row and a row note box)', ownItemRowAndNoteBox],
   ['65 (the requests panel folds at 360)', requestsPanelFolds],
   ['66 (a 200-character list name at 360)', longListName],
-  ['67 (field help and threshold labels at 360)', fieldHelpAt360],
+  ['67 (no field help and the threshold labels at 360)', fieldHelpAt360],
   ['68 (#/homebrew at 300 items)', homebrewAt300],
   ['69 (the GM-only toggle at 1180 and 360)', gmOnlyToggle],
   ['70 (a picture: choose, crop, save)', pictureChooseCropSave],
@@ -6035,7 +6356,9 @@ const CASES = [
   ['87 (a backward Tab never lands under the header)', backwardTabClearsTheHeader],
   ['88 (the record actions fit at 360, 320 and 1180)', recordActionsFit],
   ['89 (the roll page layout holds at 320 to 1180 px)', rollPageLayout],
-  ['90 (the result row and its menus)', resultRowAndMenus]
+  ['90 (the result row and its menus)', resultRowAndMenus],
+  ['91 (the homebrew head, tabs and bar from 320 to 1180 px)', homebrewHeadAndBar],
+  ['92 (the editor holds its layout and the preview sheet)', editorLayoutAndSheet]
 ];
 
 (async () => {

@@ -12,7 +12,6 @@ import {
   ALDER,
   AXE,
   editor,
-  helpButton,
   openRel,
   picker,
   press,
@@ -29,38 +28,6 @@ afterEach(cleanup);
 Element.prototype.scrollIntoView = vi.fn();
 
 const t = dict('ru');
-
-describe('the «?» of a field', () => {
-  const HELP: [string, string, string][] = [
-    [t.hbSource, 'hb-book-help', t.hbSourceHelp],
-    [t.hbAlt, 'hb-alt-help', t.hbAltHint],
-    [t.hbLine, 'hb-line-help', t.hbLineHelp],
-    [t.craftInto, 'hb-craft-help', t.hbCraftIntoHelp],
-    [t.craftFrom, 'hb-craft-from-help', t.hbCraftFromHelp],
-    [t.setLabel, 'hb-set-help', t.hbSetHelp],
-    [t.hbRefs, 'hb-refs-help', t.hbRefsHelp]
-  ];
-
-  it('names its field, starts closed and shows its hint under the label on a press', async () => {
-    const { container } = await editor(AXE);
-    await openRel();
-    for (const [label, id, text] of HELP) {
-      const button = helpButton(label);
-      const hint = document.getElementById(id);
-      expect(button).toHaveAttribute('aria-expanded', 'false');
-      expect(button).toHaveAttribute('aria-controls', id);
-      expect(hint).toHaveTextContent(text);
-      expect(hint).not.toBeVisible();
-    }
-    await expectNoA11yViolations(container);
-    for (const [label, id] of HELP) {
-      await userEvent.click(helpButton(label));
-      expect(helpButton(label)).toHaveAttribute('aria-expanded', 'true');
-      expect(document.getElementById(id)).toBeVisible();
-    }
-    await expectNoA11yViolations(container);
-  });
-});
 
 describe('the fold «Связи»', () => {
   it('picks and removes in every picker, picks a set, and cancels the inline forms', async () => {

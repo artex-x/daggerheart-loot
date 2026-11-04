@@ -32,43 +32,37 @@ RootWebArea "Обычные правила - Генератор лута Daggerh
     button "3d12 Необычная - Редкая" [description=Бросить 3d12 - Необычная - Редкая]
     button "4d12 Редкая - Легендарная" [description=Бросить 4d12 - Редкая - Легендарная]
     button "5d12 Легендарная" [description=Бросить 5d12 - Легендарная]
-    StaticText "РЕЗУЛЬТАТ БРОСКА (1–60)"
+    ... StaticText x23 of 27 same-shape siblings elided
     button "На единицу меньше" [disabled=true]
     textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
     button "На единицу больше"
-    StaticText "ИСТОЧНИК"
     button "Core" [pressed=true]
     button "Hope & Fear" [pressed=true]
-    StaticText "ТИП"
     button "Предметы" [pressed=true]
     button "Расходники" [pressed=true]
     heading "Бросок 1" [level=2]
     button "Скопировать все варианты"
     status ""
-      button "Страница"
-      StaticText "1"
-      StaticText "ПРЕДМЕТ"
-      ... StaticText x18 of 22 same-shape siblings elided
-      link "Первоклассный Спальный Мешок" [description=Страница url=/i/ci1]
-      button "В список" [expanded=true focused=true]
-      button "+ Новый список" [pressed=false]
-      button "Поделиться"
-      button "Ещё" [expanded=false haspopup=menu]
-      ... button x4 of 8 same-shape siblings elided
-      link "Зелье Быстрого Шага" [description=Страница url=/i/cc1]
-      link "Большое Зелье Быстрого Шага" [url=/i/cc25]
-      button "В список" [expanded=false]
-      button "Ещё" [expanded=false haspopup=menu]
-      link "Шипы" [description=Страница url=/i/hi1]
-      button "В список" [expanded=false]
-      button "Ещё" [expanded=false haspopup=menu]
-      button "Страница"
-      StaticText "HOPE & FEAR"
-      link "Оберегающая Свеча" [description=Страница url=/i/hc1]
-      StaticText "Зажгите эту свечу, и в пределах Средней дистанции разольётся оре..." [namelen=186 namehash=62be8214]
-      button "В список" [expanded=false]
-      button "Поделиться"
-      button "Ещё" [expanded=false haspopup=menu]
+      StaticText "Первоклассный Спальный Мешок, Зелье Быстрого Шага, Шипы, Оберега..." [namelen=74 namehash=92c425c9]
+    ... button x6 of 10 same-shape siblings elided
+    link "Первоклассный Спальный Мешок" [description=Страница url=/i/ci1]
+    button "В список" [expanded=true focused=true]
+    button "+ Новый список" [pressed=false]
+    button "Ещё" [expanded=false haspopup=menu]
+    link "Зелье Быстрого Шага" [description=Страница url=/i/cc1]
+    link "Большое Зелье Быстрого Шага" [url=/i/cc25]
+    button "В список" [expanded=false]
+    button "Ещё" [expanded=false haspopup=menu]
+    link "Шипы" [description=Страница url=/i/hi1]
+    button "В список" [expanded=false]
+    button "Ещё" [expanded=false haspopup=menu]
+    button "Страница"
+    StaticText "HOPE & FEAR"
+    link "Оберегающая Свеча" [description=Страница url=/i/hc1]
+    StaticText "Зажгите эту свечу, и в пределах Средней дистанции разольётся оре..." [namelen=186 namehash=62be8214]
+    button "В список" [expanded=false]
+    button "Поделиться"
+    button "Ещё" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -147,43 +141,37 @@ RootWebArea "Standard rules - Daggerheart Loot Generator" [url=/en/roll/std?as=g
     button "3d12 Uncommon - Rare" [description=Roll 3d12 - Uncommon - Rare]
     button "4d12 Rare - Legendary" [description=Roll 4d12 - Rare - Legendary]
     button "5d12 Legendary" [description=Roll 5d12 - Legendary]
-    StaticText "ROLL RESULT (1–60)"
+    ... StaticText x23 of 27 same-shape siblings elided
     button "One lower" [disabled=true]
     textbox "Roll result" [value=1 multiline=false readonly=false required=false]
     button "One higher"
-    StaticText "SOURCE"
     button "Core" [pressed=true]
     button "Hope & Fear" [pressed=true]
-    StaticText "TYPE"
     button "Items" [pressed=true]
     button "Consumables" [pressed=true]
     heading "Roll 1" [level=2]
     button "Copy every option"
     status ""
-      button "Page"
-      StaticText "1"
-      StaticText "ITEM"
-      ... StaticText x18 of 22 same-shape siblings elided
-      link "Premium Bedroll" [description=Page url=/i/en/ci1]
-      button "Add to list" [expanded=true focused=true]
-      button "+ New list" [pressed=false]
-      button "Share"
-      button "More" [expanded=false haspopup=menu]
-      ... button x4 of 8 same-shape siblings elided
-      link "Stride Potion" [description=Page url=/i/en/cc1]
-      link "Major Stride Potion" [url=/i/en/cc25]
-      button "Add to list" [expanded=false]
-      button "More" [expanded=false haspopup=menu]
-      link "Caltrops" [description=Page url=/i/en/hi1]
-      button "Add to list" [expanded=false]
-      button "More" [expanded=false haspopup=menu]
-      button "Page"
-      StaticText "HOPE & FEAR"
-      link "Warding Candle" [description=Page url=/i/en/hc1]
-      StaticText "You can light this candle to fill an area within Close range wit..." [namelen=208 namehash=88ca1325]
-      button "Add to list" [expanded=false]
-      button "Share"
-      button "More" [expanded=false haspopup=menu]
+      StaticText "Premium Bedroll, Stride Potion, Caltrops, Warding Candle"
+    ... button x6 of 10 same-shape siblings elided
+    link "Premium Bedroll" [description=Page url=/i/en/ci1]
+    button "Add to list" [expanded=true focused=true]
+    button "+ New list" [pressed=false]
+    button "More" [expanded=false haspopup=menu]
+    link "Stride Potion" [description=Page url=/i/en/cc1]
+    link "Major Stride Potion" [url=/i/en/cc25]
+    button "Add to list" [expanded=false]
+    button "More" [expanded=false haspopup=menu]
+    link "Caltrops" [description=Page url=/i/en/hi1]
+    button "Add to list" [expanded=false]
+    button "More" [expanded=false haspopup=menu]
+    button "Page"
+    StaticText "HOPE & FEAR"
+    link "Warding Candle" [description=Page url=/i/en/hc1]
+    StaticText "You can light this candle to fill an area within Close range wit..." [namelen=208 namehash=88ca1325]
+    button "Add to list" [expanded=false]
+    button "Share"
+    button "More" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]

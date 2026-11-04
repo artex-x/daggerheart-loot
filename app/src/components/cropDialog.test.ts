@@ -142,6 +142,55 @@ describe('moving the square', () => {
     expect(parseFloat(picture().style.left)).toBeCloseTo(before + (10 / 352) * 100, 2);
   });
 
+  it('centers the frame on a tap, and a drag does not', async () => {
+    open(fakePicture(1200, 800));
+    await ready();
+    vi.spyOn(stage(), 'getBoundingClientRect').mockReturnValue({
+      left: 0,
+      top: 0,
+      width: 352,
+      height: 352
+    } as DOMRect);
+    const before = parseFloat(picture().style.left);
+    await fireEvent.pointerDown(stage(), { pointerId: 1, clientX: 195, clientY: 176 });
+    await fireEvent.pointerUp(stage(), { pointerId: 1, clientX: 196, clientY: 176 });
+    /* The point 20 px right of the center moves the frame by the same screen distance. */
+    expect(parseFloat(picture().style.left)).toBeCloseTo(before - (20 / 352) * 100, 1);
+    const tapped = picture().style.left;
+    await fireEvent.pointerDown(stage(), { pointerId: 1, clientX: 100, clientY: 176 });
+    await fireEvent.pointerMove(stage(), { pointerId: 1, clientX: 90, clientY: 176 });
+    await fireEvent.pointerUp(stage(), { pointerId: 1, clientX: 90, clientY: 176 });
+    expect(parseFloat(picture().style.left)).toBeCloseTo(
+      parseFloat(tapped) - (10 / 352) * 100,
+      1
+    );
+  });
+
+  it('steps the zoom with its two buttons and stops at the ends', async () => {
+    const { container } = open(fakePicture(1200, 800));
+    await ready();
+    const zoom = screen.getByLabelText<HTMLInputElement>(t.hbArtZoom);
+    const less = screen.getByRole('button', { name: t.cropLess });
+    const more = screen.getByRole('button', { name: t.cropMore });
+    expect(less).toBeDisabled();
+    await userEvent.click(more);
+    expect(zoom.value).toBe('1.25');
+    await userEvent.click(less);
+    expect(zoom.value).toBe('1');
+    for (let i = 0; i < 40 && !(more as HTMLButtonElement).disabled; i++) {
+      await userEvent.click(more);
+    }
+    expect(more).toBeDisabled();
+    await expectNoA11yViolations(container);
+  });
+
+  it('keeps the hint for a screen reader and out of the view', async () => {
+    open(fakePicture(1200, 800));
+    await ready();
+    expect(document.getElementById('hb-crop-hint')).toHaveClass('vh');
+    expect(stage()).toHaveAttribute('aria-describedby', 'hb-crop-hint');
+  });
+
   it('takes no drag on a stage that has no size', async () => {
     open(fakePicture(1200, 800));
     await ready();

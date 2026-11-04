@@ -1,6 +1,6 @@
 # #/homebrew/f_src-hb_alderworkshopaaa as gm1
 # route: #/homebrew/f_src-hb_alderworkshopaaa
-# why: the Items tab at a filter address: the panel open because the page did not write the address, the pill «Мастерская Ольхи», «7 из 12», only the source rows drawn
+# why: the Items tab at a filter address: «Мастерская Ольхи» picked in the column, «Показано 7 из 12», only the source rows drawn, the group heads without the source name
 # as: gm1
 
 ## ru :: tree
@@ -20,42 +20,47 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
   main ""
     heading "Мои предметы" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
-    StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
-    button "Импорт из файла" [expanded=false]
     navigation "Мои предметы"
-      link "Предметы" [url=/homebrew]
-      link "Источники" [url=/homebrew/sources]
-      link "Комплекты" [url=/homebrew/sets]
-      link "Карты правил" [url=/homebrew/rules]
+      link "Предметы 12" [url=/homebrew]
+        StaticText "Предметы"
+        StaticText "12"
+      link "Источники 1" [url=/homebrew/sources]
+        StaticText "Источники"
+        StaticText "1"
+      link "Комплекты 1" [url=/homebrew/sets]
+        StaticText "Комплекты"
+        StaticText "1"
+      link "Карты правил 1" [url=/homebrew/rules]
+        StaticText "Карты правил"
+        StaticText "1"
     link "Новый предмет" [url=/homebrew/new]
-    status ""
+    StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
     searchbox "Найти предмет"
-    button "Фильтры (1)" [expanded=true]
-    button "Мастерская Ольхи" [description=Убрать из фильтра]
-    button "Сбросить всё"
-    StaticText "7 из 12"
-    ... StaticText x5 of 9 same-shape siblings elided
-    button "Предметы" [pressed=false]
-    ... button x3 of 7 same-shape siblings elided
-    button "Мастерская Ольхи" [pressed=true]
-    button "Пистоли" [pressed=false]
-    button "Холодное оружие" [pressed=false]
     StaticText "12 предметов из 12"
-    checkbox "Выбрать все" [checked=false]
-    StaticText "ВЫБРАТЬ ВСЕ"
-    generic ""
-    heading "Мастерская Ольхи · Пистоли 3" [level=2]
-    checkbox "Предмет 002" [checked=false]
-    button "Предмет 002 ПРЕДМЕТ МАСТЕРСКАЯ ОЛЬХИ (HB) Сгенерированный предме..." [namelen=77 namehash=5b89cda4]
-    ... checkbox x4 of 8 same-shape siblings elided
+    StaticText "Показано 7 из 12"
+    button "Импорт из файла" [expanded=false]
+    button "Выбрать"
+    complementary "Фильтры"
+      heading "Фильтры · 1" [level=2]
+      button "Сбросить"
+      StaticText "ТИП"
+      button "Все" [pressed=true]
+      button "Предметы" [pressed=false]
+      button "Расходники" [pressed=false]
+      ... button x3 of 7 same-shape siblings elided
+      StaticText "ИСТОЧНИК"
+      button "Мастерская Ольхи" [pressed=true]
+      StaticText "РАЗДЕЛ"
+      button "Все" [pressed=true]
+      button "Пистоли" [pressed=false]
+      button "Холодное оружие" [pressed=false]
+    heading "Пистоли 3" [level=2]
+    button "Предмет 002 ПРЕДМЕТ Сгенерированный предмет для замера."
     ... button x4 of 8 same-shape siblings elided
-    heading "Мастерская Ольхи · Холодное оружие 1" [level=2]
+    heading "Холодное оружие 1" [level=2]
     heading "Мастерская Ольхи 3" [level=2]
-    checkbox "Предмет 004" [checked=false]
-    button "Предмет 004 ПРЕДМЕТ МАСТЕРСКАЯ ОЛЬХИ (HB) Сгенерированный предме..." [namelen=77 namehash=d907c939]
-    checkbox "Предмет 007" [checked=false]
-    button "Предмет 007 ПРЕДМЕТ МАСТЕРСКАЯ ОЛЬХИ (HB) Сгенерированный предме..." [namelen=77 namehash=0785ffa3]
+    button "Предмет 004 ПРЕДМЕТ Сгенерированный предмет для замера."
+    button "Предмет 007 ПРЕДМЕТ Сгенерированный предмет для замера."
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -64,48 +69,41 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-?Справка
 EN
 RU
 daggerheart.com
 Аккаунт: gm1@example.test
 Бросок
-Выбрать все
+Все
+Выбрать
 Импорт из файла
-Источники
+Источники 1
 К содержимому
-Карты правил
-Комплекты
+Карты правил 1
+Комплекты 1
 Конфиденциальность
 ЛутDaggerheart
 Мастерская Ольхи
-Мастерская Ольхи×
+Найти предмет
 Новый предмет
 Открывать при запуске
 Пистоли
 Поиск
-Предмет 001
-Предмет 001ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=af8cef21]
-Предмет 002
-Предмет 002ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=b26f620e]
-Предмет 004
-Предмет 004ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=4d0a407f]
-Предмет 005
-Предмет 005ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=183706e3]
-Предмет 007
-Предмет 007ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=506b2799]
-Предмет 008
-Предмет 008ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=2b654a14]
+Предмет 001ПредметСгенерированный предмет для замера.
+Предмет 002ПредметСгенерированный предмет для замера.
+Предмет 004ПредметСгенерированный предмет для замера.
+Предмет 005ПредметСгенерированный предмет для замера.
+Предмет 007ПредметСгенерированный предмет для замера.
+Предмет 008ПредметСгенерированный предмет для замера.
 Предметы
+Предметы 12
 Расходники
-Сбросить всё
+Сбросить
 Снаряжение
 Таблицы
-Топор Тлеющих Углей
-Топор Тлеющих УглейОсновное оружиеУникальноеМастерская Ольхи (HB... [namelen=184 namehash=e7c9f22c]
+Топор Тлеющих УглейОсновное оружиеУникальноеРанг 2 · Магическое ... [namelen=163 namehash=a5051659]
 Условия использования
 Установить как приложение
-Фильтры (1)
 Холодное оружие
 Хоумбрю
 
@@ -126,42 +124,47 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew/f_src-hb_a
   main ""
     heading "My items" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
-    StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
-    button "Import from file" [expanded=false]
     navigation "My items"
-      link "Items" [url=/en/homebrew]
-      link "Sources" [url=/en/homebrew/sources]
-      link "Sets" [url=/en/homebrew/sets]
-      link "Rule cards" [url=/en/homebrew/rules]
+      link "Items 12" [url=/en/homebrew]
+        StaticText "Items"
+        StaticText "12"
+      link "Sources 1" [url=/en/homebrew/sources]
+        StaticText "Sources"
+        StaticText "1"
+      link "Sets 1" [url=/en/homebrew/sets]
+        StaticText "Sets"
+        StaticText "1"
+      link "Rule cards 1" [url=/en/homebrew/rules]
+        StaticText "Rule cards"
+        StaticText "1"
     link "New item" [url=/en/homebrew/new]
-    status ""
+    StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
     searchbox "Find an item"
-    button "Filters (1)" [expanded=true]
-    button "Alder Workshop" [description=Remove from the filter]
-    button "Reset all"
-    StaticText "7 of 12"
-    ... StaticText x5 of 9 same-shape siblings elided
-    button "Items" [pressed=false]
-    ... button x3 of 7 same-shape siblings elided
-    button "Alder Workshop" [pressed=true]
-    button "Blades" [pressed=false]
-    button "Pistols" [pressed=false]
     StaticText "12 items of 12"
-    checkbox "Select all" [checked=false]
-    StaticText "SELECT ALL"
-    generic ""
-    heading "Alder Workshop · Pistols 3" [level=2]
-    checkbox "Item 002" [checked=false]
-    button "Item 002 ITEM ALDER WORKSHOP (HB) A generated item for the measu..." [namelen=67 namehash=c7fd2bb4]
-    ... checkbox x4 of 8 same-shape siblings elided
+    StaticText "7 of 12 shown"
+    button "Import from file" [expanded=false]
+    button "Select"
+    complementary "Filters"
+      heading "Filters · 1" [level=2]
+      button "Reset"
+      StaticText "TYPE"
+      button "All" [pressed=true]
+      button "Items" [pressed=false]
+      button "Consumables" [pressed=false]
+      ... button x3 of 7 same-shape siblings elided
+      StaticText "SOURCE"
+      button "Alder Workshop" [pressed=true]
+      StaticText "SECTION"
+      button "All" [pressed=true]
+      button "Blades" [pressed=false]
+      button "Pistols" [pressed=false]
+    heading "Pistols 3" [level=2]
+    button "Item 002 ITEM A generated item for the measure."
     ... button x4 of 8 same-shape siblings elided
-    heading "Alder Workshop · Blades 1" [level=2]
+    heading "Blades 1" [level=2]
     heading "Alder Workshop 3" [level=2]
-    checkbox "Item 004" [checked=false]
-    button "Item 004 ITEM ALDER WORKSHOP (HB) A generated item for the measu..." [namelen=67 namehash=a67d73e6]
-    checkbox "Item 007" [checked=false]
-    button "Item 007 ITEM ALDER WORKSHOP (HB) A generated item for the measu..." [namelen=67 namehash=84fc7334]
+    button "Item 004 ITEM A generated item for the measure."
+    button "Item 007 ITEM A generated item for the measure."
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -170,47 +173,40 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew/f_src-hb_a
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-?Help
 Account: gm1@example.test
 Alder Workshop
-Alder Workshop×
+All
 Blades
 Consumables
 EN
-Ember Axe
-Ember AxePrimary weaponUniqueAlder Workshop (HB)Tier 2 · Magic ·... [namelen=159 namehash=ea056220]
+Ember AxePrimary weaponUniqueTier 2 · Magic · Spellcast · Melee ... [namelen=140 namehash=269142bb]
 Equipment
-Filters (1)
+Find an item
 Homebrew
 Import from file
 Install as an app
-Item 001
-Item 001ItemAlder Workshop (HB)A generated item for the measure.
-Item 002
-Item 002ItemAlder Workshop (HB)A generated item for the measure.
-Item 004
-Item 004ItemAlder Workshop (HB)A generated item for the measure.
-Item 005
-Item 005ItemAlder Workshop (HB)A generated item for the measure.
-Item 007
-Item 007ItemAlder Workshop (HB)A generated item for the measure.
-Item 008
-Item 008ItemAlder Workshop (HB)A generated item for the measure.
+Item 001ItemA generated item for the measure.
+Item 002ItemA generated item for the measure.
+Item 004ItemA generated item for the measure.
+Item 005ItemA generated item for the measure.
+Item 007ItemA generated item for the measure.
+Item 008ItemA generated item for the measure.
 Items
+Items 12
 LootDaggerheart
 New item
 Open on start
 Pistols
 Privacy
 RU
-Reset all
+Reset
 Roll
-Rule cards
+Rule cards 1
 Search
-Select all
-Sets
+Select
+Sets 1
 Skip to content
-Sources
+Sources 1
 Tables
 Terms of use
 daggerheart.com

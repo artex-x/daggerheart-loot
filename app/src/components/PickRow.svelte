@@ -150,12 +150,6 @@
 {/if}
 
 <style>
-  .msep {
-    height: 1px;
-    margin: 4px 0;
-    background: var(--line);
-  }
-
   .mit small {
     display: block;
     max-width: 28ch;

@@ -17,6 +17,7 @@
   import { descOf, eqParts, nameOf } from '../lib/i18n.js';
   import { cardBadges, kindGlyph, relText, srcLabel } from '../lib/label.js';
   import { madeFrom, upgradesTo } from '../lib/data.js';
+  import { isHomebrewRecord, oneLangOf } from '../lib/homebrew.js';
   import type { Index } from '../lib/data.js';
   import type { HiddenTags } from '../lib/rowTags.js';
   import { highlightRanges, type Term } from '../lib/search.js';
@@ -61,6 +62,12 @@
   const t = $derived(dict(lang));
 
   const eqClass = (eq: Equip): string => `eq-${eq.t}`;
+
+  /* An own item written in one language: the tag names it where the other interface shows it. */
+  const nameLang = $derived.by(() => {
+    const one = isHomebrewRecord(it) ? oneLangOf(it.ru, it.en) : null;
+    return one === lang ? null : one;
+  });
 
   const into = $derived(upgradesTo(index, it));
   const from = $derived(madeFrom(index, it));
@@ -139,7 +146,9 @@
         >{#if gmOnly}<span class="gmstate vh">{', ' + t.noteHid}</span>{/if}{#if tail}<i
             class="rtail">{tail}</i
           >{/if}</b
-      >{#each tags as b, i (i)}<Badge cls={b.cls} title={b.title}>{b.text}</Badge>{/each}</span
+      >{#each tags as b, i (i)}<Badge cls={b.cls} title={b.title}>{b.text}</Badge
+        >{/each}{#if nameLang}<span class="lt" lang={nameLang}>{nameLang.toUpperCase()}</span
+        >{/if}</span
     >{#if it.eq && stats}<span class="rstats {eqClass(it.eq)}">{stats}</span
       >{/if}{#if descOf(it, lang)}{@const blocks = descBlocks(it, lang)}<span
         >{#each blocks as b, i (i)}{#if i > 0}<br />{/if}{#if b.t === 'p'}<MarkupInline
@@ -228,6 +237,15 @@
     color: inherit;
     text-decoration: underline;
     text-underline-offset: 3px;
+  }
+
+  .row-main .rt .lt {
+    padding: 1px 5px;
+    border: 1px solid var(--line2);
+    border-radius: var(--r-sm);
+    color: var(--muted2);
+    font-size: var(--t-label);
+    font-weight: 600;
   }
 
   .row-main .rt .rnum {

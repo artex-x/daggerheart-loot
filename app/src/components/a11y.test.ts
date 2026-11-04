@@ -453,7 +453,7 @@ const STATES: {
     cloud: () => fakeCloud(SEED, 'gm1'),
     enter: async () => {
       await userEvent.click(await screen.findByRole('button', { name: 'Свой предмет' }));
-      await userEvent.type(screen.getByRole('textbox', { name: 'Название*' }), 'Фляга{Enter}');
+      await userEvent.type(screen.getByRole('textbox', { name: 'Название' }), 'Фляга{Enter}');
       await screen.findByRole('link', { name: 'Изменить' });
     }
   },
@@ -556,6 +556,9 @@ const COVERED: Record<string, string> = {
   'HelpBox.svelte': "PageHead's help panel states above",
   'HomebrewEditor.svelte':
     'homebrewEditor.test.ts in every kind, the problems and the banners; the failed save above',
+  'HomebrewBulk.svelte':
+    "homebrewBulk.test.ts: the bar's menu and the move sheet up to 760 px; homebrewPage.test.ts: the buttons from 761 px",
+  'HomebrewTabs.svelte': 'homebrewTabs.test.ts: the links, the picker and its sheet',
   'HomebrewImport.svelte':
     'homebrewImport.test.ts: the panel empty, a preview with every row note, a refused file, the update chosen',
   'HomebrewPage.svelte':

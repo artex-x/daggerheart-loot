@@ -33,22 +33,21 @@ RootWebArea "Many Worlds Tavern - Генератор лута Daggerheart" [url=
       option "Оплот Шершней" [selected=false]
       option "Дром" [selected=false]
     button "Бросить d20"
-    StaticText "РЕЗУЛЬТАТ БРОСКА (1–20)"
+    StaticText "РЕЗУЛЬТАТ БРОСКА (1-20)"
     button "На единицу меньше" [disabled=true]
     textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
     button "На единицу больше"
     heading "Бросок 1" [level=2]
     status ""
-      button "Страница"
-      StaticText "1"
-      StaticText "ОСНОВНОЕ ОРУЖИЕ"
-      ... StaticText x10 of 14 same-shape siblings elided
-      link "Искатель Врагов" [description=Страница url=/i/mw62]
-      StaticText "отметьте Стресс"
-      StaticText ", чтобы уменьшить урон вдвое и нанести этот уменьшенный урон так..." [namelen=119 namehash=c156b491]
-      button "В список" [expanded=false]
-      button "Поделиться"
-      button "Ещё" [expanded=false haspopup=menu]
+      StaticText "Искатель Врагов"
+    button "Страница"
+    ... StaticText x12 of 16 same-shape siblings elided
+    link "Искатель Врагов" [description=Страница url=/i/mw62]
+    StaticText "отметьте Стресс"
+    StaticText ", чтобы уменьшить урон вдвое и нанести этот уменьшенный урон так..." [namelen=119 namehash=c156b491]
+    button "В список" [expanded=false]
+    button "Поделиться"
+    button "Ещё" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -116,22 +115,21 @@ RootWebArea "Many Worlds Tavern - Daggerheart Loot Generator" [url=/en/roll/many
       option "Hornet Hold" [selected=false]
       option "The Drome" [selected=false]
     button "Roll d20"
-    StaticText "ROLL RESULT (1–20)"
+    StaticText "ROLL RESULT (1-20)"
     button "One lower" [disabled=true]
     textbox "Roll result" [value=1 multiline=false readonly=false required=false]
     button "One higher"
     heading "Roll 1" [level=2]
     status ""
-      button "Page"
-      StaticText "1"
-      StaticText "PRIMARY WEAPON"
-      ... StaticText x10 of 14 same-shape siblings elided
-      link "Foeseeker" [description=Page url=/i/en/mw62]
-      StaticText "Mark a Stress"
-      StaticText " to reduce the damage by half and also deal the reduced damage t..." [namelen=101 namehash=370eb9ac]
-      button "Add to list" [expanded=false]
-      button "Share"
-      button "More" [expanded=false haspopup=menu]
+      StaticText "Foeseeker"
+    button "Page"
+    ... StaticText x12 of 16 same-shape siblings elided
+    link "Foeseeker" [description=Page url=/i/en/mw62]
+    StaticText "Mark a Stress"
+    StaticText " to reduce the damage by half and also deal the reduced damage t..." [namelen=101 namehash=370eb9ac]
+    button "Add to list" [expanded=false]
+    button "Share"
+    button "More" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]

@@ -12,8 +12,9 @@
     /** The control's id: the caption becomes its `<label>`. Without it the caption is
      *  hidden from the accessible tree, and the control carries its own name. */
     for?: string | undefined;
-    /** Draws the required mark after the caption. */
-    required?: boolean;
+    /** The muted word after the caption of an optional field; a required field has none
+     *  (DESIGN.md, "Forms"). Outside the `<label>`: the control's name stays the caption. */
+    optional?: string | undefined;
     /** The field's problem, drawn after the control. */
     error?: string | undefined;
     /** The error line's id, which the control's `aria-describedby` names. */
@@ -24,15 +25,7 @@
     children: Snippet;
   }
 
-  const {
-    label,
-    for: forId,
-    required = false,
-    error,
-    errorId,
-    help,
-    children
-  }: Props = $props();
+  const { label, for: forId, optional, error, errorId, help, children }: Props = $props();
 
   let open = $state(false);
 </script>
@@ -41,32 +34,31 @@
      local snippet reads as a void expression to this rule. -->
 {#snippet caption()}
   {#if label && forId}
-    <label class="flabel" for={forId}
-      >{label}{#if required}<span class="req">*</span>{/if}</label
-    >
+    <label class="flabel" for={forId}>{label}</label>
   {:else if label}
-    <span class="flabel" aria-hidden="true"
-      >{label}{#if required}<span class="req">*</span>{/if}</span
-    >
+    <span class="flabel" aria-hidden="true">{label}</span>
   {/if}
 {/snippet}
 
 <div class="fld">
-  {#if help && label}
+  {#if label && (help || optional)}
     <div class="fhead">
       {@render caption()}
-      <HelpButton
-        lang={help.lang}
-        size="sm"
-        {open}
-        label={dict(help.lang).fieldHelp.replace('%s', label)}
-        controls={help.id}
-        onclick={() => {
-          open = !open;
-        }}
-      />
+      {#if optional}<span class="opt">{optional}</span>{/if}
+      {#if help}
+        <HelpButton
+          lang={help.lang}
+          size="sm"
+          {open}
+          label={dict(help.lang).fieldHelp.replace('%s', label)}
+          controls={help.id}
+          onclick={() => {
+            open = !open;
+          }}
+        />
+      {/if}
     </div>
-    <p class="fhelp" id={help.id} hidden={!open}>{help.text}</p>
+    {#if help}<p class="fhelp" id={help.id} hidden={!open}>{help.text}</p>{/if}
   {:else}
     {@render caption()}
   {/if}
@@ -103,9 +95,10 @@
     white-space: pre-line;
   }
 
-  .req {
-    margin-left: 0.25em;
-    color: var(--danger-text);
+  .opt {
+    font-size: var(--t-label);
+    font-weight: 400;
+    color: var(--muted2);
   }
 
   .ferr {

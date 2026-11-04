@@ -20,42 +20,47 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
   main ""
     heading "Мои предметы" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
+    navigation "Мои предметы"
+      link "Предметы 39" [url=/homebrew]
+        StaticText "Предметы"
+        StaticText "39"
+      link "Источники 0" [url=/homebrew/sources]
+        StaticText "Источники"
+        StaticText "0"
+      link "Комплекты 1" [url=/homebrew/sets]
+        StaticText "Комплекты"
+        StaticText "1"
+      link "Карты правил 0" [url=/homebrew/rules]
+        StaticText "Карты правил"
+        StaticText "0"
+    link "Новый предмет" [url=/homebrew/new]
     StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
-    button "Импорт из файла" [expanded=true]
     StaticText "ИМПОРТ ПРЕДМЕТОВ ИЗ ФАЙЛА JSON"
     button "Выбрать файл..."
-    ... StaticText x20 of 24 same-shape siblings elided
+    ... StaticText x16 of 20 same-shape siblings elided
+    link "Формат файла" [url=/schema/homebrew-v2.json]
+    link "llms.txt" [url=/llms.txt]
     combobox "Без источника 12 предметов" [value=В «Хоумбрю» expanded=false haspopup=menu]
       option "В «Хоумбрю»" [selected=true]
       option "+ Новый источник..." [selected=false]
     button "Пропустить" [pressed=false]
     button "Обновить" [pressed=true]
     button "свернуть" [expanded=true]
+    StaticText "Текст и характеристики существующих предметов и карт (12) заменя..." [namelen=191 namehash=4683eb0b]
     button "Импортировать (12)"
-    ... button x38 of 42 same-shape siblings elided
-    link "схеме homebrew-v2" [url=/schema/homebrew-v2.json]
-    link "описание для ИИ-помощников" [url=/llms.txt]
-    navigation "Мои предметы"
-      link "Предметы" [url=/homebrew]
-      link "Источники" [url=/homebrew/sources]
-      link "Комплекты" [url=/homebrew/sets]
-      link "Карты правил" [url=/homebrew/rules]
-    link "Новый предмет" [url=/homebrew/new]
-    status ""
+    ... button x39 of 43 same-shape siblings elided
     searchbox "Найти предмет"
-    button "Фильтры" [expanded=false]
     StaticText "39 предметов из 100"
-    checkbox "Выбрать все" [checked=false]
-    StaticText "ВЫБРАТЬ ВСЕ"
-    generic ""
+    button "Импорт из файла" [expanded=true]
+    complementary "Фильтры"
+      heading "Фильтры" [level=2]
+      StaticText "ТИП"
+      button "Все" [pressed=true]
+      button "Предметы" [pressed=false]
+      button "Снаряжение" [pressed=false]
     heading "Хоумбрю 39" [level=2]
-    checkbox "Мешок спокойных снов" [checked=false]
-    ... checkbox x36 of 40 same-shape siblings elided
-    checkbox "Учебный палаш 8" [checked=false]
-    button "Учебный палаш 8 ОСНОВНОЕ ОРУЖИЕ ХОУМБРЮ Ранг 2 · Физическое · Пр..." [namelen=140 namehash=940fa74d]
-    checkbox "Учебный палаш 9" [checked=false]
-    button "Учебный палаш 9 ОСНОВНОЕ ОРУЖИЕ ХОУМБРЮ Ранг 3 · Физическое · Пр..." [namelen=140 namehash=e89d220d]
+    button "Учебный палаш 8 ОСНОВНОЕ ОРУЖИЕ Ранг 2 · Физическое · Проворност..." [namelen=132 namehash=d1ab0fbe]
+    button "Учебный палаш 9 ОСНОВНОЕ ОРУЖИЕ Ранг 3 · Физическое · Проворност..." [namelen=132 namehash=a6b2658d]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -64,115 +69,78 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-?Справка
 EN
 RU
 daggerheart.com
+llms.txt
 Аккаунт: gm3@example.test
 Бросок
 В «Хоумбрю»+ Новый источник...
-Выбрать все
+Все
+Выбрать
 Выбрать файл...
 Импорт из файла
 Импортировать (12)
-Источники
+Источники 0
 К содержимому
-Карты правил
-Комплекты
+Карты правил 0
+Комплекты 1
 Конфиденциальность
 ЛутDaggerheart
-Мешок спокойных снов
-Мешок спокойных сновПредметХоумбрюСпальный мешок для долгой доро... [namelen=110 namehash=7583e7ec]
+Мешок спокойных сновПредметСпальный мешок для долгой дороги.Полу... [namelen=103 namehash=5a2e05d6]
+Найти предмет
 Новый предмет
 Обновить
 Открывать при запуске
 Отмена
-Подушка из мха
-Подушка из мхаПредметХоумбрюСвёрнутая постель для ночёвки в пути... [namelen=65 namehash=7eceaca4]
+Подушка из мхаПредметСвёрнутая постель для ночёвки в пути.
 Поиск
-Походный плед
-Походный пледПредметХоумбрюСвёрнутая постель для ночёвки в пути.
+Походный пледПредметСвёрнутая постель для ночёвки в пути.
 Предметы
+Предметы 39
 Пропустить
-Святой Венец
-Святой ВенецПредметХоумбрюЧасть убранства святого.
-Святой Пояс
-Святой ПоясПредметХоумбрюЧасть убранства святого.
-Святые Перчатки
-Святые ПерчаткиПредметХоумбрюЧасть убранства святого.
-Святые Сапоги
-Святые СапогиПредметХоумбрюЧасть убранства святого.
-Скатка путника
-Скатка путникаПредметХоумбрюСвёрнутая постель для ночёвки в пути... [namelen=101 namehash=0ff83eb5]
-Скатка следопыта
-Скатка следопытаПредметХоумбрюСвёрнутая постель для ночёвки в пу... [namelen=135 namehash=606f0f6e]
-Скатка стража
-Скатка стражаПредметХоумбрюСвёрнутая постель для ночёвки в пути.... [namelen=100 namehash=45f333c3]
-Спальный мешок дозорного
-Спальный мешок дозорногоПредметХоумбрюСпальный мешок для долгой ... [namelen=114 namehash=ae8c3235]
-Спальный мешок долгой дороги через перевал, болота, пустоши и ст... [namelen=120 namehash=084a20d9]
-Спальный мешок долгой дороги через перевал, болота, пустоши и ст... [namelen=210 namehash=6bf7de64]
-Спальный мешок из пепла
-Спальный мешок из пеплаПредметХоумбрюСпальный мешок для долгой д... [namelen=113 namehash=72899e9c]
-Спальный мешок кочевника
-Спальный мешок кочевникаПредметХоумбрюСпальный мешок для долгой ... [namelen=114 namehash=6869b42a]
-Спальный мешок лекаря
-Спальный мешок лекаряПредметХоумбрюСпальный мешок для долгой дор... [namelen=111 namehash=2f3f307b]
-Спальный мешок ловца снов
-Спальный мешок ловца сновПредметХоумбрюСпальный мешок для долгой... [namelen=115 namehash=f7af235f]
-Спальный мешок отшельника
-Спальный мешок отшельникаПредметХоумбрюСпальный мешок для долгой... [namelen=115 namehash=d9b7ce4b]
-Спальный мешок пилигрима
-Спальный мешок пилигримаПредметХоумбрюСпальный мешок для долгой ... [namelen=114 namehash=fb11bb54]
-Спальный мешок следопыта
-Спальный мешок следопытаПредметХоумбрюСпальный мешок для долгой ... [namelen=114 namehash=7435a2ce]
-Спальный мешок стража
-Спальный мешок стражаПредметХоумбрюСпальный мешок для долгой дор... [namelen=111 namehash=70d440a5]
-Спальный мешок странника
-Спальный мешок странникаПредметХоумбрюСпальный мешок для долгой ... [namelen=114 namehash=f107ccb4]
-Спальный мешок тишины
-Спальный мешок тишиныПредметХоумбрюСпальный мешок для долгой дор... [namelen=111 namehash=76dac10a]
-Спальный мешок у костра
-Спальный мешок у костраПредметХоумбрюСпальный мешок для долгой д... [namelen=113 namehash=9b06fcad]
+Святой ВенецПредметЧасть убранства святого.
+Святой ПоясПредметЧасть убранства святого.
+Святые ПерчаткиПредметЧасть убранства святого.
+Святые СапогиПредметЧасть убранства святого.
+Скатка путникаПредметСвёрнутая постель для ночёвки в пути.Улучша... [namelen=94 namehash=b9303232]
+Скатка следопытаПредметСвёрнутая постель для ночёвки в пути.Полу... [namelen=128 namehash=f6e81c88]
+Скатка стражаПредметСвёрнутая постель для ночёвки в пути.Получае... [namelen=93 namehash=ff8d5201]
+Снаряжение
+Спальный мешок дозорногоПредметСпальный мешок для долгой дороги.... [namelen=107 namehash=ea9b1fe2]
+Спальный мешок долгой дороги через перевал, болота, пустоши и ст... [namelen=203 namehash=dff2fb7a]
+Спальный мешок из пеплаПредметСпальный мешок для долгой дороги.П... [namelen=106 namehash=7958bec5]
+Спальный мешок кочевникаПредметСпальный мешок для долгой дороги.... [namelen=107 namehash=785c5818]
+Спальный мешок лекаряПредметСпальный мешок для долгой дороги.Пол... [namelen=104 namehash=8f264cb1]
+Спальный мешок ловца сновПредметСпальный мешок для долгой дороги... [namelen=108 namehash=779feea9]
+Спальный мешок отшельникаПредметСпальный мешок для долгой дороги... [namelen=108 namehash=f9ab787d]
+Спальный мешок пилигримаПредметСпальный мешок для долгой дороги.... [namelen=107 namehash=0d349412]
+Спальный мешок следопытаПредметСпальный мешок для долгой дороги.... [namelen=107 namehash=6e0f04b6]
+Спальный мешок стражаПредметСпальный мешок для долгой дороги.Пол... [namelen=104 namehash=a91fad3c]
+Спальный мешок странникаПредметСпальный мешок для долгой дороги.... [namelen=107 namehash=e0356c9b]
+Спальный мешок тишиныПредметСпальный мешок для долгой дороги.Пол... [namelen=104 namehash=01e6c487]
+Спальный мешок у костраПредметСпальный мешок для долгой дороги.П... [namelen=106 namehash=c26d390c]
 Таблицы
-Тёплый спальный мешок
-Тёплый спальный мешокПредметХоумбрюСпальный мешок для долгой дор... [namelen=111 namehash=4bd9882d]
+Тёплый спальный мешокПредметСпальный мешок для долгой дороги.Пол... [namelen=104 namehash=5e2fce50]
 Условия использования
 Установить как приложение
-Учебный палаш 1
-Учебный палаш 10
-Учебный палаш 10Основное оружиеХоумбрюРанг 3 · Физическое · Пров... [namelen=137 namehash=5a163ed9]
-Учебный палаш 11
-Учебный палаш 11Основное оружиеХоумбрюРанг 3 · Физическое · Пров... [namelen=137 namehash=a835a089]
-Учебный палаш 12
-Учебный палаш 12Основное оружиеХоумбрюРанг 3 · Физическое · Пров... [namelen=137 namehash=b4004170]
-Учебный палаш 13
-Учебный палаш 13Основное оружиеХоумбрюРанг 4 · Физическое · Пров... [namelen=137 namehash=4f35e248]
-Учебный палаш 14
-Учебный палаш 14Основное оружиеХоумбрюРанг 4 · Физическое · Пров... [namelen=137 namehash=c82224a2]
-Учебный палаш 15
-Учебный палаш 15Основное оружиеХоумбрюРанг 4 · Физическое · Пров... [namelen=137 namehash=65ffa756]
-Учебный палаш 1Основное оружиеХоумбрюРанг 1 · Физическое · Прово... [namelen=136 namehash=017d0be6]
-Учебный палаш 2
-Учебный палаш 2Основное оружиеХоумбрюРанг 1 · Физическое · Прово... [namelen=136 namehash=a97ce5b4]
-Учебный палаш 3
-Учебный палаш 3Основное оружиеХоумбрюРанг 1 · Физическое · Прово... [namelen=136 namehash=2fb13146]
-Учебный палаш 4
-Учебный палаш 4Основное оружиеХоумбрюРанг 2 · Физическое · Прово... [namelen=136 namehash=8d77c4c1]
-Учебный палаш 5
-Учебный палаш 5Основное оружиеХоумбрюРанг 2 · Физическое · Прово... [namelen=136 namehash=c1bc6d79]
-Учебный палаш 6
-Учебный палаш 6Основное оружиеХоумбрюРанг 2 · Физическое · Прово... [namelen=136 namehash=0006dc52]
-Учебный палаш 7
-Учебный палаш 7Основное оружиеХоумбрюРанг 2 · Физическое · Прово... [namelen=136 namehash=1b940cc3]
-Учебный палаш 8
-Учебный палаш 8Основное оружиеХоумбрюРанг 2 · Физическое · Прово... [namelen=136 namehash=9a7061ec]
-Учебный палаш 9
-Учебный палаш 9Основное оружиеХоумбрюРанг 3 · Физическое · Прово... [namelen=136 namehash=6ac152d7]
-Фильтры
-описание для ИИ-помощников
+Учебный палаш 10Основное оружиеРанг 3 · Физическое · Проворность... [namelen=130 namehash=50e312b4]
+Учебный палаш 11Основное оружиеРанг 3 · Физическое · Проворность... [namelen=130 namehash=c9c3b7ab]
+Учебный палаш 12Основное оружиеРанг 3 · Физическое · Проворность... [namelen=130 namehash=69abbced]
+Учебный палаш 13Основное оружиеРанг 4 · Физическое · Проворность... [namelen=130 namehash=0ee39abe]
+Учебный палаш 14Основное оружиеРанг 4 · Физическое · Проворность... [namelen=130 namehash=d322c25d]
+Учебный палаш 15Основное оружиеРанг 4 · Физическое · Проворность... [namelen=130 namehash=7a5990f4]
+Учебный палаш 1Основное оружиеРанг 1 · Физическое · Проворность ... [namelen=129 namehash=eed9a7c8]
+Учебный палаш 2Основное оружиеРанг 1 · Физическое · Проворность ... [namelen=129 namehash=4eeac298]
+Учебный палаш 3Основное оружиеРанг 1 · Физическое · Проворность ... [namelen=129 namehash=7e361f42]
+Учебный палаш 4Основное оружиеРанг 2 · Физическое · Проворность ... [namelen=129 namehash=b0f405ad]
+Учебный палаш 5Основное оружиеРанг 2 · Физическое · Проворность ... [namelen=129 namehash=96be15f1]
+Учебный палаш 6Основное оружиеРанг 2 · Физическое · Проворность ... [namelen=129 namehash=dd41422d]
+Учебный палаш 7Основное оружиеРанг 2 · Физическое · Проворность ... [namelen=129 namehash=0b98c50a]
+Учебный палаш 8Основное оружиеРанг 2 · Физическое · Проворность ... [namelen=129 namehash=bf15a568]
+Учебный палаш 9Основное оружиеРанг 3 · Физическое · Проворность ... [namelen=129 namehash=c10ea06a]
+Формат файла
 свернуть
-схеме homebrew-v2
 
 ## en :: tree
 RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm3]
@@ -191,42 +159,47 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm3]
   main ""
     heading "My items" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
+    navigation "My items"
+      link "Items 39" [url=/en/homebrew]
+        StaticText "Items"
+        StaticText "39"
+      link "Sources 0" [url=/en/homebrew/sources]
+        StaticText "Sources"
+        StaticText "0"
+      link "Sets 1" [url=/en/homebrew/sets]
+        StaticText "Sets"
+        StaticText "1"
+      link "Rule cards 0" [url=/en/homebrew/rules]
+        StaticText "Rule cards"
+        StaticText "0"
+    link "New item" [url=/en/homebrew/new]
     StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
-    button "Import from file" [expanded=true]
     StaticText "IMPORT ITEMS FROM A JSON FILE"
     button "Choose a file..."
-    ... StaticText x20 of 24 same-shape siblings elided
+    ... StaticText x16 of 20 same-shape siblings elided
+    link "File format" [url=/schema/homebrew-v2.json]
+    link "llms.txt" [url=/llms.txt]
     combobox "No source 12 items" [value=Into "Homebrew" expanded=false haspopup=menu]
       option "Into "Homebrew"" [selected=true]
       option "+ New source..." [selected=false]
     button "Skip" [pressed=false]
     button "Update" [pressed=true]
     button "show less" [expanded=true]
+    StaticText "The text and stats of the items and cards you hold (12) are repl..." [namelen=189 namehash=81aa653c]
     button "Import (12)"
-    ... button x38 of 42 same-shape siblings elided
-    link "homebrew-v2 schema" [url=/schema/homebrew-v2.json]
-    link "a description for AI assistants" [url=/llms.txt]
-    navigation "My items"
-      link "Items" [url=/en/homebrew]
-      link "Sources" [url=/en/homebrew/sources]
-      link "Sets" [url=/en/homebrew/sets]
-      link "Rule cards" [url=/en/homebrew/rules]
-    link "New item" [url=/en/homebrew/new]
-    status ""
+    ... button x39 of 43 same-shape siblings elided
     searchbox "Find an item"
-    button "Filters" [expanded=false]
     StaticText "39 items of 100"
-    checkbox "Select all" [checked=false]
-    StaticText "SELECT ALL"
-    generic ""
+    button "Import from file" [expanded=true]
+    complementary "Filters"
+      heading "Filters" [level=2]
+      StaticText "TYPE"
+      button "All" [pressed=true]
+      button "Items" [pressed=false]
+      button "Equipment" [pressed=false]
     heading "Homebrew 39" [level=2]
-    checkbox "Ash Bedroll" [checked=false]
-    ... checkbox x36 of 40 same-shape siblings elided
-    checkbox "Warden's Bedroll" [checked=false]
-    button "Warden's Bedroll ITEM HOMEBREW A bedroll for a long road. Made f..." [namelen=84 namehash=1739273d]
-    checkbox "Warm Bedroll" [checked=false]
-    button "Warm Bedroll ITEM HOMEBREW A bedroll for a long road. Made from:..." [namelen=80 namehash=63b2980f]
+    button "Warden's Bedroll ITEM A bedroll for a long road. Made from: Prem..." [namelen=75 namehash=0aae02c7]
+    button "Warm Bedroll ITEM A bedroll for a long road. Made from: Premium ..." [namelen=71 namehash=ecfb0d49]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -235,112 +208,75 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm3]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-?Help
 Account: gm3@example.test
-Ash Bedroll
-Ash BedrollItemHomebrewA bedroll for a long road.Made from: Prem... [namelen=75 namehash=caad8f66]
-Bedroll of Silence
-Bedroll of SilenceItemHomebrewA bedroll for a long road.Made fro... [namelen=82 namehash=440a7cc3]
-Bedroll of the long road over the pass, through the marshes, the... [namelen=120 namehash=bbb6ed09]
-Bedroll of the long road over the pass, through the marshes, the... [namelen=184 namehash=89a0963e]
-Camp Blanket
-Camp BlanketItemHomebrewA rolled bed for a night on the road.
-Campfire Bedroll
-Campfire BedrollItemHomebrewA bedroll for a long road.Made from:... [namelen=80 namehash=22ac5d4e]
+All
+Ash BedrollItemA bedroll for a long road.Made from: Premium Bedr... [namelen=67 namehash=38ee047f]
+Bedroll of SilenceItemA bedroll for a long road.Made from: Premi... [namelen=74 namehash=2532614b]
+Bedroll of the long road over the pass, through the marshes, the... [namelen=176 namehash=823e9fcf]
+Camp BlanketItemA rolled bed for a night on the road.
+Campfire BedrollItemA bedroll for a long road.Made from: Premium... [namelen=72 namehash=328cf69e]
 Cancel
 Choose a file...
-Dreamcatcher's Bedroll
-Dreamcatcher's BedrollItemHomebrewA bedroll for a long road.Made... [namelen=86 namehash=7173e1e7]
+Dreamcatcher's BedrollItemA bedroll for a long road.Made from: P... [namelen=78 namehash=c68dc549]
 EN
-Filters
-Healer's Bedroll
-Healer's BedrollItemHomebrewA bedroll for a long road.Made from:... [namelen=80 namehash=e0940ecb]
-Hermit's Bedroll
-Hermit's BedrollItemHomebrewA bedroll for a long road.Made from:... [namelen=80 namehash=e490ed62]
+Equipment
+File format
+Find an item
+Healer's BedrollItemA bedroll for a long road.Made from: Premium... [namelen=72 namehash=5a9df96a]
+Hermit's BedrollItemA bedroll for a long road.Made from: Premium... [namelen=72 namehash=478eb1d6]
 Import (12)
 Import from file
 Install as an app
 Into "Homebrew"+ New source...
 Items
+Items 39
 LootDaggerheart
-Moss Pillow
-Moss PillowItemHomebrewA rolled bed for a night on the road.
+Moss PillowItemA rolled bed for a night on the road.
 New item
-Nomad's Bedroll
-Nomad's BedrollItemHomebrewA bedroll for a long road.Made from: ... [namelen=79 namehash=c256eabb]
+Nomad's BedrollItemA bedroll for a long road.Made from: Premium ... [namelen=71 namehash=570439ed]
 Open on start
-Pilgrim's Bedroll
-Pilgrim's BedrollItemHomebrewA bedroll for a long road.Made from... [namelen=81 namehash=644dabe6]
-Practice Broadsword 1
-Practice Broadsword 10
-Practice Broadsword 10Primary weaponHomebrewTier 3 · Physical · ... [namelen=129 namehash=ea159801]
-Practice Broadsword 11
-Practice Broadsword 11Primary weaponHomebrewTier 3 · Physical · ... [namelen=129 namehash=1e6df817]
-Practice Broadsword 12
-Practice Broadsword 12Primary weaponHomebrewTier 3 · Physical · ... [namelen=129 namehash=8c30ab52]
-Practice Broadsword 13
-Practice Broadsword 13Primary weaponHomebrewTier 4 · Physical · ... [namelen=129 namehash=ec865e9e]
-Practice Broadsword 14
-Practice Broadsword 14Primary weaponHomebrewTier 4 · Physical · ... [namelen=129 namehash=3044677c]
-Practice Broadsword 15
-Practice Broadsword 15Primary weaponHomebrewTier 4 · Physical · ... [namelen=129 namehash=39caddc1]
-Practice Broadsword 1Primary weaponHomebrewTier 1 · Physical · A... [namelen=128 namehash=c15883ad]
-Practice Broadsword 2
-Practice Broadsword 2Primary weaponHomebrewTier 1 · Physical · A... [namelen=128 namehash=4602253e]
-Practice Broadsword 3
-Practice Broadsword 3Primary weaponHomebrewTier 1 · Physical · A... [namelen=128 namehash=d7d83d3b]
-Practice Broadsword 4
-Practice Broadsword 4Primary weaponHomebrewTier 2 · Physical · A... [namelen=128 namehash=354c6ae4]
-Practice Broadsword 5
-Practice Broadsword 5Primary weaponHomebrewTier 2 · Physical · A... [namelen=128 namehash=829a60ef]
-Practice Broadsword 6
-Practice Broadsword 6Primary weaponHomebrewTier 2 · Physical · A... [namelen=128 namehash=aff60171]
-Practice Broadsword 7
-Practice Broadsword 7Primary weaponHomebrewTier 2 · Physical · A... [namelen=128 namehash=668b2280]
-Practice Broadsword 8
-Practice Broadsword 8Primary weaponHomebrewTier 2 · Physical · A... [namelen=128 namehash=87ff4c02]
-Practice Broadsword 9
-Practice Broadsword 9Primary weaponHomebrewTier 3 · Physical · A... [namelen=128 namehash=e1149417]
+Pilgrim's BedrollItemA bedroll for a long road.Made from: Premiu... [namelen=73 namehash=84f90787]
+Practice Broadsword 10Primary weaponTier 3 · Physical · Agility ... [namelen=121 namehash=0e8ad8da]
+Practice Broadsword 11Primary weaponTier 3 · Physical · Agility ... [namelen=121 namehash=686e2abc]
+Practice Broadsword 12Primary weaponTier 3 · Physical · Agility ... [namelen=121 namehash=0b4342a6]
+Practice Broadsword 13Primary weaponTier 4 · Physical · Agility ... [namelen=121 namehash=6c3f834d]
+Practice Broadsword 14Primary weaponTier 4 · Physical · Agility ... [namelen=121 namehash=a7b880d4]
+Practice Broadsword 15Primary weaponTier 4 · Physical · Agility ... [namelen=121 namehash=3efb0750]
+Practice Broadsword 1Primary weaponTier 1 · Physical · Agility ·... [namelen=120 namehash=d6caa277]
+Practice Broadsword 2Primary weaponTier 1 · Physical · Agility ·... [namelen=120 namehash=fef00b32]
+Practice Broadsword 3Primary weaponTier 1 · Physical · Agility ·... [namelen=120 namehash=370b9f88]
+Practice Broadsword 4Primary weaponTier 2 · Physical · Agility ·... [namelen=120 namehash=c98d6c87]
+Practice Broadsword 5Primary weaponTier 2 · Physical · Agility ·... [namelen=120 namehash=83009d23]
+Practice Broadsword 6Primary weaponTier 2 · Physical · Agility ·... [namelen=120 namehash=0aee95a6]
+Practice Broadsword 7Primary weaponTier 2 · Physical · Agility ·... [namelen=120 namehash=cd472a20]
+Practice Broadsword 8Primary weaponTier 2 · Physical · Agility ·... [namelen=120 namehash=56aa2096]
+Practice Broadsword 9Primary weaponTier 3 · Physical · Agility ·... [namelen=120 namehash=96fc1a1d]
 Privacy
 RU
-Ranger's Roll
-Ranger's RollItemHomebrewA rolled bed for a night on the road.Ma... [namelen=126 namehash=676858e7]
+Ranger's RollItemA rolled bed for a night on the road.Made from:... [namelen=118 namehash=99691f93]
 Roll
-Rule cards
-Sack of Quiet Dreams
-Sack of Quiet DreamsItemHomebrewA bedroll for a long road.Made f... [namelen=84 namehash=9ee2b09a]
-Saintly Belt
-Saintly BeltItemHomebrewA piece of a saint's ensemble.
-Saintly Boots
-Saintly BootsItemHomebrewA piece of a saint's ensemble.
-Saintly Circlet
-Saintly CircletItemHomebrewA piece of a saint's ensemble.
-Saintly Gloves
-Saintly GlovesItemHomebrewA piece of a saint's ensemble.
+Rule cards 0
+Sack of Quiet DreamsItemA bedroll for a long road.Made from: Pre... [namelen=76 namehash=a4147c40]
+Saintly BeltItemA piece of a saint's ensemble.
+Saintly BootsItemA piece of a saint's ensemble.
+Saintly CircletItemA piece of a saint's ensemble.
+Saintly GlovesItemA piece of a saint's ensemble.
 Search
-Select all
-Sentry's Bedroll
-Sentry's BedrollItemHomebrewA bedroll for a long road.Made from:... [namelen=80 namehash=9e3c37c4]
-Sentry's Roll
-Sentry's RollItemHomebrewA rolled bed for a night on the road.Ma... [namelen=91 namehash=f6c0744e]
-Sets
+Select
+Sentry's BedrollItemA bedroll for a long road.Made from: Premium... [namelen=72 namehash=e9b4b9fe]
+Sentry's RollItemA rolled bed for a night on the road.Made from:... [namelen=83 namehash=01973e24]
+Sets 1
 Skip
 Skip to content
-Sources
+Sources 0
 Tables
 Terms of use
-Tracker's Bedroll
-Tracker's BedrollItemHomebrewA bedroll for a long road.Made from... [namelen=81 namehash=c82ba508]
-Traveller's Roll
-Traveller's RollItemHomebrewA rolled bed for a night on the road... [namelen=96 namehash=dd0f7fef]
+Tracker's BedrollItemA bedroll for a long road.Made from: Premiu... [namelen=73 namehash=faf4ebae]
+Traveller's RollItemA rolled bed for a night on the road.Upgrade... [namelen=88 namehash=4ceeec41]
 Update
-Wanderer's Bedroll
-Wanderer's BedrollItemHomebrewA bedroll for a long road.Made fro... [namelen=82 namehash=8ec6fadb]
-Warden's Bedroll
-Warden's BedrollItemHomebrewA bedroll for a long road.Made from:... [namelen=80 namehash=820543bb]
-Warm Bedroll
-Warm BedrollItemHomebrewA bedroll for a long road.Made from: Pre... [namelen=76 namehash=9053bc29]
-a description for AI assistants
+Wanderer's BedrollItemA bedroll for a long road.Made from: Premi... [namelen=74 namehash=8c1c35f7]
+Warden's BedrollItemA bedroll for a long road.Made from: Premium... [namelen=72 namehash=aebec638]
+Warm BedrollItemA bedroll for a long road.Made from: Premium Bed... [namelen=68 namehash=59d3d69d]
 daggerheart.com
-homebrew-v2 schema
+llms.txt
 show less

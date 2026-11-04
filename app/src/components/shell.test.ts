@@ -643,7 +643,10 @@ describe('the toast, through what a real page raises it with', () => {
 
   it('says nothing before anything has happened', () => {
     render(App, { env: at('#/roll/std') });
-    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    /* The roll page keeps its status region mounted, empty until a roll. */
+    expect(
+      screen.queryAllByRole('status').filter((r) => r.textContent.trim() !== '')
+    ).toHaveLength(0);
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 });

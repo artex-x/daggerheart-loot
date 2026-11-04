@@ -1,6 +1,6 @@
 <script lang="ts">
-  /* The selection bar's logic for the catalog, search and the shared page: add to a
-     list, print, copy, the shared page's total and its send line. `SelectionBar.svelte`
+  /* The selection bar's logic for the catalog, search, the own items and the shared page: add
+     to a list, print, copy, the shared page's total and its send line. `SelectionBar.svelte`
      draws it (one bar shape on every list page). `Shell.svelte` keeps it after the
      footer, before the modal, as `#selBar` in the live index.html.
 
@@ -10,6 +10,7 @@
   import { tick } from 'svelte';
   import AddToList from './AddToList.svelte';
   import Button from './Button.svelte';
+  import HomebrewBulk from './HomebrewBulk.svelte';
   import Icon from './Icon.svelte';
   import SelectionBar from './SelectionBar.svelte';
   import SignInPrompt from './SignInPrompt.svelte';
@@ -40,6 +41,10 @@
      total, the copy and the add-to-list; a table or search selection
      carries none of them. */
   const shared = $derived(app.shared);
+  /* The Items tab of «Мои предметы» adds its move, download and delete. */
+  const hb = $derived(
+    app.route.kind === 'homebrew' && app.route.tab === 'items' ? app.homebrew : null
+  );
   const metaOf = (id: string): ListEntryMeta => shared?.meta?.[id] ?? {};
   const takenOf = (id: string): number => takenQty(metaOf(id), app.picked.get(id));
   const taken = $derived(shared ? takenTotal(ids, metaOf, takenOf) : null);
@@ -217,9 +222,14 @@
             onclick={pressPrint}><Icon name="print" />{t.print}</Button
           >
         {/if}
-        <Button size="sm" disabled={!n} onclick={() => void copySel()}
-          ><Icon name="copy" />{t.copyText}</Button
-        >
+        {#if !hb || app.band !== 'narrow'}
+          <Button size="sm" disabled={!n} onclick={() => void copySel()}
+            ><Icon name="copy" />{t.copyText}</Button
+          >
+        {/if}
+        {#if hb}
+          <HomebrewBulk {app} store={hb} {ids} copy={() => void copySel()} />
+        {/if}
         {#if token !== null && sender}
           <span class="notify"
             ><Button

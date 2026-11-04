@@ -1897,7 +1897,7 @@ describe('homebrew entries', () => {
     expect(row.compareDocumentPosition(panel) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     /* A new item's entry lands last, right above the row. */
     await userEvent.type(
-      within(panel).getByRole('textbox', { name: 'Название*' }),
+      within(panel).getByRole('textbox', { name: 'Название' }),
       'Фляга{Enter}'
     );
     const made = await screen.findByRole('button', { name: /^Фляга/ });

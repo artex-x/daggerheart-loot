@@ -417,6 +417,15 @@ export function fieldOf(p: Problem): FieldId {
   return FIELDS[p.path] ?? LIST_FIELDS[p.path.split('.')[0] ?? ''] ?? 'hb-name';
 }
 
+/* A choice's own message: the field names the fix (DESIGN.md, "Forms"). */
+const PICK_TEXT: Partial<Record<FieldId, (t: Dict) => string>> = {
+  'hb-cls': (t) => t.hbErrCls,
+  'hb-tr': (t) => t.hbErrTr,
+  'hb-rg': (t) => t.hbErrRg,
+  'hb-dt': (t) => t.hbErrDt,
+  'hb-bu': (t) => t.hbErrBu
+};
+
 /** Returns the text a field's error line draws for a problem. */
 export function problemText(p: Problem, t: Dict): string {
   const field = fieldOf(p);
@@ -435,12 +444,12 @@ export function problemText(p: Problem, t: Dict): string {
   if (field === 'hb-th') return t.hbErrTh;
   if (p.rule === 'open') return p.path === 'set' ? t.hbErrSetOpen : t.hbErrCardOpen;
   if (field === 'hb-line') return p.rule === 'enum' ? t.hbErrLineType : t.hbErrLine;
-  return t.hbErrPick;
+  return PICK_TEXT[field]?.(t) ?? t.hbErrPick;
 }
 
 /** Returns the record the preview draws: the draft's stored part as `recordOf` draws it,
  *  with no stat block until the author chose a tier (a tier is never shown that the author
- *  did not type). */
+ *  did not type); `eqType` keeps the equipment's badge and glyph meanwhile. */
 export function previewOf(
   key: string,
   draft: ItemDraft,
@@ -449,7 +458,9 @@ export function previewOf(
 ): HomebrewRecord {
   const c = contentOf(draft, null, key) as HomebrewContent;
   if (draft.eqTier === '') delete c.eq;
-  return recordOf(key, c, book, cards);
+  const rec = recordOf(key, c, book, cards);
+  if (draft.kind === 'equip' && draft.eqTier === '') rec.eqType = draft.t;
+  return rec;
 }
 
 /** One option of a picker, and one chosen row. */

@@ -706,78 +706,6 @@ export function moneyHelpFor(lang: Lang): Help {
   return MONEY[lang];
 }
 
-/** «Мои предметы» (`#/homebrew`): one help for every tab, as one pin serves them. */
-const HOMEBREW: Record<Lang, Help> = {
-  ru: {
-    paragraphs: [
-      {
-        lead: 'Предметы.',
-        parts: [
-          ' «Новый предмет» открывает форму, а рядом с ней карточку: «На экране» - как на сайте, «На печати» - как на листе печати. Свои предметы находятся в «Поиске» вместе с каталогом, видны в «Таблицах» и добавляются в списки. С восьмого предмета появляются поиск и фильтры; отмеченные предметы можно переместить, скачать файлом или удалить.'
-        ]
-      },
-      {
-        lead: 'Источники.',
-        parts: [
-          ' Источник - книга, дополнение или сеттинг, откуда ваши предметы; в нём может быть до 30 разделов. Предмет без источника лежит в «Хоумбрю».'
-        ]
-      },
-      {
-        lead: 'Комплекты.',
-        parts: [
-          ' Карта комплекта хранит бонус предметов, которые в него входят. В комплект можно добавить и предметы из книг: бонус на них видите только вы.'
-        ]
-      },
-      {
-        lead: 'Карты правил.',
-        parts: [
-          ' Карта правил хранит правило, на которое ссылаются предметы, например свойство оружия. Её тоже можно дать предметам из книг.'
-        ]
-      },
-      {
-        lead: 'Импорт из файла.',
-        parts: [
-          ' Принимает файл из «Скачать JSON», архив из «Скачать мои данные» или файл, собранный по описанию в llms.txt. Предметы, которые уже есть, можно пропустить или обновить.'
-        ]
-      }
-    ]
-  },
-  en: {
-    paragraphs: [
-      {
-        lead: 'Items.',
-        parts: [
-          ' "New item" opens the form with the card beside it: "On screen" as on the site, "In print" as on the print sheet. Your items show up in "Search" with the catalog, in "Tables" and in lists. From the eighth item a search box and filters appear; ticked items can be moved, downloaded as a file or deleted.'
-        ]
-      },
-      {
-        lead: 'Sources.',
-        parts: [
-          ' A source is the book, supplement or setting your items come from; it can hold up to 30 sections. An item with no source is in "Homebrew".'
-        ]
-      },
-      {
-        lead: 'Sets.',
-        parts: [
-          ' A set card holds the bonus of the items in the set. Book items can join a set too: only you see the bonus on them.'
-        ]
-      },
-      {
-        lead: 'Rule cards.',
-        parts: [
-          ' A rule card holds a rule items refer to, such as a weapon feature. Book items can take it too.'
-        ]
-      },
-      {
-        lead: 'Import from file.',
-        parts: [
-          ' Takes a file from "Download JSON", the archive from "Download my data", or a file written to the description in llms.txt. Items you already have can be skipped or updated.'
-        ]
-      }
-    ]
-  }
-};
-
 const HELP: Record<string, Record<Lang, Help>> = {
   std: STD,
   alt: ALT,
@@ -789,8 +717,7 @@ const HELP: Record<string, Record<Lang, Help>> = {
   community: COMMUNITY,
   mwt: MWT,
   tables: TABLES,
-  lists: LISTS,
-  homebrew: HOMEBREW
+  lists: LISTS
 };
 
 /** What this section explains about itself, or null where nothing is written. */

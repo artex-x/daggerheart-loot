@@ -150,6 +150,11 @@ export const ICONS = {
     d: 'M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z',
     size: 16
   },
+  /* Not in app.js: the import button, Material Icons file_upload (Apache 2.0). */
+  upload: {
+    d: 'M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z',
+    size: 18
+  },
   /* Not in app.js: the «··· Ещё» menu and a sheet's «Закрыть» (DESIGN.md, "Components"),
      Material Icons more_horiz and close (Apache 2.0). */
   more: {

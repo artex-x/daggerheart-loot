@@ -127,9 +127,9 @@ RootWebArea "Лавка кузнеца - Генератор лута Daggerheart
     region "Свой предмет в этот список"
       heading "Свой предмет в этот список" [level=2]
       StaticText "Название"
-      StaticText "*"
-      textbox "Название*" [focused=true multiline=false readonly=false required=true]
+      textbox "Название" [focused=true multiline=false readonly=false required=true]
       StaticText "Описание"
+      StaticText "необязательно"
       button "Подсказка: Описание" [expanded=false]
       toolbar "Оформление: Описание" [orientation=horizontal]
         button "Жирный" [keyshortcuts=Control+B Meta+B]
@@ -343,7 +343,7 @@ RootWebArea "Лавка кузнеца - Daggerheart Loot Generator" [url=/en/li
     button "Remove from the list" [description=Remove from the list]
     checkbox "Фляга контрабандиста" [checked=false]
     spinbutton "Position in the list" [value=11 valuetext=11 required=false valuemin=1 valuemax=11]
-    button "Фляга контрабандиста ITEM HOMEBREW"
+    button "Фляга контрабандиста ITEM HOMEBREW RU"
     StaticText "QTY"
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     StaticText "PRICE"
@@ -355,9 +355,9 @@ RootWebArea "Лавка кузнеца - Daggerheart Loot Generator" [url=/en/li
     region "An own item for this list"
       heading "An own item for this list" [level=2]
       StaticText "Name"
-      StaticText "*"
-      textbox "Name*" [focused=true multiline=false readonly=false required=true]
+      textbox "Name" [focused=true multiline=false readonly=false required=true]
       StaticText "Description"
+      StaticText "optional"
       button "Help: Description" [expanded=false]
       toolbar "Formatting: Description" [orientation=horizontal]
         button "Bold" [keyshortcuts=Control+B Meta+B]
@@ -457,4 +457,4 @@ Twilight Deck
 Twilight DeckItemArtifactVault of AgesRecall Cost: 2This deck en... [namelen=870 namehash=d2092ac1]
 daggerheart.com
 Фляга контрабандиста
-Фляга контрабандистаItemHomebrew
+Фляга контрабандистаItemHomebrewRU

@@ -48,6 +48,7 @@
   let roll = $state({ hope: 1, fear: 2 });
 
   const picks = $derived(index ? altPicks(index, rarity, roll, app.kinds) : []);
+  const said = $derived(picks.map((p) => p.it));
   const crit = $derived(isCrit(roll));
   /* A critical success on the top rarity has nowhere to go, so the offer is
      the tables alone. */
@@ -114,6 +115,7 @@
   sub={t.subAlt}
   {help}
   {rolled}
+  {said}
   {lit}
   copy={choice ? () => void copyRoll(choice) : undefined}
 >
@@ -216,7 +218,7 @@
 
   {#snippet results(openRecord)}
     {#if index && picks.length}
-      <div class="results" data-primary role="status" aria-live="polite">
+      <div class="results" data-primary>
         {#if crit}
           <!-- Both tables, because the player may take any entry of this rarity
                from either one. A single link into the items table used to be the

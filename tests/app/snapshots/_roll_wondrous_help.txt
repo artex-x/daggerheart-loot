@@ -26,26 +26,23 @@ RootWebArea "Wondrous Environments - Генератор лута Daggerheart" [u
     button "Об этой таблице" [expanded=true]
     StaticText "Введите результат броска или получите случайную позицию."
     StaticText "В таблице 119 позиций, а не 100 - столько предметов описано в са..." [namelen=236 namehash=4bb228e3]
-    ... StaticText x4 of 8 same-shape siblings elided
+    ... StaticText x8 of 12 same-shape siblings elided
     link "Wondrous Environments" [url=https://www.drivethrurpg.com/en/product/552648/wondrous-environments]
-    StaticText "."
     button "Бросить 1-119"
-    StaticText "РЕЗУЛЬТАТ БРОСКА (1–119)"
     button "На единицу меньше" [disabled=true]
     textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
     button "На единицу больше"
     heading "Бросок 1" [level=2]
     status ""
-      button "Страница"
-      StaticText "1"
-      StaticText "РАСХОДНИК"
-      StaticText "WONDROUS ENVIRONMENTS"
-      link "Смола Бездны" [description=Страница url=/i/w1]
-      StaticText "Вы можете бросить флакон этой смолы в цель в пределах Далекой ди..." [namelen=127 namehash=0130265a]
-      DisclosureTriangle "Неистовое опутывание МУДРОСТЬ · УРОВЕНЬ 1 · ЗАКЛИНАНИЕ" [expanded=false]
-      button "В список" [expanded=false]
-      button "Поделиться"
-      button "Ещё" [expanded=false haspopup=menu]
+      StaticText "Смола Бездны"
+    button "Страница"
+    StaticText "WONDROUS ENVIRONMENTS"
+    link "Смола Бездны" [description=Страница url=/i/w1]
+    StaticText "Вы можете бросить флакон этой смолы в цель в пределах Далекой ди..." [namelen=127 namehash=0130265a]
+    DisclosureTriangle "Неистовое опутывание МУДРОСТЬ · УРОВЕНЬ 1 · ЗАКЛИНАНИЕ" [expanded=false]
+    button "В список" [expanded=false]
+    button "Поделиться"
+    button "Ещё" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -105,26 +102,23 @@ RootWebArea "Wondrous Environments - Daggerheart Loot Generator" [url=/en/roll/w
     button "About this table" [expanded=true]
     StaticText "Enter your roll result, or pick a random entry."
     StaticText "The table holds 119 entries rather than 100 - that is how many i..." [namelen=244 namehash=06610566]
-    ... StaticText x4 of 8 same-shape siblings elided
+    ... StaticText x8 of 12 same-shape siblings elided
     link "Wondrous Environments" [url=https://www.drivethrurpg.com/en/product/552648/wondrous-environments]
-    StaticText " supplement."
     button "Roll 1-119"
-    StaticText "ROLL RESULT (1–119)"
     button "One lower" [disabled=true]
     textbox "Roll result" [value=1 multiline=false readonly=false required=false]
     button "One higher"
     heading "Roll 1" [level=2]
     status ""
-      button "Page"
-      StaticText "1"
-      StaticText "CONSUMABLE"
-      StaticText "WONDROUS ENVIRONMENTS"
-      link "Abyssal Sap" [description=Page url=/i/en/w1]
-      StaticText "You can throw a vial of this sap at a target within Far range to..." [namelen=111 namehash=8af0f270]
-      DisclosureTriangle "Vicious Entangle SAGE · LEVEL 1 · SPELL" [expanded=false]
-      button "Add to list" [expanded=false]
-      button "Share"
-      button "More" [expanded=false haspopup=menu]
+      StaticText "Abyssal Sap"
+    button "Page"
+    StaticText "WONDROUS ENVIRONMENTS"
+    link "Abyssal Sap" [description=Page url=/i/en/w1]
+    StaticText "You can throw a vial of this sap at a target within Far range to..." [namelen=111 namehash=8af0f270]
+    DisclosureTriangle "Vicious Entangle SAGE · LEVEL 1 · SPELL" [expanded=false]
+    button "Add to list" [expanded=false]
+    button "Share"
+    button "More" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]

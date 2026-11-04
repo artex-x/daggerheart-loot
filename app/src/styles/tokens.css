@@ -148,9 +148,9 @@ html {
   /* A focused control and a linked target stop clear of the header at its full height,
      whether it is shown or hidden (WCAG 2.4.11). */
   scroll-padding-top: var(--sticky-h);
-  /* A focused control scrolls clear of the sticky selection bar (`SelectionBar.svelte`
-     sets the height while it is mounted). */
-  scroll-padding-bottom: var(--selbar-h, 0px);
+  /* A focused control scrolls clear of the sticky selection bar and the editor's bar
+     (`SelectionBar.svelte` and `HomebrewEditor.svelte` set the heights while mounted). */
+  scroll-padding-bottom: calc(var(--selbar-h, 0px) + var(--ebar-h, 0px));
 }
 
 body {

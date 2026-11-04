@@ -28,15 +28,16 @@ RootWebArea "Wondrous Environments - Генератор лута Daggerheart" [u
     button "Настроить" [expanded=false]
     button "Ещё" [expanded=false haspopup=menu]
     status ""
-      button "Страница"
-      StaticText "РАСХОДНИК"
-      StaticText "WONDROUS ENVIRONMENTS"
-      link "Смола Бездны" [description=Страница url=/i/w1]
-      StaticText "Вы можете бросить флакон этой смолы в цель в пределах Далекой ди..." [namelen=127 namehash=0130265a]
-      DisclosureTriangle "Неистовое опутывание МУДРОСТЬ · УРОВЕНЬ 1 · ЗАКЛИНАНИЕ" [expanded=false]
-      button "В список" [expanded=false]
-      button "Поделиться"
-      button "Ещё" [expanded=false haspopup=menu]
+      StaticText "Смола Бездны"
+    button "Страница"
+    StaticText "РАСХОДНИК"
+    StaticText "WONDROUS ENVIRONMENTS"
+    link "Смола Бездны" [description=Страница url=/i/w1]
+    StaticText "Вы можете бросить флакон этой смолы в цель в пределах Далекой ди..." [namelen=127 namehash=0130265a]
+    DisclosureTriangle "Неистовое опутывание МУДРОСТЬ · УРОВЕНЬ 1 · ЗАКЛИНАНИЕ" [expanded=false]
+    button "В список" [expanded=false]
+    button "Поделиться"
+    button "Ещё" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -94,15 +95,16 @@ RootWebArea "Wondrous Environments - Daggerheart Loot Generator" [url=/en/roll/w
     button "Set up" [expanded=false]
     button "More" [expanded=false haspopup=menu]
     status ""
-      button "Page"
-      StaticText "CONSUMABLE"
-      StaticText "WONDROUS ENVIRONMENTS"
-      link "Abyssal Sap" [description=Page url=/i/en/w1]
-      StaticText "You can throw a vial of this sap at a target within Far range to..." [namelen=111 namehash=8af0f270]
-      DisclosureTriangle "Vicious Entangle SAGE · LEVEL 1 · SPELL" [expanded=false]
-      button "Add to list" [expanded=false]
-      button "Share"
-      button "More" [expanded=false haspopup=menu]
+      StaticText "Abyssal Sap"
+    button "Page"
+    StaticText "CONSUMABLE"
+    StaticText "WONDROUS ENVIRONMENTS"
+    link "Abyssal Sap" [description=Page url=/i/en/w1]
+    StaticText "You can throw a vial of this sap at a target within Far range to..." [namelen=111 namehash=8af0f270]
+    DisclosureTriangle "Vicious Entangle SAGE · LEVEL 1 · SPELL" [expanded=false]
+    button "Add to list" [expanded=false]
+    button "Share"
+    button "More" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]

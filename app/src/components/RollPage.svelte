@@ -15,8 +15,10 @@
   import Panel from './Panel.svelte';
   import PinItem from './PinItem.svelte';
   import RecordHost from './RecordHost.svelte';
+  import StatusRegion from './StatusRegion.svelte';
   import type { Index } from '../lib/data.js';
   import type { Help } from '../lib/help.js';
+  import { nameOf } from '../lib/i18n.js';
   import type { Record_ } from '../lib/types.js';
   import type { AppState } from '../state/app.svelte.js';
 
@@ -29,6 +31,9 @@
     help: Help | null;
     /** What came up, as «Бросок N» reads it. */
     rolled: string;
+    /** The records of the roll: a hidden status names them, since a menu opens in the
+     *  results and a live region there would read the whole card again. */
+    said: readonly Record_[];
     /** The closed «Настроить» while a row is narrowed: the value, lit. */
     lit?: string;
     /** Copies every option, where the roll offers a choice. */
@@ -50,6 +55,7 @@
     sub,
     help,
     rolled,
+    said,
     lit = '',
     copy,
     empty,
@@ -161,6 +167,7 @@
           {#if narrow && cfgOpen}
             <div id="rp-set" class="rp-open"><Panel>{@render settings()}</Panel></div>
           {/if}
+          <StatusRegion text={said.map((it) => nameOf(it, app.lang)).join(', ')} key={said} />
           {@render results(openRecord)}
         </div>
       </div>

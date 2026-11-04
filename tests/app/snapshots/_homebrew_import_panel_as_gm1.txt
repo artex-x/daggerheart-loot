@@ -1,6 +1,6 @@
 # #/homebrew ~ import panel as gm1
 # route: #/homebrew
-# why: «Импорт из файла» pressed and expanded: the panel «Импорт предметов из файла JSON» with «Выбрать файл...» and the hint linking schema/homebrew-v2.json and llms.txt
+# why: «Импорт из файла» pressed and expanded: the panel «Импорт предметов из файла JSON» with «Выбрать файл...», the links «Формат файла» and «llms.txt» on its row and the line of what fits under it
 # as: gm1
 
 ## ru :: tree
@@ -20,35 +20,34 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
   main ""
     heading "Мои предметы" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
+    navigation "Мои предметы"
+      link "Предметы 4" [url=/homebrew]
+        StaticText "Предметы"
+        StaticText "4"
+      link "Источники 1" [url=/homebrew/sources]
+        StaticText "Источники"
+        StaticText "1"
+      link "Комплекты 1" [url=/homebrew/sets]
+        StaticText "Комплекты"
+        StaticText "1"
+      link "Карты правил 1" [url=/homebrew/rules]
+        StaticText "Карты правил"
+        StaticText "1"
+    link "Новый предмет" [url=/homebrew/new]
     StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
-    button "Импорт из файла" [expanded=true]
     StaticText "ИМПОРТ ПРЕДМЕТОВ ИЗ ФАЙЛА JSON"
     button "Выбрать файл..."
-    ... StaticText x3 of 7 same-shape siblings elided
-    link "схеме homebrew-v2" [url=/schema/homebrew-v2.json]
-    link "описание для ИИ-помощников" [url=/llms.txt]
-    navigation "Мои предметы"
-      link "Предметы" [url=/homebrew]
-      link "Источники" [url=/homebrew/sources]
-      link "Комплекты" [url=/homebrew/sets]
-      link "Карты правил" [url=/homebrew/rules]
-    link "Новый предмет" [url=/homebrew/new]
-    status ""
+    link "Формат файла" [url=/schema/homebrew-v2.json]
+    link "llms.txt" [url=/llms.txt]
+    StaticText "Подходит файл из «Скачать JSON», архив из «Скачать мои данные» и..." [namelen=95 namehash=2b30772b]
     StaticText "4 предмета из 100"
-    checkbox "Выбрать все" [checked=false]
-    StaticText "ВЫБРАТЬ ВСЕ"
-    generic ""
+    button "Импорт из файла" [expanded=true]
+    button "Выбрать"
     heading "Мастерская Ольхи · Холодное оружие 1" [level=2]
-    checkbox "Топор Тлеющих Углей" [checked=false]
-    button "Топор Тлеющих Углей ОСНОВНОЕ ОРУЖИЕ УНИКАЛЬНОЕ МАСТЕРСКАЯ ОЛЬХИ ..." [namelen=189 namehash=ae240a3a]
+    ... button x2 of 6 same-shape siblings elided
     heading "Хоумбрю 3" [level=2]
-    checkbox "Кольцо с гравировкой" [checked=false]
-    button "Кольцо с гравировкой ПРЕДМЕТ ХОУМБРЮ Надпись на неизвестном язык..." [namelen=83 namehash=441cb796]
-    checkbox "Настой кузнеца" [checked=false]
-    button "Настой кузнеца РАСХОДНИК ХОУМБРЮ Выпейте перед работой у горна: ..." [namelen=110 namehash=6c5e1ada]
-    checkbox "Whispering Cap" [checked=false]
-    button "Whispering Cap ПРЕДМЕТ ХОУМБРЮ Once per rest, hear one sentence ..." [namelen=88 namehash=46575622]
+    button "Настой кузнеца РАСХОДНИК Выпейте перед работой у горна: до конца..." [namelen=102 namehash=89c3700d]
+    button "Whispering Cap ПРЕДМЕТ EN Once per rest, hear one sentence spoke..." [namelen=83 namehash=7f2993e0]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -57,38 +56,33 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-?Справка
 EN
 RU
-Whispering Cap
-Whispering CapПредметХоумбрюOnce per rest, hear one sentence spo... [namelen=85 namehash=dabe6adf]
+Whispering CapПредметENOnce per rest, hear one sentence spoken w... [namelen=80 namehash=dcd56acc]
 daggerheart.com
+llms.txt
 Аккаунт: gm1@example.test
 Бросок
-Выбрать все
+Выбрать
 Выбрать файл...
 Импорт из файла
-Источники
+Источники 1
 К содержимому
-Карты правил
-Кольцо с гравировкой
-Кольцо с гравировкойПредметХоумбрюНадпись на неизвестном языке. ... [namelen=80 namehash=dc20935e]
-Комплекты
+Карты правил 1
+Кольцо с гравировкойПредметНадпись на неизвестном языке. Тёплое ... [namelen=73 namehash=222b1397]
+Комплекты 1
 Конфиденциальность
 ЛутDaggerheart
-Настой кузнеца
-Настой кузнецаРасходникХоумбрюВыпейте перед работой у горна: до ... [namelen=107 namehash=4dddfcea]
+Настой кузнецаРасходникВыпейте перед работой у горна: до конца с... [namelen=100 namehash=a6f81fe6]
 Новый предмет
 Открывать при запуске
 Поиск
-Предметы
+Предметы 4
 Таблицы
-Топор Тлеющих Углей
-Топор Тлеющих УглейОсновное оружиеУникальноеМастерская Ольхи (HB... [namelen=184 namehash=e7c9f22c]
+Топор Тлеющих УглейОсновное оружиеУникальноеРанг 2 · Магическое ... [namelen=163 namehash=a5051659]
 Условия использования
 Установить как приложение
-описание для ИИ-помощников
-схеме homebrew-v2
+Формат файла
 
 ## en :: tree
 RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm1]
@@ -107,35 +101,34 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm1]
   main ""
     heading "My items" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
+    navigation "My items"
+      link "Items 4" [url=/en/homebrew]
+        StaticText "Items"
+        StaticText "4"
+      link "Sources 1" [url=/en/homebrew/sources]
+        StaticText "Sources"
+        StaticText "1"
+      link "Sets 1" [url=/en/homebrew/sets]
+        StaticText "Sets"
+        StaticText "1"
+      link "Rule cards 1" [url=/en/homebrew/rules]
+        StaticText "Rule cards"
+        StaticText "1"
+    link "New item" [url=/en/homebrew/new]
     StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
-    button "Import from file" [expanded=true]
     StaticText "IMPORT ITEMS FROM A JSON FILE"
     button "Choose a file..."
-    ... StaticText x3 of 7 same-shape siblings elided
-    link "homebrew-v2 schema" [url=/schema/homebrew-v2.json]
-    link "a description for AI assistants" [url=/llms.txt]
-    navigation "My items"
-      link "Items" [url=/en/homebrew]
-      link "Sources" [url=/en/homebrew/sources]
-      link "Sets" [url=/en/homebrew/sets]
-      link "Rule cards" [url=/en/homebrew/rules]
-    link "New item" [url=/en/homebrew/new]
-    status ""
+    link "File format" [url=/schema/homebrew-v2.json]
+    link "llms.txt" [url=/llms.txt]
+    StaticText "Takes a file from "Download JSON", the archive from "Download my..." [namelen=102 namehash=587a8433]
     StaticText "4 items of 100"
-    checkbox "Select all" [checked=false]
-    StaticText "SELECT ALL"
-    generic ""
+    button "Import from file" [expanded=true]
+    button "Select"
     heading "Alder Workshop · Blades 1" [level=2]
-    checkbox "Ember Axe" [checked=false]
-    button "Ember Axe PRIMARY WEAPON UNIQUE ALDER WORKSHOP (HB) Tier 2 · Mag..." [namelen=164 namehash=412bbe09]
+    ... button x2 of 6 same-shape siblings elided
     heading "Homebrew 3" [level=2]
-    checkbox "Whispering Cap" [checked=false]
-    button "Whispering Cap ITEM HOMEBREW Once per rest, hear one sentence sp..." [namelen=86 namehash=e69fe8fd]
-    checkbox "Кольцо с гравировкой" [checked=false]
-    button "Кольцо с гравировкой ITEM HOMEBREW Надпись на неизвестном языке...." [namelen=81 namehash=4b6e3934]
-    checkbox "Настой кузнеца" [checked=false]
-    button "Настой кузнеца CONSUMABLE HOMEBREW Выпейте перед работой у горна..." [namelen=112 namehash=364d011e]
+    button "Кольцо с гравировкой ITEM RU Надпись на неизвестном языке. Тёпло..." [namelen=75 namehash=577a9a41]
+    button "Настой кузнеца CONSUMABLE RU Выпейте перед работой у горна: до к..." [namelen=106 namehash=5da704eb]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -144,35 +137,30 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm1]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-?Help
 Account: gm1@example.test
 Choose a file...
 EN
-Ember Axe
-Ember AxePrimary weaponUniqueAlder Workshop (HB)Tier 2 · Magic ·... [namelen=159 namehash=ea056220]
+Ember AxePrimary weaponUniqueTier 2 · Magic · Spellcast · Melee ... [namelen=140 namehash=269142bb]
+File format
 Import from file
 Install as an app
-Items
+Items 4
 LootDaggerheart
 New item
 Open on start
 Privacy
 RU
 Roll
-Rule cards
+Rule cards 1
 Search
-Select all
-Sets
+Select
+Sets 1
 Skip to content
-Sources
+Sources 1
 Tables
 Terms of use
-Whispering Cap
-Whispering CapItemHomebrewOnce per rest, hear one sentence spoke... [namelen=83 namehash=5a97f492]
-a description for AI assistants
+Whispering CapItemOnce per rest, hear one sentence spoken within... [namelen=75 namehash=4fea364a]
 daggerheart.com
-homebrew-v2 schema
-Кольцо с гравировкой
-Кольцо с гравировкойItemHomebrewНадпись на неизвестном языке. Тё... [namelen=78 namehash=34674d0b]
-Настой кузнеца
-Настой кузнецаConsumableHomebrewВыпейте перед работой у горна: д... [namelen=109 namehash=6e88a18f]
+llms.txt
+Кольцо с гравировкойItemRUНадпись на неизвестном языке. Тёплое н... [namelen=72 namehash=6421c4be]
+Настой кузнецаConsumableRUВыпейте перед работой у горна: до конц... [namelen=103 namehash=d39eaaae]

@@ -169,6 +169,29 @@ const gap = (a, b) => {
     ok(one[0]?.look === rollButton, h + ': the roll button looks different than on /roll/alt');
   }
 
+  /* The editor's choices are the neutral pressed state: a check and no gold; the gold is
+   * «Сохранить» alone (DESIGN.md, "Segmented control"). */
+  console.log('the editor keeps gold for its save');
+  await d.open('#/homebrew/new', { as: 'gm1' });
+  const gold = await page.evaluate(() => {
+    const probe = document.createElement('i');
+    probe.style.color = 'var(--gold)';
+    document.body.append(probe);
+    const c = getComputedStyle(probe).color;
+    probe.remove();
+    return c;
+  });
+  const pressed = await page.$$eval('.hbform .seg [aria-pressed="true"]', (els) =>
+    els.map((x) => ({ color: getComputedStyle(x).color, check: !!x.querySelector('svg') }))
+  );
+  ok(pressed.length >= 2, 'the editor draws ' + pressed.length + ' pressed options');
+  ok(
+    pressed.every((x) => x.check && x.color !== gold),
+    'an editor choice is gold or has no check: ' + JSON.stringify(pressed)
+  );
+  const golden = await page.$$eval('.hbform .btn.primary', (els) => els.length);
+  ok(golden === 1, 'the editor draws ' + golden + ' gold buttons');
+
   /* Equipment's stat line keeps one tone everywhere across the three
    * equipment tables - the kind is told by the badge, not by a second color
    * on the numbers, the same rule the legacy `eqtest.js` enforced. */

@@ -33,22 +33,21 @@ RootWebArea "Many Worlds Tavern - Генератор лута Daggerheart" [url=
       option "Оплот Шершней" [selected=false]
       option "Дром" [selected=false]
     button "Бросить d20"
-    StaticText "РЕЗУЛЬТАТ БРОСКА (1–20)"
+    StaticText "РЕЗУЛЬТАТ БРОСКА (1-20)"
     button "На единицу меньше" [disabled=true]
     textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
     button "На единицу больше"
     heading "Бросок 1" [level=2]
     status ""
-      button "Страница"
-      StaticText "1"
-      StaticText "ВТОРИЧНОЕ ОРУЖИЕ"
-      ... StaticText x9 of 13 same-shape siblings elided
-      link "Порхающие Бесы" [description=Страница url=/i/mw1]
-      StaticText "Уязвимой"
-      StaticText " вместо нанесения урона."
-      button "В список" [expanded=false]
-      button "Поделиться"
-      button "Ещё" [expanded=false haspopup=menu]
+      StaticText "Порхающие Бесы"
+    button "Страница"
+    ... StaticText x11 of 15 same-shape siblings elided
+    link "Порхающие Бесы" [description=Страница url=/i/mw1]
+    StaticText "Уязвимой"
+    StaticText " вместо нанесения урона."
+    button "В список" [expanded=false]
+    button "Поделиться"
+    button "Ещё" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -116,22 +115,21 @@ RootWebArea "Many Worlds Tavern - Daggerheart Loot Generator" [url=/en/roll/many
       option "Hornet Hold" [selected=false]
       option "The Drome" [selected=false]
     button "Roll d20"
-    StaticText "ROLL RESULT (1–20)"
+    StaticText "ROLL RESULT (1-20)"
     button "One lower" [disabled=true]
     textbox "Roll result" [value=1 multiline=false readonly=false required=false]
     button "One higher"
     heading "Roll 1" [level=2]
     status ""
-      button "Page"
-      StaticText "1"
-      StaticText "SECONDARY WEAPON"
-      ... StaticText x9 of 13 same-shape siblings elided
-      link "Flutterfiends" [description=Page url=/i/en/mw1]
-      StaticText "Vulnerable"
-      StaticText " instead of dealing damage."
-      button "Add to list" [expanded=false]
-      button "Share"
-      button "More" [expanded=false haspopup=menu]
+      StaticText "Flutterfiends"
+    button "Page"
+    ... StaticText x11 of 15 same-shape siblings elided
+    link "Flutterfiends" [description=Page url=/i/en/mw1]
+    StaticText "Vulnerable"
+    StaticText " instead of dealing damage."
+    button "Add to list" [expanded=false]
+    button "Share"
+    button "More" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]

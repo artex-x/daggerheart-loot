@@ -1,36 +1,36 @@
 <script lang="ts">
-  /* `#/homebrew`, «Мои предметы» (m02, m03, m15, m24 in the homebrew mocks): the head with
-     the home button and «?» on every tab and state (one pin, `#/homebrew`), «Импорт из
-     файла» above the tab row, then one of four tabs at its own address. The Items tab: «Новый
-     предмет», the search and the filter strip from the eighth item or a value in force (the
-     picked values are the address `#/homebrew/f_...`), the count, and the own items under
-     one heading per source and section. A row opens the editor; its tick feeds
-     the frame's selection bar, and the strip above the rows moves, downloads and deletes the
-     ticked items that the search and the filter draw (docs/specs/FEATURES.md, "Homebrew").
-     The import loads as a lazy chunk on its first open and stays open across a tab press. */
-  import { tick, untrack } from 'svelte';
-  import BatchBar from './BatchBar.svelte';
+  /* `#/homebrew`, «Мои предметы»: the list head of the catalog, then one of four tabs at its
+     own address. Up to 760 px the name is read, not drawn, and the row holds the tab picker,
+     the primary and «Ещё»; from 761 px the head holds the pin, the tab links and the primary.
+     The Items tab: the search and the filter from the eighth item or a value in force (the
+     picked values are the address `#/homebrew/f_...`), «Выбрать», and the own items under one
+     heading per source and section. A row opens the editor; in the selection mode its tick
+     feeds the one bar, which carries the move, the download and the delete
+     (`HomebrewBulk.svelte`; docs/specs/FEATURES.md, "Homebrew"). The import loads as a lazy
+     chunk on its first open and stays open across a tab press. */
+  import { onDestroy, tick, untrack } from 'svelte';
   import Button from './Button.svelte';
-  import Chip from './Chip.svelte';
-  import ChipRow from './ChipRow.svelte';
   import Empty from './Empty.svelte';
-  import FilterBar from './FilterBar.svelte';
+  import FilterPanel from './FilterPanel.svelte';
   import HomebrewCards from './HomebrewCards.svelte';
   import HomebrewSources from './HomebrewSources.svelte';
+  import HomebrewTabs from './HomebrewTabs.svelte';
   import Icon from './Icon.svelte';
   import LoadState from './LoadState.svelte';
+  import MoreMenu from './MoreMenu.svelte';
   import PageHead from './PageHead.svelte';
+  import PageTitle from './PageTitle.svelte';
   import Panel from './Panel.svelte';
+  import PinItem from './PinItem.svelte';
   import SearchBox from './SearchBox.svelte';
   import SignInPrompt from './SignInPrompt.svelte';
-  import SourcePicker from './SourcePicker.svelte';
-  import StatusRegion from './StatusRegion.svelte';
   import TableRows from './TableRows.svelte';
   import type HomebrewImport from './HomebrewImport.svelte';
   import { plainFacets } from '../lib/data.js';
   import { homebrewFacetRows, narrowRows } from '../lib/facets.js';
   import {
     chosenCount,
+    chosenLabels,
     encodeFilter,
     groupsFor,
     passes,
@@ -42,12 +42,14 @@
     homebrewTabHash,
     type HomebrewTab
   } from '../lib/hash.js';
-  import { helpFor } from '../lib/help.js';
-  import { groupsOf, type ItemRow } from '../lib/homebrew.js';
-  import { deleteItemAsk, matchRecords } from '../lib/homebrewForm.js';
+  import { groupsOf } from '../lib/homebrew.js';
+  import { matchRecords } from '../lib/homebrewForm.js';
   import { LIST_SEARCH_AT } from '../lib/lists.js';
   import { countOf } from '../lib/plural.js';
+  import { hiddenTags } from '../lib/rowTags.js';
+  import { parseQuery } from '../lib/search.js';
   import type { Record_ } from '../lib/types.js';
+  import type { Band } from '../ports/index.js';
   import type { AppState } from '../state/app.svelte.js';
   import type { Homebrew } from '../state/homebrew.svelte.js';
 
@@ -62,26 +64,19 @@
   const { app, store, tab, openKey }: Props = $props();
 
   const t = $derived(app.t);
-  const TABS: readonly {
-    tab: HomebrewTab;
-    label: 'hbItems' | 'hbSources' | 'hbSets' | 'hbRefs';
-  }[] = [
-    { tab: 'items', label: 'hbItems' },
-    { tab: 'sources', label: 'hbSources' },
-    { tab: 'sets', label: 'hbSets' },
-    { tab: 'rules', label: 'hbRefs' }
-  ];
+  const band = $derived(app.band);
+  const ready = $derived(!!app.user && store.status === 'ready');
 
   /* The Items tab's filter: the picked values are the address (`#/homebrew/f_...`); the
-     query and the panel's fold are page memory, empty each time the tab opens. A segment
-     this page did not write (a filter address, Back, «Предметы» pressed) opens the panel, as on
-     the tables and shared pages (docs/specs/ROUTES.md, "Homebrew"; docs/specs/STATE.md). */
+     query and the sheet are page memory, empty each time the tab opens. A segment this page
+     did not write (a filter address, Back, «Предметы» pressed) opens the sheet, as on the
+     tables and shared pages (docs/specs/ROUTES.md, "Homebrew"; docs/specs/STATE.md). */
   const HB_GROUPS = groupsFor('homebrew');
   let findQ = $state('');
   let filterOpen = $state(false);
   let seenSeg = $state('');
-  /* Whether the search box and the strip are drawn: from the eighth item or a value in
-     force, latched until the tab is left, so dropping the last pill never removes the
+  /* Whether the search box and the filter are drawn: from the eighth item or a value in
+     force, latched until the tab is left, so dropping the last value never removes the
      control that has the focus. */
   let finding = $state(false);
   const picked = $derived<FilterState>(app.route.kind === 'homebrew' ? app.route.filter : {});
@@ -149,25 +144,54 @@
     applyFilter({ ...inForce, [group]: next });
   }
 
-  /* Rule 20 (docs/specs/FEATURES.md): the control that removed itself hands focus on. */
+  /* Rule 20: the empty state's «Сбросить фильтры» goes with the empty state; the focus goes to
+     the first «Все» of the column, or to «Фильтры», else `#main`. */
   let filterToggle = $state<HTMLButtonElement | undefined>(undefined);
-  let allBox = $state<HTMLInputElement | undefined>(undefined);
-  let newRow = $state<HTMLDivElement | undefined>(undefined);
-  function focusOr(...els: (HTMLElement | null | undefined)[]): void {
-    (els.find((e) => e?.isConnected) ?? document.getElementById('main'))?.focus();
+  function focusFilters(): void {
+    const first = document.querySelector<HTMLElement>('.fcol .frow .chip');
+    (
+      first ?? (filterToggle?.isConnected ? filterToggle : document.getElementById('main'))
+    )?.focus();
   }
-  const newItemLink = (): HTMLElement | null => newRow?.querySelector('a') ?? null;
 
   async function resetFromEmpty(): Promise<void> {
     applyFilter({});
     await tick();
-    focusOr(filterToggle);
+    focusFilters();
   }
+
+  /* A band change takes the sheet away with no `close` event. */
+  let seenBand: Band | null = null;
+  $effect.pre(() => {
+    const now = band;
+    untrack(() => {
+      const moved = seenBand !== null && seenBand !== now;
+      seenBand = now;
+      if (!moved || now !== 'wide' || !filterOpen) return;
+      filterOpen = false;
+      void tick().then(() => {
+        if (document.activeElement === document.body) focusFilters();
+      });
+    });
+  });
+
   const groups = $derived(groupsOf(store.books, drawn, app.lang, t.srcHomebrew));
   const drawnIds = $derived(drawn.map((r) => r.id));
-  const ticked = $derived(drawnIds.filter((id) => app.sel.has(id)));
-  /* A tick the search or the filter hides is dropped, so the strip never acts on a row out
-     of sight. The other tabs keep the ticks (docs/specs/STATE.md, the UI row). */
+  /* Under a filter of one source the head names the section alone: the filter says the source. */
+  const shownBook = $derived.by(() => {
+    const src = inForce['src'];
+    if (src?.length !== 1) return null;
+    const content = store.books.find((b) => b.key === src[0])?.content;
+    if (!content) return null;
+    return app.lang === 'ru' ? content.ru || content.en : content.en || content.ru;
+  });
+  const groupLabel = (label: string): string =>
+    shownBook && label.startsWith(`${shownBook} · `)
+      ? label.slice(shownBook.length + 3)
+      : label;
+
+  /* A tick the search or the filter hides is dropped, so the bar never acts on a row out of
+     sight. The other tabs keep the ticks (docs/specs/STATE.md, the UI row). */
   $effect(() => {
     if (tab !== 'items') return;
     const shown = new Set(drawnIds);
@@ -180,13 +204,60 @@
       }
     });
   });
+
+  /* Ticks that arrive with the tab open the mode; a tab without rows leaves an empty one. */
+  $effect(() => {
+    const on = tab === 'items';
+    const n = app.sel.size;
+    untrack(() => {
+      if (on && n > 0) app.selecting = true;
+      else if (!on && n === 0) app.selecting = false;
+    });
+  });
+
+  /* «Выбрать» opens the selection mode; the focus moves to the bar's «Все». */
+  async function startSelecting(): Promise<void> {
+    app.selecting = true;
+    await tick();
+    document.querySelector<HTMLElement>('.selbarwrap .selall input')?.focus();
+  }
+
+  $effect(() => {
+    const ids = tab === 'items' ? drawnIds : [];
+    untrack(() => {
+      app.setSelectable(ids);
+    });
+  });
+  onDestroy(() => {
+    app.setSelectable([]);
+  });
+
   const count = $derived(
     countOf(store.items.length, store.itemLimit, t.hbItemsN, app.lang, t.ofLimit)
   );
-  /* The count of a bulk delete in flight, one request for all; the region says the start
-     once, and the toast says the end. */
-  let deleting = $state<number | null>(null);
-  let deletingSaid = $state('');
+  const atLimit = $derived(store.itemLimit !== null && store.items.length >= store.itemLimit);
+  const counts = $derived<Record<HomebrewTab, number>>({
+    items: store.items.length,
+    sources: store.books.length,
+    sets: store.cards.filter((c) => c.kind === 'set').length,
+    rules: store.cards.filter((c) => c.kind === 'ref').length
+  });
+
+  /* The count line while a filter or a query narrows the list, and the empty state's cause. */
+  const terms = $derived(parseQuery(findQ));
+  const chosen = $derived(chosenLabels(facRows, inForce));
+  const narrowed = $derived(chosen.length > 0 || terms.length > 0);
+  const values = $derived(chosen.map((c) => c.label).join(', '));
+  const shownText = $derived(
+    t.shownOf.replace('%n', String(drawn.length)).replace('%m', String(store.records.length))
+  );
+  const emptyCause = $derived.by(() => {
+    const fill = (s: string): string =>
+      s.replace(/%[qv]/g, (m) => (m === '%q' ? findQ.trim() : values));
+    if (chosen.length) return fill(terms.length ? t.emptyBoth : t.emptyFilters);
+    return terms.length ? fill(t.emptyQuery) : '';
+  });
+  const hide = $derived(hiddenTags('homebrew', inForce, false));
 
   /* «Импорт из файла»: the toggle, and the panel's component once its chunk loaded. */
   type ImportView = typeof HomebrewImport;
@@ -194,7 +265,9 @@
   let importSending = $state(false);
   let importView = $state<ImportView | null>(null);
   let importFailed = $state(false);
-  let importRow = $state<HTMLDivElement | undefined>(undefined);
+  let importButton = $state<HTMLButtonElement | undefined>(undefined);
+  /* What opened the panel: up to 760 px «Ещё», which has the focus back by then. */
+  let importOpener: HTMLElement | null = null;
 
   async function loadImport(): Promise<void> {
     importFailed = false;
@@ -208,117 +281,96 @@
       void closeImport();
       return;
     }
+    importOpener =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
     importing = true;
     if (!importView) void loadImport();
   }
 
-  /* Focus goes back to the toggle, which stays where the panel was. */
+  /* Focus goes back to the toggle of the tab in view, else to what opened the panel. */
   async function closeImport(): Promise<void> {
     importing = false;
     await tick();
-    importRow?.querySelector<HTMLButtonElement>('button[aria-expanded]')?.focus();
-  }
-
-  /* «Переместить (N)»: the panel under the strip, the chosen source and section, and the
-     line a `gone` answer leaves under the selects. */
-  let moving = $state(false);
-  let moveBook = $state('');
-  let moveSection = $state('');
-  let moveGone = $state<'book' | 'section' | null>(null);
-  let moveSending = $state(false);
-
-  const tickedRows = $derived(store.items.filter((r) => ticked.includes(r.key)));
-  /* An item's place as the selects name it: a source id (`''` the default) and a section. */
-  const placeOf = (r: ItemRow): { book: string; section: string } => {
-    const book = r.book_id === null ? undefined : store.book(r.book_id);
-    if (!book) return { book: '', section: '' };
-    const section = r.content.section;
-    const held = section !== undefined && book.content.sections?.some((s) => s.key === section);
-    return { book: book.id, section: held ? section : '' };
-  };
-  const toMove = $derived(
-    tickedRows.filter((r) => {
-      const at = placeOf(r);
-      return at.book !== moveBook || at.section !== (moveBook ? moveSection : '');
-    })
-  );
-
-  function toggleMove(): void {
-    moving = !moving;
-    moveGone = null;
-  }
-
-  async function movePicked(): Promise<void> {
-    if (moveSending || !toMove.length) return;
-    const rows = toMove;
-    const bookId = moveBook || null;
-    const section = (bookId && moveSection) || null;
-    moveSending = true;
-    moveGone = null;
-    try {
-      const r = await store.moveItems(rows, bookId, section);
-      if (r.ok) {
-        const n = rows.length;
-        app.clearSel();
-        moving = false;
-        app.say((t) => t.hbMovedN.replace('%n', String(n)));
-        await tick();
-        focusOr(allBox, newItemLink());
-      } else if (r.error === 'gone') {
-        moveGone = bookId !== null && !store.book(bookId) ? 'book' : 'section';
-      } else if (r.error === 'conflict') {
-        app.say((t) => t.hbMoveChanged, { error: true });
-      } else if (r.error === 'refused') {
-        app.say((t) => t.hbMoveRefused, { error: true });
-      } else if (r.error === 'limit') {
-        app.say((t) => t.hbMoveRefused, { error: true });
-      } else {
-        app.say((t) => t.hbMoveFailed, { error: true });
-      }
-    } finally {
-      moveSending = false;
-    }
-  }
-
-  async function deletePicked(): Promise<void> {
-    if (deleting !== null) return;
-    const rows = store.items.filter((r) => ticked.includes(r.key));
-    if (!rows.length) return;
-    const lead = t.hbDeleteMany.replace('%n', String(rows.length));
-    if (!app.env.dialog.confirm(deleteItemAsk(lead, true, t))) return;
-    const n = rows.length;
-    deleting = n;
-    deletingSaid = t.hbDeletingN.replace('%n', String(n));
-    /* «Удалить (N)» is disabled while it runs, so focus waits on «Выбрать все». */
-    allBox?.focus();
-    try {
-      const { result, deleted } = await store.removeItems(rows);
-      /* Each request is all or none: after a failure the rows not yet deleted keep their
-         ticks, so a second press deletes the rest. */
-      if (result.ok) {
-        app.clearSel();
-        app.say((t) => t.hbDeletedN.replace('%n', String(n)));
-      } else if (deleted) {
-        app.say((t) => `${t.hbDeletedN.replace('%n', String(deleted))}. ${t.hbDeleteFailed}`, {
-          error: true
-        });
-      } else app.say((t) => t.hbDeleteFailed, { error: true });
-    } finally {
-      deleting = null;
-      deletingSaid = '';
-    }
-    await tick();
-    focusOr(allBox, newItemLink());
+    (
+      [importButton, importOpener].find((e) => e?.isConnected) ??
+      document.getElementById('main')
+    )?.focus();
   }
 </script>
 
-<PageHead
-  {app}
-  title={t.myItems}
-  sub={t.subHomebrew}
-  help={helpFor('homebrew', app.lang)}
-  home={HOMEBREW_HASH}
-/>
+<!-- eslint-disable @typescript-eslint/no-confusing-void-expression -- a `{@render}` tag of a
+     local snippet reads as a void expression to this rule. -->
+{#snippet newItem(plus: boolean)}
+  <Button
+    variant="primary"
+    size={plus ? 'md' : 'sm'}
+    href={app.href(homebrewItemHash(null))}
+    sameTab
+    >{#if plus}<Icon name="plus" />{/if}{t.hbNewItem}</Button
+  >
+{/snippet}
+
+{#snippet tabs()}
+  <HomebrewTabs {app} {tab} {counts} limitText={count} />
+{/snippet}
+
+<!-- The head's end from 761 px: on the Sources, Sets and Rules tabs the first button under the
+     head is the tab's own, whose form opens in its place. -->
+{#snippet wideHead()}
+  {#if ready}
+    <div class="headx">
+      {@render tabs()}
+      {#if tab === 'items'}<span class="headnew">{@render newItem(true)}</span>{/if}
+    </div>
+  {/if}
+{/snippet}
+
+{#snippet importToggle()}
+  <Button
+    size="sm"
+    caret
+    on={importing}
+    expanded={importing}
+    disabled={importSending}
+    bind:el={importButton}
+    onclick={toggleImport}><Icon name="upload" />{t.importOpen}</Button
+  >
+{/snippet}
+
+{#if band === 'narrow' && ready}
+  <h1 class="vh">{t.myItems}</h1>
+  <p class="vh">{t.subHomebrew}</p>
+  <div class="pickrow">
+    {@render tabs()}
+    {#if tab === 'items'}{@render newItem(false)}{/if}
+    <MoreMenu {app} id="hb-more" size="sm">
+      {#snippet children(close: () => void)}
+        <button
+          type="button"
+          role="menuitem"
+          tabindex="-1"
+          disabled={importSending}
+          onclick={() => {
+            close();
+            toggleImport();
+          }}><Icon name="upload" />{t.importOpen}</button
+        >
+        <PinItem {app} home={HOMEBREW_HASH} onpicked={close} />
+      {/snippet}
+    </MoreMenu>
+  </div>
+{:else if band === 'narrow'}
+  <PageTitle title={t.myItems} />
+{:else}
+  <PageHead
+    {app}
+    title={t.myItems}
+    sub={t.subHomebrew}
+    help={null}
+    home={HOMEBREW_HASH}
+    extra={wideHead}
+  />
+{/if}
 
 {#if app.user === null}
   <SignInPrompt {app} lead={t.hbSignIn} after={{ hash: app.hash }} />
@@ -329,202 +381,167 @@
     <LoadState {t} failed={false} text={t.hbLoadFailed} onretry={() => void store.load()} />
   {:else}
     <div class="stack">
-      <div>
-        <div class="acts" bind:this={importRow}>
-          <Button
-            variant="ghost"
-            caret
-            on={importing}
-            expanded={importing}
-            disabled={importSending}
-            onclick={toggleImport}>{t.importOpen}</Button
-          >
-        </div>
-        {#if importing}
-          <Panel style="margin-top:14px">
-            {#if importView}
-              {@const View = importView}
-              <View
-                {app}
-                {store}
-                bind:sending={importSending}
-                onclose={() => void closeImport()}
-              />
-            {:else}
-              <LoadState
-                {t}
-                failed={importFailed}
-                text={t.hbImportChunkFailed}
-                onretry={() => void loadImport()}
-              />
-            {/if}
-          </Panel>
-        {/if}
-      </div>
-      <nav aria-label={t.myItems}>
-        <ChipRow>
-          {#each TABS as x (x.tab)}
-            <Chip
-              label={t[x.label]}
-              on={x.tab === tab}
-              href={app.href(homebrewTabHash(x.tab))}
+      {#if importing}
+        <Panel>
+          {#if importView}
+            {@const View = importView}
+            <View
+              {app}
+              {store}
+              bind:sending={importSending}
+              onclose={() => void closeImport()}
             />
-          {/each}
-        </ChipRow>
-      </nav>
+          {:else}
+            <LoadState
+              {t}
+              failed={importFailed}
+              text={t.hbImportChunkFailed}
+              onretry={() => void loadImport()}
+            />
+          {/if}
+        </Panel>
+      {/if}
       {#if tab === 'sources'}
-        <HomebrewSources {app} {store} />
+        <HomebrewSources {app} {store} tools={band === 'narrow' ? undefined : importToggle} />
       {:else if tab === 'sets'}
-        <HomebrewCards {app} {store} kind="set" {openKey} />
+        <HomebrewCards
+          {app}
+          {store}
+          kind="set"
+          {openKey}
+          tools={band === 'narrow' ? undefined : importToggle}
+        />
       {:else if tab === 'rules'}
-        <HomebrewCards {app} {store} kind="ref" {openKey} />
+        <HomebrewCards
+          {app}
+          {store}
+          kind="ref"
+          {openKey}
+          tools={band === 'narrow' ? undefined : importToggle}
+        />
       {:else}
-        <div class="acts" bind:this={newRow}>
-          <Button variant="primary" href={app.href(homebrewItemHash(null))} sameTab
-            ><Icon name="plus" />{t.hbNewItem}</Button
-          >
-        </div>
         <div>
-          <StatusRegion text={deletingSaid} />
-          {#if finding}
-            <div class="find">
-              <SearchBox
-                value={findQ}
-                placeholder={t.hbFindOwn}
-                oninput={(v: string) => {
-                  findQ = v;
-                }}
-              />
-              <FilterBar
+          {#if finding || store.records.length || band !== 'narrow'}
+            <div class="tools">
+              {#if finding}
+                <div class="grow">
+                  <SearchBox
+                    value={findQ}
+                    placeholder={t.searchShort}
+                    label={t.hbFindOwn}
+                    oninput={(v: string) => {
+                      findQ = v;
+                    }}
+                  />
+                </div>
+                {#if band !== 'wide' && facRows.length}
+                  <Button
+                    size="sm"
+                    variant={chosen.length ? 'toggle' : 'plain'}
+                    expanded={filterOpen}
+                    bind:el={filterToggle}
+                    onclick={() => {
+                      filterOpen = true;
+                    }}
+                    >{chosen.length
+                      ? t.filtersN.replace('%n', String(chosen.length))
+                      : t.filters}</Button
+                  >
+                {/if}
+              {/if}
+              {#if band !== 'narrow'}
+                {#if store.records.length}
+                  <span class="count" class:over={atLimit}>{count}</span>
+                  {#if narrowed}<span class="count">{shownText}</span>{/if}
+                {/if}
+                <span class="end">{@render importToggle()}</span>
+              {/if}
+              {#if !app.selecting && drawnIds.length > 0}
+                <button
+                  type="button"
+                  class="selmode"
+                  onclick={() => {
+                    void startSelecting();
+                  }}>{t.selectMode}</button
+                >
+              {/if}
+            </div>
+          {/if}
+          {#if band === 'narrow' && narrowed}
+            <p class="countline">
+              <span class="vals">{values}</span><span class="n">{shownText}</span>
+            </p>
+          {/if}
+          {#if band === 'narrow' && atLimit}
+            <p class="countline over">{count}</p>
+          {/if}
+          <div class="body" class:withcol={band === 'wide' && finding && facRows.length > 0}>
+            {#if finding && facRows.length}
+              <FilterPanel
+                {app}
                 rows={facRows}
                 picked={inForce}
                 shown={drawn.length}
-                total={found.length}
+                {band}
                 open={filterOpen}
-                {t}
-                ontoggle={() => {
-                  filterOpen = !filterOpen;
+                onclose={() => {
+                  filterOpen = false;
+                  filterToggle?.focus();
                 }}
                 onpick={pickFacet}
+                onclear={(group: string) => {
+                  applyFilter({ ...inForce, [group]: [] });
+                }}
                 onreset={() => {
                   applyFilter({});
                 }}
-                bind:toggleEl={filterToggle}
               />
-            </div>
-          {/if}
-          <p class="note">{count}</p>
-          {#if !store.records.length}
-            <Empty>{t.hbEmpty}</Empty>
-          {:else if !groups.length}
-            <Empty>
-              {t.nothing}
-              {#if chosenCount(inForce, HB_GROUPS) > 0}
-                <Button size="sm" onclick={() => void resetFromEmpty()}>{t.resetAll}</Button>
-              {/if}
-            </Empty>
-          {:else}
-            <BatchBar
-              total={drawnIds.length}
-              picked={ticked.length}
-              label={t.pickAll}
-              count={`${t.selected} ${String(ticked.length)}`}
-              onall={() => {
-                app.toggleAllIn(drawnIds);
-              }}
-              bind:allBox
-            >
-              {#snippet actions()}
-                <Button size="sm" caret on={moving} expanded={moving} onclick={toggleMove}
-                  >{t.hbMove.replace('%n', String(ticked.length))}</Button
-                >
-                <Button
-                  size="sm"
-                  onclick={() => void app.exportHomebrew({ items: ticked }, null)}
-                  >{`${t.exportJson} (${String(ticked.length)})`}</Button
-                >
-                <Button
-                  size="sm"
-                  variant="danger"
-                  disabled={deleting !== null}
-                  onclick={() => void deletePicked()}
-                  >{`${t.del} (${String(ticked.length)})`}</Button
-                >
-              {/snippet}
-              {#snippet below()}
-                {#if moving && ticked.length}
-                  <div class="move">
-                    <SourcePicker
-                      id="hb-move"
-                      books={store.books}
-                      lang={app.lang}
-                      value={moveBook}
-                      home={t.srcHomebrew}
-                      describedby={moveGone || !toMove.length ? 'hb-move-note' : undefined}
-                      onchange={(v: string) => {
-                        moveBook = v;
-                        moveSection = '';
-                        moveGone = null;
-                      }}
-                      section={{
-                        label: t.hbSection,
-                        value: moveSection,
-                        none: t.hbNoSection,
-                        onchange: (k: string) => {
-                          moveSection = k;
-                          moveGone = null;
-                        }
-                      }}
-                    >
-                      {#snippet label()}{t.hbSource}{/snippet}
-                    </SourcePicker>
-                    {#if moveGone}
-                      <p class="move-note err" id="hb-move-note" role="alert">
-                        {moveGone === 'book' ? t.hbMoveBookGone : t.hbMoveSectionGone}
-                      </p>
-                    {:else if !toMove.length}
-                      <p class="move-note" id="hb-move-note">{t.hbMoveHere}</p>
-                    {/if}
-                    <div class="move-go">
-                      <Button
-                        size="sm"
-                        variant="primary"
-                        disabled={moveSending || !toMove.length}
-                        onclick={() => void movePicked()}
-                        >{moveSending ? t.hbMoving : t.hbMoveGo}</Button
-                      >
-                    </div>
-                  </div>
-                {/if}
-              {/snippet}
-            </BatchBar>
-            {#if deleting !== null}
-              <p class="note progress">{t.hbDeletingN.replace('%n', String(deleting))}</p>
             {/if}
-            {#each groups as g (g.id)}
-              <h2 class="hbgroup">{g.label} <span class="n">{g.items.length}</span></h2>
-              {#if app.index}
-                <TableRows
-                  primary
-                  entries={g.items.map((it) => ({ it }))}
-                  view="list"
-                  index={app.index}
-                  lang={app.lang}
-                  selected={(id: string) => app.sel.has(id)}
-                  artBroken={(id: string) => app.artBroken(id)}
-                  ontoggle={(id: string) => {
-                    app.toggleSel(id);
-                  }}
-                  onartfail={(id: string) => {
-                    app.markArtBroken(id);
-                  }}
-                  onopen={(it: Record_) => {
-                    app.go(homebrewItemHash(it.id));
-                  }}
-                />
+            <!-- The first group head is where the list starts (DESIGN.md, "The First-Screen
+                 Rule"). -->
+            <div class="hbrows" data-primary>
+              {#if !store.records.length}
+                <Empty title={t.hbEmptyTitle} glyph="kindItem">{t.hbEmpty}</Empty>
+              {:else if !groups.length}
+                <Empty title={t.nothing} glyph="kindItem">
+                  {#if emptyCause}<p class="cause">{emptyCause}</p>{/if}
+                  {#if chosenCount(inForce, HB_GROUPS) > 0}
+                    <Button size="sm" onclick={() => void resetFromEmpty()}
+                      >{t.resetFilters}</Button
+                    >
+                  {/if}
+                </Empty>
+              {:else}
+                {#each groups as g (g.id)}
+                  <h2 class="hbgroup">
+                    {groupLabel(g.label)} <span class="n">{g.items.length}</span>
+                  </h2>
+                  {#if app.index}
+                    <TableRows
+                      entries={g.items.map((it) => ({ it }))}
+                      view="list"
+                      index={app.index}
+                      lang={app.lang}
+                      ticks={app.selecting}
+                      {hide}
+                      {terms}
+                      selected={(id: string) => app.sel.has(id)}
+                      artBroken={(id: string) => app.artBroken(id)}
+                      ontoggle={(id: string) => {
+                        app.toggleSel(id);
+                      }}
+                      onartfail={(id: string) => {
+                        app.markArtBroken(id);
+                      }}
+                      onopen={(it: Record_) => {
+                        app.go(homebrewItemHash(it.id));
+                      }}
+                    />
+                  {/if}
+                {/each}
               {/if}
-            {/each}
-          {/if}
+            </div>
+          </div>
         </div>
       {/if}
     </div>
@@ -532,59 +549,139 @@
 {/if}
 
 <style>
-  .note {
-    margin: 0 0 10px;
-    font-size: var(--t-small);
-    color: var(--muted);
-  }
-
-  .note.progress {
-    margin: 8px 0 0;
-  }
-
   /* minmax(0, 1fr): a select's long option never widens the column past the page. */
   .stack {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: 18px;
+    gap: 14px;
+    margin-top: 14px;
   }
 
-  .find {
-    margin-bottom: 12px;
+  /* The head's end: the tab links, then the primary at the right edge. */
+  .headx {
+    display: flex;
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 18px;
+    min-width: 0;
   }
 
-  /* The filter strip sits 12px under the search box, as on a shared list page. */
-  .find :global(.fbar) {
-    margin-top: 12px;
+  .headnew {
+    display: flex;
+    margin-left: auto;
   }
 
-  .acts {
+  /* Positioned: up to 760 px the row anchors the menu of «Ещё» (`MoreMenu.svelte`). */
+  .pickrow {
+    position: relative;
     display: flex;
     flex-wrap: wrap;
-    gap: var(--gap-sm);
+    align-items: center;
+    gap: 6px;
   }
 
-  /* The move panel, off the list page's price panel (`.guess`): full width in the strip. */
-  .move {
-    flex: 0 0 100%;
-    margin-top: 10px;
-    padding: 11px 0 8px;
-    border-top: 1px solid var(--line);
+  .pickrow :global(.btn.sm) {
+    flex: none;
+    height: 40px;
+    padding-inline: 11px;
   }
 
-  .move-note {
-    margin: 8px 0 0;
+  /* The search row, as the catalog's: the search first, «Выбрать» last, one height. */
+  .tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 10px;
+  }
+
+  .tools :global(input[type='search']),
+  .tools :global(.btn.sm),
+  .selmode {
+    height: 40px;
+  }
+
+  .grow {
+    flex: 1 1 140px;
+    min-width: 140px;
+  }
+
+  .end {
+    display: flex;
+    margin-left: auto;
+  }
+
+  .grow ~ .end {
+    margin-left: 0;
+  }
+
+  .selmode {
+    padding: 0 11px;
+    border: 1px solid var(--line2);
+    border-radius: var(--r-sm);
+    background: var(--surface);
+    color: var(--txt);
+    font: 600 var(--t-data) / 1 var(--ui);
+  }
+
+  .selmode:hover {
+    border-color: var(--muted2);
+  }
+
+  .count {
     font-size: var(--t-data);
-    line-height: 1.45;
-    color: var(--muted2);
+    color: var(--muted);
+    white-space: nowrap;
   }
 
-  .move-note.err {
+  .count.over,
+  .countline.over {
     color: var(--danger-text);
   }
 
-  .move-go {
-    margin-top: 10px;
+  /* The count line: the chosen values cut to one line, the count never cut. */
+  .countline {
+    display: flex;
+    align-items: baseline;
+    margin: 6px 0 0;
+    font-size: var(--t-data);
+    line-height: 16px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .countline .vals {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .countline .n {
+    flex: none;
+    margin-left: auto;
+    padding-left: 8px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* From 1000 px the filter column sits beside the rows. */
+  .body {
+    margin-top: 12px;
+  }
+
+  .body.withcol {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+  }
+
+  .hbrows {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .cause {
+    margin: 0;
+    max-width: 60ch;
   }
 
   .hbgroup {
@@ -594,9 +691,26 @@
     overflow-wrap: anywhere;
   }
 
+  .hbgroup:first-child {
+    margin-top: 0;
+  }
+
   .hbgroup .n {
     font-size: var(--t-data);
     font-weight: 500;
     color: var(--muted2);
+  }
+
+  /* Up to 760 px the search row is one line: the search, «Фильтры», «Выбрать». */
+  @media (max-width: 760px) {
+    .tools {
+      gap: 5px;
+    }
+
+    .tools :global(input[type='search']),
+    .tools :global(.btn.sm),
+    .selmode {
+      padding: 0 9px;
+    }
   }
 </style>

@@ -1,6 +1,6 @@
 # #/homebrew ~ filters as gm1
 # route: #/homebrew
-# why: twelve own items: the search box, «Фильтры» 12 px under it with the count 12 and no link button, then «12 предметов из 12», the strip and the groups
+# why: twelve own items: the search box, «12 предметов из 12», the filter column with no link button and the groups
 # as: gm1
 
 ## ru :: tree
@@ -20,36 +20,46 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
   main ""
     heading "Мои предметы" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
-    StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
-    button "Импорт из файла" [expanded=false]
     navigation "Мои предметы"
-      link "Предметы" [url=/homebrew]
-      link "Источники" [url=/homebrew/sources]
-      link "Комплекты" [url=/homebrew/sets]
-      link "Карты правил" [url=/homebrew/rules]
+      link "Предметы 12" [url=/homebrew]
+        StaticText "Предметы"
+        StaticText "12"
+      link "Источники 1" [url=/homebrew/sources]
+        StaticText "Источники"
+        StaticText "1"
+      link "Комплекты 1" [url=/homebrew/sets]
+        StaticText "Комплекты"
+        StaticText "1"
+      link "Карты правил 1" [url=/homebrew/rules]
+        StaticText "Карты правил"
+        StaticText "1"
     link "Новый предмет" [url=/homebrew/new]
-    status ""
+    StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
     searchbox "Найти предмет"
-    button "Фильтры" [expanded=false]
-    StaticText "12"
     StaticText "12 предметов из 12"
-    checkbox "Выбрать все" [checked=false]
-    StaticText "ВЫБРАТЬ ВСЕ"
-    generic ""
+    button "Импорт из файла" [expanded=false]
+    button "Выбрать"
+    complementary "Фильтры"
+      heading "Фильтры" [level=2]
+      StaticText "ТИП"
+      button "Все" [pressed=true]
+      button "Предметы" [pressed=false]
+      button "Расходники" [pressed=false]
+      ... button x3 of 7 same-shape siblings elided
+      StaticText "ИСТОЧНИК"
+      button "Все" [pressed=true]
+      StaticText "РАЗДЕЛ"
+      button "Все" [pressed=true]
+      button "Пистоли" [pressed=false]
+      button "Холодное оружие" [pressed=false]
     heading "Мастерская Ольхи · Пистоли 3" [level=2]
-    checkbox "Предмет 002" [checked=false]
-    button "Предмет 002 ПРЕДМЕТ МАСТЕРСКАЯ ОЛЬХИ (HB) Сгенерированный предме..." [namelen=77 namehash=5b89cda4]
-    ... checkbox x9 of 13 same-shape siblings elided
-    button "Предмет 005 ПРЕДМЕТ МАСТЕРСКАЯ ОЛЬХИ (HB) Сгенерированный предме..." [namelen=77 namehash=fdd42ed1]
-    ... button x8 of 12 same-shape siblings elided
+    button "Предмет 002 ПРЕДМЕТ Сгенерированный предмет для замера."
+    ... button x9 of 13 same-shape siblings elided
     heading "Мастерская Ольхи · Холодное оружие 1" [level=2]
     heading "Мастерская Ольхи 3" [level=2]
     heading "Хоумбрю 5" [level=2]
-    checkbox "Предмет 006" [checked=false]
-    button "Предмет 006 ПРЕДМЕТ ХОУМБРЮ Сгенерированный предмет для замера."
-    checkbox "Whispering Cap" [checked=false]
-    button "Whispering Cap ПРЕДМЕТ ХОУМБРЮ Once per rest, hear one sentence ..." [namelen=88 namehash=46575622]
+    button "Предмет 006 ПРЕДМЕТ Сгенерированный предмет для замера."
+    button "Whispering Cap ПРЕДМЕТ EN Once per rest, hear one sentence spoke..." [namelen=83 namehash=7f2993e0]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -58,52 +68,47 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-?Справка
 EN
 RU
-Whispering Cap
-Whispering CapПредметХоумбрюOnce per rest, hear one sentence spo... [namelen=85 namehash=dabe6adf]
+Whispering CapПредметENOnce per rest, hear one sentence spoken w... [namelen=80 namehash=dcd56acc]
 daggerheart.com
 Аккаунт: gm1@example.test
 Бросок
-Выбрать все
+Все
+Выбрать
 Импорт из файла
-Источники
+Источники 1
 К содержимому
-Карты правил
-Кольцо с гравировкой
-Кольцо с гравировкойПредметХоумбрюНадпись на неизвестном языке. ... [namelen=80 namehash=dc20935e]
-Комплекты
+Карты правил 1
+Кольцо с гравировкойПредметНадпись на неизвестном языке. Тёплое ... [namelen=73 namehash=222b1397]
+Комплекты 1
 Конфиденциальность
 ЛутDaggerheart
-Настой кузнеца
-Настой кузнецаРасходникХоумбрюВыпейте перед работой у горна: до ... [namelen=107 namehash=4dddfcea]
+Мастерская Ольхи
+Найти предмет
+Настой кузнецаРасходникВыпейте перед работой у горна: до конца с... [namelen=100 namehash=a6f81fe6]
 Новый предмет
 Открывать при запуске
+Пистоли
 Поиск
-Предмет 001
-Предмет 001ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=af8cef21]
-Предмет 002
-Предмет 002ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=b26f620e]
-Предмет 003
-Предмет 003ПредметХоумбрюСгенерированный предмет для замера.
-Предмет 004
-Предмет 004ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=4d0a407f]
-Предмет 005
-Предмет 005ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=183706e3]
-Предмет 006
-Предмет 006ПредметХоумбрюСгенерированный предмет для замера.
-Предмет 007
-Предмет 007ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=506b2799]
-Предмет 008
-Предмет 008ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=2b654a14]
+Предмет 001ПредметСгенерированный предмет для замера.
+Предмет 002ПредметСгенерированный предмет для замера.
+Предмет 003ПредметСгенерированный предмет для замера.
+Предмет 004ПредметСгенерированный предмет для замера.
+Предмет 005ПредметСгенерированный предмет для замера.
+Предмет 006ПредметСгенерированный предмет для замера.
+Предмет 007ПредметСгенерированный предмет для замера.
+Предмет 008ПредметСгенерированный предмет для замера.
 Предметы
+Предметы 12
+Расходники
+Снаряжение
 Таблицы
-Топор Тлеющих Углей
-Топор Тлеющих УглейОсновное оружиеУникальноеМастерская Ольхи (HB... [namelen=184 namehash=e7c9f22c]
+Топор Тлеющих УглейОсновное оружиеУникальноеРанг 2 · Магическое ... [namelen=163 namehash=a5051659]
 Условия использования
 Установить как приложение
-Фильтры
+Холодное оружие
+Хоумбрю
 
 ## en :: tree
 RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm1&items=12]
@@ -122,36 +127,46 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm1&ite
   main ""
     heading "My items" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
-    StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
-    button "Import from file" [expanded=false]
     navigation "My items"
-      link "Items" [url=/en/homebrew]
-      link "Sources" [url=/en/homebrew/sources]
-      link "Sets" [url=/en/homebrew/sets]
-      link "Rule cards" [url=/en/homebrew/rules]
+      link "Items 12" [url=/en/homebrew]
+        StaticText "Items"
+        StaticText "12"
+      link "Sources 1" [url=/en/homebrew/sources]
+        StaticText "Sources"
+        StaticText "1"
+      link "Sets 1" [url=/en/homebrew/sets]
+        StaticText "Sets"
+        StaticText "1"
+      link "Rule cards 1" [url=/en/homebrew/rules]
+        StaticText "Rule cards"
+        StaticText "1"
     link "New item" [url=/en/homebrew/new]
-    status ""
+    StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
     searchbox "Find an item"
-    button "Filters" [expanded=false]
-    StaticText "12"
     StaticText "12 items of 12"
-    checkbox "Select all" [checked=false]
-    StaticText "SELECT ALL"
-    generic ""
+    button "Import from file" [expanded=false]
+    button "Select"
+    complementary "Filters"
+      heading "Filters" [level=2]
+      StaticText "TYPE"
+      button "All" [pressed=true]
+      button "Items" [pressed=false]
+      button "Consumables" [pressed=false]
+      ... button x3 of 7 same-shape siblings elided
+      StaticText "SOURCE"
+      button "All" [pressed=true]
+      StaticText "SECTION"
+      button "All" [pressed=true]
+      button "Blades" [pressed=false]
+      button "Pistols" [pressed=false]
     heading "Alder Workshop · Pistols 3" [level=2]
-    checkbox "Item 002" [checked=false]
-    button "Item 002 ITEM ALDER WORKSHOP (HB) A generated item for the measu..." [namelen=67 namehash=c7fd2bb4]
-    ... checkbox x9 of 13 same-shape siblings elided
-    button "Item 005 ITEM ALDER WORKSHOP (HB) A generated item for the measu..." [namelen=67 namehash=c736683e]
-    ... button x8 of 12 same-shape siblings elided
+    button "Item 002 ITEM A generated item for the measure."
+    ... button x9 of 13 same-shape siblings elided
     heading "Alder Workshop · Blades 1" [level=2]
     heading "Alder Workshop 3" [level=2]
     heading "Homebrew 5" [level=2]
-    checkbox "Кольцо с гравировкой" [checked=false]
-    button "Кольцо с гравировкой ITEM HOMEBREW Надпись на неизвестном языке...." [namelen=81 namehash=4b6e3934]
-    checkbox "Настой кузнеца" [checked=false]
-    button "Настой кузнеца CONSUMABLE HOMEBREW Выпейте перед работой у горна..." [namelen=112 namehash=364d011e]
+    button "Кольцо с гравировкой ITEM RU Надпись на неизвестном языке. Тёпло..." [namelen=75 namehash=577a9a41]
+    button "Настой кузнеца CONSUMABLE RU Выпейте перед работой у горна: до к..." [namelen=106 namehash=5da704eb]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -160,49 +175,44 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm1&ite
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-?Help
 Account: gm1@example.test
+Alder Workshop
+All
+Blades
+Consumables
 EN
-Ember Axe
-Ember AxePrimary weaponUniqueAlder Workshop (HB)Tier 2 · Magic ·... [namelen=159 namehash=ea056220]
-Filters
+Ember AxePrimary weaponUniqueTier 2 · Magic · Spellcast · Melee ... [namelen=140 namehash=269142bb]
+Equipment
+Find an item
+Homebrew
 Import from file
 Install as an app
-Item 001
-Item 001ItemAlder Workshop (HB)A generated item for the measure.
-Item 002
-Item 002ItemAlder Workshop (HB)A generated item for the measure.
-Item 003
-Item 003ItemHomebrewA generated item for the measure.
-Item 004
-Item 004ItemAlder Workshop (HB)A generated item for the measure.
-Item 005
-Item 005ItemAlder Workshop (HB)A generated item for the measure.
-Item 006
-Item 006ItemHomebrewA generated item for the measure.
-Item 007
-Item 007ItemAlder Workshop (HB)A generated item for the measure.
-Item 008
-Item 008ItemAlder Workshop (HB)A generated item for the measure.
+Item 001ItemA generated item for the measure.
+Item 002ItemA generated item for the measure.
+Item 003ItemA generated item for the measure.
+Item 004ItemA generated item for the measure.
+Item 005ItemA generated item for the measure.
+Item 006ItemA generated item for the measure.
+Item 007ItemA generated item for the measure.
+Item 008ItemA generated item for the measure.
 Items
+Items 12
 LootDaggerheart
 New item
 Open on start
+Pistols
 Privacy
 RU
 Roll
-Rule cards
+Rule cards 1
 Search
-Select all
-Sets
+Select
+Sets 1
 Skip to content
-Sources
+Sources 1
 Tables
 Terms of use
-Whispering Cap
-Whispering CapItemHomebrewOnce per rest, hear one sentence spoke... [namelen=83 namehash=5a97f492]
+Whispering CapItemOnce per rest, hear one sentence spoken within... [namelen=75 namehash=4fea364a]
 daggerheart.com
-Кольцо с гравировкой
-Кольцо с гравировкойItemHomebrewНадпись на неизвестном языке. Тё... [namelen=78 namehash=34674d0b]
-Настой кузнеца
-Настой кузнецаConsumableHomebrewВыпейте перед работой у горна: д... [namelen=109 namehash=6e88a18f]
+Кольцо с гравировкойItemRUНадпись на неизвестном языке. Тёплое н... [namelen=72 namehash=6421c4be]
+Настой кузнецаConsumableRUВыпейте перед работой у горна: до конц... [namelen=103 namehash=d39eaaae]

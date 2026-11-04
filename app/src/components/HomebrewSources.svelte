@@ -1,8 +1,8 @@
 <script lang="ts">
   /* The Sources tab of «Мои предметы», `#/homebrew/sources` (m02, m19, m13 in the homebrew
      mocks): «Новый источник» first, the count of named sources, then each named source by
-     creation with its count, «Разделы», «Переименовать», «Скачать JSON» and «Удалить», and
-     the default source last with its count and «Скачать JSON». A source's name links to its
+     creation with its count, «Разделы» and «Ещё» (rename, JSON, delete), and the default
+     source last with its count and «Скачать JSON». A source's name links to its
      items on `#/tables/homebrew` (the `src` filter, its source chip) while it holds an
      item; an empty source's name is text, since its address would open another source's
      chip. A source's sections open under it with «Переименовать» and «Удалить». A rename
@@ -10,12 +10,13 @@
      through the store. From the eighth named source a search box filters the sources; past
      20 sections «Разделы» folds; a removal or a closed name field hands the focus on
      (docs/specs/FEATURES.md, "Homebrew", rules 12 and 20). */
-  import { tick } from 'svelte';
+  import { tick, type Snippet } from 'svelte';
   import { SvelteSet } from 'svelte/reactivity';
   import Button from './Button.svelte';
   import Empty from './Empty.svelte';
   import FoldButton from './FoldButton.svelte';
   import Icon from './Icon.svelte';
+  import MoreMenu from './MoreMenu.svelte';
   import NameField from './NameField.svelte';
   import SearchBox from './SearchBox.svelte';
   import { limitText } from '../lib/cloudLists.js';
@@ -40,9 +41,11 @@
   interface Props {
     app: AppState;
     store: Homebrew;
+    /** The right end of the counter's row (the import button from 761 px). */
+    tools?: Snippet | undefined;
   }
 
-  const { app, store }: Props = $props();
+  const { app, store, tools }: Props = $props();
 
   const t = $derived(app.t);
   const lang = $derived(app.lang);
@@ -107,9 +110,9 @@
       kind === 'new'
         ? newSource
         : kind === 'book'
-          ? byId('hb-book-' + String(id))?.querySelectorAll<HTMLElement>(
-              ':scope > .head .acts .btn'
-            )[1]
+          ? byId('hb-book-' + String(id))?.querySelector<HTMLElement>(
+              ':scope > .head .morewrap .btn'
+            )
           : kind === 'sect'
             ? byId('hb-sect-' + String(id) + '-' + String(key))?.querySelector<HTMLElement>(
                 '.acts .btn'
@@ -189,8 +192,8 @@
   const asked = (ask: string, stay: string): string =>
     [ask, stay, t.deleteNoUndo].filter(Boolean).join(' ');
 
-  /* The index of a row's «Удалить» among the drawn ones: a row with its rename field
-     open draws none. */
+  /* The index of a row's control among the drawn ones: a row with its rename field open
+     draws none. */
   const drawnAt = (dels: HTMLElement[], rowId: string): number =>
     dels.findIndex((b) => b.closest('li')?.id === rowId);
 
@@ -200,7 +203,7 @@
     const stay = n ? plural(n, t.hbSourceStayN, lang) : '';
     if (!app.env.dialog.confirm(asked(t.hbDeleteSource.replace('%s', name), stay))) return;
     const dels = (): HTMLElement[] => [
-      ...document.querySelectorAll<HTMLElement>('ul.books > li.book > .head .btn.danger')
+      ...document.querySelectorAll<HTMLElement>('ul.books > li.book > .head .morewrap .btn')
     ];
     const at = drawnAt(dels(), 'hb-book-' + book.id);
     const r = await store.removeBook(book.id);
@@ -246,25 +249,38 @@
 </script>
 
 <div class="hbtab">
-  <div class="add">
-    {#if editing === 'new'}
-      <NameField
-        id="hb-new-source"
-        label={t.hbNewSource}
-        submit={t.create}
-        cancel={t.cancel}
-        onsubmit={createSource}
-        oncancel={close}
-        maxlength={BOOK_NAME_MAX}
-      />
-    {:else}
-      <Button
-        variant="primary"
-        bind:el={newSource}
-        onclick={() => {
-          start('new', true);
-        }}><Icon name="plus" />{t.hbNewSource}</Button
-      >
+  <div class="headrow">
+    <div class="add">
+      {#if editing === 'new'}
+        <NameField
+          id="hb-new-source"
+          label={t.hbNewSource}
+          submit={t.create}
+          cancel={t.cancel}
+          onsubmit={createSource}
+          oncancel={close}
+          maxlength={BOOK_NAME_MAX}
+        />
+      {:else}
+        <Button
+          variant="primary"
+          size={app.band === 'narrow' ? 'sm' : 'md'}
+          bind:el={newSource}
+          onclick={() => {
+            start('new', true);
+          }}><Icon name="plus" />{t.hbNewSource}</Button
+        >
+      {/if}
+    </div>
+    {#if store.bookLimit !== null || books.length || tools}
+      <div class="cline">
+        {#if store.bookLimit !== null || books.length}
+          <p class="note">
+            {countOf(books.length, store.bookLimit, t.hbSourcesN, lang, t.ofLimit)}
+          </p>
+        {/if}
+        {#if tools}<span class="end">{@render tools()}</span>{/if}
+      </div>
     {/if}
   </div>
   {#if filtering}
@@ -277,9 +293,6 @@
         }}
       />
     </div>
-  {/if}
-  {#if store.bookLimit !== null || books.length}
-    <p class="note">{countOf(books.length, store.bookLimit, t.hbSourcesN, lang, t.ofLimit)}</p>
   {/if}
   {#if q && !shownBooks.length && !homeShown}
     <Empty>{t.nothing}</Empty>
@@ -330,21 +343,39 @@
                     toggle(book.id);
                   }}>{t.hbSectionsBtn}</Button
                 >
-                <Button
-                  size="sm"
-                  onclick={() => {
-                    start('book:' + book.id);
-                  }}>{t.hbRename}</Button
-                >
-                <Button
-                  size="sm"
-                  onclick={() =>
-                    void app.exportHomebrew({ book: book.id }, named(book.content))}
-                  >{t.exportJson}</Button
-                >
-                <Button size="sm" variant="danger" onclick={() => void removeSource(book)}
-                  >{t.del}</Button
-                >
+                <MoreMenu {app} id={'hb-src-' + book.id} size="sm">
+                  {#snippet children(closeMenu: () => void)}
+                    <button
+                      type="button"
+                      role="menuitem"
+                      tabindex="-1"
+                      onclick={() => {
+                        closeMenu();
+                        start('book:' + book.id);
+                      }}>{t.hbRename}</button
+                    >
+                    <button
+                      type="button"
+                      role="menuitem"
+                      tabindex="-1"
+                      onclick={() => {
+                        closeMenu();
+                        void app.exportHomebrew({ book: book.id }, named(book.content));
+                      }}>{t.exportJson}</button
+                    >
+                    <div role="separator" class="msep"></div>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      class="danger"
+                      tabindex="-1"
+                      onclick={() => {
+                        closeMenu();
+                        void removeSource(book);
+                      }}>{t.del}</button
+                    >
+                  {/snippet}
+                </MoreMenu>
               </span>
             </div>
           {/if}
@@ -493,18 +524,53 @@
     padding-top: 0;
   }
 
-  .find {
-    margin: 18px 0 0;
+  /* The create button and the counter share a row; an open name field takes the row. */
+  .headrow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    margin-bottom: 10px;
   }
 
-  .find + .note {
-    margin-top: 12px;
+  .add {
+    max-width: 100%;
+  }
+
+  .add:has(:global(input)) {
+    flex: 1 1 100%;
+  }
+
+  .add :global(.btn.sm) {
+    height: 40px;
+  }
+
+  .find {
+    margin-bottom: 12px;
+  }
+
+  .cline {
+    display: flex;
+    flex: 1 1 120px;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 10px;
+    min-width: 0;
   }
 
   .note {
-    margin: 18px 0 10px;
-    font-size: var(--t-small);
+    margin: 0;
+    font-size: var(--t-data);
     color: var(--muted);
+  }
+
+  .end {
+    display: flex;
+    margin-left: auto;
+  }
+
+  .end :global(.btn.sm) {
+    height: 40px;
   }
 
   .sections {
@@ -513,7 +579,9 @@
     border-left: 1px solid var(--line);
   }
 
+  /* Positioned: up to 760 px the row anchors the menu of «Ещё» (`MoreMenu.svelte`). */
   .head {
+    position: relative;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -541,9 +609,5 @@
     flex-wrap: wrap;
     gap: var(--gap-sm);
     margin-left: auto;
-  }
-
-  .add + .books {
-    margin-top: 18px;
   }
 </style>

@@ -1,6 +1,7 @@
 <script lang="ts">
-  /* «Ещё»: the labeled button and its menu, on the record's row, a roll page's results line
-     and a roll result's row. The caller draws the items and calls `close` first in each. */
+  /* «Ещё»: the labeled button and its menu, on the record's row, a roll page's results line,
+     a roll result's row and the homebrew pages. The caller draws the items and calls `close`
+     first in each. */
   import type { Snippet } from 'svelte';
   import Button from './Button.svelte';
   import Icon from './Icon.svelte';
@@ -12,12 +13,23 @@
     id: string;
     /** Sits in the record dialog's scroll box (`Menu`'s `flip`). */
     flip?: boolean;
+    /** Sits at the window's bottom (the selection bar, the editor's bar): it opens up. */
+    up?: boolean;
     size?: 'md' | 'sm';
+    disabled?: boolean;
     /** Draws the items; receives `close`, which closes the menu and returns the focus. */
     children: Snippet<[() => void]>;
   }
 
-  const { app, id, flip = false, size = 'md', children }: Props = $props();
+  const {
+    app,
+    id,
+    flip = false,
+    up = false,
+    size = 'md',
+    disabled = false,
+    children
+  }: Props = $props();
 
   const t = $derived(app.t);
   /* `.menu`'s distance from its control. */
@@ -53,6 +65,7 @@
 <span class="morewrap">
   <Button
     {size}
+    {disabled}
     haspopup
     expanded={open}
     controls={open ? id : undefined}
@@ -66,7 +79,7 @@
       control={button}
       label={t.moreMenu}
       {id}
-      cls="recmenu"
+      cls={up ? 'recmenu up' : 'recmenu'}
       {flip}
       onclose={() => {
         open = false;
@@ -99,5 +112,15 @@
   .morewrap :global(.recmenu [role='menuitem']:disabled) {
     opacity: 0.5;
     cursor: default;
+  }
+
+  .morewrap :global(.recmenu .danger) {
+    color: var(--danger-text);
+  }
+
+  .morewrap :global(.msep) {
+    height: 1px;
+    margin: 4px 0;
+    background: var(--line);
   }
 </style>

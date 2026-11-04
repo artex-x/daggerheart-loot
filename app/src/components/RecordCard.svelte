@@ -248,7 +248,7 @@
   <!-- A button rather than a figure: on a table row it opens the record, and
        the full card keeps the element so the two stay one component. -->
   <button type="button" class="card-media" aria-label={t.openPage} onclick={() => onopen?.(it)}>
-    <ArtWell glyph={kindGlyph(it.kind, it.eq?.t)}>
+    <ArtWell glyph={kindGlyph(it.kind, it.eq?.t ?? it.eqType)}>
       {#if art}
         <img
           src={art}

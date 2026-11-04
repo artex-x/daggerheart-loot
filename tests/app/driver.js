@@ -512,13 +512,13 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
       return true;
     },
 
-    /** Opens the record's «Ещё» menu: of the open dialog, else of the page; on a roll page
-     *  the results line's. */
-    async openMore() {
-      const handle = await page.evaluateHandle(() => {
-        const more = '.cardpick [aria-haspopup="menu"], .reshead [aria-haspopup="menu"]';
-        return document.querySelector('dialog[open] ' + more) ?? document.querySelector(more);
-      });
+    /** Opens the «Ещё» menu `more` selects, by default the record's: of the open dialog,
+     *  else of the page; on a roll page the results line's. */
+    async openMore(more = '.cardpick [aria-haspopup="menu"], .reshead [aria-haspopup="menu"]') {
+      const handle = await page.evaluateHandle(
+        (sel) => document.querySelector('dialog[open] ' + sel) ?? document.querySelector(sel),
+        more
+      );
       const el = handle.asElement();
       if (!el) {
         await handle.dispose();
@@ -528,6 +528,18 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
       await handle.dispose();
       await page.waitForSelector('[role="menu"]', { timeout: 5000 });
       await settle(page);
+    },
+
+    /** Opens the selection mode and answers the names of the drawn rows' boxes. */
+    async tickNames() {
+      await page.evaluate(() => {
+        document.querySelector('button.selmode')?.click();
+      });
+      await settle(page);
+      return page.evaluate((nameSrc) => {
+        const nameOf = eval(nameSrc);
+        return [...document.querySelectorAll('[data-row] input[type="checkbox"]')].map(nameOf);
+      }, NAME_FN);
     },
 
     /** Opens the «Ещё» menu of the open dialog, else of the page, then presses `name` in it

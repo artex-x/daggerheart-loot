@@ -90,6 +90,7 @@
   {sub}
   {help}
   rolled={String(n)}
+  said={shown ? [shown.it] : []}
   empty={max === 0 ? t.noData : undefined}
 >
   {#snippet controls()}
@@ -102,7 +103,7 @@
   {/snippet}
 
   {#snippet settings()}
-    <Field label="{t.rollLabelFor} (1–{max})">
+    <Field label="{t.rollLabelFor} (1-{max})">
       <NumberField
         value={n}
         min={1}
@@ -120,7 +121,7 @@
       <!-- The result is the record card itself, as the live app draws it: a roll
            that produced a name and nothing else would send the reader to another
            page to find out what they got. -->
-      <div class="results" data-primary role="status" aria-live="polite">
+      <div class="results" data-primary>
         <!-- Keyed on the record, not the panel: without this Svelte patches the
              existing card in place on every roll, and the previous artwork sits
              on screen until the new <img> decodes - live rebuilds #view.innerHTML

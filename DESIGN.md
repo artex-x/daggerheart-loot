@@ -457,8 +457,8 @@ and the pin and the help are labeled buttons («Открывать при зап
 "Open on start", «Справка» / "Help"; the catalog's help is named for its
 panel, «Об этих данных» / "About this data"). The one interim exception: up to
 760px the pin and the help stay round buttons with the same names until their
-page's batch moves them into «Ещё» (homebrew, search and the account, and the
-lists); the catalog's and the roller's are in «Ещё».
+page's batch moves them into «Ещё» (search and the account, and the lists); the
+catalog's, the roller's and `/homebrew`'s are in «Ещё».
 
 **The First-Screen Rule.** At 360x640 and at 1180x720, in Russian and in
 English, at scroll 0, the primary content of a route starts no lower than 40%
@@ -468,8 +468,9 @@ the rarities on the dice (owner, 2026-10-29). A design aims at 240px and 270px, 
 line-box difference does not fail the rule. The primary content is the first
 roll result on a roll page, the table on `/tables/*`, the item on `/i/` and
 `/h/`, the first result on `/search`, the first settings panel on `/account`,
-the sheet on `/p/`, the first item row on a `/homebrew` tab, the first form
-field in the editor, the first list card on `/lists`, and the first entry on
+the sheet on `/p/`, the first group head on `/homebrew`, the first card row on
+its Sets and Rules tabs, the form in the editor, the first list card on
+`/lists`, and the first entry on
 `/lists/<uuid>` and `/s/<token>`. Each page marks that element with
 `data-primary`, and `tests/app/states.js` ("primary content starts in the
 first screen") measures it.
@@ -601,7 +602,9 @@ means "a thing". Do not round a card to a pill or square a chip.
 - **Neutral pressed:** a mode toggle (the language switch, the tables list or
   grid switch, the print color or black-and-white switch) passes `neutral`:
   the pressed button takes the `check` icon before its label, a Vault Wall Lit
-  fill, a Chalk label and a lit `--muted2` border, and no gold.
+  fill, a Chalk label and a lit `--muted2` border, and no gold. It is the picker
+  of a form field too (the homebrew editor, the import's «Если уже есть:»); gold
+  stays for a choice that narrows a view.
 - Every button carries `aria-pressed`, including the ones whose original did
   not.
 
@@ -644,7 +647,9 @@ means "a thing". Do not round a card to a pill or square a chip.
 - **Variants:** the five kind hues, plus tier, source, roll number (the UI
   face's tabular figures, Chalk on a Seam Lit border), unique (dashed, Ash
   Violet on Seam Lit), and the Hope and Fear pair. Neither the roll number nor
-  the unique tag is gold: nobody chose them (The Seal Rule). On a roll card face the
+  the unique tag is gold: nobody chose them (The Seal Rule). An own item written
+  in the other language than the interface draws a small language tag («EN», «RU»)
+  after its row's tags: a hairline box, no fill, no capitals rule. On a roll card face the
   roll number is drawn over the picture from 601px and hidden up to 600px, where the
   results line names the roll.
 
@@ -684,6 +689,10 @@ means "a thing". Do not round a card to a pill or square a chip.
   (the account, the lists and «Мои предметы»), where no job is lit, and while
   its menu is open.
 
+- **List head:** `/homebrew` draws the catalog's: up to 760px the picker row with
+  the `h1` read, not drawn; from 761px the head with the pin, the tabs and the
+  primary.
+
 ### Filter chips and the count line
 
 - **Catalog:** the filters are a 250px column beside the rows from 1000px,
@@ -692,7 +701,9 @@ means "a thing". Do not round a card to a pill or square a chip.
   chips; a picked value is gold. No pill row at 360px or in the mid band: the
   count line under the search row names the chosen values in text, cut to one
   line, and the count, never cut.
-- **Pills (the shared page and the Items tab, until their batches):** 32px
+- **Own items:** `/homebrew` draws the catalog's column and sheet and no pill row
+  at any width.
+- **Pills (the shared page, until its batch):** 32px
   tall, 8px radius, a 12 per cent gold wash inside a 45 per cent gold border,
   a Seal Gold Soft label at 13px weight 600, and a dismiss glyph, beside a
   text reset and a 32px copy-link button.
@@ -703,8 +714,8 @@ means "a thing". Do not round a card to a pill or square a chip.
   bottom, `min(100%, 560px)` wide and centered, top corners at the plate
   radius, at most `min(85dvh, 640px)` tall. Its head (the title, the caller's
   controls, «Закрыть» with the close icon) and its foot stay; the body
-  scrolls. No grab handle: nothing drags it. The filter sheet and the table
-  picker are its callers.
+  scrolls. No grab handle: nothing drags it. Its callers: the filter sheet, the
+  table and tab pickers, the bulk move and the editor's preview.
 - The record dialog has the sheet's look up to 760px and is not a `Sheet`: one
   element at every width, so a window that crosses 760px remounts nothing. «Ещё» is
   a `Menu` at every width, in the dialog too. Both close with `DialogClose`.
@@ -717,6 +728,24 @@ means "a thing". Do not round a card to a pill or square a chip.
   polite summary («Выбрано: N»), the page's actions and «Снять выделение»
   last. Below 761px the box, the summary and the clear are one row and the
   actions the next. Zero ticks: the actions off, the clear on.
+
+### Forms
+
+- A field is `FormField`: its caption, the control, its error line. An optional
+  field carries the muted word «необязательно» after the caption, outside the
+  `<label>`; a required field carries no mark, and no legend explains marks.
+- A field's error is its own sentence that names the fix. The summary at the top
+  of a form names the field first.
+- A field has no «?» unless it states a constraint of the site and has no room
+  for a caption (`FEATURES.md`, rule 15). A caption under a field states a fact
+  the person must know before typing, at the data size in Ash Violet.
+- The editor's sticky bar: up to 760px the buttons of a long form stick to the
+  bottom of the window on the Vault Wall ground under a Seam top border, with
+  the safe-area padding; a window under 481px leaves them in the flow. It holds
+  one gold button. A menu may hold a single danger action where the bar has no
+  room: a danger button in a sticky bar invites a mis-tap.
+- The preview sheet: up to 760px the live card moves from the column into a
+  `Sheet`. The card draws in one place per band, never twice.
 
 ### Empty state
 

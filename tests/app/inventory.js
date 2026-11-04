@@ -279,7 +279,16 @@ async function clickEither(d, ru, en) {
 }
 
 /* «Импорт из файла» open on «Мои предметы», its lazy chunk loaded. */
+/* Ticks two of gm3's rows: the mode opens with the first tick. */
+async function hbTickTwo(d) {
+  const names = await d.tickNames();
+  for (const name of names.slice(0, 2)) await d.tick(name);
+}
+
 async function hbImportOpen(d) {
+  /* Up to 760 px the import is an item of the head's «Ещё». */
+  const more = '.pickrow [aria-haspopup="menu"]';
+  if (await d.count(more)) await d.openMore(more);
   await clickEither(d, 'Импорт из файла', 'Import from file');
   for (
     let i = 0;
@@ -1624,7 +1633,7 @@ const STATES = [
     why: 'a name typed and «Добавить в список» pressed: «11 позиций из 100», the new plain item last, right above the row, the fields empty, the toast «Предмет «Фляга контрабандиста» создан и добавлен в список» with the link «Изменить»',
     enter: async (d) => {
       await d.click('Свой предмет');
-      await d.type('Название*', 'Фляга контрабандиста');
+      await d.type('Название', 'Фляга контрабандиста');
       await d.press('Добавить в список');
       for (let i = 0; i < 40 && !(await d.text()).includes('11 позиций'); i++) await d.settle();
     },
@@ -2779,13 +2788,13 @@ const STATES = [
     id: '#/homebrew as gm1',
     route: '#/homebrew',
     as: 'gm1',
-    why: 'the Items tab: «Импорт из файла» with its caret, the tab row «Предметы» (current), «Источники», «Комплекты», «Карты правил», «Новый предмет», «4 предмета из 100» above the strip (no search under eight items), the axe under «Мастерская Ольхи · Холодное оружие» and the other three under «Хоумбрю»'
+    why: 'the Items tab: the head with the pin, the tab links with their counts and «Новый предмет», then «4 предмета из 100», «Импорт из файла» and «Выбрать» (no search under eight items), the axe under «Мастерская Ольхи · Холодное оружие» and the other three under «Хоумбрю»'
   },
   {
     id: '#/homebrew as gm3',
     route: '#/homebrew',
     as: 'gm3',
-    why: "gm3's 39 items: the search box «Найти предмет», then «39 предметов из 100», then the strip and the groups"
+    why: "gm3's 39 items: the search box «Найти предмет», «39 предметов из 100», «Импорт из файла», «Выбрать», the filter column and the groups"
   },
   {
     id: '#/homebrew ~ search as gm3',
@@ -2800,7 +2809,7 @@ const STATES = [
     id: '#/homebrew ~ no match as gm3',
     route: '#/homebrew',
     as: 'gm3',
-    why: 'a query with no match: «Ничего не найдено» in place of the strip and the groups, the count «39 предметов из 100» kept',
+    why: 'a query with no match: «Ничего не найдено» with its cause in place of the groups, the count «39 предметов из 100» kept',
     enter: async (d) => {
       await d.type('Найти предмет', 'яяяя');
     }
@@ -2835,7 +2844,7 @@ const STATES = [
     id: '#/homebrew ~ import panel as gm1',
     route: '#/homebrew',
     as: 'gm1',
-    why: '«Импорт из файла» pressed and expanded: the panel «Импорт предметов из файла JSON» with «Выбрать файл...» and the hint linking schema/homebrew-v2.json and llms.txt',
+    why: '«Импорт из файла» pressed and expanded: the panel «Импорт предметов из файла JSON» with «Выбрать файл...», the links «Формат файла» and «llms.txt» on its row and the line of what fits under it',
     enter: hbImportOpen
   },
   {
@@ -2892,7 +2901,7 @@ const STATES = [
     id: '#/homebrew ~ move as gm1',
     route: '#/homebrew',
     as: 'gm1',
-    why: 'the three items of «Хоумбрю» ticked, «Переместить (3)» pressed and expanded (m24): «Источник» on «Мастерская Ольхи», «Раздел» on «Без раздела», «Переместить»; the strip «Переместить (3)», «Скачать JSON (3)», «Удалить (3)»',
+    why: 'the three items of «Хоумбрю» ticked, «Переместить (3)» pressed: the sheet with «Источник» on «Мастерская Ольхи», «Раздел» on «Без раздела», «Отмена» and «Переместить»',
     enter: async (d) => {
       for (const name of ['Настой кузнеца', 'Whispering Cap', 'Кольцо с гравировкой'])
         await d.tick(name);
@@ -2901,19 +2910,10 @@ const STATES = [
       await d.choose('#hb-move', '00000000-0000-4000-8000-000000000501');
     }
   },
-  /* The head's home button and «?», the Items tab's filter from the eighth item and the
-     fold of a filter row of more than 12 values. `items` and `sections` seed the fake
+  /* The head's pin, the Items tab's filter from the eighth item and the fold of a filter
+     row of more than 12 values. `items` and `sections` seed the fake
      (`?items=`, `?sections=`): twelve items in two sources, or 66 with the first source's
      22 sections all used. */
-  {
-    id: '#/homebrew ~ help open as gm1',
-    route: '#/homebrew',
-    as: 'gm1',
-    why: 'the head «Мои предметы» with the home button and «Справка» pressed: the help under the head, five paragraphs with bold leads «Предметы.», «Источники.», «Комплекты.», «Карты правил.», «Импорт из файла.»',
-    enter: async (d) => {
-      await d.click('Справка');
-    }
-  },
   {
     id: '#/homebrew ~ pinned as gm1',
     route: '#/homebrew',
@@ -2930,36 +2930,144 @@ const STATES = [
     route: '#/homebrew',
     as: 'gm1',
     items: 12,
-    why: 'twelve own items: the search box, «Фильтры» 12 px under it with the count 12 and no link button, then «12 предметов из 12», the strip and the groups'
-  },
-  {
-    id: '#/homebrew ~ filters open as gm1',
-    route: '#/homebrew',
-    as: 'gm1',
-    items: 12,
-    why: '«Фильтры» pressed: the panel with «Тип» (Предметы, Расходники, Снаряжение), «Источник» (Хоумбрю, Мастерская Ольхи) and «Раздел» (Пистоли, Холодное оружие); the fold is page memory, a pick writes the address',
-    enter: async (d) => {
-      await d.click('Фильтры');
-    }
+    why: 'twelve own items: the search box, «12 предметов из 12», the filter column with no link button and the groups'
   },
   {
     id: '#/homebrew ~ filter hides a tick as gm1',
     route: '#/homebrew',
     as: 'gm1',
     items: 12,
-    why: '«Кольцо с гравировкой» of «Хоумбрю» ticked, then «Мастерская Ольхи» picked: the pill, «7 из 12», only the source rows drawn, the tick dropped and the strip unticked; the pick wrote the address #/homebrew/f_src-hb_alderworkshopaaa',
+    why: '«Кольцо с гравировкой» of «Хоумбрю» ticked, then «Мастерская Ольхи» picked: «Показано 7 из 12», only the source rows drawn, the tick dropped and the bar at zero; the pick wrote the address #/homebrew/f_src-hb_alderworkshopaaa',
     enter: async (d) => {
       await d.tick('Кольцо с гравировкой');
-      await d.click('Фильтры');
       await d.click('Мастерская Ольхи');
     }
+  },
+  /* The list head, the bar and the sheets of `#/homebrew` up to 760 px, and the editor's. */
+  {
+    id: '#/homebrew ~ narrow as gm3',
+    route: '#/homebrew',
+    as: 'gm3',
+    width: 360,
+    why: 'the head up to 760 px: the read-only heading and lead, the picker «Предметы», «Новый предмет» with no plus and «Ещё», the search row with «Фильтры» and «Выбрать»'
+  },
+  {
+    id: '#/homebrew ~ tabs as gm3',
+    route: '#/homebrew',
+    as: 'gm3',
+    width: 360,
+    why: 'the picker pressed: the sheet with the four tabs, their counts and «39 предметов из 100»',
+    enter: async (d) => {
+      await d.click('Мои предметы: Предметы');
+    }
+  },
+  {
+    id: '#/homebrew ~ more as gm3',
+    route: '#/homebrew',
+    as: 'gm3',
+    width: 360,
+    why: '«Ещё» pressed: the menu with «Импорт из файла» and the pin',
+    enter: (d) => d.openMore('.pickrow [aria-haspopup="menu"]'),
+    again: (d) => d.openMore('.pickrow [aria-haspopup="menu"]')
+  },
+  {
+    id: '#/homebrew ~ filter sheet as gm3',
+    route: '#/homebrew',
+    as: 'gm3',
+    width: 360,
+    why: '«Фильтры» pressed: the sheet with «Тип», «Источник» and «Раздел» where the seed has them, no link button, «Показать N»; a pick writes the address',
+    enter: async (d) => {
+      await d.click('Фильтры');
+    }
+  },
+  {
+    id: '#/homebrew ~ select as gm3',
+    route: '#/homebrew',
+    as: 'gm3',
+    why: 'two rows ticked in the mode: the one bar with «Все», «В список», «Печать», «Скопировать текст», «Переместить (2)», «Скачать JSON (2)», «Удалить (2)» and «Снять выделение»',
+    enter: hbTickTwo
+  },
+  {
+    id: '#/homebrew ~ select narrow as gm3',
+    route: '#/homebrew',
+    as: 'gm3',
+    width: 360,
+    why: 'the bar up to 760 px: «В список», «Печать», «Ещё» and «Снять выделение», no strip',
+    enter: hbTickTwo
+  },
+  {
+    id: '#/homebrew ~ bar more as gm3',
+    route: '#/homebrew',
+    as: 'gm3',
+    width: 360,
+    why: "the bar's «Ещё» pressed: the menu opens upward with the copy, the move, the JSON, a separator and «Удалить (2)»",
+    enter: async (d) => {
+      await hbTickTwo(d);
+      await d.openMore('.selbarwrap [aria-haspopup="menu"]');
+    },
+    again: (d) => d.openMore('.selbarwrap [aria-haspopup="menu"]')
+  },
+  {
+    id: '#/homebrew/sources ~ menu as gm1',
+    route: '#/homebrew/sources',
+    as: 'gm1',
+    why: "a source's «Ещё» pressed: «Переименовать», «Скачать JSON», a separator and «Удалить»",
+    enter: (d) => d.openMore('.book [aria-haspopup="menu"]'),
+    again: (d) => d.openMore('.book [aria-haspopup="menu"]')
+  },
+  {
+    id: '#/homebrew/sets ~ empty as gm4',
+    route: '#/homebrew/sets',
+    as: 'gm4',
+    why: 'an account with no set: the plate «Комплектов пока нет» and what a set is, no button inside'
+  },
+  {
+    id: '#/homebrew/rules ~ empty as gm4',
+    route: '#/homebrew/rules',
+    as: 'gm4',
+    why: 'an account with no rule card: the plate «Карт правил пока нет» and what a rule card is'
+  },
+  {
+    id: '#/homebrew/new ~ narrow as gm1',
+    route: '#/homebrew/new',
+    as: 'gm1',
+    width: 360,
+    why: 'the editor up to 760 px: no preview column, the sticky bar «Сохранить» and «Предпросмотр», no «Ещё» on a new item'
+  },
+  {
+    id: '#/homebrew/new ~ preview sheet as gm1',
+    route: '#/homebrew/new',
+    as: 'gm1',
+    width: 360,
+    why: '«Предпросмотр» pressed: the sheet with the screen and print switch and the card',
+    enter: async (d) => {
+      await d.click('Предпросмотр');
+    }
+  },
+  {
+    id: '#/homebrew/new ~ equipment as gm1',
+    route: '#/homebrew/new',
+    as: 'gm1',
+    why: '«Снаряжение» pressed with no tier: the preview draws the weapon badge at once and no stat block; the group «Характеристики» opens',
+    enter: async (d) => {
+      await d.click('Снаряжение');
+    }
+  },
+  {
+    id: '#/homebrew/' + HB_AXE + ' ~ bar more as gm1',
+    route: '#/homebrew/' + HB_AXE,
+    as: 'gm1',
+    width: 360,
+    why: "the editor bar's «Ещё» pressed on a stored item: the menu opens upward with «Удалить»",
+    enter: (d) => d.openMore('.ebar [aria-haspopup="menu"]'),
+    again: (d) => d.openMore('.ebar [aria-haspopup="menu"]')
   },
   {
     id: '#/homebrew/f_src-hb_alderworkshopaaa as gm1',
     route: '#/homebrew/f_src-hb_alderworkshopaaa',
     as: 'gm1',
     items: 12,
-    why: 'the Items tab at a filter address: the panel open because the page did not write the address, the pill «Мастерская Ольхи», «7 из 12», only the source rows drawn'
+    why: 'the Items tab at a filter address: «Мастерская Ольхи» picked in the column, «Показано 7 из 12», only the source rows drawn, the group heads without the source name'
   },
   {
     id: '#/homebrew ~ section fold as gm1',
@@ -2967,10 +3075,7 @@ const STATES = [
     as: 'gm1',
     items: 66,
     sections: 20,
-    why: 'the panel open over 66 items: «Раздел» draws its first 10 sections, then «и ещё 12» collapsed (a row of more than 12 values folds)',
-    enter: async (d) => {
-      await d.click('Фильтры');
-    }
+    why: 'the column over 66 items: «Раздел» draws its first 10 sections, then «и ещё 12» collapsed (a row of more than 12 values folds)'
   },
   {
     id: '#/homebrew ~ section fold open as gm1',
@@ -2980,7 +3085,6 @@ const STATES = [
     sections: 20,
     why: 'the same, «и ещё 12» pressed: all 22 sections and «свернуть» expanded, the focus kept on it',
     enter: async (d) => {
-      await d.click('Фильтры');
       await d.click('и ещё 12');
     }
   },
@@ -3005,8 +3109,8 @@ const STATES = [
     why: 'a set named by one unbroken 80-character word in the 80-character source: the fold name and its count line wrap at 360 px (rule 16), the toast «Комплект «Ж...» создан»',
     enter: async (d) => {
       await d.click('Новый комплект');
-      await d.type('Название комплекта*', 'Ж'.repeat(80));
-      await d.type('Бонус комплекта*', 'Бонус.');
+      await d.type('Название комплекта', 'Ж'.repeat(80));
+      await d.type('Бонус комплекта', 'Бонус.');
       await d.choose('#hb-card-new-set-book', '00000000-0000-4000-8000-000000000451');
       await d.click('Создать комплект');
       for (let i = 0; i < 40 && !(await d.text()).includes('Комплект «Ж'); i++)
@@ -3088,7 +3192,7 @@ const STATES = [
     id: '#/homebrew/sources as gm1',
     route: '#/homebrew/sources',
     as: 'gm1',
-    why: 'the Sources tab: «Новый источник» first, «1 источник из 20», «Мастерская Ольхи» (a link to its rows) 1 предмет · 2 раздела из 30 with «Разделы», «Переименовать», «Скачать JSON» and «Удалить», then «Хоумбрю» (a link) 3 предмета with «Скачать JSON»'
+    why: 'the Sources tab: «Новый источник» first, «1 источник из 20», «Мастерская Ольхи» (a link to its rows) 1 предмет · 2 раздела из 30 with «Разделы» and «Ещё», then «Хоумбрю» (a link) 3 предмета with «Скачать JSON»'
   },
   {
     id: '#/homebrew/sources ~ sections as gm1',
@@ -3205,7 +3309,7 @@ const STATES = [
     id: '#/homebrew as gm2',
     route: '#/homebrew',
     as: 'gm2',
-    why: 'an account with no homebrew: the Items tab with «Новый предмет», «0 предметов из 100», «Своих предметов пока нет - создайте первый выше или импортируйте файл.»'
+    why: 'an account with no homebrew: the Items tab with «Новый предмет», «Импорт из файла» alone in the tool row, and the plate «Своих предметов пока нет» with its sentence and no button'
   },
   {
     id: '#/homebrew',
@@ -3216,7 +3320,7 @@ const STATES = [
     id: '#/homebrew/new as gm1',
     route: '#/homebrew/new',
     as: 'gm1',
-    why: 'a new item: «Новый предмет», the legend, «Вид» on «Предмет», «Источник» with its «?» on «Хоумбрю», «Название» *, «Описание», «Ранг» on «Без ранга» then 1-4, «Сохранить» and «Отмена», the preview card'
+    why: 'a new item: the way back and «Новый предмет» on one row, the groups «Предмет» («Вид» on «Предмет», «Название», «Описание», «Картинка», «Ранг» on «Без ранга» then 1-4, the optional ones marked) and «Где лежит» («Источник» on «Хоумбрю» with its caption), «Связи», «Сохранить», the preview card'
   },
   {
     id: '#/homebrew/new ~ picture refused as gm1',
@@ -3329,18 +3433,7 @@ const STATES = [
     id: '#/homebrew/' + HB_AXE + ' as gm1',
     route: '#/homebrew/' + HB_AXE,
     as: 'gm1',
-    why: 'the axe in its editor: the path «Хоумбрю · Мастерская Ольхи · Холодное оружие · Ранг 2», the weapon fields filled, «Урон» over «Кость урона» and «Бонус к урону», the disclosure «Второй набор характеристик» closed with its «?», «Удалить», the preview card'
-  },
-  {
-    id: '#/homebrew/' + HB_AXE + ' ~ help open as gm1',
-    route: '#/homebrew/' + HB_AXE,
-    as: 'gm1',
-    why: 'the fold «Связи» open, the «?» of «Комплект» and of «Второй набор характеристик» pressed: each hint under its label, every other «?» closed',
-    enter: async (d) => {
-      await d.click('Связи');
-      await d.click('Подсказка: Комплект');
-      await d.click('Подсказка: Второй набор характеристик');
-    }
+    why: 'the axe in its editor: the path «Хоумбрю · Мастерская Ольхи · Холодное оружие · Ранг 2», the weapon fields filled, «Урон» over «Кость урона» and «Бонус к урону», the disclosure «Второй набор характеристик» closed, «Удалить», the preview card'
   },
   {
     id: '#/homebrew/' + HB_AXE + ' ~ conflict as gm1',
@@ -3709,15 +3802,6 @@ const STATES = [
      (docs/specs/FEATURES.md, "Consistency rules", rule 18; "Homebrew", "Language"). The
      form's own «EN» is the second control of that name: the header's switch comes first. */
   {
-    id: '#/homebrew/new ~ description help as gm1',
-    route: '#/homebrew/new',
-    as: 'gm1',
-    why: 'the «?» of «Описание» pressed: the three lines of the markup hint under the label, «Разметка входит в 3000 символов.» last, then the toolbar «Оформление: Описание» and the box',
-    enter: async (d) => {
-      await d.click('Подсказка: Описание');
-    }
-  },
-  {
     id: '#/homebrew/' + HB_AXE + ' ~ formatted draft as gm1',
     route: '#/homebrew/' + HB_AXE,
     as: 'gm1',
@@ -3746,7 +3830,7 @@ const STATES = [
     as: 'gm1',
     why: 'a name and a 3000-character «Описание», «На печати», then «Цветная»: the compact color print card cut off, the warning box «Текст не помещается на карточку при печати...» after «3000 / 3000», «Сохранить» enabled',
     enter: async (d) => {
-      await d.type('Название*', 'Свиток долгой ночи');
+      await d.type('Название', 'Свиток долгой ночи');
       await d.type('Описание', CLIPPED_TEXT);
       await d.click('На печати');
       await d.click('Цветная');
@@ -3770,9 +3854,9 @@ const STATES = [
     why: '«Новая карта правил», a name and a formatted text typed, «Просмотр» pressed: the pane «Просмотр: Текст карты» draws bold, italic and a list in place of the box, the five format buttons disabled',
     enter: async (d) => {
       await d.press('Новая карта правил');
-      await d.type('Название карты*', 'Почта из пергамента');
+      await d.type('Название карты', 'Почта из пергамента');
       await d.type(
-        'Текст карты*',
+        'Текст карты',
         '***Доставка:*** письмо прибудет после **продолжительного отдыха**.\n- Птица не летит сквозь бурю.\n- Адресат может *ответить* на обороте.'
       );
       await d.press('Просмотр');
@@ -3786,9 +3870,9 @@ const STATES = [
     enter: async (d) => {
       await d.press('Новая карта правил');
       await d.click('EN - пусто');
-      await d.type('Название карты*', 'Alder Brand');
+      await d.type('Название карты', 'Alder Brand');
       await d.click('RU - пусто');
-      await d.type('Текст карты*', 'Цель горит.');
+      await d.type('Текст карты', 'Цель горит.');
       await d.press('Создать карту');
     }
   },
@@ -3799,7 +3883,7 @@ const STATES = [
     why: '«Свой предмет» with a formatted description and «Просмотр» pressed: the pane under the toolbar of four format buttons, no «Язык текста»',
     enter: async (d) => {
       await d.click('Свой предмет');
-      await d.type('Название*', 'Фляга контрабандиста');
+      await d.type('Название', 'Фляга контрабандиста');
       await d.type('Описание', '**Двойное дно:** во второй половине *можно* спрятать письмо.');
       /* The six note boxes above the panel (the list's pair, rows 2 and 5) each draw a «Просмотр» first. */
       await d.press('Просмотр', 6);

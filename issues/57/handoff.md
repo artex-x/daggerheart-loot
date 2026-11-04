@@ -2,14 +2,14 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (wave 1 is on `main`; batches 3, 3b, 4 and 5 are on `claude/57`; `polish`,
+- Task status: in_progress (wave 1 is on `main`; batches 3, 3b, 4, 5 and 6 are on `claude/57`; `polish`,
   `harden`, the review and CI of the tip are the orchestrator's)
-- Last agent: implementer (batch 5 remediation, 2026-11-04)
+- Last agent: implementer (batch 6, 2026-11-04)
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
-- Previous sha: `9d4f47ec` (batch 5; `origin/main` `d83384b4` is merged)
-- Pushed: the batch 5 remediation commit holds this handoff; its sha and push state are in the
-  implementer's report (`git log -1 --grep="Task: 57"`).
+- Previous sha: `da96cbf3` (batch 5 remediation; `origin/main` `d83384b4` is merged)
+- Pushed: the batch 6 commit holds this handoff; its sha and push state are in the implementer's
+  report (`git log -1 --grep="Task: 57"`).
 
 ## Completed
 - Batch 1 - foundation: `9a31aede`, review fix `80872b35` (`reviews/1.md`).
@@ -272,8 +272,7 @@
     `RollPanel` and `FEATURES.md`; N8 in `COVERAGE.md`, both READMEs (the pin's wording too), `alt.ts`,
     `RollResult`; N9 below.
   - Tests: three new `rollResult.test.ts` cases, all three failing at `9d4f47ec` in a detached worktree.
-  - `polish` and `harden` of batch 5 (S13): no outcome is recorded in `reviews/5.md` or in this
-    repository, and a subagent cannot run Impeccable. The line stays open for the orchestrator.
+  - `polish` and `harden` of batch 5 (S13): the outcome is under Notes.
 
 - Batch 5 departures and deviations:
   1. `rollLabel` has two callers, so `ListPage`'s roll button reads «Бросить 1-N» too, against the brief's
@@ -298,12 +297,113 @@
      left), and `RollSelect` takes one at 50 for its `value` paths: `?? ''` on a string and an update a
      keyed option never takes. `vite.config.mts` and `COVERAGE.md` name it.
   10. The label over the Vault of Ages select stays the existing «Раздел книги», not the mock's «Раздел».
+- Batch 6 - homebrew editor, pages and imports (`plan-6.md`). New: `HomebrewTabs`, `HomebrewBulk`,
+  `d.tickNames`, the `more` argument of `d.openMore`, the `upload` icon, cases 91 and 92, the decision file
+  `2026-11-04-the-homebrew-pages-share-the-list-head-and-one-selection-bar.md`. Acceptance:
+
+  | Line | Outcome |
+  |---|---|
+  | Q6.1, no homebrew help | Done: `homebrewPage.test.ts`, `help.test.ts`; `~ help open` gone |
+  | Q6.2, the eight «?»; Q6-1, the two `CardForm` «?» | Done: `homebrewEditor.test.ts`, `homebrewPage.test.ts`; captions under «Источник» on both forms; rules 15 and 18 changed |
+  | Preview bug | Done. Reproduced first on the unchanged tree: `expect(card.querySelector('.badge.eq-weapon')).toHaveTextContent(...)` failed on null, the card stayed «Предмет». The new test passes with `eqType` |
+  | A28, head and tabs | Done: `homebrewTabs.test.ts`, `homebrewPage.test.ts`, case 91 |
+  | Filter system on the Items tab | Done: column from 1000 px, sheet below, no pill; case 82 adapted |
+  | Round 3 unit B, round 6 | Done: marker `div.hbrows`, no plus at 360, plus from 761 px |
+  | A40, one bar, bulk actions | Done: `homebrewPage.test.ts`, `homebrewBulk.test.ts` |
+  | A29 | Done: two controls on a named source |
+  | A38, theme 8 | Done: three plates; a failed read keeps `LoadState` |
+  | A13, D16 | Done: `homebrewImport.test.ts`, `~ import` goldens |
+  | A6 | Done: groups, sticky bar, sheet, pairs from 1000 px; case 92 |
+  | A7, D15 | Done: five own messages, full damage words; the English damage message is short enough for two lines at 360 by `hbErrDmg` |
+  | A8 | Done, deviation 2 |
+  | A9 | Done: the tap is built. Probe under Verification |
+  | A30 | Done: `homebrewEditor.test.ts` |
+  | A11 | Case 92 asserts the sticky column from 800 px; CI's |
+  | D5 | Done: `homebrewPage.test.ts`, `tables.test.ts`; D14 closed as by design (decision file, Accepted) |
+  | M2-2 | Done: no `.homebtn` up to 760 px, pin in «Ещё» |
+  | Seg rule | Done: `hues.js` reads it; CI's |
+  | New states | 14 entries: see Verification; axe in the component tests |
+  | Focus, rule 20 | Done: `homebrewTabs`, `homebrewBulk`, `homebrewPage`, `homebrewEditor` tests |
+  | `FIRST_SCREEN` | Rows `shipped: true`, offsets under Verification; assertion is CI's case 83 |
+  | Axe rows, artwork guard | Done: `COVERED` two rows; `node --test tools/artwork/lib.test.mjs` passes, `CARD_HEAD_SHA256` did not move |
+  | Specs, DESIGN, decision | Done |
+  | Detector, spelling, shots, `routes.json` | See Verification; `polish` and `harden` are the orchestrator's |
+  | Budget | See Verification |
+  | Inherited 5-R2 | Done: `.results` carries no role; `RollPage` draws a hidden status that names the rolled records, re-keyed per roll; `alt.test.ts`, `std.test.ts` |
+  | Inherited 5-N10 | Done: «(1-30)» with a hyphen in `StdPanel` and `RollPanel` |
+  | CI green on the tip | The orchestrator's wait |
+
+- Batch 6 departures and deviations:
+  1. `FormField` takes `optional` as the word itself, one string prop in place of the brief's boolean and `optionalText`.
+  2. The word sits outside the `<label>`: a control's name stays its caption, so no golden name and no `getByLabelText` moves. A required control keeps `required` and `aria-required`, which is what a reader hears.
+  3. A failed read, the load and signed out draw a visible `h1` up to 760 px through `PageTitle` (mock `homebrew-error`), not the `.vh` heading of the snippet in S4: no picker draws there, so nothing else would name the page. The pin is out of reach in those three states up to 760 px.
+  4. `MoreMenu` gains `up` and `disabled`. `up` is a class on `Menu`, so `Menu` does not change. The `.msep` rule moves from `PickRow` to `MoreMenu`, its third caller.
+  5. `#/homebrew ~ move` stays `as gm1`, not gm3: its enter names gm1's rows and source.
+  6. The bar's «Ещё» row: `.seldrop` loses its own line while `HomebrewBulk` is in the bar, so the three controls share one row (mock B6-1). The catalog's bar does not change.
+  7. `.hbform` is a flex column, not a grid: a sticky grid item stays inside its own row.
+  8. From 761 px the row also draws «Показано N из M» beside the limit counter while the list is narrowed: otherwise that band shows no narrowed count. The brief names only the count line up to 760 px.
+  9. The disclosure «Второй набор характеристик» keeps its caret. The brief's "plus icon" reads the mock; the code never had one, and the caret says it folds.
+  10. `.rel summary` and the disclosure lose `--gold-soft`: «Сохранить» is the one gold of the form (H21). The fold's summary takes the group head's size, as the mock.
+  11. The crop slider draws its own track and thumb: the native thumb takes no size. `accent-color` goes.
+  12. The D5 tag sits after the row's tags, as the mock draws it, not directly after the name.
+  13. `.pickrow` wraps, so at 320 px «Ещё» goes under the picker and no word breaks.
+  14. `FEATURES.md` drops the measured "150 px, four lines" of a source row: the row has two controls now, and nothing measured its new height.
+  15. Case 82 reads the column, not the toggle: at 1180 no «Фильтры» button draws.
+  16. A row's source tag is hidden on `/homebrew` (`hiddenTags`, H9): the group head says it, so the test line «Мастерская Ольхи (HB)» went.
+  17. The create button and the counter share one row on the Sources, Sets and Rules tabs, and the search sits under that row: above each other the Sets row started near 286 at 360, past 256. Up to 760 px the button is `sm`. The brief's "first control under the head" holds.
+  18. `.pickrow` and a source's `.head` are positioned. Up to 760 px `MoreMenu`'s wrap is static, so a row must anchor the menu, or `Menu` focuses its first item at the page's end and the page jumps 85 px (the golden shard found it).
+  19. `CardForm`'s «Язык текста» takes `neutral` too: it opens inside the editor's fold, and H21 keeps the gold on «Сохранить».
+  20. The brief's `record.test.ts` case for `eqType` lives in `label.test.ts` (the badge) and `homebrewEditor.test.ts` (the badge, the glyph and no stat block on the drawn card).
+  21. A local fix: a wrapped link of the error summary (`.errlink`) is inline, so its bullet stays on the first line (shot `editor-errors` at 360 EN).
+  22. The fourth first-screen row is `hb_longsrcaaaaaaaaa`: its name is short and its path, the 80-character source, is the long part; a 120-character name is cut to one line at 360, so it moves no offset (case 92 holds the cut).
+
 - Review: done, `issues/57/reviews/3.md`, verdict fix-then-continue; the one remediation
   pass is this commit. No second review is needed: the picker fix leaves the first-screen
   rows unmoved (234 at 360).
 - Plan review: not required for batch 3 (`plan.md` Status, no trigger fired).
 
 ## Verification
+- Batch 6, 2026-11-04, on the final tree:
+  - `npx vitest run` of the affected files (`homebrewPage`, `homebrewEditor`, `homebrewImport`, `homebrewTabs`,
+    `homebrewBulk`, `homebrewCatalog`, `homebrewPrintPreview`, the three `timed` files, `cropDialog`, `record`,
+    `tables`, `shell`, `selectionBar`, `a11y`, `alt`, `std`, `rollPage`, `sections`, `rollResult`, `pickRow`,
+    `quickItem`, `lib/homebrewForm`, `lib/help`, `lib/i18n`, `lib/label`): pass after the fixes. Reproduction of
+    the preview bug on `da96cbf3`: `.badge.eq-weapon` was null.
+  - `npm run lint:untyped`, `npm run lint:typed`: exit 0. `npx svelte-check`: 0 errors.
+  - `node --test tools/artwork/lib.test.mjs`: 77 pass, `CARD_HEAD_SHA256` did not move.
+  - `npm run build:test`, then `node tests/app/golden.js --update --shard=n/4`, n = 1 to 4, one at a time: 380 states,
+    64 `_homebrew_*`, 39 `_roll_*` (5-R2, 5-N10) and 4 `_lists_*` goldens moved (the `own item` states: the star and
+    the word), 14 new, 4 deleted, none in any other family. Exit 1 on shard 1: the 4 stale files, deleted by `git rm`.
+    Exit 1 on shard 4: `~ more as gm3` found a real defect (deviation 18), fixed. Then `--only=~ more as gm3` and
+    `--only=homebrew/s` re-seeded what later edits moved. Deviation: one `check:built` ran during shard 1 and rebuilt
+    `dist-test/` under it; the source was the same, and the shard reported no other failure.
+    `node tests/app/golden.js --only=homebrew` on the final build: exit 0, unchanged.
+  - `node tools/decisions.js`: 303 decisions.
+  - `npm run check:built`: exit 0, 261.5 kB within 262 (258.0 before); `dist/` carries no fake cloud.
+  - Configured: `vite build` with placeholder `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`,
+    `node tools/bundle-budget.mjs`: 318.8 kB within 319, with CI's 0.1 kB 318.9. `tools/bundle-budget.mjs` and `.claude/README.md` carry both. The unconfigured total is under 263, 8.5 kB below the 270 ceiling.
+  - Detector, `impeccable detect --json --no-inline-ignores app/src`: 67 findings (67 before); in touched files only `CropDialog`'s two `design-system-*` advisories and `tokens.css`'s two, none in a new file. `git grep -n impeccable-disable -- app/src`: nothing.
+  - Spelling over added lines and new files: only `aria-labelledby`.
+  - First screen, measured in the built app (top of `[data-primary]`, RU and EN equal):
+
+    | Row | 360x640 (limit 256) | 1180x720 (limit 288) |
+    |---|---|---|
+    | `#/homebrew as gm3` | 243 | 254 |
+    | `#/homebrew/sets ~ long name as gm4` | 241 | 252 |
+    | `#/homebrew/new as gm1` | 223 | 175 |
+    | `#/homebrew/hb_longsrcaaaaaaaaa as gm4` | 246 | 198 |
+
+    The Sets row first measured about 286 at 360 by hand, so the create button and the count share a row on the Sets, Rules and Sources tabs (deviation 17).
+
+  - A9 probe, a 3:2 picture (600 x 400): the frame's top 17 px into a 287 px stage at 360x640 and 29 px into 486 px at 1180x720, the picture's top on it, so the 3:2 picture fills the frame at the smallest zoom and nothing is cut above it (A9 holds). `getComputedStyle` cannot read a slider's pseudo-element, so the 24 px thumb is read from the shot `editor-crop`; the native thumb took no size until the slider drew its own, deviation 11. The hint is `position: absolute` (`.vh`).
+  - `git grep` of each moved control over `tests/`: `flows.mjs` (F17 keeps its `d.tick`, which opens the mode, and
+    its presses at 1180; the `*` labels went from F15, F16), `states.js` (67, 82, 83, 91, 92), `inventory.js`,
+    `hues.js`, `sweep.js`, `driver.js`, `print.js`. Every e2e flow on `/homebrew` read: F14, F15, F16, F17, F18,
+    F20 run at 1180 px, so the import toggle, the bar's buttons and «Удалить» keep their names and places.
+    `app/states` cases 91 and 92 are written, not run: CI's.
+  - `node issues/57/mocks/6/built/shoot.js`: the set in `mocks/6/built/`, 360 and 1180, RU and EN, and `/homebrew` at 761.
+  - `rtk npm run check:fast`: run last; its result is in the implementer's report.
+  - Not run locally (CI's): `app/states`, `app/contracts`, `app/print`, `app/typo`, `app/hues`, `sweep.js`, `e2e`.
 - Batch 5 remediation, 2026-11-04, on the final tree:
   - `npx vitest run` of `rollResult`, `pickRow`, `rollSelect`, `record`, `sections`, `a11y`, `selectionBar`
     and `app`: 533 passed. The three new `rollResult` cases failed at `9d4f47ec` (3 failed, 9 passed).
@@ -477,20 +577,15 @@
 - Spelling scan over added lines and new files: only `aria-labelledby`.
 
 ## Next batch (implement-ready)
-- Name: CI of the remediation tip (`browser (1)` to `(3)` decide cases 31, 89, 90 and the sweep), the
-  orchestrator's `polish` and `harden` line of batch 5, then batch 6 (`plan-6.md`).
-- Risks / do-nots: `FilterBar` stays until batches 6 and 9a remove it, and `BatchBar`
-  until batch 8; a golden is re-seeded, never edited.
+- Name: CI of the tip (`browser (1)` to `(3)` decide cases 83, 91, 92, the adapted cases, the sweep and
+  `e2e`), the orchestrator's `polish` and `harden` of batch 6, the review, then batch 7 (`plan-7.md`).
+- Risks / do-nots: `FilterBar` stays until batch 9a removes it, and `BatchBar` until batch 8 and 9a; a
+  golden is re-seeded, never edited.
 
 ## Blockers
 - None.
 
 ## Deferred
-- 5-R2 (batch 6 acceptance, rides its re-seed): `.results` is an atomic `role="status"`, and a menu
-  opens inside it. Recommended: a visually hidden status that names the rolled records, no `role`
-  on `.results`; about 40 `_roll_*` goldens move.
-- 5-N10 (batch 6 acceptance, rides its re-seed): the same page reads «Бросить 1-30» with a hyphen and
-  «Результат броска (1–30)» with an en dash (`StdPanel`, `RollPanel`); use one dash.
 - `reviews/5.md`, "Checks still needed", items 3 to 5 (not measured here): the first `/roll/alt` card's
   menu at 360x640 with 7 or more lists at scroll 0; a right-column card's menu at about 1015-1075 px with
   a long list name; Tab and Enter on the nine routes at 360.
@@ -528,6 +623,9 @@
   "until their page's batch moves them"; batch 10's lock removes it.
 - R5 of `reviews/plan-1-3.md` (deferred-scope): `review.prompt.md` names a third
   look `<name>-2.md`, while `agent-guard.mjs` reads only `plan-<batch>-<n>.md`.
+- Batch 10: the tab and picker CSS copied into `HomebrewTabs` from `TableNav` (H2); `EQ_DT`'s abbreviations
+  in the stat line (D15, shared).
+- Batch 9b: `FormField`'s `help` prop and its `HelpButton` import go with `QuickItem`'s «?», the last caller.
 - Batch 3 candidate: the 1180 px equipment column table of mock 3 (D6, Q3-T), if
   the owner says yes; one added item with its own mock check.
 - N0-2 of `reviews/mocks-2.md` (batch 4): the error-page pattern's circled icon
@@ -536,7 +634,7 @@
   3's C57 answer); `KeepNote.svelte` leaves with batch P.
 - `FilterBar.svelte`, `BatchBar.svelte`, `anyValue` and the shared page's
   `.fpill` reader in `tests/app/contracts.js` leave with their last callers
-  (batches 6, 8, 9).
+  (batches 8, 9).
 - The link-preview Worker's card images (`tools/share-card.mjs`).
 - The EN `<title>`, manifest name and `en/index.html` wordmark.
 - Uppercase controls outside the capitals rule are audited by their surface
@@ -547,6 +645,8 @@
   `.money-l`), HelpButton, `.steps-l` (RecordCard).
 
 ## Notes
+- Impeccable `polish` and `harden` of batch 5 (orchestrator, 2026-11-04, on `9d4f47ec`, from the shots of
+  `/roll/alt` and `/roll/std` at 360 and `/roll/alt` at 761; no live pass): no finding.
 - Impeccable `polish` and `harden` of batch 3b (orchestrator, 2026-11-04, on `38767ca4`,
   from the `Shell` and `tokens.css` diff, `lib/headerScroll.ts` and the shots; no live
   pass): no finding. To check in the review: `onscroll` runs `held()`, a document query,
@@ -566,4 +666,5 @@
   mock P worktree stay at `C:\Users\Ignat\.dhloot\notes\57\`.
 - Session end partial progress (if any): none
 - Durable items written to their homes this batch: `FEATURES.md`, `COVERAGE.md`, `STATE.md`,
-  `DESIGN.md`, `.claude/README.md` (the budgets), the decision file named under Completed.
+  `DESIGN.md`, `.claude/README.md` (the budgets), the decision file named under Completed. The placed
+  items of `plan-6.md` are the orchestrator's to fold into `plan.md`.

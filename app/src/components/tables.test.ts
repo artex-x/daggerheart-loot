@@ -216,6 +216,8 @@ describe('the index', () => {
   it('lists every row of the table, each carrying its roll number', () => {
     render(App, { env: at() });
     expect(rows()).toHaveLength(6);
+    /* The language tag is an own item's: no catalog row draws it. */
+    expect(document.querySelector('.row-main .lt')).toBeNull();
     expect(screen.getByText('1')).toBeInTheDocument();
   });
 

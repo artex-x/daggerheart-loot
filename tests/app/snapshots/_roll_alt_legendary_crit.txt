@@ -32,43 +32,34 @@ RootWebArea "Альтернативные таблицы - Генератор л
     button "Очень редкая" [pressed=false]
     button "Легендарная" [pressed=true]
     button "Бросить кости"
-    ... StaticText x2 of 6 same-shape siblings elided
+    ... StaticText x27 of 31 same-shape siblings elided
     button "Кость Надежды: На единицу меньше"
     textbox "Кость Надежды: Результат броска" [value=2 multiline=false readonly=false required=false]
-    ... button x2 of 6 same-shape siblings elided
-    StaticText "Кость Страха"
+    ... button x10 of 14 same-shape siblings elided
     textbox "Кость Страха: Результат броска" [value=2 multiline=false readonly=false required=false]
-    button "Кость Страха: На единицу больше"
-    StaticText "ТИП"
     button "Предметы" [pressed=true]
     button "Расходники" [pressed=true]
     heading "Бросок 2 и 2" [level=2]
-    button "Скопировать все варианты"
     status ""
-      StaticText "Критический успех!"
-      StaticText "Игрок берёт любую позицию из таблицы этой редкости. Мастер может..." [namelen=101 namehash=dce9aa7a]
-      link "Таблица предметов" [url=/tables/alt_item/legendary]
-      link "Таблица расходников" [url=/tables/alt_consumable/legendary]
-      button "Страница"
-      ... StaticText x21 of 25 same-shape siblings elided
-      link "Глиняный Спутник" [description=Страница url=/i/ci50]
-      button "В список" [expanded=false]
-      button "Поделиться"
-      button "Ещё" [expanded=false haspopup=menu]
-      ... button x4 of 8 same-shape siblings elided
-      link "Самоцвет Проворства" [description=Страница url=/i/ci53]
-      button "В список" [expanded=false]
-      button "Ещё" [expanded=false haspopup=menu]
-      link "Усыпляющий Сок" [description=Страница url=/i/cc50]
-      button "В список" [expanded=false]
-      button "Ещё" [expanded=false haspopup=menu]
-      button "Страница"
-      StaticText "HOPE & FEAR"
-      link "Квинтэссенциальный Разделитель" [description=Страница url=/i/hc53]
-      StaticText "Этим магическим клинком можно разрубить одну магическую или мета..." [namelen=162 namehash=9ca03761]
-      button "В список" [expanded=false]
-      button "Поделиться"
-      button "Ещё" [expanded=false haspopup=menu]
+      StaticText "Глиняный Спутник, Самоцвет Проворства, Усыпляющий Сок, Квинтэссе..." [namelen=85 namehash=9b0357b3]
+    link "Таблица предметов" [url=/tables/alt_item/legendary]
+    link "Таблица расходников" [url=/tables/alt_consumable/legendary]
+    link "Глиняный Спутник" [description=Страница url=/i/ci50]
+    button "В список" [expanded=false]
+    button "Ещё" [expanded=false haspopup=menu]
+    link "Самоцвет Проворства" [description=Страница url=/i/ci53]
+    button "В список" [expanded=false]
+    button "Ещё" [expanded=false haspopup=menu]
+    link "Усыпляющий Сок" [description=Страница url=/i/cc50]
+    button "В список" [expanded=false]
+    button "Ещё" [expanded=false haspopup=menu]
+    button "Страница"
+    StaticText "HOPE & FEAR"
+    link "Квинтэссенциальный Разделитель" [description=Страница url=/i/hc53]
+    StaticText "Этим магическим клинком можно разрубить одну магическую или мета..." [namelen=162 namehash=9ca03761]
+    button "В список" [expanded=false]
+    button "Поделиться"
+    button "Ещё" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -150,43 +141,34 @@ RootWebArea "Alternate tables - Daggerheart Loot Generator" [url=/en/roll/alt]
     button "Very rare" [pressed=false]
     button "Legendary" [pressed=true]
     button "Roll the dice"
-    ... StaticText x2 of 6 same-shape siblings elided
+    ... StaticText x27 of 31 same-shape siblings elided
     button "Hope Die: One lower"
     textbox "Hope Die: Roll result" [value=2 multiline=false readonly=false required=false]
-    ... button x2 of 6 same-shape siblings elided
-    StaticText "Fear Die"
+    ... button x10 of 14 same-shape siblings elided
     textbox "Fear Die: Roll result" [value=2 multiline=false readonly=false required=false]
-    button "Fear Die: One higher"
-    StaticText "TYPE"
     button "Items" [pressed=true]
     button "Consumables" [pressed=true]
     heading "Roll 2 and 2" [level=2]
-    button "Copy every option"
     status ""
-      StaticText "Critical success!"
-      StaticText "The player takes any entry from this rarity table. The GM may al..." [namelen=90 namehash=b03eb0f9]
-      link "Items table" [url=/en/tables/alt_item/legendary]
-      link "Consumables table" [url=/en/tables/alt_consumable/legendary]
-      button "Page"
-      ... StaticText x21 of 25 same-shape siblings elided
-      link "Clay Companion" [description=Page url=/i/en/ci50]
-      button "Add to list" [expanded=false]
-      button "Share"
-      button "More" [expanded=false haspopup=menu]
-      ... button x4 of 8 same-shape siblings elided
-      link "Gem of Alacrity" [description=Page url=/i/en/ci53]
-      button "Add to list" [expanded=false]
-      button "More" [expanded=false haspopup=menu]
-      link "Sleeping Sap" [description=Page url=/i/en/cc50]
-      button "Add to list" [expanded=false]
-      button "More" [expanded=false haspopup=menu]
-      button "Page"
-      StaticText "HOPE & FEAR"
-      link "Quintessential Severant" [description=Page url=/i/en/hc53]
-      StaticText "You can use this magic blade to cut one magical or metaphysical ..." [namelen=168 namehash=d436046a]
-      button "Add to list" [expanded=false]
-      button "Share"
-      button "More" [expanded=false haspopup=menu]
+      StaticText "Clay Companion, Gem of Alacrity, Sleeping Sap, Quintessential Se..." [namelen=70 namehash=425bd9e6]
+    link "Items table" [url=/en/tables/alt_item/legendary]
+    link "Consumables table" [url=/en/tables/alt_consumable/legendary]
+    link "Clay Companion" [description=Page url=/i/en/ci50]
+    button "Add to list" [expanded=false]
+    button "More" [expanded=false haspopup=menu]
+    link "Gem of Alacrity" [description=Page url=/i/en/ci53]
+    button "Add to list" [expanded=false]
+    button "More" [expanded=false haspopup=menu]
+    link "Sleeping Sap" [description=Page url=/i/en/cc50]
+    button "Add to list" [expanded=false]
+    button "More" [expanded=false haspopup=menu]
+    button "Page"
+    StaticText "HOPE & FEAR"
+    link "Quintessential Severant" [description=Page url=/i/en/hc53]
+    StaticText "You can use this magic blade to cut one magical or metaphysical ..." [namelen=168 namehash=d436046a]
+    button "Add to list" [expanded=false]
+    button "Share"
+    button "More" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]

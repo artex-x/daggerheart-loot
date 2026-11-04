@@ -20,21 +20,29 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
   main ""
     heading "Мои предметы" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
-    StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
-    button "Импорт из файла" [expanded=false]
     navigation "Мои предметы"
-      link "Предметы" [url=/homebrew]
-      link "Источники" [url=/homebrew/sources]
-      link "Комплекты" [url=/homebrew/sets]
-      link "Карты правил" [url=/homebrew/rules]
+      link "Предметы 66" [url=/homebrew]
+        StaticText "Предметы"
+        StaticText "66"
+      link "Источники 1" [url=/homebrew/sources]
+        StaticText "Источники"
+        StaticText "1"
+      link "Комплекты 1" [url=/homebrew/sets]
+        StaticText "Комплекты"
+        StaticText "1"
+      link "Карты правил 1" [url=/homebrew/rules]
+        StaticText "Карты правил"
+        StaticText "1"
+    StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
     button "Новый источник"
     StaticText "1 источник из 20"
+    button "Импорт из файла" [expanded=false]
     link "Мастерская Ольхи" [url=/tables/homebrew/f_src-hb_alderworkshopaaa]
     ... StaticText x43 of 47 same-shape siblings elided
     button "Разделы" [expanded=true]
+    button "Ещё" [expanded=false haspopup=menu]
     button "Переименовать"
-    ... button x42 of 46 same-shape siblings elided
+    ... button x39 of 43 same-shape siblings elided
     button "и ещё 7" [expanded=false]
     StaticText "21 предмет"
     button "Новый раздел"
@@ -49,17 +57,17 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-?Справка
 EN
 RU
 daggerheart.com
 Аккаунт: gm1@example.test
 Бросок
+Ещё
 Импорт из файла
-Источники
+Источники 1
 К содержимому
-Карты правил
-Комплекты
+Карты правил 1
+Комплекты 1
 Конфиденциальность
 ЛутDaggerheart
 Мастерская Ольхи
@@ -68,7 +76,7 @@ daggerheart.com
 Открывать при запуске
 Переименовать
 Поиск
-Предметы
+Предметы 66
 Разделы
 Скачать JSON
 Таблицы
@@ -95,21 +103,29 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew/sources?as
   main ""
     heading "My items" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
-    StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
-    button "Import from file" [expanded=false]
     navigation "My items"
-      link "Items" [url=/en/homebrew]
-      link "Sources" [url=/en/homebrew/sources]
-      link "Sets" [url=/en/homebrew/sets]
-      link "Rule cards" [url=/en/homebrew/rules]
+      link "Items 66" [url=/en/homebrew]
+        StaticText "Items"
+        StaticText "66"
+      link "Sources 1" [url=/en/homebrew/sources]
+        StaticText "Sources"
+        StaticText "1"
+      link "Sets 1" [url=/en/homebrew/sets]
+        StaticText "Sets"
+        StaticText "1"
+      link "Rule cards 1" [url=/en/homebrew/rules]
+        StaticText "Rule cards"
+        StaticText "1"
+    StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
     button "New source"
     StaticText "1 source of 20"
+    button "Import from file" [expanded=false]
     link "Alder Workshop" [url=/en/tables/homebrew/f_src-hb_alderworkshopaaa]
     ... StaticText x43 of 47 same-shape siblings elided
     button "Sections" [expanded=true]
+    button "More" [expanded=false haspopup=menu]
     button "Rename"
-    ... button x42 of 46 same-shape siblings elided
+    ... button x39 of 43 same-shape siblings elided
     button "and 7 more" [expanded=false]
     StaticText "21 items"
     button "New section"
@@ -124,7 +140,6 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew/sources?as
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-?Help
 Account: gm1@example.test
 Alder Workshop
 Delete
@@ -133,8 +148,9 @@ EN
 Homebrew
 Import from file
 Install as an app
-Items
+Items 66
 LootDaggerheart
+More
 New section
 New source
 Open on start
@@ -142,12 +158,12 @@ Privacy
 RU
 Rename
 Roll
-Rule cards
+Rule cards 1
 Search
 Sections
-Sets
+Sets 1
 Skip to content
-Sources
+Sources 1
 Tables
 Terms of use
 and 7 more

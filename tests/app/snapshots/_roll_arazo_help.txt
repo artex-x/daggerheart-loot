@@ -26,29 +26,25 @@ RootWebArea "Arazo's Artifacts - Генератор лута Daggerheart" [url=/
     button "Об этой книге" [expanded=true]
     StaticText "Введите результат броска или получите случайную позицию."
     StaticText "В таблице 78 позиций - 10 предметов и 68 единиц оружия и брони, ..." [namelen=157 namehash=cce2a6c7]
-    ... StaticText x3 of 7 same-shape siblings elided
+    ... StaticText x20 of 24 same-shape siblings elided
     link "The Guide to Arazo's Artifacts" [url=https://www.drivethrurpg.com/en/product/581640/the-guide-to-arazo-s-artifacts]
-    StaticText "."
     button "Бросить 1-78"
-    StaticText "РЕЗУЛЬТАТ БРОСКА (1–78)"
     button "На единицу меньше" [disabled=true]
     textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
     button "На единицу больше"
     heading "Бросок 1" [level=2]
     status ""
-      button "Страница"
-      StaticText "1"
-      StaticText "ОСНОВНОЕ ОРУЖИЕ"
-      ... StaticText x13 of 17 same-shape siblings elided
-      link "Нестареющее Око Зверя" [description=Страница url=/i/aa1]
-      StaticText "РАНГ"
-      StaticText "1"
-      button "Улучшенное Нестареющее Око Зверя" [description=Улучшенное Нестареющее Око Зверя]
-      button "Продвинутое Нестареющее Око Зверя" [description=Продвинутое Нестареющее Око Зверя]
-      button "Легендарное Нестареющее Око Зверя" [description=Легендарное Нестареющее Око Зверя]
-      button "В список" [expanded=false]
-      button "Поделиться"
-      button "Ещё" [expanded=false haspopup=menu]
+      StaticText "Нестареющее Око Зверя"
+    button "Страница"
+    link "Нестареющее Око Зверя" [description=Страница url=/i/aa1]
+    StaticText "РАНГ"
+    StaticText "1"
+    button "Улучшенное Нестареющее Око Зверя" [description=Улучшенное Нестареющее Око Зверя]
+    button "Продвинутое Нестареющее Око Зверя" [description=Продвинутое Нестареющее Око Зверя]
+    button "Легендарное Нестареющее Око Зверя" [description=Легендарное Нестареющее Око Зверя]
+    button "В список" [expanded=false]
+    button "Поделиться"
+    button "Ещё" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -112,29 +108,25 @@ RootWebArea "Arazo's Artifacts - Daggerheart Loot Generator" [url=/en/roll/arazo
     button "About this book" [expanded=true]
     StaticText "Enter your roll result, or pick a random entry."
     StaticText "The table holds 78 entries - 10 items and 68 weapons and armor, ..." [namelen=154 namehash=80f65c5e]
-    ... StaticText x3 of 7 same-shape siblings elided
+    ... StaticText x20 of 24 same-shape siblings elided
     link "The Guide to Arazo's Artifacts" [url=https://www.drivethrurpg.com/en/product/581640/the-guide-to-arazo-s-artifacts]
-    StaticText " supplement."
     button "Roll 1-78"
-    StaticText "ROLL RESULT (1–78)"
     button "One lower" [disabled=true]
     textbox "Roll result" [value=1 multiline=false readonly=false required=false]
     button "One higher"
     heading "Roll 1" [level=2]
     status ""
-      button "Page"
-      StaticText "1"
-      StaticText "PRIMARY WEAPON"
-      ... StaticText x13 of 17 same-shape siblings elided
-      link "The Ageless Eye of the Beast" [description=Page url=/i/en/aa1]
-      StaticText "TIER"
-      StaticText "1"
-      button "Improved Ageless Eye of the Beast" [description=Improved Ageless Eye of the Beast]
-      button "Advanced Ageless Eye of the Beast" [description=Advanced Ageless Eye of the Beast]
-      button "Legendary Ageless Eye of the Beast" [description=Legendary Ageless Eye of the Beast]
-      button "Add to list" [expanded=false]
-      button "Share"
-      button "More" [expanded=false haspopup=menu]
+      StaticText "The Ageless Eye of the Beast"
+    button "Page"
+    link "The Ageless Eye of the Beast" [description=Page url=/i/en/aa1]
+    StaticText "TIER"
+    StaticText "1"
+    button "Improved Ageless Eye of the Beast" [description=Improved Ageless Eye of the Beast]
+    button "Advanced Ageless Eye of the Beast" [description=Advanced Ageless Eye of the Beast]
+    button "Legendary Ageless Eye of the Beast" [description=Legendary Ageless Eye of the Beast]
+    button "Add to list" [expanded=false]
+    button "Share"
+    button "More" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]

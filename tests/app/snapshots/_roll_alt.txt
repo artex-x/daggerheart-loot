@@ -32,43 +32,34 @@ RootWebArea "Альтернативные таблицы - Генератор л
     button "Очень редкая" [pressed=false]
     button "Легендарная" [pressed=false]
     button "Бросить кости"
-    ... StaticText x2 of 6 same-shape siblings elided
+    ... StaticText x26 of 30 same-shape siblings elided
     button "Кость Надежды: На единицу меньше" [disabled=true]
     textbox "Кость Надежды: Результат броска" [value=1 multiline=false readonly=false required=false]
     button "Кость Надежды: На единицу больше"
-    StaticText "Кость Страха"
-    button "Кость Страха: На единицу меньше"
+    ... button x9 of 13 same-shape siblings elided
     textbox "Кость Страха: Результат броска" [value=2 multiline=false readonly=false required=false]
-    button "Кость Страха: На единицу больше"
-    StaticText "ТИП"
     button "Предметы" [pressed=true]
     button "Расходники" [pressed=true]
     heading "Бросок 1 и 2" [level=2]
-    button "Скопировать все варианты"
     status ""
-      button "Страница"
-      StaticText "1"
-      StaticText "НАДЕЖДА"
-      ... StaticText x20 of 24 same-shape siblings elided
-      link "Крюк-Кошка" [description=Страница url=/i/hi2]
-      button "В список" [expanded=false]
-      button "Поделиться"
-      button "Ещё" [expanded=false haspopup=menu]
-      ... button x4 of 8 same-shape siblings elided
-      link "Металлические Шарики" [description=Страница url=/i/hi3]
-      button "В список" [expanded=false]
-      button "Ещё" [expanded=false haspopup=menu]
-      link "Зелье Быстрого Шага" [description=Страница url=/i/cc1]
-      link "Большое Зелье Быстрого Шага" [url=/i/cc25]
-      button "В список" [expanded=false]
-      button "Ещё" [expanded=false haspopup=menu]
-      button "Страница"
-      StaticText "HOPE & FEAR"
-      link "Семя Вергласа" [description=Страница url=/i/hc3]
-      StaticText "Этим осколком льда можно мгновенно заморозить участок воды в пре..." [namelen=88 namehash=0c7b50a5]
-      button "В список" [expanded=false]
-      button "Поделиться"
-      button "Ещё" [expanded=false haspopup=menu]
+      StaticText "Крюк-Кошка, Металлические Шарики, Зелье Быстрого Шага, Семя Верг..." [namelen=68 namehash=3f6f8db6]
+    link "Крюк-Кошка" [description=Страница url=/i/hi2]
+    button "В список" [expanded=false]
+    button "Ещё" [expanded=false haspopup=menu]
+    link "Металлические Шарики" [description=Страница url=/i/hi3]
+    button "В список" [expanded=false]
+    button "Ещё" [expanded=false haspopup=menu]
+    link "Зелье Быстрого Шага" [description=Страница url=/i/cc1]
+    link "Большое Зелье Быстрого Шага" [url=/i/cc25]
+    button "В список" [expanded=false]
+    button "Ещё" [expanded=false haspopup=menu]
+    button "Страница"
+    StaticText "HOPE & FEAR"
+    link "Семя Вергласа" [description=Страница url=/i/hc3]
+    StaticText "Этим осколком льда можно мгновенно заморозить участок воды в пре..." [namelen=88 namehash=0c7b50a5]
+    button "В список" [expanded=false]
+    button "Поделиться"
+    button "Ещё" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -149,43 +140,34 @@ RootWebArea "Alternate tables - Daggerheart Loot Generator" [url=/en/roll/alt]
     button "Very rare" [pressed=false]
     button "Legendary" [pressed=false]
     button "Roll the dice"
-    ... StaticText x2 of 6 same-shape siblings elided
+    ... StaticText x26 of 30 same-shape siblings elided
     button "Hope Die: One lower" [disabled=true]
     textbox "Hope Die: Roll result" [value=1 multiline=false readonly=false required=false]
     button "Hope Die: One higher"
-    StaticText "Fear Die"
-    button "Fear Die: One lower"
+    ... button x9 of 13 same-shape siblings elided
     textbox "Fear Die: Roll result" [value=2 multiline=false readonly=false required=false]
-    button "Fear Die: One higher"
-    StaticText "TYPE"
     button "Items" [pressed=true]
     button "Consumables" [pressed=true]
     heading "Roll 1 and 2" [level=2]
-    button "Copy every option"
     status ""
-      button "Page"
-      StaticText "1"
-      StaticText "HOPE"
-      ... StaticText x20 of 24 same-shape siblings elided
-      link "Grapnel" [description=Page url=/i/en/hi2]
-      button "Add to list" [expanded=false]
-      button "Share"
-      button "More" [expanded=false haspopup=menu]
-      ... button x4 of 8 same-shape siblings elided
-      link "Ball Bearings" [description=Page url=/i/en/hi3]
-      button "Add to list" [expanded=false]
-      button "More" [expanded=false haspopup=menu]
-      link "Stride Potion" [description=Page url=/i/en/cc1]
-      link "Major Stride Potion" [url=/i/en/cc25]
-      button "Add to list" [expanded=false]
-      button "More" [expanded=false haspopup=menu]
-      button "Page"
-      StaticText "HOPE & FEAR"
-      link "Verglasian Seed" [description=Page url=/i/en/hc3]
-      StaticText "You can use this ice shard to instantly freeze an area of water ..." [namelen=82 namehash=7b271c85]
-      button "Add to list" [expanded=false]
-      button "Share"
-      button "More" [expanded=false haspopup=menu]
+      StaticText "Grapnel, Ball Bearings, Stride Potion, Verglasian Seed"
+    link "Grapnel" [description=Page url=/i/en/hi2]
+    button "Add to list" [expanded=false]
+    button "More" [expanded=false haspopup=menu]
+    link "Ball Bearings" [description=Page url=/i/en/hi3]
+    button "Add to list" [expanded=false]
+    button "More" [expanded=false haspopup=menu]
+    link "Stride Potion" [description=Page url=/i/en/cc1]
+    link "Major Stride Potion" [url=/i/en/cc25]
+    button "Add to list" [expanded=false]
+    button "More" [expanded=false haspopup=menu]
+    button "Page"
+    StaticText "HOPE & FEAR"
+    link "Verglasian Seed" [description=Page url=/i/en/hc3]
+    StaticText "You can use this ice shard to instantly freeze an area of water ..." [namelen=82 namehash=7b271c85]
+    button "Add to list" [expanded=false]
+    button "Share"
+    button "More" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]

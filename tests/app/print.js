@@ -3070,7 +3070,7 @@ const { ok } = rep;
     /* (b) A 3000-character description: cut off, and the warning after the pause. */
     const editorCut = async (name, desc, layout) => {
       await d.open('#/homebrew/new', { as: 'gm1' });
-      await d.type('Название*', name);
+      await d.type('Название', name);
       if (desc) await d.type('Описание', desc);
       await d.click('На печати');
       for (const label of layout) await d.click(label);

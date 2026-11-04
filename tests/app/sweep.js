@@ -73,8 +73,8 @@ const pressPrint = (d) => either(d, 'click', 'Печать', 'Print');
 async function longSet(d) {
   const ru = (await d.text()).includes('Новый комплект');
   await d.click(ru ? 'Новый комплект' : 'New set');
-  await d.type(ru ? 'Название комплекта*' : 'Set name*', 'Ж'.repeat(80));
-  await d.type(ru ? 'Бонус комплекта*' : 'Set bonus*', 'Бонус.');
+  await d.type(ru ? 'Название комплекта' : 'Set name', 'Ж'.repeat(80));
+  await d.type(ru ? 'Бонус комплекта' : 'Set bonus', 'Бонус.');
   await d.choose('#hb-card-new-set-book', '00000000-0000-4000-8000-000000000451');
   await d.click(ru ? 'Создать комплект' : 'Create set');
   for (let i = 0; i < 40 && !/Комплект «Ж|Set "Ж/.test(await d.text()); i++) await d.settle();
@@ -205,18 +205,8 @@ const PAGES = [
       'gm3',
       /* gm3 has no stored language, so the English pass draws English labels. */
       async (d) => {
-        const en = (await d.text()).includes('Import from file');
-        if (en) {
-          await d.click('Import from file');
-          for (
-            let i = 0;
-            i < 40 && !(await d.text()).includes('Import items from a JSON file');
-            i++
-          )
-            await d.settle();
-        } else {
-          await hbImportOpen(d);
-        }
+        await hbImportOpen(d);
+        const en = (await d.text()).includes('Import items from a JSON file');
         await d.upload(heldNamesFile());
         const go = en ? 'Import (12)' : 'Импортировать (12)';
         for (let i = 0; i < 40 && !(await d.text()).includes(go); i++) await d.settle();
@@ -254,6 +244,8 @@ const PAGES = [
       async (d) => {
         for (const name of ['Настой кузнеца', 'Whispering Cap', 'Кольцо с гравировкой'])
           await d.tick(name);
+        const more = '.selbarwrap [aria-haspopup="menu"]';
+        if (await d.count(more)) await d.openMore(more);
         await either(d, 'click', 'Переместить (3)', 'Move (3)');
       }
     ],
@@ -276,7 +268,7 @@ const PAGES = [
       'фильтры своих предметов: раздел развёрнут',
       'gm1',
       async (d) => {
-        await either(d, 'click', 'Фильтры', 'Filters');
+        if ((await d.count('.fcol')) === 0) await either(d, 'click', 'Фильтры', 'Filters');
         await either(d, 'click', 'и ещё 12', 'and 12 more');
       },
       { items: 66, sections: 20 }
@@ -290,12 +282,6 @@ const PAGES = [
         if ((await d.count('.fcol')) === 0) await either(d, 'click', 'Фильтры', 'Filters');
       },
       { items: 66, sections: 20 }
-    ],
-    [
-      '#/homebrew',
-      'мои предметы: подсказка раздела',
-      'gm1',
-      (d) => either(d, 'click', 'Справка', 'Help')
     ],
     /* Rule 16 at 360 on the homebrew pages: an 80-character source and an unbroken set
        name. */

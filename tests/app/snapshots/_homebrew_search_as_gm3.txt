@@ -20,28 +20,30 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
   main ""
     heading "Мои предметы" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
-    StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
-    button "Импорт из файла" [expanded=false]
     navigation "Мои предметы"
-      link "Предметы" [url=/homebrew]
-      link "Источники" [url=/homebrew/sources]
-      link "Комплекты" [url=/homebrew/sets]
-      link "Карты правил" [url=/homebrew/rules]
+      link "Предметы 39" [url=/homebrew]
+        StaticText "Предметы"
+        StaticText "39"
+      link "Источники 0" [url=/homebrew/sources]
+        StaticText "Источники"
+        StaticText "0"
+      link "Комплекты 1" [url=/homebrew/sets]
+        StaticText "Комплекты"
+        StaticText "1"
+      link "Карты правил 0" [url=/homebrew/rules]
+        StaticText "Карты правил"
+        StaticText "0"
     link "Новый предмет" [url=/homebrew/new]
-    status ""
+    StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
     searchbox "Найти предмет" [value=скатка focused=true]
     StaticText "39 предметов из 100"
-    checkbox "Выбрать все" [checked=false]
-    StaticText "ВЫБРАТЬ ВСЕ"
-    generic ""
+    StaticText "Показано 3 из 39"
+    button "Импорт из файла" [expanded=false]
+    button "Выбрать"
     heading "Хоумбрю 3" [level=2]
-    checkbox "Скатка путника" [checked=false]
-    button "Скатка путника ПРЕДМЕТ ХОУМБРЮ Свёрнутая постель для ночёвки в п..." [namelen=105 namehash=fc739192]
-    checkbox "Скатка следопыта" [checked=false]
-    button "Скатка следопыта ПРЕДМЕТ ХОУМБРЮ Свёрнутая постель для ночёвки в..." [namelen=141 namehash=a863d273]
-    checkbox "Скатка стража" [checked=false]
-    button "Скатка стража ПРЕДМЕТ ХОУМБРЮ Свёрнутая постель для ночёвки в пу..." [namelen=104 namehash=5c789478]
+    button "Скатка путника ПРЕДМЕТ Свёрнутая постель для ночёвки в пути. Улу..." [namelen=97 namehash=41ace3f8]
+    button "Скатка следопыта ПРЕДМЕТ Свёрнутая постель для ночёвки в пути. П..." [namelen=133 namehash=ea36795c]
+    button "Скатка стража ПРЕДМЕТ Свёрнутая постель для ночёвки в пути. Полу..." [namelen=96 namehash=c536b920]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -50,30 +52,27 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-?Справка
 EN
 RU
 daggerheart.com
 Аккаунт: gm3@example.test
 Бросок
-Выбрать все
+Выбрать
 Импорт из файла
-Источники
+Источники 0
 К содержимому
-Карты правил
-Комплекты
+Карты правил 0
+Комплекты 1
 Конфиденциальность
 ЛутDaggerheart
+Найти предмет
 Новый предмет
 Открывать при запуске
 Поиск
-Предметы
-Скатка путника
-Скатка путникаПредметХоумбрюСвёрнутая постель для ночёвки в пути... [namelen=101 namehash=0ff83eb5]
-Скатка следопыта
-Скатка следопытаПредметХоумбрюСвёрнутая постель для ночёвки в пу... [namelen=135 namehash=606f0f6e]
-Скатка стража
-Скатка стражаПредметХоумбрюСвёрнутая постель для ночёвки в пути.... [namelen=100 namehash=45f333c3]
+Предметы 39
+Скатка путникаПредметСвёрнутая постель для ночёвки в пути.Улучша... [namelen=94 namehash=b9303232]
+Скатка следопытаПредметСвёрнутая постель для ночёвки в пути.Полу... [namelen=128 namehash=f6e81c88]
+Скатка стражаПредметСвёрнутая постель для ночёвки в пути.Получае... [namelen=93 namehash=ff8d5201]
 Таблицы
 Условия использования
 Установить как приложение
@@ -95,28 +94,30 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm3]
   main ""
     heading "My items" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
-    StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
-    button "Import from file" [expanded=false]
     navigation "My items"
-      link "Items" [url=/en/homebrew]
-      link "Sources" [url=/en/homebrew/sources]
-      link "Sets" [url=/en/homebrew/sets]
-      link "Rule cards" [url=/en/homebrew/rules]
+      link "Items 39" [url=/en/homebrew]
+        StaticText "Items"
+        StaticText "39"
+      link "Sources 0" [url=/en/homebrew/sources]
+        StaticText "Sources"
+        StaticText "0"
+      link "Sets 1" [url=/en/homebrew/sets]
+        StaticText "Sets"
+        StaticText "1"
+      link "Rule cards 0" [url=/en/homebrew/rules]
+        StaticText "Rule cards"
+        StaticText "0"
     link "New item" [url=/en/homebrew/new]
-    status ""
+    StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
     searchbox "Find an item" [value=скатка focused=true]
     StaticText "39 items of 100"
-    checkbox "Select all" [checked=false]
-    StaticText "SELECT ALL"
-    generic ""
+    StaticText "3 of 39 shown"
+    button "Import from file" [expanded=false]
+    button "Select"
     heading "Homebrew 3" [level=2]
-    checkbox "Ranger's Roll" [checked=false]
-    button "Ranger's Roll ITEM HOMEBREW A rolled bed for a night on the road..." [namelen=132 namehash=4c70ee2d]
-    checkbox "Sentry's Roll" [checked=false]
-    button "Sentry's Roll ITEM HOMEBREW A rolled bed for a night on the road..." [namelen=95 namehash=bcc0e37f]
-    checkbox "Traveller's Roll" [checked=false]
-    button "Traveller's Roll ITEM HOMEBREW A rolled bed for a night on the r..." [namelen=100 namehash=33eafba7]
+    button "Ranger's Roll ITEM A rolled bed for a night on the road. Made fr..." [namelen=123 namehash=608ae435]
+    button "Sentry's Roll ITEM A rolled bed for a night on the road. Made fr..." [namelen=86 namehash=f01c6c0b]
+    button "Traveller's Roll ITEM A rolled bed for a night on the road. Upgr..." [namelen=91 namehash=30247e61]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -125,30 +126,27 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm3]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-?Help
 Account: gm3@example.test
 EN
+Find an item
 Import from file
 Install as an app
-Items
+Items 39
 LootDaggerheart
 New item
 Open on start
 Privacy
 RU
-Ranger's Roll
-Ranger's RollItemHomebrewA rolled bed for a night on the road.Ma... [namelen=126 namehash=676858e7]
+Ranger's RollItemA rolled bed for a night on the road.Made from:... [namelen=118 namehash=99691f93]
 Roll
-Rule cards
+Rule cards 0
 Search
-Select all
-Sentry's Roll
-Sentry's RollItemHomebrewA rolled bed for a night on the road.Ma... [namelen=91 namehash=f6c0744e]
-Sets
+Select
+Sentry's RollItemA rolled bed for a night on the road.Made from:... [namelen=83 namehash=01973e24]
+Sets 1
 Skip to content
-Sources
+Sources 0
 Tables
 Terms of use
-Traveller's Roll
-Traveller's RollItemHomebrewA rolled bed for a night on the road... [namelen=96 namehash=dd0f7fef]
+Traveller's RollItemA rolled bed for a night on the road.Upgrade... [namelen=88 namehash=4ceeec41]
 daggerheart.com

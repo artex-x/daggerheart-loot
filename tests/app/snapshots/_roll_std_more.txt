@@ -37,29 +37,28 @@ RootWebArea "Обычные правила - Генератор лута Daggerh
       menuitem "Открывается при запуске"
       menuitem "Где какая редкость" [expanded=false]
     status ""
-      button "Страница"
-      StaticText "ПРЕДМЕТ"
-      StaticText "CORE"
-      link "Первоклассный Спальный Мешок" [description=Страница url=/i/ci1]
-      ... StaticText x12 of 16 same-shape siblings elided
-      button "В список" [expanded=false]
-      button "Поделиться"
-      button "Ещё" [expanded=false haspopup=menu]
-      ... button x4 of 8 same-shape siblings elided
-      link "Зелье Быстрого Шага" [description=Страница url=/i/cc1]
-      link "Большое Зелье Быстрого Шага" [url=/i/cc25]
-      button "В список" [expanded=false]
-      button "Ещё" [expanded=false haspopup=menu]
-      link "Шипы" [description=Страница url=/i/hi1]
-      button "В список" [expanded=false]
-      button "Ещё" [expanded=false haspopup=menu]
-      button "Страница"
-      StaticText "HOPE & FEAR"
-      link "Оберегающая Свеча" [description=Страница url=/i/hc1]
-      StaticText "Зажгите эту свечу, и в пределах Средней дистанции разольётся оре..." [namelen=186 namehash=62be8214]
-      button "В список" [expanded=false]
-      button "Поделиться"
-      button "Ещё" [expanded=false haspopup=menu]
+      StaticText "Первоклассный Спальный Мешок, Зелье Быстрого Шага, Шипы, Оберега..." [namelen=74 namehash=92c425c9]
+    button "Страница"
+    ... StaticText x14 of 18 same-shape siblings elided
+    link "Первоклассный Спальный Мешок" [description=Страница url=/i/ci1]
+    button "В список" [expanded=false]
+    button "Поделиться"
+    button "Ещё" [expanded=false haspopup=menu]
+    ... button x4 of 8 same-shape siblings elided
+    link "Зелье Быстрого Шага" [description=Страница url=/i/cc1]
+    link "Большое Зелье Быстрого Шага" [url=/i/cc25]
+    button "В список" [expanded=false]
+    button "Ещё" [expanded=false haspopup=menu]
+    link "Шипы" [description=Страница url=/i/hi1]
+    button "В список" [expanded=false]
+    button "Ещё" [expanded=false haspopup=menu]
+    button "Страница"
+    StaticText "HOPE & FEAR"
+    link "Оберегающая Свеча" [description=Страница url=/i/hc1]
+    StaticText "Зажгите эту свечу, и в пределах Средней дистанции разольётся оре..." [namelen=186 namehash=62be8214]
+    button "В список" [expanded=false]
+    button "Поделиться"
+    button "Ещё" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -137,29 +136,28 @@ RootWebArea "Standard rules - Daggerheart Loot Generator" [url=/en/roll/std]
       menuitem "Opens on start"
       menuitem "Where each rarity is" [expanded=false]
     status ""
-      button "Page"
-      StaticText "ITEM"
-      StaticText "CORE"
-      link "Premium Bedroll" [description=Page url=/i/en/ci1]
-      ... StaticText x12 of 16 same-shape siblings elided
-      button "Add to list" [expanded=false]
-      button "Share"
-      button "More" [expanded=false haspopup=menu]
-      ... button x4 of 8 same-shape siblings elided
-      link "Stride Potion" [description=Page url=/i/en/cc1]
-      link "Major Stride Potion" [url=/i/en/cc25]
-      button "Add to list" [expanded=false]
-      button "More" [expanded=false haspopup=menu]
-      link "Caltrops" [description=Page url=/i/en/hi1]
-      button "Add to list" [expanded=false]
-      button "More" [expanded=false haspopup=menu]
-      button "Page"
-      StaticText "HOPE & FEAR"
-      link "Warding Candle" [description=Page url=/i/en/hc1]
-      StaticText "You can light this candle to fill an area within Close range wit..." [namelen=208 namehash=88ca1325]
-      button "Add to list" [expanded=false]
-      button "Share"
-      button "More" [expanded=false haspopup=menu]
+      StaticText "Premium Bedroll, Stride Potion, Caltrops, Warding Candle"
+    button "Page"
+    ... StaticText x14 of 18 same-shape siblings elided
+    link "Premium Bedroll" [description=Page url=/i/en/ci1]
+    button "Add to list" [expanded=false]
+    button "Share"
+    button "More" [expanded=false haspopup=menu]
+    ... button x4 of 8 same-shape siblings elided
+    link "Stride Potion" [description=Page url=/i/en/cc1]
+    link "Major Stride Potion" [url=/i/en/cc25]
+    button "Add to list" [expanded=false]
+    button "More" [expanded=false haspopup=menu]
+    link "Caltrops" [description=Page url=/i/en/hi1]
+    button "Add to list" [expanded=false]
+    button "More" [expanded=false haspopup=menu]
+    button "Page"
+    StaticText "HOPE & FEAR"
+    link "Warding Candle" [description=Page url=/i/en/hc1]
+    StaticText "You can light this candle to fill an area within Close range wit..." [namelen=208 namehash=88ca1325]
+    button "Add to list" [expanded=false]
+    button "Share"
+    button "More" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]

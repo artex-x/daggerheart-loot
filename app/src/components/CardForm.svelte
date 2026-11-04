@@ -229,12 +229,12 @@
       onchange={(v: Lang) => {
         editIn = v;
       }}
+      neutral
     />
   </FormField>
   <FormField
     label={kind === 'set' ? t.hbSetName : t.hbCardName}
     for={id + '-name'}
-    required
     error={errText('name')}
     errorId={errId('name')}
   >
@@ -257,6 +257,7 @@
     <FormField
       label={t.hbCardSub}
       for={id + '-sub'}
+      optional={t.hbOptional}
       error={errText('sub')}
       errorId={errId('sub')}
     >
@@ -278,10 +279,8 @@
   <FormField
     label={kind === 'set' ? t.hbSetBonus : t.hbCardText}
     for={id + '-text'}
-    required
     error={errText('text')}
     errorId={errId('text')}
-    help={{ id: id + '-text-help', text: t.mdHelp.replace('%n', String(CARD_TEXT_MAX)), lang }}
   >
     <MarkupField
       id={id + '-text'}
@@ -308,6 +307,7 @@
     <FormField
       label={t.hbCardUrl}
       for={id + '-url'}
+      optional={t.hbOptional}
       error={errText('url')}
       errorId={errId('url')}
     >
@@ -327,14 +327,11 @@
     </FormField>
   {/if}
   {#if withBook}
-    <FormField
-      label={t.hbSource}
-      for={id + '-book'}
-      help={{ id: id + '-book-help', text: t.hbCardSourceHelp, lang }}
-    >
+    <FormField label={t.hbSource} for={id + '-book'}>
       <select
         id={id + '-book'}
         value={draft.bookId ?? ''}
+        aria-describedby={id + '-book-cap'}
         onchange={(e) => {
           draft.bookId = e.currentTarget.value || null;
         }}
@@ -347,6 +344,7 @@
           <option value={draft.bookId}>?</option>
         {/if}
       </select>
+      <p class="hint" id={id + '-book-cap'}>{t.hbCardSourceCap}</p>
     </FormField>
   {/if}
   <div class="buttons">

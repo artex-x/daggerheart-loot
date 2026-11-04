@@ -33,21 +33,20 @@ RootWebArea "Обычные правила - Генератор лута Daggerh
     button "Предметы" [expanded=false]
     button "Ещё" [expanded=false haspopup=menu]
     status ""
-      button "Страница"
-      StaticText "ПРЕДМЕТ"
-      StaticText "CORE"
-      link "Первоклассный Спальный Мешок" [description=Страница url=/i/ci1]
-      ... StaticText x3 of 7 same-shape siblings elided
-      button "В список" [expanded=false]
-      button "Поделиться"
-      button "Ещё" [expanded=false haspopup=menu]
-      button "Страница"
-      StaticText "HOPE & FEAR"
-      link "Шипы" [description=Страница url=/i/hi1]
-      StaticText "Вы можете рассыпать эти шипы в пределах Близкой дистанции вокруг..." [namelen=145 namehash=6bd36ff3]
-      button "В список" [expanded=false]
-      button "Поделиться"
-      button "Ещё" [expanded=false haspopup=menu]
+      StaticText "Первоклассный Спальный Мешок, Шипы"
+    button "Страница"
+    ... StaticText x5 of 9 same-shape siblings elided
+    link "Первоклассный Спальный Мешок" [description=Страница url=/i/ci1]
+    button "В список" [expanded=false]
+    button "Поделиться"
+    button "Ещё" [expanded=false haspopup=menu]
+    button "Страница"
+    StaticText "HOPE & FEAR"
+    link "Шипы" [description=Страница url=/i/hi1]
+    StaticText "Вы можете рассыпать эти шипы в пределах Близкой дистанции вокруг..." [namelen=145 namehash=6bd36ff3]
+    button "В список" [expanded=false]
+    button "Поделиться"
+    button "Ещё" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -115,21 +114,20 @@ RootWebArea "Standard rules - Daggerheart Loot Generator" [url=/en/roll/std]
     button "Items" [expanded=false]
     button "More" [expanded=false haspopup=menu]
     status ""
-      button "Page"
-      StaticText "ITEM"
-      StaticText "CORE"
-      link "Premium Bedroll" [description=Page url=/i/en/ci1]
-      ... StaticText x3 of 7 same-shape siblings elided
-      button "Add to list" [expanded=false]
-      button "Share"
-      button "More" [expanded=false haspopup=menu]
-      button "Page"
-      StaticText "HOPE & FEAR"
-      link "Caltrops" [description=Page url=/i/en/hi1]
-      StaticText "You can spread these caltrops in a Very Close area around you. A..." [namelen=121 namehash=eb3c4a75]
-      button "Add to list" [expanded=false]
-      button "Share"
-      button "More" [expanded=false haspopup=menu]
+      StaticText "Premium Bedroll, Caltrops"
+    button "Page"
+    ... StaticText x5 of 9 same-shape siblings elided
+    link "Premium Bedroll" [description=Page url=/i/en/ci1]
+    button "Add to list" [expanded=false]
+    button "Share"
+    button "More" [expanded=false haspopup=menu]
+    button "Page"
+    StaticText "HOPE & FEAR"
+    link "Caltrops" [description=Page url=/i/en/hi1]
+    StaticText "You can spread these caltrops in a Very Close area around you. A..." [namelen=121 namehash=eb3c4a75]
+    button "Add to list" [expanded=false]
+    button "Share"
+    button "More" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]

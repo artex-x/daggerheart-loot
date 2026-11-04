@@ -917,7 +917,7 @@ export async function runFlows({ env, admin, member, browser, base }) {
       await d.open('#/lists/' + listId);
       await waitText(page, 'F15', 'Сохранено');
       await d.press('Свой предмет');
-      await d.type('Название*', 'Свеча F15');
+      await d.type('Название', 'Свеча F15');
       await d.press('Добавить в список');
       await until(
         'F15: the own item made on the list page, or its link, is missing',
@@ -946,15 +946,15 @@ export async function runFlows({ env, admin, member, browser, base }) {
     await withPage(ctx, await mint(env, admin, member.email), async (page, d) => {
       await d.open('#/homebrew/new');
       await waitControl(page, 'F16', 'Сохранить');
-      await d.type('Название*', 'Плащ F16');
+      await d.type('Название', 'Плащ F16');
       await d.press('Связи');
       await d.type('Улучшается до', 'Первоклассный Спальный');
       await d.click('Первоклассный Спальный Мешок');
       await d.type('Получается из', 'Пронзительная Свирель');
       await d.click('Пронзительная Свирель');
       await d.press('Новая карта правил');
-      await d.type('Название карты*', 'Клеймо F16');
-      await d.type('Текст карты*', 'Раз за отдых: перебросьте одну кость урона.');
+      await d.type('Название карты', 'Клеймо F16');
+      await d.type('Текст карты', 'Раз за отдых: перебросьте одну кость урона.');
       await d.press('Создать карту');
       await until('F16: the rule card did not reach the account', async () => {
         const { cards } = await mine();

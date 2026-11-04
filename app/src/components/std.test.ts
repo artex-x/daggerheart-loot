@@ -281,17 +281,14 @@ describe('the help', () => {
 });
 
 describe('accessibility', () => {
-  it('marks the results as a live region, so a re-roll is announced without moving focus', () => {
-    /* The rewrite dropped this - app.js draws role="status" aria-live="polite"
-       on every .results container it writes, and nothing but the qa.js
-       deletes (23c00a6, R0c) asserted it (docs/specs/COVERAGE.md, the `qa`
-       row). Gripped by
-       .results rather than the role alone - Toast.svelte can carry
-       role="status" too. */
+  it('names the roll in a hidden status, and the results are no live region', () => {
+    /* A menu opens inside the results: a live region there would read the card again. */
     const { container } = render(App, { env: at() });
     const results = container.querySelector('.results');
-    expect(results).toHaveAttribute('role', 'status');
-    expect(results).toHaveAttribute('aria-live', 'polite');
+    expect(results).not.toHaveAttribute('role');
+    expect(results).not.toHaveAttribute('aria-live');
+    const said = container.querySelector('.said[role="status"]');
+    expect(said?.textContent).not.toBe('');
   });
 
   it('has no axe violations', async () => {
