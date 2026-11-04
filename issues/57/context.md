@@ -159,6 +159,10 @@
     fix; (2) is a design change (where a source tag draws), so the planner decides it with the owner's later
     feedback batched in, then one fix batch. Status: planned in `plan-tags.md` (2026-11-04) as batch 7b, with its own
     wave 2b squash (see "Wave split"); items 5 and 6 joined it the same day.
+    - Item 7 (owner, chat, 2026-11-04, two screenshots at 1762 and 1919 px): at 1920 px the content column stays at
+      `--wrap` (1180 px) and leaves about 350 px of empty space on each side. Asks: should the suite gain
+      tests or mocks for wider windows, and should a rule govern the wide layout. Not in 7b. Routing: a planner
+      pass after wave 2b (a design decision: a wider `--wrap` or a second column at 1440+ px).
     - Owner's lean (chat, 2026-11-04): option 2, consistency first.
     - Refinement (chat, 2026-11-04): "even not to hide homebrew but upgrade lines and sets, make them visible only
       on the item page": the homebrew tag stays as today; the upgrade and relation lines and the set draw only on
