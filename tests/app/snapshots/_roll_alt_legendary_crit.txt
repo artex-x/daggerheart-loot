@@ -32,7 +32,7 @@ RootWebArea "Альтернативные таблицы - Генератор л
     button "Очень редкая" [pressed=false]
     button "Легендарная" [pressed=true]
     button "Бросить кости"
-    ... StaticText x27 of 31 same-shape siblings elided
+    ... StaticText x20 of 24 same-shape siblings elided
     button "Кость Надежды: На единицу меньше"
     textbox "Кость Надежды: Результат броска" [value=2 multiline=false readonly=false required=false]
     ... button x10 of 14 same-shape siblings elided
@@ -141,7 +141,7 @@ RootWebArea "Alternate tables - Daggerheart Loot Generator" [url=/en/roll/alt]
     button "Very rare" [pressed=false]
     button "Legendary" [pressed=true]
     button "Roll the dice"
-    ... StaticText x27 of 31 same-shape siblings elided
+    ... StaticText x20 of 24 same-shape siblings elided
     button "Hope Die: One lower"
     textbox "Hope Die: Roll result" [value=2 multiline=false readonly=false required=false]
     ... button x10 of 14 same-shape siblings elided

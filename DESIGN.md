@@ -421,7 +421,7 @@ header's measured height, is the page's `scroll-padding-top`, so a focused
 control stops clear of it. At 600px touch
 targets grow: segment padding to 8px 14px, the section copy-link button from
 about 20px to a 36px hit area, row actions onto their own line, the mode row's
-controls 40px tall, and the roll card turns from a row into the face at 601px. The catalog adds one step, 1000px: from it the filter
+controls 40px tall, and a roll card can be the tall face from 601px (The Roll Page Rule). The catalog adds one step, 1000px: from it the filter
 column sits beside the rows; from 761px it draws the wide head (the `h1`, the
 labeled pin, «Об этих данных», the group chips and the tabs) with the filters
 in the bottom sheet; below 761px the picker row, the sheet and «··· Ещё»
@@ -435,7 +435,9 @@ one column below it, two from it, in the DOM order of the one column.
 `h1`, the controls, one results line («Бросок N», «Настроить», «Ещё»); the pin, the
 help and the copy of every option are items of «Ещё». From 761px: the head with the
 labeled pin and help, a 320px control pane, the results. The roller has one gold
-primary at most, and a die is plain.
+primary at most, and a die is plain. A result is the tall face only while the roll
+sits on one line in a results column of at least 641px; otherwise the row face, so a
+four-result roll shows every name in the first screen at 1180x720.
 
 **The Search Head Rule.** `/search` takes the list head of the catalog with one
 difference: up to 760px no picker fills the head row, so the `h1` «Поиск» stays
@@ -456,6 +458,13 @@ copies and «Сохранить себе» live in «Ещё», a `Menu` that ope
 the dialog, up where the room is only above, so from the dock. «В список» is the one
 gold primary; an open «Ещё» is not drawn pressed, because gold marks a choice. A label
 never gives way to an icon (The Same Label Rule).
+
+**A steady head.** A page whose content switches under a fixed head draws the head's
+geometry from the viewport band only, never from the content; a row that some contents
+lack keeps its reserved space, and late content (a picture, a count) reserves its box.
+`/tables/*` is the first user: from 1000px the group chips sit beside the title and the
+tabs take the next row; from 761px to 999px both levels take their own rows; the tab row
+keeps the height of the tallest group's tabs on every table.
 
 **The Hidden Header Rule.** Up to 760px the whole header leaves on a scroll down
 and returns on a scroll up, on every page, because a phone reader needs the rows
@@ -638,11 +647,15 @@ means "a thing". Do not round a card to a pill or square a chip.
 - **Layout:** `full` stacks the image above the body, or, as a dossier, sets it
   beside the text (The Dossier Rule); `compact` puts a 132px square image beside it,
   and `ListPage` keeps it until its batch moves the roll panel; `face` is a roll
-  result: the picture 4:3 with a fade, the body drawn over its foot, and 96px beside
-  the text up to 600px. Its action row sits under the plate, because a popover
-  cannot leave a clipped plate.
-- **Relation lines:** a homebrew record's name draws the plain bordered badge
-  «Хоумбрю» after it; a catalog record draws none.
+  result: the picture 4:3 with a fade, the body drawn over its foot, and the row face,
+  96px beside the text, wherever the roll does not sit on one line (The Roll Page
+  Rule). Its action row sits under the plate, because a popover cannot leave a
+  clipped plate.
+- **Relation lines:** «Получается из», «Улучшается до», the set line and its bonus,
+  and the tier ladder draw on the full record card only (`full`: the record page,
+  `/h/`, the dialog, the editor preview); `face`, `compact`, rows and tiles draw
+  none. A homebrew name draws the plain bordered badge «Хоумбрю» after it on the same
+  line; a catalog name draws none.
 - **Grid tile:** two columns up to 600px; the art, the name and a second line
   (the stat line, else the other-language name). A table of more than one
   kind labels the tile with its kind badge where the colored dot used to be;
@@ -671,8 +684,12 @@ means "a thing". Do not round a card to a pill or square a chip.
   the unique tag is gold: nobody chose them (The Seal Rule). An own item written
   in the other language than the interface draws a small language tag («EN», «RU»)
   after its row's tags: a hairline box, no fill, no capitals rule. On a roll card face the
-  roll number is drawn over the picture from 601px and hidden up to 600px, where the
-  results line names the roll.
+  roll number is drawn over the picture of the tall face and hidden on the row face,
+  where the results line names the roll.
+- **One box:** a badge is an inline block: it never splits across lines, a long label
+  wraps inside its border, and in running text it keeps 2px from the lines around it.
+- **The default book:** «Core» draws on the full record card only; every other source
+  keeps its tag.
 
 ### Inputs
 

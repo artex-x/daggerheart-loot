@@ -32,7 +32,7 @@ RootWebArea "Обычные правила - Генератор лута Daggerh
     button "3d12 Необычная - Редкая" [description=Бросить 3d12 - Необычная - Редкая]
     button "4d12 Редкая - Легендарная" [description=Бросить 4d12 - Редкая - Легендарная]
     button "5d12 Легендарная" [description=Бросить 5d12 - Легендарная]
-    ... StaticText x23 of 27 same-shape siblings elided
+    ... StaticText x16 of 20 same-shape siblings elided
     button "На единицу меньше" [disabled=true]
     textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
     button "На единицу больше"
@@ -50,7 +50,6 @@ RootWebArea "Обычные правила - Генератор лута Daggerh
     button "+ Новый список" [pressed=false]
     button "Ещё" [expanded=false haspopup=menu]
     link "Зелье Быстрого Шага" [description=Открыть страницу url=/i/cc1]
-    link "Большое Зелье Быстрого Шага" [url=/i/cc25]
     button "В список" [expanded=false]
     button "Ещё" [expanded=false haspopup=menu]
     link "Шипы" [description=Открыть страницу url=/i/hi1]
@@ -85,7 +84,6 @@ RU
 daggerheart.com
 Аккаунт: gm4@example.test
 Альтернативные таблицы
-Большое Зелье Быстрого Шага
 Бросок
 В список
 Дополнения
@@ -141,7 +139,7 @@ RootWebArea "Standard rules - Daggerheart Loot Generator" [url=/en/roll/std?as=g
     button "3d12 Uncommon - Rare" [description=Roll 3d12 - Uncommon - Rare]
     button "4d12 Rare - Legendary" [description=Roll 4d12 - Rare - Legendary]
     button "5d12 Legendary" [description=Roll 5d12 - Legendary]
-    ... StaticText x23 of 27 same-shape siblings elided
+    ... StaticText x16 of 20 same-shape siblings elided
     button "One lower" [disabled=true]
     textbox "Roll result" [value=1 multiline=false readonly=false required=false]
     button "One higher"
@@ -159,7 +157,6 @@ RootWebArea "Standard rules - Daggerheart Loot Generator" [url=/en/roll/std?as=g
     button "+ New list" [pressed=false]
     button "More" [expanded=false haspopup=menu]
     link "Stride Potion" [description=Open page url=/i/en/cc1]
-    link "Major Stride Potion" [url=/i/en/cc25]
     button "Add to list" [expanded=false]
     button "More" [expanded=false haspopup=menu]
     link "Caltrops" [description=Open page url=/i/en/hi1]
@@ -199,7 +196,6 @@ Hope & Fear
 Install as an app
 Items
 LootDaggerheart
-Major Stride Potion
 More
 One higher
 One lower

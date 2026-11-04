@@ -32,7 +32,7 @@ RootWebArea "Альтернативные таблицы - Генератор л
     button "Очень редкая" [pressed=false]
     button "Легендарная" [pressed=false]
     button "Бросить кости"
-    ... StaticText x26 of 30 same-shape siblings elided
+    ... StaticText x20 of 24 same-shape siblings elided
     button "Кость Надежды: На единицу меньше" [disabled=true]
     textbox "Кость Надежды: Результат броска" [value=1 multiline=false readonly=false required=false]
     button "Кость Надежды: На единицу больше"
@@ -50,7 +50,6 @@ RootWebArea "Альтернативные таблицы - Генератор л
     button "В список" [expanded=false]
     button "Ещё" [expanded=false haspopup=menu]
     link "Зелье Быстрого Шага" [description=Открыть страницу url=/i/cc1]
-    link "Большое Зелье Быстрого Шага" [url=/i/cc25]
     button "В список" [expanded=false]
     button "Ещё" [expanded=false haspopup=menu]
     button "Открыть карточку"
@@ -73,7 +72,6 @@ EN
 RU
 daggerheart.com
 Альтернативные таблицы
-Большое Зелье Быстрого Шага
 Бросить кости
 Бросок
 В список
@@ -140,7 +138,7 @@ RootWebArea "Alternate tables - Daggerheart Loot Generator" [url=/en/roll/alt]
     button "Very rare" [pressed=false]
     button "Legendary" [pressed=false]
     button "Roll the dice"
-    ... StaticText x26 of 30 same-shape siblings elided
+    ... StaticText x20 of 24 same-shape siblings elided
     button "Hope Die: One lower" [disabled=true]
     textbox "Hope Die: Roll result" [value=1 multiline=false readonly=false required=false]
     button "Hope Die: One higher"
@@ -158,7 +156,6 @@ RootWebArea "Alternate tables - Daggerheart Loot Generator" [url=/en/roll/alt]
     button "Add to list" [expanded=false]
     button "More" [expanded=false haspopup=menu]
     link "Stride Potion" [description=Open page url=/i/en/cc1]
-    link "Major Stride Potion" [url=/i/en/cc25]
     button "Add to list" [expanded=false]
     button "More" [expanded=false haspopup=menu]
     button "Open card"
@@ -195,7 +192,6 @@ Install as an app
 Items
 Legendary
 LootDaggerheart
-Major Stride Potion
 More
 Open card
 Open on start

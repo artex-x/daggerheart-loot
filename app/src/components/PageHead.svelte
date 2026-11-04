@@ -32,11 +32,14 @@
      * pins the bar itself.
      */
     home?: string;
+    /** Whether the pin draws: `HomebrewPage` draws it only once the page is ready
+     *  (docs/specs/FEATURES.md, "Homebrew"). */
+    pin?: boolean;
     /** More of the heading row after the help (the catalog's group chips). */
     extra?: Snippet | undefined;
   }
 
-  const { app, title, sub, help, home, extra }: Props = $props();
+  const { app, title, sub, help, home, pin = true, extra }: Props = $props();
 
   const t = $derived(app.t);
   const pinned = $derived(canonicalHash(home ?? app.hash));
@@ -55,17 +58,19 @@
   <!-- Round below 761 px: 26px of paint, 44px of target. It sits in the heading row
        and a mis-tap silently changes where the app opens. The pressed pin is the
        neutral pressed state (DESIGN.md, "Segmented control"), not gold. -->
-  <button
-    type="button"
-    class="homebtn"
-    class:on
-    aria-pressed={on}
-    onclick={() => {
-      app.pinHome(home);
-    }}
-  >
-    <Icon name={on ? 'check' : 'home'} /><span class="txt">{on ? t.homeOn : t.homeHint}</span>
-  </button>
+  {#if pin}
+    <button
+      type="button"
+      class="homebtn"
+      class:on
+      aria-pressed={on}
+      onclick={() => {
+        app.pinHome(home);
+      }}
+    >
+      <Icon name={on ? 'check' : 'home'} /><span class="txt">{on ? t.homeOn : t.homeHint}</span>
+    </button>
+  {/if}
   {#if help}
     <HelpButton
       lang={app.lang}

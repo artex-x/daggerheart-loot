@@ -39,14 +39,13 @@ RootWebArea "Обычные правила - Генератор лута Daggerh
     status ""
       StaticText "Первоклассный Спальный Мешок, Зелье Быстрого Шага, Шипы, Оберега..." [namelen=74 namehash=92c425c9]
     button "Открыть карточку"
-    ... StaticText x14 of 18 same-shape siblings elided
+    ... StaticText x11 of 15 same-shape siblings elided
     link "Первоклассный Спальный Мешок" [description=Открыть страницу url=/i/ci1]
     button "В список" [expanded=false]
     button "Поделиться"
     button "Ещё" [expanded=false haspopup=menu]
     ... button x4 of 8 same-shape siblings elided
     link "Зелье Быстрого Шага" [description=Открыть страницу url=/i/cc1]
-    link "Большое Зелье Быстрого Шага" [url=/i/cc25]
     button "В список" [expanded=false]
     button "Ещё" [expanded=false haspopup=menu]
     link "Шипы" [description=Открыть страницу url=/i/hi1]
@@ -76,7 +75,6 @@ EN
 RU
 daggerheart.com
 Альтернативные таблицы
-Большое Зелье Быстрого Шага
 Бросок
 В список
 Войти
@@ -138,14 +136,13 @@ RootWebArea "Standard rules - Daggerheart Loot Generator" [url=/en/roll/std]
     status ""
       StaticText "Premium Bedroll, Stride Potion, Caltrops, Warding Candle"
     button "Open card"
-    ... StaticText x14 of 18 same-shape siblings elided
+    ... StaticText x11 of 15 same-shape siblings elided
     link "Premium Bedroll" [description=Open page url=/i/en/ci1]
     button "Add to list" [expanded=false]
     button "Share"
     button "More" [expanded=false haspopup=menu]
     ... button x4 of 8 same-shape siblings elided
     link "Stride Potion" [description=Open page url=/i/en/cc1]
-    link "Major Stride Potion" [url=/i/en/cc25]
     button "Add to list" [expanded=false]
     button "More" [expanded=false haspopup=menu]
     link "Caltrops" [description=Open page url=/i/en/hi1]
@@ -178,7 +175,6 @@ Copy every option
 EN
 Install as an app
 LootDaggerheart
-Major Stride Potion
 More
 Open card
 Opens on start

@@ -71,7 +71,7 @@ daggerheart.com
 Комплекты 2
 Конфиденциальность
 Кремнёвый пистольОсновное оружиеРанг 1 · Физическое · Искусность... [namelen=154 namehash=0ac80d0b]
-Лоскутный спальникПредметСшит из Первоклассного Спального Мешка ... [namelen=222 namehash=f37d3f28]
+Лоскутный спальникПредметСшит из Первоклассного Спального Мешка ... [namelen=158 namehash=d51dd39e]
 ЛутDaggerheart
 Настой кузнецаРасходникВыпейте перед работой у горна: до конца с... [namelen=100 namehash=a6f81fe6]
 Новый предмет
@@ -146,7 +146,7 @@ Items 7
 LootDaggerheart
 New item
 Open on start
-Patchwork BedrollItemSewn from a Premium Bedroll and a Ghostproo... [namelen=180 namehash=62b9fa3d]
+Patchwork BedrollItemSewn from a Premium Bedroll and a Ghostproo... [namelen=134 namehash=9bef99c8]
 Privacy
 RU
 Roll

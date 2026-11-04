@@ -53,7 +53,7 @@ daggerheart.com
 Свой предмет
 Скачать JSON
 Скипетр
-СкипетрОсновное оружиеCoreРанг 1 · Магическое · Влияние · Далеко... [namelen=190 namehash=de098217]
+СкипетрОсновное оружиеРанг 1 · Магическое · Влияние · Далеко · d... [namelen=186 namehash=9aee2e9c]
 Скопировать текст
 Скрыть изменение «Спальный мешок долгой дороги через перевал, бо... [namelen=139 namehash=028772a7]
 Скрыть изменение «Топор Тлеющих Углей»
@@ -128,7 +128,7 @@ Roll
 Roll 1-2
 Roll result
 Scepter
-ScepterPrimary weaponCoreTier 1 · Magic · Presence · Far · d6 ma... [namelen=160 namehash=9977457f]
+ScepterPrimary weaponTier 1 · Magic · Presence · Far · d6 mag · ... [namelen=156 namehash=5cf0702e]
 Search
 Select all
 Share

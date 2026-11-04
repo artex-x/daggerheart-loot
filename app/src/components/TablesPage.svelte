@@ -92,8 +92,8 @@
   const t = $derived(app.t);
   const band = $derived(app.band);
   const index = $derived(app.index);
-  /* The row pool and the facets only: `RecordHost` and `TableRows` keep `index`, so the
-     «Свои предметы» switch never hides an own record inside a dialog or a row. */
+  /* The row pool and the facets only: `RecordHost` keeps `index`, so the «Свои предметы»
+     switch never hides an own record inside a dialog. */
   const browse = $derived(app.browse);
 
   /* `S.tables.t`'s default off app.js: the name in the address may be missing
@@ -908,7 +908,6 @@
                     <TableRows
                       entries={col.entries}
                       {view}
-                      {index}
                       lang={app.lang}
                       flash={flashKey}
                       whole={anchored}
@@ -953,7 +952,6 @@
                 <TableRows
                   entries={s.entries}
                   {view}
-                  {index}
                   lang={app.lang}
                   flash={flashKey}
                   whole={anchored}
@@ -976,7 +974,6 @@
             <TableRows
               entries={filtered.map((it) => ({ it }))}
               {view}
-              {index}
               lang={app.lang}
               flash={flashKey}
               whole={anchored}

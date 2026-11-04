@@ -35,7 +35,7 @@ RootWebArea "Обычные правила - Генератор лута Daggerh
     status ""
       StaticText "Первоклассный Спальный Мешок, Шипы"
     button "Открыть карточку"
-    ... StaticText x5 of 9 same-shape siblings elided
+    ... StaticText x4 of 8 same-shape siblings elided
     link "Первоклассный Спальный Мешок" [description=Открыть страницу url=/i/ci1]
     button "В список" [expanded=false]
     button "Поделиться"
@@ -116,7 +116,7 @@ RootWebArea "Standard rules - Daggerheart Loot Generator" [url=/en/roll/std]
     status ""
       StaticText "Premium Bedroll, Caltrops"
     button "Open card"
-    ... StaticText x5 of 9 same-shape siblings elided
+    ... StaticText x4 of 8 same-shape siblings elided
     link "Premium Bedroll" [description=Open page url=/i/en/ci1]
     button "Add to list" [expanded=false]
     button "Share"

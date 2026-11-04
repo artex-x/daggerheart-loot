@@ -20,7 +20,7 @@ RootWebArea "Скатка следопыта - Генератор лута Dagge
     StaticText "ПРЕДМЕТ"
     heading "Скатка следопыта" [level=1]
     StaticText "Предмет другого игрока · Хоумбрю"
-    ... StaticText x13 of 17 same-shape siblings elided
+    ... StaticText x18 of 22 same-shape siblings elided
     link "Скатка путника" [url=/h/00000000-0000-4000-8000-000000000661]
     link "Скатка стража" [url=/h/00000000-0000-4000-8000-000000000663]
     link "Подушка из мха" [url=/h/00000000-0000-4000-8000-000000000664]
@@ -79,7 +79,7 @@ RootWebArea "Ranger's Roll - Daggerheart Loot Generator" [url=/en/h/00000000-000
     StaticText "ITEM"
     heading "Ranger's Roll" [level=1]
     StaticText "Another player's item · Homebrew"
-    ... StaticText x13 of 17 same-shape siblings elided
+    ... StaticText x18 of 22 same-shape siblings elided
     link "Traveller's Roll" [url=/en/h/00000000-0000-4000-8000-000000000661]
     link "Sentry's Roll" [url=/en/h/00000000-0000-4000-8000-000000000663]
     link "Camp Blanket" [url=/en/h/00000000-0000-4000-8000-000000000665]

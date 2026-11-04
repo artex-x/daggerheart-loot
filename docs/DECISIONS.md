@@ -15,11 +15,14 @@ deleted.
 ## Index
 
 - 2026-11-04 - [A long table draws its first 60 rows in the first task and the rest after it](decisions/2026-11-04-a-long-table-draws-its-rows-over-several-tasks.md)
+- 2026-11-04 - [A roll result is the tall face only when the roll fits one line](decisions/2026-11-04-a-roll-result-is-the-tall-face-only-when-the-roll-fits-one-line.md)
+- 2026-11-04 - [Relations and the Core tag draw on the full record card only](decisions/2026-11-04-relations-and-the-core-tag-draw-on-the-full-card-only.md)
 - 2026-11-04 - [Search and account follow the list head and the error page](decisions/2026-11-04-search-and-account-follow-the-list-head-and-the-error-page.md)
 - 2026-11-04 - [The homebrew pages share the list head and one selection bar](decisions/2026-11-04-the-homebrew-pages-share-the-list-head-and-one-selection-bar.md)
 - 2026-11-04 - [The record page is a dossier, the actions are one row, and «Ещё» is a menu](decisions/2026-11-04-the-record-page-is-a-dossier-with-one-more-menu.md)
 - 2026-11-04 - [The record picture goes one step deeper than where it is drawn](decisions/2026-11-04-the-record-picture-goes-one-step-deeper.md)
 - 2026-11-04 - [The roll pages share one layout, and a result is a card face with its own row](decisions/2026-11-04-the-roll-pages-share-one-layout-and-results-draw-the-card-face.md)
+- 2026-11-04 - [The table head is set by the band, not the table](decisions/2026-11-04-the-table-head-is-set-by-the-band-not-the-table.md)
 - 2026-11-03 - [Up to 760 px the header hides on scroll down and returns on scroll up](decisions/2026-11-03-the-header-hides-on-scroll-down-up-to-760-px.md)
 - 2026-10-30 - [List pages share one head and one selection bar](decisions/2026-10-30-list-pages-share-one-head-and-one-selection-bar.md)
 - 2026-10-29 - [A new purchase request toasts on every page](decisions/2026-10-29-a-new-purchase-request-toasts-on-every-page.md)
@@ -140,7 +143,7 @@ deleted.
 - 2026-09-30 - [A timed golden holds its toast until the capture reads it](decisions/2026-09-30-a-timed-golden-holds-its-toast-until-the.md)
 - 2026-09-30 - [A toast is built in the language on screen each time it is drawn](decisions/2026-09-30-a-toast-is-built-in-the-language-on.md)
 - 2026-09-30 - [Agents search with grep; no language server and no ast-grep](decisions/2026-09-30-agents-search-with-grep-no-language-server-and-no.md)
-- 2026-09-30 - [(HB) marks homebrew, and a homebrew relation shows only to its author](decisions/2026-09-30-hb-marks-homebrew-a-relation-shows-only-to-its-author.md)
+- 2026-09-30 - [(HB) marks homebrew, and a homebrew relation shows only to its author](decisions/2026-09-30-hb-marks-homebrew-a-relation-shows-only-to-its-author.md) - superseded in part
 - 2026-09-30 - [Homebrew is first-class in the catalog pages; the roll pages are excluded](decisions/2026-09-30-homebrew-is-first-class-in-the-catalog-pages.md) - superseded in part
 - 2026-09-30 - [Homebrew ships in four releases: items, catalog pages, relations, files](decisions/2026-09-30-homebrew-ships-in-four-releases.md)
 - 2026-09-30 - [Homebrew travels as its own file; a lists file v2 carries frozen entries](decisions/2026-09-30-homebrew-travels-as-its-own-file.md) - superseded in part

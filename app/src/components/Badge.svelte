@@ -27,8 +27,10 @@
 <span class="badge {cls}" {title}>{@render children()}</span>
 
 <style>
-  /* off `.badge` in style.css */
+  /* off `.badge` in style.css. One box: an inline block never splits across lines, so a
+     wrapped label stays inside its border (DESIGN.md, "Badges"). */
   .badge {
+    display: inline-block;
     font-size: var(--t-badge);
     font-weight: 650;
     letter-spacing: 0.07em;

@@ -1104,7 +1104,6 @@
               {#if it}
                 <RowMain
                   {it}
-                  {index}
                   lang={app.lang}
                   artBroken={(id: string) => app.artBroken(id)}
                   onartfail={(bad: string) => {

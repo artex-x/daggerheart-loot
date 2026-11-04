@@ -2131,3 +2131,74 @@ describe("the account's own card on a book item", () => {
     await expectNoA11yViolations(container);
   });
 });
+
+describe('the relation lines and the Core tag by card variant', () => {
+  /* The real catalog with gm3's own items: ci1 upgrades to 15 of them, q1 holds a ladder,
+     voa4_t3d is a set piece with a bonus (docs/specs/FEATURES.md, "Records"). */
+  const index = withRecords(
+    buildIndex(readLoot()),
+    SEED.homebrew.gm3.items.map((i) => recordOf(i.key, i.content, null)),
+    []
+  );
+  const card = (id: string, variant: 'full' | 'compact' | 'face', dossier = false) => {
+    const it = index.byId.get(id);
+    if (!it) throw new Error(`The index lacks ${id}. Seed or name a record it holds`);
+    return render(RecordCard, {
+      props: {
+        variant,
+        dossier,
+        it,
+        index,
+        lang: 'ru',
+        artBroken: false,
+        onartfail: () => {},
+        onopen: () => {}
+      }
+    }).container;
+  };
+  const srcTags = (c: HTMLElement): string[] =>
+    [...c.querySelectorAll('.card-meta .badge.src')].map((b) => b.textContent.trim());
+
+  it.each(['face', 'compact'] as const)(
+    'draws no relation line, set, ladder or Core badge on a %s card',
+    async (variant) => {
+      for (const id of ['ci1', 'q1', 'voa4_t3d']) {
+        const c = card(id, variant);
+        expect(c.querySelector('.craft'), id).toBeNull();
+        expect(c.querySelector('.steps'), id).toBeNull();
+        cleanup();
+      }
+      const c = card('ci1', variant);
+      expect(srcTags(c)).toEqual([]);
+      await expectNoA11yViolations(c);
+    }
+  );
+
+  it.each(['face', 'compact'] as const)('keeps another book on a %s card', (variant) => {
+    expect(srcTags(card('hi61', variant))).toEqual(['Hope & Fear']);
+  });
+
+  it.each([false, true])(
+    'draws the relation lines, the set, the ladder and the Core badge on the full card (dossier %s)',
+    async (dossier) => {
+      const c = card('ci1', 'full', dossier);
+      expect(c.querySelector('.craft')).toHaveTextContent('Улучшается до');
+      expect(srcTags(c)).toEqual(['Core']);
+      await expectNoA11yViolations(c);
+      cleanup();
+      expect(card('q1', 'full', dossier).querySelector('.steps')).not.toBeNull();
+      cleanup();
+      const set = card('voa4_t3d', 'full', dossier);
+      expect(set.querySelector('.craft')).toHaveTextContent('Комплект');
+      expect(set.querySelector('.set-bonus')).not.toBeNull();
+    }
+  );
+
+  it("keeps a homebrew badge on its name's line with a no-break space before it", () => {
+    const badge = card('ci1', 'full').querySelector('.craft .badge.hb');
+    let before = badge?.previousSibling;
+    while (before && before.nodeType === Node.COMMENT_NODE) before = before.previousSibling;
+    expect(before?.nodeType).toBe(Node.TEXT_NODE);
+    expect(before?.textContent).toBe(' ');
+  });
+});

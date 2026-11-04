@@ -163,7 +163,7 @@ daggerheart.com
 Жирный
 Заметка
 Зелье Быстрого Шага
-Зелье Быстрого ШагаРасходникCoreВы получаете бонус +1 к следующе... [namelen=128 namehash=ebb978f9]
+Зелье Быстрого ШагаРасходникВы получаете бонус +1 к следующему Б... [namelen=82 namehash=6ee20e58]
 К содержимому
 Как в книге
 Колдующий Кинжал
@@ -181,9 +181,9 @@ daggerheart.com
 Отклонить
 Очистить заметку
 Палаш
-ПалашОсновное оружиеCoreРанг 1 · Физическое · Проворность · Впло... [namelen=118 namehash=5597138b]
+ПалашОсновное оружиеРанг 1 · Физическое · Проворность · Вплотную... [namelen=114 namehash=e80c7800]
 Первоклассный Спальный Мешок
-Первоклассный Спальный МешокПредметCoreВо время отдыха вы автома... [namelen=88 namehash=9d8413c2]
+Первоклассный Спальный МешокПредметВо время отдыха вы автоматиче... [namelen=84 namehash=f15473c8]
 Печать
 Поделиться
 Подсказка: Для игроков
@@ -197,12 +197,12 @@ daggerheart.com
 Свой предмет
 Скачать JSON
 Скипетр
-СкипетрОсновное оружиеCoreРанг 1 · Магическое · Влияние · Далеко... [namelen=190 namehash=de098217]
+СкипетрОсновное оружиеРанг 1 · Магическое · Влияние · Далеко · d... [namelen=186 namehash=9aee2e9c]
 Скопировать текст
 Список
 Справка
 Стеганый Доспех
-Стеганый ДоспехБроняCoreРанг 1 · Пороги 5/11 · Броня 3Гибкое: +1... [namelen=76 namehash=f3c5334f]
+Стеганый ДоспехБроняРанг 1 · Пороги 5/11 · Броня 3Гибкое: +1 к У... [namelen=72 namehash=ad6956c1]
 Таблицы
 Только для мастера: Брошюра по Истории Искусства
 Только для мастера: Гарпун Левиафана
@@ -377,7 +377,7 @@ Art History BookletItemDread GM ToolboxThis is a finely illustra... [namelen=543
 As in the book
 Bold
 Broadsword
-BroadswordPrimary weaponCoreTier 1 · Physical · Agility · Melee ... [namelen=113 namehash=26515266]
+BroadswordPrimary weaponTier 1 · Physical · Agility · Melee · d8... [namelen=109 namehash=926e89b9]
 Bulleted list
 Casting Dagger
 Casting DaggerPrimary weaponHope & FearTier 1 · Magic · Instinct... [namelen=176 namehash=08dad18c]
@@ -400,7 +400,7 @@ GM only: Scepter
 GM only: Stride Potion
 GM only: Twilight Deck
 Gambeson Armor
-Gambeson ArmorArmorCoreTier 1 · Thresholds 5/11 · Armor 3Flexibl... [namelen=80 namehash=460b51ea]
+Gambeson ArmorArmorTier 1 · Thresholds 5/11 · Armor 3Flexible: +... [namelen=76 namehash=55bf2d62]
 Help
 Help: For players
 Help: GM only
@@ -418,7 +418,7 @@ One lower
 Own item
 Position in the list
 Premium Bedroll
-Premium BedrollItemCoreDuring downtime, you automatically clear ... [namelen=73 namehash=3b2ba4b6]
+Premium BedrollItemDuring downtime, you automatically clear a St... [namelen=69 namehash=b98fcd07]
 Preview
 Price
 Print
@@ -429,14 +429,14 @@ Roll
 Roll d10
 Roll result
 Scepter
-ScepterPrimary weaponCoreTier 1 · Magic · Presence · Far · d6 ma... [namelen=160 namehash=9977457f]
+ScepterPrimary weaponTier 1 · Magic · Presence · Far · d6 mag · ... [namelen=156 namehash=5cf0702e]
 Search
 Select all
 Share
 Show
 Skip to content
 Stride Potion
-Stride PotionConsumableCoreYou gain a +1 bonus to your next Agil... [namelen=105 namehash=05b316cd]
+Stride PotionConsumableYou gain a +1 bonus to your next Agility ... [namelen=69 namehash=5f888d9a]
 Tables
 Terms of use
 Twilight Deck

@@ -415,7 +415,6 @@
           primary
           {entries}
           view="list"
-          {index}
           lang={app.lang}
           selected={(id: string) => app.sel.has(id)}
           artBroken={(id: string) => app.artBroken(id)}

@@ -101,3 +101,24 @@ describe('the table navigation', () => {
     await expectNoA11yViolations(container);
   });
 });
+
+describe('the tab slot', () => {
+  it.each(['wide', 'mid'] as const)(
+    "holds every group's tabs unseen at %s, with no link and no name, also on a table with none",
+    async (band) => {
+      const { container } = nav('homebrew', band);
+      expect(screen.queryByRole('group', { name: 'Хоумбрю' })).toBeNull();
+      const ghosts = container.querySelector('.tabslot .ghosts');
+      expect(ghosts).toHaveAttribute('aria-hidden', 'true');
+      expect(ghosts?.querySelector('a, button')).toBeNull();
+      expect(ghosts?.querySelectorAll('.tabs').length).toBeGreaterThanOrEqual(5);
+      expect(ghosts).toHaveTextContent('Wondrous Environments');
+      await expectNoA11yViolations(container);
+    }
+  );
+
+  it('draws no slot at narrow, where the tabs live in the sheet', () => {
+    const { container } = nav('core_item', 'narrow');
+    expect(container.querySelector('.tabslot')).toBeNull();
+  });
+});

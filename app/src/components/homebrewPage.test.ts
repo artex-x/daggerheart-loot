@@ -2444,7 +2444,7 @@ describe('the bulk delete status and the focus after a press removes itself', ()
 describe('the page head', () => {
   const homeOff = (): HTMLElement => screen.getByRole('button', { name: t.homeHint });
 
-  it('draws the pin and no help on every tab, signed out and on a failed load', async () => {
+  it('draws the pin and no help on every tab once the page is ready', async () => {
     page();
     await screen.findByText('4 предмета из 100');
     expect(homeOff()).toHaveAttribute('aria-pressed', 'false');
@@ -2454,21 +2454,41 @@ describe('the page head', () => {
       expect(homeOff()).toBeInTheDocument();
       expect(screen.queryByRole('button', { name: t.helpHint })).toBeNull();
     }
-    cleanup();
-    page(null);
-    await screen.findByText(t.hbSignIn);
-    expect(homeOff()).toBeInTheDocument();
-    cleanup();
-    page('gm1', { cloud: fakeCloud(SEED, 'gm1', { offline: true }) });
-    await screen.findByText(t.hbLoadFailed);
-    expect(homeOff()).toBeInTheDocument();
-    expect(screen.queryByRole('navigation', { name: t.myItems })).toBeNull();
   });
+
+  /* A launch page that the visitor cannot use yet would end at a wall at every launch. */
+  it.each([
+    ['wide', undefined],
+    ['narrow', fakeViewport('narrow')]
+  ] as const)(
+    'draws no pin signed out, loading or on a failed read (%s)',
+    async (_, viewport) => {
+      const env = viewport ? { viewport } : {};
+      const pinNone = (): void => {
+        expect(screen.queryByRole('button', { name: t.homeHint })).toBeNull();
+        expect(screen.queryByRole('menuitem', { name: t.homeHint })).toBeNull();
+      };
+      const out = page(null, { env });
+      await screen.findByText(t.hbSignIn);
+      pinNone();
+      await expectNoA11yViolations(out.container);
+      cleanup();
+      const loading = page('gm1', { env, fake: { hold: { own: 'stall' } } });
+      await screen.findByRole('heading', { level: 1, name: t.myItems });
+      pinNone();
+      await expectNoA11yViolations(loading.container);
+      cleanup();
+      const failed = page('gm1', { env, cloud: fakeCloud(SEED, 'gm1', { offline: true }) });
+      await screen.findByText(t.hbLoadFailed);
+      pinNone();
+      expect(screen.queryByRole('navigation', { name: t.myItems })).toBeNull();
+      await expectNoA11yViolations(failed.container);
+    }
+  );
 
   it('pins #/homebrew from any tab, and a second press unpins it', async () => {
     const { container } = page('gm1', { route: '#/homebrew/sets' });
-    await screen.findByRole('heading', { level: 1, name: t.myItems });
-    await userEvent.click(homeOff());
+    await userEvent.click(await screen.findByRole('button', { name: t.homeHint }));
     const on = screen.getByRole('button', { name: t.homeOn });
     expect(on).toHaveAttribute('aria-pressed', 'true');
     expect(await screen.findByText(t.homeSet)).toBeInTheDocument();

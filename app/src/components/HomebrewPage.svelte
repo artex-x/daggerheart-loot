@@ -368,6 +368,7 @@
     sub={t.subHomebrew}
     help={null}
     home={HOMEBREW_HASH}
+    pin={ready}
     extra={wideHead}
   />
 {/if}
@@ -520,7 +521,6 @@
                     <TableRows
                       entries={g.items.map((it) => ({ it }))}
                       view="list"
-                      index={app.index}
                       lang={app.lang}
                       ticks={app.selecting}
                       {hide}

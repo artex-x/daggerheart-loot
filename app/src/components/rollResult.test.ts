@@ -183,3 +183,38 @@ describe('the row of a result', () => {
     await expectNoA11yViolations(container);
   });
 });
+
+describe('the tags of a result', () => {
+  it('draws no Core badge and no relation line, and keeps another book', async () => {
+    const core = record({ src: 'core', craft: ['w2'] });
+    const target = record({ id: 'w2', roll: 2, ru: 'Мазь', en: 'Salve' });
+    const app = new AppState(
+      fakeEnv({
+        router: memoryRouter('#/roll/wondrous'),
+        data: fakeData({ items: { wondrous: [core, target] } }),
+        storage: memoryStorage(),
+        cloud: fakeCloud(SEED)
+      })
+    );
+    app.start();
+    const { container, unmount } = render(RollResult, {
+      app,
+      index: app.index!,
+      it: app.recordFor('w1') as Record_,
+      onopen: vi.fn()
+    });
+    expect(container.querySelector('.badge.src')).toBeNull();
+    expect(container.querySelector('.craft')).toBeNull();
+    expect(container.textContent).not.toContain('Улучшается до');
+    await expectNoA11yViolations(container);
+    unmount();
+    const other = render(RollResult, {
+      app,
+      index: app.index!,
+      it: { ...core, src: 'hnf' },
+      onopen: vi.fn()
+    });
+    expect(other.container.querySelector('.badge.src')).toHaveTextContent('Hope & Fear');
+    app.stop();
+  });
+});

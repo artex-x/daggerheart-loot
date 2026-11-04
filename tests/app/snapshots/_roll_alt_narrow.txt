@@ -37,7 +37,7 @@ RootWebArea "Альтернативные таблицы - Генератор л
       StaticText "Крюк-Кошка, Металлические Шарики, Зелье Быстрого Шага, Семя Верг..." [namelen=68 namehash=3f6f8db6]
     button "Открыть карточку"
     StaticText "НАДЕЖДА"
-    ... StaticText x17 of 21 same-shape siblings elided
+    ... StaticText x15 of 19 same-shape siblings elided
     link "Крюк-Кошка" [description=Открыть страницу url=/i/hi2]
     button "В список" [expanded=false]
     ... button x5 of 9 same-shape siblings elided
@@ -46,7 +46,6 @@ RootWebArea "Альтернативные таблицы - Генератор л
     button "В список" [expanded=false]
     button "Ещё" [expanded=false haspopup=menu]
     link "Зелье Быстрого Шага" [description=Открыть страницу url=/i/cc1]
-    link "Большое Зелье Быстрого Шага" [url=/i/cc25]
     button "В список" [expanded=false]
     button "Ещё" [expanded=false haspopup=menu]
     button "Открыть карточку"
@@ -68,7 +67,6 @@ EN
 RU
 daggerheart.com
 Альтернативные таблицы
-Большое Зелье Быстрого Шага
 Бросить кости
 Бросок
 В список
@@ -127,7 +125,7 @@ RootWebArea "Alternate tables - Daggerheart Loot Generator" [url=/en/roll/alt]
       StaticText "Grapnel, Ball Bearings, Stride Potion, Verglasian Seed"
     button "Open card"
     StaticText "HOPE"
-    ... StaticText x17 of 21 same-shape siblings elided
+    ... StaticText x15 of 19 same-shape siblings elided
     link "Grapnel" [description=Open page url=/i/en/hi2]
     button "Add to list" [expanded=false]
     ... button x5 of 9 same-shape siblings elided
@@ -136,7 +134,6 @@ RootWebArea "Alternate tables - Daggerheart Loot Generator" [url=/en/roll/alt]
     button "Add to list" [expanded=false]
     button "More" [expanded=false haspopup=menu]
     link "Stride Potion" [description=Open page url=/i/en/cc1]
-    link "Major Stride Potion" [url=/i/en/cc25]
     button "Add to list" [expanded=false]
     button "More" [expanded=false haspopup=menu]
     button "Open card"
@@ -161,7 +158,6 @@ EN
 Grapnel
 Install as an app
 LootDaggerheart
-Major Stride Potion
 More
 Open card
 Privacy

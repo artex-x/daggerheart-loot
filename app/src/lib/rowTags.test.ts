@@ -2,12 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { hiddenTags } from './rowTags.js';
 
 describe('the tags a catalog row hides', () => {
-  it('hides the kind, the source and the Core tag on an equipment table, and keeps another book', () => {
+  it('hides the kind and keeps the source on an equipment table, which mixes books', () => {
     expect(hiddenTags('eq_weapon', {}, false)).toEqual({
       kind: true,
       tier: false,
-      src: false,
-      core: true
+      src: false
     });
   });
 
@@ -22,8 +21,7 @@ describe('the tags a catalog row hides', () => {
     expect(hiddenTags('core_item', {}, false)).toEqual({
       kind: true,
       tier: false,
-      src: true,
-      core: false
+      src: true
     });
   });
 
@@ -43,8 +41,7 @@ describe('the tags a catalog row hides', () => {
     expect(hiddenTags('homebrew', {}, false)).toEqual({
       kind: false,
       tier: false,
-      src: true,
-      core: false
+      src: true
     });
   });
 });

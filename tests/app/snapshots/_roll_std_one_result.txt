@@ -1,0 +1,183 @@
+# #/roll/std ~ one result
+# route: #/roll/std
+# why: Core rules with Hope & Fear and consumables off: one result, the tall face at most 380 px wide (R7)
+
+## ru :: tree
+RootWebArea "Обычные правила - Генератор лута Daggerheart" [url=/roll/std]
+  link "К содержимому" [url=/roll/std#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    link "Войти" [url=/account]
+    navigation "Разделы"
+      link "Бросок" [url=/roll/std]
+      link "Таблицы" [url=/tables]
+      link "Поиск" [url=/search]
+  navigation "Режим броска"
+    link "Обычные правила" [url=/roll/std]
+    link "Альтернативные таблицы" [url=/roll/alt]
+    button "Дополнения" [expanded=false haspopup=menu]
+  main ""
+    heading "Обычные правила" [level=1]
+    button "Открывается при запуске" [pressed=true]
+    button "Где какая редкость" [expanded=false]
+    StaticText "Бросок по таблицам корника и дополнения Hope & Fear."
+    StaticText "БРОСИТЬ"
+    button "1d12 Обычная" [description=Бросить 1d12 - Обычная]
+    button "2d12 Обычная - Необычная" [description=Бросить 2d12 - Обычная - Необычная]
+    button "3d12 Необычная - Редкая" [description=Бросить 3d12 - Необычная - Редкая]
+    button "4d12 Редкая - Легендарная" [description=Бросить 4d12 - Редкая - Легендарная]
+    button "5d12 Легендарная" [description=Бросить 5d12 - Легендарная]
+    ... StaticText x4 of 8 same-shape siblings elided
+    button "На единицу меньше" [disabled=true]
+    textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
+    button "На единицу больше"
+    button "Core" [description=Нужен хотя бы один источник pressed=true]
+    button "Hope & Fear" [pressed=false]
+    button "Предметы" [description=Нужен хотя бы один тип pressed=true]
+    button "Расходники" [pressed=false]
+    heading "Бросок 1" [level=2]
+    status ""
+      StaticText "Первоклассный Спальный Мешок"
+    button "Открыть карточку"
+    StaticText "ПРЕДМЕТ"
+    link "Первоклассный Спальный Мешок" [description=Открыть страницу url=/i/ci1]
+    StaticText "Во время отдыха вы автоматически очищаете Стресс."
+    button "В список" [expanded=false]
+    button "Поделиться"
+    button "Ещё" [expanded=false haspopup=menu]
+  contentinfo ""
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=/pages/install.html]
+      link "Конфиденциальность" [url=/pages/privacy.html]
+      link "Условия использования" [url=/pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+
+## ru :: controls
+1d12 Обычная
+2d12 Обычная - Необычная
+3d12 Необычная - Редкая
+4d12 Редкая - Легендарная
+5d12 Легендарная
+?Где какая редкость
+Core
+EN
+Hope & Fear
+RU
+daggerheart.com
+Альтернативные таблицы
+Бросок
+В список
+Войти
+Дополнения
+Ещё
+К содержимому
+Конфиденциальность
+ЛутDaggerheart
+На единицу больше
+На единицу меньше
+Обычные правила
+Открывается при запуске
+Открыть карточку
+Первоклассный Спальный Мешок
+Поделиться
+Поиск
+Предметы
+Расходники
+Результат броска
+Таблицы
+Условия использования
+Установить как приложение
+
+## en :: tree
+RootWebArea "Standard rules - Daggerheart Loot Generator" [url=/en/roll/std]
+  link "Skip to content" [url=/en/roll/std#main]
+  banner ""
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    link "Sign in" [url=/en/account]
+    navigation "Sections"
+      link "Roll" [url=/en/roll/std]
+      link "Tables" [url=/en/tables]
+      link "Search" [url=/en/search]
+  navigation "Roll mode"
+    link "Standard rules" [url=/en/roll/std]
+    link "Alternate tables" [url=/en/roll/alt]
+    button "Supplements" [expanded=false haspopup=menu]
+  main ""
+    heading "Standard rules" [level=1]
+    button "Opens on start" [pressed=true]
+    button "Where each rarity is" [expanded=false]
+    StaticText "A roll over the core book and the Hope & Fear tables."
+    StaticText "ROLL"
+    button "1d12 Common" [description=Roll 1d12 - Common]
+    button "2d12 Common - Uncommon" [description=Roll 2d12 - Common - Uncommon]
+    button "3d12 Uncommon - Rare" [description=Roll 3d12 - Uncommon - Rare]
+    button "4d12 Rare - Legendary" [description=Roll 4d12 - Rare - Legendary]
+    button "5d12 Legendary" [description=Roll 5d12 - Legendary]
+    ... StaticText x4 of 8 same-shape siblings elided
+    button "One lower" [disabled=true]
+    textbox "Roll result" [value=1 multiline=false readonly=false required=false]
+    button "One higher"
+    button "Core" [description=At least one source has to stay on pressed=true]
+    button "Hope & Fear" [pressed=false]
+    button "Items" [description=At least one type has to stay on pressed=true]
+    button "Consumables" [pressed=false]
+    heading "Roll 1" [level=2]
+    status ""
+      StaticText "Premium Bedroll"
+    button "Open card"
+    StaticText "ITEM"
+    link "Premium Bedroll" [description=Open page url=/i/en/ci1]
+    StaticText "During downtime, you automatically clear a Stress."
+    button "Add to list" [expanded=false]
+    button "Share"
+    button "More" [expanded=false haspopup=menu]
+  contentinfo ""
+    navigation "Site pages"
+      link "Install as an app" [url=/pages/en/install.html]
+      link "Privacy" [url=/pages/en/privacy.html]
+      link "Terms of use" [url=/pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
+
+## en :: controls
+1d12 Common
+2d12 Common - Uncommon
+3d12 Uncommon - Rare
+4d12 Rare - Legendary
+5d12 Legendary
+?Where each rarity is
+Add to list
+Alternate tables
+Consumables
+Core
+EN
+Hope & Fear
+Install as an app
+Items
+LootDaggerheart
+More
+One higher
+One lower
+Open card
+Opens on start
+Premium Bedroll
+Privacy
+RU
+Roll
+Roll result
+Search
+Share
+Sign in
+Skip to content
+Standard rules
+Supplements
+Tables
+Terms of use
+daggerheart.com

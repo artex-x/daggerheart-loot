@@ -31,7 +31,7 @@ RootWebArea "Обычные правила - Генератор лута Daggerh
     button "3d12 Необычная - Редкая" [description=Бросить 3d12 - Необычная - Редкая]
     button "4d12 Редкая - Легендарная" [description=Бросить 4d12 - Редкая - Легендарная]
     button "5d12 Легендарная" [description=Бросить 5d12 - Легендарная]
-    ... StaticText x11 of 15 same-shape siblings elided
+    ... StaticText x8 of 12 same-shape siblings elided
     button "На единицу меньше" [disabled=true]
     textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
     button "На единицу больше"
@@ -48,10 +48,9 @@ RootWebArea "Обычные правила - Генератор лута Daggerh
     button "В список" [expanded=false]
     button "Ещё" [expanded=false haspopup=menu]
     button "Открыть карточку"
+    StaticText "РАСХОДНИК"
     link "Зелье Быстрого Шага" [description=Открыть страницу url=/i/cc1]
     StaticText "Вы получаете бонус +1 к следующему Броску Проворности."
-    StaticText "УЛУЧШАЕТСЯ ДО"
-    link "Большое Зелье Быстрого Шага" [url=/i/cc25]
     button "В список" [expanded=false]
     button "Поделиться"
     button "Ещё" [expanded=false haspopup=menu]
@@ -75,7 +74,6 @@ Hope & Fear
 RU
 daggerheart.com
 Альтернативные таблицы
-Большое Зелье Быстрого Шага
 Бросок
 В список
 Войти
@@ -130,7 +128,7 @@ RootWebArea "Standard rules - Daggerheart Loot Generator" [url=/en/roll/std]
     button "3d12 Uncommon - Rare" [description=Roll 3d12 - Uncommon - Rare]
     button "4d12 Rare - Legendary" [description=Roll 4d12 - Rare - Legendary]
     button "5d12 Legendary" [description=Roll 5d12 - Legendary]
-    ... StaticText x11 of 15 same-shape siblings elided
+    ... StaticText x8 of 12 same-shape siblings elided
     button "One lower" [disabled=true]
     textbox "Roll result" [value=1 multiline=false readonly=false required=false]
     button "One higher"
@@ -147,10 +145,9 @@ RootWebArea "Standard rules - Daggerheart Loot Generator" [url=/en/roll/std]
     button "Add to list" [expanded=false]
     button "More" [expanded=false haspopup=menu]
     button "Open card"
+    StaticText "CONSUMABLE"
     link "Stride Potion" [description=Open page url=/i/en/cc1]
     StaticText "You gain a +1 bonus to your next Agility Roll."
-    StaticText "UPGRADES TO"
-    link "Major Stride Potion" [url=/i/en/cc25]
     button "Add to list" [expanded=false]
     button "Share"
     button "More" [expanded=false haspopup=menu]
@@ -178,7 +175,6 @@ Hope & Fear
 Install as an app
 Items
 LootDaggerheart
-Major Stride Potion
 More
 One higher
 One lower

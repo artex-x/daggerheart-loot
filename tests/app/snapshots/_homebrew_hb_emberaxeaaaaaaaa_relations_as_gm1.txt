@@ -134,7 +134,7 @@ RootWebArea "Топор Тлеющих Углей - Генератор лута 
     button "На экране" [pressed=true]
     button "На печати" [pressed=false]
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
-    ... StaticText x21 of 25 same-shape siblings elided
+    ... StaticText x22 of 26 same-shape siblings elided
     heading "Топор Тлеющих Углей" [level=2]
     button "Палаш" [description=Палаш]
     button "Улучшенный Палаш" [description=Улучшенный Палаш]
@@ -370,7 +370,7 @@ RootWebArea "Ember Axe - Daggerheart Loot Generator" [url=/en/homebrew/hb_embera
     button "On screen" [pressed=true]
     button "In print" [pressed=false]
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
-    ... StaticText x21 of 25 same-shape siblings elided
+    ... StaticText x22 of 26 same-shape siblings elided
     heading "Топор Тлеющих Углей" [level=2]
     button "Палаш" [description=Палаш]
     button "Улучшенный Палаш" [description=Улучшенный Палаш]

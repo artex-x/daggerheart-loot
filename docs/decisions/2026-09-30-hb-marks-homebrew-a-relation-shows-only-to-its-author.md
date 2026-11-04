@@ -1,5 +1,6 @@
 # 2026-09-30 - (HB) marks homebrew, and a homebrew relation shows only to its author
 
+- Superseded in part by "Relations and the Core tag draw on the full record card only" (2026-11-04): a row draws no relation line.
 - Task: `persist-7-homebrew` (owner's items 3-6, answer to Q5 and the marker answer, 2026-09-30; planner, passes 2-4).
 - Decision: one marker everywhere, the Latin text HB in both languages. A named source's tag reads
   «<source> (HB)» as plain text and the default source's «Хоумбрю»; a homebrew name inside a
@@ -10,8 +11,5 @@
   copy in a list joins `byId` only and adds nothing to a catalog card. A relation line and a ladder
   draw every catalog record, the record and three homebrew ones, then «и ещё N» (a button with
   `aria-expanded`); a row draws its catalog names, one homebrew name and the count.
-- Rejected: a dashed source badge (the owner chose the text, Q5); a dashed ladder rung (a second
-  marker; the owner chose one, 2026-09-30); «ХБ» in Russian (it reads as х/б); a second relation
-  line per origin (two labels for one arrow); drawing a viewer's frozen copies on catalog cards
-  (the owner's item 6).
+- Rejected: a dashed source badge (the owner chose the text, Q5); a dashed ladder rung (a second marker; the owner chose one, 2026-09-30); «ХБ» in Russian (it reads as х/б); a second relation line per origin (two labels for one arrow); drawing a viewer's frozen copies on catalog cards (the owner's item 6).
 - Later: the card's relation lines draw the badge «Хоумбрю»: `docs/decisions/2026-11-04-the-record-page-is-a-dossier-with-one-more-menu.md`.

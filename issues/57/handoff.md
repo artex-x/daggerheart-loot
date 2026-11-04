@@ -2,13 +2,13 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (waves 1 and 2 are on `main`; the blind review after wave 2 is remediated on `claude/57`;
-  next is batch 9a, wave 3)
-- Last agent: implementer (post-wave-2 remediation, 2026-11-04)
+- Task status: in_progress (waves 1 and 2 are on `main`; batch 7b, wave 2b, is implemented on `claude/57`; next
+  are its `polish`, `harden`, review, fix cycle and CI, then the wave 2b squash, then batch 9a)
+- Last agent: implementer (batch 7b, 2026-11-04)
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
-- Previous sha: `10a47edc` (its CI run 41870701968 green)
-- Pushed: the remediation commit; the sha is in the implementer's report.
+- Previous sha: `377d0981` (the CI run of `cd32174d` green)
+- Pushed: the batch 7b commit; the sha is in the implementer's report.
 
 ## Completed
 - Batch 1 - foundation: `9a31aede`, review fix `80872b35` (`reviews/1.md`).
@@ -484,12 +484,159 @@
   Not committed with this change: the orchestrator's later edit of `context.md` ("Phone feedback", 2026-11-04 18:46),
   which arrived in the tree during the session.
 
+- Batch 7b - one tag rule, one-box badges, a steady table head, compact roll results and the homebrew pin
+  (`plan-tags.md`, T1-T13 in the order T1-T7, T9, T13, T12, T8, T10, T11; diff base `377d0981`). New: `isCoreBook`
+  (`lib/label.ts`), `PageHead` `pin`, `TableNav`'s tab slot, the `faces` container (`OrGrid`, `RollPanel`), cases
+  95, 96 and 97 (`badgeIsOneBox`, `tableHeadHoldsStill`, `rollFitsByCount`, the `ROLL_FIT` table), the states
+  `#/search ~ relations, dialog as gm3` and `#/roll/std ~ one result`, three decision files (relations and «Core» on
+  the full card; the table head by band; the tall face only when the roll fits one line), `mocks/7b/built/head-probe.js`
+  and `shoot.js`. Batch 9a reads cases 98, 99 and 100 as its next free numbers. Acceptance:
+
+  | Line | Outcome |
+  |---|---|
+  | R1 cards: `face`, `compact` draw no relation lines, set, bonus or ladder; `full` draws all | Done: `record.test.ts` ("by card variant", ci1, q1, voa4_t3d, dossier on and off), case 95 part 3 |
+  | R1 rows: no relation line on tables, search, `/homebrew`, lists, `/s/` | Done: `tables.test.ts`, `homebrewCatalog.test.ts`, `listPage.test.ts`, `sharedListPage.test.ts`, `searchPage.test.ts`; `RowMain` has no `.rcraft` |
+  | R1 dialog keeps the own relation lines with «Хоумбрю» badges | Done: `homebrewCatalog.test.ts` (the dialog over ci1's search row, switch on and off, axe), golden `#/search ~ relations, dialog as gm3`. Deviation 1 |
+  | R2 roll result draws no «CORE» | Done: `rollResult.test.ts`, case 95 part 3 (360, 1180), `_roll_std*` goldens |
+  | R2 no «Core» on any row; dialog badge and page path keep it | Done: `tables.test.ts` (`other_starting`), `searchPage.test.ts`, list and `/s/` tests; `record.test.ts` full card `['Core']`; `_i_*` goldens unchanged |
+  | R3 another book kept | Done: `tables.test.ts` (Hope & Fear on `other_starting`), `searchPage.test.ts`, `record.test.ts` (`hi61` on `face`, `compact`), `rollResult.test.ts` |
+  | R4 homebrew tag as today | Done: `homebrewPage.test.ts`, `homebrewCatalog.test.ts` pass with the relation-line edits only |
+  | R5 item 1 (the upgrade line) | Done: case 95 part 1 at 360 and 1180, RU and EN (one rect, on its name's line, no box within 2 px, no crossing); `record.test.ts` U+00A0. Deviation 2 (the `.rel` wrapper, 3 px margin) |
+  | R5 item 3 (the tile pill) | Done: case 95 part 2 on `voa` at 360, 390, 412, 768, RU and EN, in and out of the mode; one line from 390; at 360 «ВТОРИЧНОЕ ОРУЖИЕ» / "Secondary weapon" get 135.5 px of the 139.6 / 136.0 they need and wrap inside one pill: logged (F3) |
+  | R6 measurement | Done: the T9.1 table under Verification, causes named |
+  | R6 head steady, failed at HEAD | Done: case 96 at 1180, 1050, 760, 390, RU and EN; at `377d0981` it failed 22 lines (numbers under Verification); passes now. Option A, deviation 3 |
+  | R6 `TableNav` same node; late content | Done: `tables.test.ts` "keeps the same navigation node"; `tableNav.test.ts` the tab slot. Late content: row pictures are a fixed 60 px well, tiles `aspect-ratio: 1`, the count line sits in the search row from 761 px; the filter column is per table (deviation 3) |
+  | R6 `FIRST_SCREEN` limits stay | Done: no limit or row changed; `/tables/eq_weapon` at 1180x720 is at 244 px (limit 288); case 83 is CI's |
+  | No `core` flag, one predicate, no `index` prop | Done: `git grep -n -E "hide\?\.core|core: !!EQ_TABLE" -- app` empty; `RowMain`, `TableRows` lose `index` |
+  | Print, copy, stubs unchanged | Done: `lib/print.ts`, `lib/share.ts`, `tools/build.js` no diff; `app/print` is CI's |
+  | New dialog state, golden, axe; new `why` | Done (golden in the re-seed; axe in `homebrewCatalog.test.ts`) |
+  | T8 prose, three decision files, pointers, `decisions.js` | Done: `FEATURES.md` "Rolling", "Tables and search", "Records", "Homebrew", "Chrome"; `DESIGN.md` "Layout", "Cards", "Badges"; `COVERAGE.md`; `node tools/decisions.js` 309 decisions, no problem |
+  | R7 measurement | Done: the probe at HEAD and after, under Verification |
+  | R7 the rule at 1180x720, failed at HEAD | Done: case 97 (every name of std 4 at 562, alt 4 at 645, voa at 583; std 1 and 2 whole at 665 and 666); at `377d0981` it failed 32 lines; alt crit logged (last name 744 RU, 688 EN) |
+  | R7 the owner's window 1919x980 | Done: case 97, every count whole (alt crit 820 RU, voa 844) |
+  | R7 one result at most 380 px | Done: case 97 (380 px), was 791 |
+  | R7 the row face from 601 px | Done: case 97 at 1180 (four) and 1000 (every count); `~ one source` keeps two tall faces |
+  | R7 the phone | Done: case 97 at 360 (96 px, no number); case 89 now reads 600 and 640 (row) and 720 (tall) and passed once here; `sweep.js` is CI's |
+  | R7 new state `#/roll/std ~ one result` | Done (golden in the re-seed; axe: `rollResult.test.ts`) |
+  | R7 roll `FIRST_SCREEN` offsets | Unchanged: the first result at 267 px from 761 px (probe) |
+  | `node --test tools/artwork/lib.test.mjs` | Done: 77 pass after `CARD_HEAD_SHA256` moved (the «Core» condition in the head); `renderCard` draws the full card's head, so it keeps the source badge |
+  | T13 the pin only when ready | Done: `homebrewPage.test.ts` "draws no pin signed out, loading or on a failed read" at wide and narrow, with axe; the ready case keeps it |
+  | Detector, spelling, shots, polish and harden, CI | See Verification; `polish` and `harden` (T10) and CI are the orchestrator's |
+
+- Batch 7b departures and deviations:
+  1. The T3 dialog case lives in `homebrewCatalog.test.ts` (it opens the real dialog over ci1's search row as gm3 with
+     axe), not in `recordHost.test.ts` or `pickRow.test.ts`.
+  2. R5: an inline-block badge after a U+00A0 still broke onto its own line in Chrome (EN at 360, measured), so a name
+     and its badge sit in a `span.rel` with `white-space: nowrap` (the link inside wraps as normal). A 2 px margin left
+     1.8 px to a wrapped name above it at 360; the margin is 3 px. DESIGN.md keeps "2 px from the lines around it".
+  3. HD1, option A as measured: the chips under the title from 1000 px would put `/tables/*` at 290.5 px at 1180x720
+     (limit 288), so from 1000 px the chips stay beside the title (`.tablenav` `display: contents`, the chips wrap in
+     their own box, two lines in RU up to about 1140 px) and the tabs take the next row; from 761 to 999 px both rows
+     sit under the title. The tab slot holds every group's tabs unseen (`aria-hidden`, `visibility: hidden`, spans, no
+     links), so it keeps the tallest row's height. Not built: hidden toolbar slots (a hidden control stays focusable for
+     axe in jsdom and for `d.click` in the suites), so the view switch still moves sideways where a table adds
+     «Фильтры», «Свои предметы» or the link; the filter column draws only on a table with filters. From 761 to 999 px
+     every table reserves the supplements' two tab lines (+43 px on most tables).
+  4. FEATURES "Tables and search": the 110 px head cap holds at the sweep's run widths from 1000 px, not at 1000-1140 px
+     in RU (two chip lines).
+  5. Case 97 presses a state's controls at 1180 px for its 360 px rows (`openState` `wideEnter`), because the source
+     chips live behind «Настроить» there.
+  6. The roll probe's sizes are its own (700x400, not 700x360).
+
 - Review: done, `issues/57/reviews/3.md`, verdict fix-then-continue; the one remediation
   pass is this commit. No second review is needed: the picker fix leaves the first-screen
   rows unmoved (234 at 360).
 - Plan review: not required for batch 3 (`plan.md` Status, no trigger fired).
 
 ## Verification
+- Batch 7b, 2026-11-04 (diff base `377d0981`):
+  - Failing direction: `git worktree add --detach E:/dev/dhl-7b-base 377d0981` (outside the repo, `node_modules` through a
+    junction), `npm run build:test` there, the new `tests/app/states.js` and `inventory.js` copied in, then a scratch
+    in-memory loader of `states.js` filtered to 95, 96, 97: 84 FAILED (95: the badges touch their neighbors, the
+    weapon pills split into two fragments at every width, the roll result draws «Core» and «Улучшается до»; 96: 22
+    lines, below; 97: 32 lines, the one-result width 791 px, every 1180 and 1000 row). The worktree is removed.
+  - The same loader on the task build: 95, 96, 97 and 89 pass (89's row face at 600 and 640, tall face at 720).
+  - T9.1 head probe (`node issues/57/mocks/7b/built/head-probe.js --root=E:/dev/dhl-7b-base`), as gm3 across the 19
+    tables, RU and EN; Y of each block, least .. greatest:
+
+    | Size | At HEAD | After |
+    |---|---|---|
+    | 1180x720 | chips 89 .. 136; tabs 136 .. 182.5, none on `homebrew`; search row 142 .. 238.5; rows 194 .. 290.5; chips X 16 .. 448 RU (352 EN) | chips 89, tabs 136, search row 192, rows 244, chips X 448 RU / 352 EN, every table |
+    | 1050x720 | RU: chips 136, tabs 182.5, search row 188.5 .. 238.5 (`homebrew`), rows 240.5 .. 290.5; EN as 1180 | RU: chips 89 (two lines), tabs 179.5, search row 278.5, rows 330.5; EN as 1180 |
+    | 1000x720 | (not probed) | RU as 1050; EN as 1180 |
+    | 900x720 | tabs 182.5, height 0 .. 83; search row 188.5 .. 281.5; rows 240.5 .. 333.5 | search row 281.5, rows 333.5, every table |
+    | 761x720 | (not probed) | search row 281.5; rows 333.5, but `eq_*` RU 381.5 (the toolbar wraps: five controls) |
+    | 760x720 | picker row 40 .. 41.8; search row 177 .. 179; rows 225 .. 227 | search row 177, rows 225 |
+    | 390x844, 360x640 | steady (search row 186.5, rows 234.5) | the same |
+
+    Causes: (1) `PageHead` `.page-head` is a wrapping flex row and `TableNav`'s `nav.tablenav` one item of it, so the
+    navigation sat beside the title or under it by its widest row, the seven supplement tabs (`.tabs` max-content);
+    (2) `TableNav` draws no `.tabs` where a group has one table (`homebrew` with fewer than two sources); (3) from 761 to
+    999 px the supplements' `.tabs` take two lines (83 px against 40); (4) up to 760 px `.tablenav.narrow` was a block
+    whose line box added a descent under the two-line picker (`.picker-t`, 41.8 against 40); (5) the toolbar's X:
+    «Фильтры» (mid band, a table with filters), «Свои предметы» (`eq_*` with own items) and «Ссылка на таблицу» (not
+    `homebrew`) move the view switch; (6) the filter column draws only with filters (X of the rows). Rejected
+    candidates: a scrollbar gutter (0 in every run), a scroll (0), a `TableNav` remount on a table switch (the node is
+    kept; `tables.test.ts`), late pictures and counts (fixed boxes, Y unchanged). At 761 px RU the `eq_*` toolbar wraps
+    to two lines, which case 96 does not read (760 is its mid-band neighbor): logged, not fixed (deferred).
+  - Case 96 at HEAD, the failing lines: 1180 RU and EN groups, tabs, search row, rows, chips X; 1050 RU tabs (absent on
+    `homebrew`), search row, rows; 1050 EN as 1180; 760 RU and EN search row and rows (177 .. 179, 225 .. 227).
+  - T12 roll probe (`issues/57/mocks/7b/roll-probe.cjs`, served `dist-test/` through `tests/app/lib.js`), RU, last
+    name / last action row, whole k/n; EN 0-60 px higher. The `--inject` model was not re-run here: the after numbers
+    are compared with the planner's model table in `plan-tags.md`.
+
+    | State | Size | HEAD | After |
+    |---|---|---|---|
+    | std 4 | 1919x980 | 1084 / 1231, 2/4 | 562 / 747, 4/4 |
+    | std 4 | 1180x720 | 1049 / 1196, 2/4 | 562 / 747, 2/4 (n = 45: 627 / 855) |
+    | std 4 | 1000x720 | 2695 / 2820, 0/4 | 1013 / 1133, 2/4 |
+    | std 4 | 900x720 | 2417 / 2542, 0/4 | 1013 / 1154, 2/4 |
+    | std 4 | 761x720 | 2021 / 2168, 1/4 | 1091 / 1276, 2/4 |
+    | std 4 | 700x400 | 1045 / 1274, 0/4 | 719 / 1029, 0/4 |
+    | std 2 | 1180x720 | 563 / 692, tall | 563 / 666, tall |
+    | std 2 | 1000x720 | 1386 / 1493, 0/2 | 549 / 642, 2/2 |
+    | std 1 | 1919x980 | 927 / 1009, 838 px wide | 583 / 665, 380 px, tall |
+    | std 1 | 1180x720 | 892 / 973, 791 px wide | 583 / 665, 380 px, tall |
+    | std 1 | 1000x720 | 757 / 838 | 333 / 426, row |
+    | alt 4 | 1919x980 | 1059 / 1188, 2/4 | 592 / 712, 4/4 |
+    | alt 4 | 1180x720 | 1023 / 1153, 2/4 | 645 / 787, 2/4 (EN 570 / 690, 4/4) |
+    | alt crit | 1919x980 | 1197 / 1305, 2/4 | 700 / 820, 4/4 |
+    | alt crit | 1180x720 | 1166 / 1274, 0/4 | 744 / 886, 2/4 (logged) |
+    | voa 1 | 1180x720 | 583 / 844, tall | the same |
+    | voa 1 | 900x720 | 583 / 844, tall | 333 / 563, row |
+    | std 4 | 360x640 | 1247 / 1443 | 1205 / 1401 (the relation line gone; n = 45 1286 / 1522 both) |
+
+    Differences from the model: std 4 at 1180 ends 18 px higher than modeled (562 against 580); the first result starts
+    at 267 px from 761 px as before. At 700x400 a lone or paired result is the tall face (a 668 px column), as the brief
+    says (F7).
+  - `npx vitest run` of `label`, `rowTags`, `record`, `rollResult`, `recordHost`, `pickRow`, `tables`,
+    `homebrewCatalog`, `homebrewPage`, `searchPage`, `listPage`, `sharedListPage`, `itemPage`, `badge`, `a11y`, `orGrid`,
+    `std`, `alt`, `tableNav`, `tableRows`, `roll`, `rollPage`, `homebrewEditor`, `shell`: 1195 passed.
+  - `npm run lint:untyped`, `npm run lint:typed`: no output. `npx svelte-check --threshold error`: 0 errors.
+  - `node --test tools/artwork/lib.test.mjs`: 77 pass after `CARD_HEAD_SHA256` became `e5545321...`.
+  - `node tests/app/golden.js --update --shard=n/4`, n = 1..4 (97, 98, 98, 97 states; 390 in all): shard 1 failed one
+    capture (`#/search ~ relations, dialog as gm3`: the row's name holds a no-break space after «№»); its press became
+    «Первоклассный» and `--update --only=` that state wrote it. 142 goldens moved, two new
+    (`_roll_std_one_result`, `_search_relations_dialog_as_gm3`). Read: rows lose «Core» and the relation text (the
+    `namelen` of recipe, upgrade and Frostwyrd rows drops), roll results lose «CORE», «УЛУЧШАЕТСЯ ДО» and its link and
+    another book's badge stays, four-result rolls also lose the number badges from the tree (the row face hides them; the
+    elided StaticText counts drop), the `/homebrew` lists as gm3, the list and `/s/` families. Outside the expected families: four `_i_`
+    and five `_h_` goldens of records with own relations: only the elided `StaticText` count (the `.rel` wrapper splits
+    the comma and the no-break space into their own text nodes, deviation 2); no dialog, editor or `/p/` golden moved.
+  - `node tools/decisions.js`: 309 decisions, no problem.
+  - `rtk npm run check:built`: exit 0, 264.2 kB within 265. Configured (`vite build` with placeholder
+    `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`, `node tools/bundle-budget.mjs`): 321.6 kB within 322. No
+    limit moved; `dist/` rebuilt unconfigured after.
+  - Detector, `npx impeccable detect --json --no-inline-ignores app/src`: 67 findings (67 before); in touched files only
+    the `design-system-*` advisories of `RecordCard` and `TableRows`; no new file.
+  - Spelling over the added lines: no British form.
+  - `node issues/57/mocks/7b/built/shoot.js`: 34 shots in `mocks/7b/built/` (360 and 1180, RU and EN; the head at
+    `core_item`, `wondrous`, `homebrew` at 1180).
+  - `rtk npm run check:fast`, first run: FAIL at vitest, one test: `searchPage.test.ts` "shows 300 of 305" read 240 of
+    300 rows when its 1 s `waitFor` ended under coverage (the 60-row steps); its wait is 5 s now, nothing else changed.
+  - `rtk npm run check:fast`, last: exit 0, 2092 tests with coverage (741 s), 264.2 kB within 265; gate credit armed.
+  - Not run locally (CI's): `app/states` whole (cases 83, 31 and the rest), `app/print`, `app/hues`, `app/typo`,
+    `app/contracts`, `sweep.js`, `e2e`.
 - Post-wave-2 remediation, 2026-11-04 (diff base `10a47edc`; its CI run 41870701968 green):
   - R3 baseline, `scratchpad/perf/measure.mjs` (puppeteer, 390x844, 4x CPU throttle, warm HTTP cache, the service
     worker bypassed; first contentful paint, `longtask` entries), each build served from its own `dist/`: the build
@@ -878,10 +1025,11 @@ In order:
    review of waves 1 and 2 on production (`reviews/post-wave-2.md`).
 7. Done: the post-wave-2 remediation (`cd32174d`, Completed, "Post-wave-2 remediation"; the CI credit armed on it
    2026-11-04). It edited `RecordCard`, `TableRows` and `TablesPage`, so batch 7b's dispatch re-reads them.
-8. Batch 7b (owner, 2026-11-04: the tag fix is its own batch and wave, "to start wave 3 clean"; brief `plan-tags.md`;
-   `opus`): one tag rule, one-box badges and a steady table head on `/tables/*` (T1-T11; design choice HD1, default
-   option A). Then `polish`, `harden`, the batch review, its fix cycle and CI of the tip. 7b writes its two decision
-   files and the `Supersedes` pointer itself.
+8. Done: batch 7b (Completed, "Batch 7b"; T1-T13, HD1 option A as measured, RC1 option B; three decision files and
+   their pointers). Next: `polish` and `harden` (T10) on `RecordCard`, `RowMain`, `TableRows`, `TablesPage`,
+   `TableNav`, `Badge` from the built app at 360 and 1180 px (`mocks/7b/built/` holds the shots), the batch review
+   (trigger: changed UI, `tests/app/` changed), its fix cycle and CI of the tip: cases 83, 89, 95, 96, 97, `sweep.js`
+   360 and 768 (the head cap), `app/print`.
 9. The wave 2b squash (`plan.md` section 16; `orchestrate.prompt.md` closeout step 8): after 7b's review and the green
    CI run of its tip, `ci-credit.mjs` on the tip with a clean tree, the squash onto `main`, the deploy, the merge
    back. A read-only reviewer of the wave 2b scope on production is not required by the owner's wave reviews: it is
@@ -898,7 +1046,7 @@ Facts for the dispatches:
 - `ci-credit.mjs` refuses when a writer's edits are in the tree: while a batch runs, read the run with
   `gh run watch <id> --exit-status` in the background instead. Each writer checks its predecessor's run before
   it pushes. A pushed run must have concluded before the next push.
-- Budget: 264.1 of 265 kB unconfigured, 321.4 of 322 kB configured (ceiling 350; raised by the post-wave-2 remediation). The owner raised the unconfigured
+- Budget: 264.2 of 265 kB unconfigured, 321.6 of 322 kB configured after batch 7b (ceiling 350; raised by the post-wave-2 remediation). The owner raised the unconfigured
   ceiling to 300 kB (`context.md`); the batch that first passes 270 writes it. Raises follow the standing rule.
 - The owner must keep Chrome open and signed in to Figma for batch P's burden export.
 - `FilterBar` stays until batch 9a removes it, and `BatchBar` until batch 8; a golden is re-seeded, never edited.
@@ -907,6 +1055,11 @@ Facts for the dispatches:
 - None.
 
 ## Deferred
+- `/tables/eq_*` at 761-about 800 px in RU (batch 7b probe): the toolbar's five controls wrap to two lines, so the rows
+  start at 381.5 px against 333.5 on the other tables. Case 96 reads 760 and 1050, not 761. Not fixed: the hidden
+  toolbar slots were not built (Completed, "Batch 7b", deviation 3).
+- The `--inject` model run of `roll-probe.cjs` was not repeated on the build of `377d0981`; the planner's production
+  numbers stand for the model.
 - `404.html`'s look (pw2-N1, the reviewer's deferred-scope half): it keeps the system font and draws no die mark;
   the words, the `h1` and the actions now match the app. A self-hosted font on a script-free host page needs its own
   `@font-face` path; batch 10's lock is the place to decide it.

@@ -3,7 +3,7 @@
  *
  * Pure module: no DOM, no data. */
 
-import { EQ_TABLE, groupsFor, type FilterState } from './filters.js';
+import { groupsFor, type FilterState } from './filters.js';
 import type { TableId } from './types.js';
 
 export interface HiddenTags {
@@ -13,8 +13,6 @@ export interface HiddenTags {
   tier: boolean;
   /** Every source tag: the table holds one book, or the filter picks one. */
   src: boolean;
-  /** The «Core» source tag only: an equipment table, where a row from another book keeps its name. */
-  core: boolean;
 }
 
 /* The tables that draw rows from more than one book. */
@@ -39,7 +37,6 @@ export function hiddenTags(
   return {
     kind: !groupsFor(table).includes('kind') || (kinds.length === 1 && kinds[0] !== 'equip'),
     tier: underTier || tiers.length === 1,
-    src: !MANY_BOOKS.includes(table) || srcs.length === 1,
-    core: !!EQ_TABLE[table]
+    src: !MANY_BOOKS.includes(table) || srcs.length === 1
   };
 }

@@ -26,7 +26,7 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search]
     button "Предметы" [pressed=false]
     button "Расходники" [pressed=false]
     button "Снаряжение" [pressed=false]
-    button "№ 19 Рецепт Малого ЗельяЛечения ПРЕДМЕТ CORE В качестве Хода Отд..." [namelen=176 namehash=25d8e83b]
+    button "№ 19 Рецепт Малого ЗельяЛечения ПРЕДМЕТ В качестве Хода Отдыха в..." [namelen=136 namehash=1e9befcf]
     ... button x3 of 7 same-shape siblings elided
     button "№ 29 Фляга Путника ПРЕДМЕТ VAULT OF AGES Стоимость Призыва: 1 Эт..." [namelen=243 namehash=c1ceb0f7]
     button "№ 14 Мешок Собирателя ПРЕДМЕТ ВОЮЮЩИЕ НОРЫ Вы получаете следующи..." [namelen=268 namehash=407bdce6]
@@ -58,11 +58,11 @@ daggerheart.com
 Условия использования
 Установить как приложение
 № 14Мешок СобирателяПредметВоюющие НорыВы получаете следующий Хо... [namelen=263 namehash=aa989887]
-№ 19Зелье ЛеченияРасходникCoreИзлечите 1d4+1 Ран.Получается из: ... [namelen=120 namehash=8323afd0]
-№ 19Рецепт Малого Зелья ЛеченияПредметCoreВ качестве Хода Отдыха... [namelen=172 namehash=f0170c31]
+№ 19Зелье ЛеченияРасходникИзлечите 1d4+1 Ран.
+№ 19Рецепт Малого Зелья ЛеченияПредметВ качестве Хода Отдыха вы ... [namelen=134 namehash=c4eb43bf]
 № 29Фляга ПутникаПредметVault of AgesСтоимость Призыва: 1Эта фля... [namelen=238 namehash=d7278096]
-№ 43Большое Зелье ЛеченияРасходникCoreИзлечите 1d4+2 Ран.Получае... [namelen=85 namehash=6b5e02db]
-№ 7Малое Зелье ЛеченияРасходникCoreИзлечите 1d4 Ран.Получается и... [namelen=123 namehash=7c44dabd]
+№ 43Большое Зелье ЛеченияРасходникИзлечите 1d4+2 Ран.
+№ 7Малое Зелье ЛеченияРасходникИзлечите 1d4 Ран.
 
 ## en :: tree
 RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search]
@@ -88,7 +88,7 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search]
     button "Items" [pressed=false]
     button "Consumables" [pressed=false]
     button "Equipment" [pressed=false]
-    button "No. 19 Minor Health Potion Recipe ITEM CORE As a downtime move, ..." [namelen=156 namehash=f37d3884]
+    button "No. 19 Minor Health Potion Recipe ITEM As a downtime move, you c..." [namelen=118 namehash=1b7c7a35]
     ... button x3 of 7 same-shape siblings elided
     button "No. 29 Traveler's Flask ITEM VAULT OF AGES Recall Cost: 1 This f..." [namelen=222 namehash=831eff49]
     button "No. 14 Harvesting Sack ITEM WARRIN' WARRENS Gain the following d..." [namelen=246 namehash=6032c9d7]
@@ -108,11 +108,11 @@ Install as an app
 Items
 LootDaggerheart
 No. 14Harvesting SackItemWarrin' WarrensGain the following downt... [namelen=241 namehash=ee075d5a]
-No. 19Health PotionConsumableCoreClear 1d4+1 HP.Made from: Minor... [namelen=111 namehash=e1ad9d96]
-No. 19Minor Health Potion RecipeItemCoreAs a downtime move, you ... [namelen=151 namehash=71ad543c]
+No. 19Health PotionConsumableClear 1d4+1 HP.
+No. 19Minor Health Potion RecipeItemAs a downtime move, you can ... [namelen=115 namehash=bcab7c8b]
 No. 29Traveler's FlaskItemVault of AgesRecall Cost: 1This flask ... [namelen=217 namehash=aecf623a]
-No. 43Major Health PotionConsumableCoreClear 1d4+2 HP.Made from:... [namelen=78 namehash=96b95a49]
-No. 7Minor Health PotionConsumableCoreClear 1d4 HP.Made from: Mi... [namelen=115 namehash=f4b96bc4]
+No. 43Major Health PotionConsumableClear 1d4+2 HP.
+No. 7Minor Health PotionConsumableClear 1d4 HP.
 Open on start
 Privacy
 RU

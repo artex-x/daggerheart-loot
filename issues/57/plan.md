@@ -68,6 +68,8 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
   Section 10 is now collapsed to D1-D13 and "Impeccable" (see the fold line below).
 - Batch 7b (owner's phone and desktop feedback, 2026-11-04): `plan-tags.md` is the brief (one tag rule, one-box
   badges, a steady table head, compact roll results - item 6, T12, folded in the same day); batch 7b runs after the post-wave-2 remediation, then wave 2b, then 9a on a clean `main`.
+  Implemented 2026-11-04 (`handoff.md`, Completed, "Batch 7b"): HD1 option A as measured (chips beside the title
+  from 1000 px, the tab slot), RC1 option B; cases 95-97 taken, 9a reads 98-100.
 - Fold of the placed items (2026-11-04, done): the open "Placed items" of `plan-4.md`
   to `plan-7.md` are in sections 7 and 8 (batches 8, 9a, 9b, P and 10); the briefs keep their
   text. Section 10 is collapsed to its pointer, D1-D13 and "Impeccable".

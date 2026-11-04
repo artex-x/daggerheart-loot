@@ -32,7 +32,7 @@ RootWebArea "Обычные правила - Генератор лута Daggerh
     heading "Бросок 1" [level=2]
     button "Настроить" [expanded=true]
     button "Ещё" [expanded=false haspopup=menu]
-    ... StaticText x17 of 21 same-shape siblings elided
+    ... StaticText x14 of 18 same-shape siblings elided
     button "На единицу меньше" [disabled=true]
     textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
     button "На единицу больше"
@@ -48,7 +48,6 @@ RootWebArea "Обычные правила - Генератор лута Daggerh
     ... button x5 of 9 same-shape siblings elided
     button "Ещё" [expanded=false haspopup=menu]
     link "Зелье Быстрого Шага" [description=Открыть страницу url=/i/cc1]
-    link "Большое Зелье Быстрого Шага" [url=/i/cc25]
     button "В список" [expanded=false]
     button "Ещё" [expanded=false haspopup=menu]
     link "Шипы" [description=Открыть страницу url=/i/hi1]
@@ -80,7 +79,6 @@ Hope & Fear
 RU
 daggerheart.com
 Альтернативные таблицы
-Большое Зелье Быстрого Шага
 Бросок
 В список
 Войти
@@ -137,7 +135,7 @@ RootWebArea "Standard rules - Daggerheart Loot Generator" [url=/en/roll/std]
     heading "Roll 1" [level=2]
     button "Set up" [expanded=true]
     button "More" [expanded=false haspopup=menu]
-    ... StaticText x17 of 21 same-shape siblings elided
+    ... StaticText x14 of 18 same-shape siblings elided
     button "One lower" [disabled=true]
     textbox "Roll result" [value=1 multiline=false readonly=false required=false]
     button "One higher"
@@ -153,7 +151,6 @@ RootWebArea "Standard rules - Daggerheart Loot Generator" [url=/en/roll/std]
     ... button x5 of 9 same-shape siblings elided
     button "More" [expanded=false haspopup=menu]
     link "Stride Potion" [description=Open page url=/i/en/cc1]
-    link "Major Stride Potion" [url=/i/en/cc25]
     button "Add to list" [expanded=false]
     button "More" [expanded=false haspopup=menu]
     link "Caltrops" [description=Open page url=/i/en/hi1]
@@ -189,7 +186,6 @@ Hope & Fear
 Install as an app
 Items
 LootDaggerheart
-Major Stride Potion
 More
 One higher
 One lower

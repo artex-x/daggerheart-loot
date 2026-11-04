@@ -26,7 +26,7 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/gm-token-1?v=<v>]
     button "Фильтры" [expanded=false]
     checkbox "Выбрать все (10)" [checked=false]
     checkbox "Первоклассный Спальный Мешок" [checked=false]
-    button "1 Первоклассный Спальный Мешок ×2 · 150 зол. ПРЕДМЕТ CORE Во вре..." [namelen=107 namehash=917be5d4]
+    button "1 Первоклассный Спальный Мешок ×2 · 150 зол. ПРЕДМЕТ Во время от..." [namelen=102 namehash=5f098004]
     ... checkbox x7 of 11 same-shape siblings elided
     ... button x7 of 11 same-shape siblings elided
     StaticText "ТОЛЬКО ДЛЯ МАСТЕРА"
@@ -48,8 +48,8 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/gm-token-1?v=<v>]
 
 ## ru :: controls
 11Брошюра по Истории Искусства, Только для мастераПредметDread G... [namelen=643 namehash=60500944]
-1Зелье Быстрого Шага×5 · 20 зол.РасходникCoreВы получаете бонус ... [namelen=141 namehash=1384d718]
-1Первоклассный Спальный Мешок×2 · 150 зол.ПредметCoreВо время от... [namelen=102 namehash=99116bf3]
+1Зелье Быстрого Шага×5 · 20 зол.РасходникВы получаете бонус +1 к... [namelen=95 namehash=4e19ef8d]
+1Первоклассный Спальный Мешок×2 · 150 зол.ПредметВо время отдыха... [namelen=98 namehash=b507a4b6]
 3Колода СумерекПредметАртефактVault of AgesСтоимость Призыва: 2Э... [namelen=848 namehash=0d8f84be]
 51Гарпун Левиафана99999 зол.Основное оружиеУникальноеWondrous En... [namelen=384 namehash=f8da7a98]
 EN
@@ -67,14 +67,14 @@ daggerheart.com
 Конфиденциальность
 ЛутDaggerheart
 Палаш
-ПалашОсновное оружиеCoreРанг 1 · Физическое · Проворность · Впло... [namelen=118 namehash=5597138b]
+ПалашОсновное оружиеРанг 1 · Физическое · Проворность · Вплотную... [namelen=114 namehash=e80c7800]
 Первоклассный Спальный Мешок
 Поиск
 Скипетр
-СкипетрОсновное оружиеCoreРанг 1 · Магическое · Влияние · Далеко... [namelen=190 namehash=de098217]
+СкипетрОсновное оружиеРанг 1 · Магическое · Влияние · Далеко · d... [namelen=186 namehash=9aee2e9c]
 Сохранить себе
 Стеганый Доспех
-Стеганый ДоспехБроняCoreРанг 1 · Пороги 5/11 · Броня 3Гибкое: +1... [namelen=76 namehash=f3c5334f]
+Стеганый ДоспехБроняРанг 1 · Пороги 5/11 · Броня 3Гибкое: +1 к У... [namelen=72 namehash=ad6956c1]
 Таблицы
 Топор Тлеющих Углей
 Топор Тлеющих Углей800 зол.Основное оружиеУникальноеМастерская О... [namelen=192 namehash=b0fae9a0]
@@ -106,7 +106,7 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/gm-token-1?v=<v>]
     button "Filters" [expanded=false]
     checkbox "Select all (10)" [checked=false]
     checkbox "Premium Bedroll" [checked=false]
-    button "1 Premium Bedroll ×2 · 150 gp ITEM CORE During downtime, you aut..." [namelen=90 namehash=fbf74184]
+    button "1 Premium Bedroll ×2 · 150 gp ITEM During downtime, you automati..." [namelen=85 namehash=ab96007a]
     ... checkbox x7 of 11 same-shape siblings elided
     ... button x7 of 11 same-shape siblings elided
     StaticText "GM ONLY"
@@ -128,13 +128,13 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/gm-token-1?v=<v>]
 
 ## en :: controls
 11Art History Booklet, GM onlyItemDread GM ToolboxThis is a fine... [namelen=554 namehash=e054fc70]
-1Premium Bedroll×2 · 150 gpItemCoreDuring downtime, you automati... [namelen=85 namehash=bf5d51a3]
-1Stride Potion×5 · 20 gpConsumableCoreYou gain a +1 bonus to you... [namelen=116 namehash=9b1d71ae]
+1Premium Bedroll×2 · 150 gpItemDuring downtime, you automaticall... [namelen=81 namehash=00225364]
+1Stride Potion×5 · 20 gpConsumableYou gain a +1 bonus to your ne... [namelen=80 namehash=7d8891e6]
 3Twilight DeckItemArtifactVault of AgesRecall Cost: 2This deck e... [namelen=871 namehash=aad79704]
 51Leviathan Harpoon99999 gpPrimary weaponUniqueWondrous Environm... [namelen=364 namehash=9219003b]
 Art History Booklet
 Broadsword
-BroadswordPrimary weaponCoreTier 1 · Physical · Agility · Melee ... [namelen=113 namehash=26515266]
+BroadswordPrimary weaponTier 1 · Physical · Agility · Melee · d8... [namelen=109 namehash=926e89b9]
 Casting Dagger
 Casting DaggerPrimary weaponHope & FearTier 1 · Magic · Instinct... [namelen=176 namehash=08dad18c]
 EN
@@ -142,7 +142,7 @@ Ember Axe
 Ember Axe800 gpPrimary weaponUniqueAlder Workshop (HB)Tier 2 · M... [namelen=165 namehash=770926f6]
 Filters
 Gambeson Armor
-Gambeson ArmorArmorCoreTier 1 · Thresholds 5/11 · Armor 3Flexibl... [namelen=80 namehash=460b51ea]
+Gambeson ArmorArmorTier 1 · Thresholds 5/11 · Armor 3Flexible: +... [namelen=76 namehash=55bf2d62]
 Install as an app
 Leviathan Harpoon
 LootDaggerheart
@@ -152,7 +152,7 @@ RU
 Roll
 Save to my lists
 Scepter
-ScepterPrimary weaponCoreTier 1 · Magic · Presence · Far · d6 ma... [namelen=160 namehash=9977457f]
+ScepterPrimary weaponTier 1 · Magic · Presence · Far · d6 mag · ... [namelen=156 namehash=5cf0702e]
 Search
 Sign in
 Skip to content

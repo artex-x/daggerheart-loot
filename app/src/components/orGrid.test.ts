@@ -76,3 +76,17 @@ describe('a cell keyed on the item it holds', () => {
     expect(container.querySelector('img[data-id="a"]')).toBe(before);
   });
 });
+
+describe('the faces container', () => {
+  it('is named for one and two cards, and not for four, which draw row faces', async () => {
+    const items = [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }];
+    const { container, rerender } = render(OrGrid, { or: 'или', items, card });
+    const named = (): boolean | undefined =>
+      container.querySelector('.orwrap')?.classList.contains('faces');
+    expect(named()).toBe(false);
+    await rerender({ or: 'или', items: items.slice(0, 2), card });
+    expect(named()).toBe(true);
+    await rerender({ or: 'или', items: items.slice(0, 1), card });
+    expect(named()).toBe(true);
+  });
+});

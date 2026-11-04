@@ -150,6 +150,28 @@ describe('the head', () => {
   });
 });
 
+describe('the tags of a found row', () => {
+  it('draws no Core tag on a Core row, and keeps another book', async () => {
+    const { container } = render(App, { env: at() });
+    await type('Кольцо');
+    await waitFor(() => {
+      expect(rowIds()).toContain('ci1');
+    });
+    const tags = (id: string): string[] =>
+      [
+        ...(document.querySelector(`[data-row="${id}"]`)?.querySelectorAll('.badge.src') ?? [])
+      ].map((b) => b.textContent.trim());
+    expect(tags('ci1')).toEqual([]);
+    await userEvent.clear(box());
+    await type('H&F');
+    await waitFor(() => {
+      expect(rowIds()).toContain('hi1');
+    });
+    expect(tags('hi1')).toEqual(['Hope & Fear']);
+    await expectNoA11yViolations(container);
+  });
+});
+
 describe('the start state', () => {
   it('draws a title, one sentence and three examples, with no instruction sentence', () => {
     render(App, { env: at() });
@@ -400,10 +422,14 @@ describe('the cap and the selection mode', () => {
     await fireEvent.input(box(), { target: { value: 'Много' } });
     await tick();
     expect(count()).toBe('Показано 300 из 305');
-    /* A long result draws its first 60 rows first (`TableRows.svelte`). */
-    await waitFor(() => {
-      expect(container.querySelectorAll('[data-row]')).toHaveLength(300);
-    });
+    /* A long result draws its first 60 rows first (`TableRows.svelte`); under coverage
+       on a loaded host the last steps took more than the default 1 s (240 of 300). */
+    await waitFor(
+      () => {
+        expect(container.querySelectorAll('[data-row]')).toHaveLength(300);
+      },
+      { timeout: 5000 }
+    );
     /* One event each: a typed press re-renders 300 rows several times under coverage. */
     await fireEvent.click(screen.getByRole('button', { name: ru.selectMode }));
     const all = screen.getByRole('checkbox', { name: 'Выбрать все' });

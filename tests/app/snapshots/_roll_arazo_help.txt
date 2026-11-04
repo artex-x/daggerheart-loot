@@ -26,7 +26,7 @@ RootWebArea "Arazo's Artifacts - Генератор лута Daggerheart" [url=/
     button "Об этой книге" [expanded=true]
     StaticText "Введите результат броска или получите случайную позицию."
     StaticText "В таблице 78 позиций - 10 предметов и 68 единиц оружия и брони, ..." [namelen=157 namehash=cce2a6c7]
-    ... StaticText x20 of 24 same-shape siblings elided
+    ... StaticText x18 of 22 same-shape siblings elided
     link "The Guide to Arazo's Artifacts" [url=https://www.drivethrurpg.com/en/product/581640/the-guide-to-arazo-s-artifacts]
     button "Бросить 1-78"
     button "На единицу меньше" [disabled=true]
@@ -37,11 +37,8 @@ RootWebArea "Arazo's Artifacts - Генератор лута Daggerheart" [url=/
       StaticText "Нестареющее Око Зверя"
     button "Открыть карточку"
     link "Нестареющее Око Зверя" [description=Открыть страницу url=/i/aa1]
-    StaticText "РАНГ"
-    StaticText "1"
-    button "Улучшенное Нестареющее Око Зверя" [description=Улучшенное Нестареющее Око Зверя]
-    button "Продвинутое Нестареющее Око Зверя" [description=Продвинутое Нестареющее Око Зверя]
-    button "Легендарное Нестареющее Око Зверя" [description=Легендарное Нестареющее Око Зверя]
+    StaticText "потратить Надежду"
+    StaticText ", чтобы цель отметила дополнительную Рану. Если вы это делаете, ..." [namelen=130 namehash=5ae96141]
     button "В список" [expanded=false]
     button "Поделиться"
     button "Ещё" [expanded=false haspopup=menu]
@@ -67,7 +64,6 @@ daggerheart.com
 Ещё
 К содержимому
 Конфиденциальность
-Легендарное Нестареющее Око Зверя
 ЛутDaggerheart
 На единицу больше
 На единицу меньше
@@ -77,10 +73,8 @@ daggerheart.com
 Открыть карточку
 Поделиться
 Поиск
-Продвинутое Нестареющее Око Зверя
 Результат броска
 Таблицы
-Улучшенное Нестареющее Око Зверя
 Условия использования
 Установить как приложение
 
@@ -108,7 +102,7 @@ RootWebArea "Arazo's Artifacts - Daggerheart Loot Generator" [url=/en/roll/arazo
     button "About this book" [expanded=true]
     StaticText "Enter your roll result, or pick a random entry."
     StaticText "The table holds 78 entries - 10 items and 68 weapons and armor, ..." [namelen=154 namehash=80f65c5e]
-    ... StaticText x20 of 24 same-shape siblings elided
+    ... StaticText x18 of 22 same-shape siblings elided
     link "The Guide to Arazo's Artifacts" [url=https://www.drivethrurpg.com/en/product/581640/the-guide-to-arazo-s-artifacts]
     button "Roll 1-78"
     button "One lower" [disabled=true]
@@ -119,11 +113,8 @@ RootWebArea "Arazo's Artifacts - Daggerheart Loot Generator" [url=/en/roll/arazo
       StaticText "The Ageless Eye of the Beast"
     button "Open card"
     link "The Ageless Eye of the Beast" [description=Open page url=/i/en/aa1]
-    StaticText "TIER"
-    StaticText "1"
-    button "Improved Ageless Eye of the Beast" [description=Improved Ageless Eye of the Beast]
-    button "Advanced Ageless Eye of the Beast" [description=Advanced Ageless Eye of the Beast]
-    button "Legendary Ageless Eye of the Beast" [description=Legendary Ageless Eye of the Beast]
+    StaticText "spend a Hope"
+    StaticText " to cause the target to mark an additional HP. If you do so, unt..." [namelen=135 namehash=f28e27a4]
     button "Add to list" [expanded=false]
     button "Share"
     button "More" [expanded=false haspopup=menu]
@@ -137,13 +128,10 @@ RootWebArea "Arazo's Artifacts - Daggerheart Loot Generator" [url=/en/roll/arazo
 ## en :: controls
 ?About this book
 Add to list
-Advanced Ageless Eye of the Beast
 Alternate tables
 Arazo's Artifacts
 EN
-Improved Ageless Eye of the Beast
 Install as an app
-Legendary Ageless Eye of the Beast
 LootDaggerheart
 More
 One higher

@@ -14,6 +14,7 @@ import {
   badgeKind,
   cardBadges,
   foldOwn,
+  isCoreBook,
   kindGlyph,
   printSrc,
   relName,
@@ -74,6 +75,13 @@ describe('the book a record comes from', () => {
     expect(srcLabel(c, 'ru')).toBe('Великородное');
     expect(srcLabel(c, 'en')).toBe('Highborne');
     expect(srcLabel(rec({ src: 'community' }), 'ru')).toBe('Предметы сообществ');
+  });
+
+  it('marks only the Core book as the default book', () => {
+    expect(isCoreBook(rec({ src: 'core' }))).toBe(true);
+    expect(isCoreBook(rec({ src: 'core', frame: 'beast_feast' }))).toBe(false);
+    expect(isCoreBook(rec({ src: 'hnf' }))).toBe(false);
+    expect(isCoreBook(rec({ src: 'homebrew' }))).toBe(false);
   });
 
   it('falls back to the raw source rather than to nothing', () => {

@@ -151,6 +151,12 @@ export function printSrc(it: Record_, lang: Lang): string {
     : srcLabel(it, lang);
 }
 
+/** Whether `srcLabel` gives the record «Core»: the default book, unmarked on a compact surface
+ *  (docs/specs/FEATURES.md, "Records"). */
+export function isCoreBook(it: Record_): boolean {
+  return it.src === 'core' && !it.frame && !it.realm;
+}
+
 export function srcLabel(it: Record_, lang: Lang): string {
   const t = dict(lang);
   if (it.frame) return frameName(it.frame, lang);

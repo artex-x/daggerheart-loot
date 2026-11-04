@@ -20,7 +20,6 @@ function rows(over: { whole?: boolean; entries?: typeof weapons } = {}) {
   return render(TableRows, {
     entries: over.entries ?? weapons,
     view: 'list',
-    index,
     lang: 'ru',
     selected: () => false,
     artBroken: () => false,

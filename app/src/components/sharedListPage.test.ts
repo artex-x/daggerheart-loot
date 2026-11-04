@@ -199,6 +199,28 @@ describe('heading and sub', () => {
   });
 });
 
+describe('the tags of a row', () => {
+  it('draws no relation line and no Core tag: the dialog holds them', async () => {
+    const CRAFTED: Loot = {
+      ...LOOT,
+      items: {
+        ...LOOT.items,
+        core_item: (LOOT.items['core_item'] ?? []).map((r) => ({ ...r, craft: ['cc1'] }))
+      }
+    };
+    const { container } = await openShared(NOTED_GM, 'Тайник', { data: fakeData(CRAFTED) });
+    const t = dict('ru');
+    const rows = [...container.querySelectorAll('[data-row]')];
+    expect(rows.length).toBeGreaterThan(0);
+    for (const r of rows) {
+      expect(r.textContent).not.toContain(t.craftInto);
+      expect(r.textContent).not.toContain(t.craftFrom);
+      expect(r.querySelector('.badge.src')).toBeNull();
+    }
+    await expectNoA11yViolations(container);
+  });
+});
+
 describe('with a row ticked', () => {
   it('shows one add-to-list control, in the bar, and the save button above', async () => {
     const { container } = await openShared(NOTED_GM, 'Тайник');

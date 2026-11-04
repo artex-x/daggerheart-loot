@@ -65,6 +65,24 @@
       })
     );
 
+  /* The captions of a group's tabs, or none: what the unseen copies in the tab slot draw. */
+  function tabLabels(g: TableGroup): string[] {
+    if (g.id === 'hb' && sources.length > 1) {
+      const fold = foldRows(
+        sources,
+        srcOpen,
+        CHIP_FOLD_AT,
+        CHIP_FOLD_SHOWN,
+        (s) => s.key === source
+      );
+      const rows = fold.rows.map((s) => s.label);
+      return sources.length > CHIP_FOLD_AT
+        ? [...rows, srcOpen ? t.relLess : t.andMore.replace('%n', String(fold.more))]
+        : rows;
+    }
+    return g.subs.length > 1 ? g.subs.map((sub) => t[navSubLabel(sub)]) : [];
+  }
+
   const picker = $derived(pickerLabel(table, t));
   const parts = $derived(pickerParts(table, t));
 </script>
@@ -114,7 +132,13 @@
   {/if}
 {/snippet}
 
-<nav class="tablenav" class:narrow={app.band === 'narrow'} aria-label={t.tables}>
+<nav
+  class="tablenav"
+  class:narrow={app.band === 'narrow'}
+  class:inhead={app.band === 'wide'}
+  class:below={app.band === 'mid'}
+  aria-label={t.tables}
+>
   {#if app.band === 'narrow'}
     <button
       bind:this={pickerButton}
@@ -159,13 +183,70 @@
         <Chip label={t[g.label]} on={g.id === group.id} href={app.href(tablesHash(g.top))} />
       {/each}
     </div>
-    {@render tabs(group, null)}
+    <!-- The slot holds every group's tabs unseen, so it takes the tallest row's height on
+         every table, and a table with fewer tabs or none starts its rows where the others
+         do (DESIGN.md, "Layout", "A steady head"). -->
+    <div class="tabslot">
+      {@render tabs(group, null)}
+      <div class="ghosts" aria-hidden="true">
+        {#each groups as g (g.id)}
+          {@const labels = tabLabels(g)}
+          {#if labels.length}
+            <div class="tabs">
+              {#each labels as label, i (i)}<span class="tab">{label}</span>{/each}
+            </div>
+          {/if}
+        {/each}
+      </div>
+    </div>
   {/if}
 </nav>
 
 <style>
   .tablenav {
     min-width: 0;
+  }
+
+  /* The head's geometry follows the band, never the table: from 1000 px the chips sit
+     beside the title and wrap inside their own box, and the tabs take the next row at the
+     page's width; from 761 px to 999 px the navigation takes its own row under the title
+     (DESIGN.md, "Layout", "A steady head"). */
+  .tablenav.inhead {
+    display: contents;
+  }
+
+  .inhead .groups {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .inhead .tabslot,
+  .tablenav.below {
+    flex: 1 0 100%;
+  }
+
+  /* The head row's own gap stands in for the tabs' top margin. */
+  .inhead .tabs {
+    margin-top: 0;
+  }
+
+  .tabslot {
+    display: grid;
+  }
+
+  .tabslot > :global(*),
+  .ghosts > .tabs {
+    grid-area: 1 / 1;
+  }
+
+  /* The current group's tabs keep their own height and underline inside the slot. */
+  .tabslot > .tabs {
+    align-self: start;
+  }
+
+  .ghosts {
+    display: grid;
+    visibility: hidden;
   }
 
   .groups {
@@ -242,7 +323,10 @@
     font-weight: 600;
   }
 
+  /* A flex box, not a line box: a two-line picker would add the line's descent under it. */
   .narrow {
+    display: flex;
+    align-items: center;
     min-width: 0;
     flex: 1 1 auto;
   }

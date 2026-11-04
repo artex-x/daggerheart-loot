@@ -32,12 +32,16 @@ across.
   controls and the settings, and the results line beside it holds «Бросок N» and
   the copy button. «Бросок N» reads the two faces on the alternate tables, the
   Hope die first; the line carries no instruction.
-- A result is the card face, `RecordCard variant="face"`: from 601 px the picture
-  is 4:3 and fades into the plate, with the roll number over its top right; up to
-  600 px it is 96 px beside the text and the number is not drawn (the results line
-  names the roll). Under the plate sits a row of «В список», «Поделиться» and
-  «Ещё», which holds the copies. From 601 px one result is at most 380 px wide; up
-  to 600 px it takes the line. A roll is page memory, so a sign-in from the row's
+- A result is the card face, `RecordCard variant="face"`. A result is the tall face -
+  the picture 4:3 fading into the plate, the roll number over its top right - only
+  while the whole roll sits on one line: one result, at most 380 px wide, or two side
+  by side, in a results column of at least 641 px. Otherwise each result is the row
+  face: the picture 96 px beside the text, no number (the results line names the
+  roll). Up to 600 px that is every roll; from 761 px a four-result roll and every
+  roll in a results column under 641 px (owner, 2026-11-04). A result draws no
+  relation line, no set line and no tier ladder, and no «Core» badge; another book
+  keeps its badge. Under the plate sits a row of «В список», «Поделиться» and
+  «Ещё», which holds the copies. A roll is page memory, so a sign-in from the row's
   «В список» returns to the record's own page, with the menu open there.
 - The five dice of Core rules are plain buttons, none gold and none lit: a die is
   an action, not a choice. Each names the rarities it covers: up to 760 px two
@@ -77,8 +81,8 @@ across.
   the short wording is the fix. The catalog head is measured, not the old
   strip: below 761 px the picker row is at most 64 px tall; from 761 px the
   group chips and the tabs together are at most 140 px below 1000 px (the seven
-  supplement tabs take two lines: 130 px at 768, 2026-10-30) and 110 px from
-  1000 px (`tests/app/sweep.js`,
+  supplement tabs take two lines: 130 px at 768, 2026-10-30) and 110 px at the
+  run widths from 1000 px (`tests/app/sweep.js`,
   at 500, 600, 700, 768 and the run widths, as gm2, the seventh group chip
   drawn).
 - The nine roll sections share the header's roll job «Бросок» / "Roll" and draw
@@ -169,7 +173,13 @@ across.
   starts with «Закрыть», which folds it and returns the focus to «Ещё». The roll pages'
   help item and panel up to 760 px behave the same way. From
   761 px the head is the `h1`, the labeled pin, «Об этих данных» and the two
-  navigation levels. The search row follows: the search first (placeholder
+  navigation levels. The head draws the same rows on every table of a band: the
+  title row, the group chips, the second-level tabs, the toolbar and the list start
+  at the same place (owner, 2026-11-04). From 1000 px the group chips sit beside the
+  title and wrap inside their own box, and the tabs take the next row; from 761 px
+  to 999 px both levels take their own rows under the title. The tab row keeps the
+  height of the tallest group's tabs on every table, a table with no tabs included
+  (`docs/decisions/2026-11-04-the-table-head-is-set-by-the-band-not-the-table.md`). The search row follows: the search first (placeholder
   «Поиск» / "Search", named by the long `searchPh`, at least 140 px at 360),
   «Фильтры» below 1000 px (plain at no pick, «Фильтры · N» lit while a value
   is picked: a gold label on a 45% gold border), from 761 px the view switch,
@@ -205,8 +215,8 @@ across.
   (`rowTags.ts`): the kind tag on a one-kind table or under one picked kind,
   the tier in the stat line and the tier tag under a tier heading or one
   picked tier, the source tag on a one-book table or under one picked book,
-  and the «Core» source tag on an equipment table (a row from another book
-  keeps its name). A ticked row or tile is lit and neutral: the `--surface2`
+  and the «Core» source tag on every row: the default book is unmarked; a row
+  from another book keeps its name. A row draws no relation line. A ticked row or tile is lit and neutral: the `--surface2`
   ground, the `--muted2` border and the checked box, never gold. A search
   marks the matched words of a name with `<mark>`, on a row and on a grid
   tile (`Marked`): a lit ground and an underline, not color alone; a stem
@@ -214,8 +224,8 @@ across.
 - The grid draws two columns up to 600 px. A tile is the art, the name and a
   second line: the stat line for equipment, else the other-language name
   (English first in English). Its roll number is a neutral badge; a table of
-  more than one kind labels the tile with a kind badge, and a one-kind table
-  draws none.
+  more than one kind labels the tile with a kind badge, one pill: a long label
+  wraps inside its border; a one-kind table draws none.
 - The empty state is a dashed plate with the kind glyph, «Ничего не найдено» /
   "Nothing found", one cause sentence that names the query, the chosen values
   or both («Нет совпадений с «%q» среди фильтров: %v.»), and the primary
@@ -1579,8 +1589,13 @@ address kept, and no add-to-list control is drawn.
   and the ladder draw every catalog record, the record itself and three
   homebrew records - catalog records in their order, then homebrew ones by
   name, the ladder in tier order - then «и ещё N» (`aria-expanded`), which
-  opens the rest and reads «свернуть»; a card opens closed. A row draws its
-  catalog names, the first homebrew name and «и ещё N» as text. Copied text
+  opens the rest and reads «свернуть»; a card opens closed. Only the full record
+  card - the record page, `/h/`, the dialog and the editor's preview - draws the
+  relation lines, the set line with its bonus and the tier ladder; a roll result, a
+  list's roll result, a row and a tile draw none (owner, 2026-11-04,
+  `docs/decisions/2026-11-04-relations-and-the-core-tag-draw-on-the-full-card-only.md`).
+  The dialog draws the source badge, «Core» included; a roll result draws no «Core»
+  badge. A badge stays on its name's line. Copied text
   writes one «Улучшается до» block per catalog target and per homebrew
   target up to three, each homebrew name with «(HB)», then one bodiless
   «Улучшается до: и ещё N» / "Upgrades to: and N more" line for the rest, so
@@ -1648,8 +1663,10 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   предмет» with the plus icon, then the lead line (search finds the items with
   the catalog, they appear in the tables and go into lists). Signed out, while
   the items load and on a failed read the head draws the heading «Мои предметы»
-  at every width, with no tabs and no import: up to 760 px the heading is
-  visible there, and from 761 px the pin and the lead line stay. The pin pins
+  at every width, with no tabs, no import and no pin: up to 760 px the heading is
+  visible there, and from 761 px the lead line stays. The pin draws only when the
+  page is ready, at every width: a launch page that a signed-out visitor cannot use
+  would end at a sign-in wall at every launch (owner, 2026-11-04). The pin pins
   `#/homebrew` from any tab, one pin for the page (pressed: «Открывается при
   запуске», the toast «Приложение будет открываться на этом разделе»; a second
   press unpins it). The page has no help panel (owner, Q6.1, 2026-10-29): each
@@ -2618,7 +2635,8 @@ right, so the tab order and the reading order agree
 
 - Language switch, the three jobs, skip link, starting-section pin (eleven sections
   pin as their own hash; `#/tables` pins as whichever table is on screen;
-  «Мои предметы» pins `#/homebrew` from any tab; never a record or a list).
+  «Мои предметы» pins `#/homebrew` from any tab once its items are read; never a
+  record or a list).
 - Focusing the skip link moves focus straight to `#main` and never touches
   the address bar - the browser's own fragment jump would add `#main` to the
   address and a history entry. While

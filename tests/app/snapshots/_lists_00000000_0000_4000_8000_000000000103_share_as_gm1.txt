@@ -36,7 +36,7 @@ RootWebArea "Трофеи - Генератор лута Daggerheart" [url=/lists
     generic ""
     checkbox "Палаш" [checked=false]
     spinbutton "Позиция в списке" [value=1 valuetext=1 required=false valuemin=1 valuemax=2]
-    button "Палаш ОСНОВНОЕ ОРУЖИЕ CORE Ранг 1 · Физическое · Проворность · В..." [namelen=122 namehash=96f30456]
+    button "Палаш ОСНОВНОЕ ОРУЖИЕ Ранг 1 · Физическое · Проворность · Вплотн..." [namelen=117 namehash=bd6b3505]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
@@ -44,7 +44,7 @@ RootWebArea "Трофеи - Генератор лута Daggerheart" [url=/lists
     button "Убрать из списка" [description=Убрать из списка]
     checkbox "Первоклассный Спальный Мешок" [checked=false]
     spinbutton "Позиция в списке" [value=2 valuetext=2 required=false valuemin=1 valuemax=2]
-    button "Первоклассный Спальный Мешок ПРЕДМЕТ CORE Во время отдыха вы авт..." [namelen=91 namehash=05be9147]
+    button "Первоклассный Спальный Мешок ПРЕДМЕТ Во время отдыха вы автомати..." [namelen=86 namehash=8341b15c]
     StaticText "КОЛ-ВО"
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     StaticText "ЦЕНА"
@@ -83,9 +83,9 @@ daggerheart.com
 Название списка
 Нумерованный список
 Палаш
-ПалашОсновное оружиеCoreРанг 1 · Физическое · Проворность · Впло... [namelen=118 namehash=5597138b]
+ПалашОсновное оружиеРанг 1 · Физическое · Проворность · Вплотную... [namelen=114 namehash=e80c7800]
 Первоклассный Спальный Мешок
-Первоклассный Спальный МешокПредметCoreВо время отдыха вы автома... [namelen=88 namehash=9d8413c2]
+Первоклассный Спальный МешокПредметВо время отдыха вы автоматиче... [namelen=84 namehash=f15473c8]
 Печать
 Поделиться
 Подсказка: Для игроков
@@ -142,7 +142,7 @@ RootWebArea "Трофеи - Daggerheart Loot Generator" [url=/en/lists/00000000-
     generic ""
     checkbox "Broadsword" [checked=false]
     spinbutton "Position in the list" [value=1 valuetext=1 required=false valuemin=1 valuemax=2]
-    button "Broadsword PRIMARY WEAPON CORE Tier 1 · Physical · Agility · Mel..." [namelen=117 namehash=4d6f47fc]
+    button "Broadsword PRIMARY WEAPON Tier 1 · Physical · Agility · Melee · ..." [namelen=112 namehash=52e4c04f]
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
@@ -150,7 +150,7 @@ RootWebArea "Трофеи - Daggerheart Loot Generator" [url=/en/lists/00000000-
     button "Remove from the list" [description=Remove from the list]
     checkbox "Premium Bedroll" [checked=false]
     spinbutton "Position in the list" [value=2 valuetext=2 required=false valuemin=1 valuemax=2]
-    button "Premium Bedroll ITEM CORE During downtime, you automatically cle..." [namelen=76 namehash=de202579]
+    button "Premium Bedroll ITEM During downtime, you automatically clear a ..." [namelen=71 namehash=f1054083]
     StaticText "QTY"
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     StaticText "PRICE"
@@ -174,7 +174,7 @@ RootWebArea "Трофеи - Daggerheart Loot Generator" [url=/en/lists/00000000-
 Account: gm1@example.test
 Bold
 Broadsword
-BroadswordPrimary weaponCoreTier 1 · Physical · Agility · Melee ... [namelen=113 namehash=26515266]
+BroadswordPrimary weaponTier 1 · Physical · Agility · Melee · d8... [namelen=109 namehash=926e89b9]
 Bulleted list
 Copy
 Copy text
@@ -197,7 +197,7 @@ One lower
 Own item
 Position in the list
 Premium Bedroll
-Premium BedrollItemCoreDuring downtime, you automatically clear ... [namelen=73 namehash=3b2ba4b6]
+Premium BedrollItemDuring downtime, you automatically clear a St... [namelen=69 namehash=b98fcd07]
 Preview
 Price
 Print

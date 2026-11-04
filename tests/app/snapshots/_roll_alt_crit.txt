@@ -32,7 +32,7 @@ RootWebArea "Альтернативные таблицы - Генератор л
     button "Очень редкая" [pressed=false]
     button "Легендарная" [pressed=false]
     button "Бросить кости"
-    ... StaticText x28 of 32 same-shape siblings elided
+    ... StaticText x21 of 25 same-shape siblings elided
     button "Кость Надежды: На единицу меньше"
     textbox "Кость Надежды: Результат броска" [value=2 multiline=false readonly=false required=false]
     ... button x11 of 15 same-shape siblings elided
@@ -51,7 +51,6 @@ RootWebArea "Альтернативные таблицы - Генератор л
     button "В список" [expanded=false]
     button "Ещё" [expanded=false haspopup=menu]
     link "Зелье Усиления" [description=Открыть страницу url=/i/cc2]
-    link "Большое Зелье Усиления" [url=/i/cc26]
     button "В список" [expanded=false]
     button "Ещё" [expanded=false haspopup=menu]
     button "Открыть карточку"
@@ -74,7 +73,6 @@ EN
 RU
 daggerheart.com
 Альтернативные таблицы
-Большое Зелье Усиления
 Бросить кости
 Бросок
 В список
@@ -144,7 +142,7 @@ RootWebArea "Alternate tables - Daggerheart Loot Generator" [url=/en/roll/alt]
     button "Very rare" [pressed=false]
     button "Legendary" [pressed=false]
     button "Roll the dice"
-    ... StaticText x28 of 32 same-shape siblings elided
+    ... StaticText x21 of 25 same-shape siblings elided
     button "Hope Die: One lower"
     textbox "Hope Die: Roll result" [value=2 multiline=false readonly=false required=false]
     ... button x11 of 15 same-shape siblings elided
@@ -163,7 +161,6 @@ RootWebArea "Alternate tables - Daggerheart Loot Generator" [url=/en/roll/alt]
     button "Add to list" [expanded=false]
     button "More" [expanded=false haspopup=menu]
     link "Bolster Potion" [description=Open page url=/i/en/cc2]
-    link "Major Bolster Potion" [url=/i/en/cc26]
     button "Add to list" [expanded=false]
     button "More" [expanded=false haspopup=menu]
     button "Open card"
@@ -203,7 +200,6 @@ Items
 Items table
 Legendary
 LootDaggerheart
-Major Bolster Potion
 More
 Open card
 Open on start
