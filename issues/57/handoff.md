@@ -2,14 +2,13 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (wave 1 is on `main`; batches 3, 3b, 4, 5 and 6 are on `claude/57`; `polish`,
-  `harden`, the review and CI of the tip are the orchestrator's)
-- Last agent: implementer (batch 6, 2026-11-04)
+- Task status: in_progress, paused for the owner's restart (wave 1 is on `main`; batches 3, 3b, 4, 5 and 6 are
+  on `claude/57`; batches 3-5 are reviewed with green CI; batch 6 awaits CI, polish, harden and its review)
+- Last agent: orchestrator (session pause, 2026-11-04)
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
 - Previous sha: `da96cbf3` (batch 5 remediation; `origin/main` `d83384b4` is merged)
-- Pushed: the batch 6 commit holds this handoff; its sha and push state are in the implementer's
-  report (`git log -1 --grep="Task: 57"`).
+- Pushed: yes, `96710fe3` (batch 6). The docs commit of this pause is local until the next push.
 
 ## Completed
 - Batch 1 - foundation: `9a31aede`, review fix `80872b35` (`reviews/1.md`).
@@ -577,10 +576,43 @@
 - Spelling scan over added lines and new files: only `aria-labelledby`.
 
 ## Next batch (implement-ready)
-- Name: CI of the tip (`browser (1)` to `(3)` decide cases 83, 91, 92, the adapted cases, the sweep and
-  `e2e`), the orchestrator's `polish` and `harden` of batch 6, the review, then batch 7 (`plan-7.md`).
-- Risks / do-nots: `FilterBar` stays until batch 9a removes it, and `BatchBar` until batch 8 and 9a; a
-  golden is re-seeded, never edited.
+Session pause, 2026-11-04 (owner restart). The next session continues from here. Owner AFK rules hold
+(`context.md`, "Owner AFK", "Wave reviews", "Local gates", "Mocks are direction"); defaults go to
+`C:\Users\Ignat\.dhloot\notes\owner-afk-2026-11-03\decisions.md` (items 1-11 so far).
+
+Tree at the pause: `claude/57` tip `96710fe3` pushed; a docs commit may sit on top, unpushed (it holds
+only `context.md` and this file; it rides the next push). CI run 41813328286 of `96710fe3` was in progress.
+
+In order:
+1. Read run 41813328286 (`gh run view 41813328286`). Its failures go to step 3's fix pass.
+2. `polish` and `harden` of batch 6 (the Impeccable skill, `reference/polish.md`, `harden.md`): the orchestrator
+   reads `issues/57/mocks/6/built/`, then writes the outcome in Notes.
+3. Reviewer: scope batch 6, diff base `da96cbf3`, HEAD `96710fe3`, report `reviews/6.md`, brief `plan-6.md` (its
+   22 deviations are in Completed), then one remediation pass for blockers and CI failures. A nit that needs a
+   golden re-seed rides the next batch.
+4. Batch 7, brief `plan-7.md`, `opus` (writer test 3). Add to its dispatch: `app.kinds` is shared with the
+   roller, so a search pick must not leave the roller's kinds off; fix it here, not Deferred. Then polish,
+   harden, review, fix, CI.
+5. Batch 9a, brief `plan-9a.md`, `opus`, the same cycle. Its `FIRST_SCREEN`, `selectAll` and `sendAll`
+   corrections are in the brief's "Placed items".
+6. Fold each brief's "Placed items" into `plan.md` (`plan-4.md` to `plan-9a.md`; P5 is already in batch 10); collapse
+   section 10 to a pointer (`plan.md` is over its 150 KB line). Reviewer probes go in batch 10 (`context.md`).
+7. Wave 2 squash (`plan.md` section 16; `orchestrate.prompt.md` closeout step 8): run `ci-credit.mjs` on the
+   tip with a clean tree. Then the blind review of waves 1 and 2 on production, with its remediation at once.
+8. Refresh and run 8, 9b, P, 10 (wave 3), the wave 3 blind review, then the whole-app blind review, closeout.
+
+Facts for the dispatches:
+- Local gates: affected vitest files, both lints after the last edit, the golden re-seed when goldens move
+  (each shard with Bash timeout 600000), `npm run check:built`, the detector, `rtk npm run check:fast` last.
+  Browser suites and sweeps run on CI.
+- `ci-credit.mjs` refuses when a writer's edits are in the tree: while a batch runs, read the run with
+  `gh run watch <id> --exit-status` in the background instead. Each writer checks its predecessor's run before
+  it pushes. A pushed run must have concluded before the next push.
+- Budget: 261.5 of 262 kB unconfigured (ceiling 270), 318.8 of 319 kB configured (ceiling 350). Raises follow the
+  standing rule. Batch 7 and 9a add about 1-2 kB each, and wave 3 is not sized: past 266 kB, look for removals
+  first; passing 270 stops for the owner.
+- The owner must keep Chrome open and signed in to Figma for batch P's burden export.
+- `FilterBar` stays until batch 9a removes it, and `BatchBar` until batch 8; a golden is re-seeded, never edited.
 
 ## Blockers
 - None.

@@ -486,6 +486,11 @@
     to that visible change. Nits that need a golden re-seed ride the next
     batch's re-seed; a fix pass carries blockers only (orchestrator, after the
     owner's question on run time).
+  - Reviewer probes (owner, 2026-11-04, chat): a reviewer may run read-only
+    probes through stdin or `node -e` against the built app. Batch 10 writes
+    this in `.claude/prompts/review.prompt.md` and in `.claude/README.md`
+    beside "Rule 2s ... are habit guards"; no hook changes. The prompt change
+    is a review trigger, which batch 10's review covers.
   - Owner AFK from 2026-11-03 (chat): release the whole task - wave 2, wave
     3, the post-delivery review - with the recommended option at each
     choice, logged in `C:\Users\Ignat\.dhloot\notes\owner-afk-2026-11-03\decisions.md`.
