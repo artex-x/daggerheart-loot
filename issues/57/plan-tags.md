@@ -31,7 +31,7 @@ lines (T8). Batch 9a builds on the rule and no longer carries any of it (`plan-9
 - Impeccable cannot run from a subagent. The orchestrator runs `polish` and `harden` after T9 on `RecordCard`,
   `RowMain`, `TableRows`, `TablesPage`, `TableNav` and `Badge`, from the built app at 360 and 1180 px; fallback
   `impeccable:impeccable-finish-reviewer`.
-- Tier: `opus` (writer tests 1 and 3 below). Steps are T1 to T12, run in the order T1-T7, T9, T12, T8, T10, T11
+- Tier: `opus` (writer tests 1 and 3 below). Steps are T1 to T13, run in the order T1-T7, T9, T13, T12, T8, T10, T11
   (T8's prose and decisions describe what T9 and T12 built). The line "Session end partial progress" in
   `handoff.md` names the last finished step.
 - The post-wave-2 remediation may also touch `RollResult`, `OrGrid`, `RollPanel` or `RecordCard`'s face rules: add
@@ -894,3 +894,22 @@ Open, each with its default:
 - F7 (RC1, K14). Compact roll results. Default: option B. Alternatives: option A (the picture cropped by the
   count) or option C (a «Компактно» switch). Not in this batch, by default: a sticky control pane, a shorter page
   head on the roll pages, the 601-760 px band beyond what R7 gives it.
+
+### T13. The homebrew pin in the not-ready states (owner, 2026-11-04, "recommended makes sense"; from the blind
+review after wave 2, N2)
+
+Current behavior: `/homebrew` draws the pin («Открывать при запуске») from 761 px in every state, signed out
+included. Up to 760 px the not-ready head (signed out, loading, failed read) draws the heading only, so a phone
+shows no pin there. The post-wave-2 remediation aligned `ROUTES.md` with `FEATURES.md` and `STATE.md` (a pin may
+hold `#/homebrew`) and left the width difference.
+
+Decision (owner): the pin draws only when the page is ready (signed in, items read), at every width. In the
+signed out, loading and failed states it is not drawn at any width. The reason: a launch page that a signed-out
+visitor cannot use ends at a sign-in wall at every launch. Trade-off, accepted: a signed-out visitor cannot
+pre-pin the page, and desktop loses a control that it has in those three states.
+
+Do: the one condition in `HomebrewPage` (and its head component) for the pin; `FEATURES.md` "Homebrew" and
+"Chrome" say it; `homebrewPage.test.ts` cases for the three states at both bands that fail before the fix; the
+`_homebrew*` signed-out, loading and failed goldens at 1180 move (one pin button gone), read each diff; axe on
+the states. Acceptance line: in the three not-ready states the pin is absent at 360 and 1180, present when ready at
+both. Run order: with T9 (it shares the `/homebrew` head). Cost: about 5 minutes and 0 extra gate runs.

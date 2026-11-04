@@ -193,6 +193,9 @@
       1014 px every count stacks in one column of tall faces (four results: 2125-2883 px of page). Both pages
       default to four results. Routing: a design choice (RC1) with the planner's default, option B (the row face
       whenever the tall face does not fit one line), planned in `plan-tags.md` step T12, in batch 7b.
+  - Homebrew pin (owner, 2026-11-04, chat: "recommended makes sense", on the blind review's N2): the pin
+    draws only when `/homebrew` is ready (signed in, items read), at every width; absent signed out, loading
+    and failed. Home: batch 7b, step T13 of `plan-tags.md`; `FEATURES.md` "Homebrew".
   - Bundle budget ceiling (owner, 2026-11-04, chat: "we can increase budget up to 300"):
     read as the unconfigured ceiling 270 -> 300 kB; the configured ceiling stays 350 kB
     unless a measurement passes it (then stop and ask). Raises under the 300 kB ceiling
