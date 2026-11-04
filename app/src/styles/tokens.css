@@ -93,8 +93,13 @@
   --art-well: #0a0810;
 
   /* The page container, off `.wrap`: one width for the header and the content,
-     centered, keeping clear of a display cutout. */
-  --wrap: min(1180px, 100% - 32px);
+     centered. It grows with the window to 1440px; past that only the side space
+     grows (DESIGN.md, "Layout"). */
+  --wrap: min(1440px, 100% - 32px);
+
+  /* The record dialog's card and the record page's dossier: one width for one
+     dossier (DESIGN.md, "The Dossier Rule"). */
+  --dossier-w: 980px;
 
   /* The page heading's weight and tracking; its size is `--t-page`. */
   --h-page-weight: 680;

@@ -555,12 +555,59 @@
   | 7b-N2 | Fixed: the reason is in the `headHeight()` and `headCap()` comments |
   | Deviations 3 and 4 | Accepted with R1; documented |
 
+- Batch W - the page column grows to 1440 px and centers (`plan-wide.md` section 6; previous sha `7f56b5e8`, not
+  pushed: CI run 41926299694 of `4874ed63` was still in progress). New: `--dossier-w`, case 101
+  (`pageColumnOnWideWindows`), the decision file `2026-11-04-the-page-column-grows-to-1440-px-then-centers.md`.
+  Owner defaults taken: Q1 rows stay full width, Q2 no second column, Q3 720 px stays the height, Q4 320 px is the
+  floor (`DESIGN.md` "Layout"). Acceptance:
+
+  | Line | Outcome |
+  |---|---|
+  | `main` 1440 px and centered at 1920 and 3840; client less 32 px at 1366 | Done: case 101 (main 1319 at 1366, 1440 at 1920 and 3840; sides 16/16, 233/233, 1193/1193) |
+  | Up to 1212 px nothing moves but the record page dossier from 1013 px | Local: tops equal the 1180 baseline in case 101; goldens, `FIRST_SCREEN` and sweep are CI's |
+  | Dossier at most 980 px, at the column's left edge; the dialog reads `--dossier-w` | Done: case 101 (980 and 930 in the dialog) |
+  | Editor form at most 720 px from 1100 px beside a 420 px preview | Done: case 101 (form 682, preview 420) |
+  | Account, sheets, filter column, roll pane, print sheet keep their widths | Done: case 101 (account at most 1100.5, print sheet unscaled and equal to its baseline) |
+  | Roll pairs equal, the whole roll in the window at 1920x1080 | Done: case 101 |
+  | No sideways scroll at 1366, 1920, 3840; tops equal the 1180 tops; header one row | Done: case 101 |
+  | 1366x650 tops logged | Done: roll 267, `/search` 279 against 260 |
+  | Tokens, DESIGN, FEATURES, COVERAGE, decision say section 2.5; `decisions.js` | Done: 310 decisions, no problem |
+  | Artwork guard | Done: 77 pass, `CARD_HEAD_SHA256` did not move |
+  | Owner addition: the manual-result counter on wide screens | Measured 282 px on `/roll/std` (the settings column) at 1180, 1440, 1920 and 3840, and 136 px on `/roll/alt` (two boxes side by side); the buttons stretch, the input is 74 px. Cap: `NumberField` `.numbox { max-width: 240px }`, now 240 px on `/roll/std` and 136 px on `/roll/alt`; case 101 asserts at most 240.5 px on the roll pages at every size; `DESIGN.md` "The One Width Rule" names it |
+  | `shoot.js` and shots (W8), `polish`, `harden` (W9) | Not done: the dispatch did not list `shoot.js`; W9 is the orchestrator's |
+  | Gates, CI green on the tip, CI credit | See Verification; CI is the orchestrator's wait after the push |
+
+- Batch W deviations:
+  1. Case 101 centers against the body's width, not `documentElement.clientWidth`: the headless scrollbar gutter is in
+     `clientWidth` and not in the layout width (the plan's table shows the same 15 px).
+  2. The dialog's card is `dialog[open] .modal-card`; `dialog[open]` itself fills the window.
+  3. The case adds `#/roll/alt` to the plan's state list, for the owner's counter measurement.
+  4. Case 101 compares each language's top with its own 1180 baseline (RU and EN).
+  5. `FEATURES.md` "Records" and "Homebrew" and `DESIGN.md` carry the W caps; `FEATURES.md` "Chrome" names 320 px.
+
 - Review: done, `issues/57/reviews/3.md`, verdict fix-then-continue; the one remediation
   pass is this commit. No second review is needed: the picker fix leaves the first-screen
   rows unmoved (234 at 360).
 - Plan review: not required for batch 3 (`plan.md` Status, no trigger fired).
 
 ## Verification
+- Batch W, 2026-11-05 (previous sha `7f56b5e8`, not pushed):
+  - `npx vitest run` over `record.test.ts`, `recordHost.test.ts`, `homebrewEditor.test.ts`: 218 pass. Both lints: exit 0
+    after the last edit. `node --test tools/artwork/lib.test.mjs`: 77 pass. `node tools/decisions.js`: 310 decisions, no
+    problem. `npm run check:built`: pass (264.2 kB of 265).
+  - Case 101 ran locally once through an in-memory loader over `dist-test/` (all 88 runs filter to the one case):
+    passed, with the 1366x650 tops logged: `/roll/std` 267 and `/search` 279 against 260.
+  - Failing direction: a detached worktree outside the repo at `7f56b5e8` (node_modules by junction), the new
+    `states.js` copied in, `build:test` run there: case 101 failed with 58 lines (the column at 1180 px, the dossier,
+    the editor form, the number box). The worktree is removed.
+  - Counter, measured at 1180, 1440, 1920 and 3840 (RU, built app, the headless 15 px gutter): `/roll/std` box 282 px
+    before the cap and 240 px after (input 74 px, the two buttons take the rest, so the number sits against them);
+    `/roll/alt` two boxes of 136 px, unchanged. The width does not depend on the window: it is the 282 px settings
+    column of the 320 px roll pane.
+  - `rtk npm run check:fast`: PASS in 687 s (prettier, svelte-check 0 errors, vitest 1583 pass, budget), gate credit
+    armed. No golden moved by the CSS; no shard was run, as the goldens read the accessibility tree.
+  - Not verified: `shoot.js` and the W8 shots (not in this dispatch); the other browser suites at 1180 and below
+    (goldens, `sweep.js`, case 83, case 97, `app/print`, `e2e`) are CI's.
 - Batch 7b remediation, 2026-11-04:
   - Failing direction: `TableNav.svelte` set back to the old `tabLabels()` in this tree, `npx vitest run
     app/src/components/tableNav.test.ts`: the new test failed (ghost text differs); restored, 10 of 10 pass. The sweep

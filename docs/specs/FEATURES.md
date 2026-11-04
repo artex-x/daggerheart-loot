@@ -1274,7 +1274,8 @@ address kept, and no add-to-list control is drawn.
 
 ## Records
 
-- Card in a modal from a table row, or a full page at `#/i/<id>`.
+- Card in a modal from a table row, or a full page at `#/i/<id>`. The record page's dossier is
+  as wide as the dialog's card, at most 980 px, at the column's left edge.
 - The picture goes one step deeper than where it is drawn. On a roll result and on a
   list's roll hit it is the button «Открыть карточку» / "Open card", which opens the
   record dialog over the page; in the dialog it is the link «Открыть страницу» / "Open
@@ -1957,7 +1958,8 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   with «На экране» / "On screen" (pressed at each mount) and «На печати» /
   "In print". «На печати» draws the print card ("Print") at the preview
   column's width, at most 420 px (the column is 340 px from 800 px and 420 px
-  from 1100 px; under 800 px the content width): the cell is 63x88 mm or 44x63
+  from 1100 px; under 800 px the content width; from 1100 px the form beside it is at most
+  720 px): the cell is 63x88 mm or 44x63
   mm times a scale cut to two decimals, and the card multiplies every `mm` and
   `pt` value of its stylesheet by it (the rest is in `cqw`), never a transform,
   so the fit and the clip verdict are the print page's. It keeps the set line
@@ -2637,6 +2639,8 @@ right, so the tab order and the reading order agree
 
 ## Chrome
 
+- The page column is the window less 16 px a side, up to 1440 px, and centered above that
+  (DESIGN.md, "Layout"). 320 px is the narrowest width a page is built for.
 - Language switch, the three jobs, skip link, starting-section pin (eleven sections
   pin as their own hash; `#/tables` pins as whichever table is on screen;
   «Мои предметы» pins `#/homebrew` from any tab once its items are read; never a

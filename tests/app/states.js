@@ -6,8 +6,8 @@
  * and every legacy suite uses - because a handful of real defects only show
  * up on the far side of a browser's own microtask checkpoint (the
  * `isConnected` guard) or need a real network, a real clipboard stub, or a
- * real second tab to mean anything at all. Eighty-five cases in
- * eighty-four runs (4 and 5 share one), no ancestor. Like every suite here it drives
+ * real second tab to mean anything at all. Eighty-six cases in
+ * eighty-five runs (4 and 5 share one), no ancestor. Like every suite here it drives
  * dist-test/, the test build (docs/specs/COVERAGE.md, "Test layers"): signed
  * out it draws the sign-in prompt where a list would be made, so the cases
  * that make one open as the seed's `gm2`. */
@@ -7084,6 +7084,216 @@ async function rollFitsByCount() {
   }
 }
 
+/** 101. The page column grows with the window to 1440 px and stays centered past it; a reading
+ *  surface keeps its measure at the column's left edge (DESIGN.md, "The One Width Rule"). The
+ *  roll pages' number box keeps at most 240 px (DESIGN.md, "Layout"). */
+const WIDE_STATES = [
+  '#/roll/std',
+  '#/roll/alt',
+  '#/tables/eq_weapon',
+  '#/tables/eq_weapon ~ grid searched',
+  '#/search ~ searched',
+  '#/i/ci1',
+  '#/search ~ relations, dialog as gm3',
+  '#/i/nope',
+  '#/homebrew as gm3',
+  '#/homebrew/new as gm1',
+  '#/account as gm1',
+  '#/p/set-emberaxe as gm2'
+];
+
+/** Measures one wide-window state in the page: the column, its edges, the capped surfaces,
+ *  the roll pairs and the number box. */
+function measureWide() {
+  const rect = (s) => document.querySelector(s)?.getBoundingClientRect();
+  /* The body, not `clientWidth`: the headless scrollbar gutter is in `clientWidth` and not in the
+     layout width the column centers in. */
+  const client = document.body.getBoundingClientRect().width;
+  const main = rect('main');
+  const primary = [...document.querySelectorAll('[data-primary]')].find(
+    (e) => e.getBoundingClientRect().height > 0
+  );
+  const pairs = [...document.querySelectorAll('.orgrid > .ordiv')].map((div) => {
+    const a = div.previousElementSibling?.querySelector('.dealt')?.getBoundingClientRect();
+    const b = div.nextElementSibling?.querySelector('.dealt')?.getBoundingClientRect();
+    const m = div.getBoundingClientRect();
+    return a && b
+      ? { wa: a.width, wb: b.width, gapA: m.left - a.right, gapB: b.left - m.right }
+      : null;
+  });
+  const widths = (s) =>
+    [...document.querySelectorAll(s)].map((e) => e.getBoundingClientRect().width);
+  return {
+    client,
+    scrollW: document.documentElement.scrollWidth,
+    mainW: main.width,
+    mainL: main.left,
+    mainR: client - main.right,
+    brandL: rect('.brand')?.left,
+    footL: rect('.foot')?.left,
+    topbarH: rect('.topbar')?.height,
+    top: primary ? primary.getBoundingClientRect().top + scrollY : null,
+    dossier: widths('.card.dossier'),
+    /* `dialog[open]` itself fills the window; its card is `.modal-card`. */
+    dialog: widths('dialog[open] .modal-card'),
+    form: widths('.hbform'),
+    preview: widths('.preview'),
+    account: widths('.col:has(.acc)'),
+    sheet: widths('.psheet'),
+    sheetTransform: [...document.querySelectorAll('.pfit-in')].map(
+      (e) => getComputedStyle(e).transform
+    ),
+    pairs: pairs.filter(Boolean),
+    actsBottom: [...document.querySelectorAll('.dealt .resacts')].map(
+      (e) => e.getBoundingClientRect().bottom
+    ),
+    numbox: widths('.numbox')
+  };
+}
+
+async function pageColumnOnWideWindows() {
+  const at = '101 (the page column on wide windows): ';
+  const base = {};
+  const run = async (id, width, height, lang) => {
+    const { ctx, page } = await openState(id, width, height, lang);
+    try {
+      return await page.evaluate(measureWide);
+    } finally {
+      await ctx.close();
+    }
+  };
+  for (const id of WIDE_STATES) {
+    for (const lang of ['ru', 'en']) base[id + lang] = await run(id, 1180, 720, lang);
+    const b = base[id + 'ru'];
+    ok(
+      b.numbox.every((w) => w <= 240.5),
+      at + id + ' 1180: the number box is wider than 240 px - ' + JSON.stringify(b.numbox)
+    );
+    for (const [width, height, lang] of [
+      [1366, 768, 'ru'],
+      [1920, 1080, 'ru'],
+      [1920, 1080, 'en'],
+      [3840, 2160, 'ru']
+    ]) {
+      const where = at + id + ' ' + width + 'x' + height + ' ' + lang + ': ';
+      const m = await run(id, width, height, lang);
+      const was = base[id + lang];
+      fs.writeSync(
+        1,
+        '  wide: ' +
+          where +
+          'main ' +
+          m.mainW.toFixed(0) +
+          ' (' +
+          m.mainL.toFixed(0) +
+          '/' +
+          m.mainR.toFixed(0) +
+          '); top ' +
+          (m.top === null ? '-' : m.top.toFixed(0)) +
+          ' (was ' +
+          (was.top === null ? '-' : was.top.toFixed(0)) +
+          '); dossier ' +
+          m.dossier.map((w) => w.toFixed(0)).join('/') +
+          '; form ' +
+          m.form.map((w) => w.toFixed(0)).join('/') +
+          '; numbox ' +
+          m.numbox.map((w) => w.toFixed(0)).join('/') +
+          '\n'
+      );
+      ok(
+        Math.abs(m.mainW - Math.min(1440, m.client - 32)) <= 1,
+        where + 'the column is ' + m.mainW + ' px, not min(1440, client - 32)'
+      );
+      ok(
+        Math.abs(m.mainL - m.mainR) <= 1,
+        where + 'the column is off center: ' + m.mainL + '/' + m.mainR
+      );
+      ok(
+        Math.abs(m.brandL - m.mainL) <= 1,
+        where + 'the brand is off the column edge: ' + m.brandL
+      );
+      ok(
+        Math.abs(m.footL - m.mainL) <= 1,
+        where + 'the footer is off the column edge: ' + m.footL
+      );
+      ok(
+        m.scrollW <= m.client,
+        where + 'the page scrolls sideways: ' + m.scrollW + ' > ' + m.client
+      );
+      if (m.top !== null && was.top !== null)
+        ok(
+          Math.abs(m.top - was.top) <= 2,
+          where + 'the first screen moved: ' + m.top + ' vs ' + was.top
+        );
+      for (const [key, hit] of [
+        ['dossier', id === '#/i/ci1'],
+        ['dialog', id.includes('dialog')],
+        ['form', id === '#/homebrew/new as gm1'],
+        ['preview', id === '#/homebrew/new as gm1'],
+        ['account', id.startsWith('#/account')],
+        ['sheet', id.startsWith('#/p/')],
+        ['pairs', id === '#/roll/std'],
+        ['numbox', id.startsWith('#/roll/')]
+      ])
+        if (hit) ok(m[key].length > 0, where + 'no ' + key + ' measured');
+      ok(
+        m.dossier.every((w) => w <= 980.5),
+        where + 'a dossier is wider than 980 px'
+      );
+      ok(
+        m.dialog.every((w) => w <= 980.5),
+        where + 'the dialog is wider than 980 px'
+      );
+      ok(
+        m.form.every((w) => w <= 720.5),
+        where + 'the editor form is wider than 720 px'
+      );
+      ok(
+        m.preview.every((w) => Math.abs(w - 420) <= 1),
+        where + 'the preview is not 420 px'
+      );
+      ok(
+        m.account.every((w) => w <= 1100.5),
+        where + 'the account grid is wider than 1100 px'
+      );
+      ok(
+        m.sheet.every((w, i) => Math.abs(w - was.sheet[i]) <= 1) &&
+          m.sheetTransform.every((t) => t === 'none'),
+        where + 'the print sheet changed: ' + JSON.stringify(m.sheet) + ' ' + m.sheetTransform
+      );
+      ok(
+        m.pairs.every((p) => Math.abs(p.wa - p.wb) <= 1 && Math.abs(p.gapA - p.gapB) <= 1),
+        where + 'a roll pair is uneven: ' + JSON.stringify(m.pairs)
+      );
+      if (height === 1080 && id === '#/roll/std')
+        ok(
+          m.actsBottom.every((y) => y <= height),
+          where + 'a result ends below the window'
+        );
+      ok(
+        Math.abs(m.topbarH - was.topbarH) <= 1,
+        where + 'the header changed height: ' + m.topbarH + ' vs ' + was.topbarH
+      );
+      ok(
+        m.numbox.every((w) => w <= 240.5),
+        where + 'the number box is wider than 240 px'
+      );
+    }
+  }
+  for (const id of ['#/roll/std', '#/search ~ searched']) {
+    const m = await run(id, 1366, 650, 'ru');
+    fs.writeSync(
+      1,
+      '  wide: ' +
+        at +
+        id +
+        ' 1366x650 ru: primary top ' +
+        (m.top ?? 0).toFixed(0) +
+        ' against 260 (logged)\n'
+    );
+  }
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -7174,7 +7384,8 @@ const CASES = [
   ['94 (the account holds its layout and its confirm)', accountLayoutAndConfirm],
   ['95 (a badge is one box and keeps clear of the lines around it)', badgeIsOneBox],
   ['96 (the table head holds still between tables)', tableHeadHoldsStill],
-  ['97 (a roll fits the first screen by its count)', rollFitsByCount]
+  ['97 (a roll fits the first screen by its count)', rollFitsByCount],
+  ['101 (the page column grows to 1440 px and stays centered)', pageColumnOnWideWindows]
 ];
 
 (async () => {

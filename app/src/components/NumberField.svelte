@@ -147,6 +147,9 @@
     border: 1px solid var(--line2);
     border-radius: var(--r-sm);
     overflow: hidden;
+    /* A stepper fills its settings column, which is 282px on the roll pane: past
+       240px the number floats between two far buttons (measured 2026-11-04). */
+    max-width: 240px;
   }
 
   /* The type selector is load-bearing: the field is a text input, and a generic

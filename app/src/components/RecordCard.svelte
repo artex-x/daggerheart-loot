@@ -1165,6 +1165,7 @@
   @media (min-width: 761px) {
     .card.dossier {
       grid-template-columns: clamp(260px, 40%, 460px) minmax(0, 1fr);
+      max-width: var(--dossier-w);
       gap: 32px;
       align-items: start;
     }

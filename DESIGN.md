@@ -384,12 +384,16 @@ font request outside `/assets/`. The print card keeps its local stack
 
 ## Layout
 
-One width governs everything: `--wrap: min(1180px, 100% - 32px)`. The header
+One width governs everything: `--wrap: min(1440px, 100% - 32px)`. The header
 bar, the job row, the mode row, `main` and the footer all take it, so the brand,
 the first mode control and the first word of the page share a left edge at every
 viewport. The 32px
 subtraction is the gutter, and `viewport-fit=cover` plus `env(safe-area-inset-*)`
-keeps the selection bar clear of a display cutout.
+keeps the selection bar clear of a display cutout. The column grows with the
+window from 1213px to 1472px, where it reaches 1440px, and stays 1440px and
+centered above that; every window up to 1212px draws as it did at 1180px.
+320px is the narrowest width a page is built for (WCAG 1.4.10 reflow is defined
+at 320); a 280px window scrolls sideways.
 
 The page is a vertical stack: a sticky translucent header (`rgb(14 12 21 / 86%)`
 over a 14px backdrop blur) that holds the brand row and the three jobs (63px from
@@ -409,7 +413,12 @@ so a one-field panel has no trailing gap.
 ### Named Rules
 
 **The One Width Rule.** Anything that spans the page takes `var(--wrap)`. A new
-full-width element does not invent its own container or its own gutter.
+full-width element does not invent its own container or its own gutter. From
+1472px the column stays 1440px and centered; a reading surface keeps its measure
+at the column's left edge: the dossier at most 980px (`--dossier-w`), the
+editor's form at most 720px, the account at most 1100px, prose at most 78ch, and
+a number field at most 240px (`NumberField`: past that the number floats between
+two far buttons; the roll pane's column is 282px).
 
 **The Two Breakpoints Rule.** The system has two, and a third step for the header.
 From 761px the brand, the three jobs, the language switch and the account
