@@ -4,11 +4,12 @@
 ## Status
 - Task status: in_progress (waves 1 and 2 are on `main`; batch 7b, wave 2b, is implemented on `claude/57`; next
   are its `polish`, `harden`, review, fix cycle and CI, then the wave 2b squash, then batch 9a)
-- Last agent: implementer (batch 7b, 2026-11-04)
+- Last agent: orchestrator (session pause at the owner's request, 2026-11-04 21:55 UTC, after the batch 7b implementer)
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
-- Previous sha: `377d0981` (the CI run of `cd32174d` green)
-- Pushed: the batch 7b commit; the sha is in the implementer's report.
+- Tip: `d10ffa41` (batch 7b, pushed; previous `377d0981`; `cd32174d` CI green). CI run 41919930060 of `d10ffa41` was in
+  progress at the pause. A docs commit of this pause may sit on top, unpushed.
+- Pushed: yes (`d10ffa41`).
 
 ## Completed
 - Batch 1 - foundation: `9a31aede`, review fix `80872b35` (`reviews/1.md`).
@@ -1006,8 +1007,24 @@
 - Spelling scan over added lines and new files: only `aria-labelledby`.
 
 ## Next batch (implement-ready)
-Wave 2's blind review is done and remediated (step 6). Next: batch 9a (step 7), after the CI of the remediation's
-push. Owner AFK rules hold
+SESSION PAUSE (owner, 2026-11-04 ~21:50 UTC, reboot): the next session starts at step 8's "Next:". No subagent was
+running at the pause; the usage tick cron was deleted (a new session creates its own at its first dispatch). First
+actions: `ListAgents`, `git rev-parse HEAD`, `git status --short`, then `gh run view 41919930060 --repo
+artex-x/daggerheart-loot` (CI of `d10ffa41`). Read its failures with `--log-failed` once it concluded; a red job is
+the first item of the batch 7b fix pass. The reviewer's brief: scope batch 7b, diff base `cd32174d`, HEAD `d10ffa41`,
+brief `plan-tags.md`, report `reviews/7b.md`, with the CI failures; the batch 7b implementer's 6 departures and 3
+HD1 deviations are in Completed, "Batch 7b". Open facts from its report: at 761-800 px RU the `eq_*` toolbar wraps
+(Deferred); cases 89, 95, 96, 97 ran once locally, and case 83, `sweep.js` 360 and 768, `app/print`, e2e run only on
+CI. Do the batch 7b fix pass at once (nits ride it: the owner wants nits included for reviews of waves, and a re-seed
+is paid), then CI credit, then the wave 2b squash, then 9a (it takes cases 98-100).
+Scratch to retire at closeout, not before: the worktree `.claude/worktrees/57-fold` (branch `claude/57-fold`, merged
+into `claude/57`; the orchestrator may remove both: `git worktree remove`, `git branch -d`, at the next
+quiet moment), `C:\Users\Ignat\AppData\Local\Temp\claude\...\scratchpad` (frames and perf scripts).
+Owner rules this session: "proceed autonomously" (squashes and pushes to `main` need no wait); the unconfigured
+bundle ceiling is 300 kB (`context.md`); the owner sends phone feedback in chat and `context.md` "Phone feedback"
+holds it (items 1-6 are in 7b; new items go to a planner pass or the next fix batch). The usage log at
+`C:\Users\Ignat\.dhloot\notes\usage-log.csv` closes 2026-11-05 UTC.
+Wave 2's blind review is done and remediated (step 6). Owner AFK rules hold
 (`context.md`, "Owner AFK", "Wave reviews", "Local gates", "Mocks are direction"); defaults go to
 `C:\Users\Ignat\.dhloot\notes\owner-afk-2026-11-03\decisions.md` (items 1-11 so far).
 
