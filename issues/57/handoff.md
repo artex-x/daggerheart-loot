@@ -810,15 +810,16 @@ In order:
 3. Done: CI run 41845174864 of `2c3f3833` read; its three failures are fixed in step 4.
 4. Done: the batch 7 remediation (Completed, "Batch 7 remediation"). The orchestrator waits on the CI of its push:
    cases 83 (the new `~ kind picked` row), 86, 93 and 94, `app/print`, `derived`, e2e F2.
-5. Batch 9a, brief `plan-9a.md`, `opus`, the same cycle. Its `FIRST_SCREEN`, `selectAll` and `sendAll`
-   corrections are in the brief's "Placed items".
-6. Fold each brief's "Placed items" into `plan.md` (`plan-4.md` to `plan-9a.md`; P5 is already in batch 10); collapse
-   section 10 to a pointer (`plan.md` is over its 150 KB line). Reviewer probes go in batch 10 (`context.md`).
-   Batch P gets one more line from batch 7: the unknown, expired and malformed `/p/` set may move to `ErrorPage`
-   only with a `routes.json` contract change (`#/p/short` names the heading and the sub).
-7. Wave 2 squash (`plan.md` section 16; `orchestrate.prompt.md` closeout step 8): run `ci-credit.mjs` on the
-   tip with a clean tree. Then the blind review of waves 1 and 2 on production, with its remediation at once.
-8. Refresh and run 8, 9b, P, 10 (wave 3), the wave 3 blind review, then the whole-app blind review, closeout.
+5. Fold each brief's "Placed items" into `plan.md` (`plan-4.md` to `plan-7.md`; `plan-9a.md` stays a brief until its
+   batch; P5 is already in batch 10); collapse section 10 to a pointer (`plan.md` is over its 150 KB line). Reviewer
+   probes go in batch 10 (`context.md`). Batch P gets one more line from batch 7: the unknown, expired and malformed
+   `/p/` set may move to `ErrorPage` only with a `routes.json` contract change (`#/p/short` names the heading and the sub).
+6. Wave 2 squash (owner, 2026-11-04: 9a moved to wave 3, so wave 2 is 3, 3b, 4, 5, 6, 7; `plan.md` section 16;
+   `orchestrate.prompt.md` closeout step 8): run `ci-credit.mjs` on the tip with a clean tree. Then the blind review
+   of waves 1 and 2 on production, with its remediation at once.
+7. Wave 3 in this order: 9a (brief `plan-9a.md`, `opus`; its `FIRST_SCREEN`, `selectAll` and `sendAll` corrections
+   are in "Placed items"; production still holds the old list rows, so the interim mix is wave 2's), then refresh and
+   run 8, 9b, P, 10; the wave 3 blind review; the whole-app blind review; closeout.
 
 Facts for the dispatches:
 - Local gates: affected vitest files, both lints after the last edit, the golden re-seed when goldens move

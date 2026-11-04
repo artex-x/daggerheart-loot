@@ -137,6 +137,17 @@
     to the next whole kB, with the reason in the same commit, under the 270
     and 350 kB ceilings. Home: `tools/bundle-budget.mjs` and its decision
     file, written by batch 1.
+  - Wave split (owner, 2026-11-04, chat: "let's move 9a in wave 3"): wave 2 is 3, 3b, 4, 5, 6, 7;
+    wave 3 is 9a, 8, 9b, P, 10 (9a first: it removes `FilterBar` and `BatchBar`'s last
+    callers in order, and batch 8 follows it). Wave 2 lands after batch 7's review and the
+    green CI run of its tip. Until wave 3, production keeps the old rows, `FilterBar` and
+    `BatchBar` on `/lists/<uuid>` and `/s/`. Home: `plan.md` sections 16 and 7.
+  - Autonomy (owner, 2026-11-04, chat: "don't wait proceed autonomously"): the wave squashes,
+    the pushes to `main` and the closeout landing proceed without the owner, after the green
+    CI credit of the tip and the wave's review. The deletion of a branch or worktree, a
+    `NEEDS_HUMAN_CONFIRMATION: yes`, a `fable` dispatch, an effort exception, a gate still
+    red after the one remediation cycle and a `replan` from a second look still stop for
+    the owner.
   - Bundle budget ceiling (owner, 2026-11-04, chat: "we can increase budget up to 300"):
     read as the unconfigured ceiling 270 -> 300 kB; the configured ceiling stays 350 kB
     unless a measurement passes it (then stop and ask). Raises under the 300 kB ceiling

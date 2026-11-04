@@ -10,7 +10,7 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
 - Refresh against `main` (2026-10-29): done. `claude/57` merged `main` at
   `9112c4ed`; every `audit.md` row is re-checked (`audit.md`, "Re-check
   against main"); every address in this plan is a path.
-- Phase 3: fourteen batches in the order 1, 1b, 2, 3, 3b, 4-7, 9a, 8, 9b, P, 10
+- Phase 3: fourteen batches in the order 1, 1b, 2, 3, 3b, 4-7, 9a, 8, 9b, P, 10 (9a is in wave 3 since 2026-11-04)
   (section 7; the waves of section 16 moved P from after 1b into wave 3, and the
   owner's 2026-11-03 answers added 3b and split 9). Batches 1
   (`9a31aede`, `80872b35`), 1b (`fce4a9f8`, `3e5f6301`; `reviews/1b.md`) and 2
@@ -23,7 +23,7 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
   Batches 5-10 and P are outlines; each one's refresh expands it.
 - Release (owner, 2026-10-29, `context.md` "Release in three waves" and its
   "Reviews" paragraph; "Batch 9 split"): three waves - 1, 1b, 2; then 3, 3b, 4,
-  5, 6, 7, 9a; then 8, 9b, P, 10 -
+  5, 6, 7; then 9a, 8, 9b, P, 10 (owner, 2026-11-04: 9a moved to wave 3) -
   each squashed onto `main` after its last batch's review and green CI, with
   no owner screenshot gate. After wave 2's green deploy a blind review of waves 1
   and 2 runs on production, and after wave 3's a blind review of wave 3; each
@@ -378,8 +378,9 @@ evidence for the batch review, not an owner gate (owner, 2026-10-29,
 | 10 | Lock: DESIGN.md "Notes", detector at zero, `design.json`, re-audit, closeout | E5, E6, E8, E9 (record), E7, E11, N3 (rest), every row re-checked | none | no mock | docs and closeout, unless the re-audit finds a defect |
 
 Run order (owner, 2026-10-29, "Release in three waves"; 2026-11-03, "Header
-batch", "Batch 9 split"): 1, 1b, 2 (wave 1); 3, 3b, 4, 5, 6, 7, 9a (wave 2); 8,
-9b, P, 10 (wave 3). The table keeps the old row order; section 16 gives the waves.
+batch", "Batch 9 split"; owner, 2026-11-04, "9a moves to wave 3"): 1, 1b, 2 (wave 1); 3,
+3b, 4, 5, 6, 7 (wave 2); 9a, 8, 9b, P, 10 (wave 3). The table keeps the old row
+order; section 16 gives the waves.
 
 The list page and the shared page stay one pair (owner, 2026-10-29): 10 of the 15
 components of `SharedListPage.svelte` are `ListPage.svelte`'s, and the note display,
@@ -2090,8 +2091,8 @@ review as a gate; the batches still save their screenshot sets as evidence.
 | Wave | Batches | Lands after | Production until the next wave |
 |---|---|---|---|
 | 1 | 1, 1b, 2 | batch 2's review and the green CI run of its tip | the new face, ramp, glyph, mark and shell; gold default chips beside the neutral switches (accepted; batch 3 and the surface batches make them neutral); `FIRST_SCREEN` rows logged |
-| 2 | 3, 3b, 4, 5, 6, 7, 9a | batch 9a's review and the green CI run of its tip | the new catalog, item, roller, homebrew, search and account pages; the hide-and-show header and the focus fix; the compact rows, search and filter on `/lists/<uuid>` and `/s/`; the list panels, `/lists` and print as wave 1 left them |
-| 3 | 8, 9b, P, 10 | batch 10's review and the green CI run of its tip | the finished task |
+| 2 | 3, 3b, 4, 5, 6, 7 | batch 7's review and the green CI run of its tip | the new catalog, item, roller, homebrew, search and account pages; the hide-and-show header and the focus fix; `/lists/<uuid>`, `/s/`, the list panels, `/lists` and print as wave 1 left them (old rows, `FilterBar` and `BatchBar` stay) |
+| 3 | 9a, 8, 9b, P, 10 | batch 10's review and the green CI run of its tip | the finished task |
 
 Each wave lands by `orchestrate.prompt.md`, "Task closeout and cleanup", step
 8, with these changes (owner, "Wave squash content"):
