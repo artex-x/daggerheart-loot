@@ -1,11 +1,13 @@
 /* TableNav.svelte on its own: the group chips and the tabs from 761 px, the picker and
    its sheet below it, the source tabs of the own items table and their fold. */
-import { cleanup, render, screen, within } from '@testing-library/svelte';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
 import TableNav from './TableNav.svelte';
 import type { SourceChip } from '../lib/homebrew.js';
 import type { TableId } from '../lib/types.js';
+import { fakeCloud } from '../ports/fake-cloud.js';
+import { SEED } from '../ports/fake-cloud-seed.js';
 import { fakeEnv, fakeViewport, type Band } from '../ports/index.js';
 import { AppState } from '../state/app.svelte.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
@@ -116,6 +118,45 @@ describe('the tab slot', () => {
       await expectNoA11yViolations(container);
     }
   );
+
+  it('takes the same ghost tabs with twelve long sources as with none, so the other groups keep their head', async () => {
+    const ghostsOf = (container: HTMLElement): string | null | undefined =>
+      container.querySelector('.tabslot .ghosts')?.textContent;
+    const sources = Array.from({ length: 12 }, (_, i) => ({
+      key: `b${String(i)}`,
+      label: String(i).padStart(2, '0') + 'И'.repeat(78)
+    }));
+    const cloud = fakeCloud(SEED, 'gm1');
+    const app = new AppState(fakeEnv({ cloud, viewport: fakeViewport('wide') }));
+    const stop = app.start();
+    await waitFor(() => {
+      expect(app.user).toBeTruthy();
+    });
+    const without = render(TableNav, {
+      app,
+      table: 'eq_weapon',
+      sources: [],
+      source: null,
+      filter: {}
+    });
+    expect(
+      within(screen.getByRole('group', { name: 'Группа' })).getByRole('link', {
+        name: 'Хоумбрю'
+      })
+    ).toBeInTheDocument();
+    const base = ghostsOf(without.container);
+    cleanup();
+    const crowded = render(TableNav, {
+      app,
+      table: 'eq_weapon',
+      sources,
+      source: null,
+      filter: {}
+    });
+    expect(ghostsOf(crowded.container)).toBe(base);
+    expect(ghostsOf(crowded.container)).not.toContain('ИИИ');
+    stop();
+  });
 
   it('draws no slot at narrow, where the tabs live in the sheet', () => {
     const { container } = nav('core_item', 'narrow');

@@ -81,10 +81,14 @@ across.
   the short wording is the fix. The catalog head is measured, not the old
   strip: below 761 px the picker row is at most 64 px tall; from 761 px the
   group chips and the tabs together are at most 140 px below 1000 px (the seven
-  supplement tabs take two lines: 130 px at 768, 2026-10-30) and 110 px at the
-  run widths from 1000 px (`tests/app/sweep.js`,
-  at 500, 600, 700, 768 and the run widths, as gm2, the seventh group chip
-  drawn).
+  supplement tabs take two lines: 130 px at 768, 2026-10-30), 180 px from 1000 to
+  1139 px in Russian (the chips and the reserved tab row take two lines each:
+  about 173 px at 1050, and the rows start at about 330.5 px at 1050x720, past the
+  288 px first-screen limit) and 110 px from 1140 px (`tests/app/sweep.js`,
+  at 500, 600, 700, 768, 1050 and the run widths, as gm2, the seventh group chip
+  drawn). The reserved tab row holds the tabs of every group but the homebrew
+  one: that group's source tabs hold the GM's own text, so `/tables/homebrew`
+  alone may draw a taller row.
 - The nine roll sections share the header's roll job «Бросок» / "Roll" and draw
   the mode row under the header ("Chrome";
   `docs/decisions/2026-10-29-the-header-has-three-jobs-and-a-mode-row.md`). The

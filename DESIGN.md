@@ -464,7 +464,12 @@ geometry from the viewport band only, never from the content; a row that some co
 lack keeps its reserved space, and late content (a picture, a count) reserves its box.
 `/tables/*` is the first user: from 1000px the group chips sit beside the title and the
 tabs take the next row; from 761px to 999px both levels take their own rows; the tab row
-keeps the height of the tallest group's tabs on every table.
+keeps the height of the tallest group's tabs on every table. The homebrew group's source
+tabs are not reserved: they hold the GM's own text (up to 12 names of 80 characters) and
+would push the rows of every table. The trade-off: `/tables/homebrew` with many sources
+may draw a taller row than the other tables. From 1000px to 1139px in Russian the chips
+and the reserved tab row take two lines each, a head of about 173px (the rows start at
+330.5px at 1050x720).
 
 **The Hidden Header Rule.** Up to 760px the whole header leaves on a scroll down
 and returns on a scroll up, on every page, because a phone reader needs the rows

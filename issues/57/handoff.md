@@ -544,12 +544,28 @@
      chips live behind «Настроить» there.
   6. The roll probe's sizes are its own (700x400, not 700x360).
 
+- Batch 7b remediation (`reviews/7b.md`, fix-then-continue; diff base `88c7fb52`):
+
+  | Finding | Outcome |
+  |---|---|
+  | 7b-B1 | Fixed: `sweep.js` `headHeight()` reads the top of `.tablenav > .groups` to the bottom of `.tablenav > .tabslot` when the nav has no box; the picker-row read stays below 761 px |
+  | 7b-R1 | Fixed: 173 px head and 330.5 px rows at 1050x720 RU written in `FEATURES.md`, `DESIGN.md` and the head decision file; the sweep gains a 1050 sample (gm2) with a cap of 180 px (`headCap`: 180 from 1000 to 1139 px). Numbers are the review's T9.1 probe; the probe file `mocks/7b/built/head-probe.js` is not in this tree, so they were not re-measured |
+  | 7b-R2 | Fixed: `tabLabels()` returns none for the homebrew group; trade-off (a taller row on `/tables/homebrew` with many sources) in `DESIGN.md`, `FEATURES.md` and the decision file. Test: `tableNav.test.ts`, 12 sources of 80 characters, ghost text equal to the no-source case; fails at `d10ffa41`. No inventory state added (not cheap: the golden would not show the ghosts) |
+  | 7b-N1 | Fixed: `.rcraft` removed from `sweep.js` |
+  | 7b-N2 | Fixed: the reason is in the `headHeight()` and `headCap()` comments |
+  | Deviations 3 and 4 | Accepted with R1; documented |
+
 - Review: done, `issues/57/reviews/3.md`, verdict fix-then-continue; the one remediation
   pass is this commit. No second review is needed: the picker fix leaves the first-screen
   rows unmoved (234 at 360).
 - Plan review: not required for batch 3 (`plan.md` Status, no trigger fired).
 
 ## Verification
+- Batch 7b remediation, 2026-11-04:
+  - Failing direction: `TableNav.svelte` set back to the old `tabLabels()` in this tree, `npx vitest run
+    app/src/components/tableNav.test.ts`: the new test failed (ghost text differs); restored, 10 of 10 pass. The sweep
+    changes are browser-only and CI's (`app/sweep` 1180 RU/EN, 768 with the 1050 sample); not run here.
+  - `npm run lint`: no issues; `npm run format:check`: clean; then `npm run check:fast`: exit 0.
 - Batch 7b, 2026-11-04 (diff base `377d0981`):
   - Failing direction: `git worktree add --detach E:/dev/dhl-7b-base 377d0981` (outside the repo, `node_modules` through a
     junction), `npm run build:test` there, the new `tests/app/states.js` and `inventory.js` copied in, then a scratch

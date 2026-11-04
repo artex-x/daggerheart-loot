@@ -65,22 +65,11 @@
       })
     );
 
-  /* The captions of a group's tabs, or none: what the unseen copies in the tab slot draw. */
+  /* The captions of a group's tabs, or none: what the unseen copies in the tab slot draw.
+     The homebrew group has none: its source tabs hold the GM's own text, up to 12 names of
+     80 characters, and would push the rows of every table (DESIGN.md, "A steady head"). */
   function tabLabels(g: TableGroup): string[] {
-    if (g.id === 'hb' && sources.length > 1) {
-      const fold = foldRows(
-        sources,
-        srcOpen,
-        CHIP_FOLD_AT,
-        CHIP_FOLD_SHOWN,
-        (s) => s.key === source
-      );
-      const rows = fold.rows.map((s) => s.label);
-      return sources.length > CHIP_FOLD_AT
-        ? [...rows, srcOpen ? t.relLess : t.andMore.replace('%n', String(fold.more))]
-        : rows;
-    }
-    return g.subs.length > 1 ? g.subs.map((sub) => t[navSubLabel(sub)]) : [];
+    return g.id !== 'hb' && g.subs.length > 1 ? g.subs.map((sub) => t[navSubLabel(sub)]) : [];
   }
 
   const picker = $derived(pickerLabel(table, t));

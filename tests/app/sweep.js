@@ -136,7 +136,7 @@ const PAGES = [
   ['/#/i/nope', 'предмета нет'],
   /* The four craft-heavy worst cases the legacy craftmob.js swept - the
    * mobile craft block and the dice bar overflow checks below need a page that actually
-   * draws `.craft`/`.rcraft`/`.dicebar`/`.numrow`. */
+   * draws `.craft`/`.dicebar`/`.numrow`. */
   ['#/i/w65', 'карточка с крафтом (худший случай 1)'],
   ['#/i/w3', 'карточка с крафтом (худший случай 2)'],
   ['#/i/ci19', 'карточка с крафтом (худший случай 3)'],
@@ -465,19 +465,29 @@ async function landedUnderHeader(page, id) {
 }
 
 /** Returns the catalog head's measure at the current width: the picker row below 761 px,
- *  else the group chips and the tabs (docs/specs/FEATURES.md, "Tables and search"). */
+ *  else the group chips and the tabs (docs/specs/FEATURES.md, "Tables and search").
+ *  From 1000 px `.tablenav` is `display: contents` and has no box, so the read runs from
+ *  the top of its chips to the bottom of its tab slot. */
 function headHeight(page) {
   return page.evaluate(() => {
-    const el = document.querySelector('.pickrow') ?? document.querySelector('.tablenav');
-    return el ? Math.round(el.getBoundingClientRect().height) : 0;
+    const pick = document.querySelector('.pickrow');
+    if (pick) return Math.round(pick.getBoundingClientRect().height);
+    const nav = document.querySelector('.tablenav');
+    if (!nav) return 0;
+    const box = nav.getBoundingClientRect();
+    if (box.height > 0) return Math.round(box.height);
+    const top = nav.querySelector(':scope > .groups')?.getBoundingClientRect().top;
+    const bottom = nav.querySelector(':scope > .tabslot')?.getBoundingClientRect().bottom;
+    return top === undefined || bottom === undefined ? 0 : Math.round(bottom - top);
   });
 }
 
 /** Returns the head's cap at `width`: 64 px for the picker row; for the two levels 140 px
  *  below 1000 px, where the seven supplement tabs take two lines (130 px at 768,
- *  measured 2026-10-30), and 110 px from 1000 px. */
+ *  measured 2026-10-30); 180 px from 1000 to 1139 px in RU, where the chips and the tab
+ *  slot take two lines each (about 173 px at 1050, measured); 110 px from 1140 px. */
 function headCap(width) {
-  return width <= 760 ? 64 : width < 1000 ? 140 : 110;
+  return width <= 760 ? 64 : width < 1000 ? 140 : width < 1140 ? 180 : 110;
 }
 
 (async () => {
@@ -560,7 +570,7 @@ function headCap(width) {
           document
             .querySelectorAll(
               '.card-name a, .card-name span, .badge, .chip, .fpill, .btn, .lbl, .rnum, .tab, ' +
-                '.craft, .rcraft, .dicebar, .numrow'
+                '.craft, .dicebar, .numrow'
             )
             .forEach((e) => {
               const style = getComputedStyle(e);
@@ -577,7 +587,7 @@ function headCap(width) {
            * onto the same walk rather than a second one: a spill past either
            * edge, a caption squeezed under 60px, and a craft link under the
            * 12px tap-height floor. */
-          document.querySelectorAll('.craft, .rcraft, .dicebar, .numrow').forEach((el) => {
+          document.querySelectorAll('.craft, .dicebar, .numrow').forEach((el) => {
             const r = el.getBoundingClientRect();
             if (r.right > w + 1)
               out.craftBad.push(
@@ -694,10 +704,11 @@ function headCap(width) {
             at.header
         );
       }
-      /* The head at the narrow widths no run width reaches, as gm2 (the seventh group chip
-         drawn, the worst case): the picker row; each height printed. */
+      /* The head at the widths no run width reaches, as gm2 (the seventh group chip drawn,
+         the worst case): the picker row at 500-700 px, the two-line head at 1050 px; each
+         height printed. */
       if (width === 768) {
-        for (const w of [500, 600, 700]) {
+        for (const w of [500, 600, 700, 1050]) {
           await d.viewport(w, 900);
           for (const t of ['many_worlds_tavern', 'core_item', 'eq_weapon']) {
             const where = 'шапка таблиц #/tables/' + t + ' @' + w + ' ' + lang;
