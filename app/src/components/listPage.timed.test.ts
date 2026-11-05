@@ -40,6 +40,8 @@ describe('an account list at three times the limit', () => {
     await waitFor(() => {
       expect(sub(container)).toBe('300 позиций из 300 · только для мастера: 290 · Сохранено');
     });
+    /* «Выбрать» by its class: a role query names each of the 300 rows' buttons first. */
+    await userEvent.click(container.querySelector('button.selmode') as HTMLElement);
     await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все' }));
     expect(screen.getByRole('button', { name: 'Скрыть от игроков (300)' })).toBeInTheDocument();
   });

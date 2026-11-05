@@ -20,6 +20,7 @@ import {
   relName,
   relOrder,
   relText,
+  rowLine,
   setFolds,
   srcLabel,
   srcName,
@@ -468,5 +469,72 @@ describe('kindGlyph', () => {
   it('draws the gem for any other item', () => {
     expect(kindGlyph('item', undefined)).toBe('kindItem');
     expect(kindGlyph('equip', undefined)).toBe('kindItem');
+  });
+});
+
+describe('rowLine, the one line of a compact list row', () => {
+  const rec = (over: Partial<Record_>): Record_ => ({
+    id: 'x',
+    src: 'core',
+    kind: 'item',
+    en: 'X',
+    ru: 'Х',
+    ende: '',
+    rud: '',
+    ...over
+  });
+  const sword = rec({
+    eq: {
+      t: 'weapon',
+      tier: 1,
+      cls: 'phy',
+      bu: 2,
+      dmg: 'd8+1',
+      dt: 'phy',
+      tr: 'agility',
+      rg: 'melee'
+    }
+  });
+
+  it('gives a weapon its damage, range, burden and trait in that order', () => {
+    expect(rowLine(sword, 'en', dict('en'))).toBe('d8+1 phy · Melee · Two-Handed · Agility');
+    expect(rowLine(sword, 'ru', dict('ru'))).toMatch(/^d8\+1 физ · Вплотную · Двуручное · Про/);
+  });
+
+  it('drops a blank piece and keeps the rest in order', () => {
+    const bare = rec({ eq: { t: 'secondary', tier: 1, dmg: 'd6', rg: 'close' } as never });
+    expect(rowLine(bare, 'en', dict('en'))).toBe('d6 · Close');
+  });
+
+  it('gives armor its thresholds, then its score', () => {
+    const armor = rec({ eq: { t: 'armor', tier: 2, th: [7, 15], as: 4 } as never });
+    expect(rowLine(armor, 'en', dict('en'))).toBe('Thresholds 7/15 · Armor 4');
+  });
+
+  it('gives an item the first line of its text with no markup', () => {
+    const potion = rec({
+      kind: 'consumable',
+      ende: '**Drink** to heal.\nSecond line.',
+      rud: 'Выпейте, чтобы *лечиться*.'
+    });
+    expect(rowLine(potion, 'en', dict('en'))).toBe('Drink to heal.');
+    expect(rowLine(potion, 'ru', dict('ru'))).toBe('Выпейте, чтобы лечиться.');
+  });
+
+  it('reads a list or a table that opens the text', () => {
+    expect(rowLine(rec({ ende: '- one\n- two' }), 'en', dict('en'))).toBe('- one');
+    expect(rowLine(rec({ ende: '| a | b |\n|---|---|\n| 1 | 2 |' }), 'en', dict('en'))).toBe(
+      'a | b'
+    );
+  });
+
+  it('falls to the text for an own equipment record with no stats', () => {
+    const own = rec({ id: 'hb_x', src: 'homebrew', kind: 'equip', ende: 'Shiny.' });
+    expect(rowLine(own, 'en', dict('en'))).toBe('Shiny.');
+  });
+
+  it('gives a record with no text and no stats no line', () => {
+    expect(rowLine(rec({}), 'en', dict('en'))).toBe('');
+    expect(rowLine(rec({ ende: '\n  \n' }), 'ru', dict('ru'))).toBe('');
   });
 });

@@ -1010,6 +1010,14 @@ describe('the layout band', () => {
 });
 
 describe('the selection', () => {
+  it('holds a page bar in memory, empty by default', () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/tables') }));
+    expect(app.pageBar).toBeNull();
+    const bar = (() => {}) as never;
+    app.pageBar = bar;
+    expect(app.pageBar).toBe(bar);
+  });
+
   it('leaves the selection mode with the ticks, and keeps the drawn ids apart', () => {
     const router = memoryRouter('#/tables/core_item');
     const app = new AppState(fakeEnv({ router }));
@@ -1131,7 +1139,7 @@ describe('the selection', () => {
     expect(app.picked.size).toBe(0);
   });
 
-  it('drops the taken count of an id unticked through toggleSel or toggleAllIn', () => {
+  it('drops the taken count of an id unticked through toggleSel', () => {
     const app = new AppState(fakeEnv({ router: memoryRouter('#/tables') }));
     app.toggleSel('ci1');
     app.toggleSel('q1');
@@ -1139,9 +1147,6 @@ describe('the selection', () => {
     app.pick('q1', 3);
     app.toggleSel('ci1');
     expect([...app.picked]).toEqual([['q1', 3]]);
-
-    app.toggleAllIn(['q1']);
-    expect(app.picked.size).toBe(0);
   });
 
   it('keepTicksIn drops the ticks and counts of entries not in the list', () => {

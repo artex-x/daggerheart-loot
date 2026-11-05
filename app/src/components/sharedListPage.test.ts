@@ -18,6 +18,7 @@ import {
   fakeData,
   fakeEnv,
   fakePage,
+  fakeViewport,
   memoryRouter,
   memoryStorage
 } from '../ports/index.js';
@@ -163,6 +164,21 @@ async function openShared(
 const rowCheckboxes = (): HTMLElement[] =>
   screen.getAllByRole('checkbox').filter((cb) => !cb.closest('.selall'));
 
+/** Opens the list notes of the lead line, closed on arrival. */
+async function openNotes(): Promise<void> {
+  for (const name of ['Заметка', 'Заметка мастера', 'Note', "GM's note"]) {
+    const b = screen.queryByRole('button', { name });
+    if (b) await userEvent.click(b);
+  }
+}
+
+/** Opens the selection mode with «Выбрать» where the page draws it: the ticks draw only in
+ *  the mode. */
+async function selecting(): Promise<void> {
+  const mode = document.querySelector<HTMLElement>('button.selmode');
+  if (mode) await userEvent.click(mode);
+}
+
 /** Renders `hash` as gm2, who owns the lists of `TWO_LISTS`, and waits for the account. */
 async function openAsGm2(hash: string, name: string, over: Partial<Env> = {}) {
   const cloud = fakeCloud(SHARED_GM2, 'gm2');
@@ -173,28 +189,34 @@ async function openAsGm2(hash: string, name: string, over: Partial<Env> = {}) {
 }
 
 describe('heading and sub', () => {
-  it('draws the name, the sub as one text node, the save button and a way to select every row', async () => {
+  it('draws the name, the lead line with the note buttons, the save button and «Выбрать»', async () => {
     const { container } = await openShared(NOTED_GM, 'Тайник');
 
     const sub = container.querySelector('.page-sub');
-    expect(sub).toHaveTextContent('Список от другого игрока · 2 позиции');
-    expect(sub?.childNodes).toHaveLength(1);
+    expect(sub).toHaveTextContent(/^2 позиции · Обновлено .+ · Заметка · Заметка мастера$/);
+    expect(screen.getByRole('button', { name: 'Заметка' })).toHaveAttribute(
+      'aria-expanded',
+      'false'
+    );
 
     expect(screen.getByRole('button', { name: 'Сохранить себе' })).not.toHaveAttribute(
       'aria-expanded'
     );
     expect(screen.queryByRole('button', { name: 'В список' })).not.toBeInTheDocument();
-    /* Printing a shared list used to mean ticking every row by
-       hand - `ontoggleall` now reaches the shared `AppState.toggleAllIn`,
-       the same one the tables and search pages already used. */
-    expect(screen.getByRole('checkbox', { name: 'Выбрать все (2)' })).toBeInTheDocument();
+    /* No tick and no select-all strip outside the mode: «Выбрать» opens it, and the bar's
+       «Все» ticks every drawn row. */
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
     expect(container.querySelector('.selbarwrap')).toHaveClass('idle');
     expect(screen.queryByRole('button', { name: 'Снять выделение' })).not.toBeInTheDocument();
+    await selecting();
+    expect(screen.getByRole('checkbox', { name: 'Выбрать все' })).toBeInTheDocument();
+    expect(screen.queryByText(/Выбрать все \(/)).not.toBeInTheDocument();
   });
 
   it('ticks every row from select-all', async () => {
     await openShared(NOTED_GM, 'Тайник');
-    await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все (2)' }));
+    await selecting();
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все' }));
     expect(screen.getByText('Выбрано 2 позиции')).toBeInTheDocument();
   });
 });
@@ -224,6 +246,7 @@ describe('the tags of a row', () => {
 describe('with a row ticked', () => {
   it('shows one add-to-list control, in the bar, and the save button above', async () => {
     const { container } = await openShared(NOTED_GM, 'Тайник');
+    await selecting();
     const box = rowCheckboxes()[0] as HTMLElement;
     await userEvent.click(box);
 
@@ -256,9 +279,7 @@ describe('every entry gone from the data', () => {
   it('opens as the list with no rows and the dropped-entries toast', async () => {
     const gone = listOf(904, 'Пропавшее', [{ key: 'zzz1' }, { key: 'zzz2' }]);
     const { container } = await openShared(ONE, 'Пропавшее', {}, fakeCloud(oneShared(gone)));
-    expect(container.querySelector('.page-sub')).toHaveTextContent(
-      'Список от другого игрока · 0 позиций'
-    );
+    expect(container.querySelector('.page-sub')).toHaveTextContent(/^0 позиций · Обновлено/);
     expect(screen.getByRole('button', { name: 'Сохранить себе' })).toBeInTheDocument();
     expect(container.querySelectorAll('[data-row]')).toHaveLength(0);
     expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
@@ -281,6 +302,7 @@ describe('untitled', () => {
 describe('the notes', () => {
   it("draws both list notes above the rows, and each entry's own inside its row", async () => {
     const { container } = await openShared(NOTED_GM, 'Тайник');
+    await openNotes();
     const notes = container.querySelectorAll('.hitnote');
     expect(notes[0]).toHaveTextContent('Для игроков');
     expect(notes[0]).toHaveTextContent('Лавка закрыта до утра');
@@ -304,6 +326,7 @@ describe('the notes', () => {
     const l = listOf(904, 'X', [{ key: 'ci1', qty: 2, note: 'Видно игрокам' }]);
     const { container } = await openShared(ONE, 'X', {}, fakeCloud(oneShared(l)));
     const row = container.querySelector('[data-row="ci1"]');
+    await selecting();
     await userEvent.click(row?.querySelector('input[type="checkbox"]') as HTMLElement);
     const notes = row?.querySelector(':scope > .rnotes');
     expect(notes?.nextElementSibling).toHaveClass('pickrow');
@@ -314,6 +337,7 @@ describe('the notes', () => {
   it('draws each line of a note as its own paragraph', async () => {
     const l = listOf(904, 'X', [{ key: 'ci1' }], { note: 'Первая\nВторая' });
     const { container } = await openShared(ONE, 'X', {}, fakeCloud(oneShared(l)));
+    await openNotes();
     const note = container.querySelector('.hitnote .htext');
     expect([...(note?.querySelectorAll('p') ?? [])].map((p) => p.textContent)).toEqual([
       'Первая',
@@ -325,6 +349,7 @@ describe('the notes', () => {
     const text = '**x** и *y*\n- пункт';
     const l = listOf(904, 'X', [{ key: 'ci1', note: text }], { note: text });
     const { container } = await openShared(ONE, 'X', {}, fakeCloud(oneShared(l)));
+    await openNotes();
     const notes = [...container.querySelectorAll('.hitnote .htext')];
     expect(notes).toHaveLength(2);
     for (const note of notes) {
@@ -367,6 +392,7 @@ describe('the tails', () => {
 describe('selection', () => {
   it('ticks a row and raises the bar; a second tick clears both', async () => {
     const { container } = await openShared(NOTED_GM, 'Тайник');
+    await selecting();
     const box = rowCheckboxes()[0] as HTMLElement;
     await userEvent.click(box);
 
@@ -375,7 +401,7 @@ describe('selection', () => {
 
     await userEvent.click(box);
     expect(container.querySelector('[data-row="ci1"]')).not.toHaveClass('sel');
-    expect(container.querySelector('.selcount')).not.toBeInTheDocument();
+    expect(container.querySelector('.selcount')).toHaveTextContent('Выбрано 0 позиций');
   });
 });
 
@@ -383,6 +409,7 @@ describe('adding to an existing list', () => {
   it('the bar carries the shared meta for a ticked entry', async () => {
     const { cloud, page } = await openAsGm2(PRICED_PLAYERS, 'Лавка');
 
+    await selecting();
     const rowCheckbox = document
       .querySelector('[data-row="cc21"]')
       ?.querySelector('input[type="checkbox"]') as HTMLElement;
@@ -401,7 +428,8 @@ describe('adding to an existing list', () => {
   it('a chip pours the whole list with its meta, no note or hnote', async () => {
     const { cloud, page } = await openAsGm2(PRICED_PLAYERS, 'Лавка');
 
-    await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все (3)' }));
+    await selecting();
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все' }));
     const bar = document.querySelector('.selbarwrap') as HTMLElement;
     await userEvent.click(within(bar).getByRole('button', { name: 'В список' }));
     await userEvent.click(await within(bar).findByRole('button', { name: 'Клад дракона' }));
@@ -428,7 +456,8 @@ describe('adding to an existing list', () => {
   it("leaves the GM's own note behind", async () => {
     const { cloud, page } = await openAsGm2(NOTED_GM, 'Тайник');
 
-    await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все (2)' }));
+    await selecting();
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все' }));
     const bar = document.querySelector('.selbarwrap') as HTMLElement;
     await userEvent.click(within(bar).getByRole('button', { name: 'В список' }));
     await userEvent.click(await within(bar).findByRole('button', { name: 'Клад дракона' }));
@@ -445,6 +474,7 @@ describe('adding to an existing list', () => {
     await openShared(PRICED_PLAYERS, 'Лавка', { page }, cloud);
     await screen.findByRole('button', { name: 'Аккаунт: gm2@example.test' });
 
+    await selecting();
     const rowCheckbox = document
       .querySelector('[data-row="cc21"]')
       ?.querySelector('input[type="checkbox"]') as HTMLElement;
@@ -475,6 +505,7 @@ describe('adding to an existing list', () => {
 describe('the taken count and the total', () => {
   /* PRICED: ci1 x2 unpriced, cc21 x5 at 50, q337 at 12. */
   const tick = async (id: string): Promise<void> => {
+    await selecting();
     const box = document
       .querySelector(`[data-row="${id}"]`)
       ?.querySelector('input[type="checkbox"]') as HTMLElement;
@@ -725,8 +756,10 @@ describe('a share link', () => {
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' })
     ).toBeInTheDocument();
-    expect(screen.getByText('Список от другого игрока · 3 позиции')).toBeInTheDocument();
-    expect(screen.getByText('Обновлено 3 дня назад')).toBeInTheDocument();
+    expect(document.querySelector('.page-sub')).toHaveTextContent(
+      /^3 позиции · Обновлено 3 дня назад · Заметка$/
+    );
+    await openNotes();
     expect(screen.getByText('Открыта с рассвета до заката.')).toBeInTheDocument();
     expect(screen.queryByText(/Кузнец торгуется/)).not.toBeInTheDocument();
     expect(screen.queryByText(ru.ownList)).not.toBeInTheDocument();
@@ -771,6 +804,8 @@ describe('a share link', () => {
 
   it('draws both notes on a GM link', async () => {
     open('#/s/gm-token-1');
+    await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' });
+    await openNotes();
     expect(
       await screen.findByText('Кузнец торгуется, если назвать имя его брата.')
     ).toBeInTheDocument();
@@ -810,7 +845,7 @@ describe('a share link', () => {
     it("leaves it out of the players' link, with no GM-only look", async () => {
       const { container } = open('#/s/player-token-1', marked());
       await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' });
-      expect(screen.getByText('Список от другого игрока · 2 позиции')).toBeInTheDocument();
+      expect(document.querySelector('.page-sub')).toHaveTextContent(/^2 позиции · /);
       expect(container.querySelector('[data-row="cc1"]')).toBeNull();
       expect(container.querySelector('.gm-only')).toBeNull();
       expect(container.textContent).not.toContain('Только для мастера');
@@ -866,6 +901,8 @@ describe('a share link', () => {
 
   it('draws a GM link read-only for another user, with the GM notes and the save button', async () => {
     open('#/s/gm-token-1', fakeCloud(SEED, 'gm2'));
+    await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' });
+    await openNotes();
     await screen.findByText('Кузнец торгуется, если назвать имя его брата.');
     await screen.findByRole('button', { name: 'Аккаунт: gm2@example.test' });
     expect(screen.getByRole('button', { name: 'Сохранить себе' })).toBeInTheDocument();
@@ -881,6 +918,7 @@ describe('a share link', () => {
         await screen.findByRole('heading', { level: 1, name: ru.shareGone })
       ).toBeInTheDocument();
       expect(screen.getByText(ru.shareGoneSub)).toBeInTheDocument();
+      expect(document.querySelector('.errpage h1')).toHaveTextContent(ru.shareGone);
       expect(screen.getByRole('link', { name: 'На главную' })).toHaveAttribute(
         'href',
         '/roll/std'
@@ -901,6 +939,7 @@ describe('a share link', () => {
       await screen.findByRole('heading', { level: 1, name: ru.sharedFailed })
     ).toBeInTheDocument();
     expect(screen.getByText(ru.sharedFailedSub)).toBeInTheDocument();
+    expect(document.querySelector('.errpage h1')).toHaveTextContent(ru.sharedFailed);
     cloud.setOffline(false);
     await userEvent.click(screen.getByRole('button', { name: 'Повторить' }));
     expect(
@@ -969,7 +1008,7 @@ describe('a share link', () => {
       });
       cloud.play(uuid(101), { gm_note: 'новая' });
       await waitFor(() => {
-        expect(screen.getByText('Обновлено только что')).toBeInTheDocument();
+        expect(document.querySelector('.page-sub')).toHaveTextContent(/Обновлено только что/);
       });
       expect(region()).toHaveTextContent('');
       cloud.play(uuid(101), { name: 'Лавка у моста' });
@@ -1073,7 +1112,10 @@ describe('English', () => {
     await openShared(NOTED_GM, 'Тайник');
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
 
-    expect(screen.getByText('A list from another player · 2 items')).toBeInTheDocument();
+    expect(document.querySelector('.page-sub')).toHaveTextContent(
+      /^2 items · Updated .+ · Note · GM's note$/
+    );
+    await openNotes();
     /* The list note and ci1's own entry note both carry the label. */
     expect(screen.getAllByText('For players').length).toBeGreaterThan(0);
     expect(screen.getAllByText('GM only').length).toBeGreaterThan(0);
@@ -1090,6 +1132,7 @@ describe('accessibility', () => {
   it('has no violations with the menu open and the new-list form showing', async () => {
     const { container } = await openShared(NOTED_GM, 'Тайник', {}, fakeCloud(SHARED, 'gm2'));
     await screen.findByRole('button', { name: 'Аккаунт: gm2@example.test' });
+    await selecting();
     const box = rowCheckboxes()[0] as HTMLElement;
     await userEvent.click(box);
     const bar = container.querySelector('.selbarwrap') as HTMLElement;
@@ -1101,6 +1144,7 @@ describe('accessibility', () => {
 
   it('has no violations with a row ticked and the bar showing', async () => {
     const { container } = await openShared(NOTED_GM, 'Тайник');
+    await selecting();
     const box = rowCheckboxes()[0] as HTMLElement;
     await userEvent.click(box);
     await expectNoA11yViolations(container);
@@ -1172,6 +1216,7 @@ describe('a purchase request', () => {
   const bar = (): HTMLElement => document.querySelector('.selbarwrap') as HTMLElement;
   const tickFirst = async (): Promise<void> => {
     await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' });
+    await selecting();
     await userEvent.click(rowCheckboxes()[0] as HTMLElement);
   };
   const ticked = (): number => document.querySelectorAll('.sel[data-row]').length;
@@ -1255,7 +1300,7 @@ describe('a purchase request', () => {
     await waitFor(() => {
       expect(ticked()).toBe(0);
     });
-    expect(within(bar()).queryByRole('button', { name: 'Снять выделение' })).toBeNull();
+    expect(bar().querySelector('.selcount')).toHaveTextContent('Выбрано 0 позиций');
     await expectNoA11yViolations(container);
   });
 
@@ -1423,6 +1468,7 @@ describe('a purchase request', () => {
       const { container } = await signedIn();
       await addToOwn();
       await userEvent.click(within(bar()).getByRole('button', { name: 'Снять выделение' }));
+      await selecting();
       await userEvent.click(rowCheckboxes()[0] as HTMLElement);
       expect(within(bar()).queryByRole('group')).toBeNull();
       expect(notify()).toBeInTheDocument();
@@ -1521,13 +1567,19 @@ describe('the filter', () => {
   };
   const rowsOf = (c: HTMLElement): string[] =>
     [...c.querySelectorAll<HTMLElement>('[data-row]')].map((e) => e.dataset['row'] ?? '');
-  const pills = (c: HTMLElement): string[] =>
-    [...c.querySelectorAll<HTMLElement>('.fpill')].map((e) => e.dataset['val'] ?? '');
-  const pill = (c: HTMLElement, val: string): HTMLElement =>
-    c.querySelector<HTMLElement>('.fpill[data-val="' + val + '"]') as HTMLElement;
-  const count = (c: HTMLElement): string => c.querySelector('.fcount')?.textContent ?? '';
-  const chip = (name: string): HTMLElement =>
-    within(document.querySelector('.ffilter') as HTMLElement).getByRole('button', { name });
+  /* The lead line's count, before the update time. */
+  const count = (c: HTMLElement): string =>
+    (c.querySelector('.page-sub')?.textContent ?? '').split(' · ')[0] ?? '';
+  const sheet = (): HTMLElement => document.querySelector('dialog.sheet') as HTMLElement;
+  const chip = (name: string): HTMLElement => within(sheet()).getByRole('button', { name });
+  /* «Фильтры», lit as «Фильтры · N» while N values are in force. */
+  const toggle = (): HTMLElement =>
+    screen.getByRole('button', { name: /^(Фильтры|Filters)( · \d+)?$/ });
+  /* Presses a value's chip in the sheet, opening the sheet first. */
+  const press = async (name: string): Promise<void> => {
+    if (!document.querySelector('dialog.sheet')) await userEvent.click(toggle());
+    await userEvent.click(chip(name));
+  };
   const shopReady = (): Promise<HTMLElement> =>
     screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' });
   /* «Лавка кузнеца» holding only `keys`, so a test sets the count or the kinds. */
@@ -1570,7 +1622,7 @@ describe('the filter', () => {
     );
 
   describe('the threshold', () => {
-    it('draws no search box below 8 entries, and the box and the strip at 8', async () => {
+    it('draws no search box below 8 entries, and the search row at 8', async () => {
       open('#/s/player-token-95', sized());
       expect(
         await screen.findByRole('heading', { level: 1, name: 'Семь' })
@@ -1580,12 +1632,16 @@ describe('the filter', () => {
       cleanup();
       const { container } = open('#/s/player-token-96', sized());
       await screen.findByRole('heading', { level: 1, name: 'Склад' });
-      expect(screen.getByRole('searchbox')).toHaveAttribute('placeholder', ru.searchPh);
+      expect(screen.getByRole('searchbox', { name: ru.searchPh })).toHaveAttribute(
+        'placeholder',
+        ru.searchShort
+      );
       expect(screen.getByRole('button', { name: ru.filters })).toHaveAttribute(
         'aria-expanded',
         'false'
       );
-      expect(count(container)).toBe('8');
+      expect(container.querySelector('.lfind')?.lastElementChild).toHaveClass('selmode');
+      expect(count(container)).toBe('8 позиций');
       await expectNoA11yViolations(container);
     });
 
@@ -1597,22 +1653,22 @@ describe('the filter', () => {
       );
       await shopReady();
       expect(screen.getByRole('searchbox')).toBeInTheDocument();
-      expect(container.querySelector('.fbar')).toBeNull();
-      expect(pills(container)).toEqual([]);
+      expect(screen.queryByRole('button', { name: /^Фильтры/ })).toBeNull();
       expect(rowsOf(container)).toHaveLength(8);
       expect(router.hash()).toBe('#/s/player-token-1/f_kind-consumable');
       await expectNoA11yViolations(container);
     });
 
-    it('stays drawn when the last pill goes, the query clears and a re-read shrinks the list', async () => {
+    it('stays drawn when the last value goes, the query clears and a re-read shrinks the list', async () => {
       const cloud = fakeCloud(SEED);
       for (const key of ['ci1', 'cc1', 'voa2_a3'])
         cloud.playEntry(SHOP, key, { gm_only: true });
       const { container } = open('#/s/player-token-1/f_kind-weapon', cloud);
       await shopReady();
       expect(rowsOf(container)).toHaveLength(5);
-      await userEvent.click(pill(container, 'kind:weapon'));
-      expect(pills(container)).toEqual([]);
+      await press('Оружие');
+      await userEvent.click(within(sheet()).getByRole('button', { name: 'Закрыть' }));
+      expect(toggle()).toHaveAccessibleName(ru.filters);
       expect(rowsOf(container)).toHaveLength(7);
       const box = screen.getByRole('searchbox');
       await userEvent.type(box, 'палаш');
@@ -1628,8 +1684,8 @@ describe('the filter', () => {
     it('starts unfiltered, folded and without the box on another list', async () => {
       const { container, router } = open('#/s/player-token-96', sized());
       await screen.findByRole('heading', { level: 1, name: 'Склад' });
-      await userEvent.click(screen.getByRole('button', { name: ru.filters }));
-      await userEvent.click(chip('Оружие'));
+      await press('Оружие');
+      await userEvent.click(within(sheet()).getByRole('button', { name: 'Закрыть' }));
       await userEvent.type(screen.getByRole('searchbox'), 'посох');
       router.navigate('#/s/player-token-97');
       await screen.findByRole('heading', { level: 1, name: 'Три' });
@@ -1657,19 +1713,18 @@ describe('the filter', () => {
       });
       const reads = read.mock.calls.length;
       expect(rowsOf(container)).toHaveLength(10);
-      expect(count(container)).toBe('10');
-      await userEvent.click(screen.getByRole('button', { name: ru.filters }));
-      await userEvent.click(chip('Оружие'));
-      await userEvent.click(chip('1'));
+      expect(count(container)).toBe('10 позиций');
+      await press('Оружие');
+      await press('1');
       expect(rowsOf(container)).toEqual(['q1', 'q23', 'q35']);
-      expect(count(container)).toBe('3 из 10');
-      expect(pills(container)).toEqual(['kind:weapon', 'tier:1']);
+      expect(count(container)).toBe('Показано 3 из 10');
+      expect(toggle()).toHaveAccessibleName('Фильтры · 2');
       expect(router.hash()).toBe('#/s/player-token-1/f_kind-weapon.tier-1');
       expect(router.stack).toHaveLength(1);
-      await userEvent.click(pill(container, 'tier:1'));
+      await press('1');
       expect(router.hash()).toBe('#/s/player-token-1/f_kind-weapon');
       expect(rowsOf(container)).toHaveLength(5);
-      await userEvent.click(screen.getByRole('button', { name: ru.resetAll }));
+      await userEvent.click(within(sheet()).getByRole('button', { name: ru.reset }));
       expect(router.hash()).toBe('#/s/player-token-1');
       expect(rowsOf(container)).toHaveLength(10);
       expect(read).toHaveBeenCalledTimes(reads);
@@ -1679,10 +1734,11 @@ describe('the filter', () => {
     it('opens the panel with the values of a filter link pressed', async () => {
       const { container } = open('#/s/player-token-1/f_kind-weapon.tier-1');
       await shopReady();
-      expect(screen.getByRole('button', { name: `${ru.filters} (2)` })).toHaveAttribute(
+      expect(screen.getByRole('button', { name: 'Фильтры · 2' })).toHaveAttribute(
         'aria-expanded',
         'true'
       );
+      expect(screen.getByRole('dialog', { name: ru.filters })).toBeInTheDocument();
       expect(chip('Оружие')).toHaveAttribute('aria-pressed', 'true');
       expect(chip('1')).toHaveAttribute('aria-pressed', 'true');
       expect(chip('Броня')).toHaveAttribute('aria-pressed', 'false');
@@ -1694,10 +1750,9 @@ describe('the filter', () => {
     it('ignores a value no entry answers, and the next pick writes only the values in force', async () => {
       const { container, router } = open('#/s/player-token-1/f_range-veryfar');
       await shopReady();
-      expect(pills(container)).toEqual([]);
       expect(rowsOf(container)).toHaveLength(10);
       expect(screen.getByRole('button', { name: ru.filters })).toBeInTheDocument();
-      await userEvent.click(chip('Оружие'));
+      await press('Оружие');
       expect(router.hash()).toBe('#/s/player-token-1/f_kind-weapon');
     });
 
@@ -1708,7 +1763,7 @@ describe('the filter', () => {
       expect(rowsOf(container)).toEqual(['q313']);
       cloud.playEntry(SHOP, 'q313', { gm_only: true });
       await waitFor(() => {
-        expect(pills(container)).toEqual([]);
+        expect(toggle()).toHaveAccessibleName(ru.filters);
       });
       expect(rowsOf(container)).toHaveLength(9);
       expect(router.hash()).toBe('#/s/player-token-1/f_kind-armor');
@@ -1812,20 +1867,22 @@ describe('the filter', () => {
       await shopReady();
       await userEvent.type(screen.getByRole('searchbox'), 'кинжал');
       expect(rowsOf(container)).toEqual(['q35']);
-      expect(count(container)).toBe('10');
+      expect(count(container)).toBe('Показано 1 из 10');
       expect(router.hash()).toBe('#/s/player-token-1');
     });
 
-    it('says nothing is found and offers the reset while a value is in force', async () => {
+    it('says nothing is found and offers the reset, which clears the query too', async () => {
       const { container, router } = open('#/s/player-token-1/f_kind-armor.tier-2');
       await shopReady();
-      expect(count(container)).toBe('0 из 10');
+      await userEvent.click(within(sheet()).getByRole('button', { name: 'Закрыть' }));
+      await userEvent.type(screen.getByRole('searchbox'), 'кинжал');
+      expect(count(container)).toBe('Показано 0 из 10');
       expect(screen.getByText(ru.nothing)).toBeInTheDocument();
       expect(screen.queryByRole('checkbox', { name: /Выбрать все/ })).not.toBeInTheDocument();
       await expectNoA11yViolations(container);
-      const resets = screen.getAllByRole('button', { name: ru.resetAll });
-      await userEvent.click(resets.at(-1) as HTMLElement);
+      await userEvent.click(screen.getByRole('button', { name: ru.resetAll }));
       expect(router.hash()).toBe('#/s/player-token-1');
+      expect(screen.getByRole('searchbox')).toHaveValue('');
       expect(rowsOf(container)).toHaveLength(10);
       /* Rule 20: the empty state's reset left with it; «Фильтры» takes the focus. */
       await waitFor(() => {
@@ -1833,33 +1890,34 @@ describe('the filter', () => {
       });
     });
 
-    it('hands focus to the next pill, then «Фильтры», as pills drop', async () => {
-      const { container } = open('#/s/player-token-1/f_kind-armor.tier-2');
+    it('returns the focus to «Фильтры · N» when the sheet a link opened closes', async () => {
+      open('#/s/player-token-1/f_kind-armor.tier-2');
       await shopReady();
-      await userEvent.click(pill(container, 'kind:armor'));
+      await userEvent.click(within(sheet()).getByRole('button', { name: 'Закрыть' }));
       await waitFor(() => {
-        expect(pill(container, 'tier:2')).toHaveFocus();
-      });
-      await userEvent.click(pill(container, 'tier:2'));
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: ru.filters })).toHaveFocus();
+        expect(screen.getByRole('button', { name: 'Фильтры · 2' })).toHaveFocus();
       });
     });
 
     it('keeps a tick the filter hides, and ticks only the drawn rows from select-all', async () => {
       const { container } = open('#/s/player-token-1');
       await shopReady();
+      await selecting();
       await userEvent.click(
         screen.getByRole('checkbox', { name: 'Первоклассный Спальный Мешок' })
       );
-      await userEvent.click(screen.getByRole('button', { name: ru.filters }));
-      await userEvent.click(chip('Оружие'));
-      await userEvent.click(chip('1'));
+      await press('Оружие');
+      await press('1');
+      await userEvent.click(within(sheet()).getByRole('button', { name: 'Закрыть' }));
       expect(rowsOf(container)).not.toContain('ci1');
       expect(screen.getByText(/^Выбрана 1 позиция/)).toBeInTheDocument();
-      await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все (3)' }));
+      await selecting();
+      await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все' }));
       expect(screen.getByText(/^Выбрано 4 позиции/)).toBeInTheDocument();
-      await userEvent.click(screen.getByRole('button', { name: ru.resetAll }));
+      await press('1');
+      await userEvent.click(within(sheet()).getByRole('button', { name: ru.reset }));
+      await userEvent.click(within(sheet()).getByRole('button', { name: 'Закрыть' }));
+      await selecting();
       expect(
         screen.getByRole('checkbox', { name: 'Первоклассный Спальный Мешок' })
       ).toBeChecked();
@@ -1867,18 +1925,21 @@ describe('the filter', () => {
       await expectNoA11yViolations(container);
     });
 
-    it('reads the strip, the panel and the no-match line in English', async () => {
+    it('reads the search row, the sheet and the no-match line in English', async () => {
       const en = dict('en');
       const { container } = open('#/s/player-token-1/f_kind-armor.tier-2', fakeCloud(SEED), {
         storage: memoryStorage({ 'dhloot.lang.v1': 'en' })
       });
       await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' });
-      expect(screen.getByRole('button', { name: `${en.filters} (2)` })).toBeInTheDocument();
-      expect(count(container)).toBe(`0 ${en.outOf} 10`);
+      expect(screen.getByRole('button', { name: 'Filters · 2' })).toBeInTheDocument();
+      expect(count(container)).toBe('0 of 10 shown');
       expect(screen.getByText(en.nothing)).toBeInTheDocument();
-      expect(screen.getByRole('searchbox')).toHaveAttribute('placeholder', en.searchPh);
+      expect(screen.getByRole('searchbox', { name: en.searchPh })).toHaveAttribute(
+        'placeholder',
+        en.searchShort
+      );
       expect(chip('Armor')).toHaveAttribute('aria-pressed', 'true');
-      expect(container.querySelector('.ffilter')?.textContent).toContain(en.eqTrait);
+      expect(sheet().textContent).toContain(en.eqTrait);
     });
   });
 
@@ -1906,5 +1967,83 @@ describe('the filter', () => {
     await shopReady();
     await userEvent.click(await screen.findByRole('button', { name: /^Палаш/ }));
     expect(within(screen.getByRole('dialog')).queryByText(/Комплект Ольхи/)).toBeNull();
+  });
+});
+
+describe('the compact row up to 760 px', () => {
+  Element.prototype.scrollIntoView = vi.fn();
+  const REAL = readLoot();
+  const openNarrow = async (hash: string, cloud: CloudPort = fakeCloud(SEED)) => {
+    const viewport = fakeViewport('narrow');
+    const r = render(App, {
+      env: fakeEnv({ router: memoryRouter(hash), data: fakeData(REAL), cloud, viewport })
+    });
+    await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' });
+    return { ...r, viewport };
+  };
+  const numbers = (c: HTMLElement): Record<string, string> =>
+    Object.fromEntries(
+      [...c.querySelectorAll<HTMLElement>('[data-row]')].map((r) => [
+        r.dataset['row'] ?? '',
+        r.querySelector('.cno')?.textContent ?? ''
+      ])
+    );
+
+  it('folds each row, draws «×N» for a quantity over 1, and the full row from 761 px', async () => {
+    const { container, viewport } = await openNarrow('#/s/player-token-1');
+    const rows = container.querySelectorAll('[data-row] .crow');
+    expect(rows).toHaveLength(10);
+    expect(container.querySelector('[data-row] .row-main:not(.full)')).toBeNull();
+    expect(container.querySelector('.rtail')).toBeNull();
+    const qty = [...container.querySelectorAll('.cqv')].map((e) => e.textContent);
+    expect(qty.every((q) => /^×\d+$/.test(q) && q !== '×1')).toBe(true);
+    expect(container.querySelector('[data-qty]')).toBeNull();
+    await expectNoA11yViolations(container);
+    viewport.set('wide');
+    await waitFor(() => {
+      expect(container.querySelector('.crow')).toBeNull();
+    });
+    expect(container.querySelectorAll('[data-row] .row-main')).toHaveLength(10);
+  });
+
+  it('keeps the true list numbers while a filter narrows the rows', async () => {
+    const all = await openNarrow('#/s/player-token-1');
+    const whole = numbers(all.container);
+    cleanup();
+    const some = await openNarrow('#/s/player-token-1/f_kind-weapon');
+    await userEvent.click(
+      within(document.querySelector('dialog.sheet') as HTMLElement).getByRole('button', {
+        name: 'Закрыть'
+      })
+    );
+    const shown = numbers(some.container);
+    expect(Object.keys(shown).length).toBeLessThan(Object.keys(whole).length);
+    for (const [id, no] of Object.entries(shown)) expect(no).toBe(whole[id]);
+  });
+
+  it('unfolds a row to its notes and «Открыть карточку», which opens the card', async () => {
+    const { container } = await openNarrow('#/s/gm-token-1');
+    const noted = [...container.querySelectorAll<HTMLElement>('.crow')].find((r) =>
+      r.querySelector('.cmark')
+    ) as HTMLElement;
+    const press = noted.querySelector('button.cbody') as HTMLElement;
+    await userEvent.click(press);
+    expect(press).toHaveAttribute('aria-expanded', 'true');
+    const open = document.getElementById(
+      press.getAttribute('aria-controls') ?? ''
+    ) as HTMLElement;
+    expect(open.querySelector('.hitnote')).not.toBeNull();
+    await expectNoA11yViolations(container);
+    await userEvent.click(within(open).getByRole('button', { name: 'Открыть карточку' }));
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+  });
+
+  it('marks a GM-only entry on a GM link with the mark and its dashed row', async () => {
+    const cloud = fakeCloud(SEED);
+    cloud.playEntry(uuid(101), 'q313', { gm_only: true });
+    const { container } = await openNarrow('#/s/gm-token-1', cloud);
+    const row = container.querySelector('[data-row="q313"]') as HTMLElement;
+    expect(row).toHaveClass('gm-only');
+    expect(row.querySelector('.cmark .vh')).toHaveTextContent('Только для мастера');
   });
 });

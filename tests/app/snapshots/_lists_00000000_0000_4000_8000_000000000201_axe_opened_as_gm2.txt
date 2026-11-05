@@ -27,7 +27,8 @@ daggerheart.com
 Бросить 1-2
 Бросок
 В список
-Выбрать все
+Выбрать
+Добавить свой предмет
 Ещё
 Жирный
 Закрыть
@@ -50,11 +51,7 @@ daggerheart.com
 Поиск
 Просмотр
 Результат броска
-Свой предмет
-Скачать JSON
-Скипетр
 СкипетрОсновное оружиеРанг 1 · Магическое · Влияние · Далеко · d... [namelen=186 namehash=9aee2e9c]
-Скопировать текст
 Скрыть изменение «Спальный мешок долгой дороги через перевал, бо... [namelen=139 namehash=028772a7]
 Скрыть изменение «Топор Тлеющих Углей»
 Скрыть изменения
@@ -62,10 +59,8 @@ daggerheart.com
 Таблицы
 Только для мастера: Скипетр
 Только для мастера: Топор Тлеющих Углей
-Топор Тлеющих Углей
 Топор Тлеющих УглейОсновное оружиеУникальноеМастерская Ольхи (HB... [namelen=184 namehash=e7c9f22c]
 Убрать из списка
-Удалить
 Условия использования
 Установить как приложение
 Цена
@@ -89,14 +84,11 @@ RootWebArea "Список второго ГМа - Daggerheart Loot Generator" [u
 ## en :: controls
 Account: gm2@example.test
 Add to list
+Add your own item
 Bold
 Bulleted list
 Close
-Copy text
-Delete
-Download JSON
 EN
-Ember Axe
 Ember AxePrimary weaponUniqueAlder Workshop (HB)Tier 2 · Magic ·... [namelen=159 namehash=ea056220]
 GM only: Ember Axe
 GM only: Scepter
@@ -116,7 +108,6 @@ One higher
 One lower
 Open
 Open page
-Own item
 Position in the list
 Preview
 Price
@@ -127,10 +118,9 @@ Remove from the list
 Roll
 Roll 1-2
 Roll result
-Scepter
 ScepterPrimary weaponTier 1 · Magic · Presence · Far · d6 mag · ... [namelen=156 namehash=5cf0702e]
 Search
-Select all
+Select
 Share
 Skip to content
 Tables

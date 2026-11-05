@@ -519,8 +519,8 @@
     }
   }
 
-  /* off `.dropmenu .lbl` - a third copy of `.lbl`, after Field.svelte's and
-     FilterBar.svelte's; extract only once a fourth wants it. */
+  /* off `.dropmenu .lbl` - a copy of `.lbl`, after Field.svelte's and FilterPanel.svelte's;
+     extract only once a fourth wants it. */
   .lbl {
     display: block;
     font-size: var(--t-label);

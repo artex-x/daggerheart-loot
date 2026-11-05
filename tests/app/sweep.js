@@ -569,7 +569,7 @@ function headCap(width) {
 
           document
             .querySelectorAll(
-              '.card-name a, .card-name span, .badge, .chip, .fpill, .btn, .lbl, .rnum, .tab, ' +
+              '.card-name a, .card-name span, .badge, .chip, .btn, .lbl, .rnum, .tab, ' +
                 '.craft, .dicebar, .numrow'
             )
             .forEach((e) => {

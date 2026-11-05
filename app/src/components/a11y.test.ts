@@ -336,6 +336,8 @@ const STATES: {
     route: '#/s/gm-token-1',
     cloud: () => fakeCloud(SEED),
     enter: async () => {
+      await userEvent.click(await screen.findByRole('button', { name: 'Заметка' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Заметка мастера' }));
       await screen.findByText('Кузнец торгуется, если назвать имя его брата.');
     }
   },
@@ -426,7 +428,9 @@ const STATES: {
     route: '#/lists/00000000-0000-4000-8000-000000000101',
     cloud: () => fakeCloud(SEED, 'gm1'),
     enter: async () => {
-      await userEvent.click(await screen.findByRole('button', { name: 'Свой предмет' }));
+      await userEvent.click(
+        await screen.findByRole('button', { name: 'Добавить свой предмет' })
+      );
       await userEvent.click(screen.getByRole('button', { name: 'Добавить в список' }));
       await screen.findByText('Введите название.');
     }
@@ -436,7 +440,7 @@ const STATES: {
     route: '#/lists/00000000-0000-4000-8000-000000000101',
     cloud: () => fakeCloud(SEED, 'gm1'),
     enter: async () => {
-      await screen.findByRole('button', { name: 'Свой предмет', expanded: false });
+      await screen.findByRole('button', { name: 'Добавить свой предмет', expanded: false });
     }
   },
   {
@@ -452,7 +456,9 @@ const STATES: {
     route: '#/lists/00000000-0000-4000-8000-000000000101',
     cloud: () => fakeCloud(SEED, 'gm1'),
     enter: async () => {
-      await userEvent.click(await screen.findByRole('button', { name: 'Свой предмет' }));
+      await userEvent.click(
+        await screen.findByRole('button', { name: 'Добавить свой предмет' })
+      );
       await userEvent.type(screen.getByRole('textbox', { name: 'Название' }), 'Фляга{Enter}');
       await screen.findByRole('link', { name: 'Изменить' });
     }
@@ -551,10 +557,13 @@ const COVERED: Record<string, string> = {
   'Toast.svelte':
     'the toast the add-to-list press raises, in the state above, and shell.test.ts',
   'DiceBar.svelte': 'the Core rules panel - std.test.ts and the state below',
-  'FilterBar.svelte':
-    'tables.test.ts, filterBar.test.ts with the fold closed and open, and the filter panel state below',
   'FoldButton.svelte':
-    'filterBar.test.ts with the fold closed and open, and the source chip fold closed and open in homebrewCatalog.test.ts',
+    'the source chip fold closed and open in homebrewCatalog.test.ts, and the filter panel state below',
+  'CompactRow.svelte':
+    'compactRow.test.ts folded and unfolded, listPage.test.ts and sharedListPage.test.ts at the narrow band',
+  'ListFind.svelte': 'listFind.test.ts with the sheet closed and open, and both list pages',
+  'SelMode.svelte':
+    'tables.test.ts, searchPage.test.ts, homebrewPage.test.ts and both list pages',
   'HelpBox.svelte': "PageHead's help panel states above",
   'HomebrewEditor.svelte':
     'homebrewEditor.test.ts in every kind, the problems and the banners; the failed save above',

@@ -21,12 +21,10 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
     StaticText "Клад дракона"
     textbox "Название списка" [value=Клад дракона multiline=false readonly=false required=false]
     StaticText "7 позиций из 100 · "
-    ... StaticText x23 of 27 same-shape siblings elided
+    ... StaticText x22 of 26 same-shape siblings elided
     button "Поделиться" [expanded=false]
-    button "Скопировать текст"
-    button "Скачать JSON"
     button "Печать" [description=Собрать карточки для печати: девять на лист A4]
-    ... button x6 of 10 same-shape siblings elided
+    button "Ещё" [expanded=false haspopup=menu]
     status ""
     button "Как в книге" [pressed=true]
     button "Монетами" [pressed=false]
@@ -49,17 +47,16 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
       button "Просмотр" [pressed=false]
     textbox "ТОЛЬКО ДЛЯ МАСТЕРА" [description=останется у вас multiline=true readonly=false required=false]
     DisclosureTriangle "БРОСОК ПО СПИСКУ" [expanded=false]
-    checkbox "Выбрать все" [checked=false]
-    generic ""
-    checkbox "Первоклассный Спальный Мешок" [checked=false]
+    button "Выбрать"
     spinbutton "Позиция в списке" [value=1 valuetext=1 required=false valuemin=1 valuemax=7]
+    button "Первоклассный Спальный Мешок ПРЕДМЕТ Во время отдыха вы автомати..." [namelen=86 namehash=8341b15c]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
     button "Только для мастера: Первоклассный Спальный Мешок" [description=Только для мастера pressed=false]
     button "Убрать из списка" [description=Убрать из списка]
-    ... checkbox x4 of 8 same-shape siblings elided
     spinbutton "Позиция в списке" [value=2 valuetext=2 required=false valuemin=1 valuemax=7]
+    ... button x4 of 8 same-shape siblings elided
     spinbutton "КОЛ-ВО" [value=2 valuetext=2 required=false valuemin=1 valuemax=99]
     spinbutton "ЦЕНА" [value=750 valuetext=750 required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
@@ -92,7 +89,6 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
     ... spinbutton x2 of 6 same-shape siblings elided
     ... spinbutton x2 of 6 same-shape siblings elided
     spinbutton "Позиция в списке" [value=5 valuetext=5 required=false valuemin=1 valuemax=7]
-    checkbox "Наручники" [checked=false]
     spinbutton "Позиция в списке" [value=6 valuetext=6 required=false valuemin=1 valuemax=7]
     button "Наручники ПРЕДМЕТ Эта пара наручников с замком поставляется с кл..." [namelen=69 namehash=d4e30426]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
@@ -100,7 +96,6 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
     button "Заметка" [description=Заметка]
     button "Только для мастера: Наручники" [description=Только для мастера pressed=false]
     button "Убрать из списка" [description=Убрать из списка]
-    checkbox "Мистический Плащ" [checked=false]
     spinbutton "Позиция в списке" [value=7 valuetext=7 required=false valuemin=1 valuemax=7]
     button "Мистический Плащ ПРЕДМЕТ Существо с Характеристикой Заклинателя,..." [namelen=145 namehash=55be100f]
     StaticText "КОЛ-ВО"
@@ -110,7 +105,7 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
     button "Заметка" [description=Заметка]
     button "Только для мастера: Мистический Плащ" [description=Только для мастера pressed=false]
     button "Убрать из списка" [description=Убрать из списка]
-    button "Свой предмет" [expanded=false]
+    button "Добавить свой предмет" [expanded=false]
     status ""
     status ""
   contentinfo ""
@@ -127,27 +122,25 @@ daggerheart.com
 Аккаунт: gm4@example.test
 Бросить 1-7
 Бросок
-Выбрать все
+Выбрать
+Добавить свой предмет
+Ещё
 Жирный
 Заметка
-Заряжающий Колчан
 Заряжающий КолчанПредметКогда вы успешно наносите удар стрелой и... [namelen=141 namehash=b56c369b]
 К содержимому
 Как в книге
 Конфиденциальность
 Курсив
 ЛутDaggerheart
-Мистический Плащ
 Мистический ПлащПредметСущество с Характеристикой Заклинателя, н... [namelen=143 namehash=7854e7c3]
 Монетами
 На единицу больше
 На единицу меньше
 Название списка
-Наручники
 НаручникиПредметЭта пара наручников с замком поставляется с ключ... [namelen=67 namehash=77df6619]
 Нумерованный список
 Очистить заметку
-Первоклассный Спальный Мешок
 Первоклассный Спальный МешокПредметВо время отдыха вы автоматиче... [namelen=84 namehash=f15473c8]
 Печать
 Поделиться
@@ -156,15 +149,10 @@ daggerheart.com
 Подсказка: Цена
 Позиция в списке
 Поиск
-Пронзительная Свирель
 Пронзительная СвирельПредметЭта свирель ручной работы имеет хара... [namelen=161 namehash=e5bf576d]
 Просмотр
-Разговаривающие Сферы
 Разговаривающие СферыПредметЭта пара сфер позволяет существам, к... [namelen=125 namehash=7957c029]
 Результат броска
-Свой предмет
-Скачать JSON
-Скопировать текст
 Список
 Справка
 Таблицы
@@ -176,10 +164,8 @@ daggerheart.com
 Только для мастера: Разговаривающие Сферы
 Только для мастера: Факел Алистера
 Убрать из списка
-Удалить
 Условия использования
 Установить как приложение
-Факел Алистера
 Факел АлистераПредметВы можете зажигать этот магический факел по... [namelen=189 namehash=afee43ad]
 Цена
 
@@ -201,12 +187,10 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
     StaticText "Клад дракона"
     textbox "List name" [value=Клад дракона multiline=false readonly=false required=false]
     StaticText "7 items of 100 · "
-    ... StaticText x23 of 27 same-shape siblings elided
+    ... StaticText x22 of 26 same-shape siblings elided
     button "Share" [expanded=false]
-    button "Copy text"
-    button "Download JSON"
     button "Print" [description=Lay these out for printing: nine to an A4 sheet]
-    ... button x6 of 10 same-shape siblings elided
+    button "More" [expanded=false haspopup=menu]
     status ""
     button "As in the book" [pressed=true]
     button "In coins" [pressed=false]
@@ -229,17 +213,16 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
       button "Preview" [pressed=false]
     textbox "GM ONLY" [description=stays with you multiline=true readonly=false required=false]
     DisclosureTriangle "ROLL ON THIS LIST" [expanded=false]
-    checkbox "Select all" [checked=false]
-    generic ""
-    checkbox "Premium Bedroll" [checked=false]
+    button "Select"
     spinbutton "Position in the list" [value=1 valuetext=1 required=false valuemin=1 valuemax=7]
+    button "Premium Bedroll ITEM During downtime, you automatically clear a ..." [namelen=71 namehash=f1054083]
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
     button "GM only: Premium Bedroll" [description=GM only pressed=false]
     button "Remove from the list" [description=Remove from the list]
-    ... checkbox x4 of 8 same-shape siblings elided
     spinbutton "Position in the list" [value=2 valuetext=2 required=false valuemin=1 valuemax=7]
+    ... button x4 of 8 same-shape siblings elided
     spinbutton "QTY" [value=2 valuetext=2 required=false valuemin=1 valuemax=99]
     spinbutton "PRICE" [value=750 valuetext=750 required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
@@ -272,7 +255,6 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
     ... spinbutton x2 of 6 same-shape siblings elided
     ... spinbutton x2 of 6 same-shape siblings elided
     spinbutton "Position in the list" [value=5 valuetext=5 required=false valuemin=1 valuemax=7]
-    checkbox "Manacles" [checked=false]
     spinbutton "Position in the list" [value=6 valuetext=6 required=false valuemin=1 valuemax=7]
     button "Manacles ITEM This pair of locking cuffs comes with a key."
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
@@ -280,7 +262,6 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
     button "Note" [description=Note]
     button "GM only: Manacles" [description=GM only pressed=false]
     button "Remove from the list" [description=Remove from the list]
-    checkbox "Arcane Cloak" [checked=false]
     spinbutton "Position in the list" [value=7 valuetext=7 required=false valuemin=1 valuemax=7]
     button "Arcane Cloak ITEM A creature with a Spellcast trait wearing this..." [namelen=119 namehash=9e18b7d9]
     StaticText "QTY"
@@ -290,7 +271,7 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
     button "Note" [description=Note]
     button "GM only: Arcane Cloak" [description=GM only pressed=false]
     button "Remove from the list" [description=Remove from the list]
-    button "Own item" [expanded=false]
+    button "Add your own item" [expanded=false]
     status ""
     status ""
   contentinfo ""
@@ -302,19 +283,14 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
 
 ## en :: controls
 Account: gm4@example.test
-Alistair's Torch
+Add your own item
 Alistair's TorchItemYou can light this magic torch at will. The ... [namelen=162 namehash=ca396948]
-Arcane Cloak
 Arcane CloakItemA creature with a Spellcast trait wearing this c... [namelen=117 namehash=f38d5937]
 As in the book
 Bold
 Bulleted list
-Charging Quiver
 Charging QuiverItemWhen you succeed on an attack with an arrow s... [namelen=145 namehash=07a311bd]
 Clear the note
-Copy text
-Delete
-Download JSON
 EN
 GM only: Alistair's Torch
 GM only: Arcane Cloak
@@ -332,17 +308,14 @@ Install as an app
 Italic
 List name
 LootDaggerheart
-Manacles
 ManaclesItemThis pair of locking cuffs comes with a key.
+More
 Note
 Numbered list
 One higher
 One lower
-Own item
-Piper Whistle
 Piper WhistleItemThis handcrafted whistle has a distinctive soun... [namelen=149 namehash=81a85b00]
 Position in the list
-Premium Bedroll
 Premium BedrollItemDuring downtime, you automatically clear a St... [namelen=69 namehash=b98fcd07]
 Preview
 Price
@@ -354,10 +327,9 @@ Roll
 Roll 1-7
 Roll result
 Search
-Select all
+Select
 Share
 Skip to content
-Speaking Orbs
 Speaking OrbsItemThis pair of orbs allows any creatures holding ... [namelen=120 namehash=20695eaf]
 Tables
 Terms of use

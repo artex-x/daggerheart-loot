@@ -1,0 +1,154 @@
+# #/lists/00000000-0000-4000-8000-000000008001 ~ long name as gm4
+# route: #/lists
+# why: a 120-character list name: the title field on one line beside «Выбрать» and «Ещё»
+# as: gm4
+
+## ru :: tree
+RootWebArea "Сокровищница Сокровищница Сокровищница Сокровищница Сокровищница..." [url=/lists/00000000-0000-4000-8000-000000008001?as=gm4 namelen=149 namehash=f3841412]
+  link "К содержимому" [url=/lists/00000000-0000-4000-8000-000000008001?as=gm4#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    button "Аккаунт: gm4@example.test" [expanded=false haspopup=menu]
+    navigation "Разделы"
+      link "Бросок" [url=/roll/std]
+      link "Таблицы" [url=/tables]
+      link "Поиск" [url=/search]
+  main ""
+    StaticText "Сокровищница Сокровищница Сокровищница Сокровищница Сокровищница..." [namelen=120 namehash=7ec89a3c]
+    textbox "Название списка" [value=Сокровищница Сокровищница Сокровищница Сокровищница Сокровищница Сокровищница Сокровищница Сокровищница Сокровищница Сок multiline=false readonly=false required=false]
+    StaticText "7 позиций из 100 · "
+    StaticText "Сохранено"
+    StaticText " · "
+    button "Заметки" [expanded=false]
+    button "Выбрать"
+    button "Ещё" [expanded=false haspopup=menu]
+    status ""
+    button "1 Первоклассный Спальный Мешок ПРЕДМЕТ Во время отдыха вы автома..." [expanded=false namelen=88 namehash=6018a4b1]
+    spinbutton "Кол-во: Первоклассный Спальный Мешок" [valuetext= required=false valuemin=1 valuemax=99]
+    ... button x5 of 9 same-shape siblings elided
+    spinbutton "Кол-во: Пронзительная Свирель" [valuetext= required=false valuemin=1 valuemax=99]
+    ... spinbutton x3 of 7 same-shape siblings elided
+    spinbutton "Кол-во: Наручники" [valuetext= required=false valuemin=1 valuemax=99]
+    button "7 Мистический Плащ ПРЕДМЕТ Существо с Характеристикой Заклинател..." [expanded=false namelen=147 namehash=51925581]
+    spinbutton "Кол-во: Мистический Плащ" [valuetext= required=false valuemin=1 valuemax=99]
+    button "Добавить свой предмет" [expanded=false]
+    status ""
+    status ""
+  contentinfo ""
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=/pages/install.html]
+      link "Конфиденциальность" [url=/pages/privacy.html]
+      link "Условия использования" [url=/pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+
+## ru :: controls
+1 Первоклассный Спальный МешокПредмет Во время отдыха вы автомат... [namelen=87 namehash=d9eb177e]
+2 Пронзительная СвирельПредмет Эта свирель ручной работы имеет х... [namelen=164 namehash=cd6f8526]
+3 Заряжающий КолчанПредмет Когда вы успешно наносите удар стрело... [namelen=144 namehash=19e5c89d]
+4 Факел АлистераПредмет Вы можете зажигать этот магический факел... [namelen=192 namehash=67a9056f]
+5 Разговаривающие СферыПредмет Эта пара сфер позволяет существам... [namelen=128 namehash=c239bef7]
+6 НаручникиПредмет Эта пара наручников с замком поставляется с к... [namelen=70 namehash=1628b6df]
+7 Мистический ПлащПредмет Существо с Характеристикой Заклинателя... [namelen=146 namehash=a6b93435]
+EN
+RU
+daggerheart.com
+Аккаунт: gm4@example.test
+Бросок
+Выбрать
+Добавить свой предмет
+Ещё
+Заметки
+К содержимому
+Кол-во: Заряжающий Колчан
+Кол-во: Мистический Плащ
+Кол-во: Наручники
+Кол-во: Первоклассный Спальный Мешок
+Кол-во: Пронзительная Свирель
+Кол-во: Разговаривающие Сферы
+Кол-во: Факел Алистера
+Конфиденциальность
+ЛутDaggerheart
+Название списка
+Поиск
+Таблицы
+Условия использования
+Установить как приложение
+
+## en :: tree
+RootWebArea "Сокровищница Сокровищница Сокровищница Сокровищница Сокровищница..." [url=/en/lists/00000000-0000-4000-8000-000000008001?as=gm4 namelen=149 namehash=0059ca1f]
+  link "Skip to content" [url=/en/lists/00000000-0000-4000-8000-000000008001?as=gm4#main]
+  banner ""
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    button "Account: gm4@example.test" [expanded=false haspopup=menu]
+    navigation "Sections"
+      link "Roll" [url=/en/roll/std]
+      link "Tables" [url=/en/tables]
+      link "Search" [url=/en/search]
+  main ""
+    StaticText "Сокровищница Сокровищница Сокровищница Сокровищница Сокровищница..." [namelen=120 namehash=7ec89a3c]
+    textbox "List name" [value=Сокровищница Сокровищница Сокровищница Сокровищница Сокровищница Сокровищница Сокровищница Сокровищница Сокровищница Сок multiline=false readonly=false required=false]
+    StaticText "7 items of 100 · "
+    StaticText "Saved"
+    StaticText " · "
+    button "Notes" [expanded=false]
+    button "Select"
+    button "More" [expanded=false haspopup=menu]
+    status ""
+    button "1 Premium Bedroll ITEM During downtime, you automatically clear ..." [expanded=false namelen=73 namehash=8d67c367]
+    spinbutton "Qty: Premium Bedroll" [valuetext= required=false valuemin=1 valuemax=99]
+    ... button x5 of 9 same-shape siblings elided
+    spinbutton "Qty: Piper Whistle" [valuetext= required=false valuemin=1 valuemax=99]
+    ... spinbutton x3 of 7 same-shape siblings elided
+    spinbutton "Qty: Manacles" [valuetext= required=false valuemin=1 valuemax=99]
+    button "7 Arcane Cloak ITEM A creature with a Spellcast trait wearing th..." [expanded=false namelen=121 namehash=15d1816d]
+    spinbutton "Qty: Arcane Cloak" [valuetext= required=false valuemin=1 valuemax=99]
+    button "Add your own item" [expanded=false]
+    status ""
+    status ""
+  contentinfo ""
+    navigation "Site pages"
+      link "Install as an app" [url=/pages/en/install.html]
+      link "Privacy" [url=/pages/en/privacy.html]
+      link "Terms of use" [url=/pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
+
+## en :: controls
+1 Premium BedrollItem During downtime, you automatically clear a... [namelen=72 namehash=728ff125]
+2 Piper WhistleItem This handcrafted whistle has a distinctive s... [namelen=152 namehash=8b03b4da]
+3 Charging QuiverItem When you succeed on an attack with an arro... [namelen=148 namehash=ff4e88f7]
+4 Alistair's TorchItem You can light this magic torch at will. T... [namelen=165 namehash=43d36318]
+5 Speaking OrbsItem This pair of orbs allows any creatures holdi... [namelen=123 namehash=0d3f0b27]
+6 ManaclesItem This pair of locking cuffs comes with a key.
+7 Arcane CloakItem A creature with a Spellcast trait wearing thi... [namelen=120 namehash=76e58e85]
+Account: gm4@example.test
+Add your own item
+EN
+Install as an app
+List name
+LootDaggerheart
+More
+Notes
+Privacy
+Qty: Alistair's Torch
+Qty: Arcane Cloak
+Qty: Charging Quiver
+Qty: Manacles
+Qty: Piper Whistle
+Qty: Premium Bedroll
+Qty: Speaking Orbs
+RU
+Roll
+Search
+Select
+Skip to content
+Tables
+Terms of use
+daggerheart.com

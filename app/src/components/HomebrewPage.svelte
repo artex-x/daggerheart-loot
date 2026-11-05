@@ -23,6 +23,7 @@
   import Panel from './Panel.svelte';
   import PinItem from './PinItem.svelte';
   import SearchBox from './SearchBox.svelte';
+  import SelMode from './SelMode.svelte';
   import SignInPrompt from './SignInPrompt.svelte';
   import TableRows from './TableRows.svelte';
   import type HomebrewImport from './HomebrewImport.svelte';
@@ -33,7 +34,9 @@
     chosenLabels,
     encodeFilter,
     groupsFor,
+    inForceOf,
     passes,
+    toggledFilter,
     type FilterState
   } from '../lib/filters.js';
   import {
@@ -108,15 +111,7 @@
   );
   /* A picked value no row offers is not in force: a re-read that drops a source or a
      section, or a source pick that leaves another source's section. */
-  const inForce = $derived.by<FilterState>(() => {
-    const out: FilterState = {};
-    for (const row of facRows) {
-      const on = picked[row.group] ?? [];
-      const kept = row.values.map((v) => v.value).filter((v) => on.includes(v));
-      if (kept.length) out[row.group] = kept;
-    }
-    return out;
-  });
+  const inForce = $derived(inForceOf(facRows, picked));
   const drawn = $derived(
     found.filter((it) => passes(inForce, HB_GROUPS, (g) => facetOf(it, g)))
   );
@@ -136,12 +131,7 @@
   }
 
   function pickFacet(group: string, value: string): void {
-    const order = facRows.find((r) => r.group === group)?.values.map((v) => v.value) ?? [];
-    const current = inForce[group] ?? [];
-    const next = current.includes(value)
-      ? current.filter((v) => v !== value)
-      : order.filter((v) => current.includes(v) || v === value);
-    applyFilter({ ...inForce, [group]: next });
+    applyFilter(toggledFilter(facRows, inForce, group, value));
   }
 
   /* Rule 20: the empty state's «Сбросить фильтры» goes with the empty state; the focus goes to
@@ -458,13 +448,12 @@
                 <span class="end">{@render importToggle()}</span>
               {/if}
               {#if !app.selecting && drawnIds.length > 0}
-                <button
-                  type="button"
-                  class="selmode"
+                <SelMode
+                  label={t.selectMode}
                   onclick={() => {
                     void startSelecting();
-                  }}>{t.selectMode}</button
-                >
+                  }}
+                />
               {/if}
             </div>
           {/if}
@@ -596,8 +585,7 @@
   }
 
   .tools :global(input[type='search']),
-  .tools :global(.btn.sm),
-  .selmode {
+  .tools :global(.btn.sm) {
     height: 40px;
   }
 
@@ -613,19 +601,6 @@
 
   .grow ~ .end {
     margin-left: 0;
-  }
-
-  .selmode {
-    padding: 0 11px;
-    border: 1px solid var(--line2);
-    border-radius: var(--r-sm);
-    background: var(--surface);
-    color: var(--txt);
-    font: 600 var(--t-data) / 1 var(--ui);
-  }
-
-  .selmode:hover {
-    border-color: var(--muted2);
   }
 
   .count {
@@ -708,8 +683,7 @@
     }
 
     .tools :global(input[type='search']),
-    .tools :global(.btn.sm),
-    .selmode {
+    .tools :global(.btn.sm) {
       padding: 0 9px;
     }
   }

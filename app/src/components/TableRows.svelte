@@ -20,8 +20,7 @@
 </script>
 
 <script lang="ts">
-  /* One table's rows or tiles, plus the "select all" bar above them - off
-     `renderList()`/`selectAllHTML()`/`rowHTML()`/`tileHTML()` in app.js.
+  /* One table's rows or tiles - off `renderList()`/`rowHTML()`/`tileHTML()` in app.js.
 
      A genuine component rather than a snippet local to `TablesPage.svelte`:
      every sectioned body (tier, frame, community, and each alternate-table
@@ -33,9 +32,6 @@
      confirmed with a two-line reproduction outside this file - while a real
      component, called the way every other one in this codebase already is,
      does not trip it.
-
-     `ontoggleall` draws the «Выбрать все (N)» strip for the shared page. The catalog and
-     search pass none: their selection bar's «Все» is the one select-all control.
 
      `ticks` false (the catalog outside its selection mode) draws no tick column and no
      tile box. */
@@ -73,11 +69,12 @@
     ontoggle: (id: string) => void;
     onartfail: (id: string) => void;
     onopen: (it: Record_) => void;
-    ontoggleall?: (ids: string[]) => void;
     /** Drawn under `RowMain` in a list-view row's second column, at most two
      *  lines (`.row`'s grid) - the shared page's entry notes and take line.
      *  The tile view draws nothing. */
     inside?: Snippet<[Record_]>;
+    /** Draws a list-view row's body in place of `RowMain`: the shared page's compact row. */
+    row?: Snippet<[TableEntry]> | undefined;
     /** The id of the row the anchor effect is outlining right now - state
      *  rather than a DOM write, so a keyed re-render (a view switch, a
      *  language switch) keeps the outline on the right element instead of
@@ -109,8 +106,8 @@
     ontoggle,
     onartfail,
     onopen,
-    ontoggleall,
     inside,
+    row,
     flash,
     primary = false,
     ticks = true,
@@ -144,8 +141,6 @@
     };
   });
 
-  const allSelected = $derived(entries.length > 0 && entries.every((e) => selected(e.it.id)));
-
   /** The rank shown on a tile with no roll number - equipment's own tier, or
    *  nothing at all. Off `tileTier()` in app.js. */
   function tileTier(it: Record_): string {
@@ -167,22 +162,6 @@
     return (lang === 'ru' ? it.en : it.ru) || '';
   }
 </script>
-
-{#if ticks && ontoggleall && entries.length}
-  {@const ids = entries.map((e) => e.it.id)}
-  <label class="selall">
-    <span class="selbox" data-on={allSelected ? '1' : undefined}>
-      <input
-        type="checkbox"
-        checked={allSelected}
-        onchange={() => {
-          ontoggleall(ids);
-        }}
-      />
-    </span>
-    <span>{t.selectAll} ({entries.length})</span>
-  </label>
-{/if}
 
 <div
   class={view === 'list' ? 'rows' : 'tgrid'}
@@ -213,19 +192,19 @@
             />
           </label>
         {/if}
-        <RowMain
-          {it}
-          {lang}
-          {artBroken}
-          {onartfail}
-          {onopen}
-          num={rollNum}
-          tail={entry.tail}
-          gmOnly={entry.gmOnly}
-          {hide}
-          {terms}
-          {numLabeled}
-        />
+        {#if row}{@render row(entry)}{:else}<RowMain
+            {it}
+            {lang}
+            {artBroken}
+            {onartfail}
+            {onopen}
+            num={rollNum}
+            tail={entry.tail}
+            gmOnly={entry.gmOnly}
+            {hide}
+            {terms}
+            {numLabeled}
+          />{/if}
         {#if inside}{@render inside(it)}{/if}
       </div>
     {:else}
@@ -278,7 +257,7 @@
 </div>
 
 <style>
-  /* off `.selbox` and `.selall` */
+  /* off `.selbox` */
   .selbox {
     display: flex;
     align-items: center;
@@ -307,30 +286,6 @@
     outline: 2px solid var(--gold);
     outline-offset: -3px;
     border-radius: 8px;
-  }
-
-  .selall {
-    display: inline-flex;
-    align-items: center;
-    margin-bottom: 8px;
-    color: var(--muted2);
-    font-size: var(--t-data);
-    cursor: pointer;
-    border-radius: 9px;
-    padding-right: 12px;
-    min-height: 38px;
-    transition: 0.15s;
-  }
-
-  .selall:hover {
-    color: var(--muted);
-    background: rgb(255 255 255 / 3%);
-  }
-
-  .selall .selbox {
-    border-right: 0;
-    width: 42px;
-    align-self: stretch;
   }
 
   /* off `[data-row]{scroll-margin-top:...}` and `.row.flash,.tilewrap.flash`

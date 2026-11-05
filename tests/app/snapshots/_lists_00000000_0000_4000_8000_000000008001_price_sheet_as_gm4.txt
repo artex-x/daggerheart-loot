@@ -1,0 +1,184 @@
+# #/lists/00000000-0000-4000-8000-000000008001 ~ price sheet as gm4
+# route: #/lists
+# why: row 2 ticked and «Цены» pressed: the sheet «Цены выбранных» with the percentage row, the guess and «Убрать цену (1)», «Проставить эти цены»
+# as: gm4
+
+## ru :: tree
+RootWebArea "Клад дракона - Генератор лута Daggerheart" [url=/lists/00000000-0000-4000-8000-000000008001?as=gm4]
+  dialog "Цены выбранных" [modal=true]
+    heading "Цены выбранных" [level=2]
+    button "Закрыть" [focused=true]
+    StaticText "Изменить на, %"
+    button "На единицу меньше"
+    textbox "Результат броска" [value=-20 multiline=false readonly=false required=false invalid=true]
+    button "На единицу больше"
+    button "Сделать скидку"
+    StaticText "Минус - скидка, плюс - наценка. Считается от текущей цены."
+    ... StaticText x2 of 6 same-shape siblings elided
+    StaticText "Обычная · 80–120 зол."
+    StaticText "1 мешок"
+    button "Убрать цену (1)"
+    button "Проставить эти цены"
+
+## ru :: controls
+EN
+RU
+daggerheart.com
+Аккаунт: gm4@example.test
+Бросить 1-7
+Бросок
+Взять: Пронзительная Свирель
+Выбрать все
+Добавить свой предмет
+Ещё
+Жирный
+Закрыть
+Заметка
+Заряжающий Колчан
+Заряжающий КолчанПредметКогда вы успешно наносите удар стрелой и... [namelen=141 namehash=b56c369b]
+К содержимому
+Как в книге
+Конфиденциальность
+Курсив
+ЛутDaggerheart
+Макс, взять все: Пронзительная Свирель
+Мин, взять 1: Пронзительная Свирель
+Мистический Плащ
+Мистический ПлащПредметСущество с Характеристикой Заклинателя, н... [namelen=143 namehash=7854e7c3]
+Монетами
+На единицу больше
+На единицу меньше
+Название списка
+Наручники
+НаручникиПредметЭта пара наручников с замком поставляется с ключ... [namelen=67 namehash=77df6619]
+Нумерованный список
+Очистить заметку
+Первоклассный Спальный Мешок
+Первоклассный Спальный МешокПредметВо время отдыха вы автоматиче... [namelen=84 namehash=f15473c8]
+Печать
+Поделиться
+Подсказка: Для игроков
+Подсказка: Только для мастера
+Подсказка: Цена
+Позиция в списке
+Поиск
+Пронзительная Свирель
+Пронзительная СвирельПредметЭта свирель ручной работы имеет хара... [namelen=161 namehash=e5bf576d]
+Просмотр
+Проставить эти цены
+Разговаривающие Сферы
+Разговаривающие СферыПредметЭта пара сфер позволяет существам, к... [namelen=125 namehash=7957c029]
+Результат броска
+Сделать скидку
+Скопировать текст
+Скрыть от игроков (1)
+Снять выделение
+Список
+Справка
+Таблицы
+Только для мастера: Заряжающий Колчан
+Только для мастера: Мистический Плащ
+Только для мастера: Наручники
+Только для мастера: Первоклассный Спальный Мешок
+Только для мастера: Пронзительная Свирель
+Только для мастера: Разговаривающие Сферы
+Только для мастера: Факел Алистера
+Убрать из списка
+Убрать цену (1)
+Удалить (1)
+Условия использования
+Установить как приложение
+Факел Алистера
+Факел АлистераПредметВы можете зажигать этот магический факел по... [namelen=189 namehash=afee43ad]
+Цена
+Цены
+
+## en :: tree
+RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/lists/00000000-0000-4000-8000-000000008001?as=gm4]
+  dialog "Prices of the selected" [modal=true]
+    heading "Prices of the selected" [level=2]
+    button "Close" [focused=true]
+    StaticText "Change by, %"
+    button "One lower"
+    textbox "Roll result" [value=-20 multiline=false readonly=false required=false invalid=true]
+    button "One higher"
+    button "Discount"
+    StaticText "Minus discounts, plus marks up. Counted from the current price."
+    ... StaticText x2 of 6 same-shape siblings elided
+    StaticText "Common · 80–120 gp"
+    StaticText "1 bag"
+    button "Clear price (1)"
+    button "Set these prices"
+
+## en :: controls
+Account: gm4@example.test
+Add your own item
+Alistair's Torch
+Alistair's TorchItemYou can light this magic torch at will. The ... [namelen=162 namehash=ca396948]
+Arcane Cloak
+Arcane CloakItemA creature with a Spellcast trait wearing this c... [namelen=117 namehash=f38d5937]
+As in the book
+Bold
+Bulleted list
+Charging Quiver
+Charging QuiverItemWhen you succeed on an attack with an arrow s... [namelen=145 namehash=07a311bd]
+Clear price (1)
+Clear selection
+Clear the note
+Close
+Copy text
+Delete (1)
+Discount
+EN
+GM only: Alistair's Torch
+GM only: Arcane Cloak
+GM only: Charging Quiver
+GM only: Manacles
+GM only: Piper Whistle
+GM only: Premium Bedroll
+GM only: Speaking Orbs
+Help
+Help: For players
+Help: GM only
+Help: Price
+Hide from players (1)
+In coins
+Install as an app
+Italic
+List name
+LootDaggerheart
+Manacles
+ManaclesItemThis pair of locking cuffs comes with a key.
+Max, take all: Piper Whistle
+Min, take 1: Piper Whistle
+More
+Note
+Numbered list
+One higher
+One lower
+Piper Whistle
+Piper WhistleItemThis handcrafted whistle has a distinctive soun... [namelen=149 namehash=81a85b00]
+Position in the list
+Premium Bedroll
+Premium BedrollItemDuring downtime, you automatically clear a St... [namelen=69 namehash=b98fcd07]
+Preview
+Price
+Prices
+Print
+Privacy
+RU
+Remove from the list
+Roll
+Roll 1-7
+Roll result
+Search
+Select all
+Set these prices
+Share
+Skip to content
+Speaking Orbs
+Speaking OrbsItemThis pair of orbs allows any creatures holding ... [namelen=120 namehash=20695eaf]
+Tables
+Take: Piper Whistle
+Terms of use
+daggerheart.com

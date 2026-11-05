@@ -42,7 +42,7 @@ function openShop(options: FakeCloudOptions = {}) {
 }
 
 async function openPanel(): Promise<HTMLElement> {
-  await userEvent.click(await screen.findByRole('button', { name: 'Свой предмет' }));
+  await userEvent.click(await screen.findByRole('button', { name: 'Добавить свой предмет' }));
   return screen.getByRole('textbox', { name: 'Название' });
 }
 
@@ -55,7 +55,7 @@ async function itemsNamed(cloud: CloudPort, name: string): Promise<number> {
 describe('the own-item panel', () => {
   it('opens under the row with the name focused, and Escape closes it back to the row', async () => {
     const { container } = openShop();
-    const toggle = await screen.findByRole('button', { name: 'Свой предмет' });
+    const toggle = await screen.findByRole('button', { name: 'Добавить свой предмет' });
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
     const name = await openPanel();
     expect(toggle).toHaveAttribute('aria-expanded', 'true');
@@ -69,7 +69,7 @@ describe('the own-item panel', () => {
     await userEvent.keyboard('{Escape}');
     expect(screen.queryByRole('textbox', { name: 'Название' })).not.toBeInTheDocument();
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Свой предмет' })).toHaveFocus();
+      expect(screen.getByRole('button', { name: 'Добавить свой предмет' })).toHaveFocus();
     });
     await openPanel();
     const panel = screen.getByRole('region', { name: 'Свой предмет в этот список' });

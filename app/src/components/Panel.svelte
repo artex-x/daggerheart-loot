@@ -3,7 +3,7 @@
    *
    * Extracted because `AltPanel`, `StdPanel`, `RollPanel`, `ListsPage` and
    * `SearchPage` each carried an identical copy of these five declarations.
-   * `TablesPage`'s `.tablenav`, `FilterBar`'s `.ffilter` and `ListPage`'s
+   * `TablesPage`'s `.tablenav` and `ListPage`'s
    * `<details class="panel lroll">` stay inline: each is the base rule plus a
    * variant margin or element the parent owns, and Svelte scopes a parent's
    * rule to the parent's own elements - giving this component a `class` prop

@@ -427,6 +427,25 @@ const FORMATTED_SPECS = [
   LAVKA
 ];
 
+/* Fourteen entries: past the list page's search threshold of 8. */
+const MANY_SPECS = [
+  { ...KLAD, ids: [...SEVEN_IDS, 'ci8', 'cc1', 'cc2', 'cc3', 'q1', 'q2', 'q3'] },
+  LAVKA
+];
+/* A list name at `NAME_MAX`, 120 code points. */
+const LONG_LIST_NAME = Array.from({ length: 12 }, () => 'Сокровищница')
+  .join(' ')
+  .slice(0, 120);
+const LONG_NAME_SPECS = [{ ...KLAD, name: LONG_LIST_NAME, ids: SEVEN_IDS }, LAVKA];
+
+/** Opens the «Ещё» `sel` again after the EN press closed it, from the page's top: the
+ *  menu scrolled the page, and up to 760 px the header covers a control under it. */
+const reopen = (sel) => async (d) => {
+  if (await d.count('[role="menu"]')) return;
+  await d.scrollPage(0);
+  await d.openMore(sel);
+};
+
 /** Makes the account lists `specs` on the signed-in page and opens the first (`go`) or stays. */
 const onAccount = async (d, specs, go = true) => {
   await d.settled();
@@ -1651,15 +1670,15 @@ const STATES = [
     id: SHOP + ' as gm1',
     route: SHOP,
     as: 'gm1',
-    why: '«Лавка кузнеца»: «10 позиций из 100 · Сохранено», «Поделиться» folded in place of «Ссылка игрокам»/«Ссылка себе», «Скачать JSON» after «Скопировать текст», no storage notice, coins, both list notes open; the own axe last, 800 монет, tagged «Мастерская Ольхи (HB)»; the row «Свой предмет» folded after it'
+    why: '«Лавка кузнеца»: «10 позиций из 100 · Сохранено», «Поделиться» folded in place of «Ссылка игрокам»/«Ссылка себе», «Скачать JSON» after «Скопировать текст», no storage notice, coins, both list notes open; the own axe last, 800 монет, tagged «Мастерская Ольхи (HB)»; the row «Добавить свой предмет» folded after it'
   },
   {
     id: SHOP + ' ~ own item as gm1',
     route: SHOP,
     as: 'gm1',
-    why: 'the row «Свой предмет» after the entries pressed and expanded: the panel «Свой предмет в этот список» under it with «Название» *, «Описание», «В список», «Отмена» and the note on «Мои предметы»',
+    why: 'the row «Добавить свой предмет» after the entries pressed and expanded: the panel «Свой предмет в этот список» under it with «Название» *, «Описание», «В список», «Отмена» and the note on «Мои предметы»',
     enter: async (d) => {
-      await d.click('Свой предмет');
+      await d.click('Добавить свой предмет');
     }
   },
   {
@@ -1668,7 +1687,7 @@ const STATES = [
     as: 'gm1',
     why: 'a name typed and «Добавить в список» pressed: «11 позиций из 100», the new plain item last, right above the row, the fields empty, the toast «Предмет «Фляга контрабандиста» создан и добавлен в список» with the link «Изменить»',
     enter: async (d) => {
-      await d.click('Свой предмет');
+      await d.click('Добавить свой предмет');
       await d.type('Название', 'Фляга контрабандиста');
       await d.press('Добавить в список');
       for (let i = 0; i < 40 && !(await d.text()).includes('11 позиций'); i++) await d.settle();
@@ -1682,7 +1701,7 @@ const STATES = [
     as: 'gm1',
     why: '«Добавить в список» with no name: «Введите название.» under «Название», the field aria-invalid, nothing made',
     enter: async (d) => {
-      await d.click('Свой предмет');
+      await d.click('Добавить свой предмет');
       await d.press('Добавить в список');
     }
   },
@@ -1690,13 +1709,13 @@ const STATES = [
     id: EMPTY_LIST + ' as gm1',
     route: EMPTY_LIST,
     as: 'gm1',
-    why: '«Пустой список»: «0 позиций из 100 · Сохранено», the empty hint ending «Свой предмет можно создать здесь же, кнопкой ниже.», then the row «Свой предмет» folded'
+    why: '«Пустой список»: «0 позиций из 100 · Сохранено», the empty hint ending «Свой предмет можно создать здесь же, кнопкой ниже.», then the row «Добавить свой предмет» folded'
   },
   {
     id: GM2_LIST + ' as gm2',
     route: GM2_LIST,
     as: 'gm2',
-    why: "gm2's list: «2 позиции», the panel «Новое в списке (2)» with gm1's two notices, each «новое»: «Автор изменил «Топор Тлеющих Углей».» with «Открыть», and the 120-code-point deleted name wrapped, each with «Скрыть», then «Скрыть изменения»; the Scepter, then a link to gm1's axe tagged «Мастерская Ольхи (HB)», drawn as any row; no «Свой предмет» among the actions, the row «Свой предмет» after the entries"
+    why: "gm2's list: «2 позиции», the panel «Новое в списке (2)» with gm1's two notices, each «новое»: «Автор изменил «Топор Тлеющих Углей».» with «Открыть», and the 120-code-point deleted name wrapped, each with «Скрыть», then «Скрыть изменения»; the Scepter, then a link to gm1's axe tagged «Мастерская Ольхи (HB)», drawn as any row; no «Свой предмет» among the actions, the row «Добавить свой предмет» after the entries"
   },
   {
     id: GM2_LIST + ' ~ unknown records as gm2',
@@ -2009,7 +2028,7 @@ const STATES = [
     id: LIST_A + ' as gm4',
     route: '#/lists',
     as: 'gm4',
-    why: 'the account list page: the title input, «7 позиций из 100» with the save status, «Поделиться», «Скопировать текст», «Скачать JSON», «Печать» and «Удалить», no money picker, folded note and roll panel, «Выбрать все», seven plain rows with their GM-only eyes, and «Свой предмет» after them',
+    why: 'the account list page from 761 px: the title input, «7 позиций из 100» with the save status, «Поделиться», «Печать» and «Ещё», no money picker, folded note and roll panel, «Выбрать» on its own row, seven rows with no tick and their GM-only eyes, and «Добавить свой предмет» after them',
     enter: async (d) => {
       await onAccount(d, SEVEN_SPECS);
     }
@@ -2203,6 +2222,213 @@ const STATES = [
     /* a 7000ms toast; arrived at afresh per language - see this file's header */
     timed: true
   },
+  /* The list page up to 760 px and the search row from 8 entries (docs/specs/FEATURES.md,
+     "Lists"; DESIGN.md, "Compact row"). */
+  {
+    id: LIST_A + ' ~ compact as gm4',
+    route: '#/lists',
+    as: 'gm4',
+    width: 360,
+    why: 'up to 760 px: the name, «Выбрать» and «Ещё» on the title row, the meta line with «Заметки», seven folded rows, each one button with its number, name, kind and line, and the quantity field beside it',
+    enter: async (d) => {
+      await onAccount(d, SEVEN_SPECS);
+    }
+  },
+  {
+    id: LIST_A + ' ~ compact, row open as gm4',
+    route: '#/lists',
+    as: 'gm4',
+    width: 360,
+    why: 'row 2 unfolded: its tags and whole text, the position, the price with its «?», «Заметка», «Ещё: Пронзительная Свирель» and its open note box',
+    enter: async (d) => {
+      await onAccount(d, NOTED_SPECS);
+      await d.unfold(1);
+    }
+  },
+  {
+    id: LIST_A + ' ~ compact, noted as gm4',
+    route: '#/lists',
+    as: 'gm4',
+    width: 360,
+    why: 'row 2 noted and GM only: the note mark and the GM mark with their hidden names on its meta line, the dashed row; the list notes open from «Заметки»',
+    enter: async (d) => {
+      await onAccount(d, NOTED_SPECS);
+      await d.unfold(1);
+      await d.openMore('.cfull .morewrap > [aria-haspopup="menu"]');
+      await d.click('Скрыть от игроков');
+      await d.click('Заметки');
+    }
+  },
+  {
+    id: LIST_A + ' ~ compact, selecting as gm4',
+    route: '#/lists',
+    as: 'gm4',
+    width: 360,
+    why: 'the selection mode: a tick column, row 2 ticked with «×2» in place of its field and its take line, row 1 ticked, the bar with «Все», the count, «Цены», «Ещё» and «Снять выделение»',
+    enter: async (d) => {
+      await onAccount(d, NOTED_SPECS);
+      await d.tick(ROW1_CI1);
+      await d.tick(ROW2_CI2);
+    }
+  },
+  {
+    id: LIST_A + ' ~ row more as gm4',
+    route: '#/lists',
+    as: 'gm4',
+    width: 360,
+    why: 'row 1 unfolded and its «Ещё» open: «Скрыть от игроков», «Открыть карточку», «Убрать из списка»',
+    enter: async (d) => {
+      await onAccount(d, SEVEN_SPECS);
+      await d.unfold(0);
+      await d.openMore('.cfull .morewrap > [aria-haspopup="menu"]');
+    },
+    again: reopen('.cfull .morewrap > [aria-haspopup="menu"]')
+  },
+  {
+    id: LIST_A + ' ~ more as gm4',
+    route: '#/lists',
+    as: 'gm4',
+    width: 360,
+    why: 'the list «Ещё» up to 760 px: «Поделиться», «Печать», «Бросить по списку», «Цены: монетами», «Скопировать текст», «Скачать JSON», «Удалить список»',
+    enter: async (d) => {
+      await onAccount(d, NOTED_SPECS);
+      await d.openMore('.lhead-acts .morewrap > [aria-haspopup="menu"]');
+    },
+    again: reopen('.lhead-acts .morewrap > [aria-haspopup="menu"]')
+  },
+  {
+    id: LIST_A + ' ~ more wide as gm4',
+    route: '#/lists',
+    as: 'gm4',
+    why: 'the list «Ещё» from 761 px: «Скопировать текст», «Скачать JSON», «Удалить список»',
+    enter: async (d) => {
+      await onAccount(d, SEVEN_SPECS);
+      await d.openMore('.card-acts .morewrap > [aria-haspopup="menu"]');
+    },
+    again: reopen('.card-acts .morewrap > [aria-haspopup="menu"]')
+  },
+  {
+    id: LIST_A + ' ~ many as gm4',
+    route: '#/lists',
+    as: 'gm4',
+    why: '14 entries: the search row with the box, «Фильтры» and «Выбрать» last, the rows with their grips',
+    enter: async (d) => {
+      await onAccount(d, MANY_SPECS);
+    }
+  },
+  {
+    id: LIST_A + ' ~ filter sheet as gm4',
+    route: '#/lists',
+    as: 'gm4',
+    width: 360,
+    why: '14 entries and «Фильтры» pressed: the sheet with its rows, no filter link, «Сбросить» and «Показать 14»',
+    enter: async (d) => {
+      await onAccount(d, MANY_SPECS);
+      await d.click('Фильтры');
+    }
+  },
+  {
+    id: LIST_A + ' ~ narrowed as gm4',
+    route: '#/lists',
+    as: 'gm4',
+    why: '«Расходники» picked: «Показано 3 из 14» on the meta line, «Фильтры · 1», three rows with their true numbers, no grip',
+    enter: async (d) => {
+      await onAccount(d, MANY_SPECS);
+      await d.click('Фильтры');
+      await d.click('Расходники');
+      await d.click('Закрыть');
+    }
+  },
+  {
+    id: LIST_A + ' ~ no match as gm4',
+    route: '#/lists',
+    as: 'gm4',
+    why: 'a query that hits nothing: «Показано 0 из 14», «Ничего не найдено» and «Сбросить всё»',
+    enter: async (d) => {
+      await onAccount(d, MANY_SPECS);
+      await d.type('Поиск по названию или описанию...', 'жжжж');
+    }
+  },
+  {
+    id: LIST_A + ' ~ selecting as gm4',
+    route: '#/lists',
+    as: 'gm4',
+    why: 'the selection mode with no tick: the tick column, the bar with its actions off and «Снять выделение» on',
+    enter: async (d) => {
+      await onAccount(d, SEVEN_SPECS);
+      await d.click('Выбрать');
+    }
+  },
+  {
+    id: LIST_A + ' ~ price sheet as gm4',
+    route: '#/lists',
+    as: 'gm4',
+    why: 'row 2 ticked and «Цены» pressed: the sheet «Цены выбранных» with the percentage row, the guess and «Убрать цену (1)», «Проставить эти цены»',
+    enter: async (d) => {
+      await onAccount(d, NOTED_SPECS);
+      await d.tick(ROW2_CI2);
+      await d.click(NAME.ru.prices);
+    }
+  },
+  {
+    id: LIST_A + ' ~ long name as gm4',
+    route: '#/lists',
+    as: 'gm4',
+    width: 360,
+    why: 'a 120-character list name: the title field on one line beside «Выбрать» and «Ещё»',
+    enter: async (d) => {
+      await onAccount(d, LONG_NAME_SPECS);
+    }
+  },
+  {
+    id: '#/lists/00000000-0000-4000-8000-000000000301 ~ compact as gm3',
+    route: '#/lists/00000000-0000-4000-8000-000000000301',
+    as: 'gm3',
+    width: 360,
+    why: "gm3's «Склад» up to 760 px: own items with their pictures, sources cut on one line, the search row"
+  },
+  {
+    id: '#/s/player-token-1 ~ compact',
+    route: '#/s/player-token-1',
+    width: 360,
+    why: "the players' link up to 760 px: the lead line, folded rows with «×2» and no quantity at 1, the search row"
+  },
+  {
+    id: '#/s/player-token-1 ~ compact, row open',
+    route: '#/s/player-token-1',
+    width: 360,
+    why: "row 1 unfolded: its tags, text, players' note and «Открыть карточку»",
+    enter: async (d) => {
+      await d.unfold(0);
+    }
+  },
+  {
+    id: '#/s/player-token-1 ~ selecting',
+    route: '#/s/player-token-1',
+    why: 'the selection mode with no tick: the tick column, the bar with «Все» and «Снять выделение»',
+    enter: async (d) => {
+      await d.click('Выбрать');
+    }
+  },
+  {
+    id: '#/s/player-token-1 ~ long name',
+    route: '#/s/player-token-1',
+    width: 360,
+    why: 'a 120-character list name on one line with an ellipsis',
+    enter: async (d) => {
+      for (let i = 0; i < 40 && !(await d.count('.said[data-live="live"]')); i++)
+        await d.settle();
+      await d.fake('play', '00000000-0000-4000-8000-000000000101', { name: LONG_LIST_NAME });
+      for (let i = 0; i < 40 && !(await d.text()).includes(LONG_LIST_NAME.slice(0, 20)); i++)
+        await d.settle();
+    }
+  },
+  {
+    id: '#/s/gm-token-1 ~ compact',
+    route: '#/s/gm-token-1',
+    width: 360,
+    why: 'the GM link up to 760 px: «Заметка» and «Заметка мастера» on the lead line, the note marks on the noted rows'
+  },
   {
     id: '#/lists/nope',
     route: '#/lists/nope',
@@ -2328,7 +2554,7 @@ const STATES = [
       await d.click('Фильтры');
       await d.click('Оружие');
       await d.click('1');
-      await d.click('Фильтры (2)');
+      await d.click('Закрыть');
     }
   },
   {
@@ -3989,7 +4215,7 @@ const STATES = [
     as: 'gm1',
     why: '«Свой предмет» with a formatted description and «Просмотр» pressed: the pane under the toolbar of four format buttons, no «Язык текста»',
     enter: async (d) => {
-      await d.click('Свой предмет');
+      await d.click('Добавить свой предмет');
       await d.type('Название', 'Фляга контрабандиста');
       await d.type('Описание', '**Двойное дно:** во второй половине *можно* спрятать письмо.');
       /* The six note boxes above the panel (the list's pair, rows 2 and 5) each draw a «Просмотр» first. */

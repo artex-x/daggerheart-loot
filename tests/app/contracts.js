@@ -75,14 +75,11 @@ const { ok } = rep;
               : [];
           })
         ),
-        /* Two forms while `FilterBar` lives: the shared page's pills and the
-           catalog's pressed chips (its column is open at this suite's width). */
-        picked: [
-          ...[...document.querySelectorAll('.fpill')].map((e) => e.dataset.val),
-          ...[...document.querySelectorAll('[data-fval][aria-pressed="true"]')].map(
-            (e) => e.dataset.fval
-          )
-        ],
+        /* The pressed chips: the catalog's column, or the sheet a filter link opens on
+           the shared page. */
+        picked: [...document.querySelectorAll('[data-fval][aria-pressed="true"]')].map(
+          (e) => e.dataset.fval
+        ),
         source: srcBtns.length
           ? srcBtns.map(
               (e) =>

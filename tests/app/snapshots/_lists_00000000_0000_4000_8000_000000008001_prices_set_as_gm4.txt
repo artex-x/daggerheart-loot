@@ -23,24 +23,17 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
     StaticText "7 позиций из 100 · "
     ... StaticText x14 of 18 same-shape siblings elided
     button "Поделиться" [expanded=false]
-    button "Скопировать текст"
-    button "Скачать JSON"
     button "Печать" [description=Собрать карточки для печати: девять на лист A4]
-    ... button x9 of 13 same-shape siblings elided
+    button "Ещё" [expanded=false haspopup=menu]
     status ""
     button "Как в книге" [pressed=true]
     button "Монетами" [pressed=false]
     button "Справка" [expanded=false]
     DisclosureTriangle "ЗАМЕТКИ" [expanded=false]
     DisclosureTriangle "БРОСОК ПО СПИСКУ" [expanded=false]
-    checkbox "Выбрать все" [checked=mixed]
-    generic ""
-      StaticText "Выбрана 1 позиция"
-      StaticText "Итого: "
-      StaticText "1 мешок"
-    button "Цены" [expanded=false]
     checkbox "Первоклассный Спальный Мешок" [checked=true]
     spinbutton "Позиция в списке" [value=1 valuetext=1 required=false valuemin=1 valuemax=7]
+    button "Первоклассный Спальный Мешок ПРЕДМЕТ Во время отдыха вы автомати..." [namelen=86 namehash=8341b15c]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     button "Подсказка: Цена" [expanded=false]
     spinbutton "ЦЕНА" [value=100 valuetext=100 required=false valuemin=0 valuemax=99999]
@@ -49,6 +42,7 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
     button "Убрать из списка" [description=Убрать из списка]
     checkbox "Пронзительная Свирель" [checked=false]
     spinbutton "Позиция в списке" [value=2 valuetext=2 required=false valuemin=1 valuemax=7]
+    button "Пронзительная Свирель ПРЕДМЕТ Эта свирель ручной работы имеет ха..." [namelen=163 namehash=e0e9fc1d]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
@@ -56,6 +50,7 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
     button "Убрать из списка" [description=Убрать из списка]
     checkbox "Заряжающий Колчан" [checked=false]
     spinbutton "Позиция в списке" [value=3 valuetext=3 required=false valuemin=1 valuemax=7]
+    ... button x3 of 7 same-shape siblings elided
     ... spinbutton x3 of 7 same-shape siblings elided
     spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
     ... button x3 of 7 same-shape siblings elided
@@ -83,9 +78,20 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
     button "Заметка" [description=Заметка]
     button "Только для мастера: Мистический Плащ" [description=Только для мастера pressed=false]
     button "Убрать из списка" [description=Убрать из списка]
-    button "Свой предмет" [expanded=false]
+    button "Добавить свой предмет" [expanded=false]
     status ""
     status ""
+  region "Выбранные записи"
+    checkbox "Выбрать все" [checked=mixed]
+    generic ""
+      StaticText "Выбрана 1 позиция"
+      StaticText "Итого: "
+      StaticText "1 мешок"
+    button "Цены" [expanded=false]
+    button "Скопировать текст"
+    button "Скрыть от игроков (1)"
+    button "Удалить (1)"
+    button "Снять выделение"
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -105,6 +111,8 @@ daggerheart.com
 Бросок
 Вернуть
 Выбрать все
+Добавить свой предмет
+Ещё
 Жирный
 Заметка
 Заряжающий Колчан
@@ -138,11 +146,9 @@ daggerheart.com
 Разговаривающие Сферы
 Разговаривающие СферыПредметЭта пара сфер позволяет существам, к... [namelen=125 namehash=7957c029]
 Результат броска
-Свой предмет
-Скачать JSON
-Скопировать
 Скопировать текст
 Скрыть от игроков (1)
+Снять выделение
 Список
 Справка
 Таблицы
@@ -154,7 +160,6 @@ daggerheart.com
 Только для мастера: Разговаривающие Сферы
 Только для мастера: Факел Алистера
 Убрать из списка
-Удалить
 Удалить (1)
 Условия использования
 Установить как приложение
@@ -183,24 +188,17 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
     StaticText "7 items of 100 · "
     ... StaticText x14 of 18 same-shape siblings elided
     button "Share" [expanded=false]
-    button "Copy text"
-    button "Download JSON"
     button "Print" [description=Lay these out for printing: nine to an A4 sheet]
-    ... button x9 of 13 same-shape siblings elided
+    button "More" [expanded=false haspopup=menu]
     status ""
     button "As in the book" [pressed=true]
     button "In coins" [pressed=false]
     button "Help" [expanded=false]
     DisclosureTriangle "NOTES" [expanded=false]
     DisclosureTriangle "ROLL ON THIS LIST" [expanded=false]
-    checkbox "Select all" [checked=mixed]
-    generic ""
-      StaticText "Selected 1 item"
-      StaticText "Total: "
-      StaticText "1 bag"
-    button "Prices" [expanded=false]
     checkbox "Premium Bedroll" [checked=true]
     spinbutton "Position in the list" [value=1 valuetext=1 required=false valuemin=1 valuemax=7]
+    button "Premium Bedroll ITEM During downtime, you automatically clear a ..." [namelen=71 namehash=f1054083]
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     button "Help: Price" [expanded=false]
     spinbutton "PRICE" [value=100 valuetext=100 required=false valuemin=0 valuemax=99999]
@@ -209,6 +207,7 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
     button "Remove from the list" [description=Remove from the list]
     checkbox "Piper Whistle" [checked=false]
     spinbutton "Position in the list" [value=2 valuetext=2 required=false valuemin=1 valuemax=7]
+    button "Piper Whistle ITEM This handcrafted whistle has a distinctive so..." [namelen=151 namehash=e50d3714]
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
@@ -216,6 +215,7 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
     button "Remove from the list" [description=Remove from the list]
     checkbox "Charging Quiver" [checked=false]
     spinbutton "Position in the list" [value=3 valuetext=3 required=false valuemin=1 valuemax=7]
+    ... button x3 of 7 same-shape siblings elided
     ... spinbutton x3 of 7 same-shape siblings elided
     spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]
     ... button x3 of 7 same-shape siblings elided
@@ -243,9 +243,20 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
     button "Note" [description=Note]
     button "GM only: Arcane Cloak" [description=GM only pressed=false]
     button "Remove from the list" [description=Remove from the list]
-    button "Own item" [expanded=false]
+    button "Add your own item" [expanded=false]
     status ""
     status ""
+  region "Selected records"
+    checkbox "Select all" [checked=mixed]
+    generic ""
+      StaticText "Selected 1 item"
+      StaticText "Total: "
+      StaticText "1 bag"
+    button "Prices" [expanded=false]
+    button "Copy text"
+    button "Hide from players (1)"
+    button "Delete (1)"
+    button "Clear selection"
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -258,6 +269,7 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
 
 ## en :: controls
 Account: gm4@example.test
+Add your own item
 Alistair's Torch
 Alistair's TorchItemYou can light this magic torch at will. The ... [namelen=162 namehash=ca396948]
 Arcane Cloak
@@ -267,11 +279,9 @@ Bold
 Bulleted list
 Charging Quiver
 Charging QuiverItemWhen you succeed on an attack with an arrow s... [namelen=145 namehash=07a311bd]
-Copy
+Clear selection
 Copy text
-Delete
 Delete (1)
-Download JSON
 EN
 GM only: Alistair's Torch
 GM only: Arcane Cloak
@@ -292,11 +302,11 @@ List name
 LootDaggerheart
 Manacles
 ManaclesItemThis pair of locking cuffs comes with a key.
+More
 Note
 Numbered list
 One higher
 One lower
-Own item
 Piper Whistle
 Piper WhistleItemThis handcrafted whistle has a distinctive soun... [namelen=149 namehash=81a85b00]
 Position in the list

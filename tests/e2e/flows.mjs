@@ -352,7 +352,9 @@ export async function runFlows({ env, admin, member, browser, base }) {
         made.id
       );
 
-      await d.press('Удалить');
+      /* From 761 px the list's delete is the last item of its «Ещё». */
+      await d.openMore('.card-acts .morewrap > [aria-haspopup="menu"]');
+      await d.press('Удалить список');
       await waitText(page, 'F7', 'Список «E2E список 2» удалён');
       await until(
         'F7: the list is still in the account',
@@ -916,7 +918,7 @@ export async function runFlows({ env, admin, member, browser, base }) {
 
       await d.open('#/lists/' + listId);
       await waitText(page, 'F15', 'Сохранено');
-      await d.press('Свой предмет');
+      await d.press('Добавить свой предмет');
       await d.type('Название', 'Свеча F15');
       await d.press('Добавить в список');
       await until(

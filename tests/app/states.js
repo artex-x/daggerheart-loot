@@ -6,8 +6,8 @@
  * and every legacy suite uses - because a handful of real defects only show
  * up on the far side of a browser's own microtask checkpoint (the
  * `isConnected` guard) or need a real network, a real clipboard stub, or a
- * real second tab to mean anything at all. Eighty-six cases in
- * eighty-five runs (4 and 5 share one), no ancestor. Like every suite here it drives
+ * real second tab to mean anything at all. Ninety-two cases in
+ * ninety-one runs (4 and 5 share one), no ancestor. Like every suite here it drives
  * dist-test/, the test build (docs/specs/COVERAGE.md, "Test layers"): signed
  * out it draws the sign-in prompt where a list would be made, so the cases
  * that make one open as the seed's `gm2`. */
@@ -1046,7 +1046,9 @@ async function foldedDetailsSurviveRerender() {
       roll: document.querySelector('.lroll')?.open
     }));
 
-  await page.evaluate(() => document.querySelector('.batch-all input')?.click());
+  await page.evaluate(() => document.querySelector('button.selmode')?.click());
+  await d.settle();
+  await page.evaluate(() => document.querySelector('.selbarwrap .selall input')?.click());
   await d.settle();
   let open1 = await openState();
   ok(
@@ -1247,6 +1249,11 @@ async function announceOnTouchAndHideInertGrip() {
   const { ctx, page, d } = await fresh({ width: 390, height: 900 });
   await page.setViewport({ width: 390, height: 900, isMobile: true, hasTouch: true });
   await openAccountList(d, spec, '26 (touch device)');
+  /* Up to 760 px the grip and the position field sit in the unfolded compact row. */
+  await page.evaluate(() => {
+    for (const b of document.querySelectorAll('button.cbody')) b.click();
+  });
+  await d.settle();
 
   const grip = await page.evaluate(() => {
     const g = document.querySelector('.lrow-grip');
@@ -3275,9 +3282,7 @@ async function importedListOpens() {
   await waitIn(page, () => document.querySelectorAll('.lrow').length === 3);
   const shown = await page.evaluate(() => ({
     sub: document.querySelector('.page-sub')?.textContent ?? '',
-    rows: [...document.querySelectorAll('.lrow .lrow-pick input')].map((i) =>
-      i.getAttribute('aria-label')
-    ),
+    rows: [...document.querySelectorAll('.lrow .rname')].map((e) => e.textContent),
     qty: document.querySelector('.lrow input[data-qty]')?.value ?? '',
     gold: document.querySelector('.lrow input[data-gold]')?.value ?? ''
   }));
@@ -3631,10 +3636,10 @@ async function relationFolds() {
   }
 }
 
-/** 64. The «Свой предмет» row after the entries at 360x640 as `gm1`: the open
+/** 64. The «Добавить свой предмет» row after the entries at 360x640 as `gm1`: the open
  *  panel's «Название» in view, nothing sideways, «Добавить в список» not
- *  covered at the maximum scroll with a row ticked (the list page's batch bar
- *  is in flow, not sticky), and a 120-character name keeping
+ *  covered at the maximum scroll with a row ticked (the selection bar sits after the
+ *  footer there), and a 120-character name keeping
  *  the toast's «Изменить» on screen; then at 1180 a hand-resized row note box
  *  keeps its height across a fold and an unfold. */
 async function ownItemRowAndNoteBox() {
@@ -3644,10 +3649,10 @@ async function ownItemRowAndNoteBox() {
     await d.open(SHOP, { as: 'gm1' });
     ok(
       await waitIn(page, () => !!document.querySelector('button.addrow')),
-      at + 'the row «Свой предмет» did not draw'
+      at + 'the row «Добавить свой предмет» did not draw'
     );
     await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
-    await d.press('Свой предмет');
+    await d.press('Добавить свой предмет');
     const opened = await page.evaluate(() => {
       const name = document.getElementById('qi-name');
       const r = name?.getBoundingClientRect();
@@ -3661,8 +3666,8 @@ async function ownItemRowAndNoteBox() {
     ok(opened.nameInView, at + '«Название» is out of view after the press');
     ok(!opened.sideways, at + 'the open panel scrolls the page sideways');
 
-    const first = await page.evaluate(() =>
-      document.querySelector('.lrow input[type="checkbox"]')?.getAttribute('aria-label')
+    const first = await page.evaluate(
+      () => document.querySelector('.lrow .cname')?.textContent
     );
     await d.tick(first ?? '');
     await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
@@ -3674,9 +3679,9 @@ async function ownItemRowAndNoteBox() {
       const r = btn?.getBoundingClientRect();
       if (!btn || !r) return null;
       const hit = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
-      return { hit: !!hit && btn.contains(hit), bar: !!document.querySelector('.batch.on') };
+      return { hit: !!hit && btn.contains(hit), bar: !!document.querySelector('.selbarwrap') };
     });
-    ok(!!add?.bar, at + 'the ticked row raised no batch bar');
+    ok(!!add?.bar, at + 'the ticked row raised no selection bar');
     ok(
       !!add?.hit,
       at + '«Добавить в список» is covered at the maximum scroll - ' + JSON.stringify(add)
@@ -3908,10 +3913,11 @@ async function fieldHelpAt360() {
 
 /** 69. The GM-only toggle at 1180 and 360 as `gm1` on «Лавка кузнеца»: at 1180x900 the
  *  pressed row's three action buttons are each at least 24 px tall, and at both widths its
- *  visually hidden ", Только для мастера" box is at most 1x1 px; on a 360x640 phone a
- *  120-character own item's row keeps note, eye and cross at 44 px on the meta box's line
- *  inside 0..360, and «Скрыть от игроков (2)» lies inside 0..360; nothing scrolls
- *  sideways (docs/specs/FEATURES.md, "Account and browser lists"). */
+ *  visually hidden ", Только для мастера" box is at most 1x1 px; on a 360x640 phone the open
+ *  compact row of a 120-character own item hides it from its «Ещё», every control of the
+ *  open row is inside 0..360 and at least 24 px tall, and the bar's «Скрыть от игроков (2)»
+ *  lies inside 0..360; nothing scrolls sideways (docs/specs/FEATURES.md, "Account and
+ *  browser lists"). */
 async function gmOnlyToggle() {
   const at = '69 (the GM-only toggle at 1180 and 360): ';
   const sideways = (page) =>
@@ -3966,16 +3972,15 @@ async function gmOnlyToggle() {
   }
   {
     const { ctx, page, d } = await fresh({ width: 360, height: 640 });
-    /* A phone: its scrollbar overlays the page. A desktop window's 15 px scrollbar takes
-       the row's room, and the buttons wrap under the meta box there. */
+    /* A phone: its scrollbar overlays the page. */
     await page.setViewport({ width: 360, height: 640, isMobile: true, hasTouch: true });
     await d.open(SHOP, { as: 'gm1' });
     ok(
       await waitIn(page, () => !!document.querySelector('button.addrow')),
-      at + 'the row «Свой предмет» did not draw'
+      at + 'the row «Добавить свой предмет» did not draw'
     );
     await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
-    await d.press('Свой предмет');
+    await d.press('Добавить свой предмет');
     const long = 'Ж'.repeat(120);
     await page.evaluate((v) => {
       const name = document.getElementById('qi-name');
@@ -3993,43 +3998,67 @@ async function gmOnlyToggle() {
     ok(
       await waitIn(
         page,
-        (v) =>
-          [...document.querySelectorAll('.lrow-acts .lrow-gm')].some((b) =>
-            (b.getAttribute('aria-label') ?? '').endsWith(v)
-          ),
+        (v) => [...document.querySelectorAll('.crow .cname')].some((e) => e.textContent === v),
         long
       ),
       at + 'the 120-character row did not draw'
     );
-    const m = await pressAndMeasure(page, long);
+    /* Up to 760 px the toggle is the open compact row's «Ещё» item. */
+    const m = await page.evaluate(async (v) => {
+      const frames = () =>
+        new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      const name = [...document.querySelectorAll('.crow .cname')].find(
+        (e) => e.textContent === v
+      );
+      const row = name?.closest('.lrow');
+      if (!row) return null;
+      row.querySelector('button.cbody').click();
+      await frames();
+      row.querySelector('.cfull .morewrap > button')?.click();
+      await frames();
+      const item = [...document.querySelectorAll('[role="menuitem"]')].find(
+        (b) => b.textContent.trim() === 'Скрыть от игроков'
+      );
+      if (!item) return null;
+      item.click();
+      await frames();
+      const state = row.querySelector('.cmark .vh')?.getBoundingClientRect();
+      return {
+        dashed: row.classList.contains('gm-only'),
+        state: state ? { w: state.width, h: state.height } : null,
+        rowRight: row.getBoundingClientRect().right,
+        controls: [...row.querySelectorAll('.cfull button, .cfull input, .cqf')].map((b) => {
+          const r = b.getBoundingClientRect();
+          return { h: Math.round(r.height), right: r.right };
+        })
+      };
+    }, long);
     console.log('  69 at 360: ' + JSON.stringify(m));
-    ok(!!m && m.pressed === 'true' && m.dashed, at + 'the eye did not mark the row at 360');
+    ok(!!m && m.dashed, at + 'the row «Ещё» did not mark the row at 360');
     ok(
       !!m?.state && m.state.w <= 1 && m.state.h <= 1,
       at + 'the GM-only words draw at 360 - ' + JSON.stringify(m?.state)
     );
     ok(
-      !!m && m.rowRight <= 360 && m.buttons.every((b) => b.right <= 360),
-      at + 'the row passes the right edge at 360 - ' + JSON.stringify(m)
-    );
-    ok(
-      !!m && m.buttons.length === 3 && m.buttons.every((b) => b.w === 44),
-      at + 'an action button is not 44 px wide at 360 - ' + JSON.stringify(m)
-    );
-    ok(
-      !!m && m.actsTop < m.metaBottom,
-      at + 'the action buttons wrapped under the meta box at 360 - ' + JSON.stringify(m)
+      !!m && m.rowRight <= 360 && m.controls.every((b) => b.right <= 360 && b.h >= 24),
+      at + 'a control of the open row passes 360 or is under 24 px - ' + JSON.stringify(m)
     );
     ok(!(await sideways(page)), at + 'the page scrolls sideways at 360');
 
+    await page.evaluate(() => document.querySelector('button.selmode')?.click());
+    await d.settle();
     const names = await page.evaluate(() =>
       [...document.querySelectorAll('.lrow input[type="checkbox"]')]
         .slice(0, 2)
         .map((c) => c.getAttribute('aria-label') ?? '')
     );
     for (const n of names) await d.tick(n);
+    await page.evaluate(() =>
+      document.querySelector('.selbarwrap .bulkmore .morewrap > button')?.click()
+    );
+    await d.settle();
     const hide = await page.evaluate(() => {
-      const b = [...document.querySelectorAll('.batch-acts button')].find(
+      const b = [...document.querySelectorAll('[role="menuitem"]')].find(
         (x) => x.textContent.trim() === 'Скрыть от игроков (2)'
       );
       const r = b?.getBoundingClientRect();
@@ -4538,11 +4567,12 @@ async function drawsListNotesAsFormattedText() {
   await ctx.close();
 }
 
-/** 77. A shared row's tick column runs through its note and its take line at
- *  360 and 1180: the select box ends at the row's inner bottom, the checkbox
- *  sits on the main line, and a press low in the column unticks the row
- *  (docs/specs/FEATURES.md, "Lists"). The players' link of «Лавка кузнеца», whose ci1
- *  counts 2, gets a players' note on ci1 as another device would write it. */
+/** 77. A shared row's tick column runs through its take line at 360 and through its note
+ *  too at 1180, in the selection mode: the select box ends at the row's inner bottom, the
+ *  checkbox sits on the main line (the compact row at 360), and a press low in the column
+ *  unticks the row (docs/specs/FEATURES.md, "Lists"). The players' link of «Лавка
+ *  кузнеца», whose ci1 counts 2, gets a players' note on ci1 as another device would write
+ *  it; up to 760 px the note sits in the unfolded row. */
 async function sharedRowTickColumn() {
   for (const width of [360, 1180]) {
     const at = `77 (the shared row's tick column) at ${width}: `;
@@ -4550,9 +4580,18 @@ async function sharedRowTickColumn() {
     await d.open('#/s/player-token-1');
     await d.fake('playEntry', SHOP_ID, 'ci1', { player_note: 'Видно игрокам' });
     ok(
-      await waitIn(page, () => !!document.querySelector('[data-row="ci1"] > .rnotes')),
+      await waitIn(
+        page,
+        (wide) =>
+          wide
+            ? !!document.querySelector('[data-row="ci1"] > .rnotes')
+            : !!document.querySelector('[data-row="ci1"] .cmark'),
+        width > 760
+      ),
       at + 'the ci1 row never drew its note'
     );
+    await page.click('button.selmode');
+    await d.settle();
     await page.click('[data-row="ci1"] .selbox input');
     ok(
       await waitIn(page, () => !!document.querySelector('[data-row="ci1"] > .pickrow')),
@@ -4564,10 +4603,12 @@ async function sharedRowTickColumn() {
       row.scrollIntoView({ block: 'start' });
       const box = row.querySelector(':scope > .selbox').getBoundingClientRect();
       const tick = row.querySelector(':scope > .selbox input').getBoundingClientRect();
-      const main = row.querySelector(':scope > .row-main').getBoundingClientRect();
+      const main = row
+        .querySelector(':scope > .row-main, :scope > .crow > .cbody')
+        .getBoundingClientRect();
       const r = row.getBoundingClientRect();
       return {
-        notes: !!row.querySelector(':scope > .rnotes'),
+        notes: !!row.querySelector(':scope > .rnotes, .cmark'),
         inner: r.bottom - parseFloat(getComputedStyle(row).borderBottomWidth),
         boxBottom: box.bottom,
         boxX: box.left + box.width / 2,
@@ -5561,7 +5602,8 @@ async function editorLayoutAndSheet() {
 
 /** The route families of DESIGN.md, "The First-Screen Rule": the inventory state that
  *  opens each. A row whose surface is not yet under the rule is measured and logged,
- *  not asserted (`shipped: false`). `exception` is a named limit at 360 px, in px; `wideOnly`
+ *  not asserted (`shipped: false`); `shipped: 360` asserts at 360 px and logs at 1180 px and
+ *  at the wide window of 1920x1080. `exception` is a named limit at 360 px, in px; `wideOnly`
  *  measures the row at 1180 px alone. A roll page draws its result for the number
  *  field's first value, so no roll is made and the offset is deterministic. */
 const FIRST_SCREEN = [
@@ -5584,8 +5626,11 @@ const FIRST_SCREEN = [
   { state: '#/homebrew/new as gm1', shipped: true },
   { state: '#/homebrew/hb_longsrcaaaaaaaaa as gm4', shipped: true },
   { state: '#/lists as gm1', shipped: false },
-  { state: '#/lists/00000000-0000-4000-8000-000000008001 as gm4', shipped: false },
-  { state: '#/s/player-token-1', shipped: false }
+  { state: '#/lists/00000000-0000-4000-8000-000000008001 as gm4', shipped: 360 },
+  { state: '#/lists/00000000-0000-4000-8000-000000008001 ~ many as gm4', shipped: 360 },
+  { state: '#/lists/00000000-0000-4000-8000-000000008001 ~ long name as gm4', shipped: 360 },
+  { state: '#/s/player-token-1', shipped: 360, exception: 286 },
+  { state: '#/s/player-token-1 ~ long name', shipped: 360, exception: 286 }
 ];
 
 /** Returns the top of the first `[data-primary]` with a nonzero height, at scroll 0
@@ -5923,11 +5968,10 @@ async function primaryContentInFirstScreen() {
     const state = states.get(row.state);
     ok(!!state, '83 (first screen): no inventory state ' + row.state);
     if (!state) continue;
-    for (const [width, height] of [
-      [360, 640],
-      [1180, 720]
-    ]) {
+    const sizes = [[360, 640], [1180, 720], ...(row.shipped === 360 ? [[1920, 1080]] : [])];
+    for (const [width, height] of sizes) {
       if (row.wideOnly && width < 761) continue;
+      const asserted = row.shipped === true || row.shipped === width;
       for (const lang of ['ru', 'en']) {
         const { ctx, page, d } = await fresh({ width, height, storage: state.storage });
         try {
@@ -5958,10 +6002,10 @@ async function primaryContentInFirstScreen() {
               limit.toFixed(0) +
               (width === 360 && row.exception ? ' (exception)' : '') +
               (pass ? ' pass' : ' over') +
-              (row.shipped ? '' : ' (logged)') +
+              (asserted ? '' : ' (logged)') +
               '\n'
           );
-          if (row.shipped) ok(pass, '83 (first screen): ' + where + ' starts at ' + got.top);
+          if (asserted) ok(pass, '83 (first screen): ' + where + ' starts at ' + got.top);
         } finally {
           await ctx.close();
         }
@@ -7335,6 +7379,484 @@ async function pageColumnOnWideWindows() {
   }
 }
 
+const LIST_A_ID = '#/lists/00000000-0000-4000-8000-000000008001';
+
+/** The geometry of every compact row of the page: its height, the quantity field's box and
+ *  whether the field's center hits the field. */
+const compactGeometry = () =>
+  [...document.querySelectorAll('.lrow')].map((row) => {
+    const r = row.getBoundingClientRect();
+    const f = row.querySelector('.cqf');
+    const b = f?.getBoundingClientRect();
+    const hit = b ? document.elementFromPoint(b.x + b.width / 2, b.y + b.height / 2) : null;
+    const name = row.querySelector('.cname')?.getBoundingClientRect().height ?? 0;
+    return {
+      h: r.height,
+      line: !!row.querySelector('.cfx') && name <= 21,
+      field: b ? [Math.round(b.width), Math.round(b.height)] : null,
+      hits: !!f && hit === f,
+      inside: r.left >= 0 && r.right <= innerWidth
+    };
+  });
+
+/** 98. The compact row holds from 320 to 760 px (docs/specs/FEATURES.md, "Lists"; DESIGN.md,
+ *  "Compact row"), as `gm4` on `LIST_A ~ many`, RU and EN: a row with its line is at most
+ *  80 px, the quantity field is 42x44 and takes a press at its center, the Tab order is the
+ *  body, the field, then the unfolded part, ten ArrowUp keys make one write, a write with
+ *  no network keeps the number and says «Не сохранено», a touch device draws no grip and a
+ *  typed position moves the row; from 761 px, at 1440 and at 1920 px the full row draws. */
+async function compactRowHolds() {
+  const at = '98 (the compact row from 320 to 760 px): ';
+  const many = LIST_A_ID + ' ~ many as gm4';
+  for (const [width, height] of [
+    [360, 640],
+    [320, 568]
+  ]) {
+    for (const lang of ['ru', 'en']) {
+      const where = at + width + ' ' + lang + ': ';
+      const { ctx, page } = await openState(many, width, height, lang);
+      try {
+        await page.evaluate(() => {
+          scrollTo(0, 400);
+        });
+        const rows = await page.evaluate(compactGeometry);
+        ok(rows.length === 14, where + 'not 14 compact rows - ' + rows.length);
+        ok(
+          rows.some((r) => r.line) && rows.every((r) => !r.line || r.h <= 80),
+          where +
+            'a one-line row with its line is over 80 px - ' +
+            JSON.stringify(rows.map((r) => [r.h, r.line]))
+        );
+        ok(
+          rows.every((r) => r.field?.[0] === 42 && r.field?.[1] === 44),
+          where + 'a quantity field is not 42x44 - ' + JSON.stringify(rows.map((r) => r.field))
+        );
+        const visible = await page.evaluate(
+          () =>
+            [...document.querySelectorAll('.cqf')].filter((f) => {
+              const r = f.getBoundingClientRect();
+              return r.top > 120 && r.bottom < innerHeight - 10;
+            }).length
+        );
+        ok(visible > 0, where + 'no quantity field in view');
+        const hits = await page.evaluate(() =>
+          [...document.querySelectorAll('.cqf')]
+            .filter((f) => {
+              const r = f.getBoundingClientRect();
+              return r.top > 120 && r.bottom < innerHeight - 10;
+            })
+            .every((f) => {
+              const r = f.getBoundingClientRect();
+              return document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2) === f;
+            })
+        );
+        ok(hits, where + 'a press at a field center lands on another element');
+        ok(
+          rows.every((r) => r.inside) &&
+            !(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)),
+          where + 'a row or the page passes the window sideways'
+        );
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+
+  /* The keyboard order, the one write and the unfold, at 360 RU. */
+  {
+    const { ctx, page, d } = await openState(many, 360, 640, 'ru');
+    try {
+      const order = async (n) =>
+        page.evaluate(async (count) => {
+          const out = [];
+          for (let i = 0; i < count; i++) {
+            const a = document.activeElement;
+            out.push(
+              a?.classList.contains('cbody')
+                ? 'body'
+                : a?.classList.contains('cqf')
+                  ? 'field'
+                  : a?.classList.contains('lrow-n')
+                    ? 'position'
+                    : a?.matches('[data-gold]')
+                      ? 'price'
+                      : a?.classList.contains('cnote')
+                        ? 'note'
+                        : a?.closest('.morewrap')
+                          ? 'more'
+                          : (a?.tagName ?? '')
+            );
+            await new Promise((r) => setTimeout(r, 0));
+            out.push('|');
+          }
+          return out;
+        }, n);
+      await page.focus('button.cbody');
+      const seq = [];
+      for (let i = 0; i < 3; i++) {
+        seq.push((await order(1))[0]);
+        await page.keyboard.press('Tab');
+      }
+      ok(
+        JSON.stringify(seq) === JSON.stringify(['body', 'field', 'body']),
+        at + 'the folded Tab order - ' + JSON.stringify(seq)
+      );
+      await page.focus('button.cbody');
+      await page.keyboard.press('Enter');
+      await d.settle();
+      const opened = await page.evaluate(() => ({
+        expanded: document.querySelector('button.cbody')?.getAttribute('aria-expanded'),
+        focus: document.activeElement === document.querySelector('button.cbody')
+      }));
+      ok(
+        opened.expanded === 'true' && opened.focus,
+        at + 'the press did not unfold the row and keep the focus - ' + JSON.stringify(opened)
+      );
+      const open = [];
+      for (let i = 0; i < 7; i++) {
+        open.push((await order(1))[0]);
+        await page.keyboard.press('Tab');
+      }
+      ok(
+        JSON.stringify(open) ===
+          JSON.stringify(['body', 'field', 'position', 'price', 'note', 'more', 'body']),
+        at + 'the unfolded Tab order - ' + JSON.stringify(open)
+      );
+
+      await d.writesSettled();
+      const c0 = await d.fake('writeCount');
+      await page.focus('.lrow:nth-child(2) .cqf');
+      await d.writesSettled();
+      ok((await d.fake('writeCount')) === c0, at + 'a focus alone wrote');
+      for (let i = 0; i < 10; i++) await page.keyboard.press('ArrowUp');
+      await d.writesSettled();
+      const writes = (await d.fake('writeCount')) - c0;
+      const value = await page.evaluate(
+        () => document.querySelector('.lrow:nth-child(2) .cqf')?.value
+      );
+      ok(
+        writes === 1 && value === '10',
+        at + `ten keys made ${writes} writes and the field reads ${value}`
+      );
+
+      await d.fake('setOffline', true);
+      await page.focus('.lrow:nth-child(3) .cqf');
+      await page.keyboard.type('4');
+      ok(
+        await waitIn(page, () =>
+          document.querySelector('.page-sub')?.textContent.includes('Не сохранено')
+        ),
+        at + 'a write with no network does not say «Не сохранено»'
+      );
+      ok(
+        (await page.evaluate(
+          () => document.querySelector('.lrow:nth-child(3) .cqf')?.value
+        )) === '4',
+        at + 'the failed write lost the number'
+      );
+      await d.fake('setOffline', false);
+      await d.press('Повторить');
+      ok(
+        await waitIn(page, () =>
+          document.querySelector('.page-sub')?.textContent.includes('Сохранено')
+        ),
+        at + 'the retry did not save the number'
+      );
+
+      /* From 761 px the full row draws with the same number. */
+      await d.viewport(761, 768);
+      ok(
+        await waitIn(
+          page,
+          () =>
+            !document.querySelector('.crow') &&
+            document.querySelectorAll('.lrow-meta input[data-qty]')[2]?.value === '4'
+        ),
+        at + 'at 761 px the full row did not draw with the typed number'
+      );
+      for (const [w, h] of [
+        [1440, 900],
+        [1920, 1080]
+      ]) {
+        await d.viewport(w, h);
+        ok(
+          await waitIn(
+            page,
+            () => !document.querySelector('.crow') && !!document.querySelector('.lrow-meta')
+          ),
+          at + w + ' px does not draw the full row'
+        );
+      }
+    } finally {
+      await ctx.close();
+    }
+  }
+
+  /* A touch device: no grip; a typed position moves the row and the region says it. */
+  {
+    /* A touch viewport reloads the page, so it is set before the list is made. */
+    const state = STATES.find((s) => s.id === many);
+    const { ctx, page, d } = await fresh({ width: 390, height: 844 });
+    try {
+      await page.setViewport({ width: 390, height: 844, isMobile: true, hasTouch: true });
+      await d.open(state.route, { as: state.as });
+      await state.enter(d);
+      await d.settled(state.id);
+      await d.unfold(3);
+      const grip = await page.evaluate(() => {
+        const g = document.querySelector('.lrow-grip');
+        return g ? getComputedStyle(g).display : 'none';
+      });
+      ok(grip === 'none', at + 'a touch device draws the grip - ' + grip);
+      const name = await page.evaluate(
+        () => document.querySelectorAll('.lrow')[3]?.querySelector('.cname')?.textContent
+      );
+      await page.evaluate(() => {
+        const pos = document.querySelectorAll('.lrow')[3].querySelector('.lrow-n');
+        pos.value = '1';
+        pos.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+      await d.settle();
+      const moved = await page.evaluate(() => ({
+        first: document.querySelector('.lrow .cname')?.textContent,
+        said: [...document.querySelectorAll('.said')].map((s) => s.textContent).join(' ')
+      }));
+      ok(
+        moved.first === name && moved.said.includes('позиция 1 из 14'),
+        at + 'the typed position did not move the row - ' + JSON.stringify(moved)
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
+/** 99. Search and filter on the owner's page (docs/specs/FEATURES.md, "Account and browser
+ *  lists"), as `gm4` at 360x640 and 1180x720: the search row from 8 entries and not at 7,
+ *  the filter a sheet with no link, a pick lights «Фильтры · 1» and the meta line reads
+ *  «Показано 3 из 14», the numbers stay true and the grip goes, a ticked row the filter
+ *  hides leaves the bar's count, «Все» ticks the drawn rows only; at 1920 px the search box
+ *  is no wider than `/search`'s. */
+async function listSearchAndFilter() {
+  const at = '99 (search and filter on the owner page): ';
+  for (const [width, height] of [
+    [360, 640],
+    [1180, 720]
+  ]) {
+    const where = at + width + ': ';
+    {
+      const { ctx, page } = await openState(LIST_A_ID + ' as gm4', width, height, 'ru');
+      try {
+        ok(
+          !(await page.evaluate(() => !!document.querySelector('.lfind'))),
+          where + 'a search row at 7 entries'
+        );
+      } finally {
+        await ctx.close();
+      }
+    }
+    const { ctx, page, d } = await openState(LIST_A_ID + ' ~ many as gm4', width, height, 'ru');
+    try {
+      const row = await page.evaluate(() => {
+        const f = document.querySelector('.lfind');
+        return {
+          box: !!f?.querySelector('input[type="search"]'),
+          last: f?.lastElementChild?.classList.contains('selmode') ?? false
+        };
+      });
+      ok(
+        row.box && row.last,
+        where + 'no search row with «Выбрать» last - ' + JSON.stringify(row)
+      );
+      await d.tick('Первоклассный Спальный Мешок');
+      await d.click('Фильтры');
+      const sheet = await page.evaluate(() => ({
+        open: !!document.querySelector('dialog.sheet[open]'),
+        link: [...document.querySelectorAll('dialog.sheet button')].some(
+          (b) => b.textContent.trim() === 'Ссылка на фильтры'
+        )
+      }));
+      ok(sheet.open && !sheet.link, where + 'the filter sheet - ' + JSON.stringify(sheet));
+      await d.click('Расходники');
+      await d.click('Закрыть');
+      const narrowed = await page.evaluate(() => ({
+        toggle: [...document.querySelectorAll('.lfind button')].map((b) =>
+          b.textContent.trim()
+        ),
+        sub: (document.querySelector('.page-sub')?.textContent ?? '')
+          .replace(/\s+/g, ' ')
+          .trim(),
+        numbers: [...document.querySelectorAll('.lrow')].map(
+          (r) => Number(r.dataset.index) + 1
+        ),
+        grips: document.querySelectorAll('.lrow-grip').length,
+        count: document.querySelector('.selbarwrap .selcount')?.textContent ?? ''
+      }));
+      ok(
+        narrowed.toggle.includes('Фильтры · 1') &&
+          narrowed.sub.startsWith('Показано 3 из 14') &&
+          JSON.stringify(narrowed.numbers) === '[9,10,11]' &&
+          narrowed.grips === 0 &&
+          narrowed.count.startsWith('Выбрано 0'),
+        where + 'the narrowed page - ' + JSON.stringify(narrowed)
+      );
+      await page.evaluate(() => document.querySelector('.selbarwrap .selall input')?.click());
+      await d.settle();
+      const all = await page.evaluate(
+        () => document.querySelector('.selbarwrap .selcount')?.textContent ?? ''
+      );
+      ok(all.startsWith('Выбрано 3'), where + '«Все» ticked more than the drawn rows - ' + all);
+    } finally {
+      await ctx.close();
+    }
+  }
+
+  /* At 1920 px the list's box is no wider than the search page's. */
+  {
+    const { ctx, page } = await openState(LIST_A_ID + ' ~ many as gm4', 1920, 1080, 'ru');
+    const list = await page.evaluate(
+      () => document.querySelector('.lfind input[type="search"]')?.getBoundingClientRect().width
+    );
+    await ctx.close();
+    const s = await fresh({ width: 1920, height: 1080 });
+    await s.d.open('#/search');
+    await s.d.settled('#/search');
+    const search = await s.page.evaluate(
+      () => document.querySelector('main input[type="search"]')?.getBoundingClientRect().width
+    );
+    await s.ctx.close();
+    console.log('  99 at 1920: list box ' + list + ', search box ' + search);
+    ok(
+      typeof list === 'number' && typeof search === 'number' && list <= search + 0.5,
+      at + '1920: the list box is wider than the search page box - ' + list + ' / ' + search
+    );
+  }
+}
+
+/** 100. The list head and the bars (docs/specs/FEATURES.md, "Lists"; DESIGN.md, "Selection
+ *  bar"): at 360x640 the list «Ещё» opens inside the window with its items in order and
+ *  opens the share panel, the roll and the notes; the bar is one bar at most 45% of a
+ *  640x360 window; the price sheet's foot is in view at 360x480; «Снять выделение» gives
+ *  the focus back to «Выбрать»; a `/s/` row unfolds and «Открыть карточку» opens the card;
+ *  no select-all strip and no pill; at 1920 px the bar starts at `main`'s left edge on both
+ *  pages. */
+async function listHeadAndBars() {
+  const at = '100 (the list head and the bars): ';
+  {
+    const { ctx, page, d } = await openState(LIST_A_ID + ' ~ noted as gm4', 360, 640, 'ru');
+    try {
+      await d.openMore('.lhead-acts .morewrap > [aria-haspopup="menu"]');
+      const menu = await page.evaluate(() => {
+        const m = document.querySelector('[role="menu"]');
+        const r = m?.getBoundingClientRect();
+        return {
+          items: [...(m?.querySelectorAll('[role="menuitem"]') ?? [])].map((b) =>
+            b.textContent.trim()
+          ),
+          inside:
+            !!r && r.left >= 0 && r.right <= innerWidth && r.top >= 0 && r.bottom <= innerHeight
+        };
+      });
+      ok(
+        menu.inside &&
+          JSON.stringify(menu.items) ===
+            JSON.stringify([
+              'Поделиться',
+              'Печать',
+              'Бросить по списку',
+              'Цены: монетами',
+              'Скопировать текст',
+              'Скачать JSON',
+              'Удалить список'
+            ]),
+        at + 'the list «Ещё» at 360 - ' + JSON.stringify(menu)
+      );
+      await d.click('Бросить по списку');
+      ok(!!(await d.count('details.lroll[open]')), at + '«Бросить по списку» opened no roll');
+      await d.openMore('.lhead-acts .morewrap > [aria-haspopup="menu"]');
+      await d.click('Поделиться');
+      ok(
+        (await d.text()).includes('Ссылка для игроков'),
+        at + '«Поделиться» opened no share panel'
+      );
+      await d.click('Заметки');
+      ok(!!(await d.count('div.lnote textarea')), at + '«Заметки» opened no list notes');
+      ok(
+        !(await d.count('main .selall')) && !(await d.count('.fpill')),
+        at + 'a strip or a pill'
+      );
+
+      await d.click('Выбрать');
+      await d.tick('Пронзительная Свирель');
+      await d.viewport(640, 360);
+      const bar = await page.evaluate(() => ({
+        bars: document.querySelectorAll('.selbarwrap').length,
+        h: document.querySelector('.selbarwrap')?.getBoundingClientRect().height ?? 0
+      }));
+      ok(
+        bar.bars === 1 && bar.h <= 0.45 * 360,
+        at + 'the bar at 640x360 - ' + JSON.stringify(bar)
+      );
+      await d.viewport(360, 480);
+      await d.click('Цены');
+      const foot = await page.evaluate(() => {
+        const f = document.querySelector('dialog.sheet .sheet-foot');
+        const r = f?.getBoundingClientRect();
+        return r ? { top: r.top, bottom: r.bottom, vh: innerHeight } : null;
+      });
+      ok(
+        !!foot && foot.top >= 0 && foot.bottom <= foot.vh,
+        at + 'the price sheet foot is out of view at 360x480 - ' + JSON.stringify(foot)
+      );
+      await d.click('Закрыть');
+      await d.viewport(360, 640);
+      await d.click('Снять выделение');
+      ok(
+        await waitIn(
+          page,
+          () => document.activeElement?.classList.contains('selmode') ?? false
+        ),
+        at + '«Снять выделение» did not return the focus to «Выбрать»'
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+  {
+    const { ctx, page, d } = await openState('#/s/player-token-1 ~ compact', 360, 640, 'ru');
+    try {
+      await d.unfold(0);
+      await d.click('Открыть карточку');
+      ok(
+        await waitIn(page, () => !!document.querySelector('dialog[open]:not(.sheet)')),
+        at + '«Открыть карточку» opened no card on /s/'
+      );
+      ok(
+        !(await d.count('main .selall')) && !(await d.count('.fpill')),
+        at + '/s/: a strip or a pill'
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+  /* At 1920 px the bar shares `main`'s left edge on both pages. */
+  for (const id of [LIST_A_ID + ' ~ selecting as gm4', '#/s/player-token-1 ~ selecting']) {
+    const { ctx, page } = await openState(id, 1920, 1080, 'ru');
+    try {
+      const edge = await page.evaluate(() => ({
+        bar: document.querySelector('.selbarwrap .selbar')?.getBoundingClientRect().left,
+        main: document.querySelector('main')?.getBoundingClientRect().left
+      }));
+      ok(
+        typeof edge.bar === 'number' && Math.abs(edge.bar - edge.main) <= 0.5,
+        at + id + ' 1920: the bar does not start at main - ' + JSON.stringify(edge)
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -7426,6 +7948,9 @@ const CASES = [
   ['95 (a badge is one box and keeps clear of the lines around it)', badgeIsOneBox],
   ['96 (the table head holds still between tables)', tableHeadHoldsStill],
   ['97 (a roll fits the first screen by its count)', rollFitsByCount],
+  ['98 (the compact row holds from 320 to 760 px)', compactRowHolds],
+  ["99 (search and filter on the owner's page)", listSearchAndFilter],
+  ['100 (the list head and bars)', listHeadAndBars],
   ['101 (the page column grows to 1440 px and stays centered)', pageColumnOnWideWindows]
 ];
 

@@ -5,25 +5,29 @@
      and "Account and browser lists".
 
      From 8 drawn entries, or once a query or a filter value is set, the page
-     draws the tables' search box and filter strip over the entries it draws;
-     the filter lives in the address (`#/s/<token>/f_<filter>`; docs/specs/FEATURES.md,
-     "Lists"). */
+     draws the search row (`ListFind`) over the entries it draws; the filter lives in the
+     address (`#/s/<token>/f_<filter>`; docs/specs/FEATURES.md, "Lists"). Up to 760 px a
+     row folds (`CompactRow`). */
   import { onDestroy, tick, untrack } from 'svelte';
+  import { SvelteSet } from 'svelte/reactivity';
   import Actions from './Actions.svelte';
   import Button from './Button.svelte';
+  import CompactRow from './CompactRow.svelte';
   import Empty from './Empty.svelte';
-  import FilterBar from './FilterBar.svelte';
+  import ErrorPage from './ErrorPage.svelte';
   import HitNote from './HitNote.svelte';
   import Icon from './Icon.svelte';
+  import ListFind from './ListFind.svelte';
   import LoadState from './LoadState.svelte';
   import PageTitle from './PageTitle.svelte';
   import PickQty from './PickQty.svelte';
   import RecordHost from './RecordHost.svelte';
-  import SearchBox from './SearchBox.svelte';
+  import RowMain from './RowMain.svelte';
+  import SelMode from './SelMode.svelte';
   import SignInPrompt from './SignInPrompt.svelte';
   import StatusRegion from './StatusRegion.svelte';
   import TableRows from './TableRows.svelte';
-  import UpdatedLine from './UpdatedLine.svelte';
+  import { agoText } from '../lib/ago.js';
   import { sharedListOf, snapshotRecords } from '../lib/cloudLists.js';
   import { withRecords } from '../lib/homebrew.js';
   import { listFacets, type Index } from '../lib/data.js';
@@ -31,8 +35,10 @@
   import {
     chosenCount,
     encodeFilter,
+    inForceOf,
     LIST_GROUPS,
     passes,
+    toggledFilter,
     type FilterState
   } from '../lib/filters.js';
   import { cardVersion, sectionHash, shareHash, storedListHash } from '../lib/hash.js';
@@ -137,14 +143,20 @@
   let finding = $state(false);
   const picked = $derived<FilterState>(app.route.kind === 'share' ? app.route.filter : {});
   const facRows = $derived(listFacetRows(items, t, app.lang));
-  const inForce = $derived.by<FilterState>(() => {
-    const out: FilterState = {};
-    for (const row of facRows) {
-      const on = picked[row.group] ?? [];
-      const kept = row.values.map((v) => v.value).filter((v) => on.includes(v));
-      if (kept.length) out[row.group] = kept;
-    }
-    return out;
+  const inForce = $derived(inForceOf(facRows, picked));
+  /* Up to 760 px a row folds; a press unfolds it (memory only, per link). */
+  const narrow = $derived(app.band === 'narrow');
+  const openRows = new SvelteSet<string>();
+  /* The lead line's two note buttons, closed on arrival. */
+  let pubOpen = $state(false);
+  let gmOpen = $state(false);
+  /* A row's number is its place in the list the reader holds, also while filtered. */
+  const posOf = $derived(new Map((shared?.ids ?? []).map((id, i) => [id, i + 1])));
+  $effect(() => {
+    const ids = new Set(shared?.ids ?? []);
+    untrack(() => {
+      for (const id of [...openRows]) if (!ids.has(id)) openRows.delete(id);
+    });
   });
 
   /* Another list starts unfiltered; a segment this page did not write (a filter link)
@@ -160,6 +172,9 @@
         filterOpen = false;
         finding = false;
         readyFor = null;
+        openRows.clear();
+        pubOpen = false;
+        gmOpen = false;
       }
       const seg = route.kind === 'share' ? encodeFilter(route.filter, LIST_GROUPS) : '';
       if (seg !== seenSeg) filterOpen = true;
@@ -189,24 +204,25 @@
   }
 
   function pickFacet(group: string, value: string): void {
-    const order = facRows.find((r) => r.group === group)?.values.map((v) => v.value) ?? [];
-    const current = inForce[group] ?? [];
-    const next = current.includes(value)
-      ? current.filter((v) => v !== value)
-      : order.filter((v) => current.includes(v) || v === value);
-    applyFilter({ ...inForce, [group]: next });
+    applyFilter(toggledFilter(facRows, inForce, group, value));
   }
 
   function resetFacets(): void {
     applyFilter({});
   }
 
-  /* Rule 20: the empty state's «Сбросить всё» goes with it; focus goes to «Фильтры». */
+  /* Rule 20: the empty state's «Сбросить всё» clears the query and the filter and goes with
+     the empty state; the focus goes to «Фильтры», else the search box, else `#main`. */
   let filterToggle = $state<HTMLButtonElement | undefined>(undefined);
   async function resetFromEmpty(): Promise<void> {
+    q = '';
     resetFacets();
     await tick();
-    (filterToggle?.isConnected ? filterToggle : document.getElementById('main'))?.focus();
+    (
+      (filterToggle?.isConnected ? filterToggle : null) ??
+      document.querySelector<HTMLElement>('.lfind input[type="search"]') ??
+      document.getElementById('main')
+    )?.focus();
   }
 
   /* The audience and the link are read at the press: the toast is drawn later, and a
@@ -264,7 +280,29 @@
       void cloud.detail([mine]);
     }
   });
-  const sub = $derived(`${t.sharedList} · ${plural(items.length, t.itemsN, app.lang)}`);
+  /* The lead line's count: the whole list, or what a query or a filter leaves of it. */
+  const narrowed = $derived(q.trim() !== '' || chosenCount(inForce, LIST_GROUPS) > 0);
+  const countText = $derived(
+    narrowed
+      ? t.shownOf.replace('%n', String(entries.length)).replace('%m', String(items.length))
+      : plural(items.length, t.itemsN, app.lang)
+  );
+
+  /* Ticks that arrive with the page (a sign-in that returns with them) open the mode. */
+  $effect(() => {
+    if (app.sel.size > 0 && !app.selecting) {
+      untrack(() => {
+        app.selecting = true;
+      });
+    }
+  });
+
+  /* «Выбрать» opens the selection mode; the focus moves to the bar's «Все». */
+  async function startSelecting(): Promise<void> {
+    app.selecting = true;
+    await tick();
+    document.querySelector<HTMLElement>('.selbarwrap .selall input')?.focus();
+  }
 
   /* The live `S.shared` (`git show 23c00a6^:app.js`): every add-to-list menu on
      this page - the bar's, a card's - reads its meta from it. Cleared in
@@ -321,15 +359,23 @@
 </script>
 
 <RecordHost {app} {index}>
-  {#snippet children(openRecord)}
+  {#snippet children(openRecord: (it: Record_) => void)}
     {#if !view || view.status === 'gone'}
-      <PageTitle title={t.shareGone} sub={t.shareGoneSub} />
-      <Button variant="primary" href={app.href(sectionHash('roll/std'))} sameTab
-        >{t.toStart}</Button
-      >
+      <ErrorPage title={t.shareGone}>
+        {t.shareGoneSub}
+        {#snippet actions()}
+          <Button variant="primary" href={app.href(sectionHash('roll/std'))} sameTab
+            >{t.toStart}</Button
+          >
+        {/snippet}
+      </ErrorPage>
     {:else if view.status === 'error'}
-      <PageTitle title={t.sharedFailed} sub={t.sharedFailedSub} />
-      <Button variant="primary" onclick={() => void view.retry()}>{t.retry}</Button>
+      <ErrorPage title={t.sharedFailed}>
+        {t.sharedFailedSub}
+        {#snippet actions()}
+          <Button variant="primary" onclick={() => void view.retry()}>{t.retry}</Button>
+        {/snippet}
+      </ErrorPage>
     {:else if !shared}
       <!-- The first read: no heading, which is the list's name. -->
       <LoadState {t} failed={false} text={t.sharedFailed} onretry={() => void view.retry()} />
@@ -342,9 +388,38 @@
           >
         </p>
       {/if}
-      <PageTitle title={shared.name || t.untitled} {sub} />
-      {#if view?.shared}
-        <UpdatedLine {app} at={view.shared.updated_at} />
+      <!-- The lead line: the count, the update, and a button for each note the link holds. -->
+      {#snippet sub()}
+        {countText}{#if view?.shared}{` · ${agoText(
+            Date.parse(view.shared.updated_at),
+            app.now,
+            app.lang,
+            app.t,
+            'updated'
+          )}`}{/if}{#if shared?.note}&#32;·&#32;<Button
+            size="sm"
+            variant="bare"
+            expanded={pubOpen}
+            onclick={() => {
+              pubOpen = !pubOpen;
+            }}>{t.note}</Button
+          >{/if}{#if shared?.hnote}&#32;·&#32;<Button
+            size="sm"
+            variant="bare"
+            expanded={gmOpen}
+            onclick={() => {
+              gmOpen = !gmOpen;
+            }}>{t.noteGmLink}</Button
+          >{/if}
+      {/snippet}
+      <div class="shhead">
+        <PageTitle title={shared.name || t.untitled} {sub} />
+      </div>
+      {#if (pubOpen && shared.note) || (gmOpen && shared.hnote)}
+        <div class="notes">
+          {#if pubOpen}<HitNote icon="eye" label={t.notePub} text={shared.note} />{/if}
+          {#if gmOpen}<HitNote icon="eyeOff" label={t.noteHid} text={shared.hnote} />{/if}
+        </div>
       {/if}
       <Actions style="margin-bottom:18px">
         <!-- Only the open prompt is announced: an aria-expanded=false on
@@ -357,6 +432,9 @@
           disabled={app.cloning}
           onclick={saveShared}><Icon name="plus" />{t.saveShared}</Button
         >
+        {#if !finding && entries.length && !app.selecting}
+          <SelMode label={t.selectMode} onclick={() => void startSelecting()} />
+        {/if}
       </Actions>
       {#if prompting && app.newListTarget === 'prompt'}
         <SignInPrompt
@@ -369,46 +447,83 @@
           }}
         />
       {/if}
-      {#if shared.note || shared.hnote}
-        <div class="notes">
-          <HitNote icon="eye" label={t.notePub} text={shared.note} />
-          <HitNote icon="eyeOff" label={t.noteHid} text={shared.hnote} />
-        </div>
-      {/if}
       {#if finding}
-        <div class="lfind">
-          <SearchBox
-            value={q}
-            placeholder={t.searchPh}
-            oninput={(v: string) => {
-              q = v;
-            }}
-          />
-          <FilterBar
-            rows={facRows}
-            picked={inForce}
-            shown={entries.length}
-            total={items.length}
-            open={filterOpen}
-            {t}
-            ontoggle={() => {
-              filterOpen = !filterOpen;
-            }}
-            onpick={pickFacet}
-            onreset={resetFacets}
-            oncopylink={() => {
-              void copyFilterLink(token);
-            }}
-            bind:toggleEl={filterToggle}
-          />
-        </div>
+        <ListFind
+          {app}
+          rows={facRows}
+          picked={inForce}
+          shown={entries.length}
+          query={q}
+          onquery={(v: string) => {
+            q = v;
+          }}
+          open={filterOpen}
+          onopen={() => {
+            filterOpen = true;
+          }}
+          onclose={() => {
+            filterOpen = false;
+          }}
+          onpick={pickFacet}
+          onclear={(group: string) => {
+            applyFilter({ ...inForce, [group]: [] });
+          }}
+          onreset={resetFacets}
+          oncopylink={() => {
+            void copyFilterLink(token);
+          }}
+          selectable={!app.selecting && entries.length > 0}
+          onselect={() => void startSelecting()}
+          bind:toggle={filterToggle}
+        />
       {/if}
+      {#snippet compactRow(entry: { it: Record_; gmOnly?: true })}
+        {@const it = entry.it}
+        {@const m = metaOf(it.id)}
+        <CompactRow
+          {it}
+          id={it.id}
+          no={posOf.get(it.id) ?? 0}
+          lang={app.lang}
+          artBroken={(id: string) => app.artBroken(id)}
+          onartfail={(id: string) => {
+            app.markArtBroken(id);
+          }}
+          open={openRows.has(it.id)}
+          ontoggle={() => {
+            if (openRows.has(it.id)) openRows.delete(it.id);
+            else openRows.add(it.id);
+          }}
+          price={(m.gold ?? 0) > 0 ? priceText(m.gold ?? 0, mode, app.lang) : undefined}
+          note={!!(m.note || m.hnote)}
+          gmOnly={entry.gmOnly === true}
+          qtyText={(m.qty ?? 0) > 1 ? '×' + String(m.qty) : undefined}
+        >
+          <RowMain
+            full
+            {it}
+            lang={app.lang}
+            artBroken={(id: string) => app.artBroken(id)}
+            onartfail={(id: string) => {
+              app.markArtBroken(id);
+            }}
+            onopen={openRecord}
+          />
+          <HitNote icon="eye" label={t.notePub} text={m.note} />
+          <HitNote icon="eyeOff" label={t.noteHid} text={m.hnote} />
+          <div class="cacts">
+            <Button
+              size="sm"
+              onclick={() => {
+                openRecord(it);
+              }}>{t.openCard}</Button
+            >
+          </div>
+        </CompactRow>
+      {/snippet}
       {#if items.length > 0 && entries.length === 0}
-        <Empty>
-          {t.nothing}
-          {#if chosenCount(inForce, LIST_GROUPS) > 0}
-            <Button size="sm" onclick={() => void resetFromEmpty()}>{t.resetAll}</Button>
-          {/if}
+        <Empty title={t.nothing}>
+          <Button size="sm" onclick={() => void resetFromEmpty()}>{t.resetAll}</Button>
         </Empty>
       {:else}
         <TableRows
@@ -425,13 +540,12 @@
             app.markArtBroken(id);
           }}
           onopen={openRecord}
-          ontoggleall={(ids: string[]) => {
-            app.toggleAllIn(ids);
-          }}
+          ticks={app.selecting}
+          row={narrow ? compactRow : undefined}
         >
           {#snippet inside(it: Record_)}
             {@const m = metaOf(it.id)}
-            {#if m.note || m.hnote}
+            {#if !narrow && (m.note || m.hnote)}
               <!-- Inside the row's border, as the owner's list page draws them: drawn after
                    the row they read as the next entry's notes. -->
               <div class="rnotes">
@@ -477,22 +591,32 @@
 </RecordHost>
 
 <style>
-  /* `.page-h`/`.page-sub` moved to `PageTitle.svelte`, `.card-acts` to
-     `Actions.svelte` - `margin-bottom:18px` is the live inline style
-     on this specific block, now passed as `style` rather than folded into a
-     rule of this component's own. */
+  /* `.card-acts` moved to `Actions.svelte` - `margin-bottom:18px` is the live inline style
+     on this specific block, now passed as `style`. */
   .notes {
-    margin-bottom: 18px;
+    margin: -8px 0 16px;
   }
 
-  /* The search box and the filter strip, between the notes and the rows; the
-     strip sits 12px under the box. */
-  .lfind {
-    margin: 0 0 18px;
+  /* The list's name: one line up to 760 px, three lines from 761 px, cut with an ellipsis. */
+  .shhead :global(.page-h) {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    overflow: hidden;
   }
 
-  .lfind :global(.fbar) {
-    margin-top: 12px;
+  @media (max-width: 760px) {
+    .shhead :global(.page-h) {
+      -webkit-line-clamp: 1;
+      line-clamp: 1;
+    }
+  }
+
+  .shhead :global(.page-sub .btn) {
+    min-height: 24px;
+    padding: 0;
+    vertical-align: baseline;
   }
 
   .ownline {
@@ -522,5 +646,10 @@
 
   .rnotes :global(.hitnote:first-child) {
     margin-top: 0;
+  }
+
+  .cacts {
+    display: flex;
+    margin-top: 8px;
   }
 </style>

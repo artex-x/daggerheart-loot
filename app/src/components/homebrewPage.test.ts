@@ -1838,16 +1838,6 @@ describe('the ticks across the tabs', () => {
 });
 
 const BASE32 = 'abcdefghijklmnopqrstuvwxyz234567';
-/* A key from a number: `hb_` and 16 base32 characters. */
-const keyN = (n: number): string => {
-  let tail = '';
-  let v = n;
-  do {
-    tail = BASE32.charAt(v % 32) + tail;
-    v = Math.floor(v / 32);
-  } while (v > 0);
-  return 'hb_' + tail.padStart(16, 'a');
-};
 
 describe('the bulk move', () => {
   const HOME = ['Кольцо с гравировкой', 'Настой кузнеца', 'Whispering Cap'];
@@ -1990,34 +1980,6 @@ describe('the bulk move', () => {
       'true'
     );
   });
-
-  /* 300 rows in jsdom under coverage take about 35 s; the bound is the render's, not the move's. */
-  it('moves 300 ticked items in one call', async () => {
-    const cloud = fakeCloud(SEED, 'gm2', { limits: { items: 300 } });
-    await cloud.homebrew.import({
-      books: [
-        { id: uuid(7000), key: 'hb_bigsourceaaaaaaa', content: { ru: 'Склад' }, names: true }
-      ],
-      cards: [],
-      items: Array.from({ length: 300 }, (_, i) => ({
-        id: uuid(7001 + i),
-        key: keyN(i),
-        book: null,
-        content: { kind: 'item' as const, ru: 'Предмет ' + String(i) }
-      })),
-      update: false
-    });
-    const move = vi.spyOn(cloud.homebrew, 'moveItems');
-    page('gm2', { cloud });
-    await screen.findByText('300 предметов из 300');
-    await tickRow(t.pickAll);
-    await userEvent.click(screen.getByRole('button', { name: 'Переместить (300)' }));
-    await userEvent.selectOptions(screen.getByLabelText('Источник'), 'Склад');
-    await userEvent.click(go());
-    expect(await screen.findByText('Перемещено предметов: 300')).toBeInTheDocument();
-    expect(move).toHaveBeenCalledOnce();
-    expect(move.mock.calls[0]?.[0]).toHaveLength(300);
-  }, 120_000);
 });
 
 describe('the downloads', () => {
@@ -2130,7 +2092,6 @@ describe('the Items tab filter', () => {
     const { container } = page('gm1', { fake: { fillItems: 8 } });
     await screen.findByText('8 предметов из 8');
     expect(document.querySelector('.fcol')).toBeInTheDocument();
-    expect(document.querySelector('.fpill')).toBeNull();
     expect(screen.queryByRole('button', { name: t.filterLink })).toBeNull();
     await expectNoA11yViolations(container);
   });

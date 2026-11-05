@@ -16,6 +16,7 @@
  * Everything outside arrives as an `Env`. That is what makes this testable and
  * what stops a component reaching past it. */
 
+import type { Snippet } from 'svelte';
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import {
   bundleFileName,
@@ -424,28 +425,16 @@ export class AppState {
   /** The layout band: DESIGN.md, "The Two Breakpoints Rule". */
   band = $state<Band>('wide');
 
+  /**
+   * A page's own selection bar, drawn by `SelBar` in the bar's one place in place of its
+   * own: the owner's list page sets it while its selection mode is on, so its ticks stay
+   * page state (docs/specs/STATE.md, "Lists"). Memory only.
+   */
+  pageBar = $state.raw<Snippet | null>(null);
+
   /* The «Мои предметы» tabs and the source chips keep the ticks (`keepsTicks`). */
   #clearTicksOnLeave(from: Route): void {
     if (!keepsTicks(from, this.route)) this.#clearTicks();
-  }
-
-  /**
-   * "Select all" for whatever ids are on screen - always all of one list: the
-   * whole table for a plain body, one section's own rows where the body is
-   * split, or a shared list's own rows. Ticks every id if any of them is not
-   * already ticked, unticks them otherwise. `TablesPage` and `SearchPage`
-   * each carried an identical copy of this; moved here once `SharedListPage`
-   * became a third caller, rather than adding a fourth.
-   */
-  toggleAllIn(ids: readonly string[]): void {
-    const on = ids.some((id) => !this.sel.has(id));
-    for (const id of ids) {
-      if (on) this.sel.add(id);
-      else {
-        this.sel.delete(id);
-        this.picked.delete(id);
-      }
-    }
   }
 
   /**

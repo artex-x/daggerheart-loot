@@ -609,6 +609,14 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
       await settle(page);
     },
 
+    /** Unfolds the compact list row `nth` (from 0), up to 760 px. */
+    async unfold(nth = 0) {
+      await page.evaluate((i) => {
+        document.querySelectorAll('button.cbody')[i]?.click();
+      }, nth);
+      await settle(page);
+    },
+
     /** Opens the add-to-list menu of the first roll result. */
     async openCardList() {
       await page.click('.resacts .seldrop > .btn');

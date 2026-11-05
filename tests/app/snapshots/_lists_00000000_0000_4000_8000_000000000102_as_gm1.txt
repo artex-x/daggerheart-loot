@@ -1,6 +1,6 @@
 # #/lists/00000000-0000-4000-8000-000000000102 as gm1
 # route: #/lists/00000000-0000-4000-8000-000000000102
-# why: «Пустой список»: «0 позиций из 100 · Сохранено», the empty hint ending «Свой предмет можно создать здесь же, кнопкой ниже.», then the row «Свой предмет» folded
+# why: «Пустой список»: «0 позиций из 100 · Сохранено», the empty hint ending «Свой предмет можно создать здесь же, кнопкой ниже.», then the row «Добавить свой предмет» folded
 # as: gm1
 
 ## ru :: tree
@@ -23,14 +23,12 @@ RootWebArea "Пустой список - Генератор лута Daggerheart
     StaticText "0 позиций из 100 · "
     StaticText "Сохранено"
     button "Поделиться" [expanded=false]
-    button "Скопировать текст"
-    button "Скачать JSON"
-    button "Удалить"
+    button "Ещё" [expanded=false haspopup=menu]
     status ""
     DisclosureTriangle "ЗАМЕТКИ" [expanded=false]
     StaticText "Пока пусто. Откройте «Таблицы» или «Поиск», отметьте нужное гало..." [namelen=136 namehash=e00354fc]
     StaticText " Свой предмет можно создать здесь же, кнопкой ниже."
-    button "Свой предмет" [expanded=false]
+    button "Добавить свой предмет" [expanded=false]
     status ""
     status ""
   contentinfo ""
@@ -46,6 +44,8 @@ RU
 daggerheart.com
 Аккаунт: gm1@example.test
 Бросок
+Добавить свой предмет
+Ещё
 Жирный
 К содержимому
 Конфиденциальность
@@ -58,12 +58,8 @@ daggerheart.com
 Подсказка: Только для мастера
 Поиск
 Просмотр
-Свой предмет
-Скачать JSON
-Скопировать текст
 Список
 Таблицы
-Удалить
 Условия использования
 Установить как приложение
 
@@ -87,14 +83,12 @@ RootWebArea "Пустой список - Daggerheart Loot Generator" [url=/en/li
     StaticText "0 items of 100 · "
     StaticText "Saved"
     button "Share" [expanded=false]
-    button "Copy text"
-    button "Download JSON"
-    button "Delete"
+    button "More" [expanded=false haspopup=menu]
     status ""
     DisclosureTriangle "NOTES" [expanded=false]
     StaticText "Nothing here yet. Open Tables or Search, tick what you need and ..." [namelen=122 namehash=3ef243ba]
     StaticText " You can also make an item of your own here, with the button bel..." [namelen=67 namehash=44bdc08a]
-    button "Own item" [expanded=false]
+    button "Add your own item" [expanded=false]
     status ""
     status ""
   contentinfo ""
@@ -106,11 +100,9 @@ RootWebArea "Пустой список - Daggerheart Loot Generator" [url=/en/li
 
 ## en :: controls
 Account: gm1@example.test
+Add your own item
 Bold
 Bulleted list
-Copy text
-Delete
-Download JSON
 EN
 Help: For players
 Help: GM only
@@ -118,8 +110,8 @@ Install as an app
 Italic
 List name
 LootDaggerheart
+More
 Numbered list
-Own item
 Preview
 Privacy
 RU

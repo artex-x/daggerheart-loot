@@ -21,6 +21,7 @@ import {
   fakeEnv,
   fakeImage,
   fakePage,
+  fakeViewport,
   memoryRouter,
   memoryStorage,
   noData
@@ -118,6 +119,19 @@ const openAs = (cloud: CloudPort, hash = SHOP, over: Partial<Env> = {}) => {
   const view = render(App, { env: at(hash, { router, dialog, cloud, page, ...over }) });
   return { ...view, router, dialog, page };
 };
+
+/** Opens the selection mode with «Выбрать» where the page draws it: the ticks draw only in
+ *  the mode. */
+async function selecting(): Promise<void> {
+  const mode = document.querySelector<HTMLElement>('button.selmode');
+  if (mode) await userEvent.click(mode);
+}
+
+/** Presses an item of the list's «Ещё»: from 761 px copy, download and delete sit there. */
+async function listMore(name: string): Promise<void> {
+  await userEvent.click(screen.getByRole('button', { name: 'Ещё' }));
+  await userEvent.click(screen.getByRole('menuitem', { name }));
+}
 
 /** Renders `hash` signed in as gm4, who holds `A_LIST` and `more`, and waits for the page. */
 async function openA(over: Partial<Env> = {}, hash = A_HASH, more: SeedList[] = []) {
@@ -429,6 +443,7 @@ describe('the roll panel', () => {
 describe('select-all', () => {
   it('ticks every row and reads the count; one row reads 1; none reads "select all"', async () => {
     await openA();
+    await selecting();
     expect(screen.getByRole('checkbox', { name: 'Выбрать все' })).toBeInTheDocument();
 
     const rows = ROW_NAMES.map((name) => screen.getByRole('checkbox', { name }));
@@ -438,7 +453,7 @@ describe('select-all', () => {
 
     // untick the same row - its own name never changes with selection state
     await userEvent.click(rows[0] as HTMLElement);
-    expect(screen.getByText('Выбрать все')).toBeInTheDocument();
+    expect(screen.getByText('Выбрано 0 позиций')).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все' }));
     expect(screen.getByText('Выбрано 3 позиции · 4 шт.')).toBeInTheDocument();
@@ -447,6 +462,7 @@ describe('select-all', () => {
   it('clears when history moves to a different list, not just a different page', async () => {
     const { router } = await openA({}, A_HASH, [listOf(802, 'Другой', [{ key: 'q1' }])]);
 
+    await selecting();
     await userEvent.click(screen.getByRole('checkbox', { name: ROW_NAMES[0]! }));
     expect(screen.getByText('Выбрана 1 позиция')).toBeInTheDocument();
 
@@ -455,42 +471,43 @@ describe('select-all', () => {
       expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
     });
     expect(screen.queryByText(/Выбрано/)).not.toBeInTheDocument();
-    expect(await screen.findByRole('checkbox', { name: 'Выбрать все' })).toBeInTheDocument();
+    expect(screen.queryByRole('checkbox', { name: 'Выбрать все' })).not.toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Выбрать' })).toBeInTheDocument();
   });
 });
 
 describe('the actions under a ticked selection', () => {
   /* A_LIST's rows in order: ci1 (unpriced), cc1 (750 gold), q1 (unpriced). */
   const tickRow = async (n: number): Promise<void> => {
+    await selecting();
     await userEvent.click(screen.getByRole('checkbox', { name: ROW_NAMES[n]! }));
   };
 
-  it('shows Цены and Удалить (N) once a row is ticked, and hides them again', async () => {
+  it('draws the bar in the mode, its actions on with a tick and off at zero ticks', async () => {
     await openA();
     expect(screen.queryByRole('button', { name: 'Цены' })).not.toBeInTheDocument();
 
     await tickRow(0);
-    expect(screen.getByRole('button', { name: 'Цены' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Удалить (1)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Цены' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Удалить (1)' })).toBeEnabled();
 
     await tickRow(0);
-    expect(screen.queryByRole('button', { name: 'Цены' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /Удалить \(/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Цены' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Удалить (0)' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Снять выделение' })).toBeEnabled();
   });
 
-  it('holds four buttons in the batch bar, with no percentage widget', async () => {
-    /* Ported from tests/lists2.js's own batch-bar shape check: the reprice
-       percentage field lives in the separate .guess panel, not in
-       .batch-acts alongside Цены/Скопировать/Удалить. */
+  it('holds four buttons in the selection bar, with no percentage widget', async () => {
+    /* The reprice percentage field lives in the price sheet, not in the bar's actions. */
     const { container } = await openA();
     await tickRow(0);
-    const bar = container.querySelector('.batch-acts');
+    const bar = container.querySelector('.selbarwrap .selacts');
     expect(bar).toBeInTheDocument();
     expect(
       within(bar as HTMLElement)
         .getAllByRole('button')
         .map((b) => b.textContent)
-    ).toEqual(['Цены', 'Скопировать', 'Скрыть от игроков (1)', 'Удалить (1)']);
+    ).toEqual(['Цены', 'Скопировать текст', 'Скрыть от игроков (1)', 'Удалить (1)']);
     expect((bar as HTMLElement).querySelector('input')).toBeNull();
   });
 
@@ -580,7 +597,7 @@ describe('the actions under a ticked selection', () => {
 
     expect(screen.getByText('Убрано из списка (2)')).toBeInTheDocument();
     expect((await readList(cloud, page, A_ID))?.ids).toEqual(['cc1']);
-    expect(screen.queryByRole('button', { name: 'Цены' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Цены' })).toBeDisabled();
 
     await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
     expect((await readList(cloud, page, A_ID))?.ids).toEqual(['ci1', 'cc1', 'q1']);
@@ -599,6 +616,7 @@ describe('the actions under a ticked selection', () => {
 describe('the taken count, the total and a partial removal', () => {
   /* A_LIST's rows in order: ci1 (unpriced), cc1 (x2 at 750 gold), q1 (unpriced). */
   const tickRow = async (n: number): Promise<void> => {
+    await selecting();
     await userEvent.click(screen.getByRole('checkbox', { name: ROW_NAMES[n]! }));
   };
   const takeOne = async (): Promise<void> => {
@@ -641,16 +659,17 @@ describe('the taken count, the total and a partial removal', () => {
 
   it('shows the mixed select-all box and names entries and pieces apart in a live region', async () => {
     const { container } = await openA();
+    await selecting();
     const all = screen.getByRole('checkbox', { name: 'Выбрать все' });
     await tickRow(1);
     expect(all).toHaveProperty('indeterminate', true);
     expect(screen.getByRole('checkbox', { name: 'Выбрать все' })).toBe(all);
-    const summ = container.querySelector('.batch-summ');
+    const summ = container.querySelector('.selsumm');
     expect(summ).toHaveAttribute('aria-live', 'polite');
-    expect(summ).toHaveTextContent('Выбрана 1 позиция · 2 шт. Итого: 1 сундук 5 мешков');
+    expect(summ).toHaveTextContent('Выбрана 1 позиция · 2 шт.Итого: 1 сундук 5 мешков');
     await tickRow(0);
     expect(summ).toHaveTextContent(
-      'Выбрано 2 позиции · 3 шт. Итого: 1 сундук 5 мешков (без цены: 1)'
+      'Выбрано 2 позиции · 3 шт.Итого: 1 сундук 5 мешков (без цены: 1)'
     );
     await tickRow(2);
     expect(all).toHaveProperty('indeterminate', false);
@@ -681,8 +700,8 @@ describe('the taken count, the total and a partial removal', () => {
     const { container, cloud, page } = await openA();
     await tickRow(1);
     await userEvent.click(screen.getByRole('button', { name: 'Мин, взять 1: Зелье' }));
-    expect(container.querySelector('.batch-summ')).toHaveTextContent(
-      'Выбрана 1 позиция Итого: 7 мешков 5 горстей'
+    expect(container.querySelector('.selsumm')).toHaveTextContent(
+      'Выбрана 1 позицияИтого: 7 мешков 5 горстей'
     );
     await userEvent.click(screen.getByRole('button', { name: 'Удалить (1)' }));
     expect((await readList(cloud, page, A_ID))?.meta?.['cc1']?.qty).toBeUndefined();
@@ -716,7 +735,7 @@ describe('the taken count, the total and a partial removal', () => {
     await tickRow(1);
     await tickRow(2);
     await takeOne();
-    await userEvent.click(screen.getByRole('button', { name: 'Скопировать' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Скопировать текст' }));
 
     const index = buildIndex(LOOT);
     const rec = (id: string) => index.byId.get(id)!;
@@ -750,7 +769,7 @@ describe('the taken count, the total and a partial removal', () => {
     });
     router.navigate(A_HASH);
     await waitFor(() => {
-      expect(screen.getByRole('checkbox', { name: ROW_NAMES[1]! })).toBeInTheDocument();
+      expect(screen.getByRole('textbox', { name: 'Название списка' })).toHaveValue('Тайник');
     });
     await tickRow(1);
     expect(screen.getByRole('spinbutton', { name: 'Взять: Зелье' })).toHaveValue(2);
@@ -963,7 +982,7 @@ describe('copying and sharing', () => {
   it('copies the list export written by shareList', async () => {
     const clip = fakeClipboard();
     const { cloud, page } = await openA({ clipboard: clip });
-    await userEvent.click(screen.getByRole('button', { name: 'Скопировать текст' }));
+    await listMore('Скопировать текст');
     expect(screen.getByText('Список скопирован')).toBeInTheDocument();
 
     const index = buildIndex(LOOT);
@@ -1471,14 +1490,15 @@ describe('an account list', () => {
     const { container, page } = openAs(cloud);
     await screen.findByRole('textbox', { name: 'Название списка' });
     await userEvent.click(screen.getByRole('button', { name: 'Только для мастера: Меч' }));
+    await selecting();
     await userEvent.click(screen.getByRole('checkbox', { name: 'Спальный мешок' }));
     await userEvent.click(screen.getByRole('checkbox', { name: 'Меч' }));
-    const bar = container.querySelector('.batch-acts') as HTMLElement;
+    const bar = container.querySelector('.selbarwrap .selacts') as HTMLElement;
     expect(
       within(bar)
         .getAllByRole('button')
         .map((b) => b.textContent.trim())
-    ).toEqual(['Цены', 'Скопировать', 'Скрыть от игроков (2)', 'Удалить (2)']);
+    ).toEqual(['Цены', 'Скопировать текст', 'Скрыть от игроков (2)', 'Удалить (2)']);
     await expectNoA11yViolations(container);
 
     await userEvent.click(screen.getByRole('button', { name: 'Скрыть от игроков (2)' }));
@@ -1516,6 +1536,7 @@ describe('an account list', () => {
     await screen.findByRole('textbox', { name: 'Название списка' });
     await userEvent.click(screen.getByRole('button', { name: 'Только для мастера: Меч' }));
     await userEvent.click(screen.getByRole('button', { name: 'Только для мастера: Зелье' }));
+    await selecting();
     await userEvent.click(screen.getByRole('checkbox', { name: 'Меч' }));
     await userEvent.click(screen.getByRole('checkbox', { name: 'Зелье' }));
     await userEvent.click(screen.getByRole('button', { name: 'Показать игрокам (2)' }));
@@ -1559,7 +1580,7 @@ describe('an account list', () => {
     expect(sub(container)).toBe('10 позиций из 100 · Сохранено');
     expect(screen.queryByRole('button', { name: 'Ссылка игрокам' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Ссылка себе' })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Скопировать текст' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Ещё' })).toBeInTheDocument();
     expect(screen.queryByText('Списки живут только в этом браузере.')).not.toBeInTheDocument();
     await userEvent.type(input, '!');
     await new Promise((r) => setTimeout(r, 200));
@@ -1595,7 +1616,7 @@ describe('an account list', () => {
       await userEvent.click(b);
       expect(clipboard.last.text).not.toContain('#/l/');
     }
-    await userEvent.click(screen.getByRole('button', { name: 'Скопировать текст' }));
+    await listMore('Скопировать текст');
     expect(clipboard.last.text).not.toContain('#/l/');
     await expectNoA11yViolations(container);
     await userEvent.click(share);
@@ -1605,10 +1626,10 @@ describe('an account list', () => {
   it('downloads an account list as its own file from «Скачать JSON», after «Скопировать текст»', async () => {
     const image = fakeImage();
     const { container } = openAs(fakeCloud(SEED, 'gm1'), SHOP, { image });
-    const button = await screen.findByRole('button', { name: 'Скачать JSON' });
-    const row = [...(button.parentElement?.children ?? [])].map((b) => b.textContent.trim());
-    expect(row.indexOf('Скачать JSON')).toBe(row.indexOf('Скопировать текст') + 1);
-    await userEvent.click(button);
+    await userEvent.click(await screen.findByRole('button', { name: 'Ещё' }));
+    const items = screen.getAllByRole('menuitem').map((b) => b.textContent.trim());
+    expect(items).toEqual(['Скопировать текст', 'Скачать JSON', 'Удалить список']);
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Скачать JSON' }));
     await waitFor(() => {
       expect(image.downloaded.map((d) => d.filename)).toEqual(['Лавка кузнеца.json']);
     });
@@ -1697,7 +1718,7 @@ describe('an account list', () => {
     const cloud = fakeCloud(SEED, 'gm1');
     const { router, dialog, page } = openAs(cloud);
     await screen.findByRole('textbox', { name: 'Название списка' });
-    await userEvent.click(screen.getByRole('button', { name: 'Удалить' }));
+    await listMore('Удалить список');
     page.fireHidden();
     expect(dialog.asked).toEqual([
       'Удалить список «Лавка кузнеца»? Ссылки для игроков и мастера перестанут работать. Отменить удаление нельзя.'
@@ -1714,7 +1735,7 @@ describe('an account list', () => {
   it('keeps the list when the delete is refused', async () => {
     const { router } = openAs(fakeCloud(SEED, 'gm1'), SHOP, { dialog: fakeDialog(false) });
     await screen.findByRole('textbox', { name: 'Название списка' });
-    await userEvent.click(screen.getByRole('button', { name: 'Удалить' }));
+    await listMore('Удалить список');
     expect(router.hash()).toBe(SHOP);
   });
 
@@ -1856,6 +1877,7 @@ describe('homebrew entries', () => {
     await userEvent.click(within(axeRow()).getByRole('button', { name: 'Убрать из списка' }));
     await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
     await same();
+    await selecting();
     await userEvent.click(within(axeRow()).getByRole('checkbox'));
     await userEvent.click(screen.getByRole('button', { name: 'Удалить (1)' }));
     expect(
@@ -1894,7 +1916,7 @@ describe('homebrew entries', () => {
 
   it('draws «Свой предмет» and the empty hint points at it', async () => {
     const { container } = open(fakeCloud(SEED, 'gm1'), '00000000-0000-4000-8000-000000000102');
-    const row = await screen.findByRole('button', { name: 'Свой предмет' });
+    const row = await screen.findByRole('button', { name: 'Добавить свой предмет' });
     expect(row).toHaveAttribute('aria-expanded', 'false');
     const hint = screen.getByText(/Свой предмет можно создать здесь же, кнопкой ниже\./);
     expect(hint.compareDocumentPosition(row) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
@@ -1903,7 +1925,7 @@ describe('homebrew entries', () => {
 
   it('draws «Свой предмет» as a row after the last entry, not among the actions', async () => {
     const { container } = open(fakeCloud(SEED, 'gm1'), SHOP_ID);
-    const row = await screen.findByRole('button', { name: 'Свой предмет' });
+    const row = await screen.findByRole('button', { name: 'Добавить свой предмет' });
     const share = screen.getByRole('button', { name: 'Поделиться' });
     expect(share.parentElement?.contains(row)).toBe(false);
     const rows = container.querySelectorAll('.lrow');
@@ -1949,7 +1971,7 @@ describe('every stored entry of an account list', () => {
     await screen.findByText(AXE);
     const row = unknownRow(AXE);
     expect(within(row).getByText('Предмет не загружен')).toBeInTheDocument();
-    expect(within(row).getByRole('checkbox', { name: AXE })).toBeInTheDocument();
+    expect(within(row).queryByRole('checkbox')).toBeNull();
     expect(container.querySelectorAll('.lrow')).toHaveLength(2);
     expect(sub(container)).toBe('2 позиции из 100 · Сохранено');
     expect(within(row).getByRole('spinbutton', { name: 'Позиция в списке' })).toHaveAttribute(
@@ -2021,5 +2043,348 @@ describe('every stored entry of an account list', () => {
     expect(id).toBe('list-name');
     expect(document.getElementById(id)?.textContent).toBe('Лавка кузнеца');
     expect(h1).toHaveAccessibleName('Лавка кузнеца');
+  });
+});
+
+describe('the compact row up to 760 px', () => {
+  Element.prototype.scrollIntoView = vi.fn();
+  const narrowA = (over: Partial<Env> = {}, hash = A_HASH, more: SeedList[] = []) =>
+    openA({ viewport: fakeViewport('narrow'), ...over }, hash, more);
+  const body = (name: string): HTMLElement =>
+    [...document.querySelectorAll('.crow .cname')]
+      .find((e) => e.textContent === name)
+      ?.closest('button') as HTMLElement;
+
+  it('folds every row to one button with its number, and the full row from 761 px', async () => {
+    const viewport = fakeViewport('narrow');
+    const { container } = await openA({ viewport });
+    expect(container.querySelectorAll('.lrow .crow')).toHaveLength(3);
+    expect(container.querySelector('.lrow-meta')).toBeNull();
+    expect(container.querySelectorAll('[data-qty]')).toHaveLength(3);
+    const first = body('Спальный мешок');
+    expect(first).toHaveAttribute('aria-expanded', 'false');
+    expect(first.querySelector('.cno')).toHaveTextContent('1');
+    expect(screen.queryByRole('checkbox')).toBeNull();
+    await expectNoA11yViolations(container);
+    viewport.set('wide');
+    await waitFor(() => {
+      expect(container.querySelector('.crow')).toBeNull();
+    });
+    expect(container.querySelectorAll('.lrow-meta')).toHaveLength(3);
+  });
+
+  it('unfolds a row on a press, keeps the focus, and holds the fields and the row «Ещё»', async () => {
+    const { container } = await narrowA();
+    const potion = body('Зелье');
+    await userEvent.click(potion);
+    expect(potion).toHaveAttribute('aria-expanded', 'true');
+    expect(potion).toHaveFocus();
+    const open = document.getElementById(
+      potion.getAttribute('aria-controls') ?? ''
+    ) as HTMLElement;
+    expect(within(open).getByRole('spinbutton', { name: 'Позиция в списке' })).toHaveValue(2);
+    expect(within(open).getByRole('spinbutton', { name: 'Цена' })).toHaveValue(750);
+    expect(within(open).getByRole('textbox', { name: 'Для игроков' })).toHaveValue(
+      'Светится в темноте'
+    );
+    await userEvent.click(within(open).getByRole('button', { name: 'Ещё: Зелье' }));
+    expect(screen.getAllByRole('menuitem').map((m) => m.textContent.trim())).toEqual([
+      'Скрыть от игроков',
+      'Открыть карточку',
+      'Убрать из списка'
+    ]);
+    await expectNoA11yViolations(container);
+    await userEvent.keyboard('{Escape}');
+    await userEvent.click(potion);
+    expect(potion).toHaveAttribute('aria-expanded', 'false');
+    expect(potion).not.toHaveAttribute('aria-controls');
+  });
+
+  it('runs each item of the row «Ещё»', async () => {
+    const { cloud, page } = await narrowA();
+    await userEvent.click(body('Меч'));
+    await userEvent.click(screen.getByRole('button', { name: 'Ещё: Меч' }));
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Скрыть от игроков' }));
+    await waitFor(() => {
+      expect(body('Меч').querySelector('.cmark')).not.toBeNull();
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Ещё: Меч' }));
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Открыть карточку' }));
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    await userEvent.keyboard('{Escape}');
+    await userEvent.click(screen.getByRole('button', { name: 'Ещё: Меч' }));
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Убрать из списка' }));
+    expect((await readList(cloud, page, A_ID))?.ids).toEqual(['ci1', 'cc1']);
+  });
+
+  it('keeps the unfolded rows in memory, folds them on another list, and drops a removed entry', async () => {
+    const { container, cloud, router } = await narrowA({}, A_HASH, [
+      listOf(802, 'Другой', [{ key: 'q1' }])
+    ]);
+    await userEvent.click(body('Спальный мешок'));
+    await userEvent.click(body('Меч'));
+    cloud.playRemove(A_ID, 'q1');
+    await waitFor(() => {
+      expect(container.querySelectorAll('.crow')).toHaveLength(2);
+    });
+    expect(body('Спальный мешок')).toHaveAttribute('aria-expanded', 'true');
+    router.navigate('#/lists/' + uuid(802));
+    await screen.findByDisplayValue('Другой');
+    router.navigate(A_HASH);
+    await screen.findByDisplayValue('Тайник');
+    expect(body('Спальный мешок')).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('writes the quantity once per input through the store, and nothing on a focus', async () => {
+    const cloud = fakeCloud(seedWith({ gm4: [A_LIST] }), 'gm4');
+    const page = fakePage();
+    openAs(cloud, A_HASH, { viewport: fakeViewport('narrow'), page });
+    await screen.findByRole('textbox', { name: 'Название списка' });
+    page.fireHidden();
+    await new Promise((r) => setTimeout(r, 0));
+    const before = cloud.writeCount();
+    const field = screen.getByRole('spinbutton', { name: 'Кол-во: Меч' });
+    expect(field.closest('button')).toBeNull();
+    field.focus();
+    page.fireHidden();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(cloud.writeCount()).toBe(before);
+    await userEvent.type(field, '5');
+    expect((await readList(cloud, page, A_ID))?.meta?.['q1']?.qty).toBe(5);
+  });
+
+  it('turns the quantity to text and draws the ticks in the selection mode', async () => {
+    const { container } = await narrowA();
+    await selecting();
+    expect(container.querySelectorAll('[data-qty]')).toHaveLength(0);
+    expect(container.querySelector('.lrow:nth-child(2) .cqv')).toHaveTextContent('×2');
+    expect(
+      screen.getAllByRole('checkbox', { name: /^(Спальный мешок|Зелье|Меч)$/ })
+    ).toHaveLength(3);
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Зелье' }));
+    expect(screen.getByRole('spinbutton', { name: 'Взять: Зелье' })).toBeInTheDocument();
+    await expectNoA11yViolations(container);
+  });
+
+  it('draws the head with «Выбрать» and the list «Ещё», and the notes on the meta line', async () => {
+    const { container } = await narrowA();
+    const head = container.querySelector('.lhead') as HTMLElement;
+    expect(within(head).getByRole('button', { name: 'Выбрать' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Поделиться' })).toBeNull();
+    expect(container.querySelector('details.lnote')).toBeNull();
+    expect(container.querySelector('.money')).toBeNull();
+    const notes = screen.getByRole('button', { name: 'Заметки' });
+    expect(notes).toHaveAttribute('aria-expanded', 'false');
+    await userEvent.click(notes);
+    expect(screen.getByRole('textbox', { name: 'Для игроков' })).toHaveValue(
+      'Лавка закрыта до утра'
+    );
+    await userEvent.click(within(head).getByRole('button', { name: 'Ещё' }));
+    expect(screen.getAllByRole('menuitem').map((m) => m.textContent.trim())).toEqual([
+      'Поделиться',
+      'Печать',
+      'Бросить по списку',
+      'Цены: монетами',
+      'Скопировать текст',
+      'Скачать JSON',
+      'Удалить список'
+    ]);
+    await expectNoA11yViolations(container);
+  });
+
+  it('opens the share panel, the roll and the money switch from the list «Ещё»', async () => {
+    const { cloud, page } = await narrowA();
+    const more = async (name: string): Promise<void> => {
+      await userEvent.click(screen.getByRole('button', { name: 'Ещё' }));
+      await userEvent.click(screen.getByRole('menuitem', { name }));
+    };
+    await more('Поделиться');
+    expect(await screen.findByText('Ссылка для игроков')).toBeInTheDocument();
+    await more('Бросить по списку');
+    expect(screen.getByRole('textbox', { name: 'Результат броска' })).toBeInTheDocument();
+    await userEvent.click(screen.getByText('Бросок по списку'));
+    expect(screen.queryByRole('textbox', { name: 'Результат броска' })).toBeNull();
+    await more('Цены: монетами');
+    expect((await readList(cloud, page, A_ID))?.money).toBe('coin');
+  });
+
+  it('draws the bar with «Цены» and «Ещё», which holds the copy, the hide and the delete', async () => {
+    const { container, cloud, page } = await narrowA();
+    await selecting();
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Спальный мешок' }));
+    const bar = container.querySelector('.selbarwrap') as HTMLElement;
+    const more = within(bar).getByRole('button', { name: 'Ещё' });
+    await userEvent.click(more);
+    expect(screen.getAllByRole('menuitem').map((m) => m.textContent.trim())).toEqual([
+      'Скопировать текст',
+      'Скрыть от игроков (1)',
+      'Удалить (1)'
+    ]);
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Удалить (1)' }));
+    expect((await readList(cloud, page, A_ID))?.ids).toEqual(['cc1', 'q1']);
+  });
+});
+
+describe('the selection mode and the price sheet', () => {
+  it('opens with «Выбрать», draws the bar through the page bar, and leaves with the focus back', async () => {
+    const { container } = await openA();
+    expect(container.querySelector('.selbarwrap')).toBeNull();
+    await userEvent.click(screen.getByRole('button', { name: 'Выбрать' }));
+    const all = screen.getByRole('checkbox', { name: 'Выбрать все' });
+    expect(all).toHaveFocus();
+    expect(screen.getByRole('button', { name: 'Цены' })).toBeDisabled();
+    await expectNoA11yViolations(container);
+    await userEvent.click(screen.getByRole('button', { name: 'Снять выделение' }));
+    expect(container.querySelector('.selbarwrap')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Выбрать' })).toHaveFocus();
+  });
+
+  it('draws the prices of the selected in a sheet and returns the focus to «Цены»', async () => {
+    const { container } = await openA();
+    await selecting();
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Зелье' }));
+    const prices = screen.getByRole('button', { name: 'Цены' });
+    await userEvent.click(prices);
+    const sheet = screen.getByRole('dialog', { name: 'Цены выбранных' });
+    expect(within(sheet).getByRole('button', { name: 'Убрать цену (1)' })).toBeInTheDocument();
+    await expectNoA11yViolations(container);
+    await userEvent.click(within(sheet).getByRole('button', { name: 'Закрыть' }));
+    expect(screen.queryByRole('dialog', { name: 'Цены выбранных' })).toBeNull();
+    expect(prices).toHaveFocus();
+    await userEvent.click(prices);
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Зелье' }));
+    expect(screen.queryByRole('dialog', { name: 'Цены выбранных' })).toBeNull();
+  });
+
+  it('draws «Выбрать» on its own row from 761 px and in the search row from 8 entries', async () => {
+    const { container } = await openA();
+    expect(container.querySelector('.selrow .selmode')).not.toBeNull();
+    cleanup();
+    const shop = render(App, {
+      env: at(SHOP, {
+        router: memoryRouter(SHOP),
+        data: fakeData(withStandins(LOOT)),
+        cloud: fakeCloud(SEED, 'gm1')
+      })
+    });
+    await screen.findByRole('textbox', { name: 'Название списка' });
+    expect(shop.container.querySelector('.lfind')?.lastElementChild).toHaveClass('selmode');
+    expect(shop.container.querySelector('.selrow')).toBeNull();
+  });
+});
+
+describe('search and filter on the owner page', () => {
+  Element.prototype.scrollIntoView = vi.fn();
+  const openShop = async (over: Partial<Env> = {}) => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const view = render(App, {
+      env: at(SHOP, {
+        router: memoryRouter(SHOP),
+        data: fakeData(withStandins(LOOT)),
+        cloud,
+        ...over
+      })
+    });
+    await screen.findByRole('textbox', { name: 'Название списка' });
+    return { ...view, cloud };
+  };
+  const numbers = (c: HTMLElement): number[] =>
+    [...c.querySelectorAll<HTMLElement>('.lrow')].map((r) => Number(r.dataset['index']) + 1);
+
+  it('draws no search row under 8 entries', async () => {
+    await openA();
+    expect(screen.queryByRole('searchbox')).toBeNull();
+  });
+
+  it('narrows by the query with the true numbers, the count on the meta line and no grip', async () => {
+    const { container } = await openShop();
+    expect(container.querySelectorAll('.lrow-grip').length).toBeGreaterThan(0);
+    await userEvent.type(screen.getByRole('searchbox', { name: /Поиск/ }), 'подставка 3');
+    const shown = numbers(container);
+    expect(shown.length).toBeGreaterThan(0);
+    expect(shown.every((n) => n > 1)).toBe(true);
+    expect(sub(container)).toMatch(new RegExp(`^Показано ${String(shown.length)} из 10 · `));
+    expect(container.querySelector('.lrow-grip')).toBeNull();
+    const pos = within(container.querySelector('.lrow') as HTMLElement).getByRole(
+      'spinbutton',
+      {
+        name: 'Позиция в списке'
+      }
+    );
+    expect(pos).toHaveValue(shown[0]);
+  });
+
+  it('draws «Ничего не найдено» and «Сбросить всё», which clears the query and focuses the box', async () => {
+    const { container } = await openShop();
+    const box = screen.getByRole('searchbox', { name: /Поиск/ });
+    await userEvent.type(box, 'zzzz');
+    expect(screen.getByText('Ничего не найдено')).toBeInTheDocument();
+    await expectNoA11yViolations(container);
+    await userEvent.click(screen.getByRole('button', { name: 'Сбросить всё' }));
+    expect(box).toHaveValue('');
+    expect(container.querySelectorAll('.lrow')).toHaveLength(10);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Фильтры' })).toHaveFocus();
+    });
+  });
+
+  it('opens the filter as a sheet with no link, and a pick lights «Фильтры · 1»', async () => {
+    const { container } = await openShop();
+    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
+    const sheet = screen.getByRole('dialog', { name: 'Фильтры' });
+    expect(within(sheet).queryByRole('button', { name: 'Ссылка на фильтры' })).toBeNull();
+    const first = within(sheet)
+      .getAllByRole('button')
+      .find((b) => b.dataset['fval']);
+    await userEvent.click(first as HTMLElement);
+    expect(screen.getByRole('button', { name: 'Фильтры · 1' })).toBeInTheDocument();
+    await expectNoA11yViolations(container);
+  });
+
+  it('drops a tick the query hides, and «Все» ticks the drawn rows only', async () => {
+    const { container } = await openShop();
+    await selecting();
+    const first = container.querySelector<HTMLInputElement>('.lrow input[type="checkbox"]');
+    await userEvent.click(first as HTMLElement);
+    expect(screen.getByText(/^Выбрана 1 позиция/)).toBeInTheDocument();
+    await userEvent.type(screen.getByRole('searchbox', { name: /Поиск/ }), 'подставка 3');
+    expect(screen.getByText('Выбрано 0 позиций')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все' }));
+    expect(
+      screen.getByText(new RegExp(`^Выбран[оа] ${String(numbers(container).length)} `))
+    ).toBeTruthy();
+  });
+
+  it('clears the query and the filter when an own item is created', async () => {
+    const { container } = await openShop();
+    await userEvent.type(screen.getByRole('searchbox', { name: /Поиск/ }), 'zzzz');
+    await userEvent.click(screen.getByRole('button', { name: 'Добавить свой предмет' }));
+    const panel = screen.getByRole('region', { name: 'Свой предмет в этот список' });
+    await userEvent.type(
+      within(panel).getByRole('textbox', { name: 'Название' }),
+      'Новое{Enter}'
+    );
+    await waitFor(() => {
+      expect(screen.getByRole('searchbox', { name: /Поиск/ })).toHaveValue('');
+    });
+    expect(container.querySelectorAll('.lrow').length).toBeGreaterThan(10);
+  });
+});
+
+describe('a drag above a row the page has not read', () => {
+  it('moves the entry under the grip, not the next one', async () => {
+    const drag = fakeDrag();
+    const cloud = fakeCloud(SEED, 'gm2');
+    vi.spyOn(cloud.lists, 'items').mockResolvedValue({ ok: false });
+    const page = fakePage();
+    const id = uuid(201);
+    render(App, {
+      env: at('#/lists/' + id, { router: memoryRouter('#/lists/' + id), cloud, drag, page })
+    });
+    await screen.findByText('hb_emberaxeaaaaaaaa');
+    const before = (await readList(cloud, page, id))?.ids ?? [];
+    drag.handlers?.onDrag?.(1);
+    drag.handlers?.onDrop(1, 0);
+    expect((await readList(cloud, page, id))?.ids).toEqual([before[1], before[0]]);
   });
 });

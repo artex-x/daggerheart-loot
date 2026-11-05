@@ -152,6 +152,28 @@ export function eqParts(
   return out.filter(Boolean);
 }
 
+/**
+ * Returns the stats of a list's compact row, most useful first: armor's thresholds
+ * and score; another piece's damage with its type, range, burden and trait. A piece
+ * left blank drops; a record with no `eq` returns none.
+ */
+export function eqRowParts(it: Record_, lang: Lang, labels: StatLabels): string[] {
+  const e = it.eq;
+  if (!e) return [];
+  if (e.t === 'armor') {
+    return [
+      e.th ? `${labels.thresholds} ${String(e.th[0])}/${String(e.th[1])}` : '',
+      e.as != null ? `${labels.armorScore} ${String(e.as)}` : ''
+    ].filter(Boolean);
+  }
+  return [
+    (e.dmg ?? '') + (e.dmg && e.dt ? ' ' + pick(EQ_DT[e.dt], lang) : ''),
+    eqWord(EQ_RANGE, e.rg, lang),
+    eqWord(EQ_BURDEN, e.bu == null ? undefined : String(e.bu), lang),
+    eqWord(EQ_TRAIT, e.tr, lang)
+  ].filter(Boolean);
+}
+
 export function eqLine(
   it: Record_,
   lang: Lang,

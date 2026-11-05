@@ -23,10 +23,8 @@ RootWebArea "Лавка кузнеца - Генератор лута Daggerheart
     StaticText "10 позиций из 100 · "
     ... StaticText x36 of 40 same-shape siblings elided
     button "Поделиться" [expanded=false]
-    button "Скопировать текст"
-    button "Скачать JSON"
     button "Печать" [description=Собрать карточки для печати: девять на лист A4]
-    ... button x13 of 17 same-shape siblings elided
+    button "Ещё" [expanded=false haspopup=menu]
     status ""
     button "Как в книге" [pressed=false]
     button "Монетами" [pressed=true]
@@ -50,24 +48,21 @@ RootWebArea "Лавка кузнеца - Генератор лута Daggerheart
       button "Просмотр" [pressed=false]
     textbox "ТОЛЬКО ДЛЯ МАСТЕРА" [value=Кузнец торгуется, если назвать имя его брата. description=останется у вас multiline=true readonly=false required=false]
     DisclosureTriangle "БРОСОК ПО СПИСКУ" [expanded=false]
-    checkbox "Выбрать все" [checked=mixed]
-    generic ""
-      StaticText "Выбрано 2 позиции · 3 шт."
-      StaticText "Итого: "
-      StaticText "300 зол."
-      StaticText " "
-      StaticText "(без цены: 1)"
+    searchbox "Поиск по названию или описанию..."
     checkbox "Первоклассный Спальный Мешок" [checked=true]
     spinbutton "Позиция в списке" [value=1 valuetext=1 required=false valuemin=1 valuemax=10]
+    button "Первоклассный Спальный Мешок ПРЕДМЕТ Во время отдыха вы автомати..." [namelen=86 namehash=8341b15c]
     spinbutton "КОЛ-ВО" [value=2 valuetext=2 required=false valuemin=1 valuemax=99]
     spinbutton "ЦЕНА" [value=150 valuetext=150 required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
     button "Только для мастера: Первоклассный Спальный Мешок" [description=Только для мастера pressed=false]
     button "Убрать из списка" [description=Убрать из списка]
+    button "Мин, взять 1: Первоклассный Спальный Мешок"
     spinbutton "Взять: Первоклассный Спальный Мешок" [value=2 valuetext=2 required=false valuemin=1 valuemax=2]
     button "Макс, взять все: Первоклассный Спальный Мешок" [disabled=true]
     checkbox "Палаш" [checked=false]
     spinbutton "Позиция в списке" [value=2 valuetext=2 required=false valuemin=1 valuemax=10]
+    ... button x7 of 11 same-shape siblings elided
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
@@ -132,9 +127,22 @@ RootWebArea "Лавка кузнеца - Генератор лута Daggerheart
     button "Заметка" [description=Заметка]
     button "Только для мастера: Топор Тлеющих Углей" [description=Только для мастера pressed=false]
     button "Убрать из списка" [description=Убрать из списка]
-    button "Свой предмет" [expanded=false]
+    button "Добавить свой предмет" [expanded=false]
     status ""
     status ""
+  region "Выбранные записи"
+    checkbox "Выбрать все" [focused=true checked=mixed]
+    generic ""
+      StaticText "Выбрано 2 позиции · 3 шт."
+      StaticText "Итого: "
+      StaticText "300 зол."
+      StaticText " "
+      StaticText "(без цены: 1)"
+    button "Цены" [expanded=false]
+    button "Скопировать текст"
+    button "Скрыть от игроков (2)"
+    button "Удалить (2)"
+    button "Снять выделение"
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -155,6 +163,8 @@ daggerheart.com
 Выбрать все
 Гарпун Левиафана
 Гарпун ЛевиафанаОсновное оружиеУникальноеWondrous EnvironmentsРа... [namelen=372 namehash=9449b47c]
+Добавить свой предмет
+Ещё
 Жирный
 Заметка
 Зелье Быстрого Шага
@@ -186,15 +196,14 @@ daggerheart.com
 Подсказка: Только для мастера
 Позиция в списке
 Поиск
+Поиск по названию или описанию...
 Просмотр
 Результат броска
-Свой предмет
-Скачать JSON
 Скипетр
 СкипетрОсновное оружиеРанг 1 · Магическое · Влияние · Далеко · d... [namelen=186 namehash=9aee2e9c]
-Скопировать
 Скопировать текст
 Скрыть от игроков (2)
+Снять выделение
 Список
 Справка
 Стеганый Доспех
@@ -213,10 +222,10 @@ daggerheart.com
 Топор Тлеющих Углей
 Топор Тлеющих УглейОсновное оружиеУникальноеМастерская Ольхи (HB... [namelen=184 namehash=e7c9f22c]
 Убрать из списка
-Удалить
 Удалить (2)
 Условия использования
 Установить как приложение
+Фильтры
 Цена
 Цены
 
@@ -240,10 +249,8 @@ RootWebArea "Лавка кузнеца - Daggerheart Loot Generator" [url=/en/li
     StaticText "10 items of 100 · "
     ... StaticText x36 of 40 same-shape siblings elided
     button "Share" [expanded=false]
-    button "Copy text"
-    button "Download JSON"
     button "Print" [description=Lay these out for printing: nine to an A4 sheet]
-    ... button x13 of 17 same-shape siblings elided
+    button "More" [expanded=false haspopup=menu]
     status ""
     button "As in the book" [pressed=false]
     button "In coins" [pressed=true]
@@ -267,24 +274,21 @@ RootWebArea "Лавка кузнеца - Daggerheart Loot Generator" [url=/en/li
       button "Preview" [pressed=false]
     textbox "GM ONLY" [value=Кузнец торгуется, если назвать имя его брата. description=stays with you multiline=true readonly=false required=false]
     DisclosureTriangle "ROLL ON THIS LIST" [expanded=false]
-    checkbox "Select all" [checked=mixed]
-    generic ""
-      StaticText "Selected 2 items · 3 pcs"
-      StaticText "Total: "
-      StaticText "300 gp"
-      StaticText " "
-      StaticText "(no price: 1)"
+    searchbox "Search by name or description..."
     checkbox "Premium Bedroll" [checked=true]
     spinbutton "Position in the list" [value=1 valuetext=1 required=false valuemin=1 valuemax=10]
+    button "Premium Bedroll ITEM During downtime, you automatically clear a ..." [namelen=71 namehash=f1054083]
     spinbutton "QTY" [value=2 valuetext=2 required=false valuemin=1 valuemax=99]
     spinbutton "PRICE" [value=150 valuetext=150 required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
     button "GM only: Premium Bedroll" [description=GM only pressed=false]
     button "Remove from the list" [description=Remove from the list]
+    button "Min, take 1: Premium Bedroll"
     spinbutton "Take: Premium Bedroll" [value=2 valuetext=2 required=false valuemin=1 valuemax=2]
     button "Max, take all: Premium Bedroll" [disabled=true]
     checkbox "Broadsword" [checked=false]
     spinbutton "Position in the list" [value=2 valuetext=2 required=false valuemin=1 valuemax=10]
+    ... button x7 of 11 same-shape siblings elided
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
@@ -349,9 +353,22 @@ RootWebArea "Лавка кузнеца - Daggerheart Loot Generator" [url=/en/li
     button "Note" [description=Note]
     button "GM only: Ember Axe" [description=GM only pressed=false]
     button "Remove from the list" [description=Remove from the list]
-    button "Own item" [expanded=false]
+    button "Add your own item" [expanded=false]
     status ""
     status ""
+  region "Selected records"
+    checkbox "Select all" [focused=true checked=mixed]
+    generic ""
+      StaticText "Selected 2 items · 3 pcs"
+      StaticText "Total: "
+      StaticText "300 gp"
+      StaticText " "
+      StaticText "(no price: 1)"
+    button "Prices" [expanded=false]
+    button "Copy text"
+    button "Hide from players (2)"
+    button "Delete (2)"
+    button "Clear selection"
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -361,6 +378,7 @@ RootWebArea "Лавка кузнеца - Daggerheart Loot Generator" [url=/en/li
 
 ## en :: controls
 Account: gm1@example.test
+Add your own item
 Art History Booklet
 Art History Booklet, GM onlyItemDread GM ToolboxThis is a finely... [namelen=552 namehash=2cdc2fb4]
 As in the book
@@ -370,15 +388,14 @@ BroadswordPrimary weaponTier 1 · Physical · Agility · Melee · d8... [namelen
 Bulleted list
 Casting Dagger
 Casting DaggerPrimary weaponHope & FearTier 1 · Magic · Instinct... [namelen=176 namehash=08dad18c]
+Clear selection
 Clear the note
-Copy
 Copy text
-Delete
 Delete (2)
-Download JSON
 EN
 Ember Axe
 Ember AxePrimary weaponUniqueAlder Workshop (HB)Tier 2 · Magic ·... [namelen=159 namehash=ea056220]
+Filters
 GM only: Art History Booklet
 GM only: Broadsword
 GM only: Casting Dagger
@@ -404,11 +421,11 @@ List name
 LootDaggerheart
 Max, take all: Premium Bedroll
 Min, take 1: Premium Bedroll
+More
 Note
 Numbered list
 One higher
 One lower
-Own item
 Position in the list
 Premium Bedroll
 Premium BedrollItemDuring downtime, you automatically clear a St... [namelen=69 namehash=b98fcd07]
@@ -425,6 +442,7 @@ Roll result
 Scepter
 ScepterPrimary weaponTier 1 · Magic · Presence · Far · d6 mag · ... [namelen=156 namehash=5cf0702e]
 Search
+Search by name or description...
 Select all
 Share
 Skip to content

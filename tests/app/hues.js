@@ -267,6 +267,27 @@ const gap = (a, b) => {
     'the selected tile does not differ in its fill: ' + selFill + ' vs ' + tileFill
   );
 
+  /* A ticked row of the owner's list page is lit and neutral, as a catalog row: no gold in
+   * its border or its fill (DESIGN.md, "The Seal Rule"). */
+  console.log('ticked list row');
+  await d.open('#/lists/00000000-0000-4000-8000-000000000101', { as: 'gm1' });
+  await d.tick('Первоклассный Спальный Мешок');
+  const listSel = await page.evaluate(() => {
+    const el = document.querySelector('.lrow.sel');
+    if (!el) return null;
+    const cs = getComputedStyle(el);
+    return [cs.borderTopColor, cs.backgroundColor];
+  });
+  ok(!!listSel, 'ticked list row: .lrow.sel not found');
+  const goldish = (c) => {
+    const [r, g, b] = (c.match(/[\d.]+/g) ?? []).map(Number);
+    return r - b > 40 && g - b > 20;
+  };
+  ok(
+    !!listSel && !listSel.some(goldish),
+    'a ticked list row is gold: ' + JSON.stringify(listSel)
+  );
+
   await ctx.close();
   await closeBrowser();
   console.log(

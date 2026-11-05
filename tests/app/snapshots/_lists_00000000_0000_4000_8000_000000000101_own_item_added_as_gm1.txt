@@ -21,18 +21,16 @@ RootWebArea "Лавка кузнеца - Генератор лута Daggerheart
     StaticText "Лавка кузнеца"
     textbox "Название списка" [value=Лавка кузнеца multiline=false readonly=false required=false]
     StaticText "11 позиций из 100 · "
-    ... StaticText x35 of 39 same-shape siblings elided
+    ... StaticText x34 of 38 same-shape siblings elided
     button "Поделиться" [expanded=false]
-    button "Скопировать текст"
-    button "Скачать JSON"
     button "Печать" [description=Собрать карточки для печати: девять на лист A4]
-    ... button x10 of 14 same-shape siblings elided
+    button "Ещё" [expanded=false haspopup=menu]
     status ""
     button "Как в книге" [pressed=false]
     button "Монетами" [pressed=true]
     button "Справка" [expanded=false]
     DisclosureTriangle "ЗАМЕТКИ" [expanded=true]
-    ... button x4 of 8 same-shape siblings elided
+    ... button x5 of 9 same-shape siblings elided
     button "Очистить заметку" [description=Очистить заметку]
     toolbar "Оформление: Для игроков" [orientation=horizontal]
       button "Жирный" [keyshortcuts=Control+B Meta+B]
@@ -50,17 +48,17 @@ RootWebArea "Лавка кузнеца - Генератор лута Daggerheart
       button "Просмотр" [pressed=false]
     textbox "ТОЛЬКО ДЛЯ МАСТЕРА" [value=Кузнец торгуется, если назвать имя его брата. description=останется у вас multiline=true readonly=false required=false]
     DisclosureTriangle "БРОСОК ПО СПИСКУ" [expanded=false]
-    checkbox "Выбрать все" [checked=false]
-    generic ""
-    checkbox "Первоклассный Спальный Мешок" [checked=false]
+    searchbox "Поиск по названию или описанию..."
+    button "Выбрать"
     spinbutton "Позиция в списке" [value=1 valuetext=1 required=false valuemin=1 valuemax=11]
+    button "Первоклассный Спальный Мешок ПРЕДМЕТ Во время отдыха вы автомати..." [namelen=86 namehash=8341b15c]
     spinbutton "КОЛ-ВО" [value=2 valuetext=2 required=false valuemin=1 valuemax=99]
     spinbutton "ЦЕНА" [value=150 valuetext=150 required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
     button "Только для мастера: Первоклассный Спальный Мешок" [description=Только для мастера pressed=false]
     button "Убрать из списка" [description=Убрать из списка]
-    ... checkbox x8 of 12 same-shape siblings elided
     spinbutton "Позиция в списке" [value=2 valuetext=2 required=false valuemin=1 valuemax=11]
+    ... button x8 of 12 same-shape siblings elided
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
@@ -105,7 +103,6 @@ RootWebArea "Лавка кузнеца - Генератор лута Daggerheart
     spinbutton "Позиция в списке" [value=8 valuetext=8 required=false valuemin=1 valuemax=11]
     spinbutton "Позиция в списке" [value=9 valuetext=9 required=false valuemin=1 valuemax=11]
     spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
-    checkbox "Топор Тлеющих Углей" [checked=false]
     spinbutton "Позиция в списке" [value=10 valuetext=10 required=false valuemin=1 valuemax=11]
     button "Топор Тлеющих Углей ОСНОВНОЕ ОРУЖИЕ УНИКАЛЬНОЕ МАСТЕРСКАЯ ОЛЬХИ ..." [namelen=189 namehash=ae240a3a]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
@@ -113,7 +110,6 @@ RootWebArea "Лавка кузнеца - Генератор лута Daggerheart
     button "Заметка" [description=Заметка]
     button "Только для мастера: Топор Тлеющих Углей" [description=Только для мастера pressed=false]
     button "Убрать из списка" [description=Убрать из списка]
-    checkbox "Фляга контрабандиста" [checked=false]
     spinbutton "Позиция в списке" [value=11 valuetext=11 required=false valuemin=1 valuemax=11]
     button "Фляга контрабандиста ПРЕДМЕТ ХОУМБРЮ"
     StaticText "КОЛ-ВО"
@@ -123,7 +119,7 @@ RootWebArea "Лавка кузнеца - Генератор лута Daggerheart
     button "Заметка" [description=Заметка]
     button "Только для мастера: Фляга контрабандиста" [description=Только для мастера pressed=false]
     button "Убрать из списка" [description=Убрать из списка]
-    button "Свой предмет" [expanded=true]
+    button "Добавить свой предмет" [expanded=true]
     region "Свой предмет в этот список"
       heading "Свой предмет в этот список" [level=2]
       StaticText "Название"
@@ -160,22 +156,19 @@ daggerheart.com
 Аккаунт: gm1@example.test
 Бросить 1-11
 Бросок
-Брошюра по Истории Искусства
 Брошюра по Истории ИскусстваПредметDread GM ToolboxЭто прекрасно... [namelen=621 namehash=989c4e8f]
-Выбрать все
-Гарпун Левиафана
+Выбрать
 Гарпун ЛевиафанаОсновное оружиеУникальноеWondrous EnvironmentsРа... [namelen=372 namehash=9449b47c]
 Добавить в список
+Добавить свой предмет
+Ещё
 Жирный
 Заметка
-Зелье Быстрого Шага
 Зелье Быстрого ШагаРасходникВы получаете бонус +1 к следующему Б... [namelen=82 namehash=6ee20e58]
 Изменить
 К содержимому
 Как в книге
-Колдующий Кинжал
 Колдующий КинжалОсновное оружиеHope & FearРанг 1 · Магическое · ... [namelen=213 namehash=9cd182eb]
-Колода Сумерек
 Колода СумерекПредметАртефактVault of AgesСтоимость Призыва: 2Эт... [namelen=847 namehash=17978cc1]
 Конфиденциальность
 Курсив
@@ -187,9 +180,7 @@ daggerheart.com
 Нумерованный список
 Отмена
 Очистить заметку
-Палаш
 ПалашОсновное оружиеРанг 1 · Физическое · Проворность · Вплотную... [namelen=114 namehash=e80c7800]
-Первоклассный Спальный Мешок
 Первоклассный Спальный МешокПредметВо время отдыха вы автоматиче... [namelen=84 namehash=f15473c8]
 Печать
 Поделиться
@@ -198,16 +189,12 @@ daggerheart.com
 Подсказка: Только для мастера
 Позиция в списке
 Поиск
+Поиск по названию или описанию...
 Просмотр
 Результат броска
-Свой предмет
-Скачать JSON
-Скипетр
 СкипетрОсновное оружиеРанг 1 · Магическое · Влияние · Далеко · d... [namelen=186 namehash=9aee2e9c]
-Скопировать текст
 Список
 Справка
-Стеганый Доспех
 Стеганый ДоспехБроняРанг 1 · Пороги 5/11 · Броня 3Гибкое: +1 к У... [namelen=72 namehash=ad6956c1]
 Таблицы
 Только для мастера: Брошюра по Истории Искусства
@@ -221,13 +208,11 @@ daggerheart.com
 Только для мастера: Стеганый Доспех
 Только для мастера: Топор Тлеющих Углей
 Только для мастера: Фляга контрабандиста
-Топор Тлеющих Углей
 Топор Тлеющих УглейОсновное оружиеУникальноеМастерская Ольхи (HB... [namelen=184 namehash=e7c9f22c]
 Убрать из списка
-Удалить
 Условия использования
 Установить как приложение
-Фляга контрабандиста
+Фильтры
 Фляга контрабандистаПредметХоумбрю
 Цена
 
@@ -249,18 +234,16 @@ RootWebArea "Лавка кузнеца - Daggerheart Loot Generator" [url=/en/li
     StaticText "Лавка кузнеца"
     textbox "List name" [value=Лавка кузнеца multiline=false readonly=false required=false]
     StaticText "11 items of 100 · "
-    ... StaticText x35 of 39 same-shape siblings elided
+    ... StaticText x34 of 38 same-shape siblings elided
     button "Share" [expanded=false]
-    button "Copy text"
-    button "Download JSON"
     button "Print" [description=Lay these out for printing: nine to an A4 sheet]
-    ... button x10 of 14 same-shape siblings elided
+    button "More" [expanded=false haspopup=menu]
     status ""
     button "As in the book" [pressed=false]
     button "In coins" [pressed=true]
     button "Help" [expanded=false]
     DisclosureTriangle "NOTES" [expanded=true]
-    ... button x4 of 8 same-shape siblings elided
+    ... button x5 of 9 same-shape siblings elided
     button "Clear the note" [description=Clear the note]
     toolbar "Formatting: For players" [orientation=horizontal]
       button "Bold" [keyshortcuts=Control+B Meta+B]
@@ -278,17 +261,17 @@ RootWebArea "Лавка кузнеца - Daggerheart Loot Generator" [url=/en/li
       button "Preview" [pressed=false]
     textbox "GM ONLY" [value=Кузнец торгуется, если назвать имя его брата. description=stays with you multiline=true readonly=false required=false]
     DisclosureTriangle "ROLL ON THIS LIST" [expanded=false]
-    checkbox "Select all" [checked=false]
-    generic ""
-    checkbox "Premium Bedroll" [checked=false]
+    searchbox "Search by name or description..."
+    button "Select"
     spinbutton "Position in the list" [value=1 valuetext=1 required=false valuemin=1 valuemax=11]
+    button "Premium Bedroll ITEM During downtime, you automatically clear a ..." [namelen=71 namehash=f1054083]
     spinbutton "QTY" [value=2 valuetext=2 required=false valuemin=1 valuemax=99]
     spinbutton "PRICE" [value=150 valuetext=150 required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
     button "GM only: Premium Bedroll" [description=GM only pressed=false]
     button "Remove from the list" [description=Remove from the list]
-    ... checkbox x8 of 12 same-shape siblings elided
     spinbutton "Position in the list" [value=2 valuetext=2 required=false valuemin=1 valuemax=11]
+    ... button x8 of 12 same-shape siblings elided
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
@@ -333,7 +316,6 @@ RootWebArea "Лавка кузнеца - Daggerheart Loot Generator" [url=/en/li
     spinbutton "Position in the list" [value=8 valuetext=8 required=false valuemin=1 valuemax=11]
     spinbutton "Position in the list" [value=9 valuetext=9 required=false valuemin=1 valuemax=11]
     spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]
-    checkbox "Ember Axe" [checked=false]
     spinbutton "Position in the list" [value=10 valuetext=10 required=false valuemin=1 valuemax=11]
     button "Ember Axe PRIMARY WEAPON UNIQUE ALDER WORKSHOP (HB) Tier 2 · Mag..." [namelen=164 namehash=412bbe09]
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
@@ -341,7 +323,6 @@ RootWebArea "Лавка кузнеца - Daggerheart Loot Generator" [url=/en/li
     button "Note" [description=Note]
     button "GM only: Ember Axe" [description=GM only pressed=false]
     button "Remove from the list" [description=Remove from the list]
-    checkbox "Фляга контрабандиста" [checked=false]
     spinbutton "Position in the list" [value=11 valuetext=11 required=false valuemin=1 valuemax=11]
     button "Фляга контрабандиста ITEM HOMEBREW RU"
     StaticText "QTY"
@@ -351,7 +332,7 @@ RootWebArea "Лавка кузнеца - Daggerheart Loot Generator" [url=/en/li
     button "Note" [description=Note]
     button "GM only: Фляга контрабандиста" [description=GM only pressed=false]
     button "Remove from the list" [description=Remove from the list]
-    button "Own item" [expanded=true]
+    button "Add your own item" [expanded=true]
     region "An own item for this list"
       heading "An own item for this list" [level=2]
       StaticText "Name"
@@ -384,24 +365,19 @@ RootWebArea "Лавка кузнеца - Daggerheart Loot Generator" [url=/en/li
 ## en :: controls
 Account: gm1@example.test
 Add to list
-Art History Booklet
+Add your own item
 Art History BookletItemDread GM ToolboxThis is a finely illustra... [namelen=543 namehash=efabc114]
 As in the book
 Bold
-Broadsword
 BroadswordPrimary weaponTier 1 · Physical · Agility · Melee · d8... [namelen=109 namehash=926e89b9]
 Bulleted list
 Cancel
-Casting Dagger
 Casting DaggerPrimary weaponHope & FearTier 1 · Magic · Instinct... [namelen=176 namehash=08dad18c]
 Clear the note
-Copy text
-Delete
-Download JSON
 EN
 Edit
-Ember Axe
 Ember AxePrimary weaponUniqueAlder Workshop (HB)Tier 2 · Magic ·... [namelen=159 namehash=ea056220]
+Filters
 GM only: Art History Booklet
 GM only: Broadsword
 GM only: Casting Dagger
@@ -413,7 +389,6 @@ GM only: Scepter
 GM only: Stride Potion
 GM only: Twilight Deck
 GM only: Фляга контрабандиста
-Gambeson Armor
 Gambeson ArmorArmorTier 1 · Thresholds 5/11 · Armor 3Flexible: +... [namelen=76 namehash=55bf2d62]
 Help
 Help: Description
@@ -422,17 +397,15 @@ Help: GM only
 In coins
 Install as an app
 Italic
-Leviathan Harpoon
 Leviathan HarpoonPrimary weaponUniqueWondrous EnvironmentsTier 2... [namelen=354 namehash=8183bf12]
 List name
 LootDaggerheart
+More
 Note
 Numbered list
 One higher
 One lower
-Own item
 Position in the list
-Premium Bedroll
 Premium BedrollItemDuring downtime, you automatically clear a St... [namelen=69 namehash=b98fcd07]
 Preview
 Price
@@ -443,18 +416,15 @@ Remove from the list
 Roll
 Roll 1-11
 Roll result
-Scepter
 ScepterPrimary weaponTier 1 · Magic · Presence · Far · d6 mag · ... [namelen=156 namehash=5cf0702e]
 Search
-Select all
+Search by name or description...
+Select
 Share
 Skip to content
-Stride Potion
 Stride PotionConsumableYou gain a +1 bonus to your next Agility ... [namelen=69 namehash=5f888d9a]
 Tables
 Terms of use
-Twilight Deck
 Twilight DeckItemArtifactVault of AgesRecall Cost: 2This deck en... [namelen=870 namehash=d2092ac1]
 daggerheart.com
-Фляга контрабандиста
 Фляга контрабандистаItemHomebrewRU

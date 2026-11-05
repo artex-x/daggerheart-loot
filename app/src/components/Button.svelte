@@ -22,7 +22,7 @@
     size?: 'md' | 'sm';
     title?: string;
     /** For a button whose visible text is not its name. */
-    label?: string;
+    label?: string | undefined;
     /** `aria-expanded`, for a button that folds a panel open. */
     expanded?: boolean | undefined;
     /** `aria-haspopup="menu"`, for a button that opens a `Menu`. */
@@ -258,8 +258,8 @@
     box-shadow: inset 0 2px 5px rgb(0 0 0 / 35%);
   }
 
-  /* off `.caret` in style.css - moved here from FilterBar.svelte, its first
-     use, now that the add-to-list button wants the same down/up arrow. */
+  /* off `.caret` in style.css: the filter toggle's and the add-to-list button's down/up
+     arrow. */
   .caret {
     width: 0;
     height: 0;

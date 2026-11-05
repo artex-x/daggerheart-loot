@@ -21,32 +21,32 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
     StaticText "Клад дракона"
     textbox "Название списка" [value=Клад дракона multiline=false readonly=false required=false]
     StaticText "6 позиций из 100 · "
-    ... StaticText x12 of 16 same-shape siblings elided
+    ... StaticText x11 of 15 same-shape siblings elided
     button "Поделиться" [expanded=false]
-    button "Скопировать текст"
-    button "Скачать JSON"
     button "Печать" [description=Собрать карточки для печати: девять на лист A4]
-    ... button x5 of 9 same-shape siblings elided
+    button "Ещё" [expanded=false haspopup=menu]
     status ""
     DisclosureTriangle "ЗАМЕТКИ" [expanded=false]
     DisclosureTriangle "БРОСОК ПО СПИСКУ" [expanded=false]
-    checkbox "Выбрать все" [checked=false]
-    generic ""
     checkbox "Пронзительная Свирель" [checked=false]
     spinbutton "Позиция в списке" [value=1 valuetext=1 required=false valuemin=1 valuemax=6]
+    button "Пронзительная Свирель ПРЕДМЕТ Эта свирель ручной работы имеет ха..." [namelen=163 namehash=e0e9fc1d]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
     button "Только для мастера: Пронзительная Свирель" [description=Только для мастера pressed=false]
     button "Убрать из списка" [description=Убрать из списка]
-    ... checkbox x3 of 7 same-shape siblings elided
+    checkbox "Заряжающий Колчан" [checked=false]
     spinbutton "Позиция в списке" [value=2 valuetext=2 required=false valuemin=1 valuemax=6]
+    button "Заряжающий Колчан ПРЕДМЕТ Когда вы успешно наносите удар стрелой..." [namelen=143 namehash=1f84ead5]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
     button "Только для мастера: Заряжающий Колчан" [description=Только для мастера pressed=false]
     button "Убрать из списка" [description=Убрать из списка]
+    ... checkbox x2 of 6 same-shape siblings elided
     spinbutton "Позиция в списке" [value=3 valuetext=3 required=false valuemin=1 valuemax=6]
+    ... button x2 of 6 same-shape siblings elided
     ... spinbutton x2 of 6 same-shape siblings elided
     ... spinbutton x2 of 6 same-shape siblings elided
     ... button x2 of 6 same-shape siblings elided
@@ -71,9 +71,18 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
     button "Заметка" [description=Заметка]
     button "Только для мастера: Мистический Плащ" [description=Только для мастера pressed=false]
     button "Убрать из списка" [description=Убрать из списка]
-    button "Свой предмет" [expanded=false]
+    button "Добавить свой предмет" [expanded=false]
     status ""
     status ""
+  region "Выбранные записи"
+    checkbox "Выбрать все" [checked=false]
+    generic ""
+      StaticText "Выбрано 0 позиций"
+    button "Цены" [disabled=true expanded=false]
+    button "Скопировать текст" [disabled=true]
+    button "Показать игрокам (0)" [disabled=true]
+    button "Удалить (0)" [disabled=true]
+    button "Снять выделение"
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -93,6 +102,8 @@ daggerheart.com
 Бросок
 Вернуть
 Выбрать все
+Добавить свой предмет
+Ещё
 Жирный
 Заметка
 Заряжающий Колчан
@@ -115,15 +126,15 @@ daggerheart.com
 Подсказка: Только для мастера
 Позиция в списке
 Поиск
+Показать игрокам (0)
 Пронзительная Свирель
 Пронзительная СвирельПредметЭта свирель ручной работы имеет хара... [namelen=161 namehash=e5bf576d]
 Просмотр
 Разговаривающие Сферы
 Разговаривающие СферыПредметЭта пара сфер позволяет существам, к... [namelen=125 namehash=7957c029]
 Результат броска
-Свой предмет
-Скачать JSON
 Скопировать текст
+Снять выделение
 Список
 Таблицы
 Только для мастера: Заряжающий Колчан
@@ -133,12 +144,13 @@ daggerheart.com
 Только для мастера: Разговаривающие Сферы
 Только для мастера: Факел Алистера
 Убрать из списка
-Удалить
+Удалить (0)
 Условия использования
 Установить как приложение
 Факел Алистера
 Факел АлистераПредметВы можете зажигать этот магический факел по... [namelen=189 namehash=afee43ad]
 Цена
+Цены
 
 ## en :: tree
 RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/lists/00000000-0000-4000-8000-000000008001?as=gm4]
@@ -158,32 +170,32 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
     StaticText "Клад дракона"
     textbox "List name" [value=Клад дракона multiline=false readonly=false required=false]
     StaticText "6 items of 100 · "
-    ... StaticText x12 of 16 same-shape siblings elided
+    ... StaticText x11 of 15 same-shape siblings elided
     button "Share" [expanded=false]
-    button "Copy text"
-    button "Download JSON"
     button "Print" [description=Lay these out for printing: nine to an A4 sheet]
-    ... button x5 of 9 same-shape siblings elided
+    button "More" [expanded=false haspopup=menu]
     status ""
     DisclosureTriangle "NOTES" [expanded=false]
     DisclosureTriangle "ROLL ON THIS LIST" [expanded=false]
-    checkbox "Select all" [checked=false]
-    generic ""
     checkbox "Piper Whistle" [checked=false]
     spinbutton "Position in the list" [value=1 valuetext=1 required=false valuemin=1 valuemax=6]
+    button "Piper Whistle ITEM This handcrafted whistle has a distinctive so..." [namelen=151 namehash=e50d3714]
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
     button "GM only: Piper Whistle" [description=GM only pressed=false]
     button "Remove from the list" [description=Remove from the list]
-    ... checkbox x3 of 7 same-shape siblings elided
+    checkbox "Charging Quiver" [checked=false]
     spinbutton "Position in the list" [value=2 valuetext=2 required=false valuemin=1 valuemax=6]
+    button "Charging Quiver ITEM When you succeed on an attack with an arrow..." [namelen=147 namehash=24d33b28]
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
     button "GM only: Charging Quiver" [description=GM only pressed=false]
     button "Remove from the list" [description=Remove from the list]
+    ... checkbox x2 of 6 same-shape siblings elided
     spinbutton "Position in the list" [value=3 valuetext=3 required=false valuemin=1 valuemax=6]
+    ... button x2 of 6 same-shape siblings elided
     ... spinbutton x2 of 6 same-shape siblings elided
     ... spinbutton x2 of 6 same-shape siblings elided
     ... button x2 of 6 same-shape siblings elided
@@ -208,9 +220,18 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
     button "Note" [description=Note]
     button "GM only: Arcane Cloak" [description=GM only pressed=false]
     button "Remove from the list" [description=Remove from the list]
-    button "Own item" [expanded=false]
+    button "Add your own item" [expanded=false]
     status ""
     status ""
+  region "Selected records"
+    checkbox "Select all" [checked=false]
+    generic ""
+      StaticText "Selected 0 items"
+    button "Prices" [disabled=true expanded=false]
+    button "Copy text" [disabled=true]
+    button "Show to players (0)" [disabled=true]
+    button "Delete (0)" [disabled=true]
+    button "Clear selection"
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -223,6 +244,7 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
 
 ## en :: controls
 Account: gm4@example.test
+Add your own item
 Alistair's Torch
 Alistair's TorchItemYou can light this magic torch at will. The ... [namelen=162 namehash=ca396948]
 Arcane Cloak
@@ -231,9 +253,9 @@ Bold
 Bulleted list
 Charging Quiver
 Charging QuiverItemWhen you succeed on an attack with an arrow s... [namelen=145 namehash=07a311bd]
+Clear selection
 Copy text
-Delete
-Download JSON
+Delete (0)
 EN
 GM only: Alistair's Torch
 GM only: Arcane Cloak
@@ -249,16 +271,17 @@ List name
 LootDaggerheart
 Manacles
 ManaclesItemThis pair of locking cuffs comes with a key.
+More
 Note
 Numbered list
 One higher
 One lower
-Own item
 Piper Whistle
 Piper WhistleItemThis handcrafted whistle has a distinctive soun... [namelen=149 namehash=81a85b00]
 Position in the list
 Preview
 Price
+Prices
 Print
 Privacy
 RU
@@ -269,6 +292,7 @@ Roll result
 Search
 Select all
 Share
+Show to players (0)
 Skip to content
 Speaking Orbs
 Speaking OrbsItemThis pair of orbs allows any creatures holding ... [namelen=120 namehash=20695eaf]

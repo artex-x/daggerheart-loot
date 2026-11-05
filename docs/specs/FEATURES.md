@@ -210,9 +210,8 @@ across.
   section, pick its filter value, then «Все» (owner, 2026-10-30). Ticks that arrive
   with the page (a sign-in that returns with them) open the mode. «Снять
   выделение» clears the ticks, leaves the mode, also with zero ticks, and
-  returns the focus to «Выбрать» (rule 20). `/search` has the same mode and
-  bar, with no strip. The shared page keeps its ticks and its «Выбрать все (N)»
-  strip until its batch.
+  returns the focus to «Выбрать» (rule 20). `/search`, «Мои предметы» and both
+  list pages have the same mode and bar, with no strip ("Lists").
 - A row reads its name, then its tags after it, then the stat line, then the
   description; the text holds at 70 characters a line and a separator never
   starts a line. A row hides the tags that repeat what the page already says
@@ -382,7 +381,7 @@ across.
 - The catalog's filters (`FilterPanel`) are a column beside the rows from
   1000 px, sticky under the header and scrolling inside itself, and a bottom
   sheet below it; the Items tab of «Мои предметы» draws them too ("Homebrew");
-  the shared list page keeps the strip and its pills ("Lists") until its batch. Where a table has
+  both list pages draw them as the sheet at every width ("Lists"). Where a table has
   nothing to filter by, there is neither. A row offers only values the drawn
   rows answer and shows only when it can narrow; a picked value stays offered
   (owner, 2026-10-08). On `#/tables/homebrew` the drawn rows are the chosen
@@ -393,7 +392,8 @@ across.
   is picked. The sheet adds «Закрыть» to its head and a foot with «Сбросить»
   and «Показать N» (the shown count); Escape, «Закрыть» and a press on the
   scrim close it, and it has no grab handle. A filter link that arrives opens
-  no sheet: the count line states the picks.
+  no sheet: the count line states the picks (the shared list page opens it,
+  `ROUTES.md`).
   Values in a row combine with *or*; a link naming two frames presses both.
 - A row of more than 12 values (a source of many sections on `#/tables/homebrew`,
   the equipment `src` row of an author with many sources, the Items tab's rows)
@@ -405,9 +405,9 @@ across.
 - In the catalog, «Сбросить» moves the focus to the first row's «Все» in the
   column, or to the sheet's «Закрыть»; the empty state's «Сбросить фильтры»
   moves it to the first «Все», or to «Фильтры» below 1000 px, else `#main`
-  (rule 20). On the shared page and the Items tab, dropping a pill moves the
-  focus to the pill now in its place, else the one before it, else «Фильтры»,
-  else `#main` when the strip left; «Сбросить всё» moves it to «Фильтры».
+  (rule 20). On both list pages the sheet's close returns the focus to «Фильтры
+  · N», and the empty state's «Сбросить всё» moves it to «Фильтры», else the
+  search box, else `#main`.
 - Filter state lives in the address (`STATE.md`), written with `replaceState` on
   every change, and read back only when the segment actually changed; on a
   share link too.
@@ -603,12 +603,20 @@ across.
   are page memory, closed when the page opens; coin mode and an unpriced row
   draw no «?».
 - Batch actions over a selection within a list: set prices, clear prices, shift
-  all by a percentage, suggest prices from tier or rarity, copy, remove. The
-  batch bar's select-all box keeps the name "Выбрать все"; it shows the mixed
-  state while some but not all rows are ticked, and its visible label is
-  dropped while anything is ticked. A ticked row takes the gold selected style
-  of a ticked table row. The batch bar shows the selection summary and the
-  total. "Скопировать" copies
+  all by a percentage, suggest prices from tier or rarity, copy, hide from
+  players, remove. The owner's list page has the catalog's selection mode:
+  «Выбрать» opens it (on the title row up to 760 px, on its own row from
+  761 px, last in the search row from 8 entries), the ticks draw only in it, and
+  its bar is the one selection bar, drawn in the bar's place by the page itself
+  (`app.pageBar`): «Все», the summary and the total, «Цены», «Скопировать
+  текст», «Скрыть от игроков (N)», «Удалить (N)», «Снять выделение»; up to 760 px
+  «Цены» and «Ещё», which opens up with «Скопировать текст», «Скрыть от игроков
+  (N)» and the danger «Удалить (N)». With zero ticks the actions are off. A
+  ticked row is lit and neutral, as a ticked table row: no gold. «Цены» opens
+  the sheet «Цены выбранных» / "Prices of the selected" with the percentage
+  row, the guess rows and, in its foot, «Убрать цену (N)» and «Проставить эти
+  цены»; its close returns the focus to «Цены», and it closes with the last
+  tick. "Скопировать текст" copies
   the ticked entries in list order with each taken count and unit price after
   the name, and ends with the total line. "Удалить (N)" removes by the taken
   count: an entry taken whole leaves the list, an entry taken in part keeps
@@ -641,8 +649,8 @@ across.
   or search selection has no taken count and no total, and its bar reads
   «Выбрано: N» / "N selected". The bar is a region named «Выбранные записи» /
   "Selected records": it sits after the footer, outside every other
-  landmark, pinned to the bottom of the screen. It is one shape on the
-  catalog, `/search` and the shared page (`SelectionBar`): «Все» (a tri-state
+  landmark, pinned to the bottom of the screen.   It is one shape on the
+  catalog, `/search`, «Мои предметы» and both list pages (`SelectionBar`): «Все» (a tri-state
   box named «Выбрать все», its label always visible, ticking every row the
   page draws, all sections), the summary, the actions («В список» / "Add to list",
   «Печать», «Скопировать текст», the shared page's send line), then «Снять
@@ -652,7 +660,8 @@ across.
   on. A neutral look: no gold.
 - A typed quantity is held to 99, and a negative one to none; the field then shows the held value.
 - A list has its own roll button, folded by default and opened on its
-  summary; the row numbers match it. An empty roll field means no roll has
+  summary; up to 760 px «Бросить по списку» in the list «Ещё» opens it under
+  the head. The row numbers match it. An empty roll field means no roll has
   been made yet, not zero. The panel, a row's own note box and the list note
   each keep the person's own fold/unfold across a language switch - the live
   `data-keep` opt-ins - rather than resetting to the data's own default the
@@ -743,8 +752,10 @@ address kept, and no add-to-list control is drawn.
   из 100 · Сохранено» («10 позиций · Сохранено»
   when the limit read failed); the name stops at 200 characters and each
   note at 4000 (`maxlength`, no counter). It keeps its address
-  `#/lists/<uuid>`, draws «Поделиться» / "Share" first in its actions, «Скачать JSON» / "Download JSON" after
-  «Скопировать текст», and says its save status
+  `#/lists/<uuid>`, draws «Поделиться» / "Share" first in its actions, then «Печать» and «Ещё» /
+  "More", which holds «Скопировать текст», «Скачать JSON» / "Download JSON" and the danger
+  «Удалить список» / "Delete the list" (from 761 px; up to 760 px see the compact head below),
+  and says its save status
   after the count: «Сохраняем...», «Сохранено», or
   «Не сохранено» in the danger color and «Повторить». Only the failure and
   the save that ends it («Сохранено») are announced (a permanently mounted,
@@ -814,13 +825,13 @@ address kept, and no add-to-list control is drawn.
   write. «Печать» stores an own item and another account's linked item of an
   account list in the set it opens at `#/p/`, with the item's path as its
   source line.
-- **«Свой предмет»** / "Own item"
+- **«Добавить свой предмет»** / "Add your own item"
   (`docs/decisions/2026-09-30-a-list-page-makes-a-plain-homebrew-item-in-one-press.md`,
   `docs/decisions/2026-10-01-the-quick-item-opens-under-a-lists-entries.md`):
-  on an account list, a row «Свой предмет» after the last entry (pressed
-  and expanded while open, folded on another list; on a window of 600 px
-  and more it adds the gray hint «название и описание, остальное потом в
-  редакторе») opens «Свой предмет в этот список» under it: «Название» *
+  on an account list, a row «Добавить свой предмет» after the last entry (pressed
+  and expanded while open, folded on another list) opens «Свой предмет в этот
+  список» under it; a made item clears the page's search and filter, so its new
+  row shows: «Название» *
   (focused; at most 120 characters), «Описание» (at most 3000, with the
   counter «N / 3000» past 2500; a box of rule 18 with bold, italic, both
   lists and «Просмотр»), «Добавить в список», «Отмена» and the note
@@ -901,11 +912,13 @@ address kept, and no add-to-list control is drawn.
   into. The selection's «Скопировать текст», «Печать», the list roll, its numbers
   and the counts keep every entry.
 - **The shared page `#/s/<token>`** draws the list as the link's audience sees
-  it, read-only for everyone, the owner included: the name, today's
-  «Список от другого игрока · N позиций», «Обновлено N назад» / "Updated N
-  ago" under them (`I18N.md`), «Сохранить себе», the notes the link shows (a
-  GM link adds the «Только для мастера» notes) and the rows, with the
-  selection bar: taking some rows, or all of them after «Выбрать все», into a
+  it, read-only for everyone, the owner included: the name (one line with an
+  ellipsis up to 760 px, up to three lines from 761 px), then one lead line, the
+  count «N позиций», «Обновлено N назад» / "Updated N ago" (`I18N.md`) and a
+  button for each note the link holds, «Заметка» / "Note" and on a GM link
+  «Заметка мастера» / "GM's note", each opening its note in place under the
+  head (closed on arrival); then «Сохранить себе» and «Выбрать», and the rows,
+  with the selection mode and bar: taking some rows, or all of them after «Все», into a
   new or an existing list is the bar's add-to-list control, which carries the
   taken count as the quantity (none for a count of 1), the price and a row's
   players' note, never the GM's note; the bar shows the selection summary and
@@ -954,12 +967,13 @@ address kept, and no add-to-list control is drawn.
   a GM's link keeps the mark on each copied entry; a players' link's copy has
   no such entry.
   From 8 drawn entries (`LIST_SEARCH_AT`), or once a query or a filter value
-  is set, one block sits between the notes and the rows: the tables' search
-  box («Поиск по названию или описанию...», matched as a table's box, never
-  over the list notes) and the table filter strip and panel ("Tables and
-  search"). Once drawn the block stays until another list opens: dropping the
-  last pill, clearing the query or a re-read that shrinks the list never
-  removes it. The strip is drawn only while a row can narrow, so a list of
+  is set, the search row (`ListFind`, shared with the owner's page) sits over
+  the rows: the search box («Поиск», named «Поиск по названию или описанию...»,
+  matched as a table's box, never over the list notes), «Фильтры · N» and
+  «Выбрать» last; the filter is the bottom sheet at every width ("Tables and
+  search"). Once drawn the row stays until another list opens: dropping the
+  last value, clearing the query or a re-read that shrinks the list never
+  removes it. «Фильтры» is drawn only while a row can narrow, so a list of
   alike entries shows the search box alone. The rows are Тип / Type
   («Предметы», «Расходники», «Оружие», «Вторичное», «Броня»), Источник /
   Source (the books in book order, «Предметы сообществ», the frames, then
@@ -970,7 +984,7 @@ address kept, and no add-to-list control is drawn.
   value some entry lacks; a row never narrows by the picks in another row,
   and no chip carries a count. The filter lives in the address,
   `#/s/<token>/f_<filter>` (`ROUTES.md`), written in place; a filter link
-  opens the panel. While a value is picked the strip draws the copy-link
+  opens the sheet. While a value is picked the sheet's head draws the copy-link
   button: it copies the preview link
   `https://daggerheart-loot.pages.dev[/en]/s/<token>/f_<filter>?v=<v>`, with
   the share panel's `v` of that token's card (`<site>[en/]#/s/...` in a build
@@ -979,14 +993,60 @@ address kept, and no add-to-list control is drawn.
   it toasts «Ссылка на фильтры скопирована - это ссылка для мастера: в ней
   есть заметки и позиции «Только для мастера»» / "Filter link copied - it is
   the GM's link: it carries the "GM only" notes and items". A value no drawn
-  entry answers (an old link, an entry the owner removed) draws no pill and
+  entry answers (an old link, an entry the owner removed) is not counted and
   narrows nothing, where a table empties; the address keeps it until the
   next change of the filter, it applies again if an answering entry comes
   back first, and the copied link holds only the values in force. No match
-  draws «Ничего не найдено» and, while a value is in force, «Сбросить всё».
-  A ticked entry the filter hides stays ticked and counted; «Выбрать все (N)»
-  ticks the drawn rows only. The sub keeps the whole count. The owner's list
-  page `#/lists/<id>` has no filter.
+  draws «Ничего не найдено» and «Сбросить всё», which clears the query and the
+  filter. A ticked entry the filter hides stays ticked and counted (a buyer
+  picks across filters); the bar's «Все» ticks the drawn rows only. While a
+  query or a value narrows, the lead line's count reads «Показано N из M» /
+  "N of M shown".
+- **The compact row** (owner, 2026-11-03, C1b;
+  `docs/decisions/2026-11-05-list-rows-fold-on-a-phone-and-the-list-filter-stays-in-memory.md`):
+  up to 760 px both list pages draw each entry as a compact row of about 77 px:
+  the 44 px picture with the entry's true list number on a plate, the name on up
+  to two lines, the meta line and one line cut with an ellipsis. The meta line
+  holds the first kind badge, then the price (it wraps and is never cut), else
+  another book's tag (one line with an ellipsis; never «Core»), then the note
+  mark while the entry has a note (a players' link marks only a players' note)
+  and the GM-only mark on a GM-only entry, each an icon with its hidden name.
+  The line is a weapon's damage, range, burden and trait, armor's thresholds and
+  score, else the first line of the text with no markup, else nothing. A row the
+  page has not read draws its key and «Предмет не загружен». The whole body is
+  one button with a 20 px chevron (`aria-expanded`); a press unfolds the full
+  row under it and keeps the focus. The unfolded rows are page memory, by entry
+  id, folded when another list opens; nothing is stored. The quantity is a
+  target of its own beside the button: on the owner's page a 42x44 px live field
+  named «Кол-во: <name>» / "Qty: <name>" that writes through the account's buffer
+  (a focus writes nothing), on `/s/` the text «×2», nothing at 1. In the
+  selection mode a tick column draws at the left and the field turns to the
+  text. Unfolded, the owner's row draws its tags, stats and whole text, the
+  position and price fields, the grip on a hover device, «Заметка», and «Ещё:
+  <name>» with «Скрыть от игроков» / «Показать игрокам», «Открыть карточку» and
+  the danger «Убрать из списка»; its notes draw only there. The shared row
+  unfolds to its tags, text, both notes the link holds and «Открыть карточку».
+  The drop mark draws on the compact row too. From 761 px the full row stays.
+- **The compact head** (owner, 2026-11-03, D-head 1): up to 760 px the owner's
+  page draws the name, «Выбрать» and «Ещё» on one row and the meta line under
+  them, which ends «· Заметки ▾» / "Notes" opening the list notes in place
+  (closed on arrival). The list «Ещё» holds «Поделиться», «Печать», «Бросить по
+  списку», a separator, «Цены: монетами» / «Цены: как в книге» while an entry is
+  priced, «Скопировать текст», «Скачать JSON», a separator and the danger
+  «Удалить список»; an item with no target leaves (no «Печать» without a read
+  item, no roll under 2 entries). The money chips, the list notes panel and the
+  roll panel do not draw up to 760 px. The inline rename in the `h1` stays.
+- **Search and filter on the owner's page**: from 8 entries, latched per list
+  as on `/s/`, the owner's page draws the same search row and filter sheet,
+  with no filter link: the filter is page memory and never in the address
+  (`STATE.md`). While narrowed the meta line reads «Показано 3 из 14 ·
+  Сохранено», the numbers stay the true list numbers, the grip goes and the
+  position field stays live. A tick the search or the filter hides leaves the
+  selection (the bar here deletes), and «Все» ticks the drawn rows only. Copy,
+  print, download and the roll keep the whole list. A row the page has not read
+  has no facets: a picked value or a query hides it, and the meta line counts
+  it. No match draws «Ничего не найдено» and «Сбросить всё». A reload or
+  another list clears the search and the filter.
 - **Not found**: an account address signed out draws «Список не найден», «Если
   это список из вашего аккаунта, войдите, чтобы открыть его.» and one
   «Войти», which returns to that address; nothing while the session is
@@ -2851,7 +2911,9 @@ Each rule keeps its number: a review cites it by number.
   списка»). With a known limit the count shows at zero too («0 списков из
   50»); a count inside a row shows from one. The heading never repeats in
   the count. A counter sits at the head of the collection it counts: above
-  its strip, or in its fold's summary (owner, 2026-10-02).
+  its strip, or in its fold's summary (owner, 2026-10-02). Departure: while a
+  search or a filter narrows a list page, its count reads «Показано N из M» in
+  the same place, so no extra line pushes the rows down (owner, 2026-11-03).
 - **2. Failures**: a failed account read or write says «Не получилось
   <глагол>. Проверьте соединение и попробуйте ещё раз.» / "Could not <verb>.
   Check the connection and try again."; a load line says «Не получилось
@@ -2909,7 +2971,7 @@ Each rule keeps its number: a review cites it by number.
   submit reads «Создать» / "Create" (a card form «Создать комплект» /
   «Создать карту»); a select option reads «+ Новый <noun>...». Departures:
   the add-to-list chip «+ Новый список», because a chip has no icon; and
-  the row «Свой предмет» / "Own item" after an account list's entries (plus
+  the row «Добавить свой предмет» / "Add your own item" after an account list's entries (plus
   icon), whose panel's submit reads «Добавить в список» / "Add to list", because
   the short «В список» says nothing on a submit:
   one press makes the item and adds it to the list

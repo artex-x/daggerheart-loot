@@ -10,7 +10,6 @@ import userEvent from '@testing-library/user-event';
 import { flushSync, tick } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
-import FilterBar from './FilterBar.svelte';
 import RowMain from './RowMain.svelte';
 import SelBar from './SelBar.svelte';
 import TablesPage from './TablesPage.svelte';
@@ -36,7 +35,6 @@ import { ART_BASE } from '../lib/art.js';
 import { buildIndex, type Loot } from '../lib/data.js';
 import { ICONS } from '../lib/icons.js';
 import { dict } from '../lib/dict.js';
-import type { FacetRow } from '../lib/facets.js';
 import { recordOf, withRecords } from '../lib/homebrew.js';
 import { tablesHash } from '../lib/hash.js';
 import type { Record_, TableId } from '../lib/types.js';
@@ -826,32 +824,6 @@ describe('the table link', () => {
 describe('the filter', () => {
   const wond = (over: Partial<Env> = {}): Env =>
     fakeEnv({ router: memoryRouter('#/tables/wondrous'), data: fakeData(LOOT), ...over });
-
-  it('draws no link button without a copy action, and the pills and the reset still', async () => {
-    const t = dict('ru');
-    const rows: FacetRow[] = [
-      { group: 'kind', label: t.kindF, values: [{ value: 'item', label: t.fItems }] }
-    ];
-    const props = {
-      rows,
-      picked: { kind: ['item'] },
-      shown: 1,
-      total: 2,
-      open: false,
-      t,
-      ontoggle: vi.fn(),
-      onpick: vi.fn(),
-      onreset: vi.fn()
-    };
-    const { container } = render(FilterBar, props);
-    expect(container.querySelector('.fpill')).toHaveTextContent(t.fItems);
-    expect(screen.getByRole('button', { name: 'Сбросить всё' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: t.filterLink })).not.toBeInTheDocument();
-    await expectNoA11yViolations(container);
-    cleanup();
-    render(FilterBar, { ...props, oncopylink: vi.fn() });
-    expect(screen.getByRole('button', { name: t.filterLink })).toBeInTheDocument();
-  });
 
   it('draws the column from 1000 px with «Все» pressed, and no count line', async () => {
     const { container } = render(App, { env: wond() });

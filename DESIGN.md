@@ -308,7 +308,8 @@ the tab they are on, the control they focused, the main action of the panel they
 are in. Gold on something nobody selected is wrong. The budget: a gold fill goes
 to one primary action per panel, to a choice that narrows the view, and to the
 current place. A pressed default (such as «Все» or a chip row with every chip on), a
-mode toggle and a selection are neutral: a check and a lit `--muted2` border, no gold. A die
+mode toggle and a selection are neutral: a check and a lit `--muted2` border, no gold, on a
+catalog row and a list row alike. A die
 is an action and plain: no gold, no check, no lit border. The unique tag is
 neutral and dashed, the roll number is Chalk on a seam border, and footer links
 are Ash Violet and underlined. The site share cards spend gold on the star
@@ -439,7 +440,8 @@ controls 40px tall, and a roll card can be the tall face from 601px (The Roll Pa
 column sits beside the rows; from 761px it draws the wide head (the `h1`, the
 labeled pin, «Об этих данных», the group chips and the tabs) with the filters
 in the bottom sheet; below 761px the picker row, the sheet and «··· Ещё»
-replace them. The `viewport` port (`app/src/ports/viewport.ts`) is the one place
+replace them. The list pages fold each row to the compact row up to 760px and draw the
+full row from 761px. The `viewport` port (`app/src/ports/viewport.ts`) is the one place
 that reads the width in code; CSS reads the same two numbers. Every other media
 query in the code belongs to one component and its own measured problem. Do
 not add another system breakpoint. `/account` signed in uses the 1000px step too:
@@ -505,8 +507,9 @@ page's batch moves them into «Ещё» (the lists); the catalog's, the roller's
 **The First-Screen Rule.** At 360x640 and at 1180x720, in Russian and in
 English, at scroll 0, the primary content of a route starts no lower than 40%
 of the viewport height (256px at 640, 288px at 720); the header counts as a
-control above it. One named exception: `/roll/std` at 360x640 starts at 325px, for
-the rarities on the dice (owner, 2026-10-29). A design aims at 240px and 270px, so a small face or
+control above it. Two named exceptions: `/roll/std` at 360x640 starts at 325px, for
+the rarities on the dice (owner, 2026-10-29), and `/s/<token>` at 360x640 with its search
+row starts at 286px (owner, 2026-11-03). A design aims at 240px and 270px, so a small face or
 line-box difference does not fail the rule. The primary content is the first
 roll result on a roll page, the table on `/tables/*`, the item on `/i/` and
 `/h/`, the first result on `/search`, the first settings panel on `/account`,
@@ -665,7 +668,7 @@ means "a thing". Do not round a card to a pill or square a chip.
 - **Padding:** 13px 15px 14px, with 8px between rows of content.
 - **Layout:** `full` stacks the image above the body, or, as a dossier, sets it
   beside the text (The Dossier Rule); `compact` puts a 132px square image beside it,
-  and `ListPage` keeps it until its batch moves the roll panel; `face` is a roll
+  and `ListPage`'s roll panel keeps it until its batch moves the panel; `face` is a roll
   result: the picture 4:3 with a fade, the body drawn over its foot, and the row face,
   96px beside the text, wherever the roll does not sit on one line (The Roll Page
   Rule). Its action row sits under the plate, because a popover cannot leave a
@@ -760,10 +763,9 @@ means "a thing". Do not round a card to a pill or square a chip.
   line, and the count, never cut.
 - **Own items:** `/homebrew` draws the catalog's column and sheet and no pill row
   at any width.
-- **Pills (the shared page, until its batch):** 32px
-  tall, 8px radius, a 12 per cent gold wash inside a 45 per cent gold border,
-  a Seal Gold Soft label at 13px weight 600, and a dismiss glyph, beside a
-  text reset and a 32px copy-link button.
+- **List pages:** both list pages draw the filter as the sheet at every width
+  (`ListFind`), and the count on the page's meta line («Показано 3 из 14»), not
+  on a line of its own. No pill row draws anywhere.
 
 ### Bottom sheet
 
@@ -771,8 +773,10 @@ means "a thing". Do not round a card to a pill or square a chip.
   bottom, `min(100%, 560px)` wide and centered, top corners at the plate
   radius, at most `min(85dvh, 640px)` tall. Its head (the title, the caller's
   controls, «Закрыть» with the close icon) and its foot stay; the body
-  scrolls. No grab handle: nothing drags it. Its callers: the filter sheet, the
-  table and tab pickers, the bulk move and the editor's preview.
+  scrolls. No grab handle: nothing drags it. Its callers: the filter sheet (the
+  catalog below 1000px, both list pages at every width), the table and tab
+  pickers, the bulk move, the list page's «Цены выбранных» and the editor's
+  preview.
 - The record dialog has the sheet's look up to 760px and is not a `Sheet`: one
   element at every width, so a window that crosses 760px remounts nothing. «Ещё» is
   a `Menu` at every width, in the dialog too. Both close with `DialogClose`.
@@ -784,7 +788,26 @@ means "a thing". Do not round a card to a pill or square a chip.
   gold. «Все» is a tri-state box with its label always visible, then the
   polite summary («Выбрано: N»), the page's actions and «Снять выделение»
   last. Below 761px the box, the summary and the clear are one row and the
-  actions the next. Zero ticks: the actions off, the clear on.
+  actions the next. Zero ticks: the actions off, the clear on. The owner's list
+  page draws its own bar in the same place (`app.pageBar`); up to 760px its rare
+  actions fold into «Ещё», which opens up. A panel a bar action opens is a
+  `Sheet`, because the bar is sticky and a panel under it would grow past the
+  window.
+
+### Compact row
+
+- Up to 760px a list entry is one press target of about 77px: the 44px picture
+  with the true list number on a plate at its foot, the name at 15px weight 600
+  on up to two lines, the meta line at 13px (the kind badge, the price or another
+  book's tag, the note and GM-only marks), one 13px line cut with an ellipsis, and
+  a 20px chevron. The whole body is one `<button aria-expanded>`; a press unfolds
+  the full row under it.
+- The quantity is a target apart from the button: a 42x44px field on the
+  owner's page, the text «×2» on `/s/`, laid on the body's reserved last column.
+  No remove control on the folded row: removing is in the unfolded row's «Ещё».
+- The rows are flat: one divider under each, no box, no fill. A GM-only entry
+  keeps its dashed box; a ticked row keeps its lit ground. The unfolded part has
+  no fill, so the drop mark shows over it.
 
 ### Forms
 

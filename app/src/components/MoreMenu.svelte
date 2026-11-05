@@ -17,6 +17,8 @@
     up?: boolean;
     size?: 'md' | 'sm';
     disabled?: boolean;
+    /** The button's name where «Ещё» alone would not say whose menu it is (a list row). */
+    label?: string | undefined;
     /** Draws the items; receives `close`, which closes the menu and returns the focus. */
     children: Snippet<[() => void]>;
   }
@@ -28,6 +30,7 @@
     up = false,
     size = 'md',
     disabled = false,
+    label,
     children
   }: Props = $props();
 
@@ -66,6 +69,7 @@
   <Button
     {size}
     {disabled}
+    {label}
     haspopup
     expanded={open}
     controls={open ? id : undefined}

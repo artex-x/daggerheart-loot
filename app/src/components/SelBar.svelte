@@ -4,7 +4,8 @@
      draws it (one bar shape on every list page). `Shell.svelte` keeps it after the
      footer, before the modal, as `#selBar` in the live index.html.
 
-     It mounts while a row is ticked or the catalog's selection mode is on. The shared
+     A page that holds its own ticks (the owner's list page) sets `app.pageBar`, and this
+     place draws that bar instead. It mounts while a row is ticked or the catalog's selection mode is on. The shared
      page keeps it mounted, visually hidden while empty, so its live region exists
      before the first tick and announces it. */
   import { tick } from 'svelte';
@@ -158,7 +159,10 @@
   }
 </script>
 
-{#if n || shared || app.selecting}
+{#if app.pageBar}
+  <!-- The owner's list page draws its own bar here, with its own ticks and actions. -->
+  {@render app.pageBar()}
+{:else if n || shared || app.selecting}
   <SelectionBar
     label={t.selRegion}
     total={drawn.length}

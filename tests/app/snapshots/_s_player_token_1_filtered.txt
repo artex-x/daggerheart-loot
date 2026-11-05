@@ -18,17 +18,13 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/player-token-1/f_k
       link "Поиск" [url=/search]
   main ""
     heading "Лавка кузнеца" [level=1]
-    StaticText "Список от другого игрока · 10 позиций"
-    StaticText "Обновлено 3 дня назад"
+    StaticText "Показано 3 из 10"
+    StaticText " · Обновлено 3 дня назад"
+    StaticText " · "
+    button "Заметка" [expanded=false]
     button "Сохранить себе"
-    ... StaticText x4 of 8 same-shape siblings elided
     searchbox "Поиск по названию или описанию..."
-    button "Фильтры (2)" [expanded=false]
-    button "Оружие" [description=Убрать из фильтра]
-    button "Ранг 1" [description=Убрать из фильтра]
-    button "Сбросить всё"
-    button "Ссылка на фильтры" [description=Ссылка на фильтры]
-    checkbox "Выбрать все (3)" [checked=false]
+    button "Фильтры · 2" [expanded=false focused=true]
     checkbox "Палаш" [checked=false]
     button "Палаш ОСНОВНОЕ ОРУЖИЕ Ранг 1 · Физическое · Проворность · Вплотн..." [namelen=117 namehash=bd6b3505]
     StaticText "ДЛЯ ИГРОКОВ"
@@ -64,29 +60,27 @@ daggerheart.com
 В список
 Войти
 Выбрать все
+Заметка
 К содержимому
 Колдующий Кинжал
 Колдующий КинжалОсновное оружиеHope & FearРанг 1 · Магическое · ... [namelen=213 namehash=9cd182eb]
 Конфиденциальность
 ЛутDaggerheart
-Оружие×
 Палаш
 ПалашОсновное оружиеРанг 1 · Физическое · Проворность · Вплотную... [namelen=114 namehash=e80c7800]
 Печать
 Поиск
-Ранг 1×
-Сбросить всё
+Поиск по названию или описанию...
 Скипетр
 СкипетрОсновное оружиеРанг 1 · Магическое · Влияние · Далеко · d... [namelen=186 namehash=9aee2e9c]
 Скопировать текст
 Снять выделение
 Сообщить владельцу
 Сохранить себе
-Ссылка на фильтры
 Таблицы
 Условия использования
 Установить как приложение
-Фильтры (2)
+Фильтры · 2
 
 ## en :: tree
 RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-1/f_kind-weapon.tier-1?v=<v>]
@@ -104,17 +98,13 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-1/f_kind-weapon
       link "Search" [url=/en/search]
   main ""
     heading "Лавка кузнеца" [level=1]
-    StaticText "A list from another player · 10 items"
-    StaticText "Updated 3 days ago"
+    StaticText "3 of 10 shown"
+    StaticText " · Updated 3 days ago"
+    StaticText " · "
+    button "Note" [expanded=false]
     button "Save to my lists"
-    ... StaticText x4 of 8 same-shape siblings elided
     searchbox "Search by name or description..."
-    button "Filters (2)" [expanded=false]
-    button "Weapons" [description=Remove from the filter]
-    button "Tier 1" [description=Remove from the filter]
-    button "Reset all"
-    button "Filter link" [description=Filter link]
-    checkbox "Select all (3)" [checked=false]
+    button "Filters · 2" [expanded=false focused=true]
     checkbox "Broadsword" [checked=false]
     button "Broadsword PRIMARY WEAPON Tier 1 · Physical · Agility · Melee · ..." [namelen=112 namehash=52e4c04f]
     StaticText "FOR PLAYERS"
@@ -151,25 +141,23 @@ Casting DaggerPrimary weaponHope & FearTier 1 · Magic · Instinct... [namelen=1
 Clear selection
 Copy text
 EN
-Filter link
-Filters (2)
+Filters · 2
 Install as an app
 LootDaggerheart
+Note
 Notify the owner
 Print
 Privacy
 RU
-Reset all
 Roll
 Save to my lists
 Scepter
 ScepterPrimary weaponTier 1 · Magic · Presence · Far · d6 mag · ... [namelen=156 namehash=5cf0702e]
 Search
+Search by name or description...
 Select all
 Sign in
 Skip to content
 Tables
 Terms of use
-Tier 1×
-Weapons×
 daggerheart.com
