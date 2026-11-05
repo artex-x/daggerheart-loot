@@ -149,3 +149,10 @@
 | 9b-N1..N11 | nit | local | fixed 9b-fix | `.lroll-line` monospace sentence; `shareHint` repeats (delete it, M12); misplaced SharePanel comment; stale "list summary labels"; "(item 9)/(item 8)" citations in DESIGN.md; EN "Fold" vs "show less"; red «Возьмут» cell; em dash in typo.js message; reopened note area remembers its kind; gold-soft position number on gold tint; handoff Status stale |
 | 9b-N12 | nit | deferred-scope | batch 10 | record the CLI's unformatted `config.json` writes in the exception inventory |
 | 9b-N13 | nit | deferred-scope | named | fixed 146 px indent does not follow the tick column in selection mode |
+| CI-N1 | nit | local | open | `run-all.js` weight comment: 396.1 is the mean of runs 42036663681 and 42083009049, 440 is a projection: say both |
+| CI-N2 | nit | local | open | `.claude/README.md` "Batch size" table: two stale rows ("~260-290s pooled" with `app/contracts` at 556 s; "up to ~372s for one bin" now 1459-1586 s) |
+| CI-N3 | nit | local | open | handoff batch CI entry lacks a `Review:` line; "Durable items" line names 9b's items |
+| CI-N4 | nit | local | open | COVERAGE.md `app/states` row says "ninety-five states"; `CASES` has 97: drop the count |
+| CI-N5 | nit | local | optional | `states.js` reads `--shard` after `require('./lib.js')`: no `dist-test/` shows the build message first |
+| CI-N6 | nit | deferred-scope | named | `ci.yml` comment "~20 s" fixed cost; `bash-guard.mjs` cost text "~380s"; no long-check reminder for a bare `node tests/app/states.js` |
+| CI-R1 | risk | named | CI of the next run | slow layout cases are not split equally (piece 1/4 holds 7 of 25, incl. 107); measured on 22d9a00b: states rows 411-543 s, jobs 10-11 min: fine |

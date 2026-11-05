@@ -2,23 +2,46 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress. Waves 1, 2 and 2b are on `main`; wave 3: 9a, 8 and 9b done. 9b is `18429aee`, its
-  review `22f93378` (`reviews/9b.md`, fix-then-continue), its remediation `6578a2c7`; all pushed. CI run
-  42102518161 of `6578a2c7`: every job passed but `browser (3)`, cancelled twice at its 30-minute limit
-  (`app/states`, one serial row of about 1750 s). Batch CI (`plan-ci.md`) is committed on top of `0f931af2`, not
-  pushed; its batch review is required (trigger: `tests/run-all.js` changed).
-- Last agent: implementer (batch CI, 2026-11-05). No subagent runs. No worker has uncommitted code edits.
+- Task status: in_progress, STOPPED by the owner for a session reboot (2026-11-05, about 23:30 UTC). Waves 1, 2
+  and 2b are on `main`; wave 3: 9a, 8, 9b and batch CI are built and pushed. Tip `22d9a00b` (batch CI; 9b is
+  `18429aee`, its review `22f93378`, its remediation `6578a2c7`). Batch CI's review is APPROVED
+  (`reviews/CI.md`, report-only nits N1-N6). CI run 42116078717 of `22d9a00b` is RED, but the split works: every
+  `browser (n)` job now ends in about 10-11 min (it timed out at 30 before). Four real failures to fix first,
+  all from CI's log (`gh run view 42116078717 --log-failed`):
+  (1) `app/states` case 86 (the hidden header): "after the slide: the header is not out of the window,
+  top -54.33 bottom 56.85" - the SAME figures failed in runs 42020997138 and 42083009049 and in a CI run before
+  9b, so it is deterministic on CI, not a flake (the earlier "timing flake" claim in `handoff.md` Deferred is
+  wrong: reproduce on a CI-like build with the 2 vCPU/slow headless settings, or measure the transform at the
+  moment of the check); (2) `app/states` case 89 (the roll page layout): `#/roll/many_worlds_tavern` and
+  `#/roll/vault_of_ages` at 360 RU, "the results line ends at 294.69" (the 9b remediation's `.rp-ctrl` /
+  `AltPanel` wrap change or R1/R2; read the case's limit); (3) `app/states` case 44 (share link saved after
+  sign-in): "the players' note is not on the page" (9b's note/share rewrite: stale case or a real defect);
+  (4) `e2e`: "contract: import: 50 lists of 100 entries took 9329 ms" (a timing limit on the hosted test project:
+  read the limit in `tests/e2e`, check whether the lists import or store changed in 8/9b, re-run the failed `e2e`
+  once before changing anything: `gh run rerun <id> --failed`, which the CI credit counts once).
+- Last agent: reviewer (batch CI). No subagent runs. No worker has uncommitted code edits.
 - NEEDS_HUMAN_CONFIRMATION: no. One figure for the owner: the folded requests strip at 360x640 now starts the
   rows at 304 px (was 324; the owner's figure was 292), so the 360 exception is 304 (review B3: above 300, logged).
   No for batch N: the owner answered N1-N4 on 2026-11-05; one planner default the owner may overrule: from 761 to
   999 px the pills take their own row under the head row (`plan-nav.md` section 4).
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
-- Base / starting commit: `d8e30731`; previous sha of the 9b remediation pass: `22f93378`.
-- Pushed: up to `6578a2c7`.
-- Next step, in order: (1) batch CI's review, its push and CI of its tip (acceptance 7, 8, 11 and step S8: the
-  `.claude/README.md` CI row takes the measured push-to-last-gate time), which also proves the 9b remediation; `polish` and `harden` on `ListPage`, `RequestsPanel`, `SharePanel`; (2) batch T's refresh
-  (`plan.md` section 7, "Batch T"), then T; N follows T and precedes P; (3) P, 10; the wave 3 and whole-app blind
-  reviews; closeout. The wave 3 squash message takes `reviews/9b.md` R7's corrected text.
+- Base / starting commit: `d8e30731`; previous sha of batch CI: `0f931af2`.
+- Pushed: up to `22d9a00b`.
+- Next step, in order (the owner's decisions of 2026-11-05 are in `context.md` items 7-15 and their ANSWERS):
+  (1) fix the four CI failures above in ONE fix pass (writer `opus`; reproduce each before the fix; never loosen
+  a check), apply `reviews/CI.md` nits N1-N4 and the S8 step of `plan-ci.md` (record each job's minutes, each
+  `app/states` row's seconds, the pass-line counts 25/24/24/24 of 97; the README CI row), push, CI credit;
+  (2) FOLD the plans into `plan.md`/`handoff.md` (the fold lists at the end of `plan-T.md`, `plan-D.md`,
+  `plan-text.md`, `plan-N.md`, `plan-P.md`; batch D is merged into T as "TD" with the Measure Rule `plan-text.md`;
+  renumber the new browser cases: TD 108-111, N 112-113, P 114-115; restate `plan-P.md` for the owner's "keep 63x88
+  mm" (Q-P1 no: P-D1 and P-D17 take their fallbacks, no `CLAUDE.md`/`llms.txt` change, no plan review for P));
+  (3) batches in this order: TD (`plan-T.md` + `plan-D.md` + `plan-text.md`; opus), N (`plan-N.md`; opus), P
+  (`plan-P.md`; opus), 10 (docs lock; `plan.md` section 7 row 10 plus the inherited lines), each with its batch
+  review (reviewer dispatches name the guideline set of `context.md` item 10) and one fix pass, a push and a CI
+  credit per batch; (4) the wave 3 blind review of production-like screens and its mitigation, the closeout
+  (`/handoff` skill, "Finishing a task"; `orchestrate.prompt.md` "Task closeout and cleanup": the squash onto
+  `main`, the deploy, the merge back), then the whole-feature blind review and its mitigation. The squash message
+  takes `reviews/9b.md` R7's corrected text (commit `18429aee`'s body has wrong sentences).
 
 ## Completed
 One line per shipped batch. The full acceptance tables, deviations and measurements of batches 1 to 9a are in
@@ -174,15 +197,13 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
 - Batch 9b and earlier: `git show 22f93378:issues/57/handoff.md`, "Verification".
 
 ## Next batch (implement-ready)
-- Name: batch CI's review (required), then its push and step S8 (`plan-ci.md` section 4: record each `browser (n)`
-  job's minutes, each `app/states` row's seconds and the four pass-line counts; the `.claude/README.md` "Batch
-  size" CI row takes the push-to-last-gate time). Then batch T's refresh (the Thumb Rule and the toast timing;
-  `plan.md` section 7, "Batch T"), then T, N, P and 10.
-- Verification: CI of the tip (acceptance 7: every `browser (n)` passes, each `app/states` row under 600 s, the
-  longest job under 20 min, pass lines 25, 24, 24, 24 of 97).
-- What CI of the batch CI tip must also prove for the 9b remediation: `check` (coverage of `HelpButton`,
-  `RecordActions`), `app/sweep` 360 / 390 / 768, `app/typo`, `app/print`, `app/states` (83, 65, 101, 104-107), the
-  goldens, `e2e` F8, F12, F19.
+- Name: the CI fix pass (the four failures in Status, plus `reviews/CI.md` nits N1-N4 and step S8 of
+  `plan-ci.md`), then the fold, then batch TD, N, P, 10 (see Status "Next step").
+- Verification: CI of the fix tip: every `browser (n)` green, each `app/states` row under 600 s, the longest job
+  under 20 min, pass lines 25, 24, 24, 24 of 97 (the split already holds: jobs ended in 10-11 min on
+  `22d9a00b`), `e2e` green.
+- CI of `22d9a00b` already proved the rest of the 9b remediation: `check` coverage, `app/sweep` 360/390/768,
+  `app/typo`, `app/print` passed in shards 1 and 4; the failures are the four in Status.
 - Facts for the dispatches: the local gates are the affected vitest files, both lints after the last edit, the golden
   re-seed when goldens move (each shard with the Bash timeout 600000), `npm run check:built`, the detector, and
   `rtk npm run check:fast` last; browser suites and sweeps run on CI. On this host `VITEST_MAX_WORKERS=2` bounds
