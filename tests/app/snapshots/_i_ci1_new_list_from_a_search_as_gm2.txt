@@ -83,7 +83,13 @@ RootWebArea "Premium Bedroll - Daggerheart Loot Generator" [url=/i/en/ci1?as=gm2
     StaticText "Core · Items · roll 1 "
     link "show in the table" [url=/en/tables/core_item/ci1]
     StaticText "During downtime, you automatically clear a Stress."
-    button "Add to list" [expanded=false]
+    button "Add to list" [expanded=true]
+    StaticText "LISTS"
+    searchbox "Find a list" [value=Шкатулка]
+    StaticText "Nothing found"
+    textbox "New list" [value=Шкатулка focused=true multiline=false readonly=false required=false]
+    button "Create"
+    button "Cancel"
     button "Share"
     button "Print" [description=Lay these out for printing: nine to an A4 sheet]
     button "More" [expanded=false haspopup=menu]
@@ -97,10 +103,14 @@ RootWebArea "Premium Bedroll - Daggerheart Loot Generator" [url=/i/en/ci1?as=gm2
 ## en :: controls
 Account: gm2@example.test
 Add to list
+Cancel
+Create
 EN
+Find a list
 Install as an app
 LootDaggerheart
 More
+New list
 Print
 Privacy
 RU

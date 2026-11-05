@@ -139,12 +139,11 @@ const NAME = {
     note: 'Заметка',
     removeItem: 'Убрать из списка',
     undo: 'Вернуть',
-    noteClear: 'Очистить заметку',
-    rollBy: 'Бросок по списку',
+    noteClear: 'Очистить',
+    rollBy: 'Бросить по списку',
     moneyCoin: 'Монетами',
     rename: 'Название списка',
     position: 'Позиция в списке',
-    whatIsThis: 'Справка',
     printHint: 'Собрать карточки для печати: девять на лист A4',
     printLink: 'Ссылка на набор',
     prices: 'Цены',
@@ -179,14 +178,13 @@ const NAME = {
     note: 'Note',
     removeItem: 'Remove from the list',
     undo: 'Undo',
-    noteClear: 'Clear the note',
+    noteClear: 'Clear',
     /* A plain apostrophe, the way the live app prints it (dict.ts's ASCII
        string, straightened) - not a curly one. */
     rollBy: 'Roll on this list',
     moneyCoin: 'In coins',
     rename: 'List name',
     position: 'Position in the list',
-    whatIsThis: 'Help',
     printHint: 'Lay these out for printing: nine to an A4 sheet',
     printLink: 'Link to this set',
     prices: 'Prices',
@@ -200,6 +198,11 @@ const NAME = {
 };
 
 const LANGS = ['ru', 'en'];
+
+/** The first row's «Ещё» on the list page from 761 px. */
+const FIRST_ROW_MORE = '.lrow-acts .morewrap > [aria-haspopup="menu"]';
+/** The row «Ещё» of the list page's entry `name`, from 761 px. */
+const ROW_MORE = (name) => '.lrow-acts .morewrap > [aria-label="Ещё: ' + name + '"]';
 
 /** The fake seed's `gm1` list «Лавка кузнеца», `uuid(101)`, with both share links. */
 const SHOP = '#/lists/00000000-0000-4000-8000-000000000101';
@@ -343,6 +346,13 @@ async function twoRequests(d) {
     { item: 'cc1', qty: 9 },
     { item: 'q1', qty: 1 }
   ]);
+}
+
+/** Opens the requests panel by its head button: it folds on each page visit
+ *  (docs/specs/FEATURES.md, "Lists"). */
+async function openRequests(d) {
+  for (let i = 0; i < 40 && !(await d.count('.reqhead button')); i++) await d.settle();
+  if (await d.count('.reqhead button[aria-expanded="false"]')) await d.click('Открыть');
 }
 
 /** Two purchase requests that arrive while the index is open, read there as heads, then
@@ -613,6 +623,10 @@ const STATES = [
       await onAccount(d, EIGHT_SPECS, false);
       await d.click('В список');
       await d.type('Найти список', 'порту');
+    },
+    again: async (d) => {
+      await d.click('Add to list');
+      await d.type('Find a list', 'порту');
     }
   },
   {
@@ -622,6 +636,10 @@ const STATES = [
     enter: async (d) => {
       await d.click('В список');
       await d.click('Новый список');
+    },
+    again: async (d) => {
+      await d.click('Add to list');
+      await d.click('New list');
     }
   },
   {
@@ -633,6 +651,10 @@ const STATES = [
       await d.settled();
       await d.click('В список');
       await d.click('Новый список');
+    },
+    again: async (d) => {
+      await d.click('Add to list');
+      await d.click('New list');
     }
   },
   {
@@ -667,6 +689,11 @@ const STATES = [
       await d.click('В список');
       await d.type('Найти список', 'Шкатулка');
       await d.click('Новый список');
+    },
+    again: async (d) => {
+      await d.click('Add to list');
+      await d.type('Find a list', 'Шкатулка');
+      await d.click('New list');
     }
   },
 
@@ -1039,7 +1066,8 @@ const STATES = [
       await onAccount(d, TWO_SPECS, false);
       await d.click('Кольцо Тишины');
       await d.click('В список');
-    }
+    },
+    again: (d) => d.click('Add to list')
   },
   {
     id: '#/tables ~ a row opened, new list',
@@ -1053,6 +1081,10 @@ const STATES = [
       await d.click('Самоцвет Чутья');
       await d.click('В список');
       await d.click('Новый список');
+    },
+    again: async (d) => {
+      await d.click('Add to list');
+      await d.click('New list');
     }
   },
   {
@@ -1100,7 +1132,8 @@ const STATES = [
       await d.tick(ROW1_CI1);
       await d.tick(ROW2_CI2);
       await d.click('В список');
-    }
+    },
+    again: (d) => d.click('Add to list')
   },
   {
     id: '#/tables ~ selection copied',
@@ -1780,7 +1813,16 @@ const STATES = [
     id: GM2_LIST + ' as gm2',
     route: GM2_LIST,
     as: 'gm2',
-    why: "gm2's list: «2 позиции», the panel «Новое в списке (2)» with gm1's two notices, each «новое»: «Автор изменил «Топор Тлеющих Углей».» with «Открыть», and the 120-code-point deleted name wrapped, each with «Скрыть», then «Скрыть изменения»; the Scepter, then a link to gm1's axe tagged «Мастерская Ольхи (HB)», drawn as any row; no «Свой предмет» among the actions, the row «Добавить свой предмет» after the entries"
+    why: "gm2's list: «2 позиции», the panel «Новое в списке (2)» folded to its head with «Открыть»; the Scepter, then a link to gm1's axe tagged «Мастерская Ольхи (HB)», drawn as any row; no «Свой предмет» among the actions, the row «Добавить свой предмет» after the entries"
+  },
+  {
+    id: GM2_LIST + ' ~ notices open as gm2',
+    route: GM2_LIST,
+    as: 'gm2',
+    why: "the panel opened: gm1's two notices, each «новое»: «Автор изменил «Топор Тлеющих Углей».» with «Открыть», and the 120-code-point deleted name wrapped, each with «Скрыть», then «Скрыть изменения»; «Свернуть» on the head",
+    enter: async (d) => {
+      await openRequests(d);
+    }
   },
   {
     id: GM2_LIST + ' ~ unknown records as gm2',
@@ -1795,6 +1837,7 @@ const STATES = [
     as: 'gm2',
     why: "the first notice's «Скрыть» pressed: the panel «Новое в списке (1)» with the 120-code-point deleted name and its own «Скрыть» only, no «Скрыть изменения»",
     enter: async (d) => {
+      await openRequests(d);
       await d.click('Скрыть изменение «Топор Тлеющих Углей»');
       for (let i = 0; i < 40 && (await d.text()).includes('Скрыть изменения'); i++)
         await d.settle();
@@ -1918,9 +1961,23 @@ const STATES = [
     id: SHOP + ' ~ requests as gm1',
     route: SHOP,
     as: 'gm1',
-    why: "the requests panel after the action row, before the money row: «Новое в списке (2)», the GM link's request first (cc1 «×9 из 5» in the danger color, 180 зол.; q1 «×1 из 1», «-»; «Итого: 180 зол. (без цены: 1)»), then the players' (ci1 «×1 из 2» 150 зол., cc1 «×3 из 5» 60 зол., «Итого: 210 зол.»), «Принять» and «Отклонить» under each; «только что» and, once the visible page has read them, «истечёт через 60 минут»; the toast «Новых запросов по списку «Лавка кузнеца»: 2» with «Показать»",
+    why: 'the requests panel folded at the top of the rows column: «Новое в списке (2)» and «Открыть»; the toast «Новых запросов по списку «Лавка кузнеца»: 2» with «Показать»',
     enter: async (d) => {
       await twoRequests(d);
+      for (let i = 0; i < 40 && !(await d.text()).includes('Новое в списке (2)'); i++)
+        await d.settle();
+    },
+    /* a 7000ms toast; arrived at afresh per language - see this file's header */
+    timed: true
+  },
+  {
+    id: SHOP + ' ~ requests open as gm1',
+    route: SHOP,
+    as: 'gm1',
+    why: "the requests panel opened: the GM link's request first, its columns «Было», «Возьмут», «Станет», «Цена» (cc1 5, 5, 0, 180 зол. with «Просили 9, в списке 5: возьмут 5» in the danger color; q1 1, 1, 0, «без цены»; «Итого: 180 зол. · 1 позиция без цены»), then the players' (ci1 2, 1, 1, 150 зол.; cc1 5, 3, 2, 60 зол.; «Итого: 210 зол.»), «Принять» and «Отклонить» under each; «Свернуть» on the head",
+    enter: async (d) => {
+      await twoRequests(d);
+      await openRequests(d);
       /* A drawn request is read at once in a visible tab; wait for that read. */
       for (let i = 0; i < 40 && !(await d.text()).includes('истечёт через'); i++)
         await d.settle();
@@ -1986,6 +2043,7 @@ const STATES = [
       await manyRequests(d);
       for (let i = 0; i < 40 && !(await d.text()).includes('Новое в списке (4)'); i++)
         await d.settle();
+      await openRequests(d);
     },
     /* a 7000ms toast; arrived at afresh per language - see this file's header */
     timed: true
@@ -1999,6 +2057,7 @@ const STATES = [
       await twoRequests(d);
       for (let i = 0; i < 40 && !(await d.text()).includes('Новое в списке (2)'); i++)
         await d.settle();
+      await openRequests(d);
       await d.click('Принять');
       for (let i = 0; i < 40 && !(await d.count('.shortmsg')); i++) await d.settle();
     },
@@ -2014,6 +2073,7 @@ const STATES = [
       await twoRequests(d);
       for (let i = 0; i < 40 && !(await d.text()).includes('Новое в списке (2)'); i++)
         await d.settle();
+      await openRequests(d);
       await d.click('Отклонить');
       for (let i = 0; i < 40 && !(await d.text()).includes('Решённые в этот раз (1)'); i++)
         await d.settle();
@@ -2038,6 +2098,7 @@ const STATES = [
     why: 'an edit with no network: «Не сохранено» in the danger color and «Повторить» in the sub, the edit kept on screen, «Поделиться» folded',
     enter: async (d) => {
       await d.fake('setOffline', true);
+      await d.click('Изменить');
       await d.type('Например: лавка закрыта до утра', 'Открыта с рассвета до полуночи.');
       /* The buffer is sent 2 s after the edit, and fails. */
       await d.writesSettled();
@@ -2049,7 +2110,8 @@ const STATES = [
     as: 'gm1',
     why: 'the eye of «Брошюра по Истории Искусства» pressed: the crossed eye in the pressed look, the row dashed on the recessed ground with its art at 45%, no text on the row, and «10 позиций из 100 · только для мастера: 1 · Сохранено»',
     enter: async (d) => {
-      await d.click('Только для мастера: Брошюра по Истории Искусства');
+      await d.openMore(ROW_MORE('Брошюра по Истории Искусства'));
+      await d.click('Скрыть от игроков');
       await d.writesSettled();
     }
   },
@@ -2059,7 +2121,8 @@ const STATES = [
     as: 'gm1',
     why: 'one GM-only row and one shown row ticked: «Скрыть от игроков (2)» before «Удалить (2)» in the bar',
     enter: async (d) => {
-      await d.click('Только для мастера: Брошюра по Истории Искусства');
+      await d.openMore(ROW_MORE('Брошюра по Истории Искусства'));
+      await d.click('Скрыть от игроков');
       await d.writesSettled();
       await d.tick('Брошюра по Истории Искусства');
       await d.tick('Первоклассный Спальный Мешок');
@@ -2071,7 +2134,8 @@ const STATES = [
     as: 'gm1',
     why: '«Скрыть от игроков (2)» pressed: both ticked rows dashed, the ticks kept, «Показать игрокам (2)», «только для мастера: 2» in the sub, and the toast «Скрыто от игроков: 1» with «Вернуть»',
     enter: async (d) => {
-      await d.click('Только для мастера: Брошюра по Истории Искусства');
+      await d.openMore(ROW_MORE('Брошюра по Истории Искусства'));
+      await d.click('Скрыть от игроков');
       await d.writesSettled();
       await d.tick('Брошюра по Истории Искусства');
       await d.tick('Первоклассный Спальный Мешок');
@@ -2102,7 +2166,7 @@ const STATES = [
     id: LIST_A + ' as gm4',
     route: '#/lists',
     as: 'gm4',
-    why: 'the account list page from 761 px: the title input, «7 позиций из 100» with the save status, «Поделиться», «Печать» and «Ещё», no money picker, folded note and roll panel, «Выбрать» on its own row, seven rows with no tick and their GM-only eyes, and «Добавить свой предмет» after them',
+    why: 'the account list page from 761 px: the side column first (the title input, «7 позиций из 100» with the save status, «Поделиться», «Печать», «Бросить по списку» and «Ещё», no price switch, «Заметки»), then «Выбрать» on its own row, seven rows with no tick, each with «Заметка» and «Ещё: <name>», and «Добавить свой предмет» after them',
     enter: async (d) => {
       await onAccount(d, SEVEN_SPECS);
     }
@@ -2111,36 +2175,16 @@ const STATES = [
     id: LIST_A + ' ~ noted as gm4',
     route: '#/lists',
     as: 'gm4',
-    why: 'the money picker, the list note open with two texts, row 2 priced and noted, its note box open, has-note',
+    why: 'the price switch «Цены:» with «Как в книге» pressed and «Например: 7 мешков 5 горстей», the list notes read-only with «Изменить», row 2 priced and noted: both notes read-only in its row, «Заметка, заполнена», has-note',
     enter: async (d) => {
       await onAccount(d, NOTED_SPECS);
-    }
-  },
-  {
-    id: LIST_A + ' ~ money help as gm4',
-    route: '#/lists',
-    as: 'gm4',
-    why: 'the help box under the chips, "?" pressed',
-    enter: async (d) => {
-      await onAccount(d, NOTED_SPECS);
-      await d.click(NAME.ru.whatIsThis);
-    }
-  },
-  {
-    id: LIST_A + ' ~ price help as gm4',
-    route: '#/lists',
-    as: 'gm4',
-    why: "the priced row's «Цена» «?» pressed: the conversion in book units on a line under the row's fields",
-    enter: async (d) => {
-      await onAccount(d, NOTED_SPECS);
-      await d.click('Подсказка: Цена');
     }
   },
   {
     id: LIST_A + ' ~ roll panel as gm4',
     route: '#/lists',
     as: 'gm4',
-    why: 'the panel open: empty numbox, "Бросить 1-7", the hint',
+    why: '«Бросить по списку» pressed: the panel «Бросок по списку» at the top of the rows column, the empty numbox, "Бросить 1-7", the hint',
     enter: async (d) => {
       await onAccount(d, SEVEN_SPECS);
       await d.click(NAME.ru.rollBy);
@@ -2150,7 +2194,7 @@ const STATES = [
     id: LIST_A + ' ~ rolled as gm4',
     route: '#/lists',
     as: 'gm4',
-    why: 'result 2: the compact card badged 2, both hitnotes, "Сбросить"',
+    why: 'result 2: the face of entry 2 with its row of actions, «2 шт. · по 7 мешков 5 горстей», both notes (the GM note in its dashed box), «Показать в списке», "Сбросить"',
     enter: async (d) => {
       await onAccount(d, NOTED_SPECS);
       await d.click(NAME.ru.rollBy);
@@ -2177,17 +2221,8 @@ const STATES = [
     why: "the list's players' note with «Просмотр» pressed: the pane draws the italics and the list in place of the box; the format buttons disabled",
     enter: async (d) => {
       await onAccount(d, FORMATTED_SPECS);
+      await d.click('Изменить');
       await d.click('Просмотр');
-    }
-  },
-  {
-    id: LIST_A + ' ~ note help as gm4',
-    route: '#/lists',
-    as: 'gm4',
-    why: "the list's players' note with its «?» pressed: the three lines of the formatting hint under the label row",
-    enter: async (d) => {
-      await onAccount(d, NOTED_SPECS);
-      await d.click('Подсказка: Для игроков');
     }
   },
   {
@@ -2197,6 +2232,7 @@ const STATES = [
     why: 'six rows, the undo toast',
     enter: async (d) => {
       await onAccount(d, SEVEN_SPECS);
+      await d.openMore('.lrow-acts .morewrap > [aria-haspopup="menu"]');
       await d.click(NAME.ru.removeItem);
     },
     /* a 7000ms toast; arrived at afresh per language - this file's header */
@@ -2206,10 +2242,72 @@ const STATES = [
     id: LIST_A + ' ~ note opened as gm4',
     route: '#/lists',
     as: 'gm4',
-    why: "row 1's empty note box open, focus in the first textarea",
+    why: "row 1's empty note area open: the switch with «Для игроков» pressed, «Видна по ссылке для игроков», the field with the focus, «Готово» and «Очистить»",
     enter: async (d) => {
       await onAccount(d, SEVEN_SPECS);
       await d.click(NAME.ru.note);
+    }
+  },
+  {
+    id: LIST_A + ' ~ note open as gm4',
+    route: '#/lists',
+    as: 'gm4',
+    why: "row 2's note area open on the players' note: both options marked filled, «Светится в темноте» in the field, the caption, «Готово» and «Очистить»",
+    enter: async (d) => {
+      await onAccount(d, NOTED_SPECS);
+      await d.click('Заметка, заполнена');
+    }
+  },
+  {
+    id: LIST_A + ' ~ note open, gm as gm4',
+    route: '#/lists',
+    as: 'gm4',
+    why: "row 2's note area switched to «Только для мастера»: «Проклят» in the dashed field, «Игроки не видят»",
+    enter: async (d) => {
+      await onAccount(d, NOTED_SPECS);
+      await d.click('Заметка, заполнена');
+      await d.click('Только для мастера, заполнена');
+    }
+  },
+  {
+    id: LIST_A + ' ~ list notes open as gm4',
+    route: '#/lists',
+    as: 'gm4',
+    why: "the side column's «Изменить» pressed: the list notes' area on the players' note «Лавка закрыта до утра», the GM option unmarked",
+    enter: async (d) => {
+      await onAccount(d, NOTED_SPECS);
+      await d.click('Изменить');
+    }
+  },
+  {
+    id: LIST_A + ' ~ row menu as gm4',
+    route: '#/lists',
+    as: 'gm4',
+    why: "row 1's «Ещё» from 761 px: «Скрыть от игроков», «Открыть карточку», a separator, «Убрать из списка»",
+    enter: async (d) => {
+      await onAccount(d, SEVEN_SPECS);
+      await d.openMore(FIRST_ROW_MORE);
+    },
+    again: reopen(FIRST_ROW_MORE)
+  },
+  {
+    id: LIST_A + ' ~ prices in coins as gm4',
+    route: '#/lists',
+    as: 'gm4',
+    why: "«Монетами» pressed with its check: «Например: 750 зол.», the bar's and the roll's prices in coins",
+    enter: async (d) => {
+      await onAccount(d, NOTED_SPECS);
+      await d.click(NAME.ru.moneyCoin);
+    }
+  },
+  {
+    id: LIST_A + ' ~ mid band as gm4',
+    route: '#/lists',
+    as: 'gm4',
+    width: 768,
+    why: 'from 761 to 999 px: the side content above the rows in one column, and each row with its quantity, price, «Заметка» and «Ещё» on a line under its text',
+    enter: async (d) => {
+      await onAccount(d, NOTED_SPECS);
     }
   },
   {
@@ -2313,7 +2411,7 @@ const STATES = [
     route: '#/lists',
     as: 'gm4',
     width: 360,
-    why: 'row 2 unfolded: its tags and whole text, the position, the price with its «?», «Заметка», «Ещё: Пронзительная Свирель» and its open note box',
+    why: 'row 2 unfolded: its tags and whole text, the position, the price, «Заметка, заполнена», «Ещё: Пронзительная Свирель» and both notes read-only',
     enter: async (d) => {
       await onAccount(d, NOTED_SPECS);
       await d.unfold(1);
@@ -2324,7 +2422,7 @@ const STATES = [
     route: '#/lists',
     as: 'gm4',
     width: 360,
-    why: 'row 2 noted and GM only: the note mark and the GM mark with their hidden names on its meta line, the dashed row; the list notes open from «Заметки»',
+    why: 'row 2 noted and GM only: the note mark and the GM mark with their hidden names on its meta line, the dashed row; the list notes area open from «Заметки»',
     enter: async (d) => {
       await onAccount(d, NOTED_SPECS);
       await d.unfold(1);
@@ -2377,9 +2475,9 @@ const STATES = [
     why: 'the list «Ещё» from 761 px: «Скопировать текст», «Скачать JSON», «Удалить список»',
     enter: async (d) => {
       await onAccount(d, SEVEN_SPECS);
-      await d.openMore('.card-acts .morewrap > [aria-haspopup="menu"]');
+      await d.openMore('.lacts .morewrap > [aria-haspopup="menu"]');
     },
-    again: reopen('.card-acts .morewrap > [aria-haspopup="menu"]')
+    again: reopen('.lacts .morewrap > [aria-haspopup="menu"]')
   },
   {
     id: LIST_A + ' ~ many as gm4',
@@ -3877,7 +3975,8 @@ const STATES = [
     enter: async (d) => {
       await d.tick('Топор Тлеющих Углей');
       await d.click('В список');
-    }
+    },
+    again: (d) => d.click('Add to list')
   },
   {
     id: '#/homebrew/' + HB_AXE + ' ~ add to list as gm1',
@@ -3886,7 +3985,8 @@ const STATES = [
     why: "the preview card's «В список» pressed: its menu open on gm1's lists, the form unchanged",
     enter: async (d) => {
       await d.click('В список');
-    }
+    },
+    again: (d) => d.click('Add to list')
   },
   {
     id: '#/homebrew/' + HB_AXE + ' ~ second set as gm1',
@@ -4292,8 +4392,8 @@ const STATES = [
       await d.click('Добавить свой предмет');
       await d.type('Название', 'Фляга контрабандиста');
       await d.type('Описание', '**Двойное дно:** во второй половине *можно* спрятать письмо.');
-      /* The six note boxes above the panel (the list's pair, rows 2 and 5) each draw a «Просмотр» first. */
-      await d.press('Просмотр', 6);
+      /* The note areas are closed, so the quick item's «Просмотр» is the page's only one. */
+      await d.press('Просмотр');
     }
   },
   {

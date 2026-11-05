@@ -147,10 +147,10 @@
     border: 1px solid var(--line2);
     border-radius: var(--r-sm);
     overflow: hidden;
-    /* A lone stepper fills its settings column up to 240 px (282 px on the roll pane and
-       wider in the phone panel, measured 2026-11-04). The alt roll's pair opts out in
-       `AltPanel`. */
-    max-width: 240px;
+    /* A lone stepper fills its column up to 480 px (DESIGN.md "Components", "The Stepper
+       Rule"); a box in a row with its button keeps its content width, and the alt roll's
+       pair opts out in `AltPanel`. */
+    max-width: 480px;
   }
 
   /* The type selector is load-bearing: the field is a text input, and a generic

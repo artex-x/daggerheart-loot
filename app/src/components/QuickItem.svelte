@@ -172,11 +172,6 @@
       optional={t.hbOptional}
       error={descProblem && problemText(descProblem, t)}
       errorId="qi-desc-err"
-      help={{
-        id: 'qi-desc-help',
-        text: t.mdHelp.replace('%n', String(DESC_MAX)),
-        lang: app.lang
-      }}
     >
       <MarkupField
         id="qi-desc"

@@ -21,34 +21,64 @@ const B = `
 const FALLBACK = `@media (min-width:1000px){.row-main:not(.full) .rt>span:not(.rh):not(.rstats){-webkit-line-clamp:3!important;line-clamp:3!important}}`;
 
 /* [state id, file stem, sizes, langs, shoot] */
-const W4 = [[1180, 720], [1440, 900], [1920, 1080], [2560, 1440]];
+const W4 = [
+  [1180, 720],
+  [1440, 900],
+  [1920, 1080],
+  [2560, 1440]
+];
 const SHOTS = [
   ['#/search ~ searched', 'search', W4, ['ru', 'en'], true],
   ['#/tables/eq_weapon', 'eq-weapon', W4, ['ru', 'en'], true],
   ['#/tables/voa', 'voa', W4, ['ru', 'en'], false],
   ['#/tables/wondrous', 'wondrous', W4, ['ru', 'en'], false],
   ['#/tables/hnf_consumable', 'hnf-consumable', W4, ['ru', 'en'], false],
-  ['#/search ~ capped', 'capped', [[1180, 720], [1440, 900], [1920, 1080]], ['ru', 'en'], false],
-  ['#/s/player-token-1', 'shared', [[1180, 720], [1920, 1080]], ['ru', 'en'], true],
+  [
+    '#/search ~ capped',
+    'capped',
+    [
+      [1180, 720],
+      [1440, 900],
+      [1920, 1080]
+    ],
+    ['ru', 'en'],
+    false
+  ],
+  [
+    '#/s/player-token-1',
+    'shared',
+    [
+      [1180, 720],
+      [1920, 1080]
+    ],
+    ['ru', 'en'],
+    true
+  ],
   ['#/tables/eq_weapon ~ two filters', 'eq-weapon-filters', [[1180, 720]], ['ru', 'en'], true]
 ];
 
 async function measure(page) {
   return page.evaluate(async () => {
     await document.fonts.ready;
-    for (let i = 0; i < 60 && document.querySelector('[data-drawing]'); i++) await new Promise((r) => setTimeout(r, 100));
+    for (let i = 0; i < 60 && document.querySelector('[data-drawing]'); i++)
+      await new Promise((r) => setTimeout(r, 100));
     scrollTo(0, 0);
     await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-    const prim = [...document.querySelectorAll('[data-primary]')].find((e) => e.getBoundingClientRect().height > 0);
+    const prim = [...document.querySelectorAll('[data-primary]')].find(
+      (e) => e.getBoundingClientRect().height > 0
+    );
     const rows = [...document.querySelectorAll('.rows > .row')];
-    const first = rows.find((r) => r.querySelector('.row-main .rt > span:not(.rh):not(.rstats)'));
+    const first = rows.find((r) =>
+      r.querySelector('.row-main .rt > span:not(.rh):not(.rstats)')
+    );
     let avg = 6.5;
     if (first) {
       const probe = document.createElement('span');
       const sample = first.querySelector('.row-main .rt > span:not(.rh):not(.rstats)');
       const cs = getComputedStyle(sample);
       probe.style.cssText = `position:absolute;visibility:hidden;white-space:nowrap;font:${cs.font}`;
-      probe.textContent = 'Небольшой кошель с серебряными монетами и мелкими вещами внутри '.repeat(4);
+      probe.textContent =
+        'Небольшой кошель с серебряными монетами и мелкими вещами внутри '.repeat(4);
       document.body.append(probe);
       avg = probe.getBoundingClientRect().width / probe.textContent.length;
       probe.remove();
@@ -72,7 +102,8 @@ async function measure(page) {
           if (!n.textContent.trim()) continue;
           const rg = document.createRange();
           rg.selectNodeContents(n);
-          for (const q of rg.getClientRects()) if (q.width > 0 && q.right > right && q.top < rr.bottom) right = q.right;
+          for (const q of rg.getClientRects())
+            if (q.width > 0 && q.right > right && q.top < rr.bottom) right = q.right;
         }
         if (right) empty.push((rr.right - 1 - right) / rr.width);
         widths.push(rr.width);
@@ -87,7 +118,8 @@ async function measure(page) {
         if (Math.abs(lines - Math.round(lines)) > 0.05) partial++;
       }
       if (d.scrollWidth > d.clientWidth + 1) hOver++;
-      if (/anywhere|break-word/.test(cs.overflowWrap) || cs.wordBreak === 'break-all') wrapBreak++;
+      if (/anywhere|break-word/.test(cs.overflowWrap) || cs.wordBreak === 'break-all')
+        wrapBreak++;
       maxCpl = Math.max(maxCpl, d.clientWidth / avg);
     }
     empty.sort((a, b) => a - b);
@@ -128,7 +160,13 @@ async function measure(page) {
       for (const lang of langs) {
         const { ctx, page, d } = await fresh({ width, height, storage: state.storage });
         try {
-          await d.open(state.route, { as: state.as, items: state.items, sections: state.sections, sources: state.sources, hold: state.hold });
+          await d.open(state.route, {
+            as: state.as,
+            items: state.items,
+            sections: state.sections,
+            sources: state.sources,
+            hold: state.hold
+          });
           if (state.enter) await state.enter(d);
           await d.settled(state.id);
           if (lang === 'en') await d.click('EN');
@@ -146,9 +184,29 @@ async function measure(page) {
           const rec = { state: id, width, height, lang, file, today, noCap, proposed };
           all.push(rec);
           console.log(
-            [id, width, lang, 'today', today.clamped + '/' + today.withDesc, today.clampShare + '%',
-              'noCap', noCap.clamped + '/' + noCap.withDesc, noCap.clampShare + '%', 'proposed', proposed.clampShare + '%', 'empty', proposed.emptyMedianPct + '%', 'cpl', proposed.maxCharsPerLine,
-              'partial', proposed.partialLines, 'hover', proposed.hOverflow, 'wb', proposed.wordBreakRules].join(' ')
+            [
+              id,
+              width,
+              lang,
+              'today',
+              today.clamped + '/' + today.withDesc,
+              today.clampShare + '%',
+              'noCap',
+              noCap.clamped + '/' + noCap.withDesc,
+              noCap.clampShare + '%',
+              'proposed',
+              proposed.clampShare + '%',
+              'empty',
+              proposed.emptyMedianPct + '%',
+              'cpl',
+              proposed.maxCharsPerLine,
+              'partial',
+              proposed.partialLines,
+              'hover',
+              proposed.hOverflow,
+              'wb',
+              proposed.wordBreakRules
+            ].join(' ')
           );
         } catch (e) {
           console.log('ERR', id, width, lang, String(e).slice(0, 200));
@@ -158,7 +216,10 @@ async function measure(page) {
       }
     }
   }
-  fs.writeFileSync(OUT + (only ? `measure-${only}.json` : 'measure-rowtext.json'), JSON.stringify(all, null, 1) + '\n');
+  fs.writeFileSync(
+    OUT + (only ? `measure-${only}.json` : 'measure-rowtext.json'),
+    JSON.stringify(all, null, 1) + '\n'
+  );
   await closeBrowser();
   process.exit(0);
 })();

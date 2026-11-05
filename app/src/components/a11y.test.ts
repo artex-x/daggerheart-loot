@@ -288,11 +288,9 @@ const STATES: {
         }),
         'gm4'
       ),
-    /* `press` grips buttons; the roll panel folds open on its `<summary>`,
-       which jsdom does not expose as role "button" the way a browser does, so it
-       is clicked by its text. */
     enter: async () => {
-      await userEvent.click(await screen.findByText('Бросок по списку'));
+      await screen.findByRole('textbox', { name: 'Название списка' });
+      await press('Бросить по списку');
     }
   },
   {

@@ -21,6 +21,14 @@ describe('the button form', () => {
     btn.click();
     expect(onclick).toHaveBeenCalledOnce();
   });
+
+  it('draws the check on a pressed gold chip and none on an off one', async () => {
+    const { container } = render(Chip, { label: 'Обычная', on: true, onclick: vi.fn() });
+    render(Chip, { label: 'Редкая', on: false, onclick: vi.fn() });
+    expect(screen.getByRole('button', { name: 'Обычная' }).querySelector('svg')).not.toBeNull();
+    expect(screen.getByRole('button', { name: 'Редкая' }).querySelector('svg')).toBeNull();
+    await expectNoA11yViolations(container);
+  });
 });
 
 describe('the link form', () => {
@@ -29,6 +37,7 @@ describe('the link form', () => {
     const link = screen.getByRole('link', { name: 'Core' });
     expect(link).toHaveAttribute('href', '#/tables/core_item');
     expect(link).toHaveAttribute('aria-current', 'page');
+    expect(link.querySelector('svg')).toBeNull();
   });
 
   it('carries no aria-current when it is not the one chosen', () => {

@@ -348,6 +348,10 @@
       and EN), one rule with classes (for example caption/lead, help, note, description), the DESIGN.md text
       replacing the scattered 70ch/78ch/110ch/120ch sentences, and its placement (the merged batch TD, which
       already holds item 14, is the default home).
+    - ANSWERS on item 15 (owner, chat, 2026-11-05, interactive, `plan-text.md`, `mocks/text/`): The Measure Rule
+      (`--measure-line` 120ch for leads and one-line text, `--measure-text` 70ch for passages; rows have no cap)
+      extends the merged batch TD (MT-1 to MT-7 become TD acceptance lines, TD about 168-230 min); a help panel
+      hugs its text (70ch box, MR-4 default accepted; the fallback is the line class inside the hugging box).
     - Owner's lean (chat, 2026-11-04): option 2, consistency first.
     - Refinement (chat, 2026-11-04): "even not to hide homebrew but upgrade lines and sets, make them visible only
       on the item page": the homebrew tag stays as today; the upgrade and relation lines and the set draw only on

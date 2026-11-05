@@ -110,23 +110,25 @@ const PAGES = [
   /* Both notes inside the rows of a shared page, and the price «?»'s conversion line
      open (FEATURES.md, "Lists"). */
   ['#/s/gm-token-1', 'общий список: заметки в строках'],
-  /* gm1's shop is in coin mode, which has no conversion line: switch it to bag mode first. */
+  /* The list notes' area and a row's note area open, in bag mode (FEATURES.md, "Lists"). */
   [
     '#/lists/00000000-0000-4000-8000-000000000101',
-    'цена: подсказка открыта',
+    'список: заметки открыты',
     'gm1',
     async (d) => {
-      /* Up to 760 px the price mode is in the head's «Ещё», and a row's «?» is in its
-         unfolded part (FEATURES.md, "Lists"). */
+      /* Up to 760 px the price mode is in the head's «Ещё», the list notes open from the
+         meta line, and a row's «Заметка» is in its unfolded part. */
       const compact = await d.count('button.cbody');
       if (compact) {
         await d.openMore('.lhead-acts .morewrap > [aria-haspopup="menu"]');
         await either(d, 'click', 'Цены: как в книге', 'Prices: as in the book');
-        for (let i = 0; i < compact; i++) await d.unfold(i);
+        await either(d, 'click', 'Заметки', 'Notes');
+        await d.unfold(0);
       } else {
         await either(d, 'click', 'Как в книге', 'As in the book');
+        await either(d, 'click', 'Изменить', 'Edit');
       }
-      await either(d, 'click', 'Подсказка: Цена', 'Help: Price');
+      await either(d, 'click', 'Заметка', 'Note');
     }
   ],
   ['#/i/ci1', 'карточка Кольцо Тишины'],

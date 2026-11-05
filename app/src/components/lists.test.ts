@@ -126,6 +126,14 @@ describe('the row under a full card', () => {
     );
   });
 
+  it('draws a 120-character list name whole in its row, never cut', async () => {
+    const long = 'Длинное имя списка '.repeat(7).slice(0, 119) + 'я';
+    await openCard([listOf(901, long, [])]);
+    await openMenuOn(long);
+    const row = screen.getByRole('button', { name: long });
+    expect(row.querySelector('.ln')?.textContent).toBe(long);
+  });
+
   it('marks a list that holds the record with a check and aria-pressed, never a gold fill', async () => {
     const holding = listOf(811, 'Клад дракона', [{ key: 'w1' }, { key: 'ci1' }], {
       createdAgoMs: 2 * DAY,

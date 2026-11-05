@@ -1,7 +1,7 @@
 /* The account list page at three times the entry limit, in the `timed` project: select-all
  * over 300 rows crossed the 30 s timeout under load (vite.config.mts, `timed`). */
 
-import { cleanup, render, screen, waitFor } from '@testing-library/svelte';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
 import App from '../App.svelte';
@@ -40,9 +40,13 @@ describe('an account list at three times the limit', () => {
     await waitFor(() => {
       expect(sub(container)).toBe('300 позиций из 300 · только для мастера: 290 · Сохранено');
     });
-    /* «Выбрать» by its class: a role query names each of the 300 rows' buttons first. */
+    /* By class and inside the bar: a role query over the page names each of the 300 rows'
+       controls first. */
     await userEvent.click(container.querySelector('button.selmode') as HTMLElement);
-    await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все' }));
-    expect(screen.getByRole('button', { name: 'Скрыть от игроков (300)' })).toBeInTheDocument();
+    const bar = (): HTMLElement => document.querySelector<HTMLElement>('.selbarwrap')!;
+    await userEvent.click(within(bar()).getByRole('checkbox', { name: 'Выбрать все' }));
+    expect(
+      within(bar()).getByRole('button', { name: 'Скрыть от игроков (300)' })
+    ).toBeInTheDocument();
   });
 });

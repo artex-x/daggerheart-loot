@@ -594,6 +594,13 @@
     min-width: 140px;
   }
 
+  /* DESIGN.md "Components", "The Field Measure Rule": the next controls follow the box. */
+  @media (min-width: 761px) {
+    .tools .grow {
+      max-width: 720px;
+    }
+  }
+
   .end {
     display: flex;
     margin-left: auto;

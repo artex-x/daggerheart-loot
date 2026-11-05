@@ -424,7 +424,7 @@
       {#if (pubOpen && shared.note) || (gmOpen && shared.hnote)}
         <div class="notes">
           {#if pubOpen}<HitNote icon="eye" label={t.notePub} text={shared.note} />{/if}
-          {#if gmOpen}<HitNote icon="eyeOff" label={t.noteHid} text={shared.hnote} />{/if}
+          {#if gmOpen}<HitNote icon="eyeOff" label={t.noteHid} text={shared.hnote} gm />{/if}
         </div>
       {/if}
       <Actions style={narrow ? 'margin-bottom:10px' : 'margin-bottom:18px'}>
@@ -516,7 +516,7 @@
             onopen={openRecord}
           />
           <HitNote icon="eye" label={t.notePub} text={m.note} />
-          <HitNote icon="eyeOff" label={t.noteHid} text={m.hnote} />
+          <HitNote icon="eyeOff" label={t.noteHid} text={m.hnote} gm />
           <div class="cacts">
             <Button
               size="sm"
@@ -556,7 +556,7 @@
                    the row they read as the next entry's notes. -->
               <div class="rnotes">
                 <HitNote icon="eye" label={t.notePub} text={m.note} />
-                <HitNote icon="eyeOff" label={t.noteHid} text={m.hnote} />
+                <HitNote icon="eyeOff" label={t.noteHid} text={m.hnote} gm />
               </div>
             {/if}
             {#if app.sel.has(it.id) && (m.qty ?? 0) > 1}

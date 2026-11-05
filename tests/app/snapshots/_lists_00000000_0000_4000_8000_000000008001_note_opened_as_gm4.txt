@@ -1,6 +1,6 @@
 # #/lists/00000000-0000-4000-8000-000000008001 ~ note opened as gm4
 # route: #/lists
-# why: row 1's empty note box open, focus in the first textarea
+# why: row 1's empty note area open: the switch with «Для игроков» pressed, «Видна по ссылке для игроков», the field with the focus, «Готово» and «Очистить»
 # as: gm4
 
 ## ru :: tree
@@ -21,68 +21,52 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
     StaticText "Клад дракона"
     textbox "Название списка" [value=Клад дракона multiline=false readonly=false required=false]
     StaticText "7 позиций из 100 · "
-    ... StaticText x17 of 21 same-shape siblings elided
+    ... StaticText x15 of 19 same-shape siblings elided
     button "Поделиться" [expanded=false]
     button "Печать" [description=Собрать карточки для печати: девять на лист A4]
+    button "Бросить по списку" [expanded=false]
     button "Ещё" [expanded=false haspopup=menu]
+    ... button x6 of 10 same-shape siblings elided
     status ""
-    DisclosureTriangle "ЗАМЕТКИ" [expanded=false]
-    DisclosureTriangle "БРОСОК ПО СПИСКУ" [expanded=false]
     button "Выбрать"
     spinbutton "Позиция в списке" [value=1 valuetext=1 required=false valuemin=1 valuemax=7]
     button "Первоклассный Спальный Мешок ПРЕДМЕТ Во время отдыха вы автомати..." [namelen=86 namehash=8341b15c]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
-    button "Заметка" [description=Заметка]
-    button "Только для мастера: Первоклассный Спальный Мешок" [description=Только для мастера pressed=false]
-    button "Убрать из списка" [description=Убрать из списка]
-    button "Подсказка: Для игроков" [expanded=false]
+    button "Заметка" [expanded=true]
+    button "Ещё: Первоклассный Спальный Мешок" [expanded=false haspopup=menu]
+    button "Для игроков" [pressed=true]
+    button "Только для мастера" [pressed=false]
     toolbar "Оформление: Для игроков" [orientation=horizontal]
       button "Жирный" [keyshortcuts=Control+B Meta+B]
       button "Курсив" [keyshortcuts=Control+I Meta+I]
       button "Список"
       button "Нумерованный список"
       button "Просмотр" [pressed=false]
-    textbox "ДЛЯ ИГРОКОВ" [description=уедет с текстом и ссылкой для игроков focused=true multiline=true readonly=false required=false]
-    button "Подсказка: Только для мастера" [expanded=false]
-    toolbar "Оформление: Только для мастера" [orientation=horizontal]
-      button "Жирный" [keyshortcuts=Control+B Meta+B]
-      button "Курсив" [keyshortcuts=Control+I Meta+I]
-      button "Список"
-      button "Нумерованный список"
-      button "Просмотр" [pressed=false]
-    textbox "ТОЛЬКО ДЛЯ МАСТЕРА" [description=останется у вас multiline=true readonly=false required=false]
+    textbox "Для игроков" [description=Видна по ссылке для игроков focused=true multiline=true readonly=false required=false]
+    ... button x6 of 10 same-shape siblings elided
     spinbutton "Позиция в списке" [value=2 valuetext=2 required=false valuemin=1 valuemax=7]
-    ... button x4 of 8 same-shape siblings elided
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
-    button "Заметка" [description=Заметка]
-    button "Только для мастера: Пронзительная Свирель" [description=Только для мастера pressed=false]
-    button "Убрать из списка" [description=Убрать из списка]
+    ... button x4 of 8 same-shape siblings elided
     spinbutton "Позиция в списке" [value=3 valuetext=3 required=false valuemin=1 valuemax=7]
     ... spinbutton x3 of 7 same-shape siblings elided
     ... spinbutton x3 of 7 same-shape siblings elided
-    ... button x3 of 7 same-shape siblings elided
-    ... button x3 of 7 same-shape siblings elided
-    ... button x3 of 7 same-shape siblings elided
     spinbutton "Позиция в списке" [value=4 valuetext=4 required=false valuemin=1 valuemax=7]
     spinbutton "Позиция в списке" [value=5 valuetext=5 required=false valuemin=1 valuemax=7]
     spinbutton "Позиция в списке" [value=6 valuetext=6 required=false valuemin=1 valuemax=7]
     button "Наручники ПРЕДМЕТ Эта пара наручников с замком поставляется с кл..." [namelen=69 namehash=d4e30426]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
-    button "Заметка" [description=Заметка]
-    button "Только для мастера: Наручники" [description=Только для мастера pressed=false]
-    button "Убрать из списка" [description=Убрать из списка]
+    button "Ещё: Наручники" [expanded=false haspopup=menu]
     spinbutton "Позиция в списке" [value=7 valuetext=7 required=false valuemin=1 valuemax=7]
     button "Мистический Плащ ПРЕДМЕТ Существо с Характеристикой Заклинателя,..." [namelen=145 namehash=55be100f]
     StaticText "КОЛ-ВО"
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     StaticText "ЦЕНА"
     spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
-    button "Заметка" [description=Заметка]
-    button "Только для мастера: Мистический Плащ" [description=Только для мастера pressed=false]
-    button "Убрать из списка" [description=Убрать из списка]
+    button "Заметка" [expanded=false]
+    button "Ещё: Мистический Плащ" [expanded=false haspopup=menu]
     button "Добавить свой предмет" [expanded=false]
     status ""
     status ""
@@ -98,45 +82,44 @@ EN
 RU
 daggerheart.com
 Аккаунт: gm4@example.test
-Бросить 1-7
+Бросить по списку
 Бросок
 Выбрать
+Готово
+Для игроков
 Добавить свой предмет
 Ещё
+Ещё: Заряжающий Колчан
+Ещё: Мистический Плащ
+Ещё: Наручники
+Ещё: Первоклассный Спальный Мешок
+Ещё: Пронзительная Свирель
+Ещё: Разговаривающие Сферы
+Ещё: Факел Алистера
 Жирный
 Заметка
+Заметки
 Заряжающий КолчанПредметКогда вы успешно наносите удар стрелой и... [namelen=141 namehash=b56c369b]
 К содержимому
 Конфиденциальность
 Курсив
 ЛутDaggerheart
 Мистический ПлащПредметСущество с Характеристикой Заклинателя, н... [namelen=143 namehash=7854e7c3]
-На единицу больше
-На единицу меньше
 Название списка
 НаручникиПредметЭта пара наручников с замком поставляется с ключ... [namelen=67 namehash=77df6619]
 Нумерованный список
+Очистить
 Первоклассный Спальный МешокПредметВо время отдыха вы автоматиче... [namelen=84 namehash=f15473c8]
 Печать
 Поделиться
-Подсказка: Для игроков
-Подсказка: Только для мастера
 Позиция в списке
 Поиск
 Пронзительная СвирельПредметЭта свирель ручной работы имеет хара... [namelen=161 namehash=e5bf576d]
 Просмотр
 Разговаривающие СферыПредметЭта пара сфер позволяет существам, к... [namelen=125 namehash=7957c029]
-Результат броска
 Список
 Таблицы
-Только для мастера: Заряжающий Колчан
-Только для мастера: Мистический Плащ
-Только для мастера: Наручники
-Только для мастера: Первоклассный Спальный Мешок
-Только для мастера: Пронзительная Свирель
-Только для мастера: Разговаривающие Сферы
-Только для мастера: Факел Алистера
-Убрать из списка
+Только для мастера
 Условия использования
 Установить как приложение
 Факел АлистераПредметВы можете зажигать этот магический факел по... [namelen=189 namehash=afee43ad]
@@ -160,68 +143,52 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
     StaticText "Клад дракона"
     textbox "List name" [value=Клад дракона multiline=false readonly=false required=false]
     StaticText "7 items of 100 · "
-    ... StaticText x17 of 21 same-shape siblings elided
+    ... StaticText x15 of 19 same-shape siblings elided
     button "Share" [expanded=false]
     button "Print" [description=Lay these out for printing: nine to an A4 sheet]
+    button "Roll on this list" [expanded=false]
     button "More" [expanded=false haspopup=menu]
+    ... button x6 of 10 same-shape siblings elided
     status ""
-    DisclosureTriangle "NOTES" [expanded=false]
-    DisclosureTriangle "ROLL ON THIS LIST" [expanded=false]
     button "Select"
     spinbutton "Position in the list" [value=1 valuetext=1 required=false valuemin=1 valuemax=7]
     button "Premium Bedroll ITEM During downtime, you automatically clear a ..." [namelen=71 namehash=f1054083]
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]
-    button "Note" [description=Note]
-    button "GM only: Premium Bedroll" [description=GM only pressed=false]
-    button "Remove from the list" [description=Remove from the list]
-    button "Help: For players" [expanded=false]
+    button "Note" [expanded=true]
+    button "More: Premium Bedroll" [expanded=false haspopup=menu]
+    button "For players" [pressed=true]
+    button "GM only" [pressed=false]
     toolbar "Formatting: For players" [orientation=horizontal]
       button "Bold" [keyshortcuts=Control+B Meta+B]
       button "Italic" [keyshortcuts=Control+I Meta+I]
       button "Bulleted list"
       button "Numbered list"
       button "Preview" [pressed=false]
-    textbox "FOR PLAYERS" [description=travels with the text and the players' link focused=true multiline=true readonly=false required=false]
-    button "Help: GM only" [expanded=false]
-    toolbar "Formatting: GM only" [orientation=horizontal]
-      button "Bold" [keyshortcuts=Control+B Meta+B]
-      button "Italic" [keyshortcuts=Control+I Meta+I]
-      button "Bulleted list"
-      button "Numbered list"
-      button "Preview" [pressed=false]
-    textbox "GM ONLY" [description=stays with you multiline=true readonly=false required=false]
+    textbox "For players" [description=Shown on the players' link focused=true multiline=true readonly=false required=false]
+    ... button x6 of 10 same-shape siblings elided
     spinbutton "Position in the list" [value=2 valuetext=2 required=false valuemin=1 valuemax=7]
-    ... button x4 of 8 same-shape siblings elided
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]
-    button "Note" [description=Note]
-    button "GM only: Piper Whistle" [description=GM only pressed=false]
-    button "Remove from the list" [description=Remove from the list]
+    ... button x4 of 8 same-shape siblings elided
     spinbutton "Position in the list" [value=3 valuetext=3 required=false valuemin=1 valuemax=7]
     ... spinbutton x3 of 7 same-shape siblings elided
     ... spinbutton x3 of 7 same-shape siblings elided
-    ... button x3 of 7 same-shape siblings elided
-    ... button x3 of 7 same-shape siblings elided
-    ... button x3 of 7 same-shape siblings elided
     spinbutton "Position in the list" [value=4 valuetext=4 required=false valuemin=1 valuemax=7]
     spinbutton "Position in the list" [value=5 valuetext=5 required=false valuemin=1 valuemax=7]
     spinbutton "Position in the list" [value=6 valuetext=6 required=false valuemin=1 valuemax=7]
     button "Manacles ITEM This pair of locking cuffs comes with a key."
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]
-    button "Note" [description=Note]
-    button "GM only: Manacles" [description=GM only pressed=false]
-    button "Remove from the list" [description=Remove from the list]
+    button "More: Manacles" [expanded=false haspopup=menu]
     spinbutton "Position in the list" [value=7 valuetext=7 required=false valuemin=1 valuemax=7]
     button "Arcane Cloak ITEM A creature with a Spellcast trait wearing this..." [namelen=119 namehash=9e18b7d9]
     StaticText "QTY"
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     StaticText "PRICE"
     spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]
-    button "Note" [description=Note]
-    button "GM only: Arcane Cloak" [description=GM only pressed=false]
-    button "Remove from the list" [description=Remove from the list]
+    button "Note" [expanded=false]
+    button "More: Arcane Cloak" [expanded=false haspopup=menu]
     button "Add your own item" [expanded=false]
     status ""
     status ""
@@ -240,26 +207,27 @@ Arcane CloakItemA creature with a Spellcast trait wearing this c... [namelen=117
 Bold
 Bulleted list
 Charging QuiverItemWhen you succeed on an attack with an arrow s... [namelen=145 namehash=07a311bd]
+Clear
+Done
 EN
-GM only: Alistair's Torch
-GM only: Arcane Cloak
-GM only: Charging Quiver
-GM only: Manacles
-GM only: Piper Whistle
-GM only: Premium Bedroll
-GM only: Speaking Orbs
-Help: For players
-Help: GM only
+For players
+GM only
 Install as an app
 Italic
 List name
 LootDaggerheart
 ManaclesItemThis pair of locking cuffs comes with a key.
 More
+More: Alistair's Torch
+More: Arcane Cloak
+More: Charging Quiver
+More: Manacles
+More: Piper Whistle
+More: Premium Bedroll
+More: Speaking Orbs
 Note
+Notes
 Numbered list
-One higher
-One lower
 Piper WhistleItemThis handcrafted whistle has a distinctive soun... [namelen=149 namehash=81a85b00]
 Position in the list
 Premium BedrollItemDuring downtime, you automatically clear a St... [namelen=69 namehash=b98fcd07]
@@ -268,10 +236,8 @@ Price
 Print
 Privacy
 RU
-Remove from the list
 Roll
-Roll 1-7
-Roll result
+Roll on this list
 Search
 Select
 Share

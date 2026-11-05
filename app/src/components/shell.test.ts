@@ -1107,6 +1107,12 @@ describe('the unread requests count in the tab title', () => {
     });
     await expectNoA11yViolations(container);
     router.navigate('#/lists/' + uuid(101));
+    /* The requests panel folds on arrival and reads the requests once it is open
+       (docs/specs/FEATURES.md, "Lists"). */
+    await waitFor(() => {
+      expect(document.title).toBe('(2) Лавка кузнеца - Генератор лута Daggerheart');
+    });
+    await userEvent.click(await screen.findByRole('button', { name: 'Открыть' }));
     await waitFor(() => {
       expect(document.title).toBe('Лавка кузнеца - Генератор лута Daggerheart');
     });

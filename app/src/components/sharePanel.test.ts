@@ -94,6 +94,15 @@ describe('the share panel', () => {
     const gm = await row(ru.shareLinkGm);
     expect(within(gm).getByRole('link', { name: '/s/gm-token-1' })).toBeInTheDocument();
     expect(screen.getByText(ru.shareHint)).toBeInTheDocument();
+    /* Two labeled rows, each with its own delete, and no gold primary in the panel. */
+    expect(players).toHaveTextContent(ru.shareNoGm);
+    expect(gm).toHaveTextContent(ru.shareWithGm);
+    expect(within(gm).getByRole('button', { name: ru.shareDelete })).toBeInTheDocument();
+    const box = players.closest('.panel')!;
+    expect(
+      within(box as HTMLElement).getByRole('heading', { name: ru.share, level: 2 })
+    ).toBeInTheDocument();
+    expect(box.querySelector('.btn.primary')).toBeNull();
     expect(create).not.toHaveBeenCalled();
     await expectNoA11yViolations(container);
     await userEvent.click(button);

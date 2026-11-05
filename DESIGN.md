@@ -371,6 +371,13 @@ without a second face. A value a person types or counts stays monospace: the
 value in a number field, a rung in an upgrade chain, a quantity, a price and
 damage dice. A number a person reads as prose takes neither.
 
+**The Whole Message Rule.** A heading, a control label, an error line, a status line and
+a toast wrap; they are never cut. A name, a description or a list of chosen values may be
+cut to its clamp when one press shows it whole. Exceptions: the list name and the
+editor's record name, one line up to 760px (owner, 2026-10-29). Source:
+https://carbondesignsystem.com/patterns/overflow-content/. `tests/app/typo.js` reads every
+heading, button, label, menu item, alert, status and toast of its pages at 1180px.
+
 **The Local Font Rule.** One self-hosted family, from the build's own origin:
 the woff2 files of `@fontsource-variable/source-sans-3`, imported in `main.ts`
 and preloaded for the Latin and Cyrillic subsets in `app/index.html`. No font
@@ -387,10 +394,11 @@ viewport. The 32px
 subtraction is the gutter, and `viewport-fit=cover` plus `env(safe-area-inset-*)`
 keeps the selection bar clear of a display cutout. The column grows with the
 window from 1213px to 1472px, where it reaches 1440px, and stays 1440px and
-centered above that. A window up to 1212px draws as it did at 1180px, with three
-exceptions: the record page's dossier is at most 980px from a 1013px window, the
-editor's form is at most 720px from about a 1206px window, and the roll pane's lone
-counter is at most 240px at every width (The One Width Rule).
+centered above that. A window up to 1212px draws as it did at 1180px, with two
+exceptions: the record page's dossier is at most 980px from a 1013px window, and the
+editor's form is at most 720px from about a 1206px window (The One Width Rule). On a
+wide window the owner's list page keeps its 330px side column and its rows take the rest
+of the column.
 320px is the narrowest width a page is built for (WCAG 1.4.10 reflow is defined
 at 320); a 280px window scrolls sideways.
 
@@ -416,11 +424,8 @@ full-width element does not invent its own container or its own gutter. From
 1472px the column stays 1440px and centered; a reading surface keeps its measure
 at the column's left edge: the dossier at most 980px (`--dossier-w`), the
 editor's form at most 720px (it bites from about a 1206px window), the account at
-most 1100px and prose at most 78ch. One cap is not a wide-window rule: a lone
-number field is at most 240px at every width (`NumberField`; the roll pane's column
-is 282px, and wider in the phone settings panel). Inside the box the value takes the
-free width between the two buttons, so it sits at the center and «+» at the box's right
-edge. The alt roll's two boxes opt out and fill their blocks.
+most 1100px and prose at most 78ch. A row's text is a clamped snippet, not prose, and
+takes its row's free width (The Row Text Rule).
 
 **The Two Breakpoints Rule.** The system has two, and a third step for the header.
 From 761px the brand, the three jobs, the language switch and the account
@@ -437,7 +442,10 @@ column sits beside the rows; from 761px it draws the wide head (the `h1`, the
 labeled pin, «Об этих данных», the group chips and the tabs) with the filters
 in the bottom sheet; below 761px the picker row, the sheet and «··· Ещё»
 replace them. The list pages fold each row to the compact row up to 760px and draw the
-full row from 761px. The `viewport` port (`app/src/ports/viewport.ts`) is the one place
+full row from 761px; from 1000px the owner's list page draws its 330px side column at the
+right of the rows (the side content sits above them from 761px to 999px), and the rows
+column is a size container: under 760px of it a row's controls take a line under its
+text. A container step is a component rule, not a system breakpoint. The `viewport` port (`app/src/ports/viewport.ts`) is the one place
 that reads the width in code; CSS reads the same two numbers. Every other media
 query in the code belongs to one component and its own measured problem. Do
 not add another system breakpoint. `/account` signed in uses the 1000px step too:
@@ -505,7 +513,9 @@ of the viewport height (256px at 640, 288px at 720); the header counts as a
 control above it. Two named exceptions: `/roll/std` at 360x640 starts at 325px, for
 the rarities on the dice (owner, 2026-10-29), and `/s/<token>` at 360x640 with its search
 row starts at 302px (owner, 2026-11-03, 286px; the built page measured 301px on 2026-11-05,
-and the exception took it while the owner was away). A design aims at 240px and 270px, so a small face or
+and the exception took it while the owner was away), and an account list's page with its
+folded requests strip and its search row at 360x640 starts at 324px (measured 2026-11-05 while
+the owner was away; the owner's figure was 292px). A design aims at 240px and 270px, so a small face or
 line-box difference does not fail the rule. The primary content is the first
 roll result on a roll page, the table on `/tables/*`, the item on `/i/` and
 `/h/`, the first result on `/search`, the first settings panel on `/account`,
@@ -605,15 +615,15 @@ means "a thing". Do not round a card to a pill or square a chip.
 - **Icon and label:** an icon and its label share one center: the control is
   `inline-flex` with `align-items: center`, the icon sits in one square box,
   and one gap separates the two. The icon's center is within 1px of the center
-  of the label's first line box (`tests/app/typo.js` measures the three
-  neutral switches at 360 and 1180).
+  of the label's first line box (`tests/app/typo.js` measures the pressed switches
+  and chips at 360 and 1180).
 
 ### Chips
 
 - **Style:** pill, Vault Wall fill, Seam Lit border, Ash Violet label at 13px
   weight 540.
 - **Chosen:** Seal Gold fill, Ink on Gold label at weight 650, for a choice
-  that narrows the view.
+  that narrows the view, with the `check` icon before the label (The Check Rule).
 - **Pressed default:** a chip that stands for no narrowing («Все») takes the
   neutral pressed state of the segmented control below, not gold (The Seal
   Rule).
@@ -645,7 +655,7 @@ means "a thing". Do not round a card to a pill or square a chip.
 - **Style:** a pill track (Vault Wall, Seam border, 3px padding) holding pill
   buttons at 13px weight 650 with 0.05em tracking.
 - **Chosen:** Seal Gold fill, Ink on Gold label, for a choice that narrows the
-  view.
+  view, with the `check` icon before the label (The Check Rule).
 - **Neutral pressed:** a mode toggle (the language switch, the tables list or
   grid switch, the print color or black-and-white switch) passes `neutral`:
   the pressed button takes the `check` icon before its label, a Vault Wall Lit
@@ -663,8 +673,8 @@ means "a thing". Do not round a card to a pill or square a chip.
 - **Background:** the plate gradient, a Seam border, the Plate shadow.
 - **Padding:** 13px 15px 14px, with 8px between rows of content.
 - **Layout:** `full` stacks the image above the body, or, as a dossier, sets it
-  beside the text (The Dossier Rule); `compact` puts a 132px square image beside it,
-  and `ListPage`'s roll panel keeps it until its batch moves the panel; `face` is a roll
+  beside the text (The Dossier Rule); `compact` puts a 132px square image beside it, and
+  no page draws it since the list page's roll result took `face`; `face` is a roll
   result: the picture 4:3 with a fade, the body drawn over its foot, and the row face,
   96px beside the text, wherever the roll does not sit on one line (The Roll Page
   Rule). Its action row sits under the plate, because a popover cannot leave a
@@ -717,8 +727,9 @@ means "a thing". Do not round a card to a pill or square a chip.
 
 - **Search:** full width, 46px tall, a Vault Ink Deep well, a Seam Lit border,
   9px radius.
-- **Number field:** a 46px row holding a 74px monospace input at 19px weight 650
-  between two 40px steppers.
+- **Number field:** a 46px row holding a monospace input at 19px weight 650
+  between two 40px steppers; a lone field fills its column up to 480px (The Stepper
+  Rule).
 - **Focus:** border to Seal Gold plus a 3px gold glow at 14 per cent. On the
   duality fields the glow takes that die's own color instead.
 
@@ -897,6 +908,38 @@ paths and take each layout's paints from `card-vectors.css`; the editor's
 preview draws the card larger by multiplying its `mm` and `pt` values, never by
 a transform.
 
+### Named Rules
+
+**The Row Text Rule.** A row's text takes the free width of its row: a description is cut
+only when it is longer than its clamp, never while width remains. The cap of 70ch went
+because a 1440px `/search` row was 54% empty (measured 2026-11-05). The text is a clamped
+snippet, not prose, so the prose measure does not apply. The clamp is three lines up to
+600px and from 1000px, and two lines between; a cut always has one press to the whole,
+the record. From 1000px the description's line height is 1.55, so a long second line has
+room for the eye's return. Rows stay one column at every width, and the layouts from 360px
+to 760px do not change. A row with a short description stays partly empty: tabular stat
+columns are a proposed rule (The Stat Columns Rule). Owner, 2026-11-05 (item 9).
+`tests/app/states.js` case 106 measures it.
+
+**The Field Measure Rule.** A search box is at most 720px from 761px, and the controls of
+its row follow it on the same line; up to 760px it takes the row's free width. Source:
+Android adaptive app quality, Tier 2, UI_Secondary_Elements
+(https://developer.android.com/docs/quality-guidelines/adaptive-app-quality/tier-2).
+
+**The Stepper Rule.** A lone number field fills its column up to 480px: «-» at its left
+edge, «+» at its right edge, the value centered between them, 46px tall; a button at its
+limit is disabled, and the value stays a text field. A field in a row with its button
+keeps its content width. Owner, 2026-11-05 (item 8). Source:
+https://playbook.ebay.com/design-system/components/numeric-stepper.
+
+**The Check Rule.** Every pressed chip and segment draws the check before its label, a
+gold pick and a neutral default alike: gold says "this narrows the view", the check says
+"this is on". A state never rests on color alone. A link chip marks a place and draws
+none: the sibling pills of a page head, the tabs and the table chips show the current
+place by their fill or their underline and by `aria-current`, and a navigation does not
+look like a toggle. Sources: https://developer.android.com/develop/ui/compose/components/chip,
+https://developer.apple.com/design/human-interface-guidelines/accessibility.
+
 ## Do's and Don'ts
 
 ### Do:
@@ -937,3 +980,20 @@ a transform.
   Russian, on chips, tabs and tags.
 - **Don't** set white text on a gold fill. Ink on Gold is the only text color
   there.
+
+## Proposed rules
+
+These candidates come from official design guidance (owner, 2026-11-05). None is a rule yet: each needs the
+owner's yes, its code and its check in the batch that builds it. A reviewer may cite one as a finding with its
+source.
+
+| Rule | Source | Draft | Check | Built by |
+|---|---|---|---|---|
+| The Escape Rule | https://developer.android.com/docs/quality-guidelines/adaptive-app-quality/tier-2 (Keyboard_Exit) | Escape undoes the last layer a person opened: it closes a menu, a sheet or a dialog, clears a search box that holds text, and in a selection with no layer open clears the ticks. The focus stays on its control, or goes to `main` when that control leaves. | `tests/app/states.js` on `/tables/core_item`, `/search`, `/lists` and `/lists/<uuid>` at 360 and 1180px: two ticks, Escape, «Выбрано: 0» and the focus kept; with the filter sheet open the first Escape closes only the sheet | a later task, with its mock; home `FEATURES.md` "Chrome" |
+| The Tablet Screen | https://developer.android.com/docs/quality-guidelines/adaptive-app-quality/tier-2 (test devices) | The First-Screen Rule adds 1024x640, Russian and English, as a third viewport: logged first, then asserted route by route at 256px. | `FIRST_SCREEN` gains the viewport with logged rows; each route past 256px is named to the owner | a later task |
+| The Detail Pane | https://developer.android.com/develop/ui/compose/layouts/adaptive/canonical-layouts (list-detail) | From a 1600px window a picked row on `/tables/*` and `/search` may open its dossier in a pane beside the rows, at the dialog's address; below 1600px the dialog stays. A direction, not a rule of task 57. | a states case at 1600 and 1920px: the `h1` in the pane, `aria-current` on the row, Escape and Back close it, print prints the sheet only | a later task, with its mock |
+| The Error Line | https://developer.apple.com/design/human-interface-guidelines/accessibility ("Minimize use of time-boxed interface elements") | An error that a person must act on is also a line on the page, not a toast alone. | an audit of the error toasts of `FEATURES.md` rule 2, each with its page line | a later task |
+| Window size classes | https://developer.android.com/develop/ui/compose/layouts/adaptive/window-size-classes | Not proposed: the project's 600, 760 and 1000px steps follow the same principle; only the 1600px class is of use, as the Detail Pane's threshold. | - | - |
+| A step of ten | https://developer.apple.com/design/human-interface-guidelines/steppers | Not proposed: a Shift-press step of ten is a shortcut with no label (The Clarity Rule). | - | - |
+| A 24px gutter | https://primer.style/product/getting-started/foundations/layout/ | Not proposed: from 1280px a 24px gutter would move every number of the 1440px column for 8px a side. | - | - |
+| The Stat Columns Rule | https://m2.material.io/components/data-tables (numerical data is right-aligned; the page was not re-fetched when this row was written) | From 1440px a weapon or armor row on `/tables/eq_*` draws trait, range, damage and burden in tabular columns right of its text, right-aligned with tabular figures and labeled in both languages, in place of the stat sentence; the description keeps the free width left of them. Rows stay one column. Below 1440px, on `/search`, on the list page and on `/s/` the stat sentence stays. The values come from the source book data (`CLAUDE.md`, "Product laws"). Owner, 2026-11-05: "plan stat columns later". | a states case at 1440 and 1920px on `#/tables/eq_weapon` and `eq_armor`: the column edges equal within 1px in every row, the labels exist in RU and EN, and case 106's clamp share does not rise | a task after wave 3, with its own mock (recommended; not batch 10, a docs-only lock) |

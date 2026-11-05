@@ -802,14 +802,16 @@ describe('a share link', () => {
     expect(screen.getByText(plural(7, ru.droppedItems, 'ru'))).toBeInTheDocument();
   });
 
-  it('draws both notes on a GM link', async () => {
-    open('#/s/gm-token-1');
+  it('draws both notes on a GM link, the GM note in its dashed GM box', async () => {
+    const { container } = open('#/s/gm-token-1');
     await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' });
     await openNotes();
+    const gmNote = await screen.findByText('Кузнец торгуется, если назвать имя его брата.');
+    expect(gmNote.closest('.hitnote')).toHaveClass('gm');
     expect(
-      await screen.findByText('Кузнец торгуется, если назвать имя его брата.')
-    ).toBeInTheDocument();
-    expect(screen.getByText('Открыта с рассвета до заката.')).toBeInTheDocument();
+      screen.getByText('Открыта с рассвета до заката.').closest('.hitnote')
+    ).not.toHaveClass('gm');
+    await expectNoA11yViolations(container);
   });
 
   it('tells the owner it is their list, with a link to its page', async () => {

@@ -128,11 +128,14 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables?as=gm4]
     link "Open page" [url=/i/en/ci28]
     StaticText "28"
     StaticText "ITEM"
-    StaticText "CORE"
+    ... StaticText x2 of 6 same-shape siblings elided
     heading "Ring of Silence" [level=2]
-    StaticText "Spend a Hope"
     StaticText " to activate this ring. Your footsteps are silent until your nex..." [namelen=71 namehash=01eb3998]
-    button "Add to list" [expanded=false]
+    button "Add to list" [expanded=true]
+    StaticText "LISTS"
+    button "Лавка в порту" [description=0 items pressed=false]
+    button "Клад дракона" [description=0 items pressed=false]
+    button "New list"
     button "Share"
     button "Print" [description=Lay these out for printing: nine to an A4 sheet]
     button "More" [expanded=false haspopup=menu]
@@ -216,6 +219,7 @@ Link to this table
 List
 LootDaggerheart
 More
+New list
 Open on start
 Open page
 Other
@@ -232,3 +236,5 @@ Supplements
 Tables
 Terms of use
 daggerheart.com
+Клад дракона
+Лавка в порту

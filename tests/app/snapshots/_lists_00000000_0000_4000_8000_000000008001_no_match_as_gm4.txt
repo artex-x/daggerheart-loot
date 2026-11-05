@@ -24,10 +24,10 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
     StaticText "Сохранено"
     button "Поделиться" [expanded=false]
     button "Печать" [description=Собрать карточки для печати: девять на лист A4]
+    button "Бросить по списку" [expanded=false]
     button "Ещё" [expanded=false haspopup=menu]
+    button "Заметки" [expanded=false]
     status ""
-    DisclosureTriangle "ЗАМЕТКИ" [expanded=false]
-    DisclosureTriangle "БРОСОК ПО СПИСКУ" [expanded=false]
     searchbox "Поиск по названию или описанию..." [value=жжжж focused=true]
     button "Фильтры" [expanded=false]
     StaticText "Ничего не найдено"
@@ -47,29 +47,20 @@ EN
 RU
 daggerheart.com
 Аккаунт: gm4@example.test
-Бросить 1-14
+Бросить по списку
 Бросок
 Добавить свой предмет
 Ещё
-Жирный
+Заметки
 К содержимому
 Конфиденциальность
-Курсив
 ЛутDaggerheart
-На единицу больше
-На единицу меньше
 Название списка
-Нумерованный список
 Печать
 Поделиться
-Подсказка: Для игроков
-Подсказка: Только для мастера
 Поиск
 Поиск по названию или описанию...
-Просмотр
-Результат броска
 Сбросить всё
-Список
 Таблицы
 Условия использования
 Установить как приложение
@@ -96,10 +87,10 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
     StaticText "Saved"
     button "Share" [expanded=false]
     button "Print" [description=Lay these out for printing: nine to an A4 sheet]
+    button "Roll on this list" [expanded=false]
     button "More" [expanded=false haspopup=menu]
+    button "Notes" [expanded=false]
     status ""
-    DisclosureTriangle "NOTES" [expanded=false]
-    DisclosureTriangle "ROLL ON THIS LIST" [expanded=false]
     searchbox "Search by name or description..." [value=жжжж focused=true]
     button "Filters" [expanded=false]
     StaticText "Nothing found"
@@ -117,28 +108,19 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
 ## en :: controls
 Account: gm4@example.test
 Add your own item
-Bold
-Bulleted list
 EN
 Filters
-Help: For players
-Help: GM only
 Install as an app
-Italic
 List name
 LootDaggerheart
 More
-Numbered list
-One higher
-One lower
-Preview
+Notes
 Print
 Privacy
 RU
 Reset all
 Roll
-Roll 1-14
-Roll result
+Roll on this list
 Search
 Search by name or description...
 Share

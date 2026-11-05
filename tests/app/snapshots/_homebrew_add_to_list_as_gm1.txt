@@ -160,7 +160,12 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm1]
     checkbox "Select all" [focused=true checked=mixed]
     generic ""
       StaticText "1 selected"
-    button "Add to list" [expanded=false]
+    button "Add to list" [expanded=true]
+    StaticText "LISTS"
+    button "Лавка кузнеца" [description=10 items pressed=true]
+    button "Пустой список" [description=0 items pressed=false]
+    button "Трофеи" [description=2 items pressed=false]
+    button "New list"
     button "Print" [description=Lay these out for printing: nine to an A4 sheet]
     button "Copy text"
     status ""
@@ -191,6 +196,7 @@ Items 4
 LootDaggerheart
 Move (1)
 New item
+New list
 Open on start
 Print
 Privacy
@@ -209,5 +215,8 @@ Whispering CapItemOnce per rest, hear one sentence spoken within... [namelen=75 
 daggerheart.com
 Кольцо с гравировкой
 Кольцо с гравировкойItemRUНадпись на неизвестном языке. Тёплое н... [namelen=72 namehash=6421c4be]
+Лавка кузнеца
 Настой кузнеца
 Настой кузнецаConsumableRUВыпейте перед работой у горна: до конц... [namelen=103 namehash=d39eaaae]
+Пустой список
+Трофеи

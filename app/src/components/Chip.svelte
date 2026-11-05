@@ -86,7 +86,7 @@
     data-fval={filter}
     {title}
     {onclick}
-    >{#if neutral && on}<Icon name="check" />{/if}{label}</button
+    >{#if on}<Icon name="check" />{/if}{label}</button
   >
 {/if}
 
@@ -121,11 +121,16 @@
     font-weight: 650;
   }
 
-  /* The neutral pressed default: the check and the label share one center. */
-  .chip.neutral.on {
+  /* A pressed chip draws the check (DESIGN.md "Components", "The Check Rule"); the check
+     and the label share one center. A link chip marks a place and draws none. */
+  button.chip.on {
     display: inline-flex;
     align-items: center;
     gap: 6px;
+  }
+
+  /* The neutral pressed default. */
+  .chip.neutral.on {
     background: var(--surface2);
     border-color: var(--muted2);
     color: var(--txt);

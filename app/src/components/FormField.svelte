@@ -2,9 +2,6 @@
   /* One field of a form: its caption, the control, and the field's error line. The homebrew
      editor and the quick item share it. Field.svelte is the roll panels' uppercase row. */
   import type { Snippet } from 'svelte';
-  import HelpButton from './HelpButton.svelte';
-  import { dict } from '../lib/dict.js';
-  import type { Lang } from '../lib/types.js';
 
   interface Props {
     /** The caption; omitted while the control has none, as a source being named. */
@@ -19,15 +16,10 @@
     error?: string | undefined;
     /** The error line's id, which the control's `aria-describedby` names. */
     errorId?: string | undefined;
-    /** A «?» after the caption, named «Подсказка: <caption>», that shows `text` under it;
-     *  `id` is the hint's (docs/specs/FEATURES.md, "Consistency rules", rule 15). */
-    help?: { id: string; text: string; lang: Lang } | undefined;
     children: Snippet;
   }
 
-  const { label, for: forId, optional, error, errorId, help, children }: Props = $props();
-
-  let open = $state(false);
+  const { label, for: forId, optional, error, errorId, children }: Props = $props();
 </script>
 
 <!-- eslint-disable @typescript-eslint/no-confusing-void-expression -- a `{@render}` tag of a
@@ -41,26 +33,13 @@
 {/snippet}
 
 <div class="fld">
-  {#if label && (help || optional)}
+  {#if label && optional}
     <div class="fhead">
       {@render caption()}
       <!-- A hidden caption hides its word too: alone it reads as a stray "optional". -->
       {#if optional}<span class="opt" aria-hidden={forId ? undefined : 'true'}>{optional}</span
         >{/if}
-      {#if help}
-        <HelpButton
-          lang={help.lang}
-          size="sm"
-          {open}
-          label={dict(help.lang).fieldHelp.replace('%s', label)}
-          controls={help.id}
-          onclick={() => {
-            open = !open;
-          }}
-        />
-      {/if}
     </div>
-    {#if help}<p class="fhelp" id={help.id} hidden={!open}>{help.text}</p>{/if}
   {:else}
     {@render caption()}
   {/if}
@@ -87,14 +66,6 @@
     display: flex;
     align-items: center;
     gap: 6px;
-  }
-
-  /* A hint of several sentences keeps its line breaks (`mdHelp`). */
-  .fhelp {
-    margin: 0;
-    font-size: var(--t-data);
-    color: var(--muted2);
-    white-space: pre-line;
   }
 
   .opt {

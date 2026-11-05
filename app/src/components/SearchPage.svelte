@@ -437,6 +437,13 @@
     overflow-wrap: anywhere;
   }
 
+  /* DESIGN.md "Components", "The Field Measure Rule": the next controls follow the box. */
+  @media (min-width: 761px) {
+    .searchrow .grow {
+      max-width: 720px;
+    }
+  }
+
   @media (max-width: 760px) {
     .searchrow {
       margin: 0 0 8px;

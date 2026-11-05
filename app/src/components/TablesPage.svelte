@@ -1096,6 +1096,13 @@
     line-height: 16px;
   }
 
+  /* DESIGN.md "Components", "The Field Measure Rule": the next controls follow the box. */
+  @media (min-width: 761px) {
+    .searchrow .grow {
+      max-width: 720px;
+    }
+  }
+
   /* Below 761 px the search row is one line: the search, «Фильтры», «Выбрать». */
   @media (max-width: 760px) {
     .searchrow {

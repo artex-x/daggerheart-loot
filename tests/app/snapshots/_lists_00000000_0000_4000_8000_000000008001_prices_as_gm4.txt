@@ -25,21 +25,28 @@ EN
 RU
 daggerheart.com
 Аккаунт: gm4@example.test
-Бросить 1-7
+Бросить по списку
 Бросок
 Взять: Пронзительная Свирель
 Выбрать все
 Добавить свой предмет
 Ещё
-Жирный
+Ещё: Заряжающий Колчан
+Ещё: Мистический Плащ
+Ещё: Наручники
+Ещё: Первоклассный Спальный Мешок
+Ещё: Пронзительная Свирель
+Ещё: Разговаривающие Сферы
+Ещё: Факел Алистера
 Закрыть
 Заметка
+Заметка, заполнена
 Заряжающий Колчан
 Заряжающий КолчанПредметКогда вы успешно наносите удар стрелой и... [namelen=141 namehash=b56c369b]
+Изменить
 К содержимому
 Как в книге
 Конфиденциальность
-Курсив
 ЛутDaggerheart
 Макс, взять все: Пронзительная Свирель
 Мин, взять 1: Пронзительная Свирель
@@ -51,20 +58,14 @@ daggerheart.com
 Название списка
 Наручники
 НаручникиПредметЭта пара наручников с замком поставляется с ключ... [namelen=67 namehash=77df6619]
-Нумерованный список
-Очистить заметку
 Первоклассный Спальный Мешок
 Первоклассный Спальный МешокПредметВо время отдыха вы автоматиче... [namelen=84 namehash=f15473c8]
 Печать
 Поделиться
-Подсказка: Для игроков
-Подсказка: Только для мастера
-Подсказка: Цена
 Позиция в списке
 Поиск
 Пронзительная Свирель
 Пронзительная СвирельПредметЭта свирель ручной работы имеет хара... [namelen=161 namehash=e5bf576d]
-Просмотр
 Проставить эти цены
 Разговаривающие Сферы
 Разговаривающие СферыПредметЭта пара сфер позволяет существам, к... [namelen=125 namehash=7957c029]
@@ -73,17 +74,7 @@ daggerheart.com
 Скопировать текст
 Скрыть от игроков (1)
 Снять выделение
-Список
-Справка
 Таблицы
-Только для мастера: Заряжающий Колчан
-Только для мастера: Мистический Плащ
-Только для мастера: Наручники
-Только для мастера: Первоклассный Спальный Мешок
-Только для мастера: Пронзительная Свирель
-Только для мастера: Разговаривающие Сферы
-Только для мастера: Факел Алистера
-Убрать из списка
 Убрать цену (1)
 Удалить (1)
 Условия использования
@@ -118,33 +109,19 @@ Alistair's TorchItemYou can light this magic torch at will. The ... [namelen=162
 Arcane Cloak
 Arcane CloakItemA creature with a Spellcast trait wearing this c... [namelen=117 namehash=f38d5937]
 As in the book
-Bold
-Bulleted list
 Charging Quiver
 Charging QuiverItemWhen you succeed on an attack with an arrow s... [namelen=145 namehash=07a311bd]
 Clear price (1)
 Clear selection
-Clear the note
 Close
 Copy text
 Delete (1)
 Discount
 EN
-GM only: Alistair's Torch
-GM only: Arcane Cloak
-GM only: Charging Quiver
-GM only: Manacles
-GM only: Piper Whistle
-GM only: Premium Bedroll
-GM only: Speaking Orbs
-Help
-Help: For players
-Help: GM only
-Help: Price
+Edit
 Hide from players (1)
 In coins
 Install as an app
-Italic
 List name
 LootDaggerheart
 Manacles
@@ -152,8 +129,15 @@ ManaclesItemThis pair of locking cuffs comes with a key.
 Max, take all: Piper Whistle
 Min, take 1: Piper Whistle
 More
+More: Alistair's Torch
+More: Arcane Cloak
+More: Charging Quiver
+More: Manacles
+More: Piper Whistle
+More: Premium Bedroll
+More: Speaking Orbs
 Note
-Numbered list
+Note, filled
 One higher
 One lower
 Piper Whistle
@@ -161,15 +145,13 @@ Piper WhistleItemThis handcrafted whistle has a distinctive soun... [namelen=149
 Position in the list
 Premium Bedroll
 Premium BedrollItemDuring downtime, you automatically clear a St... [namelen=69 namehash=b98fcd07]
-Preview
 Price
 Prices
 Print
 Privacy
 RU
-Remove from the list
 Roll
-Roll 1-7
+Roll on this list
 Roll result
 Search
 Select all

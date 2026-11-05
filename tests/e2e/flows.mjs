@@ -362,7 +362,7 @@ export async function runFlows({ env, admin, member, browser, base }) {
       );
 
       /* From 761 px the list's delete is the last item of its «Ещё». */
-      await d.openMore('.card-acts .morewrap > [aria-haspopup="menu"]');
+      await d.openMore('.lacts .morewrap > [aria-haspopup="menu"]');
       await d.press('Удалить список');
       await waitText(page, 'F7', 'Список «E2E список 2» удалён');
       await until(
@@ -414,6 +414,8 @@ export async function runFlows({ env, admin, member, browser, base }) {
       await waitText(page, 'F8', 'Сохранено');
       await d.press('Заметки');
       await d.type('Например: лавка закрыта до утра', 'Игрокам E2E');
+      /* One note area: the switch shows the GM note (docs/specs/FEATURES.md, "Lists"). */
+      await d.press('Только для мастера');
       await d.type('Например: позиции 9-10 лежат под прилавком', 'Мастеру E2E');
       await until('F8: the GM note did not reach the account', async () => {
         const [row] = await mine();
@@ -726,6 +728,10 @@ export async function runFlows({ env, admin, member, browser, base }) {
         await waitText(pageB, 'F12', 'Запрос отправлен владельцу списка.');
         await within10(pageA, 'F12: the owner page did not draw the request in 10 s', () =>
           document.body.textContent.includes('Новое в списке (1)')
+        );
+        /* The panel folds on each page visit (docs/specs/FEATURES.md, "Lists"). */
+        await pageA.evaluate(() =>
+          document.querySelector('.reqhead button[aria-expanded="false"]')?.click()
         );
         await a.press('Принять');
         await waitText(pageA, 'F12', 'Запрос принят');
@@ -1254,7 +1260,8 @@ export async function runFlows({ env, admin, member, browser, base }) {
           "e2e F19: the list page never joined the owner's topic",
           () => !!document.querySelector('.said[data-live="live"]')
         );
-        await d.press('Только для мастера: Палаш');
+        await d.openMore('.lrow-acts .morewrap > [aria-label="Ещё: Палаш"]');
+        await d.press('Скрыть от игроков');
         await d.writesSettled();
         await within10(
           shared,
@@ -1267,7 +1274,8 @@ export async function runFlows({ env, admin, member, browser, base }) {
           'F19: the mark did not reach the entry',
           async () => (await markOf()) === true
         );
-        await d.press('Только для мастера: Палаш');
+        await d.openMore('.lrow-acts .morewrap > [aria-label="Ещё: Палаш"]');
+        await d.press('Показать игрокам');
         await d.writesSettled();
         await within10(
           shared,

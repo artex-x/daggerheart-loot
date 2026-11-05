@@ -213,8 +213,9 @@ across.
   returns the focus to «Выбрать» (rule 20). `/search`, «Мои предметы» and both
   list pages have the same mode and bar, with no strip ("Lists").
 - A row reads its name, then its tags after it, then the stat line, then the
-  description; the text holds at 70 characters a line and a separator never
-  starts a line. A row hides the tags that repeat what the page already says
+  description; the description takes the free width of its row, at most 3 lines up to
+  600 px and from 1000 px and 2 lines between, and a separator never starts a line; a
+  cut has one press to the whole record (owner, 2026-11-05). A row hides the tags that repeat what the page already says
   (`rowTags.ts`): the kind tag on a one-kind table or under one picked kind,
   the tier in the stat line and the tier tag under a tier heading or one
   picked tier, the source tag on a one-book table or under one picked book,
@@ -422,10 +423,8 @@ across.
   undo, delete with undo. A drag lands in a gap between two rows, not on
   a row: the pointer resolves to the nearest gap, and both rows beside it
   light, because "after 3" and "before 4" are one place. On the row above the
-  gap, the highlight is drawn on that row's own last visible line, so a row
-  whose note box is open shows it there rather than losing it under the note;
-  the row below the gap is marked on its own first line, unaffected either
-  way. The drop zone is the rows' own extent plus one measured row gap at
+  gap the mark is one 2 px gold line drawn in the 8 px gap between the two rows (after
+  the last row, under it), so an open note never covers it. The drop zone is the rows' own extent plus one measured row gap at
   each end. The list accepts a release at every moment the highlight is
   shown, including while the pointer crosses a row's own controls (grip,
   inputs, note) on the way through. Leaving the zone, releasing outside it,
@@ -644,12 +643,12 @@ across.
   selection copy and in "Скопировать текст" alike.
 - Prices display as book units (default) or coins; the mode is per list and
   rides in the link.
-- An entry's price field reads «Цена» / "Price". In a mode that converts, a
-  priced row draws a small «?» after the label, outside it («Подсказка:
-  Цена», rule 15 (c)); open, a line under the row's fields shows the price in
-  book units («7 мешков 5 горстей») and follows a typed price. The open «?»
-  are page memory, closed when the page opens; coin mode and an unpriced row
-  draw no «?».
+- An entry's price field reads «Цена» / "Price" and has no «?». From 761 px, while a
+  price is set, the side column draws «Цены:» / "Prices:" with a neutral switch «Как в
+  книге» / «Монетами» and one line «Например: <price>» / "For example: <price>", the first
+  priced entry in the chosen mode; up to 760 px the mode is an item of the list «Ещё».
+  Every price on the page follows it: the rows, the bar total, the price sheet, the
+  requests panel and the roll result.
 - Batch actions over a selection within a list: set prices, clear prices, shift
   all by a percentage, suggest prices from tier or rarity, copy, hide from
   players, remove. The owner's list page has the catalog's selection mode:
@@ -707,19 +706,30 @@ across.
   mode it reads «Выбрано: 0», the actions are off and «Снять выделение» stays
   on. A neutral look: no gold.
 - A typed quantity is held to 99, and a negative one to none; the field then shows the held value.
-- A list has its own roll button, folded by default and opened on its
-  summary; up to 760 px «Бросить по списку» in the list «Ещё» opens it under
-  the head. The row numbers match it. An empty roll field means no roll has
-  been made yet, not zero. The panel, a row's own note box and the list note
-  each keep the person's own fold/unfold across a language switch - the live
-  `data-keep` opt-ins - rather than resetting to the data's own default the
-  way every other re-render does.
+- A list of two or more entries has «Бросить по списку» / "Roll on this list", a button
+  with `aria-expanded` in the action row (in the list «Ещё» up to 760 px), which opens the
+  panel «Бросок по списку» at the top of the rows column: «Результат броска (1-N)», the
+  stepper and «Бросить dN» on one row, then the result as the card face (the row face in
+  a narrow column), the entry's count and price in the page's mode, both notes (the GM
+  note in its dashed box) and «Показать в списке», which scrolls to the row, lights it for
+  1.5 s and focuses its body. The row numbers match it. An empty roll field means no roll
+  has been made yet, not zero. The panel and the open note areas are page memory and keep
+  their state across a language switch and a money switch.
 - Two notes per list and per entry: «Для игроков» goes into the copied text
   and the players' share link, «Только для мастера» only into the GM's link.
   Each note is formatted text ("Records", "Formatted
-  text") in a box of rule 18 (bold, italic, both lists, «Просмотр», the «?»),
-  named by its label and described by its line, at most 4000 characters with
-  no counter. A stored list or entry note is read the same way, with no
+  text") in a box of rule 18 (bold, italic, both lists, «Просмотр», no «?»), at most
+  4000 characters with no counter. The two notes of an entry, and the two of the list,
+  are one note area: closed, each filled note draws read-only in a full box, the GM
+  note's box dashed on the darker ground; «Заметка» (a filled note adds a dot and the
+  hidden «, заполнена»), the side column's «Изменить» or «Заметки ▾» up to 760 px opens
+  it: a neutral switch «Для игроков» / «Только для мастера» (a dot on an option whose
+  note is filled), one field for the chosen note, named by it and described by its
+  caption «Видна по ссылке для игроков» / «Игроки не видят», then «Готово», which closes
+  it and returns the focus to its opener, and «Очистить», which clears the shown note
+  with «Вернуть» in its toast. The GM field is dashed. The area opens on the players'
+  note unless only the GM note is filled; a switch keeps the typed text, which every
+  keystroke already wrote through the buffer. A stored list or entry note is read the same way, with no
   migration.
   The rolled entry, `#/s/` and the clipboard draw it formatted, the
   link card plain. On `#/s/`
@@ -925,7 +935,11 @@ address kept, and no add-to-list control is drawn.
   toasts «Не получилось изменить ссылку. Проверьте соединение и попробуйте ещё
   раз.», keeps
   the row, and reloads the panel when it was refused. A row's buttons are
-  disabled while its change runs. An empty list can be shared.
+  disabled while its change runs. An empty list can be shared. The panel is headed
+  «Поделиться»; each row names its audience with one muted line («Без заметок мастера и
+  скрытых позиций» / «С заметками «Только для мастера»»), «Скопировать» is a plain
+  button and «Удалить ссылку» a bare text button in the danger color, so the panel draws
+  no gold; each link keeps its own delete (owner, 2026-11-05).
 - **The list card** of a share link's preview link: the list name (or «Без
   названия» / "Untitled"), «N позиций» / "N items" of the entries that the
   link's audience sees - a players' link counts the entries without «Только
@@ -939,11 +953,10 @@ address kept, and no add-to-list control is drawn.
   the card it got after an edit or a revoke.
 - **«Только для мастера» / "GM only" entries**
   (`docs/decisions/2026-10-08-a-gm-only-entry-is-dropped-by-the-share-projection.md`):
-  each row of an account list's page draws an eye between «Заметка» and
-  «Убрать из списка», named «Только для мастера: <name>» with `aria-pressed`
-  and the title «Только для мастера»; pressed, it draws the crossed eye in the
-  note button's pressed look. A press marks or clears the entry through the
-  write buffer, with no toast. A GM-only row has a dashed border, the
+  each row's «Ещё» on an account list's page holds «Скрыть от игроков» / «Показать
+  игрокам» (from 761 px the full row draws «Заметка» and «Ещё: <name>» in place of three
+  icon buttons). A press marks or clears the entry through the write buffer, with no
+  toast. A GM-only row has a dashed border, the
   recessed ground and its art at 45%, on the owner's page and on the GM's
   link; no text on screen marks it, and the row's button names the state
   after the name for a screen reader («Брошюра по Истории Искусства, Только
@@ -1081,8 +1094,19 @@ address kept, and no add-to-list control is drawn.
   списку», a separator, «Цены: монетами» / «Цены: как в книге» while an entry is
   priced, «Скопировать текст», «Скачать JSON», a separator and the danger
   «Удалить список»; an item with no target leaves (no «Печать» without a read
-  item, no roll under 2 entries). The money chips, the list notes panel and the
-  roll panel do not draw up to 760 px. The inline rename in the `h1` stays.
+  item, no roll under 2 entries). The side column and its price switch do not draw up to
+  760 px: «Заметки ▾» opens the list notes' area under the head, and «Бросить по списку»
+  the roll panel. The inline rename in the `h1` stays.
+- **The side column** (from 761 px): the rename `h1`, the meta line, the action row
+  «Поделиться» (caret, `aria-expanded`), «Печать», «Бросить по списку» and «Ещё» (copy,
+  JSON, delete), the price switch while a price is set, and the list notes (read-only
+  boxes and «Изменить», or the open area). From 1000 px it is a 330 px plate at the right
+  of the rows, first in the DOM so Tab reaches the actions before the rows, and not
+  sticky; from 761 to 999 px its content sits above the rows. The rows column holds an
+  open share panel, the roll panel, the requests panel, the search row or «Выбрать», the
+  rows and «Добавить свой предмет». A full row draws its grip, tick, position, body, then
+  «Кол-во», «Цена», «Заметка» and «Ещё: <name>»; in a rows column under 760 px they take
+  a line under the row's text, inline from 760 px.
 - **Search and filter on the owner's page**: from 8 entries, latched per list
   as on `/s/`, the owner's page draws the same search row and filter sheet,
   with no filter link: the filter is page memory and never in the address
@@ -1205,15 +1229,20 @@ address kept, and no add-to-list control is drawn.
   nothing. Clearing the selection or leaving the page drops an unanswered
   question.
 - **Purchase requests: the owner**: an account list's page draws «Новое в
-  списке (N)» / "New in this list (N)" after the actions (and an open share
-  panel), before the money row, while a pending request that has not
+  списке (N)» / "New in this list (N)" at the top of the rows column (after an open
+  share panel and the roll panel), folded to its head with «Открыть» / «Свернуть»
+  (`aria-expanded`) on every page visit and at every width; the arrival toast's press
+  opens it. It draws while a pending request that has not
   expired, a decision of this page load, or a notice of the list's change
   log exists; N counts the pending requests and every notice, read or not
   (the change log below). Each request, newest first, names its link, its age and, once
   it is read, the time to expiry («По ссылке для игроков · 10 минут назад ·
-  истечёт через 50 минут»), its lines («×3 из 5», the count over the stock now, in the danger
-  color above the stock; «нет в списке» for an item the list no longer
-  holds; the line sum at the price when it was sent, or «-») and the total.
+  истечёт через 50 минут»), its lines in the columns «Позиция», «Было», «Возьмут»,
+  «Станет», «Цена» (the stock now, the count taken, the stock after, the line sum at the
+  price when it was sent or «без цены»; a short line adds «Просили 9, в списке 5: возьмут
+  5» under the name in the danger color; «нет в списке» for an item the list no longer
+  holds) and the total «Итого: 180 зол. · 1 позиция без цены». The list is read only while
+  the panel is open.
   A request draws its first 5 lines, then a bare fold button «и ещё N
   позиций» / "and N more items", which draws the rest and reads «свернуть» /
   "show less", one button both ways, so the focus stays on it. The panel
@@ -2752,8 +2781,9 @@ right, so the tab order and the reading order agree
 
 - The page column is the window less 16 px a side, up to 1440 px, and centered above that
   (DESIGN.md, "Layout"). 320 px is the narrowest width a page is built for.
-- The roll page's lone result counter is at most 240 px wide at every window width; the
-  alt roll's two die counters fill their blocks (DESIGN.md, "The One Width Rule"). In each
+- A lone number field fills its column up to 480 px (the roll pane, the phone settings
+  panel); a field in a row with its button keeps its content width, and the alt roll's
+  two die counters fill their blocks (DESIGN.md "Components", "The Stepper Rule"). In each
   box the value sits at the center, «-» at the left edge and «+» at the right edge
   (owner, 2026-11-05).
 - Language switch, the three jobs, skip link, starting-section pin (eleven sections
@@ -3080,8 +3110,8 @@ Each rule keeps its number: a review cites it by number.
   the label; it explains what the site does with the field or a constraint
   of the site, never a basic game term: a player knows the Daggerheart rules
   (owner, 2026-10-02) (the markup of the formatted text boxes that keep it, rule
-  18, and the list page's fields). The item and card forms have none (owner,
-  Q6.2 and Q6-1): a fact of the site they must state is a caption of (d). The «?» is a button named «Подсказка: <label>» / "Help:
+  18). The item and card forms, the quick item and the list pages have none (owner,
+  Q6.2, Q6-1 and Q9.1): a fact of the site they must state is a caption of (d). The «?» is a button named «Подсказка: <label>» / "Help:
   <label>" with `aria-expanded`; the hint is closed when the form opens. A
   self-explanatory field has no «?».
   (d) A line always visible under a field holds only what the person must
@@ -3132,8 +3162,9 @@ Each rule keeps its number: a review cites it by number.
   "Formatted text") is one control: the toolbar «Оформление: <поле>» /
   "Formatting: <field>" (one tab stop, the arrow keys move), the box, and a
   «?» on the label with the markup and the catalog style in three lines and
-  "Markup counts toward the N characters.". Departure: the editor's «Описание»
-  and the card forms' boxes have no «?» (owner, Q6.2 and Q6-1). The buttons, by `aria-label`: «Жирный», «Курсив»
+  "Markup counts toward the N characters.". Departure: the editor's «Описание», the
+  card forms', the quick item's and the list notes' boxes have no «?» (owner, Q6.2, Q6-1
+  and Q9.1). The buttons, by `aria-label`: «Жирный», «Курсив»
   (Ctrl+B / Cmd+B and Ctrl+I / Cmd+I in the box), «Список», «Нумерованный
   список», «Таблица» (wide fields only); each wraps or unwraps the
   selection, or prefixes the selected lines, and an edit past the cap does

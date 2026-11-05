@@ -84,8 +84,18 @@ const TWO = (cloud: ReturnType<typeof fakeCloud>): void => {
   ]);
 };
 
+/* The panel folds to its head on each page visit; the helper opens it. */
+const unfold = async (p: HTMLElement): Promise<HTMLElement> => {
+  const head = p.querySelector<HTMLButtonElement>('.reqhead button');
+  if (head?.getAttribute('aria-expanded') === 'false') await fireEvent.click(head);
+  return p;
+};
 const panel = async (): Promise<HTMLElement> =>
-  (await screen.findByRole('heading', { name: /^Новое в списке/, level: 2 })).parentElement!;
+  unfold(
+    (await screen.findByRole('heading', { name: /^Новое в списке/, level: 2 })).closest(
+      'section'
+    )!
+  );
 const requestsOf = (p: HTMLElement): HTMLElement[] => [
   ...p.querySelectorAll<HTMLElement>('.req')
 ];
@@ -107,6 +117,24 @@ const saying = (c: HTMLElement, words: string): Element | undefined =>
   regions(c).find((r) => r.textContent.trim() === words);
 
 describe('the requests panel', () => {
+  it('folds to its head on arrival, and opens and folds by the head button', async () => {
+    const { container } = openShop(TWO);
+    const head = await screen.findByRole('heading', { name: /^Новое в списке/, level: 2 });
+    const p = head.closest('section')!;
+    const toggle = within(p).getByRole('button', { name: 'Открыть' });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(p.querySelector('.req')).toBeNull();
+    await expectNoA11yViolations(container);
+    await userEvent.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(toggle).toHaveTextContent('Свернуть');
+    await requestsDrawn(p);
+    await expectNoA11yViolations(container);
+    await userEvent.click(toggle);
+    expect(p.querySelector('.req')).toBeNull();
+    expect(head).toBeInTheDocument();
+  });
+
   it('draws each pending request, newest first, with its lines against the stock and the total', async () => {
     const { container } = openShop(TWO);
     const p = await panel();
@@ -125,25 +153,43 @@ describe('the requests panel', () => {
     );
     expect(cells(player as HTMLElement)).toEqual([
       'Спальный мешок',
-      '×1 из 2',
+      '2',
+      '1',
+      '1',
       '150 зол.',
       'Зелье',
-      '×3 из 5',
+      '5',
+      '3',
+      '2',
       '60 зол.'
     ]);
     expect(player?.querySelector('.total')).toHaveTextContent('Итого: 210 зол.');
     expect(cells(gm as HTMLElement)).toEqual([
-      'Зелье',
-      '×9 из 5',
+      'ЗельеПросили 9, в списке 5: возьмут 5',
+      '5',
+      '5',
+      '0',
       '180 зол.',
       'Меч',
-      '×1 из 1',
-      '-'
+      '1',
+      '1',
+      '0',
+      'без цены'
     ]);
-    expect(gm?.querySelector('.short')).toHaveTextContent('×9 из 5');
-    expect(gm?.querySelector('.total')).toHaveTextContent('Итого: 180 зол. (без цены: 1)');
-    /* Between the action row and the money row. */
-    const acts = screen.getByRole('button', { name: 'Поделиться' }).closest('.card-acts');
+    expect(gm?.querySelector('.shortline')).toHaveTextContent(
+      'Просили 9, в списке 5: возьмут 5'
+    );
+    expect(gm?.querySelector('.total')).toHaveTextContent(
+      'Итого: 180 зол. · 1 позиция без цены'
+    );
+    expect(
+      within(gm as HTMLElement)
+        .getAllByRole('columnheader')
+        .map((h) => h.textContent.trim())
+    ).toEqual(['Позиция', 'Было', 'Возьмут', 'Станет', 'Цена']);
+    expect(p.textContent).not.toMatch(/×\d+ из|без цен:/);
+    /* After the side column, which holds the action row. */
+    const acts = screen.getByRole('button', { name: 'Поделиться' }).closest('.lside');
     expect(acts?.compareDocumentPosition(p)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     await expectNoA11yViolations(container);
   });
@@ -168,7 +214,9 @@ describe('the requests panel', () => {
     expect(p.querySelector('.decided li')).toHaveTextContent(
       'По ссылке для игроков · 1 минуту назад · принят'
     );
-    expect(within(requestsOf(p)[0] as HTMLElement).getByText('×9 из 2')).toBeInTheDocument();
+    expect(
+      within(requestsOf(p)[0] as HTMLElement).getByText('Просили 9, в списке 2: возьмут 2')
+    ).toBeInTheDocument();
     await expectNoA11yViolations(container);
   });
 
@@ -199,7 +247,7 @@ describe('the requests panel', () => {
     });
     const p = await panel();
     const req = requestsOf(p)[0] as HTMLElement;
-    expect(cells(req)).toEqual(['Меч', 'нет в списке', '-']);
+    expect(cells(req)).toEqual(['Меч', 'нет в списке', 'без цены']);
     expect(req.querySelector('.short')).toHaveTextContent('нет в списке');
     await userEvent.click(within(req).getByRole('button', { name: 'Принять' }));
     expect(await within(req).findByRole('alert')).toHaveTextContent(
@@ -400,13 +448,13 @@ describe('the requests panel', () => {
       name: 'New in this list (1)',
       level: 2
     });
-    const p = heading.parentElement!;
+    const p = await unfold(heading.closest('section')!);
     await waitFor(() => {
       expect(p.querySelector('.who')).toHaveTextContent(
         "Through the players' link · just now · expires in 60 minutes"
       );
     });
-    expect(within(p).getByText('×1 of 2')).toBeInTheDocument();
+    expect(cells(p.querySelector('.req')!)).toEqual(['Bedroll', '2', '1', '1', '150 gp']);
     expect(within(p).getByRole('button', { name: 'Apply' })).toBeInTheDocument();
     expect(within(p).getByRole('button', { name: 'Decline' })).toBeInTheDocument();
     await expectNoA11yViolations(container);
@@ -513,7 +561,7 @@ describe('homebrew lines', () => {
     });
     const p = await panel();
     const req = (await requestsDrawn(p))[0] as HTMLElement;
-    expect(cells(req)).toEqual([AXE, 'нет в списке', '-']);
+    expect(cells(req)).toEqual([AXE, 'нет в списке', 'без цены']);
     expect(req.querySelector('.short')).toHaveTextContent('нет в списке');
     await expectNoA11yViolations(container);
   });
@@ -691,7 +739,11 @@ describe('the change log in the panel', () => {
     return { ...view, world, cloud };
   }
   const inbox = async (): Promise<HTMLElement> =>
-    (await screen.findByRole('heading', { name: /^Новое в списке/, level: 2 })).parentElement!;
+    unfold(
+      (await screen.findByRole('heading', { name: /^Новое в списке/, level: 2 })).closest(
+        'section'
+      )!
+    );
   const noticeRows = (p: HTMLElement): HTMLElement[] => [
     ...p.querySelectorAll<HTMLElement>('.notice')
   ];

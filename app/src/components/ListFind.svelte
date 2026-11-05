@@ -125,6 +125,13 @@
     min-width: 0;
   }
 
+  /* DESIGN.md "Components", "The Field Measure Rule": the next controls follow the box. */
+  @media (min-width: 761px) {
+    .lfind .grow {
+      max-width: 720px;
+    }
+  }
+
   .lfind :global(input[type='search']),
   .lfind :global(.btn.sm) {
     height: 40px;

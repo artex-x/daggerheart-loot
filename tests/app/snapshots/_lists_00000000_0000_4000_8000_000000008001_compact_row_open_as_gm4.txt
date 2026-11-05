@@ -1,6 +1,6 @@
 # #/lists/00000000-0000-4000-8000-000000008001 ~ compact, row open as gm4
 # route: #/lists
-# why: row 2 unfolded: its tags and whole text, the position, the price with its «?», «Заметка», «Ещё: Пронзительная Свирель» and its open note box
+# why: row 2 unfolded: its tags and whole text, the position, the price, «Заметка, заполнена», «Ещё: Пронзительная Свирель» and both notes read-only
 # as: gm4
 
 ## ru :: tree
@@ -31,28 +31,11 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
     button "2 Пронзительная Свирель ПРЕДМЕТ 7 мешков 5 горстей , Заметка Эта..." [expanded=true namelen=194 namehash=601ab98f]
     spinbutton "Кол-во: Пронзительная Свирель" [value=2 valuetext=2 required=false valuemin=1 valuemax=99]
     spinbutton "Позиция в списке" [value=2 valuetext=2 required=false valuemin=1 valuemax=7]
-    ... button x7 of 11 same-shape siblings elided
     spinbutton "ЦЕНА" [value=750 valuetext=750 required=false valuemin=0 valuemax=99999]
-    button "Заметка" [expanded=true]
+    ... button x5 of 9 same-shape siblings elided
     button "Ещё: Пронзительная Свирель" [expanded=false haspopup=menu]
-    button "Очистить заметку" [description=Очистить заметку]
-    toolbar "Оформление: Для игроков" [orientation=horizontal]
-      button "Жирный" [keyshortcuts=Control+B Meta+B]
-      button "Курсив" [keyshortcuts=Control+I Meta+I]
-      button "Список"
-      button "Нумерованный список"
-      button "Просмотр" [pressed=false]
-    textbox "ДЛЯ ИГРОКОВ" [value=Светится в темноте description=уедет с текстом и ссылкой для игроков multiline=true readonly=false required=false]
     StaticText "ТОЛЬКО ДЛЯ МАСТЕРА"
-    StaticText "останется у вас"
-    button "Очистить заметку" [description=Очистить заметку]
-    toolbar "Оформление: Только для мастера" [orientation=horizontal]
-      button "Жирный" [keyshortcuts=Control+B Meta+B]
-      button "Курсив" [keyshortcuts=Control+I Meta+I]
-      button "Список"
-      button "Нумерованный список"
-      button "Просмотр" [pressed=false]
-    textbox "ТОЛЬКО ДЛЯ МАСТЕРА" [value=Проклят description=останется у вас multiline=true readonly=false required=false]
+    StaticText "Проклят"
     spinbutton "Кол-во: Заряжающий Колчан" [valuetext= required=false valuemin=1 valuemax=99]
     ... spinbutton x2 of 6 same-shape siblings elided
     spinbutton "Кол-во: Наручники" [valuetext= required=false valuemin=1 valuemax=99]
@@ -85,8 +68,7 @@ daggerheart.com
 Добавить свой предмет
 Ещё
 Ещё: Пронзительная Свирель
-Жирный
-Заметка
+Заметка, заполнена
 Заметки
 К содержимому
 Кол-во: Заряжающий Колчан
@@ -97,18 +79,10 @@ daggerheart.com
 Кол-во: Разговаривающие Сферы
 Кол-во: Факел Алистера
 Конфиденциальность
-Курсив
 ЛутDaggerheart
 Название списка
-Нумерованный список
-Очистить заметку
-Подсказка: Для игроков
-Подсказка: Только для мастера
-Подсказка: Цена
 Позиция в списке
 Поиск
-Просмотр
-Список
 Таблицы
 Условия использования
 Установить как приложение
@@ -142,28 +116,11 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
     button "2 Piper Whistle ITEM 7 bags 5 handfuls , Note This handcrafted w..." [expanded=true namelen=178 namehash=9c7d030a]
     spinbutton "Qty: Piper Whistle" [value=2 valuetext=2 required=false valuemin=1 valuemax=99]
     spinbutton "Position in the list" [value=2 valuetext=2 required=false valuemin=1 valuemax=7]
-    ... button x7 of 11 same-shape siblings elided
     spinbutton "PRICE" [value=750 valuetext=750 required=false valuemin=0 valuemax=99999]
-    button "Note" [expanded=true]
+    ... button x5 of 9 same-shape siblings elided
     button "More: Piper Whistle" [expanded=false haspopup=menu]
-    button "Clear the note" [description=Clear the note]
-    toolbar "Formatting: For players" [orientation=horizontal]
-      button "Bold" [keyshortcuts=Control+B Meta+B]
-      button "Italic" [keyshortcuts=Control+I Meta+I]
-      button "Bulleted list"
-      button "Numbered list"
-      button "Preview" [pressed=false]
-    textbox "FOR PLAYERS" [value=Светится в темноте description=travels with the text and the players' link multiline=true readonly=false required=false]
     StaticText "GM ONLY"
-    StaticText "stays with you"
-    button "Clear the note" [description=Clear the note]
-    toolbar "Formatting: GM only" [orientation=horizontal]
-      button "Bold" [keyshortcuts=Control+B Meta+B]
-      button "Italic" [keyshortcuts=Control+I Meta+I]
-      button "Bulleted list"
-      button "Numbered list"
-      button "Preview" [pressed=false]
-    textbox "GM ONLY" [value=Проклят description=stays with you multiline=true readonly=false required=false]
+    StaticText "Проклят"
     spinbutton "Qty: Charging Quiver" [valuetext= required=false valuemin=1 valuemax=99]
     ... spinbutton x2 of 6 same-shape siblings elided
     spinbutton "Qty: Manacles" [valuetext= required=false valuemin=1 valuemax=99]
@@ -189,24 +146,15 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
 7 Arcane CloakItem A creature with a Spellcast trait wearing thi... [namelen=120 namehash=76e58e85]
 Account: gm4@example.test
 Add your own item
-Bold
-Bulleted list
-Clear the note
 EN
-Help: For players
-Help: GM only
-Help: Price
 Install as an app
-Italic
 List name
 LootDaggerheart
 More
 More: Piper Whistle
-Note
+Note, filled
 Notes
-Numbered list
 Position in the list
-Preview
 Price
 Privacy
 Qty: Alistair's Torch

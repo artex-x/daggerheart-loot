@@ -24,43 +24,30 @@ EN
 RU
 daggerheart.com
 Аккаунт: gm2@example.test
-Бросить 1-2
+Бросить по списку
 Бросок
 В список
 Выбрать
 Добавить свой предмет
 Ещё
-Жирный
+Ещё: Скипетр
+Ещё: Топор Тлеющих Углей
 Закрыть
 Заметка
+Заметки
 К содержимому
 Конфиденциальность
-Курсив
 ЛутDaggerheart
-На единицу больше
-На единицу меньше
 Название списка
-Нумерованный список
 Открыть
 Открыть страницу
 Печать
 Поделиться
-Подсказка: Для игроков
-Подсказка: Только для мастера
 Позиция в списке
 Поиск
-Просмотр
-Результат броска
 СкипетрОсновное оружиеРанг 1 · Магическое · Влияние · Далеко · d... [namelen=186 namehash=9aee2e9c]
-Скрыть изменение «Спальный мешок долгой дороги через перевал, бо... [namelen=139 namehash=028772a7]
-Скрыть изменение «Топор Тлеющих Углей»
-Скрыть изменения
-Список
 Таблицы
-Только для мастера: Скипетр
-Только для мастера: Топор Тлеющих Углей
 Топор Тлеющих УглейОсновное оружиеУникальноеМастерская Ольхи (HB... [namelen=184 namehash=e7c9f22c]
-Убрать из списка
 Условия использования
 Установить как приложение
 Цена
@@ -85,39 +72,26 @@ RootWebArea "Список второго ГМа - Daggerheart Loot Generator" [u
 Account: gm2@example.test
 Add to list
 Add your own item
-Bold
-Bulleted list
 Close
 EN
 Ember AxePrimary weaponUniqueAlder Workshop (HB)Tier 2 · Magic ·... [namelen=159 namehash=ea056220]
-GM only: Ember Axe
-GM only: Scepter
-Help: For players
-Help: GM only
-Hide changes
-Hide the change to "Bedroll of the long road over the pass, thro... [namelen=141 namehash=e3d544a4]
-Hide the change to "Ember Axe"
 Install as an app
-Italic
 List name
 LootDaggerheart
 More
+More: Ember Axe
+More: Scepter
 Note
-Numbered list
-One higher
-One lower
+Notes
 Open
 Open page
 Position in the list
-Preview
 Price
 Print
 Privacy
 RU
-Remove from the list
 Roll
-Roll 1-2
-Roll result
+Roll on this list
 ScepterPrimary weaponTier 1 · Magic · Presence · Far · d6 mag · ... [namelen=156 namehash=5cf0702e]
 Search
 Select

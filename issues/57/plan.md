@@ -6,6 +6,7 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
 
 ## Status
 
+- Batch 9b implemented 2026-11-05 (`plan-9b.md`; handoff "Completed"); its review is next, then batch T's refresh.
 - Phase 1 (S1) and phase 2 (S2): done. The owner chose R on 2026-10-23.
 - Refresh against `main` (2026-10-29): done. `claude/57` merged `main` at
   `9112c4ed`; every `audit.md` row is re-checked (`audit.md`, "Re-check

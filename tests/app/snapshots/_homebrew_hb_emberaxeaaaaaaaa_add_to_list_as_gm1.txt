@@ -313,11 +313,15 @@ RootWebArea "Ember Axe - Daggerheart Loot Generator" [url=/en/homebrew/hb_embera
     button "On screen" [pressed=true]
     button "In print" [pressed=false]
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
-    ... StaticText x7 of 11 same-shape siblings elided
+    ... StaticText x8 of 12 same-shape siblings elided
     heading "Топор Тлеющих Углей" [level=2]
-    StaticText "Двуручное"
     StaticText "Лезвие тлеет и не гаснет под дождём."
-    button "Add to list" [expanded=false]
+    button "Add to list" [expanded=true]
+    StaticText "LISTS"
+    button "Лавка кузнеца" [description=10 items pressed=true]
+    button "Пустой список" [description=0 items pressed=false]
+    button "Трофеи" [description=2 items pressed=false]
+    button "New list"
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -360,6 +364,7 @@ Magic
 Melee
 My items
 New line
+New list
 New rule card
 No sectionPistolsBlades+ New section...
 NoneBlazing TwinsSaint's EnsembleAlder Set (HB)+ New set...
@@ -392,3 +397,6 @@ Upgrades to
 Very Close
 Very Far
 daggerheart.com
+Лавка кузнеца
+Пустой список
+Трофеи

@@ -269,7 +269,11 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables?as=gm4]
     checkbox "Select all" [focused=true checked=mixed]
     generic ""
       StaticText "2 selected"
-    button "Add to list" [expanded=false]
+    button "Add to list" [expanded=true]
+    StaticText "LISTS"
+    button "Лавка в порту" [description=0 items]
+    button "Клад дракона" [description=0 items]
+    button "New list"
     button "Print" [description=Lay these out for printing: nine to an A4 sheet]
     button "Copy text"
     button "Clear selection"
@@ -402,6 +406,7 @@ Manacles
 Minor Health Potion Recipe
 Minor Stamina Potion Recipe
 Mythic Dust Recipe
+New list
 Open on start
 Other
 Paragon's Chain
@@ -433,3 +438,5 @@ Valorstone
 Vial of Darksmoke Recipe
 Woven Net
 daggerheart.com
+Клад дракона
+Лавка в порту

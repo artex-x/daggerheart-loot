@@ -196,11 +196,10 @@
     opacity: 0.45;
   }
 
-  /* The line length holds at 70 characters. */
+  /* The text takes the free width of its row (DESIGN.md "Components", "The Row Text Rule"). */
   .row-main .rt {
     flex: 1;
     min-width: 0;
-    max-width: 70ch;
   }
 
   /* The name line: the name, then its tags after it, wrapping as a whole. */
@@ -266,9 +265,11 @@
   .rtail {
     font-style: normal;
     font-weight: 600;
-    color: var(--gold-soft);
+    color: var(--muted2);
     margin-left: 7px;
+    font-family: var(--mono);
     font-size: var(--t-data);
+    font-variant-numeric: tabular-nums;
   }
 
   .row-main.full {
@@ -280,10 +281,19 @@
     line-clamp: none;
   }
 
-  @media (max-width: 600px) {
+  /* Three lines up to 600px, and from 1000px, where two lines cut 18-28% of the described
+     RU rows at 1180px (DESIGN.md "Components", "The Row Text Rule"). */
+  @media (max-width: 600px), (min-width: 1000px) {
     .row-main:not(.full) .rt > span:where(:not(.rh)) {
       -webkit-line-clamp: 3;
       line-clamp: 3;
+    }
+  }
+
+  /* A long second line needs room for the eye's return. */
+  @media (min-width: 1000px) {
+    .row-main:not(.full) .rt > span:where(:not(.rh)):not(.rstats) {
+      line-height: 1.55;
     }
   }
 </style>

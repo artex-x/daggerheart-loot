@@ -579,6 +579,13 @@
     min-width: 0;
   }
 
+  /* DESIGN.md "Components", "The Field Measure Rule": the next controls follow the box. */
+  @media (min-width: 761px) {
+    .grow {
+      max-width: 720px;
+    }
+  }
+
   /* Up to 760 px the field takes its own line and «Создать» and «Отмена» share the next one,
      as in the add-to-list menu: at 360 px «Отмена» otherwise wrapped alone. */
   @media (max-width: 760px) {

@@ -584,12 +584,13 @@
     fill: currentcolor;
   }
 
+  /* A list name wraps whole (DESIGN.md "Typography", "The Whole Message Rule"); the inset
+     keeps a wrapped name off the row's edges. */
   .ln {
     flex: 1 1 auto;
     min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    padding-block: 6px;
+    overflow-wrap: anywhere;
   }
 
   .lc {
