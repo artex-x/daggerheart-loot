@@ -106,7 +106,7 @@ const SPECS = [
  * not on a roll/tables card, which only opens it inside a modal `typo.js`
  * never presses; `.lnote`/the per-row note toggle are `ListPage.svelte`
  * only, so `#/lists` (no entries of its own) gets neither; every `PageHead`
- * caller among these routes has help text except `SearchPage`
+ * caller among these routes has help text except `SearchPage` and `ListsPage`
  * (`help={null}`), and `RecordPage`/`ListPage`/`AccountPage` render no
  * `PageHead` at all. */
 const EXPECTED = {
@@ -122,7 +122,7 @@ const EXPECTED = {
   '#/tables/alt_item': ['help'],
   '#/tables/community_items': ['help'],
   '#/tables/many_worlds_tavern': ['help'],
-  '#/lists': ['help'],
+  '#/lists': [],
   [LIST]: ['note', 'listNote'],
   '#/i/w1': ['addToList'],
   '#/i/q1': ['addToList'],

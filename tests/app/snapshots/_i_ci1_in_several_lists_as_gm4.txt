@@ -98,7 +98,18 @@ RootWebArea "Premium Bedroll - Daggerheart Loot Generator" [url=/i/en/ci1?as=gm4
     StaticText "Core · Items · roll 1 "
     link "show in the table" [url=/en/tables/core_item/ci1]
     StaticText "During downtime, you automatically clear a Stress."
-    button "Add to list" [expanded=false]
+    button "Add to list" [expanded=true]
+    StaticText "LISTS"
+    searchbox "Find a list"
+    button "Сессия 3" [description=1 item pressed=true]
+    button "Порт Ветров" [description=1 item pressed=true]
+    button "Клад дракона" [description=1 item pressed=true]
+    button "Ёлочная ярмарка" [description=0 items pressed=false]
+    button "Сундук мага" [description=0 items pressed=false]
+    ... button x5 of 9 same-shape siblings elided
+    button "Храм Солнца" [description=0 items pressed=false]
+    button "Лавка в порту" [description=0 items pressed=false]
+    button "New list"
     button "Share"
     button "Print" [description=Lay these out for printing: nine to an A4 sheet]
     button "More" [expanded=false haspopup=menu]
@@ -113,9 +124,11 @@ RootWebArea "Premium Bedroll - Daggerheart Loot Generator" [url=/i/en/ci1?as=gm4
 Account: gm4@example.test
 Add to list
 EN
+Find a list
 Install as an app
 LootDaggerheart
 More
+New list
 Print
 Privacy
 RU
@@ -127,3 +140,15 @@ Tables
 Terms of use
 daggerheart.com
 show in the table
+Ёлочная ярмарка
+Клад дракона
+Кузнец
+Лавка в порту
+Логово
+Порт Ветров
+Рынок
+Сессия 3
+Сессия 4
+Сундук мага
+Трофеи
+Храм Солнца

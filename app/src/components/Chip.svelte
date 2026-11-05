@@ -37,16 +37,12 @@
       | {
           href: string;
           onclick?: never;
-          busy?: never;
           neutral?: never;
           filter?: never;
         }
       | {
           href?: never;
           onclick: () => void;
-          /** A choice whose read runs: dimmed, announced busy, and a press does nothing; the
-           *  focus stays on it. */
-          busy?: boolean | undefined;
           /** The neutral pressed default (DESIGN.md, "Chips"): a check and a lit ground,
            *  never gold. A filter row's «Все» is its caller. */
           neutral?: boolean | undefined;
@@ -63,7 +59,6 @@
     href,
     onclick,
     value,
-    busy,
     neutral,
     filter
   }: Props = $props();
@@ -89,12 +84,8 @@
     aria-pressed={on}
     data-val={value}
     data-fval={filter}
-    aria-busy={busy ? 'true' : undefined}
-    aria-disabled={busy ? 'true' : undefined}
     {title}
-    onclick={() => {
-      if (!busy) onclick?.();
-    }}
+    {onclick}
     >{#if neutral && on}<Icon name="check" />{/if}{label}</button
   >
 {/if}
@@ -118,14 +109,9 @@
     overflow-wrap: anywhere;
   }
 
-  .chip:hover:not([aria-disabled='true']) {
+  .chip:hover {
     border-color: var(--gold);
     color: var(--txt);
-  }
-
-  .chip[aria-disabled='true'] {
-    opacity: 0.5;
-    cursor: default;
   }
 
   .chip.on {

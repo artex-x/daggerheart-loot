@@ -5,7 +5,7 @@
   configured one stays 350 kB. The budgets themselves still rise only by the standing
   rule: a batch whose total passes a budget raises it to its measured total rounded up
   to the next whole kB, in the same commit; past a ceiling it stops and asks the owner.
-  Measured 2026-11-05 at task 57 batch 8: 268.3 and 325.7 kB, budgets 269 and 326.
+  Measured 2026-11-05: 268.3 and 325.7 kB, budgets 269 and 326.
 - Rejected: the budget set at the ceiling at once (it hides a growth of 31 kB); a
   bundle split to stay under 270 (a seam and a loading state for no reader's gain).
 - Consequence: later batches measure and raise by the standing rule up to 300 kB.

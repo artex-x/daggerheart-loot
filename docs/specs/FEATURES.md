@@ -468,7 +468,8 @@ across.
   `docs/decisions/2026-11-05-the-add-to-list-menu-stays-a-popover.md`).
 - The menu is headed «Списки» / "Lists". A list is a row: a check where it holds the
   record, the name on one line (cut with an ellipsis), and its count in words at
-  the end, «2 позиции», never cut; the name is the row's name and the count its
+  the end, «2 позиции», never cut: the entries the data still knows, the count of
+  the list's card on `/lists`; the name is the row's name and the count its
   description. The rows are neutral, with no gold fill (C61): a one-record menu's
   row is `aria-pressed`, a selection's menu only adds, so its rows carry no
   pressed state and no check. Rows are 44 px tall up to 760 px and 36 px from
@@ -495,7 +496,9 @@ across.
   primary and no import, and up to 760 px «Ещё» holds the pin alone.
 - «Новый список» opens the name field in place (rule 8): a panel under the head
   with the visible label «Название списка» / "List name", the input (placeholder
-  «Клад дракона» / "Dragon's hoard"), «Создать» and «Отмена». The focus goes into
+  «Клад дракона» / "Dragon's hoard"), «Создать» and «Отмена»; up to 760 px the input
+  takes its own line and the two buttons share the next one. The primary carries
+  `aria-expanded` while the panel is open. The focus goes into
   the input; Enter and «Создать» create, «Отмена» and Escape discard, and after
   either the focus returns to the primary. An empty name toasts «Сначала назовите
   список» and keeps the field. A create closes the field, clears the name filter
@@ -1092,8 +1095,8 @@ address kept, and no add-to-list control is drawn.
   it. No match draws «Ничего не найдено» and «Сбросить всё». A reload or
   another list clears the search and the filter.
 - **Not found** (A18, `ErrorPage`): an account address signed out, or an address
-  that is no account id, draws «Список не открывается» / "This list does not
-  open", «Списки открываются только в аккаунте, где их создали. Войдите в него.»,
+  that is no account id, draws «Войдите, чтобы открыть список» / "Sign in to open
+  this list", «Списки открываются только в аккаунте, где их создали. Войдите в него.»,
   the primary «Войти», which returns to that address, and «Открыть таблицы»; nothing while the session is
   unknown; «Загружаем...» while the session's account read runs;
   the heading «Список не загрузился», «Не получилось
@@ -2771,15 +2774,14 @@ right, so the tab order and the reading order agree
   folded by default, fold state remembered for the session only. From 761 px the
   button beside the H1 shows its label after a `?`; up to 760 px it is a round `?`
   button with the same name until its page's batch moves it. On the roll pages
-  and the catalog it is an item of «Ещё» up to 760 px; `/lists` has no help, and there the `h1` is read,
-  not drawn; `/homebrew` has no help, and its `h1` is read, not drawn, once its
-  items are read. The editor's heading is the breadcrumb row.
+  and the catalog it is an item of «Ещё» up to 760 px, and there the `h1` is read,
+  not drawn; `/lists` has no help; `/homebrew` has no help, and its `h1` is read,
+  not drawn, once its items are read. The editor's heading is the breadcrumb row.
 - The pin beside the H1 reads «Открывать при запуске» / "Open on start" with
   the home icon; pinned it reads «Открывается при запуске» / "Opens on start"
   with the check of the neutral pressed state (`Seg`), never a gold fill. From
-  761 px it is a labeled button; up to 760 px a round button with the same
-  name until its page's batch moves it into «Ещё»; on the roll pages, the
-  catalog, `/homebrew`, `/search` and `/lists` it is an item of «Ещё».
+  761 px it is a labeled button; up to 760 px it is an item of «Ещё» on the roll
+  pages, the catalog, `/homebrew`, `/search` and `/lists`.
 - **The error page** (`ErrorPage`, DESIGN.md "Error page"): every page-level
   failure draws its cause as the `h1`, one sentence and its actions with the
   primary first, no icon and no plate; a status region says the title once

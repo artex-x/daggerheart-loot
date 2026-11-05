@@ -12,7 +12,7 @@
   import Button from './Button.svelte';
   import Icon from './Icon.svelte';
   import SignInPrompt from './SignInPrompt.svelte';
-  import { NAME_MAX } from '../lib/cloudLists.js';
+  import { knownItems, NAME_MAX } from '../lib/cloudLists.js';
   import type { Msg } from '../lib/dict.js';
   import { recordHref } from '../lib/hash.js';
   import { isHomebrewKey } from '../lib/homebrew.js';
@@ -447,7 +447,7 @@
                     class="ln"
                     id={rid + '-n'}>{l.name}</span
                   ><span class="lc" id={rid + '-c'}
-                    >{plural(l.ids.length, t.itemsN, app.lang)}</span
+                    >{plural(knownItems(l, app.index?.byId).length, t.itemsN, app.lang)}</span
                   ></button
                 >
               {/each}

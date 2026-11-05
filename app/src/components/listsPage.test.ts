@@ -283,8 +283,10 @@ describe('«Новый список»', () => {
   it('opens the field in place with its label, the focus inside, and Enter creates', async () => {
     const { container } = await openIndex(TWO_LISTS);
     expect(screen.queryByRole('textbox', { name: 'Название списка' })).toBeNull();
+    expect(primary()).toHaveAttribute('aria-expanded', 'false');
     const field = await openField();
     expect(field).toHaveFocus();
+    expect(primary()).toHaveAttribute('aria-expanded', 'true');
     expect(field).toHaveAttribute('placeholder', 'Клад дракона');
     expect(screen.getByText('Название списка').tagName).toBe('LABEL');
     await expectNoA11yViolations(container);
@@ -678,6 +680,8 @@ describe('with sign-in configured', () => {
     expect(screen.queryByRole('button', { name: 'Импорт из файла' })).toBeNull();
     await expectNoA11yViolations(container);
     const retry = screen.getByRole('button', { name: 'Повторить' });
+    /* A grid item of `.stack` would stretch the retry across the column. */
+    expect(retry.parentElement?.classList.contains('stack')).toBe(false);
     cloud.setOffline(false);
     retry.focus();
     await fireEvent.click(retry);

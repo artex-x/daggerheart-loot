@@ -109,22 +109,22 @@
 | pw2-N4 | nit | local | fixed pw2-fix (one seam, `SignInPrompt`: every prompt that answers a press focuses «Войти» and offers «Отмена» back to the opener) | sign-in prompts differ |
 | pw2-N5 | nit | local | accepted (not a defect; no change) | `/pages/*.html` 308 redirects |
 | pw2-N6 | nit | local | fixed pw2-fix (the item draws a check while open; the panel starts with «Закрыть»; tables and roll pages) | «Об этих данных» panel has no close control up to 760 px. See `reviews/post-wave-2.md` |
-| 8-B1 | blocker | local | open | `/lists` failed read: «Повторить» stretches across the column (`LoadState` in the grid `.stack`); wrap it in a `<div>`. See `reviews/8.md` |
-| 8-R1 | risk | local | open | `FEATURES.md` "Chrome": the `/lists` `h1` "is read, not drawn" is false; the pin bullet still names a round pin up to 760 px |
+| 8-B1 | blocker | local | fixed 8-fix | `/lists` failed read: «Повторить» stretches across the column (`LoadState` in the grid `.stack`); wrap it in a `<div>`. See `reviews/8.md` |
+| 8-R1 | risk | local | fixed 8-fix | `FEATURES.md` "Chrome": the `/lists` `h1` "is read, not drawn" is false; the pin bullet still names a round pin up to 760 px |
 | 8-R2 | risk | local | named | configured budget 0.2 kB headroom (325.7 of 326 kB) |
-| 8-R3 | risk | local | open | EN halves of `#/i/ci1 ~ list menu as gm1` and `~ in several lists as gm4` hold no open menu (no `again`) |
-| 8-R4 | risk | local | open | `sweep.js` "импорт списков: позиции без копии" measures a closed fold |
-| 8-N1 | nit | local | open | list not-found `ErrorPage` has no `said` |
-| 8-N2 | nit | local | deferred (9b re-seed) | «Новый список» panel has no `aria-expanded` |
-| 8-N3 | nit | local | open | one list shows two counts (add-to-list row vs card) |
-| 8-N4 | nit | local | open | signed-out plate centers text, «Войти» at the left edge |
-| 8-N5 | nit | local | open | «Отмена» wraps alone under the name field at 360 px |
-| 8-N6 | nit | local | open | decision files cite "batch 8, L12" and "mock 8"; the 2026-09-28 decision needs "Amended by" (`BatchBar` gone) |
-| 8-N7 | nit | local | open | handoff Status stale, deviation numbering, no "Review:" line, file size |
+| 8-R3 | risk | local | fixed 8-fix | EN halves of `#/i/ci1 ~ list menu as gm1` and `~ in several lists as gm4` hold no open menu (no `again`) |
+| 8-R4 | risk | local | fixed 8-fix | `sweep.js` "импорт списков: позиции без копии" measures a closed fold |
+| 8-N1 | nit | local | fixed 8-fix | list not-found `ErrorPage` has no `said` |
+| 8-N2 | nit | local | fixed 8-fix | «Новый список» panel has no `aria-expanded` |
+| 8-N3 | nit | local | fixed 8-fix | one list shows two counts (add-to-list row vs card) |
+| 8-N4 | nit | local | fixed 8-fix | signed-out plate centers text, «Войти» at the left edge |
+| 8-N5 | nit | local | fixed 8-fix | «Отмена» wraps alone under the name field at 360 px |
+| 8-N6 | nit | local | fixed 8-fix | decision files cite "batch 8, L12" and "mock 8"; the 2026-09-28 decision needs "Amended by" (`BatchBar` gone) |
+| 8-N7 | nit | local | fixed 8-fix | handoff Status stale, deviation numbering, no "Review:" line, file size |
 | 8-N8 | nit | deferred-scope | named | commit `dc132655` body cites `plan-8.md`; do not amend; leave out of the squash message |
 | 8-N9 | nit | deferred-scope | deferred (batch 10) | open import toggle is gold `.btn.on`; Seal Rule says neutral |
-| 8-N10 | nit | local | optional | «Список не открывается» names a symptom, not the cause |
-| 8-P1 | polish | local | optional | each card's «Ещё» on its own row costs about 46 px per card at 360 px |
+| 8-N10 | nit | local | fixed 8-fix | «Список не открывается» names a symptom, not the cause |
+| 8-P1 | polish | local | skipped 8-fix (Thumb Rule batch resizes it) | each card's «Ещё» on its own row costs about 46 px per card at 360 px |
 | 8-P2 | polish | deferred-scope | deferred (batch 10) | two gold fills with the name field or import preview open |
 | 8-G1 | guideline | deferred-scope | Thumb Rule batch | card «Ещё» 32 px and «Выбрать» 36 px at 360 px (40 px rule) |
 | 8-G2 | guideline | deferred-scope | 9b Field Measure | `/lists` search box about 990 px at 1180 px |
@@ -132,3 +132,7 @@
 | 8-G4 | guideline | deferred-scope | toast-timing batch | list-limit toast with an email lasts 2.6 s |
 | 8-G5 | guideline | deferred-scope | "Proposed rules" | Escape does not leave the `/lists` selection mode |
 | 8-G6 | guideline | deferred-scope | 9b Whole Message | add-to-list rows cut a long name with no way to the whole name |
+| 8-CI1 | ci | local | fixed 8-fix | run 42020997138 `check`: `Chip.svelte` branches 62.5%; the `busy` prop lost its last caller (`AddToList`) and went |
+| 8-CI2 | ci | local | fixed 8-fix | `app/typo` `#/lists`: a stale `help` grip; `/lists` has no help |
+| 8-CI3 | ci | local | fixed 8-fix | e2e F7: `waitControl` read a row's text (name + count); it reads `aria-labelledby` first, as the driver |
+| 8-CI4 | ci | local | fixed 8-fix | `app/states` 54: stale, the index card says «Новое в списке (N)»; 86: a flake of the slow shard, passes alone |

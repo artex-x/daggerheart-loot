@@ -1015,7 +1015,7 @@
 {#snippet gone()}
   {#if app.user}
     {@const email = app.user.email}
-    <ErrorPage title={t.listGoneAccount}>
+    <ErrorPage title={t.listGoneAccount} said>
       {email
         ? `${t.listGoneAccountSub} ${t.listGoneAs.replace('%s', () => email)}`
         : t.listGoneAccountSub}
@@ -1027,7 +1027,7 @@
       {/snippet}
     </ErrorPage>
   {:else}
-    <ErrorPage title={t.listGoneSignedOut}>
+    <ErrorPage title={t.listGoneSignedOut} said>
       {t.listGoneSignedOutSub}
       {#snippet actions()}
         <Button

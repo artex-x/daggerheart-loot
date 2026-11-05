@@ -1747,8 +1747,13 @@ describe('an account list', () => {
       )
     ).toHaveClass('errtext');
     expect(screen.getAllByRole('heading', { level: 1 }).map((h) => h.textContent)).toEqual([
-      'Список не открывается'
+      'Войдите, чтобы открыть список'
     ]);
+    await waitFor(() => {
+      expect(container.querySelector('.errpage + .said')).toHaveTextContent(
+        'Войдите, чтобы открыть список'
+      );
+    });
     expect(container.querySelector('.page-h')).toBeNull();
     expect([...container.querySelectorAll('.erracts .btn')].map((b) => b.textContent)).toEqual([
       'Войти',
@@ -1778,7 +1783,7 @@ describe('an account list', () => {
     expect(
       screen.getByRole('heading', { level: 1, name: 'Список не загрузился' })
     ).toBeInTheDocument();
-    expect(screen.queryByText('Список не открывается')).toBeNull();
+    expect(screen.queryByText('Войдите, чтобы открыть список')).toBeNull();
     await expectNoA11yViolations(container);
     cloud.setOffline(false);
     await userEvent.click(screen.getByRole('button', { name: 'Повторить' }));
@@ -1797,6 +1802,11 @@ describe('an account list', () => {
     expect(screen.getAllByRole('heading', { level: 1 }).map((h) => h.textContent)).toEqual([
       'Этого списка нет в вашем аккаунте'
     ]);
+    await waitFor(() => {
+      expect(container.querySelector('.errpage + .said')).toHaveTextContent(
+        'Этого списка нет в вашем аккаунте'
+      );
+    });
     expect([...container.querySelectorAll('.erracts .btn')].map((b) => b.textContent)).toEqual([
       'Мои списки',
       'Открыть таблицы'
@@ -2059,7 +2069,7 @@ describe('every stored entry of an account list', () => {
     open(unknown, uuid(101));
     await new Promise((r) => setTimeout(r, 20));
     expect(screen.queryByText('Загружаем...')).toBeNull();
-    expect(screen.queryByText('Список не открывается')).toBeNull();
+    expect(screen.queryByText('Войдите, чтобы открыть список')).toBeNull();
   });
 
   it("holds the list's name as text in its h1, the input keeping its label", async () => {

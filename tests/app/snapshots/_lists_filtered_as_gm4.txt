@@ -21,7 +21,7 @@ RootWebArea "Мои списки - Генератор лута Daggerheart" [url
     heading "Мои списки" [level=1]
     button "Открывать при запуске" [pressed=false]
     button "Импорт из файла" [expanded=false]
-    button "Новый список"
+    button "Новый список" [expanded=false]
     status ""
     searchbox "Найти список" [value=порт focused=true]
     StaticText "30 списков из 50"
@@ -83,7 +83,7 @@ RootWebArea "My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm4]
     heading "My lists" [level=1]
     button "Open on start" [pressed=false]
     button "Import from file" [expanded=false]
-    button "New list"
+    button "New list" [expanded=false]
     status ""
     searchbox "Find a list" [value=порт focused=true]
     StaticText "30 lists of 50"

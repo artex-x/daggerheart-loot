@@ -7,6 +7,7 @@ import {
   entrySource,
   heldSnapshots,
   isCloudId,
+  knownItems,
   limitText,
   linkedOf,
   linkedRecords,
@@ -29,6 +30,7 @@ import {
 } from './cloudLists.js';
 import { dict } from './dict.js';
 import { recordOf } from './homebrew.js';
+import type { Record_ } from './types.js';
 
 const entry = (id: string, key: string, position: number, over: Partial<EntryRow> = {}) => ({
   id,
@@ -564,6 +566,27 @@ describe('homebrew entries', () => {
     expect(linkedOf({ id: 'x', name: '', ids: [] })).toEqual({});
     const withLinked = { ...l, linked: { [AXE]: linked } };
     expect(linkedOf(withLinked)).toBe(withLinked.linked);
+  });
+
+  it('answers the records the data or the linked items still know, in list order', () => {
+    const q1: Record_ = {
+      id: 'q1',
+      src: 'core',
+      kind: 'item',
+      en: 'Potion',
+      ende: '',
+      ru: 'Зелье',
+      rud: ''
+    };
+    const l = {
+      id: 'x',
+      name: '',
+      ids: [AXE, 'gone1', 'q1'],
+      linked: { [AXE]: linked }
+    };
+    expect(knownItems(l, new Map([['q1', q1]]))).toEqual([linked, q1]);
+    expect(knownItems(l, undefined)).toEqual([linked]);
+    expect(knownItems({ id: 'y', name: '', ids: ['q1', 'gone1'] }, new Map())).toEqual([]);
   });
 
   it('reads the valid records of an items() answer by id, each with its hid', () => {

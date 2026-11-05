@@ -180,6 +180,18 @@ export function linkedOf(l: StoredList): Readonly<Record<string, HomebrewRecord>
   return (l as Partial<CloudList>).linked ?? NO_LINKED;
 }
 
+/** Returns the records of a list's ids that the data or the list's linked items still know,
+ *  in list order: a deleted or renamed record leaves no entry that a count holds. */
+export function knownItems(
+  l: StoredList,
+  byId: ReadonlyMap<string, Record_> | undefined
+): Record_[] {
+  const linked = linkedOf(l);
+  return l.ids
+    .map((id) => byId?.get(id) ?? linked[id])
+    .filter((it): it is Record_ => it !== undefined);
+}
+
 /** One answer row of `get_homebrew_items`: the item's id, its record and its picture
  *  (absent for none). */
 export interface LinkedRow {

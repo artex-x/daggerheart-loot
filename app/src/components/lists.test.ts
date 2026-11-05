@@ -137,7 +137,9 @@ describe('the row under a full card', () => {
     const off = screen.getByRole('button', { name: rowName('Лавка в порту') });
     expect(on).toHaveAttribute('aria-pressed', 'true');
     expect(on.querySelector('svg')).not.toBeNull();
-    expect(on).toHaveAccessibleDescription('2 позиции');
+    /* `w1` is not in this dataset: the row counts the records the data still knows, as the
+       list's card on `/lists` does. */
+    expect(on).toHaveAccessibleDescription('1 позиция');
     expect(on).not.toHaveClass('on');
     expect(off).toHaveAttribute('aria-pressed', 'false');
     expect(off.querySelector('svg')).toBeNull();

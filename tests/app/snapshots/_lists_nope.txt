@@ -1,6 +1,6 @@
 # #/lists/nope
 # route: #/lists/nope
-# why: not an account address, signed out: «Список не открывается», «Войти» and «Открыть таблицы»; the address not rewritten
+# why: not an account address, signed out: «Войдите, чтобы открыть список», «Войти» and «Открыть таблицы»; the address not rewritten
 
 ## ru :: tree
 RootWebArea "Генератор лута Daggerheart" [url=/lists/nope]
@@ -17,10 +17,12 @@ RootWebArea "Генератор лута Daggerheart" [url=/lists/nope]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
-    heading "Список не открывается" [level=1]
+    heading "Войдите, чтобы открыть список" [level=1]
     StaticText "Списки открываются только в аккаунте, где их создали. Войдите в ..." [namelen=69 namehash=32433df5]
     button "Войти"
     link "Открыть таблицы" [url=/tables]
+    status ""
+      StaticText "Войдите, чтобы открыть список"
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -58,10 +60,12 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/lists/nope]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
-    heading "This list does not open" [level=1]
+    heading "Sign in to open this list" [level=1]
     StaticText "A list opens only in the account where it was made. Sign in to t..." [namelen=76 namehash=ed4d5344]
     button "Sign in"
     link "Open the tables" [url=/en/tables]
+    status ""
+      StaticText "Sign in to open this list"
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]

@@ -24,12 +24,11 @@
   import SyncStatus from './SyncStatus.svelte';
   import TextInput from './TextInput.svelte';
   import { agoText } from '../lib/ago.js';
-  import { linkedOf, NAME_MAX, type CloudList } from '../lib/cloudLists.js';
+  import { knownItems, NAME_MAX, type CloudList } from '../lib/cloudLists.js';
   import { sectionHash, storedListHash } from '../lib/hash.js';
   import { fewNames } from '../lib/i18n.js';
-  import { LIST_PAGE, LIST_SEARCH_AT, matchLists, type StoredList } from '../lib/lists.js';
+  import { LIST_PAGE, LIST_SEARCH_AT, matchLists } from '../lib/lists.js';
   import { countOf } from '../lib/plural.js';
-  import type { Record_ } from '../lib/types.js';
   import type { AppState } from '../state/app.svelte.js';
 
   interface Props {
@@ -217,16 +216,6 @@
     grid?.querySelectorAll<HTMLElement>('.listcard-main')[from]?.focus();
   }
 
-  /* The ids the data still knows, in list order - what the meta line counts and the thumbs
-     draw from, not `l.ids` itself: a deleted or renamed record must not leave a gap the
-     count holds as though it were still there. */
-  function knownItems(l: StoredList): Record_[] {
-    const linked = linkedOf(l);
-    return l.ids
-      .map((id) => index?.byId.get(id) ?? linked[id])
-      .filter((it): it is Record_ => it !== undefined);
-  }
-
   /* «Новый список» opens the name field in place (rule 8); at the limit it says so and
      stays closed (round 3, unit B). */
   let newOpen = $state(false);
@@ -290,6 +279,7 @@
   <Button
     variant="primary"
     size={md ? 'md' : 'sm'}
+    expanded={newOpen}
     bind:el={newButton}
     onclick={() => void openNew()}><Icon name="plus" />{t.newList}</Button
   >
@@ -393,7 +383,9 @@
 {:else if target === 'prompt'}
   <div class="stack">
     <Empty glyph="kindItem">
-      <SignInPrompt {app} lead={t.signInToCreate} after={{ hash: '#/lists' }} />
+      <div class="signedout">
+        <SignInPrompt {app} lead={t.signInToCreate} after={{ hash: '#/lists' }} />
+      </div>
     </Empty>
   </div>
 {:else if signedIn && cloud}
@@ -425,13 +417,16 @@
       </Panel>
     {/if}
     {#if cloud.status !== 'ready'}
-      <LoadState
-        {t}
-        failed={cloud.status === 'error'}
-        text={t.cloudLoadFailed}
-        onretry={() => void app.retryLists()}
-        after={() => newButton}
-      />
+      <!-- A block: as a grid item of `.stack` the retry would stretch across the column. -->
+      <div>
+        <LoadState
+          {t}
+          failed={cloud.status === 'error'}
+          text={t.cloudLoadFailed}
+          onretry={() => void app.retryLists()}
+          after={() => newButton}
+        />
+      </div>
     {:else}
       <div class="collection">
         {#if filtering}
@@ -505,7 +500,7 @@
                 {app}
                 list={l}
                 href={app.href(storedListHash(l.id))}
-                items={knownItems(l)}
+                items={knownItems(l, index?.byId)}
                 edited={agoText(l.updated, app.now, app.lang, t)}
                 inbox={waiting(l.id)}
                 picked={sel.has(l.id)}
@@ -584,6 +579,14 @@
     min-width: 0;
   }
 
+  /* Up to 760 px the field takes its own line and «Создать» and «Отмена» share the next one,
+     as in the add-to-list menu: at 360 px «Отмена» otherwise wrapped alone. */
+  @media (max-width: 760px) {
+    .grow {
+      flex-basis: 100%;
+    }
+  }
+
   /* The head of the collection: the count, then «Выбрать» at its end. */
   .lhead {
     display: flex;
@@ -613,6 +616,15 @@
     .stack {
       margin-top: 8px;
     }
+  }
+
+  /* The plate centers its text, so «Войти» centers too when it wraps under the lead. */
+  .signedout {
+    width: 100%;
+  }
+
+  .signedout :global(.signin) {
+    justify-content: center;
   }
 
   .hint {

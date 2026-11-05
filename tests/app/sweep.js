@@ -273,6 +273,15 @@ const PAGES = [
         await d.upload(IMPORT('keys-only-v2.json'));
         for (let i = 0; i < 40 && !/Пропущено позиций|Items skipped/.test(await d.text()); i++)
           await d.settle();
+        /* Each list's skip lines sit in a closed fold: open every fold, or the long line is
+           never laid out. */
+        const folds = (await d.text()).match(/(?:Пропущено|Skipped): \d+/g) ?? [];
+        const seen = new Map();
+        for (const f of folds) {
+          await d.press(f, seen.get(f) ?? 0);
+          seen.set(f, (seen.get(f) ?? 0) + 1);
+        }
+        if (!folds.length) throw new Error('no skip fold to open');
       }
     ],
     /* A fifth element seeds the fake: the Items tab's filter with a section row of 22

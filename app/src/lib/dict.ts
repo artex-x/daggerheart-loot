@@ -393,7 +393,7 @@ const ru = {
   listEmptyHint:
     'Пока пусто. Откройте «Таблицы» или «Поиск», отметьте нужное галочками и нажмите «В список» - или сделайте это прямо с карточки предмета.',
   itemNotLoaded: 'Предмет не загружен',
-  listGoneSignedOut: 'Список не открывается',
+  listGoneSignedOut: 'Войдите, чтобы открыть список',
   listGoneSignedOutSub: 'Списки открываются только в аккаунте, где их создали. Войдите в него.',
   listGoneAccount: 'Этого списка нет в вашем аккаунте',
   listGoneAccountSub: 'Его удалили, или он сохранён в другом аккаунте.',
@@ -1460,7 +1460,7 @@ const en: Dict = {
   listEmptyHint:
     'Nothing here yet. Open Tables or Search, tick what you need and press "Add to list" - or do it straight from an item card.',
   itemNotLoaded: 'Item not loaded',
-  listGoneSignedOut: 'This list does not open',
+  listGoneSignedOut: 'Sign in to open this list',
   listGoneSignedOutSub:
     'A list opens only in the account where it was made. Sign in to that account.',
   listGoneAccount: 'This list is not in your account',

@@ -643,7 +643,8 @@ const STATES = [
     enter: async (d) => {
       await d.settled();
       await d.click('В список');
-    }
+    },
+    again: (d) => d.click('Add to list')
   },
   {
     id: '#/i/ci1 ~ in several lists as gm4',
@@ -653,7 +654,8 @@ const STATES = [
     enter: async (d) => {
       await onAccount(d, TWELVE_SPECS, false);
       await d.click('В список');
-    }
+    },
+    again: (d) => d.click('Add to list')
   },
   {
     id: '#/i/ci1 ~ new list from a search as gm2',
@@ -2082,7 +2084,7 @@ const STATES = [
   {
     id: SHOP,
     route: SHOP,
-    why: 'signed out on an account address: the error page «Список не открывается», its cause, «Войти» and «Открыть таблицы»'
+    why: 'signed out on an account address: the error page «Войдите, чтобы открыть список», its cause, «Войти» and «Открыть таблицы»'
   },
   {
     id: LIST_GONE + ' as gm1',
@@ -2504,7 +2506,7 @@ const STATES = [
   {
     id: '#/lists/nope',
     route: '#/lists/nope',
-    why: 'not an account address, signed out: «Список не открывается», «Войти» and «Открыть таблицы»; the address not rewritten'
+    why: 'not an account address, signed out: «Войдите, чтобы открыть список», «Войти» and «Открыть таблицы»; the address not rewritten'
   },
   {
     /* The players' payload of the old `qty-and-price` fixture, as a link written before

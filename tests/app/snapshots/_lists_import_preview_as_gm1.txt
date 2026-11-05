@@ -21,7 +21,7 @@ RootWebArea "Мои списки - Генератор лута Daggerheart" [url
     heading "Мои списки" [level=1]
     button "Открывать при запуске" [pressed=false]
     button "Импорт из файла" [expanded=true]
-    button "Новый список"
+    button "Новый список" [expanded=false]
     status ""
     StaticText "ИМПОРТ ИЗ ФАЙЛА JSON"
     button "Выбрать файл..."
@@ -102,7 +102,7 @@ RootWebArea "My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm1]
     heading "My lists" [level=1]
     button "Open on start" [pressed=false]
     button "Import from file" [expanded=true]
-    button "New list"
+    button "New list" [expanded=false]
     status ""
     StaticText "IMPORT FROM A JSON FILE"
     button "Choose a file..."

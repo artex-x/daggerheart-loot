@@ -2773,6 +2773,10 @@ async function countRequestReads(page) {
   });
 }
 
+/* The index card's chip, which counts the pending requests with the unread notices. */
+const cardSays = (text) =>
+  [...document.querySelectorAll('.listcard-new')].some((e) => e.textContent.trim() === text);
+
 /** 54. A purchase request reaches the owner's open list page and the index within a
  *  second while the owner topic is joined; with Realtime down it waits for the tab to
  *  be shown again. */
@@ -2791,8 +2795,8 @@ async function liveRequests() {
   );
   await d.go('#/lists');
   ok(
-    await waitIn(page, bodyHas, '1 запрос ждёт ответа'),
-    at + 'the index does not say «1 запрос ждёт ответа»'
+    await waitIn(page, cardSays, 'Новое в списке (1)'),
+    at + 'the index card does not say «Новое в списке (1)»'
   );
   /* The loss re-reads the requests once by itself; the next request comes after it. */
   await countRequestReads(page);
@@ -2803,12 +2807,12 @@ async function liveRequests() {
   );
   await d.fake('request', 'gm-token-1', [{ item: 'cc1', qty: 1 }]);
   ok(
-    !(await waitWithin(page, 1000, bodyHas, '2 запроса ждут ответа')),
+    !(await waitWithin(page, 1000, cardSays, 'Новое в списке (2)')),
     at + 'the second request showed with Realtime down and no signal'
   );
   await d.shownAgain();
   ok(
-    await waitIn(page, bodyHas, '2 запроса ждут ответа'),
+    await waitIn(page, cardSays, 'Новое в списке (2)'),
     at + 'the second request did not show when the tab was shown again'
   );
   await ctx.close();

@@ -83,7 +83,9 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
   acceptance 14, case 104) and the add-to-list popover decision (L12). Owner item 9 (rows cut with free width) is
   placed in batch 9b ("9b-R9", section 7). Defaults for the owner's absence: AFK decisions items 13-16.
 - Batch 8 implemented 2026-11-05 (`handoff.md`, Completed, "Batch 8"): cases 102-104; the budgets stay 269 and 326
-  kB (268.3 and 325.7 measured); the 300 kB unconfigured ceiling is written; batch 9b reads cases 105-107.
+  kB (268.3 and 325.7 measured); the 300 kB unconfigured ceiling is written; batch 9b reads cases 105-107. Its review
+  (`reviews/8.md`, fix-then-continue) and the CI failures of run 42020997138 are answered by one remediation pass
+  (`handoff.md`, Completed, "Review" of batch 8); the nine add-to-list goldens with closed EN menus ride 9b's re-seed.
 - Plan review: not required (no trigger fired) for batch 8. Batch 8 changes no contract (`routes.json`, `CONTRACTS.md`,
   `llms.txt` stay), stores nothing, adds no migration, no `SECURITY DEFINER` function and no write or sync protocol
   (`plan-8.md`, "Plan review"). The earlier `required before 1` line stays satisfied by `reviews/plan-1-2.md` and

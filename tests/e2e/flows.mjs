@@ -51,12 +51,21 @@ const { makeDriver, prepare } = createRequire(import.meta.url)('../app/driver.js
 
 const WAIT = { timeout: 20_000, polling: 100 };
 
-/* A control's name the way the driver reads it: label, then text. */
+/* A control's name the way the driver reads it: `aria-labelledby`, label, then text. An
+   add-to-list row is named by its list's name alone, and its text adds the count. */
 const NAMED = (sel, name) =>
-  [...document.querySelectorAll(sel)].some(
-    (e) =>
-      (e.getAttribute('aria-label') || e.textContent || '').replace(/\s+/g, ' ').trim() === name
-  );
+  [...document.querySelectorAll(sel)].some((e) => {
+    const by = (e.getAttribute('aria-labelledby') || '')
+      .split(/\s+/)
+      .map((id) => (id ? document.getElementById(id)?.textContent : ''))
+      .filter(Boolean)
+      .join(' ');
+    return (
+      (by || e.getAttribute('aria-label') || e.textContent || '')
+        .replace(/\s+/g, ' ')
+        .trim() === name
+    );
+  });
 
 async function waitFor(page, what, fn, ...args) {
   try {

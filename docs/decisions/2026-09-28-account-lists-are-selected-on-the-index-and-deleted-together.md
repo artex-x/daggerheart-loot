@@ -1,5 +1,6 @@
 # 2026-09-28 - Account lists are selected on the index and deleted together, with no undo
 
+- Amended by "List pages share one head and one selection bar" (2026-10-30): the pick boxes draw only in the selection mode behind «Выбрать», and `SelectionBar` replaces the `BatchBar` strip over the cards.
 - Task: `persist-6-import-export` (the owner asked for selection on the index and batch
   deletion on 2026-09-27).
 - Decision: each account card on `#/lists` carries a pick box, and the list page's selection

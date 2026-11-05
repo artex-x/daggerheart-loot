@@ -22,6 +22,8 @@ RootWebArea "Генератор лута Daggerheart" [url=/lists/00000000-0000-
     StaticText "Его удалили, или он сохранён в другом аккаунте. Вы вошли как gm1..." [namelen=78 namehash=8ae82719]
     link "Мои списки" [url=/lists]
     link "Открыть таблицы" [url=/tables]
+    status ""
+      StaticText "Этого списка нет в вашем аккаунте"
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -64,6 +66,8 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/lists/00000000-0000-4000-8000-
     StaticText "It was deleted, or it is in another account. You are signed in a..." [namelen=83 namehash=c3831bd9]
     link "My lists" [url=/en/lists]
     link "Open the tables" [url=/en/tables]
+    status ""
+      StaticText "This list is not in your account"
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
