@@ -2,32 +2,47 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress. Waves 1, 2 and 2b are on `main`; wave 3: 9a, 8, 9b, batch CI and the CI fix pass
-  are built and pushed. The CI fix pass (previous sha `8c4c6833`) fixed the four failures of CI run 42116078717
-  (Completed, "CI fix pass"); its tip waits for CI and the CI credit. The `e2e` failure is the hosted project's
-  latency (no code change): if `e2e` fails again on the fix tip, `gh run rerun <id> --failed` once.
-- Last agent: implementer (the CI fix pass). No subagent runs. No worker has uncommitted code edits.
-- NEEDS_HUMAN_CONFIRMATION: no. One figure for the owner: the folded requests strip at 360x640 now starts the
-  rows at 304 px (was 324; the owner's figure was 292), so the 360 exception is 304 (review B3: above 300, logged).
-  No for batch N: the owner answered N1-N4 on 2026-11-05; one planner default the owner may overrule: from 761 to
-  999 px the pills take their own row under the head row (`plan-nav.md` section 4).
+- Task status: in_progress. Waves 1, 2 and 2b are on `main`. Wave 3 CI is fixed and credited at `a8bdf1de` (the fix tip;
+  CI green, credit armed, per the orchestrator). The plans of the rest of wave 3 are folded (2026-11-06) into `plan.md`
+  (Status, sections 4, 7, 8, 12-16), the new merged brief `plan-TD.md` and the briefs `plan-N.md`, `plan-P.md`.
+- Next batch: TD (T + D + The Measure Rule in one batch; REBATCH option B), brief `plan-TD.md`. Writer tier: opus, writer
+  test 3 (an acceptance line rests on visual judgment: the folds at 360, the card corner, the header hold, the plate's
+  ground and the hugging help panel; six header re-seeds); test 1 no (every fork has a default), test 2 no. Review:
+  required (visual parity and changed UI on every route; generated artifacts: the static pages regenerate). Plan review:
+  not required.
+- Order after TD (each with its batch review, one fix pass, a push and a CI credit): N (opus, test 3; review required:
+  changed UI and about 145 goldens), P (opus, test 3; review required: visual parity and print; the card stays 63x88 mm),
+  10 (opus, tests 2 and 3; review required: a prompt changes). Then the wave 3 squash, the wave 3 blind review with its
+  remediation, the closeout (`/handoff` skill, "Finishing a task"; `orchestrate.prompt.md` "Task closeout and cleanup":
+  the squash onto `main`, the deploy, the merge back), then the whole-app blind review and its remediation. The squash
+  message takes `reviews/9b.md` R7's corrected text (commit `18429aee`'s body has wrong sentences).
+- Per batch (acceptance count, total gate cost, the split criterion; `plan.md` sections 7 and 8): TD 44 lines, 168-230
+  min, merged because T, D and the Measure Rule share the components, the seed and the gates and move no golden tree;
+  split from 9b and N by route set. N 17 lines, 115-150 min, its own route set and about 145 goldens. P 30 lines, 157-197
+  min, its own route set (`/p/`, the print card) and gate (`app/print`). 10 21 lines, 95-125 min. Plan total of the rest:
+  about 612-796 min with the squash, the blind reviews and the closeout.
+- NEEDS_HUMAN_CONFIRMATION: no for TD, N, P and 10 (no product law changes: Q-P1 is no, the print card stays 63x88 mm). One
+  figure for the owner, not a gate: the folded requests strip at 360x640 starts the rows at 304 px (the owner's figure was
+  292; review 9b B3, logged). The owner's decisions of 2026-11-05 are in `context.md` items 7-15 and are not reopened.
+- Defaults taken at the fold (owner AFK; the orchestrator logs them as item 24 of the AFK decisions file):
+  1. Three placed lines in TD: 6-N1 (the editor row with a 120-character name at 1180), the case 89 figure after T's
+     folds, and the 9a R2 probe (measured, not fixed; `DEBT.md` at closeout).
+  2. P's phone preview reuses `previewScale` (no new `cardScale`; at 63x88 mm a 328 px column gives 1.37 std and 1.97
+     compact).
+  3. P5 (`rollNo`, about 1000 generated stubs) is not built; it goes to `DEBT.md` at closeout, so batch 10 needs no plan
+     review. If the owner wants the code, the plan writes `required before 10` first.
+  4. Batch 10 takes a small cleanup besides the docs lock: the roll card's dead code, the three roll copy rows of batch
+     N, the case 89 audit, and kept-exception defaults (`404.html` keeps the system face, `/s/` keeps the bare «1», the
+     H2 and D15 copies are kept and named); 95-125 min instead of about 20.
+  5. N reads `/tables/eq_*` at 768 px in RU (the Deferred row at 761-800 px) through case 112 (e); no fix is built.
+  6. 4-R1 is named to the owner at closeout with the recommendation to keep the page; `reviews/CI.md` N6 is named at
+     closeout, with no hook or workflow change in batch 10.
+  7. `plan.md` was compacted (147.7 KB to 114 KB): the Status history and the briefs of batches 4 to 9b, now one block
+     (`git show a8bdf1de:issues/57/plan.md`). `context.md` was not edited; its placement lines are in the planner's report.
+- Last agent: planner (the 2026-11-06 fold). No subagent runs. No worker has uncommitted code edits.
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
-- Base / starting commit: `d8e30731`; previous sha of the CI fix pass: `8c4c6833`.
-- Pushed: the CI fix pass tip (the sha is in the implementer's report; the handoff cannot name its own commit).
-- Next step, in order (the owner's decisions of 2026-11-05 are in `context.md` items 7-15 and their ANSWERS):
-  (1) CI credit of the fix tip: every `browser (n)` green, the four `app/states` pass lines (25/24/24/24 of 97,
-  not readable from a green job's log: `test-output/` uploads on failure only), `e2e` green (one rerun counts);
-  (2) FOLD the plans into `plan.md`/`handoff.md` (the fold lists at the end of `plan-T.md`, `plan-D.md`,
-  `plan-text.md`, `plan-N.md`, `plan-P.md`; batch D is merged into T as "TD" with the Measure Rule `plan-text.md`;
-  renumber the new browser cases: TD 108-111, N 112-113, P 114-115; restate `plan-P.md` for the owner's "keep 63x88
-  mm" (Q-P1 no: P-D1 and P-D17 take their fallbacks, no `CLAUDE.md`/`llms.txt` change, no plan review for P));
-  (3) batches in this order: TD (`plan-T.md` + `plan-D.md` + `plan-text.md`; opus), N (`plan-N.md`; opus), P
-  (`plan-P.md`; opus), 10 (docs lock; `plan.md` section 7 row 10 plus the inherited lines), each with its batch
-  review (reviewer dispatches name the guideline set of `context.md` item 10) and one fix pass, a push and a CI
-  credit per batch; (4) the wave 3 blind review of production-like screens and its mitigation, the closeout
-  (`/handoff` skill, "Finishing a task"; `orchestrate.prompt.md` "Task closeout and cleanup": the squash onto
-  `main`, the deploy, the merge back), then the whole-feature blind review and its mitigation. The squash message
-  takes `reviews/9b.md` R7's corrected text (commit `18429aee`'s body has wrong sentences).
+- Base / starting commit: `d8e30731`; previous sha of the fold: `a8bdf1de`.
+- Pushed: the fold commit (the sha is in the planner's report; the handoff cannot name its own commit).
 
 ## Completed
 One line per shipped batch. The full acceptance tables, deviations and measurements of batches 1 to 9a are in
@@ -214,52 +229,73 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
 - Batch 9b and earlier: `git show 22f93378:issues/57/handoff.md`, "Verification".
 
 ## Next batch (implement-ready)
-- Name: the fold, then batch TD, N, P, 10 (see Status "Next step"), after the CI credit of the fix tip.
-- Verification of the fix tip on CI: every `browser (n)` green (cases 44, 86 and 89 in `app/states` 1/4, 4/4
-  and 3/4), each `app/states` row under 600 s, the longest job under 20 min, `app/typo` green (the 1180 wrap
-  kept), `e2e` green.
-- CI of `22d9a00b` already proved the rest of the 9b remediation: `check` coverage, `app/sweep` 360/390/768,
-  `app/typo`, `app/print` passed.
-- Facts for the dispatches: the local gates are the affected vitest files, both lints after the last edit, the golden
-  re-seed when goldens move (each shard with the Bash timeout 600000), `npm run check:built`, the detector, and
-  `rtk npm run check:fast` last; browser suites and sweeps run on CI. On this host `VITEST_MAX_WORKERS=2` bounds
-  vitest's workers. A golden is re-seeded, never edited.
+- Name: batch TD (the Thumb Rule, the Reading Time Rule, the Drop Rule, `--gap-plate`, The Measure Rule). Brief:
+  `issues/57/plan-TD.md` (the merged order TD-1 to TD-12, the overlaps, 44 acceptance lines, the gate cost); it reads
+  `plan-T.md`, `plan-D.md` and `plan-text.md` in that order. Mocks: `issues/57/mocks/T/`, `mocks/D/`, `mocks/text/`.
+  Cases 108 (toasts), 109 (targets), 110 (plates), 111 (the text measure); batch N takes 112 and 113, batch P 114 and 115.
+  The last case in `states.js` today is 107.
+- Read first: `CLAUDE.md`, this file, `plan.md` Status and section 7 "Batch TD" (and 14 for the first-screen figures), then
+  `plan-TD.md`, `plan-T.md` (decisions T1-T12, "First-screen rows", "Toasts", steps), `plan-D.md` (D-1 to D-8, "Inventory
+  of dashes", steps), `plan-text.md` (sections 3-5), `docs/specs/FEATURES.md` "Chrome", "Print" (the print card keeps its
+  dashed cut line), DESIGN.md "Layout", "Typography", "Shapes", "Components", "Empty state", and `docs/decisions/` (the
+  index `docs/DECISIONS.md`). Components: `Button`, `Chip`, `Seg`, `RollPage`, `ModeRow`, `TableRows`, `ListFind`,
+  `ListCard`, `MoreMenu`, `Toast`, `app.svelte.ts`, `tokens.css`, `Empty`, `Badge`, `HitNote`, `ListPage`, `MarkupField`,
+  `PageHead`, `PageTitle`, `HelpBox`, `SignInPrompt`, `ErrorPage`, `NoticeBox`, `Shell`, `AccountPage`, `PickRow`,
+  `tools/build-pages.js`; tests `tests/app/lib.js`, `sweep.js`, `states.js` (cases 83, 89, 105-107), `inventory.js`,
+  `tests/derived.js`.
+- Dispatch (orchestrator): tier opus, writer test 3, announced in chat; run `critique` on the three mocks first; name the
+  guideline set of `context.md` item 10 in the later reviewer dispatch; the implementer's `polish` and `harden` are the
+  orchestrator's after the prose step.
+- Gates: the affected vitest files one at a time with `VITEST_MAX_WORKERS=2` (`app.test.ts`, `shell.test.ts`,
+  `listsPage.test.ts`, `listPage.test.ts`, `sharedListPage.test.ts`); `node tests/run-all.js derived`; both lints after the
+  last edit; `npm run build:test`, then the loader runs of cases 83, 108, 109, 110 and 111 (case 83 before and after) and
+  `node tests/app/sweep.js 360 ru` once; the six `--only` re-seeds of D S9; `npm run check:built`; the detector; then
+  `rtk npm run check:fast` last (Bash timeout 600000); push; CI is the full gate (the sweep at four widths, the goldens).
+  Browser suites run on CI; no browser suite beside vitest. A golden is re-seeded, never edited.
+- Verification of the fix tip on CI (the orchestrator's report): every `browser (n)` green, `e2e` green (one rerun counts).
+  The four `app/states` pass lines (25/24/24/24 of 97) are not readable from a green job's log: `test-output/` uploads on
+  failure only.
+- Facts for the dispatch: on this host the local gates are the affected vitest files, both lints after the last edit, the
+  golden re-seed when goldens move (each shard with the Bash timeout 600000), `npm run check:built`, the detector, and
+  `rtk npm run check:fast` last. `VITEST_MAX_WORKERS=2` bounds vitest's workers.
 
 ## Blockers
 - None.
 
 ## Deferred
+Placed into acceptance lines at the 2026-11-06 fold (`plan.md` section 7; the line is checked at its batch's close). A placed
+row whose facts the line carries is removed here; a row whose measured facts only this file holds stays below with its
+placement named:
+
+| Deferred row | Placed in |
+|---|---|
+| 9a R2 probe; the focus jump (3b); `LIST_A ~ more` scroll 83 | TD-P3 (measured, not fixed), then 10-18 (`DEBT.md`); rows stay below |
+| Toast over «Ещё» (batch 4) | T-14 (case 108 (f) numbers), then 10-18; row stays below |
+| 6-N1 (the editor row with a 120-character name at 1180) | TD-P1 |
+| Case 89 default (the picker cuts a long chosen part up to 760 px) | TD-P2 (the figure), 10-12 (the audit) |
+| `/tables/*` at 761 to about 800 px in RU (batch 7b probe) | N acceptance 17; row stays below |
+| Batch N copy rows (`/roll/mwt` lead, «корника», the «ИЛИ» dividers' gold) | 10-11 |
+| `RecordCard` `compact` variant, `nameActions`, `REVIEW_ART_SIZES` rows | 10-10 |
+| `typo.js` `SWITCHES` and the 360 Whole Message step | 10-17 |
+| `/s/` bare «1» against «№ 89» | 10-14 |
+| `404.html` look | 10-13 |
+| H2 tab and picker CSS copy, `EQ_DT` abbreviations | 10-9 |
+| 2-R3 header DOM order, 2-N6 text | 10-15 |
+| R5 of `reviews/plan-1-3.md` (`<name>-2.md` against `plan-<batch>-<n>.md`) | 10-7 |
+| P5 (`rollNo`) | 10-8 (`DEBT.md`) |
+| Monospace labels and uppercase controls outside their rules | 10-16 |
+| `reviews/CI.md` N6 | 10-18 |
+| `/search` at 320x568 RU; 4-R1; the dialog art at 500-760 px; `reviews/5.md` and `reviews/6.md` checks | 10-18 (closeout register); rows stay below |
+| `KeepNote.svelte` leaves with batch P | P-D15 (`plan-P.md` acceptance 12 and 30); row stays below |
+| Add-to-list states with a closed EN menu | done in 9b (acceptance 20); row removed |
+
+Rows below keep facts no acceptance line carries:
 - 9a R2 probe (run in 9b, 360x640 RU, `LIST_A ~ noted as gm4`): the list «Ещё» at top 141 and scroll 0; opening its
   menu scrolls to 83 and the shown header covers «Ещё» (top 58); Escape returns the focus and the page to scroll 0;
   a tap outside leaves scroll 83 with «Ещё» covered. A `preventScroll` focus return cannot cure the tap path (no focus
-  returns there): not taken. The same family as the focus jump below; at closeout to `DEBT.md` unless batch T fixes it.
-- `RecordCard`'s `compact` variant and `nameActions`, the `.card.compact` rules and the `REVIEW_ART_SIZES` rows for
-  132 and 96 px: no page draws them since the list roll took `RollResult`; `record.test.ts` and `tools/artwork`
-  still read them. Batch 10's audit removes them with their tests (`RecordActions`' dead rows left in the 9b
-  remediation).
-- Batch 9b, `typo.js`: the note switch and the price switch are not in `SWITCHES` (the loop opens a route and cannot
-  make an account list); `/search`'s kind row is not either; the Whole Message step reads 1180 only, not 360.
-- `/s/` shows the bare list position «1» where `/search` shows «№ 89» (critique, 2026-11-05; `plan-9b.md` M21 d): two
-  different numbers, «№ 1» costs three characters of the name column at 360 px. Not changed; batch 10's audit may
-  revisit it.
+  returns there): not taken. The same family as the focus jump below; batch TD builds no fix (TD-P3 re-reads the probe once); at closeout to `DEBT.md` (10-18).
 - Tabular stat columns on table rows from 1440 px (owner, 2026-11-05, `plan-9b.md` M22): a "Proposed rules" row, built by
   its own task after wave 3 with a mock first (`plan.md` section 12).
-- Batch N, copy in the touched heads (critique N-7, `plan-nav.md` section 6): the `/roll/mwt` lead «Выберите мир и бросьте
-  кость по нему.» is an instruction sentence (Clarity Rule; proposed fix: no lead); «корника» in the `/roll/std` lead
-  needs the `daggerheart-ru-terms` skill (the help text uses it too); the gold-outlined «ИЛИ» dividers of the roll
-  pages (Seal Rule, pre-existing). Batch 10.
-- `reviews/CI.md` N6 (deferred-scope, name at closeout): `ci.yml`'s `browser` comment says a job's fixed cost is
-  ~20 s (about 70 s, `.claude/README.md`); `.claude/hooks/bash-guard.mjs`'s `run-all` long-check cost says "up to
-  ~380s for one --shard=n/4 row"; no long-check reminder for a bare `node tests/app/states.js` (about 30 min serial
-  on CI) while `golden` and `sweep` have one. A hook change needs its selftest cases.
-- CI fix pass: up to 760 px the roll page's picker cuts a long chosen part («Оплот Шершней», «Проклятые предметы»)
-  to keep the first result in the first screen. A shorter roll label or a narrower picker frame could show it whole;
-  batch 10's audit may revisit it.
-- Add-to-list states whose EN half holds a closed menu (the 8-R3 shape): `#/i/ci1 ~ many lists as gm4`, `~ new list`,
-  `~ new list as gm2`, `~ new list from a search as gm2`, `#/tables ~ a row opened, list menu as gm4`, `~ a row
-  opened, new list`, `~ bar menu as gm4`, `#/homebrew ~ add to list as gm1`, `#/homebrew/<HB_AXE> ~ add to list as
-  gm1`. Each needs an `again` that repeats its enter's presses; it rides 9b's re-seed (placed: `plan-9b.md` S13.2,
-  acceptance 20).
 - 9a, found by the golden of `LIST_A ~ more`: at 360x900, after the list «Ещё» opens and closes, the page sits at
   scroll 83 and the shown header covers that «Ещё» (a press lands on the job row); the header hides only past its own
   height. The golden reopens from the top (`reopen` in `inventory.js`). The same family as the focus jump below.
@@ -271,15 +307,9 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
   toolbar slots were not built (Completed, "Batch 7b", deviation 3).
 - The `--inject` model run of `roll-probe.cjs` was not repeated on the build of `377d0981`; the planner's production
   numbers stand for the model.
-- `404.html`'s look (pw2-N1, the reviewer's deferred-scope half): it keeps the system font and draws no die mark;
-  the words, the `h1` and the actions now match the app. A self-hosted font on a script-free host page needs its own
-  `@font-face` path; batch 10's lock is the place to decide it.
 - `/search` at 320x568 RU (batch 7 remediation probe): after a kind is picked in the sheet and the sheet closes,
   `scrollWidth` is 313 against a `clientWidth` of 305, and a probe that hides one element at a time finds the
   header's tab links. Case 93 checks no sideways scroll before the sheet opens, where it passes. Not investigated.
-- 6-N1 (the next batch with a golden re-seed): add an editor entry with a 120-character name as the fourth
-  `FIRST_SCREEN` row, or log its 1180 offset from one probe. From 761 px the `h1` takes three lines, so the
-  offset at 1180 is unmeasured (about 240 of 288 by the review's estimate).
 - `reviews/6.md`, "Checks still needed", item 3: the homebrew selection bar at 640x360 and at 768x1024.
 - `reviews/5.md`, "Checks still needed", items 3 to 5 (not measured here): the first `/roll/alt` card's
   menu at 360x640 with 7 or more lists at scroll 0; a right-column card's menu at about 1015-1075 px with
@@ -292,12 +322,9 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
   2. A sticky «В список» on the page up to 760 px, like the dock. Trade-off: it covers about 62 px of
      text on every record, and it adds a new surface rule.
   3. 16:9 up to 760 px. Trade-off: it reaches half of the records, and it changes M4-4.
-- P5 (batch 4, K11): `rollNo` («номер» / "roll") stays; batch 10 changes it with `tools/share-card.mjs`
-  and the stubs after a plan review (`plan.md`, batch 10).
 - Toast over «Ещё» (batch 4): at 360 an action toast covers the end of the menu for its 7 s; a second
   save by touch waits for it. Batch 8 decided no sheet (`plan-8.md` L12), so it stays, and it now also covers the
-  end of the add-to-list popover; batch T measures it with the new toast durations (`plan.md` section 7, "Batch T");
-  at closeout it goes to `docs/specs/DEBT.md` unless a later batch fixes it.
+  end of the add-to-list popover; batch TD measures it with the new toast durations (T-14, case 108 (f)); at closeout it goes to `docs/specs/DEBT.md` (10-18) unless a later batch fixes it.
 - Batch 8 (`plan-8.md`): the signed-out add-to-list menu keeps its two steps (L13); the `HomebrewPage` search row
   keeps its own `.tools` beside `ListFind` (L8).
 - `RecordCard`'s dialog art at 500-760 px wide and 481-560 px tall: a 4:3 picture can fill the card, so
@@ -312,16 +339,6 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
   of section 10, "Impeccable". The batch 2 shell components still had a manual
   pass only; the post-release Impeccable audit is the backstop (with the C34 and
   A15 live-site toast check).
-- 2-R3 (batch 10 audit): from 761 px the header draws brand, jobs, language,
-  account while the DOM order is brand, language, account, jobs (WCAG 2.4.3).
-  Recommended: name the trade-off in DESIGN.md "Navigation", "Header", and let
-  the audit decide.
-- 2-N6 (batch 10): DESIGN.md "The Same Label Rule" and FEATURES.md "Chrome" say
-  "until their page's batch moves them"; batch 10's lock removes it.
-- R5 of `reviews/plan-1-3.md` (deferred-scope): `review.prompt.md` names a third
-  look `<name>-2.md`, while `agent-guard.mjs` reads only `plan-<batch>-<n>.md`.
-- Batch 10: the tab and picker CSS copied into `HomebrewTabs` from `TableNav` (H2); `EQ_DT`'s abbreviations
-  in the stat line (D15, shared).
 - Batch 3 candidate: the 1180 px equipment column table of mock 3 (D6, Q3-T), if
   the owner says yes; one added item with its own mock check.
 - N0-2 of `reviews/mocks-2.md` (batch 4): the error-page pattern's circled icon
@@ -329,11 +346,6 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
 - `KeepNote.svelte` leaves with batch P (the Account page's Display note left with batch 7).
 - The link-preview Worker's card images (`tools/share-card.mjs`).
 - The EN `<title>`, manifest name and `en/index.html` wordmark.
-- Uppercase controls outside the capitals rule are audited by their surface
-  batches (15 components carry `text-transform: uppercase`).
-- Monospace labels still outside the Key Characteristics rule, owed to their
-  surface batches: `.ordiv i` (OrGrid), `.altcol`
-  (TablesPage), HelpButton, `.steps-l` (RecordCard).
 
 
 ## Notes
@@ -346,10 +358,11 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
   `C:\Users\Ignat\.dhloot\notes\57\`.
 - Owner rules this session: "proceed autonomously"; the unconfigured ceiling is 300 kB; phone feedback goes to
   `context.md` "Phone feedback"; AFK defaults go to `C:\Users\Ignat\.dhloot\notes\owner-afk-2026-11-03\decisions.md`.
-- Cleanup performed / retained artifacts: compacted on 2026-11-05 (142 KB against the 150 KB line): Completed is one
-  line per shipped batch, Verification holds batch 8, Notes hold current state. The last pre-collapse commit is
-  `c489766a` (`git log --oneline -3 -- issues/57/`: `c489766a`, `17700f3c`, `dc132655`);
-  `git show c489766a:issues/57/handoff.md` holds the full tables and every measurement.
+- Cleanup performed / retained artifacts: `handoff.md` compacted on 2026-11-05 (142 KB against the 150 KB line):
+  Completed is one line per shipped batch, Verification holds the latest batch, Notes hold current state; the last
+  pre-collapse commit is `c489766a` (`git show c489766a:issues/57/handoff.md` holds the full tables and every
+  measurement). `plan.md` compacted on 2026-11-06 (147.7 KB to 114 KB): the Status history and the briefs of batches 4
+  to 9b became one block; the last pre-collapse commit is `a8bdf1de` (`git show a8bdf1de:issues/57/plan.md`).
 - Session end partial progress (if any): none
 - Durable items written to their homes this pass: DESIGN.md "The Whole Message Rule" (the narrow picker cut);
   COVERAGE.md "Suites" (no state count; case 86's wait); `.claude/README.md` "Batch size and the fixed cost of a run"

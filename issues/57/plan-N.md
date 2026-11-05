@@ -7,8 +7,8 @@ choice below is the owner's answer or the recommended option; the recommended op
 decisions file, item 20. A mock is direction (owner, 2026-11-03): each departure is named in "Decisions". Section
 numbers ("section 7") are those of `plan.md`. The repository cites no file of `issues/57/` and no file outside it.
 
-Batch N runs after batch T and its remediation, before batch P (`plan.md` section 7). It needs 9b's `Chip` (the Check
-Rule: a link chip draws no check) and T's 40 px rule up to 600 px, so it starts from T's pushed tip.
+Batch N runs after batch TD (T and D merged) and its remediation, before batch P (`plan.md` section 7). It needs 9b's `Chip` (the Check
+Rule: a link chip draws no check) and T's 40 px rule up to 600 px, so it starts from TD's pushed tip.
 
 ## Objective
 
@@ -30,8 +30,14 @@ moves.
   block and `.headx`/`.headnew`), `Chip.svelte` (9b's), `AltPanel.svelte`, `Die.svelte`, `ListsPage.svelte` (`.headx`),
   `SearchPage.svelte` (its `PageHead` call). A line of this brief that no longer matches the code is the implementer's
   to adapt; `handoff.md` names the change.
-- Case numbers: 110 (the head order) and 111 (the die marks), after batch T's 108 and 109 (`plan-T.md`). If T took
-  other numbers, use the next two free `states.js` numbers; `handoff.md` names the ones taken.
+- Case numbers: 112 (the head order) and 113 (the die marks), after batch TD's 108 to 111 (`plan-TD.md`: T's toasts
+  and targets 108 and 109, D's plates 110, the text measure 111). If TD took other numbers, use the next two free
+  `states.js` numbers; `handoff.md` names the ones taken. Batch P takes 114 and 115 after them.
+- Batch D and the Measure Rule are merged into the batch before this one (TD). When `PageHead` moves `.page-sub`, it
+  keeps `max-width: var(--measure-line)` and `text-wrap: balance` (the Measure Rule, `plan-text.md`); `/homebrew`'s
+  first content at 1180 is about 22 px higher than the 254 measured here, because the lead takes one line (S1 measures
+  it again). TD's folds move this brief's 360 figures (the roll pages 250.7 to 245.9 px, `/roll/std` 323.5 to 318.7,
+  the header 111.2 to 110.4), so read TD's pushed tip, not the figures of this file.
 - Host: memory-starved. Run vitest with `VITEST_MAX_WORKERS=2`, one file at a time, and no browser suite in parallel
   with vitest.
 - Impeccable cannot run from a subagent. The orchestrator runs `critique` on `mocks/N/index-N.html` before the
@@ -47,13 +53,13 @@ moves.
 | N-D2 | **Roll.** The roll `h1` reads `t.jobRoll` («Бросок» / "Roll") at every width (visually hidden up to 760 px, as today); `RollPage` loses its `title` prop and its three callers (`StdPanel`, `AltPanel`, `RollPanel`) stop passing it. From 761 px `RollPage` passes `nav` = `<ModeRow {app} inhead />` and `navBelow={app.band === 'mid'}`; `Shell` draws `ModeRow` above `main` only while `app.band === 'narrow'`. `ModeRow` gains `inhead?: boolean`: no bottom border, no `--wrap` width, no padding, `flex-wrap: wrap` on `.modes-in`. The document title keeps the mode's name. | Owner N1 ("where have we lost the page header?") and the wording of `plan-nav.md` section 3 (no new string). One heading text at every width: a band change does not rename the page for a screen reader. Measured on the nine pages (`mocks/N/roll-head/roll-head.json`): one row from 1000 px in RU and EN with the pin pressed or not; the least room left is 14 px (1000 px, RU, `/roll/community` lit, pin pressed); the pill row's left edge is one value per language on all nine pages (100 px RU, 65 px EN). |
 | N-D3 | **Tables.** `TableNav` gains `part?: 'groups' \| 'tabs'` (ignored up to 760 px, where the one instance draws the picker as today). `part="groups"` draws `<nav class="tablenav" aria-label={t.tables}>` with the `.groups` chips; `part="tabs"` draws the `.tabslot` (the current group's tabs and the hidden ghosts; the source fold of `/tables/homebrew` lives there). `TablesPage` from 761 px: `<PageHead ... nav={groups} navBelow={band === 'mid'} below={tabs} />`. The `.inhead` `display: contents` rule and the `.below` rule go. The level 3 tabs keep `role="group"` named by the group, after the navigation landmark instead of inside it. | The rule puts the pin and the help between the chips and the tabs, so one `nav` element cannot hold both levels. One `nav` landmark per head, as on the roll and homebrew heads; the tabs keep their group name. Trade-off: a landmark jump to «Таблицы» reaches the chips, and the tabs follow in reading order. Measured in the new order (`tables-wide.json`): 244 px from 1050 px RU and from 1000 px EN, unchanged; the chips' left edge one value per language on every table. |
 | N-D4 | **Homebrew (owner N2).** From 761 px `HomebrewTabs` draws its four links as `Chip href` pills with their counts in a `.pills` row (`gap: 7px`, the `.groups` gap), inside the existing `nav` «Мои предметы»; up to 760 px the picker and its sheet do not change. `Chip`'s link form gains `count?: number`: `{label}{' '}<span class="n">{count}</span>`, the count in `--muted2` at weight 500 with tabular figures, and in Ink on Gold on the lit pill (The Ink Rule). The accessible name stays «Предметы 44», as today's tab. `HomebrewPage` from 761 px: `nav` = the pills when ready, `extra` = «Новый предмет» on the Items tab when ready (the existing `.headnew`, `margin-left: auto`), `navBelow={band === 'mid'}`; `wideHead` and `.headx` go. | The count is part of the pill's name today; a `Chip` prop is the second use of the link chip, not a new component. The 9b Check Rule draws no check on a link chip. Not measured on production: `/homebrew` needs a sign-in there, and the "homebrew" cells of `headorder/` were drawn on `/roll/alt` with stand-in labels (`index-N.html`, section 4). S1 draws and measures it on the built app first. |
-| N-D5 | **`/tables/*` from 761 to 999 px: a named exception, not a fix** (owner AFK default). The head order changes nothing in this band (today's head is already h1, pin, help, then the chips, then the tabs), so the first content stays at 334 px (RU and EN, every table, `tables-mid/tables-mid.json`): 33% of a 768x1024 tablet (limit 410) and 46% of a 900x720 window (limit 288). DESIGN.md "The First-Screen Rule" names it; case 110 holds it as a ceiling of 336 px at 900x720. | The cause is the reserved tab row: 43 px of empty slot on six of seven groups, kept so that the head does not jump between tables (A steady head). Every fix measured costs more than it gives: one reserved line with a sideways-scrolling tab row is 291 px (still over), 287 px with 4+4 px of trimmed gaps (1 px under the limit, 17 over the 270 px aim) and hides 2 of 7 supplement tabs at 768 px and 1 at 900 px behind a cut label (against 9b's Whole Message Rule, and a mouse user needs Shift+wheel); no reservation in this band is 291 px on six groups and 334 on «Дополнения», and the head jumps 43 px. Fallback if the owner rejects the exception: `scrollTrim` of the mock (`TableNav` from 761 to 999 px: `.tabs { flex-wrap: nowrap; overflow-x: auto; margin-top: 6px }`, `.searchrow` 4 px higher, the current tab scrolled into view on mount) with its costs named in DESIGN.md. |
-| N-D6 | **One row from 1000 px holds.** No threshold moves. If CI's fonts break the row of `/roll/community` RU with the pin pressed at 1000 px (case 110 (c)), the remediation sets the head's gap to 8 px from 1000 px (8 px back on four gaps), not a new breakpoint. | Measured 14 px of room in the worst state; the font stack on CI (Source Sans 3, self-hosted) is the same face, so the risk is small. |
+| N-D5 | **`/tables/*` from 761 to 999 px: a named exception, not a fix** (owner AFK default). The head order changes nothing in this band (today's head is already h1, pin, help, then the chips, then the tabs), so the first content stays at 334 px (RU and EN, every table, `tables-mid/tables-mid.json`): 33% of a 768x1024 tablet (limit 410) and 46% of a 900x720 window (limit 288). DESIGN.md "The First-Screen Rule" names it; case 112 holds it as a ceiling of 336 px at 900x720. | The cause is the reserved tab row: 43 px of empty slot on six of seven groups, kept so that the head does not jump between tables (A steady head). Every fix measured costs more than it gives: one reserved line with a sideways-scrolling tab row is 291 px (still over), 287 px with 4+4 px of trimmed gaps (1 px under the limit, 17 over the 270 px aim) and hides 2 of 7 supplement tabs at 768 px and 1 at 900 px behind a cut label (against 9b's Whole Message Rule, and a mouse user needs Shift+wheel); no reservation in this band is 291 px on six groups and 334 on «Дополнения», and the head jumps 43 px. Fallback if the owner rejects the exception: `scrollTrim` of the mock (`TableNav` from 761 to 999 px: `.tabs { flex-wrap: nowrap; overflow-x: auto; margin-top: 6px }`, `.searchrow` 4 px higher, the current tab scrolled into view on mount) with its costs named in DESIGN.md. |
+| N-D6 | **One row from 1000 px holds.** No threshold moves. If CI's fonts break the row of `/roll/community` RU with the pin pressed at 1000 px (case 112 (c)), the remediation sets the head's gap to 8 px from 1000 px (8 px back on four gaps), not a new breakpoint. | Measured 14 px of room in the worst state; the font stack on CI (Source Sans 3, self-hosted) is the same face, so the risk is small. |
 | N-D7 | **The lit pill keeps the gold fill and draws no check** (critique N-3 and N-4). | The Seal Rule gives the current place a gold fill; 9b's Check Rule names the sibling pills as link chips (a place, not a press). The mock of the Toggle look (`roll-head/roll-{alt,mwt}__1180__ru__lit-toggle.png`) loses the place more than it helps the primary: the 46 px gradient primary already outweighs a 32 px pill. A Toggle look would be a third gold treatment in "Chips" and would move every catalog chip too. |
 | N-D8 | **Gaps from 761 to 999 px** (critique N-5): the title row to the pills is the head's row gap, 10 px; the pills to the lead is 12 px (`.page-head.navbelow + .page-sub { margin-top: 8px }`, over the head's 4 px margin). A page with no lead (`/tables/*`) keeps today's spacing to its `below` and search row. | Measured with these values: roll first content 264 px at 768x1024 and 900x720 (267 today), the gaps 10 and 12. |
 | N-D9 | **Focus across the 1000 px step.** A resize across 1000 px moves the nav from one place in the DOM to the other and remounts it. `PageHead` keeps the focus: before the move (`$effect.pre` on `navBelow`), the index of the focused element among `.headnav a, .headnav button`; after it (`tick`), the same index is focused. | A keyboard user who resizes loses no place; about 15 lines and one unit test. Today the roll head cannot lose a pill's focus this way, because the mode row is outside the page. |
 | N-D10 | **Owner item 12, the die marks.** In `AltPanel` each `.dv` box holds `<Die faces={12} />` (the page's own d12, lines only, 17x18 px, the `Die` component unchanged) and no letter; `.dv` loses its ring, radius, size and type rules; `.dv.h` keeps `color: var(--hope)`, `.dv.f` `color: var(--fear)`; the box keeps `aria-hidden="true"`. The visible word stays text, so a reader hears «Кость Надежды» and the fields keep their names («Кость Надежды: Результат броска»). `hopeLetter` and `fearLetter` leave `dict.ts` in both languages (no other reader). The colour conflict: the owner's hint was "gold and violet"; Seal Gold (`--gold`) stays out, because the mark is not a choice (The Seal Rule). The amber is Hope Amber (`--hope`), the token the DESIGN.md "Tertiary" rule already gives the Hope die's badge and focus glow, and the violet is Fear Violet (`--fear`). "A die is plain" (The Seal Rule, `hues.js`) covers a die button, an action; a die mark in a label is not a button, so DESIGN.md says so in one clause. | Mock `mocks/N/d12/` at 360 and 1180 px, RU and EN: the label row is 21 px instead of 22 px, nothing else moves. The alternative with a 22% fill of the hue reads more "coloured" but gives `Die` a fill its rule refuses ("lines only"): the fallback if the owner finds the line die too faint. An `aria-label` is not added: the word is already the label's text, and a second hidden name would repeat it. |
-| N-D11 | **The First-Screen Rule from 761 to 999 px.** Case 110 measures every family at 768x1024 and 900x720 and asserts 40% of the height (410 and 288 px), with the `/tables/*` exception at 900x720 (N-D5). `FIRST_SCREEN` keeps its two sizes. | The owner judged the 761-999 band against the rule ("over the limit in every option"), so the band gets an assertion; a ceiling stops the exception from growing. |
+| N-D11 | **The First-Screen Rule from 761 to 999 px.** Case 112 measures every family at 768x1024 and 900x720 and asserts 40% of the height (410 and 288 px), with the `/tables/*` exception at 900x720 (N-D5). `FIRST_SCREEN` keeps its two sizes. | The owner judged the 761-999 band against the rule ("over the limit in every option"), so the band gets an assertion; a ceiling stops the exception from growing. |
 | N-D12 | **New states** for the band that now has its own DOM order: `#/roll/alt ~ mid band` and `#/homebrew ~ mid band as gm3` (`width: 768`, height 1024), unless an existing state already opens these routes at 761-999 px (search `inventory.js` for `768`). Each gets its RU and EN golden and an axe case. | "A new state gets a `tests/app/inventory.js` entry and a re-seeded golden" (`CLAUDE.md`). `/tables/*` in this band keeps today's DOM order, so it needs no new state. |
 
 ## Owner questions (none open)
@@ -78,7 +84,7 @@ Fear Violet), N-D2 (the roll `h1` «Бросок» at every width), N-D4 (the co
   `HomebrewTabs`, `HomebrewPage`, `Chip`, `lib/dict.ts` (two keys removed).
 - Tests: `pageHead.test.ts` (new), `rollPage.test.ts`, `alt.test.ts`, `modeRow.test.ts`, `shell.test.ts`,
   `tableNav.test.ts`, `tables.test.ts`, `homebrewTabs.test.ts`, `homebrewPage.test.ts`, `chip.test.ts`,
-  `a11y.test.ts` (the map's lines for the changed files), `tests/app/states.js` (cases 110 and 111, case 96's
+  `a11y.test.ts` (the map's lines for the changed files), `tests/app/states.js` (cases 112 and 113, case 96's
   selectors, the homebrew tab check at 761 px), `tests/app/sweep.js` (`headHeight`), `tests/app/inventory.js` (two
   states), the goldens.
 - Prose: DESIGN.md, FEATURES.md, COVERAGE.md (texts below).
@@ -252,7 +258,7 @@ Update the map's lines for `PageHead.svelte` (now `pageHead.test.ts` too), `Mode
 
 ### S8. Browser suites and states
 
-1. **Case 110, the head order** (`plan-nav.md` section 8, with this refresh's figures). One context per route and
+1. **Case 112, the head order** (`plan-nav.md` section 8, with this refresh's figures). One context per route and
    language; `page.setViewport` per size in the order 1180x720, 1000x720, 900x720, 768x1024, 360x640. Routes:
    `#/roll/std`, `#/roll/alt`, `#/roll/community`, `#/roll/mwt`, `#/tables/eq_weapon`, `#/tables/wondrous`, `#/homebrew
    as gm3`, `#/lists as gm4`, `#/search`. At 1000 and 1180 px on the roll, tables and homebrew routes the steps run
@@ -278,7 +284,7 @@ Update the map's lines for `PageHead.svelte` (now `pageHead.test.ts` too), `Mode
    title row's bottom to the pills' top.
    The case fails on a pin before the pills, a primary that is not last, and a reading order that differs from the DOM
    order. Its comment cites DESIGN.md "The Head Order Rule".
-2. **Case 111, the die marks** (item 12): `#/roll/alt` at 360x640 (open «Настроить» / "Set up") and 1180x720, RU and
+2. **Case 113, the die marks** (item 12): `#/roll/alt` at 360x640 (open «Настроить» / "Set up") and 1180x720, RU and
    EN: two `.dielbl`; each holds exactly one `svg.dieicon` inside an `aria-hidden="true"` box with no text node; the
    label's text is the die's word; the svg's computed `color` equals the computed colour of a probe set to `var(--hope)`
    (Hope) or `var(--fear)` (Fear) and differs from `var(--gold)`'s; the svg's vertical center is within 1 px of the
@@ -289,7 +295,7 @@ Update the map's lines for `PageHead.svelte` (now `pageHead.test.ts` too), `Mode
 5. `sweep.js` `headHeight`: from 761 px measure from the top of `.tablenav .groups` to the bottom of `.page-below
    .tabslot` (both by `document.querySelector`); rewrite its doc comment; the caps stay.
 6. `inventory.js`: the two states of N-D12 with `why` lines.
-7. Run: `node tests/run-all.js app/states` (or the cases 83, 96, 97, 110, 111 alone through the loader of case 83),
+7. Run: `node tests/run-all.js app/states` (or the cases 83, 96, 97, 112, 113 alone through the loader of case 83),
    `node tests/app/sweep.js 768`, `node tests/app/sweep.js 1180`; Bash timeout 600000 each.
 
 ### S9. Goldens
@@ -304,7 +310,7 @@ any file outside the expected set, with its reason.
 
 ### S10. Prose, in the same commit
 
-The texts are in "DESIGN.md and FEATURES.md text this batch writes" below. COVERAGE.md: cases 110 and 111 (what each
+The texts are in "DESIGN.md and FEATURES.md text this batch writes" below. COVERAGE.md: cases 112 and 113 (what each
 proves), case 96's and `sweep.js`'s new reads, `pageHead.test.ts`.
 
 ### S11. Evidence
@@ -323,23 +329,23 @@ full gate.
 
 1. From 761 px the nine roll pages, `/tables/*` and `/homebrew` draw a visible `h1` first in the head: «Бросок» /
    "Roll", «Таблицы» / "Tables", «Мои предметы» / "My items"; up to 760 px it is visually hidden with the same text and
-   the mode row or the picker names the page; a roll page's document title names its mode (case 110 (f), (g)).
+   the mode row or the picker names the page; a roll page's document title names its mode (case 112 (f), (g)).
 2. The Head Order Rule: on every `PageHead` page the DOM order is `h1`, pills (where the page has siblings), pin, help,
    primary from 1000 px, and `h1`, pin, help, primary, pills from 761 to 999 px; the primary ends within 16 px of the
-   column's right edge; the level 3 tabs follow the head (case 110 (a)-(d)).
+   column's right edge; the level 3 tabs follow the head (case 112 (a)-(d)).
 3. From 1000 px the head is one row on all nine roll pages, RU and EN, the pin pressed or not (14 px of room measured
    at 1000 px RU); from 761 to 999 px the pills take the next row at one height in RU and EN; the pills-to-lead gap is
-   at least the title-to-pills gap (12 and 10 px); no lit pill draws a check (case 110 (c), (h), (i)).
+   at least the title-to-pills gap (12 and 10 px); no lit pill draws a check (case 112 (c), (h), (i)).
 4. A switch between roll modes moves neither the `h1` nor the pill row (left and top within 1 px); one `RollPage`
    instance stays mounted; the chips of `/tables/*` and the pills of `/homebrew` keep their left edge across tables and
-   tabs (case 110 (g), case 96).
+   tabs (case 112 (g), case 96).
 5. `/homebrew` draws its four tabs as pills with their counts from 761 px, then the pin, then «Новый предмет» last;
    up to 760 px the picker row is unchanged; S1's figures are in `handoff.md`, and its first content at 1180x720 is at
    most 288 px in RU and EN. `handoff.md` notes that the "homebrew" cells of `headorder/` were roll-page offsets.
 6. `FIRST_SCREEN` and `ROLL_FIT` pass: the roll rows at 1180x720 near 214 px (267 before), `/tables/eq_weapon` 244,
    `#/homebrew as gm3` 254 or less; the 360x640 rows unchanged. The 1000x720 and 768x1024 figures are logged in
    `handoff.md`.
-7. Case 110 passes on every route family; the case 110 figures are in `handoff.md`.
+7. Case 112 passes on every route family; the case 112 figures are in `handoff.md`.
 8. The goldens of the moved states are re-seeded (the count in `handoff.md`); the `/lists` and `/search` goldens are
    byte-identical; the two new states (N-D12) have RU and EN goldens and an axe case.
 9. RU/EN parity: no new string; `hopeLetter` and `fearLetter` are gone in both languages; a roll page's `h1` is
@@ -350,15 +356,20 @@ full gate.
     the «ИЛИ» dividers (The Seal Rule).
 12. `PageHead` keeps the focus on the same pill across the 1000 px step (`pageHead.test.ts`).
 13. `/tables/*` from 761 to 999 px: the named exception of N-D5 is in DESIGN.md "The First-Screen Rule" with its date
-    and figure, and case 110 (e) asserts its 336 px ceiling at 900x720 and 410 px at 768x1024.
+    and figure, and case 112 (e) asserts its 336 px ceiling at 900x720 and 410 px at 768x1024.
 14. Owner item 12: on `/roll/alt` each die label starts with the d12 mark in `--hope` or `--fear`, no letter, the word
-    as text; case 111 passes at 360 and 1180 px, RU and EN; DESIGN.md "Tertiary" and "The Seal Rule" carry the clause.
+    as text; case 113 passes at 360 and 1180 px, RU and EN; DESIGN.md "Tertiary" and "The Seal Rule" carry the clause.
 15. The prose of S10 is in the same commit; `node tools/decisions.js` is not needed (no decision file).
 16. `polish` and `harden` ran (the orchestrator); the shots are in `mocks/N/built/`.
+17. Placed by the 2026-11-06 fold (the `handoff.md` Deferred row on `/tables/eq_*` at 761 to about 800 px in RU: the
+    toolbar's five controls wrapped to two lines, the rows started at 381.5 px against 333.5 on the other tables):
+    case 112 (e) reads `#/tables/eq_weapon` and `#/tables/eq_armor` at 768x1024 in RU and EN. If both read 336 px or
+    less, the row is dropped from `handoff.md` and the figure is logged; if one reads more, `handoff.md` keeps the
+    row with the measured figure and the closeout writes it to `docs/specs/DEBT.md`. No fix is built for it here.
 
 ## First-screen rows
 
-| Row | 360x640 | 768x1024 (case 110) | 900x720 (case 110) | 1180x720 |
+| Row | 360x640 | 768x1024 (case 112) | 900x720 (case 112) | 1180x720 |
 |---|---|---|---|---|
 | `#/roll/std` | 323, exception (T sets its measured value) | 264 (limit 410) | 264 | 214 |
 | `#/roll/alt`, `~ crit`, `#/roll/voa`, `#/roll/wondrous` | unchanged (251) | 264 | 264 | 214 |
@@ -370,14 +381,14 @@ full gate.
 
 | State | What the screen shows | Proof |
 |---|---|---|
-| roll: three pills (fixed), the supplements button with its longest name lit («Предметы сообществ», "Wondrous Environments") | one head row from 1000 px; 14 px of room at 1000 px RU with the pin pressed | case 110 (c), `roll-head.json` |
-| tables: six group chips signed out, seven signed in | from 1000 px one row; at 1000-1049 px RU the chips wrap inside their box (288 px); from 761 to 999 px the chips' row, then the reserved tab row | case 96, case 110 |
-| homebrew counts: zero, one, many (44), at the limit (100 items, 20 sources, 100 cards), 3x (300, 60, 300 with an override) | the pills grow by one or two digits; from 1000 px RU they wrap inside their box where the row is short | S1 step 2 (3x by injection), case 110 logs |
+| roll: three pills (fixed), the supplements button with its longest name lit («Предметы сообществ», "Wondrous Environments") | one head row from 1000 px; 14 px of room at 1000 px RU with the pin pressed | case 112 (c), `roll-head.json` |
+| tables: six group chips signed out, seven signed in | from 1000 px one row; at 1000-1049 px RU the chips wrap inside their box (288 px); from 761 to 999 px the chips' row, then the reserved tab row | case 96, case 112 |
+| homebrew counts: zero, one, many (44), at the limit (100 items, 20 sources, 100 cards), 3x (300, 60, 300 with an override) | the pills grow by one or two digits; from 1000 px RU they wrap inside their box where the row is short | S1 step 2 (3x by injection), case 112 logs |
 | `/tables/homebrew` with 12 sources of 80 characters | the source tabs under the head, not reserved, folded past `CHIP_FOLD_AT` (unchanged; only their place in the DOM moves, after the help) | `tableNav.test.ts` (the fold inside the `tabs` part), the `_tables_homebrew*` goldens |
-| the longest help label («Об этих предметах») and the pressed pin («Открывается при запуске») | in the one row at 1000 px | case 110 at 1000 px, pin pressed |
-| each family at 360 px | unchanged layouts; the hidden roll `h1` reads «Бросок» | case 110 (f), the narrow goldens |
-| each family at 1180 px | one head row; first content 214 (roll), 244 (tables), S1 (homebrew) | case 110 (e), case 83 |
-| `/roll/alt` die labels at 360 (the settings open) and 1180 px | the d12 mark, the word | case 111 |
+| the longest help label («Об этих предметах») and the pressed pin («Открывается при запуске») | in the one row at 1000 px | case 112 at 1000 px, pin pressed |
+| each family at 360 px | unchanged layouts; the hidden roll `h1` reads «Бросок» | case 112 (f), the narrow goldens |
+| each family at 1180 px | one head row; first content 214 (roll), 244 (tables), S1 (homebrew) | case 112 (e), case 83 |
+| `/roll/alt` die labels at 360 (the settings open) and 1180 px | the d12 mark, the word | case 113 |
 
 At many and at the limit: the pill order is fixed (the modes, `TABLE_NAV`, the four homebrew tabs); the primary
 «Новый предмет» ends the row from 761 px; at 360 px with the keyboard open nothing changes (no field in the head); no
@@ -430,7 +441,7 @@ help labels). RU is the longer language in the head row: measured at 1000 px (14
 | vitest, one file at a time with `VITEST_MAX_WORKERS=2` (11 files) | 12-16 |
 | `check:fast` (the diff reaches `dict.ts`: 676-840 s on this host) | 12-14 |
 | `build:test` and four golden shards with `--update`, then the diff read of about 145 files | 25-30 |
-| cases 83, 96, 97, 110, 111 and `sweep.js` 768 and 1180 | 15-20 |
+| cases 83, 96, 97, 112, 113 and `sweep.js` 768 and 1180 | 15-20 |
 | `check:built`, lints | 4-5 |
 | `polish` and `harden` (the orchestrator) | 5-10 |
 | one CI run; the review | 11 + 20-30 |
@@ -443,7 +454,7 @@ help labels). RU is the longer language in the head row: measured at 1000 px (14
   law).
 - Split criterion (`CLAUDE.md`, "Size a batch by its gates"): its own route set (the nine roll pages, `/tables/*` and
   `/homebrew` from 761 px) and its own golden set against T's up-to-600 px re-baseline; item 12 joins because it is a
-  roll-page file the batch opens and costs no gate of its own beyond case 111.
+  roll-page file the batch opens and costs no gate of its own beyond case 113.
 - Plan review: not required (no trigger fired: no migration, no SECURITY DEFINER function, no public contract change,
   no stored key, no write or sync protocol). The reviewer of the batch is required by the golden re-seed.
 
@@ -524,7 +535,7 @@ FEATURES.md:
   supplement's name; and on Arazo's Artifacts the button and the menu read «Arazo's Artifacts», the tab title the
   book's full title."
 
-## Fold list (for the orchestrator: `plan.md`, `handoff.md`, `context.md`)
+## Fold list (folded into `plan.md` and `handoff.md` on 2026-11-06; kept for the record. For the orchestrator: `plan.md`, `handoff.md`, `context.md`)
 
 1. `plan.md` section 7, "Batch N": replace the outline's body with one line: "Refreshed 2026-11-05 into `plan-N.md`
    (implement-ready); the figures and the decisions are there." Keep the split criterion line.
@@ -534,10 +545,10 @@ FEATURES.md:
 3. `plan.md` section 14 (first-screen rows): add the 768x1024 and 900x720 columns of "First-screen rows" above and the
    `/tables/*` exception.
 4. `context.md` item 11, after the ANSWER: "Placed (planner, 2026-11-05): `plan-N.md` N-D5: a named exception, 334 px
-   at 900x720, ceiling 336 in case 110; fallback `scrollTrim` (287 px). Measured: `mocks/N/tables-mid/`. Correction: the
+   at 900x720, ceiling 336 in case 112; fallback `scrollTrim` (287 px). Measured: `mocks/N/tables-mid/`. Correction: the
    'homebrew' cells of `mocks/N/headorder/` were drawn on `/roll/alt`; S1 measures the real page." The rule tag:
    "The Head Order Rule: batch N, acceptance 2 (DESIGN.md, replaces "A steady head")."
-5. `context.md` item 12: "Placed (planner, 2026-11-05): batch N, `plan-N.md` N-D10 and S6, case 111; mock
+5. `context.md` item 12: "Placed (planner, 2026-11-05): batch N, `plan-N.md` N-D10 and S6, case 113; mock
    `mocks/N/d12/` (lines in `--hope`/`--fear`, no letter; the 22% fill is the fallback); the Seal Rule's 'a die is
    plain' covers die buttons, the Tertiary rule covers the mark."
 6. `handoff.md`: the next batch after T is N, brief `plan-N.md`; the Deferred rows of acceptance 11 (three rows, for

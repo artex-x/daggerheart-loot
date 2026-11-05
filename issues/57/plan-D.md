@@ -6,8 +6,9 @@ places owner items 13 and 14 of `context.md` (2026-11-05). Every choice below is
 owner away it is logged in the owner-AFK decisions file. A mock is direction (owner, 2026-11-03): each departure is
 named in "Decisions". Section numbers ("section 7") are those of `plan.md`. Guideline sources are cited by URL only.
 
-Batch D runs after batch N and its remediation, before batch P, unless the owner merges it with batch T
-(`plan-rebatch.md`, recommended option B): then it runs inside T's batch, after 9b, and the fold list says what moves.
+Batch D is merged into batch T as batch TD (owner, 2026-11-05, `plan-rebatch.md` option B): it runs inside TD, after 9b
+and before N. `plan-TD.md` gives the merged order of steps, the case numbers and the acceptance map; this brief stays
+the source for D's decisions, steps and acceptance lines (its case numbers below are TD's: 110 and 111).
 
 ## Objective
 
@@ -21,14 +22,14 @@ content from 761 px. Nothing is stored; no string changes; no route or contract 
 ## Dispatch preflight
 
 - `git fetch origin`; merge `origin/main` into `claude/57` if it moved (a merge, never a rebase). `git log --oneline -8`
-  must show the commit of the batch before D (N standalone, or 9b when merged with T).
+  must show 9b's last commit and the CI fix pass (`a8bdf1de` or later).
 - Read the shipped `Empty.svelte`, `Badge.svelte`, `HitNote.svelte` (9b gave it a dashed `gm` variant, `plan-9b.md`
   M14), `ListPage.svelte` (`.titleinput`, `.addrow`, `.narea.gm`, `.lrow.gm-only`), `TableRows.svelte` (`.row.gm-only`),
   `MarkupField.svelte` (`.pane`), `PageHead.svelte` and `PageTitle.svelte` (`.page-sub`), and the plate's parents in
   `SearchPage`, `TablesPage`, `HomebrewPage`, `ListsPage`. A line of this brief that no longer matches the code is the
   implementer's to adapt; `handoff.md` names the change.
-- Case numbers: 112 (the plates) and 113 (the lead), after batch N's 110 and 111 (`plan-N.md`). Merged with T: 110
-  and 111, and batch N moves to 112 and 113. `handoff.md` names the numbers taken.
+- Case numbers (TD's): T takes 108 and 109, D's plates are 110, and D's lead case is widened into the text measure,
+  111 (`plan-text.md`). Batch N takes 112 and 113 and batch P 114 and 115. `handoff.md` names the numbers taken.
 - Host: memory-starved. Run vitest with `VITEST_MAX_WORKERS=2`, one file at a time, and no browser suite in parallel
   with vitest.
 - Impeccable cannot run from a subagent. The orchestrator runs `critique` on `mocks/D/` before the dispatch and
@@ -44,9 +45,9 @@ content from 761 px. Nothing is stored; no string changes; no route or contract 
 | D-2 | **The plate, option A.** `Empty` takes a solid 1 px Seam border (`--line`) on the Vault Wall ground (`--bg2`); radius, padding and contents stay. | Mock `shots/search__1180__ru__a.png`. The ground keeps the plate's edge visible on a 1440 px column without a second outline style, and it is quieter than a card (`--surface`). Fallback, option B: the ground with no border (`shots/search__1180__ru__b.png`): the edge then rests on a 6-step contrast difference (`#14111d` on `#0e0c15`), which a dim phone screen loses. |
 | D-3 | **The other dashed surfaces turn solid and keep their colour and ground.** The unique tag (`Badge` `.uniq`: `--line2`, Ash Violet, like the tier tag; its word says what it is), the GM note box (`HitNote` `.gm`: `--line2` on `--bg2`, the `eyeOff` icon and «Только для мастера»), the GM note field (`ListPage` `.narea.gm textarea`; the `Seg` and the caption name the note), the GM-only row (`ListPage` `.lrow.gm-only`, `TableRows` `.row.gm-only`: `--line2` on `--bg2`, the art at 45% and the GM mark on the meta line), the list title field (`.titleinput`: a solid `--line2` underline, `--muted2` on hover, gold on focus), the add row (`.addrow`: `--line2` on a transparent ground, the Seal Gold Soft label with its plus), the formatted-text preview (`MarkupField` `.pane`: `--line2` on `--bg2`). | Each keeps a second sign of what it is, so the dash was never the only one. Fallback for the GM row only, if the review finds it too close to a plain row: a 2 px `--muted2` top border (no new hue). Reverses `plan-9b.md` M14's dashed `gm` box, accepted: owner item 13 came after 9b's plan. |
 | D-4 | **The gap token.** `tokens.css` gains `--gap-plate: 16px`: the space from the last block above an empty plate (the search row, the kind chips, the count line, the page head) to the plate's top edge, at every width. | Measured today (live site, RU and EN equal): `/search` 4 px at 1180 and 1920 (the kind chips) and 8 px at 360 (the search row); `/tables/*` 12 px at 1180 (the search row, beside the filter column) and 6 px at 360 (the count line); `/homebrew` 12 px and `/lists` 10 px (signed in) or 18 px (signed out) read from the CSS, because production needs a sign-in there (S1 measures them on the built app). 16 px is twice the 8 px gap between the chips of a row, so the plate reads as the next block, not as one more chip (proximity); it is the catalog's existing gap above its search row. Fallback: 12 px (the `--anchor-gap` value): fewer moves, but 1.5x the chip gap. |
-| D-5 | **The gap's mechanism.** The plate's own `margin-top: var(--gap-plate)`, which collapses with the smaller bottom margin of the block above in a block parent (`/search`, `/tables/*` up to 999 px, `/homebrew` without the column). Where the plate is the first child of a flex or grid item and cannot collapse, the container takes the gap and the plate's margin is 0: the filter-column body (`.body.withcol:has(> .rowscol > .empty:first-child)` in `TablesPage`, the same on `HomebrewPage`'s `.body.withcol` and `.hbrows`), so the filter column and the plate share one top 16 px under the search row; `ListsPage`'s `.stack` (a grid) sets its own top so the signed-out plate lands 16 px under the head. Case 112 is the arbiter: a parent it finds at another value gets the same treatment, named in `handoff.md`. | Measured in the mock: the plain margin gave 28 px beside the filter column (12 + 16, no collapse in a flex item); the `:has` pair gives 16 and keeps the column aligned (`after.json`). `:has` is already used by `CompactRow`. Alternative: a gap prop on `Empty`: every caller passes a number, a second place for one value. |
+| D-5 | **The gap's mechanism.** The plate's own `margin-top: var(--gap-plate)`, which collapses with the smaller bottom margin of the block above in a block parent (`/search`, `/tables/*` up to 999 px, `/homebrew` without the column). Where the plate is the first child of a flex or grid item and cannot collapse, the container takes the gap and the plate's margin is 0: the filter-column body (`.body.withcol:has(> .rowscol > .empty:first-child)` in `TablesPage`, the same on `HomebrewPage`'s `.body.withcol` and `.hbrows`), so the filter column and the plate share one top 16 px under the search row; `ListsPage`'s `.stack` (a grid) sets its own top so the signed-out plate lands 16 px under the head. Case 110 is the arbiter: a parent it finds at another value gets the same treatment, named in `handoff.md`. | Measured in the mock: the plain margin gave 28 px beside the filter column (12 + 16, no collapse in a flex item); the `:has` pair gives 16 and keeps the column aligned (`after.json`). `:has` is already used by `CompactRow`. Alternative: a gap prop on `Empty`: every caller passes a number, a second place for one value. |
 | D-6 | **The lead cap (owner item 14).** The page lead (`.page-sub` of `PageHead` and of `PageTitle`) caps at 120ch (835 px at 14 px) instead of 70ch (487 px). A one-to-two sentence lead takes one line while its column allows it; up to 760 px it wraps in the column as today. The prose caps do not move. | Measured (`leads.json`): of 15 head pages only two leads wrap from 761 px today: `/search` (RU 91 characters, 593 px on one line; EN 90, 526 px) and `/homebrew` (RU 105, 684 px; EN 113, 633 px). With 120ch both take one line from 768 px (column 736 px) to 1920 px. `/account` keeps its own 70ch column (557 px): RU stays on two lines, EN (499 px) takes one. Fallback: 140ch. Alternative not taken: no cap, which lets a future three-sentence lead run 1440 px. Trade-off accepted: a 105-character line is past WCAG 1.4.8's 80-character measure (AAA, not a requirement here); a single line needs no return sweep, which is that measure's reason. |
-| D-7 | **The checks.** A static check in `tests/derived.js` ("Dashed means drop"): no CSS declaration in `app/src` (`.svelte`, `.css`) has `border*` or `outline*` with `dashed`, except `PrintCard.svelte`'s cut border. Case 112 (browser, the plates) and case 113 (browser, the lead). | A static check costs seconds and catches a new dash in any component, also one no browser state opens. |
+| D-7 | **The checks.** A static check in `tests/derived.js` ("Dashed means drop"): no CSS declaration in `app/src` (`.svelte`, `.css`) has `border*` or `outline*` with `dashed`, except `PrintCard.svelte`'s cut border. Case 110 (browser, the plates) and case 111 (browser, the lead). | A static check costs seconds and catches a new dash in any component, also one no browser state opens. |
 | D-8 | **No golden moves by the look.** The goldens are accessibility trees and control lists (`## ru :: tree`, `## ru :: controls`): borders, margins and widths are not in them. Six goldens re-seed for their header only: the `why` text of six `inventory.js` states says "dashed". | Counted: 16 golden files hold a plate's text; none moves. Error states draw no plate (`ErrorPage`: "No icon and no plate", DESIGN.md "Error page"; `LoadState` draws a line), so they move nothing either. |
 
 ## Owner questions (none open)
@@ -128,22 +129,22 @@ nothing moves: the lead is hidden or wraps in its column, and no `FIRST_SCREEN` 
 
 | Step | Files |
 |---|---|
-| S1 | `tests/app/states.js` (case 112, run red first) |
+| S1 | `tests/app/states.js` (case 110, run red first) |
 | S2 | `app/src/styles/tokens.css` |
-| S3 | `Empty.svelte`, `TablesPage.svelte`, `HomebrewPage.svelte`, `ListsPage.svelte`; any other plate parent case 112 names (`SearchPage`, `ListPage`, `SharedListPage`, `HomebrewCards`, `HomebrewSources`) |
+| S3 | `Empty.svelte`, `TablesPage.svelte`, `HomebrewPage.svelte`, `ListsPage.svelte`; any other plate parent case 110 names (`SearchPage`, `ListPage`, `SharedListPage`, `HomebrewCards`, `HomebrewSources`) |
 | S4 | `Badge.svelte`, `HitNote.svelte`, `ListPage.svelte`, `TableRows.svelte`, `MarkupField.svelte`, `CompactRow.svelte` (comment), `listPage.test.ts` (a comment), `sharedListPage.test.ts` (two titles), `tests/app/states.js` (the `dashed` keys of two cases), `tests/app/inventory.js` (six `why` texts) |
 | S5 | `PageHead.svelte`, `PageTitle.svelte` |
 | S6 | `tests/derived.js` |
-| S7 | `tests/app/states.js` (case 113) |
+| S7 | `tests/app/states.js` (case 111) |
 | S8 | `DESIGN.md`, `docs/specs/FEATURES.md`, `docs/specs/COVERAGE.md` |
 | S9 | `tests/app/snapshots/*` (six headers, re-seeded with `--only`, never edited) |
 | S10 | `issues/57/mocks/D/built/`, `handoff.md` |
 
 ## Steps
 
-### S1. Case 112, red first
+### S1. Case 110, red first
 
-`tests/app/states.js`, case 112 "the empty plate" (DESIGN.md "Empty state", "The Drop Rule"): for each plate state
+`tests/app/states.js`, case 110 "the empty plate" (DESIGN.md "Empty state", "The Drop Rule"): for each plate state
 below at 360x640 and 1180x720, RU and EN, read (a) the plate's four computed border styles; (b) the gap from the
 nearest visible block above it to its top edge: the lowest bottom of the elements in `main` that are not the plate, its
 ancestor or its child, overlap it sideways and end above its top (the function `gapProbe` of `mocks/D/measure.cjs`,
@@ -173,9 +174,9 @@ twice a chip row's gap, so the plate reads as the next block (DESIGN.md, "Empty 
 3. `HomebrewPage.svelte`: the same pair on its `.body.withcol` and `.hbrows`.
 4. `ListsPage.svelte`: the signed-out `.stack` sets its own top so the plate lands 16 px under the head (`.stack >
    :global(.empty:first-child) { margin-top: 0 }`, and the stack's `margin-top` 12 px at every width, the head's 4 px
-   bottom margin above it); read the signed-in no-lists state in case 112 and treat its parent the same way if it is a
+   bottom margin above it); read the signed-in no-lists state in case 110 and treat its parent the same way if it is a
    flex or grid.
-5. Re-run case 112: every row passes; a parent that does not is fixed by the same pattern and named in `handoff.md`.
+5. Re-run case 110: every row passes; a parent that does not is fixed by the same pattern and named in `handoff.md`.
 
 ### S4. The other dashes (D-3)
 
@@ -210,9 +211,9 @@ files; in each, match `/(border|outline)[\w-]*\s*:[^;{}]*\bdashed\b/g`; allow `c
 cut border, DESIGN.md "The Drop Rule"); `ok(found.length === 0, 'a dashed border outside a drop place: ' + list)`.
 First assert the pattern reads `border: 1px dashed` and `border-style: dashed` and not `/* dashed */`.
 
-### S7. Case 113, the lead
+### S7. Case 111, the lead
 
-`tests/app/states.js`, case 113 "the page lead": on `#/search`, `#/homebrew as gm3`, `#/lists as gm1`, `#/roll/alt` and
+`tests/app/states.js`, case 111 "the page lead": on `#/search`, `#/homebrew as gm3`, `#/lists as gm1`, `#/roll/alt` and
 `#/account` at 1180x720, 1440x900 and 1920x1080, RU and EN: the `main .page-sub` computed `max-width` is 120ch (its
 pixel value over the font size is 120 +/- 1 `ch` of the face: read `ch` from a probe span); where its one-line width
 (a hidden `nowrap` clone, as `leadProbe` of `mocks/D/measure.cjs`) is at most its column's width, it is one line (its
@@ -226,7 +227,7 @@ and the borders sentence; "Colors", "Named Rules" (the Seal Rule's "The unique t
 (the unique variant); "Compact row" (the GM-only box); "Empty state" (the plate and the gap); "The One Width Rule" (the
 lead); "Typography", "Hierarchy" (the campsite). FEATURES.md: the five lines that say "dashed" (the catalog's empty
 state, the rolled entry's GM note, the note area's GM box and field, the GM-only row). COVERAGE.md: the two rows that
-say "dashed" (list page and shared page tests) and cases 112 and 113, and the derived check. `git grep -n -i dashed --
+say "dashed" (list page and shared page tests) and cases 110 and 111, and the derived check. `git grep -n -i dashed --
 DESIGN.md docs/specs app/src tests` then finds only the print card, The Drop Rule's own text, the derived check and
 `PrintCard.svelte`.
 
@@ -241,24 +242,24 @@ cause, do not re-seed it.
 
 `issues/57/mocks/D/built/` (`shoot.js` from `mocks/9b/built/shoot.js`): `search`, `search-none`, `tables-none`,
 `lists-empty`, `lists-out`, `homebrew-none`, `list-gm-only`, `shared-gm-only` at 360 and 1180 px, RU and EN, and
-`search` and `homebrew` at 1920 RU. `handoff.md`: the before and after gap of every case 112 row, the lead lines of
-case 113, the six re-seeded ids. Then the gates (Verification) and one commit.
+`search` and `homebrew` at 1920 RU. `handoff.md`: the before and after gap of every case 110 row, the lead lines of
+case 111, the six re-seeded ids. Then the gates (Verification) and one commit.
 
 ## Acceptance criteria
 
 1. The Drop Rule holds: `tests/derived.js` "Dashed means drop" passes; `git grep -n -E
    "(border|outline)[a-z-]*: [^;]*dashed" -- app/src` finds `PrintCard.svelte` only.
-2. The plate (D-2): every plate state of case 112 draws a solid `--line` border on `--bg2`, RU and EN, 360 and 1180.
+2. The plate (D-2): every plate state of case 110 draws a solid `--line` border on `--bg2`, RU and EN, 360 and 1180.
 3. The unique tag, the GM note box and field, the GM-only rows on the list page and `/s/`, the title field, the add
    row and the preview pane draw solid borders and keep their colour and ground (D-3; the built shots).
 4. The list drop mark is unchanged: a 2 px gold line (the existing drag case passes).
-5. The gap (D-4): case 112 reads 16 +/- 0.5 px above every plate in every listed state, at 360 and 1180, RU and EN;
+5. The gap (D-4): case 110 reads 16 +/- 0.5 px above every plate in every listed state, at 360 and 1180, RU and EN;
    `--gap-plate` is the only place of the value (`git grep -n "gap-plate" -- app/src` names `tokens.css` and the
    rules of S3).
-6. The filter column and the plate share one top on `/tables/*` and `/homebrew` from 1000 px (case 112 (c)).
-7. The lead (D-6): case 113 passes: one line on `/search` and `/homebrew` at 1180, 1440 and 1920, RU and EN; `/lists`
+6. The filter column and the plate share one top on `/tables/*` and `/homebrew` from 1000 px (case 110 (c)).
+7. The lead (D-6): case 111 passes: one line on `/search` and `/homebrew` at 1180, 1440 and 1920, RU and EN; `/lists`
    and `/roll/alt` one line as today; `/account` RU two lines inside its column, EN one.
-8. The lead still wraps at 360 (case 113, `/lists` and `/account`), with no sideways scroll.
+8. The lead still wraps at 360 (case 111, `/lists` and `/account`), with no sideways scroll.
 9. DESIGN.md carries The Drop Rule in "Shapes", "Named Rules" (2 of 8), the new borders sentence, the plate and the gap
    in "Empty state", the lead sentence in "The One Width Rule", and the corrected unique-tag, GM-only and Typography
    lines; FEATURES.md and COVERAGE.md say no "dashed" outside the print card.
@@ -275,12 +276,12 @@ case 113, the six re-seeded ids. Then the gates (Verification) and one commit.
 
 | State | What the screen shows | Proof |
 |---|---|---|
-| empty (a search, a table, a tab, a list, `/lists` with no lists or signed out, `/s/` with no match) | the plate: solid seam border on the Vault Wall ground, 16 px under the row above, its glyph, title, cause and one primary | case 112, the shots |
-| one, many | no plate; the rows as today; the lead on one line from 761 px | case 113, unchanged goldens |
+| empty (a search, a table, a tab, a list, `/lists` with no lists or signed out, `/s/` with no match) | the plate: solid seam border on the Vault Wall ground, 16 px under the row above, its glyph, title, cause and one primary | case 110, the shots |
+| one, many | no plate; the rows as today; the lead on one line from 761 px | case 111, unchanged goldens |
 | at the limit, one past it, 3x | not applicable: a plate shows at zero results only; the count lines and refusals do not change | unchanged |
-| the longest text | a 100-character query in «Нет совпадений с «...»» wraps inside the plate at 360; the longest lead (`/homebrew` EN, 113 characters) on one line from 768 px | case 112 at 360 (`#/search ~ nothing found` RU and EN), case 113 |
-| 360 px | the plate 16 px under the search row or the count line; leads as today | case 112, case 113 |
-| 1180 px | the plate 16 px under the chips or the search row, the filter column on its top; `/search` and `/homebrew` leads on one line | case 112, case 113 |
+| the longest text | a 100-character query in «Нет совпадений с «...»» wraps inside the plate at 360; the longest lead (`/homebrew` EN, 113 characters) on one line from 768 px | case 110 at 360 (`#/search ~ nothing found` RU and EN), case 111 |
+| 360 px | the plate 16 px under the search row or the count line; leads as today | case 110, case 111 |
+| 1180 px | the plate 16 px under the chips or the search row, the filter column on its top; `/search` and `/homebrew` leads on one line | case 110, case 111 |
 
 At many and at the limit nothing changes in row order, the primary's place, folds, popups or sticky regions; the
 on-screen keyboard at 360 covers the same rows as today (the plate is 8-10 px lower, under the box).
@@ -311,8 +312,8 @@ longer on `/search` and `/homebrew`); 120ch holds the longer of each pair from 7
 - Unit: none new (CSS and comments; jsdom has no layout); `listPage.test.ts` and `sharedListPage.test.ts` run for their
   renamed titles.
 - Static: `tests/derived.js` "Dashed means drop".
-- Browser (CI): cases 112 and 113; case 83's `FIRST_SCREEN` rows; the goldens.
-- COVERAGE.md names cases 112, 113 and the derived block.
+- Browser (CI): cases 110 and 111; case 83's `FIRST_SCREEN` rows; the goldens.
+- COVERAGE.md names cases 110, 111 and the derived block.
 
 ## Verification
 
@@ -320,7 +321,7 @@ longer on `/search` and `/homebrew`); 120ch holds the longer of each pair from 7
    `app/src/components/sharedListPage.test.ts`, one at a time.
 2. `node tests/run-all.js derived`.
 3. `npm run lint:untyped`, `npm run lint:typed`.
-4. `npm run build:test`; cases 112, 113 and 83 through the in-memory loader of `states.js` on the final `dist-test/`;
+4. `npm run build:test`; cases 110, 111 and 83 through the in-memory loader of `states.js` on the final `dist-test/`;
    the six `--only` re-seeds (S9).
 5. `rtk npm run check:built`; `npx impeccable detect --json --no-inline-ignores app/src` (no new finding in a touched
    file).
@@ -341,7 +342,7 @@ longer on `/search` and `/homebrew`); 120ch holds the longer of each pair from 7
 
 One code batch (45-60 min: `check:fast` 12-14 min with `VITEST_MAX_WORKERS=2`, one CI run 10.5-11.5, one review fix
 cycle, the screenshot set) plus extra gates: the two vitest files alone, two workers (8-10); `derived` (1); both lints,
-`check:built` and the detector (4-5); `build:test` and the loader runs of cases 112, 113 and 83, red then green (10-12);
+`check:built` and the detector (4-5); `build:test` and the loader runs of cases 110, 111 and 83, red then green (10-12);
 the six `--only` re-seeds (5-8); the shots at 360, 1180 and 1920 (5); `polish` and `harden` (5-10); the review (20-30).
 No full golden re-seed. About 100-140 min in all as its own batch; inside T's batch (`plan-rebatch.md`, option B) about
 33-45 min more than T alone (the lints, `check:built`, the detector, `polish`, `harden`, `build:test` and the shot setup
@@ -349,7 +350,7 @@ run once; the review grows by 10-15 min).
 
 ## Writer tests (for the orchestrator's dispatch; not a model choice)
 
-- Test 1: no. Every fork has a default (D-1 to D-8); case 112 decides each plate parent.
+- Test 1: no. Every fork has a default (D-1 to D-8); case 110 decides each plate parent.
 - Test 2: no. No contract, route, stored state, product law, hook or configuration; `tests/derived.js` is a test.
 - Test 3: in part. Six header-only re-seeds, no design node; the plate ground and the GM looks rest on visual
   judgment against `mocks/D/`.
@@ -408,7 +409,7 @@ reads "the GM note in its GM box"; "the GM note's box dashed on the darker groun
 darker ground"; "The GM field is dashed." goes (the switch and the caption name the note); "A GM-only row has a dashed
 border" reads "A GM-only row sits on the darker ground".
 
-## Fold list (for the orchestrator: `plan.md`, `handoff.md`, `context.md`; this brief edits none of them)
+## Fold list (folded into `plan.md`, `plan-TD.md` and `handoff.md` on 2026-11-06; kept for the record)
 
 1. `plan.md` Status: "Batch D (owner items 13 and 14, 2026-11-05): `plan-D.md` is its brief (decisions D-1 to D-8,
    steps S1-S10, acceptance 1-14, the four standing checks); `mocks/D/` is its mock. Defaults: AFK decisions file." and

@@ -27,7 +27,8 @@ exception. A browser check enforces both rules. Nothing new is stored; no string
   `SharePanel`, `Chip`, `Seg`, `ListFind`: a line of this brief that no longer matches the code is the
   implementer's to adapt; `handoff.md` names the change.
 - Case numbers: 108 and 109 are the next free `states.js` numbers after 9b's 105-107; `handoff.md` names the ones
-  taken. Batch N's brief (`plan-N.md`) takes 110 and 111 after them.
+  taken. Batch D, merged into this batch as TD (`plan-TD.md`), takes 110 (the plates) and 111 (the text measure);
+  batch N takes 112 and 113 and batch P 114 and 115.
 - Host: memory-starved. Run vitest with `VITEST_MAX_WORKERS=2`, one suite at a time, and no browser suite in parallel
   with vitest.
 - Impeccable cannot run from a subagent. The orchestrator runs `critique` on `mocks/T/` before the dispatch and
@@ -563,7 +564,7 @@ Not required (no trigger fired): no migration, no SECURITY DEFINER function, no 
 protocol. The toast hold changes timing only. `plan.md` Status already carries "Plan review: not required (no trigger
 fired) for batches 9b and T"; this refresh keeps it.
 
-## Fold list (for the orchestrator: `plan.md`, `handoff.md`, `context.md`; this brief edits none of them)
+## Fold list (folded into `plan.md`, `plan-TD.md` and `handoff.md` on 2026-11-06; kept for the record)
 
 1. `plan.md` Status: add "Batch T refresh (2026-11-05): `plan-T.md` is batch T's brief (decisions T1-T12, steps
    S1-S10, acceptance 1-20, the four standing checks); `mocks/T/` is its mock (the live site with the CSS injected,

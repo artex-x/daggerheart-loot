@@ -274,7 +274,7 @@ column):
 Not a `FIRST_SCREEN` row, logged in `handoff.md`: `/lists` and `/account` signed out rise about 22 px from 768 px (the
 sign-in lead and the account lead take one line).
 
-The browser check: case 111 "the text measure" in `tests/app/states.js` (TD's numbering; D's case 113 becomes it).
+The browser check: case 111 "the text measure" in `tests/app/states.js` (TD's numbering; D's lead case, 111 in `plan-D.md`, is widened into it).
 One case reads every class on its routes, at 360x640, 768x1024, 1180x720, 1440x900 and 1920x1080, RU and EN, through the
 in-memory loader on `dist-test/`:
 
@@ -300,7 +300,7 @@ the help panel's box at 1180 (inner 1097 px, paragraph 543 px) and on the footer
 ## 6. Placement
 
 Recommended: extend merged batch TD (`plan-T.md` with `plan-D.md`). Reasons: D-6 already opens `PageHead` and
-`PageTitle` for the lead cap and writes case 113 (TD's 111) of the same shape; T opens `Toast.svelte`; D opens `HitNote`,
+`PageTitle` for the lead cap and writes the lead case (TD's 111) of the same shape; T opens `Toast.svelte`; D opens `HitNote`,
 `ListPage`, `ListsPage`, `TablesPage`, `SearchPage`, `HomebrewPage` and DESIGN.md's "The One Width Rule" and "Typography".
 No `CLAUDE.md` split criterion applies: no public contract, the same route set as D, no golden moves (the goldens are
 accessibility trees and control lists; widths are not in them), the same gates. The new files for TD: `tokens.css` (T
@@ -341,10 +341,10 @@ Not batch 10: it is the docs lock and carries no code.
 4. RU/EN parity: no string changes. The measure is in `ch`, so RU and EN take the same box; the widest lines differ (about
    76 RU and 81 EN characters at 70ch), both inside the sources' bands. Every case reads both languages.
 
-## 8. Fold list (for the orchestrator; this brief edits none of these)
+## 8. Fold list (folded into `plan.md`, `plan-TD.md` and `handoff.md` on 2026-11-06; kept for the record)
 
 1. `plan-T.md` / `plan-D.md` dispatch (TD): read this brief with them; TD's acceptance gains lines MT-1 to MT-7 below;
-   D-6's literal 120ch becomes `var(--measure-line)` (same value); D's case 113 (TD 111) widens into "the text measure"
+   D-6's literal 120ch becomes `var(--measure-line)` (same value); D's lead case (TD 111) widens into "the text measure"
    (section 5); `plan-D.md` S8's One Width Rule sentence and its "Typography", "Hierarchy" Body line are replaced by
    this brief's (section 4).
    - MT-1: `tokens.css` holds `--measure-line: 120ch` and `--measure-text: 70ch`; every selector of section 4 uses them.

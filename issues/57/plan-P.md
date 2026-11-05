@@ -8,16 +8,16 @@ answered every mock P question on 2026-10-29 (`context.md`, "Print batch answers
 A mock is direction (owner, 2026-11-03): each departure from mock P or from section 15 is named in "Decisions".
 Section numbers ("section 15") are those of `plan.md`.
 
-Batch P runs after batch N and its remediation (CI credit passed), before batch 10. Run order of wave 3: 9a, 8, 9b, T,
-N, P, 10.
+Batch P runs after batch N and its remediation (CI credit passed), before batch 10. Run order of wave 3: 9a, 8, 9b, TD
+(T and D merged), N, P, 10. Restated 2026-11-06 for the owner's answer to Q-P1: the standard card stays 63x88 mm.
 
 ## Objective
 
 The printed card reads at the table in one face on every machine: Source Sans 3, rules text at 7.1 pt on the standard
 card and 5.7 pt on the compact card (never under 4.5 pt there), the tier word on the paper floor, list items with a
 visible marker, the source line alone on the bottom line, the Figma node's hands with fingers. The sheet is fitted
-again once the face has loaded, and «Напечатать» waits for that fit. The standard card is 63.5x88.9 mm if the owner
-confirms the product-law text (Q-P1). The `/p/` page puts the first sheet (on a phone, the first readable card) inside
+again once the face has loaded, and «Напечатать» waits for that fit. The standard card stays 63x88 mm and the sheet
+keeps its 8.5 mm and 14.5 mm margins (Q-P1, owner, 2026-11-05: kept). The `/p/` page puts the first sheet (on a phone, the first readable card) inside
 the first screen: the way back and the heading on one row, the two switches always visible, the primary first in the
 row under the head (from 761 px) or in a bottom dock (up to 760 px), the notes under the sheets, no `KeepNote`.
 
@@ -31,40 +31,34 @@ row under the head (from 761 px) or in a bottom dock (up to 760 px), the notes u
   against the design", "the sheet in a phone window", the `cardFit` and editor-view specs). Batches 9b, T and N edited
   `Seg`, `Button`, `Toast`, `HomebrewEditor`, `PageHead`, `tokens.css` and `states.js`: a line of this brief that no
   longer matches the code is the implementer's to adapt; `handoff.md` names the change.
-- Case numbers: 112 and 113 are the next free `states.js` numbers after batch N's 110 and 111; `handoff.md` names the
-  ones taken.
+- Case numbers: 114 and 115 are the next free `states.js` numbers after batch N's 112 and 113 (TD took 108 to 111);
+  `handoff.md` names the ones taken.
 - Host: memory-starved. Run vitest with `VITEST_MAX_WORKERS=2`, one file group at a time, and no browser suite beside
   vitest.
 - Impeccable cannot run from a subagent. The orchestrator runs `polish` and `harden` on `/p/` (360, 390, 768, 1180 px,
   RU and EN) and on the print renders after S12; fallback `impeccable:impeccable-finish-reviewer`.
-- Plan review: required before this batch (Status line in "Plan review" below). Q-P1 must be answered first.
+- Plan review: not required (Status line; Q-P1 is answered no, so no contract or product law changes).
 - Steps are S1 to S14. The line "Session end partial progress" in `handoff.md` names the last finished step.
 
-## Owner question (NEEDS_HUMAN_CONFIRMATION: yes)
+## Owner answer (settled; NEEDS_HUMAN_CONFIRMATION: no)
 
-**Q-P1. Write the 63.5x88.9 mm standard card into the product law?** The owner answered QP.2 on 2026-10-29 ("standard
-card 63.5x88.9 mm, nine still fit on A4"). The answer changes the `CLAUDE.md` product law ("nine 63x88 mm cards per A4
-sheet") and the public `llms.txt` sentence on `/p/<id>`, and the owner's stop rule names a product law. The
-orchestrator asks once before the dispatch.
+**Q-P1 ANSWER (owner, chat, 2026-11-05, interactive): KEEP 63x88 mm.** No official Daggerheart card size was found;
+63.5x88.9 mm is the poker size; the difference is below printing tolerance (`context.md`, "Q-P1 ANSWER"). So this brief
+takes every "Fallback (Q-P1 no)":
 
-- Current: a 63x88 mm card, 8.5 mm side and 14.5 mm top and bottom sheet margins, 2 mm gutters; the subtitle says
-  «как у обычной игральной», which the card is not (0.5 x 0.9 mm smaller than a 2.5 x 3.5 in card, `audit.md` PR9).
-- Proposed: 63.5x88.9 mm, 7.75 mm side and 13.15 mm top and bottom margins, the same gutters; the compact card stays
-  44x63 mm (QP.3). Every phone, tablet and laptop sees it only on paper and in the `/p/` preview.
-- **Recommended: yes.** The card then matches the boxed Daggerheart cards and standard 63.5x88 mm sleeves, and the
-  subtitle tells the truth. Trade-off: 7.75 mm side margins, still outside the 3-5 mm unprintable band of a home
-  printer; every print figure is re-measured (it is anyway, for the face).
-- Visual evidence for the owner (already drawn): `mocks/P/proposed-ss3-std9-colour-ru__300dpi.jpg` beside
-  `mocks/P/current-today-std9-colour-ru__300dpi.jpg` (the whole sheet at 63.5x88.9 against 63x88), the real-size card
-  crops `mocks/P/proposed-ss3-std9-colour-ru__card-weapon__300dpi.jpg` and `..._card-long_...`, and `mocks/P/index.html`,
-  "Owner answers already in the plan".
-- If the owner says no: P-D1's fallback (63x88 stays); S6 skips the size lines; the plan review is not required.
+- P-D1 and P-D17 keep today's values and text. The `.psheet` grid (63 mm by 88 mm cells, 8.5 mm and 14.5 mm padding),
+  `PrintPreview`'s cell, `PRINTED_PX.std` (238.11) and the subtitle `printSub` do not change.
+- `CLAUDE.md`, `PRODUCT.md`, `README.md`, `README.ru.md`, `llms.txt`, `docs/fixtures/` and `tests/contracts.js` do not
+  change; DESIGN.md "Signature component: the print card" keeps 63x88 mm. No plan review runs before this batch.
+- The compact card stays 44x63 mm (QP.3).
+- Where a step below still reads 63.5, 88.9, 7.75, 13.15, 240 or "Q-P1 yes", it is superseded by this section: read it
+  as the 63x88 value of today's code. The steps and acceptance lines that carry the size have been edited to say so.
 
 ## Decisions of this refresh (planner defaults; the QP answers are the owner's)
 
 | # | Decision | Reason and trade-off |
 |---|---|---|
-| P-D1 | **Card size (QP.2, Q-P1).** `.psheet` `grid-template-columns: repeat(3, 63.5mm)`, `grid-template-rows: repeat(3, 88.9mm)`, `padding: 13.15mm 7.75mm`; `PrintPreview`'s cell `63.5mm` x `88.9mm`; `PRINTED_PX.std` 240 (63.5 mm at 96 px per inch). The compact sheet is unchanged. Fallback (Q-P1 no): every 63x88 value stays. | Owner, QP.2. One geometry per sheet in two components and one constant. |
+| P-D1 | **Card size (QP.2, Q-P1): kept at 63x88 mm (owner, 2026-11-05).** Nothing changes: `.psheet` stays `repeat(3, 63mm)` by `repeat(3, 88mm)` with `padding: 14.5mm 8.5mm`, `PrintPreview`'s cell stays `63mm` x `88mm`, `PRINTED_PX.std` stays 238.11. The compact sheet is unchanged. The 63.5x88.9 mm text of the earlier brief is dropped. | Owner, Q-P1. The change was below printing tolerance and no official size exists. |
 | P-D2 | **The face (QP.1).** `--print-ui` leaves `tokens.css`; `PrintCard.svelte`'s 17 `var(--print-ui)` read `var(--ui)`. The card is set in `'Source Sans 3 Variable'` where the face has loaded, else the system stack after it. | Owner, QP.1; one token, no near-duplicate. The face is already self-hosted and preloaded (batch 1), upright and italic, weights 200-900 (the name and tier number use 900). |
 | P-D3 | **The fit after the face loads.** A new port `FontsPort { settled(): Promise<boolean> }` (`app/src/ports/fonts.ts`): the browser form resolves `true` after `document.fonts.ready` when `document.fonts.status` was `'loading'` at the call, else `false` at once; the fake resolves `false` at once, or holds until a test releases it (`fakeFonts()` with `release(loading: boolean)`). `PrintPage` and `PrintPreview` call it after `tick()` once per sheet render (keys: the cards, `per`, `shownPrintBW`, `lang`) and, on `true`, bump a `refit` counter that each `PrintCard` reads in its fit effect. `TablesPage`'s anchor scroll moves to the port too (its second user; the cast and its comment go). «Напечатать» is `disabled` until the port settles. | The fit never awaited a font (`PrintCard`'s doc comment): with a self-hosted face, the first fit can run in the fallback face (`font-display: swap`). After `tick()` the cards have laid out once, so the italic and any unpreloaded subset have started to load and `fonts.ready` is the pending promise. `false` skips a second fit of 180 cards when the face was already in memory. Browser APIs belong behind a port (`CLAUDE.md`); the two uses make it earn its place. Alternative: each card awaits `document.fonts.ready` itself (180 promises, no port, untestable in jsdom). |
 | P-D4 | **The rules-text base per sheet (QP.4) and the compact floor (RP-2, first half).** `PrintCard` takes `compact: boolean` (both callers know it). CSS: `.pc-text { font-size: 4cqw }`, `.pcard.compact .pc-text { font-size: 4.6cqw }`. `fit()`: `const base = compact ? 4.6 : 4.0`, `const floor = compact ? 3.7 : 2.6`; the black-and-white grow runs from `base` to `GROW_CAP` (5); the shrink runs `base` down to `max(3, floor)`, then the padding rungs, then down to `floor`. The reference implementation is `refitAll` in `mocks/P/tools/mockp.cjs` (the fit the mock measured). **Departure** from section 15's "Ladder unchanged below the base": on the compact card the ladder stops at 3.7cqw (4.5 pt on a 43.2 mm content box). | Owner, QP.4. The compact floor: before it, three RU colour compact cards printed rules text at 4.2-4.4 pt, under the paper floor every label keeps (`DECISIONS.md`, "Print card small text ..."); mock P measured the cost: 3 more RU compact colour cards lose their picture (20 for 17), no catalog card clips. The standard floor stays 2.6cqw (4.7 pt at 62.7 mm). |
@@ -80,7 +74,7 @@ orchestrator asks once before the dispatch.
 | P-D14 | **The phone preview (QP.6) at the 760 px step, not 600.** Up to 760 px the screen draws one card per row, `min(column, 420px)` wide (`PREVIEW_MAX_PX`, the editor preview's cap), centered, 12 px apart; blanks are not drawn; each card keeps its paper layout and is drawn by a screen-only `transform: scale(k)` with `k` = shown width / printed width, passed to the card as `screenScale` (the same mechanism as today's scaled sheet: `fit()` divides it out). From 761 px the scaled sheet of today. Print media draws the sheets as today at every width. **Departure** from mock P and section 7's "below 600 px": 760 is the system step the `viewport` port reads (DESIGN.md, "The Two Breakpoints Rule": no new system breakpoint), and `k` must be computed in code. | Owner, QP.6 ("one card per row at 360"). At 761 px today's sheet draws its cards about 218 px wide (readable); at 600-760 px a whole sheet would draw them 170-218 px. A 420 px cap keeps a card under about 590 px tall on a tablet held upright. Alternative: 600 px by a component media query, with `k` read from the DOM: a second width source. |
 | P-D15 | **`KeepNote` goes (C31).** `KeepNote.svelte`, its `a11y.test.ts` line, its `printPage.test.ts` describe, the strings `keepBefore`, `keepLink`, `keepAfter` and the getter `printChanged` (no reader left: `app.test.ts` and `accountPage.test.ts` assert `shownPrintBW` / `shownPrintCompact` against the default instead). The switches show the visit's choice. | Owner Q3.2; `handoff.md` Deferred ("`KeepNote.svelte` leaves with batch P"). Delete a component with its last caller. |
 | P-D16 | **Labels (QP.7, RP-1).** `printColor` «Цвет» / "Color", `printBW` «Ч/б» / "B&W", `printStd` «63×88» / "63×88", `printCompact` «44×63» / "44×63", `printNow` «Напечатать» / "Print"; they reach `/p/`, the editor's print view and the account defaults (one name, rule 4). The colour group's accessible name was the page title; it becomes `printInk` «Цвет печати» / "Print color" (new) in `PrintSwitches` and stays `defaultPrint` on the account page. | Owner, QP.7 and RP-1. The group name is a campsite fix: a radio group named «Печать карточек» does not say what it chooses. |
-| P-D17 | **The subtitle (QP.2).** `printSub` «Карточек: %n. Листов A4: %p. Размер карты 63,5×88,9 мм - как у обычной игральной.» / "Cards: %n. A4 sheets: %p. Card size 63.5×88.9 mm - the size of a playing card." `printSubCompact` unchanged. Fallback (Q-P1 no): today's text. | Owner, QP.2; RU decimal comma, EN decimal point. |
+| P-D17 | **The subtitle (QP.2, Q-P1): today's text stays.** `printSub` and `printSubCompact` do not change; the card size is not written into any string. | Owner, Q-P1: with 63x88 mm kept the sentence needs no new text. |
 | P-D18 | **The toast clears the dock.** `Toast.svelte`'s page toast offset adds `var(--ebar-h, 0px)` beside batch T's `var(--selbar-h, 0px)`; `tokens.css`'s `--ebar-h` comment names both bars (the editor's and the print page's). | A 4000 ms «Ссылка скопирована» would cover «Напечатать» at 360. The editor's toast clears its bar too (the same variable). Fallback: if T's toast offset has another form, follow it and name the change. |
 | P-D19 | **The bundle.** About +0.6 to +1.0 kB (the port, `Crumb`, the dock) and -0.4 kB (`KeepNote`); measured in S13. A raise follows the standing rule (measured total rounded up, the reason in the commit, under the 300 kB ceiling). | `context.md`, "Bundle budget ceiling". |
 
@@ -103,19 +97,19 @@ orchestrator asks once before the dispatch.
 
 - New: `app/src/ports/fonts.ts` (`browserFonts`, `fakeFonts`), `FontsPort` in `ports/types.ts`, `fonts` in `Env`;
   `app/src/components/Crumb.svelte`; the dock in `PrintPage`; `PrintCard`'s `compact` and `refit` props; the strings
-  `printInk`, `printSheetN`; cases 112 and 113; the inventory states of "New states".
+  `printInk`, `printSheetN`; cases 114 and 115; the inventory states of "New states".
 - Changed: `PrintCard.svelte`, `PrintPage.svelte`, `PrintPreview.svelte`, `PrintSwitches.svelte`, `HomebrewEditor.svelte`
   (the crumb only), `TablesPage.svelte` (the port only), `Toast.svelte` (one offset line), `tokens.css` (`--print-ui`
-  out, the `--ebar-h` comment), `lib/print.ts` (`PRINTED_PX.std`, `cardScale`), `lib/dict.ts`, `state/app.svelte.ts`
+  out, the `--ebar-h` comment), `lib/dict.ts`, `state/app.svelte.ts`
   (`printChanged` out), `ports/index.ts`, `ports/types.ts`; the four `card/burden-*.svg`.
 - Deleted: `KeepNote.svelte`.
 - Tests: `printPage.test.ts`, `homebrewPrintPreview.test.ts`, `print.test.ts`, `ports.test.ts`, `tables.test.ts`,
   `accountPage.test.ts`, `app.test.ts`, `a11y.test.ts`, `crumb.test.ts` (new), the editor's component test that reads
   `.crumb` (find it with `git grep -n "crumb\|\.back" -- app/src/components/*.test.ts`), `tests/app/print.js`,
-  `tests/app/states.js` (cases 83, 112, 113, and the case that reads `.keepnote a`), `tests/app/inventory.js` (S10).
+  `tests/app/states.js` (cases 83, 114, 115, and the case that reads `.keepnote a`), `tests/app/inventory.js` (S10).
 - Prose: `FEATURES.md` ("Print", "Homebrew" print view, "Account" Display switches, rule 9), `DESIGN.md`, `COVERAGE.md`,
-  `CLAUDE.md` (Q-P1), `PRODUCT.md`, `README.md`, `README.ru.md`, `llms.txt` (Q-P1), one decision file and the
-  "Amended by" lines of the five older ones, `docs/DECISIONS.md` (by `node tools/decisions.js`).
+  one decision file and the "Amended by" lines of the five older ones, `docs/DECISIONS.md` (by `node tools/decisions.js`).
+  Not touched (Q-P1 is no): `CLAUDE.md`, `PRODUCT.md`, `README.md`, `README.ru.md`, `llms.txt`.
 
 ## Out of scope
 
@@ -157,7 +151,7 @@ orchestrator asks once before the dispatch.
 
 | Number | Where it lands | Step |
 |---|---|---|
-| `/p/` first-screen tops at 360x640, 390x844, 768x1024, 1180x720, RU and EN (estimate 236-248 px at 360: header 111, padding 26, crumb row about 40, gap, the switches' 42 px track, gap; about 200-215 px at 1180) | `FIRST_SCREEN`, case 112, `handoff.md` | S2 (before), S12 (after) |
+| `/p/` first-screen tops at 360x640, 390x844, 768x1024, 1180x720, RU and EN (estimate 236-248 px at 360: header 111, padding 26, crumb row about 40, gap, the switches' 42 px track, gap; about 200-215 px at 1180) | `FIRST_SCREEN`, case 114, `handoff.md` | S2 (before), S12 (after) |
 | The catalog fit in all four layouts, RU and EN, in the shipped face: rules-text median and minimum pt, cards below the base, art median, art gone, names on three lines, the smallest text and what it is | `FEATURES.md` "Print", the decision file, `handoff.md` | S11 |
 | Which cards give their picture way with a tier band or a mark, and their clearance (P-D8) | `handoff.md`, `print.js` | S11 |
 | The compact EN «DAMAGE» shortfall in pt (today 3.1-3.7 in Segoe UI) and the RU one-line values (4.8 pt) | `FEATURES.md` named shortfalls | S11 |
@@ -181,7 +175,7 @@ orchestrator asks once before the dispatch.
 | S10 | `tests/app/inventory.js`, `tests/app/states.js`, `tests/app/print.js` |
 | S11 | `issues/57/mocks/P/tools/print-measure.cjs` and `print-analyse.cjs` (pointed at `dist-test/`), `handoff.md` |
 | S12 | `issues/57/mocks/P/built/` |
-| S13 | `FEATURES.md`, `DESIGN.md`, `COVERAGE.md`, `CLAUDE.md`, `PRODUCT.md`, `README.md`, `README.ru.md`, `llms.txt`, `docs/decisions/`, `docs/DECISIONS.md` |
+| S13 | `FEATURES.md`, `DESIGN.md`, `COVERAGE.md`, `docs/decisions/`, `docs/DECISIONS.md` (`CLAUDE.md`, `PRODUCT.md`, `README.md`, `README.ru.md` and `llms.txt` stay: Q-P1 is no) |
 | S14 | goldens under `tests/app/snapshots/`, `handoff.md` |
 
 ## Steps
@@ -257,24 +251,26 @@ orchestrator asks once before the dispatch.
 
 ### S6. The geometry and the phone preview (P-D1, P-D14)
 
-1. `PrintPage.svelte` `.psheet`: the P-D1 grid and padding (Q-P1 yes). `PrintPreview.svelte` `.pframe`: `63.5mm` x
-   `88.9mm`. `lib/print.ts`: `PRINTED_PX.std` 240 and its comment; a new `cardScale(width, compact)` = `min(width,
-   PREVIEW_MAX_PX) / PRINTED_PX[...]`, cut to three decimals, 1 before the column has a width (`print.test.ts`: 328 px
-   gives 1.366 std and 1.972 compact; 700 px gives 1.75 std; 0 gives 1). `previewScale` stays.
+1. No geometry change (Q-P1 is no, P-D1): `.psheet` and `PrintPreview`'s `.pframe` keep their 63mm x 88mm cells and
+   today's padding. The phone preview reuses `previewScale(width, compact)` of `lib/print.ts` (the editor's function:
+   `min(width, PREVIEW_MAX_PX) / PRINTED_PX[...]`, cut to two decimals, 1 before the column has a width), so no
+   `cardScale` is added and `lib/print.ts` and `print.test.ts` do not change (planner default, 2026-11-06: the
+   second function would differ from `previewScale` by one decimal). At 63x88 mm a 328 px column gives 1.37 std and
+   1.97 compact, and 700 px gives 1.76 std.
 2. `PrintPage.svelte`: `const narrow = $derived(app.band === 'narrow')`; `const k = $derived(narrow ?
-   cardScale(column, app.shownPrintCompact) : sheetScale(column))`; `screenScale={k}`; `.pfit` takes `class:one={narrow}`
+   previewScale(column, app.shownPrintCompact) : sheetScale(column))`; `screenScale={k}`; `.pfit` takes `class:one={narrow}`
    and `class:scaled={!narrow && k < 1}`. Screen-only CSS (`@media screen`) for `.pfit.one`: `.pfit-in` no transform;
    `.psheet` `width: auto; height: auto; padding: 0; margin: 0 0 12px; background: none; box-shadow: none;
    grid-template-columns: calc(var(--pcard-w) * var(--pfit)); grid-auto-rows: calc(var(--pcard-h) * var(--pfit)); gap:
-   12px; justify-content: center` (with `--pcard-w`/`--pcard-h` 63.5mm/88.9mm, or 44mm/63mm on `.compact`);
+   12px; justify-content: center` (with `--pcard-w`/`--pcard-h` 63mm/88mm, or 44mm/63mm on `.compact`);
    `:global(.pcard)` inside it `width: var(--pcard-w); height: var(--pcard-h); transform: scale(var(--pfit));
    transform-origin: 0 0`; `.pcard.blank` `display: none`. `@media print` keeps today's rules and adds nothing for `.one`
    (print draws the A4 sheets).
 3. «Лист N из M» (`printSheetN`, `%n` and `%m`): a `<p class="psheet-n">` before each `.psheet` from the second, at
    every width, `@media print { display: none }`, `--t-data`, `--muted`.
 4. `printPage.test.ts` "the sheet on a narrow screen": with `fakeViewport('narrow')` and a 328 px column the cards carry
-   `screenScale` 1.366 and the sheet class `one`; with `'mid'` and 736 px the sheet scales whole (today's test); the fit
-   written at k 1.366 equals the fit at 1 (as the half-scale test).
+   `screenScale` 1.37 and the sheet class `one`; with `'mid'` and 736 px the sheet scales whole (today's test); the fit
+   written at k 1.37 equals the fit at 1 (as the half-scale test).
 
 ### S7. The head, the row and the dock (P-D11, P-D12, P-D16, P-D18)
 
@@ -321,7 +317,7 @@ orchestrator asks once before the dispatch.
 | `printNow` | Напечатать | Print |
 | `printInk` (new) | Цвет печати | Print color |
 | `printSheetN` (new) | Лист %n из %m | Sheet %n of %m |
-| `printSub` | Карточек: %n. Листов A4: %p. Размер карты 63,5×88,9 мм - как у обычной игральной. | Cards: %n. A4 sheets: %p. Card size 63.5×88.9 mm - the size of a playing card. |
+| `printSub` | unchanged (Q-P1 is no) | unchanged |
 | `printNote` | В окне печати включите «Фоновые изображения». | In the print dialog, turn on "Background graphics". |
 
 Then `printPage.test.ts` and `homebrewPrintPreview.test.ts` take the new labels (49 and its sites; `git grep -n -E
@@ -333,7 +329,7 @@ groups, «Ссылка на набор». `accountPage.test.ts` takes the accoun
 ### S10. Browser tests and states
 
 1. `tests/app/print.js`: the switch clicks take the new labels (`bw` «Ч/б», `colour` «Цвет», `compact` «44×63», the
-   standard «63×88»; EN «B&W»); the card size 63.5 / 88.9 mm (Q-P1), the compact 44 / 63; the colour text ceiling and
+   standard «63×88»; EN «B&W»); the card size stays 63 / 88 mm (Q-P1 no), the compact 44 / 63; the colour text ceiling and
    ranges read the base per sheet (`<= 4.0` standard and `<= 4.6` compact in colour; `floor..5` in black and white);
    «Daggerheart» absent from every bottom line and the source box as wide as the content box (`gameLines` goes); the
    burden `SPEC` and the head figures re-measured with their reasons; "the sheet in a phone window": at 360 one card per
@@ -345,7 +341,7 @@ groups, «Ссылка на набор». `accountPage.test.ts` takes the accoun
 2. `tests/app/states.js`:
    - case 83: `#/p/set-emberaxe as gm2` to `shipped: true` (the rule at 360x640 and 1180x720, RU and EN).
    - the case that reads `.keepnote a` (`c` of the prefs case): asserts no note and the switch pressed for the visit.
-   - **Case 112, the print page head and dock** (FEATURES "Print"; DESIGN.md "The Two Breakpoints Rule"):
+   - **Case 114, the print page head and dock** (FEATURES "Print"; DESIGN.md "The Two Breakpoints Rule"):
      `#/p/set-emberaxe as gm2` at 360x640, 390x844, 768x1024 and 1180x720, RU and EN: (a) DOM order: the back link,
      the `h1`, then from 761 px «Напечатать», the two groups, «Ссылка на набор» on one row, up to 760 px the two groups
      on one row; (b) up to 760 px the dock is in view at scroll 0 and after a scroll to the last card, holds «Напечатать»
@@ -353,7 +349,7 @@ groups, «Ссылка на набор». `accountPage.test.ts` takes the accoun
      within 40% of the height (logged at 390 and 768); (d) up to 760 px each card is one per row, `min(column, 420)`
      wide within 1 px, centered; (e) «Лист 2 из 2» before the second sheet of the ten-card set; (f) no sideways scroll;
      (g) every control at 360 and 390 px passes batch T's `targets` floor (40 px, 44 for menu items).
-   - **Case 113, the face wait**: open `#/p/set-emberaxe as gm2` at 1180x720 with request interception holding every
+   - **Case 115, the face wait**: open `#/p/set-emberaxe as gm2` at 1180x720 with request interception holding every
      `/assets/*.woff2` for 1500 ms and the cache disabled: «Напечатать» is disabled while the sheet shows and enabled
      after the fonts arrive; the cards' written fit (the `.pc-text` sizes and `--pcpad`) then equals a warm open of the
      same set; with the woff2 requests failed (aborted), the button enables and the sheet fits in the fallback face.
@@ -384,31 +380,29 @@ dock height, and the button's wait (cold and warm) and the refit time on the 180
 
 ### S13. Specs and decisions (each in this commit)
 
-1. `FEATURES.md` "Print": the card size and margins (Q-P1); the face and the fit after it loads, the waiting
+1. `FEATURES.md` "Print": the card size and margins stay (Q-P1 no; no size line changes); the face and the fit after it loads, the waiting
    «Напечатать», a tab offline with no cached face prints in the fallback; the bases 4.0 / 4.6cqw, the compact floor
    3.7cqw, the black-and-white grow from the base; the tier word on the 4.5 pt floor; the en dash marker; the art that
    gives way and its clearance; the bottom line without «Daggerheart» (its sentence goes); the hands of the nodes; every
    measured figure of S11 with its date and host; the named shortfalls re-measured; the `/p/` bar (the crumb, the row,
    the dock up to 760 px, the notes under the sheets, «Лист N из M», no note under the bar: the paragraph on the
    switches' note is rewritten); the phone preview up to 760 px; each departure from nodes `714-42387` and `3773-90792`
-   with its date: the card size, the face, the bases, the compact floor, the tier word floor, the clearance. "Homebrew"
+   with its date: the face, the bases, the compact floor, the tier word floor, the clearance. "Homebrew"
    (the print view's cell size and labels), "Account" (the Display switches' short labels), rule 9 (the print bar's
    departure goes; the dock up to 760 px is named as the editor's bar is).
 2. `DESIGN.md`: "Overview" (the print exception paragraph: the card is set in the UI face; the "identical print"
    sentence is true now); "Typography" ("Print Font" line goes, the UI font line names the print card); "The Local Font
    Rule" (the card's sentence); "The Two Breakpoints Rule" (the `/p/` step at 760 px: one card per row); "Signature
-   component: the print card" (63.5x88.9 mm, 13.15 by 7.75 mm margins, the face, the bases, the compact floor, the
+   component: the print card" (the size and margins stay 63x88 mm and 14.5 by 8.5 mm; the face, the bases, the compact floor, the
    marker, the bottom line, the hands with fingers; the compact card is no longer the standard card at 70% in its text
    size).
-3. `CLAUDE.md` "Product laws" line: "nine 63.5x88.9 mm cards per A4 sheet" (Q-P1). If a guard refuses the write, stop
-   and return the text for the orchestrator.
-4. `PRODUCT.md` (the "Table handout" row), `README.md` and `README.ru.md` (the print paragraph), `llms.txt` (the
-   `/p/<id>` line): 63.5x88.9 mm. `node tests/contracts.js` and `node tests/derived.js` pass.
-5. `COVERAGE.md`: the `app/print` row (the new checks of S10.1), cases 112 and 113, `Crumb.svelte` and `fonts.ts` with
+3. `CLAUDE.md`, `PRODUCT.md`, `README.md`, `README.ru.md` and `llms.txt` stay unchanged (Q-P1 is no). `node
+   tests/contracts.js` and `node tests/derived.js` pass without a fixture or contract change.
+5. `COVERAGE.md`: the `app/print` row (the new checks of S10.1), cases 114 and 115, `Crumb.svelte` and `fonts.ts` with
    their tests, `KeepNote` out of the print row.
 6. A decision file `docs/decisions/2026-11-<dd>-the-print-card-sets-the-ui-face-at-a-larger-base.md` (title at most
    80 characters, for example "The print card prints in the UI face at 7.1 pt, fitted after it loads"): Decision (the
-   face, the bases and floors, the fit after the face, the size with Q-P1); Rejected (today's local stack: a different
+   face, the bases and floors, the fit after the face; the card size stays, Q-P1); Rejected (today's local stack: a different
    fit on every machine; Overpass: not compared, QP.1; an art floor: smaller text on the longest cards, QP.8; a 600 px
    phone step: a second width source; the label stop at 4.5 pt: a collision on 70 EN compact cards); "Amends" lines for
    "Print card small text keeps the ribbon and gets one paper floor in every view" (2026-09-23: the tier word, the
@@ -429,7 +423,7 @@ dock height, and the button's wait (cold and warm) and the refit time on the 180
 2. Local gates (owner, "Local gates", with one exception): the vitest files of S3-S9, both lints, Prettier, the detector
    on the touched files, `node tests/derived.js`, `node tests/contracts.js`, `npm run check:built`, one local
    `node tests/run-all.js app/print` (the print figures cannot be pinned from CI's logs alone; about 8 min, no vitest
-   beside it), then `rtk npm run check:fast` last (Bash timeout 600000). Cases 112, 113 and the sweep run on CI.
+   beside it), then `rtk npm run check:fast` last (Bash timeout 600000). Cases 114, 115 and the sweep run on CI.
 3. `handoff.md`: every acceptance line with its outcome, the S2 and S12 tables, the S11 figures, the departures (P-D4,
    P-D5, P-D8, P-D12, P-D14 and any found while building), the `polish` and `harden` outcome, the CI run.
 
@@ -445,23 +439,24 @@ The axe cases: `printPage.test.ts` "axe" adds the narrow band with the dock and 
 
 ## Acceptance (each line is checked and its outcome is in `handoff.md`)
 
-1. Q-P1 answered before the dispatch; with yes, the standard card is 63.5x88.9 mm with 7.75 / 13.15 mm margins
-   (`print.js` "size and grid"), and `CLAUDE.md`, `PRODUCT.md`, `README.md`, `README.ru.md`, `llms.txt`, `DESIGN.md` and
-   `FEATURES.md` say so; with no, every 63x88 figure stays and the line reads "kept, owner".
+1. Q-P1 is answered: the standard card stays 63x88 mm with 8.5 / 14.5 mm margins (owner, 2026-11-05: kept). The
+   line reads "kept, owner" in `handoff.md`; `print.js` "size and grid" keeps its 63 / 88 mm figures; `CLAUDE.md`,
+   `PRODUCT.md`, `README.md`, `README.ru.md`, `llms.txt`, `DESIGN.md` and `FEATURES.md` carry no size change
+   (`git diff --stat` names none of them for a size).
 2. PR1 and PR2 (QP.4): the rules text starts at 4.0cqw standard and 4.6cqw compact; the catalog measure (S11) gives the
    medians (7.1 and 5.7 pt in colour) and the counts that `FEATURES.md` states.
 3. PR3 (QP.1): `--print-ui` is gone (`git grep -n print-ui -- app` returns nothing); `print.js` reads Source Sans 3 as
    the platform face of `.pc-text`.
-4. The fit after the face: `printPage.test.ts` (S5.3) and case 113 pass; «Напечатать» is disabled until the port
+4. The fit after the face: `printPage.test.ts` (S5.3) and case 115 pass; «Напечатать» is disabled until the port
    settles; an aborted face fits in the fallback and the button enables.
 5. PR4, C29, C30 (First-Screen Rule): the `/p/` row of `FIRST_SCREEN` is `shipped: true` and passes at 360x640 and
-   1180x720, RU and EN (target 240 / 270, limit 256 / 288); case 112 (c) logs 390 and 768.
+   1180x720, RU and EN (target 240 / 270, limit 256 / 288); case 114 (c) logs 390 and 768.
 6. PR5: the tier word is at least 4.5 pt in every layout (`print.js` floors check).
 7. PR6: a `ul` item prints an en dash in black (`print.js` reads `li::marker` content and colour on `voa2_a3`).
 8. PR7: closed with no code (measured in mock P); `FEATURES.md` keeps no claim about it.
 9. PR8 and QP.8: the ladder order holds; a colour card whose art gives way has no blank band and clears every mark
    (`print.js`, P-D8 check); `handoff.md` lists the cards and their clearance.
-10. PR9: answered by Q-P1 (line 1).
+10. PR9: closed by Q-P1 (line 1): the size stays and the subtitle `printSub` stays as it is (owner).
 11. PR10 (QP.5): the name and tags are unchanged (no `.pc-name` or `.pc-tag` rule changes in the diff).
 12. PR12 and C31: no `KeepNote` (S8.3 grep); the A4 sentence is gone; the hint is under the sheets or gone by S11.3.
 13. C29: the bar holds the crumb row and one control row from 761 px, the crumb row and the switches' row up to 760 px.
@@ -485,8 +480,8 @@ The axe cases: `printPage.test.ts` "axe" adds the narrow band with the dock and 
     `expectNoA11yViolations`.
 23. The fonts port serves `PrintPage`, `PrintPreview` and `TablesPage`; no component reads `document.fonts`
     (`git grep -n "document.fonts" -- app/src` lists only `ports/fonts.ts`).
-24. The dock: case 112 (b); the toast clears it (P-D18); focus stops clear of it (`--ebar-h`).
-25. The Thumb Rule on `/p/` (batch T): `sweep.js 360` and `390` report no target under 40 px on `/p/`; case 112 (g).
+24. The dock: case 114 (b); the toast clears it (P-D18); focus stops clear of it (`--ebar-h`).
+25. The Thumb Rule on `/p/` (batch T): `sweep.js 360` and `390` report no target under 40 px on `/p/`; case 114 (g).
 26. New states: the three of "New states" with goldens in RU and EN and axe cases.
 27. Each departure from nodes `714-42387` and `3773-90792` is named in `FEATURES.md` "Print" with its date; DESIGN.md
     and the decision file match; the six older decision files carry "Amended by".
@@ -504,8 +499,8 @@ The axe cases: `printPage.test.ts` "axe" adds the narrow band with the dock and 
 | State | What `/p/` and the card show | Proof |
 |---|---|---|
 | empty set (no card the build knows) | the heading, «Печатать нечего...», the deleted note if any, «На главную»; no bar, no dock, no sheet | `printPage.test.ts` "nothing to print", unchanged |
-| one card | 360: the crumb, the switches, one card 328 px wide, the notes, the dock; 1180: the crumb, the row, one sheet with eight blanks, the notes | case 112, `#/p/set-emberaxe ~ phone as gm2` |
-| many (ten, two sheets) | «Лист 2 из 2» before the second sheet; at 360 the cards of both sheets one per row, the label between the ninth and tenth | `#/p/set-tencards as gm2`, case 112 (e) |
+| one card | 360: the crumb, the switches, one card 328 px wide, the notes, the dock; 1180: the crumb, the row, one sheet with eight blanks, the notes | case 114, `#/p/set-emberaxe ~ phone as gm2` |
+| many (ten, two sheets) | «Лист 2 из 2» before the second sheet; at 360 the cards of both sheets one per row, the label between the ninth and tenth | `#/p/set-tencards as gm2`, case 114 (e) |
 | at the cap (180) | twenty sheets (twelve compact); at 360, 180 cards one per row (about 82,000 px of page); one refit pass after the face | `print.js` `MAX`, S12 refit time |
 | one past the cap (181 pressed) | the cap toast, unchanged (now 10000 ms by batch T's long class: 97 characters) | `app.test.ts`, unchanged |
 | 3x the default | none: 180 is a render bound, not a configurable limit | - |
@@ -513,8 +508,8 @@ The axe cases: `printPage.test.ts` "axe" adds the narrow band with the dock and 
 | the longest names (`cm26`, `f60`, `hi62`, `ci81`, with ` ×99`) | at most three lines (`FEATURES.md` cap); fewer in Source Sans 3 (mock P: 4 RU names on three lines for 11) | `nameLines` in `print.js` |
 | the longest source (80 code points, `set-longsrc1`) | the source wraps right-aligned in the whole width | `print.js`, the `why` |
 | a no-picture record and a broken picture | the light well with the glyph (batch 1b), unchanged | `print.js` |
-| 360 px | the first card top within 256 px (estimate 236-248); the dock at the bottom, one row, 40 px buttons | case 83, case 112 |
-| 1180 px | the sheet top within 288 px (estimate 200-215) | case 83, case 112 |
+| 360 px | the first card top within 256 px (estimate 236-248); the dock at the bottom, one row, 40 px buttons | case 83, case 114 |
+| 1180 px | the sheet top within 288 px (estimate 200-215) | case 83, case 114 |
 
 Row order: the cards in the set's order, unchanged. The primary: from 761 px the first control under the head; up to
 760 px the dock's first control. Popups at 360: «Ещё» opens up from the dock, one item (about 60 px), no keyboard
@@ -566,7 +561,7 @@ languages; the EN labels are American ("Color").
 |---|---|---|---|---|
 | `#/p/set-emberaxe as gm2` 360x640 | measure (today's bar: three wrapped rows, about 450-530) | 236-248 | 256 | `shipped: true`; past 256 after S12: trim the crumb row's margin and the row gap to 8 px, else name the measured value as an exception (logged, AFK) |
 | `#/p/set-emberaxe as gm2` 1180x720 | measure (about 330-350) | 200-215 | 288 | `shipped: true` |
-| 390x844, 768x1024 | measure | logged | 40% | case 112 (c) logs |
+| 390x844, 768x1024 | measure | logged | 40% | case 114 (c) logs |
 
 ## Gate cost (`VITEST_MAX_WORKERS=2`, this host)
 
@@ -586,11 +581,10 @@ languages; the EN labels are American ("Color").
 | one CI run | 11 |
 | the batch review (the Figma departures, the print figures, the product law) | 20-30 |
 | one fix cycle (`check:fast` and CI) | 25 |
-| the plan review before the dispatch (Q-P1's `llms.txt` line) | 30-40 |
-| **Total** | **187-237** |
+| **Total** | **157-197** |
 
-`plan.md` section 8 counted 75-95 min for P. The difference: the plan review (30-40), the fonts port and the crumb
-extraction (their tests, 10), the per-card phone preview and cases 112-113 (15), one local `app/print` run (8), the
+`plan.md` section 8 counted 75-95 min for P. The difference (the plan review of the earlier 187-237 is gone with Q-P1 no): the fonts port and the crumb
+extraction (their tests, 10), the per-card phone preview and cases 114-115 (15), one local `app/print` run (8), the
 golden re-seed that section 8 did not count (15-20), and this host's `VITEST_MAX_WORKERS=2` timings. No split: the card
 and the page share `PrintPage.svelte`, the `#/p/` seed sets, the `app/print` gate and the `/p/` goldens (`CLAUDE.md`,
 "Size a batch by its gates"); a split would pay a second `check:fast`, CI run and review (about 60 min) and re-seed the
@@ -600,16 +594,15 @@ and the page share `PrintPage.svelte`, the `#/p/` seed sets, the `app/print` gat
 
 | Test | Answer |
 |---|---|
-| 1 (an open design question) | no: every fork has a default (P-D1 to P-D19); Q-P1 is answered before the dispatch |
-| 2 (public contract, route, stored state, product law, hook, configuration) | yes: the product law's card size (`CLAUDE.md`, Q-P1) and the `llms.txt` line; no route, stored state or hook |
+| 1 (an open design question) | no: every fork has a default (P-D1 to P-D19); Q-P1 is answered (no) |
+| 2 (public contract, route, stored state, product law, hook, configuration) | no: Q-P1 is no, so the product law, `CLAUDE.md` and `llms.txt` do not change; no route, stored state or hook; the four `card/burden-*.svg` keep their paths |
 | 3 (print fitting, golden re-seed, parity with a design node) | yes: the print fit at new bases and floors, about 30-45 goldens, parity with nodes `714-42387` and `3773-90792` (the hands) |
 
 ## Plan review
 
-- Plan review: required before P (trigger: public contract change - `llms.txt`, the `/p/<id>` line, takes the card size
-  63.5x88.9 mm with Q-P1; the four `card/burden-*.svg` keep their paths and take new bytes, as the share cards did).
-- If Q-P1 is no, no trigger fires: then `- Plan review: not required (no trigger fired)`; the burden bytes alone change
-  no contract (`CONTRACTS.md` section 5 freezes the paths).
+- Plan review: not required (no trigger fired). Q-P1 is answered no (owner, 2026-11-05), so `llms.txt` and the
+  product law do not change; the four `card/burden-*.svg` keep their paths and take new bytes, which
+  `CONTRACTS.md` section 5 does not freeze.
 - No migration, no `SECURITY DEFINER` function, no stored key, no write or sync protocol; no stored data can be lost.
 
 ## Risks and do-nots
@@ -624,43 +617,24 @@ and the page share `PrintPage.svelte`, the `#/p/` seed sets, the `app/print` gat
 - `transform` on the card is screen-only (`@media screen`); print media must draw the A4 sheets at full size at every
   window width (`print.js` "print media equal at 360 and 1180").
 - `fit()` divides rendered sizes by `screenScale`; with `k > 1` (the phone) the division is the same code; the half-scale
-  equality test gets a 1.366 twin.
+  equality test gets a 1.37 twin.
 - The editor's print preview uses `scale`, not `screenScale`: it multiplies mm and pt and needs `compact` for the base;
   check it renders the same card and fit (acceptance 20).
 - A `<use>` with `xlink:href` and masks in an `<img>` SVG renders in Chrome, Firefox and Safari; S1 renders it in
   Chrome; the screenshot set's PDF rasters are the print proof.
 
-## Fold list (for the orchestrator: `plan.md`, `handoff.md`, `context.md`, the AFK file)
+## Fold list (folded into `plan.md` and `handoff.md` on 2026-11-06, restated for Q-P1 no)
 
-1. `plan.md` Status: add "Batch P refresh (2026-11-05): `plan-P.md` is batch P's brief (decisions P-D1 to P-D19, steps
-   S1-S14, acceptance 1-30, the four standing checks); `mocks/P/burden/` holds the hands check (0% difference to the raw
-   export)." and the line `- Plan review: required before P (trigger: public contract change - llms.txt's /p/<id> line
-   takes the 63.5x88.9 mm card with Q-P1)`, replacing the Status sentence "Batch P fires no plan-review trigger" (it
-   missed the `llms.txt` line) and "Batches P and 10 take their own line at their refreshes" for P.
-2. `plan.md` Status: `NEEDS_HUMAN_CONFIRMATION: yes` for batch P only, Q-P1 (text in "Owner question" above).
-3. `plan.md` section 7 table, row P: "Mock depends on" adds "N: `/p/` keeps no `PageHead`"; the run order line reads
-   9a, 8, 9b, T, N, P, 10.
-4. `plan.md` section 7, "Batch P": add "- Placed (2026-11-05): `plan-P.md`; every line above is an acceptance line
-   there (1-30)." The line "The Two Breakpoints Rule takes the `/p/` card step (one card per row below 600 px)" reads
-   "up to 760 px" (P-D14); section 4's table row "The Two Breakpoints Rule" already says 760.
-5. `plan.md` section 8: row P reads "`plan-P.md`, 'Gate cost': 187-237 in all (with the plan review)"; the "Time left"
-   paragraph replaces "P 75-95" with "P 187-237".
-6. `plan.md` section 8 writer table, row P: test 2 "yes: the product law's card size (Q-P1, `CLAUDE.md`) and the
-   `llms.txt` line"; plan-review column "required (llms.txt, Q-P1)".
-7. `plan.md` section 15: a one-line pointer at its head, "Expanded into `plan-P.md` (2026-11-05); departures there:
-   P-D4 (compact floor), P-D5 (label shortfall kept), P-D8 (mark clearance), P-D12 (the link a button from 761 px),
-   P-D14 (the 760 px step)."
-8. `plan.md` section 14: the batch line "print P" stays; add "Batch P (`plan-P.md`, 'First-screen rows'): the `/p/` row
-   to `shipped: true`, estimate 236-248 / 200-215."
-9. `handoff.md` "Next step": after N, batch P with brief `issues/57/plan-P.md`, mock `issues/57/mocks/P/`, after Q-P1
-   and the plan review; cases 112 and 113.
-10. `handoff.md` Deferred: the line "`KeepNote.svelte` leaves with batch P" is placed (`plan-P.md` P-D15, acceptance
-    12 and 30); keep it until P ships.
-11. `context.md`, "Burden hands": add "Rendered (planner, 2026-11-05, `mocks/P/burden/`): each hands file draws
-    pixel-identical to its raw export above y 37 and differs from today's file on 5.0-5.8% of the pixels; the pairs stay
-    unfolded (8 and 5 paths)." "Print batch answers", QP.2: add "Q-P1 (2026-11-05): the product-law write waits for the
-    owner's confirmation (`plan-P.md`)."
-12. `context.md`, "Mock P answers": add "RP-2 (planner default, 2026-11-05): the compact floor 3.7cqw is taken, the
-    label stop at 4.5 pt is not (`plan-P.md` P-D4, P-D5)."
-13. The AFK decisions file has item 22 (written by this planner).
-14. `.impeccable/design.json` still says 63x88 mm: batch 10 regenerates it (no action in P).
+The earlier fold list asked for a `required before P` plan-review line, `NEEDS_HUMAN_CONFIRMATION: yes`, a `CLAUDE.md`
+and `llms.txt` write and a 187-237 minute cost. The owner answered Q-P1 no, so the fold took instead:
+
+1. `plan.md` Status: `- Plan review: not required (no trigger fired)` for batch P; `NEEDS_HUMAN_CONFIRMATION: no`.
+2. `plan.md` section 7: row P, the run order 9a, 8, 9b, TD, N, P, 10, and one block "Batch P" with the 30 acceptance lines
+   by pointer (acceptance 1 and 10 read "kept, owner"); section 8: row P 157-197 min, writer tests 1 no, 2 no, 3 yes;
+   section 13: QP.2 reads "kept at 63x88 mm (Q-P1)"; section 14: the `/p/` row to `shipped: true` (estimate 236-248 at
+   360, 200-215 at 1180); section 15: collapsed to a pointer; section 4: the print card row keeps 63x88 mm.
+3. `handoff.md`: after N, batch P with this brief and `mocks/P/`; cases 114 and 115; the Deferred line on `KeepNote`
+   is placed (P-D15, acceptance 12 and 30).
+4. Not folded (no longer applies): the `CLAUDE.md`, `PRODUCT.md`, `README` and `llms.txt` size writes, the Q-P1 text in
+   `context.md` "Print batch answers" (the answer is recorded there), and the 63.5x88.9 mm subtitle.
+5. `.impeccable/design.json` says 63x88 mm and stays true; batch 10 regenerates it for other reasons.
