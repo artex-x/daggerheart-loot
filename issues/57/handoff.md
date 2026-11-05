@@ -3,14 +3,18 @@
 
 ## Status
 - Task status: in_progress. Waves 1, 2 and 2b are on `main`; wave 3: 9a and 8 done (8's remediation `ee252240`,
-  `d8e30731`, CI credit passed); the 9b refresh is written (`plan-9b.md`, `mocks/9b/`), not committed.
-- Last agent: planner (9b refresh, 2026-11-05). No subagent runs. No worker has uncommitted code edits.
-- NEEDS_HUMAN_CONFIRMATION: no (Q9b-1 and Q9b-2 of `plan-9b.md` took their defaults; AFK items 17 and 18)
+  `d8e30731`, CI credit passed); the 9b refresh is written (`plan-9b.md`, `mocks/9b/`), revised 2026-11-05 for the
+  owner's answers (Row Text, not Row Columns; the share panel keeps a delete per link), not committed.
+- Last agent: planner (9b revision for the owner's row decision, and the item 11 outline, 2026-11-05). No subagent runs. No worker has uncommitted code edits.
+- NEEDS_HUMAN_CONFIRMATION: no for batch 9b (Q9b-1 and Q9b-2 are answered by the owner; AFK items 17 to 19). Yes, not
+  blocking 9b, for batch N: N1 (A, B or C) and N2 of `plan-nav.md` (owner item 11), answered interactively.
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
 - Base / starting commit: `d8e30731`.
-- Pushed: yes at `d8e30731`; the planner's files are uncommitted (the orchestrator commits them as docs).
+- Pushed: yes at `d8e30731`; the planner's files are uncommitted (the orchestrator commits them as docs): `plan-9b.md`,
+  `plan-nav.md`, `plan.md`, `context.md`, `handoff.md`, `mocks/9b/` (re-shot, `rowtext.cjs`, `measure.json`), `mocks/N/`.
 - Next step, in order: (1) the orchestrator commits the refresh, runs Impeccable `critique` on `mocks/9b/` and
-  dispatches batch 9b (`plan-9b.md`); (2) batch T's refresh (`plan.md` section 7, "Batch T"), then T; (3) batch P (the
+  dispatches batch 9b (`plan-9b.md`); the owner answers N1 and N2 (`plan-nav.md`) when he chooses, and batch N joins
+  after T only on A; (2) batch T's refresh (`plan.md` section 7, "Batch T"), then T; (3) batch P (the
   burden hands are exported, `context.md`), 10; the wave 3 and whole-app blind reviews; closeout. Every reviewer
   dispatch names the guideline set (`context.md` item 10) until 9b writes DESIGN.md "Proposed rules".
 
@@ -166,9 +170,10 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
     F10, F13, F15 adapted; hosted project): CI's.
 
 ## Next batch (implement-ready)
-- Name: batch 9b - the list panels and five guideline rules. Brief: `issues/57/plan-9b.md` (decisions M1-M20, steps
-  S1-S15, acceptance 1-29, the standing checks, verification, gate cost 100-135 min); mocks: `mocks/9/` (panels) and
-  `mocks/9b/` (the rules, measured on the built app). Cases 105-107 are the next free numbers. Writer tests: 2 and 3
+- Name: batch 9b - the list panels and five guideline rules (Row Text, Field Measure, Stepper, Check, Whole Message).
+  Brief: `issues/57/plan-9b.md` (decisions M1-M20, steps S1-S15, acceptance 1-29, the standing checks, verification,
+  gate cost 95-130 min); mocks: `mocks/9/` (panels) and `mocks/9b/` (the rules, measured on the built app). M1 is the
+  owner's Row Text choice: CSS in `RowMain.svelte` alone, one column, case 106 asserts at most 15% clamped rows. Cases 105-107 are the next free numbers. Writer tests: 2 and 3
   yes, 1 and 4 no. Plan review: not required. After 9b: batch T's refresh (Thumb Rule and toast timing; `plan.md`
   section 7, "Batch T"), then P and 10.
 - Verification for 9b: `plan-9b.md`, "Verification" (vitest per file with `VITEST_MAX_WORKERS=2`, both lints, the

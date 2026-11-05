@@ -190,10 +190,20 @@
       lists two columns of rows from a width the planner names), with a mock step; the cap and the clamp above
       are the fallback only.
       Placed (planner, 9b refresh, 2026-11-05): the Row Columns Rule, `plan-9b.md` M1 (two row columns from a 1108 px
-      list, text at most 100ch, three lines); home DESIGN.md "Components", "Named Rules", and FEATURES.md "Tables and
-      search", batch 9b. Measured on the built app (`mocks/9b/measure.json`): a `/search` row is 43%, 54% and 55%
-      empty at 1180, 1440 and 1920 px (25%, 42%, 45% beside the filter column); two columns double the rows on the
-      first screen and cut fewer descriptions.
+      list, text at most 100ch, three lines). Measured on the built app: a `/search` row is 43%, 54% and 55% empty at
+      1180, 1440 and 1920 px (25%, 42%, 45% beside the filter column).
+      Answer (owner, chat, 2026-11-05, interactive): Row Columns is REJECTED. Batch 9b builds "one column, no text
+      cap": the 70ch cap of `.rt` in `RowMain.svelte` goes and the description runs to the row's right edge (option
+      B of the independent opinion, `C:\Users\Ignat\.dhloot\notes\57\wide-rows-opinion.md`). Its fallbacks: more than
+      15% of RU rows still clamping at 1200, 1440 and 1920 px gives a 3-line clamp from 1000 px; 200-character lines that
+      read badly give a cap near 120ch. Placed (planner, 2026-11-05): `plan-9b.md` M1 and S2, "The Row Text Rule"
+      (DESIGN.md "Components", "Named Rules", "The One Width Rule"; FEATURES.md "Tables and search"), case 106,
+      batch 9b. Measured (`mocks/9b/measure.json`, `rowText`): the 15% trigger fired (RU shares under the plain cap
+      removal: `/search` «меч» 28.2 / 22.1 / 21.4%, `eq_weapon` 18.6 / 10.4 / 9.9%, `wondrous` 21.8 / 3.4 / 1.7% at
+      1180 / 1440 / 1920 px; the 292-row catalogue sample 4.8 / 3.1 / 3.1%), so the rule holds the 3-line clamp from
+      1000 px (12.2% or less on every state of 20 rows or more, Vault of Ages excepted: its 300-800 character rules
+      text clamps by content). The 120ch cap is not built. Q9b-2 (owner, same chat): the share panel keeps a delete per
+      link.
     - Item 10 (owner, chat, 2026-11-05): review the Material Design guidelines (and similar official ones)
       against `DESIGN.md` in parallel with batch 8: what to add as named rules, and whether any wave 1-3 screen or
       mock should be reconsidered against them. No Material skill is installed (the project's `DESIGN.md` stays
@@ -223,10 +233,26 @@
       section (source URL per entry), so the dispatch line is a stopgap until batch 10 writes it. No prompt or
       agent file changes for this (a change there is a review trigger of its own).
       Placed (planner, 9b refresh, 2026-11-05): (a) the five rules, batch 9b (`plan-9b.md` M1-M5; homes DESIGN.md
-      "Components", "Named Rules" for Row Columns, Field Measure, Stepper, Check, and "Typography" for Whole
+      "Components", "Named Rules" for Row Text, Field Measure, Stepper, Check, and "Typography" for Whole
       Message); (b) "Proposed rules", batch 9b (M19; the stopgap ends with 9b's commit); the Thumb Rule and the
       toast timing (the Reading Time Rule), a new batch T between 9b and P (`plan.md` section 7, "Batch T"; homes
       DESIGN.md "The Phone-First Rule" and "Components", "Named Rules", FEATURES.md "Chrome").
+    - Item 11 (owner, chat, 2026-11-05, two production screenshots at about 1920 px, RU): "why roll pages are between
+      page title and header and table pages are after header? can we unify these behavior?" Facts: on `/roll/alt` the
+      second-level row («Обычные правила», «Альтернативные таблицы», «Дополнения ˅») is its own full-width row with a
+      bottom rule above the page title and the title row (title, pin, «Об этих таблицах»); on `/tables` the group
+      chips sit on the same row as the title and its two buttons, and the second level (the Предметы / Расходники tabs)
+      is below the title. Addendum (owner, same day, a `/homebrew` screenshot): "and we might also want to make it
+      consistent with items page": on «Мои предметы» the title, the pin and the four underlined tabs (Предметы 44,
+      Источники 5, Комплекты 3, Карты правил 4) are on one row with «Новый предмет» at the far right, then the subtitle,
+      the search row, the filter column and the rows. Three placements of sibling-page navigation exist (roll above the
+      title, tables beside it, homebrew beside it in another style). Ask: one placement rule and one style, on every
+      family that has siblings (`/search`, `/lists` and the list pages have none).
+      Placed (planner, 2026-11-05): `plan-nav.md` (the three placements, three options with the offsets measured on the
+      built app, the recommendation A: siblings as pills in the head row, level 3 as underlined tabs, up to 760 px the
+      pills when they fit else a picker; batch N, outline, after T and before P, `plan.md` section 7). Not in 9b: the
+      move is a `Shell` and `RollPage` markup change with about 25-35 goldens, 70-90 min. The owner answers N1 (A, B or
+      C) and N2 (the homebrew tabs as pills) interactively; nothing is built before.
     - Owner's lean (chat, 2026-11-04): option 2, consistency first.
     - Refinement (chat, 2026-11-04): "even not to hide homebrew but upgrade lines and sets, make them visible only
       on the item page": the homebrew tag stays as today; the upgrade and relation lines and the set draw only on

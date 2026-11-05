@@ -11,7 +11,8 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
   `9112c4ed`; every `audit.md` row is re-checked (`audit.md`, "Re-check
   against main"); every address in this plan is a path.
 - Phase 3: seventeen batches in the order 1, 1b, 2, 3, 3b, 4-7, 7b, W, 9a, 8, 9b, T, P, 10 (9a is in wave 3 since
-  2026-11-04; 7b and W are wave 2b; T added at the 9b refresh, 2026-11-05)
+  2026-11-04; 7b and W are wave 2b; T added at the 9b refresh, 2026-11-05; batch N, the sibling navigation of owner
+  item 11, joins between T and P if the owner answers A)
   (section 7; the waves of section 16 moved P from after 1b into wave 3, and the
   owner's 2026-11-03 answers added 3b and split 9). Batches 1
   (`9a31aede`, `80872b35`), 1b (`fce4a9f8`, `3e5f6301`; `reviews/1b.md`) and 2
@@ -92,9 +93,15 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
   `reviews/plan-1-3.md`; batches 9b, P and 10 take their own line at their refreshes.
 - Batch 9b refresh (2026-11-05): `plan-9b.md` is batch 9b's brief (decisions M1-M20, steps S1-S15, acceptance 1-29,
   the four standing checks); `mocks/9b/` is the mock of the five rules (the built app with the proposed CSS, measured).
-  Row Columns takes two row columns from a 1108 px list and a 100ch text, not the 110ch default of AFK item 16
-  (measured: 42-55% of a row empty at 1440-1920 px). Batch 9b also writes DESIGN.md "Proposed rules" (M19). The Thumb
-  Rule and the toast timing are a new batch T between 9b and P (section 7). Defaults: AFK decisions items 17 and 18.
+  Rows take the Row Text Rule (owner, chat, 2026-11-05, option B of the independent opinion at
+  `C:\Users\Ignat\.dhloot\notes\57\wide-rows-opinion.md`; the first plan's Row Columns, two columns from a 1108 px
+  list, is rejected): the 70ch cap goes, the text takes the free width of its row, one column, 3 lines from 1000 px
+  (the owner's fallback; its 15% trigger fired at 1180 px, `mocks/9b/measure.json`). Batch 9b also writes DESIGN.md
+  "Proposed rules" (M19). The Thumb Rule and the toast timing are a new batch T between 9b and P (section 7).
+  Defaults: AFK decisions items 17, 18 and 19; the share panel keeps a delete per link (owner, 2026-11-05).
+- Item 11 (owner, 2026-11-05): one placement and one style for sibling-page navigation on the roll, table and
+  homebrew pages. `plan-nav.md` holds the facts, three options and the recommendation (A: siblings in the head row);
+  batch N (section 7, outline) waits for the owner's answer N1 and N2. Not in 9b.
 - Plan review: not required (no trigger fired) for batches 9b and T. Batch 9b changes no contract, stores nothing new
   and adds no write protocol; its note switch commits the shown draft through the existing write path before it
   switches (`plan-9b.md`, "Error scenarios"). Batch T changes control sizes, toast durations and test limits only: no
@@ -783,8 +790,9 @@ Batch 9a (wave 3, first, after wave 2; `mocks/F/` up to 760 px, mock 9 elsewhere
 Batch 9b (wave 3, after batch 8; refreshed 2026-11-05: the implement-ready brief, decisions M1-M20 and acceptance
 lines 1-29 are `plan-9b.md`, with mock 9 and `mocks/9b/`; where the lines below differ, `plan-9b.md` wins):
 
-- Added at the refresh (owner item 10 (a) and (b)): the Row Columns Rule (M1; it replaces 9b-R9's 110ch default
-  after the owner's refinement of item 9: two row columns from a 1108 px list, a 100ch text, three lines), the Field
+- Added at the refresh (owner item 10 (a) and (b)): the Row Text Rule (M1; it replaces 9b-R9's 110ch default
+  after the owner's refinement of item 9 and his choice of 2026-11-05: no text cap, one column, three lines from
+  1000 px; two row columns are rejected), the Field
   Measure Rule (M2, 8-G2), the Stepper Rule (M3, 8-G3; it replaces the 240 px cap), the Check Rule (M4), the Whole
   Message Rule (M5, 8-G6) and DESIGN.md "Proposed rules" (M19); the nine add-to-list states with an `again`; 8-N2
   kept in the re-seed; review 9a R2's probe; the `plan-wave3-wide.md` lines 9b-W1 to 9b-W7 (W1 by M18).
@@ -889,6 +897,23 @@ Batch T (wave 3, after 9b, before P; owner, `context.md` item 10, "APPROVED"; ou
 - Toast over «Ещё» (`handoff.md` Deferred): T measures it with the new durations; it fixes it only if the fix is
   local to `Toast`, else the line stays for `DEBT.md` at closeout.
 
+Batch N (wave 3, after T, before P; owner item 11, 2026-11-05; outline; `plan-nav.md` holds the facts, the options and the
+recommendation; not buildable before the owner answers):
+
+- Open design question N1: where sibling-page navigation sits. Recommended A: level 2 (the roll modes, the table
+  groups, the homebrew tabs as pills) in the head row after the `h1`, the pin and the help from 1000 px, on its own row
+  under the head from 761 to 999 px; level 3 (books, sources) stays underlined tabs under the head row; up to 760 px
+  the pills when all fit (the roll row), else one picker. Alternatives: B (a full-width row above the title on all
+  three families: tables 244 to 306 px and homebrew 254 to 309 px past the 288 limit), C (style only: homebrew tabs
+  to pills, one edit that rides in 9b). Open design question N2 (with A): the homebrew tabs become pills with counts.
+- Code, if A: `ModeRow` moves out of `Shell` into `RollPage`'s `PageHead` `extra` from 761 px (the `h1` visually
+  hidden, as up to 760 px); `HomebrewTabs` draws pills from 761 px; DESIGN.md "A steady head" and "The Roll Page Rule",
+  FEATURES.md "Chrome" and "Rolling" change with it; a states case (one `RollPage` instance across a mode switch, the
+  pills keep their top and left, the focus stays); `FIRST_SCREEN` and `ROLL_FIT` rows re-measured at 1180 and 1000 px.
+- Split criterion: a different route set (the nine roll pages from 761 px, `/homebrew`) and its own goldens (about
+  25-35 states); 9b and T are full. Gate cost 70-90 min (`plan-nav.md`, section 4). Mock: `mocks/N/` (probe scripts,
+  1180 RU shots and offsets built; the full set at five widths is the batch's first step). Plan review: not required.
+
 Batch 10:
 
 - DESIGN.md "Proposed rules" (written by 9b, M19): re-checked against the shipped rules; an entry the owner said yes
@@ -975,15 +1000,16 @@ code batch.
 | 9a (done) | `npm run check:built` where `dist` assets change (1) | 1 |
 | 7b | `plan-tags.md`: the vitest files of T1-T6 and T9 (about 15 files, 8-10); artwork test, both lints, decisions, the detector (4-5); `build:test` and the four golden shards (70-120 goldens, 15-20); `check:built` and the configured build (3-4); the head probe and its failing run at HEAD (T9.1, T9.3, 8-12); the roll probe before and after and the roll results CSS (T12, 20-30; folded in by `CLAUDE.md` "Size a batch by its gates": the same `RecordCard`, `RollResult` and `_roll_*` goldens; its own batch would cost 50-65); `polish` and `harden` (5-10); the screenshot set (about 3). One golden re-seed, one `check:fast`, one CI run, one batch review and by habit one fix cycle: 4-6 runs. Its wave 2b squash adds 15-20 (section 16) | 100-135 |
 | 9a | the new 360 px goldens, the axe cases and the `check:fast` growth of C1b (10-15); the new goldens and `lists.test.ts` cases of D1 (5-10) | 15-25 |
-| 9b | `plan-9b.md`, "Gate cost": the re-seed of about 70-100 list, `/s/` and add-to-list goldens (15-20); the affected vitest files alone with `VITEST_MAX_WORKERS=2` (15-20); `check:built`, detector, E4, Prettier (4-5); the loader runs of cases 83 and 104-107 (8-10); the shots at four widths (10); `polish` and `harden` (5-10); `sweep.js 768` on CI | 100-135 in all |
+| 9b | `plan-9b.md`, "Gate cost": the re-seed of about 70-100 list, `/s/` and add-to-list goldens (15-20); the affected vitest files alone with `VITEST_MAX_WORKERS=2` (15-20); `check:built`, detector, E4, Prettier (4-5); the loader runs of cases 83 and 104-107 (8-10); the shots at four widths (10); `polish` and `harden` (5-10); `sweep.js 768` on CI | 95-130 in all |
 | T | the `FIRST_SCREEN` re-measure at 360 before and after through the loader (8-10); the mock at 360 and 390 (8-10, no gate); `app.test.ts` timers (2); the shots at 360 and 390 (8); `polish` and `harden` (5-10); the new sweep step runs on CI; no golden re-seed expected | 65-90 in all |
+| N (outline, if the owner answers A) | `plan-nav.md`, section 4: the mock at five widths (8-10); the re-seed of about 25-35 roll and homebrew states (8-12); `check:built` and lints (4-5); the loader runs of the roll and `FIRST_SCREEN` cases (6-8); `polish` and `harden` (5-10) | 70-90 in all |
 | 10 | docs only: one `check:fast` and one docs-only CI run (no `e2e`) | about 20 in all |
 | waves (section 16) | per wave: the merge of `origin/main`, the squash in the main checkout, the `main` CI run with the deploy (10.5-11.5) and the merge back (about 2); three waves, plus the small wave 2b (15-20, in the 7b row) | 37-41 |
 | blind reviews, post-release check and closeout (section 16) | the three blind production reviews, after wave 2, after wave 3 and of the whole app, each with its remediation batch (the whole-app one about 45-60, the owner's print not counted; the two wave reviews and their fix batches are not in the totals below), then the closeout commit and its docs-only CI run and the last squash (about 20) | 65-80 |
 
-Time left at the 9b refresh (2026-11-05; batches up to 8 spent): 9b 100-135 min, T 65-90, P 75-95 (45-60 plus its
+Time left at the 9b refresh (2026-11-05; batches up to 8 spent): 9b 95-130 min, T 65-90, P 75-95 (45-60 plus its
 30-35 of extra gates), 10 about 20 (45-55 if it takes P5's code), the wave 3 squash 12-14, the two blind reviews with
-their remediation and the closeout 65-80: about 337-434 min, 5.6-7.2 hours. T as its own batch costs one CI run and
+their remediation and the closeout 65-80: about 332-429 min, 5.5-7.1 hours; batch N, if the owner answers A, adds 70-90. T as its own batch costs one CI run and
 one review (about 45-60 min) against a fold into 9b; the split criterion is in the section 7 table. The toast timing
 folds into T (the same `Toast.svelte` and CI run): its own batch would cost 45-60 min for three lines. This host is
 memory-starved: every vitest run takes `VITEST_MAX_WORKERS=2`, and a browser suite never runs beside vitest, so the
@@ -1018,7 +1044,7 @@ for the orchestrator's dispatch, not a model choice):
 | 7b | no | yes: 75-125 goldens in one re-seed; badge, tile, head and roll result layouts. Test 1 is yes: the head choice HD1 and the roll choice RC1 have defaults (options A and B) that block nothing | none (`plan-tags.md`) |
 | 8 | yes, in part: the bundle ceiling goes into `tools/bundle-budget.mjs`, `.claude/README.md` and a decision file (configuration every session runs under; no contract, route, stored state or product law) | yes: about 35-40 goldens re-seeded; the card, bar, head and menu follow mock 8. Test 1 is no: every fork has a default (`plan-8.md` L10, L12, L13) | none (`plan-8.md`) |
 | 9a | no: no stored state, route or contract changes (D1 keeps the filter in memory) | yes: the list goldens, the compact row at 360 px | none |
-| 9b | yes: `.prettierignore` (E4) and `.impeccable/config.json` (E2), configuration every session runs under | yes: about 70-100 goldens; the side column, the panels and the row columns against mocks 9 and 9b. Test 1 is no (M1-M20 decided) | none: the note switch commits the shown draft before it switches (`plan-9b.md`) |
+| 9b | yes: `.prettierignore` (E4) and `.impeccable/config.json` (E2), configuration every session runs under | yes: about 70-100 goldens; the side column and the panels against mock 9, the row text against mock 9b. Test 1 is no (M1-M20 decided) | none: the note switch commits the shown draft before it switches (`plan-9b.md`) |
 | T | no: sizes, durations and test limits only | no golden re-seed; but the allow-list of the sweep step and each `FIRST_SCREEN` row that passes its limit are choices (test 1: a fold or an exception per row) | none |
 | 10 | no, unless it edits `.impeccable/config.json` again | no, unless it takes code | none |
 
@@ -1440,7 +1466,7 @@ search and account 7, print P, homebrew and the editor 6, `/lists` 8,
 
 Batch 9b (`plan-9b.md`, "First-screen rows"): the five list rows move to `shipped: true`; the requests state's row is
 added (the rule, or its measured exception at 360; owner 292, estimate 296). Measured at the 9b refresh on the built
-app with the five rules injected (`mocks/9b/measure.json`): no first-screen top moves (`/search` 279, `/tables/eq_weapon`
+app with the rules injected (`mocks/9b/measure.json`; the Row Text Rule of the owner's 2026-11-05 choice): no first-screen top moves (`/search` 279, `/tables/eq_weapon`
 244, `~ two filters` 244 at 1180 and 252 at 360, `/roll/std` 267 at 1180 and 323 at 360, `/s/` 275 at 1920, `/lists ~
 many lists` 199 at 1920).
 

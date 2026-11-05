@@ -1,11 +1,13 @@
 # Batch 9b - The list panels and five guideline rules (implement-ready)
 
 This brief is the implementer's whole input for batch 9b, with mock 9 (`mocks/9/`, the panel states), the mock of
-the five rules (`mocks/9b/index.html`, `measure.json`, the PNGs), `plan-9a.md` for the shapes 9a shipped, and
-`plan-wave3-wide.md` section 3 for the wide lines. The owner is AFK (`context.md`, "Owner AFK from 2026-11-03"):
-every choice below is the recommended option, logged in the owner-AFK decisions file (items 17 and 18). A mock is
-direction (owner, 2026-11-03): each departure is named in "Decisions". Section numbers ("section 7") are those of
-`plan.md`. The guideline sources are cited by URL only (the report outside the repository is never cited).
+the five rules (`mocks/9b/index.html`, `measure.json`, the PNGs, `rowtext.cjs`), `plan-9a.md` for the shapes 9a
+shipped, and `plan-wave3-wide.md` section 3 for the wide lines. Every choice below is the recommended option, logged
+in the owner-AFK decisions file (items 17, 18 and 19), except the two the owner answered in chat on 2026-11-05:
+rows stay one column and the text takes the free width (M1; `context.md` item 9), and the share panel keeps a delete
+per link (M12). A mock is direction (owner, 2026-11-03): each departure is named in "Decisions". Section numbers
+("section 7") are those of `plan.md`. The guideline sources are cited by URL only (the report outside the repository
+is never cited).
 
 Batch 9b runs after batch 8 and its remediation (`d8e30731`, CI credit passed), before batch T.
 
@@ -14,7 +16,7 @@ Batch 9b runs after batch 8 and its remediation (`d8e30731`, CI credit passed), 
 The owner's list page gets its final layout: from 1000 px a 330 px side column holds the name, the actions, the
 price switch and the list notes; a row's notes are one area with a «Для игроков» / «Только для мастера» switch;
 the share, roll and requests panels take mock 9's form; every «?» of the list pages goes. Five guideline rules ship
-with their code and browser checks: Row Columns (rows use the free width before they cut text), Field Measure (a
+with their code and browser checks: Row Text (a row's text takes the free width of its row before it is cut), Field Measure (a
 search box is at most 720 px), Stepper (a lone number field fills its column), Check (every pressed chip draws the
 check) and Whole Message (a heading, a control label, an error line and a toast are never cut). DESIGN.md gains the
 "Proposed rules" section. Nothing new is stored.
@@ -32,15 +34,15 @@ check) and Whole Message (a heading, a control label, an error line and a toast 
 - Host: memory-starved. Run vitest with `VITEST_MAX_WORKERS=2` (vitest 4 reads it), one suite at a time, and no
   browser suite in parallel with vitest. `listPage.test.ts` is 114 KB: run it alone.
 - Impeccable cannot run from a subagent. The orchestrator runs `critique` on `mocks/9b/` before the dispatch and
-  `polish` and `harden` after S13 on `ListPage`, `SharedListPage`, `RequestsPanel`, `SharePanel`, `TableRows`,
+  `polish` and `harden` after S13 on `ListPage`, `SharedListPage`, `RequestsPanel`, `SharePanel`,
   from the built app at 360, 768, 1180 and 1920 px; fallback `impeccable:impeccable-finish-reviewer`.
 - Steps are S1 to S15. The line "Session end partial progress" in `handoff.md` names the last finished step.
 
-## Decisions of this refresh (planner defaults; the owner is away)
+## Decisions of this refresh (planner defaults; the owner's two answers of 2026-11-05 are M1 and M12)
 
 | # | Decision | Reason and trade-off |
 |---|---|---|
-| M1 | **Row Columns.** `TableRows`' list view (`.rows`) is a grid: `grid-template-columns: repeat(auto-fill, minmax(min(550px, 100%), 1fr)); gap: 8px`. `RowMain`'s text cap is `100ch` (was 70ch) and its description clamp is 3 lines at every width (was 2, 3 up to 600 px). The list page's `.lrows` keeps one column (its side column holds the rest). **Departure:** a full-width row list at 1180 px (`/search`, the catalog tables with no filter column, `/s/`) turns two columns; the owner-reviewed 1180 layout drew one. | Measured (`mocks/9b/measure.json`, the probes of this refresh): a row is 43% empty at 1180, 54% at 1440 and 55% at 1920 on `/search` RU; 25%, 42% and 45% beside the filter column. Two columns double the rows on the first screen (search 1440: 4 to 8; 1920: 6 to 12; `eq_weapon` 1920: 8 to 16) and cut fewer descriptions (search 1920 RU 5/32 to 2/32, EN 3/32 to 0/32). 550 px is the column at which the filter-column list (1123 px at a 1440 window) takes two columns; a higher minimum keeps 1440 at one column with 42% empty. Accepted: a numbered table reads 1-2 / 3-4 across (row-major, the DOM and Tab order); the 1180 departure. Rejected: the 110ch cap (31-33% empty at 1440-1920), no cap (lines up to about 165ch, 5-8 rows a screen against 8-12), two columns with a 2-line clamp (6/32 cut at 1180). |
+| M1 | **Row Text** (owner, 2026-11-05, option B of the independent opinion; Row Columns is rejected). `RowMain`'s `.rt` loses `max-width: 70ch`: a row's text takes the free width of its row, in one column at every width (`TableRows` and its flex column stay as they are). The description clamp stays 3 lines up to 600 px and 2 lines from 601 to 999 px, and becomes 3 lines from 1000 px (the owner's stated fallback; its trigger fired, see the measures). Up to 760 px the layouts do not change (a phone row is narrower than the old 557 px cap). **Departure:** from about 800 px, where a row is wider than the old cap, the text is wider than the owner-reviewed 1180 screens drew, and rows from 1000 px show a third line. | Measured on the built app of `d8e30731` with the rule injected (`mocks/9b/measure.json`, `rowText`, every drawn row with a description; `rowtext.cjs`). Share of described rows that clamp, RU, at 1180 / 1440 / 1920 px, today -> text cap removed with 2 lines (B) -> B with 3 lines from 1000 px (the rule): `/search` «меч» (131 rows) 57.3 -> 28.2 / 22.1 / 21.4 -> 12.2 / 9.9 / 9.2; `eq_weapon` (355) 35.5 -> 18.6 / 10.4 / 9.9 -> 6.5 / 5.1 / 4.8; `wondrous` (119) 60.5 -> 21.8 / 3.4 / 1.7 -> 0.8; `hnf_consumable` (60) 26.7 -> 1.7 / 0 / 0 -> 0; the catalogue sample `/search ~ capped` (292 of 1459) 32.2 -> 4.8 / 3.1 / 3.1 -> 2.1 / 1.4 / 1.4; Vault of Ages (144) 93.8 -> 85.4 / 77.8 / 75.0 -> 61.8 / 36.8 / 34.7 (rules text of 300-800 characters: it clamps by content at every width). EN is lower everywhere. The owner's trigger is "more than 15% of RU rows still clamp under B": B alone passes the catalogue sample and fails at 1180 on three tables (18.6, 21.8, 28.2) and on `/search` at 1440 and 1920 (22.1, 21.4), so the 3-line clamp from 1000 px is in; with it every state of case 106 that has 20 or more described rows, Vault of Ages excepted (content), is at 12.2% or less (`/s/player-token-1` has 10 rows, 2 of them clamp at 1180 RU: too few for a share). A text line is up to about 160 characters at 1180, 200 at 1440 and 207 at 1920 and 2560 on `/search` (the 1440 px column bounds it; 119-166 beside the filter column), above the 75-80 of reading prose: a row is a scan surface, and the owner's second fallback (a cap near 120ch) is named in the rule's check, not built. The median row still leaves 27-43% free at 1440-1920 on `/search` RU and EN: short descriptions leave space that no layout fills without new content (the opinion's option C, not for 9b). First-screen tops do not move (`/search` 279, `eq_weapon` 244, `/s/` 275 in every shot). Rejected by the owner: two row columns (1108/550/575 px thresholds, a 100ch text). Rejected by the opinion: a list-detail pane (a later direction), tiles as the default, a stat column. |
 | M2 | **Field Measure.** From 761 px the search box's wrapper takes `max-width: 720px` and keeps its own `flex` basis, on `SearchPage`, `TablesPage`, `HomebrewPage` (`.tools .grow`), `ListsPage` and `ListFind`. Up to 760 px nothing changes. The row's next controls follow the box. «Выбрать» stays last in its row; section 14's "at the right end" reads "last". | A 720 px `flex` basis wraps the catalog's search row and moved its first row from 244 to 292 px (mock 9b, measured); a `max-width` alone keeps 244. Source: https://developer.android.com/docs/quality-guidelines/adaptive-app-quality/tier-2 (UI_Secondary_Elements). 8-G2: `/lists` is the third `ListFind` caller. |
 | M3 | **Stepper.** `NumberField`'s `.numbox` cap is `max-width: 480px` (was 240). A lone field fills its column (the roll pane 282 of 282 px, the phone settings panel); a field in a `NumRow` beside its button, and the price sheet's fields, keep their content width. The 240 px sentences leave DESIGN.md "Layout" and FEATURES.md. | Owner item 8 allowed dropping the cap; 8-G3 found the box 240 px in a 282 px column. Source: https://playbook.ebay.com/design-system/components/numeric-stepper. |
 | M4 | **Check.** `Chip`'s button form draws `Icon check` whenever `on`, gold or neutral; `.chip.on` takes the neutral rule's `inline-flex`, `gap: 6px`. `Seg` draws the check on every pressed option. A link chip (`TableNav`, `aria-current`) is a place, not a press, and draws none. | Sources: https://developer.android.com/develop/ui/compose/components/chip, https://developer.apple.com/design/human-interface-guidelines/accessibility ("Convey information with more than color alone"). Measured: `#/tables/eq_weapon ~ two filters` keeps its first row at 244 px at 1180 (RU and EN) with the check on both gold chips. |
@@ -51,7 +53,7 @@ check) and Whole Message (a heading, a control label, an error line and a toast 
 | M9 | The note switch (A2, A5): one note area per entry, and one for the list. Closed, each filled note draws read-only as a `HitNote` box (players') or its dashed `gm` variant (GM), with «Изменить» in the side column for the list notes. «Заметка» (or «Изменить», or «Заметки ▾» up to 760 px) opens the area: a neutral `Seg` «Для игроков» / «Только для мастера» (a dot on an option whose note is filled), one `MarkupField` for the chosen note, the caption («Видна по ссылке для игроков» / «Игроки не видят»), «Готово» and «Очистить». The GM option draws the field dashed. Opening picks the players' note unless only the GM note is filled. A switch first commits the shown draft through the existing `noteInput` path, then shows the other note. | Mock 9 `list-note`, `list-note-gm`. Standing check 2 (plan section 7): a switch never drops an edit. The note «?» and the × go (Q9.1). |
 | M10 | The price switch: «Цены:» with a neutral `Seg` «Как в книге» / «Монетами» (the check, M4) and one line «Например: <price>» (the first priced entry in the chosen mode). It replaces the two `Chip`s, the «?» and `HelpBox`. Every price on the page follows it: rows, the bar total, the price sheet, the requests panel and the roll result. Up to 760 px 9a's «Ещё» item stays as it is. | Mock 9 `list-prices`. Least work up to 760 px (9a G17). |
 | M11 | The roll panel (A42): «Бросить по списку» is a button with `aria-expanded` in the action row (the side column from 1000 px, the head row from 761 px, «Ещё» up to 760 px as 9a) that opens a `Panel` at the top of the rows column: «Результат броска (1-N)», the stepper and «Бросить dN» (the gold primary) on one `NumRow`, then the result as `RecordCard variant="face"` from 601 px or `RollResult`'s row face up to 600 px, the entry's price in the page's mode, both notes (`HitNote`, `gm` dashed) and «Показать в списке» (scrolls to the row and flashes it). The `<details class="panel lroll">` and the `compact`, `nameActions`, `Actions`, `sendAll` code of the old card go where no other reader needs them. | Mock 9 `list-roll`, B9-1, `plan.md` section 7 "From batch 5". |
-| M12 | The share panel (A3, A4): two labeled link rows. Each: the caption («Ссылка для игроков» / «Ссылка для мастера»), one muted line («Без заметок мастера и скрытых позиций» / «С заметками «Только для мастера»»), the link, «Скопировать» neutral, and «Удалить ссылку» as a bare danger text button. `shareHint` goes if the two lines say what it says (else it stays, and `handoff.md` names why). **Departure:** mock 9 draws one «Закрыть доступ по обеим ссылкам»; each link keeps its own delete. | A4: no gold in the panel. Dropping a per-link delete is a feature loss, which needs the owner's yes (owner rule, "Confirm feature sacrifices"). |
+| M12 | The share panel (A3, A4): two labeled link rows. Each: the caption («Ссылка для игроков» / «Ссылка для мастера»), one muted line («Без заметок мастера и скрытых позиций» / «С заметками «Только для мастера»»), the link, «Скопировать» neutral, and «Удалить ссылку» as a bare danger text button. `shareHint` goes if the two lines say what it says (else it stays, and `handoff.md` names why). **Departure:** mock 9 draws one «Закрыть доступ по обеим ссылкам»; each link keeps its own delete (owner, 2026-11-05: yes, keep it; Q9b-2). | A4: no gold in the panel. Dropping a per-link delete is a feature loss, which needs the owner's yes (owner rule, "Confirm feature sacrifices"); the owner said to keep it. |
 | M13 | The requests panel folds to its head at every width (owner, round 6, R9-1): `h2` «Новое в списке (N)» and «Открыть» / «Свернуть» (`aria-expanded`). Open, each request shows, per entry, the columns «Было», «Возьмут», «Станет», «Цена»; a short stock reads «Просили 9, в списке 5: возьмут 5»; a line with no price reads «без цены»; the total reads «Итого: 180 зол. · 1 позиция без цены». `requestOf` («×%w из %h») and the «(без цен: N)» form go. The `h2` stays drawn while folded, so the arrival toast's focus target exists; a `go` arrival opens the panel. | Mock 9 `list-requests-open`. The fold keeps the first entry in the first screen at 360. |
 | M14 | `HitNote` draws a full 1 px border box (no left accent); its `gm` variant is dashed, the style of the owner's GM editor. `/s/` on a GM link draws the GM note with it (A22). | N1 (the detector's `side-tab` on `HitNote.svelte`) and A22 in one change. |
 | M15 | E2: the drop mark is a 2 px gold line drawn by `::before` of the row after the gap (or `::after` of the last row) in the 8 px gap, `position: absolute`, full row width; no inset shadow and no side border. Then the `side-tab` entry for `ListPage.svelte` leaves `.impeccable/config.json`. | Plan review B2. Every `FEATURES.md` "Lists" drop rule stays. |
@@ -59,30 +61,30 @@ check) and Whole Message (a heading, a control label, an error line and a toast 
 | M17 | Q9.1: the money «?» (`moneyHelp`, `HelpBox class="money-help"`), the note «?» (`noteHelp`, `mdHelp` hint) and the price field «?» (`priceHelp`, `.ghint`) go, with `QuickItem`'s «?» (the last `FormField` `help` caller). `HelpButton.svelte`, `HelpBox.svelte`, `moneyHelpFor` and their tests go too if `git grep` finds no other caller. | Owner, Q9.1 (2026-10-29). Add no module before something uses it; delete a module with no caller. |
 | M18 | M-9b (`plan-wave3-wide.md`) is not drawn. Batch W capped the column at 1440 px, under the 1620 px at which option A of Q-W2 holds, and the list page's `.lrows` keeps one column: option A is the rule. The built shots at 1920 and 2560 px and case 105's slack step replace the mock. | Arithmetic of `plan-wave3-wide.md` fact 7 with W's cap; no drawing would change the choice. |
 | M19 | DESIGN.md gains "Proposed rules" (the text is the last section of this brief), written by this batch, not batch 10. | 9b edits DESIGN.md already; the section gives the reviewers of 9b, T, P and 10 a permanent home for the guideline sources (owner item 10, "Reviewers"), which ends the dispatch stopgap three reviews sooner. Batch 10 only re-checks it. |
-| M20 | Homes of the five rules: a new "### Named Rules" subsection at the end of DESIGN.md "Components" holds Row Columns, Field Measure, Stepper and Check (4 of 8); Whole Message goes into "Typography", "Named Rules" (5 of 8). | "Layout" already holds nine named rules and "A steady head", past its budget of 8 (`.claude/README.md`, "Owner insights"). Each of the four is a component's rule. |
+| M20 | Homes of the five rules: a new "### Named Rules" subsection at the end of DESIGN.md "Components" holds Row Text, Field Measure, Stepper and Check (4 of 8); Whole Message goes into "Typography", "Named Rules" (5 of 8). | "Layout" already holds nine named rules and "A steady head", past its budget of 8 (`.claude/README.md`, "Owner insights"). Each of the four is a component's rule. |
 
-## Owner questions (default taken; none blocks)
+## Owner questions (none open)
 
-- Q9b-1. Row Columns turns a full-width row list two columns at 1180 px (M1). Recommended: accept it; the
-  alternative, a minimum of about 575 px, keeps 1180 at one column but leaves the filter-column tables at 1440 px
-  one column with 42% of each row empty.
-- Q9b-2. The share panel keeps a delete per link (M12). Recommended: keep it; mock 9's one «Закрыть доступ по обеим
-  ссылкам» would remove the delete of one link only.
+- Q9b-1 (answered, owner, 2026-11-05): Row Columns is rejected; rows stay one column and the text takes the free
+  width (M1). One point stays with the owner's eye, not a blocker: the 3-line clamp from 1000 px is the owner's own
+  fallback, taken because the measured trigger fired (M1); the 120ch cap is the owner's second fallback, built only
+  if the shots at 1440 and 1920 px read badly.
+- Q9b-2 (answered, owner, 2026-11-05): the share panel keeps a delete per link (M12).
 
 ## Placed items (each is its own acceptance line below)
 
-- `plan.md` section 7, "Batch 9b": every line; 9b-R9 is replaced by M1 (owner refinement of item 9).
+- `plan.md` section 7, "Batch 9b": every line; 9b-R9 is replaced by M1 (the owner's choice of 2026-11-05, item 9: one column, no text cap).
 - `context.md` item 10 (a): the five rules; (b): the "Proposed rules" section (M19).
 - 8-G2 (Field Measure includes `/lists`), 8-G3 (Stepper), 8-G6 (Whole Message, the add-to-list row).
 - 8-N2: fixed in batch 8's remediation (`aria-expanded` on «Новый список», goldens re-seeded); 9b's re-seed keeps it.
 - `handoff.md` Deferred: the nine add-to-list states whose EN half holds a closed menu; review 9a R2's probe;
   `FormField`'s `help` prop; the monospace labels `.lnote`, `.lroll`, `.money-l`, `.batch-lbl`.
-- `plan-wave3-wide.md` 9b-W1 to 9b-W7 (W1 by M18; W5 is not applicable: `golden.js` has no 1920 family).
+- `plan-wave3-wide.md` 9b-W1 to 9b-W7 (W1 by M18; W2's slack holds by construction under M1; W3: `/s/` is one column with M1's text; W5 is not applicable: `golden.js` has no 1920 family).
 
 ## In scope
 
 - New: none. A `gm` prop on `HitNote`, a `rowMore` snippet and a note-area snippet in `ListPage`.
-- Changed: `ListPage`, `SharedListPage`, `RequestsPanel`, `SharePanel`, `HitNote`, `RowMain`, `TableRows`,
+- Changed: `ListPage`, `SharedListPage`, `RequestsPanel`, `SharePanel`, `HitNote`, `RowMain`,
   `NumberField`, `Chip`, `Seg`, `AddToList`, `ListFind`, `SearchPage`, `TablesPage`, `HomebrewPage`, `ListsPage`,
   `QuickItem`, `FormField`, `lib/dict.ts`, `.impeccable/config.json`, `.prettierignore`.
 - Deleted (when no caller is left): `HelpButton.svelte`, `HelpBox.svelte`, their tests, `moneyHelpFor`, the help
@@ -94,7 +96,7 @@ check) and Whole Message (a heading, a control label, an error line and a toast 
 - The Thumb Rule and the toast timing (batch T). The print page (batch P). `ROUTES.md`, `CONTRACTS.md`,
   `routes.json`, `llms.txt`, the store, the cloud port, the server.
 - The catalog's filter column, `FilterPanel`, `Sheet`, `SelectionBar`, `Menu` (no change beyond M4's chip).
-- A drawn `/s/` side column: `/s/` keeps mock 9's one column (it takes M1's two row columns).
+- A drawn `/s/` side column: `/s/` keeps mock 9's one column; its row text takes M1's free width.
 
 ## Facts read from the code (`d8e30731`, 2026-11-05)
 
@@ -119,7 +121,7 @@ check) and Whole Message (a heading, a control label, an error line and a toast 
 | Step | Files |
 |---|---|
 | S1 | `app/src/lib/dict.ts`, `lib/i18n.test.ts` |
-| S2 | `RowMain.svelte`, `TableRows.svelte`, `tableRows.test.ts` |
+| S2 | `RowMain.svelte` |
 | S3 | `SearchPage.svelte`, `TablesPage.svelte`, `HomebrewPage.svelte`, `ListsPage.svelte`, `ListFind.svelte` |
 | S4 | `NumberField.svelte` |
 | S5 | `Chip.svelte`, `Seg.svelte`, `chip.test.ts`, the `Seg` cases |
@@ -157,15 +159,21 @@ Both languages, ASCII punctuation, both plural sets where a count shows:
 - Delete the keys whose last reader goes: `requestOf`, the «(без цен)» key, `moneyAs` if no reader stays,
   `notePubHint`, `noteHidHint`, `mdHelp` (if only the note «?» read it), `noteClear` if only the × read it.
 
-### S2. Row Columns (M1)
+### S2. Row Text (M1)
 
-1. `TableRows.svelte`, `.rows`: `display: grid; grid-template-columns: repeat(auto-fill, minmax(min(550px, 100%),
-   1fr)); gap: 8px`. The comment gives the reason in one line and cites DESIGN.md "Components", "The Row Columns
-   Rule". `.row` keeps `width: 100%`.
-2. `RowMain.svelte`: `.rt { max-width: 100ch }`; the description clamp is 3 lines for every non-`full` row; delete
-   the `@media (max-width: 600px)` block that set 3. Update the "70 characters" comment.
-3. `tableRows.test.ts`: the list view's container carries the grid class (jsdom has no layout; the geometry is case
-   106).
+CSS in `RowMain.svelte` alone; `TableRows.svelte`, the list page's `.lrows` and `CompactRow` stay as they are.
+
+1. `.row-main .rt`: delete `max-width: 70ch`. Replace its comment ("The line length holds at 70 characters.") by
+   one line: the text takes the free width of its row (DESIGN.md "Components", "The Row Text Rule"). `flex: 1` and
+   `min-width: 0` stay, so on the list page's full row the text box ends at `.lrow-meta`.
+2. The clamp: the base stays `-webkit-line-clamp: 2` (601 to 999 px). Replace `@media (max-width: 600px)` by
+   `@media (max-width: 600px), (min-width: 1000px)` and keep its body (3 lines, `line-clamp` too). The comment says
+   why in one to three lines: three lines up to 600 px, and from 1000 px where two lines cut 18-28% of the described
+   RU rows at 1180 px (DESIGN.md "Components", "The Row Text Rule"). `.row-main.full` keeps its `none`.
+3. No unit test: jsdom has no layout, and no logic changes. Case 106 (S13.5) is the proof.
+   `git grep -n "70ch" app/src/components/RowMain.svelte` finds nothing after the edit.
+4. Trap: add no grid, no column count and no new `max-width` to `TableRows` or `ListPage` (the owner rejected Row
+   Columns). The row's picture, tick column, tags and stat line do not change.
 
 ### S3. Field Measure (M2)
 
@@ -291,17 +299,31 @@ descriptions; each delete still deletes one link.
    above the rows and every row's controls sit under the row body (A1: no badge over a name, each name's word on one
    line, no sideways scroll); at 1000 and 1180 px the side column is 330 px at the main column's right, the rows
    column at its left, the DOM order side then rows; at 1180 a row's controls are inline; at 1920 and 2560 px the
-   side column keeps 330 px and the slack between a row's text and its quantity field is at most 240 px (9b-W2);
-   `/s/` keeps one column with two row columns from 1128 px of list (9b-W3); RU and EN.
-5. Case 106 (Row Columns and Field Measure): at 1180, 1440 and 1920 px, RU and EN, on `#/search ~ searched`,
-   `#/tables/eq_weapon`, a full-width table (the route `#/tables/core_item`, which has no inventory state), `#/homebrew as gm3`, `#/s/player-token-1`:
-   rows draw two columns when the list is at least 1108 px, else one; no row's right edge passes its column; Tab
-   order equals the visual order of the first four rows; no description box with `scrollHeight > clientHeight` has
-   40 px or more free to the right of its text box ("cut while free"); the rows of the owner's screenshot («Фляга
-   Путника», «Мешок Собирателя») show whole at 1440 and 1920. The search box is at most 720 px wide and its next
-   control starts within 16 px of it on those pages, `#/lists ~ many lists as gm4` and `LIST_A ~ many as gm4`. At
-   360, 390 and 768 px the box fills its row as today and `RowMain`'s computed cap and clamp are as S2 sets them.
-   Log the count of cut rows on `/tables/eq_weapon` at 1440 RU before (1/19, this refresh) and after.
+   side column keeps 330 px and a row's text box ends within 24 px of its quantity field (the text takes the free
+   width, M1, so the slack of 240 px that 9b-W2 allowed is zero by construction); `/s/` keeps one column and its row
+   text takes the row (9b-W3); RU and EN.
+5. Case 106 (Row Text and Field Measure). Rows: at 1180x720, 1440x900 and 1920x1080 px, RU and EN, on
+   `#/search ~ searched`, `#/search ~ capped` (300 rows, the catalogue sample), `#/tables/eq_weapon`,
+   `#/tables/wondrous`, `#/tables/hnf_consumable`, `#/tables/voa` and `#/s/player-token-1`; wait until no
+   `[data-drawing]` is left. The description box is `.row-main:not(.full) .rt > span:not(.rh):not(.rstats)`.
+   Steps: (a) `.rt` has a computed `max-width` of `none` and its right edge is within 16 px of the row body's
+   content edge. (b) No box with `scrollHeight > clientHeight + 1` has 40 px or more free to the right of its text
+   ("cut while free"; it holds by construction next to the plain row, and guards a later cap). (c) Clamp share: the
+   boxes with `scrollHeight > clientHeight + 1`, over the described rows, are at most 15% on every state of at least
+   20 described rows except `#/tables/voa` (rules text of 300-800 characters: logged, named in the case's comment, not
+   asserted); `/s/` has 10 rows and is logged only. The case logs every share with its state, width and language;
+   this refresh measured 12.2% or less on the asserted states (M1). If a share passes 15%, the batch stops and names
+   the state and the figure to the orchestrator; the owner's second fallback (a text cap near 120ch) is not built
+   unasked. (d) Computed clamp: `-webkit-line-clamp` of the box is 3 at 360, 390 and 600 px, 2 at 601, 768 and 999 px,
+   3 at 1000 and 1180 px. (e) No row text is cut inside a word: no box has `scrollWidth > clientWidth + 1`, no box's
+   computed `overflow-wrap` is `anywhere` or `break-word` and no `word-break` is `break-all`, and a clamped box
+   shows whole lines (`clientHeight` is the clamp's line count times the line height, within 0.05 line); the ellipsis
+   at the end of the last line is the one cut, and one press opens the whole record. (f) The rows of the owner's
+   screenshot («Фляга Путника», «Мешок Собирателя») are not clamped at 1440 and 1920 px. (g) Field Measure: the
+   search box is at most 720 px wide and its next control starts within 16 px of it on the pages above that have one,
+   `#/lists ~ many lists as gm4` and `LIST_A ~ many as gm4`; at 360, 390 and 768 px the box fills its row as today.
+   Log the shares in `handoff.md` (the build of `d8e30731` with the rule injected gave `/search` «меч» RU 12.2 /
+   9.9 / 9.2% at 1180 / 1440 / 1920 px, `eq_weapon` 6.5 / 5.1 / 4.8%).
 6. Case 107 (the note switch in a real browser): type in the players' note, switch to «Только для мастера» within
    the store's quiet time, switch back, reload: the text is kept; the requests panel opens and folds by its head;
    the price switch changes every drawn price.
@@ -326,17 +348,25 @@ descriptions; each delete still deletes one link.
 ### S14. Prose, in the same commit
 
 - DESIGN.md: the four rules in "Components", "Named Rules", and Whole Message in "Typography" (texts below);
-  "Layout": the first paragraph's 240 px exception goes and "A window up to 1212px draws as it did at 1180px" names
-  the row columns from a 1108 px list; "The One Width Rule" loses the lone number field's sentences; "The Two
+  "Layout": the first paragraph's 240 px exception goes ("A window up to 1212px draws as it did at 1180px" stays: a
+  row's text follows its row, which is no new exception); "The One Width Rule" loses the lone number field's
+  sentences and gains one: a row's text is a clamped snippet, not prose, and takes its row's free width (The Row
+  Text Rule); "The Two
   Breakpoints Rule" names the 1000 px side column of the list page and the rows container's 760 px step;
   "Components": "Inputs" (the stepper), "Chips" (the check), the selection and the gold budget checked;
   "Proposed rules" (the text below, after "Do's and Don'ts").
-- FEATURES.md: "Tables and search" (the 70-character sentence: the text holds at 100 characters, rows take two
-  columns from a 1108 px list); "Rolling" (the 240 px sentence goes); "Lists" (the side column, the note switch, the
+- FEATURES.md: "Tables and search", the sentence "the text holds at 70 characters a line and a separator never
+  starts a line" reads "the description takes the free width of its row, at most 3 lines up to 600 px and from
+  1000 px and 2 lines between, and a separator never starts a line; a cut has one press to the whole record" (owner,
+  2026-11-05); "Rolling" (the 240 px sentence goes); "Lists" (the side column, the note switch, the
   price switch with its example, the roll panel, the share panel, the requests panel folded, the row «Ещё», the
   drop mark); rule 15 (c) (no «?» on the list pages); "Chrome" if a label sentence moves; the section 14 sentence
   "«Выбрать» at the right end" reads "last in its row" where FEATURES holds it.
 - `COVERAGE.md`: cases 105-107, the `typo.js` steps, the deleted help states.
+- A decision file under `docs/decisions/` (`.claude/templates/decision.template.md`, then `node tools/decisions.js`):
+  "A row's text takes its row's free width; rows stay one column" with the measured shares of M1 and the rejected
+  alternatives (two row columns, a 110ch or 100ch cap, tiles by default, a stat column, a list-detail pane). It cites
+  no batch, plan line or mock.
 - `I18N.md` if a term moves.
 
 ### S15. Evidence
@@ -371,8 +401,10 @@ and `list`, `shared-player`, `search`, `list-requests` at 1920 and 2560 px, RU a
     `help` prop; `HelpButton` and `HelpBox` are deleted if no caller is left; rule 15 (c) changed.
 13. Icon-and-label controls of the note switch and the list controls share one vertical center at 360 and 1180
     (`typo.js` `SWITCHES`).
-14. Row Columns (M1; item 9 and its refinement): case 106 passes; DESIGN.md and FEATURES.md "Tables and search" name
-    the rule with the owner's date (2026-11-05); the before and after cut counts are logged.
+14. Row Text (M1; item 9): case 106 passes (a to g); `RowMain` has no `max-width: 70ch` and clamps at 3 lines up to
+    600 px and from 1000 px; DESIGN.md "The Row Text Rule" and "The One Width Rule" and FEATURES.md "Tables and search"
+    carry the rule with the owner's date (2026-11-05); the clamp shares are logged in `handoff.md`; the decision file
+    is written.
 15. Field Measure (M2, 8-G2): case 106's box steps pass on `/search`, the catalog, `/homebrew`, `/lists`, the list page
     and `/s/`.
 16. Stepper (M3, 8-G3): case 104 passes with the new steps; the 240 px sentences are gone from DESIGN.md and
@@ -390,8 +422,8 @@ and `list`, `shared-player`, `search`, `list-requests` at 1920 and 2560 px, RU a
 24. `FIRST_SCREEN`: the five list rows are `shipped: true` and pass at 360x640 and 1180x720, RU and EN; the requests
     row passes its rule or its logged exception; DESIGN.md "The First-Screen Rule" names a new exception with its
     date.
-25. Wide lines: 9b-W2, 9b-W3, 9b-W4 (case 105), 9b-W6 (the shots), 9b-W7 (DESIGN.md "Layout" names the side column
-    at wide widths); 9b-W1 by M18.
+25. Wide lines: 9b-W2 (zero slack by M1, case 105), 9b-W3, 9b-W4 (case 105), 9b-W6 (the shots), 9b-W7 (DESIGN.md
+    "Layout" names the side column at wide widths); 9b-W1 by M18.
 26. New states: each with its RU and EN golden and an axe case (S13.1).
 27. Parity and detector: `i18n.test.ts` passes; no new detector finding in a touched file; no `impeccable-disable`.
 28. `polish` and `harden` ran (the orchestrator); the screenshot set is in `mocks/9b/built/`.
@@ -407,6 +439,9 @@ and `list`, `shared-player`, `search`, `list-requests` at 1920 and 2560 px, RU a
 | `#/s/player-token-1`, `~ long name` | exception 302 (unchanged) | asserted (275 today) |
 | the requests state (new) | the rule, or the measured exception (owner 292, estimate 296) | asserted (the folded strip) |
 
+The Row Text Rule moves no first-screen top (measured with the rule injected: `/search` 279, `eq_weapon` 244, `/s/`
+275 at 1180, 1440, 1920 and 2560 px).
+
 ## States table (standing check 1)
 
 | State | What the screen shows | Proof |
@@ -418,7 +453,10 @@ and `list`, `shared-player`, `search`, `list-requests` at 1920 and 2560 px, RU a
 | a 120-character entry name | wraps in its row at every width; in the add-to-list row whole | case 105, S6 test |
 | a 1000-character note (`NOTE_MAX`) | the area's field scrolls; the read-only box wraps | `listPage.test.ts` |
 | 50 requests (the server limit) | folded strip; open: the existing `REQUESTS_SHOWN` fold | `requestsPanel.test.ts` |
-| row lists at 360 / 1180 | one column / two columns from a 1108 px list | case 106 |
+| row lists (catalog, `/search`, `/s/`, list page) at 360 / 1180 / 1920 | one column at every width; the text takes the row's free width | case 106 (a), (b) |
+| a description longer than the clamp (RU: 12% of the described `/search` rows at 1180 with the rule; 57% under the old cap) | cut to 3 lines up to 600 px and from 1000 px, 2 lines between, ellipsis at the end of the last line; one press opens the record | case 106 (c), (d), (e) |
+| the longest description (811 characters RU) | clamped, no sideways scroll, no half line | case 106 (e) on `#/tables/voa` |
+| `/search` at its cap (300 rows) and a table of 355 rows | rows draw in steps of 60; the clamp share holds | case 106 (c) on `#/search ~ capped` and `#/tables/eq_weapon` |
 
 At many and at the limit: the rows keep list order; the primary «Добавить свой предмет» stays after the last row;
 at 360 with the keyboard open the note area's field and its two buttons fit (the area is in the row, not a popup);
@@ -437,6 +475,8 @@ no sticky region grows (the side column is not sticky; the selection bar unchang
   next row's body, else the rows head.
 - A stale tab (the previous bundle): it draws the old panels on the same stored data; nothing new is stored.
 - A revert (the previous frontend): the same stored keys and server shape; both notes stay as stored.
+- The Row Text Rule (M1) is CSS: it changes no state and no stored value. A stale tab draws the old 70ch text; a
+  revert restores it.
 - No path loses stored data: no plan-review trigger.
 
 ## Consistency (standing check 3)
@@ -446,7 +486,7 @@ one thing: «Бросить по списку» in the side column, the head and
 the roll panel), 15 and 16 (labels, the rename `h1`), 19 (the short stock line, not a box), 20 (focus returns).
 Siblings: `/lists` and `/homebrew` share the head pattern and «Ещё»; `/s/` keeps one column. Named differences:
 the list filter stays a sheet at every width (9a G15); the side column exists on the owner's page only; the share
-panel keeps a delete per link (M12); M1's 1180 departure.
+panel keeps a delete per link (M12); M1's wider row text from about 800 px and its third line from 1000 px (a departure from the 1180 screens the owner reviewed).
 
 ## RU/EN parity (standing check 4)
 
@@ -458,10 +498,12 @@ longer language in the side column (the action row and the switch), measured by 
 
 "Components", a new "### Named Rules" subsection at its end:
 
-**The Row Columns Rule.** A row list uses its width before it cuts a row's text. The rows flow in columns of at
-least 550px, so a list of 1108px or more draws two (the 1440px column holds no third); a row's text holds at most
-100ch and clamps at three lines, and a cut always has one press to the whole, the record. The list page keeps one
-column beside its side column. Owner, 2026-11-05 (items 7 and 9).
+**The Row Text Rule.** A row's text takes the free width of its row: a description is cut only when it is longer
+than its clamp, never while width remains. The cap of 70ch went because a 1440px `/search` row was 54% empty
+(measured 2026-11-05). The text is a clamped snippet, not prose, so the prose measure does not apply. The clamp is
+three lines up to 600px and from 1000px, and two lines between; a cut always has one press to the whole, the
+record. Rows stay one column at every width, and the layouts from 360px to 760px do not change. Owner, 2026-11-05
+(item 9).
 
 **The Field Measure Rule.** A search box is at most 720px from 761px, and the controls of its row follow it on the
 same line; up to 760px it takes the row's free width. Source: Android adaptive app quality, Tier 2,
@@ -503,7 +545,7 @@ source.
 
 ## Tests
 
-- Unit: `tableRows.test.ts`, `chip.test.ts`, the `Seg` cases, `listPage.test.ts`, `lists.test.ts`,
+- Unit: `chip.test.ts`, the `Seg` cases, `listPage.test.ts`, `lists.test.ts`,
   `sharedListPage.test.ts`, `sharePanel.test.ts`, `requestsPanel.test.ts`, `quickItem.test.ts`, `a11y.test.ts`,
   `i18n.test.ts`; every changed component ends with `expectNoA11yViolations`.
 - Browser (CI): cases 104-107, case 83, `typo.js`, `sweep.js 360` and `768`, the reorder cases.
@@ -526,8 +568,9 @@ source.
 - Do not change a route, the `/s/` address grammar, a stored key or the server shape.
 - Do not use a `flex-basis` of 720px for the search box (S3 trap).
 - Do not make the side column sticky (M6).
-- A browser case at 1180 that reads one row column (case 93, the sweep's overlap step) adapts to two columns; a case
-  is adapted, never deleted, and `handoff.md` names each.
+- Do not add a grid, a column count or a text cap to the rows (the owner rejected Row Columns; the 120ch cap is a
+  named fallback, not built unasked). A case that fails on the wider row text is adapted, never deleted, and
+  `handoff.md` names each.
 - Delete a symbol only after `git grep` finds no reader; a kept leftover is named in `handoff.md`.
 - If a whole-message wrap moves a `FIRST_SCREEN` row past its limit, keep the cut, allow-list it with its reason
   and name it (M5).
@@ -537,15 +580,17 @@ source.
 One code batch (45-60 min: `check:fast` 12-14 min with `VITEST_MAX_WORKERS=2` on this memory-starved host, 744 s
 measured at batch 8; one CI run 10.5-11.5; one review fix cycle; the screenshot set) plus extra gates: the golden
 re-seed of about 70-100 states (`build:test` and four shards, 15-20); the affected vitest files alone, two workers
-(15-20); `check:built`, the detector, E4 and Prettier (4-5); the loader runs of cases 83 and 104-107 (8-10); the
-screenshot set at four widths (10); `polish` and `harden` (5-10). CI adds `sweep.js 768`. About 100-135 min in all.
+(12-18: `tableRows.test.ts` is no longer touched); `check:built`, the detector, E4 and Prettier (4-5); the loader
+runs of cases 83 and 104-107 (8-10); the screenshot set at four widths (10); `polish` and `harden` (5-10). CI adds
+`sweep.js 768`. About 95-130 min in all (the two-column design's goldens, its case 93 adaptation and its unit test
+are gone).
 
 ## Writer tests (for the orchestrator's dispatch; not a model choice)
 
 - Test 1: no. Every fork has a default (M1-M20).
 - Test 2: yes: `.impeccable/config.json` and `.prettierignore` (configuration every session runs under).
-- Test 3: yes: about 70-100 goldens re-seeded; the side column, the panels and the row columns rest on visual
-  judgment against mock 9 and mock 9b.
+- Test 3: yes: about 70-100 goldens re-seeded; the side column and the panels rest on visual judgment against
+  mock 9, and the row text against mock 9b.
 - Test 4: no.
 
 ## Split criterion
