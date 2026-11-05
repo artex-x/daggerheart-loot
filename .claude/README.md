@@ -1012,6 +1012,7 @@ documented; the parity rows below are replaced by the gates that survive.
 | `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub` | ~260-290s pooled | longer; 723 s with WSL and Rancher up (2026-10-15) |
 | `node tests/app/sweep.js <width>` | ~320-590s per width | longer; CI's `browser` matrix runs every width; locally (the offline path) run `node tests/run-all.js --shard=n/5` per call |
 | `node tests/app/golden.js --shard=n/4` | ~100-290s per shard | longer; CI's `browser` matrix runs every shard; a batch that adds states re-seeds them with `--update --only=<id>` or takes CI's text ("CI credit") |
+| `node tests/app/states.js --shard=n/4` | about 440 s per row on CI (1742.8 s for all 97 cases in one row, run 42083009049, 2026-11-05) | longer; CI's `browser` matrix runs every row; one case's time is its `took:` line in `test-output/` |
 | `node tests/run-all.js <suites> --shard=n/m` | varies with what the packer bins together - measured up to ~372s for one bin (`sweep1180-ru`: 371.9s(ru)/172.7s(en), CI run `35232880507`) | longer; a shard's own bins are not interchangeable with `ci.yml`'s matrix count (`tests/derived.js` asserts the two agree) |
 
 Re-measured on this host on 2026-09-25, at the end of the accounts release:
@@ -1124,11 +1125,14 @@ fit the Bash tool's 600000 ms maximum at all - the long-check reminder's
 above is the only one that belongs in a foreground call.
 
 This table is about a **local** foreground call. A CI job's fixed cost is
-about twenty seconds (checkout, setup-node, `npm ci`, `npm run build`), not
-minutes - `tests/run-all.js`'s `--shard=n/m` and `ci.yml`'s `browser` matrix
+about seventy seconds (checkout, setup-node, `npm ci`, `npm run build:test`;
+2026-11-05), not ten minutes - `tests/run-all.js`'s `--shard=n/m` and `ci.yml`'s `browser` matrix
 split the real-Chrome suites across five such jobs for exactly that reason
 (four until 2026-09-26, when the slowest suite step passed 360 s on two
-consecutive runs, 36229149582 and 36230695846).
+consecutive runs, 36229149582 and 36230695846). On 2026-11-05 the one
+`app/states` row passed the job's 30-minute limit (1742.8 s at 97 cases),
+so it runs as four rows of interleaved cases (decision "app/states runs as
+four interleaved rows; the browser job keeps 30 minutes").
 CI run 36105652165 (2026-09-25): the `browser` shards' suite steps 361, 367,
 367 and 224 s; the `e2e` job's `npm run e2e` step 20 s. CI run 36124766953
 (2026-09-25): `migrate-test` 1 s when the test project is up to date, `npm

@@ -15,6 +15,7 @@ deleted.
 ## Index
 
 - 2026-11-05 - [A row's text takes its row's free width; rows stay one column](decisions/2026-11-05-a-row-text-takes-its-row-s-free-width-rows-stay-one-column.md)
+- 2026-11-05 - [app/states runs as four interleaved rows; the browser job keeps 30 minutes](decisions/2026-11-05-app-states-runs-as-four-interleaved-rows.md)
 - 2026-11-05 - [List rows fold on a phone and the list filter stays in memory](decisions/2026-11-05-list-rows-fold-on-a-phone-and-the-list-filter-stays-in-memory.md)
 - 2026-11-05 - [The add-to-list menu stays a popover](decisions/2026-11-05-the-add-to-list-menu-stays-a-popover.md)
 - 2026-11-05 - [The unconfigured bundle ceiling rises to 300 kB](decisions/2026-11-05-the-unconfigured-bundle-ceiling-rises-to-300-kb.md)

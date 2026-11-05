@@ -38,18 +38,7 @@ const ONLY = onlyArg ? onlyArg.slice('--only='.length) : null;
  * `stateIdx % of !== n` interleave (ported from the deleted parity harness,
  * issue 47), which spreads the ~7s `#/tables*` arrivals evenly instead of
  * piling them into one shard. */
-const shardArg = process.argv.find((a) => a.startsWith('--shard='));
-const SHARD = shardArg
-  ? (() => {
-      const m = /^--shard=(\d+)\/(\d+)$/.exec(shardArg);
-      const n = m && Number(m[1]);
-      const of = m && Number(m[2]);
-      if (!n || !of || n < 1 || n > of) {
-        throw new Error(`--shard must look like --shard=1/4 (got "${shardArg}")`);
-      }
-      return { n: n - 1, of };
-    })()
-  : null;
+const SHARD = require('./shard.js').shardOf(process.argv);
 
 /** The file name a state's golden is written under - the deleted `parity.js`'s
  *  own rule, so a state id and its golden's basename always agree by eye. */

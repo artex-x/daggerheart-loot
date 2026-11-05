@@ -6,8 +6,9 @@
  * and every legacy suite uses - because a handful of real defects only show
  * up on the far side of a browser's own microtask checkpoint (the
  * `isConnected` guard) or need a real network, a real clipboard stub, or a
- * real second tab to mean anything at all. Ninety-two cases in
- * ninety-one runs (4 and 5 share one), no ancestor. Like every suite here it drives
+ * real second tab to mean anything at all. One run per `CASES` entry (4 and 5
+ * share one), no ancestor; `--shard=n/of` runs every `of`-th entry, as
+ * `golden.js` does. Like every suite here it drives
  * dist-test/, the test build (docs/specs/COVERAGE.md, "Test layers"): signed
  * out it draws the sign-in prompt where a list would be made, so the cases
  * that make one open as the seed's `gm2`. */
@@ -18,6 +19,7 @@ const { PNG } = require('pngjs');
 const { axe, baseUrl, fresh, sharedPage, reporter, closeBrowser } = require('./lib.js');
 const { TARGETS, ready } = require('./driver.js');
 const { HB_FILE, STATES, hbImportOpen } = require('./inventory.js');
+const { shardOf } = require('./shard.js');
 
 /** The fake seed's `gm1` list «Лавка кузнеца», `uuid(101)`, and the first id
  *  the fake hands a new list, `uuid(5000)`. */
@@ -8826,26 +8828,38 @@ const CASES = [
   ['107 (the note switch in a real browser)', noteSwitchInABrowser]
 ];
 
+const SHARD = shardOf(process.argv);
+/* The interleave spreads the slow layout cases at the end of the list over
+ * every piece, as `golden.js` spreads its states. */
+const MINE = CASES.filter((c, i) => !SHARD || i % SHARD.of === SHARD.n);
+
 (async () => {
   /* Each case gets its own try/catch: a hung CDP call under host load
    * (this tree is shared - CLAUDE.md, "Task and session protocol") must not
    * take the other cases down with it, and a synchronous write - not
    * console.log's own buffering - is what survives a crash that follows
    * immediately after. */
-  for (const [label, fn] of CASES) {
+  for (const [label, fn] of MINE) {
     fs.writeSync(1, 'running: ' + label + '\n');
+    const t0 = Date.now();
     try {
       await fn();
     } catch (e) {
       rep.ok(false, label + ': threw - ' + (e && e.message ? e.message : String(e)));
     }
+    fs.writeSync(1, 'took: ' + label + ' ' + ((Date.now() - t0) / 1000).toFixed(1) + 's\n');
   }
 
   await closeBrowser().catch(() => {});
   console.log(
     rep.failed
       ? '\n' + rep.failed + ' FAILED'
-      : '\nreal-input states (dist-test/): all ' + CASES.length + ' runs passed'
+      : '\nreal-input states (dist-test/): all ' +
+          MINE.length +
+          ' runs passed' +
+          (SHARD
+            ? ' (shard ' + (SHARD.n + 1) + '/' + SHARD.of + ' of ' + CASES.length + ')'
+            : '')
   );
   process.exit(rep.failed ? 1 : 0);
 })();

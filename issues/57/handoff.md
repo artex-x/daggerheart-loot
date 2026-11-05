@@ -5,9 +5,9 @@
 - Task status: in_progress. Waves 1, 2 and 2b are on `main`; wave 3: 9a, 8 and 9b done. 9b is `18429aee`, its
   review `22f93378` (`reviews/9b.md`, fix-then-continue), its remediation `6578a2c7`; all pushed. CI run
   42102518161 of `6578a2c7`: every job passed but `browser (3)`, cancelled twice at its 30-minute limit
-  (`app/states`, one serial row of about 1750 s). Batch CI (`plan-ci.md`) is the fix.
-- Last agent: planner (batch CI plan, 2026-11-05; docs only, not committed). No subagent runs. No worker has
-  uncommitted code edits.
+  (`app/states`, one serial row of about 1750 s). Batch CI (`plan-ci.md`) is committed on top of `0f931af2`, not
+  pushed; its batch review is required (trigger: `tests/run-all.js` changed).
+- Last agent: implementer (batch CI, 2026-11-05). No subagent runs. No worker has uncommitted code edits.
 - NEEDS_HUMAN_CONFIRMATION: no. One figure for the owner: the folded requests strip at 360x640 now starts the
   rows at 304 px (was 324; the owner's figure was 292), so the 360 exception is 304 (review B3: above 300, logged).
   No for batch N: the owner answered N1-N4 on 2026-11-05; one planner default the owner may overrule: from 761 to
@@ -15,8 +15,8 @@
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
 - Base / starting commit: `d8e30731`; previous sha of the 9b remediation pass: `22f93378`.
 - Pushed: up to `6578a2c7`.
-- Next step, in order: (1) batch CI (`plan-ci.md`, section 4), its batch review and CI of its tip, which also
-  proves the 9b remediation; `polish` and `harden` on `ListPage`, `RequestsPanel`, `SharePanel`; (2) batch T's refresh
+- Next step, in order: (1) batch CI's review, its push and CI of its tip (acceptance 7, 8, 11 and step S8: the
+  `.claude/README.md` CI row takes the measured push-to-last-gate time), which also proves the 9b remediation; `polish` and `harden` on `ListPage`, `RequestsPanel`, `SharePanel`; (2) batch T's refresh
   (`plan.md` section 7, "Batch T"), then T; N follows T and precedes P; (3) P, 10; the wave 3 and whole-app blind
   reviews; closeout. The wave 3 squash message takes `reviews/9b.md` R7's corrected text.
 
@@ -115,8 +115,39 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
   | N11 | Fixed: this Status; the file compacted (batch 8 and the 9b deviations to the pre-pass commit) |
   | R5, R7, N12, N13 | Left as their `reviews.md` rows say |
 
+- Batch CI - `app/states` as four interleaved shard rows and fresh shard weights (`plan-ci.md` section 4, previous
+  sha `0f931af2`). Acceptance:
+
+  | Line | Outcome |
+  |---|---|
+  | 1 One parse | Done: `tests/app/shard.js`; `git grep -n --untracked -E "shardArg\|shard=\(" -- tests` finds only it |
+  | 2 `--list` | Done: 22 rows over the five shards, each once, the bins of `plan-ci.md` section 5 exactly (sums 1586.3, 1471.6, 1458.8, 1461.8, 1490.5) |
+  | 3 States rows | Done: 4/4 in shard 2, 3/4 in 3, 2/4 in 4, 1/4 in 5 |
+  | 4 `--shard=1/40` | Done: cases 1, 50, 91, a `took:` line each, `all 3 runs passed (shard 1/40 of 97)` |
+  | 5 Parse error | Done: `states.js`, `golden.js` and `run-all.js` with `--shard=5/4` throw the old message |
+  | 6 `derived,contracts` | Done: pass |
+  | 7, 8, 11 CI | Open: CI of the pushed tip (each `app/states` row under 600 s, the longest job under 20 min, pass lines 25/24/24/24 of 97) |
+  | 9 Docs | Done: COVERAGE.md "Suites", `.claude/README.md` (a `states.js --shard=n/4` row, the CI fixed cost and the 2026-11-05 cause), the decision file, `docs/DECISIONS.md` rebuilt. The CI row of "Batch size" waits for S8's measured time |
+  | 10 W-N4 | Done: removed from Deferred |
+
+  Deviations: the start line `shard n/m: <rows>` prints after the empty-queue check (still after the build
+  check); the help text says "once per shard" instead of a count; `.claude/README.md`'s CI fixed cost "about twenty
+  seconds" was stale and now reads about seventy (`plan-ci.md` section 1). The `--list` sum line reads `sum <s>`.
+
 
 ## Verification
+- Batch CI, 2026-11-05 (previous sha `0f931af2`), each in the foreground:
+  - `node tests/run-all.js --shard=n/5 --list`, n = 1 to 5: 3, 3, 8, 4, 4 rows, as `plan-ci.md` section 5.
+  - `node tests/app/states.js --shard=5/4`, `node tests/app/golden.js --shard=5/4`, `node tests/run-all.js
+    --shard=5/4 --list`: each exit 1 with `--shard must look like --shard=1/4 (got "--shard=5/4")`.
+  - `node tests/run-all.js derived,contracts`: first FAIL (the cited decision file did not exist yet), then pass
+    after it was written.
+  - `node tools/decisions.js`: `docs/DECISIONS.md - 315 decisions`.
+  - `npm run build:test`, then `node tests/app/states.js --shard=1/40`: cases 1 (3.0 s), 50 (7.9 s), 91 (20.7 s);
+    `all 3 runs passed (shard 1/40 of 97)`.
+  - `npm run lint:untyped`, `npm run lint:typed`: exit 0 (untyped rerun after the last format).
+  - `VITEST_MAX_WORKERS=2 rtk npm run check:fast`: first FAIL (prettier on `tests/app/states.js`), fixed with
+    `prettier --write`; then PASS in 54 s, gate credit armed.
 - Batch 9b remediation, 2026-11-05 (previous sha `22f93378`; vitest with `VITEST_MAX_WORKERS=2`):
   - Reproduced first, on the 9b build: `sweep-only.cjs` (the sweep's `PAGES` filtered to «список: заметки
     открыты», no focus walk) at 360: 45 px RU, 16 px EN, as CI; `pv-probe.cjs` on `#/roll/community_items` at
@@ -143,12 +174,12 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
 - Batch 9b and earlier: `git show 22f93378:issues/57/handoff.md`, "Verification".
 
 ## Next batch (implement-ready)
-- Name: batch CI - `app/states` as four interleaved shard rows and fresh shard weights (`plan-ci.md`, section 4:
-  objective, files, steps S1-S8, acceptance 1-11, proofs in section 6). Then batch T's refresh (the Thumb Rule and
-  the toast timing; `plan.md` section 7, "Batch T"), then T, N, P and 10.
-- Verification: `node tests/run-all.js --shard=n/5 --list` (n = 1 to 5), `npm run build:test` then
-  `node tests/app/states.js --shard=1/40`, the two `--shard=5/4` parse checks, `node tests/run-all.js
-  derived,contracts`, `rtk npm run check:fast`; CI of the tip.
+- Name: batch CI's review (required), then its push and step S8 (`plan-ci.md` section 4: record each `browser (n)`
+  job's minutes, each `app/states` row's seconds and the four pass-line counts; the `.claude/README.md` "Batch
+  size" CI row takes the push-to-last-gate time). Then batch T's refresh (the Thumb Rule and the toast timing;
+  `plan.md` section 7, "Batch T"), then T, N, P and 10.
+- Verification: CI of the tip (acceptance 7: every `browser (n)` passes, each `app/states` row under 600 s, the
+  longest job under 20 min, pass lines 25, 24, 24, 24 of 97).
 - What CI of the batch CI tip must also prove for the 9b remediation: `check` (coverage of `HelpButton`,
   `RecordActions`), `app/sweep` 360 / 390 / 768, `app/typo`, `app/print`, `app/states` (83, 65, 101, 104-107), the
   goldens, `e2e` F8, F12, F19.
@@ -194,8 +225,6 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
   Review 9a R2: its probe (360x640 RU on `LIST_A ~ noted`: open «Ещё», close by Escape, then by a tap outside, read
   `scrollY`) was not run in the 9a fix pass; batch 9b takes it (`plan-9b.md` S8 step 10, acceptance 22), else
   `DEBT.md` at closeout.
-- W-N4 (batch W review): the `tests/run-all.js` weight for `app/states` (179.3 s) is stale; case 101 opens 74
-  contexts, up to 3840x2160. Re-measure it from the CI run of the tip.
 - `/tables/eq_*` at 761-about 800 px in RU (batch 7b probe): the toolbar's five controls wrap to two lines, so the rows
   start at 381.5 px against 333.5 on the other tables. Case 96 reads 760 and 1050, not 761. Not fixed: the hidden
   toolbar slots were not built (Completed, "Batch 7b", deviation 3).

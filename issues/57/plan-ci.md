@@ -7,7 +7,8 @@ their homes in the batch (step S7).
 
 ## Status
 
-- Planned 2026-11-05 (planner). Next: batch CI, then batch T's refresh.
+- Planned 2026-11-05 (planner). Batch CI implemented 2026-11-05 (S1-S7 committed, not pushed); next: its
+  review, the push and S8, then batch T's refresh.
 - Open design question: none.
 - Plan review: not required (no trigger fired). The batch changes no
   migration, no public contract, no stored data or key and no write or sync
