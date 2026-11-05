@@ -67,6 +67,8 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
   | 17 Parity, detector | Done: `i18n.test.ts` passes; detector 62 findings (67 at batch W), none new in a touched file; no `impeccable-disable` added |
   | 18 `polish` and `harden`, shots | Shots in `mocks/8/built/` (`shoot.js`); `polish` and `harden` are the orchestrator's (a subagent cannot run Impeccable), see Notes |
 
+  CI fix, 2026-11-05: the 2026-10-30 list-pages decision file got the "Amends" line the 2026-09-28 file's "Amended by" needs; `node tools/decisions.js` and the `derived` suite pass.
+
 
 - Batch 8 departures and deviations:
   1. Two keys beyond the brief: `listOpen` («Открыть», the card menu item: `noticeOpen` and `arrivalOpen` mean other
