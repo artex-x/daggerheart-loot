@@ -1,0 +1,22 @@
+/* Batch T mock: the first-screen folds (T3) and the header hold (T12), injected after thumb.css. */
+@media screen and (max-width: 600px) {
+  /* RollPage.svelte: the results line takes its growth back from its own margins. */
+  .reshead {
+    margin: 0 !important;
+  }
+  .rp:not(.two) .rp-ctrl {
+    margin-top: 0 !important;
+  }
+  /* ModeRow.svelte: the row's padding. */
+  .modes-in {
+    padding: 4px 0 !important;
+  }
+  /* Seg.svelte: the track loses its padding, so a 40 px segment makes a 42 px track (the header row is 44 px). */
+  .seg {
+    padding: 0 1px !important;
+  }
+  /* TablesPage.svelte: the picker row's gap to the search row. */
+  .pickrow {
+    margin-bottom: 4px !important;
+  }
+}

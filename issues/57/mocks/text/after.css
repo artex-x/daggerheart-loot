@@ -1,0 +1,62 @@
+/* The proposed Measure Rule (plan-text.md), injected over the live site by `measure.cjs after`.
+   `!important` only beats the scoped selectors of the build; the batch writes plain rules. */
+:root {
+  --measure-line: 120ch;
+  --measure-text: 70ch;
+}
+
+/* Line class */
+main .page-sub,
+main .cause,
+main .empty .hint,
+main .signin-lead,
+main .errtext,
+main .esub,
+.toast {
+  max-width: var(--measure-line) !important;
+  text-wrap: balance;
+}
+
+/* The toast keeps its window inset */
+.toast {
+  max-width: min(var(--measure-line), calc(100% - 32px)) !important;
+}
+
+/* Passage class: the text keeps the measure, the box hugs it. `.card-desc`, `.set-bonus` and `.ref-text` were in
+   this run; plan-text.md drops them after the long-record reading (the dossier column is the measure). */
+.helpbox p,
+main .printnote,
+main .clipwarn,
+.card-desc,
+.set-bonus,
+.ref-text,
+.htext,
+footer .foot-licence p {
+  max-width: var(--measure-text) !important;
+}
+
+.helpbox,
+.hitnote,
+.box.warn {
+  width: fit-content !important;
+  max-width: 100% !important;
+}
+
+.box.warn .lead {
+  max-width: var(--measure-text) !important;
+}
+
+/* Row class: no cap (batch 9b) */
+.row-main .rt {
+  max-width: none !important;
+}
+
+/* The signed-out account column: the cap moves from the column to its panel, so the lead
+   follows the line class like every other lead */
+main .col:not(:has(.acc)) {
+  max-width: none !important;
+}
+
+main .col:not(:has(.acc)) > .panel {
+  max-width: var(--measure-text) !important;
+}

@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Mock T - the Thumb Rule on the live site, and the /lists card corner</title>
+    <style>
+      body {
+        font:
+          14px/1.5 system-ui,
+          sans-serif;
+        margin: 24px;
+        max-width: 1100px;
+      }
+      table {
+        border-collapse: collapse;
+        margin: 12px 0;
+      }
+      td,
+      th {
+        border: 1px solid #ccc;
+        padding: 4px 8px;
+        text-align: left;
+      }
+      img {
+        max-width: 360px;
+        border: 1px solid #ccc;
+        margin: 4px;
+        vertical-align: top;
+      }
+      code {
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>
+      Mock T - the Thumb Rule (40 px targets up to 600 px) and the first-screen folds (planner,
+      2026-11-05)
+    </h1>
+    <p>
+      Method: the live site <code>https://daggerheart-loot.pages.dev</code> (production, wave
+      2b, <code>b6f153a5</code>), signed out, 29 states at 360x640, 390x640 and 600x640, Russian
+      and English (<code>probe.cjs</code>). Three passes: <b>before</b> (as shipped),
+      <b>after</b> (<code>thumb.css</code> injected: every boxed control 40 px, the text links
+      by their padded box) and <b>fold</b> (<code>thumb.css</code> plus <code>fold.css</code>:
+      the spacing folds of T3 and the header hold of T12). Readings:
+      <code>measure-before-360-390-600.json</code> (19866 controls read, 3428 readings under 40
+      px in 33 selector groups), <code>measure-after-*.json</code>,
+      <code>measure-fold-*.json</code> (78 readings under 40 px, every one the skip link, which
+      T7 allows). Not built code. The signed-in surfaces (the lists, the list pages,
+      <code>/homebrew</code>) are not on the live site signed out:
+      <code>listcard.html</code> draws the card from the code's CSS, and the implementer
+      measures their first-screen rows through the loader (<code>plan-T.md</code> S3).
+    </p>
+    <h2>First-screen tops at 360x640 (limit 256; RU = EN unless noted)</h2>
+    <table>
+      <tr>
+        <th>Row</th>
+        <th>Before</th>
+        <th>After, no fold</th>
+        <th>After, with the folds</th>
+      </tr>
+      <tr>
+        <td>/roll/std (exception 325)</td>
+        <td>323.5</td>
+        <td>338.7 (EN 379.9)</td>
+        <td>318.7</td>
+      </tr>
+      <tr>
+        <td>/roll/alt, /roll/vault_of_ages, /roll/wondrous_environments</td>
+        <td>250.7</td>
+        <td>265.9 (EN 307.1)</td>
+        <td>245.9</td>
+      </tr>
+      <tr>
+        <td>/tables/eq_weapon</td>
+        <td>234.4</td>
+        <td>242.4 (EN 283.6)</td>
+        <td>230.4</td>
+      </tr>
+      <tr>
+        <td>/tables/eq_weapon, two filters</td>
+        <td>252.4</td>
+        <td>260.4 (EN 301.6)</td>
+        <td>248.4</td>
+      </tr>
+      <tr>
+        <td>/i/ci1</td>
+        <td>137.2</td>
+        <td>140.4 (EN 181.6)</td>
+        <td>136.4</td>
+      </tr>
+      <tr>
+        <td>/search, «меч»</td>
+        <td>230.0</td>
+        <td>236.4 (EN 277.6)</td>
+        <td>232.4</td>
+      </tr>
+      <tr>
+        <td>the header</td>
+        <td>111.2</td>
+        <td>114.4 (EN 155.6: the brand row wraps)</td>
+        <td>110.4</td>
+      </tr>
+    </table>
+    <p>
+      At 390 px every row reads as at 360 RU (the EN header holds at 390 without the fold). At
+      600x640 (logged, not asserted): /roll/std 316.2, 331.4, 311.4; the roll pages 250.2,
+      265.4, 245.4; the other rows as at 360.
+    </p>
+    <h2>Shots (before, after, fold)</h2>
+    <p>
+      The results line and a result's action row (a row of small buttons, the add and more row
+      on a card):
+    </p>
+    <img src="shots/roll-std__360__ru__before.png" alt="/roll/std at 360 RU before" />
+    <img
+      src="shots/roll-std__360__ru__after.png"
+      alt="/roll/std at 360 RU with 40 px targets, no fold"
+    />
+    <img
+      src="shots/roll-std__360__ru__fold.png"
+      alt="/roll/std at 360 RU with 40 px targets and the folds"
+    />
+    <p>The selection bar (three rows of 40 px controls) and the filter sheet's chips:</p>
+    <img
+      src="shots/tables-selecting__360__ru__before.png"
+      alt="the catalog selection bar at 360 RU before"
+    />
+    <img
+      src="shots/tables-selecting__360__ru__fold.png"
+      alt="the catalog selection bar at 360 RU with 40 px controls"
+    />
+    <img
+      src="shots/tables-filters__360__ru__before.png"
+      alt="the filter sheet at 360 RU before"
+    />
+    <img
+      src="shots/tables-filters__360__ru__fold.png"
+      alt="the filter sheet at 360 RU with 40 px chips"
+    />
+    <p>The header and the picker row in English (the tightest row), and the grid's tick:</p>
+    <img
+      src="shots/tables-eq-weapon__360__en__after.png"
+      alt="the catalog at 360 EN with 40 px targets: the header wraps"
+    />
+    <img
+      src="shots/tables-eq-weapon__360__en__fold.png"
+      alt="the catalog at 360 EN with the header hold"
+    />
+    <img
+      src="shots/tables-grid-selecting__360__ru__fold.png"
+      alt="the grid with a 40 px tick"
+    />
+    <p>The roll setup's chips and steppers, and /search's start chips:</p>
+    <img
+      src="shots/roll-std-setup__360__ru__fold.png"
+      alt="the roll setup with 40 px chips and steppers"
+    />
+    <img src="shots/search__360__ru__fold.png" alt="/search start with 40 px example chips" />
+    <p>
+      Every pass at 360 and 390 px, RU and EN, is in <code>shots/</code> as
+      <code>&lt;state&gt;__&lt;width&gt;__&lt;lang&gt;__&lt;before|after|fold&gt;.png</code>.
+    </p>
+    <h2>The /lists card «Ещё» (8-P1, T5)</h2>
+    <p>
+      <code>listcard.html</code> (the card CSS of <code>ListCard.svelte</code> at HEAD, the
+      system face as a stand-in for Source Sans 3): today the bordered 32 px «Ещё» on its own
+      row, 197 px a card; recommended, «Ещё» as a 40 px text button in the corner the pick box
+      takes in the selection mode, 155 px (a card 42 px shorter, so about 3 cards in the first
+      screen at 360); fallback, the row kept and the button 40 px, 171 px.
+    </p>
+    <img
+      src="shots/listcard__360__ru.png"
+      alt="the lists card today, in the corner, and with the row kept"
+      style="max-width: 360px"
+    />
+    <h2>Critique</h2>
+    <p>
+      Impeccable <code>critique</code> is the orchestrator's (a subagent cannot run it); its
+      outcome is written here.
+    </p>
+  </body>
+</html>

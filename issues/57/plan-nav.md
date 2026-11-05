@@ -1,5 +1,9 @@
 # Sibling-page navigation and one head order (outline for batch N; owner item 11)
 
+Status (2026-11-05): batch N is implemented from `plan-N.md` (implement-ready, with this refresh's measurements and
+mocks `mocks/N/index-N.html`). This file keeps the options, the owner's answers N1-N4 and the first critique; where
+the two differ, `plan-N.md` wins.
+
 Purpose: record the owner's question of 2026-11-05 ("why roll pages are between page title and header and table pages
 are after header? can we unify these behavior?", and "consistent with items page"), the options, and the owner's
 answers: N1 = option A with a visible page heading on every family, N2 = the homebrew tabs become pills with counts,

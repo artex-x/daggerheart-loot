@@ -1,0 +1,1712 @@
+[
+  {
+    "route": "/search",
+    "lang": "ru",
+    "w": 360,
+    "lead": null
+  },
+  {
+    "route": "/search",
+    "lang": "ru",
+    "w": 1180,
+    "lead": {
+      "chars": 91,
+      "text": "Поиск сразу по 1459 позициям - добыча, расходники и снаряжение, на русском и на английском.",
+      "width": 487,
+      "lines": 2,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 592.6,
+      "column": 1133,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/search",
+    "lang": "ru",
+    "w": 1440,
+    "lead": {
+      "chars": 91,
+      "text": "Поиск сразу по 1459 позициям - добыча, расходники и снаряжение, на русском и на английском.",
+      "width": 487,
+      "lines": 2,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 592.6,
+      "column": 1393,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/search",
+    "lang": "ru",
+    "w": 1920,
+    "lead": {
+      "chars": 91,
+      "text": "Поиск сразу по 1459 позициям - добыча, расходники и снаряжение, на русском и на английском.",
+      "width": 487,
+      "lines": 2,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 592.6,
+      "column": 1440,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/search",
+    "lang": "en",
+    "w": 360,
+    "lead": null
+  },
+  {
+    "route": "/search",
+    "lang": "en",
+    "w": 1180,
+    "lead": {
+      "chars": 90,
+      "text": "Search all 1459 entries at once - loot, consumables and equipment, in Russian and English.",
+      "width": 487,
+      "lines": 2,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 526.1,
+      "column": 1133,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/search",
+    "lang": "en",
+    "w": 1440,
+    "lead": {
+      "chars": 90,
+      "text": "Search all 1459 entries at once - loot, consumables and equipment, in Russian and English.",
+      "width": 487,
+      "lines": 2,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 526.1,
+      "column": 1393,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/search",
+    "lang": "en",
+    "w": 1920,
+    "lead": {
+      "chars": 90,
+      "text": "Search all 1459 entries at once - loot, consumables and equipment, in Russian and English.",
+      "width": 487,
+      "lines": 2,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 526.1,
+      "column": 1440,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/tables/eq_weapon",
+    "lang": "ru",
+    "w": 360,
+    "lead": null
+  },
+  {
+    "route": "/tables/eq_weapon",
+    "lang": "ru",
+    "w": 1180,
+    "lead": null
+  },
+  {
+    "route": "/tables/eq_weapon",
+    "lang": "ru",
+    "w": 1440,
+    "lead": null
+  },
+  {
+    "route": "/tables/eq_weapon",
+    "lang": "ru",
+    "w": 1920,
+    "lead": null
+  },
+  {
+    "route": "/tables/eq_weapon",
+    "lang": "en",
+    "w": 360,
+    "lead": null
+  },
+  {
+    "route": "/tables/eq_weapon",
+    "lang": "en",
+    "w": 1180,
+    "lead": null
+  },
+  {
+    "route": "/tables/eq_weapon",
+    "lang": "en",
+    "w": 1440,
+    "lead": null
+  },
+  {
+    "route": "/tables/eq_weapon",
+    "lang": "en",
+    "w": 1920,
+    "lead": null
+  },
+  {
+    "route": "/lists",
+    "lang": "ru",
+    "w": 360,
+    "lead": {
+      "chars": 59,
+      "text": "Соберите добычу в список и отправьте игрокам одной ссылкой.",
+      "width": 313,
+      "lines": 2,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 392.4,
+      "column": 313,
+      "fitsColumn": false
+    }
+  },
+  {
+    "route": "/lists",
+    "lang": "ru",
+    "w": 1180,
+    "lead": {
+      "chars": 59,
+      "text": "Соберите добычу в список и отправьте игрокам одной ссылкой.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 392.4,
+      "column": 1133,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/lists",
+    "lang": "ru",
+    "w": 1440,
+    "lead": {
+      "chars": 59,
+      "text": "Соберите добычу в список и отправьте игрокам одной ссылкой.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 392.4,
+      "column": 1393,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/lists",
+    "lang": "ru",
+    "w": 1920,
+    "lead": {
+      "chars": 59,
+      "text": "Соберите добычу в список и отправьте игрокам одной ссылкой.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 392.4,
+      "column": 1440,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/lists",
+    "lang": "en",
+    "w": 360,
+    "lead": {
+      "chars": 70,
+      "text": "Collect loot into a list and send it to your players as a single link.",
+      "width": 313,
+      "lines": 2,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 370.6,
+      "column": 313,
+      "fitsColumn": false
+    }
+  },
+  {
+    "route": "/lists",
+    "lang": "en",
+    "w": 1180,
+    "lead": {
+      "chars": 70,
+      "text": "Collect loot into a list and send it to your players as a single link.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 370.6,
+      "column": 1133,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/lists",
+    "lang": "en",
+    "w": 1440,
+    "lead": {
+      "chars": 70,
+      "text": "Collect loot into a list and send it to your players as a single link.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 370.6,
+      "column": 1393,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/lists",
+    "lang": "en",
+    "w": 1920,
+    "lead": {
+      "chars": 70,
+      "text": "Collect loot into a list and send it to your players as a single link.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 370.6,
+      "column": 1440,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/homebrew",
+    "lang": "ru",
+    "w": 360,
+    "lead": null
+  },
+  {
+    "route": "/homebrew",
+    "lang": "ru",
+    "w": 1180,
+    "lead": {
+      "chars": 105,
+      "text": "Предметы, которых нет в книгах: они ищутся вместе с каталогом, попадают в таблицы и добавляются в списки.",
+      "width": 487,
+      "lines": 2,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 683.7,
+      "column": 1133,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/homebrew",
+    "lang": "ru",
+    "w": 1440,
+    "lead": {
+      "chars": 105,
+      "text": "Предметы, которых нет в книгах: они ищутся вместе с каталогом, попадают в таблицы и добавляются в списки.",
+      "width": 487,
+      "lines": 2,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 683.7,
+      "column": 1393,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/homebrew",
+    "lang": "ru",
+    "w": 1920,
+    "lead": {
+      "chars": 105,
+      "text": "Предметы, которых нет в книгах: они ищутся вместе с каталогом, попадают в таблицы и добавляются в списки.",
+      "width": 487,
+      "lines": 2,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 683.7,
+      "column": 1440,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/homebrew",
+    "lang": "en",
+    "w": 360,
+    "lead": null
+  },
+  {
+    "route": "/homebrew",
+    "lang": "en",
+    "w": 1180,
+    "lead": {
+      "chars": 113,
+      "text": "Items that are not in the books: search finds them with the catalog, they appear in the tables and go into lists.",
+      "width": 487,
+      "lines": 2,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 633,
+      "column": 1133,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/homebrew",
+    "lang": "en",
+    "w": 1440,
+    "lead": {
+      "chars": 113,
+      "text": "Items that are not in the books: search finds them with the catalog, they appear in the tables and go into lists.",
+      "width": 487,
+      "lines": 2,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 633,
+      "column": 1393,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/homebrew",
+    "lang": "en",
+    "w": 1920,
+    "lead": {
+      "chars": 113,
+      "text": "Items that are not in the books: search finds them with the catalog, they appear in the tables and go into lists.",
+      "width": 487,
+      "lines": 2,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 633,
+      "column": 1440,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/account",
+    "lang": "ru",
+    "w": 360,
+    "lead": {
+      "chars": 97,
+      "text": "Войдите, чтобы ваши данные были доступны на всех устройствах. Всё остальное работает и без входа.",
+      "width": 313,
+      "lines": 3,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 632.9,
+      "column": 313,
+      "fitsColumn": false
+    }
+  },
+  {
+    "route": "/account",
+    "lang": "ru",
+    "w": 1180,
+    "lead": {
+      "chars": 97,
+      "text": "Войдите, чтобы ваши данные были доступны на всех устройствах. Всё остальное работает и без входа.",
+      "width": 487,
+      "lines": 2,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 632.9,
+      "column": 556.6,
+      "fitsColumn": false
+    }
+  },
+  {
+    "route": "/account",
+    "lang": "ru",
+    "w": 1440,
+    "lead": {
+      "chars": 97,
+      "text": "Войдите, чтобы ваши данные были доступны на всех устройствах. Всё остальное работает и без входа.",
+      "width": 487,
+      "lines": 2,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 632.9,
+      "column": 556.6,
+      "fitsColumn": false
+    }
+  },
+  {
+    "route": "/account",
+    "lang": "ru",
+    "w": 1920,
+    "lead": {
+      "chars": 97,
+      "text": "Войдите, чтобы ваши данные были доступны на всех устройствах. Всё остальное работает и без входа.",
+      "width": 487,
+      "lines": 2,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 632.9,
+      "column": 556.6,
+      "fitsColumn": false
+    }
+  },
+  {
+    "route": "/account",
+    "lang": "en",
+    "w": 360,
+    "lead": {
+      "chars": 88,
+      "text": "Sign in to have your data on all your devices. Everything else works without signing in.",
+      "width": 313,
+      "lines": 2,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 499,
+      "column": 313,
+      "fitsColumn": false
+    }
+  },
+  {
+    "route": "/account",
+    "lang": "en",
+    "w": 1180,
+    "lead": {
+      "chars": 88,
+      "text": "Sign in to have your data on all your devices. Everything else works without signing in.",
+      "width": 487,
+      "lines": 2,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 499,
+      "column": 556.6,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/account",
+    "lang": "en",
+    "w": 1440,
+    "lead": {
+      "chars": 88,
+      "text": "Sign in to have your data on all your devices. Everything else works without signing in.",
+      "width": 487,
+      "lines": 2,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 499,
+      "column": 556.6,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/account",
+    "lang": "en",
+    "w": 1920,
+    "lead": {
+      "chars": 88,
+      "text": "Sign in to have your data on all your devices. Everything else works without signing in.",
+      "width": 487,
+      "lines": 2,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 499,
+      "column": 556.6,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/p/set-twocards",
+    "lang": "ru",
+    "w": 360,
+    "lead": {
+      "chars": 33,
+      "text": "Войдите, чтобы печатать карточки.",
+      "width": 313,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 218,
+      "column": 313,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/p/set-twocards",
+    "lang": "ru",
+    "w": 1180,
+    "lead": {
+      "chars": 33,
+      "text": "Войдите, чтобы печатать карточки.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 218,
+      "column": 1133,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/p/set-twocards",
+    "lang": "ru",
+    "w": 1440,
+    "lead": {
+      "chars": 33,
+      "text": "Войдите, чтобы печатать карточки.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 218,
+      "column": 1393,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/p/set-twocards",
+    "lang": "ru",
+    "w": 1920,
+    "lead": {
+      "chars": 33,
+      "text": "Войдите, чтобы печатать карточки.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 218,
+      "column": 1440,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/p/set-twocards",
+    "lang": "en",
+    "w": 360,
+    "lead": {
+      "chars": 23,
+      "text": "Sign in to print cards.",
+      "width": 313,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 123.7,
+      "column": 313,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/p/set-twocards",
+    "lang": "en",
+    "w": 1180,
+    "lead": {
+      "chars": 23,
+      "text": "Sign in to print cards.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 123.7,
+      "column": 1133,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/p/set-twocards",
+    "lang": "en",
+    "w": 1440,
+    "lead": {
+      "chars": 23,
+      "text": "Sign in to print cards.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 123.7,
+      "column": 1393,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/p/set-twocards",
+    "lang": "en",
+    "w": 1920,
+    "lead": {
+      "chars": 23,
+      "text": "Sign in to print cards.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 123.7,
+      "column": 1440,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/std",
+    "lang": "ru",
+    "w": 360,
+    "lead": null
+  },
+  {
+    "route": "/roll/std",
+    "lang": "ru",
+    "w": 1180,
+    "lead": {
+      "chars": 52,
+      "text": "Бросок по таблицам корника и дополнения Hope & Fear.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 344.8,
+      "column": 1133,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/std",
+    "lang": "ru",
+    "w": 1440,
+    "lead": {
+      "chars": 52,
+      "text": "Бросок по таблицам корника и дополнения Hope & Fear.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 344.8,
+      "column": 1393,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/std",
+    "lang": "ru",
+    "w": 1920,
+    "lead": {
+      "chars": 52,
+      "text": "Бросок по таблицам корника и дополнения Hope & Fear.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 344.8,
+      "column": 1440,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/std",
+    "lang": "en",
+    "w": 360,
+    "lead": null
+  },
+  {
+    "route": "/roll/std",
+    "lang": "en",
+    "w": 1180,
+    "lead": {
+      "chars": 53,
+      "text": "A roll over the core book and the Hope & Fear tables.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 304.4,
+      "column": 1133,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/std",
+    "lang": "en",
+    "w": 1440,
+    "lead": {
+      "chars": 53,
+      "text": "A roll over the core book and the Hope & Fear tables.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 304.4,
+      "column": 1393,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/std",
+    "lang": "en",
+    "w": 1920,
+    "lead": {
+      "chars": 53,
+      "text": "A roll over the core book and the Hope & Fear tables.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 304.4,
+      "column": 1440,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/alt",
+    "lang": "ru",
+    "w": 360,
+    "lead": null
+  },
+  {
+    "route": "/roll/alt",
+    "lang": "ru",
+    "w": 1180,
+    "lead": {
+      "chars": 61,
+      "text": "Бросок Костей Дуальности по объединённым таблицам обеих книг.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 416.8,
+      "column": 1133,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/alt",
+    "lang": "ru",
+    "w": 1440,
+    "lead": {
+      "chars": 61,
+      "text": "Бросок Костей Дуальности по объединённым таблицам обеих книг.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 416.8,
+      "column": 1393,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/alt",
+    "lang": "ru",
+    "w": 1920,
+    "lead": {
+      "chars": 61,
+      "text": "Бросок Костей Дуальности по объединённым таблицам обеих книг.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 416.8,
+      "column": 1440,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/alt",
+    "lang": "en",
+    "w": 360,
+    "lead": null
+  },
+  {
+    "route": "/roll/alt",
+    "lang": "en",
+    "w": 1180,
+    "lead": {
+      "chars": 66,
+      "text": "A Duality Dice roll over both books merged into one set of tables.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 374.7,
+      "column": 1133,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/alt",
+    "lang": "en",
+    "w": 1440,
+    "lead": {
+      "chars": 66,
+      "text": "A Duality Dice roll over both books merged into one set of tables.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 374.7,
+      "column": 1393,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/alt",
+    "lang": "en",
+    "w": 1920,
+    "lead": {
+      "chars": 66,
+      "text": "A Duality Dice roll over both books merged into one set of tables.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 374.7,
+      "column": 1440,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/wondrous",
+    "lang": "ru",
+    "w": 360,
+    "lead": null
+  },
+  {
+    "route": "/roll/wondrous",
+    "lang": "ru",
+    "w": 1180,
+    "lead": {
+      "chars": 56,
+      "text": "Введите результат броска или получите случайную позицию.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 378.2,
+      "column": 1133,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/wondrous",
+    "lang": "ru",
+    "w": 1440,
+    "lead": {
+      "chars": 56,
+      "text": "Введите результат броска или получите случайную позицию.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 378.2,
+      "column": 1393,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/wondrous",
+    "lang": "ru",
+    "w": 1920,
+    "lead": {
+      "chars": 56,
+      "text": "Введите результат броска или получите случайную позицию.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 378.2,
+      "column": 1440,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/wondrous",
+    "lang": "en",
+    "w": 360,
+    "lead": null
+  },
+  {
+    "route": "/roll/wondrous",
+    "lang": "en",
+    "w": 1180,
+    "lead": {
+      "chars": 47,
+      "text": "Enter your roll result, or pick a random entry.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 261.1,
+      "column": 1133,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/wondrous",
+    "lang": "en",
+    "w": 1440,
+    "lead": {
+      "chars": 47,
+      "text": "Enter your roll result, or pick a random entry.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 261.1,
+      "column": 1393,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/wondrous",
+    "lang": "en",
+    "w": 1920,
+    "lead": {
+      "chars": 47,
+      "text": "Enter your roll result, or pick a random entry.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 261.1,
+      "column": 1440,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/dread",
+    "lang": "ru",
+    "w": 360,
+    "lead": null
+  },
+  {
+    "route": "/roll/dread",
+    "lang": "ru",
+    "w": 1180,
+    "lead": {
+      "chars": 56,
+      "text": "Введите результат броска или получите случайную позицию.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 378.2,
+      "column": 1133,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/dread",
+    "lang": "ru",
+    "w": 1440,
+    "lead": {
+      "chars": 56,
+      "text": "Введите результат броска или получите случайную позицию.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 378.2,
+      "column": 1393,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/dread",
+    "lang": "ru",
+    "w": 1920,
+    "lead": {
+      "chars": 56,
+      "text": "Введите результат броска или получите случайную позицию.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 378.2,
+      "column": 1440,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/dread",
+    "lang": "en",
+    "w": 360,
+    "lead": null
+  },
+  {
+    "route": "/roll/dread",
+    "lang": "en",
+    "w": 1180,
+    "lead": {
+      "chars": 47,
+      "text": "Enter your roll result, or pick a random entry.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 261.1,
+      "column": 1133,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/dread",
+    "lang": "en",
+    "w": 1440,
+    "lead": {
+      "chars": 47,
+      "text": "Enter your roll result, or pick a random entry.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 261.1,
+      "column": 1393,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/dread",
+    "lang": "en",
+    "w": 1920,
+    "lead": {
+      "chars": 47,
+      "text": "Enter your roll result, or pick a random entry.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 261.1,
+      "column": 1440,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/voa",
+    "lang": "ru",
+    "w": 360,
+    "lead": null
+  },
+  {
+    "route": "/roll/voa",
+    "lang": "ru",
+    "w": 1180,
+    "lead": {
+      "chars": 46,
+      "text": "Выберите раздел книги и бросьте кость по нему.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 299.1,
+      "column": 1133,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/voa",
+    "lang": "ru",
+    "w": 1440,
+    "lead": {
+      "chars": 46,
+      "text": "Выберите раздел книги и бросьте кость по нему.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 299.1,
+      "column": 1393,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/voa",
+    "lang": "ru",
+    "w": 1920,
+    "lead": {
+      "chars": 46,
+      "text": "Выберите раздел книги и бросьте кость по нему.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 299.1,
+      "column": 1440,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/voa",
+    "lang": "en",
+    "w": 360,
+    "lead": null
+  },
+  {
+    "route": "/roll/voa",
+    "lang": "en",
+    "w": 1180,
+    "lead": {
+      "chars": 46,
+      "text": "Pick a section of the book and roll within it.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 250.9,
+      "column": 1133,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/voa",
+    "lang": "en",
+    "w": 1440,
+    "lead": {
+      "chars": 46,
+      "text": "Pick a section of the book and roll within it.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 250.9,
+      "column": 1393,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/voa",
+    "lang": "en",
+    "w": 1920,
+    "lead": {
+      "chars": 46,
+      "text": "Pick a section of the book and roll within it.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 250.9,
+      "column": 1440,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/dv",
+    "lang": "ru",
+    "w": 360,
+    "lead": null
+  },
+  {
+    "route": "/roll/dv",
+    "lang": "ru",
+    "w": 1180,
+    "lead": {
+      "chars": 56,
+      "text": "Введите результат броска или получите случайную позицию.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 378.2,
+      "column": 1133,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/dv",
+    "lang": "ru",
+    "w": 1440,
+    "lead": {
+      "chars": 56,
+      "text": "Введите результат броска или получите случайную позицию.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 378.2,
+      "column": 1393,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/dv",
+    "lang": "ru",
+    "w": 1920,
+    "lead": {
+      "chars": 56,
+      "text": "Введите результат броска или получите случайную позицию.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 378.2,
+      "column": 1440,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/dv",
+    "lang": "en",
+    "w": 360,
+    "lead": null
+  },
+  {
+    "route": "/roll/dv",
+    "lang": "en",
+    "w": 1180,
+    "lead": {
+      "chars": 47,
+      "text": "Enter your roll result, or pick a random entry.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 261.1,
+      "column": 1133,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/dv",
+    "lang": "en",
+    "w": 1440,
+    "lead": {
+      "chars": 47,
+      "text": "Enter your roll result, or pick a random entry.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 261.1,
+      "column": 1393,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/dv",
+    "lang": "en",
+    "w": 1920,
+    "lead": {
+      "chars": 47,
+      "text": "Enter your roll result, or pick a random entry.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 261.1,
+      "column": 1440,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/arazo",
+    "lang": "ru",
+    "w": 360,
+    "lead": null
+  },
+  {
+    "route": "/roll/arazo",
+    "lang": "ru",
+    "w": 1180,
+    "lead": {
+      "chars": 56,
+      "text": "Введите результат броска или получите случайную позицию.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 378.2,
+      "column": 1133,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/arazo",
+    "lang": "ru",
+    "w": 1440,
+    "lead": {
+      "chars": 56,
+      "text": "Введите результат броска или получите случайную позицию.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 378.2,
+      "column": 1393,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/arazo",
+    "lang": "ru",
+    "w": 1920,
+    "lead": {
+      "chars": 56,
+      "text": "Введите результат броска или получите случайную позицию.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 378.2,
+      "column": 1440,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/arazo",
+    "lang": "en",
+    "w": 360,
+    "lead": null
+  },
+  {
+    "route": "/roll/arazo",
+    "lang": "en",
+    "w": 1180,
+    "lead": {
+      "chars": 47,
+      "text": "Enter your roll result, or pick a random entry.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 261.1,
+      "column": 1133,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/arazo",
+    "lang": "en",
+    "w": 1440,
+    "lead": {
+      "chars": 47,
+      "text": "Enter your roll result, or pick a random entry.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 261.1,
+      "column": 1393,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/arazo",
+    "lang": "en",
+    "w": 1920,
+    "lead": {
+      "chars": 47,
+      "text": "Enter your roll result, or pick a random entry.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 261.1,
+      "column": 1440,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/community",
+    "lang": "ru",
+    "w": 360,
+    "lead": null
+  },
+  {
+    "route": "/roll/community",
+    "lang": "ru",
+    "w": 1180,
+    "lead": {
+      "chars": 37,
+      "text": "Выберите происхождение и бросьте d10.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 251.9,
+      "column": 1133,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/community",
+    "lang": "ru",
+    "w": 1440,
+    "lead": {
+      "chars": 37,
+      "text": "Выберите происхождение и бросьте d10.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 251.9,
+      "column": 1393,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/community",
+    "lang": "ru",
+    "w": 1920,
+    "lead": {
+      "chars": 37,
+      "text": "Выберите происхождение и бросьте d10.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 251.9,
+      "column": 1440,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/community",
+    "lang": "en",
+    "w": 360,
+    "lead": null
+  },
+  {
+    "route": "/roll/community",
+    "lang": "en",
+    "w": 1180,
+    "lead": {
+      "chars": 28,
+      "text": "Pick an origin and roll d10.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 154.6,
+      "column": 1133,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/community",
+    "lang": "en",
+    "w": 1440,
+    "lead": {
+      "chars": 28,
+      "text": "Pick an origin and roll d10.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 154.6,
+      "column": 1393,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/community",
+    "lang": "en",
+    "w": 1920,
+    "lead": {
+      "chars": 28,
+      "text": "Pick an origin and roll d10.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 154.6,
+      "column": 1440,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/mwt",
+    "lang": "ru",
+    "w": 360,
+    "lead": null
+  },
+  {
+    "route": "/roll/mwt",
+    "lang": "ru",
+    "w": 1180,
+    "lead": {
+      "chars": 37,
+      "text": "Выберите мир и бросьте кость по нему.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 241.6,
+      "column": 1133,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/mwt",
+    "lang": "ru",
+    "w": 1440,
+    "lead": {
+      "chars": 37,
+      "text": "Выберите мир и бросьте кость по нему.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 241.6,
+      "column": 1393,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/mwt",
+    "lang": "ru",
+    "w": 1920,
+    "lead": {
+      "chars": 37,
+      "text": "Выберите мир и бросьте кость по нему.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 241.6,
+      "column": 1440,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/mwt",
+    "lang": "en",
+    "w": 360,
+    "lead": null
+  },
+  {
+    "route": "/roll/mwt",
+    "lang": "en",
+    "w": 1180,
+    "lead": {
+      "chars": 32,
+      "text": "Pick a realm and roll within it.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 173,
+      "column": 1133,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/mwt",
+    "lang": "en",
+    "w": 1440,
+    "lead": {
+      "chars": 32,
+      "text": "Pick a realm and roll within it.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 173,
+      "column": 1393,
+      "fitsColumn": true
+    }
+  },
+  {
+    "route": "/roll/mwt",
+    "lang": "en",
+    "w": 1920,
+    "lead": {
+      "chars": 32,
+      "text": "Pick a realm and roll within it.",
+      "width": 487,
+      "lines": 1,
+      "lineHeight": 22.4,
+      "maxWidth": "487.06px",
+      "fontSize": "14px",
+      "oneLineWidth": 173,
+      "column": 1440,
+      "fitsColumn": true
+    }
+  }
+]

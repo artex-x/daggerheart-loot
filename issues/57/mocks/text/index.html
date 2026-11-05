@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Mock text - The Measure Rule (owner item 15)</title>
+    <style>
+      body {
+        font:
+          14px/1.5 system-ui,
+          sans-serif;
+        background: #0e0c15;
+        color: #e6e3ec;
+        margin: 24px;
+        max-width: 1500px;
+      }
+      h1,
+      h2 {
+        font-weight: 650;
+      }
+      p {
+        max-width: 70ch;
+      }
+      .row {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        align-items: flex-start;
+      }
+      figure {
+        margin: 0 0 16px;
+        flex: 1 1 600px;
+      }
+      figcaption {
+        color: #9b93b3;
+        font-size: 12px;
+      }
+      img {
+        border: 1px solid #312a45;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Mock text (planner, 2026-11-05)</h1>
+    <p>
+      The live site (production) today, and with the proposed Measure Rule injected by
+      <code>measure.cjs after</code> (<code>after.css</code>). Existing: everything but the text
+      caps. Proposed: a line class at 120ch (leads, plate causes, sign-in leads, toasts), a
+      passage class at 70ch (help panels, notes, record text, the footer licence) whose
+      text-only box is as wide as its text, and rows as batch 9b ships them. Readings:
+      <code>today-summary.txt</code>, <code>after-summary.txt</code>; the brief is
+      <code>issues/57/plan-text.md</code>.
+    </p>
+
+    <h2>«Об этих данных», /tables/eq_weapon, 1920 px, RU</h2>
+    <div class="row">
+      <figure>
+        <img src="shots/today-tables-weapon-help__1920__ru.png" alt="" />
+        <figcaption>Today: the panel spans 1440 px, the text wraps at 543 px.</figcaption>
+      </figure>
+      <figure>
+        <img src="shots/after-tables-weapon-help__1920__ru.png" alt="" />
+        <figcaption>Proposed: the panel is as wide as its text (70ch).</figcaption>
+      </figure>
+    </div>
+
+    <h2>«Об этой книге», /roll/vault_of_ages, RU</h2>
+    <div class="row">
+      <figure>
+        <img src="shots/today-roll-voa-help__1920__ru.png" alt="" />
+        <figcaption>Today, 1920 px: about 880 px of the panel is empty.</figcaption>
+      </figure>
+      <figure>
+        <img src="shots/after-roll-voa-help__1180__ru.png" alt="" />
+        <figcaption>Proposed, 1180 px.</figcaption>
+      </figure>
+    </div>
+
+    <h2>/account and /lists signed out, RU</h2>
+    <div class="row">
+      <figure>
+        <img src="shots/today-account-out__1920__ru.png" alt="" />
+        <figcaption>
+          Today: the 97-character lead takes two lines in a 557 px column.
+        </figcaption>
+      </figure>
+      <figure>
+        <img src="shots/after-account-out__1180__ru.png" alt="" />
+        <figcaption>
+          Proposed: one line; the sign-in panel keeps the passage measure.
+        </figcaption>
+      </figure>
+    </div>
+    <div class="row">
+      <figure>
+        <img src="shots/today-lists-out__1920__ru.png" alt="" />
+        <figcaption>Today: the sign-in lead wraps at 62ch beside its button.</figcaption>
+      </figure>
+      <figure>
+        <img src="shots/after-lists-out__1920__ru.png" alt="" />
+        <figcaption>Proposed: one line.</figcaption>
+      </figure>
+    </div>
+  </body>
+</html>

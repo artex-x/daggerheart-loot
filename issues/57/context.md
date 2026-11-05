@@ -274,6 +274,80 @@
       Rule"; the page table: roll, tables and homebrew change in batch N, `/lists` and `/search` already follow it, the
       list page, `/s/`, account, editor and print draw no `PageHead`; the browser check; up to 143 golden files).
       The design critique of the N mocks is judged in `plan-nav.md` section 6.
+      ANSWER (owner, chat, 2026-11-05, interactive, after the all-width mocks `mocks/N/headorder/`): option A for
+      761-999 px (pills on their own row after pin and help; the strict order holds from 1000 px). Measured in
+      that folder (RU, first content, limit 288 and 256 at 360): roll 254 (A) vs 294 (B), homebrew 261 vs 301;
+      at 768 and 900 px `/tables/*` is 334-340 today and over the limit in every option (the reserved tab row is
+      the cause): batch N must name its own fix or an accepted exception for `/tables/*` in that band.
+    - Item 12 (owner, chat, 2026-11-05, screenshot of the «РЕЗУЛЬТАТ БРОСКА» group, RU, 360 px): the two round
+      badges with the letters «Н» (gold) and «С» (violet) before «Кость Надежды» and «Кость Страха» should be a
+      coloured d12 die icon, with no letters. Routing: roll-page markup in `RollPanel`/`StdPanel`/`AltPanel`
+      (the `hopeDie`/`fearDie` labels); the planner places it in batch 9b (if it opens those files; it does not
+      today) or batch T/N (N opens the roll heads); it needs the existing `card/die-d12-*.svg` or the
+      `Dice` icon set, the Hope/Fear colours of `tokens.css` (a die is never gold or lit: `hues.js` and the
+      Dice Rule in `DESIGN.md`; check which rule covers a die in a label), a browser check at 360 and 1180 px,
+      RU and EN, and an `aria-label` that keeps the word (a reader must hear «Кость Надежды», not a colour).
+      ANSWERS (owner, chat, 2026-11-05, interactive, after `mocks/N/d12/` and `mocks/N/tables-mid/`): item 12 =
+      the line d12 in the Hope and Fear colours (plan-N N-D10 default; the 22% fill stays the fallback); `/tables/*`
+      at 761-999 px = a named exception in the First-Screen Rule held to 336 px by a case (N-D5), not the
+      scrolling tab row.
+      ANSWERS on batch T (owner, chat, 2026-11-05, interactive, `plan-T.md`): the `/lists` card's «Ещё» goes to
+      the card's top-right corner as a 40 px text button (T5; a departure from mock 8, accepted); toasts last
+      4000 ms (plain), 7000 ms (error and action) and 10000 ms (an email address, or over 80 characters), every
+      toast pauses on hover, touch and focus (T8; the 10 s class extends the approved 4000/7000, accepted).
+    - Item 13 (owner, chat, 2026-11-05, screenshot of the empty `/search` page at about 1890 px, RU): the
+      empty-state plate («Что ищем?») has a dashed border and reads as a drag-and-drop target; the owner asks the
+      same for "other elements". Facts (grep, 2026-11-05): `dashed` appears in 8 components (`Empty`, `Badge`
+      for «Уникальное», `CompactRow`, `HitNote`, `ListPage` 7 times, `MarkupField`, `PrintCard` (print: fine),
+      `TableRows`); `DESIGN.md` lines 309, 569, 712, 820, 843 name dashed for the unique badge, a value-less
+      filter, the list drop mark and the `Empty` plate. Ask: a dashed border should say "drop here" only. Routing:
+      a planner decision with an inventory (every dashed element, what it means, where it is a real drop target
+      and where not), one DESIGN.md rule ("Dashed Means Droppable" or similar, with the Material/Apple
+      sources of the report if they say so) and the replacement style for non-drop uses (solid border, quieter
+      ground); the surfaces are `Empty` (every empty and error plate), the unique badge, the value-less filter
+      chip, `HitNote`, and the list drop mark stays dashed. Owner addendum (chat, same hour): the plate also sits
+      too close to the chip row above it on `/search` (about 8 px between the kind chips with «Свои предметы» and
+      the plate's top edge): the planner measures the gap between a filter or chip row and the empty plate on
+      every page that has both (`/search`, `/tables/*`, `/lists`, `/homebrew`) and sets one gap token. Place it in the next batch that touches `Empty`
+      (batch T/N or its own small batch before 10); goldens move for each plate state.
+    - Item 14 (owner, chat, 2026-11-05, screenshot of the `/search` head at about 1890 px, RU): "re width rules maybe
+      we don't need to have line wraps e.g. there, it adds additional line while it could be read as 1 sentence".
+      Facts: the page lead («Поиск сразу по 1459 позициям - добыча, расходники и снаряжение, на русском и на
+      английском. И 44 ваших предмета.») wraps to two lines at about 690 px although the column is about 1440 px;
+      the cause is the prose cap (`DESIGN.md` One Width Rule: "prose at most 78ch"; the lead is a `.page-sub`).
+      Ask: do not wrap a short lead early. Routing: a planner decision with the lead lengths per page and
+      language (measure the longest lead of every PageHead page in RU and EN), a lead cap that lets a one-to-two
+      sentence lead fit on one line while the column allows it (for example 120-140ch or no cap up to a length),
+      the effect on the First-Screen Rule (a lead on one line saves 22 px of first content), one DESIGN.md
+      sentence in the One Width Rule; place it with the head batch (N) or batch D, whichever opens `PageHead`'s
+      lead styles; goldens do not move (width is CSS) but the 360 px wrap must stay.
+    - Q-P1 ANSWER (owner, chat, 2026-11-05, interactive): KEEP 63x88 mm (no official Daggerheart card size was
+      found; 63.5x88.9 mm is the poker size; the difference is below printing tolerance). So `plan-P.md` takes
+      every "Fallback (Q-P1 no)": P-D1 and P-D17 keep today's values and text, no `CLAUDE.md` or `llms.txt`
+      change, and NO plan review is required before P (the trigger of plan-P's finding 2 does not fire).
+      The `plan-P.md` decisions P-D1/P-D17, its Status and the fold list must be re-stated for "no" before the
+      P dispatch (a short edit by the P refresh pass, not a replan).
+    - ANSWERS on batch D and the batch structure (owner, chat, 2026-11-05, interactive, `plan-D.md`,
+      `plan-rebatch.md`): the empty plate is option A (solid `--line` border on the `--bg2` ground, `--gap-plate`
+      16 px, the lead cap 120ch); REBATCH option B: batch D merges into batch T as one batch "TD"; the order after
+      9b is TD, N, P, 10, then the wave 3 and whole-app blind reviews and closeout. TD takes the cases 108-111
+      and N moves to 112-113, P to 114-115 (the P/N/T planners numbered them separately: renumber at the fold).
+      The fold lists at the end of plan-T.md, plan-N.md, plan-P.md and plan-D.md go into `plan.md` (Status,
+      sections 7, 8, 14, 16, 12) and `handoff.md` after 9b commits (the 9b implementer edits handoff.md now).
+    - Item 14 addendum (owner, chat, 2026-11-05, screenshot of `/homebrew` «Мои предметы» at about 1560 px, RU): the
+      same early wrap of the lead («Предметы, которых нет в книгах: ...» on two lines at about 470 px) and the
+      dashed «УНИКАЛЬНОЕ» badge; "we should be consistent on how we resolve it". `plan-D.md` D-6 already covers
+      `/homebrew` (RU 105 characters, one line under the 120ch cap) and the dashed badge (D-1); the check must
+      read both `PageHead` and `PageTitle` leads on `/search` and `/homebrew` at 1180, 1440 and 1920 px.
+    - Item 15 (owner, chat, 2026-11-05, screenshot of the open «Об этих данных» panel on `/tables`, RU, panel
+      about 640 px wide, text wrapping at about 530 px): "we should review all multi-line content and make sure
+      we make a consistent decision how we show it on different dimensions, one of other items like this is help
+      info". Ask: one text-width rule for every multi-line block (leads, help panels, notes, plates, error and
+      empty text, row descriptions, dialogs), checked at 360, 768, 1180, 1440 and 1920 px. Routing: a planner
+      audit (inventory of every multi-line block, its cap or container, its measured line length per width, RU
+      and EN), one rule with classes (for example caption/lead, help, note, description), the DESIGN.md text
+      replacing the scattered 70ch/78ch/110ch/120ch sentences, and its placement (the merged batch TD, which
+      already holds item 14, is the default home).
     - Owner's lean (chat, 2026-11-04): option 2, consistency first.
     - Refinement (chat, 2026-11-04): "even not to hide homebrew but upgrade lines and sets, make them visible only
       on the item page": the homebrew tag stays as today; the upgrade and relation lines and the set draw only on
