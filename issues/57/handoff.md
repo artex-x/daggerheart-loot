@@ -2,21 +2,17 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress. Waves 1, 2 and 2b are on `main`; wave 3: 9a done (CI green `6f90ccd6`), batch 8 is
-  `dc132655` with its one remediation pass on top (not pushed: the dispatch said not to push).
-- Last agent: implementer (batch 8 remediation). No subagent runs. No worker has uncommitted edits.
-- NEEDS_HUMAN_CONFIRMATION: no
+- Task status: in_progress. Waves 1, 2 and 2b are on `main`; wave 3: 9a and 8 done (8's remediation `ee252240`,
+  `d8e30731`, CI credit passed); the 9b refresh is written (`plan-9b.md`, `mocks/9b/`), not committed.
+- Last agent: planner (9b refresh, 2026-11-05). No subagent runs. No worker has uncommitted code edits.
+- NEEDS_HUMAN_CONFIRMATION: no (Q9b-1 and Q9b-2 of `plan-9b.md` took their defaults; AFK items 17 and 18)
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
-- Base / starting commit: `c489766a` (batch 8 `dc132655`, docs `17700f3c`, the review record `c489766a`).
-- Pushed: yes at `c489766a`; the remediation commit is not pushed. CI run 42020997138 of `17700f3c` failed on `check`
-  (coverage), `app/typo` (shard 1), `app/states` (shard 3) and `e2e` F7; the remediation answers all four.
-- Next step, in order: (1) the orchestrator pushes the remediation and waits on its CI (e2e F7, F8, F10, F13, F15 are
-  CI's only proof; `app/states` 54, 86, 102-104 and the adapted cases; `sweep.js` 360 with the fold step; the
-  configured budget on CI's `e2e` job, 8-R2); (2) the 9b planner refresh (`context.md` items 8, 9, 10: Row Columns,
-  Stepper, Field Measure, check on gold chips, Whole Message, with G1-G3 and G6 as inputs; the Thumb Rule and the toast
-  timing are approved, the planner names their batches); (3) batches 9b, P (the burden hands are exported,
-  `context.md`), 10; the wave 3 and whole-app blind reviews; closeout. Every reviewer dispatch names the guideline set
-  (`context.md` item 10).
+- Base / starting commit: `d8e30731`.
+- Pushed: yes at `d8e30731`; the planner's files are uncommitted (the orchestrator commits them as docs).
+- Next step, in order: (1) the orchestrator commits the refresh, runs Impeccable `critique` on `mocks/9b/` and
+  dispatches batch 9b (`plan-9b.md`); (2) batch T's refresh (`plan.md` section 7, "Batch T"), then T; (3) batch P (the
+  burden hands are exported, `context.md`), 10; the wave 3 and whole-app blind reviews; closeout. Every reviewer
+  dispatch names the guideline set (`context.md` item 10) until 9b writes DESIGN.md "Proposed rules".
 
 ## Completed
 One line per shipped batch. The full acceptance tables, deviations and measurements of batches 1 to 9a are in
@@ -170,9 +166,17 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
     F10, F13, F15 adapted; hosted project): CI's.
 
 ## Next batch (implement-ready)
-- Name: none implement-ready. The orchestrator pushes the remediation, reads its CI, then dispatches the 9b planner
-  refresh (Status, "Next step"). Cases 105-107 are the next free numbers; `context.md` items 9 and 10 add 9b's
-  wide-row and guideline inputs.
+- Name: batch 9b - the list panels and five guideline rules. Brief: `issues/57/plan-9b.md` (decisions M1-M20, steps
+  S1-S15, acceptance 1-29, the standing checks, verification, gate cost 100-135 min); mocks: `mocks/9/` (panels) and
+  `mocks/9b/` (the rules, measured on the built app). Cases 105-107 are the next free numbers. Writer tests: 2 and 3
+  yes, 1 and 4 no. Plan review: not required. After 9b: batch T's refresh (Thumb Rule and toast timing; `plan.md`
+  section 7, "Batch T"), then P and 10.
+- Verification for 9b: `plan-9b.md`, "Verification" (vitest per file with `VITEST_MAX_WORKERS=2`, both lints, the
+  four golden shards with `--update`, `check:built`, the detector and E4 checks, the loader runs of cases 83 and
+  104-107, `rtk npm run check:fast` last, push, CI).
+- Fallback named in the brief: if a Whole Message wrap moves a `FIRST_SCREEN` row past its limit, the label keeps its
+  cut and joins the allow-list with its reason (M5); if no drop-mark form passes the detector, a value-scoped ignore
+  stays for batch 10 (S12).
 - Facts for the dispatches: the local gates are the affected vitest files, both lints after the last edit, the golden
   re-seed when goldens move (each shard with the Bash timeout 600000), `npm run check:built`, the detector, and
   `rtk npm run check:fast` last; browser suites and sweeps run on CI. `ci-credit.mjs` refuses while a writer's edits
@@ -190,12 +194,14 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
 - Add-to-list states whose EN half holds a closed menu (the 8-R3 shape): `#/i/ci1 ~ many lists as gm4`, `~ new list`,
   `~ new list as gm2`, `~ new list from a search as gm2`, `#/tables ~ a row opened, list menu as gm4`, `~ a row
   opened, new list`, `~ bar menu as gm4`, `#/homebrew ~ add to list as gm1`, `#/homebrew/<HB_AXE> ~ add to list as
-  gm1`. Each needs an `again` that repeats its enter's presses; it rides 9b's re-seed.
+  gm1`. Each needs an `again` that repeats its enter's presses; it rides 9b's re-seed (placed: `plan-9b.md` S13.2,
+  acceptance 20).
 - 9a, found by the golden of `LIST_A ~ more`: at 360x900, after the list «Ещё» opens and closes, the page sits at
   scroll 83 and the shown header covers that «Ещё» (a press lands on the job row); the header hides only past its own
   height. The golden reopens from the top (`reopen` in `inventory.js`). The same family as the focus jump below.
   Review 9a R2: its probe (360x640 RU on `LIST_A ~ noted`: open «Ещё», close by Escape, then by a tap outside, read
-  `scrollY`) was not run in the 9a fix pass; batch 9b takes it, else `DEBT.md` at closeout.
+  `scrollY`) was not run in the 9a fix pass; batch 9b takes it (`plan-9b.md` S8 step 10, acceptance 22), else
+  `DEBT.md` at closeout.
 - W-N4 (batch W review): the `tests/run-all.js` weight for `app/states` (179.3 s) is stale; case 101 opens 74
   contexts, up to 3840x2160. Re-measure it from the CI run of the tip.
 - `/tables/eq_*` at 761-about 800 px in RU (batch 7b probe): the toolbar's five controls wrap to two lines, so the rows
@@ -228,7 +234,8 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
   and the stubs after a plan review (`plan.md`, batch 10).
 - Toast over «Ещё» (batch 4): at 360 an action toast covers the end of the menu for its 7 s; a second
   save by touch waits for it. Batch 8 decided no sheet (`plan-8.md` L12), so it stays, and it now also covers the
-  end of the add-to-list popover; at closeout it goes to `docs/specs/DEBT.md` unless a later batch fixes it.
+  end of the add-to-list popover; batch T measures it with the new toast durations (`plan.md` section 7, "Batch T");
+  at closeout it goes to `docs/specs/DEBT.md` unless a later batch fixes it.
 - Batch 8 (`plan-8.md`): the signed-out add-to-list menu keeps its two steps (L13); the `HomebrewPage` search row
   keeps its own `.tools` beside `ListFind` (L8).
 - `RecordCard`'s dialog art at 500-760 px wide and 481-560 px tall: a 4:3 picture can fill the card, so
@@ -253,7 +260,8 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
   look `<name>-2.md`, while `agent-guard.mjs` reads only `plan-<batch>-<n>.md`.
 - Batch 10: the tab and picker CSS copied into `HomebrewTabs` from `TableNav` (H2); `EQ_DT`'s abbreviations
   in the stat line (D15, shared).
-- Batch 9b: `FormField`'s `help` prop and its `HelpButton` import go with `QuickItem`'s «?», the last caller.
+- Batch 9b: `FormField`'s `help` prop and its `HelpButton` import go with `QuickItem`'s «?», the last caller
+  (placed: `plan-9b.md` S11, acceptance 12). The ListPage monospace labels below: acceptance 23.
 - Batch 3 candidate: the 1180 px equipment column table of mock 3 (D6, Q3-T), if
   the owner says yes; one added item with its own mock check.
 - N0-2 of `reviews/mocks-2.md` (batch 4): the error-page pattern's circled icon

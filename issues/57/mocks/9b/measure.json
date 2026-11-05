@@ -1,0 +1,477 @@
+[
+ {
+  "state": "#/search ~ searched",
+  "width": 1180,
+  "height": 720,
+  "lang": "ru",
+  "file": "search__1180__ru.png",
+  "today": {
+   "primaryTop": 279,
+   "rowCols": 1,
+   "rowsInScreen": 3,
+   "cut": "5/32",
+   "searchBox": 1048,
+   "gapToNext": 10,
+   "stepper": null
+  },
+  "proposed": {
+   "primaryTop": 279,
+   "rowCols": 2,
+   "rowsInScreen": 4,
+   "cut": "3/32",
+   "searchBox": 720,
+   "gapToNext": 10,
+   "stepper": null
+  }
+ },
+ {
+  "state": "#/search ~ searched",
+  "width": 1180,
+  "height": 720,
+  "lang": "en",
+  "file": "search__1180__en.png",
+  "today": {
+   "primaryTop": 279,
+   "rowCols": 1,
+   "rowsInScreen": 3,
+   "cut": "3/32",
+   "searchBox": 1065,
+   "gapToNext": 10,
+   "stepper": null
+  },
+  "proposed": {
+   "primaryTop": 279,
+   "rowCols": 2,
+   "rowsInScreen": 4,
+   "cut": "2/32",
+   "searchBox": 720,
+   "gapToNext": 10,
+   "stepper": null
+  }
+ },
+ {
+  "state": "#/search ~ searched",
+  "width": 1440,
+  "height": 900,
+  "lang": "ru",
+  "file": "search__1440__ru.png",
+  "today": {
+   "primaryTop": 279,
+   "rowCols": 1,
+   "rowsInScreen": 4,
+   "cut": "5/32",
+   "searchBox": 1308,
+   "gapToNext": 10,
+   "stepper": null
+  },
+  "proposed": {
+   "primaryTop": 279,
+   "rowCols": 2,
+   "rowsInScreen": 8,
+   "cut": "2/32",
+   "searchBox": 720,
+   "gapToNext": 10,
+   "stepper": null
+  }
+ },
+ {
+  "state": "#/search ~ searched",
+  "width": 1440,
+  "height": 900,
+  "lang": "en",
+  "file": "search__1440__en.png",
+  "today": {
+   "primaryTop": 279,
+   "rowCols": 1,
+   "rowsInScreen": 5,
+   "cut": "3/32",
+   "searchBox": 1325,
+   "gapToNext": 10,
+   "stepper": null
+  },
+  "proposed": {
+   "primaryTop": 279,
+   "rowCols": 2,
+   "rowsInScreen": 10,
+   "cut": "0/32",
+   "searchBox": 720,
+   "gapToNext": 10,
+   "stepper": null
+  }
+ },
+ {
+  "state": "#/search ~ searched",
+  "width": 1920,
+  "height": 1080,
+  "lang": "ru",
+  "file": "search__1920__ru.png",
+  "today": {
+   "primaryTop": 279,
+   "rowCols": 1,
+   "rowsInScreen": 6,
+   "cut": "5/32",
+   "searchBox": 1355,
+   "gapToNext": 10,
+   "stepper": null
+  },
+  "proposed": {
+   "primaryTop": 279,
+   "rowCols": 2,
+   "rowsInScreen": 12,
+   "cut": "2/32",
+   "searchBox": 720,
+   "gapToNext": 10,
+   "stepper": null
+  }
+ },
+ {
+  "state": "#/search ~ searched",
+  "width": 1920,
+  "height": 1080,
+  "lang": "en",
+  "file": "search__1920__en.png",
+  "today": {
+   "primaryTop": 279,
+   "rowCols": 1,
+   "rowsInScreen": 7,
+   "cut": "3/32",
+   "searchBox": 1372,
+   "gapToNext": 10,
+   "stepper": null
+  },
+  "proposed": {
+   "primaryTop": 279,
+   "rowCols": 2,
+   "rowsInScreen": 14,
+   "cut": "0/32",
+   "searchBox": 720,
+   "gapToNext": 10,
+   "stepper": null
+  }
+ },
+ {
+  "state": "#/tables/eq_weapon",
+  "width": 1440,
+  "height": 900,
+  "lang": "ru",
+  "file": "eq-weapon__1440__ru.png",
+  "today": {
+   "primaryTop": 244,
+   "rowCols": 1,
+   "rowsInScreen": 6,
+   "cut": "1/19",
+   "searchBox": 971,
+   "gapToNext": 14,
+   "stepper": null
+  },
+  "proposed": {
+   "primaryTop": 244,
+   "rowCols": 2,
+   "rowsInScreen": 12,
+   "cut": "0/19",
+   "searchBox": 720,
+   "gapToNext": 14,
+   "stepper": null
+  }
+ },
+ {
+  "state": "#/tables/eq_weapon",
+  "width": 1920,
+  "height": 1080,
+  "lang": "ru",
+  "file": "eq-weapon__1920__ru.png",
+  "today": {
+   "primaryTop": 244,
+   "rowCols": 1,
+   "rowsInScreen": 8,
+   "cut": "1/19",
+   "searchBox": 1018,
+   "gapToNext": 14,
+   "stepper": null
+  },
+  "proposed": {
+   "primaryTop": 244,
+   "rowCols": 2,
+   "rowsInScreen": 16,
+   "cut": "0/19",
+   "searchBox": 720,
+   "gapToNext": 14,
+   "stepper": null
+  }
+ },
+ {
+  "state": "#/tables/eq_weapon ~ two filters",
+  "width": 1180,
+  "height": 720,
+  "lang": "ru",
+  "file": "eq-weapon-filters__1180__ru.png",
+  "today": {
+   "primaryTop": 244,
+   "rowCols": 1,
+   "rowsInScreen": 4,
+   "cut": "5/20",
+   "searchBox": 585,
+   "gapToNext": 14,
+   "stepper": null
+  },
+  "proposed": {
+   "primaryTop": 292,
+   "rowCols": 1,
+   "rowsInScreen": 4,
+   "cut": "1/20",
+   "searchBox": 720,
+   "gapToNext": 14,
+   "stepper": null
+  }
+ },
+ {
+  "state": "#/tables/eq_weapon ~ two filters",
+  "width": 1180,
+  "height": 720,
+  "lang": "en",
+  "file": "eq-weapon-filters__1180__en.png",
+  "today": {
+   "primaryTop": 244,
+   "rowCols": 1,
+   "rowsInScreen": 4,
+   "cut": "4/20",
+   "searchBox": 674,
+   "gapToNext": 14,
+   "stepper": null
+  },
+  "proposed": {
+   "primaryTop": 292,
+   "rowCols": 1,
+   "rowsInScreen": 4,
+   "cut": "1/20",
+   "searchBox": 720,
+   "gapToNext": 14,
+   "stepper": null
+  }
+ },
+ {
+  "state": "#/tables/eq_weapon ~ two filters",
+  "width": 360,
+  "height": 640,
+  "lang": "ru",
+  "file": "eq-weapon-filters__360__ru.png",
+  "today": {
+   "primaryTop": 252,
+   "rowCols": 1,
+   "rowsInScreen": 3,
+   "cut": "13/20",
+   "searchBox": 144,
+   "gapToNext": 5,
+   "stepper": null
+  },
+  "proposed": {
+   "primaryTop": 252,
+   "rowCols": 1,
+   "rowsInScreen": 3,
+   "cut": "13/20",
+   "searchBox": 144,
+   "gapToNext": 5,
+   "stepper": null
+  }
+ },
+ {
+  "state": "#/tables/eq_weapon ~ two filters",
+  "width": 360,
+  "height": 640,
+  "lang": "en",
+  "file": "eq-weapon-filters__360__en.png",
+  "today": {
+   "primaryTop": 252,
+   "rowCols": 1,
+   "rowsInScreen": 3,
+   "cut": "9/20",
+   "searchBox": 178,
+   "gapToNext": 5,
+   "stepper": null
+  },
+  "proposed": {
+   "primaryTop": 252,
+   "rowCols": 1,
+   "rowsInScreen": 3,
+   "cut": "9/20",
+   "searchBox": 178,
+   "gapToNext": 5,
+   "stepper": null
+  }
+ },
+ {
+  "state": "#/s/player-token-1",
+  "width": 1920,
+  "height": 1080,
+  "lang": "ru",
+  "file": "shared__1920__ru.png",
+  "today": {
+   "primaryTop": 275,
+   "rowCols": 1,
+   "rowsInScreen": 7,
+   "cut": "3/10",
+   "searchBox": 1273,
+   "gapToNext": 8,
+   "stepper": null
+  },
+  "proposed": {
+   "primaryTop": 275,
+   "rowCols": 2,
+   "rowsInScreen": 10,
+   "cut": "2/10",
+   "searchBox": 720,
+   "gapToNext": 8,
+   "stepper": null
+  }
+ },
+ {
+  "state": "#/s/player-token-1",
+  "width": 1920,
+  "height": 1080,
+  "lang": "en",
+  "file": "shared__1920__en.png",
+  "today": {
+   "primaryTop": 275,
+   "rowCols": 1,
+   "rowsInScreen": 7,
+   "cut": "3/10",
+   "searchBox": 1307,
+   "gapToNext": 8,
+   "stepper": null
+  },
+  "proposed": {
+   "primaryTop": 275,
+   "rowCols": 2,
+   "rowsInScreen": 10,
+   "cut": "2/10",
+   "searchBox": 720,
+   "gapToNext": 8,
+   "stepper": null
+  }
+ },
+ {
+  "state": "#/roll/std",
+  "width": 1180,
+  "height": 720,
+  "lang": "ru",
+  "file": "roll-std__1180__ru.png",
+  "today": {
+   "primaryTop": 267,
+   "rowCols": 0,
+   "rowsInScreen": 0,
+   "cut": "0/0",
+   "searchBox": null,
+   "gapToNext": null,
+   "stepper": "240 of 282"
+  },
+  "proposed": {
+   "primaryTop": 267,
+   "rowCols": 0,
+   "rowsInScreen": 0,
+   "cut": "0/0",
+   "searchBox": null,
+   "gapToNext": null,
+   "stepper": "282 of 282"
+  }
+ },
+ {
+  "state": "#/roll/std",
+  "width": 1180,
+  "height": 720,
+  "lang": "en",
+  "file": "roll-std__1180__en.png",
+  "today": {
+   "primaryTop": 267,
+   "rowCols": 0,
+   "rowsInScreen": 0,
+   "cut": "0/0",
+   "searchBox": null,
+   "gapToNext": null,
+   "stepper": "240 of 282"
+  },
+  "proposed": {
+   "primaryTop": 267,
+   "rowCols": 0,
+   "rowsInScreen": 0,
+   "cut": "0/0",
+   "searchBox": null,
+   "gapToNext": null,
+   "stepper": "282 of 282"
+  }
+ },
+ {
+  "state": "#/roll/std",
+  "width": 360,
+  "height": 640,
+  "lang": "ru",
+  "file": "roll-std__360__ru.png",
+  "today": {
+   "primaryTop": 323,
+   "rowCols": 0,
+   "rowsInScreen": 0,
+   "cut": "0/0",
+   "searchBox": null,
+   "gapToNext": null,
+   "stepper": null
+  },
+  "proposed": {
+   "primaryTop": 323,
+   "rowCols": 0,
+   "rowsInScreen": 0,
+   "cut": "0/0",
+   "searchBox": null,
+   "gapToNext": null,
+   "stepper": null
+  }
+ },
+ {
+  "state": "#/roll/std",
+  "width": 360,
+  "height": 640,
+  "lang": "en",
+  "file": "roll-std__360__en.png",
+  "today": {
+   "primaryTop": 323,
+   "rowCols": 0,
+   "rowsInScreen": 0,
+   "cut": "0/0",
+   "searchBox": null,
+   "gapToNext": null,
+   "stepper": null
+  },
+  "proposed": {
+   "primaryTop": 323,
+   "rowCols": 0,
+   "rowsInScreen": 0,
+   "cut": "0/0",
+   "searchBox": null,
+   "gapToNext": null,
+   "stepper": null
+  }
+ },
+ {
+  "state": "#/lists ~ many lists as gm4",
+  "width": 1920,
+  "height": 1080,
+  "lang": "ru",
+  "file": "lists-many__1920__ru.png",
+  "today": {
+   "primaryTop": 199,
+   "rowCols": 0,
+   "rowsInScreen": 0,
+   "cut": "0/0",
+   "searchBox": 1256,
+   "gapToNext": 109,
+   "stepper": null
+  },
+  "proposed": {
+   "primaryTop": 199,
+   "rowCols": 0,
+   "rowsInScreen": 0,
+   "cut": "0/0",
+   "searchBox": 720,
+   "gapToNext": 109,
+   "stepper": null
+  }
+ }
+]

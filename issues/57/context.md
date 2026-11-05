@@ -189,6 +189,11 @@
       choose a layout that uses it (for example the text caps go, the text takes the free width, or the table
       lists two columns of rows from a width the planner names), with a mock step; the cap and the clamp above
       are the fallback only.
+      Placed (planner, 9b refresh, 2026-11-05): the Row Columns Rule, `plan-9b.md` M1 (two row columns from a 1108 px
+      list, text at most 100ch, three lines); home DESIGN.md "Components", "Named Rules", and FEATURES.md "Tables and
+      search", batch 9b. Measured on the built app (`mocks/9b/measure.json`): a `/search` row is 43%, 54% and 55%
+      empty at 1180, 1440 and 1920 px (25%, 42%, 45% beside the filter column); two columns double the rows on the
+      first screen and cut fewer descriptions.
     - Item 10 (owner, chat, 2026-11-05): review the Material Design guidelines (and similar official ones)
       against `DESIGN.md` in parallel with batch 8: what to add as named rules, and whether any wave 1-3 screen or
       mock should be reconsidered against them. No Material skill is installed (the project's `DESIGN.md` stays
@@ -217,6 +222,11 @@
       URL, even when no `DESIGN.md` rule exists yet. The permanent home of the sources is the "Proposed rules"
       section (source URL per entry), so the dispatch line is a stopgap until batch 10 writes it. No prompt or
       agent file changes for this (a change there is a review trigger of its own).
+      Placed (planner, 9b refresh, 2026-11-05): (a) the five rules, batch 9b (`plan-9b.md` M1-M5; homes DESIGN.md
+      "Components", "Named Rules" for Row Columns, Field Measure, Stepper, Check, and "Typography" for Whole
+      Message); (b) "Proposed rules", batch 9b (M19; the stopgap ends with 9b's commit); the Thumb Rule and the
+      toast timing (the Reading Time Rule), a new batch T between 9b and P (`plan.md` section 7, "Batch T"; homes
+      DESIGN.md "The Phone-First Rule" and "Components", "Named Rules", FEATURES.md "Chrome").
     - Owner's lean (chat, 2026-11-04): option 2, consistency first.
     - Refinement (chat, 2026-11-04): "even not to hide homebrew but upgrade lines and sets, make them visible only
       on the item page": the homebrew tag stays as today; the upgrade and relation lines and the set draw only on
@@ -792,6 +802,14 @@
   stops it. An existing defect, in `handoff.md` Deferred after batch 3b.
 - 30 backward `focus()` stops at 320 px EN: 8 covered today, 0 with
   `scroll-padding-top` at the measured height.
+
+## Facts measured at the batch 9b refresh (2026-11-05, `dist-test/` of `d8e30731`)
+- `RowMain`'s 70ch text is 557 px. Row list widths: full width 1133 / 1393 / 1440 px at 1180 / 1440 / 1920
+  windows; beside the filter column 863 / 1123 / 1170.
+- A 720 px `flex-basis` on the catalog's search box wraps its row: the first row moved 244 to 292 px at 1180; a
+  `max-width` alone keeps 244.
+- The roll pane's stepper is 240 of a 282 px column at 1180; `/roll/std` first result 267 px at 1180x720, 323 px at
+  360x640.
 
 ## Command costs
 | Command | Wall clock | Fits one call? |

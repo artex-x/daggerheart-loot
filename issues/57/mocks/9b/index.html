@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Mock 9b - the five rules on the built app</title>
+    <style>
+      body { font: 14px/1.5 system-ui, sans-serif; margin: 24px; max-width: 1100px; }
+      table { border-collapse: collapse; margin: 12px 0; }
+      td, th { border: 1px solid #ccc; padding: 4px 8px; text-align: left; }
+      img { max-width: 100%; border: 1px solid #ccc; }
+      code { font-size: 13px; }
+    </style>
+  </head>
+  <body>
+    <h1>Mock 9b - Row Columns, Field Measure, Stepper, Check (planner, 2026-11-05)</h1>
+    <p>
+      Method: the built <code>dist-test/</code> of <code>d8e30731</code>, each state opened as
+      <code>tests/app/states.js</code> case 83 opens it, then the proposed CSS injected
+      (<code>measure.json</code> holds both readings). Not built code. The Field Measure shots of
+      <code>eq-weapon-filters__1180</code> and <code>lists-many__1920</code> were re-shot with the
+      corrected rule (a <code>max-width</code> only; a 720 px flex basis wrapped the catalog row and moved
+      its first row from 244 to 292 px). The panels of mock 9 are not redrawn: mock 9 stands.
+    </p>
+    <h2>Measured (rows on the first screen, cut descriptions of the first 40 rows)</h2>
+    <table>
+      <tr><th>State</th><th>Window</th><th>Today</th><th>Proposed</th></tr>
+      <tr><td>/search ~ searched RU</td><td>1180x720</td><td>1 column, 3 rows, 5/32 cut, box 1048</td><td>2 columns, 4 rows, 3/32 cut, box 720</td></tr>
+      <tr><td>/search ~ searched RU</td><td>1440x900</td><td>1 column, 4 rows, 5/32 cut, 54% of a row empty</td><td>2 columns, 8 rows, 2/32 cut</td></tr>
+      <tr><td>/search ~ searched RU</td><td>1920x1080</td><td>1 column, 6 rows, 5/32 cut, 55% empty</td><td>2 columns, 12 rows, 2/32 cut</td></tr>
+      <tr><td>/tables/eq_weapon RU</td><td>1440x900</td><td>1 column, 6 rows, 42% empty</td><td>2 columns, 12 rows</td></tr>
+      <tr><td>/tables/eq_weapon ~ two filters RU</td><td>1180x720</td><td>first row 244, 5/20 cut</td><td>first row 244, 1/20 cut, gold chips with the check</td></tr>
+      <tr><td>/s/player-token-1 RU</td><td>1920x1080</td><td>1 column, 7 rows, box 1273</td><td>2 columns, 10 rows, box 720</td></tr>
+      <tr><td>/roll/std RU and EN</td><td>1180x720</td><td>stepper 240 of a 282 px column</td><td>282 of 282; first result 267 (unchanged)</td></tr>
+      <tr><td>/lists ~ many lists RU</td><td>1920x1080</td><td>box 1256</td><td>box 720; first card 199 (unchanged)</td></tr>
+    </table>
+    <p>
+      Every first-screen top in the table is unchanged by the proposal. Clarity Rule: no control gains
+      help text. The Impeccable <code>critique</code> of this mock is the orchestrator's (a subagent
+      cannot run it); the owner is away, so the recommended option is logged in the AFK decisions file.
+    </p>
+    <h2>Shots</h2>
+    <p>search: <a href="search__1180__ru.png">1180 RU</a> <a href="search__1180__en.png">1180 EN</a>
+      <a href="search__1440__ru.png">1440 RU</a> <a href="search__1440__en.png">1440 EN</a>
+      <a href="search__1920__ru.png">1920 RU</a> <a href="search__1920__en.png">1920 EN</a></p>
+    <p>tables: <a href="eq-weapon__1440__ru.png">eq_weapon 1440</a> <a href="eq-weapon__1920__ru.png">1920</a>
+      <a href="eq-weapon-filters__1180__ru.png">two filters 1180 RU</a> <a href="eq-weapon-filters__1180__en.png">EN</a>
+      <a href="eq-weapon-filters__360__ru.png">360 RU</a> <a href="eq-weapon-filters__360__en.png">360 EN</a></p>
+    <p>other: <a href="shared__1920__ru.png">/s/ 1920 RU</a> <a href="shared__1920__en.png">EN</a>
+      <a href="roll-std__1180__ru.png">/roll/std 1180 RU</a> <a href="roll-std__1180__en.png">EN</a>
+      <a href="roll-std__360__ru.png">360 RU</a> <a href="roll-std__360__en.png">EN</a>
+      <a href="lists-many__1920__ru.png">/lists 1920 RU</a></p>
+    <img src="search__1440__ru.png" alt="search at 1440 with two row columns" />
+  </body>
+</html>

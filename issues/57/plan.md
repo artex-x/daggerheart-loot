@@ -10,8 +10,8 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
 - Refresh against `main` (2026-10-29): done. `claude/57` merged `main` at
   `9112c4ed`; every `audit.md` row is re-checked (`audit.md`, "Re-check
   against main"); every address in this plan is a path.
-- Phase 3: fifteen batches in the order 1, 1b, 2, 3, 3b, 4-7, 7b, 9a, 8, 9b, P, 10 (9a is in wave 3 since 2026-11-04;
-  7b is its own wave 2b since 2026-11-04)
+- Phase 3: seventeen batches in the order 1, 1b, 2, 3, 3b, 4-7, 7b, W, 9a, 8, 9b, T, P, 10 (9a is in wave 3 since
+  2026-11-04; 7b and W are wave 2b; T added at the 9b refresh, 2026-11-05)
   (section 7; the waves of section 16 moved P from after 1b into wave 3, and the
   owner's 2026-11-03 answers added 3b and split 9). Batches 1
   (`9a31aede`, `80872b35`), 1b (`fce4a9f8`, `3e5f6301`; `reviews/1b.md`) and 2
@@ -90,6 +90,15 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
   `llms.txt` stay), stores nothing, adds no migration, no `SECURITY DEFINER` function and no write or sync protocol
   (`plan-8.md`, "Plan review"). The earlier `required before 1` line stays satisfied by `reviews/plan-1-2.md` and
   `reviews/plan-1-3.md`; batches 9b, P and 10 take their own line at their refreshes.
+- Batch 9b refresh (2026-11-05): `plan-9b.md` is batch 9b's brief (decisions M1-M20, steps S1-S15, acceptance 1-29,
+  the four standing checks); `mocks/9b/` is the mock of the five rules (the built app with the proposed CSS, measured).
+  Row Columns takes two row columns from a 1108 px list and a 100ch text, not the 110ch default of AFK item 16
+  (measured: 42-55% of a row empty at 1440-1920 px). Batch 9b also writes DESIGN.md "Proposed rules" (M19). The Thumb
+  Rule and the toast timing are a new batch T between 9b and P (section 7). Defaults: AFK decisions items 17 and 18.
+- Plan review: not required (no trigger fired) for batches 9b and T. Batch 9b changes no contract, stores nothing new
+  and adds no write protocol; its note switch commits the shown draft through the existing write path before it
+  switches (`plan-9b.md`, "Error scenarios"). Batch T changes control sizes, toast durations and test limits only: no
+  route, contract, stored key or write path. Batches P and 10 take their own line at their refreshes.
 - Batch 3b implemented (2026-11-04), on `claude/57`; `handoff.md` has its outcomes and its
   departures. `polish`, `harden`, the batch review and CI follow, then batch 4's refresh.
 - Batch 3b refresh (2026-11-03): `plan-3b.md` is batch 3b's brief, in the shape of
@@ -402,12 +411,13 @@ evidence for the batch review, not an owner gate (owner, 2026-10-29,
 | 8 | Lists page `/lists`, list cards, lists import, add-to-list menu | A14, A16, A18, C35, C61, C62, D6, D20, D116 | `R/lists-*`, `R/item-listmenu` | none | a different route and filter set (`/lists`, and the add-to-list menu that the item pages open) |
 | 9a | `/lists/<uuid>` and `/s/<token>` for the phone: the C1b compact row, search and filter on the owner's page, the actions into «Ещё», the list «Ещё» menu, the selection bar on both pages | F2 (C1b, D1, D-head 1), A2 (row actions), A19, A20, A21, A40 (list rows, `/s/`), A41, D2, list row clarity rows | `R/list`, `R/list-picked`, `R/shared-*` | none: `mocks/F/` replaces mock 9 for the row and the head up to 760 px; every other mock 9 state stands | the owner's wish to ship the F2 fix in wave 2 ("Batch 9 split"); split from 8 by a different route and filter set |
 | 9b | The list panels: the note switch, the side column, the share, roll and requests panels, the price switch, A1 at 640-900 px, the «?» removal, the drop mark, E4 | A1, A2 (note area), A3, A4, A5, A22, A42, N1, E2 (the drop mark), E4, list panel clarity rows | `R/list-note`, `R/list-share`, `R/list-roll`, `R/list-prices`, `R/list-requests` | 9a: it draws on the 9a head and rows | the same split as 9a; wave 3, after batch 8 |
+| T | The Thumb Rule (40 px controls up to 600 px, 8-G1) and the Reading Time Rule (toasts 4000 / 7000 ms, every toast pauses on hover or focus, 8-G4); the `FIRST_SCREEN` rows at 360 re-measured | 8-G1, 8-G4, 8-P1 (owner, item 10 "APPROVED") | none | none: `mocks/T/` is the built app with the CSS injected, as `mocks/9b/` | a different route set (every route up to 600 px, the shared `Button` and `Toast`) with its own re-baseline of every `FIRST_SCREEN` row at 360, which 9b's list review cannot hold; before P, so the print bar is built on the rule |
 | 10 | Lock: DESIGN.md "Notes", detector at zero, `design.json`, re-audit, closeout | E5, E6, E8, E9 (record), E7, E11, N3 (rest), every row re-checked | none | no mock | docs and closeout, unless the re-audit finds a defect |
 
 Run order (owner, 2026-10-29, "Release in three waves"; 2026-11-03, "Header
 batch", "Batch 9 split"; owner, 2026-11-04, "9a moves to wave 3", "wave 2b"): 1, 1b, 2 (wave 1); 3,
-3b, 4, 5, 6, 7 (wave 2); 7b (wave 2b); 9a, 8, 9b, P, 10 (wave 3). The table keeps the old row
-order; section 16 gives the waves.
+3b, 4, 5, 6, 7 (wave 2); 7b, W (wave 2b); 9a, 8, 9b, T, P, 10 (wave 3; T added at the 9b refresh,
+2026-11-05). The table keeps the old row order; section 16 gives the waves.
 
 The list page and the shared page stay one pair (owner, 2026-10-29): 10 of the 15
 components of `SharedListPage.svelte` are `ListPage.svelte`'s, and the note display,
@@ -770,24 +780,14 @@ Batch 9a (wave 3, first, after wave 2; `mocks/F/` up to 760 px, mock 9 elsewhere
 - From batch 7b: relation lines and the «Core» tag are gone from compact rows when 9a starts; `RowMain full`
   builds no relation line, and the compact row's meta line never draws «Core» (`plan-9a.md`, "Dispatch preflight").
 
-Batch 9b (wave 3, after batch 8; mock 9):
+Batch 9b (wave 3, after batch 8; refreshed 2026-11-05: the implement-ready brief, decisions M1-M20 and acceptance
+lines 1-29 are `plan-9b.md`, with mock 9 and `mocks/9b/`; where the lines below differ, `plan-9b.md` wins):
 
-- 9b-R9 (owner item 9, `context.md`, "Phone feedback"; placed at the batch 8 refresh, 2026-11-05): on a wide window
-  the catalog, search, homebrew and list rows leave free width at the right yet cut the description with an
-  ellipsis. `RowMain` holds the text at `max-width: 70ch` and clamps it to 2 lines (3 up to 600 px). Default taken
-  (AFK log item 16): from 1000 px the text column's cap is 110ch and the clamp is 3 lines; up to 999 px both stay
-  (70ch, 2 lines; 3 lines up to 600 px), so the 360 first-screen limits and the compact rows do not move. 9b owns it
-  because it lays out the full row at wide widths (M-9b): its slack arithmetic changes, because a 110ch text (about
-  770 px) fills a text cell of C - 854 px up to C of about 1620 px, so M-9b's option A holds with no empty slack up
-  to 1620 px and about 260 px at 1880. Acceptance (its own line): (a) a browser case at 1180, 1440 and 1920 px, RU and
-  EN, on `/tables/eq_weapon`, `/tables/core_item`, `/search` with a query, `/homebrew` as `gm3` and a list page
-  with 8 or more entries: no description that fits in 3 lines at 110ch is cut (`scrollHeight <= clientHeight`), and
-  the two rows of the owner's screenshot («Фляга Путника», «Мешок Собирателя») show whole at 1440 and 1920; (b) the
-  count of cut rows on `/tables/eq_weapon` at 1440 RU is logged before and after in `handoff.md`; (c) at 360, 390
-  and 768 `RowMain`'s clamp and cap are unchanged (computed style); (d) `FEATURES.md` "Tables and search" ("holds at
-  70 characters a line") and `DESIGN.md` name the 110ch step with the owner's date. Fallback if 3 lines make the
-  catalog rows too tall at 1180: keep 2 lines and widen the cap only; the writer measures both and logs the pick.
-  `plan-wave3-wide.md` Q-W2 is not reopened: the rows column still takes the rest of the column (option A).
+- Added at the refresh (owner item 10 (a) and (b)): the Row Columns Rule (M1; it replaces 9b-R9's 110ch default
+  after the owner's refinement of item 9: two row columns from a 1108 px list, a 100ch text, three lines), the Field
+  Measure Rule (M2, 8-G2), the Stepper Rule (M3, 8-G3; it replaces the 240 px cap), the Check Rule (M4), the Whole
+  Message Rule (M5, 8-G6) and DESIGN.md "Proposed rules" (M19); the nine add-to-list states with an `again`; 8-N2
+  kept in the re-seed; review 9a R2's probe; the `plan-wave3-wide.md` lines 9b-W1 to 9b-W7 (W1 by M18).
 - E2 (plan review B2): the reorder drop mark is redrawn so the detector does
   not flag it. Recommended form: a 2 px gold line drawn by a gap element
   between the rows, not an inset shadow on the row. Every `FEATURES.md`
@@ -850,8 +850,49 @@ Batch 9b (wave 3, after batch 8; mock 9):
 - DESIGN.md (section 4, departures): The Two Breakpoints Rule takes the 1000 px
   side-column step; the gold budget is checked.
 
+Batch T (wave 3, after 9b, before P; owner, `context.md` item 10, "APPROVED"; outline, its refresh expands it into
+`plan-T.md`):
+
+- The Thumb Rule (8-G1): up to 600 px every control a person presses is at least 40 px tall and 40 px wide; a menu
+  item and a row target are 44 px; at every width no control is under the WCAG 2.5.8 floor of 24 px, except a link
+  inside a sentence. Scope `@media screen and (max-width: 600px)` (print never matches). Code: `Button.svelte`
+  `.btn.sm` 40 px up to 600 px (32 px from 601 px); `ListFind`'s and `SearchBox`'s 36 px rows to 40 px; the card
+  «Ещё» of `/lists` and the roll result's controls; the menu items of `Menu`/`MoreMenu` 44 px.
+  Sources: https://developer.android.com/docs/quality-guidelines/adaptive-app-quality/tier-2 (Touch_Targets),
+  https://developer.apple.com/design/human-interface-guidelines/accessibility,
+  https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html.
+- 8-P1 (from batch 8, skipped there for this batch): the `/lists` card's «··· Ещё» takes a borderless ghost form on
+  the chip's row, at 40 px up to 600 px.
+- The check: a `sweep.js` step at 360 and 390 px, RU and EN, on every swept route: each visible `button`, `a[href]`
+  outside running text, `[role=menuitem]` and `input` is at least 40x40 px (44 px for menu items and row buttons); a
+  named allow-list holds each exception with its reason; at 768 and 1180 px every target passes 24x24 px or the
+  spacing circle. The step's allow-list covers `/lists`, the card menus and `ListFind` (8-G1).
+- `FIRST_SCREEN` at 360: the batch measures every row before and after (through the loader of case 83). A row that
+  passes 256 px is brought back by a fold the mock names, or takes an `exception` at the measured value, logged in
+  the AFK decisions file while the owner is away. `/roll/std`'s exception (325 px today, 323 measured at the 9b
+  refresh) and `/s/`'s (302) move to their measured values; DESIGN.md "The First-Screen Rule" names each with its date.
+- The Reading Time Rule (8-G4): a plain toast lasts 4000 ms, an error toast 7000 ms like an action toast, and every
+  toast pauses while the pointer or the focus is in it (today only an action toast pauses). `app.svelte.ts`
+  (`const ms`), `Toast.svelte`; `app.test.ts` timer cases move to 4000 and 7000; a `tests/app/states.js` step: an
+  error toast is still present 5000 ms after it shows, and a hover pauses a plain toast. `FEATURES.md` "Chrome" (the
+  1600 ms sentence and the accessibility toast rule) and DESIGN.md "Toast" change with it. Sources:
+  https://developer.apple.com/design/human-interface-guidelines/accessibility ("Minimize use of time-boxed interface
+  elements"), https://api.flutter.dev/flutter/material/SnackBar/duration.html.
+- DESIGN.md: the Thumb Rule merges into "The Phone-First Rule" ("Layout" holds nine named rules, past its budget of
+  8), and "At 600px touch targets grow" of "The Two Breakpoints Rule" points to it; the Reading Time Rule is the
+  fifth rule of "Components", "Named Rules" (9b writes the subsection).
+- Mock step: `mocks/T/` from the built app of 9b's tip with the CSS injected, at 360 and 390 px, RU and EN, on the
+  roll pages, the catalog, `/search`, `/lists`, the list pages and `/p/`, with each `FIRST_SCREEN` offset before and
+  after; `critique` by the orchestrator; with the owner away the recommended fold is logged.
+- Goldens: none expected to move (sizes and durations are not in the accessibility tree); a state whose tree moves
+  is re-seeded with `--only`.
+- Toast over «Ещё» (`handoff.md` Deferred): T measures it with the new durations; it fixes it only if the fix is
+  local to `Toast`, else the line stays for `DEBT.md` at closeout.
+
 Batch 10:
 
+- DESIGN.md "Proposed rules" (written by 9b, M19): re-checked against the shipped rules; an entry the owner said yes
+  to before the closeout moves out of the section with its batch.
 - P5 (from `plan-4.md`, K11): `rollNo` changes in `dict.ts` and `tools/share-card.mjs` together, then `node tools/build.js` regenerates the stubs; a plan review runs first. Batch 10 takes code for it.
 - Reviewer probes (owner, 2026-11-04, `context.md`, "Reviewer probes"): a reviewer
   may run read-only probes through stdin or `node -e` against the built app. Batch 10
@@ -888,7 +929,7 @@ Batch 10:
   `issues/57/`, and the last squash. The task directory is retired only after
   the whole-app blind review.
 
-Each of batches 2-9 (3b, 9a and 9b included):
+Each of batches 2-9 (3b, 9a, 9b and T included):
 
 - Each new open or pressed state has its `tests/app/inventory.js` entry, a
   golden in RU and EN and an axe case (`expectNoA11yViolations`) in the same
@@ -931,13 +972,22 @@ code batch.
 | 3b | `build:test` and one golden pair (about 5); `check:built`, both lints, decisions and the detector (about 5); `polish` and `harden` (5-10); the browser suites, the sweep and the focus-fix proof run on CI | 15-20 |
 | 4, 5, 6, 7 (done) | spent (planned extra gates 30-35, 32-40, 38-49 and 32-43 min, each with `npm run check:built`) | - |
 | 8 | `plan-8.md`: the golden re-seed of about 35-40 `/lists` and add-to-list states (`build:test` and four shards, 15-20); `check:built` and the configured budget line (3); both lints, decisions, the detector (3); `polish` and `harden` (5-10); the screenshot set (5); cases 102-104 run on CI. One `check:fast` (10-14), one CI run, one review fix cycle | 75-100 in all |
-| 9a (done), 9b | `npm run check:built` where `dist` assets change (1) | 1 each |
+| 9a (done) | `npm run check:built` where `dist` assets change (1) | 1 |
 | 7b | `plan-tags.md`: the vitest files of T1-T6 and T9 (about 15 files, 8-10); artwork test, both lints, decisions, the detector (4-5); `build:test` and the four golden shards (70-120 goldens, 15-20); `check:built` and the configured build (3-4); the head probe and its failing run at HEAD (T9.1, T9.3, 8-12); the roll probe before and after and the roll results CSS (T12, 20-30; folded in by `CLAUDE.md` "Size a batch by its gates": the same `RecordCard`, `RollResult` and `_roll_*` goldens; its own batch would cost 50-65); `polish` and `harden` (5-10); the screenshot set (about 3). One golden re-seed, one `check:fast`, one CI run, one batch review and by habit one fix cycle: 4-6 runs. Its wave 2b squash adds 15-20 (section 16) | 100-135 |
 | 9a | the new 360 px goldens, the axe cases and the `check:fast` growth of C1b (10-15); the new goldens and `lists.test.ts` cases of D1 (5-10) | 15-25 |
-| 9b | `node tests/app/sweep.js 768` for A1 (about 8) | 8 |
+| 9b | `plan-9b.md`, "Gate cost": the re-seed of about 70-100 list, `/s/` and add-to-list goldens (15-20); the affected vitest files alone with `VITEST_MAX_WORKERS=2` (15-20); `check:built`, detector, E4, Prettier (4-5); the loader runs of cases 83 and 104-107 (8-10); the shots at four widths (10); `polish` and `harden` (5-10); `sweep.js 768` on CI | 100-135 in all |
+| T | the `FIRST_SCREEN` re-measure at 360 before and after through the loader (8-10); the mock at 360 and 390 (8-10, no gate); `app.test.ts` timers (2); the shots at 360 and 390 (8); `polish` and `harden` (5-10); the new sweep step runs on CI; no golden re-seed expected | 65-90 in all |
 | 10 | docs only: one `check:fast` and one docs-only CI run (no `e2e`) | about 20 in all |
 | waves (section 16) | per wave: the merge of `origin/main`, the squash in the main checkout, the `main` CI run with the deploy (10.5-11.5) and the merge back (about 2); three waves, plus the small wave 2b (15-20, in the 7b row) | 37-41 |
 | blind reviews, post-release check and closeout (section 16) | the three blind production reviews, after wave 2, after wave 3 and of the whole app, each with its remediation batch (the whole-app one about 45-60, the owner's print not counted; the two wave reviews and their fix batches are not in the totals below), then the closeout commit and its docs-only CI run and the last squash (about 20) | 65-80 |
+
+Time left at the 9b refresh (2026-11-05; batches up to 8 spent): 9b 100-135 min, T 65-90, P 75-95 (45-60 plus its
+30-35 of extra gates), 10 about 20 (45-55 if it takes P5's code), the wave 3 squash 12-14, the two blind reviews with
+their remediation and the closeout 65-80: about 337-434 min, 5.6-7.2 hours. T as its own batch costs one CI run and
+one review (about 45-60 min) against a fold into 9b; the split criterion is in the section 7 table. The toast timing
+folds into T (the same `Toast.svelte` and CI run): its own batch would cost 45-60 min for three lines. This host is
+memory-starved: every vitest run takes `VITEST_MAX_WORKERS=2`, and a browser suite never runs beside vitest, so the
+local `check:fast` is 12-14 min (744 s measured at batch 8's remediation).
 
 Total at the batch 3b refresh (2026-11-03), counted as at the batch 3 refresh
 (batches 1, 1b, 2 and wave 1 spent): ten code batches (3, 3b, 4, 5, 6, 7, 9a, 8, 9b,
@@ -968,7 +1018,8 @@ for the orchestrator's dispatch, not a model choice):
 | 7b | no | yes: 75-125 goldens in one re-seed; badge, tile, head and roll result layouts. Test 1 is yes: the head choice HD1 and the roll choice RC1 have defaults (options A and B) that block nothing | none (`plan-tags.md`) |
 | 8 | yes, in part: the bundle ceiling goes into `tools/bundle-budget.mjs`, `.claude/README.md` and a decision file (configuration every session runs under; no contract, route, stored state or product law) | yes: about 35-40 goldens re-seeded; the card, bar, head and menu follow mock 8. Test 1 is no: every fork has a default (`plan-8.md` L10, L12, L13) | none (`plan-8.md`) |
 | 9a | no: no stored state, route or contract changes (D1 keeps the filter in memory) | yes: the list goldens, the compact row at 360 px | none |
-| 9b | yes: `.prettierignore` (E4) and `.impeccable/config.json` (E2), configuration every session runs under | yes: the list goldens again | its refresh checks the note switch's pending-edit save for possible data loss |
+| 9b | yes: `.prettierignore` (E4) and `.impeccable/config.json` (E2), configuration every session runs under | yes: about 70-100 goldens; the side column, the panels and the row columns against mocks 9 and 9b. Test 1 is no (M1-M20 decided) | none: the note switch commits the shown draft before it switches (`plan-9b.md`) |
+| T | no: sizes, durations and test limits only | no golden re-seed; but the allow-list of the sweep step and each `FIRST_SCREEN` row that passes its limit are choices (test 1: a fold or an exception per row) | none |
 | 10 | no, unless it edits `.impeccable/config.json` again | no, unless it takes code | none |
 
 ## 9. Mock schedule
@@ -1333,6 +1384,8 @@ catalog, `/homebrew`, `/lists`, `/lists/<uuid>`, `/s/`), at both widths:
 - «Выбрать» / "Select" sits at the right end of the collection's head row
   (the row that holds the count). It never goes into «Ещё» / "More" and never
   joins the primary action's row.
+  Since the 9b refresh (2026-11-05, the Field Measure Rule) "at the right end" reads "last in the row": from 761 px the
+  search box is at most 720 px and the row's controls follow it.
 - The search sits first in the row under the page head, beside «Фильтры · N»
   / "Filters · N" at 360; it is never inside the filter sheet.
 - The view switch (grid or table, a choice for the visit, Q3.2) stays its own
@@ -1384,6 +1437,15 @@ Batch 8 (`plan-8.md`, L9): `#/lists as gm1` moves to `shipped: true`, and a new 
 FIRST_SCREEN batches: roll pages 5 (the header part 2), tables 3, item 4,
 search and account 7, print P, homebrew and the editor 6, `/lists` 8,
 `/lists/<uuid>` and `/s/` 9a at 360 and 9b at 1180.
+
+Batch 9b (`plan-9b.md`, "First-screen rows"): the five list rows move to `shipped: true`; the requests state's row is
+added (the rule, or its measured exception at 360; owner 292, estimate 296). Measured at the 9b refresh on the built
+app with the five rules injected (`mocks/9b/measure.json`): no first-screen top moves (`/search` 279, `/tables/eq_weapon`
+244, `~ two filters` 244 at 1180 and 252 at 360, `/roll/std` 267 at 1180 and 323 at 360, `/s/` 275 at 1920, `/lists ~
+many lists` 199 at 1920).
+
+Batch T re-measures every row at 360x640 before and after the Thumb Rule; each row past 256 px takes a fold or its
+measured exception (section 7, "Batch T").
 
 ## 15. Batch P - Print (outline)
 
@@ -1580,7 +1642,7 @@ review as a gate; the batches still save their screenshot sets as evidence.
 | 1 | 1, 1b, 2 | batch 2's review and the green CI run of its tip | the new face, ramp, glyph, mark and shell; gold default chips beside the neutral switches (accepted; batch 3 and the surface batches make them neutral); `FIRST_SCREEN` rows logged |
 | 2 | 3, 3b, 4, 5, 6, 7 | batch 7's review and the green CI run of its tip | the new catalog, item, roller, homebrew, search and account pages; the hide-and-show header and the focus fix; `/lists/<uuid>`, `/s/`, the list panels, `/lists` and print as wave 1 left them (old rows, `FilterBar` and `BatchBar` stay) |
 | 2b | 7b | batch 7b's review and the green CI run of its tip | wave 2's pages with the tag rule (relation lines and «Core» on the full record card only), one-box badges and a steady table head; the list rows, `FilterBar` and `BatchBar` as wave 2 left them |
-| 3 | 9a, 8, 9b, P, 10 | batch 10's review and the green CI run of its tip | the finished task |
+| 3 | 9a, 8, 9b, T, P, 10 | batch 10's review and the green CI run of its tip | the finished task |
 
 Wave 2b is a small squash of one batch (owner, 2026-11-04, `context.md`, "Wave split"): it ships the tag
 fix sooner and starts wave 3 on a clean `main`.
