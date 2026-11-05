@@ -2,14 +2,14 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (waves 1 and 2 are on `main`; batch 7b and its fix pass (`4874ed63`) are done and CI-green;
-  batch W is committed at `8b1bc021` and its fix pass is the commit on top of it; next are the W8/W9 leftovers, CI of
-  the tip, the CI credit, the wave 2b squash, then batch 9a (cases 98-100))
-- Last agent: implementer (batch W fix pass, 2026-11-05)
+- Task status: in_progress (waves 1, 2 and 2b are on `main`; wave 2b is `b6f153a5`, 2026-11-05, deploy green: batch 7b
+  with its fix pass and batch W with its fix pass; next is wave 3, starting with batch 9a (cases 98-100, plus the 9a-W
+  lines of `plan-wave3-wide.md`))
+- Last agent: orchestrator (wave 2b squash, merge back `8b99ac8e`)
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
-- Tip: `8b1bc021` (batch W, pushed; CI run 41930985566 was in progress); the W fix pass is one commit on top, not pushed.
-- Pushed: yes (`8b1bc021`); the fix pass: no.
+- Tip: `8b99ac8e` (merge of `main` after the wave 2b squash), pushed.
+- Pushed: yes.
 
 ## Completed
 - Batch 1 - foundation: `9a31aede`, review fix `80872b35` (`reviews/1.md`).
@@ -1080,10 +1080,11 @@
 - Spelling scan over added lines and new files: only `aria-labelledby`.
 
 ## Next batch (implement-ready)
-Batch 7b and its fix pass (`4874ed63`) are done and CI-green. Batch W is committed at `8b1bc021` (CI run 41930985566
-in progress when its fix pass was written); the fix pass (`reviews/W.md`, W-B1 to W-N5, W8, W9) is the next commit and is
-not pushed. Next: push, then CI of the tip (watch `app/states` cases 83, 97, 101, `app/golden`, `sweep.js`,
-`app/print`, `contracts` at 1280, `e2e`), the CI credit, the wave 2b squash, then 9a (cases 98-100).
+Wave 2b (batches 7b and W with their fix passes) is on `main` as `b6f153a5`, the deploy is green, and `claude/57`
+merged it back (`8b99ac8e`). Next: batch 9a (brief `plan-9a.md` plus the 9a-W1 to W7 lines of `plan-wave3-wide.md`;
+cases 98-100; case 101 is W's; `--wrap` is now 1440 px and `--dossier-w` 980 px, `DESIGN.md` "The One Width Rule").
+Owed to wave 3: the owner's wide-screen rulings (`context.md`, item 7), `plan-wave3-wide.md` Q-W2 (9b at wide widths:
+rows take the rest of the column, the default taken) and its mock pass M-9b.
 Scratch to retire at closeout, not before: the worktree `.claude/worktrees/57-fold` (branch `claude/57-fold`, merged
 into `claude/57`; the orchestrator may remove both: `git worktree remove`, `git branch -d`, at the next
 quiet moment), `C:\Users\Ignat\AppData\Local\Temp\claude\...\scratchpad` (frames and perf scripts).
