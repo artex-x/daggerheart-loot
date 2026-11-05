@@ -253,6 +253,13 @@
       pills when they fit else a picker; batch N, outline, after T and before P, `plan.md` section 7). Not in 9b: the
       move is a `Shell` and `RollPage` markup change with about 25-35 goldens, 70-90 min. The owner answers N1 (A, B or
       C) and N2 (the homebrew tabs as pills) interactively; nothing is built before.
+      Answer (owner, chat, 2026-11-05, interactive): N1 = option A, with a correction: "where have we lost the page
+      header?" - the roll page must keep a VISIBLE `h1` from 761 px, so every family draws its heading first in the
+      title row, then the pin, the help and the pills (tables «Таблицы», homebrew «Мои предметы», roll «Бросок» /
+      "Roll", the job name; the lit pill names the mode). N2 = the homebrew tabs become pills with counts. Placed
+      (planner, same day): `plan-nav.md` sections 3-5 (measured with the visible `h1`: roll first content 267 to 214
+      at 1180 and 1000, 256 at 768, 360 unchanged; `/roll/wondrous` RU ends 42 px short of the 1000 px column; up to
+      760 px the `h1` stays hidden because the pills or the picker name the page) and `plan.md` section 7, batch N.
     - Owner's lean (chat, 2026-11-04): option 2, consistency first.
     - Refinement (chat, 2026-11-04): "even not to hide homebrew but upgrade lines and sets, make them visible only
       on the item page": the homebrew tag stays as today; the upgrade and relation lines and the set draw only on

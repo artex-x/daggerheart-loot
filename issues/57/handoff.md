@@ -6,15 +6,13 @@
   `d8e30731`, CI credit passed); the 9b refresh is written (`plan-9b.md`, `mocks/9b/`), revised 2026-11-05 for the
   owner's answers (Row Text, not Row Columns; the share panel keeps a delete per link), not committed.
 - Last agent: planner (9b revision for the owner's row decision, and the item 11 outline, 2026-11-05). No subagent runs. No worker has uncommitted code edits.
-- NEEDS_HUMAN_CONFIRMATION: no for batch 9b (Q9b-1 and Q9b-2 are answered by the owner; AFK items 17 to 19). Yes, not
-  blocking 9b, for batch N: N1 (A, B or C) and N2 of `plan-nav.md` (owner item 11), answered interactively.
+- NEEDS_HUMAN_CONFIRMATION: no for batch 9b (Q9b-1 and Q9b-2 are answered by the owner; AFK items 17 to 19). No for batch N: the owner answered N1 (option A with a visible `h1`) and N2 (pills) on 2026-11-05; its refresh expands `plan-nav.md` into `plan-N.md`.
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
 - Base / starting commit: `d8e30731`.
 - Pushed: yes at `d8e30731`; the planner's files are uncommitted (the orchestrator commits them as docs): `plan-9b.md`,
   `plan-nav.md`, `plan.md`, `context.md`, `handoff.md`, `mocks/9b/` (re-shot, `rowtext.cjs`, `measure.json`), `mocks/N/`.
 - Next step, in order: (1) the orchestrator commits the refresh, runs Impeccable `critique` on `mocks/9b/` and
-  dispatches batch 9b (`plan-9b.md`); the owner answers N1 and N2 (`plan-nav.md`) when he chooses, and batch N joins
-  after T only on A; (2) batch T's refresh (`plan.md` section 7, "Batch T"), then T; (3) batch P (the
+  dispatches batch 9b (`plan-9b.md`); batch N (`plan-nav.md`, owner item 11: option A, a visible `h1` on every family) follows T and precedes P; (2) batch T's refresh (`plan.md` section 7, "Batch T"), then T; (3) batch P (the
   burden hands are exported, `context.md`), 10; the wave 3 and whole-app blind reviews; closeout. Every reviewer
   dispatch names the guideline set (`context.md` item 10) until 9b writes DESIGN.md "Proposed rules".
 

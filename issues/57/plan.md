@@ -12,7 +12,7 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
   against main"); every address in this plan is a path.
 - Phase 3: seventeen batches in the order 1, 1b, 2, 3, 3b, 4-7, 7b, W, 9a, 8, 9b, T, P, 10 (9a is in wave 3 since
   2026-11-04; 7b and W are wave 2b; T added at the 9b refresh, 2026-11-05; batch N, the sibling navigation of owner
-  item 11, joins between T and P if the owner answers A)
+  item 11, sits between T and P: the owner answered A, 2026-11-05)
   (section 7; the waves of section 16 moved P from after 1b into wave 3, and the
   owner's 2026-11-03 answers added 3b and split 9). Batches 1
   (`9a31aede`, `80872b35`), 1b (`fce4a9f8`, `3e5f6301`; `reviews/1b.md`) and 2
@@ -99,9 +99,10 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
   (the owner's fallback; its 15% trigger fired at 1180 px, `mocks/9b/measure.json`). Batch 9b also writes DESIGN.md
   "Proposed rules" (M19). The Thumb Rule and the toast timing are a new batch T between 9b and P (section 7).
   Defaults: AFK decisions items 17, 18 and 19; the share panel keeps a delete per link (owner, 2026-11-05).
-- Item 11 (owner, 2026-11-05): one placement and one style for sibling-page navigation on the roll, table and
-  homebrew pages. `plan-nav.md` holds the facts, three options and the recommendation (A: siblings in the head row);
-  batch N (section 7, outline) waits for the owner's answer N1 and N2. Not in 9b.
+- Item 11 (owner, 2026-11-05): one placement and one style for sibling-page navigation. Answered: N1 = option A with a
+  visible `h1` on every family from 761 px (roll «Бросок» / "Roll"), N2 = the homebrew tabs as pills with counts.
+  `plan-nav.md` holds the facts, the measured offsets (roll 267 to 214 at 1180 and 1000, 256 at 768) and batch N's
+  acceptance lines; batch N (section 7, outline, after T and before P) is the build. Not in 9b.
 - Plan review: not required (no trigger fired) for batches 9b and T. Batch 9b changes no contract, stores nothing new
   and adds no write protocol; its note switch commits the shown draft through the existing write path before it
   switches (`plan-9b.md`, "Error scenarios"). Batch T changes control sizes, toast durations and test limits only: no
@@ -897,22 +898,30 @@ Batch T (wave 3, after 9b, before P; owner, `context.md` item 10, "APPROVED"; ou
 - Toast over «Ещё» (`handoff.md` Deferred): T measures it with the new durations; it fixes it only if the fix is
   local to `Toast`, else the line stays for `DEBT.md` at closeout.
 
-Batch N (wave 3, after T, before P; owner item 11, 2026-11-05; outline; `plan-nav.md` holds the facts, the options and the
-recommendation; not buildable before the owner answers):
+Batch N (wave 3, after T, before P; owner item 11, 2026-11-05; outline; `plan-nav.md` holds the facts, the options, the
+measured offsets and the acceptance lines; its refresh expands it into `plan-N.md`):
 
-- Open design question N1: where sibling-page navigation sits. Recommended A: level 2 (the roll modes, the table
-  groups, the homebrew tabs as pills) in the head row after the `h1`, the pin and the help from 1000 px, on its own row
-  under the head from 761 to 999 px; level 3 (books, sources) stays underlined tabs under the head row; up to 760 px
-  the pills when all fit (the roll row), else one picker. Alternatives: B (a full-width row above the title on all
-  three families: tables 244 to 306 px and homebrew 254 to 309 px past the 288 limit), C (style only: homebrew tabs
-  to pills, one edit that rides in 9b). Open design question N2 (with A): the homebrew tabs become pills with counts.
-- Code, if A: `ModeRow` moves out of `Shell` into `RollPage`'s `PageHead` `extra` from 761 px (the `h1` visually
-  hidden, as up to 760 px); `HomebrewTabs` draws pills from 761 px; DESIGN.md "A steady head" and "The Roll Page Rule",
-  FEATURES.md "Chrome" and "Rolling" change with it; a states case (one `RollPage` instance across a mode switch, the
-  pills keep their top and left, the focus stays); `FIRST_SCREEN` and `ROLL_FIT` rows re-measured at 1180 and 1000 px.
+- Decided (owner, 2026-11-05): N1 = option A with a correction: every family keeps a VISIBLE `h1` from 761 px, first in
+  its title row, then the pin, the help and the pills. Level 2 (the roll modes, the table groups, the homebrew tabs as
+  pills with counts: N2) sits in the head row from 1000 px and on its own row under it from 761 to 999 px; level 3
+  (books, sources) stays underlined tabs under the head row. The roll `h1` reads the job name, «Бросок» / "Roll"
+  (`jobRoll`, no new string; the lit pill names the mode). Up to 760 px the `h1` stays hidden on all three families
+  (the picker or the lit pill row names the page). Alternatives not taken: B (a full-width row above the title: tables
+  244 to 306 px and homebrew 254 to 309 px, past 288), C (style only).
+- Measured with the visible `h1` (`mocks/N/measure-roll-h1.json`): roll first content 267 to 214 at 1180 and 1000
+  (one row, the longest label ends 42 px short of the column at 1000 RU), 256 at 768 (the pills on their own row), 360
+  unchanged. Trade-offs: a longer title row; the head is two rows below 1000 px; no full-width rule line; a mode switch
+  must not move the `h1` or the pills.
+- Code: `ModeRow` moves out of `Shell` into `RollPage`'s `PageHead` `extra` from 761 px and the `h1` reads `jobRoll`;
+  `HomebrewTabs` draws pills from 761 px; DESIGN.md ("A steady head", "The Roll Page Rule", "The Two Breakpoints Rule",
+  a new "The Sibling Row Rule") and FEATURES.md ("Chrome", "Rolling", "Homebrew") change with it; a states case (one
+  `RollPage` instance across a mode switch, the `h1` and pills keep their top and left, the focus stays, the `h1` is
+  visible per family from 761 px and hidden at 360); `FIRST_SCREEN` and `ROLL_FIT` rows re-measured. Acceptance 1-8 of
+  `plan-nav.md`, section 5, are the batch's own lines.
 - Split criterion: a different route set (the nine roll pages from 761 px, `/homebrew`) and its own goldens (about
-  25-35 states); 9b and T are full. Gate cost 70-90 min (`plan-nav.md`, section 4). Mock: `mocks/N/` (probe scripts,
-  1180 RU shots and offsets built; the full set at five widths is the batch's first step). Plan review: not required.
+  25-35 states); 9b and T are full. Gate cost 70-90 min (`plan-nav.md`, section 5). Mock: `mocks/N/` (probe scripts, the
+  roll shots with the visible `h1` and the offsets built; the homebrew pills and the full width set are the first step).
+  Plan review: not required.
 
 Batch 10:
 
@@ -1002,14 +1011,14 @@ code batch.
 | 9a | the new 360 px goldens, the axe cases and the `check:fast` growth of C1b (10-15); the new goldens and `lists.test.ts` cases of D1 (5-10) | 15-25 |
 | 9b | `plan-9b.md`, "Gate cost": the re-seed of about 70-100 list, `/s/` and add-to-list goldens (15-20); the affected vitest files alone with `VITEST_MAX_WORKERS=2` (15-20); `check:built`, detector, E4, Prettier (4-5); the loader runs of cases 83 and 104-107 (8-10); the shots at four widths (10); `polish` and `harden` (5-10); `sweep.js 768` on CI | 95-130 in all |
 | T | the `FIRST_SCREEN` re-measure at 360 before and after through the loader (8-10); the mock at 360 and 390 (8-10, no gate); `app.test.ts` timers (2); the shots at 360 and 390 (8); `polish` and `harden` (5-10); the new sweep step runs on CI; no golden re-seed expected | 65-90 in all |
-| N (outline, if the owner answers A) | `plan-nav.md`, section 4: the mock at five widths (8-10); the re-seed of about 25-35 roll and homebrew states (8-12); `check:built` and lints (4-5); the loader runs of the roll and `FIRST_SCREEN` cases (6-8); `polish` and `harden` (5-10) | 70-90 in all |
+| N (outline; the owner answered A) | `plan-nav.md`, section 4: the mock at five widths (8-10); the re-seed of about 25-35 roll and homebrew states (8-12); `check:built` and lints (4-5); the loader runs of the roll and `FIRST_SCREEN` cases (6-8); `polish` and `harden` (5-10) | 70-90 in all |
 | 10 | docs only: one `check:fast` and one docs-only CI run (no `e2e`) | about 20 in all |
 | waves (section 16) | per wave: the merge of `origin/main`, the squash in the main checkout, the `main` CI run with the deploy (10.5-11.5) and the merge back (about 2); three waves, plus the small wave 2b (15-20, in the 7b row) | 37-41 |
 | blind reviews, post-release check and closeout (section 16) | the three blind production reviews, after wave 2, after wave 3 and of the whole app, each with its remediation batch (the whole-app one about 45-60, the owner's print not counted; the two wave reviews and their fix batches are not in the totals below), then the closeout commit and its docs-only CI run and the last squash (about 20) | 65-80 |
 
 Time left at the 9b refresh (2026-11-05; batches up to 8 spent): 9b 95-130 min, T 65-90, P 75-95 (45-60 plus its
 30-35 of extra gates), 10 about 20 (45-55 if it takes P5's code), the wave 3 squash 12-14, the two blind reviews with
-their remediation and the closeout 65-80: about 332-429 min, 5.5-7.1 hours; batch N, if the owner answers A, adds 70-90. T as its own batch costs one CI run and
+their remediation and the closeout 65-80: about 332-429 min, 5.5-7.1 hours; batch N (owner answered A) adds 70-90. T as its own batch costs one CI run and
 one review (about 45-60 min) against a fold into 9b; the split criterion is in the section 7 table. The toast timing
 folds into T (the same `Toast.svelte` and CI run): its own batch would cost 45-60 min for three lines. This host is
 memory-starved: every vitest run takes `VITEST_MAX_WORKERS=2`, and a browser suite never runs beside vitest, so the

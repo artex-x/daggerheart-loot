@@ -1,0 +1,952 @@
+[
+ {
+  "id": "#/roll/std",
+  "width": 1180,
+  "height": 720,
+  "lang": "ru",
+  "today": {
+   "primaryTop": 267,
+   "headH": 37,
+   "h1Text": "Обычные правила",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 2,
+   "lastPillRight": 458,
+   "scrollW": -15
+  },
+  "moved": {
+   "primaryTop": 214,
+   "headH": 37,
+   "h1Text": "Бросок",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 3,
+   "lastPillRight": 906,
+   "scrollW": -15
+  }
+ },
+ {
+  "id": "#/roll/std",
+  "width": 1180,
+  "height": 720,
+  "lang": "en",
+  "today": {
+   "primaryTop": 267,
+   "headH": 37,
+   "h1Text": "Standard rules",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 2,
+   "lastPillRight": 371,
+   "scrollW": -15
+  },
+  "moved": {
+   "primaryTop": 214,
+   "headH": 37,
+   "h1Text": "Roll",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 3,
+   "lastPillRight": 712,
+   "scrollW": -15
+  }
+ },
+ {
+  "id": "#/roll/std",
+  "width": 1000,
+  "height": 720,
+  "lang": "ru",
+  "today": {
+   "primaryTop": 267,
+   "headH": 37,
+   "h1Text": "Обычные правила",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 2,
+   "lastPillRight": 458,
+   "scrollW": -15
+  },
+  "moved": {
+   "primaryTop": 214,
+   "headH": 37,
+   "h1Text": "Бросок",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 3,
+   "lastPillRight": 906,
+   "scrollW": -15
+  }
+ },
+ {
+  "id": "#/roll/std",
+  "width": 1000,
+  "height": 720,
+  "lang": "en",
+  "today": {
+   "primaryTop": 267,
+   "headH": 37,
+   "h1Text": "Standard rules",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 2,
+   "lastPillRight": 371,
+   "scrollW": -15
+  },
+  "moved": {
+   "primaryTop": 214,
+   "headH": 37,
+   "h1Text": "Roll",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 3,
+   "lastPillRight": 712,
+   "scrollW": -15
+  }
+ },
+ {
+  "id": "#/roll/std",
+  "width": 360,
+  "height": 640,
+  "lang": "ru",
+  "today": {
+   "primaryTop": 323,
+   "headH": null,
+   "h1Text": "Обычные правила",
+   "h1Visible": false,
+   "pillRows": 1,
+   "headRowTops": 0,
+   "lastPillRight": 329,
+   "scrollW": -15
+  },
+  "moved": null
+ },
+ {
+  "id": "#/roll/std",
+  "width": 360,
+  "height": 640,
+  "lang": "en",
+  "today": {
+   "primaryTop": 323,
+   "headH": null,
+   "h1Text": "Standard rules",
+   "h1Visible": false,
+   "pillRows": 1,
+   "headRowTops": 0,
+   "lastPillRight": 329,
+   "scrollW": -15
+  },
+  "moved": null
+ },
+ {
+  "id": "#/roll/alt",
+  "width": 1180,
+  "height": 720,
+  "lang": "ru",
+  "today": {
+   "primaryTop": 267,
+   "headH": 37,
+   "h1Text": "Альтернативные таблицы",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 2,
+   "lastPillRight": 460,
+   "scrollW": -15
+  },
+  "moved": {
+   "primaryTop": 214,
+   "headH": 37,
+   "h1Text": "Бросок",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 3,
+   "lastPillRight": 884,
+   "scrollW": -15
+  }
+ },
+ {
+  "id": "#/roll/alt",
+  "width": 1180,
+  "height": 720,
+  "lang": "en",
+  "today": {
+   "primaryTop": 267,
+   "headH": 37,
+   "h1Text": "Alternate tables",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 2,
+   "lastPillRight": 371,
+   "scrollW": -15
+  },
+  "moved": {
+   "primaryTop": 214,
+   "headH": 37,
+   "h1Text": "Roll",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 3,
+   "lastPillRight": 701,
+   "scrollW": -15
+  }
+ },
+ {
+  "id": "#/roll/alt",
+  "width": 1000,
+  "height": 720,
+  "lang": "ru",
+  "today": {
+   "primaryTop": 267,
+   "headH": 37,
+   "h1Text": "Альтернативные таблицы",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 2,
+   "lastPillRight": 460,
+   "scrollW": -15
+  },
+  "moved": {
+   "primaryTop": 214,
+   "headH": 37,
+   "h1Text": "Бросок",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 3,
+   "lastPillRight": 884,
+   "scrollW": -15
+  }
+ },
+ {
+  "id": "#/roll/alt",
+  "width": 1000,
+  "height": 720,
+  "lang": "en",
+  "today": {
+   "primaryTop": 267,
+   "headH": 37,
+   "h1Text": "Alternate tables",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 2,
+   "lastPillRight": 371,
+   "scrollW": -15
+  },
+  "moved": {
+   "primaryTop": 214,
+   "headH": 37,
+   "h1Text": "Roll",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 3,
+   "lastPillRight": 701,
+   "scrollW": -15
+  }
+ },
+ {
+  "id": "#/roll/alt",
+  "width": 360,
+  "height": 640,
+  "lang": "ru",
+  "today": {
+   "primaryTop": 251,
+   "headH": null,
+   "h1Text": "Альтернативные таблицы",
+   "h1Visible": false,
+   "pillRows": 1,
+   "headRowTops": 0,
+   "lastPillRight": 329,
+   "scrollW": -15
+  },
+  "moved": null
+ },
+ {
+  "id": "#/roll/alt",
+  "width": 360,
+  "height": 640,
+  "lang": "en",
+  "today": {
+   "primaryTop": 251,
+   "headH": null,
+   "h1Text": "Alternate tables",
+   "h1Visible": false,
+   "pillRows": 1,
+   "headRowTops": 0,
+   "lastPillRight": 329,
+   "scrollW": -15
+  },
+  "moved": null
+ },
+ {
+  "id": "#/roll/mwt",
+  "width": 1180,
+  "height": 720,
+  "lang": "ru",
+  "today": {
+   "primaryTop": 267,
+   "headH": 37,
+   "h1Text": "Many Worlds Tavern",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 2,
+   "lastPillRight": 497,
+   "scrollW": -15
+  },
+  "moved": {
+   "primaryTop": 214,
+   "headH": 37,
+   "h1Text": "Бросок",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 3,
+   "lastPillRight": 901,
+   "scrollW": -15
+  }
+ },
+ {
+  "id": "#/roll/mwt",
+  "width": 1180,
+  "height": 720,
+  "lang": "en",
+  "today": {
+   "primaryTop": 267,
+   "headH": 37,
+   "h1Text": "Many Worlds Tavern",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 2,
+   "lastPillRight": 409,
+   "scrollW": -15
+  },
+  "moved": {
+   "primaryTop": 214,
+   "headH": 37,
+   "h1Text": "Roll",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 3,
+   "lastPillRight": 724,
+   "scrollW": -15
+  }
+ },
+ {
+  "id": "#/roll/mwt",
+  "width": 1000,
+  "height": 720,
+  "lang": "ru",
+  "today": {
+   "primaryTop": 267,
+   "headH": 37,
+   "h1Text": "Many Worlds Tavern",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 2,
+   "lastPillRight": 497,
+   "scrollW": -15
+  },
+  "moved": {
+   "primaryTop": 214,
+   "headH": 37,
+   "h1Text": "Бросок",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 3,
+   "lastPillRight": 901,
+   "scrollW": -15
+  }
+ },
+ {
+  "id": "#/roll/mwt",
+  "width": 1000,
+  "height": 720,
+  "lang": "en",
+  "today": {
+   "primaryTop": 267,
+   "headH": 37,
+   "h1Text": "Many Worlds Tavern",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 2,
+   "lastPillRight": 409,
+   "scrollW": -15
+  },
+  "moved": {
+   "primaryTop": 214,
+   "headH": 37,
+   "h1Text": "Roll",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 3,
+   "lastPillRight": 724,
+   "scrollW": -15
+  }
+ },
+ {
+  "id": "#/roll/mwt",
+  "width": 360,
+  "height": 640,
+  "lang": "ru",
+  "today": {
+   "primaryTop": 251,
+   "headH": null,
+   "h1Text": "Many Worlds Tavern",
+   "h1Visible": false,
+   "pillRows": 1,
+   "headRowTops": 0,
+   "lastPillRight": 329,
+   "scrollW": -15
+  },
+  "moved": null
+ },
+ {
+  "id": "#/roll/mwt",
+  "width": 360,
+  "height": 640,
+  "lang": "en",
+  "today": {
+   "primaryTop": 251,
+   "headH": null,
+   "h1Text": "Many Worlds Tavern",
+   "h1Visible": false,
+   "pillRows": 1,
+   "headRowTops": 0,
+   "lastPillRight": 329,
+   "scrollW": -15
+  },
+  "moved": null
+ },
+ {
+  "id": "#/roll/wondrous",
+  "width": 1180,
+  "height": 720,
+  "lang": "ru",
+  "today": {
+   "primaryTop": 267,
+   "headH": 37,
+   "h1Text": "Wondrous Environments",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 2,
+   "lastPillRight": 523,
+   "scrollW": -15
+  },
+  "moved": {
+   "primaryTop": 214,
+   "headH": 37,
+   "h1Text": "Бросок",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 3,
+   "lastPillRight": 942,
+   "scrollW": -15
+  }
+ },
+ {
+  "id": "#/roll/wondrous",
+  "width": 1180,
+  "height": 720,
+  "lang": "en",
+  "today": {
+   "primaryTop": 267,
+   "headH": 37,
+   "h1Text": "Wondrous Environments",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 2,
+   "lastPillRight": 435,
+   "scrollW": -15
+  },
+  "moved": {
+   "primaryTop": 214,
+   "headH": 37,
+   "h1Text": "Roll",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 3,
+   "lastPillRight": 750,
+   "scrollW": -15
+  }
+ },
+ {
+  "id": "#/roll/wondrous",
+  "width": 1000,
+  "height": 720,
+  "lang": "ru",
+  "today": {
+   "primaryTop": 267,
+   "headH": 37,
+   "h1Text": "Wondrous Environments",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 2,
+   "lastPillRight": 523,
+   "scrollW": -15
+  },
+  "moved": {
+   "primaryTop": 214,
+   "headH": 37,
+   "h1Text": "Бросок",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 3,
+   "lastPillRight": 942,
+   "scrollW": -15
+  }
+ },
+ {
+  "id": "#/roll/wondrous",
+  "width": 1000,
+  "height": 720,
+  "lang": "en",
+  "today": {
+   "primaryTop": 267,
+   "headH": 37,
+   "h1Text": "Wondrous Environments",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 2,
+   "lastPillRight": 435,
+   "scrollW": -15
+  },
+  "moved": {
+   "primaryTop": 214,
+   "headH": 37,
+   "h1Text": "Roll",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 3,
+   "lastPillRight": 750,
+   "scrollW": -15
+  }
+ },
+ {
+  "id": "#/roll/wondrous",
+  "width": 360,
+  "height": 640,
+  "lang": "ru",
+  "today": {
+   "primaryTop": 251,
+   "headH": null,
+   "h1Text": "Wondrous Environments",
+   "h1Visible": false,
+   "pillRows": 1,
+   "headRowTops": 0,
+   "lastPillRight": 329,
+   "scrollW": -15
+  },
+  "moved": null
+ },
+ {
+  "id": "#/roll/wondrous",
+  "width": 360,
+  "height": 640,
+  "lang": "en",
+  "today": {
+   "primaryTop": 251,
+   "headH": null,
+   "h1Text": "Wondrous Environments",
+   "h1Visible": false,
+   "pillRows": 1,
+   "headRowTops": 0,
+   "lastPillRight": 329,
+   "scrollW": -15
+  },
+  "moved": null
+ },
+ {
+  "id": "#/roll/voa",
+  "width": 1180,
+  "height": 720,
+  "lang": "ru",
+  "today": {
+   "primaryTop": 267,
+   "headH": 37,
+   "h1Text": "Vault of Ages",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 2,
+   "lastPillRight": 456,
+   "scrollW": -15
+  },
+  "moved": {
+   "primaryTop": 214,
+   "headH": 37,
+   "h1Text": "Бросок",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 3,
+   "lastPillRight": 859,
+   "scrollW": -15
+  }
+ },
+ {
+  "id": "#/roll/voa",
+  "width": 1180,
+  "height": 720,
+  "lang": "en",
+  "today": {
+   "primaryTop": 267,
+   "headH": 37,
+   "h1Text": "Vault of Ages",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 2,
+   "lastPillRight": 368,
+   "scrollW": -15
+  },
+  "moved": {
+   "primaryTop": 214,
+   "headH": 37,
+   "h1Text": "Roll",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 3,
+   "lastPillRight": 682,
+   "scrollW": -15
+  }
+ },
+ {
+  "id": "#/roll/voa",
+  "width": 1000,
+  "height": 720,
+  "lang": "ru",
+  "today": {
+   "primaryTop": 267,
+   "headH": 37,
+   "h1Text": "Vault of Ages",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 2,
+   "lastPillRight": 456,
+   "scrollW": -15
+  },
+  "moved": {
+   "primaryTop": 214,
+   "headH": 37,
+   "h1Text": "Бросок",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 3,
+   "lastPillRight": 859,
+   "scrollW": -15
+  }
+ },
+ {
+  "id": "#/roll/voa",
+  "width": 1000,
+  "height": 720,
+  "lang": "en",
+  "today": {
+   "primaryTop": 267,
+   "headH": 37,
+   "h1Text": "Vault of Ages",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 2,
+   "lastPillRight": 368,
+   "scrollW": -15
+  },
+  "moved": {
+   "primaryTop": 214,
+   "headH": 37,
+   "h1Text": "Roll",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 3,
+   "lastPillRight": 682,
+   "scrollW": -15
+  }
+ },
+ {
+  "id": "#/roll/voa",
+  "width": 360,
+  "height": 640,
+  "lang": "ru",
+  "today": {
+   "primaryTop": 251,
+   "headH": null,
+   "h1Text": "Vault of Ages",
+   "h1Visible": false,
+   "pillRows": 1,
+   "headRowTops": 0,
+   "lastPillRight": 329,
+   "scrollW": -15
+  },
+  "moved": null
+ },
+ {
+  "id": "#/roll/voa",
+  "width": 360,
+  "height": 640,
+  "lang": "en",
+  "today": {
+   "primaryTop": 251,
+   "headH": null,
+   "h1Text": "Vault of Ages",
+   "h1Visible": false,
+   "pillRows": 1,
+   "headRowTops": 0,
+   "lastPillRight": 329,
+   "scrollW": -15
+  },
+  "moved": null
+ },
+ {
+  "id": "#/roll/std",
+  "width": 768,
+  "height": 1024,
+  "lang": "ru",
+  "today": {
+   "primaryTop": 267,
+   "headH": 37,
+   "h1Text": "Обычные правила",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 2,
+   "lastPillRight": 458,
+   "scrollW": -15
+  },
+  "moved": {
+   "primaryTop": 256,
+   "headH": 79,
+   "h1Text": "Бросок",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 3,
+   "lastPillRight": 458,
+   "scrollW": -15
+  }
+ },
+ {
+  "id": "#/roll/std",
+  "width": 768,
+  "height": 1024,
+  "lang": "en",
+  "today": {
+   "primaryTop": 267,
+   "headH": 37,
+   "h1Text": "Standard rules",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 2,
+   "lastPillRight": 371,
+   "scrollW": -15
+  },
+  "moved": {
+   "primaryTop": 256,
+   "headH": 79,
+   "h1Text": "Roll",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 3,
+   "lastPillRight": 371,
+   "scrollW": -15
+  }
+ },
+ {
+  "id": "#/roll/alt",
+  "width": 768,
+  "height": 1024,
+  "lang": "ru",
+  "today": {
+   "primaryTop": 267,
+   "headH": 37,
+   "h1Text": "Альтернативные таблицы",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 2,
+   "lastPillRight": 460,
+   "scrollW": -15
+  },
+  "moved": {
+   "primaryTop": 256,
+   "headH": 79,
+   "h1Text": "Бросок",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 3,
+   "lastPillRight": 460,
+   "scrollW": -15
+  }
+ },
+ {
+  "id": "#/roll/alt",
+  "width": 768,
+  "height": 1024,
+  "lang": "en",
+  "today": {
+   "primaryTop": 267,
+   "headH": 37,
+   "h1Text": "Alternate tables",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 2,
+   "lastPillRight": 371,
+   "scrollW": -15
+  },
+  "moved": {
+   "primaryTop": 256,
+   "headH": 79,
+   "h1Text": "Roll",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 3,
+   "lastPillRight": 371,
+   "scrollW": -15
+  }
+ },
+ {
+  "id": "#/roll/mwt",
+  "width": 768,
+  "height": 1024,
+  "lang": "ru",
+  "today": {
+   "primaryTop": 267,
+   "headH": 37,
+   "h1Text": "Many Worlds Tavern",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 2,
+   "lastPillRight": 497,
+   "scrollW": -15
+  },
+  "moved": {
+   "primaryTop": 256,
+   "headH": 79,
+   "h1Text": "Бросок",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 3,
+   "lastPillRight": 497,
+   "scrollW": -15
+  }
+ },
+ {
+  "id": "#/roll/mwt",
+  "width": 768,
+  "height": 1024,
+  "lang": "en",
+  "today": {
+   "primaryTop": 267,
+   "headH": 37,
+   "h1Text": "Many Worlds Tavern",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 2,
+   "lastPillRight": 409,
+   "scrollW": -15
+  },
+  "moved": {
+   "primaryTop": 256,
+   "headH": 79,
+   "h1Text": "Roll",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 3,
+   "lastPillRight": 409,
+   "scrollW": -15
+  }
+ },
+ {
+  "id": "#/roll/wondrous",
+  "width": 768,
+  "height": 1024,
+  "lang": "ru",
+  "today": {
+   "primaryTop": 267,
+   "headH": 37,
+   "h1Text": "Wondrous Environments",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 2,
+   "lastPillRight": 523,
+   "scrollW": -15
+  },
+  "moved": {
+   "primaryTop": 256,
+   "headH": 79,
+   "h1Text": "Бросок",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 3,
+   "lastPillRight": 523,
+   "scrollW": -15
+  }
+ },
+ {
+  "id": "#/roll/wondrous",
+  "width": 768,
+  "height": 1024,
+  "lang": "en",
+  "today": {
+   "primaryTop": 267,
+   "headH": 37,
+   "h1Text": "Wondrous Environments",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 2,
+   "lastPillRight": 435,
+   "scrollW": -15
+  },
+  "moved": {
+   "primaryTop": 256,
+   "headH": 79,
+   "h1Text": "Roll",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 3,
+   "lastPillRight": 435,
+   "scrollW": -15
+  }
+ },
+ {
+  "id": "#/roll/voa",
+  "width": 768,
+  "height": 1024,
+  "lang": "ru",
+  "today": {
+   "primaryTop": 267,
+   "headH": 37,
+   "h1Text": "Vault of Ages",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 2,
+   "lastPillRight": 456,
+   "scrollW": -15
+  },
+  "moved": {
+   "primaryTop": 256,
+   "headH": 79,
+   "h1Text": "Бросок",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 3,
+   "lastPillRight": 456,
+   "scrollW": -15
+  }
+ },
+ {
+  "id": "#/roll/voa",
+  "width": 768,
+  "height": 1024,
+  "lang": "en",
+  "today": {
+   "primaryTop": 267,
+   "headH": 37,
+   "h1Text": "Vault of Ages",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 2,
+   "lastPillRight": 368,
+   "scrollW": -15
+  },
+  "moved": {
+   "primaryTop": 256,
+   "headH": 79,
+   "h1Text": "Roll",
+   "h1Visible": true,
+   "pillRows": 1,
+   "headRowTops": 3,
+   "lastPillRight": 368,
+   "scrollW": -15
+  }
+ }
+]
