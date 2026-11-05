@@ -281,8 +281,10 @@
     justify-content: center;
   }
 
+  /* As `RollPage`'s control row: a long chosen value moves the button to its own line. */
   .altctrl.row {
     flex-direction: row;
+    flex-wrap: wrap;
     gap: 8px;
   }
 

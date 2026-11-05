@@ -176,7 +176,7 @@ RootWebArea "Лавка кузнеца - Daggerheart Loot Generator" [url=/en/li
     ... button x11 of 15 same-shape siblings elided
     region "New in this list (2)"
       heading "New in this list (2)" [level=2]
-      button "Fold" [expanded=true]
+      button "Show less" [expanded=true]
       StaticText "Through the GM link · just now · expires in 60 minutes"
       StaticText "ITEM"
       ... StaticText x34 of 38 same-shape siblings elided
@@ -252,7 +252,6 @@ EN
 Edit
 Ember AxePrimary weaponUniqueAlder Workshop (HB)Tier 2 · Magic ·... [namelen=159 namehash=ea056220]
 Filters
-Fold
 Gambeson ArmorArmorTier 1 · Thresholds 5/11 · Armor 3Flexible: +... [namelen=76 namehash=55bf2d62]
 In coins
 Install as an app
@@ -286,6 +285,7 @@ Search by name or description...
 Select
 Share
 Show
+Show less
 Skip to content
 Stride PotionConsumableYou gain a +1 bonus to your next Agility ... [namelen=69 namehash=5f888d9a]
 Tables

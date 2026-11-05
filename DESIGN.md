@@ -231,8 +231,8 @@ the two disagree, the code is right and this file is stale.
 - A locked type scale of ten steps, enforced by a test.
 - Monospace only for a value a person types or counts: a number field, a rung,
   a quantity, a price, damage dice. Some monospace labels remain (the batch
-  bar's select-all, the "or" divider, alternate-table column heads, list
-  summary labels, the help button, the record steps label); their surfaces
+  bar's select-all, the "or" divider, alternate-table column heads, the
+  help button, the record steps label); their surfaces
   still owe the change.
 - Two worlds in one product: the dark screen, and the white printed card.
 
@@ -510,12 +510,14 @@ are items of «Ещё» on the catalog, the roller, `/homebrew`, `/search` and
 **The First-Screen Rule.** At 360x640 and at 1180x720, in Russian and in
 English, at scroll 0, the primary content of a route starts no lower than 40%
 of the viewport height (256px at 640, 288px at 720); the header counts as a
-control above it. Two named exceptions: `/roll/std` at 360x640 starts at 325px, for
-the rarities on the dice (owner, 2026-10-29), and `/s/<token>` at 360x640 with its search
+control above it. Named exceptions: `/roll/std` at 360x640 starts at 325px, for
+the rarities on the dice (owner, 2026-10-29); `/s/<token>` at 360x640 with its search
 row starts at 302px (owner, 2026-11-03, 286px; the built page measured 301px on 2026-11-05,
-and the exception took it while the owner was away), and an account list's page with its
-folded requests strip and its search row at 360x640 starts at 324px (measured 2026-11-05 while
-the owner was away; the owner's figure was 292px). A design aims at 240px and 270px, so a small face or
+and the exception took it while the owner was away); `/s/<token>` with a 120-character list
+name at 1180x720 starts at 312px, because from 761px the name takes three lines (measured
+2026-11-05); and an account list's page with its folded requests strip (a 6px inset up to
+760px) and its search row at 360x640 starts at 304px (measured 2026-11-05 while the owner was
+away; the owner's figure was 292px). A design aims at 240px and 270px, so a small face or
 line-box difference does not fail the rule. The primary content is the first
 roll result on a roll page, the table on `/tables/*`, the item on `/i/` and
 `/h/`, the first result on `/search`, the first settings panel on `/account`,
@@ -918,7 +920,7 @@ snippet, not prose, so the prose measure does not apply. The clamp is three line
 the record. From 1000px the description's line height is 1.55, so a long second line has
 room for the eye's return. Rows stay one column at every width, and the layouts from 360px
 to 760px do not change. A row with a short description stays partly empty: tabular stat
-columns are a proposed rule (The Stat Columns Rule). Owner, 2026-11-05 (item 9).
+columns are a proposed rule (The Stat Columns Rule). Owner, 2026-11-05.
 `tests/app/states.js` case 106 measures it.
 
 **The Field Measure Rule.** A search box is at most 720px from 761px, and the controls of
@@ -929,7 +931,7 @@ Android adaptive app quality, Tier 2, UI_Secondary_Elements
 **The Stepper Rule.** A lone number field fills its column up to 480px: «-» at its left
 edge, «+» at its right edge, the value centered between them, 46px tall; a button at its
 limit is disabled, and the value stays a text field. A field in a row with its button
-keeps its content width. Owner, 2026-11-05 (item 8). Source:
+keeps its content width. Owner, 2026-11-05. Source:
 https://playbook.ebay.com/design-system/components/numeric-stepper.
 
 **The Check Rule.** Every pressed chip and segment draws the check before its label, a

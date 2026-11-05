@@ -1241,8 +1241,11 @@ address kept, and no add-to-list control is drawn.
   «Станет», «Цена» (the stock now, the count taken, the stock after, the line sum at the
   price when it was sent or «без цены»; a short line adds «Просили 9, в списке 5: возьмут
   5» under the name in the danger color; «нет в списке» for an item the list no longer
-  holds) and the total «Итого: 180 зол. · 1 позиция без цены». The list is read only while
-  the panel is open.
+  holds) and the total «Итого: 180 зол. · 1 позиция без цены». Up to 600 px each line is
+  its own block: the name, then the four values, each under its own caption, a price
+  whole. The panel is a plain plate with no gold; only the first request's «Принять» (or
+  «Принять доступное») is the primary, the later ones plain (DESIGN.md, "The Seal Rule").
+  The list is read only while the panel is open.
   A request draws its first 5 lines, then a bare fold button «и ещё N
   позиций» / "and N more items", which draws the rest and reads «свернуть» /
   "show less", one button both ways, so the focus stays on it. The panel

@@ -8,7 +8,6 @@ import { flushSync } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import HelpItem from './HelpItem.svelte';
-import { dict } from '../lib/dict.js';
 import {
   fakeClipboard,
   fakeData,
@@ -231,15 +230,14 @@ describe('the two panes from 761 px', () => {
 });
 
 describe('the help item', () => {
-  it('reads «Справка» where the panel has no name of its own', () => {
+  it('reads the name of its panel', () => {
     render(HelpItem, {
-      help: { paragraphs: [] },
+      help: { button: 'Об этой книге', paragraphs: [] },
       open: false,
-      t: dict('ru'),
       ontoggle: vi.fn(),
       onpicked: vi.fn()
     });
-    expect(screen.getByRole('menuitem', { name: 'Справка' })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'Об этой книге' })).toBeInTheDocument();
   });
 });
 

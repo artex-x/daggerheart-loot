@@ -2409,11 +2409,11 @@ describe('the page head', () => {
     page();
     await screen.findByText('4 предмета из 100');
     expect(homeOff()).toHaveAttribute('aria-pressed', 'false');
-    expect(screen.queryByRole('button', { name: t.helpHint })).toBeNull();
+    expect(document.querySelector('.helpbtn')).toBeNull();
     for (const open of [sources, sets, rules]) {
       await open();
       expect(homeOff()).toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: t.helpHint })).toBeNull();
+      expect(document.querySelector('.helpbtn')).toBeNull();
     }
   });
 

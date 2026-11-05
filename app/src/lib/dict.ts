@@ -56,8 +56,6 @@ const ru = {
   copyName: 'Скопировать название',
   copyText: 'Скопировать текст',
   copyImg: 'Скопировать изображение',
-  sImg: 'Картинка',
-  sText: 'Текст',
   openPage: 'Открыть страницу',
   openCard: 'Открыть карточку',
   showInTable: 'показать в таблице',
@@ -78,7 +76,6 @@ const ru = {
   srcFrame: 'Сеттинг',
   srcComm: 'Предметы сообществ',
   copyLink: 'Скопировать ссылку',
-  sendAll: 'Отправить',
   nameCopied: 'Название скопировано',
   imgCopied: 'Картинка скопирована',
   textCopied: 'Текст скопирован',
@@ -192,8 +189,6 @@ const ru = {
   /* The same button once it is on: the live app renames it rather than only
      filling it in, so a screen reader hears the state and not just the offer. */
   homeOn: 'Открывается при запуске',
-  helpHint: 'Справка',
-  fieldHelp: 'Подсказка: %s',
   rollLabelFor: 'Результат броска',
   /* Singular: the chip names the book, the label above the picker asks for
      one community. */
@@ -1041,8 +1036,6 @@ const ru = {
   shareStopped: 'Ссылка удалена',
   shareNoGm: 'Без заметок мастера и скрытых позиций',
   shareWithGm: 'С заметками «Только для мастера»',
-  shareHint:
-    '«Удалить ссылку» закрывает доступ: по удалённой ссылке список больше не откроется. «Создать ссылку» даёт новую. Ссылка для игроков скрывает заметки и позиции «Только для мастера», ссылка для мастера показывает их - давайте её только мастерам.',
   shareLoadFailed: 'Не получилось загрузить ссылки.',
   requestsLoadFailed: 'Не получилось загрузить запросы.',
   shareCreated: 'Ссылка создана.',
@@ -1214,8 +1207,6 @@ const en: Dict = {
   copyName: 'Copy name',
   copyText: 'Copy text',
   copyImg: 'Copy image',
-  sImg: 'Image',
-  sText: 'Text',
   openPage: 'Open page',
   openCard: 'Open card',
   showInTable: 'show in the table',
@@ -1232,7 +1223,6 @@ const en: Dict = {
   srcFrame: 'Frame',
   srcComm: 'Community items',
   copyLink: 'Copy link',
-  sendAll: 'Share',
   nameCopied: 'Name copied',
   imgCopied: 'Image copied',
   textCopied: 'Text copied',
@@ -1319,8 +1309,6 @@ const en: Dict = {
   uniqueHint: 'Printed at a single tier - this one has no upgrade ladder',
   homeHint: 'Open on start',
   homeOn: 'Opens on start',
-  helpHint: 'Help',
-  fieldHelp: 'Help: %s',
   rollLabelFor: 'Roll result',
   communityLabel: 'Community',
   realmLabel: 'Realm',
@@ -2102,8 +2090,6 @@ const en: Dict = {
   shareStopped: 'Link deleted',
   shareNoGm: 'Without GM notes and hidden entries',
   shareWithGm: 'With the GM-only notes',
-  shareHint:
-    '"Delete link" ends access: a deleted link no longer opens the list. "Create link" makes a new one. The players\' link hides the "GM only" notes and items; the GM\'s link shows them - give it to GMs only.',
   shareLoadFailed: 'Could not load the links.',
   requestsLoadFailed: 'Could not load the requests.',
   shareCreated: 'Link created.',
@@ -2160,7 +2146,7 @@ const en: Dict = {
   reqNoPrice: 'no price',
   reqUnpricedN: '%n entry without a price|%n entries without a price',
   requestsOpen: 'Open',
-  requestsFold: 'Fold',
+  requestsFold: 'Show less',
   requestNotInList: 'not in the list',
   requestApply: 'Apply',
   requestApplyAvailable: 'Apply what is there',

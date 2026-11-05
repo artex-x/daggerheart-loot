@@ -5622,13 +5622,17 @@ const FIRST_SCREEN = [
   { state: '#/lists/00000000-0000-4000-8000-000000008001 ~ many as gm4', shipped: true },
   { state: '#/lists/00000000-0000-4000-8000-000000008001 ~ long name as gm4', shipped: true },
   { state: '#/s/player-token-1', shipped: true, exception: 302 },
-  /* From 761 px the name takes up to three lines: 312 px at 1180x720 (measured 2026-11-05), logged. */
-  { state: '#/s/player-token-1 ~ long name', shipped: 360, exception: 302 },
+  /* From 761 px the 120-character name takes three lines (DESIGN.md, "The First-Screen Rule"). */
+  {
+    state: '#/s/player-token-1 ~ long name',
+    shipped: true,
+    exception: { 360: 302, 1180: 312 }
+  },
   /* The folded requests strip above the rows (docs/specs/FEATURES.md, "Lists"). */
   {
     state: '#/lists/00000000-0000-4000-8000-000000000101 ~ requests as gm1',
     shipped: true,
-    exception: 324
+    exception: 304
   }
 ];
 
@@ -5989,7 +5993,14 @@ async function primaryContentInFirstScreen() {
           const where = row.state + ' ' + width + 'x' + height + ' ' + lang;
           ok(!!got, '83 (first screen): ' + where + ' marks no [data-primary] with a height');
           if (!got) continue;
-          const limit = width === 360 && row.exception ? row.exception : 0.4 * got.vh;
+          /* A number is the 360 px exception; an object names one per width. */
+          const exception =
+            typeof row.exception === 'object'
+              ? row.exception[width]
+              : width === 360
+                ? row.exception
+                : undefined;
+          const limit = exception ?? 0.4 * got.vh;
           const pass = got.top <= limit;
           fs.writeSync(
             1,
@@ -5999,7 +6010,7 @@ async function primaryContentInFirstScreen() {
               got.top.toFixed(0) +
               ' / ' +
               limit.toFixed(0) +
-              (width === 360 && row.exception ? ' (exception)' : '') +
+              (exception ? ' (exception)' : '') +
               (pass ? ' pass' : ' over') +
               (asserted ? '' : ' (logged)') +
               '\n'
@@ -8630,6 +8641,55 @@ async function noteSwitchInABrowser() {
     at + 'the price switch did not move the example - ' + coin
   );
   await ctx.close();
+
+  /* At 360 px the notes of an unfolded compact row, read-only and open, take the width of
+     the unfolded part: no second indent under it, and no sideways scroll. */
+  for (const lang of ['ru', 'en']) {
+    const n = await fresh({ width: 360, height: 640 });
+    try {
+      await openAccountList(
+        n.d,
+        {
+          n: 1,
+          name: 'Тайник',
+          ids: ['ci1', 'ci2'],
+          meta: { ci1: { note: 'Светится в темноте', hnote: 'Проклят' } }
+        },
+        '107'
+      );
+      if (lang === 'en') await n.d.click('EN');
+      await n.d.unfold(0);
+      const width = () =>
+        n.page.evaluate(() => {
+          const body = document.querySelector('.lrow .cfull');
+          const note = body?.querySelector('.rnote');
+          /* The content box: a padded note box is as wide as its row and still narrow. */
+          const inner = (e) => {
+            const cs = getComputedStyle(e);
+            return e.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+          };
+          return {
+            row: body ? inner(body) : 0,
+            note: note ? inner(note) : 0,
+            scroll: document.documentElement.scrollWidth - document.documentElement.clientWidth
+          };
+        });
+      const ro = await width();
+      ok(
+        ro.note >= ro.row - 24 && ro.scroll <= 0,
+        at + '360 ' + lang + ': the read-only row notes are narrow - ' + JSON.stringify(ro)
+      );
+      await n.page.click('.lrow .cfull [data-note-open]');
+      await n.d.settle();
+      const open = await width();
+      ok(
+        open.note >= open.row - 24 && open.scroll <= 0,
+        at + '360 ' + lang + ': the open note area is narrow - ' + JSON.stringify(open)
+      );
+    } finally {
+      await n.ctx.close();
+    }
+  }
 
   const r = await fresh({ width: 1180, height: 900 });
   try {

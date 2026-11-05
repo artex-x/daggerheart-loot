@@ -390,6 +390,16 @@ describe('the list note', () => {
     }
   });
 
+  it('reopens on the players note after the GM note was shown and the area closed', async () => {
+    await openA();
+    await openListNotes();
+    await userEvent.click(screen.getByRole('button', { name: /^Только для мастера/ }));
+    await userEvent.click(screen.getByRole('button', { name: 'Готово' }));
+    await openListNotes();
+    expect(screen.getByRole('textbox', { name: 'Для игроков' })).toHaveFocus();
+    expect(screen.queryByRole('textbox', { name: 'Только для мастера' })).toBeNull();
+  });
+
   it('marks each filled note on its switch option for a screen reader', async () => {
     await openA();
     await openListNotes();

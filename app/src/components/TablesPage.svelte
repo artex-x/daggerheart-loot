@@ -755,7 +755,6 @@
           <PinItem {app} {home} onpicked={closeMore} />
           {#if help}
             <HelpItem
-              {t}
               {help}
               open={helpOpen}
               onpicked={closeMore}

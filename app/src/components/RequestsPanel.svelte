@@ -190,7 +190,7 @@
   </div>
 {/if}
 {#if owner && (pending.length || decided.length || notices.length)}
-  <section class="reqpanel" aria-labelledby="reqpanel-h" bind:this={panel}>
+  <section class="reqpanel" class:folded aria-labelledby="reqpanel-h" bind:this={panel}>
     <div class="reqhead">
       <h2 id="reqpanel-h" tabindex="-1" bind:this={head}>
         {t.inboxHead.replace('%n', String(pending.length + notices.length))}
@@ -207,7 +207,7 @@
     </div>
     {#if !folded}
       <div id="reqpanel-body">
-        {#each shown as r (r.id)}
+        {#each shown as r, i (r.id)}
           {@const short = owner.short[r.id]}
           {@const total = requestTotal(r.lines)}
           {@const all = linesOpen.has(r.id)}
@@ -241,11 +241,11 @@
                     {#if stock === null}
                       <td class="n short" colspan="3">{t.requestNotInList}</td>
                     {:else}
-                      <td class="n">{stock}</td>
-                      <td class="n" class:short={l.qty > stock}>{took}</td>
-                      <td class="n">{stock - took}</td>
+                      <td class="n" data-h={t.reqWas}>{stock}</td>
+                      <td class="n" data-h={t.reqTaken}>{took}</td>
+                      <td class="n" data-h={t.reqBecomes}>{stock - took}</td>
                     {/if}
-                    <td class="n"
+                    <td class="n" data-h={t.reqPrice}
                       >{l.price === null
                         ? t.reqNoPrice
                         : priceText(l.price * l.qty, mode, app.lang)}</td
@@ -278,10 +278,11 @@
               <p class="shortmsg" role="alert">{shortText(short, itemName, t)}</p>
             {/if}
             <Actions>
+              <!-- One gold action in the panel: the first request's (DESIGN.md, "The Seal Rule"). -->
               {#if !short}
                 <Button
                   size="sm"
-                  variant="primary"
+                  variant={i === 0 ? 'primary' : 'plain'}
                   disabled={owner.busy !== null}
                   onclick={() => void answer(r.id, () => owner.apply(r.id, false))}
                   >{t.requestApply}</Button
@@ -289,7 +290,7 @@
               {:else if r.lines.some((l) => (stockOf(l.item) ?? 0) > 0)}
                 <Button
                   size="sm"
-                  variant="primary"
+                  variant={i === 0 ? 'primary' : 'plain'}
                   disabled={owner.busy !== null}
                   onclick={() => void answer(r.id, () => owner.apply(r.id, true))}
                   >{t.requestApplyAvailable}</Button
@@ -432,11 +433,13 @@
     margin: 0 0 18px;
   }
 
+  /* The `Panel` ground: a waiting request is nobody's choice, so no gold frame. */
   .reqpanel {
     margin: 0 0 18px;
-    border: 1px solid rgb(var(--gold-rgb) / 45%);
+    border: 1px solid var(--line);
     border-radius: var(--r);
-    background: rgb(var(--gold-rgb) / 6%);
+    background: linear-gradient(180deg, var(--surface2), var(--surface));
+    box-shadow: var(--shadow);
     padding: 12px 14px;
   }
 
@@ -519,7 +522,7 @@
 
   .total {
     font-size: var(--t-small);
-    color: var(--gold-soft);
+    color: var(--txt);
     margin-bottom: 8px;
   }
 
@@ -567,7 +570,7 @@
   .nnew {
     font-size: var(--t-label);
     font-weight: 650;
-    color: var(--gold-soft);
+    color: var(--muted2);
   }
 
   .nfold {
@@ -613,30 +616,75 @@
   }
 
   .st-ok {
-    color: var(--gold-soft);
+    color: var(--muted2);
   }
 
   .st-no {
     color: var(--danger-text);
   }
 
-  /* Five columns in a 300 px panel at 360 px: tighter insets, a name and a price that wrap. */
+  /* Up to 760 px the folded strip is one short line above the rows (DESIGN.md, "The
+     First-Screen Rule"). */
+  @media (max-width: 760px) {
+    .reqpanel.folded {
+      padding: 6px 12px;
+      margin-bottom: 10px;
+    }
+  }
+
+  /* Up to 600 px each line is its own block: the name, then the four values, each under
+     its own caption; the head row stays for a screen reader only, and a price stays whole. */
   @media (max-width: 600px) {
-    th {
-      letter-spacing: 0;
+    thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
     }
 
-    th.n,
-    td.n {
-      padding-left: 6px;
+    tbody tr {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(max-content, 1.3fr);
+      gap: 1px 8px;
+      padding: 4px 0;
     }
 
     td {
-      overflow-wrap: anywhere;
+      padding: 0;
     }
 
-    td.n:last-child {
+    tbody td:first-child {
+      grid-column: 1 / -1;
+      font-weight: 600;
+      overflow-wrap: break-word;
+      /* A long name or short line would widen the price track it spans. */
+      contain: inline-size;
+    }
+
+    td.n {
+      padding-left: 0;
+      text-align: left;
+    }
+
+    td.n[colspan] {
+      grid-column: span 3;
       white-space: normal;
+    }
+
+    td.n::before {
+      content: attr(data-h) / '';
+      display: block;
+      font-size: var(--t-badge);
+      line-height: 1.3;
+      font-weight: 650;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted2);
+    }
+
+    td.n[colspan]::before {
+      content: none;
     }
 
     .req :global(.btn) {

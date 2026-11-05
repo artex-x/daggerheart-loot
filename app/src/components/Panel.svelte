@@ -3,12 +3,10 @@
    *
    * Extracted because `AltPanel`, `StdPanel`, `RollPanel`, `ListsPage` and
    * `SearchPage` each carried an identical copy of these five declarations.
-   * `TablesPage`'s `.tablenav` and `ListPage`'s
-   * `<details class="panel lroll">` stay inline: each is the base rule plus a
-   * variant margin or element the parent owns, and Svelte scopes a parent's
-   * rule to the parent's own elements - giving this component a `class` prop
-   * would make all three variants `:global()`, which is worse than three
-   * five-line copies. */
+   * `TablesPage`'s `.tablenav` and `RequestsPanel`'s `<section>` stay inline: each is the
+   * base rule plus a variant margin or element the parent owns, and Svelte scopes a parent's
+   * rule to the parent's own elements - giving this component a `class` prop would make the
+   * variants `:global()`, which is worse than two short copies. */
   import type { Snippet } from 'svelte';
 
   /* `primary` marks the page's primary content (DESIGN.md, "The First-Screen Rule"). */

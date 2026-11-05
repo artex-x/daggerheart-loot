@@ -2,23 +2,22 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress. Waves 1, 2 and 2b are on `main`; wave 3: 9a and 8 done; batch 9b is implemented and
-  verified but NOT committed: `check:fast` fails at its format stage on another session's untracked planner files
-  (`issues/57/mocks/{D,N/*,P/burden,T,text}/`, `plan-{D,N,P,T,rebatch,text}.md`; two HTML files do not parse), so
-  the commit gate has no credit. 9b's own files pass Prettier.
-- Last agent: implementer (batch 9b, 2026-11-05). No subagent runs. No worker has uncommitted code edits.
-- NEEDS_HUMAN_CONFIRMATION: no for batch 9b (Q9b-1 and Q9b-2 are answered by the owner; AFK items 17 to 19; M21 and M22 are planner defaults). No for batch N: the owner answered N1 (option A with a visible `h1`), N2 (pills), N3 (heading, pills, then pin and help) and N4 (one head order on every `PageHead` page) on 2026-11-05; its refresh expands `plan-nav.md` into `plan-N.md`. One planner default the owner may overrule: from 761 to 999 px the pills take their own row under the head row (`plan-nav.md` section 4).
+- Task status: in_progress. Waves 1, 2 and 2b are on `main`; wave 3: 9a, 8 and 9b done. 9b is `18429aee`
+  (pushed; CI run 42083009049 red), its review `22f93378` (`reviews/9b.md`, fix-then-continue), and its one
+  remediation pass is committed on top, not pushed (the dispatch said not to push).
+- Last agent: implementer (the 9b remediation pass, 2026-11-05). No subagent runs. No worker has uncommitted code
+  edits.
+- NEEDS_HUMAN_CONFIRMATION: no. One figure for the owner: the folded requests strip at 360x640 now starts the
+  rows at 304 px (was 324; the owner's figure was 292), so the 360 exception is 304 (review B3: above 300, logged).
+  No for batch N: the owner answered N1-N4 on 2026-11-05; one planner default the owner may overrule: from 761 to
+  999 px the pills take their own row under the head row (`plan-nav.md` section 4).
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
-- Base / starting commit: `d8e30731`; previous sha of batch 9b: `340fa727`.
-- Pushed: no. Uncommitted: batch 9b's files (every path in `git status` except `issues/57/context.md`,
-  `issues/57/plan-nav.md` and the untracked planner files above, which are the other session's).
-- Next step, in order: (0) the other session commits or formats its planner files; then `VITEST_MAX_WORKERS=2 rtk
-  npm run check:fast` and the 9b commit (stage 9b's files by name); (1) the orchestrator runs `polish` and `harden` on `ListPage`, `SharedListPage`,
-  `RequestsPanel`, `SharePanel` (360, 768, 1180, 1920), dispatches 9b's batch review (trigger: changed UI,
-  `tests/app/`, `.impeccable/config.json`, `.prettierignore`), pushes, and waits on CI; (2) batch T's refresh
-  (`plan.md` section 7, "Batch T"), then T; batch N follows T and precedes P; (3) batch P, 10; the wave 3 and
-  whole-app blind reviews; closeout. DESIGN.md "Proposed rules" now holds the guideline sources (the dispatch
-  stopgap of `context.md` item 10 ends).
+- Base / starting commit: `d8e30731`; previous sha of the 9b remediation pass: `22f93378`.
+- Pushed: up to `18429aee`; `22f93378` (the review) and the remediation commit are not pushed.
+- Next step, in order: (1) the orchestrator pushes, waits on CI of the fix tip (one re-run of a failed `e2e`
+  counts) and runs `polish` and `harden` on `ListPage`, `RequestsPanel`, `SharePanel`; (2) batch T's refresh
+  (`plan.md` section 7, "Batch T"), then T; N follows T and precedes P; (3) P, 10; the wave 3 and whole-app blind
+  reviews; closeout. The wave 3 squash message takes `reviews/9b.md` R7's corrected text.
 
 ## Completed
 One line per shipped batch. The full acceptance tables, deviations and measurements of batches 1 to 9a are in
@@ -43,87 +42,9 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
 - Wave 2b (7b, W): on `main` as `b6f153a5`, merged back as `8b99ac8e`.
 - Batch 9a - the list pages on a phone: `6703151d`, fix `6f90ccd6` (`reviews/9a.md`, approve).
 
-- Batch 8 - the lists page, list cards, lists import, the add-to-list menu, the stepper and the ceiling (`plan-8.md`,
-  previous sha `82dec9d6`). New: `ListFind`'s optional filter props and `beside`, `TextInput`'s `onkeydown`,
-  `ListCard`'s `inbox`, cases 102-104, two decision files (the popover, the 300 kB ceiling). Deleted: `BatchBar.svelte`,
-  `batchBar.test.ts`, `help.ts` `LISTS`, `DEBT.md` D116 and its section. Acceptance:
-
-  | Line | Outcome |
-  |---|---|
-  | 1 Head | Done: `PageHead` + `extra`; no sub, no help; `LISTS` and `#/lists ~ help` gone. `listsPage.test.ts` "the head"; case 102 (CI) |
-  | 2 «Ещё» of the head | Done: the import item and `PinItem`; no `.homebtn` on `/lists`; DESIGN Same Label sentence and the two FEATURES "Chrome" sentences rewritten |
-  | 3 «Новый список» and the field | Done: label «Название списка», Enter/«Создать», Escape/«Отмена», focus in and back, empty name kept; plus icon at both bands |
-  | 4 Limit and 150 lists | Done: `listsFull()` toast, field closed, `.count.over`; 150 lists draw 24, «Показать ещё (126)», the bar «Все» ticks 48 |
-  | 5 Count line and search | Done: count, `SyncStatus`, «Выбрать»; `ListFind` from 8 with the count in the row from 761 px, under it up to 760 px; no «Ваш аккаунт», `groupAccount` gone, D116 deleted |
-  | 6 Card | Done: the chip «Новое в списке (N)» (neutral), «Ещё: <name>» with «Открыть», «Скачать JSON», a separator, «Удалить список»; no red «Удалить»; the link name holds the chip. The 120-character wrap is case 102 (jsdom has no `overflow-wrap`) |
-  | 7 Card delete | Done: today's confirm, no undo, focus to the next card's «Ещё», else the previous, else the primary. Deviation 4 on a list another tab deleted |
-  | 8 Selection mode | Done: `app.pageBar = listsBar`, focus on «Все», ticks only in the mode, neutral `.picked`, the actions off at zero, «Снять выделение» to «Выбрать», delete keeps the mode, no drawn card leaves it; `hues.js` reads the ticked card; 640x360 and the bar edge are case 102; `BatchBar` files and their `a11y`/COVERAGE rows gone |
-  | 9 A-label | Verified, no change: the bar's add button is `AddToList`'s `t.toList` on every page (batch 4 K4); `addToList` is read only by `QuickItem`. Covered by `homebrewBulk.test.ts`, `pickRow.test.ts`, `tables.test.ts` (`openBarMenu` presses «В список») and `sharedListPage.test.ts` (`within(bar)` «В список») |
-  | 10 Empty, signed out, failed | Done: three states, goldens `~ empty as gm4`, `#/lists`, `~ load failed`; axe in `listsPage.test.ts` |
-  | 11 Import | Done: head toggle or menu item, panel under the head, focus back; skip lines with no raw id, a known record named; closed fold «Пропущено: N»; name-taken line in view; refused codes kept; cases 58-62 and e2e F13 adapted |
-  | 12 Not found | Done: two `ErrorPage` branches, one `h1`; `listNotFound`, `listNotFoundSub`, `signInToOpen` removed (no reader); A18 closed |
-  | 13 Add-to-list menu | Done: heading «Списки» (also signed out), rows with check, `aria-pressed` on a one-record menu only, the count as the row's description, no gold, 44/36 px rows, «Новый список» button under a separator; popover at every width; cases 1, 2, 3, 22, 23, 27, 37, 42 adapted |
-  | 14 Stepper (owner item 8) | Done: `flex: 1 1 auto; min-width: 0` on the input, the 240 px cap kept (AFK item 16); FEATURES "Rolling" area and DESIGN One Width Rule updated; case 104 (CI) |
-  | 15 Ceiling (9a R1) | Done: `tools/bundle-budget.mjs`, `.claude/README.md`, the new decision file and the "Amended by" line; budgets not raised (268.3 of 269, 325.7 of 326) |
-  | 16 States and cases | Done: inventory entries below, goldens re-seeded, cases 102-104 written; `FIRST_SCREEN` rows `shipped: true`; no case deleted |
-  | 17 Parity, detector | Done: `i18n.test.ts` passes; detector 62 findings (67 at batch W), none new in a touched file; no `impeccable-disable` added |
-  | 18 `polish` and `harden`, shots | Shots in `mocks/8/built/` (`shoot.js`); `polish` and `harden` are the orchestrator's (a subagent cannot run Impeccable), see Notes |
-
-  CI fix, 2026-11-05: the 2026-10-30 list-pages decision file got the "Amends" line the 2026-09-28 file's "Amended by" needs; `node tools/decisions.js` and the `derived` suite pass.
-
-
-- Batch 8 departures and deviations:
-  1. Two keys beyond the brief: `listOpen` («Открыть», the card menu item: `noticeOpen` and `arrivalOpen` mean other
-     things) and `listGoneAs` («Вы вошли как %s.»): the sentence is left out without an email, so it is its own key.
-  2. The add-to-list row's accessible name is the list name alone, and its count is its description
-     (`aria-labelledby`, `aria-describedby`): a name of "name + count" broke every row lookup and reads the count twice.
-  3. The chip «Новое в списке (N)» and «Ещё» sit on two lines of the card, not one as mock 8: the chip is inside the link
-     (the plan) and the actions row is after it.
-  4. A delete of a list another tab already deleted: no guard was added. The menu leaves with its card, so the stale
-     press is only a confirm-time race; `CloudLists.remove` of a gone id enqueues a delete that removes nothing on the
-     server. Acceptance 7's second clause holds by the store and the server, with no unit test.
-  5. `ListCard` lost `overflow: hidden` (the card's menu opens past it) and its pick box's accent is `--txt`.
-  6. Up to 760 px the head's buttons are 44 px tall with 6 px insets and a 4 px icon gap: the RU row is 307 of 313 px
-     at 360. At 320 px the primary and «Ещё» wrap under the `h1` together (no text fits: `h1` 120 + 178 px), against
-     acceptance 1's "one row at 320"; case 102 holds one row from 360 and the pair's row at 320 (the 9a precedent,
-     `HomebrewPage` at 320). `PageHead` lost its round pin rules (no caller draws pin or help in it below 761 px; S10).
-  7. Case 104 reads `/roll/wondrous` for the `RollPanel` (no `/roll/eq_weapon` route) and checks the price sheet's
-     steppers by their 52 px input and no growth, not by the 133/136 figures of the brief (case 89 logs none).
-  8. `ImportPanel`'s name-taken line is a `<p class="taken">`, outside the fold, not a list item.
-  9. Found by the local run of case 83: the empty `SyncSaid` region took a grid row and its 14 px gap; it sits before
-     the `.stack` now, and up to 760 px the stack's top margin is 8 px and the count under the search row is tighter.
-     First screen at 360x640: `#/lists as gm1` 239 of 256 (mock 231), `~ many lists as gm4` 252 of 256 (mock 253), RU
-     and EN; 199 of 288 at 1180 (mock 189 and 191).
-  10. Found by the local run of case 102: at 320 px a card was 280 px in a 273 px grid (`minmax(280px, 1fr)`); the grid
-     takes `minmax(min(280px, 100%), 1fr)`.
-- Review: required (trigger: changed UI, `tests/app/`, configuration), report `issues/57/reviews/8.md`, verdict
-  fix-then-continue. The one remediation pass (previous sha `c489766a`):
-
-  | Finding | Outcome |
-  |---|---|
-  | CI `check`: `Chip.svelte` branches 62.5% | Reproduced: `vitest related Chip.svelte --coverage` gave 62.5% (5/8), lines 83-96. Batch 8 removed the last caller of `Chip`'s `busy` (the menu rows are `.lrow` now). Fixed: the dead `busy` prop and its `aria-disabled` CSS are gone; no threshold changed |
-  | CI `app/typo` `#/lists` "help" | Stale grip: `/lists` has no help (Q8.1). `EXPECTED['#/lists']` is `[]`; the comment names `ListsPage` beside `SearchPage`. `node tests/run-all.js app/typo` passes |
-  | CI e2e F7 «E2E список» | Stale wait: `waitControl`'s `NAMED` read `aria-label`, else the text, and a menu row's text is its name and its count. `NAMED` reads `aria-labelledby` first, as the driver's `NAME_FN`; F8's «E2E ссылки» had the same wait. F10, F13 (`d.tick` opens the mode) and F15 read as written. Not runnable here: CI's `e2e` is the proof |
-  | CI `app/states` 54 | Caused by batch 8 (a stale case): the index card says «Новое в списке (N)» and no «N запрос(а) ждёт ответа» line. Reproduced alone through the in-memory loader (both lines failed). The case reads the card's `.listcard-new` chip, (1), then (2) after `shownAgain`; it passes |
-  | CI `app/states` 86 | Not batch 8: a timing flake of the slow shard (1414 s). Batch 8 changed no header file (`git diff 82dec9d6 dc132655` of `Shell`, `headerScroll`, `ports/scroll`, `tokens.css`, `App` is empty), and the case passed twice alone. Unchanged; Deferred names it |
-  | B1 | Fixed: the `LoadState` branch sits in a plain `<div>`, so «Повторить» keeps its own width; `listsPage.test.ts` asserts that the retry is no grid item of `.stack`. The shots are not re-taken |
-  | R1 | Fixed: both `FEATURES.md` "Chrome" sentences as the review wrote them |
-  | R2 | Named: CI's `e2e` figure of the tip is the orchestrator's read before 9b |
-  | R3 | Fixed: `again: (d) => d.click('Add to list')` on both states, re-seeded (EN menus open). Nine more add-to-list states have closed EN halves (Deferred). The EN shots are not re-taken |
-  | R4 | Fixed: the sweep entry opens every `.skips` fold by its summary («Пропущено: N» / "Skipped: N") and throws when it finds none. Not run here: `sweep.js` is CI's |
-  | N1 | Fixed: both `gone()` branches pass `said`; `listPage.test.ts` reads the status after the page |
-  | N2 | Fixed (one attribute and a test): «Новый список» carries `aria-expanded`; every signed-in `_lists*` golden moves by it |
-  | N3 | Fixed: `knownItems(l, byId)` moves to `lib/cloudLists.ts` (its second caller); the add-to-list row counts it, as the card does. `cloudLists.test.ts`; `lists.test.ts` reads «1 позиция» for a list of `w1` (not in the test data) and `ci1` |
-  | N4 | Fixed: the signed-out plate centers «Войти» under the lead (`.signedout`, `justify-content: center`) |
-  | N5 | Fixed: up to 760 px the name input takes its own line and «Создать» and «Отмена» the next one; `FEATURES.md` "Lists" |
-  | N6 | Fixed: the two 2026-11-05 decision files cite no batch, plan line or mock; the 2026-09-28 file gains "Amended by" the 2026-10-30 file, above "- Task" |
-  | N7 | Fixed: Status replaced, the deviations in order 1-10, this Review line, the file compacted |
-  | N10 | Fixed: «Войдите, чтобы открыть список» / "Sign in to open this list", the sentence kept; `FEATURES.md`, `COVERAGE.md`, `inventory.js`, the tests |
-  | P1 | Skipped: the Thumb Rule batch (G1) resizes the same card «Ещё» to 40 px, so a ghost variant now would be done twice |
-  | N8, N9, P2, G1-G6 | Left as their `reviews.md` rows say (deferred) |
-
-  The new and changed unit tests failed at `17700f3c` in a detached worktree outside the repo (6 failed: the two
-  `said` reads, `aria-expanded`, the retry's parent, the menu row's count, the `knownItems` import); it is removed.
+- Batch 8 - the lists page, list cards, lists import, the add-to-list menu, the stepper and the ceiling
+  (`reviews/8.md`, remediated): its acceptance table, deviations 1-10, the remediation table and its
+  verification are in `git show 22f93378:issues/57/handoff.md`.
 
 - Batch 9b - the list panels and five guideline rules (`plan-9b.md`, previous sha `340fa727`). Acceptance:
 
@@ -162,121 +83,73 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
   | 31 `/s/` tail and note | Done: `.rtail` `--muted2`, mono, tabular; the GM box without gold; case 106 (i) |
   | 32 Deferred rows | Done: the bare «1» and the stat columns rows are in Deferred |
 
-- Batch 9b deviations:
-  1. Dict: `noteKind` («Чья заметка», the switch's group name) and `reqItem` («Позиция», the name column's header) beyond
-     the brief; `noteEdit` reuses `edit`, `noteForPlayers`/`noteForGm` reuse `notePub`/`noteHid`, `noteClearText` is the
-     shortened `noteClear` («Очистить»). Deleted: `requestOf`, `notePubHint`, `noteHidHint`, `mdHelp`, `moneyAs`.
-     `unpricedN` stays (the selection bar's total).
-  2. Plan state ids: the 761 px row menu is `~ row menu as gm4` (`~ row more as gm4` is the 360 compact state); the
-     book-units state is the existing `~ noted` and the new one is `~ prices in coins`; the requests states live on
-     gm1's shop (`SHOP ~ requests as gm1` now folded, `~ requests open as gm1` new).
-  3. `FIRST_SCREEN`: the requests row (gm1's shop: the folded strip and the search row of its 10 entries) measured
-     324 px at 360x640, so its exception is 324 and DESIGN.md "The First-Screen Rule" names it (owner's figure 292;
-     the AFK log entry is the orchestrator's). `#/s/player-token-1 ~ long name` stays `shipped: 360`: from 761 px
-     the name takes three lines and the first entry starts at 312 of 288 at 1180x720 (logged, not asserted).
-  4. Case 106 (b) measures a clamped box against its row's content edge, not its last line (a multi-paragraph
-     description ends lines early by content); case 107 leaves the page and comes back instead of a reload (the
-     fake cloud lives in the page).
-  5. Found by case 65: at 360 the five request columns pushed the page sideways; up to 600 px the insets narrow and a
-     name and a price wrap (`RequestsPanel.svelte`).
-  6. The sweep entry opens the list notes and a row's note area (360 and 761+); the requests panel at 360 is not in
-     the sweep (gm1's shop holds no request on arrival).
+- Batch 9b deviations 1-6 (dict keys, state ids, `FIRST_SCREEN`, case 106 (b), case 65's insets, the sweep
+  entry): `git show 22f93378:issues/57/handoff.md`. Deviation 3's 324 px and Deviation 5's wrapping insets are
+  superseded by the remediation below.
+- Review: required, `reviews/9b.md`, fix-then-continue. The one remediation pass (previous sha `22f93378`):
+
+  | Finding | Outcome |
+  |---|---|
+  | CI `check`: `HelpButton.svelte`, `RecordActions.svelte` coverage | Cause: 9b removed the callers of `HelpButton`'s small and unlabeled forms (the list page's «?», `QuickItem`) and of `RecordActions`' `name` and `card` rows (the list roll's compact card). Fixed by removing the dead code, not by tests: `HelpButton` is the one labeled form `PageHead` draws (`size`, `controls`, `labeled`, `lang` gone); `Help.button` is required (every help names one), so `HelpItem` lost `t`; `RecordActions` keeps `share` and `menu`; dict keys `helpHint`, `fieldHelp`, `sendAll`, `sImg`, `sText` deleted (no reader). No threshold changed. `RecordCard`'s `compact` variant and `nameActions` stay for batch 10 (Deferred): their removal reaches `tools/artwork` `REVIEW_ART_SIZES` and eight `record.test.ts` cases |
+  | CI `app/sweep` 360/390 «список: заметки открыты» | Cause: B1. Reproduced on the 9b build (45 px RU, 16 px EN at 360); after the fix the entry is clean at 360 and 390, RU and EN |
+  | CI `app/typo` `#/roll/community_items` `span.pv` | The app was wrong: at 1180 the roll page's control row is 282 px and the primary takes 149, so the picker got 125 px and «Великородное» (99 px) was cut (81 shown). `.rp-ctrl` and `AltPanel`'s `.altctrl.row` wrap: the roll button takes its own line when the value and it do not fit (community RU at 1180: the picker 282 px). `node tests/run-all.js app/typo` passes |
+  | CI `app/print` «Убрать из списка» | Stale step: from 761 px the removal is an item of the row's «Ещё». The step opens it first (`d.openMore('.lrow-acts .morewrap > ...')`); the assertion is kept. Reproduced and checked alone (`scratchpad/print-step.cjs`): the old press throws the CI error, the new one draws the toast, hidden under print |
+  | B1 | Fixed: `.lrow.compact .rnote { padding: 0; margin: 4px 0 0 }`; case 107 checks at 360, RU and EN, the read-only notes and the open area against the row width less 24 px and no sideways scroll. Shots `list-notes__360`, `list-note__360`, `list-note-area__360` |
+  | B2 | Fixed: the `Panel` ground (line border, plate gradient, shadow), the total in `--txt`, `.st-ok` and `.nnew` in `--muted2`, `primary` only on the first shown request; `requestsPanel.test.ts` (one gold action); FEATURES.md "Purchase requests: the owner" |
+  | B3 | Fixed: up to 760 px the folded strip has a 6 px 12 px inset and a 10 px margin; measured 304 px at 360x640 RU and EN (was 324); the exception is 304 and DESIGN.md "The First-Screen Rule" says so. Above 300: logged for the owner in Status |
+  | R1 | Fixed: the `faces` container is the whole `.lroll-res`, so a panel of 641 px or more draws the tall card face in the 260 px column (1180, 768); a narrower panel (601 to about 690 px windows) keeps the row face. Named deviation from "card face from 601 px" |
+  | R2 | Fixed: up to 600 px each request line is a block: the name, then four values under their own captions (`data-h`, `content: attr() / ''`), the price whole (`max-content`); the head row is visually hidden for a screen reader. Case 65's 1000 px panel bound holds after the line insets were tightened |
+  | R3 | Fixed: `FIRST_SCREEN` takes a per-width exception; `/s/ ~ long name` is `shipped: true` with `{ 360: 302, 1180: 312 }`, case 83 asserts it; DESIGN.md names it |
+  | R4 | Checked, nothing widened past its box: `scratchpad/seg-probe.cjs` on `#/homebrew/new ~ equipment`, `~ new card` and a set page at 320 and 360, RU and EN: no `.seg` past its parent's content box, no cut option, no sideways scroll; some switches wrap to two to five rows. Shots `hb-new`, `hb-card`, `hb-set` at 320/360 |
+  | N1 | Fixed: `.lroll-line` in `var(--ui)` with tabular figures |
+  | N2 | Fixed: `shareHint` deleted in both languages, with its `.hint` rule |
+  | N3 | Fixed: the Seal Rule comment sits on the panel head rule |
+  | N4 | Fixed: DESIGN.md "Key Characteristics" and the Deferred monospace line no longer name the list summary labels |
+  | N5 | Fixed: "(item 9)" and "(item 8)" gone |
+  | N6 | Fixed: EN `requestsFold` "Show less", as the fold button |
+  | N7 | Fixed: the «Возьмут» cell is not red; the short line under the name says it |
+  | N8 | Fixed: the new `typo.js` message uses an ASCII hyphen |
+  | N9 | Fixed: a closed area forgets its shown note (`closeArea`, the close branch of `toggleArea`); `listPage.test.ts` "reopens on the players note" |
+  | N10 | Fixed: `.lrow-n` is `--txt` on no tint, focus on `--surface2`; the grip lost its gold tint |
+  | N11 | Fixed: this Status; the file compacted (batch 8 and the 9b deviations to the pre-pass commit) |
+  | R5, R7, N12, N13 | Left as their `reviews.md` rows say |
+
 
 ## Verification
-- Batch 9b, 2026-11-05 (previous sha `340fa727`; vitest with `VITEST_MAX_WORKERS=2`):
-  - `svelte-check`: 0 errors. Vitest `listPage` 134 pass (40 adapted: the side column, the note area, the row «Ещё»,
-    the price switch, the roll panel); `requestsPanel` 37 (+1); `sharePanel`, `sharedListPage`, `chip`, `quickItem`,
-    `i18n`, `help`, `plural`: 272 pass together; `lists` and `listPage.timed`: 39 pass.
-  - Goldens: `build:test`, the four shards with `--update` (shard 1 failed once on the three stale help goldens,
-    removed; shard 4 once on `SHOP ~ own item preview` pressing the seventh «Просмотр», fixed and re-seeded with
-    `--only`). 67 files: 3 deleted (the help states), 8 new, the rest changed (`_lists*`, `_s_gm_token_1_saved`, the nine
-    add-to-list states' EN halves, `#/lists/...201` notices).
-  - Browser cases through the in-memory loader (`scratchpad/states-only.cjs`, the `CASES` list filtered) on the final
-    `dist-test/`: 13, 17, 18, 22, 30, 33, 56, 64, 65 (after the Deviation 5 fix), 69, 76, 100, 104, 105, 106, 107 pass;
-    83 passes after the two `FIRST_SCREEN` changes of Deviation 3 (list page 210 / 139, `~ many` 254 / 139, `/s/` 301 /
-    275, the requests row 324 / 209 at 360 / 1180).
-  - Case 106 clamp shares, RU then EN, 1180 / 1440 / 1920: `/search ~ searched` 12.2 / 9.9 / 9.2 and 10.7 / 8.4 / 8.4;
-    `~ capped` 2.1 / 1.4 / 1.4 and 1.4 / 1.4 / 1.4; `eq_weapon` 6.5 / 5.1 / 4.8 and 5.4 / 3.9 / 3.7; `wondrous` 0.8 every
-    width; `hnf_consumable` 0; `voa` (logged) 61.8 / 36.8 / 34.7 and 40.3 / 25.7 / 23.6; `/s/player-token-1` (logged,
-    10 rows) 20 / 10 / 10 and 10 / 10 / 10. The 1.55 line height is kept (no first-screen top moved).
-  - E4: `npx impeccable detect --json --no-config --no-inline-ignores ListPage.svelte HitNote.svelte`: `[]`; one edit
-    with the hook live and `impeccable detect --json app/src`: `config.json` byte-identical (`cmp`), 60 findings (62
-    before), none new in a touched file (the old 11 px / 7 px radii); `prettier --check .impeccable/config.json` passes.
-  - `npm run lint:untyped`, `npm run lint:typed`: exit 0 after the last edit. `node tools/decisions.js`: 314 decisions.
-  - `rtk npm run check:built`: pass, 268.0 kB within 269 (unconfigured); no budget raised.
-  - `VITEST_MAX_WORKERS=2 rtk npm run check:fast`: FAIL at the format stage, only on the other session's untracked
-    files. Its later stages run by hand: `node tools/check/run.mjs --only=typecheck,test:golden` pass (23 s); the
-    `vitest related` of the plan's 27 test roots with coverage on the 19 changed sources (`VITEST_MAX_WORKERS=2`): 80
-    files, 2929 of 2932 pass on the first run; the 3 failures fixed (`a11y.test.ts` pressed the old roll summary,
-    `shell.test.ts` now opens the folded requests panel before the read, `listPage.timed.test.ts` scopes its role
-    queries to the bar: 27.4 s to 4.8 s alone) and their files rerun: 157 pass. The budget stage: `check:built` above.
-  - Commit gate, 2026-11-05: planner mock files formatted and committed apart as `18855ed`; two stray `</html>` tags
-    removed from `mocks/N/headorder/index.html` and `mocks/N/index-N.html`. `VITEST_MAX_WORKERS=2 rtk npm run
-    check:fast`: first run failed on the branch threshold of `app/src/lib/help.ts` (83.33 of 85) after the money
-    help and its test left; `help.test.ts` got one test for `isBold` and `isLink` on all three part kinds. Second
-    run: exit 0 (format, svelte-check 0 errors, golden stage, vitest 80 files, 2932 tests, coverage thresholds).
-  - Shots: `mocks/9b/built/` (`shoot.js`): the list page, its notes, prices, roll, share, requests, row menu, `/s/`,
-    `/search`, the catalog's gold chips, `/roll/std`, at 360 / 1180, a few at 768, the wide set at 1920 / 2560.
-  - Not run here: `typo.js`, `sweep.js`, `app/contracts`, `app/print`, `app/hues`, case 101 and the rest of
-    `app/states`, `e2e` (F8, F12, F19 adapted): CI's.
-- Batch 8 remediation, 2026-11-05 (previous sha `c489766a`, not pushed; vitest with `VITEST_MAX_WORKERS=2`):
-  - Reproduced first: `npx vitest related .../Chip.svelte --run --coverage --coverage.include=app/src/components/Chip.svelte`
-    (40 files, 1621 tests, 774 s): branches 62.5% (5/8), the CI error. Case 54 failed alone on the in-memory loader
-    (`scratchpad/states-only.cjs`, the `CASES` list filtered) with both CI lines; case 86 passed alone, twice.
-  - Vitest `listsPage`, `listPage`, `lists`, `lib/cloudLists`, `chip`: 273 pass. At `17700f3c` (detached worktree, the
-    four changed test files copied in): 6 fail, 259 pass.
-  - Goldens: `build:test`; `golden.js --update --only=#/lists` (86 states, 27 files move: the `[expanded=false]` of
-    «Новый список» on every signed-in `_lists*`, and on the two not-found pages the new title and the status line);
-    `--update` of `#/i/ci1 ~ list menu as gm1` and `~ in several lists as gm4` (EN menus open). Compare-only, unchanged:
-    `--only=list menu` (3), `add to list` (2), `bar menu` (1), `from a list` (2), `#/i/ci1` (15).
-  - Loader runs on the final `dist-test/`: cases 54, 86 pass; 54 and 102 pass after `check:built`.
-  - `node tests/run-all.js app/typo`: ok, 189 s.
-  - `npm run lint:untyped`, `npm run lint:typed`: exit 0 after the last edit. `npx prettier --list-different` on the
-    changed files: clean after `--write` of `tests/e2e/flows.mjs`. `node tools/decisions.js`: 313 decisions.
-  - `rtk npm run check:built`: pass, 268.3 kB within 269. Detector `npx impeccable detect --json --no-inline-ignores
-    app/src`: 62 findings (62 before).
-  - `VITEST_MAX_WORKERS=2 rtk npm run check:fast`: PASS in 744 s (vitest 94 files, 3757 tests, 678 s, coverage on the
-    changed sources including `Chip.svelte`; budget passed), gate credit armed.
-  - Not run here: `sweep.js` (the R4 fold step), `app/contracts`, `app/print`, `app/hues`, the rest of `app/states`,
-    `e2e` (F7, F8): CI's. The `lists-error`, `lists-signedout`, `lists-new` and EN `item-listmenu` shots are not
-    re-taken.
-- Batch 8, 2026-11-05 (previous sha `82dec9d6`):
-  - Vitest, the whole suite once mid-batch: 129 files, 4733 tests pass; after the last edits `listsPage`, `listPage` and
-    `importPanel`: 234 pass. `svelte-check`: 0 errors. `npm run lint:typed` and `npm run lint:untyped`: exit 0 after
-    the last source edit. `node tools/decisions.js`: 313 decisions. `node tests/run-all.js contracts,dataint,derived`:
-    pass. `node --test tools/artwork/lib.test.mjs`: 77 pass.
-  - Goldens: `build:test`, the four shards with `--update` (shard 1 failed once on the stale `_lists_help.txt`, removed),
-    then `--only=#/lists` once more after the spacing fix (86 states). 43 files move: 36 changed, 6 new
-    (`~ card menu`, `~ empty as gm4`, `~ more`, `~ new list`, `~ selecting`, the signed-in not-found), 1 deleted
-    (`~ help`); every one is a `_lists*`, an add-to-list menu (`_i_ci1*`, `_tables_a_row_opened*`, `_tables_bar_menu`,
-    `_roll_std_list_menu`, two `_homebrew*`) or the import.
-  - Browser cases run locally through an in-memory loader of `states.js` (the `CASES` list filtered), on the final
-    `build:test`: 1, 2, 3, 22, 23, 27, 37, 41, 42, 58-62, 66, 79, 83, 89, 101, 102, 103, 104 pass. They found three
-    defects, fixed here (deviations 6, 9, 10) and case 62's two reads of the bar's buttons through `d.text()` (the bar sits
-    outside `main`). `node tests/app/hues.js`: pass, with the new ticked list card read.
-  - `npm run check:built`: pass, 268.3 kB of 269 unconfigured. Configured (the `.env.test.local` line of
-    `.claude/README.md`, with the main checkout's file): 325.7 kB of 326. No budget raised; ceilings now 300 and 350.
-  - Detector `impeccable detect --json --no-inline-ignores app/src`: 62 findings, none new in a touched file (the
-    touched files carry only the old 11 px and 7 px radii).
-  - `rtk npm run check:fast`: the first run failed on `listPage.timed.test.ts` (56 s under the parallel load against
-    its 30 s timeout; 11.4 s alone, 10.8 s at 9a: host load, not this batch); the second run PASS in 758 s (vitest 2918
-    pass, budget within 269 kB), gate credit armed.
-  - Not run here: `sweep.js`, `app/contracts`, `app/typo`, `app/print`, the other `app/states` cases and `e2e` (F7, F8,
-    F10, F13, F15 adapted; hosted project): CI's.
+- Batch 9b remediation, 2026-11-05 (previous sha `22f93378`; vitest with `VITEST_MAX_WORKERS=2`):
+  - Reproduced first, on the 9b build: `sweep-only.cjs` (the sweep's `PAGES` filtered to «список: заметки
+    открыты», no focus walk) at 360: 45 px RU, 16 px EN, as CI; `pv-probe.cjs` on `#/roll/community_items` at
+    1180 RU: the picker 125 px, the value 81 of 99 px; `print-step.cjs`: the old press throws `no control named
+    "Убрать из списка"`. The new case 107 360 block and the two new unit tests fail at `22f93378` in a detached
+    worktree outside the repo (107: the note content box 88 of 245 px and 69 / 40 px sideways; vitest: the one gold
+    action and the reopen); the worktree is removed.
+  - After the fix: the sweep entry clean at 360 and 390, RU and EN; `node tests/run-all.js app/typo`: ok, 219 s;
+    `print-step.cjs`: the toast under print `display: none`; `seg-probe.cjs` (R4): every switch inside its box.
+  - Loader runs (`states-only.cjs`) on the final `dist-test/`: 83 (requests 304 / 304 at 360, 209 at 1180; `/s/ ~
+    long name` 301 / 302 at 360, 312 / 312 at 1180), 105, 106 (clamp shares as at 9b), 107, 65 pass.
+  - Vitest: the 11 affected files 786 of 788 on the first run; the 2 stale tests fixed (`rollPage.test.ts` read the
+    dead «Справка» fallback, `sharePanel.test.ts` the deleted hint) and their files rerun: pass.
+  - Goldens: compare `golden.js --only=#/lists` (91 states): 22 diffs, all explained (EN "Show less", the share hint
+    gone, the tall face's number badge in `~ rolled`); re-seeded with `--update`: 11 files.
+  - Shots re-taken: `list-note*`, `list-notes*`, `list-note-area__360`, `list-requests*`, `list-roll` at 768 and
+    1180, `hb-new`, `hb-card`, `hb-set` at 320 / 360. `list-roll__360` is skipped by `shoot.js` (its state presses
+    «Бросить по списку» at the state's own width).
+  - `npm run lint:untyped`, `npm run lint:typed`: exit 0 after the last edit. `rtk npm run check:built`: pass,
+    267.4 kB within 269. Detector `impeccable detect --json --no-inline-ignores app/src`: 60 findings (60 before),
+    none new.
+  - `VITEST_MAX_WORKERS=2 rtk npm run check:fast`: PASS (format, svelte-check, golden stage: 3 stages 87 s; vitest 79
+    files, 2926 tests with coverage on the changed sources, 931 s; budget within 269 kB), gate credit armed.
+- Batch 9b and earlier: `git show 22f93378:issues/57/handoff.md`, "Verification".
 
 ## Next batch (implement-ready)
-- Name: batch 9b's review (required: changed UI, `tests/app/`, `.impeccable/config.json`, `.prettierignore`), then
-  batch T's refresh (the Thumb Rule and the toast timing; `plan.md` section 7, "Batch T"), then T, N, P and 10.
-- What CI must prove for 9b: `app/states` (cases 105-107 new; 13, 17, 18, 22, 30, 33, 56, 64, 65, 69, 76, 83, 100,
-  101, 104 adapted), `app/typo` (the gold chip in `SWITCHES`, the Whole Message step), `sweep.js` 360 and 768 (the new
-  notes entry), `e2e` F8, F12 and F19 (the note switch, the folded requests panel, the row «Ещё»), the goldens, the
-  bundle budget.
+- Name: push the remediation, CI of the fix tip, then batch T's refresh (the Thumb Rule and the toast timing;
+  `plan.md` section 7, "Batch T"), then T, N, P and 10.
+- What CI must prove for the fix: `check` (coverage of `HelpButton`, `RecordActions`), `app/sweep` 360 / 390 / 768,
+  `app/typo`, `app/print`, `app/states` (83, 65, 101, 104-107), the goldens, `e2e` F8, F12, F19.
 - Facts for the dispatches: the local gates are the affected vitest files, both lints after the last edit, the golden
   re-seed when goldens move (each shard with the Bash timeout 600000), `npm run check:built`, the detector, and
-  `rtk npm run check:fast` last; browser suites and sweeps run on CI. `ci-credit.mjs` refuses while a writer's edits
-  are in the tree. The budget after batch 8: 268.3 of 269 kB unconfigured, 325.7 of 326 configured (ceilings 300 and
-  350). On this host `VITEST_MAX_WORKERS=2` bounds vitest's workers (vitest 4 reads it). The owner keeps Chrome open
-  and signed in to Figma for batch P's burden export. A golden is re-seeded, never edited.
+  `rtk npm run check:fast` last; browser suites and sweeps run on CI. On this host `VITEST_MAX_WORKERS=2` bounds
+  vitest's workers. A golden is re-seeded, never edited.
 
 ## Blockers
 - None.
@@ -286,13 +159,12 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
   menu scrolls to 83 and the shown header covers «Ещё» (top 58); Escape returns the focus and the page to scroll 0;
   a tap outside leaves scroll 83 with «Ещё» covered. A `preventScroll` focus return cannot cure the tap path (no focus
   returns there): not taken. The same family as the focus jump below; at closeout to `DEBT.md` unless batch T fixes it.
-- Batch 9b leftovers with other readers: `RecordCard`'s `compact` variant and `nameActions`, the `.card.compact`
-  rules, the `REVIEW_ART_SIZES` rows for 132 and 96 px and `RecordActions`' `sendAll` row: no page draws them since
-  the list roll took `RollResult`; `record.test.ts` still reads them. Batch 10's audit removes them with their tests.
+- `RecordCard`'s `compact` variant and `nameActions`, the `.card.compact` rules and the `REVIEW_ART_SIZES` rows for
+  132 and 96 px: no page draws them since the list roll took `RollResult`; `record.test.ts` and `tools/artwork`
+  still read them. Batch 10's audit removes them with their tests (`RecordActions`' dead rows left in the 9b
+  remediation).
 - Batch 9b, `typo.js`: the note switch and the price switch are not in `SWITCHES` (the loop opens a route and cannot
   make an account list); `/search`'s kind row is not either; the Whole Message step reads 1180 only, not 360.
-- Batch 9b: the requests panel keeps its gold frame and tint (`.reqpanel`); mock 9 draws a plain plate. A Seal Rule
-  question for the review.
 - `/s/` shows the bare list position «1» where `/search` shows «№ 89» (critique, 2026-11-05; `plan-9b.md` M21 d): two
   different numbers, «№ 1» costs three characters of the name column at 360 px. Not changed; batch 10's audit may
   revisit it.
@@ -374,8 +246,6 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
   look `<name>-2.md`, while `agent-guard.mjs` reads only `plan-<batch>-<n>.md`.
 - Batch 10: the tab and picker CSS copied into `HomebrewTabs` from `TableNav` (H2); `EQ_DT`'s abbreviations
   in the stat line (D15, shared).
-- Batch 9b: `FormField`'s `help` prop and its `HelpButton` import go with `QuickItem`'s «?», the last caller
-  (placed: `plan-9b.md` S11, acceptance 12). The ListPage monospace labels below: acceptance 23.
 - Batch 3 candidate: the 1180 px equipment column table of mock 3 (D6, Q3-T), if
   the owner says yes; one added item with its own mock check.
 - N0-2 of `reviews/mocks-2.md` (batch 4): the error-page pattern's circled icon
@@ -387,8 +257,7 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
   batches (15 components carry `text-transform: uppercase`).
 - Monospace labels still outside the Key Characteristics rule, owed to their
   surface batches: `.ordiv i` (OrGrid), `.altcol`
-  (TablesPage), the ListPage summary labels (`.lnote`, `.lroll`, `.batch-lbl`,
-  `.money-l`), HelpButton, `.steps-l` (RecordCard).
+  (TablesPage), HelpButton, `.steps-l` (RecordCard).
 
 
 ## Notes

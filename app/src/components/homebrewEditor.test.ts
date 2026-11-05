@@ -95,11 +95,7 @@ describe('the form', () => {
       'false'
     ]);
     /* A player knows the tier and the damage line (FEATURES.md, rule 15(c)). */
-    for (const label of [t.tier, t.hbDmg]) {
-      expect(
-        screen.queryByRole('button', { name: t.fieldHelp.replace('%s', label) })
-      ).toBeNull();
-    }
+    expect(screen.queryByRole('button', { name: /^Подсказка: / })).toBeNull();
     for (const name of [t.hbCls, t.hbTrait, t.hbRange, t.hbDt, t.hbBurden]) {
       expect(group(name)).toBeInTheDocument();
     }
@@ -121,9 +117,7 @@ describe('the form', () => {
     expect(screen.getByRole('textbox', { name: t.hbThMajor })).toHaveAttribute('id', 'hb-th0');
     expect(screen.getByRole('textbox', { name: t.hbThSevere })).toHaveAttribute('id', 'hb-th1');
     expect(screen.getByRole('group', { name: t.hbTh })).toBeInTheDocument();
-    expect(
-      screen.queryByRole('button', { name: t.fieldHelp.replace('%s', t.hbTh) })
-    ).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Подсказка: / })).toBeNull();
     expect(screen.queryByRole('group', { name: t.hbCls })).toBeNull();
     await press(t.hbType, 'Основное оружие');
     expect(dieBox()).toHaveValue('d10');
@@ -1231,22 +1225,7 @@ describe('no «?» on a field', () => {
     const { container } = await editor(AXE);
     await openRel();
     expect(container.querySelector('.hbform .helpbtn')).toBeNull();
-    for (const label of [
-      t.hbSource,
-      t.hbDesc,
-      t.hbAlt,
-      t.hbLine,
-      t.craftInto,
-      t.craftFrom,
-      t.setLabel,
-      t.hbRefs,
-      t.tier,
-      t.hbTh
-    ]) {
-      expect(
-        screen.queryByRole('button', { name: t.fieldHelp.replace('%s', label) })
-      ).toBeNull();
-    }
+    expect(screen.queryByRole('button', { name: /^Подсказка: / })).toBeNull();
     expect(screen.getByText(t.hbSourceCap)).toBeInTheDocument();
     expect(screen.getByText(t.hbLineCap)).toBeInTheDocument();
     expect(screen.getByLabelText(t.hbSource)).toHaveAccessibleDescription(t.hbSourceCap);

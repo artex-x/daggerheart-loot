@@ -73,8 +73,6 @@
   {/if}
   {#if help}
     <HelpButton
-      lang={app.lang}
-      labeled
       label={help.button}
       open={helpOpen}
       onclick={() => {

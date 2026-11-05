@@ -136,16 +136,16 @@
 | 8-CI2 | ci | local | fixed 8-fix | `app/typo` `#/lists`: a stale `help` grip; `/lists` has no help |
 | 8-CI3 | ci | local | fixed 8-fix | e2e F7: `waitControl` read a row's text (name + count); it reads `aria-labelledby` first, as the driver |
 | 8-CI4 | ci | local | fixed 8-fix | `app/states` 54: stale, the index card says «Новое в списке (N)»; 86: a flake of the slow shard, passes alone |
-| 9b-B1 | blocker | local | open | open compact row notes at 360 px: `.rnote` padding-left 146px applies to the compact row, text breaks inside words; fix `.lrow.compact .rnote { padding: 0; margin: 4px 0 0 }`, re-shoot, width guard in case 105/107. `reviews/9b.md` |
-| 9b-B2 | blocker | local | open | requests panel gold frame/ground/total/marks and a gold «Принять» per request break the Seal Rule; plain Panel, total in --txt, marks --muted2, `primary` only on `shown[0]` |
-| 9b-B3 | blocker | local | open | 324 px first-screen exception at 360: folded strip 56 px + 18 px margin; use padding 6px 12px, margin-bottom 10px up to 760 px, re-measure (near 292), set the exception to the measured value |
-| 9b-R1 | risk | local | open | list roll result at 1180 draws the row face in a 260 px column (about 18 chars a line); acceptance 6/M11 want the card face from 601 px; name or fix |
-| 9b-R2 | risk | local | open | open requests table at 360 splits prices («180 / зол.», «без / цены») |
-| 9b-R3 | risk | local | open | `/s/ ~ long name` 312 of 288 at 1180: named exception asserted by case 83 plus a DESIGN.md sentence, or fix |
-| 9b-R4 | risk | local | open | Check Rule widens gold Seg switches of the homebrew editor, relations, import and CardForm by about 20 px; no check at 320/360 |
+| 9b-B1 | blocker | local | fixed 9b-fix | open compact row notes at 360 px: `.rnote` padding-left 146px applies to the compact row, text breaks inside words; fix `.lrow.compact .rnote { padding: 0; margin: 4px 0 0 }`, re-shoot, width guard in case 105/107. `reviews/9b.md` |
+| 9b-B2 | blocker | local | fixed 9b-fix | requests panel gold frame/ground/total/marks and a gold «Принять» per request break the Seal Rule; plain Panel, total in --txt, marks --muted2, `primary` only on `shown[0]` |
+| 9b-B3 | blocker | local | fixed 9b-fix | 324 px first-screen exception at 360: folded strip 56 px + 18 px margin; use padding 6px 12px, margin-bottom 10px up to 760 px, re-measure (near 292), set the exception to the measured value |
+| 9b-R1 | risk | local | fixed 9b-fix | list roll result at 1180 draws the row face in a 260 px column (about 18 chars a line); acceptance 6/M11 want the card face from 601 px; name or fix |
+| 9b-R2 | risk | local | fixed 9b-fix | open requests table at 360 splits prices («180 / зол.», «без / цены») |
+| 9b-R3 | risk | local | fixed 9b-fix | `/s/ ~ long name` 312 of 288 at 1180: named exception asserted by case 83 plus a DESIGN.md sentence, or fix |
+| 9b-R4 | risk | local | fixed 9b-fix | Check Rule widens gold Seg switches of the homebrew editor, relations, import and CardForm by about 20 px; no check at 320/360 |
 | 9b-R5 | risk | deferred-scope | TD (Measure Rule) | 4000-character list note at 761-999 px draws whole above the rows, unmeasured |
-| 9b-R6 | risk | local | open | unrun: case 83 after the limit change, cases 101, 104-107, typo.js, sweep.js 360/768, e2e F8/F12/F19; read CI of 18429aee |
+| 9b-R6 | risk | local | fixed 9b-fix | unrun: case 83 after the limit change, cases 101, 104-107, typo.js, sweep.js 360/768, e2e F8/F12/F19; read CI of 18429aee |
 | 9b-R7 | risk | named | squash message | commit 18429aee body has wrong sentences (side column holds the panels; "each folded by default"; clamp lines; "stepper/number field/check keep one size"; "tag rule"); correct the wave 3 squash message, see `reviews/9b.md` |
-| 9b-N1..N11 | nit | local | open | `.lroll-line` monospace sentence; `shareHint` repeats (delete it, M12); misplaced SharePanel comment; stale "list summary labels"; "(item 9)/(item 8)" citations in DESIGN.md; EN "Fold" vs "show less"; red «Возьмут» cell; em dash in typo.js message; reopened note area remembers its kind; gold-soft position number on gold tint; handoff Status stale |
+| 9b-N1..N11 | nit | local | fixed 9b-fix | `.lroll-line` monospace sentence; `shareHint` repeats (delete it, M12); misplaced SharePanel comment; stale "list summary labels"; "(item 9)/(item 8)" citations in DESIGN.md; EN "Fold" vs "show less"; red «Возьмут» cell; em dash in typo.js message; reopened note area remembers its kind; gold-soft position number on gold tint; handoff Status stale |
 | 9b-N12 | nit | deferred-scope | batch 10 | record the CLI's unformatted `config.json` writes in the exception inventory |
 | 9b-N13 | nit | deferred-scope | named | fixed 146 px indent does not follow the tick column in selection mode |

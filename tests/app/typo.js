@@ -329,7 +329,7 @@ async function iconCentres(page, groupName) {
         },
         { WHOLE, CUT_ALLOWED }
       );
-      ok(!cut.length, where + ': a whole message is cut — ' + cut.slice(0, 3).join(', '));
+      ok(!cut.length, where + ': a whole message is cut - ' + cut.slice(0, 3).join(', '));
 
       ok(!bad.fam.length, where + ': wrong font — ' + bad.fam.slice(0, 3).join(', '));
       ok(

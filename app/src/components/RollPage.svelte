@@ -148,7 +148,6 @@
                   <PinItem {app} onpicked={close} />
                   {#if help}
                     <HelpItem
-                      {t}
                       {help}
                       open={helpOpen}
                       onpicked={close}
@@ -201,8 +200,11 @@
     align-items: start;
   }
 
+  /* The roll button takes its own line when the picker's value and it do not fit one: a
+     value is never cut (DESIGN.md, "The Whole Message Rule"). */
   .rp-ctrl {
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
     min-width: 0;
   }

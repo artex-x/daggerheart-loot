@@ -1,56 +1,21 @@
 <script lang="ts">
-  /* The "?" that folds a help box open - off `.helpbtn` in style.css. It has
-   * no `title`: Chrome would expose it as a description equal to the name, and
-   * the hint is the open box, not a hover (FEATURES.md, rule 15 (c)).
-   *
-   * Extracted on its second use: the page-level button (`PageHead.svelte`)
-   * and the money picker's own, smaller one (`ListPage.svelte`) draw
-   * the same button at two sizes. */
-  import { dict } from '../lib/dict.js';
-  import type { Lang } from '../lib/types.js';
-
+  /* The page help beside an H1 (`PageHead.svelte`), off `.helpbtn` in style.css: a round
+   * «?» up to 760 px, its name visible from 761 px. It has no `title`: Chrome would expose
+   * it as a description equal to the name, and the hint is the open box, not a hover
+   * (FEATURES.md, rule 15 (c)). */
   interface Props {
-    lang: Lang;
     open: boolean;
     onclick: () => void;
-    /** `.helpbtn.sm` (`git show 23c00a6^:style.css`) - 22x22 at every width, the class
-     *  specificity keeping it there even inside the 600px override. */
-    size?: 'sm';
-    /** The name; a field's «?» names its field. */
-    label?: string | undefined;
-    /** The id of the hint this button shows. */
-    controls?: string;
-    /** The page help beside an H1 (`PageHead.svelte`): its name is visible from 761 px. */
-    labeled?: boolean;
+    /** The name: the help's own button name. */
+    label: string;
   }
 
-  const { lang, open, onclick, size, label, controls, labeled }: Props = $props();
-
-  const t = $derived(dict(lang));
-  const name = $derived(label ?? t.helpHint);
+  const { open, onclick, label }: Props = $props();
 </script>
 
-{#if labeled}
-  <button
-    type="button"
-    class="helpbtn labeled"
-    class:on={open}
-    aria-expanded={open}
-    aria-controls={controls}
-    {onclick}><span class="q" aria-hidden="true">?</span><span class="txt">{name}</span></button
-  >
-{:else}
-  <button
-    type="button"
-    class="helpbtn"
-    class:sm={size === 'sm'}
-    class:on={open}
-    aria-label={name}
-    aria-expanded={open}
-    aria-controls={controls}
-    {onclick}>?</button
-  >
-{/if}
+<button type="button" class="helpbtn" class:on={open} aria-expanded={open} {onclick}
+  ><span class="q" aria-hidden="true">?</span><span class="txt">{label}</span></button
+>
 
 <style>
   /* off `.helpbtn` in style.css */
@@ -89,14 +54,6 @@
     transform: translate(-50%, -50%);
   }
 
-  /* `.helpbtn.sm` in `git show 23c00a6^:style.css` - a higher-specificity rule that keeps the small variant at
-     22x22 even inside the 600px block below. */
-  .helpbtn.sm {
-    width: 22px;
-    height: 22px;
-    font-size: var(--t-label);
-  }
-
   @media (max-width: 600px) {
     .helpbtn {
       width: 34px;
@@ -116,7 +73,7 @@
   }
 
   @media (min-width: 761px) {
-    .labeled {
+    .helpbtn {
       display: inline-flex;
       align-items: center;
       gap: 6px;
@@ -127,7 +84,7 @@
       font: 600 var(--t-data) / 1 var(--ui);
     }
 
-    .labeled .q {
+    .q {
       font: 700 var(--t-control) / 1 var(--mono);
     }
 

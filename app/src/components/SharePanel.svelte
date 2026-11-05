@@ -196,18 +196,17 @@
         </Actions>
       </div>
     {/each}
-    <p class="hint">{t.shareHint}</p>
   {/if}
 </Panel>
 
 <style>
+  /* No gold in the panel: copying a link narrows nothing (DESIGN.md, "The Seal Rule"). */
   .sharehead {
     margin: 0 0 8px;
     font-size: var(--t-body);
     font-weight: 650;
   }
 
-  /* No gold in the panel: copying a link narrows nothing (DESIGN.md, "The Seal Rule"). */
   .del :global(.btn) {
     color: var(--danger-text);
   }
@@ -249,11 +248,5 @@
     font: var(--t-data)/1.4 var(--mono);
     color: var(--muted2);
     overflow-wrap: anywhere;
-  }
-
-  .hint {
-    margin: 10px 0 0;
-    font-size: var(--t-data);
-    color: var(--muted);
   }
 </style>

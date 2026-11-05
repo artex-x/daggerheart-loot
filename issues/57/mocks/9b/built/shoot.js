@@ -30,6 +30,15 @@ const share = async (d, lang, width) => {
   await d.settle();
 };
 
+const noteArea = async (d, lang, width, page) => {
+  await page.click('.lrow .cfull [data-note-open]');
+  await d.settle();
+};
+const NARROW = [
+  [320, 640],
+  [360, 640]
+];
+
 /* [file id, inventory state id, sizes, a step after the language, full page] */
 const PAGES = [
   ['list', LIST + ' ~ noted as gm4', [...SMALL, ...MID, ...WIDE], null, true],
@@ -37,7 +46,7 @@ const PAGES = [
   ['list-note-gm', LIST + ' ~ note open, gm as gm4', [[1180, 720]], null, true],
   ['list-notes', LIST + ' ~ list notes open as gm4', [[1180, 720]], null, true],
   ['list-prices', LIST + ' ~ prices in coins as gm4', [[1180, 720], ...MID], null, true],
-  ['list-roll', LIST + ' ~ rolled as gm4', [[1180, 720]], null, true],
+  ['list-roll', LIST + ' ~ rolled as gm4', [[1180, 720], ...MID], null, true],
   ['list-share', LIST + ' ~ noted as gm4', SMALL, share, true],
   ['list-requests', SHOP + ' ~ requests as gm1', [...SMALL, ...WIDE], null, false],
   ['list-requests-open', SHOP + ' ~ requests open as gm1', SMALL, null, true],
@@ -46,6 +55,10 @@ const PAGES = [
   ['list-note', LIST + ' ~ compact, row open as gm4', [[360, 640]], null, true],
   ['list-notes', LIST + ' ~ compact, noted as gm4', [[360, 640]], null, true],
   ['list-roll', LIST + ' ~ roll panel as gm4', [[360, 640]], null, true],
+  ['list-note-area', LIST + ' ~ compact, row open as gm4', [[360, 640]], noteArea, true],
+  ['hb-new', '#/homebrew/new ~ equipment as gm1', NARROW, null, true],
+  ['hb-card', '#/homebrew/new ~ new card as gm1', NARROW, null, true],
+  ['hb-set', '#/homebrew/sets/hb_starsleepsetaaaa as gm3', NARROW, null, true],
   ['shared-player', '#/s/player-token-1', [...SMALL, ...MID, ...WIDE], null, true],
   ['shared-gm', '#/s/gm-token-1', SMALL, null, true],
   ['search', '#/search ~ searched', [...SMALL, ...WIDE], null, false],
@@ -82,7 +95,7 @@ async function inv(sid, width, height, lang) {
       for (const lang of ['ru', 'en']) {
         try {
           const got = await inv(sid, width, height, lang);
-          if (after) await after(got.d, lang, width);
+          if (after) await after(got.d, lang, width, got.page);
           await got.d.settle();
           await got.page.evaluate(async () => {
             await document.fonts.ready;

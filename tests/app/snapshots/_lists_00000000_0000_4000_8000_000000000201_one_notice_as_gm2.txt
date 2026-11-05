@@ -115,7 +115,7 @@ RootWebArea "Список второго ГМа - Daggerheart Loot Generator" [u
     ... button x2 of 6 same-shape siblings elided
     region "New in this list (1)"
       heading "New in this list (1)" [focused=true level=2]
-      button "Fold" [expanded=true]
+      button "Show less" [expanded=true]
       StaticText "new"
       StaticText "The author deleted "Bedroll of the long road over the pass, thro..." [namelen=178 namehash=aab57179]
       button "Hide the change to "Bedroll of the long road over the pass, thro..." [namelen=141 namehash=e3d544a4]
@@ -149,7 +149,6 @@ Account: gm2@example.test
 Add your own item
 EN
 Ember AxePrimary weaponUniqueAlder Workshop (HB)Tier 2 · Magic ·... [namelen=159 namehash=ea056220]
-Fold
 Hide the change to "Bedroll of the long road over the pass, thro... [namelen=141 namehash=e3d544a4]
 Install as an app
 List name
@@ -170,6 +169,7 @@ ScepterPrimary weaponTier 1 · Magic · Presence · Far · d6 mag · ... [namele
 Search
 Select
 Share
+Show less
 Skip to content
 Tables
 Terms of use

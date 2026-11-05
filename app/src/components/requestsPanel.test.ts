@@ -604,6 +604,19 @@ describe('the folds of a long panel', () => {
     await expectNoA11yViolations(container);
   });
 
+  it('draws one gold action in the panel: the first request accepts in gold, the later ones plain', async () => {
+    openShop((cloud) => {
+      for (let i = 0; i < 3; i++) {
+        vi.setSystemTime(T0 + i * 60_000);
+        cloud.request('gm-token-1', [{ item: 'cc1', qty: 1 }]);
+      }
+    });
+    const p = await panel();
+    const accepts = within(p).getAllByRole('button', { name: 'Принять' });
+    expect(accepts).toHaveLength(3);
+    expect(accepts.map((b) => b.classList.contains('primary'))).toEqual([true, false, false]);
+  });
+
   it('draws fifteen lines and four folds at the limits of ten requests of a hundred lines', async () => {
     const cloud = fakeCloud(SEED, 'gm1');
     const keys = Array.from({ length: 90 }, (_, i) => 'x' + String(i));

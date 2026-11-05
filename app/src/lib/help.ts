@@ -30,8 +30,8 @@ export interface HelpPara {
 }
 
 export interface Help {
-  /** The name of the help's button, where it is not «Справка» (the Same Label Rule). */
-  button?: string;
+  /** The name of the help's button: what the help is about (the Same Label Rule). */
+  button: string;
   paragraphs: HelpPara[];
 }
 

@@ -277,8 +277,8 @@
     return own ? itemMeta(own, id) : {};
   }
 
-  /** The note an area shows: the one the person switched to, else the players' note unless
-   *  only the GM note is filled. */
+  /** The note an area shows: the one the person switched to while it is open, else the
+   *  players' note unless only the GM note is filled. */
   function kindOf(key: string, o: { note?: string | undefined; hnote?: string | undefined }) {
     return noteKinds.get(key) ?? (!o.note && o.hnote ? 'hnote' : 'note');
   }
@@ -290,6 +290,7 @@
   ) {
     if (editing.has(key)) {
       editing.delete(key);
+      noteKinds.delete(key);
       return;
     }
     noteKinds.set(key, kindOf(key, o));
@@ -311,6 +312,7 @@
   /** «Готово»: the area closes and the focus returns to the control that opened it. */
   function closeArea(key: string): void {
     editing.delete(key);
+    noteKinds.delete(key);
     void tick().then(() => {
       const at = document.querySelector(`[data-note-open="${key}"]`);
       (at instanceof HTMLButtonElement ? at : at?.querySelector('button'))?.focus();
@@ -2073,18 +2075,19 @@
     font-weight: 650;
   }
 
-  /* The result: the face (the row face in a narrow column, `RollResult`), then the price
-     line, both notes and «Показать в списке». */
+  /* The result: the face, then the price line, both notes and «Показать в списке». The
+     `faces` container is the whole result, so a 641 px panel draws the tall card face in its
+     260 px column (`RollResult`) and a narrower one the row face. */
   .lroll-res {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 14px;
+    container: faces / inline-size;
   }
 
   .faces {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    container: faces / inline-size;
   }
 
   @media (min-width: 601px) {
@@ -2100,7 +2103,8 @@
 
   .lroll-line {
     margin: 0;
-    font: 600 var(--t-data) / 1.4 var(--mono);
+    font: 600 var(--t-data) / 1.4 var(--ui);
+    font-variant-numeric: tabular-nums;
     color: var(--txt);
   }
 
@@ -2315,6 +2319,12 @@
     margin-top: 0;
   }
 
+  /* The compact row has no text column to indent under: the notes take its full width. */
+  .lrow.compact .rnote {
+    padding: 0;
+    margin: 4px 0 0;
+  }
+
   .lrow.has-note {
     border-color: var(--line2);
   }
@@ -2345,7 +2355,6 @@
     width: 26px;
     color: var(--muted2);
     cursor: grab;
-    background: rgb(216 171 94 / 5%);
     border-right: 1px solid var(--line);
     touch-action: none;
   }
@@ -2379,9 +2388,9 @@
     border: 0;
     border-right: 1px solid var(--line);
     font: 650 var(--t-label)/1 var(--mono);
-    color: var(--gold-soft);
+    color: var(--txt);
     text-align: center;
-    background: rgb(216 171 94 / 7%);
+    background: transparent;
     appearance: textfield;
     -moz-appearance: textfield;
   }
@@ -2394,7 +2403,7 @@
 
   .lrow-n:focus {
     outline: none;
-    background: rgb(216 171 94 / 16%);
+    background: var(--surface2);
     box-shadow: inset 0 0 0 1px var(--gold);
   }
 

@@ -2645,6 +2645,8 @@ const { ok } = rep;
   }
 
   await d.open('#/lists/00000000-0000-4000-8000-000000000101', { as: 'gm1' });
+  /* From 761 px the removal is an item of the row's «Ещё». */
+  await d.openMore('.lrow-acts .morewrap > [aria-haspopup="menu"]');
   await d.click('Убрать из списка');
   await d.media('print');
   try {

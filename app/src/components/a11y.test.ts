@@ -595,11 +595,9 @@ const COVERED: Record<string, string> = {
   'RollSelect.svelte': 'rollSelect.test.ts, and the pickers in sections.test.ts',
   'PickRow.svelte': 'record.test.ts on a catalog and an own record, and inside the modal above',
   'QuickItem.svelte': 'quickItem.test.ts, and the refused own-item panel above',
-  'FormField.svelte':
-    'the own-item panel above, and every field of homebrewEditor.test.ts with each «?» closed and open',
+  'FormField.svelte': 'the own-item panel above, and every field of homebrewEditor.test.ts',
   'TextArea.svelte': 'the own-item panel above, and the description in homebrewEditor.test.ts',
-  'HelpButton.svelte':
-    "PageHead's help panel states above, the list page's own priced entry below, and each field «?» of homebrewEditor.test.ts closed and open",
+  'HelpButton.svelte': "PageHead's help panel states above, closed and open",
   'HitNote.svelte':
     "the list page's priced, noted entry with the roll panel open above, the shared list below, and a formatted note in sharedListPage.test.ts",
   'ListPage.svelte': 'listPage.test.ts, and both list-page states below',
