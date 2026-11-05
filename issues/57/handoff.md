@@ -2,14 +2,24 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (waves 1, 2 and 2b are on `main`; wave 3: 9a done, CI green on `6f90ccd6`; batch 8
-  implemented, committed on `claude/57`, not pushed; next: its review, then batch 9b's refresh)
-- Last agent: implementer (batch 8, 2026-11-05)
+- Task status: in_progress, STOPPED by the owner after batch 8's review (laptop restart, 2026-11-05 11:51 UTC).
+  Waves 1, 2 and 2b are on `main`; wave 3: 9a done (CI green `6f90ccd6`); batch 8 is `dc132655`, pushed with the
+  docs commit `17700f3c`; `reviews/8.md` verdict fix-then-continue (B1, R1-R4, nits N1-N10, guideline findings
+  G1-G6; rows in `reviews.md`). Not started: the remediation pass, the 9b refresh.
+- Last agent: reviewer (batch 8). No subagent runs. No worker has uncommitted edits (tree clean at `17700f3c`).
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
-- Previous sha: `82dec9d6` (the batch 8 commit is reported by the implementer's summary).
-- Pushed: no; the orchestrator pushes. `issues/57/context.md` holds the orchestrator's uncommitted 2026-11-05 lines
-  (items 9 and 10), left out of the batch commit.
+- Tip: `17700f3c` (batch 8 `dc132655` + docs). Pushed: yes. CI run 42020997138 was pending at 11:51 UTC; the
+  background `ci-credit.mjs` died with the restart, so run `node .claude/hooks/ci-credit.mjs 17700f3c` again, in the
+  background, in the next session, and read `gh run view 42020997138`.
+- Next step, in order: (1) CI of `17700f3c`; (2) one remediation pass for batch 8 on a fresh implementer (`sonnet`
+  is enough: files named in `reviews/8.md`): B1, R1, R3, R4, N1, N3-N7, with the usage-guard and the lowest worker
+  count (the host ran at 0.5 GB free RAM; close other apps first), then push and CI; (3) the 9b planner refresh
+  (`context.md` items 8, 9, 10: Row Columns, Stepper, Field Measure, check on gold chips, Whole Message with
+  G1-G3 and G6 as inputs; the Thumb Rule and the toast timing are approved, the planner names their batches);
+  (4) batches 9b, P (the burden hands are exported, `context.md`), 10; the wave 3 and whole-app blind reviews;
+  closeout. Every reviewer dispatch names the guideline set (`context.md` item 10). Compact `handoff.md` before 9b
+  (142 KB of 150 KB).
 
 ## Completed
 - Batch 1 - foundation: `9a31aede`, review fix `80872b35` (`reviews/1.md`).
