@@ -2178,7 +2178,7 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   did not change is written as the row holds it, a changed one trimmed. The
   summary names a problem of the hidden language with its code («Описание
   (EN) - ...»), and a press on it switches the language and focuses the
-  field. «Свой предмет» on a list writes the language on screen only.
+  field. «Добавить свой предмет» on a list writes the language on screen only.
   Source and section names keep the one-language rename of "The Sources tab".
 - **The guard**: while the form differs from what it loaded, a link, Back,
   Forward and every in-app navigation ask «Изменения не сохранены. Уйти со
@@ -2201,7 +2201,7 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   удалить. Проверьте соединение и попробуйте ещё раз.». The editor names
   how many account lists hold the item.
 - **Where an item is used**: an own item goes into the account's lists as a
-  link and draws live there, on their share links too; «Свой предмет»
+  link and draws live there, on their share links too; «Добавить свой предмет»
   on a list page makes one in one press ("Lists"). A lists file never carries an
   own key. A
   list another user saved from a share link, or added the item to from one,
@@ -2757,7 +2757,7 @@ right, so the tab order and the reading order agree
   an undo is on offer leaves the toast on the page for the rest of its time.
   A language switch while a toast is up redraws its text and its button in
   the new language, keeps its time left and moves no focus. A toast whose
-  action is a link («Изменить» after «Свой предмет») lasts 7000 ms too,
+  action is a link («Изменить» after «Добавить свой предмет») lasts 7000 ms too,
   never takes focus and opens its page in a new tab; a toast with an action
   pauses its clock while the pointer is over it or the person has moved
   focus into it, and runs on with the time it had left; the focus an undo
@@ -3051,7 +3051,7 @@ Each rule keeps its number: a review cites it by number.
   section's lead line.
 - **16. Long names**: a name of any allowed length wraps inside its box at
   360 px (`overflow-wrap: anywhere` on the list card, the page heading, the
-  toast, the chip, the filter pill, the source and card rows and their count
+  toast, the chip, the source and card rows and their count
   lines, the path line under a heading, the source tag, the set and craft
   lines of a card, and the form fields, whose grids take `minmax(0, 1fr)`, so a
   select's long option never widens them); nothing scrolls sideways. A toast takes up to the window's width less 16 px a side,
@@ -3090,7 +3090,7 @@ Each rule keeps its number: a review cites it by number.
   the text; a selection that touches unequal or unrelated stars at one end
   gets no edit. «Просмотр» / "Preview" (pressed) draws the text in place of the
   box, the format buttons disabled, only where no rendered view sits beside
-  the field (owner, 2026-10-14): the card forms, «Свой предмет» and the list
+  the field (owner, 2026-10-14): the card forms, «Добавить свой предмет» and the list
   notes; the item form's card is its preview.
 - **19. Warnings**: a line that tells about a risk and blocks nothing is a
   warning: the warning box (`NoticeBox`), a fact and an option in
@@ -3107,9 +3107,8 @@ Each rule keeps its number: a review cites it by number.
   pressed control, focus moves to the control that now holds its place in the
   same group, else the nearest one before it, else the group's lead control,
   else `#main`; no heading takes a `tabindex`. The cases: «Выйти» - the header's
-  «Войти», or the account button when the sign-out is refused; a filter pill -
-  the pill now at its place, the one before it, «Фильтры», `#main` when the
-  strip left; «Сбросить всё», in the strip or in an empty state - «Фильтры»;
+  «Войти», or the account button when the sign-out is refused; «Сбросить всё»
+  in an empty state - «Фильтры», else the search box, else `#main`;
   the catalog's «Сбросить» - the first «Все» of the column, or the sheet's
   «Закрыть»; its empty state's «Сбросить фильтры» - the first «Все», else
   «Фильтры», else `#main`; «Снять выделение» - «Выбрать», else `#main`;

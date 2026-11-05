@@ -294,7 +294,6 @@ const ru = {
   allShort: 'Все',
   selCount: 'Выбрано: %n',
   selRegion: 'Выбранные записи',
-  copySel: 'Скопировать',
   selCopied: 'Выбранное скопировано',
 
   /* The table filter: the strip, the panel it folds open, and the link that
@@ -1378,7 +1377,6 @@ const en: Dict = {
   allShort: 'All',
   selCount: '%n selected',
   selRegion: 'Selected records',
-  copySel: 'Copy',
   selCopied: 'Selection copied',
 
   filters: 'Filters',

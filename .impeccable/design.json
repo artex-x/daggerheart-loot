@@ -470,14 +470,6 @@
       "css": ".ds-tabs { display: flex; gap: 4px; flex-wrap: wrap; font-family: var(--ui, Inter, system-ui, sans-serif); border-bottom: 1px solid var(--line, #312a45); } .ds-tab { flex: none; text-decoration: none; color: var(--muted, #9b93b3); padding: 9px 13px 10px; border-bottom: 2px solid transparent; font-size: 13.5px; font-weight: 560; white-space: nowrap; transition: 0.15s; } .ds-tab:hover { color: var(--txt, #ece8f6); } .ds-tab-on { color: var(--gold-soft, #f0d091); border-bottom-color: var(--gold, #d8ab5e); } .ds-tab-sep { margin-left: auto; }"
     },
     {
-      "name": "Filter Pill",
-      "kind": "chip",
-      "refersTo": "filter-pill",
-      "description": "A chosen filter value, visible outside the folded panel, beside a text reset and a copy-link button.",
-      "html": "<div class='ds-fbar'><button class='ds-fpill'>Уровень 2<i>×</i></button><button class='ds-fpill'>Маг<i>×</i></button><button class='ds-fclear'>Сбросить</button></div>",
-      "css": ".ds-fbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-family: var(--ui, Inter, system-ui, sans-serif); } .ds-fpill { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 8px 0 11px; border: 1px solid rgb(216 171 94 / 45%); border-radius: 8px; background: rgb(216 171 94 / 12%); color: var(--gold-soft, #f0d091); font-size: 12.5px; font-weight: 600; cursor: pointer; transition: 0.15s; } .ds-fpill i { font-style: normal; font-size: 15px; line-height: 1; color: var(--muted, #9b93b3); width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; border-radius: 5px; } .ds-fpill:hover { border-color: var(--gold, #d8ab5e); } .ds-fpill:hover i { background: rgb(255 255 255 / 10%); color: var(--txt, #ece8f6); } .ds-fclear { height: 32px; padding: 0 9px; border: 0; border-radius: 8px; background: transparent; color: var(--muted, #9b93b3); font-size: 12.5px; font-weight: 600; cursor: pointer; transition: 0.15s; } .ds-fclear:hover { background: rgb(255 255 255 / 6%); color: var(--txt, #ece8f6); }"
-    },
-    {
       "name": "Print Card",
       "kind": "custom",
       "refersTo": "card",

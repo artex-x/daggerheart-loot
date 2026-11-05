@@ -945,6 +945,7 @@ describe('a share link', () => {
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' })
     ).toBeInTheDocument();
+    expect(document.activeElement).toBe(document.getElementById('main'));
   });
 
   it('saves a copy signed in and opens it', async () => {

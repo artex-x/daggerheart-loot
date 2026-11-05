@@ -112,10 +112,14 @@
   @media (max-width: 760px) {
     .lfind {
       gap: 5px;
+      margin-bottom: 8px;
     }
 
+    /* 36 px, as mock F: the first entry must start in the first screen at 360x640. */
     .lfind :global(input[type='search']),
-    .lfind :global(.btn.sm) {
+    .lfind :global(.btn.sm),
+    .lfind :global(.selmode) {
+      height: 36px;
       padding: 0 9px;
     }
   }

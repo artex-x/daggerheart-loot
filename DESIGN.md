@@ -175,12 +175,6 @@ components:
     backgroundColor: "transparent"
     textColor: "{colors.seal-gold-soft}"
     padding: "9px 13px 10px"
-  filter-pill:
-    backgroundColor: "rgb(216 171 94 / 12%)"
-    textColor: "{colors.seal-gold-soft}"
-    rounded: "{rounded.control}"
-    padding: "0 8px 0 11px"
-    height: "32px"
   toast:
     backgroundColor: "{colors.seal-gold}"
     textColor: "{colors.ink-on-gold}"
@@ -253,7 +247,7 @@ and a two-color duality pair. Every color outside the neutrals has one job.
   the primary button, the lit tab's underline, the focus ring, the toast. It is
   never decoration and never a surface at rest.
 - **Seal Gold Soft** (`#f0d091`): gold as text. Links in prose, the lit tab
-  label, a filter pill's label. It exists because a gold fill
+  label. It exists because a gold fill
   needs dark ink on it, while gold text needs to be lighter than that fill.
 - **Ink on Gold** (`#1a1206`): the only color printed on a gold fill. Darker
   than any page surface, chosen against the gold specifically.
@@ -509,7 +503,8 @@ English, at scroll 0, the primary content of a route starts no lower than 40%
 of the viewport height (256px at 640, 288px at 720); the header counts as a
 control above it. Two named exceptions: `/roll/std` at 360x640 starts at 325px, for
 the rarities on the dice (owner, 2026-10-29), and `/s/<token>` at 360x640 with its search
-row starts at 286px (owner, 2026-11-03). A design aims at 240px and 270px, so a small face or
+row starts at 302px (owner, 2026-11-03, 286px; the built page measured 301px on 2026-11-05,
+and the exception took it while the owner was away). A design aims at 240px and 270px, so a small face or
 line-box difference does not fail the rule. The primary content is the first
 roll result on a roll page, the table on `/tables/*`, the item on `/i/` and
 `/h/`, the first result on `/search`, the first settings panel on `/account`,
@@ -557,7 +552,7 @@ elevation step is a change to the system, not a component decision.
 
 Rectangles with gently rounded corners, at five radii and no more: 14px for a
 plate (panel, card, modal), 9px for a full-size control (button, search box,
-number field, focus ring), 8px for a compact control (small button, filter pill,
+number field, focus ring), 8px for a compact control (small button,
 icon button), 6px for a tag, and 999px for anything that is one choice in a row
 (a chip, a segment, the toast).
 

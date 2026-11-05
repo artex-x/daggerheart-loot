@@ -116,7 +116,16 @@ const PAGES = [
     'цена: подсказка открыта',
     'gm1',
     async (d) => {
-      await either(d, 'click', 'Как в книге', 'As in the book');
+      /* Up to 760 px the price mode is in the head's «Ещё», and a row's «?» is in its
+         unfolded part (FEATURES.md, "Lists"). */
+      const compact = await d.count('button.cbody');
+      if (compact) {
+        await d.openMore('.lhead-acts .morewrap > [aria-haspopup="menu"]');
+        await either(d, 'click', 'Цены: как в книге', 'Prices: as in the book');
+        for (let i = 0; i < compact; i++) await d.unfold(i);
+      } else {
+        await either(d, 'click', 'Как в книге', 'As in the book');
+      }
       await either(d, 'click', 'Подсказка: Цена', 'Help: Price');
     }
   ],

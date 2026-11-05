@@ -2609,10 +2609,20 @@
     grid-row: 1;
   }
 
+  .lhead > :global(h1.page-h) {
+    margin-bottom: 2px;
+  }
+
+  /* The name's own line height, not the 46 px of a form field: the first entry must start
+     in the first screen at 360x640 (DESIGN.md, "The First-Screen Rule"). */
+  .lhead .titleinput {
+    height: auto;
+  }
+
   .lhead > :global(.page-sub) {
     grid-column: 1 / -1;
     grid-row: 2;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
   }
 
   .lhead-acts {

@@ -199,7 +199,7 @@ picture or a removal live in page memory only, never in the address,
 The crop dialog holds the decoded picture while it is open and frees it when
 it closes. A list entry
 links another account's item by its id; the item lives in that account, and in
-memory only as the last read of the list's linked items answered it; the «Свой предмет» panel's fields are page memory.
+memory only as the last read of the list's linked items answered it; the «Добавить свой предмет» panel's fields are page memory.
 
 `keepOpen` holds what the person folded or unfolded by hand, so a redraw does
 not undo it.

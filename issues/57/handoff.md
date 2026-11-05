@@ -2,12 +2,12 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (waves 1, 2 and 2b are on `main`; wave 3 started: batch 9a is committed on `claude/57`,
-  not pushed; next: its `polish` and `harden`, the push and CI, the batch review, then batch 8)
-- Last agent: implementer (batch 9a; previous sha `d81ac6a0`)
+- Task status: in_progress (waves 1, 2 and 2b are on `main`; wave 3 started: batch 9a and its CI fix pass are
+  committed on `claude/57`, the fix pass not pushed; next: the push and CI, then batch 8)
+- Last agent: implementer (batch 9a fix pass; previous sha `6703151d`)
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
-- Tip: the batch 9a commit on `d81ac6a0`, not pushed (the orchestrator pushes).
+- Tip: the batch 9a fix pass commit on `6703151d`, not pushed (the orchestrator pushes).
 - Pushed: no.
 
 ## Completed
@@ -670,6 +670,26 @@
      17.4 s alone: a role query for «Выбрать» named all 300 rows' buttons; it now presses `button.selmode` (10.8 s).
 - Open decisions taken with the default (owner AFK): Q9a-1 (a filter link still opens the sheet on `/s/`), Q9a-2 (a
   player's numbers can differ from the owner's with a GM-only entry).
+- Batch 9a fix pass (CI run 41965557563 of `6703151d`; review `reviews/9a.md`, approve; previous sha `6703151d`).
+  Each failure was reproduced first on `dist-test/` through an in-memory loader of `states.js` and `sweep.js`:
+
+  | Failure or finding | Cause and outcome |
+  |---|---|
+  | sweep 360, 390 «цена: подсказка открыта» | Stale entry: up to 760 px the price mode is in the head's «Ещё» and a row's «?» in its unfolded part. The entry opens both there |
+  | states 17, end of the list | Test artifact: puppeteer's clip screenshot resizes the view through 1x1 px, the list redraws as compact rows, the grip leaves and the drag ends. `goldStripAt` takes `captureBeyondViewport: false` |
+  | states 43 | Stale: «Скопировать текст» is in the list «Ещё» at every width. `LIST_MORE` selector |
+  | states 64 | Stale: focusing «Название» scrolled «Добавить в список» under the selection bar; the case scrolls to the end before the press, as its own coverage check does |
+  | states 76 | Stale: at 360 the notes open from «Заметки» on the meta line, the roll from the list «Ещё» |
+  | states 83 | Real: at 360 the list head was taller than mock F. The title input takes its line height (it had the 46 px of a form field), the search row is 36 px, the head margins are smaller: `LIST_A ~ many` 254 under 256, `/s/` 301. `/s/` stays over 286, so the exception moves to 302 (`plan-9a.md`, "First-screen rows"; AFK decisions item 12; DESIGN.md) |
+  | e2e F8 | Stale flow: the `/s/` lead line opens the notes by «Заметка» and «Заметка мастера», closed on arrival (G9). F8 presses them first, and checks that a players' link has no GM button |
+  | N1 | Fixed: `copySel` left `dict.ts` and `inventory.js` |
+  | N2 | Fixed: rules 16 and 20, DESIGN.md (the `filter-pill` token, Seal Gold Soft, radii) and its `.impeccable/design.json` sample |
+  | N3 | Fixed: «Добавить свой предмет» in FEATURES.md, COVERAGE.md, STATE.md |
+  | N4 | Fixed: case 100 ticks 14 rows by «Выбрать» and «Все» and holds the foot at 360x480 |
+  | N5 | Fixed: `SharedListPage`'s «Повторить» focuses `#main`; `sharedListPage.test.ts` |
+  | N6, N7 | Fixed: the budget comment cites no batch; `add-source.prompt.md` drops `FilterPanel.svelte` |
+  | R1 | Placed in the Next batch line for batch 8 |
+  | R2 | Not run; Deferred |
 
 - Review: done, `issues/57/reviews/3.md`, verdict fix-then-continue; the one remediation
   pass is this commit. No second review is needed: the picker fix leaves the first-screen
@@ -677,6 +697,14 @@
 - Plan review: not required for batch 3 (`plan.md` Status, no trigger fired).
 
 ## Verification
+- Batch 9a fix pass, 2026-11-05 (previous sha `6703151d`, not pushed):
+  - Reproduced on `dist-test/` of `6703151d` through an in-memory loader of `states.js` (the `CASES` list filtered):
+    17, 43, 64 and 76 failed as on CI. After the fixes, on a fresh `build:test`: cases 17, 43, 64, 76, 83, 98, 99 and
+    100 pass (83 logs `LIST_A ~ many` 254 / 256 and `/s/` 301 / 302 at 360, RU and EN). `sweep.js` filtered to «цена:
+    подсказка открыта»: clean at 360 and 390, RU and EN. `prettier` and `eslint` on the changed files: clean.
+  - `rtk npm run check:fast`: PASS in 863 s (vitest 2897 pass, budget within 269 kB), gate credit armed.
+  - Not run here: `e2e` F8 (hosted project; CI's), the rest of `app/states` and `sweep.js`, the goldens (no state's
+    accessibility tree changed: CSS, a test-only change, and a focus move after a press).
 - Batch 9a, 2026-11-05 (previous sha `d81ac6a0`, not pushed):
   - Vitest over the 15 affected files (`compactRow`, `listFind`, `listPage`, `lists`, `sharedListPage`, `tables`,
     `searchPage`, `homebrewPage`, `shell`, `a11y`, `lib/label`, `lib/filters`, `lib/lists`, `lib/i18n`, `state/app`):
@@ -1182,11 +1210,10 @@
 - Spelling scan over added lines and new files: only `aria-labelledby`.
 
 ## Next batch (implement-ready)
-Batch 9a is committed (not pushed). Next, in order: the orchestrator's `polish` and `harden` (S13) on `ListPage`,
-`SharedListPage`, `CompactRow`, `ListFind` from `mocks/9a/built/` at 360 and 1180 px; the push and CI (cases 83,
-98-100 and the adapted ones, `sweep.js`, `e2e` F7 and F16); the batch review (triggers: new and changed UI,
-`tests/app/` changed, `.claude/prompts/add-source.prompt.md` changed); then batch 8 (`BatchBar` leaves with
-`ListsPage`; `app.pageBar` is free for it).
+Batch 9a and its CI fix pass are committed (not pushed; review `reviews/9a.md`, approve). Next: the push and CI of
+the fix pass (`app/states` 17, 43, 64, 76, 83, 100; `sweep.js` 360 and 390; `e2e` F8), then batch 8 (`BatchBar`
+leaves with `ListsPage`; `app.pageBar` is free for it). Batch 8's brief takes review 9a R1: past 270 kB it writes
+the owner's 300 kB ceiling into `tools/bundle-budget.mjs`, `.claude/README.md` and a decision file.
 
 Wave 2b (batches 7b and W with their fix passes) is on `main` as `b6f153a5`, the deploy is green, and `claude/57`
 merged it back (`8b99ac8e`). Next: batch 9a (brief `plan-9a.md` plus the 9a-W1 to W7 lines of `plan-wave3-wide.md`;
@@ -1251,9 +1278,8 @@ Facts for the dispatches:
 - 9a, found by the golden of `LIST_A ~ more`: at 360x900, after the list «Ещё» opens and closes, the page sits at
   scroll 83 and the shown header covers that «Ещё» (a press lands on the job row); the header hides only past its own
   height. The golden reopens from the top (`reopen` in `inventory.js`). The same family as the focus jump below.
-- 9a: `.impeccable/design.json` still draws the retired `.fpill`/`.fbar` sample; batch 10 regenerates the file.
-- 9a: `.claude/prompts/add-source.prompt.md` named `FilterBar.svelte` in its wiring list; it now names
-  `FilterPanel.svelte` (a prompt edit: a review trigger).
+  Review 9a R2: its probe (360x640 RU on `LIST_A ~ noted`: open «Ещё», close by Escape, then by a tap outside, read
+  `scrollY`) was not run in the 9a fix pass; batch 9b takes it, else `DEBT.md` at closeout.
 - W-N4 (batch W review): the `tests/run-all.js` weight for `app/states` (179.3 s) is stale; case 101 opens 74
   contexts, up to 3840x2160. Re-measure it from the CI run of the tip.
 - `/tables/eq_*` at 761-about 800 px in RU (batch 7b probe): the toolbar's five controls wrap to two lines, so the rows
@@ -1282,8 +1308,6 @@ Facts for the dispatches:
   2. A sticky «В список» on the page up to 760 px, like the dock. Trade-off: it covers about 62 px of
      text on every record, and it adds a new surface rule.
   3. 16:9 up to 760 px. Trade-off: it reaches half of the records, and it changes M4-4.
-- `SharedListPage`'s failed branch (batch 9): «Повторить» drops the focus to `body`, as `ItemPage` did
-  before 4-N6.
 - P5 (batch 4, K11): `rollNo` («номер» / "roll") stays; batch 10 changes it with `tools/share-card.mjs`
   and the stubs after a plan review (`plan.md`, batch 10).
 - Toast over «Ещё» (batch 4): at 360 an action toast covers the end of the menu for its 7 s; a second

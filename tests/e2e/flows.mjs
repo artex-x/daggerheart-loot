@@ -427,8 +427,17 @@ export async function runFlows({ env, admin, member, browser, base }) {
     await withPage(ctx, null, async (page, d) => {
       await d.open('#/s/' + tokens.player);
       await waitText(page, 'F8', 'E2E ссылки');
-      await waitText(page, 'F8', 'Игрокам E2E');
       await waitText(page, 'F8', 'Обновлено');
+      /* The lead line's note buttons open the notes; both are closed on arrival. */
+      await waitControl(page, 'F8', 'Заметка');
+      await expectInPage(
+        page,
+        'F8',
+        'the players link offers the GM note',
+        () => !document.body.textContent.includes('Заметка мастера')
+      );
+      await d.press('Заметка');
+      await waitText(page, 'F8', 'Игрокам E2E');
       await expectInPage(
         page,
         'F8',
@@ -436,6 +445,8 @@ export async function runFlows({ env, admin, member, browser, base }) {
         () => !document.body.textContent.includes('Мастеру E2E')
       );
       await d.open('#/s/' + tokens.gm);
+      await waitControl(page, 'F8', 'Заметка мастера');
+      await d.press('Заметка мастера');
       await waitText(page, 'F8', 'Мастеру E2E');
     });
 

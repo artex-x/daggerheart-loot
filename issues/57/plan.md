@@ -72,7 +72,7 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
   from 1000 px, the tab slot), RC1 option B; cases 95-97 taken, 9a reads 98-100.
 - Batch 9a implemented 2026-11-05 (`handoff.md`, Completed, "Batch 9a"): cases 98-100; the budgets rose to 269 and
   326 kB under the standing rule (+3.8 kB against the brief's +1.5); the placed items of `plan-9a.md` stay for the
-  orchestrator's fold.
+  orchestrator's fold. Its CI fix pass (2026-11-05) moved the `/s/` first-screen exception from 286 to 302 px.
 - Fold of the placed items (2026-11-04, done): the open "Placed items" of `plan-4.md`
   to `plan-7.md` are in sections 7 and 8 (batches 8, 9a, 9b, P and 10); the briefs keep their
   text. Section 10 is collapsed to its pointer, D1-D13 and "Impeccable".

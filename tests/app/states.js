@@ -25,6 +25,9 @@ const SHOP = '#/lists/00000000-0000-4000-8000-000000000101';
 const FIRST_NEW = '#/lists/00000000-0000-4000-8000-000000005000';
 /** The fake seed's `gm1` list «Трофеи», `uuid(103)`, with no share link. */
 const TROPHIES = '#/lists/00000000-0000-4000-8000-000000000103';
+/** The owner's list page «Ещё»: in the head's row up to 760 px, in the action row from 761 px. */
+const LIST_MORE =
+  '.lhead-acts .morewrap > [aria-haspopup="menu"], .card-acts .morewrap > [aria-haspopup="menu"]';
 
 /** Opens `#/lists` signed in as `as`, makes the account list `spec` (`driver.js`,
  *  `accountLists`) and goes to its page; answers the list's id. A new `d.open` resets the
@@ -904,7 +907,11 @@ async function dragReorder() {
       return { x: r.x, y: r.bottom - 3, width: 200, height: 3, sx: scrollX, sy: scrollY };
     }, i);
     const clip = pageClip(rect);
-    const png = PNG.sync.read(await notePage.screenshot({ type: 'png', clip }));
+    /* By default puppeteer resizes the view for a clip, through 1x1 px: the list redraws as
+       compact rows, and the dragged grip leaves, which ends the drag. */
+    const png = PNG.sync.read(
+      await notePage.screenshot({ type: 'png', clip, captureBeyondViewport: false })
+    );
     let n = 0;
     for (let p = 0; p < png.width * png.height; p++) {
       const r = png.data[p * 4];
@@ -2555,6 +2562,7 @@ async function shareLinksOfAnAccountList() {
   );
   await d.press('Скопировать', 1);
   copied.push((await d.clipboard())?.text ?? '');
+  await d.openMore(LIST_MORE);
   await d.press('Скопировать текст');
   copied.push((await d.clipboard())?.text ?? '');
   ok(
@@ -3696,6 +3704,9 @@ async function ownItemRowAndNoteBox() {
       name.value = v;
       name.dispatchEvent(new Event('input', { bubbles: true }));
     }, long);
+    /* The focus scrolled «Название» into view, and the button can sit under the bar again. */
+    await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+    await d.settle();
     const press = await page.evaluateHandle(() =>
       [...document.querySelectorAll('.quick button')].find(
         (b) => b.textContent.trim() === 'Добавить в список'
@@ -4519,6 +4530,8 @@ async function drawsListNotesAsFormattedText() {
     },
     '76'
   );
+  /* Up to 760 px the list notes and the roll open from the head. */
+  await d.press('Заметки');
   await d.press('Просмотр');
   ok(
     await waitIn(page, () => !!document.querySelector('.lnote .pane ul')),
@@ -4537,7 +4550,8 @@ async function drawsListNotesAsFormattedText() {
     pane.padding === '18px' && pane.margin === '4px' && pane.italic === 'закрыта',
     at + 'the pane does not take the list rules - ' + JSON.stringify(pane)
   );
-  await d.press('Бросок по списку');
+  await d.openMore(LIST_MORE);
+  await d.press('Бросить по списку');
   await d.press('На единицу больше');
   await d.press('На единицу больше');
   ok(
@@ -5629,8 +5643,8 @@ const FIRST_SCREEN = [
   { state: '#/lists/00000000-0000-4000-8000-000000008001 as gm4', shipped: 360 },
   { state: '#/lists/00000000-0000-4000-8000-000000008001 ~ many as gm4', shipped: 360 },
   { state: '#/lists/00000000-0000-4000-8000-000000008001 ~ long name as gm4', shipped: 360 },
-  { state: '#/s/player-token-1', shipped: 360, exception: 286 },
-  { state: '#/s/player-token-1 ~ long name', shipped: 360, exception: 286 }
+  { state: '#/s/player-token-1', shipped: 360, exception: 302 },
+  { state: '#/s/player-token-1 ~ long name', shipped: 360, exception: 302 }
 ];
 
 /** Returns the top of the first `[data-primary]` with a nonzero height, at scroll 0
@@ -7817,6 +7831,34 @@ async function listHeadAndBars() {
           () => document.activeElement?.classList.contains('selmode') ?? false
         ),
         at + '«Снять выделение» did not return the focus to «Выбрать»'
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+  /* Fourteen ticks: the sheet's body reaches its height cap, and the foot stays in view. */
+  {
+    const { ctx, page, d } = await openState(LIST_A_ID + ' ~ many as gm4', 360, 640, 'ru');
+    try {
+      await d.click('Выбрать');
+      await page.evaluate(() => document.querySelector('.selbarwrap .selall input')?.click());
+      await d.settle();
+      await d.viewport(360, 480);
+      await d.click('Цены');
+      const sheet = await page.evaluate(() => {
+        const f = document.querySelector('dialog.sheet .sheet-foot')?.getBoundingClientRect();
+        return {
+          rows: document.querySelectorAll('dialog.sheet .guess-row').length,
+          foot: f ? { top: f.top, bottom: f.bottom } : null,
+          vh: innerHeight
+        };
+      });
+      ok(
+        sheet.rows === 14 &&
+          !!sheet.foot &&
+          sheet.foot.top >= 0 &&
+          sheet.foot.bottom <= sheet.vh,
+        at + 'the price sheet of 14 rows at 360x480 - ' + JSON.stringify(sheet)
       );
     } finally {
       await ctx.close();

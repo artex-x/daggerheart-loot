@@ -34,8 +34,7 @@ const code = walk(DIST).filter(
    postgrest-js, realtime-js and storage-js) as a chunk loaded after first
    paint - 325.5 kB in all here and about 0.1 kB more on CI's `e2e` job, so
    under 326 - while the unconfigured one `check:built` measures, 268.1 kB,
-   must stay under 269 (measured 2026-11-05 after task 57 batch 9a: the list
-   pages' compact row, search row, own selection bar, list menus and price
+   must stay under 269 (measured 2026-11-05 after the list pages' compact row, search row, own selection bar, list menus and price
    sheet; 264.1 kB and 321.4 kB before it). A batch whose total passes a budget
    raises it to its measured total rounded up to the next whole kB, never past
    350 configured and 270 unconfigured (owner, 2026-10-22;

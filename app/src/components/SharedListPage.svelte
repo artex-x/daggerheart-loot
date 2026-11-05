@@ -225,6 +225,12 @@
     )?.focus();
   }
 
+  /* The press takes «Повторить» out of the DOM, so the focus goes to `#main` (rule 20). */
+  function retry(): void {
+    void view?.retry();
+    void tick().then(() => document.getElementById('main')?.focus());
+  }
+
   /* The audience and the link are read at the press: the toast is drawn later, and a
      re-read in between must not change what it says. */
   async function copyFilterLink(at: string): Promise<void> {
@@ -373,7 +379,7 @@
       <ErrorPage title={t.sharedFailed}>
         {t.sharedFailedSub}
         {#snippet actions()}
-          <Button variant="primary" onclick={() => void view.retry()}>{t.retry}</Button>
+          <Button variant="primary" onclick={retry}>{t.retry}</Button>
         {/snippet}
       </ErrorPage>
     {:else if !shared}
@@ -421,7 +427,7 @@
           {#if gmOpen}<HitNote icon="eyeOff" label={t.noteHid} text={shared.hnote} />{/if}
         </div>
       {/if}
-      <Actions style="margin-bottom:18px">
+      <Actions style={narrow ? 'margin-bottom:10px' : 'margin-bottom:18px'}>
         <!-- Only the open prompt is announced: an aria-expanded=false on
              every signed-out shared page would name a panel nobody opened. -->
         <Button
@@ -606,10 +612,16 @@
     overflow: hidden;
   }
 
+  /* Tighter steps up to 760 px: the first entry must start in the first screen at 360x640
+     (DESIGN.md, "The First-Screen Rule"). */
   @media (max-width: 760px) {
     .shhead :global(.page-h) {
       -webkit-line-clamp: 1;
       line-clamp: 1;
+    }
+
+    .shhead :global(.page-sub) {
+      margin-bottom: 10px;
     }
   }
 
