@@ -62,7 +62,8 @@ From the Many Worlds Tavern commit (`5d62bf06`) and `git grep mwt` at `b6f153a5`
 
 | Batch | Content | Why this size | Gates |
 |---|---|---|---|
-| B1 | Translate the draft, merge 93 records and 4 refs, ingest 45 pictures, wire the source, update specs, fixtures and goldens, write the decision file | No split: data, art, wiring and goldens share the same components, seed and filters, and the one public-contract change (a new source key and its routes) lands in one commit. The Many Worlds Tavern ingest was one commit too. | `check:fast`, then push for CI |
+| B0 | Translate `records-draft.json` (93 records, 4 refs) with the `daggerheart-ru-terms` skill and daggerheart.su; a reviewer checks terms, parity and consistency; one fix pass | Touches only `issues/pistolheart/`, so it does not wait for task 57. The Russian is the largest content risk; B1 then merges verified text. | none (JSON valid, parity script) |
+| B1 | Merge 93 records and 4 refs, ingest 45 pictures, wire the source, update specs, fixtures and goldens, write the decision file | No split: data, art, wiring and goldens share the same components, seed and filters, and the one public-contract change (a new source key and its routes) lands in one commit. The Many Worlds Tavern ingest was one commit too. | `check:fast`, then push for CI |
 | R1 | Reviewer on B1, one remediation commit | Triggers: public contracts and routes changed, new source mechanics, large data ingest. | `check:fast`, CI |
 | B2 | Closeout: audit `issues/pistolheart/` against `/handoff`'s durable list, move what qualifies, delete the directory, squash onto `main` | Per `CLAUDE.md`. | CI of the tip |
 
@@ -72,8 +73,9 @@ browser-suite run. Run `check:built` and the browser suite once, after the golde
 ## B1 order of work
 
 1. Merge `main`; re-grep (see Start gate).
-2. Convert `records-draft.json` to `data.js` records: Russian text, `refs` objects in the `RefCard`
-   shape, `img` fields. Use a merge script that loads `data.js`, mutates `L`, and writes the exact
+2. Convert `records-draft.json` (Russian done in B0) to `data.js` records: `refs` objects in the
+   `RefCard` shape, `img` fields. Write plain text only: `node tools/desc-style.mjs --write` applies
+   the bold cost and italic condition styling. Use a merge script that loads `data.js`, mutates `L`, and writes the exact
    `window.LOOT=` + JSON + `;\n` form.
 3. Ingest the art; run `node tools/desc-style.mjs --write`, then `node tools/build.js`; search `i/` for `undefined`.
 4. Wire the source (Touchpoints). A new word on the print card is not expected: the traits and ranges

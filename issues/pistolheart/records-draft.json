@@ -2,21 +2,49 @@
  "note": "Draft records for source ph. ru/rud are null: translate with the daggerheart-ru-terms skill. Typos of the book (Very close, d10 +9, d6+1phy) are fixed. Roll = id number, book order, a line's rungs after its head.",
  "refs": {
   "ph-mounted": {
+   "en": "Mounted rules: Charge (Yah!), Serpentine, Spurs",
+   "ensub": "Pistolheart Vol. 1 · p. 7 · Rules",
+   "ende": "- Mounts don't have their own stats and can't be targeted by adversaries. Exceptions to this are PCs mounted on creatures with their own stat blocks, such as a ranger's animal companion, or a druid in Beastform.\n- Mounts can suffer consequences as a result of a PC rolling with Fear.\n- A mounted rider automatically succeeds on rolls to outrun or catch up to someone on foot.\n- Once per long rest, a mounted rider can take a short rest while on the move.\n- If a PC's mount isn't present in a scene, but the mount could reasonably reach the PC, they can give the GM a Fear to whistle for any number of mounts, involving them in the scene.\n- While mounted, PCs can move within Far range and can use the following abilities:\n  - Charge: Make a Strength roll. On a success, you move in a line to Far range, passing through any adversaries in your path.\n  - Serpentine: When you are targeted by an attack, while mounted, you can mark a Stress to make an Instinct reaction roll. On a success, you gain a bonus to your Evasion against the attack equal to your tier.\n  - Spurs: Make an Agility Roll to move within Very Far range.",
+   "ru": "Правила верховой езды: Натиск (Ях!), Змейка, Шпоры",
+   "rusub": "Pistolheart, том 1 · с. 7 · Правила",
+   "rud": "- Скакуны не имеют собственных характеристик, и противники не могут выбирать их целью. Исключение составляют персонажи верхом на существах с собственными блоками характеристик, например на компаньоне Следопыта или на Друиде в Звериной Форме.\n- Скакун может пострадать от последствий, если персонаж бросает со Страхом.\n- Всадник автоматически преуспевает в бросках, чтобы убежать от пеших или догнать их.\n- Один раз за продолжительный отдых всадник может совершить короткий отдых на ходу.\n- Если скакуна нет в сцене, но он мог бы добраться до персонажа, персонаж может отдать Мастеру Страх, чтобы свистом подозвать любое число скакунов, включив их в сцену.\n- Верхом персонажи могут перемещаться в пределах Далекой дистанции и использовать следующие способности:\n  - Натиск: Совершите Бросок Силы. При успехе вы перемещаетесь по прямой на Далекую дистанцию, проходя сквозь всех противников на пути.\n  - Змейка: Когда вы становитесь целью атаки, будучи верхом, вы можете отметить Стресс, чтобы совершить Бросок Реакции Инстинкта. При успехе вы получаете к Уклонению против этой атаки бонус, равный вашему Рангу.\n  - Шпоры: Совершите Бросок Проворности, чтобы переместиться в пределах Очень Далекой дистанции.",
+   "url": "https://www.drivethrurpg.com/en/product/547537/pistolheart-volume-1",
    "title": "Mounted rules: Charge (Yah!), Serpentine, Spurs",
    "source": "Pistolheart Volume 1, printed page 7 (PDF page 10), \"Optional Rules for Mounted PCs\"",
    "text": "- Mounts don't have their own stats and can't be targeted by adversaries. Exceptions to this are PCs mounted on creatures with their own stat blocks, such as a ranger's animal companion, or a druid in Beastform.\n- Mounts can suffer consequences as a result of a PC rolling with Fear.\n- A mounted rider automatically succeeds on rolls to outrun or catch up to someone on foot.\n- Once per long rest, a mounted rider can take a short rest while on the move.\n- If a PC's mount isn't present in a scene, but the mount could reasonably reach the PC, they can give the GM a Fear to whistle for any number of mounts, involving them in the scene.\n- While mounted, PCs can move within Far range and can use the following abilities:\n  - Charge: Make a Strength roll. On a success, you move in a line to Far range, passing through any adversaries in your path.\n  - Serpentine: When you are targeted by an attack, while mounted, you can mark a Stress to make an Instinct reaction roll. On a success, you gain a bonus to your Evasion against the attack equal to your tier.\n  - Spurs: Make an Agility Roll to move within Very Far range."
   },
   "ph-saddles": {
+   "en": "Magic Saddles",
+   "ensub": "Pistolheart Vol. 3 · p. 34 · Rules",
+   "ende": "These saddles adjust to fit the size of the mount. A PC and their mount can only benefit from the effects of a single saddle at a time.",
+   "ru": "Магические сёдла",
+   "rusub": "Pistolheart, том 3 · с. 34 · Правила",
+   "rud": "Эти сёдла подстраиваются под размер скакуна. Персонаж и его скакун могут одновременно получать выгоду только от одного седла.",
+   "url": "https://www.drivethrurpg.com/en/product/578612/pistolheart-volume-3",
    "title": "Magic Saddles",
    "source": "Pistolheart Volume 3, printed page 34 (PDF page 34), \"Magic Saddles\"",
    "text": "These saddles adjust to fit the size of the mount. A PC and their mount can only benefit from the effects of a single saddle at a time."
   },
   "ph-infusions": {
+   "en": "Infusions",
+   "ensub": "Pistolheart Vol. 3 · p. 34 · Rules",
+   "ende": "Infusions are a new type of feature that you can add to an item, wearable object, or layer onto a weapon or armor. Operating similarly to the \"Touched\" domain cards, a PC must have a majority of their domain cards of the corresponding type in their loadout to benefit from the infused feature. If an Infusion is placed on a weapon or armor, it exists alongside the original feature and does not replace it. A PC can hold 1 Infused item at a time. At tier 3, they can hold 2 Infused items, but can only benefit from one Infusion at a time.",
+   "ru": "Инфузии",
+   "rusub": "Pistolheart, том 3 · с. 34 · Правила",
+   "rud": "Инфузии - новый вид свойств, которые можно добавить к предмету, носимой вещи или наложить на оружие либо броню. Подобно картам домена «Затронутый» (например, «Затронутый Арканой»), персонаж должен иметь в Руке большинство карт домена соответствующего типа, чтобы получать выгоду от свойства Инфузии. Если Инфузия размещена на оружии или броне, она действует наряду с исходным свойством и не заменяет его. Персонаж может держать 1 предмет с Инфузией одновременно. На Ранге 3 он может держать 2 таких предмета, но получать выгоду только от одной Инфузии за раз.",
+   "url": "https://www.drivethrurpg.com/en/product/578612/pistolheart-volume-3",
    "title": "Infusions",
    "source": "Pistolheart Volume 3, printed page 34 (PDF page 34), \"Infusions\"",
    "text": "Infusions are a new type of feature that you can add to an item, wearable object, or layer onto a weapon or armor. Operating similarly to the \"Touched\" domain cards, a PC must have a majority of their domain cards of the corresponding type in their loadout to benefit from the infused feature. If an Infusion is placed on a weapon or armor, it exists alongside the original feature and does not replace it. A PC can hold 1 Infused item at a time. At tier 3, they can hold 2 Infused items, but can only benefit from one Infusion at a time."
   },
   "ph-most-wanted": {
+   "en": "Most Wanted (Corrupt Sheriff)",
+   "ensub": "Pistolheart Vol. 2 · Corrupt Sheriff · Adversary feature",
+   "ende": "Most Wanted - Action: Spend 2 Fear to make a PC Most Wanted. A Most Wanted PC has disadvantage on Presence Rolls in civilized locations. A Most Wanted PC can clear the condition by spending a chest of gold to pay the bounty or by finding another way to clear their name.",
+   "ru": "Особо Разыскиваемый («Продажный Шериф»)",
+   "rusub": "Pistolheart, том 2 · Продажный Шериф · Свойство противника",
+   "rud": "Особо Разыскиваемый - Действие: Потратьте 2 Страха, чтобы сделать персонажа Особо Разыскиваемым. Особо Разыскиваемый персонаж имеет помеху на Броски Влияния в цивилизованных местах. Особо Разыскиваемый персонаж может снять это состояние, заплатив награду за голову сундуком золота или найдя иной способ очистить своё имя.",
+   "url": "https://www.drivethrurpg.com/en/product/564429/pistolheart-volume-2",
    "title": "Most Wanted (Corrupt Sheriff)",
    "source": "Pistolheart Volume 2, Corrupt Sheriff (Tier 2 Leader) stat block, \"Most Wanted - Action\"",
    "text": "Most Wanted - Action: Spend 2 Fear to make a PC Most Wanted. A Most Wanted PC has disadvantage on Presence Rolls in civilized locations. A Most Wanted PC can clear the condition by spending a chest of gold to pay the bounty or by finding another way to clear their name."
@@ -31,8 +59,8 @@
    "roll": 1,
    "en": "Snubnose Revolver",
    "ende": "***Lucky Bullet:*** On a successful attack, you can roll an additional damage die and discard the lowest result.",
-   "ru": null,
-   "rud": null,
+   "ru": "Короткоствольный Револьвер",
+   "rud": "***Счастливая пуля:*** При успешной атаке вы можете бросить дополнительную кость урона и отбросить результат с наименьшим значением.",
    "img": "ph1.webp",
    "eq": {
     "t": "weapon",
@@ -56,8 +84,8 @@
    "roll": 2,
    "en": "Improved Snubnose Revolver",
    "ende": "***Lucky Bullet:*** On a successful attack, you can roll an additional damage die and discard the lowest result.",
-   "ru": null,
-   "rud": null,
+   "ru": "Улучшенный Короткоствольный Револьвер",
+   "rud": "***Счастливая пуля:*** При успешной атаке вы можете бросить дополнительную кость урона и отбросить результат с наименьшим значением.",
    "img": "ph1.webp",
    "eq": {
     "t": "weapon",
@@ -81,8 +109,8 @@
    "roll": 3,
    "en": "Advanced Snubnose Revolver",
    "ende": "***Lucky Bullet:*** On a successful attack, you can roll an additional damage die and discard the lowest result.",
-   "ru": null,
-   "rud": null,
+   "ru": "Продвинутый Короткоствольный Револьвер",
+   "rud": "***Счастливая пуля:*** При успешной атаке вы можете бросить дополнительную кость урона и отбросить результат с наименьшим значением.",
    "img": "ph1.webp",
    "eq": {
     "t": "weapon",
@@ -106,8 +134,8 @@
    "roll": 4,
    "en": "Legendary Snubnose Revolver",
    "ende": "***Lucky Bullet:*** On a successful attack, you can roll an additional damage die and discard the lowest result.",
-   "ru": null,
-   "rud": null,
+   "ru": "Легендарный Короткоствольный Револьвер",
+   "rud": "***Счастливая пуля:*** При успешной атаке вы можете бросить дополнительную кость урона и отбросить результат с наименьшим значением.",
    "img": "ph1.webp",
    "eq": {
     "t": "weapon",
@@ -131,8 +159,8 @@
    "roll": 5,
    "en": "Warbringer Revolver",
    "ende": "***No Peace:*** When you deal Severe damage, your target becomes temporarily Vulnerable.",
-   "ru": null,
-   "rud": null,
+   "ru": "Револьвер Вестника Войны",
+   "rud": "***Никакого мира:*** Когда вы наносите Тяжелый урон, ваша цель временно становится Уязвимой.",
    "img": "ph5.webp",
    "eq": {
     "t": "weapon",
@@ -156,8 +184,8 @@
    "roll": 6,
    "en": "Improved Warbringer Revolver",
    "ende": "***No Peace:*** When you deal Severe damage, your target becomes temporarily Vulnerable.",
-   "ru": null,
-   "rud": null,
+   "ru": "Улучшенный Револьвер Вестника Войны",
+   "rud": "***Никакого мира:*** Когда вы наносите Тяжелый урон, ваша цель временно становится Уязвимой.",
    "img": "ph5.webp",
    "eq": {
     "t": "weapon",
@@ -181,8 +209,8 @@
    "roll": 7,
    "en": "Advanced Warbringer Revolver",
    "ende": "***No Peace:*** When you deal Severe damage, your target becomes temporarily Vulnerable.",
-   "ru": null,
-   "rud": null,
+   "ru": "Продвинутый Револьвер Вестника Войны",
+   "rud": "***Никакого мира:*** Когда вы наносите Тяжелый урон, ваша цель временно становится Уязвимой.",
    "img": "ph5.webp",
    "eq": {
     "t": "weapon",
@@ -206,8 +234,8 @@
    "roll": 8,
    "en": "Legendary Warbringer Revolver",
    "ende": "***No Peace:*** When you deal Severe damage, your target becomes temporarily Vulnerable.",
-   "ru": null,
-   "rud": null,
+   "ru": "Легендарный Револьвер Вестника Войны",
+   "rud": "***Никакого мира:*** Когда вы наносите Тяжелый урон, ваша цель временно становится Уязвимой.",
    "img": "ph5.webp",
    "eq": {
     "t": "weapon",
@@ -231,8 +259,8 @@
    "roll": 9,
    "en": "Arcpistol",
    "ende": "***Spellshot:*** +1 bonus to Spellcast rolls.",
-   "ru": null,
-   "rud": null,
+   "ru": "Арк-Пистолет",
+   "rud": "***Чародейский выстрел:*** Бонус +1 к Броскам Заклинаний.",
    "img": "ph9.webp",
    "eq": {
     "t": "weapon",
@@ -256,8 +284,8 @@
    "roll": 10,
    "en": "Improved Arcpistol",
    "ende": "***Spellshot:*** +1 bonus to Spellcast rolls.",
-   "ru": null,
-   "rud": null,
+   "ru": "Улучшенный Арк-Пистолет",
+   "rud": "***Чародейский выстрел:*** Бонус +1 к Броскам Заклинаний.",
    "img": "ph9.webp",
    "eq": {
     "t": "weapon",
@@ -281,8 +309,8 @@
    "roll": 11,
    "en": "Advanced Arcpistol",
    "ende": "***Spellshot:*** +1 bonus to Spellcast rolls.",
-   "ru": null,
-   "rud": null,
+   "ru": "Продвинутый Арк-Пистолет",
+   "rud": "***Чародейский выстрел:*** Бонус +1 к Броскам Заклинаний.",
    "img": "ph9.webp",
    "eq": {
     "t": "weapon",
@@ -306,8 +334,8 @@
    "roll": 12,
    "en": "Legendary Arcpistol",
    "ende": "***Spellshot:*** +1 bonus to Spellcast rolls.",
-   "ru": null,
-   "rud": null,
+   "ru": "Легендарный Арк-Пистолет",
+   "rud": "***Чародейский выстрел:*** Бонус +1 к Броскам Заклинаний.",
    "img": "ph9.webp",
    "eq": {
     "t": "weapon",
@@ -331,8 +359,8 @@
    "roll": 13,
    "en": "Scoped Rifle",
    "ende": "***Longshot:*** You have a +2 bonus to attack rolls against adversaries at Far range or farther.",
-   "ru": null,
-   "rud": null,
+   "ru": "Винтовка с Прицелом",
+   "rud": "***Дальний выстрел:*** Вы получаете бонус +2 к Броскам Атаки против противников на Далекой дистанции или дальше.",
    "img": "ph13.webp",
    "eq": {
     "t": "weapon",
@@ -356,8 +384,8 @@
    "roll": 14,
    "en": "Improved Scoped Rifle",
    "ende": "***Longshot:*** You have a +2 bonus to attack rolls against adversaries at Far range or farther.",
-   "ru": null,
-   "rud": null,
+   "ru": "Улучшенная Винтовка с Прицелом",
+   "rud": "***Дальний выстрел:*** Вы получаете бонус +2 к Броскам Атаки против противников на Далекой дистанции или дальше.",
    "img": "ph13.webp",
    "eq": {
     "t": "weapon",
@@ -381,8 +409,8 @@
    "roll": 15,
    "en": "Advanced Scoped Rifle",
    "ende": "***Longshot:*** You have a +2 bonus to attack rolls against adversaries at Far range or farther.",
-   "ru": null,
-   "rud": null,
+   "ru": "Продвинутая Винтовка с Прицелом",
+   "rud": "***Дальний выстрел:*** Вы получаете бонус +2 к Броскам Атаки против противников на Далекой дистанции или дальше.",
    "img": "ph13.webp",
    "eq": {
     "t": "weapon",
@@ -406,8 +434,8 @@
    "roll": 16,
    "en": "Legendary Scoped Rifle",
    "ende": "***Longshot:*** You have a +2 bonus to attack rolls against adversaries at Far range or farther.",
-   "ru": null,
-   "rud": null,
+   "ru": "Легендарная Винтовка с Прицелом",
+   "rud": "***Дальний выстрел:*** Вы получаете бонус +2 к Броскам Атаки против противников на Далекой дистанции или дальше.",
    "img": "ph13.webp",
    "eq": {
     "t": "weapon",
@@ -431,8 +459,8 @@
    "roll": 17,
    "en": "Bolt Action Rifle",
    "ende": "***Piercing Round:*** When you deal Major damage, you can mark a Stress to make your target become temporarily Vulnerable.",
-   "ru": null,
-   "rud": null,
+   "ru": "Затворная Винтовка",
+   "rud": "***Пробивающий патрон:*** Когда вы наносите Ощутимый урон, вы можете отметить Стресс, чтобы ваша цель временно стала Уязвимой.",
    "img": "ph17.webp",
    "eq": {
     "t": "weapon",
@@ -456,8 +484,8 @@
    "roll": 18,
    "en": "Improved Bolt Action Rifle",
    "ende": "***Piercing Round:*** When you deal Major damage, you can mark a Stress to make your target become temporarily Vulnerable.",
-   "ru": null,
-   "rud": null,
+   "ru": "Улучшенная Затворная Винтовка",
+   "rud": "***Пробивающий патрон:*** Когда вы наносите Ощутимый урон, вы можете отметить Стресс, чтобы ваша цель временно стала Уязвимой.",
    "img": "ph17.webp",
    "eq": {
     "t": "weapon",
@@ -481,8 +509,8 @@
    "roll": 19,
    "en": "Advanced Bolt Action Rifle",
    "ende": "***Piercing Round:*** When you deal Major damage, you can mark a Stress to make your target become temporarily Vulnerable.",
-   "ru": null,
-   "rud": null,
+   "ru": "Продвинутая Затворная Винтовка",
+   "rud": "***Пробивающий патрон:*** Когда вы наносите Ощутимый урон, вы можете отметить Стресс, чтобы ваша цель временно стала Уязвимой.",
    "img": "ph17.webp",
    "eq": {
     "t": "weapon",
@@ -506,8 +534,8 @@
    "roll": 20,
    "en": "Legendary Bolt Action Rifle",
    "ende": "***Piercing Round:*** When you deal Major damage, you can mark a Stress to make your target become temporarily Vulnerable.",
-   "ru": null,
-   "rud": null,
+   "ru": "Легендарная Затворная Винтовка",
+   "rud": "***Пробивающий патрон:*** Когда вы наносите Ощутимый урон, вы можете отметить Стресс, чтобы ваша цель временно стала Уязвимой.",
    "img": "ph17.webp",
    "eq": {
     "t": "weapon",
@@ -531,8 +559,8 @@
    "roll": 21,
    "en": "Sawed Off",
    "ende": "***Wide Spread:*** When you make an attack roll, choose a target within range and make an attack roll against all creatures within Melee range of your target.",
-   "ru": null,
-   "rud": null,
+   "ru": "Обрез",
+   "rud": "***Широкий разброс:*** Когда вы совершаете Бросок Атаки, выберите цель в пределах дистанции и совершите Бросок Атаки против всех существ Вплотную к вашей цели.",
    "img": "ph21.webp",
    "eq": {
     "t": "weapon",
@@ -556,8 +584,8 @@
    "roll": 22,
    "en": "Improved Sawed Off",
    "ende": "***Wide Spread:*** When you make an attack roll, choose a target within range and make an attack roll against all creatures within Melee range of your target.",
-   "ru": null,
-   "rud": null,
+   "ru": "Улучшенный Обрез",
+   "rud": "***Широкий разброс:*** Когда вы совершаете Бросок Атаки, выберите цель в пределах дистанции и совершите Бросок Атаки против всех существ Вплотную к вашей цели.",
    "img": "ph21.webp",
    "eq": {
     "t": "weapon",
@@ -581,8 +609,8 @@
    "roll": 23,
    "en": "Advanced Sawed Off",
    "ende": "***Wide Spread:*** When you make an attack roll, choose a target within range and make an attack roll against all creatures within Melee range of your target.",
-   "ru": null,
-   "rud": null,
+   "ru": "Продвинутый Обрез",
+   "rud": "***Широкий разброс:*** Когда вы совершаете Бросок Атаки, выберите цель в пределах дистанции и совершите Бросок Атаки против всех существ Вплотную к вашей цели.",
    "img": "ph21.webp",
    "eq": {
     "t": "weapon",
@@ -606,8 +634,8 @@
    "roll": 24,
    "en": "Legendary Sawed Off",
    "ende": "***Wide Spread:*** When you make an attack roll, choose a target within range and make an attack roll against all creatures within Melee range of your target.",
-   "ru": null,
-   "rud": null,
+   "ru": "Легендарный Обрез",
+   "rud": "***Широкий разброс:*** Когда вы совершаете Бросок Атаки, выберите цель в пределах дистанции и совершите Бросок Атаки против всех существ Вплотную к вашей цели.",
    "img": "ph21.webp",
    "eq": {
     "t": "weapon",
@@ -631,8 +659,8 @@
    "roll": 25,
    "en": "Slug Gun",
    "ende": "***Double Barrel:*** When you succeed on an attack against a target, you can spend a Hope to change your damage die to a d12.",
-   "ru": null,
-   "rud": null,
+   "ru": "Жаканное Ружьё",
+   "rud": "***Двойной ствол:*** Когда вы успешно атакуете цель, вы можете потратить Надежду, чтобы изменить вашу кость урона на d12.",
    "img": "ph25.webp",
    "eq": {
     "t": "weapon",
@@ -656,8 +684,8 @@
    "roll": 26,
    "en": "Improved Slug Gun",
    "ende": "***Double Barrel:*** When you succeed on an attack against a target, you can spend a Hope to change your damage die to a d12.",
-   "ru": null,
-   "rud": null,
+   "ru": "Улучшенное Жаканное Ружьё",
+   "rud": "***Двойной ствол:*** Когда вы успешно атакуете цель, вы можете потратить Надежду, чтобы изменить вашу кость урона на d12.",
    "img": "ph25.webp",
    "eq": {
     "t": "weapon",
@@ -681,8 +709,8 @@
    "roll": 27,
    "en": "Advanced Slug Gun",
    "ende": "***Double Barrel:*** When you succeed on an attack against a target, you can spend a Hope to change your damage die to a d12.",
-   "ru": null,
-   "rud": null,
+   "ru": "Продвинутое Жаканное Ружьё",
+   "rud": "***Двойной ствол:*** Когда вы успешно атакуете цель, вы можете потратить Надежду, чтобы изменить вашу кость урона на d12.",
    "img": "ph25.webp",
    "eq": {
     "t": "weapon",
@@ -706,8 +734,8 @@
    "roll": 28,
    "en": "Legendary Slug Gun",
    "ende": "***Double Barrel:*** When you succeed on an attack against a target, you can spend a Hope to change your damage die to a d12.",
-   "ru": null,
-   "rud": null,
+   "ru": "Легендарное Жаканное Ружьё",
+   "rud": "***Двойной ствол:*** Когда вы успешно атакуете цель, вы можете потратить Надежду, чтобы изменить вашу кость урона на d12.",
    "img": "ph25.webp",
    "eq": {
     "t": "weapon",
@@ -731,8 +759,8 @@
    "roll": 29,
    "en": "Lever-Load Rifle",
    "ende": "***Rapid Fire:*** You can mark a Stress to target an additional adversary within range with the same attack roll.",
-   "ru": null,
-   "rud": null,
+   "ru": "Рычажная Винтовка",
+   "rud": "***Скорострельность:*** Вы можете отметить Стресс, чтобы выбрать целью ещё одного противника в пределах дистанции тем же Броском Атаки.",
    "img": "ph29.webp",
    "eq": {
     "t": "weapon",
@@ -756,8 +784,8 @@
    "roll": 30,
    "en": "Improved Lever-Load Rifle",
    "ende": "***Rapid Fire:*** You can mark a Stress to target an additional adversary within range with the same attack roll.",
-   "ru": null,
-   "rud": null,
+   "ru": "Улучшенная Рычажная Винтовка",
+   "rud": "***Скорострельность:*** Вы можете отметить Стресс, чтобы выбрать целью ещё одного противника в пределах дистанции тем же Броском Атаки.",
    "img": "ph29.webp",
    "eq": {
     "t": "weapon",
@@ -781,8 +809,8 @@
    "roll": 31,
    "en": "Advanced Lever-Load Rifle",
    "ende": "***Rapid Fire:*** You can mark a Stress to target an additional adversary within range with the same attack roll.",
-   "ru": null,
-   "rud": null,
+   "ru": "Продвинутая Рычажная Винтовка",
+   "rud": "***Скорострельность:*** Вы можете отметить Стресс, чтобы выбрать целью ещё одного противника в пределах дистанции тем же Броском Атаки.",
    "img": "ph29.webp",
    "eq": {
     "t": "weapon",
@@ -806,8 +834,8 @@
    "roll": 32,
    "en": "Legendary Lever-Load Rifle",
    "ende": "***Rapid Fire:*** You can mark a Stress to target an additional adversary within range with the same attack roll.",
-   "ru": null,
-   "rud": null,
+   "ru": "Легендарная Рычажная Винтовка",
+   "rud": "***Скорострельность:*** Вы можете отметить Стресс, чтобы выбрать целью ещё одного противника в пределах дистанции тем же Броском Атаки.",
    "img": "ph29.webp",
    "eq": {
     "t": "weapon",
@@ -831,8 +859,8 @@
    "roll": 33,
    "en": "Pocket Pistol",
    "ende": "***Bang! Bang!:*** When you damage a target within melee range, the damage die is a d6.",
-   "ru": null,
-   "rud": null,
+   "ru": "Карманный Пистолет",
+   "rud": "***Бах! Бах!:*** Когда вы наносите урон цели Вплотную, кость урона - d6.",
    "img": "ph33.webp",
    "eq": {
     "t": "weapon",
@@ -856,8 +884,8 @@
    "roll": 34,
    "en": "Improved Pocket Pistol",
    "ende": "***Bang! Bang!:*** When you damage a target within melee range, the damage die is a d6.",
-   "ru": null,
-   "rud": null,
+   "ru": "Улучшенный Карманный Пистолет",
+   "rud": "***Бах! Бах!:*** Когда вы наносите урон цели Вплотную, кость урона - d6.",
    "img": "ph33.webp",
    "eq": {
     "t": "weapon",
@@ -881,8 +909,8 @@
    "roll": 35,
    "en": "Advanced Pocket Pistol",
    "ende": "***Bang! Bang!:*** When you damage a target within melee range, the damage die is a d6.",
-   "ru": null,
-   "rud": null,
+   "ru": "Продвинутый Карманный Пистолет",
+   "rud": "***Бах! Бах!:*** Когда вы наносите урон цели Вплотную, кость урона - d6.",
    "img": "ph33.webp",
    "eq": {
     "t": "weapon",
@@ -906,8 +934,8 @@
    "roll": 36,
    "en": "Legendary Pocket Pistol",
    "ende": "***Bang! Bang!:*** When you damage a target within melee range, the damage die is a d6.",
-   "ru": null,
-   "rud": null,
+   "ru": "Легендарный Карманный Пистолет",
+   "rud": "***Бах! Бах!:*** Когда вы наносите урон цели Вплотную, кость урона - d6.",
    "img": "ph33.webp",
    "eq": {
     "t": "weapon",
@@ -931,8 +959,8 @@
    "roll": 37,
    "en": "Foal .44 Revolver",
    "ende": "***Rifling:*** You have a +2 bonus on attacks against targets at Far range.",
-   "ru": null,
-   "rud": null,
+   "ru": "Револьвер Жеребёнок .44",
+   "rud": "***Нарезка:*** Вы получаете бонус +2 к атакам по целям на Далекой дистанции.",
    "img": "ph37.webp",
    "eq": {
     "t": "weapon",
@@ -956,8 +984,8 @@
    "roll": 38,
    "en": "Improved Foal .44 Revolver",
    "ende": "***Rifling:*** You have a +2 bonus on attacks against targets at Far range.",
-   "ru": null,
-   "rud": null,
+   "ru": "Улучшенный Револьвер Жеребёнок .44",
+   "rud": "***Нарезка:*** Вы получаете бонус +2 к атакам по целям на Далекой дистанции.",
    "img": "ph37.webp",
    "eq": {
     "t": "weapon",
@@ -981,8 +1009,8 @@
    "roll": 39,
    "en": "Advanced Foal .44 Revolver",
    "ende": "***Rifling:*** You have a +2 bonus on attacks against targets at Far range.",
-   "ru": null,
-   "rud": null,
+   "ru": "Продвинутый Револьвер Жеребёнок .44",
+   "rud": "***Нарезка:*** Вы получаете бонус +2 к атакам по целям на Далекой дистанции.",
    "img": "ph37.webp",
    "eq": {
     "t": "weapon",
@@ -1006,8 +1034,8 @@
    "roll": 40,
    "en": "Legendary Foal .44 Revolver",
    "ende": "***Rifling:*** You have a +2 bonus on attacks against targets at Far range.",
-   "ru": null,
-   "rud": null,
+   "ru": "Легендарный Револьвер Жеребёнок .44",
+   "rud": "***Нарезка:*** Вы получаете бонус +2 к атакам по целям на Далекой дистанции.",
    "img": "ph37.webp",
    "eq": {
     "t": "weapon",
@@ -1031,8 +1059,8 @@
    "roll": 41,
    "en": "Rope Hatchet",
    "ende": "***Tug:*** When you deal Major damage or greater to a target with this weapon, you can mark a Stress to pull the target into Melee range.",
-   "ru": null,
-   "rud": null,
+   "ru": "Топорик на Верёвке",
+   "rud": "***Притягивание:*** Когда вы наносите этим оружием Ощутимый или больший урон цели, вы можете отметить Стресс, чтобы притянуть цель Вплотную к себе.",
    "img": "ph41.webp",
    "eq": {
     "t": "weapon",
@@ -1056,8 +1084,8 @@
    "roll": 42,
    "en": "Improved Rope Hatchet",
    "ende": "***Tug:*** When you deal Major damage or greater to a target with this weapon, you can mark a Stress to pull the target into Melee range.",
-   "ru": null,
-   "rud": null,
+   "ru": "Улучшенный Топорик на Верёвке",
+   "rud": "***Притягивание:*** Когда вы наносите этим оружием Ощутимый или больший урон цели, вы можете отметить Стресс, чтобы притянуть цель Вплотную к себе.",
    "img": "ph41.webp",
    "eq": {
     "t": "weapon",
@@ -1081,8 +1109,8 @@
    "roll": 43,
    "en": "Advanced Rope Hatchet",
    "ende": "***Tug:*** When you deal Major damage or greater to a target with this weapon, you can mark a Stress to pull the target into Melee range.",
-   "ru": null,
-   "rud": null,
+   "ru": "Продвинутый Топорик на Верёвке",
+   "rud": "***Притягивание:*** Когда вы наносите этим оружием Ощутимый или больший урон цели, вы можете отметить Стресс, чтобы притянуть цель Вплотную к себе.",
    "img": "ph41.webp",
    "eq": {
     "t": "weapon",
@@ -1106,8 +1134,8 @@
    "roll": 44,
    "en": "Legendary Rope Hatchet",
    "ende": "***Tug:*** When you deal Major damage or greater to a target with this weapon, you can mark a Stress to pull the target into Melee range.",
-   "ru": null,
-   "rud": null,
+   "ru": "Легендарный Топорик на Верёвке",
+   "rud": "***Притягивание:*** Когда вы наносите этим оружием Ощутимый или больший урон цели, вы можете отметить Стресс, чтобы притянуть цель Вплотную к себе.",
    "img": "ph41.webp",
    "eq": {
     "t": "weapon",
@@ -1131,8 +1159,8 @@
    "roll": 45,
    "en": "Prospector's Pouch",
    "ende": "***Full Purse:*** If you possess at least one bag of coins, this weapon's damage die becomes a d8 instead of a d6.",
-   "ru": null,
-   "rud": null,
+   "ru": "Кошель Старателя",
+   "rud": "***Полный кошель:*** Если у вас есть хотя бы один мешок монет, кость урона этого оружия становится d8 вместо d6.",
    "img": "ph45.webp",
    "eq": {
     "t": "weapon",
@@ -1156,8 +1184,8 @@
    "roll": 46,
    "en": "Improved Prospector's Pouch",
    "ende": "***Full Purse:*** If you possess at least one bag of coins, this weapon's damage die becomes a d8 instead of a d6.",
-   "ru": null,
-   "rud": null,
+   "ru": "Улучшенный Кошель Старателя",
+   "rud": "***Полный кошель:*** Если у вас есть хотя бы один мешок монет, кость урона этого оружия становится d8 вместо d6.",
    "img": "ph45.webp",
    "eq": {
     "t": "weapon",
@@ -1181,8 +1209,8 @@
    "roll": 47,
    "en": "Advanced Prospector's Pouch",
    "ende": "***Full Purse:*** If you possess at least one bag of coins, this weapon's damage die becomes a d8 instead of a d6.",
-   "ru": null,
-   "rud": null,
+   "ru": "Продвинутый Кошель Старателя",
+   "rud": "***Полный кошель:*** Если у вас есть хотя бы один мешок монет, кость урона этого оружия становится d8 вместо d6.",
    "img": "ph45.webp",
    "eq": {
     "t": "weapon",
@@ -1206,8 +1234,8 @@
    "roll": 48,
    "en": "Legendary Prospector's Pouch",
    "ende": "***Full Purse:*** If you possess at least one bag of coins, this weapon's damage die becomes a d8 instead of a d6.",
-   "ru": null,
-   "rud": null,
+   "ru": "Легендарный Кошель Старателя",
+   "rud": "***Полный кошель:*** Если у вас есть хотя бы один мешок монет, кость урона этого оружия становится d8 вместо d6.",
    "img": "ph45.webp",
    "eq": {
     "t": "weapon",
@@ -1231,8 +1259,8 @@
    "roll": 49,
    "en": "Maverick's Shuffle",
    "ende": "***Counting Cards:*** When you succeed with Fear, roll a d4. On a result of 4, gain a Hope.",
-   "ru": null,
-   "rud": null,
+   "ru": "Тасовка Маверика",
+   "rud": "***Счёт карт:*** Когда вы преуспеваете со Страхом, бросьте d4. При результате 4 получите Надежду.",
    "img": "ph49.webp",
    "eq": {
     "t": "weapon",
@@ -1256,8 +1284,8 @@
    "roll": 50,
    "en": "Improved Maverick's Shuffle",
    "ende": "***Counting Cards:*** When you succeed with Fear, roll a d4. On a result of 4, gain a Hope.",
-   "ru": null,
-   "rud": null,
+   "ru": "Улучшенная Тасовка Маверика",
+   "rud": "***Счёт карт:*** Когда вы преуспеваете со Страхом, бросьте d4. При результате 4 получите Надежду.",
    "img": "ph49.webp",
    "eq": {
     "t": "weapon",
@@ -1281,8 +1309,8 @@
    "roll": 51,
    "en": "Advanced Maverick's Shuffle",
    "ende": "***Counting Cards:*** When you succeed with Fear, roll a d4. On a result of 4, gain a Hope.",
-   "ru": null,
-   "rud": null,
+   "ru": "Продвинутая Тасовка Маверика",
+   "rud": "***Счёт карт:*** Когда вы преуспеваете со Страхом, бросьте d4. При результате 4 получите Надежду.",
    "img": "ph49.webp",
    "eq": {
     "t": "weapon",
@@ -1306,8 +1334,8 @@
    "roll": 52,
    "en": "Legendary Maverick's Shuffle",
    "ende": "***Counting Cards:*** When you succeed with Fear, roll a d4. On a result of 4, gain a Hope.",
-   "ru": null,
-   "rud": null,
+   "ru": "Легендарная Тасовка Маверика",
+   "rud": "***Счёт карт:*** Когда вы преуспеваете со Страхом, бросьте d4. При результате 4 получите Надежду.",
    "img": "ph49.webp",
    "eq": {
     "t": "weapon",
@@ -1331,8 +1359,8 @@
    "roll": 53,
    "en": "Carving Knife",
    "ende": "***Cruel Edge:*** When you critically succeed on an attack with your primary weapon against a target within Melee range, you can reroll any damage dice showing a 1 or 2.",
-   "ru": null,
-   "rud": null,
+   "ru": "Разделочный Нож",
+   "rud": "***Жестокое лезвие:*** Когда вы получаете критический успех при атаке основным оружием по цели Вплотную, вы можете перебросить любые кости урона, показавшие 1 или 2.",
    "img": "ph53.webp",
    "eq": {
     "t": "secondary",
@@ -1356,8 +1384,8 @@
    "roll": 54,
    "en": "Improved Carving Knife",
    "ende": "***Cruel Edge:*** When you critically succeed on an attack with your primary weapon against a target within Melee range, you can reroll any damage dice showing a 1 or 2.",
-   "ru": null,
-   "rud": null,
+   "ru": "Улучшенный Разделочный Нож",
+   "rud": "***Жестокое лезвие:*** Когда вы получаете критический успех при атаке основным оружием по цели Вплотную, вы можете перебросить любые кости урона, показавшие 1 или 2.",
    "img": "ph53.webp",
    "eq": {
     "t": "secondary",
@@ -1381,8 +1409,8 @@
    "roll": 55,
    "en": "Advanced Carving Knife",
    "ende": "***Cruel Edge:*** When you critically succeed on an attack with your primary weapon against a target within Melee range, you can reroll any damage dice showing a 1 or 2.",
-   "ru": null,
-   "rud": null,
+   "ru": "Продвинутый Разделочный Нож",
+   "rud": "***Жестокое лезвие:*** Когда вы получаете критический успех при атаке основным оружием по цели Вплотную, вы можете перебросить любые кости урона, показавшие 1 или 2.",
    "img": "ph53.webp",
    "eq": {
     "t": "secondary",
@@ -1406,8 +1434,8 @@
    "roll": 56,
    "en": "Legendary Carving Knife",
    "ende": "***Cruel Edge:*** When you critically succeed on an attack with your primary weapon against a target within Melee range, you can reroll any damage dice showing a 1 or 2.",
-   "ru": null,
-   "rud": null,
+   "ru": "Легендарный Разделочный Нож",
+   "rud": "***Жестокое лезвие:*** Когда вы получаете критический успех при атаке основным оружием по цели Вплотную, вы можете перебросить любые кости урона, показавшие 1 или 2.",
    "img": "ph53.webp",
    "eq": {
     "t": "secondary",
@@ -1431,8 +1459,8 @@
    "roll": 57,
    "en": "Wood Axe",
    "ende": "***Cruel Edge:*** When you critically succeed on an attack with your primary weapon against a target within Melee range, you can reroll any damage dice showing a 1 or 2.",
-   "ru": null,
-   "rud": null,
+   "ru": "Дровяной Топор",
+   "rud": "***Жестокое лезвие:*** Когда вы получаете критический успех при атаке основным оружием по цели Вплотную, вы можете перебросить любые кости урона, показавшие 1 или 2.",
    "img": "ph57.webp",
    "eq": {
     "t": "secondary",
@@ -1456,8 +1484,8 @@
    "roll": 58,
    "en": "Improved Wood Axe",
    "ende": "***Cruel Edge:*** When you critically succeed on an attack with your primary weapon against a target within Melee range, you can reroll any damage dice showing a 1 or 2.",
-   "ru": null,
-   "rud": null,
+   "ru": "Улучшенный Дровяной Топор",
+   "rud": "***Жестокое лезвие:*** Когда вы получаете критический успех при атаке основным оружием по цели Вплотную, вы можете перебросить любые кости урона, показавшие 1 или 2.",
    "img": "ph57.webp",
    "eq": {
     "t": "secondary",
@@ -1481,8 +1509,8 @@
    "roll": 59,
    "en": "Advanced Wood Axe",
    "ende": "***Cruel Edge:*** When you critically succeed on an attack with your primary weapon against a target within Melee range, you can reroll any damage dice showing a 1 or 2.",
-   "ru": null,
-   "rud": null,
+   "ru": "Продвинутый Дровяной Топор",
+   "rud": "***Жестокое лезвие:*** Когда вы получаете критический успех при атаке основным оружием по цели Вплотную, вы можете перебросить любые кости урона, показавшие 1 или 2.",
    "img": "ph57.webp",
    "eq": {
     "t": "secondary",
@@ -1506,8 +1534,8 @@
    "roll": 60,
    "en": "Legendary Wood Axe",
    "ende": "***Cruel Edge:*** When you critically succeed on an attack with your primary weapon against a target within Melee range, you can reroll any damage dice showing a 1 or 2.",
-   "ru": null,
-   "rud": null,
+   "ru": "Легендарный Дровяной Топор",
+   "rud": "***Жестокое лезвие:*** Когда вы получаете критический успех при атаке основным оружием по цели Вплотную, вы можете перебросить любые кости урона, показавшие 1 или 2.",
    "img": "ph57.webp",
    "eq": {
     "t": "secondary",
@@ -1531,8 +1559,8 @@
    "roll": 61,
    "en": "Sand Pouch",
    "ende": "***Pocket Sand:*** When you deal Severe damage to a creature within Melee range, they become temporarily Vulnerable.",
-   "ru": null,
-   "rud": null,
+   "ru": "Мешочек с Песком",
+   "rud": "***Песок в глаза:*** Когда вы наносите Тяжелый урон существу Вплотную, оно временно становится Уязвимым.",
    "img": "ph61.webp",
    "eq": {
     "t": "secondary",
@@ -1556,8 +1584,8 @@
    "roll": 62,
    "en": "Improved Sand Pouch",
    "ende": "***Pocket Sand:*** When you deal Severe damage to a creature within Melee range, they become temporarily Vulnerable.",
-   "ru": null,
-   "rud": null,
+   "ru": "Улучшенный Мешочек с Песком",
+   "rud": "***Песок в глаза:*** Когда вы наносите Тяжелый урон существу Вплотную, оно временно становится Уязвимым.",
    "img": "ph61.webp",
    "eq": {
     "t": "secondary",
@@ -1581,8 +1609,8 @@
    "roll": 63,
    "en": "Advanced Sand Pouch",
    "ende": "***Pocket Sand:*** When you deal Severe damage to a creature within Melee range, they become temporarily Vulnerable.",
-   "ru": null,
-   "rud": null,
+   "ru": "Продвинутый Мешочек с Песком",
+   "rud": "***Песок в глаза:*** Когда вы наносите Тяжелый урон существу Вплотную, оно временно становится Уязвимым.",
    "img": "ph61.webp",
    "eq": {
     "t": "secondary",
@@ -1606,8 +1634,8 @@
    "roll": 64,
    "en": "Legendary Sand Pouch",
    "ende": "***Pocket Sand:*** When you deal Severe damage to a creature within Melee range, they become temporarily Vulnerable.",
-   "ru": null,
-   "rud": null,
+   "ru": "Легендарный Мешочек с Песком",
+   "rud": "***Песок в глаза:*** Когда вы наносите Тяжелый урон существу Вплотную, оно временно становится Уязвимым.",
    "img": "ph61.webp",
    "eq": {
     "t": "secondary",
@@ -1631,8 +1659,8 @@
    "roll": 65,
    "en": "Hexer's Bandolier",
    "ende": "While wearing this bandolier, you can spend a Hope during a moment of calm to change the damage type of one of your firearms from physical to magic or from magic to physical until your next rest.",
-   "ru": null,
-   "rud": null,
+   "ru": "Патронташ Проклинателя",
+   "rud": "Пока вы носите этот патронташ, вы можете потратить Надежду в момент спокойствия, чтобы до следующего отдыха сменить тип урона одного вашего огнестрельного оружия с физического на магический или с магического на физический.",
    "img": "ph65.webp"
   },
   {
@@ -1643,8 +1671,8 @@
    "roll": 66,
    "en": "Bandit Mask",
    "ende": "While wearing this bandit mask, you don't count as Most Wanted, but have disadvantage on Presence Rolls.",
-   "ru": null,
-   "rud": null,
+   "ru": "Маска Бандита",
+   "rud": "Пока вы носите эту бандитскую маску, вы не считаетесь Особо Разыскиваемым, но получаете помеху на Броски Влияния.",
    "img": "ph66.webp",
    "refs": [
     "ph-most-wanted"
@@ -1658,8 +1686,8 @@
    "roll": 67,
    "en": "White Hat",
    "ende": "This gleaming, wide-brimmed cowboy hat never seems to get dirty or damaged. When it catches the sun just right, the light of justice seems to radiate off you. While wearing this hat, you have advantage on Presence Rolls when dealing with the Law.",
-   "ru": null,
-   "rud": null,
+   "ru": "Белая Шляпа",
+   "rud": "Эта сверкающая ковбойская шляпа с широкими полями никогда не пачкается и не портится. Когда на неё падает солнечный луч под нужным углом, кажется, что от вас исходит свет правосудия. Пока вы носите эту шляпу, вы получаете преимущество на Броски Влияния при общении с блюстителями закона.",
    "img": "ph67.webp"
   },
   {
@@ -1670,8 +1698,8 @@
    "roll": 68,
    "en": "Bandit's Gunny Sack",
    "ende": "You save time quickly unpacking your gear when you use a downtime move on a short rest. When you roll a die to determine how many Armor Slots, Stress, or Hit Points you clear, you can use the die's maximum result instead.",
-   "ru": null,
-   "rud": null,
+   "ru": "Рогожный Мешок Бандита",
+   "rud": "Вы быстро распаковываете снаряжение и экономите время, когда используете Ход Отдыха во время короткого отдыха. Когда вы бросаете кость, чтобы определить, сколько Ячеек Брони, Стресса или Ран вы очищаете, вы можете взять её максимальный результат.",
    "img": "ph68.webp"
   },
   {
@@ -1682,8 +1710,8 @@
    "roll": 69,
    "en": "Ricochet Round",
    "ende": "When you fail an attack roll made with a firearm, you can spend a Hope to make the target mark a Hit Point, and describe the elaborate path your bullet takes to hit the target.",
-   "ru": null,
-   "rud": null,
+   "ru": "Рикошетный Патрон",
+   "rud": "Когда вы проваливаете Бросок Атаки огнестрельным оружием, вы можете потратить Надежду, чтобы заставить цель отметить Рану, и описать затейливый путь, по которому ваша пуля настигает цель.",
    "img": "ph69.webp"
   },
   {
@@ -1693,9 +1721,9 @@
    "kind": "consumable",
    "roll": 70,
    "en": "Questionable Invigorator",
-   "ende": "You can drink this dubious looking liquid to roll a d6. On a result of 2 or higher, you gain a +2 bonus on action and damage rolls until the end of the scene. On a result of 1, you gain a -1 penalty to action and damage rolls until the end of the scene.",
-   "ru": null,
-   "rud": null,
+   "ende": "You can drink this dubious looking liquid to roll a d6. On a result of 2 or higher, you gain a +2 bonus on action and damage rolls until the end of the scene. On a result of 1, you gain a −1 penalty to action and damage rolls until the end of the scene.",
+   "ru": "Сомнительный Тонизатор",
+   "rud": "Вы можете выпить эту подозрительного вида жидкость, чтобы бросить d6. При результате 2 или выше вы получаете бонус +2 к Броскам Действия и Урона до конца сцены. При результате 1 вы получаете штраф −1 к Броскам Действия и Урона до конца сцены.",
    "img": "ph70.webp"
   },
   {
@@ -1706,8 +1734,8 @@
    "roll": 71,
    "en": "Laudanum",
    "ende": "You can imbibe a dram of this tincture to clear up to 12 Stress, then mark a Stress that can't be cleared by any means until you take a long rest.",
-   "ru": null,
-   "rud": null,
+   "ru": "Лауданум",
+   "rud": "Вы можете принять глоток этой настойки, чтобы очистить до 12 Стресса, а затем отметить Стресс, который нельзя очистить никакими способами до продолжительного отдыха.",
    "img": "ph71.webp"
   },
   {
@@ -1718,8 +1746,8 @@
    "roll": 72,
    "en": "Black Hat Leathers",
    "ende": "***Turn Tail:*** As a reaction, when you take Severe damage you can move up to Close range.",
-   "ru": null,
-   "rud": null,
+   "ru": "Кожаный Доспех Чёрной Шляпы",
+   "rud": "***Дать дёру:*** В качестве реакции, когда вы получаете Тяжелый урон, вы можете переместиться в пределах Средней дистанции.",
    "img": "ph72.webp",
    "eq": {
     "t": "armor",
@@ -1745,9 +1773,9 @@
    "kind": "equip",
    "roll": 73,
    "en": "Boreworm Plate",
-   "ende": "***Sand Strider:*** -1 to Agility. You can move up to Close range through dirt or sand, underground, as part of an action.",
-   "ru": null,
-   "rud": null,
+   "ende": "***Sand Strider:*** −1 to Agility. You can move up to Close range through dirt or sand, underground, as part of an action.",
+   "ru": "Латы Бурового Червя",
+   "rud": "***Бегущий по пескам:*** −1 к Проворности. Вы можете в рамках действия перемещаться в пределах Средней дистанции сквозь землю или песок, в том числе под землёй.",
    "img": "ph73.webp",
    "eq": {
     "t": "armor",
@@ -1774,8 +1802,8 @@
    "roll": 74,
    "en": "Gilded Ribcage",
    "ende": "***Macabre:*** An undead adversary must mark a Stress the first time it attacks you in a scene.",
-   "ru": null,
-   "rud": null,
+   "ru": "Позолоченная Грудная Клетка",
+   "rud": "***Макабр:*** Противник-нежить должен отметить Стресс, когда впервые атакует вас за сцену.",
    "img": "ph74.webp",
    "eq": {
     "t": "armor",
@@ -1802,8 +1830,8 @@
    "roll": 75,
    "en": "The Inexorable's Duster",
    "ende": "***Death's Acolyte:*** Once per scene, when you fail an attack roll you can mark a Stress to force the target to mark a Hit Point.",
-   "ru": null,
-   "rud": null,
+   "ru": "Пыльник Неумолимого",
+   "rud": "***Служитель Смерти:*** Один раз за сцену, когда вы проваливаете Бросок Атаки, вы можете отметить Стресс, чтобы заставить цель отметить Рану.",
    "img": "ph75.webp",
    "eq": {
     "t": "armor",
@@ -1830,8 +1858,8 @@
    "roll": 76,
    "en": "Gunpowder Whiskey",
    "ende": "Mark a Hit Point and a Stress to drink this spirit. On your next successful attack, you automatically deal maximum damage.",
-   "ru": null,
-   "rud": null,
+   "ru": "Виски с Порохом",
+   "rud": "Отметьте Рану и Стресс, чтобы выпить этот напиток. При вашей следующей успешной атаке вы автоматически наносите максимальный урон.",
    "img": "ph76.webp"
   },
   {
@@ -1842,8 +1870,8 @@
    "roll": 77,
    "en": "Paper Horse",
    "ende": "Shred this origami horse to immediately become mounted on a paper horse. The paper horse lasts until the end of the scene, until you dismount it, or until you take Severe damage while mounted.",
-   "ru": null,
-   "rud": null,
+   "ru": "Бумажный Конь",
+   "rud": "Разорвите эту оригами-лошадку, чтобы немедленно оказаться верхом на бумажном коне. Бумажный конь существует до конца сцены, пока вы с него не спешитесь или пока вы не получите Тяжелый урон, будучи верхом.",
    "img": "ph77.webp",
    "refs": [
     "ph-mounted"
@@ -1857,8 +1885,8 @@
    "roll": 78,
    "en": "Coati Paw",
    "ende": "If the PC holding this paw fails a roll, they can give the GM 3 Fear to turn that failure into a critical success, and become Vulnerable until the end of the scene.",
-   "ru": null,
-   "rud": null,
+   "ru": "Лапка Коати",
+   "rud": "Если персонаж, держащий эту лапку, проваливает бросок, он может отдать Мастеру 3 Страха, чтобы превратить провал в критический успех и стать Уязвимым до конца сцены.",
    "img": "ph78.webp"
   },
   {
@@ -1869,8 +1897,8 @@
    "roll": 79,
    "en": "Pegasus Saddle",
    "ende": "Spend a Hope to make your mount sprout wings, allowing it to fly until the end of the scene. While the wings are out, you can spend 3 Hope to allow any allied mounts within Far range to fly with you.",
-   "ru": null,
-   "rud": null,
+   "ru": "Седло Пегаса",
+   "rud": "Потратьте Надежду, чтобы у вашего скакуна выросли крылья, позволяющие ему летать до конца сцены. Пока крылья раскрыты, вы можете потратить 3 Надежды, чтобы все союзные скакуны в пределах Далекой дистанции могли летать вместе с вами.",
    "img": "ph79.webp",
    "refs": [
     "ph-mounted",
@@ -1885,8 +1913,8 @@
    "roll": 80,
    "en": "War Saddle",
    "ende": "When you Yah! (PHv1, pg7), you can mark a Stress to deal d4+4 physical damage using your tier to targets you pass through whose Difficulty you meet.",
-   "ru": null,
-   "rud": null,
+   "ru": "Боевое Седло",
+   "rud": "Когда вы совершаете «Ях!» (Pistolheart, том 1, с. 7), вы можете отметить Стресс, чтобы нанести d4+4 физического урона с использованием вашего Ранга целям, сквозь которые вы проходите и чьей Сложности вы достигаете.",
    "img": "ph80.webp",
    "refs": [
     "ph-mounted",
@@ -1901,8 +1929,8 @@
    "roll": 81,
    "en": "Preservation Saddle",
    "ende": "As an action, you can make your mount disappear into the saddle until you spend a Hope to summon it.",
-   "ru": null,
-   "rud": null,
+   "ru": "Седло Хранения",
+   "rud": "В качестве действия вы можете сделать так, чтобы ваш скакун исчез в седле, пока вы не потратите Надежду, чтобы вызвать его.",
    "img": "ph81.webp",
    "refs": [
     "ph-mounted",
@@ -1917,8 +1945,8 @@
    "roll": 82,
    "en": "Opulent Barding",
    "ende": "While mounted, you can spend a handful of gold in place of marking an Armor Slot.",
-   "ru": null,
-   "rud": null,
+   "ru": "Роскошный Конский Доспех",
+   "rud": "Пока вы верхом, вы можете потратить горсть золота вместо того, чтобы отмечать Ячейку Брони.",
    "img": "ph82.webp",
    "refs": [
     "ph-mounted",
@@ -1933,8 +1961,8 @@
    "roll": 83,
    "en": "Bubble Tack",
    "ende": "Once per scene, while mounted, you can extend an air bubble around you to Very Close range. The air bubble moves with you and lasts until the end of the scene, or you dismount. Creatures and solid objects can pass freely through the bubble, but gases and liquids are kept out.",
-   "ru": null,
-   "rud": null,
+   "ru": "Пузырчатая Сбруя",
+   "rud": "Один раз за сцену, будучи верхом, вы можете создать вокруг себя воздушный пузырь, распространяющийся на Близкую дистанцию. Пузырь движется вместе с вами и сохраняется до конца сцены или пока вы не спешитесь. Существа и твёрдые предметы свободно проходят сквозь пузырь, а газы и жидкости не проникают внутрь.",
    "img": "ph83.webp",
    "refs": [
     "ph-mounted",
@@ -1949,8 +1977,8 @@
    "roll": 84,
    "en": "Rodeo Saddle",
    "ende": "You gain a bonus equal to your tier on Strength and Agility rolls to perform tricks and acrobatic feats while mounted.",
-   "ru": null,
-   "rud": null,
+   "ru": "Седло для Родео",
+   "rud": "Вы получаете бонус, равный вашему Рангу, к Броскам Силы и Проворности при выполнении трюков и акробатических номеров верхом.",
    "img": "ph84.webp",
    "refs": [
     "ph-mounted",
@@ -1965,8 +1993,8 @@
    "roll": 85,
    "en": "Arcana Infusion",
    "ende": "Once per scene, on a successful attack that deals magic damage, increase your proficiency by 1. The first time in a scene you deal Severe magic damage, gain a Hope.",
-   "ru": null,
-   "rud": null,
+   "ru": "Инфузия Арканы",
+   "rud": "Один раз за сцену при успешной атаке, наносящей магический урон, увеличьте ваше Мастерство на 1. Когда вы впервые за сцену наносите Тяжелый магический урон, получите Надежду.",
    "img": "ph85.webp",
    "refs": [
     "ph-infusions"
@@ -1980,8 +2008,8 @@
    "roll": 86,
    "en": "Blade Infusion",
    "ende": "Once per scene, on a successful attack that deals physical damage, increase your proficiency by 1. The first time in a scene you deal Severe physical damage, gain a Hope.",
-   "ru": null,
-   "rud": null,
+   "ru": "Инфузия Клинка",
+   "rud": "Один раз за сцену при успешной атаке, наносящей физический урон, увеличьте ваше Мастерство на 1. Когда вы впервые за сцену наносите Тяжелый физический урон, получите Надежду.",
    "img": "ph86.webp",
    "refs": [
     "ph-infusions"
@@ -1995,8 +2023,8 @@
    "roll": 87,
    "en": "Bone Infusion",
    "ende": "At the beginning of a scene, you gain a +1 bonus to Evasion until you take damage. The first time in a scene that you avoid damage, gain a Hope.",
-   "ru": null,
-   "rud": null,
+   "ru": "Инфузия Кости",
+   "rud": "В начале сцены вы получаете бонус +1 к Уклонению, пока не получите урон. Когда вы впервые за сцену избегаете урона, получите Надежду.",
    "img": "ph87.webp",
    "refs": [
     "ph-infusions"
@@ -2010,8 +2038,8 @@
    "roll": 88,
    "en": "Codex Infusion",
    "ende": "Once per long rest, you can add an additional grimoire card of level 3 or lower from your vault into your loadout, which does not count against your maximum loadout size. You can use this grimoire card once before it returns to your vault.",
-   "ru": null,
-   "rud": null,
+   "ru": "Инфузия Кодекса",
+   "rud": "Один раз за продолжительный отдых вы можете добавить в свою Руку дополнительную карту гримуара уровня 3 или ниже из вашего Хранилища; она не учитывается в максимальном размере вашей Руки. Вы можете использовать эту карту гримуара один раз, после чего она возвращается в ваше Хранилище.",
    "img": "ph88.webp",
    "refs": [
     "ph-infusions"
@@ -2025,8 +2053,8 @@
    "roll": 89,
    "en": "Grace Infusion",
    "ende": "Once per scene, when you make an Adversary mark a Stress, you can make them mark an additional Stress and gain a Hope.",
-   "ru": null,
-   "rud": null,
+   "ru": "Инфузия Грации",
+   "rud": "Один раз за сцену, когда вы заставляете противника отметить Стресс, вы можете заставить его отметить ещё один Стресс; тогда вы получаете Надежду.",
    "img": "ph89.webp",
    "refs": [
     "ph-infusions"
@@ -2040,8 +2068,8 @@
    "roll": 90,
    "en": "Midnight Infusion",
    "ende": "Once per rest, if you roll a success with Hope on an attack and your Fear roll is 1 lower than your Hope roll, you roll a critical success instead.",
-   "ru": null,
-   "rud": null,
+   "ru": "Инфузия Полночи",
+   "rud": "Один раз до следующего отдыха, если вы совершаете успешную атаку с Надеждой, а результат вашей Кости Страха на 1 меньше результата Кости Надежды, вы вместо этого получаете критический успех.",
    "img": "ph90.webp",
    "refs": [
     "ph-infusions"
@@ -2055,8 +2083,8 @@
    "roll": 91,
    "en": "Sage Infusion",
    "ende": "Once per rest, gain a special Armor Slot that you can only mark if it's your last Armor Slot. When you mark this Armor Slot, clear a Hit Point and gain a Hope.",
-   "ru": null,
-   "rud": null,
+   "ru": "Инфузия Мудрости",
+   "rud": "Один раз до следующего отдыха получите особую Ячейку Брони, которую можно отметить, только если это ваша последняя Ячейка Брони. Когда вы отмечаете эту Ячейку Брони, очистите Рану и получите Надежду.",
    "img": "ph91.webp",
    "refs": [
     "ph-infusions"
@@ -2070,8 +2098,8 @@
    "roll": 92,
    "en": "Splendor Infusion",
    "ende": "Once per session, when you make yourself or another PC clear any number of Hit Points, the target clears a Stress for each Hit Point cleared.",
-   "ru": null,
-   "rud": null,
+   "ru": "Инфузия Величия",
+   "rud": "Один раз за сессию, когда вы очищаете любое число Ран себе или другому персонажу, цель очищает по одному Стрессу за каждую очищенную Рану.",
    "img": "ph92.webp",
    "refs": [
     "ph-infusions"
@@ -2085,8 +2113,8 @@
    "roll": 93,
    "en": "Valor Infusion",
    "ende": "Once per scene, you can spend Hope instead of marking Armor Slots to reduce the damage severity.",
-   "ru": null,
-   "rud": null,
+   "ru": "Инфузия Доблести",
+   "rud": "Один раз за сцену вы можете потратить Надежду вместо отметки Ячеек Брони, чтобы снизить степень тяжести урона.",
    "img": "ph93.webp",
    "refs": [
     "ph-infusions"

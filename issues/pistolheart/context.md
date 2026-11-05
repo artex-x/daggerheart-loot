@@ -60,7 +60,8 @@ Volume 1 holds 36 records, Volume 2 holds 35, Volume 3 holds 22.
   "d6+1phy" and "d4+3phy" (secondary weapons). Foal .44 Revolver prints `d6` at Tier 1 with no bonus.
 - No name or id of the 93 records collides with an existing record. `tests/dataint.js` pins the record
   total at 1459; it becomes 1552.
-- The draft carries `ru` and `rud` as `null`: translate them (`daggerheart-ru-terms`).
+- The draft's Russian is done and reviewed (B0, 2026-11-05): `translation-notes.md` (terms, divergences, doubtful
+  choices) and `reviews/B0.md`. Terms came from ru.daggerheart.su and the shipped corpus.
 
 ## Source facts to settle in the batch
 

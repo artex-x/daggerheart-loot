@@ -23,7 +23,9 @@
 - Gates: none.
 
 ## Next batch (implement-ready)
-- Name: B1 - add the Pistolheart source
+- B0 is done (2026-11-05): `records-draft.json` carries Russian for 93 records and 4 refs; `translation-notes.md` lists terms and divergences; `reviews/B0.md` (fix-then-continue) is applied, no second review. B1 merges the text as it stands; do not re-translate.
+- B1 facts from B0: the product name stays Latin "Pistolheart" in Russian (`volumes.ts` name: "Pistolheart, том N"; the Latin-script data check allows it); the Charge move is «Натиск», War Saddle keeps «Ях!»; the draft refs hold `en`, `ensub`, `ende`, `ru`, `rusub`, `rud`, `url` plus the working fields `title`, `source`, `text`, which are not shipped.
+- Name: B1 - add the Pistolheart source (after task 57)
 - Objective: 93 records, 4 references, 45 pictures, the source wired in the app, tools, tests and docs.
 - In scope: `plan.md`, "Design" and "Touchpoints".
 - Out of scope: review, closeout, any redesign of tables or filters, new roll modes.
