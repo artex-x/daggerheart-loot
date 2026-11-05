@@ -200,13 +200,18 @@
     align-items: start;
   }
 
-  /* The roll button takes its own line when the picker's value and it do not fit one: a
-     value is never cut (DESIGN.md, "The Whole Message Rule"). */
   .rp-ctrl {
     display: flex;
-    flex-wrap: wrap;
     gap: 8px;
     min-width: 0;
+  }
+
+  /* From 761 px the roll button takes its own line when the picker's value and it do not fit
+     one. Up to 760 px the row stays one line and a long value is cut: a second line moves the
+     first result past the first screen, and the select shows every name whole (DESIGN.md,
+     "The Whole Message Rule" and "The First-Screen Rule"). */
+  .rp.two .rp-ctrl {
+    flex-wrap: wrap;
   }
 
   .rp:not(.two) .rp-ctrl {

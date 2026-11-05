@@ -373,7 +373,9 @@ damage dice. A number a person reads as prose takes neither.
 
 **The Whole Message Rule.** A heading, a control label, an error line, a status line and
 a toast wrap; they are never cut. A name, a description or a list of chosen values may be
-cut to its clamp when one press shows it whole. Exceptions: the list name and the
+cut to its clamp when one press shows it whole: up to 760px a roll page's picker cuts a long
+chosen part (the select shows it whole), so the roll button keeps its line and the first
+result its first screen; from 761px the button wraps instead. Exceptions: the list name and the
 editor's record name, one line up to 760px (owner, 2026-10-29). Source:
 https://carbondesignsystem.com/patterns/overflow-content/. `tests/app/typo.js` reads every
 heading, button, label, menu item, alert, status and toast of its pages at 1180px.

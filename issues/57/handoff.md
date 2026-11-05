@@ -2,35 +2,21 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress, STOPPED by the owner for a session reboot (2026-11-05, about 23:30 UTC). Waves 1, 2
-  and 2b are on `main`; wave 3: 9a, 8, 9b and batch CI are built and pushed. Tip `22d9a00b` (batch CI; 9b is
-  `18429aee`, its review `22f93378`, its remediation `6578a2c7`). Batch CI's review is APPROVED
-  (`reviews/CI.md`, report-only nits N1-N6). CI run 42116078717 of `22d9a00b` is RED, but the split works: every
-  `browser (n)` job now ends in about 10-11 min (it timed out at 30 before). Four real failures to fix first,
-  all from CI's log (`gh run view 42116078717 --log-failed`):
-  (1) `app/states` case 86 (the hidden header): "after the slide: the header is not out of the window,
-  top -54.33 bottom 56.85" - the SAME figures failed in runs 42020997138 and 42083009049 and in a CI run before
-  9b, so it is deterministic on CI, not a flake (the earlier "timing flake" claim in `handoff.md` Deferred is
-  wrong: reproduce on a CI-like build with the 2 vCPU/slow headless settings, or measure the transform at the
-  moment of the check); (2) `app/states` case 89 (the roll page layout): `#/roll/many_worlds_tavern` and
-  `#/roll/vault_of_ages` at 360 RU, "the results line ends at 294.69" (the 9b remediation's `.rp-ctrl` /
-  `AltPanel` wrap change or R1/R2; read the case's limit); (3) `app/states` case 44 (share link saved after
-  sign-in): "the players' note is not on the page" (9b's note/share rewrite: stale case or a real defect);
-  (4) `e2e`: "contract: import: 50 lists of 100 entries took 9329 ms" (a timing limit on the hosted test project:
-  read the limit in `tests/e2e`, check whether the lists import or store changed in 8/9b, re-run the failed `e2e`
-  once before changing anything: `gh run rerun <id> --failed`, which the CI credit counts once).
-- Last agent: reviewer (batch CI). No subagent runs. No worker has uncommitted code edits.
+- Task status: in_progress. Waves 1, 2 and 2b are on `main`; wave 3: 9a, 8, 9b, batch CI and the CI fix pass
+  are built and pushed. The CI fix pass (previous sha `8c4c6833`) fixed the four failures of CI run 42116078717
+  (Completed, "CI fix pass"); its tip waits for CI and the CI credit. The `e2e` failure is the hosted project's
+  latency (no code change): if `e2e` fails again on the fix tip, `gh run rerun <id> --failed` once.
+- Last agent: implementer (the CI fix pass). No subagent runs. No worker has uncommitted code edits.
 - NEEDS_HUMAN_CONFIRMATION: no. One figure for the owner: the folded requests strip at 360x640 now starts the
   rows at 304 px (was 324; the owner's figure was 292), so the 360 exception is 304 (review B3: above 300, logged).
   No for batch N: the owner answered N1-N4 on 2026-11-05; one planner default the owner may overrule: from 761 to
   999 px the pills take their own row under the head row (`plan-nav.md` section 4).
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
-- Base / starting commit: `d8e30731`; previous sha of batch CI: `0f931af2`.
-- Pushed: up to `22d9a00b`.
+- Base / starting commit: `d8e30731`; previous sha of the CI fix pass: `8c4c6833`.
+- Pushed: the CI fix pass tip (the sha is in the implementer's report; the handoff cannot name its own commit).
 - Next step, in order (the owner's decisions of 2026-11-05 are in `context.md` items 7-15 and their ANSWERS):
-  (1) fix the four CI failures above in ONE fix pass (writer `opus`; reproduce each before the fix; never loosen
-  a check), apply `reviews/CI.md` nits N1-N4 and the S8 step of `plan-ci.md` (record each job's minutes, each
-  `app/states` row's seconds, the pass-line counts 25/24/24/24 of 97; the README CI row), push, CI credit;
+  (1) CI credit of the fix tip: every `browser (n)` green, the four `app/states` pass lines (25/24/24/24 of 97,
+  not readable from a green job's log: `test-output/` uploads on failure only), `e2e` green (one rerun counts);
   (2) FOLD the plans into `plan.md`/`handoff.md` (the fold lists at the end of `plan-T.md`, `plan-D.md`,
   `plan-text.md`, `plan-N.md`, `plan-P.md`; batch D is merged into T as "TD" with the Measure Rule `plan-text.md`;
   renumber the new browser cases: TD 108-111, N 112-113, P 114-115; restate `plan-P.md` for the owner's "keep 63x88
@@ -156,9 +142,40 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
   Deviations: the start line `shard n/m: <rows>` prints after the empty-queue check (still after the build
   check); the help text says "once per shard" instead of a count; `.claude/README.md`'s CI fixed cost "about twenty
   seconds" was stale and now reads about seventy (`plan-ci.md` section 1). The `--list` sum line reads `sum <s>`.
+- Review: required, `reviews/CI.md`, approve; nits N1-N5 done in the CI fix pass, N6 in Deferred.
+- Batch CI, S8 (CI run 42116078717 of `22d9a00b`, 2026-11-05): `browser (1)` 14.9 min, (2) 11.2, (3) 12.2, (4)
+  10.7, (5) 10.3; push to the last gate job 15.0 min. `app/states` rows: 1/4 542.6 s (FAIL), 2/4 318.6 s, 3/4
+  491.3 s (FAIL), 4/4 411.3 s (FAIL); each under 600 s, sum 1764 against the projected 1760. Acceptance 8: 2/4 is
+  28 % under 440 and 1/4 23 % over; the weights stay 440 until a green run (`tests/run-all.js` comment). The pass
+  lines are not in a job log (the summary prints only `ok`/`FAIL` rows), so 25/24/24/24 is by construction, read
+  from the `--shard=1/40` proof and the review. Shard rows matched `plan-ci.md` section 5.
+
+- CI fix pass (previous sha `8c4c6833`): the four failures of run 42116078717, each reproduced first.
+
+  | Failure | Cause | Fix |
+  |---|---|---|
+  | `app/states` 86 "after the slide" | The case: after `home()` a loaded runner draws the header's return after `settle()`; the motion came on while the header was still out, so the header slid in, that slide's `transitionend` answered the wait, and the read landed 4 frames (66.7 ms of the 0.2 s ease-out) into the slide out. Reproduced locally with `scratchpad/slide-probe.cjs` (no settle after the scroll to 0): top -54.32, bottom 56.87, CI's figures. The app is right. The Deferred "timing flake" line was wrong and is gone | The case waits for the header back at top 0 before the motion comes on, and the wait takes only a `transitionend` while the header is `away`. The probe with both: -111.19, hidden. Case 86 passes alone |
+  | `app/states` 89 at 360 RU | The app: the 9b remediation's `flex-wrap` on `.rp-ctrl` put the roll button on its own line at 360 for «Оплот Шершней» and «Проклятые предметы» (the picker took 313 px), so the results line ended at 294.69 against the case's 256 (First-Screen Rule). `scratchpad/pick-probe.cjs`: every other part keeps one line at 246.69 | The wrap holds from 761 px only (`.rp.two .rp-ctrl`), where the results have their own column and `app/typo`'s 1180 read needs it; up to 760 px the row is one line and the chosen part is cut with its ellipsis (the select shows it whole). `AltPanel`'s narrow-only `.altctrl.row` wrap removed. DESIGN.md "The Whole Message Rule" names the cut. Case 89 passes |
+  | `app/states` 44 | The case was stale: since 9b a closed note area draws each filled note as a read-only `HitNote`, not a `textarea` | The case reads `main .hitnote` text and `main textarea` values; the players' note is found, the GM note still is not. Case 44 passes |
+  | `e2e` import 9329 ms | The hosted project's latency: no commit since `origin/main` changed `supabase/`, `supabase.ts`, `cloud.ts` or `cloud.contract.ts` (`git diff --stat origin/main HEAD`: only `tests/e2e/flows.mjs`, the UI flows), and the same code measured 2812 ms (run 42083009049, `18429aee`), 2383 ms (42102518161, `6578a2c7`) and 1860 ms (42036663681) | None; `IMPORT_MS` stays 6000. One `gh run rerun <id> --failed` if it recurs |
+
+  Nits: N1 the `run-all.js` weight comment (the golden mean, the `app/states` projection and the measured rows);
+  N2 `.claude/README.md` "Batch size": the CI row (S8), the pooled-suites row and the `--shard=n/m` row; N3 this
+  handoff; N4 COVERAGE.md "the ninety-five states" gone (and case 86's line names the wait); N5 `states.js` reads
+  `--shard` before `lib.js`.
 
 
 ## Verification
+- CI fix pass, 2026-11-05 (previous sha `8c4c6833`), each in the foreground:
+  - Reproduced first on `npm run build:test` of `8c4c6833`: `node tests/app/states.js --shard=37/97` (case 44):
+    FAIL "the players' note is not on the page"; `--shard=79/97` (case 89): the two CI lines, 294.6875;
+    `--shard=76/97` (case 86): pass alone, also under `emulateCPUThrottling(4)` (`scratchpad/states-throttled.cjs`);
+    `scratchpad/slide-probe.cjs` with the scroll to 0 unsettled: top -54.32, bottom 56.87 (CI's figures).
+  - After the fix (new `dist-test/`): `--shard=37/97`, `--shard=76/97`, `--shard=79/97`: each `all 1 runs passed`;
+    the probe with the wait and the `away` filter: -111.19. `node tests/app/states.js --shard=5/4`: the shard
+    message before any build check.
+  - `npm run lint:untyped`, `npm run lint:typed`: exit 0. `rtk npm run check:built`: pass, 267.4 kB within 269.
+  - `VITEST_MAX_WORKERS=2 rtk npm run check:fast`: see the implementer's report (run after this file).
 - Batch CI, 2026-11-05 (previous sha `0f931af2`), each in the foreground:
   - `node tests/run-all.js --shard=n/5 --list`, n = 1 to 5: 3, 3, 8, 4, 4 rows, as `plan-ci.md` section 5.
   - `node tests/app/states.js --shard=5/4`, `node tests/app/golden.js --shard=5/4`, `node tests/run-all.js
@@ -197,13 +214,12 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
 - Batch 9b and earlier: `git show 22f93378:issues/57/handoff.md`, "Verification".
 
 ## Next batch (implement-ready)
-- Name: the CI fix pass (the four failures in Status, plus `reviews/CI.md` nits N1-N4 and step S8 of
-  `plan-ci.md`), then the fold, then batch TD, N, P, 10 (see Status "Next step").
-- Verification: CI of the fix tip: every `browser (n)` green, each `app/states` row under 600 s, the longest job
-  under 20 min, pass lines 25, 24, 24, 24 of 97 (the split already holds: jobs ended in 10-11 min on
-  `22d9a00b`), `e2e` green.
+- Name: the fold, then batch TD, N, P, 10 (see Status "Next step"), after the CI credit of the fix tip.
+- Verification of the fix tip on CI: every `browser (n)` green (cases 44, 86 and 89 in `app/states` 1/4, 4/4
+  and 3/4), each `app/states` row under 600 s, the longest job under 20 min, `app/typo` green (the 1180 wrap
+  kept), `e2e` green.
 - CI of `22d9a00b` already proved the rest of the 9b remediation: `check` coverage, `app/sweep` 360/390/768,
-  `app/typo`, `app/print` passed in shards 1 and 4; the failures are the four in Status.
+  `app/typo`, `app/print` passed.
 - Facts for the dispatches: the local gates are the affected vitest files, both lints after the last edit, the golden
   re-seed when goldens move (each shard with the Bash timeout 600000), `npm run check:built`, the detector, and
   `rtk npm run check:fast` last; browser suites and sweeps run on CI. On this host `VITEST_MAX_WORKERS=2` bounds
@@ -232,9 +248,13 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
   кость по нему.» is an instruction sentence (Clarity Rule; proposed fix: no lead); «корника» in the `/roll/std` lead
   needs the `daggerheart-ru-terms` skill (the help text uses it too); the gold-outlined «ИЛИ» dividers of the roll
   pages (Seal Rule, pre-existing). Batch 10.
-- Case 86 "after the slide" (CI run 42020997138, shard 3 at 1414 s): the header read mid-way (top -54.3, bottom 56.9)
-  after the filtered `transitionend`; it passed twice alone on 2026-11-05. If it recurs, log each `transitionend`'s
-  `elapsedTime` and target before the read.
+- `reviews/CI.md` N6 (deferred-scope, name at closeout): `ci.yml`'s `browser` comment says a job's fixed cost is
+  ~20 s (about 70 s, `.claude/README.md`); `.claude/hooks/bash-guard.mjs`'s `run-all` long-check cost says "up to
+  ~380s for one --shard=n/4 row"; no long-check reminder for a bare `node tests/app/states.js` (about 30 min serial
+  on CI) while `golden` and `sweep` have one. A hook change needs its selftest cases.
+- CI fix pass: up to 760 px the roll page's picker cuts a long chosen part («Оплот Шершней», «Проклятые предметы»)
+  to keep the first result in the first screen. A shorter roll label or a narrower picker frame could show it whole;
+  batch 10's audit may revisit it.
 - Add-to-list states whose EN half holds a closed menu (the 8-R3 shape): `#/i/ci1 ~ many lists as gm4`, `~ new list`,
   `~ new list as gm2`, `~ new list from a search as gm2`, `#/tables ~ a row opened, list menu as gm4`, `~ a row
   opened, new list`, `~ bar menu as gm4`, `#/homebrew ~ add to list as gm1`, `#/homebrew/<HB_AXE> ~ add to list as
@@ -331,6 +351,7 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
   `c489766a` (`git log --oneline -3 -- issues/57/`: `c489766a`, `17700f3c`, `dc132655`);
   `git show c489766a:issues/57/handoff.md` holds the full tables and every measurement.
 - Session end partial progress (if any): none
-- Durable items written to their homes this pass: `FEATURES.md` "Chrome" (help and pin) and "Lists" (the menu count,
-  the name field up to 760 px, `aria-expanded`, the not-found title); `COVERAGE.md` (the not-found title); the
-  decision files of 2026-09-28 ("Amended by") and 2026-11-05 (two).
+- Durable items written to their homes this pass: DESIGN.md "The Whole Message Rule" (the narrow picker cut);
+  COVERAGE.md "Suites" (no state count; case 86's wait); `.claude/README.md` "Batch size and the fixed cost of a run"
+  (the CI row, the pooled row, the `states.js --shard` and `--shard=n/m` rows); the `tests/run-all.js` weight comment.
+  Batch CI's: COVERAGE.md "Suites", `.claude/README.md` "Batch size", the decision file of 2026-11-05.

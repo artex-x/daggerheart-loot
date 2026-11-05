@@ -36,8 +36,12 @@ const HERE = __dirname;
 /* Weight column: CI seconds, not a local guess. Measured on GitHub's
    ubuntu-latest runners, the mean of runs 42036663681 and 42102518161,
    2026-11-05 (each suite prints `ok  <name> <what> <secs>s`); `app/golden`
-   4/4 and `app/states` are from run 42083009049, because shard 3 of run
-   42102518161 did not finish. A local run is advisory, the same doctrine
+   4/4 is the mean of runs 42036663681 and 42083009049, because shard 3 of
+   run 42102518161 did not finish; `app/states` is about 1760 s / 4, from
+   1742.8 s in run 42083009049 plus the 360 px block of case 107. Run
+   42116078717 measured 542.6, 318.6, 491.3 and 411.3 s (sum 1764), three of
+   them with a failed case, so the four rows keep 440 until a green run. A
+   local run is advisory, the same doctrine
    `.claude/README.md` states for every other cost table in this repository.
    These numbers are the input to `--shard`'s bin packer below, so an entry
    that is off by multiples mis-packs a shard, not just a sort order. The

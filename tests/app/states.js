@@ -16,10 +16,12 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { PNG } = require('pngjs');
+const { shardOf } = require('./shard.js');
+/* Read before lib.js, whose require checks the build: a bad `--shard` names itself first. */
+const SHARD = shardOf(process.argv);
 const { axe, baseUrl, fresh, sharedPage, reporter, closeBrowser } = require('./lib.js');
 const { TARGETS, ready } = require('./driver.js');
 const { HB_FILE, STATES, hbImportOpen } = require('./inventory.js');
-const { shardOf } = require('./shard.js');
 
 /** The fake seed's `gm1` list «Лавка кузнеца», `uuid(101)`, and the first id
  *  the fake hands a new list, `uuid(5000)`. */
@@ -2557,8 +2559,12 @@ async function saveShareLinkAfterSignIn() {
     ),
     at + 'the sign-in did not open the copy - ' + (await d.hash())
   );
+  /* A closed note area draws each filled note read-only (docs/specs/FEATURES.md, "Lists");
+     an open one holds it in its field. */
   const notes = await page.evaluate(() =>
-    [...document.querySelectorAll('textarea')].map((t) => t.value).join('\n')
+    [...document.querySelectorAll('main .hitnote, main textarea')]
+      .map((e) => (e instanceof HTMLTextAreaElement ? e.value : e.textContent))
+      .join('\n')
   );
   ok(
     notes.includes('Открыта с рассвета до заката.'),
@@ -6212,6 +6218,16 @@ async function headerHidesAndReturns() {
   );
 
   await home();
+  /* A loaded runner can draw the scroll to 0 after `settle()`. Motion that comes on before
+     the header is back slides it in; that slide's end then answers the wait below, and the
+     read lands 4 frames into the slide out (top -54.3, measured on CI 2026-11-05). */
+  ok(
+    await waitIn(page, () => {
+      const bar = document.querySelector('.topbar');
+      return !bar.classList.contains('away') && bar.getBoundingClientRect().top === 0;
+    }),
+    at + 'the header did not return at scroll 0'
+  );
   const declared = () => d.computed('.topbar', ['transition-duration', 'transition-property']);
   try {
     await page.emulateMediaFeatures([
@@ -6230,7 +6246,8 @@ async function headerHidesAndReturns() {
              bubbles a `transitionend` too, which can arrive while the header is mid-way. */
           const bar = document.querySelector('.topbar');
           bar.addEventListener('transitionend', (e) => {
-            if (e.target === bar && e.propertyName === 'transform') done(true);
+            const away = bar.classList.contains('away');
+            if (e.target === bar && e.propertyName === 'transform' && away) done(true);
           });
           setTimeout(() => done(false), 3000);
         })
@@ -8828,7 +8845,6 @@ const CASES = [
   ['107 (the note switch in a real browser)', noteSwitchInABrowser]
 ];
 
-const SHARD = shardOf(process.argv);
 /* The interleave spreads the slow layout cases at the end of the list over
  * every piece, as `golden.js` spreads its states. */
 const MINE = CASES.filter((c, i) => !SHARD || i % SHARD.of === SHARD.n);
