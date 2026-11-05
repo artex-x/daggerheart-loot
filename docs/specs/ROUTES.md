@@ -296,7 +296,10 @@ home section. A well-formed key the account does not hold, or a key of the
 other card kind, draws the tab with nothing open and keeps the address. The routes are read
 in every build, as `#/account` is: signed out they draw the sign-in prompt,
 and a build with no sign-in configured draws the not-found page and keeps
-the address. No tab reads current on them, and a pin may not hold them.
+the address. No tab reads current on them. A pin may hold `#/homebrew`, one pin for
+the four tabs, and opens it signed out with its sign-in prompt (`STATE.md`,
+`dhloot.home.v1`; `FEATURES.md`, "Homebrew"); a pin never holds a tab's own address,
+`#/homebrew/new` or an editor.
 
 `#/tables/homebrew` is the signed-in author's own items as a table. It is read
 in every build: signed out it draws the sign-in prompt, and a build with no

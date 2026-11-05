@@ -17,7 +17,6 @@ RootWebArea "Мицелиевый Плащ - Генератор лута Daggerh
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
-    button "Страница"
     StaticText "ПРЕДМЕТ"
     heading "Мицелиевый Плащ" [level=1]
     StaticText "Many Worlds Tavern · Спорополис · номер 9 "
@@ -52,7 +51,6 @@ daggerheart.su
 Печать
 Поделиться
 Поиск
-Страница
 Таблицы
 Условия использования
 Установить как приложение
@@ -73,7 +71,6 @@ RootWebArea "Mycelial Cloak - Daggerheart Loot Generator" [url=/i/en/mw9?v=<v>]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
-    button "Page"
     StaticText "ITEM"
     heading "Mycelial Cloak" [level=1]
     StaticText "Many Worlds Tavern · Sporopolis · roll 9 "
@@ -99,7 +96,6 @@ EN
 Install as an app
 LootDaggerheart
 More
-Page
 Print
 Privacy
 RU

@@ -349,15 +349,17 @@ before this page shipped).
 It carries `noindex, nofollow` like every other page (section 1) and both
 languages on the one page at once (`docs/specs/I18N.md`) rather than
 switching on a stored preference, since there is no script here to read one.
-The English half sits in a `<div lang="en">`. There is no per-language 404
+The English half sits in a `<div lang="en">`, under its own `h2`: the page has one
+`h1`. Both halves say what the app's own not-found page says (`NoPage.svelte`): «Страницы
+по этому адресу нет», its cause, «На главную» and «Открыть таблицы». There is no per-language 404
 (issue 64): Pages serves one `404.html` for every miss, whatever the path,
 so a variant could only be a script that picks a language from the path
 (`/en/` or `/i/en/`). That was rejected: the page is script-free by design,
 a dead end reads at a glance in either language, and its value is having no
 logic that can fail.
 Its links are absolute URLs of the site's host
-(`https://daggerheart-loot.pages.dev/#/roll/std` and `.../#/search`; the
-English half `.../en/#/roll/std` and `.../en/#/search`) rather than
+(`https://daggerheart-loot.pages.dev/roll/std` and `.../tables`; the
+English half `.../en/roll/std` and `.../en/tables`) rather than
 relative, unlike every other page in this repository: it can be served
 while the browser still shows an arbitrary, possibly nested bad path, and a
 relative link would resolve against that path's own directory, not against

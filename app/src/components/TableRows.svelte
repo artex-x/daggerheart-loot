@@ -1,3 +1,24 @@
+<script module lang="ts">
+  /* Rows past the first ones draw in later tasks, so a long table paints before all of
+     it is built: `/tables/eq_weapon` drew 458 rows in one 8-9 s task at a 4x CPU throttle
+     (measured 2026-11-04 on this host). Every `TableRows` that mounts in one task shares
+     the first budget, so a sectioned table paints its first rows, not each section's. */
+  const FIRST_ROWS = 60;
+  const STEP_ROWS = 60;
+  let budget = FIRST_ROWS;
+  let refill: ReturnType<typeof setTimeout> | undefined;
+
+  function firstShare(want: number): number {
+    refill ??= setTimeout(() => {
+      budget = FIRST_ROWS;
+      refill = undefined;
+    }, 0);
+    const got = Math.min(want, budget);
+    budget -= got;
+    return got;
+  }
+</script>
+
 <script lang="ts">
   /* One table's rows or tiles, plus the "select all" bar above them - off
      `renderList()`/`selectAllHTML()`/`rowHTML()`/`tileHTML()` in app.js.
@@ -18,7 +39,7 @@
 
      `ticks` false (the catalog outside its selection mode) draws no tick column and no
      tile box. */
-  import type { Snippet } from 'svelte';
+  import { untrack, type Snippet } from 'svelte';
   import ArtWell from './ArtWell.svelte';
   import Badge from './Badge.svelte';
   import Marked from './Marked.svelte';
@@ -27,7 +48,6 @@
   import { dict } from '../lib/dict.js';
   import { eqParts, nameOf } from '../lib/i18n.js';
   import { cardBadges, kindGlyph } from '../lib/label.js';
-  import type { Index } from '../lib/data.js';
   import type { HiddenTags } from '../lib/rowTags.js';
   import type { Term } from '../lib/search.js';
   import type { Lang, Record_ } from '../lib/types.js';
@@ -47,7 +67,6 @@
   interface Props {
     entries: TableEntry[];
     view: 'list' | 'grid';
-    index: Index;
     lang: Lang;
     selected: (id: string) => boolean;
     artBroken: (id: string) => boolean;
@@ -76,12 +95,14 @@
     terms?: readonly Term[] | undefined;
     /** A row's number reads «№ 89» (`RowMain`); a tile keeps its bare badge. */
     numLabeled?: boolean | undefined;
+    /** Draws every row in the first task: an anchor scrolls to its row once, and rows
+     *  drawn above it later would move it. */
+    whole?: boolean;
   }
 
   const {
     entries,
     view,
-    index,
     lang,
     selected,
     artBroken,
@@ -95,10 +116,33 @@
     ticks = true,
     hide,
     terms,
-    numLabeled
+    numLabeled,
+    whole = false
   }: Props = $props();
 
   const t = $derived(dict(lang));
+
+  /* Only the first draw is spread out: rows that arrive later (a filter cleared, a
+     re-read) draw at once. */
+  let drawn = $state(untrack(() => (whole ? Infinity : firstShare(entries.length))));
+  let done = $state(false);
+  const shown = $derived(
+    whole || done || drawn >= entries.length ? entries : entries.slice(0, drawn)
+  );
+  const drawing = $derived(shown.length < entries.length);
+  $effect(() => {
+    if (!drawing) {
+      done = true;
+      return;
+    }
+    const upTo = shown.length + STEP_ROWS;
+    const next = setTimeout(() => {
+      drawn = upTo;
+    }, 0);
+    return () => {
+      clearTimeout(next);
+    };
+  });
 
   const allSelected = $derived(entries.length > 0 && entries.every((e) => selected(e.it.id)));
 
@@ -140,8 +184,12 @@
   </label>
 {/if}
 
-<div class={view === 'list' ? 'rows' : 'tgrid'} data-primary={primary ? '' : undefined}>
-  {#each entries as entry (entry.it.id)}
+<div
+  class={view === 'list' ? 'rows' : 'tgrid'}
+  data-primary={primary ? '' : undefined}
+  data-drawing={drawing ? '' : undefined}
+>
+  {#each shown as entry (entry.it.id)}
     {@const it = entry.it}
     {@const rollNum = entry.n ?? it.roll}
     {#if view === 'list'}
@@ -167,7 +215,6 @@
         {/if}
         <RowMain
           {it}
-          {index}
           {lang}
           {artBroken}
           {onartfail}
@@ -187,6 +234,7 @@
       {@const kind = cardBadges(it, lang, t)[0]}
       <div
         class="tilewrap"
+        class:ticks
         class:sel={ticks && selected(it.id)}
         class:flash={flash === it.id}
         data-row={it.id}
@@ -440,13 +488,25 @@
     border: 1px solid var(--line2);
   }
 
-  /* The kind on a table of more than one kind: a labeled badge, not a dot. */
+  /* The kind on a table of more than one kind: a labeled badge, not a dot. It keeps the
+     full term on one line where it fits; a longer label wraps inside its one pill. */
   .tile-k {
     position: absolute;
     right: 7px;
     top: 7px;
     z-index: 1;
+    max-width: calc(100% - 14px);
+    text-align: right;
+  }
+
+  /* The tick box sits at the top left in the selection mode: the pill keeps clear of it. */
+  .tilewrap.ticks .tile-k {
     max-width: calc(100% - 44px);
+  }
+
+  .tile-k :global(.badge) {
+    text-wrap: balance;
+    line-height: 1.2;
   }
 
   .tile-b {

@@ -55,9 +55,8 @@
   });
 </script>
 
-<!-- A record opened over this page: a rung of the tier ladder, or the
-     picture, both of which the live app answers with the modal rather than
-     a navigation - `RecordHost`'s own state. -->
+<!-- A record opened over this page: a rung of the tier ladder, which opens the
+     modal rather than a navigation - `RecordHost`'s own state. -->
 <RecordHost {app} {index}>
   {#snippet children(openRecord)}
     {#if !index}

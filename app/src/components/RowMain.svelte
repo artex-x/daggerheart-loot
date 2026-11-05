@@ -10,23 +10,19 @@
      `.row-main .rt b` rule below draws any `<b>` written here as the name. */
   import ArtWell from './ArtWell.svelte';
   import Badge from './Badge.svelte';
-  import Icon from './Icon.svelte';
   import Marked from './Marked.svelte';
   import MarkupInline from './MarkupInline.svelte';
   import { artSrc, descBlocks } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
   import { descOf, eqParts, nameOf } from '../lib/i18n.js';
-  import { cardBadges, kindGlyph, relText, srcLabel } from '../lib/label.js';
-  import { madeFrom, upgradesTo } from '../lib/data.js';
+  import { cardBadges, isCoreBook, kindGlyph, srcLabel } from '../lib/label.js';
   import { isHomebrewRecord, oneLangOf } from '../lib/homebrew.js';
-  import type { Index } from '../lib/data.js';
   import type { HiddenTags } from '../lib/rowTags.js';
   import type { Term } from '../lib/search.js';
   import type { Equip, Lang, Record_ } from '../lib/types.js';
 
   interface Props {
     it: Record_;
-    index: Index;
     lang: Lang;
     artBroken: (id: string) => boolean;
     onartfail: (id: string) => void;
@@ -50,7 +46,6 @@
 
   const {
     it,
-    index,
     lang,
     artBroken,
     onartfail,
@@ -73,18 +68,14 @@
     return one === lang ? null : one;
   });
 
-  const into = $derived(upgradesTo(index, it));
-  const from = $derived(madeFrom(index, it));
-
   /* The tags after the name: the kind tag first, the unique and tier tags, then the
-     source. A tag the page already says is left out (`hide`). */
+     source. A tag the page already says is left out (`hide`), and the default book is
+     unmarked (docs/specs/FEATURES.md, "Tables and search"). */
   const tags = $derived.by(() => {
     const out = cardBadges(it, lang, t).filter(
       (b, i) => !(i === 0 && hide?.kind) && !(b.cls === 'tier' && hide?.tier)
     );
-    const src = srcLabel(it, lang);
-    const core = it.src === 'core' && !it.frame && !it.realm;
-    if (!hide?.src && !(hide?.core && core)) out.push({ cls: 'src', text: src });
+    if (!hide?.src && !isCoreBook(it)) out.push({ cls: 'src', text: srcLabel(it, lang) });
     return out;
   });
 
@@ -149,17 +140,6 @@
                 />{/if}{b.t === 'ol' ? String(b.start + j) + '. ' : '• '}<MarkupInline
                 c={item}
               />{/each}{/if}{/each}</span
-      >{/if}{#if into.length || from.length}<span class="rcraft"
-        >{#if from.length}<Icon name="craftFrom" />{t.craftFrom}: {relText(
-            from,
-            lang,
-            1
-          )}{/if}{#if into.length && from.length}<span class="rsep">·</span
-          >{/if}{#if into.length}<Icon name="craft" />{t.craftInto}: {relText(
-            into,
-            lang,
-            1
-          )}{/if}</span
       >{/if}</span
   >
 </button>
@@ -250,28 +230,6 @@
     line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-  }
-
-  .row-main .rt .rcraft {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 2px 4px;
-    -webkit-line-clamp: none;
-    line-clamp: none;
-    min-width: 0;
-    color: var(--muted);
-    font-size: var(--t-data);
-    margin-top: 4px;
-  }
-
-  .row-main .rt .rcraft :global(svg) {
-    fill: var(--muted2);
-  }
-
-  /* Its own flex item, so the row gap spaces both sides of the dot. */
-  .row-main .rt .rcraft .rsep {
-    display: block;
   }
 
   .row-main .rt .rstats {

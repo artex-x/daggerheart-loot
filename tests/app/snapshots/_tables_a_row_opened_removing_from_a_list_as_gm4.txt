@@ -8,7 +8,7 @@
 RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tables?as=gm4&hold=rows%3Astall]
   dialog "Кольцо Тишины" [modal=true]
     button "Закрыть" [focused=true]
-    button "Страница"
+    link "Открыть страницу" [url=/i/ci28]
     StaticText "28"
     StaticText "ПРЕДМЕТ"
     ... StaticText x2 of 6 same-shape siblings elided
@@ -33,14 +33,14 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 15Камень ДоблестиВы можете прикрепить этот камень к доспеху, кот... [namelen=279 namehash=15159a82]
 16Скелетный КлючКогда вы используете этот ключ, чтобы открыть за... [namelen=125 namehash=6a6d1728]
 17Магическая ПризмаПоместите эту призму в выбранное вами место и... [namelen=320 namehash=cdad333c]
-18Рецепт Малого Зелья ВыносливостиВ качестве Хода Отдыха вы може... [namelen=173 namehash=508b360f]
-19Рецепт Малого Зелья ЛеченияВ качестве Хода Отдыха вы можете ис... [namelen=159 namehash=ffd5fb87]
+18Рецепт Малого Зелья ВыносливостиВ качестве Хода Отдыха вы може... [namelen=134 namehash=13012a9b]
+19Рецепт Малого Зелья ЛеченияВ качестве Хода Отдыха вы можете ис... [namelen=125 namehash=1ca88b7d]
 1Первоклассный Спальный МешокВо время отдыха вы автоматически оч... [namelen=78 namehash=d542e7db]
 20Компасы СвязиЭти два компаса указывают друг на друга, независи... [namelen=115 namehash=366e7e2e]
 21Исправляющий ДухЭтот крошечный дух сидит в изгибе вашего ушног... [namelen=187 namehash=cce65cff]
 22Перчатки ГекконаВы можете лазать по вертикальным поверхностям ... [namelen=75 namehash=47e2887d]
 23Хранитель ЗнанийВы можете сохранить в этой книге имена и подро... [namelen=168 namehash=7e26f7c5]
-24Рецепт Флакона с Чёрным ДымомВ качестве Хода Отдыха вы можете ... [namelen=156 namehash=bcfa2a9e]
+24Рецепт Флакона с Чёрным ДымомВ качестве Хода Отдыха вы можете ... [namelen=120 namehash=e3b4914d]
 25Кровавый КаменьВы можете прикрепить этот камень к оружию, кото... [namelen=232 namehash=4b865025]
 26Самоцвет ВеликанаВы можете прикрепить этот камень к оружию, ко... [namelen=224 namehash=b953500e]
 27ПарашютВо время падения вы можете отметить Стресс, чтобы разве... [namelen=127 namehash=14988ba6]
@@ -70,7 +70,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 49Ботинки Хождения по ВодеВы можете ходить по поверхности воды, ... [namelen=84 namehash=9c72b8fd]
 4Факел АлистераВы можете зажигать этот магический факел по желан... [namelen=183 namehash=05f38a25]
 50Глиняный СпутникКогда вы лепите из этого шарика глины глиняног... [namelen=327 namehash=0848b81e]
-51Рецепт Мифической ПылиВ качестве Хода Отдыха вы можете использ... [namelen=156 namehash=6259b6cb]
+51Рецепт Мифической ПылиВ качестве Хода Отдыха вы можете использ... [namelen=126 namehash=b5709424]
 52Осколок ПамятиОдин раз за продолжительный отдых вы можете потр... [namelen=177 namehash=2905d481]
 53Самоцвет ПроворстваВы можете прикрепить этот самоцвет к оружию... [namelen=142 namehash=7a22dd74]
 54Самоцвет МощиВы можете прикрепить этот самоцвет к оружию, что ... [namelen=129 namehash=4360b2eb]
@@ -105,6 +105,7 @@ daggerheart.com
 Лавка в порту
 ЛутDaggerheart
 Открывать при запуске
+Открыть страницу
 Печать
 Поделиться
 Поиск
@@ -116,7 +117,6 @@ daggerheart.com
 Снаряжение
 Список
 Ссылка на таблицу
-Страница
 Таблицы
 Условия использования
 Установить как приложение
@@ -126,7 +126,7 @@ daggerheart.com
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables?as=gm4&hold=rows%3Astall]
   dialog "Ring of Silence" [modal=true]
     button "Close" [focused=true]
-    button "Page"
+    link "Open page" [url=/i/en/ci28]
     StaticText "28"
     StaticText "ITEM"
     StaticText "CORE"
@@ -147,14 +147,14 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables?as=gm4&hold=ro
 15ValorstoneYou can attach this stone to armor that doesn't alre... [namelen=268 namehash=67b03075]
 16Skeleton KeyWhen you use this key to open a locked door, you g... [namelen=98 namehash=47d328b1]
 17Arcane PrismPosition this prism in a location of your choosing... [namelen=288 namehash=339ebb3e]
-18Minor Stamina Potion RecipeAs a downtime move, you can use the... [namelen=149 namehash=21b901dc]
-19Minor Health Potion RecipeAs a downtime move, you can use a vi... [namelen=139 namehash=29fad57a]
+18Minor Stamina Potion RecipeAs a downtime move, you can use the... [namelen=116 namehash=a3bef30c]
+19Minor Health Potion RecipeAs a downtime move, you can use a vi... [namelen=107 namehash=29630444]
 1Premium BedrollDuring downtime, you automatically clear a Stres... [namelen=66 namehash=d7be6b7c]
 20Homing CompassesThese two compasses point toward each other no... [namelen=95 namehash=e0f17ea0]
 21Corrector SpriteThis tiny sprite sits in the curve of your ear... [namelen=176 namehash=5464afa9]
 22Gecko GlovesYou can climb up vertical surfaces and across ceil... [namelen=69 namehash=998d82a9]
 23LorekeeperYou can store the name and details of up to three ho... [namelen=158 namehash=94440ec3]
-24Vial of Darksmoke RecipeAs a downtime move, you can mark a Str... [namelen=127 namehash=f7efe279]
+24Vial of Darksmoke RecipeAs a downtime move, you can mark a Str... [namelen=97 namehash=89571c11]
 25BloodstoneYou can attach this stone to a weapon that doesn't a... [namelen=214 namehash=c7b420e7]
 26GreatstoneYou can attach this stone to a weapon that doesn't a... [namelen=221 namehash=257f9416]
 27GliderWhile falling, you can mark a Stress to deploy this smal... [namelen=107 namehash=68750fec]
@@ -184,7 +184,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables?as=gm4&hold=ro
 49Lakestrider BootsYou can walk on the surface of water as if it... [namelen=82 namehash=a0eeb3e3]
 4Alistair's TorchYou can light this magic torch at will. The fla... [namelen=159 namehash=a9f8057c]
 50Clay CompanionWhen you sculpt this ball of clay into a clay an... [namelen=302 namehash=e31ede46]
-51Mythic Dust RecipeAs a downtime move, you can use a handful of... [namelen=125 namehash=4a6391df]
+51Mythic Dust RecipeAs a downtime move, you can use a handful of... [namelen=101 namehash=f9dfb9e7]
 52Shard of MemoryOnce per long rest, you can spend 2 Hope to rec... [namelen=132 namehash=3874c94b]
 53Gem of AlacrityYou can attach this gem to a weapon, allowing y... [namelen=126 namehash=5d93b4d7]
 54Gem of MightYou can attach this gem to a weapon, allowing you ... [namelen=124 namehash=bff314fe]
@@ -218,8 +218,8 @@ List
 LootDaggerheart
 More
 Open on start
+Open page
 Other
-Page
 Print
 Privacy
 RU

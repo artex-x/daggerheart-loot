@@ -203,6 +203,22 @@ const selectMode = (): void => {
 };
 
 describe('the index', () => {
+  it('keeps the same navigation node when the table changes', async () => {
+    const env = at();
+    const { container } = render(App, { env });
+    const before = container.querySelector('.tablenav');
+    expect(before).not.toBeNull();
+    for (const hash of ['#/tables/core_consumable', '#/tables/hnf_item', '#/tables/wondrous']) {
+      env.router.navigate(hash, 'ru');
+      await tick();
+      expect(container.querySelector('.tablenav'), hash).toBe(before);
+    }
+    expect(screen.getByRole('link', { name: 'Wondrous Environments' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
+  });
+
   it('opens on core_item, with the book chip on and its two sub-chips shown', () => {
     render(App, { env: at() });
     expect(screen.getByRole('link', { name: 'Core' })).toHaveAttribute('aria-current', 'page');
@@ -221,17 +237,7 @@ describe('the index', () => {
     expect(screen.getByText('1')).toBeInTheDocument();
   });
 
-  it('shows an upgrade chain inline, without a clamp of its own', () => {
-    render(App, { env: at() });
-    expect(screen.getByText(/Улучшается до: Плащ Бездны/)).toBeInTheDocument();
-  });
-
-  it('shows what it was made from, on the record the upgrade points at', () => {
-    render(App, { env: at() });
-    expect(screen.getByText(/Получается из: Плащ Теней/)).toBeInTheDocument();
-  });
-
-  it("draws a chain row's made-from before its upgrade, each with its own arrow", async () => {
+  it('draws no relation line on a row: the dialog holds them', async () => {
     /* ci1 -> ci2 -> ci3, so ci2 carries both directions. */
     const CHAINED: Loot = {
       ...LOOT,
@@ -243,29 +249,40 @@ describe('the index', () => {
       }
     };
     const { container } = render(App, { env: at({ data: fakeData(CHAINED) }) });
-    const craft = container.querySelector('[data-row="ci2"] .rcraft');
-    expect(craft).not.toBeNull();
-    if (!craft) return;
-    expect(craft.textContent).toBe('Получается из: Кольцо Тишины·Улучшается до: Плащ Бездны');
-    const paths = [...craft.querySelectorAll('svg path')].map((p) => p.getAttribute('d'));
-    expect(paths).toHaveLength(2);
-    expect(paths[0]).not.toBe(paths[1]);
+    const t = dict('ru');
+    for (const id of ['ci1', 'ci2', 'ci3']) {
+      const it = container.querySelector(`[data-row="${id}"]`);
+      expect(it, id).not.toBeNull();
+      expect(it?.querySelector('.rcraft'), id).toBeNull();
+      expect(it?.textContent, id).not.toContain(t.craftInto);
+      expect(it?.textContent, id).not.toContain(t.craftFrom);
+    }
     await expectNoA11yViolations(container);
   });
 
-  it('draws a row with two targets as one comma-joined upgrade line', async () => {
-    const TWO: Loot = {
+  it('draws no Core tag on a row of a table that mixes books, and keeps the other book', async () => {
+    const MIXED: Loot = {
       ...LOOT,
       items: {
         ...LOOT.items,
-        core_item: (LOOT.items['core_item'] ?? []).map((r) =>
-          r.id === 'ci2' ? { ...r, craft: ['ci3', 'ci1'] } : r
-        )
+        starting: [
+          row({ id: 'ai1', src: 'core', ru: 'Ключ Ядра' }),
+          row({ id: 'ai2', src: 'hnf', ru: 'Ключ Надежды' })
+        ]
       }
     };
-    const { container } = render(App, { env: at({ data: fakeData(TWO) }) });
-    const craft = container.querySelector('[data-row="ci2"] .rcraft');
-    expect(craft?.textContent).toBe('Улучшается до: Плащ Бездны, Кольцо Тишины');
+    const { container } = render(App, {
+      env: at({ router: memoryRouter('#/tables/other_starting'), data: fakeData(MIXED) })
+    });
+    await waitFor(() => {
+      expect(container.querySelector('[data-row="ai2"]')).not.toBeNull();
+    });
+    const tags = (id: string): string[] =>
+      [
+        ...(container.querySelector(`[data-row="${id}"]`)?.querySelectorAll('.badge.src') ?? [])
+      ].map((b) => b.textContent.trim());
+    expect(tags('ai1')).toEqual([]);
+    expect(tags('ai2')).toEqual(['Hope & Fear']);
     await expectNoA11yViolations(container);
   });
 
@@ -299,9 +316,7 @@ describe('the index', () => {
       }
     };
     const { container } = render(App, { env: at({ data: fakeData(FORMATTED) }) });
-    const run = container.querySelector(
-      '[data-row="ci1"] .rt > span:not(.rh):not(.rstats):not(.rcraft)'
-    );
+    const run = container.querySelector('[data-row="ci1"] .rt > span:not(.rh):not(.rstats)');
     expect(run?.innerHTML.replace(/<!---->/g, '')).toBe(
       '<b>Раз:</b> тихо.<br>2. Один<br>3. Два<br>А | Б<br>1 | <i>2</i>'
     );
@@ -1798,6 +1813,29 @@ describe('the head below 761 px', () => {
     expect(more).toHaveFocus();
   });
 
+  it('marks «Об этих данных» open in «Ещё», and closes its panel with «Закрыть»', async () => {
+    const { container } = render(App, { env: narrow() });
+    const more = screen.getByRole('button', { name: 'Ещё' });
+    await userEvent.click(more);
+    const closed = screen.getByRole('menuitem', { name: 'Об этих данных' });
+    expect(closed).toHaveAttribute('aria-expanded', 'false');
+    const helpPath = closed.querySelector('svg path')?.getAttribute('d');
+    await userEvent.click(closed);
+    const panel = screen.getByText(/Класс - раздел книги, а не тип урона/).closest('.helpbox');
+    expect(panel).not.toBeNull();
+    await userEvent.click(more);
+    const open = screen.getByRole('menuitem', { name: 'Об этих данных' });
+    expect(open).toHaveAttribute('aria-expanded', 'true');
+    expect(open.querySelector('svg path')?.getAttribute('d')).not.toBe(helpPath);
+    await expectNoA11yViolations(container);
+    await userEvent.keyboard('{Escape}');
+    await userEvent.click(
+      within(panel as HTMLElement).getByRole('button', { name: 'Закрыть' })
+    );
+    expect(screen.queryByText(/Класс - раздел книги, а не тип урона/)).toBeNull();
+    expect(more).toHaveFocus();
+  });
+
   it('closes «Ещё» for good on a band change, and places the focus', async () => {
     const viewport = fakeViewport('narrow');
     render(App, { env: narrow({ viewport }) });
@@ -1932,7 +1970,7 @@ describe('accessibility', () => {
 });
 
 describe("a row with the author's own relations", () => {
-  it("draws a row's catalog names, the first homebrew name with (HB) and «и ещё 14»", async () => {
+  it('draws no relation line and no Core tag: the dialog holds them', async () => {
     const REAL = readLoot();
     const names = Array.from(
       { length: 15 },
@@ -1951,16 +1989,16 @@ describe("a row with the author's own relations", () => {
     const { container } = render(RowMain, {
       props: {
         it,
-        index,
         lang: 'ru',
         artBroken: () => false,
         onartfail: () => {},
         onopen: () => {}
       }
     });
-    expect(container.querySelector('.rcraft')?.textContent).toBe(
-      `Улучшается до: Малое Зелье Выносливости, ${[...names].sort((a, b) => a.localeCompare(b, 'ru'))[0] ?? ''} (HB) и ещё 14`
-    );
+    expect(container.querySelector('.rcraft')).toBeNull();
+    expect(container.textContent).not.toContain(dict('ru').craftInto);
+    expect(container.textContent).not.toContain('Зелье я');
+    expect(container.querySelector('.badge.src')).toBeNull();
     await expectNoA11yViolations(container);
   });
 
@@ -1976,7 +2014,6 @@ describe("a row with the author's own relations", () => {
     );
     const props = {
       it,
-      index: buildIndex({ items: {} }),
       lang: 'ru' as const,
       onartfail: () => {},
       onopen: () => {}
@@ -1998,7 +2035,6 @@ describe("a row with the author's own relations", () => {
     if (!it) throw new Error('The catalog lacks ci18');
     const props = {
       it,
-      index,
       lang: 'ru' as const,
       artBroken: () => false,
       onartfail: () => {},

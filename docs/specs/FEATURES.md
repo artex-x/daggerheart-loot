@@ -32,12 +32,16 @@ across.
   controls and the settings, and the results line beside it holds «Бросок N» and
   the copy button. «Бросок N» reads the two faces on the alternate tables, the
   Hope die first; the line carries no instruction.
-- A result is the card face, `RecordCard variant="face"`: from 601 px the picture
-  is 4:3 and fades into the plate, with the roll number over its top right; up to
-  600 px it is 96 px beside the text and the number is not drawn (the results line
-  names the roll). Under the plate sits a row of «В список», «Поделиться» and
-  «Ещё», which holds the copies. From 601 px one result is at most 380 px wide; up
-  to 600 px it takes the line. A roll is page memory, so a sign-in from the row's
+- A result is the card face, `RecordCard variant="face"`. A result is the tall face -
+  the picture 4:3 fading into the plate, the roll number over its top right - only
+  while the whole roll sits on one line: one result, at most 380 px wide, or two side
+  by side, in a results column of at least 641 px. Otherwise each result is the row
+  face: the picture 96 px beside the text, no number (the results line names the
+  roll). Up to 600 px that is every roll; from 761 px a four-result roll and every
+  roll in a results column under 641 px (owner, 2026-11-04). A result draws no
+  relation line, no set line and no tier ladder, and no «Core» badge; another book
+  keeps its badge. Under the plate sits a row of «В список», «Поделиться» and
+  «Ещё», which holds the copies. A roll is page memory, so a sign-in from the row's
   «В список» returns to the record's own page, with the menu open there.
 - The five dice of Core rules are plain buttons, none gold and none lit: a die is
   an action, not a choice. Each names the rarities it covers: up to 760 px two
@@ -77,10 +81,14 @@ across.
   the short wording is the fix. The catalog head is measured, not the old
   strip: below 761 px the picker row is at most 64 px tall; from 761 px the
   group chips and the tabs together are at most 140 px below 1000 px (the seven
-  supplement tabs take two lines: 130 px at 768, 2026-10-30) and 110 px from
-  1000 px (`tests/app/sweep.js`,
-  at 500, 600, 700, 768 and the run widths, as gm2, the seventh group chip
-  drawn).
+  supplement tabs take two lines: 130 px at 768, 2026-10-30), 180 px from 1000 to
+  1139 px in Russian (the chips and the reserved tab row take two lines each:
+  about 173 px at 1050, and the rows start at about 330.5 px at 1050x720, past the
+  288 px first-screen limit) and 110 px from 1140 px (`tests/app/sweep.js`,
+  at 500, 600, 700, 768, 1050 and the run widths, as gm2, the seventh group chip
+  drawn). The reserved tab row holds the tabs of every group but the homebrew
+  one: that group's source tabs hold the GM's own text, so `/tables/homebrew`
+  alone may draw a taller row.
 - The nine roll sections share the header's roll job «Бросок» / "Roll" and draw
   the mode row under the header ("Chrome";
   `docs/decisions/2026-10-29-the-header-has-three-jobs-and-a-mode-row.md`). The
@@ -163,13 +171,27 @@ across.
   The page name «Таблицы» is the `h1` at every width; below 761 px it is read,
   not drawn, and the head is the picker row: the picker, the view switch and
   «··· Ещё» / "··· More" (the three-dot icon and the word), whose menu holds
-  «Ссылка на таблицу» (not on `homebrew`), the pin and «Об этих данных». From
+  «Ссылка на таблицу» (not on `homebrew`), the pin and «Об этих данных». That item
+  opens and folds the panel under the head; while it is open the item draws a check
+  for its icon (the pin item's mark) and reads `aria-expanded="true"`, and the panel
+  starts with «Закрыть», which folds it and returns the focus to «Ещё». The roll pages'
+  help item and panel up to 760 px behave the same way. From
   761 px the head is the `h1`, the labeled pin, «Об этих данных» and the two
-  navigation levels. The search row follows: the search first (placeholder
+  navigation levels. The head draws the same rows on every table of a band: the
+  title row, the group chips, the second-level tabs, the toolbar and the list start
+  at the same place (owner, 2026-11-04). From 1000 px the group chips sit beside the
+  title and wrap inside their own box, and the tabs take the next row; from 761 px
+  to 999 px both levels take their own rows under the title. The tab row keeps the
+  height of the tallest group's tabs on every table, a table with no tabs included
+  (`docs/decisions/2026-11-04-the-table-head-is-set-by-the-band-not-the-table.md`). The search row follows: the search first (placeholder
   «Поиск» / "Search", named by the long `searchPh`, at least 140 px at 360),
   «Фильтры» below 1000 px (plain at no pick, «Фильтры · N» lit while a value
   is picked: a gold label on a 45% gold border), from 761 px the view switch,
   the «Свои предметы» switch and «Ссылка на таблицу», then «Выбрать» last.
+- A long table paints before all of it is built: the first 60 rows of the page draw in
+  the first task and 60 more in each task after it; rows that arrive later (a filter
+  cleared) and an anchored table draw at once. The counts, «Все» and the selection read
+  the data, not the drawn rows (`docs/decisions/2026-11-04-a-long-table-draws-its-rows-over-several-tasks.md`).
 - The count line, «<chosen values> · Показано N из M» / "<chosen values> · N of
   M shown", draws only while a filter or a query narrows the view: under the
   search row below 761 px, the values left and the count right with no
@@ -197,8 +219,8 @@ across.
   (`rowTags.ts`): the kind tag on a one-kind table or under one picked kind,
   the tier in the stat line and the tier tag under a tier heading or one
   picked tier, the source tag on a one-book table or under one picked book,
-  and the «Core» source tag on an equipment table (a row from another book
-  keeps its name). A ticked row or tile is lit and neutral: the `--surface2`
+  and the «Core» source tag on every row: the default book is unmarked; a row
+  from another book keeps its name. A row draws no relation line. A ticked row or tile is lit and neutral: the `--surface2`
   ground, the `--muted2` border and the checked box, never gold. A search
   marks the matched words of a name with `<mark>`, on a row and on a grid
   tile (`Marked`): a lit ground and an underline, not color alone; a stem
@@ -206,8 +228,8 @@ across.
 - The grid draws two columns up to 600 px. A tile is the art, the name and a
   second line: the stat line for equipment, else the other-language name
   (English first in English). Its roll number is a neutral badge; a table of
-  more than one kind labels the tile with a kind badge, and a one-kind table
-  draws none.
+  more than one kind labels the tile with a kind badge, one pill: a long label
+  wraps inside its border; a one-kind table draws none.
 - The empty state is a dashed plate with the kind glyph, «Ничего не найдено» /
   "Nothing found", one cause sentence that names the query, the chosen values
   or both («Нет совпадений с «%q» среди фильтров: %v.»), and the primary
@@ -677,7 +699,13 @@ address kept, and no add-to-list control is drawn.
   «+ Новый список»; «Войти» takes the focus); on a shared page «Сохранить
   себе» reads pressed and opens the prompt under it, and a second press folds
   it. While the session is still unknown none of them is drawn, so a
-  signed-in reader never sees a prompt flash.
+  signed-in reader never sees a prompt flash. Every prompt that answers a press
+  behaves the same way: the menu's slot, the selection bar's «Печать», and the
+  boxed prompt under a pressed control (the shared page's «Сохранить себе», the
+  record's «Печать» and «Сохранить себе») give «Войти» the focus and offer
+  «Отмена», which closes the prompt and returns the focus to the control that had
+  it. A page-level prompt (`#/lists`, «Мои предметы», `#/p/<id>`) leaves the focus
+  where it is and has no «Отмена».
 - **The return after sign-in**: «Войти» opens `#/account` and remembers the
   page and the started action; the account page's sign-in carries both
   through the provider redirect (`STATE.md`, `dhloot.auth.return`). Back on
@@ -1246,7 +1274,13 @@ address kept, and no add-to-list control is drawn.
 
 ## Records
 
-- Card in a modal from a table row, or a full page at `#/i/<id>`.
+- Card in a modal from a table row, or a full page at `#/i/<id>`. The record page's dossier is
+  as wide as the dialog's card, at most 980 px, at the column's left edge.
+- The picture goes one step deeper than where it is drawn. On a roll result and on a
+  list's roll hit it is the button «Открыть карточку» / "Open card", which opens the
+  record dialog over the page; in the dialog it is the link «Открыть страницу» / "Open
+  page" to the record's page; on the record page and in the editor's preview it is a
+  picture only, no control.
 - **The item page and the dialog.** `#/i/<id>`, `#/h/<uuid>` and the record dialog
   draw one dossier: no plate, the picture beside the text from 761 px and above
   it, cropped to 4:3, up to 760 px; the art file is not touched. The name is drawn
@@ -1560,8 +1594,13 @@ address kept, and no add-to-list control is drawn.
   and the ladder draw every catalog record, the record itself and three
   homebrew records - catalog records in their order, then homebrew ones by
   name, the ladder in tier order - then «и ещё N» (`aria-expanded`), which
-  opens the rest and reads «свернуть»; a card opens closed. A row draws its
-  catalog names, the first homebrew name and «и ещё N» as text. Copied text
+  opens the rest and reads «свернуть»; a card opens closed. Only the full record
+  card - the record page, `/h/`, the dialog and the editor's preview - draws the
+  relation lines, the set line with its bonus and the tier ladder; a roll result, a
+  list's roll result, a row and a tile draw none (owner, 2026-11-04,
+  `docs/decisions/2026-11-04-relations-and-the-core-tag-draw-on-the-full-card-only.md`).
+  The dialog draws the source badge, «Core» included; a roll result draws no «Core»
+  badge. A badge stays on its name's line. Copied text
   writes one «Улучшается до» block per catalog target and per homebrew
   target up to three, each homebrew name with «(HB)», then one bodiless
   «Улучшается до: и ещё N» / "Upgrades to: and N more" line for the rest, so
@@ -1629,8 +1668,10 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   предмет» with the plus icon, then the lead line (search finds the items with
   the catalog, they appear in the tables and go into lists). Signed out, while
   the items load and on a failed read the head draws the heading «Мои предметы»
-  at every width, with no tabs and no import: up to 760 px the heading is
-  visible there, and from 761 px the pin and the lead line stay. The pin pins
+  at every width, with no tabs, no import and no pin: up to 760 px the heading is
+  visible there, and from 761 px the lead line stays. The pin draws only when the
+  page is ready, at every width: a launch page that a signed-out visitor cannot use
+  would end at a sign-in wall at every launch (owner, 2026-11-04). The pin pins
   `#/homebrew` from any tab, one pin for the page (pressed: «Открывается при
   запуске», the toast «Приложение будет открываться на этом разделе»; a second
   press unpins it). The page has no help panel (owner, Q6.1, 2026-10-29): each
@@ -1917,7 +1958,8 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   with «На экране» / "On screen" (pressed at each mount) and «На печати» /
   "In print". «На печати» draws the print card ("Print") at the preview
   column's width, at most 420 px (the column is 340 px from 800 px and 420 px
-  from 1100 px; under 800 px the content width): the cell is 63x88 mm or 44x63
+  from 1100 px; under 800 px the content width; from 1100 px the form beside it is at most
+  720 px): the cell is 63x88 mm or 44x63
   mm times a scale cut to two decimals, and the card multiplies every `mm` and
   `pt` value of its stylesheet by it (the rest is in `cqw`), never a transform,
   so the fit and the clip verdict are the print page's. It keeps the set line
@@ -2597,9 +2639,14 @@ right, so the tab order and the reading order agree
 
 ## Chrome
 
+- The page column is the window less 16 px a side, up to 1440 px, and centered above that
+  (DESIGN.md, "Layout"). 320 px is the narrowest width a page is built for.
+- The roll page's lone result counter is at most 240 px wide at every window width; the
+  alt roll's two die counters fill their blocks (DESIGN.md, "The One Width Rule").
 - Language switch, the three jobs, skip link, starting-section pin (eleven sections
   pin as their own hash; `#/tables` pins as whichever table is on screen;
-  «Мои предметы» pins `#/homebrew` from any tab; never a record or a list).
+  «Мои предметы» pins `#/homebrew` from any tab once its items are read; never a
+  record or a list).
 - Focusing the skip link moves focus straight to `#main` and never touches
   the address bar - the browser's own fragment jump would add `#main` to the
   address and a history entry. While

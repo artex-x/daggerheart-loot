@@ -6,8 +6,8 @@
  * and every legacy suite uses - because a handful of real defects only show
  * up on the far side of a browser's own microtask checkpoint (the
  * `isConnected` guard) or need a real network, a real clipboard stub, or a
- * real second tab to mean anything at all. Eighty-five cases in
- * eighty-four runs (4 and 5 share one), no ancestor. Like every suite here it drives
+ * real second tab to mean anything at all. Eighty-six cases in
+ * eighty-five runs (4 and 5 share one), no ancestor. Like every suite here it drives
  * dist-test/, the test build (docs/specs/COVERAGE.md, "Test layers"): signed
  * out it draws the sign-in prompt where a list would be made, so the cases
  * that make one open as the seed's `gm2`. */
@@ -1771,11 +1771,10 @@ async function noteClearTargetYieldsToTheToolbar() {
   await ctx.close();
 }
 
-/** 31. The card image's focus ring is drawn, not clipped by the card, at
- *  both card sizes: a pixel read of a 3px band inside each edge of the
- *  focused `.card-media`, against the ring's own color. At 520 px the full
- *  card scrolls the page under the 63 px header, and the case asserts it, so
- *  the clip's scroll offset stays tested. */
+/** 31. The card image's focus ring is drawn, not clipped by the card, on a roll
+ *  result: a pixel read of a 3px band inside each edge of the focused
+ *  `.card-media`, against the ring's own color. The record page draws its
+ *  picture as no control, so it has no ring to read. */
 async function cardMediaRingVisible() {
   async function ringAt(route, selector, label, mustScroll) {
     const { ctx, page, d } = await fresh({ width: 1180, height: 520 });
@@ -1860,7 +1859,6 @@ async function cardMediaRingVisible() {
     }
     await ctx.close();
   }
-  await ringAt('#/i/ci1', '.card.full .card-media', 'full', true);
   await ringAt('#/roll/wondrous', '.card.face .card-media', 'face', false);
 }
 
@@ -6321,8 +6319,8 @@ async function showLongestTitle(page, d, parts) {
 /** 89. The nine roll pages share one layout (docs/specs/FEATURES.md, "Rolling"): at 761 px the
  *  heading, the pin and the help share one line; up to 760 px the heading is read, not drawn,
  *  and the results line holds its three parts; «Ещё» holds the pin and the help; the dice are
- *  two rows at 360; the card flips at 600/601 px; a picker never cuts the roll button; the
- *  longest title of «Проклятые предметы» and of Many Worlds Tavern breaks no word. */
+ *  two rows at 360; the card is the tall face from a 641 px results column; a picker never
+ *  cuts the roll button; the longest title of «Проклятые предметы» and of Many Worlds Tavern breaks no word. */
 async function rollPageLayout() {
   const at = '89 (the roll page layout): ';
   for (const lang of ['ru', 'en']) {
@@ -6510,14 +6508,20 @@ async function rollPageLayout() {
           b.top >= media.top && b.right <= media.right && b.left > media.left + media.width / 2
       };
     });
-  const phone = await read();
-  ok(phone.w === 96, at + 'the picture is ' + phone.w + ' px at 600');
-  ok(!phone.shown, at + 'the number badge is drawn at 600');
-  await flip.d.viewport(601, 800);
+  /* The card is the tall face from a 641 px results column, which a 720 px window gives with
+     the scrollbar's gutter; 640 and 600 px draw the row face. */
+  for (const w of [600, 640]) {
+    await flip.d.viewport(w, 800);
+    await flip.d.settle();
+    const phone = await read();
+    ok(phone.w === 96, at + 'the picture is ' + phone.w + ' px at ' + w);
+    ok(!phone.shown, at + 'the number badge is drawn at ' + w);
+  }
+  await flip.d.viewport(720, 800);
   await flip.d.settle();
   const face = await read();
-  ok(Math.abs(face.w - face.card) <= 2, at + 'the picture does not fill the card at 601');
-  ok(Math.abs(face.w / face.h - 4 / 3) < 0.02, at + 'the picture is not 4:3 at 601');
+  ok(Math.abs(face.w - face.card) <= 2, at + 'the picture does not fill the card at 720');
+  ok(Math.abs(face.w / face.h - 4 / 3) < 0.02, at + 'the picture is not 4:3 at 720');
   ok(
     face.shown && face.over,
     at + 'the badge is not over the picture - ' + JSON.stringify(face)
@@ -6634,6 +6638,703 @@ async function resultRowAndMenus() {
   }
 }
 
+/** Opens inventory state `id` at `width` x `height` in `lang`, the way case 83 does, and
+ *  answers the context, the page and the driver. `wideEnter` presses the state's controls at
+ *  1180 px, where they draw, then takes the window to its size. */
+async function openState(id, width, height, lang, wideEnter = false) {
+  const state = STATES.find((s) => s.id === id);
+  if (!state) throw new Error('no inventory state ' + id);
+  const got = await fresh({
+    width: wideEnter ? 1180 : width,
+    height: wideEnter ? 720 : height,
+    storage: state.storage
+  });
+  await got.d.open(state.route, {
+    as: state.as,
+    items: state.items,
+    sections: state.sections,
+    sources: state.sources,
+    hold: state.hold
+  });
+  if (state.enter) await state.enter(got.d);
+  await got.d.settled(state.id);
+  if (wideEnter) await got.d.viewport(width, height);
+  if (lang === 'en') await got.d.click('EN');
+  await got.d.addressSettled();
+  await got.page.evaluate(async () => {
+    await document.fonts.ready;
+    scrollTo(0, 0);
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+  });
+  return got;
+}
+
+/** 95. A badge is one box and keeps clear of the lines around it (DESIGN.md, "Badges"): the
+ *  «Хоумбрю» badges of a relation line on the full card, a grid tile's kind badge in and out
+ *  of the selection mode, and a roll result that draws no «Core» badge and no relation line. */
+async function badgeIsOneBox() {
+  const at = '95 (a badge is one box): ';
+  for (const [width, height] of [
+    [360, 640],
+    [1180, 720]
+  ]) {
+    for (const lang of ['ru', 'en']) {
+      const where = at + '#/i/ci1 as gm3 ' + width + ' ' + lang + ': ';
+      const { ctx, page } = await openState('#/i/ci1 as gm3', width, height, lang);
+      try {
+        const m = await page.evaluate(() => {
+          const out = { badges: 0, split: [], apart: [], close: [], cross: [] };
+          for (const p of document.querySelectorAll('.craft p')) {
+            const boxes = [...p.querySelectorAll('a, .badge, .btn')].flatMap((el) =>
+              [...el.getClientRects()].map((r) => ({ el, r, badge: el.matches('.badge') }))
+            );
+            for (const badge of p.querySelectorAll('.badge.hb')) {
+              out.badges++;
+              const rects = badge.getClientRects();
+              if (rects.length !== 1) out.split.push(badge.textContent + ' ' + rects.length);
+              const b = rects[0];
+              const name = badge.previousElementSibling;
+              const nr = name ? [...name.getClientRects()].pop() : null;
+              if (!nr || Math.min(b.bottom, nr.bottom) - Math.max(b.top, nr.top) <= 0)
+                out.apart.push(
+                  (name?.textContent ?? '?') + ' ' + JSON.stringify([b.top, nr?.top])
+                );
+              for (const o of boxes) {
+                if (o.el === badge) continue;
+                const v = Math.min(b.bottom, o.r.bottom) - Math.max(b.top, o.r.top);
+                const h = Math.min(b.right, o.r.right) - Math.max(b.left, o.r.left);
+                if (v > 0 && h > 0)
+                  out.cross.push(badge.textContent + ' x ' + o.el.textContent);
+                if (v <= 0) {
+                  const gap = Math.max(o.r.top - b.bottom, b.top - o.r.bottom);
+                  if (gap < 2)
+                    out.close.push(o.el.textContent.slice(0, 20) + ' ' + gap.toFixed(1));
+                }
+              }
+            }
+          }
+          return out;
+        });
+        ok(m.badges >= 3, where + 'the line draws ' + m.badges + ' «Хоумбрю» badges');
+        ok(!m.split.length, where + 'a badge splits into fragments: ' + m.split.join(' | '));
+        ok(!m.apart.length, where + "a badge leaves its name's line: " + m.apart.join(' | '));
+        ok(
+          !m.close.length,
+          where + 'a box is closer than 2 px: ' + m.close.slice(0, 4).join(' | ')
+        );
+        ok(
+          !m.cross.length,
+          where + 'a badge touches a box: ' + m.cross.slice(0, 4).join(' | ')
+        );
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+
+  /* The weapon kind badges on grid tiles: the first table of the list that draws both. */
+  for (const [width, height] of [
+    [360, 640],
+    [390, 844],
+    [412, 915],
+    [768, 1024]
+  ]) {
+    for (const lang of ['ru', 'en']) {
+      const { ctx, page, d } = await fresh({ width, height, lang });
+      try {
+        let table = null;
+        for (const t of ['other_starting', 'voa', 'mwt']) {
+          await d.open('#/tables/' + t, { lang });
+          await d.click(lang === 'en' ? 'Grid' : 'Сетка');
+          const both = await page.evaluate(
+            () =>
+              !!document.querySelector('.tile-k .badge.eq-weapon') &&
+              !!document.querySelector('.tile-k .badge.eq-secondary')
+          );
+          if (both) {
+            table = t;
+            break;
+          }
+        }
+        const where = at + 'tiles ' + table + ' ' + width + ' ' + lang + ': ';
+        ok(!!table, at + width + ' ' + lang + ': no grid table draws both weapon badges');
+        if (!table) continue;
+        const read = () =>
+          page.evaluate(() =>
+            [...document.querySelectorAll('.tile-k .badge')].map((b) => {
+              const rects = b.getClientRects();
+              const r = b.getBoundingClientRect();
+              const img = b.closest('.tile-img').getBoundingClientRect();
+              return {
+                text: b.textContent.trim(),
+                cls: b.className,
+                n: rects.length,
+                h: r.height,
+                w: r.width,
+                inside:
+                  r.left >= img.left - 0.5 &&
+                  r.right <= img.right + 0.5 &&
+                  r.top >= img.top - 0.5 &&
+                  r.bottom <= img.bottom + 0.5
+              };
+            })
+          );
+        const out = await read();
+        const line = Math.min(...out.map((b) => b.h));
+        const weapons = out.filter((b) => /eq-(weapon|secondary)/.test(b.cls));
+        ok(
+          !out.some((b) => b.n !== 1),
+          where +
+            'a kind badge splits: ' +
+            JSON.stringify(out.filter((b) => b.n !== 1).slice(0, 2))
+        );
+        ok(
+          out.every((b) => b.inside),
+          where + 'a kind badge leaves its picture'
+        );
+        const tall = weapons.filter((b) => b.h > line + 1);
+        fs.writeSync(
+          1,
+          '  tile pills: ' +
+            where +
+            'one line ' +
+            line.toFixed(1) +
+            ' px; weapon widths ' +
+            [
+              ...new Set(
+                weapons.map((b) => b.text + ' ' + b.w.toFixed(1) + 'x' + b.h.toFixed(1))
+              )
+            ].join(', ') +
+            '\n'
+        );
+        /* At 360 px a tile leaves «ВТОРИЧНОЕ ОРУЖИЕ» 135.5 px of the 139.6 it needs (measured
+           2026-11-04): the pill wraps inside its one border, logged and not asserted. */
+        if (width > 360)
+          ok(
+            !tall.length,
+            where + 'a weapon badge takes two lines: ' + JSON.stringify(tall.slice(0, 2))
+          );
+        await d.click(lang === 'en' ? 'Select' : 'Выбрать');
+        const sel = await read();
+        ok(!sel.some((b) => b.n !== 1), where + 'in the selection mode a kind badge splits');
+        ok(
+          sel.every((b) => b.inside),
+          where + 'in the selection mode a kind badge leaves its picture'
+        );
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+
+  /* A roll result of ci1: no «Core» badge and no relation line; its name opens the page,
+     which draws them. */
+  for (const [width, height] of [
+    [360, 640],
+    [1180, 720]
+  ]) {
+    const { ctx, page, d } = await fresh({ width, height });
+    try {
+      const where = at + '/roll/std as gm3 ' + width + ': ';
+      await d.open('#/roll/std', { as: 'gm3' });
+      await d.settled('#/roll/std as gm3');
+      const card = await page.evaluate(() => {
+        const face = document.querySelector('.card.face[data-id="ci1"]');
+        return face
+          ? {
+              src: [...face.querySelectorAll('.badge.src')].map((b) => b.textContent.trim()),
+              craft: !!face.querySelector('.craft'),
+              steps: !!face.querySelector('.steps')
+            }
+          : null;
+      });
+      ok(!!card, where + 'the roll holds no ci1');
+      if (!card) continue;
+      ok(!card.src.includes('Core'), where + 'the result draws «Core»');
+      ok(!card.craft && !card.steps, where + 'the result draws a relation line or a ladder');
+      await page.click('.card.face[data-id="ci1"] .card-name a');
+      await d.settled('/i/ci1 as gm3');
+      ok(
+        await waitIn(
+          page,
+          () => location.pathname.endsWith('/i/ci1') && !!document.querySelector('.craft')
+        ),
+        where + "the name does not open ci1's page with its relation lines"
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
+/** The tables `TableNav` lists, in its order (`TABLE_NAV`), as gm3 draws them. */
+const NAV_TABLES = [
+  'core_item',
+  'core_consumable',
+  'hnf_item',
+  'hnf_consumable',
+  'alt_item',
+  'alt_consumable',
+  'wondrous',
+  'dread',
+  'voa',
+  'dv',
+  'arazo',
+  'community',
+  'mwt',
+  'eq_weapon',
+  'eq_secondary',
+  'eq_armor',
+  'other_starting',
+  'other_frames',
+  'homebrew'
+];
+
+/** 96. The table head holds still between tables (DESIGN.md, "Layout", "A steady head"): per
+ *  band, the title row, the group chips, the tab slot, the search row and the rows region
+ *  start at one Y on every table, and the chips at one X. */
+async function tableHeadHoldsStill() {
+  const at = '96 (the table head holds still): ';
+  for (const [width, height] of [
+    [1180, 720],
+    [1050, 720],
+    [760, 720],
+    [390, 844]
+  ]) {
+    for (const lang of ['ru', 'en']) {
+      const { ctx, page, d } = await fresh({ width, height, lang });
+      try {
+        await d.open('#/tables/' + NAV_TABLES[0], { as: 'gm3', lang });
+        await d.settled('#/tables as gm3');
+        const seen = {};
+        for (const table of NAV_TABLES) {
+          await d.go('#/tables/' + table);
+          const m = await page.evaluate(async () => {
+            await document.fonts.ready;
+            scrollTo(0, 0);
+            await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+            const box = (s) => document.querySelector('main ' + s)?.getBoundingClientRect();
+            const y = (s) => {
+              const r = box(s);
+              return r ? Math.round(r.top * 2) / 2 : null;
+            };
+            return {
+              title: y('.page-head') ?? y('.pickrow'),
+              groups: y('.page-head .groups'),
+              tabs: y('.page-head .tabslot') ?? y('.page-head .tabs'),
+              searchrow: y('.searchrow'),
+              rowscol: y('.rowscol'),
+              groupsX: box('.page-head .groups')
+                ? Math.round(box('.page-head .groups').left)
+                : null
+            };
+          });
+          for (const [k, v] of Object.entries(m)) (seen[k] ??= []).push([table, v]);
+        }
+        for (const [k, vals] of Object.entries(seen)) {
+          const drawn = vals.filter(([, v]) => v !== null);
+          if (!drawn.length) continue;
+          const lo = drawn.reduce((a, b) => (b[1] < a[1] ? b : a));
+          const hi = drawn.reduce((a, b) => (b[1] > a[1] ? b : a));
+          const absent = vals.filter(([, v]) => v === null).map(([t]) => t);
+          const line =
+            width +
+            ' ' +
+            lang +
+            ' ' +
+            k +
+            ': ' +
+            lo[1] +
+            ' (' +
+            lo[0] +
+            ') .. ' +
+            hi[1] +
+            ' (' +
+            hi[0] +
+            ')' +
+            (absent.length ? ', absent on ' + absent.join(' ') : '');
+          fs.writeSync(1, '  head: ' + line + '\n');
+          ok(hi[1] - lo[1] <= 1 && !absent.length, at + line);
+        }
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+}
+
+/** The roll pages' fit check beside `FIRST_SCREEN` (DESIGN.md, "The Roll Page Rule"): per
+ *  state and size, what of each result must end inside the first screen. `names` asserts the
+ *  bottom of every name, `whole` of every action row, `first` of the first two action rows;
+ *  `row` asks for pictures at most 100 px wide and no number, `tall` for pictures of at least
+ *  300 px with the number, `narrow` for a result at most 380.5 px wide. `logged` measures only. */
+const ROLL_FIT = [
+  { state: '#/roll/std', size: [1180, 720], names: true, row: true },
+  { state: '#/roll/alt', size: [1180, 720], names: true, row: true },
+  { state: '#/roll/std ~ one source', size: [1180, 720], whole: true, tall: true },
+  {
+    state: '#/roll/std ~ one result',
+    size: [1180, 720],
+    whole: true,
+    narrow: true,
+    tall: true
+  },
+  { state: '#/roll/voa', size: [1180, 720], names: true, narrow: true, tall: true },
+  { state: '#/roll/alt ~ crit', size: [1180, 720], logged: true },
+  ...[
+    '#/roll/std',
+    '#/roll/alt',
+    '#/roll/alt ~ crit',
+    '#/roll/std ~ one source',
+    '#/roll/std ~ one result',
+    '#/roll/voa'
+  ].map((state) => ({ state, size: [1919, 980], whole: true })),
+  ...['#/roll/std', '#/roll/std ~ one source', '#/roll/std ~ one result'].map((state) => ({
+    state,
+    size: [1000, 720],
+    row: true,
+    first: true
+  })),
+  ...['#/roll/std', '#/roll/std ~ one result'].map((state) => ({
+    state,
+    size: [360, 640],
+    phone: true
+  }))
+];
+
+/** 97. A roll fits the first screen by its count (DESIGN.md, "The Roll Page Rule"). */
+async function rollFitsByCount() {
+  const at = '97 (a roll fits by its count): ';
+  for (const row of ROLL_FIT) {
+    const [width, height] = row.size;
+    for (const lang of ['ru', 'en']) {
+      const where = at + row.state + ' ' + width + 'x' + height + ' ' + lang + ': ';
+      const { ctx, page } = await openState(row.state, width, height, lang, !!row.phone);
+      try {
+        const cards = await page.evaluate(() =>
+          [...document.querySelectorAll('.dealt')].map((d) => {
+            const r = (s) => d.querySelector(s)?.getBoundingClientRect();
+            const num = d.querySelector('.badge.num');
+            return {
+              name: r('.card-name').bottom,
+              acts: r('.resacts').bottom,
+              pic: r('.card-media').width,
+              w: d.getBoundingClientRect().width,
+              num: !!num && getComputedStyle(num).display !== 'none'
+            };
+          })
+        );
+        fs.writeSync(
+          1,
+          '  roll fit: ' +
+            where +
+            cards.length +
+            ' results; names ' +
+            cards.map((c) => c.name.toFixed(0)).join('/') +
+            '; acts ' +
+            cards.map((c) => c.acts.toFixed(0)).join('/') +
+            '; pic ' +
+            cards.map((c) => c.pic.toFixed(0)).join('/') +
+            '; w ' +
+            cards.map((c) => c.w.toFixed(0)).join('/') +
+            (row.logged ? ' (logged)' : '') +
+            '\n'
+        );
+        ok(cards.length > 0, where + 'no result drawn');
+        if (row.logged || !cards.length) continue;
+        if (row.names)
+          ok(
+            cards.every((c) => c.name <= height),
+            where + 'a name ends below the fold'
+          );
+        if (row.whole)
+          ok(
+            cards.every((c) => c.acts <= height),
+            where + 'an action row ends below the fold'
+          );
+        if (row.first)
+          ok(
+            cards.slice(0, 2).every((c) => c.acts <= height),
+            where + 'the first two results do not fit'
+          );
+        if (row.row)
+          ok(
+            cards.every((c) => c.pic <= 100 && !c.num),
+            where + 'a result is not the row face'
+          );
+        if (row.tall)
+          ok(
+            cards.every((c) => c.pic >= 300 && c.num),
+            where + 'a result is not the tall face'
+          );
+        if (row.narrow)
+          ok(
+            cards.every((c) => c.w <= 380.5),
+            where + 'a result is wider than 380 px'
+          );
+        if (row.phone)
+          ok(
+            cards.every((c) => Math.abs(c.pic - 96) < 0.5 && !c.num),
+            where + 'the phone face moved'
+          );
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+}
+
+/** 101. The page column grows with the window to 1440 px and stays centered past it; a reading
+ *  surface keeps its measure at the column's left edge (DESIGN.md, "The One Width Rule"). The
+ *  single counter of the roll pages keeps at most 240 px, the alt roll's two boxes fill their
+ *  blocks (DESIGN.md, "Layout"). */
+const WIDE_STATES = [
+  '#/roll/std',
+  '#/roll/alt',
+  '#/tables/eq_weapon',
+  '#/tables/eq_weapon ~ grid searched',
+  '#/search ~ searched',
+  '#/i/ci1',
+  '#/search ~ relations, dialog as gm3',
+  '#/i/nope',
+  '#/homebrew as gm3',
+  '#/homebrew/new as gm1',
+  '#/account as gm1',
+  '#/p/set-emberaxe as gm2'
+];
+
+/** Measures one wide-window state in the page: the column, its edges, the capped surfaces,
+ *  the roll pairs and the number box. */
+function measureWide() {
+  const rect = (s) => document.querySelector(s)?.getBoundingClientRect();
+  /* The body, not `clientWidth`: the headless scrollbar gutter is in `clientWidth` and not in the
+     layout width the column centers in. */
+  const client = document.body.getBoundingClientRect().width;
+  const main = rect('main');
+  const primary = [...document.querySelectorAll('[data-primary]')].find(
+    (e) => e.getBoundingClientRect().height > 0
+  );
+  const pairs = [...document.querySelectorAll('.orgrid > .ordiv')].map((div) => {
+    const a = div.previousElementSibling?.querySelector('.dealt')?.getBoundingClientRect();
+    const b = div.nextElementSibling?.querySelector('.dealt')?.getBoundingClientRect();
+    const m = div.getBoundingClientRect();
+    return a && b
+      ? { wa: a.width, wb: b.width, gapA: m.left - a.right, gapB: b.left - m.right }
+      : null;
+  });
+  const widths = (s) =>
+    [...document.querySelectorAll(s)].map((e) => e.getBoundingClientRect().width);
+  const lefts = (s) =>
+    [...document.querySelectorAll(s)].map((e) => e.getBoundingClientRect().left);
+  return {
+    /* Not the dialog's card, which is centered in the window by design; and the form's panel,
+       since the form sits inside the panel's padding. */
+    dossierL: [...document.querySelectorAll('.card.dossier')]
+      .filter((e) => !e.closest('dialog'))
+      .map((e) => e.getBoundingClientRect().left),
+    formL: [...document.querySelectorAll('.hbform')].map(
+      (e) => e.parentElement.getBoundingClientRect().left
+    ),
+    accountL: lefts('.col:has(.acc)'),
+    client,
+    scrollW: document.documentElement.scrollWidth,
+    mainW: main.width,
+    mainL: main.left,
+    mainR: client - main.right,
+    brandL: rect('.brand')?.left,
+    footL: rect('.foot')?.left,
+    topbarH: rect('.topbar')?.height,
+    top: primary ? primary.getBoundingClientRect().top + scrollY : null,
+    dossier: widths('.card.dossier'),
+    /* `dialog[open]` itself fills the window; its card is `.modal-card`. */
+    dialog: widths('dialog[open] .modal-card'),
+    form: widths('.hbform'),
+    preview: widths('.preview'),
+    account: widths('.col:has(.acc)'),
+    sheet: widths('.psheet'),
+    sheetTransform: [...document.querySelectorAll('.pfit-in')].map(
+      (e) => getComputedStyle(e).transform
+    ),
+    pairs: pairs.filter(Boolean),
+    actsBottom: [...document.querySelectorAll('.dealt .resacts')].map(
+      (e) => e.getBoundingClientRect().bottom
+    ),
+    numbox: widths('.numbox')
+  };
+}
+
+async function pageColumnOnWideWindows() {
+  const at = '101 (the page column on wide windows): ';
+  const base = {};
+  const run = async (id, width, height, lang) => {
+    const { ctx, page } = await openState(id, width, height, lang);
+    try {
+      return await page.evaluate(measureWide);
+    } finally {
+      await ctx.close();
+    }
+  };
+  for (const id of WIDE_STATES) {
+    for (const lang of ['ru', 'en']) base[id + lang] = await run(id, 1180, 720, lang);
+    const b = base[id + 'ru'];
+    ok(
+      b.numbox.every((w) => w <= 240.5),
+      at + id + ' 1180: the number box is wider than 240 px - ' + JSON.stringify(b.numbox)
+    );
+    for (const [width, height, lang] of [
+      [1366, 768, 'ru'],
+      [1920, 1080, 'ru'],
+      [1920, 1080, 'en'],
+      [3840, 2160, 'ru']
+    ]) {
+      const where = at + id + ' ' + width + 'x' + height + ' ' + lang + ': ';
+      const m = await run(id, width, height, lang);
+      const was = base[id + lang];
+      fs.writeSync(
+        1,
+        '  wide: ' +
+          where +
+          'main ' +
+          m.mainW.toFixed(0) +
+          ' (' +
+          m.mainL.toFixed(0) +
+          '/' +
+          m.mainR.toFixed(0) +
+          '); top ' +
+          (m.top === null ? '-' : m.top.toFixed(0)) +
+          ' (was ' +
+          (was.top === null ? '-' : was.top.toFixed(0)) +
+          '); dossier ' +
+          m.dossier.map((w) => w.toFixed(0)).join('/') +
+          '; form ' +
+          m.form.map((w) => w.toFixed(0)).join('/') +
+          '; numbox ' +
+          m.numbox.map((w) => w.toFixed(0)).join('/') +
+          '\n'
+      );
+      ok(
+        Math.abs(m.mainW - Math.min(1440, m.client - 32)) <= 1,
+        where + 'the column is ' + m.mainW + ' px, not min(1440, client - 32)'
+      );
+      ok(
+        Math.abs(m.mainL - m.mainR) <= 1,
+        where + 'the column is off center: ' + m.mainL + '/' + m.mainR
+      );
+      ok(
+        Math.abs(m.brandL - m.mainL) <= 1,
+        where + 'the brand is off the column edge: ' + m.brandL
+      );
+      ok(
+        Math.abs(m.footL - m.mainL) <= 1,
+        where + 'the footer is off the column edge: ' + m.footL
+      );
+      ok(
+        m.scrollW <= m.client,
+        where + 'the page scrolls sideways: ' + m.scrollW + ' > ' + m.client
+      );
+      if (m.top !== null && was.top !== null)
+        ok(
+          Math.abs(m.top - was.top) <= 2,
+          where + 'the first screen moved: ' + m.top + ' vs ' + was.top
+        );
+      for (const [key, hit] of [
+        ['dossier', id === '#/i/ci1'],
+        ['dialog', id.includes('dialog')],
+        ['form', id === '#/homebrew/new as gm1'],
+        ['preview', id === '#/homebrew/new as gm1'],
+        ['account', id.startsWith('#/account')],
+        ['sheet', id.startsWith('#/p/')],
+        ['pairs', id === '#/roll/std'],
+        ['numbox', id.startsWith('#/roll/')]
+      ])
+        if (hit) ok(m[key].length > 0, where + 'no ' + key + ' measured');
+      ok(
+        m.dossier.every((w) => w <= 980.5),
+        where + 'a dossier is wider than 980 px'
+      );
+      ok(
+        m.dialog.every((w) => w <= 980.5),
+        where + 'the dialog is wider than 980 px'
+      );
+      ok(
+        m.form.every((w) => w <= 720.5),
+        where + 'the editor form is wider than 720 px'
+      );
+      ok(
+        m.preview.every((w) => Math.abs(w - 420) <= 1),
+        where + 'the preview is not 420 px'
+      );
+      ok(
+        m.account.every((w) => w <= 1100.5),
+        where + 'the account grid is wider than 1100 px'
+      );
+      ok(
+        m.sheet.every((w, i) => Math.abs(w - was.sheet[i]) <= 1) &&
+          m.sheetTransform.every((t) => t === 'none'),
+        where + 'the print sheet changed: ' + JSON.stringify(m.sheet) + ' ' + m.sheetTransform
+      );
+      ok(
+        m.pairs.every((p) => Math.abs(p.wa - p.wb) <= 1 && Math.abs(p.gapA - p.gapB) <= 1),
+        where + 'a roll pair is uneven: ' + JSON.stringify(m.pairs)
+      );
+      if (height === 1080 && id === '#/roll/std')
+        ok(
+          m.actsBottom.every((y) => y <= height),
+          where + 'a result ends below the window'
+        );
+      ok(
+        Math.abs(m.topbarH - was.topbarH) <= 1,
+        where + 'the header changed height: ' + m.topbarH + ' vs ' + was.topbarH
+      );
+      ok(
+        m.numbox.every((w) => w <= 240.5),
+        where + 'the number box is wider than 240 px'
+      );
+      /* Each of the three surfaces starts at the column's left edge, so none is centered. */
+      for (const key of ['dossierL', 'formL', 'accountL'])
+        ok(
+          m[key].every((x) => Math.abs(x - m.mainL) <= 1),
+          where + key + ' is off the column edge: ' + JSON.stringify(m[key]) + ' vs ' + m.mainL
+        );
+    }
+  }
+  /* The cap is the single-box counter's; the two die boxes of the alt roll fill their blocks at
+     every width, also in the phone settings panel where a block is wider than 240 px. */
+  for (const width of [360, 700]) {
+    const where = at + '#/roll/alt ' + width + ' ru, settings open: ';
+    const { ctx, page, d } = await openState('#/roll/alt', width, 800, 'ru');
+    try {
+      await d.click('Настроить');
+      await d.settle();
+      const boxes = await page.evaluate(() =>
+        [...document.querySelectorAll('.numbox')].map((n) => [
+          n.getBoundingClientRect().width,
+          n.parentElement.getBoundingClientRect().width
+        ])
+      );
+      ok(boxes.length === 2, where + 'expected two number boxes, found ' + boxes.length);
+      ok(
+        boxes.every(([box, block]) => Math.abs(box - block) <= 1),
+        where + 'a number box does not fill its block: ' + JSON.stringify(boxes)
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+  for (const id of ['#/roll/std', '#/search ~ searched']) {
+    const m = await run(id, 1366, 650, 'ru');
+    fs.writeSync(
+      1,
+      '  wide: ' +
+        at +
+        id +
+        ' 1366x650 ru: primary top ' +
+        (m.top ?? 0).toFixed(0) +
+        ' against 260 (logged)\n'
+    );
+  }
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -6721,7 +7422,11 @@ const CASES = [
   ['91 (the homebrew head, tabs and bar from 320 to 1180 px)', homebrewHeadAndBar],
   ['92 (the editor holds its layout and the preview sheet)', editorLayoutAndSheet],
   ['93 (the search page holds from 320 to 1180 px)', searchHeadAndRows],
-  ['94 (the account holds its layout and its confirm)', accountLayoutAndConfirm]
+  ['94 (the account holds its layout and its confirm)', accountLayoutAndConfirm],
+  ['95 (a badge is one box and keeps clear of the lines around it)', badgeIsOneBox],
+  ['96 (the table head holds still between tables)', tableHeadHoldsStill],
+  ['97 (a roll fits the first screen by its count)', rollFitsByCount],
+  ['101 (the page column grows to 1440 px and stays centered)', pageColumnOnWideWindows]
 ];
 
 (async () => {

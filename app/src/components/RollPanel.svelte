@@ -138,16 +138,11 @@
 </RollPage>
 
 <style>
-  /* One card keeps the width of one of a pair; up to 600 px the card is a row and takes the
-     line, as on `/roll/std`. */
+  /* The `faces` container: a lone result is the tall face, at most 380 px wide, from a
+     641 px column, and the row face under it (DESIGN.md, "The Roll Page Rule"). */
   .results {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-  }
-
-  @media (min-width: 601px) {
-    .results {
-      grid-template-columns: minmax(0, 380px);
-    }
+    container: faces / inline-size;
   }
 </style>

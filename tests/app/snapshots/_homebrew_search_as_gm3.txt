@@ -41,9 +41,9 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
     button "Импорт из файла" [expanded=false]
     button "Выбрать"
     heading "Хоумбрю 3" [level=2]
-    button "Скатка путника ПРЕДМЕТ Свёрнутая постель для ночёвки в пути. Улу..." [namelen=97 namehash=41ace3f8]
-    button "Скатка следопыта ПРЕДМЕТ Свёрнутая постель для ночёвки в пути. П..." [namelen=133 namehash=ea36795c]
-    button "Скатка стража ПРЕДМЕТ Свёрнутая постель для ночёвки в пути. Полу..." [namelen=96 namehash=c536b920]
+    button "Скатка путника ПРЕДМЕТ Свёрнутая постель для ночёвки в пути."
+    button "Скатка следопыта ПРЕДМЕТ Свёрнутая постель для ночёвки в пути."
+    button "Скатка стража ПРЕДМЕТ Свёрнутая постель для ночёвки в пути."
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -70,9 +70,9 @@ daggerheart.com
 Открывать при запуске
 Поиск
 Предметы 39
-Скатка путникаПредметСвёрнутая постель для ночёвки в пути.Улучша... [namelen=94 namehash=b9303232]
-Скатка следопытаПредметСвёрнутая постель для ночёвки в пути.Полу... [namelen=128 namehash=f6e81c88]
-Скатка стражаПредметСвёрнутая постель для ночёвки в пути.Получае... [namelen=93 namehash=ff8d5201]
+Скатка путникаПредметСвёрнутая постель для ночёвки в пути.
+Скатка следопытаПредметСвёрнутая постель для ночёвки в пути.
+Скатка стражаПредметСвёрнутая постель для ночёвки в пути.
 Таблицы
 Условия использования
 Установить как приложение
@@ -115,9 +115,9 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm3]
     button "Import from file" [expanded=false]
     button "Select"
     heading "Homebrew 3" [level=2]
-    button "Ranger's Roll ITEM A rolled bed for a night on the road. Made fr..." [namelen=123 namehash=608ae435]
-    button "Sentry's Roll ITEM A rolled bed for a night on the road. Made fr..." [namelen=86 namehash=f01c6c0b]
-    button "Traveller's Roll ITEM A rolled bed for a night on the road. Upgr..." [namelen=91 namehash=30247e61]
+    button "Ranger's Roll ITEM A rolled bed for a night on the road."
+    button "Sentry's Roll ITEM A rolled bed for a night on the road."
+    button "Traveller's Roll ITEM A rolled bed for a night on the road."
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -137,16 +137,16 @@ New item
 Open on start
 Privacy
 RU
-Ranger's RollItemA rolled bed for a night on the road.Made from:... [namelen=118 namehash=99691f93]
+Ranger's RollItemA rolled bed for a night on the road.
 Roll
 Rule cards 0
 Search
 Select
-Sentry's RollItemA rolled bed for a night on the road.Made from:... [namelen=83 namehash=01973e24]
+Sentry's RollItemA rolled bed for a night on the road.
 Sets 1
 Skip to content
 Sources 0
 Tables
 Terms of use
-Traveller's RollItemA rolled bed for a night on the road.Upgrade... [namelen=88 namehash=4ceeec41]
+Traveller's RollItemA rolled bed for a night on the road.
 daggerheart.com

@@ -2632,7 +2632,7 @@ const { ok } = rep;
      unconditional, so nothing here depends on which route raised them. */
   console.log('the dialog and the action toast under print media (D20)');
   await d.open('#/roll/wondrous');
-  await d.click('Страница');
+  await d.click('Открыть карточку');
   await d.media('print');
   try {
     const dialog = await d.computed('dialog', ['display']);

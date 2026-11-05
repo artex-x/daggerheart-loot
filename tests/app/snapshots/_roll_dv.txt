@@ -33,10 +33,10 @@ RootWebArea "The Dragon's Vault - Генератор лута Daggerheart" [url=
     heading "Бросок 1" [level=2]
     status ""
       StaticText "Святилище Оградителя"
-    button "Страница"
+    button "Открыть карточку"
     ... StaticText x2 of 6 same-shape siblings elided
     StaticText "THE DRAGON'S VAULT"
-    link "Святилище Оградителя" [description=Страница url=/i/dv1]
+    link "Святилище Оградителя" [description=Открыть страницу url=/i/dv1]
     StaticText "Пока вы носите это кольцо, вы получаете бонус +1 к Броскам Закли..." [namelen=292 namehash=aa1e347c]
     button "В список" [expanded=false]
     button "Поделиться"
@@ -67,11 +67,11 @@ daggerheart.com
 На единицу меньше
 Обычные правила
 Открывать при запуске
+Открыть карточку
 Поделиться
 Поиск
 Результат броска
 Святилище Оградителя
-Страница
 Таблицы
 Условия использования
 Установить как приложение
@@ -107,10 +107,10 @@ RootWebArea "The Dragon's Vault - Daggerheart Loot Generator" [url=/en/roll/drag
     heading "Roll 1" [level=2]
     status ""
       StaticText "Abjurer's Fane"
-    button "Page"
+    button "Open card"
     ... StaticText x2 of 6 same-shape siblings elided
     StaticText "THE DRAGON'S VAULT"
-    link "Abjurer's Fane" [description=Page url=/i/en/dv1]
+    link "Abjurer's Fane" [description=Open page url=/i/en/dv1]
     StaticText "You have a +1 bonus to Spellcast Rolls for Arcana Domain spells ..." [namelen=247 namehash=910f9a4d]
     button "Add to list" [expanded=false]
     button "Share"
@@ -133,8 +133,8 @@ LootDaggerheart
 More
 One higher
 One lower
+Open card
 Open on start
-Page
 Privacy
 RU
 Roll

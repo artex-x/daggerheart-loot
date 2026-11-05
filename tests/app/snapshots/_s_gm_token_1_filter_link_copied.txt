@@ -90,7 +90,7 @@ daggerheart.com
 Оружие
 Оружие×
 Палаш
-ПалашОсновное оружиеCoreРанг 1 · Физическое · Проворность · Впло... [namelen=118 namehash=5597138b]
+ПалашОсновное оружиеРанг 1 · Физическое · Проворность · Вплотную... [namelen=114 namehash=e80c7800]
 Поиск
 Предметы
 Проворность
@@ -98,7 +98,7 @@ daggerheart.com
 Сбросить всё
 Сила
 Скипетр
-СкипетрОсновное оружиеCoreРанг 1 · Магическое · Влияние · Далеко... [namelen=190 namehash=de098217]
+СкипетрОсновное оружиеРанг 1 · Магическое · Влияние · Далеко · d... [namelen=186 namehash=9aee2e9c]
 Сохранить себе
 Средне
 Ссылка на фильтры
@@ -172,7 +172,7 @@ Agility
 Alder Workshop
 Armor
 Broadsword
-BroadswordPrimary weaponCoreTier 1 · Physical · Agility · Melee ... [namelen=113 namehash=26515266]
+BroadswordPrimary weaponTier 1 · Physical · Agility · Melee · d8... [namelen=109 namehash=926e89b9]
 Casting Dagger
 Casting DaggerPrimary weaponHope & FearTier 1 · Magic · Instinct... [namelen=176 namehash=08dad18c]
 Close
@@ -204,7 +204,7 @@ Reset all
 Roll
 Save to my lists
 Scepter
-ScepterPrimary weaponCoreTier 1 · Magic · Presence · Far · d6 ma... [namelen=160 namehash=9977457f]
+ScepterPrimary weaponTier 1 · Magic · Presence · Far · d6 mag · ... [namelen=156 namehash=5cf0702e]
 Search
 Sign in
 Skip to content

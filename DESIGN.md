@@ -384,12 +384,19 @@ font request outside `/assets/`. The print card keeps its local stack
 
 ## Layout
 
-One width governs everything: `--wrap: min(1180px, 100% - 32px)`. The header
+One width governs everything: `--wrap: min(1440px, 100% - 32px)`. The header
 bar, the job row, the mode row, `main` and the footer all take it, so the brand,
 the first mode control and the first word of the page share a left edge at every
 viewport. The 32px
 subtraction is the gutter, and `viewport-fit=cover` plus `env(safe-area-inset-*)`
-keeps the selection bar clear of a display cutout.
+keeps the selection bar clear of a display cutout. The column grows with the
+window from 1213px to 1472px, where it reaches 1440px, and stays 1440px and
+centered above that. A window up to 1212px draws as it did at 1180px, with three
+exceptions: the record page's dossier is at most 980px from a 1013px window, the
+editor's form is at most 720px from about a 1206px window, and the roll pane's lone
+counter is at most 240px at every width (The One Width Rule).
+320px is the narrowest width a page is built for (WCAG 1.4.10 reflow is defined
+at 320); a 280px window scrolls sideways.
 
 The page is a vertical stack: a sticky translucent header (`rgb(14 12 21 / 86%)`
 over a 14px backdrop blur) that holds the brand row and the three jobs (63px from
@@ -409,7 +416,14 @@ so a one-field panel has no trailing gap.
 ### Named Rules
 
 **The One Width Rule.** Anything that spans the page takes `var(--wrap)`. A new
-full-width element does not invent its own container or its own gutter.
+full-width element does not invent its own container or its own gutter. From
+1472px the column stays 1440px and centered; a reading surface keeps its measure
+at the column's left edge: the dossier at most 980px (`--dossier-w`), the
+editor's form at most 720px (it bites from about a 1206px window), the account at
+most 1100px and prose at most 78ch. One cap is not a wide-window rule: a lone
+number field is at most 240px at every width (`NumberField`: past that the number
+floats between two far buttons; the roll pane's column is 282px, and wider in the
+phone settings panel). The alt roll's two boxes opt out and fill their blocks.
 
 **The Two Breakpoints Rule.** The system has two, and a third step for the header.
 From 761px the brand, the three jobs, the language switch and the account
@@ -421,7 +435,7 @@ header's measured height, is the page's `scroll-padding-top`, so a focused
 control stops clear of it. At 600px touch
 targets grow: segment padding to 8px 14px, the section copy-link button from
 about 20px to a 36px hit area, row actions onto their own line, the mode row's
-controls 40px tall, and the roll card turns from a row into the face at 601px. The catalog adds one step, 1000px: from it the filter
+controls 40px tall, and a roll card can be the tall face from 601px (The Roll Page Rule). The catalog adds one step, 1000px: from it the filter
 column sits beside the rows; from 761px it draws the wide head (the `h1`, the
 labeled pin, «Об этих данных», the group chips and the tabs) with the filters
 in the bottom sheet; below 761px the picker row, the sheet and «··· Ещё»
@@ -435,7 +449,9 @@ one column below it, two from it, in the DOM order of the one column.
 `h1`, the controls, one results line («Бросок N», «Настроить», «Ещё»); the pin, the
 help and the copy of every option are items of «Ещё». From 761px: the head with the
 labeled pin and help, a 320px control pane, the results. The roller has one gold
-primary at most, and a die is plain.
+primary at most, and a die is plain. A result is the tall face only while the roll
+sits on one line in a results column of at least 641px; otherwise the row face, so a
+four-result roll shows every name in the first screen at 1180x720.
 
 **The Search Head Rule.** `/search` takes the list head of the catalog with one
 difference: up to 760px no picker fills the head row, so the `h1` «Поиск» stays
@@ -456,6 +472,18 @@ copies and «Сохранить себе» live in «Ещё», a `Menu` that ope
 the dialog, up where the room is only above, so from the dock. «В список» is the one
 gold primary; an open «Ещё» is not drawn pressed, because gold marks a choice. A label
 never gives way to an icon (The Same Label Rule).
+
+**A steady head.** A page whose content switches under a fixed head draws the head's
+geometry from the viewport band only, never from the content; a row that some contents
+lack keeps its reserved space, and late content (a picture, a count) reserves its box.
+`/tables/*` is the first user: from 1000px the group chips sit beside the title and the
+tabs take the next row; from 761px to 999px both levels take their own rows; the tab row
+keeps the height of the tallest group's tabs on every table. The homebrew group's source
+tabs are not reserved: they hold the GM's own text (up to 12 names of 80 characters) and
+would push the rows of every table. The trade-off: `/tables/homebrew` with many sources
+may draw a taller row than the other tables. From 1000px to 1139px in Russian the chips
+and the reserved tab row take two lines each, a head of about 173px (the rows start at
+330.5px at 1050x720).
 
 **The Hidden Header Rule.** Up to 760px the whole header leaves on a scroll down
 and returns on a scroll up, on every page, because a phone reader needs the rows
@@ -638,11 +666,15 @@ means "a thing". Do not round a card to a pill or square a chip.
 - **Layout:** `full` stacks the image above the body, or, as a dossier, sets it
   beside the text (The Dossier Rule); `compact` puts a 132px square image beside it,
   and `ListPage` keeps it until its batch moves the roll panel; `face` is a roll
-  result: the picture 4:3 with a fade, the body drawn over its foot, and 96px beside
-  the text up to 600px. Its action row sits under the plate, because a popover
-  cannot leave a clipped plate.
-- **Relation lines:** a homebrew record's name draws the plain bordered badge
-  «Хоумбрю» after it; a catalog record draws none.
+  result: the picture 4:3 with a fade, the body drawn over its foot, and the row face,
+  96px beside the text, wherever the roll does not sit on one line (The Roll Page
+  Rule). Its action row sits under the plate, because a popover cannot leave a
+  clipped plate.
+- **Relation lines:** «Получается из», «Улучшается до», the set line and its bonus,
+  and the tier ladder draw on the full record card only (`full`: the record page,
+  `/h/`, the dialog, the editor preview); `face`, `compact`, rows and tiles draw
+  none. A homebrew name draws the plain bordered badge «Хоумбрю» after it on the same
+  line; a catalog name draws none.
 - **Grid tile:** two columns up to 600px; the art, the name and a second line
   (the stat line, else the other-language name). A table of more than one
   kind labels the tile with its kind badge where the colored dot used to be;
@@ -671,8 +703,12 @@ means "a thing". Do not round a card to a pill or square a chip.
   the unique tag is gold: nobody chose them (The Seal Rule). An own item written
   in the other language than the interface draws a small language tag («EN», «RU»)
   after its row's tags: a hairline box, no fill, no capitals rule. On a roll card face the
-  roll number is drawn over the picture from 601px and hidden up to 600px, where the
-  results line names the roll.
+  roll number is drawn over the picture of the tall face and hidden on the row face,
+  where the results line names the roll.
+- **One box:** a badge is an inline block: it never splits across lines, a long label
+  wraps inside its border, and in running text it keeps 2px from the lines around it.
+- **The default book:** «Core» draws on the full record card only; every other source
+  keeps its tag.
 
 ### Inputs
 

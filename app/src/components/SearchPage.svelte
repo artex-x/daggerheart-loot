@@ -51,7 +51,7 @@
   const t = $derived(app.t);
   const band = $derived(app.band);
   const index = $derived(app.index);
-  /* The row pool only: `RecordHost` and `TableRows` keep `index`. */
+  /* The row pool only: `RecordHost` keeps `index`. */
   const browse = $derived(app.browse);
   const own = $derived(app.homebrew?.records.length ?? 0);
   /* The catalog count stays; the own items add a sentence, whatever the switch. */
@@ -322,7 +322,6 @@
           primary
           entries={found.map((it) => ({ it }))}
           view="list"
-          {index}
           lang={app.lang}
           ticks={app.selecting}
           {terms}

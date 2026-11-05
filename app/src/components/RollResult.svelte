@@ -71,6 +71,13 @@
     flex: 1 1 auto;
   }
 
+  /* A tall face is at most 380 px wide (docs/specs/FEATURES.md, "Rolling"). */
+  @container faces (min-width: 641px) {
+    .dealt {
+      max-width: 380px;
+    }
+  }
+
   .resacts {
     position: relative;
     display: flex;

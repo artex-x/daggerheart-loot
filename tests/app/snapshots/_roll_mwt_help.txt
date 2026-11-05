@@ -47,8 +47,8 @@ RootWebArea "Many Worlds Tavern - Генератор лута Daggerheart" [url=
     heading "Бросок 1" [level=2]
     status ""
       StaticText "Порхающие Бесы"
-    button "Страница"
-    link "Порхающие Бесы" [description=Страница url=/i/mw1]
+    button "Открыть карточку"
+    link "Порхающие Бесы" [description=Открыть страницу url=/i/mw1]
     StaticText "Уязвимой"
     StaticText " вместо нанесения урона."
     button "В список" [expanded=false]
@@ -87,11 +87,11 @@ daggerheart.com
 На единицу меньше
 Обычные правила
 Открывать при запуске
+Открыть карточку
 Поделиться
 Поиск
 Порхающие Бесы
 Результат броска
-Страница
 Таблицы
 Условия использования
 Установить как приложение
@@ -141,8 +141,8 @@ RootWebArea "Many Worlds Tavern - Daggerheart Loot Generator" [url=/en/roll/many
     heading "Roll 1" [level=2]
     status ""
       StaticText "Flutterfiends"
-    button "Page"
-    link "Flutterfiends" [description=Page url=/i/en/mw1]
+    button "Open card"
+    link "Flutterfiends" [description=Open page url=/i/en/mw1]
     StaticText "Vulnerable"
     StaticText " instead of dealing damage."
     button "Add to list" [expanded=false]
@@ -169,8 +169,8 @@ Many Worlds Tavern
 More
 One higher
 One lower
+Open card
 Open on start
-Page
 Privacy
 RU
 Realm

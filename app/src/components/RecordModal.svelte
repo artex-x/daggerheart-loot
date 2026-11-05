@@ -109,6 +109,7 @@
       lang={app.lang}
       artBroken={app.artBroken(it.id)}
       {onopen}
+      pageLink
       onartfail={(bad: string) => {
         app.markArtBroken(bad);
       }}
@@ -153,7 +154,7 @@
   .modal-card {
     position: relative;
     z-index: 2;
-    width: min(980px, 100%);
+    width: min(var(--dossier-w), 100%);
     max-height: 88vh;
     padding: 24px;
     overflow: auto;

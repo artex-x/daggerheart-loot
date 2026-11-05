@@ -58,9 +58,9 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 
 ## ru :: controls
 100Фрикционные ОбмоткиОсновное оружиеУникальноеРанг 1 · Физическ... [namelen=248 namehash=18621ce9]
-101Фроствирд (Дремлющий)Основное оружиеУникальноеРанг 2 · Физиче... [namelen=313 namehash=2f1fc976]
-102Фроствирд (Пробуждённый)Основное оружиеУникальноеРанг 3 · Физ... [namelen=552 namehash=33cff0fe]
-103Фроствирд (Возвышенный)Основное оружиеУникальноеРанг 4 · Физи... [namelen=604 namehash=45bbf00a]
+101Фроствирд (Дремлющий)Основное оружиеУникальноеРанг 2 · Физиче... [namelen=274 namehash=f9e7e5aa]
+102Фроствирд (Пробуждённый)Основное оружиеУникальноеРанг 3 · Физ... [namelen=477 namehash=cd7e6508]
+103Фроствирд (Возвышенный)Основное оружиеУникальноеРанг 4 · Физи... [namelen=565 namehash=69baaeca]
 104Студенистый МолотОсновное оружиеУникальноеРанг 3 · Физическое... [namelen=293 namehash=c9118b65]
 105Меч Призрачного КасанияОсновное оружиеУникальноеРанг 2 · Физи... [namelen=258 namehash=e1177efd]
 106Духовая Трубка Скорбного ЕжаВторичное оружиеУникальноеРанг 2 ... [namelen=239 namehash=e8251fa8]
@@ -294,9 +294,9 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/dragons_vault]
 
 ## en :: controls
 100Friction WrapsPrimary weaponUniqueTier 1 · Physical · Agility... [namelen=232 namehash=02ea7cbb]
-101Frostwyrd (Dormant)Primary weaponUniqueTier 2 · Physical · St... [namelen=312 namehash=f7eeb3e5]
-102Frostwyrd (Awakened)Primary weaponUniqueTier 3 · Physical · S... [namelen=530 namehash=a4223bea]
-103Frostwyrd (Exalted)Primary weaponUniqueTier 4 · Physical · St... [namelen=574 namehash=c1839abd]
+101Frostwyrd (Dormant)Primary weaponUniqueTier 2 · Physical · St... [namelen=279 namehash=7cbe1a15]
+102Frostwyrd (Awakened)Primary weaponUniqueTier 3 · Physical · S... [namelen=467 namehash=dee26eee]
+103Frostwyrd (Exalted)Primary weaponUniqueTier 4 · Physical · St... [namelen=543 namehash=a1e52438]
 104Gelatinous HammerPrimary weaponUniqueTier 3 · Physical · Stre... [namelen=284 namehash=6a4e38ed]
 105Ghost Touch SwordPrimary weaponUniqueTier 2 · Physical · Agil... [namelen=212 namehash=2acc487a]
 106Grief Urchin BlowgunSecondary weaponUniqueTier 2 · Physical ·... [namelen=230 namehash=241f763d]

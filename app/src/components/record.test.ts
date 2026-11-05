@@ -352,13 +352,51 @@ describe('the dossier', () => {
     expect(card.querySelector('.card-acts')).toBeNull();
   });
 
-  it('draws the name as an `h2` in the dialog, with no path line', async () => {
-    render(App, { env: at('ci1') });
-    await userEvent.click(screen.getByRole('button', { name: 'Страница' }));
-    const dialog = await screen.findByRole('dialog');
+  it('draws the name as an `h2` in the dialog, with no path line', () => {
+    const app = new AppState(at('ci1'));
+    app.start();
+    const ci1 = app.index?.byId.get('ci1');
+    if (!app.index || !ci1) throw new Error('The test data has no ci1.');
+    render(RecordModal, { app, index: app.index, it: ci1, onclose: () => {} });
+    const dialog = screen.getByRole('dialog');
     expect(within(dialog).getByRole('heading', { level: 2 })).toHaveClass('card-name');
     expect(within(dialog).queryByRole('heading', { level: 1 })).toBeNull();
     expect(dialog.querySelector('.card-sub')).toBeNull();
+    app.stop();
+  });
+
+  it('draws the picture as no control on the record page, and a press opens nothing', async () => {
+    const { container } = render(App, { env: at('ci1') });
+    const media = container.querySelector('.card.dossier .card-media') as HTMLElement;
+    expect(media.tagName).toBe('DIV');
+    expect(media).not.toHaveAttribute('aria-label');
+    expect(media.querySelector('img')).not.toBeNull();
+    expect(screen.queryByRole('button', { name: /Страница|Открыть/ })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Открыть страницу' })).toBeNull();
+    await userEvent.click(media);
+    expect(screen.queryByRole('dialog')).toBeNull();
+    await expectNoA11yViolations(container);
+  });
+
+  it("links the dialog's picture to the record's page", async () => {
+    const app = new AppState(at('ci1'));
+    app.start();
+    const ci1 = app.index?.byId.get('ci1');
+    if (!app.index || !ci1) throw new Error('The test data has no ci1.');
+    const { container } = render(RecordModal, {
+      app,
+      index: app.index,
+      it: ci1,
+      onclose: () => {}
+    });
+    const link = within(screen.getByRole('dialog')).getByRole('link', {
+      name: 'Открыть страницу'
+    });
+    expect(link).toHaveClass('card-media');
+    expect(link).toHaveAttribute('href', '/i/ci1');
+    expect(screen.queryByRole('button', { name: /Страница|Открыть/ })).toBeNull();
+    await expectNoA11yViolations(container);
+    app.stop();
   });
 
   it('keeps the icon pair and the labeled row on a compact card', () => {
@@ -407,7 +445,8 @@ describe('the roll card face', () => {
     const face = draw('face');
     expect(face.html).toBe(draw('compact').html);
     expect(face.name).toHaveAttribute('href', '/i/ci1');
-    expect(face.media).toHaveAttribute('aria-label', 'Страница');
+    /* No `onopen`: nothing to open, so the picture is no control. */
+    expect(face.media?.tagName).toBe('DIV');
   });
 
   it('draws no action row without the snippet', () => {
@@ -2090,5 +2129,76 @@ describe("the account's own card on a book item", () => {
     await userEvent.click(more);
     expect(line.querySelectorAll('a')).toHaveLength(99);
     await expectNoA11yViolations(container);
+  });
+});
+
+describe('the relation lines and the Core tag by card variant', () => {
+  /* The real catalog with gm3's own items: ci1 upgrades to 15 of them, q1 holds a ladder,
+     voa4_t3d is a set piece with a bonus (docs/specs/FEATURES.md, "Records"). */
+  const index = withRecords(
+    buildIndex(readLoot()),
+    SEED.homebrew.gm3.items.map((i) => recordOf(i.key, i.content, null)),
+    []
+  );
+  const card = (id: string, variant: 'full' | 'compact' | 'face', dossier = false) => {
+    const it = index.byId.get(id);
+    if (!it) throw new Error(`The index lacks ${id}. Seed or name a record it holds`);
+    return render(RecordCard, {
+      props: {
+        variant,
+        dossier,
+        it,
+        index,
+        lang: 'ru',
+        artBroken: false,
+        onartfail: () => {},
+        onopen: () => {}
+      }
+    }).container;
+  };
+  const srcTags = (c: HTMLElement): string[] =>
+    [...c.querySelectorAll('.card-meta .badge.src')].map((b) => b.textContent.trim());
+
+  it.each(['face', 'compact'] as const)(
+    'draws no relation line, set, ladder or Core badge on a %s card',
+    async (variant) => {
+      for (const id of ['ci1', 'q1', 'voa4_t3d']) {
+        const c = card(id, variant);
+        expect(c.querySelector('.craft'), id).toBeNull();
+        expect(c.querySelector('.steps'), id).toBeNull();
+        cleanup();
+      }
+      const c = card('ci1', variant);
+      expect(srcTags(c)).toEqual([]);
+      await expectNoA11yViolations(c);
+    }
+  );
+
+  it.each(['face', 'compact'] as const)('keeps another book on a %s card', (variant) => {
+    expect(srcTags(card('hi61', variant))).toEqual(['Hope & Fear']);
+  });
+
+  it.each([false, true])(
+    'draws the relation lines, the set, the ladder and the Core badge on the full card (dossier %s)',
+    async (dossier) => {
+      const c = card('ci1', 'full', dossier);
+      expect(c.querySelector('.craft')).toHaveTextContent('Улучшается до');
+      expect(srcTags(c)).toEqual(['Core']);
+      await expectNoA11yViolations(c);
+      cleanup();
+      expect(card('q1', 'full', dossier).querySelector('.steps')).not.toBeNull();
+      cleanup();
+      const set = card('voa4_t3d', 'full', dossier);
+      expect(set.querySelector('.craft')).toHaveTextContent('Комплект');
+      expect(set.querySelector('.set-bonus')).not.toBeNull();
+    }
+  );
+
+  it("keeps a homebrew badge on its name's line with a no-break space before it", () => {
+    const badge = card('ci1', 'full').querySelector('.craft .badge.hb');
+    let before = badge?.previousSibling;
+    while (before && before.nodeType === Node.COMMENT_NODE) before = before.previousSibling;
+    expect(before?.nodeType).toBe(Node.TEXT_NODE);
+    expect(before?.textContent).toBe(' ');
   });
 });

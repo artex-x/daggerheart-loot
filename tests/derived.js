@@ -794,16 +794,20 @@ console.log('the app documents');
    way-home links name the site's host itself (docs/specs/META.md section 7). */
 {
   const html404 = fs.readFileSync(path.join(ROOT, '404.html'), 'utf8');
+  /* The app's not-found page's two actions (`NoPage.svelte`), one `h1`, and the title in
+     the characters of FEATURES.md "Consistency rules" 14. */
   ok(
     html404.includes('href="' + SITE + 'roll/std"') &&
-      html404.includes('href="' + SITE + 'search"'),
-    '404.html does not link ' + SITE + 'roll/std and ' + SITE + 'search'
+      html404.includes('href="' + SITE + 'tables"'),
+    '404.html does not link ' + SITE + 'roll/std and ' + SITE + 'tables'
   );
   ok(
     html404.includes('href="' + SITE + 'en/roll/std"') &&
-      html404.includes('href="' + SITE + 'en/search"'),
-    '404.html does not link ' + SITE + 'en/roll/std and en/search in its English half'
+      html404.includes('href="' + SITE + 'en/tables"'),
+    '404.html does not link ' + SITE + 'en/roll/std and en/tables in its English half'
   );
+  ok((html404.match(/<h1[\s>]/g) ?? []).length === 1, '404.html draws more than one h1');
+  ok(!/[\u2013\u2014\u2026]/.test(html404), '404.html holds a dash or an ellipsis character');
   ok(!html404.includes(SITE + '#/'), '404.html links an address in the fragment form');
   ok(!html404.includes('/daggerheart-loot/#'), '404.html still links a path of the old host');
 }

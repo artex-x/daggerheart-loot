@@ -484,7 +484,7 @@ const STATES = [
     route: '#/roll/wondrous_environments',
     why: 'the card opened over the roll',
     enter: async (d) => {
-      await d.click('Страница');
+      await d.click('Открыть карточку');
     }
   },
 
@@ -625,7 +625,11 @@ const STATES = [
     }
   },
 
-  { id: '#/roll/std', route: '#/roll/std', why: 'Core rules' },
+  {
+    id: '#/roll/std',
+    route: '#/roll/std',
+    why: 'Core rules: four results draw row faces from 601 px'
+  },
 
   /* One source off, which halves the roll from four cards to two - so the OR
      grid changes layout as well as content, and the chip has to refuse to
@@ -659,6 +663,15 @@ const STATES = [
     route: '#/roll/std',
     why: 'Core rules with consumables switched off',
     enter: async (d) => {
+      await d.click('Расходники');
+    }
+  },
+  {
+    id: '#/roll/std ~ one result',
+    route: '#/roll/std',
+    why: 'Core rules with Hope & Fear and consumables off: one result, the tall face at most 380 px wide (R7)',
+    enter: async (d) => {
+      await d.click('Hope & Fear');
       await d.click('Расходники');
     }
   },
@@ -1134,6 +1147,17 @@ const STATES = [
     width: 360,
     why: '«Ещё» open: the table link, the pin and «Об этих данных»',
     enter: async (d) => {
+      await d.click('Ещё');
+    }
+  },
+  {
+    id: '#/tables/eq_weapon ~ data notes from more',
+    route: '#/tables/eq_weapon',
+    width: 360,
+    why: '«Об этих данных» opened from «Ещё»: the panel with «Закрыть» first, and «Ещё» open again with the item checked',
+    enter: async (d) => {
+      await d.click('Ещё');
+      await d.click('Об этих данных');
       await d.click('Ещё');
     }
   },
@@ -3750,9 +3774,19 @@ const STATES = [
     id: '#/search ~ relations as gm3',
     route: '#/search',
     as: 'gm3',
-    why: "«спальный мешок» typed: the catalog matches and the own bedrolls ranked together; ci1's row «Улучшается до: Мешок спокойных снов (HB) и ещё 14»; each own row «Получается из: Первоклассный Спальный Мешок»",
+    why: '«спальный мешок» typed: the catalog matches and the own bedrolls ranked together; no row draws a relation line',
     enter: async (d) => {
       await d.type('Поиск по названию или описанию...', 'спальный мешок');
+    }
+  },
+  {
+    id: '#/search ~ relations, dialog as gm3',
+    route: '#/search',
+    as: 'gm3',
+    why: "«спальный мешок» typed, ci1's row pressed: the dialog's «Улучшается до» with three «Хоумбрю» badges and «и ещё 12»",
+    enter: async (d) => {
+      await d.type('Поиск по названию или описанию...', 'спальный мешок');
+      await d.click('Первоклассный');
     }
   },
   {

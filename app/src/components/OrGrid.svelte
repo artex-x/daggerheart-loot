@@ -3,8 +3,9 @@
 
      A roll offers a choice rather than a result: the player takes one of them,
      so the cards are laid out as alternatives and not as a list. One card
-     fills the row; two sit either side of the separator; four make a 2x2 with
-     a full-width separator between the rows.
+     fills the row; two sit either side of the separator; four make a 2x2 of row faces with
+     a full-width separator between the rows. One or two name the `faces` container, so a
+     roll that sits on one line draws the tall face (DESIGN.md, "The Roll Page Rule").
 
      The layout is computed into a flat list of cells rather than written out
      three times. That keeps the markup to one loop, and it makes the list
@@ -48,7 +49,7 @@
 </script>
 
 {#if items.length}
-  <div class="orwrap">
+  <div class="orwrap" class:faces={items.length <= 2}>
     <div class="orgrid" class:c2={items.length === 2} class:c4={items.length > 2}>
       {#each cells as cell, i (i)}
         {#if cell.kind === 'card'}
@@ -83,6 +84,10 @@
   /* off `.orgrid` and `.ordiv` in style.css */
   .orwrap {
     container-type: inline-size;
+  }
+
+  .orwrap.faces {
+    container-name: faces;
   }
 
   .orgrid {
@@ -142,6 +147,13 @@
 
   .ordiv.h i {
     margin: 0 14px;
+  }
+
+  /* The rule between the two rows of row faces: 42 px rather than 62. */
+  @container (min-width: 641px) {
+    .ordiv.h {
+      padding: 6px 0;
+    }
   }
 
   /* On a narrow pane the columns stack, so the separator becomes a rule across the width

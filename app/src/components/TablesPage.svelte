@@ -92,8 +92,8 @@
   const t = $derived(app.t);
   const band = $derived(app.band);
   const index = $derived(app.index);
-  /* The row pool and the facets only: `RecordHost` and `TableRows` keep `index`, so the
-     «Свои предметы» switch never hides an own record inside a dialog or a row. */
+  /* The row pool and the facets only: `RecordHost` keeps `index`, so the «Свои предметы»
+     switch never hides an own record inside a dialog. */
   const browse = $derived(app.browse);
 
   /* `S.tables.t`'s default off app.js: the name in the address may be missing
@@ -599,6 +599,8 @@
      `document.fonts` does not exist in jsdom, so component tests fall through
      to an already-resolved promise. */
   let flashKey = $state('');
+  /* An anchor's target and every row above it draw in the first task (`TableRows`). */
+  const anchored = $derived(app.route.kind === 'tables' && !!app.route.anchor);
   let played = '';
   let flashTimer: ReturnType<typeof setTimeout> | undefined;
   $effect(() => {
@@ -766,7 +768,16 @@
     </div>
   </div>
   {#if help && helpOpen}
-    <HelpBox {help} />
+    <HelpBox
+      {help}
+      close={{
+        label: t.close,
+        onclose: () => {
+          helpOpen = false;
+          moreButton?.focus();
+        }
+      }}
+    />
   {/if}
 {:else}
   <PageHead {app} title={t.tables} sub="" {help} {home} extra={nav} />
@@ -897,9 +908,9 @@
                     <TableRows
                       entries={col.entries}
                       {view}
-                      {index}
                       lang={app.lang}
                       flash={flashKey}
+                      whole={anchored}
                       ticks={app.selecting}
                       {hide}
                       {terms}
@@ -941,9 +952,9 @@
                 <TableRows
                   entries={s.entries}
                   {view}
-                  {index}
                   lang={app.lang}
                   flash={flashKey}
+                  whole={anchored}
                   ticks={app.selecting}
                   {hide}
                   {terms}
@@ -963,9 +974,9 @@
             <TableRows
               entries={filtered.map((it) => ({ it }))}
               {view}
-              {index}
               lang={app.lang}
               flash={flashKey}
+              whole={anchored}
               ticks={app.selecting}
               {hide}
               {terms}

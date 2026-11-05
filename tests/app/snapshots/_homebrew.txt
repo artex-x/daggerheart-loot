@@ -18,7 +18,6 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
       link "Поиск" [url=/search]
   main ""
     heading "Мои предметы" [level=1]
-    button "Открывать при запуске" [pressed=false]
     StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
     StaticText "Войдите, чтобы создавать свои предметы."
     button "Войти"
@@ -38,7 +37,6 @@ daggerheart.com
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
-Открывать при запуске
 Поиск
 Таблицы
 Условия использования
@@ -60,7 +58,6 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew]
       link "Search" [url=/en/search]
   main ""
     heading "My items" [level=1]
-    button "Open on start" [pressed=false]
     StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
     StaticText "Sign in to create your own items."
     button "Sign in"
@@ -75,7 +72,6 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew]
 EN
 Install as an app
 LootDaggerheart
-Open on start
 Privacy
 RU
 Roll

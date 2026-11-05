@@ -40,9 +40,9 @@ RootWebArea "Many Worlds Tavern - Генератор лута Daggerheart" [url=
     heading "Бросок 1" [level=2]
     status ""
       StaticText "Искатель Врагов"
-    button "Страница"
+    button "Открыть карточку"
     ... StaticText x12 of 16 same-shape siblings elided
-    link "Искатель Врагов" [description=Страница url=/i/mw62]
+    link "Искатель Врагов" [description=Открыть страницу url=/i/mw62]
     StaticText "отметьте Стресс"
     StaticText ", чтобы уменьшить урон вдвое и нанести этот уменьшенный урон так..." [namelen=119 namehash=c156b491]
     button "В список" [expanded=false]
@@ -76,10 +76,10 @@ daggerheart.com
 На единицу меньше
 Обычные правила
 Открывать при запуске
+Открыть карточку
 Поделиться
 Поиск
 Результат броска
-Страница
 Таблицы
 Условия использования
 Установить как приложение
@@ -122,9 +122,9 @@ RootWebArea "Many Worlds Tavern - Daggerheart Loot Generator" [url=/en/roll/many
     heading "Roll 1" [level=2]
     status ""
       StaticText "Foeseeker"
-    button "Page"
+    button "Open card"
     ... StaticText x12 of 16 same-shape siblings elided
-    link "Foeseeker" [description=Page url=/i/en/mw62]
+    link "Foeseeker" [description=Open page url=/i/en/mw62]
     StaticText "Mark a Stress"
     StaticText " to reduce the damage by half and also deal the reduced damage t..." [namelen=101 namehash=370eb9ac]
     button "Add to list" [expanded=false]
@@ -149,8 +149,8 @@ Many Worlds Tavern
 More
 One higher
 One lower
+Open card
 Open on start
-Page
 Privacy
 RU
 Realm

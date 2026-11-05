@@ -18,11 +18,10 @@ RootWebArea "Святой Щит - Генератор лута Daggerheart" [url
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
-    button "Страница"
     StaticText "ВТОРИЧНОЕ ОРУЖИЕ"
     StaticText "УНИКАЛЬНОЕ"
     heading "Святой Щит" [level=1]
-    ... StaticText x23 of 27 same-shape siblings elided
+    ... StaticText x26 of 30 same-shape siblings elided
     link "показать в таблице" [url=/tables/vault_of_ages/voa4_t3d]
     link "Святой Клинок" [url=/i/voa4_t3e]
     link "Святое Облачение" [url=/i/voa4_t3f]
@@ -62,7 +61,6 @@ daggerheart.com
 Святой Клинок
 Святой Пояс
 Святые Перчатки
-Страница
 Таблицы
 Условия использования
 Установить как приложение
@@ -84,11 +82,10 @@ RootWebArea "Saintly Guard - Daggerheart Loot Generator" [url=/i/en/voa4_t3d?as=
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
-    button "Page"
     StaticText "SECONDARY WEAPON"
     StaticText "UNIQUE"
     heading "Saintly Guard" [level=1]
-    ... StaticText x23 of 27 same-shape siblings elided
+    ... StaticText x26 of 30 same-shape siblings elided
     link "show in the table" [url=/en/tables/vault_of_ages/voa4_t3d]
     link "Saintly Blade" [url=/i/en/voa4_t3e]
     link "Saintly Vestments" [url=/i/en/voa4_t3f]
@@ -116,7 +113,6 @@ EN
 Install as an app
 LootDaggerheart
 More
-Page
 Print
 Privacy
 RU

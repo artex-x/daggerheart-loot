@@ -1,6 +1,6 @@
 # #/search ~ relations as gm3
 # route: #/search
-# why: «спальный мешок» typed: the catalog matches and the own bedrolls ranked together; ci1's row «Улучшается до: Мешок спокойных снов (HB) и ещё 14»; each own row «Получается из: Первоклассный Спальный Мешок»
+# why: «спальный мешок» typed: the catalog matches and the own bedrolls ranked together; no row draws a relation line
 # as: gm3
 
 ## ru :: tree
@@ -29,10 +29,10 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search?
     button "Снаряжение" [pressed=false]
     switch "Свои предметы" [checked=true]
     StaticText "Свои предметы"
-    button "№ 1 Первоклассный СпальныйМешок ПРЕДМЕТ CORE Во время отдыха вы ..." [namelen=144 namehash=f614ddb0]
+    button "№ 1 Первоклассный СпальныйМешок ПРЕДМЕТ Во время отдыха вы автом..." [namelen=89 namehash=ebfbd4eb]
     ... button x14 of 18 same-shape siblings elided
-    button "Мешок спокойных снов ПРЕДМЕТ ХОУМБРЮ Спальный мешок для долгой д..." [namelen=114 namehash=797ad34a]
-    button "Базовые припасы ПРЕДМЕТ CORE Стартовый предмет базовой книги. Па..." [namelen=133 namehash=ff99e5fd]
+    button "Мешок спокойных снов ПРЕДМЕТ ХОУМБРЮ Спальный мешок для долгой д..." [namelen=70 namehash=711bf141]
+    button "Базовые припасы ПРЕДМЕТ Стартовый предмет базовой книги. Палатка..." [namelen=128 namehash=e31f2927]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -45,38 +45,38 @@ EN
 RU
 daggerheart.com
 Аккаунт: gm3@example.test
-Базовые припасыПредметCoreСтартовый предмет базовой книги. Палат... [namelen=130 namehash=975af03c]
+Базовые припасыПредметСтартовый предмет базовой книги. Палатка, ... [namelen=126 namehash=422e1b0a]
 Бросок
 Все
 Выбрать
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
-Мешок спокойных сновПредметХоумбрюСпальный мешок для долгой доро... [namelen=110 namehash=7583e7ec]
+Мешок спокойных сновПредметХоумбрюСпальный мешок для долгой доро... [namelen=67 namehash=0a5100fb]
 Открывать при запуске
 Поиск
 Поиск по названию или описанию...
 Предметы
 Расходники
 Снаряжение
-Спальный мешок дозорногоПредметХоумбрюСпальный мешок для долгой ... [namelen=114 namehash=ae8c3235]
-Спальный мешок долгой дороги через перевал, болота, пустоши и ст... [namelen=210 namehash=6bf7de64]
-Спальный мешок из пеплаПредметХоумбрюСпальный мешок для долгой д... [namelen=113 namehash=72899e9c]
-Спальный мешок кочевникаПредметХоумбрюСпальный мешок для долгой ... [namelen=114 namehash=6869b42a]
-Спальный мешок лекаряПредметХоумбрюСпальный мешок для долгой дор... [namelen=111 namehash=2f3f307b]
-Спальный мешок ловца сновПредметХоумбрюСпальный мешок для долгой... [namelen=115 namehash=f7af235f]
-Спальный мешок отшельникаПредметХоумбрюСпальный мешок для долгой... [namelen=115 namehash=d9b7ce4b]
-Спальный мешок пилигримаПредметХоумбрюСпальный мешок для долгой ... [namelen=114 namehash=fb11bb54]
-Спальный мешок следопытаПредметХоумбрюСпальный мешок для долгой ... [namelen=114 namehash=7435a2ce]
-Спальный мешок стражаПредметХоумбрюСпальный мешок для долгой дор... [namelen=111 namehash=70d440a5]
-Спальный мешок странникаПредметХоумбрюСпальный мешок для долгой ... [namelen=114 namehash=f107ccb4]
-Спальный мешок тишиныПредметХоумбрюСпальный мешок для долгой дор... [namelen=111 namehash=76dac10a]
-Спальный мешок у костраПредметХоумбрюСпальный мешок для долгой д... [namelen=113 namehash=9b06fcad]
+Спальный мешок дозорногоПредметХоумбрюСпальный мешок для долгой ... [namelen=71 namehash=64dd0d0e]
+Спальный мешок долгой дороги через перевал, болота, пустоши и ст... [namelen=167 namehash=296b2419]
+Спальный мешок из пеплаПредметХоумбрюСпальный мешок для долгой д... [namelen=70 namehash=8e7b9ded]
+Спальный мешок кочевникаПредметХоумбрюСпальный мешок для долгой ... [namelen=71 namehash=b4169537]
+Спальный мешок лекаряПредметХоумбрюСпальный мешок для долгой дор... [namelen=68 namehash=e9cfbbe1]
+Спальный мешок ловца сновПредметХоумбрюСпальный мешок для долгой... [namelen=72 namehash=ccd1c539]
+Спальный мешок отшельникаПредметХоумбрюСпальный мешок для долгой... [namelen=72 namehash=896bf706]
+Спальный мешок пилигримаПредметХоумбрюСпальный мешок для долгой ... [namelen=71 namehash=23ca3eea]
+Спальный мешок следопытаПредметХоумбрюСпальный мешок для долгой ... [namelen=71 namehash=743c02ff]
+Спальный мешок стражаПредметХоумбрюСпальный мешок для долгой дор... [namelen=68 namehash=0ba3c570]
+Спальный мешок странникаПредметХоумбрюСпальный мешок для долгой ... [namelen=71 namehash=85b5fd17]
+Спальный мешок тишиныПредметХоумбрюСпальный мешок для долгой дор... [namelen=68 namehash=46afd68a]
+Спальный мешок у костраПредметХоумбрюСпальный мешок для долгой д... [namelen=70 namehash=164f3632]
 Таблицы
-Тёплый спальный мешокПредметХоумбрюСпальный мешок для долгой дор... [namelen=111 namehash=4bd9882d]
+Тёплый спальный мешокПредметХоумбрюСпальный мешок для долгой дор... [namelen=68 namehash=c3e96eda]
 Условия использования
 Установить как приложение
-№ 1Первоклассный Спальный МешокПредметCoreВо время отдыха вы авт... [namelen=140 namehash=a962cb70]
+№ 1Первоклассный Спальный МешокПредметВо время отдыха вы автомат... [namelen=87 namehash=f3e34730]
 
 ## en :: tree
 RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search?as=gm3]
@@ -104,10 +104,10 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search?as=gm3]
     button "Equipment" [pressed=false]
     switch "Own items" [checked=true]
     StaticText "Own items"
-    button "No. 1 Premium Bedroll ITEM CORE During downtime, you automatical..." [namelen=124 namehash=1f75acd1]
+    button "No. 1 Premium Bedroll ITEM During downtime, you automatically cl..." [namelen=77 namehash=252f0ef8]
     ... button x14 of 18 same-shape siblings elided
-    button "Sack of Quiet Dreams ITEM HOMEBREW A bedroll for a long road. Ma..." [namelen=88 namehash=c36a9ca1]
-    button "Basic supplies ITEM CORE Core starting item. Tent, bedroll, tind..." [namelen=104 namehash=74598b95]
+    button "Sack of Quiet Dreams ITEM HOMEBREW A bedroll for a long road."
+    button "Basic supplies ITEM Core starting item. Tent, bedroll, tinderbox..." [namelen=99 namehash=35c8d620]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -118,37 +118,37 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search?as=gm3]
 ## en :: controls
 Account: gm3@example.test
 All
-Ash BedrollItemHomebrewA bedroll for a long road.Made from: Prem... [namelen=75 namehash=caad8f66]
-Basic suppliesItemCoreCore starting item. Tent, bedroll, tinderb... [namelen=101 namehash=e1fb05ac]
-Bedroll of SilenceItemHomebrewA bedroll for a long road.Made fro... [namelen=82 namehash=440a7cc3]
-Bedroll of the long road over the pass, through the marshes, the... [namelen=184 namehash=89a0963e]
-Campfire BedrollItemHomebrewA bedroll for a long road.Made from:... [namelen=80 namehash=22ac5d4e]
+Ash BedrollItemHomebrewA bedroll for a long road.
+Basic suppliesItemCore starting item. Tent, bedroll, tinderbox, ... [namelen=97 namehash=88bf522d]
+Bedroll of SilenceItemHomebrewA bedroll for a long road.
+Bedroll of the long road over the pass, through the marshes, the... [namelen=158 namehash=27f6ef1a]
+Campfire BedrollItemHomebrewA bedroll for a long road.
 Consumables
-Dreamcatcher's BedrollItemHomebrewA bedroll for a long road.Made... [namelen=86 namehash=7173e1e7]
+Dreamcatcher's BedrollItemHomebrewA bedroll for a long road.
 EN
 Equipment
-Healer's BedrollItemHomebrewA bedroll for a long road.Made from:... [namelen=80 namehash=e0940ecb]
-Hermit's BedrollItemHomebrewA bedroll for a long road.Made from:... [namelen=80 namehash=e490ed62]
+Healer's BedrollItemHomebrewA bedroll for a long road.
+Hermit's BedrollItemHomebrewA bedroll for a long road.
 Install as an app
 Items
 LootDaggerheart
-No. 1Premium BedrollItemCoreDuring downtime, you automatically c... [namelen=119 namehash=3645583c]
-Nomad's BedrollItemHomebrewA bedroll for a long road.Made from: ... [namelen=79 namehash=c256eabb]
+No. 1Premium BedrollItemDuring downtime, you automatically clear... [namelen=74 namehash=e0bf73ae]
+Nomad's BedrollItemHomebrewA bedroll for a long road.
 Open on start
-Pilgrim's BedrollItemHomebrewA bedroll for a long road.Made from... [namelen=81 namehash=644dabe6]
+Pilgrim's BedrollItemHomebrewA bedroll for a long road.
 Privacy
 RU
 Roll
-Sack of Quiet DreamsItemHomebrewA bedroll for a long road.Made f... [namelen=84 namehash=9ee2b09a]
+Sack of Quiet DreamsItemHomebrewA bedroll for a long road.
 Search
 Search by name or description...
 Select
-Sentry's BedrollItemHomebrewA bedroll for a long road.Made from:... [namelen=80 namehash=9e3c37c4]
+Sentry's BedrollItemHomebrewA bedroll for a long road.
 Skip to content
 Tables
 Terms of use
-Tracker's BedrollItemHomebrewA bedroll for a long road.Made from... [namelen=81 namehash=c82ba508]
-Wanderer's BedrollItemHomebrewA bedroll for a long road.Made fro... [namelen=82 namehash=8ec6fadb]
-Warden's BedrollItemHomebrewA bedroll for a long road.Made from:... [namelen=80 namehash=820543bb]
-Warm BedrollItemHomebrewA bedroll for a long road.Made from: Pre... [namelen=76 namehash=9053bc29]
+Tracker's BedrollItemHomebrewA bedroll for a long road.
+Wanderer's BedrollItemHomebrewA bedroll for a long road.
+Warden's BedrollItemHomebrewA bedroll for a long road.
+Warm BedrollItemHomebrewA bedroll for a long road.
 daggerheart.com

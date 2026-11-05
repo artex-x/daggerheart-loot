@@ -54,7 +54,6 @@ daggerheart.com
 Снаряжение
 Сохранить
 Список
-Страница
 Таблица
 Таблицы
 Улучшается до
@@ -119,4 +118,3 @@ Upgrades to
 Zoom in
 Zoom out
 daggerheart.com
-Страница

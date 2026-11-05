@@ -18,12 +18,11 @@ RootWebArea "Палаш - Генератор лута Daggerheart" [url=/i/q1?as
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
-    button "Страница"
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
     heading "Палаш" [level=1]
     StaticText "Снаряжение · Оружие · Ранг 1 "
     link "показать в таблице" [url=/tables/eq_weapon/q1]
-    ... StaticText x14 of 18 same-shape siblings elided
+    ... StaticText x15 of 19 same-shape siblings elided
     button "Улучшенный Палаш" [description=Улучшенный Палаш]
     button "Продвинутый Палаш" [description=Продвинутый Палаш]
     button "Легендарный Палаш" [description=Легендарный Палаш]
@@ -59,7 +58,6 @@ daggerheart.com
 Поделиться
 Поиск
 Продвинутый Палаш
-Страница
 Таблицы
 Топор Тлеющих Углей
 Улучшенный Палаш
@@ -82,12 +80,11 @@ RootWebArea "Broadsword - Daggerheart Loot Generator" [url=/i/en/q1?as=gm1&v=<v>
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
-    button "Page"
     StaticText "PRIMARY WEAPON"
     heading "Broadsword" [level=1]
     StaticText "Equipment · Weapons · Tier 1 "
     link "show in the table" [url=/en/tables/eq_weapon/q1]
-    ... StaticText x14 of 18 same-shape siblings elided
+    ... StaticText x15 of 19 same-shape siblings elided
     button "Improved Broadsword" [description=Improved Broadsword]
     button "Advanced Broadsword" [description=Advanced Broadsword]
     button "Legendary Broadsword" [description=Legendary Broadsword]
@@ -118,7 +115,6 @@ Install as an app
 Legendary Broadsword
 LootDaggerheart
 More
-Page
 Print
 Privacy
 RU

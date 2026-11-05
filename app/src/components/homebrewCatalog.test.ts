@@ -755,18 +755,37 @@ describe('search with own items', () => {
 });
 
 describe("the author's own relations on catalog rows and cards", () => {
-  const relation = (id: string): string | null | undefined =>
-    document.querySelector(`[data-row="${id}"] .rcraft`)?.textContent;
+  /* The upgrade line of the dialog over a row: the row itself draws none. */
+  const dialogLine = async (id: string): Promise<Element | null | undefined> => {
+    const row = document.querySelector(`[data-row="${id}"]`);
+    expect(row?.textContent).not.toContain(t.craftInto);
+    const body = row?.querySelector('.row-main');
+    if (!(body instanceof HTMLElement)) throw new Error(`No row body for ${id}`);
+    await userEvent.click(body);
+    const dialog = await screen.findByRole('dialog');
+    return within(dialog).getByText(t.craftInto).closest('p');
+  };
 
-  it("keeps a catalog row's own relations while the switch hides the own items", async () => {
+  it("draws a catalog row's own relations in its dialog, also while the switch hides the own items", async () => {
     const { container } = page('#/search', { as: 'gm3' });
     await screen.findByText(t.subSearch + ' И 39 ваших предметов.');
     await userEvent.type(screen.getByRole('searchbox', { name: t.searchPh }), 'кольцо');
-    expect(relation('ci1')).toBe('Улучшается до: Мешок спокойных снов (HB) и ещё 14');
+    let line = await dialogLine('ci1');
+    expect(line).toHaveTextContent('Мешок спокойных снов');
+    expect(line?.querySelectorAll('.badge.hb').length).toBeGreaterThan(0);
+    await expectNoA11yViolations(container);
+    await userEvent.click(
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'Закрыть' })
+    );
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).toBeNull();
+    });
     await userEvent.click(ownSwitch());
     expect(ownSwitch()).not.toBeChecked();
     expect(rowIds()).toEqual(['ci1']);
-    expect(relation('ci1')).toBe('Улучшается до: Мешок спокойных снов (HB) и ещё 14');
+    line = await dialogLine('ci1');
+    expect(line).toHaveTextContent('Мешок спокойных снов');
+    expect(line?.querySelectorAll('.badge.hb').length).toBeGreaterThan(0);
     await expectNoA11yViolations(container);
   });
 

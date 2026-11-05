@@ -6,7 +6,7 @@
 RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tables/eq_weapon]
   dialog "Палаш" [modal=true]
     button "Закрыть"
-    button "Страница"
+    link "Открыть страницу" [url=/i/q1]
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
     StaticText "CORE"
     heading "Палаш" [level=2]
@@ -29,9 +29,9 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 
 ## ru :: controls
 100Фрикционные ОбмоткиУникальноеThe Dragon's VaultФизическое · П... [namelen=242 namehash=8df6a66a]
-101Фроствирд (Дремлющий)УникальноеThe Dragon's VaultФизическое ·... [namelen=307 namehash=01efd20f]
-102Фроствирд (Пробуждённый)УникальноеThe Dragon's VaultФизическо... [namelen=546 namehash=941c67ac]
-103Фроствирд (Возвышенный)УникальноеThe Dragon's VaultФизическое... [namelen=598 namehash=5542d233]
+101Фроствирд (Дремлющий)УникальноеThe Dragon's VaultФизическое ·... [namelen=268 namehash=158ba9be]
+102Фроствирд (Пробуждённый)УникальноеThe Dragon's VaultФизическо... [namelen=471 namehash=5015ac05]
+103Фроствирд (Возвышенный)УникальноеThe Dragon's VaultФизическое... [namelen=559 namehash=246ae519]
 104Студенистый МолотУникальноеThe Dragon's VaultФизическое · Сил... [namelen=287 namehash=cb76c971]
 105Меч Призрачного КасанияУникальноеThe Dragon's VaultФизическое... [namelen=252 namehash=0c9d22a9]
 107Молот ГрифонаУникальноеThe Dragon's VaultФизическое · Сила · ... [namelen=299 namehash=9446c211]
@@ -349,6 +349,7 @@ daggerheart.com
 Мясницкий ТопорУникальноеПир зверейФизическое · Сила · Вплотную ... [namelen=110 namehash=7cfccd3a]
 Наручные РуныМагическое · Инстинкт · Близко · d10 маг · Одноручн... [namelen=66 namehash=f74718fb]
 Обоюдоострый МечУникальноеФизическое · Проворность · Вплотную · ... [namelen=207 namehash=cecad2c1]
+Открыть страницу
 Палаш УрокаУникальноеФизическое · Искусность · Вплотную · d8+3 ф... [namelen=170 namehash=b94a9b3c]
 ПалашФизическое · Проворность · Вплотную · d8 физ · ОдноручноеНа... [namelen=90 namehash=c9de5a1e]
 Палочка ОчарованияУникальноеМагическое · Влияние · Далеко · d6+4... [namelen=199 namehash=4e655d36]
@@ -454,7 +455,6 @@ daggerheart.com
 Список
 Ссылка на раздел
 Стальная АлебардаУникальноеФизическое · Сила · Близко · d8+4 физ... [namelen=136 namehash=03502bf3]
-Страница
 СюрикенУникальноеHope & FearФизическое · Знание · Средне · d8+7 ... [namelen=200 namehash=e50a4e6e]
 Таблица: Оружие
 Таблицы
@@ -524,7 +524,7 @@ daggerheart.com
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon]
   dialog "Broadsword" [modal=true]
     button "Close"
-    button "Page"
+    link "Open page" [url=/i/en/q1]
     StaticText "PRIMARY WEAPON"
     StaticText "CORE"
     heading "Broadsword" [level=2]
@@ -547,9 +547,9 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon]
 
 ## en :: controls
 100Friction WrapsUniqueThe Dragon's VaultPhysical · Agility · Me... [namelen=227 namehash=a6d52767]
-101Frostwyrd (Dormant)UniqueThe Dragon's VaultPhysical · Strengt... [namelen=307 namehash=26c8788d]
-102Frostwyrd (Awakened)UniqueThe Dragon's VaultPhysical · Streng... [namelen=525 namehash=b890fb20]
-103Frostwyrd (Exalted)UniqueThe Dragon's VaultPhysical · Strengt... [namelen=569 namehash=131c1ab6]
+101Frostwyrd (Dormant)UniqueThe Dragon's VaultPhysical · Strengt... [namelen=274 namehash=98ab13e1]
+102Frostwyrd (Awakened)UniqueThe Dragon's VaultPhysical · Streng... [namelen=462 namehash=9ab26430]
+103Frostwyrd (Exalted)UniqueThe Dragon's VaultPhysical · Strengt... [namelen=538 namehash=796f03e5]
 104Gelatinous HammerUniqueThe Dragon's VaultPhysical · Strength ... [namelen=279 namehash=a677c94b]
 105Ghost Touch SwordUniqueThe Dragon's VaultPhysical · Agility ·... [namelen=207 namehash=f854b629]
 107Gryphon HammerUniqueThe Dragon's VaultPhysical · Strength · M... [namelen=236 namehash=4445ed46]
@@ -963,7 +963,7 @@ Magus RevolverUniqueMagic · Finesse · Very Far · d6+13 mag · One... [namelen
 Meridian CutlassUniquePhysical · Presence · Melee · d10+5 phy · ... [namelen=199 namehash=d192a958]
 Midas ScytheUniqueMagic · Knowledge · Melee · d10+9 mag · Two-Ha... [namelen=156 namehash=9c887ffe]
 More
-Page
+Open page
 PitchforkUniqueBeast FeastPhysical · Strength · Melee · d10+3 ph... [namelen=78 namehash=d6e51167]
 Platinum EstocUniqueHope & FearPhysical · Finesse · Melee · d8+7... [namelen=180 namehash=add647b5]
 Print

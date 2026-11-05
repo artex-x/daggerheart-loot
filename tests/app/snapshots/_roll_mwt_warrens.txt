@@ -40,9 +40,9 @@ RootWebArea "Many Worlds Tavern - Генератор лута Daggerheart" [url=
     heading "Бросок 1" [level=2]
     status ""
       StaticText "Боевая Летучая Мышь"
-    button "Страница"
+    button "Открыть карточку"
     ... StaticText x10 of 14 same-shape siblings elided
-    link "Боевая Летучая Мышь" [description=Страница url=/i/mw41]
+    link "Боевая Летучая Мышь" [description=Открыть страницу url=/i/mw41]
     StaticText "Хаотичное:"
     StaticText " Если вы проваливаете Бросок Атаки боевой летучей мышью, Мастер ..." [namelen=132 namehash=7afa2e8e]
     button "В список" [expanded=false]
@@ -76,10 +76,10 @@ daggerheart.com
 На единицу меньше
 Обычные правила
 Открывать при запуске
+Открыть карточку
 Поделиться
 Поиск
 Результат броска
-Страница
 Таблицы
 Условия использования
 Установить как приложение
@@ -122,9 +122,9 @@ RootWebArea "Many Worlds Tavern - Daggerheart Loot Generator" [url=/en/roll/many
     heading "Roll 1" [level=2]
     status ""
       StaticText "Battlebat"
-    button "Page"
+    button "Open card"
     ... StaticText x10 of 14 same-shape siblings elided
-    link "Battlebat" [description=Page url=/i/en/mw41]
+    link "Battlebat" [description=Open page url=/i/en/mw41]
     StaticText "Chaotic:"
     StaticText " If you fail your attack roll with the battlebat, the GM can spe..." [namelen=115 namehash=96b864f1]
     button "Add to list" [expanded=false]
@@ -149,8 +149,8 @@ Many Worlds Tavern
 More
 One higher
 One lower
+Open card
 Open on start
-Page
 Privacy
 RU
 Realm

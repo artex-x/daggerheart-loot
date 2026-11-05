@@ -74,15 +74,15 @@ daggerheart.com
 Голодный Кулачный Клинок
 Двуручный Меч
 Двуручный Меч Вайаты
-Двуручный МечОсновное оружиеCoreРанг 1 · Физическое · Сила · Впл... [namelen=219 namehash=96cea55c]
+Двуручный МечОсновное оружиеРанг 1 · Физическое · Сила · Вплотну... [namelen=215 namehash=1ad2dc4e]
 Динамит
 ДинамитРасходникКолоссы СухоземьяВы можете поджечь эту динамитну... [namelen=355 namehash=d20016fc]
 Длинный Меч
-Длинный МечОсновное оружиеCoreРанг 1 · Физическое · Проворность ... [namelen=98 namehash=59632de9]
+Длинный МечОсновное оружиеРанг 1 · Физическое · Проворность · Вп... [namelen=94 namehash=7414ec2f]
 Доспех Дуэлянта
-Доспех ДуэлянтаБроняУникальноеCoreРанг 3 · Пороги 16/39 · Броня ... [namelen=145 namehash=8864796c]
+Доспех ДуэлянтаБроняУникальноеРанг 3 · Пороги 16/39 · Броня 6Физ... [namelen=141 namehash=7e0ce4cc]
 Доспех Железного Дерева
-Доспех Железного ДереваБроняУникальноеCoreРанг 2 · Пороги 9/20 ·... [namelen=200 namehash=d78a36d4]
+Доспех Железного ДереваБроняУникальноеРанг 2 · Пороги 9/20 · Бро... [namelen=196 namehash=788381e5]
 Доспех из Гробового Дерева
 Доспех из Гробового ДереваБроняТёмное сердце АндалурииРанг 1 · П... [namelen=172 namehash=805186ca]
 Дочь Зелени
@@ -95,14 +95,14 @@ daggerheart.com
 Клятва Равновесия
 Кнут из Хвоста Виверны
 Колдующий Меч
-Колдующий МечОсновное оружиеУникальноеCoreРанг 2 · Магическое · ... [namelen=207 namehash=93513aad]
+Колдующий МечОсновное оружиеУникальноеРанг 2 · Магическое · Сила... [namelen=203 namehash=456e359f]
 Колчан Фей
 Кольца Товарищества
 Кольцо Кровавой Матроны
 Кольчуга из Змиевой Чешуи
 Конфиденциальность
 Короткий Меч
-Короткий МечВторичное оружиеCoreРанг 1 · Физическое · Проворност... [namelen=158 namehash=c6048af7]
+Короткий МечВторичное оружиеРанг 1 · Физическое · Проворность · ... [namelen=154 namehash=32c5d199]
 Кортик Мёртвых
 Краска Цвета Яда
 Кровоглот
@@ -111,14 +111,14 @@ daggerheart.com
 Латы УжасаБроняУникальноеHope & FearРанг 4 · Пороги 14/38 · Брон... [namelen=202 namehash=c1d670ac]
 Легендарная Кольчуга из Змиевой Чешуи
 Легендарный Двуручный Меч
-Легендарный Двуручный МечОсновное оружиеCoreРанг 4 · Физическое ... [namelen=232 namehash=e9142c71]
+Легендарный Двуручный МечОсновное оружиеРанг 4 · Физическое · Си... [namelen=228 namehash=6431c559]
 Легендарный Длинный меч
-Легендарный Длинный мечОсновное оружиеCoreРанг 4 · Физическое · ... [namelen=111 namehash=0a02cbef]
+Легендарный Длинный мечОсновное оружиеРанг 4 · Физическое · Пров... [namelen=107 namehash=e04b0463]
 Легендарный Доспех из Гробового Дерева
 Легендарный Доспех из Гробового ДереваБроняТёмное сердце Андалур... [namelen=185 namehash=d415dfb2]
 Легендарный Кнут из Хвоста Виверны
 Легендарный Короткий Меч
-Легендарный Короткий МечВторичное оружиеCoreРанг 4 · Физическое ... [namelen=171 namehash=f61263cb]
+Легендарный Короткий МечВторичное оружиеРанг 4 · Физическое · Пр... [namelen=167 namehash=9cec2553]
 Легендарный Кортик Мёртвых
 Легендарный Меч Света
 Легендарный Меч СветаОсновное оружиеHope & FearРанг 4 · Магическ... [namelen=109 namehash=5e302dc8]
@@ -144,7 +144,7 @@ daggerheart.com
 Меч Тьмы
 Меч ТьмыОсновное оружиеHope & FearРанг 1 · Магическое · Влияние ... [namelen=158 namehash=5d6f5162]
 Меч Храбрости
-Меч ХрабростиОсновное оружиеУникальноеCoreРанг 3 · Физическое · ... [namelen=154 namehash=094e3662]
+Меч ХрабростиОсновное оружиеУникальноеРанг 3 · Физическое · Сила... [namelen=150 namehash=e0a75bc6]
 Меч Хрустального Духа
 Меч-Разрушитель
 Меч-Трость
@@ -159,7 +159,7 @@ daggerheart.com
 Нож Единорога
 Ночной Покров
 Обоюдоострый Меч
-Обоюдоострый МечОсновное оружиеУникальноеCoreРанг 4 · Физическое... [namelen=235 namehash=9128bbf3]
+Обоюдоострый МечОсновное оружиеУникальноеРанг 4 · Физическое · П... [namelen=231 namehash=bfc2c94b]
 Осколок Эмберита
 Открывать при запуске
 Панцирь Тарана
@@ -171,9 +171,9 @@ daggerheart.com
 Пифийская Вилка
 Плащ Дюн
 Плащ Монэтта
-Плащ МонэттаБроняУникальноеCoreРанг 3 · Пороги 16/39 · Броня 6Ма... [namelen=142 namehash=59a101a9]
+Плащ МонэттаБроняУникальноеРанг 3 · Пороги 16/39 · Броня 6Магиче... [namelen=138 namehash=7746857a]
 Плетённый Углями Доспех
-Плетённый Углями ДоспехБроняУникальноеCoreРанг 4 · Пороги 13/36 ... [namelen=144 namehash=91a88c15]
+Плетённый Углями ДоспехБроняУникальноеРанг 4 · Пороги 13/36 · Бр... [namelen=140 namehash=6e1a5c7f]
 Поиск
 Поиск по названию или описанию...
 Последний Рубеж
@@ -184,14 +184,14 @@ daggerheart.com
 Предметы
 Продвинутая Кольчуга из Змиевой Чешуи
 Продвинутый Двуручный Меч
-Продвинутый Двуручный МечОсновное оружиеCoreРанг 3 · Физическое ... [namelen=231 namehash=d7d8cb79]
+Продвинутый Двуручный МечОсновное оружиеРанг 3 · Физическое · Си... [namelen=227 namehash=e29b3535]
 Продвинутый Длинный Меч
-Продвинутый Длинный МечОсновное оружиеCoreРанг 3 · Физическое · ... [namelen=110 namehash=0dd04dc9]
+Продвинутый Длинный МечОсновное оружиеРанг 3 · Физическое · Пров... [namelen=106 namehash=afc5ca49]
 Продвинутый Доспех из Гробового Дерева
 Продвинутый Доспех из Гробового ДереваБроняТёмное сердце Андалур... [namelen=184 namehash=daf838ba]
 Продвинутый Кнут из Хвоста Виверны
 Продвинутый Короткий Меч
-Продвинутый Короткий МечВторичное оружиеCoreРанг 3 · Физическое ... [namelen=171 namehash=7f6b2692]
+Продвинутый Короткий МечВторичное оружиеРанг 3 · Физическое · Пр... [namelen=167 namehash=5bf144a3]
 Продвинутый Кортик Мёртвых
 Продвинутый Меч Света
 Продвинутый Меч СветаОсновное оружиеHope & FearРанг 3 · Магическ... [namelen=108 namehash=2c8ec164]
@@ -204,7 +204,7 @@ daggerheart.com
 Ртутный Фамильяр
 Рукавицы Убийцы
 Руны Укрепления
-Руны УкрепленияБроняУникальноеCoreРанг 3 · Пороги 17/43 · Броня ... [namelen=149 namehash=c855b73b]
+Руны УкрепленияБроняУникальноеРанг 3 · Пороги 17/43 · Броня 6Муч... [namelen=145 namehash=7489447b]
 Скипетр Инея
 Скипетр ИнеяОсновное оружиеУникальноеHope & FearРанг 3 · Магичес... [namelen=221 namehash=e27e542a]
 Складная Дубинка
@@ -224,17 +224,17 @@ daggerheart.com
 Тысяча Порезов
 Узы Души
 Укреплённый Полный Доспех
-Укреплённый Полный ДоспехБроняУникальноеCoreРанг 4 · Пороги 15/4... [namelen=177 namehash=685132b6]
+Укреплённый Полный ДоспехБроняУникальноеРанг 4 · Пороги 15/40 · ... [namelen=173 namehash=5c9a943f]
 Улучшенная Кольчуга из Змиевой Чешуи
 Улучшенный Двуручный Меч
-Улучшенный Двуручный МечОсновное оружиеCoreРанг 2 · Физическое ·... [namelen=230 namehash=8feb898d]
+Улучшенный Двуручный МечОсновное оружиеРанг 2 · Физическое · Сил... [namelen=226 namehash=e236edc6]
 Улучшенный Длинный Меч
-Улучшенный Длинный МечОсновное оружиеCoreРанг 2 · Физическое · П... [namelen=109 namehash=9a0317f5]
+Улучшенный Длинный МечОсновное оружиеРанг 2 · Физическое · Прово... [namelen=105 namehash=856cb767]
 Улучшенный Доспех из Гробового Дерева
 Улучшенный Доспех из Гробового ДереваБроняТёмное сердце Андалури... [namelen=183 namehash=0711b4f4]
 Улучшенный Кнут из Хвоста Виверны
 Улучшенный Короткий Меч
-Улучшенный Короткий МечВторичное оружиеCoreРанг 2 · Физическое ·... [namelen=170 namehash=6495a49b]
+Улучшенный Короткий МечВторичное оружиеРанг 2 · Физическое · Про... [namelen=166 namehash=f52d9b80]
 Улучшенный Кортик Мёртвых
 Улучшенный Меч Света
 Улучшенный Меч СветаОсновное оружиеHope & FearРанг 2 · Магическо... [namelen=107 namehash=13ac935a]
@@ -254,19 +254,19 @@ daggerheart.com
 Шлем Возмездия
 Щит Отталкивания
 Щит Храбреца
-Щит ХрабрецаВторичное оружиеУникальноеCoreРанг 4 · Физическое · ... [namelen=246 namehash=0a51c971]
+Щит ХрабрецаВторичное оружиеУникальноеРанг 4 · Физическое · Пров... [namelen=242 namehash=195366d0]
 Щупальце Черной Крови
 Щупальце Черной КровиВторичное оружиеУникальноеHope & FearРанг 4... [namelen=240 namehash=ca703972]
 Эфирная Винтовка
 Эфирный Двуручный Меч
 Эфирный Двуручный МечОсновное оружиеУникальноеHope & FearРанг 4 ... [namelen=213 namehash=1df2506f]
 Ярость Зантака
-№ 102Фроствирд (Пробуждённый)Основное оружиеУникальноеThe Dragon... [namelen=572 namehash=1759542f]
-№ 103Фроствирд (Возвышенный)Основное оружиеУникальноеThe Dragon'... [namelen=624 namehash=63688591]
+№ 102Фроствирд (Пробуждённый)Основное оружиеУникальноеThe Dragon... [namelen=497 namehash=01549386]
+№ 103Фроствирд (Возвышенный)Основное оружиеУникальноеThe Dragon'... [namelen=585 namehash=417f1a96]
 № 104Студенистый МолотОсновное оружиеУникальноеThe Dragon's Vaul... [namelen=313 namehash=81a8ce20]
 № 105Меч Призрачного КасанияОсновное оружиеУникальноеThe Dragon'... [namelen=278 namehash=78498523]
 № 108Меч Адского ПламениОсновное оружиеУникальноеThe Dragon's Va... [namelen=464 namehash=9059bbb8]
-№ 108Нектар Обетного ЦветкаРасходникWondrous EnvironmentsВы очищ... [namelen=274 namehash=7a8fecaf]
+№ 108Нектар Обетного ЦветкаРасходникWondrous EnvironmentsВы очищ... [namelen=232 namehash=e79cc67d]
 № 10Маленький Лесной ДухПредметЛесноеИгривый лесной дух следует ... [namelen=280 namehash=760d7e39]
 № 10Мистическая СмолаРасходникDread GM ToolboxМаленькая баночка ... [namelen=269 namehash=1154021e]
 № 10Чаша ОбетаПредметArazo's ArtifactsОдин раз за продолжительны... [namelen=331 namehash=560a8cb7]
@@ -287,7 +287,7 @@ daggerheart.com
 № 14Легендарный Кортик МёртвыхОсновное оружиеArazo's ArtifactsРа... [namelen=339 namehash=0c63d472]
 № 14Сфера БезумияПредметVault of AgesСтоимость Призыва: 3Выберит... [namelen=784 namehash=7649eb9e]
 № 14Шлем Белого КогтяПредметVault of AgesСтоимость Призыва: 1Это... [namelen=366 namehash=1e92d2cc]
-№ 15Камень ДоблестиПредметCoreВы можете прикрепить этот камень к... [namelen=292 namehash=9fc7632e]
+№ 15Камень ДоблестиПредметВы можете прикрепить этот камень к дос... [namelen=288 namehash=c681bd68]
 № 16Колчан ФейПредметDread GM ToolboxПри находке содержит 1d6 ст... [namelen=384 namehash=507a17a6]
 № 17Амулет ВацитосаПредметVault of AgesСтоимость Призыва: 1Один ... [namelen=196 namehash=245bd6bf]
 № 17Плащ ДюнПредметThe Dragon's VaultОдин раз до следующего Прод... [namelen=358 namehash=a740269c]
@@ -304,7 +304,7 @@ daggerheart.com
 № 23Карманные Часы Странника ВремениПредметVault of AgesСтоимост... [namelen=394 namehash=abe1fd3e]
 № 26Мантия АрхимагаБроняУникальноеVault of AgesРанг 4 · Пороги 1... [namelen=338 namehash=abb338c9]
 № 27Посох Чёрной ДырыОсновное оружиеУникальноеVault of AgesРанг ... [namelen=668 namehash=8906634e]
-№ 29Успокаивающий КулонПредметCoreКогда вы должны отметить после... [namelen=133 namehash=52295b7f]
+№ 29Успокаивающий КулонПредметКогда вы должны отметить последний... [namelen=129 namehash=efbb6373]
 № 2Клинок ЖивущихОсновное оружиеУникальноеDread GM ToolboxРанг 3... [namelen=229 namehash=283db90b]
 № 2Проклятая ГоловаПредметVault of AgesСтоимость Призыва: 2Один ... [namelen=350 namehash=668e6021]
 № 2Стекло Разбитой СудьбыПредметПроклятый предметVault of AgesСу... [namelen=722 namehash=4e0a939c]
@@ -412,13 +412,13 @@ Advanced Coffinwood Armor
 Advanced Coffinwood ArmorArmorDark Heart of AndaluriaTier 3 · Th... [namelen=174 namehash=c82029b4]
 Advanced Dirk of the Dead
 Advanced Greatsword
-Advanced GreatswordPrimary weaponCoreTier 3 · Physical · Strengt... [namelen=206 namehash=a556a41f]
+Advanced GreatswordPrimary weaponTier 3 · Physical · Strength · ... [namelen=202 namehash=137b6590]
 Advanced Longsword
-Advanced LongswordPrimary weaponCoreTier 3 · Physical · Agility ... [namelen=96 namehash=f724f572]
+Advanced LongswordPrimary weaponTier 3 · Physical · Agility · Me... [namelen=92 namehash=f9b8731d]
 Advanced Shadowblade
 Advanced ShadowbladePrimary weaponHope & FearTier 3 · Magic · Pr... [namelen=182 namehash=52e5768f]
 Advanced Shortsword
-Advanced ShortswordSecondary weaponCoreTier 3 · Physical · Agili... [namelen=163 namehash=074986ec]
+Advanced ShortswordSecondary weaponTier 3 · Physical · Agility ·... [namelen=159 namehash=cec42121]
 Advanced Whipsword
 Advanced WhipswordPrimary weaponHope & FearTier 3 · Physical · F... [namelen=191 namehash=88ead2b4]
 Advanced Wyrmscale Hauberk
@@ -438,20 +438,20 @@ Blackblood Tendril
 Blackblood TendrilSecondary weaponUniqueHope & FearTier 4 · Magi... [namelen=237 namehash=d98b0595]
 Blade of the Living
 Bladefare Armor
-Bladefare ArmorArmorUniqueCoreTier 3 · Thresholds 16/39 · Armor ... [namelen=127 namehash=6e5c5c21]
+Bladefare ArmorArmorUniqueTier 3 · Thresholds 16/39 · Armor 6Phy... [namelen=123 namehash=7e08fb14]
 Bloodgorger
 Bracers of the Sun and Moon
 Braveshield
-BraveshieldSecondary weaponUniqueCoreTier 4 · Physical · Agility... [namelen=229 namehash=7a09d287]
+BraveshieldSecondary weaponUniqueTier 4 · Physical · Agility · M... [namelen=225 namehash=a090756a]
 Bravesword
-BraveswordPrimary weaponUniqueCoreTier 3 · Physical · Strength ·... [namelen=146 namehash=1e2e8991]
+BraveswordPrimary weaponUniqueTier 3 · Physical · Strength · Mel... [namelen=142 namehash=1b2cff64]
 Brightsword
 BrightswordPrimary weaponHope & FearTier 1 · Magic · Strength · ... [namelen=94 namehash=3a0ebeb5]
 Calming Pendant
 Cane Sword
 Cane SwordPrimary weaponUniqueHope & FearTier 2 · Physical · Fin... [namelen=168 namehash=c3d45711]
 Casting Sword
-Casting SwordPrimary weaponUniqueCoreTier 2 · Magic · Strength ·... [namelen=178 namehash=0a32fb9d]
+Casting SwordPrimary weaponUniqueTier 2 · Magic · Strength · Mel... [namelen=174 namehash=80bc191e]
 Chalice of Commitment
 Charger's Carapace
 Charm of Vacitos
@@ -472,7 +472,7 @@ Devil-Finger Charm
 Dirk of the Dead
 Doomsday Potion
 Dual-Ended Sword
-Dual-Ended SwordPrimary weaponUniqueCoreTier 4 · Physical · Agil... [namelen=194 namehash=35693c17]
+Dual-Ended SwordPrimary weaponUniqueTier 4 · Physical · Agility ... [namelen=190 namehash=223578d5]
 Dusk Wing
 Dynamite
 DynamiteConsumableColossus of the DrylandsYou can light this dyn... [namelen=350 namehash=af32b4ac]
@@ -480,7 +480,7 @@ EN
 Elemental Longbow
 Emberite Shard
 Emberwoven Armor
-Emberwoven ArmorArmorUniqueCoreTier 4 · Thresholds 13/36 · Armor... [namelen=144 namehash=785ec8a5]
+Emberwoven ArmorArmorUniqueTier 4 · Thresholds 13/36 · Armor 6Bu... [namelen=140 namehash=761b0cc6]
 Equipment
 Ethereal Zweihänder
 Ethereal ZweihänderPrimary weaponUniqueHope & FearTier 4 · Magic... [namelen=206 namehash=fbb033b4]
@@ -490,7 +490,7 @@ Frost Oil
 Frostwyrd (Awakened)
 Frostwyrd (Exalted)
 Full Fortified Armor
-Full Fortified ArmorArmorUniqueCoreTier 4 · Thresholds 15/40 · A... [namelen=180 namehash=27dc6647]
+Full Fortified ArmorArmorUniqueTier 4 · Thresholds 15/40 · Armor... [namelen=176 namehash=e9d8753d]
 Furnace Amulet
 Gaze of Vaeth
 Gelatinous Hammer
@@ -500,7 +500,7 @@ Gloves of Alacrity
 Godbound Laminar
 Godbound LaminarArmorUniqueHope & FearTier 4 · Thresholds 13/36 ... [namelen=122 namehash=c741efe5]
 Greatsword
-GreatswordPrimary weaponCoreTier 1 · Physical · Strength · Melee... [namelen=197 namehash=bb321134]
+GreatswordPrimary weaponTier 1 · Physical · Strength · Melee · d... [namelen=193 namehash=b7cc6553]
 Green Ooze Oil
 Harrowcleave
 Hellfire Sword
@@ -511,20 +511,20 @@ Improved Coffinwood Armor
 Improved Coffinwood ArmorArmorDark Heart of AndaluriaTier 2 · Th... [namelen=174 namehash=49eb3527]
 Improved Dirk of the Dead
 Improved Greatsword
-Improved GreatswordPrimary weaponCoreTier 2 · Physical · Strengt... [namelen=206 namehash=665cdf9d]
+Improved GreatswordPrimary weaponTier 2 · Physical · Strength · ... [namelen=202 namehash=73ecabde]
 Improved Longsword
-Improved LongswordPrimary weaponCoreTier 2 · Physical · Agility ... [namelen=96 namehash=6ae279a3]
+Improved LongswordPrimary weaponTier 2 · Physical · Agility · Me... [namelen=92 namehash=5f61f11c]
 Improved Shadowblade
 Improved ShadowbladePrimary weaponHope & FearTier 2 · Magic · Pr... [namelen=182 namehash=6733c5cd]
 Improved Shortsword
-Improved ShortswordSecondary weaponCoreTier 2 · Physical · Agili... [namelen=163 namehash=6bb0ec4b]
+Improved ShortswordSecondary weaponTier 2 · Physical · Agility ·... [namelen=159 namehash=99a092c2]
 Improved Whipsword
 Improved WhipswordPrimary weaponHope & FearTier 2 · Physical · F... [namelen=191 namehash=0ca4023d]
 Improved Wyrmscale Hauberk
 Improved Wyverntail Whip
 Install as an app
 Irontree Breastplate Armor
-Irontree Breastplate ArmorArmorUniqueCoreTier 2 · Thresholds 9/2... [namelen=199 namehash=1a6833f8]
+Irontree Breastplate ArmorArmorUniqueTier 2 · Thresholds 9/20 · ... [namelen=195 namehash=69629aad]
 Items
 Keening Bone Flute
 Kinetic Edge
@@ -536,32 +536,32 @@ Legendary Coffinwood Armor
 Legendary Coffinwood ArmorArmorDark Heart of AndaluriaTier 4 · T... [namelen=176 namehash=4787fe5a]
 Legendary Dirk of the Dead
 Legendary Greatsword
-Legendary GreatswordPrimary weaponCoreTier 4 · Physical · Streng... [namelen=208 namehash=2e6443da]
+Legendary GreatswordPrimary weaponTier 4 · Physical · Strength ·... [namelen=204 namehash=70ad8c19]
 Legendary Longsword
-Legendary LongswordPrimary weaponCoreTier 4 · Physical · Agility... [namelen=98 namehash=5b79ef88]
+Legendary LongswordPrimary weaponTier 4 · Physical · Agility · M... [namelen=94 namehash=063cfad8]
 Legendary Shadowblade
 Legendary ShadowbladePrimary weaponHope & FearTier 4 · Magic · P... [namelen=183 namehash=23f616e0]
 Legendary Shortsword
-Legendary ShortswordSecondary weaponCoreTier 4 · Physical · Agil... [namelen=164 namehash=29d0ccf9]
+Legendary ShortswordSecondary weaponTier 4 · Physical · Agility ... [namelen=160 namehash=df9f33eb]
 Legendary Whipsword
 Legendary WhipswordPrimary weaponHope & FearTier 4 · Physical · ... [namelen=192 namehash=fd3eb678]
 Legendary Wyrmscale Hauberk
 Legendary Wyverntail Whip
 Little Forest Spirit
 Longsword
-LongswordPrimary weaponCoreTier 1 · Physical · Agility · Melee ·... [namelen=87 namehash=2a686ec7]
+LongswordPrimary weaponTier 1 · Physical · Agility · Melee · d10... [namelen=83 namehash=86d04352]
 LootDaggerheart
 Mercurial Familiar
 Monett's Cloak
-Monett's CloakArmorUniqueCoreTier 3 · Thresholds 16/39 · Armor 6... [namelen=126 namehash=c5c4313e]
+Monett's CloakArmorUniqueTier 3 · Thresholds 16/39 · Armor 6Magi... [namelen=122 namehash=728d03d1]
 Murderer's Gauntlets
 Nightshroud
-No. 102Frostwyrd (Awakened)Primary weaponUniqueThe Dragon's Vaul... [namelen=552 namehash=887dd6f8]
-No. 103Frostwyrd (Exalted)Primary weaponUniqueThe Dragon's Vault... [namelen=596 namehash=30505aff]
+No. 102Frostwyrd (Awakened)Primary weaponUniqueThe Dragon's Vaul... [namelen=489 namehash=fe033a53]
+No. 103Frostwyrd (Exalted)Primary weaponUniqueThe Dragon's Vault... [namelen=565 namehash=59e44c93]
 No. 104Gelatinous HammerPrimary weaponUniqueThe Dragon's VaultTi... [namelen=306 namehash=cbb4cda7]
 No. 105Ghost Touch SwordPrimary weaponUniqueThe Dragon's VaultTi... [namelen=234 namehash=6dbcc007]
 No. 108Hellfire SwordPrimary weaponUniqueThe Dragon's VaultTier ... [namelen=416 namehash=4c453a83]
-No. 108Votive Bloom NectarConsumableWondrous EnvironmentsYou cle... [namelen=260 namehash=e9cf1966]
+No. 108Votive Bloom NectarConsumableWondrous EnvironmentsYou cle... [namelen=217 namehash=8cba3745]
 No. 10Arcane ResinConsumableDread GM ToolboxA tiny jar of bowstr... [namelen=263 namehash=6b5ee099]
 No. 10Chalice of CommitmentItemArazo's ArtifactsOnce per long re... [namelen=338 namehash=2114cd5c]
 No. 10Little Forest SpiritItemWildborneA playful forest spirit f... [namelen=292 namehash=d76836a7]
@@ -582,7 +582,7 @@ No. 143NightshroudArmorUniqueThe Dragon's VaultTier 2 · Threshol... [namelen=28
 No. 14Legendary Dirk of the DeadPrimary weaponArazo's ArtifactsT... [namelen=340 namehash=b53f6801]
 No. 14Sphere of InsanityItemVault of AgesRecall Cost: 3Pick a cr... [namelen=747 namehash=86cc4ad5]
 No. 14White Talon HelmItemVault of AgesRecall Cost: 1This helm g... [namelen=308 namehash=2789c6a3]
-No. 15ValorstoneItemCoreYou can attach this stone to armor that ... [namelen=280 namehash=0a2b0bf3]
+No. 15ValorstoneItemYou can attach this stone to armor that does... [namelen=276 namehash=b13d2d20]
 No. 16Fey QuiverItemDread GM ToolboxContains 1d6 fey-touched arr... [namelen=310 namehash=0f5bd594]
 No. 17Charm of VacitosItemVault of AgesRecall Cost: 1Once per lo... [namelen=147 namehash=cb48cdd6]
 No. 17Cloak of the DunesItemThe Dragon's VaultOnce per long rest... [namelen=346 namehash=87f24851]
@@ -599,7 +599,7 @@ No. 23Hungry Fist BladeSecondary weaponUniqueVault of AgesTier 4... [namelen=414
 No. 23Timewalker PocketwatchItemVault of AgesRecall Cost: 1Once ... [namelen=341 namehash=7869f875]
 No. 26Arch-Magus's RobesArmorUniqueVault of AgesTier 4 · Thresho... [namelen=298 namehash=0af06daf]
 No. 27Black Hole StaffPrimary weaponUniqueVault of AgesTier 4 · ... [namelen=602 namehash=787fb2ec]
-No. 29Calming PendantItemCoreWhen you would mark your last Stres... [namelen=120 namehash=599b5063]
+No. 29Calming PendantItemWhen you would mark your last Stress, r... [namelen=116 namehash=0ad32303]
 No. 2Blade of the LivingPrimary weaponUniqueDread GM ToolboxTier... [namelen=238 namehash=dfce0e68]
 No. 2Cursed HeadItemVault of AgesRecall Cost: 2Once per long res... [namelen=297 namehash=ebbc58d3]
 No. 2Glass of Shattered FateItemCursed objectVault of AgesA crea... [namelen=697 namehash=f9eaaed7]
@@ -665,7 +665,7 @@ Ring of the Blood Matron
 Rings of Camaraderie
 Roll
 Runes of Fortification
-Runes of FortificationArmorUniqueCoreTier 3 · Thresholds 17/43 ·... [namelen=138 namehash=ca569c13]
+Runes of FortificationArmorUniqueTier 3 · Thresholds 17/43 · Arm... [namelen=134 namehash=919b8f12]
 Scorpion Gauntlet
 Search
 Search by name or description...
@@ -676,7 +676,7 @@ ShadowbladePrimary weaponHope & FearTier 1 · Magic · Presence · ... [namelen=
 Shattersword
 Shield of Repulsion
 Shortsword
-ShortswordSecondary weaponCoreTier 1 · Physical · Agility · Mele... [namelen=152 namehash=3eb3c4e5]
+ShortswordSecondary weaponTier 1 · Physical · Agility · Melee · ... [namelen=148 namehash=1bd545e4]
 Sign in
 Singing Sword
 Singing SwordPrimary weaponUniqueHope & FearTier 3 · Physical · ... [namelen=202 namehash=cf053f4f]

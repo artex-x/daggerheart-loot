@@ -772,6 +772,26 @@ describe('the taken count, the total and a partial removal', () => {
 });
 
 describe('a row', () => {
+  it('draws no relation line and no Core tag: the dialog holds them', async () => {
+    const CRAFTED: Loot = {
+      ...LOOT,
+      items: {
+        ...LOOT.items,
+        core_item: (LOOT.items['core_item'] ?? []).map((r) => ({ ...r, craft: ['cc1'] }))
+      }
+    };
+    const { container } = await openA({ data: fakeData(CRAFTED) });
+    const t = dict('ru');
+    const rows = [...container.querySelectorAll('.row-main')];
+    expect(rows).toHaveLength(3);
+    for (const r of rows) {
+      expect(r.textContent).not.toContain(t.craftInto);
+      expect(r.textContent).not.toContain(t.craftFrom);
+      expect(r.querySelector('.badge.src')).toBeNull();
+    }
+    await expectNoA11yViolations(container);
+  });
+
   it('moves on a committed position and resets on an out-of-range one', async () => {
     const { cloud, page } = await openA();
     const pos = screen.getAllByRole('spinbutton', { name: 'Позиция в списке' });

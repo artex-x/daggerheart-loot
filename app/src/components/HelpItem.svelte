@@ -1,5 +1,6 @@
 <script lang="ts">
-  /* The help as an item of «Ещё»: the panel's own name (DESIGN.md, "The Same Label Rule"). */
+  /* The help as an item of «Ещё»: the panel's own name (DESIGN.md, "The Same Label Rule"),
+     with a check while the panel is open, as the pin item marks its state. */
   import Icon from './Icon.svelte';
   import type { Dict } from '../lib/dict.js';
   import type { Help } from '../lib/help.js';
@@ -24,5 +25,5 @@
   onclick={() => {
     onpicked();
     ontoggle();
-  }}><Icon name="help" />{help.button ?? t.helpHint}</button
+  }}><Icon name={open ? 'check' : 'help'} />{help.button ?? t.helpHint}</button
 >

@@ -17,7 +17,6 @@ RootWebArea "Табельный Секач - Генератор лута Daggerh
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
-    button "Страница"
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
     StaticText "УНИКАЛЬНОЕ"
     heading "Табельный Секач" [level=1]
@@ -50,7 +49,6 @@ daggerheart.com
 Печать
 Поделиться
 Поиск
-Страница
 Таблицы
 Условия использования
 Установить как приложение
@@ -71,7 +69,6 @@ RootWebArea "Standard Issue Slicer - Daggerheart Loot Generator" [url=/i/en/mw47
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
-    button "Page"
     StaticText "PRIMARY WEAPON"
     StaticText "UNIQUE"
     heading "Standard Issue Slicer" [level=1]
@@ -96,7 +93,6 @@ EN
 Install as an app
 LootDaggerheart
 More
-Page
 Print
 Privacy
 RU

@@ -4,6 +4,7 @@
      levels are the table picker's sheet: the picker, a group, a table - three taps to
      another group's table. On `#/tables/homebrew` with two sources or more the tabs are
      the sources, folded past `CHIP_FOLD_AT` (rule 12). */
+  import { tick } from 'svelte';
   import Chip from './Chip.svelte';
   import FoldButton from './FoldButton.svelte';
   import Icon from './Icon.svelte';
@@ -46,6 +47,16 @@
   let picking = $state(false);
   let sheetGroup = $state<TableGroup | null>(null);
   const shownGroup = $derived(sheetGroup ?? group);
+  let pickerButton = $state<HTMLButtonElement | undefined>(undefined);
+
+  /* Rule 20: a pick closes the sheet with no `close` event, and the pressed link leaves
+     with it, so the focus returns to the picker once the sheet is gone. */
+  function picked(): void {
+    picking = false;
+    void tick().then(() => {
+      pickerButton?.focus();
+    });
+  }
 
   const srcHref = (key: string): string =>
     app.href(
@@ -53,6 +64,13 @@
         filter: { ...(filter['kind'] ? { kind: filter['kind'] } : {}), src: [key] }
       })
     );
+
+  /* The captions of a group's tabs, or none: what the unseen copies in the tab slot draw.
+     The homebrew group has none: its source tabs hold the GM's own text, up to 12 names of
+     80 characters, and would push the rows of every table (DESIGN.md, "A steady head"). */
+  function tabLabels(g: TableGroup): string[] {
+    return g.id !== 'hb' && g.subs.length > 1 ? g.subs.map((sub) => t[navSubLabel(sub)]) : [];
+  }
 
   const picker = $derived(pickerLabel(table, t));
   const parts = $derived(pickerParts(table, t));
@@ -103,9 +121,16 @@
   {/if}
 {/snippet}
 
-<nav class="tablenav" class:narrow={app.band === 'narrow'} aria-label={t.tables}>
+<nav
+  class="tablenav"
+  class:narrow={app.band === 'narrow'}
+  class:inhead={app.band === 'wide'}
+  class:below={app.band === 'mid'}
+  aria-label={t.tables}
+>
   {#if app.band === 'narrow'}
     <button
+      bind:this={pickerButton}
       type="button"
       class="picker"
       aria-haspopup="dialog"
@@ -138,9 +163,7 @@
             />
           {/each}
         </div>
-        {@render tabs(shownGroup, () => {
-          picking = false;
-        })}
+        {@render tabs(shownGroup, picked)}
       </Sheet>
     {/if}
   {:else}
@@ -149,13 +172,70 @@
         <Chip label={t[g.label]} on={g.id === group.id} href={app.href(tablesHash(g.top))} />
       {/each}
     </div>
-    {@render tabs(group, null)}
+    <!-- The slot holds every group's tabs unseen, so it takes the tallest row's height on
+         every table, and a table with fewer tabs or none starts its rows where the others
+         do (DESIGN.md, "Layout", "A steady head"). -->
+    <div class="tabslot">
+      {@render tabs(group, null)}
+      <div class="ghosts" aria-hidden="true">
+        {#each groups as g (g.id)}
+          {@const labels = tabLabels(g)}
+          {#if labels.length}
+            <div class="tabs">
+              {#each labels as label, i (i)}<span class="tab">{label}</span>{/each}
+            </div>
+          {/if}
+        {/each}
+      </div>
+    </div>
   {/if}
 </nav>
 
 <style>
   .tablenav {
     min-width: 0;
+  }
+
+  /* The head's geometry follows the band, never the table: from 1000 px the chips sit
+     beside the title and wrap inside their own box, and the tabs take the next row at the
+     page's width; from 761 px to 999 px the navigation takes its own row under the title
+     (DESIGN.md, "Layout", "A steady head"). */
+  .tablenav.inhead {
+    display: contents;
+  }
+
+  .inhead .groups {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .inhead .tabslot,
+  .tablenav.below {
+    flex: 1 0 100%;
+  }
+
+  /* The head row's own gap stands in for the tabs' top margin. */
+  .inhead .tabs {
+    margin-top: 0;
+  }
+
+  .tabslot {
+    display: grid;
+  }
+
+  .tabslot > :global(*),
+  .ghosts > .tabs {
+    grid-area: 1 / 1;
+  }
+
+  /* The current group's tabs keep their own height and underline inside the slot. */
+  .tabslot > .tabs {
+    align-self: start;
+  }
+
+  .ghosts {
+    display: grid;
+    visibility: hidden;
   }
 
   .groups {
@@ -232,7 +312,10 @@
     font-weight: 600;
   }
 
+  /* A flex box, not a line box: a two-line picker would add the line's descent under it. */
   .narrow {
+    display: flex;
+    align-items: center;
     min-width: 0;
     flex: 1 1 auto;
   }

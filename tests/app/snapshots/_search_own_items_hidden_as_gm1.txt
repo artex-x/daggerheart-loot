@@ -61,13 +61,13 @@ daggerheart.com
 Бросок
 В список
 Возвращающийся Топор
-Возвращающийся ТопорВторичное оружиеУникальноеCoreРанг 2 · Физич... [namelen=225 namehash=b89af8ff]
+Возвращающийся ТопорВторичное оружиеУникальноеРанг 2 · Физическо... [namelen=221 namehash=f420b829]
 Все
 Выбрать все
 К содержимому
 Конфиденциальность
 Легендарный Священный Топор
-Легендарный Священный ТопорОсновное оружиеCoreРанг 4 · Магическо... [namelen=108 namehash=4a075938]
+Легендарный Священный ТопорОсновное оружиеРанг 4 · Магическое · ... [namelen=104 namehash=70eb00e6]
 Легендарный Топор Рассвета
 ЛутDaggerheart
 Мясницкий Топор
@@ -79,26 +79,26 @@ daggerheart.com
 Поиск по названию или описанию...
 Предметы
 Продвинутый Священный Топор
-Продвинутый Священный ТопорОсновное оружиеCoreРанг 3 · Магическо... [namelen=107 namehash=87afbd6f]
+Продвинутый Священный ТопорОсновное оружиеРанг 3 · Магическое · ... [namelen=103 namehash=b8a12bc5]
 Продвинутый Топор Рассвета
 Расходники
 Священный Топор
-Священный ТопорОсновное оружиеCoreРанг 1 · Магическое · Сила · В... [namelen=95 namehash=59b6d44a]
+Священный ТопорОсновное оружиеРанг 1 · Магическое · Сила · Вплот... [namelen=91 namehash=b06449bb]
 Скопировать текст
 Снаряжение
 Снять выделение
 Стопорный Ключ
 Таблицы
 Топор Лабрис
-Топор ЛабрисОсновное оружиеУникальноеCoreРанг 3 · Физическое · С... [namelen=133 namehash=d414071e]
+Топор ЛабрисОсновное оружиеУникальноеРанг 3 · Физическое · Сила ... [namelen=129 namehash=3bbc6a82]
 Топор Лесного Стража
 Топор Рассвета
 Топор Чёрной Порчи
 Топор-Пила Лесоруба
 Топоры Рикошета
-Топоры РикошетаОсновное оружиеУникальноеCoreРанг 4 · Физическое ... [namelen=210 namehash=bedaa888]
+Топоры РикошетаОсновное оружиеУникальноеРанг 4 · Физическое · Пр... [namelen=206 namehash=f1a8bc13]
 Улучшенный Священный Топор
-Улучшенный Священный ТопорОсновное оружиеCoreРанг 2 · Магическое... [namelen=106 namehash=c07efdd2]
+Улучшенный Священный ТопорОсновное оружиеРанг 2 · Магическое · С... [namelen=102 namehash=7f1fb7a5]
 Улучшенный Топор Рассвета
 Условия использования
 Установить как приложение
@@ -167,7 +167,7 @@ Account: gm1@example.test
 Add to list
 Advanced Axe of the Dawn
 Advanced Hallowed Axe
-Advanced Hallowed AxePrimary weaponCoreTier 3 · Magic · Strength... [namelen=96 namehash=9e092780]
+Advanced Hallowed AxePrimary weaponTier 3 · Magic · Strength · M... [namelen=92 namehash=f1b0c4ee]
 All
 Axe of the Dawn
 Black Corruption Axe
@@ -181,18 +181,18 @@ Equipment
 Felling Axe-Saw
 Forestwarden's Axe
 Hallowed Axe
-Hallowed AxePrimary weaponCoreTier 1 · Magic · Strength · Melee ... [namelen=87 namehash=61925d61]
+Hallowed AxePrimary weaponTier 1 · Magic · Strength · Melee · d8... [namelen=83 namehash=5552f048]
 Improved Axe of the Dawn
 Improved Hallowed Axe
-Improved Hallowed AxePrimary weaponCoreTier 2 · Magic · Strength... [namelen=96 namehash=6d5b3cff]
+Improved Hallowed AxePrimary weaponTier 2 · Magic · Strength · M... [namelen=92 namehash=28205671]
 Install as an app
 Items
 Jamming Spanner
 Labrys Axe
-Labrys AxePrimary weaponUniqueCoreTier 3 · Physical · Strength ·... [namelen=124 namehash=7ac8c636]
+Labrys AxePrimary weaponUniqueTier 3 · Physical · Strength · Mel... [namelen=120 namehash=80f0a220]
 Legendary Axe of the Dawn
 Legendary Hallowed Axe
-Legendary Hallowed AxePrimary weaponCoreTier 4 · Magic · Strengt... [namelen=98 namehash=fef9eb68]
+Legendary Hallowed AxePrimary weaponTier 4 · Magic · Strength · ... [namelen=94 namehash=a760f3f5]
 LootDaggerheart
 No. 10Felling Axe-SawItemRidgeborneThis massive hybrid tool cuts... [namelen=234 namehash=ac3afa6c]
 No. 116Restless VengeancePrimary weaponUniqueThe Dragon's VaultT... [namelen=470 namehash=3605c1f4]
@@ -209,9 +209,9 @@ Privacy
 RU
 Restless Vengeance
 Returning Axe
-Returning AxeSecondary weaponUniqueCoreTier 2 · Physical · Agili... [namelen=207 namehash=e755d905]
+Returning AxeSecondary weaponUniqueTier 2 · Physical · Agility ·... [namelen=203 namehash=cbf1e344]
 Ricochet Axes
-Ricochet AxesPrimary weaponUniqueCoreTier 4 · Physical · Agility... [namelen=175 namehash=1cbe4556]
+Ricochet AxesPrimary weaponUniqueTier 4 · Physical · Agility · F... [namelen=171 namehash=47813ce9]
 Roll
 Search
 Search by name or description...

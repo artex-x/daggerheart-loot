@@ -31,7 +31,7 @@ RootWebArea "Обычные правила - Генератор лута Daggerh
     button "3d12 Необычная - Редкая" [description=Бросить 3d12 - Необычная - Редкая]
     button "4d12 Редкая - Легендарная" [description=Бросить 4d12 - Редкая - Легендарная]
     button "5d12 Легендарная" [description=Бросить 5d12 - Легендарная]
-    ... StaticText x10 of 14 same-shape siblings elided
+    ... StaticText x9 of 13 same-shape siblings elided
     button "На единицу меньше" [disabled=true]
     textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
     button "На единицу больше"
@@ -44,12 +44,12 @@ RootWebArea "Обычные правила - Генератор лута Daggerh
     status ""
       StaticText "Первоклассный Спальный Мешок, Шипы"
     ... button x2 of 6 same-shape siblings elided
-    link "Первоклассный Спальный Мешок" [description=Страница url=/i/ci1]
+    link "Первоклассный Спальный Мешок" [description=Открыть страницу url=/i/ci1]
     button "В список" [expanded=false]
     button "Ещё" [expanded=false haspopup=menu]
-    button "Страница"
+    button "Открыть карточку"
     StaticText "HOPE & FEAR"
-    link "Шипы" [description=Страница url=/i/hi1]
+    link "Шипы" [description=Открыть страницу url=/i/hi1]
     StaticText "Вы можете рассыпать эти шипы в пределах Близкой дистанции вокруг..." [namelen=145 namehash=6bd36ff3]
     button "В список" [expanded=false]
     button "Поделиться"
@@ -86,6 +86,7 @@ daggerheart.com
 На единицу меньше
 Обычные правила
 Открывается при запуске
+Открыть карточку
 Первоклассный Спальный Мешок
 Поделиться
 Поиск
@@ -93,7 +94,6 @@ daggerheart.com
 Расходники
 Результат броска
 Скопировать все варианты
-Страница
 Таблицы
 Условия использования
 Установить как приложение
@@ -128,7 +128,7 @@ RootWebArea "Standard rules - Daggerheart Loot Generator" [url=/en/roll/std]
     button "3d12 Uncommon - Rare" [description=Roll 3d12 - Uncommon - Rare]
     button "4d12 Rare - Legendary" [description=Roll 4d12 - Rare - Legendary]
     button "5d12 Legendary" [description=Roll 5d12 - Legendary]
-    ... StaticText x10 of 14 same-shape siblings elided
+    ... StaticText x9 of 13 same-shape siblings elided
     button "One lower" [disabled=true]
     textbox "Roll result" [value=1 multiline=false readonly=false required=false]
     button "One higher"
@@ -141,12 +141,12 @@ RootWebArea "Standard rules - Daggerheart Loot Generator" [url=/en/roll/std]
     status ""
       StaticText "Premium Bedroll, Caltrops"
     ... button x2 of 6 same-shape siblings elided
-    link "Premium Bedroll" [description=Page url=/i/en/ci1]
+    link "Premium Bedroll" [description=Open page url=/i/en/ci1]
     button "Add to list" [expanded=false]
     button "More" [expanded=false haspopup=menu]
-    button "Page"
+    button "Open card"
     StaticText "HOPE & FEAR"
-    link "Caltrops" [description=Page url=/i/en/hi1]
+    link "Caltrops" [description=Open page url=/i/en/hi1]
     StaticText "You can spread these caltrops in a Very Close area around you. A..." [namelen=121 namehash=eb3c4a75]
     button "Add to list" [expanded=false]
     button "Share"
@@ -179,8 +179,8 @@ LootDaggerheart
 More
 One higher
 One lower
+Open card
 Opens on start
-Page
 Premium Bedroll
 Privacy
 RU

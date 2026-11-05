@@ -69,7 +69,6 @@ RootWebArea "Фляга туманов - Генератор лута Daggerheart
       button "Удалить"
     button "На экране" [pressed=true]
     button "На печати" [pressed=false]
-    button "Страница"
     StaticText "ПРЕДМЕТ"
     StaticText "МАСТЕРСКАЯ СТАРОГО ОРУЖЕЙНИКА ИЗ ДОЛИНЫ ТУМАНОВ ЗА ПЕРЕВАЛОМ У С..." [namelen=85 namehash=1aec063f]
     heading "Фляга туманов" [level=2]
@@ -116,7 +115,6 @@ daggerheart.com
 Снаряжение
 Сохранить
 Список
-Страница
 Таблица
 Таблицы
 Удалить
@@ -191,7 +189,6 @@ RootWebArea "Mist Flask - Daggerheart Loot Generator" [url=/en/homebrew/hb_longs
       button "Delete"
     button "On screen" [pressed=true]
     button "In print" [pressed=false]
-    button "Страница"
     StaticText "ПРЕДМЕТ"
     StaticText "МАСТЕРСКАЯ СТАРОГО ОРУЖЕЙНИКА ИЗ ДОЛИНЫ ТУМАНОВ ЗА ПЕРЕВАЛОМ У С..." [namelen=85 namehash=1aec063f]
     heading "Фляга туманов" [level=2]
@@ -245,4 +242,3 @@ Tables
 Terms of use
 Upgrades to
 daggerheart.com
-Страница

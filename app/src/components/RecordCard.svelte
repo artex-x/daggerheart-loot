@@ -27,6 +27,7 @@
     FOLD_OWN,
     cardBadges,
     foldOwn,
+    isCoreBook,
     kindGlyph,
     relName,
     relOrder,
@@ -91,6 +92,8 @@
      * opens a different rung of the same upgrade line.
      */
     onopen?: ((r: Record_) => void) | undefined;
+    /** The record dialog: the picture links to the record's page. */
+    pageLink?: boolean;
     /** The two icon buttons beside the name on a compact card: copy the name, copy the link. */
     nameActions?: Snippet;
     /** The labeled row under the description: send, picture, text. */
@@ -117,6 +120,7 @@
     col,
     onartfail,
     onopen,
+    pageLink = false,
     nameActions,
     actions,
     pick,
@@ -150,6 +154,9 @@
     const l = isHomebrewKey(key) ? oneLangOf(c.rud, c.ende) : null;
     return l && l !== lang ? l : undefined;
   };
+
+  /* The relation lines, the set and the ladder are the full card's (DESIGN.md, "Cards"). */
+  const whole = $derived(variant === 'full');
 
   const into = $derived(relOrder(upgradesTo(index, it), lang));
   const from = $derived(relOrder(madeFrom(index, it), lang));
@@ -237,31 +244,50 @@
 
 <!-- eslint-disable @typescript-eslint/no-confusing-void-expression, svelte/no-useless-mustaches --
      a `{@render}` tag reads as a void expression to the first rule; `{' '}` keeps the space
-     before a fold button, which a block's edge would trim. -->
+     before a fold button, which a block's edge would trim, and `{'\u00a0'}` keeps a badge on
+     its name's line. -->
 <!-- A homebrew record's mark in a relation line. The text outside the card keeps «(HB)»
      (`relName`). -->
 {#snippet hbBadge(r: Record_)}
-  {#if isHomebrewRecord(r)}{' '}<Badge cls="hb">{t.srcHomebrew}</Badge>{/if}
+  {#if isHomebrewRecord(r)}{'\u00a0'}<Badge cls="hb">{t.srcHomebrew}</Badge>{/if}
+{/snippet}
+
+{#snippet picture()}
+  <ArtWell glyph={kindGlyph(it.kind, it.eq?.t ?? it.eqType)}>
+    {#if art}
+      <img
+        src={art}
+        alt=""
+        loading="lazy"
+        decoding="async"
+        onerror={() => {
+          onartfail(it.id);
+        }}
+      />
+    {/if}
+  </ArtWell>
 {/snippet}
 
 <article class="card {variant}" class:dossier data-id={it.id}>
-  <!-- A button rather than a figure: on a table row it opens the record, and
-       the full card keeps the element so the two stay one component. -->
-  <button type="button" class="card-media" aria-label={t.openPage} onclick={() => onopen?.(it)}>
-    <ArtWell glyph={kindGlyph(it.kind, it.eq?.t ?? it.eqType)}>
-      {#if art}
-        <img
-          src={art}
-          alt=""
-          loading="lazy"
-          decoding="async"
-          onerror={() => {
-            onartfail(it.id);
-          }}
-        />
-      {/if}
-    </ArtWell>
-  </button>
+  <!-- The picture goes one step deeper than where it is drawn: a result opens the dialog,
+       the dialog links to the page, and on the page or the editor's preview it is a
+       picture only (docs/specs/FEATURES.md, "Records"). -->
+  {#if pageLink}
+    <a class="card-media" href={pathOf(recordHref(it), hrefLang)} aria-label={t.openPage}
+      >{@render picture()}</a
+    >
+  {:else if onopen && variant !== 'full'}
+    <button
+      type="button"
+      class="card-media"
+      aria-label={t.openCard}
+      onclick={() => {
+        onopen(it);
+      }}>{@render picture()}</button
+    >
+  {:else}
+    <div class="card-media">{@render picture()}</div>
+  {/if}
 
   <div class="card-body">
     <!-- The path line under the name already gives the number and the source. -->
@@ -275,7 +301,7 @@
       {#each badges as b, i (i)}
         <Badge cls={b.cls} title={b.title}>{b.text}</Badge>
       {/each}
-      {#if !sub}
+      {#if !sub && (whole || !isCoreBook(it))}
         <Badge cls="src">{srcLabel(it, lang)}</Badge>
       {/if}
     </div>
@@ -310,7 +336,7 @@
       <Markup {blocks} />
     </div>
 
-    {#if ladder.length}
+    {#if whole && ladder.length}
       <!-- Улучшенный / Продвинутый / Легендарный are the same weapon four
            times over, so the card offers the ladder rather than making a
            person search for the next rung. The one they are on is a label
@@ -343,7 +369,7 @@
       </div>
     {/if}
 
-    {#if into.length || from.length || setMembers.length || setBonus}
+    {#if whole && (into.length || from.length || setMembers.length || setBonus)}
       <!-- Both directions in chain order: where a thing came from, then where
            it goes, each with its own arrow. Only the forward one travels into
            a copied message. -->
@@ -353,9 +379,10 @@
             <Icon name="craftFrom" />
             <span class="craft-l">{t.craftFrom}</span>
             <span
-              >{#each fromFold.shown as r, i (r.id)}{i > 0 ? ', ' : ''}<a
-                  href={pathOf(recordHref(r), hrefLang)}>{nameOf(r, lang)}</a
-                >{@render hbBadge(r)}{/each}{#if fromFold.more}{' '}{@render moreButton(
+              >{#each fromFold.shown as r, i (r.id)}{i > 0 ? ', ' : ''}<span class="rel"
+                  ><a href={pathOf(recordHref(r), hrefLang)}>{nameOf(r, lang)}</a
+                  >{@render hbBadge(r)}</span
+                >{/each}{#if fromFold.more}{' '}{@render moreButton(
                   'from',
                   fromFold.more
                 )}{/if}</span
@@ -367,9 +394,10 @@
             <Icon name="craft" />
             <span class="craft-l">{t.craftInto}</span>
             <span
-              >{#each intoFold.shown as r, i (r.id)}{i > 0 ? ', ' : ''}<a
-                  href={pathOf(recordHref(r), hrefLang)}>{nameOf(r, lang)}</a
-                >{@render hbBadge(r)}{/each}{#if intoFold.more}{' '}{@render moreButton(
+              >{#each intoFold.shown as r, i (r.id)}{i > 0 ? ', ' : ''}<span class="rel"
+                  ><a href={pathOf(recordHref(r), hrefLang)}>{nameOf(r, lang)}</a
+                  >{@render hbBadge(r)}</span
+                >{/each}{#if intoFold.more}{' '}{@render moreButton(
                   'into',
                   intoFold.more
                 )}{/if}</span
@@ -387,15 +415,14 @@
             <Icon name="craft" />
             <span class="craft-l">{t.setLabel}</span>
             <span
-              >{#each setFold.shown as member, i (member.id)}{i > 0
-                  ? ', '
-                  : ''}{#if member.id === it.id}<span aria-current="true"
-                    >{nameOf(member, lang)}</span
-                  >{:else}<a href={pathOf(recordHref(member), hrefLang)}
-                    >{nameOf(member, lang)}</a
-                  >{/if}{@render hbBadge(
-                  member
-                )}{/each}{#if setFold.more}{' '}{@render moreButton(
+              >{#each setFold.shown as member, i (member.id)}{i > 0 ? ', ' : ''}<span
+                  class="rel"
+                  >{#if member.id === it.id}<span aria-current="true"
+                      >{nameOf(member, lang)}</span
+                    >{:else}<a href={pathOf(recordHref(member), hrefLang)}
+                      >{nameOf(member, lang)}</a
+                    >{/if}{@render hbBadge(member)}</span
+                >{/each}{#if setFold.more}{' '}{@render moreButton(
                   'set',
                   setFold.more
                 )}{/if}</span
@@ -525,6 +552,10 @@
     border: 0;
     padding: 0;
     display: block;
+  }
+
+  /* It opens the record's dialog, whose picture is larger. */
+  button.card-media {
     cursor: zoom-in;
   }
 
@@ -532,7 +563,6 @@
     width: 100%;
     aspect-ratio: 1;
     max-height: 420px;
-    cursor: default;
   }
 
   .card.compact .card-media {
@@ -556,7 +586,7 @@
   }
 
   /* Mostly paid off, but this one override was not a no-op: `.card-media`
-     is a real button flush against `.card`, and `.card` is `overflow: clip`.
+     is a real control flush against `.card`, and `.card` is `overflow: clip`.
      The global rule's `+2px` offset (tokens.css) draws the ring outside this
      button's border box, which is outside `.card`'s padding box, so it is
      clipped on three sides and survives as a single line on one interior
@@ -738,6 +768,22 @@
 
   .craft p > :global(*) {
     min-width: 0;
+  }
+
+  /* An atomic badge's margin enters the line box, so the lines around it keep 2 px
+     (DESIGN.md, "Badges"): 2 px of margin left 1.8 px to a wrapped name above (measured
+     2026-11-04 at 360 px). */
+  .craft :global(.badge) {
+    margin-block: 3px;
+  }
+
+  /* A name and its badge: no break between them, a long name still wraps inside itself. */
+  .craft .rel {
+    white-space: nowrap;
+  }
+
+  .craft .rel > :global(*) {
+    white-space: normal;
   }
 
   /* Inside the chain's 3px gap the line needs no pull toward its text. */
@@ -966,29 +1012,57 @@
   }
 
   /* ---------- the roll card face ----------
-     The body is not positioned, so the number badge anchors to the card. The picture sits at
-     `z-index: -1` inside the card's own stacking context: a mask would paint it over the
-     body's foot otherwise. */
+     The row face is the base: the picture 96px beside the text, no number. The tall face needs
+     a `faces` container of 641px, which a roll provides only while it sits on one line
+     (DESIGN.md, "The Roll Page Rule"); up to 600px no container is that wide, so the phone
+     keeps the row face. */
   .card.face {
     position: relative;
-    flex-direction: column;
+    flex-direction: row;
+    align-items: flex-start;
     isolation: isolate;
   }
 
   .card.face .card-media {
-    z-index: -1;
-    width: 100%;
-    aspect-ratio: 4 / 3;
-    mask-image: linear-gradient(180deg, #000 72%, transparent);
+    width: 96px;
+    aspect-ratio: 1;
+    margin: 10px 0 10px 10px;
+    border-radius: 8px;
   }
 
-  /* The fade would take the ring's bottom edge with it. */
-  .card.face .card-media:focus-visible {
-    mask-image: none;
+  .card.face .card-body {
+    padding: 10px 12px;
+    gap: 4px;
   }
 
-  /* The body's badges paint over the sunk picture's own ring, so the card repeats it on top. */
-  @media (min-width: 601px) {
+  .card.face :global(.badge.num) {
+    display: none;
+  }
+
+  /* The tall face: the body is not positioned, so the number badge anchors to the card. The
+     picture sits at `z-index: -1` inside the card's own stacking context: a mask would paint
+     it over the body's foot otherwise. */
+  @container faces (min-width: 641px) {
+    .card.face {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .card.face .card-media {
+      z-index: -1;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      margin: 0;
+      border-radius: 0;
+      mask-image: linear-gradient(180deg, #000 72%, transparent);
+    }
+
+    /* The fade would take the ring's bottom edge with it. */
+    .card.face .card-media:focus-visible {
+      mask-image: none;
+    }
+
+    /* The body's badges paint over the sunk picture's own ring, so the card repeats it on top. */
     .card.face:has(.card-media:focus-visible)::after {
       content: '';
       position: absolute;
@@ -999,43 +1073,18 @@
       border-radius: var(--r-sm);
       pointer-events: none;
     }
-  }
-
-  .card.face .card-body {
-    margin-top: -26px;
-    padding: 0 14px 12px;
-    gap: 7px;
-  }
-
-  .card.face :global(.badge.num) {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-  }
-
-  @media (max-width: 600px) {
-    .card.face {
-      flex-direction: row;
-      align-items: flex-start;
-    }
-
-    .card.face .card-media {
-      z-index: auto;
-      width: 96px;
-      aspect-ratio: 1;
-      margin: 10px 0 10px 10px;
-      border-radius: 8px;
-      mask-image: none;
-    }
 
     .card.face .card-body {
-      margin-top: 0;
-      padding: 10px 12px;
-      gap: 4px;
+      margin-top: -26px;
+      padding: 0 14px 12px;
+      gap: 7px;
     }
 
     .card.face :global(.badge.num) {
-      display: none;
+      display: inline-block;
+      position: absolute;
+      top: 10px;
+      right: 10px;
     }
   }
 
@@ -1116,6 +1165,7 @@
   @media (min-width: 761px) {
     .card.dossier {
       grid-template-columns: clamp(260px, 40%, 460px) minmax(0, 1fr);
+      max-width: var(--dossier-w);
       gap: 32px;
       align-items: start;
     }

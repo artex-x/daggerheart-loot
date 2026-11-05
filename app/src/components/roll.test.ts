@@ -322,7 +322,7 @@ describe('the record over the page', () => {
     render(App, { env: at('#/roll/wondrous', { random: lands(5, 20) }) });
     await userEvent.click(screen.getByRole('button', { name: 'Бросить d20' }));
     /* The picture is the way in, as it is in the live app. */
-    await userEvent.click(screen.getAllByRole('button', { name: 'Страница' })[0]!);
+    await userEvent.click(screen.getAllByRole('button', { name: 'Открыть карточку' })[0]!);
   };
 
   it('opens the record without leaving the page behind it', async () => {
@@ -372,6 +372,18 @@ describe('the record over the page', () => {
     for (const name of ['Скопировать название', 'Скопировать ссылку', 'Скопировать текст']) {
       expect(within(dialog).getByRole('menuitem', { name }), name).toBeInTheDocument();
     }
+  });
+
+  it("goes one step deeper from the dialog's picture: the record's page", async () => {
+    await openFirst();
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).queryByRole('button', { name: 'Открыть карточку' })).toBeNull();
+    const link = within(dialog).getByRole('link', { name: 'Открыть страницу' });
+    expect(link).toHaveClass('card-media');
+    const id = link.closest('.card')?.getAttribute('data-id') ?? '';
+    expect(id).not.toBe('');
+    expect(link).toHaveAttribute('href', `/i/${id}`);
+    await expectNoA11yViolations(dialog);
   });
 });
 

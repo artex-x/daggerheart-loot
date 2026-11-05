@@ -40,9 +40,9 @@ RootWebArea "Many Worlds Tavern - Генератор лута Daggerheart" [url=
     heading "Бросок 1" [level=2]
     status ""
       StaticText "Одолженная Лапа"
-    button "Страница"
+    button "Открыть карточку"
     ... StaticText x10 of 14 same-shape siblings elided
-    link "Одолженная Лапа" [description=Страница url=/i/mw82]
+    link "Одолженная Лапа" [description=Открыть страницу url=/i/mw82]
     StaticText "Полезное:"
     StaticText " Когда вы участвуете в Командном Броске, бросайте d20 в качестве..." [namelen=79 namehash=5ea860d6]
     button "В список" [expanded=false]
@@ -76,10 +76,10 @@ daggerheart.com
 Обычные правила
 Одолженная Лапа
 Открывать при запуске
+Открыть карточку
 Поделиться
 Поиск
 Результат броска
-Страница
 Таблицы
 Условия использования
 Установить как приложение
@@ -122,9 +122,9 @@ RootWebArea "Many Worlds Tavern - Daggerheart Loot Generator" [url=/en/roll/many
     heading "Roll 1" [level=2]
     status ""
       StaticText "Lent Leg"
-    button "Page"
+    button "Open card"
     ... StaticText x10 of 14 same-shape siblings elided
-    link "Lent Leg" [description=Page url=/i/en/mw82]
+    link "Lent Leg" [description=Open page url=/i/en/mw82]
     StaticText "Helpful:"
     StaticText " When you're part of a Tag Team roll, roll a d20 as your Hope di..." [namelen=66 namehash=1ac3f27a]
     button "Add to list" [expanded=false]
@@ -149,8 +149,8 @@ Many Worlds Tavern
 More
 One higher
 One lower
+Open card
 Open on start
-Page
 Privacy
 RU
 Realm

@@ -1585,9 +1585,11 @@
     }
   }
 
+  /* The form keeps its measure past 1180px: a wider form only moves the preview away
+     (964px at 1920, measured 2026-11-04). */
   @media (min-width: 1100px) {
     .hbedit {
-      grid-template-columns: minmax(0, 1fr) 420px;
+      grid-template-columns: minmax(0, 720px) 420px;
     }
   }
 

@@ -18,12 +18,11 @@ RootWebArea "Скатка следопыта - Генератор лута Dagge
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
-    button "Страница"
     StaticText "ПРЕДМЕТ"
     heading "Скатка следопыта" [level=1]
     StaticText "Хоумбрю "
     link "показать в таблице" [url=/tables/homebrew/hb_rangerrollaaaaaa]
-    ... StaticText x13 of 17 same-shape siblings elided
+    ... StaticText x18 of 22 same-shape siblings elided
     link "Скатка путника" [url=/h/00000000-0000-4000-8000-000000000661]
     link "Скатка стража" [url=/h/00000000-0000-4000-8000-000000000663]
     link "Подушка из мха" [url=/h/00000000-0000-4000-8000-000000000664]
@@ -64,7 +63,6 @@ daggerheart.com
 Скатка путника
 Скатка стража
 Сон под звёздами
-Страница
 Таблицы
 Условия использования
 Установить как приложение
@@ -85,12 +83,11 @@ RootWebArea "Ranger's Roll - Daggerheart Loot Generator" [url=/en/h/00000000-000
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
-    button "Page"
     StaticText "ITEM"
     heading "Ranger's Roll" [level=1]
     StaticText "Homebrew "
     link "show in the table" [url=/en/tables/homebrew/hb_rangerrollaaaaaa]
-    ... StaticText x13 of 17 same-shape siblings elided
+    ... StaticText x18 of 22 same-shape siblings elided
     link "Traveller's Roll" [url=/en/h/00000000-0000-4000-8000-000000000661]
     link "Sentry's Roll" [url=/en/h/00000000-0000-4000-8000-000000000663]
     link "Camp Blanket" [url=/en/h/00000000-0000-4000-8000-000000000665]
@@ -121,7 +118,6 @@ Install as an app
 LootDaggerheart
 More
 Moss Pillow
-Page
 Print
 Privacy
 RU

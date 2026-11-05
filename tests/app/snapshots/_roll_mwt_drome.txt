@@ -40,9 +40,9 @@ RootWebArea "Many Worlds Tavern - Генератор лута Daggerheart" [url=
     heading "Бросок 1" [level=2]
     status ""
       StaticText "Чакка"
-    button "Страница"
+    button "Открыть карточку"
     ... StaticText x10 of 14 same-shape siblings elided
-    link "Чакка" [description=Страница url=/i/mw93]
+    link "Чакка" [description=Открыть страницу url=/i/mw93]
     StaticText "Возвращающееся:"
     StaticText " Когда это оружие брошено в пределах дистанции, оно появляется в..." [namelen=94 namehash=aa87bd9a]
     button "В список" [expanded=false]
@@ -75,10 +75,10 @@ daggerheart.com
 На единицу меньше
 Обычные правила
 Открывать при запуске
+Открыть карточку
 Поделиться
 Поиск
 Результат броска
-Страница
 Таблицы
 Условия использования
 Установить как приложение
@@ -122,9 +122,9 @@ RootWebArea "Many Worlds Tavern - Daggerheart Loot Generator" [url=/en/roll/many
     heading "Roll 1" [level=2]
     status ""
       StaticText "Chukka"
-    button "Page"
+    button "Open card"
     ... StaticText x10 of 14 same-shape siblings elided
-    link "Chukka" [description=Page url=/i/en/mw93]
+    link "Chukka" [description=Open page url=/i/en/mw93]
     StaticText "Returning:"
     StaticText " When this weapon is thrown within its range, it appears in your..." [namelen=99 namehash=7730571f]
     button "Add to list" [expanded=false]
@@ -149,8 +149,8 @@ Many Worlds Tavern
 More
 One higher
 One lower
+Open card
 Open on start
-Page
 Privacy
 RU
 Realm

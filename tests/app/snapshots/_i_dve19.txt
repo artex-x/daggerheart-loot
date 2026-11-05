@@ -17,7 +17,6 @@ RootWebArea "Уголёк - Генератор лута Daggerheart" [url=/i/dve
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
-    button "Страница"
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
     StaticText "УНИКАЛЬНОЕ"
     heading "Уголёк" [level=1]
@@ -52,7 +51,6 @@ daggerheart.com
 Печать
 Поделиться
 Поиск
-Страница
 Таблицы
 Условия использования
 Установить как приложение
@@ -73,7 +71,6 @@ RootWebArea "Ember - Daggerheart Loot Generator" [url=/i/en/dve19?v=<v>]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
-    button "Page"
     StaticText "PRIMARY WEAPON"
     StaticText "UNIQUE"
     heading "Ember" [level=1]
@@ -99,7 +96,6 @@ EN
 Install as an app
 LootDaggerheart
 More
-Page
 Print
 Privacy
 RU

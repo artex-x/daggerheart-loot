@@ -6,7 +6,7 @@
 RootWebArea "Палаш - Генератор лута Daggerheart" [url=/i/q1?v=<v>]
   dialog "Улучшенный Палаш" [modal=true]
     button "Закрыть" [focused=true]
-    button "Страница"
+    link "Открыть страницу" [url=/i/q38]
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
     StaticText "CORE"
     heading "Улучшенный Палаш" [level=2]
@@ -34,12 +34,12 @@ daggerheart.com
 Конфиденциальность
 Легендарный Палаш
 ЛутDaggerheart
+Открыть страницу
 Палаш
 Печать
 Поделиться
 Поиск
 Продвинутый Палаш
-Страница
 Таблицы
 Улучшенный Палаш
 Условия использования
@@ -50,7 +50,7 @@ daggerheart.com
 RootWebArea "Broadsword - Daggerheart Loot Generator" [url=/i/en/q1?v=<v>]
   dialog "Improved Broadsword" [modal=true]
     button "Close" [focused=true]
-    button "Page"
+    link "Open page" [url=/i/en/q38]
     StaticText "PRIMARY WEAPON"
     StaticText "CORE"
     heading "Improved Broadsword" [level=2]
@@ -76,7 +76,7 @@ Install as an app
 Legendary Broadsword
 LootDaggerheart
 More
-Page
+Open page
 Print
 Privacy
 RU

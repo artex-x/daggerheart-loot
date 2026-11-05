@@ -40,9 +40,9 @@ RootWebArea "Vault of Ages - Генератор лута Daggerheart" [url=/roll
     heading "Бросок 1" [level=2]
     status ""
       StaticText "Благословенный Нож Шеф-Повара"
-    button "Страница"
+    button "Открыть карточку"
     ... StaticText x11 of 15 same-shape siblings elided
-    link "Благословенный Нож Шеф-Повара" [description=Страница url=/i/voa1_t1a]
+    link "Благословенный Нож Шеф-Повара" [description=Открыть страницу url=/i/voa1_t1a]
     StaticText " 0"
     StaticText "Еда, приготовленная этим ножом, всегда вкусна и готовится вдвое ..." [namelen=186 namehash=62309a64]
     button "В список" [expanded=false]
@@ -75,11 +75,11 @@ daggerheart.com
 На единицу меньше
 Обычные правила
 Открывать при запуске
+Открыть карточку
 Поделиться
 Поиск
 Раздел книги
 Результат броска
-Страница
 Таблицы
 Условия использования
 Установить как приложение
@@ -122,9 +122,9 @@ RootWebArea "Vault of Ages - Daggerheart Loot Generator" [url=/en/roll/vault_of_
     heading "Roll 1" [level=2]
     status ""
       StaticText "Blessed Chef's Knife"
-    button "Page"
+    button "Open card"
     ... StaticText x11 of 15 same-shape siblings elided
-    link "Blessed Chef's Knife" [description=Page url=/i/en/voa1_t1a]
+    link "Blessed Chef's Knife" [description=Open page url=/i/en/voa1_t1a]
     StaticText " 0"
     StaticText "Food prepared by this knife is always delicious and prepared at ..." [namelen=178 namehash=fceb0968]
     button "Add to list" [expanded=false]
@@ -148,8 +148,8 @@ LootDaggerheart
 More
 One higher
 One lower
+Open card
 Open on start
-Page
 Privacy
 RU
 Roll

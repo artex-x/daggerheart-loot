@@ -33,12 +33,11 @@ RootWebArea "Wondrous Environments - Генератор лута Daggerheart" [u
     heading "Бросок 3" [level=2]
     status ""
       StaticText "Эфироцвет"
-    button "Страница"
-    ... StaticText x3 of 7 same-shape siblings elided
-    link "Эфироцвет" [description=Страница url=/i/w3]
+    button "Открыть карточку"
+    ... StaticText x2 of 6 same-shape siblings elided
+    StaticText "WONDROUS ENVIRONMENTS"
+    link "Эфироцвет" [description=Открыть страницу url=/i/w3]
     StaticText "Этот цветок чувствителен к магии и указывает в направлении сильн..." [namelen=171 namehash=72f58938]
-    StaticText "УЛУЧШАЕТСЯ ДО"
-    link "Чай Эфироцвета" [url=/i/w2]
     button "В список" [expanded=false]
     button "Поделиться"
     button "Ещё" [expanded=false haspopup=menu]
@@ -68,14 +67,13 @@ daggerheart.com
 На единицу меньше
 Обычные правила
 Открывать при запуске
+Открыть карточку
 Поделиться
 Поиск
 Результат броска
-Страница
 Таблицы
 Условия использования
 Установить как приложение
-Чай Эфироцвета
 Эфироцвет
 
 ## en :: tree
@@ -109,12 +107,11 @@ RootWebArea "Wondrous Environments - Daggerheart Loot Generator" [url=/en/roll/w
     heading "Roll 3" [level=2]
     status ""
       StaticText "Aetherflower"
-    button "Page"
-    ... StaticText x3 of 7 same-shape siblings elided
-    link "Aetherflower" [description=Page url=/i/en/w3]
+    button "Open card"
+    ... StaticText x2 of 6 same-shape siblings elided
+    StaticText "WONDROUS ENVIRONMENTS"
+    link "Aetherflower" [description=Open page url=/i/en/w3]
     StaticText "This flower is sensitive to magic, and will point in the directi..." [namelen=186 namehash=f75955ca]
-    StaticText "UPGRADES TO"
-    link "Aetherflower Tea" [url=/i/en/w2]
     button "Add to list" [expanded=false]
     button "Share"
     button "More" [expanded=false haspopup=menu]
@@ -129,7 +126,6 @@ RootWebArea "Wondrous Environments - Daggerheart Loot Generator" [url=/en/roll/w
 ?About this table
 Add to list
 Aetherflower
-Aetherflower Tea
 Alternate tables
 EN
 Install as an app
@@ -137,8 +133,8 @@ LootDaggerheart
 More
 One higher
 One lower
+Open card
 Open on start
-Page
 Privacy
 RU
 Roll

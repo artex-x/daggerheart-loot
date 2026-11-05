@@ -1,11 +1,13 @@
 /* TableNav.svelte on its own: the group chips and the tabs from 761 px, the picker and
    its sheet below it, the source tabs of the own items table and their fold. */
-import { cleanup, render, screen, within } from '@testing-library/svelte';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
 import TableNav from './TableNav.svelte';
 import type { SourceChip } from '../lib/homebrew.js';
 import type { TableId } from '../lib/types.js';
+import { fakeCloud } from '../ports/fake-cloud.js';
+import { SEED } from '../ports/fake-cloud-seed.js';
 import { fakeEnv, fakeViewport, type Band } from '../ports/index.js';
 import { AppState } from '../state/app.svelte.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
@@ -59,6 +61,25 @@ describe('the table navigation', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
+  it('returns the focus to the picker after a pick closes the sheet', async () => {
+    nav('eq_weapon', 'narrow');
+    const picker = screen.getByRole('button', { name: 'Таблица: Оружие' });
+    await userEvent.click(picker);
+    const sheet = within(screen.getByRole('dialog'));
+    await userEvent.click(sheet.getByRole('link', { name: 'Броня' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(document.activeElement).toBe(picker);
+    await userEvent.click(picker);
+    await userEvent.click(
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'Core' })
+    );
+    await userEvent.click(
+      within(screen.getByRole('dialog')).getByRole('link', { name: 'Предметы' })
+    );
+    expect(document.activeElement).toBe(picker);
+    await expectNoA11yViolations(document.body);
+  });
+
   it('names a one-table group by its book in the picker', () => {
     nav('voa', 'narrow');
     expect(screen.getByRole('button', { name: 'Таблица: Vault of Ages' })).toBeInTheDocument();
@@ -80,5 +101,65 @@ describe('the table navigation', () => {
     await userEvent.click(tabs.getByRole('button', { name: /и ещё/ }));
     expect(tabs.getAllByRole('link')).toHaveLength(14);
     await expectNoA11yViolations(container);
+  });
+});
+
+describe('the tab slot', () => {
+  it.each(['wide', 'mid'] as const)(
+    "holds every group's tabs unseen at %s, with no link and no name, also on a table with none",
+    async (band) => {
+      const { container } = nav('homebrew', band);
+      expect(screen.queryByRole('group', { name: 'Хоумбрю' })).toBeNull();
+      const ghosts = container.querySelector('.tabslot .ghosts');
+      expect(ghosts).toHaveAttribute('aria-hidden', 'true');
+      expect(ghosts?.querySelector('a, button')).toBeNull();
+      expect(ghosts?.querySelectorAll('.tabs').length).toBeGreaterThanOrEqual(5);
+      expect(ghosts).toHaveTextContent('Wondrous Environments');
+      await expectNoA11yViolations(container);
+    }
+  );
+
+  it('takes the same ghost tabs with twelve long sources as with none, so the other groups keep their head', async () => {
+    const ghostsOf = (container: HTMLElement): string | null | undefined =>
+      container.querySelector('.tabslot .ghosts')?.textContent;
+    const sources = Array.from({ length: 12 }, (_, i) => ({
+      key: `b${String(i)}`,
+      label: String(i).padStart(2, '0') + 'И'.repeat(78)
+    }));
+    const cloud = fakeCloud(SEED, 'gm1');
+    const app = new AppState(fakeEnv({ cloud, viewport: fakeViewport('wide') }));
+    const stop = app.start();
+    await waitFor(() => {
+      expect(app.user).toBeTruthy();
+    });
+    const without = render(TableNav, {
+      app,
+      table: 'eq_weapon',
+      sources: [],
+      source: null,
+      filter: {}
+    });
+    expect(
+      within(screen.getByRole('group', { name: 'Группа' })).getByRole('link', {
+        name: 'Хоумбрю'
+      })
+    ).toBeInTheDocument();
+    const base = ghostsOf(without.container);
+    cleanup();
+    const crowded = render(TableNav, {
+      app,
+      table: 'eq_weapon',
+      sources,
+      source: null,
+      filter: {}
+    });
+    expect(ghostsOf(crowded.container)).toBe(base);
+    expect(ghostsOf(crowded.container)).not.toContain('ИИИ');
+    stop();
+  });
+
+  it('draws no slot at narrow, where the tabs live in the sheet', () => {
+    const { container } = nav('core_item', 'narrow');
+    expect(container.querySelector('.tabslot')).toBeNull();
   });
 });
