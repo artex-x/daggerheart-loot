@@ -49,8 +49,8 @@ both README source tables, `llms.txt` and the `url` of each rules card.
 - ph, 2026-11-05: roll numbers in book order "the same way as Arazo's Artifacts" (one pool, a line's rungs after
   its head); ids `ph1`-`ph93` equal the rolls.
 - lr, 2026-11-05: the Fruitcake and the Deed are cut to a card plus a rules card (`lr-fruitcake`, `lr-deed`);
-  three rules cards in all (`lr-recipes` too). Recommended and not yet confirmed: no record for the Mournguard
-  Mark Badge and the four letters (lore, no rule effect); one pool of 26 in book order (as ph and Arazo).
+  three rules cards in all (`lr-recipes` too). Owner, 2026-11-05: no record for the Mournguard Mark Badge and
+  the four letters (lore, no rule effect), so no 27th picture; one roll pool of 26 in book order (as ph and Arazo).
 - vh, 2026-11-05: the printed per-room rolls stay (a record has `room` and its roll inside the room's table, as
   an mwt record has a realm); Remembrance Potion is `craft`-linked to Major Remembrance Potion and Foresight
   Potion to Legendary Foresight Potion.

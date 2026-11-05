@@ -42,7 +42,6 @@
 - lr and vh pictures are not generated.
 
 ## Deferred
-- Owner confirmations still open: no record for the Mournguard Mark Badge and the four letters (lr); one pool of 26 for lr.
 - B2 decides whether vh6's English "an experience" is capitalized (the corpus capitalizes Experience; B0 may not change English).
 
 ## Notes
@@ -52,6 +51,6 @@
 
 - One prompt for the whole task (owner, 2026-11-05; the owner generates the lr and vh pictures while it runs):
 
-  TASK: new-items. Work in `.claude/worktrees/new-items` (branch `claude/new-items`). Read CLAUDE.md, then `issues/new-items/context.md`, `plan.md`, `handoff.md`. Start gate: `issues/57/` must be gone from `main`; if not, stop and say so. Run the task as the orchestrator (`.claude/prompts/orchestrate.prompt.md`) and spawn subagents for the work. Take the recommended option for the two open owner questions (no record for the Mournguard Mark Badge and the letters; one pool of 26 for lr) and log them in the decision file. Order: (1) `git merge main`, refresh the touchpoints, read `docs/DECISIONS.md` for task 57 decisions; (2) B1, source ph, per `plan.md` incl. the UI verification pass; push; (3) R1 reviewer, one remediation commit, push, green CI; (4) before B2 count the pictures: `Last Round Table\images` must hold 26 and `Escape the Veiled Halls\images` 15 (the badge picture is not needed); if they are not there, stop, report which are missing, and wait for me; (5) B2, sources lr and vh, per `plan.md` incl. the checks B0 left and the UI pass at ten supplements; push; (6) R2 only if B2 deviates from B1's pattern, V1 only if the UI pass needs more than a local fix; (7) B3 closeout with `/handoff`, squash after green CI. Stop for the human only on a critical case. Report after each batch.
+  TASK: new-items. Work in `.claude/worktrees/new-items` (branch `claude/new-items`). Read CLAUDE.md, then `issues/new-items/context.md`, `plan.md`, `handoff.md`. Start gate: `issues/57/` must be gone from `main`; if not, stop and say so. Run the task as the orchestrator (`.claude/prompts/orchestrate.prompt.md`) and spawn subagents for the work. The owner settled the lr questions on 2026-11-05 (no record for the Mournguard Mark Badge and the letters; one roll pool of 26): record them in the decision file. Order: (1) `git merge main`, refresh the touchpoints, read `docs/DECISIONS.md` for task 57 decisions; (2) B1, source ph, per `plan.md` incl. the UI verification pass; push; (3) R1 reviewer, one remediation commit, push, green CI; (4) before B2 count the pictures: `Last Round Table\images` must hold 26 and `Escape the Veiled Halls\images` 15 (the badge picture is not needed); if they are not there, stop, report which are missing, and wait for me; (5) B2, sources lr and vh, per `plan.md` incl. the checks B0 left and the UI pass at ten supplements; push; (6) R2 only if B2 deviates from B1's pattern, V1 only if the UI pass needs more than a local fix; (7) B3 closeout with `/handoff`, squash after green CI. Stop for the human only on a critical case. Report after each batch.
 
 - Durable items written to their homes this batch (file, section): none.
