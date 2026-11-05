@@ -1,0 +1,390 @@
+{
+ "note": "Draft records for source lr. Russian (ru, rud) filled and reviewed in B0-lr. Roll = id number, book order. Weapons are single Tier 2 records. Not shipped: working field names title/source/note of refs.",
+ "refs": {
+  "lr-fruitcake": {
+   "en": "Longfire Fruitcake: The Gift that Keeps Giving",
+   "ensub": "The Last Round Table · p. 40 · Rules",
+   "ende": "- Success with Hope: Clear 1d4 Stress immediately.\n- Success with Fear: Clear 1d4 Stress, and become Vulnerable, until cleared with another Strength Reaction Roll.\n- Failure with Hope: Become Vulnerable, until the end of the scene.\n- Failure with Fear: Mark 1 Stress, and become Impaired until the end of the scene.\nImpaired Condition: While Impaired a creature is Vulnerable, may only move Very Close, and can't clear Stress.",
+   "ru": "Фруктовый Кекс Долгого Огня: Подарок, Который Дарит Снова и Снова",
+   "rusub": "The Last Round Table · с. 40 · Правила",
+   "rud": "- Успех с Надеждой: Немедленно очистите 1d4 Стресса.\n- Успех со Страхом: Очистите 1d4 Стресса и станьте Уязвимым, пока не очистите это состояние повторным Броском Реакции Силы.\n- Провал с Надеждой: Станьте Уязвимым до конца сцены.\n- Провал со Страхом: Отметьте 1 Стресс и станьте Ослабленным до конца сцены.\nСостояние Ослаблен: Пока существо Ослаблено, оно Уязвимо, может перемещаться только в пределах Близкой дистанции и не может очищать Стресс.",
+   "url": "https://heartofdaggers.com/products/the-last-round-table/",
+   "title": "Longfire Fruitcake: The Gift that Keeps Giving",
+   "source": "The Last Round Table, printed page 40, \"Longfire Fruitcake\" (the roll outcomes and the Impaired condition)",
+   "records": [
+    "Longfire Fruitcake"
+   ],
+   "text": "- Success with Hope: Clear 1d4 Stress immediately.\n- Success with Fear: Clear 1d4 Stress, and become Vulnerable, until cleared with another Strength Reaction Roll.\n- Failure with Hope: Become Vulnerable, until the end of the scene.\n- Failure with Fear: Mark 1 Stress, and become Impaired until the end of the scene.\nImpaired Condition: While Impaired a creature is Vulnerable, may only move Very Close, and can't clear Stress."
+  },
+  "lr-recipes": {
+   "en": "Last Round Recipes: learning and brewing",
+   "ensub": "The Last Round Table · p. 39 · Rules",
+   "ende": "Learning Recipes: Memorizing a recipe uses a Downtime Project. If a player dedicates Rest Moves to this, start a Recipe Countdown matching its Rating. At the same time begin a Crumble Countdown for the book, starting at 0.\n- Roll: As a Long Rest Downtime Project move, the PC makes a Knowledge reaction roll against a Difficulty of 10 + Recipe Rating (for example Difficulty 14 for a rating 4 recipe).\n- Success: Each success on the roll reduces the countdown by 1. When the countdown reaches 0, the PC has learned the recipe for the potion. Critical Successes lower the countdown by 2.\n- Failure: For each failure, increase the Crumble Countdown by 1. The GM rolls a D20 if it's lower, the Recipe Book crumbles into dust.\nThe Crumble Countdown does not reset. It continues to build with each new attempt at learning a Recipe.\n| Name | Rating | Effect |\n| Thunderbelly Brew | 1 | The drinker produces a burp loud enough to be heard for a mile. |\n| Irongut IPA | 2 | Grants Advantage on Reaction Rolls to ingested poisons or spoiled food for one Scene. |\n| Storyteller Wine | 2 | Grants 1 extra Hope when using the Prepare downtime move. |\n| Second Wind Stout | 3 | Clears 1 Stress. |\n| Tongue-Tied Tipple | 3 | Causes the drinker to make a Difficulty 15 Presence Reaction roll to attempt to lie, stuttering incoherently if they fail the roll. Lasts until the end of the scene. |\n| Last Call Lager | 4 | Reduce the Recall cost of swapping from your Vault by 1 for the Scene. |\n| Nightwatch Tonic | 4 | Stay awake and alert. Gain one additional downtime move. Make a Difficulty 12 Strength Reaction Roll, marking 1d4 Stress on a fail. |\n| Bastion Bitter | 5 | Grants 1 extra Armor slot for the Scene. |",
+   "ru": "Рецепты Последнего Круга: изучение и варка",
+   "rusub": "The Last Round Table · с. 39 · Правила",
+   "rud": "Изучение рецептов: Запоминание рецепта требует Хода Отдыха «Работа над Проектом». Если игрок посвящает этому Ходы Отдыха, запустите Отсчёт Рецепта, равный его Рейтингу. Одновременно запустите Отсчёт Рассыпания для книги, начиная с 0.\n- Бросок: В рамках Хода Отдыха «Работа над Проектом» во время продолжительного отдыха персонаж совершает Бросок Реакции Знания против Сложности 10 + Рейтинг рецепта (например, Сложность 14 для рецепта с рейтингом 4).\n- Успех: Каждый успех на броске уменьшает Отсчёт на 1. Когда Отсчёт доходит до 0, персонаж выучил рецепт напитка. Критический успех уменьшает Отсчёт на 2.\n- Провал: За каждый провал увеличивайте Отсчёт Рассыпания на 1. Мастер бросает d20: если результат ниже, Книга Рецептов рассыпается в прах.\nОтсчёт Рассыпания не сбрасывается. Он продолжает расти с каждой новой попыткой выучить рецепт.\n| Название | Рейтинг | Эффект |\n| Пойло Громового Брюха | 1 | Пьющий издаёт отрыжку, достаточно громкую, чтобы её было слышно на расстоянии 1 км. |\n| Светлый Эль Железного Нутра | 2 | Даёт преимущество на Броски Реакции против проглоченных ядов или испорченной пищи на одну сцену. |\n| Вино Сказителя | 2 | Даёт 1 дополнительную Надежду при выполнении Хода Отдыха «Подготовка». |\n| Стаут Второго Дыхания | 3 | Очищает 1 Стресс. |\n| Глоток Связанного Языка | 3 | Заставляет пьющего совершать Бросок Реакции Влияния (15), когда он пытается солгать; при провале он несвязно заикается. Действует до конца сцены. |\n| Лагер Последнего Заказа | 4 | Уменьшает на 1 Стоимость Призыва при замене карты из вашего Хранилища на время сцены. |\n| Тоник Ночного Дозора | 4 | Вы бодрствуете и настороже. Получите один дополнительный Ход Отдыха. Совершите Бросок Реакции Силы (12), отмечая 1d4 Стресса при провале. |\n| Биттер Бастиона | 5 | Даёт 1 дополнительную Ячейку Брони на время сцены. |",
+   "url": "https://heartofdaggers.com/products/the-last-round-table/",
+   "title": "Last Round Recipes: learning and brewing",
+   "source": "The Last Round Table, printed page 39, \"Last Round Recipes\"",
+   "records": [
+    "Last Round Recipes"
+   ],
+   "text": "Learning Recipes: Memorizing a recipe uses a Downtime Project. If a player dedicates Rest Moves to this, start a Recipe Countdown matching its Rating. At the same time begin a Crumble Countdown for the book, starting at 0.\n- Roll: As a Long Rest Downtime Project move, the PC makes a Knowledge reaction roll against a Difficulty of 10 + Recipe Rating (for example Difficulty 14 for a rating 4 recipe).\n- Success: Each success on the roll reduces the countdown by 1. When the countdown reaches 0, the PC has learned the recipe for the potion. Critical Successes lower the countdown by 2.\n- Failure: For each failure, increase the Crumble Countdown by 1. The GM rolls a D20 if it's lower, the Recipe Book crumbles into dust.\nThe Crumble Countdown does not reset. It continues to build with each new attempt at learning a Recipe.\n| Name | Rating | Effect |\n| Thunderbelly Brew | 1 | The drinker produces a burp loud enough to be heard for a mile. |\n| Irongut IPA | 2 | Grants Advantage on Reaction Rolls to ingested poisons or spoiled food for one Scene. |\n| Storyteller Wine | 2 | Grants 1 extra Hope when using the Prepare downtime move. |\n| Second Wind Stout | 3 | Clears 1 Stress. |\n| Tongue-Tied Tipple | 3 | Causes the drinker to make a Difficulty 15 Presence Reaction roll to attempt to lie, stuttering incoherently if they fail the roll. Lasts until the end of the scene. |\n| Last Call Lager | 4 | Reduce the Recall cost of swapping from your Vault by 1 for the Scene. |\n| Nightwatch Tonic | 4 | Stay awake and alert. Gain one additional downtime move. Make a Difficulty 12 Strength Reaction Roll, marking 1d4 Stress on a fail. |\n| Bastion Bitter | 5 | Grants 1 extra Armor slot for the Scene. |"
+  },
+  "lr-deed": {
+   "en": "Deed to the Last Round Table: the tavern's Mood",
+   "ensub": "The Last Round Table · p. 38 · Rules",
+   "ende": "The Clean Up Song - Action: Once per lunar cycle, the Pipe Organ begins playing a jaunty tune and the animated features clean and repair the Tower, magically restoring it to it's original state. Mortals who stay within the tower during this mark 1d4 Stress, due to the chaos.\nMove House - Action: Once per lunar cycle, the Owner may Spend 3 Hope to cause the Stairwell Entrance to move to anywhere within 100 miles, connecting the Last Round Table to a new location.\nRaising the Mood (once per session):\n- Protect guests or staff from harm, offer shelter or aid, resolve conflict peacefully, share food or drink freely, or sing a Hymnal in the Shrine. Each act raises Mood by 1.\nLowering the Mood (once per session):\n- Exploit guests, hoard comfort, threaten the helpless, destroy Hymnal Pages, or deny reasonable aid. Each such act lowers Mood by 1 immediately.\nLoss of Control:\n- If Mood reaches Dying, the Tavern ignores all commands.\n- If Mood remains at Dying through a full day, the bond with the Deed breaks, and the tavern moves to a random new location, expelling the current owners magically from the Stairwell Dungeon Entrance.",
+   "ru": "Купчая на Последний Круглый Стол: Настроение таверны",
+   "rusub": "The Last Round Table · с. 38 · Правила",
+   "rud": "Песня Уборки - Действие: Один раз за лунный цикл Орган начинает играть бодрую мелодию, а оживлённые предметы обстановки убирают и чинят Башню, магически возвращая её в первоначальное состояние. Смертные, остающиеся в башне в это время, отмечают 1d4 Стресса из-за хаоса.\nПереезд - Действие: Один раз за лунный цикл Владелец может потратить 3 Надежды, чтобы Лестничный Вход переместился в любое место в пределах 160 км, соединив Последний Круглый Стол с новым местом.\nПовышение Настроения (один раз за сессию):\n- Защита гостей или персонала от вреда, предложение приюта или помощи, мирное разрешение конфликта, щедрое угощение едой или питьём или песня из Сборника Гимнов в Святилище. Каждое такое действие повышает Настроение на 1.\nПонижение Настроения (один раз за сессию):\n- Эксплуатация гостей, накопительство уюта, угрозы беспомощным, уничтожение Страниц Сборника Гимнов или отказ в разумной помощи. Каждое такое действие немедленно понижает Настроение на 1.\nПотеря Контроля:\n- Если Настроение достигает уровня «Умирающее», Таверна игнорирует все приказы.\n- Если Настроение остаётся на уровне «Умирающее» целые сутки, связь с Купчей разрывается, и таверна переносится в случайное новое место, магически изгоняя нынешних владельцев из Лестничного Входа в Подземелье.",
+   "url": "https://heartofdaggers.com/products/the-last-round-table/",
+   "title": "Deed to the Last Round Table: the tavern's Mood",
+   "source": "The Last Round Table, printed page 38, \"Deed to the Last Round Table\" (the two actions and the Mood rules)",
+   "records": [
+    "Deed to the Last Round Table"
+   ],
+   "note": "Depends on the Living Pub Mood countdown of the Environments section (printed page 14), which is not in the catalog. Owner decision 2026-11-05: the rules card ships.",
+   "text": "The Clean Up Song - Action: Once per lunar cycle, the Pipe Organ begins playing a jaunty tune and the animated features clean and repair the Tower, magically restoring it to it's original state. Mortals who stay within the tower during this mark 1d4 Stress, due to the chaos.\nMove House - Action: Once per lunar cycle, the Owner may Spend 3 Hope to cause the Stairwell Entrance to move to anywhere within 100 miles, connecting the Last Round Table to a new location.\nRaising the Mood (once per session):\n- Protect guests or staff from harm, offer shelter or aid, resolve conflict peacefully, share food or drink freely, or sing a Hymnal in the Shrine. Each act raises Mood by 1.\nLowering the Mood (once per session):\n- Exploit guests, hoard comfort, threaten the helpless, destroy Hymnal Pages, or deny reasonable aid. Each such act lowers Mood by 1 immediately.\nLoss of Control:\n- If Mood reaches Dying, the Tavern ignores all commands.\n- If Mood remains at Dying through a full day, the bond with the Deed breaks, and the tavern moves to a random new location, expelling the current owners magically from the Stairwell Dungeon Entrance."
+  }
+ },
+ "records": [
+  {
+   "id": "lr1",
+   "src": "lr",
+   "roll": 1,
+   "en": "Anklebiter",
+   "ende": "This divinely animated rocking chair is made entirely of rare Peryton antlers. Anklebiter cannot move or travel on its own, but can twist and rock freely, and communicate in a rough fashion by rapidly squeaking against the floor.\nStrangely, unlike other Sitizens animated by the Saint's Blessing, Anklebiter can stay animated if taken outside the Tower, if that ever happens to it for any reason.\nSitting in Anklebiter as part of a Short Rest clears 1 Stress.",
+   "ru": "Лодыжкогрыз",
+   "rud": "Это божественно оживлённое кресло-качалка целиком сделано из редких рогов Перитона. Лодыжкогрыз не может двигаться или перемещаться сам, но может свободно изгибаться и раскачиваться, а также грубо общаться, быстро скрипя по полу.\nКак ни странно, в отличие от других мебельчан, оживлённых Благословением Святого, Лодыжкогрыз остаётся оживлённым, даже если его вынести за пределы Башни, если такое с ним по какой-то причине случится.\nЕсли сидеть в Лодыжкогрызе во время короткого отдыха, вы очищаете 1 Стресс.",
+   "img": "lr1.webp",
+   "kind": "item"
+  },
+  {
+   "id": "lr2",
+   "src": "lr",
+   "roll": 2,
+   "en": "Alewife Almanac",
+   "ende": "A compact clothbound reassuringly stout book, stamped with clasped hands above a wreath of hop and barley.\nInside the back cover is a magical charm to summon a Witch's Skillet.\nSummon Witch's Skillet - Action: Reading this eldritch charm from the Almanac summons a Witch's Skillet. Only one of these may be summoned per Almanac at a time.",
+   "ru": "Альманах Пивоварихи",
+   "rud": "Компактная, успокаивающе пузатая книга в тканевом переплёте с оттиском сомкнутых рук над венком из хмеля и ячменя.\nВнутри задней обложки находится магический заговор для вызова Ведьминой Сковороды.\nВызов Ведьминой Сковороды - Действие: Прочитав этот потусторонний заговор из Альманаха, вы вызываете Ведьмину Сковороду. Одновременно от одного Альманаха может быть вызвана только одна такая сковорода.",
+   "img": "lr2.webp",
+   "kind": "item"
+  },
+  {
+   "id": "lr3",
+   "src": "lr",
+   "roll": 3,
+   "en": "Witch's Skillet",
+   "ende": "***Double Duty:*** +1 to Armor Score; +2 to primary weapon damage within Melee range",
+   "ru": "Ведьмина Сковорода",
+   "rud": "***Двойная Служба:*** +1 к Показателю Брони; +2 к урону основного оружия по целям Вплотную к вам",
+   "img": "lr3.webp",
+   "kind": "equip",
+   "eq": {
+    "t": "secondary",
+    "tier": 2,
+    "tr": "presence",
+    "rg": "melee",
+    "dmg": "d6+2",
+    "dt": "phy",
+    "bu": 1,
+    "as": null,
+    "th": null,
+    "line": "",
+    "cls": "phy"
+   }
+  },
+  {
+   "id": "lr4",
+   "src": "lr",
+   "roll": 4,
+   "en": "Blessed Horseshoe",
+   "ende": "A shining brass horseshoe stamped with the Blazing Barrel mark of Saint Bungus.\nRetail Therapy - Passive: If hung over the doorframe of a tavern or bar, will add +1 to all social roles made by the bar's staff. Bar owners do not gain this benefit.",
+   "ru": "Благословленная Подкова",
+   "rud": "Блестящая латунная подкова с оттиском Пылающей Бочки Святого Бунгуса.\nТерапия Покупками - Пассивно: Если повесить её над дверным проёмом таверны или бара, она добавляет +1 ко всем социальным броскам, совершаемым персоналом заведения. Владельцы заведения этой выгоды не получают.",
+   "img": "lr4.webp",
+   "kind": "item"
+  },
+  {
+   "id": "lr5",
+   "src": "lr",
+   "roll": 5,
+   "en": "Black Ledger",
+   "ende": "A black leather book bound with cold iron, its pages updating with debts both real and unseen.\nTally - Action: **Mark 1 Stress** to record a creature you can see. You know the current Health, Conditions, or Stress state of any Tallied creature.",
+   "ru": "Чёрный Гроссбух",
+   "rud": "Чёрная кожаная книга, окованная холодным железом; её страницы обновляются, вписывая долги, как явные, так и невидимые.\nУчёт - Действие: **Отметьте 1 Стресс**, чтобы занести в книгу существо, которое вы видите. Вы знаете текущее здоровье, состояния или уровень Стресса любого учтённого существа.",
+   "img": "lr5.webp",
+   "kind": "item"
+  },
+  {
+   "id": "lr6",
+   "src": "lr",
+   "roll": 6,
+   "en": "Deed to the Last Round Table",
+   "ende": "This heavy parchment, stamped with the Blazing Barrel of Saint Bungus, magically binds the Last Round Table to new Owners, as long as they sincerely intend to offer shelter, comfort, and cheer to decent folk throughout the land.\nFull control of the tavern is tied directly to the Living Pub Mood Swings. The owner may request cooperation from rooms, fixtures, and defenders when their actions align with cheer, comfort, and safety.",
+   "ru": "Купчая на Последний Круглый Стол",
+   "rud": "Этот тяжёлый пергамент с оттиском Пылающей Бочки Святого Бунгуса магически привязывает Последний Круглый Стол к новым Владельцам, пока те искренне намерены предлагать приют, уют и радушие порядочным людям по всей земле.\nПолный контроль над таверной напрямую связан с Перепадами Настроения Живого Паба. Владелец может просить содействия у комнат, обстановки и защитников, когда его действия соответствуют радушию, уюту и безопасности.",
+   "img": "lr6.webp",
+   "kind": "item",
+   "refs": [
+    "lr-deed"
+   ]
+  },
+  {
+   "id": "lr7",
+   "src": "lr",
+   "roll": 7,
+   "en": "Hymnal of Saint Bungus",
+   "ende": "A squat stained hymnal, that smells faintly of wax and ale. It contains a mix of working songs, drinking songs, and raunchy or political limericks that are weirdly reassuring.\nCups Up - Action: Once per Session, the Hymnal Holder sings this song to roust allies and raise their spirits. You immediately grant allies within Close range 1d4 Hope.\nDraw Down the Day - Rest Move: Sing this song as Rest move, to clear 1 Stress on all allies within earshot.",
+   "ru": "Сборник Гимнов Святого Бунгуса",
+   "rud": "Приземистый, весь в пятнах сборник гимнов, слабо пахнущий воском и элем. В нём собраны рабочие песни, застольные песни и непристойные или политические частушки, которые на удивление успокаивают.\nКружки Вверх - Действие: Один раз за сессию Держатель Сборника поёт эту песню, чтобы поднять союзников и взбодрить их. Вы немедленно даёте союзникам в пределах Средней дистанции 1d4 Надежды.\nПроводы Дня - Ход Отдыха: Спойте эту песню в качестве Хода Отдыха, чтобы очистить 1 Стресс всем союзникам, которые вас слышат.",
+   "img": "lr7.webp",
+   "kind": "item"
+  },
+  {
+   "id": "lr8",
+   "src": "lr",
+   "roll": 8,
+   "en": "Last Round Recipes",
+   "ende": "A brittle old loosely stitched handwritten book made from different grades of vellum and parchment, written by many different authors over a period of time.\nBrewing: Once a Recipe is learned, PCs can brew 1d4 drink's worth using 1 Long Rest Downtime Move. Each brew ingredients cost equal to its rating in Silver (Bags).",
+   "ru": "Рецепты Последнего Круга",
+   "rud": "Хрупкая старая рукописная книга, небрежно сшитая из разных сортов велени и пергамента и написанная многими авторами в течение долгого времени.\nВарка: Когда рецепт изучен, персонажи могут сварить 1d4 порции напитка за один Ход Отдыха во время продолжительного отдыха. Ингредиенты каждой варки стоят число мешков серебра, равное рейтингу рецепта.",
+   "img": "lr8.webp",
+   "kind": "item",
+   "refs": [
+    "lr-recipes"
+   ]
+  },
+  {
+   "id": "lr9",
+   "src": "lr",
+   "roll": 9,
+   "en": "Loathsome Lute",
+   "ende": "***Malicious:*** On a successful attack, the target must mark a Stress.\n***Feedback - Reaction:*** When an enemy hits with a melee attack, they must make an Agility Reaction Roll against Difficulty 12, or be thrown back to a location within Close Range",
+   "ru": "Омерзительная Лютня",
+   "rud": "***Злобное:*** При успешной атаке цель должна отметить Стресс.\n***Обратная Связь - Реакция:*** Когда противник попадает атакой Вплотную, он должен совершить Бросок Реакции Проворности (12), иначе будет отброшен в точку в пределах Средней дистанции",
+   "img": "lr9.webp",
+   "kind": "equip",
+   "eq": {
+    "t": "weapon",
+    "tier": 2,
+    "tr": "presence",
+    "rg": "far",
+    "dmg": "d8+6",
+    "dt": "mag",
+    "bu": 2,
+    "as": null,
+    "th": null,
+    "line": "",
+    "cls": "mag"
+   }
+  },
+  {
+   "id": "lr10",
+   "src": "lr",
+   "roll": 10,
+   "en": "Noggin' Boots",
+   "ende": "Ragged worn-down leather jackboots, etched with waves, that smell of salt, old rum, and ambergris.\nPumped Up - Reaction: Once per Long Rest, when you take a bold or reckless action, you may gain Advantage.",
+   "ru": "Хмельные Сапоги",
+   "rud": "Потрёпанные стоптанные кожаные сапоги с вытравленными волнами, пахнущие солью, старым ромом и амброй.\nЗаряд Бодрости - Реакция: Один раз за продолжительный отдых, когда вы совершаете смелое или безрассудное действие, вы можете получить преимущество.",
+   "img": "lr10.webp",
+   "kind": "item"
+  },
+  {
+   "id": "lr11",
+   "src": "lr",
+   "roll": 11,
+   "en": "Oiled Longcoat",
+   "ende": "A heavy lanolin treated wool longcoat, with a soft cotton lining, which settles its weight on the shoulders like a hug from a reassuring friend that's got your back.\nTraveller's Companion - Passive: When you go to mark a Stress, roll a D6. On a 6, do not mark the Stress.",
+   "ru": "Промасленное Длиннополое Пальто",
+   "rud": "Тяжёлое шерстяное длиннополое пальто, пропитанное ланолином, с мягкой хлопковой подкладкой; его вес ложится на плечи, как объятие надёжного друга, который прикроет вам спину.\nСпутник Путника - Пассивно: Когда вы собираетесь отметить Стресс, бросьте d6. При результате 6 не отмечайте Стресс.",
+   "img": "lr11.webp",
+   "kind": "item"
+  },
+  {
+   "id": "lr12",
+   "src": "lr",
+   "roll": 12,
+   "en": "Paddle of Rising Ferment",
+   "ende": "***Rising Ferment - Reaction:*** **Mark 1 Stress** to reanimate any creature killed by the Paddle as a Shambling Zombie, controlled by the Paddle Wielder until the end of the scene, after which it acts on its own as a normal zombie would.",
+   "ru": "Весло Растущего Брожения",
+   "rud": "***Растущее Брожение - Реакция:*** **Отметьте 1 Стресс**, чтобы поднять любое существо, убитое Веслом, как Бредущего Зомби под контролем владельца Весла до конца сцены; после этого оно действует само по себе, как обычный зомби.",
+   "img": "lr12.webp",
+   "kind": "equip",
+   "eq": {
+    "t": "weapon",
+    "tier": 2,
+    "tr": "strength",
+    "rg": "veryclose",
+    "dmg": "d8+6",
+    "dt": "phy",
+    "bu": 2,
+    "as": null,
+    "th": null,
+    "line": "",
+    "cls": "phy"
+   },
+   "refs": [
+    "shambling-zombie"
+   ]
+  },
+  {
+   "id": "lr13",
+   "src": "lr",
+   "roll": 13,
+   "en": "Rose Lantern",
+   "ende": "A magical lantern made from red tinted copper carved in the shape of a rose, with the phrase \"Love is in the Air\" written on its base in flowing letters.\nLove is in the Air - Action: When invoked with the phrase written on it, the lantern flickers with a warm red glow and emits soft music. All allies within close range clear 1 Stress. The lantern may be used once per day.",
+   "ru": "Фонарь-Роза",
+   "rud": "Магический фонарь из красной тонированной меди, вырезанный в форме розы, с надписью «Любовь витает в воздухе», выведенной на основании плавными буквами.\nЛюбовь витает в воздухе - Действие: Когда произносят написанную на нём фразу, фонарь мерцает тёплым красным светом и издаёт тихую музыку. Все союзники в пределах Средней дистанции очищают 1 Стресс. Фонарь можно использовать один раз в день.",
+   "img": "lr13.webp",
+   "kind": "item"
+  },
+  {
+   "id": "lr14",
+   "src": "lr",
+   "roll": 14,
+   "en": "Wolfhorn Hunting Charm",
+   "ende": "A small scrimshawed horn, taken from a dire wolf, with carvings depicting a moon and a bow. Usually found with a cord of braided wolf fur.\nStalker's Stance - Action: Gain advantage on rolls related to stealth or hunting for the duration of a scene. Can be used once per Long Rest.",
+   "ru": "Охотничий Оберег из Волчьего Рога",
+   "rud": "Небольшой рог лютого волка, украшенный резьбой по кости с изображением луны и лука. Обычно встречается со шнурком из плетёной волчьей шерсти.\nСтойка Преследователя - Действие: Получите преимущество на броски, связанные со скрытностью или охотой, на время сцены. Можно использовать один раз за продолжительный отдых.",
+   "img": "lr14.webp",
+   "kind": "item"
+  },
+  {
+   "id": "lr15",
+   "src": "lr",
+   "roll": 15,
+   "en": "Apocalypse Ale",
+   "ende": "A deep amber barleywine, that's unsettingly thick and heavy, feeling almost the same weight as lead or gold.\nHeavy Drinker - Reaction: Drinking a glass of this ale increases the specific gravity of the PC. Until the end of the scene the PC can not be moved, teleporting, or restrained against their will.\n- Drinking more than 1 glass of Apocalypse Ale between rests, prompts a Strength Reaction roll, against a difficulty of 10 + number of glasses drank that day. On a fail, you have Disadvantage on all rolls until you take a rest.",
+   "ru": "Эль Апокалипсиса",
+   "rud": "Тёмно-янтарное ячменное вино, тревожно густое и тяжёлое, почти как свинец или золото.\nТяжёлый Выпивоха - Реакция: Выпив бокал этого эля, персонаж увеличивает свой удельный вес. До конца сцены персонажа нельзя сдвинуть с места, телепортировать или обездвижить против его воли.\n- Если выпить больше 1 бокала Эля Апокалипсиса между отдыхами, нужно совершить Бросок Реакции Силы, Сложность которого равна 10 + число бокалов, выпитых за день. При провале вы получаете помеху на все броски до следующего отдыха.",
+   "img": "lr15.webp",
+   "kind": "consumable"
+  },
+  {
+   "id": "lr16",
+   "src": "lr",
+   "roll": 16,
+   "en": "Backstage Pass",
+   "ende": "Poof - Action: You tear this magical ticket to disappear from where you are and immediately reappear at a point you can see within Very Far range.",
+   "ru": "Пропуск за Кулисы",
+   "rud": "Пуф - Действие: Вы разрываете этот магический билет, исчезаете с того места, где находитесь, и немедленно появляетесь в точке, которую видите, в пределах Очень Далекой дистанции.",
+   "img": "lr16.webp",
+   "kind": "consumable"
+  },
+  {
+   "id": "lr17",
+   "src": "lr",
+   "roll": 17,
+   "en": "Blessed Kegs of the Blazing Barrel",
+   "ende": "A small oaken keg bound in silver hoops etched with prayers of preservation, and sealed with golden beeswax. The keg is slightly cool to the touch.\nThe Freshmaker - Passive: Contents in the keg remain fresh until the seal is broken. The first drink from a freshly opened keg clears 1 Stress.",
+   "ru": "Благословленные Бочонки Пылающей Бочки",
+   "rud": "Небольшой дубовый бочонок, стянутый серебряными обручами с выгравированными молитвами о сохранности и запечатанный золотым пчелиным воском. Бочонок слегка прохладен на ощупь.\nОсвежитель - Пассивно: Содержимое бочонка остаётся свежим, пока печать не сломана. Первый глоток из свежеоткрытого бочонка очищает 1 Стресс.",
+   "img": "lr17.webp",
+   "kind": "consumable"
+  },
+  {
+   "id": "lr18",
+   "src": "lr",
+   "roll": 18,
+   "en": "Enzymatic Disabler",
+   "ende": "Small glass vial in a brass safety frame, filled with mist.\nGoop Off - Action: Throw this vial at a location anywhere within Far range, breaking it to create a cloud that targets all Ooze, Slime, or Amorphous creatures in Close range to the location. All targets become Vulnerable until they mark a Hit Point.",
+   "ru": "Ферментный Обезвреживатель",
+   "rud": "Маленькая стеклянная склянка в латунной защитной оправе, наполненная дымкой.\nДолой Слизь - Действие: Бросьте эту склянку в точку в пределах Далекой дистанции: она разбивается и создаёт облако, действующее на всех Слизей, Желе и Аморфных существ в пределах Средней дистанции от этой точки. Все цели становятся Уязвимыми, пока не отметят Рану.",
+   "img": "lr18.webp",
+   "kind": "consumable"
+  },
+  {
+   "id": "lr19",
+   "src": "lr",
+   "roll": 19,
+   "en": "Gravedraught Ale",
+   "ende": "This deep blue ale is painfully cold to the touch, slowly sloshes around like chilled oil.\nCold One - Action: When a bottle is broken or thrown, it shatters in a burst of pale blue vapor and frost. Targets within Very Close range must make a Difficulty 12 Agility Reaction roll, taking 2d8+2 magical damage if they fail.",
+   "ru": "Эль Могильного Холода",
+   "rud": "Этот тёмно-синий эль болезненно холоден на ощупь и медленно перекатывается, как охлаждённое масло.\nЛедяной Глоток - Действие: Когда бутылку разбивают или бросают, она взрывается облаком бледно-голубого пара и инея. Цели в пределах Близкой дистанции должны совершить Бросок Реакции Проворности (12), а при провале получают 2d8+2 магического урона.",
+   "img": "lr19.webp",
+   "kind": "consumable"
+  },
+  {
+   "id": "lr20",
+   "src": "lr",
+   "roll": 20,
+   "en": "Longfire Fruitcake",
+   "ende": "A brick-dense loaf of fruitcake soaked with enough spirits to qualify as fire hazard. Hard as pine, sweet as regret, and stubbornly unchanged by time.\nFound in 10lb loafs, pre-cut into 5 slices. Longfire Fruitcake never molds, dries out, or softens. A slice provides enough nutrients to replace a day's rations.\nThe Gift that Keeps Giving - Action: Consume a slice of Longfire Cake, then make a Difficulty 10 Strength Reaction roll, applying the following results:\nAdditionally, a slice of Longfire Fruitcake may be set alight, creating a dim light source which lasts 1 hour.",
+   "ru": "Фруктовый Кекс Долгого Огня",
+   "rud": "Плотный, как кирпич, фруктовый кекс, пропитанный таким количеством спиртного, что тянет на пожароопасный предмет. Твёрд, как сосна, сладок, как сожаление, и упрямо не поддаётся времени.\nВстречается в буханках примерно по 4,5 кг, заранее нарезанных на 5 ломтей. Фруктовый Кекс Долгого Огня никогда не плесневеет, не сохнет и не черствеет. Один ломоть даёт достаточно питательных веществ, чтобы заменить дневной рацион.\nПодарок, Который Дарит Снова и Снова - Действие: Съешьте ломоть Кекса Долгого Огня, затем совершите Бросок Реакции Силы (10), применив следующие результаты:\nКроме того, ломоть Фруктового Кекса Долгого Огня можно поджечь, создав тусклый источник света, который горит 1 час.",
+   "img": "lr20.webp",
+   "kind": "consumable",
+   "refs": [
+    "lr-fruitcake"
+   ]
+  },
+  {
+   "id": "lr21",
+   "src": "lr",
+   "roll": 21,
+   "en": "Ironwood Coal",
+   "ende": "A dense coal veined with metallic sheen, that sparks when struck. Ironwood coal burns hotter and longer than normal coal, and can act like flint and steel, igniting itself with any sharp blow.\n1lb of well stacked and ventilated Ironwood Coal will burn for a day, at twice the heat of normal coal, and burns extremely cleanly leaving almost no ash or smoke. It can sell for as much as 1 Copper (Handful) per pound, depending on availability.",
+   "ru": "Уголь Железного Дерева",
+   "rud": "Плотный уголь с металлическим отливом прожилок, который искрит при ударе. Уголь Железного Дерева горит жарче и дольше обычного угля и может служить как кремень и огниво, воспламеняясь от любого резкого удара.\nПримерно 0,5 кг хорошо уложенного и проветриваемого Угля Железного Дерева горит целый день с вдвое большим жаром, чем обычный уголь, и горит очень чисто, почти не оставляя золы или дыма. Его можно продать до 1 горсти меди за каждые 0,5 кг, в зависимости от доступности.",
+   "img": "lr21.webp",
+   "kind": "consumable"
+  },
+  {
+   "id": "lr22",
+   "src": "lr",
+   "roll": 22,
+   "en": "Pocket Sand Pouch",
+   "ende": "A special mixture of rapidly dispersible sand and dust, chili powder, and glitter, stored in a handy vellum pouch.\nNot In The Face - Reaction: When an adversary in melee range attempts an action roll, you may use this to impose Disadvantage on the roll.",
+   "ru": "Мешочек Карманного Песка",
+   "rud": "Особая смесь быстро рассеивающегося песка и пыли, порошка чили и блёсток, хранящаяся в удобном пергаментном мешочке.\nТолько Не в Лицо - Реакция: Когда противник Вплотную к вам пытается совершить Бросок Действия, вы можете использовать этот мешочек, чтобы наложить на бросок помеху.",
+   "img": "lr22.webp",
+   "kind": "consumable"
+  },
+  {
+   "id": "lr23",
+   "src": "lr",
+   "roll": 23,
+   "en": "Saint Bungus Honey Butter Soap",
+   "ende": "These tiny bars of soap are found wrapped in waxed cloth and stamped with a seal of a flaming beer barrel. The soap smells strongly of honey, herbs, and ash, and produces a rich lather even in cold water.\nRub a Dub - Rest Move: When used as part of a rest, it leaves skin clean, warm, and delightfully scented, with the lingering impression of having slept in a respectable bed and recently made mostly good life choices, which honestly is the only magic any of us really need. You also clear 1d4 stress. Each bar of soap lasts 1 bath.",
+   "ru": "Медово-Масляное Мыло Святого Бунгуса",
+   "rud": "Эти крошечные кусочки мыла завёрнуты в провощённую ткань и отмечены печатью с горящей пивной бочкой. Мыло сильно пахнет мёдом, травами и пеплом и даёт густую пену даже в холодной воде.\nТру-Тру-Тру - Ход Отдыха: Если использовать его во время отдыха, кожа остаётся чистой, тёплой и восхитительно пахнущей, с сохраняющимся ощущением, что вы спали в приличной постели и недавно приняли в основном хорошие жизненные решения, что, честно говоря, и есть единственная магия, которая действительно нужна любому из нас. Вы также очищаете 1d4 Стресса. Одного куска мыла хватает на 1 купание.",
+   "img": "lr23.webp",
+   "kind": "consumable"
+  },
+  {
+   "id": "lr24",
+   "src": "lr",
+   "roll": 24,
+   "en": "Screaming Siren Rum",
+   "ende": "A dark spiced rum, high enough in proof to catch flame.\nWay Hay - Reaction: Drinking a glass of this rum grants boldness and luck beyond reason, but at a cost. Until the end of the scene, any time you would mark Hit Points, roll a d6. On a 6 you mark 1 less Hit Point. At the end of the scene you become Vulnerable until you take a rest.",
+   "ru": "Ром Кричащей Сирены",
+   "rud": "Тёмный пряный ром, достаточно крепкий, чтобы вспыхнуть.\nЭгей - Реакция: Бокал этого рома дарует отвагу и везение сверх всякой меры, но за это придётся заплатить. До конца сцены каждый раз, когда вы должны отметить Раны, бросьте d6. При результате 6 вы отмечаете на 1 Рану меньше. В конце сцены вы становитесь Уязвимым до следующего отдыха.",
+   "img": "lr24.webp",
+   "kind": "consumable"
+  },
+  {
+   "id": "lr25",
+   "src": "lr",
+   "roll": 25,
+   "en": "Sacred Mother Jar",
+   "ende": "A thick glass jar sealed with pitch. Inside a thick yellow paste undulates slowly as if alive. The Sacred Mother Jar contains the original culture which grew to form the sentient yeastmother Doppelcrock.\nIf brought in contact with Doppelcrock, it will disable her with conflicting emotions and thoughts. If portions of the contents are removed from the jar, they turn gray and die.\nBurden of Proof - Action: Choose a location within Far range, and throw the jar to create an area within Very Close range from the target location. Any ooze-based lifeform within that area becomes Vulnerable.",
+   "ru": "Банка Святой Матери",
+   "rud": "Толстая стеклянная банка, запечатанная смолой. Внутри медленно колышется густая жёлтая паста, словно живая. Банка Святой Матери содержит исходную культуру, из которой выросла разумная материнская закваска Доппелькрок.\nЕсли банка соприкоснётся с Доппелькрок, содержимое выведет её из строя противоречивыми эмоциями и мыслями. Если извлечь часть содержимого из банки, извлечённое посереет и умрёт.\nБремя Доказательства - Действие: Выберите точку в пределах Далекой дистанции и бросьте банку, чтобы создать область в пределах Близкой дистанции от этой точки. Любая форма жизни на основе слизи в этой области становится Уязвимой.",
+   "img": "lr25.webp",
+   "kind": "consumable"
+  },
+  {
+   "id": "lr26",
+   "src": "lr",
+   "roll": 26,
+   "en": "Scroll of Reaping",
+   "ende": "A black vellum scroll written with red ink, which contains a spiritual contract binding the undead.\nUmbral Binding - Action: When read, you have Advantage on action rolls against Undead enemies for the remainder of the scene. The scroll ignites in a harmless green flame, burning away to black ash.",
+   "ru": "Свиток Жатвы",
+   "rud": "Чёрный пергаментный свиток, исписанный красными чернилами, содержащий духовный договор, связывающий нежить.\nТеневое Связывание - Действие: При прочтении вы получаете преимущество на Броски Действия против врагов-нежити до конца сцены. Свиток вспыхивает безвредным зелёным пламенем и сгорает, обращаясь в чёрный пепел.",
+   "img": "lr26.webp",
+   "kind": "consumable"
+  }
+ ]
+}
