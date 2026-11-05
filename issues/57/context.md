@@ -1003,3 +1003,12 @@
 - Human provides new info
 - context.md is missing a fact you need
 - You suspect drift vs issue or plan
+
+## Placed (orchestrator, 2026-11-06, from the fold planner)
+- Item 10: homes DESIGN.md "The Phone-First Rule", "Components" "Named Rules" (Reading Time Rule 5 of 8), FEATURES.md "Chrome"; the long toast class (10000 ms; an email address or more than 80 characters) is a planner default (AFK item 21); batch TD (`plan-TD.md`).
+- Item 11: `plan-N.md` N-D5, a named exception, 334 px at 900x720, ceiling 336 in case 112; fallback `scrollTrim` (287 px). The "homebrew" cells of `mocks/N/headorder/` were roll-page offsets; N S1 measures the real page. The Head Order Rule: batch N, acceptance 2.
+- Item 12: batch N, N-D10, case 113, `mocks/N/d12/`.
+- Item 13: batch TD, `plan-D.md`. Corrections: the list drop mark is a 2 px gold line; the value-less filter chip is not dashed.
+- Item 14: batch TD, D-6, now `--measure-line` (`plan-text.md`).
+- Item 15: `plan-text.md`, batch TD (MT-1 to MT-7, case 111).
+- CI note: run 42128868815 of the fold commit `d524e220` failed `check` on one timing test (`homebrew.timed.test.ts`, 16.96 ms against 16) on a docs-only change; the credit refuses a `check` re-run, so the TD tip carries the gate.
