@@ -93,7 +93,7 @@ async function newListFromCard() {
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/i/ci1', { as: 'gm2' });
   await d.press('В список');
-  await d.press('+ Новый список');
+  await d.press('Новый список');
   const box = await newListInputBox(page);
   ok(!!box, '1 (card): the new-list form did not open');
   ok(!!box?.focused, '1 (card): the input is not focused');
@@ -107,7 +107,7 @@ async function newListFromBar() {
   await d.open('#/tables', { as: 'gm2' });
   await d.tick('Первоклассный Спальный Мешок'); // ticking a row is not this case's point
   await d.press('В список');
-  await d.press('+ Новый список');
+  await d.press('Новый список');
   const box = await newListInputBox(page);
   ok(!!box, '2 (selection bar): the new-list form did not open');
   ok(!!box?.focused, '2 (selection bar): the input is not focused');
@@ -122,7 +122,7 @@ async function newListFromModal() {
   await d.press('Самоцвет Чутья');
   ok(await d.has('В список'), '3 (modal): the modal did not open');
   await d.press('В список');
-  await d.press('+ Новый список');
+  await d.press('Новый список');
   const box = await newListInputBox(page);
   ok(!!box, '3 (modal): the new-list form did not open');
   ok(!!box?.focused, '3 (modal): the input is not focused');
@@ -184,7 +184,7 @@ async function addToListMenuStaysInModal() {
     ok(inside(menu, card), '23 (menu in the modal): the menu sits outside .modal-card');
   }
 
-  await d.press('+ Новый список');
+  await d.press('Новый список');
   const input = await newListInputBox(page);
   ok(!!input, '23 (menu in the modal): the new-list form did not open');
   ok(!!input?.focused, '23 (menu in the modal): the input is not focused');
@@ -1316,8 +1316,8 @@ async function announceOnTouchAndHideInertGrip() {
   await ctx2.close();
 }
 
-/** 27. At 50 lists the menu keeps its label, search and «+ Новый список» in
- *  view and scrolls only its chips; the lists holding the record lead
+/** 27. At 50 lists the menu keeps its heading, search and «Новый список» in
+ *  view and scrolls only its rows; the lists holding the record lead
  *  (docs/specs/FEATURES.md, "Lists"). */
 async function listMenuKeepsItsControlsInView() {
   /* gm2 holds one list of its own; 49 more make the fake's limit of 50. */
@@ -1349,17 +1349,15 @@ async function listMenuKeepsItsControlsInView() {
       };
       const menu = document.querySelector('.dropmenu');
       const chips = menu?.querySelector('.pickchips');
-      const newChip = [...(menu?.querySelectorAll(':scope > .chip') ?? [])].find(
-        (c) => c.textContent === '+ Новый список'
-      );
+      const newChip = menu?.querySelector(':scope > .lnew');
       return {
         menu: box(menu),
         search: box(menu?.querySelector('input[type="search"]')),
         newChip: box(newChip),
         scrolls: !!chips && chips.scrollHeight > chips.clientHeight,
-        firstOn: [...(chips?.querySelectorAll('.chip') ?? [])]
+        firstOn: [...(chips?.querySelectorAll('.lrow') ?? [])]
           .slice(0, 6)
-          .map((c) => c.classList.contains('on')),
+          .map((c) => c.getAttribute('aria-pressed') === 'true'),
         view: { x: 0, y: 0, w: innerWidth, h: innerHeight }
       };
     });
@@ -1368,7 +1366,7 @@ async function listMenuKeepsItsControlsInView() {
       ok(m.menu.h <= 342, at + 'the menu is ' + String(m.menu.h) + ' px tall, over 342');
       for (const [name, b] of [
         ['the search box', m.search],
-        ['«+ Новый список»', m.newChip]
+        ['«Новый список»', m.newChip]
       ]) {
         ok(
           !!b && inside(b, m.menu),
@@ -1381,14 +1379,14 @@ async function listMenuKeepsItsControlsInView() {
         ok(!!b && b.shown, at + name + ' is covered or clipped - ' + JSON.stringify(b));
       }
     }
-    ok(m.scrolls, at + 'the chips do not scroll on their own');
+    ok(m.scrolls, at + 'the rows do not scroll on their own');
     ok(
       JSON.stringify(m.firstOn) === JSON.stringify([true, true, true, true, true, false]),
       at + 'the five lists holding the record do not lead - ' + JSON.stringify(m.firstOn)
     );
 
     await d.type('Найти список', 'Шкатулка');
-    await d.press('+ Новый список');
+    await d.press('Новый список');
     const input = await page.evaluate(() => {
       const el = document.querySelector('.picker-new input[type="text"]');
       return el && { value: el.value, focused: el === document.activeElement };
@@ -2227,7 +2225,7 @@ async function pressPromptSignIn(page) {
   await ready(page);
 }
 
-/** 37. A signed-out selection's «+ Новый список» is the sign-in prompt; its
+/** 37. A signed-out selection's «Новый список» is the sign-in prompt; its
  *  «Войти» opens #/account, whose Google sign-in comes back to the table with
  *  the same row ticked and the bar's menu open over the account's lists.
  *  Leaving #/account by a tab first forgets it (docs/specs/FEATURES.md,
@@ -2238,7 +2236,7 @@ async function signInFromTheBar() {
   await d.open('#/tables');
   await d.tick('Первоклассный Спальный Мешок');
   await d.press('В список');
-  await d.press('+ Новый список');
+  await d.press('Новый список');
   ok(
     (await page.evaluate(() => document.body.innerText)).includes(
       'Войдите, чтобы создать список.'
@@ -2260,15 +2258,14 @@ async function signInFromTheBar() {
     ticked: [...document.querySelectorAll('input[type="checkbox"]')].some(
       (c) => c.checked && c.getAttribute('aria-label') === 'Первоклассный Спальный Мешок'
     ),
-    chips: [...document.querySelectorAll('.dropmenu .chip')].map((c) => c.textContent)
+    chips: [...document.querySelectorAll('.dropmenu .lrow .ln, .dropmenu .lnew')].map(
+      (c) => c.textContent
+    )
   }));
   ok(back.ticked, at + 'the row is no longer ticked');
   ok(
-    back.chips.some((c) => c.includes('Лавка кузнеца')) &&
-      back.chips.includes('+ Новый список'),
-    at +
-      "the menu lacks the account's lists or «+ Новый список» - " +
-      JSON.stringify(back.chips)
+    back.chips.some((c) => c.includes('Лавка кузнеца')) && back.chips.includes('Новый список'),
+    at + "the menu lacks the account's lists or «Новый список» - " + JSON.stringify(back.chips)
   );
   await ctx.close();
 
@@ -2276,7 +2273,7 @@ async function signInFromTheBar() {
   await again.d.open('#/tables');
   await again.d.tick('Первоклассный Спальный Мешок');
   await again.d.press('В список');
-  await again.d.press('+ Новый список');
+  await again.d.press('Новый список');
   await pressPromptSignIn(again.page);
   await again.d.press('Поиск');
   await again.page.click('header a[href="/account"]');
@@ -2398,19 +2395,15 @@ async function notSavedThenRetried() {
   await ctx.close();
 }
 
-/** 41. Deleting an account list on the index: the browser's confirm names
+/** 41. Deleting an account list from its card's «Ещё»: the browser's confirm names
  *  the share links, the card goes, and the toast offers no undo. */
 async function deleteAccountList() {
   const at = '41 (delete an account list): ';
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/lists', { as: 'gm1' });
   await waitIn(page, () => document.body.innerText.includes('Трофеи'));
-  const index = await page.evaluate(() =>
-    [...document.querySelectorAll('.listcard')].findIndex((c) =>
-      c.textContent.includes('Трофеи')
-    )
-  );
-  await d.press('Удалить', index);
+  await d.press('Ещё: Трофеи');
+  await d.press('Удалить список');
   ok(
     (d.dialog() ?? '').includes('перестанут работать'),
     at + 'the confirm does not name the links - ' + JSON.stringify(d.dialog())
@@ -2435,7 +2428,7 @@ async function promptInDialogMenuAt360() {
   await d.open('#/tables');
   await d.press('Кольцо Тишины');
   await d.press('В список');
-  await d.press('+ Новый список');
+  await d.press('Новый список');
   await d.settle();
   const m = await page.evaluate(() => {
     const box = (el) => {
@@ -3145,10 +3138,10 @@ async function accountMenu() {
 
 /** A file of docs/fixtures/import/. */
 const IMPORT_FILE = (name) => path.join(__dirname, '../../docs/fixtures/import', name);
-/** The account cards' pick boxes that are ticked, and the strip's summary. */
+/** The account cards' pick boxes that are ticked, and the selection bar's count. */
 const picks = () => ({
   ticked: document.querySelectorAll('.listcard-pick input:checked').length,
-  summary: document.querySelector('.batch-summ')?.textContent.trim() ?? ''
+  summary: document.querySelector('.selbarwrap .selcount')?.textContent.trim() ?? ''
 });
 
 /** 58. The ticked lists download as one lists file: two account cards ticked,
@@ -3159,7 +3152,7 @@ async function ticksDownloadAsOneFile() {
   const at = '58 (the ticked lists download as one lists file): ';
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/lists', { as: 'gm1' });
-  await waitIn(page, () => !!document.querySelector('.listcard-pick'));
+  await waitIn(page, () => !!document.querySelector('.listcard'));
   await d.tick('Выбрать: Пустой список');
   await d.tick('Выбрать: Лавка кузнеца');
   await d.press('Скачать JSON (2)');
@@ -3236,7 +3229,7 @@ async function dataZipReadsBack() {
   fs.writeFileSync(tmp, bytes);
   try {
     await d.go('#/lists');
-    await waitIn(page, () => !!document.querySelector('.listcard-pick'));
+    await waitIn(page, () => !!document.querySelector('.listcard'));
     await d.press('Импорт из файла');
     await d.upload(tmp);
     ok(
@@ -3265,7 +3258,7 @@ async function importedListOpens() {
   const at = '60 (an imported list opens with its rows in file order): ';
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/lists', { as: 'gm1' });
-  await waitIn(page, () => !!document.querySelector('.listcard-pick'));
+  await waitIn(page, () => !!document.querySelector('.listcard'));
   await d.press('Импорт из файла');
   await d.upload(IMPORT_FILE('example.json'));
   await waitIn(page, bodyHas, 'Импортировать (1)');
@@ -3314,7 +3307,7 @@ async function tickedListsDeletedTogether() {
   const at = '61 (ticked lists are deleted together after one confirm): ';
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/lists', { as: 'gm1' });
-  await waitIn(page, () => !!document.querySelector('.listcard-pick'));
+  await waitIn(page, () => !!document.querySelector('.listcard'));
   await d.tick('Выбрать: Пустой список');
   await d.tick('Выбрать: Трофеи');
   await d.press('Удалить (2)');
@@ -3350,7 +3343,7 @@ async function tickedListsDeletedTogether() {
   await ctx.close();
 }
 
-/** 62. A search prunes the ticks and «Выбрать все» ticks the drawn cards
+/** 62. A search prunes the ticks and the bar's «Все» ticks the drawn cards
  *  only: gm1's three lists and nine made through the fake; a tick the query hides is dropped for good,
  *  and the checked boxes always equal the summary's number. */
 async function searchPrunesTicks() {
@@ -3366,8 +3359,8 @@ async function searchPrunesTicks() {
   await d.settled('62');
   await d.accountLists(names.map((name, n) => ({ n: n + 1, name, ids: [] })));
   ok(
-    (await d.count('.listcard-pick')) === 12,
-    at + 'twelve account cards are not drawn - ' + String(await d.count('.listcard-pick'))
+    (await d.count('.listcard')) === 12,
+    at + 'twelve account cards are not drawn - ' + String(await d.count('.listcard'))
   );
   const agree = async (step, summary) => {
     const p = await page.evaluate(picks);
@@ -3380,10 +3373,10 @@ async function searchPrunesTicks() {
   };
   await d.tick('Выбрать: Порт Ветров');
   await d.tick('Выбрать: Рынок');
-  await agree('two ticked', 'Выбрано 2');
+  await agree('two ticked', 'Выбрано: 2');
   await d.type('Найти список', 'порт');
-  await agree('the query', 'Выбрано 1');
-  ok((await d.text()).includes('Удалить (1)'), at + 'the query does not leave «Удалить (1)»');
+  await agree('the query', 'Выбрано: 1');
+  ok(await d.has('Удалить (1)'), at + 'the query does not leave «Удалить (1)»');
   await d.type('Найти список', '');
   const rynok = await page.evaluate(
     () =>
@@ -3392,14 +3385,11 @@ async function searchPrunesTicks() {
       )?.checked
   );
   ok(rynok === false, at + '«Рынок» came back ticked');
-  await agree('the query cleared', 'Выбрано 1');
+  await agree('the query cleared', 'Выбрано: 1');
   await d.type('Найти список', 'порт');
   await d.tick('Выбрать все');
-  await agree('select-all over the query', 'Выбрано 2');
-  ok(
-    (await d.text()).includes('Скачать JSON (2)'),
-    at + 'select-all does not offer «Скачать JSON (2)»'
-  );
+  await agree('select-all over the query', 'Выбрано: 2');
+  ok(await d.has('Скачать JSON (2)'), at + 'select-all does not offer «Скачать JSON (2)»');
   await ctx.close();
 }
 
@@ -3853,7 +3843,8 @@ async function longListName() {
   );
   ok(index >= 0, at + 'the long name has no card after the return');
   if (index >= 0) {
-    await d.press('Удалить', index);
+    await d.press('Ещё: ' + long);
+    await d.press('Удалить список');
     ok(
       await waitIn(page, () => !!document.querySelector('.toast:popover-open')),
       at + 'the delete toast did not show'
@@ -4901,7 +4892,7 @@ async function recordActionsFit() {
     return {
       menu: box(menu),
       search: box(menu.querySelector('.pickq')),
-      add: box(menu.querySelector(':scope > .chip') ?? menu.lastElementChild),
+      add: box(menu.querySelector(':scope > .lnew') ?? menu.lastElementChild),
       scrolls: chips.scrollHeight > chips.clientHeight,
       view: { x: 0, y: 0, w: innerWidth, h: innerHeight }
     };
@@ -5639,7 +5630,8 @@ const FIRST_SCREEN = [
   { state: '#/homebrew/sets ~ long name as gm4', shipped: true },
   { state: '#/homebrew/new as gm1', shipped: true },
   { state: '#/homebrew/hb_longsrcaaaaaaaaa as gm4', shipped: true },
-  { state: '#/lists as gm1', shipped: false },
+  { state: '#/lists as gm1', shipped: true },
+  { state: '#/lists ~ many lists as gm4', shipped: true },
   { state: '#/lists/00000000-0000-4000-8000-000000008001 as gm4', shipped: 360 },
   { state: '#/lists/00000000-0000-4000-8000-000000008001 ~ many as gm4', shipped: 360 },
   { state: '#/lists/00000000-0000-4000-8000-000000008001 ~ long name as gm4', shipped: 360 },
@@ -6662,7 +6654,7 @@ async function resultRowAndMenus() {
         const chips = list.querySelector('.pickchips');
         return {
           menu: box(list),
-          add: box(list.querySelector(':scope > .chip') ?? list.lastElementChild),
+          add: box(list.querySelector(':scope > .lnew') ?? list.lastElementChild),
           scrolls: chips.scrollHeight > chips.clientHeight,
           header: document.querySelector('.topbar').getBoundingClientRect().bottom
         };
@@ -7899,6 +7891,366 @@ async function listHeadAndBars() {
   }
 }
 
+/** 102. The lists page holds from 320 to 1440 px (docs/specs/FEATURES.md, "Lists"): no
+ *  sideways scroll; up to 760 px the `h1`, «Новый список» and «Ещё» share one row from 360 px
+ *  (at 320 px the primary and «Ещё» share the row under the `h1`); the
+ *  primary is 44 px tall up to 760 px, and from 761 px it ends at the column's right edge;
+ *  the cards of a grid row share one height and never pass the grid; a 120-character name
+ *  wraps inside its card; the bar takes at most 45% of 640x360 and starts at `main` from
+ *  1180 px; the count is red at the limit. */
+async function listsPageHolds() {
+  const at = '102 (the lists page): ';
+  for (const id of ['#/lists as gm1', '#/lists ~ many lists as gm4']) {
+    for (const lang of ['ru', 'en']) {
+      for (const [width, height] of [
+        [320, 568],
+        [360, 640],
+        [390, 844],
+        [768, 1024],
+        [1180, 720],
+        [1440, 900]
+      ]) {
+        const where = at + id + ' ' + width + ' ' + lang + ': ';
+        const { ctx, page } = await openState(id, width, height, lang);
+        try {
+          const m = await page.evaluate(() => {
+            const box = (el) => {
+              if (!el) return null;
+              const r = el.getBoundingClientRect();
+              return {
+                top: r.top,
+                bottom: r.bottom,
+                left: r.left,
+                right: r.right,
+                h: r.height
+              };
+            };
+            const head = document.querySelector('main .page-head');
+            const grid = document.querySelector('.listgrid');
+            return {
+              sideways:
+                document.documentElement.scrollWidth > document.documentElement.clientWidth,
+              head: box(head),
+              h1: box(head?.querySelector('h1')),
+              prim: box(head?.querySelector('.btn.primary')),
+              more: box(head?.querySelector('.headx [aria-haspopup="menu"]')),
+              grid: box(grid),
+              cards: [...(grid?.querySelectorAll('.listcard') ?? [])].map(box)
+            };
+          });
+          ok(!m.sideways, where + 'the page scrolls sideways');
+          ok(!!m.h1 && !!m.prim, where + 'no h1 or primary in the head - ' + JSON.stringify(m));
+          if (!m.h1 || !m.prim) continue;
+          const mid = (b) => b.top + b.h / 2;
+          if (width <= 760) {
+            ok(
+              !!m.more &&
+                Math.abs(mid(m.prim) - mid(m.more)) <= 1 &&
+                (width < 360 || (mid(m.prim) > m.h1.top && mid(m.prim) < m.h1.bottom)),
+              where +
+                'the h1, the primary and «Ещё» do not share one row - ' +
+                JSON.stringify(m)
+            );
+            ok(m.prim.h >= 43.5, where + 'the primary is ' + m.prim.h + ' px tall');
+          } else {
+            ok(
+              Math.abs(m.prim.right - m.head.right) <= 1,
+              where + 'the primary does not end at the column edge - ' + JSON.stringify(m)
+            );
+          }
+          const rows = new Map();
+          for (const c of m.cards) {
+            const key = Math.round(c.top);
+            rows.set(key, [...(rows.get(key) ?? []), c.h]);
+          }
+          ok(
+            [...rows.values()].every((hs) => Math.max(...hs) - Math.min(...hs) <= 1),
+            where + 'the cards of a row differ in height - ' + JSON.stringify([...rows])
+          );
+          ok(
+            !!m.grid &&
+              m.cards.every(
+                (c) => c.left >= m.grid.left - 0.5 && c.right <= m.grid.right + 0.5
+              ),
+            where + 'a card passes the grid'
+          );
+        } finally {
+          await ctx.close();
+        }
+      }
+    }
+  }
+  {
+    const where = at + '360, a name of 120 characters: ';
+    const long = 'Сокровищница '.repeat(10).slice(0, 120);
+    const { ctx, page, d } = await openState('#/lists as gm1', 360, 640, 'ru');
+    try {
+      await d.fake('setLive', false);
+      await d.fake('lists.apply', [
+        { op: 'update', id: '00000000-0000-4000-8000-000000000103', patch: { name: long } }
+      ]);
+      await d.shownAgain();
+      await waitIn(page, (v) => document.body.innerText.includes(v), long);
+      const m = await page.evaluate((v) => {
+        const card = [...document.querySelectorAll('.listcard')].find((c) =>
+          c.textContent.includes(v)
+        );
+        const name = card?.querySelector('.listcard-top b');
+        const grid = document.querySelector('.listgrid')?.getBoundingClientRect();
+        const r = card?.getBoundingClientRect();
+        return {
+          sideways: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+          inGrid: !!r && !!grid && r.right <= grid.right + 0.5,
+          lines: name
+            ? Math.round(
+                name.getBoundingClientRect().height /
+                  parseFloat(getComputedStyle(name).lineHeight)
+              )
+            : 0
+        };
+      }, long);
+      ok(!m.sideways && m.inGrid && m.lines >= 2, where + JSON.stringify(m));
+    } finally {
+      await ctx.close();
+    }
+  }
+  {
+    const { ctx, page } = await openState('#/lists ~ lists selected as gm1', 640, 360, 'ru');
+    try {
+      const h = await page.evaluate(
+        () => document.querySelector('.selbarwrap')?.getBoundingClientRect().height ?? 0
+      );
+      ok(h > 0 && h <= 0.45 * 360, at + 'the bar at 640x360 is ' + h + ' px');
+    } finally {
+      await ctx.close();
+    }
+  }
+  for (const width of [1180, 1440]) {
+    const { ctx, page } = await openState('#/lists ~ selecting as gm1', width, 900, 'ru');
+    try {
+      const edge = await page.evaluate(() => ({
+        bar: document.querySelector('.selbarwrap .selbar')?.getBoundingClientRect().left,
+        main: document.querySelector('main')?.getBoundingClientRect().left
+      }));
+      ok(
+        typeof edge.bar === 'number' && Math.abs(edge.bar - edge.main) <= 0.5,
+        at + width + ': the bar does not start at main - ' + JSON.stringify(edge)
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+  {
+    const { ctx, page } = await openState('#/lists ~ list limit as gm2', 1180, 720, 'ru');
+    try {
+      const m = await page.evaluate(() => {
+        const c = document.querySelector('.count');
+        return {
+          over: !!c?.classList.contains('over'),
+          color: c ? getComputedStyle(c).color : ''
+        };
+      });
+      const [r, g] = (m.color.match(/[\d.]+/g) ?? []).map(Number);
+      ok(m.over && r - g > 40, at + 'the count at the limit is not red - ' + JSON.stringify(m));
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
+/** 103. The add-to-list menu keeps its place and its keys (docs/specs/FEATURES.md, "Lists"):
+ *  on `/i/ci1` and a `/roll/std` result as gm1, at 360 and 1180, RU and EN: the heading, the
+ *  checked rows that hold the record, rows of 44 px up to 760 px and 36 px from 761 px, the
+ *  menu inside the window and uncovered, Tab and Shift+Tab in DOM order to «Новый список»,
+ *  Escape back to the toggle. */
+async function addToListMenuKeys() {
+  const at = '103 (the add-to-list menu): ';
+  for (const route of ['#/i/ci1', '#/roll/std']) {
+    for (const lang of ['ru', 'en']) {
+      for (const [width, height] of [
+        [360, 640],
+        [1180, 720]
+      ]) {
+        const where = at + route + ' ' + width + ' ' + lang + ': ';
+        const { ctx, page, d } = await fresh({ width, height, lang });
+        try {
+          await d.open(route, { as: 'gm1', lang });
+          await d.settled(where);
+          if (route === '#/i/ci1') await d.press(lang === 'en' ? 'Add to list' : 'В список');
+          else await d.openCardList();
+          await d.settle();
+          const m = await page.evaluate(() => {
+            const menu = document.querySelector('.dropmenu');
+            const r = menu?.getBoundingClientRect();
+            const rows = [...(menu?.querySelectorAll('.lrow') ?? [])];
+            const covered = rows.some((row) => {
+              const b = row.getBoundingClientRect();
+              const hit = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2);
+              return b.bottom <= innerHeight && !(hit && row.contains(hit));
+            });
+            return {
+              head: menu?.querySelector('.lbl')?.textContent ?? '',
+              pressed: rows
+                .filter((row) => row.getAttribute('aria-pressed') === 'true')
+                .map((row) => [
+                  row.querySelector('.ln')?.textContent,
+                  !!row.querySelector('svg')
+                ]),
+              heights: rows.map((row) => row.getBoundingClientRect().height),
+              inside:
+                !!r &&
+                r.left >= 0 &&
+                r.right <= innerWidth &&
+                r.top >= 0 &&
+                r.bottom <= innerHeight,
+              covered
+            };
+          });
+          ok(
+            m.head === (lang === 'en' ? 'Lists' : 'Списки'),
+            where + 'the heading - ' + m.head
+          );
+          ok(
+            route !== '#/i/ci1' ||
+              (m.pressed.length >= 1 && m.pressed.every(([, check]) => check)),
+            where + 'no checked row holds the record - ' + JSON.stringify(m.pressed)
+          );
+          const want = width <= 760 ? 44 : 36;
+          ok(
+            m.heights.length > 0 && m.heights.every((h) => Math.abs(h - want) <= 0.5),
+            where + 'the rows are not ' + want + ' px - ' + JSON.stringify(m.heights)
+          );
+          ok(m.inside, where + 'the menu leaves the window');
+          ok(!m.covered, where + 'a row is covered');
+          await page.evaluate(() =>
+            document
+              .querySelector('.dropmenu')
+              ?.closest('.seldrop')
+              ?.querySelector(':scope > .btn')
+              ?.focus()
+          );
+          const walk = [];
+          for (let i = 0; i < m.heights.length + 1; i++) {
+            await page.keyboard.press('Tab');
+            walk.push(
+              await page.evaluate(() => document.activeElement?.className.split(' ')[0] ?? '')
+            );
+          }
+          ok(
+            walk.slice(0, -1).every((c) => c === 'lrow') && walk.at(-1) === 'lnew',
+            where + 'Tab does not walk the rows to «Новый список» - ' + JSON.stringify(walk)
+          );
+          await page.keyboard.down('Shift');
+          await page.keyboard.press('Tab');
+          await page.keyboard.up('Shift');
+          ok(
+            await page.evaluate(() => document.activeElement?.classList.contains('lrow')),
+            where + 'Shift+Tab does not return to the last row'
+          );
+          await page.keyboard.press('Escape');
+          await d.settle();
+          ok(
+            await page.evaluate(
+              () =>
+                !document.querySelector('.dropmenu') &&
+                !!document.activeElement?.matches('.seldrop > .btn')
+            ),
+            where + 'Escape does not close the menu onto its toggle'
+          );
+        } finally {
+          await ctx.close();
+        }
+      }
+    }
+  }
+}
+
+/** 104. The number stepper is laid out as a stepper (owner, 2026-11-05; docs/specs/FEATURES.md,
+ *  "Rolling"): on `/roll/std`, `/roll/wondrous` and `/roll/alt` at 360, 390, 768 and 1180,
+ *  RU and EN, the value is centered in its box within 1.5 px, «+» ends at the box's right
+ *  edge, and the box is `min(240, column)` wide (the alt pair: its block); the field is 46 px
+ *  tall. The list page's price-sheet steppers keep their own narrow size. */
+async function numberStepperLayout() {
+  const at = '104 (the number stepper): ';
+  for (const id of ['#/roll/std', '#/roll/wondrous', '#/roll/alt']) {
+    for (const lang of ['ru', 'en']) {
+      for (const [width, height] of [
+        [360, 800],
+        [390, 844],
+        [768, 1024],
+        [1180, 800]
+      ]) {
+        const where = at + id + ' ' + width + ' ' + lang + ': ';
+        const { ctx, page, d } = await openState(id, width, height, lang);
+        try {
+          if (width <= 760) {
+            await d.click(lang === 'en' ? 'Set up' : 'Настроить');
+            await d.settle();
+          }
+          const m = await page.evaluate(() =>
+            [...document.querySelectorAll('.numbox')]
+              .filter((n) => n.getBoundingClientRect().width > 0)
+              .map((n) => {
+                const b = n.getBoundingClientRect();
+                const input = n.querySelector('input').getBoundingClientRect();
+                const plus = n.querySelector('button:last-of-type').getBoundingClientRect();
+                const col = n.parentElement.getBoundingClientRect().width;
+                return {
+                  alt: !!n.closest('.dieblock'),
+                  center: input.left + input.width / 2 - (b.left + b.width / 2),
+                  plusGap: b.right - plus.right,
+                  w: b.width,
+                  col,
+                  h: input.height
+                };
+              })
+          );
+          ok(m.length > 0, where + 'no number box');
+          for (const n of m) {
+            const want = n.alt ? n.col : Math.min(240, n.col);
+            ok(
+              Math.abs(n.center) <= 1.5 &&
+                n.plusGap >= 0 &&
+                n.plusGap <= 2 &&
+                Math.abs(n.w - want) <= 1 &&
+                Math.abs(n.h - 46) <= 0.5,
+              where + JSON.stringify(n)
+            );
+          }
+          ok(
+            !(await page.evaluate(
+              () => document.documentElement.scrollWidth > document.documentElement.clientWidth
+            )),
+            where + 'the page scrolls sideways'
+          );
+        } finally {
+          await ctx.close();
+        }
+      }
+    }
+  }
+  {
+    const { ctx, page } = await openState(LIST_A_ID + ' ~ price sheet as gm4', 1180, 720, 'ru');
+    try {
+      const m = await page.evaluate(() =>
+        [...document.querySelectorAll('.money-act .numbox')].map((n) => {
+          const kids = [...n.children].reduce((s, k) => s + k.getBoundingClientRect().width, 0);
+          return {
+            input: n.querySelector('input').getBoundingClientRect().width,
+            grew: n.getBoundingClientRect().width - kids
+          };
+        })
+      );
+      ok(
+        m.length > 0 && m.every((n) => Math.abs(n.input - 52) <= 0.5 && n.grew <= 2.5),
+        at + 'the price-sheet steppers changed size - ' + JSON.stringify(m)
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -7993,7 +8345,10 @@ const CASES = [
   ['98 (the compact row holds from 320 to 760 px)', compactRowHolds],
   ["99 (search and filter on the owner's page)", listSearchAndFilter],
   ['100 (the list head and bars)', listHeadAndBars],
-  ['101 (the page column grows to 1440 px and stays centered)', pageColumnOnWideWindows]
+  ['101 (the page column grows to 1440 px and stays centered)', pageColumnOnWideWindows],
+  ['102 (the lists page holds from 320 to 1440 px)', listsPageHolds],
+  ['103 (the add-to-list menu keeps its place and its keys)', addToListMenuKeys],
+  ['104 (the number stepper is laid out as a stepper)', numberStepperLayout]
 ];
 
 (async () => {

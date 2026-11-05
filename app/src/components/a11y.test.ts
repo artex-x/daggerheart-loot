@@ -363,9 +363,9 @@ const STATES: {
     route: '#/lists',
     cloud: () => fakeCloud(SEED, 'gm1'),
     enter: async () => {
-      await userEvent.click(
-        await screen.findByRole('checkbox', { name: 'Выбрать: Пустой список' })
-      );
+      await screen.findByText('Пустой список');
+      await userEvent.click(screen.getByRole('button', { name: 'Выбрать' }));
+      await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать: Пустой список' }));
       await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать: Трофеи' }));
       await screen.findByRole('button', { name: 'Удалить (2)' });
     }
@@ -605,15 +605,14 @@ const COVERED: Record<string, string> = {
   'HitNote.svelte':
     "the list page's priced, noted entry with the roll panel open above, the shared list below, and a formatted note in sharedListPage.test.ts",
   'ListPage.svelte': 'listPage.test.ts, and both list-page states below',
-  'ListCard.svelte': 'listsPage.test.ts, signed out, signed in and with a failed read',
+  'ListCard.svelte':
+    'listsPage.test.ts, its cards with «Ещё», ticked and with the waiting chip',
   'OrGrid.svelte': 'the Core rules panel, which is the only screen with a choice',
   'StdPanel.svelte': 'std.test.ts, and both pressed states below',
   'Button.svelte':
     'the roll button and the card actions, on every roll page; the second set disclosure in homebrewEditor.test.ts',
   'Chip.svelte': 'the source and kind rows of std.test.ts and the rarity row of alt.test.ts',
   'AltPanel.svelte': 'alt.test.ts, and the critical-success state below',
-  'BatchBar.svelte':
-    'batchBar.test.ts idle, some and all ticked; the lists index with two ticked above; listPage.test.ts',
   'ImportPanel.svelte':
     'importPanel.test.ts empty, previewed, refused and with errors; the preview and error reports above',
   'ArtWell.svelte':

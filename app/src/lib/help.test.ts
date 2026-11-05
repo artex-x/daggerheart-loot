@@ -135,62 +135,15 @@ describe('the help for a section', () => {
     expect(textOf(helpFor('mwt', 'en'), 0)).toContain('Hornet Hold 11 and The Drome 17');
   });
 
-  it('writes no help for «Мои предметы»', () => {
-    for (const lang of LANGS) expect(helpFor('homebrew', lang)).toBeNull();
+  it('writes no help for «Мои предметы» and «Мои списки»', () => {
+    for (const lang of LANGS) {
+      expect(helpFor('homebrew', lang)).toBeNull();
+      expect(helpFor('lists', lang)).toBeNull();
+    }
   });
 
   it('has nothing to say about a section nobody wrote one for', () => {
     expect(helpFor('nonsense', 'ru')).toBe(null);
-  });
-
-  it('bolds both roles the two notes and the share button play, mid-sentence', () => {
-    /* "Для игроков"/"Только для мастера" and "Поделиться" sit inside running prose
-       rather than opening their paragraph, so each is a run of parts rather than a
-       `lead`. */
-    const bold = (lang: 'ru' | 'en', at: number) =>
-      helpFor('lists', lang)
-        ?.paragraphs[at]?.parts.filter(isBold)
-        .map((b) => b.b);
-    for (const lang of LANGS) {
-      const lists = helpFor('lists', lang);
-      expect(lists?.paragraphs.length, lang).toBe(5);
-      expect(lists?.paragraphs[0]?.lead, lang).toBeUndefined();
-      expect(lists?.paragraphs[1]?.parts.filter(isBold), lang).toHaveLength(0);
-    }
-    expect(bold('ru', 2)).toEqual(['Для игроков', 'Только для мастера']);
-    expect(bold('ru', 3)).toEqual(['Поделиться']);
-    expect(bold('en', 2)).toEqual(['For players', 'GM only']);
-    expect(bold('en', 3)).toEqual(['Share']);
-  });
-
-  it('says what ticked account lists and «Импорт из файла» do, and where the format is', () => {
-    expect(textOf(helpFor('lists', 'ru'), 4)).toBe(
-      'Списки аккаунта можно отметить и скачать файлом JSON или удалить разом, а «Импорт из файла» добавляет списки из такого файла - например, чтобы перенести их в другой аккаунт. Формат файла описан для ИИ-помощников в llms.txt.'
-    );
-    expect(textOf(helpFor('lists', 'en'), 4)).toContain('"Import from file" adds lists');
-    expect(textOf(helpFor('lists', 'en'), 4)).toContain(
-      'described for AI assistants in llms.txt'
-    );
-  });
-
-  it('names no old list link button', () => {
-    for (const lang of LANGS) {
-      const all = (helpFor('lists', lang)?.paragraphs ?? []).map((_, i) =>
-        textOf(helpFor('lists', lang), i)
-      );
-      expect(all.join(' '), lang).not.toMatch(
-        /Ссылка игрокам|Ссылка себе|Players' link|Your own link/
-      );
-    }
-  });
-
-  it('says the lists are kept in the account, and nothing of a move or a date', () => {
-    expect(textOf(helpFor('lists', 'ru'), 1)).toBe(
-      'Войдите - и списки будут храниться в аккаунте: они сохраняются сами и открываются на любом устройстве.'
-    );
-    expect(textOf(helpFor('lists', 'en'), 1)).toBe(
-      'Sign in and your lists are kept in your account: they save themselves and open on any device.'
-    );
   });
 
   it('bolds the three-unit list and the three worked examples in the money help', () => {
@@ -233,9 +186,5 @@ describe('the tables help, «Об этих данных»', () => {
     expect(help?.paragraphs.every((para) => !!para.lead)).toBe(true);
     expect(help?.button).toBe(lang === 'ru' ? 'Об этих данных' : 'About this data');
     expect(linksOf(help).map((l) => l.label)).toEqual(['daggerheart.su']);
-  });
-
-  it('leaves the list help on the default button name', () => {
-    for (const lang of LANGS) expect(helpFor('lists', lang)?.button).toBeUndefined();
   });
 });

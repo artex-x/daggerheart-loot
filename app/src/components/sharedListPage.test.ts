@@ -482,9 +482,9 @@ describe('adding to an existing list', () => {
 
     const bar = document.querySelector('.selbarwrap') as HTMLElement;
     await userEvent.click(within(bar).getByRole('button', { name: 'В список' }));
-    await userEvent.click(await within(bar).findByRole('button', { name: '+ Новый список' }));
+    await userEvent.click(await within(bar).findByRole('button', { name: 'Новый список' }));
 
-    const input = screen.getByPlaceholderText('Например: клад дракона');
+    const input = screen.getByPlaceholderText('Клад дракона');
     await userEvent.clear(input);
     await userEvent.type(input, 'Сундук');
     await userEvent.click(within(bar).getByRole('button', { name: 'Создать' }));
@@ -1138,8 +1138,8 @@ describe('accessibility', () => {
     await userEvent.click(box);
     const bar = container.querySelector('.selbarwrap') as HTMLElement;
     await userEvent.click(within(bar).getByRole('button', { name: 'В список' }));
-    await userEvent.click(await within(bar).findByRole('button', { name: '+ Новый список' }));
-    expect(screen.getByPlaceholderText('Например: клад дракона')).toBeInTheDocument();
+    await userEvent.click(await within(bar).findByRole('button', { name: 'Новый список' }));
+    expect(screen.getByPlaceholderText('Клад дракона')).toBeInTheDocument();
     await expectNoA11yViolations(container);
   });
 

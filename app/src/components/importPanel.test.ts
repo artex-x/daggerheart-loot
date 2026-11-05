@@ -93,9 +93,11 @@ describe('the import field', () => {
     await importButton(1);
     const [block] = [...container.querySelectorAll('.rep-list')];
     expect(block?.querySelector('b')?.textContent).toBe('1. Лавка кузнеца');
-    expect(lineTexts(block!)).toEqual([
+    expect(lineTexts(block!)).toEqual([]);
+    expect(block?.querySelector('.taken')).toHaveTextContent(
       'Список с таким названием уже есть в аккаунте - появится второй'
-    ]);
+    );
+    expect(block?.querySelector('details')).toBeNull();
     await expectNoA11yViolations(container);
   });
 
@@ -116,14 +118,20 @@ describe('the import field', () => {
       'без позиций'
     ]);
     expect(lineTexts(blocks[0]!)).toEqual([
-      'Позиция 4, zzz1: пропущена - такой записи нет в данных',
-      'Позиция 5, Первоклассный Спальный Мешок (ci1): пропущена - уже есть в позиции 1',
+      'Позиция 4: пропущена - такой записи нет в данных',
+      'Позиция 5, Первоклассный Спальный Мешок: пропущена - уже есть в позиции 1'
+    ]);
+    expect(lineTexts(blocks[1]!)).toEqual([]);
+    /* The name taken stays in view; the skips are details on request, with no raw id. */
+    expect(blocks.map((b) => b.querySelector('.taken')?.textContent)).toEqual([
+      'Список с таким названием уже есть в аккаунте - появится второй',
       'Список с таким названием уже есть в аккаунте - появится второй'
     ]);
-    expect(lineTexts(blocks[1]!)).toEqual([
-      'Список с таким названием уже есть в аккаунте - появится второй'
-    ]);
-    expect(blocks[0]?.querySelector('code')?.textContent).toBe('zzz1');
+    const fold = blocks[0]?.querySelector('details');
+    expect(fold).not.toHaveAttribute('open');
+    expect(fold?.querySelector('summary')).toHaveTextContent('Пропущено: 2');
+    expect(blocks[1]?.querySelector('details')).toBeNull();
+    expect(blocks[0]?.querySelector('code')).toBeNull();
     await expectNoA11yViolations(container);
   });
 
@@ -677,12 +685,12 @@ describe('own items without a snapshot in a lists file', () => {
       '1 позиция будет импортирована'
     ]);
     expect(lineTexts(one!)).toEqual([
-      'Позиция 3, ' + LAMP + ': ' + UNHELD,
-      'Позиция 4, Топор Тлеющих Углей (' + AXE + '): пропущена - уже есть в позиции 2'
+      'Позиция 3: ' + UNHELD,
+      'Позиция 4, Топор Тлеющих Углей: пропущена - уже есть в позиции 2'
     ]);
     expect(lineTexts(two!)).toEqual([
-      'Позиция 1, ' + LAMP + ': ' + UNHELD,
-      'Позиция 3, ' + LAMP + ': пропущена - уже есть в позиции 2'
+      'Позиция 1: ' + UNHELD,
+      'Позиция 3: пропущена - уже есть в позиции 2'
     ]);
     await expectNoA11yViolations(container);
     const held = await axeId(cloud);
@@ -715,9 +723,8 @@ describe('own items without a snapshot in a lists file', () => {
     choose(container, fixture('keys-only-v2.json'));
     expect(await screen.findByRole('button', { name: 'Import (2)' })).toBeInTheDocument();
     expect(lineTexts(blocks(container)[0]!)[0]).toBe(
-      'Item 3, ' +
-        LAMP +
-        ': skipped - your account does not hold this own item: first import the items file on the My items page'
+      'Item 3: ' +
+        'skipped - your account does not hold this own item: first import the items file on the My items page'
     );
     await expectNoA11yViolations(container);
   });
@@ -729,7 +736,7 @@ describe('own items without a snapshot in a lists file', () => {
     expect(previews(container)).toEqual(['Списков: 1, позиций: 0. Пропущено позиций: 1.']);
     const [block] = blocks(container);
     expect(block?.querySelector('small')?.textContent).toBe('без позиций');
-    expect(lineTexts(block!)).toEqual(['Позиция 1, ' + LAMP + ': ' + UNHELD]);
+    expect(lineTexts(block!)).toEqual(['Позиция 1: ' + UNHELD]);
     await expectNoA11yViolations(container);
   });
 
@@ -776,7 +783,7 @@ describe('own items without a snapshot in a lists file', () => {
     await waitFor(() => {
       expect(previews(container)[0]).toBe('Списков: 1, позиций: 2. Пропущено позиций: 1.');
     });
-    expect(lineTexts(blocks(container)[0]!)).toEqual(['Позиция 2, ' + AXE + ': ' + UNHELD]);
+    expect(lineTexts(blocks(container)[0]!)).toEqual(['Позиция 2: ' + UNHELD]);
   });
 
   it('keeps a skip whose own item comes after the preview', async () => {
@@ -796,7 +803,7 @@ describe('own items without a snapshot in a lists file', () => {
       expect(previews(container)).toEqual(['Списков: 2, позиций: 3. Пропущено позиций: 4.']);
     });
     const lamps = blocks(container).flatMap((b) =>
-      lineTexts(b).filter((l) => l.includes(LAMP) && l.endsWith(UNHELD))
+      lineTexts(b).filter((l) => l.endsWith(UNHELD))
     );
     expect(lamps).toHaveLength(2);
   });
@@ -862,7 +869,7 @@ describe('own items without a snapshot in a lists file', () => {
       'Сервер не принял файл: данные в аккаунте изменились. Нажмите «Импортировать» ещё раз.'
     );
     await waitFor(() => {
-      expect(lineTexts(blocks(container)[0]!)).toEqual(['Позиция 2, ' + AXE + ': ' + UNHELD]);
+      expect(lineTexts(blocks(container)[0]!)).toEqual(['Позиция 2: ' + UNHELD]);
     });
     await userEvent.click(await importButton(1));
     expect(await screen.findByText('Импортировано списков: 1')).toBeInTheDocument();

@@ -588,72 +588,6 @@ const TABLES: Record<Lang, Help> = {
 };
 
 /**
- * The lists index's help. Paragraph 3 carries two bold words and
- * paragraph 4 one, mid-sentence rather than a `lead` - each sits inside
- * running prose, not at the paragraph's head, so each is a run of parts.
- */
-const LISTS: Record<Lang, Help> = {
-  ru: {
-    paragraphs: [
-      p(
-        'Соберите список: отметьте нужное галочками в «Таблицах» или «Поиске» и нажмите «В список». То же самое можно сделать прямо с карточки предмета - меню остаётся открытым, поэтому один предмет легко положить сразу в несколько списков.'
-      ),
-      p(
-        'Войдите - и списки будут храниться в аккаунте: они сохраняются сами и открываются на любом устройстве.'
-      ),
-      {
-        parts: [
-          'У списка и у каждой позиции две заметки. ',
-          { b: 'Для игроков' },
-          ' уезжает вместе с текстом и ссылкой для игроков. ',
-          { b: 'Только для мастера' },
-          ' остаётся у вас: ни в текст, ни в ссылку для игроков она не попадает.'
-        ]
-      },
-      {
-        parts: [
-          'Списком из аккаунта делятся кнопкой ',
-          { b: 'Поделиться' },
-          ': в ней ссылка для игроков и ссылка для мастера, в которой видны и заметки «Только для мастера». По ссылке всегда открывается список таким, какой он сейчас. «Удалить ссылку» закрывает доступ по ней, «Создать ссылку» даёт новую.'
-        ]
-      },
-      p(
-        'Списки аккаунта можно отметить и скачать файлом JSON или удалить разом, а «Импорт из файла» добавляет списки из такого файла - например, чтобы перенести их в другой аккаунт. Формат файла описан для ИИ-помощников в llms.txt.'
-      )
-    ]
-  },
-  en: {
-    paragraphs: [
-      p(
-        'Build a list: tick what you need in Tables or Search and press "Add to list". The same works straight from an item card - the menu stays open, so one item goes into several lists without reopening anything.'
-      ),
-      p(
-        'Sign in and your lists are kept in your account: they save themselves and open on any device.'
-      ),
-      {
-        parts: [
-          'A list and every entry in it carry two notes. ',
-          { b: 'For players' },
-          " travels with the copied text and with the players' link. ",
-          { b: 'GM only' },
-          ' stays with you: it reaches neither.'
-        ]
-      },
-      {
-        parts: [
-          'Share a list from your account with ',
-          { b: 'Share' },
-          ': it holds a players\' link and a GM\'s link, which also shows the "GM only" notes. A link always opens the list as it is now. "Delete link" ends access through it, "Create link" makes a new one.'
-        ]
-      },
-      p(
-        'Tick account lists to download them as a JSON file or delete them together; "Import from file" adds lists from such a file - to move them to another account, for example. The file format is described for AI assistants in llms.txt.'
-      )
-    ]
-  }
-};
-
-/**
  * The money picker's own help, off the `moneyHelp` string in app.js - one
  * paragraph with five bold runs mid-sentence: the three-unit list, then each
  * of the three worked examples' rounded answer. Not a section's help (no
@@ -716,8 +650,7 @@ const HELP: Record<string, Record<Lang, Help>> = {
   arazo: ARAZO,
   community: COMMUNITY,
   mwt: MWT,
-  tables: TABLES,
-  lists: LISTS
+  tables: TABLES
 };
 
 /** What this section explains about itself, or null where nothing is written. */

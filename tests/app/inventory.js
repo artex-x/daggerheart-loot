@@ -155,10 +155,8 @@ const NAME = {
     clearPriceOne: 'Убрать цену (1)',
     applyPrices: 'Проставить эти цены',
     discount: 'Сделать скидку',
-    /* The chip's own text carries the "+ " - `d.click` needs the exact string
-       because the EN press has already renamed it by the time a press spec
-       runs. */
-    newList: '+ Новый список',
+    /* Exact: the EN press has already renamed it by the time a press spec runs. */
+    newList: 'Новый список',
     create: 'Создать'
   },
   en: {
@@ -196,7 +194,7 @@ const NAME = {
     clearPriceOne: 'Clear price (1)',
     applyPrices: 'Set these prices',
     discount: 'Discount',
-    newList: '+ New list',
+    newList: 'New list',
     create: 'Create'
   }
 };
@@ -300,17 +298,36 @@ async function hbImportOpen(d) {
     await d.settle();
 }
 
-/** Waits for gm1's account cards, then opens «Импорт из файла». */
+/* The lists index's head «Ещё» up to 760 px, and the first card's «Ещё». */
+const HEAD_MORE = '.headx .morewrap > [aria-haspopup="menu"]';
+const CARD_MORE = '.listcard-acts .morewrap > [aria-haspopup="menu"]';
+
+/** Waits for the account cards of the lists index. */
+async function waitCards(d) {
+  for (let i = 0; i < 40 && !(await d.count('.listcard')); i++) await d.settle();
+}
+
+/** Waits for gm1's account cards, then opens «Импорт из файла»: up to 760 px from the
+ *  head's «Ещё». */
 async function importOpen(d) {
-  for (let i = 0; i < 40 && !(await d.count('.listcard-pick')); i++) await d.settle();
+  await waitCards(d);
+  if (await d.count(HEAD_MORE)) await d.openMore(HEAD_MORE);
   await clickEither(d, 'Импорт из файла', 'Import from file');
 }
 
-/** Waits for gm1's account cards, then ticks «Пустой список» and «Трофеи». */
+/** Waits for gm1's account cards, then opens the selection mode and ticks «Пустой список»
+ *  and «Трофеи». */
 async function tickTwo(d) {
-  for (let i = 0; i < 40 && !(await d.count('.listcard-pick')); i++) await d.settle();
+  await waitCards(d);
   await d.tick('Выбрать: Пустой список');
   await d.tick('Выбрать: Трофеи');
+}
+
+/** Presses «Новый список», types `name` and presses «Создать». */
+async function createList(d, name) {
+  await d.click('Новый список');
+  await d.type('Клад дракона', name);
+  await d.click('Создать');
 }
 
 /** Two purchase requests, sent once the owner's first requests read has landed: an arrival
@@ -333,7 +350,7 @@ async function twoRequests(d) {
 async function requestsOnIndex(d) {
   await d.go('#/lists');
   await twoRequests(d);
-  for (let i = 0; i < 40 && !(await d.count('.listcard-req')); i++) await d.settle();
+  for (let i = 0; i < 40 && !(await d.count('.listcard-new')); i++) await d.settle();
   await d.go(SHOP);
 }
 
@@ -383,6 +400,12 @@ const TWELVE_SPECS = [
     'Ёлочная ярмарка'
   ].map((name, i) => ({ n: 3 + i, name, ids: i === 2 || i === 6 ? ['ci1'] : [] }))
 ];
+/* Forty-nine lists: with gm2's own one the account is at the limit of 50. */
+const FORTY_NINE_SPECS = Array.from({ length: 49 }, (_, i) => ({
+  n: 100 + i,
+  name: 'Список ' + String(i + 2),
+  ids: []
+}));
 /* Thirty lists: the index draws 24 and folds 6 under «Показать ещё (6)». */
 const THIRTY_SPECS = [
   ...TWELVE_SPECS,
@@ -450,6 +473,9 @@ const onAccount = async (d, specs, go = true) => {
   const made = await d.accountLists(specs);
   if (go) await d.go(made[0].hash);
 };
+
+/* An account list id no account holds. */
+const LIST_GONE = '#/lists/00000000-0000-4000-8000-000000009999';
 
 /* The ported list page states: gm4's list `uuid(8001)`, made in `enter`. */
 const LIST_A = '#/lists/00000000-0000-4000-8000-000000008001';
@@ -595,7 +621,7 @@ const STATES = [
     why: 'signed out: the sign-in prompt in the new-list slot - one line, «Войти» and «Отмена», no provider buttons',
     enter: async (d) => {
       await d.click('В список');
-      await d.click('+ Новый список');
+      await d.click('Новый список');
     }
   },
   {
@@ -606,14 +632,14 @@ const STATES = [
     enter: async (d) => {
       await d.settled();
       await d.click('В список');
-      await d.click('+ Новый список');
+      await d.click('Новый список');
     }
   },
   {
     id: '#/i/ci1 ~ list menu as gm1',
     route: '#/i/ci1',
     as: 'gm1',
-    why: "one plain menu: gm1's lists holding the record first and lit («Лавка кузнеца», «Трофеи»), then the rest",
+    why: "the menu «Списки»: gm1's lists holding the record first with a check («Лавка кузнеца», «Трофеи»), then the rest, each with its count in words; «Новый список» under a separator",
     enter: async (d) => {
       await d.settled();
       await d.click('В список');
@@ -623,7 +649,7 @@ const STATES = [
     id: '#/i/ci1 ~ in several lists as gm4',
     route: '#/i/ci1',
     as: 'gm4',
-    why: 'the three lists holding the record first, lit; the label, search and new-list chip pinned over the scrolling chips',
+    why: 'the three lists holding the record first, with a check; the heading, the search and «Новый список» pinned over the scrolling rows',
     enter: async (d) => {
       await onAccount(d, TWELVE_SPECS, false);
       await d.click('В список');
@@ -638,7 +664,7 @@ const STATES = [
       await onAccount(d, TWELVE_SPECS, false);
       await d.click('В список');
       await d.type('Найти список', 'Шкатулка');
-      await d.click('+ Новый список');
+      await d.click('Новый список');
     }
   },
 
@@ -1024,7 +1050,7 @@ const STATES = [
     enter: async (d) => {
       await d.click('Самоцвет Чутья');
       await d.click('В список');
-      await d.click('+ Новый список');
+      await d.click('Новый список');
     }
   },
   {
@@ -1427,17 +1453,17 @@ const STATES = [
     }
   },
 
-  /* The lists index, off `renderLists` (`git show 23c00a6^:app.js`). */
+  /* The lists index (docs/specs/FEATURES.md, "Lists"). */
   {
     id: '#/lists',
     route: '#/lists',
-    why: 'signed out: the panel is the sign-in prompt, and no group'
+    why: 'signed out: the head with the pin and no primary, the plate with the kind glyph and the sign-in prompt'
   },
   {
     id: '#/lists as gm1',
     route: '#/lists',
     as: 'gm1',
-    why: "«Импорт из файла» under the name row; «Ваш аккаунт» with «3 списка из 50», the idle strip «Выбрать все», then gm1's three lists with «N позиций · изменён N назад», a pick box and one «Удалить» each; no notice",
+    why: "the head with the pin, «Импорт из файла» and «Новый список»; «3 списка из 50» and «Выбрать»; gm1's three cards with «N позиций · изменён N назад» and a «Ещё: <name>» each; no group heading",
     enter: async (d) => {
       await d.settled();
     }
@@ -1445,7 +1471,7 @@ const STATES = [
   {
     id: '#/lists ~ load failed',
     route: '#/lists',
-    why: 'signed in with no network: the account group says the read failed and offers «Повторить»',
+    why: 'signed in with no network: the head with «Новый список», the read failed and «Повторить»',
     enter: async (d) => {
       await d.fake('setOffline', true);
       await d.fake('auth.signIn', 'google');
@@ -1453,21 +1479,44 @@ const STATES = [
     }
   },
   {
-    id: '#/lists ~ help',
+    id: '#/lists ~ empty as gm4',
     route: '#/lists',
-    why: 'the five paragraphs, the third with two bold runs and the fourth with one; the second says what signing in does, the fourth how an account list is shared, the fifth what ticked account lists and «Импорт из файла» do',
+    as: 'gm4',
+    why: 'an account with no list: «0 списков из 50», the plate «Списков пока нет» with its hint and «Открыть таблицы»; no «Выбрать», no search',
     enter: async (d) => {
-      await d.click('Справка');
+      await d.settled();
+    }
+  },
+  {
+    id: '#/lists ~ more as gm1',
+    route: '#/lists',
+    as: 'gm1',
+    width: 360,
+    why: 'the head «Ещё» up to 760 px: «Импорт из файла» and «Открывать при запуске»',
+    enter: async (d) => {
+      await waitCards(d);
+      await d.openMore(HEAD_MORE);
+    },
+    again: reopen(HEAD_MORE)
+  },
+  {
+    id: '#/lists ~ new list as gm1',
+    route: '#/lists',
+    as: 'gm1',
+    why: '«Новый список» pressed: the panel under the head with «Название списка», the empty field focused, «Создать» and «Отмена»',
+    enter: async (d) => {
+      await waitCards(d);
+      await d.click('Новый список');
     }
   },
   {
     id: '#/lists ~ created as gm2',
     route: '#/lists',
     as: 'gm2',
-    why: 'the new account list first in «Ваш аккаунт», «0 позиций · изменён только что», the field cleared, the toast',
+    why: 'the new account list first, «0 позиций · изменён только что», the field closed, the focus on «Новый список», the toast',
     enter: async (d) => {
-      await d.type('Например: клад дракона', 'Тайник');
-      await d.click('Создать');
+      await waitCards(d);
+      await createList(d, 'Тайник');
     },
     /* a 1600ms toast; arrived at afresh per language - see this file's header */
     timed: true
@@ -1476,13 +1525,12 @@ const STATES = [
     id: '#/lists ~ not saved as gm2',
     route: '#/lists',
     as: 'gm2',
-    why: 'a create with no network: the new card first in «Ваш аккаунт», and the account count line ends «· Не сохранено» in the danger color and «Повторить»',
+    why: 'a create with no network: the new card first, and the count line ends «· Не сохранено» in the danger color and «Повторить»',
     enter: async (d) => {
       for (let i = 0; i < 40 && !(await d.text()).includes('1 список из 50'); i++)
         await d.settle();
       await d.fake('setOffline', true);
-      await d.type('Например: клад дракона', 'Тайник');
-      await d.click('Создать');
+      await createList(d, 'Тайник');
       /* A hidden tab sends the buffer at once, and it fails; the index draws no
          `[data-saving]` for `writesSettled()` to wait on. */
       await d.hidden();
@@ -1496,16 +1544,12 @@ const STATES = [
     id: '#/lists ~ list limit as gm2',
     route: '#/lists',
     as: 'gm2',
-    why: 'one create past the 50-list limit: the toast «Достигнут предел списков в аккаунте: 50...», no 51st card, the count «50 списков из 50», the draft kept in the field',
+    why: 'at 50 of 50 the press on «Новый список»: the toast «Достигнут предел списков в аккаунте: 50...», the field closed, the count «50 списков из 50» in red, 24 cards and «Показать ещё (26)»',
     enter: async (d) => {
-      for (let i = 0; i < 40 && !(await d.text()).includes('1 список из 50'); i++)
+      await onAccount(d, FORTY_NINE_SPECS, false);
+      for (let i = 0; i < 40 && !(await d.text()).includes('50 списков из 50'); i++)
         await d.settle();
-      for (let n = 2; n <= 50; n++) {
-        await d.type('Например: клад дракона', 'Список ' + String(n));
-        await d.click('Создать');
-      }
-      await d.type('Например: клад дракона', 'Пятьдесят первый');
-      await d.click('Создать');
+      await d.click('Новый список');
     },
     /* a 1600ms toast; arrived at afresh per language - see this file's header */
     timed: true
@@ -1514,7 +1558,7 @@ const STATES = [
     id: '#/lists ~ many lists as gm4',
     route: '#/lists',
     as: 'gm4',
-    why: 'the name filter, 24 cards and «Показать ещё (6)»',
+    why: 'the search row «Найти список» with the count and «Выбрать» last, 24 cards and «Показать ещё (6)»',
     enter: async (d) => {
       await onAccount(d, THIRTY_SPECS, false);
     }
@@ -1553,10 +1597,10 @@ const STATES = [
     id: '#/lists ~ requests as gm1',
     route: '#/lists',
     as: 'gm1',
-    why: 'two purchase requests on «Лавка кузнеца», one per link: the gold line «2 запроса ждут ответа» under its meta line «10 позиций · изменён 3 дня назад», and in its link name; the pick box in its corner; no line on the other cards; the toast «Новых запросов по списку «Лавка кузнеца»: 2» with «Открыть»; the tab title «(2) Мои списки - ...»',
+    why: 'two purchase requests on «Лавка кузнеца», one per link: the neutral chip «Новое в списке (2)» in its card and in its link name; no chip on the other cards; the toast «Новых запросов по списку «Лавка кузнеца»: 2» with «Открыть»; the tab title «(2) Мои списки - ...»',
     enter: async (d) => {
       await twoRequests(d);
-      for (let i = 0; i < 40 && !(await d.count('.listcard-req')); i++) await d.settle();
+      for (let i = 0; i < 40 && !(await d.count('.listcard-new')); i++) await d.settle();
     },
     /* a 7000ms toast; arrived at afresh per language - see this file's header */
     timed: true
@@ -1574,24 +1618,45 @@ const STATES = [
     timed: true
   },
   {
+    id: '#/lists ~ card menu as gm1',
+    route: '#/lists',
+    as: 'gm1',
+    why: "the first card's «Ещё: Пустой список» open: «Открыть», «Скачать JSON», a separator and «Удалить список»",
+    enter: async (d) => {
+      await waitCards(d);
+      await d.openMore(CARD_MORE);
+    },
+    again: reopen(CARD_MORE)
+  },
+  {
+    id: '#/lists ~ selecting as gm1',
+    route: '#/lists',
+    as: 'gm1',
+    why: '«Выбрать» pressed: a pick box on each card and no «Ещё»; the bar «Все» focused, «Выбрано: 0», «Скачать JSON (0)» and «Удалить (0)» off, «Снять выделение» last',
+    enter: async (d) => {
+      await waitCards(d);
+      await d.click('Выбрать');
+    }
+  },
+  {
     id: '#/lists ~ lists selected as gm1',
     route: '#/lists',
     as: 'gm1',
-    why: '«Пустой список» and «Трофеи» ticked: the gold strip «Выбрано 2» with «Скачать JSON (2)» and «Удалить (2)», «Выбрать все» mixed, the two cards gold',
+    why: '«Пустой список» and «Трофеи» ticked: the bar «Выбрано: 2» with «Скачать JSON (2)» and «Удалить (2)», «Все» mixed, the two cards neutral with a lit border',
     enter: tickTwo
   },
   {
     id: '#/lists ~ import panel as gm1',
     route: '#/lists',
     as: 'gm1',
-    why: '«Импорт из файла» pressed and expanded: the field «Импорт из файла JSON» with «Выбрать файл...» and the hint linking schema/import-v1.json and llms.txt',
+    why: '«Импорт из файла» pressed and expanded: the panel under the head with «Импорт из файла JSON», «Выбрать файл...» and the hint linking the schema and llms.txt',
     enter: importOpen
   },
   {
     id: '#/lists ~ import preview as gm1',
     route: '#/lists',
     as: 'gm1',
-    why: 'unknown-id.json chosen: «Списков: 2, позиций: 3. Пропущено позиций: 2.», the report by list - «1. Лавка кузнеца» with zzz1 skipped, the repeated ci1 skipped and the name note, «2. Пустой список» «без позиций» with the name note - then «Импортировать (2)» and «Отмена»',
+    why: 'unknown-id.json chosen: «Списков: 2, позиций: 3. Пропущено позиций: 2.», the report by list - «1. Лавка кузнеца» with the name note and the closed fold «Пропущено: 2», «2. Пустой список» «без позиций» with the name note - then «Импортировать (2)» and «Отмена»',
     enter: async (d) => {
       await importOpen(d);
       await d.upload(IMPORT('unknown-id.json'));
@@ -1615,7 +1680,7 @@ const STATES = [
     id: '#/lists ~ import preview by keys as gm1',
     route: '#/lists',
     as: 'gm1',
-    why: 'keys-only-v2.json chosen: «Списков: 2, позиций: 3. Пропущено позиций: 4.», «Своих предметов, которых нет в аккаунте: 1 - ...», block 1 «2 позиции будут импортированы» with the lamp skipped as not held and the axe repeat, block 2 «1 позиция будет импортирована» with the lamp skipped as not held and its repeat, then «Импортировать (2)» and «Отмена»',
+    why: 'keys-only-v2.json chosen: «Списков: 2, позиций: 3. Пропущено позиций: 4.», «Своих предметов, которых нет в аккаунте: 1 - ...», block 1 «2 позиции будут импортированы» and block 2 «1 позиция будет импортирована», each with a closed «Пропущено: 2», then «Импортировать (2)» and «Отмена»',
     enter: async (d) => {
       await importOpen(d);
       await d.upload(IMPORT('keys-only-v2.json'));
@@ -1638,7 +1703,7 @@ const STATES = [
     id: '#/lists ~ imported as gm1',
     route: '#/lists',
     as: 'gm1',
-    why: 'example.json imported: the field folded, the new «Лавка кузнеца» first with «3 позиции · изменён только что», the toast «Импортировано списков: 1»',
+    why: 'example.json imported: the panel closed and its toggle focused, the new «Лавка кузнеца» first with «3 позиции · изменён только что», the toast «Импортировано списков: 1»',
     enter: async (d) => {
       await importOpen(d);
       await d.upload(IMPORT('example.json'));
@@ -1653,7 +1718,7 @@ const STATES = [
     id: '#/lists ~ lists deleted as gm1',
     route: '#/lists',
     as: 'gm1',
-    why: '«Удалить (2)» over «Пустой список» and «Трофеи», the confirm accepted: «Лавка кузнеца» alone, the strip idle, the toast «Удалено списков: 2» with no «Вернуть»',
+    why: '«Удалить (2)» over «Пустой список» and «Трофеи», the confirm accepted: «Лавка кузнеца» alone, the mode still on with «Выбрано: 0» and «Все» focused, the toast «Удалено списков: 2» with no «Вернуть»',
     enter: async (d) => {
       await tickTwo(d);
       await d.click('Удалить (2)');
@@ -2017,7 +2082,16 @@ const STATES = [
   {
     id: SHOP,
     route: SHOP,
-    why: 'signed out on an account address: «Список не найден», the line asking to sign in, one «Войти»'
+    why: 'signed out on an account address: the error page «Список не открывается», its cause, «Войти» and «Открыть таблицы»'
+  },
+  {
+    id: LIST_GONE + ' as gm1',
+    route: LIST_GONE,
+    as: 'gm1',
+    why: 'signed in, an id the account does not hold: «Этого списка нет в вашем аккаунте», the cause with «Вы вошли как gm1@example.test.», «Мои списки» and «Открыть таблицы»',
+    enter: async (d) => {
+      await d.settled();
+    }
   },
 
   /* The list page, off `renderOneList` and everything it draws
@@ -2430,7 +2504,7 @@ const STATES = [
   {
     id: '#/lists/nope',
     route: '#/lists/nope',
-    why: '"Список не найден", the sub, the «Мои списки» button; the address not rewritten'
+    why: 'not an account address, signed out: «Список не открывается», «Войти» and «Открыть таблицы»; the address not rewritten'
   },
   {
     /* The players' payload of the old `qty-and-price` fixture, as a link written before

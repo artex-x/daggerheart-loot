@@ -1016,7 +1016,7 @@ describe('the tier ladder', () => {
     await userEvent.click(
       within(screen.getByRole('dialog')).getByRole('button', { name: 'В список' })
     );
-    expect(screen.getByRole('button', { name: '+ Новый список' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Новый список' })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'Закрыть' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -1027,7 +1027,7 @@ describe('the tier ladder', () => {
       'aria-expanded',
       'false'
     );
-    expect(screen.queryByRole('button', { name: '+ Новый список' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Новый список' })).not.toBeInTheDocument();
   });
 
   it('folds the same menu when the modal closes through the backdrop', async () => {
@@ -1036,7 +1036,7 @@ describe('the tier ladder', () => {
     await userEvent.click(
       within(screen.getByRole('dialog')).getByRole('button', { name: 'В список' })
     );
-    expect(screen.getByRole('button', { name: '+ Новый список' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Новый список' })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('dialog'));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -1073,10 +1073,10 @@ describe('the tier ladder', () => {
       name: 'В список'
     });
     await userEvent.click(toggle);
-    expect(screen.getByRole('button', { name: '+ Новый список' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Новый список' })).toBeInTheDocument();
 
     await userEvent.keyboard('{Escape}');
-    expect(screen.queryByRole('button', { name: '+ Новый список' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Новый список' })).not.toBeInTheDocument();
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
     expect(toggle).toHaveFocus();
     /* Only the menu closed - a second, unclaimed Escape is what closes the

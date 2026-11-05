@@ -2,6 +2,7 @@
    a sheet at every band (docs/specs/FEATURES.md, "Account and browser lists"). */
 import { cleanup, render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
+import { createRawSnippet } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import ListFind from './ListFind.svelte';
 import type { FacetRow } from '../lib/facets.js';
@@ -95,5 +96,36 @@ describe('the list search row', () => {
   it('draws the link in the sheet where the page can copy one', () => {
     find({ open: true, picked: { kind: ['weapon'] }, oncopylink: vi.fn() });
     expect(screen.getByRole('button', { name: 'Ссылка на фильтры' })).toBeInTheDocument();
+  });
+
+  it('draws the search box and «Выбрать» alone with no filter props, the page naming its box', async () => {
+    const app = new AppState(fakeEnv());
+    app.band = 'wide';
+    const onquery = vi.fn();
+    const { container } = render(ListFind, {
+      app,
+      query: '',
+      onquery,
+      placeholder: 'Найти список',
+      label: 'Найти список',
+      selectable: true,
+      onselect: vi.fn(),
+      beside: createRawSnippet(() => ({ render: () => '<p class="beside">3 списка</p>' }))
+    });
+    const row = container.querySelector('.lfind') as HTMLElement;
+    expect(screen.getByRole('searchbox', { name: 'Найти список' })).toHaveAttribute(
+      'placeholder',
+      'Найти список'
+    );
+    expect(screen.queryByRole('button', { name: /Фильтры/ })).toBeNull();
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect([...row.children].map((c) => c.className.split(' ')[0])).toEqual([
+      'grow',
+      'beside',
+      'selmode'
+    ]);
+    await userEvent.type(screen.getByRole('searchbox'), 'л');
+    expect(onquery).toHaveBeenCalledWith('л');
+    await expectNoA11yViolations(container);
   });
 });

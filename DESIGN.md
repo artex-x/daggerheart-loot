@@ -303,7 +303,8 @@ are in. Gold on something nobody selected is wrong. The budget: a gold fill goes
 to one primary action per panel, to a choice that narrows the view, and to the
 current place. A pressed default (such as «Все» or a chip row with every chip on), a
 mode toggle and a selection are neutral: a check and a lit `--muted2` border, no gold, on a
-catalog row and a list row alike. A die
+catalog row, a list row and a card of `/lists` alike. A notice that waits, the list
+card's «Новое в списке (N)», is a neutral chip: nobody chose it. A die
 is an action and plain: no gold, no check, no lit border. The unique tag is
 neutral and dashed, the roll number is Chalk on a seam border, and footer links
 are Ash Violet and underlined. The site share cards spend gold on the star
@@ -416,9 +417,10 @@ full-width element does not invent its own container or its own gutter. From
 at the column's left edge: the dossier at most 980px (`--dossier-w`), the
 editor's form at most 720px (it bites from about a 1206px window), the account at
 most 1100px and prose at most 78ch. One cap is not a wide-window rule: a lone
-number field is at most 240px at every width (`NumberField`: past that the number
-floats between two far buttons; the roll pane's column is 282px, and wider in the
-phone settings panel). The alt roll's two boxes opt out and fill their blocks.
+number field is at most 240px at every width (`NumberField`; the roll pane's column
+is 282px, and wider in the phone settings panel). Inside the box the value takes the
+free width between the two buttons, so it sits at the center and «+» at the box's right
+edge. The alt roll's two boxes opt out and fill their blocks.
 
 **The Two Breakpoints Rule.** The system has two, and a third step for the header.
 From 761px the brand, the three jobs, the language switch and the account
@@ -493,10 +495,9 @@ is never only an icon where its label fits: the three jobs keep their labels at
 360px, the signed-out account control keeps «Войти» / "Sign in" at every width,
 and the pin and the help are labeled buttons («Открывать при запуске» /
 "Open on start", «Справка» / "Help"; the catalog's help is named for its
-panel, «Об этих данных» / "About this data"). The one interim exception: up to
-760px the pin and the help stay round buttons with the same names until their
-page's batch moves them into «Ещё» (the lists); the catalog's, the roller's,
-`/homebrew`'s and `/search`'s are in «Ещё». The account page draws neither.
+panel, «Об этих данных» / "About this data"). Up to 760px the pin and the help
+are items of «Ещё» on the catalog, the roller, `/homebrew`, `/search` and
+`/lists`. The account page draws neither.
 
 **The First-Screen Rule.** At 360x640 and at 1180x720, in Russian and in
 English, at scroll 0, the primary content of a route starts no lower than 40%
@@ -687,6 +688,10 @@ means "a thing". Do not round a card to a pill or square a chip.
   on a light well (`#ebe7f0`, glyph `#3a3350`).
 - **Entrance:** a 0.28s `pop` (10px up, 0.985 to 1) on
   `cubic-bezier(0.2, 0.8, 0.3, 1)`, cancelled under reduced motion.
+- **List card:** the lists index's card is the plate with the name, the meta line, up
+  to six thumbs and the neutral «Новое в списке (N)» chip inside its link, and its
+  actions in a labeled «Ещё: <name>»; in the selection mode a pick box takes their
+  place. No `overflow` clip: the menu opens past the card.
 - **Image review:** the page under `tools/artwork/review/` draws this card
   head from the same CSS and label code. A change to it follows
   `docs/artwork.md`, "The card follows the site's card".
@@ -785,7 +790,9 @@ means "a thing". Do not round a card to a pill or square a chip.
   last. Below 761px the box, the summary and the clear are one row and the
   actions the next. Zero ticks: the actions off, the clear on. The owner's list
   page draws its own bar in the same place (`app.pageBar`); up to 760px its rare
-  actions fold into «Ещё», which opens up. A panel a bar action opens is a
+  actions fold into «Ещё», which opens up; the lists index draws its bar the same way.
+  The add-to-list menu is a popover at every width, headed «Списки», a neutral row
+  per list with a check where it holds the record and its count in words. A panel a bar action opens is a
   `Sheet`, because the bar is sticky and a panel under it would grow past the
   window.
 

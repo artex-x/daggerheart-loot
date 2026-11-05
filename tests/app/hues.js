@@ -288,6 +288,23 @@ const gap = (a, b) => {
     'a ticked list row is gold: ' + JSON.stringify(listSel)
   );
 
+  /* A ticked card of the lists index is neutral too: a lit border, no gold. */
+  console.log('ticked list card');
+  await d.open('#/lists', { as: 'gm1' });
+  for (let i = 0; i < 40 && !(await d.count('.listcard')); i++) await d.settle();
+  await d.tick('Выбрать: Трофеи');
+  const cardSel = await page.evaluate(() => {
+    const el = document.querySelector('.listcard.picked');
+    if (!el) return null;
+    const cs = getComputedStyle(el);
+    return [cs.borderTopColor, cs.backgroundColor];
+  });
+  ok(!!cardSel, 'ticked list card: .listcard.picked not found');
+  ok(
+    !!cardSel && !cardSel.some(goldish),
+    'a ticked list card is gold: ' + JSON.stringify(cardSel)
+  );
+
   await ctx.close();
   await closeBrowser();
   console.log(

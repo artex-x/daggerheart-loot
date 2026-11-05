@@ -24,7 +24,7 @@ RootWebArea "Первоклассный Спальный Мешок - Генер
     link "показать в таблице" [url=/tables/core_item/ci1]
     StaticText "Во время отдыха вы автоматически очищаете Стресс."
     button "В список" [expanded=true]
-    StaticText "ЛЕЖИТ В СПИСКАХ"
+    StaticText "СПИСКИ"
     searchbox "Найти список" [value=Шкатулка]
     StaticText "Ничего не найдено"
     textbox "Новый список" [value=Шкатулка focused=true multiline=false readonly=false required=false]

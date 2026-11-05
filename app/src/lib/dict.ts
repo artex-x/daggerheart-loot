@@ -247,7 +247,6 @@ const ru = {
   subSecondary: 'Вторичное',
   subArmor: 'Броня',
 
-  subLists: 'Соберите добычу в список и отправьте игрокам одной ссылкой.',
   /* "по всем N позициям" needs "всем" to agree with the numeral, so the
      sentence leaves it out and reads for any count. */
   subSearch:
@@ -330,10 +329,12 @@ const ru = {
      button both raise - `git show 23c00a6^:app.js`. */
   addToList: 'Добавить в список',
   toList: 'В список',
-  addTo: 'Добавить в',
-  inLists: 'Лежит в списках',
+  listsHead: 'Списки',
   newList: 'Новый список',
-  listNamePh: 'Например: клад дракона',
+  listNameLabel: 'Название списка',
+  listNamePh: 'Клад дракона',
+  listsNoneTitle: 'Списков пока нет',
+  listsNoneHint: 'Нажмите «Новый список» - или «В список» у предмета в таблице или в броске.',
   create: 'Создать',
   cancel: 'Отмена',
   findList: 'Найти список',
@@ -392,8 +393,11 @@ const ru = {
   listEmptyHint:
     'Пока пусто. Откройте «Таблицы» или «Поиск», отметьте нужное галочками и нажмите «В список» - или сделайте это прямо с карточки предмета.',
   itemNotLoaded: 'Предмет не загружен',
-  listNotFound: 'Список не найден',
-  listNotFoundSub: 'Возможно, он удалён или открыт в другом браузере.',
+  listGoneSignedOut: 'Список не открывается',
+  listGoneSignedOutSub: 'Списки открываются только в аккаунте, где их создали. Войдите в него.',
+  listGoneAccount: 'Этого списка нет в вашем аккаунте',
+  listGoneAccountSub: 'Его удалили, или он сохранён в другом аккаунте.',
+  listGoneAs: 'Вы вошли как %s.',
   rollBy: 'Бросок по списку',
   rollHint: 'Бросьте кубик и введите результат - или нажмите кнопку',
   clear: 'Сбросить',
@@ -448,6 +452,7 @@ const ru = {
   qtyOf: 'Кол-во: %s',
   moreOf: 'Ещё: %s',
   rollFromList: 'Бросить по списку',
+  listOpen: 'Открыть',
   listDeleteItem: 'Удалить список',
   moneyTo_bag: 'Цены: как в книге',
   moneyTo_coin: 'Цены: монетами',
@@ -527,10 +532,8 @@ const ru = {
   exportData: 'Скачать мои данные (ZIP)',
   zipNoArt: 'Картинок в архиве нет: после переноса добавьте их заново.',
 
-  /* Account lists: the index groups, the save status, the sign-in prompts,
-     the delete confirm and the limits (docs/specs/FEATURES.md, "Lists"). */
-  groupAccount: 'Ваш аккаунт',
-  noCloudLists: 'В аккаунте пока нет списков - создайте первый выше.',
+  /* Account lists: the save status, the sign-in prompts, the delete confirm and the
+     limits (docs/specs/FEATURES.md, "Lists"). */
   cloudLoading: 'Загружаем...',
   cloudLoadFailed: 'Не получилось загрузить списки аккаунта.',
   retry: 'Повторить',
@@ -543,7 +546,6 @@ const ru = {
     'Войдите, чтобы создавать списки: они хранятся в аккаунте и открываются на любом устройстве.',
   signInToCreateShort: 'Войдите, чтобы создать список.',
   signInToSave: 'Войдите, и список сохранится в ваш аккаунт.',
-  signInToOpen: 'Если это список из вашего аккаунта, войдите, чтобы открыть его.',
   deleteCloudConfirm:
     'Удалить список «%s»? Ссылки для игроков и мастера перестанут работать. Отменить удаление нельзя.',
   limitLists:
@@ -973,6 +975,7 @@ const ru = {
     '), или архив ZIP из «Скачать мои данные». Списки добавятся как новые; существующие не изменятся.',
   importPreview: 'Списков: %l, позиций: %n.',
   importSkippedN: 'Пропущено позиций: %n.',
+  importSkippedList: 'Пропущено: %n',
   importWillN:
     '%n позиция будет импортирована|%n позиции будут импортированы|%n позиций будут импортированы',
   importListEmpty: 'без позиций',
@@ -1341,7 +1344,6 @@ const en: Dict = {
   subSecondary: 'Secondary',
   subArmor: 'Armor',
 
-  subLists: 'Collect loot into a list and send it to your players as a single link.',
   subSearch:
     'Search all 1459 entries at once - loot, consumables and equipment, in Russian and English.',
   subSearchOwn: 'And %n item of your own.|And %n items of your own.',
@@ -1403,10 +1405,12 @@ const en: Dict = {
 
   addToList: 'Add to list',
   toList: 'Add to list',
-  addTo: 'Add to',
-  inLists: 'Sits in lists',
+  listsHead: 'Lists',
   newList: 'New list',
-  listNamePh: 'For example: dragon hoard',
+  listNameLabel: 'List name',
+  listNamePh: "Dragon's hoard",
+  listsNoneTitle: 'No lists yet',
+  listsNoneHint: 'Press "New list" - or "Add to list" on an item in a table or a roll.',
   create: 'Create',
   cancel: 'Cancel',
   findList: 'Find a list',
@@ -1456,8 +1460,12 @@ const en: Dict = {
   listEmptyHint:
     'Nothing here yet. Open Tables or Search, tick what you need and press "Add to list" - or do it straight from an item card.',
   itemNotLoaded: 'Item not loaded',
-  listNotFound: 'List not found',
-  listNotFoundSub: 'It may have been deleted, or it lives in another browser.',
+  listGoneSignedOut: 'This list does not open',
+  listGoneSignedOutSub:
+    'A list opens only in the account where it was made. Sign in to that account.',
+  listGoneAccount: 'This list is not in your account',
+  listGoneAccountSub: 'It was deleted, or it is in another account.',
+  listGoneAs: 'You are signed in as %s.',
   rollBy: 'Roll on this list',
   rollHint: 'Roll a die and type the result - or press the button',
   clear: 'Clear',
@@ -1508,6 +1516,7 @@ const en: Dict = {
   qtyOf: 'Qty: %s',
   moreOf: 'More: %s',
   rollFromList: 'Roll on this list',
+  listOpen: 'Open',
   listDeleteItem: 'Delete the list',
   moneyTo_bag: 'Prices: as in the book',
   moneyTo_coin: 'Prices: in coins',
@@ -1584,8 +1593,6 @@ const en: Dict = {
   exportData: 'Download my data (ZIP)',
   zipNoArt: 'The archive holds no pictures: add them again after the move.',
 
-  groupAccount: 'Your account',
-  noCloudLists: 'No lists in your account yet - create one above.',
   cloudLoading: 'Loading...',
   cloudLoadFailed: 'Could not load the lists in your account.',
   retry: 'Retry',
@@ -1598,7 +1605,6 @@ const en: Dict = {
     'Sign in to create lists: they are kept in your account and open on any device.',
   signInToCreateShort: 'Sign in to create a list.',
   signInToSave: 'Sign in and the list is saved to your account.',
-  signInToOpen: 'If this list is in your account, sign in to open it.',
   deleteCloudConfirm:
     'Delete the list "%s"? Its player and GM links will stop working. This cannot be undone.',
   limitLists:
@@ -2016,6 +2022,7 @@ const en: Dict = {
     '), or the ZIP archive from "Download my data". The lists are added as new ones; the lists you have do not change.',
   importPreview: 'Lists: %l, items: %n.',
   importSkippedN: 'Items skipped: %n.',
+  importSkippedList: 'Skipped: %n',
   importWillN: '%n item will be imported|%n items will be imported',
   importListEmpty: 'no items',
   importNoName: '(no name)',

@@ -2380,9 +2380,9 @@ touch and limit triggers run once per statement".
 carries the account client chunk. A batch whose total passes a budget raises
 it to the measured total rounded up to the next whole kB (a printed 250.3
 gives 251; the tool compares the unrounded total, so a printed whole number
-such as 251.0 can pass 251: add 1 kB), never past 350 kB configured and 270 kB
-unconfigured (owner, 2026-10-22: "we can increase it up to 270
-defensively"). `npm run check:built` builds `dist/`
+such as 251.0 can pass 251: add 1 kB), never past 350 kB configured and 300 kB
+unconfigured (owner, 2026-10-22, and 2026-11-04: "we can increase budget up to
+300"). `npm run check:built` builds `dist/`
 unconfigured and so measures only the 269 kB limit. The 326 kB limit runs in
 CI's `e2e` job, after `npm run e2e` leaves the configured build in `dist/`,
 and in `deploy`. The lists release passed `check:built` locally and failed
@@ -2395,7 +2395,9 @@ drops every `E2E_*` name, the secret key included, before the build:
 node --env-file=.env.test.local --input-type=module -e "import { buildEnv } from './tests/e2e/lib.mjs'; import { spawnSync } from 'node:child_process'; process.exit(spawnSync('npm run build && npm run budget', { shell: true, stdio: 'inherit', env: buildEnv(process.env) }).status ?? 1);"
 ```
 
-Expected: `within the 326 kB budget (with the account client chunk)`; 325.5 kB
+Expected: `within the 326 kB budget (with the account client chunk)`; 325.7 kB
+locally on 2026-11-05 after task 57 batch 8 (the lists page, its cards and the
+add-to-list menu), 268.3 kB unconfigured; 325.5 kB
 locally on 2026-11-05 after task 57 batch 9a (the list pages on a phone), 268.1 kB unconfigured; 321.4 kB
 locally on 2026-11-04 after task 57's blind review of wave 2 (a long table's chunked first
 draw, the record picture's three forms, the prompts' «Отмена»), 264.1 kB unconfigured; 320.7 kB
@@ -2444,7 +2446,8 @@ configured bundle budget is 210 kB; the unconfigured stays 150 kB", amended by
 "The bundle budget steps up per batch to 250 kB configured and 190
 unconfigured", amended by "The bundle ceilings rise to 300 kB configured and
 250 unconfigured", amended by "The configured bundle ceiling rises to 350 kB",
-amended by "The unconfigured bundle ceiling rises to 270 kB".
+amended by "The unconfigured bundle ceiling rises to 270 kB", amended by "The
+unconfigured bundle ceiling rises to 300 kB".
 
 Branch migrations on the test project: `migrate-test` runs on every
 branch's `e2e`, so a migration that a branch pushed is in the test project

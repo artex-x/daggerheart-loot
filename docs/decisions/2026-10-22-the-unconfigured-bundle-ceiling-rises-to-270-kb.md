@@ -1,5 +1,6 @@
 # 2026-10-22 - The unconfigured bundle ceiling rises to 270 kB
 
+- Amended by "The unconfigured bundle ceiling rises to 300 kB" (2026-11-05): the unconfigured ceiling is 300 kB.
 - Task: `persist-review` (the owner, 2026-10-22: "we can increase it up to 270
   defensively").
 - Decision: the unconfigured ceiling of `tools/bundle-budget.mjs` is 270 kB and the

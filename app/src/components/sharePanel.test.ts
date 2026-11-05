@@ -345,6 +345,7 @@ describe('a list made a moment ago', () => {
     });
     await screen.findByRole('button', { name: 'Аккаунт: gm1@example.test' });
     await screen.findByText('Лавка кузнеца');
+    await userEvent.click(screen.getByRole('button', { name: ru.newList }));
     await userEvent.type(screen.getByPlaceholderText(ru.listNamePh), 'Лавка');
     await userEvent.click(screen.getByRole('button', { name: ru.create }));
     router.navigate('#/lists/' + uuid(5000));

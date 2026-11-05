@@ -309,9 +309,9 @@ export async function runFlows({ env, admin, member, browser, base }) {
     const mine = () => listsOf(admin, member.id);
     await withPage(ctx, await mint(env, admin, member.email), async (page, d) => {
       await d.open('#/lists');
-      await waitText(page, 'F7', 'Ваш аккаунт');
-      await waitText(page, 'F7', 'В аккаунте пока нет списков');
-      await d.type('Например: клад дракона', 'E2E список');
+      await waitText(page, 'F7', 'Списков пока нет');
+      await d.press('Новый список');
+      await d.type('Клад дракона', 'E2E список');
       await d.press('Создать');
       await until('F7: the new list did not reach the account', async () => {
         const rows = await mine();
@@ -381,8 +381,9 @@ export async function runFlows({ env, admin, member, browser, base }) {
     const tokens = {};
     await withPage(ctx, await mint(env, admin, member.email), async (page, d) => {
       await d.open('#/lists');
-      await waitText(page, 'F8', 'Ваш аккаунт');
-      await d.type('Например: клад дракона', 'E2E ссылки');
+      await waitText(page, 'F8', 'Списков пока нет');
+      await d.press('Новый список');
+      await d.type('Клад дракона', 'E2E ссылки');
       await d.press('Создать');
       await until('F8: the new list did not reach the account', async () => {
         const rows = await mine();
@@ -528,8 +529,9 @@ export async function runFlows({ env, admin, member, browser, base }) {
     const mine = () => listsOf(admin, member.id);
     await withPage(ctx, await mint(env, admin, member.email), async (page, d) => {
       await d.open('#/lists');
-      await waitText(page, 'F10', 'Ваш аккаунт');
-      await d.type('Например: клад дракона', 'E2E закрытие');
+      await waitText(page, 'F10', 'Списков пока нет');
+      await d.press('Новый список');
+      await d.type('Клад дракона', 'E2E закрытие');
       await d.press('Создать');
       await until('F10: the new list did not reach the account', async () => {
         const rows = await mine();
@@ -746,7 +748,7 @@ export async function runFlows({ env, admin, member, browser, base }) {
     );
     await withPage(ctx, await mint(env, admin, member.email), async (page, d) => {
       await d.open('#/lists');
-      await waitText(page, 'F13', 'Ваш аккаунт');
+      await waitText(page, 'F13', 'Списков пока нет');
       await waitControl(page, 'F13', 'Импорт из файла');
       await d.press('Импорт из файла');
       await d.upload(example);
@@ -766,7 +768,8 @@ export async function runFlows({ env, admin, member, browser, base }) {
           entries[0].price_coins === 150
         );
       });
-      await d.type('Например: клад дракона', 'F13');
+      await d.press('Новый список');
+      await d.type('Клад дракона', 'F13');
       await d.press('Создать');
       await until('F13: the second list did not reach the account', async () => {
         return (await mine()).length === 2;
@@ -894,8 +897,8 @@ export async function runFlows({ env, admin, member, browser, base }) {
       await d.open('#/i/' + key);
       await waitControl(page, 'F15', 'В список');
       await d.press('В список');
-      await d.press('+ Новый список');
-      await d.type('Например: клад дракона', 'F15');
+      await d.press('Новый список');
+      await d.type('Клад дракона', 'F15');
       await d.press('Создать');
       await until('F15: the entry does not link the own item', async () => {
         const [e] = await entriesOf();

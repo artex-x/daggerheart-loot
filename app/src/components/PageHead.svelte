@@ -1,8 +1,8 @@
 <script lang="ts">
   /* The heading of a page: its name, the pin and the help beside it, the line under
-     it, and the explanation the help folds open. From 761 px the two buttons carry
-     their labels; up to 760 px they stay round with the same names until their page's
-     batch moves them (DESIGN.md, "The Same Label Rule").
+     it, and the explanation the help folds open. The two buttons carry their labels;
+     up to 760 px every page draws them in its «Ещё» instead (DESIGN.md, "The Same
+     Label Rule").
 
      Extracted on the second use rather than designed: the roll panel and the
      Core rules panel had the same thirty lines and the same two hundred of
@@ -55,9 +55,9 @@
      needs. -->
 <div class="page-head">
   <h1 class="page-h">{title}</h1>
-  <!-- Round below 761 px: 26px of paint, 44px of target. It sits in the heading row
-       and a mis-tap silently changes where the app opens. The pressed pin is the
-       neutral pressed state (DESIGN.md, "Segmented control"), not gold. -->
+  <!-- A 44px target: it sits in the heading row, and a mis-tap silently changes where
+       the app opens. The pressed pin is the neutral pressed state (DESIGN.md,
+       "Segmented control"), not gold. -->
   {#if pin}
     <button
       type="button"
@@ -68,7 +68,7 @@
         app.pinHome(home);
       }}
     >
-      <Icon name={on ? 'check' : 'home'} /><span class="txt">{on ? t.homeOn : t.homeHint}</span>
+      <Icon name={on ? 'check' : 'home'} />{on ? t.homeOn : t.homeHint}
     </button>
   {/if}
   {#if help}
@@ -109,11 +109,11 @@
   }
 
   .homebtn {
-    width: 26px;
-    height: 26px;
+    height: 32px;
     flex: none;
-    padding: 0;
-    border-radius: 50%;
+    gap: 6px;
+    padding: 0 12px 0 10px;
+    border-radius: var(--r-sm);
     position: relative;
     border: 1px solid var(--line2);
     background: transparent;
@@ -124,6 +124,9 @@
     transition: 0.15s;
     vertical-align: middle;
     cursor: pointer;
+    font: inherit;
+    font-size: var(--t-data);
+    font-weight: 600;
   }
 
   .homebtn:hover {
@@ -135,37 +138,6 @@
     background: var(--surface2);
     border-color: var(--muted2);
     color: var(--txt);
-  }
-
-  /* The `.vh` rule of `styles/tokens.css` up to 760 px, where the label stays the name. */
-  .txt {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-
-  @media (min-width: 761px) {
-    .homebtn {
-      width: auto;
-      height: 32px;
-      gap: 6px;
-      padding: 0 12px 0 10px;
-      border-radius: var(--r-sm);
-      font: inherit;
-      font-size: var(--t-data);
-      font-weight: 600;
-    }
-
-    .txt {
-      position: static;
-      width: auto;
-      height: auto;
-      overflow: visible;
-      clip-path: none;
-    }
   }
 
   .homebtn :global(svg) {
@@ -189,18 +161,5 @@
     color: var(--muted);
     font-size: var(--t-small);
     max-width: 70ch;
-  }
-
-  @media (max-width: 600px) {
-    .homebtn {
-      width: 34px;
-      height: 34px;
-      font-size: var(--t-body);
-    }
-
-    .homebtn :global(svg) {
-      width: 17px;
-      height: 17px;
-    }
   }
 </style>

@@ -9,10 +9,10 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     link "Открыть страницу" [url=/i/ci56]
     StaticText "56"
     StaticText "ПРЕДМЕТ"
-    StaticText "CORE"
+    ... StaticText x2 of 6 same-shape siblings elided
     heading "Самоцвет Чутья" [level=2]
-    StaticText "Вы можете прикрепить этот самоцвет к оружию, что позволит вам ис..." [namelen=118 namehash=200f82d5]
     button "В список" [expanded=true]
+    StaticText "СПИСКИ"
     StaticText "Войдите, чтобы создать список."
     button "Войти" [focused=true]
     button "Отмена"

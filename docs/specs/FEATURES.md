@@ -449,12 +449,12 @@ across.
 - Add from a table or search selection, or from an item card. The card menu stays
   open so one item can go into several lists, and through the new-list form
   and its cancel. From the eighth list (`LIST_SEARCH_AT`) it draws a search
-  box, folded as search folds (case, `ё` as `е`); only the chips scroll, so
-  the label, the search and «+ Новый список» (or the open form) stay in view.
-  «+ Новый список» starts the form with the trimmed query as the name, and a
+  box, folded as search folds (case, `ё` as `е`); only the rows scroll, so
+  the heading, the search and «Новый список» (or the open form) stay in view.
+  «Новый список» starts the form with the trimmed query as the name, and a
   create clears the query. A one-record menu puts the lists holding the
   record first, newest first in each group, in the order taken when it
-  opens: a pressed chip keeps its place until the menu opens again, and a
+  opens: a pressed row keeps its place until the menu opens again, and a
   list that appears while it is open (created here or in another tab)
   joins the first group. A selection's menu
   stays newest first. The menu opens on
@@ -464,66 +464,107 @@ across.
   first) whenever it opens or grows, so it neither spills past the modal's
   edge nor drags the card's own scroll position along with it. Escape closes
   it and returns focus to the toggle, the same as any other disclosure on
-  the page.
-- In a one-record menu a press on a pressed chip removes the record with «Убрано из
+  the page. It is a popover at every width, also at 360 px (no bottom sheet:
+  `docs/decisions/2026-11-05-the-add-to-list-menu-stays-a-popover.md`).
+- The menu is headed «Списки» / "Lists". A list is a row: a check where it holds the
+  record, the name on one line (cut with an ellipsis), and its count in words at
+  the end, «2 позиции», never cut; the name is the row's name and the count its
+  description. The rows are neutral, with no gold fill (C61): a one-record menu's
+  row is `aria-pressed`, a selection's menu only adds, so its rows carry no
+  pressed state and no check. Rows are 44 px tall up to 760 px and 36 px from
+  761 px. «Новый список» / "New list" is a button with the plus icon under a
+  separator, outside the rows.
+- In a one-record menu a press on a pressed row removes the record with «Убрано из
   «%s»» / "Removed from «%s»" and «Вернуть» / "Undo". A list whose entries this tab
-  has not read draws its chip busy (dimmed, announced busy, a second press does
+  has not read draws its row busy (dimmed, announced busy, a second press does
   nothing, the focus stays) until they are read, so the undo writes back the
   quantity, price and notes the read held; a failed read toasts «Не получилось
   загрузить списки аккаунта.» / "Could not load the lists in your account." and
   removes nothing. A menu closed during the read
   still removes and toasts.
 - Signed out (sign-in configured, no session) the reader holds no list: the menu
-  draws «+ Новый список» / "+ New list" alone, with no label and no empty line, and the chip opens
-  the sign-in prompt in its place.
-- The index, from the eighth account list, draws a name filter («Найти список») under
-  the create panel: it matches the list name, folded as search folds, keeps the
-  group's order, lives in memory only and starts empty on every visit; a
-  create clears it; no match draws «Ничего не найдено». The
-  index draws the first 24 cards (`LIST_PAGE`) of what the filter leaves, then
-  «Показать ещё (N)» / "Show more (N)", N still hidden; each press draws 24
-  more and moves focus to the first card it revealed, and the button goes
-  when none remain. Any edit to the query folds the result back to 24. The
-  drawn count is session memory (`AppState.listsShown`): a return from a
-  list page shows the same cards, a reload starts at 24. A new card goes
-  first in its group and pushes the last drawn card under the button.
-- A card of the index names its list and, under the name, a meta line in the
-  edit time's type: the count of the entries the data still knows in words,
-  «9 позиций» / "9 items", and on an account list the edit time after it,
-  «9 позиций · изменён 3 дня назад». No gold badge: that look is a roll
-  number's. An account card's link name is the name, the count, the edit time
-  and any pending requests.
-- Signed in, with the account lists read, each account card carries a pick
-  box in its top right corner, outside the card's link: a 32 px box with a
-  44 px target, named «Выбрать: <name>» / "Select: <name>"; a ticked card
-  takes a gold border. Browser cards have none. Over the account cards sits
-  the selection strip the list page draws over its rows: «Выбрать все» /
-  "Select all" (mixed while some are ticked; its visible text dropped while
-  anything is ticked), the polite summary «Выбрано N», and while N > 0
-  «Скачать JSON (N)» and «Удалить (N)»; at 640 px or less the two actions take
-  their own line, half the width each. «Выбрать все» ticks the drawn cards
-  only, and the ticks are always a subset of the drawn cards: a search, a
-  fold back to 24, a delete or a re-read that removes a card, or a sign-out
-  drops the ticks that leave the view, and a card that comes back is not
-  ticked. The ticks are page memory and start empty on every visit.
-  «Скачать JSON (N)» downloads the ticked lists as one lists file ("Account
-  and browser lists", "Exports") and keeps the ticks. «Удалить (N)» asks the
-  browser's confirm «Удалить списки (2): «Пустой список», «Трофеи»? Ссылки для
-  игроков и мастера на них перестанут работать. Отменить удаление нельзя.»,
-  naming the first five lists, then «и ещё N»; «Отмена» changes nothing and
-  keeps the ticks. On yes the lists go at once through the write buffer, as
-  one delete does, the ticks clear, and the toast «Удалено списков: 2» has no
-  «Вернуть». A removal the server refuses draws that list again with one
-  «Изменение не сохранилось...» toast; the others stay deleted.
-- Signed in, with the account lists read, the «Новый список» panel has «Импорт
-  из файла» / "Import from file" under the name row, a toggle that opens the
-  field «Импорт из файла JSON» / "Import from a JSON file" in the same panel:
+  draws the heading and «Новый список» / "New list" alone, with no empty line and no
+  separator, and the button opens the sign-in prompt in its place (two steps, kept).
+- The index's head is the page head with «Мои списки», no line under it and no help
+  (Q8.1). From 761 px the pin, «Импорт из файла» (while the account lists are read)
+  and the primary «Новый список» (plus icon) share its row, the primary at the
+  column's right edge. Up to 760 px the row holds the `h1`, the primary (`sm`, plus
+  icon, 44 px tall) and «Ещё» (at 320 px the primary and «Ещё» wrap under the `h1`
+  together), which holds «Импорт из файла» (while the lists are
+  read) and the pin (`PinItem`); no round pin draws. Signed out, the head draws no
+  primary and no import, and up to 760 px «Ещё» holds the pin alone.
+- «Новый список» opens the name field in place (rule 8): a panel under the head
+  with the visible label «Название списка» / "List name", the input (placeholder
+  «Клад дракона» / "Dragon's hoard"), «Создать» and «Отмена». The focus goes into
+  the input; Enter and «Создать» create, «Отмена» and Escape discard, and after
+  either the focus returns to the primary. An empty name toasts «Сначала назовите
+  список» and keeps the field. A create closes the field, clears the name filter
+  and toasts «Список «%s» создан». At the limit the primary stays enabled: a press
+  toasts the limit and the field stays closed (round 3, unit B).
+- The count line heads the collection: «3 списка из 50» (red at the limit), then
+  «Не сохранено» and «Повторить» while a write fails, then «Выбрать» at its end
+  while a card is drawn and the mode is off. From the eighth account list
+  (`LIST_SEARCH_AT`) the row under the head is the search «Найти список» with
+  «Выбрать» last; the count sits under it up to 760 px and in the row, after the
+  box, from 761 px. The search matches the list name, folded as search folds,
+  keeps the newest-edit order, lives in memory only and starts empty on every
+  visit; a create clears it; no match draws «Ничего не найдено». The index draws
+  the first 24 cards (`LIST_PAGE`) of what the search leaves, then «Показать ещё
+  (N)» / "Show more (N)", N still hidden; each press draws 24 more and moves focus
+  to the first card it revealed, and the button goes when none remain. Any edit to
+  the query folds the result back to 24. The drawn count is session memory
+  (`AppState.listsShown`): a return from a list page shows the same cards, a reload
+  starts at 24. A new card goes first and pushes the last drawn card under the
+  button.
+- Signed in with no list, the collection is the empty plate: the kind glyph,
+  «Списков пока нет» / "No lists yet", «Нажмите «Новый список» - или «В список» у
+  предмета в таблице или в броске.» and «Открыть таблицы». Signed out it is the
+  plate with the kind glyph holding the sign-in prompt «Войдите, чтобы создавать
+  списки...» and «Войти», which returns to `#/lists`. A failed read keeps the
+  load line «Не получилось загрузить списки аккаунта.» and «Повторить», whose
+  retry sends the focus to the primary.
+- A card names its list (a name of 120 characters wraps inside the card) and,
+  under the name, a meta line: the count of the entries the data still knows in
+  words and the edit time, «9 позиций · изменён 3 дня назад», then up to six
+  thumbs or «Список пуст». No gold badge: that look is a roll number's. Pending
+  purchase requests and unread notices draw the neutral chip «Новое в списке (N)»
+  / "New in this list (N)" inside the link (no gold: DESIGN.md, "The Seal Rule").
+  The link's name is the name, the count, the edit time and the chip. The card's
+  actions are its «Ещё», named «Ещё: <name>» / "More: <name>": «Открыть»,
+  «Скачать JSON», a separator and «Удалить список» (danger); no red «Удалить» on a
+  card (A16). «Удалить список» asks the browser's confirm «Удалить список «%s»?
+  Ссылки для игроков и мастера перестанут работать. Отменить удаление нельзя.» and
+  offers no undo; the focus then goes to the next card's «Ещё», else the
+  previous one's, else the primary.
+- «Выбрать» opens the selection mode and focuses the bar's «Все»: each card draws
+  a pick box in its top right corner, outside the card's link (32 px, a 44 px
+  target, named «Выбрать: <name>» / "Select: <name>"), and no «Ещё». A ticked card
+  is neutral: a lit border and the check, no gold. The bar is the one selection bar
+  (`SelectionBar` through `app.pageBar`): «Все», «Выбрано: N», «Скачать JSON (N)»,
+  «Удалить (N)» and «Снять выделение» last; with no tick the two actions are off.
+  «Все» ticks the drawn cards only, and the ticks are always a subset of the drawn
+  cards: a search, a fold back to 24, a delete or a re-read that removes a card,
+  or a sign-out drops the ticks that leave the view, and a card that comes back is
+  not ticked. The ticks are page memory. «Скачать JSON (N)» downloads the ticked
+  lists as one lists file ("Account and browser lists", "Exports") and keeps the
+  ticks. «Удалить (N)» asks the browser's confirm «Удалить списки (2): «Пустой
+  список», «Трофеи»? Ссылки для игроков и мастера на них перестанут работать.
+  Отменить удаление нельзя.», naming the first five lists, then «и ещё N»;
+  «Отмена» changes nothing and keeps the ticks. On yes the lists go at once through
+  the write buffer, as one delete does, the ticks clear, the mode stays on with the
+  focus on «Все», and the toast «Удалено списков: 2» has no «Вернуть». A removal
+  the server refuses draws that list again with one «Изменение не сохранилось...»
+  toast; the others stay deleted. «Снять выделение» leaves the mode and focuses
+  «Выбрать»; a page with no drawn card leaves it too.
+- Signed in, with the account lists read, «Импорт из файла» / "Import from file"
+  is the head's toggle from 761 px and an item of the head's «Ещё» up to 760 px; it
+  opens the panel «Импорт из файла JSON» / "Import from a JSON file" under the head:
   «Выбрать файл...», the chosen file's name, and a hint that links the published
   schema (`schema/import-v3.json`, «схеме import-v3» / "import-v3 schema") and
   `llms.txt`, relative, in a new tab. A refused file and the per-list errors
   draw in the error look (rule 19: the danger border and text, no fill). The
-  toggle and «Отмена» fold the field and forget the file, and the focus returns
-  to the toggle. A file of more than 5 MB is refused before it is read; a file
+  toggle (or the menu item) and «Отмена» close the panel and forget the file, and
+  the focus returns to the toggle, else to «Ещё»; no «Закрыть» is drawn. A file of more than 5 MB is refused before it is read; a file
   that starts with a zip's signature is read as the data zip ("Account and
   browser lists", "Exports"), anything else as UTF-8 text. A zip of more than 10
   MB is refused before it is read, «Архив больше 10 МБ.»; a zip's chosen data
@@ -565,8 +606,12 @@ across.
   or a name the account holds: an unknown id, a repeated id and an own item
   without a snapshot that the account does not hold («пропущена - этого своего
   предмета нет в аккаунте: сначала импортируйте файл предметов на странице «Мои
-  предметы»») are skipped and named with their positions, and a name the account
-  holds is allowed and noted («...появится второй»). A skipped entry is no first
+  предметы»») are skipped and named with their positions and, where the data knows
+  the record, its name, never the raw id («Позиция 4: пропущена - такой записи нет
+  в данных»); a list's skips sit in a closed fold «Пропущено: N» / "Skipped: N"
+  (details on request, D6), and a name the account holds is allowed and noted
+  above it («...появится второй»). The refused report keeps its field and path
+  codes. A skipped entry is no first
   entry: a later entry of its key is read as if the skipped one were absent.
   The report draws the first 20 list blocks, then «и ещё N списков» /
   «свернуть» (rule 12); the skips are grouped by list once, so 1000 lists of
@@ -702,10 +747,10 @@ address kept, and no add-to-list control is drawn.
 - **Where a list is made**: signed in, every list made on the index, in the
   add-to-list menu or by "Сохранить себе" on a shared page is an account list.
   Signed out, each of those places draws the sign-in prompt instead: one line
-  and one «Войти», never a provider button. On the index the create panel is
+  and one «Войти», never a provider button. On the index the collection's plate holds
   the prompt («Войдите, чтобы создавать списки: ...»); in the menu the
-  new-list slot is (no list chip is drawn; «Отмена» folds it back to
-  «+ Новый список»; «Войти» takes the focus); on a shared page «Сохранить
+  new-list slot is (no list row is drawn; «Отмена» folds it back to
+  «Новый список»; «Войти» takes the focus); on a shared page «Сохранить
   себе» reads pressed and opens the prompt under it, and a second press folds
   it. While the session is still unknown none of them is drawn, so a
   signed-in reader never sees a prompt flash. Every prompt that answers a press
@@ -725,20 +770,19 @@ address kept, and no add-to-list control is drawn.
   `#/account` any other way forgets it, and so does a navigation or a
   sign-out before the action finishes.
 - **The index**: the heading «Мои списки» / "My lists" (the menu item's
-  name; the header has no Lists job). Signed in, the create
-  panel, then the group «Ваш аккаунт» / "Your account" - the count «3 списка
+  name; the header has no Lists job). Signed in, the head with
+  «Новый список» (its name field opens in place), then the count line «3 списка
   из 50» / "3 lists of 50" (the limit from `my_limit()`, an override's own
   number; «3 списка» when the limit read failed; with a known limit «0
   списков из 50» too), which ends «· Не сохранено» in the danger color and
   «Повторить» while a write fails, announced with the save that ends it (the
-  list page keeps its permanent status); the selection strip, then the
+  list page keeps its permanent status); «Выбрать», then the
   account lists, newest
-  edit first, each card with its pick box, the meta line «N позиций · изменён
-  N назад» / "N items · edited N ago" under its name (`I18N.md`) and one
-  «Удалить»; «Загружаем...» while the first read runs; «Не получилось
-  загрузить списки аккаунта.» and a small «Повторить» when it fails; «В
-  аккаунте пока нет списков - создайте первый выше.» under the count when
-  there are none. A create at the account's list limit writes nothing and
+  edit first, each card with the meta line «N позиций · изменён
+  N назад» / "N items · edited N ago" under its name (`I18N.md`) and its
+  «Ещё» ("Lists"); «Загружаем...» while the first read runs; «Не получилось
+  загрузить списки аккаунта.» and a small «Повторить» when it fails; the empty
+  plate «Списков пока нет» under the count when there are none. A create at the account's list limit writes nothing and
   toasts the limit text («Достигнут предел списков в аккаунте: 50. ...»), the
   draft kept: in the index and in the add-to-list menu's new list. Signed out,
   the create panel is the prompt and no group is drawn.
@@ -782,7 +826,7 @@ address kept, and no add-to-list control is drawn.
   account again. An edit to a list or an entry that was deleted meanwhile,
   on another device or in another tab, is dropped with no toast, together
   with that list's or that entry's other waiting edits, and the account is
-  read again; the page of a deleted list then says «Список не найден». A
+  read again; the page of a deleted list then draws the not-found error page. A
   send that the server fails three times in a row, at
   least 15 s apart, is split in half, and each half is sent on its own; a
   single edit that the server still fails three times is dropped as
@@ -1047,15 +1091,19 @@ address kept, and no add-to-list control is drawn.
   has no facets: a picked value or a query hides it, and the meta line counts
   it. No match draws «Ничего не найдено» and «Сбросить всё». A reload or
   another list clears the search and the filter.
-- **Not found**: an account address signed out draws «Список не найден», «Если
-  это список из вашего аккаунта, войдите, чтобы открыть его.» and one
-  «Войти», which returns to that address; nothing while the session is
+- **Not found** (A18, `ErrorPage`): an account address signed out, or an address
+  that is no account id, draws «Список не открывается» / "This list does not
+  open", «Списки открываются только в аккаунте, где их создали. Войдите в него.»,
+  the primary «Войти», which returns to that address, and «Открыть таблицы»; nothing while the session is
   unknown; «Загружаем...» while the session's account read runs;
   the heading «Список не загрузился», «Не получилось
   загрузить списки аккаунта.» and a primary «Повторить» when the read failed
-  (never «Список не найден», which would call a list missing that may exist);
-  today's not-found page («Список не найден» and «Мои списки») for an id the
-  account does not hold, a local id an older build made among them.
+  (never the not-found page, which would call a list missing that may exist);
+  signed in, for an id the account does not hold (a local id an older build made
+  among them), «Этого списка нет в вашем аккаунте» / "This list is not in your
+  account", «Его удалили, или он сохранён в другом аккаунте. Вы вошли как
+  <email>.» (the last sentence only with an email), the primary «Мои списки» and
+  «Открыть таблицы». The title is the page's one `h1`.
 - **Delete** asks through the browser's confirm «Удалить список «%s»? Ссылки
   для игроков и мастера перестанут работать. Отменить удаление нельзя.»; the
   toast has no «Вернуть». On the list page it returns to `#/lists`.
@@ -2702,7 +2750,9 @@ right, so the tab order and the reading order agree
 - The page column is the window less 16 px a side, up to 1440 px, and centered above that
   (DESIGN.md, "Layout"). 320 px is the narrowest width a page is built for.
 - The roll page's lone result counter is at most 240 px wide at every window width; the
-  alt roll's two die counters fill their blocks (DESIGN.md, "The One Width Rule").
+  alt roll's two die counters fill their blocks (DESIGN.md, "The One Width Rule"). In each
+  box the value sits at the center, «-» at the left edge and «+» at the right edge
+  (owner, 2026-11-05).
 - Language switch, the three jobs, skip link, starting-section pin (eleven sections
   pin as their own hash; `#/tables` pins as whichever table is on screen;
   «Мои предметы» pins `#/homebrew` from any tab once its items are read; never a
@@ -2721,7 +2771,7 @@ right, so the tab order and the reading order agree
   folded by default, fold state remembered for the session only. From 761 px the
   button beside the H1 shows its label after a `?`; up to 760 px it is a round `?`
   button with the same name until its page's batch moves it. On the roll pages
-  and the catalog it is an item of «Ещё» up to 760 px, and there the `h1` is read,
+  and the catalog it is an item of «Ещё» up to 760 px; `/lists` has no help, and there the `h1` is read,
   not drawn; `/homebrew` has no help, and its `h1` is read, not drawn, once its
   items are read. The editor's heading is the breadcrumb row.
 - The pin beside the H1 reads «Открывать при запуске» / "Open on start" with
@@ -2729,7 +2779,7 @@ right, so the tab order and the reading order agree
   with the check of the neutral pressed state (`Seg`), never a gold fill. From
   761 px it is a labeled button; up to 760 px a round button with the same
   name until its page's batch moves it into «Ещё»; on the roll pages, the
-  catalog, `/homebrew` and `/search` it is an item of «Ещё».
+  catalog, `/homebrew`, `/search` and `/lists` it is an item of «Ещё».
 - **The error page** (`ErrorPage`, DESIGN.md "Error page"): every page-level
   failure draws its cause as the `h1`, one sentence and its actions with the
   primary first, no icon and no plate; a status region says the title once
@@ -2898,8 +2948,8 @@ them too, and a departure is named here
 Each rule keeps its number: a review cites it by number.
 
 - **1. Counters**: a limited collection shows «N <plural> из M» / "N
-  <plural> of M" in one place: the account group of `#/lists` («3 списка из
-  50»), an account list's sub («10 позиций из 100 · Сохранено»), the Items
+  <plural> of M" in one place: the count line at the head of `#/lists`'
+  collection («3 списка из 50»), an account list's sub («10 позиций из 100 · Сохранено»), the Items
   tab's «3 предмета из 100» (the tool row from 761 px, the picker's sheet up to
   760 px), the Sources tab's «2 источника из 20», the Sets
   tab's «1 комплект · 2 карты из 100», the Rules tab's «1 карта правил · 2
@@ -2970,7 +3020,8 @@ Each rule keeps its number: a review cites it by number.
   «Новый раздел», «Новый комплект», «Новая карта правил»); the form's
   submit reads «Создать» / "Create" (a card form «Создать комплект» /
   «Создать карту»); a select option reads «+ Новый <noun>...». Departures:
-  the add-to-list chip «+ Новый список», because a chip has no icon; and
+  the add-to-list menu's «Новый список» is a row-sized button with the plus icon
+  under a separator, not a full button; and
   the row «Добавить свой предмет» / "Add your own item" after an account list's entries (plus
   icon), whose panel's submit reads «Добавить в список» / "Add to list", because
   the short «В список» says nothing on a submit:
@@ -2980,8 +3031,9 @@ Each rule keeps its number: a review cites it by number.
   names the source the press makes from the file, so it carries the name and
   no «+» (its custom option is the rule's «+ Новый источник...»).
 - **9. The primary action** is the first control under the lead, before any
-  management panel. Departures: the Items tab of «Мои предметы» draws its
-  primary in the head; the import is the last control of each tab's tool row
+  management panel. Departures: the Items tab of «Мои предметы» and `/lists`
+  draw their primary in the head (`/lists` with its import as the head's toggle,
+  or an item of «Ещё» up to 760 px); the import is the last control of each tab's tool row
   or an item of «Ещё»; on the other tabs the create button is the
   first control under the tab row; an account list's page makes an own
   item from the row after its entries; the print bar of `#/p/<id>` puts

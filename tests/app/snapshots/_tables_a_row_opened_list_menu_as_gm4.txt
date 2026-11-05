@@ -14,16 +14,15 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     heading "Кольцо Тишины" [level=2]
     StaticText ", чтобы активировать это кольцо. Ваши шаги будут бесшумными до с..." [namelen=81 namehash=29328dad]
     button "В список" [expanded=true]
-    StaticText "ЛЕЖИТ В СПИСКАХ"
-    button "Лавка в порту" [pressed=false]
-    button "Клад дракона" [pressed=false]
-    button "+ Новый список" [pressed=false]
+    StaticText "СПИСКИ"
+    button "Лавка в порту" [description=0 позиций pressed=false]
+    button "Клад дракона" [description=0 позиций pressed=false]
+    button "Новый список"
     button "Поделиться"
     button "Печать" [description=Собрать карточки для печати: девять на лист A4]
     button "Ещё" [expanded=false haspopup=menu]
 
 ## ru :: controls
-+ Новый список
 10Подвешенный ЖезлЭтот плоский жезл исписан рунами. Когда вы акт... [namelen=212 namehash=0646e468]
 11Камень ОбликаАктивируйте этот камень размером с гальку, чтобы ... [namelen=198 namehash=1879d150]
 12Пустой СундукЭтот магический сундук кажется пустым. Скажите кл... [namelen=144 namehash=8813eef8]
@@ -103,6 +102,7 @@ daggerheart.com
 Конфиденциальность
 Лавка в порту
 ЛутDaggerheart
+Новый список
 Открывать при запуске
 Открыть страницу
 Печать

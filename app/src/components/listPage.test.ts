@@ -1739,14 +1739,25 @@ describe('an account list', () => {
     expect(router.hash()).toBe(SHOP);
   });
 
-  it('asks a signed-out reader to sign in, and «Войти» opens the account page', async () => {
+  it('draws the error page signed out, «Войти» and «Открыть таблицы», and «Войти» opens the account page', async () => {
     const { container, router } = openAs(fakeCloud(SEED));
     expect(
-      await screen.findByText('Если это список из вашего аккаунта, войдите, чтобы открыть его.')
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole('heading', { level: 1, name: 'Список не найден' })
-    ).toBeInTheDocument();
+      await screen.findByText(
+        'Списки открываются только в аккаунте, где их создали. Войдите в него.'
+      )
+    ).toHaveClass('errtext');
+    expect(screen.getAllByRole('heading', { level: 1 }).map((h) => h.textContent)).toEqual([
+      'Список не открывается'
+    ]);
+    expect(container.querySelector('.page-h')).toBeNull();
+    expect([...container.querySelectorAll('.erracts .btn')].map((b) => b.textContent)).toEqual([
+      'Войти',
+      'Открыть таблицы'
+    ]);
+    expect(screen.getByRole('link', { name: 'Открыть таблицы' })).toHaveAttribute(
+      'href',
+      '/tables'
+    );
     await expectNoA11yViolations(container);
     await userEvent.click(screen.getByRole('button', { name: 'Войти' }));
     expect(router.hash()).toBe('#/account');
@@ -1767,7 +1778,7 @@ describe('an account list', () => {
     expect(
       screen.getByRole('heading', { level: 1, name: 'Список не загрузился' })
     ).toBeInTheDocument();
-    expect(screen.queryByText('Список не найден')).toBeNull();
+    expect(screen.queryByText('Список не открывается')).toBeNull();
     await expectNoA11yViolations(container);
     cloud.setOffline(false);
     await userEvent.click(screen.getByRole('button', { name: 'Повторить' }));
@@ -1776,11 +1787,35 @@ describe('an account list', () => {
     );
   });
 
-  it("draws today's not-found page for an id the account does not hold", async () => {
-    openAs(fakeCloud(SEED, 'gm2'));
+  it('names the account it looked in for an id the account does not hold, with «Мои списки»', async () => {
+    const { container } = openAs(fakeCloud(SEED, 'gm2'));
     expect(
-      await screen.findByText('Возможно, он удалён или открыт в другом браузере.')
-    ).toBeInTheDocument();
+      await screen.findByText(
+        'Его удалили, или он сохранён в другом аккаунте. Вы вошли как gm2@example.test.'
+      )
+    ).toHaveClass('errtext');
+    expect(screen.getAllByRole('heading', { level: 1 }).map((h) => h.textContent)).toEqual([
+      'Этого списка нет в вашем аккаунте'
+    ]);
+    expect([...container.querySelectorAll('.erracts .btn')].map((b) => b.textContent)).toEqual([
+      'Мои списки',
+      'Открыть таблицы'
+    ]);
+    expect(screen.getByRole('link', { name: 'Мои списки' })).toHaveAttribute('href', '/lists');
+    await expectNoA11yViolations(container);
+  });
+
+  it('leaves the account sentence out when the session has no email', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    const session = cloud.auth.session.bind(cloud.auth);
+    cloud.auth.session = async () => {
+      const s = await session();
+      return s ? { ...s, email: '' } : s;
+    };
+    openAs(cloud);
+    expect(
+      await screen.findByText('Его удалили, или он сохранён в другом аккаунте.')
+    ).toHaveClass('errtext');
   });
 });
 
@@ -2024,7 +2059,7 @@ describe('every stored entry of an account list', () => {
     open(unknown, uuid(101));
     await new Promise((r) => setTimeout(r, 20));
     expect(screen.queryByText('Загружаем...')).toBeNull();
-    expect(screen.queryByText('Список не найден')).toBeNull();
+    expect(screen.queryByText('Список не открывается')).toBeNull();
   });
 
   it("holds the list's name as text in its h1, the input keeping its label", async () => {

@@ -151,7 +151,7 @@ describe('the row of a result', () => {
       onopen: vi.fn()
     });
     await userEvent.click(within(group()).getByRole('button', { name: 'В список' }));
-    await userEvent.click(screen.getByRole('button', { name: '+ Новый список' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Новый список' }));
     await userEvent.click(screen.getByRole('button', { name: 'Войти' }));
     expect(app.signInFor).toEqual({
       hash: '#/i/w1',

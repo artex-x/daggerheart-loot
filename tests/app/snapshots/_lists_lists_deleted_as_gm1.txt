@@ -1,6 +1,6 @@
 # #/lists ~ lists deleted as gm1
 # route: #/lists
-# why: «Удалить (2)» over «Пустой список» and «Трофеи», the confirm accepted: «Лавка кузнеца» alone, the strip idle, the toast «Удалено списков: 2» with no «Вернуть»
+# why: «Удалить (2)» over «Пустой список» and «Трофеи», the confirm accepted: «Лавка кузнеца» alone, the mode still on with «Выбрано: 0» and «Все» focused, the toast «Удалено списков: 2» with no «Вернуть»
 # as: gm1
 
 ## ru :: tree
@@ -20,23 +20,21 @@ RootWebArea "Мои списки - Генератор лута Daggerheart" [url
   main ""
     heading "Мои списки" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
-    StaticText "Соберите добычу в список и отправьте игрокам одной ссылкой."
-    StaticText "НОВЫЙ СПИСОК"
-    textbox "Новый список" [multiline=false readonly=false required=false]
-    button "Создать"
     button "Импорт из файла" [expanded=false]
+    button "Новый список"
     status ""
-    heading "ВАШ АККАУНТ" [level=2]
     StaticText "1 список из 50"
-    checkbox "Выбрать все" [focused=true checked=false]
-    StaticText "ВЫБРАТЬ ВСЕ"
-    generic ""
     checkbox "Выбрать: Лавка кузнеца" [checked=false]
     link "Лавка кузнеца, 10 позиций, изменён 3 дня назад" [url=/lists/00000000-0000-4000-8000-000000000101]
       StaticText "Лавка кузнеца"
       StaticText "10 позиций · изменён 3 дня назад"
-    button "Удалить"
+  region "Выбранные записи"
+    checkbox "Выбрать все" [focused=true checked=false]
+    generic ""
+      StaticText "Выбрано: 0"
+    button "Скачать JSON (0)" [disabled=true]
+    button "Удалить (0)" [disabled=true]
+    button "Снять выделение"
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -47,7 +45,6 @@ RootWebArea "Мои списки - Генератор лута Daggerheart" [url
     StaticText "Удалено списков: 2"
 
 ## ru :: controls
-?Справка
 EN
 RU
 daggerheart.com
@@ -63,9 +60,10 @@ daggerheart.com
 Новый список
 Открывать при запуске
 Поиск
-Создать
+Скачать JSON (0)
+Снять выделение
 Таблицы
-Удалить
+Удалить (0)
 Условия использования
 Установить как приложение
 
@@ -86,23 +84,21 @@ RootWebArea "My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm1]
   main ""
     heading "My lists" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
-    StaticText "Collect loot into a list and send it to your players as a single..." [namelen=70 namehash=7a94568a]
-    StaticText "NEW LIST"
-    textbox "New list" [multiline=false readonly=false required=false]
-    button "Create"
     button "Import from file" [expanded=false]
+    button "New list"
     status ""
-    heading "YOUR ACCOUNT" [level=2]
     StaticText "1 list of 50"
-    checkbox "Select all" [focused=true checked=false]
-    StaticText "SELECT ALL"
-    generic ""
     checkbox "Select: Лавка кузнеца" [checked=false]
     link "Лавка кузнеца, 10 items, edited 3 days ago" [url=/en/lists/00000000-0000-4000-8000-000000000101]
       StaticText "Лавка кузнеца"
       StaticText "10 items · edited 3 days ago"
-    button "Delete"
+  region "Selected records"
+    checkbox "Select all" [focused=true checked=false]
+    generic ""
+      StaticText "0 selected"
+    button "Download JSON (0)" [disabled=true]
+    button "Delete (0)" [disabled=true]
+    button "Clear selection"
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -113,10 +109,10 @@ RootWebArea "My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm1]
     StaticText "Lists deleted: 2"
 
 ## en :: controls
-?Help
 Account: gm1@example.test
-Create
-Delete
+Clear selection
+Delete (0)
+Download JSON (0)
 EN
 Import from file
 Install as an app

@@ -649,20 +649,24 @@ describe('the selection bar', () => {
     expect(container.querySelector('.selcount')).toHaveTextContent('Выбрано: 6');
   });
 
-  it('the menu names a single ticked record "лежит в списках"', async () => {
+  it('heads the menu «Списки» and toggles its rows for a single ticked record', async () => {
     await openBar();
     await userEvent.click(rowCheckboxes()[0] as HTMLElement);
     await openBarMenu();
-    expect(screen.getByText('Лежит в списках')).toBeInTheDocument();
+    expect(screen.getByText('Списки')).toHaveClass('lbl');
+    expect(document.querySelector('.dropmenu .lrow')).toHaveAttribute('aria-pressed');
   });
 
-  it('the menu names two or more ticked records "Добавить в"', async () => {
+  it('heads the menu «Списки» for two ticked records, its rows only adding: no pressed state', async () => {
     await openBar();
     const boxes = rowCheckboxes();
     await userEvent.click(boxes[0] as HTMLElement);
     await userEvent.click(boxes[1] as HTMLElement);
     await openBarMenu();
-    expect(screen.getByText('Добавить в')).toBeInTheDocument();
+    expect(screen.getByText('Списки')).toHaveClass('lbl');
+    const rows = [...document.querySelectorAll('.dropmenu .lrow')];
+    expect(rows.length).toBeGreaterThan(0);
+    for (const r of rows) expect(r).not.toHaveAttribute('aria-pressed');
   });
 
   it('keeps the menu newest first for two ticked records, even where a list holds one of them', async () => {
@@ -676,7 +680,10 @@ describe('the selection bar', () => {
     await userEvent.click(boxes[1] as HTMLElement);
     await openBarMenu();
     const chips = screen.getAllByRole('button', { name: /Клад дракона|Лавка в порту/ });
-    expect(chips.map((c) => c.textContent)).toEqual(['Лавка в порту', 'Клад дракона']);
+    expect(chips.map((c) => c.querySelector('.ln')?.textContent)).toEqual([
+      'Лавка в порту',
+      'Клад дракона'
+    ]);
   });
 
   it('a chip adds every ticked id in one press, keeps the ticks, and toasts the count', async () => {

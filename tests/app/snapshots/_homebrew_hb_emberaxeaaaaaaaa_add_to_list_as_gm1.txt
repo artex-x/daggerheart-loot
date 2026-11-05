@@ -117,11 +117,11 @@ RootWebArea "Топор Тлеющих Углей - Генератор лута 
     heading "Топор Тлеющих Углей" [level=2]
     StaticText "Лезвие тлеет и не гаснет под дождём."
     button "В список" [expanded=true]
-    StaticText "ЛЕЖИТ В СПИСКАХ"
-    button "Лавка кузнеца" [pressed=true]
-    button "Пустой список" [pressed=false]
-    button "Трофеи" [pressed=false]
-    button "+ Новый список" [pressed=false]
+    StaticText "СПИСКИ"
+    button "Лавка кузнеца" [description=10 позиций pressed=true]
+    button "Пустой список" [description=0 позиций pressed=false]
+    button "Трофеи" [description=2 позиции pressed=false]
+    button "Новый список"
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -130,7 +130,6 @@ RootWebArea "Топор Тлеющих Углей - Генератор лута 
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-+ Новый список
 1
 2
 3
@@ -172,6 +171,7 @@ daggerheart.com
 НетПылающие близнецыУбранство СвятогоКомплект Ольхи (HB)+ Новый ... [namelen=75 namehash=aca7e35f]
 Новая карта правил
 Новая линия
+Новый список
 Нумерованный список
 Оба
 Одноручное

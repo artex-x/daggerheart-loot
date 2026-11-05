@@ -12,6 +12,7 @@
   import CompactRow from './CompactRow.svelte';
   import Die from './Die.svelte';
   import Empty from './Empty.svelte';
+  import ErrorPage from './ErrorPage.svelte';
   import Field from './Field.svelte';
   import HelpBox from './HelpBox.svelte';
   import HelpButton from './HelpButton.svelte';
@@ -1009,20 +1010,46 @@
   {/if}
 {/snippet}
 
-<RecordHost {app} {index} extra={(it: Record_) => entryNoteBlock(metaOf(it.id), t)}>
-  {#snippet children(openRecord: (it: Record_) => void)}
-    {#if !index}
-      <NoData>{t.noData}</NoData>
-    {:else if !own}
-      {#if cloudAddress && app.user === null}
-        <!-- One «Войти», not the prompt: the sub already carries its line. -->
-        <PageTitle title={t.listNotFound} sub={t.signInToOpen} />
+<!-- A list this account does not hold (A18): signed out, the sign-in; signed in, the
+     account it was looked for in (docs/specs/FEATURES.md, "Lists"). -->
+{#snippet gone()}
+  {#if app.user}
+    {@const email = app.user.email}
+    <ErrorPage title={t.listGoneAccount}>
+      {email
+        ? `${t.listGoneAccountSub} ${t.listGoneAs.replace('%s', () => email)}`
+        : t.listGoneAccountSub}
+      {#snippet actions()}
+        <Button variant="primary" href={app.href(sectionHash('lists'))} sameTab
+          >{sectionLabel('lists', t)}</Button
+        >
+        <Button href={app.href(sectionHash('tables'))} sameTab>{t.openTables}</Button>
+      {/snippet}
+    </ErrorPage>
+  {:else}
+    <ErrorPage title={t.listGoneSignedOut}>
+      {t.listGoneSignedOutSub}
+      {#snippet actions()}
         <Button
           variant="primary"
           onclick={() => {
             app.askSignIn({ hash: app.hash });
           }}>{t.signIn}</Button
         >
+        <Button href={app.href(sectionHash('tables'))} sameTab>{t.openTables}</Button>
+      {/snippet}
+    </ErrorPage>
+  {/if}
+{/snippet}
+
+<RecordHost {app} {index} extra={(it: Record_) => entryNoteBlock(metaOf(it.id), t)}>
+  {#snippet children(openRecord: (it: Record_) => void)}
+    {#if !index}
+      <NoData>{t.noData}</NoData>
+    {:else if !own}
+      {#if cloudAddress && app.user === null}
+        <!-- eslint-disable-next-line @typescript-eslint/no-confusing-void-expression -->
+        {@render gone()}
       {:else if cloudAddress && cloud?.status === 'error'}
         <PageTitle title={t.sharedFailed} />
         <LoadState
@@ -1062,10 +1089,8 @@
           onretry={() => void app.retryLists()}
         />
       {:else}
-        <PageTitle title={t.listNotFound} sub={t.listNotFoundSub} />
-        <Button variant="primary" href={app.href(sectionHash('lists'))} sameTab
-          >{sectionLabel('lists', t)}</Button
-        >
+        <!-- eslint-disable-next-line @typescript-eslint/no-confusing-void-expression -->
+        {@render gone()}
       {/if}
     {:else}
       <!-- The heading shows only the rename input; an account list's heading holds

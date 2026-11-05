@@ -2,13 +2,14 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (waves 1, 2 and 2b are on `main`; wave 3 started: batch 9a and its fix pass are done,
-  CI green on `6f90ccd6`; next: batch 8, brief `plan-8.md`)
-- Last agent: planner (batch 8 refresh, 2026-11-05; writes only `plan-8.md`, `plan.md`, `handoff.md`, `context.md`)
+- Task status: in_progress (waves 1, 2 and 2b are on `main`; wave 3: 9a done, CI green on `6f90ccd6`; batch 8
+  implemented, committed on `claude/57`, not pushed; next: its review, then batch 9b's refresh)
+- Last agent: implementer (batch 8, 2026-11-05)
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
-- Tip: `6f90ccd6` plus this uncommitted planner pass (the orchestrator commits it).
-- Pushed: the tip `6f90ccd6` is pushed and green (run 41972009883).
+- Previous sha: `82dec9d6` (the batch 8 commit is reported by the implementer's summary).
+- Pushed: no; the orchestrator pushes. `issues/57/context.md` holds the orchestrator's uncommitted 2026-11-05 lines
+  (items 9 and 10), left out of the batch commit.
 
 ## Completed
 - Batch 1 - foundation: `9a31aede`, review fix `80872b35` (`reviews/1.md`).
@@ -696,7 +697,81 @@
   rows unmoved (234 at 360).
 - Plan review: not required for batch 3 (`plan.md` Status, no trigger fired).
 
+- Batch 8 - the lists page, list cards, lists import, the add-to-list menu, the stepper and the ceiling (`plan-8.md`,
+  previous sha `82dec9d6`). New: `ListFind`'s optional filter props and `beside`, `TextInput`'s `onkeydown`,
+  `ListCard`'s `inbox`, cases 102-104, two decision files (the popover, the 300 kB ceiling). Deleted: `BatchBar.svelte`,
+  `batchBar.test.ts`, `help.ts` `LISTS`, `DEBT.md` D116 and its section. Acceptance:
+
+  | Line | Outcome |
+  |---|---|
+  | 1 Head | Done: `PageHead` + `extra`; no sub, no help; `LISTS` and `#/lists ~ help` gone. `listsPage.test.ts` "the head"; case 102 (CI) |
+  | 2 «Ещё» of the head | Done: the import item and `PinItem`; no `.homebtn` on `/lists`; DESIGN Same Label sentence and the two FEATURES "Chrome" sentences rewritten |
+  | 3 «Новый список» and the field | Done: label «Название списка», Enter/«Создать», Escape/«Отмена», focus in and back, empty name kept; plus icon at both bands |
+  | 4 Limit and 150 lists | Done: `listsFull()` toast, field closed, `.count.over`; 150 lists draw 24, «Показать ещё (126)», the bar «Все» ticks 48 |
+  | 5 Count line and search | Done: count, `SyncStatus`, «Выбрать»; `ListFind` from 8 with the count in the row from 761 px, under it up to 760 px; no «Ваш аккаунт», `groupAccount` gone, D116 deleted |
+  | 6 Card | Done: the chip «Новое в списке (N)» (neutral), «Ещё: <name>» with «Открыть», «Скачать JSON», a separator, «Удалить список»; no red «Удалить»; the link name holds the chip. The 120-character wrap is case 102 (jsdom has no `overflow-wrap`) |
+  | 7 Card delete | Done: today's confirm, no undo, focus to the next card's «Ещё», else the previous, else the primary. Deviation 4 on a list another tab deleted |
+  | 8 Selection mode | Done: `app.pageBar = listsBar`, focus on «Все», ticks only in the mode, neutral `.picked`, the actions off at zero, «Снять выделение» to «Выбрать», delete keeps the mode, no drawn card leaves it; `hues.js` reads the ticked card; 640x360 and the bar edge are case 102; `BatchBar` files and their `a11y`/COVERAGE rows gone |
+  | 9 A-label | Verified, no change: the bar's add button is `AddToList`'s `t.toList` on every page (batch 4 K4); `addToList` is read only by `QuickItem`. Covered by `homebrewBulk.test.ts`, `pickRow.test.ts`, `tables.test.ts` (`openBarMenu` presses «В список») and `sharedListPage.test.ts` (`within(bar)` «В список») |
+  | 10 Empty, signed out, failed | Done: three states, goldens `~ empty as gm4`, `#/lists`, `~ load failed`; axe in `listsPage.test.ts` |
+  | 11 Import | Done: head toggle or menu item, panel under the head, focus back; skip lines with no raw id, a known record named; closed fold «Пропущено: N»; name-taken line in view; refused codes kept; cases 58-62 and e2e F13 adapted |
+  | 12 Not found | Done: two `ErrorPage` branches, one `h1`; `listNotFound`, `listNotFoundSub`, `signInToOpen` removed (no reader); A18 closed |
+  | 13 Add-to-list menu | Done: heading «Списки» (also signed out), rows with check, `aria-pressed` on a one-record menu only, the count as the row's description, no gold, 44/36 px rows, «Новый список» button under a separator; popover at every width; cases 1, 2, 3, 22, 23, 27, 37, 42 adapted |
+  | 14 Stepper (owner item 8) | Done: `flex: 1 1 auto; min-width: 0` on the input, the 240 px cap kept (AFK item 16); FEATURES "Rolling" area and DESIGN One Width Rule updated; case 104 (CI) |
+  | 15 Ceiling (9a R1) | Done: `tools/bundle-budget.mjs`, `.claude/README.md`, the new decision file and the "Amended by" line; budgets not raised (268.3 of 269, 325.7 of 326) |
+  | 16 States and cases | Done: inventory entries below, goldens re-seeded, cases 102-104 written; `FIRST_SCREEN` rows `shipped: true`; no case deleted |
+  | 17 Parity, detector | Done: `i18n.test.ts` passes; detector 62 findings (67 at batch W), none new in a touched file; no `impeccable-disable` added |
+  | 18 `polish` and `harden`, shots | Shots in `mocks/8/built/` (`shoot.js`); `polish` and `harden` are the orchestrator's (a subagent cannot run Impeccable), see Notes |
+
+- Batch 8 departures and deviations:
+  1. Two keys beyond the brief: `listOpen` («Открыть», the card menu item: `noticeOpen` and `arrivalOpen` mean other
+     things) and `listGoneAs` («Вы вошли как %s.»): the sentence is left out without an email, so it is its own key.
+  2. The add-to-list row's accessible name is the list name alone, and its count is its description
+     (`aria-labelledby`, `aria-describedby`): a name of "name + count" broke every row lookup and reads the count twice.
+  3. The chip «Новое в списке (N)» and «Ещё» sit on two lines of the card, not one as mock 8: the chip is inside the link
+     (the plan) and the actions row is after it.
+  4. A delete of a list another tab already deleted: no guard was added. The menu leaves with its card, so the stale
+     press is only a confirm-time race; `CloudLists.remove` of a gone id enqueues a delete that removes nothing on the
+     server. Acceptance 7's second clause holds by the store and the server, with no unit test.
+  5. `ListCard` lost `overflow: hidden` (the card's menu opens past it) and its pick box's accent is `--txt`.
+  6. Up to 760 px the head's buttons are 44 px tall with 6 px insets and a 4 px icon gap: the RU row is 307 of 313 px
+     at 360. At 320 px the primary and «Ещё» wrap under the `h1` together (no text fits: `h1` 120 + 178 px), against
+     acceptance 1's "one row at 320"; case 102 holds one row from 360 and the pair's row at 320 (the 9a precedent,
+     `HomebrewPage` at 320). `PageHead` lost its round pin rules (no caller draws pin or help in it below 761 px; S10).
+  9. Found by the local run of case 83: the empty `SyncSaid` region took a grid row and its 14 px gap; it sits before
+     the `.stack` now, and up to 760 px the stack's top margin is 8 px and the count under the search row is tighter.
+     First screen at 360x640: `#/lists as gm1` 239 of 256 (mock 231), `~ many lists as gm4` 252 of 256 (mock 253), RU
+     and EN; 199 of 288 at 1180 (mock 189 and 191).
+  10. Found by the local run of case 102: at 320 px a card was 280 px in a 273 px grid (`minmax(280px, 1fr)`); the grid
+     takes `minmax(min(280px, 100%), 1fr)`.
+  7. Case 104 reads `/roll/wondrous` for the `RollPanel` (no `/roll/eq_weapon` route) and checks the price sheet's
+     steppers by their 52 px input and no growth, not by the 133/136 figures of the brief (case 89 logs none).
+  8. `ImportPanel`'s name-taken line is a `<p class="taken">`, outside the fold, not a list item.
+
 ## Verification
+- Batch 8, 2026-11-05 (previous sha `82dec9d6`, not pushed):
+  - Vitest, the whole suite once mid-batch: 129 files, 4733 tests pass; after the last edits `listsPage`, `listPage` and
+    `importPanel`: 234 pass. `svelte-check`: 0 errors. `npm run lint:typed` and `npm run lint:untyped`: exit 0 after
+    the last source edit. `node tools/decisions.js`: 313 decisions. `node tests/run-all.js contracts,dataint,derived`:
+    pass. `node --test tools/artwork/lib.test.mjs`: 77 pass.
+  - Goldens: `build:test`, the four shards with `--update` (shard 1 failed once on the stale `_lists_help.txt`, removed),
+    then `--only=#/lists` once more after the spacing fix (86 states). 43 files move: 36 changed, 6 new
+    (`~ card menu`, `~ empty as gm4`, `~ more`, `~ new list`, `~ selecting`, the signed-in not-found), 1 deleted
+    (`~ help`); every one is a `_lists*`, an add-to-list menu (`_i_ci1*`, `_tables_a_row_opened*`, `_tables_bar_menu`,
+    `_roll_std_list_menu`, two `_homebrew*`) or the import.
+  - Browser cases run locally through an in-memory loader of `states.js` (the `CASES` list filtered), on the final
+    `build:test`: 1, 2, 3, 22, 23, 27, 37, 41, 42, 58-62, 66, 79, 83, 89, 101, 102, 103, 104 pass. They found three
+    defects, fixed here (deviations 6, 9, 10) and case 62's two reads of the bar's buttons through `d.text()` (the bar sits
+    outside `main`). `node tests/app/hues.js`: pass, with the new ticked list card read.
+  - `npm run check:built`: pass, 268.3 kB of 269 unconfigured. Configured (the `.env.test.local` line of
+    `.claude/README.md`, with the main checkout's file): 325.7 kB of 326. No budget raised; ceilings now 300 and 350.
+  - Detector `impeccable detect --json --no-inline-ignores app/src`: 62 findings, none new in a touched file (the
+    touched files carry only the old 11 px and 7 px radii).
+  - `rtk npm run check:fast`: the first run failed on `listPage.timed.test.ts` (56 s under the parallel load against
+    its 30 s timeout; 11.4 s alone, 10.8 s at 9a: host load, not this batch); the second run PASS in 758 s (vitest 2918
+    pass, budget within 269 kB), gate credit armed.
+  - Not run here: `sweep.js`, `app/contracts`, `app/typo`, `app/print`, the other `app/states` cases and `e2e` (F7, F8,
+    F10, F13, F15 adapted; hosted project): CI's.
 - Batch 9a fix pass, 2026-11-05 (previous sha `6703151d`, not pushed):
   - Reproduced on `dist-test/` of `6703151d` through an in-memory loader of `states.js` (the `CASES` list filtered):
     17, 43, 64 and 76 failed as on CI. After the fixes, on a fresh `build:test`: cases 17, 43, 64, 76, 83, 98, 99 and
@@ -1210,17 +1285,12 @@
 - Spelling scan over added lines and new files: only `aria-labelledby`.
 
 ## Next batch (implement-ready)
-Batch 8 - the lists page, list cards, lists import, add-to-list menu. The brief is `issues/57/plan-8.md` (refreshed
-2026-11-05, planner; implement-ready; decisions L1-L15, steps S1-S11, acceptance 1-18, the four standing checks,
-gate cost 75-100 min). Batch 9a and its CI fix pass are done (`reviews/9a.md` approve; tip `6f90ccd6`, CI green).
-`BatchBar.svelte` leaves with `ListsPage`; `app.pageBar` carries the bar. It also takes: review 9a R1 (the 300 kB
-unconfigured ceiling into `tools/bundle-budget.mjs`, `.claude/README.md` and a decision file, whether or not its
-total passes 270; acceptance 15), the bar's «В список» label as its own check (acceptance 9; batch 4's K4 closed the
-code), owner item 8 (the number stepper in `NumberField.svelte`, L10, acceptance 14, case 104) and the add-to-list
-popover decision (L12). Cases 102, 103 and 104 are the next free numbers; batch 9b reads the next three after them.
-NEEDS_HUMAN_CONFIRMATION: no (defaults L1-L15 are in the AFK log, items 13-16). Writer tests (not a model choice):
-test 1 no, test 2 yes in part (the ceiling is configuration), test 3 yes (about 35-40 goldens), test 4 no, so `opus`.
-Owner item 9 (rows cut with free width at wide windows) is placed in batch 9b, "9b-R9" in `plan.md` section 7.
+Batch 8 is implemented (Completed, "Batch 8"). Next, in order: the orchestrator's `polish` and `harden` on
+`ListsPage`, `ListCard`, `AddToList` and `ImportPanel` from the built app at 360 and 1180 px (the shots are in
+`mocks/8/built/`); the batch review (required: changed UI, `tests/app`, configuration); the push and CI of the tip
+(`app/states` 102-104 and the adapted cases, `sweep.js` with `importOpen` at 360, `hues.js`, e2e F7, F8, F10, F13, F15);
+then batch 9b's refresh (cases 105-107 are the next free numbers; `context.md` items 9 and 10 add its wide-row and
+Material-review inputs).
 
 Wave 2b (batches 7b and W with their fix passes) is on `main` as `b6f153a5`, the deploy is green, and `claude/57`
 merged it back (`8b99ac8e`). Next: batch 9a (brief `plan-9a.md` plus the 9a-W1 to W7 lines of `plan-wave3-wide.md`;
@@ -1351,18 +1421,19 @@ Facts for the dispatches:
 - N0-2 of `reviews/mocks-2.md` (batch 4): the error-page pattern's circled icon
   is a template shape; keep the heading, the cause and the action.
 - `KeepNote.svelte` leaves with batch P (the Account page's Display note left with batch 7).
-- `BatchBar.svelte` leaves with its last caller, `ListsPage` (batch 8); `FilterBar`, `anyValue` and the `.fpill`
-  reader left with batch 9a.
 - The link-preview Worker's card images (`tools/share-card.mjs`).
 - The EN `<title>`, manifest name and `en/index.html` wordmark.
 - Uppercase controls outside the capitals rule are audited by their surface
   batches (15 components carry `text-transform: uppercase`).
 - Monospace labels still outside the Key Characteristics rule, owed to their
-  surface batches: `.batch-all` (BatchBar), `.ordiv i` (OrGrid), `.altcol`
+  surface batches: `.ordiv i` (OrGrid), `.altcol`
   (TablesPage), the ListPage summary labels (`.lnote`, `.lroll`, `.batch-lbl`,
   `.money-l`), HelpButton, `.steps-l` (RecordCard).
 
 ## Notes
+- Impeccable `polish` and `harden` of batch 8: not run by the implementer (a subagent cannot run Impeccable); the
+  orchestrator runs them from `mocks/8/built/` and the built app (fallback `impeccable:impeccable-finish-reviewer`).
+  The batch review is required (changed UI, `tests/app`, configuration).
 - Impeccable `polish` and `harden` of batch W (implementer, 2026-11-05, orchestrator fallback, on the built app with
   the fix pass): shots in `mocks/W/built/` (`shoot.js`): roll std and voa, core_item, eq_weapon, voa, `/search` with
   «меч», the dialog, `/i/ci1`, `/homebrew`, the editor, `/account`, a print page, `#/i/nope` at 1920 and 3840 RU,
