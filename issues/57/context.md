@@ -183,6 +183,40 @@
       Placed (planner, 2026-11-05): batch 9b, "9b-R9" in `plan.md` section 7 (the only wave 3 batch that lays out the
       full row at wide widths). Choice (AFK default): from 1000 px the row text cap is 110ch (70ch today) and the
       clamp is 3 lines (2 today); below 1000 px nothing changes.
+      Refinement (owner, chat, 2026-11-05): "still too many empty space there, maybe we can utilize it more
+      efficiently". The 110ch cap does not satisfy it: at 1440 and 1920 px a row still leaves a wide empty band
+      on its right. The 9b refresh must measure the empty share of a row at 1440 and 1920 px, RU and EN, and
+      choose a layout that uses it (for example the text caps go, the text takes the free width, or the table
+      lists two columns of rows from a width the planner names), with a mock step; the cap and the clamp above
+      are the fallback only.
+    - Item 10 (owner, chat, 2026-11-05): review the Material Design guidelines (and similar official ones)
+      against `DESIGN.md` in parallel with batch 8: what to add as named rules, and whether any wave 1-3 screen or
+      mock should be reconsidered against them. No Material skill is installed (the project's `DESIGN.md` stays
+      the authority). Report: `C:\Users\Ignat\.dhloot\notes\57\material-review.md` (read-only agent, outside the
+      repo). Routing: the orchestrator reads it, the 9b planner pass takes the wide-screen rules and the owner
+      decides the rest; a rule enters `DESIGN.md` only with its browser check in the batch that writes it.
+      Answer (owner, chat, 2026-11-05: "proceed as recommended ... we need to document them even if they would be
+      useful for future"): (a) batch 9b takes five rules with their code, browser check and mock: Row Columns,
+      Stepper, Field Measure (search box at most 720 px), the check on gold chips, Whole Message (never cut);
+      (b) every other candidate of the report is written into `DESIGN.md` too, in a "Proposed rules" section
+      that names, for each, its source, its draft text, its enforcing check and the batch that would build it
+      (batch 10 writes the section, or the 9b planner pass if it is cheaper); (c) the Thumb Rule (40 px controls
+      up to 600 px; moves `FIRST_SCREEN` offsets) and the toast timing (4000/7000 ms) wait for the owner's
+      explicit yes before any code; the section lists them as "Proposed, owner decision open".
+      APPROVED (owner, chat, 2026-11-05, "Approve both"): the Thumb Rule and the toast timing are decided, not
+      proposed. They are built and enforced, so they are no longer in the "Proposed" section. Placement is the
+      planner's: the 9b refresh names the batch (a new batch before 10 for the Thumb Rule, because it moves every
+      `FIRST_SCREEN` offset at 360 and the `/roll/std` exception; the toast timing in the batch that opens
+      `Toast`), with a mock step, the re-measured `FIRST_SCREEN` rows and a browser case per rule. Report:
+      `C:\Users\Ignat\.dhloot\notes\57\material-review.md`, drafts in its part 2.
+      Reviewers (owner, chat, 2026-11-05): every batch review of wave 3 and each wave and whole-app blind review
+      is dispatched with the guideline set named in its message: `DESIGN.md` (named rules and the "Proposed rules"
+      section), the Impeccable direction and its `critique`, the Material and other official sources of
+      `C:\Users\Ignat\.dhloot\notes\57\material-review.md` (a reviewer may read it, the repo may not cite it),
+      and the Clarity Rule. The reviewer reports a screen that breaks one of them as a finding with the source
+      URL, even when no `DESIGN.md` rule exists yet. The permanent home of the sources is the "Proposed rules"
+      section (source URL per entry), so the dispatch line is a stopgap until batch 10 writes it. No prompt or
+      agent file changes for this (a change there is a review trigger of its own).
     - Owner's lean (chat, 2026-11-04): option 2, consistency first.
     - Refinement (chat, 2026-11-04): "even not to hide homebrew but upgrade lines and sets, make them visible only
       on the item page": the homebrew tag stays as today; the upgrade and relation lines and the set draw only on
