@@ -2,7 +2,7 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (planned and implement-ready; all B0 translations done; B1 waits for task 57, B2 waits for art)
+- Task status: in_progress (planned and implement-ready; all B0 translations done; B1, all three sources in one batch, waits for task 57 and for the lr and vh pictures)
 - Last agent: orchestrator (2026-11-05)
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `claude/new-items` (worktree `.claude/worktrees/new-items`; renamed from `claude/pistolheart`, nothing was pushed)
@@ -25,24 +25,24 @@
 
 ## Next batch (implement-ready)
 - B0 is done for ph, lr and vh. Next is B1.
-- Name: B1 - add the Pistolheart source (after task 57)
-- Objective: 93 records, 4 references, 45 pictures, the source wired in the app, tools, tests and docs; the pattern B2 copies.
-- In scope: `plan.md`, "Design", "Touchpoints", "B1 and B2 order of work".
+- Name: B1 - add the three sources ph, lr and vh in one batch (after task 57)
+- Objective: 134 records, 7 references, 86 pictures, three sources wired in the app, tools, tests and docs; the shared section mechanism built once.
+- In scope: `plan.md`, "Design", "Touchpoints", "B1 order of work", "Checks that B0 left for B1".
 - Out of scope: lr and vh, review, closeout, any redesign of tables or filters, new roll modes.
 - Files expected: about 150 (45 pictures x 3 files, `data.js`, derived files, app, tests, goldens, specs).
-- Acceptance criteria: every ph record of `context.md` is in `data.js` with Russian text; four refs render with a DriveThruRPG link; 45 pictures installed with no `unsourced`; `dataint` reports 1552 records; roll, tables, search, share stub and print card work for `ph`; `check:fast` green.
-- UI pass (owner, 2026-11-05): `plan.md`, "UI verification at every width": tables, roll, the supplements menu and panel, search, record, list and print at 360-1440 in both languages; findings listed here with route, width, language and number; screenshots in `mocks/`. B2's pass decides; V1 only if a local fix is not enough.
+- Acceptance criteria: every record of `context.md`, "Goal" is in `data.js` with Russian text; the seven refs render with their product link; 86 pictures installed with no `unsourced`; `dataint` reports 1593 records; roll (incl. the vh room picker), tables, search, share stub and print card work for `ph`, `lr` and `vh`; `check:fast` green.
+- UI pass (owner, 2026-11-05): `plan.md`, "UI verification at every width": tables, roll, the supplements menu and panel, search, record, list and print at 360-1440 in both languages; findings listed here with route, width, language and number; screenshots in `mocks/`. The pass runs once, at ten supplements; V1 only if a local fix is not enough.
 - Verification commands: `node tests/run-all.js dataint,derived,contracts`, `rtk npm run check:fast` (Bash timeout 600000); then `npm run build:test`, the browser suite and `node tests/app/sweep.js <width>` for 360, 390, 768, 1180.
 - Risks / do-nots: `plan.md`, "Do-nots". Start only when task 57 is closed.
 - Fallback: a flat `ph` table if the volume sections cost more than about 10 files.
-- Then: R1 (reviewer), then B2 when the lr and vh pictures are accepted (1593 records), then B3 closeout.
+- Then: R1 (reviewer, one remediation commit), V1 only if needed, then B3 closeout.
 
 ## Blockers
 - Task 57 is not closed (waves 2b done, batch 9a pending).
-- lr and vh pictures are not generated.
+- lr and vh pictures are not generated (the owner is generating them; B1 counts them before the ingest).
 
 ## Deferred
-- B2 decides whether vh6's English "an experience" is capitalized (the corpus capitalizes Experience; B0 may not change English).
+- B1 decides whether vh6's English "an experience" is capitalized (the corpus capitalizes Experience; B0 may not change English).
 
 ## Notes
 - Start prompt for B1 (paste into a new session):
@@ -51,6 +51,6 @@
 
 - One prompt for the whole task (owner, 2026-11-05; the owner generates the lr and vh pictures while it runs):
 
-  TASK: new-items. Work in `.claude/worktrees/new-items` (branch `claude/new-items`). Read CLAUDE.md, then `issues/new-items/context.md`, `plan.md`, `handoff.md`. Start gate: `issues/57/` must be gone from `main`; if not, stop and say so. Run the task as the orchestrator (`.claude/prompts/orchestrate.prompt.md`) and spawn subagents for the work. The owner settled the lr questions on 2026-11-05 (no record for the Mournguard Mark Badge and the letters; one roll pool of 26): record them in the decision file. Order: (1) `git merge main`, refresh the touchpoints, read `docs/DECISIONS.md` for task 57 decisions; (2) B1, source ph, per `plan.md` incl. the UI verification pass; push; (3) R1 reviewer, one remediation commit, push, green CI; (4) before B2 count the pictures: `Last Round Table\images` must hold 26 and `Escape the Veiled Halls\images` 15 (the badge picture is not needed); if they are not there, stop, report which are missing, and wait for me; (5) B2, sources lr and vh, per `plan.md` incl. the checks B0 left and the UI pass at ten supplements; push; (6) R2 only if B2 deviates from B1's pattern, V1 only if the UI pass needs more than a local fix; (7) B3 closeout with `/handoff`, squash after green CI. Stop for the human only on a critical case. Report after each batch.
+  TASK: new-items. Work in `.claude/worktrees/new-items` (branch `claude/new-items`). Read CLAUDE.md, then `issues/new-items/context.md`, `plan.md`, `handoff.md`. Start gate: `issues/57/` must be gone from `main`; if not, stop and say so. Run the task as the orchestrator (`.claude/prompts/orchestrate.prompt.md`) and spawn subagents for the work. The owner settled the lr questions on 2026-11-05 (no record for the Mournguard Mark Badge and the letters; one roll pool of 26): record them in the decision file. Order: (1) `git merge main`, refresh the touchpoints, read `docs/DECISIONS.md` for task 57 decisions; (2) B1, all three sources in one batch per `plan.md` (build the shared mechanism with ph first, then lr and vh, the checks B0 left, the UI verification pass at ten supplements); before the ingest of lr and vh count the pictures: `Last Round Table\images` must hold 26 and `Escape the Veiled Halls\images` 15 (the badge picture is not needed); if they are not there, stop, report which are missing, and wait for me; push; (3) R1 reviewer, one remediation commit, push, green CI; (4) V1 only if the UI pass needs more than a local fix; (5) B3 closeout with `/handoff`, squash after green CI. Stop for the human only on a critical case. Report after each batch.
 
 - Durable items written to their homes this batch (file, section): none.
