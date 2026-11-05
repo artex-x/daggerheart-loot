@@ -4,9 +4,10 @@
 ## Status
 - Task status: in_progress. Waves 1, 2 and 2b are on `main`; wave 3: 9a and 8 done (8's remediation `ee252240`,
   `d8e30731`, CI credit passed); the 9b refresh is written (`plan-9b.md`, `mocks/9b/`), revised 2026-11-05 for the
-  owner's answers (Row Text, not Row Columns; the share panel keeps a delete per link), not committed.
-- Last agent: planner (9b revision for the owner's row decision, and the item 11 outline, 2026-11-05). No subagent runs. No worker has uncommitted code edits.
-- NEEDS_HUMAN_CONFIRMATION: no for batch 9b (Q9b-1 and Q9b-2 are answered by the owner; AFK items 17 to 19). No for batch N: the owner answered N1 (option A with a visible `h1`) and N2 (pills) on 2026-11-05; its refresh expands `plan-nav.md` into `plan-N.md`.
+  owner's answers (Row Text, not Row Columns; the share panel keeps a delete per link), then 2026-11-05 for the
+  critique (M21, M22), not committed.
+- Last agent: planner (the owner's answers on the empty weapon rows and the head order, and the mock critique, placed, 2026-11-05; docs only, no browser). No subagent runs. No worker has uncommitted code edits.
+- NEEDS_HUMAN_CONFIRMATION: no for batch 9b (Q9b-1 and Q9b-2 are answered by the owner; AFK items 17 to 19; M21 and M22 are planner defaults). No for batch N: the owner answered N1 (option A with a visible `h1`), N2 (pills), N3 (heading, pills, then pin and help) and N4 (one head order on every `PageHead` page) on 2026-11-05; its refresh expands `plan-nav.md` into `plan-N.md`. One planner default the owner may overrule: from 761 to 999 px the pills take their own row under the head row (`plan-nav.md` section 4).
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
 - Base / starting commit: `d8e30731`.
 - Pushed: yes at `d8e30731`; the planner's files are uncommitted (the orchestrator commits them as docs): `plan-9b.md`,
@@ -171,7 +172,9 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
 - Name: batch 9b - the list panels and five guideline rules (Row Text, Field Measure, Stepper, Check, Whole Message).
   Brief: `issues/57/plan-9b.md` (decisions M1-M20, steps S1-S15, acceptance 1-29, the standing checks, verification,
   gate cost 95-130 min); mocks: `mocks/9/` (panels) and `mocks/9b/` (the rules, measured on the built app). M1 is the
-  owner's Row Text choice: CSS in `RowMain.svelte` alone, one column, case 106 asserts at most 15% clamped rows. Cases 105-107 are the next free numbers. Writer tests: 2 and 3
+  owner's Row Text choice: CSS in `RowMain.svelte` alone, one column, case 106 asserts at most 15% clamped rows; M21
+  adds the 1.55 line height from 1000 px and the `/s/` tail and note colours (case 106 (h), (i)); M22 only names the
+  stat columns as a later item in DESIGN.md "Proposed rules". Cases 105-107 are the next free numbers. Writer tests: 2 and 3
   yes, 1 and 4 no. Plan review: not required. After 9b: batch T's refresh (Thumb Rule and toast timing; `plan.md`
   section 7, "Batch T"), then P and 10.
 - Verification for 9b: `plan-9b.md`, "Verification" (vitest per file with `VITEST_MAX_WORKERS=2`, both lints, the
@@ -191,6 +194,15 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
 - None.
 
 ## Deferred
+- `/s/` shows the bare list position «1» where `/search` shows «№ 89» (critique, 2026-11-05; `plan-9b.md` M21 d): two
+  different numbers, «№ 1» costs three characters of the name column at 360 px. Not changed; batch 10's audit may
+  revisit it.
+- Tabular stat columns on table rows from 1440 px (owner, 2026-11-05, `plan-9b.md` M22): a "Proposed rules" row, built by
+  its own task after wave 3 with a mock first (`plan.md` section 12).
+- Batch N, copy in the touched heads (critique N-7, `plan-nav.md` section 6): the `/roll/mwt` lead «Выберите мир и бросьте
+  кость по нему.» is an instruction sentence (Clarity Rule; proposed fix: no lead); «корника» in the `/roll/std` lead
+  needs the `daggerheart-ru-terms` skill (the help text uses it too); the gold-outlined «ИЛИ» dividers of the roll
+  pages (Seal Rule, pre-existing). Batch 10.
 - Case 86 "after the slide" (CI run 42020997138, shard 3 at 1414 s): the header read mid-way (top -54.3, bottom 56.9)
   after the filtered `transitionend`; it passed twice alone on 2026-11-05. If it recurs, log each `transitionend`'s
   `elapsedTime` and target before the read.

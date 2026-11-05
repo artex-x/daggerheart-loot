@@ -103,6 +103,15 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
   visible `h1` on every family from 761 px (roll «Бросок» / "Roll"), N2 = the homebrew tabs as pills with counts.
   `plan-nav.md` holds the facts, the measured offsets (roll 267 to 214 at 1180 and 1000, 256 at 768) and batch N's
   acceptance lines; batch N (section 7, outline, after T and before P) is the build. Not in 9b.
+  Addendum (owner, same day): N3 = the head order is the heading, the pills, then the pin and the help (this replaces
+  the order heading, pin, help, pills); N4 = it is ONE rule for every page that draws a `PageHead` ("The Head Order
+  Rule", `plan-nav.md` section 4). `/lists` and `/search` already follow it; the roll, tables and homebrew heads
+  change, in batch N only (up to 143 golden files, section 8).
+- Design critique of the 9b and N mocks (2026-11-05, outside the repository) and the owner's answer on the empty
+  weapon rows ("ship the row-text rule, plan stat columns later"), placed: 9b takes M21 (line height 1.55 from 1000
+  px, the `/s/` tail colour and font, the `/s/` note, the bare «1» as a Deferred row) and M22 (tabular stat columns
+  named as a later item: a "Proposed rules" row and section 12; recommended as its own task after wave 3); batch N takes
+  the rest (`plan-nav.md` section 6). Batch 9b stays the next implement-ready batch.
 - Plan review: not required (no trigger fired) for batches 9b and T. Batch 9b changes no contract, stores nothing new
   and adds no write protocol; its note switch commits the shown draft through the existing write path before it
   switches (`plan-9b.md`, "Error scenarios"). Batch T changes control sizes, toast durations and test limits only: no
@@ -797,6 +806,9 @@ lines 1-29 are `plan-9b.md`, with mock 9 and `mocks/9b/`; where the lines below 
   Measure Rule (M2, 8-G2), the Stepper Rule (M3, 8-G3; it replaces the 240 px cap), the Check Rule (M4), the Whole
   Message Rule (M5, 8-G6) and DESIGN.md "Proposed rules" (M19); the nine add-to-list states with an `again`; 8-N2
   kept in the re-seed; review 9a R2's probe; the `plan-wave3-wide.md` lines 9b-W1 to 9b-W7 (W1 by M18).
+- Added after the mock critique (2026-11-05): M21 (the description line height 1.55 from 1000 px; the `/s/` tail
+  `.rtail` leaves `--gold-soft` for `--muted2` and monospace; no gold in the `HitNote` box) and M22 (the stat columns
+  of weapon and armor rows are a named later item, not built in 9b); acceptance 30-32, case 106 (h) and (i).
 - E2 (plan review B2): the reorder drop mark is redrawn so the detector does
   not flag it. Recommended form: a 2 px gold line drawn by a gap element
   between the rows, not an inset shadow on the row. Every `FEATURES.md`
@@ -902,26 +914,36 @@ Batch N (wave 3, after T, before P; owner item 11, 2026-11-05; outline; `plan-na
 measured offsets and the acceptance lines; its refresh expands it into `plan-N.md`):
 
 - Decided (owner, 2026-11-05): N1 = option A with a correction: every family keeps a VISIBLE `h1` from 761 px, first in
-  its title row, then the pin, the help and the pills. Level 2 (the roll modes, the table groups, the homebrew tabs as
-  pills with counts: N2) sits in the head row from 1000 px and on its own row under it from 761 to 999 px; level 3
-  (books, sources) stays underlined tabs under the head row. The roll `h1` reads the job name, «Бросок» / "Roll"
-  (`jobRoll`, no new string; the lit pill names the mode). Up to 760 px the `h1` stays hidden on all three families
-  (the picker or the lit pill row names the page). Alternatives not taken: B (a full-width row above the title: tables
-  244 to 306 px and homebrew 254 to 309 px, past 288), C (style only).
-- Measured with the visible `h1` (`mocks/N/measure-roll-h1.json`): roll first content 267 to 214 at 1180 and 1000
-  (one row, the longest label ends 42 px short of the column at 1000 RU), 256 at 768 (the pills on their own row), 360
-  unchanged. Trade-offs: a longer title row; the head is two rows below 1000 px; no full-width rule line; a mode switch
-  must not move the `h1` or the pills.
-- Code: `ModeRow` moves out of `Shell` into `RollPage`'s `PageHead` `extra` from 761 px and the `h1` reads `jobRoll`;
-  `HomebrewTabs` draws pills from 761 px; DESIGN.md ("A steady head", "The Roll Page Rule", "The Two Breakpoints Rule",
-  a new "The Sibling Row Rule") and FEATURES.md ("Chrome", "Rolling", "Homebrew") change with it; a states case (one
-  `RollPage` instance across a mode switch, the `h1` and pills keep their top and left, the focus stays, the `h1` is
-  visible per family from 761 px and hidden at 360); `FIRST_SCREEN` and `ROLL_FIT` rows re-measured. Acceptance 1-8 of
-  `plan-nav.md`, section 5, are the batch's own lines.
-- Split criterion: a different route set (the nine roll pages from 761 px, `/homebrew`) and its own goldens (about
-  25-35 states); 9b and T are full. Gate cost 70-90 min (`plan-nav.md`, section 5). Mock: `mocks/N/` (probe scripts, the
-  roll shots with the visible `h1` and the offsets built; the homebrew pills and the full width set are the first step).
-  Plan review: not required.
+  its title row. N3: then the pills (level 2: the roll modes, the table groups, the homebrew tabs as pills with counts,
+  N2), then the pin and the help, then the page's primary action at the right end. N4: that is ONE rule for every page
+  that draws a `PageHead` ("The Head Order Rule", `plan-nav.md` section 4); a page with no siblings (`/search`,
+  `/lists`) has no pills slot and its pin follows its heading. From 761 to 999 px the pills take their own row under the
+  head row (the one named departure; the DOM follows the reading order in each band); level 3 (books, sources) stays
+  underlined tabs under the head row. The roll `h1` reads the job name, «Бросок» / "Roll" (`jobRoll`, no new string; the
+  lit pill names the mode). Up to 760 px the `h1` stays hidden on all three families (the picker or the lit pill row
+  names the page). Alternatives not taken: B (a full-width row above the title: tables 244 to 306 px and homebrew 254
+  to 309 px, past 288), C (style only), and strict order on three rows below 1000 px (about 40 px more).
+- Measured with the visible `h1` and the old order (`mocks/N/measure-roll-h1.json`): roll first content 267 to 214 at
+  1180 and 1000 (one row, the longest label ends 42 px short of the column at 1000 RU with the pin unpressed, about 30
+  px with it pressed), 256 at 768 (the pills on their own row), 360 unchanged. The new order does not change these
+  totals; batch N's first step re-measures every family. Trade-offs: a longer title row; the head is two rows below
+  1000 px; no full-width rule line; the pills cannot move on a mode switch (they follow a constant `h1`).
+- Code: `PageHead` gains `nav` (the pills, between the `h1` and the pin) and `navBelow` (the page passes its mid band);
+  `extra` means the primary actions at the right end. `RollPage` passes `ModeRow` as `nav` from 761 px (`Shell` keeps it
+  above the page up to 760 px) and the `h1` reads `jobRoll`; `TablesPage` moves its chips from `extra` to `nav`;
+  `HomebrewPage` splits `wideHead` into `nav` (pills with counts, `HomebrewTabs`) and `extra` («Новый предмет»);
+  `ListsPage` and `SearchPage` stay. DESIGN.md ("The Head Order Rule", "A steady head", "The Roll Page Rule", "The Two
+  Breakpoints Rule", "Chips") and FEATURES.md ("Chrome", "Rolling", "Tables and search", "Homebrew", "Lists") change
+  with it; a states case reads the head order on every route family at 1180 and 768 px (DOM order, reading order, the
+  primary at the right end, the offsets; `plan-nav.md` section 8); `FIRST_SCREEN` and `ROLL_FIT` rows re-measured.
+  Acceptance 1-11 of `plan-nav.md`, section 7, are the batch's own lines. The mock critique's findings are judged in
+  `plan-nav.md` section 6 (no check on a place; the gold weight, the 768 gap and the pin-state headroom are measured
+  steps; the mwt lead and «корника» go to batch 10).
+- Split criterion: a different route set (the nine roll pages, `/tables/*` and `/homebrew` from 761 px) and its own
+  goldens (up to 143 files: roll 37, tables 63, homebrew 43; `/lists` and `/search` byte-identical); 9b and T are
+  full. Gate cost 90-110 min (`plan-nav.md`, section 7). Mock: `mocks/N/` (probe scripts, the roll shots with the
+  visible `h1` and the offsets built with the old order; the new order, the homebrew pills and the full width set are
+  the first step). Plan review: not required.
 
 Batch 10:
 
@@ -1011,14 +1033,14 @@ code batch.
 | 9a | the new 360 px goldens, the axe cases and the `check:fast` growth of C1b (10-15); the new goldens and `lists.test.ts` cases of D1 (5-10) | 15-25 |
 | 9b | `plan-9b.md`, "Gate cost": the re-seed of about 70-100 list, `/s/` and add-to-list goldens (15-20); the affected vitest files alone with `VITEST_MAX_WORKERS=2` (15-20); `check:built`, detector, E4, Prettier (4-5); the loader runs of cases 83 and 104-107 (8-10); the shots at four widths (10); `polish` and `harden` (5-10); `sweep.js 768` on CI | 95-130 in all |
 | T | the `FIRST_SCREEN` re-measure at 360 before and after through the loader (8-10); the mock at 360 and 390 (8-10, no gate); `app.test.ts` timers (2); the shots at 360 and 390 (8); `polish` and `harden` (5-10); the new sweep step runs on CI; no golden re-seed expected | 65-90 in all |
-| N (outline; the owner answered A) | `plan-nav.md`, section 4: the mock at five widths (8-10); the re-seed of about 25-35 roll and homebrew states (8-12); `check:built` and lints (4-5); the loader runs of the roll and `FIRST_SCREEN` cases (6-8); `polish` and `harden` (5-10) | 70-90 in all |
+| N (outline; the owner answered A, N3, N4) | `plan-nav.md`, section 7: the mock at five widths with the new order (12-15); the re-seed of up to 143 roll, tables and homebrew states (`build:test` and four shards 15-20, the diff read 8-10); `check:built` and lints (4-5); the vitest files of the moved components (10-12); the loader runs of the head order case, the roll and `FIRST_SCREEN` cases (8-10); `polish` and `harden` (5-10) | 90-110 in all |
 | 10 | docs only: one `check:fast` and one docs-only CI run (no `e2e`) | about 20 in all |
 | waves (section 16) | per wave: the merge of `origin/main`, the squash in the main checkout, the `main` CI run with the deploy (10.5-11.5) and the merge back (about 2); three waves, plus the small wave 2b (15-20, in the 7b row) | 37-41 |
 | blind reviews, post-release check and closeout (section 16) | the three blind production reviews, after wave 2, after wave 3 and of the whole app, each with its remediation batch (the whole-app one about 45-60, the owner's print not counted; the two wave reviews and their fix batches are not in the totals below), then the closeout commit and its docs-only CI run and the last squash (about 20) | 65-80 |
 
 Time left at the 9b refresh (2026-11-05; batches up to 8 spent): 9b 95-130 min, T 65-90, P 75-95 (45-60 plus its
 30-35 of extra gates), 10 about 20 (45-55 if it takes P5's code), the wave 3 squash 12-14, the two blind reviews with
-their remediation and the closeout 65-80: about 332-429 min, 5.5-7.1 hours; batch N (owner answered A) adds 70-90. T as its own batch costs one CI run and
+their remediation and the closeout 65-80: about 332-429 min, 5.5-7.1 hours; batch N (owner answered A, N3, N4) adds 90-110. T as its own batch costs one CI run and
 one review (about 45-60 min) against a fold into 9b; the split criterion is in the section 7 table. The toast timing
 folds into T (the same `Toast.svelte` and CI run): its own batch would cost 45-60 min for three lines. This host is
 memory-starved: every vitest run takes `VITEST_MAX_WORKERS=2`, and a browser suite never runs beside vitest, so the
@@ -1212,6 +1234,14 @@ grep -n impeccable-disable -- app/src` returns nothing.
 - Deferred: the link-preview
   Worker's card images (`tools/share-card.mjs`); a Golos Text trial; the EN
   `<title>`, manifest name and `en/index.html` wordmark.
+- Deferred (owner, 2026-11-05, "plan stat columns later"): tabular stat columns on table rows from 1440 px. Today a
+  weapon or armor row draws trait, range, damage and burden as one stat sentence, so a row with a short description is
+  60-70% empty at 1920 px even after the Row Text Rule (batch 9b). Outline: a states mock first (`eq_weapon` and
+  `eq_armor` at 1440 and 1920 px, RU and EN); then right-aligned tabular columns with labels right of the text, rows
+  still one column, the stat sentence kept below 1440 px, on `/search`, the list page and `/s/`; values from the source
+  book data. It is the DESIGN.md "Proposed rules" row "The Stat Columns Rule" (written by 9b, M22). Recommended: its own
+  task after wave 3, not batch 10 (a docs-only lock of about 20 minutes) and not before wave 3 (9b, T and N are full).
+  Trade-off: production keeps half-empty weapon rows until then.
 - Risk: batch P moves every print measurement that `tests/app/print.js` and
   `FEATURES.md` "Print" pin; with QP.2 the sheet geometry moves too. Its
   refresh lists each pinned figure with its new value from the catalog

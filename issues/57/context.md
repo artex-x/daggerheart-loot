@@ -204,6 +204,12 @@
       1000 px (12.2% or less on every state of 20 rows or more, Vault of Ages excepted: its 300-800 character rules
       text clamps by content). The 120ch cap is not built. Q9b-2 (owner, same chat): the share panel keeps a delete per
       link.
+      Follow-up (owner, chat, 2026-11-05, interactive): weapon-table rows stay partly empty at 1920 px where a
+      description is short: "ship the row-text rule, plan stat columns later". Placed (planner): 9b ships M1 as planned;
+      "tabular stat columns on table rows from 1440 px" is "The Stat Columns Rule" in DESIGN.md "Proposed rules" (`plan-9b.md`
+      M22) and `plan.md` section 12, recommended as its own task after wave 3 (not batch 10). The design critique's
+      row findings are M21 (line height 1.55 from 1000 px, the `/s/` tail colour and font, the `/s/` note, the bare «1»
+      as a Deferred row).
     - Item 10 (owner, chat, 2026-11-05): review the Material Design guidelines (and similar official ones)
       against `DESIGN.md` in parallel with batch 8: what to add as named rules, and whether any wave 1-3 screen or
       mock should be reconsidered against them. No Material skill is installed (the project's `DESIGN.md` stays
@@ -260,6 +266,14 @@
       (planner, same day): `plan-nav.md` sections 3-5 (measured with the visible `h1`: roll first content 267 to 214
       at 1180 and 1000, 256 at 768, 360 unchanged; `/roll/wondrous` RU ends 42 px short of the 1000 px column; up to
       760 px the `h1` stays hidden because the pills or the picker name the page) and `plan.md` section 7, batch N.
+      Follow-up (owner, chat, 2026-11-05, interactive): N3 = the roll head order is the heading, then the pills, then the
+      pin and the help at the end of the row (this replaces "title, pin, help, pills"; the tables and homebrew heads
+      follow the same order); "I want it consistent on all pages then" (N4) = ONE rule for every page that draws a
+      `PageHead`: heading, pills (where the page has siblings), pin, help, the primary action(s) at the right end; a
+      page without siblings has no pills slot. Placed (planner): `plan-nav.md` sections 4, 6, 7 and 8 ("The Head Order
+      Rule"; the page table: roll, tables and homebrew change in batch N, `/lists` and `/search` already follow it, the
+      list page, `/s/`, account, editor and print draw no `PageHead`; the browser check; up to 143 golden files).
+      The design critique of the N mocks is judged in `plan-nav.md` section 6.
     - Owner's lean (chat, 2026-11-04): option 2, consistency first.
     - Refinement (chat, 2026-11-04): "even not to hide homebrew but upgrade lines and sets, make them visible only
       on the item page": the homebrew tag stays as today; the upgrade and relation lines and the set draw only on
