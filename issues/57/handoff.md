@@ -2,20 +2,21 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress. Waves 1, 2 and 2b are on `main`; wave 3: 9a, 8 and 9b done. 9b is `18429aee`
-  (pushed; CI run 42083009049 red), its review `22f93378` (`reviews/9b.md`, fix-then-continue), and its one
-  remediation pass is committed on top, not pushed (the dispatch said not to push).
-- Last agent: implementer (the 9b remediation pass, 2026-11-05). No subagent runs. No worker has uncommitted code
-  edits.
+- Task status: in_progress. Waves 1, 2 and 2b are on `main`; wave 3: 9a, 8 and 9b done. 9b is `18429aee`, its
+  review `22f93378` (`reviews/9b.md`, fix-then-continue), its remediation `6578a2c7`; all pushed. CI run
+  42102518161 of `6578a2c7`: every job passed but `browser (3)`, cancelled twice at its 30-minute limit
+  (`app/states`, one serial row of about 1750 s). Batch CI (`plan-ci.md`) is the fix.
+- Last agent: planner (batch CI plan, 2026-11-05; docs only, not committed). No subagent runs. No worker has
+  uncommitted code edits.
 - NEEDS_HUMAN_CONFIRMATION: no. One figure for the owner: the folded requests strip at 360x640 now starts the
   rows at 304 px (was 324; the owner's figure was 292), so the 360 exception is 304 (review B3: above 300, logged).
   No for batch N: the owner answered N1-N4 on 2026-11-05; one planner default the owner may overrule: from 761 to
   999 px the pills take their own row under the head row (`plan-nav.md` section 4).
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
 - Base / starting commit: `d8e30731`; previous sha of the 9b remediation pass: `22f93378`.
-- Pushed: up to `18429aee`; `22f93378` (the review) and the remediation commit are not pushed.
-- Next step, in order: (1) the orchestrator pushes, waits on CI of the fix tip (one re-run of a failed `e2e`
-  counts) and runs `polish` and `harden` on `ListPage`, `RequestsPanel`, `SharePanel`; (2) batch T's refresh
+- Pushed: up to `6578a2c7`.
+- Next step, in order: (1) batch CI (`plan-ci.md`, section 4), its batch review and CI of its tip, which also
+  proves the 9b remediation; `polish` and `harden` on `ListPage`, `RequestsPanel`, `SharePanel`; (2) batch T's refresh
   (`plan.md` section 7, "Batch T"), then T; N follows T and precedes P; (3) P, 10; the wave 3 and whole-app blind
   reviews; closeout. The wave 3 squash message takes `reviews/9b.md` R7's corrected text.
 
@@ -142,10 +143,15 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
 - Batch 9b and earlier: `git show 22f93378:issues/57/handoff.md`, "Verification".
 
 ## Next batch (implement-ready)
-- Name: push the remediation, CI of the fix tip, then batch T's refresh (the Thumb Rule and the toast timing;
-  `plan.md` section 7, "Batch T"), then T, N, P and 10.
-- What CI must prove for the fix: `check` (coverage of `HelpButton`, `RecordActions`), `app/sweep` 360 / 390 / 768,
-  `app/typo`, `app/print`, `app/states` (83, 65, 101, 104-107), the goldens, `e2e` F8, F12, F19.
+- Name: batch CI - `app/states` as four interleaved shard rows and fresh shard weights (`plan-ci.md`, section 4:
+  objective, files, steps S1-S8, acceptance 1-11, proofs in section 6). Then batch T's refresh (the Thumb Rule and
+  the toast timing; `plan.md` section 7, "Batch T"), then T, N, P and 10.
+- Verification: `node tests/run-all.js --shard=n/5 --list` (n = 1 to 5), `npm run build:test` then
+  `node tests/app/states.js --shard=1/40`, the two `--shard=5/4` parse checks, `node tests/run-all.js
+  derived,contracts`, `rtk npm run check:fast`; CI of the tip.
+- What CI of the batch CI tip must also prove for the 9b remediation: `check` (coverage of `HelpButton`,
+  `RecordActions`), `app/sweep` 360 / 390 / 768, `app/typo`, `app/print`, `app/states` (83, 65, 101, 104-107), the
+  goldens, `e2e` F8, F12, F19.
 - Facts for the dispatches: the local gates are the affected vitest files, both lints after the last edit, the golden
   re-seed when goldens move (each shard with the Bash timeout 600000), `npm run check:built`, the detector, and
   `rtk npm run check:fast` last; browser suites and sweeps run on CI. On this host `VITEST_MAX_WORKERS=2` bounds

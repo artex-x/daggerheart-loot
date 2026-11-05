@@ -7,7 +7,11 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
 ## Status
 
 - Batch 9b implemented, reviewed and remediated 2026-11-05 (`plan-9b.md`, `reviews/9b.md`; handoff "Completed");
-  CI of the fix tip is next, then batch T's refresh.
+  CI of the fix tip `6578a2c7` (run 42102518161) was cancelled twice at the 30-minute limit of `browser (3)`:
+  `app/states` is one serial row of about 1750 s. Batch CI (`plan-ci.md`) splits it into four interleaved rows and
+  refreshes the shard weights; then batch T's refresh.
+- Plan review: not required (no trigger fired) for batch CI. It changes no migration, no contract, no stored data
+  and no write protocol; its batch review is required (`tests/run-all.js` changes).
 - Phase 1 (S1) and phase 2 (S2): done. The owner chose R on 2026-10-23.
 - Refresh against `main` (2026-10-29): done. `claude/57` merged `main` at
   `9112c4ed`; every `audit.md` row is re-checked (`audit.md`, "Re-check
