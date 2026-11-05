@@ -2,13 +2,13 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (waves 1, 2 and 2b are on `main`; wave 3 started: batch 9a and its CI fix pass are
-  committed on `claude/57`, the fix pass not pushed; next: the push and CI, then batch 8)
-- Last agent: implementer (batch 9a fix pass; previous sha `6703151d`)
+- Task status: in_progress (waves 1, 2 and 2b are on `main`; wave 3 started: batch 9a and its fix pass are done,
+  CI green on `6f90ccd6`; next: batch 8, brief `plan-8.md`)
+- Last agent: planner (batch 8 refresh, 2026-11-05; writes only `plan-8.md`, `plan.md`, `handoff.md`, `context.md`)
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
-- Tip: the batch 9a fix pass commit on `6703151d`, not pushed (the orchestrator pushes).
-- Pushed: no.
+- Tip: `6f90ccd6` plus this uncommitted planner pass (the orchestrator commits it).
+- Pushed: the tip `6f90ccd6` is pushed and green (run 41972009883).
 
 ## Completed
 - Batch 1 - foundation: `9a31aede`, review fix `80872b35` (`reviews/1.md`).
@@ -1210,10 +1210,17 @@
 - Spelling scan over added lines and new files: only `aria-labelledby`.
 
 ## Next batch (implement-ready)
-Batch 9a and its CI fix pass are committed (not pushed; review `reviews/9a.md`, approve). Next: the push and CI of
-the fix pass (`app/states` 17, 43, 64, 76, 83, 100; `sweep.js` 360 and 390; `e2e` F8), then batch 8 (`BatchBar`
-leaves with `ListsPage`; `app.pageBar` is free for it). Batch 8's brief takes review 9a R1: past 270 kB it writes
-the owner's 300 kB ceiling into `tools/bundle-budget.mjs`, `.claude/README.md` and a decision file.
+Batch 8 - the lists page, list cards, lists import, add-to-list menu. The brief is `issues/57/plan-8.md` (refreshed
+2026-11-05, planner; implement-ready; decisions L1-L15, steps S1-S11, acceptance 1-18, the four standing checks,
+gate cost 75-100 min). Batch 9a and its CI fix pass are done (`reviews/9a.md` approve; tip `6f90ccd6`, CI green).
+`BatchBar.svelte` leaves with `ListsPage`; `app.pageBar` carries the bar. It also takes: review 9a R1 (the 300 kB
+unconfigured ceiling into `tools/bundle-budget.mjs`, `.claude/README.md` and a decision file, whether or not its
+total passes 270; acceptance 15), the bar's «В список» label as its own check (acceptance 9; batch 4's K4 closed the
+code), owner item 8 (the number stepper in `NumberField.svelte`, L10, acceptance 14, case 104) and the add-to-list
+popover decision (L12). Cases 102, 103 and 104 are the next free numbers; batch 9b reads the next three after them.
+NEEDS_HUMAN_CONFIRMATION: no (defaults L1-L15 are in the AFK log, items 13-16). Writer tests (not a model choice):
+test 1 no, test 2 yes in part (the ceiling is configuration), test 3 yes (about 35-40 goldens), test 4 no, so `opus`.
+Owner item 9 (rows cut with free width at wide windows) is placed in batch 9b, "9b-R9" in `plan.md` section 7.
 
 Wave 2b (batches 7b and W with their fix passes) is on `main` as `b6f153a5`, the deploy is green, and `claude/57`
 merged it back (`8b99ac8e`). Next: batch 9a (brief `plan-9a.md` plus the 9a-W1 to W7 lines of `plan-wave3-wide.md`;
@@ -1267,7 +1274,8 @@ Facts for the dispatches:
   `gh run watch <id> --exit-status` in the background instead. Each writer checks its predecessor's run before
   it pushes. A pushed run must have concluded before the next push.
 - Budget: 264.2 of 265 kB unconfigured, 321.6 of 322 kB configured after batch 7b (ceiling 350; raised by the post-wave-2 remediation). The owner raised the unconfigured
-  ceiling to 300 kB (`context.md`); the batch that first passes 270 writes it. Raises follow the standing rule.
+  ceiling to 300 kB (`context.md`); batch 8 writes it (`plan-8.md` L11), 268.1 of 269 kB unconfigured and 325.5 of 326
+  configured after 9a. Raises follow the standing rule.
 - The owner must keep Chrome open and signed in to Figma for batch P's burden export.
 - `FilterBar` stays until batch 9a removes it, and `BatchBar` until batch 8; a golden is re-seeded, never edited.
 
@@ -1311,7 +1319,10 @@ Facts for the dispatches:
 - P5 (batch 4, K11): `rollNo` («номер» / "roll") stays; batch 10 changes it with `tools/share-card.mjs`
   and the stubs after a plan review (`plan.md`, batch 10).
 - Toast over «Ещё» (batch 4): at 360 an action toast covers the end of the menu for its 7 s; a second
-  save by touch waits for it. Named for the batch 8 sheet decision.
+  save by touch waits for it. Batch 8 decided no sheet (`plan-8.md` L12), so it stays, and it now also covers the
+  end of the add-to-list popover; at closeout it goes to `docs/specs/DEBT.md` unless a later batch fixes it.
+- Batch 8 (`plan-8.md`): the signed-out add-to-list menu keeps its two steps (L13); the `HomebrewPage` search row
+  keeps its own `.tools` beside `ListFind` (L8).
 - `RecordCard`'s dialog art at 500-760 px wide and 481-560 px tall: a 4:3 picture can fill the card, so
   the dock is not in view until a scroll (sticky holds inside `.card-body`). No phone portrait reaches it.
 - Focus jump (batch 3b, measured facts item 3): a `focus()` on a header control moves the page up

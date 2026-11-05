@@ -76,6 +76,16 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
 - Fold of the placed items (2026-11-04, done): the open "Placed items" of `plan-4.md`
   to `plan-7.md` are in sections 7 and 8 (batches 8, 9a, 9b, P and 10); the briefs keep their
   text. Section 10 is collapsed to its pointer, D1-D13 and "Impeccable".
+- Batch 8 refresh (2026-11-05): `plan-8.md` is batch 8's brief (decisions L1-L15, steps S1-S11, acceptance 1-18, the
+  four standing checks). Batch 9a and its fix pass are done (`reviews/9a.md` approve; tip `6f90ccd6`, CI green).
+  Placed in it: review 9a R1 (the 300 kB ceiling, L11, acceptance 15), batch 3 deviation 2 (the bar's label, acceptance
+  9: already closed by batch 4's K4, kept as a check), owner item 8 of `context.md` (the number stepper, L10,
+  acceptance 14, case 104) and the add-to-list popover decision (L12). Owner item 9 (rows cut with free width) is
+  placed in batch 9b ("9b-R9", section 7). Defaults for the owner's absence: AFK decisions items 13-16.
+- Plan review: not required (no trigger fired) for batch 8. Batch 8 changes no contract (`routes.json`, `CONTRACTS.md`,
+  `llms.txt` stay), stores nothing, adds no migration, no `SECURITY DEFINER` function and no write or sync protocol
+  (`plan-8.md`, "Plan review"). The earlier `required before 1` line stays satisfied by `reviews/plan-1-2.md` and
+  `reviews/plan-1-3.md`; batches 9b, P and 10 take their own line at their refreshes.
 - Batch 3b implemented (2026-11-04), on `claude/57`; `handoff.md` has its outcomes and its
   departures. `polish`, `harden`, the batch review and CI follow, then batch 4's refresh.
 - Batch 3b refresh (2026-11-03): `plan-3b.md` is batch 3b's brief, in the shape of
@@ -649,8 +659,13 @@ Batch 7b (wave 2b, after the post-wave-2 remediation; the brief is `plan-tags.md
 - Gate cost 100-135 min (section 8). The wave 2b squash follows its review and the green CI run of its tip
   (section 16); batch 9a then builds its compact row on the rule (`plan-9a.md`, "Dispatch preflight").
 
-Batch 8:
+Batch 8 (refreshed 2026-11-05; the implement-ready brief, decisions and acceptance lines are `plan-8.md`; the lines
+below are the outline it expands, and where they differ `plan-8.md` wins - its departures from mock 8 are L1, L6,
+L7, L12 and L13):
 
+- Added at the refresh: review 9a R1 (the 300 kB ceiling into `tools/bundle-budget.mjs`, `.claude/README.md` and a
+  decision file; `plan-8.md` L11, acceptance 15); the bar's «В список» label check (acceptance 9); owner item 8 (the
+  number stepper, L10, acceptance 14, case 104); the add-to-list menu stays a popover (L12).
 - D116 (section 6).
 - A18: `/lists/<uuid>` not found names a true cause (no browser lists exist
   after R10) and one next step, with a sign-in when signed out.
@@ -753,6 +768,22 @@ Batch 9a (wave 3, first, after wave 2; `mocks/F/` up to 760 px, mock 9 elsewhere
 
 Batch 9b (wave 3, after batch 8; mock 9):
 
+- 9b-R9 (owner item 9, `context.md`, "Phone feedback"; placed at the batch 8 refresh, 2026-11-05): on a wide window
+  the catalog, search, homebrew and list rows leave free width at the right yet cut the description with an
+  ellipsis. `RowMain` holds the text at `max-width: 70ch` and clamps it to 2 lines (3 up to 600 px). Default taken
+  (AFK log item 16): from 1000 px the text column's cap is 110ch and the clamp is 3 lines; up to 999 px both stay
+  (70ch, 2 lines; 3 lines up to 600 px), so the 360 first-screen limits and the compact rows do not move. 9b owns it
+  because it lays out the full row at wide widths (M-9b): its slack arithmetic changes, because a 110ch text (about
+  770 px) fills a text cell of C - 854 px up to C of about 1620 px, so M-9b's option A holds with no empty slack up
+  to 1620 px and about 260 px at 1880. Acceptance (its own line): (a) a browser case at 1180, 1440 and 1920 px, RU and
+  EN, on `/tables/eq_weapon`, `/tables/core_item`, `/search` with a query, `/homebrew` as `gm3` and a list page
+  with 8 or more entries: no description that fits in 3 lines at 110ch is cut (`scrollHeight <= clientHeight`), and
+  the two rows of the owner's screenshot («Фляга Путника», «Мешок Собирателя») show whole at 1440 and 1920; (b) the
+  count of cut rows on `/tables/eq_weapon` at 1440 RU is logged before and after in `handoff.md`; (c) at 360, 390
+  and 768 `RowMain`'s clamp and cap are unchanged (computed style); (d) `FEATURES.md` "Tables and search" ("holds at
+  70 characters a line") and `DESIGN.md` name the 110ch step with the owner's date. Fallback if 3 lines make the
+  catalog rows too tall at 1180: keep 2 lines and widen the cap only; the writer measures both and logs the pick.
+  `plan-wave3-wide.md` Q-W2 is not reopened: the rows column still takes the rest of the column (option A).
 - E2 (plan review B2): the reorder drop mark is redrawn so the detector does
   not flag it. Recommended form: a 2 px gold line drawn by a gap element
   between the rows, not an inset shadow on the row. Every `FEATURES.md`
@@ -895,7 +926,8 @@ code batch.
 | 3 | `node tests/run-all.js app/contracts,app/states,app/typo,app/hues,app/print,contracts,dataint,derived,stub` (15-18); `node tests/app/sweep.js 360` and `768` (about 16); the golden re-seed, `build:test` and four `--update` shards (11-12; about 56 catalog states plus the Account, search and shared states whose text or bar moves); `npm run check:built` (1); both lints (2); `node tools/decisions.js` and the detector (2); the orchestrator's Impeccable `polish` and `harden` run (about 10, section 10) | 55-65 |
 | 3b | `build:test` and one golden pair (about 5); `check:built`, both lints, decisions and the detector (about 5); `polish` and `harden` (5-10); the browser suites, the sweep and the focus-fix proof run on CI | 15-20 |
 | 4, 5, 6, 7 (done) | spent (planned extra gates 30-35, 32-40, 38-49 and 32-43 min, each with `npm run check:built`) | - |
-| 8, 9a, 9b | `npm run check:built` where `dist` assets change (1) | 1 each |
+| 8 | `plan-8.md`: the golden re-seed of about 35-40 `/lists` and add-to-list states (`build:test` and four shards, 15-20); `check:built` and the configured budget line (3); both lints, decisions, the detector (3); `polish` and `harden` (5-10); the screenshot set (5); cases 102-104 run on CI. One `check:fast` (10-14), one CI run, one review fix cycle | 75-100 in all |
+| 9a (done), 9b | `npm run check:built` where `dist` assets change (1) | 1 each |
 | 7b | `plan-tags.md`: the vitest files of T1-T6 and T9 (about 15 files, 8-10); artwork test, both lints, decisions, the detector (4-5); `build:test` and the four golden shards (70-120 goldens, 15-20); `check:built` and the configured build (3-4); the head probe and its failing run at HEAD (T9.1, T9.3, 8-12); the roll probe before and after and the roll results CSS (T12, 20-30; folded in by `CLAUDE.md` "Size a batch by its gates": the same `RecordCard`, `RollResult` and `_roll_*` goldens; its own batch would cost 50-65); `polish` and `harden` (5-10); the screenshot set (about 3). One golden re-seed, one `check:fast`, one CI run, one batch review and by habit one fix cycle: 4-6 runs. Its wave 2b squash adds 15-20 (section 16) | 100-135 |
 | 9a | the new 360 px goldens, the axe cases and the `check:fast` growth of C1b (10-15); the new goldens and `lists.test.ts` cases of D1 (5-10) | 15-25 |
 | 9b | `node tests/app/sweep.js 768` for A1 (about 8) | 8 |
@@ -930,7 +962,7 @@ for the orchestrator's dispatch, not a model choice):
 | 6 | no | yes: goldens | none |
 | 7 | no | yes: goldens | none |
 | 7b | no | yes: 75-125 goldens in one re-seed; badge, tile, head and roll result layouts. Test 1 is yes: the head choice HD1 and the roll choice RC1 have defaults (options A and B) that block nothing | none (`plan-tags.md`) |
-| 8 | no | yes: goldens | none |
+| 8 | yes, in part: the bundle ceiling goes into `tools/bundle-budget.mjs`, `.claude/README.md` and a decision file (configuration every session runs under; no contract, route, stored state or product law) | yes: about 35-40 goldens re-seeded; the card, bar, head and menu follow mock 8. Test 1 is no: every fork has a default (`plan-8.md` L10, L12, L13) | none (`plan-8.md`) |
 | 9a | no: no stored state, route or contract changes (D1 keeps the filter in memory) | yes: the list goldens, the compact row at 360 px | none |
 | 9b | yes: `.prettierignore` (E4) and `.impeccable/config.json` (E2), configuration every session runs under | yes: the list goldens again | its refresh checks the note switch's pending-edit save for possible data loss |
 | 10 | no, unless it edits `.impeccable/config.json` again | no, unless it takes code | none |
@@ -1341,6 +1373,9 @@ The re-renders that follow from this table: `mocks/3/` (`catalog` and its
 states), `mocks/5/` (`roller`), `mocks/6/` (`homebrew-items`, `editor`),
 `mocks/7/` (`search-results`), `mocks/P/` (`print-preview`), `mocks/8/` (`lists-index`),
 `mocks/9/` (`list`, `shared-player`).
+
+Batch 8 (`plan-8.md`, L9): `#/lists as gm1` moves to `shipped: true`, and a new row `#/lists ~ many lists as gm4`
+(30 lists, the search row) is asserted at the rule (mock 8 measured 231 / 189 and 253 / 191 at 360 / 1180).
 
 FIRST_SCREEN batches: roll pages 5 (the header part 2), tables 3, item 4,
 search and account 7, print P, homebrew and the editor 6, `/lists` 8,

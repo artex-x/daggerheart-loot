@@ -163,6 +163,26 @@
       `--wrap` (1180 px) and leaves about 350 px of empty space on each side. Asks: should the suite gain
       tests or mocks for wider windows, and should a rule govern the wide layout. Not in 7b. Routing: a planner
       pass after wave 2b (a design decision: a wider `--wrap` or a second column at 1440+ px).
+    - Item 8 (owner, chat, 2026-11-05, screenshot of the number field under «Бросить 1-145», about 330 px wide, RU):
+      the roll-number stepper («РЕЗУЛЬТАТ БРОСКА (1-145)», «-», «1», «+») looks strange: the «+» sits far from the
+      field's end, the value is not centered, extra space follows the «+", and since the field got a fixed width
+      it is smaller than the other controls on the page. Asks: make it smaller, or put the «+» at the right side;
+      reverting the fixed width is allowed, if it works at every supported width. Routing: a wave 3 batch that
+      touches the roll pages (default: batch 8's refresh or the first batch that opens `RollPanel`/`RollPage`;
+      the planner names it); a browser case at 360, 390, 768 and 1180 px, RU and EN, and `FEATURES.md` follow.
+      Placed (planner, 2026-11-05): batch 8 (`plan-8.md` L10, acceptance 14, case 104). No wave 3 batch opens a roll
+      page; batch 8 takes it as the next to ship, because the change is CSS in `NumberField.svelte` alone. Choice
+      (AFK default): the input grows (`flex: 1 1 auto`), so the value centers and «+» sits at the box's right
+      edge; the 240 px cap stays; dropping the cap is the one-line fallback.
+    - Item 9 (owner, chat, 2026-11-05, screenshot at about 1530 px, RU, table rows «Фляга Путника», «Мешок
+      Собирателя»): on a wide window the table and list rows have much free width on the right, yet the one-line
+      description is cut with an ellipsis. Ask: use the free width before truncating. Routing: the wide-window
+      rule (`plan-wave3-wide.md`, Q-W2) and the row text clamp of `RowMain`/`TableRows`; the planner decides the
+      clamp (more lines, or no cut while width remains) and names the batch; a browser case at 1180, 1440 and
+      1920 px, RU and EN, plus the 360 first-screen limits stay.
+      Placed (planner, 2026-11-05): batch 9b, "9b-R9" in `plan.md` section 7 (the only wave 3 batch that lays out the
+      full row at wide widths). Choice (AFK default): from 1000 px the row text cap is 110ch (70ch today) and the
+      clamp is 3 lines (2 today); below 1000 px nothing changes.
     - Owner's lean (chat, 2026-11-04): option 2, consistency first.
     - Refinement (chat, 2026-11-04): "even not to hide homebrew but upgrade lines and sets, make them visible only
       on the item page": the homebrew tag stays as today; the upgrade and relation lines and the set draw only on
@@ -205,7 +225,8 @@
     unless a measurement passes it (then stop and ask). Raises under the 300 kB ceiling
     follow the standing rule (measured total rounded up, reason in the commit). The
     batch that first passes 270 writes the new ceiling into `tools/bundle-budget.mjs`,
-    `.claude/README.md` and its decision file.
+    `.claude/README.md` and its decision file. Home: batch 8 (`plan-8.md` L11, acceptance 15), written whether or not
+    its own total passes 270 (the unconfigured build was 268.1 of 269 kB after 9a).
   - Site share cards (owner, 2026-10-29, chat: "Yes, batch 1"): batch 1
     re-renders both cards in the new system with the font change. Home:
     `docs/artwork.md`, "The site share cards", written by batch 1. Facts:
@@ -426,6 +447,14 @@
     Downloads; use Copy as SVG. Batch P exports the hands only (without the
     label), one- and two-hand, colour and black-and-white (node
     3773-90792).
+    Export done by the orchestrator (owner, chat, 2026-11-05: "do the burden export now"): in
+    `C:\Users\Ignat\.dhloot\notes\57\figma\`, `burden-{1,2}-{colour,bw}-hands.svg` (62x37, from the
+    `Burden` group of the Палаш card for one hand and the Длинный меч card for two, colour page node
+    714-42387 and black-and-white page node 3773-90792). Each was Copy as SVG of `Burden` (62x48), then
+    the first `<path fill="black">` (the «ХВАТ» label, y 21-46) was deleted and the viewBox cut to 62x37.
+    The raw copies sit beside them without the suffix. Not yet rendered: batch P renders each before the
+    swap and compares with the node. The existing `card/burden-*.svg` are 62x36, so batch P reads the
+    one-pixel height change.
   - Card bottom line (owner, 2026-10-29, interactive): the screen record
     card drops «Daggerheart» from its bottom line and keeps only the source
     (Core, Hope & Fear, a homebrew author) - batch 4 (record card), and
