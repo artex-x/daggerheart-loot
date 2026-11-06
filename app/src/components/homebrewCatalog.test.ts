@@ -143,9 +143,9 @@ const pill = (): HTMLElement => {
   return found;
 };
 
-/* The source tabs: the links of the table nav's second level. */
+/* The source tabs: the links of the table nav's second level, under the head from 761 px. */
 const chips = (): HTMLAnchorElement[] => [
-  ...document.querySelectorAll<HTMLAnchorElement>('.tablenav .tabs a')
+  ...document.querySelectorAll<HTMLAnchorElement>('.tabslot > .tabs a, .tablenav .tabs a')
 ];
 const chipOn = (): string | null | undefined =>
   chips().find((a) => a.getAttribute('aria-current') === 'page')?.textContent;

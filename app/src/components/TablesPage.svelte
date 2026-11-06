@@ -702,6 +702,19 @@
   <TableNav {app} {table} sources={hbSources} source={hbSource} filter={filterState} />
 {/snippet}
 
+<!-- From 761 px the head holds the group chips and the tabs follow under it (DESIGN.md,
+     "The Head Order Rule"). -->
+{#snippet tabsRow()}
+  <TableNav
+    {app}
+    {table}
+    sources={hbSources}
+    source={hbSource}
+    filter={filterState}
+    part="tabs"
+  />
+{/snippet}
+
 <!-- From 1000 px the column shows the picks, so the line is the count alone. -->
 {#snippet countLine()}
   <p class="count" class:line={band === 'narrow'}>
@@ -780,7 +793,16 @@
     />
   {/if}
 {:else}
-  <PageHead {app} title={t.tables} sub="" {help} {home} extra={nav} />
+  <PageHead
+    {app}
+    title={t.tables}
+    sub=""
+    {help}
+    {home}
+    {nav}
+    navBelow={band === 'mid'}
+    below={tabsRow}
+  />
 {/if}
 
 <RecordHost {app} {index}>

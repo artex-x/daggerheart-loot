@@ -16,12 +16,12 @@ RootWebArea "Many Worlds Tavern - Генератор лута Daggerheart" [url=
       link "Бросок" [url=/roll/many_worlds_tavern]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
-  navigation "Режим броска"
-    link "Обычные правила" [url=/roll/std]
-    link "Альтернативные таблицы" [url=/roll/alt]
-    button "Many Worlds Tavern" [expanded=false haspopup=menu]
   main ""
-    heading "Many Worlds Tavern" [level=1]
+    heading "Бросок" [level=1]
+    navigation "Режим броска"
+      link "Обычные правила" [url=/roll/std]
+      link "Альтернативные таблицы" [url=/roll/alt]
+      button "Many Worlds Tavern" [expanded=false haspopup=menu]
     button "Открывать при запуске" [pressed=false]
     button "Об этой книге" [expanded=false]
     StaticText "Выберите мир и бросьте кость по нему."
@@ -98,12 +98,12 @@ RootWebArea "Many Worlds Tavern - Daggerheart Loot Generator" [url=/en/roll/many
       link "Roll" [url=/en/roll/many_worlds_tavern]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
-  navigation "Roll mode"
-    link "Standard rules" [url=/en/roll/std]
-    link "Alternate tables" [url=/en/roll/alt]
-    button "Many Worlds Tavern" [expanded=false haspopup=menu]
   main ""
-    heading "Many Worlds Tavern" [level=1]
+    heading "Roll" [level=1]
+    navigation "Roll mode"
+      link "Standard rules" [url=/en/roll/std]
+      link "Alternate tables" [url=/en/roll/alt]
+      button "Many Worlds Tavern" [expanded=false haspopup=menu]
     button "Open on start" [pressed=false]
     button "About this book" [expanded=false]
     StaticText "Pick a realm and roll within it."

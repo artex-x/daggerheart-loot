@@ -16,19 +16,19 @@ RootWebArea "Vault of Ages - Генератор лута Daggerheart" [url=/roll
       link "Бросок" [url=/roll/vault_of_ages]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
-  navigation "Режим броска"
-    link "Обычные правила" [url=/roll/std]
-    link "Альтернативные таблицы" [url=/roll/alt]
-    button "Vault of Ages" [expanded=true haspopup=menu]
-    menu "Дополнения" [orientation=vertical]
-      menuitem "Wondrous Environments" [focused=true]
-      menuitem "Dread GM Toolbox"
-      menuitem "Vault of Ages"
-      ... menuitem x2 of 6 same-shape siblings elided
-      menuitem "Предметы сообществ"
-      menuitem "Many Worlds Tavern"
   main ""
-    heading "Vault of Ages" [level=1]
+    heading "Бросок" [level=1]
+    navigation "Режим броска"
+      link "Обычные правила" [url=/roll/std]
+      link "Альтернативные таблицы" [url=/roll/alt]
+      button "Vault of Ages" [expanded=true haspopup=menu]
+      menu "Дополнения" [orientation=vertical]
+        menuitem "Wondrous Environments" [focused=true]
+        menuitem "Dread GM Toolbox"
+        menuitem "Vault of Ages"
+        ... menuitem x2 of 6 same-shape siblings elided
+        menuitem "Предметы сообществ"
+        menuitem "Many Worlds Tavern"
     button "Открывать при запуске" [pressed=false]
     button "Об этой книге" [expanded=false]
     StaticText "Выберите раздел книги и бросьте кость по нему."
@@ -111,12 +111,12 @@ RootWebArea "Vault of Ages - Daggerheart Loot Generator" [url=/en/roll/vault_of_
       link "Roll" [url=/en/roll/vault_of_ages]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
-  navigation "Roll mode"
-    link "Standard rules" [url=/en/roll/std]
-    link "Alternate tables" [url=/en/roll/alt]
-    button "Vault of Ages" [expanded=false haspopup=menu]
   main ""
-    heading "Vault of Ages" [level=1]
+    heading "Roll" [level=1]
+    navigation "Roll mode"
+      link "Standard rules" [url=/en/roll/std]
+      link "Alternate tables" [url=/en/roll/alt]
+      button "Vault of Ages" [expanded=false haspopup=menu]
     button "Open on start" [pressed=false]
     button "About this book" [expanded=false]
     StaticText "Pick a section of the book and roll within it."

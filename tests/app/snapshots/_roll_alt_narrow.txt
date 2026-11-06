@@ -21,7 +21,7 @@ RootWebArea "Альтернативные таблицы - Генератор л
     link "Альтернативные таблицы" [url=/roll/alt]
     button "Дополнения" [expanded=false haspopup=menu]
   main ""
-    heading "Альтернативные таблицы" [level=1]
+    heading "Бросок" [level=1]
     StaticText "Бросок Костей Дуальности по объединённым таблицам обеих книг."
     combobox "Редкость" [value=Обычная expanded=false haspopup=menu]
       option "Обычная" [selected=true]
@@ -109,7 +109,7 @@ RootWebArea "Alternate tables - Daggerheart Loot Generator" [url=/en/roll/alt]
     link "Alternate tables" [url=/en/roll/alt]
     button "Supplements" [expanded=false haspopup=menu]
   main ""
-    heading "Alternate tables" [level=1]
+    heading "Roll" [level=1]
     StaticText "A Duality Dice roll over both books merged into one set of table..." [namelen=66 namehash=f9462005]
     combobox "Rarity" [value=Common expanded=false haspopup=menu]
       option "Common" [selected=true]

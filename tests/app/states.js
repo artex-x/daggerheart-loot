@@ -560,7 +560,7 @@ async function historyBackForward() {
   await page.goBack();
   await d.settle();
   const chip = await page.evaluate(
-    () => document.querySelector('.tablenav .tabs [aria-current="page"]')?.textContent
+    () => document.querySelector('.tabslot .tabs [aria-current="page"]')?.textContent
   );
   ok(chip === 'Броня', '15 (navigation): back returned the wrong table - ' + chip);
   await page.goForward();
@@ -5236,7 +5236,7 @@ async function homebrewItemsFilterAddress() {
 
 /** 91. The list head of `#/homebrew` (docs/specs/FEATURES.md, "`#/homebrew` and its tabs"):
  *  up to 760 px the read-only heading, the picker row and «Ещё», the sheet and the one bar;
- *  from 761 px the head with the tab links; the 300-item page. */
+ *  from 761 px the head with the tab pills; the 300-item page. */
 async function homebrewHeadAndBar() {
   const at = '91 (the homebrew head, tabs and bar): ';
   const sideways = (page) =>
@@ -5292,9 +5292,9 @@ async function homebrewHeadAndBar() {
       await d.open('#/homebrew', { as: 'gm1', lang });
       await opened(page);
       const m = await page.evaluate(() => ({
-        tabs: [...document.querySelectorAll('.hbtabs .tab')].map((a) => a.offsetTop),
+        tabs: [...document.querySelectorAll('.hbtabs .chip')].map((a) => a.offsetTop),
         current: document.querySelectorAll('.hbtabs [aria-current="page"]').length,
-        broken: [...document.querySelectorAll('.hbtabs .tab')].some(
+        broken: [...document.querySelectorAll('.hbtabs .chip')].some(
           (a) => a.scrollWidth > a.clientWidth
         )
       }));
@@ -6972,7 +6972,7 @@ const NAV_TABLES = [
   'homebrew'
 ];
 
-/** 96. The table head holds still between tables (DESIGN.md, "Layout", "A steady head"): per
+/** 96. The table head holds still between tables (DESIGN.md, "The Head Order Rule"): per
  *  band, the title row, the group chips, the tab slot, the search row and the rows region
  *  start at one Y on every table, and the chips at one X. */
 async function tableHeadHoldsStill() {
@@ -7003,7 +7003,7 @@ async function tableHeadHoldsStill() {
             return {
               title: y('.page-head') ?? y('.pickrow'),
               groups: y('.page-head .groups'),
-              tabs: y('.page-head .tabslot') ?? y('.page-head .tabs'),
+              tabs: y('.page-below .tabslot') ?? y('.page-head .tabs'),
               searchrow: y('.searchrow'),
               rowscol: y('.rowscol'),
               groupsX: box('.page-head .groups')
@@ -9373,6 +9373,343 @@ async function textMeasure() {
   }
 }
 
+/** The routes of case 112: the family, the route, who is signed in. */
+const HEAD_ROUTES = [
+  ['roll', '#/roll/std', null],
+  ['roll', '#/roll/alt', null],
+  ['roll', '#/roll/community', null],
+  ['roll', '#/roll/mwt', null],
+  ['tables', '#/tables/eq_weapon', null],
+  ['tables', '#/tables/eq_armor', null],
+  ['tables', '#/tables/wondrous', null],
+  ['homebrew', '#/homebrew', 'gm3'],
+  ['lists', '#/lists', 'gm4'],
+  ['search', '#/search', null]
+];
+const HEAD_SIZES = [
+  [1180, 720],
+  [1000, 720],
+  [900, 720],
+  [768, 1024],
+  [360, 640]
+];
+const HEADINGS = {
+  roll: { ru: 'Бросок', en: 'Roll' },
+  tables: { ru: 'Таблицы', en: 'Tables' },
+  homebrew: { ru: 'Мои предметы', en: 'My items' }
+};
+
+/** Reads the page head of case 112: its parts' boxes, their DOM order and the lit pills. */
+function headProbe() {
+  const head = document.querySelector('main .page-head');
+  const box = (el) => {
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    return { top: r.top, bottom: r.bottom, left: r.left, right: r.right, h: r.height };
+  };
+  const h1 = document.querySelector('main h1');
+  const nav = head?.querySelector('.headnav') ?? null;
+  const pin = head?.querySelector('.homebtn') ?? null;
+  const help = head?.querySelector('.helpbtn') ?? null;
+  const primary = head?.querySelector('.btn.primary') ?? null;
+  const parts = [
+    ['h1', h1],
+    ['nav', nav],
+    ['pin', pin],
+    ['help', help],
+    ['primary', primary]
+  ].filter(([, el]) => el);
+  const order = [...parts]
+    .sort(([, a], [, b]) =>
+      a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
+    )
+    .map(([k]) => k);
+  /* The head's own controls outside the pills, in DOM order: the primary ends them. */
+  const controls = head
+    ? [...head.querySelectorAll('a, button')].filter((el) => !el.closest('.headnav'))
+    : [];
+  const lit = [...document.querySelectorAll('main .headnav .on, main .headnav [aria-current]')];
+  const checks = lit.filter((el) => {
+    const svgs = el.querySelectorAll('svg').length;
+    return el.classList.contains('sup') ? svgs > 1 : svgs > 0;
+  }).length;
+  const mainEl = document.querySelector('main');
+  const mcs = getComputedStyle(mainEl);
+  const mr = mainEl.getBoundingClientRect();
+  const lead = document.querySelector('main .page-sub');
+  const modesLit = document.querySelector('nav.modes [aria-current="page"]');
+  return {
+    boxes: Object.fromEntries(parts.map(([k, el]) => [k, box(el)])),
+    order,
+    lastIsPrimary: !primary || controls[controls.length - 1] === primary,
+    below: !!nav?.classList.contains('below'),
+    h1: h1 ? { text: h1.textContent.trim(), w: h1.getBoundingClientRect().width } : null,
+    checks,
+    contentRight: mr.right - parseFloat(mcs.paddingRight),
+    lead: box(lead),
+    title: document.title,
+    modeLit: modesLit?.textContent.trim() ?? null
+  };
+}
+
+/** 112. The Head Order Rule (DESIGN.md): every page head draws the heading, the pills of
+ *  the sibling pages, the pin, the help and the primary, in this DOM order and in this
+ *  reading order; from 761 to 999 px the pills take the row under the others. The first
+ *  content of each family against the First-Screen Rule at 768 and 900 px, `/tables/*` at
+ *  900x720 under its named ceiling of 336 px. */
+async function headOrder() {
+  const at = '112 (the head order): ';
+  /* The pills' place per language and size, on the roll routes. */
+  const pills = {};
+  for (const [family, route, as] of HEAD_ROUTES) {
+    for (const lang of ['ru', 'en']) {
+      const { ctx, page, d } = await fresh({ width: 1180, height: 720, lang });
+      try {
+        await d.open(route, { as, lang });
+        await d.settled(route);
+        for (const [width, height] of HEAD_SIZES) {
+          await d.viewport(width, height);
+          await d.settle();
+          const presses =
+            width >= 1000 && ['roll', 'tables', 'homebrew'].includes(family)
+              ? [false, true]
+              : [false];
+          for (const pressed of presses) {
+            if (pressed) {
+              await page.evaluate(() =>
+                document.querySelector('main .page-head .homebtn')?.click()
+              );
+              await d.settle();
+            }
+            const where =
+              at +
+              route +
+              ' ' +
+              width +
+              'x' +
+              height +
+              ' ' +
+              lang +
+              (pressed ? ' pinned' : '') +
+              ': ';
+            const top = await primaryTop(page);
+            const m = await page.evaluate(headProbe);
+            fs.writeSync(
+              1,
+              '  head: ' +
+                where +
+                'order ' +
+                m.order.join(',') +
+                ', first content ' +
+                (top ? top.top.toFixed(1) : 'none') +
+                '\n'
+            );
+            /* (f) The heading. */
+            if (HEADINGS[family]) {
+              ok(
+                m.h1?.text === HEADINGS[family][lang],
+                where + 'the heading reads ' + m.h1?.text
+              );
+              if (width === 360) ok(m.h1.w <= 1, where + 'the heading is drawn at 360 px');
+            }
+            if (width === 360) continue;
+            /* (a), (b) The DOM order. */
+            const hasNav = ['roll', 'tables', 'homebrew'].includes(family);
+            ok(
+              !!m.boxes.h1 && m.order[0] === 'h1',
+              where + 'the heading is not first - ' + m.order
+            );
+            ok(
+              hasNav === !!m.boxes.nav,
+              where + 'the pills box is ' + (m.boxes.nav ? 'drawn' : 'missing')
+            );
+            ok(!!m.boxes.pin, where + 'no pin in the head');
+            const want = m.order.filter((k) => k !== 'nav');
+            const pinAt = want.indexOf('pin');
+            ok(pinAt === 1, where + 'the pin does not follow the heading - ' + m.order);
+            ok(m.lastIsPrimary, where + 'a control follows the primary');
+            if (hasNav) {
+              const navAt = m.order.indexOf('nav');
+              ok(
+                m.below ? navAt === m.order.length - 1 : navAt === 1,
+                where + 'the pills are out of place - ' + m.order
+              );
+              ok(
+                m.below === width < 1000,
+                where + 'the pills row is ' + (m.below ? 'below' : 'in the row')
+              );
+            }
+            /* (c) The reading order equals the DOM order. */
+            const center = (b) => (b.top + b.bottom) / 2;
+            const row = Object.entries(m.boxes).filter(([k]) => !(m.below && k === 'nav'));
+            const c0 = center(m.boxes.h1);
+            for (const [k, b] of row)
+              ok(
+                Math.abs(center(b) - c0) <= 8,
+                where + k + ' is off the title row by ' + (center(b) - c0).toFixed(1)
+              );
+            for (let i = 1; i < row.length; i++)
+              ok(
+                row[i][1].left >= row[i - 1][1].right - 1,
+                where + row[i][0] + ' reads before ' + row[i - 1][0]
+              );
+            if (m.below) {
+              const rowBottom = Math.max(...row.map(([, b]) => b.bottom));
+              ok(
+                m.boxes.nav.top >= rowBottom - 0.5,
+                where + 'the pills are not under the title row'
+              );
+              /* (i) The pills stand closer to the title row than to the lead. */
+              if (route === '#/roll/alt' && m.lead) {
+                const up = m.boxes.nav.top - rowBottom;
+                const down = m.lead.top - m.boxes.nav.bottom;
+                ok(
+                  down >= up - 0.5,
+                  where +
+                    'the pills-to-lead gap ' +
+                    down.toFixed(1) +
+                    ' is under ' +
+                    up.toFixed(1)
+                );
+              }
+            }
+            /* (d) The primary ends the row. */
+            if (m.boxes.primary && (width === 1180 || width === 768))
+              ok(
+                m.contentRight - m.boxes.primary.right <= 16,
+                where +
+                  'the primary ends ' +
+                  (m.contentRight - m.boxes.primary.right).toFixed(1) +
+                  ' px short'
+              );
+            /* (h) No lit pill draws a check. */
+            ok(m.checks === 0, where + m.checks + ' lit pills draw a check');
+            /* (e) The first screen. */
+            if (top && !pressed) {
+              const limit =
+                width === 768
+                  ? 410
+                  : family === 'tables' && width === 900
+                    ? 336
+                    : width === 1000
+                      ? null
+                      : 288;
+              if (limit !== null)
+                ok(
+                  top.top <= limit,
+                  where +
+                    'the first content starts at ' +
+                    top.top.toFixed(1) +
+                    ', past ' +
+                    limit
+                );
+            }
+            /* (g) The pill row holds still on the roll routes; the title names the mode. */
+            if (family === 'roll' && !pressed) {
+              const key = lang + ' ' + width;
+              const p = { left: m.boxes.nav.left, top: m.boxes.nav.top };
+              pills[key] ??= p;
+              ok(
+                Math.abs(pills[key].left - p.left) <= 1 &&
+                  Math.abs(pills[key].top - p.top) <= 1,
+                where + 'the pills moved - ' + JSON.stringify([pills[key], p])
+              );
+              ok(
+                !!m.modeLit && m.title.startsWith(m.modeLit),
+                where + 'the title ' + m.title + ' does not name ' + m.modeLit
+              );
+            }
+          }
+          if (presses.length > 1) {
+            await page.evaluate(() =>
+              document.querySelector('main .page-head .homebtn')?.click()
+            );
+            await d.settle();
+          }
+        }
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+}
+
+/** 113. The die marks of `/roll/alt` (owner item 12; DESIGN.md, "Colors", "Tertiary"): each
+ *  die label starts with the page's d12 in its die's color, hidden from a reader, and no
+ *  letter; the word names the die and the field. */
+async function dieMarks() {
+  const at = '113 (the die marks): ';
+  for (const [width, height] of [
+    [360, 640],
+    [1180, 720]
+  ]) {
+    for (const lang of ['ru', 'en']) {
+      const { ctx, page, d } = await fresh({ width, height, lang });
+      try {
+        await d.open('#/roll/alt', { lang });
+        await d.settle();
+        if (width === 360) await d.click(lang === 'ru' ? 'Настроить' : 'Set up');
+        const where = at + width + ' ' + lang + ': ';
+        const m = await page.evaluate(() => {
+          const probe = (v) => {
+            const s = document.createElement('span');
+            s.style.color = v;
+            document.body.append(s);
+            const c = getComputedStyle(s).color;
+            s.remove();
+            return c;
+          };
+          const tones = {
+            hope: probe('var(--hope)'),
+            fear: probe('var(--fear)'),
+            gold: probe('var(--gold)')
+          };
+          const labels = [...document.querySelectorAll('main .dielbl')].map((l) => {
+            const dv = l.querySelector('.dv');
+            const svg = dv?.querySelector('svg.dieicon');
+            const lr = l.getBoundingClientRect();
+            const sr = svg?.getBoundingClientRect();
+            return {
+              text: l.textContent.trim(),
+              hidden: dv?.getAttribute('aria-hidden'),
+              svgs: dv ? dv.querySelectorAll('svg.dieicon').length : 0,
+              own: dv ? dv.textContent.trim() : null,
+              color: svg ? getComputedStyle(svg).color : null,
+              dy: sr ? sr.top + sr.height / 2 - (lr.top + lr.height / 2) : null
+            };
+          });
+          const field = document.querySelector('main .dieblock input');
+          return { tones, labels, field: field?.getAttribute('aria-label') ?? null };
+        });
+        const words =
+          lang === 'ru' ? ['Кость Надежды', 'Кость Страха'] : ['Hope Die', 'Fear Die'];
+        ok(m.labels.length === 2, where + m.labels.length + ' die labels');
+        m.labels.forEach((l, i) => {
+          const tone = i === 0 ? m.tones.hope : m.tones.fear;
+          ok(l.text === words[i], where + 'the label reads ' + l.text);
+          ok(
+            l.hidden === 'true' && l.svgs === 1 && l.own === '',
+            where + 'the mark - ' + JSON.stringify(l)
+          );
+          ok(
+            l.color === tone && l.color !== m.tones.gold,
+            where + 'the mark is ' + l.color + ', not ' + tone
+          );
+          ok(
+            l.dy !== null && Math.abs(l.dy) <= 1,
+            where + 'the mark is off the label line by ' + l.dy
+          );
+        });
+        const name =
+          lang === 'ru' ? 'Кость Надежды: Результат броска' : 'Hope Die: Roll result';
+        ok(m.field === name, where + 'the Hope field is named ' + m.field);
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -9477,7 +9814,9 @@ const CASES = [
   ['108 (the toasts in a real browser)', toastsInABrowser],
   ['109 (the targets of open layers at 360)', targetsInOpenLayers],
   ['110 (the empty plate)', emptyPlate],
-  ['111 (the text measure)', textMeasure]
+  ['111 (the text measure)', textMeasure],
+  ['112 (the head order)', headOrder],
+  ['113 (the die marks)', dieMarks]
 ];
 
 /* The interleave spreads the slow layout cases at the end of the list over

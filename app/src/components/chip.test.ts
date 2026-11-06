@@ -52,6 +52,23 @@ describe('the link form', () => {
     expect(screen.getByRole('link', { name: 'Предметы' }).className).toContain('sm');
   });
 
+  it('draws a count after the label, inside the name, and no check when lit', async () => {
+    const { container } = render(Chip, {
+      label: 'Предметы',
+      count: 44,
+      on: true,
+      href: '/homebrew'
+    });
+    const link = screen.getByRole('link', { name: 'Предметы 44' });
+    expect(link.querySelector('.n')?.textContent).toBe('44');
+    expect(link.querySelector('svg')).toBeNull();
+    render(Chip, { label: 'Источники', count: 0, on: false, href: '/homebrew/sources' });
+    expect(screen.getByRole('link', { name: 'Источники 0' })).toBeInTheDocument();
+    render(Chip, { label: 'Core', on: false, href: '/tables/core_item' });
+    expect(screen.getByRole('link', { name: 'Core' }).querySelector('.n')).toBeNull();
+    await expectNoA11yViolations(container);
+  });
+
   it('can carry a title, same as the button form', () => {
     render(Chip, { label: 'Core', on: false, href: '#/tables/core_item', title: 'Core' });
     expect(screen.getByRole('link', { name: 'Core' })).toHaveAttribute('title', 'Core');

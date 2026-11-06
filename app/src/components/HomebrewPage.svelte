@@ -304,15 +304,10 @@
   <HomebrewTabs {app} {tab} {counts} limitText={count} />
 {/snippet}
 
-<!-- The head's end from 761 px: on the Sources, Sets and Rules tabs the first button under the
-     head is the tab's own, whose form opens in its place. -->
-{#snippet wideHead()}
-  {#if ready}
-    <div class="headx">
-      {@render tabs()}
-      {#if tab === 'items'}<span class="headnew">{@render newItem(true)}</span>{/if}
-    </div>
-  {/if}
+<!-- The head's primary from 761 px, on the Items tab only: on the Sources, Sets and Rules tabs
+     the first button under the head is the tab's own, whose form opens in its place. -->
+{#snippet headNew()}
+  <span class="headnew">{@render newItem(true)}</span>
 {/snippet}
 
 {#snippet importToggle()}
@@ -359,7 +354,9 @@
     help={null}
     home={HOMEBREW_HASH}
     pin={ready}
-    extra={wideHead}
+    nav={ready ? tabs : undefined}
+    navBelow={band === 'mid'}
+    extra={ready && tab === 'items' ? headNew : undefined}
   />
 {/if}
 
@@ -546,18 +543,10 @@
     margin-top: 14px;
   }
 
-  /* The head's end: the tab links, then the primary at the right edge. */
-  .headx {
-    display: flex;
-    flex: 1 1 auto;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px 18px;
-    min-width: 0;
-  }
-
+  /* The primary ends the head row (DESIGN.md, "The Head Order Rule"). */
   .headnew {
     display: flex;
+    flex: none;
     margin-left: auto;
   }
 

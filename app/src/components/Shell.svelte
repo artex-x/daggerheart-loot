@@ -313,7 +313,8 @@
   </div>
 </header>
 
-{#if modeOf(app.section)}
+<!-- From 761 px the roll page's head draws the same controls as its pills. -->
+{#if modeOf(app.section) && app.band === 'narrow'}
   <ModeRow {app} />
 {/if}
 

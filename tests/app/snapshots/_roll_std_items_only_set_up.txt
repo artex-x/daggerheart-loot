@@ -21,7 +21,7 @@ RootWebArea "Обычные правила - Генератор лута Daggerh
     link "Альтернативные таблицы" [url=/roll/alt]
     button "Дополнения" [expanded=false haspopup=menu]
   main ""
-    heading "Обычные правила" [level=1]
+    heading "Бросок" [level=1]
     StaticText "Бросок по таблицам корника и дополнения Hope & Fear."
     StaticText "БРОСИТЬ"
     button "1d12 Обычная" [description=Бросить 1d12 - Обычная]
@@ -102,7 +102,7 @@ RootWebArea "Standard rules - Daggerheart Loot Generator" [url=/en/roll/std]
     link "Alternate tables" [url=/en/roll/alt]
     button "Supplements" [expanded=false haspopup=menu]
   main ""
-    heading "Standard rules" [level=1]
+    heading "Roll" [level=1]
     StaticText "A roll over the core book and the Hope & Fear tables."
     StaticText "ROLL"
     button "1d12 Common" [description=Roll 1d12 - Common]

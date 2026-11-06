@@ -76,16 +76,54 @@ describe('the heading', () => {
       const { container } = render(App, { env: at(hash) });
       const h1 = screen.getByRole('heading', { level: 1 });
       expect(h1).toHaveClass('vh');
+      expect(h1.textContent).toBe('Бросок');
       expect(container.querySelector('.page-head')).toBeNull();
+      /* The mode row names the page, above `main`. */
+      const modes = screen.getByRole('navigation', { name: 'Режим броска' });
+      expect(container.querySelector('main')?.contains(modes)).toBe(false);
     }
   );
 
-  it('is drawn in the head from 761 px', () => {
+  /* DESIGN.md, "The Head Order Rule": the heading, the pills, the pin, the help. */
+  it.each([
+    ['wide', false],
+    ['mid', true]
+  ] as const)('is drawn in the head at %s, the pills in their place', async (band, below) => {
     const { container } = render(App, {
-      env: at('#/roll/std', { viewport: fakeViewport('mid') })
+      env: at('#/roll/alt', { viewport: fakeViewport(band) })
     });
-    expect(screen.getByRole('heading', { level: 1 })).toHaveClass('page-h');
-    expect(container.querySelector('.page-head')).not.toBeNull();
+    const h1 = screen.getByRole('heading', { level: 1 });
+    expect(h1).toHaveClass('page-h');
+    expect(h1.textContent).toBe('Бросок');
+    const head = container.querySelector('.page-head') as HTMLElement;
+    const modes = within(head).getByRole('navigation', { name: 'Режим броска' });
+    expect(screen.getAllByRole('navigation', { name: 'Режим броска' })).toHaveLength(1);
+    const pin = within(head).getByRole('button', { name: 'Открывать при запуске' });
+    const help = within(head).getByRole('button', { name: 'Об этих таблицах' });
+    const order = [h1, ...(below ? [pin, help, modes] : [modes, pin, help])];
+    for (let i = 1; i < order.length; i++) {
+      expect(order[i - 1]?.compareDocumentPosition(order[i] as Node)).toBe(
+        Node.DOCUMENT_POSITION_FOLLOWING
+      );
+    }
+    expect(modes.closest('.headnav')?.classList.contains('below')).toBe(below);
+    await expectNoA11yViolations(container);
+  });
+
+  /* Each mode draws its own panel, so the head is drawn again: the text holds still, and
+     the browser case 112 holds the place. */
+  it('keeps the heading text across a switch between modes and lights the new pill', async () => {
+    const router = memoryRouter('#/roll/std');
+    render(App, { env: at('#/roll/std', { router, viewport: fakeViewport('wide') }) });
+    router.navigate('#/roll/alt');
+    await waitFor(() => {
+      expect(
+        within(screen.getByRole('navigation', { name: 'Режим броска' })).getByRole('link', {
+          name: 'Альтернативные таблицы'
+        })
+      ).toHaveAttribute('aria-current', 'page');
+    });
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Бросок');
   });
 
   it('stays with nothing to roll, in both bands', () => {

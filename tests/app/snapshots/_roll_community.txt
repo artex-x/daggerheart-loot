@@ -16,12 +16,12 @@ RootWebArea "Предметы сообществ - Генератор лута D
       link "Бросок" [url=/roll/community_items]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
-  navigation "Режим броска"
-    link "Обычные правила" [url=/roll/std]
-    link "Альтернативные таблицы" [url=/roll/alt]
-    button "Предметы сообществ" [expanded=false haspopup=menu]
   main ""
-    heading "Предметы сообществ" [level=1]
+    heading "Бросок" [level=1]
+    navigation "Режим броска"
+      link "Обычные правила" [url=/roll/std]
+      link "Альтернативные таблицы" [url=/roll/alt]
+      button "Предметы сообществ" [expanded=false haspopup=menu]
     button "Открывать при запуске" [pressed=false]
     button "Об этих предметах" [expanded=false]
     StaticText "Выберите происхождение и бросьте d10."
@@ -98,12 +98,12 @@ RootWebArea "Community items - Daggerheart Loot Generator" [url=/en/roll/communi
       link "Roll" [url=/en/roll/community_items]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
-  navigation "Roll mode"
-    link "Standard rules" [url=/en/roll/std]
-    link "Alternate tables" [url=/en/roll/alt]
-    button "Community items" [expanded=false haspopup=menu]
   main ""
-    heading "Community items" [level=1]
+    heading "Roll" [level=1]
+    navigation "Roll mode"
+      link "Standard rules" [url=/en/roll/std]
+      link "Alternate tables" [url=/en/roll/alt]
+      button "Community items" [expanded=false haspopup=menu]
     button "Open on start" [pressed=false]
     button "About these items" [expanded=false]
     StaticText "Pick an origin and roll d10."

@@ -487,6 +487,21 @@ describe('which job is lit', () => {
     );
   });
 
+  /* From 761 px the roll page's head draws the same controls (DESIGN.md, "The Head Order
+     Rule"). */
+  it.each([
+    ['narrow', false],
+    ['mid', true],
+    ['wide', true]
+  ] as const)('draws the mode row once, inside main: %s', (band, inside) => {
+    const { container } = render(App, {
+      env: at('#/roll/alt', { viewport: fakeViewport(band) })
+    });
+    const modes = screen.getAllByRole('navigation', { name: 'Режим броска' });
+    expect(modes).toHaveLength(1);
+    expect(container.querySelector('main')?.contains(modes[0] as Node)).toBe(inside);
+  });
+
   it('lights «Бросок» and the supplements button with its name on a supplement', () => {
     for (const [hash, name] of [
       ['#/roll/voa', 'Vault of Ages'],

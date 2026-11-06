@@ -1,6 +1,7 @@
 <script lang="ts">
   /* The mode row of the nine roll sections: the Core rules, the alternate tables and
-     the supplements menu (docs/specs/FEATURES.md, "Chrome"). Its own controls, not
+     the supplements menu (docs/specs/FEATURES.md, "Chrome"); up to 760 px under the header,
+     from 761 px the pills of the roll page's head. Its own controls, not
      `Chip`: `Chip`'s button form is a pressed toggle, and the menu button is a menu
      button. The styles compose Chip's tokens. Each control carries `data-section`, the
      canonical key the route contract reads (`tests/app/contracts.js`). */
@@ -12,7 +13,8 @@
   import type { Section } from '../lib/types.js';
   import type { AppState } from '../state/app.svelte.js';
 
-  const { app }: { app: AppState } = $props();
+  /** `inhead`: the page head's pills from 761 px, not the row under the header. */
+  const { app, inhead = false }: { app: AppState; inhead?: boolean } = $props();
 
   const t = $derived(app.t);
   const mode = $derived(modeOf(app.section));
@@ -43,7 +45,7 @@
   }
 </script>
 
-<nav class="modes" aria-label={t.modesLabel}>
+<nav class="modes" class:inhead aria-label={t.modesLabel}>
   <div class="modes-in">
     {#each OWN as [s, key] (s)}
       <a
@@ -113,6 +115,18 @@
     width: var(--wrap);
     margin-inline: auto;
     padding: 10px 0;
+  }
+
+  /* In the page head the row is the pills' box (DESIGN.md, "The Head Order Rule"). */
+  .modes.inhead {
+    border-bottom: 0;
+  }
+
+  .inhead .modes-in {
+    width: auto;
+    margin: 0;
+    padding: 0;
+    flex-wrap: wrap;
   }
 
   .supwrap {

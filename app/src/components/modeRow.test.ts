@@ -48,17 +48,35 @@ describe('the mode row', () => {
     );
   });
 
-  /* Rule 4: the lit control reads the page's heading. The one departure is Arazo's
-     Artifacts, whose heading is the book's full title. */
+  /* Rule 4: the heading names the job, «Бросок»; the lit control reads the page's name,
+     as the tab title does. The one departure is Arazo's Artifacts, whose tab title is the
+     book's full title. */
   it.each(ROLL.filter((s) => s !== 'roll/arazo'))(
-    'reads the heading of %s on its lit control',
+    'reads the tab title of %s on its lit control under the heading «Бросок»',
     async (s) => {
       render(App, { env: fakeEnv({ router: memoryRouter(sectionHash(s)) }) });
       const h1 = await screen.findByRole('heading', { level: 1 });
+      expect(h1.textContent).toBe('Бросок');
       const nav = screen.getByRole('navigation', { name: 'Режим броска' });
-      expect(nav.querySelector('[aria-current="page"]')?.textContent).toBe(h1.textContent);
+      const lit = nav.querySelector('[aria-current="page"]')?.textContent ?? '';
+      expect(lit).not.toBe('');
+      expect(document.title.startsWith(`${lit} - `)).toBe(true);
     }
   );
+
+  it('draws the same three controls with no row of its own in the page head', async () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/roll/alt') }));
+    const view = render(ModeRow, { app, inhead: true });
+    const nav = screen.getByRole('navigation', { name: 'Режим броска' });
+    expect(nav).toHaveClass('inhead');
+    expect(
+      within(nav)
+        .getAllByRole('link')
+        .map((a) => a.textContent)
+    ).toEqual(['Обычные правила', 'Альтернативные таблицы']);
+    expect(button(nav).textContent).toBe('Дополнения');
+    await expectNoA11yViolations(view.container);
+  });
 
   it.each(['#/tables', '#/search', '#/lists', '#/i/ci1', '#/account'])(
     'draws no mode row on %s',

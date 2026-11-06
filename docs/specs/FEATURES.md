@@ -27,8 +27,10 @@ across.
   results line holds «Бросок N» / "Roll N", «Настроить» / "Set up" and «Ещё».
   «Настроить» opens the settings over the results: the manual entry and, on the
   two own modes, the source and type rows. «Ещё» holds «Скопировать все варианты»
-  (where the roll is a choice), the pin and the help. From 761 px the head holds
-  the `h1`, the labeled pin and help, and the lead; a 320 px pane holds the roll
+  (where the roll is a choice), the pin and the help. The `h1` reads «Бросок» /
+  "Roll" at every width. From 761 px the head holds the `h1`, the three mode pills,
+  the labeled pin and help (DESIGN.md, "The Head Order Rule"; from 761 to 999 px the
+  pills take the row under them), and the lead; a 320 px pane holds the roll
   controls and the settings, and the results line beside it holds «Бросок N» and
   the copy button. «Бросок N» reads the two faces on the alternate tables, the
   Hope die first; the line carries no instruction.
@@ -82,15 +84,16 @@ across.
   strip: below 761 px the picker row is at most 64 px tall; from 761 px the
   group chips and the tabs together are at most 140 px below 1000 px (the seven
   supplement tabs take two lines: 130 px at 768, 2026-10-30), 180 px from 1000 to
-  1139 px in Russian (the chips and the reserved tab row take two lines each:
-  about 173 px at 1050, and the rows start at about 330.5 px at 1050x720, past the
-  288 px first-screen limit) and 110 px from 1140 px (`tests/app/sweep.js`,
+  1139 px in Russian (the chips take two lines inside the head row up to about
+  1049 px; the rows start at 288 px at 1000x720, measured 2026-11-05, and 287.5 px at
+  1050x720, measured 2026-11-06) and 110 px from 1140 px (`tests/app/sweep.js`,
   at 500, 600, 700, 768, 1050 and the run widths, as gm2, the seventh group chip
   drawn). The reserved tab row holds the tabs of every group but the homebrew
   one: that group's source tabs hold the GM's own text, so `/tables/homebrew`
   alone may draw a taller row.
 - The nine roll sections share the header's roll job «Бросок» / "Roll" and draw
-  the mode row under the header ("Chrome";
+  the mode row under the header up to 760 px and the same controls as the page head's
+  pills from 761 px ("Chrome";
   `docs/decisions/2026-10-29-the-header-has-three-jobs-and-a-mode-row.md`). The
   seven supplement modes (Wondrous Environments to Many Worlds Tavern) are the
   items of its «Дополнения» / "Supplements" menu, in table order, each a link to
@@ -141,7 +144,9 @@ across.
   higher", and the same for Fear - where the live app named both fields the
   same string and all four steppers the same two strings, so a screen reader
   could not tell which die was being changed. A deliberate accessibility
-  improvement, not a drift.
+  improvement, not a drift. Each die's label starts with that die's mark, the page's
+  d12 in lines, amber for Hope and violet for Fear, with no letter; the word names the
+  die (owner, 2026-11-05).
 - A hidden status region on every roll mode names the rolled records
   (`role="status"`), so a re-roll is read out without moving focus off the
   controls. The results themselves are no live region: a menu opens inside them.
@@ -176,12 +181,15 @@ across.
   for its icon (the pin item's mark) and reads `aria-expanded="true"`, and the panel
   starts with «Закрыть», which folds it and returns the focus to «Ещё». The roll pages'
   help item and panel up to 760 px behave the same way. From
-  761 px the head is the `h1`, the labeled pin, «Об этих данных» and the two
-  navigation levels. The head draws the same rows on every table of a band: the
+  761 px the head is the `h1`, the group chips, the labeled pin and «Об этих данных»
+  (DESIGN.md, "The Head Order Rule"), and the tabs follow under the head. The head
+  draws the same rows on every table of a band: the
   title row, the group chips, the second-level tabs, the toolbar and the list start
-  at the same place (owner, 2026-11-04). From 1000 px the group chips sit beside the
-  title and wrap inside their own box, and the tabs take the next row; from 761 px
-  to 999 px both levels take their own rows under the title. The tab row keeps the
+  at the same place (owner, 2026-11-04). From 1000 px the group chips follow the `h1`
+  in the head row, before the pin and «Об этих данных», and wrap inside their own box;
+  from 761 px to 999 px they take the row under them; the tabs follow under the head.
+  From 761 to 999 px the rows start at 334 px in a 720 px window, a named exception of
+  the First-Screen Rule (DESIGN.md). The tab row keeps the
   height of the tallest group's tabs on every table, a table with no tabs included
   (`docs/decisions/2026-11-04-the-table-head-is-set-by-the-band-not-the-table.md`). The search row follows: the search first (placeholder
   «Поиск» / "Search", named by the long `searchPh`, at least 140 px at 360),
@@ -488,7 +496,8 @@ across.
 - The index's head is the page head with «Мои списки», no line under it and no help
   (Q8.1). From 761 px the pin, «Импорт из файла» (while the account lists are read)
   and the primary «Новый список» (plus icon) share its row, the primary at the
-  column's right edge. Up to 760 px the row holds the `h1`, the primary (`sm`, plus
+  column's right edge. The head follows DESIGN.md's Head Order Rule: no siblings, so the
+  pin follows the heading and the primary ends the row. Up to 760 px the row holds the `h1`, the primary (`sm`, plus
   icon, 44 px tall) and «Ещё» (at 320 px the primary and «Ещё» wrap under the `h1`
   together), which holds «Импорт из файла» (while the lists are
   read) and the pin (`PinItem`); no round pin draws. Signed out, the head draws no
@@ -1807,9 +1816,11 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   picker (named «Мои предметы: Предметы» / "My items: Items"), on the Items tab
   «Новый предмет» with no plus icon, and «Ещё» («Импорт из файла» and the pin).
   The picker opens a sheet with the four tabs, their counts and the limit
-  counter; a tab press closes it. From 761 px the head holds the heading, the
-  labeled pin, the tab links with their counts and, on the Items tab, «Новый
-  предмет» with the plus icon, then the lead line (search finds the items with
+  counter; a tab press closes it. From 761 px the head holds the heading, the four
+  tabs as pills with their counts («Предметы 44»), the labeled pin and, on the Items
+  tab, «Новый предмет» with the plus icon at the right end (from 761 to 999 px the
+  pills take the row under them; DESIGN.md, "The Head Order Rule"), then the lead line
+  (search finds the items with
   the catalog, they appear in the tables and go into lists). Signed out, while
   the items load and on a failed read the head draws the heading «Мои предметы»
   at every width, with no tabs, no import and no pin: up to 760 px the heading is
@@ -2949,15 +2960,16 @@ right, so the tab order and the reading order agree
   short page, after a navigation and while a menu, a sheet, a dialog, a text field
   or a drag owns the page; a keyboard focus inside it brings it back. A focused control and
   a linked target stop clear of its full height, so a Tab never lands under it.
-- The nine roll sections draw the mode row under the sticky header; it
-  scrolls with the page. It holds three controls: «Обычные правила» /
-  "Standard rules", «Альтернативные таблицы» / "Alternate tables" (the page
-  headings' words) and the menu button «Дополнения ▾» / "Supplements ▾", which
+- The nine roll sections draw the mode row under the sticky header up to 760 px; it
+  scrolls with the page. From 761 px the same three controls are the pills of the page
+  head, after the `h1` «Бросок» / "Roll" (DESIGN.md, "The Head Order Rule"). It holds
+  three controls: «Обычные правила» / "Standard rules", «Альтернативные таблицы» /
+  "Alternate tables" (the pages' names) and the menu button «Дополнения ▾» / "Supplements ▾", which
   on a supplement page shows that supplement's name. The lit control takes
   the current place's gold fill and `aria-current="page"`; each carries
   `data-section`, the section's canonical key. At 600 px and below the
   controls share the row, 40 px tall, and a long name takes two lines: the
-  row is 53 px at 360 and 1180 px in both languages (measured 2026-10-30).
+  row is 53 px at 360 px in both languages (measured 2026-10-30).
 - The supplements menu «Дополнения» / "Supplements" opens under its button
   with a muted caption and the seven supplements, 44 px items, the open one
   checked with `aria-current="page"`; it is 367 px tall. Its keys and its
@@ -3029,14 +3041,13 @@ Each rule keeps its number: a review cites it by number.
 - **4. One name**: the menu item, the page heading and the tab name a page
   the same way: `#/lists` is «Мои списки» / "My lists" in the menu, the heading,
   the tab title, the start-section option and the buttons to it; `/roll/alt` is
-  «Альтернативные таблицы» / "Alternate tables" in the lit mode chip, the heading,
-  the tab title and the start-section option.
-  The lit control of the mode row reads its page's heading. Departures: the job
-  «Бросок» / "Roll" names a group of nine roll pages and has no heading of its
-  own; the menu button «Дополнения» / "Supplements" names the seven supplement
-  pages as one group and shows the open supplement's name; and on Arazo's
-  Artifacts the button and the menu read «Arazo's Artifacts», the heading the
-  book's full title.
+  «Альтернативные таблицы» / "Alternate tables" in the lit mode pill, the tab title
+  and the start-section option. The lit pill reads its page's name. Departures: the
+  nine roll pages and `/tables/*` are headed by their job, «Бросок» / "Roll" and
+  «Таблицы» / "Tables", and the lit pill or tab names the page; the menu button
+  «Дополнения» / "Supplements" names the seven supplement pages as one group and
+  shows the open supplement's name; and on Arazo's Artifacts the button and the menu
+  read «Arazo's Artifacts», the tab title the book's full title.
 - **5. Toasts**: a create says «<Что> «%s» создан(а)» / "<What> "%s"
   created", an update «Сохранено: «%s»» / "Saved: "%s"", a delete «<Что>
   «%s» удалён(а)» / "<What> "%s" deleted"; a rename is silent. A bulk write

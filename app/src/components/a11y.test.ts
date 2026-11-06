@@ -567,7 +567,8 @@ const COVERED: Record<string, string> = {
     'homebrewEditor.test.ts in every kind, the problems and the banners; the failed save above',
   'HomebrewBulk.svelte':
     "homebrewBulk.test.ts: the bar's menu and the move sheet up to 760 px; homebrewPage.test.ts: the buttons from 761 px",
-  'HomebrewTabs.svelte': 'homebrewTabs.test.ts: the links, the picker and its sheet',
+  'HomebrewTabs.svelte':
+    'homebrewTabs.test.ts: the pills with counts, the picker and its sheet',
   'HomebrewImport.svelte':
     'homebrewImport.test.ts: the panel empty, a preview with every row note, a refused file, the update chosen',
   'HomebrewPage.svelte':
@@ -607,7 +608,8 @@ const COVERED: Record<string, string> = {
   'StdPanel.svelte': 'std.test.ts, and both pressed states below',
   'Button.svelte':
     'the roll button and the card actions, on every roll page; the second set disclosure in homebrewEditor.test.ts',
-  'Chip.svelte': 'the source and kind rows of std.test.ts and the rarity row of alt.test.ts',
+  'Chip.svelte':
+    'the source and kind rows of std.test.ts, the rarity row of alt.test.ts, and chip.test.ts with a count',
   'AltPanel.svelte': 'alt.test.ts, and the critical-success state below',
   'ImportPanel.svelte':
     'importPanel.test.ts empty, previewed, refused and with errors; the preview and error reports above',
@@ -625,7 +627,7 @@ const COVERED: Record<string, string> = {
   'Sheet.svelte':
     'sheet.test.ts open with its head and foot, and the filter and picker sheets in tables.test.ts',
   'TableNav.svelte':
-    'tableNav.test.ts in the three bands with the picker sheet open, and tables.test.ts',
+    'tableNav.test.ts: the picker sheet open, the groups and the tabs parts at mid and wide; tables.test.ts',
   'Field.svelte': 'the number field on every roll page, and the rows above it',
   'Icon.svelte': 'the card actions and the pin toggle',
   'KeepNote.svelte': 'the note under the print bar in printPage.test.ts',
@@ -641,7 +643,7 @@ const COVERED: Record<string, string> = {
   'NumberField.svelte': 'the number row on every roll page',
   'NumRow.svelte': 'the number row on every roll page, and the lists index above',
   'PageHead.svelte':
-    'the heading of every roll page, with both help states above; homebrewPage.test.ts pinned and open',
+    'pageHead.test.ts with the pills in the row and below it; the heading of every roll page, with both help states above; homebrewPage.test.ts pinned and open',
   'PickerRollPanel.svelte':
     'sections.test.ts: Vault of Ages, communities and the realms, and in English above',
   'PageTitle.svelte':
@@ -686,7 +688,8 @@ const COVERED: Record<string, string> = {
   'Marked.svelte': 'searchPage.test.ts and tables.test.ts, the marked rows and tiles',
   'Markup.svelte': 'markup.test.ts: every block, a lead, and markup characters as text',
   'Menu.svelte': 'accountMenu.test.ts and modeRow.test.ts with each menu open',
-  'ModeRow.svelte': 'modeRow.test.ts on the nine roll sections, the menu closed and open',
+  'ModeRow.svelte':
+    'modeRow.test.ts on the nine roll sections and in the page head, the menu closed and open',
   'MarkupInline.svelte': 'markup.test.ts inside every block, and the record card above',
   'MarkupField.svelte':
     'markupField.test.ts with the toolbar, with «Просмотр» pressed and read-only; homebrewEditor.test.ts and listPage.test.ts with the hint open',

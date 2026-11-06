@@ -36,12 +36,15 @@
     (
       | {
           href: string;
+          /** A count after the label, as the homebrew pills draw it. */
+          count?: number | undefined;
           onclick?: never;
           neutral?: never;
           filter?: never;
         }
       | {
           href?: never;
+          count?: never;
           onclick: () => void;
           /** The neutral pressed default (DESIGN.md, "Chips"): a check and a lit ground,
            *  never gold. A filter row's «Все» is its caller. */
@@ -57,11 +60,14 @@
     title,
     size = 'md',
     href,
+    count,
     onclick,
     value,
     neutral,
     filter
   }: Props = $props();
+  /* The space keeps the count apart in the accessible name («Предметы 44»). */
+  const named = $derived(count === undefined ? label : label + ' ');
 </script>
 
 {#if href}
@@ -72,7 +78,8 @@
     aria-current={on ? 'page' : undefined}
     data-val={value}
     {title}
-    {href}>{label}</a
+    {href}
+    >{named}{#if count !== undefined}<span class="n">{count}</span>{/if}</a
   >
 {:else}
   <button
@@ -119,6 +126,17 @@
     border-color: var(--gold);
     color: var(--ink-on-gold);
     font-weight: 650;
+  }
+
+  .chip .n {
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: var(--muted2);
+  }
+
+  /* Ink on Gold on the lit pill (DESIGN.md, "The Ink Rule"). */
+  .chip.on .n {
+    color: inherit;
   }
 
   /* A pressed chip draws the check (DESIGN.md "Components", "The Check Rule"); the check

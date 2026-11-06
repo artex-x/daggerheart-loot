@@ -111,7 +111,6 @@
 <RollPage
   {app}
   {index}
-  title={t.pageAlt}
   sub={t.subAlt}
   {help}
   {rolled}
@@ -161,10 +160,10 @@
     <Field label={t.rollResult}>
       <NumRow>
         <!-- Each die is labeled, because which one found a card is half of what the card
-             says. The letter and the word carry it, not the hue alone. -->
+             says. The die's own mark and its word name it; the hue alone does not. -->
         <div class="dieblock">
           <span class="dielbl"
-            ><span class="dv h" aria-hidden="true">{t.hopeLetter}</span>{t.hopeDie}</span
+            ><span class="dv h" aria-hidden="true"><Die faces={12} /></span>{t.hopeDie}</span
           >
           <NumberField
             value={roll.hope}
@@ -181,7 +180,7 @@
         </div>
         <div class="dieblock">
           <span class="dielbl"
-            ><span class="dv f" aria-hidden="true">{t.fearLetter}</span>{t.fearDie}</span
+            ><span class="dv f" aria-hidden="true"><Die faces={12} /></span>{t.fearDie}</span
           >
           <NumberField
             value={roll.fear}
@@ -310,17 +309,10 @@
     white-space: nowrap;
   }
 
+  /* The die's mark takes its die's color; it is not a button (DESIGN.md, "The Seal Rule"). */
   .dv {
     display: inline-flex;
-    align-items: center;
-    justify-content: center;
     flex: none;
-    width: 22px;
-    height: 22px;
-    border: 1px solid currentcolor;
-    border-radius: 50%;
-    font-size: var(--t-label);
-    font-weight: 700;
   }
 
   .dv.h {

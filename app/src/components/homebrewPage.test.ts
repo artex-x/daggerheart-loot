@@ -1616,6 +1616,39 @@ describe('the card form on a tab', () => {
   });
 });
 
+/* DESIGN.md, "The Head Order Rule": the heading, the pills, the pin, the primary last; from
+   761 to 999 px the pills after the primary. */
+describe('the head from 761 px', () => {
+  it.each([
+    ['wide', false],
+    ['mid', true]
+  ] as const)('draws the pills with counts in their place at %s', async (band, below) => {
+    const { container } = page('gm1', { env: { viewport: fakeViewport(band) } });
+    const nav = await screen.findByRole('navigation', { name: t.myItems });
+    const h1 = screen.getByRole('heading', { level: 1, name: t.myItems });
+    const pin = screen.getByRole('button', { name: t.homeHint });
+    const primary = screen.getByRole('link', { name: new RegExp(t.hbNewItem) });
+    const pills = within(nav).getAllByRole('link');
+    expect(pills.every((a) => a.classList.contains('chip'))).toBe(true);
+    expect(pills[0]).toHaveClass('on');
+    const order = below ? [h1, pin, primary, nav] : [h1, nav, pin, primary];
+    for (let i = 1; i < order.length; i++) {
+      expect(order[i - 1]?.compareDocumentPosition(order[i] as Node)).toBe(
+        Node.DOCUMENT_POSITION_FOLLOWING
+      );
+    }
+    expect(nav.closest('.headnav')?.classList.contains('below')).toBe(below);
+    expect(container.querySelector('.page-head')).toContainElement(primary);
+    await expectNoA11yViolations(container);
+  });
+
+  it('draws no primary in the head on another tab', async () => {
+    page('gm1', { route: '#/homebrew/sets' });
+    await screen.findByRole('navigation', { name: t.myItems });
+    expect(document.querySelector('.page-head .headnew')).toBeNull();
+  });
+});
+
 describe('the head up to 760 px', () => {
   const narrow = { env: { viewport: fakeViewport('narrow') } };
 

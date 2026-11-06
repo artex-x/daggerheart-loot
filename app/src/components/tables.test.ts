@@ -1333,7 +1333,9 @@ describe('the chip nav', () => {
     const nav = screen.getByRole('group', { name: 'Группа' });
     return [...nav.querySelectorAll('a')].map((a) => a.textContent);
   };
-  const bookRow = (): HTMLElement | null => document.querySelector('.tablenav .tabs');
+  /** The third level: the tabs under the head (DESIGN.md, "The Head Order Rule"). */
+  const bookRow = (): HTMLElement | null =>
+    document.querySelector('.page-below .tabslot > .tabs');
 
   it('draws six group chips signed out, the supplements under one', () => {
     render(App, {
@@ -1350,7 +1352,7 @@ describe('the chip nav', () => {
   });
 
   it.each(['many_worlds_tavern', 'core_item'])(
-    'holds the group and book chips of %s in one navigation landmark named by the tab',
+    'holds the group chips of %s in one navigation landmark, the book tabs after the help',
     async (table) => {
       const { container } = render(App, {
         env: fakeEnv({ router: memoryRouter(`#/tables/${table}`), data: fakeData(LOOT) })
@@ -1361,8 +1363,20 @@ describe('the chip nav', () => {
       expect(
         within(navs[0] as HTMLElement).getByRole('link', { name: 'Core' })
       ).toBeInTheDocument();
+      /* The head order: the heading, the chips, the pin, the help, then the tabs. */
+      const h1 = screen.getByRole('heading', { level: 1, name: 'Таблицы' });
+      const pin = screen.getByRole('button', { name: 'Открывать при запуске' });
+      const help = screen.getByRole('button', { name: 'Об этих данных' });
+      const order: Element[] = [h1, navs[0] as HTMLElement, pin, help];
       if (table === 'many_worlds_tavern') {
-        expect(navs[0]).toContainElement(bookRow());
+        const row = bookRow() as HTMLElement;
+        expect(navs[0]).not.toContainElement(row);
+        order.push(row);
+      }
+      for (let i = 1; i < order.length; i++) {
+        expect(order[i - 1]?.compareDocumentPosition(order[i] as Node)).toBe(
+          Node.DOCUMENT_POSITION_FOLLOWING
+        );
       }
       await expectNoA11yViolations(container);
       cleanup();

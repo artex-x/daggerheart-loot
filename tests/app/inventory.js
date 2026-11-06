@@ -754,6 +754,12 @@ const STATES = [
     width: 360,
     why: 'up to 760 px: the rarity select and the primary on one row, the results line, the 96 px cards'
   },
+  {
+    id: '#/roll/alt ~ mid band',
+    route: '#/roll/alt',
+    width: 768,
+    why: 'from 761 to 999 px: the head «Бросок», the pin and «Об этих таблицах», then the three mode pills on the row under them (DESIGN.md, "The Head Order Rule")'
+  },
 
   /* The roll pages up to 760 px: the settings behind «Настроить» and the rest of the page's
      controls in «Ещё»; the golden width draws the two panes. */
@@ -3284,13 +3290,20 @@ const STATES = [
     id: '#/homebrew as gm1',
     route: '#/homebrew',
     as: 'gm1',
-    why: 'the Items tab: the head with the pin, the tab links with their counts and «Новый предмет», then «4 предмета из 100», «Импорт из файла» and «Выбрать» (no search under eight items), the axe under «Мастерская Ольхи · Холодное оружие» and the other three under «Хоумбрю»'
+    why: 'the Items tab: the head with the tab pills with their counts, the pin and «Новый предмет», then «4 предмета из 100», «Импорт из файла» and «Выбрать» (no search under eight items), the axe under «Мастерская Ольхи · Холодное оружие» and the other three under «Хоумбрю»'
   },
   {
     id: '#/homebrew as gm3',
     route: '#/homebrew',
     as: 'gm3',
     why: "gm3's 39 items: the search box «Найти предмет», «39 предметов из 100», «Импорт из файла», «Выбрать», the filter column and the groups"
+  },
+  {
+    id: '#/homebrew ~ mid band as gm3',
+    route: '#/homebrew',
+    as: 'gm3',
+    width: 768,
+    why: 'from 761 to 999 px: the head «Мои предметы», the pin and «Новый предмет», then the four tab pills with their counts on the row under them (DESIGN.md, "The Head Order Rule")'
   },
   {
     id: '#/homebrew ~ search as gm3',

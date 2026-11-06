@@ -16,12 +16,12 @@ RootWebArea "Обычные правила - Генератор лута Daggerh
       link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
-  navigation "Режим броска"
-    link "Обычные правила" [url=/roll/std]
-    link "Альтернативные таблицы" [url=/roll/alt]
-    button "Дополнения" [expanded=false haspopup=menu]
   main ""
-    heading "Обычные правила" [level=1]
+    heading "Бросок" [level=1]
+    navigation "Режим броска"
+      link "Обычные правила" [url=/roll/std]
+      link "Альтернативные таблицы" [url=/roll/alt]
+      button "Дополнения" [expanded=false haspopup=menu]
     button "Открывается при запуске" [pressed=true]
     button "Где какая редкость" [expanded=false]
     StaticText "Бросок по таблицам корника и дополнения Hope & Fear."
@@ -113,12 +113,12 @@ RootWebArea "Standard rules - Daggerheart Loot Generator" [url=/en/roll/std]
       link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
-  navigation "Roll mode"
-    link "Standard rules" [url=/en/roll/std]
-    link "Alternate tables" [url=/en/roll/alt]
-    button "Supplements" [expanded=false haspopup=menu]
   main ""
-    heading "Standard rules" [level=1]
+    heading "Roll" [level=1]
+    navigation "Roll mode"
+      link "Standard rules" [url=/en/roll/std]
+      link "Alternate tables" [url=/en/roll/alt]
+      button "Supplements" [expanded=false haspopup=menu]
     button "Opens on start" [pressed=true]
     button "Where each rarity is" [expanded=false]
     StaticText "A roll over the core book and the Hope & Fear tables."

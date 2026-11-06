@@ -268,10 +268,11 @@ ordinary item.
 ### Tertiary
 
 - **Hope Amber** (`#e9b949`) and **Fear Violet** (`#8a72d6`): the two duality
-  dice. They color the badge and the focus glow of the die they belong to, on
-  the alternate tables only. This is the one place where a color other than
-  Seal Gold reaches a focus treatment, because the glow says which die the
-  person is changing.
+  dice. They color the badge, the die's mark before each die's label on the
+  alternate tables (the page's d12 in lines, no letter; the word names the die)
+  and the focus glow of the die they belong to, on the alternate tables only.
+  This is the one place where a color other than Seal Gold reaches a focus
+  treatment, because the glow says which die the person is changing.
 - **Alarm Red** (`#e0685f`): destructive actions and the error toast.
 - **Alarm Red Text** (`#f0a49d`, `--danger-text`): the same alarm as text on
   the dark ground - a destructive button's label, an error line, a failed save.
@@ -304,8 +305,9 @@ to one primary action per panel, to a choice that narrows the view, and to the
 current place. A pressed default (such as «Все» or a chip row with every chip on), a
 mode toggle and a selection are neutral: a check and a lit `--muted2` border, no gold, on a
 catalog row, a list row and a card of `/lists` alike. A notice that waits, the list
-card's «Новое в списке (N)», is a neutral chip: nobody chose it. A die
-is an action and plain: no gold, no check, no lit border. The unique tag is
+card's «Новое в списке (N)», is a neutral chip: nobody chose it. A die button
+is an action and plain: no gold, no check, no lit border. A die's mark in a label is
+not a button: it takes its die's color (Tertiary). The unique tag is
 neutral, the roll number is Chalk on a seam border, and footer links
 are Ash Violet and underlined. The site share cards spend gold on the star
 alone. Seal Gold Soft on a link in prose is text, outside the fill budget.
@@ -407,8 +409,8 @@ font request outside `/assets/`. The print card keeps its local stack
 
 One width governs everything: `--wrap: min(1440px, 100% - 32px)`. The header
 bar, the job row, the mode row, `main` and the footer all take it, so the brand,
-the first mode control and the first word of the page share a left edge at every
-viewport. The 32px
+the first mode control (up to 760px) and the first word of the page share a left edge
+at every viewport. The 32px
 subtraction is the gutter, and `viewport-fit=cover` plus `env(safe-area-inset-*)`
 keeps the selection bar clear of a display cutout. The column grows with the
 window from 1213px to 1472px, where it reaches 1440px, and stays 1440px and
@@ -423,7 +425,7 @@ at 320); a 280px window scrolls sideways.
 The page is a vertical stack: a sticky translucent header (`rgb(14 12 21 / 86%)`
 over a 14px backdrop blur) that holds the brand row and the three jobs (63px from
 761px, 111px at 360px; up to 760px it leaves on a scroll down and returns on a
-scroll up), the mode row on the nine roll pages (53px, scrolling with
+scroll up), the mode row on the nine roll pages up to 760px (53px, scrolling with
 the page), the content, then the footer. `main`
 carries 26px of top padding, 48px of bottom padding, and a 60vh minimum so a
 short route does not collapse. `scrollbar-gutter: stable` on `html` reserves the
@@ -455,7 +457,7 @@ control stops clear of it. At 600px every target takes the thumb size (The
 Phone-First Rule), row actions take their own line, and a roll card can be the tall face
 from 601px (The Roll Page Rule). The catalog adds one step, 1000px: from it the filter
 column sits beside the rows; from 761px it draws the wide head (the `h1`, the
-labeled pin, «Об этих данных», the group chips and the tabs) with the filters
+group chips, the labeled pin and «Об этих данных», then the tabs) with the filters
 in the bottom sheet; below 761px the picker row, the sheet and «··· Ещё»
 replace them. The list pages fold each row to the compact row up to 760px and draw the
 full row from 761px; from 1000px the owner's list page draws its 330px side column at the
@@ -469,8 +471,10 @@ one column below it, two from it, in the DOM order of the one column.
 
 **The Roll Page Rule.** The nine roll pages share one layout. Up to 760px: a read-only
 `h1`, the controls, one results line («Бросок N», «Настроить», «Ещё»); the pin, the
-help and the copy of every option are items of «Ещё». From 761px: the head with the
-labeled pin and help, a 320px control pane, the results. The roller has one gold
+help and the copy of every option are items of «Ещё». From 761px: the head (The Head
+Order Rule) with the `h1` «Бросок», the three mode pills and the labeled pin and help, a
+320px control pane, the results. The `h1` names the job at every width; the lit pill and
+the tab title name the mode. The roller has one gold
 primary at most, and a die is plain. A result is the tall face only while the roll
 sits on one line in a results column of at least 641px; otherwise the row face, so a
 four-result roll shows every name in the first screen at 1180x720.
@@ -495,17 +499,24 @@ the dialog, up where the room is only above, so from the dock. «В список
 gold primary; an open «Ещё» is not drawn pressed, because gold marks a choice. A label
 never gives way to an icon (The Same Label Rule).
 
-**A steady head.** A page whose content switches under a fixed head draws the head's
-geometry from the viewport band only, never from the content; a row that some contents
-lack keeps its reserved space, and late content (a picture, a count) reserves its box.
-`/tables/*` is the first user: from 1000px the group chips sit beside the title and the
-tabs take the next row; from 761px to 999px both levels take their own rows; the tab row
-keeps the height of the tallest group's tabs on every table. The homebrew group's source
-tabs are not reserved: they hold the GM's own text (up to 12 names of 80 characters) and
-would push the rows of every table. The trade-off: `/tables/homebrew` with many sources
-may draw a taller row than the other tables. From 1000px to 1139px in Russian the chips
-and the reserved tab row take two lines each, a head of about 173px (the rows start at
-330.5px at 1050x720).
+**The Head Order Rule.** A page head draws, in this order in the DOM and on the screen:
+the heading, the pills of the sibling pages where the page has siblings, the pin, the
+help, and the page's primary action at the right end. A page with no siblings has no
+pills slot, so its pin follows its heading. From 1000px the head is one row, and where the
+row is short the pills wrap inside their own box (the catalog's chips in Russian up to
+about 1049px); from 761px to 999px the pills take the next row, under the heading, the
+pin, the help and the primary, so the DOM order is the reading order in each band. A
+third level (a table group's books, the homebrew sources) is underlined tabs under the
+head. Up to 760px the heading is read, not drawn, and the mode row or the picker row
+names the page. The head's geometry follows the band only, never the content: the heading
+is constant, so a switch between siblings moves no pill, a row that some contents lack
+keeps its reserved space, late content (a picture, a count) reserves its box, and the
+catalog's tab row keeps the height of the tallest group's tabs on every table; the
+homebrew sources are not reserved, because they hold the GM's own text (up to 12 names of
+80 characters), so `/tables/homebrew` may draw a taller row. From 1000px to 1139px in
+Russian the chips and the reserved tab row take two lines each (the rows start at 288px
+at 1000x720 and 287.5px at 1050x720). The lit pill takes the gold fill of the current
+place and no check (The Check Rule). Owner, 2026-11-05.
 
 **The Hidden Header Rule.** Up to 760px the whole header leaves on a scroll down
 and returns on a scroll up, on every page, because a phone reader needs the rows
@@ -534,7 +545,10 @@ it while the owner was away); `/s/<token>` with a 120-character list
 name at 1180x720 starts at 312px, because from 761px the name takes three lines (measured
 2026-11-05); and an account list's page with its folded requests strip (a 6px inset up to
 760px) and its search row at 360x640 starts at 304px (measured 2026-11-05 while the owner was
-away; the owner's figure was 292px). A design aims at 240px and 270px, so a small face or
+away; the owner's figure was 292px). From 761px to 999px the rule is checked at 768x1024
+and 900x720 too, with one more exception: `/tables/*` in a 720px window starts at 334px,
+the reserved tab row of The Head Order Rule, held to 336px (measured 2026-11-05 and
+2026-11-06; taken while the owner was away). A design aims at 240px and 270px, so a small face or
 line-box difference does not fail the rule. The primary content is the first
 roll result on a roll page, the table on `/tables/*`, the item on `/i/` and
 `/h/`, the first result on `/search`, the first settings panel on `/account`,
@@ -676,15 +690,17 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
 - **Semantics:** a chip that navigates is an anchor carrying `aria-current`; a
   chip that toggles is a button carrying `aria-pressed`. Middle-click keeps
   working on the navigating kind.
-- **Mode row:** the roll pages' three mode controls take the chip's look; at
-  600px and below they share the row, 40px tall, and a long name takes two
-  lines.
+- **Sibling pills:** the roll modes, the catalog's groups and the four homebrew tabs
+  (with their counts, tabular, in `--muted2`) are link chips in the page head (The Head
+  Order Rule); the lit one takes the Seal Gold fill of the current place and draws no
+  check. Up to 600px the roll's three share the mode row, 40px tall, and a long name
+  takes two lines.
 - **Neutral pressed (`Chip neutral`):** the `check` icon before the label, the
   Vault Wall Lit fill, a Chalk label at weight 600 and a lit `--muted2`
   border, the icon and the label on one center. A filter row's «Все» is its
   caller; a picked value chip stays gold.
-- **Two-level navigation:** the catalog's group chips (links), then the book
-  or section of the group as underlined tabs: Ash Violet text, the current tab
+- **Two-level navigation:** the catalog's group chips in the head row, then the book
+  or section of the group as underlined tabs under the head: Ash Violet text, the current tab
   gold text on a 2px gold underline. Each level is a group named for
   assistive technology («Группа», the group's name, «Источник»).
 
@@ -778,8 +794,9 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
   the magnifier), at 14px weight 560 in Ash Violet with a 2px transparent bottom
   border. The lit job turns that border gold and the label Seal Gold Soft.
   «Бросок» stands for the nine roll pages and opens the last one of the tab.
-- **Mode row:** under the sticky header on the nine roll pages only, scrolling
-  with the page: «Обычные правила», «Альтернативные таблицы» and the menu button
+- **Mode row:** up to 760px, under the sticky header on the nine roll pages only,
+  scrolling with the page; from 761px the same three controls are the page head's pills
+  after «Бросок»: «Обычные правила», «Альтернативные таблицы» and the menu button
   «Дополнения ▾», which shows the open supplement's name. The controls compose
   the chip's tokens; the lit one takes the Seal Gold fill of the current place.
   The menu under the button lists the seven supplements, 44px items, the open
@@ -799,8 +816,8 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
   its menu is open.
 
 - **List head:** `/homebrew` draws the catalog's: up to 760px the picker row with
-  the `h1` read, not drawn; from 761px the head with the pin, the tabs and the
-  primary.
+  the `h1` read, not drawn; from 761px the head with the four tabs as pills with their
+  counts, the pin and the primary.
 
 ### Filter chips and the count line
 

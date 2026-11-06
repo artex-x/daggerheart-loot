@@ -1,14 +1,16 @@
 <script lang="ts">
-  /* The shell of the nine roll pages (DESIGN.md, "The Roll Page Rule"). Up to 760 px the `h1`
-     is read, not drawn; the controls sit under the mode row and one line holds «Бросок N»,
-     «Настроить» and «Ещё». From 761 px: the head, the control pane and the results. The DOM
-     differs by band: both at once would draw every field and id twice. */
+  /* The shell of the nine roll pages (DESIGN.md, "The Roll Page Rule"). The `h1` names the
+     job, «Бросок»; up to 760 px it is read, not drawn, the controls sit under the mode row
+     and one line holds «Бросок N», «Настроить» and «Ещё». From 761 px: the head with the mode
+     pills, the control pane and the results. The DOM differs by band: both at once would draw
+     every field and id twice. */
   import { tick, untrack } from 'svelte';
   import type { Snippet } from 'svelte';
   import Button from './Button.svelte';
   import HelpBox from './HelpBox.svelte';
   import HelpItem from './HelpItem.svelte';
   import Icon from './Icon.svelte';
+  import ModeRow from './ModeRow.svelte';
   import MoreMenu from './MoreMenu.svelte';
   import NoData from './NoData.svelte';
   import PageHead from './PageHead.svelte';
@@ -25,7 +27,6 @@
   interface Props {
     app: AppState;
     index: Index | null;
-    title: string;
     /** The line under the heading: drawn from 761 px, read below. */
     sub: string;
     help: Help | null;
@@ -51,7 +52,6 @@
   const {
     app,
     index,
-    title,
     sub,
     help,
     rolled,
@@ -96,11 +96,15 @@
   });
 </script>
 
+<!-- eslint-disable @typescript-eslint/no-confusing-void-expression -- a `{@render}` tag of a
+     local snippet reads as a void expression to this rule. -->
+{#snippet modes()}<ModeRow {app} inhead />{/snippet}
+
 {#if narrow}
-  <h1 class="vh">{title}</h1>
+  <h1 class="vh">{t.jobRoll}</h1>
   {#if sub}<p class="vh">{sub}</p>{/if}
 {:else}
-  <PageHead {app} {title} {sub} {help} />
+  <PageHead {app} title={t.jobRoll} {sub} {help} nav={modes} navBelow={app.band === 'mid'} />
 {/if}
 
 {#if empty}

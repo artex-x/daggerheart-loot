@@ -16,12 +16,12 @@ RootWebArea "Wondrous Environments - Генератор лута Daggerheart" [u
       link "Бросок" [url=/roll/wondrous_environments]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
-  navigation "Режим броска"
-    link "Обычные правила" [url=/roll/std]
-    link "Альтернативные таблицы" [url=/roll/alt]
-    button "Wondrous Environments" [expanded=false haspopup=menu]
   main ""
-    heading "Wondrous Environments" [level=1]
+    heading "Бросок" [level=1]
+    navigation "Режим броска"
+      link "Обычные правила" [url=/roll/std]
+      link "Альтернативные таблицы" [url=/roll/alt]
+      button "Wondrous Environments" [expanded=false haspopup=menu]
     button "Открывать при запуске" [pressed=false]
     button "Об этой таблице" [expanded=true]
     StaticText "Введите результат броска или получите случайную позицию."
@@ -92,12 +92,12 @@ RootWebArea "Wondrous Environments - Daggerheart Loot Generator" [url=/en/roll/w
       link "Roll" [url=/en/roll/wondrous_environments]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
-  navigation "Roll mode"
-    link "Standard rules" [url=/en/roll/std]
-    link "Alternate tables" [url=/en/roll/alt]
-    button "Wondrous Environments" [expanded=false haspopup=menu]
   main ""
-    heading "Wondrous Environments" [level=1]
+    heading "Roll" [level=1]
+    navigation "Roll mode"
+      link "Standard rules" [url=/en/roll/std]
+      link "Alternate tables" [url=/en/roll/alt]
+      button "Wondrous Environments" [expanded=false haspopup=menu]
     button "Open on start" [pressed=false]
     button "About this table" [expanded=true]
     StaticText "Enter your roll result, or pick a random entry."

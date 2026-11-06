@@ -485,19 +485,16 @@ async function landedUnderHeader(page, id) {
 }
 
 /** Returns the catalog head's measure at the current width: the picker row below 761 px,
- *  else the group chips and the tabs (docs/specs/FEATURES.md, "Tables and search").
- *  From 1000 px `.tablenav` is `display: contents` and has no box, so the read runs from
- *  the top of its chips to the bottom of its tab slot. */
+ *  else from the top of the group chips in the page head to the bottom of the tab slot
+ *  under it (DESIGN.md, "The Head Order Rule"; docs/specs/FEATURES.md, "Tables and search"). */
 function headHeight(page) {
   return page.evaluate(() => {
     const pick = document.querySelector('.pickrow');
     if (pick) return Math.round(pick.getBoundingClientRect().height);
-    const nav = document.querySelector('.tablenav');
-    if (!nav) return 0;
-    const box = nav.getBoundingClientRect();
-    if (box.height > 0) return Math.round(box.height);
-    const top = nav.querySelector(':scope > .groups')?.getBoundingClientRect().top;
-    const bottom = nav.querySelector(':scope > .tabslot')?.getBoundingClientRect().bottom;
+    const top = document.querySelector('.tablenav .groups')?.getBoundingClientRect().top;
+    const bottom = document
+      .querySelector('.page-below .tabslot')
+      ?.getBoundingClientRect().bottom;
     return top === undefined || bottom === undefined ? 0 : Math.round(bottom - top);
   });
 }
