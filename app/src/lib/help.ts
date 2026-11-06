@@ -219,7 +219,7 @@ const VOA: Record<Lang, Help> = {
       {
         lead: 'Recall Cost.',
         parts: [
-          ' Items in this book are often stronger than those in the core book, so most carry a Recall Cost. If balance matters at your table, have the player pay it in Stress and swap the item for one of the domain cards in their loadout - only then does it count as equipped. If balance does not matter, skip the rule.'
+          ' Items in this book are often stronger than those in Core, so most carry a Recall Cost. If balance matters at your table, have the player pay it in Stress and swap the item for one of the domain cards in their loadout - only then does it count as equipped. If balance does not matter, skip the rule.'
         ]
       },
       {

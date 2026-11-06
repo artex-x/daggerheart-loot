@@ -1247,7 +1247,7 @@ const en: Dict = {
   pageDv: "The Dragon's Vault",
   pageCommunity: 'Community items',
   pageStd: 'Standard rules',
-  subStd: 'A roll over the core book and the Hope & Fear tables.',
+  subStd: 'A roll over the Core and Hope & Fear tables.',
   common: 'Common',
   uncommon: 'Uncommon',
   rare: 'Rare',

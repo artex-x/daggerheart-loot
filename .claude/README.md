@@ -1832,13 +1832,13 @@ Facts settled during implementation (`persist-usage-monitoring`,
 
 ## Kept tooling exceptions
 
-Four repository lines skip a tool on purpose. Each is kept with its reason (task 57,
+Four exceptions skip a tool on purpose. Each is kept with its reason (task 57,
 2026-11-06); the design detector keeps none (DESIGN.md, "Notes").
 
 | Line | Where | Reason |
 |---|---|---|
-| `.impeccable/hook.cache.json`, `.impeccable/hook.pending.json` | `.gitignore` | The Impeccable hook writes them during a session. Prettier reads `.gitignore` but not `.git/info/exclude`, so without these tracked lines `format:check` fails in every session where the hook ran (owner, task 57 plan review) |
-| `.impeccable/config.local.json` | `.gitignore` | A local config with no tracked ignore is how a credential gets committed (owner, task 57 plan review) |
+| `.impeccable/hook.cache.json`, `.impeccable/hook.pending.json` | `.gitignore` | The Impeccable hook writes them during a session. Prettier reads `.gitignore` but not `.git/info/exclude`, so without these tracked lines `format:check` fails in every session where the hook ran (owner, 2026-10-29) |
+| `.impeccable/config.local.json` | `.gitignore` | A local config with no tracked ignore is how a credential gets committed (owner, 2026-10-29) |
 | `['.impeccable/', false]` in the `VITEST` rule | `tools/check/lib.mjs` | Vitest reads no `.impeccable/` file, as for `DESIGN.md`; the rule suppresses no check, it keeps the gate from selecting tests for a change there |
 | `issues/*/mocks/**` in `ignores` | `eslint.config.mjs` | A task's mock pages are scratch that its closeout deletes (owner, 2026-10-23) |
 

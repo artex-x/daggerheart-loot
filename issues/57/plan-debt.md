@@ -1,6 +1,6 @@
 # Plan debt - paying the kept defects after wave 3 (TASK 57)
 
-This file is the plan for the task that follows task 57. It lists the defects and cleanups that task 57 keeps on purpose, groups them, and gives the order. It is scratch of task 57: at closeout the user-visible defects move to `docs/specs/DEBT.md`, and this plan moves to the directory of the follow-up task.
+This file is the plan for the task that follows task 57. It lists the defects and cleanups that task 57 keeps on purpose, groups them, and gives the order. It is scratch of task 57: at closeout the user-visible defects move to `docs/specs/DEBT.md`, and this plan moves to the directory of the follow-up task, `issues/57-debt/` (task id `57-debt`, the name `DEBT.md` gives its sections).
 
 ## Status
 

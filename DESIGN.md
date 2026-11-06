@@ -1119,4 +1119,5 @@ Kept exceptions, each with its reason (checked 2026-11-06):
   "Header").
 - **Capitals:** every `text-transform: uppercase` outside the print card and the badge is a
   field caption, a column or section label, the ladder and relation labels or the brand line,
-  inside The Capitals Rule; no control is set in capitals.
+  inside The Capitals Rule; no control label is set in capitals. The account button's
+  initial (`Shell.svelte` `.ini`) is one letter in capitals, not a label.

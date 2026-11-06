@@ -129,7 +129,7 @@ RootWebArea "Standard rules - Daggerheart Loot Generator" [url=/en/roll/std]
       button "Supplements" [expanded=false haspopup=menu]
     button "Opens on start" [pressed=true]
     button "Where each rarity is" [expanded=true]
-    StaticText "A roll over the core book and the Hope & Fear tables."
+    StaticText "A roll over the Core and Hope & Fear tables."
     StaticText "Common"
     ... StaticText x22 of 26 same-shape siblings elided
     button "1d12 Common" [description=Roll 1d12 - Common]

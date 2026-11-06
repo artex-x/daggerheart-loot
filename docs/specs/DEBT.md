@@ -10,11 +10,12 @@ user-visible defect does not belong here. Why this file is the home:
 `docs/DECISIONS.md`, "Kept defects live in `docs/specs/DEBT.md`, grouped by
 the task that owes them".
 
-## Phone overlays and scroll (the follow-up task of task 57)
+## Phone overlays and scroll (task `57-debt`)
 
-All figures are at 360x640 unless stated. Task 57 measured each one and built no fix: the
-four share one cause family (a menu, a focus return or a toast that moves or covers the page
-under the hide-and-show header), and one batch with mobile probes fixes them together.
+All figures are at 360x640 unless stated. Task 57 measured each one and built no fix. D122
+to D124 share one cause family (a menu, a focus return or a toast that moves or covers the
+page under the hide-and-show header), and one batch with mobile probes fixes them together.
+D125 is a sideways overflow and D126 is a dialog layout; the same batch takes them.
 
 ### D122 - a focus on a header control moves the page up
 
@@ -55,16 +56,18 @@ under the hide-and-show header), and one batch with mobile probes fixes them tog
 - **How to verify the fix**: `tests/app/states.js` case 108 (f) asserts no overlap between the
   toast and an open menu at 360 px, RU and EN.
 
-### D125 - `/search` at 320x568 scrolls sideways after the kind sheet closes
+### D125 - the Russian header tabs are wider than the page at 320 px with a classic scrollbar
 
-- **Where**: `app/src/components/SearchPage.svelte`, `Shell.svelte` (the header's job links).
-- **What**: in Russian at 320x568, after a kind is picked in the sheet and the sheet closes,
-  `scrollWidth` is 313 against a `clientWidth` of 305; hiding one element at a time points at
-  the header's job links (measured in the batch 7 remediation, not probed again).
-- **Why deferred**: found by a probe outside its batch's routes; 320 px is the narrowest
-  width a page is built for, and no device class of the users is that narrow.
-- **How to verify the fix**: `tests/app/states.js` case 93 at 320x568 RU reads no sideways
-  scroll after the sheet closes, as it does before the sheet opens.
+- **Where**: `app/src/components/TabBar.svelte` (`nav.tabs`, the header's job links).
+- **What**: in Russian at a 320 px window the tab bar is 297.2 px wide and ends at 313.2 px,
+  while `scrollbar-gutter: stable` leaves the body 305 px. The bar reaches 8.2 px into the
+  gutter on every route, before and after the `/search` kind sheet; English ends at 289.
+  Where the scrollbar takes width (a desktop window with classic scrollbars), the page
+  scrolls 8 px sideways. A phone's overlay scrollbar takes no width (measured 2026-11-06).
+- **Why deferred**: only a desktop window narrowed to 320 px with classic scrollbars shows
+  it; a 320 px phone draws the bar inside the page.
+- **How to verify the fix**: at 320x568 RU on `#/search` and `#/roll/std`, the right edge
+  of `nav.tabs` is not past `document.body`'s right edge (305 px).
 
 ### D126 - the record dialog's dock is out of view on a short wide window
 
@@ -77,7 +80,7 @@ under the hide-and-show header), and one batch with mobile probes fixes them tog
 - **How to verify the fix**: a states case at 600x500 and 760x560 opens the dialog of a
   record with a picture: the dock's bottom is inside the viewport at scroll 0.
 
-## Visual leftovers (the follow-up task of task 57, mock first)
+## Visual leftovers (task `57-debt`, mock first)
 
 ### D127 - a wide table row with a short description stays half empty
 

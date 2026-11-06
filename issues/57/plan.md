@@ -23,7 +23,8 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
     cases 114-115, 30 acceptance lines, 157-197 min. Built 2026-11-06 (`handoff.md`, Completed); review pending.
   - Batch 10 (the docs lock and the cleanup the earlier batches left): an outline in section 7 with 21 acceptance
     lines; 95-125 min. Built 2026-11-06 (`handoff.md`, Completed: 10-1 to 10-19 and 10-21 have outcomes; 10-20 is
-    the orchestrator's); review pending.
+    the orchestrator's); reviewed (`reviews/10.md`, fix-then-continue) and its one fix pass built the same day. Next:
+    10-20, the orchestrator's. The follow-up task's id is `57-debt` (DEBT.md section names).
   - Defaults taken while the owner is away are listed in `handoff.md`, Status, and logged by the orchestrator in
     `C:\Users\Ignat\.dhloot\notes\owner-afk-2026-11-03\decisions.md` (items 20-23 are the batch planners', item 24 is
     this fold's).

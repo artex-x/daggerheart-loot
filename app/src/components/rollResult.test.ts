@@ -78,7 +78,6 @@ describe('the row of a result', () => {
   it('offers no print and no copy icons beside the name', () => {
     const { container } = render(App, { env: at() });
     expect(screen.queryByRole('button', { name: 'Печать' })).not.toBeInTheDocument();
-    expect(container.querySelector('.card-name-acts')).toBeNull();
     expect(container.querySelector('.card-acts')).toBeNull();
   });
 

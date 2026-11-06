@@ -683,15 +683,6 @@
     }
   }
 
-  /* `.card-name svg` in style.css, and it is not the icon's own size: this row
-     pins its icons to 14px whatever they arrive as. One pixel each way, which
-     made the name row a pixel taller and moved everything under it. */
-  .card-name :global(svg) {
-    width: 14px;
-    height: 14px;
-    fill: currentcolor;
-  }
-
   /* off `.eqstats` in style.css */
   .eqstats {
     display: flex;

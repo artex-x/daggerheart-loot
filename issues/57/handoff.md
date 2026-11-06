@@ -2,39 +2,31 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress. Waves 1, 2 and 2b are on `main`. Wave 3 has built 9a, 8, 9b, CI, TD, N, P (each with its one
-  fix pass) and now batch 10, the docs lock and the cleanup (previous sha `5147cd01`, the P fix pass, CI green and
-  credited). Batch 10 is committed and pushed on `claude/57` (sha in the implementer's report). CI of the new tip is the
-  full gate: not yet run.
-- Review: required (trigger: review.prompt.md changed; also changed UI and a `--only` golden re-seed of the roll copy).
-- Next: the batch 10 review and its one fix cycle, then 10-20 (the orchestrator's: the wave 3 squash, the blind reviews,
-  the closeout commit, the last squash).
+- Task status: in_progress. Waves 1, 2 and 2b are on `main`. Wave 3 has built 9a, 8, 9b, CI, TD, N, P and 10, each
+  with its one fix pass. The batch 10 fix pass (previous sha `ca730999`) is committed and pushed on `claude/57` (sha in
+  the implementer's report). CI of the new tip is the full gate: not yet run.
+- Review: `reviews/10.md`, fix-then-continue; every local finding has an outcome (the fix-pass table under Completed).
+  10-R2 (`.impeccable/design.json`) stays the orchestrator's, on the 10-20 checklist.
+- Next: CI of the new tip, then 10-20 (the orchestrator's: the wave 3 squash, the blind reviews, `design.json`, the
+  closeout commit, the last squash).
 - NEEDS_HUMAN_CONFIRMATION: no. The "For the owner" list is under Notes.
-- Defaults taken in batch 10 (owner AFK; the orchestrator logs them in the AFK decisions file):
-  1. 10-2: the screen radii outside the five-step scale were fixed, not documented (DESIGN.md "Don't add a sixth
-     radius"): 11px rows, tiles, the add row and the add-to-list menu take `--r` (14px, a plate, as `Menu`); 7px fields,
-     the list card thumbnails and the ladder steps take 8px; the skip link takes `--r-sm`; the crop frame 6px. A 1-3 px
-     corner change on those surfaces; no golden reads a radius.
-  2. 10-2: `#cfc8e0` (three components) became the token `--txt-soft` (Chalk Soft); the button's gold steps, the crop
-     grid and the print paints are frontmatter entries. Detector: 0 findings (61 before).
-  3. 10-11: «корника» becomes «Core» (the corpus convention, DESIGN.md "Don't translate a book name"; by the skill's rule
-     zero this is a corpus measure, not a site term) in the `/roll/std` lead, the two help passages and `README.ru.md`.
-     The `/roll/mwt` lead goes (`sub` optional in `PICKER_ROLL`); `/roll/voa`, `/roll/community` and `/roll/wondrous`
-     keep their instruction leads (not in the batch line; For the owner).
-  4. 10-11: the «ИЛИ» divider is neutral as a whole: `--line2` outline, `--muted` text, `--bg2` ground (the line named the
-     outline only; a gold word in a grey outline still spends gold on nothing chosen).
-  5. 10-16: the four monospace labels take `var(--ui)` (fixed, not named); the 15 uppercase components were read and each
-     is a caption or a label inside The Capitals Rule (named in DESIGN.md "Notes", no change).
-  6. 10-12: the cut is kept. Probe `scratchpad/pick2.cjs`: «Проклятые предметы» needs 31 px at 360 RU and 1 px at 390,
-     «Оплот Шершней» 3 px at 360 RU, EN none; the frame can give about 8 px, so the 31 px cut stays (DEBT.md D128).
-  7. 10-17: `/search`'s kind row joined `SWITCHES`; the 360 Whole Message step was not added (it doubles the page loop,
-     and the grips differ at 360): COVERAGE.md "Known thin spots".
-  8. 10-3: `.impeccable/design.json` is not regenerated: no documented script writes it; Impeccable `document` and
-     `audit` are the orchestrator's.
-- Last agent: implementer (batch 10). No subagent runs. No worker has uncommitted code edits.
+- Defaults taken in the batch 10 fix pass (owner AFK; the orchestrator logs them in the AFK decisions file; batch
+  10's defaults 1-8, all accepted by the review: `git show ca730999:issues/57/handoff.md`, Status):
+  1. 10-B1: D125 is kept and rewritten, not dropped: the probe names `nav.tabs` (RU, 8.2 px past the 305 px body at
+     320 px, on every route); the sideways scroll needs a classic scrollbar. For the owner item 10 asks whether that
+     window is supported.
+  2. 10-N6: the follow-up task's id is `57-debt` (DEBT.md section names, `plan-debt.md`).
+  3. 10-N10: EN `subStd` reads "A roll over the Core and Hope & Fear tables." and the EN Recall Cost help says "in
+     Core": one name in both languages. The `daggerheart-ru-terms` check: daggerheart.su prints the source of a Core
+     card as «Core» (`ru.daggerheart.su/domain-card/book-of-ava`), so «Core» stays in RU. The 13 `#/roll/std` goldens
+     were re-seeded by the tool (`--only`), one EN line each.
+  4. 10-N9: the decision file now cites DESIGN.md "The Head Order Rule" and says it replaced "A steady head"; no
+     "Amended by" line, because batch N wrote no decision file to name.
+  5. CI run 42218469286: cases 11 and 68 are not batch 10's (Verification); no code change, no limit changed.
+- Last agent: implementer (batch 10 fix pass). No subagent runs. No worker has uncommitted code edits.
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
-- Base / starting commit: `d8e30731`; previous sha of batch 10: `5147cd01`.
-- Pushed: `5147cd01` and the batch 10 commit.
+- Base / starting commit: `d8e30731`; previous sha of the batch 10 fix pass: `ca730999`.
+- Pushed: `34ae151c`, `ca730999` and the fix-pass commit.
 
 ## Completed
 One line per shipped batch. The full acceptance tables, deviations and measurements of batches 1 to 9a are in
@@ -393,33 +385,43 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
   | 10-19 Re-audit defects | None new: every finding is in 10-18 |
   | 10-20 Landing | Not this batch (the orchestrator's) |
   | 10-21 Gate cost | See Verification; one CI run and one review cycle still to come |
+- Review: `reviews/10.md`, fix-then-continue. Batch sha `34ae151c`. The one fix pass (previous sha `ca730999`):
+
+  | Finding | Outcome |
+  |---|---|
+  | CI run 42218469286, `app/states` 11 `#/tables/wondrous/w3` navigation timeout | Not batch 10's: passes alone at `34ae151c` (10.4 s) and at `5147cd01` (11.6 s); "nothing in flight" is the CI host's load. No change |
+  | CI run 42218469286, `app/states` 68 rows 507.5 ms over 500 | Not batch 10's: medians (a) 312.1 / 323.2 ms at `34ae151c`, 277.7 / 308.9 ms at `5147cd01`, single samples 270-481 ms on both; batch 10 touched only radii and copy on those rows. The limit stays 500 |
+  | 10-B1 | Fixed: D125 rewritten from `scratchpad/d125-probe2.cjs` and `d125-routes.cjs`: RU `nav.tabs` 297.2 px, right 313.2 against the 305 px body (`scrollbar-gutter: stable`) at 320 px on five routes, before and after the kind sheet; EN 289; 360 px clean. No batch id; the check reads the bar's edge against the body |
+  | 10-R1 | Fixed: the owner list under Notes (items 10-17 added) |
+  | 10-N1 | Fixed: `reviews.md` heading restored; CI-N1 to CI-N5 `fixed CI-fix` |
+  | 10-N2 | Fixed: `README.ru.md` «Core и Hope & Fear» |
+  | 10-N3 | Fixed: `orchestrate.prompt.md` "a second look at a plan: `plan-<batch>-<n>.md`" |
+  | 10-N4 | Fixed: FEATURES.md lost "compact card" in both sentences |
+  | 10-N5 | Fixed: `.card-name :global(svg)` and its comment gone; the `.card-name-acts` assertion gone; the review page comment reads "168 + 96 px" |
+  | 10-N6 | Fixed: the section intro names D122-D124 as the cause family and D125, D126 apart; sections name task `57-debt` |
+  | 10-N7 | Fixed: DESIGN.md "Notes" says "no control label" and names the `.ini` initial |
+  | 10-N8 | Fixed: "Four exceptions"; "(owner, 2026-10-29)" |
+  | 10-N9 | Fixed (default 4); N-N12 with it |
+  | 10-N10 | Fixed (default 3) |
+  | 10-N11 | Fixed: the `tokens.css` comment says "the markup preview", as DESIGN.md |
+  | 10-R2 | Left: the orchestrator's (10-20) |
 
 ## Verification
-- Batch 10, 2026-11-06 (previous sha `5147cd01`), each in the foreground or waited on, one heavy command at a time. The P
-  fix pass's block: `git show 5147cd01:issues/57/handoff.md`, "Verification".
-  - Detector `npx impeccable detect --json --no-inline-ignores app/src`: 61 findings before, `[]` after;
-    `git grep -n impeccable-disable -- app/src`: empty.
-  - `node --test tools/artwork/lib.test.mjs`: first run 1 FAIL ("pins the card head": the name actions left the head),
-    hash re-pinned after `review.mjs` was read (no name actions drawn); second run 77 pass.
-  - `node tests/derived.js`: everything matches ("American spelling", "Dashed means drop", "One measure").
-  - `npm run build:test`, then `MSYS_NO_PATHCONV=1 node tests/app/golden.js --update --only="#/roll/std"` (13 states,
-    one line each: the lead) and `--only="#/roll/mwt"` (7 states, the lead gone, the tool's elision line moved): 20 files,
-    re-seeded by the tool, none edited.
-  - `node tests/run-all.js app/typo`: `ok app/typo` 219.2 s (the new `/search` kind row entry included).
-  - `node tests/app/states.js --shard=79/105` (case 89): `all 1 runs passed`, 76.6 s. `--shard=73/105` (case 83): `all 1
-    runs passed`, 256.0 s; `/roll/std` 323 / 325 at 360 RU and EN, `/s/` 308 / 309.
-  - Probe `scratchpad/pick2.cjs` (case 89 audit, 360 and 390, RU and EN): the cuts under Status default 6.
-  - Sweep probe (`scratchpad/mkprobe.cjs`, `PROBE_RE="бросок d12|many worlds|карточка Кольцо|вторая сумка|альтернативные"`,
-    `targets` included): `clean` at 360 RU, 390 EN, 768 RU and 1180 EN.
-  - Vitest one file at a time, `VITEST_MAX_WORKERS=2`: `record` 113, `sections` 31, `rollResult` 16, `orGrid` 4, `std` 31,
-    `i18n` 73: all pass.
-  - `npm run lint:untyped`, `npm run lint:typed`: exit 0.
-  - `rtk npm run check:built`: pass; unconfigured bundle 269.5 kB within 270 (no raise).
+- Batch 10 fix pass, 2026-11-06 (previous sha `ca730999`), each in the foreground, one heavy command at a time. The
+  batch 10 block: `git show ca730999:issues/57/handoff.md`, "Verification".
+  - `npm run build:test`: exit 0 (before the probes, and again after the copy change).
+  - D125 probes (`scratchpad/d125-probe.cjs`, `d125-probe2.cjs`, `d125-routes.cjs`): figures under the fix-pass table.
+    A `::-webkit-scrollbar` style did not change `clientWidth` in headless (320), so the classic bar was read as the
+    body edge that `scrollbar-gutter: stable` leaves (305).
+  - `node tests/app/states.js --shard=8/105` (case 11): `all 1 runs passed` at `34ae151c` and at `5147cd01` (a detached
+    worktree in the scratchpad, `node_modules` joined, removed after). `--shard=58/105` (case 68): passed twice at each.
+  - `MSYS_NO_PATHCONV=1 node tests/app/golden.js --update --only="#/roll/std"`: 13 files, one EN line each, by the tool.
+  - Vitest one file at a time, `VITEST_MAX_WORKERS=2`: `rollResult` 16, `record` 113, `help` 14, `i18n` 73, components `std` 23, components `sections` 23: all pass. `node --test tools/artwork/lib.test.mjs` 77 pass. `node tests/run-all.js derived`: ok.
+  - `npm run lint:untyped`, `npm run lint:typed`: exit 0. `rtk npm run check:built`: pass; unconfigured bundle 269.5 kB within 270.
   - `VITEST_MAX_WORKERS=2 rtk npm run check:fast`: run last, after this file; the commit gate takes only its pass.
-  - Gate cost (10-21): about 75 min of local gates so far; one CI run and one review cycle remain.
 
 ## Next batch (implement-ready)
-- First: CI of the batch 10 tip, then the batch 10 review (required: review.prompt.md changed) and its one fix cycle.
+- First: CI of the batch 10 fix-pass tip.
 - Then: 10-20, the orchestrator's (plan.md section 16): the wave 3 squash, the wave 3 and whole-app blind reviews, the
   closeout commit that deletes `issues/57/` and moves `plan-debt.md` to the follow-up task, the last squash.
 
@@ -428,7 +430,7 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
 
 ## Deferred
 Batch 10 placed every row of the 2026-11-06 fold. The measured rows went to `docs/specs/DEBT.md` (the focus jump D122; the
-9a R2 probe, `LIST_A ~ more` and the `/p/` dock «Ещё» D123; the toast over «Ещё» D124; `/search` at 320x568 D125; the
+9a R2 probe, `LIST_A ~ more` and the `/p/` dock «Ещё» D123; the toast over «Ещё» D124; the RU header tabs at 320 px D125; the
 dialog art at 500-760 px D126; the stat columns D127; case 89 D128; TD-R1 and TD-R2 D129; P5 D130; the two RU compact
 print cards D131). The rows with no user-visible defect are under Notes, "For the owner". The earlier text of this
 section: `git show 5147cd01:issues/57/handoff.md`, "Deferred".
@@ -458,6 +460,22 @@ section: `git show 5147cd01:issues/57/handoff.md`, "Deferred".
      golden families re-seeded.
   8. P-N9: EN "Print" names two actions (`print`, `printNow`), RU keeps «Печать» / «Напечатать»; the RP-1 answer stands.
   9. The 2-R1 Impeccable `polish` and `harden` passes and `.impeccable/design.json` (`document`) are the orchestrator's.
+  10. D125: the RU header tabs pass the page by 8.2 px at 320 px, a sideways scroll only with classic scrollbars.
+      Recommended: keep the entry for `57-debt`; trade-off: a desktop window that narrow scrolls 8 px until then.
+  11. The four burden hands keep the export's paths with the masks as clip paths, a departure from "Export vectors;
+      do not redraw them" (0.000% of pixels differ from the exact bytes at 12x). Recommended: keep; trade-off: the
+      files are not the export's bytes.
+  12. The `/p/` background-graphics hint is gone (0% of pixels differ without background graphics). Recommended:
+      keep it gone.
+  13. D131: two RU compact color cards print their rules text at 3.4cqw (4.2 pt), under the 3.7cqw floor.
+      Recommended: accept until `57-debt`; trade-off: smaller text on two cards.
+  14. Bundle headroom: 269.5 of 270 kB unconfigured; the configured figure is measured on CI only, against 328. Recommended: let the next change raise the
+      budget by the rounding rule (ceilings 300 and 350); trade-off: one raise per bundle change.
+  15. 9b-N13: in the selection mode the row controls' fixed 146 px inset does not follow the tick column.
+      Recommended: fix it in the `57-debt` visual batch with a mock; trade-off: a few px of misalignment until then.
+  16. N-R1: thin first-screen margins (`#/homebrew as gm3` 286.2 of 288 at 900x720, `/tables/*` 333.6 of 336).
+      Recommended: keep; case 83 fails first on any head growth, which is the guard.
+  17. N-N12: fixed in the batch 10 fix pass (the decision file cites "The Head Order Rule"); no action.
 - Mocks path: `issues/57/mocks/<N>/`; built shots in `mocks/<N>/built/` (`shoot.js` per batch).
 - Impeccable `polish` and `harden`: the orchestrator runs them per batch (a subagent cannot); batch 8's outcome is in
   `reviews/8.md`, "polish and harden outcome". Earlier outcomes are in the pre-collapse handoff.

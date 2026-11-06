@@ -1586,7 +1586,7 @@ address kept, and no add-to-list control is drawn.
   it is sectioned by a value the record itself carries, or, for Vault of
   Ages, by the book's own tiers; extending the rule to every table was
   rejected.
-- The `.badge src` chip on a compact card, a table row, a Search result, a list
+- The `.badge src` chip on a table row, a Search result, a list
   row, or a modal card is a tag, not a path: one leaf naming the book, the
   community, or the setting - never a breadcrumb. It carries no path segment
   because every place it is drawn already shows the surrounding context (a
@@ -1681,7 +1681,7 @@ address kept, and no add-to-list control is drawn.
   text-copied message.
 - Consumables get a "(consumable)" suffix outside the app, where the badge is
   not visible.
-- A compact card's and a roll card face's art zooms slightly on hover, guarded by `@media
+- A roll card face's art zooms slightly on hover, guarded by `@media
   (hover:hover)` so no touch device triggers it on tap; a full-page record's
   art never zooms.
 - Upgrade chains render both directions; the reverse is computed at load.
