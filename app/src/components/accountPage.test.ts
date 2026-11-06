@@ -560,8 +560,8 @@ describe('the Display section', () => {
       expect(pressed(d, 'Вид таблиц по умолчанию')).toBe('Сетка');
     });
     expect(pressed(d, 'Язык')).toBe('RU');
-    expect(pressed(d, 'Печать по умолчанию')).toBe('Чёрно-белая');
-    expect(pressed(d, 'Размер карты')).toBe('Компактная');
+    expect(pressed(d, 'Печать по умолчанию')).toBe('Ч/б');
+    expect(pressed(d, 'Размер карты')).toBe('44×63');
     for (const g of [
       'Язык',
       'Вид таблиц по умолчанию',
@@ -589,8 +589,8 @@ describe('the Display section', () => {
     await userEvent.selectOptions(select, 'Поиск');
     expect(storage.get(HOME_KEY)).toBe('#/search');
     await userEvent.click(d.getByRole('button', { name: 'Список' }));
-    await userEvent.click(d.getByRole('button', { name: 'Цветная' }));
-    await userEvent.click(d.getByRole('button', { name: 'Обычная' }));
+    await userEvent.click(d.getByRole('button', { name: 'Цвет' }));
+    await userEvent.click(d.getByRole('button', { name: '63×88' }));
     expect(storage.get(PREFS_KEY)).toBe('{"view":"list","printBw":false,"printCompact":false}');
     await userEvent.selectOptions(notify, 'always');
     expect(notify.value).toBe('always');
@@ -632,18 +632,21 @@ describe('the Display section', () => {
   });
 
   it("drops a page's print pick when the default is set here", async () => {
+    /* A switch differs from its default for this visit. */
+    const changed = (a: AppState): boolean =>
+      a.shownPrintBW !== a.printBW || a.shownPrintCompact !== a.printCompact;
     const app = new AppState(
       fakeEnv({ cloud: as('gm2'), router: memoryRouter('#/account'), storage: memoryStorage() })
     );
     app.start();
     app.showPrintBW(true);
-    expect(app.printChanged).toBe(true);
+    expect(changed(app)).toBe(true);
     render(AccountPage, { app });
     const d = await section();
-    await userEvent.click(d.getByRole('button', { name: 'Чёрно-белая' }));
-    await userEvent.click(d.getByRole('button', { name: 'Цветная' }));
+    await userEvent.click(d.getByRole('button', { name: 'Ч/б' }));
+    await userEvent.click(d.getByRole('button', { name: 'Цвет' }));
     expect(app.shownPrintBW).toBe(false);
-    expect(app.printChanged).toBe(false);
+    expect(changed(app)).toBe(false);
     app.stop();
   });
 

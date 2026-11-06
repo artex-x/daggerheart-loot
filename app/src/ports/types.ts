@@ -255,6 +255,13 @@ export interface MotionPort {
   reduced(): boolean;
 }
 
+export interface FontsPort {
+  /** Resolves once the document's fonts have settled: true when a face was loading at the
+   *  call (a layout fitted before it may be wrong), false when none was. A failed load
+   *  settles too. */
+  settled(): Promise<boolean>;
+}
+
 /** The layout band: `narrow` up to 760 px, `mid` 761-999 px, `wide` from 1000 px. */
 export type Band = 'narrow' | 'mid' | 'wide';
 
@@ -734,6 +741,7 @@ export interface Env {
   dialog: DialogPort;
   pwa: PwaPort;
   motion: MotionPort;
+  fonts: FontsPort;
   viewport: ViewportPort;
   scroll: ScrollPort;
   page: PagePort;

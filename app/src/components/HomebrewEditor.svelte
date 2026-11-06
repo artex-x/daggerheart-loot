@@ -21,7 +21,7 @@
   import ErrorPage from './ErrorPage.svelte';
   import FormField from './FormField.svelte';
   import HomebrewRelations from './HomebrewRelations.svelte';
-  import Icon from './Icon.svelte';
+  import Crumb from './Crumb.svelte';
   import LoadState from './LoadState.svelte';
   import MarkupField from './MarkupField.svelte';
   import MoreMenu from './MoreMenu.svelte';
@@ -920,6 +920,7 @@
         lang={editIn}
         bw={app.shownPrintBW}
         compact={app.shownPrintCompact}
+        fonts={app.env.fonts}
         artBroken={previewBroken}
         onartfail={() => {
           previewBroken = true;
@@ -965,10 +966,7 @@
     {/snippet}
   </ErrorPage>
 {:else}
-  <div class="crumb">
-    <a class="back" href={app.href(HOMEBREW_HASH)}><Icon name="back" />{t.myItems}</a>
-    <h1 class="ttl" {title}>{title}</h1>
-  </div>
+  <Crumb href={app.href(HOMEBREW_HASH)} label={t.myItems} {title} />
   <p class="esub">{sub}</p>
   <div class="hbedit">
     <Panel>
@@ -1506,60 +1504,6 @@
 {/if}
 
 <style>
-  /* The way back and the item's name on one row (`.page-h`, `.page-sub`). */
-  .crumb {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-    min-width: 0;
-    margin-bottom: 4px;
-  }
-
-  .back {
-    display: inline-flex;
-    align-items: center;
-    flex: none;
-    gap: 4px;
-    min-height: 24px;
-    color: var(--muted);
-    font-size: var(--t-small);
-    text-decoration: none;
-  }
-
-  .back:hover {
-    color: var(--txt);
-  }
-
-  @media screen and (max-width: 600px) {
-    .back {
-      min-height: var(--thumb);
-      margin-block: min(0px, calc((24px - var(--thumb)) / 2));
-    }
-  }
-
-  .ttl {
-    min-width: 0;
-    margin: 0;
-    overflow: hidden;
-    font-size: var(--t-page);
-    font-weight: var(--h-page-weight);
-    letter-spacing: var(--h-page-spacing);
-    line-height: 1.25;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-
-  @media (min-width: 761px) {
-    .ttl {
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 3;
-      line-clamp: 3;
-      overflow-wrap: anywhere;
-      white-space: normal;
-    }
-  }
-
   .esub {
     margin: 0 0 12px;
     color: var(--muted);

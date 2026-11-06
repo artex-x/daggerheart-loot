@@ -24,6 +24,10 @@
   import type { Equip, Lang, Record_ } from '../lib/types.js';
 
   const GROW_CAP = 5;
+  /* The rules text's first size and its last rung, per sheet (FEATURES.md, "Print"): 7.1 pt
+     and 5.7 pt at the base; the compact floor is 4.5 pt on its 43.2 mm content box. */
+  const BASE = { std: 4.0, compact: 4.6 } as const;
+  const FLOOR = { std: 2.6, compact: 3.7 } as const;
 
   interface Props {
     it: Record_;
@@ -53,6 +57,11 @@
      *  px). `fit()` divides it out of the rendered sizes it reads, so the fit is the one
      *  a full-size sheet gets. */
     screenScale?: number;
+    /** The compact sheet's card: its rules text starts and stops at its own sizes. */
+    compact?: boolean;
+    /** Bumped by the page once the face has loaded after the first fit (`FontsPort`): the
+     *  card fits again in the face it prints in. */
+    refit?: number;
   }
 
   const {
@@ -65,7 +74,9 @@
     setLine,
     onfit,
     scale = 1,
-    screenScale = 1
+    screenScale = 1,
+    compact = false,
+    refit = 0
   }: Props = $props();
 
   const t = $derived(dict(lang));
@@ -131,11 +142,13 @@
   let card = $state<HTMLElement | undefined>(undefined);
 
   /**
-   * `fitPrintCards`'s loop body for one card. The rules-text ladder is ported
-   * verbatim: the same constants, the same `-= 0.1` / `-= 1.5` steps, the
-   * same `toFixed(1)` and the same exits. One rung of it is new, not ported:
-   * before the shrink ladder, a black-and-white card's rules text grows in
-   * 0.1cqw steps while it fits, capped at `GROW_CAP`.
+   * `fitPrintCards`'s loop body for one card. The rules-text ladder keeps the
+   * ported steps (`-= 0.1` / `-= 1.5`, `toFixed(1)`, the same exits) from its own
+   * base per sheet (`BASE`) down to its floor (`FLOOR`; the compact card stops at
+   * 3.7cqw, 4.5 pt). Before the shrink ladder, a black-and-white card's rules text
+   * grows in 0.1cqw steps while it fits, capped at `GROW_CAP`. A color card whose
+   * picture gives way moves its text up to just under its lowest mark and fits it
+   * again from the base.
    *
    * The strip is fitted first, because the rules text measures the space it
    * leaves (FEATURES.md, "Print"). Each value first tries one line: it
@@ -157,7 +170,8 @@
    * and `.pc-art` is absolutely positioned, so its own last value cannot move
    * what the next pass reads. Runs synchronously after the DOM this effect
    * reads - never awaits fonts or images, exactly as the live call inside
-   * `render()` does not either.
+   * `render()` does not either. It runs again when `refit` changes, after the face
+   * has loaded (`FontsPort`).
    *
    * This loop is linear in card count, not quadratic, only because
    * `container-type: size` on `.pcard` (below) implies `contain: layout
@@ -270,7 +284,9 @@
     if (box) box.style.removeProperty('--pcpad');
     const tight = (): boolean => text.scrollHeight > text.clientHeight + 1;
 
-    let pct = 3.5;
+    const base = compact ? BASE.compact : BASE.std;
+    const floor = compact ? FLOOR.compact : FLOOR.std;
+    let pct = base;
     /* Black and white only: the picture's space is blank paper there, so short
        text grows until it would spill, under the name's 5.8cqw. Color never
        grows: the picture owns that space - FEATURES.md, "Print" (issue 61). */
@@ -284,7 +300,7 @@
         text.style.fontSize = pct.toFixed(1) + 'cqw';
       }
     }
-    while (tight() && pct > 3) {
+    while (tight() && pct > Math.max(3, floor) + 0.05) {
       pct -= 0.1;
       text.style.fontSize = pct.toFixed(1) + 'cqw';
     }
@@ -293,7 +309,7 @@
       pad -= 1.5;
       if (box) box.style.setProperty('--pcpad', `${String(pad)}cqw`);
     }
-    while (tight() && pct > 2.6) {
+    while (tight() && pct > floor + 0.05) {
       pct -= 0.1;
       text.style.fontSize = pct.toFixed(1) + 'cqw';
     }
@@ -304,13 +320,41 @@
       art.style.height = `${String(Math.max(0, line - top + 6))}cqw`;
       const band = Math.min(100, line - top - 1);
       art.style.setProperty('--artw', `${String(band)}cqw`);
-      art.style.display = line - top < 24 ? 'none' : '';
+      const gone = line - top < 24;
+      art.style.display = gone ? 'none' : '';
+      /* The picture gave way: no blank band above the text, but the tags and the name
+         stay clear of the marks drawn over the art (FEATURES.md, "Print"). */
+      if (gone) {
+        const cardTop = px(el.getBoundingClientRect().top);
+        let clear = 0;
+        for (const m of el.querySelectorAll<HTMLElement>(
+          '.pc-tier, .pc-tier > *, .pc-burden, .pc-burden > *, .pc-shield, .pc-shield > *'
+        )) {
+          clear = Math.max(clear, cq(px(m.getBoundingClientRect().bottom) - cardTop) + 1.2);
+        }
+        let lift = Math.max(5.8, Math.ceil(clear * 10) / 10);
+        box.style.setProperty('--pcpad', `${lift.toFixed(1)}cqw`);
+        pct = base;
+        text.style.fontSize = '';
+        while (tight() && pct > floor + 0.05) {
+          pct -= 0.1;
+          text.style.fontSize = pct.toFixed(1) + 'cqw';
+        }
+        /* Text still cut at its floor under a tall mark (a burden mark and its label reach
+           about 23cqw) takes the mark's band back step by step: a cut text costs more. */
+        while (tight() && lift > 5.8) {
+          lift = Math.max(5.8, lift - 1.5);
+          box.style.setProperty('--pcpad', `${lift.toFixed(1)}cqw`);
+        }
+      }
     }
     report();
   }
 
   $effect(() => {
     void lang;
+    void compact;
+    void refit;
     void bw;
     void it;
     void qty;
@@ -352,7 +396,7 @@
         src={cardArt(burden === 2 ? 'burden-2' : 'burden-1', bw)}
         alt=""
         width="62"
-        height="36"
+        height="37"
       /></span
     >
   {/if}
@@ -417,7 +461,7 @@
 <!-- Whitespace below is content, covering the whole card - see
      docs/specs/COVERAGE.md, "Whitespace text nodes are content". -->
 <!-- prettier-ignore -->
-<article class="pcard {pkClass}" class:bw data-pid={it.id} style:--pc-scale={scale === 1 ? undefined : scale} bind:this={card}
+<article class="pcard {pkClass}" class:bw class:compact data-pid={it.id} style:--pc-scale={scale === 1 ? undefined : scale} bind:this={card}
   >{#if !bw}<div class="pc-art" class:none={!artUrl}
       >{#if artUrl}<img
           class="pc-back"
@@ -451,7 +495,7 @@
         ></table>{:else}{#if i > 0 && blocks[i - 1]?.b.t === 'p'}<br
           />{/if}{#if lead?.members}<b class="pc-set"><i>{lead.name}</i></b><i>{lead.members}:</i
             >{:else if lead}<b class="pc-set"><i>{lead.name}:</i></b>{/if}<MarkupInline c={b.c} />{/if}{/each}</div
-    ><div class="pc-bottom"><span class="pc-game">Daggerheart</span><span class="pc-src">{src}</span></div></div
+    ><div class="pc-bottom"><span class="pc-src">{src}</span></div></div
   ></article
 >
 
@@ -474,7 +518,7 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
-    font-family: var(--print-ui);
+    font-family: var(--ui);
     /* The paper floor for small text (docs/DECISIONS.md, "Print card small
        text keeps the ribbon and gets one paper floor in every view"). */
     --pc-min-label: calc(4.5pt * var(--pc-scale, 1));
@@ -551,7 +595,7 @@
     left: 0;
     top: 2.6cqw;
     width: 100%;
-    font: 900 6.4cqw/1 var(--print-ui);
+    font: 900 6.4cqw/1 var(--ui);
   }
 
   .pc-tier i {
@@ -559,7 +603,7 @@
     left: 0;
     top: 9.6cqw;
     width: 100%;
-    font: 500 max(2.6cqw, calc(4pt * var(--pc-scale, 1))) / 1 var(--print-ui);
+    font: 500 max(2.6cqw, var(--pc-min-label)) / 1 var(--ui);
     font-style: normal;
     letter-spacing: 0;
     text-transform: uppercase;
@@ -586,7 +630,7 @@
     top: 100%;
     margin-top: 0.3cqw;
     text-align: center;
-    font: 500 max(2.4cqw, var(--pc-min-label)) / 1 var(--print-ui);
+    font: 500 max(2.4cqw, var(--pc-min-label)) / 1 var(--ui);
     letter-spacing: 0.02em;
     text-transform: uppercase;
     color: #fff;
@@ -624,7 +668,7 @@
     padding: 0.6cqw 2.3cqw;
     border-radius: 9cqw;
     white-space: nowrap;
-    font: 500 max(2.9cqw, var(--pc-min-label)) / 1.2 var(--print-ui);
+    font: 500 max(2.9cqw, var(--pc-min-label)) / 1.2 var(--ui);
     letter-spacing: 0.04em;
     text-transform: uppercase;
     color: #000;
@@ -642,7 +686,7 @@
 
   .pc-name {
     margin: 0;
-    font: 900 5.8cqw/1.1 var(--print-ui);
+    font: 900 5.8cqw/1.1 var(--ui);
     text-transform: uppercase;
     letter-spacing: -0.01em;
   }
@@ -655,6 +699,8 @@
      and a value fit between the ribbon's ornament lines. */
   .pc-strip {
     position: relative;
+    /* The rules text gives way in a full content box, never the strip's band. */
+    flex-shrink: 0;
     height: max(14cqw, calc(20pt * var(--pc-scale, 1)));
     margin: 1.2cqw 0 0.6cqw;
   }
@@ -679,6 +725,7 @@
 
   .pc-thstrip {
     position: relative;
+    flex-shrink: 0;
     height: max(10.4cqw, calc(18.5pt * var(--pc-scale, 1)));
     margin: 1.6cqw 0 0.8cqw;
     border: 0.28cqw solid #75788a;
@@ -715,7 +762,7 @@
 
   .pc-th-lab small {
     display: block;
-    font: 500 max(1.9cqw, var(--pc-min-label)) / 1.1 var(--print-ui);
+    font: 500 max(1.9cqw, var(--pc-min-label)) / 1.1 var(--ui);
     letter-spacing: -0.01em;
     text-transform: uppercase;
     color: #000;
@@ -785,7 +832,7 @@
   .pc-th-box b {
     position: relative;
     z-index: 2;
-    font: 700 max(3.4cqw, var(--pc-min-value)) / 1 var(--print-ui);
+    font: 700 max(3.4cqw, var(--pc-min-value)) / 1 var(--ui);
     color: #fff;
   }
 
@@ -820,7 +867,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font: 700 max(4cqw, var(--pc-min-value)) / 1 var(--print-ui);
+    font: 700 max(4cqw, var(--pc-min-value)) / 1 var(--ui);
     color: #fff;
   }
 
@@ -829,7 +876,7 @@
     left: -2cqw;
     right: -2cqw;
     top: 109%;
-    font: 500 max(2.2cqw, var(--pc-min-label)) / 1 var(--print-ui);
+    font: 500 max(2.2cqw, var(--pc-min-label)) / 1 var(--ui);
     font-style: normal;
     letter-spacing: 0.02em;
     text-transform: uppercase;
@@ -887,7 +934,7 @@
 
   .bw .pc-tier i {
     top: 6.6cqw;
-    font-size: max(2cqw, calc(4pt * var(--pc-scale, 1)));
+    font-size: max(2cqw, var(--pc-min-label));
   }
 
   .bw .pc-shield {
@@ -1024,7 +1071,7 @@
   .pc-die b {
     position: relative;
     z-index: 2;
-    font: 700 max(3.6cqw, var(--pc-min-value)) / 1 var(--print-ui);
+    font: 700 max(3.6cqw, var(--pc-min-value)) / 1 var(--ui);
     color: #000;
   }
 
@@ -1080,7 +1127,7 @@
 
   .pc-bonus {
     flex: none;
-    font: 700 max(3.2cqw, var(--pc-min-value)) / 1 var(--print-ui);
+    font: 700 max(3.2cqw, var(--pc-min-value)) / 1 var(--ui);
     color: #000;
   }
 
@@ -1097,7 +1144,7 @@
   .pc-box small {
     display: block;
     margin-bottom: 0.25em;
-    font: 500 max(2.2cqw, var(--pc-min-label)) / 1.05 var(--print-ui);
+    font: 500 max(2.2cqw, var(--pc-min-label)) / 1.05 var(--ui);
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: #000;
@@ -1112,7 +1159,7 @@
      keeps one line or wraps to two, and `fit()` shrinks it. */
   .pc-box b {
     display: block;
-    font: 600 max(3cqw, var(--pc-min-value)) / 1 var(--print-ui);
+    font: 600 max(3cqw, var(--pc-min-value)) / 1 var(--ui);
     text-transform: none;
     color: #000;
   }
@@ -1127,8 +1174,12 @@
     flex: 1 1 auto;
     min-height: 0;
     overflow: hidden;
-    font-size: 3.5cqw;
+    font-size: 4cqw;
     line-height: 1.25;
+  }
+
+  .pcard.compact .pc-text {
+    font-size: 4.6cqw;
   }
 
   .pc-text p {
@@ -1146,6 +1197,15 @@
      and no global `.dlist` rule exists in `app/`. */
   .pc-text li {
     margin: 1px 0;
+  }
+
+  /* A dash, not the default disc, which prints as a speck at this size. */
+  .pc-text ul {
+    list-style-type: '\2013  ';
+  }
+
+  .pc-text li::marker {
+    color: #000;
   }
 
   /* Global: MarkupInline draws the text's `<i>` and `<b>`. */
@@ -1177,21 +1237,17 @@
   .pc-bottom {
     margin-top: auto;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     gap: 2cqw;
     padding-top: 1.4cqw;
-    font: italic 400 max(2.9cqw, var(--pc-min-label)) / 1.4 var(--print-ui);
+    font: italic 400 max(2.9cqw, var(--pc-min-label)) / 1.4 var(--ui);
     color: #000;
   }
 
-  /* A long homebrew source line wraps, right-aligned, beside «Daggerheart»: the fit ladder
+  /* A long homebrew source line wraps, right-aligned, in the whole width: the fit ladder
      then shrinks the text for the taller bottom (FEATURES.md, "Print"). */
-  .pc-game {
-    flex: none;
-    white-space: nowrap;
-  }
-
   .pc-src {
+    flex: 1 1 auto;
     min-width: 0;
     overflow-wrap: anywhere;
     text-align: right;

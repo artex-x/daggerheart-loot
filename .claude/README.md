@@ -2380,14 +2380,14 @@ the database's part. `docs/DECISIONS.md`, 2026-09-30, "The list_entries
 touch and limit triggers run once per statement".
 
 **The configured bundle budget.** `tools/bundle-budget.mjs` has two limits:
-270 kB for the unconfigured build and 327 kB for the configured one, which
+270 kB for the unconfigured build and 328 kB for the configured one, which
 carries the account client chunk. A batch whose total passes a budget raises
 it to the measured total rounded up to the next whole kB (a printed 250.3
 gives 251; the tool compares the unrounded total, so a printed whole number
 such as 251.0 can pass 251: add 1 kB), never past 350 kB configured and 300 kB
 unconfigured (owner, 2026-10-22, and 2026-11-04: "we can increase budget up to
 300"). `npm run check:built` builds `dist/`
-unconfigured and so measures only the 270 kB limit. The 327 kB limit runs in
+unconfigured and so measures only the 270 kB limit. The 328 kB limit runs in
 CI's `e2e` job, after `npm run e2e` leaves the configured build in `dist/`,
 and in `deploy`. The lists release passed `check:built` locally and failed
 this step in CI (run 36228323330). A batch that adds code to the app or to
@@ -2399,7 +2399,9 @@ drops every `E2E_*` name, the secret key included, before the build:
 node --env-file=.env.test.local --input-type=module -e "import { buildEnv } from './tests/e2e/lib.mjs'; import { spawnSync } from 'node:child_process'; process.exit(spawnSync('npm run build && npm run budget', { shell: true, stdio: 'inherit', env: buildEnv(process.env) }).status ?? 1);"
 ```
 
-Expected: `within the 327 kB budget (with the account client chunk)`; 326.7 kB
+Expected: `within the 328 kB budget (with the account client chunk)`; 327.3 kB
+locally on 2026-11-06 after task 57 batch P (the print page's dock and crumb, the fonts
+port; it passed 327, so the limit rose to 328), 269.8 kB unconfigured; 326.7 kB
 locally on 2026-11-06 after task 57 batch N's fix pass (the mode row's focus return, the
 add menu's side), 269.2 kB unconfigured (it passed 269, so that limit rose to 270); 326.3 kB
 locally on 2026-11-06 after task 57 batch N (one head order on every page; it passed 326,

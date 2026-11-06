@@ -208,9 +208,9 @@ ornament.
 The UI face is Source Sans 3, self-hosted: the build serves its woff2 files
 from its own `/assets/`, and no font service is asked for anything. The face
 draws with `font-display: swap`, so the system stack behind it draws until the
-file arrives. The print card is the exception: it keeps the local stack it was
-fitted with (`--print-ui`) until the print batch decides its face, because a
-face change moves every print measurement.
+file arrives. The print card is set in the same face: the sheet fits its cards
+again once the face has loaded, and «Напечатать» waits for that fit, so the
+printed card is the same on every machine (owner, 2026-10-29).
 
 **The Clarity Rule.** A control, a state or a section that needs help text, a
 tooltip, a legend or an instruction sentence to be understood is a defect. A
@@ -325,8 +325,7 @@ surface color and never white.
 `@fontsource-variable/source-sans-3`, upright and italic, with full Cyrillic),
 with the system stack behind it (`-apple-system`, `BlinkMacSystemFont`,
 `Segoe UI`, Roboto).
-**Print Font:** the print card's own local stack, `--print-ui` (Inter, then the
-system stack), until the print batch decides it.
+The print card uses the UI font too (`var(--ui)`), at its own sizes.
 **Numeral Font:** `ui-monospace`, with `SF Mono`, Menlo and Consolas behind it.
 
 **Character:** One neutral workhorse family does everything, and a monospace
@@ -402,8 +401,9 @@ class takes the column. `tests/app/states.js` case 111 measures it.
 the woff2 files of `@fontsource-variable/source-sans-3`, imported in `main.ts`
 and preloaded for the Latin and Cyrillic subsets in `app/index.html`. No font
 service and no font from another origin, ever; `tests/app/typo.js` fails on a
-font request outside `/assets/`. The print card keeps its local stack
-(`--print-ui`), because the print fit is measured with it.
+font request outside `/assets/`. The print card takes the same face, and its
+fit runs again once the face has loaded (`FontsPort`); a tab with no cached
+face prints in the system stack behind it.
 
 ## Layout
 
@@ -463,7 +463,8 @@ replace them. The list pages fold each row to the compact row up to 760px and dr
 full row from 761px; from 1000px the owner's list page draws its 330px side column at the
 right of the rows (the side content sits above them from 761px to 999px), and the rows
 column is a size container: under 760px of it a row's controls take a line under its
-text. A container step is a component rule, not a system breakpoint. The `viewport` port (`app/src/ports/viewport.ts`) is the one place
+text. The print page draws one card per row, at most 420px wide, with a bottom dock up to
+760px, and the A4 sheet from 761px. A container step is a component rule, not a system breakpoint. The `viewport` port (`app/src/ports/viewport.ts`) is the one place
 that reads the width in code; CSS reads the same two numbers. Every other media
 query in the code belongs to one component and its own measured problem. Do
 not add another system breakpoint. `/account` signed in uses the 1000px step too:
@@ -942,17 +943,24 @@ rather than with the viewport. The artwork fills a square region at the top,
 masked to fade at both edges, over a blurred and darkened copy of itself. A
 color card with no picture draws the kind glyph in dark ink on a light well,
 where Figma node `714-42387` leaves blank paper. The
-tier plate and the burden mark sit at fixed `cqw` offsets. Text is fitted by
+tier plate and the burden mark sit at fixed `cqw` offsets; the burden mark draws
+the node's hands with fingers. The card is set in Source Sans 3: the rules text
+starts at 4.0cqw (7.1 pt) on the standard card and 4.6cqw (5.7 pt) on the compact
+card, and stops at 2.6cqw and 3.7cqw (4.5 pt on the compact card). A list item
+prints an en dash. The bottom line holds the source alone, right-aligned in the
+whole width. When the picture gives way to a long text, the text moves up to just
+under the marks drawn over the art. Text is fitted by
 measuring the rendered box, which is why reduced motion sets transition duration
 to `0s` rather than removing transitions: a zero duration still applies the end
 state on the same frame, and the fitting routine reads layout back immediately.
 In black and white the rules text also grows into the space the picture would
 have taken, to a cap under the name's size. An opt-in compact sheet lays
 sixteen cards at 44x63 mm in a 4x4 grid with the same 2 mm gutters and 19.5 by
-14 mm margins, in either layout; the card is the same composition at 70%.
+14 mm margins, in either layout; the card is the same composition at 70%,
+apart from its rules text, which starts and stops at its own sizes.
 Small text has a paper floor under its `cqw` size, `max(<design>cqw, 4.5pt)`
-for labels and 5pt for values and numbers, so a field over the floor keeps
-its Figma size. The weights step down from 900 (the name and the tier number)
+for labels and the tier word and 5pt for values and numbers, so a field over the
+floor keeps its Figma size. The weights step down from 900 (the name and the tier number)
 through 700 for numbers and 600 for strip values to 500 for labels. The
 damage strip's cells sit between the ribbon's own dividers and ornament
 lines, so the ribbon frames every label and value instead of crossing it.

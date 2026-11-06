@@ -2515,21 +2515,47 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   stores the first 180 and says «Карточек за один раз: не больше 180. Не
   попали на лист: N. Разделите набор на части.» as a toast, after a sign-in
   too: the cut is the maker's, so a reader of a handed-on link never sees it.
-- On screen, when the page column is narrower than the A4 sheet (a window
-  under about 840 px), the sheets are drawn scaled down to the column's width
-  (`sheetScale`, a transform under `@media screen`), so the page never scrolls
-  sideways; the bar keeps its size. The layout stays the paper one in every
-  window: the fit divides the scale out of the sizes it reads, so it writes
-  the same values as in a wide window, and print media draws the sheets at
-  full size (owner, 2026-10-22;
-  `docs/decisions/2026-10-22-the-print-sheet-scales-to-a-phone-screen-by-a.md`).
+- The page's head is one row: «Назад» (a link) and the heading «Печать
+  карточек» (`Crumb`, as the item editor's). From 761 px one row follows:
+  «Напечатать» (the primary), the color switch («Цвет» / «Ч/б», the group
+  «Цвет печати»), the size switch («63×88» / «44×63», the group «Размер карты»)
+  and «Ссылка на набор». Up to 760 px the row holds the two switches, and a
+  dock after the sheets holds «Напечатать» and «Ещё» with its one item
+  «Ссылка на набор»; the dock sticks to the window's bottom from a 481 px
+  window height, as the editor's bar does, and a focused control and the
+  page's toast stop clear of it (`--ebar-h`). The red deleted note, the clip
+  warning and its status region stay above the sheets. The sub line (the card
+  and sheet counts and the size) follows the last sheet, and every sheet from
+  the second has «Лист N из M» / "Sheet N of M" above it; neither prints. No
+  hint asks for the print dialog's background option: the sheet prints its
+  fills without it (`print-color-adjust: exact`; a nine-card color PDF with and
+  without background graphics differed on 0% of its pixels, measured
+  2026-11-06). `/p/` draws no `PageHead`, so it has no pin and no help.
+- On screen, up to 760 px, the page draws one card per row,
+  `min(column, 420 px)` wide and centered, 12 px apart, with no blank places:
+  each card keeps its paper layout and is drawn by a screen-only transform
+  (`previewScale`, the editor preview's function). From 761 px, when the page
+  column is narrower than the A4 sheet (a window under about 840 px), the
+  sheets are drawn scaled down to the column's width (`sheetScale`, a
+  transform under `@media screen`), so the page never scrolls sideways. The
+  layout stays the paper one in every window: the fit divides the scale out
+  of the sizes it reads, so it writes the same values as in a wide window,
+  and print media draws the A4 sheets at full size at every width (owner,
+  2026-10-22 and 2026-10-29;
+  `docs/decisions/2026-10-22-the-print-sheet-scales-to-a-phone-screen-by-a.md`,
+  `docs/decisions/2026-11-06-the-print-card-prints-in-the-ui-face-fitted-after-it-loads.md`).
 - Color and black-and-white are two different cards, not one with a switch.
 - The vectors whose color and black-and-white files share one geometry - the
   tier banner, the threshold box, both ribbons and the six dice - are drawn
   inline from the exported files' paths (`lib/cardVectors.ts`) and painted by
   CSS per layout (`styles/card-vectors.css`, each value copied from its file);
   the shield and the two burden marks, whose files differ in shape, and the
-  dots and the arrow stay `<img>` of their files. Every file under `card/`
+  dots and the arrow stay `<img>` of their files. The burden marks draw the
+  hands with fingers of nodes `714-42387` and `3773-90792`: the four
+  `card/burden-*.svg` hold their exported paths, 62x37 units (owner,
+  2026-10-29), with each of Figma's outside-stroke masks written as the same
+  region in a clip path, because Chrome prints a masked image as a raster
+  (the two forms draw the same pixels; measured 2026-11-06). Every file under `card/`
   stays published as it is (`CONTRACTS.md` section 5); the browser suite
   compares each drawn vector with its file, pixel by pixel (owner,
   2026-10-20;
@@ -2543,13 +2569,14 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   name in bold italic, the member list in italics.
 - A card that still cuts off text after the last rung is counted: the bar
   draws «Текст не помещается на карточки при печати: N. Конец текста на них
-  не напечатается.» in the warning box (rule 19) after the red deleted note
-  and before the gray note, hidden in print media with the bar; it blocks
+  не напечатается.» in the warning box (rule 19) after the red deleted note,
+  hidden in print media with the bar; it blocks
   nothing. The count reads the text box down and across, the name and the
   bottom line across and the content box down. The bar's status region says
-  the box once when it appears (rule 19). A long homebrew source line
-  wraps, right-aligned, beside «Daggerheart», which keeps its one line; the
-  fit ladder then shrinks the text for the taller bottom. The
+  the box once when it appears (rule 19). The bottom line holds the source
+  alone (owner, 2026-10-29: «Daggerheart» left it); a long homebrew source
+  line wraps, right-aligned, in the whole width; the fit ladder then shrinks
+  the text for the taller bottom. The
   editor's print view draws the same card with the same fit ("Homebrew").
 - An artifact weapon (`eq.tier: 'A'`) prints as a loot artifact card does: the
   tag `Артефакт`, then its class tag, no tier band, and its damage strip.
@@ -2569,17 +2596,47 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   `Range`), and a value on two lines gets 1.2 leading; then the damage-type
   label beside a modifier shrinks the same way until it fits its box; then
   a strip whose tallest block is taller than the ribbon's inner band grows
-  until the band holds it. The rules text then steps its font down, then
-  the top padding.
+  until the band holds it. The rules text then steps its font down from its
+  base, 4.0cqw (7.1 pt) on the standard card and 4.6cqw (5.7 pt) on the
+  compact one, to 3cqw (3.7cqw compact), then the top padding, then its font
+  again to its floor, 2.6cqw (4.6 pt) and 3.7cqw (4.5 pt) on the compact
+  card. When the padding leaves the picture less than 24cqw, the picture gives
+  way: a color card then moves its text up to 1.2cqw under the lowest mark it
+  draws over the art (the tier band, the burden mark and its label, the armor
+  mark and its label; 5.8cqw with none) and fits it again from its base, with
+  no blank band above the text; text still cut at its floor under a tall mark
+  takes the mark's band back in 1.5cqw steps.
+- The card is set in the UI face, Source Sans 3 (`var(--ui)`, owner,
+  2026-10-29), on every machine. The fit runs once the sheet has drawn and
+  again, on every card, once a face that was loading has arrived
+  (`FontsPort`); «Напечатать» is disabled until that answer, which comes at
+  once when no face was loading and also when the face fails to load. A tab
+  offline with no cached face prints in the system stack behind it, fitted in
+  that face.
+- A list item prints an en dash in black as its marker; a numbered list keeps
+  its numbers.
 - Small text has a paper floor in every view, written `max(<design>cqw,
   <floor>)` so a field already over it keeps its Figma size: labels 4.5 pt,
-  values and numbers 5 pt, the tier word 4 pt (`DECISIONS.md`, "Print card
+  values and numbers 5 pt, the tier word 4.5 pt (`DECISIONS.md`, "Print card
   small text keeps the ribbon and gets one paper floor in every view").
   Named shortfalls, set by the ribbon's cells on the compact sheet: a Russian
-  value kept on one line (`Проворность` and `Очень далеко` 4.8 pt), the
-  English `DAMAGE` beside a modifier (3.1-3.7 pt), and the d4 value (4.5 pt,
-  the triangle is narrow). Measured 2026-09-23 on the Windows host (Segoe
-  UI).
+  value kept on one line (at least the 4.5 pt label floor), the English
+  `DAMAGE` beside a modifier, which shrinks to fit its box (3.94 pt at the
+  least in Source Sans 3, measured 2026-11-06), and the d4 value (4.5 pt, the
+  triangle is narrow).
+- The whole catalog and the four `gm4` homebrew items, measured on the
+  Windows host on 2026-11-06 in Source Sans 3 (RU / EN): in color the rules
+  text has a median of 7.1 pt on the standard card and 5.7 pt on the compact
+  card (4.6 pt at the least); 17 / 3 standard and 35 / 14 compact cards go
+  below the base; the picture has a median of 65 / 68% of the standard card
+  and 60 / 63% of the compact card, and gives way on 7 / 3 standard and 21 / 9
+  compact cards, 4 / 1 and 13 / 3 of them with a mark (clearance 23.2cqw
+  standard, 23.4cqw compact; `voa4_t4i` and `voa4_a3` take part of the band
+  back, 18.9cqw and 16.4cqw); in black and white the median is 8.9 pt standard
+  and 6.2 pt compact. Four Russian names take three lines and no English one.
+  No catalog card clips; the homebrew fixture `uuid(516)` (3000 characters)
+  does by design. The smallest text is a label at 4.5 pt, apart from the
+  English `DAMAGE` above.
 - Weights: 900 for the name and the tier number only; 700 for the die
   value, the modifier, the threshold numbers and the armor score; 600 for
   the strip values; 500 for labels, captions and tags; 400 italic for the
@@ -2613,9 +2670,9 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   `card/arrow.svg`'s 7:12 proportion; the image stays in the markup,
   hidden. The burden label sits under its mark.
 - In black and white the rules text first grows, in 0.1cqw steps from its
-  3.5cqw default to at most 5cqw (8.9 pt), while it still fits its box: the
+  base to at most 5cqw (8.9 pt), while it still fits its box: the
   space a color card gives its picture is blank paper there (issue 61). Text
-  that does not fit at 3.5cqw takes the shrink ladder unchanged. Color never
+  that does not fit at its base takes the shrink ladder unchanged. Color never
   grows - the picture owns that space and the ladder gives it up last.
   Measured on the Windows host on 2026-09-23: a two-line card was 54-67% blank
   and reaches the cap; the longest texts land at 3.6-4.3cqw. A one-line card
@@ -2624,18 +2681,18 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   share at 4.3 pt - and rejected as a replacement for the 3x3 sheet
   (`DECISIONS.md`).
 - Two independent switches: color or black-and-white, standard or compact;
-  every combination prints. The compact card is the same card at 70% - every
-  dimension is `cqw` - so the ladders run unchanged: compact color text is
-  4.3 pt by default and 3.2 pt at the floor, and the compact black-and-white
-  card reads at 6.2 pt where the grow rung reaches its cap. A size change
-  fits every card again at its new size. Measured 2026-09-23
-  (`DECISIONS.md`).
+  every combination prints. The compact card is the same composition at 70% -
+  every dimension is `cqw` - apart from its rules text, which starts at 4.6cqw
+  (5.7 pt) and stops at 3.7cqw (4.5 pt); the compact black-and-white card
+  reads at 6.2 pt where the grow rung reaches its cap. A size change fits every
+  card again at its new size.
 - The compact subtitle says 44×63 mm and sixteen to a sheet; the print
   control's hint keeps "nine to an A4 sheet" - it names the default.
 - A set with no card the build knows draws the heading, the "nothing to
   print" note and «На главную» - no bar, no sheet.
-- `Назад` steps back in browser history; with nowhere to step back to it goes
-  home, not to `#/lists`: the reader of a handed-over link may have no lists.
+- «Назад» steps back in browser history; with nowhere to step back to it is a
+  link home, not to `#/lists`: the reader of a handed-over link may have no
+  lists.
 - A card's own name is drawn as `<h2 class="pc-name">`, a heading-level fix:
   the live app's `printCardHTML` wrote `<h3>` there - unrelated to the
   alternate-tables page's own heading jump, `<h1>` straight to `<h4>`, fixed
@@ -2647,9 +2704,16 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   `dhloot.prefs.v1` (`STATE.md`, "Account preferences"). The two switches
   in the print bar change the layout for this visit: the pick survives
   leaving the print page and coming back, and a reload draws the default.
-  While either switch differs from its default, a build with sign-in draws
-  the same note as the tables toolbar under the bar, with its link to
-  `#/account`; the bar never prints, so neither does the note.
+  The pressed switch shows the visit's pick; no note is drawn under the bar
+  (owner, Q3.2).
+- Departures from Figma nodes `714-42387` and `3773-90792`, each the owner's
+  or named here: the light print well (2026-10-29, above); the face, Source
+  Sans 3 for the node's faces (2026-10-29: the Core Set's Questa Sans and
+  Eveleth Clean fail self-hosting and Cyrillic); the rules text bases 4.0cqw
+  and 4.6cqw (2026-10-29); the compact floor 3.7cqw (2026-11-06); the tier word
+  on the 4.5 pt floor (2026-11-06); the clearance under the marks of a card
+  whose picture gave way (2026-11-06); the bottom line without «Daggerheart»
+  (2026-10-29).
 - An own homebrew item's picture prints on the color card from its 640 px
   file, as a catalog picture does; the black-and-white card draws no
   picture.
@@ -2789,9 +2853,9 @@ right, so the tab order and the reading order agree
   the section it opens; a refused write says the save-failed error toast
   and the select shows the section kept); «Вид таблиц по умолчанию» / "Default
   table view" («Список» / «Сетка»); «Печать по умолчанию» / "Default print", two
-  small segmented controls that wrap inside 360 px: the color («Цветная» /
-  «Чёрно-белая») and the card size («Обычная» / «Компактная», named «Размер
-  карты»); «Когда беру из чужого списка» / "When I take from someone else's
+  small segmented controls that wrap inside 360 px: the color («Цвет» /
+  «Ч/б», "Color" / "B&W") and the card size («63×88» / «44×63», named «Размер
+  карты»), the labels of the print page's switches; «Когда беру из чужого списка» / "When I take from someone else's
   list", a select at every width («Спрашивать» / «Сообщать владельцу» / «Не
   сообщать», "Ask" / "Notify the owner" / "Don't notify"), no hint: the remembered answer of
   flow b ("Account and browser lists", "Purchase requests: flow b"), kept in
@@ -2998,9 +3062,9 @@ right, so the tab order and the reading order agree
   `/assets/`, so the app draws the same glyphs on a machine without the face
   installed. The weights in use (540 to 680) render as authored on the
   variable face. `font-display: swap` draws the system stack until a file
-  arrives; no font comes from another origin. The print card keeps its own
-  local stack (`--print-ui`, Inter first) until the print batch decides its
-  face (owner, 2026-10-23;
+  arrives; no font comes from another origin. The print card takes the same
+  face and fits again once it has loaded ("Print"; owner, 2026-10-23 and
+  2026-10-29;
   `docs/decisions/2026-10-29-the-ui-font-is-source-sans-3-self-hosted.md`).
 
 ### Consistency rules
@@ -3097,9 +3161,10 @@ Each rule keeps its number: a review cites it by number.
   or an item of «Ещё» up to 760 px); the import is the last control of each tab's tool row
   or an item of «Ещё»; on the other tabs the create button is the
   first control under the tab row; an account list's page makes an own
-  item from the row after its entries; the print bar of `#/p/<id>` puts
-  «Назад» before «Отправить на печать», the way back first (owner,
-  2026-10-22).
+  item from the row after its entries; the print page `#/p/<id>` draws
+  «Назад» and its heading on one row, then from 761 px «Напечатать» first in
+  the row under them, and up to 760 px in a bottom dock, as the item editor's
+  bar.
 - **10. Undo**: a removal the app can write back offers «Вернуть» / "Undo"
   in its toast (a member's «Убрать» on the Sets and Rules tabs too); a server
   delete that cannot be undone asks the browser's confirm first and offers no

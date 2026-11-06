@@ -20,7 +20,7 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
     `plan-N.md`, mocks `mocks/N/`, cases 112-113, 17 acceptance lines, 115-150 min. Built 2026-11-06 (`handoff.md`,
     Completed); reviewed (`reviews/N.md`, fix-then-continue) and its one fix pass built the same day.
   - Batch P (print), restated for Q-P1 = no (owner: the standard card stays 63x88 mm): brief `plan-P.md`, mocks `mocks/P/`,
-    cases 114-115, 30 acceptance lines, 157-197 min.
+    cases 114-115, 30 acceptance lines, 157-197 min. Built 2026-11-06 (`handoff.md`, Completed); review pending.
   - Batch 10 (the docs lock and the cleanup the earlier batches left): an outline in section 7 with 21 acceptance
     lines; 95-125 min.
   - Defaults taken while the owner is away are listed in `handoff.md`, Status, and logged by the orchestrator in

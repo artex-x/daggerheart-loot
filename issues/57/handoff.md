@@ -2,48 +2,40 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress. Waves 1, 2 and 2b are on `main`. Wave 3 has built 9a, 8, 9b, the CI split, the CI fix pass,
-  batch TD with its fix pass and CI fix (TD tip `2986f75c`, CI green), batch N (`cb581b66`, The Head Order Rule, the
-  `/tables/*` mid-band exception, the d12 die marks; CI run 42177661196 failed case 90 only) and now N's one fix pass
-  (`reviews/N.md`, fix-then-continue: the CI failure, N-B1, N-N1 to N-N11), committed and pushed on `claude/57` (sha
-  in the implementer's report). CI of the new tip is the full gate: not yet run.
-- Next batch: P (`plan-P.md`; cases 114 and 115), after CI of the fix-pass tip is green.
-- Review: N's review is done (`reviews/N.md`); its fix pass is the one remediation cycle. `polish` and `harden` on
-  `/roll/alt`, `/tables/eq_weapon` and `#/homebrew` at 360, 768, 1000 and 1180 px are the orchestrator's (acceptance
-  16), with the keyboard and screen-reader pass of `reviews/N.md` "Checks still needed". TD-R1 and TD-R2 stay on the
-  owner list.
-- Order after N: P, 10, then the wave 3 squash, the wave 3 blind review with its remediation, the closeout and the
-  whole-app blind review (unchanged from the fold; `plan.md` section 7). The squash message takes `reviews/9b.md` R7's
-  corrected text.
-- NEEDS_HUMAN_CONFIRMATION: no. Figures for the owner, not gates: the folded requests strip at 360x640 starts the rows
-  at 303 px (owner's figure 292); `/s/<token>` at 360x640 starts at 308.2 px (exception 309); `/tables/*` at 900x720
-  starts at 333.6 px (the N-D5 exception, ceiling 336); `#/homebrew as gm3` at 900x720 starts at 286.2 px (limit 288).
-- Defaults taken in N (owner AFK; the orchestrator logs them in the AFK decisions file; the TD defaults 1-9 are in
-  `git show 2986f75c:issues/57/handoff.md`, Status):
-  1. The gaps of the mid-band head are set where the margins collapse (`main` is a block): `.page-below` 10 px and
-     the lead under a mid-band head 12 px, so the measured gaps are the brief's 10 and 12 (the brief wrote 6 and 8 over
-     the head's 4 px).
-  2. S1 measured the built page (case 112) instead of a DOM-move probe: the figures are the shipped head's.
-  3. The roll `title` prop left the whole chain (`RollPanel`, `PickerRollPanel`, `App.svelte`'s two tables), not
-     only the three panels: nothing else read it.
-  4. `TableNav part="tabs"` draws nothing up to 760 px (the tabs live in the picker's sheet), so a stray instance
-     cannot draw a second picker.
-  5. Acceptance 4's "one `RollPage` instance" is not built: each mode is its own panel in `App.svelte` (a change of
-     the route branches, out of scope); the head's text and place hold (case 112 (g)).
-- Defaults taken in the N fix pass (owner AFK):
-  6. Case 90 was a real defect, not a flake: the add menu opened up into the header near the page top. `AddToList`
-     opens up in the page's own scroll only where the page above holds the menu under the header; a pinned bar and a
-     clipping card keep the old rule (`Menu.svelte` already flips only with room above).
-  7. The 760/761 px pill focus lives in `Shell`, not in `RollPage`'s band check (the review's place): `Shell`'s row
-     under the header goes before `RollPage`'s effects run, so `RollPage` read a focus already on `body`.
-  8. A supplement picked at 360 px also lost the focus to `body` (the menu closed with the focused item): the item
-     press now returns the focus to the menu's button at every width (rule 20).
-  9. The unconfigured bundle measured 269.2 kB: the limit rose to 270 (N-R2, the owner's rule), not in batch P.
-- Last agent: implementer (batch N fix pass). No subagent runs. No worker has uncommitted code edits.
+- Task status: in_progress. Waves 1, 2 and 2b are on `main`. Wave 3 has built 9a, 8, 9b, the CI split and fix pass, TD
+  with its fix pass, N with its fix pass (`ef9b511c`, CI green and credited) and now batch P (print: the card and the
+  `/p/` page), committed and pushed on `claude/57` (sha in the implementer's report; previous sha `b3d3994c`, the P
+  plan's docs commit, pushed with it). CI of the new tip is the full gate: not yet run.
+- Review: required (trigger: print fitting and its measured figures, a golden re-seed of 40 files, a Figma-node parity
+  change (the burden hands) and two departures from the brief, defaults 1 and 2 below).
+- Next batch: 10, after P's review with its one remediation cycle and a green CI of the tip.
+- NEEDS_HUMAN_CONFIRMATION: no. For the owner: default 1 (the burden files are the export's paths with Figma's masks
+  written as clip paths, not the exact bytes) and default 4 (the background-graphics hint is gone).
+- Defaults taken in P (owner AFK; the orchestrator logs them in the AFK decisions file):
+  1. The four `card/burden-*.svg` take the export's paths with each outside-stroke mask written as the same region in a
+     clip path (`issues/57/mocks/P/burden/unmask.cjs`), not P-D10's exact bytes: Chrome prints a masked `<img>` SVG as a
+     raster (4 to 10 images a file, `rasterprobe.cjs`), which broke FEATURES.md "A compact black-and-white sheet holds no
+     raster image" (two `print.js` checks). The clip form draws the same pixels (`pixcmp.cjs`: 0.000% at 12x, max
+     channel 4) and prints vector (0 images). The spec won over the brief.
+  2. P-D8's clearance (about 23cqw under a burden mark and its label) left voa4_t4i and voa4_a3 cut on the RU compact
+     color sheet at the 3.7cqw floor. At its floor the text now takes the mark's band back in 1.5cqw steps (18.9 and
+     16.4cqw on those two), so no catalog card clips (acceptance 19); `print.js`'s clearance check exempts a card at its
+     floor.
+  3. The fonts port's browser form waits on the font set's `ready` for both answers (P-D3: "false at once" when none
+     loads): `TablesPage`'s anchor scroll needs the document-loaded wait it had.
+  4. The hint goes (S11.3): a nine-card color PDF with and without background graphics differs on 0% of its pixels
+     (`print-color-adjust: exact`); `printNote` is deleted in both languages.
+  5. The dock's «Ещё» is `up` without `flip` (the editor bar's form; `flip` is the record dialog's).
+  6. `.pc-strip` and `.pc-thstrip` take `flex-shrink: 0`: a full content box shrank the strip under its 20 pt band
+     (`print.js`: voa4_a3 compact 26.0 px for 26.7).
+  7. The configured bundle measured 327.3 kB: its limit rose to 328 (`tools/bundle-budget.mjs`, `.claude/README.md`);
+     unconfigured 269.8 of 270.
+  8. S2 (the before tops) was not measured again: TD's Verification logs `/p/` at 579 px RU (360x640); the after tops are
+     under Verification.
+- Last agent: implementer (batch P). No subagent runs. No worker has uncommitted code edits.
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
-- Base / starting commit: `d8e30731`; batch N `cb581b66` (previous sha `2986f75c`); previous sha of the N fix pass:
-  `ff41b4f7` (N's review record).
-- Pushed: `ff41b4f7` and the fix-pass commit (sha in the implementer's report).
+- Base / starting commit: `d8e30731`; previous sha of batch P: `b3d3994c`.
+- Pushed: `b3d3994c` and the batch P commit.
 
 ## Completed
 One line per shipped batch. The full acceptance tables, deviations and measurements of batches 1 to 9a are in
@@ -320,143 +312,91 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
   | N-R2 | Met now: 269.2 kB unconfigured, the limit 270 (default 9); configured 326.7 of 327 |
   | N-R1, N-N12 | Left as `reviews.md` names them |
 
+- Batch P - print: the card and the `/p/` page (`plan-P.md`, previous sha `b3d3994c`). Cases 114, 115. Acceptance (30):
+
+  | Line | Outcome |
+  |---|---|
+  | 1 Q-P1 | Kept, owner: 63x88 mm, 8.5 / 14.5 mm; `print.js` "size and grid" unchanged; `CLAUDE.md`, `PRODUCT.md`, the READMEs and `llms.txt` untouched; no size line moved in DESIGN.md or FEATURES.md |
+  | 2 PR1, PR2 | Done: 4.0cqw / 4.6cqw (`BASE`); catalog medians 7.1 / 5.7 pt in color (S11 below) |
+  | 3 PR3 | Done: `git grep -n print-ui -- app` empty; `print.js` reads the platform face of `.pc-text` (CDP): Source Sans 3 |
+  | 4 Face wait | Done: `printPage.test.ts` "the fit after the face loads" (held, released true: every card fitted again; false: once), `homebrewPrintPreview.test.ts`, case 115 (held 1500 ms: disabled, then the warm fit; aborted: enabled, no spill) |
+  | 5 PR4, C29, C30 | Done: `/p/` row `shipped: true`; 233 px at 360x640, 190 at 1180x720, RU = EN (TD's before: 579 / 350); case 114 (c) logs 233.1 at 390, 189.8 at 768 |
+  | 6 PR5 | Done: the tier word `max(2.6cqw, --pc-min-label)` (2cqw in black and white); `smallFields` floor 4.5 pt |
+  | 7 PR6 | Done: `list-style-type: '\2013  '`, black `::marker`; `print.js` reads it on `voa2_a3` |
+  | 8 PR7 | Closed with no code; FEATURES.md makes no claim |
+  | 9 PR8, QP.8 | Done, with Deviation 2: the ladder order holds; a color card whose picture gives way lifts its text to its marks' clearance (`print.js` check; cards under S11) |
+  | 10 PR9 | Closed by line 1: `printSub` unchanged |
+  | 11 PR10 | Done: no `.pc-name` or `.pc-tag` rule changed |
+  | 12 PR12, C31 | Done: no `KeepNote`; the A4 sentence gone; the hint gone too (S11.3: 0% of pixels differ without background graphics) |
+  | 13 C29 bar | Done: the crumb row and one control row from 761 px, the crumb row and the switches' row up to 760 px (case 114 (a)) |
+  | 14 C30, QP.6 | Done: one card per row `min(column, 420)` up to 760 px (the scale is cut to two decimals: up to 2.4 px narrower); print media unchanged at 360 (`print.js`) |
+  | 15 QP.7, RP-1 | Done: «Цвет» / «Ч/б» / «63×88» / «44×63» / «Напечатать» and "Color" / "B&W" / "Print" on `/p/`, the editor's print view and the account; `printInk` names the color group |
+  | 16 Bottom line | Done: no «Daggerheart»; `.pc-src` takes the width; the FEATURES.md sentence rewritten; the two `why`s changed |
+  | 17 Hands | Done, with Deviation 1: S1 0% to the raw export; the four files hold the export's paths with the masks as clip paths (0.000% of pixels differ from the exact bytes at 12x, max channel 4); the `<img>` reserves 62x37; `derived` and `print.js` pass; paths unchanged |
+  | 18 Compact floor | Done: 3.7cqw floor (`smallFields`, `cardFit`); the EN «DAMAGE» beside a modifier 3.94 pt, named in FEATURES.md |
+  | 19 No clip | Done: only `uuid(516)` clips in all eight layouts; smallest text 4.5 pt labels, the named EN shortfall apart |
+  | 20 Editor view | Done: `print.js` editor-view spec passes with `compact` and `refit` passed by `PrintPreview` |
+  | 21 Retired and failed | Unchanged and still tested (`printPage.test.ts` "the states of #/p/") |
+  | 22 Crumb | Done: `Crumb.svelte` serves both; `crumb.test.ts` ends with axe; editor goldens unchanged (Verification) |
+  | 23 Fonts port | Done: `git grep -n "document.fonts" -- app/src` lists `ports/fonts.ts` only (the comment in `TablesPage` names the port) |
+  | 24 Dock | Done: case 114 (b); the toast offset adds `--ebar-h`; `tokens.css` scroll padding names both bars |
+  | 25 Thumb Rule | Done: case 114 (g) at 360 and 390, menu shut and open; sweep probe under Verification |
+  | 26 New states | Done: `#/p/set-emberaxe ~ phone as gm2`, `~ phone more as gm2`; `#/p/set-tencards as gm2` existed (its `why` now names «Лист 2 из 2»); axe in `printPage.test.ts` "draws one card per row ..." |
+  | 27 Departures | Done: FEATURES.md "Print" list with dates; DESIGN.md; the decision file; six "Amended by" lines |
+  | 28 Batches 2-9 line | Partly: QP answers applied; detector and shots under Verification; `polish` and `harden` are the orchestrator's |
+  | 29 Bundle | See Verification |
+  | 30 Strings | Done: `printChanged`, `keepBefore`, `keepLink`, `keepAfter` gone in both languages |
+
+  Deviations: (1) and (2) as Status defaults 1 and 2. (3) S12's 300 dpi PDF rasters of the four layouts were not drawn:
+  one nine-card color RU sheet at 150 dpi (`mocks/P/built/built-std9-colour-ru__150dpi.png`) and the screen set are;
+  `print.js` ran every PDF check locally. (4) No `cardScale`: the phone preview reuses `previewScale` (planner default
+  2026-11-06), so a card is up to 2.4 px narrower than its column, never wider.
+
 ## Verification
-- N fix pass, 2026-11-06 (previous sha `ff41b4f7`), each in the foreground or waited on; vitest with
-  `VITEST_MAX_WORKERS=2`, one file at a time:
-  - Reproduced: `npm run build:test`, `node tests/app/states.js --shard=80/103` (case 90): `FAIL 90 (the result row):
-    1180: the add menu slides under the header`, as CI. Probe `scratchpad/c90-probe.cjs` at 1180x720: before, scroll 0,
-    the toggle at 369, the menu at 21 (340 tall), the header bottom 63; after, the page at scroll 53, the menu at 356.
-  - Red first, in a detached worktree of `ff41b4f7` (outside the repo, removed after) with the new tests copied in:
-    `rollPage.test.ts` 6 FAIL (the mode switch at wide and mid by link and by menu, the 760/761 px pill both ways),
-    `rollResult.test.ts` 1 FAIL (opens down near the page top), `modeRow.test.ts` 1 FAIL (the button's focus after a
-    pick). The base `shell.test.ts` prints the same `derived_inert` warnings as the fixed tree (not new).
-  - After: vitest `rollPage` 35, `rollResult` 16, `modeRow` 33, `pageHead` 6, `i18n` 73, `shell` 119, `pickRow` 37,
-    `lists` 38: all pass. `npm run typecheck`: 0 errors, 0 warnings.
-  - `node tests/app/states.js --shard=n/103`: 80 (case 90) passes; the add-menu cases 1, 2, 3, 23, 27, 42, 88, 103
-    (n = 1, 2, 3, 19, 22, 35, 78, 93) pass; 102 (case 112) 93 s, 103 (case 113), 86 (case 96) 93 s pass.
-  - Focus probe `scratchpad/focus-probe.cjs` (Enter on «Альтернативные таблицы» on `/roll/std`, then the
-    supplements menu, Down twice, Enter): at 1180, 768 and 360 the focus lands on the lit `A.mode.on` and then on the
-    lit `BUTTON.mode.sup.on` «Vault of Ages»; the next Tab goes to the pin (1180) or the part select (768, 360). A
-    focused pill crossing 760 to 761, 761 to 760 and 1000 to 999 px stays on «Альтернативные таблицы».
-  - Sweep probe (`scratchpad/mkprobe.cjs`, `PROBE_RE` on the nine roll pages and the three homebrew tabs): `clean` at
-    1180 RU, 768 EN, 360 RU, 390 EN.
-  - Goldens: `MSYS_NO_PATHCONV=1 node tests/app/golden.js --only="#/roll"`: 42 states compared, `unchanged`; none
-    re-seeded.
-  - `node tests/run-all.js contracts,derived`: both ok. `npm run lint:untyped`, `npm run lint:typed`: exit 0 after
-    the last edit (the first `lint:typed` failed on an optional chain that `svelte-check` needed; moved into `pick`).
-  - `rtk npm run check:built`: first FAIL, 269.2 kB over 269; the limit rose to 270 (default 9), then pass, 269.2
-    within 270. Configured (`.claude/README.md`'s line, the main checkout's `.env.test.local`): 326.7 kB within 327.
+- Batch P, 2026-11-06 (previous sha `b3d3994c`), each in the foreground or waited on; vitest with `VITEST_MAX_WORKERS=2`,
+  one file at a time. Earlier batches' blocks: `git show b3d3994c:issues/57/handoff.md`, "Verification".
+  - S1: `node issues/57/mocks/P/burden/render.cjs`: `diffToRawPct` 0 and `natural` [62, 37] for all four; `sheet.png`
+    draws fingers in both layouts. Then default 1: `rasterprobe.cjs` 4 and 10 images for masked files, 0 for each clip
+    file and 0 for the old mittens; `pixcmp.cjs` 0.000% (max channel 4 and 3). `node tests/derived.js`: everything
+    matches.
+  - Vitest by file: `printPage` 79, `homebrewPrintPreview` 17, `crumb`, `ports`, `tables`, `accountPage`, `a11y`,
+    `homebrewEditor`, `state/app`: all pass. `npm run typecheck`: 0 errors, 0 warnings.
+  - `npm run build:test`, then `node tests/app/states.js --shard=n/105`: 104 (case 114) 22.7 s, 105 (case 115) 5.1 s,
+    73 (case 83) 281 s: each `all 1 runs passed`. Case 114 logs the first sheet at 233.1 px (390x844) and 189.8 px
+    (768x1024), RU = EN.
+  - First screen (case 83, `#/p/set-emberaxe as gm2`, RU = EN): 233 px at 360x640 (limit 256; 579 before), 190 px at
+    1180x720 (limit 288). The dock at 360: 67 px tall, `--ebar-h` equal (case 114 (b)).
+  - S11 (`issues/57/mocks/P/tools/print-measure.cjs` on `dist-test/`, 1463 cards a layout, RU / EN): color standard
+    median 7.1 pt, min 4.6, below the base 17 / 3, picture median 65 / 68%, gone 7 / 3 (4 / 1 with a mark, 23.2cqw);
+    color compact median 5.7, min 4.6, below the base 35 / 14, picture median 60 / 63%, gone 21 / 9 (13 / 3 with a
+    mark, 23.4cqw; voa4_t4i 18.9, voa4_a3 16.4 after default 2); black and white median 8.9 standard, 6.2 compact;
+    names on three lines 4 / 0; clipped: `hb_longtextaaaaaaaa` (`uuid(516)`) alone in all eight layouts; the smallest
+    text 4.5 pt labels, the EN compact «Damage» 3.94 pt. CDP reads Source Sans 3. S11.3 (`scratchpad/bgpdf.cjs`): 0
+    of 2,174,960 pixels differ at 150 dpi.
+  - `node tests/run-all.js app/print`: first run 6 FAIL (the footer gap at 768 after the new sub line, the strip at 26.0
+    px, the two raster checks), fixed by the test (the sub line, then the footer) and defaults 6 and 1; second run 2
+    FAIL (the gap 86 px against 80: the sub line's 18 px margin), fixed in `PrintPage` and measured by
+    `scratchpad/gapprobe.cjs` (68 px at 768); the third run is CI's.
+  - Sweep probe (`scratchpad/mkprobe.cjs`, `PROBE_RE="печать|редактор"`, the `targets` step included): `clean` at 360,
+    390, 768 and 1180, RU and EN.
+  - Goldens: `MSYS_NO_PATHCONV=1 node tests/app/golden.js --only="#/homebrew/hb_"`: 15 states, only the print preview
+    moved (its labels), so the editor's `Crumb` is byte-identical; then `--update --only=` "print preview" (2), "#/p/"
+    (38, the two phone states seeded) and "#/account" (6): 40 files, re-seeded by the tool, none edited. Read: the
+    crumb link before the `h1`, the new labels, the sub line after the cards, no «Daggerheart», no hint, the dock menu.
+  - Shots: `node issues/57/mocks/P/built/shoot.js`: 26 PNGs, none skipped.
+  - Detector `npx impeccable detect --json --no-inline-ignores app/src`: 61 findings (60 before); the new one is
+    `PrintCard`'s `li::marker` `#000`, an N3 print colour advisory for batch 10. No `impeccable-disable`.
+  - `npm run lint:untyped`, `npm run lint:typed`: exit 0. `rtk npm run check:built`: pass, 269.8 kB within 270. The
+    configured build (`.claude/README.md`'s line): 327.3 kB over 327, the limit rose to 328 (default 7), then pass.
+  - `node tools/decisions.js`: 316 decisions. `node tests/derived.js`: everything matches.
   - `VITEST_MAX_WORKERS=2 rtk npm run check:fast`: run last, after this file; the commit gate takes only its pass.
-- Batch N, 2026-11-06 (previous sha `2986f75c`), each in the foreground or waited on; vitest with
-  `VITEST_MAX_WORKERS=2`:
-  - `npm run typecheck`: 0 errors, 0 warnings.
-  - Vitest by file: `rollPage` 29, `pageHead` 6 (new), `alt` + `modeRow` + `tableNav` + `sections` 88, `chip` +
-    `homebrewTabs` + `modeRow` + `sections` 69, `tables` + `shell` 250, `homebrewPage` 128 (+2 head cases), `a11y` +
-    `std` + `i18n` 138: all pass after the test updates (the first runs failed on the old heading names, the letter
-    badges and the tabs inside `.tablenav`, as expected).
-  - `npm run build:test`, then `node tests/app/states.js --shard=n/103`: 102 (case 112) 93 s, 103 (case 113) 8 s, 73
-    (case 83), 86 (case 96), 81 (case 91), 12 (case 15), 79 (case 89), 87 (case 97), 91 (case 101), 101 (case 111):
-    each `all 1 runs passed`.
-  - Case 112 first content (RU = EN unless named): roll (four routes) 214.2 at 1180x720 and 1000x720, 264.4 at
-    900x720 and 768x1024, 360x640 unchanged (`/roll/std` 322.7, `/roll/alt` 253.9, community and mwt 249.9);
-    `/tables/eq_weapon`, `eq_armor`, `wondrous` 243.8 at 1180, 287.6 RU / 243.8 EN at 1000, 333.6 at 900 and 768, 230.4
-    at 360; `#/homebrew as gm3` 231.4 at 1180, 266.0 RU / 231.4 EN at 1000, 286.2 at 900 and 768, 242.4 at 360;
-    `/lists as gm4` and `/search` mark no first content in this read (logged).
-  - Case 96 (1180, 1050, 760, 390, RU and EN): every key one value per band; 1180 RU rows at 244, 1050 RU at 287.5, the
-    chips at X 117: the head holds still and S4 moved nothing.
-  - Sweep probe (`scratchpad/mkprobe.cjs`, `PROBE_RE` on the 12 roll, tables and homebrew pages of `sweep.js`, the
-    `targets` step included): `clean` at 1180 RU and EN, 768 RU and EN, 360 RU and 390 EN.
-  - Goldens: `node tests/app/golden.js --shard=n/4 --update`, n = 1 to 4 (each exit 0, shard 1 449 s): 139 files - 40
-    `_roll*` (the `h1` reads «Бросок» / "Roll"; the mode row's navigation moves into `main` after the `h1`), 56 `_tables*`
-    (the chips' landmark before the pin and the help; the tabs after them), 41 `_homebrew*` (the pills with their counts
-    before the pin; a pill's label text ends in the space before its count), and the two new states `_roll_alt_mid_band` and
-    `_homebrew_mid_band_as_gm3`. Unchanged: `_roll_wondrous_modal` (the dialog's tree holds no page head) and every
-    `_lists*`, `_search*`, `_s_*`, `_account*`, `_i_*`, `_h_*` and `_p_*` file. Re-seeded by the tool, none edited. After the `Chip` lint fix (the space moved into the
-    label text) `MSYS_NO_PATHCONV=1 node tests/app/golden.js --update --only="#/homebrew"` re-seeded the 79 homebrew states
-    again (259 s); the total stays 139.
-  - Detector `npx impeccable detect --json --no-inline-ignores app/src`: 60 findings (60 before), none new.
-  - `npm run lint:untyped`, `npm run lint:typed`: exit 0 after the last edit (the first `lint:typed` failed on a
-    `{' '}` in `Chip`, fixed). `npm run check:built`: pass, 268.8 kB within 269 (268.3 before).
-  - Budget (TD-R4): the configured build by `.claude/README.md`'s line (`.env.test.local` of the main checkout):
-    326.3 kB, past the 326 limit, so `tools/bundle-budget.mjs` raised it to 327 (the owner's rule: the measured total
-    rounded up, never past 350); `.claude/README.md` "The configured bundle budget" says so. Unconfigured stays 269.
-  - `node tests/run-all.js contracts,derived`: both ok (ROUTES.md's mode-row sentence changed prose only).
-  - Shots: `node issues/57/mocks/N/built/shoot.js`: 82 PNGs, none skipped.
-  - `VITEST_MAX_WORKERS=2 rtk npm run check:fast`: first FAIL (vitest: 20 of 40 in `homebrewCatalog.test.ts`, whose
-    source-tab helper read `.tablenav .tabs`; the tabs are under the head now, so it reads `.tabslot > .tabs` too; the
-    file then 40 pass); the second run is in the implementer's report (run last, after this file).
-
-- TD CI fix, 2026-11-06 (previous sha `0e78f7e8`), each in the foreground or waited on:
-  - `npm run build:test`, then `node tests/app/states.js --shard=85/101` (case 95): red before (`and 12 more 0.4` at
-    1180 EN, as CI), `all 1 runs passed` after. `node tests/app/sweep.js 1180 en`: `clean at 1180 (en)`.
-  - `node tests/app/golden.js --only="own set as gm1"`: `unchanged` before and after (the race does not reproduce
-    here); no golden re-seeded. Goldens are trees, so the fold's box moves none of the FoldButton family.
-  - `npm run lint:untyped`, `npm run lint:typed`: exit 0. `npm run check:built`: pass, 268.3 kB within 269.
-  - `VITEST_MAX_WORKERS=2 rtk npm run check:fast`: see the implementer's report (run last).
-- TD fix pass, 2026-11-06 (previous sha `d22f93a5`), each in the foreground or waited on; vitest with
-  `VITEST_MAX_WORKERS=2`:
-  - Probe: `scratchpad/mkprobe.cjs` writes `sweep-probe.cjs`, `tests/app/sweep.js` with the page list filtered by
-    `PROBE_RE` (the same `targets` call and floors). On the `cd2a2904` build at 1180: 22 FAIL (the CI reports, RU and
-    EN). After (`npm run build:test`): 1180, 768 (RU, EN), 360 (RU, EN) and 390 EN on the failing pages: each `clean`.
-    The 360/390/768 red is CI's log, not re-run locally.
-  - `node tests/app/sweep.js 1180 en` (all pages, the N6 spacing included): `clean at 1180 (en)`.
-  - `node tests/app/states.js --shard=73/101` (case 83): `all 1 runs passed`. At 360x640, RU = EN: `/roll/std` 323
-    (325), `/roll/alt` and `~ crit` 254, `voa` and `wondrous` 250, `LIST_A` 210, `~ many` 254, `~ long name` 210,
-    `SHOP ~ requests` 304 (304), `/lists as gm1` 238, `~ many lists` 251; 1180 rows unchanged.
-  - `node tests/app/states.js --shard=n/101`, n = 99 (case 109), 79 (case 89), 98 (case 108): each `all 1 runs passed`.
-  - Vitest: `app.test.ts` + `importPanel.test.ts` 362 pass; `homebrewImport`, `homebrewPage`, `listsPage` 229 pass;
-    `shell`, `listPage`, `record`, `requestsPanel` 405 pass. The eight finds at the default timeout failed on TD
-    before `AFTER_ERROR` (TD's first `check:fast`), so the red is recorded there.
-  - `npm run lint:untyped`, `npm run lint:typed`: exit 0. `npm run check:built`: pass, 268.3 kB within 269.
-  - Goldens: not run locally (CSS boxes and a test helper only; no tree line moves); CI's golden job.
-  - `VITEST_MAX_WORKERS=2 rtk npm run check:fast`: see the implementer's report (run last, after this file).
-
-## Verification (batch TD)
-- Batch TD, 2026-11-06 (previous sha `ee4ddc74`), each in the foreground unless named; vitest with
-  `VITEST_MAX_WORKERS=2`:
-  - Red first: a detached worktree of `ee4ddc74` (outside the repo, removed after) with the new `states.js`, `lib.js`
-    and `derived.js`: case 108 13 FAIL (no page toast class, no long or held toast), case 110 FAIL on every row (dashed,
-    gaps 4-14 px), case 111 273 FAIL (leads at 70ch and two lines, help boxes 1097 px, the footer past 70ch).
-    `sweep.js 360 ru` on the `ee4ddc74` build: 984 target reports.
-  - After (`npm run build:test` of the final tree): `node tests/app/states.js --shard=n/101`, n = 98 (108), 99 (109),
-    100 (110), 101 (111), 73 (83), 79 (89): each `all 1 runs passed`, except 83 before the `/s/` exception (4 FAIL at
-    308.2 against 302; passes at 309). `node tests/app/sweep.js 360 ru`: `clean at 360 (ru)`.
-  - Vitest: `app.test.ts` 310, `shell.test.ts` 135, `listsPage.test.ts` 52, `listPage.test.ts` 108,
-    `sharedListPage.test.ts` 116: all pass.
-  - `node tests/run-all.js derived`: ok (the two new blocks included). `node tools/build.js`: exit 0.
-  - Goldens: `MSYS_NO_PATHCONV=1 node tests/app/golden.js --update --only=<id>` for the six ids (D S9): each
-    "states compared: 1", six files, line 3 only.
-  - Detector `npx impeccable detect --json --no-inline-ignores app/src`: 60 findings, none new.
-  - `npm run lint:untyped`, `npm run lint:typed`: exit 0 after the last edit. `rtk npm run check:built`: pass, 268.2 kB
-    within 269. `VITEST_MAX_WORKERS=2 rtk npm run check:fast`: first FAIL (8 tests of `homebrewImport`, `homebrewPage`,
-    `importPanel` found a plain toast behind a 7000 or 10000 ms error inside the 5000 ms find; Deviation 7), then PASS
-    in 1034 s (3 stages 87 s, vitest 2134 tests, budget), gate credit armed.
-- First screen (case 83 rows at 360x640, RU = EN; before `ee4ddc74` / after): `/roll/std` 323 / 319 (exception 325);
-  `/roll/alt`, `~ crit`, `voa`, `wondrous` 251 / 246; `/tables/eq_weapon` 234 / 230, `~ two filters` 252 / 248;
-  `/i/ci1` and `/h/...0513` 137 / 136; `/search ~ searched` 230 / 232; `/account as gm1` 192 / 191; `/homebrew as gm3`
-  243 / 242; `/homebrew/sets ~ long name` 241 / 240; `/homebrew/new` 223 / 223; `/homebrew/hb_longsrc...` 246 / 245;
-  `/lists as gm1` 239 / 238; `/lists ~ many lists` 252 / 251; `LIST_A` 210 / 209, `~ many` 254 / 253, `~ long name`
-  210 / 209; `/s/player-token-1` and `~ long name` 301 / 308.2 (exception 302 to 309); `SHOP ~ requests` 304 / 303;
-  `/p/set-emberaxe` (logged) 583 / 579 RU. At 1180x720: `/search ~ searched` and `~ kind picked` 279 / 257,
-  `/homebrew as gm3` 254 / 231, `/homebrew/sets ~ long name` 252 / 229; the rest unchanged.
-- Plates (case 110, the gap in px, RU = EN, 360 / 1180; before / after 16): `/search` and `~ narrow`, `~ nothing found`
-  8 / 4; `~ kind picked` 10 / 4; `/tables ~ nothing found`, `eq_armor`, `wondrous` 6 / 12; `/tables/homebrew as gm2`
-  6 / 4; `/homebrew ~ no match` 12 / 12; sets and rules empty 10 / 10; `/lists` signed out 8 / 14; `~ empty` 10 / 10;
-  `~ nothing found` 6 / 10; `LIST_A ~ no match` 8 / 10; `/s/ ~ no match` 8 / 10.
-- Text measure (MT-7; 1180 and 1920 RU; before from `mocks/text/today-summary.txt`, after from case 111): the
-  `/search`, `/homebrew` and `/account` leads 2 lines / 1 line; the `/lists` sign-in lead 2 / 1 (and 1 from 768); the
-  plate causes 1 / 1; the `/lists ~ empty` hint 2 / 1; the help panel boxes 1097 px / 487 px around 487 px paragraphs;
-  the Vault of Ages and arazo panels hug at 487 px; the footer license 165-220 / under 70ch a line. `/lists` and
-  `/account` signed out rise one lead line (22.4 px) from 768 px; neither is a `FIRST_SCREEN` row.
-- Batch CI fix pass and earlier: `git show ee4ddc74:issues/57/handoff.md`, "Verification".
 
 ## Next batch (implement-ready)
-- First: CI of the N fix-pass tip (the full gate).
-- Then: batch P (print; `issues/57/plan-P.md`, mocks `issues/57/mocks/P/`). Cases 114 and 115. The last case in
-  `states.js` is 113 (103 cases; `--shard=n/103` runs one: 102 is case 112, 103 is case 113).
-- P reads N's head: from 761 px a roll page's `h1` is «Бросок» and the mode pills are in `main`'s head, not above it.
-- Gates: as `plan-P.md`, "Verification"; vitest with `VITEST_MAX_WORKERS=2`, one file at a time; `check:fast` last.
-  The bundle figures after the N fix pass are under Verification (269.2 of 270, configured 326.7 of 327).
+- First: the batch P review (`reviews/P.md`; the trigger is in Status), then CI of the P tip.
+- Then: batch 10 (the docs lock and the cleanup; `plan.md` section 7). `states.js` ends at case 115 (105 cases;
+  `--shard=n/105` runs one: 104 is case 114, 105 is case 115).
+- `polish` and `harden` on `/p/` (360, 390, 768, 1180 px, RU and EN) and on the print renders are the orchestrator's
+  (acceptance 28).
 
 ## Blockers
 - None.
@@ -484,7 +424,6 @@ placement named:
 | Monospace labels and uppercase controls outside their rules | 10-16 |
 | `reviews/CI.md` N6 | 10-18 |
 | `/search` at 320x568 RU; 4-R1; the dialog art at 500-760 px; `reviews/5.md` and `reviews/6.md` checks | 10-18 (closeout register); rows stay below |
-| `KeepNote.svelte` leaves with batch P | P-D15 (`plan-P.md` acceptance 12 and 30); row stays below |
 | Add-to-list states with a closed EN menu | done in 9b (acceptance 20); row removed |
 
 Rows below keep facts no acceptance line carries:
@@ -542,7 +481,6 @@ Rows below keep facts no acceptance line carries:
   the owner says yes; one added item with its own mock check.
 - N0-2 of `reviews/mocks-2.md` (batch 4): the error-page pattern's circled icon
   is a template shape; keep the heading, the cause and the action.
-- `KeepNote.svelte` leaves with batch P (the Account page's Display note left with batch 7).
 - The link-preview Worker's card images (`tools/share-card.mjs`).
 - The EN `<title>`, manifest name and `en/index.html` wordmark.
 

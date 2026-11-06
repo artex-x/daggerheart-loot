@@ -20,7 +20,8 @@ import {
   memoryRouter,
   memoryStorage,
   type Band,
-  type FakeMedia
+  type FakeMedia,
+  type FontsPort
 } from '../ports/index.js';
 import { AppState } from '../state/app.svelte.js';
 import { readLoot } from './loot.js';
@@ -57,6 +58,8 @@ export async function editor(
     media?: FakeMedia;
     /* The layout band; wide by default. */
     band?: Band;
+    /* The fonts port; answers at once by default. */
+    fonts?: FontsPort;
   } = {}
 ): Promise<EditorView> {
   const as = opts.as === undefined ? 'gm1' : opts.as;
@@ -71,8 +74,9 @@ export async function editor(
   const data = opts.real ? { data: fakeData(REAL) } : {};
   const media = opts.media ?? fakeMedia();
   const viewport = opts.band ? { viewport: fakeViewport(opts.band) } : {};
+  const fonts = opts.fonts ? { fonts: opts.fonts } : {};
   const app = new AppState(
-    fakeEnv({ cloud, router, dialog, page, storage, media, ...data, ...viewport })
+    fakeEnv({ cloud, router, dialog, page, storage, media, ...data, ...viewport, ...fonts })
   );
   app.start();
   await flush();

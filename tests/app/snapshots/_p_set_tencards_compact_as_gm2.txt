@@ -18,26 +18,25 @@ RootWebArea "Генератор лута Daggerheart" [url=/p/set-tencards?as=gm
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
+    link "Назад" [url=/roll/std]
     heading "Печать карточек" [level=1]
-    StaticText "Карточек: 10. Листов A4: 1. Размер карты 44×63 мм - шестнадцать ..." [namelen=72 namehash=acdf8cab]
-    button "Назад"
-    button "Отправить на печать"
-    button "Цветная" [pressed=true]
-    button "Чёрно-белая" [pressed=false]
-    button "Обычная" [pressed=false]
-    button "Компактная" [pressed=true]
+    button "Напечатать"
+    button "Цвет" [pressed=true]
+    button "Ч/б" [pressed=false]
+    button "63×88" [pressed=false]
+    button "44×63" [pressed=true]
     button "Ссылка на набор"
-    StaticText "Только до перезагрузки. Чтобы сохранить, измените в "
-    link "настройках аккаунта" [url=/account]
-    ... StaticText x40 of 44 same-shape siblings elided
     status ""
+    StaticText "ПРЕДМЕТ"
     heading "ПЕРВОКЛАССНЫЙ СПАЛЬНЫЙ МЕШОК" [level=2]
+    StaticText "Во время отдыха вы автоматически очищаете Стресс."
+    ... StaticText x27 of 31 same-shape siblings elided
     heading "ПРОНЗИТЕЛЬНАЯ СВИРЕЛЬ" [level=2]
     ... heading x6 of 10 same-shape siblings elided
     heading "БАНКА С ОГНЁМ" [level=2]
     heading "ПОДВЕШЕННЫЙ ЖЕЗЛ" [level=2]
-    StaticText "Daggerheart"
     StaticText "Core"
+    StaticText "Карточек: 10. Листов A4: 1. Размер карты 44×63 мм - шестнадцать ..." [namelen=72 namehash=acdf8cab]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -46,26 +45,25 @@ RootWebArea "Генератор лута Daggerheart" [url=/p/set-tencards?as=gm
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
+44×63
+63×88
 EN
 RU
 daggerheart.com
 Аккаунт: gm2@example.test
 Бросок
 К содержимому
-Компактная
 Конфиденциальность
 ЛутDaggerheart
 Назад
-Обычная
-Отправить на печать
+Напечатать
 Поиск
 Ссылка на набор
 Таблицы
 Условия использования
 Установить как приложение
-Цветная
-Чёрно-белая
-настройках аккаунта
+Цвет
+Ч/б
 
 ## en :: tree
 RootWebArea "Daggerheart Loot Generator" [url=/en/p/set-tencards?as=gm2]
@@ -82,26 +80,25 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/p/set-tencards?as=gm2]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
+    link "Back" [url=/en/roll/std]
     heading "Printing cards" [level=1]
-    StaticText "Cards: 10. A4 sheets: 1. Card size 44×63 mm - sixteen to a sheet..." [namelen=65 namehash=8bad63d8]
-    button "Back"
-    button "Send to printer"
+    button "Print"
     button "Color" [pressed=true]
-    button "Black and white" [pressed=false]
-    button "Standard" [pressed=false]
-    button "Compact" [pressed=true]
+    button "B&W" [pressed=false]
+    button "63×88" [pressed=false]
+    button "44×63" [pressed=true]
     button "Link to this set"
-    StaticText "Only until the page reloads. To keep it, change it in "
-    link "your account settings" [url=/en/account]
-    ... StaticText x40 of 44 same-shape siblings elided
     status ""
+    StaticText "ITEM"
     heading "PREMIUM BEDROLL" [level=2]
+    StaticText "During downtime, you automatically clear a Stress."
+    ... StaticText x27 of 31 same-shape siblings elided
     heading "PIPER WHISTLE" [level=2]
     ... heading x6 of 10 same-shape siblings elided
     heading "FIRE JAR" [level=2]
     heading "SUSPENDED ROD" [level=2]
-    StaticText "Daggerheart"
     StaticText "Core"
+    StaticText "Cards: 10. A4 sheets: 1. Card size 44×63 mm - sixteen to a sheet..." [namelen=65 namehash=8bad63d8]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -110,23 +107,22 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/p/set-tencards?as=gm2]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
+44×63
+63×88
 Account: gm2@example.test
+B&W
 Back
-Black and white
 Color
-Compact
 EN
 Install as an app
 Link to this set
 LootDaggerheart
+Print
 Privacy
 RU
 Roll
 Search
-Send to printer
 Skip to content
-Standard
 Tables
 Terms of use
 daggerheart.com
-your account settings

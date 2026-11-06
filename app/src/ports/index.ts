@@ -12,6 +12,7 @@ import { browserImage, fakeImage } from './image.js';
 import { browserMedia, fakeMedia } from './media.js';
 import { nativeDrag, noDrag } from './drag.js';
 import { browserMotion, fakeMotion } from './motion.js';
+import { browserFonts, fakeFonts } from './fonts.js';
 import { browserViewport, fakeViewport } from './viewport.js';
 import { browserScroll, fakeScroll } from './scroll.js';
 import { browserPage, fakePage } from './page.js';
@@ -31,6 +32,8 @@ export { browserMedia, fakeMedia, fakePicture } from './media.js';
 export type { FakeMedia } from './media.js';
 export { fakeDrag, nativeDrag, noDrag } from './drag.js';
 export { browserMotion, fakeMotion } from './motion.js';
+export { browserFonts, fakeFonts } from './fonts.js';
+export type { FakeFonts } from './fonts.js';
 export { browserViewport, fakeViewport } from './viewport.js';
 export type { FakeViewport } from './viewport.js';
 export { browserScroll, fakeScroll } from './scroll.js';
@@ -61,6 +64,7 @@ export function browserEnv(): Env {
     dialog: browserDialog(),
     pwa: browserPwa(),
     motion: browserMotion(),
+    fonts: browserFonts(),
     viewport: browserViewport(),
     scroll: browserScroll(),
     page: browserPage(),
@@ -88,6 +92,7 @@ export function fakeEnv(over: Partial<Env> = {}): Env {
     dialog: fakeDialog(),
     pwa: fakePwa(),
     motion: fakeMotion(),
+    fonts: fakeFonts(),
     viewport: fakeViewport(),
     scroll: fakeScroll(),
     page: fakePage(),

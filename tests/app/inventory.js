@@ -3014,7 +3014,7 @@ const STATES = [
     why: 'the other layout: no art, the band, the tag and the mark in a row over the name, -bw vectors; the note under the bar',
     enter: async (d) => {
       await sheet(d);
-      await d.click('Чёрно-белая');
+      await d.click('Ч/б');
     }
   },
   {
@@ -3040,7 +3040,7 @@ const STATES = [
     why: 'the same nine, the other layout; the note under the bar',
     enter: async (d) => {
       await sheet(d);
-      await d.click('Чёрно-белая');
+      await d.click('Ч/б');
     }
   },
   {
@@ -3059,14 +3059,14 @@ const STATES = [
     why: 'the same, with the black-and-white padding floor; the note under the bar',
     enter: async (d) => {
       await sheet(d);
-      await d.click('Чёрно-белая');
+      await d.click('Ч/б');
     }
   },
   {
     id: TEN + ' as gm2',
     route: TEN,
     as: 'gm2',
-    why: 'a second sheet: eighteen places, eight blank, the second sheet a page break; "Листов A4: 2"',
+    why: 'a second sheet: eighteen places, eight blank, the second sheet a page break with «Лист 2 из 2» before it; "Листов A4: 2" under the last sheet',
     enter: sheet
   },
   {
@@ -3092,7 +3092,7 @@ const STATES = [
     why: 'the same seven, the other layout; the note under the bar',
     enter: async (d) => {
       await sheet(d);
-      await d.click('Чёрно-белая');
+      await d.click('Ч/б');
     }
   },
   {
@@ -3111,7 +3111,7 @@ const STATES = [
     why: 'the same nine, the other layout; the note under the bar',
     enter: async (d) => {
       await sheet(d);
-      await d.click('Чёрно-белая');
+      await d.click('Ч/б');
     }
   },
   {
@@ -3121,7 +3121,7 @@ const STATES = [
     why: 'the compact sheet in color: the size switch pressed, the compact subtitle, sixteen places, fourteen blank; the note under the bar',
     enter: async (d) => {
       await sheet(d);
-      await d.click('Компактная');
+      await d.click('44×63');
     }
   },
   {
@@ -3131,8 +3131,8 @@ const STATES = [
     why: 'the compact sheet in black and white: both switches pressed away from their defaults; the note under the bar',
     enter: async (d) => {
       await sheet(d);
-      await d.click('Чёрно-белая');
-      await d.click('Компактная');
+      await d.click('Ч/б');
+      await d.click('44×63');
     }
   },
   {
@@ -3143,7 +3143,7 @@ const STATES = [
     why: 'every card shape on the compact sheet, in color; the note under the bar',
     enter: async (d) => {
       await sheet(d);
-      await d.click('Компактная');
+      await d.click('44×63');
     }
   },
   {
@@ -3154,8 +3154,8 @@ const STATES = [
     why: 'every card shape on the compact sheet, in black and white: the grow rung at 44 mm; the note under the bar',
     enter: async (d) => {
       await sheet(d);
-      await d.click('Чёрно-белая');
-      await d.click('Компактная');
+      await d.click('Ч/б');
+      await d.click('44×63');
     }
   },
   {
@@ -3166,7 +3166,7 @@ const STATES = [
     why: 'the color fit ladder at 44 mm on the longest texts; the note under the bar',
     enter: async (d) => {
       await sheet(d);
-      await d.click('Компактная');
+      await d.click('44×63');
     }
   },
   {
@@ -3177,8 +3177,8 @@ const STATES = [
     why: 'the black-and-white fit at 44 mm on the longest texts; the note under the bar',
     enter: async (d) => {
       await sheet(d);
-      await d.click('Чёрно-белая');
-      await d.click('Компактная');
+      await d.click('Ч/б');
+      await d.click('44×63');
     }
   },
   {
@@ -3188,7 +3188,7 @@ const STATES = [
     why: 'ten cards on one compact sheet: sixteen places, six blank, no page break; "Листов A4: 1"; the note under the bar',
     enter: async (d) => {
       await sheet(d);
-      await d.click('Компактная');
+      await d.click('44×63');
     }
   },
   {
@@ -4233,7 +4233,7 @@ const STATES = [
     why: "a page pick away from the account's default: color on the compact sheet; the note under the bar",
     enter: async (d) => {
       await sheet(d);
-      await d.click('Цветная');
+      await d.click('Цвет');
     }
   },
   {
@@ -4250,25 +4250,45 @@ const STATES = [
     why: "an own item's picture on print: the axe's color card draws its picture (the catalog's ci1.webp, seeded), as print.js pins",
     enter: async (d) => {
       await sheet(d);
-      await d.click('Цветная');
+      await d.click('Цвет');
     }
   },
   {
     id: '#/p/set-ownitems ~ colour for this visit as gm1',
     route: '#/p/set-ownitems',
     as: 'gm1',
-    why: 'the same two own items in color on the compact sheet; the note under the bar',
+    why: 'the same two own items in color on the compact sheet; «Цвет» pressed for this visit, no note under the bar',
     enter: async (d) => {
       await sheet(d);
-      await d.click('Цветная');
+      await d.click('Цвет');
     }
   },
   {
     id: '#/p/set-emberaxe as gm2',
     route: '#/p/set-emberaxe',
     as: 'gm2',
-    why: "gm1's axe in a set made by another account, read by gm2 on the standard color sheet, its source line the path",
+    why: "gm1's axe in a set made by another account, read by gm2 on the standard color sheet, its source line the path; «Назад» and the heading on one row, then «Напечатать», the two switches and «Ссылка на набор»; the sub line under the sheet",
     enter: sheet
+  },
+  {
+    id: '#/p/set-emberaxe ~ phone as gm2',
+    route: '#/p/set-emberaxe',
+    as: 'gm2',
+    width: 360,
+    why: 'up to 760 px: «Назад» and the heading, the two switches on one row, one card the column wide, the sub line under it, and the dock with «Напечатать» and «Ещё»',
+    enter: sheet
+  },
+  {
+    id: '#/p/set-emberaxe ~ phone more as gm2',
+    route: '#/p/set-emberaxe',
+    as: 'gm2',
+    width: 360,
+    why: "the dock's «Ещё» open upward with its one item «Ссылка на набор»",
+    enter: async (d) => {
+      await sheet(d);
+      await d.openMore('.pdock .morewrap > [aria-haspopup="menu"]');
+    },
+    again: (d) => d.openMore('.pdock .morewrap > [aria-haspopup="menu"]')
   },
   /* gm4's «Свиток Узоролиста»: every construct of the formatted text
      (docs/specs/FEATURES.md, "Records", "Formatted text"). */
@@ -4291,7 +4311,7 @@ const STATES = [
     id: '#/p/set-clipped1 as gm2',
     route: '#/p/set-clipped1',
     as: 'gm2',
-    why: "gm4's item at the 3000-character text on the standard color sheet: the card cut off, the warning box «Текст не помещается на карточки при печати: 1. ...» in the bar before the gray note, «Отправить на печать» enabled",
+    why: "gm4's item at the 3000-character text on the standard color sheet: the card cut off, the warning box «Текст не помещается на карточки при печати: 1. ...» in the bar, the sub line under the sheet, «Напечатать» enabled",
     enter: async (d) => {
       await sheet(d);
       for (let i = 0; i < 40 && !(await d.text()).includes('Текст не помещается'); i++)
@@ -4302,7 +4322,7 @@ const STATES = [
     id: '#/p/set-longsrc1 as gm2',
     route: '#/p/set-longsrc1',
     as: 'gm2',
-    why: "gm4's item with an 80-code-point source and section on the standard color sheet: the source line wraps right-aligned beside «Daggerheart», the art block draws the kind glyph on the light print well",
+    why: "gm4's item with an 80-code-point source and section on the standard color sheet: the source line alone on the bottom line, wrapped right-aligned in the whole width, the art block draws the kind glyph on the light print well",
     enter: sheet
   },
   {
@@ -4312,7 +4332,7 @@ const STATES = [
     why: 'the same card on the compact color sheet: the source line still inside the card',
     enter: async (d) => {
       await sheet(d);
-      await d.click('Компактная');
+      await d.click('44×63');
     }
   },
   {
@@ -4343,7 +4363,7 @@ const STATES = [
     id: '#/homebrew/' + HB_AXE + ' ~ print preview as gm1',
     route: '#/homebrew/' + HB_AXE,
     as: 'gm1',
-    why: '«На печати» of «Показать карточку» pressed: the print groups on «Чёрно-белая» and «Компактная», the 44x63 mm black-and-white print card in place of the screen card, no «В список», no warning',
+    why: '«На печати» of «Показать карточку» pressed: the print groups on «Ч/б» and «44×63», the 44x63 mm black-and-white print card in place of the screen card, no «В список», no warning',
     enter: async (d) => {
       await d.click('На печати');
     }
@@ -4352,12 +4372,12 @@ const STATES = [
     id: '#/homebrew/new ~ print preview clipped as gm1',
     route: '#/homebrew/new',
     as: 'gm1',
-    why: 'a name and a 3000-character «Описание», «На печати», then «Цветная»: the compact color print card cut off, the warning box «Текст не помещается на карточку при печати...» after «3000 / 3000», «Сохранить» enabled',
+    why: 'a name and a 3000-character «Описание», «На печати», then «Цвет»: the compact color print card cut off, the warning box «Текст не помещается на карточку при печати...» after «3000 / 3000», «Сохранить» enabled',
     enter: async (d) => {
       await d.type('Название', 'Свиток долгой ночи');
       await d.type('Описание', CLIPPED_TEXT);
       await d.click('На печати');
-      await d.click('Цветная');
+      await d.click('Цвет');
       for (let i = 0; i < 40 && !(await d.text()).includes('Текст не помещается'); i++)
         await d.settle();
     }

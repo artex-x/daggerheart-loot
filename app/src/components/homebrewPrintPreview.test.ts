@@ -5,6 +5,7 @@ import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/sv
 import { tick } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { dict } from '../lib/dict.js';
+import { fakeFonts } from '../ports/index.js';
 import { PREVIEW_FIT_MS } from '../lib/print.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 import {
@@ -45,7 +46,7 @@ describe('the view switch', () => {
     expect(container.querySelector('.preview article.card')).not.toBeNull();
     expect(screen.getByRole('button', { name: t.toList })).toBeInTheDocument();
     expect(printCard()).toBeNull();
-    expect(screen.queryByRole('group', { name: t.printTitle })).toBeNull();
+    expect(screen.queryByRole('group', { name: t.printInk })).toBeNull();
     await expectNoA11yViolations(container);
   });
 
@@ -55,13 +56,12 @@ describe('the view switch', () => {
     /* gm1's Display default: black and white, compact. */
     expect(app.shownPrintBW).toBe(true);
     expect(app.shownPrintCompact).toBe(true);
-    expect(pressed(t.printTitle, t.printBW)).toBe('true');
+    expect(pressed(t.printInk, t.printBW)).toBe('true');
     expect(pressed(t.printSize, t.printCompact)).toBe('true');
     expect(printCard()).toHaveClass('bw');
     expect(container.querySelector('.preview .pframe')).toHaveClass('compact');
     expect(container.querySelector('.preview article.card')).toBeNull();
     expect(screen.queryByRole('button', { name: t.toList })).toBeNull();
-    expect(container.querySelector('.keepnote')).toBeNull();
     expect(printCard()?.querySelector('.pc-name')).toHaveTextContent('Топор Тлеющих Углей');
     /* The first draw takes the draft at once. */
     expect(printText()).toContain('Лезвие тлеет');
@@ -71,7 +71,7 @@ describe('the view switch', () => {
   it('writes the visit pick from its switches and remounts the card on a size change', async () => {
     const { app, container } = await editor(AXE);
     await printView();
-    await press(t.printTitle, t.printColor);
+    await press(t.printInk, t.printColor);
     expect(app.shownPrintBW).toBe(false);
     expect(printCard()).not.toHaveClass('bw');
     const before = printCard();
@@ -79,7 +79,7 @@ describe('the view switch', () => {
     expect(app.shownPrintCompact).toBe(false);
     expect(container.querySelector('.preview .pframe')).not.toHaveClass('compact');
     expect(printCard()).not.toBe(before);
-    await press(t.printTitle, t.printBW);
+    await press(t.printInk, t.printBW);
     expect(app.shownPrintBW).toBe(true);
     expect(printCard()).toHaveClass('bw');
   });
@@ -94,6 +94,33 @@ describe('the view switch', () => {
       expect(printCard()?.querySelector('.pc-name')).toHaveTextContent('Ember Axe');
     });
     expect(printText()).toContain('The blade smoulders');
+  });
+});
+
+describe('the print card after the face loads', () => {
+  it('fits the card again when a loading face arrives, and not when none was loading', async () => {
+    for (const loading of [true, false]) {
+      let reads = 0;
+      const restore = fakeLayout(() => {
+        reads++;
+        return 50;
+      }, 0);
+      try {
+        const fonts = fakeFonts(true);
+        const { unmount } = await editor(AXE, { fonts });
+        await printView();
+        await new Promise((r) => setTimeout(r, 20));
+        const once = reads;
+        expect(once, String(loading)).toBeGreaterThan(0);
+        fonts.release(loading);
+        await new Promise((r) => setTimeout(r, 20));
+        if (loading) expect(reads).toBeGreaterThan(once);
+        else expect(reads).toBe(once);
+        unmount();
+      } finally {
+        restore();
+      }
+    }
   });
 });
 
@@ -282,7 +309,7 @@ describe('the drafts a print card draws', () => {
     await editor(null);
     await cropFile();
     await printView();
-    await press(t.printTitle, t.printColor);
+    await press(t.printInk, t.printColor);
     const img = printCard()?.querySelector<HTMLImageElement>('.pc-img');
     expect(img?.src).toBe('blob:fake-2');
   }, 30_000);

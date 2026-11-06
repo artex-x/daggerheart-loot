@@ -630,7 +630,7 @@ const COVERED: Record<string, string> = {
     'tableNav.test.ts: the picker sheet open, the groups and the tabs parts at mid and wide; tables.test.ts',
   'Field.svelte': 'the number field on every roll page, and the rows above it',
   'Icon.svelte': 'the card actions and the pin toggle',
-  'KeepNote.svelte': 'the note under the print bar in printPage.test.ts',
+  'Crumb.svelte': 'crumb.test.ts, and the editor and print page heads in their own tests',
   'ListsPage.svelte': 'listsPage.test.ts, and the state above',
   'LoadState.svelte':
     'the loading and failed account reads above; homebrewCatalog.test.ts failed, with axe; homebrewPage.test.ts, homebrewEditor.test.ts and record.test.ts loading and failed',

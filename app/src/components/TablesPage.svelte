@@ -584,7 +584,7 @@
      row 8px low - `[data-row="ci1"]`'s absolute top reads 493.97 at effect
      time against 485.97 once the page settles, and `scrollHeight` 5909
      against 5890 - so `#/tables/core_item ~ row anchor` went from exact to
-     6-8% at 1100 and 768 when this was tried. `document.fonts.ready` is doing
+     6-8% at 1100 and 768 when this was tried. The font set's `ready` is doing
      duty as "the document has finished loading", which is what it actually
      tracks with an empty font set, and by then the layout is final.
 
@@ -596,9 +596,8 @@
      8.47%, for `#/tables/core_item ~ row anchor @ en 375`. That is fixed
      where it belongs, in `tests/app/driver.js`: `ready()` now waits for
      the same promise, so the sweep cannot start before this scroll has
-     happened.
-     `document.fonts` does not exist in jsdom, so component tests fall through
-     to an already-resolved promise. */
+     happened. The wait goes through the fonts port (`app.env.fonts`); either answer
+     means the layout is final. */
   let flashKey = $state('');
   /* An anchor's target and every row above it draw in the first task (`TableRows`). */
   const anchored = $derived(app.route.kind === 'tables' && !!app.route.anchor);
@@ -636,11 +635,7 @@
       flashTimer = setTimeout(() => {
         flashKey = '';
       }, 1600);
-      /* `document.fonts` is declared non-optional in lib.dom, but jsdom does
-         not implement it - the cast is what lets a component test run this
-         effect without FontFaceSet existing at all. */
-      const fonts = (document as unknown as { fonts?: { ready: Promise<unknown> } }).fonts;
-      void (fonts?.ready ?? Promise.resolve()).then(() => {
+      void app.env.fonts.settled().then(() => {
         /* The lookup happens here, not above: the element the effect saw at
            trigger time can be replaced by a keyed re-render (a language
            switch swaps the row's text nodes; a view switch swaps list rows

@@ -2161,7 +2161,12 @@ async function accountPreferences() {
     await waitIn(page, () => !!document.querySelector('.psheet'));
     return page.evaluate(() => ({
       bw: document.querySelector('.psheet.bw') !== null,
-      note: document.querySelector('.keepnote a')?.getAttribute('href') ?? null
+      /* No note under the bar: the switch shows the visit's pick alone. */
+      note: document.querySelector('.printbar a[href="/account"]') !== null,
+      pressed:
+        [...document.querySelectorAll('.printbar .seg button')]
+          .find((b) => b.textContent.trim() === 'Ч/б')
+          ?.getAttribute('aria-pressed') ?? null
     }));
   };
   const accountPrefs = () =>
@@ -2169,28 +2174,30 @@ async function accountPreferences() {
   await c.d.open('#/p/set-twocards', { as: 'gm2' });
   await sheet(c.page);
   const before = await accountPrefs();
-  await c.d.click('Чёрно-белая');
+  await c.d.click('Ч/б');
   const kept = await c.d.storage('dhloot.prefs.v1');
   ok(kept === SEEDED, at + 'c: the print page press changed dhloot.prefs.v1 - ' + kept);
   const account = await accountPrefs();
   ok(account === before, at + 'c: the print page press changed the account row - ' + account);
   let seen = await sheet(c.page);
   ok(
-    seen.bw && seen.note === '/account',
-    at + 'c: the press did not draw black and white with the note - ' + JSON.stringify(seen)
+    seen.bw && !seen.note && seen.pressed === 'true',
+    at +
+      'c: the press did not draw black and white, pressed, with no note - ' +
+      JSON.stringify(seen)
   );
   await c.d.go('#/lists');
   await c.d.go('#/p/set-twocards');
   seen = await sheet(c.page);
   ok(
-    seen.bw && seen.note === '/account',
+    seen.bw && !seen.note && seen.pressed === 'true',
     at + 'c: the pick did not survive a return from #/lists - ' + JSON.stringify(seen)
   );
   await c.d.open('#/p/set-twocards', { as: 'gm2' });
   seen = await sheet(c.page);
   ok(
-    !seen.bw && seen.note === null,
-    at + 'c: a reload did not draw the color default without the note - ' + JSON.stringify(seen)
+    !seen.bw && !seen.note && seen.pressed === 'false',
+    at + 'c: a reload did not draw the color default - ' + JSON.stringify(seen)
   );
   await c.ctx.close();
 }
@@ -5627,7 +5634,7 @@ const FIRST_SCREEN = [
   /* Its enter presses a kind chip, which draws from 761 px only. */
   { state: '#/search ~ kind picked', shipped: true, wideOnly: true },
   { state: '#/account as gm1', shipped: true },
-  { state: '#/p/set-emberaxe as gm2', shipped: false },
+  { state: '#/p/set-emberaxe as gm2', shipped: true },
   { state: '#/homebrew as gm3', shipped: true },
   { state: '#/homebrew/sets ~ long name as gm4', shipped: true },
   { state: '#/homebrew/new as gm1', shipped: true },
@@ -9711,6 +9718,297 @@ async function dieMarks() {
   }
 }
 
+/** 114. The print page head and dock (docs/specs/FEATURES.md, "Print"; DESIGN.md, "The Two
+ *  Breakpoints Rule"): the way back and the heading on one row; from 761 px the primary,
+ *  the two switches and the link in one row under it; up to 760 px the switches under it,
+ *  one card per row and a dock with the primary and «Ещё»; the sheet inside the first
+ *  screen; «Лист 2 из 2» before a second sheet; the Thumb Rule at 360 and 390 px. */
+async function printHead() {
+  const at = '114 (the print page head and dock): ';
+  const WORDS = {
+    ru: { print: 'Напечатать', more: 'Ещё', link: 'Ссылка на набор', sheet2: 'Лист 2 из 2' },
+    en: { print: 'Print', more: 'More', link: 'Link to this set', sheet2: 'Sheet 2 of 2' }
+  };
+  for (const [width, height] of [
+    [360, 640],
+    [390, 844],
+    [768, 1024],
+    [1180, 720]
+  ]) {
+    for (const lang of ['ru', 'en']) {
+      const w = WORDS[lang];
+      const narrow = width <= 760;
+      const where = at + width + ' ' + lang + ': ';
+      const { ctx, page, d } = await fresh({ width, height, lang });
+      try {
+        await d.open('#/p/set-emberaxe', { as: 'gm2', lang });
+        await waitIn(page, () => !!document.querySelector('.psheet'));
+        await d.settle();
+        const m = await page.evaluate(() => {
+          const name = (e) => e.textContent.trim();
+          const bar = document.querySelector('.printbar');
+          const crumb = bar?.querySelector('.crumb');
+          const row = bar?.querySelector('.prow');
+          const first = document.querySelector('.psheet').getBoundingClientRect();
+          const main = document.querySelector('main');
+          const cs = getComputedStyle(main);
+          const column =
+            main.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+          const left = main.getBoundingClientRect().left + parseFloat(cs.paddingLeft);
+          const cards = [...document.querySelectorAll('.pcard')]
+            .filter((c) => getComputedStyle(c).display !== 'none')
+            .map((c) => c.getBoundingClientRect());
+          const dock = document.querySelector('.pdock');
+          return {
+            crumb: crumb ? [...crumb.children].map((e) => e.tagName + ':' + name(e)) : [],
+            row: row
+              ? [...row.children].map((e) =>
+                  e.matches('.seg') ? 'group:' + e.getAttribute('aria-label') : name(e)
+                )
+              : [],
+            rowTops: row
+              ? new Set([...row.children].map((e) => Math.round(e.getBoundingClientRect().top)))
+                  .size
+              : 0,
+            top: first.top,
+            column,
+            widths: cards.map((r) => r.width),
+            offCentre: cards.map((r) => Math.abs(r.left - left + r.right - left - column) / 2),
+            scroll: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+            dock: dock ? [...dock.querySelectorAll('button')].map(name) : null
+          };
+        });
+        /* (a) the DOM order */
+        ok(
+          m.crumb.length === 2 && /^A:/.test(m.crumb[0]) && /^H1:/.test(m.crumb[1]),
+          where + 'the crumb is ' + JSON.stringify(m.crumb)
+        );
+        const groups = m.row.filter((x) => x.startsWith('group:'));
+        ok(groups.length === 2, where + 'the row holds ' + JSON.stringify(m.row));
+        if (narrow) {
+          ok(m.row.length === 2, where + 'the row up to 760 px is ' + JSON.stringify(m.row));
+        } else {
+          ok(
+            m.row.length === 4 &&
+              m.row[0].endsWith(w.print) &&
+              m.row[3].endsWith(w.link) &&
+              m.row[1].startsWith('group:') &&
+              m.row[2].startsWith('group:'),
+            where + 'the row from 761 px is ' + JSON.stringify(m.row)
+          );
+        }
+        ok(m.rowTops === 1, where + 'the row takes ' + m.rowTops + ' lines');
+        /* (c) the first sheet inside the first screen */
+        ok(
+          m.top <= height * 0.4,
+          where + 'the first sheet starts at ' + m.top.toFixed(1) + ' px'
+        );
+        if (width === 390 || width === 768)
+          console.log(
+            '  114 ' + width + ' ' + lang + ': the first sheet at ' + m.top.toFixed(1)
+          );
+        /* (f) no sideways scroll */
+        ok(m.scroll <= 0, where + 'the page scrolls sideways by ' + m.scroll + ' px');
+        if (!narrow) {
+          ok(m.dock === null, where + 'a dock is drawn from 761 px');
+          continue;
+        }
+        /* (d) one card per row, its width cut to two decimals of scale */
+        const want = Math.min(m.column, 420);
+        ok(
+          m.widths.length > 0 && m.widths.every((x) => x <= want + 0.5 && want - x < 2.5),
+          where + 'a card is not ' + want + ' px wide: ' + m.widths.join(',')
+        );
+        ok(
+          m.offCentre.every((v) => v <= 1),
+          where + 'a card is off centre: ' + m.offCentre.join(',')
+        );
+        /* (b) the dock */
+        ok(
+          JSON.stringify(m.dock) === JSON.stringify([w.print, w.more]),
+          where + 'the dock holds ' + JSON.stringify(m.dock)
+        );
+        const dockAt = () =>
+          page.evaluate(() => {
+            const r = document.querySelector('.pdock').getBoundingClientRect();
+            return {
+              top: r.top,
+              bottom: r.bottom,
+              h: r.height,
+              inner: innerHeight,
+              ebar: getComputedStyle(document.documentElement).getPropertyValue('--ebar-h')
+            };
+          });
+        let k = await dockAt();
+        ok(
+          k.top >= 0 && k.bottom <= k.inner + 0.5,
+          where + 'the dock is out of view at scroll 0: ' + JSON.stringify(k)
+        );
+        ok(
+          Math.abs(parseFloat(k.ebar) - k.h) <= 1,
+          where + '--ebar-h is ' + k.ebar + ' for a ' + k.h + ' px dock'
+        );
+        await page.evaluate(() => {
+          const cards = document.querySelectorAll('.pcard:not(.blank)');
+          cards[cards.length - 1].scrollIntoView({ block: 'end' });
+        });
+        await d.settle();
+        k = await dockAt();
+        ok(
+          k.top >= 0 && k.bottom <= k.inner + 0.5,
+          where + 'the dock is out of view at the last card: ' + JSON.stringify(k)
+        );
+        await page.evaluate(() => window.scrollTo(0, 0));
+        await d.settle();
+        /* (g) the Thumb Rule at 360 and 390 px */
+        const small = await targets(page, { floor: 40, menuFloor: 44 });
+        for (const t of small)
+          ok(false, where + t.sel + ' «' + t.name + '» ' + t.w + 'x' + t.h);
+        await page.evaluate(() => document.querySelector('.pdock .morewrap button').click());
+        await d.settle();
+        const menu = await page.evaluate(() => {
+          const btn = document.querySelector('.pdock .morewrap button');
+          const box = document.getElementById('print-more');
+          if (!box) return null;
+          return {
+            items: [...box.querySelectorAll('[role=menuitem]')].map((e) =>
+              e.textContent.trim()
+            ),
+            up: box.getBoundingClientRect().bottom <= btn.getBoundingClientRect().top + 0.5
+          };
+        });
+        ok(
+          !!menu && menu.up && JSON.stringify(menu.items) === JSON.stringify([w.link]),
+          where + '«' + w.more + '» does not open up with the link: ' + JSON.stringify(menu)
+        );
+        if (width === 360) {
+          const open = await targets(page, { floor: 40, menuFloor: 44 });
+          for (const t of open)
+            ok(false, where + 'menu open: ' + t.sel + ' «' + t.name + '» ' + t.w + 'x' + t.h);
+        }
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+  /* (e) the label before the second sheet of the ten-card set */
+  for (const lang of ['ru', 'en']) {
+    for (const width of [360, 1180]) {
+      const { ctx, page, d } = await fresh({ width, height: 720, lang });
+      try {
+        await d.open('#/p/set-tencards', { as: 'gm2', lang });
+        await waitIn(page, () => !!document.querySelector('.psheet'));
+        const m = await page.evaluate(() => ({
+          labels: [...document.querySelectorAll('.psheet-n')].map((e) => e.textContent.trim()),
+          next: document
+            .querySelector('.psheet-n')
+            ?.nextElementSibling?.getAttribute('data-next')
+        }));
+        ok(
+          JSON.stringify(m.labels) === JSON.stringify([WORDS[lang].sheet2]) && m.next === '1',
+          at + width + ' ' + lang + ': the sheet label is ' + JSON.stringify(m)
+        );
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+}
+
+/** 115. The face wait (docs/specs/FEATURES.md, "Print"): «Напечатать» waits while the face
+ *  loads and the cards fit again once it arrives, to the same numbers as a warm open; a
+ *  failed face still enables the button and the sheet fits in the fallback face. */
+async function printFaceWait() {
+  const at = '115 (the face wait): ';
+  const fitOf = (page) =>
+    page.evaluate(() =>
+      [...document.querySelectorAll('.pcard:not(.blank)')].map((c) => [
+        c.querySelector('.pc-text')?.style.fontSize ?? '',
+        c.querySelector('.pc-content')?.style.getPropertyValue('--pcpad') ?? ''
+      ])
+    );
+  const button = (page) =>
+    page.evaluate(() => {
+      const b = [...document.querySelectorAll('.printbar .prow button')].find((e) =>
+        /Напечатать/.test(e.textContent)
+      );
+      return b ? b.disabled : null;
+    });
+  const { ctx, page, d } = await fresh({ width: 1180, height: 720 });
+  try {
+    await d.open('#/p/set-emberaxe', { as: 'gm2' });
+    await waitIn(page, () => !!document.querySelector('.psheet'));
+    ok(
+      await waitIn(page, () =>
+        [...document.querySelectorAll('.printbar .prow button')].some(
+          (b) => /Напечатать/.test(b.textContent) && !b.disabled
+        )
+      ),
+      at + 'the warm open never enabled «Напечатать»'
+    );
+    const warm = await fitOf(page);
+    const url = page.url();
+
+    for (const mode of ['held', 'failed']) {
+      const p2 = await ctx.newPage();
+      await p2.setViewport({ width: 1180, height: 720 });
+      await p2.setBypassServiceWorker(true);
+      await p2.setCacheEnabled(false);
+      await p2.setRequestInterception(true);
+      p2.on('request', (req) => {
+        if (!/\.woff2(\?|$)/.test(req.url())) {
+          req.continue().catch(() => {});
+          return;
+        }
+        if (mode === 'failed') req.abort().catch(() => {});
+        else setTimeout(() => req.continue().catch(() => {}), 1500);
+      });
+      try {
+        await p2.goto(url, { waitUntil: 'domcontentloaded' });
+        await waitIn(p2, () => !!document.querySelector('.psheet'));
+        if (mode === 'held') {
+          ok(
+            (await button(p2)) === true,
+            at + 'held: «Напечатать» is not disabled while the face loads'
+          );
+        }
+        ok(
+          await waitIn(p2, () =>
+            [...document.querySelectorAll('.printbar .prow button')].some(
+              (b) => /Напечатать/.test(b.textContent) && !b.disabled
+            )
+          ),
+          at + mode + ': «Напечатать» never enabled'
+        );
+        await new Promise((r) => setTimeout(r, 200));
+        if (mode === 'held') {
+          const cold = await fitOf(p2);
+          ok(
+            JSON.stringify(cold) === JSON.stringify(warm),
+            at +
+              'held: the fit after the face ' +
+              JSON.stringify(cold) +
+              ' is not the warm ' +
+              JSON.stringify(warm)
+          );
+        } else {
+          const spill = await p2.evaluate(
+            () =>
+              [...document.querySelectorAll('.pcard:not(.blank) .pc-text')].filter(
+                (e) => e.scrollHeight > e.clientHeight + 1
+              ).length
+          );
+          ok(spill === 0, at + 'failed: ' + spill + ' cards spill in the fallback face');
+        }
+      } finally {
+        await p2.close();
+      }
+    }
+  } finally {
+    await ctx.close();
+  }
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -9817,7 +10115,9 @@ const CASES = [
   ['110 (the empty plate)', emptyPlate],
   ['111 (the text measure)', textMeasure],
   ['112 (the head order)', headOrder],
-  ['113 (the die marks)', dieMarks]
+  ['113 (the die marks)', dieMarks],
+  ['114 (the print page head and dock)', printHead],
+  ['115 (the face wait)', printFaceWait]
 ];
 
 /* The interleave spreads the slow layout cases at the end of the list over

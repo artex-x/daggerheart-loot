@@ -1,5 +1,6 @@
 # 2026-10-21 - The print card recolours its exported vectors with CSS; the files stay published
 
+- Amended by "The print card prints in the UI face at 7.1 pt, fitted after it loads" (2026-11-06): the four burden files take the hands' paths, their masks as clip paths.
 - Task: `debt-cleanup` (owner decision 30 (d), 2026-10-16, confirmed 2026-10-20 after the risk case).
 - Decision: a pair of `card/` files with one geometry (same viewBox and, path by path, `d`, stroke width, cap and join)
   is drawn inline by `CardVector.svelte` from `lib/cardVectors.ts` (the dice from `dice.ts`'s `DIE_ART`), each paint

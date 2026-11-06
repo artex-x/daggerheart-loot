@@ -431,13 +431,11 @@ describe('the view switch', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Сетка' }));
     expect(document.querySelector('.tilewrap')).toBeInTheDocument();
     expect(env.storage.get('dhloot.prefs.v1')).toBeNull();
-    expect(document.querySelector('.keepnote')).toBeNull();
   });
 
-  it('draws no note under the view switch, which carries the choice alone', async () => {
+  it('has no violations with the view switched, signed in', async () => {
     const { container } = render(App, { env: at({ cloud: fakeCloud(SEED) }) });
     await userEvent.click(screen.getByRole('button', { name: 'Сетка' }));
-    expect(document.querySelector('.keepnote')).toBeNull();
     await expectNoA11yViolations(container);
   });
 

@@ -2119,10 +2119,6 @@ export class AppState {
     return this.#printCompactNow ?? this.#printCompact;
   }
 
-  get printChanged(): boolean {
-    return this.shownPrintBW !== this.#printBW || this.shownPrintCompact !== this.#printCompact;
-  }
-
   /** Changes the tables view for this visit: no storage write, no account save. */
   showTablesView(view: 'list' | 'grid'): void {
     this.#tablesViewNow = view === this.#tablesView ? null : view;

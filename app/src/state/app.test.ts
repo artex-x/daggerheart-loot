@@ -420,13 +420,16 @@ describe('the default print layout', () => {
 });
 
 describe('a page switch lasts the visit', () => {
+  /* A switch differs from its default for this visit. */
+  const changed = (a: AppState): boolean =>
+    a.shownPrintBW !== a.printBW || a.shownPrintCompact !== a.printCompact;
   const PREFS_KEY = 'dhloot.prefs.v1';
   const flush = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
 
   it('changes what is shown and not the default, storing nothing', () => {
     const env = at('#/roll/std');
     const app = new AppState(env);
-    expect(app.printChanged).toBe(false);
+    expect(changed(app)).toBe(false);
     app.showPrintBW(true);
     app.showPrintCompact(true);
     app.showTablesView('grid');
@@ -436,7 +439,7 @@ describe('a page switch lasts the visit', () => {
       'grid'
     ]);
     expect([app.printBW, app.printCompact, app.tablesView]).toEqual([false, false, 'list']);
-    expect(app.printChanged).toBe(true);
+    expect(changed(app)).toBe(true);
     expect(env.storage.get(PREFS_KEY)).toBeNull();
   });
 
@@ -445,9 +448,9 @@ describe('a page switch lasts the visit', () => {
     app.showPrintBW(true);
     app.showPrintCompact(true);
     app.showPrintBW(false);
-    expect(app.printChanged).toBe(true);
+    expect(changed(app)).toBe(true);
     app.showPrintCompact(false);
-    expect(app.printChanged).toBe(false);
+    expect(changed(app)).toBe(false);
     app.showTablesView('grid');
     app.showTablesView('list');
     expect(app.shownTablesView).toBe(app.tablesView);
@@ -466,7 +469,7 @@ describe('a page switch lasts the visit', () => {
       'list',
       false
     ]);
-    expect(app.printChanged).toBe(false);
+    expect(changed(app)).toBe(false);
   });
 
   it('starts a new visit from the default over the same storage', () => {
@@ -477,7 +480,7 @@ describe('a page switch lasts the visit', () => {
     first.showPrintBW(false);
     first.showTablesView('list');
     const next = new AppState(env);
-    expect([next.shownPrintBW, next.shownTablesView, next.printChanged]).toEqual([
+    expect([next.shownPrintBW, next.shownTablesView, changed(next)]).toEqual([
       true,
       'grid',
       false
@@ -518,7 +521,7 @@ describe('a page switch lasts the visit', () => {
       false,
       false
     ]);
-    expect(app.printChanged).toBe(true);
+    expect(changed(app)).toBe(true);
     app.stop();
   });
 });

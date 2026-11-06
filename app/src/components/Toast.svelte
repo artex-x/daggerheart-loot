@@ -223,10 +223,10 @@
     overflow-wrap: anywhere;
   }
 
-  /* The page's toast floats above the selection bar (`SelectionBar` sets the height); the
-     dialog's copy keeps its place. */
+  /* The page's toast floats above the selection bar and the bottom bar of the editor or the
+     print page (each sets its height); the dialog's copy keeps its place. */
   .toast.page {
-    bottom: calc(26px + var(--selbar-h, 0px));
+    bottom: calc(26px + var(--selbar-h, 0px) + var(--ebar-h, 0px));
   }
 
   /* The alarm fill with dark ink, about 5.6:1 (DESIGN.md, "Toast"). */
