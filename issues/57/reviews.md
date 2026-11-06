@@ -167,3 +167,18 @@
 | TD-N4 | nit | local | fixed TD-fix | `toastMs` exported, read by nobody outside its module |
 | TD-N5 | nit | local | fixed TD-fix | case 109 retries every failed 360 px entry at 1180 px; name the states that need it |
 | TD-N6 | nit | local | fixed TD-fix | `targets` spacing test lacks the circle-vs-circle check of WCAG 2.5.8; dead `LABEL` clause |
+| N-B1 | blocker | local | open | from 761 px a roll mode switch (and a supplement pick) drops the keyboard focus to `body`: each mode is its own panel, so `PageHead`/`ModeRow inhead` remount; fix: a module flag set on a ModeRow press, the mounted `inhead` instance focuses the lit control (supplements button on a supplement page) and clears it; `rollPage.test.ts` cases at wide and mid for link and menu paths; extend RollPage's band-change focus check to `nav.modes`. `reviews/N.md` |
+| N-R1 | risk | named | CI | first-screen margins thin: `#/homebrew as gm3` 900x720 286.2 of 288, `/tables/*` 333.6 of 336, 1000 px RU roll row 14 px with the pin pressed |
+| N-R2 | risk | deferred-scope | named | unconfigured bundle 268.8 of 269 kB: batch P raises it to the measured figure rounded up (under 300 kB) |
+| N-N1 | nit | local | open | `pageVoa`, `pageMwt`, `pageArazo` keys have no reader: delete |
+| N-N2 | nit | local | open | FEATURES.md rule 4: the Arazo tab title is not the book's full title (`SECTION_LABEL` gives «Arazo's Artifacts»); drop the departure, fix the `modeRow.test.ts` comment, add `roll/arazo` to its `it.each` |
+| N-N3 | nit | local | open | DESIGN.md First-Screen Rule: the `/tables/*` exception was not "taken while the owner was away"; the owner answered it 2026-11-05 |
+| N-N4 | nit | local | open | DESIGN.md/FEATURES.md "about 1049px" chips wrap: case 96 reads 287.5 at 1050 RU; write 1139 |
+| N-N5 | nit | local | open | "Up to 760px the heading is read, not drawn" holds only for pages with siblings |
+| N-N6 | nit | local | open | case 113 doc comment cites "owner item 12" (task scratch) |
+| N-N7 | nit | local | open | `pageHead.test.ts` never tests the lead's 12 px margin |
+| N-N8 | nit | local | open | `TableNav` `part` doc comment names three levels for two values |
+| N-N9 | nit | local | open | `.sheetlinks .tab { border-bottom: 0 }` in `HomebrewTabs` is dead CSS |
+| N-N10 | nit | local | open | `bundle-budget.mjs` comment arithmetic gives 326.2, measurement was 326.3: state the measured figure |
+| N-N11 | nit | local | open | `handoff.md` lacks the batch sha and the second `check:fast` result |
+| N-N12 | nit | deferred-scope | named | the 2026-11-04 decision file still cites "A steady head" |
