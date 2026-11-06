@@ -183,3 +183,16 @@
 | N-N11 | nit | local | fixed N-fix | `handoff.md` lacks the batch sha and the second `check:fast` result |
 | N-N12 | nit | deferred-scope | named | the 2026-11-04 decision file still cites "A steady head" |
 | N-CI1 | blocker | local | fixed N-fix | CI run 42177661196 of `cb581b66`, case 90 at 1180x720: the add menu opened up into the header. Not a flake: N moved the result row 53 px up, so neither side held the 340 px menu and the up side cannot scroll above the page top; `AddToList` opens up in the page scroll only where the page above holds the menu under the header |
+| P-B1 | blocker | local | open | default 2 loosens the clearance check (`c.atFloor || c.top >= c.low - 0.5` exempts every floor card whose picture gave way) and no test reaches the 1.5cqw loop (`voa4_t4i`, `voa4_a3` on the RU compact color sheet); replace with a rectangle-intersection test (mark rects against `.pc-tag` and `.pc-name` line rects), no exemption, run on a RU compact color set holding both cards; if an intersection remains take a named rules-text shortfall under the 3.7cqw floor (P-D5's rule) and log it; add default 2 to the Status "For the owner" line. `reviews/P.md` |
+| P-R1 | risk | local | open | `.pdock` sticks only from a 481 px window height; on a landscape phone «Напечатать» is after every card; let the dock stick at every height, keep `--ebar-h` for the print page |
+| P-R2 | risk | named | CI | unconfigured bundle 269.8 of 270 kB; if CI fails, raise to 271 by the rounding rule |
+| P-R3 | risk | local | open | fonts port waits on `ready` in both cases; FEATURES.md and the `FontsPort` doc comment say less than the code does: fix the wording |
+| P-N1 | nit | local | open | 14 stale `why`s in `inventory.js` ("the note under the bar"); re-seeds golden line 3 only |
+| P-N2 | nit | local | open | `back()` takes over ctrl/cmd-click on «Назад»; skip modified clicks as `router.ts` does |
+| P-N3 | nit | local | open | toast adds `--ebar-h` under 481 px of window height where both bars are in the flow |
+| P-N4 | nit | local | open | the `ResizeObserver` effect setting `--ebar-h` is duplicated in `HomebrewEditor` and `PrintPage`: extract |
+| P-N5 | nit | local | open | FEATURES.md cites "Q3.2" and the decision file "QP.*" (task-scratch ids) |
+| P-N6 | nit | local | open | case 115's held-face comparison runs on one short card and may not tell whether the refit ran |
+| P-N7 | nit | local | open | DESIGN.md "Signature component" says the text moves "just under the marks", which default 2 contradicts on two cards |
+| P-N8 | nit | deferred-scope | named | open dock «Ещё»: page scrolled about 24 px, header covers part of the crumb row (focus-jump family) |
+| P-N9 | nit | deferred-scope | named | in EN "Print" names two actions; RU keeps them apart (owner's call) |
