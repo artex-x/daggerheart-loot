@@ -569,3 +569,4 @@ Rows below keep facts no acceptance line carries:
   COVERAGE.md "Suites" (no state count; case 86's wait); `.claude/README.md` "Batch size and the fixed cost of a run"
   (the CI row, the pooled row, the `states.js --shard` and `--shard=n/m` rows); the `tests/run-all.js` weight comment.
   Batch CI's: COVERAGE.md "Suites", `.claude/README.md` "Batch size", the decision file of 2026-11-05.
+- Post-wave-3 debt plan: `issues/57/plan-debt.md` (steps 1-5; at closeout the user-visible defects go to `docs/specs/DEBT.md` and the plan moves to the follow-up task directory).
