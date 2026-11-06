@@ -156,3 +156,14 @@
 | CI-N5 | nit | local | optional | `states.js` reads `--shard` after `require('./lib.js')`: no `dist-test/` shows the build message first |
 | CI-N6 | nit | deferred-scope | named | `ci.yml` comment "~20 s" fixed cost; `bash-guard.mjs` cost text "~380s"; no long-check reminder for a bare `node tests/app/states.js` |
 | CI-R1 | risk | named | CI of the next run | slow layout cases are not split equally (piece 1/4 holds 7 of 25, incl. 107); measured on 22d9a00b: states rows 411-543 s, jobs 10-11 min: fine |
+| TD-B1 | blocker | local | open | after a retry succeeds the success toast waits 7-10 s behind the old error toast; the retry press closes the shown error first (option A), tests back to the default timeout, one case asserts the success toast shows at once. `reviews/TD.md` |
+| TD-R1 | risk | deferred-scope | named | `TARGET_ALLOW` `.craft a` is a second exception to "every control" (the «Улучшается до» line the owner reported 2026-11-04); name it to the owner |
+| TD-R2 | risk | deferred-scope | named | `/s/` first-screen exception at 360 moved 286, 302, then 309 px; no spacing fold tried |
+| TD-R3 | risk | local | open | `/roll/alt` at 360: the results line sits about 2 px from the picker and the first card; two rows of 40 px boxes read as one block (10 px budget left) |
+| TD-R4 | risk | deferred-scope | named | bundle headroom 0.8 kB (268.2 of 269); batch N expects a budget raise |
+| TD-N1 | nit | local | open | "(T5)" plan id in a `listsPage.test.ts` comment |
+| TD-N2 | nit | local | open | stale durations in comments: `inventory.js` "4000ms toast", `Toast.svelte` two "7000 ms" |
+| TD-N3 | nit | local | open | garbled comment in `golden.js` ("short toast lifetime of the time") |
+| TD-N4 | nit | local | open | `toastMs` exported, read by nobody outside its module |
+| TD-N5 | nit | local | open | case 109 retries every failed 360 px entry at 1180 px; name the states that need it |
+| TD-N6 | nit | local | open | `targets` spacing test lacks the circle-vs-circle check of WCAG 2.5.8; dead `LABEL` clause |
