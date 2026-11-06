@@ -234,6 +234,20 @@ describe('the row under a full card', () => {
 
     expect(screen.queryByPlaceholderText('Клад дракона')).not.toBeInTheDocument();
     expect((await listNamed(cloud, page, 'Новый клад')).ids).toEqual(['ci1']);
+    /* The create closes the error toast it answers, so its own toast shows at once. */
+    expect(
+      await screen.findByText('Добавлено в «Новый клад»', undefined, { timeout: 500 })
+    ).toBeInTheDocument();
+  });
+
+  it('creates the list on Enter in the new-list field', async () => {
+    const { cloud, page } = await openCard(TWO_LISTS);
+    await openMenuOn('Лавка в порту');
+    await userEvent.click(screen.getByRole('button', { name: 'Новый список' }));
+    await userEvent.type(screen.getByPlaceholderText('Клад дракона'), 'Добыча{Enter}');
+    expect(screen.queryByPlaceholderText('Клад дракона')).not.toBeInTheDocument();
+    expect(screen.getByText('Добавлено в «Добыча»')).toBeInTheDocument();
+    expect((await listNamed(cloud, page, 'Добыча')).ids).toEqual(['ci1']);
   });
 
   it('folds the new-list form on cancel', async () => {

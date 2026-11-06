@@ -35,6 +35,8 @@ const { HB_FILE, STATES, hbImportOpen } = require('./inventory.js');
  *  the fake hands a new list, `uuid(5000)`. */
 const SHOP = '#/lists/00000000-0000-4000-8000-000000000101';
 const FIRST_NEW = '#/lists/00000000-0000-4000-8000-000000005000';
+/** The fake seed's `gm2` list, `uuid(201)`, with its change notices. */
+const GM2_LIST_ID = '#/lists/00000000-0000-4000-8000-000000000201';
 /** The fake seed's `gm1` list «Трофеи», `uuid(103)`, with no share link. */
 const TROPHIES = '#/lists/00000000-0000-4000-8000-000000000103';
 /** The owner's list page «Ещё»: in the head's row up to 760 px, in the action row from 761 px. */
@@ -2316,10 +2318,7 @@ async function signOutOnAccountList() {
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open(SHOP, { as: 'gm1' });
   ok(
-    await waitIn(
-      page,
-      () => document.querySelector('input.titleinput')?.value === 'Лавка кузнеца'
-    ),
+    await waitIn(page, () => document.querySelector('.titleinput')?.value === 'Лавка кузнеца'),
     at + 'the account list did not open'
   );
   await d.fake('auth.signOut');
@@ -2340,10 +2339,7 @@ async function notSavedThenRetried() {
   const at = '40 (not saved, then retried): ';
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open(SHOP, { as: 'gm1' });
-  await waitIn(
-    page,
-    () => document.querySelector('input.titleinput')?.value === 'Лавка кузнеца'
-  );
+  await waitIn(page, () => document.querySelector('.titleinput')?.value === 'Лавка кузнеца');
   await d.fake('setOffline', true);
   await d.type('Название списка', 'Лавка у моста');
   ok(
@@ -2358,7 +2354,7 @@ async function notSavedThenRetried() {
     at + 'the sub does not say «Не сохранено» with «Повторить»'
   );
   ok(
-    (await page.evaluate(() => document.querySelector('input.titleinput')?.value)) ===
+    (await page.evaluate(() => document.querySelector('.titleinput')?.value)) ===
       'Лавка у моста',
     at + 'the edit left the screen'
   );
@@ -2453,7 +2449,7 @@ async function shareLinksOfAnAccountList() {
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   const copied = [];
   await d.open(TROPHIES, { as: 'gm1' });
-  await waitIn(page, () => document.querySelector('input.titleinput')?.value === 'Трофеи');
+  await waitIn(page, () => document.querySelector('.titleinput')?.value === 'Трофеи');
   await d.press('Поделиться');
   ok(
     await waitIn(
@@ -2502,7 +2498,7 @@ async function shareLinksOfAnAccountList() {
     at + 'the new link does not open the list with the owner line'
   );
   await d.go(TROPHIES);
-  await waitIn(page, () => document.querySelector('input.titleinput')?.value === 'Трофеи');
+  await waitIn(page, () => document.querySelector('.titleinput')?.value === 'Трофеи');
   await d.press('Поделиться');
   await waitIn(
     page,
@@ -2569,7 +2565,7 @@ async function saveShareLinkAfterSignIn() {
       page,
       (p) =>
         location.pathname === p &&
-        document.querySelector('input.titleinput')?.value === 'Лавка кузнеца',
+        document.querySelector('.titleinput')?.value === 'Лавка кузнеца',
       FIRST_NEW.slice(1)
     ),
     at + 'the sign-in did not open the copy - ' + (await d.hash())
@@ -2705,7 +2701,7 @@ async function liveAccountList() {
     await waitIn(page, () => !!document.querySelector('.said[data-live="live"]')),
     at + 'the owner topic did not join'
   );
-  const title = (name) => document.querySelector('input.titleinput')?.value === name;
+  const title = (name) => document.querySelector('.titleinput')?.value === name;
   await d.fake('play', SHOP_ID, { name: 'Лавка у моста' });
   ok(
     await waitWithin(page, 1000, title, 'Лавка у моста'),
@@ -2928,10 +2924,7 @@ async function accountEditsWaitThenGoOnce() {
   const at = '49 (account edits wait two seconds, then go once): ';
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open(SHOP, { as: 'gm1' });
-  await waitIn(
-    page,
-    () => document.querySelector('input.titleinput')?.value === 'Лавка кузнеца'
-  );
+  await waitIn(page, () => document.querySelector('.titleinput')?.value === 'Лавка кузнеца');
   const shopRow = async () => {
     const read = await d.fake('lists.rows', ['00000000-0000-4000-8000-000000000101']);
     const shop = read?.ok
@@ -2951,7 +2944,9 @@ async function accountEditsWaitThenGoOnce() {
     );
   /* The list notes open from the side column («Изменить»), or «Заметки» up to 760 px. */
   if (!(await page.evaluate(noteShown))) {
-    await page.evaluate(() => document.querySelector('.lnotes .nopen button, .lnkb')?.click());
+    await page.evaluate(() =>
+      document.querySelector('.lnotes .nopen button, .lhead .metat')?.click()
+    );
     await d.settle();
   }
   ok(await page.evaluate(noteShown), at + 'the list note field is not on screen');
@@ -3065,10 +3060,7 @@ async function accountMenu() {
 
   await d.open(SHOP, { as: 'gm1' });
   ok(
-    await waitIn(
-      page,
-      () => document.querySelector('input.titleinput')?.value === 'Лавка кузнеца'
-    ),
+    await waitIn(page, () => document.querySelector('.titleinput')?.value === 'Лавка кузнеца'),
     at + 'the account list did not open'
   );
   await d.press(CONTROL);
@@ -5163,10 +5155,7 @@ async function addressBarPathForm() {
 
     /* The owner's panel copies the seeded players link; a reader opens it. */
     await d.open(SHOP, { as: 'gm1' });
-    await waitIn(
-      page,
-      () => document.querySelector('input.titleinput')?.value === 'Лавка кузнеца'
-    );
+    await waitIn(page, () => document.querySelector('.titleinput')?.value === 'Лавка кузнеца');
     await d.press('Поделиться');
     await waitIn(page, () => document.querySelectorAll('.sharelink').length === 2);
     await d.press('Скопировать');
@@ -5618,7 +5607,7 @@ async function editorLayoutAndSheet() {
  *  opens each. A row whose surface is not yet under the rule is measured and logged,
  *  not asserted (`shipped: false`); `shipped: 360` asserts at 360 px and logs at 1180 px and
  *  at the wide window of 1920x1080. `exception` is a named limit at 360 px, in px; `wideOnly`
- *  measures the row at 1180 px alone. A roll page draws its result for the number
+ *  measures the row at 1180 px alone; `mid` adds 768x1024 and 900x720, the mid band. A roll page draws its result for the number
  *  field's first value, so no roll is made and the offset is deterministic. */
 const FIRST_SCREEN = [
   { state: '#/roll/std', shipped: true, exception: 325 },
@@ -5633,6 +5622,7 @@ const FIRST_SCREEN = [
   { state: '#/search ~ searched', shipped: true },
   /* Its enter presses a kind chip, which draws from 761 px only. */
   { state: '#/search ~ kind picked', shipped: true, wideOnly: true },
+  { state: '#/account', shipped: true },
   { state: '#/account as gm1', shipped: true },
   { state: '#/p/set-emberaxe as gm2', shipped: true },
   { state: '#/homebrew as gm3', shipped: true },
@@ -5641,9 +5631,26 @@ const FIRST_SCREEN = [
   { state: '#/homebrew/hb_longsrcaaaaaaaaa as gm4', shipped: true },
   { state: '#/lists as gm1', shipped: true },
   { state: '#/lists ~ many lists as gm4', shipped: true },
-  { state: '#/lists/00000000-0000-4000-8000-000000008001 as gm4', shipped: true },
-  { state: '#/lists/00000000-0000-4000-8000-000000008001 ~ many as gm4', shipped: true },
-  { state: '#/lists/00000000-0000-4000-8000-000000008001 ~ long name as gm4', shipped: true },
+  { state: '#/lists/00000000-0000-4000-8000-000000008001 as gm4', shipped: true, mid: true },
+  {
+    state: '#/lists/00000000-0000-4000-8000-000000008001 ~ many as gm4',
+    shipped: true,
+    mid: true
+  },
+  {
+    state: '#/lists/00000000-0000-4000-8000-000000008001 ~ long name as gm4',
+    shipped: true,
+    mid: true
+  },
+  /* Up to 999 px the owner's list page draws the compact head (docs/specs/FEATURES.md, "Lists"). */
+  { state: '#/lists/00000000-0000-4000-8000-000000000101 as gm1', shipped: true, mid: true },
+  /* Its folded notices strip above the rows takes the strip's exception at 360 px. */
+  {
+    state: '#/lists/00000000-0000-4000-8000-000000000201 as gm2',
+    shipped: true,
+    mid: true,
+    exception: 304
+  },
   /* The thumb-size «Сохранить себе» (DESIGN.md, "The First-Screen Rule", 2026-11-06). */
   { state: '#/s/player-token-1', shipped: true, exception: 309 },
   /* From 761 px the 120-character name takes three lines (DESIGN.md, "The First-Screen Rule"). */
@@ -5656,6 +5663,7 @@ const FIRST_SCREEN = [
   {
     state: '#/lists/00000000-0000-4000-8000-000000000101 ~ requests as gm1',
     shipped: true,
+    mid: true,
     exception: 304
   }
 ];
@@ -5900,7 +5908,7 @@ async function searchHeadAndRows() {
 }
 
 /** 94. The account holds its layout and its delete confirm (docs/specs/FEATURES.md,
- *  "Account"): one column at 360, two from 1000 px, the print row inside the window, the
+ *  "Account"): one column at 360, two from 1000 px, the two print rows inside the window, the
  *  filled final button and the focus of the confirm. */
 async function accountLayoutAndConfirm() {
   const at = '94 (the account layout and confirm): ';
@@ -5915,9 +5923,13 @@ async function accountLayoutAndConfirm() {
         await d.open('#/account', { as: 'gm1', lang });
         await waitIn(page, () => !!document.querySelector('.acc .ids li'));
         const m = await page.evaluate(() => {
-          const segs = [...document.querySelectorAll('.wb .seg')].map((s) =>
-            s.getBoundingClientRect()
-          );
+          const segs = [...document.querySelectorAll('main .set .seg')]
+            .filter((s) =>
+              /^(Цвет печати|Размер карты|Print color|Card size)$/.test(
+                s.getAttribute('aria-label') ?? ''
+              )
+            )
+            .map((s) => s.getBoundingClientRect());
           const a = document.querySelector('.colA')?.getBoundingClientRect();
           const b = document.querySelector('.colB')?.getBoundingClientRect();
           return {
@@ -5931,7 +5943,7 @@ async function accountLayoutAndConfirm() {
           };
         });
         ok(!m.chk, at + where + ': a checkbox is drawn');
-        ok(m.segs === 2 && m.inside, at + where + ': the print row - ' + JSON.stringify(m));
+        ok(m.segs === 2 && m.inside, at + where + ': the print rows - ' + JSON.stringify(m));
         ok(
           !m.heads.some((h) => /Вы вошли как|Signed in as/.test(h)),
           at + where + ': a «Вы вошли как» panel is drawn'
@@ -5995,7 +6007,17 @@ async function primaryContentInFirstScreen() {
     const state = states.get(row.state);
     ok(!!state, '83 (first screen): no inventory state ' + row.state);
     if (!state) continue;
-    const sizes = [[360, 640], [1180, 720], ...(row.shipped === 360 ? [[1920, 1080]] : [])];
+    const sizes = [
+      [360, 640],
+      [1180, 720],
+      ...(row.shipped === 360 ? [[1920, 1080]] : []),
+      ...(row.mid
+        ? [
+            [768, 1024],
+            [900, 720]
+          ]
+        : [])
+    ];
     for (const [width, height] of sizes) {
       if (row.wideOnly && width < 761) continue;
       const asserted = row.shipped === true || row.shipped === width;
@@ -7892,6 +7914,30 @@ async function listHeadAndBars() {
           sheet.foot.bottom <= sheet.vh,
         at + 'the price sheet of 14 rows at 360x480 - ' + JSON.stringify(sheet)
       );
+      /* From 761 px a sheet is centered with four round corners (DESIGN.md, "Sheet"). */
+      await d.viewport(1180, 720);
+      await d.settle();
+      const wide = await page.evaluate(() => {
+        const s = document.querySelector('dialog.sheet[open]');
+        const r = s?.getBoundingClientRect();
+        const cs = s ? getComputedStyle(s) : null;
+        const root = getComputedStyle(document.documentElement);
+        return r && cs
+          ? {
+              top: r.top,
+              gap: innerHeight - r.bottom,
+              radius: cs.borderBottomLeftRadius,
+              r: root.getPropertyValue('--r').trim()
+            }
+          : null;
+      });
+      ok(
+        !!wide &&
+          Math.abs(wide.top - wide.gap) <= 1 &&
+          wide.gap >= 16 &&
+          wide.radius === wide.r,
+        at + 'the price sheet of 14 rows at 1180x720 is not centered - ' + JSON.stringify(wide)
+      );
     } finally {
       await ctx.close();
     }
@@ -8293,7 +8339,14 @@ async function numberStepperLayout() {
   }
   /* The list roll's field sits in a row with its button: it keeps its content width. */
   for (const width of [768, 1180]) {
-    const { ctx, page } = await openState(LIST_A_ID + ' ~ roll panel as gm4', width, 800, 'ru');
+    /* Up to 999 px «Бросить по списку» is an item of the list «Ещё»: entered at 1180. */
+    const { ctx, page } = await openState(
+      LIST_A_ID + ' ~ roll panel as gm4',
+      width,
+      800,
+      'ru',
+      width < 1000
+    );
     try {
       const w = await page.evaluate(
         () => document.querySelector('.numbox')?.getBoundingClientRect().width ?? null
@@ -8306,8 +8359,8 @@ async function numberStepperLayout() {
 }
 
 /** 105. The list page layout (docs/specs/FEATURES.md, "Lists"; DESIGN.md, "The Two
- *  Breakpoints Rule"): at 768 px the side content sits above the rows and each row's
- *  controls take a line under its body; at 1000 and 1180 px the 330 px side column is at the
+ *  Breakpoints Rule"): at 768 px the compact head sits above the rows, no side column, and
+ *  each row's controls take a line under its body; at 1000 and 1180 px the 330 px side column is at the
  *  right of the rows, first in the DOM, and at 1180 a row's controls are inline; at 1920 and
  *  2560 px the side column keeps 330 px and a row's text ends within 24 px of its quantity
  *  field. `#/s/` keeps one column and its row text takes the row. Nothing scrolls sideways. */
@@ -8340,10 +8393,12 @@ async function listPageLayout() {
               };
             };
             const side = document.querySelector('.lside');
+            const head = document.querySelector('.lhead');
             const main = document.querySelector('.lmain');
             const rows = [...document.querySelectorAll('.lrows > .lrow, .rows > .row')];
             return {
               side: box(side),
+              head: box(head),
               main: box(main),
               sideFirst:
                 !!side &&
@@ -8377,11 +8432,12 @@ async function listPageLayout() {
             }
             continue;
           }
-          ok(!!m.side && m.sideFirst, where + 'the side column is not first in the DOM');
           if (width < 1000) {
             ok(
-              m.side.bottom <= m.rowsTop + 1,
-              where + 'the side content is not above the rows - ' + JSON.stringify(m.side)
+              !m.side && !!m.head && m.head.bottom <= m.rowsTop + 1,
+              where +
+                'the compact head is not above the rows - ' +
+                JSON.stringify([m.side, m.head])
             );
             for (const r of m.rows) {
               ok(
@@ -8390,8 +8446,9 @@ async function listPageLayout() {
               );
             }
           } else {
+            ok(!!m.side && m.sideFirst, where + 'the side column is not first in the DOM');
             ok(
-              Math.abs(m.side.width - 330) <= 1 && m.side.left >= m.main.right,
+              !!m.side && Math.abs(m.side.width - 330) <= 1 && m.side.left >= m.main.right,
               where + 'the side column is not 330 px at the right - ' + JSON.stringify(m.side)
             );
             if (width >= 1180) {
@@ -9011,24 +9068,65 @@ const TARGET_LAYERS = [
   LIST_A_ID + ' ~ more as gm4',
   LIST_A_ID + ' ~ row more as gm4',
   LIST_A_ID + ' ~ note open as gm4',
-  SHOP + ' ~ requests open as gm1'
+  LIST_A_ID + ' ~ selecting as gm4',
+  LIST_A_ID + ' ~ compact, selecting as gm4',
+  LIST_A_ID + ' ~ price sheet as gm4',
+  /* «Макс» and the take field; «Мин» is in `~ compact, selecting`. */
+  LIST_A_ID + ' ~ picked as gm4',
+  SHOP + ' ~ requests open as gm1',
+  SHOP + ' ~ share as gm1',
+  SHOP + ' ~ many requests as gm1',
+  SHOP + ' ~ not saved as gm1',
+  GM2_LIST_ID + ' ~ notices open as gm2',
+  '#/i/ci1',
+  '#/h/00000000-0000-4000-8000-000000000513 as gm1'
+];
+
+/** The layers case 109 also reads at 1180x720 with the 24 px floor and its spacing. */
+const TARGET_LAYERS_WIDE = [
+  SHOP + ' ~ share as gm1',
+  SHOP + ' ~ not saved as gm1',
+  GM2_LIST_ID + ' ~ notices open as gm2',
+  '#/i/ci1',
+  '#/h/00000000-0000-4000-8000-000000000513 as gm1'
 ];
 
 /** 109. Every open layer at 360x640 holds thumb targets (DESIGN.md, "The Phone-First
  *  Rule"): `targets` finds no control under 40 px (44 px for a menu item) that its hit test
- *  does not prove, in RU and EN. */
+ *  does not prove, in RU and EN; the wide layers hold 24 px targets at 1180x720. */
 async function targetsInOpenLayers() {
   const at = '109 (the targets of open layers): ';
   for (const id of TARGET_LAYERS) {
     for (const lang of ['ru', 'en']) {
       /* A state whose control draws from 761 px only is entered there (`wideEnter`). */
-      const { ctx, page } = await openState(id, 360, 640, lang, /~ note open as gm4$/.test(id));
+      const { ctx, page } = await openState(
+        id,
+        360,
+        640,
+        lang,
+        /~ (note open|share|not saved) as gm[14]$/.test(id)
+      );
       try {
         const got = await targets(page, { floor: 40, menuFloor: 44 });
         for (const t of got)
           ok(
             false,
             at + id + ' ' + lang + ': ' + t.sel + ' «' + t.name + '» ' + t.w + 'x' + t.h
+          );
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+  for (const id of TARGET_LAYERS_WIDE) {
+    for (const lang of ['ru', 'en']) {
+      const { ctx, page } = await openState(id, 1180, 720, lang);
+      try {
+        const got = await targets(page, { floor: 24, spacing: true });
+        for (const t of got)
+          ok(
+            false,
+            at + id + ' 1180 ' + lang + ': ' + t.sel + ' «' + t.name + '» ' + t.w + 'x' + t.h
           );
       } finally {
         await ctx.close();
@@ -9391,6 +9489,9 @@ const HEAD_ROUTES = [
   ['tables', '#/tables/eq_armor', null],
   ['tables', '#/tables/wondrous', null],
   ['homebrew', '#/homebrew', 'gm3'],
+  ['homebrew', '#/homebrew/sources', 'gm3'],
+  ['homebrew', '#/homebrew/sets', 'gm3'],
+  ['homebrew', '#/homebrew/rules', 'gm3'],
   ['lists', '#/lists', 'gm4'],
   ['search', '#/search', null]
 ];
@@ -9467,8 +9568,11 @@ function headProbe() {
  *  900x720 under its named ceiling of 336 px. */
 async function headOrder() {
   const at = '112 (the head order): ';
-  /* The pills' place per language and size, on the roll routes. */
+  /* The pills' place per language and size, on the roll routes; each pill's width, and the
+     homebrew pills' first top and line count per tab. */
   const pills = {};
+  const widths = {};
+  const hbPills = {};
   for (const [family, route, as] of HEAD_ROUTES) {
     for (const lang of ['ru', 'en']) {
       const { ctx, page, d } = await fresh({ width: 1180, height: 720, lang });
@@ -9625,6 +9729,43 @@ async function headOrder() {
               ok(
                 !!m.modeLit && m.title.startsWith(m.modeLit),
                 where + 'the title ' + m.title + ' does not name ' + m.modeLit
+              );
+            }
+            /* (g) A lit pill keeps its rest width (DESIGN.md, "Chips", "Sibling pills"): each
+               mode pill, and each catalog group chip, is as wide on every route. */
+            if ((family === 'roll' || family === 'tables') && !pressed) {
+              const key = family + ' ' + lang + ' ' + width;
+              const ws = await page.evaluate(() =>
+                [
+                  ...document.querySelectorAll(
+                    'main .page-head .headnav .mode:not(.sup), main .page-head .headnav a.chip'
+                  )
+                ].map((e) => e.getBoundingClientRect().width)
+              );
+              widths[key] ??= ws;
+              ok(
+                ws.length === widths[key].length &&
+                  ws.every((w, i) => Math.abs(w - (widths[key][i] ?? 0)) <= 0.5),
+                where + 'a pill changed its width - ' + JSON.stringify([widths[key], ws])
+              );
+            }
+            /* (j) From 1000 px every homebrew tab wraps its pills alike (the reserved primary). */
+            if (family === 'homebrew' && width >= 1000 && !pressed) {
+              const key = lang + ' ' + width;
+              const hp = await page.evaluate(() => {
+                const tops = [
+                  ...document.querySelectorAll('main .page-head .headnav a.chip')
+                ].map((e) => Math.round(e.getBoundingClientRect().top));
+                return { top: tops[0] ?? null, lines: new Set(tops).size };
+              });
+              hbPills[key] ??= hp;
+              ok(
+                hp.lines === hbPills[key].lines &&
+                  hp.top !== null &&
+                  Math.abs(hp.top - (hbPills[key].top ?? 0)) <= 1,
+                where +
+                  'the homebrew pills differ from the Items tab - ' +
+                  JSON.stringify([hbPills[key], hp])
               );
             }
           }

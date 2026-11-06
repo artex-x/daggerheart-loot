@@ -1,6 +1,6 @@
 <script lang="ts">
   /* The catalog's filters (docs/specs/FEATURES.md, "Tables and search"): a column beside
-     the rows from 1000 px, a bottom sheet below it. Each row starts with «Все», the
+     the rows from 1000 px, a sheet below it. Each row starts with «Все», the
      neutral pressed default while the row has no pick; a picked value is gold.
 
      Owns none of the routing: `TablesPage` turns a pick into an address. It owns the

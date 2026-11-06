@@ -2,30 +2,21 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress, STOPPED by the owner (2026-11-06, about 19:00 UTC) for a laptop restart. Waves 1, 2, 2b
-  and 3 are on `main`: wave 3 landed as `10011729` (CI and deploy green), `claude/57` merged it back as `45050594`.
-  No pipeline is in flight: nothing is running on `main` or on the branch tip, and no agent or cron job runs.
-- WARNING, the worktree holds UNCOMMITTED work: batch PW3 (47 paths: 45 modified, 2 new `MetaToggle.svelte` and
-  `metaToggle.test.ts`). Do not run `git clean`, `git checkout`, `git restore` or `git stash` here. HEAD is `c035fc6a`;
-  `76675004` and `c035fc6a` are local docs commits (reviews and the PW3 plan), pushed with the next push.
-- Batch PW3 (`plan-pw3.md` part B) is the wave 3 review remediation and ships as the second squash S2. The owner
-  answered D1-D11 on 2026-11-06, each the recommended option (D2 tool row on both pages, D4 wrap from 1000 px). Done in
-  the tree: PW-1..PW-31, PW-32, PW-33, PW-34, PW-35, PW-37, PW-39 with unit tests and spec lines. NOT done: PW-36 (the
-  golden re-seeds), PW-38 (bundle: `check:built` not run; expect a raise to 271 unconfigured), the detector,
-  `check:fast`, case 83 re-run (a row `GM2_LIST as gm2` at 360 got `exception: 304`), the Completed table and
-  Verification block (drafts in the old session's scratchpad, lost on reboot: rewrite them). See Notes, "Session end
-  partial progress".
-- Review: required (trigger: changed UI, about 110 goldens), after the commit and CI.
+- Task status: in_progress. Waves 1, 2, 2b and 3 are on `main`: wave 3 landed as `10011729`, `claude/57` merged it
+  back as `45050594`.
+- Batch PW3 (`plan-pw3.md` part B, the wave 3 review remediation, the second squash S2) is implemented and committed
+  on `claude/57` (previous sha `c8d25b27`; the commit is named in the implementer's report), merged with `origin/main`
+  and pushed. CI of the tip is the full gate (CI-first policy, `context.md`). The detector was not run (the policy
+  leaves it to CI and the review).
+- Review: required (trigger: changed UI, the golden re-seed), after CI.
 - NEEDS_HUMAN_CONFIRMATION: no.
 - Writer tier: `opus` (writer test 3).
 - Main checkout `E:\dev\daggerheart-loot`: on `claude/roll-per-line` (not `main`); the squash needs it switched to
   `main` and back (it was clean).
-- Branch: `claude/57` (worktree `.claude/worktrees/57`). Pushed: everything up to `45050594`.
-- Next step, in order (CI-first policy, owner 2026-11-06, `context.md` decision 41: a writer runs only `check:fast`,
-  the golden re-seeds and the affected vitest files, then pushes; CI and one fix pass find the rest):
-  (1) a fresh implementer (opus) finishes PW3 from the tree: `npm run build:test`, re-seed the goldens per family,
-  both lints, `check:built` (raise the budget by the rounding rule if over), `check:fast`, commit, merge
-  `origin/main`, push; (2) CI credit of the tip (`node .claude/hooks/ci-credit.mjs <sha>`), batch review (reviewer,
+- Branch: `claude/57` (worktree `.claude/worktrees/57`). Pushed: the PW3 commit and its merge of `origin/main`.
+- Next step, in order (CI-first policy, owner 2026-11-06, `context.md`: a writer runs only `check:fast`, the golden
+  re-seeds and the affected vitest files, then pushes; CI and one fix pass find the rest):
+  (1) done: PW3 committed and pushed; (2) CI credit of the tip (`node .claude/hooks/ci-credit.mjs <sha>`), batch review (reviewer,
   opus) and one fix pass; (3) S2: merge `origin/main`, push, squash onto `main` in the main checkout (the wave 3
   landing's steps: `git switch main`, `pull --ff-only`, `merge --squash claude/57`, credit, commit, push, watch the
   `main` run, merge back, switch the main checkout back to `claude/roll-per-line`); (4) the owner checks the signed-in
@@ -412,29 +403,109 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
   | 10-N11 | Fixed: the `tokens.css` comment says "the markup preview", as DESIGN.md |
   | 10-R2 | Left: the orchestrator's (10-20) |
 
+- Batch PW3 - the wave 3 review remediation, shipping as S2 (`plan-pw3.md` part B, previous sha `c8d25b27`). Owner
+  answers of 2026-11-06 (D1-D11, each the recommended option: D1 (a), D2 (b), D3 (a), D4 (a), D5 (a), D6 (a), D7 (a),
+  D8 (a), D9 (a), D10 (a), D11 (a)); no departure from a recommended option. Acceptance (39):
+
+  | Line | Outcome |
+  |---|---|
+  | PW-1 D1 | Done: `Sheet` from 761 px `inset: 0; margin: auto`, four `--r` corners, the plate shadow; caps kept. Case 100 reads the 14-tick price sheet at 1180x720 (top = bottom gap within 1 px, gap >= 16, radius `--r`); the 360x480 reads kept. DESIGN.md "Sheet" (was "Bottom sheet"), "The Two Breakpoints Rule", "Filter chips"; FEATURES.md `/s/` filter line; `sheet.test.ts` describe "the sheet"; `Sheet` and `FilterPanel` comments |
+  | PW-2 D2 (b) | Done: `/lists` from 761 px draws the import as the last control before «Выбрать» in the count row (`.lhead`) and in `ListFind`'s `beside`; the head keeps the primary; up to 760 px «Ещё». `listsPage.test.ts` (not in `.page-head`, before `.selmode`, axe). FEATURES.md "Lists", rule 9 |
+  | PW-2b | Done: from 1000 px the Sources, Sets and Rules tabs draw `<span class="headnew reserve" aria-hidden="true" inert>` with `visibility: hidden`; none at the mid band. `homebrewPage.test.ts` (hidden, inert, axe; none at mid). Case 112 (j) reads the pills' first top and line count per tab at 1000 and 1180, RU and EN, as gm3. DESIGN.md "The Head Order Rule" |
+  | PW-3 D3 (a) | Done: `compactHead = app.band !== 'wide'` for the head branch, `class:wide`, «Заметки ▾», the list «Ещё» items and `.selrow`; the rows stay on `narrow`. A focus in the head at the 999/1000 crossing goes to the name field or the list «Ещё». `listPage.test.ts` (mid head, the crossing both ways). `FIRST_SCREEN` `mid` flag (768x1024, 900x720) on the list rows, `SHOP as gm1` and the new `GM2_LIST as gm2`; case 83 figures under Verification. Case 105 at 768 reads the compact head; case 104's 768 roll read enters at 1180; the sweep's «список: заметки открыты» follows `.lhead`. FEATURES.md "The compact head", "The side column"; DESIGN.md "The Two Breakpoints Rule" |
+  | PW-4 D4 (a) | Done: the side plate's field is `<textarea rows="1" class="titleinput">` (`fitName`: height = scrollHeight on mount, input, value and width change), Enter blurs, a `\s*\n\s*` run stored as one space; the compact head keeps `<input>` with `text-overflow: ellipsis`. Suites read `.titleinput` (`states.js`, `tests/e2e/flows.mjs`). `listPage.test.ts` (textarea, Enter, paste). DESIGN.md "The Whole Message Rule"; FEATURES.md rule 16 |
+  | PW-5 D5 (a) | Done: RU `signInLead`; `FIRST_SCREEN` `#/account` (240 at 360x640, 170 at 1180x720, RU and EN); `accountPage.test.ts`; FEATURES.md "Account" |
+  | PW-6 D6 (a) | Done: `subWondrous`, `subVoa`, `subCommunity`, `rollHint` gone in both languages (`i18n.test.ts` GONE list); `sub` gone from `RollPanel`, `PickerRollPanel` and `App.svelte`; `.rollhint` gone. FEATURES.md "Rolling", "Lists" |
+  | PW-7 D7 (a) | Done: `MetaToggle.svelte`; `ListPage`'s «Заметки ▾» and `SharedListPage`'s two toggles use it; `.lnkb` gone. `metaToggle.test.ts`, `sharedListPage.test.ts`, `a11y.test.ts`. FEATURES.md "Lists" |
+  | PW-8 D8 (a) | Done: two `.set` rows «Цвет печати» / «Размер карты»; `.wb` and `defaultPrint` gone. `accountPage.test.ts` (two groups, axe); case 94 reads the two groups. FEATURES.md "Account" |
+  | PW-9 D9 (a) | Done: `subSearch` RU and EN without the language clause; `derived` passes; FEATURES.md "Tables and search" |
+  | PW-10 D10 (a) | Done: `switchKind` moves no focus; `listPage.test.ts`; FEATURES.md "Lists" |
+  | PW-11 D11 (a) | Done: static titles " - "; `.back`, `.lang a` and `404.html`'s links take the padded box (40 px up to 600 px, 24 px from 601 px); `node tools/build.js` exit 0 (in `build:test`); probe under Verification. DESIGN.md "Notes" |
+  | PW-12 | Done: `TableLink` padded box, `position: relative`, no external icon. `TARGET_ALLOW` `inline` needs the block to end as a sentence (`[.!?][»")]?$`). Lists under Verification |
+  | PW-13 | Done: the price sheet's field is named `t.repricePct`; `.numbox` 42 px, its buttons and input 40 px up to 600 px. `listPage.test.ts` |
+  | PW-14 | Done: `.linkbtn` padded box with the growth given back, `min-width: var(--thumb)`, `position: relative`; the hit test passes at 360 (the give-back is kept) |
+  | PW-15 | Done: `.lrow-pick` `min-width: max(32px, var(--thumb))`, centered |
+  | PW-16 | Done: `PickQty` up to 600 px: the group height auto, buttons and input 40 px. The «Мин» state is `LIST_A ~ compact, selecting`, «Макс» `~ picked`. FEATURES.md "Lists" (the take line) |
+  | PW-17 | Done: the 36 px rule of the `.decided`, `.notice`, `.more` buttons deleted |
+  | PW-18 | Done: `.sharelink` flex, `min-height: max(24px, var(--thumb))` |
+  | PW-19 | Done: `.ntext a` padded box, `min-width: var(--thumb)` |
+  | PW-20 | Done: `TARGET_LAYERS` gained the named entries (`~ share`, `~ not saved` entered at 1180), `TARGET_LAYERS_WIDE` (5 entries, floor 24, spacing); COVERAGE.md case 109 |
+  | PW-21 | Done: `SyncStatus` `after`; a pressed retry that saves sends the focus to `after()`, else `#main`; one that fails returns it to «Повторить»; `ListPage` passes the list «Ещё», `ListsPage` «Новый список». `listPage.test.ts`; rule 20 |
+  | PW-22 | Done: Enter in `AddToList`'s new-list field creates; `lists.test.ts` |
+  | PW-23 | Done: FEATURES.md "Lists": the menu row name wraps |
+  | PW-24 | Done: `closeErrorToast()` in `ListsPage.create` and `AddToList.createNew`; `listsPage.test.ts`, `lists.test.ts`; DESIGN.md "The Reading Time Rule", FEATURES.md "Chrome" |
+  | PW-25 | Done: the share hint sentence gone from FEATURES.md |
+  | PW-26 | Done: FEATURES.md and the `#/roll/std ~ request arrived as gm1` `why` say "the action toast"; its golden re-seeded (line 3) |
+  | PW-27 | Done: `.lroll-wrap` is the `faces` container; `@container faces (min-width: 641px)` draws the two columns |
+  | PW-28 | Done: RU `eachPrice` «%s за штуку» (the roll line, `share.ts` comment, `share.test.ts`, `sharedListPage.test.ts`, FEATURES.md) |
+  | PW-29 | Done: `pressPrint` focuses `#main` when the focus fell to `body`; `listPage.test.ts`; rule 20 |
+  | PW-30 | Done: `.pl` with `data-label` and a hidden 650-weight `::after` in `ModeRow` and `Chip`'s link form. Case 112 (g) reads the pill widths across routes (0.5 px). DESIGN.md "Sibling pills" |
+  | PW-31 | Done: `HomebrewEditor`'s sign-in and read heads draw `sub` from 761 px only; `homebrewEditor.test.ts` |
+  | PW-32 | Done (probe, no defect): «Добавлено в «Пустой список»» shows 12-20 ms after the press and lasts 4000 ms, RU and EN |
+  | PW-33 | Nothing to build (the planning commit) |
+  | PW-34 | See Verification (before and after) |
+  | PW-35 | See Verification (the two lists) |
+  | PW-36 | See Verification, "Goldens" |
+  | PW-37 | Done: the DESIGN.md, FEATURES.md and COVERAGE.md lines above; `derived` passes |
+  | PW-38 | See Verification, "Bundle" |
+  | PW-39 | Done: this entry's head |
+
+  Every new unit test failed at `c035fc6a` (a detached worktree, the test files copied in: 20 cases red) and passes
+  here. Case 83's new row `GM2_LIST as gm2` at 360x640 starts at 260 px: the folded notices strip above the rows, as
+  the requests strip of `SHOP ~ requests` (304 px). The app is right and the row first lacked the strip's named
+  exception; it takes `exception: 304`, and DESIGN.md "The First-Screen Rule" names the notices strip.
+
 ## Verification
-- Batch 10 fix pass, 2026-11-06 (previous sha `ca730999`), each in the foreground, one heavy command at a time. The
-  batch 10 block: `git show ca730999:issues/57/handoff.md`, "Verification".
-  - `npm run build:test`: exit 0 (before the probes, and again after the copy change).
-  - D125 probes (`scratchpad/d125-probe.cjs`, `d125-probe2.cjs`, `d125-routes.cjs`): figures under the fix-pass table.
-    A `::-webkit-scrollbar` style did not change `clientWidth` in headless (320), so the classic bar was read as the
-    body edge that `scrollbar-gutter: stable` leaves (305).
-  - `node tests/app/states.js --shard=8/105` (case 11): `all 1 runs passed` at `34ae151c` and at `5147cd01` (a detached
-    worktree in the scratchpad, `node_modules` joined, removed after). `--shard=58/105` (case 68): passed twice at each.
-  - `MSYS_NO_PATHCONV=1 node tests/app/golden.js --update --only="#/roll/std"`: 13 files, one EN line each, by the tool.
-  - Vitest one file at a time, `VITEST_MAX_WORKERS=2`: `rollResult` 16, `record` 113, `help` 14, `i18n` 73, components `std` 23, components `sections` 23: all pass. `node --test tools/artwork/lib.test.mjs` 77 pass. `node tests/run-all.js derived`: ok.
-  - `npm run lint:untyped`, `npm run lint:typed`: exit 0. `rtk npm run check:built`: pass; unconfigured bundle 269.5 kB within 270.
+- Batch PW3, 2026-11-06 (previous sha `c8d25b27`), each in the foreground, one heavy command at a time, over two
+  sessions (the owner's restart between them). The batch 10 fix pass block: `git show c8d25b27:issues/57/handoff.md`,
+  "Verification".
+  - `npm run build:test`: exit 0 (the baseline, after each source change before a browser read, and at the start of
+    the second session).
+  - First session, all pass: `npm run typecheck` 0 errors; `states.js --shard=k/105` cases 94, 100, 104, 105, 106,
+    109, 111, 112 each `all 1 runs passed`; a sweep probe (the target step, every sweep page) clean at 360, 768 and
+    1180, RU and EN; every new unit test red at `c035fc6a` (a detached worktree, 20 cases).
+  - `node tests/app/states.js --shard=73/105` (case 83): `all 1 runs passed (shard 73/105 of 105)`. Figures: `#/account`
+    240 (360x640) and 170 (1180x720), RU and EN; `LIST_A as gm4` 162 at 768x1024 and 900x720; `SHOP as gm1` 212 at both
+    mid sizes; `GM2_LIST as gm2` 260 at 360x640 (exception 304), 209 at 1180x720, 231 at 768x1024 and 900x720.
+  - PW-34 / PW-35 probe (`pw3-targets.cjs` in the session scratchpad): `targets()` of `tests/app/lib.js` on 34 states
+    and pages (the PW-20 entries, `#/lists as gm1`, `~ many lists as gm4`, `#/homebrew` and its tabs, `/account`
+    signed out and as gm1, six roll pages, `#/search`, `/s/`, `/pages/privacy.html` RU and EN, `/nope`, `/404.html`)
+    at 360x640 (40, menu 44), 768x1024 and 1180x720 (24, spacing), RU and EN; it also lists the targets that pass only
+    by `inline`.
+    - Before (`c035fc6a` code): 80 reports, all at 360 (`label.lrow-pick` 32 px, `span.qgroup` 38 px, the price
+      sheet's `.numbox` 28x30 and 52x30, the `.more` and `.notice` buttons 36 px, `#/h/...0513` «показать в таблице»
+      19 px, the static pages' `a.back` 24 px and `nav.lang > a` 17 px). `inline`-only at 360: the notice's «Открыть»,
+      `#/i/ci1` «показать в таблице», the `/account` consent links and the static pages' in-sentence links.
+    - After (run again in the second session, the same result): `reports: 0`. `inline`-only: the four `/account`
+      consent links («условия», «политику конфиденциальности», "terms", "privacy policy") and the static privacy
+      pages' links inside a sentence («странице аккаунта», "account page", the email). The notice «Открыть» and
+      «показать в таблице» left the list by their padded box.
+  - PW-32 probe: «Добавлено в «Пустой список»» shows 12-20 ms after the press and lasts 4000 ms, RU and EN.
+  - Goldens (PW-36), `MSYS_NO_PATHCONV=1 rtk node tests/app/golden.js --update --only=<prefix>`: `#/roll/`,
+    `#/account`, `#/search`, `#/s/`, `#/homebrew` (`--shard=n/3`), `#/lists` (`--shard=n/4`); compared without
+    `--update`, unchanged: `#/i/ci1`, `#/h/`, `#/tables/eq_weapon`. `git diff --shortstat tests/app/snapshots`: 154
+    files, 643 insertions, 623 deletions. Each diff read; every changed line is one of: the list name field
+    `multiline=true` (49 files); the `/lists` import button moved after the count line (21); the homebrew pills'
+    label without its trailing space, the link name unchanged (42, PW-30's label span), and on the Sources, Sets and
+    Rules tabs the hidden reserve «Новый предмет» in the controls list (PW-2b); the roll leads gone and the elision
+    window moved (15); the search lead (18); the account lead and the print row label (6); the price sheet field name
+    (2); the mid band compact head (1); the GM note's `focused` gone (PW-10, 1); three `why` lines (PW-26, the share
+    hint, «за штуку»).
+  - `npm run lint:untyped`, `npm run lint:typed`: exit 0.
+  - Bundle (PW-38): the first `rtk npm run check:built` failed: 270.2 kB unconfigured against 270. Raised to 271 by the
+    rounding rule (`tools/bundle-budget.mjs`, `.claude/README.md`); the second run passed, "within the 271 kB budget".
+    The configured figure is CI's (about 327.7 projected, under 328).
+  - Vitest one file at a time (small files grouped), `VITEST_MAX_WORKERS=2`: `listPage` 141, `listsPage` 53,
+    `homebrewPage` 132, `sharedListPage` + `metaToggle` 110, `accountPage` + `lists` 85, `homebrewEditor` 98, `i18n` +
+    `share` + `sheet` + `chip` + `modeRow` 186, `a11y` + `record` + `itemPage` + `requestsPanel` + `sharePanel` 226,
+    `rollPage` + `pageHead` + `homebrewTabs` + `app` 357: all pass.
+  - `node tests/run-all.js derived,contracts`: ok.
+  - Not run (CI-first policy): the detector, the other `states.js` cases, the full sweep and the full golden job.
   - `VITEST_MAX_WORKERS=2 rtk npm run check:fast`: run last, after this file; the commit gate takes only its pass.
 
 ## Next batch (implement-ready)
-- Batch PW3, `plan-pw3.md` part B: implement-ready once part A's rows D1-D11 have the owner's answers or their logged
-  defaults. The dispatch names each answer; a departure from a recommended option takes that row's other branch, which
-  part B already spells (PW-2 carries D2 (a) in full).
-- Order: baseline probe, the owner rows PW-1 to PW-11, the local lines PW-12 to PW-33, the suites, the probes and the
-  targeted `states.js` cases, the golden re-seed, the docs and the bundle, `check:fast` last; commit; push; CI.
-- Verification: `plan-pw3.md`, "Verification" (the filtered target probe PW-34, the `inline` narrowing lists PW-35,
-  cases 83, 105, 106, 109, 111, 112 and the price-sheet case one at a time, vitest by file, `check:fast` last).
-- Then: the batch review, its one fix pass, green CI, the S2 squash; then the whole-app blind review with `plan-pw3.md`
+- None until the PW3 review: CI credit of the pushed tip, the batch review (reviewer, opus) and its one fix pass.
+- Then: green CI, the S2 squash; then the whole-app blind review with `plan-pw3.md`
   part C in its dispatch, its remediation, the closeout (`plan.md` section 16).
 
 ## Blockers
@@ -481,7 +552,7 @@ section: `git show 5147cd01:issues/57/handoff.md`, "Deferred".
       keep it gone.
   13. D131: two RU compact color cards print their rules text at 3.4cqw (4.2 pt), under the 3.7cqw floor.
       Recommended: accept until `57-debt`; trade-off: smaller text on two cards.
-  14. Bundle headroom: 269.5 of 270 kB unconfigured; the configured figure is measured on CI only, against 328. Recommended: let the next change raise the
+  14. Bundle headroom: 270.2 of 271 kB unconfigured (PW3 raised it from 270); the configured figure is measured on CI only, against 328. Recommended: let the next change raise the
       budget by the rounding rule (ceilings 300 and 350); trade-off: one raise per bundle change.
   15. 9b-N13: in the selection mode the row controls' fixed 146 px inset does not follow the tick column.
       Recommended: fix it in the `57-debt` visual batch with a mock; trade-off: a few px of misalignment until then.
@@ -502,7 +573,7 @@ section: `git show 5147cd01:issues/57/handoff.md`, "Deferred".
   pre-collapse commit is `c489766a` (`git show c489766a:issues/57/handoff.md` holds the full tables and every
   measurement). `plan.md` compacted on 2026-11-06 (147.7 KB to 114 KB): the Status history and the briefs of batches 4
   to 9b became one block; the last pre-collapse commit is `a8bdf1de` (`git show a8bdf1de:issues/57/plan.md`).
-- Session end partial progress (if any): PW3 step 6 of 7 not started (owner stop 2026-11-06); nothing committed, 47 `git status --short` paths. Owner answers D1-D11 applied (all recommended). Done in the tree: PW-1 to PW-31 (code, unit tests, DESIGN.md/FEATURES.md/COVERAGE.md lines), PW-32 (probe: «Добавлено в «Пустой список»» shows in 12-20 ms and lasts 4000 ms, RU and EN; no defect), PW-33 (nothing), PW-34/35 (probe `scratchpad/pw3-targets.cjs`: before 80 reports at 360, after 0 at 360/768/1180 RU+EN; `inline`-only after: the `/account` consent links and the static pages' in-sentence links; the notice «Открыть» and «показать в таблице» left the list), PW-37 (docs, `derived` ok), PW-39 (answers). Also: case 83 `GM2_LIST as gm2` measured 260 px at 360 and given `exception: 304` (DESIGN.md First-Screen Rule names the notices strip) - re-run case 83 to confirm; the sweep's «список: заметки открыты» step and case 104's 768 roll read follow the compact head; suites read `.titleinput` (textarea from 1000 px). In progress / not run: PW-36 goldens (not re-seeded), PW-38 bundle (`check:built` not run; the test build grew about 0.55 kB gzip, so the unconfigured budget likely passes 270 and needs the raise to 271 in `tools/bundle-budget.mjs`; configured projected about 327.9 of 328 on CI), the detector, `check:fast`. Gates that ran, all pass: `npm run typecheck` 0 errors; `npm run lint:typed`, `lint:untyped` exit 0 (before the last two test edits); vitest by file (`listPage` 141, `listsPage` 53, `sharedListPage`+`metaToggle` 110, `homebrewPage` 132, `accountPage` 46, `lists` 39, `homebrewEditor` 98, share/i18n 246, a11y and six more 301, pill and roll files 163, sheet/record/search/catalog/filter/requests/app 591); every new test red at `c035fc6a` (detached worktree, 20 cases, removed after); `node tests/run-all.js derived,contracts` ok; sweep probe (target step, every page) clean at 360, 768, 1180 RU+EN; `states.js --shard=k/105` cases 94, 100, 104, 105, 106, 109, 111, 112 each `all 1 runs passed`, case 83 2 FAIL (the GM2 row at 360, fixed as above, not re-run). Draft acceptance table: `scratchpad/pw3-completed.md`, draft verification: `scratchpad/pw3-verif.md` (session scratchpad; the facts above stand without them). Next step for a fresh implementer: `npm run build:test`; `node tests/app/states.js --shard=73/105` (case 83); re-seed goldens with `MSYS_NO_PATHCONV=1 node tests/app/golden.js --update --only=<prefix>` for `#/lists`, `#/s/`, `#/roll/`, `#/account`, `#/search`, `#/homebrew/sources`, `#/homebrew/sets`, `#/homebrew/rules` (the hidden reserve link joins the controls list) and spot-compare `#/tables/eq_weapon` and `#/i/ci1`, reading each diff; then lints, `rtk npm run check:built` (raise the budget by the rounding rule if over), the detector, `rtk npm run check:fast`; write the acceptance table into Completed and the Verification block; commit, merge `origin/main`, push.
+- Session end partial progress (if any): none.
 - Durable items written to their homes by TD: DESIGN.md "The Phone-First Rule", "The Drop Rule", "The Measure Rule",
   "The Reading Time Rule", "Empty state", "Toast", "The First-Screen Rule" (`/s/` 309); FEATURES.md "Chrome", "Lists",
   "Account"; COVERAGE.md cases 108-111, the sweep step, the derived blocks. Earlier pass: DESIGN.md "The Whole Message Rule" (the narrow picker cut);

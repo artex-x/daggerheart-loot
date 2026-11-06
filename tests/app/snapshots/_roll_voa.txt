@@ -24,7 +24,6 @@ RootWebArea "Vault of Ages - Генератор лута Daggerheart" [url=/roll
       button "Vault of Ages" [expanded=false haspopup=menu]
     button "Открывать при запуске" [pressed=false]
     button "Об этой книге" [expanded=false]
-    StaticText "Выберите раздел книги и бросьте кость по нему."
     combobox "Раздел книги" [value=Ранг 1 expanded=false haspopup=menu]
       option "Ранг 1" [selected=true]
       option "Ранг 2" [selected=false]
@@ -41,7 +40,8 @@ RootWebArea "Vault of Ages - Генератор лута Daggerheart" [url=/roll
     status ""
       StaticText "Благословенный Нож Шеф-Повара"
     button "Открыть карточку"
-    ... StaticText x11 of 15 same-shape siblings elided
+    StaticText "1"
+    ... StaticText x10 of 14 same-shape siblings elided
     link "Благословенный Нож Шеф-Повара" [description=Открыть страницу url=/i/voa1_t1a]
     StaticText " 0"
     StaticText "Еда, приготовленная этим ножом, всегда вкусна и готовится вдвое ..." [namelen=186 namehash=62309a64]
@@ -106,7 +106,6 @@ RootWebArea "Vault of Ages - Daggerheart Loot Generator" [url=/en/roll/vault_of_
       button "Vault of Ages" [expanded=false haspopup=menu]
     button "Open on start" [pressed=false]
     button "About this book" [expanded=false]
-    StaticText "Pick a section of the book and roll within it."
     combobox "Section" [value=Tier 1 expanded=false haspopup=menu]
       option "Tier 1" [selected=true]
       option "Tier 2" [selected=false]
@@ -123,7 +122,8 @@ RootWebArea "Vault of Ages - Daggerheart Loot Generator" [url=/en/roll/vault_of_
     status ""
       StaticText "Blessed Chef's Knife"
     button "Open card"
-    ... StaticText x11 of 15 same-shape siblings elided
+    StaticText "1"
+    ... StaticText x10 of 14 same-shape siblings elided
     link "Blessed Chef's Knife" [description=Open page url=/i/en/voa1_t1a]
     StaticText " 0"
     StaticText "Food prepared by this knife is always delicious and prepared at ..." [namelen=178 namehash=fceb0968]

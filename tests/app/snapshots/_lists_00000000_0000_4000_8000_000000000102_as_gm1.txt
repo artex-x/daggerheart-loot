@@ -19,7 +19,7 @@ RootWebArea "Пустой список - Генератор лута Daggerheart
       link "Поиск" [url=/search]
   main ""
     StaticText "Пустой список"
-    textbox "Название списка" [value=Пустой список multiline=false readonly=false required=false]
+    textbox "Название списка" [value=Пустой список multiline=true readonly=false required=false]
     StaticText "0 позиций из 100 · "
     StaticText "Сохранено"
     button "Поделиться" [expanded=false]
@@ -73,7 +73,7 @@ RootWebArea "Пустой список - Daggerheart Loot Generator" [url=/en/li
       link "Search" [url=/en/search]
   main ""
     StaticText "Пустой список"
-    textbox "List name" [value=Пустой список multiline=false readonly=false required=false]
+    textbox "List name" [value=Пустой список multiline=true readonly=false required=false]
     StaticText "0 items of 100 · "
     StaticText "Saved"
     button "Share" [expanded=false]

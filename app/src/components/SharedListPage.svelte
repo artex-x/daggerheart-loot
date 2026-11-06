@@ -19,6 +19,7 @@
   import Icon from './Icon.svelte';
   import ListFind from './ListFind.svelte';
   import LoadState from './LoadState.svelte';
+  import MetaToggle from './MetaToggle.svelte';
   import PageTitle from './PageTitle.svelte';
   import PickQty from './PickQty.svelte';
   import RecordHost from './RecordHost.svelte';
@@ -402,21 +403,19 @@
             app.lang,
             app.t,
             'updated'
-          )}`}{/if}{#if shared?.note}&#32;·&#32;<Button
-            size="sm"
-            variant="bare"
+          )}`}{/if}{#if shared?.note}&#32;·&#32;<MetaToggle
+            label={t.note}
             expanded={pubOpen}
             onclick={() => {
               pubOpen = !pubOpen;
-            }}>{t.note}</Button
-          >{/if}{#if shared?.hnote}&#32;·&#32;<Button
-            size="sm"
-            variant="bare"
+            }}
+          />{/if}{#if shared?.hnote}&#32;·&#32;<MetaToggle
+            label={t.noteGmLink}
             expanded={gmOpen}
             onclick={() => {
               gmOpen = !gmOpen;
-            }}>{t.noteGmLink}</Button
-          >{/if}
+            }}
+          />{/if}
       {/snippet}
       <div class="shhead">
         <PageTitle title={shared.name || t.untitled} {sub} />

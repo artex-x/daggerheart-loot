@@ -20,10 +20,10 @@ RootWebArea "Мои списки - Генератор лута Daggerheart" [url
   main ""
     heading "Мои списки" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Импорт из файла" [expanded=false]
     button "Новый список" [expanded=false]
     status ""
     StaticText "0 списков из 50"
+    button "Импорт из файла" [expanded=false]
     StaticText "Списков пока нет"
     StaticText "Нажмите «Новый список» - или «В список» у предмета в таблице или..." [namelen=74 namehash=2ec60ca3]
     link "Открыть таблицы" [url=/tables]
@@ -69,10 +69,10 @@ RootWebArea "My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm4]
   main ""
     heading "My lists" [level=1]
     button "Open on start" [pressed=false]
-    button "Import from file" [expanded=false]
     button "New list" [expanded=false]
     status ""
     StaticText "0 lists of 50"
+    button "Import from file" [expanded=false]
     StaticText "No lists yet"
     StaticText "Press "New list" - or "Add to list" on an item in a table or a r..." [namelen=68 namehash=209750b9]
     link "Open the tables" [url=/en/tables]

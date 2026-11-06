@@ -274,6 +274,7 @@
     }
     const store = app.cloudLists;
     if (!store || app.listsFull()) return;
+    app.closeErrorToast();
     const l = store.create(draft);
     const fresh = store.add(l.id, ids, knows, carried);
     if (store.saved) added(l.name, fresh, []);
@@ -490,6 +491,11 @@
               aria-label={t.newList}
               oninput={(e) => {
                 draft = e.currentTarget.value;
+              }}
+              onkeydown={(e) => {
+                if (e.key !== 'Enter') return;
+                e.preventDefault();
+                createNew();
               }}
             />
             <Button size="sm" variant="primary" onclick={createNew}>{t.create}</Button>

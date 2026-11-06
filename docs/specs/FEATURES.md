@@ -30,7 +30,10 @@ across.
   (where the roll is a choice), the pin and the help. The `h1` reads «Бросок» /
   "Roll" at every width. From 761 px the head holds the `h1`, the three mode pills,
   the labeled pin and help (DESIGN.md, "The Head Order Rule"; from 761 to 999 px the
-  pills take the row under them), and the lead; a 320 px pane holds the roll
+  pills take the row under them), and the lead. Only `/roll/std` and `/roll/alt` draw a
+  lead, a description of the two books they combine; the other seven draw none, since
+  their pill names the book and the field label and the roll button say what to do
+  (DESIGN.md, "The Clarity Rule"; owner, 2026-11-06). A 320 px pane holds the roll
   controls and the settings, and the results line beside it holds «Бросок N» and
   the copy button. «Бросок N» reads the two faces on the alternate tables, the
   Hope die first; the line carries no instruction.
@@ -277,7 +280,10 @@ across.
   and descriptions in both languages at once) and three example queries as
   chips («зелье», «меч», «лечения зелья»; "potion", "sword", "healing
   potions"), each of which finds a record. A press fills the box and the box
-  keeps the focus.
+  keeps the focus. The plate is the one place that states both languages: from 761 px
+  the page lead reads «Поиск сразу по 1459 позициям - добыча, расходники и снаряжение.» /
+  "Search all 1459 entries at once - loot, consumables and equipment." (owner,
+  2026-11-06).
 - **Nothing found** on `#/search`: the plate, «Ничего не найдено», one cause
   naming the query («Нет совпадений с «%q» в названиях и описаниях.»), or the
   query and the picked kinds, and one primary: «Сбросить фильтры» while a kind
@@ -476,7 +482,7 @@ across.
   the page. It is a popover at every width, also at 360 px (no bottom sheet:
   `docs/decisions/2026-11-05-the-add-to-list-menu-stays-a-popover.md`).
 - The menu is headed «Списки» / "Lists". A list is a row: a check where it holds the
-  record, the name on one line (cut with an ellipsis), and its count in words at
+  record, the name, wrapped (DESIGN.md, "The Whole Message Rule"), and its count in words at
   the end, «2 позиции», never cut: the entries the data still knows, the count of
   the list's card on `/lists`; the name is the row's name and the count its
   description. The rows are neutral, with no gold fill (C61): a one-record menu's
@@ -496,9 +502,10 @@ across.
   draws the heading and «Новый список» / "New list" alone, with no empty line and no
   separator, and the button opens the sign-in prompt in its place (two steps, kept).
 - The index's head is the page head with «Мои списки», no line under it and no help
-  (Q8.1). From 761 px the pin, «Импорт из файла» (while the account lists are read)
-  and the primary «Новый список» (plus icon) share its row, the primary at the
-  column's right edge. The head follows DESIGN.md's Head Order Rule: no siblings, so the
+  (Q8.1). From 761 px the pin and the primary «Новый список» (plus icon) share its row,
+  the primary at the column's right edge; «Импорт из файла» (while the account lists are
+  read) is the last control before «Выбрать» in the count row, or in the search row from
+  the eighth list, as on every tab of «Мои предметы» (rule 9). The head follows DESIGN.md's Head Order Rule: no siblings, so the
   pin follows the heading and the primary ends the row. Up to 760 px the row holds the `h1`, the primary (`sm`, plus
   icon, 44 px tall) and «Ещё» (at 320 px the primary and «Ещё» wrap under the `h1`
   together), which holds «Импорт из файла» (while the lists are
@@ -511,12 +518,12 @@ across.
   `aria-expanded` while the panel is open. The focus goes into
   the input; Enter and «Создать» create, «Отмена» and Escape discard, and after
   either the focus returns to the primary. An empty name toasts «Сначала назовите
-  список» and keeps the field. A create closes the field, clears the name filter
-  and toasts «Список «%s» создан». At the limit the primary stays enabled: a press
+  список» and keeps the field. A create closes the error toast it answers, closes the
+  field, clears the name filter and toasts «Список «%s» создан». At the limit the primary stays enabled: a press
   toasts the limit and the field stays closed (round 3, unit B).
 - The count line heads the collection: «3 списка из 50» (red at the limit), then
-  «Не сохранено» and «Повторить» while a write fails, then «Выбрать» at its end
-  while a card is drawn and the mode is off. From the eighth account list
+  «Не сохранено» and «Повторить» while a write fails, then from 761 px «Импорт из файла»,
+  then «Выбрать» at its end while a card is drawn and the mode is off. From the eighth account list
   (`LIST_SEARCH_AT`) the row under the head is the search «Найти список» with
   «Выбрать» last; the count sits under it up to 760 px and in the row, after the
   box, from 761 px. The search matches the list name, folded as search folds,
@@ -571,7 +578,7 @@ across.
   toast; the others stay deleted. «Снять выделение» leaves the mode and focuses
   «Выбрать»; a page with no drawn card leaves it too.
 - Signed in, with the account lists read, «Импорт из файла» / "Import from file"
-  is the head's toggle from 761 px and an item of the head's «Ещё» up to 760 px; it
+  is a toggle in the count row from 761 px and an item of the head's «Ещё» up to 760 px; it
   opens the panel «Импорт из файла JSON» / "Import from a JSON file" under the head:
   «Выбрать файл...», the chosen file's name, and a hint that links the published
   schema (`schema/import-v3.json`, «схеме import-v3» / "import-v3 schema") and
@@ -651,21 +658,21 @@ across.
   later stays skipped: choose the file again.
 - Optional quantity and price per entry; both travel into copied text. The
   price is the price of one unit: after a count over 1 the copied line reads
-  "×2 — по 7 мешков 5 горстей" / "×2 — 7 bags 5 handfuls each", in the
+  "×2 — 7 мешков 5 горстей за штуку" / "×2 — 7 bags 5 handfuls each", in the
   selection copy and in "Скопировать текст" alike.
 - Prices display as book units (default) or coins; the mode is per list and
   rides in the link.
-- An entry's price field reads «Цена» / "Price" and has no «?». From 761 px, while a
+- An entry's price field reads «Цена» / "Price" and has no «?». From 1000 px, while a
   price is set, the side column draws «Цены:» / "Prices:" with a neutral switch «Как в
   книге» / «Монетами» and one line «Например: <price>» / "For example: <price>", the first
-  priced entry in the chosen mode; up to 760 px the mode is an item of the list «Ещё».
+  priced entry in the chosen mode; up to 999 px the mode is an item of the list «Ещё».
   Every price on the page follows it: the rows, the bar total, the price sheet, the
   requests panel and the roll result.
 - Batch actions over a selection within a list: set prices, clear prices, shift
   all by a percentage, suggest prices from tier or rarity, copy, hide from
   players, remove. The owner's list page has the catalog's selection mode:
-  «Выбрать» opens it (on the title row up to 760 px, on its own row from
-  761 px, last in the search row from 8 entries), the ticks draw only in it, and
+  «Выбрать» opens it (on the title row up to 999 px, on its own row from
+  1000 px, last in the search row from 8 entries), the ticks draw only in it, and
   its bar is the one selection bar, drawn in the bar's place by the page itself
   (`app.pageBar`): «Все», the summary and the total, «Цены», «Скопировать
   текст», «Скрыть от игроков (N)», «Удалить (N)», «Снять выделение»; up to 760 px
@@ -689,7 +696,7 @@ across.
   the line sum (price x taken count) only for a priced entry. The count
   field sits between «Мин» and «Макс» / "Min" and "Max" in one joined
   control: «Мин» sets the count to 1, «Макс» to the whole quantity, and each
-  is disabled at its end. At 600 px or less the control is 36 px tall and
+  is disabled at its end. At 600 px or less each part of the control is 40 px tall and
   each end at least 44 px wide. The field narrows the count to
   1..quantity; an emptied field puts its value back on commit. The count lives in memory only and clears with its
   tick, on "clear selection", and on a navigation. The total is the sum of
@@ -719,10 +726,10 @@ across.
   on. A neutral look: no gold.
 - A typed quantity is held to 99, and a negative one to none; the field then shows the held value.
 - A list of two or more entries has «Бросить по списку» / "Roll on this list", a button
-  with `aria-expanded` in the action row (in the list «Ещё» up to 760 px), which opens the
+  with `aria-expanded` in the action row (in the list «Ещё» up to 999 px), which opens the
   panel «Бросок по списку» at the top of the rows column: «Результат броска (1-N)», the
-  stepper and «Бросить dN» on one row, then the result as the card face (the row face in
-  a narrow column), the entry's count and price in the page's mode, both notes (the GM
+  stepper and «Бросить dN» on one row, no hint under them, then the result as the card face
+  beside its notes from a 641 px panel (the row face over them in a narrower one), the entry's count and price in the page's mode, both notes (the GM
   note in its GM box) and «Показать в списке», which scrolls to the row, lights it for
   1.5 s and focuses its body. The row numbers match it. An empty roll field means no roll
   has been made yet, not zero. The panel and the open note areas are page memory and keep
@@ -734,14 +741,15 @@ across.
   4000 characters with no counter. The two notes of an entry, and the two of the list,
   are one note area: closed, each filled note draws read-only in a full box, the GM
   note's box on the darker ground; «Заметка» (a filled note adds a dot and the
-  hidden «, заполнена»), the side column's «Изменить» or «Заметки ▾» up to 760 px opens
+  hidden «, заполнена»), the side column's «Изменить» or «Заметки ▾» up to 999 px opens
   it: a neutral switch «Для игроков» / «Только для мастера» (a dot on an option whose
   note is filled), one field for the chosen note, named by it and described by its
   caption «Видна по ссылке для игроков» / «Игроки не видят», then «Готово», which closes
   it and returns the focus to its opener, and «Очистить», which clears the shown note
   with «Вернуть» in its toast. The area opens on the players'
   note unless only the GM note is filled; a switch keeps the typed text, which every
-  keystroke already wrote through the buffer. A stored list or entry note is read the same way, with no
+  keystroke already wrote through the buffer, and keeps the focus on the pressed option
+  (owner, 2026-11-06): a keyboard reader compares the two notes, then presses Tab to type. A stored list or entry note is read the same way, with no
   migration.
   The rolled entry, `#/s/` and the clipboard draw it formatted, the
   link card plain. On `#/s/`
@@ -823,7 +831,7 @@ address kept, and no add-to-list control is drawn.
   note at 4000 (`maxlength`, no counter). It keeps its address
   `#/lists/<uuid>`, draws «Поделиться» / "Share" first in its actions, then «Печать» and «Ещё» /
   "More", which holds «Скопировать текст», «Скачать JSON» / "Download JSON" and the danger
-  «Удалить список» / "Delete the list" (from 761 px; up to 760 px see the compact head below),
+  «Удалить список» / "Delete the list" (from 1000 px; up to 999 px see the compact head below),
   and says its save status
   after the count: «Сохраняем...», «Сохранено», or
   «Не сохранено» in the danger color and «Повторить». Only the failure and
@@ -939,9 +947,7 @@ address kept, and no add-to-list control is drawn.
   links are all deleted says «Ссылка удалена» and
   offers «Создать ссылку» alone, which makes a new link and toasts «Ссылка
   создана.»; the next open does not make one by itself. Replacing a link is
-  delete, then create. Under the rows a hint says what the two buttons do,
-  that the players' link hides the «Только для мастера» notes and items and
-  that the GM's link shows them. «Загружаем...»
+  delete, then create. «Загружаем...»
   while the links are read; «Не получилось загрузить ссылки.» and a small
   «Повторить» when the read, or a link it had to make, failed; a failed change
   toasts «Не получилось изменить ссылку. Проверьте соединение и попробуйте ещё
@@ -951,7 +957,8 @@ address kept, and no add-to-list control is drawn.
   «Поделиться»; each row names its audience with one muted line («Без заметок мастера и
   скрытых позиций» / «С заметками «Только для мастера»»), «Скопировать» is a plain
   button and «Удалить ссылку» a bare text button in the danger color, so the panel draws
-  no gold; each link keeps its own delete (owner, 2026-11-05).
+  no gold; each link keeps its own delete (owner, 2026-11-05). The link is a target of
+  40 px up to 600 px and 24 px from 601 px; the panel grows to hold it.
 - **The list card** of a share link's preview link: the list name (or «Без
   названия» / "Untitled"), «N позиций» / "N items" of the entries that the
   link's audience sees - a players' link counts the entries without «Только
@@ -987,9 +994,10 @@ address kept, and no add-to-list control is drawn.
   it, read-only for everyone, the owner included: the name (one line with an
   ellipsis up to 760 px, up to three lines from 761 px), then one lead line, the
   count «N позиций», «Обновлено N назад» / "Updated N ago" (`I18N.md`) and a
-  button for each note the link holds, «Заметка» / "Note" and on a GM link
+  toggle for each note the link holds, «Заметка» / "Note" and on a GM link
   «Заметка мастера» / "GM's note", each opening its note in place under the
-  head (closed on arrival); then «Сохранить себе» and «Выбрать», and the rows,
+  head (closed on arrival); each is the owner's page's meta-line toggle, underlined
+  with a chevron that turns while open (`MetaToggle`; owner, 2026-11-06); then «Сохранить себе» and «Выбрать», and the rows,
   with the selection mode and bar: taking some rows, or all of them after «Все», into a
   new or an existing list is the bar's add-to-list control, which carries the
   taken count as the quantity (none for a count of 1), the price and a row's
@@ -1042,7 +1050,7 @@ address kept, and no add-to-list control is drawn.
   is set, the search row (`ListFind`, shared with the owner's page) sits over
   the rows: the search box («Поиск», named «Поиск по названию или описанию...»,
   matched as a table's box, never over the list notes), «Фильтры · N» and
-  «Выбрать» last; the filter is the bottom sheet at every width ("Tables and
+  «Выбрать» last; the filter is the sheet at every width ("Tables and
   search"). Once drawn the row stays until another list opens: dropping the
   last value, clearing the query or a re-read that shrinks the list never
   removes it. «Фильтры» is drawn only while a row can narrow, so a list of
@@ -1100,22 +1108,28 @@ address kept, and no add-to-list control is drawn.
   the danger «Убрать из списка»; its notes draw only there. The shared row
   unfolds to its tags, text, both notes the link holds and «Открыть карточку».
   The drop mark draws on the compact row too. From 761 px the full row stays.
-- **The compact head** (owner, 2026-11-03, D-head 1): up to 760 px the owner's
-  page draws the name, «Выбрать» and «Ещё» on one row and the meta line under
+- **The compact head** (owner, 2026-11-03, D-head 1; to 999 px, owner 2026-11-06): up to
+  999 px the owner's page draws the name, «Выбрать» and «Ещё» on one row and the meta line under
   them, which ends «· Заметки ▾» / "Notes" opening the list notes in place
   (closed on arrival). The list «Ещё» holds «Поделиться», «Печать», «Бросить по
   списку», a separator, «Цены: монетами» / «Цены: как в книге» while an entry is
   priced, «Скопировать текст», «Скачать JSON», a separator and the danger
   «Удалить список»; an item with no target leaves (no «Печать» without a read
   item, no roll under 2 entries). The side column and its price switch do not draw up to
-  760 px: «Заметки ▾» opens the list notes' area under the head, and «Бросить по списку»
-  the roll panel. The inline rename in the `h1` stays.
-- **The side column** (from 761 px): the rename `h1`, the meta line, the action row
+  999 px: «Заметки ▾» (the meta-line toggle, underlined with a chevron that turns while
+  open) opens the list notes' area under the head, and «Бросить по списку» the roll
+  panel; the read-only list notes show only in that area. The inline rename in the `h1`
+  stays, one line with an ellipsis while it has no focus. From 761 to 999 px the rows
+  keep the full row; only the head is compact, so the first entry starts in the first
+  screen at 768x1024 and 900x720 (DESIGN.md, "The First-Screen Rule").
+- **The side column** (from 1000 px): the rename `h1`, the meta line, the action row
   «Поделиться» (caret, `aria-expanded`), «Печать», «Бросить по списку» and «Ещё» (copy,
   JSON, delete), the price switch while a price is set, and the list notes (read-only
-  boxes and «Изменить», or the open area). From 1000 px it is a 330 px plate at the right
-  of the rows, first in the DOM so Tab reaches the actions before the rows, and not
-  sticky; from 761 to 999 px its content sits above the rows. The rows column holds an
+  boxes and «Изменить», or the open area), in a 330 px plate at the right of the rows,
+  first in the DOM so Tab reaches the actions before the rows, and not sticky. Its rename
+  field wraps the whole name and grows with it; Enter ends the edit, and a pasted line
+  break becomes one space. A focus in the head at the 999/1000 px crossing goes to the
+  same control in the other head: the name field, else the list «Ещё». The rows column holds an
   open share panel, the roll panel, the requests panel, the search row or «Выбрать», the
   rows and «Добавить свой предмет». A full row draws its grip, tick, position, body, then
   «Кол-во», «Цена», «Заметка» and «Ещё: <name>»; in a rows column under 760 px they take
@@ -1295,7 +1309,7 @@ address kept, and no add-to-list control is drawn.
   owner's Realtime topic, or on the 45 s poll on the lists pages and the
   shown-again signal while it is down. On every page an arrival after the
   page's first requests read (never a request this tab decided) shows the
-  gold action toast «Новый запрос по списку «%s»» / "New request for the
+  action toast «Новый запрос по списку «%s»» / "New request for the
   list "%s"", for two or more on one list «Новых запросов по списку «%s»:
   N», on two or more lists «Новых запросов: N», 7000 ms; an arrival while
   it shows or waits adds to its count and restarts its time. Its button
@@ -2770,8 +2784,9 @@ right, so the tab order and the reading order agree
 
 - **Unknown session**: the title and the loading line «Загружаем...», while the
   cloud has not answered.
-- **Signed out**: the lead «Войдите, чтобы ваши данные были доступны на всех
-  устройствах. Всё остальное работает и без входа.» and one panel, «Войти»:
+- **Signed out**: the lead «Войдите, чтобы данные были на всех устройствах. Остальное
+  работает без входа.» (two lines at 360 px, one from 768 px; the panel starts in the first
+  screen) and one panel, «Войти»:
   «Войти через Google» and «Войти через Discord» (each with the provider's
   own logo), then the consent line linking the terms and privacy pages of
   the language on screen.
@@ -2862,10 +2877,10 @@ right, so the tab order and the reading order agree
   address until another section is chosen; an old section name shows as
   the section it opens; a refused write says the save-failed error toast
   and the select shows the section kept); «Вид таблиц по умолчанию» / "Default
-  table view" («Список» / «Сетка»); «Печать по умолчанию» / "Default print", two
-  small segmented controls that wrap inside 360 px: the color («Цвет» /
-  «Ч/б», "Color" / "B&W") and the card size («63×88» / «44×63», named «Размер
-  карты»), the labels of the print page's switches; «Когда беру из чужого списка» / "When I take from someone else's
+  table view" («Список» / «Сетка»); two rows with the group names of the print page's
+  switches, «Цвет печати» / "Print color" («Цвет» / «Ч/б», "Color" / "B&W") and «Размер
+  карты» / "Card size" («63×88» / «44×63»), each a small segmented control (owner,
+  2026-11-06); «Когда беру из чужого списка» / "When I take from someone else's
   list", a select at every width («Спрашивать» / «Сообщать владельцу» / «Не
   сообщать», "Ask" / "Notify the owner" / "Don't notify"), no hint: the remembered answer of
   flow b ("Account and browser lists", "Purchase requests: flow b"), kept in
@@ -2950,7 +2965,8 @@ right, so the tab order and the reading order agree
   action - for its own class's time (one waits; a newer plain toast takes its
   place); a later error or action toast replaces it at once (owner,
   2026-10-08). The press of a write that can be retried (an import, a homebrew bulk
-  delete or move, a homebrew item or card save, a card delete) first closes a shown
+  delete or move, a homebrew item or card save, a card delete, a list create on `#/lists`
+  or in the add-to-list menu) first closes a shown
   error toast, so the answer of a retry shows at once. The new-request toast ("Purchase requests: the owner") is
   the lowest: an action toast whose button («Открыть» / «Показать») moves
   to a page of the app and never takes focus; it waits behind any other
@@ -3167,9 +3183,9 @@ Each rule keeps its number: a review cites it by number.
   no «+» (its custom option is the rule's «+ Новый источник...»).
 - **9. The primary action** is the first control under the lead, before any
   management panel. Departures: the Items tab of «Мои предметы» and `/lists`
-  draw their primary in the head (`/lists` with its import as the head's toggle,
-  or an item of «Ещё» up to 760 px); the import is the last control of each tab's tool row
-  or an item of «Ещё»; on the other tabs the create button is the
+  draw their primary in the head; from 761 px the import is the last control before
+  «Выбрать» in the collection's tool row on `/lists` and on every tab of «Мои предметы»,
+  and an item of the head's «Ещё» up to 760 px (owner, 2026-11-06); on the other tabs the create button is the
   first control under the tab row; an account list's page makes an own
   item from the row after its entries; the print page `#/p/<id>` draws
   «Назад» and its heading on one row, then from 761 px «Напечатать» first in
@@ -3235,7 +3251,7 @@ Each rule keeps its number: a review cites it by number.
   набор пустым»).
   (g) A row label that says its condition needs no question hint: the
   account's «Когда беру из чужого списка» replaced the select's hint, and
-  «Вид таблиц по умолчанию» and «Печать по умолчанию» replaced the Display
+  «Вид таблиц по умолчанию», «Цвет печати» and «Размер карты» replaced the Display
   section's lead line.
 - **16. Long names**: a name of any allowed length wraps inside its box at
   360 px (`overflow-wrap: anywhere` on the list card, the page heading, the
@@ -3244,9 +3260,12 @@ Each rule keeps its number: a review cites it by number.
   lines of a card, and the form fields, whose grids take `minmax(0, 1fr)`, so a
   select's long option never widens them); nothing scrolls sideways. A toast takes up to the window's width less 16 px a side,
   so a long one stays a few lines high at the bottom of the window.
-  Departure: an account list's name is an `<input>` inside its `h1` (rule 15),
-  one line that scrolls inside its box (owner, 2026-10-22); the `h1` also
-  holds the name as visually hidden text. Departure: the catalog's count line
+  Departure: an account list's name is a field inside its `h1` (rule 15) (owner,
+  2026-10-22): up to 999 px an `<input>`, one line cut with an ellipsis while it has no
+  focus; from 1000 px, in the side plate, a field that wraps the whole name (owner,
+  2026-11-06). `/s/` draws the same name on up to three lines: its first screen holds
+  the rows, which the side plate does not push down. The `h1` also holds the name as
+  visually hidden text. Departure: the catalog's count line
   cuts to one line with an ellipsis and its table picker to two lines, the full
   text still read (owner, 2026-10-29); a source tab wraps inside its box.
 - **17. Handed-out links** (owner, 2026-10-14), on every page: a control
@@ -3309,7 +3328,10 @@ Each rule keeps its number: a review cites it by number.
   доступное» and «Отклонить» - the first button of the request now at their
   place, of the one before it, the panel head, `#main`; a load line's
   «Повторить» when it leaves - the group's lead control («Новый список» on
-  `#/lists`, the panel head in the requests panel), else `#main`; on the
+  `#/lists`, the panel head in the requests panel), else `#main`; the save status
+  «Повторить» when it leaves - the list «Ещё» on a list page, «Новый список» on `#/lists`
+  (never the name field: a phone would open its keyboard), and back on «Повторить» when
+  the retry fails; the list page's «Печать» - `#main` of the print page; on the
   homebrew tabs a source's «Удалить» - the next row's «Ещё», the one before,
   «Новый источник»; a section's «Удалить» - the next row's «Удалить», the one
   before, that source's «Новый раздел»; a card's «Удалить» - the next card's, the previous card's, the

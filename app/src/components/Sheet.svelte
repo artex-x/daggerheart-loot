@@ -1,7 +1,7 @@
 <script lang="ts">
-  /* A bottom sheet: a native modal `<dialog>` attached to the bottom of the screen, its
-     head and foot fixed and its body scrolling (DESIGN.md, "Components"). The filter
-     sheet and the table picker are its callers. No grab handle: nothing drags it.
+  /* A sheet: a native modal `<dialog>`, attached to the bottom of the screen up to 760 px
+     and centered from 761 px, its head and foot fixed and its body scrolling (DESIGN.md,
+     "Sheet"). No grab handle: nothing drags it.
 
      Opened with `showModal()` for the focus trap, the inert page and Escape, as
      `RecordModal.svelte` is; the toast is drawn inside it while it is open. */
@@ -84,6 +84,18 @@
     color: var(--txt);
     display: flex;
     overflow: hidden;
+  }
+
+  /* From 761 px a sheet takes the record dialog's place: centered, four round corners. */
+  @media (min-width: 761px) {
+    dialog[open] {
+      inset: 0;
+      margin: auto;
+      height: fit-content;
+      border-bottom: 1px solid var(--line2);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+    }
   }
 
   dialog::backdrop {

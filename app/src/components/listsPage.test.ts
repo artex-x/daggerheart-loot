@@ -140,15 +140,19 @@ describe('a card per list', () => {
 });
 
 describe('the head', () => {
-  it('draws the pin, the import toggle and the primary from 761 px, with no sub line and no help', async () => {
+  it('draws the pin and the primary from 761 px, the import in the count row before «Выбрать», no sub line and no help', async () => {
     const { container } = await openIndex(TWO_LISTS);
     const head = container.querySelector('.page-head') as HTMLElement;
     expect(within(head).getByRole('heading', { level: 1, name: 'Мои списки' })).toBeVisible();
     expect(within(head).getByRole('button', { name: 'Открывать при запуске' })).toBeVisible();
-    expect(within(head).getByRole('button', { name: 'Импорт из файла' })).toHaveAttribute(
-      'aria-expanded',
-      'false'
-    );
+    expect(within(head).queryByRole('button', { name: 'Импорт из файла' })).toBeNull();
+    /* The collection's tool row, as on every tab of «Мои предметы» (rule 9). */
+    const row = container.querySelector('.collection .lhead') as HTMLElement;
+    const imp = within(row).getByRole('button', { name: 'Импорт из файла' });
+    expect(imp).toHaveAttribute('aria-expanded', 'false');
+    const controls = [...row.querySelectorAll('button')];
+    expect(controls.at(-1)).toHaveClass('selmode');
+    expect(controls.at(-2)).toBe(imp);
     expect(within(head).getByRole('button', { name: 'Новый список' })).toHaveClass('primary');
     expect(head.querySelector('.headx')?.lastElementChild).toHaveClass('primary');
     expect(container.querySelector('.page-sub')).toBeNull();
@@ -325,6 +329,17 @@ describe('«Новый список»', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Создать' }));
     expect(screen.getByRole('alert')).toHaveTextContent('Сначала назовите список');
     expect(field).toHaveFocus();
+  });
+
+  it('shows the create toast at once after the blank-name error toast', async () => {
+    await openIndex(TWO_LISTS);
+    const field = await openField();
+    await userEvent.click(screen.getByRole('button', { name: 'Создать' }));
+    expect(screen.getByRole('alert')).toHaveTextContent('Сначала назовите список');
+    await userEvent.type(field, 'Клад{Enter}');
+    expect(
+      await screen.findByText('Список «Клад» создан', undefined, { timeout: 500 })
+    ).toBeInTheDocument();
   });
 
   it('stays enabled at the limit: the press says the limit, the field stays closed, the count is red', async () => {
@@ -717,6 +732,10 @@ describe('with sign-in configured', () => {
       expect(countText(container)).toBe('2 списка из 50');
     });
     expect(said()).toContain('Сохранено');
+    /* Rule 20: the pressed «Повторить» left with the status, so the focus goes to the primary. */
+    await waitFor(() => {
+      expect(primary()).toHaveFocus();
+    });
   });
 
   it('says loading while the first read is in flight, and the empty plate when the account has no list', async () => {

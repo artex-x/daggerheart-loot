@@ -20,10 +20,10 @@ RootWebArea "Мои списки - Генератор лута Daggerheart" [url
   main ""
     heading "Мои списки" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Импорт из файла" [expanded=false]
     button "Новый список" [expanded=false]
     status ""
     StaticText "3 списка из 50"
+    button "Импорт из файла" [expanded=false]
     button "Выбрать"
     link "Пустой список, 0 позиций, изменён 1 час назад" [url=/lists/00000000-0000-4000-8000-000000000102]
       StaticText "Пустой список"
@@ -93,10 +93,10 @@ RootWebArea "My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm1]
   main ""
     heading "My lists" [level=1]
     button "Open on start" [pressed=false]
-    button "Import from file" [expanded=false]
     button "New list" [expanded=false]
     status ""
     StaticText "3 lists of 50"
+    button "Import from file" [expanded=false]
     button "Select"
     link "Пустой список, 0 items, edited 1 hour ago" [url=/en/lists/00000000-0000-4000-8000-000000000102]
       StaticText "Пустой список"

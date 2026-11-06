@@ -141,9 +141,6 @@ const ru = {
   keepOneKind: 'Нужен хотя бы один тип',
   or: 'ИЛИ',
   copyRoll: 'Скопировать все варианты',
-  subWondrous: 'Введите результат броска или получите случайную позицию.',
-  subVoa: 'Выберите раздел книги и бросьте кость по нему.',
-  subCommunity: 'Выберите происхождение и бросьте d10.',
 
   /* The alternate tables. Two dice with names instead of a sum, so each one
      is labeled and the card says which of them found it. */
@@ -238,8 +235,7 @@ const ru = {
 
   /* "по всем N позициям" needs "всем" to agree with the numeral, so the
      sentence leaves it out and reads for any count. */
-  subSearch:
-    'Поиск сразу по 1459 позициям - добыча, расходники и снаряжение, на русском и на английском.',
+  subSearch: 'Поиск сразу по 1459 позициям - добыча, расходники и снаряжение.',
   subSearchOwn: 'И %n ваш предмет.|И %n ваших предмета.|И %n ваших предметов.',
 
   searchPh: 'Поиск по названию или описанию...',
@@ -388,7 +384,6 @@ const ru = {
   listGoneAccountSub: 'Его удалили, или он сохранён в другом аккаунте.',
   listGoneAs: 'Вы вошли как %s.',
   rollBy: 'Бросок по списку',
-  rollHint: 'Бросьте кубик и введите результат - или нажмите кнопку',
   clear: 'Сбросить',
   note: 'Заметка',
   listNote: 'Заметки',
@@ -439,7 +434,7 @@ const ru = {
   pickMinOf: 'Мин, взять 1: %s',
   pickMaxOf: 'Макс, взять все: %s',
   pcsN: '%n шт.',
-  eachPrice: 'по %s',
+  eachPrice: '%s за штуку',
   money_bag: 'Как в книге',
   money_coin: 'Монетами',
   goldUnit: 'зол.',
@@ -480,14 +475,12 @@ const ru = {
   menuLists: 'Мои списки',
   displayHead: 'Отображение на всех устройствах',
   defaultTablesView: 'Вид таблиц по умолчанию',
-  defaultPrint: 'Печать по умолчанию',
   displayHome: 'Раздел при запуске',
   displayNotify: 'Когда беру из чужого списка',
   notifyAsk: 'Спрашивать',
   notifyAlways: 'Сообщать владельцу',
   notifyNever: 'Не сообщать',
-  signInLead:
-    'Войдите, чтобы ваши данные были доступны на всех устройствах. Всё остальное работает и без входа.',
+  signInLead: 'Войдите, чтобы данные были на всех устройствах. Остальное работает без входа.',
   signInWith: 'Войти через %s',
   consentBefore: 'Входя, вы принимаете ',
   consentTerms: 'условия',
@@ -1262,9 +1255,6 @@ const en: Dict = {
   keepOneKind: 'At least one type has to stay on',
   or: 'OR',
   copyRoll: 'Copy every option',
-  subWondrous: 'Enter your roll result, or pick a random entry.',
-  subVoa: 'Pick a section of the book and roll within it.',
-  subCommunity: 'Pick an origin and roll d10.',
 
   pageAlt: 'Alternate tables',
   subAlt: 'A Duality Dice roll over both books merged into one set of tables.',
@@ -1332,8 +1322,7 @@ const en: Dict = {
   subSecondary: 'Secondary',
   subArmor: 'Armor',
 
-  subSearch:
-    'Search all 1459 entries at once - loot, consumables and equipment, in Russian and English.',
+  subSearch: 'Search all 1459 entries at once - loot, consumables and equipment.',
   subSearchOwn: 'And %n item of your own.|And %n items of your own.',
 
   searchPh: 'Search by name or description...',
@@ -1455,7 +1444,6 @@ const en: Dict = {
   listGoneAccountSub: 'It was deleted, or it is in another account.',
   listGoneAs: 'You are signed in as %s.',
   rollBy: 'Roll on this list',
-  rollHint: 'Roll a die and type the result - or press the button',
   clear: 'Clear',
   note: 'Note',
   listNote: 'Notes',
@@ -1539,7 +1527,6 @@ const en: Dict = {
   menuLists: 'My lists',
   displayHead: 'Display on all your devices',
   defaultTablesView: 'Default table view',
-  defaultPrint: 'Default print',
   displayHome: 'Section on start',
   displayNotify: "When I take from someone else's list",
   notifyAsk: 'Ask',

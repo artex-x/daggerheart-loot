@@ -10,7 +10,7 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
     button "Закрыть" [focused=true]
     StaticText "Изменить на, %"
     button "На единицу меньше"
-    textbox "Результат броска" [value=-20 multiline=false readonly=false required=false invalid=true]
+    textbox "Изменить на, %" [value=-20 multiline=false readonly=false required=false invalid=true]
     button "На единицу больше"
     button "Сделать скидку"
     StaticText "Минус - скидка, плюс - наценка. Считается от текущей цены."
@@ -44,6 +44,7 @@ daggerheart.com
 Заряжающий Колчан
 Заряжающий КолчанПредметКогда вы успешно наносите удар стрелой и... [namelen=141 namehash=b56c369b]
 Изменить
+Изменить на, %
 К содержимому
 Как в книге
 Конфиденциальность
@@ -69,7 +70,6 @@ daggerheart.com
 Проставить эти цены
 Разговаривающие Сферы
 Разговаривающие СферыПредметЭта пара сфер позволяет существам, к... [namelen=125 namehash=7957c029]
-Результат броска
 Сделать скидку
 Скопировать текст
 Скрыть от игроков (1)
@@ -91,7 +91,7 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
     button "Close" [focused=true]
     StaticText "Change by, %"
     button "One lower"
-    textbox "Roll result" [value=-20 multiline=false readonly=false required=false invalid=true]
+    textbox "Change by, %" [value=-20 multiline=false readonly=false required=false invalid=true]
     button "One higher"
     button "Discount"
     StaticText "Minus discounts, plus marks up. Counted from the current price."
@@ -109,6 +109,7 @@ Alistair's TorchItemYou can light this magic torch at will. The ... [namelen=162
 Arcane Cloak
 Arcane CloakItemA creature with a Spellcast trait wearing this c... [namelen=117 namehash=f38d5937]
 As in the book
+Change by, %
 Charging Quiver
 Charging QuiverItemWhen you succeed on an attack with an arrow s... [namelen=145 namehash=07a311bd]
 Clear price (1)
@@ -152,7 +153,6 @@ Privacy
 RU
 Roll
 Roll on this list
-Roll result
 Search
 Select all
 Set these prices

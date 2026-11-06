@@ -1,6 +1,6 @@
 # #/roll/std ~ request arrived as gm1
 # route: #/roll/std
-# why: two purchase requests on «Лавка кузнеца» arrive on another page: the gold action toast «Новых запросов по списку «Лавка кузнеца»: 2» with «Открыть» at the bottom; the tab title «(2) Обычные правила - ...»; the page itself unchanged
+# why: two purchase requests on «Лавка кузнеца» arrive on another page: the action toast «Новых запросов по списку «Лавка кузнеца»: 2» with «Открыть» at the bottom; the tab title «(2) Обычные правила - ...»; the page itself unchanged
 # as: gm1
 
 ## ru :: tree

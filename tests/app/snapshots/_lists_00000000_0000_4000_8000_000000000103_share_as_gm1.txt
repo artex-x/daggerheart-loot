@@ -19,7 +19,7 @@ RootWebArea "Трофеи - Генератор лута Daggerheart" [url=/lists
       link "Поиск" [url=/search]
   main ""
     StaticText "Трофеи"
-    textbox "Название списка" [value=Трофеи multiline=false readonly=false required=false]
+    textbox "Название списка" [value=Трофеи multiline=true readonly=false required=false]
     StaticText "2 позиции из 100 · "
     ... StaticText x7 of 11 same-shape siblings elided
     button "Поделиться" [expanded=true]
@@ -107,7 +107,7 @@ RootWebArea "Трофеи - Daggerheart Loot Generator" [url=/en/lists/00000000-
       link "Search" [url=/en/search]
   main ""
     StaticText "Трофеи"
-    textbox "List name" [value=Трофеи multiline=false readonly=false required=false]
+    textbox "List name" [value=Трофеи multiline=true readonly=false required=false]
     StaticText "2 items of 100 · "
     ... StaticText x7 of 11 same-shape siblings elided
     button "Share" [expanded=true]

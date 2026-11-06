@@ -116,18 +116,17 @@ const PAGES = [
     'список: заметки открыты',
     'gm1',
     async (d) => {
-      /* Up to 760 px the price mode is in the head's «Ещё», the list notes open from the
-         meta line, and a row's «Заметка» is in its unfolded part. */
-      const compact = await d.count('button.cbody');
-      if (compact) {
+      /* Up to 999 px the price mode is in the head's «Ещё» and the list notes open from the
+         meta line; up to 760 px a row's «Заметка» is in its unfolded part. */
+      if (await d.count('.lhead')) {
         await d.openMore('.lhead-acts .morewrap > [aria-haspopup="menu"]');
         await either(d, 'click', 'Цены: как в книге', 'Prices: as in the book');
         await either(d, 'click', 'Заметки', 'Notes');
-        await d.unfold(0);
       } else {
         await either(d, 'click', 'Как в книге', 'As in the book');
         await either(d, 'click', 'Изменить', 'Edit');
       }
+      if (await d.count('button.cbody')) await d.unfold(0);
       await either(d, 'click', 'Заметка', 'Note');
     }
   ],

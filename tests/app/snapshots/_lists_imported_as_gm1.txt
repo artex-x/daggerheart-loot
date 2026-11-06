@@ -20,10 +20,10 @@ RootWebArea "Мои списки - Генератор лута Daggerheart" [url
   main ""
     heading "Мои списки" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Импорт из файла" [expanded=false focused=true]
     button "Новый список" [expanded=false]
     status ""
     StaticText "4 списка из 50"
+    button "Импорт из файла" [expanded=false focused=true]
     button "Выбрать"
     link "Лавка кузнеца, 3 позиции, изменён только что" [url=/lists/00000000-0000-4000-8000-000000005000]
       StaticText "Лавка кузнеца"
@@ -93,10 +93,10 @@ RootWebArea "My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm1]
   main ""
     heading "My lists" [level=1]
     button "Open on start" [pressed=false]
-    button "Import from file" [expanded=false focused=true]
     button "New list" [expanded=false]
     status ""
     StaticText "4 lists of 50"
+    button "Import from file" [expanded=false focused=true]
     button "Select"
     link "Лавка кузнеца, 3 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000005000]
       StaticText "Лавка кузнеца"

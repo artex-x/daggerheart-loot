@@ -19,7 +19,7 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
       link "Поиск" [url=/search]
   main ""
     StaticText "Клад дракона"
-    textbox "Название списка" [value=Клад дракона multiline=false readonly=false required=false]
+    textbox "Название списка" [value=Клад дракона multiline=true readonly=false required=false]
     StaticText "Показано 0 из 14 · "
     StaticText "Сохранено"
     button "Поделиться" [expanded=false]
@@ -82,7 +82,7 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
       link "Search" [url=/en/search]
   main ""
     StaticText "Клад дракона"
-    textbox "List name" [value=Клад дракона multiline=false readonly=false required=false]
+    textbox "List name" [value=Клад дракона multiline=true readonly=false required=false]
     StaticText "0 of 14 shown · "
     StaticText "Saved"
     button "Share" [expanded=false]

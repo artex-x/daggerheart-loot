@@ -20,7 +20,7 @@ RootWebArea "Список второго ГМа - Генератор лута Da
       link "Поиск" [url=/search]
   main ""
     StaticText "Список второго ГМа"
-    textbox "Название списка" [value=Список второго ГМа multiline=false readonly=false required=false]
+    textbox "Название списка" [value=Список второго ГМа multiline=true readonly=false required=false]
     StaticText "2 позиции из 100 · "
     ... StaticText x5 of 9 same-shape siblings elided
     button "Поделиться" [expanded=false]
@@ -100,7 +100,7 @@ RootWebArea "Список второго ГМа - Daggerheart Loot Generator" [u
       link "Search" [url=/en/search]
   main ""
     StaticText "Список второго ГМа"
-    textbox "List name" [value=Список второго ГМа multiline=false readonly=false required=false]
+    textbox "List name" [value=Список второго ГМа multiline=true readonly=false required=false]
     StaticText "2 items of 100 · "
     ... StaticText x5 of 9 same-shape siblings elided
     button "Share" [expanded=false]

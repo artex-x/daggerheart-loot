@@ -20,7 +20,7 @@ RootWebArea "(2) Лавка кузнеца - Генератор лута Daggerh
       link "Поиск" [url=/search]
   main ""
     StaticText "Лавка кузнеца"
-    textbox "Название списка" [value=Лавка кузнеца multiline=false readonly=false required=false]
+    textbox "Название списка" [value=Лавка кузнеца multiline=true readonly=false required=false]
     StaticText "10 позиций из 100 · "
     ... StaticText x29 of 33 same-shape siblings elided
     button "Поделиться" [expanded=false]
@@ -152,7 +152,7 @@ RootWebArea "(2) Лавка кузнеца - Daggerheart Loot Generator" [url=/e
       link "Search" [url=/en/search]
   main ""
     StaticText "Лавка кузнеца"
-    textbox "List name" [value=Лавка кузнеца multiline=false readonly=false required=false]
+    textbox "List name" [value=Лавка кузнеца multiline=true readonly=false required=false]
     StaticText "10 items of 100 · "
     ... StaticText x29 of 33 same-shape siblings elided
     button "Share" [expanded=false]

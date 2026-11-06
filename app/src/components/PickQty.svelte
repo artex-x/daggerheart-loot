@@ -192,10 +192,16 @@
     color: var(--muted2);
   }
 
-  /* A touch target at phone width (DESIGN.md, "The Two Breakpoints Rule"). */
+  /* The thumb target at phone width: each part is 40 px tall inside the box's border
+     (DESIGN.md, "The Phone-First Rule"). */
   @media (max-width: 600px) {
     .qgroup {
-      height: max(36px, var(--thumb));
+      height: auto;
+    }
+
+    .qgroup button,
+    .qgroup input {
+      min-height: max(34px, var(--thumb));
     }
 
     .qgroup button {

@@ -392,8 +392,10 @@ damage dice. A number a person reads as prose takes neither.
 a toast wrap; they are never cut. A name, a description or a list of chosen values may be
 cut to its clamp when one press shows it whole: up to 760px a roll page's picker cuts a long
 chosen part (the select shows it whole), so the roll button keeps its line and the first
-result its first screen; from 761px the button wraps instead. Exceptions: the list name and the
-editor's record name, one line up to 760px (owner, 2026-10-29). Source:
+result its first screen; from 761px the button wraps instead. Exceptions: the editor's
+record name, one line up to 760px (owner, 2026-10-29), and the owner's list name, one line
+with an ellipsis while it has no focus up to 999px; in the side plate from 1000px the field
+wraps the whole name and grows with it, as it pushes no row down (owner, 2026-11-06). Source:
 https://carbondesignsystem.com/patterns/overflow-content/. `tests/app/typo.js` reads every
 heading, button, label, menu item, alert, status and toast of its pages at 1180px.
 
@@ -473,10 +475,10 @@ Phone-First Rule), row actions take their own line, and a roll card can be the t
 from 601px (The Roll Page Rule). The catalog adds one step, 1000px: from it the filter
 column sits beside the rows; from 761px it draws the wide head (the `h1`, the
 group chips, the labeled pin and «Об этих данных», then the tabs) with the filters
-in the bottom sheet; below 761px the picker row, the sheet and «··· Ещё»
+in the sheet; below 761px the picker row, the sheet and «··· Ещё»
 replace them. The list pages fold each row to the compact row up to 760px and draw the
-full row from 761px; from 1000px the owner's list page draws its 330px side column at the
-right of the rows (the side content sits above them from 761px to 999px), and the rows
+full row from 761px; the owner's list page draws the compact head up to 999px and its 330px
+side column at the right of the rows from 1000px (owner, 2026-11-06), and the rows
 column is a size container: under 760px of it a row's controls take a line under its
 text. The print page draws one card per row, at most 420px wide, with a bottom dock up to
 760px, and the A4 sheet from 761px. A container step is a component rule, not a system breakpoint. The `viewport` port (`app/src/ports/viewport.ts`) is the one place
@@ -504,7 +506,7 @@ line, so a picked kind adds no line above the first result.
 
 **The Dossier Rule.** A record page and the record dialog are one dossier: the
 picture beside the text from 761px and 4:3 above it below, no plate on a page. The
-name is drawn once. The dialog is a bottom sheet with a sticky dock up to 760px, not
+name is drawn once. The dialog is a sheet at the bottom with a sticky dock up to 760px, not
 sticky in a window shorter than 481px, where two rows would take almost half of the
 height: a component rule, not a breakpoint. «В список», «Поделиться», «Печать» and
 «Ещё» are the same four labeled controls on every record surface at every width;
@@ -526,13 +528,16 @@ third level (a table group's books, the homebrew sources) is underlined tabs und
 head. Up to 760px a page with siblings reads its heading, not draws it, and the mode row
 or the picker row names the page. The head's geometry follows the band only, never the content: the heading
 is constant, so a switch between siblings moves no pill, a row that some contents lack
-keeps its reserved space, late content (a picture, a count) reserves its box, and the
+keeps its reserved space (on «Мои предметы» from 1000px the Sources, Sets and Rules tabs keep
+the Items tab's «Новый предмет» as a hidden, unreachable copy, so the pills wrap at one width
+on every tab), late content (a picture, a count) reserves its box, and the
 catalog's tab row keeps the height of the tallest group's tabs on every table; the
 homebrew sources are not reserved, because they hold the GM's own text (up to 12 names of
 80 characters), so `/tables/homebrew` may draw a taller row. From 1000px to 1139px in
 Russian the chips and the reserved tab row take two lines each (the rows start at 288px
 at 1000x720 and 287.5px at 1050x720). The lit pill takes the gold fill of the current
-place and no check (The Check Rule). Owner, 2026-11-05.
+place and no check (The Check Rule), and keeps its rest width: its label reserves the width
+of its lit weight, so lighting it moves no neighbor. Owner, 2026-11-05.
 
 **The Hidden Header Rule.** Up to 760px the whole header leaves on a scroll down
 and returns on a scroll up, on every page, because a phone reader needs the rows
@@ -559,8 +564,9 @@ row starts at 309px (owner, 2026-11-03, 286px; the built page measured 301px on 
 and 308.2px on 2026-11-06, when «Сохранить себе» took the thumb size, and the exception took
 it while the owner was away); `/s/<token>` with a 120-character list
 name at 1180x720 starts at 312px, because from 761px the name takes three lines (measured
-2026-11-05); and an account list's page with its folded requests strip (a 6px inset up to
-760px) and its search row at 360x640 starts at 304px (measured 2026-11-05 while the owner was
+2026-11-05); and an account list's page with its folded requests or notices strip (a 6px inset up to
+760px) and its search row at 360x640 starts at 304px (the notices strip measured 260px on
+2026-11-06) (measured 2026-11-05 while the owner was
 away; the owner's figure was 292px). From 761px to 999px the rule is checked at 768x1024
 and 900x720 too, with one more exception: `/tables/*` in a 720px window starts at 334px,
 the reserved tab row of The Head Order Rule, held to 336px (measured 2026-11-05 and
@@ -710,7 +716,8 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
 - **Sibling pills:** the roll modes, the catalog's groups and the four homebrew tabs
   (with their counts, tabular, in `--muted2`) are link chips in the page head (The Head
   Order Rule); the lit one takes the Seal Gold fill of the current place and draws no
-  check. Up to 600px the roll's three share the mode row, 40px tall, and a long name
+  check, and keeps its rest width: the label reserves its 650 weight's width in a hidden
+  line. Up to 600px the roll's three share the mode row, 40px tall, and a long name
   takes two lines.
 - **Neutral pressed (`Chip neutral`):** the `check` icon before the label, the
   Vault Wall Lit fill, a Chalk label at weight 600 and a lit `--muted2`
@@ -842,7 +849,7 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
 ### Filter chips and the count line
 
 - **Catalog:** the filters are a 250px column beside the rows from 1000px,
-  sticky under the header and scrolling inside itself, and a bottom sheet
+  sticky under the header and scrolling inside itself, and a sheet
   below it. Each row is «Все» (the neutral pressed default) and the value
   chips; a picked value is gold. No pill row at 360px or in the mid band: the
   count line under the search row names the chosen values in text, cut to one
@@ -853,11 +860,13 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
   (`ListFind`), and the count on the page's meta line («Показано 3 из 14»), not
   on a line of its own. No pill row draws anywhere.
 
-### Bottom sheet
+### Sheet
 
-- `Sheet`: a native `<dialog>` opened with `showModal()`, attached to the
-  bottom, `min(100%, 560px)` wide and centered, top corners at the plate
-  radius, at most `min(85dvh, 640px)` tall. Its head (the title, the caller's
+- `Sheet`: a native `<dialog>` opened with `showModal()`, `min(100%, 560px)` wide and
+  centered, at most `min(85dvh, 640px)` tall. Up to 760px it is attached to the bottom with
+  its top corners at the plate radius; from 761px it sits in the middle of the window with
+  four round corners and the plate shadow, the record dialog's shape and place, so every
+  modal from 761px has one shape (owner, 2026-11-06). Its head (the title, the caller's
   controls, «Закрыть» with the close icon) and its foot stay; the body
   scrolls. No grab handle: nothing drags it. Its callers: the filter sheet (the
   catalog below 1000px, both list pages at every width), the table and tab
@@ -1039,7 +1048,8 @@ https://developer.apple.com/design/human-interface-guidelines/accessibility.
 address or more than 80 characters, in either language. Every toast holds while a pointer,
 a finger or the focus is on it, and runs on with the time it had left. A notice said while
 an error or an action toast shows waits for it; the new-request toast waits behind every
-other one. A retry press closes the error it answers, so its result never waits behind
+other one. A retry press, and a list create after a refused name, closes the error it
+answers, so its result never waits behind
 the old failure (the Clarity Rule). The toast floats above the selection bar. Owner, 2026-11-05; sources: Flutter's
 `SnackBar.duration` (https://api.flutter.dev/flutter/material/SnackBar/duration.html) and
 Apple's Human Interface Guidelines, Accessibility. `tests/app/states.js` case 108 measures
@@ -1115,6 +1125,10 @@ Kept exceptions, each with its reason (checked 2026-11-06):
 - **`404.html`:** the host's script-free not-found page keeps the system face and draws no die
   mark. A self-hosted face there needs its own `@font-face` path outside the build's hashed
   assets; the page holds a heading, a cause and two links in each language.
+- **Static pages:** `/pages/*.html` (privacy, terms, install, in each language) keep the system
+  face for the same reason: `tools/build-pages.js` writes them outside the Vite build and does
+  not know the hashed woff2 name (owner, 2026-11-06). Their links of their own line, and the
+  links of `404.html`, take the target size of The Phone-First Rule.
 - **Header order:** from 761px the Tab order differs from the visual order (Navigation,
   "Header").
 - **Capitals:** every `text-transform: uppercase` outside the print card and the badge is a

@@ -20,7 +20,6 @@ RootWebArea "Мои списки - Генератор лута Daggerheart" [url
   main ""
     heading "Мои списки" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Импорт из файла" [expanded=true]
     button "Новый список" [expanded=false]
     status ""
     StaticText "ИМПОРТ ИЗ ФАЙЛА JSON"
@@ -31,6 +30,7 @@ RootWebArea "Мои списки - Генератор лута Daggerheart" [url
     link "описание для ИИ-помощников" [url=/llms.txt]
     StaticText "), или архив ZIP из «Скачать мои данные». Списки добавятся как н..." [namelen=96 namehash=cade2d7e]
     StaticText "3 списка из 50"
+    button "Импорт из файла" [expanded=true]
     button "Выбрать"
     link "Пустой список, 0 позиций, изменён 1 час назад" [url=/lists/00000000-0000-4000-8000-000000000102]
       StaticText "Пустой список"
@@ -96,7 +96,6 @@ RootWebArea "My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm1]
   main ""
     heading "My lists" [level=1]
     button "Open on start" [pressed=false]
-    button "Import from file" [expanded=true]
     button "New list" [expanded=false]
     status ""
     StaticText "IMPORT FROM A JSON FILE"
@@ -107,6 +106,7 @@ RootWebArea "My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm1]
     link "a description for AI assistants" [url=/llms.txt]
     StaticText "), or the ZIP archive from "Download my data". The lists are add..." [namelen=113 namehash=069a136e]
     StaticText "3 lists of 50"
+    button "Import from file" [expanded=true]
     button "Select"
     link "Пустой список, 0 items, edited 1 hour ago" [url=/en/lists/00000000-0000-4000-8000-000000000102]
       StaticText "Пустой список"

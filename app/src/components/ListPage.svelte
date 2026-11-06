@@ -21,6 +21,7 @@
   import NumRow from './NumRow.svelte';
   import LoadState from './LoadState.svelte';
   import MarkupField from './MarkupField.svelte';
+  import MetaToggle from './MetaToggle.svelte';
   import PageTitle from './PageTitle.svelte';
   import Panel from './Panel.svelte';
   import PickQty from './PickQty.svelte';
@@ -86,6 +87,10 @@
 
   const { app }: Props = $props();
 
+  /** The list «Ещё», in the compact head or in the side plate's action row. */
+  const LIST_MORE =
+    '.lhead-acts .morewrap > [aria-haspopup="menu"], .lacts .morewrap > [aria-haspopup="menu"]';
+
   const t = $derived(app.t);
 
   const route = $derived(app.route);
@@ -129,8 +134,28 @@
   const qtyById = $derived(
     Object.fromEntries((own?.ids ?? []).map((id) => [id, metaOf(id).qty ?? 0]))
   );
-  /* Up to 760 px a row folds (docs/specs/FEATURES.md, "Lists"). */
+  /* Up to 760 px a row folds; up to 999 px the head is compact and the side column is
+     not drawn (docs/specs/FEATURES.md, "Lists"). */
   const narrow = $derived(app.band === 'narrow');
+  const compactHead = $derived(app.band !== 'wide');
+
+  /* Rule 20: the head redraws at 1000 px. A focus in it goes to the same control in the
+     other head, the name field or the list «Ещё». Read before the head redraws. */
+  let wasCompact: boolean | null = null;
+  $effect.pre(() => {
+    const now = compactHead;
+    untrack(() => {
+      const moved = wasCompact !== null && wasCompact !== now;
+      wasCompact = now;
+      const at = document.activeElement;
+      if (!moved || !at?.closest('.lhead, .lside')) return;
+      const name = at.classList.contains('titleinput');
+      void tick().then(() => {
+        if (document.activeElement !== document.body) return;
+        document.querySelector<HTMLElement>(name ? '.titleinput' : LIST_MORE)?.focus();
+      });
+    });
+  });
 
   /* The search and the filter: page memory, per list, never in the address
      (docs/specs/STATE.md, "Filters"). */
@@ -197,8 +222,12 @@
   }
 
   /* The page draws only signed in (an account list), so «Печать» always stores a set. */
-  function pressPrint(): void {
-    if (own) void app.print([...own.ids], qtyById);
+  async function pressPrint(): Promise<void> {
+    if (!own) return;
+    await app.print([...own.ids], qtyById);
+    /* Rule 20: the move to `/p/<id>` removed the pressed control. */
+    await tick();
+    if (document.activeElement === document.body) document.getElementById('main')?.focus();
   }
 
   /* Local state. `roll` is the live `S.listRoll.n` for this list, but kept in
@@ -301,12 +330,10 @@
   }
 
   /** Shows the other note of an area. The shown note is already in the store: every
-   *  keystroke writes through `noteInput`, so the switch drops no edit. */
+   *  keystroke writes through `noteInput`, so the switch drops no edit. The focus stays on
+   *  the pressed option (docs/specs/FEATURES.md, "Lists"). */
   function switchKind(key: string, kind: 'note' | 'hnote'): void {
     noteKinds.set(key, kind);
-    void tick().then(() => {
-      document.getElementById(`note-${key}-${kind}`)?.focus();
-    });
   }
 
   /** «Готово»: the area closes and the focus returns to the control that opened it. */
@@ -345,9 +372,46 @@
 
   /* ---------- handlers, each the live one by line ---------- */
 
+  /* A pasted line break becomes one space: a stored name holds none. */
   function rename(e: Event): void {
-    const el = e.currentTarget as HTMLInputElement;
-    if (own) cloud?.rename(own.id, el.value);
+    const el = e.currentTarget as HTMLInputElement | HTMLTextAreaElement;
+    if (own) cloud?.rename(own.id, el.value.replace(/\s*\n\s*/g, ' '));
+  }
+
+  /** The side plate's name field takes the height of its whole text: on mount, on each
+   *  typed or stored value and when its width changes. */
+  function fitName(
+    ta: HTMLTextAreaElement,
+    value: string
+  ): { update(v: string): void; destroy(): void } {
+    let last = value;
+    const fit = (): void => {
+      ta.style.height = 'auto';
+      ta.style.height = `${String(ta.scrollHeight + ta.offsetHeight - ta.clientHeight)}px`;
+    };
+    fit();
+    ta.addEventListener('input', fit);
+    let width = ta.clientWidth;
+    const watch =
+      typeof ResizeObserver === 'function'
+        ? new ResizeObserver(() => {
+            if (ta.clientWidth === width) return;
+            width = ta.clientWidth;
+            fit();
+          })
+        : null;
+    watch?.observe(ta);
+    return {
+      update(v: string) {
+        if (v === last) return;
+        last = v;
+        void tick().then(fit);
+      },
+      destroy() {
+        ta.removeEventListener('input', fit);
+        watch?.disconnect();
+      }
+    };
   }
 
   async function copyList(): Promise<void> {
@@ -1144,26 +1208,44 @@
           oninput={rename}
         />
       {/snippet}
+      <!-- In the side plate the field wraps the whole name; Enter ends the edit
+           (DESIGN.md, "The Whole Message Rule"). -->
+      {#snippet renameArea()}
+        <span class="vh" id="list-name">{own.name}</span><textarea
+          class="titleinput"
+          rows="1"
+          value={own.name}
+          maxlength={NAME_MAX}
+          aria-label={t.rename}
+          oninput={rename}
+          onkeydown={(e: KeyboardEvent) => {
+            if (e.key !== 'Enter') return;
+            e.preventDefault();
+            (e.currentTarget as HTMLTextAreaElement).blur();
+          }}
+          use:fitName={own.name}></textarea>
+      {/snippet}
       {#snippet cloudSub()}
         {narrowed
           ? t.shownOf.replace('%n', String(shownRows.length)).replace('%m', String(rows.length))
           : countOf(own.ids.length, cloud?.entryLimit ?? null, t.itemsN, app.lang, t.ofLimit)} ·
         {#if gmN > 0}{`${t.gmOnlyN.replace('%n', String(gmN))} · `}{/if}<SyncStatus
           {app}
-        />{#if narrow}&#32;·&#32;<button
-            type="button"
-            class="lnkb"
-            data-note-open="list"
-            aria-expanded={editing.has('list')}
-            onclick={() => {
-              toggleArea('list', own);
-            }}>{t.listNote}<Icon name="chevron" /></button
+          after={() => document.querySelector<HTMLElement>(LIST_MORE)}
+        />{#if compactHead}&#32;·&#32;<span data-note-open="list"
+            ><MetaToggle
+              label={t.listNote}
+              expanded={editing.has('list')}
+              onclick={() => {
+                toggleArea('list', own);
+              }}
+            /></span
           >{/if}
       {/snippet}
       {#snippet listMore()}
         <MoreMenu {app} id="list-more" size="sm">
           {#snippet children(close: () => void)}
-            {#if narrow}
+            {#if compactHead}
               <button
                 type="button"
                 role="menuitem"
@@ -1181,7 +1263,7 @@
                   disabled={app.printing}
                   onclick={() => {
                     close();
-                    pressPrint();
+                    void pressPrint();
                   }}><Icon name="print" />{t.print}</button
                 >
               {/if}
@@ -1244,11 +1326,11 @@
       {/snippet}
       <!-- eslint-disable @typescript-eslint/no-confusing-void-expression -- a `{@render}` tag
            of a local snippet reads as a void expression to this rule. -->
-      <!-- From 761 px the side holds the name, the actions, the price switch and the list
-           notes; from 1000 px it is the right column, first in the DOM so Tab reaches the
-           actions before the rows (docs/specs/FEATURES.md, "Lists"). -->
-      <div class="lpage" class:wide={!narrow}>
-        {#if narrow}
+      <!-- From 1000 px the side column holds the name, the actions, the price switch and the
+           list notes, first in the DOM so Tab reaches the actions before the rows; up to 999 px
+           the compact head (docs/specs/FEATURES.md, "Lists"). -->
+      <div class="lpage" class:wide={!compactHead}>
+        {#if compactHead}
           <div class="lhead">
             <!-- The input's value would name the heading a second time. -->
             <PageTitle title={renameTitle} sub={cloudSub} labelledby="list-name" />
@@ -1264,7 +1346,7 @@
           {/if}
         {:else}
           <div class="lside">
-            <PageTitle title={renameTitle} sub={cloudSub} labelledby="list-name" />
+            <PageTitle title={renameArea} sub={cloudSub} labelledby="list-name" />
             <div class="lacts">
               <Button
                 size="sm"
@@ -1280,7 +1362,7 @@
                   size="sm"
                   title={t.printHint}
                   disabled={app.printing}
-                  onclick={pressPrint}><Icon name="print" />{t.print}</Button
+                  onclick={() => void pressPrint()}><Icon name="print" />{t.print}</Button
                 >
               {/if}
               {#if rows.length > 1}
@@ -1354,36 +1436,40 @@
                   >
                   {#if hit}<Button variant="ghost" onclick={clearRoll}>{t.clear}</Button>{/if}
                 </NumRow>
-                {#if !hit}<p class="rollhint">{t.rollHint}</p>{/if}
               </Field>
               {#if hit && hitRow && index}
                 {@const h = hit}
                 {@const hm = metaOf(hitRow.id)}
                 {@const hid = hitRow.id}
-                <div class="lroll-res">
-                  <div class="faces">
-                    {#key h}
-                      <RollResult {app} {index} it={h} rollLabel={roll} onopen={openRecord} />
-                    {/key}
-                  </div>
-                  <div class="lroll-side">
-                    {#if (hm.gold ?? 0) > 0 || (hm.qty ?? 0) > 1}
-                      <p class="lroll-line">
-                        {[
-                          (hm.qty ?? 0) > 1 ? t.pcsN.replace('%n', String(hm.qty)) : '',
-                          (hm.gold ?? 0) > 0
-                            ? t.eachPrice.replace('%s', priceText(hm.gold ?? 0, mode, app.lang))
-                            : ''
-                        ]
-                          .filter(Boolean)
-                          .join(' · ')}
-                      </p>
-                    {/if}
-                    {@render readNotes(hm)}
-                    <div class="lroll-show">
-                      <Button size="sm" onclick={() => void showInList(hid)}
-                        >{t.showInList}</Button
-                      >
+                <div class="lroll-wrap">
+                  <div class="lroll-res">
+                    <div class="faces">
+                      {#key h}
+                        <RollResult {app} {index} it={h} rollLabel={roll} onopen={openRecord} />
+                      {/key}
+                    </div>
+                    <div class="lroll-side">
+                      {#if (hm.gold ?? 0) > 0 || (hm.qty ?? 0) > 1}
+                        <p class="lroll-line">
+                          {[
+                            (hm.qty ?? 0) > 1 ? t.pcsN.replace('%n', String(hm.qty)) : '',
+                            (hm.gold ?? 0) > 0
+                              ? t.eachPrice.replace(
+                                  '%s',
+                                  priceText(hm.gold ?? 0, mode, app.lang)
+                                )
+                              : ''
+                          ]
+                            .filter(Boolean)
+                            .join(' · ')}
+                        </p>
+                      {/if}
+                      {@render readNotes(hm)}
+                      <div class="lroll-show">
+                        <Button size="sm" onclick={() => void showInList(hid)}
+                          >{t.showInList}</Button
+                        >
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1420,7 +1506,7 @@
               onselect={() => void startSelecting()}
               bind:toggle={filterToggle}
             />
-          {:else if !narrow && rows.length && !app.selecting}
+          {:else if !compactHead && rows.length && !app.selecting}
             <div class="selrow">
               <SelMode label={t.selectMode} onclick={() => void startSelecting()} />
             </div>
@@ -1438,7 +1524,7 @@
                       min={-90}
                       max={500}
                       empty
-                      label={t.rollResult}
+                      label={t.repricePct}
                       stepDownLabel={t.stepDown}
                       stepUpLabel={t.stepUp}
                       onchange={(n: number) => {
@@ -1849,6 +1935,19 @@
     padding: 0 0 4px;
   }
 
+  /* The compact head's field: one line, cut with an ellipsis while it has no focus. */
+  input.titleinput {
+    text-overflow: ellipsis;
+  }
+
+  /* The side plate's field: as tall as its whole text (`fitName`). */
+  textarea.titleinput {
+    display: block;
+    resize: none;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+  }
+
   .titleinput:focus {
     outline: none;
     border-bottom-color: var(--gold);
@@ -2073,13 +2172,17 @@
   }
 
   /* The result: the face, then the price line, both notes and «Показать в списке». The
-     `faces` container is the whole result, so a 641 px panel draws the tall card face in its
-     260 px column (`RollResult`) and a narrower one the row face. */
+     `faces` container is the whole result: from 641 px of it the face takes its 260 px
+     column and draws the tall card face (`RollResult`); under it one column and the row
+     face. */
+  .lroll-wrap {
+    container: faces / inline-size;
+  }
+
   .lroll-res {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 14px;
-    container: faces / inline-size;
   }
 
   .faces {
@@ -2087,7 +2190,7 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  @media (min-width: 601px) {
+  @container faces (min-width: 641px) {
     .lroll-res {
       grid-template-columns: minmax(0, 260px) minmax(0, 1fr);
       align-items: start;
@@ -2107,13 +2210,6 @@
 
   .lroll-show {
     margin-top: 12px;
-  }
-
-  /* off `.rollhint` (`git show 23c00a6^:style.css`) */
-  .rollhint {
-    margin: 10px 0 0;
-    font-size: var(--t-data);
-    color: var(--muted2);
   }
 
   .batch-total b {
@@ -2191,20 +2287,21 @@
     margin-bottom: 0;
   }
 
+  /* The thumb target up to 600 px (DESIGN.md, "The Phone-First Rule"). */
   .money-act :global(.numbox) {
     margin: 0;
-    height: 32px;
+    height: max(32px, var(--thumb) + 2px);
   }
 
   .money-act :global(.numbox button) {
-    width: 28px;
-    height: 30px;
+    width: max(28px, var(--thumb));
+    height: max(30px, var(--thumb));
     font-size: var(--t-control);
   }
 
   .money-act :global(.numbox input[type='text']) {
     width: 52px;
-    height: 30px;
+    height: max(30px, var(--thumb));
     font-size: var(--t-small);
     padding: 0;
   }
@@ -2527,15 +2624,17 @@
     border-color: var(--gold);
   }
 
-  /* off `.lrow-pick` (`git show 23c00a6^:style.css`) */
+  /* off `.lrow-pick` (`git show 23c00a6^:style.css`); the thumb target up to 600 px. */
   .lrow-pick {
     display: flex;
     align-items: center;
+    justify-content: center;
+    min-width: max(32px, var(--thumb));
     padding: 0 2px 0 10px;
     flex: none;
   }
 
-  /* Up to 760 px the head is the name, «Выбрать» and «Ещё» on one row, the meta line under
+  /* Up to 999 px the head is the name, «Выбрать» and «Ещё» on one row, the meta line under
      both (DESIGN.md, "Compact row"). */
   .lhead {
     display: grid;
@@ -2574,40 +2673,7 @@
     align-items: center;
   }
 
-  /* «Заметки ▾» on the meta line: a text button with a 24 px target. */
-  .lnkb {
-    display: inline-flex;
-    align-items: center;
-    gap: 2px;
-    min-height: 24px;
-    padding: 0;
-    border: 0;
-    background: none;
-    color: var(--txt);
-    font: inherit;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    cursor: pointer;
-  }
-
-  .lnkb :global(svg) {
-    width: 16px;
-    height: 16px;
-  }
-
-  .lnkb[aria-expanded='true'] :global(svg) {
-    transform: rotate(180deg);
-  }
-
-  /* The thumb target by its padded box; the meta line keeps its height. */
-  @media screen and (max-width: 600px) {
-    .lnkb {
-      min-height: var(--thumb);
-      margin-block: min(0px, calc((24px - var(--thumb)) / 2));
-    }
-  }
-
-  /* From 761 px «Выбрать» has its own row at the end, under the head. */
+  /* From 1000 px «Выбрать» has its own row at the end, under the head. */
   .selrow {
     display: flex;
     justify-content: flex-end;

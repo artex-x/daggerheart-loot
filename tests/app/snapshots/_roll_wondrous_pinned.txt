@@ -24,7 +24,6 @@ RootWebArea "Wondrous Environments - Генератор лута Daggerheart" [u
       button "Wondrous Environments" [expanded=false haspopup=menu]
     button "Открывается при запуске" [pressed=true]
     button "Об этой таблице" [expanded=false]
-    StaticText "Введите результат броска или получите случайную позицию."
     button "Бросить 1-119"
     StaticText "РЕЗУЛЬТАТ БРОСКА (1-119)"
     button "На единицу меньше" [disabled=true]
@@ -34,7 +33,8 @@ RootWebArea "Wondrous Environments - Генератор лута Daggerheart" [u
     status ""
       StaticText "Смола Бездны"
     button "Открыть карточку"
-    ... StaticText x2 of 6 same-shape siblings elided
+    StaticText "1"
+    StaticText "РАСХОДНИК"
     StaticText "WONDROUS ENVIRONMENTS"
     link "Смола Бездны" [description=Открыть страницу url=/i/w1]
     StaticText "Вы можете бросить флакон этой смолы в цель в пределах Далекой ди..." [namelen=127 namehash=0130265a]
@@ -101,7 +101,6 @@ RootWebArea "Wondrous Environments - Daggerheart Loot Generator" [url=/en/roll/w
       button "Wondrous Environments" [expanded=false haspopup=menu]
     button "Opens on start" [pressed=true]
     button "About this table" [expanded=false]
-    StaticText "Enter your roll result, or pick a random entry."
     button "Roll 1-119"
     StaticText "ROLL RESULT (1-119)"
     button "One lower" [disabled=true]
@@ -111,7 +110,8 @@ RootWebArea "Wondrous Environments - Daggerheart Loot Generator" [url=/en/roll/w
     status ""
       StaticText "Abyssal Sap"
     button "Open card"
-    ... StaticText x2 of 6 same-shape siblings elided
+    StaticText "1"
+    StaticText "CONSUMABLE"
     StaticText "WONDROUS ENVIRONMENTS"
     link "Abyssal Sap" [description=Open page url=/i/en/w1]
     StaticText "You can throw a vial of this sap at a target within Far range to..." [namelen=111 namehash=8af0f270]

@@ -1642,8 +1642,19 @@ describe('the head from 761 px', () => {
     await expectNoA11yViolations(container);
   });
 
-  it('draws no primary in the head on another tab', async () => {
-    page('gm1', { route: '#/homebrew/sets' });
+  it('draws no primary on another tab; from 1000 px it keeps its place hidden and unreachable', async () => {
+    const { container } = page('gm1', { route: '#/homebrew/sets' });
+    await screen.findByRole('navigation', { name: t.myItems });
+    expect(screen.queryByRole('link', { name: new RegExp(t.hbNewItem) })).toBeNull();
+    const reserve = container.querySelector<HTMLElement>('.page-head .headnew');
+    expect(reserve).toHaveClass('reserve');
+    expect(reserve).toHaveAttribute('aria-hidden', 'true');
+    expect(reserve).toHaveAttribute('inert');
+    await expectNoA11yViolations(container);
+  });
+
+  it('keeps no reserve on another tab at the mid band, where the pills have their own row', async () => {
+    page('gm1', { route: '#/homebrew/sets', env: { viewport: fakeViewport('mid') } });
     await screen.findByRole('navigation', { name: t.myItems });
     expect(document.querySelector('.page-head .headnew')).toBeNull();
   });

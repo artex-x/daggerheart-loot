@@ -123,7 +123,7 @@ function page({ id, lang, title, desc, body }) {
 <!-- kept out of search results, same as every other page - docs/specs/META.md
      section 1 -->
 <meta name="robots" content="noindex, nofollow">
-<title>${esc(title[lang])} — ${t.site}</title>
+<title>${esc(title[lang])} - ${t.site}</title>
 <meta name="description" content="${esc(desc[lang])}">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="${t.site}">
@@ -153,7 +153,13 @@ function page({ id, lang, title, desc, body }) {
   ol,ul{margin:0 0 12px;padding-left:22px}
   a{color:#d8ab5e}
   .lang{font-size:13px;margin:0 0 16px}
-  .back{display:inline-block;margin:8px 0 16px}
+  /* A link of its own line is a target: 24 px, and 40 px up to 600 px, by a padded box
+     with the growth given back (DESIGN.md, "The Phone-First Rule"). */
+  .back,.lang a{--tg:24px;display:inline-block;position:relative;min-width:var(--tg);
+       padding-block:max(0px,calc((var(--tg) - 1lh) / 2))}
+  .lang a{margin-block:min(0px,calc((1lh - var(--tg)) / 2))}
+  .back{margin:calc(8px + min(0px,calc((1lh - var(--tg)) / 2))) 0 calc(16px + min(0px,calc((1lh - var(--tg)) / 2)))}
+  @media (max-width:600px){.back,.lang a{--tg:40px}}
 </style>
 </head>
 <body>

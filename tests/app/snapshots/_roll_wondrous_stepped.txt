@@ -24,7 +24,6 @@ RootWebArea "Wondrous Environments - Генератор лута Daggerheart" [u
       button "Wondrous Environments" [expanded=false haspopup=menu]
     button "Открывать при запуске" [pressed=false]
     button "Об этой таблице" [expanded=false]
-    StaticText "Введите результат броска или получите случайную позицию."
     button "Бросить 1-119"
     StaticText "РЕЗУЛЬТАТ БРОСКА (1-119)"
     button "На единицу меньше"
@@ -34,7 +33,8 @@ RootWebArea "Wondrous Environments - Генератор лута Daggerheart" [u
     status ""
       StaticText "Эфироцвет"
     button "Открыть карточку"
-    ... StaticText x2 of 6 same-shape siblings elided
+    StaticText "3"
+    StaticText "ПРЕДМЕТ"
     StaticText "WONDROUS ENVIRONMENTS"
     link "Эфироцвет" [description=Открыть страницу url=/i/w3]
     StaticText "Этот цветок чувствителен к магии и указывает в направлении сильн..." [namelen=171 namehash=72f58938]
@@ -98,7 +98,6 @@ RootWebArea "Wondrous Environments - Daggerheart Loot Generator" [url=/en/roll/w
       button "Wondrous Environments" [expanded=false haspopup=menu]
     button "Open on start" [pressed=false]
     button "About this table" [expanded=false]
-    StaticText "Enter your roll result, or pick a random entry."
     button "Roll 1-119"
     StaticText "ROLL RESULT (1-119)"
     button "One lower"
@@ -108,7 +107,8 @@ RootWebArea "Wondrous Environments - Daggerheart Loot Generator" [url=/en/roll/w
     status ""
       StaticText "Aetherflower"
     button "Open card"
-    ... StaticText x2 of 6 same-shape siblings elided
+    StaticText "3"
+    StaticText "ITEM"
     StaticText "WONDROUS ENVIRONMENTS"
     link "Aetherflower" [description=Open page url=/i/en/w3]
     StaticText "This flower is sensitive to magic, and will point in the directi..." [namelen=186 namehash=f75955ca]

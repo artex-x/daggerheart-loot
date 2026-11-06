@@ -772,9 +772,15 @@ describe('the states around the form', () => {
     await expectNoA11yViolations(container);
   });
 
-  it('asks a signed-out reader to sign in', async () => {
-    await editor(AXE, { as: null });
+  it('asks a signed-out reader to sign in, the lead drawn from 761 px only', async () => {
+    const { container } = await editor(AXE, { as: null });
     expect(screen.getByText(t.hbSignIn)).toBeInTheDocument();
+    expect(screen.getByText(t.subHomebrew)).toBeInTheDocument();
+    await expectNoA11yViolations(container);
+    cleanup();
+    await editor(AXE, { as: null, band: 'narrow' });
+    expect(screen.getByText(t.hbSignIn)).toBeInTheDocument();
+    expect(screen.queryByText(t.subHomebrew)).toBeNull();
   });
 
   it('draws a failed load with «Повторить», not «Предмет не найден»', async () => {

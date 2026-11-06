@@ -568,6 +568,17 @@
     overflow-wrap: anywhere;
   }
 
+  /* «Открыть» after the notice: the thumb target up to 600 px and 24 px from 601 px by a
+     padded box, the growth given back (DESIGN.md, "The Phone-First Rule"). */
+  .ntext a {
+    position: relative;
+    display: inline-block;
+    min-width: var(--thumb);
+    text-align: center;
+    padding-block: max(0px, calc((max(24px, var(--thumb)) - 1lh) / 2));
+    margin-block: min(0px, calc((1lh - max(24px, var(--thumb))) / 2));
+  }
+
   .nnew {
     font-size: var(--t-label);
     font-weight: 650;
@@ -691,14 +702,6 @@
     .req :global(.btn) {
       flex: 1 1 0;
       justify-content: center;
-    }
-
-    /* A touch target at phone width, as every control here (DESIGN.md, "The Two
-       Breakpoints Rule"). */
-    .decided :global(.btn),
-    .notice :global(.btn),
-    .more :global(.btn) {
-      min-height: 36px;
     }
   }
 </style>

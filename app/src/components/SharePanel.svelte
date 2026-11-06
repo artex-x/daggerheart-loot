@@ -249,4 +249,11 @@
     color: var(--muted2);
     overflow-wrap: anywhere;
   }
+
+  /* The link as a target: 40 px up to 600 px, 24 px from 601 px; the panel grows. */
+  .sharelink {
+    display: flex;
+    align-items: center;
+    min-height: max(24px, var(--thumb));
+  }
 </style>

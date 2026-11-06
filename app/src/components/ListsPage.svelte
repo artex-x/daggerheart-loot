@@ -243,6 +243,7 @@
       return;
     }
     if (!cloud || app.listsFull()) return;
+    app.closeErrorToast();
     const l = cloud.create(draft);
     if (findQ) setQuery('');
     /* A refused write has already said why: a "created" on top of it would bury the one
@@ -310,19 +311,24 @@
 
 {#snippet wideHead()}
   {#if signedIn}
-    <span class="headx">
-      {#if canImport}
-        <Button
-          size="sm"
-          caret
-          on={importing}
-          expanded={importing}
-          disabled={importSending}
-          bind:el={importButton}
-          onclick={toggleImport}><Icon name="upload" />{t.importOpen}</Button
-        >
-      {/if}
-      {@render newList(true)}
+    <span class="headx">{@render newList(true)}</span>
+  {/if}
+{/snippet}
+
+<!-- From 761 px the import is the last control before «Выбрать» in the count row, as on
+     every tab of «Мои предметы» (docs/specs/FEATURES.md, rule 9). -->
+{#snippet importToggle()}
+  {#if canImport && !narrow}
+    <span class="end">
+      <Button
+        size="sm"
+        caret
+        on={importing}
+        expanded={importing}
+        disabled={importSending}
+        bind:el={importButton}
+        onclick={toggleImport}><Icon name="upload" />{t.importOpen}</Button
+      >
     </span>
   {/if}
 {/snippet}
@@ -337,8 +343,13 @@
       app.lang,
       t.ofLimit
     )}{#if cloud?.sync === 'failed'}&#32;·
-      <SyncStatus {app} />{/if}
+      <SyncStatus {app} after={() => newButton} />{/if}
   </p>
+{/snippet}
+
+{#snippet countRow()}
+  {@render countLine()}
+  {@render importToggle()}
 {/snippet}
 
 <!-- The bar of the selection mode, drawn by `SelBar` through `app.pageBar` (a top-level
@@ -438,12 +449,12 @@
             label={t.findList}
             selectable={!!drawnAccount.length && !selecting}
             onselect={() => void startSelecting()}
-            beside={narrow ? undefined : countLine}
+            beside={narrow ? undefined : countRow}
           />
           {#if narrow}{@render countLine()}{/if}
         {:else}
           <div class="lhead">
-            {@render countLine()}
+            {@render countRow()}
             {#if drawnAccount.length && !selecting}
               <SelMode label={t.selectMode} onclick={() => void startSelecting()} />
             {/if}
@@ -548,8 +559,8 @@
     margin-top: 0;
   }
 
-  /* The head's end: the import toggle and the primary at the column's right edge; up to
-     760 px the primary and «Ещё», positioned so the row anchors the menu (`MoreMenu`). */
+  /* The head's end: the primary at the column's right edge; up to 760 px the primary and
+     «Ещё», positioned so the row anchors the menu (`MoreMenu`). */
   .headx {
     position: relative;
     display: flex;
@@ -611,6 +622,11 @@
     align-items: center;
     gap: 10px;
     margin-bottom: 10px;
+  }
+
+  .end {
+    display: flex;
+    margin-left: auto;
   }
 
   .count {
