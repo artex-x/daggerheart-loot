@@ -1,6 +1,6 @@
 # #/lists/00000000-0000-4000-8000-000000008001 ~ rolled as gm4
 # route: #/lists
-# why: result 2: the face of entry 2 with its row of actions, «2 шт. · по 7 мешков 5 горстей», both notes (the GM note in its GM box), «Показать в списке», "Сбросить"
+# why: result 2: the face of entry 2 with its row of actions, «2 шт. · 7 мешков 5 горстей за штуку», both notes (the GM note in its GM box), «Показать в списке», "Сбросить"
 # as: gm4
 
 ## ru :: tree
@@ -19,7 +19,7 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
       link "Поиск" [url=/search]
   main ""
     StaticText "Клад дракона"
-    textbox "Название списка" [value=Клад дракона multiline=false readonly=false required=false]
+    textbox "Название списка" [value=Клад дракона multiline=true readonly=false required=false]
     StaticText "7 позиций из 100 · "
     ... StaticText x30 of 34 same-shape siblings elided
     button "Поделиться" [expanded=false]
@@ -142,7 +142,7 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
       link "Search" [url=/en/search]
   main ""
     StaticText "Клад дракона"
-    textbox "List name" [value=Клад дракона multiline=false readonly=false required=false]
+    textbox "List name" [value=Клад дракона multiline=true readonly=false required=false]
     StaticText "7 items of 100 · "
     ... StaticText x30 of 34 same-shape siblings elided
     button "Share" [expanded=false]

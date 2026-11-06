@@ -24,7 +24,6 @@ RootWebArea "Dread GM Toolbox - Генератор лута Daggerheart" [url=/r
       button "Dread GM Toolbox" [expanded=false haspopup=menu]
     button "Открывать при запуске" [pressed=false]
     button "Об этой книге" [expanded=false]
-    StaticText "Введите результат броска или получите случайную позицию."
     button "Бросить 1-29"
     StaticText "РЕЗУЛЬТАТ БРОСКА (1-29)"
     button "На единицу меньше" [disabled=true]
@@ -34,7 +33,8 @@ RootWebArea "Dread GM Toolbox - Генератор лута Daggerheart" [url=/r
     status ""
       StaticText "Эфирная Винтовка"
     button "Открыть карточку"
-    ... StaticText x10 of 14 same-shape siblings elided
+    StaticText "1"
+    ... StaticText x9 of 13 same-shape siblings elided
     link "Эфирная Винтовка" [description=Открыть страницу url=/i/di1]
     StaticText "Неестественное:"
     StaticText " Биологически живые стрелки должны отмечать Стресс каждый раз, к..." [namelen=171 namehash=1386cde3]
@@ -98,7 +98,6 @@ RootWebArea "Dread GM Toolbox - Daggerheart Loot Generator" [url=/en/roll/dread_
       button "Dread GM Toolbox" [expanded=false haspopup=menu]
     button "Open on start" [pressed=false]
     button "About this book" [expanded=false]
-    StaticText "Enter your roll result, or pick a random entry."
     button "Roll 1-29"
     StaticText "ROLL RESULT (1-29)"
     button "One lower" [disabled=true]
@@ -108,7 +107,8 @@ RootWebArea "Dread GM Toolbox - Daggerheart Loot Generator" [url=/en/roll/dread_
     status ""
       StaticText "Aether Rifle"
     button "Open card"
-    ... StaticText x10 of 14 same-shape siblings elided
+    StaticText "1"
+    ... StaticText x9 of 13 same-shape siblings elided
     link "Aether Rifle" [description=Open page url=/i/en/di1]
     StaticText "Uncanny:"
     StaticText " Shooters who are biologically alive must mark a Stress each tim..." [namelen=164 namehash=b75ef83a]

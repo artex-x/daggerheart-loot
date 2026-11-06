@@ -20,10 +20,10 @@ RootWebArea "Мои списки - Генератор лута Daggerheart" [url
   main ""
     heading "Мои списки" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Импорт из файла" [expanded=false]
     button "Новый список" [expanded=false]
     status ""
     StaticText "1 список из 50"
+    button "Импорт из файла" [expanded=false]
     button "Выбрать"
     link "Список второго ГМа, 2 позиции, изменён позавчера, Новое в списке..." [url=/lists/00000000-0000-4000-8000-000000000201 namelen=68 namehash=8240dd25]
       StaticText "Список второго ГМа"
@@ -74,10 +74,10 @@ RootWebArea "My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm2]
   main ""
     heading "My lists" [level=1]
     button "Open on start" [pressed=false]
-    button "Import from file" [expanded=false]
     button "New list" [expanded=false]
     status ""
     StaticText "1 list of 50"
+    button "Import from file" [expanded=false]
     button "Select"
     link "Список второго ГМа, 2 items, edited 2 days ago, New in this list..." [url=/en/lists/00000000-0000-4000-8000-000000000201 namelen=68 namehash=84b70fc4]
       StaticText "Список второго ГМа"

@@ -194,10 +194,19 @@ describe('heading and sub', () => {
 
     const sub = container.querySelector('.page-sub');
     expect(sub).toHaveTextContent(/^2 позиции · Обновлено .+ · Заметка · Заметка мастера$/);
-    expect(screen.getByRole('button', { name: 'Заметка' })).toHaveAttribute(
+    /* Both note toggles are the meta-line toggle of the owner's page: a chevron, an open state. */
+    for (const name of ['Заметка', 'Заметка мастера']) {
+      const toggle = screen.getByRole('button', { name });
+      expect(toggle).toHaveAttribute('aria-expanded', 'false');
+      expect(toggle).toHaveClass('metat');
+      expect(toggle.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+    }
+    await userEvent.click(screen.getByRole('button', { name: 'Заметка мастера' }));
+    expect(screen.getByRole('button', { name: 'Заметка мастера' })).toHaveAttribute(
       'aria-expanded',
-      'false'
+      'true'
     );
+    await expectNoA11yViolations(container);
 
     expect(screen.getByRole('button', { name: 'Сохранить себе' })).not.toHaveAttribute(
       'aria-expanded'
@@ -702,7 +711,9 @@ describe('the taken count and the total', () => {
     const rec = (id: string) => index.byId.get(id)!;
     const parts = [
       share(rec('ci1'), index, 'ru', { suffix: ' ×2' }),
-      share(rec('cc21'), index, 'ru', { suffix: ' ×2 — по ' + priceText(50, 'bag', 'ru') }),
+      share(rec('cc21'), index, 'ru', {
+        suffix: ' ×2 — ' + priceText(50, 'bag', 'ru') + ' за штуку'
+      }),
       share(rec('q337'), index, 'ru', { suffix: ' — ' + priceText(12, 'bag', 'ru') })
     ];
     expect(clip.last.text).toBe(

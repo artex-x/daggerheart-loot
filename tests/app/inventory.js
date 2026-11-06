@@ -1651,7 +1651,7 @@ const STATES = [
     id: '#/roll/std ~ request arrived as gm1',
     route: '#/roll/std',
     as: 'gm1',
-    why: 'two purchase requests on «Лавка кузнеца» arrive on another page: the gold action toast «Новых запросов по списку «Лавка кузнеца»: 2» with «Открыть» at the bottom; the tab title «(2) Обычные правила - ...»; the page itself unchanged',
+    why: 'two purchase requests on «Лавка кузнеца» arrive on another page: the action toast «Новых запросов по списку «Лавка кузнеца»: 2» with «Открыть» at the bottom; the tab title «(2) Обычные правила - ...»; the page itself unchanged',
     enter: async (d) => {
       await twoRequests(d);
       for (let i = 0; i < 40 && !(await d.count('.toast.act')); i++) await d.settle();
@@ -1947,7 +1947,7 @@ const STATES = [
     id: SHOP + ' ~ share as gm1',
     route: SHOP,
     as: 'gm1',
-    why: '«Поделиться» pressed and expanded: the panel with both seed links, «Скопировать» and «Удалить ссылку» in each row, and the hint',
+    why: '«Поделиться» pressed and expanded: the panel with both seed links, «Скопировать» and «Удалить ссылку» in each row',
     enter: async (d) => {
       await d.click('Поделиться');
     }
@@ -2201,7 +2201,7 @@ const STATES = [
     id: LIST_A + ' ~ rolled as gm4',
     route: '#/lists',
     as: 'gm4',
-    why: 'result 2: the face of entry 2 with its row of actions, «2 шт. · по 7 мешков 5 горстей», both notes (the GM note in its GM box), «Показать в списке», "Сбросить"',
+    why: 'result 2: the face of entry 2 with its row of actions, «2 шт. · 7 мешков 5 горстей за штуку», both notes (the GM note in its GM box), «Показать в списке», "Сбросить"',
     enter: async (d) => {
       await onAccount(d, NOTED_SPECS);
       await d.click(NAME.ru.rollBy);
@@ -2312,7 +2312,7 @@ const STATES = [
     route: '#/lists',
     as: 'gm4',
     width: 768,
-    why: 'from 761 to 999 px: the side content above the rows in one column, and each row with its quantity, price, «Заметка» and «Ещё» on a line under its text',
+    why: 'from 761 to 999 px: the compact head (the name, «Выбрать» and «Ещё», the meta line with «Заметки»), and each row with its quantity, price, «Заметка» and «Ещё» on a line under its text',
     enter: async (d) => {
       await onAccount(d, NOTED_SPECS);
     }

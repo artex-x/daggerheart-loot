@@ -24,9 +24,9 @@ RootWebArea "Arazo's Artifacts - Генератор лута Daggerheart" [url=/
       button "Arazo's Artifacts" [expanded=false haspopup=menu]
     button "Открывать при запуске" [pressed=false]
     button "Об этой книге" [expanded=true]
-    StaticText "Введите результат броска или получите случайную позицию."
     StaticText "В таблице 78 позиций - 10 предметов и 68 единиц оружия и брони, ..." [namelen=157 namehash=cce2a6c7]
-    ... StaticText x18 of 22 same-shape siblings elided
+    StaticText "Своей таблицы броска у книги нет, вместо неё - «Предназначение»:..." [namelen=391 namehash=dc1447ed]
+    ... StaticText x17 of 21 same-shape siblings elided
     link "The Guide to Arazo's Artifacts" [url=https://www.drivethrurpg.com/en/product/581640/the-guide-to-arazo-s-artifacts]
     button "Бросить 1-78"
     button "На единицу меньше" [disabled=true]
@@ -100,9 +100,9 @@ RootWebArea "Arazo's Artifacts - Daggerheart Loot Generator" [url=/en/roll/arazo
       button "Arazo's Artifacts" [expanded=false haspopup=menu]
     button "Open on start" [pressed=false]
     button "About this book" [expanded=true]
-    StaticText "Enter your roll result, or pick a random entry."
     StaticText "The table holds 78 entries - 10 items and 68 weapons and armor, ..." [namelen=154 namehash=80f65c5e]
-    ... StaticText x18 of 22 same-shape siblings elided
+    StaticText "The book has no roll table; it offers Destiny instead: at sessio..." [namelen=397 namehash=95d13785]
+    ... StaticText x17 of 21 same-shape siblings elided
     link "The Guide to Arazo's Artifacts" [url=https://www.drivethrurpg.com/en/product/581640/the-guide-to-arazo-s-artifacts]
     button "Roll 1-78"
     button "One lower" [disabled=true]

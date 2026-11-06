@@ -349,30 +349,32 @@
                   }}
                 />
               </div>
+              <!-- The two print defaults carry the group names of the `/p/` toolbar. -->
               <div class="set">
-                <span class="setname">{t.defaultPrint}</span>
-                <div class="wb">
-                  <Seg
-                    neutral
-                    small
-                    options={art}
-                    value={app.printBW ? 'bw' : 'color'}
-                    label={t.defaultPrint}
-                    onchange={(v: 'color' | 'bw') => {
-                      app.setPrintBW(v === 'bw');
-                    }}
-                  />
-                  <Seg
-                    neutral
-                    small
-                    options={sizes}
-                    value={app.printCompact ? 'compact' : 'std'}
-                    label={t.printSize}
-                    onchange={(v: 'std' | 'compact') => {
-                      app.setPrintCompact(v === 'compact');
-                    }}
-                  />
-                </div>
+                <span class="setname">{t.printInk}</span>
+                <Seg
+                  neutral
+                  small
+                  options={art}
+                  value={app.printBW ? 'bw' : 'color'}
+                  label={t.printInk}
+                  onchange={(v: 'color' | 'bw') => {
+                    app.setPrintBW(v === 'bw');
+                  }}
+                />
+              </div>
+              <div class="set">
+                <span class="setname">{t.printSize}</span>
+                <Seg
+                  neutral
+                  small
+                  options={sizes}
+                  value={app.printCompact ? 'compact' : 'std'}
+                  label={t.printSize}
+                  onchange={(v: 'std' | 'compact') => {
+                    app.setPrintCompact(v === 'compact');
+                  }}
+                />
               </div>
               <!-- A select at every width: three answers of the owner's length do not
                    fit a segmented control at 360 px. -->
@@ -670,13 +672,6 @@
     outline: none;
     border-color: var(--gold);
     box-shadow: 0 0 0 3px rgb(216 171 94 / 14%);
-  }
-
-  /* The two print defaults wrap inside 360 px. */
-  .wb {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
   }
 
   @media (max-width: 600px) {

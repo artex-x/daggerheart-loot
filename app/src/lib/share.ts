@@ -304,7 +304,7 @@ export function qtySuffix(qty: number | undefined): string {
 
 /**
  * Returns the price that follows a name and its count in copied text: the
- * unit price, marked "по" / "each" when the count is over 1, so a pasted line
+ * unit price, marked "за штуку" / "each" when the count is over 1, so a pasted line
  * never reads as the price of the whole stack.
  */
 export function priceTail(

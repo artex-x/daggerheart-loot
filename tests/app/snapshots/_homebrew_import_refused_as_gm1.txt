@@ -21,16 +21,16 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
     heading "Мои предметы" [level=1]
     navigation "Мои предметы"
       link "Предметы 4" [url=/homebrew]
-        StaticText "Предметы "
+        StaticText "Предметы"
         StaticText "4"
       link "Источники 1" [url=/homebrew/sources]
-        StaticText "Источники "
+        StaticText "Источники"
         StaticText "1"
       link "Комплекты 1" [url=/homebrew/sets]
-        StaticText "Комплекты "
+        StaticText "Комплекты"
         StaticText "1"
       link "Карты правил 1" [url=/homebrew/rules]
-        StaticText "Карты правил "
+        StaticText "Карты правил"
         StaticText "1"
     button "Открывать при запуске" [pressed=false]
     link "Новый предмет" [url=/homebrew/new]
@@ -110,16 +110,16 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm1]
     heading "My items" [level=1]
     navigation "My items"
       link "Items 4" [url=/en/homebrew]
-        StaticText "Items "
+        StaticText "Items"
         StaticText "4"
       link "Sources 1" [url=/en/homebrew/sources]
-        StaticText "Sources "
+        StaticText "Sources"
         StaticText "1"
       link "Sets 1" [url=/en/homebrew/sets]
-        StaticText "Sets "
+        StaticText "Sets"
         StaticText "1"
       link "Rule cards 1" [url=/en/homebrew/rules]
-        StaticText "Rule cards "
+        StaticText "Rule cards"
         StaticText "1"
     button "Open on start" [pressed=false]
     link "New item" [url=/en/homebrew/new]

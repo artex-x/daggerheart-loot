@@ -1012,3 +1012,22 @@
 - Item 14: batch TD, D-6, now `--measure-line` (`plan-text.md`).
 - Item 15: `plan-text.md`, batch TD (MT-1 to MT-7, case 111).
 - CI note: run 42128868815 of the fold commit `d524e220` failed `check` on one timing test (`homebrew.timed.test.ts`, 16.96 ms against 16) on a docs-only change; the credit refuses a `check` re-run, so the TD tip carries the gate.
+
+## Owner decisions of the 2026-11-06 session (orchestrator, from the AFK log; full text: C:\Users\Ignat\.dhloot\notes\owner-afk-2026-11-03\decisions.md items 24-41)
+- Order: wave 3 landed on `main` first (`10011729`), the blind reviews ran on production, then the remediation PW3 ships
+  as its own squash S2; then the whole-app review with the same two-reviewer strategy (production signed out, fixture
+  build signed in via `?as=<user>`, plus a short signed-in checklist for the owner, who may use Claude in Chrome with
+  writes to the account: create only a test list named "ZZ ..." and never delete real data); the wave 3 test list
+  «ZZ review wave 3 (delete me)» is in the owner's account for the owner to delete.
+- Consistency matters a lot (same action, same place on sibling pages): the final review prompt carries a consistency
+  matrix, an overlay inventory per width, a screenshot per probe, seeded defect classes (`plan-pw3.md` part C).
+- D1-D11 of `plan-pw3.md` are answered, each the recommended option (D2 tool row on both pages, D4 wrap from 1000 px).
+- The post-wave-3 debt work is a separate task `57-debt` after 57 (`plan-debt.md`: tooling and CI first, then phone
+  overlays, then visual leftovers with a mock, then Impeccable polish/harden/document).
+- CI-first policy: a writer runs only `check:fast` (the commit hook needs it), the golden re-seeds and the affected
+  vitest files; no loader runs, target-size probes, `check:built` or detector by hand; CI and one fix pass find the
+  rest. The commit hook stays as it is.
+- The closeout recommendations stand: 4-R1 keep the page; CI N6 (ci.yml/bash-guard figures) in the `57-debt` task;
+  TD-R1/TD-R2 exceptions accepted; the burden hands as clip paths and the two RU compact print cards at 3.4cqw are
+  named to the owner; deleting the remote branch waits for the owner.
+- Reviewer calibration: the production reviewer found 0 of OC-1..OC-7, the signed-in reviewer found OC-1 only.

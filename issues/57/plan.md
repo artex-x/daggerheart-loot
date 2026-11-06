@@ -25,6 +25,10 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
     lines; 95-125 min. Built 2026-11-06 (`handoff.md`, Completed: 10-1 to 10-19 and 10-21 have outcomes; 10-20 is
     the orchestrator's); reviewed (`reviews/10.md`, fix-then-continue) and its one fix pass built the same day. Next:
     10-20, the orchestrator's. The follow-up task's id is `57-debt` (DEBT.md section names).
+  - Wave 3 is on `main` as `10011729` (merged back as `45050594`); its blind reviews are `reviews/post-wave-3.md`,
+    `post-wave-3-signed-in.md` and `post-wave-3-owner-chrome.md`. Batch PW3, their one remediation batch, ships as the
+    second squash S2: brief `plan-pw3.md` (owner decisions D1-D11, 40 acceptance lines, 80-115 min local). Its part C
+    changes the whole-app blind review's dispatch (section 16, step 1).
   - Defaults taken while the owner is away are listed in `handoff.md`, Status, and logged by the orchestrator in
     `C:\Users\Ignat\.dhloot\notes\owner-afk-2026-11-03\decisions.md` (items 20-23 are the batch planners', item 24 is
     this fold's).
@@ -56,6 +60,8 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
   code and three roll copy rows: no contract, no stored key, no write path. P5 (`rollNo`, about 1000 generated stubs and
   `tools/share-card.mjs`) is not built here (acceptance 10-8); if the owner asks for it, the plan writes a `required before
   10` line first.
+- Plan review: not required (no trigger fired) for batch PW3. It changes control sizes, the sheet's place from 761 px,
+  heads, copy and the list name's element: no route, no contract, no stored key, no write path (`plan-pw3.md`, Status).
 - Batch review (`orchestrate.prompt.md`, "When to run reviewer"): TD required (visual parity and changed UI on every
   route; generated artifacts: the static pages regenerate); N required (changed UI, a golden re-seed of about 145
   files); P required (visual parity and print, the four burden files); 10 required (a prompt changed:
@@ -1204,7 +1210,9 @@ After wave 3 and its blind review, in order (batch 10's last lines):
    The owner also tries the header on a real iPhone (`plan-3b.md`: the bounce at both
    ends of a long list, the on-screen keyboard, VoiceOver into the hidden header);
    headless Chrome cannot show these. Report: `issues/57/reviews/post-release.md`.
-   It covers the whole app.
+   It covers the whole app. Its dispatch adds `plan-pw3.md` part C (the surface inventory, the consistency
+   matrix, a screenshot per probe, the seeded defect classes) and runs two blind reviewers: production signed out
+   and the fixture build signed in.
 2. Its findings are remediated at once, nits included, in a fix batch on
    `claude/57` (the remediation rule above).
 3. The closeout (`/handoff`): the audit, the durable moves, `git rm -r

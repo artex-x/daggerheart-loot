@@ -93,6 +93,8 @@
   const { app, store, key }: Props = $props();
 
   const t = $derived(app.t);
+  /* The lead of the sign-in and read-failure heads, drawn from 761 px. */
+  const headSub = $derived(app.band === 'narrow' ? undefined : t.subHomebrew);
   const lang = $derived(app.lang);
 
   /* The item this form edits: `key`, or the key of the item it created. */
@@ -936,16 +938,17 @@
 
 <svelte:window {onkeydown} />
 
+<!-- Up to 760 px the lead is not drawn, as on `#/homebrew`. -->
 {#if app.user === null}
-  <PageTitle title={t.myItems} sub={t.subHomebrew} />
+  <PageTitle title={t.myItems} sub={headSub} />
   <SignInPrompt {app} lead={t.hbSignIn} after={{ hash: app.hash }} />
 {:else if app.user === undefined}
   <!-- The session is not known yet. -->
 {:else if store.status === 'error' && !formLoaded}
-  <PageTitle title={t.myItems} sub={t.subHomebrew} />
+  <PageTitle title={t.myItems} sub={headSub} />
   <LoadState {t} failed text={t.hbLoadFailed} onretry={() => void store.load()} />
 {:else if !formLoaded && !missing}
-  <PageTitle title={t.myItems} sub={t.subHomebrew} />
+  <PageTitle title={t.myItems} sub={headSub} />
   <LoadState {t} failed={false} text={t.hbLoadFailed} onretry={() => void store.load()} />
 {:else if missing}
   <ErrorPage title={t.notFound} said>

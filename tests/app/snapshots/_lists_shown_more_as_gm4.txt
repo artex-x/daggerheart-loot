@@ -20,11 +20,11 @@ RootWebArea "Мои списки - Генератор лута Daggerheart" [url
   main ""
     heading "Мои списки" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Импорт из файла" [expanded=false]
     button "Новый список" [expanded=false]
     status ""
     searchbox "Найти список"
     StaticText "30 списков из 50"
+    button "Импорт из файла" [expanded=false]
     button "Выбрать"
     link "Сессия 22, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000008030]
       StaticText "Сессия 22"
@@ -251,11 +251,11 @@ RootWebArea "My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm4]
   main ""
     heading "My lists" [level=1]
     button "Open on start" [pressed=false]
-    button "Import from file" [expanded=false]
     button "New list" [expanded=false]
     status ""
     searchbox "Find a list"
     StaticText "30 lists of 50"
+    button "Import from file" [expanded=false]
     button "Select"
     link "Сессия 22, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000008030]
       StaticText "Сессия 22"

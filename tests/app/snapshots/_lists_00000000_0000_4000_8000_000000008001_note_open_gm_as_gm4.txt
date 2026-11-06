@@ -19,7 +19,7 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
       link "Поиск" [url=/search]
   main ""
     StaticText "Клад дракона"
-    textbox "Название списка" [value=Клад дракона multiline=false readonly=false required=false]
+    textbox "Название списка" [value=Клад дракона multiline=true readonly=false required=false]
     StaticText "7 позиций из 100 · "
     ... StaticText x19 of 23 same-shape siblings elided
     button "Поделиться" [expanded=false]
@@ -50,7 +50,7 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
       button "Список"
       button "Нумерованный список"
       button "Просмотр" [pressed=false]
-    textbox "Только для мастера" [value=Проклят description=Игроки не видят focused=true multiline=true readonly=false required=false]
+    textbox "Только для мастера" [value=Проклят description=Игроки не видят multiline=true readonly=false required=false]
     spinbutton "Позиция в списке" [value=3 valuetext=3 required=false valuemin=1 valuemax=7]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
@@ -148,7 +148,7 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
       link "Search" [url=/en/search]
   main ""
     StaticText "Клад дракона"
-    textbox "List name" [value=Клад дракона multiline=false readonly=false required=false]
+    textbox "List name" [value=Клад дракона multiline=true readonly=false required=false]
     StaticText "7 items of 100 · "
     ... StaticText x19 of 23 same-shape siblings elided
     button "Share" [expanded=false]
@@ -179,7 +179,7 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
       button "Bulleted list"
       button "Numbered list"
       button "Preview" [pressed=false]
-    textbox "GM only" [value=Проклят description=Players do not see it focused=true multiline=true readonly=false required=false]
+    textbox "GM only" [value=Проклят description=Players do not see it multiline=true readonly=false required=false]
     spinbutton "Position in the list" [value=3 valuetext=3 required=false valuemin=1 valuemax=7]
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]

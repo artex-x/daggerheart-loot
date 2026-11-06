@@ -264,7 +264,7 @@ async function openPrint(d, spec, { as = 'gm2' } = {}) {
  *  radio inside a `label` is not exempt: the label is measured in its place. */
 const TARGET_ALLOW = [
   {
-    why: 'a link inside running text (WCAG 2.5.8, "Inline")',
+    why: 'a link inside running text, a block of 20 more characters that ends as a sentence (WCAG 2.5.8, "Inline")',
     test: 'inline'
   },
   { why: 'the skip link: shown on keyboard focus only (WCAG 2.4.1)', test: 'a.skip' },
@@ -308,8 +308,10 @@ async function targets(page, { floor, menuFloor = floor, spacing = false }) {
         let block = el.parentElement;
         while (block && getComputedStyle(block).display.startsWith('inline'))
           block = block.parentElement;
-        const around = (block?.textContent ?? '').length - (el.textContent ?? '').length;
-        return around >= 20;
+        const text = (block?.textContent ?? '').trim();
+        const around = text.length - (el.textContent ?? '').trim().length;
+        /* Running text is a sentence: a path line or a link after a label is not. */
+        return around >= 20 && /[.!?][»")]?$/.test(text);
       };
       const allowed = (el) =>
         ALLOW.some((a) => (a.test === 'inline' ? inline(el) : el.matches(a.test)));

@@ -305,9 +305,15 @@
 {/snippet}
 
 <!-- The head's primary from 761 px, on the Items tab only: on the Sources, Sets and Rules tabs
-     the first button under the head is the tab's own, whose form opens in its place. -->
+     the first button under the head is the tab's own, whose form opens in its place. From
+     1000 px those tabs keep its place hidden, so the pills wrap at one width on every tab
+     (DESIGN.md, "The Head Order Rule"). -->
 {#snippet headNew()}
-  <span class="headnew">{@render newItem(true)}</span>
+  {#if tab === 'items'}
+    <span class="headnew">{@render newItem(true)}</span>
+  {:else}
+    <span class="headnew reserve" aria-hidden="true" inert>{@render newItem(true)}</span>
+  {/if}
 {/snippet}
 
 {#snippet importToggle()}
@@ -356,7 +362,7 @@
     pin={ready}
     nav={ready ? tabs : undefined}
     navBelow={band === 'mid'}
-    extra={ready && tab === 'items' ? headNew : undefined}
+    extra={ready && (tab === 'items' || band === 'wide') ? headNew : undefined}
   />
 {/if}
 
@@ -548,6 +554,10 @@
     display: flex;
     flex: none;
     margin-left: auto;
+  }
+
+  .headnew.reserve {
+    visibility: hidden;
   }
 
   /* Positioned: up to 760 px the row anchors the menu of «Ещё» (`MoreMenu.svelte`). */

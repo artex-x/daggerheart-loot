@@ -231,6 +231,10 @@ describe('the heading and the action row', () => {
     await waitFor(() => {
       expect(router.hash()).toMatch(/^#\/p\/[A-Za-z0-9_-]{12}$/);
     });
+    /* Rule 20: the move removed «Печать», so the focus goes to the page. */
+    await waitFor(() => {
+      expect(document.activeElement?.id).toBe('main');
+    });
     const read = await cloud.prints.read(router.hash().slice(4));
     expect(read.ok && (read.set as { entries: unknown[] }).entries).toMatchObject([
       { k: 'ci1', q: 2 },
@@ -476,7 +480,7 @@ describe('the roll panel', () => {
     expect(within(hit).getByText('Светится в темноте')).toBeInTheDocument();
     expect(within(hit).getByText('Проклят').closest('.hitnote')).toHaveClass('gm');
     expect(hit.querySelector('.lroll-line')).toHaveTextContent(
-      `2 шт. · по ${priceText(750, 'bag', 'ru')}`
+      `2 шт. · ${priceText(750, 'bag', 'ru')} за штуку`
     );
     expect(screen.getByRole('button', { name: 'Сбросить' })).toBeInTheDocument();
     await expectNoA11yViolations(container);
@@ -617,7 +621,7 @@ describe('the actions under a ticked selection', () => {
     const panel = within(container.querySelector('.guess') as HTMLElement);
     expect(panel.getByRole('button', { name: 'Сделать скидку' })).toBeInTheDocument();
 
-    const field = panel.getByRole('textbox', { name: 'Результат броска' });
+    const field = panel.getByRole('textbox', { name: 'Изменить на, %' });
     await userEvent.clear(field);
     await userEvent.type(field, '5');
     expect(panel.getByRole('button', { name: 'Поднять цену' })).toBeInTheDocument();
@@ -2406,7 +2410,7 @@ describe('the selection mode and the price sheet', () => {
     expect(screen.queryByRole('dialog', { name: 'Цены выбранных' })).toBeNull();
   });
 
-  it('draws «Выбрать» on its own row from 761 px and in the search row from 8 entries', async () => {
+  it('draws «Выбрать» on its own row from 1000 px and in the search row from 8 entries', async () => {
     const { container } = await openA();
     expect(container.querySelector('.selrow .selmode')).not.toBeNull();
     cleanup();
@@ -2536,5 +2540,101 @@ describe('a drag above a row the page has not read', () => {
     drag.handlers?.onDrag?.(1);
     drag.handlers?.onDrop(1, 0);
     expect((await readList(cloud, page, id))?.ids).toEqual([before[1], before[0]]);
+  });
+});
+
+describe('the compact head up to 999 px and the side plate from 1000 px', () => {
+  Element.prototype.scrollIntoView = vi.fn();
+  const LIST_MORE =
+    '.lhead-acts .morewrap > [aria-haspopup="menu"], .lacts .morewrap > [aria-haspopup="menu"]';
+  const more = () => document.querySelector<HTMLElement>(LIST_MORE);
+
+  it('draws the compact head at the mid band: «Выбрать», «Ещё» with «Поделиться», the one-line name', async () => {
+    const { container } = await openA({ viewport: fakeViewport('mid') });
+    const head = container.querySelector('.lhead') as HTMLElement;
+    expect(head).not.toBeNull();
+    expect(container.querySelector('.lside')).toBeNull();
+    expect(within(head).getByRole('button', { name: 'Выбрать' })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Название списка' }).tagName).toBe('INPUT');
+    expect(screen.getByRole('button', { name: 'Заметки' })).toHaveAttribute(
+      'aria-expanded',
+      'false'
+    );
+    await userEvent.click(within(head).getByRole('button', { name: 'Ещё' }));
+    expect(screen.getByRole('menuitem', { name: 'Поделиться' })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'Цены: монетами' })).toBeInTheDocument();
+    await expectNoA11yViolations(container);
+  });
+
+  it('keeps the focus on the list «Ещё» across the 999/1000 px crossing, both ways', async () => {
+    const viewport = fakeViewport('mid');
+    await openA({ viewport });
+    more()?.focus();
+    viewport.set('wide');
+    await waitFor(() => {
+      expect(more()?.closest('.lacts')).not.toBeNull();
+    });
+    await waitFor(() => {
+      expect(more()).toHaveFocus();
+    });
+    viewport.set('mid');
+    await waitFor(() => {
+      expect(more()?.closest('.lhead-acts')).not.toBeNull();
+    });
+    await waitFor(() => {
+      expect(more()).toHaveFocus();
+    });
+  });
+
+  it('wraps the whole name in the side plate: Enter adds no line break and ends the edit', async () => {
+    const { container, cloud, page } = await openA();
+    const field = screen.getByRole('textbox', { name: 'Название списка' });
+    expect(field.tagName).toBe('TEXTAREA');
+    expect(field.closest('.lside')).not.toBeNull();
+    await userEvent.click(field);
+    await userEvent.keyboard('{End}{Enter}');
+    expect(field).not.toHaveFocus();
+    expect(field).toHaveValue('Тайник');
+    expect((await readList(cloud, page, A_ID))?.name).toBe('Тайник');
+    await expectNoA11yViolations(container);
+  });
+
+  it('stores a pasted line break as one space', async () => {
+    const { cloud, page } = await openA();
+    const field = screen.getByRole('textbox', { name: 'Название списка' });
+    await fireEvent.input(field, { target: { value: 'Тайник \n  у реки' } });
+    expect((await readList(cloud, page, A_ID))?.name).toBe('Тайник у реки');
+  });
+
+  it('keeps the focus on the pressed option of the note switch', async () => {
+    await openA();
+    await openListNotes();
+    await userEvent.click(screen.getByRole('button', { name: /^Только для мастера/ }));
+    expect(screen.getByRole('textbox', { name: 'Только для мастера' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Только для мастера/ })).toHaveFocus();
+  });
+
+  it('sends the focus to the list «Ещё» when «Повторить» saves, and keeps it on a retry that fails', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const { container, page } = openAs(cloud);
+    const input = await screen.findByRole('textbox', { name: 'Название списка' });
+    cloud.setOffline(true);
+    await userEvent.type(input, '!');
+    page.fireHidden();
+    await waitFor(() => {
+      expect(sub(container)).toContain('Не сохранено');
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Повторить' }));
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Повторить' })).toHaveFocus();
+    });
+    cloud.setOffline(false);
+    await userEvent.click(screen.getByRole('button', { name: 'Повторить' }));
+    await waitFor(() => {
+      expect(sub(container)).toContain('Сохранено');
+    });
+    await waitFor(() => {
+      expect(more()).toHaveFocus();
+    });
   });
 });

@@ -350,7 +350,7 @@ export async function runFlows({ env, admin, member, browser, base }) {
         page,
         'e2e F7: a reload did not read the new name and the row back',
         () =>
-          document.querySelector('input.titleinput')?.value === 'E2E список 2' &&
+          document.querySelector('.titleinput')?.value === 'E2E список 2' &&
           document.querySelectorAll('.lrow').length === 1
       );
       await expectInPage(
@@ -514,7 +514,7 @@ export async function runFlows({ env, admin, member, browser, base }) {
         'e2e F8: «Сохранить себе» did not open the copy',
         () =>
           location.pathname.startsWith('/lists/') &&
-          document.querySelector('input.titleinput')?.value === 'E2E ссылки'
+          document.querySelector('.titleinput')?.value === 'E2E ссылки'
       );
       await until('F8: the copy in the account holds a GM note', async () => {
         const rows = await listsOf(admin, copier.id);
@@ -649,7 +649,7 @@ export async function runFlows({ env, admin, member, browser, base }) {
         await within10(
           pageB,
           "F11: the second page did not draw the first page's rename in 10 s",
-          () => document.querySelector('input.titleinput')?.value === 'E2E live 3'
+          () => document.querySelector('.titleinput')?.value === 'E2E live 3'
         );
       });
     });

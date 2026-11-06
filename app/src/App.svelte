@@ -26,8 +26,6 @@
 
   interface PickerRoll {
     section: 'voa' | 'community' | 'mwt';
-    /** The lead under the head; none where the picker and the roll button say it. */
-    sub?: keyof Dict;
     label: keyof Dict;
     parts: (t: Dict, lang: Lang, index: Index | null) => Part[];
     rows: (index: Index, id: string) => readonly Record_[];
@@ -36,14 +34,12 @@
   const PICKER_ROLL: Partial<Record<Section, PickerRoll>> = {
     'roll/voa': {
       section: 'voa',
-      sub: 'subVoa',
       label: 'voaSection',
       parts: (t) => voaParts(t),
       rows: voaGroup
     },
     'roll/community': {
       section: 'community',
-      sub: 'subCommunity',
       label: 'communityLabel',
       parts: (_t, lang, index) => communityParts(index, lang),
       rows: communityGroup
@@ -121,12 +117,7 @@
         <!-- The three whole-table rolls share this branch; a number kept from one table
              points past the end of a shorter one (docs/specs/FEATURES.md, "Rolling"). -->
         {#key app.route.section}
-          <RollPanel
-            {app}
-            section={cfg.table}
-            sub={app.t.subWondrous}
-            rows={app.index?.rows.get(cfg.table) ?? []}
-          />
+          <RollPanel {app} section={cfg.table} rows={app.index?.rows.get(cfg.table) ?? []} />
         {/key}
       {:else if app.route.section === 'roll/std'}
         <StdPanel {app} />
@@ -138,7 +129,6 @@
           <PickerRollPanel
             {app}
             section={pr.section}
-            sub={pr.sub ? app.t[pr.sub] : ''}
             label={app.t[pr.label]}
             parts={pr.parts(app.t, app.lang, app.index)}
             rowsOf={(id: string) => (app.index ? pr.rows(app.index, id) : [])}

@@ -1,6 +1,6 @@
 # #/lists/00000000-0000-4000-8000-000000008001 ~ mid band as gm4
 # route: #/lists
-# why: from 761 to 999 px: the side content above the rows in one column, and each row with its quantity, price, «Заметка» and «Ещё» on a line under its text
+# why: from 761 to 999 px: the compact head (the name, «Выбрать» and «Ещё», the meta line with «Заметки»), and each row with its quantity, price, «Заметка» and «Ещё» on a line under its text
 # as: gm4
 
 ## ru :: tree
@@ -21,25 +21,22 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
     StaticText "Клад дракона"
     textbox "Название списка" [value=Клад дракона multiline=false readonly=false required=false]
     StaticText "7 позиций из 100 · "
-    ... StaticText x21 of 25 same-shape siblings elided
-    button "Поделиться" [expanded=false]
-    button "Печать" [description=Собрать карточки для печати: девять на лист A4]
-    button "Бросить по списку" [expanded=false]
-    button "Ещё" [expanded=false haspopup=menu]
-    button "Как в книге" [pressed=true]
-    button "Монетами" [pressed=false]
-    ... button x7 of 11 same-shape siblings elided
-    status ""
+    ... StaticText x18 of 22 same-shape siblings elided
+    button "Заметки" [expanded=false]
     button "Выбрать"
+    button "Ещё" [expanded=false haspopup=menu]
+    status ""
     spinbutton "Позиция в списке" [value=1 valuetext=1 required=false valuemin=1 valuemax=7]
     button "Первоклассный Спальный Мешок ПРЕДМЕТ Во время отдыха вы автомати..." [namelen=86 namehash=8341b15c]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
+    button "Заметка" [expanded=false]
     button "Ещё: Первоклассный Спальный Мешок" [expanded=false haspopup=menu]
     spinbutton "Позиция в списке" [value=2 valuetext=2 required=false valuemin=1 valuemax=7]
     ... button x4 of 8 same-shape siblings elided
     spinbutton "КОЛ-ВО" [value=2 valuetext=2 required=false valuemin=1 valuemax=99]
     spinbutton "ЦЕНА" [value=750 valuetext=750 required=false valuemin=0 valuemax=99999]
+    ... button x5 of 9 same-shape siblings elided
     ... button x4 of 8 same-shape siblings elided
     spinbutton "Позиция в списке" [value=3 valuetext=3 required=false valuemin=1 valuemax=7]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
@@ -76,7 +73,6 @@ EN
 RU
 daggerheart.com
 Аккаунт: gm4@example.test
-Бросить по списку
 Бросок
 Выбрать
 Добавить свой предмет
@@ -90,19 +86,15 @@ daggerheart.com
 Ещё: Факел Алистера
 Заметка
 Заметка, заполнена
+Заметки
 Заряжающий КолчанПредметКогда вы успешно наносите удар стрелой и... [namelen=141 namehash=b56c369b]
-Изменить
 К содержимому
-Как в книге
 Конфиденциальность
 ЛутDaggerheart
 Мистический ПлащПредметСущество с Характеристикой Заклинателя, н... [namelen=143 namehash=7854e7c3]
-Монетами
 Название списка
 НаручникиПредметЭта пара наручников с замком поставляется с ключ... [namelen=67 namehash=77df6619]
 Первоклассный Спальный МешокПредметВо время отдыха вы автоматиче... [namelen=84 namehash=f15473c8]
-Печать
-Поделиться
 Позиция в списке
 Поиск
 Пронзительная СвирельПредметЭта свирель ручной работы имеет хара... [namelen=161 namehash=e5bf576d]
@@ -131,25 +123,22 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
     StaticText "Клад дракона"
     textbox "List name" [value=Клад дракона multiline=false readonly=false required=false]
     StaticText "7 items of 100 · "
-    ... StaticText x21 of 25 same-shape siblings elided
-    button "Share" [expanded=false]
-    button "Print" [description=Lay these out for printing: nine to an A4 sheet]
-    button "Roll on this list" [expanded=false]
-    button "More" [expanded=false haspopup=menu]
-    button "As in the book" [pressed=true]
-    button "In coins" [pressed=false]
-    ... button x7 of 11 same-shape siblings elided
-    status ""
+    ... StaticText x18 of 22 same-shape siblings elided
+    button "Notes" [expanded=false]
     button "Select"
+    button "More" [expanded=false haspopup=menu]
+    status ""
     spinbutton "Position in the list" [value=1 valuetext=1 required=false valuemin=1 valuemax=7]
     button "Premium Bedroll ITEM During downtime, you automatically clear a ..." [namelen=71 namehash=f1054083]
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]
+    button "Note" [expanded=false]
     button "More: Premium Bedroll" [expanded=false haspopup=menu]
     spinbutton "Position in the list" [value=2 valuetext=2 required=false valuemin=1 valuemax=7]
     ... button x4 of 8 same-shape siblings elided
     spinbutton "QTY" [value=2 valuetext=2 required=false valuemin=1 valuemax=99]
     spinbutton "PRICE" [value=750 valuetext=750 required=false valuemin=0 valuemax=99999]
+    ... button x5 of 9 same-shape siblings elided
     ... button x4 of 8 same-shape siblings elided
     spinbutton "Position in the list" [value=3 valuetext=3 required=false valuemin=1 valuemax=7]
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
@@ -186,11 +175,8 @@ Account: gm4@example.test
 Add your own item
 Alistair's TorchItemYou can light this magic torch at will. The ... [namelen=162 namehash=ca396948]
 Arcane CloakItemA creature with a Spellcast trait wearing this c... [namelen=117 namehash=f38d5937]
-As in the book
 Charging QuiverItemWhen you succeed on an attack with an arrow s... [namelen=145 namehash=07a311bd]
 EN
-Edit
-In coins
 Install as an app
 List name
 LootDaggerheart
@@ -205,18 +191,16 @@ More: Premium Bedroll
 More: Speaking Orbs
 Note
 Note, filled
+Notes
 Piper WhistleItemThis handcrafted whistle has a distinctive soun... [namelen=149 namehash=81a85b00]
 Position in the list
 Premium BedrollItemDuring downtime, you automatically clear a St... [namelen=69 namehash=b98fcd07]
 Price
-Print
 Privacy
 RU
 Roll
-Roll on this list
 Search
 Select
-Share
 Skip to content
 Speaking OrbsItemThis pair of orbs allows any creatures holding ... [namelen=120 namehash=20695eaf]
 Tables

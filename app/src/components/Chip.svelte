@@ -67,7 +67,7 @@
     filter
   }: Props = $props();
   /* The space keeps the count apart in the accessible name («Предметы 44»). */
-  const named = $derived(count === undefined ? label : label + ' ');
+  const gap = $derived(count === undefined ? '' : ' ');
 </script>
 
 {#if href}
@@ -79,7 +79,9 @@
     data-val={value}
     {title}
     {href}
-    >{named}{#if count !== undefined}<span class="n">{count}</span>{/if}</a
+    ><span class="pl" data-label={label}>{label}</span>{gap}{#if count !== undefined}<span
+        class="n">{count}</span
+      >{/if}</a
   >
 {:else}
   <button
@@ -125,6 +127,20 @@
     background: var(--gold);
     border-color: var(--gold);
     color: var(--ink-on-gold);
+    font-weight: 650;
+  }
+
+  /* The label keeps the width of its lit weight, so a lit pill does not move its neighbors
+     (DESIGN.md, "Sibling pills"). */
+  .pl {
+    display: inline-grid;
+  }
+
+  .pl::after {
+    content: attr(data-label) / '';
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
     font-weight: 650;
   }
 

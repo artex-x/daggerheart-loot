@@ -84,7 +84,8 @@
         onclick={() => {
           press(s);
         }}
-        aria-current={s === mode ? 'page' : undefined}>{t[key]}</a
+        aria-current={s === mode ? 'page' : undefined}
+        ><span class="pl" data-label={t[key]}>{t[key]}</span></a
       >
     {/each}
     <div class="supwrap" onfocusout={closeOnFocusOut}>
@@ -197,6 +198,20 @@
     background: var(--gold);
     border-color: var(--gold);
     color: var(--ink-on-gold);
+    font-weight: 650;
+  }
+
+  /* The label keeps the width of its lit weight, so a lit pill does not move its neighbors
+     (DESIGN.md, "Sibling pills"). */
+  .pl {
+    display: inline-grid;
+  }
+
+  .pl::after {
+    content: attr(data-label) / '';
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
     font-weight: 650;
   }
 

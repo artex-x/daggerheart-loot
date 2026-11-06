@@ -28,6 +28,7 @@ Recommended order: 1, 2, 3 (4 and 5 ride on them). Step 1 first because it short
 - Case speed-ups: from the `took:` lines name the five slowest `app/states` cases and compare one context with `setViewport` per width against a `fresh()` context per cell.
 - Output streaming: `run-all.js` writes a row's log only when the row ends, so a cancelled job keeps nothing of the running row.
 - Timing limits that flaked on CI: `homebrew.timed.test.ts` (16 ms, measured 16.96 ms on a docs-only commit) and the e2e import limit `IMPORT_MS` (6000 ms; one run took 9329 ms on the hosted project). Decide a margin from several CI readings, not from one.
+- The fake has no switch for a raised limit, so no suite reads 3x the default limits (150 lists, 300 entries, 30 pending requests) on the list pages (`reviews/post-wave-3-signed-in.md`, "Checks still needed").
 - Acceptance: selftest cases for each hook change; one CI run with the new weights where no browser job passes 15 min.
 
 ## Step 2 - Phone overlays and scroll
@@ -38,6 +39,9 @@ Items (all measured at 360x640 unless stated):
 - After the list «Ещё» closes, the page sits at scroll 83-87 and the shown header covers «Ещё»; Escape returns to scroll 0, a tap outside does not.
 - A `focus()` on a header control moves the page up (scroll 1500 to 1199 at 320 px).
 - `/search` at 320x568 RU: after the kind sheet closes, `scrollWidth` is 313 against 305.
+- Escape does not clear a selection or fold «Настроить» (`/tables/core_item`, `/roll/std`; post-wave-3 N9): input for DESIGN.md "Proposed rules", The Escape Rule.
+- A toast sets `role` and `aria-live` in the same update as its text, so a screen reader can miss it (post-wave-3 signed-in R2): check with NVDA or VoiceOver first; a fix touches case 108's timing hook and case 32's role count.
+- Inputs under 16 px at 360 px (the add-to-list new-list field 13 px, the row position and price 13 px, the note 14 px, «Кол-во» 15 px; post-wave-3 signed-in R3): check the iOS zoom on a device first.
 - Recommended approach (Option A): `preventScroll` where the control is always in view, a toast placed above an open menu, and a header that stays hidden while a menu is open. Option B (a bottom sheet on phones) removes the family but is a larger redesign.
 - Acceptance: a case per item that fails before and passes after; no new first-screen exception; RU/EN parity; the target-size sweep clean at 360, 390, 768 and 1180.
 
@@ -47,8 +51,6 @@ Items (all measured at 360x640 unless stated):
 - Tabular stat columns on table rows from 1440 px (owner: a mock first, then the owner's yes).
 - Monospace labels outside the Key Characteristics rule: `.ordiv i`, `.altcol`, `HelpButton`, `.steps-l`.
 - Uppercase controls outside the capitals rule (15 components).
-- The gold-outlined «ИЛИ» dividers of the roll pages (Seal Rule).
-- `/roll/mwt` lead (an instruction sentence) and «корника» in the `/roll/std` lead (use the `daggerheart-ru-terms` skill).
 - `404.html`: system font and no die mark.
 - The EN `<title>`, the manifest name, the `en/index.html` wordmark, and the link-preview Worker card images (`tools/share-card.mjs`).
 - Acceptance: owner approves the mock before the build; DESIGN.md "Proposed rules" rows move to named rules or are deleted.

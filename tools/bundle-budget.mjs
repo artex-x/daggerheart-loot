@@ -34,14 +34,14 @@ const code = walk(DIST).filter(
    postgrest-js, realtime-js and storage-js) as a chunk loaded after first
    paint - 327.3 kB here (326.7 before the print page's dock, crumb and fonts port)
    and about 0.1 kB more on CI's `e2e` job, so under 328 - while the unconfigured one
-   `check:built` measures, 269.8 kB (269.2 before), must stay under 270 (measured
-   2026-11-06). A batch whose total passes a
+   `check:built` measures, 270.2 kB (269.8 before the wave 3 review fixes), must stay
+   under 271 (measured 2026-11-06). A batch whose total passes a
    budget raises it to its measured total rounded up to the next whole kB, never past
    350 configured and 300 unconfigured (owner, 2026-10-22 and 2026-11-04; decisions
    "The configured bundle ceiling rises to 350 kB" and "The unconfigured bundle
    ceiling rises to 300 kB"). */
 const withAccount = code.some((f) => /[\\/]assets[\\/]supabase-[^\\/]*\.js$/.test(f));
-const BUDGET_KB = withAccount ? 328 : 270; // gzip, code only
+const BUDGET_KB = withAccount ? 328 : 271; // gzip, code only
 const WHICH = withAccount ? 'with the account client chunk' : 'no account client chunk';
 
 let total = 0;

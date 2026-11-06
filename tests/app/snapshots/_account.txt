@@ -18,7 +18,7 @@ RootWebArea "Аккаунт - Генератор лута Daggerheart" [url=/acc
       link "Поиск" [url=/search]
   main ""
     heading "Аккаунт" [level=1]
-    StaticText "Войдите, чтобы ваши данные были доступны на всех устройствах. Вс..." [namelen=97 namehash=56f0d4bc]
+    StaticText "Войдите, чтобы данные были на всех устройствах. Остальное работа..." [namelen=77 namehash=7c6e1fe3]
     heading "ВОЙТИ" [level=2]
     button "Войти через Google"
     button "Войти через Discord"

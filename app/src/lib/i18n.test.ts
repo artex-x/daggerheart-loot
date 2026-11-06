@@ -191,7 +191,8 @@ describe('the interface words', () => {
       'nowhereSub',
       'printLoadFailedTitle',
       'defaultTablesView',
-      'defaultPrint',
+      'printInk',
+      'printSize',
       'signedInNow',
       'deleteGoes',
       'deleteGoesRest'
@@ -204,7 +205,12 @@ describe('the interface words', () => {
       'signedInAs',
       'accountSub',
       'printCompactBox',
-      'hbEmptyTable'
+      'hbEmptyTable',
+      'defaultPrint',
+      'subWondrous',
+      'subVoa',
+      'subCommunity',
+      'rollHint'
     ];
     for (const lang of ['ru', 'en'] as const) {
       const t: Record<string, string> = dict(lang);

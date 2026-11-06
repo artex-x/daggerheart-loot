@@ -21,7 +21,7 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search]
     button "Ещё" [expanded=true haspopup=menu]
     menu "Ещё" [orientation=vertical]
       menuitem "Открывать при запуске" [focused=true]
-    StaticText "Поиск сразу по 1459 позициям - добыча, расходники и снаряжение, ..." [namelen=91 namehash=d415684b]
+    StaticText "Поиск сразу по 1459 позициям - добыча, расходники и снаряжение."
     searchbox "Поиск по названию или описанию..."
     button "Фильтры" [expanded=false]
     StaticText "Что ищем?"
@@ -76,7 +76,7 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search]
     button "More" [expanded=true haspopup=menu]
     menu "More" [orientation=vertical]
       menuitem "Open on start" [focused=true]
-    StaticText "Search all 1459 entries at once - loot, consumables and equipmen..." [namelen=90 namehash=c7b98fa7]
+    StaticText "Search all 1459 entries at once - loot, consumables and equipmen..." [namelen=66 namehash=99988b56]
     searchbox "Search by name or description..."
     button "Filters" [expanded=false]
     StaticText "What are you looking for?"

@@ -688,6 +688,8 @@ const COVERED: Record<string, string> = {
   'Marked.svelte': 'searchPage.test.ts and tables.test.ts, the marked rows and tiles',
   'Markup.svelte': 'markup.test.ts: every block, a lead, and markup characters as text',
   'Menu.svelte': 'accountMenu.test.ts and modeRow.test.ts with each menu open',
+  'MetaToggle.svelte':
+    "metaToggle.test.ts closed and open, the owner's list page at the mid band (listPage.test.ts) and the /s/ note toggles (sharedListPage.test.ts)",
   'ModeRow.svelte':
     'modeRow.test.ts on the nine roll sections and in the page head, the menu closed and open',
   'MarkupInline.svelte': 'markup.test.ts inside every block, and the record card above',

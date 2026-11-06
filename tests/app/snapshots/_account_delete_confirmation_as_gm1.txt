@@ -31,7 +31,7 @@ RootWebArea "Аккаунт - Генератор лута Daggerheart" [url=/acc
       ... option x8 of 12 same-shape siblings elided
       option "Поиск" [selected=false]
       option "Мои предметы" [selected=false]
-    ... StaticText x15 of 19 same-shape siblings elided
+    ... StaticText x16 of 20 same-shape siblings elided
     button "Список" [pressed=false]
     button "Сетка" [pressed=true]
     button "Цвет" [pressed=false]
@@ -120,7 +120,7 @@ RootWebArea "Account - Daggerheart Loot Generator" [url=/en/account?as=gm1]
       ... option x8 of 12 same-shape siblings elided
       option "Search" [selected=false]
       option "My items" [selected=false]
-    ... StaticText x15 of 19 same-shape siblings elided
+    ... StaticText x16 of 20 same-shape siblings elided
     button "List" [pressed=false]
     button "Grid" [pressed=true]
     button "Color" [pressed=false]

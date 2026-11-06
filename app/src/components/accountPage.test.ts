@@ -41,7 +41,7 @@ describe('signed out', () => {
     expect(await screen.findByRole('heading', { name: 'Войти', level: 2 })).toBeInTheDocument();
     expect(
       screen.getByText(
-        'Войдите, чтобы ваши данные были доступны на всех устройствах. Всё остальное работает и без входа.'
+        'Войдите, чтобы данные были на всех устройствах. Остальное работает без входа.'
       )
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Войти через Google' })).toBeInTheDocument();
@@ -451,7 +451,8 @@ describe('signed in as gm2', () => {
     ).toBeInTheDocument();
     expect(screen.getByLabelText('Section on start')).toBeInTheDocument();
     expect(screen.getByRole('group', { name: 'Default table view' })).toBeInTheDocument();
-    expect(screen.getByRole('group', { name: 'Default print' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Print color' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Card size' })).toBeInTheDocument();
     const notify = screen.getByLabelText<HTMLSelectElement>(
       "When I take from someone else's list"
     );
@@ -560,14 +561,16 @@ describe('the Display section', () => {
       expect(pressed(d, 'Вид таблиц по умолчанию')).toBe('Сетка');
     });
     expect(pressed(d, 'Язык')).toBe('RU');
-    expect(pressed(d, 'Печать по умолчанию')).toBe('Ч/б');
+    /* Two named rows, the group names of the `/p/` toolbar. */
+    expect(pressed(d, 'Цвет печати')).toBe('Ч/б');
     expect(pressed(d, 'Размер карты')).toBe('44×63');
-    for (const g of [
-      'Язык',
-      'Вид таблиц по умолчанию',
-      'Печать по умолчанию',
-      'Размер карты'
-    ]) {
+    const ink = d.getByRole('group', { name: 'Цвет печати' }).closest('.set');
+    const size = d.getByRole('group', { name: 'Размер карты' }).closest('.set');
+    expect(ink).not.toBe(size);
+    expect(ink?.querySelector('.setname')).toHaveTextContent('Цвет печати');
+    expect(size?.querySelector('.setname')).toHaveTextContent('Размер карты');
+    await expectNoA11yViolations(container);
+    for (const g of ['Язык', 'Вид таблиц по умолчанию', 'Цвет печати', 'Размер карты']) {
       expect(d.getByRole('group', { name: g })).toHaveClass('neutral');
     }
     const notify = d.getByLabelText<HTMLSelectElement>('Когда беру из чужого списка');
