@@ -197,3 +197,17 @@
 | P-N8 | nit | deferred-scope | named | open dock «Ещё»: page scrolled about 24 px, header covers part of the crumb row (focus-jump family) |
 | P-N9 | nit | deferred-scope | named | in EN "Print" names two actions; RU keeps them apart (owner's call) |
 | P-CI1 | blocker | local | fixed P-fix | CI run 42200991922 of `1ae45461`, `app/typo` `#/p/set-emberaxe` RU/EN at 360 and 1180: no pressed switch with a check in «Печать карточек»; the color group is named «Цвет печати» / "Print color" since P (`printInk`), so `typo.js` `SWITCHES` names it; the app was right |
+| 10-B1 | blocker | local | open | DEBT.md D125 (`/search` at 320x568 RU) is wrong as written: the plan's "one probe first" was not run; the reviewer's probe reads scrollWidth 313 RU / 305 EN at 320 px both before and after the sheet, clientWidth 320, so no sideways scroll in headless; the old "313 against 305" can only come from a 15 px classic scrollbar; rewrite What and How to verify, name the element, drop the batch id, or drop the entry and name it to the owner. `reviews/10.md` |
+| 10-R1 | risk | local | open | "For the owner" lost items: burden hands as clip paths (departure from "Export vectors; do not redraw them"), the removed background-graphics hint, bundle headroom 269.5 of 270, rows 9b-N13 (146 px inset in selection mode), N-R1, N-N12 |
+| 10-R2 | risk | orchestrator | open | `.impeccable/design.json` is stale (dashed gold unique badge, no `--txt-soft`, `--measure-*`): regenerate with Impeccable `document` before the last squash |
+| 10-N1 | nit | local | open | line 1 of `reviews.md` corrupted: CI-N1..N4 rows sit before the heading, CI-N3/N4 still `open` |
+| 10-N2 | nit | local | open | `README.ru.md` line 48 still «Корник» |
+| 10-N3 | nit | local | open | `orchestrate.prompt.md` line 265 still names a second look `<name>-2.md` |
+| 10-N4 | nit | local | open | FEATURES.md lines 1589, 1684 say "compact card" about the removed screen variant |
+| 10-N5 | nit | local | open | dead code from 10-10: `.card-name :global(svg)` rule, always-true `.card-name-acts` assertion in `rollResult.test.ts`, "168 + 132 px" comment in `tools/artwork/review/index.html` |
+| 10-N6 | nit | local | open | DEBT.md section intro says "the four" but holds five; "the follow-up task of task 57" is not a named task |
+| 10-N7 | nit | local | open | DESIGN.md Notes "no control is set in capitals" but the account button's `.ini` is uppercase |
+| 10-N8 | nit | local | open | `.claude/README.md` "Four repository lines" but five; cites a scratch plan review |
+| 10-N9 | nit | local | open | the 2026-11-04 decision file still cites "A steady head" |
+| 10-N10 | nit | local | optional | EN `subStd` says "the core book" where RU now says «Core» |
+| 10-N11 | nit | local | optional | `--txt-soft` comment in `tokens.css` and DESIGN.md name its use differently |
