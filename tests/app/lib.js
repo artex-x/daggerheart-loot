@@ -269,8 +269,8 @@ const TARGET_ALLOW = [
   },
   { why: 'the skip link: shown on keyboard focus only (WCAG 2.4.1)', test: 'a.skip' },
   {
-    why: 'a link of a craft or relation line: the line height of its label sets its size (WCAG 2.5.8, "Inline")',
-    test: '.craft a'
+    why: 'a link or the «и ещё N» fold of a craft or relation line: the line height of its label sets its size (WCAG 2.5.8, "Inline")',
+    test: '.craft a, .craft p .btn.bare'
   },
   { why: 'a disabled control is not pressable', test: ':disabled, [aria-disabled="true"]' }
 ];

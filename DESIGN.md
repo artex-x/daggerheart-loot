@@ -557,8 +557,9 @@ box; a text link grows its padded box and keeps its line. From 601px the small b
 32px. At every width a target is at least 24x24px or keeps the WCAG 2.5.8 spacing; a link
 inside a sentence is the one exception, and a craft or relation line's link counts as one.
 From 601px a text control (a bare button, a footer link, the license summary) takes a
-24px padded box and gives the growth back, so no line moves; the fold «и ещё N» of a
-relation line is a button, not a link, and takes it too.
+24px padded box and gives the growth back, so no line moves. The fold «и ещё N» of a
+relation line is the exception: from 601px it keeps the line's height, as the line's links
+do, because a 24px box there comes closer than 2px to a badge on the line above ("Badges").
 Owner, 2026-11-05; sources: Android adaptive app quality, Tier 2 (Touch_Targets), and
 Apple's Human Interface Guidelines, Accessibility. `tests/app/sweep.js` and
 `tests/app/states.js` case 109 hit-test it.

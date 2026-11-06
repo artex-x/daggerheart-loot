@@ -3,9 +3,9 @@
 
 ## Status
 - Task status: in_progress. Waves 1, 2 and 2b are on `main`. Wave 3 has built 9a, 8, 9b, the CI split, the CI fix pass,
-  batch TD (`cd2a2904`, review `reviews/TD.md` fix-then-continue) and now TD's one fix pass (CI run 42148704213's
-  `app/sweep` failures, TD-B1, TD-R3, TD-N1 to N6), committed and pushed on `claude/57` (sha in the implementer's
-  report). CI of the fix tip is the full gate: not yet run.
+  batch TD (`cd2a2904`, review `reviews/TD.md` fix-then-continue), TD's one fix pass (`0e78f7e8`) and now its CI fix
+  (run 42156716768: case 95 at 1180 EN and the `#/i/q1 ~ own set as gm1` golden), committed and pushed on `claude/57`
+  (sha in the implementer's report). CI of the new tip is the full gate: not yet run.
 - Next batch: N (`plan-N.md`; cases 112 and 113), from the fix tip, with TD-R4 (bundle budget) in its dispatch.
   Writer tier: opus, test 3.
 - Review: TD's one remediation cycle is this pass; no second review unless CI or the orchestrator finds a new defect.
@@ -37,10 +37,13 @@
      entry was added: every CI failure was a real control.
   8. TD-R3: 4 px under the narrow results line on every roll page and 4 px under `/roll/alt`'s picker row; `/roll/alt`
      and `~ crit` at 360 now 254 of 256, `/roll/std` 323 of 325.
-- Last agent: implementer (TD fix pass). No subagent runs. No worker has uncommitted code edits.
+  9. TD CI fix: from 601 px the relation line's fold «и ещё N» keeps the line's height (no 24 px box) and joins the
+     `.craft a` entry of `TARGET_ALLOW`; trade-off: an 18.8 px fold on pointer widths. Rejected: a 4 px row gap in
+     `.craft p` (moves every wrapped relation line at every width).
+- Last agent: implementer (TD CI fix). No subagent runs. No worker has uncommitted code edits.
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
-- Base / starting commit: `d8e30731`; previous sha of the TD fix pass: `d22f93a5` (TD itself: `cd2a2904`).
-- Pushed: `d22f93a5` and the fix commit together (sha in the implementer's report).
+- Base / starting commit: `d8e30731`; previous sha of the TD CI fix: `0e78f7e8` (TD fix pass; TD itself: `cd2a2904`).
+- Pushed: the CI fix commit (sha in the implementer's report).
 
 ## Completed
 One line per shipped batch. The full acceptance tables, deviations and measurements of batches 1 to 9a are in
@@ -255,7 +258,19 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
   | TD-N6 | Fixed: `targets` also requires 24 px between the centers of two undersized targets; the dead `LABEL` clause is `hidden(el)` |
   | TD-R1, TD-R2, TD-R4 | Left as `reviews.md` names them (owner list, batch N dispatch) |
 
+  CI fix (run 42156716768, previous sha `0e78f7e8`): case 95 - the fold's new 24 px box came 0.4 px from a badge on the
+  line above; `RecordCard` keeps the fold at the line's height from 601 px, `TARGET_ALLOW` covers it (default 9). The
+  golden - the 4000 ms «Сохранено» toast was still up at the RU capture (`status ""`), a timing race, not the box; the
+  state's `enter` now waits for the toast to end; the golden is unchanged, not re-seeded.
+
 ## Verification
+- TD CI fix, 2026-11-06 (previous sha `0e78f7e8`), each in the foreground or waited on:
+  - `npm run build:test`, then `node tests/app/states.js --shard=85/101` (case 95): red before (`and 12 more 0.4` at
+    1180 EN, as CI), `all 1 runs passed` after. `node tests/app/sweep.js 1180 en`: `clean at 1180 (en)`.
+  - `node tests/app/golden.js --only="own set as gm1"`: `unchanged` before and after (the race does not reproduce
+    here); no golden re-seeded. Goldens are trees, so the fold's box moves none of the FoldButton family.
+  - `npm run lint:untyped`, `npm run lint:typed`: exit 0. `npm run check:built`: pass, 268.3 kB within 269.
+  - `VITEST_MAX_WORKERS=2 rtk npm run check:fast`: see the implementer's report (run last).
 - TD fix pass, 2026-11-06 (previous sha `d22f93a5`), each in the foreground or waited on; vitest with
   `VITEST_MAX_WORKERS=2`:
   - Probe: `scratchpad/mkprobe.cjs` writes `sweep-probe.cjs`, `tests/app/sweep.js` with the page list filtered by

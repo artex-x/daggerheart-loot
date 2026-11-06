@@ -3799,6 +3799,9 @@ const STATES = [
       await d.go('#/i/q1');
       for (let i = 0; i < 40 && !(await d.text()).includes('Комплект Ольхи'); i++)
         await d.settle();
+      /* The golden holds no toast: the 4000ms «Сохранено» toast runs out first, or a fast
+         host captures it. */
+      for (let i = 0; i < 80 && (await d.count('.toast[role]')); i++) await d.settle();
     }
   },
   {

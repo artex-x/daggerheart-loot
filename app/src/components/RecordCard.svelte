@@ -843,6 +843,16 @@
     font-size: var(--t-data);
   }
 
+  /* From 601 px the fold of a relation line keeps the line's height, as the line's links do:
+     a 24 px padded box came 0.4 px from a badge on the line above (DESIGN.md, "Badges";
+     measured 2026-11-06 at 1180 px). Up to 600 px it keeps the thumb target. */
+  @media screen and (min-width: 601px) {
+    .craft p :global(.btn.bare) {
+      min-height: 0;
+      margin-block: 0;
+    }
+  }
+
   /* `.card-acts` moved to `Actions.svelte`; its two 600px descendant
      rules below are re-anchored on this component's own root, `.card`,
      since a scoped rule cannot otherwise reach inside a child component. */
