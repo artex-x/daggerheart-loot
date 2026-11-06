@@ -3,11 +3,12 @@
      the sheet's grid, drawn at the preview column's width, at most 420 px
      (docs/specs/FEATURES.md, "Homebrew" and "Print"). The card follows the draft
      `PREVIEW_FIT_MS` after the last change, so a burst of typing fits it once. */
-  import { untrack } from 'svelte';
+  import { tick, untrack } from 'svelte';
   import PrintCard from './PrintCard.svelte';
   import type { Index } from '../lib/data.js';
   import { PREVIEW_FIT_MS, previewScale, setLineOf } from '../lib/print.js';
   import type { Lang, Record_ } from '../lib/types.js';
+  import type { FontsPort } from '../ports/types.js';
 
   interface Props {
     it: Record_;
@@ -19,9 +20,12 @@
     onartfail: (id: string) => void;
     /** Told after each fit whether the card cuts off text. */
     onclipped: (clipped: boolean) => void;
+    /** The card fits again once a face that was loading has arrived. */
+    fonts: FontsPort;
   }
 
-  const { it, index, lang, bw, compact, artBroken, onartfail, onclipped }: Props = $props();
+  const { it, index, lang, bw, compact, artBroken, onartfail, onclipped, fonts }: Props =
+    $props();
 
   /* The first draw takes the draft and its index at once; a later change waits for the
      pause. The index moves with the item: the editor rebuilds it on every input but the
@@ -43,6 +47,25 @@
 
   let width = $state(0);
   const scale = $derived(previewScale(width, compact));
+
+  /* The face may still be loading when the card first fits (FEATURES.md, "Print"). */
+  let refit = $state(0);
+  $effect(() => {
+    void shown;
+    void compact;
+    void bw;
+    void lang;
+    void scale;
+    let live = true;
+    void tick()
+      .then(() => fonts.settled())
+      .then((loading) => {
+        if (live && loading) refit++;
+      });
+    return () => {
+      live = false;
+    };
+  });
 </script>
 
 <!-- A size or scale change remounts the card, so `fit()` measures it at the size it is
@@ -58,6 +81,8 @@
         {onartfail}
         {setLine}
         {scale}
+        {compact}
+        {refit}
         onfit={onclipped}
       />
     {/key}

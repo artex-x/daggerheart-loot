@@ -8,6 +8,7 @@
   import { onMount, tick } from 'svelte';
   import Actions from './Actions.svelte';
   import Button from './Button.svelte';
+  import Icon from './Icon.svelte';
   import LoadState from './LoadState.svelte';
   import Panel from './Panel.svelte';
   import { shareOf, type ShareAudience } from '../lib/cloudLists.js';
@@ -142,6 +143,7 @@
 </script>
 
 <Panel style="margin-bottom:16px">
+  <h2 class="sharehead">{t.share}</h2>
   {#if status === 'loading' || status === 'error'}
     <LoadState
       {t}
@@ -155,6 +157,7 @@
       <div class="sharerow" bind:this={rowEls[audience]}>
         <div class="who">
           <b>{audience === 'player' ? t.shareLinkPlayers : t.shareLinkGm}</b>
+          <span class="what">{audience === 'player' ? t.shareNoGm : t.shareWithGm}</span>
           {#if row}
             <a class="sharelink" href={app.href(shareHash(row.token))}
               >{app.href(shareHash(row.token))}</a
@@ -167,18 +170,19 @@
           {#if row}
             <Button
               size="sm"
-              variant="primary"
               onclick={() => {
                 copy(audience, row.token);
-              }}>{t.shareCopy}</Button
+              }}><Icon name="copy" />{t.shareCopy}</Button
             >
-            <Button
-              size="sm"
-              variant="danger"
-              disabled={busy[audience]}
-              onclick={() => {
-                remove(audience, row.id);
-              }}>{t.shareDelete}</Button
+            <span class="del"
+              ><Button
+                size="sm"
+                variant="bare"
+                disabled={busy[audience]}
+                onclick={() => {
+                  remove(audience, row.id);
+                }}>{t.shareDelete}</Button
+              ></span
             >
           {:else}
             <Button
@@ -192,11 +196,28 @@
         </Actions>
       </div>
     {/each}
-    <p class="hint">{t.shareHint}</p>
   {/if}
 </Panel>
 
 <style>
+  /* No gold in the panel: copying a link narrows nothing (DESIGN.md, "The Seal Rule"). */
+  .sharehead {
+    margin: 0 0 8px;
+    font-size: var(--t-body);
+    font-weight: 650;
+  }
+
+  .del :global(.btn) {
+    color: var(--danger-text);
+  }
+
+  .what {
+    display: block;
+    margin: 2px 0 4px;
+    font-size: var(--t-data);
+    color: var(--muted);
+  }
+
   .sharerow {
     display: flex;
     align-items: center;
@@ -206,7 +227,7 @@
     border-top: 1px solid var(--line);
   }
 
-  .sharerow:first-child {
+  .sharehead + .sharerow {
     border-top: 0;
     padding-top: 2px;
   }
@@ -227,11 +248,5 @@
     font: var(--t-data)/1.4 var(--mono);
     color: var(--muted2);
     overflow-wrap: anywhere;
-  }
-
-  .hint {
-    margin: 10px 0 0;
-    font-size: var(--t-data);
-    color: var(--muted);
   }
 </style>

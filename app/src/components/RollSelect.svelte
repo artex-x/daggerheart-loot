@@ -83,9 +83,10 @@
   }
 
   /* 16 px: a smaller field makes iOS zoom the page on focus. */
+  /* Over the border too: the whole box is the target. */
   select {
     position: absolute;
-    inset: 0;
+    inset: -1px;
     width: 100%;
     opacity: 0;
     font: inherit;

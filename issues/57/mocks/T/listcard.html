@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=360" />
+    <title>Mock T - the /lists card «Ещё» at 360 px (8-P1 with the Thumb Rule)</title>
+    <style>
+      /* The card CSS of ListCard.svelte (HEAD 340fa727) and Button.svelte, with the tokens of tokens.css. */
+      :root {
+        color-scheme: dark;
+        --bg: #0e0c15;
+        --bg2: #14111d;
+        --surface: #1a1626;
+        --surface2: #221d31;
+        --line: #312a45;
+        --line2: #3f3758;
+        --txt: #ece8f6;
+        --muted: #9b93b3;
+        --muted2: #8a83a3;
+        --gold: #d8ab5e;
+        --gold-soft: #f0d091;
+        --r: 14px;
+        --r-sm: 9px;
+        --t-body: 16px;
+        --t-control: 15px;
+        --t-small: 14px;
+        --t-data: 13px;
+        --t-label: 12px;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--txt);
+        font:
+          15px/1.4 'Source Sans 3 Variable',
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          Roboto,
+          sans-serif;
+      }
+      .page {
+        width: 360px;
+        padding: 16px;
+      }
+      h2 {
+        font-size: var(--t-label);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted2);
+        margin: 18px 0 8px;
+      }
+      .note {
+        font-size: var(--t-data);
+        color: var(--muted);
+        margin: 0 0 8px;
+      }
+      .grid {
+        display: grid;
+        gap: 12px;
+      }
+      .listcard {
+        position: relative;
+        background: linear-gradient(180deg, var(--surface2), var(--surface));
+        border: 1px solid var(--line);
+        border-radius: var(--r);
+        display: flex;
+        flex-direction: column;
+      }
+      .listcard-main {
+        display: block;
+        padding: 14px 15px 12px;
+        color: inherit;
+        text-decoration: none;
+        flex: 1;
+      }
+      .listcard-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      .listcard-top b {
+        font-size: var(--t-body);
+        font-weight: 650;
+        line-height: 1.3;
+        overflow-wrap: anywhere;
+      }
+      .listcard-meta {
+        margin: -6px 0 10px;
+        font-size: var(--t-data);
+        color: var(--muted2);
+      }
+      .listcard-thumbs {
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+      }
+      .listcard-thumbs img {
+        width: 40px;
+        height: 40px;
+        border-radius: 7px;
+        object-fit: cover;
+        background: #0a0810;
+      }
+      .listcard-new {
+        display: inline-block;
+        margin-top: 10px;
+        padding: 3px 8px;
+        border: 1px solid var(--line2);
+        border-radius: var(--r-sm);
+        background: var(--surface2);
+        font-size: var(--t-label);
+        font-weight: 650;
+        line-height: 1.3;
+      }
+      .listcard-acts {
+        display: flex;
+        justify-content: flex-end;
+        gap: 6px;
+        padding: 0 10px 10px;
+      }
+      .btn {
+        border: 1px solid var(--line2);
+        background: var(--surface);
+        color: var(--txt);
+        border-radius: 8px;
+        font: inherit;
+        font-size: var(--t-data);
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+      }
+      .btn.sm32 {
+        height: 32px;
+        padding: 0 11px;
+      }
+      .btn.sm40 {
+        height: 40px;
+        padding: 0 11px;
+      }
+      .btn.bare {
+        border: 0;
+        background: none;
+        color: var(--muted);
+        height: 40px;
+        min-width: 40px;
+        padding: 0 8px;
+      }
+      .dots {
+        letter-spacing: 1px;
+      }
+      /* Proposed: the card's «Ещё» takes the corner slot the selection mode's pick box uses. */
+      .corner .listcard-top {
+        padding-right: 76px;
+      }
+      .corner .listcard-acts {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        padding: 0;
+      }
+      .tag {
+        font-size: 11px;
+        color: var(--gold-soft);
+        margin-left: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <h2>Today (batch 8): bordered 32 px «Ещё» on its own row</h2>
+      <div class="grid">
+        <div class="listcard" id="today">
+          <a class="listcard-main" href="#"
+            ><div class="listcard-top"><b>Лавка кузнеца</b></div>
+            <p class="listcard-meta">9 позиций · изменён 2 ч назад</p>
+            <div class="listcard-thumbs">
+              <img src="../../../../img/thumb/aa1.webp" alt="" /><img
+                src="../../../../img/thumb/aa10.webp"
+                alt=""
+              /><img src="../../../../img/thumb/aa11.webp" alt="" /><img
+                src="../../../../img/thumb/aa15.webp"
+                alt=""
+              /><img src="../../../../img/thumb/ci20.webp" alt="" /><img
+                src="../../../../img/thumb/ci21.webp"
+                alt=""
+              />
+            </div>
+            <span class="listcard-new">Новое в списке (2)</span></a
+          >
+          <div class="listcard-acts">
+            <button class="btn sm32" type="button"><span class="dots">···</span>Ещё</button>
+          </div>
+        </div>
+      </div>
+      <h2>Recommended (T5): «Ещё» in the corner slot, text button, 40 px target</h2>
+      <p class="note">
+        The slot the pick box takes in the selection mode; the name reserves 76 px. No row of
+        its own.
+      </p>
+      <div class="grid">
+        <div class="listcard corner" id="corner">
+          <a class="listcard-main" href="#"
+            ><div class="listcard-top"><b>Лавка кузнеца</b></div>
+            <p class="listcard-meta">9 позиций · изменён 2 ч назад</p>
+            <div class="listcard-thumbs">
+              <img src="../../../../img/thumb/aa1.webp" alt="" /><img
+                src="../../../../img/thumb/aa10.webp"
+                alt=""
+              /><img src="../../../../img/thumb/aa11.webp" alt="" /><img
+                src="../../../../img/thumb/aa15.webp"
+                alt=""
+              /><img src="../../../../img/thumb/ci20.webp" alt="" /><img
+                src="../../../../img/thumb/ci21.webp"
+                alt=""
+              />
+            </div>
+            <span class="listcard-new">Новое в списке (2)</span></a
+          >
+          <div class="listcard-acts">
+            <button class="btn bare" type="button"><span class="dots">···</span>Ещё</button>
+          </div>
+        </div>
+        <div class="listcard corner" id="corner-long">
+          <a class="listcard-main" href="#"
+            ><div class="listcard-top">
+              <b
+                >Сокровищница дракона из северных гор, найденная после третьей сессии
+                кампании</b
+              >
+            </div>
+            <p class="listcard-meta">24 позиции · изменён вчера</p>
+            <div class="listcard-thumbs">
+              <img src="../../../../img/thumb/ci22.webp" alt="" /><img
+                src="../../../../img/thumb/ci23.webp"
+                alt=""
+              /><img src="../../../../img/thumb/aa19.webp" alt="" /></div
+          ></a>
+          <div class="listcard-acts">
+            <button class="btn bare" type="button"><span class="dots">···</span>Ещё</button>
+          </div>
+        </div>
+      </div>
+      <h2>Alternative (fallback): the row stays, the button grows to 40 px</h2>
+      <div class="grid">
+        <div class="listcard" id="row40">
+          <a class="listcard-main" href="#"
+            ><div class="listcard-top"><b>Лавка кузнеца</b></div>
+            <p class="listcard-meta">9 позиций · изменён 2 ч назад</p>
+            <div class="listcard-thumbs">
+              <img src="../../../../img/thumb/aa1.webp" alt="" /><img
+                src="../../../../img/thumb/aa10.webp"
+                alt=""
+              /><img src="../../../../img/thumb/aa11.webp" alt="" /></div
+          ></a>
+          <div class="listcard-acts">
+            <button class="btn sm40" type="button"><span class="dots">···</span>Ещё</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,38 @@
+[
+  {
+    "file": "burden-1-colour",
+    "row": 0,
+    "natural": [62, 37],
+    "todayNatural": [62, 36],
+    "diffToRawPct": 0,
+    "diffToTodayPct": 5.58,
+    "inkPct": 67.59
+  },
+  {
+    "file": "burden-2-colour",
+    "row": 1,
+    "natural": [62, 37],
+    "todayNatural": [62, 36],
+    "diffToRawPct": 0,
+    "diffToTodayPct": 5.77,
+    "inkPct": 67.59
+  },
+  {
+    "file": "burden-1-bw",
+    "row": 2,
+    "natural": [62, 37],
+    "todayNatural": [62, 36],
+    "diffToRawPct": 0,
+    "diffToTodayPct": 4.99,
+    "inkPct": 35.39
+  },
+  {
+    "file": "burden-2-bw",
+    "row": 3,
+    "natural": [62, 37],
+    "todayNatural": [62, 36],
+    "diffToRawPct": 0,
+    "diffToTodayPct": 5.18,
+    "inkPct": 49.75
+  }
+]

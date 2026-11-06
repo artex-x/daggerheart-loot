@@ -13,11 +13,15 @@ for (const [key, cards] of groups) {
   const pts = cards.map((c) => c.textPx * 0.75).sort((a, b) => a - b);
   const cqs = cards.map((c) => c.textCq);
   const n = cards.length;
-  const atDefault = cqs.filter((v) => Math.abs(v - 3.5) < 0.05).length;
-  const grew = cqs.filter((v) => v > 3.55).length;
-  const shrunk = cqs.filter((v) => v < 3.45).length;
+  const base = key.includes('compact') ? 4.6 : 4.0;
+  const atDefault = cqs.filter((v) => Math.abs(v - base) < 0.05).length;
+  const grew = cqs.filter((v) => v > base + 0.05).length;
+  const shrunk = cqs.filter((v) => v < base - 0.05).length;
   const padStep = cards.filter((c) => c.pad !== 'default').length;
-  const floor = cqs.filter((v) => v <= 2.65).length;
+  const floor = cqs.filter((v) => v <= (key.includes('compact') ? 3.75 : 2.65)).length;
+  const goneMark = bw
+    ? []
+    : cards.filter((c) => c.artShare === 0 && c.mark).map((c) => c.id + ' ' + c.pad);
   const clipped = cards.filter((c) => c.clipped);
   const minPt = Math.min(...cards.map((c) => c.minPx * 0.75));
   const minCard = cards.find((c) => c.minPx * 0.75 === minPt);
@@ -48,7 +52,8 @@ for (const [key, cards] of groups) {
       ? `p10 ${pct(art, 0.1)} / median ${pct(art, 0.5)} / p90 ${pct(art, 0.9)} %`
       : '-',
     artHidden,
-    name3: nameLines.filter((v) => v >= 3).length
+    name3: nameLines.filter((v) => v >= 3).length,
+    goneMark: goneMark.length + (goneMark.length ? ': ' + goneMark.slice(0, 20).join(', ') : '')
   });
 }
 for (const r of rows) console.log(JSON.stringify(r));

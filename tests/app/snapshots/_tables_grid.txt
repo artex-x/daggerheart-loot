@@ -18,8 +18,6 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Поиск" [url=/search]
   main ""
     heading "Таблицы" [level=1]
-    button "Открывать при запуске" [pressed=false]
-    button "Об этих данных" [expanded=false]
     navigation "Таблицы"
       link "Core" [url=/tables/core_item]
       link "Hope & Fear" [url=/tables/hope_and_fear_item]
@@ -27,8 +25,10 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Дополнения" [url=/tables/wondrous_environments]
       link "Снаряжение" [url=/tables/eq_weapon]
       link "Прочее" [url=/tables/other_starting]
-      link "Предметы" [url=/tables/core_item]
-      link "Расходники" [url=/tables/core_consumable]
+    button "Открывать при запуске" [pressed=false]
+    button "Об этих данных" [expanded=false]
+    link "Предметы" [url=/tables/core_item]
+    link "Расходники" [url=/tables/core_consumable]
     searchbox "Поиск по названию или описанию..."
     button "Список" [pressed=false]
     button "Сетка" [pressed=true]
@@ -149,8 +149,6 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
     heading "Tables" [level=1]
-    button "Open on start" [pressed=false]
-    button "About this data" [expanded=false]
     navigation "Tables"
       link "Core" [url=/en/tables/core_item]
       link "Hope & Fear" [url=/en/tables/hope_and_fear_item]
@@ -158,8 +156,10 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables]
       link "Supplements" [url=/en/tables/wondrous_environments]
       link "Equipment" [url=/en/tables/eq_weapon]
       link "Other" [url=/en/tables/other_starting]
-      link "Items" [url=/en/tables/core_item]
-      link "Consumables" [url=/en/tables/core_consumable]
+    button "Open on start" [pressed=false]
+    button "About this data" [expanded=false]
+    link "Items" [url=/en/tables/core_item]
+    link "Consumables" [url=/en/tables/core_consumable]
     searchbox "Search by name or description..."
     button "List" [pressed=false]
     button "Grid" [pressed=true]

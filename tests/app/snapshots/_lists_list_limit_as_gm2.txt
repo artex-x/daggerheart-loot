@@ -1,6 +1,6 @@
 # #/lists ~ list limit as gm2
 # route: #/lists
-# why: one create past the 50-list limit: the toast «Достигнут предел списков в аккаунте: 50...», no 51st card, the count «50 списков из 50», the draft kept in the field
+# why: at 50 of 50 the press on «Новый список»: the toast «Достигнут предел списков в аккаунте: 50...», the field closed, the count «50 списков из 50» in red, 24 cards and «Показать ещё (26)»
 # as: gm2
 
 ## ru :: tree
@@ -20,122 +20,113 @@ RootWebArea "Мои списки - Генератор лута Daggerheart" [url
   main ""
     heading "Мои списки" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
-    StaticText "Соберите добычу в список и отправьте игрокам одной ссылкой."
-    StaticText "НОВЫЙ СПИСОК"
-    textbox "Новый список" [value=Пятьдесят первый focused=true multiline=false readonly=false required=false]
-    button "Создать"
     button "Импорт из файла" [expanded=false]
-    searchbox "Найти список"
+    button "Новый список" [expanded=false]
     status ""
-    heading "ВАШ АККАУНТ" [level=2]
+    searchbox "Найти список"
     StaticText "50 списков из 50"
-    checkbox "Выбрать все" [checked=false]
-    StaticText "ВЫБРАТЬ ВСЕ"
-    generic ""
-    checkbox "Выбрать: Список 50" [checked=false]
-    link "Список 50, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000005048]
+    button "Выбрать"
+    link "Список 50, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000008148]
       StaticText "Список 50"
       StaticText "0 позиций · изменён только что"
       StaticText "Список пуст"
-    button "Удалить"
-    ... checkbox x21 of 25 same-shape siblings elided
-    link "Список 49, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000005047]
+    button "Ещё: Список 50" [expanded=false haspopup=menu]
+    link "Список 49, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000008147]
       StaticText "Список 49"
       StaticText "0 позиций · изменён только что"
       StaticText "Список пуст"
-    ... button x22 of 26 same-shape siblings elided
-    link "Список 48, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000005046]
+    button "Ещё: Список 49" [expanded=false haspopup=menu]
+    link "Список 48, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000008146]
       StaticText "Список 48"
       StaticText "0 позиций · изменён только что"
       StaticText "Список пуст"
-    link "Список 47, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000005045]
+    ... button x20 of 24 same-shape siblings elided
+    link "Список 47, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000008145]
       StaticText "Список 47"
       StaticText "0 позиций · изменён только что"
       StaticText "Список пуст"
-    link "Список 46, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000005044]
+    link "Список 46, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000008144]
       StaticText "Список 46"
       StaticText "0 позиций · изменён только что"
       StaticText "Список пуст"
-    link "Список 45, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000005043]
+    link "Список 45, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000008143]
       StaticText "Список 45"
       StaticText "0 позиций · изменён только что"
       StaticText "Список пуст"
-    link "Список 44, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000005042]
+    link "Список 44, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000008142]
       StaticText "Список 44"
       StaticText "0 позиций · изменён только что"
       StaticText "Список пуст"
-    link "Список 43, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000005041]
+    link "Список 43, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000008141]
       StaticText "Список 43"
       StaticText "0 позиций · изменён только что"
       StaticText "Список пуст"
-    link "Список 42, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000005040]
+    link "Список 42, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000008140]
       StaticText "Список 42"
       StaticText "0 позиций · изменён только что"
       StaticText "Список пуст"
-    link "Список 41, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000005039]
+    link "Список 41, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000008139]
       StaticText "Список 41"
       StaticText "0 позиций · изменён только что"
       StaticText "Список пуст"
-    link "Список 40, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000005038]
+    link "Список 40, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000008138]
       StaticText "Список 40"
       StaticText "0 позиций · изменён только что"
       StaticText "Список пуст"
-    link "Список 39, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000005037]
+    link "Список 39, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000008137]
       StaticText "Список 39"
       StaticText "0 позиций · изменён только что"
       StaticText "Список пуст"
-    link "Список 38, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000005036]
+    link "Список 38, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000008136]
       StaticText "Список 38"
       StaticText "0 позиций · изменён только что"
       StaticText "Список пуст"
-    link "Список 37, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000005035]
+    link "Список 37, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000008135]
       StaticText "Список 37"
       StaticText "0 позиций · изменён только что"
       StaticText "Список пуст"
-    link "Список 36, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000005034]
+    link "Список 36, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000008134]
       StaticText "Список 36"
       StaticText "0 позиций · изменён только что"
       StaticText "Список пуст"
-    link "Список 35, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000005033]
+    link "Список 35, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000008133]
       StaticText "Список 35"
       StaticText "0 позиций · изменён только что"
       StaticText "Список пуст"
-    link "Список 34, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000005032]
+    link "Список 34, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000008132]
       StaticText "Список 34"
       StaticText "0 позиций · изменён только что"
       StaticText "Список пуст"
-    link "Список 33, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000005031]
+    link "Список 33, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000008131]
       StaticText "Список 33"
       StaticText "0 позиций · изменён только что"
       StaticText "Список пуст"
-    link "Список 32, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000005030]
+    link "Список 32, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000008130]
       StaticText "Список 32"
       StaticText "0 позиций · изменён только что"
       StaticText "Список пуст"
-    link "Список 31, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000005029]
+    link "Список 31, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000008129]
       StaticText "Список 31"
       StaticText "0 позиций · изменён только что"
       StaticText "Список пуст"
-    link "Список 30, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000005028]
+    link "Список 30, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000008128]
       StaticText "Список 30"
       StaticText "0 позиций · изменён только что"
       StaticText "Список пуст"
-    link "Список 29, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000005027]
+    link "Список 29, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000008127]
       StaticText "Список 29"
       StaticText "0 позиций · изменён только что"
       StaticText "Список пуст"
-    checkbox "Выбрать: Список 28" [checked=false]
-    link "Список 28, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000005026]
+    link "Список 28, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000008126]
       StaticText "Список 28"
       StaticText "0 позиций · изменён только что"
       StaticText "Список пуст"
-    checkbox "Выбрать: Список 27" [checked=false]
-    link "Список 27, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000005025]
+    button "Ещё: Список 28" [expanded=false haspopup=menu]
+    link "Список 27, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000008125]
       StaticText "Список 27"
       StaticText "0 позиций · изменён только что"
       StaticText "Список пуст"
-    button "Удалить"
+    button "Ещё: Список 27" [expanded=false haspopup=menu]
     button "Показать ещё (26)"
   contentinfo ""
     navigation "Страницы сайта"
@@ -147,46 +138,45 @@ RootWebArea "Мои списки - Генератор лута Daggerheart" [url
     StaticText "Достигнут предел списков в аккаунте: 50. Нужно больше - напишите..." [namelen=95 namehash=4944cbd0]
 
 ## ru :: controls
-?Справка
 EN
 RU
 daggerheart.com
 Аккаунт: gm2@example.test
 Бросок
-Выбрать все
-Выбрать: Список 27
-Выбрать: Список 28
-Выбрать: Список 29
-Выбрать: Список 30
-Выбрать: Список 31
-Выбрать: Список 32
-Выбрать: Список 33
-Выбрать: Список 34
-Выбрать: Список 35
-Выбрать: Список 36
-Выбрать: Список 37
-Выбрать: Список 38
-Выбрать: Список 39
-Выбрать: Список 40
-Выбрать: Список 41
-Выбрать: Список 42
-Выбрать: Список 43
-Выбрать: Список 44
-Выбрать: Список 45
-Выбрать: Список 46
-Выбрать: Список 47
-Выбрать: Список 48
-Выбрать: Список 49
-Выбрать: Список 50
+Выбрать
+Ещё: Список 27
+Ещё: Список 28
+Ещё: Список 29
+Ещё: Список 30
+Ещё: Список 31
+Ещё: Список 32
+Ещё: Список 33
+Ещё: Список 34
+Ещё: Список 35
+Ещё: Список 36
+Ещё: Список 37
+Ещё: Список 38
+Ещё: Список 39
+Ещё: Список 40
+Ещё: Список 41
+Ещё: Список 42
+Ещё: Список 43
+Ещё: Список 44
+Ещё: Список 45
+Ещё: Список 46
+Ещё: Список 47
+Ещё: Список 48
+Ещё: Список 49
+Ещё: Список 50
 Импорт из файла
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
+Найти список
 Новый список
 Открывать при запуске
 Поиск
 Показать ещё (26)
-Создать
 Список 27, 0 позиций, изменён только что
 Список 28, 0 позиций, изменён только что
 Список 29, 0 позиций, изменён только что
@@ -212,7 +202,6 @@ daggerheart.com
 Список 49, 0 позиций, изменён только что
 Список 50, 0 позиций, изменён только что
 Таблицы
-Удалить
 Условия использования
 Установить как приложение
 
@@ -233,122 +222,113 @@ RootWebArea "My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm2]
   main ""
     heading "My lists" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
-    StaticText "Collect loot into a list and send it to your players as a single..." [namelen=70 namehash=7a94568a]
-    StaticText "NEW LIST"
-    textbox "New list" [value=Пятьдесят первый focused=true multiline=false readonly=false required=false]
-    button "Create"
     button "Import from file" [expanded=false]
-    searchbox "Find a list"
+    button "New list" [expanded=false]
     status ""
-    heading "YOUR ACCOUNT" [level=2]
+    searchbox "Find a list"
     StaticText "50 lists of 50"
-    checkbox "Select all" [checked=false]
-    StaticText "SELECT ALL"
-    generic ""
-    checkbox "Select: Список 50" [checked=false]
-    link "Список 50, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000005048]
+    button "Select"
+    link "Список 50, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000008148]
       StaticText "Список 50"
       StaticText "0 items · edited just now"
       StaticText "The list is empty"
-    button "Delete"
-    ... checkbox x21 of 25 same-shape siblings elided
-    link "Список 49, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000005047]
+    button "More: Список 50" [expanded=false haspopup=menu]
+    link "Список 49, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000008147]
       StaticText "Список 49"
       StaticText "0 items · edited just now"
       StaticText "The list is empty"
-    ... button x22 of 26 same-shape siblings elided
-    link "Список 48, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000005046]
+    button "More: Список 49" [expanded=false haspopup=menu]
+    link "Список 48, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000008146]
       StaticText "Список 48"
       StaticText "0 items · edited just now"
       StaticText "The list is empty"
-    link "Список 47, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000005045]
+    ... button x20 of 24 same-shape siblings elided
+    link "Список 47, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000008145]
       StaticText "Список 47"
       StaticText "0 items · edited just now"
       StaticText "The list is empty"
-    link "Список 46, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000005044]
+    link "Список 46, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000008144]
       StaticText "Список 46"
       StaticText "0 items · edited just now"
       StaticText "The list is empty"
-    link "Список 45, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000005043]
+    link "Список 45, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000008143]
       StaticText "Список 45"
       StaticText "0 items · edited just now"
       StaticText "The list is empty"
-    link "Список 44, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000005042]
+    link "Список 44, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000008142]
       StaticText "Список 44"
       StaticText "0 items · edited just now"
       StaticText "The list is empty"
-    link "Список 43, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000005041]
+    link "Список 43, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000008141]
       StaticText "Список 43"
       StaticText "0 items · edited just now"
       StaticText "The list is empty"
-    link "Список 42, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000005040]
+    link "Список 42, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000008140]
       StaticText "Список 42"
       StaticText "0 items · edited just now"
       StaticText "The list is empty"
-    link "Список 41, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000005039]
+    link "Список 41, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000008139]
       StaticText "Список 41"
       StaticText "0 items · edited just now"
       StaticText "The list is empty"
-    link "Список 40, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000005038]
+    link "Список 40, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000008138]
       StaticText "Список 40"
       StaticText "0 items · edited just now"
       StaticText "The list is empty"
-    link "Список 39, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000005037]
+    link "Список 39, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000008137]
       StaticText "Список 39"
       StaticText "0 items · edited just now"
       StaticText "The list is empty"
-    link "Список 38, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000005036]
+    link "Список 38, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000008136]
       StaticText "Список 38"
       StaticText "0 items · edited just now"
       StaticText "The list is empty"
-    link "Список 37, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000005035]
+    link "Список 37, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000008135]
       StaticText "Список 37"
       StaticText "0 items · edited just now"
       StaticText "The list is empty"
-    link "Список 36, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000005034]
+    link "Список 36, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000008134]
       StaticText "Список 36"
       StaticText "0 items · edited just now"
       StaticText "The list is empty"
-    link "Список 35, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000005033]
+    link "Список 35, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000008133]
       StaticText "Список 35"
       StaticText "0 items · edited just now"
       StaticText "The list is empty"
-    link "Список 34, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000005032]
+    link "Список 34, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000008132]
       StaticText "Список 34"
       StaticText "0 items · edited just now"
       StaticText "The list is empty"
-    link "Список 33, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000005031]
+    link "Список 33, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000008131]
       StaticText "Список 33"
       StaticText "0 items · edited just now"
       StaticText "The list is empty"
-    link "Список 32, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000005030]
+    link "Список 32, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000008130]
       StaticText "Список 32"
       StaticText "0 items · edited just now"
       StaticText "The list is empty"
-    link "Список 31, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000005029]
+    link "Список 31, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000008129]
       StaticText "Список 31"
       StaticText "0 items · edited just now"
       StaticText "The list is empty"
-    link "Список 30, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000005028]
+    link "Список 30, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000008128]
       StaticText "Список 30"
       StaticText "0 items · edited just now"
       StaticText "The list is empty"
-    link "Список 29, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000005027]
+    link "Список 29, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000008127]
       StaticText "Список 29"
       StaticText "0 items · edited just now"
       StaticText "The list is empty"
-    checkbox "Select: Список 28" [checked=false]
-    link "Список 28, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000005026]
+    link "Список 28, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000008126]
       StaticText "Список 28"
       StaticText "0 items · edited just now"
       StaticText "The list is empty"
-    checkbox "Select: Список 27" [checked=false]
-    link "Список 27, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000005025]
+    button "More: Список 28" [expanded=false haspopup=menu]
+    link "Список 27, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000008125]
       StaticText "Список 27"
       StaticText "0 items · edited just now"
       StaticText "The list is empty"
-    button "Delete"
+    button "More: Список 27" [expanded=false haspopup=menu]
     button "Show more (26)"
   contentinfo ""
     navigation "Site pages"
@@ -360,45 +340,43 @@ RootWebArea "My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm2]
     StaticText "You have reached the limit of 50 lists. Need more? Write to dagg..." [namelen=87 namehash=0b401e88]
 
 ## en :: controls
-?Help
 Account: gm2@example.test
-Create
-Delete
 EN
+Find a list
 Import from file
 Install as an app
 LootDaggerheart
+More: Список 27
+More: Список 28
+More: Список 29
+More: Список 30
+More: Список 31
+More: Список 32
+More: Список 33
+More: Список 34
+More: Список 35
+More: Список 36
+More: Список 37
+More: Список 38
+More: Список 39
+More: Список 40
+More: Список 41
+More: Список 42
+More: Список 43
+More: Список 44
+More: Список 45
+More: Список 46
+More: Список 47
+More: Список 48
+More: Список 49
+More: Список 50
 New list
 Open on start
 Privacy
 RU
 Roll
 Search
-Select all
-Select: Список 27
-Select: Список 28
-Select: Список 29
-Select: Список 30
-Select: Список 31
-Select: Список 32
-Select: Список 33
-Select: Список 34
-Select: Список 35
-Select: Список 36
-Select: Список 37
-Select: Список 38
-Select: Список 39
-Select: Список 40
-Select: Список 41
-Select: Список 42
-Select: Список 43
-Select: Список 44
-Select: Список 45
-Select: Список 46
-Select: Список 47
-Select: Список 48
-Select: Список 49
-Select: Список 50
+Select
 Show more (26)
 Skip to content
 Tables

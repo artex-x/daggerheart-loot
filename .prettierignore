@@ -43,14 +43,6 @@ docs/fixtures/
 .claude/.check-2-pass.json
 .claude/.hook-state.json
 
-# The impeccable CLI's own store: `impeccable hooks ignore-value` writes it
-# unformatted, which reddens format:check the moment a finding is suppressed.
-# The hook's other three files need no line here: the root .gitignore lists
-# them, and Prettier reads it. Listed individually, not as the whole
-# .impeccable/ directory: design.json also lives there, is tracked,
-# hand-authored project data, and has to stay checked.
-.impeccable/config.json
-
 # Machine-written: the Supabase CLI owns the two gitignored scratch directories.
 supabase/.temp/
 supabase/.branches/

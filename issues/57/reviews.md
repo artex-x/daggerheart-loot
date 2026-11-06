@@ -109,3 +109,105 @@
 | pw2-N4 | nit | local | fixed pw2-fix (one seam, `SignInPrompt`: every prompt that answers a press focuses «Войти» and offers «Отмена» back to the opener) | sign-in prompts differ |
 | pw2-N5 | nit | local | accepted (not a defect; no change) | `/pages/*.html` 308 redirects |
 | pw2-N6 | nit | local | fixed pw2-fix (the item draws a check while open; the panel starts with «Закрыть»; tables and roll pages) | «Об этих данных» panel has no close control up to 760 px. See `reviews/post-wave-2.md` |
+| 8-B1 | blocker | local | fixed 8-fix | `/lists` failed read: «Повторить» stretches across the column (`LoadState` in the grid `.stack`); wrap it in a `<div>`. See `reviews/8.md` |
+| 8-R1 | risk | local | fixed 8-fix | `FEATURES.md` "Chrome": the `/lists` `h1` "is read, not drawn" is false; the pin bullet still names a round pin up to 760 px |
+| 8-R2 | risk | local | named (owner list, 10-fix) | configured budget 0.2 kB headroom (325.7 of 326 kB) |
+| 8-R3 | risk | local | fixed 8-fix | EN halves of `#/i/ci1 ~ list menu as gm1` and `~ in several lists as gm4` hold no open menu (no `again`) |
+| 8-R4 | risk | local | fixed 8-fix | `sweep.js` "импорт списков: позиции без копии" measures a closed fold |
+| 8-N1 | nit | local | fixed 8-fix | list not-found `ErrorPage` has no `said` |
+| 8-N2 | nit | local | fixed 8-fix | «Новый список» panel has no `aria-expanded` |
+| 8-N3 | nit | local | fixed 8-fix | one list shows two counts (add-to-list row vs card) |
+| 8-N4 | nit | local | fixed 8-fix | signed-out plate centers text, «Войти» at the left edge |
+| 8-N5 | nit | local | fixed 8-fix | «Отмена» wraps alone under the name field at 360 px |
+| 8-N6 | nit | local | fixed 8-fix | decision files cite "batch 8, L12" and "mock 8"; the 2026-09-28 decision needs "Amended by" (`BatchBar` gone) |
+| 8-N7 | nit | local | fixed 8-fix | handoff Status stale, deviation numbering, no "Review:" line, file size |
+| 8-N8 | nit | deferred-scope | named | commit `dc132655` body cites `plan-8.md`; do not amend; leave out of the squash message |
+| 8-N9 | nit | deferred-scope | deferred (batch 10) | open import toggle is gold `.btn.on`; Seal Rule says neutral |
+| 8-N10 | nit | local | fixed 8-fix | «Список не открывается» names a symptom, not the cause |
+| 8-P1 | polish | local | skipped 8-fix (Thumb Rule batch resizes it) | each card's «Ещё» on its own row costs about 46 px per card at 360 px |
+| 8-P2 | polish | deferred-scope | deferred (batch 10) | two gold fills with the name field or import preview open |
+| 8-G1 | guideline | deferred-scope | Thumb Rule batch | card «Ещё» 32 px and «Выбрать» 36 px at 360 px (40 px rule) |
+| 8-G2 | guideline | deferred-scope | 9b Field Measure | `/lists` search box about 990 px at 1180 px |
+| 8-G3 | guideline | deferred-scope | 9b Stepper Rule | stepper box 240 px in a 282 px column |
+| 8-G4 | guideline | deferred-scope | toast-timing batch | list-limit toast with an email lasts 2.6 s |
+| 8-G5 | guideline | deferred-scope | "Proposed rules" | Escape does not leave the `/lists` selection mode |
+| 8-G6 | guideline | deferred-scope | 9b Whole Message | add-to-list rows cut a long name with no way to the whole name |
+| 8-CI1 | ci | local | fixed 8-fix | run 42020997138 `check`: `Chip.svelte` branches 62.5%; the `busy` prop lost its last caller (`AddToList`) and went |
+| 8-CI2 | ci | local | fixed 8-fix | `app/typo` `#/lists`: a stale `help` grip; `/lists` has no help |
+| 8-CI3 | ci | local | fixed 8-fix | e2e F7: `waitControl` read a row's text (name + count); it reads `aria-labelledby` first, as the driver |
+| 8-CI4 | ci | local | fixed 8-fix | `app/states` 54: stale, the index card says «Новое в списке (N)»; 86: a flake of the slow shard, passes alone |
+| 9b-B1 | blocker | local | fixed 9b-fix | open compact row notes at 360 px: `.rnote` padding-left 146px applies to the compact row, text breaks inside words; fix `.lrow.compact .rnote { padding: 0; margin: 4px 0 0 }`, re-shoot, width guard in case 105/107. `reviews/9b.md` |
+| 9b-B2 | blocker | local | fixed 9b-fix | requests panel gold frame/ground/total/marks and a gold «Принять» per request break the Seal Rule; plain Panel, total in --txt, marks --muted2, `primary` only on `shown[0]` |
+| 9b-B3 | blocker | local | fixed 9b-fix | 324 px first-screen exception at 360: folded strip 56 px + 18 px margin; use padding 6px 12px, margin-bottom 10px up to 760 px, re-measure (near 292), set the exception to the measured value |
+| 9b-R1 | risk | local | fixed 9b-fix | list roll result at 1180 draws the row face in a 260 px column (about 18 chars a line); acceptance 6/M11 want the card face from 601 px; name or fix |
+| 9b-R2 | risk | local | fixed 9b-fix | open requests table at 360 splits prices («180 / зол.», «без / цены») |
+| 9b-R3 | risk | local | fixed 9b-fix | `/s/ ~ long name` 312 of 288 at 1180: named exception asserted by case 83 plus a DESIGN.md sentence, or fix |
+| 9b-R4 | risk | local | fixed 9b-fix | Check Rule widens gold Seg switches of the homebrew editor, relations, import and CardForm by about 20 px; no check at 320/360 |
+| 9b-R5 | risk | deferred-scope | TD (Measure Rule) | 4000-character list note at 761-999 px draws whole above the rows, unmeasured |
+| 9b-R6 | risk | local | fixed 9b-fix | unrun: case 83 after the limit change, cases 101, 104-107, typo.js, sweep.js 360/768, e2e F8/F12/F19; read CI of 18429aee |
+| 9b-R7 | risk | named | squash message | commit 18429aee body has wrong sentences (side column holds the panels; "each folded by default"; clamp lines; "stepper/number field/check keep one size"; "tag rule"); correct the wave 3 squash message, see `reviews/9b.md` |
+| 9b-N1..N11 | nit | local | fixed 9b-fix | `.lroll-line` monospace sentence; `shareHint` repeats (delete it, M12); misplaced SharePanel comment; stale "list summary labels"; "(item 9)/(item 8)" citations in DESIGN.md; EN "Fold" vs "show less"; red «Возьмут» cell; em dash in typo.js message; reopened note area remembers its kind; gold-soft position number on gold tint; handoff Status stale |
+| 9b-N12 | nit | deferred-scope | batch 10 | record the CLI's unformatted `config.json` writes in the exception inventory |
+| 9b-N13 | nit | deferred-scope | named (owner list, 10-fix) | fixed 146 px indent does not follow the tick column in selection mode |
+| CI-N1 | nit | local | fixed CI-fix | `run-all.js` weight comment: 396.1 is the mean of runs 42036663681 and 42083009049, 440 is a projection: say both |
+| CI-N2 | nit | local | fixed CI-fix | `.claude/README.md` "Batch size" table: two stale rows ("~260-290s pooled" with `app/contracts` at 556 s; "up to ~372s for one bin" now 1459-1586 s) |
+| CI-N3 | nit | local | fixed CI-fix | handoff batch CI entry lacks a `Review:` line; "Durable items" line names 9b's items |
+| CI-N4 | nit | local | fixed CI-fix | COVERAGE.md `app/states` row says "ninety-five states"; `CASES` has 97: drop the count |
+| CI-N5 | nit | local | fixed CI-fix | `states.js` reads `--shard` after `require('./lib.js')`: no `dist-test/` shows the build message first |
+| CI-N6 | nit | deferred-scope | named (owner list, batch 10) | `ci.yml` comment "~20 s" fixed cost; `bash-guard.mjs` cost text "~380s"; no long-check reminder for a bare `node tests/app/states.js` |
+| CI-R1 | risk | named | CI of the next run | slow layout cases are not split equally (piece 1/4 holds 7 of 25, incl. 107); measured on 22d9a00b: states rows 411-543 s, jobs 10-11 min: fine |
+| TD-B1 | blocker | local | fixed TD-fix | after a retry succeeds the success toast waits 7-10 s behind the old error toast; the retry press closes the shown error first (option A), tests back to the default timeout, one case asserts the success toast shows at once. `reviews/TD.md` |
+| TD-R1 | risk | deferred-scope | named | `TARGET_ALLOW` `.craft a` is a second exception to "every control" (the «Улучшается до» line the owner reported 2026-11-04); name it to the owner |
+| TD-R2 | risk | deferred-scope | named | `/s/` first-screen exception at 360 moved 286, 302, then 309 px; no spacing fold tried |
+| TD-R3 | risk | local | fixed TD-fix | `/roll/alt` at 360: the results line sits about 2 px from the picker and the first card; two rows of 40 px boxes read as one block (10 px budget left) |
+| TD-R4 | risk | deferred-scope | named (owner list, 10-fix) | bundle headroom 0.8 kB (268.2 of 269); batch N expects a budget raise |
+| TD-N1 | nit | local | fixed TD-fix | "(T5)" plan id in a `listsPage.test.ts` comment |
+| TD-N2 | nit | local | fixed TD-fix | stale durations in comments: `inventory.js` "4000ms toast", `Toast.svelte` two "7000 ms" |
+| TD-N3 | nit | local | fixed TD-fix | garbled comment in `golden.js` ("short toast lifetime of the time") |
+| TD-N4 | nit | local | fixed TD-fix | `toastMs` exported, read by nobody outside its module |
+| TD-N5 | nit | local | fixed TD-fix | case 109 retries every failed 360 px entry at 1180 px; name the states that need it |
+| TD-N6 | nit | local | fixed TD-fix | `targets` spacing test lacks the circle-vs-circle check of WCAG 2.5.8; dead `LABEL` clause |
+| N-B1 | blocker | local | fixed N-fix | from 761 px a roll mode switch (and a supplement pick) drops the keyboard focus to `body`: each mode is its own panel, so `PageHead`/`ModeRow inhead` remount; fix: a module flag set on a ModeRow press, the mounted `inhead` instance focuses the lit control (supplements button on a supplement page) and clears it; `rollPage.test.ts` cases at wide and mid for link and menu paths; extend RollPage's band-change focus check to `nav.modes`. `reviews/N.md` |
+| N-R1 | risk | named | named (owner list, 10-fix) | first-screen margins thin: `#/homebrew as gm3` 900x720 286.2 of 288, `/tables/*` 333.6 of 336, 1000 px RU roll row 14 px with the pin pressed |
+| N-R2 | risk | deferred-scope | fixed N-fix | unconfigured bundle 268.8 of 269 kB: the N fix pass measured 269.2 and raised the limit to 270 (configured 326.7 of 327) |
+| N-N1 | nit | local | fixed N-fix | `pageVoa`, `pageMwt`, `pageArazo` keys have no reader: delete |
+| N-N2 | nit | local | fixed N-fix | FEATURES.md rule 4: the Arazo tab title is not the book's full title (`SECTION_LABEL` gives «Arazo's Artifacts»); drop the departure, fix the `modeRow.test.ts` comment, add `roll/arazo` to its `it.each` |
+| N-N3 | nit | local | fixed N-fix | DESIGN.md First-Screen Rule: the `/tables/*` exception was not "taken while the owner was away"; the owner answered it 2026-11-05 |
+| N-N4 | nit | local | fixed N-fix | DESIGN.md/FEATURES.md "about 1049px" chips wrap: case 96 reads 287.5 at 1050 RU; write 1139 |
+| N-N5 | nit | local | fixed N-fix | "Up to 760px the heading is read, not drawn" holds only for pages with siblings |
+| N-N6 | nit | local | fixed N-fix | case 113 doc comment cites "owner item 12" (task scratch) |
+| N-N7 | nit | local | fixed N-fix | `pageHead.test.ts` never tests the lead's 12 px margin |
+| N-N8 | nit | local | fixed N-fix | `TableNav` `part` doc comment names three levels for two values |
+| N-N9 | nit | local | fixed N-fix | `.sheetlinks .tab { border-bottom: 0 }` in `HomebrewTabs` is dead CSS |
+| N-N10 | nit | local | fixed N-fix | `bundle-budget.mjs` comment arithmetic gives 326.2, measurement was 326.3: state the measured figure |
+| N-N11 | nit | local | fixed N-fix | `handoff.md` lacks the batch sha and the second `check:fast` result |
+| N-N12 | nit | deferred-scope | fixed 10-fix (10-N9) | the 2026-11-04 decision file still cites "A steady head" |
+| N-CI1 | blocker | local | fixed N-fix | CI run 42177661196 of `cb581b66`, case 90 at 1180x720: the add menu opened up into the header. Not a flake: N moved the result row 53 px up, so neither side held the 340 px menu and the up side cannot scroll above the page top; `AddToList` opens up in the page scroll only where the page above holds the menu under the header |
+| P-B1 | blocker | local | fixed P-fix | default 2 loosens the clearance check (`c.atFloor || c.top >= c.low - 0.5` exempts every floor card whose picture gave way) and no test reaches the 1.5cqw loop (`voa4_t4i`, `voa4_a3` on the RU compact color sheet); replace with a rectangle-intersection test (mark rects against `.pc-tag` and `.pc-name` line rects), no exemption, run on a RU compact color set holding both cards; if an intersection remains take a named rules-text shortfall under the 3.7cqw floor (P-D5's rule) and log it; add default 2 to the Status "For the owner" line. `reviews/P.md` |
+| P-R1 | risk | local | fixed P-fix | `.pdock` sticks only from a 481 px window height; on a landscape phone «Напечатать» is after every card; let the dock stick at every height, keep `--ebar-h` for the print page |
+| P-R2 | risk | named | named (owner list, 10-fix) | unconfigured bundle 269.8 of 270 kB; if CI fails, raise to 271 by the rounding rule |
+| P-R3 | risk | local | fixed P-fix | fonts port waits on `ready` in both cases; FEATURES.md and the `FontsPort` doc comment say less than the code does: fix the wording |
+| P-N1 | nit | local | fixed P-fix | 14 stale `why`s in `inventory.js` ("the note under the bar"); re-seeds golden line 3 only |
+| P-N2 | nit | local | fixed P-fix | `back()` takes over ctrl/cmd-click on «Назад»; skip modified clicks as `router.ts` does |
+| P-N3 | nit | local | fixed P-fix | toast adds `--ebar-h` under 481 px of window height where both bars are in the flow |
+| P-N4 | nit | local | fixed P-fix | the `ResizeObserver` effect setting `--ebar-h` is duplicated in `HomebrewEditor` and `PrintPage`: extract |
+| P-N5 | nit | local | fixed P-fix | FEATURES.md cites "Q3.2" and the decision file "QP.*" (task-scratch ids) |
+| P-N6 | nit | local | fixed P-fix | case 115's held-face comparison runs on one short card and may not tell whether the refit ran |
+| P-N7 | nit | local | fixed P-fix | DESIGN.md "Signature component" says the text moves "just under the marks", which default 2 contradicts on two cards |
+| P-N8 | nit | deferred-scope | named | open dock «Ещё»: page scrolled about 24 px, header covers part of the crumb row (focus-jump family) |
+| P-N9 | nit | deferred-scope | named | in EN "Print" names two actions; RU keeps them apart (owner's call) |
+| P-CI1 | blocker | local | fixed P-fix | CI run 42200991922 of `1ae45461`, `app/typo` `#/p/set-emberaxe` RU/EN at 360 and 1180: no pressed switch with a check in «Печать карточек»; the color group is named «Цвет печати» / "Print color" since P (`printInk`), so `typo.js` `SWITCHES` names it; the app was right |
+| 10-B1 | blocker | local | fixed 10-fix | DEBT.md D125 (`/search` at 320x568 RU) is wrong as written: the plan's "one probe first" was not run; the reviewer's probe reads scrollWidth 313 RU / 305 EN at 320 px both before and after the sheet, clientWidth 320, so no sideways scroll in headless; the old "313 against 305" can only come from a 15 px classic scrollbar; rewrite What and How to verify, name the element, drop the batch id, or drop the entry and name it to the owner. `reviews/10.md` |
+| 10-R1 | risk | local | fixed 10-fix | "For the owner" lost items: burden hands as clip paths (departure from "Export vectors; do not redraw them"), the removed background-graphics hint, bundle headroom 269.5 of 270, rows 9b-N13 (146 px inset in selection mode), N-R1, N-N12 |
+| 10-R2 | risk | orchestrator | open | `.impeccable/design.json` is stale (dashed gold unique badge, no `--txt-soft`, `--measure-*`): regenerate with Impeccable `document` before the last squash |
+| 10-N1 | nit | local | fixed 10-fix | line 1 of `reviews.md` corrupted: CI-N1..N4 rows sit before the heading, CI-N3/N4 still `open` |
+| 10-N2 | nit | local | fixed 10-fix | `README.ru.md` line 48 still «Корник» |
+| 10-N3 | nit | local | fixed 10-fix | `orchestrate.prompt.md` line 265 still names a second look `<name>-2.md` |
+| 10-N4 | nit | local | fixed 10-fix | FEATURES.md lines 1589, 1684 say "compact card" about the removed screen variant |
+| 10-N5 | nit | local | fixed 10-fix | dead code from 10-10: `.card-name :global(svg)` rule, always-true `.card-name-acts` assertion in `rollResult.test.ts`, "168 + 132 px" comment in `tools/artwork/review/index.html` |
+| 10-N6 | nit | local | fixed 10-fix | DEBT.md section intro says "the four" but holds five; "the follow-up task of task 57" is not a named task |
+| 10-N7 | nit | local | fixed 10-fix | DESIGN.md Notes "no control is set in capitals" but the account button's `.ini` is uppercase |
+| 10-N8 | nit | local | fixed 10-fix | `.claude/README.md` "Four repository lines" but five; cites a scratch plan review |
+| 10-N9 | nit | local | fixed 10-fix | the 2026-11-04 decision file still cites "A steady head" |
+| 10-N10 | nit | local | fixed 10-fix | EN `subStd` says "the core book" where RU now says «Core» |
+| 10-N11 | nit | local | fixed 10-fix | `--txt-soft` comment in `tokens.css` and DESIGN.md name its use differently |

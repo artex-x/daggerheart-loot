@@ -16,6 +16,15 @@ import type { Record_ } from '../lib/types.js';
 
 afterEach(cleanup);
 
+/** The roll page's heading names the job; the lit control of the mode row names the page. */
+function expectPage(name: string): void {
+  expect(
+    screen.getByRole('heading', { level: 1, name: /^(Бросок|Roll)$/ })
+  ).toBeInTheDocument();
+  const modes = screen.getByRole('navigation', { name: /^(Режим броска|Roll mode)$/ });
+  expect(modes.querySelector('[aria-current="page"]')).toHaveTextContent(name);
+}
+
 const rec = (over: Partial<Record_>): Record_ => ({
   id: 'x',
   src: 'voa',
@@ -99,9 +108,7 @@ const chosen = (name: string): HTMLElement =>
 describe('Vault of Ages', () => {
   it('opens on the first tier and shows what is in it', () => {
     render(App, { env: at('#/roll/voa') });
-    expect(
-      screen.getByRole('heading', { level: 1, name: 'Vault of Ages' })
-    ).toBeInTheDocument();
+    expectPage('Vault of Ages');
     expect(chosen('Ранг 1')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Камень первого ранга' })).toBeInTheDocument();
   });
@@ -148,9 +155,7 @@ describe('Vault of Ages', () => {
 describe('community items', () => {
   it('opens on the first community the records mention', () => {
     render(App, { env: at('#/roll/community') });
-    expect(
-      screen.getByRole('heading', { level: 1, name: 'Предметы сообществ' })
-    ).toBeInTheDocument();
+    expectPage('Предметы сообществ');
     expect(chosen('Научное')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Первое научное' })).toBeInTheDocument();
   });
@@ -166,9 +171,7 @@ describe('community items', () => {
     render(App, { env: at('#/roll/community') });
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
     expect(screen.getByRole('option', { name: 'Loreborne' })).toBeInTheDocument();
-    expect(
-      screen.getByRole('heading', { level: 1, name: 'Community items' })
-    ).toBeInTheDocument();
+    expectPage('Community items');
   });
 
   it('labels the picker with the singular, not the book’s name', () => {
@@ -183,9 +186,7 @@ describe('community items', () => {
 describe('Many Worlds Tavern', () => {
   it('opens on the first realm and offers the six realms', () => {
     render(App, { env: at('#/roll/mwt') });
-    expect(
-      screen.getByRole('heading', { level: 1, name: 'Many Worlds Tavern' })
-    ).toBeInTheDocument();
+    expectPage('Many Worlds Tavern');
     for (const name of [
       'Спорополис',
       'Лес Пари',
@@ -244,21 +245,20 @@ describe('Many Worlds Tavern', () => {
     expect(screen.getByRole('link', { name: 'Первый шершневый' })).toBeInTheDocument();
   });
 
-  it('names the realms in the language on screen', async () => {
+  it('names the realms in the language on screen, with no lead', async () => {
     render(App, { env: at('#/roll/mwt') });
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
     expect(screen.getByRole('option', { name: "Warrin' Warrens" })).toBeInTheDocument();
     expect(within(screen.getByRole('main')).getByText('Realm')).toBeInTheDocument();
-    expect(screen.getByText('Pick a realm and roll within it.')).toBeInTheDocument();
+    /* The realm picker and the roll button say it: the page draws no lead. */
+    expect(document.querySelector('main .page-sub')).toBeNull();
   });
 
   it('says the data is missing when the catalog has no realm rows', () => {
     render(App, {
       env: fakeEnv({ router: memoryRouter('#/roll/mwt'), data: fakeData(NO_MWT) })
     });
-    expect(
-      screen.getByRole('heading', { level: 1, name: 'Many Worlds Tavern' })
-    ).toBeInTheDocument();
+    expectPage('Many Worlds Tavern');
     expect(screen.getByText('Данные не загрузились. Обновите страницу.')).toBeInTheDocument();
   });
 });
@@ -273,15 +273,13 @@ describe('a dataset that did not load', () => {
     ['#/roll/mwt', 'Many Worlds Tavern']
   ])('says so on %s rather than rendering an empty picker', (route, heading) => {
     render(App, { env: fakeEnv({ router: memoryRouter(route), data: noData() }) });
-    expect(screen.getByRole('heading', { level: 1, name: heading })).toBeInTheDocument();
+    expectPage(heading);
     expect(screen.getByText('Данные не загрузились. Обновите страницу.')).toBeInTheDocument();
   });
 
   it('says so on #/roll/dv, a whole-table roll with no picker', () => {
     render(App, { env: fakeEnv({ router: memoryRouter('#/roll/dv'), data: noData() }) });
-    expect(
-      screen.getByRole('heading', { level: 1, name: "The Dragon's Vault" })
-    ).toBeInTheDocument();
+    expectPage("The Dragon's Vault");
     expect(screen.getByText('Данные не загрузились. Обновите страницу.')).toBeInTheDocument();
   });
 });

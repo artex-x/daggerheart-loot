@@ -1,6 +1,6 @@
 # #/s/gm-token-1 ~ gm only
 # route: #/s/gm-token-1
-# why: signed out on the GM's link, after another device marked «Брошюра по Истории Искусства» GM only: every row kept, that row dashed with its art at 45%, and its button named with «, Только для мастера» for a screen reader only
+# why: signed out on the GM's link, after another device marked «Брошюра по Истории Искусства» GM only: every row kept, that row on the recessed ground with its art at 45%, and its button named with «, Только для мастера» for a screen reader only
 
 ## ru :: tree
 RootWebArea "Генератор лута Daggerheart" [url=/s/gm-token-1?v=<v>]
@@ -18,22 +18,19 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/gm-token-1?v=<v>]
       link "Поиск" [url=/search]
   main ""
     heading "Лавка кузнеца" [level=1]
-    StaticText "Список от другого игрока · 10 позиций"
-    StaticText "Обновлено только что"
+    StaticText "10 позиций"
+    StaticText " · Обновлено только что"
+    ... StaticText x4 of 8 same-shape siblings elided
+    button "Заметка" [expanded=false]
+    button "Заметка мастера" [expanded=false]
     button "Сохранить себе"
-    ... StaticText x8 of 12 same-shape siblings elided
     searchbox "Поиск по названию или описанию..."
     button "Фильтры" [expanded=false]
-    checkbox "Выбрать все (10)" [checked=false]
-    checkbox "Первоклассный Спальный Мешок" [checked=false]
-    button "1 Первоклассный Спальный Мешок ×2 · 150 зол. ПРЕДМЕТ Во время от..." [namelen=102 namehash=5f098004]
-    ... checkbox x7 of 11 same-shape siblings elided
-    ... button x7 of 11 same-shape siblings elided
+    button "Выбрать"
+    ... button x8 of 12 same-shape siblings elided
     StaticText "ТОЛЬКО ДЛЯ МАСТЕРА"
     StaticText "Проклят."
-    checkbox "Брошюра по Истории Искусства" [checked=false]
     button "11 Брошюра по Истории Искусства , Только для мастера ПРЕДМЕТ DRE..." [namelen=648 namehash=1655ccee]
-    checkbox "Топор Тлеющих Углей" [checked=false]
     button "Топор Тлеющих Углей 800 зол. ОСНОВНОЕ ОРУЖИЕ УНИКАЛЬНОЕ МАСТЕРСК..." [namelen=198 namehash=61329d72]
     status ""
       StaticText "Список обновлён"
@@ -56,27 +53,21 @@ EN
 RU
 daggerheart.com
 Бросок
-Брошюра по Истории Искусства
 Войти
-Гарпун Левиафана
-Зелье Быстрого Шага
+Выбрать
+Заметка
+Заметка мастера
 К содержимому
-Колдующий Кинжал
 Колдующий КинжалОсновное оружиеHope & FearРанг 1 · Магическое · ... [namelen=213 namehash=9cd182eb]
-Колода Сумерек
 Конфиденциальность
 ЛутDaggerheart
-Палаш
 ПалашОсновное оружиеРанг 1 · Физическое · Проворность · Вплотную... [namelen=114 namehash=e80c7800]
-Первоклассный Спальный Мешок
 Поиск
-Скипетр
+Поиск по названию или описанию...
 СкипетрОсновное оружиеРанг 1 · Магическое · Влияние · Далеко · d... [namelen=186 namehash=9aee2e9c]
 Сохранить себе
-Стеганый Доспех
 Стеганый ДоспехБроняРанг 1 · Пороги 5/11 · Броня 3Гибкое: +1 к У... [namelen=72 namehash=ad6956c1]
 Таблицы
-Топор Тлеющих Углей
 Топор Тлеющих Углей800 зол.Основное оружиеУникальноеМастерская О... [namelen=192 namehash=b0fae9a0]
 Условия использования
 Установить как приложение
@@ -98,22 +89,19 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/gm-token-1?v=<v>]
       link "Search" [url=/en/search]
   main ""
     heading "Лавка кузнеца" [level=1]
-    StaticText "A list from another player · 10 items"
-    StaticText "Updated just now"
+    StaticText "10 items"
+    StaticText " · Updated just now"
+    ... StaticText x4 of 8 same-shape siblings elided
+    button "Note" [expanded=false]
+    button "GM's note" [expanded=false]
     button "Save to my lists"
-    ... StaticText x8 of 12 same-shape siblings elided
     searchbox "Search by name or description..."
     button "Filters" [expanded=false]
-    checkbox "Select all (10)" [checked=false]
-    checkbox "Premium Bedroll" [checked=false]
-    button "1 Premium Bedroll ×2 · 150 gp ITEM During downtime, you automati..." [namelen=85 namehash=ab96007a]
-    ... checkbox x7 of 11 same-shape siblings elided
-    ... button x7 of 11 same-shape siblings elided
+    button "Select"
+    ... button x8 of 12 same-shape siblings elided
     StaticText "GM ONLY"
     StaticText "Проклят."
-    checkbox "Art History Booklet" [checked=false]
     button "11 Art History Booklet , GM only ITEM DREAD GM TOOLBOX This is a..." [namelen=559 namehash=1239c16f]
-    checkbox "Ember Axe" [checked=false]
     button "Ember Axe 800 gp PRIMARY WEAPON UNIQUE ALDER WORKSHOP (HB) Tier ..." [namelen=171 namehash=8de947c8]
     status ""
       StaticText "The list was updated"
@@ -132,32 +120,26 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/gm-token-1?v=<v>]
 1Stride Potion×5 · 20 gpConsumableYou gain a +1 bonus to your ne... [namelen=80 namehash=7d8891e6]
 3Twilight DeckItemArtifactVault of AgesRecall Cost: 2This deck e... [namelen=871 namehash=aad79704]
 51Leviathan Harpoon99999 gpPrimary weaponUniqueWondrous Environm... [namelen=364 namehash=9219003b]
-Art History Booklet
-Broadsword
 BroadswordPrimary weaponTier 1 · Physical · Agility · Melee · d8... [namelen=109 namehash=926e89b9]
-Casting Dagger
 Casting DaggerPrimary weaponHope & FearTier 1 · Magic · Instinct... [namelen=176 namehash=08dad18c]
 EN
-Ember Axe
 Ember Axe800 gpPrimary weaponUniqueAlder Workshop (HB)Tier 2 · M... [namelen=165 namehash=770926f6]
 Filters
-Gambeson Armor
+GM's note
 Gambeson ArmorArmorTier 1 · Thresholds 5/11 · Armor 3Flexible: +... [namelen=76 namehash=55bf2d62]
 Install as an app
-Leviathan Harpoon
 LootDaggerheart
-Premium Bedroll
+Note
 Privacy
 RU
 Roll
 Save to my lists
-Scepter
 ScepterPrimary weaponTier 1 · Magic · Presence · Far · d6 mag · ... [namelen=156 namehash=5cf0702e]
 Search
+Search by name or description...
+Select
 Sign in
 Skip to content
-Stride Potion
 Tables
 Terms of use
-Twilight Deck
 daggerheart.com

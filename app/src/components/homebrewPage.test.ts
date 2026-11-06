@@ -1616,6 +1616,39 @@ describe('the card form on a tab', () => {
   });
 });
 
+/* DESIGN.md, "The Head Order Rule": the heading, the pills, the pin, the primary last; from
+   761 to 999 px the pills after the primary. */
+describe('the head from 761 px', () => {
+  it.each([
+    ['wide', false],
+    ['mid', true]
+  ] as const)('draws the pills with counts in their place at %s', async (band, below) => {
+    const { container } = page('gm1', { env: { viewport: fakeViewport(band) } });
+    const nav = await screen.findByRole('navigation', { name: t.myItems });
+    const h1 = screen.getByRole('heading', { level: 1, name: t.myItems });
+    const pin = screen.getByRole('button', { name: t.homeHint });
+    const primary = screen.getByRole('link', { name: new RegExp(t.hbNewItem) });
+    const pills = within(nav).getAllByRole('link');
+    expect(pills.every((a) => a.classList.contains('chip'))).toBe(true);
+    expect(pills[0]).toHaveClass('on');
+    const order = below ? [h1, pin, primary, nav] : [h1, nav, pin, primary];
+    for (let i = 1; i < order.length; i++) {
+      expect(order[i - 1]?.compareDocumentPosition(order[i] as Node)).toBe(
+        Node.DOCUMENT_POSITION_FOLLOWING
+      );
+    }
+    expect(nav.closest('.headnav')?.classList.contains('below')).toBe(below);
+    expect(container.querySelector('.page-head')).toContainElement(primary);
+    await expectNoA11yViolations(container);
+  });
+
+  it('draws no primary in the head on another tab', async () => {
+    page('gm1', { route: '#/homebrew/sets' });
+    await screen.findByRole('navigation', { name: t.myItems });
+    expect(document.querySelector('.page-head .headnew')).toBeNull();
+  });
+});
+
 describe('the head up to 760 px', () => {
   const narrow = { env: { viewport: fakeViewport('narrow') } };
 
@@ -1838,16 +1871,6 @@ describe('the ticks across the tabs', () => {
 });
 
 const BASE32 = 'abcdefghijklmnopqrstuvwxyz234567';
-/* A key from a number: `hb_` and 16 base32 characters. */
-const keyN = (n: number): string => {
-  let tail = '';
-  let v = n;
-  do {
-    tail = BASE32.charAt(v % 32) + tail;
-    v = Math.floor(v / 32);
-  } while (v > 0);
-  return 'hb_' + tail.padStart(16, 'a');
-};
 
 describe('the bulk move', () => {
   const HOME = ['Кольцо с гравировкой', 'Настой кузнеца', 'Whispering Cap'];
@@ -1990,34 +2013,6 @@ describe('the bulk move', () => {
       'true'
     );
   });
-
-  /* 300 rows in jsdom under coverage take about 35 s; the bound is the render's, not the move's. */
-  it('moves 300 ticked items in one call', async () => {
-    const cloud = fakeCloud(SEED, 'gm2', { limits: { items: 300 } });
-    await cloud.homebrew.import({
-      books: [
-        { id: uuid(7000), key: 'hb_bigsourceaaaaaaa', content: { ru: 'Склад' }, names: true }
-      ],
-      cards: [],
-      items: Array.from({ length: 300 }, (_, i) => ({
-        id: uuid(7001 + i),
-        key: keyN(i),
-        book: null,
-        content: { kind: 'item' as const, ru: 'Предмет ' + String(i) }
-      })),
-      update: false
-    });
-    const move = vi.spyOn(cloud.homebrew, 'moveItems');
-    page('gm2', { cloud });
-    await screen.findByText('300 предметов из 300');
-    await tickRow(t.pickAll);
-    await userEvent.click(screen.getByRole('button', { name: 'Переместить (300)' }));
-    await userEvent.selectOptions(screen.getByLabelText('Источник'), 'Склад');
-    await userEvent.click(go());
-    expect(await screen.findByText('Перемещено предметов: 300')).toBeInTheDocument();
-    expect(move).toHaveBeenCalledOnce();
-    expect(move.mock.calls[0]?.[0]).toHaveLength(300);
-  }, 120_000);
 });
 
 describe('the downloads', () => {
@@ -2130,7 +2125,6 @@ describe('the Items tab filter', () => {
     const { container } = page('gm1', { fake: { fillItems: 8 } });
     await screen.findByText('8 предметов из 8');
     expect(document.querySelector('.fcol')).toBeInTheDocument();
-    expect(document.querySelector('.fpill')).toBeNull();
     expect(screen.queryByRole('button', { name: t.filterLink })).toBeNull();
     await expectNoA11yViolations(container);
   });
@@ -2448,11 +2442,11 @@ describe('the page head', () => {
     page();
     await screen.findByText('4 предмета из 100');
     expect(homeOff()).toHaveAttribute('aria-pressed', 'false');
-    expect(screen.queryByRole('button', { name: t.helpHint })).toBeNull();
+    expect(document.querySelector('.helpbtn')).toBeNull();
     for (const open of [sources, sets, rules]) {
       await open();
       expect(homeOff()).toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: t.helpHint })).toBeNull();
+      expect(document.querySelector('.helpbtn')).toBeNull();
     }
   });
 

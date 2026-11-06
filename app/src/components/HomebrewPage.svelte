@@ -23,6 +23,7 @@
   import Panel from './Panel.svelte';
   import PinItem from './PinItem.svelte';
   import SearchBox from './SearchBox.svelte';
+  import SelMode from './SelMode.svelte';
   import SignInPrompt from './SignInPrompt.svelte';
   import TableRows from './TableRows.svelte';
   import type HomebrewImport from './HomebrewImport.svelte';
@@ -33,7 +34,9 @@
     chosenLabels,
     encodeFilter,
     groupsFor,
+    inForceOf,
     passes,
+    toggledFilter,
     type FilterState
   } from '../lib/filters.js';
   import {
@@ -108,15 +111,7 @@
   );
   /* A picked value no row offers is not in force: a re-read that drops a source or a
      section, or a source pick that leaves another source's section. */
-  const inForce = $derived.by<FilterState>(() => {
-    const out: FilterState = {};
-    for (const row of facRows) {
-      const on = picked[row.group] ?? [];
-      const kept = row.values.map((v) => v.value).filter((v) => on.includes(v));
-      if (kept.length) out[row.group] = kept;
-    }
-    return out;
-  });
+  const inForce = $derived(inForceOf(facRows, picked));
   const drawn = $derived(
     found.filter((it) => passes(inForce, HB_GROUPS, (g) => facetOf(it, g)))
   );
@@ -136,12 +131,7 @@
   }
 
   function pickFacet(group: string, value: string): void {
-    const order = facRows.find((r) => r.group === group)?.values.map((v) => v.value) ?? [];
-    const current = inForce[group] ?? [];
-    const next = current.includes(value)
-      ? current.filter((v) => v !== value)
-      : order.filter((v) => current.includes(v) || v === value);
-    applyFilter({ ...inForce, [group]: next });
+    applyFilter(toggledFilter(facRows, inForce, group, value));
   }
 
   /* Rule 20: the empty state's «Сбросить фильтры» goes with the empty state; the focus goes to
@@ -314,15 +304,10 @@
   <HomebrewTabs {app} {tab} {counts} limitText={count} />
 {/snippet}
 
-<!-- The head's end from 761 px: on the Sources, Sets and Rules tabs the first button under the
-     head is the tab's own, whose form opens in its place. -->
-{#snippet wideHead()}
-  {#if ready}
-    <div class="headx">
-      {@render tabs()}
-      {#if tab === 'items'}<span class="headnew">{@render newItem(true)}</span>{/if}
-    </div>
-  {/if}
+<!-- The head's primary from 761 px, on the Items tab only: on the Sources, Sets and Rules tabs
+     the first button under the head is the tab's own, whose form opens in its place. -->
+{#snippet headNew()}
+  <span class="headnew">{@render newItem(true)}</span>
 {/snippet}
 
 {#snippet importToggle()}
@@ -369,7 +354,9 @@
     help={null}
     home={HOMEBREW_HASH}
     pin={ready}
-    extra={wideHead}
+    nav={ready ? tabs : undefined}
+    navBelow={band === 'mid'}
+    extra={ready && tab === 'items' ? headNew : undefined}
   />
 {/if}
 
@@ -458,13 +445,12 @@
                 <span class="end">{@render importToggle()}</span>
               {/if}
               {#if !app.selecting && drawnIds.length > 0}
-                <button
-                  type="button"
-                  class="selmode"
+                <SelMode
+                  label={t.selectMode}
                   onclick={() => {
                     void startSelecting();
-                  }}>{t.selectMode}</button
-                >
+                  }}
+                />
               {/if}
             </div>
           {/if}
@@ -557,18 +543,10 @@
     margin-top: 14px;
   }
 
-  /* The head's end: the tab links, then the primary at the right edge. */
-  .headx {
-    display: flex;
-    flex: 1 1 auto;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px 18px;
-    min-width: 0;
-  }
-
+  /* The primary ends the head row (DESIGN.md, "The Head Order Rule"). */
   .headnew {
     display: flex;
+    flex: none;
     margin-left: auto;
   }
 
@@ -596,14 +574,20 @@
   }
 
   .tools :global(input[type='search']),
-  .tools :global(.btn.sm),
-  .selmode {
+  .tools :global(.btn.sm) {
     height: 40px;
   }
 
   .grow {
     flex: 1 1 140px;
     min-width: 140px;
+  }
+
+  /* DESIGN.md "Components", "The Field Measure Rule": the next controls follow the box. */
+  @media (min-width: 761px) {
+    .tools .grow {
+      max-width: 720px;
+    }
   }
 
   .end {
@@ -613,19 +597,6 @@
 
   .grow ~ .end {
     margin-left: 0;
-  }
-
-  .selmode {
-    padding: 0 11px;
-    border: 1px solid var(--line2);
-    border-radius: var(--r-sm);
-    background: var(--surface);
-    color: var(--txt);
-    font: 600 var(--t-data) / 1 var(--ui);
-  }
-
-  .selmode:hover {
-    border-color: var(--muted2);
   }
 
   .count {
@@ -679,9 +650,19 @@
     min-width: 0;
   }
 
+  /* Beside the filter column the body takes the plate's gap (DESIGN.md, "Empty state"). */
+  .body.withcol:has(> .hbrows > :global(.empty:first-child)) {
+    margin-top: var(--gap-plate);
+  }
+
+  .body.withcol > .hbrows > :global(.empty:first-child) {
+    margin-top: 0;
+  }
+
   .cause {
     margin: 0;
-    max-width: 60ch;
+    max-width: var(--measure-line);
+    text-wrap: balance;
   }
 
   .hbgroup {
@@ -708,8 +689,7 @@
     }
 
     .tools :global(input[type='search']),
-    .tools :global(.btn.sm),
-    .selmode {
+    .tools :global(.btn.sm) {
       padding: 0 9px;
     }
   }

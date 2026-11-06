@@ -164,12 +164,16 @@ missing or over-budget rule is a finding.
 
 A plan review checks that the plan answers each check, and challenges
 the answers. A batch review checks the code, the golden snapshots and
-the sweep results that the handoff records against them. A run that a
-read-only reviewer cannot make goes to "Checks still needed".
+the sweep results that the handoff records against them. A reviewer may run
+a read-only probe against the built app (`dist-test/`): a script through stdin or
+`node -e` that opens a page, measures and prints, and writes no file (owner,
+2026-11-04). A run that a read-only reviewer cannot make goes to "Checks still
+needed".
 
 ## Output format
 First write the full report to `<TASK_DIR>/reviews/<batch>.md` (a plan
-review: `plan-<batch>.md`; a second look: `<name>-2.md`) from
+review: `plan-<batch>.md`; a second look at a plan: `plan-<batch>-<n>.md`, the name
+`agent-guard.mjs` reads) from
 `.claude/templates/review.template.md`, with `Reviewed:` set to the output of
 `git rev-parse HEAD`. Then return the same text and the report path. The
 three head lines (`Verdict:`, `Reviewed:`, `Scope:`) are read by hooks

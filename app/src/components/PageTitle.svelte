@@ -61,7 +61,8 @@
     margin: 0 0 18px;
     color: var(--muted);
     font-size: var(--t-small);
-    max-width: 70ch;
+    max-width: var(--measure-line);
+    text-wrap: balance;
     overflow-wrap: anywhere;
   }
 </style>

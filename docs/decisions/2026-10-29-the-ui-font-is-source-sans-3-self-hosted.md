@@ -1,7 +1,7 @@
 # 2026-10-29 - The UI font is Source Sans 3, self-hosted from the build's own origin
 
-- Task: `57` (the owner, 2026-10-23: the font study and direction R; the
-  package and the share card faces confirmed 2026-10-29).
+- Amended by "The print card prints in the UI face at 7.1 pt, fitted after it loads" (2026-11-06): the print card takes it.
+- Task: `57` (the owner, 2026-10-23: the font study and direction R; the package and the share card faces confirmed 2026-10-29).
 - Decision: `--ui` is `'Source Sans 3 Variable'` from
   `@fontsource-variable/source-sans-3` (pinned exactly), imported in
   `main.ts` and served from `/assets/`; the print card keeps the old local

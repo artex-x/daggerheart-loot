@@ -16,12 +16,12 @@ RootWebArea "Arazo's Artifacts - Генератор лута Daggerheart" [url=/
       link "Бросок" [url=/roll/arazos_artifacts]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
-  navigation "Режим броска"
-    link "Обычные правила" [url=/roll/std]
-    link "Альтернативные таблицы" [url=/roll/alt]
-    button "Arazo's Artifacts" [expanded=false haspopup=menu]
   main ""
-    heading "The Guide to Arazo's Artifacts" [level=1]
+    heading "Бросок" [level=1]
+    navigation "Режим броска"
+      link "Обычные правила" [url=/roll/std]
+      link "Альтернативные таблицы" [url=/roll/alt]
+      button "Arazo's Artifacts" [expanded=false haspopup=menu]
     button "Открывать при запуске" [pressed=false]
     button "Об этой книге" [expanded=true]
     StaticText "Введите результат броска или получите случайную позицию."
@@ -92,12 +92,12 @@ RootWebArea "Arazo's Artifacts - Daggerheart Loot Generator" [url=/en/roll/arazo
       link "Roll" [url=/en/roll/arazos_artifacts]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
-  navigation "Roll mode"
-    link "Standard rules" [url=/en/roll/std]
-    link "Alternate tables" [url=/en/roll/alt]
-    button "Arazo's Artifacts" [expanded=false haspopup=menu]
   main ""
-    heading "The Guide to Arazo's Artifacts" [level=1]
+    heading "Roll" [level=1]
+    navigation "Roll mode"
+      link "Standard rules" [url=/en/roll/std]
+      link "Alternate tables" [url=/en/roll/alt]
+      button "Arazo's Artifacts" [expanded=false haspopup=menu]
     button "Open on start" [pressed=false]
     button "About this book" [expanded=true]
     StaticText "Enter your roll result, or pick a random entry."

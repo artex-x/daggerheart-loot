@@ -14,13 +14,16 @@
     icon: IconName;
     label: string;
     text: string | undefined;
+    /** The «Только для мастера» note: on the darker ground, the style of the owner's GM
+     *  note field. */
+    gm?: boolean;
   }
 
-  const { icon, label, text }: Props = $props();
+  const { icon, label, text, gm = false }: Props = $props();
 </script>
 
 {#if text}
-  <div class="hitnote">
+  <div class="hitnote" class:gm>
     <Icon name={icon} />
     <div class="htext mdtext">
       <b>{label}</b>
@@ -30,30 +33,34 @@
 {/if}
 
 <style>
-  /* off `.hitnote` and its four (`git show 23c00a6^:style.css`) */
+  /* A full box with no accent and no gold: a note is nobody's pick (DESIGN.md, "The Seal
+     Rule"). */
   .hitnote {
     display: flex;
     gap: 8px;
     align-items: flex-start;
     margin-top: 12px;
     padding: 10px 12px;
+    /* As wide as its text (DESIGN.md, "The Measure Rule"). */
+    width: fit-content;
+    max-width: 100%;
     border: 1px solid var(--line2);
-    border-left: 2px solid var(--gold);
-    border-radius: 9px;
-    background: rgb(216 171 94 / 6%);
+    border-radius: var(--r-sm);
     font-size: var(--t-data);
     line-height: 1.5;
     color: var(--txt);
   }
 
+  .hitnote.gm {
+    background: var(--bg2);
+  }
+
   .hitnote :global(svg) {
-    fill: var(--gold);
+    fill: var(--muted2);
     margin-top: 3px;
     flex: none;
   }
 
-  /* `--muted`: inside a shared page's row, `--muted2` on the gold tint over `--surface`
-     reads 4.48:1, under axe's 4.5 (tests/app/sweep.js at 360, measured 2026-10-21). */
   .hitnote b {
     display: block;
     font-size: var(--t-badge);
@@ -66,6 +73,7 @@
 
   .htext {
     min-width: 0;
+    max-width: var(--measure-text);
     overflow-wrap: break-word;
   }
 
@@ -73,9 +81,7 @@
      template - Svelte prunes a rule no element of *this* component's markup
      can satisfy, and `npm run check` fails on the pruned CSS. `:global` keeps
      it, and placed after the base rule the two are equal in specificity, so
-     source order is what makes the 8px win - exactly what decides it in the
-     live cascade, which reaches both instances through one specificity-based
-     rule. */
+     source order is what makes the 8px win. */
   :global(.hitnote + .hitnote) {
     margin-top: 8px;
   }

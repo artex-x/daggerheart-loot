@@ -84,7 +84,8 @@ The header draws three jobs over them in every build: «Бросок» / "Roll" 
 nine roll sections, «Таблицы» / "Tables" and «Поиск» / "Search"
 (`app/src/lib/nav.ts`). «Бросок» opens the last roll section of the tab, else the
 pinned start section when it is a roll section, else `#/roll/std`. The nine roll
-sections draw a mode row under the header: Core rules, the alternate tables and
+sections draw a mode row under the header up to 760 px and the same controls in the page
+head from 761 px: Core rules, the alternate tables and
 one «Дополнения» / "Supplements" menu of the seven supplement sections
 (`roll/wondrous_environments` to `roll/many_worlds_tavern`); every supplement
 address stays its own section (`FEATURES.md`, "Chrome"). `#/lists` has no job: it

@@ -275,8 +275,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 36px;
-    height: 32px;
+    min-width: max(36px, var(--thumb));
+    height: max(32px, var(--thumb));
     padding: 0;
     border-radius: var(--r-sm);
     border: 1px solid var(--line2);
@@ -320,10 +320,10 @@
      rules are Markup.svelte's, under `mdtext`. */
   .pane {
     padding: 10px 14px;
-    border: 1px dashed var(--line2);
+    border: 1px solid var(--line2);
     border-radius: var(--r-sm);
     background: var(--bg2);
-    color: #cfc8e0;
+    color: var(--txt-soft);
     font-size: var(--t-small);
     line-height: 1.62;
     overflow-wrap: anywhere;

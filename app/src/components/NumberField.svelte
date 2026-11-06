@@ -147,15 +147,19 @@
     border: 1px solid var(--line2);
     border-radius: var(--r-sm);
     overflow: hidden;
-    /* A lone stepper fills its settings column, 282px on the roll pane and wider in the
-       phone panel: past 240px the number floats between two far buttons (measured
-       2026-11-04). The alt roll's pair opts out in `AltPanel`. */
-    max-width: 240px;
+    /* A lone stepper fills its column up to 480 px (DESIGN.md "Components", "The Stepper
+       Rule"); a box in a row with its button keeps its content width, and the alt roll's
+       pair opts out in `AltPanel`. */
+    max-width: 480px;
   }
 
   /* The type selector is load-bearing: the field is a text input, and a generic
-     input rule would otherwise stretch it to the full width. */
+     input rule would otherwise stretch it to the full width. It takes the box's free
+     width, so the value sits at the center and «+» at the box's right edge (owner,
+     2026-11-05); 74 px is its basis. */
   input[type='text'] {
+    flex: 1 1 auto;
+    min-width: 0;
     width: 74px;
     height: 46px;
     padding: 0;
@@ -217,7 +221,7 @@
      apply, because its base rule comes before the block. */
   @media (max-width: 430px) {
     button {
-      width: 36px;
+      width: max(36px, var(--thumb));
     }
   }
 </style>

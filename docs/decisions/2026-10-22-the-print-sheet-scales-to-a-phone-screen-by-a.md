@@ -1,7 +1,7 @@
 # 2026-10-22 - The print sheet scales to a phone screen by a transform the fit divides out
 
-- Task: `persist-review` (the owner, decision 51: I5 "Implement now", 2026-10-22;
-  planner, 2026-10-22).
+- Amended by "The print card prints in the UI face at 7.1 pt, fitted after it loads" (2026-11-06): one card per row up to 760 px.
+- Task: `persist-review` (the owner, decision 51: I5 "Implement now", 2026-10-22; planner, 2026-10-22).
 - Decision: below about 840 px `#/p/` draws its sheets with `transform: scale()` under
   `@media screen` at `sheetScale` (the column's width over 210 mm, cut to three
   decimals), and `PrintCard`'s `screenScale` divides the same number out of the

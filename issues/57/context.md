@@ -163,6 +163,195 @@
       `--wrap` (1180 px) and leaves about 350 px of empty space on each side. Asks: should the suite gain
       tests or mocks for wider windows, and should a rule govern the wide layout. Not in 7b. Routing: a planner
       pass after wave 2b (a design decision: a wider `--wrap` or a second column at 1440+ px).
+    - Item 8 (owner, chat, 2026-11-05, screenshot of the number field under «Бросить 1-145», about 330 px wide, RU):
+      the roll-number stepper («РЕЗУЛЬТАТ БРОСКА (1-145)», «-», «1», «+») looks strange: the «+» sits far from the
+      field's end, the value is not centered, extra space follows the «+", and since the field got a fixed width
+      it is smaller than the other controls on the page. Asks: make it smaller, or put the «+» at the right side;
+      reverting the fixed width is allowed, if it works at every supported width. Routing: a wave 3 batch that
+      touches the roll pages (default: batch 8's refresh or the first batch that opens `RollPanel`/`RollPage`;
+      the planner names it); a browser case at 360, 390, 768 and 1180 px, RU and EN, and `FEATURES.md` follow.
+      Placed (planner, 2026-11-05): batch 8 (`plan-8.md` L10, acceptance 14, case 104). No wave 3 batch opens a roll
+      page; batch 8 takes it as the next to ship, because the change is CSS in `NumberField.svelte` alone. Choice
+      (AFK default): the input grows (`flex: 1 1 auto`), so the value centers and «+» sits at the box's right
+      edge; the 240 px cap stays; dropping the cap is the one-line fallback.
+    - Item 9 (owner, chat, 2026-11-05, screenshot at about 1530 px, RU, table rows «Фляга Путника», «Мешок
+      Собирателя»): on a wide window the table and list rows have much free width on the right, yet the one-line
+      description is cut with an ellipsis. Ask: use the free width before truncating. Routing: the wide-window
+      rule (`plan-wave3-wide.md`, Q-W2) and the row text clamp of `RowMain`/`TableRows`; the planner decides the
+      clamp (more lines, or no cut while width remains) and names the batch; a browser case at 1180, 1440 and
+      1920 px, RU and EN, plus the 360 first-screen limits stay.
+      Placed (planner, 2026-11-05): batch 9b, "9b-R9" in `plan.md` section 7 (the only wave 3 batch that lays out the
+      full row at wide widths). Choice (AFK default): from 1000 px the row text cap is 110ch (70ch today) and the
+      clamp is 3 lines (2 today); below 1000 px nothing changes.
+      Refinement (owner, chat, 2026-11-05): "still too many empty space there, maybe we can utilize it more
+      efficiently". The 110ch cap does not satisfy it: at 1440 and 1920 px a row still leaves a wide empty band
+      on its right. The 9b refresh must measure the empty share of a row at 1440 and 1920 px, RU and EN, and
+      choose a layout that uses it (for example the text caps go, the text takes the free width, or the table
+      lists two columns of rows from a width the planner names), with a mock step; the cap and the clamp above
+      are the fallback only.
+      Placed (planner, 9b refresh, 2026-11-05): the Row Columns Rule, `plan-9b.md` M1 (two row columns from a 1108 px
+      list, text at most 100ch, three lines). Measured on the built app: a `/search` row is 43%, 54% and 55% empty at
+      1180, 1440 and 1920 px (25%, 42%, 45% beside the filter column).
+      Answer (owner, chat, 2026-11-05, interactive): Row Columns is REJECTED. Batch 9b builds "one column, no text
+      cap": the 70ch cap of `.rt` in `RowMain.svelte` goes and the description runs to the row's right edge (option
+      B of the independent opinion, `C:\Users\Ignat\.dhloot\notes\57\wide-rows-opinion.md`). Its fallbacks: more than
+      15% of RU rows still clamping at 1200, 1440 and 1920 px gives a 3-line clamp from 1000 px; 200-character lines that
+      read badly give a cap near 120ch. Placed (planner, 2026-11-05): `plan-9b.md` M1 and S2, "The Row Text Rule"
+      (DESIGN.md "Components", "Named Rules", "The One Width Rule"; FEATURES.md "Tables and search"), case 106,
+      batch 9b. Measured (`mocks/9b/measure.json`, `rowText`): the 15% trigger fired (RU shares under the plain cap
+      removal: `/search` «меч» 28.2 / 22.1 / 21.4%, `eq_weapon` 18.6 / 10.4 / 9.9%, `wondrous` 21.8 / 3.4 / 1.7% at
+      1180 / 1440 / 1920 px; the 292-row catalogue sample 4.8 / 3.1 / 3.1%), so the rule holds the 3-line clamp from
+      1000 px (12.2% or less on every state of 20 rows or more, Vault of Ages excepted: its 300-800 character rules
+      text clamps by content). The 120ch cap is not built. Q9b-2 (owner, same chat): the share panel keeps a delete per
+      link.
+      Follow-up (owner, chat, 2026-11-05, interactive): weapon-table rows stay partly empty at 1920 px where a
+      description is short: "ship the row-text rule, plan stat columns later". Placed (planner): 9b ships M1 as planned;
+      "tabular stat columns on table rows from 1440 px" is "The Stat Columns Rule" in DESIGN.md "Proposed rules" (`plan-9b.md`
+      M22) and `plan.md` section 12, recommended as its own task after wave 3 (not batch 10). The design critique's
+      row findings are M21 (line height 1.55 from 1000 px, the `/s/` tail colour and font, the `/s/` note, the bare «1»
+      as a Deferred row).
+    - Item 10 (owner, chat, 2026-11-05): review the Material Design guidelines (and similar official ones)
+      against `DESIGN.md` in parallel with batch 8: what to add as named rules, and whether any wave 1-3 screen or
+      mock should be reconsidered against them. No Material skill is installed (the project's `DESIGN.md` stays
+      the authority). Report: `C:\Users\Ignat\.dhloot\notes\57\material-review.md` (read-only agent, outside the
+      repo). Routing: the orchestrator reads it, the 9b planner pass takes the wide-screen rules and the owner
+      decides the rest; a rule enters `DESIGN.md` only with its browser check in the batch that writes it.
+      Answer (owner, chat, 2026-11-05: "proceed as recommended ... we need to document them even if they would be
+      useful for future"): (a) batch 9b takes five rules with their code, browser check and mock: Row Columns,
+      Stepper, Field Measure (search box at most 720 px), the check on gold chips, Whole Message (never cut);
+      (b) every other candidate of the report is written into `DESIGN.md` too, in a "Proposed rules" section
+      that names, for each, its source, its draft text, its enforcing check and the batch that would build it
+      (batch 10 writes the section, or the 9b planner pass if it is cheaper); (c) the Thumb Rule (40 px controls
+      up to 600 px; moves `FIRST_SCREEN` offsets) and the toast timing (4000/7000 ms) wait for the owner's
+      explicit yes before any code; the section lists them as "Proposed, owner decision open".
+      APPROVED (owner, chat, 2026-11-05, "Approve both"): the Thumb Rule and the toast timing are decided, not
+      proposed. They are built and enforced, so they are no longer in the "Proposed" section. Placement is the
+      planner's: the 9b refresh names the batch (a new batch before 10 for the Thumb Rule, because it moves every
+      `FIRST_SCREEN` offset at 360 and the `/roll/std` exception; the toast timing in the batch that opens
+      `Toast`), with a mock step, the re-measured `FIRST_SCREEN` rows and a browser case per rule. Report:
+      `C:\Users\Ignat\.dhloot\notes\57\material-review.md`, drafts in its part 2.
+      Reviewers (owner, chat, 2026-11-05): every batch review of wave 3 and each wave and whole-app blind review
+      is dispatched with the guideline set named in its message: `DESIGN.md` (named rules and the "Proposed rules"
+      section), the Impeccable direction and its `critique`, the Material and other official sources of
+      `C:\Users\Ignat\.dhloot\notes\57\material-review.md` (a reviewer may read it, the repo may not cite it),
+      and the Clarity Rule. The reviewer reports a screen that breaks one of them as a finding with the source
+      URL, even when no `DESIGN.md` rule exists yet. The permanent home of the sources is the "Proposed rules"
+      section (source URL per entry), so the dispatch line is a stopgap until batch 10 writes it. No prompt or
+      agent file changes for this (a change there is a review trigger of its own).
+      Placed (planner, 9b refresh, 2026-11-05): (a) the five rules, batch 9b (`plan-9b.md` M1-M5; homes DESIGN.md
+      "Components", "Named Rules" for Row Text, Field Measure, Stepper, Check, and "Typography" for Whole
+      Message); (b) "Proposed rules", batch 9b (M19; the stopgap ends with 9b's commit); the Thumb Rule and the
+      toast timing (the Reading Time Rule), a new batch T between 9b and P (`plan.md` section 7, "Batch T"; homes
+      DESIGN.md "The Phone-First Rule" and "Components", "Named Rules", FEATURES.md "Chrome").
+    - Item 11 (owner, chat, 2026-11-05, two production screenshots at about 1920 px, RU): "why roll pages are between
+      page title and header and table pages are after header? can we unify these behavior?" Facts: on `/roll/alt` the
+      second-level row («Обычные правила», «Альтернативные таблицы», «Дополнения ˅») is its own full-width row with a
+      bottom rule above the page title and the title row (title, pin, «Об этих таблицах»); on `/tables` the group
+      chips sit on the same row as the title and its two buttons, and the second level (the Предметы / Расходники tabs)
+      is below the title. Addendum (owner, same day, a `/homebrew` screenshot): "and we might also want to make it
+      consistent with items page": on «Мои предметы» the title, the pin and the four underlined tabs (Предметы 44,
+      Источники 5, Комплекты 3, Карты правил 4) are on one row with «Новый предмет» at the far right, then the subtitle,
+      the search row, the filter column and the rows. Three placements of sibling-page navigation exist (roll above the
+      title, tables beside it, homebrew beside it in another style). Ask: one placement rule and one style, on every
+      family that has siblings (`/search`, `/lists` and the list pages have none).
+      Placed (planner, 2026-11-05): `plan-nav.md` (the three placements, three options with the offsets measured on the
+      built app, the recommendation A: siblings as pills in the head row, level 3 as underlined tabs, up to 760 px the
+      pills when they fit else a picker; batch N, outline, after T and before P, `plan.md` section 7). Not in 9b: the
+      move is a `Shell` and `RollPage` markup change with about 25-35 goldens, 70-90 min. The owner answers N1 (A, B or
+      C) and N2 (the homebrew tabs as pills) interactively; nothing is built before.
+      Answer (owner, chat, 2026-11-05, interactive): N1 = option A, with a correction: "where have we lost the page
+      header?" - the roll page must keep a VISIBLE `h1` from 761 px, so every family draws its heading first in the
+      title row, then the pin, the help and the pills (tables «Таблицы», homebrew «Мои предметы», roll «Бросок» /
+      "Roll", the job name; the lit pill names the mode). N2 = the homebrew tabs become pills with counts. Placed
+      (planner, same day): `plan-nav.md` sections 3-5 (measured with the visible `h1`: roll first content 267 to 214
+      at 1180 and 1000, 256 at 768, 360 unchanged; `/roll/wondrous` RU ends 42 px short of the 1000 px column; up to
+      760 px the `h1` stays hidden because the pills or the picker name the page) and `plan.md` section 7, batch N.
+      Follow-up (owner, chat, 2026-11-05, interactive): N3 = the roll head order is the heading, then the pills, then the
+      pin and the help at the end of the row (this replaces "title, pin, help, pills"; the tables and homebrew heads
+      follow the same order); "I want it consistent on all pages then" (N4) = ONE rule for every page that draws a
+      `PageHead`: heading, pills (where the page has siblings), pin, help, the primary action(s) at the right end; a
+      page without siblings has no pills slot. Placed (planner): `plan-nav.md` sections 4, 6, 7 and 8 ("The Head Order
+      Rule"; the page table: roll, tables and homebrew change in batch N, `/lists` and `/search` already follow it, the
+      list page, `/s/`, account, editor and print draw no `PageHead`; the browser check; up to 143 golden files).
+      The design critique of the N mocks is judged in `plan-nav.md` section 6.
+      ANSWER (owner, chat, 2026-11-05, interactive, after the all-width mocks `mocks/N/headorder/`): option A for
+      761-999 px (pills on their own row after pin and help; the strict order holds from 1000 px). Measured in
+      that folder (RU, first content, limit 288 and 256 at 360): roll 254 (A) vs 294 (B), homebrew 261 vs 301;
+      at 768 and 900 px `/tables/*` is 334-340 today and over the limit in every option (the reserved tab row is
+      the cause): batch N must name its own fix or an accepted exception for `/tables/*` in that band.
+    - Item 12 (owner, chat, 2026-11-05, screenshot of the «РЕЗУЛЬТАТ БРОСКА» group, RU, 360 px): the two round
+      badges with the letters «Н» (gold) and «С» (violet) before «Кость Надежды» and «Кость Страха» should be a
+      coloured d12 die icon, with no letters. Routing: roll-page markup in `RollPanel`/`StdPanel`/`AltPanel`
+      (the `hopeDie`/`fearDie` labels); the planner places it in batch 9b (if it opens those files; it does not
+      today) or batch T/N (N opens the roll heads); it needs the existing `card/die-d12-*.svg` or the
+      `Dice` icon set, the Hope/Fear colours of `tokens.css` (a die is never gold or lit: `hues.js` and the
+      Dice Rule in `DESIGN.md`; check which rule covers a die in a label), a browser check at 360 and 1180 px,
+      RU and EN, and an `aria-label` that keeps the word (a reader must hear «Кость Надежды», not a colour).
+      ANSWERS (owner, chat, 2026-11-05, interactive, after `mocks/N/d12/` and `mocks/N/tables-mid/`): item 12 =
+      the line d12 in the Hope and Fear colours (plan-N N-D10 default; the 22% fill stays the fallback); `/tables/*`
+      at 761-999 px = a named exception in the First-Screen Rule held to 336 px by a case (N-D5), not the
+      scrolling tab row.
+      ANSWERS on batch T (owner, chat, 2026-11-05, interactive, `plan-T.md`): the `/lists` card's «Ещё» goes to
+      the card's top-right corner as a 40 px text button (T5; a departure from mock 8, accepted); toasts last
+      4000 ms (plain), 7000 ms (error and action) and 10000 ms (an email address, or over 80 characters), every
+      toast pauses on hover, touch and focus (T8; the 10 s class extends the approved 4000/7000, accepted).
+    - Item 13 (owner, chat, 2026-11-05, screenshot of the empty `/search` page at about 1890 px, RU): the
+      empty-state plate («Что ищем?») has a dashed border and reads as a drag-and-drop target; the owner asks the
+      same for "other elements". Facts (grep, 2026-11-05): `dashed` appears in 8 components (`Empty`, `Badge`
+      for «Уникальное», `CompactRow`, `HitNote`, `ListPage` 7 times, `MarkupField`, `PrintCard` (print: fine),
+      `TableRows`); `DESIGN.md` lines 309, 569, 712, 820, 843 name dashed for the unique badge, a value-less
+      filter, the list drop mark and the `Empty` plate. Ask: a dashed border should say "drop here" only. Routing:
+      a planner decision with an inventory (every dashed element, what it means, where it is a real drop target
+      and where not), one DESIGN.md rule ("Dashed Means Droppable" or similar, with the Material/Apple
+      sources of the report if they say so) and the replacement style for non-drop uses (solid border, quieter
+      ground); the surfaces are `Empty` (every empty and error plate), the unique badge, the value-less filter
+      chip, `HitNote`, and the list drop mark stays dashed. Owner addendum (chat, same hour): the plate also sits
+      too close to the chip row above it on `/search` (about 8 px between the kind chips with «Свои предметы» and
+      the plate's top edge): the planner measures the gap between a filter or chip row and the empty plate on
+      every page that has both (`/search`, `/tables/*`, `/lists`, `/homebrew`) and sets one gap token. Place it in the next batch that touches `Empty`
+      (batch T/N or its own small batch before 10); goldens move for each plate state.
+    - Item 14 (owner, chat, 2026-11-05, screenshot of the `/search` head at about 1890 px, RU): "re width rules maybe
+      we don't need to have line wraps e.g. there, it adds additional line while it could be read as 1 sentence".
+      Facts: the page lead («Поиск сразу по 1459 позициям - добыча, расходники и снаряжение, на русском и на
+      английском. И 44 ваших предмета.») wraps to two lines at about 690 px although the column is about 1440 px;
+      the cause is the prose cap (`DESIGN.md` One Width Rule: "prose at most 78ch"; the lead is a `.page-sub`).
+      Ask: do not wrap a short lead early. Routing: a planner decision with the lead lengths per page and
+      language (measure the longest lead of every PageHead page in RU and EN), a lead cap that lets a one-to-two
+      sentence lead fit on one line while the column allows it (for example 120-140ch or no cap up to a length),
+      the effect on the First-Screen Rule (a lead on one line saves 22 px of first content), one DESIGN.md
+      sentence in the One Width Rule; place it with the head batch (N) or batch D, whichever opens `PageHead`'s
+      lead styles; goldens do not move (width is CSS) but the 360 px wrap must stay.
+    - Q-P1 ANSWER (owner, chat, 2026-11-05, interactive): KEEP 63x88 mm (no official Daggerheart card size was
+      found; 63.5x88.9 mm is the poker size; the difference is below printing tolerance). So `plan-P.md` takes
+      every "Fallback (Q-P1 no)": P-D1 and P-D17 keep today's values and text, no `CLAUDE.md` or `llms.txt`
+      change, and NO plan review is required before P (the trigger of plan-P's finding 2 does not fire).
+      The `plan-P.md` decisions P-D1/P-D17, its Status and the fold list must be re-stated for "no" before the
+      P dispatch (a short edit by the P refresh pass, not a replan).
+    - ANSWERS on batch D and the batch structure (owner, chat, 2026-11-05, interactive, `plan-D.md`,
+      `plan-rebatch.md`): the empty plate is option A (solid `--line` border on the `--bg2` ground, `--gap-plate`
+      16 px, the lead cap 120ch); REBATCH option B: batch D merges into batch T as one batch "TD"; the order after
+      9b is TD, N, P, 10, then the wave 3 and whole-app blind reviews and closeout. TD takes the cases 108-111
+      and N moves to 112-113, P to 114-115 (the P/N/T planners numbered them separately: renumber at the fold).
+      The fold lists at the end of plan-T.md, plan-N.md, plan-P.md and plan-D.md go into `plan.md` (Status,
+      sections 7, 8, 14, 16, 12) and `handoff.md` after 9b commits (the 9b implementer edits handoff.md now).
+    - Item 14 addendum (owner, chat, 2026-11-05, screenshot of `/homebrew` «Мои предметы» at about 1560 px, RU): the
+      same early wrap of the lead («Предметы, которых нет в книгах: ...» on two lines at about 470 px) and the
+      dashed «УНИКАЛЬНОЕ» badge; "we should be consistent on how we resolve it". `plan-D.md` D-6 already covers
+      `/homebrew` (RU 105 characters, one line under the 120ch cap) and the dashed badge (D-1); the check must
+      read both `PageHead` and `PageTitle` leads on `/search` and `/homebrew` at 1180, 1440 and 1920 px.
+    - Item 15 (owner, chat, 2026-11-05, screenshot of the open «Об этих данных» panel on `/tables`, RU, panel
+      about 640 px wide, text wrapping at about 530 px): "we should review all multi-line content and make sure
+      we make a consistent decision how we show it on different dimensions, one of other items like this is help
+      info". Ask: one text-width rule for every multi-line block (leads, help panels, notes, plates, error and
+      empty text, row descriptions, dialogs), checked at 360, 768, 1180, 1440 and 1920 px. Routing: a planner
+      audit (inventory of every multi-line block, its cap or container, its measured line length per width, RU
+      and EN), one rule with classes (for example caption/lead, help, note, description), the DESIGN.md text
+      replacing the scattered 70ch/78ch/110ch/120ch sentences, and its placement (the merged batch TD, which
+      already holds item 14, is the default home).
+    - ANSWERS on item 15 (owner, chat, 2026-11-05, interactive, `plan-text.md`, `mocks/text/`): The Measure Rule
+      (`--measure-line` 120ch for leads and one-line text, `--measure-text` 70ch for passages; rows have no cap)
+      extends the merged batch TD (MT-1 to MT-7 become TD acceptance lines, TD about 168-230 min); a help panel
+      hugs its text (70ch box, MR-4 default accepted; the fallback is the line class inside the hugging box).
     - Owner's lean (chat, 2026-11-04): option 2, consistency first.
     - Refinement (chat, 2026-11-04): "even not to hide homebrew but upgrade lines and sets, make them visible only
       on the item page": the homebrew tag stays as today; the upgrade and relation lines and the set draw only on
@@ -205,7 +394,8 @@
     unless a measurement passes it (then stop and ask). Raises under the 300 kB ceiling
     follow the standing rule (measured total rounded up, reason in the commit). The
     batch that first passes 270 writes the new ceiling into `tools/bundle-budget.mjs`,
-    `.claude/README.md` and its decision file.
+    `.claude/README.md` and its decision file. Home: batch 8 (`plan-8.md` L11, acceptance 15), written whether or not
+    its own total passes 270 (the unconfigured build was 268.1 of 269 kB after 9a).
   - Site share cards (owner, 2026-10-29, chat: "Yes, batch 1"): batch 1
     re-renders both cards in the new system with the font change. Home:
     `docs/artwork.md`, "The site share cards", written by batch 1. Facts:
@@ -426,6 +616,14 @@
     Downloads; use Copy as SVG. Batch P exports the hands only (without the
     label), one- and two-hand, colour and black-and-white (node
     3773-90792).
+    Export done by the orchestrator (owner, chat, 2026-11-05: "do the burden export now"): in
+    `C:\Users\Ignat\.dhloot\notes\57\figma\`, `burden-{1,2}-{colour,bw}-hands.svg` (62x37, from the
+    `Burden` group of the Палаш card for one hand and the Длинный меч card for two, colour page node
+    714-42387 and black-and-white page node 3773-90792). Each was Copy as SVG of `Burden` (62x48), then
+    the first `<path fill="black">` (the «ХВАТ» label, y 21-46) was deleted and the viewBox cut to 62x37.
+    The raw copies sit beside them without the suffix. Not yet rendered: batch P renders each before the
+    swap and compares with the node. The existing `card/burden-*.svg` are 62x36, so batch P reads the
+    one-pixel height change.
   - Card bottom line (owner, 2026-10-29, interactive): the screen record
     card drops «Daggerheart» from its bottom line and keeps only the source
     (Core, Hope & Fear, a homebrew author) - batch 4 (record card), and
@@ -730,6 +928,14 @@
 - 30 backward `focus()` stops at 320 px EN: 8 covered today, 0 with
   `scroll-padding-top` at the measured height.
 
+## Facts measured at the batch 9b refresh (2026-11-05, `dist-test/` of `d8e30731`)
+- `RowMain`'s 70ch text is 557 px. Row list widths: full width 1133 / 1393 / 1440 px at 1180 / 1440 / 1920
+  windows; beside the filter column 863 / 1123 / 1170.
+- A 720 px `flex-basis` on the catalog's search box wraps its row: the first row moved 244 to 292 px at 1180; a
+  `max-width` alone keeps 244.
+- The roll pane's stepper is 240 of a 282 px column at 1180; `/roll/std` first result 267 px at 1180x720, 323 px at
+  360x640.
+
 ## Command costs
 | Command | Wall clock | Fits one call? |
 |---|---|---|
@@ -797,3 +1003,12 @@
 - Human provides new info
 - context.md is missing a fact you need
 - You suspect drift vs issue or plan
+
+## Placed (orchestrator, 2026-11-06, from the fold planner)
+- Item 10: homes DESIGN.md "The Phone-First Rule", "Components" "Named Rules" (Reading Time Rule 5 of 8), FEATURES.md "Chrome"; the long toast class (10000 ms; an email address or more than 80 characters) is a planner default (AFK item 21); batch TD (`plan-TD.md`).
+- Item 11: `plan-N.md` N-D5, a named exception, 334 px at 900x720, ceiling 336 in case 112; fallback `scrollTrim` (287 px). The "homebrew" cells of `mocks/N/headorder/` were roll-page offsets; N S1 measures the real page. The Head Order Rule: batch N, acceptance 2.
+- Item 12: batch N, N-D10, case 113, `mocks/N/d12/`.
+- Item 13: batch TD, `plan-D.md`. Corrections: the list drop mark is a 2 px gold line; the value-less filter chip is not dashed.
+- Item 14: batch TD, D-6, now `--measure-line` (`plan-text.md`).
+- Item 15: `plan-text.md`, batch TD (MT-1 to MT-7, case 111).
+- CI note: run 42128868815 of the fold commit `d524e220` failed `check` on one timing test (`homebrew.timed.test.ts`, 16.96 ms against 16) on a docs-only change; the credit refuses a `check` re-run, so the TD tip carries the gate.

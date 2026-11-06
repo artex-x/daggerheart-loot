@@ -1,5 +1,6 @@
-/* TableNav.svelte on its own: the group chips and the tabs from 761 px, the picker and
-   its sheet below it, the source tabs of the own items table and their fold. */
+/* TableNav.svelte on its own: from 761 px the group chips (the page head's pills) and the
+   tabs (under the head) as two parts, the picker and its sheet below it, the source tabs
+   of the own items table and their fold. */
 import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -12,7 +13,10 @@ import { fakeEnv, fakeViewport, type Band } from '../ports/index.js';
 import { AppState } from '../state/app.svelte.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  for (const main of document.querySelectorAll('body > main')) main.remove();
+});
 
 function nav(
   table: TableId,
@@ -21,7 +25,15 @@ function nav(
   source: string | null = null
 ) {
   const app = new AppState(fakeEnv({ viewport: fakeViewport(band) }));
-  return render(TableNav, { app, table, sources, source, filter: {} });
+  /* In the page the tabs sit in `main`, as axe's region rule needs. */
+  const main = document.body.appendChild(document.createElement('main'));
+  render(TableNav, { target: main, props: { app, table, sources, source, filter: {} } });
+  if (band !== 'narrow')
+    render(TableNav, {
+      target: main,
+      props: { app, table, sources, source, filter: {}, part: 'tabs' }
+    });
+  return { container: document.body };
 }
 
 describe('the table navigation', () => {
@@ -29,7 +41,9 @@ describe('the table navigation', () => {
     'draws the group chips and the tabs at %s',
     async (band) => {
       const { container } = nav('eq_weapon', band);
-      const groups = within(screen.getByRole('group', { name: 'Группа' }));
+      /* One landmark: the chips; the tabs follow it, a group named by the chips' group. */
+      const landmark = screen.getByRole('navigation', { name: 'Таблицы' });
+      const groups = within(within(landmark).getByRole('group', { name: 'Группа' }));
       expect(groups.getByRole('link', { name: 'Снаряжение' })).toHaveAttribute(
         'aria-current',
         'page'
@@ -40,6 +54,10 @@ describe('the table navigation', () => {
         'page'
       );
       expect(tabs.getByRole('link', { name: 'Броня' })).not.toHaveAttribute('aria-current');
+      expect(landmark.contains(screen.getByRole('group', { name: 'Снаряжение' }))).toBe(false);
+      expect(
+        landmark.compareDocumentPosition(screen.getByRole('group', { name: 'Снаряжение' }))
+      ).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
       await expectNoA11yViolations(container);
     }
   );
@@ -132,18 +150,21 @@ describe('the tab slot', () => {
     await waitFor(() => {
       expect(app.user).toBeTruthy();
     });
-    const without = render(TableNav, {
-      app,
-      table: 'eq_weapon',
-      sources: [],
-      source: null,
-      filter: {}
-    });
+    render(TableNav, { app, table: 'eq_weapon', sources: [], source: null, filter: {} });
     expect(
       within(screen.getByRole('group', { name: 'Группа' })).getByRole('link', {
         name: 'Хоумбрю'
       })
     ).toBeInTheDocument();
+    cleanup();
+    const without = render(TableNav, {
+      app,
+      table: 'eq_weapon',
+      sources: [],
+      source: null,
+      filter: {},
+      part: 'tabs'
+    });
     const base = ghostsOf(without.container);
     cleanup();
     const crowded = render(TableNav, {
@@ -151,7 +172,8 @@ describe('the tab slot', () => {
       table: 'eq_weapon',
       sources,
       source: null,
-      filter: {}
+      filter: {},
+      part: 'tabs'
     });
     expect(ghostsOf(crowded.container)).toBe(base);
     expect(ghostsOf(crowded.container)).not.toContain('ИИИ');

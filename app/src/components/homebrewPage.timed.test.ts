@@ -4,7 +4,7 @@
    runs in the `timed` vitest project, one file at a time after the parallel files
    (vite.config.mts), so another worker's load does not decide it.
    docs/specs/FEATURES.md, "Homebrew". */
-import { cleanup, waitFor, within } from '@testing-library/svelte';
+import { cleanup, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { fakeCloud } from '../ports/fake-cloud.js';
@@ -80,4 +80,37 @@ describe('a set of 300 own members and 100 book items', () => {
        The case took 2.0 s alone (file 12.2-12.6 s) and 2.7 s with coverage on this host
        (2026-10-16); npm run check prints no case time. The timeout is over three times either. */
   }, 60_000);
+});
+
+/* 300 rows in jsdom under coverage take about 35 s alone and crossed 120 s beside the parallel
+   files (2026-11-05); the bound is the render's, not the move's. */
+describe('the bulk move of 300 items', () => {
+  it('moves 300 ticked items in one call', async () => {
+    const cloud = fakeCloud(SEED, 'gm2', { limits: { items: 300 } });
+    await cloud.homebrew.import({
+      books: [
+        { id: uuid(7000), key: 'hb_bigsourceaaaaaaa', content: { ru: 'Склад' }, names: true }
+      ],
+      cards: [],
+      items: Array.from({ length: 300 }, (_, i) => ({
+        id: uuid(7001 + i),
+        key: keyN(i),
+        book: null,
+        content: { kind: 'item' as const, ru: 'Предмет ' + String(i) }
+      })),
+      update: false
+    });
+    const move = vi.spyOn(cloud.homebrew, 'moveItems');
+    page('gm2', { cloud });
+    await screen.findByText('300 предметов из 300');
+    /* By class: a role query names each of the 300 rows' buttons first. */
+    await userEvent.click(document.querySelector('button.selmode') as HTMLElement);
+    await userEvent.click(document.querySelector('.selbarwrap .selall input') as HTMLElement);
+    await userEvent.click(screen.getByRole('button', { name: 'Переместить (300)' }));
+    await userEvent.selectOptions(screen.getByLabelText('Источник'), 'Склад');
+    await userEvent.click(screen.getByRole('button', { name: 'Переместить' }));
+    expect(await screen.findByText('Перемещено предметов: 300')).toBeInTheDocument();
+    expect(move).toHaveBeenCalledOnce();
+    expect(move.mock.calls[0]?.[0]).toHaveLength(300);
+  }, 120_000);
 });

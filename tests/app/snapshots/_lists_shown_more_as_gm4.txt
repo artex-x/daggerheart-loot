@@ -20,35 +20,27 @@ RootWebArea "Мои списки - Генератор лута Daggerheart" [url
   main ""
     heading "Мои списки" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
-    StaticText "Соберите добычу в список и отправьте игрокам одной ссылкой."
-    StaticText "НОВЫЙ СПИСОК"
-    textbox "Новый список" [multiline=false readonly=false required=false]
-    button "Создать"
     button "Импорт из файла" [expanded=false]
-    searchbox "Найти список"
+    button "Новый список" [expanded=false]
     status ""
-    heading "ВАШ АККАУНТ" [level=2]
+    searchbox "Найти список"
     StaticText "30 списков из 50"
-    checkbox "Выбрать все" [checked=false]
-    StaticText "ВЫБРАТЬ ВСЕ"
-    generic ""
-    checkbox "Выбрать: Сессия 22" [checked=false]
+    button "Выбрать"
     link "Сессия 22, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000008030]
       StaticText "Сессия 22"
       StaticText "0 позиций · изменён только что"
       StaticText "Список пуст"
-    button "Удалить"
-    ... checkbox x27 of 31 same-shape siblings elided
+    button "Ещё: Сессия 22" [expanded=false haspopup=menu]
     link "Сессия 21, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000008029]
       StaticText "Сессия 21"
       StaticText "0 позиций · изменён только что"
       StaticText "Список пуст"
-    ... button x27 of 31 same-shape siblings elided
+    button "Ещё: Сессия 21" [expanded=false haspopup=menu]
     link "Сессия 20, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000008028]
       StaticText "Сессия 20"
       StaticText "0 позиций · изменён только что"
       StaticText "Список пуст"
+    ... button x26 of 30 same-shape siblings elided
     link "Сессия 19, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000008027]
       StaticText "Сессия 19"
       StaticText "0 позиций · изменён только что"
@@ -147,17 +139,15 @@ RootWebArea "Мои списки - Генератор лута Daggerheart" [url
       StaticText "Храм Солнца"
       StaticText "0 позиций · изменён только что"
       StaticText "Список пуст"
-    checkbox "Выбрать: Лавка в порту" [checked=false]
     link "Лавка в порту, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000008002]
       StaticText "Лавка в порту"
       StaticText "0 позиций · изменён только что"
       StaticText "Список пуст"
-    button "Удалить"
-    checkbox "Выбрать: Клад дракона" [checked=false]
+    button "Ещё: Лавка в порту" [expanded=false haspopup=menu]
     link "Клад дракона, 1 позиция, изменён только что" [url=/lists/00000000-0000-4000-8000-000000008001]
       StaticText "Клад дракона"
       StaticText "1 позиция · изменён только что"
-    button "Удалить"
+    button "Ещё: Клад дракона" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -166,44 +156,43 @@ RootWebArea "Мои списки - Генератор лута Daggerheart" [url
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-?Справка
 EN
 RU
 daggerheart.com
 Ёлочная ярмарка, 0 позиций, изменён только что
 Аккаунт: gm4@example.test
 Бросок
-Выбрать все
-Выбрать: Ёлочная ярмарка
-Выбрать: Клад дракона
-Выбрать: Кузнец
-Выбрать: Лавка в порту
-Выбрать: Логово
-Выбрать: Порт Ветров
-Выбрать: Рынок
-Выбрать: Сессия 10
-Выбрать: Сессия 11
-Выбрать: Сессия 12
-Выбрать: Сессия 13
-Выбрать: Сессия 14
-Выбрать: Сессия 15
-Выбрать: Сессия 16
-Выбрать: Сессия 17
-Выбрать: Сессия 18
-Выбрать: Сессия 19
-Выбрать: Сессия 20
-Выбрать: Сессия 21
-Выбрать: Сессия 22
-Выбрать: Сессия 3
-Выбрать: Сессия 4
-Выбрать: Сессия 5
-Выбрать: Сессия 6
-Выбрать: Сессия 7
-Выбрать: Сессия 8
-Выбрать: Сессия 9
-Выбрать: Сундук мага
-Выбрать: Трофеи
-Выбрать: Храм Солнца
+Выбрать
+Ещё: Ёлочная ярмарка
+Ещё: Клад дракона
+Ещё: Кузнец
+Ещё: Лавка в порту
+Ещё: Логово
+Ещё: Порт Ветров
+Ещё: Рынок
+Ещё: Сессия 10
+Ещё: Сессия 11
+Ещё: Сессия 12
+Ещё: Сессия 13
+Ещё: Сессия 14
+Ещё: Сессия 15
+Ещё: Сессия 16
+Ещё: Сессия 17
+Ещё: Сессия 18
+Ещё: Сессия 19
+Ещё: Сессия 20
+Ещё: Сессия 21
+Ещё: Сессия 22
+Ещё: Сессия 3
+Ещё: Сессия 4
+Ещё: Сессия 5
+Ещё: Сессия 6
+Ещё: Сессия 7
+Ещё: Сессия 8
+Ещё: Сессия 9
+Ещё: Сундук мага
+Ещё: Трофеи
+Ещё: Храм Солнца
 Импорт из файла
 К содержимому
 Клад дракона, 1 позиция, изменён только что
@@ -212,6 +201,7 @@ daggerheart.com
 Лавка в порту, 0 позиций, изменён только что
 Логово, 0 позиций, изменён только что
 ЛутDaggerheart
+Найти список
 Новый список
 Открывать при запуске
 Поиск
@@ -237,11 +227,9 @@ daggerheart.com
 Сессия 7, 0 позиций, изменён только что
 Сессия 8, 0 позиций, изменён только что
 Сессия 9, 0 позиций, изменён только что
-Создать
 Сундук мага, 0 позиций, изменён только что
 Таблицы
 Трофеи, 0 позиций, изменён только что
-Удалить
 Условия использования
 Установить как приложение
 Храм Солнца, 0 позиций, изменён только что
@@ -263,35 +251,27 @@ RootWebArea "My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm4]
   main ""
     heading "My lists" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
-    StaticText "Collect loot into a list and send it to your players as a single..." [namelen=70 namehash=7a94568a]
-    StaticText "NEW LIST"
-    textbox "New list" [multiline=false readonly=false required=false]
-    button "Create"
     button "Import from file" [expanded=false]
-    searchbox "Find a list"
+    button "New list" [expanded=false]
     status ""
-    heading "YOUR ACCOUNT" [level=2]
+    searchbox "Find a list"
     StaticText "30 lists of 50"
-    checkbox "Select all" [checked=false]
-    StaticText "SELECT ALL"
-    generic ""
-    checkbox "Select: Сессия 22" [checked=false]
+    button "Select"
     link "Сессия 22, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000008030]
       StaticText "Сессия 22"
       StaticText "0 items · edited just now"
       StaticText "The list is empty"
-    button "Delete"
-    ... checkbox x27 of 31 same-shape siblings elided
+    button "More: Сессия 22" [expanded=false haspopup=menu]
     link "Сессия 21, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000008029]
       StaticText "Сессия 21"
       StaticText "0 items · edited just now"
       StaticText "The list is empty"
-    ... button x27 of 31 same-shape siblings elided
+    button "More: Сессия 21" [expanded=false haspopup=menu]
     link "Сессия 20, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000008028]
       StaticText "Сессия 20"
       StaticText "0 items · edited just now"
       StaticText "The list is empty"
+    ... button x26 of 30 same-shape siblings elided
     link "Сессия 19, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000008027]
       StaticText "Сессия 19"
       StaticText "0 items · edited just now"
@@ -390,17 +370,15 @@ RootWebArea "My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm4]
       StaticText "Храм Солнца"
       StaticText "0 items · edited just now"
       StaticText "The list is empty"
-    checkbox "Select: Лавка в порту" [checked=false]
     link "Лавка в порту, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000008002]
       StaticText "Лавка в порту"
       StaticText "0 items · edited just now"
       StaticText "The list is empty"
-    button "Delete"
-    checkbox "Select: Клад дракона" [checked=false]
+    button "More: Лавка в порту" [expanded=false haspopup=menu]
     link "Клад дракона, 1 item, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000008001]
       StaticText "Клад дракона"
       StaticText "1 item · edited just now"
-    button "Delete"
+    button "More: Клад дракона" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -409,51 +387,49 @@ RootWebArea "My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm4]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-?Help
 Account: gm4@example.test
-Create
-Delete
 EN
+Find a list
 Import from file
 Install as an app
 LootDaggerheart
+More: Ёлочная ярмарка
+More: Клад дракона
+More: Кузнец
+More: Лавка в порту
+More: Логово
+More: Порт Ветров
+More: Рынок
+More: Сессия 10
+More: Сессия 11
+More: Сессия 12
+More: Сессия 13
+More: Сессия 14
+More: Сессия 15
+More: Сессия 16
+More: Сессия 17
+More: Сессия 18
+More: Сессия 19
+More: Сессия 20
+More: Сессия 21
+More: Сессия 22
+More: Сессия 3
+More: Сессия 4
+More: Сессия 5
+More: Сессия 6
+More: Сессия 7
+More: Сессия 8
+More: Сессия 9
+More: Сундук мага
+More: Трофеи
+More: Храм Солнца
 New list
 Open on start
 Privacy
 RU
 Roll
 Search
-Select all
-Select: Ёлочная ярмарка
-Select: Клад дракона
-Select: Кузнец
-Select: Лавка в порту
-Select: Логово
-Select: Порт Ветров
-Select: Рынок
-Select: Сессия 10
-Select: Сессия 11
-Select: Сессия 12
-Select: Сессия 13
-Select: Сессия 14
-Select: Сессия 15
-Select: Сессия 16
-Select: Сессия 17
-Select: Сессия 18
-Select: Сессия 19
-Select: Сессия 20
-Select: Сессия 21
-Select: Сессия 22
-Select: Сессия 3
-Select: Сессия 4
-Select: Сессия 5
-Select: Сессия 6
-Select: Сессия 7
-Select: Сессия 8
-Select: Сессия 9
-Select: Сундук мага
-Select: Трофеи
-Select: Храм Солнца
+Select
 Skip to content
 Tables
 Terms of use

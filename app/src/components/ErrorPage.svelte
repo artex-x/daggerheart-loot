@@ -47,7 +47,8 @@
 
   .errtext {
     margin: 0 0 18px;
-    max-width: 62ch;
+    max-width: var(--measure-line);
+    text-wrap: balance;
     color: var(--muted);
     font-size: var(--t-small);
     overflow-wrap: anywhere;

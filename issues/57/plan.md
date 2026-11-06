@@ -6,88 +6,65 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
 
 ## Status
 
-- Phase 1 (S1) and phase 2 (S2): done. The owner chose R on 2026-10-23.
-- Refresh against `main` (2026-10-29): done. `claude/57` merged `main` at
-  `9112c4ed`; every `audit.md` row is re-checked (`audit.md`, "Re-check
-  against main"); every address in this plan is a path.
-- Phase 3: fifteen batches in the order 1, 1b, 2, 3, 3b, 4-7, 7b, 9a, 8, 9b, P, 10 (9a is in wave 3 since 2026-11-04;
-  7b is its own wave 2b since 2026-11-04)
-  (section 7; the waves of section 16 moved P from after 1b into wave 3, and the
-  owner's 2026-11-03 answers added 3b and split 9). Batches 1
-  (`9a31aede`, `80872b35`), 1b (`fce4a9f8`, `3e5f6301`; `reviews/1b.md`) and 2
-  (`30de6bf5`, fix pass `65829261`; `reviews/2.md` approve) are done, and wave
-  1 landed on `main` as `d83384b4`; `claude/57` merged it at the batch 3
-  refresh (2026-10-30). Batch 3 is implemented (section 10; `handoff.md` has
-  its commit, gates and deviations), waiting for the orchestrator's `polish`
-  and `harden` and its batch review. Batches 3b and 4 are implemented
-  (`plan-3b.md`, `plan-4.md`; `handoff.md` has their gates and deviations).
-  Batches 5-10 and P are outlines; each one's refresh expands it.
-- Release (owner, 2026-10-29, `context.md` "Release in three waves" and its
-  "Reviews" paragraph; "Batch 9 split"): three waves - 1, 1b, 2; then 3, 3b, 4,
-  5, 6, 7; then 7b alone (wave 2b, owner, 2026-11-04); then 9a, 8, 9b, P, 10 (owner, 2026-11-04: 9a moved to wave 3) -
-  each squashed onto `main` after its last batch's review and green CI, with
-  no owner screenshot gate. After wave 2's green deploy a blind review of waves 1
-  and 2 runs on production, and after wave 3's a blind review of wave 3; each
-  remediates at once in a fix batch on `claude/57` (owner, `context.md`, "Wave
-  reviews"). Then the whole-app blind review and the closeout (section 16). This replaces "one squash at closeout" and "no batch
-  lands on `main` before the owner has seen its screenshots".
-- Mocks: every batch mock from 1 to 9 is drawn ahead (section 9); the owner
-  confirms each one before its implementer starts. Mock P is drawn (2026-10-29,
-  owner) from the pre-batch-1 build; its no-picture well follows mock 1b.
-- Print review (owner, 2026-10-29, `context.md` "Print review", "Print feel"):
-  the print audit is `audit.md`, "Print audit (2026-10-29)"; batch P (section
-  15) runs in wave 3, after batch 9b, and takes the `/p/` page rows C29, C30
-  and C31 from batch 7.
-  Batch P fires no plan-review trigger: it changes no public contract (the
-  four burden files of `card/` keep their paths and take the Figma node's
-  vectors as new bytes - `CONTRACTS.md` section 5 freezes the paths, as for the
-  share cards; a card size change is a product rule of `FEATURES.md` and
-  `CLAUDE.md`, not a `CONTRACTS.md` one), no stored data or key and no write
-  protocol. If its refresh makes it delete or rename a `card/` file, it writes
-  a `required` line before P.
+- Snapshot 2026-11-06 (tip `a8bdf1de`, CI green, the credit armed): waves 1, 2 and 2b are on `main`; wave 3 has built 9a, 8,
+  9b, the batch CI split (`plan-ci.md`) and the CI fix pass. Phase 3 now runs 9a, 8, 9b, TD, N, P, 10, then the wave 3
+  squash, the wave 3 blind review with its remediation, the whole-app blind review with its remediation and the closeout
+  (section 16). The history of the earlier refreshes (device shares, mock answers, the plan reviews' sub-bullets, the 9a, 8
+  and 9b refresh notes): `git show a8bdf1de:issues/57/plan.md`, Status.
+- The plans of the rest of wave 3 are folded (2026-11-06) from the owner's decisions of 2026-11-05 (`context.md` items
+  7-15 and their ANSWER and APPROVED lines; none is reopened here):
+  - Batch TD = T + D + The Measure Rule in one batch (REBATCH option B; owner items 10 (approved), 13, 14, 15): brief
+    `plan-TD.md`, which reads `plan-T.md`, `plan-D.md` and `plan-text.md`; mocks `mocks/T/`, `mocks/D/`, `mocks/text/`;
+    cases 108-111; 44 acceptance lines; 168-230 min. Built, reviewed (`reviews/TD.md`) and fixed 2026-11-06.
+  - Batch N (The Head Order Rule, the `/tables/*` exception at 761-999 px, owner item 12's d12 die marks): brief
+    `plan-N.md`, mocks `mocks/N/`, cases 112-113, 17 acceptance lines, 115-150 min. Built 2026-11-06 (`handoff.md`,
+    Completed); reviewed (`reviews/N.md`, fix-then-continue) and its one fix pass built the same day.
+  - Batch P (print), restated for Q-P1 = no (owner: the standard card stays 63x88 mm): brief `plan-P.md`, mocks `mocks/P/`,
+    cases 114-115, 30 acceptance lines, 157-197 min. Built 2026-11-06 (`handoff.md`, Completed); review pending.
+  - Batch 10 (the docs lock and the cleanup the earlier batches left): an outline in section 7 with 21 acceptance
+    lines; 95-125 min. Built 2026-11-06 (`handoff.md`, Completed: 10-1 to 10-19 and 10-21 have outcomes; 10-20 is
+    the orchestrator's); reviewed (`reviews/10.md`, fix-then-continue) and its one fix pass built the same day. Next:
+    10-20, the orchestrator's. The follow-up task's id is `57-debt` (DEBT.md section names).
+  - Defaults taken while the owner is away are listed in `handoff.md`, Status, and logged by the orchestrator in
+    `C:\Users\Ignat\.dhloot\notes\owner-afk-2026-11-03\decisions.md` (items 20-23 are the batch planners', item 24 is
+    this fold's).
+- Mocks: every batch mock is drawn ahead (section 9); with the owner away the recommended option is taken and logged.
+- Release (owner, 2026-10-29, `context.md`, "Release in three waves"; "Batch 9 split"; 2026-11-04): waves 1, 2 and 2b are
+  squashed; wave 3 (9a, 8, 9b, TD, N, P, 10) is squashed after batch 10's review and green CI, with no owner screenshot gate
+  (section 16).
 - Plan review: required before 1 (trigger: public contract changes in batch 1b - the no-picture asset paths of CONTRACTS.md - and in batch 2 - routes.json tab, llms.txt)
 - Plan review coverage at the earlier refreshes (2026-10-29): no new plan review was required. Batch 2's contract set (`routes.json` `tab` and `mode`, `llms.txt` with `tests/contracts.js` and `CONTRACTS.md`) and batch 1b's (the no-picture asset paths) were reviewed by `reviews/plan-1-2.md` and `reviews/plan-1-3.md`; the later parts (light print well, waves, mark, burden hands, bottom line, first-screen exceptions) change no contract, store no data and add no write protocol.
-- Plan review coverage at the batch 3 refresh (2026-10-30): no new plan review
-  is required (no trigger fired). Batch 3 changes no `CONTRACTS.md` path, no
-  `docs/fixtures/` value, no `tests/contracts.js` line and no `llms.txt` text:
-  `routes.json` `picked` keeps its values and only `tests/app/contracts.js`
-  reads the new filter chips beside the shared page's pills. It stores nothing
-  (the selection mode, the sheet and the viewport band are memory), adds no
-  migration, no SECURITY DEFINER function and no write or sync protocol. The
-  new `viewport` port reads the window width only.
 - Plan review findings applied: reviews/plan-1-3.md
   - All 15 findings were applied before the batches they touch shipped (the report holds each id, section and change); the sub-bullets were collapsed at the batch 3 refresh (2026-10-30, last full text: `git show 65829261:issues/57/plan.md`, Status).
 - Plan review findings applied: reviews/plan-1-2.md
   - All 29 findings were applied before the batches they touch shipped (the report holds each id, section and change); the sub-bullets were collapsed at the batch 3 refresh (2026-10-30, last full text: `git show 65829261:issues/57/plan.md`, Status).
-- Earlier refresh history (device shares, First-Screen Rule, mock answers, mock-unit findings, the 2026-10-29 folds): `context.md` holds the owner decisions and `git show 65829261:issues/57/plan.md`, Status, the earlier text.
-- Batch 3 refresh (2026-10-30): section 10 was batch 3's brief (batch 2's brief
-  left; `git show 65829261:issues/57/plan.md`). The mock `mocks/3/` was
-  re-checked against `main` and stands. Thirteen planner defaults D1-D13 are
-  logged there; two need the owner's later yes (section 13: Q3-S, Q3-T). The
-  Impeccable fallback of `reviews/2.md` R1 is named in section 10, "Impeccable".
-  Section 10 is now collapsed to D1-D13 and "Impeccable" (see the fold line below).
-- Batch 7b (owner's phone and desktop feedback, 2026-11-04): `plan-tags.md` is the brief (one tag rule, one-box
-  badges, a steady table head, compact roll results - item 6, T12, folded in the same day); batch 7b runs after the post-wave-2 remediation, then wave 2b, then 9a on a clean `main`.
-  Implemented 2026-11-04 (`handoff.md`, Completed, "Batch 7b"): HD1 option A as measured (chips beside the title
-  from 1000 px, the tab slot), RC1 option B; cases 95-97 taken, 9a reads 98-100.
-- Fold of the placed items (2026-11-04, done): the open "Placed items" of `plan-4.md`
-  to `plan-7.md` are in sections 7 and 8 (batches 8, 9a, 9b, P and 10); the briefs keep their
-  text. Section 10 is collapsed to its pointer, D1-D13 and "Impeccable".
-- Batch 3b implemented (2026-11-04), on `claude/57`; `handoff.md` has its outcomes and its
-  departures. `polish`, `harden`, the batch review and CI follow, then batch 4's refresh.
-- Batch 3b refresh (2026-11-03): `plan-3b.md` is batch 3b's brief, in the shape of
-  section 10. The owner's answers Q1-Q4 are folded into sections 7, 8, 14 and 16;
-  batch 9 is split into 9a (wave 2) and 9b (wave 3). The owner is AFK: the defaults
-  are in `plan-3b.md`, "Decisions of this refresh", and the orchestrator logs them.
-- Plan review coverage at the batch 3b refresh (2026-11-03): no new plan review is
-  required (no trigger fired). Batch 3b changes no public contract, stores nothing
-  and adds no write or sync protocol. Batches 9a and 9b take theirs at their own
-  refreshes: their outlines carry no plan-review line.
-- NEEDS_HUMAN_CONFIRMATION: no. Q3-T takes its default (deferred). Q3-S is
-  answered (owner, 2026-10-30, `context.md`): the per-section «Выбрать все
-  (N)» strip goes. Every other question of section 13 is answered; Q-W1 took the
-  owner's answer "Wave squash content" (`issues/57/` goes onto `main` with each
-  squash).
+- Plan review: not required (no trigger fired) for batches 3, 3b, 8, 9b and CI. None changed a `CONTRACTS.md` path, a
+  `docs/fixtures/` value, a `tests/contracts.js` line or `llms.txt`, stored a new key, added a migration, a `SECURITY
+  DEFINER` function or a write or sync protocol (each brief's "Plan review"). Batch CI changed `tests/run-all.js` and
+  `ci.yml`: that is a batch-review trigger, not a plan-review one.
+- Plan review: not required (no trigger fired) for batch TD. It changes control sizes, toast durations, borders, gaps,
+  text widths and test limits only: no route, no contract (the static pages' URLs are frozen, their CSS is not), no
+  stored key, no migration, no write path (`plan-TD.md`, "Writer tier, review and confirmation").
+- Plan review: not required (no trigger fired) for batch N. It changes the DOM order and the look of the page heads and
+  two dictionary keys: no contract (`routes.json`, `CONTRACTS.md`, `llms.txt` stay), no stored key, no write path
+  (`plan-N.md`, "Gate cost, goldens, tier, review").
+- Plan review: not required (no trigger fired) for batch P. The owner answered Q-P1 no (2026-11-05): the card stays 63x88
+  mm, so `CLAUDE.md`, `llms.txt` and the product law do not change. The four `card/burden-*.svg` keep their paths and take
+  new bytes (`CONTRACTS.md` section 5 freezes the paths); no stored key, no write path (`plan-P.md`, "Plan review").
+  The `required before P` line that `plan-P.md`'s earlier fold list asked for is not written.
+- Plan review: not required (no trigger fired) for batch 10. It is the docs lock plus a cleanup of the roll card's dead
+  code and three roll copy rows: no contract, no stored key, no write path. P5 (`rollNo`, about 1000 generated stubs and
+  `tools/share-card.mjs`) is not built here (acceptance 10-8); if the owner asks for it, the plan writes a `required before
+  10` line first.
+- Batch review (`orchestrate.prompt.md`, "When to run reviewer"): TD required (visual parity and changed UI on every
+  route; generated artifacts: the static pages regenerate); N required (changed UI, a golden re-seed of about 145
+  files); P required (visual parity and print, the four burden files); 10 required (a prompt changed:
+  `.claude/prompts/review.prompt.md`; changed UI and a golden re-seed `--only` for the roll copy). Each reviewer dispatch
+  names the guideline set of `context.md` item 10 (owner, 2026-11-05); one remediation pass per batch.
+- NEEDS_HUMAN_CONFIRMATION: no for TD, N, P and 10; no product law changes (the print card stays 63x88 mm). Settled
+  by the owner: Q3-S, Q-W1, Q-P1, N1-N4 and the 761-999 px form, items 12-15. One figure named to the owner, not a
+  gate: the folded requests strip at 360x640 starts the rows at 304 px (the owner's figure was 292; review 9b B3,
+  logged). Q3-T takes its default (deferred).
 
 Earlier plan review: `reviews/plan-1.md` (fix-then-continue) was applied to
 the plan of 2026-10-23 (`git show 69f2178:issues/57/plan.md` and the commit
@@ -307,7 +284,7 @@ its own surface. Each batch's share is its own line in section 7.
 | Buttons, danger | a filled alarm red with dark text in the delete confirm | 7 | - |
 | Seal Rule (gold budget) | the gold-bordered «Новое в списке (3)» chip | 8 | 9b |
 | Signature component: the print card (art region) | the light well `#ebe7f0` with the glyph `#3a3350` | 1b | P |
-| Signature component: the print card | 63.5x88.9 mm, 7.75 / 13.15 mm, Source Sans 3, 4.0 / 4.6cqw, no «Daggerheart» on the bottom line | P | - |
+| Signature component: the print card | 63x88 mm and 14.5 / 8.5 mm margins kept (Q-P1, owner, 2026-11-05), Source Sans 3, 4.0 / 4.6cqw, no «Daggerheart» on the bottom line | P | - |
 
 ## 5. Impeccable exceptions
 
@@ -373,7 +350,7 @@ evidence for the batch review, not an owner gate (owner, 2026-10-29,
 |---|---|---|---|---|---|
 | 1 (done) | Foundation: font, ten-step ramp, tokens, neutral pressed default, badges, footer links, art well and kind glyph, share cards, clarity rule | C2 (type), C9, C11, C28, C33, C50, C55, C64, A10, A26, A39, N5, E1, E3 | all of `R/*` for type; `R/catalog` («Все»), `R/homebrew-items` (glyph); the share cards are new | none: the type, the ramp and the glyph are R's own; the share cards are new pictures | a review that cannot be held in one pass: it moves the text metrics of every route; layout work on top would hide its regressions |
 | 1b | No-picture placeholder retired: the kind glyph on the colour print card, the three placeholder files deleted, every reader moved, the link card of a no-picture record | C55 (print), A38 (owner, 2026-10-29) | the colour print card of a no-picture record (new); the link card of a no-picture item | none: mock 1's glyph is approved; mock 1b draws the print card and the link card | a public contract change (`CONTRACTS.md` asset paths) and a print change (product law), with its own gates (`app/print`, `contracts,dataint`, the preview Worker and deploy tooling) and a review frame apart from batch 1's type sweep; it needs a batch review |
-| P | Print: the card's rules-text base, floors and markers, the print face and its fit, the line pitch, the card size if the owner says yes; the `/p/` page (bar, switches, notes, the preview at 360, the first screen) | PR1-PR10, PR12 (`audit.md`, "Print audit"), C29, C30, C31 (from batch 7) | `R/print-preview` (screen); the print card has no R state, so mock P draws it at print resolution | 1b: mock P draws the light well as the owner confirmed it at mock 1b | split from 1b by 1b's public contract change (`CONTRACTS.md` asset paths), which P does not carry. Merged into P: the `/p/` rows of batch 7, because they share `PrintPage.svelte`, its seed sets and the `app/print` gate (`CLAUDE.md`, "merge work that shares a component, seed and filter") |
+| P | Print: the card's rules-text base, floors and markers, the print face and its fit, the line pitch; the `/p/` page (bar, switches, notes, the preview at 360, the first screen). The card stays 63x88 mm (Q-P1, owner, 2026-11-05) | PR1-PR10 and PR12 (`audit.md`, "Print audit"), C29, C30, C31 (from batch 7) | `R/print-preview` (screen); the print card has no R state, so mock P draws it at print resolution | 1b: mock P draws the light well as the owner confirmed it at mock 1b; N: `/p/` keeps no `PageHead`; TD: the bar is built on the Thumb Rule | its own route set (`/p/`, the print card, the editor's print view) with its own gate (`app/print`) and goldens, after N; split from 1b by 1b's public contract change (`CONTRACTS.md` asset paths), which P does not carry. Merged into P: the `/p/` rows of batch 7, because they share `PrintPage.svelte`, its seed sets and the `app/print` gate (`CLAUDE.md`, "merge work that shares a component, seed and filter") |
 | 2 | Shell: header, three jobs with icons, the mode row and the supplements menu, the account control, the wordmark, the pin and «Справка» labels, the toast; the American-spelling sweep across the repository (owner: no batch 2b) | C6, C27, C34 (verify), C37, C47, C48, C52, A15 (verify), A27 (icons), A35, A36, A37, P7, P9, D9, D10, D11, N4, D121 | `R/header`, `R/shell-*`, `R/roller-supmenu` | none: R draws the header; the refresh adds the request toast and `/en/` | public contract changes (`routes.json` `tab`, `llms.txt`) and public spec changes (`ROUTES.md`, `FEATURES.md` "Chrome", `I18N.md`); it needs a batch review (contracts, `.claude/hooks/`, prompts and agents changed) |
 | 3 | Catalog tables and filters | C1 (panel renamed «Об этих данных»), C2 («Все»), C3, C4, C5, C7, C8, C10, C12 (verify), C53, C54, C56, C57, C58, C59, A25, A40 (tables), P1, P13, P14, P15 | `R/catalog`, `R/catalog-*`, `R/pattern-empty` | none | a different route and filter set (`/tables/*`) |
 | 3b | The header hides on scroll down and returns on scroll up up to 760 px, on every page; the `--sticky-h` / `--anchor-gap` focus fix at every width | F2 (B2, owner Q2), WCAG 2.4.11 (`feedback.md`, "New defect found") | none | none: `mocks/F/` draws the two positions | a different route set: the header is on every route and has no filter set; the owner ordered it as its own batch ("Header batch") |
@@ -385,12 +362,14 @@ evidence for the batch review, not an owner gate (owner, 2026-10-29,
 | 8 | Lists page `/lists`, list cards, lists import, add-to-list menu | A14, A16, A18, C35, C61, C62, D6, D20, D116 | `R/lists-*`, `R/item-listmenu` | none | a different route and filter set (`/lists`, and the add-to-list menu that the item pages open) |
 | 9a | `/lists/<uuid>` and `/s/<token>` for the phone: the C1b compact row, search and filter on the owner's page, the actions into «Ещё», the list «Ещё» menu, the selection bar on both pages | F2 (C1b, D1, D-head 1), A2 (row actions), A19, A20, A21, A40 (list rows, `/s/`), A41, D2, list row clarity rows | `R/list`, `R/list-picked`, `R/shared-*` | none: `mocks/F/` replaces mock 9 for the row and the head up to 760 px; every other mock 9 state stands | the owner's wish to ship the F2 fix in wave 2 ("Batch 9 split"); split from 8 by a different route and filter set |
 | 9b | The list panels: the note switch, the side column, the share, roll and requests panels, the price switch, A1 at 640-900 px, the «?» removal, the drop mark, E4 | A1, A2 (note area), A3, A4, A5, A22, A42, N1, E2 (the drop mark), E4, list panel clarity rows | `R/list-note`, `R/list-share`, `R/list-roll`, `R/list-prices`, `R/list-requests` | 9a: it draws on the 9a head and rows | the same split as 9a; wave 3, after batch 8 |
-| 10 | Lock: DESIGN.md "Notes", detector at zero, `design.json`, re-audit, closeout | E5, E6, E8, E9 (record), E7, E11, N3 (rest), every row re-checked | none | no mock | docs and closeout, unless the re-audit finds a defect |
+| TD | The Thumb Rule (40 px controls up to 600 px, 8-G1), the Reading Time Rule (toasts 4000 / 7000 / 10000 ms, every toast holds, 8-G4), the Drop Rule (no dashed border) with one 16 px gap above every empty plate, and The Measure Rule (leads on one line, help panels as wide as their text, notes and the footer at 70ch); the `FIRST_SCREEN` rows at 360 re-measured | 8-G1, 8-G4, 8-P1 (owner, item 10 "APPROVED"), owner items 13, 14, 15 | none: `mocks/T/`, `mocks/D/`, `mocks/text/` are the built app with the CSS injected | none | merged by `CLAUDE.md` (one component set, one seed, one gate, no golden tree moves except six headers; `plan-rebatch.md` option B). Split from 9b: every route up to 600 px, every plate state and every text block, with a re-baseline of every `FIRST_SCREEN` row at 360 that 9b's list review cannot hold; before N and P, so the head and the print bar are built on the rules |
+| N | One head order on every page that draws a `PageHead` (the heading, the sibling pills, the pin, the help, the primary at the right end; the pills on their own row from 761 to 999 px), the roll `h1` «Бросок», the homebrew tabs as pills with counts, the d12 die marks of `/roll/alt` | owner items 11 and 12 | none: `mocks/N/` (`headorder/`, `tables-mid/`, `d12/`, `roll-head/`) | none | a different route set (the nine roll pages, `/tables/*` and `/homebrew` from 761 px) and its own about 145 goldens; merged with TD the review would pass one pass (about 65 files, 150 goldens) |
+| 10 | Lock: DESIGN.md "Notes", detector at zero, `design.json`, re-audit, the cleanup the earlier batches left (the roll card's dead code, three roll copy rows, the case 89 audit, kept exceptions named), closeout | E5, E6, E8, E9 (record), E7, E11, N3 (rest), every row re-checked | none | no mock | docs and closeout plus a small code cleanup; follows P because it re-audits the final tree and carries the review-prompt change (a review trigger) |
 
 Run order (owner, 2026-10-29, "Release in three waves"; 2026-11-03, "Header
-batch", "Batch 9 split"; owner, 2026-11-04, "9a moves to wave 3", "wave 2b"): 1, 1b, 2 (wave 1); 3,
-3b, 4, 5, 6, 7 (wave 2); 7b (wave 2b); 9a, 8, 9b, P, 10 (wave 3). The table keeps the old row
-order; section 16 gives the waves.
+batch", "Batch 9 split"; owner, 2026-11-04, "9a moves to wave 3", "wave 2b"; owner, 2026-11-05, "REBATCH option B"): 1, 1b, 2
+(wave 1); 3, 3b, 4, 5, 6, 7 (wave 2); 7b, W (wave 2b); 9a, 8, 9b, TD, N, P, 10 (wave 3; T added at the 9b refresh,
+2026-11-05, with D and the Measure Rule merged into it). The table keeps the old row order; section 16 gives the waves.
 
 The list page and the shared page stay one pair (owner, 2026-10-29): 10 of the 15
 components of `SharedListPage.svelte` are `ListPage.svelte`'s, and the note display,
@@ -414,67 +393,6 @@ Batch 1b: done (`reviews/1b.md`); its brief and acceptance lines are at `git sho
 5d9aefbc:issues/57/plan.md`, section 10 (mock `mocks/1b/`, confirmed by the
 owner's answer M1b-1). The inherited
 `reviews/1.md` N6 (the `#0a0810` literal on `--art-well`) is one of them.
-
-Batch P (owner, 2026-10-29, "Print review" and "Print feel"; outline and
-acceptance in section 15; mock step `mocks/P/`):
-
-- The print audit rows PR1-PR10 and PR12 (`audit.md`, "Print audit
-  (2026-10-29)"), each with its outcome.
-- C29 (from batch 7): the print bar holds fewer rows; the A4, orientation and
-  margin sentence goes (`@page` sets them); at most the background-graphics
-  hint stays, under the sheet.
-- C30 (from batch 7): the screen preview at 360 can be read (section 15, "The
-  `/p/` page").
-- C31 (from batch 7, Q3.2 answered): the print switches are a choice for the
-  visit in their own controls, with no `KeepNote` under the print bar.
-- From batch 7: the `/p/` retired link and failed read draw `ErrorPage`; batch P keeps
-  that wording. The unknown, expired and malformed set still draws `PageTitle`
-  «Печать карточек» with the sub `printSetGone`, because `docs/fixtures/urls/routes.json`
-  (`#/p/short`) names that heading and sub and the preview Worker quotes `printSetGone`.
-  Batch P may move that set to `ErrorPage` only with a `routes.json` contract change,
-  which fires a plan-review trigger: its refresh writes a `required` line first.
-- `printColor`, `printBW`, `printStd` and `printCompact` are shared with the
-  account's `Seg`s, so QP.7's short labels reach both at once (the account's
-  goldens move with them); `KeepNote` leaves with batch P as before.
-- The `/p/` row of `FIRST_SCREEN` moves from logged to asserted at 360x640 and
-  1180x720, RU and EN (section 14).
-- Each departure from the Figma nodes `714-42387` and `3773-90792` that the
-  owner said yes to at mock P is named in `FEATURES.md` "Print" with the date.
-- The lines of "Each of batches 2-9" below apply to batch P too (new states,
-  the owner's mock notes, `polish` and `harden`, the detector, American
-  spelling in new prose, `FIRST_SCREEN`, the screenshot set, here at print
-  resolution in `issues/57/mocks/P/built/`).
-- Mock P answers (owner, 2026-10-29): QP.1 the print face is Source Sans 3;
-  QP.6 `/p/` at 360 shows one card per row; QP.7 the short switch labels
-  «Цвет» / «Ч/б» and «63×88» / «44×63» (EN "Color" / "B&W" after batch 2);
-  QP.8 a card whose picture gives way keeps the ladder order and drops the
-  blank paper band above the text.
-- RP-1 (owner, round 2): the `/p/` primary reads «Напечатать» / "Print" in
-  place of «Отправить на печать» / "Send to printer", in both languages.
-- The card bottom line (owner, 2026-10-29, "Card bottom line"): «Daggerheart»
-  leaves the bottom line of both layouts on both sheets; the source line stays
-  and takes the freed width, so a long homebrew source no longer wraps beside
-  it. `FEATURES.md` "Print" loses the «Daggerheart» sentence; the
-  `PrintCard.svelte` comment on the long source line and the `why` of
-  `#/p/set-longsrc1 as gm2` change with it.
-- The burden hands (owner, 2026-10-29, "Burden hands"): `card/burden-1.svg`,
-  `burden-2.svg`, `burden-1-bw.svg` and `burden-2-bw.svg` take the hands of
-  Figma nodes `714-42387` (colour) and `3773-90792` (black and white), the
-  hands only without the «ХВАТ» label, one- and two-hand, exported by Copy as
-  SVG through the owner's Chrome (method and the probe file in `context.md`).
-  The file names stay; the print checks run after the swap. If a colour and a
-  black-and-white pair share one geometry after the export, it folds into
-  `cardVectors.ts` by the rule that `tests/derived.js` checks
-  (`UNFOLDED`). If the export fails, the fingers are redrawn to match the node,
-  a named exception to "export vectors, do not redraw them".
-- QP.2 changes the product law's card size: the `CLAUDE.md` line "Printing is
-  nine 63x88 mm cards per A4 sheet" reads 63.5x88.9 mm, with `FEATURES.md`
-  "Print" and DESIGN.md, in the same commit. If a guard refuses the
-  `CLAUDE.md` write, the implementer stops and returns the text.
-- DESIGN.md (section 4, departures): "Signature component: the print card"
-  is rewritten for the card size, margins, face, rules-text base and bottom
-  line; The Two Breakpoints Rule takes the `/p/` card step (one card per row
-  below 600 px).
 
 Batch 2: done (`reviews/2.md`); its brief and acceptance lines are at `git show
 65829261:issues/57/plan.md`, section 10 (mock `mocks/2/`, the mark
@@ -517,340 +435,155 @@ Batch 3b: its implement-ready brief and acceptance lines are `plan-3b.md`
 DESIGN.md (section 4, departures): batch 3 wrote its rewrites (the list is in
 section 10 of `git show 5ecca692:issues/57/plan.md`, "DESIGN.md rules this batch writes").
 
-Batch 4:
+Batches 4, 5, 6, 7, 7b, W, 8, 9a and 9b: done. Their implement-ready briefs and acceptance lines are `plan-4.md` to
+`plan-9b.md` and `plan-tags.md`; their outcomes are `handoff.md` "Completed" and `reviews/<batch>.md`; the owner answers they
+carried are in `context.md` and section 13. This block was collapsed at the 2026-11-06 fold (the file passed the 150 KB
+line); the earlier text is `git show a8bdf1de:issues/57/plan.md`, section 7. Every item those batches placed in a later
+batch is an acceptance line of that batch below (TD, N, P, 10); the rules they wrote live in DESIGN.md, FEATURES.md and
+`docs/decisions/`.
 
-- New states: the «Ещё» menu open and the bottom-sheet dialog.
-- C63 is closed by a live check of the rebuilt dialog's backdrop.
-- Clarity inventory: the `/h/` signed-out box «Войдите, и копия...» becomes
-  «Войти и сохранить» (plan review N11).
-- The item sheet's fixed action bar holds three labelled controls at every
-  width, with nothing cut at 360 in RU or EN (R cuts «Ещё» at 360; mock unit B,
-  2026-10-29). Recommended set, confirmed at mock 4: the primary «В список»,
-  «Поделиться» and «Ещё» (Печать and the copy actions inside «Ещё»).
-- `Button` gets the neutral pressed variant only when a caller in this or a
-  later batch needs it; the batch that adds the first caller adds the variant
-  and its case (plan review R4).
-- The card bottom line (owner, 2026-10-29, "Card bottom line"): the screen
-  record card drops «Daggerheart» and keeps only the source (Core, Hope &
-  Fear, a homebrew author); the roll cards (batch 5) and the list rows (batch
-  9) that reuse it follow.
-- M4-2 (owner): one label per action on every page and state («Сохранить
-  себе»); the relink line stays as the menu item's second line.
-- DESIGN.md (section 4, departures): "Shapes" (the 4:3 crop window on the item
-  page and the dialog) is rewritten; the bottom sheet of batch 3 and the 760
-  px menu-or-sheet step are checked against the dialog and «Ещё».
+Batch TD (wave 3, after 9b; REBATCH option B, owner, 2026-11-05; the brief is `plan-TD.md`, which reads `plan-T.md`, `plan-D.md` and
+`plan-text.md`; mocks `mocks/T/`, `mocks/D/`, `mocks/text/`; cases 108-111; `plan-rebatch.md` holds the options):
 
-Batch 5:
+- Acceptance: 44 lines (`plan-TD.md`, "Acceptance"): T-1 to T-20 (`plan-T.md`), D-1 to D-14 (`plan-D.md`), MT-1 to MT-7
+  (`plan-text.md`) and three placed lines: TD-P1 (6-N1, the editor row with a 120-character name at 1180), TD-P2 (the
+  case 89 figure after T's folds) and TD-P3 (the 9a R2 probe: measured, not fixed, then `DEBT.md`).
+- The Thumb Rule (8-G1), from the old outline with these changes (`plan-T.md` fold item 2): the floor is the box for a
+  boxed control and the padded box for a text link; one token `--thumb`; the check is a hit test shared by the sweep step
+  and case 109; a fourth toast class, long 10000 ms, for a toast with an email address or more than 80 characters; the
+  toast floats above the selection bar; 8-P1 is the card's corner slot, a departure from mock 8's chip row; the header
+  holds its height. The menu items' 44 px is already true.
+- The Reading Time Rule (8-G4): plain 4000, error 7000, action 7000, long 10000 ms; every toast holds while touched,
+  hovered or focused; the toast over «Ещё» is measured (case 108 (f)), not fixed (T-14).
+- Batch D (owner items 13 and 14): the Drop Rule (`dashed` means "drop here", so the screen draws none), the plate on
+  `--bg2` with a solid `--line` border, `--gap-plate` 16 px above every plate, the lead cap, which the Measure Rule
+  replaces by `--measure-line`; the `FIRST_SCREEN` effect is about -22 px on `/search` and `/homebrew` at 1180.
+- The Measure Rule (owner item 15): `--measure-line` 120ch and `--measure-text` 70ch, a help panel hugs its text, the
+  derived check "One measure"; case 111 reads every class at five widths.
+- The `FIRST_SCREEN` rows at 360 are re-measured before and after (`plan-T.md`, "First-screen rows"): a row past 256 px
+  takes a fold or its measured exception, logged and named in DESIGN.md "The First-Screen Rule".
+- Gate cost 168-230 min; writer tests 1 no, 2 no, 3 yes in part; review required; plan review not required;
+  NEEDS_HUMAN_CONFIRMATION no (`plan-TD.md`).
 
-- Q5.1 (owner): the roller help panel (C38) is renamed «Где какая редкость» /
-  "Where each rarity is" and holds the book's four placement lines, as
-  `mocks/5/` draws them; the rest goes; `help.ts` and its tests change with it.
-  Its button reads «Где какая редкость» / "Where each rarity is" (plan review
-  R3).
-- N2: `orGrid.test.ts` gives its `<img>` a `src`, or the case uses no `<img>`.
-- The dice at 360 (owner, "Roller dice at 360", variant A): each die keeps the
-  rarities it covers, in two rows (3 + 2), 40 px tall (round 3, unit A).
-  `/roll/std` at 360 is a named exception to the First-Screen Rule (the first
-  result at about 325 px); every other roll mode keeps the rule (about 247
-  px). Section 14 gives the check.
-- M5-7 (owner): a compact roll result card at 360 (96 px art beside the text);
-  the full card face from 600 px.
-- N2-2 (owner, round 2): the Vault of Ages panel stays; its button takes the
-  panel's name (the Same Label Rule), which mock 5 gives from its content.
-- The roll cards drop «Daggerheart» from their bottom line (batch 4's card).
-- M2-2 and R2-1 (from batch 2): on the nine roll pages up to 760 px the pin
-  and the panel button move into «Настроить» and «··· Ещё» (mock 5), and the
-  H1 is visually hidden up to 760 px, not "at 360" (owner Q1 A1; mock 5's rule is
-  `@media (max-width: 760px)`); batch 2's interim round buttons go there.
-- Up to 760 px no roll page draws the H1 visibly, the pin or the panel button in
-  the head.
-- From 761 px the H1, the pin and the panel button of the longest pair
-  («Альтернативные таблицы», «Где какая редкость» class of labels) share one
-  line at 761 px in RU and EN: a geometry line in the batch's states case.
-- `FEATURES.md` "Chrome" names the visually hidden H1 range.
-- 2-N5 (from `handoff.md` Deferred): `SECTION_LABEL['roll/alt']` becomes `pageAlt`,
-  so the `/roll/alt` tab title and its `/account` start-section option read as the
-  heading; `alt` stays for the tables group chip; the `/roll/alt` and `/account`
-  goldens are re-seeded.
-- DESIGN.md (section 4, departures): "Cards" (the 96 px compact image at 360),
-  "Badges" (the roll number at 1180 only) and the dice in "Chips" are
-  rewritten; "Shapes" (batch 4's crop window) is checked on the roll cards.
+Batch N (wave 3, after TD, before P; owner items 11 and 12, 2026-11-05; the brief is `plan-N.md`: decisions N-D1 to N-D12, steps
+S1-S12, acceptance 1-17, cases 112-113; mocks `mocks/N/`; `plan-nav.md` holds the options and the first mock critique):
 
-Batch 6:
+- Decided (owner, 2026-11-05): N1 option A with a visible `h1` on every family from 761 px (roll «Бросок» / "Roll"); N2 the
+  homebrew tabs as pills with counts; N3 the head order is the heading, the pills, the pin, the help, the primary at the
+  right end; N4 one rule for every `PageHead` ("The Head Order Rule"; `/lists` and `/search` already follow it); from 761 to
+  999 px the pills take their own row (option A); item 12: the d12 die marks of `/roll/alt` in lines, Hope Amber and Fear
+  Violet, no letter; `/tables/*` at 761-999 px is a named exception held to 336 px at 900x720 by a case (N-D5).
+- Acceptance 1-17 (`plan-N.md`): the head order and the pills, the one-row head from 1000 px, the lit pill, the homebrew
+  head, `FIRST_SCREEN` and `ROLL_FIT`, case 112, the goldens (about 140-150 files; `/lists` and `/search` byte-identical),
+  parity, the focus across the 1000 px step, the `/tables/*` exception, the die marks (case 113), the prose, `polish` and
+  `harden`, and line 17: the Deferred row on `/tables/eq_*` at 761-800 px in RU is read by case 112 (e) at 768.
+- Placed in batch 10, not here (N acceptance 11): the `/roll/mwt` lead, «корника» in the `/roll/std` lead, the gold outline
+  of the «ИЛИ» dividers (acceptance 10-11 below).
+- Gate cost 115-150 min; writer tests 1 no, 2 no, 3 yes (a golden re-seed and the head at five widths); review required;
+  plan review not required; NEEDS_HUMAN_CONFIRMATION no. It starts from TD's pushed tip and keeps `var(--measure-line)`
+  when it moves `.page-sub`.
 
-- Q6.1 (owner): the homebrew help panel (A27) goes; tabs with counts, a
-  one-line empty state per tab and the import details inside the import panel
-  replace it; `help.ts`, its tests and the help inventory states go with it.
-- Q6.2 (owner): the eight field «?» buttons of the editor go; option text, the
-  toolbar and fields shown only where they apply say the same; `FEATURES.md`
-  rules 15 (c) and 18 change in the same commit (the owner's yes, 2026-10-29).
-- The editor conflict state keeps its rule: the primary does not overwrite the
-  other device's changes (A30).
-- The Items-tab filter strip of `f74eae09` adopts R's filter system.
-- A11 is closed by a live check (the preview is already `sticky`).
-- Round 3, unit B (owner): the `/homebrew` primary marker is the first group
-  head, and group heads stay at 360; a homebrew filter in force is a lit
-  «Фильтры · 1» at 360.
-- Round 6 (owner): on `/homebrew` at 360 «Новый предмет» has no plus icon (it
-  has one at 1180); the selection bar of batch 3.
-- DESIGN.md (section 4, departures): "Segmented control" (the neutral check on
-  form-field pickers) is rewritten; "Filter pills" (none at any width on
-  `/homebrew`) and the neutral selection are checked.
-- M2-2 (from batch 2): on `/homebrew` below 760 px the pin moves into the head
-  row's «Ещё» (mock 6); batch 2's interim round button goes there.
-- Owner-reported bug (2026-10-30, `context.md`): in the homebrew editor, «Вид» =
-  «Снаряжение» leaves the preview card as an item (badge «ПРЕДМЕТ», the item glyph)
-  until the tier is chosen; «Расходник» changes it at once. Reproduce it first. After
-  the fix the preview follows «Вид» immediately, and a component test in
-  `homebrewEditor.test.ts` holds it. The likely cause is not verified: the preview
-  builds the equipment record only once its `eq` fields exist.
+Batch P (wave 3, after N; the brief is `plan-P.md`: decisions P-D1 to P-D19, steps S1-S14, acceptance 1-30, cases 114-115;
+mock `mocks/P/`, burden check `mocks/P/burden/`; restated 2026-11-06 for Q-P1 = no):
 
-Batch 7:
+- Q-P1 (owner, 2026-11-05): the standard card stays 63x88 mm. P-D1 and P-D17 take their fallbacks: the sheet geometry,
+  `PrintPreview`'s cell, `PRINTED_PX.std` and the subtitle `printSub` do not change; `CLAUDE.md`, `PRODUCT.md`,
+  `README.md`, `README.ru.md`, `llms.txt` and DESIGN.md "Signature component: the print card" keep 63x88 mm. This
+  reverses QP.2 of 2026-10-29. The phone preview reuses `previewScale` (no new `cardScale`; planner default, 2026-11-06).
+- The inherited lines of the print review (owner, 2026-10-29, "Print review", "Print feel"), each an acceptance line of
+  `plan-P.md`: PR1-PR10 and PR12 (`audit.md`, "Print audit"; PR9 closed by Q-P1), C29 (the bar holds fewer rows, the A4
+  sentence goes), C30 (the preview at 360 can be read), C31 (the switches are a choice for the visit, no `KeepNote`; the
+  Deferred line "`KeepNote.svelte` leaves with batch P" is placed: P-D15, acceptance 12 and 30), the retired link and
+  failed read on `ErrorPage` with the gone set kept on `PageTitle` (`routes.json` `#/p/short`), the switch labels shared
+  with the account (QP.7, RP-1), the `/p/` `FIRST_SCREEN` row asserted, each Figma departure in `FEATURES.md` "Print",
+  the bottom line without «Daggerheart», the four burden files with fingers (paths unchanged), QP.1 (Source Sans 3), QP.4
+  (4.0 and 4.6cqw; the compact floor 3.7cqw, P-D4), QP.6 (one card per row up to 760 px), QP.8 (the art gives way, the marks
+  are cleared), and the lines of "Each of batches 2-9" below.
+- New in the brief: the fonts port and the refit after the face loads with a waiting «Напечатать» (P-D3); `Crumb.svelte`
+  as the head row of the editor and `/p/` (P-D11); the dock up to 760 px (P-D12); the notes under the sheets and «Лист N
+  из M» (P-D13); the toast clears the dock (P-D18).
+- Gate cost 157-197 min (`plan-P.md`, "Gate cost"); writer tests 1 no, 2 no, 3 yes (print fitting, 30-45 goldens, parity
+  with Figma nodes `714-42387` and `3773-90792`); review required; plan review not required; NEEDS_HUMAN_CONFIRMATION no.
+  Split criterion: its own route set (`/p/`, the print card, the editor's print view) with its own gate and goldens.
 
-- The `/p/` page rows (C29, C30, C31) and its first-screen row moved to
-  batch P (same component, seed sets and gate).
-- The batch 4 error-page pattern is applied to `/i/nope`, `/h/` gone and the
-  other error pages.
-- Clarity inventory, account: the settings scope sentence, the notify
-  question, the ZIP manual (A33) and the «Выйти везде» note become labels that
-  say it (plan review N11).
-- The error-page pattern reaches the `/p/` not-found and retired-link pages
-  (`print-nope` in `mocks/7/`); batch 7 runs before batch P (the waves), and
-  batch P keeps that wording.
-- DESIGN.md (section 4, departures): "Buttons" (the danger fill in the delete
-  confirm) is rewritten; the empty-state plate and the bottom sheet are
-  checked.
-- M2-2 (from batch 2): on `/search` below 760 px the pin takes the place
-  mock 7 draws; batch 2's interim round button goes.
+Batch 10 (wave 3, last; docs lock plus the cleanup the earlier batches left; outline, its refresh expands it; writer
+tests 2 and 3: a prompt every later session runs under, and a `--only` golden re-seed; review required (a prompt changed);
+plan review not required; NEEDS_HUMAN_CONFIRMATION no). Each line is its own acceptance line, and the batch is not closed
+while one has no outcome:
 
-Batch 7b (wave 2b, after the post-wave-2 remediation; the brief is `plan-tags.md`; owner's feedback of 2026-11-04,
-`context.md`, "Phone feedback"; opus; no mock):
+- 10-1: DESIGN.md "Proposed rules" (written by 9b, M19) is re-checked against the shipped rules; an entry the owner said
+  yes to before the closeout moves out with its batch.
+- 10-2: `ignoreValues` is empty and `impeccable detect --json --no-inline-ignores app/src` reports nothing: each intended
+  literal becomes a DESIGN.md frontmatter entry (32 of `PrintCard.svelte`'s 33 advisories are print colours - `#000`,
+  `#fff`, the Figma golds - and one is the radius `2.4cqw`), and every other finding is fixed. A finding that is neither
+  fixed nor documented is named to the owner as a kept exception (plan review N15). `git grep -n impeccable-disable -- app/src`
+  returns nothing (E11).
+- 10-3: The re-audit is Impeccable `audit` over the S1 capture; `.impeccable/design.json` is regenerated with Impeccable
+  `document` after TD's tokens land (plan review R5): it draws no dashed unique tag (D), holds `--measure-line` and
+  `--measure-text` (text), and keeps the print card at 63x88 mm (Q-P1 is no).
+- 10-4: The kept exceptions are recorded with their reasons (plan review N14): a surviving detector ignore in DESIGN.md
+  "Notes"; E5, E6, E8 and E9 in `.claude/README.md` (owner, Q4 and B1).
+- 10-5: The spelling grep of batch 2 is re-run over the paths in scope and returns only the kept forms (its word list is
+  the one `tests/derived.js` "American spelling" holds; the kept forms are in the batch 2 decision file).
+- 10-6: The `FIRST_SCREEN` table has no logged row: every route is asserted (`shipped: true`), with the named exceptions.
+- 10-7: Reviewer probes (owner, 2026-11-04, `context.md`, "Reviewer probes"): `.claude/prompts/review.prompt.md` and
+  `.claude/README.md` (beside "Rule 2s ... are habit guards") say a reviewer may run read-only probes through stdin or
+  `node -e` against the built app; no hook changes. In the same edit, `review.prompt.md` names a second plan look
+  `plan-<batch>-<n>.md`, the name `agent-guard.mjs` reads (R5 of `reviews/plan-1-3.md`). The prompt change is a review
+  trigger, which this batch's review covers.
+- 10-8: P5 (`rollNo`, `plan-4.md` K11, `handoff.md` Deferred). Default (planner, 2026-11-06, owner away): not built. The
+  change rewrites about 1000 generated share stubs (`i/*.html`) and `tools/share-card.mjs` for one word and needs its own
+  plan review; it goes to `docs/specs/DEBT.md` at closeout with that cost. If the owner asks for the code, the plan writes
+  `- Plan review: required before 10` first and the line reads "«№» and "No." in both languages, `node tools/build.js`
+  regenerates the stubs, `app/contracts` passes".
+- 10-9: From batch 6, settle (fold, or keep and name in the closeout) the tab and picker CSS copied into `HomebrewTabs` from
+  `TableNav` (H2; after N moved the wide tabs to pills, count what is left) and `EQ_DT`'s abbreviations in the stat line (D15,
+  shared with the catalog rows and print). Default: keep and name.
+- 10-10: Dead code of the list roll (`handoff.md` Deferred): `RecordCard`'s `compact` variant and `nameActions`, the
+  `.card.compact` rules and the `tools/artwork` `REVIEW_ART_SIZES` rows for 132 and 96 px go with the eight `record.test.ts`
+  cases that read them, after `git grep` shows that no page draws them; `node --test tools/artwork/lib.test.mjs` passes.
+- 10-11: Batch N's three copy rows (`handoff.md` Deferred): the `/roll/mwt` lead is an instruction sentence (Clarity Rule;
+  proposed fix: no lead); «корника» in the `/roll/std` lead is decided with the `daggerheart-ru-terms` skill (the help text
+  uses the word too); the gold outline of the «ИЛИ» dividers (`OrGrid`, The Seal Rule) takes `--line2`. The goldens of the
+  changed roll states are re-seeded with `--only` in RU and EN; `i18n` parity holds.
+- 10-12: The case 89 default (CI fix pass, `handoff.md` Deferred): up to 760 px the roll row keeps one line and cuts a long
+  chosen part with an ellipsis («Оплот Шершней», «Проклятые предметы»; the select shows it whole). The batch measures a
+  shorter roll label and a narrower picker frame at 360 and 390 px in RU and EN; it takes a narrower frame only if every
+  roll row of `FIRST_SCREEN` still passes; otherwise the cut stays and DESIGN.md "The Whole Message Rule" keeps naming it.
+  A label change needs the owner (The Same Label Rule).
+- 10-13: `404.html` keeps its system face and its missing die mark (a script-free host page: a self-hosted font needs its
+  own `@font-face` path); DESIGN.md "Notes" names it as a kept exception, or the batch builds it if the audit finds a cheap
+  path (default: keep).
+- 10-14: `/s/` shows the bare list position «1» where `/search` shows «№ 89» (`handoff.md` Deferred; M21 d). Default: keep;
+  FEATURES.md "Lists" names it («№ 1» costs three characters of the name column at 360).
+- 10-15: 2-R3: from 761 px the header draws brand, jobs, language, account while the DOM order is brand, language,
+  account, jobs (WCAG 2.4.3); DESIGN.md "Navigation", "Header" names the trade-off unless the audit finds a cheap order that
+  keeps the look. 2-N6: DESIGN.md "The Same Label Rule" and FEATURES.md "Chrome" lose "until their page's batch moves them".
+- 10-16: Monospace labels outside the Key Characteristics rule (`.ordiv i`, `.altcol`, `HelpButton`, `.steps-l`) and the 15
+  components with `text-transform: uppercase` outside The Capitals Rule: each is fixed or named in DESIGN.md "Notes".
+- 10-17: `tests/app/typo.js`: `/search`'s kind row joins `SWITCHES` and the Whole Message step reads 360 as well as 1180 if
+  each costs one loop entry; the note and price switches need an account list the loop cannot make (`DEBT.md`).
+- 10-18: The closeout register (`/handoff`): each row goes to `docs/specs/DEBT.md` with its figures, or is named to the owner
+  and dropped: the focus jump and the 9a R2 probe (TD-P3), the toast over «Ещё» (T-14), `RecordCard`'s dialog art at
+  500-760 px wide and 481-560 px tall, `/search` at 320x568 RU (the 313 against 305 sideways scroll; one probe first),
+  4-R1 (named to the owner; the recommendation is to keep the page), the tabular stat columns task (section 12),
+  `reviews/CI.md` N6 (the `ci.yml` comment, the `bash-guard.mjs` text, no reminder for a bare `states.js`; a hook change
+  needs selftest cases), the `reviews/5.md` and `reviews/6.md` "Checks still needed", the link-preview Worker's card images,
+  the EN `<title>`, manifest name and `en/index.html` wordmark.
+- 10-19: A defect that the re-audit finds goes to `DEBT.md` under the task that owes it and the batch stays small; or the
+  batch fixes it in code and pays the full code gate.
+- 10-20: Wave 3 lands after this batch's review and green CI; then the closing steps of section 16 run in order: the wave 3
+  blind review with its remediation, the whole-app blind review with its remediation, the closeout commit that deletes
+  `issues/57/`, and the last squash. The task directory is retired only after the whole-app blind review.
+- 10-21: Gate cost 95-125 min (section 8): one `check:fast`, one CI run, one review and its fix cycle, the affected vitest
+  files, the artwork test, both lints, `check:built`, the detector, `build:test`, the `--only` re-seeds and the loader runs of
+  cases 83 and 89.
+- Standing checks (outline; its refresh expands them): scale and error scenarios are not applicable (no new state, nothing
+  stored, no write path; the copy rows change text only); consistency follows `FEATURES.md` rules 4 and 14 (one name, one
+  wording, a lead that is not an instruction); RU/EN parity: each changed string has both languages and `i18n.test.ts`
+  passes.
 
-- R1: «Получается из», «Улучшается до», the set line with its bonus and the tier ladder draw on the full record
-  card only (`variant="full"`: the record page, `/h/`, the dialog, the editor preview); a roll result, a list's
-  roll result, a row and a tile draw none, at every width.
-- R2: «Core» is unmarked on every compact surface and named on the full card; `isCoreBook` replaces the `core`
-  flag of `hiddenTags`. R3 and R4: another book's tag and the homebrew tag draw as today.
-- R5: a badge is one box (`inline-block`, U+00A0 before a relation badge, 2 px around it); a tile's weapon kind
-  badge is one pill.
-- R6 (design choice HD1, default option A): the head of `/tables/*` is a function of the band, not of the table;
-  the measurement comes first. A browser case holds it, and the `FIRST_SCREEN` limits stay.
-- R7 (item 6, design choice RC1, default option B; `plan-tags.md` T12): a roll result is the tall face only while
-  the roll sits on one line in a results column of at least 641 px (one result at most 380 px wide, or two side by
-  side); otherwise every result is the row face, as on the phone. A one-, two- and four-result roll shows every
-  name in the first screen at 1180x720 and the whole roll at 1919x980; a browser case holds it; the phone does not
-  move; the one-result width on `/roll/std` meets `FEATURES.md` "Rolling".
-- New states `#/search ~ relations, dialog as gm3` and `#/roll/std ~ one result`; three decision files, the
-  `Supersedes` pointer and the `Amended by` line; prose in `FEATURES.md` and `DESIGN.md`; 75-125 goldens in one
-  re-seed. `RowMain` and `TableRows` lose `index`.
-- Gate cost 100-135 min (section 8). The wave 2b squash follows its review and the green CI run of its tip
-  (section 16); batch 9a then builds its compact row on the rule (`plan-9a.md`, "Dispatch preflight").
-
-Batch 8:
-
-- D116 (section 6).
-- A18: `/lists/<uuid>` not found names a true cause (no browser lists exist
-  after R10) and one next step, with a sign-in when signed out.
-- A new state: the add-to-list menu in its new form.
-- Q8.1 (owner): the `/lists` «Справка» panel (`help.ts` `LISTS`) goes, with
-  its tests and the `#/lists ~ help` inventory state and goldens.
-- Round 3, unit B (owner): at 50 of 50 lists «Новый список» stays on and
-  explains the limit, and the count turns red.
-- The selection bar of batch 3 on `/lists`.
-- DESIGN.md (section 4, departures): the Seal Rule's gold budget (the
-  «Новое в списке (3)» chip) is rewritten; the empty-state plate, the bottom
-  sheet and the neutral selection are checked.
-- M2-2 (from batch 2): on `/lists` below 760 px the pin moves into «Ещё»
-  (mock 8); batch 2's interim round button goes, and with it the Same Label
-  Rule's interim note in DESIGN.md (the last page that draws it). The pin item
-  is `PinItem` and the menu is `MoreMenu` (batch 5; batches 6 and 7 use them
-  too); acceptance wording: "the pin item is `PinItem`".
-- From batch 7: `/lists/<uuid>` not found (A18) and its sign-in variant draw
-  `ErrorPage`; `ListPage` has no `PageTitle` not-found left.
-- `BatchBar.svelte` is deleted: `/lists` is its last caller, because 9a runs first.
-
-Batch 9a (wave 3, first, after wave 2; `mocks/F/` up to 760 px, mock 9 elsewhere):
-
-- The compact row, C1b (owner Q3): on `/lists/<uuid>` and `/s/` while `app.band ===
-  'narrow'`, a 77 px row: art 44 px with the position number on a plate, the name on
-  up to 2 lines, the meta line (the short kind badge, the price or else the source,
-  the note mark, the lock of a GM-only entry), one clamped 13 px line (an item's
-  effect; a weapon's damage, range, burden and trait in that order; armor's
-  thresholds and score). The whole body is one `<button aria-expanded>` with a 20 px
-  chevron, and a press unfolds the full row. From 761 px the full row stays.
-- Open rows are page memory (`openRows`, keyed by entry id, dropped when the list
-  changes). Nothing is stored.
-- Quantity: a separate target at the far right, never inside the button. On the
-  owner's page a live number field, 42x44 px, named «Кол-во: <name>» / "Qty: <name>",
-  through the write buffer, with `touch-action: manipulation` and no stepper. On
-  `/s/` the text «×2». A quantity of 1 draws nothing on `/s/`.
-- In the unfolded row: the price edit, the position field (it stays, one tap away:
-  WCAG 2.5.7), the drag grip on hover devices only, the note, «Скрыть от игроков»,
-  «Открыть карточку» and «Убрать из списка» in the row's «··· Ещё». No remove control
-  on the compact row. The drop mark also draws on the compact row.
-- The position numbers are the true list numbers (3, 7, 13), also while narrowed, so
-  the list roll still matches.
-- In selection mode a tick column draws at the left and the quantity turns to the
-  text «×2».
-- D1, search and filter on the owner's page, at every width: `LIST_SEARCH_AT` = 8,
-  latched per list as on `/s/`; `SearchBox`, «Фильтры · N» and «Выбрать» last, in a
-  new `ListFind.svelte` that both pages share (extract on the second use);
-  `listFacetRows` and `LIST_GROUPS`; `FilterPanel` as a sheet at every width; the
-  filter in page memory, with no address.
-- While narrowed, the meta line reads «Показано 3 из 14 · сохранено». No match draws
-  «Ничего не найдено» and «Сбросить всё».
-- While narrowed the grip goes and the position field stays live. A hidden tick
-  leaves the selection, and «Все» ticks the drawn rows only. «Свой предмет» clears
-  the query and the filter, so the new row shows. Copy, print, download and roll keep
-  the whole list. A not-loaded row has no facets: a picked value hides it and the
-  meta line counts it.
-- D-head 1 (owner Q4, reverses M9-1): up to 760 px «Поделиться», «Печать» and
-  «Бросить по списку» sit in «··· Ещё» on `/lists/<uuid>` at every list size. The
-  inline rename in the `h1` stays. From 761 px «Печать» stays on the action row.
-- N9-2 (owner, round 2): on `/lists/<uuid>` at 360 «Цены» goes into «Ещё» and
-  «Заметки» sits on the meta line. 9b rewrites the switch itself.
-- A3, in part: «Удалить» moves to the list «Ещё» menu.
-- The selection bar of batch 3 on both pages. `FEATURES.md` "Lists": "A ticked row
-  takes the gold selected style" becomes the neutral selection of theme 1 (a lit
-  border and a check, no gold), in the same commit (mock unit B, 2026-10-29).
-- Round 3, unit B (owner): on `/s/` at 360 «Печать» moves into «Выбрать» (it stays
-  on the row at 1180); a 200-character list name is cut to one line at 360.
-- A2, in part: row actions are 24 px targets at the least.
-- A19: no bare count and no always-on tick on `/s/`. A20: the filter draws only from
-  8 entries. A21: the `/s/` unknown-token page (see the batch 7 line below). A41: «Добавить свой
-  предмет» replaces the explainer.
-- From batch 7: `/s/` with an unknown token draws `ErrorPage` (A21); `TableRows`'
-  `ontoggleall`, its strip and the `.selall` rules go with `SharedListPage`'s last
-  use. The `selectAll` key stays: `SelBar` reads it as the name of «Все» (`plan-9a.md`
-  corrects `plan-7.md` here).
-- `FilterBar.svelte`, `anyValue` and the shared page's `.fpill` reader in
-  `tests/app/contracts.js` go: `/s/` is the last caller.
-- The list rows drop «Daggerheart» from the bottom line where they reuse batch 4's
-  card.
-- `FIRST_SCREEN` at 360 (section 14): `LIST_A as gm4` is `shipped: 360` at about 200
-  px; a new row of 8 or more entries is asserted at the rule (about 252 px);
-  `#/s/player-token-1` is `shipped: 360`; a new `/s/` row of 8 or more entries has an
-  `exception` of 286 px at 360 (owner Q4).
-- DESIGN.md "The First-Screen Rule" lists the `/s/` exception of 286 px with the
-  owner's date.
-- New states, each with its RU and EN golden and an axe case: `LIST_A ~ compact`
-  (360), `~ compact, row open` (360), `~ many`, `~ filter sheet` (360), `~ narrowed`,
-  `~ no match`, `#/s/player-token-1 ~ compact` (360), the list «Ещё» menu, the `/s/`
-  selection mode.
-- Text in the same commit: `FEATURES.md` "Lists", "Account and browser lists" (the
-  sentence "has no filter" goes), "Chrome"; `STATE.md` (Filters and UI rows: the list
-  page's query, picks and `openRows`); DESIGN.md "Layout"; `COVERAGE.md`; one file
-  under `docs/decisions/` (the compact row, no stored mode, the filter in memory, and
-  what was rejected: C1, C2, C3, D2, D-head 2). `ROUTES.md`, `CONTRACTS.md`,
-  `routes.json` and `llms.txt` do not change.
-- DESIGN.md (section 4, departures): the neutral selection (`FEATURES.md` "Lists")
-  and the bottom sheet are checked.
-- From batch 7b: relation lines and the «Core» tag are gone from compact rows when 9a starts; `RowMain full`
-  builds no relation line, and the compact row's meta line never draws «Core» (`plan-9a.md`, "Dispatch preflight").
-
-Batch 9b (wave 3, after batch 8; mock 9):
-
-- E2 (plan review B2): the reorder drop mark is redrawn so the detector does
-  not flag it. Recommended form: a 2 px gold line drawn by a gap element
-  between the rows, not an inset shadow on the row. Every `FEATURES.md`
-  "Lists" drop rule stays (both rows lit, the mark on the last visible line
-  under an open note); the existing reorder cases pass. Then the `side-tab`
-  entry for `ListPage.svelte` leaves `.impeccable/config.json`, and
-  `impeccable detect --json --no-config --no-inline-ignores` passes on
-  `ListPage.svelte` and `HitNote.svelte` (N1). If no form passes, a
-  value-scoped ignore stays and batch 10 names it to the owner.
-- E4 (plan review R8): first, one edit with the Impeccable hook live and one
-  `impeccable detect` run; `.impeccable/config.json` stays byte-identical and
-  `npx prettier --check .impeccable/config.json` passes. Then the file holds no
-  `ignoreValues`, and the `.prettierignore` line goes (the file is
-  Prettier-formatted, or deleted if `impeccable detect` runs without it). If
-  the hook rewrites the file, E4 stays and `handoff.md` gives that reason.
-- A1 (P0, plan review R2): at 640-900 px the quantity, the price and the row
-  actions stack under the row body; the title column holds at least one word
-  per line, and no badge draws over a title. Proof: `node tests/app/sweep.js
-  768` and a geometry case in `tests/app/states.js`. The screenshot set adds
-  768 px (RU and EN) for `list`, `list-prices` and `shared-player`.
-- The note switch saves a pending edit before it shows the other note (plan
-  review, standing check 2).
-- Q9.1 (owner): the list page's inline «?» buttons (the price display, the
-  notes, the price field) go; the money, price and note help states of
-  `inventory.js` (`LIST_A ~ money help`, `~ price help`, `~ note help`) leave
-  with their goldens; `FEATURES.md` rule 15 (c) changes in the same commit.
-- Icon-and-label controls share one vertical center in the note switch and the
-  list controls, at 360 and 1180 (owner review, 2026-10-23); the batch 1
-  browser check covers the new controls.
-- A2, the rest: one note area with a «Для игроков» / «Только для мастера» switch
-  replaces the two editors per row (`R/list-note`).
-- A3, the rest: the list controls sit in the side column; the share panel is two
-  labeled link rows (`R/list-share`). A4: one gold «Скопировать» per panel at most.
-- A5: short note labels; the border style carries the difference.
-- A42: «Бросить по списку» is a real button that opens the roll panel; the
-  result shows as the card face with both notes (`R/list-roll`). Up to 760 px it
-  opens from «Ещё» (9a).
-- From batch 5: `ListPage`'s roll result draws `variant="face"` and `RollResult`'s
-  row; `compact`, `nameActions`, `Actions`, `sendAll`, the `.card.compact` rules and
-  the two `REVIEW_ART_SIZES` rows for 132 px and 96 px are deleted.
-- From batch 6: `FormField`'s `help` prop and its `HelpButton` import go with the
-  last «?» (`QuickItem`'s; the card forms' «?» went in batch 6, Q6-1).
-- Price toggle: the switch reads «Цены:» «Как в книге» / «Монетами», shows an
-  example under it, and every price on the page follows it, rows, totals and
-  the roll result included (`R/list-prices`, `R/list-picked`).
-- Requests: «Новое в списке» shows was, taken and becomes per entry and names a
-  short stock in words («Просили 9, в списке 5»), with no «×9 из 5» or «(без
-  цен: 1)» (`R/list-requests`).
-- The GM view of `/s/` draws the GM-only note in the same style as the owner's
-  editor (A22).
-- New state: the note switch.
-- The requests panel on `/lists/<uuid>` (owner, round 6 and R9-1) folds to its
-  head («Новое в списке (3)», «Открыть») at every width. Under D-head 1 the page
-  with requests and fewer than 8 entries passes at 360 (about 244 px); with 8 or
-  more entries it is a named exception at about 296 px, past the owner's 292 px, so
-  the batch logs the measured value as a default and sets the limit to it (section
-  14).
-- `FIRST_SCREEN`: `LIST_A as gm4` and `#/s/player-token-1` move from `shipped: 360`
-  to `shipped: true`, with the side column at 1180.
-- DESIGN.md (section 4, departures): The Two Breakpoints Rule takes the 1000 px
-  side-column step; the gold budget is checked.
-
-Batch 10:
-
-- P5 (from `plan-4.md`, K11): `rollNo` changes in `dict.ts` and `tools/share-card.mjs` together, then `node tools/build.js` regenerates the stubs; a plan review runs first. Batch 10 takes code for it.
-- Reviewer probes (owner, 2026-11-04, `context.md`, "Reviewer probes"): a reviewer
-  may run read-only probes through stdin or `node -e` against the built app. Batch 10
-  writes this in `.claude/prompts/review.prompt.md` and in `.claude/README.md` beside
-  "Rule 2s ... are habit guards"; no hook changes. The prompt change is a review
-  trigger, which batch 10's review covers.
-- From batch 6, two items for batch 10 to settle (fold, or keep and name in the
-  closeout): the copied tab and picker CSS of `HomebrewTabs` and `TableNav` (H2,
-  about 35 lines), and `EQ_DT`'s abbreviations in the stat line (D15; shared with
-  the catalog rows and print). `KeepNote` is untouched by batch 10.
-- `ignoreValues` is empty and `impeccable detect --json --no-inline-ignores
-  app/src` reports nothing: each intended literal becomes a DESIGN.md
-  frontmatter entry (32 of `PrintCard.svelte`'s 33 advisories are print
-  colours - `#000`, `#fff`, the Figma golds - and one is the radius `2.4cqw`),
-  and every other finding is fixed. A finding that is neither fixed nor
-  documented is named to the owner as a kept exception (plan review N15).
-  `git grep -n impeccable-disable -- app/src` returns nothing (E11).
-- The re-audit is Impeccable `audit` over the S1 capture; `.impeccable/design.json`
-  is regenerated with Impeccable `document` (plan review R5).
-- The kept exceptions are recorded with their reasons (plan review N14): a
-  surviving detector ignore in DESIGN.md "Notes"; E5, E6, E8 and E9 in
-  `.claude/README.md` (owner, Q4 and B1).
-- The spelling grep of batch 2 is re-run over the paths in scope and returns
-  only the kept forms. Its word list is the one `tests/derived.js` ("American
-  spelling") holds; the kept forms are in the batch 2 decision file (batch 2's
-  brief, `git show 65829261:issues/57/plan.md`, S10, has the file set).
-- The `FIRST_SCREEN` table has no logged row: every route is asserted.
-- A defect that the re-audit finds goes to `docs/specs/DEBT.md` under the task
-  that owes it and batch 10 stays docs only; or batch 10 fixes it in code and
-  pays the full code gate (section 8).
-- Wave 3 lands after batch 10's review and green CI; then the closing steps of
-  section 16 run in order: the wave 3 blind review with its remediation, the
-  whole-app blind review with its remediation, the closeout commit that deletes
-  `issues/57/`, and the last squash. The task directory is retired only after
-  the whole-app blind review.
-
-Each of batches 2-9 (3b, 9a and 9b included):
+Each of batches 2-9 (3b, 9a, 9b, TD, N, P and 10 included):
 
 - Each new open or pressed state has its `tests/app/inventory.js` entry, a
   golden in RU and EN and an axe case (`expectNoA11yViolations`) in the same
@@ -887,39 +620,36 @@ code batch.
 |---|---|---|
 | 1 (done) | `node tests/run-all.js app/print,app/typo,app/hues,stub,app/states`, `npm run check:built`, both lints, `node --test tools/artwork/lib.test.mjs`, `node tools/artwork/cards.mjs --check` | 13 (spent) |
 | 1b (done) | spent (planned 16-18 min of extra gates) | - |
-| P | `node tests/run-all.js app/print,app/states,stub` (6-8); `npm run check:built` (1); the catalog fit measure for the `FEATURES.md` figures (`issues/57/mocks/P/tools/print-measure.cjs` and `print-analyse.cjs`, RU and EN, four layouts, about 12); the burden export through the owner's Chrome (about 5); the print-resolution screenshot set (about 5); the batch review of the Figma departures in its fix cycle (about 5) | 30-35 |
+| P | `plan-P.md`, "Gate cost": the affected vitest files (20-25), the catalog measure and the background PDFs (12-15), the golden re-seed of 30-45 print states (15-20), one local `app/print` run (8), `check:built` (2), the screenshot set and PDF rasters (8-10), `polish` and `harden` (5-10), the batch review (20-30) and one fix cycle (25). Q-P1 is no, so the plan review of the earlier estimate is gone | 157-197 in all |
 | 2 (done) | spent (planned 65-75 min of extra gates: `check:db`, the golden re-seed, the sweep, the selftest, the mark) | - |
 | 3 | `node tests/run-all.js app/contracts,app/states,app/typo,app/hues,app/print,contracts,dataint,derived,stub` (15-18); `node tests/app/sweep.js 360` and `768` (about 16); the golden re-seed, `build:test` and four `--update` shards (11-12; about 56 catalog states plus the Account, search and shared states whose text or bar moves); `npm run check:built` (1); both lints (2); `node tools/decisions.js` and the detector (2); the orchestrator's Impeccable `polish` and `harden` run (about 10, section 10) | 55-65 |
 | 3b | `build:test` and one golden pair (about 5); `check:built`, both lints, decisions and the detector (about 5); `polish` and `harden` (5-10); the browser suites, the sweep and the focus-fix proof run on CI | 15-20 |
 | 4, 5, 6, 7 (done) | spent (planned extra gates 30-35, 32-40, 38-49 and 32-43 min, each with `npm run check:built`) | - |
-| 8, 9a, 9b | `npm run check:built` where `dist` assets change (1) | 1 each |
+| 8 | `plan-8.md`: the golden re-seed of about 35-40 `/lists` and add-to-list states (`build:test` and four shards, 15-20); `check:built` and the configured budget line (3); both lints, decisions, the detector (3); `polish` and `harden` (5-10); the screenshot set (5); cases 102-104 run on CI. One `check:fast` (10-14), one CI run, one review fix cycle | 75-100 in all |
+| 9a (done) | `npm run check:built` where `dist` assets change (1) | 1 |
 | 7b | `plan-tags.md`: the vitest files of T1-T6 and T9 (about 15 files, 8-10); artwork test, both lints, decisions, the detector (4-5); `build:test` and the four golden shards (70-120 goldens, 15-20); `check:built` and the configured build (3-4); the head probe and its failing run at HEAD (T9.1, T9.3, 8-12); the roll probe before and after and the roll results CSS (T12, 20-30; folded in by `CLAUDE.md` "Size a batch by its gates": the same `RecordCard`, `RollResult` and `_roll_*` goldens; its own batch would cost 50-65); `polish` and `harden` (5-10); the screenshot set (about 3). One golden re-seed, one `check:fast`, one CI run, one batch review and by habit one fix cycle: 4-6 runs. Its wave 2b squash adds 15-20 (section 16) | 100-135 |
 | 9a | the new 360 px goldens, the axe cases and the `check:fast` growth of C1b (10-15); the new goldens and `lists.test.ts` cases of D1 (5-10) | 15-25 |
-| 9b | `node tests/app/sweep.js 768` for A1 (about 8) | 8 |
-| 10 | docs only: one `check:fast` and one docs-only CI run (no `e2e`) | about 20 in all |
+| 9b | `plan-9b.md`, "Gate cost": the re-seed of about 70-100 list, `/s/` and add-to-list goldens (15-20); the affected vitest files alone with `VITEST_MAX_WORKERS=2` (15-20); `check:built`, detector, E4, Prettier (4-5); the loader runs of cases 83 and 104-107 (8-10); the shots at four widths (10); `polish` and `harden` (5-10); `sweep.js 768` on CI | 95-130 in all |
+| TD | `plan-TD.md`, "Gate cost": T's three vitest files and the loader runs of cases 83, 108 and 109 before and after (30-38); D's two vitest files, `derived`, the loader runs of cases 110, 111 and 83 red then green, six `--only` re-seeds and the shots (25-35); the Measure Rule's CSS in 12 files, case 111 at five widths and the prose (40-55); lints, `check:built`, the detector, `polish` and `harden` once (15-20); the review of about 57 files and six goldens (25-35). No golden re-seed beyond the six headers | 168-230 in all (T 65-90 and D 100-140 as two batches; `plan-rebatch.md` 128-175 before the Measure Rule) |
+| N | `plan-N.md`, "Gate cost": the homebrew head probe (12-15); 11 vitest files (12-16); the re-seed of about 145 roll, tables and homebrew states (25-30); the loader runs of cases 83, 96, 97, 112, 113 and `sweep.js` 768 and 1180 (15-20); `check:built` and lints (4-5); `polish` and `harden` (5-10); the review (20-30) | 115-150 in all |
+| 10 | docs and the cleanup of acceptance 10-1 to 10-21: one `check:fast` (12-14), one CI run (10.5-11.5), the affected vitest files and the artwork test (6-8), lints, `check:built` and the detector (4-5), `build:test`, the `--only` re-seeds of the roll copy and the loader runs of cases 83 and 89 (10-12), `polish` and `harden` on the roll heads (5), the review of a prompt change (20-30) and one fix cycle (22-26). A docs-only batch would cost about 20; the code part is the cleanup of 10-8 to 10-17 | 95-125 in all |
 | waves (section 16) | per wave: the merge of `origin/main`, the squash in the main checkout, the `main` CI run with the deploy (10.5-11.5) and the merge back (about 2); three waves, plus the small wave 2b (15-20, in the 7b row) | 37-41 |
 | blind reviews, post-release check and closeout (section 16) | the three blind production reviews, after wave 2, after wave 3 and of the whole app, each with its remediation batch (the whole-app one about 45-60, the owner's print not counted; the two wave reviews and their fix batches are not in the totals below), then the closeout commit and its docs-only CI run and the last squash (about 20) | 65-80 |
 
-Total at the batch 3b refresh (2026-11-03), counted as at the batch 3 refresh
-(batches 1, 1b, 2 and wave 1 spent): ten code batches (3, 3b, 4, 5, 6, 7, 9a, 8, 9b,
-P) at 45-60 min (450-600), plus 130-160 min of extra gates (3: 55-65; 3b: 15-20; P:
-30-35; 9a: 15-25; 9b: 8; 4-8, 9a, 9b: 7), plus batch 10 at about 20, plus the two
-waves that are left (25-28) and the post-release check and closeout (65-80): about
-690-888 min, so about 11.5-14.8 hours. Batch 3's own run is spent, except its review
-fix cycle (about 20-25 min), so the time left is about 610-788 min, 10.2-13.1 hours.
-Feedback item A adds no gate. If batch 10 takes code, add 25-35 min. Batch P adds
-75-95 min of its own gates and measures. The owner's 2026-10-29 merges saved two
-batches (about 90-120 min); keeping the spelling sweep in batch 2 saved one CI run
-and one review (about 30 min). Batch 1b cost one batch for its contract and print
-change, 3b one for the header, and the 9a and 9b split one for the F2 fix in wave 2.
-Mock drawing (section 9) runs no gate.
+Time left at the 2026-11-06 fold (batches up to the CI fix pass spent): TD 168-230 min, N 115-150, P 157-197, 10 95-125,
+the wave 3 squash 12-14, the two blind reviews with their remediation and the closeout 65-80: about 612-796 min, 10.2-13.3
+hours. The merge of D into T saved one CI cycle pair and one review (about 67-95 min, `plan-rebatch.md`); T and D as
+batches of their own would have cost 65-90 and 100-140. This host is memory-starved: every vitest run takes
+`VITEST_MAX_WORKERS=2`, and a browser suite never runs beside vitest, so the local `check:fast` is 12-14 min (744 s measured
+at batch 8's remediation). The earlier totals (batch 3b refresh, 9b refresh) are at `git show a8bdf1de:issues/57/plan.md`,
+section 8.
 
 Writer tests per remaining batch (`orchestrate.prompt.md`, "Writer tier"; facts
 for the orchestrator's dispatch, not a model choice):
 
 | Batch | Test 2 (public contract, route, stored state, product law, hook, configuration) | Test 3 (print fitting, golden re-seed, parity with a design node) | Plan-review trigger |
 |---|---|---|---|
-| P | yes: the product law's card size (QP.2, `CLAUDE.md`) | yes: print fitting; parity with Figma nodes `714-42387` and `3773-90792` (the burden export) | none |
+| P | no: Q-P1 is no, so the product law, `CLAUDE.md` and `llms.txt` do not change | yes: print fitting; parity with Figma nodes `714-42387` and `3773-90792` (the burden export); 30-45 goldens | none (`plan-P.md`, "Plan review") |
 | 3 | no (no contract, route or stored state changes; `tests/app/contracts.js` only reads a second form of the same fixture value) | yes: about 56 catalog goldens re-seeded, the first-screen offsets and the sheet, bar and column layouts rest on visual judgment | none (section 10) |
 | 3b | no | one new golden pair, seeded with `--only`; no re-seed of other states and no design node | none (`plan-3b.md`) |
 | 4 | no | yes: new states and their goldens | none |
@@ -927,10 +657,12 @@ for the orchestrator's dispatch, not a model choice):
 | 6 | no | yes: goldens | none |
 | 7 | no | yes: goldens | none |
 | 7b | no | yes: 75-125 goldens in one re-seed; badge, tile, head and roll result layouts. Test 1 is yes: the head choice HD1 and the roll choice RC1 have defaults (options A and B) that block nothing | none (`plan-tags.md`) |
-| 8 | no | yes: goldens | none |
+| 8 | yes, in part: the bundle ceiling goes into `tools/bundle-budget.mjs`, `.claude/README.md` and a decision file (configuration every session runs under; no contract, route, stored state or product law) | yes: about 35-40 goldens re-seeded; the card, bar, head and menu follow mock 8. Test 1 is no: every fork has a default (`plan-8.md` L10, L12, L13) | none (`plan-8.md`) |
 | 9a | no: no stored state, route or contract changes (D1 keeps the filter in memory) | yes: the list goldens, the compact row at 360 px | none |
-| 9b | yes: `.prettierignore` (E4) and `.impeccable/config.json` (E2), configuration every session runs under | yes: the list goldens again | its refresh checks the note switch's pending-edit save for possible data loss |
-| 10 | no, unless it edits `.impeccable/config.json` again | no, unless it takes code | none |
+| 9b | yes: `.prettierignore` (E4) and `.impeccable/config.json` (E2), configuration every session runs under | yes: about 70-100 goldens; the side column and the panels against mock 9, the row text against mock 9b. Test 1 is no (M1-M20 decided) | none: the note switch commits the shown draft before it switches (`plan-9b.md`) |
+| TD | no: sizes, durations, borders, widths and test limits only | yes, in part: the folds at 360, the card corner, the header hold, the plate's ground and the hugging help panel rest on visual judgment; six header re-seeds. Test 1 is no: every fork has a default (T1-T12, D-1 to D-8, MR-1 to MR-6) | none |
+| N | no | yes: about 145 goldens re-seeded; the head at five widths against the mocks. Test 1 is no (N-D1 to N-D12 decided) | none (`plan-N.md`) |
+| 10 | yes: `.claude/prompts/review.prompt.md` and `.claude/README.md` (configuration every later session runs under); no hook change | yes: the `--only` re-seed of the roll copy states | none: P5 goes to `DEBT.md` (acceptance 10-8) |
 
 ## 9. Mock schedule
 
@@ -1087,10 +819,22 @@ grep -n impeccable-disable -- app/src` returns nothing.
 - Deferred: the link-preview
   Worker's card images (`tools/share-card.mjs`); a Golos Text trial; the EN
   `<title>`, manifest name and `en/index.html` wordmark.
+- Deferred (owner, 2026-11-05, "plan stat columns later"): tabular stat columns on table rows from 1440 px. Today a
+  weapon or armor row draws trait, range, damage and burden as one stat sentence, so a row with a short description is
+  60-70% empty at 1920 px even after the Row Text Rule (batch 9b). Outline: a states mock first (`eq_weapon` and
+  `eq_armor` at 1440 and 1920 px, RU and EN); then right-aligned tabular columns with labels right of the text, rows
+  still one column, the stat sentence kept below 1440 px, on `/search`, the list page and `/s/`; values from the source
+  book data. It is the DESIGN.md "Proposed rules" row "The Stat Columns Rule" (written by 9b, M22). Recommended: its own
+  task after wave 3, not batch 10 (the docs lock and a small cleanup) and not before wave 3 (9b, TD and N are full).
+  Trade-off: production keeps half-empty weapon rows until then.
 - Risk: batch P moves every print measurement that `tests/app/print.js` and
-  `FEATURES.md` "Print" pin; with QP.2 the sheet geometry moves too. Its
-  refresh lists each pinned figure with its new value from the catalog
-  measure, and its batch review reads the figures against the PDFs.
+  `FEATURES.md` "Print" pin (the face, the bases and the floors move the fit); the
+  sheet geometry stays at 63x88 mm (Q-P1 no). Its brief lists each pinned figure with
+  its new value from the catalog measure, and its batch review reads the figures
+  against the PDFs.
+- Risk: batch TD holds three rule sets in one review (about 57 files, six goldens) and one red CI run blocks all
+  three; the loader cases (83, 108, 109, 110, 111) run before `check:fast`. A hugging help panel leaves page space right of
+  it at 1920 px: the owner may take MR-4's fallback, one line (`plan-text.md`, section 9).
 - Risk: a self-hosted print face makes the fit depend on a font load (QP.1);
   the fit after `document.fonts.ready` and the waiting print button are the
   guard, and an offline tab prints in the fallback with its clip count.
@@ -1147,8 +891,9 @@ review answers" and "Mock answers"):
 Batch P (`mocks/P/index.html`), all answered (owner, 2026-10-29, `context.md`
 "Print batch answers" and "Mock P answers"):
 
-- QP.2 the standard card is 63.5 x 88.9 mm (nine on A4, 7.75 mm side and 13.15
-  mm top and bottom margins); QP.3 the compact card stays 44 x 63 mm (it fits
+- QP.2 (owner, 2026-10-29: 63.5 x 88.9 mm) is reversed by Q-P1 (owner, 2026-11-05): the standard card stays 63 x 88 mm with its
+  8.5 mm side and 14.5 mm top and bottom margins (no official Daggerheart size was found; the difference is below printing
+  tolerance). QP.3 the compact card stays 44 x 63 mm (it fits
   Mini European sleeves with about 5 mm spare in length, not Mini American
   ones); QP.4 the rules text starts at 4.0cqw standard (7.1 pt) and 4.6cqw
   compact (5.7 pt); QP.5 the Figma node's left-aligned name and pill tags stay.
@@ -1294,6 +1039,8 @@ catalog, `/homebrew`, `/lists`, `/lists/<uuid>`, `/s/`), at both widths:
 - «Выбрать» / "Select" sits at the right end of the collection's head row
   (the row that holds the count). It never goes into «Ещё» / "More" and never
   joins the primary action's row.
+  Since the 9b refresh (2026-11-05, the Field Measure Rule) "at the right end" reads "last in the row": from 761 px the
+  search box is at most 720 px and the row's controls follow it.
 - The search sits first in the row under the page head, beside «Фильтры · N»
   / "Filters · N" at 360; it is never inside the filter sheet.
 - The view switch (grid or table, a choice for the visit, Q3.2) stays its own
@@ -1339,192 +1086,43 @@ states), `mocks/5/` (`roller`), `mocks/6/` (`homebrew-items`, `editor`),
 `mocks/7/` (`search-results`), `mocks/P/` (`print-preview`), `mocks/8/` (`lists-index`),
 `mocks/9/` (`list`, `shared-player`).
 
+Batch 8 (`plan-8.md`, L9): `#/lists as gm1` moves to `shipped: true`, and a new row `#/lists ~ many lists as gm4`
+(30 lists, the search row) is asserted at the rule (mock 8 measured 231 / 189 and 253 / 191 at 360 / 1180).
+
 FIRST_SCREEN batches: roll pages 5 (the header part 2), tables 3, item 4,
 search and account 7, print P, homebrew and the editor 6, `/lists` 8,
 `/lists/<uuid>` and `/s/` 9a at 360 and 9b at 1180.
 
-## 15. Batch P - Print (outline)
+Batch 9b (`plan-9b.md`, "First-screen rows"): the five list rows move to `shipped: true`; the requests state's row is
+added (the rule, or its measured exception at 360; owner 292, estimate 296). Measured at the 9b refresh on the built
+app with the rules injected (`mocks/9b/measure.json`; the Row Text Rule of the owner's 2026-11-05 choice): no first-screen top moves (`/search` 279, `/tables/eq_weapon`
+244, `~ two filters` 244 at 1180 and 252 at 360, `/roll/std` 267 at 1180 and 323 at 360, `/s/` 275 at 1920, `/lists ~
+many lists` 199 at 1920).
 
-Owner, 2026-10-29 (`context.md`, "Print review" and "Print feel"): a print
-audit, then a print mock the owner confirms, then this batch with the print
-checks (after 1b by its mock; in wave 3, after batch 9b, by the release
-order). The product law holds: nine cards on A4 or sixteen on the
-compact sheet, colour and black-and-white as two layouts, the fit measured in
-the browser. Inside the card, fonts, type sizes, spacing, art and stat blocks
-may change; each departure from the Figma nodes is named for the owner's yes.
-The cards keep the feeling of Daggerheart cards; the Core Set PDF is a style
-reference only (hierarchy, type feel, banners, stat blocks, density), and
-nothing from it enters the repository or a mock.
+Batch TD re-measures every row at 360x640 before and after the folds (`plan-T.md`, "First-screen rows"; measured on the
+live site, before / with the Thumb Rule only / with the folds): `/roll/std` 323.5 / 338.7 / 318.7 (its exception stays 325),
+the roll pages 250.7 / 265.9 / 245.9, the catalog 234.4 / 242.4 / 230.4, two filters 252.4 / 260.4 / 248.4, `/i/ci1`
+137.2 / 140.4 / 136.4, `/search` 230.0 / 236.4 / 232.4, the header 111.2 / 114.4 (155.6 at 360 EN) / 110.4. The list pages,
+`/lists`, `/homebrew` and `/s/` are estimates that TD measures through the loader; a row past 256 px takes a fold or its
+measured `exception` (section 7, "Batch TD"). The lead on one line (D, the Measure Rule) lowers `#/search ~ searched`,
+`#/search ~ kind picked` and `#/homebrew as gm3` by about 22 px at 1180; nothing at 360 moves.
 
-Owner answers (2026-10-29, `context.md` "Print batch answers"): QP.2 the
-standard card is 63.5 x 88.9 mm; QP.3 the compact card stays 44 x 63 mm;
-QP.4 the rules text starts at 4.0cqw on the standard card (7.1 pt) and at
-4.6cqw on the compact card (5.7 pt); QP.5 the Figma node's left-aligned name
-and pill tags stay. Mock P is drawn now from the pre-batch-1 build; only the
-no-picture well waits for batch 1b.
+Batch N (`plan-N.md`, "First-screen rows") adds the 768x1024 and 900x720 columns (limit 410 and 288): the roll rows 264, the
+catalog 334 (at 900x720 a named exception with a ceiling of 336, the reserved tab row), `#/homebrew as gm3` measured in S1;
+at 1180 the roll rows read about 214 (267 before) and `/tables/eq_weapon` 244.
 
-Mock P answers (owner, 2026-10-29, `context.md` "Mock P answers"; section 13):
-QP.1 Source Sans 3; QP.6 one card per row at 360; QP.7 the short switch
-labels; QP.8 the band drops. RP-1: the primary reads «Напечатать» / "Print".
-No design question is open; the later owner decisions for this batch (the
-bottom line, the burden hands, the card size in `CLAUDE.md`) are its lines in
-section 7, "Batch P". Read every «Отправить на печать» / "Send to printer" and
-EN "Colour" below as «Напечатать» / "Print" and "Color"; the refresh rewrites
-those lines.
+Batch P (`plan-P.md`, "First-screen rows"): the `#/p/set-emberaxe as gm2` row moves to `shipped: true` (estimate 236-248 px at
+360x640, limit 256; 200-215 px at 1180x720, limit 288).
 
-Findings (`audit.md`, "Print audit (2026-10-29)"): PR1 (compact colour text
-4.3 pt), PR2 (standard colour text 6.2 pt under the reference's 7 pt, art 66%
-against 49%), PR3 (the print face depends on the machine), PR4 (`/p/` fails
-the First-Screen Rule; C29, C30), PR5 (the tier word at 4 pt), PR6 (list
-markers), PR7 (line pitch, verify), PR8 (art on long texts: keep the ladder
-order), PR9 (card size), PR10 (the name and tags: keep), PR12 (the bar notes;
-C29, C31). PR11 is batch 1b's.
+## 15. Batch P - Print (expanded into `plan-P.md`)
 
-What may change, by part of the card (recommended options):
-
-| Part | Today | Proposed | Departure from the Figma nodes |
-|---|---|---|---|
-| Face | `var(--ui)`, the reader's installed face (Segoe UI on this host) | Source Sans 3, the self-hosted UI face; `--print-ui` goes and the card reads `--ui` again (one token, no near-duplicate), QP.1 | yes: the nodes are set in their own face; named |
-| Rules-text base | 3.5cqw on both sheets (6.2 / 4.3 pt) | 4.0cqw standard (7.1 pt), 4.6cqw compact (5.7 pt) (owner, QP.4); black and white grows from the same base to today's 5cqw cap | yes: the node's text size; named |
-| Ladder | 3.5 to 3.0cqw, the padding 23 to 8cqw (colour) or 5.8 to 3cqw (black and white), then to 2.6cqw | unchanged below the base: base to 3.0cqw, the padding, then to 2.6cqw | no |
-| Paper floors | labels 4.5 pt, values 5 pt, the tier word 4 pt | the tier word takes the 4.5 pt label floor (PR5); the others stay; the named compact shortfalls are re-measured in the new face | yes for the tier word; named |
-| List marker | the default disc (a speck at 6.2 pt) | an en dash in black (mock P), PR6 | no: the node has no list |
-| Line pitch | PR7: measured in mock P, the line pitch is even (10.41 px on `voa2_a3`); each list item adds the 1 px `li` margin, and the jitter in the 300 dpi rasters is raster rounding (32.5 device px a line) | unchanged; PR7 closes with no code change | no |
-| Art | the square art region; the text takes what it needs, the art the rest; a card whose art gives way keeps a blank band of paper at the top | the ladder order stays; a colour card whose art gives way drops the band (padding 5.8cqw) and fits its text again from the base (QP.8, recommended, drawn in mock P) | no: the node has no card without art |
-| Name and tags | left, 5.8cqw 900 capitals; pill tags | unchanged (owner, QP.5) | no |
-| Card size | 63 x 88 and 44 x 63 mm | 63.5 x 88.9 on A4 with 7.75 mm side and 13.15 mm top margins (owner, QP.2); 44 x 63 kept (owner, QP.3) | yes for 63.5 x 88.9; named |
-| Black and white | top-aligned, no art block, text grows to 5cqw | unchanged apart from the base, the face and the floors (owner, Q1b.1) | no |
-
-The fit with a self-hosted face (QP.1): `fit()` runs synchronously after
-render and never awaits a font. With Source Sans 3 the sheet fits again when
-the face has loaded: `PrintPage.svelte` (and `PrintPreview.svelte`) re-run the
-fit of every card once `document.fonts.ready` settles after the page opens,
-and `/p/` preloads the face. «Отправить на печать» / "Print" waits for that
-fit (disabled with its existing busy state until then). The browser suite
-waits for the fit as it waits for the sheet today. A tab opened offline with
-no cached face fits and prints in the fallback; the clip count says what it
-cuts, as today.
-
-The `/p/` page (C29, C30, C31, PR4, PR12; the First-Screen Rule):
-
-- Primary content: the first sheet (or, at 360 with QP.6, the first card).
-  Design target 240 px at 640 and 270 px at 720 (section 14); today 529 and
-  350.
-- The bar (mock P): «Назад» / "Back" and the H1 on one row; the two switches
-  stay visible controls for the visit (Q3.2, plan review R3), never inside a
-  menu, on one row with short labels (QP.7: «Цвет» / «Ч/б», «63×88» /
-  «44×63»; EN "Colour" / "B&W"); at 1180 the primary «Отправить на печать» /
-  "Send to printer" leads that row and «Ещё» / "More" (holding «Ссылка на
-  набор») ends it; at 360 the primary and «Ещё» sit in a fixed bottom bar,
-  as the item sheet's (batch 4). The sub line (cards, sheets, size) moves
-  under the sheets, and each sheet from the second has «Лист N из M» /
-  "Sheet N of M" above it (at 1180 every sheet). `mocks/7/`'s «Настройки
-  листа ▾» menu is not built, because it hides the temporary choice.
-- First screen, measured in mock P (`mocks/P/first-screen.jsonl`): today the
-  sheet starts at 529 px at 360x640 and at 350 px at 1180x720 (RU and EN);
-  proposed, 248 at 360 (limit 256, 8 over the 240 target) and 271 at 1180
-  (limit 288, 1 over the 270 target). The batch reaches the target by the
-  page's top padding or the batch 2 header, and names the outcome.
-- The A4, orientation and margin sentence goes (`@page` sets them); the
-  background-graphics hint moves under the sheet. `KeepNote` leaves the print
-  bar (C31); the switches show the visit's choice themselves.
-- At 360 (QP.6, recommended): one card per row at the column width, with «Лист
-  N из M» / "Sheet N of M" between sheets; print media and every width from
-  600 px draw the sheets as today.
-- The not-found and retired-link pages keep their wording for batch 7's
-  error pattern.
-
-Mock spec: drawn and answered (`mocks/P/index.html`; the spec is at `git show
-5d9aefbc:issues/57/plan.md`, section 15, "Mock spec"). Its tools stay in
-`mocks/P/tools/` for the catalog measure.
-
-Files expected (outline; the refresh names every edit): `PrintCard.svelte`
-(the face, the base and grow start per sheet, the tier floor, the marker, the
-line pitch); `PrintPage.svelte` and `PrintPreview.svelte` (the fit after the
-face loads, the bar, the notes, the 360 preview); `PrintSwitches.svelte` if
-the switches change form; `KeepNote.svelte` callers; `tokens.css` (the
-`--print-ui` token goes with QP.1); `app/src/lib/print.ts` (`sheetScale` and
-the sheet geometry with QP.2); `dict.ts` (the bar sentence, the subtitle with
-QP.2, «Лист N из M», the switch labels with QP.7; both languages);
-`AccountPage.svelte` (the default switches take the QP.7 labels); `FEATURES.md` "Print" (every figure and
-each departure with its date); DESIGN.md "Signature component: the print
-card" and "Overview" (the identical-print sentence becomes true); a
-`docs/decisions/` file that amends the 2026-09-23 decisions ("Print card small
-text ..." and "The compact sheet ..."), then `node tools/decisions.js`;
-`tests/app/print.js` (the measured figures, the face wait, the geometry with
-QP.2, the marker and pitch checks); `printPage.test.ts`; `tests/app/states.js`
-(the `/p/` `FIRST_SCREEN` row asserted); the `/p/` inventory states and their
-goldens (the bar's text moves; CI's golden text or the shard).
-
-Acceptance (outline; each a line of the expanded batch):
-
-- Each of PR1-PR10 and PR12 has its outcome: fixed as the owner chose at mock
-  P, or kept with the owner's answer.
-- C29, C30 and C31 (from batch 7) are fixed as section 7, "Batch P" states.
-- The catalog measure, run on the built batch in both languages and all four
-  layouts, gives the figures that `FEATURES.md` "Print" states, and the
-  handoff records them.
-- No catalog card is clipped; the smallest rendered text is at its floor or a
-  named shortfall.
-- The print card is set in the face the owner chose, on every machine the
-  suite runs on, and the fit runs after the face has loaded.
-- The `/p/` row of `FIRST_SCREEN` is asserted and passes at 360x640 and
-  1180x720, RU and EN.
-- `FEATURES.md` "Print" names each Figma departure with its date; DESIGN.md
-  and the decision file match.
-- `tests/app/print.js` passes; every `card/*.svg` path is unchanged
-  (`CONTRACTS.md` section 5), and only the four burden files take new bytes
-  (the node's hands).
-
-Standing checks:
-
-1. Scale. States:
-
-   | State | Shows | Proof |
-   |---|---|---|
-   | empty set, one card, nine, sixteen, 180 (the cap), 181 pressed (the refusal toast) | the sheets, or the "nothing to print" page; the cap toast unchanged | `tests/app/print.js` (`MAX`), `printPage.test.ts` |
-   | the longest rules text (`voa2_a3`, 847 RU characters) and the clipping fixture | the ladder from the new base; the clip count names the fixture | print suite, catalog measure |
-   | the longest names (`cm26`, `f60`, `hi62`, `ci81`, with ` ×99`) | at most three lines (`FEATURES.md` cap) | `nameLines` in the print suite |
-   | a no-picture record and a broken picture | the light well with the glyph (batch 1b) | print suite |
-   | `/p/` at 360 and at 1180, RU and EN | the first sheet or card inside the first screen | `FIRST_SCREEN`, `sweep.js 360` and `1180` |
-
-   No collection or cap changes. At 360 the primary action «Отправить на
-   печать» is first in the row under the head; no sticky region grows.
-2. Error scenarios: the face fails to load - the fallback face, the fit of the
-   fallback, the clip count as today; a failed set read, a deleted homebrew
-   card, an expired set - unchanged pages and notes (`FEATURES.md` "Print");
-   offline - the cached face or the fallback; a stale tab - the old bundle
-   prints with its old sizes; a revert - the previous card returns, nothing
-   is stored (the switches are visit memory, the defaults in
-   `dhloot.prefs.v1` keep their shape). No stored data or key changes.
-3. Consistency: rule 9 (the primary action first) on the bar; rule 19 (the
-   warning box) for the clip note; the temporary choice where it is made
-   (Q3.2); one name for the print action across the pick row, the selection
-   bar and the list toolbar (rule 4), unchanged. Departures: the compact card
-   is no longer the standard card at 70% (QP.4), named.
-4. RU/EN parity: every changed string in both languages with the same facts
-   (the subtitle, «Лист N из M» / "Sheet N of M", the bar's labels); the
-   catalog measure runs in both languages; the EN `printColor` is "Color"
-   after batch 2's spelling sweep, which ships before batch P (the waves), so
-   batch P's new labels are American ("Color" / "B&W").
-
-Gates: `rtk npm run check:fast`; `node tests/run-all.js
-app/print,app/states,stub`; `npm run check:built`; the catalog measure;
-push and CI credit; a batch review (the Figma departures, the print figures).
-Cost: section 8, row P.
-
-Risks and do-nots:
-
-- Do not change the sheet counts, the colour and black-and-white split or
-  the browser-measured fit (product law).
-- Do not copy anything from the Core Set PDF into the repository or a mock.
-- Do not delete or rename a `card/*.svg` (`CONTRACTS.md` section 5); a new
-  vector is an addition with its own file. Re-export only the four burden
-  files, from the Figma nodes (owner, "Burden hands").
-- `tests/app/print.js` pins many measured values; change each to the new
-  measurement with its reason, never loosen a check to pass.
-- The editor's print preview (batch 6's surface) follows the card
-  automatically; batch P checks it renders the same card and fit.
+Batch P's brief is `plan-P.md` (2026-11-05), restated 2026-11-06 for the owner's Q-P1 answer: the standard card stays 63x88
+mm. The outline that stood here (the owner's answers of 2026-10-29, the findings PR1-PR12, the card changes, the `/p/` page,
+the checks and the risks) is at `git show a8bdf1de:issues/57/plan.md`, section 15; every line of it is an acceptance line of
+`plan-P.md`. Departures from the outline are named there: P-D4 (the compact floor 3.7cqw), P-D5 (the label shortfall kept),
+P-D8 (the mark clearance), P-D12 (the link is a button from 761 px), P-D14 (the 760 px step, with `previewScale` reused at 63x88
+mm) and Q-P1 (QP.2's 63.5x88.9 mm is not built). The product law of `CLAUDE.md` ("nine 63x88 mm cards per A4 sheet") is
+unchanged.
 
 ## 16. Release waves and the post-release check
 
@@ -1538,7 +1136,7 @@ review as a gate; the batches still save their screenshot sets as evidence.
 | 1 | 1, 1b, 2 | batch 2's review and the green CI run of its tip | the new face, ramp, glyph, mark and shell; gold default chips beside the neutral switches (accepted; batch 3 and the surface batches make them neutral); `FIRST_SCREEN` rows logged |
 | 2 | 3, 3b, 4, 5, 6, 7 | batch 7's review and the green CI run of its tip | the new catalog, item, roller, homebrew, search and account pages; the hide-and-show header and the focus fix; `/lists/<uuid>`, `/s/`, the list panels, `/lists` and print as wave 1 left them (old rows, `FilterBar` and `BatchBar` stay) |
 | 2b | 7b | batch 7b's review and the green CI run of its tip | wave 2's pages with the tag rule (relation lines and «Core» on the full record card only), one-box badges and a steady table head; the list rows, `FilterBar` and `BatchBar` as wave 2 left them |
-| 3 | 9a, 8, 9b, P, 10 | batch 10's review and the green CI run of its tip | the finished task |
+| 3 | 9a, 8, 9b, TD, N, P, 10 | batch 10's review and the green CI run of its tip | the finished task |
 
 Wave 2b is a small squash of one batch (owner, 2026-11-04, `context.md`, "Wave split"): it ships the tag
 fix sooner and starts wave 3 on a clean `main`.

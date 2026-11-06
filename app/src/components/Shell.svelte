@@ -13,7 +13,7 @@
   import { headerAt, nextHeader } from '../lib/headerScroll.js';
   import { nameOf } from '../lib/i18n.js';
   import { modeOf } from '../lib/nav.js';
-  import { untrack } from 'svelte';
+  import { tick, untrack } from 'svelte';
   import type { Snippet } from 'svelte';
   import type { AppState } from '../state/app.svelte.js';
   import type { Lang } from '../lib/types.js';
@@ -162,6 +162,26 @@
       document.activeElement?.matches(FIELD) === true
     );
   }
+
+  /* The mode row moves between the header and the roll page's head at 761 px; a focused
+     pill keeps the focus by its index. Read here, before any part of the frame redraws:
+     the row under the header goes before the page's own effects run. */
+  const PILLS = 'nav.modes .mode';
+  let wasNarrow: boolean | null = null;
+  $effect.pre(() => {
+    const now = app.band === 'narrow';
+    untrack(() => {
+      const moved = wasNarrow !== null && wasNarrow !== now;
+      wasNarrow = now;
+      const active = document.activeElement;
+      const at = moved && active ? [...document.querySelectorAll(PILLS)].indexOf(active) : -1;
+      if (at < 0) return;
+      void tick().then(() => {
+        if (document.activeElement === document.body)
+          document.querySelectorAll<HTMLElement>(PILLS)[at]?.focus();
+      });
+    });
+  });
 
   /* The header hides up to 760 px only (DESIGN.md, "The Hidden Header Rule"). */
   $effect(() => {
@@ -313,7 +333,8 @@
   </div>
 </header>
 
-{#if modeOf(app.section)}
+<!-- From 761 px the roll page's head draws the same controls as its pills. -->
+{#if modeOf(app.section) && app.band === 'narrow'}
   <ModeRow {app} />
 {/if}
 
@@ -391,7 +412,7 @@
     color: var(--ink-on-gold);
     font-weight: 700;
     padding: 10px 16px;
-    border-radius: 0 0 10px 0;
+    border-radius: 0 0 var(--r-sm) 0;
   }
 
   /* off `.topbar` in style.css. Sticky and translucent: the tabs stay reachable
@@ -611,11 +632,46 @@
     width: fit-content;
   }
 
+  .foot-licence p {
+    max-width: var(--measure-text);
+  }
+
   /* Footer links are muted and underlined: they are not the page's action
      (DESIGN.md, "The Seal Rule"). */
   .foot a {
     color: var(--muted);
     text-decoration: underline;
+  }
+
+  /* A text link reaches the target by its padded box and keeps its line: 24 px from 601 px,
+     the thumb target up to 600 px (DESIGN.md, "The Phone-First Rule"); the license's
+     summary is the footer's last line. */
+  @media screen {
+    .foot-nav a {
+      display: inline-block;
+      padding-block: max(0px, calc((max(24px, var(--thumb)) - 1lh) / 2));
+      margin-block: min(0px, calc((1lh - max(24px, var(--thumb))) / 2));
+    }
+  }
+
+  @media screen and (min-width: 601px) {
+    .foot-licence summary {
+      padding-block: max(0px, calc((24px - 1lh) / 2));
+      margin-block: min(0px, calc((1lh - 24px) / 2));
+    }
+  }
+
+  @media screen and (max-width: 600px) {
+    .brand {
+      padding-block: 5px;
+      margin-block: -5px;
+    }
+
+    .foot-licence summary {
+      display: flex;
+      align-items: center;
+      min-height: var(--thumb);
+    }
   }
 
   /* The gap is `.topbar-in`'s, the bottom margin `.brand`'s gap. */

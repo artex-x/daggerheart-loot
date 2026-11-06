@@ -42,6 +42,9 @@
     terms?: readonly Term[] | undefined;
     /** The number reads «№ 89»: a page that names no table (search). */
     numLabeled?: boolean | undefined;
+    /** The unfolded part of a list's compact row: no picture, no name, no press, the text
+     *  whole. */
+    full?: boolean;
   }
 
   const {
@@ -55,7 +58,8 @@
     gmOnly,
     hide,
     terms,
-    numLabeled
+    numLabeled,
+    full = false
   }: Props = $props();
 
   const t = $derived(dict(lang));
@@ -93,56 +97,72 @@
   );
 </script>
 
-<!-- No aria-label: the live app left this button's name to its content, so
-     the row's accessible name is the whole row - name, stat line, description
-     and badges. Verbose, but faithful - matching it is what the structural
-     goldens (tests/app/inventory.js) check byte for byte. -->
-<button
-  type="button"
-  class="row-main"
-  onclick={() => {
-    onopen(it);
-  }}
->
-  <span class="ra" class:gm={gmOnly}
-    ><ArtWell glyph={kindGlyph(it.kind, it.eq?.t)}
-      >{#if it.img && !artBroken(it.id)}<img
-          src={artSrc(it.img, false, 'thumb')}
-          alt=""
-          loading="lazy"
-          decoding="async"
-          onerror={() => {
-            onartfail(it.id);
-          }}
-        />{/if}</ArtWell
-    ></span
+{#snippet tagList()}{#each tags as b, i (i)}<Badge cls={b.cls} title={b.title}>{b.text}</Badge
+    >{/each}{#if nameLang}<span class="lt" lang={nameLang}>{nameLang.toUpperCase()}</span
+    >{/if}{/snippet}
+
+{#snippet textColumn()}{#if it.eq && stats}<span class="rstats {eqClass(it.eq)}">{stats}</span
+    >{/if}{#if descOf(it, lang)}{@const blocks = descBlocks(it, lang)}<span
+      >{#each blocks as b, i (i)}{#if i > 0}<br />{/if}{#if b.t === 'p'}<MarkupInline
+            c={b.c}
+          />{:else if b.t === 'table'}{#each [b.head, ...b.rows] as row, j (j)}{#if j > 0}<br
+              />{/if}{#each row as cell, k (k)}{k > 0 ? ' | ' : ''}<MarkupInline
+                c={cell}
+              />{/each}{/each}{:else}{#each b.items as item, j (j)}{#if j > 0}<br
+              />{/if}{b.t === 'ol' ? String(b.start + j) + '. ' : '• '}<MarkupInline
+              c={item}
+            />{/each}{/if}{/each}</span
+    >{/if}{/snippet}
+
+<!-- eslint-disable @typescript-eslint/no-confusing-void-expression -- a `{@render}` tag of a
+     local snippet reads as a void expression to this rule. -->
+{#if full}
+  <!-- The unfolded compact row: the tags, the stats and the whole text, with no picture,
+       no name and no press (the row's button above names it). -->
+  <div class="row-main full">
+    <span class="rt"><span class="rh">{@render tagList()}</span>{@render textColumn()}</span>
+  </div>
+{:else}
+  <!-- No aria-label: the live app left this button's name to its content, so
+       the row's accessible name is the whole row - name, stat line, description
+       and badges. Verbose, but faithful - matching it is what the structural
+       goldens (tests/app/inventory.js) check byte for byte. -->
+  <button
+    type="button"
+    class="row-main"
+    onclick={() => {
+      onopen(it);
+    }}
   >
-  <span class="rt"
-    ><span class="rh"
-      ><b
-        >{#if num}<span class="rnum"
-            >{numLabeled ? t.rowNo.replace('%n', String(num)) : num}</span
-          >{/if}<span class="rname"><Marked text={nameOf(it, lang)} {terms} /></span
-        >{#if gmOnly}<span class="gmstate vh">{', ' + t.noteHid}</span>{/if}{#if tail}<i
-            class="rtail">{tail}</i
-          >{/if}</b
-      >{#each tags as b, i (i)}<Badge cls={b.cls} title={b.title}>{b.text}</Badge
-        >{/each}{#if nameLang}<span class="lt" lang={nameLang}>{nameLang.toUpperCase()}</span
-        >{/if}</span
-    >{#if it.eq && stats}<span class="rstats {eqClass(it.eq)}">{stats}</span
-      >{/if}{#if descOf(it, lang)}{@const blocks = descBlocks(it, lang)}<span
-        >{#each blocks as b, i (i)}{#if i > 0}<br />{/if}{#if b.t === 'p'}<MarkupInline
-              c={b.c}
-            />{:else if b.t === 'table'}{#each [b.head, ...b.rows] as row, j (j)}{#if j > 0}<br
-                />{/if}{#each row as cell, k (k)}{k > 0 ? ' | ' : ''}<MarkupInline
-                  c={cell}
-                />{/each}{/each}{:else}{#each b.items as item, j (j)}{#if j > 0}<br
-                />{/if}{b.t === 'ol' ? String(b.start + j) + '. ' : '• '}<MarkupInline
-                c={item}
-              />{/each}{/if}{/each}</span
-      >{/if}</span
-  >
-</button>
+    <span class="ra" class:gm={gmOnly}
+      ><ArtWell glyph={kindGlyph(it.kind, it.eq?.t)}
+        >{#if it.img && !artBroken(it.id)}<img
+            src={artSrc(it.img, false, 'thumb')}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            onerror={() => {
+              onartfail(it.id);
+            }}
+          />{/if}</ArtWell
+      ></span
+    >
+    <span class="rt"
+      ><span class="rh"
+        ><b
+          >{#if num}<span class="rnum"
+              >{numLabeled ? t.rowNo.replace('%n', String(num)) : num}</span
+            >{/if}<span class="rname"><Marked text={nameOf(it, lang)} {terms} /></span
+          >{#if gmOnly}<span class="gmstate vh">{', ' + t.noteHid}</span>{/if}{#if tail}<i
+              class="rtail">{tail}</i
+            >{/if}</b
+        >{@render tagList()}</span
+      >{@render textColumn()}</span
+    >
+  </button>
+{/if}
+
+<!-- eslint-enable @typescript-eslint/no-confusing-void-expression -->
 
 <style>
   /* off `.row-main` and its family in style.css */
@@ -176,11 +196,10 @@
     opacity: 0.45;
   }
 
-  /* The line length holds at 70 characters. */
+  /* The text takes the free width of its row (DESIGN.md "Components", "The Row Text Rule"). */
   .row-main .rt {
     flex: 1;
     min-width: 0;
-    max-width: 70ch;
   }
 
   /* The name line: the name, then its tags after it, wrapping as a whole. */
@@ -246,15 +265,35 @@
   .rtail {
     font-style: normal;
     font-weight: 600;
-    color: var(--gold-soft);
+    color: var(--muted2);
     margin-left: 7px;
+    font-family: var(--mono);
     font-size: var(--t-data);
+    font-variant-numeric: tabular-nums;
   }
 
-  @media (max-width: 600px) {
-    .row-main .rt > span:where(:not(.rh)) {
+  .row-main.full {
+    padding: 0;
+  }
+
+  .row-main.full .rt > span:where(:not(.rh)) {
+    -webkit-line-clamp: none;
+    line-clamp: none;
+  }
+
+  /* Three lines up to 600px, and from 1000px, where two lines cut 18-28% of the described
+     RU rows at 1180px (DESIGN.md "Components", "The Row Text Rule"). */
+  @media (max-width: 600px), (min-width: 1000px) {
+    .row-main:not(.full) .rt > span:where(:not(.rh)) {
       -webkit-line-clamp: 3;
       line-clamp: 3;
+    }
+  }
+
+  /* A long second line needs room for the eye's return. */
+  @media (min-width: 1000px) {
+    .row-main:not(.full) .rt > span:where(:not(.rh)):not(.rstats) {
+      line-height: 1.55;
     }
   }
 </style>

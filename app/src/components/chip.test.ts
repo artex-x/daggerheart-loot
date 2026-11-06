@@ -21,6 +21,14 @@ describe('the button form', () => {
     btn.click();
     expect(onclick).toHaveBeenCalledOnce();
   });
+
+  it('draws the check on a pressed gold chip and none on an off one', async () => {
+    const { container } = render(Chip, { label: 'Обычная', on: true, onclick: vi.fn() });
+    render(Chip, { label: 'Редкая', on: false, onclick: vi.fn() });
+    expect(screen.getByRole('button', { name: 'Обычная' }).querySelector('svg')).not.toBeNull();
+    expect(screen.getByRole('button', { name: 'Редкая' }).querySelector('svg')).toBeNull();
+    await expectNoA11yViolations(container);
+  });
 });
 
 describe('the link form', () => {
@@ -29,6 +37,7 @@ describe('the link form', () => {
     const link = screen.getByRole('link', { name: 'Core' });
     expect(link).toHaveAttribute('href', '#/tables/core_item');
     expect(link).toHaveAttribute('aria-current', 'page');
+    expect(link.querySelector('svg')).toBeNull();
   });
 
   it('carries no aria-current when it is not the one chosen', () => {
@@ -41,6 +50,23 @@ describe('the link form', () => {
   it('takes the small size the table nav’s second row uses', () => {
     render(Chip, { label: 'Предметы', on: false, href: '#/tables/core_item', size: 'sm' });
     expect(screen.getByRole('link', { name: 'Предметы' }).className).toContain('sm');
+  });
+
+  it('draws a count after the label, inside the name, and no check when lit', async () => {
+    const { container } = render(Chip, {
+      label: 'Предметы',
+      count: 44,
+      on: true,
+      href: '/homebrew'
+    });
+    const link = screen.getByRole('link', { name: 'Предметы 44' });
+    expect(link.querySelector('.n')?.textContent).toBe('44');
+    expect(link.querySelector('svg')).toBeNull();
+    render(Chip, { label: 'Источники', count: 0, on: false, href: '/homebrew/sources' });
+    expect(screen.getByRole('link', { name: 'Источники 0' })).toBeInTheDocument();
+    render(Chip, { label: 'Core', on: false, href: '/tables/core_item' });
+    expect(screen.getByRole('link', { name: 'Core' }).querySelector('.n')).toBeNull();
+    await expectNoA11yViolations(container);
   });
 
   it('can carry a title, same as the button form', () => {

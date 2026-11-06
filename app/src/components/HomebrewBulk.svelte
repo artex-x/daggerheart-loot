@@ -93,6 +93,7 @@
     const moved = toMove;
     const bookId = moveBook || null;
     const section = (bookId && moveSection) || null;
+    app.closeErrorToast();
     moveSending = true;
     moveGone = null;
     try {
@@ -124,6 +125,7 @@
     const count = gone.length;
     const lead = t.hbDeleteMany.replace('%n', String(count));
     if (!app.env.dialog.confirm(deleteItemAsk(lead, true, t))) return;
+    app.closeErrorToast();
     deleting = true;
     deletingSaid = t.hbDeletingN.replace('%n', String(count));
     /* The bar's actions are disabled while it runs, so the focus waits on «Все». */

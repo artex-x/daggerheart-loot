@@ -10,10 +10,9 @@
      twice at once. `ids` is what a chip acts on. */
   import { tick, flushSync, onDestroy, untrack } from 'svelte';
   import Button from './Button.svelte';
-  import Chip from './Chip.svelte';
   import Icon from './Icon.svelte';
   import SignInPrompt from './SignInPrompt.svelte';
-  import { NAME_MAX } from '../lib/cloudLists.js';
+  import { knownItems, NAME_MAX } from '../lib/cloudLists.js';
   import type { Msg } from '../lib/dict.js';
   import { recordHref } from '../lib/hash.js';
   import { isHomebrewKey } from '../lib/homebrew.js';
@@ -25,6 +24,7 @@
     pickerOrder,
     type StoredList
   } from '../lib/lists.js';
+  import { plural } from '../lib/plural.js';
   import type { AppState } from '../state/app.svelte.js';
 
   interface Props {
@@ -67,10 +67,8 @@
      page is mounted. */
   const shared = $derived(app.shared);
   const carried = $derived(meta ?? shared?.meta);
-  /* A single record's menu names it - `t.inLists` even where it lies in no
-     list at all, matching the live app's own reading of `listMenuHTML`. */
+  /* A single record's menu toggles its rows; the selection bar's only adds. */
   const one = $derived(ids.length === 1 ? ids[0] : undefined);
-  const label = $derived(one !== undefined ? t.inLists : t.addTo);
 
   /* The account's lists, once read; none signed out or before the session is known. */
   const target = $derived(app.newListTarget);
@@ -110,6 +108,15 @@
 
   let root = $state<HTMLDivElement | undefined>(undefined);
   let up = $state(false);
+
+  /** Answers whether `el` sits in a fixed or sticky box, which a page scroll does not move. */
+  function pinned(el: HTMLElement): boolean {
+    for (let p = el.parentElement; p; p = p.parentElement) {
+      const { position } = getComputedStyle(p);
+      if (position === 'fixed' || position === 'sticky') return true;
+    }
+    return false;
+  }
 
   /* On the rising edge of `open`, whoever opened it - the button, or a
      sign-in that reopens the menu through `app.menuFor`. */
@@ -312,15 +319,21 @@
          card's scroll position along, and let a menu on a record page at 360
          wide open down past the card and lose its lower part (issue 68). */
       const from = root;
-      const clipBottom = Math.min(
-        window.innerHeight,
-        ...['.card:not(.dossier)', '.modal-card'].map(
-          (sel) => from.closest(sel)?.getBoundingClientRect().bottom ?? Infinity
-        )
+      const clips = ['.card:not(.dossier)', '.modal-card'].map(
+        (sel) => from.closest(sel)?.getBoundingClientRect().bottom ?? Infinity
       );
-      const below = clipBottom - btn.getBoundingClientRect().bottom;
+      const clipBottom = Math.min(window.innerHeight, ...clips);
+      const at = btn.getBoundingClientRect();
+      const below = clipBottom - at.bottom;
       const need = menu.getBoundingClientRect().height + 16;
-      up = below < need;
+      /* A toggle in the page's own scroll opens up only where the page above it holds the
+         menu under the header: near the page top no scroll uncovers it, while a scroll down
+         always can (states.js case 90). A pinned bar or a clipping card keeps the old rule. */
+      const header = parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue('--sticky-h')
+      );
+      const above = at.top + window.scrollY - (Number.isNaN(header) ? 0 : header);
+      up = below < need && (clips.some(Number.isFinite) || pinned(btn) || above >= need);
       /* `classList.toggle` precedes `scrollIntoView` in `placeMenu` - the class
          has to be on the menu before it is scrolled into view. */
       flushSync();
@@ -411,10 +424,7 @@
     >
     {#if open}
       <div class="dropmenu" class:long={showSearch} class:up>
-        <!-- Signed out the reader holds no list: the menu is the create slot alone. -->
-        {#if target !== 'prompt'}
-          <span class="lbl">{label}</span>
-        {/if}
+        <span class="lbl">{t.listsHead}</span>
         {#if showSearch}
           <input
             type="search"
@@ -427,18 +437,34 @@
             }}
           />
         {/if}
+        <!-- Signed out the reader holds no list: the menu is the create slot alone. -->
         {#if target !== 'prompt'}
           <div class="pickchips">
             {#if shown.length}
               {#each shown as l (l.id)}
-                <Chip
-                  label={l.name}
-                  on={inList(l)}
-                  busy={busyId === l.id}
+                {@const busy = busyId === l.id}
+                {@const rid = 'lr-' + menuName() + '-' + l.id}
+                <!-- A one-record menu toggles; the selection bar's only adds, so its rows
+                     carry no pressed state. The check, not a fill, says "holds it" (C61).
+                     The name is the list's; the count is its description. -->
+                <button
+                  type="button"
+                  class="lrow"
+                  aria-labelledby={rid + '-n'}
+                  aria-describedby={rid + '-c'}
+                  aria-pressed={one !== undefined ? inList(l) : undefined}
+                  aria-busy={busy ? 'true' : undefined}
+                  aria-disabled={busy ? 'true' : undefined}
                   onclick={() => {
-                    void pick(l);
+                    if (!busy) void pick(l);
                   }}
-                />
+                  >{#if inList(l)}<Icon name="check" />{:else}<span class="sp"></span>{/if}<span
+                    class="ln"
+                    id={rid + '-n'}>{l.name}</span
+                  ><span class="lc" id={rid + '-c'}
+                    >{plural(knownItems(l, app.index?.byId).length, t.itemsN, app.lang)}</span
+                  ></button
+                >
               {/each}
             {:else}
               <span class="picker-none">{t.nothing}</span>
@@ -470,7 +496,10 @@
             <Button size="sm" variant="ghost" onclick={cancelNew}>{t.cancel}</Button>
           </span>
         {:else if target !== 'wait'}
-          <Chip label={'+ ' + t.newList} on={false} onclick={openNew} />
+          {#if target !== 'prompt'}<span class="lsep" aria-hidden="true"></span>{/if}
+          <button type="button" class="lnew" onclick={openNew}
+            ><Icon name="plus" />{t.newList}</button
+          >
         {/if}
       </div>
     {/if}
@@ -493,11 +522,11 @@
     position: absolute;
     bottom: calc(100% + 8px);
     right: 0;
-    min-width: 230px;
+    min-width: 280px;
     max-width: min(320px, 90vw);
     z-index: 60;
     border: 1px solid var(--line2);
-    border-radius: 11px;
+    border-radius: var(--r);
     background: var(--surface);
     padding: 10px;
     box-shadow: 0 16px 40px -14px rgb(0 0 0 / 85%);
@@ -519,8 +548,8 @@
     }
   }
 
-  /* off `.dropmenu .lbl` - a third copy of `.lbl`, after Field.svelte's and
-     FilterBar.svelte's; extract only once a fourth wants it. */
+  /* off `.dropmenu .lbl` - a copy of `.lbl`, after Field.svelte's and FilterPanel.svelte's;
+     extract only once a fourth wants it. */
   .lbl {
     display: block;
     font-size: var(--t-label);
@@ -531,14 +560,76 @@
     margin-bottom: 2px;
   }
 
-  .dropmenu :global(.chip) {
+  /* A list row: the check (or its room), the name on one line, the count in words, never
+     cut. 44 px tall up to 760 px, 36 px from 761 px. Neutral: no gold (C61). */
+  .lrow,
+  .lnew {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     width: 100%;
-    text-align: left;
+    /* A row target up to 600 px (DESIGN.md, "The Phone-First Rule"). */
+    min-height: max(36px, var(--thumb) + 4px);
+    padding: 0 8px;
+    border: 0;
+    border-radius: var(--r-sm);
+    background: transparent;
+    color: var(--txt);
+    font: inherit;
     font-size: var(--t-data);
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .lrow:hover:not([aria-disabled='true']),
+  .lnew:hover {
+    background: var(--surface2);
+  }
+
+  .lrow[aria-disabled='true'] {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  .lrow :global(svg),
+  .lnew :global(svg),
+  .sp {
+    flex: none;
+    width: 14px;
+    height: 14px;
+    fill: currentcolor;
+  }
+
+  /* A list name wraps whole (DESIGN.md "Typography", "The Whole Message Rule"); the inset
+     keeps a wrapped name off the row's edges. */
+  .ln {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding-block: 6px;
+    overflow-wrap: anywhere;
+  }
+
+  .lc {
+    flex: none;
+    color: var(--muted2);
+    white-space: nowrap;
+  }
+
+  .lsep {
+    height: 1px;
+    margin: 2px 0;
+    background: var(--line);
+  }
+
+  @media (max-width: 760px) {
+    .lrow,
+    .lnew {
+      min-height: 44px;
+    }
   }
 
   /* off `.dropmenu.long` - the picker grows a search box once there are more
-     lists than fit without one. Only the chips scroll, so the label, the
+     lists than fit without one. Only the rows scroll, so the heading, the
      search and «+ Новый список» stay in view (issue 68). */
   .dropmenu.long {
     max-height: min(60vh, 340px);
@@ -550,7 +641,7 @@
 
   input.pickq {
     width: 100%;
-    height: 32px;
+    height: max(32px, var(--thumb));
     padding: 0 10px;
     margin-bottom: 8px;
     box-sizing: border-box;
@@ -568,12 +659,12 @@
     box-shadow: 0 0 0 3px rgb(216 171 94 / 14%);
   }
 
-  /* The padding and the equal negative margin keep a chip's 2px + 2px focus
+  /* The padding and the equal negative margin keep a row's 2px + 2px focus
      ring (tokens.css) inside the scroll box, which would clip it. */
   .pickchips {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 2px;
     padding: 4px;
     margin: -4px;
   }
@@ -601,7 +692,7 @@
   .picker-new input {
     flex: 1;
     min-width: 150px;
-    height: 32px;
+    height: max(32px, var(--thumb));
     padding: 0 11px;
     border-radius: 8px;
     background: var(--bg2);

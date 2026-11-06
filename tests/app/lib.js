@@ -259,7 +259,163 @@ async function openPrint(d, spec, { as = 'gm2' } = {}) {
   throw new Error('openPrint: #/p/' + made.id + ' never left its loading state');
 }
 
+/** The controls that `targets` lets pass under the floor, each with the reason a source
+ *  gives (DESIGN.md, "The Phone-First Rule"). A new entry needs its reason. A checkbox or a
+ *  radio inside a `label` is not exempt: the label is measured in its place. */
+const TARGET_ALLOW = [
+  {
+    why: 'a link inside running text (WCAG 2.5.8, "Inline")',
+    test: 'inline'
+  },
+  { why: 'the skip link: shown on keyboard focus only (WCAG 2.4.1)', test: 'a.skip' },
+  {
+    why: 'a link or the «и ещё N» fold of a craft or relation line: the line height of its label sets its size (WCAG 2.5.8, "Inline")',
+    test: '.craft a, .craft p .btn.bare'
+  },
+  { why: 'a disabled control is not pressable', test: ':disabled, [aria-disabled="true"]' }
+];
+
+/**
+ * Returns every visible pressable control under the floor that a hit test does not prove
+ * (DESIGN.md, "The Phone-First Rule"): `{ sel, name, w, h }` each. A box at or over
+ * `floor` (`menuFloor` for a menu item) passes; a smaller one is scrolled to the window's
+ * center and passes when the 8 edge points of a floor-sized square on its center all land
+ * on it or inside it, so padding and a `::after` target count. `spacing` (768 px and up)
+ * also passes a target whose 24 px circle meets no other target's box and no other
+ * undersized target's circle (WCAG 2.5.8). While a modal dialog is open only its controls
+ * are read. The page is left at scroll 0.
+ */
+async function targets(page, { floor, menuFloor = floor, spacing = false }) {
+  return page.evaluate(
+    (FLOOR, MENU, SPACING, ALLOW) => {
+      const SEL =
+        'button, a[href], input:not([type=hidden]), select, textarea, summary, ' +
+        '[role^=menuitem], [role=option], [role=tab], [tabindex="0"]';
+      const modal = [...document.querySelectorAll('dialog[open]')].find((x) =>
+        x.matches(':modal')
+      );
+      const root = modal ?? document;
+      const hidden = (el) => {
+        if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return true;
+        if (!el.checkVisibility({ visibilityProperty: true })) return true;
+        for (let e = el; e; e = e.parentElement)
+          if (getComputedStyle(e).clipPath === 'inset(50%)') return true;
+        const r = el.getBoundingClientRect();
+        return r.width < 1 || r.height < 1;
+      };
+      const inline = (el) => {
+        if (el.tagName !== 'A' || getComputedStyle(el).display !== 'inline') return false;
+        let block = el.parentElement;
+        while (block && getComputedStyle(block).display.startsWith('inline'))
+          block = block.parentElement;
+        const around = (block?.textContent ?? '').length - (el.textContent ?? '').length;
+        return around >= 20;
+      };
+      const allowed = (el) =>
+        ALLOW.some((a) => (a.test === 'inline' ? inline(el) : el.matches(a.test)));
+      const seen = new Set();
+      const all = [];
+      for (const raw of root.querySelectorAll(SEL)) {
+        let el = raw;
+        if (
+          el.matches('input[type=checkbox], input[type=radio]') &&
+          el.closest('label') &&
+          el.closest('label') !== el
+        )
+          el = el.closest('label');
+        if (seen.has(el)) continue;
+        seen.add(el);
+        if (hidden(el)) continue;
+        all.push(el);
+      }
+      const name = (el) =>
+        (el.getAttribute('aria-label') || el.textContent || el.getAttribute('title') || '')
+          .trim()
+          .replace(/\s+/g, ' ')
+          .slice(0, 40);
+      const sel = (el) => {
+        const own = (e) =>
+          e.tagName.toLowerCase() +
+          [...e.classList]
+            .filter((c) => !/^svelte-/.test(c))
+            .map((c) => '.' + c)
+            .join('');
+        return (el.parentElement ? own(el.parentElement) + ' > ' : '') + own(el);
+      };
+      const out = [];
+      const small = [];
+      for (const el of all) {
+        if (allowed(el)) continue;
+        const f = el.matches('[role^=menuitem]') ? MENU : FLOOR;
+        const r = el.getBoundingClientRect();
+        if (r.width >= f - 0.5 && r.height >= f - 0.5) continue;
+        el.scrollIntoView({ block: 'center', inline: 'center' });
+        const b = el.getBoundingClientRect();
+        const cx = b.left + b.width / 2;
+        const cy = b.top + b.height / 2;
+        const h = f / 2 - 1;
+        const pts = [
+          [cx - h, cy - h],
+          [cx, cy - h],
+          [cx + h, cy - h],
+          [cx + h, cy],
+          [cx + h, cy + h],
+          [cx, cy + h],
+          [cx - h, cy + h],
+          [cx - h, cy]
+        ];
+        const hit = pts.every(([x, y]) => {
+          const at = document.elementFromPoint(x, y);
+          return !!at && (at === el || el.contains(at));
+        });
+        if (hit) continue;
+        small.push({ el, cx, cy, b });
+      }
+      for (const s of small) {
+        if (SPACING) {
+          /* The 24 px circle on its center against every other target's box and against
+             every other undersized target's circle (centers 24 px apart), read in the same
+             scroll position. */
+          s.el.scrollIntoView({ block: 'center', inline: 'center' });
+          const b = s.el.getBoundingClientRect();
+          const cx = b.left + b.width / 2;
+          const cy = b.top + b.height / 2;
+          const clear = all.every((o) => {
+            if (o === s.el || o.contains(s.el) || s.el.contains(o)) return true;
+            const q = o.getBoundingClientRect();
+            const dx = Math.max(q.left - cx, 0, cx - q.right);
+            const dy = Math.max(q.top - cy, 0, cy - q.bottom);
+            return dx * dx + dy * dy >= 144;
+          });
+          const apart = small.every((o) => {
+            if (o === s || o.el.contains(s.el) || s.el.contains(o.el)) return true;
+            const q = o.el.getBoundingClientRect();
+            const dx = q.left + q.width / 2 - cx;
+            const dy = q.top + q.height / 2 - cy;
+            return dx * dx + dy * dy >= 576;
+          });
+          if (clear && apart) continue;
+        }
+        out.push({
+          sel: sel(s.el),
+          name: name(s.el),
+          w: Math.round(s.b.width * 10) / 10,
+          h: Math.round(s.b.height * 10) / 10
+        });
+      }
+      scrollTo(0, 0);
+      return out;
+    },
+    floor,
+    menuFloor,
+    spacing,
+    TARGET_ALLOW
+  );
+}
+
 module.exports = {
+  targets,
+  TARGET_ALLOW,
   baseUrl,
   fresh,
   sharedPage,

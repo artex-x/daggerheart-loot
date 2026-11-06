@@ -23,7 +23,8 @@ import { frameName } from './frames.js';
 import type { FrameId } from './frames.js';
 import { isHomebrewKey, isHomebrewRecord } from './homebrew.js';
 import { realmName } from './realms.js';
-import { EQ_TYPE, eqWord, nameOf } from './i18n.js';
+import { EQ_TYPE, descOf, eqRowParts, eqWord, nameOf } from './i18n.js';
+import { markupText } from './markup.js';
 import { SUB_LABEL, groupOf } from './tables.js';
 import type { Dict } from './dict.js';
 import type { IconName } from './icons.js';
@@ -313,4 +314,23 @@ export function relText(
   const { shown, more } = foldOwn(relOrder(list, lang), keep, self, folds);
   const head = shown.map((r) => relName(r, lang)).join(', ');
   return more > 0 ? head + ' ' + dict(lang).andMore.replace('%n', String(more)) : head;
+}
+
+/** Returns the one line of a list's compact row: the stats of a weapon or armor, else the
+ *  first line of the text with no markup, else `''` (docs/specs/FEATURES.md, "Lists"). */
+export function rowLine(it: Record_, lang: Lang, t: Dict): string {
+  const stats = eqRowParts(it, lang, {
+    tier: t.tier,
+    thresholds: t.eqTh,
+    armorScore: t.eqScore,
+    artifact: t.voaArtifact1
+  }).join(' · ');
+  if (stats) return stats;
+  const text = markupText(descOf(it, lang) || '');
+  return (
+    text
+      .split('\n')
+      .map((l) => l.trim())
+      .find(Boolean) ?? ''
+  );
 }

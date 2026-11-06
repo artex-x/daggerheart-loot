@@ -1,0 +1,7 @@
+# 2026-11-05 - A row's text takes its row's free width; rows stay one column
+
+- Task: `57` (the owner, 2026-11-05, chat: one column, no text cap; the 3-line clamp from 1000px is the owner's fallback, taken on the measured trigger).
+- Decision: `RowMain`'s text has no `max-width`; the description clamps 3 lines up to 600px and from 1000px, 2 lines between, with a 1.55 line height from 1000px; rows stay one column at every width. DESIGN.md "Components", "The Row Text Rule"; FEATURES.md "Tables and search".
+- Evidence: the share of described RU rows that clamp at 1180 / 1440 / 1920px, under the old 70ch cap, then with no cap and 2 lines, then with no cap and 3 lines from 1000px: `/search` «меч» 57.3 -> 28.2 / 22.1 / 21.4 -> 12.2 / 9.9 / 9.2; `/tables/eq_weapon` 35.5 -> 18.6 / 10.4 / 9.9 -> 6.5 / 5.1 / 4.8; a 292-row catalogue sample 32.2 -> 4.8 / 3.1 / 3.1 -> 2.1 / 1.4 / 1.4. Vault of Ages clamps by content (rules text of 300-800 characters). The owner's trigger was more than 15% of RU rows clamping with no cap.
+- Rejected: two row columns from a 1108px list (the owner rejected them); a 110ch or a 100ch cap (a 1440px row stayed about half empty); tiles as the default (they hide the stat line); a stat column in this change (a later task with its own mock, DESIGN.md "Proposed rules", "The Stat Columns Rule"); a list-detail pane (a later direction, "The Detail Pane").
+- Accepted trade-off: a row with a short description stays partly empty at 1920px; a 3-line row is about 4px taller from 1000px.

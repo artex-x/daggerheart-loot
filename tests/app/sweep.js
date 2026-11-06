@@ -13,7 +13,7 @@
  * languages and ran the focus walk, which made it 1.7x its siblings; the
  * language split is what `run-all.js`'s two 1180 rows pass). No language
  * argument means both, the original shape. */
-const { fresh, axe, reporter, closeBrowser } = require('./lib.js');
+const { fresh, axe, reporter, closeBrowser, targets } = require('./lib.js');
 /* The app's own reading of an address, so a landed path compares as its route key. */
 const { addressOf } = require('../../app/src/lib/address.ts');
 const {
@@ -110,14 +110,25 @@ const PAGES = [
   /* Both notes inside the rows of a shared page, and the price «?»'s conversion line
      open (FEATURES.md, "Lists"). */
   ['#/s/gm-token-1', 'общий список: заметки в строках'],
-  /* gm1's shop is in coin mode, which has no conversion line: switch it to bag mode first. */
+  /* The list notes' area and a row's note area open, in bag mode (FEATURES.md, "Lists"). */
   [
     '#/lists/00000000-0000-4000-8000-000000000101',
-    'цена: подсказка открыта',
+    'список: заметки открыты',
     'gm1',
     async (d) => {
-      await either(d, 'click', 'Как в книге', 'As in the book');
-      await either(d, 'click', 'Подсказка: Цена', 'Help: Price');
+      /* Up to 760 px the price mode is in the head's «Ещё», the list notes open from the
+         meta line, and a row's «Заметка» is in its unfolded part. */
+      const compact = await d.count('button.cbody');
+      if (compact) {
+        await d.openMore('.lhead-acts .morewrap > [aria-haspopup="menu"]');
+        await either(d, 'click', 'Цены: как в книге', 'Prices: as in the book');
+        await either(d, 'click', 'Заметки', 'Notes');
+        await d.unfold(0);
+      } else {
+        await either(d, 'click', 'Как в книге', 'As in the book');
+        await either(d, 'click', 'Изменить', 'Edit');
+      }
+      await either(d, 'click', 'Заметка', 'Note');
     }
   ],
   ['#/i/ci1', 'карточка Кольцо Тишины'],
@@ -264,6 +275,15 @@ const PAGES = [
         await d.upload(IMPORT('keys-only-v2.json'));
         for (let i = 0; i < 40 && !/Пропущено позиций|Items skipped/.test(await d.text()); i++)
           await d.settle();
+        /* Each list's skip lines sit in a closed fold: open every fold, or the long line is
+           never laid out. */
+        const folds = (await d.text()).match(/(?:Пропущено|Skipped): \d+/g) ?? [];
+        const seen = new Map();
+        for (const f of folds) {
+          await d.press(f, seen.get(f) ?? 0);
+          seen.set(f, (seen.get(f) ?? 0) + 1);
+        }
+        if (!folds.length) throw new Error('no skip fold to open');
       }
     ],
     /* A fifth element seeds the fake: the Items tab's filter with a section row of 22
@@ -465,19 +485,16 @@ async function landedUnderHeader(page, id) {
 }
 
 /** Returns the catalog head's measure at the current width: the picker row below 761 px,
- *  else the group chips and the tabs (docs/specs/FEATURES.md, "Tables and search").
- *  From 1000 px `.tablenav` is `display: contents` and has no box, so the read runs from
- *  the top of its chips to the bottom of its tab slot. */
+ *  else from the top of the group chips in the page head to the bottom of the tab slot
+ *  under it (DESIGN.md, "The Head Order Rule"; docs/specs/FEATURES.md, "Tables and search"). */
 function headHeight(page) {
   return page.evaluate(() => {
     const pick = document.querySelector('.pickrow');
     if (pick) return Math.round(pick.getBoundingClientRect().height);
-    const nav = document.querySelector('.tablenav');
-    if (!nav) return 0;
-    const box = nav.getBoundingClientRect();
-    if (box.height > 0) return Math.round(box.height);
-    const top = nav.querySelector(':scope > .groups')?.getBoundingClientRect().top;
-    const bottom = nav.querySelector(':scope > .tabslot')?.getBoundingClientRect().bottom;
+    const top = document.querySelector('.tablenav .groups')?.getBoundingClientRect().top;
+    const bottom = document
+      .querySelector('.page-below .tabslot')
+      ?.getBoundingClientRect().bottom;
     return top === undefined || bottom === undefined ? 0 : Math.round(bottom - top);
   });
 }
@@ -569,7 +586,7 @@ function headCap(width) {
 
           document
             .querySelectorAll(
-              '.card-name a, .card-name span, .badge, .chip, .fpill, .btn, .lbl, .rnum, .tab, ' +
+              '.card-name a, .card-name span, .badge, .chip, .btn, .lbl, .rnum, .tab, ' +
                 '.craft, .dicebar, .numrow'
             )
             .forEach((e) => {
@@ -656,6 +673,28 @@ function headCap(width) {
           const cap = headCap(width);
           ok(head > 0 && head <= cap, where + ': the catalog head ' + head + 'px, cap ' + cap);
         }
+
+        /* Every pressable control is a thumb target up to 600 px, else at least 24 px or
+           spaced (DESIGN.md, "The Phone-First Rule"); `targets` names what fails its hit test. */
+        const floor = width <= 600 ? 40 : 24;
+        for (const t of await targets(
+          page,
+          width <= 600 ? { floor: 40, menuFloor: 44 } : { floor: 24, spacing: true }
+        ))
+          ok(
+            false,
+            where +
+              ': a target under ' +
+              floor +
+              ' px - ' +
+              t.sel +
+              ' «' +
+              t.name +
+              '» ' +
+              t.w +
+              'x' +
+              t.h
+          );
 
         const broken = await page.evaluate(() =>
           [...document.images]

@@ -196,7 +196,7 @@ export interface HayParts {
 }
 
 /* One folded string per field, so no term can bleed across a field boundary. */
-type Hay = (it: Record_) => HayParts;
+export type Hay = (it: Record_) => HayParts;
 
 const folded = (fields: readonly (string | undefined)[]): string[] =>
   fields.filter((s): s is string => !!s).map(foldQuery);

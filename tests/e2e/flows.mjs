@@ -51,12 +51,21 @@ const { makeDriver, prepare } = createRequire(import.meta.url)('../app/driver.js
 
 const WAIT = { timeout: 20_000, polling: 100 };
 
-/* A control's name the way the driver reads it: label, then text. */
+/* A control's name the way the driver reads it: `aria-labelledby`, label, then text. An
+   add-to-list row is named by its list's name alone, and its text adds the count. */
 const NAMED = (sel, name) =>
-  [...document.querySelectorAll(sel)].some(
-    (e) =>
-      (e.getAttribute('aria-label') || e.textContent || '').replace(/\s+/g, ' ').trim() === name
-  );
+  [...document.querySelectorAll(sel)].some((e) => {
+    const by = (e.getAttribute('aria-labelledby') || '')
+      .split(/\s+/)
+      .map((id) => (id ? document.getElementById(id)?.textContent : ''))
+      .filter(Boolean)
+      .join(' ');
+    return (
+      (by || e.getAttribute('aria-label') || e.textContent || '')
+        .replace(/\s+/g, ' ')
+        .trim() === name
+    );
+  });
 
 async function waitFor(page, what, fn, ...args) {
   try {
@@ -309,9 +318,9 @@ export async function runFlows({ env, admin, member, browser, base }) {
     const mine = () => listsOf(admin, member.id);
     await withPage(ctx, await mint(env, admin, member.email), async (page, d) => {
       await d.open('#/lists');
-      await waitText(page, 'F7', 'Ваш аккаунт');
-      await waitText(page, 'F7', 'В аккаунте пока нет списков');
-      await d.type('Например: клад дракона', 'E2E список');
+      await waitText(page, 'F7', 'Списков пока нет');
+      await d.press('Новый список');
+      await d.type('Клад дракона', 'E2E список');
       await d.press('Создать');
       await until('F7: the new list did not reach the account', async () => {
         const rows = await mine();
@@ -352,7 +361,9 @@ export async function runFlows({ env, admin, member, browser, base }) {
         made.id
       );
 
-      await d.press('Удалить');
+      /* From 761 px the list's delete is the last item of its «Ещё». */
+      await d.openMore('.lacts .morewrap > [aria-haspopup="menu"]');
+      await d.press('Удалить список');
       await waitText(page, 'F7', 'Список «E2E список 2» удалён');
       await until(
         'F7: the list is still in the account',
@@ -379,8 +390,9 @@ export async function runFlows({ env, admin, member, browser, base }) {
     const tokens = {};
     await withPage(ctx, await mint(env, admin, member.email), async (page, d) => {
       await d.open('#/lists');
-      await waitText(page, 'F8', 'Ваш аккаунт');
-      await d.type('Например: клад дракона', 'E2E ссылки');
+      await waitText(page, 'F8', 'Списков пока нет');
+      await d.press('Новый список');
+      await d.type('Клад дракона', 'E2E ссылки');
       await d.press('Создать');
       await until('F8: the new list did not reach the account', async () => {
         const rows = await mine();
@@ -402,6 +414,8 @@ export async function runFlows({ env, admin, member, browser, base }) {
       await waitText(page, 'F8', 'Сохранено');
       await d.press('Заметки');
       await d.type('Например: лавка закрыта до утра', 'Игрокам E2E');
+      /* One note area: the switch shows the GM note (docs/specs/FEATURES.md, "Lists"). */
+      await d.press('Только для мастера');
       await d.type('Например: позиции 9-10 лежат под прилавком', 'Мастеру E2E');
       await until('F8: the GM note did not reach the account', async () => {
         const [row] = await mine();
@@ -425,8 +439,17 @@ export async function runFlows({ env, admin, member, browser, base }) {
     await withPage(ctx, null, async (page, d) => {
       await d.open('#/s/' + tokens.player);
       await waitText(page, 'F8', 'E2E ссылки');
-      await waitText(page, 'F8', 'Игрокам E2E');
       await waitText(page, 'F8', 'Обновлено');
+      /* The lead line's note buttons open the notes; both are closed on arrival. */
+      await waitControl(page, 'F8', 'Заметка');
+      await expectInPage(
+        page,
+        'F8',
+        'the players link offers the GM note',
+        () => !document.body.textContent.includes('Заметка мастера')
+      );
+      await d.press('Заметка');
+      await waitText(page, 'F8', 'Игрокам E2E');
       await expectInPage(
         page,
         'F8',
@@ -434,6 +457,8 @@ export async function runFlows({ env, admin, member, browser, base }) {
         () => !document.body.textContent.includes('Мастеру E2E')
       );
       await d.open('#/s/' + tokens.gm);
+      await waitControl(page, 'F8', 'Заметка мастера');
+      await d.press('Заметка мастера');
       await waitText(page, 'F8', 'Мастеру E2E');
     });
 
@@ -515,8 +540,9 @@ export async function runFlows({ env, admin, member, browser, base }) {
     const mine = () => listsOf(admin, member.id);
     await withPage(ctx, await mint(env, admin, member.email), async (page, d) => {
       await d.open('#/lists');
-      await waitText(page, 'F10', 'Ваш аккаунт');
-      await d.type('Например: клад дракона', 'E2E закрытие');
+      await waitText(page, 'F10', 'Списков пока нет');
+      await d.press('Новый список');
+      await d.type('Клад дракона', 'E2E закрытие');
       await d.press('Создать');
       await until('F10: the new list did not reach the account', async () => {
         const rows = await mine();
@@ -703,6 +729,10 @@ export async function runFlows({ env, admin, member, browser, base }) {
         await within10(pageA, 'F12: the owner page did not draw the request in 10 s', () =>
           document.body.textContent.includes('Новое в списке (1)')
         );
+        /* The panel folds on each page visit (docs/specs/FEATURES.md, "Lists"). */
+        await pageA.evaluate(() =>
+          document.querySelector('.reqhead button[aria-expanded="false"]')?.click()
+        );
         await a.press('Принять');
         await waitText(pageA, 'F12', 'Запрос принят');
         await until('F12: the apply did not lower ci1 to 2', async () => {
@@ -733,7 +763,7 @@ export async function runFlows({ env, admin, member, browser, base }) {
     );
     await withPage(ctx, await mint(env, admin, member.email), async (page, d) => {
       await d.open('#/lists');
-      await waitText(page, 'F13', 'Ваш аккаунт');
+      await waitText(page, 'F13', 'Списков пока нет');
       await waitControl(page, 'F13', 'Импорт из файла');
       await d.press('Импорт из файла');
       await d.upload(example);
@@ -753,7 +783,8 @@ export async function runFlows({ env, admin, member, browser, base }) {
           entries[0].price_coins === 150
         );
       });
-      await d.type('Например: клад дракона', 'F13');
+      await d.press('Новый список');
+      await d.type('Клад дракона', 'F13');
       await d.press('Создать');
       await until('F13: the second list did not reach the account', async () => {
         return (await mine()).length === 2;
@@ -881,8 +912,8 @@ export async function runFlows({ env, admin, member, browser, base }) {
       await d.open('#/i/' + key);
       await waitControl(page, 'F15', 'В список');
       await d.press('В список');
-      await d.press('+ Новый список');
-      await d.type('Например: клад дракона', 'F15');
+      await d.press('Новый список');
+      await d.type('Клад дракона', 'F15');
       await d.press('Создать');
       await until('F15: the entry does not link the own item', async () => {
         const [e] = await entriesOf();
@@ -916,7 +947,7 @@ export async function runFlows({ env, admin, member, browser, base }) {
 
       await d.open('#/lists/' + listId);
       await waitText(page, 'F15', 'Сохранено');
-      await d.press('Свой предмет');
+      await d.press('Добавить свой предмет');
       await d.type('Название', 'Свеча F15');
       await d.press('Добавить в список');
       await until(
@@ -1229,7 +1260,8 @@ export async function runFlows({ env, admin, member, browser, base }) {
           "e2e F19: the list page never joined the owner's topic",
           () => !!document.querySelector('.said[data-live="live"]')
         );
-        await d.press('Только для мастера: Палаш');
+        await d.openMore('.lrow-acts .morewrap > [aria-label="Ещё: Палаш"]');
+        await d.press('Скрыть от игроков');
         await d.writesSettled();
         await within10(
           shared,
@@ -1242,7 +1274,8 @@ export async function runFlows({ env, admin, member, browser, base }) {
           'F19: the mark did not reach the entry',
           async () => (await markOf()) === true
         );
-        await d.press('Только для мастера: Палаш');
+        await d.openMore('.lrow-acts .morewrap > [aria-label="Ещё: Палаш"]');
+        await d.press('Показать игрокам');
         await d.writesSettled();
         await within10(
           shared,

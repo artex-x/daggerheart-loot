@@ -16,12 +16,12 @@ RootWebArea "The Dragon's Vault - Генератор лута Daggerheart" [url=
       link "Бросок" [url=/roll/dragons_vault]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
-  navigation "Режим броска"
-    link "Обычные правила" [url=/roll/std]
-    link "Альтернативные таблицы" [url=/roll/alt]
-    button "The Dragon's Vault" [expanded=false haspopup=menu]
   main ""
-    heading "The Dragon's Vault" [level=1]
+    heading "Бросок" [level=1]
+    navigation "Режим броска"
+      link "Обычные правила" [url=/roll/std]
+      link "Альтернативные таблицы" [url=/roll/alt]
+      button "The Dragon's Vault" [expanded=false haspopup=menu]
     button "Открывать при запуске" [pressed=false]
     button "Об этой книге" [expanded=true]
     StaticText "Введите результат броска или получите случайную позицию."
@@ -91,12 +91,12 @@ RootWebArea "The Dragon's Vault - Daggerheart Loot Generator" [url=/en/roll/drag
       link "Roll" [url=/en/roll/dragons_vault]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
-  navigation "Roll mode"
-    link "Standard rules" [url=/en/roll/std]
-    link "Alternate tables" [url=/en/roll/alt]
-    button "The Dragon's Vault" [expanded=false haspopup=menu]
   main ""
-    heading "The Dragon's Vault" [level=1]
+    heading "Roll" [level=1]
+    navigation "Roll mode"
+      link "Standard rules" [url=/en/roll/std]
+      link "Alternate tables" [url=/en/roll/alt]
+      button "The Dragon's Vault" [expanded=false haspopup=menu]
     button "Open on start" [pressed=false]
     button "About this book" [expanded=true]
     StaticText "Enter your roll result, or pick a random entry."

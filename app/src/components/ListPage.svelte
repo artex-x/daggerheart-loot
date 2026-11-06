@@ -4,33 +4,35 @@
    * copy, `contextNote`/`onListPage`, the live drag event model, the bar's actions
    * (`batchBarHTML`) and the money panel (`moneyPanelHTML`, `guessWhy`), all in
    * `git show 23c00a6^:app.js`. */
-  import { tick, untrack } from 'svelte';
+  import { onDestroy, tick, untrack } from 'svelte';
   import { SvelteMap, SvelteSet } from 'svelte/reactivity';
-  import Actions from './Actions.svelte';
-  import BatchBar from './BatchBar.svelte';
   import Button from './Button.svelte';
-  import Chip from './Chip.svelte';
+  import CompactRow from './CompactRow.svelte';
   import Die from './Die.svelte';
   import Empty from './Empty.svelte';
+  import ErrorPage from './ErrorPage.svelte';
   import Field from './Field.svelte';
-  import HelpBox from './HelpBox.svelte';
-  import HelpButton from './HelpButton.svelte';
   import HitNote from './HitNote.svelte';
   import Icon from './Icon.svelte';
+  import ListFind from './ListFind.svelte';
+  import MoreMenu from './MoreMenu.svelte';
   import NoData from './NoData.svelte';
   import NumberField from './NumberField.svelte';
   import NumRow from './NumRow.svelte';
-  import OrGrid from './OrGrid.svelte';
   import LoadState from './LoadState.svelte';
   import MarkupField from './MarkupField.svelte';
   import PageTitle from './PageTitle.svelte';
+  import Panel from './Panel.svelte';
   import PickQty from './PickQty.svelte';
-  import RecordActions from './RecordActions.svelte';
-  import RecordCard from './RecordCard.svelte';
   import RecordHost from './RecordHost.svelte';
+  import RollResult from './RollResult.svelte';
   import RowMain from './RowMain.svelte';
   import RequestsPanel from './RequestsPanel.svelte';
+  import Seg from './Seg.svelte';
+  import SelectionBar from './SelectionBar.svelte';
+  import SelMode from './SelMode.svelte';
   import SharePanel from './SharePanel.svelte';
+  import Sheet from './Sheet.svelte';
   import StatusRegion from './StatusRegion.svelte';
   import SyncSaid from './SyncSaid.svelte';
   import SyncStatus from './SyncStatus.svelte';
@@ -38,14 +40,23 @@
   import { linkedOf, isCloudId, NAME_MAX, NOTE_MAX } from '../lib/cloudLists.js';
   import { withRecords } from '../lib/homebrew.js';
   import { sectionLabel, type Dict } from '../lib/dict.js';
+  import { listFacetRows } from '../lib/facets.js';
+  import {
+    chosenCount,
+    inForceOf,
+    LIST_GROUPS,
+    toggledFilter,
+    type FilterState
+  } from '../lib/filters.js';
   import type { MarkupTool } from '../lib/markupEdit.js';
-  import { moneyHelpFor } from '../lib/help.js';
   import { sectionHash } from '../lib/hash.js';
   import { nameOf, selCountText } from '../lib/i18n.js';
   import { countOf } from '../lib/plural.js';
   import {
     gmOnlyCount,
     itemMeta,
+    LIST_SEARCH_AT,
+    narrowEntries,
     QTY_MAX,
     stockLeft,
     takenQty,
@@ -64,6 +75,7 @@
     type MoneyMode
   } from '../lib/money.js';
   import { pick, rollLabel as rollLabelFor } from '../lib/roll.js';
+  import { hayFor, parseQuery, statLineFor } from '../lib/search.js';
   import { entryNoteBlock, shareList, shareSelection } from '../lib/share.js';
   import type { Record_ } from '../lib/types.js';
   import type { AppState } from '../state/app.svelte.js';
@@ -117,6 +129,73 @@
   const qtyById = $derived(
     Object.fromEntries((own?.ids ?? []).map((id) => [id, metaOf(id).qty ?? 0]))
   );
+  /* Up to 760 px a row folds (docs/specs/FEATURES.md, "Lists"). */
+  const narrow = $derived(app.band === 'narrow');
+
+  /* The search and the filter: page memory, per list, never in the address
+     (docs/specs/STATE.md, "Filters"). */
+  let q = $state('');
+  let facets = $state<FilterState>({});
+  let filterOpen = $state(false);
+  /* Latched per list, as on `#/s/`: the control that has the focus never leaves. */
+  let finding = $state(false);
+  let filterToggle = $state<HTMLButtonElement | undefined>(undefined);
+  /* The compact rows a press unfolded, by entry id; memory only. */
+  const openRows = new SvelteSet<string>();
+  /* The roll panel opens from the action row, or from «Ещё» up to 760 px. */
+  let rollOpen = $state(false);
+  /* The note areas open for editing, by entry id or `list`, and the note each shows;
+     page memory only (docs/specs/FEATURES.md, "Lists"). */
+  const editing = new SvelteSet<string>();
+  const noteKinds = new SvelteMap<string, 'note' | 'hnote'>();
+  /* The entry whose row «Показать в списке» lit, for 1.5 s. */
+  let flashId = $state<string | null>(null);
+  const facRows = $derived(listFacetRows(items, t, app.lang));
+  const inForce = $derived(inForceOf(facRows, facets));
+  const terms = $derived(parseQuery(q));
+  const statLine = $derived(statLineFor(app.lang, t));
+  const hay = $derived(hayFor(statLine));
+  const narrowed = $derived(terms.length > 0 || chosenCount(inForce, LIST_GROUPS) > 0);
+  /** The rows drawn, each with `at`, its true place in the list. */
+  const shownRows = $derived(narrowEntries(rows, inForce, terms, statLine, hay));
+  $effect(() => {
+    if (
+      !finding &&
+      own &&
+      (own.ids.length >= LIST_SEARCH_AT || q !== '' || chosenCount(inForce, LIST_GROUPS) > 0)
+    )
+      finding = true;
+  });
+  /* An entry that leaves the list takes its unfolded mark with it. */
+  $effect(() => {
+    const ids = new Set(own?.ids ?? []);
+    untrack(() => {
+      for (const id of [...openRows]) if (!ids.has(id)) openRows.delete(id);
+    });
+  });
+
+  function flipRow(id: string): void {
+    if (openRows.has(id)) openRows.delete(id);
+    else openRows.add(id);
+  }
+
+  function pickFacet(group: string, value: string): void {
+    facets = toggledFilter(facRows, inForce, group, value);
+  }
+
+  /* Rule 20: «Сбросить всё» leaves with the empty state; the focus goes to «Фильтры», else
+     the search box, else `#main`. */
+  async function resetFromEmpty(): Promise<void> {
+    q = '';
+    facets = {};
+    await tick();
+    (
+      (filterToggle?.isConnected ? filterToggle : null) ??
+      document.querySelector<HTMLElement>('.lfind input[type="search"]') ??
+      document.getElementById('main')
+    )?.focus();
+  }
+
   /* The page draws only signed in (an account list), so «Печать» always stores a set. */
   function pressPrint(): void {
     if (own) void app.print([...own.ids], qtyById);
@@ -154,10 +233,8 @@
   });
 
   let roll = $state(0);
-  let moneyHelp = $state(false);
   let guess = $state(false);
   let rp = $state(-20);
-  const noteOpen = new SvelteMap<string, boolean>();
   let rowsEl = $state<HTMLDivElement | undefined>(undefined);
   /* The id of the entry being dragged, captured when the drag starts. */
   let dragId = $state<string | null>(null);
@@ -170,7 +247,8 @@
     dragMark === null ? -1 : dragMark.where === 'before' ? dragMark.over : dragMark.over + 1
   );
 
-  const hit = $derived(roll >= 1 && roll <= rows.length ? (rows[roll - 1]?.it ?? null) : null);
+  const hitRow = $derived(roll >= 1 && roll <= rows.length ? (rows[roll - 1] ?? null) : null);
+  const hit = $derived(hitRow?.it ?? null);
   const rollLabel = $derived(rollLabelFor(rows.length, t));
 
   const mode = $derived(moneyMode(own));
@@ -188,20 +266,81 @@
   const gmN = $derived(gmOnlyCount(own?.ids ?? [], metaOf));
   const tickedShown = $derived(ticked.length - gmOnlyCount(ticked, metaOf));
 
-  /** The live `hidden` default (no note → hidden), with a person's own
-   *  fold/unfold winning once they have touched it - the live `keepOpen`. */
-  function boxHidden(id: string, meta: ListEntryMeta): boolean {
-    return noteOpen.has(id) ? !noteOpen.get(id) : !(meta.note || meta.hnote);
-  }
+  /* The first priced entry in the chosen mode: the price switch's «Например». */
+  const priceSample = $derived.by((): string => {
+    const l = own;
+    const id = l?.ids.find((x) => (itemMeta(l, x).gold ?? 0) > 0);
+    return l && id ? priceText(itemMeta(l, id).gold ?? 0, mode, app.lang) : '';
+  });
 
   function metaOf(id: string): ListEntryMeta {
     return own ? itemMeta(own, id) : {};
   }
 
-  /** The price field's conversion hint - empty in coin mode, where there is
-   *  nothing to translate. */
-  function goldText(coins: number): string {
-    return coins > 0 && mode !== 'coin' ? priceText(coins, mode, app.lang) : '';
+  /** The note an area shows: the one the person switched to while it is open, else the
+   *  players' note unless only the GM note is filled. */
+  function kindOf(key: string, o: { note?: string | undefined; hnote?: string | undefined }) {
+    return noteKinds.get(key) ?? (!o.note && o.hnote ? 'hnote' : 'note');
+  }
+
+  /** Opens or closes a note area; open, its field takes the focus once mounted. */
+  function toggleArea(
+    key: string,
+    o: { note?: string | undefined; hnote?: string | undefined }
+  ) {
+    if (editing.has(key)) {
+      editing.delete(key);
+      noteKinds.delete(key);
+      return;
+    }
+    noteKinds.set(key, kindOf(key, o));
+    editing.add(key);
+    void tick().then(() => {
+      document.getElementById(`note-${key}-${kindOf(key, o)}`)?.focus();
+    });
+  }
+
+  /** Shows the other note of an area. The shown note is already in the store: every
+   *  keystroke writes through `noteInput`, so the switch drops no edit. */
+  function switchKind(key: string, kind: 'note' | 'hnote'): void {
+    noteKinds.set(key, kind);
+    void tick().then(() => {
+      document.getElementById(`note-${key}-${kind}`)?.focus();
+    });
+  }
+
+  /** «Готово»: the area closes and the focus returns to the control that opened it. */
+  function closeArea(key: string): void {
+    editing.delete(key);
+    noteKinds.delete(key);
+    void tick().then(() => {
+      const at = document.querySelector(`[data-note-open="${key}"]`);
+      (at instanceof HTMLButtonElement ? at : at?.querySelector('button'))?.focus();
+    });
+  }
+
+  /** «Показать в списке»: the rolled entry's row scrolls into view, lights for 1.5 s and
+   *  takes the focus; a search or a filter that hides it is cleared first. */
+  async function showInList(id: string): Promise<void> {
+    const at = own?.ids.indexOf(id) ?? -1;
+    if (at < 0) return;
+    const find = (): HTMLElement | null | undefined =>
+      rowsEl?.querySelector<HTMLElement>(`.lrow[data-index="${String(at)}"]`);
+    if (!find()) {
+      q = '';
+      facets = {};
+      await tick();
+    }
+    const row = find();
+    if (!row) return;
+    row.scrollIntoView({ block: 'center' });
+    row
+      .querySelector<HTMLElement>('button.row-main, button.cbody')
+      ?.focus({ preventScroll: true });
+    flashId = id;
+    setTimeout(() => {
+      if (flashId === id) flashId = null;
+    }, 1500);
   }
 
   /* ---------- handlers, each the live one by line ---------- */
@@ -236,10 +375,6 @@
     if (own) cloud?.setMoney(own.id, mode2);
   }
 
-  function toggleMoneyHelp(): void {
-    moneyHelp = !moneyHelp;
-  }
-
   /* Auto-size: the module-level rule (`git show 23c00a6^:app.js`) - skip a hand-resized
      or hidden box, otherwise grow to content up to the ceiling. */
   function autoSize(ta: HTMLTextAreaElement | null | undefined): void {
@@ -263,17 +398,15 @@
     else cloud?.setMeta(l.id, key, kind, el.value.trim());
   }
 
-  /** The live `data-note-clear` handler (`git show 23c00a6^:app.js`): empty the sibling
-   *  textarea through a synthetic `input` event, so the same handler above
+  /** «Очистить», the live `data-note-clear` handler (`git show 23c00a6^:app.js`): empty the
+   *  area's textarea through a synthetic `input` event, so the same handler above
    *  updates the model, the storage and the address - no second copy of that
-   *  logic here. The undo writes through the store instead: clearing a row's
-   *  only note unmounts its box, and an event on a detached textarea reaches
-   *  no handler (Svelte delegates `input` to the root). */
-  function clearNote(key: string, kind: 'note' | 'hnote', e: MouseEvent): void {
-    const btn = e.currentTarget as HTMLElement;
-    const ta = btn.closest('.nfield')?.querySelector('textarea');
+   *  logic here. The undo writes through the store instead: an event on a detached
+   *  textarea reaches no handler (Svelte delegates `input` to the root). */
+  function clearNote(key: string, kind: 'note' | 'hnote'): void {
+    const ta = document.getElementById(`note-${key}-${kind}`);
     const l = own;
-    if (!ta || !l) return;
+    if (!(ta instanceof HTMLTextAreaElement) || !l) return;
     const was = ta.value;
     if (!was) return;
     const at = cloud;
@@ -294,20 +427,6 @@
         }
       }
     });
-  }
-
-  /** The live `data-note-toggle` handler (`git show 23c00a6^:app.js`): flip the box,
-   *  remember the person's own choice, and - only on the way open - focus its
-   *  first textarea once Svelte has mounted it (the box sizes itself). */
-  function toggleNote(id: string, e: MouseEvent): void {
-    const row = (e.currentTarget as HTMLElement).closest('.lrow');
-    const wasHidden = boxHidden(id, metaOf(id));
-    noteOpen.set(id, wasHidden);
-    if (wasHidden && row) {
-      void tick().then(() => {
-        row.querySelector<HTMLTextAreaElement>('.rnote textarea')?.focus();
-      });
-    }
   }
 
   /** The live `data-remove` handler (`git show 23c00a6^:app.js`): remember everything
@@ -392,10 +511,62 @@
       picked.delete(id);
     }
   }
+  /* «Все» ticks the drawn rows only. */
   function pickAll(on: boolean): void {
     lsel.clear();
     picked.clear();
-    if (on && own) for (const id of own.ids) lsel.add(id);
+    if (on) for (const row of shownRows) lsel.add(row.id);
+  }
+
+  /* A tick the search or the filter hides leaves the selection, so the bar never deletes a
+     row out of sight (docs/specs/FEATURES.md, "Account and browser lists"). */
+  $effect(() => {
+    const shown = new Set(shownRows.map((r) => r.id));
+    untrack(() => {
+      for (const id of [...lsel]) {
+        if (!shown.has(id)) {
+          lsel.delete(id);
+          picked.delete(id);
+        }
+      }
+    });
+  });
+
+  /* The selection mode: the ticks draw only in it, and its bar is this page's own, drawn
+     in the bar's one place through `app.pageBar`. Leaving it drops the ticks. */
+  $effect(() => {
+    if (app.selecting) return;
+    untrack(() => {
+      lsel.clear();
+      picked.clear();
+      guess = false;
+    });
+  });
+  $effect(() => {
+    const on = !!own && app.selecting;
+    untrack(() => {
+      app.pageBar = on ? listBar : null;
+    });
+  });
+  onDestroy(() => {
+    app.pageBar = null;
+  });
+
+  /* «Выбрать» opens the mode; the focus moves to the bar's «Все». */
+  async function startSelecting(): Promise<void> {
+    app.pageBar = listBar;
+    app.selecting = true;
+    await tick();
+    document.querySelector<HTMLElement>('.selbarwrap .selall input')?.focus();
+  }
+
+  /* «Снять выделение» leaves it; the focus returns to «Выбрать», else `#main`. */
+  async function leaveSelecting(): Promise<void> {
+    app.clearSel();
+    await tick();
+    (
+      document.querySelector<HTMLElement>('button.selmode') ?? document.getElementById('main')
+    )?.focus();
   }
 
   /** Copies the ticked rows, in list order, with each taken count and unit
@@ -413,8 +584,20 @@
 
   /* ---------- the actions under a ticked selection (`git show 23c00a6^:app.js`) ---------- */
 
+  let guessBtn = $state<HTMLButtonElement | undefined>(undefined);
   function toggleGuess(): void {
     guess = !guess;
+  }
+  /* The price sheet closes with the last tick. */
+  $effect(() => {
+    if (!ticked.length) guess = false;
+  });
+  /* Rule 20: the sheet's close returns the focus to «Цены». */
+  function closeGuess(): void {
+    guess = false;
+    void tick().then(() => {
+      guessBtn?.focus();
+    });
   }
 
   /**
@@ -470,7 +653,7 @@
       },
       (count, t) => `${t.guessDone} (${String(count)})`
     );
-    if (n) guess = false;
+    if (n) closeGuess();
   }
 
   /** The live `data-reprice` handler: every ticked, priced row
@@ -574,10 +757,6 @@
   const NOTE_TOOLS: readonly MarkupTool[] = ['bold', 'italic', 'ul', 'ol'];
   /* A note box's text while the person edits it, by box id; memory only. */
   const drafts = new SvelteMap<string, string>();
-  /* The note boxes whose «?» hint is open, by box id. */
-  const noteHelp = new SvelteSet<string>();
-  /* The rows whose price «?» shows its conversion, by entry id. */
-  const priceHelp = new SvelteSet<string>();
   /* The share and own-item panels fold when another list opens, and the hand
      heights, keyed by record id, belong to the list that set them. */
   let sharing = $state(false);
@@ -587,10 +766,16 @@
     void ownId;
     sharing = false;
     quick = false;
+    q = '';
+    facets = {};
+    filterOpen = false;
+    finding = false;
+    openRows.clear();
+    editing.clear();
+    noteKinds.clear();
+    rollOpen = false;
     handHeight.clear();
     drafts.clear();
-    noteHelp.clear();
-    priceHelp.clear();
   });
   $effect(() => {
     const el = rowsEl;
@@ -602,7 +787,7 @@
         if (id !== null && cloud?.move(listId, id, to)) announceMove(id, to);
       },
       onDrag: (from) => {
-        dragId = items[from]?.id ?? null;
+        dragId = rows[from]?.id ?? null;
       },
       onOver: (over, where) => {
         dragMark = where ? { over, where } : null;
@@ -619,7 +804,7 @@
      auto-sizing must not undo it on the next keystroke. */
   $effect(() => {
     let dragging: { ta: HTMLTextAreaElement; h: number } | null = null;
-    const sel = '.lnote textarea, .rnote textarea';
+    const sel = '.narea textarea';
     const onDown = (e: PointerEvent): void => {
       const ta = (e.target as HTMLElement).closest<HTMLTextAreaElement>(sel);
       dragging = ta ? { ta, h: ta.offsetHeight } : null;
@@ -694,98 +879,216 @@
   }
 </script>
 
-{#snippet noteField(
-  o: { note?: string | undefined; hnote?: string | undefined },
-  key: string,
-  kind: 'note' | 'hnote'
-)}
+{#snippet noteArea(o: { note?: string | undefined; hnote?: string | undefined }, key: string)}
+  {@const kind = kindOf(key, o)}
   {@const id = `note-${key}-${kind}`}
   {@const caption = kind === 'note' ? t.notePub : t.noteHid}
   {@const stored = (kind === 'note' ? o.note : o.hnote) ?? ''}
-  <div
-    class="nfield"
-    class:n-pub={kind === 'note'}
-    class:n-hid={kind === 'hnote'}
-    use:noteBox={stored}
-  >
-    <span class="nlbl"
-      ><Icon name={kind === 'note' ? 'eye' : 'eyeOff'} /><label for={id}>{caption}</label><i
-        id="{id}-hint">{kind === 'note' ? t.notePubHint : t.noteHidHint}</i
-      ><HelpButton
-        lang={app.lang}
-        size="sm"
-        open={noteHelp.has(id)}
-        label={t.fieldHelp.replace('%s', caption)}
-        controls="{id}-help"
-        onclick={() => {
-          if (noteHelp.has(id)) noteHelp.delete(id);
-          else noteHelp.add(id);
+  <!-- One area per entry and one for the list: the switch picks the note it shows
+       (docs/specs/FEATURES.md, "Lists"). -->
+  <div class="narea" class:gm={kind === 'hnote'}>
+    <div class="nswitch">
+      <Seg
+        neutral
+        small
+        label={t.noteKind}
+        options={[
+          { value: 'note', label: t.notePub, filled: o.note ? t.noteFilled : undefined },
+          { value: 'hnote', label: t.noteHid, filled: o.hnote ? t.noteFilled : undefined }
+        ]}
+        value={kind}
+        onchange={(k: 'note' | 'hnote') => {
+          switchKind(key, k);
         }}
-      /><button
-        type="button"
-        class="note-x"
-        title={t.noteClear}
-        aria-label={t.noteClear}
-        onclick={(e) => {
-          clearNote(key, kind, e);
-        }}>&times;</button
-      ></span
+      />
+      <span class="ncap" id="{id}-hint"
+        >{kind === 'note' ? t.noteSeenByPlayers : t.noteNotSeen}</span
+      >
+    </div>
+    {#key id}
+      <!-- The pressed option shows the caption; the field is named by it. -->
+      <div class="nfield" use:noteBox={stored}>
+        <label class="vh" for={id}>{caption}</label>
+        <MarkupField
+          bind:value={
+            () => drafts.get(id) ?? stored,
+            (v: string) => {
+              drafts.set(id, v);
+            }
+          }
+          {id}
+          rows={3}
+          maxlength={NOTE_MAX}
+          placeholder={kind === 'note'
+            ? key === 'list'
+              ? t.listNotePhPub
+              : t.notePhPub
+            : key === 'list'
+              ? t.listNotePhHid
+              : t.notePhHid}
+          describedby="{id}-hint"
+          label={caption}
+          tools={NOTE_TOOLS}
+          preview
+          {t}
+          oninput={(e: Event) => {
+            noteInput(key, kind, e);
+          }}
+        />
+      </div>
+    {/key}
+    <div class="nacts">
+      <Button
+        size="sm"
+        onclick={() => {
+          closeArea(key);
+        }}>{t.noteDone}</Button
+      >
+      <Button
+        size="sm"
+        variant="bare"
+        onclick={() => {
+          clearNote(key, kind);
+        }}>{t.noteClear}</Button
+      >
+    </div>
+  </div>
+{/snippet}
+
+<!-- A closed note area: each filled note read-only, the GM note in its GM box. -->
+{#snippet readNotes(o: { note?: string | undefined; hnote?: string | undefined })}
+  <HitNote icon="eye" label={t.notePub} text={o.note} />
+  <HitNote icon="eyeOff" label={t.noteHid} text={o.hnote} gm />
+{/snippet}
+
+<!-- The owner's selection bar, drawn by `SelBar` through `app.pageBar` (a top-level snippet,
+     so the script can hand it over): the ticks are this page's own. -->
+{#snippet listBar()}
+  {#if own}
+    <SelectionBar
+      label={t.selRegion}
+      total={shownRows.length}
+      picked={ticked.length}
+      allLabel={t.selectAll}
+      allText={t.allShort}
+      count={selCountText(ticked.length, taken.pieces, app.lang, t)}
+      clearText={t.clearSel}
+      onall={pickAll}
+      onclear={() => void leaveSelecting()}
     >
-    <p class="nhelp" id="{id}-help" hidden={!noteHelp.has(id)}>
-      {t.mdHelp.replace('%n', String(NOTE_MAX))}
-    </p>
-    <MarkupField
-      bind:value={
-        () => drafts.get(id) ?? stored,
-        (v: string) => {
-          drafts.set(id, v);
-        }
-      }
-      {id}
-      rows={3}
-      maxlength={NOTE_MAX}
-      placeholder={kind === 'note'
-        ? key === 'list'
-          ? t.listNotePhPub
-          : t.notePhPub
-        : key === 'list'
-          ? t.listNotePhHid
-          : t.notePhHid}
-      describedby="{id}-hint"
-      label={caption}
-      tools={NOTE_TOOLS}
-      preview
-      {t}
-      oninput={(e: Event) => {
-        noteInput(key, kind, e);
-      }}
-    />
-  </div>
+      {#snippet summary()}{#if total}<span class="batch-total"
+            >{total.label} <b>{total.value}</b>&#32;{#if total.unpriced}
+              <span class="np">{total.unpriced}</span>{/if}</span
+          >{/if}{/snippet}
+      {#snippet actions()}
+        <Button
+          size="sm"
+          on={guess}
+          caret
+          expanded={guess}
+          disabled={!ticked.length}
+          bind:el={guessBtn}
+          onclick={toggleGuess}>{t.batchMoney}</Button
+        >
+        {#if narrow}
+          <span class="bulkmore">
+            <MoreMenu {app} id="list-bulk" up size="sm" disabled={!ticked.length}>
+              {#snippet children(close: () => void)}
+                <button
+                  type="button"
+                  role="menuitem"
+                  tabindex="-1"
+                  onclick={() => {
+                    close();
+                    void copyTicked();
+                  }}><Icon name="copy" />{t.copyText}</button
+                >
+                <button
+                  type="button"
+                  role="menuitem"
+                  tabindex="-1"
+                  onclick={() => {
+                    close();
+                    gmOnlyTicked();
+                  }}
+                  >{(tickedShown > 0 ? t.gmOnlyHide : t.gmOnlyShow).replace(
+                    '%n',
+                    String(ticked.length)
+                  )}</button
+                >
+                <div role="separator" class="msep"></div>
+                <button
+                  type="button"
+                  role="menuitem"
+                  tabindex="-1"
+                  class="danger"
+                  onclick={() => {
+                    close();
+                    batchDelete();
+                  }}>{t.del} ({String(ticked.length)})</button
+                >
+              {/snippet}
+            </MoreMenu>
+          </span>
+        {:else}
+          <Button size="sm" disabled={!ticked.length} onclick={() => void copyTicked()}
+            ><Icon name="copy" />{t.copyText}</Button
+          >
+          <Button size="sm" disabled={!ticked.length} onclick={gmOnlyTicked}
+            >{(tickedShown > 0 ? t.gmOnlyHide : t.gmOnlyShow).replace(
+              '%n',
+              String(ticked.length)
+            )}</Button
+          >
+          <Button size="sm" variant="danger" disabled={!ticked.length} onclick={batchDelete}
+            >{t.del} ({String(ticked.length)})</Button
+          >
+        {/if}
+      {/snippet}
+    </SelectionBar>
+  {/if}
 {/snippet}
 
-{#snippet notePair(o: { note?: string | undefined; hnote?: string | undefined }, key: string)}
-  <div class="npair">
-    <!-- eslint-disable @typescript-eslint/no-confusing-void-expression -->
-    {@render noteField(o, key, 'note')}
-    {@render noteField(o, key, 'hnote')}
-    <!-- eslint-enable @typescript-eslint/no-confusing-void-expression -->
-  </div>
-{/snippet}
-
-<RecordHost {app} {index} extra={(it: Record_) => entryNoteBlock(metaOf(it.id), t)}>
-  {#snippet children(openRecord)}
-    {#if !index}
-      <NoData>{t.noData}</NoData>
-    {:else if !own}
-      {#if cloudAddress && app.user === null}
-        <!-- One «Войти», not the prompt: the sub already carries its line. -->
-        <PageTitle title={t.listNotFound} sub={t.signInToOpen} />
+<!-- A list this account does not hold (A18): signed out, the sign-in; signed in, the
+     account it was looked for in (docs/specs/FEATURES.md, "Lists"). -->
+{#snippet gone()}
+  {#if app.user}
+    {@const email = app.user.email}
+    <ErrorPage title={t.listGoneAccount} said>
+      {email
+        ? `${t.listGoneAccountSub} ${t.listGoneAs.replace('%s', () => email)}`
+        : t.listGoneAccountSub}
+      {#snippet actions()}
+        <Button variant="primary" href={app.href(sectionHash('lists'))} sameTab
+          >{sectionLabel('lists', t)}</Button
+        >
+        <Button href={app.href(sectionHash('tables'))} sameTab>{t.openTables}</Button>
+      {/snippet}
+    </ErrorPage>
+  {:else}
+    <ErrorPage title={t.listGoneSignedOut} said>
+      {t.listGoneSignedOutSub}
+      {#snippet actions()}
         <Button
           variant="primary"
           onclick={() => {
             app.askSignIn({ hash: app.hash });
           }}>{t.signIn}</Button
         >
+        <Button href={app.href(sectionHash('tables'))} sameTab>{t.openTables}</Button>
+      {/snippet}
+    </ErrorPage>
+  {/if}
+{/snippet}
+
+<RecordHost {app} {index} extra={(it: Record_) => entryNoteBlock(metaOf(it.id), t)}>
+  {#snippet children(openRecord: (it: Record_) => void)}
+    {#if !index}
+      <NoData>{t.noData}</NoData>
+    {:else if !own}
+      {#if cloudAddress && app.user === null}
+        <!-- eslint-disable-next-line @typescript-eslint/no-confusing-void-expression -->
+        {@render gone()}
       {:else if cloudAddress && cloud?.status === 'error'}
         <PageTitle title={t.sharedFailed} />
         <LoadState
@@ -825,10 +1128,8 @@
           onretry={() => void app.retryLists()}
         />
       {:else}
-        <PageTitle title={t.listNotFound} sub={t.listNotFoundSub} />
-        <Button variant="primary" href={app.href(sectionHash('lists'))} sameTab
-          >{sectionLabel('lists', t)}</Button
-        >
+        <!-- eslint-disable-next-line @typescript-eslint/no-confusing-void-expression -->
+        {@render gone()}
       {/if}
     {:else}
       <!-- The heading shows only the rename input; an account list's heading holds
@@ -844,166 +1145,290 @@
         />
       {/snippet}
       {#snippet cloudSub()}
-        {countOf(own.ids.length, cloud?.entryLimit ?? null, t.itemsN, app.lang, t.ofLimit)} ·
-        {#if gmN > 0}{`${t.gmOnlyN.replace('%n', String(gmN))} · `}{/if}<SyncStatus {app} />
+        {narrowed
+          ? t.shownOf.replace('%n', String(shownRows.length)).replace('%m', String(rows.length))
+          : countOf(own.ids.length, cloud?.entryLimit ?? null, t.itemsN, app.lang, t.ofLimit)} ·
+        {#if gmN > 0}{`${t.gmOnlyN.replace('%n', String(gmN))} · `}{/if}<SyncStatus
+          {app}
+        />{#if narrow}&#32;·&#32;<button
+            type="button"
+            class="lnkb"
+            data-note-open="list"
+            aria-expanded={editing.has('list')}
+            onclick={() => {
+              toggleArea('list', own);
+            }}>{t.listNote}<Icon name="chevron" /></button
+          >{/if}
       {/snippet}
-      <!-- The input's value would name the heading a second time. -->
-      <PageTitle title={renameTitle} sub={cloudSub} labelledby="list-name" />
-      <Actions style="margin-bottom:16px">
-        <Button
-          size="sm"
-          caret
-          on={sharing}
-          expanded={sharing}
-          onclick={() => {
-            sharing = !sharing;
-          }}><Icon name="link" />{t.share}</Button
-        >
-        <Button size="sm" onclick={() => void copyList()}
-          ><Icon name="copy" />{t.copyText}</Button
-        >
-        <Button size="sm" onclick={() => void app.exportLists([own.id])}>{t.exportJson}</Button>
-        {#if items.length}
-          <Button size="sm" title={t.printHint} disabled={app.printing} onclick={pressPrint}
-            ><Icon name="print" />{t.print}</Button
-          >
-        {/if}
-        <Button size="sm" variant="danger" onclick={del}>{t.del}</Button>
-      </Actions>
-      {#if sharing}
-        <SharePanel {app} listId={own.id} />
-      {/if}
-      <RequestsPanel {app} list={own} />
-
-      {#if priced}
-        <div class="money">
-          <span class="money-l">{t.moneyAs}</span>
-          {#each MONEY_MODES as m (m)}
-            <Chip
-              label={t[`money_${m}`]}
-              on={m === mode}
-              onclick={() => {
-                pickMoney(m);
-              }}
-            />
-          {/each}
-          <HelpButton lang={app.lang} size="sm" open={moneyHelp} onclick={toggleMoneyHelp} />
-          {#if moneyHelp}
-            <span class="money-br"></span>
-            <HelpBox help={moneyHelpFor(app.lang)} class="money-help" />
-          {/if}
-        </div>
-      {/if}
-
-      <details
-        class="lnote"
-        open={untrack(() => !!(own.note || own.hnote))}
-        ontoggle={(e) => {
-          const box = e.currentTarget;
-          if (!box.open) return;
-          autoSize(box.querySelector<HTMLTextAreaElement>('#note-list-note'));
-          autoSize(box.querySelector<HTMLTextAreaElement>('#note-list-hnote'));
-        }}
-      >
-        <summary><Icon name="note" /><span>{t.listNote}</span></summary>
-        <!-- eslint-disable-next-line @typescript-eslint/no-confusing-void-expression -->
-        {@render notePair(own, 'list')}
-      </details>
-
-      {#if rows.length > 1}
-        <!-- `<details class="panel lroll">` is a `Panel.svelte` variant: a
-         `<details>`, and `.lroll{padding:0}` plus its own `summary`/`[open]`
-         rules are this component's own - kept inline. -->
-        <details class="panel lroll">
-          <summary><Icon name="die" /><span>{t.rollBy}</span></summary>
-          <Field label="{t.rollResult} (1-{rows.length})" after={hit ? 14 : 0}>
-            <NumRow>
-              <NumberField
-                value={roll}
-                min={1}
-                max={rows.length}
-                empty
-                label={t.rollResult}
-                stepDownLabel={t.stepDown}
-                stepUpLabel={t.stepUp}
-                onchange={setRoll}
-              />
-              <Button variant="primary" onclick={rollNow}
-                ><Die faces={rows.length} />{rollLabel}</Button
+      {#snippet listMore()}
+        <MoreMenu {app} id="list-more" size="sm">
+          {#snippet children(close: () => void)}
+            {#if narrow}
+              <button
+                type="button"
+                role="menuitem"
+                tabindex="-1"
+                onclick={() => {
+                  close();
+                  sharing = !sharing;
+                }}><Icon name="link" />{t.share}</button
               >
-              {#if hit}<Button variant="ghost" onclick={clearRoll}>{t.clear}</Button>{/if}
-            </NumRow>
-            {#if !hit}<p class="rollhint">{t.rollHint}</p>{/if}
-          </Field>
-          {#if hit}
-            {@const h = hit}
-            <OrGrid or={t.or} items={[h]}>
-              {#snippet card(it: Record_)}
-                <RecordCard
-                  variant="compact"
-                  {it}
-                  {index}
-                  lang={app.lang}
-                  rollLabel={roll}
-                  artBroken={app.artBroken(it.id)}
-                  onartfail={(bad: string) => {
-                    app.markArtBroken(bad);
-                  }}
-                  onopen={openRecord}
+              {#if items.length}
+                <button
+                  type="button"
+                  role="menuitem"
+                  tabindex="-1"
+                  disabled={app.printing}
+                  onclick={() => {
+                    close();
+                    pressPrint();
+                  }}><Icon name="print" />{t.print}</button
                 >
-                  {#snippet nameActions()}
-                    <RecordActions {app} {index} {it} row="name" />
-                  {/snippet}
-                  {#snippet actions()}
-                    <RecordActions
-                      {app}
-                      {index}
-                      {it}
-                      row="card"
-                      extra={entryNoteBlock(metaOf(it.id), t)}
-                    />
-                  {/snippet}
-                </RecordCard>
-              {/snippet}
-            </OrGrid>
-            <HitNote icon="eye" label={t.notePub} text={metaOf(h.id).note} />
-            <HitNote icon="eyeOff" label={t.noteHid} text={metaOf(h.id).hnote} />
-          {/if}
-        </details>
-      {/if}
-
-      {#if rows.length}
-        <BatchBar
-          total={own.ids.length}
-          picked={ticked.length}
-          label={t.pickAll}
-          count={selCountText(ticked.length, taken.pieces, app.lang, t)}
-          joined
-          onall={pickAll}
-        >
-          {#snippet summary()}{#if total}<span class="batch-total"
-                >{total.label} <b>{total.value}</b>&#32;{#if total.unpriced}
-                  <span class="np">{total.unpriced}</span>{/if}</span
-              >{/if}{/snippet}
-          {#snippet actions()}
-            <Button size="sm" on={guess} caret expanded={guess} onclick={toggleGuess}
-              >{t.batchMoney}</Button
+              {/if}
+              {#if rows.length > 1}
+                <button
+                  type="button"
+                  role="menuitem"
+                  tabindex="-1"
+                  onclick={() => {
+                    close();
+                    rollOpen = !rollOpen;
+                  }}><Icon name="die" />{t.rollFromList}</button
+                >
+              {/if}
+              <div role="separator" class="msep"></div>
+              {#if priced}
+                {@const to = mode === 'coin' ? 'bag' : 'coin'}
+                <button
+                  type="button"
+                  role="menuitem"
+                  tabindex="-1"
+                  onclick={() => {
+                    close();
+                    pickMoney(to);
+                  }}>{t[`moneyTo_${to}`]}</button
+                >
+              {/if}
+            {/if}
+            <button
+              type="button"
+              role="menuitem"
+              tabindex="-1"
+              onclick={() => {
+                close();
+                void copyList();
+              }}><Icon name="copy" />{t.copyText}</button
             >
-            <Button size="sm" onclick={() => void copyTicked()}
-              ><Icon name="copy" />{t.copySel}</Button
+            <button
+              type="button"
+              role="menuitem"
+              tabindex="-1"
+              onclick={() => {
+                close();
+                void app.exportLists([own.id]);
+              }}>{t.exportJson}</button
             >
-            <Button size="sm" onclick={gmOnlyTicked}
-              >{(tickedShown > 0 ? t.gmOnlyHide : t.gmOnlyShow).replace(
-                '%n',
-                String(ticked.length)
-              )}</Button
-            >
-            <Button size="sm" variant="danger" onclick={batchDelete}
-              >{t.del} ({String(ticked.length)})</Button
+            <div role="separator" class="msep"></div>
+            <button
+              type="button"
+              role="menuitem"
+              tabindex="-1"
+              class="danger"
+              onclick={() => {
+                close();
+                del();
+              }}>{t.listDeleteItem}</button
             >
           {/snippet}
-          {#snippet below()}
-            {#if ticked.length && guess}
+        </MoreMenu>
+      {/snippet}
+      <!-- eslint-disable @typescript-eslint/no-confusing-void-expression -- a `{@render}` tag
+           of a local snippet reads as a void expression to this rule. -->
+      <!-- From 761 px the side holds the name, the actions, the price switch and the list
+           notes; from 1000 px it is the right column, first in the DOM so Tab reaches the
+           actions before the rows (docs/specs/FEATURES.md, "Lists"). -->
+      <div class="lpage" class:wide={!narrow}>
+        {#if narrow}
+          <div class="lhead">
+            <!-- The input's value would name the heading a second time. -->
+            <PageTitle title={renameTitle} sub={cloudSub} labelledby="list-name" />
+            <div class="lhead-acts">
+              {#if !finding && rows.length && !app.selecting}
+                <SelMode label={t.selectMode} onclick={() => void startSelecting()} />
+              {/if}
+              {@render listMore()}
+            </div>
+          </div>
+          {#if editing.has('list')}
+            <div class="lnotes">{@render noteArea(own, 'list')}</div>
+          {/if}
+        {:else}
+          <div class="lside">
+            <PageTitle title={renameTitle} sub={cloudSub} labelledby="list-name" />
+            <div class="lacts">
+              <Button
+                size="sm"
+                caret
+                on={sharing}
+                expanded={sharing}
+                onclick={() => {
+                  sharing = !sharing;
+                }}><Icon name="link" />{t.share}</Button
+              >
+              {#if items.length}
+                <Button
+                  size="sm"
+                  title={t.printHint}
+                  disabled={app.printing}
+                  onclick={pressPrint}><Icon name="print" />{t.print}</Button
+                >
+              {/if}
+              {#if rows.length > 1}
+                <Button
+                  size="sm"
+                  on={rollOpen}
+                  expanded={rollOpen}
+                  onclick={() => {
+                    rollOpen = !rollOpen;
+                  }}><Icon name="die" />{t.rollFromList}</Button
+                >
+              {/if}
+              {@render listMore()}
+            </div>
+            {#if priced}
+              <div class="lprices">
+                <span class="plbl">{t.pricesLabel}</span>
+                <Seg
+                  neutral
+                  small
+                  label={t.batchMoney}
+                  options={MONEY_MODES.map((m) => ({ value: m, label: t[`money_${m}`] }))}
+                  value={mode}
+                  onchange={pickMoney}
+                />
+                {#if priceSample}<p class="pex">
+                    {t.priceExample.replace('%s', priceSample)}
+                  </p>{/if}
+              </div>
+            {/if}
+            <div class="lnotes">
+              {#if editing.has('list')}
+                {@render noteArea(own, 'list')}
+              {:else}
+                {@render readNotes(own)}
+                <span class="nopen" data-note-open="list"
+                  ><Button
+                    size="sm"
+                    variant="bare"
+                    expanded={false}
+                    onclick={() => {
+                      toggleArea('list', own);
+                    }}><Icon name="note" />{own.note || own.hnote ? t.edit : t.listNote}</Button
+                  ></span
+                >
+              {/if}
+            </div>
+          </div>
+        {/if}
+        <div class="lmain">
+          {#if sharing}
+            <SharePanel {app} listId={own.id} />
+          {/if}
+          {#if rollOpen && rows.length > 1}
+            <Panel style="margin-bottom:16px">
+              <h2 class="lroll-h">{t.rollBy}</h2>
+              <Field label="{t.rollResult} (1-{rows.length})" after={hit ? 14 : 0}>
+                <NumRow>
+                  <NumberField
+                    value={roll}
+                    min={1}
+                    max={rows.length}
+                    empty
+                    label={t.rollResult}
+                    stepDownLabel={t.stepDown}
+                    stepUpLabel={t.stepUp}
+                    onchange={setRoll}
+                  />
+                  <Button variant="primary" onclick={rollNow}
+                    ><Die faces={rows.length} />{rollLabel}</Button
+                  >
+                  {#if hit}<Button variant="ghost" onclick={clearRoll}>{t.clear}</Button>{/if}
+                </NumRow>
+                {#if !hit}<p class="rollhint">{t.rollHint}</p>{/if}
+              </Field>
+              {#if hit && hitRow && index}
+                {@const h = hit}
+                {@const hm = metaOf(hitRow.id)}
+                {@const hid = hitRow.id}
+                <div class="lroll-res">
+                  <div class="faces">
+                    {#key h}
+                      <RollResult {app} {index} it={h} rollLabel={roll} onopen={openRecord} />
+                    {/key}
+                  </div>
+                  <div class="lroll-side">
+                    {#if (hm.gold ?? 0) > 0 || (hm.qty ?? 0) > 1}
+                      <p class="lroll-line">
+                        {[
+                          (hm.qty ?? 0) > 1 ? t.pcsN.replace('%n', String(hm.qty)) : '',
+                          (hm.gold ?? 0) > 0
+                            ? t.eachPrice.replace('%s', priceText(hm.gold ?? 0, mode, app.lang))
+                            : ''
+                        ]
+                          .filter(Boolean)
+                          .join(' · ')}
+                      </p>
+                    {/if}
+                    {@render readNotes(hm)}
+                    <div class="lroll-show">
+                      <Button size="sm" onclick={() => void showInList(hid)}
+                        >{t.showInList}</Button
+                      >
+                    </div>
+                  </div>
+                </div>
+              {/if}
+            </Panel>
+          {/if}
+          <RequestsPanel {app} list={own} />
+
+          {#if finding}
+            <ListFind
+              {app}
+              rows={facRows}
+              picked={inForce}
+              shown={shownRows.length}
+              query={q}
+              onquery={(v: string) => {
+                q = v;
+              }}
+              open={filterOpen}
+              onopen={() => {
+                filterOpen = true;
+              }}
+              onclose={() => {
+                filterOpen = false;
+              }}
+              onpick={pickFacet}
+              onclear={(group: string) => {
+                facets = { ...inForce, [group]: [] };
+              }}
+              onreset={() => {
+                facets = {};
+              }}
+              selectable={!app.selecting && shownRows.length > 0}
+              onselect={() => void startSelecting()}
+              bind:toggle={filterToggle}
+            />
+          {:else if !narrow && rows.length && !app.selecting}
+            <div class="selrow">
+              <SelMode label={t.selectMode} onclick={() => void startSelecting()} />
+            </div>
+          {/if}
+
+          {#if guess && ticked.length && index}
+            {@const idx = index}
+            <Sheet {app} label={t.priceSelTitle} title={t.priceSelTitle} onclose={closeGuess}>
               <div class="guess">
                 {#if pricedCount}
                   <div class="money-act">
@@ -1031,241 +1456,352 @@
                   {#each ticked as id (id)}
                     {@const it = byId(id)}
                     {#if it}
-                      {@const v = guessPrice(it, index.rarityOf)}
+                      {@const v = guessPrice(it, idx.rarityOf)}
                       <div class="guess-row">
                         <span>{nameOf(it, app.lang)}</span>
-                        <span class="guess-band">{guessWhy(it, index.rarityOf, t)}</span>
+                        <span class="guess-band">{guessWhy(it, idx.rarityOf, t)}</span>
                         <b>{v ? priceText(v, mode, app.lang) : '-'}</b>
                       </div>
                     {/if}
                   {/each}
                 </div>
-                <div class="money-act">
-                  <Button size="sm" variant="primary" onclick={applyGuess}
-                    >{t.guessApply}</Button
-                  >
-                  {#if pricedCount}
-                    <Button size="sm" onclick={clearPrices}
-                      >{t.batchNoPrice} ({String(pricedCount)})</Button
-                    >
-                  {/if}
-                </div>
               </div>
-            {/if}
-          {/snippet}
-        </BatchBar>
-        <div class="rows lrows" data-primary bind:this={rowsEl}>
-          {#each rows as row, i (row.id)}
-            {@const it = row.it}
-            {@const id = row.id}
-            {@const label = it ? nameOf(it, app.lang) : id}
-            {@const m = metaOf(id)}
-            {@const hasNote = !!(m.note || m.hnote)}
-            {@const goldHint = goldText(m.gold ?? 0)}
-            <div
-              class="row lrow"
-              class:sel={lsel.has(id)}
-              class:has-note={hasNote}
-              class:gm-only={!!m.gmOnly}
-              class:dragging={dragId === id}
-              class:drop-before={dropGap === i}
-              class:drop-after={dropGap === i + 1}
-              data-index={i}
-            >
-              <span
-                class="lrow-grip"
-                draggable="true"
-                data-drag="{own.id}:{id}"
-                title={t.dragHint}
-                aria-hidden="true"><Icon name="grip" /></span
-              >
-              <label class="lrow-pick"
-                ><input
-                  type="checkbox"
-                  checked={lsel.has(id)}
-                  aria-label={label}
-                  onchange={(e) => {
-                    pickRow(id, e.currentTarget.checked);
-                  }}
-                /></label
-              >
-              <input
-                type="number"
-                class="lrow-n"
-                min="1"
-                max={own.ids.length}
-                inputmode="numeric"
-                value={i + 1}
-                aria-label={t.position}
-                onchange={(e) => {
-                  setPos(id, i, e);
-                }}
-              />
-              {#if it}
-                <RowMain
-                  {it}
-                  lang={app.lang}
-                  artBroken={(id: string) => app.artBroken(id)}
-                  onartfail={(bad: string) => {
-                    app.markArtBroken(bad);
-                  }}
-                  onopen={openRecord}
-                  gmOnly={m.gmOnly}
-                />
-              {:else}
-                <div class="unk"><b>{id}</b><span>{t.itemNotLoaded}</span></div>
-              {/if}
-              <div class="lrow-meta">
-                <label
-                  ><span>{t.qty}</span><input
+              {#snippet foot()}
+                {#if pricedCount}
+                  <Button size="sm" onclick={clearPrices}
+                    >{t.batchNoPrice} ({String(pricedCount)})</Button
+                  >
+                {/if}
+                <Button size="sm" variant="primary" onclick={applyGuess}>{t.guessApply}</Button>
+              {/snippet}
+            </Sheet>
+          {/if}
+
+          {#if rows.length && !shownRows.length}
+            <Empty title={t.nothing}>
+              <Button size="sm" onclick={() => void resetFromEmpty()}>{t.resetAll}</Button>
+            </Empty>
+          {:else if rows.length}
+            <div class="rows lrows" data-primary bind:this={rowsEl}>
+              {#each shownRows as row (row.id)}
+                {@const it = row.it}
+                {@const id = row.id}
+                {@const at = row.at}
+                {@const label = it ? nameOf(it, app.lang) : id}
+                {@const m = metaOf(id)}
+                {@const hasNote = !!(m.note || m.hnote)}
+                {#snippet pick()}
+                  <label class="lrow-pick"
+                    ><input
+                      type="checkbox"
+                      checked={lsel.has(id)}
+                      aria-label={label}
+                      onchange={(e) => {
+                        pickRow(id, e.currentTarget.checked);
+                      }}
+                    /></label
+                  >
+                {/snippet}
+                {#snippet grip()}
+                  <span
+                    class="lrow-grip"
+                    draggable="true"
+                    data-drag="{own.id}:{id}"
+                    title={t.dragHint}
+                    aria-hidden="true"><Icon name="grip" /></span
+                  >
+                {/snippet}
+                {#snippet posField()}
+                  <input
                     type="number"
+                    class="lrow-n"
                     min="1"
-                    max="99"
+                    max={own.ids.length}
+                    inputmode="numeric"
+                    value={at + 1}
+                    aria-label={t.position}
+                    onchange={(e) => {
+                      setPos(id, at, e);
+                    }}
+                  />
+                {/snippet}
+                <!-- No `<label>`: a button inside one would be a second control of the label
+                 (FEATURES.md, rule 15), and 300 `label[for]` lookups stalled jsdom's role
+                 queries past the timed suite's 30 s (2026-10-16), so the caption names the
+                 field by `aria-labelledby`. -->
+                {#snippet priceField()}
+                  <div class="gfield">
+                    <span id="gcap-{id}">{t.price}</span><input
+                      aria-labelledby="gcap-{id}"
+                      type="number"
+                      min="0"
+                      max="99999"
+                      inputmode="numeric"
+                      data-gold
+                      value={m.gold || ''}
+                      placeholder="-"
+                      oninput={(e) => {
+                        setGold(id, e);
+                      }}
+                    />
+                  </div>
+                {/snippet}
+                {#snippet notes()}
+                  {#if editing.has(id)}
+                    <div class="rnote">{@render noteArea(m, id)}</div>
+                  {:else if hasNote}
+                    <div class="rnote ro">{@render readNotes(m)}</div>
+                  {/if}
+                {/snippet}
+                <!-- One menu for the compact and the full row. -->
+                {#snippet rowMore()}
+                  <MoreMenu
+                    {app}
+                    id="row-more-{id}"
+                    size="sm"
+                    label={t.moreOf.replace('%s', () => label)}
+                  >
+                    {#snippet children(close: () => void)}
+                      <button
+                        type="button"
+                        role="menuitem"
+                        tabindex="-1"
+                        onclick={() => {
+                          close();
+                          cloud?.setGmOnly(own.id, id, !m.gmOnly);
+                        }}
+                        ><Icon name={m.gmOnly ? 'eye' : 'eyeOff'} />{m.gmOnly
+                          ? t.rowShow
+                          : t.rowHide}</button
+                      >
+                      {#if it}
+                        <button
+                          type="button"
+                          role="menuitem"
+                          tabindex="-1"
+                          onclick={() => {
+                            close();
+                            openRecord(it);
+                          }}>{t.openCard}</button
+                        >
+                      {/if}
+                      <div role="separator" class="msep"></div>
+                      <button
+                        type="button"
+                        role="menuitem"
+                        tabindex="-1"
+                        class="danger"
+                        onclick={() => {
+                          close();
+                          removeEntry(id, it, at);
+                        }}>{t.removeItem}</button
+                      >
+                    {/snippet}
+                  </MoreMenu>
+                {/snippet}
+                <!-- «Заметка»: opens the row's note area; a dot and the hidden text say a note is
+                 filled. -->
+                {#snippet noteBtn()}
+                  <button
+                    type="button"
+                    class="cnote"
+                    class:on={hasNote}
+                    data-note-open={id}
+                    aria-expanded={editing.has(id)}
+                    onclick={() => {
+                      toggleArea(id, m);
+                    }}
+                    ><Icon name="note" />{t.note}{#if hasNote}<span
+                        class="ndot"
+                        aria-hidden="true"
+                      ></span><span class="vh">{t.noteFilled}</span>{/if}</button
+                  >
+                {/snippet}
+                {#snippet qtyField()}
+                  <input
+                    type="number"
+                    class="cqf"
+                    min="1"
+                    max={QTY_MAX}
                     inputmode="numeric"
                     data-qty
-                    value={m.qty || ''}
                     placeholder="1"
+                    value={m.qty || ''}
+                    aria-label={t.qtyOf.replace('%s', () => label)}
                     oninput={(e) => {
                       setQty(id, e);
                     }}
-                  /></label
+                  />
+                {/snippet}
+                <div
+                  class="row lrow"
+                  class:compact={narrow}
+                  class:sel={lsel.has(id)}
+                  class:has-note={hasNote}
+                  class:gm-only={!!m.gmOnly}
+                  class:dragging={dragId === id}
+                  class:drop-before={dropGap === at}
+                  class:drop-after={dropGap === at + 1}
+                  class:flash={flashId === id}
+                  data-index={at}
                 >
-                <!-- No `<label>`: a button inside one would be a second control of the label
-                     (FEATURES.md, rule 15), and 300 `label[for]` lookups stalled jsdom's role
-                     queries past the timed suite's 30 s (2026-10-16), so the caption names the
-                     field by `aria-labelledby`. -->
-                <div class="gfield">
-                  <span
-                    ><span id="gcap-{id}">{t.price}</span>{#if goldHint}<HelpButton
+                  {#if narrow}
+                    {#if app.selecting}{@render pick()}{/if}
+                    <CompactRow
+                      {it}
+                      {id}
+                      no={at + 1}
+                      lang={app.lang}
+                      artBroken={(id: string) => app.artBroken(id)}
+                      onartfail={(bad: string) => {
+                        app.markArtBroken(bad);
+                      }}
+                      open={openRows.has(id)}
+                      ontoggle={() => {
+                        flipRow(id);
+                      }}
+                      price={(m.gold ?? 0) > 0
+                        ? priceText(m.gold ?? 0, mode, app.lang)
+                        : undefined}
+                      note={hasNote}
+                      gmOnly={!!m.gmOnly}
+                      qtyText={app.selecting && (m.qty ?? 0) > 1
+                        ? '×' + String(m.qty)
+                        : undefined}
+                      field={app.selecting ? undefined : qtyField}
+                    >
+                      {#if it}
+                        <RowMain
+                          full
+                          {it}
+                          lang={app.lang}
+                          artBroken={(id: string) => app.artBroken(id)}
+                          onartfail={(bad: string) => {
+                            app.markArtBroken(bad);
+                          }}
+                          onopen={openRecord}
+                        />
+                      {/if}
+                      <div class="cfields">
+                        <label class="cf"><span>{t.position}</span>{@render posField()}</label>
+                        {@render priceField()}
+                        {#if !narrowed}{@render grip()}{/if}
+                        {@render noteBtn()}
+                        {@render rowMore()}
+                      </div>
+                      {@render notes()}
+                    </CompactRow>
+                  {:else}
+                    {#if !narrowed}{@render grip()}{/if}
+                    {#if app.selecting}{@render pick()}{/if}
+                    {@render posField()}
+                    {#if it}
+                      <RowMain
+                        {it}
                         lang={app.lang}
-                        size="sm"
-                        open={priceHelp.has(id)}
-                        label={t.fieldHelp.replace('%s', t.price)}
-                        controls="ghint-{id}"
-                        onclick={() => {
-                          if (priceHelp.has(id)) priceHelp.delete(id);
-                          else priceHelp.add(id);
+                        artBroken={(id: string) => app.artBroken(id)}
+                        onartfail={(bad: string) => {
+                          app.markArtBroken(bad);
                         }}
-                      />{/if}</span
-                  ><input
-                    aria-labelledby="gcap-{id}"
-                    type="number"
-                    min="0"
-                    max="99999"
-                    inputmode="numeric"
-                    data-gold
-                    value={m.gold || ''}
-                    placeholder="-"
-                    oninput={(e) => {
-                      setGold(id, e);
-                    }}
-                  />
+                        onopen={openRecord}
+                        gmOnly={m.gmOnly}
+                      />
+                    {:else}
+                      <div class="unk"><b>{id}</b><span>{t.itemNotLoaded}</span></div>
+                    {/if}
+                    <div class="lrow-ctl">
+                      <div class="lrow-meta">
+                        <label
+                          ><span>{t.qty}</span><input
+                            type="number"
+                            min="1"
+                            max={QTY_MAX}
+                            inputmode="numeric"
+                            data-qty
+                            value={m.qty || ''}
+                            placeholder="1"
+                            oninput={(e) => {
+                              setQty(id, e);
+                            }}
+                          /></label
+                        >
+                        {@render priceField()}
+                      </div>
+                      <div class="lrow-acts">
+                        {@render noteBtn()}
+                        {@render rowMore()}
+                      </div>
+                    </div>
+                  {/if}
+                  {#if lsel.has(id) && (m.qty ?? 0) > 1}
+                    {@const n = takenOf(id)}
+                    <div class="lrow-take">
+                      <PickQty
+                        value={n}
+                        max={m.qty ?? 1}
+                        label={t.pickQty}
+                        ofText={t.pickOf.replace('%n', String(m.qty ?? 1))}
+                        sum={priceText((m.gold ?? 0) * n, mode, app.lang)}
+                        name={t.pickQtyOf.replace('%s', label)}
+                        minText={t.pickMin}
+                        maxText={t.pickMax}
+                        minName={t.pickMinOf.replace('%s', label)}
+                        maxName={t.pickMaxOf.replace('%s', label)}
+                        onchange={(n: number) => {
+                          picked.set(id, n);
+                        }}
+                      />
+                    </div>
+                  {/if}
+                  {#if !narrow}{@render notes()}{/if}
                 </div>
-              </div>
-              <div class="lrow-acts">
-                <button
-                  type="button"
-                  class="lrow-note"
-                  class:on={hasNote}
-                  title={t.note}
-                  aria-label={t.note}
-                  onclick={(e) => {
-                    toggleNote(id, e);
-                  }}><Icon name="note" /></button
-                >
-                <button
-                  type="button"
-                  class="lrow-gm"
-                  aria-pressed={!!m.gmOnly}
-                  title={t.noteHid}
-                  aria-label={t.gmOnlyOf.replace('%s', label)}
-                  onclick={() => {
-                    cloud?.setGmOnly(own.id, id, !m.gmOnly);
-                  }}><Icon name={m.gmOnly ? 'eyeOff' : 'eye'} /></button
-                >
-                <button
-                  type="button"
-                  class="row-x"
-                  title={t.removeItem}
-                  aria-label={t.removeItem}
-                  onclick={() => {
-                    removeEntry(id, it, i);
-                  }}>&times;</button
-                >
-              </div>
-              {#if goldHint}
-                <p class="ghint" id="ghint-{id}" hidden={!priceHelp.has(id)}>
-                  {goldHint}
-                </p>
-              {/if}
-              {#if lsel.has(id) && (m.qty ?? 0) > 1}
-                {@const n = takenOf(id)}
-                <div class="lrow-take">
-                  <PickQty
-                    value={n}
-                    max={m.qty ?? 1}
-                    label={t.pickQty}
-                    ofText={t.pickOf.replace('%n', String(m.qty ?? 1))}
-                    sum={priceText((m.gold ?? 0) * n, mode, app.lang)}
-                    name={t.pickQtyOf.replace('%s', label)}
-                    minText={t.pickMin}
-                    maxText={t.pickMax}
-                    minName={t.pickMinOf.replace('%s', label)}
-                    maxName={t.pickMaxOf.replace('%s', label)}
-                    onchange={(n: number) => {
-                      picked.set(id, n);
-                    }}
-                  />
-                </div>
-              {/if}
-              {#if !boxHidden(id, m)}
-                <!-- eslint-disable-next-line @typescript-eslint/no-confusing-void-expression -->
-                <div class="rnote">{@render notePair(m, id)}</div>
+              {/each}
+            </div>
+          {:else}
+            <Empty
+              >{t.listEmptyHint}{#if app.homebrew}{' ' + t.listEmptyHintOwn}{/if}</Empty
+            >
+          {/if}
+          <!-- eslint-enable @typescript-eslint/no-confusing-void-expression -->
+          {#if app.homebrew}
+            <!-- After the last entry, so a new item's entry lands right above it. -->
+            <div class="addwrap">
+              <button
+                type="button"
+                class="addrow"
+                class:on={quick}
+                aria-expanded={quick}
+                bind:this={quickBtn}
+                onclick={() => {
+                  quick = !quick;
+                }}
+                ><span class="plus"><Icon name="plus" /></span><span>{t.quickOwn}</span><i
+                  class="caret"
+                  class:up={quick}
+                ></i></button
+              >
+              {#if quick}
+                <QuickItem
+                  {app}
+                  listId={own.id}
+                  onclose={() => {
+                    quick = false;
+                    void tick().then(() => {
+                      quickBtn?.focus();
+                    });
+                  }}
+                  oncreated={() => {
+                    q = '';
+                    facets = {};
+                  }}
+                />
               {/if}
             </div>
-          {/each}
-        </div>
-      {:else}
-        <Empty
-          >{t.listEmptyHint}{#if app.homebrew}{' ' + t.listEmptyHintOwn}{/if}</Empty
-        >
-      {/if}
-      {#if app.homebrew}
-        <!-- After the last entry, so a new item's entry lands right above it. -->
-        <div class="addwrap">
-          <!-- `aria-label` repeats the computed name: the browser suites' driver names a
-               control by `textContent`, which holds the hint («press('Свой предмет')»). -->
-          <button
-            type="button"
-            class="addrow"
-            class:on={quick}
-            aria-expanded={quick}
-            aria-label={t.quickOwn}
-            bind:this={quickBtn}
-            onclick={() => {
-              quick = !quick;
-            }}
-            ><span class="plus"><Icon name="plus" /></span><span>{t.quickOwn}</span><span
-              class="addhint"
-              aria-hidden="true">{t.quickRowHint}</span
-            ><i class="caret" class:up={quick}></i></button
-          >
-          {#if quick}
-            <QuickItem
-              {app}
-              listId={own.id}
-              onclose={() => {
-                quick = false;
-                void tick().then(() => {
-                  quickBtn?.focus();
-                });
-              }}
-            />
           {/if}
+          <StatusRegion text={said} />
+          <SyncSaid {app} live={app.cloudLists?.live} />
         </div>
-      {/if}
-      <StatusRegion text={said} />
-      <SyncSaid {app} live={app.cloudLists?.live} />
+      </div>
     {/if}
   {/snippet}
 </RecordHost>
@@ -1304,7 +1840,7 @@
     max-width: 560px;
     background: transparent;
     border: 0;
-    border-bottom: 1px dashed var(--line2);
+    border-bottom: 1px solid var(--line2);
     color: var(--txt);
     font: inherit;
     font-size: var(--t-page);
@@ -1322,8 +1858,8 @@
     border-bottom-color: var(--muted2);
   }
 
-  /* The «Свой предмет» row after the entries: a list row's box; the dashed
-     border marks "add", not a homebrew item (that mark has no dashes). */
+  /* The «Добавить свой предмет» row after the entries: a list row's box on no ground: it
+     adds, it is not an entry. */
   .addwrap {
     display: flex;
     flex-direction: column;
@@ -1338,8 +1874,8 @@
     width: 100%;
     min-height: 52px;
     padding: 0 14px 0 13px;
-    border: 1px dashed var(--line2);
-    border-radius: 11px;
+    border: 1px solid var(--line2);
+    border-radius: var(--r);
     background: transparent;
     color: var(--gold-soft);
     font: inherit;
@@ -1372,18 +1908,6 @@
     border-radius: 8px;
   }
 
-  .addhint {
-    font-weight: 400;
-    font-size: var(--t-data);
-    color: var(--muted2);
-  }
-
-  @media (width < 600px) {
-    .addhint {
-      display: none;
-    }
-  }
-
   /* off `.caret` in `Button.svelte`, whose rule is scoped there */
   .caret {
     width: 0;
@@ -1405,78 +1929,123 @@
   /* `.card-acts` moved to `Actions.svelte` - `margin-bottom:16px` is
      the live inline style on this specific block, now passed as `style`. */
 
-  /* off `.money`, `.money-l`, `.money-br`, `.money-help` (`git show 23c00a6^:style.css`).
-     `.money-help` reaches into `HelpBox`'s own root, hence `:global()`. */
-  .money {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    flex-wrap: wrap;
-    margin: 0 0 14px;
-  }
-
-  .money-l {
-    font: 650 var(--t-label)/1 var(--mono);
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-    color: var(--muted2);
-  }
-
-  .money-br {
-    flex: 0 0 100%;
-    height: 0;
-  }
-
-  .money > :global(.money-help) {
-    flex: 0 0 100%;
-    margin: 2px 0 0;
-  }
-
-  /* off `.lnote` and its family (`git show 23c00a6^:style.css`) */
-  .lnote {
-    border: 1px solid var(--line2);
-    border-radius: 12px;
-    background: var(--surface);
+  /* The side column from 1000 px; from 761 to 999 px its content sits above the rows. Not
+     sticky: with the notes open it can pass the viewport (docs/specs/FEATURES.md, "Lists"). */
+  .lside {
     margin-bottom: 16px;
   }
 
-  .lnote summary {
+  .lside :global(.page-sub) {
+    margin-bottom: 12px;
+  }
+
+  @media (min-width: 1000px) {
+    .lpage.wide {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 330px;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .lside {
+      grid-column: 2;
+      grid-row: 1;
+      margin: 0;
+      padding: 16px;
+      background: linear-gradient(180deg, var(--surface2), var(--surface));
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+    }
+
+    .lmain {
+      grid-column: 1;
+      grid-row: 1;
+      min-width: 0;
+    }
+
+    .lside .titleinput {
+      max-width: none;
+    }
+  }
+
+  .lacts {
     display: flex;
-    align-items: center;
-    gap: 7px;
-    padding: 10px 13px;
-    cursor: pointer;
-    list-style: none;
     flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
   }
 
-  .lnote summary::-webkit-details-marker {
-    display: none;
+  .lprices {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+    margin-bottom: 14px;
   }
 
-  .lnote summary :global(svg) {
-    fill: var(--muted2);
+  .plbl {
+    font-size: var(--t-data);
+    color: var(--muted);
   }
 
-  .lnote summary span {
-    font: 650 var(--t-label)/1 var(--mono);
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
+  .pex {
+    flex: 0 0 100%;
+    margin: 0;
+    font-size: var(--t-data);
     color: var(--muted2);
   }
 
-  .lnote summary:hover span {
-    color: var(--gold-soft);
+  .lnotes {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
   }
 
-  .lnote[open] summary {
-    padding-bottom: 6px;
+  /* The side column is narrower than the passage measure: its notes fill it. */
+  .lnotes > :global(.hitnote) {
+    align-self: stretch;
+    width: auto;
+    margin: 0;
   }
 
-  /* off `.lnote textarea,.rnote textarea` and the `:focus` pair
-     (`git show 23c00a6^:style.css`) */
-  .lnote :global(textarea),
-  .rnote :global(textarea) {
+  /* Up to 760 px the open list notes sit under the head. */
+  .lhead + .lnotes {
+    margin-bottom: 14px;
+  }
+
+  /* The note area: the switch and its caption, one field, «Готово» and «Очистить». */
+  .narea {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-self: stretch;
+    min-width: 0;
+  }
+
+  .nswitch {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+  }
+
+  .ncap {
+    font-size: var(--t-data);
+    color: var(--muted2);
+  }
+
+  .nfield {
+    min-width: 0;
+  }
+
+  .nacts {
+    display: flex;
+    gap: 8px;
+  }
+
+  .narea :global(textarea) {
     display: block;
     width: 100%;
     box-sizing: border-box;
@@ -1491,179 +2060,53 @@
     overflow-y: auto;
   }
 
-  .rnote :global(textarea) {
-    font-size: var(--t-data);
-    background: var(--surface);
-  }
-
-  .lnote :global(textarea:focus),
-  .rnote :global(textarea:focus) {
+  .narea :global(textarea:focus) {
     outline: none;
     border-color: var(--gold);
     box-shadow: 0 0 0 3px rgb(216 171 94 / 14%);
   }
 
-  /* off `.npair`, `.nfield`, `.nlbl` (both declarations), `.nlbl i`, `.n-hid textarea` and
-     the 640px override in `git show 23c00a6^:style.css` */
-  .npair {
+  .lroll-h {
+    margin: 0 0 12px;
+    font-size: var(--t-body);
+    font-weight: 650;
+  }
+
+  /* The result: the face, then the price line, both notes and «Показать в списке». The
+     `faces` container is the whole result, so a 641 px panel draws the tall card face in its
+     260 px column (`RollResult`) and a narrower one the row face. */
+  .lroll-res {
     display: grid;
-    gap: 12px;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+    container: faces / inline-size;
   }
 
-  .lnote .npair {
-    padding: 0 13px 13px;
+  .faces {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  .rnote .npair {
-    gap: 10px;
-  }
-
-  .nfield {
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
-
-  .nlbl {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-wrap: wrap;
-    font: 650 var(--t-badge)/1 var(--mono);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted2);
-  }
-
-  .nlbl i {
-    font-style: normal;
-    font-size: var(--t-badge);
-    letter-spacing: 0.02em;
-    text-transform: none;
-    color: var(--muted2);
-    font-weight: 400;
-  }
-
-  .n-hid :global(textarea) {
-    border-style: dashed;
-  }
-
-  /* FormField's `.fhelp`: the hint keeps its line breaks. */
-  .nhelp {
-    margin: 0;
-    font-size: var(--t-data);
-    color: var(--muted2);
-    white-space: pre-line;
-  }
-
-  @media (max-width: 640px) {
-    .npair {
-      grid-template-columns: 1fr;
+  @media (min-width: 601px) {
+    .lroll-res {
+      grid-template-columns: minmax(0, 260px) minmax(0, 1fr);
+      align-items: start;
     }
   }
 
-  /* off `.note-x`, `:hover`, `.nfield:has(textarea:placeholder-shown)
-     .note-x` (`git show 23c00a6^:style.css`) */
-  .note-x {
-    margin-left: auto;
-    width: 20px;
-    height: 20px;
-    flex: none;
-    border: 0;
-    border-radius: 6px;
-    background: none;
-    color: var(--muted2);
-    font: 400 var(--t-title)/1 var(--ui);
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: 0.15s;
-    position: relative;
+  .lroll-side > :global(.hitnote:first-child) {
+    margin-top: 0;
   }
 
-  .note-x:hover {
-    background: var(--surface);
+  .lroll-line {
+    margin: 0;
+    font: 600 var(--t-data) / 1.4 var(--ui);
+    font-variant-numeric: tabular-nums;
     color: var(--txt);
   }
 
-  /* 20px of paint, 44px of target - the same `PageHead.svelte`
-     `.homebtn::after` shape. */
-  .note-x::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 44px;
-    height: 44px;
-    transform: translate(-50%, -50%);
-  }
-
-  .nfield:has(:global(textarea:placeholder-shown)) .note-x {
-    display: none;
-  }
-
-  /* off `.panel` (`git show 23c00a6^:style.css`) - kept here for the `<details
-     class="panel lroll">` variant above; see `Panel.svelte` for the plain
-     rule this one duplicates on purpose. */
-  .panel {
-    background: linear-gradient(180deg, var(--surface2), var(--surface));
-    border: 1px solid var(--line);
-    border-radius: var(--r);
-    padding: 18px;
-    box-shadow: var(--shadow);
-  }
-
-  /* off `.lroll` and its family (`git show 23c00a6^:style.css`) */
-  .lroll {
-    padding: 0;
-  }
-
-  .lroll > summary {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 13px;
-    cursor: pointer;
-    list-style: none;
-  }
-
-  .lroll > summary::-webkit-details-marker {
-    display: none;
-  }
-
-  .lroll > summary :global(svg) {
-    fill: var(--muted2);
-    width: 15px;
-    height: 15px;
-    flex: none;
-  }
-
-  .lroll > summary span {
-    font: 650 var(--t-label)/1 var(--mono);
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-    color: var(--muted2);
-  }
-
-  .lroll > summary:hover span {
-    color: var(--gold-soft);
-  }
-
-  .lroll[open] > summary {
-    padding-bottom: 4px;
-  }
-
-  .lroll > :global(:not(summary)) {
-    margin-left: 13px;
-    margin-right: 13px;
-  }
-
-  .lroll > :global(:last-child) {
-    margin-bottom: 13px;
+  .lroll-show {
+    margin-top: 12px;
   }
 
   /* off `.rollhint` (`git show 23c00a6^:style.css`) */
@@ -1684,14 +2127,12 @@
   /* off `.guess`, `.guess-note`, `.guess-rows`, `.guess-row` and its three
      (`git show 23c00a6^:style.css`) */
   .guess {
-    flex: 0 0 100%;
-    margin-top: 10px;
-    padding: 11px 0 8px;
-    border-top: 1px solid var(--line);
+    padding: 2px 0 4px;
   }
 
   .guess-note {
     margin: 0 0 9px;
+    max-width: var(--measure-text);
     font-size: var(--t-label);
     line-height: 1.55;
     color: var(--muted);
@@ -1784,9 +2225,7 @@
 
   /* off `.batch-lbl` (`git show 23c00a6^:style.css`) */
   .batch-lbl {
-    font: 650 var(--t-badge)/1 var(--mono);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font: 650 var(--t-label) / 1 var(--ui);
     color: var(--muted2);
   }
 
@@ -1806,7 +2245,7 @@
     width: 100%;
     background: var(--surface);
     border: 1px solid var(--line);
-    border-radius: 11px;
+    border-radius: var(--r);
     transition:
       border-color 0.15s,
       opacity 0.15s;
@@ -1815,7 +2254,6 @@
 
   /* Before hover and `.sel`, so they still win (docs/specs/FEATURES.md, "Account and browser lists"). */
   .lrow.gm-only {
-    border-style: dashed;
     border-color: var(--line2);
     background: var(--bg2);
   }
@@ -1826,7 +2264,10 @@
     }
   }
 
+  /* A size container: the rows column, not the window, decides whether a row's controls
+     sit inline (DESIGN.md, "The Two Breakpoints Rule"). */
   .lrows {
+    container: lrows / inline-size;
     margin-top: 0;
     border-top-left-radius: 0;
     border-top-right-radius: 0;
@@ -1852,73 +2293,53 @@
 
   /* the `.lrow` family: `.lrow`, `.rnote`, `.lrow.has-note`,
      `.lrow-acts .lrow-note`, `.on`, `svg` (`git show 23c00a6^:style.css`) */
+  /* Not clipped, so the drop mark draws in the gap; the first cell takes the corners. */
   .lrow {
+    position: relative;
     align-items: stretch;
     flex-wrap: wrap;
+    overflow: visible;
   }
 
+  .lrow > :first-child {
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+  }
+
+  /* A row's notes under its text: read-only boxes, or the open area. */
   .rnote {
     flex: 0 0 100%;
-    border-top: 1px solid var(--line);
-    background: var(--bg2);
-    padding: 9px 11px;
+    padding: 0 11px 11px 146px;
+  }
+
+  .rnote.ro > :global(.hitnote:first-child) {
+    margin-top: 0;
+  }
+
+  /* The compact row has no text column to indent under: the notes take its full width. */
+  .lrow.compact .rnote {
+    padding: 0;
+    margin: 4px 0 0;
   }
 
   .lrow.has-note {
     border-color: var(--line2);
   }
 
-  /* off `TableRows.svelte` `.row.sel` */
+  /* A ticked row is lit and neutral, as `TableRows.svelte`'s (DESIGN.md, "The Seal Rule"). */
   .lrow.sel {
-    border-color: rgb(216 171 94 / 55%);
-    background: rgb(216 171 94 / 5%);
+    border-color: var(--muted2);
+    background: var(--surface2);
   }
 
   /* The take line inside a ticked row (docs/specs/FEATURES.md, "Lists"),
-     starting under the art: 107px, measured 2026-09-23 at 1180. No fill: a
-     background would cover the `drop-after` inset mark. */
+     starting under the art: 107px, measured 2026-09-23 at 1180. */
   .lrow-take {
     flex: 0 0 100%;
     display: flex;
     justify-content: flex-start;
     border-top: 1px solid rgb(216 171 94 / 22%);
     padding: 8px 11px 8px 107px;
-  }
-
-  /* The price's conversion, under the row's fields while its «?» is open, at the take
-     line's inset. */
-  .ghint {
-    flex: 0 0 100%;
-    margin: 0;
-    padding: 0 11px 8px 107px;
-    font-size: var(--t-data);
-    color: var(--muted2);
-    overflow-wrap: anywhere;
-  }
-
-  .lrow-acts .lrow-note,
-  .lrow-acts .lrow-gm {
-    color: var(--muted2);
-  }
-
-  .lrow-acts .lrow-gm {
-    border-top: 1px solid var(--line);
-  }
-
-  .lrow-acts .lrow-gm[aria-pressed='true'] {
-    color: var(--gold);
-    background: rgb(216 171 94 / 12%);
-  }
-
-  .lrow-acts .lrow-note.on {
-    color: var(--gold);
-    background: rgb(216 171 94 / 12%);
-  }
-
-  .lrow-acts .lrow-note :global(svg),
-  .lrow-acts .lrow-gm :global(svg) {
-    display: block;
-    margin: 0 auto;
   }
 
   /* off `.lrow-grip`, `:hover`, `:active`, `.lrow-n` and its three
@@ -1931,7 +2352,6 @@
     width: 26px;
     color: var(--muted2);
     cursor: grab;
-    background: rgb(216 171 94 / 5%);
     border-right: 1px solid var(--line);
     touch-action: none;
   }
@@ -1965,9 +2385,9 @@
     border: 0;
     border-right: 1px solid var(--line);
     font: 650 var(--t-label)/1 var(--mono);
-    color: var(--gold-soft);
+    color: var(--txt);
     text-align: center;
-    background: rgb(216 171 94 / 7%);
+    background: transparent;
     appearance: textfield;
     -moz-appearance: textfield;
   }
@@ -1980,41 +2400,80 @@
 
   .lrow-n:focus {
     outline: none;
-    background: rgb(216 171 94 / 16%);
+    background: var(--surface2);
     box-shadow: inset 0 0 0 1px var(--gold);
   }
 
-  /* off `.lrow.dragging`, `.drop-before`, `.drop-after` (`git show 23c00a6^:style.css`) */
+  /* The drop mark is a 2 px gold line in the 8 px gap before the row it lands above, or
+     after the last row (docs/specs/FEATURES.md, "Lists"). */
   .lrow.dragging {
     opacity: 0.45;
   }
 
-  .lrow.drop-before {
-    box-shadow: inset 0 3px 0 0 var(--gold);
+  .lrow.drop-before::before,
+  .lrow.drop-after:last-child::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--gold);
+    pointer-events: none;
   }
 
-  .lrow.drop-after {
-    box-shadow: inset 0 -3px 0 0 var(--gold);
+  .lrow.drop-before::before {
+    top: -6px;
   }
 
-  /* An inset box-shadow paints above `.lrow`'s own background but below its
-     children; an open note box is `.rnote`, the row's last child, and covers
-     the line above (docs/specs/FEATURES.md, "Lists"). Redraw the same inset
-     on it so a noted row shows the mark too. */
-  .lrow.drop-after .rnote {
-    box-shadow: inset 0 -3px 0 0 var(--gold);
+  .lrow.drop-after:last-child::after {
+    bottom: -6px;
   }
 
-  /* off `.lrow-meta` and its labels (`git show 23c00a6^:style.css`); the price field's caption holds
-     its «?», so the field is a `.gfield`, not a `<label>`. The «?» makes that caption
-     taller, so the fields align at the end and the two inputs stay on one line. */
-  .lrow-meta {
+  /* «Показать в списке» lights the row for 1.5 s. */
+  .lrow.flash {
+    border-color: var(--gold);
+  }
+
+  /* The row's controls: the quantity and the price, «Заметка» and «Ещё», inline at the
+     row's end; in a rows column under 760 px they take a line under the text (A1). */
+  .lrow-ctl {
     flex: none;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 10px 8px 0;
+  }
+
+  .lrow-meta {
     display: flex;
     gap: 6px;
     align-items: flex-end;
-    padding: 8px 10px;
-    border-left: 1px solid var(--line);
+  }
+
+  .lrow-acts {
+    display: flex;
+    gap: 6px;
+    padding-top: 16px;
+  }
+
+  @container lrows (max-width: 759px) {
+    .lrow-ctl {
+      flex: 0 0 100%;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      padding: 0 10px 10px 146px;
+    }
+
+    .lrow-acts {
+      padding-top: 0;
+    }
+  }
+
+  .ndot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentcolor;
   }
 
   .lrow-meta > label,
@@ -2034,13 +2493,12 @@
     gap: 4px;
   }
 
-  /* `position`: the input paints over the price «?»'s 44 px target, which reaches into it. */
   .lrow-meta input {
     position: relative;
     width: 64px;
     height: 30px;
     padding: 0 8px;
-    border-radius: 7px;
+    border-radius: 8px;
     background: var(--bg2);
     border: 1px solid var(--line2);
     color: var(--txt);
@@ -2069,40 +2527,6 @@
     border-color: var(--gold);
   }
 
-  /* off `.lrow-acts` and its four (`git show 23c00a6^:style.css`) */
-  .lrow-acts {
-    flex: none;
-    display: flex;
-    flex-direction: column;
-    border-left: 1px solid var(--line);
-  }
-
-  .lrow-acts button {
-    flex: 1;
-    width: 38px;
-    border: 0;
-    background: transparent;
-    color: var(--muted2);
-    font-size: var(--t-control);
-    line-height: 1;
-    transition: 0.15s;
-  }
-
-  .lrow-acts button:hover:not(:disabled) {
-    background: var(--surface2);
-    color: var(--gold);
-  }
-
-  .lrow-acts button:disabled {
-    opacity: 0.28;
-  }
-
-  .lrow-acts .row-x {
-    border-left: 0;
-    border-top: 1px solid var(--line);
-    font-size: var(--t-title);
-  }
-
   /* off `.lrow-pick` (`git show 23c00a6^:style.css`) */
   .lrow-pick {
     display: flex;
@@ -2111,60 +2535,176 @@
     flex: none;
   }
 
+  /* Up to 760 px the head is the name, «Выбрать» and «Ещё» on one row, the meta line under
+     both (DESIGN.md, "Compact row"). */
+  .lhead {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 8px;
+    align-items: start;
+  }
+
+  .lhead > :global(.page-h) {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .lhead > :global(h1.page-h) {
+    margin-bottom: 2px;
+  }
+
+  /* The name's own line height, not the 46 px of a form field: the first entry must start
+     in the first screen at 360x640 (DESIGN.md, "The First-Screen Rule"). */
+  .lhead .titleinput {
+    height: auto;
+    min-height: var(--thumb);
+  }
+
+  .lhead > :global(.page-sub) {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin-bottom: 8px;
+  }
+
+  .lhead-acts {
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  /* «Заметки ▾» on the meta line: a text button with a 24 px target. */
+  .lnkb {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    min-height: 24px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--txt);
+    font: inherit;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+
+  .lnkb :global(svg) {
+    width: 16px;
+    height: 16px;
+  }
+
+  .lnkb[aria-expanded='true'] :global(svg) {
+    transform: rotate(180deg);
+  }
+
+  /* The thumb target by its padded box; the meta line keeps its height. */
+  @media screen and (max-width: 600px) {
+    .lnkb {
+      min-height: var(--thumb);
+      margin-block: min(0px, calc((24px - var(--thumb)) / 2));
+    }
+  }
+
+  /* From 761 px «Выбрать» has its own row at the end, under the head. */
+  .selrow {
+    display: flex;
+    justify-content: flex-end;
+    margin: 0 0 10px;
+  }
+
+  /* The unfolded compact row's fields: the position, the price, the grip, «Заметка», «Ещё». */
+  .cfields {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 8px;
+    margin: 8px 0 6px;
+  }
+
+  .cf,
+  .cfields .gfield {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .cf > span,
+  .cfields .gfield > span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: var(--t-badge);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted2);
+  }
+
+  .cfields .lrow-n,
+  .cfields input[data-gold] {
+    position: relative;
+    width: 64px;
+    height: max(32px, var(--thumb));
+    padding: 0 8px;
+    border-radius: var(--r-sm);
+    background: var(--bg2);
+    border: 1px solid var(--line2);
+    color: var(--txt);
+    font: 600 var(--t-data) / 1 var(--mono);
+    text-align: center;
+  }
+
+  .cfields .lrow-n {
+    width: 48px;
+  }
+
+  .cfields .lrow-grip {
+    align-self: stretch;
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    width: 32px;
+  }
+
+  .cnote {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: max(32px, var(--thumb));
+    padding: 0 10px;
+    border: 1px solid var(--line2);
+    border-radius: var(--r-sm);
+    background: var(--surface);
+    color: var(--txt);
+    font: 600 var(--t-data) / 1 var(--ui);
+    cursor: pointer;
+  }
+
+  .cnote.on {
+    border-color: var(--muted2);
+  }
+
+  /* The bar's «Ещё» up to 760 px: this box anchors the menu, as `HomebrewBulk`'s does. */
+  .bulkmore {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+  }
+
+  .bulkmore :global(.morewrap) {
+    flex: 1;
+    min-width: 0;
+  }
+
   /* This component's own 8px-radius override deleted - the
      global `:focus-visible` rule (tokens.css) already reaches every
      control, at the one radius the owner chose. */
 
-  /* off the 600px block for `.lrow`, `.lrow .row-main`, `.lrow-meta`,
-     `.lrow-acts`, its `button`, `.row-x` (`git show 23c00a6^:style.css`) */
-  @media (max-width: 600px) {
-    .lrow {
-      flex-wrap: wrap;
-    }
-
-    .lrow > :global(.row-main),
-    .lrow > .unk {
-      flex: 1 1 auto;
-    }
-
-    .lrow-meta {
-      flex: 1 1 auto;
-      border-left: 0;
-      border-top: 1px solid var(--line);
-      padding: 8px 10px 8px 44px;
-    }
-
-    .lrow-acts {
-      flex-direction: row;
-      border-left: 0;
-      border-top: 1px solid var(--line);
-    }
-
-    /* `flex: none`: the base `flex: 1` sized from a zero basis left the unbordered note
-       button 1 px under 44 (measured 2026-10-08, tests/app/states.js case 69). */
-    .lrow-acts button {
-      flex: none;
-      width: 44px;
-      min-height: 38px;
-    }
-
-    .lrow-acts .row-x,
-    .lrow-acts .lrow-gm {
-      border-top: 0;
-      border-left: 1px solid var(--line);
-    }
-
-    .lrow-take,
-    .ghint {
+  /* The take line under a compact row starts at the row's inset. */
+  @media (max-width: 760px) {
+    .lrow-take {
       padding-left: 11px;
-    }
-  }
-
-  /* The meta box and three 44 px action buttons fill a 360 px row to the pixel; this
-     leaves 4 px of slack (measured 2026-10-08, tests/app/states.js case 69). */
-  @media (max-width: 400px) {
-    .lrow-meta {
-      padding-right: 6px;
     }
   }
 </style>

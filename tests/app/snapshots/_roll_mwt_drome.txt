@@ -16,15 +16,14 @@ RootWebArea "Many Worlds Tavern - Генератор лута Daggerheart" [url=
       link "Бросок" [url=/roll/many_worlds_tavern]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
-  navigation "Режим броска"
-    link "Обычные правила" [url=/roll/std]
-    link "Альтернативные таблицы" [url=/roll/alt]
-    button "Many Worlds Tavern" [expanded=false haspopup=menu]
   main ""
-    heading "Many Worlds Tavern" [level=1]
+    heading "Бросок" [level=1]
+    navigation "Режим броска"
+      link "Обычные правила" [url=/roll/std]
+      link "Альтернативные таблицы" [url=/roll/alt]
+      button "Many Worlds Tavern" [expanded=false haspopup=menu]
     button "Открывать при запуске" [pressed=false]
     button "Об этой книге" [expanded=false]
-    StaticText "Выберите мир и бросьте кость по нему."
     combobox "Мир" [value=Дром expanded=false haspopup=menu]
       option "Спорополис" [selected=false]
       option "Лес Пари" [selected=false]
@@ -41,7 +40,8 @@ RootWebArea "Many Worlds Tavern - Генератор лута Daggerheart" [url=
     status ""
       StaticText "Чакка"
     button "Открыть карточку"
-    ... StaticText x10 of 14 same-shape siblings elided
+    StaticText "1"
+    ... StaticText x9 of 13 same-shape siblings elided
     link "Чакка" [description=Открыть страницу url=/i/mw93]
     StaticText "Возвращающееся:"
     StaticText " Когда это оружие брошено в пределах дистанции, оно появляется в..." [namelen=94 namehash=aa87bd9a]
@@ -98,15 +98,14 @@ RootWebArea "Many Worlds Tavern - Daggerheart Loot Generator" [url=/en/roll/many
       link "Roll" [url=/en/roll/many_worlds_tavern]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
-  navigation "Roll mode"
-    link "Standard rules" [url=/en/roll/std]
-    link "Alternate tables" [url=/en/roll/alt]
-    button "Many Worlds Tavern" [expanded=false haspopup=menu]
   main ""
-    heading "Many Worlds Tavern" [level=1]
+    heading "Roll" [level=1]
+    navigation "Roll mode"
+      link "Standard rules" [url=/en/roll/std]
+      link "Alternate tables" [url=/en/roll/alt]
+      button "Many Worlds Tavern" [expanded=false haspopup=menu]
     button "Open on start" [pressed=false]
     button "About this book" [expanded=false]
-    StaticText "Pick a realm and roll within it."
     combobox "Realm" [value=The Drome expanded=false haspopup=menu]
       option "Sporopolis" [selected=false]
       option "Wagerwood" [selected=false]
@@ -123,7 +122,8 @@ RootWebArea "Many Worlds Tavern - Daggerheart Loot Generator" [url=/en/roll/many
     status ""
       StaticText "Chukka"
     button "Open card"
-    ... StaticText x10 of 14 same-shape siblings elided
+    StaticText "1"
+    ... StaticText x9 of 13 same-shape siblings elided
     link "Chukka" [description=Open page url=/i/en/mw93]
     StaticText "Returning:"
     StaticText " When this weapon is thrown within its range, it appears in your..." [namelen=99 namehash=7730571f]

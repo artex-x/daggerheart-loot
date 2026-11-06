@@ -18,16 +18,14 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/player-token-1?v=<
       link "Поиск" [url=/search]
   main ""
     heading "Лавка кузнеца" [level=1]
-    StaticText "Список от другого игрока · 10 позиций"
-    StaticText "Обновлено 3 дня назад"
+    StaticText "Показано 1 из 10"
+    StaticText " · Обновлено 3 дня назад"
+    StaticText " · "
+    button "Заметка" [expanded=false]
     button "Сохранить себе"
-    ... StaticText x2 of 6 same-shape siblings elided
     searchbox "Поиск по названию или описанию..." [value=кинжал focused=true]
     button "Фильтры" [expanded=false]
-    StaticText "10"
-    checkbox "Выбрать все (1)" [checked=false]
-    StaticText "Выбрать все (1)"
-    checkbox "Колдующий Кинжал" [checked=false]
+    button "Выбрать"
     button "Колдующий Кинжал ОСНОВНОЕ ОРУЖИЕ HOPE & FEAR Ранг 1 · Магическое..." [namelen=217 namehash=26fb60d0]
     status ""
   region "Выбранные записи"
@@ -45,12 +43,14 @@ RU
 daggerheart.com
 Бросок
 Войти
+Выбрать
+Заметка
 К содержимому
-Колдующий Кинжал
 Колдующий КинжалОсновное оружиеHope & FearРанг 1 · Магическое · ... [namelen=213 namehash=9cd182eb]
 Конфиденциальность
 ЛутDaggerheart
 Поиск
+Поиск по названию или описанию...
 Сохранить себе
 Таблицы
 Условия использования
@@ -73,16 +73,14 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-1?v=<v>]
       link "Search" [url=/en/search]
   main ""
     heading "Лавка кузнеца" [level=1]
-    StaticText "A list from another player · 10 items"
-    StaticText "Updated 3 days ago"
+    StaticText "1 of 10 shown"
+    StaticText " · Updated 3 days ago"
+    StaticText " · "
+    button "Note" [expanded=false]
     button "Save to my lists"
-    ... StaticText x2 of 6 same-shape siblings elided
     searchbox "Search by name or description..." [value=кинжал focused=true]
     button "Filters" [expanded=false]
-    StaticText "10"
-    checkbox "Select all (1)" [checked=false]
-    StaticText "Select all (1)"
-    checkbox "Casting Dagger" [checked=false]
+    button "Select"
     button "Casting Dagger PRIMARY WEAPON HOPE & FEAR Tier 1 · Magic · Insti..." [namelen=180 namehash=610850d0]
     status ""
   region "Selected records"
@@ -95,17 +93,19 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-1?v=<v>]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-Casting Dagger
 Casting DaggerPrimary weaponHope & FearTier 1 · Magic · Instinct... [namelen=176 namehash=08dad18c]
 EN
 Filters
 Install as an app
 LootDaggerheart
+Note
 Privacy
 RU
 Roll
 Save to my lists
 Search
+Search by name or description...
+Select
 Sign in
 Skip to content
 Tables

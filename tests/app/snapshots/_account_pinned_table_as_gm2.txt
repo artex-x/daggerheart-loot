@@ -34,10 +34,10 @@ RootWebArea "Аккаунт - Генератор лута Daggerheart" [url=/acc
     ... StaticText x9 of 13 same-shape siblings elided
     button "Список" [pressed=true]
     button "Сетка" [pressed=false]
-    button "Цветная" [pressed=true]
-    button "Чёрно-белая" [pressed=false]
-    button "Обычная" [pressed=true]
-    button "Компактная" [pressed=false]
+    button "Цвет" [pressed=true]
+    button "Ч/б" [pressed=false]
+    button "63×88" [pressed=true]
+    button "44×63" [pressed=false]
     combobox "Когда беру из чужого списка" [value=Спрашивать expanded=false haspopup=menu]
       option "Спрашивать" [selected=true]
       option "Сообщать владельцу" [selected=false]
@@ -61,6 +61,8 @@ RootWebArea "Аккаунт - Генератор лута Daggerheart" [url=/acc
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
+44×63
+63×88
 EN
 RU
 daggerheart.com
@@ -69,10 +71,8 @@ daggerheart.com
 Выйти
 Выйти на всех устройствах
 К содержимому
-Компактная
 Конфиденциальность
 ЛутDaggerheart
-Обычная
 Обычные правилаАльтернативные таблицыWondrous EnvironmentsDread ... [namelen=192 namehash=5e7c637f]
 Подключить Discord
 Поиск
@@ -84,8 +84,8 @@ daggerheart.com
 Удалить аккаунт...
 Условия использования
 Установить как приложение
-Цветная
-Чёрно-белая
+Цвет
+Ч/б
 
 ## en :: tree
 RootWebArea "Account - Daggerheart Loot Generator" [url=/en/account?as=gm2]
@@ -119,9 +119,9 @@ RootWebArea "Account - Daggerheart Loot Generator" [url=/en/account?as=gm2]
     button "List" [pressed=true]
     button "Grid" [pressed=false]
     button "Color" [pressed=true]
-    button "Black and white" [pressed=false]
-    button "Standard" [pressed=true]
-    button "Compact" [pressed=false]
+    button "B&W" [pressed=false]
+    button "63×88" [pressed=true]
+    button "44×63" [pressed=false]
     combobox "When I take from someone else's list" [value=Ask expanded=false haspopup=menu]
       option "Ask" [selected=true]
       option "Notify the owner" [selected=false]
@@ -145,11 +145,12 @@ RootWebArea "Account - Daggerheart Loot Generator" [url=/en/account?as=gm2]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
+44×63
+63×88
 Account: gm2@example.test
 AskNotify the ownerDon't notify
-Black and white
+B&W
 Color
-Compact
 Connect Discord
 Delete account...
 Download my data (ZIP)
@@ -165,7 +166,6 @@ Search
 Sign out
 Sign out everywhere
 Skip to content
-Standard
 Standard rulesAlternate tablesWondrous EnvironmentsDread GM Tool... [namelen=176 namehash=1c0e3b5e]
 Tables
 Terms of use

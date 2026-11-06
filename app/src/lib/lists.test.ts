@@ -4,6 +4,7 @@ import {
   itemMeta,
   matchLists,
   moveEntry,
+  narrowEntries,
   pickerOrder,
   stockLeft,
   takenQty,
@@ -12,6 +13,8 @@ import {
   withMeta,
   type StoredList
 } from './lists.js';
+import { parseQuery } from './search.js';
+import type { Record_ } from './types.js';
 
 const list = (id: string, ids: string[] = ['ci1']): StoredList => ({ id, name: id, ids });
 
@@ -196,5 +199,52 @@ describe('finding a list by name', () => {
   it('is plain newest first when no list passes', () => {
     const three = [named('x', 'x', 1), named('y', 'y', 3), named('z', 'z', 2)];
     expect(pickerOrder(three, () => false).map((l) => l.id)).toEqual(['y', 'z', 'x']);
+  });
+});
+
+describe('narrowEntries', () => {
+  const rec = (id: string, kind: 'item' | 'consumable', en: string): Record_ => ({
+    id,
+    src: 'core',
+    kind,
+    en,
+    ru: en,
+    ende: '',
+    rud: ''
+  });
+  const rows = [
+    { id: 'a', it: rec('a', 'item', 'Rope') },
+    { id: 'gone', it: null },
+    { id: 'b', it: rec('b', 'consumable', 'Potion') },
+    { id: 'c', it: rec('c', 'item', 'Ropeladder') }
+  ];
+
+  it('passes every row with no value in force and no term', () => {
+    expect(narrowEntries(rows, {}, [], () => '').map((r) => r.at)).toEqual([0, 1, 2, 3]);
+  });
+
+  it('keeps the true index while a value or a term narrows, and drops a row with no record', () => {
+    expect(
+      narrowEntries(rows, { kind: ['item'] }, [], () => '').map((r) => [r.id, r.at])
+    ).toEqual([
+      ['a', 0],
+      ['c', 3]
+    ]);
+    expect(narrowEntries(rows, {}, parseQuery('potion'), () => '').map((r) => r.at)).toEqual([
+      2
+    ]);
+    expect(narrowEntries(rows, { kind: [] }, [], () => '').length).toBe(4);
+  });
+
+  it('narrows 300 rows and keeps their order', () => {
+    const many = Array.from({ length: 300 }, (_, i) => ({
+      id: String(i),
+      it: rec(String(i), i % 3 ? 'item' : 'consumable', 'Thing ' + String(i))
+    }));
+    const kept = narrowEntries(many, { kind: ['consumable'] }, [], () => '');
+    expect(kept.length).toBe(100);
+    expect(kept.map((r) => r.at).every((at, i, all) => i === 0 || at > (all[i - 1] ?? 0))).toBe(
+      true
+    );
   });
 });

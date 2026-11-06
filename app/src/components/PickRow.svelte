@@ -156,6 +156,7 @@
 {/if}
 
 <style>
+  /* A caption in a 320 px menu: The Measure Rule's menu exception (DESIGN.md). */
   .mit small {
     display: block;
     max-width: 28ch;

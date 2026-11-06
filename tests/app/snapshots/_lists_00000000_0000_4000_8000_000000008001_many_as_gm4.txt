@@ -1,0 +1,258 @@
+# #/lists/00000000-0000-4000-8000-000000008001 ~ many as gm4
+# route: #/lists
+# why: 14 entries: the search row with the box, «Фильтры» and «Выбрать» last, the rows with their grips
+# as: gm4
+
+## ru :: tree
+RootWebArea "Клад дракона - Генератор лута Daggerheart" [url=/lists/00000000-0000-4000-8000-000000008001?as=gm4]
+  link "К содержимому" [url=/lists/00000000-0000-4000-8000-000000008001?as=gm4#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    button "Аккаунт: gm4@example.test" [expanded=false haspopup=menu]
+    navigation "Разделы"
+      link "Бросок" [url=/roll/std]
+      link "Таблицы" [url=/tables]
+      link "Поиск" [url=/search]
+  main ""
+    StaticText "Клад дракона"
+    textbox "Название списка" [value=Клад дракона multiline=false readonly=false required=false]
+    StaticText "14 позиций из 100 · "
+    ... StaticText x27 of 31 same-shape siblings elided
+    button "Поделиться" [expanded=false]
+    button "Печать" [description=Собрать карточки для печати: девять на лист A4]
+    button "Бросить по списку" [expanded=false]
+    button "Ещё" [expanded=false haspopup=menu]
+    ... button x15 of 19 same-shape siblings elided
+    status ""
+    searchbox "Поиск по названию или описанию..."
+    button "Выбрать"
+    spinbutton "Позиция в списке" [value=1 valuetext=1 required=false valuemin=1 valuemax=14]
+    button "Первоклассный Спальный Мешок ПРЕДМЕТ Во время отдыха вы автомати..." [namelen=86 namehash=8341b15c]
+    spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
+    spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
+    button "Ещё: Первоклассный Спальный Мешок" [expanded=false haspopup=menu]
+    spinbutton "Позиция в списке" [value=2 valuetext=2 required=false valuemin=1 valuemax=14]
+    ... button x11 of 15 same-shape siblings elided
+    spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
+    spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
+    ... button x11 of 15 same-shape siblings elided
+    spinbutton "Позиция в списке" [value=3 valuetext=3 required=false valuemin=1 valuemax=14]
+    ... spinbutton x10 of 14 same-shape siblings elided
+    ... spinbutton x10 of 14 same-shape siblings elided
+    spinbutton "Позиция в списке" [value=4 valuetext=4 required=false valuemin=1 valuemax=14]
+    spinbutton "Позиция в списке" [value=5 valuetext=5 required=false valuemin=1 valuemax=14]
+    spinbutton "Позиция в списке" [value=6 valuetext=6 required=false valuemin=1 valuemax=14]
+    spinbutton "Позиция в списке" [value=7 valuetext=7 required=false valuemin=1 valuemax=14]
+    spinbutton "Позиция в списке" [value=8 valuetext=8 required=false valuemin=1 valuemax=14]
+    spinbutton "Позиция в списке" [value=9 valuetext=9 required=false valuemin=1 valuemax=14]
+    spinbutton "Позиция в списке" [value=10 valuetext=10 required=false valuemin=1 valuemax=14]
+    spinbutton "Позиция в списке" [value=11 valuetext=11 required=false valuemin=1 valuemax=14]
+    spinbutton "Позиция в списке" [value=12 valuetext=12 required=false valuemin=1 valuemax=14]
+    spinbutton "Позиция в списке" [value=13 valuetext=13 required=false valuemin=1 valuemax=14]
+    button "Длинный Меч ОСНОВНОЕ ОРУЖИЕ Ранг 1 · Физическое · Проворность · ..." [namelen=96 namehash=990e0b21]
+    spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
+    spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
+    button "Ещё: Длинный Меч" [expanded=false haspopup=menu]
+    spinbutton "Позиция в списке" [value=14 valuetext=14 required=false valuemin=1 valuemax=14]
+    button "Секира ОСНОВНОЕ ОРУЖИЕ Ранг 1 · Физическое · Сила · Вплотную · d..." [namelen=84 namehash=074c8957]
+    StaticText "КОЛ-ВО"
+    spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
+    StaticText "ЦЕНА"
+    spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
+    button "Заметка" [expanded=false]
+    button "Ещё: Секира" [expanded=false haspopup=menu]
+    button "Добавить свой предмет" [expanded=false]
+    status ""
+    status ""
+  contentinfo ""
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=/pages/install.html]
+      link "Конфиденциальность" [url=/pages/privacy.html]
+      link "Условия использования" [url=/pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+
+## ru :: controls
+EN
+RU
+daggerheart.com
+Аккаунт: gm4@example.test
+Бросить по списку
+Бросок
+Выбрать
+Длинный МечОсновное оружиеРанг 1 · Физическое · Проворность · Вп... [namelen=94 namehash=7414ec2f]
+Добавить свой предмет
+Ещё
+Ещё: Длинный Меч
+Ещё: Заряжающий Колчан
+Ещё: Зелье Быстрого Шага
+Ещё: Зелье Сосредоточенности
+Ещё: Зелье Усиления
+Ещё: Мистический Плащ
+Ещё: Наручники
+Ещё: Палаш
+Ещё: Первоклассный Спальный Мешок
+Ещё: Плетёная Сеть
+Ещё: Пронзительная Свирель
+Ещё: Разговаривающие Сферы
+Ещё: Секира
+Ещё: Факел Алистера
+Заметка
+Заметки
+Заряжающий КолчанПредметКогда вы успешно наносите удар стрелой и... [namelen=141 namehash=b56c369b]
+Зелье Быстрого ШагаРасходникВы получаете бонус +1 к следующему Б... [namelen=82 namehash=6ee20e58]
+Зелье СосредоточенностиРасходникВы получаете бонус +1 к следующе... [namelen=85 namehash=0c732b9e]
+Зелье УсиленияРасходникВы получаете бонус +1 к следующему Броску... [namelen=70 namehash=49062a42]
+К содержимому
+Конфиденциальность
+ЛутDaggerheart
+Мистический ПлащПредметСущество с Характеристикой Заклинателя, н... [namelen=143 namehash=7854e7c3]
+Название списка
+НаручникиПредметЭта пара наручников с замком поставляется с ключ... [namelen=67 namehash=77df6619]
+ПалашОсновное оружиеРанг 1 · Физическое · Проворность · Вплотную... [namelen=114 namehash=e80c7800]
+Первоклассный Спальный МешокПредметВо время отдыха вы автоматиче... [namelen=84 namehash=f15473c8]
+Печать
+Плетёная СетьПредметВы можете совершить Бросок Искусности, испол... [namelen=182 namehash=94cb7d11]
+Поделиться
+Позиция в списке
+Поиск
+Поиск по названию или описанию...
+Пронзительная СвирельПредметЭта свирель ручной работы имеет хара... [namelen=161 namehash=e5bf576d]
+Разговаривающие СферыПредметЭта пара сфер позволяет существам, к... [namelen=125 namehash=7957c029]
+СекираОсновное оружиеРанг 1 · Физическое · Сила · Вплотную · d10... [namelen=82 namehash=399db05b]
+Таблицы
+Условия использования
+Установить как приложение
+Факел АлистераПредметВы можете зажигать этот магический факел по... [namelen=189 namehash=afee43ad]
+Фильтры
+Цена
+
+## en :: tree
+RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/lists/00000000-0000-4000-8000-000000008001?as=gm4]
+  link "Skip to content" [url=/en/lists/00000000-0000-4000-8000-000000008001?as=gm4#main]
+  banner ""
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    button "Account: gm4@example.test" [expanded=false haspopup=menu]
+    navigation "Sections"
+      link "Roll" [url=/en/roll/std]
+      link "Tables" [url=/en/tables]
+      link "Search" [url=/en/search]
+  main ""
+    StaticText "Клад дракона"
+    textbox "List name" [value=Клад дракона multiline=false readonly=false required=false]
+    StaticText "14 items of 100 · "
+    ... StaticText x27 of 31 same-shape siblings elided
+    button "Share" [expanded=false]
+    button "Print" [description=Lay these out for printing: nine to an A4 sheet]
+    button "Roll on this list" [expanded=false]
+    button "More" [expanded=false haspopup=menu]
+    ... button x15 of 19 same-shape siblings elided
+    status ""
+    searchbox "Search by name or description..."
+    button "Select"
+    spinbutton "Position in the list" [value=1 valuetext=1 required=false valuemin=1 valuemax=14]
+    button "Premium Bedroll ITEM During downtime, you automatically clear a ..." [namelen=71 namehash=f1054083]
+    spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
+    spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]
+    button "More: Premium Bedroll" [expanded=false haspopup=menu]
+    spinbutton "Position in the list" [value=2 valuetext=2 required=false valuemin=1 valuemax=14]
+    ... button x11 of 15 same-shape siblings elided
+    spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
+    spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]
+    ... button x11 of 15 same-shape siblings elided
+    spinbutton "Position in the list" [value=3 valuetext=3 required=false valuemin=1 valuemax=14]
+    ... spinbutton x10 of 14 same-shape siblings elided
+    ... spinbutton x10 of 14 same-shape siblings elided
+    spinbutton "Position in the list" [value=4 valuetext=4 required=false valuemin=1 valuemax=14]
+    spinbutton "Position in the list" [value=5 valuetext=5 required=false valuemin=1 valuemax=14]
+    spinbutton "Position in the list" [value=6 valuetext=6 required=false valuemin=1 valuemax=14]
+    spinbutton "Position in the list" [value=7 valuetext=7 required=false valuemin=1 valuemax=14]
+    spinbutton "Position in the list" [value=8 valuetext=8 required=false valuemin=1 valuemax=14]
+    spinbutton "Position in the list" [value=9 valuetext=9 required=false valuemin=1 valuemax=14]
+    spinbutton "Position in the list" [value=10 valuetext=10 required=false valuemin=1 valuemax=14]
+    spinbutton "Position in the list" [value=11 valuetext=11 required=false valuemin=1 valuemax=14]
+    spinbutton "Position in the list" [value=12 valuetext=12 required=false valuemin=1 valuemax=14]
+    spinbutton "Position in the list" [value=13 valuetext=13 required=false valuemin=1 valuemax=14]
+    button "Longsword PRIMARY WEAPON Tier 1 · Physical · Agility · Melee · d..." [namelen=85 namehash=95cb095b]
+    spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
+    spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]
+    button "More: Longsword" [expanded=false haspopup=menu]
+    spinbutton "Position in the list" [value=14 valuetext=14 required=false valuemin=1 valuemax=14]
+    button "Battleaxe PRIMARY WEAPON Tier 1 · Physical · Strength · Melee · ..." [namelen=86 namehash=adba0870]
+    StaticText "QTY"
+    spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
+    StaticText "PRICE"
+    spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]
+    button "Note" [expanded=false]
+    button "More: Battleaxe" [expanded=false haspopup=menu]
+    button "Add your own item" [expanded=false]
+    status ""
+    status ""
+  contentinfo ""
+    navigation "Site pages"
+      link "Install as an app" [url=/pages/en/install.html]
+      link "Privacy" [url=/pages/en/privacy.html]
+      link "Terms of use" [url=/pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
+
+## en :: controls
+Account: gm4@example.test
+Add your own item
+Alistair's TorchItemYou can light this magic torch at will. The ... [namelen=162 namehash=ca396948]
+Arcane CloakItemA creature with a Spellcast trait wearing this c... [namelen=117 namehash=f38d5937]
+BattleaxePrimary weaponTier 1 · Physical · Strength · Melee · d1... [namelen=84 namehash=f80ae9d1]
+Bolster PotionConsumableYou gain a +1 bonus to your next Strengt... [namelen=71 namehash=d5a3c692]
+BroadswordPrimary weaponTier 1 · Physical · Agility · Melee · d8... [namelen=109 namehash=926e89b9]
+Charging QuiverItemWhen you succeed on an attack with an arrow s... [namelen=145 namehash=07a311bd]
+Control PotionConsumableYou gain a +1 bonus to your next Finesse... [namelen=70 namehash=0f45c9bb]
+EN
+Filters
+Install as an app
+List name
+LongswordPrimary weaponTier 1 · Physical · Agility · Melee · d10... [namelen=83 namehash=86d04352]
+LootDaggerheart
+ManaclesItemThis pair of locking cuffs comes with a key.
+More
+More: Alistair's Torch
+More: Arcane Cloak
+More: Battleaxe
+More: Bolster Potion
+More: Broadsword
+More: Charging Quiver
+More: Control Potion
+More: Longsword
+More: Manacles
+More: Piper Whistle
+More: Premium Bedroll
+More: Speaking Orbs
+More: Stride Potion
+More: Woven Net
+Note
+Notes
+Piper WhistleItemThis handcrafted whistle has a distinctive soun... [namelen=149 namehash=81a85b00]
+Position in the list
+Premium BedrollItemDuring downtime, you automatically clear a St... [namelen=69 namehash=b98fcd07]
+Price
+Print
+Privacy
+RU
+Roll
+Roll on this list
+Search
+Search by name or description...
+Select
+Share
+Skip to content
+Speaking OrbsItemThis pair of orbs allows any creatures holding ... [namelen=120 namehash=20695eaf]
+Stride PotionConsumableYou gain a +1 bonus to your next Agility ... [namelen=69 namehash=5f888d9a]
+Tables
+Terms of use
+Woven NetItemYou can make a Finesse Roll using this net to trap ... [namelen=149 namehash=d3ec5ac6]
+daggerheart.com

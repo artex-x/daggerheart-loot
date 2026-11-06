@@ -17,17 +17,17 @@
      their book, so `PICKER_ROLL` names the part and its rows for one shared panel.
      Core rules and the alternate tables roll several cards at once, and the
      alternate tables roll two dice, so both have panels of their own. */
-  const ROLL_TABLE: Partial<Record<Section, { table: string; title: keyof Dict }>> = {
-    'roll/wondrous': { table: 'wondrous', title: 'pageWondrous' },
-    'roll/dread': { table: 'dread', title: 'pageDread' },
-    'roll/dv': { table: 'dv', title: 'pageDv' },
-    'roll/arazo': { table: 'arazo', title: 'pageArazo' }
+  const ROLL_TABLE: Partial<Record<Section, { table: string }>> = {
+    'roll/wondrous': { table: 'wondrous' },
+    'roll/dread': { table: 'dread' },
+    'roll/dv': { table: 'dv' },
+    'roll/arazo': { table: 'arazo' }
   };
 
   interface PickerRoll {
     section: 'voa' | 'community' | 'mwt';
-    title: keyof Dict;
-    sub: keyof Dict;
+    /** The lead under the head; none where the picker and the roll button say it. */
+    sub?: keyof Dict;
     label: keyof Dict;
     parts: (t: Dict, lang: Lang, index: Index | null) => Part[];
     rows: (index: Index, id: string) => readonly Record_[];
@@ -36,7 +36,6 @@
   const PICKER_ROLL: Partial<Record<Section, PickerRoll>> = {
     'roll/voa': {
       section: 'voa',
-      title: 'pageVoa',
       sub: 'subVoa',
       label: 'voaSection',
       parts: (t) => voaParts(t),
@@ -44,7 +43,6 @@
     },
     'roll/community': {
       section: 'community',
-      title: 'pageCommunity',
       sub: 'subCommunity',
       label: 'communityLabel',
       parts: (_t, lang, index) => communityParts(index, lang),
@@ -52,8 +50,6 @@
     },
     'roll/mwt': {
       section: 'mwt',
-      title: 'pageMwt',
-      sub: 'subMwt',
       label: 'realmLabel',
       parts: (_t, lang) => realmParts(lang),
       rows: realmGroup
@@ -128,7 +124,6 @@
           <RollPanel
             {app}
             section={cfg.table}
-            title={app.t[cfg.title]}
             sub={app.t.subWondrous}
             rows={app.index?.rows.get(cfg.table) ?? []}
           />
@@ -143,8 +138,7 @@
           <PickerRollPanel
             {app}
             section={pr.section}
-            title={app.t[pr.title]}
-            sub={app.t[pr.sub]}
+            sub={pr.sub ? app.t[pr.sub] : ''}
             label={app.t[pr.label]}
             parts={pr.parts(app.t, app.lang, app.index)}
             rowsOf={(id: string) => (app.index ? pr.rows(app.index, id) : [])}

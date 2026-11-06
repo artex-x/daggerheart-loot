@@ -36,9 +36,11 @@
     app: AppState;
     listId: string;
     onclose: () => void;
+    /** Called once the new entry is in the list: the page clears its search and filter. */
+    oncreated?: (() => void) | undefined;
   }
 
-  const { app, listId, onclose }: Props = $props();
+  const { app, listId, onclose, oncreated }: Props = $props();
 
   const t = $derived(app.t);
 
@@ -111,6 +113,7 @@
       }
       ids = store.newIds();
       lists.add(listId, [pair.key], (id) => app.knows(id));
+      oncreated?.();
       const shown = name.trim();
       name = '';
       desc = '';
@@ -169,11 +172,6 @@
       optional={t.hbOptional}
       error={descProblem && problemText(descProblem, t)}
       errorId="qi-desc-err"
-      help={{
-        id: 'qi-desc-help',
-        text: t.mdHelp.replace('%n', String(DESC_MAX)),
-        lang: app.lang
-      }}
     >
       <MarkupField
         id="qi-desc"

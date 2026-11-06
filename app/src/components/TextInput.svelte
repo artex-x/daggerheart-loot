@@ -24,6 +24,8 @@
     /** The most the database keeps (docs/specs/FEATURES.md, "Consistency rules"). */
     maxlength?: number | undefined;
     oninput?: () => void;
+    /** Enter and Escape, for a field that is its own small form (the new list's name). */
+    onkeydown?: ((e: KeyboardEvent) => void) | undefined;
     /** The language of the text, when it is not the page's. */
     lang?: Lang | undefined;
   }
@@ -41,6 +43,7 @@
     describedby,
     maxlength,
     oninput,
+    onkeydown,
     lang
   }: Props = $props();
 </script>
@@ -60,6 +63,7 @@
   aria-describedby={describedby}
   {maxlength}
   {oninput}
+  {onkeydown}
 />
 
 <style>

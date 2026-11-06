@@ -1,5 +1,6 @@
 # 2026-09-23 - The black-and-white card grows its rules text to a cap under the name
 
+- Amended by "The print card prints in the UI face at 7.1 pt, fitted after it loads" (2026-11-06): it grows from the base.
 - Task: `61`, human decision (find it with `git log --grep="Task: 61"`).
 - Decision: `fit()` grows a black-and-white card's rules text from
   3.5cqw to at most 5cqw while it fits, then shrinks as before. Colour

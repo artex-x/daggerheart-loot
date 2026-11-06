@@ -18,8 +18,8 @@ for (let i = 0; i < ids.length; i += 176)
 chunks[0] = [...extra, ...chunks[0]];
 
 const NAMES = {
-  ru: { color: 'Цветная', bw: 'Чёрно-белая', std: 'Обычная', compact: 'Компактная' },
-  en: { color: 'Colour', bw: 'Black and white', std: 'Standard', compact: 'Compact' }
+  ru: { color: 'Цвет', bw: 'Ч/б', std: '63×88', compact: '44×63' },
+  en: { color: 'Color', bw: 'B&W', std: '63×88', compact: '44×63' }
 };
 
 function measure() {
@@ -89,7 +89,8 @@ function measure() {
       clipped,
       minPx,
       minWhat,
-      textChars: text ? text.textContent.length : 0
+      textChars: text ? text.textContent.length : 0,
+      mark: !!el.querySelector('.pc-tier, .pc-burden, .pc-shield')
     });
   }
   return out;

@@ -348,7 +348,6 @@ describe('the dossier', () => {
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
     expect(card.querySelector('h2')).toBeNull();
     expect(card.querySelector('.card-name + .card-sub .subline')).not.toBeNull();
-    expect(card.querySelector('.card-name-acts')).toBeNull();
     expect(card.querySelector('.card-acts')).toBeNull();
   });
 
@@ -399,29 +398,27 @@ describe('the dossier', () => {
     app.stop();
   });
 
-  it('keeps the icon pair and the labeled row on a compact card', () => {
+  it('keeps the labeled row on a face card', () => {
     const app = new AppState(at('ci1'));
     app.start();
     const slot = (html: string) => createRawSnippet(() => ({ render: () => html }));
     const { container } = render(RecordCard, {
-      variant: 'compact',
+      variant: 'face',
       it: app.recordFor('ci1') as NonNullable<ReturnType<AppState['recordFor']>>,
       index: app.index as Index,
       lang: 'ru',
       artBroken: false,
       onartfail: () => undefined,
-      nameActions: slot('<button type="button">a</button>'),
       actions: slot('<button type="button">b</button>')
     });
     expect(container.querySelector('.card.dossier')).toBeNull();
-    expect(container.querySelector('.card-name-acts')).not.toBeNull();
     expect(container.querySelector('.card-acts')).not.toBeNull();
     app.stop();
   });
 });
 
 describe('the roll card face', () => {
-  const draw = (variant: 'face' | 'compact') => {
+  const draw = (variant: 'face') => {
     const app = new AppState(at('ci1'));
     app.start();
     const view = render(RecordCard, {
@@ -432,18 +429,16 @@ describe('the roll card face', () => {
       artBroken: false,
       onartfail: () => undefined
     });
-    const html = view.container.querySelector('.card-body')?.innerHTML ?? '';
     const name = view.container.querySelector('.card-name a');
     const media = view.container.querySelector('.card-media');
     const row = view.container.querySelector('.card-acts');
     view.unmount();
     app.stop();
-    return { html, name, media, row };
+    return { name, media, row };
   };
 
-  it('draws the head and the body of the compact card, the name a link', () => {
+  it('draws the name as a link to the page', () => {
     const face = draw('face');
-    expect(face.html).toBe(draw('compact').html);
     expect(face.name).toHaveAttribute('href', '/i/ci1');
     /* No `onopen`: nothing to open, so the picture is no control. */
     expect(face.media?.tagName).toBe('DIV');
@@ -1016,7 +1011,7 @@ describe('the tier ladder', () => {
     await userEvent.click(
       within(screen.getByRole('dialog')).getByRole('button', { name: 'В список' })
     );
-    expect(screen.getByRole('button', { name: '+ Новый список' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Новый список' })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'Закрыть' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -1027,7 +1022,7 @@ describe('the tier ladder', () => {
       'aria-expanded',
       'false'
     );
-    expect(screen.queryByRole('button', { name: '+ Новый список' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Новый список' })).not.toBeInTheDocument();
   });
 
   it('folds the same menu when the modal closes through the backdrop', async () => {
@@ -1036,7 +1031,7 @@ describe('the tier ladder', () => {
     await userEvent.click(
       within(screen.getByRole('dialog')).getByRole('button', { name: 'В список' })
     );
-    expect(screen.getByRole('button', { name: '+ Новый список' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Новый список' })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('dialog'));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -1073,10 +1068,10 @@ describe('the tier ladder', () => {
       name: 'В список'
     });
     await userEvent.click(toggle);
-    expect(screen.getByRole('button', { name: '+ Новый список' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Новый список' })).toBeInTheDocument();
 
     await userEvent.keyboard('{Escape}');
-    expect(screen.queryByRole('button', { name: '+ Новый список' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Новый список' })).not.toBeInTheDocument();
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
     expect(toggle).toHaveFocus();
     /* Only the menu closed - a second, unclaimed Escape is what closes the
@@ -1440,7 +1435,7 @@ describe('an own homebrew item', () => {
       { kind: 'item', en: 'Cap', ende: 'Hear.' },
       null
     );
-    for (const variant of ['full', 'compact'] as const) {
+    for (const variant of ['full', 'face'] as const) {
       const view = render(RecordCard, {
         props: { it: cap, index, lang: 'ru', variant, artBroken: false, onartfail: () => {} }
       });
@@ -2140,7 +2135,7 @@ describe('the relation lines and the Core tag by card variant', () => {
     SEED.homebrew.gm3.items.map((i) => recordOf(i.key, i.content, null)),
     []
   );
-  const card = (id: string, variant: 'full' | 'compact' | 'face', dossier = false) => {
+  const card = (id: string, variant: 'full' | 'face', dossier = false) => {
     const it = index.byId.get(id);
     if (!it) throw new Error(`The index lacks ${id}. Seed or name a record it holds`);
     return render(RecordCard, {
@@ -2159,7 +2154,7 @@ describe('the relation lines and the Core tag by card variant', () => {
   const srcTags = (c: HTMLElement): string[] =>
     [...c.querySelectorAll('.card-meta .badge.src')].map((b) => b.textContent.trim());
 
-  it.each(['face', 'compact'] as const)(
+  it.each(['face'] as const)(
     'draws no relation line, set, ladder or Core badge on a %s card',
     async (variant) => {
       for (const id of ['ci1', 'q1', 'voa4_t3d']) {
@@ -2174,7 +2169,7 @@ describe('the relation lines and the Core tag by card variant', () => {
     }
   );
 
-  it.each(['face', 'compact'] as const)('keeps another book on a %s card', (variant) => {
+  it.each(['face'] as const)('keeps another book on a %s card', (variant) => {
     expect(srcTags(card('hi61', variant))).toEqual(['Hope & Fear']);
   });
 

@@ -19,6 +19,7 @@
   import PinItem from './PinItem.svelte';
   import RecordHost from './RecordHost.svelte';
   import SearchBox from './SearchBox.svelte';
+  import SelMode from './SelMode.svelte';
   import Switch from './Switch.svelte';
   import TableRows from './TableRows.svelte';
   import { kindOf } from '../lib/data.js';
@@ -230,13 +231,12 @@
           >
         {/if}
         {#if !app.selecting && found.length > 0}
-          <button
-            type="button"
-            class="selmode"
+          <SelMode
+            label={t.selectMode}
             onclick={() => {
               void startSelecting();
-            }}>{t.selectMode}</button
-          >
+            }}
+          />
         {/if}
       </div>
 
@@ -376,28 +376,13 @@
   }
 
   .searchrow :global(input[type='search']),
-  .searchrow :global(.btn.sm),
-  .selmode {
+  .searchrow :global(.btn.sm) {
     height: 40px;
   }
 
   .searchrow .grow {
     flex: 1 1 140px;
     min-width: 140px;
-  }
-
-  .selmode {
-    flex: none;
-    padding: 0 11px;
-    border: 1px solid var(--line2);
-    border-radius: var(--r-sm);
-    background: var(--surface);
-    color: var(--txt);
-    font: 600 var(--t-data) / 1 var(--ui);
-  }
-
-  .selmode:hover {
-    border-color: var(--muted2);
   }
 
   /* From 761 px: the kinds and the own-items switch, wrapped whole, then the count line at
@@ -448,8 +433,16 @@
 
   .cause {
     margin: 0;
-    max-width: 60ch;
+    max-width: var(--measure-line);
+    text-wrap: balance;
     overflow-wrap: anywhere;
+  }
+
+  /* DESIGN.md "Components", "The Field Measure Rule": the next controls follow the box. */
+  @media (min-width: 761px) {
+    .searchrow .grow {
+      max-width: 720px;
+    }
   }
 
   @media (max-width: 760px) {
@@ -459,8 +452,7 @@
     }
 
     .searchrow :global(input[type='search']),
-    .searchrow :global(.btn.sm),
-    .selmode {
+    .searchrow :global(.btn.sm) {
       padding: 0 9px;
     }
   }
@@ -474,7 +466,7 @@
     }
 
     .searchrow :global(.btn.sm),
-    .selmode {
+    .searchrow :global(button.selmode) {
       padding: 0 6px;
     }
 

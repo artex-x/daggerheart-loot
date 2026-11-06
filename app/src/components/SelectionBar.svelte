@@ -7,6 +7,7 @@
      The caller's snippet markup keeps the caller's CSS scope. */
   import type { Snippet } from 'svelte';
   import Button from './Button.svelte';
+  import { watchBarHeight } from './barHeight.js';
 
   interface Props {
     /** The region's name. */
@@ -52,19 +53,7 @@
 
   /* The page's scroll padding follows the bar's height, so a tab stop under it scrolls
      into view (WCAG 2.4.11). */
-  $effect(() => {
-    const el = wrap;
-    if (!el || typeof ResizeObserver !== 'function') return;
-    const root = document.documentElement;
-    const watch = new ResizeObserver(() => {
-      root.style.setProperty('--selbar-h', `${String(el.offsetHeight)}px`);
-    });
-    watch.observe(el);
-    return () => {
-      watch.disconnect();
-      root.style.removeProperty('--selbar-h');
-    };
-  });
+  $effect(() => (wrap ? watchBarHeight(wrap, '--selbar-h') : undefined));
 </script>
 
 <!-- A labeled region: the bar sits after the footer, outside every other landmark. -->

@@ -33,9 +33,12 @@
     source: string | null;
     /** The filter in force: a source tab keeps its `kind`. */
     filter: FilterState;
+    /** From 761 px, which level this instance draws: the group chips (the page head's
+     *  pills) or the tabs under the head. Up to 760 px the one instance is the picker. */
+    part?: 'groups' | 'tabs';
   }
 
-  const { app, table, sources, source, filter }: Props = $props();
+  const { app, table, sources, source, filter, part = 'groups' }: Props = $props();
 
   const t = $derived(app.t);
   const groups = $derived(TABLE_NAV.filter((g) => g.id !== 'hb' || !!app.user));
@@ -67,7 +70,7 @@
 
   /* The captions of a group's tabs, or none: what the unseen copies in the tab slot draw.
      The homebrew group has none: its source tabs hold the GM's own text, up to 12 names of
-     80 characters, and would push the rows of every table (DESIGN.md, "A steady head"). */
+     80 characters, and would push the rows of every table (DESIGN.md, "The Head Order Rule"). */
   function tabLabels(g: TableGroup): string[] {
     return g.id !== 'hb' && g.subs.length > 1 ? g.subs.map((sub) => t[navSubLabel(sub)]) : [];
   }
@@ -121,60 +124,11 @@
   {/if}
 {/snippet}
 
-<nav
-  class="tablenav"
-  class:narrow={app.band === 'narrow'}
-  class:inhead={app.band === 'wide'}
-  class:below={app.band === 'mid'}
-  aria-label={t.tables}
->
-  {#if app.band === 'narrow'}
-    <button
-      bind:this={pickerButton}
-      type="button"
-      class="picker"
-      aria-haspopup="dialog"
-      aria-label={t.tablePick.replace('%s', picker)}
-      onclick={() => {
-        sheetGroup = null;
-        picking = true;
-      }}
-      ><span class="picker-t"
-        >{#if parts.book}<span class="picker-book">{parts.book}</span>{/if}{parts.name}</span
-      ><Icon name="chevron" /></button
-    >
-    {#if picking}
-      <Sheet
-        {app}
-        label={t.tablePick.replace('%s', picker)}
-        title={t.tables}
-        onclose={() => {
-          picking = false;
-        }}
-      >
-        <div class="groups" role="group" aria-label={t.groupLabel}>
-          {#each groups as g (g.id)}
-            <Chip
-              label={t[g.label]}
-              on={g.id === shownGroup.id}
-              onclick={() => {
-                sheetGroup = g;
-              }}
-            />
-          {/each}
-        </div>
-        {@render tabs(shownGroup, picked)}
-      </Sheet>
-    {/if}
-  {:else}
-    <div class="groups" role="group" aria-label={t.groupLabel}>
-      {#each groups as g (g.id)}
-        <Chip label={t[g.label]} on={g.id === group.id} href={app.href(tablesHash(g.top))} />
-      {/each}
-    </div>
-    <!-- The slot holds every group's tabs unseen, so it takes the tallest row's height on
-         every table, and a table with fewer tabs or none starts its rows where the others
-         do (DESIGN.md, "Layout", "A steady head"). -->
+{#if part === 'tabs'}
+  <!-- Up to 760 px the tabs live in the picker's sheet. The slot holds every group's tabs unseen, so it takes the tallest row's height on
+       every table, and a table with fewer tabs or none starts its rows where the others
+       do (DESIGN.md, "The Head Order Rule"). -->
+  {#if app.band !== 'narrow'}
     <div class="tabslot">
       {@render tabs(group, null)}
       <div class="ghosts" aria-hidden="true">
@@ -189,33 +143,65 @@
       </div>
     </div>
   {/if}
-</nav>
+{:else}
+  <nav class="tablenav" class:narrow={app.band === 'narrow'} aria-label={t.tables}>
+    {#if app.band === 'narrow'}
+      <button
+        bind:this={pickerButton}
+        type="button"
+        class="picker"
+        aria-haspopup="dialog"
+        aria-label={t.tablePick.replace('%s', picker)}
+        onclick={() => {
+          sheetGroup = null;
+          picking = true;
+        }}
+        ><span class="picker-t"
+          >{#if parts.book}<span class="picker-book">{parts.book}</span>{/if}{parts.name}</span
+        ><Icon name="chevron" /></button
+      >
+      {#if picking}
+        <Sheet
+          {app}
+          label={t.tablePick.replace('%s', picker)}
+          title={t.tables}
+          onclose={() => {
+            picking = false;
+          }}
+        >
+          <div class="groups" role="group" aria-label={t.groupLabel}>
+            {#each groups as g (g.id)}
+              <Chip
+                label={t[g.label]}
+                on={g.id === shownGroup.id}
+                onclick={() => {
+                  sheetGroup = g;
+                }}
+              />
+            {/each}
+          </div>
+          {@render tabs(shownGroup, picked)}
+        </Sheet>
+      {/if}
+    {:else}
+      <div class="groups" role="group" aria-label={t.groupLabel}>
+        {#each groups as g (g.id)}
+          <Chip label={t[g.label]} on={g.id === group.id} href={app.href(tablesHash(g.top))} />
+        {/each}
+      </div>
+    {/if}
+  </nav>
+{/if}
 
 <style>
   .tablenav {
     min-width: 0;
   }
 
-  /* The head's geometry follows the band, never the table: from 1000 px the chips sit
-     beside the title and wrap inside their own box, and the tabs take the next row at the
-     page's width; from 761 px to 999 px the navigation takes its own row under the title
-     (DESIGN.md, "Layout", "A steady head"). */
-  .tablenav.inhead {
-    display: contents;
-  }
-
-  .inhead .groups {
-    flex: 1 1 0;
-    min-width: 0;
-  }
-
-  .inhead .tabslot,
-  .tablenav.below {
-    flex: 1 0 100%;
-  }
-
-  /* The head row's own gap stands in for the tabs' top margin. */
-  .inhead .tabs {
+  /* The head's geometry follows the band, never the table (DESIGN.md, "The Head Order
+     Rule"): the head's own gaps stand in for the tabs' top margin. */
+  .tabslot > .tabs,
+  .ghosts > .tabs {
     margin-top: 0;
   }
 

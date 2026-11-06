@@ -1,0 +1,141 @@
+# #/s/gm-token-1 ~ compact
+# route: #/s/gm-token-1
+# why: the GM link up to 760 px: «Заметка» and «Заметка мастера» on the lead line, the note marks on the noted rows
+
+## ru :: tree
+RootWebArea "Генератор лута Daggerheart" [url=/s/gm-token-1?v=<v>]
+  link "К содержимому" [url=/s/gm-token-1?v=<v>#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    link "Войти" [url=/account]
+    navigation "Разделы"
+      link "Бросок" [url=/roll/std]
+      link "Таблицы" [url=/tables]
+      link "Поиск" [url=/search]
+  main ""
+    heading "Лавка кузнеца" [level=1]
+    StaticText "10 позиций"
+    StaticText " · Обновлено 3 дня назад"
+    ... StaticText x2 of 6 same-shape siblings elided
+    button "Заметка" [expanded=false]
+    button "Заметка мастера" [expanded=false]
+    button "Сохранить себе"
+    searchbox "Поиск по названию или описанию..."
+    ... button x9 of 13 same-shape siblings elided
+    button "Выбрать"
+    StaticText "×2"
+    StaticText "×5"
+    button "9 Брошюра по Истории Искусства ПРЕДМЕТ Dread GM Toolbox Это прек..." [expanded=false namelen=626 namehash=d3117f88]
+    button "10 Топор Тлеющих Углей ОСНОВНОЕ ОРУЖИЕ 800 зол. d10+2 маг · Впло..." [expanded=false namelen=109 namehash=08cc2c3b]
+    status ""
+  region "Выбранные записи"
+    generic ""
+  contentinfo ""
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=/pages/install.html]
+      link "Конфиденциальность" [url=/pages/privacy.html]
+      link "Условия использования" [url=/pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+
+## ru :: controls
+1 Первоклассный Спальный МешокПредмет150 зол. Во время отдыха вы... [namelen=95 namehash=1797b39c]
+10 Топор Тлеющих УглейОсновное оружие800 зол. d10+2 маг · Вплотн... [namelen=107 namehash=b34edfe2]
+2 ПалашОсновное оружие, Заметка d8 физ · Вплотную · Одноручное ·... [namelen=76 namehash=6015c674]
+3 Стеганый ДоспехБроня Пороги 5/11 · Броня 3
+4 Зелье Быстрого ШагаРасходник20 зол. Вы получаете бонус +1 к сл... [namelen=92 namehash=f4caab53]
+5 Колода СумерекПредметVault of Ages, Заметка Стоимость Призыва:... [namelen=66 namehash=551a81b3]
+6 СкипетрОсновное оружие d6 маг · Далеко · Двуручное · Влияние
+7 Гарпун ЛевиафанаОсновное оружие99999 зол. d8+3 физ · Далеко · ... [namelen=86 namehash=f41bcbe4]
+8 Колдующий КинжалОсновное оружиеHope & Fear d6 маг · Средне · О... [namelen=84 namehash=067834bf]
+9 Брошюра по Истории ИскусстваПредметDread GM Toolbox Это прекра... [namelen=624 namehash=37953bde]
+EN
+RU
+daggerheart.com
+Бросок
+Войти
+Выбрать
+Заметка
+Заметка мастера
+К содержимому
+Конфиденциальность
+ЛутDaggerheart
+Поиск
+Поиск по названию или описанию...
+Сохранить себе
+Таблицы
+Условия использования
+Установить как приложение
+Фильтры
+
+## en :: tree
+RootWebArea "Daggerheart Loot Generator" [url=/en/s/gm-token-1?v=<v>]
+  link "Skip to content" [url=/en/s/gm-token-1?v=<v>#main]
+  banner ""
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    link "Sign in" [url=/en/account]
+    navigation "Sections"
+      link "Roll" [url=/en/roll/std]
+      link "Tables" [url=/en/tables]
+      link "Search" [url=/en/search]
+  main ""
+    heading "Лавка кузнеца" [level=1]
+    StaticText "10 items"
+    StaticText " · Updated 3 days ago"
+    ... StaticText x2 of 6 same-shape siblings elided
+    button "Note" [expanded=false]
+    button "GM's note" [expanded=false]
+    button "Save to my lists"
+    searchbox "Search by name or description..."
+    ... button x9 of 13 same-shape siblings elided
+    button "Select"
+    StaticText "×2"
+    StaticText "×5"
+    button "9 Art History Booklet ITEM Dread GM Toolbox This is a finely ill..." [expanded=false namelen=548 namehash=ca59896b]
+    button "10 Ember Axe PRIMARY WEAPON 800 gp d10+2 mag · Melee · Two-Hande..." [expanded=false namelen=77 namehash=4cdd0941]
+    status ""
+  region "Selected records"
+    generic ""
+  contentinfo ""
+    navigation "Site pages"
+      link "Install as an app" [url=/pages/en/install.html]
+      link "Privacy" [url=/pages/en/privacy.html]
+      link "Terms of use" [url=/pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
+
+## en :: controls
+1 Premium BedrollItem150 gp During downtime, you automatically c... [namelen=78 namehash=832b1966]
+10 Ember AxePrimary weapon800 gp d10+2 mag · Melee · Two-Handed ... [namelen=75 namehash=ae3fe1a6]
+2 BroadswordPrimary weapon, Note d8 phy · Melee · One-Handed · A... [namelen=70 namehash=209148c6]
+3 Gambeson ArmorArmor Thresholds 5/11 · Armor 3
+4 Stride PotionConsumable20 gp You gain a +1 bonus to your next ... [namelen=77 namehash=f6bdd8c9]
+5 Twilight DeckItemVault of Ages, Note Recall Cost: 2
+6 ScepterPrimary weapon d6 mag · Far · Two-Handed · Presence
+7 Leviathan HarpoonPrimary weapon99999 gp d8+3 phy · Far · Two-H... [namelen=79 namehash=34e62b83]
+8 Casting DaggerPrimary weaponHope & Fear d6 mag · Close · One-H... [namelen=80 namehash=354feb70]
+9 Art History BookletItemDread GM Toolbox This is a finely illus... [namelen=546 namehash=e313a64c]
+EN
+Filters
+GM's note
+Install as an app
+LootDaggerheart
+Note
+Privacy
+RU
+Roll
+Save to my lists
+Search
+Search by name or description...
+Select
+Sign in
+Skip to content
+Tables
+Terms of use
+daggerheart.com

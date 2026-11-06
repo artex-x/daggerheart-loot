@@ -3,8 +3,11 @@
  *
  * Pure module: no storage, no DOM. */
 
+import { listFacets } from './data.js';
+import { LIST_GROUPS, passes, type FilterState } from './filters.js';
 import { MONEY_DEFAULT, type MoneyMode } from './money.js';
-import { foldQuery } from './search.js';
+import { foldQuery, matches, type Hay, type StatLine, type Term } from './search.js';
+import type { Record_ } from './types.js';
 
 /** The list quantity field's own `max`: a quantity read from any file or row is clamped to it. */
 export const QTY_MAX = 99;
@@ -33,6 +36,33 @@ export interface ListShape {
 /** The count from which a search box is drawn: lists in the add-to-list menu and on the
  *  lists index, own items, sets and rule cards on «Мои предметы». */
 export const LIST_SEARCH_AT = 8;
+
+/**
+ * Returns the entries a list page draws under a filter and a query, each with `at`, its
+ * index in `rows`, so a row keeps its true number while the list is narrowed. A row with
+ * no record fails while a value is in force or a term is set.
+ */
+export function narrowEntries<T extends { id: string; it: Record_ | null }>(
+  rows: readonly T[],
+  inForce: FilterState,
+  terms: readonly Term[],
+  statLine: StatLine,
+  hay?: Hay
+): (T & { at: number })[] {
+  const filtered = LIST_GROUPS.some((g) => (inForce[g]?.length ?? 0) > 0);
+  const out: (T & { at: number })[] = [];
+  rows.forEach((row, at) => {
+    const it = row.it;
+    if (filtered || terms.length) {
+      if (!it) return;
+      const f = listFacets(it);
+      if (filtered && !passes(inForce, LIST_GROUPS, (g) => f[g] ?? '')) return;
+      if (terms.length && !matches(it, terms, statLine, hay)) return;
+    }
+    out.push({ ...row, at });
+  });
+  return out;
+}
 
 /** How many cards the lists index draws before «Показать ещё», and how many each press adds (issue 68). */
 export const LIST_PAGE = 24;

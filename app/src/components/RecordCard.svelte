@@ -53,12 +53,11 @@
   interface Props {
     /**
      * `full` is the whole record: the picture on top, at full width, on a plate.
-     * `compact` is a result or a table row: the picture beside the text at
-     * 132px, and the name is a link to the page rather than a heading of it.
      * `face` is a roll result: the picture 4:3 above the text with a fade from 601 px, 96px
-     * beside it below (DESIGN.md, "Cards"); the name is a link as on `compact`.
+     * beside it below (DESIGN.md, "Cards"); the name is a link to the page rather than a
+     * heading of it.
      */
-    variant?: 'full' | 'compact' | 'face';
+    variant?: 'full' | 'face';
     /** The record page and the dialog: no plate, the picture beside the text from 761 px
      *  and 4:3 above it below (DESIGN.md, "The Dossier Rule"). */
     dossier?: boolean;
@@ -94,8 +93,6 @@
     onopen?: ((r: Record_) => void) | undefined;
     /** The record dialog: the picture links to the record's page. */
     pageLink?: boolean;
-    /** The two icon buttons beside the name on a compact card: copy the name, copy the link. */
-    nameActions?: Snippet;
     /** The labeled row under the description: send, picture, text. */
     actions?: Snippet;
     /** The action row, or the add-to-list control in the editor's preview - only the full
@@ -121,7 +118,6 @@
     onartfail,
     onopen,
     pageLink = false,
-    nameActions,
     actions,
     pick,
     manage = false
@@ -312,9 +308,6 @@
         <a href={pathOf(recordHref(it), hrefLang)} title={t.openPage}>{name}</a>
       {:else}
         <span>{name}</span>
-      {/if}
-      {#if nameActions}
-        <span class="card-name-acts">{@render nameActions()}</span>
       {/if}
     </svelte:element>
     {#if sub}
@@ -539,11 +532,6 @@
     flex-direction: column;
   }
 
-  .card.compact {
-    flex-direction: row;
-    align-items: stretch;
-  }
-
   .card-media {
     position: relative;
     background: var(--art-well);
@@ -565,13 +553,7 @@
     max-height: 420px;
   }
 
-  .card.compact .card-media {
-    width: 132px;
-    aspect-ratio: 1;
-  }
-
   @media (hover: hover) {
-    .card.compact .card-media:hover img,
     .card.face .card-media:hover img {
       transform: scale(1.05);
     }
@@ -623,17 +605,17 @@
   }
 
   .steps-l {
-    font: 650 var(--t-badge)/1 var(--mono);
+    font: 650 var(--t-badge)/1 var(--ui);
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--muted2);
   }
 
   .steps .step {
-    min-width: 26px;
-    height: 26px;
+    min-width: max(26px, var(--thumb));
+    height: max(26px, var(--thumb));
     padding: 0 6px;
-    border-radius: 7px;
+    border-radius: 8px;
     border: 1px solid var(--line2);
     background: var(--surface);
     color: var(--muted);
@@ -691,20 +673,14 @@
     border-bottom-color: currentcolor;
   }
 
-  .card-name-acts {
-    display: inline-flex;
-    gap: 2px;
-    flex: none;
-    align-self: center;
-  }
-
-  /* `.card-name svg` in style.css, and it is not the icon's own size: this row
-     pins its icons to 14px whatever they arrive as. One pixel each way, which
-     made the name row a pixel taller and moved everything under it. */
-  .card-name :global(svg) {
-    width: 14px;
-    height: 14px;
-    fill: currentcolor;
+  /* The name link reaches the thumb target by its padded box; no line moves (DESIGN.md,
+     "The Phone-First Rule"). */
+  @media screen and (max-width: 600px) {
+    .card-name a {
+      display: inline-block;
+      padding-block: max(0px, calc((var(--thumb) - 1lh) / 2));
+      margin-block: min(0px, calc((1lh - var(--thumb)) / 2));
+    }
   }
 
   /* off `.eqstats` in style.css */
@@ -728,7 +704,7 @@
 
   .card-desc {
     margin: 0;
-    color: #cfc8e0;
+    color: var(--txt-soft);
     font-size: var(--t-small);
     line-height: 1.55;
     overflow-wrap: anywhere;
@@ -833,6 +809,16 @@
     font-size: var(--t-data);
   }
 
+  /* From 601 px the fold of a relation line keeps the line's height, as the line's links do:
+     a 24 px padded box came 0.4 px from a badge on the line above (DESIGN.md, "Badges";
+     measured 2026-11-06 at 1180 px). Up to 600 px it keeps the thumb target. */
+  @media screen and (min-width: 601px) {
+    .craft p :global(.btn.bare) {
+      min-height: 0;
+      margin-block: 0;
+    }
+  }
+
   /* `.card-acts` moved to `Actions.svelte`; its two 600px descendant
      rules below are re-anchored on this component's own root, `.card`,
      since a scoped rule cannot otherwise reach inside a child component. */
@@ -895,6 +881,7 @@
     display: flex;
     align-items: center;
     gap: 6px;
+    min-height: var(--thumb);
     padding: 5px 8px;
     cursor: pointer;
     list-style: none;
@@ -968,10 +955,6 @@
      Kept last, as they are there: these override base rules of equal
      specificity. */
   @media (max-width: 600px) {
-    .card.compact .card-media {
-      width: 96px;
-    }
-
     .card-body {
       padding: 11px 12px 12px;
     }
@@ -986,10 +969,6 @@
 
     .card-desc {
       font-size: var(--t-data);
-    }
-
-    .card-name-acts {
-      gap: 0;
     }
 
     /* Room is tight, so the wording goes and the icons stay - the button

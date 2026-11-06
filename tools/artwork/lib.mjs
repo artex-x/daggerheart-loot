@@ -811,22 +811,13 @@ export const REVIEW_ART_SIZES = [
     declarations: ['aspect-ratio: 4 / 3']
   },
   {
-    label: 'list card 132',
-    px: 132,
-    dir: 'img/',
-    radius: 0,
-    file: COMPONENTS + 'RecordCard.svelte',
-    selector: '.card.compact .card-media',
-    declarations: ['width: 132px']
-  },
-  {
-    label: 'phone card 96',
+    label: 'roll row face 96',
     px: 96,
     dir: 'img/',
-    radius: 0,
+    radius: 8,
     file: COMPONENTS + 'RecordCard.svelte',
-    selector: '.card.compact .card-media',
-    declarations: ['width: 96px']
+    selector: '.card.face .card-media',
+    declarations: ['width: 96px', 'border-radius: 8px']
   },
   {
     label: 'row 60, thumb',
@@ -841,10 +832,10 @@ export const REVIEW_ART_SIZES = [
     label: 'lists 40, thumb',
     px: 40,
     dir: 'img/thumb/',
-    radius: 7,
+    radius: 8,
     file: COMPONENTS + 'ListCard.svelte',
     selector: '.listcard-thumbs .thumb',
-    declarations: ['width: 40px', 'border-radius: 7px']
+    declarations: ['width: 40px', 'border-radius: 8px']
   }
 ];
 

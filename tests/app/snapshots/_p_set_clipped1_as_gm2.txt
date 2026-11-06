@@ -1,6 +1,6 @@
 # #/p/set-clipped1 as gm2
 # route: #/p/set-clipped1
-# why: gm4's item at the 3000-character text on the standard color sheet: the card cut off, the warning box «Текст не помещается на карточки при печати: 1. ...» in the bar before the gray note, «Отправить на печать» enabled
+# why: gm4's item at the 3000-character text on the standard color sheet: the card cut off, the warning box «Текст не помещается на карточки при печати: 1. ...» in the bar, the sub line under the sheet, «Напечатать» enabled
 # as: gm2
 
 ## ru :: tree
@@ -18,22 +18,22 @@ RootWebArea "Генератор лута Daggerheart" [url=/p/set-clipped1?as=gm
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
+    link "Назад" [url=/roll/std]
     heading "Печать карточек" [level=1]
-    StaticText "Карточек: 1. Листов A4: 1. Размер карты 63×88 мм - как у обычной..." [namelen=75 namehash=81ed5454]
-    button "Назад"
-    button "Отправить на печать"
-    button "Цветная" [pressed=true]
-    button "Чёрно-белая" [pressed=false]
-    button "Обычная" [pressed=true]
-    button "Компактная" [pressed=false]
+    button "Напечатать"
+    button "Цвет" [pressed=true]
+    button "Ч/б" [pressed=false]
+    button "63×88" [pressed=true]
+    button "44×63" [pressed=false]
     button "Ссылка на набор"
     status ""
       StaticText "Текст не помещается на карточки при печати: 1. Конец текста на н..." [namelen=83 namehash=23295f6c]
     StaticText "Текст не помещается на карточки при печати: 1. Конец текста на н..." [namelen=83 namehash=23295f6c]
-    ... StaticText x3 of 7 same-shape siblings elided
+    StaticText "ПРЕДМЕТ"
     heading "СВИТОК ДОЛГОЙ НОЧИ" [level=2]
-    StaticText "Daggerheart"
+    StaticText "Раз за отдых вы можете развернуть свиток и прочитать его вслух д..." [namelen=3000 namehash=22b79c07]
     StaticText "Хоумбрю"
+    StaticText "Карточек: 1. Листов A4: 1. Размер карты 63×88 мм - как у обычной..." [namelen=75 namehash=81ed5454]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -42,25 +42,25 @@ RootWebArea "Генератор лута Daggerheart" [url=/p/set-clipped1?as=gm
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
+44×63
+63×88
 EN
 RU
 daggerheart.com
 Аккаунт: gm2@example.test
 Бросок
 К содержимому
-Компактная
 Конфиденциальность
 ЛутDaggerheart
 Назад
-Обычная
-Отправить на печать
+Напечатать
 Поиск
 Ссылка на набор
 Таблицы
 Условия использования
 Установить как приложение
-Цветная
-Чёрно-белая
+Цвет
+Ч/б
 
 ## en :: tree
 RootWebArea "Daggerheart Loot Generator" [url=/en/p/set-clipped1?as=gm2]
@@ -77,22 +77,22 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/p/set-clipped1?as=gm2]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
+    link "Back" [url=/en/roll/std]
     heading "Printing cards" [level=1]
-    StaticText "Cards: 1. A4 sheets: 1. Card size 63×88 mm - the size of a playi..." [namelen=72 namehash=8d8c7d0b]
-    button "Back"
-    button "Send to printer"
+    button "Print"
     button "Color" [pressed=true]
-    button "Black and white" [pressed=false]
-    button "Standard" [pressed=true]
-    button "Compact" [pressed=false]
+    button "B&W" [pressed=false]
+    button "63×88" [pressed=true]
+    button "44×63" [pressed=false]
     button "Link to this set"
     status ""
       StaticText "The text does not fit some cards in print: 1. The end of the tex..." [namelen=89 namehash=72741af4]
     StaticText "The text does not fit some cards in print: 1. The end of the tex..." [namelen=89 namehash=72741af4]
-    ... StaticText x3 of 7 same-shape siblings elided
+    StaticText "ITEM"
     heading "SCROLL OF THE LONG NIGHT" [level=2]
-    StaticText "Daggerheart"
+    StaticText "Once per rest you can unroll the scroll and read it aloud until ..." [namelen=3000 namehash=6b4f4e88]
     StaticText "Homebrew"
+    StaticText "Cards: 1. A4 sheets: 1. Card size 63×88 mm - the size of a playi..." [namelen=72 namehash=8d8c7d0b]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -101,22 +101,22 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/p/set-clipped1?as=gm2]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
+44×63
+63×88
 Account: gm2@example.test
+B&W
 Back
-Black and white
 Color
-Compact
 EN
 Install as an app
 Link to this set
 LootDaggerheart
+Print
 Privacy
 RU
 Roll
 Search
-Send to printer
 Skip to content
-Standard
 Tables
 Terms of use
 daggerheart.com

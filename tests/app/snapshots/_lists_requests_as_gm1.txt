@@ -1,6 +1,6 @@
 # #/lists ~ requests as gm1
 # route: #/lists
-# why: two purchase requests on «Лавка кузнеца», one per link: the gold line «2 запроса ждут ответа» under its meta line «10 позиций · изменён 3 дня назад», and in its link name; the pick box in its corner; no line on the other cards; the toast «Новых запросов по списку «Лавка кузнеца»: 2» with «Открыть»; the tab title «(2) Мои списки - ...»
+# why: two purchase requests on «Лавка кузнеца», one per link: the neutral chip «Новое в списке (2)» in its card and in its link name; no chip on the other cards; the toast «Новых запросов по списку «Лавка кузнеца»: 2» with «Открыть»; the tab title «(2) Мои списки - ...»
 # as: gm1
 
 ## ru :: tree
@@ -20,35 +20,25 @@ RootWebArea "(2) Мои списки - Генератор лута Daggerheart" 
   main ""
     heading "Мои списки" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
-    StaticText "Соберите добычу в список и отправьте игрокам одной ссылкой."
-    StaticText "НОВЫЙ СПИСОК"
-    textbox "Новый список" [multiline=false readonly=false required=false]
-    button "Создать"
     button "Импорт из файла" [expanded=false]
+    button "Новый список" [expanded=false]
     status ""
-    heading "ВАШ АККАУНТ" [level=2]
     StaticText "3 списка из 50"
-    checkbox "Выбрать все" [checked=false]
-    StaticText "ВЫБРАТЬ ВСЕ"
-    generic ""
-    checkbox "Выбрать: Пустой список" [checked=false]
+    button "Выбрать"
     link "Пустой список, 0 позиций, изменён 1 час назад" [url=/lists/00000000-0000-4000-8000-000000000102]
       StaticText "Пустой список"
       StaticText "0 позиций · изменён 1 час назад"
       StaticText "Список пуст"
-    button "Удалить"
-    checkbox "Выбрать: Лавка кузнеца" [checked=false]
-    link "Лавка кузнеца, 10 позиций, изменён 3 дня назад, 2 запроса ждут о..." [url=/lists/00000000-0000-4000-8000-000000000101 namelen=69 namehash=cf9e017c]
+    button "Ещё: Пустой список" [expanded=false haspopup=menu]
+    link "Лавка кузнеца, 10 позиций, изменён 3 дня назад, Новое в списке (..." [url=/lists/00000000-0000-4000-8000-000000000101 namelen=66 namehash=39dc80a0]
       StaticText "Лавка кузнеца"
       StaticText "10 позиций · изменён 3 дня назад"
-      StaticText "2 запроса ждут ответа"
-    button "Удалить"
-    checkbox "Выбрать: Трофеи" [checked=false]
+      StaticText "Новое в списке (2)"
+    button "Ещё: Лавка кузнеца" [expanded=false haspopup=menu]
     link "Трофеи, 2 позиции, изменён в прошлом месяце" [url=/lists/00000000-0000-4000-8000-000000000103]
       StaticText "Трофеи"
       StaticText "2 позиции · изменён в прошлом месяце"
-    button "Удалить"
+    button "Ещё: Трофеи" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -60,30 +50,27 @@ RootWebArea "(2) Мои списки - Генератор лута Daggerheart" 
     button "Открыть"
 
 ## ru :: controls
-?Справка
 EN
 RU
 daggerheart.com
 Аккаунт: gm1@example.test
 Бросок
-Выбрать все
-Выбрать: Лавка кузнеца
-Выбрать: Пустой список
-Выбрать: Трофеи
+Выбрать
+Ещё: Лавка кузнеца
+Ещё: Пустой список
+Ещё: Трофеи
 Импорт из файла
 К содержимому
 Конфиденциальность
-Лавка кузнеца, 10 позиций, изменён 3 дня назад, 2 запроса ждут о... [namelen=69 namehash=cf9e017c]
+Лавка кузнеца, 10 позиций, изменён 3 дня назад, Новое в списке (... [namelen=66 namehash=39dc80a0]
 ЛутDaggerheart
 Новый список
 Открывать при запуске
 Открыть
 Поиск
 Пустой список, 0 позиций, изменён 1 час назад
-Создать
 Таблицы
 Трофеи, 2 позиции, изменён в прошлом месяце
-Удалить
 Условия использования
 Установить как приложение
 
@@ -104,35 +91,25 @@ RootWebArea "(2) My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm1]
   main ""
     heading "My lists" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
-    StaticText "Collect loot into a list and send it to your players as a single..." [namelen=70 namehash=7a94568a]
-    StaticText "NEW LIST"
-    textbox "New list" [multiline=false readonly=false required=false]
-    button "Create"
     button "Import from file" [expanded=false]
+    button "New list" [expanded=false]
     status ""
-    heading "YOUR ACCOUNT" [level=2]
     StaticText "3 lists of 50"
-    checkbox "Select all" [checked=false]
-    StaticText "SELECT ALL"
-    generic ""
-    checkbox "Select: Пустой список" [checked=false]
+    button "Select"
     link "Пустой список, 0 items, edited 1 hour ago" [url=/en/lists/00000000-0000-4000-8000-000000000102]
       StaticText "Пустой список"
       StaticText "0 items · edited 1 hour ago"
       StaticText "The list is empty"
-    button "Delete"
-    checkbox "Select: Лавка кузнеца" [checked=false]
-    link "Лавка кузнеца, 10 items, edited 3 days ago, 2 requests wait for ..." [url=/en/lists/00000000-0000-4000-8000-000000000101 namelen=73 namehash=f0d166c3]
+    button "More: Пустой список" [expanded=false haspopup=menu]
+    link "Лавка кузнеца, 10 items, edited 3 days ago, New in this list (2)" [url=/en/lists/00000000-0000-4000-8000-000000000101]
       StaticText "Лавка кузнеца"
       StaticText "10 items · edited 3 days ago"
-      StaticText "2 requests wait for an answer"
-    button "Delete"
-    checkbox "Select: Трофеи" [checked=false]
+      StaticText "New in this list (2)"
+    button "More: Лавка кузнеца" [expanded=false haspopup=menu]
     link "Трофеи, 2 items, edited last month" [url=/en/lists/00000000-0000-4000-8000-000000000103]
       StaticText "Трофеи"
       StaticText "2 items · edited last month"
-    button "Delete"
+    button "More: Трофеи" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -144,14 +121,14 @@ RootWebArea "(2) My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm1]
     button "Open"
 
 ## en :: controls
-?Help
 Account: gm1@example.test
-Create
-Delete
 EN
 Import from file
 Install as an app
 LootDaggerheart
+More: Лавка кузнеца
+More: Пустой список
+More: Трофеи
 New list
 Open
 Open on start
@@ -159,14 +136,11 @@ Privacy
 RU
 Roll
 Search
-Select all
-Select: Лавка кузнеца
-Select: Пустой список
-Select: Трофеи
+Select
 Skip to content
 Tables
 Terms of use
 daggerheart.com
-Лавка кузнеца, 10 items, edited 3 days ago, 2 requests wait for ... [namelen=73 namehash=f0d166c3]
+Лавка кузнеца, 10 items, edited 3 days ago, New in this list (2)
 Пустой список, 0 items, edited 1 hour ago
 Трофеи, 2 items, edited last month

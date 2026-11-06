@@ -1,0 +1,171 @@
+search-start | p.cause < div.empty
+   ru: 62c/2L/31cpl/cap60/free279/wid262  62c/1L/62cpl/cap60/free467/wid467  62c/1L/62cpl/cap60/free467/wid467  62c/1L/62cpl/cap60/free467/wid467  62c/1L/62cpl/cap60/free467/wid467
+   en: 55c/2L/28cpl/cap60/free279/wid266  55c/1L/55cpl/cap60/free373/wid373  55c/1L/55cpl/cap60/free373/wid373  55c/1L/55cpl/cap60/free373/wid373  55c/1L/55cpl/cap60/free373/wid373
+search-start | p < details.foot-licence
+   ru: 661c/13L/51cpl/free313/wid310  661c/6L/110cpl/free721/wid720  661c/4L/165cpl/free1133/wid1126  661c/3L/220cpl/free1393/wid1391  661c/3L/220cpl/free1440/wid1432
+   en: 660c/13L/51cpl/free313/wid310  660c/6L/110cpl/free721/wid719  660c/4L/165cpl/free1133/wid1112  660c/3L/220cpl/free1393/wid1369  660c/3L/220cpl/free1440/wid1426
+search-start | p.page-sub
+   ru: -  91c/2L/46cpl/cap70/free721/wid485/EARLY1of1  91c/2L/46cpl/cap70/free1133/wid485/EARLY1of1  91c/2L/46cpl/cap70/free1393/wid485/EARLY1of1  91c/2L/46cpl/cap70/free1440/wid485/EARLY1of1
+   en: -  90c/2L/45cpl/cap70/free721/wid477/EARLY1of1  90c/2L/45cpl/cap70/free1133/wid477/EARLY1of1  90c/2L/45cpl/cap70/free1393/wid477/EARLY1of1  90c/2L/45cpl/cap70/free1440/wid477/EARLY1of1
+search-start | p.title < div.empty
+   ru: -  -  -  -  -
+   en: 25c/1L/25cpl/free177/wid177  25c/1L/25cpl/free177/wid177  25c/1L/25cpl/free177/wid177  25c/1L/25cpl/free177/wid177  25c/1L/25cpl/free177/wid177
+search-none | p.cause < div.empty
+   ru: 49c/2L/25cpl/cap60/free279/wid275  49c/1L/49cpl/cap60/free357/wid357  49c/1L/49cpl/cap60/free357/wid357  49c/1L/49cpl/cap60/free357/wid357  49c/1L/49cpl/cap60/free357/wid357
+   en: 47c/2L/24cpl/cap60/free279/wid229  47c/1L/47cpl/cap60/free319/wid319  47c/1L/47cpl/cap60/free319/wid319  47c/1L/47cpl/cap60/free319/wid319  47c/1L/47cpl/cap60/free319/wid319
+search-none | p < details.foot-licence
+   ru: 661c/13L/51cpl/free313/wid310  661c/6L/110cpl/free721/wid720  661c/4L/165cpl/free1133/wid1126  661c/3L/220cpl/free1393/wid1391  661c/3L/220cpl/free1440/wid1432
+   en: 660c/13L/51cpl/free313/wid310  660c/6L/110cpl/free721/wid719  660c/4L/165cpl/free1133/wid1112  660c/3L/220cpl/free1393/wid1369  660c/3L/220cpl/free1440/wid1426
+search-none | p.page-sub
+   ru: -  91c/2L/46cpl/cap70/free721/wid485/EARLY1of1  91c/2L/46cpl/cap70/free1133/wid485/EARLY1of1  91c/2L/46cpl/cap70/free1393/wid485/EARLY1of1  91c/2L/46cpl/cap70/free1440/wid485/EARLY1of1
+   en: -  90c/2L/45cpl/cap70/free721/wid477/EARLY1of1  90c/2L/45cpl/cap70/free1133/wid477/EARLY1of1  90c/2L/45cpl/cap70/free1393/wid477/EARLY1of1  90c/2L/45cpl/cap70/free1440/wid477/EARLY1of1
+search-rows | p < details.foot-licence
+   ru: 661c/13L/51cpl/free313/wid310  661c/6L/110cpl/free721/wid720  661c/4L/165cpl/free1133/wid1126  661c/3L/220cpl/free1393/wid1391  661c/3L/220cpl/free1440/wid1432
+   en: 660c/13L/51cpl/free313/wid310  660c/6L/110cpl/free721/wid719  660c/4L/165cpl/free1133/wid1112  660c/3L/220cpl/free1393/wid1369  660c/3L/220cpl/free1440/wid1426
+search-rows | p.page-sub
+   ru: -  91c/2L/46cpl/cap70/free721/wid485/EARLY1of1  91c/2L/46cpl/cap70/free1133/wid485/EARLY1of1  91c/2L/46cpl/cap70/free1393/wid485/EARLY1of1  91c/2L/46cpl/cap70/free1440/wid485/EARLY1of1
+   en: -  90c/2L/45cpl/cap70/free721/wid477/EARLY1of1  90c/2L/45cpl/cap70/free1133/wid477/EARLY1of1  90c/2L/45cpl/cap70/free1393/wid477/EARLY1of1  90c/2L/45cpl/cap70/free1440/wid477/EARLY1of1
+tables-weapon-help | p < div.helpbox
+   ru: 144c/4L/36cpl/cap78/free277/wid257/n3  144c/2L/72cpl/cap78/free685/wid514/EARLY1of3  144c/2L/72cpl/cap78/free1097/wid514/EARLY3of3  144c/2L/72cpl/cap78/free1357/wid514/EARLY3of3  144c/2L/72cpl/cap78/free1404/wid514/EARLY3of3
+   en: 163c/4L/41cpl/cap78/free277/wid275/n3  163c/2L/82cpl/cap78/free685/wid538/n3  163c/2L/82cpl/cap78/free1097/wid538/EARLY3of3  163c/2L/82cpl/cap78/free1357/wid538/EARLY3of3  163c/2L/82cpl/cap78/free1404/wid538/EARLY3of3
+tables-weapon-help | p < details.foot-licence
+   ru: 661c/13L/51cpl/free313/wid310  661c/6L/110cpl/free721/wid720  661c/4L/165cpl/free1133/wid1126  661c/3L/220cpl/free1393/wid1391  661c/3L/220cpl/free1440/wid1432
+   en: 660c/13L/51cpl/free313/wid310  660c/6L/110cpl/free721/wid719  660c/4L/165cpl/free1133/wid1112  660c/3L/220cpl/free1393/wid1369  660c/3L/220cpl/free1440/wid1426
+tables-loot | p < details.foot-licence
+   ru: 661c/13L/51cpl/free313/wid310  661c/6L/110cpl/free721/wid720  661c/4L/165cpl/free1133/wid1126  661c/3L/220cpl/free1393/wid1391  661c/3L/220cpl/free1440/wid1432
+   en: 660c/13L/51cpl/free313/wid310  660c/6L/110cpl/free721/wid719  660c/4L/165cpl/free1133/wid1112  660c/3L/220cpl/free1393/wid1369  660c/3L/220cpl/free1440/wid1426
+tables-voa | p < details.foot-licence
+   ru: 661c/13L/51cpl/free313/wid310  661c/6L/110cpl/free721/wid720  661c/4L/165cpl/free1133/wid1126  661c/3L/220cpl/free1393/wid1391  661c/3L/220cpl/free1440/wid1432
+   en: 660c/13L/51cpl/free313/wid310  660c/6L/110cpl/free721/wid719  660c/4L/165cpl/free1133/wid1112  660c/3L/220cpl/free1393/wid1369  660c/3L/220cpl/free1440/wid1426
+tables-none | p.cause < div.empty
+   ru: 62c/2L/31cpl/cap60/free279/wid275  62c/1L/62cpl/cap60/free456/wid456  62c/1L/62cpl/cap60/free456/wid456  62c/1L/62cpl/cap60/free456/wid456  62c/1L/62cpl/cap60/free456/wid456
+   en: 57c/2L/29cpl/cap60/free279/wid255  57c/1L/57cpl/cap60/free369/wid369  57c/1L/57cpl/cap60/free369/wid369  57c/1L/57cpl/cap60/free369/wid369  57c/1L/57cpl/cap60/free369/wid369
+tables-none | p < details.foot-licence
+   ru: 661c/13L/51cpl/free313/wid310  661c/6L/110cpl/free721/wid720  661c/4L/165cpl/free1133/wid1126  661c/3L/220cpl/free1393/wid1391  661c/3L/220cpl/free1440/wid1432
+   en: 660c/13L/51cpl/free313/wid310  660c/6L/110cpl/free721/wid719  660c/4L/165cpl/free1133/wid1112  660c/3L/220cpl/free1393/wid1369  660c/3L/220cpl/free1440/wid1426
+tables-dialog | p < details.foot-licence
+   ru: 661c/13L/51cpl/free313/wid310  661c/6L/110cpl/free721/wid720  661c/4L/165cpl/free1133/wid1126  661c/3L/220cpl/free1393/wid1391  661c/3L/220cpl/free1440/wid1432
+   en: 660c/13L/51cpl/free313/wid310  660c/6L/110cpl/free721/wid719  660c/4L/165cpl/free1133/wid1112  660c/3L/220cpl/free1393/wid1369  660c/3L/220cpl/free1440/wid1426
+roll-std-help | p < div.helpbox
+   ru: 114c/3L/38cpl/cap78/free277/wid266/n4  114c/2L/57cpl/cap78/free685/wid500/n4  114c/2L/57cpl/cap78/free1097/wid500/EARLY1of4  114c/2L/57cpl/cap78/free1357/wid500/EARLY1of4  114c/2L/57cpl/cap78/free1404/wid500/EARLY1of4
+   en: 97c/3L/32cpl/cap78/free277/wid264/n4  97c/2L/49cpl/cap78/free685/wid495/EARLY1of4  97c/2L/49cpl/cap78/free1097/wid495/EARLY1of4  97c/2L/49cpl/cap78/free1357/wid495/EARLY1of4  97c/2L/49cpl/cap78/free1404/wid495/EARLY1of4
+roll-std-help | p < div.card-desc.mdtext
+   ru: 186c/7L/27cpl/free181/wid181/n4  186c/6L/31cpl/free247/wid234/n4  186c/6L/31cpl/free220/wid219/n4  186c/4L/47cpl/free350/wid337/n4  186c/4L/47cpl/free374/wid370/n4
+   en: 208c/6L/35cpl/free181/wid181/n4  208c/5L/42cpl/free247/wid233/n4  208c/6L/35cpl/free225/wid222/n4  208c/4L/52cpl/free355/wid348/n4  208c/4L/52cpl/free378/wid368/n4
+roll-std-help | p < details.foot-licence
+   ru: 661c/13L/51cpl/free313/wid310  661c/6L/110cpl/free721/wid720  661c/4L/165cpl/free1133/wid1126  661c/3L/220cpl/free1393/wid1391  661c/3L/220cpl/free1440/wid1432
+   en: 660c/13L/51cpl/free313/wid310  660c/6L/110cpl/free721/wid719  660c/4L/165cpl/free1133/wid1112  660c/3L/220cpl/free1393/wid1369  660c/3L/220cpl/free1440/wid1426
+roll-std-help | p.page-sub
+   ru: -  52c/1L/52cpl/cap70/free721/wid345  52c/1L/52cpl/cap70/free1133/wid345  52c/1L/52cpl/cap70/free1393/wid345  52c/1L/52cpl/cap70/free1440/wid345
+   en: -  53c/1L/53cpl/cap70/free721/wid304  53c/1L/53cpl/cap70/free1133/wid304  53c/1L/53cpl/cap70/free1393/wid304  53c/1L/53cpl/cap70/free1440/wid304
+roll-std-result | p < div.card-desc.mdtext
+   ru: 186c/7L/27cpl/free181/wid181/n4  186c/6L/31cpl/free247/wid234/n4  186c/6L/31cpl/free220/wid219/n4  186c/4L/47cpl/free350/wid337/n4  186c/4L/47cpl/free374/wid370/n4
+   en: 208c/6L/35cpl/free181/wid181/n4  208c/5L/42cpl/free247/wid233/n4  208c/6L/35cpl/free225/wid222/n4  208c/4L/52cpl/free355/wid348/n4  208c/4L/52cpl/free378/wid368/n4
+roll-std-result | p < details.foot-licence
+   ru: 661c/13L/51cpl/free313/wid310  661c/6L/110cpl/free721/wid720  661c/4L/165cpl/free1133/wid1126  661c/3L/220cpl/free1393/wid1391  661c/3L/220cpl/free1440/wid1432
+   en: 660c/13L/51cpl/free313/wid310  660c/6L/110cpl/free721/wid719  660c/4L/165cpl/free1133/wid1112  660c/3L/220cpl/free1393/wid1369  660c/3L/220cpl/free1440/wid1426
+roll-std-result | p.page-sub
+   ru: -  52c/1L/52cpl/cap70/free721/wid345  52c/1L/52cpl/cap70/free1133/wid345  52c/1L/52cpl/cap70/free1393/wid345  52c/1L/52cpl/cap70/free1440/wid345
+   en: -  53c/1L/53cpl/cap70/free721/wid304  53c/1L/53cpl/cap70/free1133/wid304  53c/1L/53cpl/cap70/free1393/wid304  53c/1L/53cpl/cap70/free1440/wid304
+roll-alt-help | p < div.helpbox
+   ru: 180c/5L/36cpl/cap78/free277/wid277/n5  180c/3L/60cpl/cap78/free685/wid536/EARLY1of5  180c/3L/60cpl/cap78/free1097/wid536/EARLY3of5  180c/3L/60cpl/cap78/free1357/wid536/EARLY3of5  180c/3L/60cpl/cap78/free1404/wid536/EARLY3of5
+   en: 165c/4L/41cpl/cap78/free277/wid270/n5  165c/2L/83cpl/cap78/free685/wid543/n5  165c/2L/83cpl/cap78/free1097/wid543/EARLY3of5  165c/2L/83cpl/cap78/free1357/wid543/EARLY3of5  165c/2L/83cpl/cap78/free1404/wid543/EARLY3of5
+roll-alt-help | p < div.card-desc.mdtext
+   ru: 89c/4L/22cpl/free181/wid165/n4  89c/3L/30cpl/free247/wid243/n4  89c/4L/22cpl/free220/wid195/n4  89c/2L/45cpl/free350/wid345/n4  89c/2L/45cpl/free374/wid345/n4
+   en: 82c/3L/27cpl/free181/wid172/n4  82c/2L/41cpl/free247/wid239/n4  82c/3L/27cpl/free225/wid216/n4  82c/2L/41cpl/free355/wid351/n4  82c/2L/41cpl/free378/wid369/n4
+roll-alt-help | p < details.foot-licence
+   ru: 661c/13L/51cpl/free313/wid310  661c/6L/110cpl/free721/wid720  661c/4L/165cpl/free1133/wid1126  661c/3L/220cpl/free1393/wid1391  661c/3L/220cpl/free1440/wid1432
+   en: 660c/13L/51cpl/free313/wid310  660c/6L/110cpl/free721/wid719  660c/4L/165cpl/free1133/wid1112  660c/3L/220cpl/free1393/wid1369  660c/3L/220cpl/free1440/wid1426
+roll-alt-help | p.page-sub
+   ru: -  61c/1L/61cpl/cap70/free721/wid417  61c/1L/61cpl/cap70/free1133/wid417  61c/1L/61cpl/cap70/free1393/wid417  61c/1L/61cpl/cap70/free1440/wid417
+   en: -  66c/1L/66cpl/cap70/free721/wid375  66c/1L/66cpl/cap70/free1133/wid375  66c/1L/66cpl/cap70/free1393/wid375  66c/1L/66cpl/cap70/free1440/wid375
+roll-voa-help | p < div.card-desc.mdtext
+   ru: 186c/8L/23cpl/free181/wid179  186c/6L/31cpl/free247/wid236  186c/5L/37cpl/free350/wid326  186c/5L/37cpl/free350/wid326  186c/5L/37cpl/free350/wid326
+   en: 178c/6L/30cpl/free181/wid178  178c/5L/36cpl/free247/wid239  178c/4L/45cpl/free350/wid346  178c/4L/45cpl/free350/wid346  178c/4L/45cpl/free350/wid346
+roll-voa-help | p < details.foot-licence
+   ru: 661c/13L/51cpl/free313/wid310  661c/6L/110cpl/free721/wid720  661c/4L/165cpl/free1133/wid1126  661c/3L/220cpl/free1393/wid1391  661c/3L/220cpl/free1440/wid1432
+   en: 660c/13L/51cpl/free313/wid310  660c/6L/110cpl/free721/wid719  660c/4L/165cpl/free1133/wid1112  660c/3L/220cpl/free1393/wid1369  660c/3L/220cpl/free1440/wid1426
+roll-voa-help | p.page-sub
+   ru: -  46c/1L/46cpl/cap70/free721/wid299  46c/1L/46cpl/cap70/free1133/wid299  46c/1L/46cpl/cap70/free1393/wid299  46c/1L/46cpl/cap70/free1440/wid299
+   en: -  46c/1L/46cpl/cap70/free721/wid251  46c/1L/46cpl/cap70/free1133/wid251  46c/1L/46cpl/cap70/free1393/wid251  46c/1L/46cpl/cap70/free1440/wid251
+roll-voa-help | p < div.helpbox
+   ru: -  372c/5L/74cpl/cap78/free685/wid538/EARLY2of5  372c/5L/74cpl/cap78/free1097/wid538/EARLY5of5  372c/5L/74cpl/cap78/free1357/wid538/EARLY5of5  372c/5L/74cpl/cap78/free1404/wid538/EARLY5of5
+   en: 371c/9L/41cpl/cap78/free277/wid274/n5  371c/4L/93cpl/cap78/free685/wid537/EARLY3of5  371c/4L/93cpl/cap78/free1097/wid537/EARLY5of5  371c/4L/93cpl/cap78/free1357/wid537/EARLY5of5  371c/4L/93cpl/cap78/free1404/wid537/EARLY5of5
+lists-out | p.page-sub
+   ru: 59c/2L/30cpl/cap70/free313/wid293  59c/1L/59cpl/cap70/free721/wid392  59c/1L/59cpl/cap70/free1133/wid392  59c/1L/59cpl/cap70/free1393/wid392  59c/1L/59cpl/cap70/free1440/wid392
+   en: 70c/2L/35cpl/cap70/free313/wid305  70c/1L/70cpl/cap70/free721/wid371  70c/1L/70cpl/cap70/free1133/wid371  70c/1L/70cpl/cap70/free1393/wid371  70c/1L/70cpl/cap70/free1440/wid371
+lists-out | p.signin-lead < div.signin
+   ru: 91c/3L/30cpl/cap62/free275/wid237  91c/2L/46cpl/cap62/free593/wid374  91c/2L/46cpl/cap62/free1005/wid374/EARLY1of1  91c/2L/46cpl/cap62/free1265/wid374/EARLY1of1  91c/2L/46cpl/cap62/free1312/wid374/EARLY1of1
+   en: 78c/2L/39cpl/cap62/free275/wid245  78c/2L/39cpl/cap62/free590/wid395/EARLY1of1  78c/2L/39cpl/cap62/free1002/wid395/EARLY1of1  78c/2L/39cpl/cap62/free1262/wid395/EARLY1of1  78c/2L/39cpl/cap62/free1309/wid395/EARLY1of1
+lists-out | p < details.foot-licence
+   ru: 661c/13L/51cpl/free313/wid310  661c/6L/110cpl/free721/wid720  661c/4L/165cpl/free1133/wid1126  661c/3L/220cpl/free1393/wid1391  661c/3L/220cpl/free1440/wid1432
+   en: 660c/13L/51cpl/free313/wid310  660c/6L/110cpl/free721/wid719  660c/4L/165cpl/free1133/wid1112  660c/3L/220cpl/free1393/wid1369  660c/3L/220cpl/free1440/wid1426
+homebrew-out | p.signin-lead < div.signin
+   ru: 39c/1L/39cpl/cap62/free313/wid261  39c/1L/39cpl/cap62/free631/wid261  39c/1L/39cpl/cap62/free1043/wid261  39c/1L/39cpl/cap62/free1303/wid261  39c/1L/39cpl/cap62/free1350/wid261
+   en: 33c/1L/33cpl/cap62/free313/wid190  33c/1L/33cpl/cap62/free628/wid190  33c/1L/33cpl/cap62/free1040/wid190  33c/1L/33cpl/cap62/free1300/wid190  33c/1L/33cpl/cap62/free1347/wid190
+homebrew-out | p < details.foot-licence
+   ru: 661c/13L/51cpl/free313/wid310  661c/6L/110cpl/free721/wid720  661c/4L/165cpl/free1133/wid1126  661c/3L/220cpl/free1393/wid1391  661c/3L/220cpl/free1440/wid1432
+   en: 660c/13L/51cpl/free313/wid310  660c/6L/110cpl/free721/wid719  660c/4L/165cpl/free1133/wid1112  660c/3L/220cpl/free1393/wid1369  660c/3L/220cpl/free1440/wid1426
+homebrew-out | p.page-sub
+   ru: -  105c/2L/53cpl/cap70/free721/wid474/EARLY1of1  105c/2L/53cpl/cap70/free1133/wid474/EARLY1of1  105c/2L/53cpl/cap70/free1393/wid474/EARLY1of1  105c/2L/53cpl/cap70/free1440/wid474/EARLY1of1
+   en: -  113c/2L/57cpl/cap70/free721/wid475/EARLY1of1  113c/2L/57cpl/cap70/free1133/wid475/EARLY1of1  113c/2L/57cpl/cap70/free1393/wid475/EARLY1of1  113c/2L/57cpl/cap70/free1440/wid475/EARLY1of1
+account-out | p.page-sub < div.col
+   ru: 97c/3L/32cpl/cap70/free313/wid297  97c/2L/49cpl/cap70/free557/wid432  97c/2L/49cpl/cap70/free557/wid432  97c/2L/49cpl/cap70/free557/wid432  97c/2L/49cpl/cap70/free557/wid432
+   en: 88c/2L/44cpl/cap70/free313/wid258  88c/2L/44cpl/cap70/free557/wid482/EARLY1of1  88c/2L/44cpl/cap70/free557/wid482/EARLY1of1  88c/2L/44cpl/cap70/free557/wid482/EARLY1of1  88c/2L/44cpl/cap70/free557/wid482/EARLY1of1
+account-out | p.hint < div.field
+   ru: 59c/2L/30cpl/free275/wid243  59c/1L/59cpl/free519/wid375  59c/1L/59cpl/free519/wid375  59c/1L/59cpl/free519/wid375  59c/1L/59cpl/free519/wid375
+   en: 58c/2L/29cpl/free275/wid270  58c/1L/58cpl/free519/wid308  58c/1L/58cpl/free519/wid308  58c/1L/58cpl/free519/wid308  58c/1L/58cpl/free519/wid308
+account-out | p < details.foot-licence
+   ru: 661c/13L/51cpl/free313/wid310  661c/6L/110cpl/free721/wid720  661c/4L/165cpl/free1133/wid1126  661c/3L/220cpl/free1393/wid1391  661c/3L/220cpl/free1440/wid1432
+   en: 660c/13L/51cpl/free313/wid310  660c/6L/110cpl/free721/wid719  660c/4L/165cpl/free1133/wid1112  660c/3L/220cpl/free1393/wid1369  660c/3L/220cpl/free1440/wid1426
+item-page | p.subline < div.card-sub
+   ru: 44c/1L/44cpl/free313/wid287  44c/1L/44cpl/free401/wid160  44c/1L/44cpl/free556/wid160  44c/1L/44cpl/free556/wid160  44c/1L/44cpl/free556/wid160
+   en: 39c/1L/39cpl/free313/wid219  39c/1L/39cpl/free401/wid110  39c/1L/39cpl/free556/wid110  39c/1L/39cpl/free556/wid110  39c/1L/39cpl/free556/wid110
+item-page | p < div.card-desc.mdtext
+   ru: 49c/2L/25cpl/free313/wid281  49c/1L/49cpl/free401/wid329  49c/1L/49cpl/free556/wid329  49c/1L/49cpl/free556/wid329  49c/1L/49cpl/free556/wid329
+   en: 50c/1L/50cpl/free313/wid296  50c/1L/50cpl/free401/wid296  50c/1L/50cpl/free556/wid296  50c/1L/50cpl/free556/wid296  50c/1L/50cpl/free556/wid296
+item-page | p < details.foot-licence
+   ru: 661c/13L/51cpl/free313/wid310  661c/6L/110cpl/free721/wid720  661c/4L/165cpl/free1133/wid1126  661c/3L/220cpl/free1393/wid1391  661c/3L/220cpl/free1440/wid1432
+   en: 660c/13L/51cpl/free313/wid310  660c/6L/110cpl/free721/wid719  660c/4L/165cpl/free1133/wid1112  660c/3L/220cpl/free1393/wid1369  660c/3L/220cpl/free1440/wid1426
+item-voa | p.subline < div.card-sub
+   ru: 44c/1L/44cpl/free313/wid287  44c/1L/44cpl/free401/wid160  44c/1L/44cpl/free556/wid160  44c/1L/44cpl/free556/wid160  44c/1L/44cpl/free556/wid160
+   en: 39c/1L/39cpl/free313/wid219  39c/1L/39cpl/free401/wid110  39c/1L/39cpl/free556/wid110  39c/1L/39cpl/free556/wid110  39c/1L/39cpl/free556/wid110
+item-voa | p < div.card-desc.mdtext
+   ru: 49c/2L/25cpl/free313/wid281  49c/1L/49cpl/free401/wid329  49c/1L/49cpl/free556/wid329  49c/1L/49cpl/free556/wid329  49c/1L/49cpl/free556/wid329
+   en: 50c/1L/50cpl/free313/wid296  50c/1L/50cpl/free401/wid296  50c/1L/50cpl/free556/wid296  50c/1L/50cpl/free556/wid296  50c/1L/50cpl/free556/wid296
+item-voa | p < details.foot-licence
+   ru: 661c/13L/51cpl/free313/wid310  661c/6L/110cpl/free721/wid720  661c/4L/165cpl/free1133/wid1126  661c/3L/220cpl/free1393/wid1391  661c/3L/220cpl/free1440/wid1432
+   en: 660c/13L/51cpl/free313/wid310  660c/6L/110cpl/free721/wid719  660c/4L/165cpl/free1133/wid1112  660c/3L/220cpl/free1393/wid1369  660c/3L/220cpl/free1440/wid1426
+print | p.page-sub
+   ru: 33c/1L/33cpl/cap70/free313/wid218  33c/1L/33cpl/cap70/free721/wid218  33c/1L/33cpl/cap70/free1133/wid218  33c/1L/33cpl/cap70/free1393/wid218  33c/1L/33cpl/cap70/free1440/wid218
+   en: -  -  -  -  -
+print | p < details.foot-licence
+   ru: 661c/13L/51cpl/free313/wid310  661c/6L/110cpl/free721/wid720  661c/4L/165cpl/free1133/wid1126  661c/3L/220cpl/free1393/wid1391  661c/3L/220cpl/free1440/wid1432
+   en: 660c/13L/51cpl/free313/wid310  660c/6L/110cpl/free721/wid719  660c/4L/165cpl/free1133/wid1112  660c/3L/220cpl/free1393/wid1369  660c/3L/220cpl/free1440/wid1426
+share-notfound | p.page-sub
+   ru: 38c/1L/38cpl/cap70/free313/wid248  38c/1L/38cpl/cap70/free721/wid248  38c/1L/38cpl/cap70/free1133/wid248  38c/1L/38cpl/cap70/free1393/wid248  38c/1L/38cpl/cap70/free1440/wid248
+   en: 40c/1L/40cpl/cap70/free313/wid219  40c/1L/40cpl/cap70/free721/wid219  40c/1L/40cpl/cap70/free1133/wid219  40c/1L/40cpl/cap70/free1393/wid219  40c/1L/40cpl/cap70/free1440/wid219
+share-notfound | p < details.foot-licence
+   ru: 661c/13L/51cpl/free313/wid310  661c/6L/110cpl/free721/wid720  661c/4L/165cpl/free1133/wid1126  661c/3L/220cpl/free1393/wid1391  661c/3L/220cpl/free1440/wid1432
+   en: 660c/13L/51cpl/free313/wid310  660c/6L/110cpl/free721/wid719  660c/4L/165cpl/free1133/wid1112  660c/3L/220cpl/free1393/wid1369  660c/3L/220cpl/free1440/wid1426
+footer | p < div.card-desc.mdtext
+   ru: 186c/7L/27cpl/free181/wid181/n4  186c/6L/31cpl/free247/wid234/n4  186c/6L/31cpl/free220/wid219/n4  186c/4L/47cpl/free350/wid337/n4  186c/4L/47cpl/free374/wid370/n4
+   en: 208c/6L/35cpl/free181/wid181/n4  208c/5L/42cpl/free247/wid233/n4  208c/6L/35cpl/free225/wid222/n4  208c/4L/52cpl/free355/wid348/n4  208c/4L/52cpl/free378/wid368/n4
+footer | p < details.foot-licence
+   ru: 661c/13L/51cpl/free313/wid310  661c/6L/110cpl/free721/wid720  661c/4L/165cpl/free1133/wid1126  661c/3L/220cpl/free1393/wid1391  661c/3L/220cpl/free1440/wid1432
+   en: 660c/13L/51cpl/free313/wid310  660c/6L/110cpl/free721/wid719  660c/4L/165cpl/free1133/wid1112  660c/3L/220cpl/free1393/wid1369  660c/3L/220cpl/free1440/wid1426
+footer | p.page-sub
+   ru: -  52c/1L/52cpl/cap70/free721/wid345  52c/1L/52cpl/cap70/free1133/wid345  52c/1L/52cpl/cap70/free1393/wid345  52c/1L/52cpl/cap70/free1440/wid345
+   en: -  53c/1L/53cpl/cap70/free721/wid304  53c/1L/53cpl/cap70/free1133/wid304  53c/1L/53cpl/cap70/free1393/wid304  53c/1L/53cpl/cap70/free1440/wid304
+privacy | p
+   ru: 1197c/32L/37cpl/free312/wid311/n13  1197c/15L/80cpl/free640/wid631/n13  1197c/15L/80cpl/free640/wid631/n13  1197c/15L/80cpl/free640/wid631/n13  1197c/15L/80cpl/free640/wid631/n13
+   en: 1168c/26L/45cpl/free312/wid311/n13  1168c/12L/97cpl/free640/wid634/n13  1168c/12L/97cpl/free640/wid634/n13  1168c/12L/97cpl/free640/wid634/n13  1168c/12L/97cpl/free640/wid634/n13
+privacy | li < ul
+   ru: 427c/13L/33cpl/free290/wid282/n6  427c/6L/71cpl/free618/wid606/n6  427c/6L/71cpl/free618/wid606/n6  427c/6L/71cpl/free618/wid606/n6  427c/6L/71cpl/free618/wid606/n6
+   en: 412c/11L/38cpl/free290/wid275/n6  412c/5L/82cpl/free618/wid609/n6  412c/5L/82cpl/free618/wid609/n6  412c/5L/82cpl/free618/wid609/n6  412c/5L/82cpl/free618/wid609/n6
+terms | p
+   ru: 308c/8L/39cpl/free312/wid305/n7  308c/4L/77cpl/free640/wid638/n7  308c/4L/77cpl/free640/wid638/n7  308c/4L/77cpl/free640/wid638/n7  308c/4L/77cpl/free640/wid638/n7
+   en: 308c/8L/39cpl/free312/wid305/n7  308c/4L/77cpl/free640/wid638/n7  308c/4L/77cpl/free640/wid638/n7  308c/4L/77cpl/free640/wid638/n7  308c/4L/77cpl/free640/wid638/n7
+terms | li < ul
+   ru: 144c/5L/29cpl/free290/wid270/n3  144c/2L/72cpl/free618/wid588/n3  144c/2L/72cpl/free618/wid588/n3  144c/2L/72cpl/free618/wid588/n3  144c/2L/72cpl/free618/wid588/n3
+   en: 107c/3L/36cpl/free290/wid279/n3  107c/2L/54cpl/free618/wid616/n3  107c/2L/54cpl/free618/wid616/n3  107c/2L/54cpl/free618/wid616/n3  107c/2L/54cpl/free618/wid616/n3

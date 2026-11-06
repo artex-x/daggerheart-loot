@@ -1,6 +1,6 @@
 # #/lists ~ lists selected as gm1
 # route: #/lists
-# why: «Пустой список» and «Трофеи» ticked: the gold strip «Выбрано 2» with «Скачать JSON (2)» and «Удалить (2)», «Выбрать все» mixed, the two cards gold
+# why: «Пустой список» and «Трофеи» ticked: the bar «Выбрано: 2» with «Скачать JSON (2)» and «Удалить (2)», «Все» mixed, the two cards neutral with a lit border
 # as: gm1
 
 ## ru :: tree
@@ -20,20 +20,10 @@ RootWebArea "Мои списки - Генератор лута Daggerheart" [url
   main ""
     heading "Мои списки" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
-    StaticText "Соберите добычу в список и отправьте игрокам одной ссылкой."
-    StaticText "НОВЫЙ СПИСОК"
-    textbox "Новый список" [multiline=false readonly=false required=false]
-    button "Создать"
     button "Импорт из файла" [expanded=false]
+    button "Новый список" [expanded=false]
     status ""
-    heading "ВАШ АККАУНТ" [level=2]
     StaticText "3 списка из 50"
-    checkbox "Выбрать все" [checked=mixed]
-    generic ""
-      StaticText "Выбрано 2"
-    button "Скачать JSON (2)"
-    ... button x2 of 6 same-shape siblings elided
     checkbox "Выбрать: Пустой список" [checked=true]
     link "Пустой список, 0 позиций, изменён 1 час назад" [url=/lists/00000000-0000-4000-8000-000000000102]
       StaticText "Пустой список"
@@ -43,12 +33,17 @@ RootWebArea "Мои списки - Генератор лута Daggerheart" [url
     link "Лавка кузнеца, 10 позиций, изменён 3 дня назад" [url=/lists/00000000-0000-4000-8000-000000000101]
       StaticText "Лавка кузнеца"
       StaticText "10 позиций · изменён 3 дня назад"
-    button "Удалить"
     checkbox "Выбрать: Трофеи" [checked=true]
     link "Трофеи, 2 позиции, изменён в прошлом месяце" [url=/lists/00000000-0000-4000-8000-000000000103]
       StaticText "Трофеи"
       StaticText "2 позиции · изменён в прошлом месяце"
-    button "Удалить"
+  region "Выбранные записи"
+    checkbox "Выбрать все" [focused=true checked=mixed]
+    generic ""
+      StaticText "Выбрано: 2"
+    button "Скачать JSON (2)"
+    button "Удалить (2)"
+    button "Снять выделение"
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -57,7 +52,6 @@ RootWebArea "Мои списки - Генератор лута Daggerheart" [url
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-?Справка
 EN
 RU
 daggerheart.com
@@ -77,10 +71,9 @@ daggerheart.com
 Поиск
 Пустой список, 0 позиций, изменён 1 час назад
 Скачать JSON (2)
-Создать
+Снять выделение
 Таблицы
 Трофеи, 2 позиции, изменён в прошлом месяце
-Удалить
 Удалить (2)
 Условия использования
 Установить как приложение
@@ -102,20 +95,10 @@ RootWebArea "My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm1]
   main ""
     heading "My lists" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
-    StaticText "Collect loot into a list and send it to your players as a single..." [namelen=70 namehash=7a94568a]
-    StaticText "NEW LIST"
-    textbox "New list" [multiline=false readonly=false required=false]
-    button "Create"
     button "Import from file" [expanded=false]
+    button "New list" [expanded=false]
     status ""
-    heading "YOUR ACCOUNT" [level=2]
     StaticText "3 lists of 50"
-    checkbox "Select all" [checked=mixed]
-    generic ""
-      StaticText "Selected 2"
-    button "Download JSON (2)"
-    ... button x2 of 6 same-shape siblings elided
     checkbox "Select: Пустой список" [checked=true]
     link "Пустой список, 0 items, edited 1 hour ago" [url=/en/lists/00000000-0000-4000-8000-000000000102]
       StaticText "Пустой список"
@@ -125,12 +108,17 @@ RootWebArea "My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm1]
     link "Лавка кузнеца, 10 items, edited 3 days ago" [url=/en/lists/00000000-0000-4000-8000-000000000101]
       StaticText "Лавка кузнеца"
       StaticText "10 items · edited 3 days ago"
-    button "Delete"
     checkbox "Select: Трофеи" [checked=true]
     link "Трофеи, 2 items, edited last month" [url=/en/lists/00000000-0000-4000-8000-000000000103]
       StaticText "Трофеи"
       StaticText "2 items · edited last month"
-    button "Delete"
+  region "Selected records"
+    checkbox "Select all" [focused=true checked=mixed]
+    generic ""
+      StaticText "2 selected"
+    button "Download JSON (2)"
+    button "Delete (2)"
+    button "Clear selection"
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -139,10 +127,8 @@ RootWebArea "My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm1]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-?Help
 Account: gm1@example.test
-Create
-Delete
+Clear selection
 Delete (2)
 Download JSON (2)
 EN
