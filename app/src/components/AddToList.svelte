@@ -553,7 +553,8 @@
     align-items: center;
     gap: 8px;
     width: 100%;
-    min-height: 36px;
+    /* A row target up to 600 px (DESIGN.md, "The Phone-First Rule"). */
+    min-height: max(36px, var(--thumb) + 4px);
     padding: 0 8px;
     border: 0;
     border-radius: var(--r-sm);
@@ -625,7 +626,7 @@
 
   input.pickq {
     width: 100%;
-    height: 32px;
+    height: max(32px, var(--thumb));
     padding: 0 10px;
     margin-bottom: 8px;
     box-sizing: border-box;
@@ -676,7 +677,7 @@
   .picker-new input {
     flex: 1;
     min-width: 150px;
-    height: 32px;
+    height: max(32px, var(--thumb));
     padding: 0 11px;
     border-radius: 8px;
     background: var(--bg2);

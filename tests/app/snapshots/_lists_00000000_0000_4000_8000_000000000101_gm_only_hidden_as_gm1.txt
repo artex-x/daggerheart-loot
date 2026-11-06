@@ -1,6 +1,6 @@
 # #/lists/00000000-0000-4000-8000-000000000101 ~ gm only hidden as gm1
 # route: #/lists/00000000-0000-4000-8000-000000000101
-# why: «Скрыть от игроков (2)» pressed: both ticked rows dashed, the ticks kept, «Показать игрокам (2)», «только для мастера: 2» in the sub, and the toast «Скрыто от игроков: 1» with «Вернуть»
+# why: «Скрыть от игроков (2)» pressed: both ticked rows on the recessed ground, the ticks kept, «Показать игрокам (2)», «только для мастера: 2» in the sub, and the toast «Скрыто от игроков: 1» with «Вернуть»
 # as: gm1
 
 ## ru :: tree

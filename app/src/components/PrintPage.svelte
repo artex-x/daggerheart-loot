@@ -257,7 +257,7 @@
     font-size: var(--t-data);
     line-height: 1.55;
     color: var(--muted2);
-    max-width: 62ch;
+    max-width: var(--measure-text);
   }
 
   .printnote.warnnote {
@@ -267,7 +267,7 @@
 
   .clipwarn {
     margin-top: 12px;
-    max-width: 62ch;
+    max-width: var(--measure-text);
   }
 
   /* off `.psheet` (`git show 23c00a6^:style.css`) */

@@ -13,7 +13,7 @@
  * languages and ran the focus walk, which made it 1.7x its siblings; the
  * language split is what `run-all.js`'s two 1180 rows pass). No language
  * argument means both, the original shape. */
-const { fresh, axe, reporter, closeBrowser } = require('./lib.js');
+const { fresh, axe, reporter, closeBrowser, targets } = require('./lib.js');
 /* The app's own reading of an address, so a landed path compares as its route key. */
 const { addressOf } = require('../../app/src/lib/address.ts');
 const {
@@ -676,6 +676,28 @@ function headCap(width) {
           const cap = headCap(width);
           ok(head > 0 && head <= cap, where + ': the catalog head ' + head + 'px, cap ' + cap);
         }
+
+        /* Every pressable control is a thumb target up to 600 px, else at least 24 px or
+           spaced (DESIGN.md, "The Phone-First Rule"); `targets` names what fails its hit test. */
+        const floor = width <= 600 ? 40 : 24;
+        for (const t of await targets(
+          page,
+          width <= 600 ? { floor: 40, menuFloor: 44 } : { floor: 24, spacing: true }
+        ))
+          ok(
+            false,
+            where +
+              ': a target under ' +
+              floor +
+              ' px - ' +
+              t.sel +
+              ' «' +
+              t.name +
+              '» ' +
+              t.w +
+              'x' +
+              t.h
+          );
 
         const broken = await page.evaluate(() =>
           [...document.images]

@@ -146,7 +146,7 @@ function readLocalPrefs(env: Env): LocalPrefs {
   };
 }
 
-/** What a toast offers for the 7000ms it lasts: an undo (`run`), a link to
+/** What a toast offers for the 7000ms it lasts (10000ms for a long one): an undo (`run`), a link to
  *  a page opened in a new tab (`href`), or a move to a page of the app (`go`). Only
  *  `run` takes the focus. The label is built in the language on screen each time it
  *  is drawn. */
@@ -156,7 +156,7 @@ export type ToastAction =
   | { label: Msg; go: () => void };
 
 /** Off `showToast` in app.js: a plain notice, an error (`role=alert`), or one
- *  with an action - each its own duration, decided by `say` below. */
+ *  with an action - each its own duration, decided by `toastMs` below. */
 export interface Toast {
   msg: string;
   mode: '' | 'err' | 'act';
@@ -172,7 +172,26 @@ interface Said {
   arrival?: true | undefined;
 }
 
-const ARRIVAL_MS = 7000;
+/** The Reading Time Rule (DESIGN.md, "Components"): how long each class of toast shows. */
+export const TOAST_MS = { plain: 4000, error: 7000, action: 7000, long: 10000 } as const;
+
+/** A toast longer than this in either language takes the long class: a third line in the
+ *  360 px toast. */
+export const TOAST_LONG_CHARS = 80;
+
+const ARRIVAL_MS = TOAST_MS.action;
+
+/** Returns how long a toast of `mode` shows `msg`: the long class when its text holds an
+ *  email address or runs past `TOAST_LONG_CHARS` in either language, so the class is the
+ *  same in Russian and English. */
+export function toastMs(mode: Toast['mode'], msg: Msg): number {
+  const long = (['ru', 'en'] as const).some((lang) => {
+    const text = msg(dict(lang), lang);
+    return text.includes('@') || text.length > TOAST_LONG_CHARS;
+  });
+  if (long) return TOAST_MS.long;
+  return mode === 'act' ? TOAST_MS.action : mode === 'err' ? TOAST_MS.error : TOAST_MS.plain;
+}
 
 /* The one list that every id names, or null for none or several. */
 function oneList(ids: readonly string[]): string | null {
@@ -1775,8 +1794,9 @@ export class AppState {
 
   /**
    * Says something with no place on screen - a toast, off `showToast` in
-   * app.js. Plain notices last 1600ms, an error 2600ms and `role="alert"`,
-   * and one with an action 7000ms. A second call replaces the first and
+   * app.js. A plain notice lasts 4000ms, an error 7000ms and `role="alert"`, one
+   * with an action 7000ms, and one with an email address or more than 80
+   * characters in either language 10000ms (`toastMs`). A second call replaces the first and
    * restarts the clock, except a plain notice said while an error or an action
    * toast shows: it waits and shows when that toast ends. The arrival toast
    * (`arrival`) is the lowest: it waits behind any other toast, a plain one too,
@@ -1811,7 +1831,7 @@ export class AppState {
       }
       if (shown?.arrival) this.#arrival = null;
     }
-    const ms = opts.action ? 7000 : opts.error ? 2600 : 1600;
+    const ms = toastMs(mode, msg);
     this.#said = said;
     if (this.#toastTimer) clearTimeout(this.#toastTimer);
     this.#toastTimer = null;
@@ -1830,12 +1850,12 @@ export class AppState {
   }
 
   /**
-   * Holds an action toast's clock while the pointer is over it or focus is
+   * Holds the toast's clock while a pointer or a finger is over it or focus is
    * inside it (`on`), and runs it on with the time it had left when both end.
-   * A plain notice and an error never hold: a resting pointer must not keep them.
+   * Every toast holds (DESIGN.md, "The Reading Time Rule").
    */
   holdToast(on: boolean): void {
-    if (this.#said?.mode !== 'act' || this.env.clock.holdsToasts?.()) return;
+    if (!this.#said || this.env.clock.holdsToasts?.()) return;
     if (on) {
       if (this.#toastLeft !== null || !this.#toastTimer) return;
       clearTimeout(this.#toastTimer);

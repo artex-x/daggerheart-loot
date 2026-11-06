@@ -101,11 +101,23 @@
      dossier; its width is stated in DESIGN.md, "The One Width Rule". */
   --dossier-w: 980px;
 
+  /* The Measure Rule (DESIGN.md, "Typography"): a line, and a passage read line after line. */
+  --measure-line: 120ch;
+  --measure-text: 70ch;
+
   /* The page heading's weight and tracking; its size is `--t-page`. */
   --h-page-weight: 680;
   --h-page-spacing: -0.01em;
 
   --gap-sm: 6px;
+
+  /* The space above an empty plate: twice a chip row's gap, so the plate reads as the next
+     block (DESIGN.md, "Empty state"). */
+  --gap-plate: 16px;
+
+  /* The thumb target up to 600px (DESIGN.md, "The Phone-First Rule"); 0 lets a floor of
+     `max(<size>, var(--thumb))` keep the size from 601px. */
+  --thumb: 0px;
 
   /* The color every gold-filled control prints its own text in - a button,
      a chip, the home pin, a toast action. Not `--bg`/`--surface`: darker than
@@ -132,6 +144,13 @@
 @media (max-width: 600px) {
   :root {
     --sticky-h: 111px;
+  }
+}
+
+/* `screen`: print never takes the thumb floor. */
+@media screen and (max-width: 600px) {
+  :root {
+    --thumb: 40px;
   }
 }
 

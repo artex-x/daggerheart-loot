@@ -1,6 +1,6 @@
 # #/lists/00000000-0000-4000-8000-000000008001 ~ note open, gm as gm4
 # route: #/lists
-# why: row 2's note area switched to «Только для мастера»: «Проклят» in the dashed field, «Игроки не видят»
+# why: row 2's note area switched to «Только для мастера»: «Проклят» in the GM field, «Игроки не видят»
 # as: gm4
 
 ## ru :: tree

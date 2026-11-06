@@ -1530,6 +1530,13 @@
     color: var(--txt);
   }
 
+  @media screen and (max-width: 600px) {
+    .back {
+      min-height: var(--thumb);
+      margin-block: min(0px, calc((24px - var(--thumb)) / 2));
+    }
+  }
+
   .ttl {
     min-width: 0;
     margin: 0;
@@ -1557,7 +1564,7 @@
     margin: 0 0 12px;
     color: var(--muted);
     font-size: var(--t-small);
-    max-width: 70ch;
+    max-width: var(--measure-line);
     overflow-wrap: anywhere;
   }
 
@@ -1671,7 +1678,7 @@
   }
 
   select {
-    height: 38px;
+    height: max(38px, var(--thumb));
     width: auto;
     max-width: 100%;
     padding: 0 10px;
@@ -1763,6 +1770,18 @@
 
   .rel[open] summary {
     margin-bottom: 12px;
+  }
+
+  /* The fold's summary reaches the thumb target by its padded box. */
+  @media screen and (max-width: 600px) {
+    .rel summary {
+      padding-block: max(0px, calc((var(--thumb) - 1lh) / 2));
+      margin-block: min(0px, calc((1lh - var(--thumb)) / 2));
+    }
+
+    .rel[open] summary {
+      margin-bottom: calc(12px + min(0px, calc((1lh - var(--thumb)) / 2)));
+    }
   }
 
   .ebar {

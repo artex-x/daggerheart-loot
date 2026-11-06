@@ -55,7 +55,7 @@
     n?: number;
     /** The shared page's `×qty · price` after the name - `RowMain`'s `rtail`. */
     tail?: string;
-    /** The shared page's GM-only entry on a GM's link: the row's dashed look
+    /** The shared page's GM-only entry on a GM's link: the row's GM look
      *  and `RowMain`'s `gmOnly`. */
     gmOnly?: true;
   }
@@ -297,7 +297,7 @@
 
   @media (max-width: 600px) {
     .selbox {
-      width: 38px;
+      width: max(38px, var(--thumb));
     }
   }
 
@@ -340,7 +340,6 @@
 
   /* Before hover and `.sel`, so they still win (docs/specs/FEATURES.md, "Account and browser lists"). */
   .row.gm-only {
-    border-style: dashed;
     border-color: var(--line2);
     background: var(--bg2);
   }
@@ -385,8 +384,8 @@
     top: 6px;
     left: 6px;
     z-index: 2;
-    width: 30px;
-    height: 30px;
+    width: max(30px, var(--thumb));
+    height: max(30px, var(--thumb));
     border: 1px solid var(--line2);
     border-radius: 8px;
     background: rgb(14 12 21 / 82%);

@@ -631,6 +631,16 @@
     vertical-align: baseline;
   }
 
+  /* The thumb target by its padded box; the lead line keeps its height. */
+  @media screen and (max-width: 600px) {
+    .shhead :global(.page-sub .btn) {
+      min-height: var(--thumb);
+      min-width: var(--thumb);
+      justify-content: center;
+      margin-block: min(0px, calc((24px - var(--thumb)) / 2));
+    }
+  }
+
   .ownline {
     margin: 0 0 16px;
     padding: 10px 12px;

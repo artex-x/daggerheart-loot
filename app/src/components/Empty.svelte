@@ -1,5 +1,6 @@
 <script lang="ts">
-  /* The shared empty state: a dashed plate (DESIGN.md, "Shapes"). The catalog passes a
+  /* The shared empty state: a plate with a seam border on the Vault Wall ground (DESIGN.md,
+     "Empty state"), `--gap-plate` under the block above it. The catalog passes a
      heading and its kind glyph; every other caller draws the plate around its text. */
   import type { Snippet } from 'svelte';
   import ArtWell from './ArtWell.svelte';
@@ -32,8 +33,10 @@
     padding: 32px 16px;
     text-align: center;
     color: var(--muted2);
-    border: 1px dashed var(--line2);
+    border: 1px solid var(--line);
+    background: var(--bg2);
     border-radius: var(--r);
+    margin-top: var(--gap-plate);
   }
 
   .glyph {

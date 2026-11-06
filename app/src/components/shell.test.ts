@@ -26,7 +26,7 @@ import {
 } from '../ports/index.js';
 import type { Env } from '../ports/index.js';
 import type { Loot } from '../lib/data.js';
-import { AppState } from '../state/app.svelte.js';
+import { AppState, TOAST_MS } from '../state/app.svelte.js';
 import { fakeCloud } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
 
@@ -675,13 +675,50 @@ describe('the toast component, directly', () => {
       await tick();
       expect(screen.getByRole('alert')).toHaveTextContent('Не получилось');
       expect(screen.queryByText('Скопировано')).toBeNull();
-      vi.advanceTimersByTime(2600);
+      vi.advanceTimersByTime(TOAST_MS.error);
       await tick();
       expect(screen.getByRole('status')).toHaveTextContent('Скопировано');
       expect(screen.queryByRole('alert')).toBeNull();
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it('holds a plain toast while a pointer is on it and runs on after it leaves', async () => {
+    vi.useFakeTimers();
+    try {
+      const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+      const { container } = render(Toast, { app });
+      app.say(() => 'Скопировано');
+      await tick();
+      const box = container.querySelector('.toast');
+      if (!(box instanceof HTMLElement)) throw new Error('no toast');
+      await fireEvent.pointerEnter(box);
+      vi.advanceTimersByTime(TOAST_MS.plain + 1000);
+      await tick();
+      expect(screen.getByRole('status')).toHaveTextContent('Скопировано');
+      await fireEvent.pointerLeave(box);
+      vi.advanceTimersByTime(TOAST_MS.plain);
+      await tick();
+      expect(screen.queryByText('Скопировано')).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("floats the page's toast above the selection bar and keeps the dialog's copy in place", async () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+    const page = render(Toast, { app });
+    app.say(() => 'Скопировано');
+    await tick();
+    expect(page.container.querySelector('.toast')).toHaveClass('page');
+    page.unmount();
+    app.dialogOpen = true;
+    const inDialog = render(Toast, { app, inDialog: true });
+    app.say(() => 'Ещё раз');
+    await tick();
+    expect(inDialog.container.querySelector('.toast')).not.toHaveClass('page');
+    await expectNoA11yViolations(inDialog.container);
   });
 
   it('runs the action and hides the toast when its button is pressed', async () => {

@@ -2670,6 +2670,60 @@ ok(
   ok(llms.length === 0, 'llms.txt keeps British spelling: ' + llms.join(' | '));
 }
 
+/* Every `.svelte` and `.css` file under app/src, as [path relative to app/src, text]. */
+const APP_STYLES = (() => {
+  const out = [];
+  const walk = (dir) => {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = path.join(dir, e.name);
+      if (e.isDirectory()) walk(p);
+      else if (/\.(svelte|css)$/.test(e.name)) out.push(p);
+    }
+  };
+  const src = path.join(ROOT, 'app', 'src');
+  walk(src);
+  return out.map((p) => [
+    path.relative(src, p).split(path.sep).join('/'),
+    fs.readFileSync(p, 'utf8')
+  ]);
+})();
+
+console.log('Dashed means drop');
+/* A dashed border marks a drop place, and the app has none; the print card's cut line is
+   the one exception (DESIGN.md, "The Drop Rule"). */
+const DASHED = /(border|outline)[\w-]*\s*:[^;{}]*\bdashed\b/g;
+ok(
+  'border: 1px dashed red;'.match(DASHED)?.length === 1 &&
+    'border-style: dashed;'.match(DASHED)?.length === 1 &&
+    !DASHED.test('/* dashed */ color: red;'),
+  'the dashed-border pattern does not read its own examples'
+);
+DASHED.lastIndex = 0;
+{
+  const found = APP_STYLES.filter(
+    ([rel, text]) => rel !== 'components/PrintCard.svelte' && text.match(DASHED)
+  ).map(([rel]) => rel);
+  ok(APP_STYLES.length > 50, 'only ' + APP_STYLES.length + ' style files read under app/src');
+  ok(found.length === 0, 'a dashed border outside a drop place: ' + found.join(', '));
+}
+
+console.log('One measure');
+/* Text takes the measure of its class from `tokens.css`, never a `ch` literal; a menu
+   item's second line is the one exception (DESIGN.md, "The Measure Rule"). */
+const CH_CAP = /max-width\s*:\s*[\d.]+ch\b/g;
+ok(
+  'max-width: 70ch;'.match(CH_CAP)?.length === 1 &&
+    !'max-width: var(--measure-text);'.match(CH_CAP),
+  'the ch-measure pattern does not read its own examples'
+);
+{
+  const found = APP_STYLES.filter(
+    ([rel, text]) =>
+      rel !== 'styles/tokens.css' && rel !== 'components/PickRow.svelte' && text.match(CH_CAP)
+  ).map(([rel]) => rel);
+  ok(found.length === 0, 'a ch measure outside tokens.css: ' + found.join(', '));
+}
+
 console.log('Russian record text');
 /* Distances are rounded metric in Russian text (docs/specs/I18N.md, "Rules"). */
 const IMPERIAL =

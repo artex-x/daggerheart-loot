@@ -1,6 +1,6 @@
 # #/lists/00000000-0000-4000-8000-000000000101 ~ gm only as gm1
 # route: #/lists/00000000-0000-4000-8000-000000000101
-# why: the eye of «Брошюра по Истории Искусства» pressed: the crossed eye in the pressed look, the row dashed on the recessed ground with its art at 45%, no text on the row, and «10 позиций из 100 · только для мастера: 1 · Сохранено»
+# why: the eye of «Брошюра по Истории Искусства» pressed: the crossed eye in the pressed look, the row on the recessed ground with its art at 45%, no text on the row, and «10 позиций из 100 · только для мастера: 1 · Сохранено»
 # as: gm1
 
 ## ru :: tree

@@ -433,7 +433,8 @@
 
   .cause {
     margin: 0;
-    max-width: 60ch;
+    max-width: var(--measure-line);
+    text-wrap: balance;
     overflow-wrap: anywhere;
   }
 

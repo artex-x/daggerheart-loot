@@ -802,7 +802,7 @@ describe('a share link', () => {
     expect(screen.getByText(plural(7, ru.droppedItems, 'ru'))).toBeInTheDocument();
   });
 
-  it('draws both notes on a GM link, the GM note in its dashed GM box', async () => {
+  it('draws both notes on a GM link, the GM note in its GM box', async () => {
     const { container } = open('#/s/gm-token-1');
     await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' });
     await openNotes();
@@ -2041,7 +2041,7 @@ describe('the compact row up to 760 px', () => {
     expect(await screen.findByRole('dialog')).toBeInTheDocument();
   });
 
-  it('marks a GM-only entry on a GM link with the mark and its dashed row', async () => {
+  it('marks a GM-only entry on a GM link with the mark and its GM row', async () => {
     const cloud = fakeCloud(SEED);
     cloud.playEntry(uuid(101), 'q313', { gm_only: true });
     const { container } = await openNarrow('#/s/gm-token-1', cloud);

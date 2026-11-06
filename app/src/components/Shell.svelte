@@ -611,11 +611,36 @@
     width: fit-content;
   }
 
+  .foot-licence p {
+    max-width: var(--measure-text);
+  }
+
   /* Footer links are muted and underlined: they are not the page's action
      (DESIGN.md, "The Seal Rule"). */
   .foot a {
     color: var(--muted);
     text-decoration: underline;
+  }
+
+  /* A text link reaches the thumb target by its padded box and keeps its line (DESIGN.md,
+     "The Phone-First Rule"); the license's summary is the footer's last line. */
+  @media screen and (max-width: 600px) {
+    .brand {
+      padding-block: 5px;
+      margin-block: -5px;
+    }
+
+    .foot-nav a {
+      display: inline-block;
+      padding-block: max(0px, calc((var(--thumb) - 1lh) / 2));
+      margin-block: min(0px, calc((1lh - var(--thumb)) / 2));
+    }
+
+    .foot-licence summary {
+      display: flex;
+      align-items: center;
+      min-height: var(--thumb);
+    }
   }
 
   /* The gap is `.topbar-in`'s, the bottom margin `.brand`'s gap. */

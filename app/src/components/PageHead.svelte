@@ -158,6 +158,9 @@
     margin: 0 0 18px;
     color: var(--muted);
     font-size: var(--t-small);
-    max-width: 70ch;
+    /* A lead of one or two sentences takes one line while the column allows it (DESIGN.md,
+       "The Measure Rule"). */
+    max-width: var(--measure-line);
+    text-wrap: balance;
   }
 </style>

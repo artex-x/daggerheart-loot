@@ -184,9 +184,11 @@
      so the longest names hold two lines in RU and EN at 360 px with a classic scrollbar
      (301 px of controls; mock 2 drew 0.8 / 1.25 / 1 on 328 px, measured 2026-10-30). */
   @media (max-width: 600px) {
+    /* 4px: the results line's thumb targets take the rest back (DESIGN.md, "The
+       First-Screen Rule"). */
     .modes-in {
       gap: 5px;
-      padding: 6px 0;
+      padding: 4px 0;
     }
 
     .mode {

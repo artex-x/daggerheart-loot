@@ -30,6 +30,11 @@ import {
   opened,
   utf8
 } from '../test/importPanel.js';
+import { TOAST_MS } from '../state/app.svelte.js';
+
+/* A plain toast said while an error toast shows waits for it (DESIGN.md, "The Reading Time
+   Rule"): a find after an error waits past its time, the long class at most. */
+const AFTER_ERROR = { timeout: TOAST_MS.long + 2000 };
 
 afterEach(cleanup);
 
@@ -561,7 +566,9 @@ describe('own items in a lists file', () => {
       ).toBeInTheDocument();
     });
     await userEvent.click(await importButton(1));
-    expect(await screen.findByText('Импортировано списков: 1')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Импортировано списков: 1', undefined, AFTER_ERROR)
+    ).toBeInTheDocument();
     const sent = imp.mock.calls[1]?.[0];
     expect(sent?.[0]?.entries[0]).toMatchObject({
       item_key: gm1Key('hb_emberaxeaaaaaaaa'),
@@ -847,7 +854,9 @@ describe('own items without a snapshot in a lists file', () => {
       [gm2Key(AXE), gm2Key(LAMP)].sort()
     );
     await userEvent.click(await importButton(2));
-    expect(await screen.findByText('Импортировано списков: 2')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Импортировано списков: 2', undefined, AFTER_ERROR)
+    ).toBeInTheDocument();
     expect(imp).toHaveBeenCalledTimes(2);
     expect(imp.mock.calls[1]?.[0]).toEqual(imp.mock.calls[0]?.[0]);
   });
@@ -872,7 +881,9 @@ describe('own items without a snapshot in a lists file', () => {
       expect(lineTexts(blocks(container)[0]!)).toEqual(['Позиция 2: ' + UNHELD]);
     });
     await userEvent.click(await importButton(1));
-    expect(await screen.findByText('Импортировано списков: 1')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Импортировано списков: 1', undefined, AFTER_ERROR)
+    ).toBeInTheDocument();
     const [first, second] = imp.mock.calls.map((c) => c[0][0]);
     expect(second?.list.id).not.toBe(first?.list.id);
     expect(second?.entries.map((e) => e.item_key)).toEqual(['ci1']);
@@ -911,7 +922,9 @@ describe('the press', () => {
     expect(await importButton(1)).toBeEnabled();
     cloud.setOffline(false);
     await userEvent.click(await importButton(1));
-    expect(await screen.findByText('Импортировано списков: 1')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Импортировано списков: 1', undefined, AFTER_ERROR)
+    ).toBeInTheDocument();
     expect(imp).toHaveBeenCalledTimes(2);
     expect(imp.mock.calls[1]?.[0]).toEqual(imp.mock.calls[0]?.[0]);
   });

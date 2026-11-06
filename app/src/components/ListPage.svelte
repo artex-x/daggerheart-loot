@@ -955,7 +955,7 @@
   </div>
 {/snippet}
 
-<!-- A closed note area: each filled note read-only, the GM note in its dashed box. -->
+<!-- A closed note area: each filled note read-only, the GM note in its GM box. -->
 {#snippet readNotes(o: { note?: string | undefined; hnote?: string | undefined })}
   <HitNote icon="eye" label={t.notePub} text={o.note} />
   <HitNote icon="eyeOff" label={t.noteHid} text={o.hnote} gm />
@@ -1840,7 +1840,7 @@
     max-width: 560px;
     background: transparent;
     border: 0;
-    border-bottom: 1px dashed var(--line2);
+    border-bottom: 1px solid var(--line2);
     color: var(--txt);
     font: inherit;
     font-size: var(--t-page);
@@ -1858,8 +1858,8 @@
     border-bottom-color: var(--muted2);
   }
 
-  /* The «Добавить свой предмет» row after the entries: a list row's box; the dashed
-     border marks "add", not a homebrew item (that mark has no dashes). */
+  /* The «Добавить свой предмет» row after the entries: a list row's box on no ground: it
+     adds, it is not an entry. */
   .addwrap {
     display: flex;
     flex-direction: column;
@@ -1874,7 +1874,7 @@
     width: 100%;
     min-height: 52px;
     padding: 0 14px 0 13px;
-    border: 1px dashed var(--line2);
+    border: 1px solid var(--line2);
     border-radius: 11px;
     background: transparent;
     color: var(--gold-soft);
@@ -2003,8 +2003,10 @@
     gap: 8px;
   }
 
+  /* The side column is narrower than the passage measure: its notes fill it. */
   .lnotes > :global(.hitnote) {
     align-self: stretch;
+    width: auto;
     margin: 0;
   }
 
@@ -2056,11 +2058,6 @@
     padding: 9px 11px;
     max-height: 320px;
     overflow-y: auto;
-  }
-
-  /* The GM note draws dashed, the style of `HitNote`'s GM box. */
-  .narea.gm :global(textarea) {
-    border-style: dashed;
   }
 
   .narea :global(textarea:focus) {
@@ -2135,6 +2132,7 @@
 
   .guess-note {
     margin: 0 0 9px;
+    max-width: var(--measure-text);
     font-size: var(--t-label);
     line-height: 1.55;
     color: var(--muted);
@@ -2256,7 +2254,6 @@
 
   /* Before hover and `.sel`, so they still win (docs/specs/FEATURES.md, "Account and browser lists"). */
   .lrow.gm-only {
-    border-style: dashed;
     border-color: var(--line2);
     background: var(--bg2);
   }
@@ -2601,6 +2598,14 @@
     transform: rotate(180deg);
   }
 
+  /* The thumb target by its padded box; the meta line keeps its height. */
+  @media screen and (max-width: 600px) {
+    .lnkb {
+      min-height: var(--thumb);
+      margin-block: min(0px, calc((24px - var(--thumb)) / 2));
+    }
+  }
+
   /* From 761 px «Выбрать» has its own row at the end, under the head. */
   .selrow {
     display: flex;
@@ -2639,7 +2644,7 @@
   .cfields input[data-gold] {
     position: relative;
     width: 64px;
-    height: 32px;
+    height: max(32px, var(--thumb));
     padding: 0 8px;
     border-radius: var(--r-sm);
     background: var(--bg2);
@@ -2664,7 +2669,7 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    height: 32px;
+    height: max(32px, var(--thumb));
     padding: 0 10px;
     border: 1px solid var(--line2);
     border-radius: var(--r-sm);

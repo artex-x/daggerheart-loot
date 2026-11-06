@@ -18,7 +18,8 @@
      *  `danger-fill` is the one irreversible press of a confirm, the account's
      *  «Удалить навсегда» (DESIGN.md, "Buttons"). */
     variant?: 'plain' | 'primary' | 'toggle' | 'ghost' | 'danger' | 'danger-fill' | 'bare';
-    /** `sm` is the 32px row on a card; the default 46px is the panel's. */
+    /** `sm` is the 32px row on a card (40px up to 600px, the thumb target); the default
+     *  46px is the panel's. */
     size?: 'md' | 'sm';
     title?: string;
     /** For a button whose visible text is not its name. */
@@ -136,7 +137,7 @@
 
   /* off `.btn.sm` */
   .btn.sm {
-    height: 32px;
+    height: max(32px, var(--thumb));
     padding: 0 11px;
     font-size: var(--t-data);
     border-radius: 8px;
@@ -240,6 +241,15 @@
   .btn.bare:hover {
     background: none;
     color: var(--txt);
+  }
+
+  /* Text alone reaches the thumb target by its padded box and gives the growth back by a
+     negative margin, so no line moves (DESIGN.md, "The Phone-First Rule"). */
+  @media screen and (max-width: 600px) {
+    .btn.bare {
+      min-height: var(--thumb);
+      margin-block: min(0px, calc((1lh - var(--thumb)) / 2));
+    }
   }
 
   /* off `.btn.on` / `.btn.primary.on` in style.css: gold outline on a plain

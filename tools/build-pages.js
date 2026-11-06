@@ -144,7 +144,7 @@ function page({ id, lang, title, desc, body }) {
 <style>
   body{background:#0e0c15;color:#ece8f6;font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
        margin:0;padding:24px}
-  main{max-width:640px;margin:0 auto}
+  main{max-width:70ch;margin:0 auto}
   h1{font-size:22px;margin:0 0 10px}
   h2{font-size:16px;margin:22px 0 6px;color:#d8ab5e}
   h3{font-size:15px;margin:16px 0 4px}

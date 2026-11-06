@@ -661,9 +661,19 @@
     min-width: 0;
   }
 
+  /* Beside the filter column the body takes the plate's gap (DESIGN.md, "Empty state"). */
+  .body.withcol:has(> .hbrows > :global(.empty:first-child)) {
+    margin-top: var(--gap-plate);
+  }
+
+  .body.withcol > .hbrows > :global(.empty:first-child) {
+    margin-top: 0;
+  }
+
   .cause {
     margin: 0;
-    max-width: 60ch;
+    max-width: var(--measure-line);
+    text-wrap: balance;
   }
 
   .hbgroup {

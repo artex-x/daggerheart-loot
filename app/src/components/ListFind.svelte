@@ -143,12 +143,19 @@
       margin-bottom: 8px;
     }
 
-    /* 36 px, as mock F: the first entry must start in the first screen at 360x640. */
+    /* 36 px, as mock F, and the thumb target up to 600 px: the first entry must start in
+       the first screen at 360x640, so the row gives the growth back from its margin. */
     .lfind :global(input[type='search']),
     .lfind :global(.btn.sm),
     .lfind :global(.selmode) {
-      height: 36px;
+      height: max(36px, var(--thumb));
       padding: 0 9px;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .lfind {
+      margin-bottom: 4px;
     }
   }
 </style>

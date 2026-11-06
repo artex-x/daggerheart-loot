@@ -306,7 +306,7 @@ mode toggle and a selection are neutral: a check and a lit `--muted2` border, no
 catalog row, a list row and a card of `/lists` alike. A notice that waits, the list
 card's «Новое в списке (N)», is a neutral chip: nobody chose it. A die
 is an action and plain: no gold, no check, no lit border. The unique tag is
-neutral and dashed, the roll number is Chalk on a seam border, and footer links
+neutral, the roll number is Chalk on a seam border, and footer links
 are Ash Violet and underlined. The site share cards spend gold on the star
 alone. Seal Gold Soft on a link in prose is text, outside the fill budget.
 
@@ -340,10 +340,11 @@ catalog.
   in a grid.
 - **Title** (`--t-title`, 680, 18px, 1.28, -0.01em): a record name on a card.
 - **Body** (`--t-body`, 400, 16px, 1.6): the page default, set on `body` and
-  inherited by every control through `font: inherit`. Prose caps at 70ch.
+  inherited by every control through `font: inherit`. Its measure follows The Measure
+  Rule.
 - **Control** (`--t-control`, 15px): a control label.
 - **Body Small** (`--t-small`, 400, 14px, 1.55): record descriptions and
-  secondary prose. 1.62 on a full card. Notes cap at 62ch.
+  secondary prose. 1.62 on a full card.
 - **Data** (`--t-data`, 13px): a stat line, a meta line, a small control. The
   floor for data text.
 - **Label** (`--t-label`, 650, 12px, 0.1em, uppercase): field captions and
@@ -379,6 +380,21 @@ result its first screen; from 761px the button wraps instead. Exceptions: the li
 editor's record name, one line up to 760px (owner, 2026-10-29). Source:
 https://carbondesignsystem.com/patterns/overflow-content/. `tests/app/typo.js` reads every
 heading, button, label, menu item, alert, status and toast of its pages at 1180px.
+
+**The Measure Rule.** Text keeps the measure of its class, named in `tokens.css`, never a
+`ch` literal in a component. A line - a page lead, a plate's cause or hint, a sign-in lead,
+an error page's sentence, a form hint or error, a warning's lead, a status line, a toast -
+is at most `--measure-line` (120ch): one or two sentences take one line while the column
+allows it, and a wrap is balanced. A passage - a help panel, a note, a long hint, the
+footer's license - is at most `--measure-text` (70ch, about 80 characters a line in both
+languages), because its lines are read one after another (WCAG 1.4.8,
+https://www.w3.org/WAI/WCAG22/Understanding/visual-presentation.html; GOV.UK,
+https://design-system.service.gov.uk/styles/layout/); a passage in a layout column of at
+most 80ch, such as the dossier's text and a roll face, takes the column. A box that holds
+only a passage is as wide as its text; a box with actions keeps its slot, and its text does
+not grow past itself. A row's description has no measure (The Row Text Rule). A menu
+item's second line keeps the 28ch of its 320px menu, the one exception. At 360px every
+class takes the column. `tests/app/states.js` case 111 measures it.
 
 **The Local Font Rule.** One self-hosted family, from the build's own origin:
 the woff2 files of `@fontsource-variable/source-sans-3`, imported in `main.ts`
@@ -425,9 +441,8 @@ so a one-field panel has no trailing gap.
 full-width element does not invent its own container or its own gutter. From
 1472px the column stays 1440px and centered; a reading surface keeps its measure
 at the column's left edge: the dossier at most 980px (`--dossier-w`), the
-editor's form at most 720px (it bites from about a 1206px window), the account at
-most 1100px and prose at most 78ch. A row's text is a clamped snippet, not prose, and
-takes its row's free width (The Row Text Rule).
+editor's form at most 720px (it bites from about a 1206px window), and the account at
+most 1100px; text inside them keeps its class's measure (The Measure Rule).
 
 **The Two Breakpoints Rule.** The system has two, and a third step for the header.
 From 761px the brand, the three jobs, the language switch and the account
@@ -436,10 +451,9 @@ the sticky header is 63px. Up to 760px the jobs take a second row and the
 header is 111px at 360px in both languages (at most 112px). A linked section,
 row or card lands `--anchor-gap` (12px) under the header; `--sticky-h`, the
 header's measured height, is the page's `scroll-padding-top`, so a focused
-control stops clear of it. At 600px touch
-targets grow: segment padding to 8px 14px, the section copy-link button from
-about 20px to a 36px hit area, row actions onto their own line, the mode row's
-controls 40px tall, and a roll card can be the tall face from 601px (The Roll Page Rule). The catalog adds one step, 1000px: from it the filter
+control stops clear of it. At 600px every target takes the thumb size (The
+Phone-First Rule), row actions take their own line, and a roll card can be the tall face
+from 601px (The Roll Page Rule). The catalog adds one step, 1000px: from it the filter
 column sits beside the rows; from 761px it draws the wide head (the `h1`, the
 labeled pin, «Об этих данных», the group chips and the tabs) with the filters
 in the bottom sheet; below 761px the picker row, the sheet and «··· Ещё»
@@ -514,8 +528,9 @@ English, at scroll 0, the primary content of a route starts no lower than 40%
 of the viewport height (256px at 640, 288px at 720); the header counts as a
 control above it. Named exceptions: `/roll/std` at 360x640 starts at 325px, for
 the rarities on the dice (owner, 2026-10-29); `/s/<token>` at 360x640 with its search
-row starts at 302px (owner, 2026-11-03, 286px; the built page measured 301px on 2026-11-05,
-and the exception took it while the owner was away); `/s/<token>` with a 120-character list
+row starts at 309px (owner, 2026-11-03, 286px; the built page measured 301px on 2026-11-05
+and 308.2px on 2026-11-06, when «Сохранить себе» took the thumb size, and the exception took
+it while the owner was away); `/s/<token>` with a 120-character list
 name at 1180x720 starts at 312px, because from 761px the name takes three lines (measured
 2026-11-05); and an account list's page with its folded requests strip (a 6px inset up to
 760px) and its search row at 360x640 starts at 304px (measured 2026-11-05 while the owner was
@@ -535,7 +550,15 @@ time; GMs use a laptop about 80% of the time (`PRODUCT.md`, "Users"). The
 player surfaces (the shared list, the list page, the item, search, `/lists`)
 are designed at 360x640 first, then widened. The GM surfaces (the roller, the
 tables, homebrew, print) keep both widths and still pass the First-Screen Rule
-on a phone. Every mock and every review checks 360x640 first.
+on a phone. Every mock and every review checks 360x640 first. Up to 600px every
+control a person presses is a thumb target of at least 40x40px (`--thumb`), the size of
+the mode row and the dice; a menu item and a row are 44px. A control with a box grows its
+box; a text link grows its padded box and keeps its line. From 601px the small button is
+32px. At every width a target is at least 24x24px or keeps the WCAG 2.5.8 spacing; a link
+inside a sentence is the one exception, and a craft or relation line's link counts as one.
+Owner, 2026-11-05; sources: Android adaptive app quality, Tier 2 (Touch_Targets), and
+Apple's Human Interface Guidelines, Accessibility. `tests/app/sweep.js` and
+`tests/app/states.js` case 109 hit-test it.
 
 ## Elevation & Depth
 
@@ -572,9 +595,8 @@ icon button), 6px for a tag, and 999px for anything that is one choice in a row
 (a chip, a segment, the toast).
 
 Borders are one pixel and a seam color, except where a border states something:
-a gold-tinted border marks a filter that has a value, a dashed border marks a
-property rather than a category (the unique tag) and the empty-state plate,
-and a border at about 45 per cent alpha echoes its own tag's hue.
+a gold-tinted border marks a filter that has a value, and a border at about 45 per
+cent alpha echoes its own tag's hue. A border is solid (The Drop Rule).
 
 A ticked row or tile is lit and neutral: the Vault Wall Lit ground, the
 `--muted2` border and the checked box. Never gold, never a one-side stripe (The
@@ -591,12 +613,20 @@ transparent PNG keeps a ground.
 **The Pill Rule.** A pill means "one of these, choosable". A rounded rectangle
 means "a thing". Do not round a card to a pill or square a chip.
 
+**The Drop Rule.** A dashed border means "drop here": it marks a place that takes a
+dragged thing, and nothing else is dashed. The app has no such place: the list's drop
+mark is a 2px gold line, so the screen draws no dashed border. The print card's 0.4mm
+cut border is a cut line on paper, the one exception. `tests/derived.js` ("Dashed means
+drop") enforces it. Owner, 2026-11-05; sources: the Scottish Government Design System's
+file upload (https://designsystem.gov.scot/components/file-upload) and IBM Carbon's file
+uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
+
 ## Components
 
 ### Buttons
 
 - **Shape:** 9px radius at full size (46px tall, 0 18px padding); 8px radius at
-  small size (32px tall, 0 11px padding, 13px text).
+  small size (32px tall from 601px and 40px up to 600px, 0 11px padding, 13px text).
 - **Plain:** Vault Wall fill, Seam Lit border, Chalk label at 15px weight 600.
   The default.
 - **Primary:** a top-down gold gradient (`#e2b76c` to Seal Gold), an `#e8c27c`
@@ -625,7 +655,7 @@ means "a thing". Do not round a card to a pill or square a chip.
 ### Chips
 
 - **Style:** pill, Vault Wall fill, Seam Lit border, Ash Violet label at 13px
-  weight 540.
+  weight 540; 40px tall and at least 40px wide up to 600px, the label centered.
 - **Chosen:** Seal Gold fill, Ink on Gold label at weight 650, for a choice
   that narrows the view, with the `check` icon before the label (The Check Rule).
 - **Pressed default:** a chip that stands for no narrowing («Все») takes the
@@ -704,8 +734,8 @@ means "a thing". Do not round a card to a pill or square a chip.
   `cubic-bezier(0.2, 0.8, 0.3, 1)`, cancelled under reduced motion.
 - **List card:** the lists index's card is the plate with the name, the meta line, up
   to six thumbs and the neutral «Новое в списке (N)» chip inside its link, and its
-  actions in a labeled «Ещё: <name>»; in the selection mode a pick box takes their
-  place. No `overflow` clip: the menu opens past the card.
+  actions in a labeled «Ещё: <name>», text alone in the card's top right corner (the name
+  keeps clear of it); in the selection mode a pick box takes that corner. No `overflow` clip: the menu opens past the card.
 - **Image review:** the page under `tools/artwork/review/` draws this card
   head from the same CSS and label code. A change to it follows
   `docs/artwork.md`, "The card follows the site's card".
@@ -715,8 +745,8 @@ means "a thing". Do not round a card to a pill or square a chip.
 - **Style:** uppercase 11.5px at weight 650 with 0.07em tracking, 6px radius, on
   a 50 per cent black ground inside a hairline border.
 - **Variants:** the five kind hues, plus tier, source, roll number (the UI
-  face's tabular figures, Chalk on a Seam Lit border), unique (dashed, Ash
-  Violet on Seam Lit), and the Hope and Fear pair. Neither the roll number nor
+  face's tabular figures, Chalk on a Seam Lit border), unique (Ash Violet on Seam
+  Lit, like the tier tag; its word says it is a property), and the Hope and Fear pair. Neither the roll number nor
   the unique tag is gold: nobody chose them (The Seal Rule). An own item written
   in the other language than the interface draws a small language tag («EN», «RU»)
   after its row's tags: a hairline box, no fill, no capitals rule. On a roll card face the
@@ -823,7 +853,7 @@ means "a thing". Do not round a card to a pill or square a chip.
   owner's page, the text «×2» on `/s/`, laid on the body's reserved last column.
   No remove control on the folded row: removing is in the unfolded row's «Ещё».
 - The rows are flat: one divider under each, no box, no fill. A GM-only entry
-  keeps its dashed box; a ticked row keeps its lit ground. The unfolded part has
+  keeps its box on the Vault Wall ground; a ticked row keeps its lit ground. The unfolded part has
   no fill, so the drop mark shows over it.
 
 ### Forms
@@ -846,9 +876,11 @@ means "a thing". Do not round a card to a pill or square a chip.
 
 ### Empty state
 
-- `Empty`: a dashed plate. The catalog adds the kind glyph in its art well (the
-  only picture), the heading «Ничего не найдено», one cause sentence and a
-  primary reset while a filter is chosen.
+- `Empty`: a plate with a Seam border (`--line`) on the Vault Wall ground (`--bg2`),
+  `--gap-plate` (16px) under the block above it on every page - twice a chip row's gap, so
+  it reads as the next block. Beside the filter column the column and the plate share that
+  top. The catalog adds the kind glyph in its art well (the only picture), the heading
+  «Ничего не найдено», one cause sentence and a primary reset while a filter is chosen.
 - A search's start state: the glyph, a title («Что ищем?»), one sentence and example
   queries as chips; the syntax lives in the examples, not in an instruction.
 - A search's nothing-found state: the cause (the query, the picked kinds or both) and
@@ -866,13 +898,16 @@ means "a thing". Do not round a card to a pill or square a chip.
 
 ### Toast
 
-- **Style:** a fixed plate 26px off the bottom, centered: Vault Wall fill, a
+- **Style:** a fixed plate 26px off the bottom, centered, and 26px above the selection
+  bar while the bar shows: Vault Wall fill, a
   1px Ash Violet Low (`--muted2`) border, Chalk text, `--r` corners and the
   Float shadow, entering on a 0.2s rise. No toast is gold. The error flavor is
   the Alarm Red fill with Ink on Gold text (about 5.6:1). The action flavor
-  holds a Vault Wall Lit button with a Seam Lit border.
-- **Width:** as wide as its text, at most the window less 16px a side; a long
+  holds a Vault Wall Lit button with a Seam Lit border, 40px tall up to 600px.
+- **Width:** as wide as its text, at most the line measure (The Measure Rule) and the
+  window less 16px a side; a long
   name wraps inside it, so it stays a few lines high at 360px.
+- **Time:** The Reading Time Rule.
 - It is a `popover="manual"` element so it survives the inertness of a native
   `<dialog>`, and it is `display: none !important` under print.
 
@@ -916,8 +951,8 @@ a transform.
 
 **The Row Text Rule.** A row's text takes the free width of its row: a description is cut
 only when it is longer than its clamp, never while width remains. The cap of 70ch went
-because a 1440px `/search` row was 54% empty (measured 2026-11-05). The text is a clamped
-snippet, not prose, so the prose measure does not apply. The clamp is three lines up to
+because a 1440px `/search` row was 54% empty (measured 2026-11-05). It is the row class of
+The Measure Rule: a clamped snippet with no measure. The clamp is three lines up to
 600px and from 1000px, and two lines between; a cut always has one press to the whole,
 the record. From 1000px the description's line height is 1.55, so a long second line has
 room for the eye's return. Rows stay one column at every width, and the layouts from 360px
@@ -943,6 +978,16 @@ none: the sibling pills of a page head, the tabs and the table chips show the cu
 place by their fill or their underline and by `aria-current`, and a navigation does not
 look like a toggle. Sources: https://developer.android.com/develop/ui/compose/components/chip,
 https://developer.apple.com/design/human-interface-guidelines/accessibility.
+
+**The Reading Time Rule.** A toast stays long enough to read twice: 4000ms for a notice,
+7000ms for an error or a toast with an action, 10000ms for one that carries an email
+address or more than 80 characters, in either language. Every toast holds while a pointer,
+a finger or the focus is on it, and runs on with the time it had left. A notice said while
+an error or an action toast shows waits for it; the new-request toast waits behind every
+other one. The toast floats above the selection bar. Owner, 2026-11-05; sources: Flutter's
+`SnackBar.duration` (https://api.flutter.dev/flutter/material/SnackBar/duration.html) and
+Apple's Human Interface Guidelines, Accessibility. `tests/app/states.js` case 108 measures
+it.
 
 ## Do's and Don'ts
 

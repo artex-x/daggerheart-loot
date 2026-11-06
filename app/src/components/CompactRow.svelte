@@ -317,7 +317,7 @@
   }
 
   /* The flat list: one divider per row, no box (DESIGN.md, "Compact row"). A GM-only entry
-     keeps its dashed box; a ticked row keeps its lit ground. */
+     keeps its box on the darker ground; a ticked row keeps its lit ground. */
   :global(.rows:has(> .row > .crow)) {
     gap: 0;
     border-top: 1px solid var(--line2);

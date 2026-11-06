@@ -10,7 +10,7 @@
  *
  * A state with `again` runs it after the press on «EN», which closes an open `Menu`.
  *
- * A state marked `timed: true` raises a toast that lives 1600-7000ms.
+ * A state marked `timed: true` raises a toast that lives 4000-10000ms.
  * golden.js arrives at it fresh per language instead of reusing one arrival
  * for both (`captureState`): a 50-120ms snapshot ahead of the EN press would
  * otherwise eat into the toast's own window on a state that needs one more
@@ -576,7 +576,7 @@ const STATES = [
     enter: async (d) => {
       await d.click('Открывать при запуске');
     },
-    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    /* a 4000ms toast; arrived at afresh per language - see this file's header */
     timed: true
   },
 
@@ -608,7 +608,7 @@ const STATES = [
     enter: async (d) => {
       await d.more('Скопировать название');
     },
-    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    /* a 4000ms toast; arrived at afresh per language - see this file's header */
     timed: true
   },
 
@@ -1143,7 +1143,7 @@ const STATES = [
       await d.tick(ROW1_CI1);
       await d.click('Скопировать текст');
     },
-    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    /* a 4000ms toast; arrived at afresh per language - see this file's header */
     timed: true
   },
   {
@@ -1553,7 +1553,7 @@ const STATES = [
       await waitCards(d);
       await createList(d, 'Тайник');
     },
-    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    /* a 4000ms toast; arrived at afresh per language - see this file's header */
     timed: true
   },
   {
@@ -1572,7 +1572,7 @@ const STATES = [
       for (let i = 0; i < 40 && !(await d.text()).includes('Не сохранено'); i++)
         await d.settle();
     },
-    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    /* a 4000ms toast; arrived at afresh per language - see this file's header */
     timed: true
   },
   {
@@ -1586,7 +1586,7 @@ const STATES = [
         await d.settle();
       await d.click('Новый список');
     },
-    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    /* a 4000ms toast; arrived at afresh per language - see this file's header */
     timed: true
   },
   {
@@ -1746,7 +1746,7 @@ const STATES = [
         await d.settle();
       await d.click('Импортировать (1)');
     },
-    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    /* a 4000ms toast; arrived at afresh per language - see this file's header */
     timed: true
   },
   {
@@ -1758,7 +1758,7 @@ const STATES = [
       await tickTwo(d);
       await d.click('Удалить (2)');
     },
-    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    /* a 4000ms toast; arrived at afresh per language - see this file's header */
     timed: true
   },
 
@@ -1954,7 +1954,7 @@ const STATES = [
       await d.click('Поделиться');
       await d.click('Удалить ссылку', 1);
     },
-    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    /* a 4000ms toast; arrived at afresh per language - see this file's header */
     timed: true
   },
   {
@@ -2079,7 +2079,7 @@ const STATES = [
         await d.settle();
       await d.click('Решённые в этот раз (1)');
     },
-    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    /* a 4000ms toast; arrived at afresh per language - see this file's header */
     timed: true
   },
   {
@@ -2108,7 +2108,7 @@ const STATES = [
     id: SHOP + ' ~ gm only as gm1',
     route: SHOP,
     as: 'gm1',
-    why: 'the eye of «Брошюра по Истории Искусства» pressed: the crossed eye in the pressed look, the row dashed on the recessed ground with its art at 45%, no text on the row, and «10 позиций из 100 · только для мастера: 1 · Сохранено»',
+    why: 'the eye of «Брошюра по Истории Искусства» pressed: the crossed eye in the pressed look, the row on the recessed ground with its art at 45%, no text on the row, and «10 позиций из 100 · только для мастера: 1 · Сохранено»',
     enter: async (d) => {
       await d.openMore(ROW_MORE('Брошюра по Истории Искусства'));
       await d.click('Скрыть от игроков');
@@ -2132,7 +2132,7 @@ const STATES = [
     id: SHOP + ' ~ gm only hidden as gm1',
     route: SHOP,
     as: 'gm1',
-    why: '«Скрыть от игроков (2)» pressed: both ticked rows dashed, the ticks kept, «Показать игрокам (2)», «только для мастера: 2» in the sub, and the toast «Скрыто от игроков: 1» with «Вернуть»',
+    why: '«Скрыть от игроков (2)» pressed: both ticked rows on the recessed ground, the ticks kept, «Показать игрокам (2)», «только для мастера: 2» in the sub, and the toast «Скрыто от игроков: 1» with «Вернуть»',
     enter: async (d) => {
       await d.openMore(ROW_MORE('Брошюра по Истории Искусства'));
       await d.click('Скрыть от игроков');
@@ -2194,7 +2194,7 @@ const STATES = [
     id: LIST_A + ' ~ rolled as gm4',
     route: '#/lists',
     as: 'gm4',
-    why: 'result 2: the face of entry 2 with its row of actions, «2 шт. · по 7 мешков 5 горстей», both notes (the GM note in its dashed box), «Показать в списке», "Сбросить"',
+    why: 'result 2: the face of entry 2 with its row of actions, «2 шт. · по 7 мешков 5 горстей», both notes (the GM note in its GM box), «Показать в списке», "Сбросить"',
     enter: async (d) => {
       await onAccount(d, NOTED_SPECS);
       await d.click(NAME.ru.rollBy);
@@ -2262,7 +2262,7 @@ const STATES = [
     id: LIST_A + ' ~ note open, gm as gm4',
     route: '#/lists',
     as: 'gm4',
-    why: "row 2's note area switched to «Только для мастера»: «Проклят» in the dashed field, «Игроки не видят»",
+    why: "row 2's note area switched to «Только для мастера»: «Проклят» in the GM field, «Игроки не видят»",
     enter: async (d) => {
       await onAccount(d, NOTED_SPECS);
       await d.click('Заметка, заполнена');
@@ -2422,7 +2422,7 @@ const STATES = [
     route: '#/lists',
     as: 'gm4',
     width: 360,
-    why: 'row 2 noted and GM only: the note mark and the GM mark with their hidden names on its meta line, the dashed row; the list notes area open from «Заметки»',
+    why: 'row 2 noted and GM only: the note mark and the GM mark with their hidden names on its meta line, the row on the recessed ground; the list notes area open from «Заметки»',
     enter: async (d) => {
       await onAccount(d, NOTED_SPECS);
       await d.unfold(1);
@@ -2668,7 +2668,7 @@ const STATES = [
   {
     id: '#/s/gm-token-1 ~ gm only',
     route: '#/s/gm-token-1',
-    why: "signed out on the GM's link, after another device marked «Брошюра по Истории Искусства» GM only: every row kept, that row dashed with its art at 45%, and its button named with «, Только для мастера» for a screen reader only",
+    why: "signed out on the GM's link, after another device marked «Брошюра по Истории Искусства» GM only: every row kept, that row on the recessed ground with its art at 45%, and its button named with «, Только для мастера» for a screen reader only",
     enter: async (d) => {
       await gmOnlyLive(d);
       for (let i = 0; i < 40 && !(await d.count('.gm-only')); i++) await d.settle();
@@ -2756,7 +2756,7 @@ const STATES = [
       await d.click('Оружие');
       await d.click('Ссылка на фильтры');
     },
-    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    /* a 4000ms toast; arrived at afresh per language - see this file's header */
     timed: true
   },
   {
@@ -2780,7 +2780,7 @@ const STATES = [
       await d.click('Сообщить владельцу');
       for (let i = 0; i < 40 && !(await d.count('.sentline')); i++) await d.settle();
     },
-    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    /* a 4000ms toast; arrived at afresh per language - see this file's header */
     timed: true
   },
   {
@@ -2804,7 +2804,7 @@ const STATES = [
       )
         await d.settle();
     },
-    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    /* a 4000ms toast; arrived at afresh per language - see this file's header */
     timed: true
   },
   {
@@ -2818,7 +2818,7 @@ const STATES = [
       await d.click('В список');
       await d.click('Список второго ГМа');
     },
-    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    /* a 4000ms toast; arrived at afresh per language - see this file's header */
     timed: true
   },
   {
@@ -2829,7 +2829,7 @@ const STATES = [
     enter: async (d) => {
       await d.click('Сохранить себе');
     },
-    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    /* a 4000ms toast; arrived at afresh per language - see this file's header */
     timed: true
   },
   {
@@ -3389,7 +3389,7 @@ const STATES = [
         await d.settle();
       await d.click('Импортировать (5)');
     },
-    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    /* a 4000ms toast; arrived at afresh per language - see this file's header */
     timed: true
   },
   {
@@ -3417,7 +3417,7 @@ const STATES = [
     enter: async (d) => {
       await d.click('Открывать при запуске');
     },
-    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    /* a 4000ms toast; arrived at afresh per language - see this file's header */
     timed: true
   },
   {
@@ -3611,7 +3611,7 @@ const STATES = [
       for (let i = 0; i < 40 && !(await d.text()).includes('Комплект «Ж'); i++)
         await d.settle();
     },
-    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    /* a 4000ms toast; arrived at afresh per language - see this file's header */
     timed: true
   },
   {
@@ -3749,7 +3749,7 @@ const STATES = [
       for (let i = 0; i < 40 && !(await d.text()).includes('Сохранено: «Топор'); i++)
         await d.settle();
     },
-    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    /* a 4000ms toast; arrived at afresh per language - see this file's header */
     timed: true
   },
   {
@@ -3776,7 +3776,7 @@ const STATES = [
       for (let i = 0; i < 40 && !(await d.text()).includes('Сохранено: «Палаш»'); i++)
         await d.settle();
     },
-    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    /* a 4000ms toast; arrived at afresh per language - see this file's header */
     timed: true
   },
   {
@@ -3958,7 +3958,7 @@ const STATES = [
     enter: async (d) => {
       await d.press('Удалить');
     },
-    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    /* a 4000ms toast; arrived at afresh per language - see this file's header */
     timed: true
   },
   {

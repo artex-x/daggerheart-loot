@@ -564,6 +564,7 @@
   .ntext {
     flex: 1 1 auto;
     min-width: 0;
+    max-width: var(--measure-text);
     overflow-wrap: anywhere;
   }
 

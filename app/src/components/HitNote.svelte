@@ -14,8 +14,8 @@
     icon: IconName;
     label: string;
     text: string | undefined;
-    /** The «Только для мастера» note: a dashed box on the darker ground, the style of the
-     *  owner's GM note field. */
+    /** The «Только для мастера» note: on the darker ground, the style of the owner's GM
+     *  note field. */
     gm?: boolean;
   }
 
@@ -41,6 +41,9 @@
     align-items: flex-start;
     margin-top: 12px;
     padding: 10px 12px;
+    /* As wide as its text (DESIGN.md, "The Measure Rule"). */
+    width: fit-content;
+    max-width: 100%;
     border: 1px solid var(--line2);
     border-radius: var(--r-sm);
     font-size: var(--t-data);
@@ -49,7 +52,6 @@
   }
 
   .hitnote.gm {
-    border-style: dashed;
     background: var(--bg2);
   }
 
@@ -71,6 +73,7 @@
 
   .htext {
     min-width: 0;
+    max-width: var(--measure-text);
     overflow-wrap: break-word;
   }
 

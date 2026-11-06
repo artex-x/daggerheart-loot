@@ -221,7 +221,7 @@
      apply, because its base rule comes before the block. */
   @media (max-width: 430px) {
     button {
-      width: 36px;
+      width: max(36px, var(--thumb));
     }
   }
 </style>

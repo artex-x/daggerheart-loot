@@ -560,6 +560,13 @@
     color: var(--txt);
   }
 
+  @media screen and (max-width: 600px) {
+    .skips summary {
+      padding-block: max(0px, calc((var(--thumb) - 1lh) / 2));
+      margin-block: min(0px, calc((1lh - var(--thumb)) / 2));
+    }
+  }
+
   /* The count of errors past the kept ones. */
   .rep-more {
     margin: 4px 0 0;

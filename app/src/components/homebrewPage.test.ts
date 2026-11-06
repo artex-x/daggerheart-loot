@@ -29,10 +29,14 @@ import {
   memoryStorage,
   type CloudPort
 } from '../ports/index.js';
-import { AppState } from '../state/app.svelte.js';
+import { AppState, TOAST_MS } from '../state/app.svelte.js';
 import { DELETE_CHUNK } from '../state/homebrew.svelte.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 import { page, t, tab } from '../test/homebrewPage.js';
+
+/* A plain toast said while an error toast shows waits for it (DESIGN.md, "The Reading Time
+   Rule"): a find after an error waits past its time, the long class at most. */
+const AFTER_ERROR = { timeout: TOAST_MS.long + 2000 };
 
 afterEach(cleanup);
 
@@ -464,7 +468,9 @@ describe('#/homebrew', () => {
     }
     cloud.setOffline(false);
     await userEvent.click(screen.getByRole('button', { name: 'Удалить (3)' }));
-    expect(await screen.findByText('Удалено предметов: 3')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Удалено предметов: 3', undefined, AFTER_ERROR)
+    ).toBeInTheDocument();
     expect(sent).toBe(2);
     expect(screen.getByText('1 предмет из 100')).toBeInTheDocument();
   });
@@ -489,7 +495,9 @@ describe('#/homebrew', () => {
     expect(sent).toEqual([DELETE_CHUNK, DELETE_CHUNK]);
     expect(screen.getByText('70 предметов из 120')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Удалить (70)' }));
-    expect(await screen.findByText('Удалено предметов: 70')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Удалено предметов: 70', undefined, AFTER_ERROR)
+    ).toBeInTheDocument();
     expect(sent).toEqual([DELETE_CHUNK, DELETE_CHUNK, DELETE_CHUNK, 20]);
   });
 
@@ -845,7 +853,9 @@ describe('the Sets and Rules tabs', () => {
     expect(write).not.toHaveBeenCalled();
     await userEvent.type(field, 'Кольцо');
     await userEvent.click(screen.getByRole('option', { name: /Кольцо с гравировкой/ }));
-    expect(await screen.findByText('Сохранено: «Кольцо с гравировкой»')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Сохранено: «Кольцо с гравировкой»', undefined, AFTER_ERROR)
+    ).toBeInTheDocument();
     const read = await cloud.homebrew.load();
     expect(read.ok && read.items.find((i) => i.id === uuid(514))?.content.refs).toEqual([
       ...more.slice(0, 2),

@@ -223,10 +223,24 @@
     line-height: 1.3;
   }
 
+  /* «Ещё» sits in the card's top right corner, the slot the pick box takes in the
+     selection mode, as text alone: a row of its own made every card taller (DESIGN.md,
+     "Cards"). The name keeps clear of it. */
   .listcard-acts {
+    position: absolute;
+    top: 4px;
+    right: 4px;
     display: flex;
-    justify-content: flex-end;
     gap: 6px;
-    padding: 0 10px 10px;
+  }
+
+  .listcard-acts :global(.btn.bare) {
+    min-height: max(32px, var(--thumb));
+    margin-block: 0;
+    padding: 0 8px;
+  }
+
+  .listcard:has(> .listcard-acts) .listcard-top {
+    padding-right: 76px;
   }
 </style>

@@ -1,6 +1,6 @@
 # #/lists/00000000-0000-4000-8000-000000008001 ~ compact, noted as gm4
 # route: #/lists
-# why: row 2 noted and GM only: the note mark and the GM mark with their hidden names on its meta line, the dashed row; the list notes area open from «Заметки»
+# why: row 2 noted and GM only: the note mark and the GM mark with their hidden names on its meta line, the row on the recessed ground; the list notes area open from «Заметки»
 # as: gm4
 
 ## ru :: tree

@@ -366,7 +366,7 @@ describe('the list note', () => {
       const pub = screen.getByRole('textbox', { name: 'Для игроков' });
       await userEvent.clear(pub);
       await userEvent.type(pub, 'Открыто до полуночи');
-      /* The switch shows the GM note, with its dashed field and its caption. */
+      /* The switch shows the GM note, with its GM field and its caption. */
       await userEvent.click(screen.getByRole('button', { name: /^Только для мастера/ }));
       expect(screen.getByRole('textbox', { name: 'Только для мастера' })).toHaveValue(
         'Не для игроков'

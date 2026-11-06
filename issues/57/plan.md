@@ -15,7 +15,7 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
   7-15 and their ANSWER and APPROVED lines; none is reopened here):
   - Batch TD = T + D + The Measure Rule in one batch (REBATCH option B; owner items 10 (approved), 13, 14, 15): brief
     `plan-TD.md`, which reads `plan-T.md`, `plan-D.md` and `plan-text.md`; mocks `mocks/T/`, `mocks/D/`, `mocks/text/`;
-    cases 108-111; 44 acceptance lines; 168-230 min.
+    cases 108-111; 44 acceptance lines; 168-230 min. Built 2026-11-06 (`handoff.md`, Completed); its review is next.
   - Batch N (The Head Order Rule, the `/tables/*` exception at 761-999 px, owner item 12's d12 die marks): brief
     `plan-N.md`, mocks `mocks/N/`, cases 112-113, 17 acceptance lines, 115-150 min.
   - Batch P (print), restated for Q-P1 = no (owner: the standard card stays 63x88 mm): brief `plan-P.md`, mocks `mocks/P/`,

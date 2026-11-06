@@ -688,7 +688,7 @@
 
   /* The fold button reads as the card's name, on a 24 px target (WCAG 2.5.8). */
   .head .name :global(.btn.bare) {
-    min-height: 24px;
+    min-height: max(24px, var(--thumb));
     color: var(--txt);
     font-size: inherit;
     font-weight: 600;
@@ -748,5 +748,14 @@
   .members a {
     min-width: 0;
     overflow-wrap: anywhere;
+  }
+
+  /* A member's link reaches the thumb target by its padded box (DESIGN.md, "The
+     Phone-First Rule"). */
+  @media screen and (max-width: 600px) {
+    .members a {
+      padding-block: max(0px, calc((var(--thumb) - 1lh) / 2));
+      margin-block: min(0px, calc((1lh - var(--thumb)) / 2));
+    }
   }
 </style>

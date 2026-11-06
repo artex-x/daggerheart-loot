@@ -19,7 +19,15 @@ const { PNG } = require('pngjs');
 const { shardOf } = require('./shard.js');
 /* Read before lib.js, whose require checks the build: a bad `--shard` names itself first. */
 const SHARD = shardOf(process.argv);
-const { axe, baseUrl, fresh, sharedPage, reporter, closeBrowser } = require('./lib.js');
+const {
+  axe,
+  baseUrl,
+  fresh,
+  sharedPage,
+  reporter,
+  closeBrowser,
+  targets
+} = require('./lib.js');
 const { TARGETS, ready } = require('./driver.js');
 const { HB_FILE, STATES, hbImportOpen } = require('./inventory.js');
 
@@ -3934,7 +3942,7 @@ async function gmOnlyToggle() {
       const meta = row.querySelector('.lrow-meta').getBoundingClientRect();
       const state = row.querySelector('.gmstate')?.getBoundingClientRect();
       return {
-        dashed: row.classList.contains('gm-only'),
+        gmOnly: row.classList.contains('gm-only'),
         state: state ? { w: state.width, h: state.height } : null,
         rowRight: row.getBoundingClientRect().right,
         actsTop: acts.top,
@@ -3954,7 +3962,7 @@ async function gmOnlyToggle() {
     );
     const m = await pressAndMeasure(page, 'Брошюра по Истории Искусства');
     console.log('  69 at 1180: ' + JSON.stringify(m));
-    ok(!!m && m.dashed, at + 'the row «Ещё» did not mark the row at 1180');
+    ok(!!m && m.gmOnly, at + 'the row «Ещё» did not mark the row at 1180');
     ok(
       !!m?.state && m.state.w <= 1 && m.state.h <= 1,
       at + 'the GM-only words draw at 1180 - ' + JSON.stringify(m?.state)
@@ -4020,7 +4028,7 @@ async function gmOnlyToggle() {
       await frames();
       const state = row.querySelector('.cmark .vh')?.getBoundingClientRect();
       return {
-        dashed: row.classList.contains('gm-only'),
+        gmOnly: row.classList.contains('gm-only'),
         state: state ? { w: state.width, h: state.height } : null,
         rowRight: row.getBoundingClientRect().right,
         controls: [...row.querySelectorAll('.cfull button, .cfull input, .cqf')].map((b) => {
@@ -4030,7 +4038,7 @@ async function gmOnlyToggle() {
       };
     }, long);
     console.log('  69 at 360: ' + JSON.stringify(m));
-    ok(!!m && m.dashed, at + 'the row «Ещё» did not mark the row at 360');
+    ok(!!m && m.gmOnly, at + 'the row «Ещё» did not mark the row at 360');
     ok(
       !!m?.state && m.state.w <= 1 && m.state.h <= 1,
       at + 'the GM-only words draw at 360 - ' + JSON.stringify(m?.state)
@@ -5629,12 +5637,13 @@ const FIRST_SCREEN = [
   { state: '#/lists/00000000-0000-4000-8000-000000008001 as gm4', shipped: true },
   { state: '#/lists/00000000-0000-4000-8000-000000008001 ~ many as gm4', shipped: true },
   { state: '#/lists/00000000-0000-4000-8000-000000008001 ~ long name as gm4', shipped: true },
-  { state: '#/s/player-token-1', shipped: true, exception: 302 },
+  /* The thumb-size «Сохранить себе» (DESIGN.md, "The First-Screen Rule", 2026-11-06). */
+  { state: '#/s/player-token-1', shipped: true, exception: 309 },
   /* From 761 px the 120-character name takes three lines (DESIGN.md, "The First-Screen Rule"). */
   {
     state: '#/s/player-token-1 ~ long name',
     shipped: true,
-    exception: { 360: 302, 1180: 312 }
+    exception: { 360: 309, 1180: 312 }
   },
   /* The folded requests strip above the rows (docs/specs/FEATURES.md, "Lists"). */
   {
@@ -8742,6 +8751,630 @@ async function noteSwitchInABrowser() {
   }
 }
 
+/** Opens inventory state `id` at 360x640 in `lang` and records in the page when the first
+ *  toast shows (`__toastAt`, the page clock), so a case reads a toast's age. */
+async function openToasting(id, lang) {
+  const state = STATES.find((s) => s.id === id);
+  if (!state) throw new Error('no inventory state ' + id);
+  const got = await fresh({ width: 360, height: 640, storage: state.storage });
+  await got.page.evaluateOnNewDocument(() => {
+    new MutationObserver(() => {
+      const t = document.querySelector('.toast.page[role]');
+      if (t && window.__toastAt === undefined) window.__toastAt = performance.now();
+    }).observe(document, { subtree: true, attributes: true, attributeFilter: ['role'] });
+  });
+  await got.d.open(state.route, {
+    as: state.as,
+    items: state.items,
+    sections: state.sections,
+    sources: state.sources,
+    hold: state.hold
+  });
+  if (state.enter) await state.enter(got.d);
+  await got.d.settled(state.id);
+  /* The switch redraws a shown toast in English and keeps its deadline. */
+  if (lang === 'en') await got.d.click('EN');
+  return got;
+}
+
+/** Waits until the shown toast is `ms` old and answers whether a toast still shows. */
+function toastAt(page, ms) {
+  return page.evaluate(async (at) => {
+    for (let i = 0; i < 400 && window.__toastAt === undefined; i++)
+      await new Promise((r) => setTimeout(r, 25));
+    if (window.__toastAt === undefined) return null;
+    const wait = window.__toastAt + at - performance.now();
+    if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+    return !!document.querySelector('.toast.page[role]');
+  }, ms);
+}
+
+/** 108. The toasts in a real browser (DESIGN.md, "The Reading Time Rule"), 360x640: a plain
+ *  toast lives 4000 ms, an error 7000 ms, a long one 10000 ms and takes three lines; a
+ *  pointer on a toast holds it and it runs on when the pointer leaves; the page's toast sits
+ *  above the selection bar. The toast over a result's «Ещё» is measured, not asserted. */
+async function toastsInABrowser() {
+  const at = '108 (the toasts): ';
+  for (const lang of ['ru', 'en']) {
+    const en = lang === 'en';
+    const plain = async () => {
+      const o = await openToasting('#/tables/eq_weapon', lang);
+      await o.page.evaluate(() => document.querySelector('main .tsec-link')?.click());
+      return o;
+    };
+    const runs = [
+      /* (a) A plain toast: a section link copied. */
+      async () => {
+        const o = await plain();
+        try {
+          const a = await toastAt(o.page, 3500);
+          const b = await toastAt(o.page, 4600);
+          ok(
+            a === true && b === false,
+            at + lang + ' (a): the plain toast at 3.5 s / 4.6 s - ' + a + ' / ' + b
+          );
+        } finally {
+          await o.ctx.close();
+        }
+      },
+      /* (b) An error toast: the last source pressed off. */
+      async () => {
+        const o = await openToasting('#/roll/std ~ set up', lang);
+        try {
+          for (let i = 0; i < 3; i++) {
+            const pressed = await o.page.evaluate(() => {
+              if (document.querySelector('.toast.page[role="alert"]')) return false;
+              const on = document.querySelector('button.chip[data-val][aria-pressed="true"]');
+              on?.click();
+              return !!on;
+            });
+            if (!pressed) break;
+            await o.d.settle();
+          }
+          const a = await toastAt(o.page, 5000);
+          const b = await toastAt(o.page, 6500);
+          const c = await toastAt(o.page, 7600);
+          ok(
+            a === true && b === true && c === false,
+            at + lang + ' (b): the error toast at 5 / 6.5 / 7.6 s - ' + [a, b, c].join(' / ')
+          );
+        } finally {
+          await o.ctx.close();
+        }
+      },
+      /* (c) A pointer on a plain toast holds it; it runs on with the time it had left. */
+      async () => {
+        const o = await plain();
+        try {
+          await toastAt(o.page, 1000);
+          const box = await o.page.evaluate(() => {
+            const r = document.querySelector('.toast.page[role]')?.getBoundingClientRect();
+            return r ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : null;
+          });
+          ok(!!box, at + lang + ' (c): no toast to point at');
+          if (!box) return;
+          await o.page.mouse.move(box.x, box.y);
+          const held = await toastAt(o.page, 6000);
+          await o.page.mouse.move(5, 300);
+          const left = await o.page.evaluate(() => performance.now());
+          const gone = await o.page.evaluate(async () => {
+            for (let i = 0; i < 200 && document.querySelector('.toast.page[role]'); i++)
+              await new Promise((r) => setTimeout(r, 25));
+            return performance.now();
+          });
+          ok(
+            held === true && gone - left <= 3600 && gone - left >= 2000,
+            at +
+              lang +
+              ' (c): held ' +
+              held +
+              ', gone ' +
+              Math.round(gone - left) +
+              ' ms after the pointer left'
+          );
+        } finally {
+          await o.ctx.close();
+        }
+      },
+      /* (d) A long toast: the list limit with its email address. */
+      async () => {
+        const o = await openToasting('#/lists ~ list limit as gm2', lang);
+        try {
+          const lines = await o.page.evaluate(() => {
+            const t = document.querySelector('.toast.page[role]');
+            if (!t) return 0;
+            const cs = getComputedStyle(t);
+            const inner =
+              t.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+            return Math.round(inner / parseFloat(cs.lineHeight));
+          });
+          const a = await toastAt(o.page, 9000);
+          const b = await toastAt(o.page, 10600);
+          ok(
+            a === true && b === false,
+            at + lang + ' (d): the long toast at 9 / 10.6 s - ' + a + ' / ' + b
+          );
+          if (!en)
+            ok(lines >= 3, at + 'ru (d): the long toast takes ' + lines + ' lines at 360');
+        } finally {
+          await o.ctx.close();
+        }
+      }
+    ];
+    await Promise.all(runs.map((f) => f()));
+
+    /* (e) The page's toast floats above the selection bar. */
+    {
+      const { ctx, page } = await openState('#/tables/eq_weapon ~ selecting', 360, 640, lang);
+      try {
+        await page.evaluate(() => {
+          const boxes = [...document.querySelectorAll('main .selbox input')].slice(0, 2);
+          for (const b of boxes) b.click();
+        });
+        await page.evaluate(
+          (name) => {
+            const b = [...document.querySelectorAll('.selbarwrap button')].find(
+              (x) => x.textContent.trim() === name
+            );
+            b?.click();
+          },
+          en ? 'Copy text' : 'Скопировать текст'
+        );
+        ok(
+          await waitIn(page, () => !!document.querySelector('.toast.page[role]')),
+          at + lang + ' (e): no toast after «Скопировать текст»'
+        );
+        const m = await page.evaluate(() => ({
+          toast: document.querySelector('.toast.page[role]')?.getBoundingClientRect().bottom,
+          bar: document.querySelector('.selbarwrap')?.getBoundingClientRect().top
+        }));
+        ok(
+          m.toast !== undefined && m.bar !== undefined && m.toast <= m.bar + 0.5,
+          at + lang + ' (e): the toast covers the selection bar - ' + JSON.stringify(m)
+        );
+      } finally {
+        await ctx.close();
+      }
+    }
+
+    /* (f) A toast over a roll result's open «Ещё»: logged for DEBT.md, not asserted. */
+    {
+      const { ctx, page, d } = await openState('#/roll/std ~ card more', 360, 640, lang);
+      try {
+        /* The press on «EN» closes the menu: open it again. */
+        if (!(await page.$('[role="menu"] [role="menuitem"]'))) await d.openCardMore();
+        await page.evaluate(() =>
+          document.querySelector('[role="menu"] [role="menuitem"]')?.click()
+        );
+        await d.settle();
+        await d.openCardMore();
+        const m = await page.evaluate(() => {
+          const t = document.querySelector('.toast.page[role]')?.getBoundingClientRect();
+          const items = [...document.querySelectorAll('[role="menu"] [role="menuitem"]')];
+          const last = items.at(-1)?.getBoundingClientRect();
+          if (!t || !last) return { toast: !!t, last: !!last };
+          const v = Math.max(0, Math.min(t.bottom, last.bottom) - Math.max(t.top, last.top));
+          const h = Math.max(0, Math.min(t.right, last.right) - Math.max(t.left, last.left));
+          return {
+            toastTop: Math.round(t.top),
+            lastBottom: Math.round(last.bottom),
+            overlap: Math.round(v * h)
+          };
+        });
+        fs.writeSync(1, '  toast over «Ещё» (f) 360 ' + lang + ': ' + JSON.stringify(m) + '\n');
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+}
+
+/** The open layers `sweep.js` does not open, read by case 109. */
+const TARGET_LAYERS = [
+  '#/tables/eq_weapon ~ filter sheet',
+  '#/tables/eq_weapon ~ table picker',
+  '#/tables/eq_weapon ~ more menu',
+  '#/tables/eq_weapon ~ selecting',
+  '#/tables ~ a row opened',
+  '#/tables/eq_weapon ~ a row opened, actions menu',
+  '#/tables ~ a row opened, list menu as gm4',
+  '#/tables ~ bar menu as gm4',
+  '#/i/ci1 ~ list menu as gm1',
+  '#/i/q1 ~ more as gm3',
+  '#/roll/std ~ set up',
+  '#/roll/std ~ more',
+  '#/roll/std ~ card more',
+  '#/roll/vault_of_ages ~ supplements menu',
+  '#/search ~ more',
+  '#/search ~ selecting',
+  '#/lists ~ more as gm1',
+  '#/lists ~ card menu as gm1',
+  '#/lists ~ selecting as gm1',
+  '#/lists ~ import panel as gm1',
+  '#/s/player-token-1 ~ selecting',
+  '#/homebrew ~ more as gm3',
+  '#/homebrew ~ filter sheet as gm3',
+  '#/homebrew ~ select narrow as gm3',
+  '#/homebrew ~ bar more as gm3',
+  '#/homebrew/new ~ preview sheet as gm1',
+  '#/homebrew/new ~ picker open as gm1',
+  '#/homebrew/new ~ crop dialog as gm1',
+  '#/account ~ delete confirmation as gm1',
+  LIST_A_ID + ' ~ more as gm4',
+  LIST_A_ID + ' ~ row more as gm4',
+  LIST_A_ID + ' ~ note open as gm4',
+  SHOP + ' ~ requests open as gm1'
+];
+
+/** 109. Every open layer at 360x640 holds thumb targets (DESIGN.md, "The Phone-First
+ *  Rule"): `targets` finds no control under 40 px (44 px for a menu item) that its hit test
+ *  does not prove, in RU and EN. */
+async function targetsInOpenLayers() {
+  const at = '109 (the targets of open layers): ';
+  for (const id of TARGET_LAYERS) {
+    for (const lang of ['ru', 'en']) {
+      /* A state whose control draws from 761 px only is entered there (`wideEnter`). */
+      const { ctx, page } = await openState(id, 360, 640, lang).catch(() =>
+        openState(id, 360, 640, lang, true)
+      );
+      try {
+        const got = await targets(page, { floor: 40, menuFloor: 44 });
+        for (const t of got)
+          ok(
+            false,
+            at + id + ' ' + lang + ': ' + t.sel + ' «' + t.name + '» ' + t.w + 'x' + t.h
+          );
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+}
+
+/** The empty plates of DESIGN.md, "Empty state": the inventory states that draw one. */
+const PLATES = [
+  '#/search',
+  '#/search ~ narrow',
+  '#/search ~ nothing found',
+  '#/search ~ nothing found, kind picked',
+  '#/tables ~ nothing found',
+  '#/tables/eq_armor ~ nothing found',
+  '#/tables/wondrous ~ nothing found',
+  '#/tables/homebrew as gm2',
+  '#/homebrew ~ no match as gm3',
+  '#/homebrew/sets ~ empty as gm4',
+  '#/homebrew/rules ~ empty as gm4',
+  '#/lists',
+  '#/lists ~ empty as gm4',
+  '#/lists ~ nothing found as gm4',
+  LIST_A_ID + ' ~ no match as gm4',
+  '#/s/player-token-1 ~ no match'
+];
+
+/** Reads the first drawn plate in `main`: its four border styles, its ground, the gap from
+ *  the lowest block above it that overlaps it sideways, and the filter column's top. */
+function plateProbe() {
+  const vis = (e) => {
+    const r = e.getBoundingClientRect();
+    const cs = getComputedStyle(e);
+    return r.width > 0 && r.height > 0 && cs.visibility !== 'hidden' && cs.display !== 'none';
+  };
+  const plate = [...document.querySelectorAll('main .empty')].find(vis);
+  if (!plate) return null;
+  const pr = plate.getBoundingClientRect();
+  let above = null;
+  for (const e of document.querySelectorAll('main *')) {
+    if (e === plate || e.contains(plate) || plate.contains(e) || !vis(e)) continue;
+    /* An open sheet lies over the page, not above the plate. */
+    if (e.closest('dialog')) continue;
+    const r = e.getBoundingClientRect();
+    if (r.bottom > pr.top + 0.5 || r.right <= pr.left || r.left >= pr.right) continue;
+    if (!above || r.bottom > above.bottom) above = { bottom: r.bottom, el: e.className };
+  }
+  const cs = getComputedStyle(plate);
+  const col = document.querySelector('main .fcol');
+  return {
+    borders: [cs.borderTopStyle, cs.borderRightStyle, cs.borderBottomStyle, cs.borderLeftStyle],
+    ground: cs.backgroundColor,
+    gap: above ? Math.round((pr.top - above.bottom) * 10) / 10 : null,
+    above: above ? String(above.el).slice(0, 60) : null,
+    colTop: col && vis(col) ? col.getBoundingClientRect().top - pr.top : null
+  };
+}
+
+/** 110. The empty plate (DESIGN.md, "Empty state", "The Drop Rule"): a solid border on
+ *  every side on the Vault Wall ground, 16 px under the block above it, and beside the
+ *  filter column on the column's top. */
+async function emptyPlate() {
+  const at = '110 (the empty plate): ';
+  for (const id of PLATES) {
+    for (const [width, height] of [
+      [360, 640],
+      [1180, 720]
+    ]) {
+      for (const lang of ['ru', 'en']) {
+        const where = at + id + ' ' + width + ' ' + lang + ': ';
+        /* A state whose controls draw from 761 px or 1000 px is entered at 1180 px. */
+        const wide = width < 761 && /kind picked|eq_armor|wondrous/.test(id);
+        const { ctx, page } = await openState(id, width, height, lang, wide);
+        try {
+          const m = await page.evaluate(plateProbe);
+          fs.writeSync(1, '  plate: ' + where + JSON.stringify(m) + '\n');
+          ok(!!m, where + 'no plate');
+          if (!m) continue;
+          ok(
+            m.borders.every((b) => b === 'solid'),
+            where + 'the border is not solid - ' + m.borders.join(' ')
+          );
+          ok(m.ground === 'rgb(20, 17, 29)', where + 'the ground is ' + m.ground);
+          ok(
+            m.gap !== null && Math.abs(m.gap - 16) <= 0.5,
+            where + 'the gap above the plate is ' + m.gap + ' (under ' + m.above + ')'
+          );
+          if (m.colTop !== null)
+            ok(
+              Math.abs(m.colTop) <= 0.5,
+              where + 'the filter column starts ' + m.colTop + ' px off the plate'
+            );
+        } finally {
+          await ctx.close();
+        }
+      }
+    }
+  }
+}
+
+/** Reads a text block's measure: its max-width and the width of 120ch and 70ch in its own
+ *  font, its drawn lines (the line boxes of its text), its widest line, its one-line width
+ *  and the free width of its parent. */
+function measureProbe(sel) {
+  const els = [...document.querySelectorAll(sel)].filter((e) => {
+    const r = e.getBoundingClientRect();
+    return r.width > 0 && r.height > 0 && getComputedStyle(e).visibility !== 'hidden';
+  });
+  return els.map((e) => {
+    const cs = getComputedStyle(e);
+    const probe = document.createElement('span');
+    probe.textContent = '0'.repeat(100);
+    probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;font:inherit';
+    e.appendChild(probe);
+    const ch = probe.getBoundingClientRect().width / 100;
+    probe.remove();
+    const range = document.createRange();
+    range.selectNodeContents(e);
+    const rects = [...range.getClientRects()].filter((r) => r.width > 0);
+    const tops = new Set(rects.map((r) => Math.round(r.top + r.height / 2)));
+    const lines = [];
+    for (const t of tops) {
+      const on = rects.filter((r) => Math.round(r.top + r.height / 2) === t);
+      lines.push(Math.max(...on.map((r) => r.right)) - Math.min(...on.map((r) => r.left)));
+    }
+    const clone = e.cloneNode(true);
+    clone.style.cssText =
+      'position:absolute;visibility:hidden;white-space:nowrap;max-width:none;width:auto;left:0;top:0';
+    e.parentElement.appendChild(clone);
+    const natural = clone.getBoundingClientRect().width;
+    clone.remove();
+    const p = e.parentElement;
+    const pcs = getComputedStyle(p);
+    const free = p.clientWidth - parseFloat(pcs.paddingLeft) - parseFloat(pcs.paddingRight);
+    const box = e.getBoundingClientRect();
+    const lh = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.6;
+    return {
+      cls: String(e.className).slice(0, 40),
+      max: cs.maxWidth === 'none' ? null : parseFloat(cs.maxWidth),
+      line: ch * 120,
+      text: ch * 70,
+      balance: /balance/.test(cs.textWrapStyle || cs.textWrap || ''),
+      lines: box.height < lh * 1.5 ? 1 : lines.length,
+      widest: lines.length ? Math.max(...lines) : 0,
+      natural,
+      free,
+      box: box.width,
+      right: box.right,
+      pright: p.getBoundingClientRect().right,
+      sideways: document.documentElement.scrollWidth > document.documentElement.clientWidth
+    };
+  });
+}
+
+const MEASURE_SIZES = [
+  [360, 640],
+  [768, 1024],
+  [1180, 720],
+  [1440, 900],
+  [1920, 1080]
+];
+
+/** 111. The text measure (DESIGN.md, "The Measure Rule"): a line takes one line while its
+ *  column allows it and wraps in the column at 360; a passage keeps 70ch, and a box that
+ *  holds only a passage is as wide as its text; a box with actions follows its text. */
+async function textMeasure() {
+  const at = '111 (the text measure): ';
+  /* (a) The line class: a lead, a sign-in lead, a plate's cause and hint, an error sentence. */
+  const LINES = [
+    ['#/search', 'main .page-sub'],
+    ['#/homebrew as gm3', 'main .page-sub'],
+    ['#/roll/alt', 'main .page-sub'],
+    ['#/lists', 'main .page-sub, main .signin-lead'],
+    ['#/account', 'main .page-sub'],
+    ['#/search ~ nothing found', 'main .cause'],
+    ['#/lists ~ empty as gm4', 'main .hint'],
+    ['#/i/nope', 'main .errtext']
+  ];
+  for (const [id, sel] of LINES) {
+    for (const lang of ['ru', 'en']) {
+      const { ctx, page, d } = await openState(id, 1180, 720, lang);
+      try {
+        for (const [width, height] of MEASURE_SIZES) {
+          await d.viewport(width, height);
+          await d.settle();
+          const where = at + id + ' ' + sel + ' ' + width + ' ' + lang + ': ';
+          const got = await page.evaluate(measureProbe, sel);
+          fs.writeSync(
+            1,
+            '  line: ' +
+              where +
+              got
+                .map((g) => g.cls + ' ' + g.lines + 'L ' + Math.round(g.widest) + '/' + g.free)
+                .join('; ') +
+              '\n'
+          );
+          /* Up to 760 px a roll page and `/search` hide the lead. */
+          if (!got.length && width <= 760) continue;
+          ok(got.length > 0, where + 'no block drawn');
+          for (const g of got) {
+            ok(
+              g.max !== null && Math.abs(g.max - g.line) <= 1,
+              where + g.cls + ': its max-width is ' + g.max + ', not 120ch (' + g.line + ')'
+            );
+            ok(g.balance, where + g.cls + ': its wrap is not balanced');
+            if (width >= 768 && g.natural <= Math.min(g.free, g.line) - 1)
+              ok(
+                g.lines === 1,
+                where + g.cls + ': it fits its column and takes ' + g.lines + ' lines'
+              );
+            if (width === 360)
+              ok(
+                g.right <= g.pright + 0.5 && !g.sideways,
+                where + g.cls + ': it does not wrap in its column'
+              );
+          }
+        }
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+
+  /* (a2) A box with actions: the sign-in button follows the lead's widest line. */
+  for (const lang of ['ru', 'en']) {
+    for (const [width, height] of [
+      [1180, 720],
+      [1920, 1080]
+    ]) {
+      const where = at + '#/lists signed out ' + width + ' ' + lang + ': ';
+      const { ctx, page } = await openState('#/lists', width, height, lang);
+      try {
+        const m = await page.evaluate(() => {
+          const lead = document.querySelector('main .signin-lead');
+          const btn = document.querySelector('main .signin .btn, main .signin button');
+          if (!lead || !btn) return null;
+          const range = document.createRange();
+          range.selectNodeContents(lead);
+          const right = Math.max(...[...range.getClientRects()].map((r) => r.right));
+          return { gap: btn.getBoundingClientRect().left - right };
+        });
+        ok(
+          !!m && m.gap >= 0 && m.gap <= 12,
+          where + 'the button does not follow the lead - ' + JSON.stringify(m)
+        );
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+
+  /* (b) The passage class: help panels, a note, the footer license. Each width opens its
+     own page: a help panel folds when the page head leaves at 760 px. */
+  const PASSAGES = [
+    ['#/roll/std ~ help', 'main .helpbox p', 'main .helpbox'],
+    ['#/roll/arazo ~ help', 'main .helpbox p', 'main .helpbox'],
+    ['#/s/gm-token-1', 'main .hitnote .htext', 'main .hitnote'],
+    ['#/roll/std', '.foot-licence p', null]
+  ];
+  for (const [id, sel, boxSel] of PASSAGES) {
+    for (const lang of ['ru', 'en']) {
+      for (const [width, height] of MEASURE_SIZES) {
+        const { ctx, page } = await openState(id, width, height, lang, width < 761);
+        try {
+          if (!boxSel)
+            await page.evaluate(() => (document.querySelector('.foot-licence').open = true));
+          const where = at + id + ' ' + sel + ' ' + width + ' ' + lang + ': ';
+          const got = await page.evaluate(measureProbe, sel);
+          /* Up to 760 px a help panel is an item of «Ещё» and the `/s/` notes sit on the
+             lead line: nothing to read there. */
+          if (!got.length && width < 761) continue;
+          ok(got.length > 0, where + 'no passage drawn');
+          for (const g of got)
+            ok(
+              g.widest <= g.text + 1,
+              where + 'a line is ' + Math.round(g.widest) + ' px, past 70ch (' + g.text + ')'
+            );
+          if (!boxSel) continue;
+          /* The box against the extent of what it holds: a band inside it is the defect. */
+          const box = await page.evaluate(
+            (b) =>
+              [...document.querySelectorAll(b)].map((e) => {
+                const cs = getComputedStyle(e);
+                const inner =
+                  e.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+                const kids = [...e.children].map((k) => k.getBoundingClientRect());
+                const widest =
+                  Math.max(...kids.map((k) => k.right)) - Math.min(...kids.map((k) => k.left));
+                const p = e.parentElement;
+                const pcs = getComputedStyle(p);
+                const col =
+                  p.clientWidth - parseFloat(pcs.paddingLeft) - parseFloat(pcs.paddingRight);
+                return { inner, widest, outer: e.getBoundingClientRect().width, col };
+              }),
+            boxSel
+          );
+          fs.writeSync(1, '  passage: ' + where + JSON.stringify(box) + '\n');
+          for (const b of box) {
+            if (width === 360)
+              ok(
+                b.outer >= b.col - 1 || b.inner <= b.widest + 1,
+                where + 'the box is neither its text nor the column - ' + JSON.stringify(b)
+              );
+            else
+              ok(
+                b.inner <= b.widest + 1,
+                where + 'the box is wider than its text - ' + JSON.stringify(b)
+              );
+          }
+        } finally {
+          await ctx.close();
+        }
+      }
+    }
+  }
+
+  /* The dossier's text column is the measure of a record's text: at most 80ch. */
+  for (const lang of ['ru', 'en']) {
+    const { ctx, page, d } = await fresh({ width: 1180, height: 900, lang });
+    try {
+      await d.open('#/i/voa2_a3');
+      const got = await page.evaluate(measureProbe, 'main .card-desc');
+      ok(
+        got.length > 0 && got.every((g) => g.box <= (g.line * 80) / 120 + 1),
+        at + '#/i/voa2_a3 ' + lang + ': the record text is past 80ch - ' + JSON.stringify(got)
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+
+  /* The list page's side column: its read-only notes fill it, a hugging note would not. */
+  {
+    const { ctx, page } = await openState(LIST_A_ID + ' ~ noted as gm4', 1180, 720, 'ru');
+    try {
+      const m = await page.evaluate(() =>
+        [...document.querySelectorAll('.lnotes > .hitnote')].map((n) => {
+          const col = n.parentElement;
+          return { note: n.getBoundingClientRect().width, col: col.clientWidth };
+        })
+      );
+      ok(
+        m.length > 0 && m.every((x) => x.note >= x.col - 1),
+        at + 'the side column notes are narrower than the column - ' + JSON.stringify(m)
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -8842,7 +9475,11 @@ const CASES = [
   ['104 (the number stepper is laid out as a stepper)', numberStepperLayout],
   ['105 (the list page layout)', listPageLayout],
   ['106 (row text and field measure)', rowTextAndFieldMeasure],
-  ['107 (the note switch in a real browser)', noteSwitchInABrowser]
+  ['107 (the note switch in a real browser)', noteSwitchInABrowser],
+  ['108 (the toasts in a real browser)', toastsInABrowser],
+  ['109 (the targets of open layers at 360)', targetsInOpenLayers],
+  ['110 (the empty plate)', emptyPlate],
+  ['111 (the text measure)', textMeasure]
 ];
 
 /* The interleave spreads the slow layout cases at the end of the list over

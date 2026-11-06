@@ -230,7 +230,7 @@ across.
   (English first in English). Its roll number is a neutral badge; a table of
   more than one kind labels the tile with a kind badge, one pill: a long label
   wraps inside its border; a one-kind table draws none.
-- The empty state is a dashed plate with the kind glyph, «Ничего не найдено» /
+- The empty state is a plate with the kind glyph, «Ничего не найдено» /
   "Nothing found", one cause sentence that names the query, the chosen values
   or both («Нет совпадений с «%q» среди фильтров: %v.»), and the primary
   «Сбросить фильтры» / "Reset the filters" while a filter is chosen.
@@ -532,7 +532,8 @@ across.
   purchase requests and unread notices draw the neutral chip «Новое в списке (N)»
   / "New in this list (N)" inside the link (no gold: DESIGN.md, "The Seal Rule").
   The link's name is the name, the count, the edit time and the chip. The card's
-  actions are its «Ещё», named «Ещё: <name>» / "More: <name>": «Открыть»,
+  actions are its «Ещё», text alone in the card's top right corner, after the link in the
+  DOM, named «Ещё: <name>» / "More: <name>": «Открыть»,
   «Скачать JSON», a separator and «Удалить список» (danger); no red «Удалить» on a
   card (A16). «Удалить список» asks the browser's confirm «Удалить список «%s»?
   Ссылки для игроков и мастера перестанут работать. Отменить удаление нельзя.» and
@@ -711,7 +712,7 @@ across.
   panel «Бросок по списку» at the top of the rows column: «Результат броска (1-N)», the
   stepper and «Бросить dN» on one row, then the result as the card face (the row face in
   a narrow column), the entry's count and price in the page's mode, both notes (the GM
-  note in its dashed box) and «Показать в списке», which scrolls to the row, lights it for
+  note in its GM box) and «Показать в списке», which scrolls to the row, lights it for
   1.5 s and focuses its body. The row numbers match it. An empty roll field means no roll
   has been made yet, not zero. The panel and the open note areas are page memory and keep
   their state across a language switch and a money switch.
@@ -721,13 +722,13 @@ across.
   text") in a box of rule 18 (bold, italic, both lists, «Просмотр», no «?»), at most
   4000 characters with no counter. The two notes of an entry, and the two of the list,
   are one note area: closed, each filled note draws read-only in a full box, the GM
-  note's box dashed on the darker ground; «Заметка» (a filled note adds a dot and the
+  note's box on the darker ground; «Заметка» (a filled note adds a dot and the
   hidden «, заполнена»), the side column's «Изменить» or «Заметки ▾» up to 760 px opens
   it: a neutral switch «Для игроков» / «Только для мастера» (a dot on an option whose
   note is filled), one field for the chosen note, named by it and described by its
   caption «Видна по ссылке для игроков» / «Игроки не видят», then «Готово», which closes
   it and returns the focus to its opener, and «Очистить», which clears the shown note
-  with «Вернуть» in its toast. The GM field is dashed. The area opens on the players'
+  with «Вернуть» in its toast. The area opens on the players'
   note unless only the GM note is filled; a switch keeps the typed text, which every
   keystroke already wrote through the buffer. A stored list or entry note is read the same way, with no
   migration.
@@ -956,7 +957,7 @@ address kept, and no add-to-list control is drawn.
   each row's «Ещё» on an account list's page holds «Скрыть от игроков» / «Показать
   игрокам» (from 761 px the full row draws «Заметка» and «Ещё: <name>» in place of three
   icon buttons). A press marks or clears the entry through the write buffer, with no
-  toast. A GM-only row has a dashed border, the
+  toast. A GM-only row sits on the darker ground: the
   recessed ground and its art at 45%, on the owner's page and on the GM's
   link; no text on screen marks it, and the row's button names the state
   after the name for a screen reader («Брошюра по Истории Искусства, Только
@@ -2669,7 +2670,9 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
 configured (the two `VITE_SUPABASE_*` values, `docs/specs/META.md` section
 3). Sign-in is optional: everything else works without it. The page is titled
 «Аккаунт» / "Account" (the tab reads `Аккаунт - <docTitle>`), and each section
-is a panel headed by an `h2`. Signed out it is one column at 70ch; signed in it
+is a panel headed by an `h2`. Signed out its sign-in panel keeps the passage measure
+and its lead takes one line while the column allows it (DESIGN.md, "The Measure Rule");
+signed in it
 is one column below 1000 px and two columns from 1000 px (up to 1100 px wide):
 the left holds «Отображение на всех устройствах» and «Способы входа», the right
 «Ваши данные», «Выход» and «Удаление аккаунта». The DOM order is left then
@@ -2810,6 +2813,10 @@ right, so the tab order and the reading order agree
   and the catalog it is an item of «Ещё» up to 760 px, and there the `h1` is read,
   not drawn; `/lists` has no help; `/homebrew` has no help, and its `h1` is read,
   not drawn, once its items are read. The editor's heading is the breadcrumb row.
+  An open panel is as wide as its text (DESIGN.md, "The Measure Rule").
+- Up to 600 px every control a person presses is a thumb target of at least 40x40 px,
+  and a menu item and a row 44 px (owner, 2026-11-05; DESIGN.md, "The Phone-First
+  Rule").
 - The pin beside the H1 reads «Открывать при запуске» / "Open on start" with
   the home icon; pinned it reads «Открывается при запуске» / "Opens on start"
   with the check of the neutral pressed state (`Seg`), never a gold fill. From
@@ -2843,13 +2850,15 @@ right, so the tab order and the reading order agree
   A language switch while a toast is up redraws its text and its button in
   the new language, keeps its time left and moves no focus. A toast whose
   action is a link («Изменить» after «Добавить свой предмет») lasts 7000 ms too,
-  never takes focus and opens its page in a new tab; a toast with an action
-  pauses its clock while the pointer is over it or the person has moved
-  focus into it, and runs on with the time it had left; the focus an undo
-  toast takes itself does not pause it. A toast with no action never pauses.
+  never takes focus and opens its page in a new tab. A plain toast lasts 4000 ms, an
+  error toast and a toast with an action 7000 ms, and a toast whose text holds an email
+  address or more than 80 characters in either language 10000 ms (owner, 2026-11-05;
+  DESIGN.md, "The Reading Time Rule"). Every toast pauses its clock while a pointer or a
+  finger is on it or the person has moved focus into it, and runs on with the time it
+  had left; the focus an undo toast takes itself does not pause it.
   An error toast or a toast with an action keeps its place for its time: a
   later plain toast waits and shows when it ends - its timer, its close or its
-  action - for its own 1600 ms (one waits; a newer plain toast takes its
+  action - for its own class's time (one waits; a newer plain toast takes its
   place); a later error or action toast replaces it at once (owner,
   2026-10-08). The new-request toast ("Purchase requests: the owner") is
   the lowest: an action toast whose button («Открыть» / «Показать») moves
@@ -2865,7 +2874,8 @@ right, so the tab order and the reading order agree
   button).
 - The toast is a plate: `--surface` with a 1px `--muted2` border, `--txt`
   text, the Float shadow and `--r` corners, at most the window's width less
-  16 px a side, 26 px off the bottom; its action button is `--surface2` with a
+  16 px a side and the line measure, 26 px off the bottom and 26 px above the selection
+  bar while the bar shows; its action button is `--surface2` with a
   `--line2` border. The error toast takes the Alarm Red fill (`--danger`) with
   dark ink (`--ink-on-gold`, about 5.6:1). No toast is gold.
 - The footer carries the full DPCGL license notice (`dict.ts`'s

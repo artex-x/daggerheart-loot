@@ -195,7 +195,7 @@
   /* A touch target at phone width (DESIGN.md, "The Two Breakpoints Rule"). */
   @media (max-width: 600px) {
     .qgroup {
-      height: 36px;
+      height: max(36px, var(--thumb));
     }
 
     .qgroup button {

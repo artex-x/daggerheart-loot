@@ -57,7 +57,13 @@ import { fakeCloud, type FakeCloud, type FakeCloudOptions } from '../ports/fake-
 import { SEED, uuid, type Seed } from '../ports/fake-cloud-seed.js';
 import { seedWith } from '../test/seed.js';
 import type { CloudList } from '../lib/cloudLists.js';
-import { AppState, LIST_POLL_MS, SIGN_OUT_WAIT_MS } from './app.svelte.js';
+import {
+  AppState,
+  LIST_POLL_MS,
+  SIGN_OUT_WAIT_MS,
+  TOAST_LONG_CHARS,
+  TOAST_MS
+} from './app.svelte.js';
 
 const LANG_KEY = 'dhloot.lang.v1';
 const HOME_KEY = 'dhloot.home.v1';
@@ -1279,7 +1285,12 @@ describe('the toast', () => {
     vi.useRealTimers();
   });
 
-  it('shows a plain notice for 1600ms', () => {
+  it('pins the four durations of the Reading Time Rule', () => {
+    expect(TOAST_MS).toEqual({ plain: 4000, error: 7000, action: 7000, long: 10000 });
+    expect(TOAST_LONG_CHARS).toBe(80);
+  });
+
+  it('shows a plain notice for its plain time', () => {
     vi.useFakeTimers();
     const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
     app.say(() => 'Добавлено в «Клад дракона»');
@@ -1289,27 +1300,53 @@ describe('the toast', () => {
       action: undefined
     });
 
-    vi.advanceTimersByTime(1599);
+    vi.advanceTimersByTime(TOAST_MS.plain - 1);
     expect(app.toast).not.toBeNull();
     vi.advanceTimersByTime(1);
     expect(app.toast).toBeNull();
     vi.useRealTimers();
   });
 
-  it('shows an error for 2600ms', () => {
+  it('shows an error for its error time', () => {
     vi.useFakeTimers();
     const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
     app.say(() => 'Сначала назовите список', { error: true });
     expect(app.toast?.mode).toBe('err');
 
-    vi.advanceTimersByTime(2599);
+    vi.advanceTimersByTime(TOAST_MS.error - 1);
     expect(app.toast).not.toBeNull();
     vi.advanceTimersByTime(1);
     expect(app.toast).toBeNull();
     vi.useRealTimers();
   });
 
-  it('shows an action for 7000ms', () => {
+  it('gives a toast with an email address the long class', () => {
+    vi.useFakeTimers();
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+    app.say(() => 'Напишите на a@b.ru', { error: true });
+    vi.advanceTimersByTime(TOAST_MS.long - 1);
+    expect(app.toast).not.toBeNull();
+    vi.advanceTimersByTime(1);
+    expect(app.toast).toBeNull();
+    vi.useRealTimers();
+  });
+
+  it('gives a toast of more than 80 characters in either language the long class', () => {
+    vi.useFakeTimers();
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+    app.say((_, lang) => (lang === 'en' ? 'x'.repeat(TOAST_LONG_CHARS + 1) : 'коротко'));
+    vi.advanceTimersByTime(TOAST_MS.long - 1);
+    expect(app.toast?.msg).toBe('коротко');
+    vi.advanceTimersByTime(1);
+    expect(app.toast).toBeNull();
+    /* At the limit itself the class stays plain. */
+    app.say(() => 'x'.repeat(TOAST_LONG_CHARS));
+    vi.advanceTimersByTime(TOAST_MS.plain);
+    expect(app.toast).toBeNull();
+    vi.useRealTimers();
+  });
+
+  it('shows an action for its action time', () => {
     vi.useFakeTimers();
     const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
     const run = vi.fn();
@@ -1317,7 +1354,7 @@ describe('the toast', () => {
     expect(app.toast?.mode).toBe('act');
     expect(app.toast?.action?.label).toBe('Вернуть');
 
-    vi.advanceTimersByTime(6999);
+    vi.advanceTimersByTime(TOAST_MS.action - 1);
     expect(app.toast).not.toBeNull();
     vi.advanceTimersByTime(1);
     expect(app.toast).toBeNull();
@@ -1329,12 +1366,12 @@ describe('the toast', () => {
     vi.useFakeTimers();
     const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
     app.say(() => 'one');
-    vi.advanceTimersByTime(1000);
+    vi.advanceTimersByTime(TOAST_MS.plain - 1000);
     app.say(() => 'two');
     vi.advanceTimersByTime(1000);
     // the first timer would have fired by now had it not been cleared
     expect(app.toast?.msg).toBe('two');
-    vi.advanceTimersByTime(600);
+    vi.advanceTimersByTime(TOAST_MS.plain - 1000);
     expect(app.toast).toBeNull();
     vi.useRealTimers();
   });
@@ -1358,7 +1395,7 @@ describe('the toast', () => {
     vi.advanceTimersByTime(1000);
     app.setLang('en');
     expect(app.toast?.msg).toBe(dict('en').homeSet);
-    vi.advanceTimersByTime(599);
+    vi.advanceTimersByTime(TOAST_MS.plain - 1001);
     expect(app.toast).not.toBeNull();
     vi.advanceTimersByTime(1);
     expect(app.toast).toBeNull();
@@ -1387,16 +1424,25 @@ describe('the toast', () => {
     vi.useRealTimers();
   });
 
-  it('never holds a plain notice', () => {
+  it('holds a plain notice and an error while hovered and runs on with the time they had left', () => {
     vi.useFakeTimers();
     const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
     app.say(() => 'Добавлено');
+    vi.advanceTimersByTime(1000);
     app.holdToast(true);
-    vi.advanceTimersByTime(1600);
+    vi.advanceTimersByTime(60_000);
+    expect(app.toast?.msg).toBe('Добавлено');
+    app.holdToast(false);
+    vi.advanceTimersByTime(TOAST_MS.plain - 1001);
+    expect(app.toast).not.toBeNull();
+    vi.advanceTimersByTime(1);
     expect(app.toast).toBeNull();
     app.say(() => 'Ошибка', { error: true });
     app.holdToast(true);
-    vi.advanceTimersByTime(2600);
+    vi.advanceTimersByTime(60_000);
+    expect(app.toast?.msg).toBe('Ошибка');
+    app.holdToast(false);
+    vi.advanceTimersByTime(TOAST_MS.error);
     expect(app.toast).toBeNull();
     vi.useRealTimers();
   });
@@ -1424,7 +1470,7 @@ describe('the toast', () => {
       mode: 'act',
       action: { label: 'Изменить', href: '#/homebrew/hb_flask' }
     });
-    vi.advanceTimersByTime(7000);
+    vi.advanceTimersByTime(TOAST_MS.action);
     expect(app.toast).toBeNull();
     vi.useRealTimers();
   });
@@ -1468,18 +1514,18 @@ describe('the toast slot, owner 2026-10-08', () => {
     expect(app.toast?.mode).toBe('act');
   });
 
-  it('holds a plain toast said during an error until the error ends, then shows it 1600ms', () => {
+  it('holds a plain toast said during an error until the error ends, then shows it for its own class', () => {
     const app = made();
     app.say(() => 'ошибка', { error: true });
     vi.advanceTimersByTime(1000);
     app.say(() => 'потом');
     expect(app.toast?.msg).toBe('ошибка');
-    vi.advanceTimersByTime(1599);
+    vi.advanceTimersByTime(TOAST_MS.error - 1001);
     expect(app.toast?.msg).toBe('ошибка');
     vi.advanceTimersByTime(1);
     expect(app.toast?.msg).toBe('потом');
     expect(app.toast?.mode).toBe('');
-    vi.advanceTimersByTime(1599);
+    vi.advanceTimersByTime(TOAST_MS.plain - 1);
     expect(app.toast?.msg).toBe('потом');
     vi.advanceTimersByTime(1);
     expect(app.toast).toBeNull();
@@ -1489,7 +1535,7 @@ describe('the toast slot, owner 2026-10-08', () => {
     const app = made();
     app.say(() => 'убрано', { action: act });
     app.say(() => 'потом');
-    vi.advanceTimersByTime(6999);
+    vi.advanceTimersByTime(TOAST_MS.action - 1);
     expect(app.toast?.msg).toBe('убрано');
     vi.advanceTimersByTime(1);
     expect(app.toast?.msg).toBe('потом');
@@ -1509,7 +1555,7 @@ describe('the toast slot, owner 2026-10-08', () => {
     expect(app.toast?.msg).toBe('убрано');
     app.say(() => 'вторая ошибка', { error: true });
     expect(app.toast?.msg).toBe('вторая ошибка');
-    vi.advanceTimersByTime(2600);
+    vi.advanceTimersByTime(TOAST_MS.error);
     expect(app.toast?.msg).toBe('потом');
   });
 
@@ -1518,9 +1564,9 @@ describe('the toast slot, owner 2026-10-08', () => {
     app.say(() => 'ошибка', { error: true });
     app.say(() => 'первая');
     app.say(() => 'вторая');
-    vi.advanceTimersByTime(2600);
+    vi.advanceTimersByTime(TOAST_MS.error);
     expect(app.toast?.msg).toBe('вторая');
-    vi.advanceTimersByTime(1600);
+    vi.advanceTimersByTime(TOAST_MS.plain);
     expect(app.toast).toBeNull();
   });
 
@@ -1532,7 +1578,7 @@ describe('the toast slot, owner 2026-10-08', () => {
     vi.advanceTimersByTime(60_000);
     expect(app.toast?.msg).toBe('убрано');
     app.holdToast(false);
-    vi.advanceTimersByTime(7000);
+    vi.advanceTimersByTime(TOAST_MS.action);
     expect(app.toast?.msg).toBe('потом');
   });
 
@@ -1541,7 +1587,7 @@ describe('the toast slot, owner 2026-10-08', () => {
     app.say(() => 'ошибка', { error: true });
     app.say((t) => t.homeSet);
     app.setLang('en');
-    vi.advanceTimersByTime(2600);
+    vi.advanceTimersByTime(TOAST_MS.error);
     expect(app.toast?.msg).toBe(dict('en').homeSet);
   });
 
@@ -2980,7 +3026,7 @@ describe('the new-request toast', () => {
     expect(app.toast?.msg).toBe('убрано');
     app.say(() => 'ошибка', { error: true });
     expect(app.toast?.msg).toBe('ошибка');
-    await vi.advanceTimersByTimeAsync(2600);
+    await vi.advanceTimersByTimeAsync(TOAST_MS.error);
     expect(app.toast?.msg).toBe('Новый запрос по списку «Лавка кузнеца»');
     app.stop();
   });
@@ -2990,7 +3036,7 @@ describe('the new-request toast', () => {
     await arrive(cloud);
     app.say(() => 'скопировано');
     expect(app.toast?.msg).toBe('скопировано');
-    await vi.advanceTimersByTimeAsync(1600);
+    await vi.advanceTimersByTimeAsync(TOAST_MS.plain);
     expect(app.toast).toBeNull();
     expect(app.ownerRequests?.unreadCount(Date.now())).toBe(1);
     app.stop();
@@ -3001,9 +3047,9 @@ describe('the new-request toast', () => {
     app.say(() => 'убрано', { action: undo });
     await arrive(cloud);
     app.say(() => 'потом');
-    await vi.advanceTimersByTimeAsync(7000);
+    await vi.advanceTimersByTimeAsync(TOAST_MS.action);
     expect(app.toast?.msg).toBe('потом');
-    await vi.advanceTimersByTimeAsync(1600);
+    await vi.advanceTimersByTimeAsync(TOAST_MS.plain);
     expect(app.toast).toBeNull();
     app.stop();
   });
@@ -3013,9 +3059,9 @@ describe('the new-request toast', () => {
     app.say(() => 'убрано', { action: undo });
     app.say(() => 'потом');
     await arrive(cloud);
-    await vi.advanceTimersByTimeAsync(7000);
+    await vi.advanceTimersByTimeAsync(TOAST_MS.action);
     expect(app.toast?.msg).toBe('потом');
-    await vi.advanceTimersByTimeAsync(1600);
+    await vi.advanceTimersByTimeAsync(TOAST_MS.plain);
     expect(app.toast).toBeNull();
     app.stop();
   });
@@ -3026,7 +3072,7 @@ describe('the new-request toast', () => {
     expect(app.toast?.mode).toBe('act');
     await app.ownerRequests?.decline(id ?? '');
     expect(app.toast?.msg).toBe('Запрос отклонён');
-    await vi.advanceTimersByTimeAsync(1600);
+    await vi.advanceTimersByTimeAsync(TOAST_MS.plain);
     expect(app.toast).toBeNull();
     app.stop();
   });
@@ -3049,7 +3095,7 @@ describe('the new-request toast', () => {
     expect(id).not.toBeNull();
     await vi.advanceTimersByTimeAsync(COALESCE_MS + 50);
     expect(app.toast?.msg).toBe('Запрос принят');
-    await vi.advanceTimersByTimeAsync(1600);
+    await vi.advanceTimersByTimeAsync(TOAST_MS.plain);
     expect(app.toast?.msg).toBe('Новый запрос по списку «Лавка кузнеца»');
     app.stop();
   });

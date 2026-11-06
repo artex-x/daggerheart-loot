@@ -982,4 +982,13 @@
     margin-left: auto;
     font-size: var(--t-data);
   }
+
+  /* A text link reaches the thumb target by its padded box (DESIGN.md, "The Phone-First
+     Rule"). */
+  @media screen and (max-width: 600px) {
+    .links a {
+      padding-block: max(0px, calc((var(--thumb) - 1lh) / 2));
+      margin-block: min(0px, calc((1lh - var(--thumb)) / 2));
+    }
+  }
 </style>

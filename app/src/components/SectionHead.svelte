@@ -47,7 +47,7 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    min-height: 28px;
+    min-height: max(28px, var(--thumb));
     border: 0;
     background: transparent;
     color: var(--muted);

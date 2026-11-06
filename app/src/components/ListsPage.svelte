@@ -464,6 +464,7 @@
                   {app}
                   id={'lcard-' + l.id}
                   size="sm"
+                  variant="bare"
                   label={t.moreOf.replace('%s', l.name || t.untitled)}
                 >
                   {#snippet children(close: () => void)}
@@ -535,6 +536,16 @@
     grid-template-columns: minmax(0, 1fr);
     gap: 14px;
     margin-top: 14px;
+  }
+
+  /* A grid item's margin cannot collapse: a stack that starts with the plate takes its gap
+     (DESIGN.md, "Empty state"). */
+  .stack:has(> :global(.empty:first-child)) {
+    margin-top: var(--gap-plate);
+  }
+
+  .stack > :global(.empty:first-child) {
+    margin-top: 0;
   }
 
   /* The head's end: the import toggle and the primary at the column's right edge; up to
@@ -636,7 +647,8 @@
 
   .hint {
     margin: 0;
-    max-width: 46ch;
+    max-width: var(--measure-line);
+    text-wrap: balance;
     font-size: var(--t-small);
   }
 

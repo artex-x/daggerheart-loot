@@ -46,6 +46,9 @@
     border-radius: var(--r);
     background: var(--surface);
     border: 1px solid var(--line2);
+    /* As wide as its text: a box that holds only a passage (DESIGN.md, "The Measure Rule"). */
+    width: fit-content;
+    max-width: 100%;
     /* The panel folds open the same way the card and the modal do. The port
        had dropped this one line, and it is not only motion: an element that
        animates a transform is painted through its own layer, and the layer
@@ -82,7 +85,7 @@
     color: #cfc8e0;
     font-size: var(--t-small);
     line-height: 1.6;
-    max-width: 78ch;
+    max-width: var(--measure-text);
   }
 
   .helpbox p:last-child {

@@ -214,8 +214,10 @@
     flex-wrap: wrap;
   }
 
+  /* Up to 760 px the results line takes the thumb size up to 600 px and gives its growth
+     back from these margins (DESIGN.md, "The First-Screen Rule"). */
   .rp:not(.two) .rp-ctrl {
-    margin-top: 4px;
+    margin-top: 0;
   }
 
   .rp-ctrl :global(.btn.primary) {
@@ -242,8 +244,8 @@
     align-items: center;
     flex-wrap: wrap;
     gap: 6px;
-    min-height: 28px;
-    margin: 4px 0;
+    min-height: max(28px, var(--thumb));
+    margin: 0;
   }
 
   .reshead h2 {
@@ -255,7 +257,7 @@
 
   .reshead > :global(.btn),
   .reshead :global(.morewrap > .btn) {
-    height: 28px;
+    height: max(28px, var(--thumb));
   }
 
   .rp.two .reshead {

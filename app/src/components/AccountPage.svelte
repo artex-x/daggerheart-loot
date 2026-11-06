@@ -558,10 +558,15 @@
 <!-- eslint-enable @typescript-eslint/no-confusing-void-expression -->
 
 <style>
-  /* The page reads as one column at `.page-sub`'s own measure; signed in, two columns
-     from 1000 px, the left one first in the DOM, so the tab order reads as the page. */
-  .col {
-    max-width: 70ch;
+  /* Signed out the sign-in panel keeps the passage measure and the lead takes the line
+     measure (DESIGN.md, "The Measure Rule"); signed in, one column at the passage measure,
+     two from 1000 px, the left one first in the DOM, so the tab order reads as the page. */
+  .col:has(.acc) {
+    max-width: var(--measure-text);
+  }
+
+  .col:not(:has(.acc)) > :global(.panel) {
+    max-width: var(--measure-text);
   }
 
   @media (min-width: 1000px) {
@@ -650,7 +655,7 @@
 
   /* TextInput.svelte's box at a button's height. */
   select {
-    height: 38px;
+    height: max(38px, var(--thumb));
     width: auto;
     max-width: 100%;
     padding: 0 10px;

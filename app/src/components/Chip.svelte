@@ -142,4 +142,15 @@
     padding: 5px 11px;
     font-size: var(--t-data);
   }
+
+  /* The thumb target (DESIGN.md, "The Phone-First Rule"); the label keeps its center. */
+  @media screen and (max-width: 600px) {
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: var(--thumb);
+      min-width: var(--thumb);
+    }
+  }
 </style>

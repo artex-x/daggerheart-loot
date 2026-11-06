@@ -1,6 +1,6 @@
 # #/lists/00000000-0000-4000-8000-000000008001 ~ rolled as gm4
 # route: #/lists
-# why: result 2: the face of entry 2 with its row of actions, «2 шт. · по 7 мешков 5 горстей», both notes (the GM note in its dashed box), «Показать в списке», "Сбросить"
+# why: result 2: the face of entry 2 with its row of actions, «2 шт. · по 7 мешков 5 горстей», both notes (the GM note in its GM box), «Показать в списке», "Сбросить"
 # as: gm4
 
 ## ru :: tree

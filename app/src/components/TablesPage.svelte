@@ -1019,6 +1019,14 @@
     padding-inline: 6px;
   }
 
+  /* Up to 600 px the 42 px switch track takes its 2 px from this margin (DESIGN.md, "The
+     First-Screen Rule"). */
+  @media (max-width: 600px) {
+    .pickrow {
+      margin-bottom: 4px;
+    }
+  }
+
   .morewrap {
     position: relative;
     flex: none;
@@ -1131,13 +1139,24 @@
     min-width: 0;
   }
 
+  /* Beside the filter column the plate's margin cannot collapse: the body takes the gap,
+     so the column and the plate share one top (DESIGN.md, "Empty state"). */
+  .body.withcol:has(> .rowscol > :global(.empty:first-child)) {
+    margin-top: var(--gap-plate);
+  }
+
+  .body.withcol > .rowscol > :global(.empty:first-child) {
+    margin-top: 0;
+  }
+
   .tsection + .tsection {
     margin-top: 22px;
   }
 
   .cause {
     margin: 0;
-    max-width: 60ch;
+    max-width: var(--measure-line);
+    text-wrap: balance;
   }
 
   /* off `.tsection` and its flash keyframes - `git show 23c00a6^:style.css`. The heading

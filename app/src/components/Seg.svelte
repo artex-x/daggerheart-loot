@@ -144,10 +144,19 @@
      global `:focus-visible` rule (tokens.css) already reaches every
      control, at the one radius the owner chose. */
 
+  /* The thumb target; the track gives up its inset so the header keeps its height
+     (DESIGN.md, "The Phone-First Rule"), and the pressed option fills it. */
   @media (max-width: 600px) {
+    .seg {
+      padding: 0 1px;
+    }
+
     .seg button,
     .seg.small button {
       padding: 8px 14px;
+      min-height: var(--thumb);
+      min-width: var(--thumb);
+      justify-content: center;
     }
   }
 </style>

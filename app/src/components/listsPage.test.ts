@@ -129,10 +129,12 @@ describe('a card per list', () => {
     /* No tick and no red «Удалить» outside the selection mode (A16): a labeled «Ещё». */
     expect(container.querySelector('.listcard-pick')).toBeNull();
     expect(container.querySelector('.listcard .btn.danger')).toBeNull();
-    expect(screen.getByRole('button', { name: 'Ещё: Клад дракона' })).toHaveAttribute(
-      'aria-haspopup',
-      'menu'
-    );
+    const more = screen.getByRole('button', { name: 'Ещё: Клад дракона' });
+    expect(more).toHaveAttribute('aria-haspopup', 'menu');
+    /* The card's corner draws «Ещё» as text alone, outside the card's link (T5). */
+    expect(more).toHaveClass('bare');
+    expect(more.closest('a')).toBeNull();
+    expect(more.closest('.listcard-acts')?.parentElement).toHaveClass('listcard');
     await expectNoA11yViolations(container);
   });
 });
