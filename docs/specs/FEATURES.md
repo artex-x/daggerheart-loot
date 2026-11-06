@@ -2521,9 +2521,10 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   «Цвет печати»), the size switch («63×88» / «44×63», the group «Размер карты»)
   and «Ссылка на набор». Up to 760 px the row holds the two switches, and a
   dock after the sheets holds «Напечатать» and «Ещё» with its one item
-  «Ссылка на набор»; the dock sticks to the window's bottom from a 481 px
-  window height, as the editor's bar does, and a focused control and the
-  page's toast stop clear of it (`--ebar-h`). The red deleted note, the clip
+  «Ссылка на набор»; the dock sticks to the window's bottom at every window
+  height (the page has no text field for an on-screen keyboard to cover, and a
+  phone on its side would otherwise find «Напечатать» after every card), and a
+  focused control and the page's toast stop clear of it (`--pdock-h`). The red deleted note, the clip
   warning and its status region stay above the sheets. The sub line (the card
   and sheet counts and the size) follows the last sheet, and every sheet from
   the second has «Лист N из M» / "Sheet N of M" above it; neither prints. No
@@ -2604,13 +2605,16 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   way: a color card then moves its text up to 1.2cqw under the lowest mark it
   draws over the art (the tier band, the burden mark and its label, the armor
   mark and its label; 5.8cqw with none) and fits it again from its base, with
-  no blank band above the text; text still cut at its floor under a tall mark
-  takes the mark's band back in 1.5cqw steps.
+  no blank band above the text. No mark then covers a tag or a line of the
+  name: text still cut at its floor under a mark steps its font on down, to
+  2.6cqw at the least, a named shortfall (below), because a mark over a tag
+  costs more on paper than smaller text.
 - The card is set in the UI face, Source Sans 3 (`var(--ui)`, owner,
   2026-10-29), on every machine. The fit runs once the sheet has drawn and
   again, on every card, once a face that was loading has arrived
-  (`FontsPort`); «Напечатать» is disabled until that answer, which comes at
-  once when no face was loading and also when the face fails to load. A tab
+  (`FontsPort`); «Напечатать» is disabled until that answer, which comes once
+  the document has finished loading and its fonts have settled, whether a face
+  was loading or not, and also when the face fails to load. A tab
   offline with no cached face prints in the system stack behind it, fitted in
   that face.
 - A list item prints an en dash in black as its marker; a numbered list keeps
@@ -2623,7 +2627,12 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   value kept on one line (at least the 4.5 pt label floor), the English
   `DAMAGE` beside a modifier, which shrinks to fit its box (3.94 pt at the
   least in Source Sans 3, measured 2026-11-06), and the d4 value (4.5 pt, the
-  triangle is narrow).
+  triangle is narrow). One more on the compact color sheet in Russian: the
+  rules text of `voa4_t4i` and `voa4_a3`, cut at the 3.7cqw floor under a
+  burden mark, prints at 3.4cqw (4.2 pt; measured 2026-11-06), with no mark
+  over a tag or the name (2026-11-06, a default while the owner was away, by
+  the rule of the `DAMAGE` label: a named shortfall is better than a collision
+  on paper).
 - The whole catalog and the four `gm4` homebrew items, measured on the
   Windows host on 2026-11-06 in Source Sans 3 (RU / EN): in color the rules
   text has a median of 7.1 pt on the standard card and 5.7 pt on the compact
@@ -2631,12 +2640,12 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   below the base; the picture has a median of 65 / 68% of the standard card
   and 60 / 63% of the compact card, and gives way on 7 / 3 standard and 21 / 9
   compact cards, 4 / 1 and 13 / 3 of them with a mark (clearance 23.2cqw
-  standard, 23.4cqw compact; `voa4_t4i` and `voa4_a3` take part of the band
-  back, 18.9cqw and 16.4cqw); in black and white the median is 8.9 pt standard
+  standard, 23.4cqw compact; `voa4_t4i` and `voa4_a3` go under the floor, 23.4cqw
+  and 22.4cqw); in black and white the median is 8.9 pt standard
   and 6.2 pt compact. Four Russian names take three lines and no English one.
   No catalog card clips; the homebrew fixture `uuid(516)` (3000 characters)
   does by design. The smallest text is a label at 4.5 pt, apart from the
-  English `DAMAGE` above.
+  English `DAMAGE` and the two Russian compact cards above.
 - Weights: 900 for the name and the tier number only; 700 for the die
   value, the modifier, the threshold numbers and the armor score; 600 for
   the strip values; 500 for labels, captions and tags; 400 italic for the
@@ -2705,7 +2714,7 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   in the print bar change the layout for this visit: the pick survives
   leaving the print page and coming back, and a reload draws the default.
   The pressed switch shows the visit's pick; no note is drawn under the bar
-  (owner, Q3.2).
+  (owner, 2026-10-30).
 - Departures from Figma nodes `714-42387` and `3773-90792`, each the owner's
   or named here: the light print well (2026-10-29, above); the face, Source
   Sans 3 for the node's faces (2026-10-29: the Core Set's Questa Sans and

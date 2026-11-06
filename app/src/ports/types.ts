@@ -256,9 +256,9 @@ export interface MotionPort {
 }
 
 export interface FontsPort {
-  /** Resolves once the document's fonts have settled: true when a face was loading at the
-   *  call (a layout fitted before it may be wrong), false when none was. A failed load
-   *  settles too. */
+  /** Resolves once the document has finished loading and its fonts have settled, in both
+   *  cases: true when a face was loading at the call (a layout fitted before it may be
+   *  wrong), false when none was. A failed load settles too. */
   settled(): Promise<boolean>;
 }
 

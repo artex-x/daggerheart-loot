@@ -1,6 +1,6 @@
 # #/p/set-ninecard ~ compact as gm2
 # route: #/p/set-ninecard
-# why: every card shape on the compact sheet, in color; the note under the bar
+# why: every card shape on the compact sheet, in color
 # as: gm2
 
 ## ru :: tree

@@ -1,6 +1,6 @@
 # #/p/set-twocards ~ colour for this visit as gm1
 # route: #/p/set-twocards
-# why: a page pick away from the account's default: color on the compact sheet; the note under the bar
+# why: a page pick away from the account's default: color on the compact sheet
 # as: gm1
 
 ## ru :: tree

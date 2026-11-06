@@ -17,6 +17,7 @@
   import PrintCard from './PrintCard.svelte';
   import PrintSwitches from './PrintSwitches.svelte';
   import StatusRegion from './StatusRegion.svelte';
+  import { watchBarHeight } from './barHeight.js';
   import { printSetHash, sectionHash } from '../lib/hash.js';
   import { withRecords } from '../lib/homebrew.js';
   import {
@@ -127,19 +128,7 @@
 
   /* The dock's height, so a focused control and the page's toast stop clear of it. */
   let dock = $state<HTMLDivElement | undefined>(undefined);
-  $effect(() => {
-    const el = dock;
-    if (!el || typeof ResizeObserver !== 'function') return;
-    const root = document.documentElement;
-    const watch = new ResizeObserver(() => {
-      root.style.setProperty('--ebar-h', `${String(el.offsetHeight)}px`);
-    });
-    watch.observe(el);
-    return () => {
-      watch.disconnect();
-      root.style.removeProperty('--ebar-h');
-    };
-  });
+  $effect(() => (dock ? watchBarHeight(dock, '--pdock-h') : undefined));
 
   /* Whether each card still cuts off text after its fit, by the card's key; written only
      on a change, so a report cannot re-render the bar in a loop (FEATURES.md, "Print"). */
@@ -156,6 +145,8 @@
   /* A handed-over link may have no history to step back to: the link's own address, home,
      not the lists. */
   function back(e: MouseEvent): void {
+    /* A modified click is the browser's, as in `router.ts`. */
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     if (!app.env.router.canGoBack()) return;
     e.preventDefault();
     app.env.router.back();
@@ -374,8 +365,13 @@
     font-size: var(--t-data);
   }
 
-  /* Up to 760 px: the primary and «Ещё» on the ground of the editor's bar. */
+  /* Up to 760 px: the primary and «Ещё» on the ground of the editor's bar. It sticks at
+     every height: the page has no field for an on-screen keyboard to cover, and a short
+     window would put «Напечатать» after every card. */
   .pdock {
+    position: sticky;
+    bottom: 0;
+    z-index: 3;
     display: flex;
     gap: var(--gap-sm);
     margin: 12px -16px 0;
@@ -394,14 +390,6 @@
     position: relative;
     display: flex;
     flex: none;
-  }
-
-  @media (min-height: 481px) {
-    .pdock {
-      position: sticky;
-      bottom: 0;
-      z-index: 3;
-    }
   }
 
   .printnote {

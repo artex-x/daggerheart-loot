@@ -167,17 +167,17 @@ html {
   /* A focused control and a linked target stop clear of the header at its full height,
      whether it is shown or hidden (WCAG 2.4.11). */
   scroll-padding-top: var(--sticky-h);
-  /* A focused control scrolls clear of the sticky selection bar and the bottom bar of the
-     editor or the print page (`SelectionBar.svelte`, `HomebrewEditor.svelte` and
+  /* A focused control scrolls clear of the sticky selection bar, the editor's bottom bar
+     and the print page's dock (`SelectionBar.svelte`, `HomebrewEditor.svelte` and
      `PrintPage.svelte` set the heights while mounted). */
-  scroll-padding-bottom: calc(var(--selbar-h, 0px) + var(--ebar-h, 0px));
+  scroll-padding-bottom: calc(var(--selbar-h, 0px) + var(--ebar-h, 0px) + var(--pdock-h, 0px));
 }
 
-/* Under 481 px of height the bottom bars stay in the flow (`HomebrewEditor.svelte`,
-   `PrintPage.svelte`). */
+/* Under 481 px of height the editor's bar stays in the flow (`HomebrewEditor.svelte`); the
+   print page's dock sticks at every height. */
 @media (max-height: 480px) {
   html {
-    scroll-padding-bottom: var(--selbar-h, 0px);
+    scroll-padding-bottom: calc(var(--selbar-h, 0px) + var(--pdock-h, 0px));
   }
 }
 

@@ -1,6 +1,6 @@
 # #/p/set-dragonvt ~ black and white as gm2
 # route: #/p/set-dragonvt
-# why: the same seven, the other layout; the note under the bar
+# why: the same seven, the other layout
 # as: gm2
 
 ## ru :: tree

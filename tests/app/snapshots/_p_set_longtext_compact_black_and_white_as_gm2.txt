@@ -1,6 +1,6 @@
 # #/p/set-longtext ~ compact black and white as gm2
 # route: #/p/set-longtext
-# why: the black-and-white fit at 44 mm on the longest texts; the note under the bar
+# why: the black-and-white fit at 44 mm on the longest texts
 # as: gm2
 
 ## ru :: tree

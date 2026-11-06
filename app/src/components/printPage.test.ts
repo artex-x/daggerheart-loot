@@ -1001,6 +1001,21 @@ describe('back', () => {
     /* Not prevented: the router follows the link (`ports/router.ts`). */
     expect(await fireEvent.click(back)).toBe(true);
   });
+
+  it.each([
+    ['ctrlKey', { ctrlKey: true }],
+    ['metaKey', { metaKey: true }],
+    ['shiftKey', { shiftKey: true }],
+    ['altKey', { altKey: true }],
+    ['the middle button', { button: 1 }]
+  ])('leaves a click with %s to the browser', async (_, init) => {
+    const env = await atSet('ci1', { from: '#/roll/std' });
+    render(App, { env });
+    await opened();
+    const at = env.router.hash();
+    expect(await fireEvent.click(screen.getByRole('link', { name: 'Назад' }), init)).toBe(true);
+    expect(env.router.hash()).toBe(at);
+  });
 });
 
 describe('print', () => {
@@ -1142,6 +1157,35 @@ describe('the fit is wired', () => {
       ).toBe('5.8cqw');
       expect(compact?.querySelector<HTMLElement>('.pc-art')?.style.display).toBe('none');
     } finally {
+      restore();
+    }
+  });
+
+  it('takes text cut at its floor under a mark below the floor, not under the mark', async () => {
+    /* Tight down to 3.0cqw: past the compact floor (3.7), so only the shortfall rung fits it. */
+    const restore = fakeLayout((text) => {
+      const size = parseFloat(text.style.fontSize);
+      return !size || size >= 3 ? 140 : 50;
+    }, 0);
+    /* The burden label ends 50 px under the card's top: 22.3cqw of clearance. */
+    const rect = vi
+      .spyOn(Element.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: Element) {
+        const bottom = this.matches('.pc-burden small') ? 50 : 0;
+        return { top: 0, bottom, left: 0, right: 0, width: 0, height: bottom } as DOMRect;
+      });
+    try {
+      render(App, { env: await atSet('q1') });
+      await opened();
+      await userEvent.click(screen.getByRole('button', { name: '44×63' }));
+      const card = document.querySelector('.pcard.compact[data-pid="q1"]');
+      expect(card?.querySelector<HTMLElement>('.pc-art')?.style.display).toBe('none');
+      expect(
+        card?.querySelector<HTMLElement>('.pc-content')?.style.getPropertyValue('--pcpad')
+      ).toBe('22.3cqw');
+      expect(card?.querySelector('.pc-text')).toHaveStyle({ fontSize: '2.9cqw' });
+    } finally {
+      rect.mockRestore();
       restore();
     }
   });

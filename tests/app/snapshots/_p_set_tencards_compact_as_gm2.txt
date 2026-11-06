@@ -1,6 +1,6 @@
 # #/p/set-tencards ~ compact as gm2
 # route: #/p/set-tencards
-# why: ten cards on one compact sheet: sixteen places, six blank, no page break; "Листов A4: 1"; the note under the bar
+# why: ten cards on one compact sheet: sixteen places, six blank, no page break; "Листов A4: 1"
 # as: gm2
 
 ## ru :: tree

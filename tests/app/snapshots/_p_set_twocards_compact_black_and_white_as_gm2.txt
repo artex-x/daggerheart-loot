@@ -1,6 +1,6 @@
 # #/p/set-twocards ~ compact black and white as gm2
 # route: #/p/set-twocards
-# why: the compact sheet in black and white: both switches pressed away from their defaults; the note under the bar
+# why: the compact sheet in black and white: both switches pressed away from their defaults
 # as: gm2
 
 ## ru :: tree

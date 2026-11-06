@@ -1,6 +1,6 @@
 # #/p/set-ownitems ~ colour for this visit as gm1
 # route: #/p/set-ownitems
-# why: the same two own items in color on the compact sheet; «Цвет» pressed for this visit, no note under the bar
+# why: the same two own items in color on the compact sheet; «Цвет» pressed for this visit
 # as: gm1
 
 ## ru :: tree

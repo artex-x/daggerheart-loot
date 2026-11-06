@@ -3011,7 +3011,7 @@ const STATES = [
     id: TWO + ' ~ black and white as gm2',
     route: TWO,
     as: 'gm2',
-    why: 'the other layout: no art, the band, the tag and the mark in a row over the name, -bw vectors; the note under the bar',
+    why: 'the other layout: no art, the band, the tag and the mark in a row over the name, -bw vectors',
     enter: async (d) => {
       await sheet(d);
       await d.click('Ч/б');
@@ -3037,7 +3037,7 @@ const STATES = [
     route: NINE,
     as: 'gm2',
     whole: true,
-    why: 'the same nine, the other layout; the note under the bar',
+    why: 'the same nine, the other layout',
     enter: async (d) => {
       await sheet(d);
       await d.click('Ч/б');
@@ -3056,7 +3056,7 @@ const STATES = [
     route: LONG,
     as: 'gm2',
     whole: true,
-    why: 'the same, with the black-and-white padding floor; the note under the bar',
+    why: 'the same, with the black-and-white padding floor',
     enter: async (d) => {
       await sheet(d);
       await d.click('Ч/б');
@@ -3089,7 +3089,7 @@ const STATES = [
     route: DV_SET,
     as: 'gm2',
     whole: true,
-    why: 'the same seven, the other layout; the note under the bar',
+    why: 'the same seven, the other layout',
     enter: async (d) => {
       await sheet(d);
       await d.click('Ч/б');
@@ -3108,7 +3108,7 @@ const STATES = [
     route: VOA4_SET,
     as: 'gm2',
     whole: true,
-    why: 'the same nine, the other layout; the note under the bar',
+    why: 'the same nine, the other layout',
     enter: async (d) => {
       await sheet(d);
       await d.click('Ч/б');
@@ -3118,7 +3118,7 @@ const STATES = [
     id: TWO + ' ~ compact as gm2',
     route: TWO,
     as: 'gm2',
-    why: 'the compact sheet in color: the size switch pressed, the compact subtitle, sixteen places, fourteen blank; the note under the bar',
+    why: 'the compact sheet in color: the size switch pressed, the compact subtitle, sixteen places, fourteen blank',
     enter: async (d) => {
       await sheet(d);
       await d.click('44×63');
@@ -3128,7 +3128,7 @@ const STATES = [
     id: TWO + ' ~ compact black and white as gm2',
     route: TWO,
     as: 'gm2',
-    why: 'the compact sheet in black and white: both switches pressed away from their defaults; the note under the bar',
+    why: 'the compact sheet in black and white: both switches pressed away from their defaults',
     enter: async (d) => {
       await sheet(d);
       await d.click('Ч/б');
@@ -3140,7 +3140,7 @@ const STATES = [
     route: NINE,
     as: 'gm2',
     whole: true,
-    why: 'every card shape on the compact sheet, in color; the note under the bar',
+    why: 'every card shape on the compact sheet, in color',
     enter: async (d) => {
       await sheet(d);
       await d.click('44×63');
@@ -3151,7 +3151,7 @@ const STATES = [
     route: NINE,
     as: 'gm2',
     whole: true,
-    why: 'every card shape on the compact sheet, in black and white: the grow rung at 44 mm; the note under the bar',
+    why: 'every card shape on the compact sheet, in black and white: the grow rung at 44 mm',
     enter: async (d) => {
       await sheet(d);
       await d.click('Ч/б');
@@ -3163,7 +3163,7 @@ const STATES = [
     route: LONG,
     as: 'gm2',
     whole: true,
-    why: 'the color fit ladder at 44 mm on the longest texts; the note under the bar',
+    why: 'the color fit ladder at 44 mm on the longest texts',
     enter: async (d) => {
       await sheet(d);
       await d.click('44×63');
@@ -3174,7 +3174,7 @@ const STATES = [
     route: LONG,
     as: 'gm2',
     whole: true,
-    why: 'the black-and-white fit at 44 mm on the longest texts; the note under the bar',
+    why: 'the black-and-white fit at 44 mm on the longest texts',
     enter: async (d) => {
       await sheet(d);
       await d.click('Ч/б');
@@ -3185,7 +3185,7 @@ const STATES = [
     id: TEN + ' ~ compact as gm2',
     route: TEN,
     as: 'gm2',
-    why: 'ten cards on one compact sheet: sixteen places, six blank, no page break; "Листов A4: 1"; the note under the bar',
+    why: 'ten cards on one compact sheet: sixteen places, six blank, no page break; "Листов A4: 1"',
     enter: async (d) => {
       await sheet(d);
       await d.click('44×63');
@@ -4230,7 +4230,7 @@ const STATES = [
     id: TWO + ' ~ colour for this visit as gm1',
     route: TWO,
     as: 'gm1',
-    why: "a page pick away from the account's default: color on the compact sheet; the note under the bar",
+    why: "a page pick away from the account's default: color on the compact sheet",
     enter: async (d) => {
       await sheet(d);
       await d.click('Цвет');
@@ -4257,7 +4257,7 @@ const STATES = [
     id: '#/p/set-ownitems ~ colour for this visit as gm1',
     route: '#/p/set-ownitems',
     as: 'gm1',
-    why: 'the same two own items in color on the compact sheet; «Цвет» pressed for this visit, no note under the bar',
+    why: 'the same two own items in color on the compact sheet; «Цвет» pressed for this visit',
     enter: async (d) => {
       await sheet(d);
       await d.click('Цвет');

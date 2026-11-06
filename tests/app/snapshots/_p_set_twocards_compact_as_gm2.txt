@@ -1,6 +1,6 @@
 # #/p/set-twocards ~ compact as gm2
 # route: #/p/set-twocards
-# why: the compact sheet in color: the size switch pressed, the compact subtitle, sixteen places, fourteen blank; the note under the bar
+# why: the compact sheet in color: the size switch pressed, the compact subtitle, sixteen places, fourteen blank
 # as: gm2
 
 ## ru :: tree

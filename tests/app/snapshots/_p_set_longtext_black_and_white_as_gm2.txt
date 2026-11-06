@@ -1,6 +1,6 @@
 # #/p/set-longtext ~ black and white as gm2
 # route: #/p/set-longtext
-# why: the same, with the black-and-white padding floor; the note under the bar
+# why: the same, with the black-and-white padding floor
 # as: gm2
 
 ## ru :: tree

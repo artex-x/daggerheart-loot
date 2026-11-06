@@ -1,6 +1,6 @@
 # #/p/set-twocards ~ black and white as gm2
 # route: #/p/set-twocards
-# why: the other layout: no art, the band, the tag and the mark in a row over the name, -bw vectors; the note under the bar
+# why: the other layout: no art, the band, the tag and the mark in a row over the name, -bw vectors
 # as: gm2
 
 ## ru :: tree

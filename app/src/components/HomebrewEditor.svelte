@@ -37,6 +37,7 @@
   import SignInPrompt from './SignInPrompt.svelte';
   import StatusRegion from './StatusRegion.svelte';
   import TextInput from './TextInput.svelte';
+  import { watchBarHeight } from './barHeight.js';
   import { newArtName, shownArt, type ArtValue } from '../lib/art.js';
   import { limitText } from '../lib/cloudLists.js';
   import { lineMembers } from '../lib/data.js';
@@ -800,19 +801,7 @@
     });
   }
 
-  $effect(() => {
-    const el = ebar;
-    if (!el || !narrow || typeof ResizeObserver !== 'function') return;
-    const root = document.documentElement;
-    const watch = new ResizeObserver(() => {
-      root.style.setProperty('--ebar-h', `${String(el.offsetHeight)}px`);
-    });
-    watch.observe(el);
-    return () => {
-      watch.disconnect();
-      root.style.removeProperty('--ebar-h');
-    };
-  });
+  $effect(() => (ebar && narrow ? watchBarHeight(ebar, '--ebar-h') : undefined));
 </script>
 
 <!-- eslint-disable @typescript-eslint/no-confusing-void-expression -- a `{@render}` tag

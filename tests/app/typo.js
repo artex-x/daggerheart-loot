@@ -42,7 +42,7 @@ const SWITCHES = [
   {
     route: '#/p/set-emberaxe',
     as: 'gm1',
-    group: { ru: 'Печать карточек', en: 'Printing cards' }
+    group: { ru: 'Цвет печати', en: 'Print color' }
   },
   {
     route: '#/p/set-emberaxe',

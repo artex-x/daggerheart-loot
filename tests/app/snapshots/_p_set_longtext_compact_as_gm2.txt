@@ -1,6 +1,6 @@
 # #/p/set-longtext ~ compact as gm2
 # route: #/p/set-longtext
-# why: the color fit ladder at 44 mm on the longest texts; the note under the bar
+# why: the color fit ladder at 44 mm on the longest texts
 # as: gm2
 
 ## ru :: tree

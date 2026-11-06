@@ -949,7 +949,9 @@ starts at 4.0cqw (7.1 pt) on the standard card and 4.6cqw (5.7 pt) on the compac
 card, and stops at 2.6cqw and 3.7cqw (4.5 pt on the compact card). A list item
 prints an en dash. The bottom line holds the source alone, right-aligned in the
 whole width. When the picture gives way to a long text, the text moves up to just
-under the marks drawn over the art. Text is fitted by
+under the marks drawn over the art, and no mark covers a tag or the name: text
+still cut at its floor there goes under the floor, a named shortfall (two RU
+compact cards at 3.4cqw, 4.2 pt; `FEATURES.md`, "Print"). Text is fitted by
 measuring the rendered box, which is why reduced motion sets transition duration
 to `0s` rather than removing transitions: a zero duration still applies the end
 state on the same frame, and the fitting routine reads layout back immediately.

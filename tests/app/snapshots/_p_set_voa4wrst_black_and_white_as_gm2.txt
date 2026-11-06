@@ -1,6 +1,6 @@
 # #/p/set-voa4wrst ~ black and white as gm2
 # route: #/p/set-voa4wrst
-# why: the same nine, the other layout; the note under the bar
+# why: the same nine, the other layout
 # as: gm2
 
 ## ru :: tree

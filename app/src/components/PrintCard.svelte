@@ -28,6 +28,8 @@
      and 5.7 pt at the base; the compact floor is 4.5 pt on its 43.2 mm content box. */
   const BASE = { std: 4.0, compact: 4.6 } as const;
   const FLOOR = { std: 2.6, compact: 3.7 } as const;
+  /* The last rung for text cut at its floor under a mark: the standard floor, on either sheet. */
+  const SHORTFALL = FLOOR.std;
 
   interface Props {
     it: Record_;
@@ -148,7 +150,8 @@
    * 3.7cqw, 4.5 pt). Before the shrink ladder, a black-and-white card's rules text
    * grows in 0.1cqw steps while it fits, capped at `GROW_CAP`. A color card whose
    * picture gives way moves its text up to just under its lowest mark and fits it
-   * again from the base.
+   * again from the base; text still cut at its floor under a mark shrinks on to
+   * `SHORTFALL`.
    *
    * The strip is fitted first, because the rules text measures the space it
    * leaves (FEATURES.md, "Print"). Each value first tries one line: it
@@ -332,7 +335,7 @@
         )) {
           clear = Math.max(clear, cq(px(m.getBoundingClientRect().bottom) - cardTop) + 1.2);
         }
-        let lift = Math.max(5.8, Math.ceil(clear * 10) / 10);
+        const lift = Math.max(5.8, Math.ceil(clear * 10) / 10);
         box.style.setProperty('--pcpad', `${lift.toFixed(1)}cqw`);
         pct = base;
         text.style.fontSize = '';
@@ -340,11 +343,11 @@
           pct -= 0.1;
           text.style.fontSize = pct.toFixed(1) + 'cqw';
         }
-        /* Text still cut at its floor under a tall mark (a burden mark and its label reach
-           about 23cqw) takes the mark's band back step by step: a cut text costs more. */
-        while (tight() && lift > 5.8) {
-          lift = Math.max(5.8, lift - 1.5);
-          box.style.setProperty('--pcpad', `${lift.toFixed(1)}cqw`);
+        /* Text still cut at its floor under a mark goes under the floor, not under the mark:
+           a named shortfall costs less on paper than a collision (FEATURES.md, "Print"). */
+        while (lift > 5.8 && tight() && pct > SHORTFALL + 0.05) {
+          pct -= 0.1;
+          text.style.fontSize = pct.toFixed(1) + 'cqw';
         }
       }
     }

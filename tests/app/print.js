@@ -1508,36 +1508,73 @@ const { ok } = rep;
     'a sliver of picture remains above the name: ' + slivers.map((v) => v.toFixed(1)).join(', ')
   );
 
-  /* A color card whose picture gave way draws its tags and name below every mark it
-     draws over the art: the tier band, the burden mark and its label, the armor mark
-     and its label (FEATURES.md, "Print"). */
-  const crowded = async () =>
-    page.$$eval('.pcard:not(.blank):not(.bw)', (cards) =>
+  /* A color card whose picture gave way draws no tag and no name line under a mark it
+     draws over the art: the tier band, the burden mark and its label, the armor mark and
+     its label (FEATURES.md, "Print"). Rectangles, not tops: the marks sit in the corners. */
+  const crowded = async (where) => {
+    const gaveWay = await page.$$eval('.pcard:not(.blank):not(.bw)', (cards) =>
       cards
         .filter((c) => c.querySelector('.pc-art')?.style.display === 'none')
         .map((c) => {
           const marks = [
             ...c.querySelectorAll(
-              '.pc-tier, .pc-tier > *, .pc-burden, .pc-burden > *, .pc-shield, .pc-shield > *'
+              '.pc-tier svg, .pc-tier b, .pc-tier i, .pc-burden img, .pc-burden small, .pc-shield img, .pc-shield i'
             )
-          ].map((e) => e.getBoundingClientRect().bottom);
-          const low = marks.length ? Math.max(...marks) : -Infinity;
-          const tags = c.querySelector('.pc-tags')?.getBoundingClientRect().top ?? Infinity;
-          const name = c.querySelector('.pc-name').getBoundingClientRect().top;
-          /* At its floor the text takes the mark's band back rather than be cut. */
-          const text = c.querySelector('.pc-text');
-          const size = parseFloat(getComputedStyle(text).fontSize) / (c.clientWidth / 100);
-          const atFloor = size <= (c.classList.contains('compact') ? 3.7 : 2.6) + 0.05;
-          return { id: c.dataset.pid, low, top: Math.min(tags, name), atFloor };
+          ].map((e) => e.getBoundingClientRect());
+          const rng = document.createRange();
+          rng.selectNodeContents(c.querySelector('.pc-name'));
+          const text = [
+            ...[...c.querySelectorAll('.pc-tag')].map((e) => e.getBoundingClientRect()),
+            ...[...rng.getClientRects()].filter((r) => r.width > 0)
+          ];
+          let hit = null;
+          for (const m of marks)
+            for (const t of text) {
+              const w = Math.min(m.right, t.right) - Math.max(m.left, t.left);
+              const h = Math.min(m.bottom, t.bottom) - Math.max(m.top, t.top);
+              if (w > 0.5 && h > 0.5 && !hit) hit = w.toFixed(1) + 'x' + h.toFixed(1);
+            }
+          const box = c.querySelector('.pc-content');
+          const size = parseFloat(getComputedStyle(c.querySelector('.pc-text')).fontSize);
+          return {
+            id: c.dataset.pid,
+            lift: box.style.getPropertyValue('--pcpad'),
+            text: ((size / c.clientWidth) * 100).toFixed(1) + 'cqw',
+            hit
+          };
         })
     );
-  const gaveWay = await crowded();
+    ok(
+      gaveWay.every((c) => !c.hit),
+      where +
+        ': a card whose picture gave way draws a mark over a tag or its name: ' +
+        JSON.stringify(gaveWay.filter((c) => c.hit))
+    );
+    console.log(
+      '  ' +
+        where +
+        ', cards whose picture gave way (lift, text): ' +
+        gaveWay.map((c) => c.id + ' ' + c.lift + ' ' + c.text).join(', ')
+    );
+    return gaveWay;
+  };
+  await crowded('LONG');
+  /* The two catalog cards whose text is still cut at its floor under a burden mark on the
+     RU compact color sheet: they go under the floor, not under the mark. */
+  await openAs(d, 'voa4_t4i-voa4_a3', false, true, bw, compact);
+  const short = await crowded('voa4_t4i-voa4_a3 compact');
   ok(
-    gaveWay.every((c) => c.atFloor || c.top >= c.low - 0.5),
-    'a card whose picture gave way draws its tags under a mark: ' +
-      JSON.stringify(gaveWay.filter((c) => !c.atFloor && c.top < c.low - 0.5))
+    short.length === 2 && short.every((c) => c.lift !== '5.8cqw' && parseFloat(c.text) < 3.7),
+    'voa4_t4i and voa4_a3 no longer reach the shortfall under a mark: ' + JSON.stringify(short)
   );
-  console.log('  cards whose picture gave way: ' + gaveWay.map((c) => c.id).join(', '));
+  const unclipped = await page.$$eval('.pc-text', (e) =>
+    e.map((x) => x.scrollHeight - x.clientHeight)
+  );
+  ok(
+    unclipped.every((v) => v <= 1),
+    'voa4_t4i-voa4_a3 compact: the text spills: ' + unclipped.join(',')
+  );
+  await openPrint(d, 'voa2_a3-voa2_a1-voa2_c4-voa2_c3-voa2_t4e-voa2_t4d-voa2_c1-voa2_a6-di11');
 
   /* The list marker is a black en dash, not the default disc (FEATURES.md, "Print"). */
   const marker = await page.$eval('.pcard[data-pid="voa2_a3"]', (c) => {
@@ -2068,9 +2105,16 @@ const { ok } = rep;
                 for (const e of c.querySelectorAll('.pc-tier i')) {
                   if (pt(e) < 4.49) out.push(id + 'tier word ' + pt(e).toFixed(2) + 'pt');
                 }
+                /* The named rules-text shortfall: two RU compact color cards cut at their
+                   floor under a burden mark print at 3.4cqw. */
+                const under =
+                  ru &&
+                  compactSheet &&
+                  !c.classList.contains('bw') &&
+                  ['voa4_t4i', 'voa4_a3'].includes(c.dataset.pid);
                 for (const e of c.querySelectorAll('.pc-text')) {
                   const size = parseFloat(getComputedStyle(e).fontSize) / cqw;
-                  if (size < (compactSheet ? 3.7 : 2.6) - 0.05)
+                  if (size < (under ? 3.4 : compactSheet ? 3.7 : 2.6) - 0.05)
                     out.push(id + 'rules text ' + size.toFixed(2) + 'cqw');
                 }
                 /* The weight scale: only the name and the tier number are

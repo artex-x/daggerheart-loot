@@ -3,14 +3,27 @@
 
 ## Status
 - Task status: in_progress. Waves 1, 2 and 2b are on `main`. Wave 3 has built 9a, 8, 9b, the CI split and fix pass, TD
-  with its fix pass, N with its fix pass (`ef9b511c`, CI green and credited) and now batch P (print: the card and the
-  `/p/` page), committed and pushed on `claude/57` (sha in the implementer's report; previous sha `b3d3994c`, the P
-  plan's docs commit, pushed with it). CI of the new tip is the full gate: not yet run.
-- Review: required (trigger: print fitting and its measured figures, a golden re-seed of 40 files, a Figma-node parity
-  change (the burden hands) and two departures from the brief, defaults 1 and 2 below).
-- Next batch: 10, after P's review with its one remediation cycle and a green CI of the tip.
+  with its fix pass, N with its fix pass (`ef9b511c`, CI green and credited), batch P (`1ae45461`, CI run 42200991922:
+  one `app/typo` failure) and now P's one fix pass (`reviews/P.md`), committed and pushed on `claude/57` (sha in the
+  implementer's report; previous sha `e5d63c9c`, the P review's docs commit, pushed with it). CI of the new tip is the
+  full gate: not yet run.
+- Review: `reviews/P.md`, fix-then-continue; its one remediation cycle is this fix pass (table under Completed).
+- Next batch: 10, after a green CI of the tip.
 - NEEDS_HUMAN_CONFIRMATION: no. For the owner: default 1 (the burden files are the export's paths with Figma's masks
-  written as clip paths, not the exact bytes) and default 4 (the background-graphics hint is gone).
+  written as clip paths, not the exact bytes), default 2 as the fix pass changed it (two RU compact color cards print
+  their rules text at 3.4cqw, 4.2 pt, under the 3.7cqw floor; shot `mocks/P/built/shortfall-voa4__compact-ru.png`) and
+  default 4 (the background-graphics hint is gone).
+- Defaults taken in the P fix pass (owner AFK):
+  1. P-B1: the rectangle test found the tier band over a tag of `voa4_t4i` (21.0 x 6.5 px) and its burden label over
+     a tag (2.9 x 4.8 px) at the 17.4cqw take-back; `voa4_a3` had none at 16.4cqw. Taken: the reviewer's recommended
+     option, a named rules-text shortfall: text cut at its floor under a mark shrinks on to 2.6cqw; both cards land
+     at 3.4cqw (4.2 pt) with the full clearance (23.4 and 22.4cqw), no intersection, no clip.
+  2. P-R1: the dock writes its own `--pdock-h` (not `--ebar-h`), so `tokens.css` and `Toast.svelte` drop only the
+     editor's bar under 481 px of height and keep the dock's; no page class.
+  3. P-N4: the helper `watchBarHeight` (`components/barHeight.ts`) also serves `SelectionBar`'s `--selbar-h` effect,
+     the same code (a third copy).
+  4. P-N6: case 115 runs on `set-longtext` in place of `set-emberaxe` and asserts that the held fit differs from the
+     warm one before the face arrives.
 - Defaults taken in P (owner AFK; the orchestrator logs them in the AFK decisions file):
   1. The four `card/burden-*.svg` take the export's paths with each outside-stroke mask written as the same region in a
      clip path (`issues/57/mocks/P/burden/unmask.cjs`), not P-D10's exact bytes: Chrome prints a masked `<img>` SVG as a
@@ -351,8 +364,48 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
   one nine-card color RU sheet at 150 dpi (`mocks/P/built/built-std9-colour-ru__150dpi.png`) and the screen set are;
   `print.js` ran every PDF check locally. (4) No `cardScale`: the phone preview reuses `previewScale` (planner default
   2026-11-06), so a card is up to 2.4 px narrower than its column, never wider.
+- Review: `reviews/P.md`, fix-then-continue. Batch sha `1ae45461`. The one fix pass (previous sha `e5d63c9c`):
+
+  | Finding | Outcome |
+  |---|---|
+  | CI run 42200991922, `app/typo` `#/p/set-emberaxe` RU/EN 360/1180 "no pressed switch with a check in Печать карточек" | The test was stale: since P the color group is `printInk` «Цвет печати» / "Print color" (P-D16), and its pressed option draws the check. `typo.js` `SWITCHES` names the new group; the check is unchanged. `node tests/run-all.js app/typo` passes |
+  | P-B1 | Fixed. `print.js` tests rectangles: no mark rect (tier `svg`/`b`/`i`, burden `img`/`small`, shield `img`/`i`) over a `.pc-tag` rect or a `.pc-name` line rect (`getClientRects`) by more than 0.5 px, no exemption, on the long set and on RU compact color `voa4_t4i-voa4_a3`, with each lift logged. The probe (`scratchpad/b1-probe.cjs`) on the take-back found `voa4_t4i` at 17.4cqw with the tier band 21.0 x 6.5 px and the burden label 2.9 x 4.8 px over a tag; `voa4_a3` at 16.4cqw clear. Default 1 (Status): `PrintCard` drops the take-back loop; text cut at its floor under a mark shrinks on to `SHORTFALL` (2.6cqw): both cards 3.4cqw (4.2 pt), lift 23.4 / 22.4cqw, no hit, no spill. `printPage.test.ts` "takes text cut at its floor under a mark below the floor" reaches the rung in jsdom (a stubbed burden label rect): red at `e5d63c9c` (`--pcpad` 5.8cqw for 22.3), green after. `smallFields` names the two cards' 3.4cqw floor. FEATURES.md "Print" (the fit, the named shortfalls, the catalog figures), DESIGN.md "Signature component" (P-N7), the decision file |
+  | P-R1 | Fixed: `.pdock` is sticky at every height; it writes `--pdock-h`, which `tokens.css`' scroll padding and the page toast keep under 481 px (default 2). Case 114 adds 740x360 (the dock in view at scroll 0 and at the last card; `--pdock-h` and the scroll padding equal its height; the first-screen read skipped there) |
+  | P-R2 | CI: the configured and unconfigured figures under Verification; no raise made locally |
+  | P-R3 | Fixed: FEATURES.md "Print" and the `FontsPort` doc comment say the answer comes once the document has finished loading and its fonts have settled, in both cases |
+  | P-N1 | Fixed: 14 `why`s lose "the note under the bar" / "no note under the bar" (the deleted-item note's `why` stays: that note is real); goldens re-seeded by the tool, line 3 only |
+  | P-N2 | Fixed: `back()` returns on a modified or non-primary click; `printPage.test.ts` five cases (ctrl, meta, shift, alt, middle button), red at `e5d63c9c`, green after |
+  | P-N3 | Fixed: `.toast.page` under 481 px of height drops `--ebar-h` and keeps `--selbar-h` and `--pdock-h` |
+  | P-N4 | Fixed: `watchBarHeight` (`components/barHeight.ts`) in `PrintPage`, `HomebrewEditor` and `SelectionBar` (default 3) |
+  | P-N5 | Fixed: FEATURES.md "(owner, 2026-10-30)"; the decision file names the owner's answers and dates, no QP ids |
+  | P-N6 | Fixed: case 115 on `set-longtext`; the held fit before the face arrives must differ from the warm fit, and the fit after must equal it (default 4) |
+  | P-N7 | Fixed with P-B1 (DESIGN.md "Signature component") |
+  | P-N8, P-N9 | Deferred (below) |
 
 ## Verification
+- P fix pass, 2026-11-06 (previous sha `e5d63c9c`), each in the foreground or waited on, one heavy command at a time:
+  - `npm run build:test`; `node tests/run-all.js app/typo`: `ok app/typo` 213.7 s (CI's four failures gone).
+  - P-B1 probe `scratchpad/b1-probe.cjs` (RU compact color `voa4_t4i-voa4_a3-voa2_a3-voa2_a1`): before, `voa4_t4i`
+    17.4cqw lift, hits tier `svg` x tag 21.0 x 6.5 px and burden `small` x tag 2.9 x 4.8 px; `voa4_a3` 16.4cqw, no
+    hit. After: 23.4 / 22.4cqw, text 3.41cqw (5.59 px on a 164 px card, 4.2 pt), no hit, no spill.
+  - `node issues/57/mocks/P/tools/print-measure.cjs` (whole catalog, RU and EN, four layouts): clipped only
+    `hb_longtextaaaaaaaa` in all eight layouts; rules text under its floor only `voa4_t4i` and `voa4_a3`, RU color
+    compact, 3.4cqw. Shot `mocks/P/built/shortfall-voa4__compact-ru.png`.
+  - Vitest one file at a time, `VITEST_MAX_WORKERS=2`: `printPage` 85 pass, `selectionBar` 7, `homebrewEditor` 98,
+    `homebrewPrintPreview` 17. Red first in a detached worktree at `e5d63c9c` with the new tests copied in: "takes text
+    cut at its floor under a mark below the floor" FAIL (`5.8cqw` for `22.3cqw`), the five modified-click cases FAIL
+    (`false` for `true`); the worktree removed.
+  - `node tests/run-all.js app/print`: `ok app/print` 536.5 s.
+  - `node tests/app/states.js --shard=104/105` (case 114, 740x360 added): first run 26 FAIL, the Thumb Rule read at
+    740 px, where `--thumb` is 0 (a test error: the read is now up to 600 px only); second run `all 1 runs passed`,
+    22.9 s; 233.1 px at 390, 189.8 at 768. `--shard=105/105` (case 115 on `set-longtext`): passed, 5.4 s.
+  - Sweep probe (`scratchpad/mkprobe.cjs`, `PROBE_RE="печать|редактор"`, `targets` included): `clean` at 360, 390, 768
+    and 1180, RU and EN.
+  - Goldens: `MSYS_NO_PATHCONV=1 node tests/app/golden.js --update --only="#/p/"`: 38 states, structural snapshots
+    unchanged; 14 files moved, each line 3 only (`git diff --numstat`: 1 / 1 each).
+  - `node tools/decisions.js`: 316 decisions. `npm run lint:untyped`, `npm run lint:typed`: exit 0.
+  - `rtk npm run check:built`: pass; unconfigured bundle 269.7 kB within 270 (P-R2: no raise).
+  - `VITEST_MAX_WORKERS=2 rtk npm run check:fast`: run last, after this file; the commit gate takes only its pass.
 - Batch P, 2026-11-06 (previous sha `b3d3994c`), each in the foreground or waited on; vitest with `VITEST_MAX_WORKERS=2`,
   one file at a time. Earlier batches' blocks: `git show b3d3994c:issues/57/handoff.md`, "Verification".
   - S1: `node issues/57/mocks/P/burden/render.cjs`: `diffToRawPct` 0 and `natural` [62, 37] for all four; `sheet.png`
@@ -392,7 +445,7 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
   - `VITEST_MAX_WORKERS=2 rtk npm run check:fast`: run last, after this file; the commit gate takes only its pass.
 
 ## Next batch (implement-ready)
-- First: the batch P review (`reviews/P.md`; the trigger is in Status), then CI of the P tip.
+- First: CI of the P fix pass tip (P-R2's CI figure; the `app/print`, `app/typo` and case 114/115 rows).
 - Then: batch 10 (the docs lock and the cleanup; `plan.md` section 7). `states.js` ends at case 115 (105 cases;
   `--shard=n/105` runs one: 104 is case 114, 105 is case 115).
 - `polish` and `harden` on `/p/` (360, 390, 768, 1180 px, RU and EN) and on the print renders are the orchestrator's
@@ -408,7 +461,8 @@ placement named:
 
 | Deferred row | Placed in |
 |---|---|
-| 9a R2 probe; the focus jump (3b); `LIST_A ~ more` scroll 83 | TD-P3 measured (done), then 10-18 (`DEBT.md`); rows stay below |
+| 9a R2 probe; the focus jump (3b); `LIST_A ~ more` scroll 83; the `/p/` dock «Ещё» (`reviews/P.md` P-N8) | TD-P3 measured (done), then 10-18 (`DEBT.md`); rows stay below |
+| EN "Print" names two actions, `print` and `printNow` (`reviews/P.md` P-N9; RU keeps «Печать» / «Напечатать») | 10-11 (the copy rows), or the owner's RP-1 answer stands |
 | Toast over «Ещё» (batch 4) | T-14 measured (done), then 10-18; row stays below |
 | Case 89 default (the picker cuts a long chosen part up to 760 px) | TD-P2 done (245.9 px); 10-12 (the audit) |
 | `/tables/*` at 761 to about 800 px in RU (batch 7b probe) | done in N (acceptance 17: 333.6 px at 768x1024 on `eq_weapon` and `eq_armor`, RU and EN); row removed |
@@ -467,6 +521,9 @@ Rows below keep facts no acceptance line carries:
   keeps its own `.tools` beside `ListFind` (L8).
 - `RecordCard`'s dialog art at 500-760 px wide and 481-560 px tall: a 4:3 picture can fill the card, so
   the dock is not in view until a scroll (sticky holds inside `.card-body`). No phone portrait reaches it.
+- The `/p/` dock (`reviews/P.md` P-N8, shot `mocks/P/built/p-more__360__en.png`): with the dock «Ещё» open at
+  360 px the page sits about 24 px down and the shown header covers part of the crumb row. The same family as the
+  focus jump below; at closeout to `docs/specs/DEBT.md` (10-18).
 - Focus jump (batch 3b, measured facts item 3): a `focus()` on a header control moves the page up
   (scroll 1500 to 1199 at 320 px, to 1115 at 1180 px; 900 to 558 at 360 px with the fix). An
   existing defect, harmless for the hide: the upward move shows the header.

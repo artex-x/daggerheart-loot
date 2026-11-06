@@ -9721,23 +9721,27 @@ async function dieMarks() {
 /** 114. The print page head and dock (docs/specs/FEATURES.md, "Print"; DESIGN.md, "The Two
  *  Breakpoints Rule"): the way back and the heading on one row; from 761 px the primary,
  *  the two switches and the link in one row under it; up to 760 px the switches under it,
- *  one card per row and a dock with the primary and «Ещё»; the sheet inside the first
- *  screen; «Лист 2 из 2» before a second sheet; the Thumb Rule at 360 and 390 px. */
+ *  one card per row and a dock with the primary and «Ещё», in view at every window height
+ *  (740x360 included); the sheet inside the first screen; «Лист 2 из 2» before a second
+ *  sheet; the Thumb Rule at 360 and 390 px. */
 async function printHead() {
   const at = '114 (the print page head and dock): ';
   const WORDS = {
     ru: { print: 'Напечатать', more: 'Ещё', link: 'Ссылка на набор', sheet2: 'Лист 2 из 2' },
     en: { print: 'Print', more: 'More', link: 'Link to this set', sheet2: 'Sheet 2 of 2' }
   };
+  /* 740x360: a phone on its side, where the dock still sticks. */
   for (const [width, height] of [
     [360, 640],
     [390, 844],
+    [740, 360],
     [768, 1024],
     [1180, 720]
   ]) {
     for (const lang of ['ru', 'en']) {
       const w = WORDS[lang];
       const narrow = width <= 760;
+      const short = height < 481;
       const where = at + width + ' ' + lang + ': ';
       const { ctx, page, d } = await fresh({ width, height, lang });
       try {
@@ -9800,7 +9804,7 @@ async function printHead() {
         ok(m.rowTops === 1, where + 'the row takes ' + m.rowTops + ' lines');
         /* (c) the first sheet inside the first screen */
         ok(
-          m.top <= height * 0.4,
+          short || m.top <= height * 0.4,
           where + 'the first sheet starts at ' + m.top.toFixed(1) + ' px'
         );
         if (width === 390 || width === 768)
@@ -9836,7 +9840,8 @@ async function printHead() {
               bottom: r.bottom,
               h: r.height,
               inner: innerHeight,
-              ebar: getComputedStyle(document.documentElement).getPropertyValue('--ebar-h')
+              pdock: getComputedStyle(document.documentElement).getPropertyValue('--pdock-h'),
+              pad: getComputedStyle(document.documentElement).scrollPaddingBottom
             };
           });
         let k = await dockAt();
@@ -9844,9 +9849,17 @@ async function printHead() {
           k.top >= 0 && k.bottom <= k.inner + 0.5,
           where + 'the dock is out of view at scroll 0: ' + JSON.stringify(k)
         );
+        /* The page's scroll padding holds the dock at every height, the short window too. */
         ok(
-          Math.abs(parseFloat(k.ebar) - k.h) <= 1,
-          where + '--ebar-h is ' + k.ebar + ' for a ' + k.h + ' px dock'
+          Math.abs(parseFloat(k.pdock) - k.h) <= 1 && Math.abs(parseFloat(k.pad) - k.h) <= 1,
+          where +
+            '--pdock-h is ' +
+            k.pdock +
+            ', the scroll padding ' +
+            k.pad +
+            ' for a ' +
+            k.h +
+            ' px dock'
         );
         await page.evaluate(() => {
           const cards = document.querySelectorAll('.pcard:not(.blank)');
@@ -9860,8 +9873,8 @@ async function printHead() {
         );
         await page.evaluate(() => window.scrollTo(0, 0));
         await d.settle();
-        /* (g) the Thumb Rule at 360 and 390 px */
-        const small = await targets(page, { floor: 40, menuFloor: 44 });
+        /* (g) the Thumb Rule at 360 and 390 px (`--thumb` holds up to 600 px only) */
+        const small = width <= 600 ? await targets(page, { floor: 40, menuFloor: 44 }) : [];
         for (const t of small)
           ok(false, where + t.sel + ' «' + t.name + '» ' + t.w + 'x' + t.h);
         await page.evaluate(() => document.querySelector('.pdock .morewrap button').click());
@@ -9916,8 +9929,9 @@ async function printHead() {
 }
 
 /** 115. The face wait (docs/specs/FEATURES.md, "Print"): «Напечатать» waits while the face
- *  loads and the cards fit again once it arrives, to the same numbers as a warm open; a
- *  failed face still enables the button and the sheet fits in the fallback face. */
+ *  loads and the cards fit again once it arrives, from the fallback face's numbers to those
+ *  of a warm open; a failed face still enables the button and the sheet fits in the
+ *  fallback face. */
 async function printFaceWait() {
   const at = '115 (the face wait): ';
   const fitOf = (page) =>
@@ -9936,7 +9950,9 @@ async function printFaceWait() {
     });
   const { ctx, page, d } = await fresh({ width: 1180, height: 720 });
   try {
-    await d.open('#/p/set-emberaxe', { as: 'gm2' });
+    /* Nine long cards: their fit in the fallback face differs from the warm one, so the
+       held open proves the refit ran. */
+    await d.open('#/p/set-longtext', { as: 'gm2' });
     await waitIn(page, () => !!document.querySelector('.psheet'));
     ok(
       await waitIn(page, () =>
@@ -9966,11 +9982,11 @@ async function printFaceWait() {
       try {
         await p2.goto(url, { waitUntil: 'domcontentloaded' });
         await waitIn(p2, () => !!document.querySelector('.psheet'));
+        let early = null;
         if (mode === 'held') {
-          ok(
-            (await button(p2)) === true,
-            at + 'held: «Напечатать» is not disabled while the face loads'
-          );
+          const [disabled, fitted] = await Promise.all([button(p2), fitOf(p2)]);
+          early = fitted;
+          ok(disabled === true, at + 'held: «Напечатать» is not disabled while the face loads');
         }
         ok(
           await waitIn(p2, () =>
@@ -9990,6 +10006,10 @@ async function printFaceWait() {
               JSON.stringify(cold) +
               ' is not the warm ' +
               JSON.stringify(warm)
+          );
+          ok(
+            JSON.stringify(early) !== JSON.stringify(warm),
+            at + 'held: the fit in the fallback face already equals the warm one'
           );
         } else {
           const spill = await p2.evaluate(
