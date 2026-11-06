@@ -504,11 +504,11 @@ the heading, the pills of the sibling pages where the page has siblings, the pin
 help, and the page's primary action at the right end. A page with no siblings has no
 pills slot, so its pin follows its heading. From 1000px the head is one row, and where the
 row is short the pills wrap inside their own box (the catalog's chips in Russian up to
-about 1049px); from 761px to 999px the pills take the next row, under the heading, the
+about 1139px); from 761px to 999px the pills take the next row, under the heading, the
 pin, the help and the primary, so the DOM order is the reading order in each band. A
 third level (a table group's books, the homebrew sources) is underlined tabs under the
-head. Up to 760px the heading is read, not drawn, and the mode row or the picker row
-names the page. The head's geometry follows the band only, never the content: the heading
+head. Up to 760px a page with siblings reads its heading, not draws it, and the mode row
+or the picker row names the page. The head's geometry follows the band only, never the content: the heading
 is constant, so a switch between siblings moves no pill, a row that some contents lack
 keeps its reserved space, late content (a picture, a count) reserves its box, and the
 catalog's tab row keeps the height of the tallest group's tabs on every table; the
@@ -548,7 +548,7 @@ name at 1180x720 starts at 312px, because from 761px the name takes three lines 
 away; the owner's figure was 292px). From 761px to 999px the rule is checked at 768x1024
 and 900x720 too, with one more exception: `/tables/*` in a 720px window starts at 334px,
 the reserved tab row of The Head Order Rule, held to 336px (measured 2026-11-05 and
-2026-11-06; taken while the owner was away). A design aims at 240px and 270px, so a small face or
+2026-11-06; owner, 2026-11-05). A design aims at 240px and 270px, so a small face or
 line-box difference does not fail the rule. The primary content is the first
 roll result on a roll page, the table on `/tables/*`, the item on `/i/` and
 `/h/`, the first result on `/search`, the first settings panel on `/account`,

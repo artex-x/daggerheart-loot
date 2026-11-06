@@ -122,11 +122,8 @@ const ru = {
      сообществ» included (docs/decisions/2026-10-21-source-names-follow-the-source-product.md). */
   pageWondrous: 'Wondrous Environments',
   pageDread: 'Dread GM Toolbox',
-  pageVoa: 'Vault of Ages',
   pageDv: "The Dragon's Vault",
-  pageArazo: "The Guide to Arazo's Artifacts",
   pageCommunity: 'Предметы сообществ',
-  pageMwt: 'Many Worlds Tavern',
   pageStd: 'Обычные правила',
   subStd: 'Бросок по таблицам корника и дополнения Hope & Fear.',
   /* The five dice buttons say which rarity band they cover */
@@ -1251,11 +1248,8 @@ const en: Dict = {
 
   pageWondrous: 'Wondrous Environments',
   pageDread: 'Dread GM Toolbox',
-  pageVoa: 'Vault of Ages',
   pageDv: "The Dragon's Vault",
-  pageArazo: "The Guide to Arazo's Artifacts",
   pageCommunity: 'Community items',
-  pageMwt: 'Many Worlds Tavern',
   pageStd: 'Standard rules',
   subStd: 'A roll over the core book and the Hope & Fear tables.',
   common: 'Common',

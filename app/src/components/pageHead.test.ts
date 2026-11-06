@@ -79,7 +79,8 @@ describe('the page head', () => {
     expectOrder(h1, pin, help, primary, pills);
     expect(main.querySelector('.page-head')).toHaveClass('navbelow');
     expect(pills.closest('.headnav')).toHaveClass('below');
-    /* The lead follows the head with the larger gap (12 px against the row's 10 px). */
+    /* The order only: the lead's 12 px under a mid-band head is measured in a browser
+       (states.js case 112), since jsdom's cascade lets the later `.page-sub` rule win. */
     expect(main.querySelector('.page-head.navbelow + .page-below + .page-sub')).not.toBeNull();
     await expectNoA11yViolations(main);
   });

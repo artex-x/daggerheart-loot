@@ -1,3 +1,10 @@
+<script lang="ts" module>
+  /* Each mode draws its own panel (App.svelte), so a press in the head's pills mounts the
+     row again with the old control gone; the new row takes the focus back (DESIGN.md, "The
+     Head Order Rule"). */
+  let pressed = false;
+</script>
+
 <script lang="ts">
   /* The mode row of the nine roll sections: the Core rules, the alternate tables and
      the supplements menu (docs/specs/FEATURES.md, "Chrome"); up to 760 px under the header,
@@ -27,6 +34,20 @@
 
   let open = $state(false);
   let button = $state<HTMLButtonElement | undefined>(undefined);
+  let row = $state<HTMLElement | undefined>(undefined);
+
+  /** Notes a press that leaves the lit mode: only that one mounts the row again. */
+  function press(to: Section): void {
+    if (inhead && to !== mode) pressed = true;
+  }
+
+  $effect(() => {
+    if (!inhead || !pressed || !row) return;
+    pressed = false;
+    const active = document.activeElement;
+    if (active && active !== document.body) return;
+    (supplement ? button : row.querySelector<HTMLElement>('a[aria-current="page"]'))?.focus();
+  });
 
   $effect(() => {
     void app.navigations;
@@ -37,6 +58,13 @@
     open = false;
   }
 
+  /* Rule 20: a pressed item returns the focus to its menu's button. */
+  function pick(to: Section): void {
+    press(to);
+    close();
+    button?.focus();
+  }
+
   /* Focus that lands outside the button and its menu closes the menu, as the account
      menu's does (Shell.svelte); only a focus that lands somewhere counts. */
   function closeOnFocusOut(e: FocusEvent & { currentTarget: HTMLElement }): void {
@@ -45,7 +73,7 @@
   }
 </script>
 
-<nav class="modes" class:inhead aria-label={t.modesLabel}>
+<nav class="modes" class:inhead aria-label={t.modesLabel} bind:this={row}>
   <div class="modes-in">
     {#each OWN as [s, key] (s)}
       <a
@@ -53,6 +81,9 @@
         class:on={s === mode}
         href={app.href(sectionHash(s))}
         data-section={sectionHash(s)}
+        onclick={() => {
+          press(s);
+        }}
         aria-current={s === mode ? 'page' : undefined}>{t[key]}</a
       >
     {/each}
@@ -90,7 +121,9 @@
               tabindex="-1"
               href={app.href(sectionHash(s))}
               aria-current={s === supplement ? 'page' : undefined}
-              onclick={close}
+              onclick={() => {
+                pick(s);
+              }}
               ><span class="mark"
                 >{#if s === supplement}<Icon name="check" />{/if}</span
               >{t[SECTION_LABEL[s]]}</a

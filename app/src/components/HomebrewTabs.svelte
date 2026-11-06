@@ -166,7 +166,6 @@
     justify-content: space-between;
     min-height: 44px;
     font-size: var(--t-control);
-    border-bottom: 0;
   }
 
   .limit {

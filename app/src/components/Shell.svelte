@@ -13,7 +13,7 @@
   import { headerAt, nextHeader } from '../lib/headerScroll.js';
   import { nameOf } from '../lib/i18n.js';
   import { modeOf } from '../lib/nav.js';
-  import { untrack } from 'svelte';
+  import { tick, untrack } from 'svelte';
   import type { Snippet } from 'svelte';
   import type { AppState } from '../state/app.svelte.js';
   import type { Lang } from '../lib/types.js';
@@ -162,6 +162,26 @@
       document.activeElement?.matches(FIELD) === true
     );
   }
+
+  /* The mode row moves between the header and the roll page's head at 761 px; a focused
+     pill keeps the focus by its index. Read here, before any part of the frame redraws:
+     the row under the header goes before the page's own effects run. */
+  const PILLS = 'nav.modes .mode';
+  let wasNarrow: boolean | null = null;
+  $effect.pre(() => {
+    const now = app.band === 'narrow';
+    untrack(() => {
+      const moved = wasNarrow !== null && wasNarrow !== now;
+      wasNarrow = now;
+      const active = document.activeElement;
+      const at = moved && active ? [...document.querySelectorAll(PILLS)].indexOf(active) : -1;
+      if (at < 0) return;
+      void tick().then(() => {
+        if (document.activeElement === document.body)
+          document.querySelectorAll<HTMLElement>(PILLS)[at]?.focus();
+      });
+    });
+  });
 
   /* The header hides up to 760 px only (DESIGN.md, "The Hidden Header Rule"). */
   $effect(() => {

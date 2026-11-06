@@ -33,8 +33,8 @@
     source: string | null;
     /** The filter in force: a source tab keeps its `kind`. */
     filter: FilterState;
-    /** From 761 px, which level this instance draws: the group chips, the page head's
-     *  pills, or the tabs under the head. Up to 760 px the one instance is the picker. */
+    /** From 761 px, which level this instance draws: the group chips (the page head's
+     *  pills) or the tabs under the head. Up to 760 px the one instance is the picker. */
     part?: 'groups' | 'tabs';
   }
 

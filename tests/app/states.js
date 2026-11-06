@@ -6613,7 +6613,8 @@ async function rollPageLayout() {
 
 /** 90. A result's row at 360x640 and 1180x720: three labeled controls inside the card's width;
  *  its «Ещё» holds the copies inside the window and a copy returns the focus to it; the
- *  add-to-list menu stays in the window, under the header, and with 150 lists scrolls with
+ *  add-to-list menu stays in the window, under the header (near the page top it opens down,
+ *  since no scroll uncovers a menu above the page top), and with 150 lists scrolls with
  *  «+ Новый список» in view; the dialog over the result opens its own add menu
  *  (docs/specs/FEATURES.md, "Records"). */
 async function resultRowAndMenus() {
@@ -9634,9 +9635,9 @@ async function headOrder() {
   }
 }
 
-/** 113. The die marks of `/roll/alt` (owner item 12; DESIGN.md, "Colors", "Tertiary"): each
- *  die label starts with the page's d12 in its die's color, hidden from a reader, and no
- *  letter; the word names the die and the field. */
+/** 113. The die marks of `/roll/alt` (docs/specs/FEATURES.md, "Rolling"; DESIGN.md, "Colors",
+ *  "Tertiary"): each die label starts with the page's d12 in its die's color, hidden from a
+ *  reader, and no letter; the word names the die and the field. */
 async function dieMarks() {
   const at = '113 (the die marks): ';
   for (const [width, height] of [

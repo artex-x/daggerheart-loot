@@ -85,7 +85,7 @@ across.
   group chips and the tabs together are at most 140 px below 1000 px (the seven
   supplement tabs take two lines: 130 px at 768, 2026-10-30), 180 px from 1000 to
   1139 px in Russian (the chips take two lines inside the head row up to about
-  1049 px; the rows start at 288 px at 1000x720, measured 2026-11-05, and 287.5 px at
+  1139 px; the rows start at 288 px at 1000x720, measured 2026-11-05, and 287.5 px at
   1050x720, measured 2026-11-06) and 110 px from 1140 px (`tests/app/sweep.js`,
   at 500, 600, 700, 768, 1050 and the run widths, as gm2, the seventh group chip
   drawn). The reserved tab row holds the tabs of every group but the homebrew
@@ -98,7 +98,9 @@ across.
   seven supplement modes (Wondrous Environments to Many Worlds Tavern) are the
   items of its «Дополнения» / "Supplements" menu, in table order, each a link to
   its section; the open one is checked and the current page, and the menu
-  button shows its name. The name is the source's product name
+  button shows its name. A mode switch keeps the keyboard focus on the lit
+  control (the pressed pill, or the menu button after a supplement), and a focused
+  pill stays focused when the row moves at 761 px. The name is the source's product name
   (`docs/decisions/2026-10-21-source-names-follow-the-source-product.md`). The
   roll pages draw no supplements panel. The catalog's tabs draw each book by
   its full name at every width; below 761 px the books are in the picker's
@@ -1451,7 +1453,9 @@ address kept, and no add-to-list control is drawn.
   opens up where the room is only above, so from the dock.
 - A roll result has the add control, «Поделиться» and «Ещё» under its plate, and no
   «Печать»; the copies are in «Ещё», without «Сохранить себе». The add menu opens
-  down, and up where the window has no room below.
+  down, and up where the window has no room below and the page above the control
+  holds the whole menu under the header; near the page top it opens down and the
+  page scrolls to it.
 - An own homebrew item opens at `#/i/<key>` for its author only; any other
   reader, signed out included, gets the not-found page, and «Загружаем...»
   draws until the session and the author's items are known. Its path reads
@@ -3046,8 +3050,7 @@ Each rule keeps its number: a review cites it by number.
   nine roll pages and `/tables/*` are headed by their job, «Бросок» / "Roll" and
   «Таблицы» / "Tables", and the lit pill or tab names the page; the menu button
   «Дополнения» / "Supplements" names the seven supplement pages as one group and
-  shows the open supplement's name; and on Arazo's Artifacts the button and the menu
-  read «Arazo's Artifacts», the tab title the book's full title.
+  shows the open supplement's name.
 - **5. Toasts**: a create says «<Что> «%s» создан(а)» / "<What> "%s"
   created", an update «Сохранено: «%s»» / "Saved: "%s"", a delete «<Что>
   «%s» удалён(а)» / "<What> "%s" deleted"; a rename is silent. A bulk write

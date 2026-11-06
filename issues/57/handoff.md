@@ -3,13 +3,15 @@
 
 ## Status
 - Task status: in_progress. Waves 1, 2 and 2b are on `main`. Wave 3 has built 9a, 8, 9b, the CI split, the CI fix pass,
-  batch TD with its fix pass and CI fix (TD tip `2986f75c`, CI green), and now batch N (The Head Order Rule, the
-  `/tables/*` mid-band exception, the d12 die marks), committed and pushed on `claude/57` (sha in the implementer's
-  report). CI of the new tip is the full gate: not yet run.
-- Next batch: N's review (`Review: required`, below), then P (`plan-P.md`; cases 114 and 115).
-- Review: required (trigger: a golden re-seed of 137 files and 2 new and a DOM order change of every page head from 761 px;
-  `plan-N.md`, "Gate cost, goldens, tier, review"). `polish` and `harden` on `/roll/alt`, `/tables/eq_weapon` and
-  `#/homebrew` at 360, 768, 1000 and 1180 px are the orchestrator's (acceptance 16). TD-R1 and TD-R2 stay on the owner list.
+  batch TD with its fix pass and CI fix (TD tip `2986f75c`, CI green), batch N (`cb581b66`, The Head Order Rule, the
+  `/tables/*` mid-band exception, the d12 die marks; CI run 42177661196 failed case 90 only) and now N's one fix pass
+  (`reviews/N.md`, fix-then-continue: the CI failure, N-B1, N-N1 to N-N11), committed and pushed on `claude/57` (sha
+  in the implementer's report). CI of the new tip is the full gate: not yet run.
+- Next batch: P (`plan-P.md`; cases 114 and 115), after CI of the fix-pass tip is green.
+- Review: N's review is done (`reviews/N.md`); its fix pass is the one remediation cycle. `polish` and `harden` on
+  `/roll/alt`, `/tables/eq_weapon` and `#/homebrew` at 360, 768, 1000 and 1180 px are the orchestrator's (acceptance
+  16), with the keyboard and screen-reader pass of `reviews/N.md` "Checks still needed". TD-R1 and TD-R2 stay on the
+  owner list.
 - Order after N: P, 10, then the wave 3 squash, the wave 3 blind review with its remediation, the closeout and the
   whole-app blind review (unchanged from the fold; `plan.md` section 7). The squash message takes `reviews/9b.md` R7's
   corrected text.
@@ -28,10 +30,20 @@
      cannot draw a second picker.
   5. Acceptance 4's "one `RollPage` instance" is not built: each mode is its own panel in `App.svelte` (a change of
      the route branches, out of scope); the head's text and place hold (case 112 (g)).
-- Last agent: implementer (batch N). No subagent runs. No worker has uncommitted code edits.
+- Defaults taken in the N fix pass (owner AFK):
+  6. Case 90 was a real defect, not a flake: the add menu opened up into the header near the page top. `AddToList`
+     opens up in the page's own scroll only where the page above holds the menu under the header; a pinned bar and a
+     clipping card keep the old rule (`Menu.svelte` already flips only with room above).
+  7. The 760/761 px pill focus lives in `Shell`, not in `RollPage`'s band check (the review's place): `Shell`'s row
+     under the header goes before `RollPage`'s effects run, so `RollPage` read a focus already on `body`.
+  8. A supplement picked at 360 px also lost the focus to `body` (the menu closed with the focused item): the item
+     press now returns the focus to the menu's button at every width (rule 20).
+  9. The unconfigured bundle measured 269.2 kB: the limit rose to 270 (N-R2, the owner's rule), not in batch P.
+- Last agent: implementer (batch N fix pass). No subagent runs. No worker has uncommitted code edits.
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
-- Base / starting commit: `d8e30731`; previous sha of batch N: `2986f75c` (the TD CI fix).
-- Pushed: the batch N commit (sha in the implementer's report).
+- Base / starting commit: `d8e30731`; batch N `cb581b66` (previous sha `2986f75c`); previous sha of the N fix pass:
+  `ff41b4f7` (N's review record).
+- Pushed: `ff41b4f7` and the fix-pass commit (sha in the implementer's report).
 
 ## Completed
 One line per shipped batch. The full acceptance tables, deviations and measurements of batches 1 to 9a are in
@@ -286,8 +298,55 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
   before), 266.0 RU and 231.4 EN at 1000x720 (the pills wrap in their box in RU), 286.2 at 900x720 and 768x1024 RU and
   EN (the pills on the next row), 242.4 at 360x640 (unchanged). Not measured: the 3x counts by text injection and
   1050/1920 px (the S1 probe was not drawn, Deviation 2).
+- Review: `reviews/N.md`, fix-then-continue. Batch sha `cb581b66`. N-N11: its second `check:fast` passed (the task
+  branch's commit gate takes only a passing run, and `cb581b66` was committed through it); its time was not recorded.
+  The one fix pass (previous sha `ff41b4f7`):
+
+  | Finding | Outcome |
+  |---|---|
+  | CI run 42177661196, case 90 at 1180x720 «the add menu slides under the header» | Reproduced locally (`states.js --shard=80/103`, the same FAIL). Not a flake: N moved the result row up 53 px (the first content 267 to 214), so at scroll 0 the toggle sat at 369 px, neither side held the 340 px menu, and the menu opened up to 21 px under a 63 px header with no scroll above the page top (`scratchpad/c90-probe.cjs`). `AddToList` opens up in the page scroll only where the page above holds the menu under the header (`--sticky-h`); a pinned box (`SelBar`, the editor bar) and a clipping card or dialog keep the old rule. After: the menu opens down, the page scrolls 53 px, the menu at 356 to 696 px. `rollResult.test.ts` three side cases (the down case red before); FEATURES.md "Records" |
+  | N-B1 | Fixed as recommended: `ModeRow` `<script module>` flag set by a press that leaves the lit mode (an `OWN` link or a supplement item) in the `inhead` instance; the mounted `inhead` instance focuses the lit link, or the supplements button on a supplement page, when the focus is on `body`, and clears the flag. `rollPage.test.ts` "a mode switch at wide / mid" (link and menu, red before). The 760/761 px crossing: in `Shell` (default 7), `rollPage.test.ts` narrow to mid and back (red before). At 360 the menu item press returns the focus to its button (default 8; `modeRow.test.ts`, red before). FEATURES.md "Tables and search" (the mode row bullet), COVERAGE.md |
+  | N-N1 | Fixed: `pageVoa`, `pageMwt`, `pageArazo` deleted in both languages |
+  | N-N2 | Fixed: rule 4 lost the Arazo departure; the `modeRow.test.ts` comment fixed and `roll/arazo` in its `it.each` (passes) |
+  | N-N3 | Fixed: "owner, 2026-11-05" |
+  | N-N4 | Fixed: "about 1139px" in DESIGN.md and FEATURES.md |
+  | N-N5 | Fixed: "a page with siblings reads its heading, not draws it" |
+  | N-N6 | Fixed: case 113 cites FEATURES.md "Rolling" |
+  | N-N7 | Reworded: jsdom's cascade lets the later `.page-sub` rule win (a computed-margin case read `0`), so the test states the order only and names case 112 (i), which measures the 12 px |
+  | N-N8 | Fixed: "the group chips (the page head's pills) or the tabs under the head" |
+  | N-N9 | Fixed: the dead `border-bottom: 0` removed |
+  | N-N10 | Fixed: the comment states the measured totals (326.7 now, 326.3 and 325.7 before) |
+  | N-N11 | Fixed: this line |
+  | N-R2 | Met now: 269.2 kB unconfigured, the limit 270 (default 9); configured 326.7 of 327 |
+  | N-R1, N-N12 | Left as `reviews.md` names them |
 
 ## Verification
+- N fix pass, 2026-11-06 (previous sha `ff41b4f7`), each in the foreground or waited on; vitest with
+  `VITEST_MAX_WORKERS=2`, one file at a time:
+  - Reproduced: `npm run build:test`, `node tests/app/states.js --shard=80/103` (case 90): `FAIL 90 (the result row):
+    1180: the add menu slides under the header`, as CI. Probe `scratchpad/c90-probe.cjs` at 1180x720: before, scroll 0,
+    the toggle at 369, the menu at 21 (340 tall), the header bottom 63; after, the page at scroll 53, the menu at 356.
+  - Red first, in a detached worktree of `ff41b4f7` (outside the repo, removed after) with the new tests copied in:
+    `rollPage.test.ts` 6 FAIL (the mode switch at wide and mid by link and by menu, the 760/761 px pill both ways),
+    `rollResult.test.ts` 1 FAIL (opens down near the page top), `modeRow.test.ts` 1 FAIL (the button's focus after a
+    pick). The base `shell.test.ts` prints the same `derived_inert` warnings as the fixed tree (not new).
+  - After: vitest `rollPage` 35, `rollResult` 16, `modeRow` 33, `pageHead` 6, `i18n` 73, `shell` 119, `pickRow` 37,
+    `lists` 38: all pass. `npm run typecheck`: 0 errors, 0 warnings.
+  - `node tests/app/states.js --shard=n/103`: 80 (case 90) passes; the add-menu cases 1, 2, 3, 23, 27, 42, 88, 103
+    (n = 1, 2, 3, 19, 22, 35, 78, 93) pass; 102 (case 112) 93 s, 103 (case 113), 86 (case 96) 93 s pass.
+  - Focus probe `scratchpad/focus-probe.cjs` (Enter on «Альтернативные таблицы» on `/roll/std`, then the
+    supplements menu, Down twice, Enter): at 1180, 768 and 360 the focus lands on the lit `A.mode.on` and then on the
+    lit `BUTTON.mode.sup.on` «Vault of Ages»; the next Tab goes to the pin (1180) or the part select (768, 360). A
+    focused pill crossing 760 to 761, 761 to 760 and 1000 to 999 px stays on «Альтернативные таблицы».
+  - Sweep probe (`scratchpad/mkprobe.cjs`, `PROBE_RE` on the nine roll pages and the three homebrew tabs): `clean` at
+    1180 RU, 768 EN, 360 RU, 390 EN.
+  - Goldens: `MSYS_NO_PATHCONV=1 node tests/app/golden.js --only="#/roll"`: 42 states compared, `unchanged`; none
+    re-seeded.
+  - `node tests/run-all.js contracts,derived`: both ok. `npm run lint:untyped`, `npm run lint:typed`: exit 0 after
+    the last edit (the first `lint:typed` failed on an optional chain that `svelte-check` needed; moved into `pick`).
+  - `rtk npm run check:built`: first FAIL, 269.2 kB over 269; the limit rose to 270 (default 9), then pass, 269.2
+    within 270. Configured (`.claude/README.md`'s line, the main checkout's `.env.test.local`): 326.7 kB within 327.
+  - `VITEST_MAX_WORKERS=2 rtk npm run check:fast`: run last, after this file; the commit gate takes only its pass.
 - Batch N, 2026-11-06 (previous sha `2986f75c`), each in the foreground or waited on; vitest with
   `VITEST_MAX_WORKERS=2`:
   - `npm run typecheck`: 0 errors, 0 warnings.
@@ -392,12 +451,12 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
 - Batch CI fix pass and earlier: `git show ee4ddc74:issues/57/handoff.md`, "Verification".
 
 ## Next batch (implement-ready)
-- First: batch N's review (required, Status) and its one remediation cycle, from N's pushed tip.
+- First: CI of the N fix-pass tip (the full gate).
 - Then: batch P (print; `issues/57/plan-P.md`, mocks `issues/57/mocks/P/`). Cases 114 and 115. The last case in
   `states.js` is 113 (103 cases; `--shard=n/103` runs one: 102 is case 112, 103 is case 113).
 - P reads N's head: from 761 px a roll page's `h1` is «Бросок» and the mode pills are in `main`'s head, not above it.
 - Gates: as `plan-P.md`, "Verification"; vitest with `VITEST_MAX_WORKERS=2`, one file at a time; `check:fast` last.
-  The bundle figure after N is under Verification.
+  The bundle figures after the N fix pass are under Verification (269.2 of 270, configured 326.7 of 327).
 
 ## Blockers
 - None.

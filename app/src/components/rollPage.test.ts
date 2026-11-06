@@ -126,6 +126,50 @@ describe('the heading', () => {
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Бросок');
   });
 
+  describe.each(['wide', 'mid'] as const)('a mode switch at %s', (band) => {
+    /* The real router takes a link press from the document; the fake takes `click`. */
+    const noNavigation = (e: MouseEvent): void => {
+      e.preventDefault();
+    };
+    afterEach(() => {
+      document.removeEventListener('click', noNavigation);
+    });
+
+    const page = () => {
+      document.addEventListener('click', noNavigation);
+      const router = memoryRouter('#/roll/std');
+      render(App, { env: at('#/roll/std', { router, viewport: fakeViewport(band) }) });
+      const modes = (): HTMLElement => screen.getByRole('navigation', { name: 'Режим броска' });
+      return { router, modes };
+    };
+
+    it('keeps the focus on the pressed pill, lit', async () => {
+      const { router, modes } = page();
+      const alt = within(modes()).getByRole('link', { name: 'Альтернативные таблицы' });
+      alt.focus();
+      await userEvent.keyboard('{Enter}');
+      router.click(alt.getAttribute('href') ?? '');
+      await waitFor(() => {
+        const lit = within(modes()).getByRole('link', { name: 'Альтернативные таблицы' });
+        expect(lit).toHaveAttribute('aria-current', 'page');
+        expect(lit).toHaveFocus();
+      });
+    });
+
+    it('puts the focus on the supplements button after a supplement is picked', async () => {
+      const { router, modes } = page();
+      await userEvent.click(within(modes()).getByRole('button', { name: 'Дополнения' }));
+      const item = screen.getByRole('menuitem', { name: 'Vault of Ages' });
+      await userEvent.click(item);
+      router.click(item.getAttribute('href') ?? '');
+      await waitFor(() => {
+        const sup = within(modes()).getByRole('button', { name: 'Vault of Ages' });
+        expect(sup).toHaveAttribute('aria-current', 'page');
+        expect(sup).toHaveFocus();
+      });
+    });
+  });
+
   it('stays with nothing to roll, in both bands', () => {
     const { container } = render(App, { env: at('#/roll/wondrous', { data: noData() }) });
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
@@ -303,6 +347,25 @@ describe('a band change', () => {
     viewport.set('narrow');
     await waitFor(() => {
       expect(button('Настроить')).toHaveFocus();
+    });
+  });
+
+  it.each([
+    ['narrow', 'mid'],
+    ['mid', 'narrow']
+  ] as const)('keeps a focused mode pill on the same pill from %s to %s', async (from, to) => {
+    const viewport: FakeViewport = fakeViewport(from);
+    render(App, { env: at('#/roll/std', { viewport }) });
+    const alt = (): HTMLElement =>
+      within(screen.getByRole('navigation', { name: 'Режим броска' })).getByRole('link', {
+        name: 'Альтернативные таблицы'
+      });
+    const before = alt();
+    before.focus();
+    viewport.set(to);
+    await waitFor(() => {
+      expect(alt()).not.toBe(before);
+      expect(alt()).toHaveFocus();
     });
   });
 });

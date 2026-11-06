@@ -49,9 +49,8 @@ describe('the mode row', () => {
   });
 
   /* Rule 4: the heading names the job, «Бросок»; the lit control reads the page's name,
-     as the tab title does. The one departure is Arazo's Artifacts, whose tab title is the
-     book's full title. */
-  it.each(ROLL.filter((s) => s !== 'roll/arazo'))(
+     as the tab title does. */
+  it.each(ROLL)(
     'reads the tab title of %s on its lit control under the heading «Бросок»',
     async (s) => {
       render(App, { env: fakeEnv({ router: memoryRouter(sectionHash(s)) }) });
@@ -148,6 +147,18 @@ describe('the supplements menu', () => {
     await userEvent.keyboard('{End}');
     expect(items[6]).toHaveFocus();
     await userEvent.keyboard('{Escape}');
+    expect(screen.queryByRole('menu')).toBeNull();
+    expect(button(nav)).toHaveFocus();
+  });
+
+  it('returns the focus to its button after a supplement is picked', async () => {
+    const { nav, items } = await open('#/roll/std');
+    const noNavigation = (e: MouseEvent): void => {
+      e.preventDefault();
+    };
+    document.addEventListener('click', noNavigation);
+    await userEvent.click(items[3] as HTMLElement);
+    document.removeEventListener('click', noNavigation);
     expect(screen.queryByRole('menu')).toBeNull();
     expect(button(nav)).toHaveFocus();
   });

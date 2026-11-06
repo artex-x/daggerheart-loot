@@ -109,6 +109,15 @@
   let root = $state<HTMLDivElement | undefined>(undefined);
   let up = $state(false);
 
+  /** Answers whether `el` sits in a fixed or sticky box, which a page scroll does not move. */
+  function pinned(el: HTMLElement): boolean {
+    for (let p = el.parentElement; p; p = p.parentElement) {
+      const { position } = getComputedStyle(p);
+      if (position === 'fixed' || position === 'sticky') return true;
+    }
+    return false;
+  }
+
   /* On the rising edge of `open`, whoever opened it - the button, or a
      sign-in that reopens the menu through `app.menuFor`. */
   let wasOpen = false;
@@ -310,15 +319,21 @@
          card's scroll position along, and let a menu on a record page at 360
          wide open down past the card and lose its lower part (issue 68). */
       const from = root;
-      const clipBottom = Math.min(
-        window.innerHeight,
-        ...['.card:not(.dossier)', '.modal-card'].map(
-          (sel) => from.closest(sel)?.getBoundingClientRect().bottom ?? Infinity
-        )
+      const clips = ['.card:not(.dossier)', '.modal-card'].map(
+        (sel) => from.closest(sel)?.getBoundingClientRect().bottom ?? Infinity
       );
-      const below = clipBottom - btn.getBoundingClientRect().bottom;
+      const clipBottom = Math.min(window.innerHeight, ...clips);
+      const at = btn.getBoundingClientRect();
+      const below = clipBottom - at.bottom;
       const need = menu.getBoundingClientRect().height + 16;
-      up = below < need;
+      /* A toggle in the page's own scroll opens up only where the page above it holds the
+         menu under the header: near the page top no scroll uncovers it, while a scroll down
+         always can (states.js case 90). A pinned bar or a clipping card keeps the old rule. */
+      const header = parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue('--sticky-h')
+      );
+      const above = at.top + window.scrollY - (Number.isNaN(header) ? 0 : header);
+      up = below < need && (clips.some(Number.isFinite) || pinned(btn) || above >= need);
       /* `classList.toggle` precedes `scrollIntoView` in `placeMenu` - the class
          has to be on the menu before it is scrolled into view. */
       flushSync();
