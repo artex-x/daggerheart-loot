@@ -2557,6 +2557,7 @@
      in the first screen at 360x640 (DESIGN.md, "The First-Screen Rule"). */
   .lhead .titleinput {
     height: auto;
+    min-height: var(--thumb);
   }
 
   .lhead > :global(.page-sub) {

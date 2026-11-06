@@ -1586,7 +1586,8 @@ const STATES = [
         await d.settle();
       await d.click('Новый список');
     },
-    /* a 4000ms toast; arrived at afresh per language - see this file's header */
+    /* a 10000ms error toast (it holds an email address); arrived at afresh per language - see
+       this file's header */
     timed: true
   },
   {

@@ -1531,6 +1531,21 @@ describe('the toast slot, owner 2026-10-08', () => {
     expect(app.toast).toBeNull();
   });
 
+  it('shows a retry answer at once: the retry press closes the shown error and only an error', () => {
+    const app = made();
+    app.say(() => 'не получилось', { error: true });
+    vi.advanceTimersByTime(1000);
+    app.closeErrorToast();
+    expect(app.toast).toBeNull();
+    app.say(() => 'импортировано');
+    expect(app.toast).toMatchObject({ msg: 'импортировано', mode: '' });
+    app.closeErrorToast();
+    expect(app.toast?.msg).toBe('импортировано');
+    app.say(() => 'убрано', { action: act });
+    app.closeErrorToast();
+    expect(app.toast?.mode).toBe('act');
+  });
+
   it('holds a plain toast said during an action toast until 7000ms, the undo press or the close', () => {
     const app = made();
     app.say(() => 'убрано', { action: act });

@@ -9014,9 +9014,7 @@ async function targetsInOpenLayers() {
   for (const id of TARGET_LAYERS) {
     for (const lang of ['ru', 'en']) {
       /* A state whose control draws from 761 px only is entered there (`wideEnter`). */
-      const { ctx, page } = await openState(id, 360, 640, lang).catch(() =>
-        openState(id, 360, 640, lang, true)
-      );
+      const { ctx, page } = await openState(id, 360, 640, lang, /~ note open as gm4$/.test(id));
       try {
         const got = await targets(page, { floor: 40, menuFloor: 44 });
         for (const t of got)

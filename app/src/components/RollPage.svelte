@@ -245,7 +245,9 @@
     flex-wrap: wrap;
     gap: 6px;
     min-height: max(28px, var(--thumb));
-    margin: 0;
+    /* Up to 760 px 4 px part the line's 40 px buttons from the first card, so the two do
+       not read as one block; the first screen holds it (DESIGN.md, "The First-Screen Rule"). */
+    margin: 0 0 4px;
   }
 
   .reshead h2 {

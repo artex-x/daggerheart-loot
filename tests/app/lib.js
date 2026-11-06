@@ -281,8 +281,9 @@ const TARGET_ALLOW = [
  * `floor` (`menuFloor` for a menu item) passes; a smaller one is scrolled to the window's
  * center and passes when the 8 edge points of a floor-sized square on its center all land
  * on it or inside it, so padding and a `::after` target count. `spacing` (768 px and up)
- * also passes a target whose 24 px circle meets no other target's box (WCAG 2.5.8). While
- * a modal dialog is open only its controls are read. The page is left at scroll 0.
+ * also passes a target whose 24 px circle meets no other target's box and no other
+ * undersized target's circle (WCAG 2.5.8). While a modal dialog is open only its controls
+ * are read. The page is left at scroll 0.
  */
 async function targets(page, { floor, menuFloor = floor, spacing = false }) {
   return page.evaluate(
@@ -324,8 +325,7 @@ async function targets(page, { floor, menuFloor = floor, spacing = false }) {
           el = el.closest('label');
         if (seen.has(el)) continue;
         seen.add(el);
-        if (hidden(el) && !(el.tagName === 'LABEL' && !hidden(raw.closest('label') ?? el)))
-          continue;
+        if (hidden(el)) continue;
         all.push(el);
       }
       const name = (el) =>
@@ -373,7 +373,8 @@ async function targets(page, { floor, menuFloor = floor, spacing = false }) {
       }
       for (const s of small) {
         if (SPACING) {
-          /* The 24 px circle on its center against every other target's box, read in the same
+          /* The 24 px circle on its center against every other target's box and against
+             every other undersized target's circle (centers 24 px apart), read in the same
              scroll position. */
           s.el.scrollIntoView({ block: 'center', inline: 'center' });
           const b = s.el.getBoundingClientRect();
@@ -386,7 +387,14 @@ async function targets(page, { floor, menuFloor = floor, spacing = false }) {
             const dy = Math.max(q.top - cy, 0, cy - q.bottom);
             return dx * dx + dy * dy >= 144;
           });
-          if (clear) continue;
+          const apart = small.every((o) => {
+            if (o === s || o.el.contains(s.el) || s.el.contains(o.el)) return true;
+            const q = o.el.getBoundingClientRect();
+            const dx = q.left + q.width / 2 - cx;
+            const dy = q.top + q.height / 2 - cy;
+            return dx * dx + dy * dy >= 576;
+          });
+          if (clear && apart) continue;
         }
         out.push({
           sel: sel(s.el),

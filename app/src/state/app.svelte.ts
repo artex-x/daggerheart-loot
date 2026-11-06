@@ -184,7 +184,7 @@ const ARRIVAL_MS = TOAST_MS.action;
 /** Returns how long a toast of `mode` shows `msg`: the long class when its text holds an
  *  email address or runs past `TOAST_LONG_CHARS` in either language, so the class is the
  *  same in Russian and English. */
-export function toastMs(mode: Toast['mode'], msg: Msg): number {
+function toastMs(mode: Toast['mode'], msg: Msg): number {
   const long = (['ru', 'en'] as const).some((lang) => {
     const text = msg(dict(lang), lang);
     return text.includes('@') || text.length > TOAST_LONG_CHARS;
@@ -1878,6 +1878,12 @@ export class AppState {
   async copied(run: () => Promise<boolean>, ok: Msg): Promise<void> {
     const success = await run();
     this.say(success ? ok : (t) => t.copyFailed, { error: !success });
+  }
+
+  /** Ends a shown error toast and leaves any other one. A press that retries a failed
+   *  write calls it, so the retry's answer shows at once (docs/specs/FEATURES.md, "Chrome"). */
+  closeErrorToast(): void {
+    if (this.#said?.mode === 'err') this.hideToast();
   }
 
   /** Ends the shown toast - its timer, its close or its action - and shows a waiting

@@ -131,7 +131,7 @@ describe('a card per list', () => {
     expect(container.querySelector('.listcard .btn.danger')).toBeNull();
     const more = screen.getByRole('button', { name: 'Ещё: Клад дракона' });
     expect(more).toHaveAttribute('aria-haspopup', 'menu');
-    /* The card's corner draws «Ещё» as text alone, outside the card's link (T5). */
+    /* The card's corner draws «Ещё» as text alone, outside the card's link. */
     expect(more).toHaveClass('bare');
     expect(more.closest('a')).toBeNull();
     expect(more.closest('.listcard-acts')?.parentElement).toHaveClass('listcard');

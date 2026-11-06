@@ -603,6 +603,7 @@
       x.kind === 'custom' ? { ...x, name: custom[i] ?? '', lang } : x
     );
     const callRows = toHomebrewRows(file, rows, sent, store, update, importIds);
+    app.closeErrorToast();
     sending = true;
     const r = await store.import(callRows);
     sending = false;

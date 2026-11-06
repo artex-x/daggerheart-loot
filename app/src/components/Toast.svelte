@@ -57,7 +57,7 @@
   });
 
   /* A toast with an undo takes focus, or a keyboard user could not reach the
-     button before its 7000ms run out; a plain notice never does. `pre`, so
+     button before its time runs out (7000 or 10000 ms); a plain notice never does. `pre`, so
      "was focus inside" is read before the button leaves the DOM. The origin
      may already be gone when this runs (a removed row leaves first, and focus
      is then on `body`), so the toast falls back to `#main`, or to the
@@ -127,7 +127,7 @@
 
   /* Every toast holds its clock while hovered or touched or while the person moved focus
      into it (`app.holdToast`). The undo's own `.focus()` above does not count
-     (`selfFocus`), so it still runs out at 7000 ms and returns focus. */
+     (`selfFocus`), so it still runs out at its own time and returns focus. */
   let hover = $state(false);
   let focused = $state(false);
   let selfFocus = false;

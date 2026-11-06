@@ -352,6 +352,7 @@
     /* An own item deleted since the preview gains its copy, with the same ids. */
     const fresh = app.importPlan(lists, plan) ?? plan;
     if (fresh !== plan && view.kind === 'preview') view = { ...view, plan: fresh };
+    app.closeErrorToast();
     sending = true;
     const answer = await app.importLists(fresh);
     sending = false;

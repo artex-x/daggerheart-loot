@@ -24,11 +24,6 @@ import {
   rowsOf,
   utf8
 } from '../test/homebrewImport.js';
-import { TOAST_MS } from '../state/app.svelte.js';
-
-/* A plain toast said while an error toast shows waits for it (DESIGN.md, "The Reading Time
-   Rule"): a find after an error waits past its time, the long class at most. */
-const AFTER_ERROR = { timeout: TOAST_MS.long + 2000 };
 
 afterEach(cleanup);
 
@@ -716,9 +711,7 @@ describe('the press', () => {
     );
     cloud.setOffline(false);
     await userEvent.click(await importButton(5));
-    expect(
-      await screen.findByText(/^Импортировано предметов: 3/, undefined, AFTER_ERROR)
-    ).toBeInTheDocument();
+    expect(await screen.findByText(/^Импортировано предметов: 3/)).toBeInTheDocument();
     expect(imp).toHaveBeenCalledTimes(2);
     expect(imp.mock.calls[1]?.[0]).toEqual(imp.mock.calls[0]?.[0]);
   });

@@ -2860,7 +2860,9 @@ right, so the tab order and the reading order agree
   later plain toast waits and shows when it ends - its timer, its close or its
   action - for its own class's time (one waits; a newer plain toast takes its
   place); a later error or action toast replaces it at once (owner,
-  2026-10-08). The new-request toast ("Purchase requests: the owner") is
+  2026-10-08). The press of a write that can be retried (an import, a homebrew bulk
+  delete or move, a homebrew item or card save, a card delete) first closes a shown
+  error toast, so the answer of a retry shows at once. The new-request toast ("Purchase requests: the owner") is
   the lowest: an action toast whose button («Открыть» / «Показать») moves
   to a page of the app and never takes focus; it waits behind any other
   toast, a plain one too, and displaces nothing; any later toast, a plain

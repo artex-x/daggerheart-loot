@@ -281,10 +281,12 @@
     justify-content: center;
   }
 
-  /* As `RollPage`'s control row up to 760 px: one line, a long chosen value is cut. */
+  /* As `RollPage`'s control row up to 760 px: one line, a long chosen value is cut. The
+     4 px part it from the results line's 40 px buttons right under it. */
   .altctrl.row {
     flex-direction: row;
     gap: 8px;
+    margin-bottom: 4px;
   }
 
   .dieblock {

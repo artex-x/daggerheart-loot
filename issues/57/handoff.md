@@ -2,14 +2,14 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress. Waves 1, 2 and 2b are on `main`. Wave 3 has built 9a, 8, 9b, the CI split, the CI fix pass
-  and now batch TD (T + D + The Measure Rule; `plan-TD.md`), committed and pushed on `claude/57` (the sha is in the
-  implementer's report; the handoff cannot name its own commit). CI of the TD tip is the full gate (the sweep at four
-  widths, the goldens, cases 108-111): not yet run.
-- Next batch: N (`plan-N.md`; cases 112 and 113), after TD's review and its one fix pass. Writer tier: opus, test 3.
-- Review: required (trigger: visual parity and changed UI on every route; generated artifacts: the static pages'
-  template `tools/build-pages.js` changed). Name the guideline set of `context.md` item 10, the Clarity Rule and the
-  Measure Rule's sources in the dispatch. `polish` and `harden` on the T, D and text surfaces are the orchestrator's.
+- Task status: in_progress. Waves 1, 2 and 2b are on `main`. Wave 3 has built 9a, 8, 9b, the CI split, the CI fix pass,
+  batch TD (`cd2a2904`, review `reviews/TD.md` fix-then-continue) and now TD's one fix pass (CI run 42148704213's
+  `app/sweep` failures, TD-B1, TD-R3, TD-N1 to N6), committed and pushed on `claude/57` (sha in the implementer's
+  report). CI of the fix tip is the full gate: not yet run.
+- Next batch: N (`plan-N.md`; cases 112 and 113), from the fix tip, with TD-R4 (bundle budget) in its dispatch.
+  Writer tier: opus, test 3.
+- Review: TD's one remediation cycle is this pass; no second review unless CI or the orchestrator finds a new defect.
+  `polish` and `harden` on the T, D and text surfaces are the orchestrator's. TD-R1 and TD-R2 go to the owner list.
 - Order after TD: N, P, 10, then the wave 3 squash, the wave 3 blind review with its remediation, the closeout and the
   whole-app blind review (unchanged from the fold; `plan.md` section 7). The squash message takes `reviews/9b.md` R7's
   corrected text.
@@ -29,10 +29,18 @@
      box is its target (the plan named `AltPanel`'s `.pick select`; the rule lives in `RollSelect`).
   5. `AccountPage` signed in below 1000 px keeps the passage measure on its column (`.col:has(.acc)`), so the signed-in
      page does not widen at 761-999 px; signed out the cap moved to the sign-in panel (MR-5).
-- Last agent: implementer (batch TD). No subagent runs. No worker has uncommitted code edits.
+- Defaults taken in the TD fix pass (owner AFK):
+  6. TD-B1 option A: the press of a retryable write closes a shown error toast (`app.closeErrorToast()`), so a retry's
+     answer shows at once; trade-off: an unread error closes when the person presses again.
+  7. From 601 px a text control (`.btn.bare`, the footer links, the license summary) takes a 24 px padded box with the
+     growth given back; up to 600 px `.btn.bare` also takes `min-width: var(--thumb)` (centered). No `TARGET_ALLOW`
+     entry was added: every CI failure was a real control.
+  8. TD-R3: 4 px under the narrow results line on every roll page and 4 px under `/roll/alt`'s picker row; `/roll/alt`
+     and `~ crit` at 360 now 254 of 256, `/roll/std` 323 of 325.
+- Last agent: implementer (TD fix pass). No subagent runs. No worker has uncommitted code edits.
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
-- Base / starting commit: `d8e30731`; previous sha of TD: `ee4ddc74`.
-- Pushed: the TD commit (sha in the implementer's report).
+- Base / starting commit: `d8e30731`; previous sha of the TD fix pass: `d22f93a5` (TD itself: `cd2a2904`).
+- Pushed: `d22f93a5` and the fix commit together (sha in the implementer's report).
 
 ## Completed
 One line per shipped batch. The full acceptance tables, deviations and measurements of batches 1 to 9a are in
@@ -228,9 +236,45 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
   beyond the plan: none; `#/tables/homebrew as gm2` joined case 110. (7) Eight component tests that find a plain
   toast said during an error toast (`homebrewImport`, `homebrewPage`, `importPanel`) wait `TOAST_MS.long + 2000` ms
   (`AFTER_ERROR`): a 7000 or 10000 ms error outlived the 5000 ms find; up to 5-7 s more each, real timers.
-- Review: required (trigger: visual parity and changed UI on every route; the static pages' template changed).
+- Review: `reviews/TD.md`, fix-then-continue. The one fix pass (previous sha `d22f93a5`):
+
+  | Finding | Outcome |
+  |---|---|
+  | CI `app/sweep` 768/1180: `nav.foot-nav > a` 20.8 px, `details.foot-licence > summary` 20.8 px | Real controls (a nav row, a disclosure). `Shell`: the footer links take `max(24px, var(--thumb))` as a padded box at every width with the growth given back; from 601 px the summary takes a 24 px padded box the same way. Reproduced red locally at 1180 (22 reports), clean after |
+  | CI `app/sweep` 768/1180: `span > button.btn.bare.sm` «и ещё N» 18.8 px | A button (`FoldButton`), not a link: the `.craft a` entry does not cover it and should not. `Button`: `.btn.bare` takes `min-height: max(24px, var(--thumb))` with the growth given back at every width (the 600 px block widened to `screen`) |
+  | CI `app/sweep` 360/390 EN: `div.nacts` «Clear» 30.2 wide, `div.reqhead` «Open» 31.7 wide | Real buttons. `.btn.bare` takes `min-width: var(--thumb)` and centers its text up to 600 px |
+  | CI `app/sweep` 360/390 EN: the record card's `.refs summary` 26.2 px | A disclosure: `min-height: var(--thumb)` in `RecordCard` |
+  | CI `app/sweep` 360/390 EN: `h1.page-h > input.titleinput` 38.8 px | A field: `.lhead .titleinput { min-height: var(--thumb) }` in `ListPage`; `LIST_A` first screen 209 to 210, the requests row 303 to 304 (exception 304) |
+  | TD-B1 | Fixed, option A: `AppState.closeErrorToast()`; `ImportPanel` send, `HomebrewImport` send, `HomebrewBulk` delete and move, `HomebrewCards` remove, `write`, `writeCard` call it before the write. The eight `AFTER_ERROR` finds are back at the default timeout (the three files equal `ee4ddc74`); `app.test.ts` "shows a retry answer at once". FEATURES.md "Chrome", DESIGN.md "The Reading Time Rule" |
+  | TD-R3 | Fixed: `RollPage` `.reshead` 4 px under it, `AltPanel` `.altctrl.row` 4 px under it; first screens at 360 in Verification |
+  | TD-N1 | Fixed: "(T5)" gone |
+  | TD-N2 | Fixed: `~ list limit as gm2` says a 10000 ms error toast; `~ not saved as gm2` is a 4000 ms create toast (kept); `Toast.svelte` comments name 7000 or 10000 ms and "its own time" |
+  | TD-N3 | Fixed: "inside the toast's lifetime" |
+  | TD-N4 | Fixed: `toastMs` not exported |
+  | TD-N5 | Fixed: case 109 enters only `~ note open as gm4` at 1180 (`wideEnter` by a named regex) |
+  | TD-N6 | Fixed: `targets` also requires 24 px between the centers of two undersized targets; the dead `LABEL` clause is `hidden(el)` |
+  | TD-R1, TD-R2, TD-R4 | Left as `reviews.md` names them (owner list, batch N dispatch) |
 
 ## Verification
+- TD fix pass, 2026-11-06 (previous sha `d22f93a5`), each in the foreground or waited on; vitest with
+  `VITEST_MAX_WORKERS=2`:
+  - Probe: `scratchpad/mkprobe.cjs` writes `sweep-probe.cjs`, `tests/app/sweep.js` with the page list filtered by
+    `PROBE_RE` (the same `targets` call and floors). On the `cd2a2904` build at 1180: 22 FAIL (the CI reports, RU and
+    EN). After (`npm run build:test`): 1180, 768 (RU, EN), 360 (RU, EN) and 390 EN on the failing pages: each `clean`.
+    The 360/390/768 red is CI's log, not re-run locally.
+  - `node tests/app/sweep.js 1180 en` (all pages, the N6 spacing included): `clean at 1180 (en)`.
+  - `node tests/app/states.js --shard=73/101` (case 83): `all 1 runs passed`. At 360x640, RU = EN: `/roll/std` 323
+    (325), `/roll/alt` and `~ crit` 254, `voa` and `wondrous` 250, `LIST_A` 210, `~ many` 254, `~ long name` 210,
+    `SHOP ~ requests` 304 (304), `/lists as gm1` 238, `~ many lists` 251; 1180 rows unchanged.
+  - `node tests/app/states.js --shard=n/101`, n = 99 (case 109), 79 (case 89), 98 (case 108): each `all 1 runs passed`.
+  - Vitest: `app.test.ts` + `importPanel.test.ts` 362 pass; `homebrewImport`, `homebrewPage`, `listsPage` 229 pass;
+    `shell`, `listPage`, `record`, `requestsPanel` 405 pass. The eight finds at the default timeout failed on TD
+    before `AFTER_ERROR` (TD's first `check:fast`), so the red is recorded there.
+  - `npm run lint:untyped`, `npm run lint:typed`: exit 0. `npm run check:built`: pass, 268.3 kB within 269.
+  - Goldens: not run locally (CSS boxes and a test helper only; no tree line moves); CI's golden job.
+  - `VITEST_MAX_WORKERS=2 rtk npm run check:fast`: see the implementer's report (run last, after this file).
+
+## Verification (batch TD)
 - Batch TD, 2026-11-06 (previous sha `ee4ddc74`), each in the foreground unless named; vitest with
   `VITEST_MAX_WORKERS=2`:
   - Red first: a detached worktree of `ee4ddc74` (outside the repo, removed after) with the new `states.js`, `lib.js`

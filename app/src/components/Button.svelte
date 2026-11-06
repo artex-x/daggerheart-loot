@@ -243,12 +243,15 @@
     color: var(--txt);
   }
 
-  /* Text alone reaches the thumb target by its padded box and gives the growth back by a
-     negative margin, so no line moves (DESIGN.md, "The Phone-First Rule"). */
-  @media screen and (max-width: 600px) {
+  /* Text alone reaches the target by its padded box and gives the growth back by a
+     negative margin, so no line moves: 24 px from 601 px, the thumb target up to 600 px
+     (DESIGN.md, "The Phone-First Rule"). */
+  @media screen {
     .btn.bare {
-      min-height: var(--thumb);
-      margin-block: min(0px, calc((1lh - var(--thumb)) / 2));
+      min-height: max(24px, var(--thumb));
+      min-width: var(--thumb);
+      justify-content: center;
+      margin-block: min(0px, calc((1lh - max(24px, var(--thumb))) / 2));
     }
   }
 

@@ -191,6 +191,7 @@
     ];
     /* Counted among the drawn buttons: a row with its form open draws none. */
     const at = dels().findIndex((b) => b.closest('li')?.id === 'hb-card-' + c.id);
+    app.closeErrorToast();
     const r = await store.removeCard(c);
     if (!r.ok) {
       app.say((t) => t.hbDeleteFailed, { error: true });
@@ -212,6 +213,7 @@
   ): Promise<boolean> {
     const r0 = records.get(row.key);
     const name = r0 ? nameOf(r0, lang) : row.key;
+    app.closeErrorToast();
     pending.add(row.key);
     try {
       const r = await store.updateItem(row, { content, book_id: row.book_id }, row.revision);
@@ -250,6 +252,7 @@
   ): Promise<boolean> {
     const row = store.cards.find((x) => x.id === cardId);
     if (!row) return false;
+    app.closeErrorToast();
     pendingCards.add(cardId);
     try {
       const r = await store.updateCard(

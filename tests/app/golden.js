@@ -411,8 +411,8 @@ if (require.main === module) {
    *  enter, snapshot ru, press EN, snapshot en - a snapshot is a read and does
    *  not perturb the page, so nothing forces a second arrival. `timed` states
    *  arrive fresh per language instead, each raising its own toast. That split
-   *  kept the capture inside the short toast lifetime of the time; the toast hold has made
-   *  that window moot, and the split stays because the goldens are recorded so. */
+   *  kept the capture inside the toast's lifetime; the toast hold has made that window
+   *  moot, and the split stays because the goldens are recorded so. */
   const captureState = async (state) => {
     if (!state.timed) {
       const { ctx, page, d } = await fresh({

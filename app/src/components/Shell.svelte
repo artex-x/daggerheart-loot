@@ -622,18 +622,28 @@
     text-decoration: underline;
   }
 
-  /* A text link reaches the thumb target by its padded box and keeps its line (DESIGN.md,
-     "The Phone-First Rule"); the license's summary is the footer's last line. */
+  /* A text link reaches the target by its padded box and keeps its line: 24 px from 601 px,
+     the thumb target up to 600 px (DESIGN.md, "The Phone-First Rule"); the license's
+     summary is the footer's last line. */
+  @media screen {
+    .foot-nav a {
+      display: inline-block;
+      padding-block: max(0px, calc((max(24px, var(--thumb)) - 1lh) / 2));
+      margin-block: min(0px, calc((1lh - max(24px, var(--thumb))) / 2));
+    }
+  }
+
+  @media screen and (min-width: 601px) {
+    .foot-licence summary {
+      padding-block: max(0px, calc((24px - 1lh) / 2));
+      margin-block: min(0px, calc((1lh - 24px) / 2));
+    }
+  }
+
   @media screen and (max-width: 600px) {
     .brand {
       padding-block: 5px;
       margin-block: -5px;
-    }
-
-    .foot-nav a {
-      display: inline-block;
-      padding-block: max(0px, calc((var(--thumb) - 1lh) / 2));
-      margin-block: min(0px, calc((1lh - var(--thumb)) / 2));
     }
 
     .foot-licence summary {

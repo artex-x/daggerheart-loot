@@ -905,6 +905,7 @@
     display: flex;
     align-items: center;
     gap: 6px;
+    min-height: var(--thumb);
     padding: 5px 8px;
     cursor: pointer;
     list-style: none;

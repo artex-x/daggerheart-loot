@@ -556,6 +556,9 @@ the mode row and the dice; a menu item and a row are 44px. A control with a box 
 box; a text link grows its padded box and keeps its line. From 601px the small button is
 32px. At every width a target is at least 24x24px or keeps the WCAG 2.5.8 spacing; a link
 inside a sentence is the one exception, and a craft or relation line's link counts as one.
+From 601px a text control (a bare button, a footer link, the license summary) takes a
+24px padded box and gives the growth back, so no line moves; the fold «и ещё N» of a
+relation line is a button, not a link, and takes it too.
 Owner, 2026-11-05; sources: Android adaptive app quality, Tier 2 (Touch_Targets), and
 Apple's Human Interface Guidelines, Accessibility. `tests/app/sweep.js` and
 `tests/app/states.js` case 109 hit-test it.
@@ -984,7 +987,8 @@ https://developer.apple.com/design/human-interface-guidelines/accessibility.
 address or more than 80 characters, in either language. Every toast holds while a pointer,
 a finger or the focus is on it, and runs on with the time it had left. A notice said while
 an error or an action toast shows waits for it; the new-request toast waits behind every
-other one. The toast floats above the selection bar. Owner, 2026-11-05; sources: Flutter's
+other one. A retry press closes the error it answers, so its result never waits behind
+the old failure (the Clarity Rule). The toast floats above the selection bar. Owner, 2026-11-05; sources: Flutter's
 `SnackBar.duration` (https://api.flutter.dev/flutter/material/SnackBar/duration.html) and
 Apple's Human Interface Guidelines, Accessibility. `tests/app/states.js` case 108 measures
 it.
