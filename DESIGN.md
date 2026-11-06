@@ -4,6 +4,10 @@ description: A dark bilingual catalog of 1459 Daggerheart records, with one gold
 colors:
   seal-gold: "#d8ab5e"
   seal-gold-soft: "#f0d091"
+  seal-gold-top: "#e2b76c"
+  seal-gold-edge: "#e8c27c"
+  seal-gold-pressed: "#c99b52"
+  seal-gold-pressed-deep: "#b8873f"
   ink-on-gold: "#1a1206"
   vault-ink: "#0e0c15"
   vault-ink-deep: "#14111d"
@@ -12,6 +16,7 @@ colors:
   seam: "#312a45"
   seam-lit: "#3f3758"
   chalk: "#ece8f6"
+  chalk-soft: "#cfc8e0"
   ash-violet: "#9b93b3"
   ash-violet-low: "#8a83a3"
   relic-blue: "#7a8ee0"
@@ -24,6 +29,15 @@ colors:
   alarm-red: "#e0685f"
   alarm-red-text: "#f0a49d"
   tag-ground: "rgb(10 8 16 / 50%)"
+  crop-grid: "rgb(255 255 255 / 22%)"
+  paper: "#ffffff"
+  paper-ink: "#000000"
+  print-gold-light: "#fcec9c"
+  print-gold: "#edc659"
+  print-die-rim: "#d09101"
+  print-die-light: "#fefbd5"
+  print-die: "#f7ef83"
+  print-strip-line: "#75788a"
 typography:
   headline:
     fontFamily: "'Source Sans 3 Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
@@ -81,6 +95,7 @@ rounded:
   sm: "9px"
   md: "14px"
   pill: "999px"
+  print-strip: "2.4cqw"
 spacing:
   xs: "6px"
   sm: "8px"
@@ -104,7 +119,7 @@ components:
     padding: "0 18px"
     height: "46px"
   button-primary-active:
-    backgroundColor: "#b8873f"
+    backgroundColor: "{colors.seal-gold-pressed-deep}"
     textColor: "{colors.ink-on-gold}"
   button-sm:
     backgroundColor: "{colors.vault-wall}"
@@ -230,10 +245,7 @@ the two disagree, the code is right and this file is stale.
 - One self-hosted UI face, Source Sans 3, with tabular figures.
 - A locked type scale of ten steps, enforced by a test.
 - Monospace only for a value a person types or counts: a number field, a rung,
-  a quantity, a price, damage dice. Some monospace labels remain (the batch
-  bar's select-all, the "or" divider, alternate-table column heads, the
-  help button, the record steps label); their surfaces
-  still owe the change.
+  a quantity, a price, damage dice. Every label is set in the UI face.
 - Two worlds in one product: the dark screen, and the white printed card.
 
 ## Colors
@@ -290,6 +302,8 @@ ordinary item.
 - **Seam** (`#312a45`) and **Seam Lit** (`#3f3758`): the hairline borders. Seam
   outlines a plate; Seam Lit outlines a control.
 - **Chalk** (`#ece8f6`): primary text.
+- **Chalk Soft** (`#cfc8e0`, `--txt-soft`): prose a step under Chalk - a record's
+  description, a help panel, the markup preview.
 - **Ash Violet** (`#9b93b3`): secondary text and the resting state of every
   control label.
 - **Ash Violet Low** (`#8a83a3`): captions, placeholders and empty states. It
@@ -306,7 +320,8 @@ current place. A pressed default (such as «Все» or a chip row with every ch
 mode toggle and a selection are neutral: a check and a lit `--muted2` border, no gold, on a
 catalog row, a list row and a card of `/lists` alike. A notice that waits, the list
 card's «Новое в списке (N)», is a neutral chip: nobody chose it. A die button
-is an action and plain: no gold, no check, no lit border. A die's mark in a label is
+is an action and plain: no gold, no check, no lit border. The «ИЛИ» / "OR" divider
+between two roll results is a label, not a choice: Ash Violet on a Seam Lit outline. A die's mark in a label is
 not a button: it takes its die's color (Tertiary). The unique tag is
 neutral, the roll number is Chalk on a seam border, and footer links
 are Ash Violet and underlined. The site share cards spend gold on the star
@@ -608,9 +623,10 @@ elevation step is a change to the system, not a component decision.
 ## Shapes
 
 Rectangles with gently rounded corners, at five radii and no more: 14px for a
-plate (panel, card, modal), 9px for a full-size control (button, search box,
-number field, focus ring), 8px for a compact control (small button,
-icon button), 6px for a tag, and 999px for anything that is one choice in a row
+plate (panel, card, modal, menu, a table or list row, a tile), 9px for a full-size
+control (button, search box, number field, focus ring, the skip link), 8px for a
+compact control (small button, icon button, a 30px field, a 40px thumbnail), 6px
+for a tag and the picture crop frame, and 999px for anything that is one choice in a row
 (a chip, a segment, the toast).
 
 Borders are one pixel and a seam color, except where a border states something:
@@ -623,8 +639,8 @@ Seal Rule: nobody chose a value there, the reader picked a row).
 
 Artwork is square, except the record page and the dialog up to 760px and the roll
 card face from 601px, which crop it to 4:3. A record image is `aspect-ratio: 1` with `object-fit: cover`:
-132px beside a compact card, full width and up to 420px on a plate card, 60px in
-a table row, always over the art well (`--art-well`, `#0a0810`) so a
+96px beside the text on a roll result's row face, full width and up to 420px on a
+plate card, 60px in a table row, always over the art well (`--art-well`, `#0a0810`) so a
 transparent PNG keeps a ground.
 
 ### Named Rules
@@ -728,15 +744,14 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
 - **Background:** the plate gradient, a Seam border, the Plate shadow.
 - **Padding:** 13px 15px 14px, with 8px between rows of content.
 - **Layout:** `full` stacks the image above the body, or, as a dossier, sets it
-  beside the text (The Dossier Rule); `compact` puts a 132px square image beside it, and
-  no page draws it since the list page's roll result took `face`; `face` is a roll
+  beside the text (The Dossier Rule); `face` is a roll
   result: the picture 4:3 with a fade, the body drawn over its foot, and the row face,
   96px beside the text, wherever the roll does not sit on one line (The Roll Page
   Rule). Its action row sits under the plate, because a popover cannot leave a
   clipped plate.
 - **Relation lines:** «Получается из», «Улучшается до», the set line and its bonus,
   and the tier ladder draw on the full record card only (`full`: the record page,
-  `/h/`, the dialog, the editor preview); `face`, `compact`, rows and tiles draw
+  `/h/`, the dialog, the editor preview); `face`, rows and tiles draw
   none. A homebrew name draws the plain bordered badge «Хоумбрю» after it on the same
   line; a catalog name draws none.
 - **Grid tile:** two columns up to 600px; the art, the name and a second line
@@ -803,7 +818,11 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
   The menu under the button lists the seven supplements, 44px items, the open
   one with a check; no sheet and no grab handle.
 - **Header:** sticky, translucent, blurred, with a one-pixel seam under it; 63px
-  from 761px, 111px at 360px.
+  from 761px, 111px at 360px. The DOM order is the brand, the language switch, the
+  account control, then the jobs, the reading order of the two rows up to 760px; from
+  761px the one row draws the jobs after the brand, so the Tab order there differs
+  from the visual order (WCAG 2.4.3). Kept: one DOM serves both layouts, and no
+  order was found that keeps both looks (2026-11-06).
 - **Brand:** the vault die - a d12 decagon in Seal Gold with a Seal Gold Soft
   face and a keyhole cut through it, with a 35 per cent gold drop shadow -
   beside a two-line wordmark: «Лут» in Russian, «Loot» in English, over
@@ -971,6 +990,11 @@ tells the two apart. Each threshold arrow grows from its box's right notch:
 a dark arrow in a gold rim that continues the frame in color, a solid black
 arrow in black and white.
 
+The card prints in its own paints, named in the frontmatter: paper white and ink black,
+Figma's tier-tag gold (`#fcec9c` to `#edc659`), the die (a `#d09101` rim over
+`#fefbd5` to `#f7ef83`), the threshold strip's `#75788a` line and its 2.4cqw corners.
+None of them is a screen color.
+
 Color and black-and-white are two distinct layouts, not one layout with the
 color removed. The vectors the two layouts share in shape (the tier banner, the
 threshold box, the ribbons, the dice) are drawn inline from the exported files'
@@ -1064,7 +1088,8 @@ it.
 
 ## Proposed rules
 
-These candidates come from official design guidance (owner, 2026-11-05). None is a rule yet: each needs the
+These candidates come from official design guidance (owner, 2026-11-05); re-checked against the
+shipped rules on 2026-11-06, when the owner had said yes to none of them. None is a rule yet: each needs the
 owner's yes, its code and its check in the batch that builds it. A reviewer may cite one as a finding with its
 source.
 
@@ -1078,3 +1103,20 @@ source.
 | A step of ten | https://developer.apple.com/design/human-interface-guidelines/steppers | Not proposed: a Shift-press step of ten is a shortcut with no label (The Clarity Rule). | - | - |
 | A 24px gutter | https://primer.style/product/getting-started/foundations/layout/ | Not proposed: from 1280px a 24px gutter would move every number of the 1440px column for 8px a side. | - | - |
 | The Stat Columns Rule | https://m2.material.io/components/data-tables (numerical data is right-aligned; the page was not re-fetched when this row was written) | From 1440px a weapon or armor row on `/tables/eq_*` draws trait, range, damage and burden in tabular columns right of its text, right-aligned with tabular figures and labeled in both languages, in place of the stat sentence; the description keeps the free width left of them. Rows stay one column. Below 1440px, on `/search`, on the list page and on `/s/` the stat sentence stays. The values come from the source book data (`CLAUDE.md`, "Product laws"). Owner, 2026-11-05: "plan stat columns later". | a states case at 1440 and 1920px on `#/tables/eq_weapon` and `eq_armor`: the column edges equal within 1px in every row, the labels exist in RU and EN, and case 106's clamp share does not rise | a task after wave 3, with its own mock (recommended; not batch 10, a docs-only lock) |
+
+## Notes
+
+Kept exceptions, each with its reason (checked 2026-11-06):
+
+- **Detector:** `impeccable detect --json --no-inline-ignores app/src` reports nothing; the
+  config holds no ignore and no source holds an `impeccable-disable` comment. Every literal it
+  would flag is a frontmatter entry: the primary button's gold steps, Chalk Soft, the crop
+  grid, and the print card's paints and corner.
+- **`404.html`:** the host's script-free not-found page keeps the system face and draws no die
+  mark. A self-hosted face there needs its own `@font-face` path outside the build's hashed
+  assets; the page holds a heading, a cause and two links in each language.
+- **Header order:** from 761px the Tab order differs from the visual order (Navigation,
+  "Header").
+- **Capitals:** every `text-transform: uppercase` outside the print card and the badge is a
+  field caption, a column or section label, the ladder and relation labels or the brand line,
+  inside The Capitals Rule; no control is set in capitals.

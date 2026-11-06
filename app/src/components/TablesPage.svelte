@@ -1215,7 +1215,7 @@
   /* off `.altcol` */
   .altcol {
     margin: 16px 0 8px;
-    font: 650 var(--t-label)/1 var(--mono);
+    font: 650 var(--t-label)/1 var(--ui);
     letter-spacing: 0.09em;
     text-transform: uppercase;
   }

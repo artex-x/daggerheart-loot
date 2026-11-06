@@ -26,7 +26,8 @@
 
   interface PickerRoll {
     section: 'voa' | 'community' | 'mwt';
-    sub: keyof Dict;
+    /** The lead under the head; none where the picker and the roll button say it. */
+    sub?: keyof Dict;
     label: keyof Dict;
     parts: (t: Dict, lang: Lang, index: Index | null) => Part[];
     rows: (index: Index, id: string) => readonly Record_[];
@@ -49,7 +50,6 @@
     },
     'roll/mwt': {
       section: 'mwt',
-      sub: 'subMwt',
       label: 'realmLabel',
       parts: (_t, lang) => realmParts(lang),
       rows: realmGroup
@@ -138,7 +138,7 @@
           <PickerRollPanel
             {app}
             section={pr.section}
-            sub={app.t[pr.sub]}
+            sub={pr.sub ? app.t[pr.sub] : ''}
             label={app.t[pr.label]}
             parts={pr.parts(app.t, app.lang, app.index)}
             rowsOf={(id: string) => (app.index ? pr.rows(app.index, id) : [])}

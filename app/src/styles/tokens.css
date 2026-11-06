@@ -20,6 +20,8 @@
   --line2: #3f3758;
 
   --txt: #ece8f6;
+  /* Prose a step under Chalk: a description, a help panel, a note well. */
+  --txt-soft: #cfc8e0;
   --muted: #9b93b3;
   /* 4.93:1 on a panel, 5.41:1 on the page background. The #736b8c this
      replaced was 3.89:1, and it carried every section label, placeholder and

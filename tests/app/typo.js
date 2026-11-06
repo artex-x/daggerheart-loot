@@ -56,6 +56,12 @@ const SWITCHES = [
     group: { ru: 'Ранг', en: 'Tier' },
     sheet: { ru: 'Фильтры', en: 'Filters' }
   },
+  /* The search page's kind row from 761 px, its sheet up to 760 px: «Все» pressed. */
+  {
+    route: '#/search',
+    group: { ru: 'Тип', en: 'Type' },
+    sheet: { ru: 'Фильтры', en: 'Filters' }
+  },
   /* A gold pick from the address: «2» pressed, «Все» not. */
   {
     route: '#/tables/eq_weapon/f_tier-2',

@@ -1078,7 +1078,8 @@ address kept, and no add-to-list control is drawn.
   `docs/decisions/2026-11-05-list-rows-fold-on-a-phone-and-the-list-filter-stays-in-memory.md`):
   up to 760 px both list pages draw each entry as a compact row of about 77 px:
   the 44 px picture with the entry's true list number on a plate, the name on up
-  to two lines, the meta line and one line cut with an ellipsis. The meta line
+  to two lines (the number is bare, «1», where `/search` writes «№ 89»: a «№ » would
+  take three characters of the name column at 360 px; kept 2026-11-06), the meta line and one line cut with an ellipsis. The meta line
   holds the first kind badge, then the price (it wraps and is never cut), else
   another book's tag (one line with an ellipsis; never «Core»), then the note
   mark while the entry has a note (a players' link marks only a players' note)
@@ -2896,9 +2897,9 @@ right, so the tab order and the reading order agree
   nothing for the money chips and `aria-current="true"` for the menu chips.
 - Help panels behind «Справка» / "Help" per section, or the panel's own name,
   folded by default, fold state remembered for the session only. From 761 px the
-  button beside the H1 shows its label after a `?`; up to 760 px it is a round `?`
-  button with the same name until its page's batch moves it. On the roll pages
-  and the catalog it is an item of «Ещё» up to 760 px, and there the `h1` is read,
+  button beside the H1 shows its label after a `?`; up to 760 px the page head draws
+  no help button: the help is an item of «Ещё». On the roll pages and the catalog
+  the `h1` is read there,
   not drawn; `/lists` has no help; `/homebrew` has no help, and its `h1` is read,
   not drawn, once its items are read. The editor's heading is the breadcrumb row.
   An open panel is as wide as its text (DESIGN.md, "The Measure Rule").

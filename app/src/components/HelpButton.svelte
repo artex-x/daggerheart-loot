@@ -27,7 +27,7 @@
     border: 1px solid var(--line2);
     background: var(--surface);
     color: var(--muted);
-    font: 700 var(--t-control)/1 var(--mono);
+    font: 700 var(--t-control)/1 var(--ui);
     transition: 0.15s;
     position: relative;
     cursor: pointer;
@@ -85,7 +85,7 @@
     }
 
     .q {
-      font: 700 var(--t-control) / 1 var(--mono);
+      font: 700 var(--t-control) / 1 var(--ui);
     }
 
     .txt {

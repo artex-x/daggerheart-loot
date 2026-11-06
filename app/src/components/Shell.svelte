@@ -412,7 +412,7 @@
     color: var(--ink-on-gold);
     font-weight: 700;
     padding: 10px 16px;
-    border-radius: 0 0 10px 0;
+    border-radius: 0 0 var(--r-sm) 0;
   }
 
   /* off `.topbar` in style.css. Sticky and translucent: the tabs stay reachable

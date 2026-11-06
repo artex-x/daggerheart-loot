@@ -245,12 +245,13 @@ describe('Many Worlds Tavern', () => {
     expect(screen.getByRole('link', { name: 'Первый шершневый' })).toBeInTheDocument();
   });
 
-  it('names the realms in the language on screen', async () => {
+  it('names the realms in the language on screen, with no lead', async () => {
     render(App, { env: at('#/roll/mwt') });
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
     expect(screen.getByRole('option', { name: "Warrin' Warrens" })).toBeInTheDocument();
     expect(within(screen.getByRole('main')).getByText('Realm')).toBeInTheDocument();
-    expect(screen.getByText('Pick a realm and roll within it.')).toBeInTheDocument();
+    /* The realm picker and the roll button say it: the page draws no lead. */
+    expect(document.querySelector('main .page-sub')).toBeNull();
   });
 
   it('says the data is missing when the catalog has no realm rows', () => {

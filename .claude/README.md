@@ -1420,6 +1420,10 @@ adversary:
   a bare `git branch <name>` or `git tag <name>`, which creates a ref:
   to tell it from a list form (`git tag -l <pattern>`, `git branch
   --contains <sha>`) the rule would need each subcommand's option grammar.
+- A reviewer may run read-only probes through stdin or `node -e` against the
+  built app (`dist-test/`): a script that opens a page, measures and prints,
+  and writes no file (owner, 2026-11-04; `.claude/prompts/review.prompt.md`).
+  No hook judges the difference: the habit guards above stay as they are.
 - The orphan-task-directory rule (row 40) is invisible to a deletion through
   `git clean`, through `node -e "fs.rmSync(...)"`, through an unexpanded glob
   (`rm issues/<id>/*` reaches the hook as the literal token), or from the
@@ -1825,6 +1829,18 @@ Facts settled during implementation (`persist-usage-monitoring`,
   string, so the column holds a jsonb string, not an object; two
   `tests/db/usage.test.mjs` cases failed on it. Pass `${sql.json(x)}` (or `tx.json(x)`), as
   every `tests/db/` file and `tools/supabase/usage.mjs` do.
+
+## Kept tooling exceptions
+
+Four repository lines skip a tool on purpose. Each is kept with its reason (task 57,
+2026-11-06); the design detector keeps none (DESIGN.md, "Notes").
+
+| Line | Where | Reason |
+|---|---|---|
+| `.impeccable/hook.cache.json`, `.impeccable/hook.pending.json` | `.gitignore` | The Impeccable hook writes them during a session. Prettier reads `.gitignore` but not `.git/info/exclude`, so without these tracked lines `format:check` fails in every session where the hook ran (owner, task 57 plan review) |
+| `.impeccable/config.local.json` | `.gitignore` | A local config with no tracked ignore is how a credential gets committed (owner, task 57 plan review) |
+| `['.impeccable/', false]` in the `VITEST` rule | `tools/check/lib.mjs` | Vitest reads no `.impeccable/` file, as for `DESIGN.md`; the rule suppresses no check, it keeps the gate from selecting tests for a change there |
+| `issues/*/mocks/**` in `ignores` | `eslint.config.mjs` | A task's mock pages are scratch that its closeout deletes (owner, 2026-10-23) |
 
 ## Decisions registry
 

@@ -24,7 +24,7 @@ RootWebArea "Обычные правила - Генератор лута Daggerh
       button "Дополнения" [expanded=false haspopup=menu]
     button "Открывается при запуске" [pressed=true]
     button "Где какая редкость" [expanded=true]
-    StaticText "Бросок по таблицам корника и дополнения Hope & Fear."
+    StaticText "Бросок по таблицам Core и дополнения Hope & Fear."
     StaticText "Обычная"
     ... StaticText x22 of 26 same-shape siblings elided
     button "1d12 Обычная" [description=Бросить 1d12 - Обычная]

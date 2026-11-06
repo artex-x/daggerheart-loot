@@ -82,7 +82,7 @@
 
   .helpbox p {
     margin: 0 0 11px;
-    color: #cfc8e0;
+    color: var(--txt-soft);
     font-size: var(--t-small);
     line-height: 1.6;
     max-width: var(--measure-text);

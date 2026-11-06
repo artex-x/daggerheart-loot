@@ -24,7 +24,6 @@ RootWebArea "Many Worlds Tavern - Генератор лута Daggerheart" [url=
       button "Many Worlds Tavern" [expanded=false haspopup=menu]
     button "Открывать при запуске" [pressed=false]
     button "Об этой книге" [expanded=false]
-    StaticText "Выберите мир и бросьте кость по нему."
     combobox "Мир" [value=Лес Пари expanded=false haspopup=menu]
       option "Спорополис" [selected=false]
       option "Лес Пари" [selected=true]
@@ -41,7 +40,8 @@ RootWebArea "Many Worlds Tavern - Генератор лута Daggerheart" [url=
     status ""
       StaticText "Верная Мотыга"
     button "Открыть карточку"
-    ... StaticText x10 of 14 same-shape siblings elided
+    StaticText "1"
+    ... StaticText x9 of 13 same-shape siblings elided
     link "Верная Мотыга" [description=Открыть страницу url=/i/mw21]
     StaticText "Мудрое:"
     StaticText " Вы получаете бонус к Мастерству, равный числу карт домена Мудро..." [namelen=135 namehash=7e6234e8]
@@ -106,7 +106,6 @@ RootWebArea "Many Worlds Tavern - Daggerheart Loot Generator" [url=/en/roll/many
       button "Many Worlds Tavern" [expanded=false haspopup=menu]
     button "Open on start" [pressed=false]
     button "About this book" [expanded=false]
-    StaticText "Pick a realm and roll within it."
     combobox "Realm" [value=Wagerwood expanded=false haspopup=menu]
       option "Sporopolis" [selected=false]
       option "Wagerwood" [selected=true]
@@ -123,7 +122,8 @@ RootWebArea "Many Worlds Tavern - Daggerheart Loot Generator" [url=/en/roll/many
     status ""
       StaticText "Trusty Cultivator"
     button "Open card"
-    ... StaticText x10 of 14 same-shape siblings elided
+    StaticText "1"
+    ... StaticText x9 of 13 same-shape siblings elided
     link "Trusty Cultivator" [description=Open page url=/i/en/mw21]
     StaticText "Sagelike:"
     StaticText " Gain proficiency equal to the number of Sage cards in your load..." [namelen=112 namehash=a3910f12]

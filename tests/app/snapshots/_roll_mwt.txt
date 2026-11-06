@@ -24,7 +24,6 @@ RootWebArea "Many Worlds Tavern - Генератор лута Daggerheart" [url=
       button "Many Worlds Tavern" [expanded=false haspopup=menu]
     button "Открывать при запуске" [pressed=false]
     button "Об этой книге" [expanded=false]
-    StaticText "Выберите мир и бросьте кость по нему."
     combobox "Мир" [value=Спорополис expanded=false haspopup=menu]
       option "Спорополис" [selected=true]
       option "Лес Пари" [selected=false]
@@ -41,7 +40,8 @@ RootWebArea "Many Worlds Tavern - Генератор лута Daggerheart" [url=
     status ""
       StaticText "Порхающие Бесы"
     button "Открыть карточку"
-    ... StaticText x11 of 15 same-shape siblings elided
+    StaticText "1"
+    ... StaticText x10 of 14 same-shape siblings elided
     link "Порхающие Бесы" [description=Открыть страницу url=/i/mw1]
     StaticText "Уязвимой"
     StaticText " вместо нанесения урона."
@@ -106,7 +106,6 @@ RootWebArea "Many Worlds Tavern - Daggerheart Loot Generator" [url=/en/roll/many
       button "Many Worlds Tavern" [expanded=false haspopup=menu]
     button "Open on start" [pressed=false]
     button "About this book" [expanded=false]
-    StaticText "Pick a realm and roll within it."
     combobox "Realm" [value=Sporopolis expanded=false haspopup=menu]
       option "Sporopolis" [selected=true]
       option "Wagerwood" [selected=false]
@@ -123,7 +122,8 @@ RootWebArea "Many Worlds Tavern - Daggerheart Loot Generator" [url=/en/roll/many
     status ""
       StaticText "Flutterfiends"
     button "Open card"
-    ... StaticText x11 of 15 same-shape siblings elided
+    StaticText "1"
+    ... StaticText x10 of 14 same-shape siblings elided
     link "Flutterfiends" [description=Open page url=/i/en/mw1]
     StaticText "Vulnerable"
     StaticText " instead of dealing damage."

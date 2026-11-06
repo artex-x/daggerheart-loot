@@ -22,7 +22,7 @@ RootWebArea "Обычные правила - Генератор лута Daggerh
     button "Дополнения" [expanded=false haspopup=menu]
   main ""
     heading "Бросок" [level=1]
-    StaticText "Бросок по таблицам корника и дополнения Hope & Fear."
+    StaticText "Бросок по таблицам Core и дополнения Hope & Fear."
     StaticText "БРОСИТЬ"
     button "1d12 Обычная" [description=Бросить 1d12 - Обычная]
     button "2d12 Обычная - Необычная" [description=Бросить 2d12 - Обычная - Необычная]

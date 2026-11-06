@@ -1084,7 +1084,7 @@ before deletion, `23c00a6^`: `git show 23c00a6^:app.js` (or `:style.css`,
 | `states` | journey | superseded by `tests/parity/specs.js`'s `STATES`, then by `tests/app/states.js`; that inventory itself now lives in `tests/app/inventory.js` | states reachable only by clicking |
 | `audit2` | sweep | ported as is | every address, at four widths, in both languages |
 | `craftmob` | layout | **audited (R0b.1), ported in five places - all landed.** Already ported (pre-dates R0b.1): the page-level sideways-scroll class at 360/390/768/1180 (`tests/app/sweep.js:255`). Landed (R0b.2): the four craft-heavy worst-case records `#/i/w65`, `#/i/w3`, `#/i/ci19`, `#/i/w2` (`tests/app/sweep.js:54-57`) plus `.craft, .rcraft, .dicebar, .numrow` in the clipped-text selector list with the spill/squeeze-under-60px/`.craft a` tap-height reads (`tests/app/sweep.js:282-303`); the selection-bar overflow at a narrow width (`tests/app/states.js:511`, case 16 `selectionBarGeometry`); the standalone share stub `i/w3.html` at 320/390 (`tests/stub.js`); a selected tile's own fill (`tests/app/hues.js:159`). Thin spots recorded below: the `@media (hover:hover)` guard, and the 320px width | narrow screens, touch highlight, selection bar overflow |
-| `typo` | layout | ported as is; `tests/app/typo.js` is in fact stricter than this - its `EXPECTED` set turns "control not found" into a failure the live suite used to swallow | two fonts and one size scale, every page, both languages; the check on every pressed switch and chip (gold and neutral) on one center with its label at 360 and 1180; no cut heading, button, label, menu item, alert, status or toast at 1180 (The Whole Message Rule, its allow-list by selector) |
+| `typo` | layout | ported as is; `tests/app/typo.js` is in fact stricter than this - its `EXPECTED` set turns "control not found" into a failure the live suite used to swallow | two fonts and one size scale, every page, both languages; the check on every pressed switch and chip (gold and neutral, `/search`'s kind row included) on one center with its label at 360 and 1180; no cut heading, button, label, menu item, alert, status or toast at 1180 (The Whole Message Rule, its allow-list by selector) |
 | `hues` | layout | rewritten (reads rendered badges, not injected spans) | badges that can share a list are told apart by hue |
 
 ### `tests/app/*` - the same real Chrome, against `dist-test/` (B12)
@@ -2031,6 +2031,12 @@ Not blocking, recorded so they are not mistaken for coverage:
   Not asserted: the catalog head at 761-999 px x 720 (tops 291-382 against 288), 1366x650 (roll
   267, `/search` 279 against 260; logged by case 101), and widths under 320 px (280 overflows;
   320 is the floor, DESIGN.md "Layout").
+
+- **`tests/app/typo.js` switches and the cut check.** `SWITCHES` holds no list page's note
+  or price switch: each needs an account list with entries, which the loop's open-a-route
+  entry cannot make. The Whole Message step reads its pages at 1180 px only: a 360 px pass
+  doubles the page loop and its grips differ there (the help is an item of «Ещё»). Up to
+  760 px the roll picker's cut is the one known cut (`DEBT.md`, D128).
 
 - `ports/media.ts` (decode, canvas render, the WebP probe) is excluded from
   the unit coverage table, as `ports/image.ts` is: jsdom has no

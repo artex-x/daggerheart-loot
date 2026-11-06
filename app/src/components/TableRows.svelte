@@ -324,7 +324,7 @@
     width: 100%;
     background: var(--surface);
     border: 1px solid var(--line);
-    border-radius: 11px;
+    border-radius: var(--r);
     transition: 0.15s;
     overflow: hidden;
   }
@@ -404,7 +404,7 @@
     width: 100%;
     background: var(--surface);
     border: 1px solid var(--line);
-    border-radius: 11px;
+    border-radius: var(--r);
     overflow: hidden;
     text-align: left;
     padding: 0;

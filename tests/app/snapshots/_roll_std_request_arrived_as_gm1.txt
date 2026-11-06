@@ -25,7 +25,7 @@ RootWebArea "(2) Обычные правила - Генератор лута Dag
       button "Дополнения" [expanded=false haspopup=menu]
     button "Открывается при запуске" [pressed=true]
     button "Где какая редкость" [expanded=false]
-    StaticText "Бросок по таблицам корника и дополнения Hope & Fear."
+    StaticText "Бросок по таблицам Core и дополнения Hope & Fear."
     StaticText "БРОСИТЬ"
     button "1d12 Обычная" [description=Бросить 1d12 - Обычная]
     button "2d12 Обычная - Необычная" [description=Бросить 2d12 - Обычная - Необычная]

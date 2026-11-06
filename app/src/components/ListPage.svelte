@@ -1875,7 +1875,7 @@
     min-height: 52px;
     padding: 0 14px 0 13px;
     border: 1px solid var(--line2);
-    border-radius: 11px;
+    border-radius: var(--r);
     background: transparent;
     color: var(--gold-soft);
     font: inherit;
@@ -2245,7 +2245,7 @@
     width: 100%;
     background: var(--surface);
     border: 1px solid var(--line);
-    border-radius: 11px;
+    border-radius: var(--r);
     transition:
       border-color 0.15s,
       opacity 0.15s;
@@ -2498,7 +2498,7 @@
     width: 64px;
     height: 30px;
     padding: 0 8px;
-    border-radius: 7px;
+    border-radius: 8px;
     background: var(--bg2);
     border: 1px solid var(--line2);
     color: var(--txt);

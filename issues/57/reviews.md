@@ -1,4 +1,4 @@
-# Review register - TASK 57
+| CI-N4 | nit | local | fixed || CI-N3 | nit | local | fixed || CI-N2 | nit | local | fixed || CI-N1 | nit | local | fixed |# Review register - TASK 57
 
 | id | severity | kind | status | summary |
 |---|---|---|---|---|
@@ -154,7 +154,7 @@
 | CI-N3 | nit | local | open | handoff batch CI entry lacks a `Review:` line; "Durable items" line names 9b's items |
 | CI-N4 | nit | local | open | COVERAGE.md `app/states` row says "ninety-five states"; `CASES` has 97: drop the count |
 | CI-N5 | nit | local | optional | `states.js` reads `--shard` after `require('./lib.js')`: no `dist-test/` shows the build message first |
-| CI-N6 | nit | deferred-scope | named | `ci.yml` comment "~20 s" fixed cost; `bash-guard.mjs` cost text "~380s"; no long-check reminder for a bare `node tests/app/states.js` |
+| CI-N6 | nit | deferred-scope | named (owner list, batch 10) | `ci.yml` comment "~20 s" fixed cost; `bash-guard.mjs` cost text "~380s"; no long-check reminder for a bare `node tests/app/states.js` |
 | CI-R1 | risk | named | CI of the next run | slow layout cases are not split equally (piece 1/4 holds 7 of 25, incl. 107); measured on 22d9a00b: states rows 411-543 s, jobs 10-11 min: fine |
 | TD-B1 | blocker | local | fixed TD-fix | after a retry succeeds the success toast waits 7-10 s behind the old error toast; the retry press closes the shown error first (option A), tests back to the default timeout, one case asserts the success toast shows at once. `reviews/TD.md` |
 | TD-R1 | risk | deferred-scope | named | `TARGET_ALLOW` `.craft a` is a second exception to "every control" (the «Улучшается до» line the owner reported 2026-11-04); name it to the owner |

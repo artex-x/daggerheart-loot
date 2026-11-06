@@ -372,7 +372,7 @@
     position: absolute;
     inset: 6%;
     border: 2px solid var(--gold);
-    border-radius: 4px;
+    border-radius: 6px;
     box-shadow: 0 0 0 9999px rgb(7 6 11 / 62%);
     pointer-events: none;
   }

@@ -125,7 +125,7 @@ const ru = {
   pageDv: "The Dragon's Vault",
   pageCommunity: 'Предметы сообществ',
   pageStd: 'Обычные правила',
-  subStd: 'Бросок по таблицам корника и дополнения Hope & Fear.',
+  subStd: 'Бросок по таблицам Core и дополнения Hope & Fear.',
   /* The five dice buttons say which rarity band they cover */
   common: 'Обычная',
   uncommon: 'Необычная',
@@ -144,7 +144,6 @@ const ru = {
   subWondrous: 'Введите результат броска или получите случайную позицию.',
   subVoa: 'Выберите раздел книги и бросьте кость по нему.',
   subCommunity: 'Выберите происхождение и бросьте d10.',
-  subMwt: 'Выберите мир и бросьте кость по нему.',
 
   /* The alternate tables. Two dice with names instead of a sum, so each one
      is labeled and the card says which of them found it. */
@@ -1266,7 +1265,6 @@ const en: Dict = {
   subWondrous: 'Enter your roll result, or pick a random entry.',
   subVoa: 'Pick a section of the book and roll within it.',
   subCommunity: 'Pick an origin and roll d10.',
-  subMwt: 'Pick a realm and roll within it.',
 
   pageAlt: 'Alternate tables',
   subAlt: 'A Duality Dice roll over both books merged into one set of tables.',

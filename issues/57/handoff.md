@@ -2,53 +2,39 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress. Waves 1, 2 and 2b are on `main`. Wave 3 has built 9a, 8, 9b, the CI split and fix pass, TD
-  with its fix pass, N with its fix pass (`ef9b511c`, CI green and credited), batch P (`1ae45461`, CI run 42200991922:
-  one `app/typo` failure) and now P's one fix pass (`reviews/P.md`), committed and pushed on `claude/57` (sha in the
-  implementer's report; previous sha `e5d63c9c`, the P review's docs commit, pushed with it). CI of the new tip is the
+- Task status: in_progress. Waves 1, 2 and 2b are on `main`. Wave 3 has built 9a, 8, 9b, CI, TD, N, P (each with its one
+  fix pass) and now batch 10, the docs lock and the cleanup (previous sha `5147cd01`, the P fix pass, CI green and
+  credited). Batch 10 is committed and pushed on `claude/57` (sha in the implementer's report). CI of the new tip is the
   full gate: not yet run.
-- Review: `reviews/P.md`, fix-then-continue; its one remediation cycle is this fix pass (table under Completed).
-- Next batch: 10, after a green CI of the tip.
-- NEEDS_HUMAN_CONFIRMATION: no. For the owner: default 1 (the burden files are the export's paths with Figma's masks
-  written as clip paths, not the exact bytes), default 2 as the fix pass changed it (two RU compact color cards print
-  their rules text at 3.4cqw, 4.2 pt, under the 3.7cqw floor; shot `mocks/P/built/shortfall-voa4__compact-ru.png`) and
-  default 4 (the background-graphics hint is gone).
-- Defaults taken in the P fix pass (owner AFK):
-  1. P-B1: the rectangle test found the tier band over a tag of `voa4_t4i` (21.0 x 6.5 px) and its burden label over
-     a tag (2.9 x 4.8 px) at the 17.4cqw take-back; `voa4_a3` had none at 16.4cqw. Taken: the reviewer's recommended
-     option, a named rules-text shortfall: text cut at its floor under a mark shrinks on to 2.6cqw; both cards land
-     at 3.4cqw (4.2 pt) with the full clearance (23.4 and 22.4cqw), no intersection, no clip.
-  2. P-R1: the dock writes its own `--pdock-h` (not `--ebar-h`), so `tokens.css` and `Toast.svelte` drop only the
-     editor's bar under 481 px of height and keep the dock's; no page class.
-  3. P-N4: the helper `watchBarHeight` (`components/barHeight.ts`) also serves `SelectionBar`'s `--selbar-h` effect,
-     the same code (a third copy).
-  4. P-N6: case 115 runs on `set-longtext` in place of `set-emberaxe` and asserts that the held fit differs from the
-     warm one before the face arrives.
-- Defaults taken in P (owner AFK; the orchestrator logs them in the AFK decisions file):
-  1. The four `card/burden-*.svg` take the export's paths with each outside-stroke mask written as the same region in a
-     clip path (`issues/57/mocks/P/burden/unmask.cjs`), not P-D10's exact bytes: Chrome prints a masked `<img>` SVG as a
-     raster (4 to 10 images a file, `rasterprobe.cjs`), which broke FEATURES.md "A compact black-and-white sheet holds no
-     raster image" (two `print.js` checks). The clip form draws the same pixels (`pixcmp.cjs`: 0.000% at 12x, max
-     channel 4) and prints vector (0 images). The spec won over the brief.
-  2. P-D8's clearance (about 23cqw under a burden mark and its label) left voa4_t4i and voa4_a3 cut on the RU compact
-     color sheet at the 3.7cqw floor. At its floor the text now takes the mark's band back in 1.5cqw steps (18.9 and
-     16.4cqw on those two), so no catalog card clips (acceptance 19); `print.js`'s clearance check exempts a card at its
-     floor.
-  3. The fonts port's browser form waits on the font set's `ready` for both answers (P-D3: "false at once" when none
-     loads): `TablesPage`'s anchor scroll needs the document-loaded wait it had.
-  4. The hint goes (S11.3): a nine-card color PDF with and without background graphics differs on 0% of its pixels
-     (`print-color-adjust: exact`); `printNote` is deleted in both languages.
-  5. The dock's «Ещё» is `up` without `flip` (the editor bar's form; `flip` is the record dialog's).
-  6. `.pc-strip` and `.pc-thstrip` take `flex-shrink: 0`: a full content box shrank the strip under its 20 pt band
-     (`print.js`: voa4_a3 compact 26.0 px for 26.7).
-  7. The configured bundle measured 327.3 kB: its limit rose to 328 (`tools/bundle-budget.mjs`, `.claude/README.md`);
-     unconfigured 269.8 of 270.
-  8. S2 (the before tops) was not measured again: TD's Verification logs `/p/` at 579 px RU (360x640); the after tops are
-     under Verification.
-- Last agent: implementer (batch P). No subagent runs. No worker has uncommitted code edits.
+- Review: required (trigger: review.prompt.md changed; also changed UI and a `--only` golden re-seed of the roll copy).
+- Next: the batch 10 review and its one fix cycle, then 10-20 (the orchestrator's: the wave 3 squash, the blind reviews,
+  the closeout commit, the last squash).
+- NEEDS_HUMAN_CONFIRMATION: no. The "For the owner" list is under Notes.
+- Defaults taken in batch 10 (owner AFK; the orchestrator logs them in the AFK decisions file):
+  1. 10-2: the screen radii outside the five-step scale were fixed, not documented (DESIGN.md "Don't add a sixth
+     radius"): 11px rows, tiles, the add row and the add-to-list menu take `--r` (14px, a plate, as `Menu`); 7px fields,
+     the list card thumbnails and the ladder steps take 8px; the skip link takes `--r-sm`; the crop frame 6px. A 1-3 px
+     corner change on those surfaces; no golden reads a radius.
+  2. 10-2: `#cfc8e0` (three components) became the token `--txt-soft` (Chalk Soft); the button's gold steps, the crop
+     grid and the print paints are frontmatter entries. Detector: 0 findings (61 before).
+  3. 10-11: «корника» becomes «Core» (the corpus convention, DESIGN.md "Don't translate a book name"; by the skill's rule
+     zero this is a corpus measure, not a site term) in the `/roll/std` lead, the two help passages and `README.ru.md`.
+     The `/roll/mwt` lead goes (`sub` optional in `PICKER_ROLL`); `/roll/voa`, `/roll/community` and `/roll/wondrous`
+     keep their instruction leads (not in the batch line; For the owner).
+  4. 10-11: the «ИЛИ» divider is neutral as a whole: `--line2` outline, `--muted` text, `--bg2` ground (the line named the
+     outline only; a gold word in a grey outline still spends gold on nothing chosen).
+  5. 10-16: the four monospace labels take `var(--ui)` (fixed, not named); the 15 uppercase components were read and each
+     is a caption or a label inside The Capitals Rule (named in DESIGN.md "Notes", no change).
+  6. 10-12: the cut is kept. Probe `scratchpad/pick2.cjs`: «Проклятые предметы» needs 31 px at 360 RU and 1 px at 390,
+     «Оплот Шершней» 3 px at 360 RU, EN none; the frame can give about 8 px, so the 31 px cut stays (DEBT.md D128).
+  7. 10-17: `/search`'s kind row joined `SWITCHES`; the 360 Whole Message step was not added (it doubles the page loop,
+     and the grips differ at 360): COVERAGE.md "Known thin spots".
+  8. 10-3: `.impeccable/design.json` is not regenerated: no documented script writes it; Impeccable `document` and
+     `audit` are the orchestrator's.
+- Last agent: implementer (batch 10). No subagent runs. No worker has uncommitted code edits.
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
-- Base / starting commit: `d8e30731`; previous sha of batch P: `b3d3994c`.
-- Pushed: `b3d3994c` and the batch P commit.
+- Base / starting commit: `d8e30731`; previous sha of batch 10: `5147cd01`.
+- Pushed: `5147cd01` and the batch 10 commit.
 
 ## Completed
 One line per shipped batch. The full acceptance tables, deviations and measurements of batches 1 to 9a are in
@@ -382,167 +368,96 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
   | P-N7 | Fixed with P-B1 (DESIGN.md "Signature component") |
   | P-N8, P-N9 | Deferred (below) |
 
+- Batch 10 - the docs lock and the cleanup (`plan.md` section 7, previous sha `5147cd01`). Acceptance (21):
+
+  | Line | Outcome |
+  |---|---|
+  | 10-1 Proposed rules | Done: re-checked against the shipped rules; the owner said yes to none, so none moved; the intro dated |
+  | 10-2 Detector at zero | Done: `impeccable detect --json --no-inline-ignores app/src` 0 findings (61 before); `config.json` holds no ignore; `git grep -n impeccable-disable -- app/src` empty. Documented: 14 colors and the `print-strip` radius in the frontmatter. Fixed: 11 radii, 3 colors (defaults 1, 2) |
+  | 10-3 Re-audit, `design.json` | Partly: the audit read the detector output and the shipped rules (nothing new to `DEBT.md` beyond 10-18); `design.json` not regenerated (default 8, the orchestrator's `document`) |
+  | 10-4 Kept exceptions | Done: DESIGN.md "Notes" (no detector ignore survives); `.claude/README.md` "Kept tooling exceptions" (E5, E6, E8, E9) |
+  | 10-5 Spelling | Done: `node tests/derived.js` "American spelling" passes; the batch 2 word list over `app/src`, DESIGN.md, `docs/specs`, `.claude` finds identifiers (`aria-labelledby`, the `colour` paint key, `foot-licence`), decision file names, record ids and test names only |
+  | 10-6 `FIRST_SCREEN` | Done: 25 rows, every one `shipped: true`; no logged row |
+  | 10-7 Reviewer probes | Done: `review.prompt.md` (probes; the second plan look `plan-<batch>-<n>.md`) and `.claude/README.md` beside the habit guards; no hook change |
+  | 10-8 P5 | Not built (default): DEBT.md D130 |
+  | 10-9 H2 copy, `EQ_DT` | Kept and named (For the owner): five rules (`.tab`, `.tab:hover`, `.tab[aria-current]`, `.picker`, `.picker-t`) of `TableNav` are copied in `HomebrewTabs`; `EQ_DT` serves the catalog rows and print |
+  | 10-10 Dead code | Done: `git grep` found no page drawing `compact` or `nameActions`; both, `.card.compact` and `.card-name-acts` removed; `record.test.ts` adapted (8 cases); `REVIEW_ART_SIZES` lost 132, the 96 row points at the face's row rule; `CARD_HEAD_SHA256` re-pinned (the renderer draws no name actions); `node --test tools/artwork/lib.test.mjs` 77 pass |
+  | 10-11 Copy rows | Done (defaults 3, 4): the mwt lead gone, «Core», the neutral divider; goldens re-seeded `--only` `#/roll/std` (13, one line each) and `#/roll/mwt` (7); `sections.test.ts` reads no lead; `i18n` parity in `check:fast` |
+  | 10-12 Case 89 | Kept (default 6); DESIGN.md "The Whole Message Rule" still names the cut; DEBT.md D128; case 89 passes |
+  | 10-13 `404.html` | Kept; DESIGN.md "Notes" |
+  | 10-14 `/s/` «1» | Kept; FEATURES.md "Lists", the compact row |
+  | 10-15 2-R3, 2-N6 | Done: DESIGN.md "Navigation", "Header" names the Tab-order trade-off; FEATURES.md "Chrome" lost "until its page's batch moves it" (DESIGN.md had no such text left) |
+  | 10-16 Monospace, capitals | Done (default 5) |
+  | 10-17 `typo.js` | Done in part (default 7); `node tests/run-all.js app/typo` passes |
+  | 10-18 Register | Done: DEBT.md D122-D131 in two sections of the follow-up task; the rest named under Notes, "For the owner" |
+  | 10-19 Re-audit defects | None new: every finding is in 10-18 |
+  | 10-20 Landing | Not this batch (the orchestrator's) |
+  | 10-21 Gate cost | See Verification; one CI run and one review cycle still to come |
+
 ## Verification
-- P fix pass, 2026-11-06 (previous sha `e5d63c9c`), each in the foreground or waited on, one heavy command at a time:
-  - `npm run build:test`; `node tests/run-all.js app/typo`: `ok app/typo` 213.7 s (CI's four failures gone).
-  - P-B1 probe `scratchpad/b1-probe.cjs` (RU compact color `voa4_t4i-voa4_a3-voa2_a3-voa2_a1`): before, `voa4_t4i`
-    17.4cqw lift, hits tier `svg` x tag 21.0 x 6.5 px and burden `small` x tag 2.9 x 4.8 px; `voa4_a3` 16.4cqw, no
-    hit. After: 23.4 / 22.4cqw, text 3.41cqw (5.59 px on a 164 px card, 4.2 pt), no hit, no spill.
-  - `node issues/57/mocks/P/tools/print-measure.cjs` (whole catalog, RU and EN, four layouts): clipped only
-    `hb_longtextaaaaaaaa` in all eight layouts; rules text under its floor only `voa4_t4i` and `voa4_a3`, RU color
-    compact, 3.4cqw. Shot `mocks/P/built/shortfall-voa4__compact-ru.png`.
-  - Vitest one file at a time, `VITEST_MAX_WORKERS=2`: `printPage` 85 pass, `selectionBar` 7, `homebrewEditor` 98,
-    `homebrewPrintPreview` 17. Red first in a detached worktree at `e5d63c9c` with the new tests copied in: "takes text
-    cut at its floor under a mark below the floor" FAIL (`5.8cqw` for `22.3cqw`), the five modified-click cases FAIL
-    (`false` for `true`); the worktree removed.
-  - `node tests/run-all.js app/print`: `ok app/print` 536.5 s.
-  - `node tests/app/states.js --shard=104/105` (case 114, 740x360 added): first run 26 FAIL, the Thumb Rule read at
-    740 px, where `--thumb` is 0 (a test error: the read is now up to 600 px only); second run `all 1 runs passed`,
-    22.9 s; 233.1 px at 390, 189.8 at 768. `--shard=105/105` (case 115 on `set-longtext`): passed, 5.4 s.
-  - Sweep probe (`scratchpad/mkprobe.cjs`, `PROBE_RE="печать|редактор"`, `targets` included): `clean` at 360, 390, 768
-    and 1180, RU and EN.
-  - Goldens: `MSYS_NO_PATHCONV=1 node tests/app/golden.js --update --only="#/p/"`: 38 states, structural snapshots
-    unchanged; 14 files moved, each line 3 only (`git diff --numstat`: 1 / 1 each).
-  - `node tools/decisions.js`: 316 decisions. `npm run lint:untyped`, `npm run lint:typed`: exit 0.
-  - `rtk npm run check:built`: pass; unconfigured bundle 269.7 kB within 270 (P-R2: no raise).
+- Batch 10, 2026-11-06 (previous sha `5147cd01`), each in the foreground or waited on, one heavy command at a time. The P
+  fix pass's block: `git show 5147cd01:issues/57/handoff.md`, "Verification".
+  - Detector `npx impeccable detect --json --no-inline-ignores app/src`: 61 findings before, `[]` after;
+    `git grep -n impeccable-disable -- app/src`: empty.
+  - `node --test tools/artwork/lib.test.mjs`: first run 1 FAIL ("pins the card head": the name actions left the head),
+    hash re-pinned after `review.mjs` was read (no name actions drawn); second run 77 pass.
+  - `node tests/derived.js`: everything matches ("American spelling", "Dashed means drop", "One measure").
+  - `npm run build:test`, then `MSYS_NO_PATHCONV=1 node tests/app/golden.js --update --only="#/roll/std"` (13 states,
+    one line each: the lead) and `--only="#/roll/mwt"` (7 states, the lead gone, the tool's elision line moved): 20 files,
+    re-seeded by the tool, none edited.
+  - `node tests/run-all.js app/typo`: `ok app/typo` 219.2 s (the new `/search` kind row entry included).
+  - `node tests/app/states.js --shard=79/105` (case 89): `all 1 runs passed`, 76.6 s. `--shard=73/105` (case 83): `all 1
+    runs passed`, 256.0 s; `/roll/std` 323 / 325 at 360 RU and EN, `/s/` 308 / 309.
+  - Probe `scratchpad/pick2.cjs` (case 89 audit, 360 and 390, RU and EN): the cuts under Status default 6.
+  - Sweep probe (`scratchpad/mkprobe.cjs`, `PROBE_RE="бросок d12|many worlds|карточка Кольцо|вторая сумка|альтернативные"`,
+    `targets` included): `clean` at 360 RU, 390 EN, 768 RU and 1180 EN.
+  - Vitest one file at a time, `VITEST_MAX_WORKERS=2`: `record` 113, `sections` 31, `rollResult` 16, `orGrid` 4, `std` 31,
+    `i18n` 73: all pass.
+  - `npm run lint:untyped`, `npm run lint:typed`: exit 0.
+  - `rtk npm run check:built`: pass; unconfigured bundle 269.5 kB within 270 (no raise).
   - `VITEST_MAX_WORKERS=2 rtk npm run check:fast`: run last, after this file; the commit gate takes only its pass.
-- Batch P, 2026-11-06 (previous sha `b3d3994c`), each in the foreground or waited on; vitest with `VITEST_MAX_WORKERS=2`,
-  one file at a time. Earlier batches' blocks: `git show b3d3994c:issues/57/handoff.md`, "Verification".
-  - S1: `node issues/57/mocks/P/burden/render.cjs`: `diffToRawPct` 0 and `natural` [62, 37] for all four; `sheet.png`
-    draws fingers in both layouts. Then default 1: `rasterprobe.cjs` 4 and 10 images for masked files, 0 for each clip
-    file and 0 for the old mittens; `pixcmp.cjs` 0.000% (max channel 4 and 3). `node tests/derived.js`: everything
-    matches.
-  - Vitest by file: `printPage` 79, `homebrewPrintPreview` 17, `crumb`, `ports`, `tables`, `accountPage`, `a11y`,
-    `homebrewEditor`, `state/app`: all pass. `npm run typecheck`: 0 errors, 0 warnings.
-  - `npm run build:test`, then `node tests/app/states.js --shard=n/105`: 104 (case 114) 22.7 s, 105 (case 115) 5.1 s,
-    73 (case 83) 281 s: each `all 1 runs passed`. Case 114 logs the first sheet at 233.1 px (390x844) and 189.8 px
-    (768x1024), RU = EN.
-  - First screen (case 83, `#/p/set-emberaxe as gm2`, RU = EN): 233 px at 360x640 (limit 256; 579 before), 190 px at
-    1180x720 (limit 288). The dock at 360: 67 px tall, `--ebar-h` equal (case 114 (b)).
-  - S11 (`issues/57/mocks/P/tools/print-measure.cjs` on `dist-test/`, 1463 cards a layout, RU / EN): color standard
-    median 7.1 pt, min 4.6, below the base 17 / 3, picture median 65 / 68%, gone 7 / 3 (4 / 1 with a mark, 23.2cqw);
-    color compact median 5.7, min 4.6, below the base 35 / 14, picture median 60 / 63%, gone 21 / 9 (13 / 3 with a
-    mark, 23.4cqw; voa4_t4i 18.9, voa4_a3 16.4 after default 2); black and white median 8.9 standard, 6.2 compact;
-    names on three lines 4 / 0; clipped: `hb_longtextaaaaaaaa` (`uuid(516)`) alone in all eight layouts; the smallest
-    text 4.5 pt labels, the EN compact «Damage» 3.94 pt. CDP reads Source Sans 3. S11.3 (`scratchpad/bgpdf.cjs`): 0
-    of 2,174,960 pixels differ at 150 dpi.
-  - `node tests/run-all.js app/print`: first run 6 FAIL (the footer gap at 768 after the new sub line, the strip at 26.0
-    px, the two raster checks), fixed by the test (the sub line, then the footer) and defaults 6 and 1; second run 2
-    FAIL (the gap 86 px against 80: the sub line's 18 px margin), fixed in `PrintPage` and measured by
-    `scratchpad/gapprobe.cjs` (68 px at 768); the third run is CI's.
-  - Sweep probe (`scratchpad/mkprobe.cjs`, `PROBE_RE="печать|редактор"`, the `targets` step included): `clean` at 360,
-    390, 768 and 1180, RU and EN.
-  - Goldens: `MSYS_NO_PATHCONV=1 node tests/app/golden.js --only="#/homebrew/hb_"`: 15 states, only the print preview
-    moved (its labels), so the editor's `Crumb` is byte-identical; then `--update --only=` "print preview" (2), "#/p/"
-    (38, the two phone states seeded) and "#/account" (6): 40 files, re-seeded by the tool, none edited. Read: the
-    crumb link before the `h1`, the new labels, the sub line after the cards, no «Daggerheart», no hint, the dock menu.
-  - Shots: `node issues/57/mocks/P/built/shoot.js`: 26 PNGs, none skipped.
-  - Detector `npx impeccable detect --json --no-inline-ignores app/src`: 61 findings (60 before); the new one is
-    `PrintCard`'s `li::marker` `#000`, an N3 print colour advisory for batch 10. No `impeccable-disable`.
-  - `npm run lint:untyped`, `npm run lint:typed`: exit 0. `rtk npm run check:built`: pass, 269.8 kB within 270. The
-    configured build (`.claude/README.md`'s line): 327.3 kB over 327, the limit rose to 328 (default 7), then pass.
-  - `node tools/decisions.js`: 316 decisions. `node tests/derived.js`: everything matches.
-  - `VITEST_MAX_WORKERS=2 rtk npm run check:fast`: run last, after this file; the commit gate takes only its pass.
+  - Gate cost (10-21): about 75 min of local gates so far; one CI run and one review cycle remain.
 
 ## Next batch (implement-ready)
-- First: CI of the P fix pass tip (P-R2's CI figure; the `app/print`, `app/typo` and case 114/115 rows).
-- Then: batch 10 (the docs lock and the cleanup; `plan.md` section 7). `states.js` ends at case 115 (105 cases;
-  `--shard=n/105` runs one: 104 is case 114, 105 is case 115).
-- `polish` and `harden` on `/p/` (360, 390, 768, 1180 px, RU and EN) and on the print renders are the orchestrator's
-  (acceptance 28).
+- First: CI of the batch 10 tip, then the batch 10 review (required: review.prompt.md changed) and its one fix cycle.
+- Then: 10-20, the orchestrator's (plan.md section 16): the wave 3 squash, the wave 3 and whole-app blind reviews, the
+  closeout commit that deletes `issues/57/` and moves `plan-debt.md` to the follow-up task, the last squash.
 
 ## Blockers
 - None.
 
 ## Deferred
-Placed into acceptance lines at the 2026-11-06 fold (`plan.md` section 7; the line is checked at its batch's close). A placed
-row whose facts the line carries is removed here; a row whose measured facts only this file holds stays below with its
-placement named:
+Batch 10 placed every row of the 2026-11-06 fold. The measured rows went to `docs/specs/DEBT.md` (the focus jump D122; the
+9a R2 probe, `LIST_A ~ more` and the `/p/` dock «Ещё» D123; the toast over «Ещё» D124; `/search` at 320x568 D125; the
+dialog art at 500-760 px D126; the stat columns D127; case 89 D128; TD-R1 and TD-R2 D129; P5 D130; the two RU compact
+print cards D131). The rows with no user-visible defect are under Notes, "For the owner". The earlier text of this
+section: `git show 5147cd01:issues/57/handoff.md`, "Deferred".
 
-| Deferred row | Placed in |
-|---|---|
-| 9a R2 probe; the focus jump (3b); `LIST_A ~ more` scroll 83; the `/p/` dock «Ещё» (`reviews/P.md` P-N8) | TD-P3 measured (done), then 10-18 (`DEBT.md`); rows stay below |
-| EN "Print" names two actions, `print` and `printNow` (`reviews/P.md` P-N9; RU keeps «Печать» / «Напечатать») | 10-11 (the copy rows), or the owner's RP-1 answer stands |
-| Toast over «Ещё» (batch 4) | T-14 measured (done), then 10-18; row stays below |
-| Case 89 default (the picker cuts a long chosen part up to 760 px) | TD-P2 done (245.9 px); 10-12 (the audit) |
-| `/tables/*` at 761 to about 800 px in RU (batch 7b probe) | done in N (acceptance 17: 333.6 px at 768x1024 on `eq_weapon` and `eq_armor`, RU and EN); row removed |
-| Batch N copy rows (`/roll/mwt` lead, «корника», the «ИЛИ» dividers' gold) | 10-11 |
-| `RecordCard` `compact` variant, `nameActions`, `REVIEW_ART_SIZES` rows | 10-10 |
-| `typo.js` `SWITCHES` and the 360 Whole Message step | 10-17 |
-| `/s/` bare «1» against «№ 89» | 10-14 |
-| `404.html` look | 10-13 |
-| H2 tab and picker CSS copy, `EQ_DT` abbreviations | 10-9 |
-| 2-R3 header DOM order, 2-N6 text | 10-15 |
-| R5 of `reviews/plan-1-3.md` (`<name>-2.md` against `plan-<batch>-<n>.md`) | 10-7 |
-| P5 (`rollNo`) | 10-8 (`DEBT.md`) |
-| Monospace labels and uppercase controls outside their rules | 10-16 |
-| `reviews/CI.md` N6 | 10-18 |
-| `/search` at 320x568 RU; 4-R1; the dialog art at 500-760 px; `reviews/5.md` and `reviews/6.md` checks | 10-18 (closeout register); rows stay below |
-| Add-to-list states with a closed EN menu | done in 9b (acceptance 20); row removed |
-
-Rows below keep facts no acceptance line carries:
-- 9a R2 probe, re-read in TD with the 40 px «Ещё» (360x640 RU, `LIST_A ~ noted as gm4`): «Ещё» at 136.4, scroll 0;
-  open: scroll 87 and «Ещё» at 49.4 under the shown header (0 to 110.4); Escape: scroll 0; a tap outside: scroll 87,
-  «Ещё» covered. In 9b: the list «Ещё» at top 141 and scroll 0; opening its
-  menu scrolls to 83 and the shown header covers «Ещё» (top 58); Escape returns the focus and the page to scroll 0;
-  a tap outside leaves scroll 83 with «Ещё» covered. A `preventScroll` focus return cannot cure the tap path (no focus
-  returns there): not taken. The same family as the focus jump below; batch TD builds no fix (TD-P3 re-reads the probe once); at closeout to `DEBT.md` (10-18).
-- Tabular stat columns on table rows from 1440 px (owner, 2026-11-05, `plan-9b.md` M22): a "Proposed rules" row, built by
-  its own task after wave 3 with a mock first (`plan.md` section 12).
-- 9a, found by the golden of `LIST_A ~ more`: at 360x900, after the list «Ещё» opens and closes, the page sits at
-  scroll 83 and the shown header covers that «Ещё» (a press lands on the job row); the header hides only past its own
-  height. The golden reopens from the top (`reopen` in `inventory.js`). The same family as the focus jump below.
-  Review 9a R2: its probe (360x640 RU on `LIST_A ~ noted`: open «Ещё», close by Escape, then by a tap outside, read
-  `scrollY`) was not run in the 9a fix pass; batch 9b takes it (`plan-9b.md` S8 step 10, acceptance 22), else
-  `DEBT.md` at closeout.
-- The `--inject` model run of `roll-probe.cjs` was not repeated on the build of `377d0981`; the planner's production
-  numbers stand for the model.
-- `/search` at 320x568 RU (batch 7 remediation probe): after a kind is picked in the sheet and the sheet closes,
-  `scrollWidth` is 313 against a `clientWidth` of 305, and a probe that hides one element at a time finds the
-  header's tab links. Case 93 checks no sideways scroll before the sheet opens, where it passes. Not investigated.
-- `reviews/6.md`, "Checks still needed", item 3: the homebrew selection bar at 640x360 and at 768x1024.
-- `reviews/5.md`, "Checks still needed", items 3 to 5 (not measured here): the first `/roll/alt` card's
-  menu at 360x640 with 7 or more lists at scroll 0; a right-column card's menu at about 1015-1075 px with
-  a long list name; Tab and Enter on the nine routes at 360.
-- 4-R1 (wave 2 blind review; the owner's choice): at 360x640 «В список» ends inside the first screen
-  on 21 of 98 sampled records at the 4:3 crop (median bottom 693 px, worst 908 px). No device above
-  760 px is affected. Current behavior: on a phone the primary is below the fold on most records.
-  1. Recommended: keep the page, and let a reader scroll. The text starts in the first screen on
-     almost every record. Trade-off: adding to a list from a long record takes a scroll.
-  2. A sticky «В список» on the page up to 760 px, like the dock. Trade-off: it covers about 62 px of
-     text on every record, and it adds a new surface rule.
-  3. 16:9 up to 760 px. Trade-off: it reaches half of the records, and it changes M4-4.
-- Toast over «Ещё» (batch 4): at 360 an action toast covers the end of the menu for its 7 s; a second
-  save by touch waits for it. Batch 8 decided no sheet (`plan-8.md` L12), so it stays, and it now also covers the
-  end of the add-to-list popover. TD's case 108 (f), 360: the 4000 ms toast's top at 570 px, the roll result's open
-  «Ещё» last item ending at 625 px, 4829 px² of overlap RU, 3405 EN (the toast now floats above the selection bar
-  only). At closeout it goes to `docs/specs/DEBT.md` (10-18) unless a later batch fixes it.
-- Batch 8 (`plan-8.md`): the signed-out add-to-list menu keeps its two steps (L13); the `HomebrewPage` search row
-  keeps its own `.tools` beside `ListFind` (L8).
-- `RecordCard`'s dialog art at 500-760 px wide and 481-560 px tall: a 4:3 picture can fill the card, so
-  the dock is not in view until a scroll (sticky holds inside `.card-body`). No phone portrait reaches it.
-- The `/p/` dock (`reviews/P.md` P-N8, shot `mocks/P/built/p-more__360__en.png`): with the dock «Ещё» open at
-  360 px the page sits about 24 px down and the shown header covers part of the crumb row. The same family as the
-  focus jump below; at closeout to `docs/specs/DEBT.md` (10-18).
-- Focus jump (batch 3b, measured facts item 3): a `focus()` on a header control moves the page up
-  (scroll 1500 to 1199 at 320 px, to 1115 at 1180 px; 900 to 558 at 360 px with the fix). An
-  existing defect, harmless for the hide: the upward move shows the header.
-  `{ preventScroll: true }` fits only a control always in view, and `Menu` also serves controls
-  that scroll away, so the fix needs its own look. At closeout it goes to `docs/specs/DEBT.md`
-  unless a later batch fixes it.
-- 2-R1 (answered for batch 3 on): the orchestrator-run `polish` and `harden`
-  of section 10, "Impeccable". The batch 2 shell components still had a manual
-  pass only; the post-release Impeccable audit is the backstop (with the C34 and
-  A15 live-site toast check).
-- Batch 3 candidate: the 1180 px equipment column table of mock 3 (D6, Q3-T), if
-  the owner says yes; one added item with its own mock check.
-- N0-2 of `reviews/mocks-2.md` (batch 4): the error-page pattern's circled icon
-  is a template shape; keep the heading, the cause and the action.
-- The link-preview Worker's card images (`tools/share-card.mjs`).
-- The EN `<title>`, manifest name and `en/index.html` wordmark.
-
+- `plan-debt.md` is the follow-up task's plan (steps 1-5); the closeout moves it to that task's directory.
+- Batch 8 (`plan-8.md`): the signed-out add-to-list menu keeps its two steps (L13); the `HomebrewPage` search row keeps
+  its own `.tools` beside `ListFind` (L8). Kept designs, not defects.
 
 ## Notes
+- For the owner (named, not filed in `DEBT.md`; each is a refactor, a test or tooling gap, or a choice with no defect):
+  1. 4-R1: at 360x640 «В список» ends inside the first screen on 21 of 98 sampled records (median bottom 693 px).
+     Recommended: keep the page and let the reader scroll; the trade-off is one scroll on a long record.
+  2. `reviews/CI.md` N6: the `ci.yml` comment says a job's fixed cost is about 20 s (about 70 s), `bash-guard.mjs` says a
+     shard row costs about 380 s (440-840 s now), and a bare `node tests/app/states.js` has no long-check reminder. A
+     hook change needs selftest cases: `plan-debt.md` step 1.
+  3. The link-preview Worker's card images (`tools/share-card.mjs`) and the EN `<title>`, manifest name and
+     `en/index.html` wordmark: no defect was measured; they wait for the owner's look (`plan-debt.md` step 3).
+  4. `reviews/5.md` "Checks still needed" 3-5 and `reviews/6.md` item 3 (menus with 7+ lists at 360, a right-column
+     card's menu at 1015-1075 px, Tab and Enter on the nine routes at 360, the homebrew bar at 640x360 and 768x1024):
+     not measured; the batch reviews and CI's sweeps cover the families.
+  5. 10-9: `HomebrewTabs` copies five tab and picker rules of `TableNav`; `EQ_DT`'s stat abbreviations serve the catalog
+     rows and print. Kept; a refactor with no visible defect (`plan-debt.md` step 4).
+  6. `typo.js` reads no note or price switch (an account list the loop cannot make) and runs the Whole Message step at
+     1180 only (COVERAGE.md "Known thin spots").
+  7. The `/roll/voa`, `/roll/community` and `/roll/wondrous` leads are instruction sentences, as the `/roll/mwt` lead was
+     (Clarity Rule). Recommended: drop them in the follow-up's visual batch with a mock; trade-off: three more roll
+     golden families re-seeded.
+  8. P-N9: EN "Print" names two actions (`print`, `printNow`), RU keeps «Печать» / «Напечатать»; the RP-1 answer stands.
+  9. The 2-R1 Impeccable `polish` and `harden` passes and `.impeccable/design.json` (`document`) are the orchestrator's.
 - Mocks path: `issues/57/mocks/<N>/`; built shots in `mocks/<N>/built/` (`shoot.js` per batch).
 - Impeccable `polish` and `harden`: the orchestrator runs them per batch (a subagent cannot); batch 8's outcome is in
   `reviews/8.md`, "polish and harden outcome". Earlier outcomes are in the pre-collapse handoff.

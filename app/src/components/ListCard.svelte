@@ -199,7 +199,7 @@
   .listcard-thumbs .thumb {
     width: 40px;
     height: 40px;
-    border-radius: 7px;
+    border-radius: 8px;
     overflow: hidden;
   }
 

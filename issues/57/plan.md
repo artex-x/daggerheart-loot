@@ -22,7 +22,8 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
   - Batch P (print), restated for Q-P1 = no (owner: the standard card stays 63x88 mm): brief `plan-P.md`, mocks `mocks/P/`,
     cases 114-115, 30 acceptance lines, 157-197 min. Built 2026-11-06 (`handoff.md`, Completed); review pending.
   - Batch 10 (the docs lock and the cleanup the earlier batches left): an outline in section 7 with 21 acceptance
-    lines; 95-125 min.
+    lines; 95-125 min. Built 2026-11-06 (`handoff.md`, Completed: 10-1 to 10-19 and 10-21 have outcomes; 10-20 is
+    the orchestrator's); review pending.
   - Defaults taken while the owner is away are listed in `handoff.md`, Status, and logged by the orchestrator in
     `C:\Users\Ignat\.dhloot\notes\owner-afk-2026-11-03\decisions.md` (items 20-23 are the batch planners', item 24 is
     this fold's).

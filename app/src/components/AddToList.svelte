@@ -526,7 +526,7 @@
     max-width: min(320px, 90vw);
     z-index: 60;
     border: 1px solid var(--line2);
-    border-radius: 11px;
+    border-radius: var(--r);
     background: var(--surface);
     padding: 10px;
     box-shadow: 0 16px 40px -14px rgb(0 0 0 / 85%);

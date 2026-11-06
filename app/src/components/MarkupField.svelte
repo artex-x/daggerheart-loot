@@ -323,7 +323,7 @@
     border: 1px solid var(--line2);
     border-radius: var(--r-sm);
     background: var(--bg2);
-    color: #cfc8e0;
+    color: var(--txt-soft);
     font-size: var(--t-small);
     line-height: 1.62;
     overflow-wrap: anywhere;

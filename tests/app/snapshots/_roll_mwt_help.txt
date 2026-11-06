@@ -24,9 +24,9 @@ RootWebArea "Many Worlds Tavern - Генератор лута Daggerheart" [url=
       button "Many Worlds Tavern" [expanded=false haspopup=menu]
     button "Открывать при запуске" [pressed=false]
     button "Об этой книге" [expanded=true]
-    StaticText "Выберите мир и бросьте кость по нему."
     StaticText "В разделе шесть миров Many Worlds Tavern, у каждого своя колода:..." [namelen=337 namehash=7f81e4cd]
-    ... StaticText x21 of 25 same-shape siblings elided
+    StaticText "В колодах есть предметы, расходники, оружие и броня, в порядке к..." [namelen=380 namehash=d2617cba]
+    ... StaticText x20 of 24 same-shape siblings elided
     link "Sporopolis" [url=https://heartofdaggers.com/products/sporopolis-item-and-domain-cards/]
     link "Wagerwood" [url=https://heartofdaggers.com/products/wagerwood-item-and-domain-cards/]
     link "Warrin' Warrens" [url=https://heartofdaggers.com/products/warrin-warrens-items-and-domains/]
@@ -118,9 +118,9 @@ RootWebArea "Many Worlds Tavern - Daggerheart Loot Generator" [url=/en/roll/many
       button "Many Worlds Tavern" [expanded=false haspopup=menu]
     button "Open on start" [pressed=false]
     button "About this book" [expanded=true]
-    StaticText "Pick a realm and roll within it."
     StaticText "This section holds the six realms of Many Worlds Tavern, each wi..." [namelen=312 namehash=1bacacf5]
-    ... StaticText x21 of 25 same-shape siblings elided
+    StaticText "The decks hold items, consumables, weapons and armor, in the set..." [namelen=362 namehash=8cc1eda5]
+    ... StaticText x20 of 24 same-shape siblings elided
     link "Sporopolis" [url=https://heartofdaggers.com/products/sporopolis-item-and-domain-cards/]
     link "Wagerwood" [url=https://heartofdaggers.com/products/wagerwood-item-and-domain-cards/]
     link "Warrin' Warrens" [url=https://heartofdaggers.com/products/warrin-warrens-items-and-domains/]
