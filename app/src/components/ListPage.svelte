@@ -1219,7 +1219,7 @@
           aria-label={t.rename}
           oninput={rename}
           onkeydown={(e: KeyboardEvent) => {
-            if (e.key !== 'Enter') return;
+            if (e.key !== 'Enter' || e.isComposing) return;
             e.preventDefault();
             (e.currentTarget as HTMLTextAreaElement).blur();
           }}
@@ -1904,7 +1904,8 @@
      (never part of the `font` shorthand this rule resets), and the numbers
      that "survive" from the class are the ones `.page-h` already set on the
      input's own parent, inherited right back through `font: inherit`. */
-  input[type='text'] {
+  input[type='text'],
+  textarea.titleinput {
     width: 100%;
     height: 46px;
     padding: 0 14px;
@@ -1915,7 +1916,8 @@
     font: inherit;
   }
 
-  input[type='text']:focus {
+  input[type='text']:focus,
+  textarea.titleinput:focus {
     outline: none;
     border-color: var(--gold);
     box-shadow: 0 0 0 3px rgb(216 171 94 / 14%);
@@ -1943,6 +1945,8 @@
   /* The side plate's field: as tall as its whole text (`fitName`). */
   textarea.titleinput {
     display: block;
+    min-height: 46px;
+    padding-block: 7px;
     resize: none;
     overflow: hidden;
     overflow-wrap: anywhere;

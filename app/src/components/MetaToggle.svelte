@@ -7,13 +7,12 @@
     label: string;
     expanded: boolean;
     onclick: () => void;
-    el?: HTMLButtonElement | undefined;
   }
 
-  let { label, expanded, onclick, el = $bindable() }: Props = $props();
+  let { label, expanded, onclick }: Props = $props();
 </script>
 
-<button type="button" class="metat" aria-expanded={expanded} bind:this={el} {onclick}
+<button type="button" class="metat" aria-expanded={expanded} {onclick}
   >{label}<Icon name="chevron" /></button
 >
 

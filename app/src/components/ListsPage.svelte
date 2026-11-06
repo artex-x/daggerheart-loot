@@ -41,6 +41,13 @@
   const index = $derived(app.index);
   const target = $derived(app.newListTarget);
   const cloud = $derived(app.cloudLists);
+  /* Set from the first failed write to the next saved state, so a pressed «Повторить» keeps
+     the status drawn while it sends and a retry that fails gets the focus back (rule 20). */
+  let failedSeen = $state(false);
+  $effect(() => {
+    if (cloud?.sync === 'failed') failedSeen = true;
+    else if (cloud?.sync === 'saved') failedSeen = false;
+  });
   const signedIn = $derived(target === 'cloud');
   const ready = $derived(signedIn && cloud?.status === 'ready');
   const narrow = $derived(app.band === 'narrow');
@@ -342,7 +349,7 @@
       t.listsN,
       app.lang,
       t.ofLimit
-    )}{#if cloud?.sync === 'failed'}&#32;·
+    )}{#if cloud?.sync === 'failed' || (cloud?.sync === 'saving' && failedSeen)}&#32;·
       <SyncStatus {app} after={() => newButton} />{/if}
   </p>
 {/snippet}

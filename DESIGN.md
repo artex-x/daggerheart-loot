@@ -566,8 +566,8 @@ it while the owner was away); `/s/<token>` with a 120-character list
 name at 1180x720 starts at 312px, because from 761px the name takes three lines (measured
 2026-11-05); and an account list's page with its folded requests or notices strip (a 6px inset up to
 760px) and its search row at 360x640 starts at 304px (the notices strip measured 260px on
-2026-11-06) (measured 2026-11-05 while the owner was
-away; the owner's figure was 292px). From 761px to 999px the rule is checked at 768x1024
+2026-11-06; measured 2026-11-05 while the owner was
+away, the owner's figure was 292px). From 761px to 999px the rule is checked at 768x1024
 and 900x720 too, with one more exception: `/tables/*` in a 720px window starts at 334px,
 the reserved tab row of The Head Order Rule, held to 336px (measured 2026-11-05 and
 2026-11-06; owner, 2026-11-05). A design aims at 240px and 270px, so a small face or

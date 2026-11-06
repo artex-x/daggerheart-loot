@@ -738,6 +738,24 @@ describe('with sign-in configured', () => {
     });
   });
 
+  it('keeps the focus on «Повторить» when the retry fails again', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    const page = fakePage();
+    const { container } = withCloud(cloud, { page });
+    await screen.findByText('Список второго ГМа');
+    cloud.setOffline(true);
+    await userEvent.type(await openField(), 'Тайник');
+    await userEvent.click(screen.getByRole('button', { name: 'Создать' }));
+    page.fireHidden();
+    await waitFor(() => {
+      expect(countText(container)).toContain('Не сохранено');
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Повторить' }));
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Повторить' })).toHaveFocus();
+    });
+  });
+
   it('says loading while the first read is in flight, and the empty plate when the account has no list', async () => {
     const slow = fakeCloud(SEED, 'gm1');
     slow.lists.list = () => new Promise(() => undefined);

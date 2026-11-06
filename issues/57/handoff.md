@@ -4,20 +4,21 @@
 ## Status
 - Task status: in_progress. Waves 1, 2, 2b and 3 are on `main`: wave 3 landed as `10011729`, `claude/57` merged it
   back as `45050594`.
-- Batch PW3 (`plan-pw3.md` part B, the wave 3 review remediation, the second squash S2) is implemented and committed
-  on `claude/57` (previous sha `c8d25b27`; the commit is named in the implementer's report), merged with `origin/main`
-  and pushed. CI of the tip is the full gate (CI-first policy, `context.md`). The detector was not run (the policy
-  leaves it to CI and the review).
-- Review: required (trigger: changed UI, the golden re-seed), after CI.
+- Batch PW3 (`plan-pw3.md` part B, the wave 3 review remediation, the second squash S2) is implemented on `claude/57`
+  (previous sha `c8d25b27`) and pushed; no merge commit (`origin/main` was already an ancestor through `45050594`).
+  The one fix pass (review B1, R1, N1-N6) is committed and pushed after it: the side plate's name textarea takes the
+  input's field box and focus ring, a pressed «Повторить» on `#/lists` keeps the status drawn, N1-N6. CI of the tip
+  is the full gate (CI-first policy, `context.md`). The detector was not run (the policy leaves it to CI).
+- Review: done (`reviews/PW3.md`, fix-then-continue); the fix pass is shipped; CI of its tip next.
 - NEEDS_HUMAN_CONFIRMATION: no.
 - Writer tier: `opus` (writer test 3).
 - Main checkout `E:\dev\daggerheart-loot`: on `claude/roll-per-line` (not `main`); the squash needs it switched to
   `main` and back (it was clean).
-- Branch: `claude/57` (worktree `.claude/worktrees/57`). Pushed: the PW3 commit and its merge of `origin/main`.
+- Branch: `claude/57` (worktree `.claude/worktrees/57`). Pushed: the PW3 commit and the fix pass.
 - Next step, in order (CI-first policy, owner 2026-11-06, `context.md`: a writer runs only `check:fast`, the golden
   re-seeds and the affected vitest files, then pushes; CI and one fix pass find the rest):
-  (1) done: PW3 committed and pushed; (2) CI credit of the tip (`node .claude/hooks/ci-credit.mjs <sha>`), batch review (reviewer,
-  opus) and one fix pass; (3) S2: merge `origin/main`, push, squash onto `main` in the main checkout (the wave 3
+  (1) done: PW3 committed and pushed; (2) CI credit of the tip (`node .claude/hooks/ci-credit.mjs <sha>`); batch review and
+  the one fix pass are done; (3) S2: merge `origin/main`, push, squash onto `main` in the main checkout (the wave 3
   landing's steps: `git switch main`, `pull --ff-only`, `merge --squash claude/57`, credit, commit, push, watch the
   `main` run, merge back, switch the main checkout back to `claude/roll-per-line`); (4) the owner checks the signed-in
   list on production; (5) the whole-app blind review with the new prompt (`plan-pw3.md` part C): production reviewer
@@ -502,6 +503,14 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
   - `node tests/run-all.js derived,contracts`: ok.
   - Not run (CI-first policy): the detector, the other `states.js` cases, the full sweep and the full golden job.
   - `VITEST_MAX_WORKERS=2 rtk npm run check:fast`: run last, after this file; the commit gate takes only its pass.
+  - Fix pass (review B1, R1, N1-N6): `build:test` exit 0; `node tests/app/sweep.js 1180 ru` clean (it failed in CI run
+    42281030388); `listsPage.test.ts` new case red without the `saving` clause, green with it; `listPage.test.ts`,
+    `metaToggle.test.ts`, `sharedListPage.test.ts` pass.
+  - Fix pass: `VITEST_MAX_WORKERS=2 npm run check:fast` PASS in 834 s (prettier, svelte-check 0 errors, 1636 tests, budget 270.2 kB).
+  - Reviewer browser reads on `dist-test/` (PW3 review): PW-4, `~ long name as gm4` (120 characters): a 336px
+    textarea at 1180 and 1000, `scrollHeight` 335 = `clientHeight` 335, rows top unchanged at 139; at 768 and 360 an
+    input with `text-overflow: ellipsis`, no sideways scroll. PW-27, `~ rolled as gm4`: `.lroll-wrap` 741px gives two
+    columns (260 / 467) at 1180; widths 621, 561, 615 and 555 give one column at 1060, 1000, 700 and 640.
 
 ## Next batch (implement-ready)
 - None until the PW3 review: CI credit of the pushed tip, the batch review (reviewer, opus) and its one fix pass.
@@ -538,9 +547,6 @@ section: `git show 5147cd01:issues/57/handoff.md`, "Deferred".
      rows and print. Kept; a refactor with no visible defect (`plan-debt.md` step 4).
   6. `typo.js` reads no note or price switch (an account list the loop cannot make) and runs the Whole Message step at
      1180 only (COVERAGE.md "Known thin spots").
-  7. The `/roll/voa`, `/roll/community` and `/roll/wondrous` leads are instruction sentences, as the `/roll/mwt` lead was
-     (Clarity Rule). Recommended: drop them in the follow-up's visual batch with a mock; trade-off: three more roll
-     golden families re-seeded.
   8. P-N9: EN "Print" names two actions (`print`, `printNow`), RU keeps «Печать» / «Напечатать»; the RP-1 answer stands.
   9. The 2-R1 Impeccable `polish` and `harden` passes and `.impeccable/design.json` (`document`) are the orchestrator's.
   10. D125: the RU header tabs pass the page by 8.2 px at 320 px, a sideways scroll only with classic scrollbars.
