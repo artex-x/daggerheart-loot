@@ -2,28 +2,37 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress. Waves 1, 2, 2b and 3 are on `main`; wave 3 landed as `10011729` and `claude/57` merged it
-  back as `45050594`. The three wave 3 reviews are recorded (`76675004`, local): `reviews/post-wave-3.md` (production,
-  signed out), `reviews/post-wave-3-signed-in.md` (fixture build), `reviews/post-wave-3-owner-chrome.md` (the owner's
-  Chrome); `reviews.md` rows PW3-*, SI-*, OC-*.
-- Planned: batch PW3, their one remediation batch, shipping as the second squash S2 (`plan-pw3.md`). Part A holds 11
-  owner decisions D1-D11, each with one recommended option; part B the batch (40 acceptance lines, about 30 files, 80-115
-  min local plus CI and one review cycle); part C the changes to the whole-app blind review's dispatch.
-- Waiting for: the owner's answers to D1-D11. A row with no answer takes its recommended option, logged in the AFK
-  decisions file. The batch dispatch follows the answers.
-- NEEDS_HUMAN_CONFIRMATION: yes, D1-D11 of `plan-pw3.md` part A (owner-visible choices; no product law, no feature
-  loss). The questions: D1 center the sheet from 761 px; D2 the import in the tool row on both pages (the orchestrator
-  had recommended the head row; the probe shows the homebrew pills wrap at 1180 px RU with it); D3 the compact head
-  through 999 px on the list page; D4 the side-plate name wraps whole, one line with an ellipsis up to 999 px; D5 the
-  shorter RU account lead; D6 remove the six roll instruction leads and the list roll hint; D7 one note toggle look on
-  both list pages; D8 two named print rows on `/account`; D9 drop the language clause from the search lead; D10 the
-  note switch keeps the focus; D11 the static pages keep the system face, their links get the target size.
-- Plan review: not required (no trigger fired). Batch review: required (changed UI, about 110 goldens). Writer tier:
-  `opus` (writer test 3).
-- Last agent: planner (PW3 plan). No subagent runs. No worker has uncommitted code edits.
-- Branch: `claude/57` (worktree `.claude/worktrees/57`)
-- Base / starting commit: `d8e30731`; tip before this plan: `76675004`.
-- Pushed: everything up to `45050594`; `76675004` and the PW3 plan commit are local.
+- Task status: in_progress, STOPPED by the owner (2026-11-06, about 19:00 UTC) for a laptop restart. Waves 1, 2, 2b
+  and 3 are on `main`: wave 3 landed as `10011729` (CI and deploy green), `claude/57` merged it back as `45050594`.
+  No pipeline is in flight: nothing is running on `main` or on the branch tip, and no agent or cron job runs.
+- WARNING, the worktree holds UNCOMMITTED work: batch PW3 (47 paths: 45 modified, 2 new `MetaToggle.svelte` and
+  `metaToggle.test.ts`). Do not run `git clean`, `git checkout`, `git restore` or `git stash` here. HEAD is `c035fc6a`;
+  `76675004` and `c035fc6a` are local docs commits (reviews and the PW3 plan), pushed with the next push.
+- Batch PW3 (`plan-pw3.md` part B) is the wave 3 review remediation and ships as the second squash S2. The owner
+  answered D1-D11 on 2026-11-06, each the recommended option (D2 tool row on both pages, D4 wrap from 1000 px). Done in
+  the tree: PW-1..PW-31, PW-32, PW-33, PW-34, PW-35, PW-37, PW-39 with unit tests and spec lines. NOT done: PW-36 (the
+  golden re-seeds), PW-38 (bundle: `check:built` not run; expect a raise to 271 unconfigured), the detector,
+  `check:fast`, case 83 re-run (a row `GM2_LIST as gm2` at 360 got `exception: 304`), the Completed table and
+  Verification block (drafts in the old session's scratchpad, lost on reboot: rewrite them). See Notes, "Session end
+  partial progress".
+- Review: required (trigger: changed UI, about 110 goldens), after the commit and CI.
+- NEEDS_HUMAN_CONFIRMATION: no.
+- Writer tier: `opus` (writer test 3).
+- Main checkout `E:\dev\daggerheart-loot`: on `claude/roll-per-line` (not `main`); the squash needs it switched to
+  `main` and back (it was clean).
+- Branch: `claude/57` (worktree `.claude/worktrees/57`). Pushed: everything up to `45050594`.
+- Next step, in order (CI-first policy, owner 2026-11-06, `context.md` decision 41: a writer runs only `check:fast`,
+  the golden re-seeds and the affected vitest files, then pushes; CI and one fix pass find the rest):
+  (1) a fresh implementer (opus) finishes PW3 from the tree: `npm run build:test`, re-seed the goldens per family,
+  both lints, `check:built` (raise the budget by the rounding rule if over), `check:fast`, commit, merge
+  `origin/main`, push; (2) CI credit of the tip (`node .claude/hooks/ci-credit.mjs <sha>`), batch review (reviewer,
+  opus) and one fix pass; (3) S2: merge `origin/main`, push, squash onto `main` in the main checkout (the wave 3
+  landing's steps: `git switch main`, `pull --ff-only`, `merge --squash claude/57`, credit, commit, push, watch the
+  `main` run, merge back, switch the main checkout back to `claude/roll-per-line`); (4) the owner checks the signed-in
+  list on production; (5) the whole-app blind review with the new prompt (`plan-pw3.md` part C): production reviewer
+  signed out plus the fixture-build reviewer signed in, and its remediation as S3; (6) closeout (`/handoff`): Impeccable
+  `document` to regenerate `.impeccable/design.json` (review finding 10-R2), move `plan-debt.md` to `issues/57-debt/`,
+  delete `issues/57/`, last squash S4. Deleting the remote branch waits for the owner.
 
 ## Completed
 One line per shipped batch. The full acceptance tables, deviations and measurements of batches 1 to 9a are in
@@ -493,7 +502,7 @@ section: `git show 5147cd01:issues/57/handoff.md`, "Deferred".
   pre-collapse commit is `c489766a` (`git show c489766a:issues/57/handoff.md` holds the full tables and every
   measurement). `plan.md` compacted on 2026-11-06 (147.7 KB to 114 KB): the Status history and the briefs of batches 4
   to 9b became one block; the last pre-collapse commit is `a8bdf1de` (`git show a8bdf1de:issues/57/plan.md`).
-- Session end partial progress (if any): none
+- Session end partial progress (if any): PW3 step 6 of 7 not started (owner stop 2026-11-06); nothing committed, 47 `git status --short` paths. Owner answers D1-D11 applied (all recommended). Done in the tree: PW-1 to PW-31 (code, unit tests, DESIGN.md/FEATURES.md/COVERAGE.md lines), PW-32 (probe: «Добавлено в «Пустой список»» shows in 12-20 ms and lasts 4000 ms, RU and EN; no defect), PW-33 (nothing), PW-34/35 (probe `scratchpad/pw3-targets.cjs`: before 80 reports at 360, after 0 at 360/768/1180 RU+EN; `inline`-only after: the `/account` consent links and the static pages' in-sentence links; the notice «Открыть» and «показать в таблице» left the list), PW-37 (docs, `derived` ok), PW-39 (answers). Also: case 83 `GM2_LIST as gm2` measured 260 px at 360 and given `exception: 304` (DESIGN.md First-Screen Rule names the notices strip) - re-run case 83 to confirm; the sweep's «список: заметки открыты» step and case 104's 768 roll read follow the compact head; suites read `.titleinput` (textarea from 1000 px). In progress / not run: PW-36 goldens (not re-seeded), PW-38 bundle (`check:built` not run; the test build grew about 0.55 kB gzip, so the unconfigured budget likely passes 270 and needs the raise to 271 in `tools/bundle-budget.mjs`; configured projected about 327.9 of 328 on CI), the detector, `check:fast`. Gates that ran, all pass: `npm run typecheck` 0 errors; `npm run lint:typed`, `lint:untyped` exit 0 (before the last two test edits); vitest by file (`listPage` 141, `listsPage` 53, `sharedListPage`+`metaToggle` 110, `homebrewPage` 132, `accountPage` 46, `lists` 39, `homebrewEditor` 98, share/i18n 246, a11y and six more 301, pill and roll files 163, sheet/record/search/catalog/filter/requests/app 591); every new test red at `c035fc6a` (detached worktree, 20 cases, removed after); `node tests/run-all.js derived,contracts` ok; sweep probe (target step, every page) clean at 360, 768, 1180 RU+EN; `states.js --shard=k/105` cases 94, 100, 104, 105, 106, 109, 111, 112 each `all 1 runs passed`, case 83 2 FAIL (the GM2 row at 360, fixed as above, not re-run). Draft acceptance table: `scratchpad/pw3-completed.md`, draft verification: `scratchpad/pw3-verif.md` (session scratchpad; the facts above stand without them). Next step for a fresh implementer: `npm run build:test`; `node tests/app/states.js --shard=73/105` (case 83); re-seed goldens with `MSYS_NO_PATHCONV=1 node tests/app/golden.js --update --only=<prefix>` for `#/lists`, `#/s/`, `#/roll/`, `#/account`, `#/search`, `#/homebrew/sources`, `#/homebrew/sets`, `#/homebrew/rules` (the hidden reserve link joins the controls list) and spot-compare `#/tables/eq_weapon` and `#/i/ci1`, reading each diff; then lints, `rtk npm run check:built` (raise the budget by the rounding rule if over), the detector, `rtk npm run check:fast`; write the acceptance table into Completed and the Verification block; commit, merge `origin/main`, push.
 - Durable items written to their homes by TD: DESIGN.md "The Phone-First Rule", "The Drop Rule", "The Measure Rule",
   "The Reading Time Rule", "Empty state", "Toast", "The First-Screen Rule" (`/s/` 309); FEATURES.md "Chrome", "Lists",
   "Account"; COVERAGE.md cases 108-111, the sweep step, the derived blocks. Earlier pass: DESIGN.md "The Whole Message Rule" (the narrow picker cut);

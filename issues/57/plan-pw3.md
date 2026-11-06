@@ -8,17 +8,18 @@ part C the changes to the whole-app blind review prompt, part D the conflicts th
 
 - Planned 2026-11-06 (planner) from `reviews/post-wave-3.md` (production, signed out), `reviews/post-wave-3-signed-in.md`
   (fixture build, signed in), `reviews/post-wave-3-owner-chrome.md` (the owner's Chrome) and the owner's priority of
-  2026-11-06: consistency, the same action in the same place on sibling pages. Not started.
-- Owner: partly present ("pass all the feedback to the planner and then decide"). Part A waits for the owner's answers.
-  A row the owner does not answer takes its recommended option, logged in the AFK decisions file (memory, "Owner AFK").
+  2026-11-06: consistency, the same action in the same place on sibling pages. Implemented 2026-11-06 (implementer);
+  the handoff holds the acceptance table. Batch review next.
+- Owner: answered D1-D11 on 2026-11-06, each the recommended option (D2 (b), D4 (a)); the default-included lines of
+  part A stay in.
 - Plan review: not required (no trigger fired). No route, no `CONTRACTS.md` path, no fixture, no `llms.txt` line, no
   stored key, no migration and no write or sync protocol changes. The list name field changes its element, not the
   stored name (part B, PW-4).
 - Batch review: required (trigger: changed UI on most routes and a golden re-seed of about 110 files).
 - Writer tier: `opus` (writer test 3: a golden re-seed and visual judgment at five widths). Test 1 also holds while a
   part A row stays open; the dispatch waits for the answers or the logged defaults.
-- NEEDS_HUMAN_CONFIRMATION: yes, for the part A rows (owner-visible choices). No product law and no feature loss:
-  every control that moves stays one press away.
+- NEEDS_HUMAN_CONFIRMATION: no (answered 2026-11-06). No product law and no feature loss: every control that moves
+  stays one press away.
 
 Measurements of this plan: read-only probes on `dist-test/` of 2026-11-06 14:13 (the app code of these pages equals
 `45050594`), scripts in the planner's scratchpad (`hb-head-probe.cjs`, `hb-tabs-probe.cjs`, `list-head-probe.cjs`,
