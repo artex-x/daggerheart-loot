@@ -2,31 +2,28 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress. Waves 1, 2 and 2b are on `main`. Wave 3 has built 9a, 8, 9b, CI, TD, N, P and 10, each
-  with its one fix pass. The batch 10 fix pass (previous sha `ca730999`) is committed and pushed on `claude/57` (sha in
-  the implementer's report). CI of the new tip is the full gate: not yet run.
-- Review: `reviews/10.md`, fix-then-continue; every local finding has an outcome (the fix-pass table under Completed).
-  10-R2 (`.impeccable/design.json`) stays the orchestrator's, on the 10-20 checklist.
-- Next: CI of the new tip, then 10-20 (the orchestrator's: the wave 3 squash, the blind reviews, `design.json`, the
-  closeout commit, the last squash).
-- NEEDS_HUMAN_CONFIRMATION: no. The "For the owner" list is under Notes.
-- Defaults taken in the batch 10 fix pass (owner AFK; the orchestrator logs them in the AFK decisions file; batch
-  10's defaults 1-8, all accepted by the review: `git show ca730999:issues/57/handoff.md`, Status):
-  1. 10-B1: D125 is kept and rewritten, not dropped: the probe names `nav.tabs` (RU, 8.2 px past the 305 px body at
-     320 px, on every route); the sideways scroll needs a classic scrollbar. For the owner item 10 asks whether that
-     window is supported.
-  2. 10-N6: the follow-up task's id is `57-debt` (DEBT.md section names, `plan-debt.md`).
-  3. 10-N10: EN `subStd` reads "A roll over the Core and Hope & Fear tables." and the EN Recall Cost help says "in
-     Core": one name in both languages. The `daggerheart-ru-terms` check: daggerheart.su prints the source of a Core
-     card as «Core» (`ru.daggerheart.su/domain-card/book-of-ava`), so «Core» stays in RU. The 13 `#/roll/std` goldens
-     were re-seeded by the tool (`--only`), one EN line each.
-  4. 10-N9: the decision file now cites DESIGN.md "The Head Order Rule" and says it replaced "A steady head"; no
-     "Amended by" line, because batch N wrote no decision file to name.
-  5. CI run 42218469286: cases 11 and 68 are not batch 10's (Verification); no code change, no limit changed.
-- Last agent: implementer (batch 10 fix pass). No subagent runs. No worker has uncommitted code edits.
+- Task status: in_progress. Waves 1, 2, 2b and 3 are on `main`; wave 3 landed as `10011729` and `claude/57` merged it
+  back as `45050594`. The three wave 3 reviews are recorded (`76675004`, local): `reviews/post-wave-3.md` (production,
+  signed out), `reviews/post-wave-3-signed-in.md` (fixture build), `reviews/post-wave-3-owner-chrome.md` (the owner's
+  Chrome); `reviews.md` rows PW3-*, SI-*, OC-*.
+- Planned: batch PW3, their one remediation batch, shipping as the second squash S2 (`plan-pw3.md`). Part A holds 11
+  owner decisions D1-D11, each with one recommended option; part B the batch (40 acceptance lines, about 30 files, 80-115
+  min local plus CI and one review cycle); part C the changes to the whole-app blind review's dispatch.
+- Waiting for: the owner's answers to D1-D11. A row with no answer takes its recommended option, logged in the AFK
+  decisions file. The batch dispatch follows the answers.
+- NEEDS_HUMAN_CONFIRMATION: yes, D1-D11 of `plan-pw3.md` part A (owner-visible choices; no product law, no feature
+  loss). The questions: D1 center the sheet from 761 px; D2 the import in the tool row on both pages (the orchestrator
+  had recommended the head row; the probe shows the homebrew pills wrap at 1180 px RU with it); D3 the compact head
+  through 999 px on the list page; D4 the side-plate name wraps whole, one line with an ellipsis up to 999 px; D5 the
+  shorter RU account lead; D6 remove the six roll instruction leads and the list roll hint; D7 one note toggle look on
+  both list pages; D8 two named print rows on `/account`; D9 drop the language clause from the search lead; D10 the
+  note switch keeps the focus; D11 the static pages keep the system face, their links get the target size.
+- Plan review: not required (no trigger fired). Batch review: required (changed UI, about 110 goldens). Writer tier:
+  `opus` (writer test 3).
+- Last agent: planner (PW3 plan). No subagent runs. No worker has uncommitted code edits.
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
-- Base / starting commit: `d8e30731`; previous sha of the batch 10 fix pass: `ca730999`.
-- Pushed: `34ae151c`, `ca730999` and the fix-pass commit.
+- Base / starting commit: `d8e30731`; tip before this plan: `76675004`.
+- Pushed: everything up to `45050594`; `76675004` and the PW3 plan commit are local.
 
 ## Completed
 One line per shipped batch. The full acceptance tables, deviations and measurements of batches 1 to 9a are in
@@ -421,9 +418,15 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
   - `VITEST_MAX_WORKERS=2 rtk npm run check:fast`: run last, after this file; the commit gate takes only its pass.
 
 ## Next batch (implement-ready)
-- First: CI of the batch 10 fix-pass tip.
-- Then: 10-20, the orchestrator's (plan.md section 16): the wave 3 squash, the wave 3 and whole-app blind reviews, the
-  closeout commit that deletes `issues/57/` and moves `plan-debt.md` to the follow-up task, the last squash.
+- Batch PW3, `plan-pw3.md` part B: implement-ready once part A's rows D1-D11 have the owner's answers or their logged
+  defaults. The dispatch names each answer; a departure from a recommended option takes that row's other branch, which
+  part B already spells (PW-2 carries D2 (a) in full).
+- Order: baseline probe, the owner rows PW-1 to PW-11, the local lines PW-12 to PW-33, the suites, the probes and the
+  targeted `states.js` cases, the golden re-seed, the docs and the bundle, `check:fast` last; commit; push; CI.
+- Verification: `plan-pw3.md`, "Verification" (the filtered target probe PW-34, the `inline` narrowing lists PW-35,
+  cases 83, 105, 106, 109, 111, 112 and the price-sheet case one at a time, vitest by file, `check:fast` last).
+- Then: the batch review, its one fix pass, green CI, the S2 squash; then the whole-app blind review with `plan-pw3.md`
+  part C in its dispatch, its remediation, the closeout (`plan.md` section 16).
 
 ## Blockers
 - None.
