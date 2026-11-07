@@ -393,7 +393,8 @@ a toast wrap; they are never cut. A name, a description or a list of chosen valu
 cut to its clamp when one press shows it whole: up to 760px a roll page's picker cuts a long
 chosen part (the select shows it whole), so the roll button keeps its line and the first
 result its first screen; from 761px the button wraps instead. Exceptions: the editor's
-record name, one line up to 760px (owner, 2026-10-29), and the owner's list name, one line
+record name, one line with an ellipsis while it has no focus, at every width (owner,
+2026-10-29; the heading above it shows the whole name), and the owner's list name, one line
 with an ellipsis while it has no focus up to 999px; in the side plate from 1000px the field
 wraps the whole name and grows with it, as it pushes no row down (owner, 2026-11-06). Source:
 https://carbondesignsystem.com/patterns/overflow-content/. `tests/app/typo.js` reads every
@@ -872,6 +873,11 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
   catalog below 1000px, both list pages at every width), the table and tab
   pickers, the bulk move, the list page's «Цены выбранных» and the editor's
   preview.
+- Every modal draws one scrim, `--scrim` (`rgb(6 4 12 / 78%)`), and no blur: the dark veil
+  already parts the modal from the page, depth stays tonal, and a blur of the page costs a
+  phone a frame for no meaning (2026-11-06).
+- The crop dialog takes the sheet's shape and place at every width and keeps the window's
+  height, which its square stage needs on a landscape phone.
 - The record dialog has the sheet's look up to 760px and is not a `Sheet`: one
   element at every width, so a window that crosses 760px remounts nothing. «Ещё» is
   a `Menu` at every width, in the dialog too. Both close with `DialogClose`.
@@ -879,7 +885,8 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
 ### Selection bar
 
 - `SelectionBar`: one shape on every list page, pinned to the bottom of the
-  screen, a Vault Wall ground under a `--muted2` top border and a blur; no
+  screen on a page of any length (fixed; the footer keeps its height clear under the
+  page, 2026-11-06), a Vault Wall ground under a `--muted2` top border and a blur; no
   gold. «Все» is a tri-state box with its label always visible, then the
   polite summary («Выбрано: N»), the page's actions and «Снять выделение»
   last. Below 761px the box, the summary and the clear are one row and the
@@ -888,7 +895,7 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
   actions fold into «Ещё», which opens up; the lists index draws its bar the same way.
   The add-to-list menu is a popover at every width, headed «Списки», a neutral row
   per list with a check where it holds the record and its count in words. A panel a bar action opens is a
-  `Sheet`, because the bar is sticky and a panel under it would grow past the
+  `Sheet`, because the bar is pinned and a panel under it would grow past the
   window.
 
 ### Compact row
@@ -949,7 +956,8 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
 ### Toast
 
 - **Style:** a fixed plate 26px off the bottom, centered, and 26px above the selection
-  bar while the bar shows: Vault Wall fill, a
+  bar while the bar shows; inside a modal up to 760px, 26px above the record dialog's
+  dock or the sheet's foot: Vault Wall fill, a
   1px Ash Violet Low (`--muted2`) border, Chalk text, `--r` corners and the
   Float shadow, entering on a 0.2s rise. No toast is gold. The error flavor is
   the Alarm Red fill with Ink on Gold text (about 5.6:1). The action flavor
@@ -1040,7 +1048,8 @@ gold pick and a neutral default alike: gold says "this narrows the view", the ch
 "this is on". A state never rests on color alone. A link chip marks a place and draws
 none: the sibling pills of a page head, the tabs and the table chips show the current
 place by their fill or their underline and by `aria-current`, and a navigation does not
-look like a toggle. Sources: https://developer.android.com/develop/ui/compose/components/chip,
+look like a toggle. The table picker sheet's group chips up to 760px are the same table
+chips: the shown group takes the fill and `aria-pressed`, and no check (2026-11-06). Sources: https://developer.android.com/develop/ui/compose/components/chip,
 https://developer.apple.com/design/human-interface-guidelines/accessibility.
 
 **The Reading Time Rule.** A toast stays long enough to read twice: 4000ms for a notice,

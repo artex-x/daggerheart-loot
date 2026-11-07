@@ -41,6 +41,7 @@
           onclick?: never;
           neutral?: never;
           filter?: never;
+          place?: never;
         }
       | {
           href?: never;
@@ -51,6 +52,9 @@
           neutral?: boolean | undefined;
           /** A filter value, `<group>:<value>`, as `data-fval` for the browser suites. */
           filter?: string | undefined;
+          /** A table chip of the picker sheet: the group is a place, shown by its fill with
+           *  no check (DESIGN.md, "The Check Rule"). */
+          place?: boolean | undefined;
         }
     );
 
@@ -64,7 +68,8 @@
     onclick,
     value,
     neutral,
-    filter
+    filter,
+    place = false
   }: Props = $props();
   /* The space keeps the count apart in the accessible name («Предметы 44»). */
   const gap = $derived(count === undefined ? '' : ' ');
@@ -95,7 +100,7 @@
     data-fval={filter}
     {title}
     {onclick}
-    >{#if on}<Icon name="check" />{/if}{label}</button
+    >{#if on && !place}<Icon name="check" />{/if}{label}</button
   >
 {/if}
 

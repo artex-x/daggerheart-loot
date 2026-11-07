@@ -290,13 +290,12 @@
 
 <!-- eslint-disable @typescript-eslint/no-confusing-void-expression -- a `{@render}` tag of a
      local snippet reads as a void expression to this rule. -->
-{#snippet newItem(plus: boolean)}
+{#snippet newItem(md: boolean)}
   <Button
     variant="primary"
-    size={plus ? 'md' : 'sm'}
+    size={md ? 'md' : 'sm'}
     href={app.href(homebrewItemHash(null))}
-    sameTab
-    >{#if plus}<Icon name="plus" />{/if}{t.hbNewItem}</Button
+    sameTab><Icon name="plus" />{t.hbNewItem}</Button
   >
 {/snippet}
 

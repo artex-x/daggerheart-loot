@@ -197,6 +197,34 @@
     });
   });
 
+  /* Rule 20: a navigation that takes the pressed link or button away with its page puts the
+     focus on `#main`, after the new page placed its own (`ModeRow`, a dialog). */
+  let lastFocus: Element | null = null;
+  $effect(() => {
+    const note = (e: FocusEvent): void => {
+      lastFocus = e.target instanceof Element ? e.target : null;
+    };
+    document.addEventListener('focusin', note);
+    return () => {
+      document.removeEventListener('focusin', note);
+    };
+  });
+  let seenNavigations: number | null = null;
+  $effect(() => {
+    const now = app.navigations;
+    untrack(() => {
+      const moved = seenNavigations !== null && seenNavigations !== now;
+      seenNavigations = now;
+      if (!moved) return;
+      void tick().then(() => {
+        const active = document.activeElement;
+        if (active && active !== document.body) return;
+        if (!lastFocus || lastFocus.isConnected) return;
+        document.getElementById('main')?.focus({ preventScroll: true });
+      });
+    });
+  });
+
   /* An arrival shows the header and waits out the scroll that comes with it: a linked
      target, the browser's restore on Back or a reload, a shorter page. */
   $effect(() => {
@@ -353,18 +381,9 @@
   {@render children()}
 </main>
 
-<!-- The selection bar comes before the footer now, not after - it is
-     `position: sticky`, not fixed, and z-index (SelBar.svelte's own
-     `.selbarwrap`, 45) is what paints it over the footer whenever it is
-     open, so a keyboard user tabbing forward used to reach the footer's
-     license link before the bar's own buttons, the reverse of what is on
-     top of what on screen. A sticky box also has a flow position, unlike a
-     fixed one: with a selection open the footer is pushed down by exactly
-     the bar's own height (measured at 1180: 5885px page height with no
-     selection, 5938px with one - the 53px difference is `.selbarwrap`'s own
-     height there), and at maximum scroll the bar rests above the footer
-     with a ~20px gap rather than overlapping it (measured at both 1180 and
-     375). -->
+<!-- The selection bar comes before the footer: it paints over the footer (z-index 45), so a
+     forward Tab reaches its buttons before the footer's links. It is fixed to the window's
+     bottom, and the footer's bottom padding keeps its height clear under the page. -->
 <SelBar {app} />
 
 <!-- The license notice is on every page on purpose: the terms ask for it, and
@@ -617,7 +636,8 @@
     width: var(--wrap);
     margin-inline: auto;
     margin-top: 20px;
-    padding: 22px 0 40px;
+    /* The selection bar is fixed over the window's bottom: the page ends above it. */
+    padding: 22px 0 calc(40px + var(--selbar-h, 0px));
     color: var(--muted2);
     font-size: var(--t-data);
     border-top: 1px solid var(--line);

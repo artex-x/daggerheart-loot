@@ -2061,12 +2061,12 @@ describe('homebrew entries', () => {
     });
   });
 
-  it('draws «Свой предмет» and the empty hint points at it', async () => {
+  it('draws «Свой предмет» on an empty list, with no instruction sentence', async () => {
     const { container } = open(fakeCloud(SEED, 'gm1'), '00000000-0000-4000-8000-000000000102');
     const row = await screen.findByRole('button', { name: 'Добавить свой предмет' });
     expect(row).toHaveAttribute('aria-expanded', 'false');
-    const hint = screen.getByText(/Свой предмет можно создать здесь же, кнопкой ниже\./);
-    expect(hint.compareDocumentPosition(row) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(container.querySelector('.empty')).toBeNull();
+    expect(container).not.toHaveTextContent(/Пока пусто/);
     await expectNoA11yViolations(container);
   });
 

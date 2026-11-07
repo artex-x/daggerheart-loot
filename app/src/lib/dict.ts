@@ -375,8 +375,6 @@ const ru = {
      the roll panel and a row's own controls. */
   rename: 'Название списка',
   listCopied: 'Список скопирован',
-  listEmptyHint:
-    'Пока пусто. Откройте «Таблицы» или «Поиск», отметьте нужное галочками и нажмите «В список» - или сделайте это прямо с карточки предмета.',
   itemNotLoaded: 'Предмет не загружен',
   listGoneSignedOut: 'Войдите, чтобы открыть список',
   listGoneSignedOutSub: 'Списки открываются только в аккаунте, где их создали. Войдите в него.',
@@ -583,7 +581,6 @@ const ru = {
     'Предмет сохранится в «Мои предметы», в «Хоумбрю». Вид, источник и остальное можно задать потом в редакторе.',
   quickAdded: 'Предмет «%s» создан и добавлен в список',
   quickFailed: 'Не получилось создать предмет. Проверьте соединение - текст остался в форме.',
-  listEmptyHintOwn: 'Свой предмет можно создать здесь же, кнопкой ниже.',
   hbErrBookGone: 'Этот источник удалили - выберите другой.',
   hbOptional: 'необязательно',
   hbGroupItem: 'Предмет',
@@ -1434,8 +1431,6 @@ const en: Dict = {
 
   rename: 'List name',
   listCopied: 'List copied',
-  listEmptyHint:
-    'Nothing here yet. Open Tables or Search, tick what you need and press "Add to list" - or do it straight from an item card.',
   itemNotLoaded: 'Item not loaded',
   listGoneSignedOut: 'Sign in to open this list',
   listGoneSignedOutSub:
@@ -1631,7 +1626,6 @@ const en: Dict = {
     'The item is saved in "My items", under "Homebrew". Its kind, source and the rest can be set later in the editor.',
   quickAdded: 'Item "%s" created and added to the list',
   quickFailed: 'Could not create the item. Check the connection - the text stays in the form.',
-  listEmptyHintOwn: 'You can also make an item of your own here, with the button below.',
   hbErrBookGone: 'This source was deleted - choose another one.',
   hbOptional: 'optional',
   hbGroupItem: 'Item',

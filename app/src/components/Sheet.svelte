@@ -8,6 +8,7 @@
   import type { Snippet } from 'svelte';
   import DialogClose from './DialogClose.svelte';
   import Toast from './Toast.svelte';
+  import { watchBarHeight } from './barHeight.js';
   import type { AppState } from '../state/app.svelte.js';
 
   interface Props {
@@ -38,6 +39,10 @@
       app.dialogOpen = false;
     };
   });
+
+  /* Up to 760 px the toast floats over the foot, not over its buttons (`Toast`). */
+  let footEl = $state<HTMLElement | undefined>(undefined);
+  $effect(() => (dialog && footEl ? watchBarHeight(footEl, '--dock-h', dialog) : undefined));
 </script>
 
 <!-- The scrim is not an element: a press on it arrives on the dialog itself. -->
@@ -62,7 +67,7 @@
       />
     </div>
     <div class="sheet-body">{@render children()}</div>
-    {#if foot}<div class="sheet-foot">{@render foot()}</div>{/if}
+    {#if foot}<div class="sheet-foot" bind:this={footEl}>{@render foot()}</div>{/if}
   </div>
   <Toast {app} inDialog />
 </dialog>
@@ -99,7 +104,7 @@
   }
 
   dialog::backdrop {
-    background: rgb(6 4 12 / 78%);
+    background: var(--scrim);
   }
 
   .sheet-card {

@@ -174,6 +174,7 @@
               <Chip
                 label={t[g.label]}
                 on={g.id === shownGroup.id}
+                place
                 onclick={() => {
                   sheetGroup = g;
                 }}

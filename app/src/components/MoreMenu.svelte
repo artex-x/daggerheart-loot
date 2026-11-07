@@ -112,6 +112,16 @@
     }
   }
 
+  /* Up to 600 px every small «Ещё» is one box: the thumb height and a compact padding, so a
+     page head holds its `h1`, its primary and «Ещё» on one row at 360 px (`/lists`).
+     `.btn.btn`: `Button`'s own `.btn.sm` rule ties this one on specificity. */
+  @media (max-width: 600px) {
+    .morewrap :global(.btn.btn.sm) {
+      gap: 4px;
+      padding-inline: 6px;
+    }
+  }
+
   /* The wrap is as narrow as the button, and the menu's width must not follow it. */
   .morewrap :global(.recmenu) {
     width: max-content;

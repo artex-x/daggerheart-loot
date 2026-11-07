@@ -30,7 +30,7 @@
   import HelpItem from './HelpItem.svelte';
   import Icon from './Icon.svelte';
   import LoadState from './LoadState.svelte';
-  import Menu from './Menu.svelte';
+  import MoreMenu from './MoreMenu.svelte';
   import NoData from './NoData.svelte';
   import PageHead from './PageHead.svelte';
   import PinItem from './PinItem.svelte';
@@ -346,16 +346,8 @@
     );
   }
 
-  /* The «Ещё» menu below 761 px: the table link, the pin and «Об этих данных». */
-  let moreOpen = $state(false);
-  let moreButton = $state<HTMLButtonElement | undefined>(undefined);
+  /* The «Ещё» menu below 761 px (`MoreMenu`): the table link, the pin and «Об этих данных». */
   const home = $derived(tablesHash(table));
-
-  /* Rule 20: the pressed item leaves with the menu, so the focus returns to «Ещё». */
-  function closeMore(): void {
-    moreOpen = false;
-    moreButton?.focus();
-  }
 
   /* A band change takes the menu or a sheet away with no `close` event, so its flag is
      reset here and a lost focus is placed. `TableNav` remounts, which resets the picker;
@@ -367,8 +359,7 @@
       const moved = seenBand !== null && seenBand !== now;
       seenBand = now;
       if (!moved) return;
-      const open = moreOpen || filterOpen || app.dialogOpen;
-      if (now !== 'narrow') moreOpen = false;
+      const open = !!document.getElementById('tables-more') || filterOpen || app.dialogOpen;
       if (now === 'wide') filterOpen = false;
       if (!open) return;
       void tick().then(() => {
@@ -727,62 +718,42 @@
   <div class="pickrow">
     {@render nav()}
     {@render viewSwitch()}
-    <div class="morewrap">
-      <button
-        type="button"
-        class="morebtn"
-        aria-haspopup="menu"
-        aria-expanded={moreOpen}
-        aria-controls={moreOpen ? 'tables-more' : undefined}
-        bind:this={moreButton}
-        onclick={() => {
-          moreOpen = !moreOpen;
-        }}><Icon name="more" /><span>{t.moreMenu}</span></button
-      >
-      {#if moreOpen && moreButton}
-        <Menu
-          control={moreButton}
-          label={t.moreMenu}
-          id="tables-more"
-          cls="moremenu"
-          onclose={() => {
-            moreOpen = false;
-          }}
-        >
-          {#if linkable}
-            <button
-              type="button"
-              role="menuitem"
-              tabindex="-1"
-              onclick={() => {
-                closeMore();
-                void copyTableLink();
-              }}><Icon name="link" />{t.tableLink}</button
-            >
-          {/if}
-          <PinItem {app} {home} onpicked={closeMore} />
-          {#if help}
-            <HelpItem
-              {help}
-              open={helpOpen}
-              onpicked={closeMore}
-              ontoggle={() => {
-                helpOpen = !helpOpen;
-              }}
-            />
-          {/if}
-        </Menu>
-      {/if}
-    </div>
+    <MoreMenu {app} id="tables-more" size="sm">
+      {#snippet children(close: () => void)}
+        {#if linkable}
+          <button
+            type="button"
+            role="menuitem"
+            tabindex="-1"
+            onclick={() => {
+              close();
+              void copyTableLink();
+            }}><Icon name="link" />{t.tableLink}</button
+          >
+        {/if}
+        <PinItem {app} {home} onpicked={close} />
+        {#if help}
+          <HelpItem
+            {help}
+            open={helpOpen}
+            onpicked={close}
+            ontoggle={() => {
+              helpOpen = !helpOpen;
+            }}
+          />
+        {/if}
+      {/snippet}
+    </MoreMenu>
   </div>
   {#if help && helpOpen}
+    <!-- «Закрыть» returns the focus to «Ещё», which held the item (rule 20). -->
     <HelpBox
       {help}
       close={{
         label: t.close,
         onclose: () => {
           helpOpen = false;
-          moreButton?.focus();
+          document.querySelector<HTMLElement>('.pickrow .morewrap > .btn')?.focus();
         }
       }}
     />
@@ -1024,7 +995,9 @@
   }
 
   /* Below 761 px: the picker, the view switch and «Ещё» on one row. */
+  /* The row anchors the «Ещё» menu up to 760 px (`MoreMenu`). */
   .pickrow {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 4px;
@@ -1044,26 +1017,13 @@
     }
   }
 
-  .morewrap {
-    position: relative;
+  /* As tall as the picker, as in the picker row of «Мои предметы». */
+  .pickrow :global(.morewrap) {
     flex: none;
   }
 
-  .morebtn {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    min-height: 40px;
-    padding: 0 7px;
-    border: 1px solid var(--line2);
-    border-radius: var(--r-sm);
-    background: var(--surface);
-    color: var(--txt);
-    font: 600 var(--t-data) / 1 var(--ui);
-  }
-
-  .morebtn:hover {
-    border-color: var(--muted2);
+  .pickrow :global(.morewrap .btn.sm) {
+    height: 40px;
   }
 
   /* The search row: the search first, «Выбрать» last, every control at one height. */
