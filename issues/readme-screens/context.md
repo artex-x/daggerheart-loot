@@ -9,7 +9,8 @@
 - No GitHub issue. The owner asked for it in a session on 2026-11-07.
 - A previous session made promo screenshots with ad hoc Puppeteer scripts in a
   scratch folder (not in the repository). Its findings are below.
-- Task id `readme-screens` is the planner's pick; the owner confirms it.
+- Task id `readme-screens`, confirmed by the owner on 2026-11-07, with the
+  recommended answers to plan.md Q2-Q4.
 
 ## Facts found (2026-11-07, at `62070925`)
 - Puppeteer `^25.9.0` is a dev dependency. `pixelmatch` and `pngjs` are too.

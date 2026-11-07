@@ -4,7 +4,7 @@
 ## Status
 - Task status: in_progress (planned, not started)
 - Last agent: planner
-- NEEDS_HUMAN_CONFIRMATION: yes (plan.md, Q1-Q4)
+- NEEDS_HUMAN_CONFIRMATION: no (owner accepted the recommended Q1-Q4, 2026-11-07)
 - Branch: `claude/readme-screens`
 - Base / starting commit: `62070925`
 - Pushed: no
@@ -21,7 +21,7 @@
 - Commands run (exact): none; the plan changes no code.
 - Gates: none.
 
-## Next batch (implement-ready after the owner answers Q1-Q4)
+## Next batch (implement-ready)
 - Name: B1
 - Objective: one command makes 8 README screenshots; both READMEs show them.
 - In scope: plan.md D1-D5 and the B1 acceptance list.
@@ -45,7 +45,7 @@
   homebrew entry from the list and say so in the handoff.
 
 ## Blockers
-- The owner's answers to Q1-Q4.
+- None.
 
 ## Deferred
 - A screen of the homebrew editor for a future guide document.

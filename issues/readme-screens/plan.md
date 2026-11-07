@@ -6,8 +6,8 @@ This plan adds reproducible screenshots of the app to `README.md` and
 ## Status
 
 - Planned 2026-11-07 (planner). Not started. One implement batch, B1.
-- Open questions Q1-Q4 below wait for the owner. The batch uses the
-  recommended option where the owner gives no answer.
+- Owner, 2026-11-07: the recommended answer to each of Q1-Q4 is accepted.
+  B1 is implement-ready.
 - Plan review: not declared. The plan has one batch and no contract change.
 
 ## Design
@@ -181,7 +181,7 @@ look, one CI run about 15 min, one reviewer run (trigger: a check stage in
 `tools/check/lib.mjs` changes). Total about 40-50 min of gates plus the
 owner's time.
 
-## Open questions for the owner
+## Owner answers (2026-11-07: the recommended answer to each)
 
 - Q1. Task id `readme-screens`: keep it? (Recommended: yes.)
 - Q2. Fixture data: option A, a separate showcase user `gm5`? (Recommended: A.)
