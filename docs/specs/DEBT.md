@@ -193,9 +193,28 @@ and D140 are two more short-window layouts; D137 to D139 are focus and scroll ru
   follow the column's real top while it is unstuck (a measured custom property such as `--fcol-top`, updated on
   scroll and resize, `max-height: calc(100dvh - max(var(--anchor-top), var(--fcol-top)) - ...)`), so the last
   section is in the window at scroll 0 with no page scroll. Check the phone sheet (it is not this column) is unchanged.
+- **Same pattern found by a code scan, 2026-11-07** (to measure before fixing): the sticky preview of the
+  homebrew editor, `HomebrewEditor.svelte` `.preview` from 800 px (`position: sticky; top: 130px;
+  max-height: calc(100vh - 146px); overflow-y: auto`). The cap fits the window only when stuck, so at page top
+  (the preview's natural top is below 130 px) its bottom can sit below the fold; it also hardcodes 130 and 146 px
+  where the filter column uses `--anchor-top` (the header is 63, 105 or 111 px by band), and uses `100vh` where the
+  others use `100dvh`. Fix with the same measured top and the `--sticky-h` / `--anchor-top` tokens.
+  The scan found no other sticky column with a capped inner scroll (the sticky bottom bars of the editor and
+  `PrintPage` are not columns). `overscroll-behavior: contain` also sits on `Menu.svelte`, `ModeRow.svelte` and
+  `Sheet.svelte`: those are overlays, where containing the scroll is right; only the page-level column is wrong.
 - **How to verify the fix**: a states case opens `#/tables/eq_weapon` at 1920x950 and 1180x720, scrolls the
   column to its end and reads the last section's bottom inside the window at page scroll 0; the column's bottom
-  never extends past the window while the page scrolls.
+  never extends past the window while the page scrolls. The same read on the editor preview
+  (`#/homebrew/new ~ equipment` with a long record, 1180x720 and 1920x950). The sweep (below) lists every
+  other candidate.
+- **Sweep to run with the fix** (a probe script in the scratchpad, then a states case for what it finds): for
+  each sticky or capped column and each overlay, at 360x640, 768x1024, 1000x720, 1180x720 and 1920x950, at page
+  scroll 0 and after a scroll, read (a) the element's bottom against the window, (b) whether its last child is
+  reachable with its own scroll only, (c) for an overlay, whether an ancestor's clip (`overflow` not `visible`)
+  crops it and whether its opening scrolls any ancestor. Candidates: `FilterPanel` column, the editor preview, the
+  record dialog's «Ещё» menu and «В список» popover, `ModeRow` supplements menu (cap `100dvh - 186px` assumes a
+  control near the top), `MoreMenu` callers, `HelpBox`, `SharePanel`, `RequestsPanel`, the print dock and the
+  editor bar.
 
 ## Copy and prompt leftovers (task `57-debt`, owner first)
 
