@@ -142,17 +142,16 @@ describe('rollLabel', () => {
 });
 
 describe('rollPool', () => {
-  const rec = (id: string, line?: string): Record_ =>
-    ({
-      id,
-      src: 'arazo',
-      kind: 'equip',
-      ru: id,
-      en: id,
-      rud: '',
-      ende: '',
-      ...(line ? { eq: { t: 'weapon', tier: 1, line } } : {})
-    }) as Record_;
+  const rec = (id: string, line?: string): Record_ => ({
+    id,
+    src: 'arazo',
+    kind: 'equip',
+    ru: id,
+    en: id,
+    rud: '',
+    ende: '',
+    ...(line ? { eq: { t: 'weapon', tier: 1, line } } : {})
+  });
 
   it('drops the rungs of an upgrade line and keeps its head and the single items, in order', () => {
     const rows = [rec('a1', 'a1'), rec('a2', 'a1'), rec('a3', 'a1'), rec('b'), rec('c1', 'c1')];
