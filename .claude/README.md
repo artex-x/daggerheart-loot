@@ -753,6 +753,13 @@ commit gate; ...` or `check:fast: FAIL at <step>`. A change to a module that
 most files import (`lib/dict.ts`, `state/app.svelte.ts`) makes the related
 run close to the whole vitest stage. Measured 215-310 s (2026-10-07).
 
+`check:fast` does not run ESLint. Run `npm run lint:typed` and `npm run
+lint:untyped` before every push; the CI `check` job runs both inside `npm run
+check` and fails the push on a finding (two CI failures on `roll-per-line`
+came from skipping them). `lib/homebrew.timed.test.ts` ("300 cards in under
+50 ms") measured 56-58 ms on this host on 2026-11-07 and passed on a re-run;
+a failure with a time near the bound is that flake, not a regression.
+
 **Stage cache.** Between `begin` and `arm`, the `npm run check` chain runs
 `node --test tools/check/lib.test.mjs` (`check:fast` does not, so the guards
 G1-G3 below run only in `npm run check` and in CI) and then

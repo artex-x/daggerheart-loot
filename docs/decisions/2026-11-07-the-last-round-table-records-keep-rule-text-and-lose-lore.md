@@ -6,3 +6,4 @@
 - Rejected: keep the lore (the `lr` descriptions average 344 characters against 147 for the other records); rewrite or summarize the lore (it invents text the book does not print); move the lore to a `lore` field or a file (dead data that nothing reads).
 - Evidence: after the trim `lr` averages 225 (EN) and 247 (RU) characters; the longest text is `lr6` at 431 (EN) and `lr20` at 510 (RU); `tests/derived.js` caps a record at 450 and 520.
 - Accepted trade-off: `lr` now differs from the other sources, which keep their descriptive sentences (`voa` averages 319 characters, `dv` 228); applying the rule to another source is a separate owner decision.
+- Known losses, left to the owner to restore: `lr1` loses "cannot move or travel on its own" and "can stay animated outside the Tower"; `lr25` keeps its Doppelcrock rule but loses the only sentence that says who Doppelcrock is (the sentient yeastmother).
