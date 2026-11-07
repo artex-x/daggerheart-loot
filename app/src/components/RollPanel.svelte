@@ -2,15 +2,16 @@
   /* A roll on one list of records: pick a number, or let the dice pick it, and
      read what came up.
 
-     This is the shape five sections share. Wondrous, Dread and The Dragon's
-     Vault roll over a whole table; Vault of Ages and Communities roll inside
-     a part of one, and pass a `picker` that chooses which part. Core
-     rules and the alternate tables roll several cards at once and get their
-     own panels; what they share with this one is the number field and the
-     result card.
+     Whole tables (Wondrous, Dread, The Dragon's Vault and the other supplements
+     of `ROLL_TABLE` in App.svelte) roll here directly; Vault of Ages, Communities
+     and Many Worlds Tavern roll inside a part of one, and pass a `picker` that
+     chooses which part. Core rules and the alternate tables roll several cards at
+     once and get their own panels; what they share with this one is the number
+     field and the result card.
 
-     The rows are a prop rather than a table name, because two of the five
-     callers do not have a table name to give - their rows are a slice. */
+     The rows are a prop rather than a table name, because the picker callers do
+     not have a table name to give - their rows are a slice. A caller passes the
+     whole table: the panel drops the rungs of an upgrade line itself (`rollPool`). */
   import { untrack } from 'svelte';
   import Button from './Button.svelte';
   import Die from './Die.svelte';
@@ -19,7 +20,7 @@
   import RollPage from './RollPage.svelte';
   import RollResult from './RollResult.svelte';
   import { helpFor } from '../lib/help.js';
-  import { pick, rollLabel as rollLabelFor } from '../lib/roll.js';
+  import { pick, rollLabel as rollLabelFor, rollPool } from '../lib/roll.js';
   import type { AppState } from '../state/app.svelte.js';
   import type { Record_ } from '../lib/types.js';
   import type { Snippet } from 'svelte';
@@ -44,7 +45,8 @@
 
   const t = $derived(app.t);
   const index = $derived(app.index);
-  const max = $derived(rows.length);
+  const pool = $derived(rollPool(rows));
+  const max = $derived(pool.length);
 
   let n = $state(1);
 
@@ -60,7 +62,7 @@
   /* The record for whatever number is in the field, from the first paint. The
      live app opens on row one rather than on an empty panel, and a page that
      shows nothing until it is pressed reads as not having loaded. */
-  const result = $derived(rows[n - 1] ?? null);
+  const result = $derived(pool[n - 1] ?? null);
 
   /* The record and the index together, so the card below is reached with both
      in hand: a result exists only where an index does, and pairing them says

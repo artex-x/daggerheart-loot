@@ -289,13 +289,13 @@ const ARAZO: Record<Lang, Help> = {
     button: 'Об этой книге',
     paragraphs: [
       p(
-        'В таблице 78 позиций - 10 предметов и 68 единиц оружия и брони, в порядке книги. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно.'
+        'Бросок выбирает из 27 позиций - 10 предметов и 17 единиц снаряжения (оружие и броня), в порядке книги. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно.'
       ),
       p(
         'Своей таблицы броска у книги нет, вместо неё - «Предназначение»: на нулевой сессии каждый игрок выбирает из всех карточек четыре интересные, а мастер раскладывает их по ролям в кампании. Слух - о предмете только говорят; Немезида - им владеет враг; Приз - его нужно заслужить или купить; Суждённый - он найдётся сам, в нужный момент. Кнопка здесь только на случай, когда бросок всё же нужен.'
       ),
       p(
-        'Все семнадцать единиц снаряжения растут вместе с владельцем: у каждой четыре версии - базовая, Улучшенная, Продвинутая и Легендарная. У каждой версии свой номер, поэтому снаряжение выпадает чаще предметов. Урон, пороги и часть свойств мы подогнали под оружие и броню из Core, поэтому они отличаются от книги.'
+        'Все семнадцать единиц снаряжения растут вместе с владельцем: у каждой четыре версии - базовая, Улучшенная, Продвинутая и Легендарная. Бросок даёт базовую версию; остальные три открываются из карточки, в ряду «Ранг». Урон, пороги и часть свойств мы подогнали под оружие и броню из Core, поэтому они отличаются от книги.'
       ),
       { parts: ['Источник: дополнение ', ARAZO_LINK, '.'] }
     ]
@@ -304,13 +304,13 @@ const ARAZO: Record<Lang, Help> = {
     button: 'About this book',
     paragraphs: [
       p(
-        "The table holds 78 entries - 10 items and 68 weapons and armor, in the book's own order. No die covers that range, so the button picks an entry at random."
+        "A roll picks from 27 entries - 10 items and 17 pieces of equipment (weapons and armor), in the book's own order. No die covers that range, so the button picks an entry at random."
       ),
       p(
         'The book has no roll table; it offers Destiny instead: at session zero each player picks four cards that interest them from the whole set, and the GM gives each a role in the campaign. A Rumor is only talked about; a Nemesis item is borne by an enemy; a Prize must be earned or bought; a Fated item turns up on its own, at the right moment. The button is here only for when a roll is still wanted.'
       ),
       p(
-        'All seventeen pieces of equipment grow with their bearer: each has four versions - base, Improved, Advanced and Legendary. Each version has its own number, so equipment comes up more often than items. Damage, thresholds and some feature text are matched to the Core weapons and armor by this site, so they differ from the book.'
+        'All seventeen pieces of equipment grow with their bearer: each has four versions - base, Improved, Advanced and Legendary. A roll gives the base version; open the card to reach the other three in its "Tier" row. Damage, thresholds and some feature text are matched to the Core weapons and armor by this site, so they differ from the book.'
       ),
       { parts: ['Source: the ', ARAZO_LINK, ' supplement.'] }
     ]
@@ -457,10 +457,10 @@ const PH: Record<Lang, Help> = {
     button: 'Об этой книге',
     paragraphs: [
       p(
-        'В таблице 93 позиции из трёх томов - 18 предметов, 7 расходников и 68 единиц оружия и брони, в порядке книг. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно.'
+        'Бросок выбирает из 45 позиций трёх томов - 18 предметов, 7 расходников, 16 единиц оружия и 4 доспеха, в порядке книг. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно.'
       ),
       p(
-        'Шестнадцать видов оружия растут вместе с владельцем: у каждого четыре версии - базовая, Улучшенная, Продвинутая и Легендарная. У каждой версии свой номер, поэтому оружие выпадает чаще предметов. Оружие и броня есть и в таблицах снаряжения - там их отбирает фильтр «Источник».'
+        'Шестнадцать видов оружия растут вместе с владельцем: у каждого четыре версии - базовая, Улучшенная, Продвинутая и Легендарная. Бросок даёт базовую версию; остальные открываются из карточки, в ряду «Ранг». Оружие и броня есть и в таблицах снаряжения - там их отбирает фильтр «Источник».'
       ),
       p(
         'Третий том добавляет магические сёдла и инфузии. Правила верховой езды, сёдел, инфузий и состояния Особо Разыскиваемый - в карточках правил на записях, которые на них ссылаются.'
@@ -472,10 +472,10 @@ const PH: Record<Lang, Help> = {
     button: 'About this book',
     paragraphs: [
       p(
-        "The table holds 93 entries from three volumes - 18 items, 7 consumables and 68 weapons and armor, in the books' own order. No die covers that range, so the button picks an entry at random."
+        "A roll picks from 45 entries over three volumes - 18 items, 7 consumables, 16 weapons and 4 armors, in the books' own order. No die covers that range, so the button picks an entry at random."
       ),
       p(
-        'Sixteen weapons grow with their bearer: each has four versions - base, Improved, Advanced and Legendary. Each version has its own number, so weapons come up more often than items. The weapons and armor are in the equipment tables too - the "Source" filter picks them out there.'
+        'Sixteen weapons grow with their bearer: each has four versions - base, Improved, Advanced and Legendary. A roll gives the base version; open the card to reach the others in its "Tier" row. The weapons and armor are in the equipment tables too - the "Source" filter picks them out there.'
       ),
       p(
         'Volume 3 adds magic saddles and Infusions. The rules for mounts, saddles, Infusions and the Most Wanted condition are rule cards on the records that point at them.'
@@ -537,7 +537,7 @@ const VH: Record<Lang, Help> = {
     button: 'Об этой книге',
     paragraphs: [
       p(
-        'В разделе четыре комнаты приключения, у каждой своя таблица добычи: Подвал - 4 позиции, Гардеробная - 4, Лаборатория - 3, Библиотека - 4. Сначала выберите комнату, потом бросьте кость: в таблице из 4 позиций это d4. В Лаборатории книга бросает d3; такой кости у кнопки нет, поэтому там она выбирает позицию случайно.'
+        'В разделе 15 позиций приключения - 7 предметов и 8 расходников, в порядке книги. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно.'
       ),
       p(
         'Зелье Воспоминаний улучшается до Большого Зелья Воспоминаний, а Зелье Предвидения - до Легендарного Зелья Предвидения.'
@@ -549,7 +549,7 @@ const VH: Record<Lang, Help> = {
     button: 'About this book',
     paragraphs: [
       p(
-        'This section holds the four rooms of the adventure, each with its own loot table: The Basement has 4 entries, The Dressing Room 4, The Laboratory 3 and The Library 4. Pick a room, then roll: a 4-entry table rolls a d4. The book rolls a d3 in The Laboratory; the button has no such die, so there it picks an entry at random.'
+        "This section holds the adventure's 15 entries - 7 items and 8 consumables, in the book's own order. No die covers that range, so the button picks an entry at random."
       ),
       p(
         'The Remembrance Potion upgrades to the Major Remembrance Potion, and the Foresight Potion to the Legendary Foresight Potion.'

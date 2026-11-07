@@ -866,12 +866,12 @@ const STATES = [
   {
     id: '#/roll/arazo',
     route: '#/roll/arazos_artifacts',
-    why: "a roll on Arazo's Artifacts, the eleventh section"
+    why: "a roll on Arazo's Artifacts, the eleventh section: one pool of 27, an upgrade line rolls at its head"
   },
   {
     id: '#/roll/arazo ~ help',
     route: '#/roll/arazos_artifacts',
-    why: 'the help panel, unfolded: Destiny instead of a roll table, and the four versions of every piece of equipment',
+    why: 'the help panel, unfolded: Destiny instead of a roll table, and the four versions of every piece of equipment, the other three opened from the card',
     enter: async (d) => {
       await d.click('Об этой книге');
     }
@@ -963,12 +963,12 @@ const STATES = [
     }
   },
 
-  /* Pistolheart and The Last Round Table roll one pool each; Escape the Veiled Halls rolls
-     inside one room's table, a d4 or, in The Laboratory, 1-3 at random. */
+  /* Pistolheart, The Last Round Table and Escape the Veiled Halls roll one pool each; an
+     upgrade line is one entry, its head. */
   {
     id: '#/roll/ph',
     route: '#/roll/pistolheart',
-    why: 'Pistolheart: one pool of 93, the button picks 1-93 at random, the first rung of a line'
+    why: 'Pistolheart: one pool of 45, the button picks 1-45 at random, the head of a line'
   },
   {
     id: '#/roll/ph ~ help',
@@ -986,20 +986,12 @@ const STATES = [
   {
     id: '#/roll/vh',
     route: '#/roll/escape_the_veiled_halls',
-    why: 'Escape the Veiled Halls on its first room, The Basement: «Комната» and a d4, the ten supplements'
-  },
-  {
-    id: '#/roll/vh ~ laboratory',
-    route: '#/roll/escape_the_veiled_halls',
-    why: 'The Laboratory: three entries, the button picks 1-3 at random',
-    enter: async (d) => {
-      await d.part('Лаборатория');
-    }
+    why: 'Escape the Veiled Halls: one pool of 15, no picker, the button picks 1-15 at random, the ten supplements'
   },
   {
     id: '#/roll/vh ~ help',
     route: '#/roll/escape_the_veiled_halls',
-    why: 'the help panel, unfolded: the four room tables, the d3 room, the two potion upgrades',
+    why: 'the help panel, unfolded: the 15 entries, the two potion upgrades',
     enter: async (d) => {
       await d.click('Об этой книге');
     }
@@ -1390,12 +1382,9 @@ const STATES = [
     why: 'a plain body with a kind row, 26 rows in book order'
   },
   {
-    id: '#/tables/vh ~ library picked',
+    id: '#/tables/vh',
     route: '#/tables/escape_the_veiled_halls',
-    why: 'the filter column with its kind and room rows, The Library picked: 4 rows',
-    enter: async (d) => {
-      await d.click('Библиотека');
-    }
+    why: 'a plain body with a kind row, 15 rows in book order'
   },
   {
     id: '#/tables/other_starting',

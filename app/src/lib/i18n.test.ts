@@ -20,7 +20,6 @@ import { TABLE_SLUG } from './hash.js';
 import { whereFrom } from './label.js';
 import type { Rarity } from './money.js';
 import { communities, communityGroup, sectionGroup } from './sections.js';
-import { ROOM_ORDER, roomName } from './rooms.js';
 import { VOLUME_ORDER, volumeName } from './sectionProps.js';
 import {
   descOf,
@@ -486,7 +485,6 @@ describe('the preview card quotes the app', () => {
     LABEL_GROUPS: Record<string, readonly string[]>;
     REALM_LABEL: Record<string, readonly [string, string]>;
     VOLUME_LABEL: Record<string, readonly [string, string]>;
-    ROOM_LABEL: Record<string, readonly [string, string]>;
     TABLE_SLUG: Record<string, string>;
   };
   const derived = require_('../../../tools/derived.js') as {
@@ -510,8 +508,7 @@ describe('the preview card quotes the app', () => {
     'commF',
     'frameF',
     'realmF',
-    'volF',
-    'roomF'
+    'volF'
   ] as const;
 
   it.each(['ru', 'en'] as const)('copies the words of dict.ts (%s)', (lang) => {
@@ -535,14 +532,11 @@ describe('the preview card quotes the app', () => {
     expect(share.REALM_LABEL).toEqual(want);
   });
 
-  it('names every volume and room as the app does, in both languages', () => {
+  it('names every volume as the app does, in both languages', () => {
     expect(share.VOLUME_LABEL).toEqual(
       Object.fromEntries(
         VOLUME_ORDER.map((v) => [String(v), [volumeName(v, 'ru'), volumeName(v, 'en')]])
       )
-    );
-    expect(share.ROOM_LABEL).toEqual(
-      Object.fromEntries(ROOM_ORDER.map((id) => [id, [roomName(id, 'ru'), roomName(id, 'en')]]))
     );
   });
 
@@ -628,9 +622,7 @@ describe('the preview card quotes the app', () => {
       ['mwt', 'f_kind-equip.realm-sporopolis-godsvale'],
       ['mwt', 'f_kind-item_realm-wagerwood'],
       ['ph', 'f_vol-2'],
-      ['ph', 'f_kind-equip.vol-1-3'],
-      ['vh', 'f_room-library'],
-      ['vh', 'f_kind-consumable.room-basement-laboratory']
+      ['ph', 'f_kind-equip.vol-1-3']
     ];
     for (const [table, segment] of cases) {
       expect(share.LABEL_GROUPS[table]).toEqual(groupsFor(table));
@@ -647,7 +639,6 @@ describe('the preview card quotes the app', () => {
       frames: Record<string, { n: number }>;
       realms: Record<string, { n: number }>;
       volumes: Record<string, { n: number }>;
-      rooms: Record<string, { n: number }>;
     };
     const altCount = (kind: 'item' | 'consumable'): number =>
       (Object.keys(LOOT.alt?.[kind] ?? {}) as Rarity[]).reduce(
@@ -695,8 +686,6 @@ describe('the preview card quotes the app', () => {
         VOLUME_ORDER.map((v) => [String(v), { n: sectionGroup(index, 'ph', String(v)).length }])
       )
     );
-    expect(names.rooms).toEqual(
-      Object.fromEntries(ROOM_ORDER.map((r) => [r, { n: sectionGroup(index, 'vh', r).length }]))
-    );
+    expect(names).not.toHaveProperty('rooms');
   });
 });

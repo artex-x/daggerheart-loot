@@ -8,7 +8,7 @@ the address of an edit: line numbers drift (the numbers below are `new-items` at
 
 ## Status
 
-- State: B1 implement-ready (plan review applied 2026-11-07); B2 (the `lr` trim) planned, runs after B1. Nothing implemented.
+- State: B1 implemented 2026-11-07 (one commit, Parts A and B; handoff "Completed"); B2 (the `lr` trim) is next, then the B1 review.
 - Plan review: required before B1 (trigger: public contract change - the `room` filter group of `vh`, the `room`
   column of `catalog.csv` and `catalog-index.csv`, the `rooms` key of `names.json`, the roll range of three routes) - done 2026-11-07, reviews/plan-B1.md (fix-then-continue)
 - Plan review findings applied: reviews/plan-B1.md
@@ -30,7 +30,7 @@ the address of an edit: line numbers drift (the numbers below are `new-items` at
   - Nit 8, `handoff.md`: each template field has its own line.
 - Plan review: not required for B2 (no trigger fired: the text of 26 records; no contract, no stored shape)
 - NEEDS_HUMAN_CONFIRMATION: no (no product law changes; D1-D5 are settled by the owner; B2's rule is the owner's default and the owner may change it)
-- Next batch: B1 (one batch, two parts: A `vh` is one flat list, B one roll row per item); then B2 (the `lr` trim).
+- Next batch: B2 (the `lr` trim); then the code review of B1 and B2 together.
 
 ## Start gate
 

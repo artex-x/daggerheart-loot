@@ -5615,6 +5615,8 @@ const FIRST_SCREEN = [
   { state: '#/roll/alt ~ crit', shipped: true },
   { state: '#/roll/voa', shipped: true },
   { state: '#/roll/wondrous', shipped: true },
+  /* A whole-table roll with no picker since its rooms were retired (2026-11-07). */
+  { state: '#/roll/vh', shipped: true },
   { state: '#/tables/eq_weapon', shipped: true },
   { state: '#/tables/eq_weapon ~ two filters', shipped: true },
   { state: '#/i/ci1', shipped: true },
@@ -6559,11 +6561,7 @@ async function rollPageLayout() {
           );
         }
 
-        for (const route of [
-          '#/roll/many_worlds_tavern',
-          '#/roll/vault_of_ages',
-          '#/roll/escape_the_veiled_halls'
-        ]) {
+        for (const route of ['#/roll/many_worlds_tavern', '#/roll/vault_of_ages']) {
           await d.open(route, { lang });
           const longest = await page.$eval(
             '.pick select',

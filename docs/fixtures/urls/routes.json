@@ -129,7 +129,7 @@
   },
   {
     "hash": "#/roll/pistolheart",
-    "why": "Pistolheart, one pool of 93",
+    "why": "Pistolheart, one pool of 45",
     "resolves": {
       "hash": "#/roll/pistolheart",
       "tab": "roll",
@@ -153,7 +153,7 @@
   },
   {
     "hash": "#/roll/escape_the_veiled_halls",
-    "why": "Escape the Veiled Halls, a room, then a roll inside it",
+    "why": "Escape the Veiled Halls, one pool of 15",
     "resolves": {
       "hash": "#/roll/escape_the_veiled_halls",
       "tab": "roll",
@@ -348,7 +348,7 @@
   },
   {
     "hash": "#/tables/escape_the_veiled_halls",
-    "why": "a table sectioned by room",
+    "why": "a plain table with a kind row, 15 rows",
     "resolves": {
       "hash": "#/tables/escape_the_veiled_halls",
       "tab": "tables",
@@ -361,17 +361,15 @@
   },
   {
     "hash": "#/tables/escape_the_veiled_halls/f_room-laboratory",
-    "why": "a room filter, the three-entry table",
+    "why": "a retired room filter: the group is unknown, so the table stays whole",
     "resolves": {
       "hash": "#/tables/escape_the_veiled_halls/f_room-laboratory",
       "tab": "tables",
       "mode": null,
-      "rows": 3,
+      "rows": 15,
       "printCards": 0,
-      "picked": [
-        "room:laboratory"
-      ],
-      "count": "3 из 15"
+      "picked": [],
+      "count": "15"
     }
   },
   {

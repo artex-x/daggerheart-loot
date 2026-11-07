@@ -70,7 +70,7 @@ How data is organized today (do not reinvent this)
    - `id` - stable public id
    - `src` / source
    - `kind` - `item` | `consumable` (equipment may also appear with an `eq` block)
-   - `roll` - table number when the set is rolled
+   - `roll` - table number when the set is rolled; an upgrade line is one roll row, its head: give its rungs no `roll` (owner, 2026-11-05)
    - `en` / `ru` - names
    - `ende` / `rud` - descriptions
    - `img` - image filename

@@ -1968,6 +1968,33 @@ describe('accessibility', () => {
   });
 });
 
+/* A rung of an upgrade line keeps its row but has no roll (docs/specs/FEATURES.md, "Rolling"). */
+describe('an upgrade line on a rolled table', () => {
+  const REAL = readLoot();
+  const open = (): void => {
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/arazo'), data: fakeData(REAL) })
+    });
+  };
+
+  it('draws the roll number on the head row and no number on a rung row', () => {
+    open();
+    expect(document.querySelector('[data-row="aa19"] .rnum')).toHaveTextContent('7');
+    expect(document.querySelector('[data-row="aa20"]')).toBeInTheDocument();
+    expect(document.querySelector('[data-row="aa20"] .rnum')).toBeNull();
+  });
+
+  it('draws the tier on a rung tile and the roll number on the head tile', async () => {
+    const { container } = render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/arazo'), data: fakeData(REAL) })
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Сетка' }));
+    expect(document.querySelector('[data-row="aa19"] .tile-n')).toHaveTextContent('7');
+    expect(document.querySelector('[data-row="aa20"] .tile-n')).toHaveTextContent('Ранг 2');
+    await expectNoA11yViolations(container);
+  });
+});
+
 describe("a row with the author's own relations", () => {
   it('draws no relation line and no Core tag: the dialog holds them', async () => {
     const REAL = readLoot();

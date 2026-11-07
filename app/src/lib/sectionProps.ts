@@ -1,16 +1,15 @@
 /* The tables sectioned by a property each record carries, and what each value is called.
  *
- * Many Worlds Tavern is sectioned by `realm`, Pistolheart by `vol` and Escape the Veiled
- * Halls by `room`. One descriptor per table names the property, its values in book order
- * and their names; the table page's sections, the facet row, the record path's last leaf
- * and the room picker all read it. The property name is also the filter group, a frozen
- * address word (docs/specs/ROUTES.md, "Filter grammar").
+ * Many Worlds Tavern is sectioned by `realm` and Pistolheart by `vol`. One descriptor per
+ * table names the property, its values in book order and their names; the table page's
+ * sections, the facet row, the record path's last leaf and the realm picker all read it.
+ * The property name is also the filter group, a frozen address word
+ * (docs/specs/ROUTES.md, "Filter grammar").
  *
  * Pure module: no DOM, no data beyond what is handed in. */
 
 import { REALM_ORDER, realmName } from './realms.js';
 import type { Realm } from './realms.js';
-import { ROOM_ORDER, roomName } from './rooms.js';
 import type { Dict } from './dict.js';
 import type { Lang, Record_, TableId } from './types.js';
 
@@ -27,7 +26,7 @@ export function volumeName(v: Volume | string, lang: Lang): string {
 
 export interface SectionProp {
   /** The record field, which is also the filter group. */
-  group: 'realm' | 'vol' | 'room';
+  group: 'realm' | 'vol';
   /** The facet row's caption. */
   label: keyof Dict;
   /** The values, in book order, as the address writes them. */
@@ -55,13 +54,6 @@ export const SECTION_PROP: Partial<Record<TableId, SectionProp>> = {
     name: volumeName,
     chip: (id) => id,
     valueOf: (it) => (it.vol == null ? '' : String(it.vol))
-  },
-  vh: {
-    group: 'room',
-    label: 'roomF',
-    order: ROOM_ORDER,
-    name: roomName,
-    valueOf: (it) => it.room ?? ''
   }
 };
 

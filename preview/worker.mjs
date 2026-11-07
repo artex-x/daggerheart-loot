@@ -21,7 +21,6 @@ import {
   TEXT,
   FRAME_LABEL,
   REALM_LABEL,
-  ROOM_LABEL,
   VOLUME_LABEL,
   LABEL_GROUPS,
   TABLE_PATH,
@@ -528,10 +527,6 @@ function volumeLabel(v, lang) {
   return has(VOLUME_LABEL, v) ? pick(VOLUME_LABEL[v], lang) : null;
 }
 
-function roomLabel(r, lang) {
-  return has(ROOM_LABEL, r) ? pick(ROOM_LABEL[r], lang) : null;
-}
-
 /* The tables sectioned by a record property: the filter group, its word, the names and
    the `names.json` counts of its sections (app/src/lib/sectionProps.ts). */
 const SECTIONED = {
@@ -542,8 +537,7 @@ const SECTIONED = {
     name: volumeLabel,
     chip: (v) => (has(VOLUME_LABEL, v) ? v : null),
     counts: 'volumes'
-  },
-  vh: { group: 'room', word: 'roomF', name: roomLabel, counts: 'rooms' }
+  }
 };
 
 /** Returns the card of the catalog table `table`, with the anchor or the filter `tail`. */

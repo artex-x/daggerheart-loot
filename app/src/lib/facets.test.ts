@@ -361,8 +361,8 @@ describe('the realm row', () => {
   });
 });
 
-describe('the volume and room rows', () => {
-  it('follow the kind row on Pistolheart and Escape the Veiled Halls, in book order', () => {
+describe('the volume row', () => {
+  it('follows the kind row on Pistolheart, in book order; Escape the Veiled Halls has the kind row only', () => {
     const index = buildIndex({
       items: {
         ph: [
@@ -370,8 +370,8 @@ describe('the volume and room rows', () => {
           row({ id: 'p2', src: 'ph', kind: 'consumable', vol: 1 })
         ],
         vh: [
-          row({ id: 'v1', src: 'vh', kind: 'item', room: 'library' }),
-          row({ id: 'v2', src: 'vh', kind: 'consumable', room: 'basement' })
+          row({ id: 'v1', src: 'vh', kind: 'item' }),
+          row({ id: 'v2', src: 'vh', kind: 'consumable' })
         ]
       },
       eq: []
@@ -388,16 +388,7 @@ describe('the volume and room rows', () => {
       ]
     });
     const vh = facetRows(index, 'vh', dict('en'), 'en');
-    expect(vh[1]).toEqual({
-      group: 'room',
-      label: 'Room',
-      values: [
-        { value: 'basement', label: 'The Basement' },
-        { value: 'dressing', label: 'The Dressing Room' },
-        { value: 'laboratory', label: 'The Laboratory' },
-        { value: 'library', label: 'The Library' }
-      ]
-    });
+    expect(vh.map((r) => r.group)).toEqual(['kind']);
   });
 });
 

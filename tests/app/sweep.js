@@ -171,8 +171,7 @@ const PAGES = [
     ['#/tables/eq_weapon/f_tier-2_cls-mag', 'ссылка на фильтры'],
     ['#/tables/community_items/Seaborne', 'якорь сообщества'],
     ['#/tables/many_worlds_tavern/warrens', 'якорь мира'],
-    ['#/tables/pistolheart/2', 'якорь тома'],
-    ['#/tables/escape_the_veiled_halls/laboratory', 'якорь комнаты']
+    ['#/tables/pistolheart/2', 'якорь тома']
   ])
   /* The print page's states, three drawn sheets and the two print prompts, at every
      width. The sheets are seeded print sets (`tests/app/lib.js`, `PRINT_SETS`). */

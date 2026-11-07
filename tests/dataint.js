@@ -13,6 +13,8 @@ const DATA = L.items,
   ALT = L.alt,
   REFS = L.refs;
 const ALL = [].concat(...Object.values(DATA), EQ);
+/* A tier past an upgrade line's head; the twin of `isRung` in app/src/lib/roll.ts. */
+const isRung = (x) => !!(x.eq && x.eq.line) && x.eq.line !== x.id;
 
 console.log('identifiers');
 const byId = {};
@@ -67,19 +69,12 @@ ALL.forEach((x) =>
     x.id + ': a realm off mwt, or mwt with none'
   )
 );
-/* A Pistolheart record names the volume it is printed in, an Escape the Veiled Halls
-   record the room whose table it is in; no other record carries either. */
+/* A Pistolheart record names the volume it is printed in; no other record carries one. */
 ALL.forEach((x) => {
   ok(
     (x.src === 'ph') === (x.vol !== undefined) &&
       (x.vol === undefined || [1, 2, 3].includes(x.vol)),
     x.id + ': a volume off ph, ph with none, or an unknown volume ' + x.vol
-  );
-  ok(
-    (x.src === 'vh') === (x.room !== undefined) &&
-      (x.room === undefined ||
-        ['basement', 'dressing', 'laboratory', 'library'].includes(x.room)),
-    x.id + ': a room off vh, vh with none, or an unknown room ' + x.room
   );
 });
 
@@ -301,25 +296,9 @@ Object.keys(DATA).forEach((table) => {
     Object.entries(byR).forEach(([realm, rows]) =>
       ROLL_POOLS.push([table + '/' + realm, rows])
     );
-  } else if (table === 'vh') {
-    /* Each room prints its own loot table: d4, d4, d3, d4. */
-    const byR = {};
-    DATA[table].forEach((x) => {
-      (byR[x.room] = byR[x.room] || []).push(x);
-    });
-    ok(
-      JSON.stringify(Object.keys(byR)) ===
-        JSON.stringify(['basement', 'dressing', 'laboratory', 'library']),
-      'Escape the Veiled Halls rooms are not the four in the adventure order: ' +
-        Object.keys(byR)
-    );
-    ok(
-      JSON.stringify(Object.values(byR).map((rows) => rows.length)) === '[4,4,3,4]',
-      'Escape the Veiled Halls room tables are not 4/4/3/4'
-    );
-    Object.entries(byR).forEach(([room, rows]) => ROLL_POOLS.push([table + '/' + room, rows]));
   } else {
-    ROLL_POOLS.push([table, DATA[table]]);
+    /* An upgrade line is one roll row, its head (docs/specs/FEATURES.md, "Rolling"). */
+    ROLL_POOLS.push([table, DATA[table].filter((x) => !isRung(x))]);
   }
 });
 const ROLLED = new Set(ROLL_POOLS.flatMap(([, rows]) => rows));
@@ -336,6 +315,29 @@ ROLL_POOLS.forEach(([name, rows]) => {
   ok(
     [...rolls].sort((a, b) => a - b).join() === rows.map((_, i) => i + 1).join(),
     name + ': numbers do not cover 1-' + rows.length
+  );
+  ok(
+    rolls.every((n, i) => n === i + 1),
+    name + ': roll numbers do not ascend in table order'
+  );
+});
+/* Every line inside a roll pool has exactly one rolled record, its head; every other
+   line (the campaign frames, the Core equipment) has none. */
+const LINES = new Map();
+ALL.forEach((x) => {
+  if (x.eq && x.eq.line)
+    (LINES.get(x.eq.line) || LINES.set(x.eq.line, []).get(x.eq.line)).push(x);
+});
+LINES.forEach((rows, line) => {
+  const rolled = rows.filter((x) => x.roll != null);
+  const pooled = rows.some((x) => ROLLED.has(x));
+  ok(
+    pooled ? rolled.length === 1 && rolled[0].id === line : rolled.length === 0,
+    'line ' +
+      line +
+      ': rolled records are ' +
+      rolled.map((x) => x.id).join() +
+      ', not its head only'
   );
 });
 

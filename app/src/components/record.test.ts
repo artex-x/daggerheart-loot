@@ -1273,11 +1273,19 @@ describe("a supplement's rule card", () => {
     );
   });
 
-  it('names the volume of a Pistolheart weapon in the path line', () => {
+  it('names the volume and the tier of a Pistolheart rung, which has no roll, in the path line', () => {
     const { container } = render(App, {
       env: fakeEnv({ router: memoryRouter('#/i/ph38'), data: fakeData(REAL) })
     });
-    expect(container.textContent).toContain('Pistolheart · Том 2 · номер 38');
+    expect(container.textContent).toContain('Pistolheart · Том 2 · Ранг 2');
+    expect(container.textContent).not.toContain('· номер');
+  });
+
+  it('names the volume and the roll of a Pistolheart line head in the path line', () => {
+    const { container } = render(App, {
+      env: fakeEnv({ router: memoryRouter('#/i/ph37'), data: fakeData(REAL) })
+    });
+    expect(container.textContent).toContain('Pistolheart · Том 2 · номер 10');
   });
 });
 

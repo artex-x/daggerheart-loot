@@ -6,7 +6,7 @@ in `CONTRACTS.md`.
 
 ## Rolling
 
-Nine modes. Each keeps its own input in memory only. A mode starts at its
+Twelve modes. Each keeps its own input in memory only. A mode starts at its
 first row on every visit: a switch between two modes carries no number
 across.
 
@@ -18,12 +18,18 @@ across.
 | Dread GM Toolbox | 1-29 | 1 | `dread {n}` |
 | Vault of Ages | section + roll within it | 1 | `voa {k, n}` |
 | The Dragon's Vault | 1-145 | 1 | `dv {n}` |
-| Arazo's Artifacts | 1-78 | 1 | `arazo {n}` |
+| Arazo's Artifacts | 1-27 | 1 | `arazo {n}` |
 | Community items | community + 1-10 | 1 | `comm {c, n}` |
 | Many Worlds Tavern | realm + a roll inside it (1-11 to 1-21) | 1 | `mwt {r, n}` |
-| Pistolheart | 1-93 | 1 | `ph {n}` |
+| Pistolheart | 1-45 | 1 | `ph {n}` |
 | The Last Round Table | 1-26 | 1 | `lr {n}` |
-| Escape the Veiled Halls | room + a roll inside it (d4, or 1-3 in The Laboratory) | 1 | `vh {r, n}` |
+| Escape the Veiled Halls | 1-15 | 1 | `vh {n}` |
+
+- One roll row per item: an upgrade line is rolled once, at its head, so a line and a
+  single item have the same chance. Its other tiers open from the card, whose «Ранг» /
+  "Tier" row lists them. A rung has no `roll`; it keeps its row in its table, in search
+  and in every link (owner, 2026-11-05;
+  `docs/decisions/2026-11-07-one-roll-row-per-item-an-upgrade-line-is-rolled-at-its-head.md`).
 
 - The twelve roll pages share one layout (`RollPage`). Up to 760 px the `h1` and
   the lead are read, not drawn; the roll controls sit under the mode row; one
@@ -48,7 +54,8 @@ across.
   roll). Up to 600 px that is every roll; from 761 px a four-result roll and every
   roll in a results column under 641 px (owner, 2026-11-04). A result draws no
   relation line, no set line and no tier ladder, and no «Core» badge; another book
-  keeps its badge. Under the plate sits a row of «В список», «Поделиться» and
+  keeps its badge. A rolled line head is no exception: its other tiers open from
+  «Открыть карточку» / "Open card" (owner, 2026-11-07). Under the plate sits a row of «В список», «Поделиться» and
   «Ещё», which holds the copies. A roll is page memory, so a sign-in from the row's
   «В список» returns to the record's own page, with the menu open there.
 - The five dice of Core rules are plain buttons, none gold and none lit: a die is
@@ -56,7 +63,7 @@ across.
   rows, three over two, with the count over the rarities; from 761 px a list under
   the group label «Бросить». The other modes have one gold roll button.
 - A choice among parts is a native select with the name over the value: Vault of
-  Ages, Community items, Many Worlds Tavern and Escape the Veiled Halls at every width, the rarity on the
+  Ages, Community items and Many Worlds Tavern at every width, the rarity on the
   alternate tables up to 760 px. From 761 px the rarity is a row of neutral chips
   with no tier line.
 - The source and type chips toggle; a row with every chip on draws each neutral
@@ -126,12 +133,12 @@ across.
 - Each card on the alternate tables says which die found it, and its number
   badge is the face that die showed rather than the row the record has in the
   book it was printed in.
-- Vault of Ages sections, communities, Many Worlds Tavern realms and Escape the
-  Veiled Halls rooms are different lengths, so changing the part resets the roll to
-  1: a number from one part would point past the end of another. One panel draws the
-  four pickers (`PickerRollPanel.svelte`). A realm or a room is a fixed chip: with no
-  `mwt` or `vh` rows (a `data.js` from before the source, held in the HTTP cache) the
-  page says that the data did not load, as every roll page does with no rows.
+- Vault of Ages sections, communities and Many Worlds Tavern realms are different
+  lengths, so changing the part resets the roll to 1: a number from one part would
+  point past the end of another. One panel draws the three pickers
+  (`PickerRollPanel.svelte`). A realm is a fixed chip: with no `mwt` rows (a `data.js`
+  from before the source, held in the HTTP cache) the page says that the data did not
+  load, as every roll page does with no rows.
 - Many Worlds Tavern is six card sets, one per realm, in release order:
   Sporopolis (20), Wagerwood (20), Warrin' Warrens (21), Godsvale (20), Hornet
   Hold (11) and The Drome (17). 11, 17 and 21 cards are not a die, so on those
@@ -144,13 +151,13 @@ across.
   its frame; the equipment `src` chip reads "Many Worlds Tavern", one value
   for the six realms. The printed rarity is not shipped, and the domain cards
   of the sets are not loot.
-- Pistolheart is one pool of 93 over its three volumes and The Last Round Table one
-  pool of 26, each in book order (a Pistolheart line's rungs after its head), rolled at
-  random (as Arazo's Artifacts; owner, 2026-11-05). Escape the Veiled Halls prints one loot
-  table per room: The Basement (d4), The Dressing Room (d4), The Laboratory (d3, so
-  the button picks 1-3 at random) and The Library (d4). The tables page sections
-  `mwt` by realm, `ph` by volume and `vh` by room (`sectionProps.ts`), and a record's
-  path ends with that section («Pistolheart · Том 2»); its badge and print card name
+- Pistolheart is one pool of 45 over its three volumes (93 rows: its 16 lines roll at
+  their heads), The Last Round Table one pool of 26 and Escape the Veiled Halls one pool
+  of 15, each in book order, rolled at random (as Arazo's Artifacts; owner, 2026-11-05).
+  Escape the Veiled Halls is one flat list with no rooms (owner, 2026-11-07;
+  `docs/decisions/2026-11-07-escape-the-veiled-halls-is-one-flat-list-with-no-rooms.md`).
+  The tables page sections `mwt` by realm and `ph` by volume (`sectionProps.ts`), and a
+  record's path ends with that section («Pistolheart · Том 2»); its badge and print card name
   the book. Their rule cards link to the product page, the host as the link text.
   The volume filter row reads «Том» with the chips «1», «2» and «3» (`SectionProp.chip`);
   the sections and the path read «Том 2».
@@ -349,8 +356,8 @@ across.
   card: the table's name in the stub's words («Core · Предметы»), «N
   позиций» / "N items" of the table, a community or frame block's label and
   count («Сообщество: Великородное. 10 позиций»), a realm block's label and
-  count («Мир: Воюющие Норы. 21 позиция»), a volume or room block's label and count
-  («Комната: Библиотека. 4 позиции», «Том: 2. 35 позиций»), the `comm`, `frame`, `realm`, `vol` and `room`
+  count («Мир: Воюющие Норы. 21 позиция»), a volume block's label and count
+  («Том: 2. 35 позиций»), the `comm`, `frame`, `realm` and `vol`
   filter labels with no count on a filter, and the site picture. A table card
   keeps its old count in a message until the link is sent again.
 - **The three equipment tables hold equipment from every source, not only the

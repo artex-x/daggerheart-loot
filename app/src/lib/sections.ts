@@ -1,11 +1,11 @@
-/* The four sections that roll inside a chosen part of their book.
+/* The three sections that roll inside a chosen part of their book.
  *
  * Vault of Ages has no roll table of its own, so the book's own six divisions
  * are the choice: four tiers, then artifacts and cursed objects, which are
  * categories rather than tiers and exist nowhere else. Community items are
  * grouped by the community they belong to, and the roll is a d10 inside one.
  * Many Worlds Tavern is one card set per realm, and the roll is inside
- * one realm's deck; Escape the Veiled Halls prints one loot table per room.
+ * one realm's deck.
  *
  * The list of communities is derived from the records rather than written down
  * again. app.js keeps a hardcoded pair list, and a second copy of nine proper
@@ -89,8 +89,7 @@ export function communityParts(index: Index | null, lang: Lang): Part[] {
 }
 
 /** The sections of a sectioned table as picker choices, in book order: the realms of Many
- *  Worlds Tavern, the rooms of Escape the Veiled Halls. A fixed set: it does not wait for
- *  the index. */
+ *  Worlds Tavern. A fixed set: it does not wait for the index. */
 export function sectionParts(table: TableId, lang: Lang): Part[] {
   const prop = SECTION_PROP[table];
   return prop ? prop.order.map((id) => ({ id, label: prop.name(id, lang) })) : [];

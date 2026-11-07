@@ -393,7 +393,7 @@
 
   /* Which body shape this table draws, off `renderTables()`'s own branches:
      a plain list, or one split by tier, frame, community, a record property
-     (`SECTION_PROP`: realm, volume, room), the equipment
+     (`SECTION_PROP`: realm, volume), the equipment
      tables' own tier sections, or the alternate tables' rarity/hope-fear
      columns. */
   type BodyKind = 'plain' | 'tier' | 'other' | 'comm' | 'prop' | 'eq' | 'alt' | 'hb';

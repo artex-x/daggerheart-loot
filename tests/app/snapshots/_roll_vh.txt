@@ -1,6 +1,6 @@
 # #/roll/vh
 # route: #/roll/escape_the_veiled_halls
-# why: Escape the Veiled Halls on its first room, The Basement: «Комната» and a d4, the ten supplements
+# why: Escape the Veiled Halls: one pool of 15, no picker, the button picks 1-15 at random, the ten supplements
 
 ## ru :: tree
 RootWebArea "Escape the Veiled Halls - Генератор лута Daggerheart" [url=/roll/escape_the_veiled_halls]
@@ -24,13 +24,8 @@ RootWebArea "Escape the Veiled Halls - Генератор лута Daggerheart" 
       button "Escape the Veiled Halls" [expanded=false haspopup=menu]
     button "Открывать при запуске" [pressed=false]
     button "Об этой книге" [expanded=false]
-    combobox "Комната" [value=Подвал expanded=false haspopup=menu]
-      option "Подвал" [selected=true]
-      option "Гардеробная" [selected=false]
-      option "Лаборатория" [selected=false]
-      option "Библиотека" [selected=false]
-    button "Бросить d4"
-    StaticText "РЕЗУЛЬТАТ БРОСКА (1-4)"
+    button "Бросить 1-15"
+    StaticText "РЕЗУЛЬТАТ БРОСКА (1-15)"
     button "На единицу меньше" [disabled=true]
     textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
     button "На единицу больше"
@@ -60,13 +55,12 @@ Escape the Veiled Halls
 RU
 daggerheart.com
 Альтернативные таблицы
-Бросить d4
+Бросить 1-15
 Бросок
 В список
 Войти
 Ещё
 К содержимому
-Комната
 Конфиденциальность
 ЛутDaggerheart
 На единицу больше
@@ -104,13 +98,8 @@ RootWebArea "Escape the Veiled Halls - Daggerheart Loot Generator" [url=/en/roll
       button "Escape the Veiled Halls" [expanded=false haspopup=menu]
     button "Open on start" [pressed=false]
     button "About this book" [expanded=false]
-    combobox "Room" [value=The Basement expanded=false haspopup=menu]
-      option "The Basement" [selected=true]
-      option "The Dressing Room" [selected=false]
-      option "The Laboratory" [selected=false]
-      option "The Library" [selected=false]
-    button "Roll d4"
-    StaticText "ROLL RESULT (1-4)"
+    button "Roll 1-15"
+    StaticText "ROLL RESULT (1-15)"
     button "One lower" [disabled=true]
     textbox "Roll result" [value=1 multiline=false readonly=false required=false]
     button "One higher"
@@ -150,9 +139,8 @@ Privacy
 RU
 Resilience Charm
 Roll
-Roll d4
+Roll 1-15
 Roll result
-Room
 Search
 Share
 Sign in

@@ -64,14 +64,15 @@ text, not the rules those items refer to.
   — the catalog without its text, for one fetch: the same rows in the same
   order, columns `id, kind, source, name_ru, name_en, tier, rarity, roll,
   class, trait, range, damage, burden, armor_score, thresholds, crafts_into,
-  community, realm, volume, room`.
+  community, realm, volume`.
 - [catalog.csv](https://daggerheart-loot.pages.dev/catalog.csv) — 1593
   rows, one per record. Columns: `id, kind, source, name_ru, name_en, tier,
   rarity, roll, class, trait, range, damage, burden, armor_score, thresholds,
-  crafts_into, community, url, text_ru, text_en, realm, volume, room`. `realm` names a
-  Many Worlds Tavern record's realm in English, `volume` a Pistolheart record's
-  volume number and `room` an Escape the Veiled Halls record's room in English;
-  each is empty elsewhere. A set member's `text_ru`
+  crafts_into, community, url, text_ru, text_en, realm, volume`. `realm` names a
+  Many Worlds Tavern record's realm in English and `volume` a Pistolheart record's
+  volume number; each is empty elsewhere. `roll` is the record's number in its
+  own table, and empty on an upgrade line's rungs: a line rolls once, at its
+  head. A set member's `text_ru`
   and `text_en` end with the set's shared bonus: `<bonus name> (Set:
   <members>): <text>`, with `Комплект` for `Set` in Russian.
   `crafts_into` holds the ids a record upgrades into, joined with `;`.
@@ -135,11 +136,11 @@ wrong.
 | `Dread GM Toolbox` | 29 | A third-party horror supplement. Cthulhu-mythos material: Mi-go equipment, cursed relics, things with a cost attached. | The campaign is horror-flavored. In heroic fantasy these read as tonal noise, and some carry a drawback that only makes sense in a horror game. |
 | `Vault of Ages` | 144 | Four third-party volumes by one author, sorted by tier: 30-34 per tier plus 9 artifacts and 5 cursed objects. Deliberately stronger than Core, which is why most entries carry a Recall Cost. | You want a reward that bends the story rather than the numbers. Read the tier off the record: unlike every other loot set, it has one. |
 | `The Dragon's Vault` | 145 | A third-party supplement: 77 loot entries and 68 pieces of equipment, including a Frostwyrd upgrade chain and the paired Ember/Spark weapons. | You want more of the same shape as Wondrous Environments plus named, feature-heavy equipment. |
-| `Arazo's Artifacts` | 78 | A third-party book of 27 magic items that grow with the bearer: 10 items and 68 pieces of equipment. Each of the 17 pieces of equipment is four records (base, Improved, Advanced, Legendary), rebalanced to the Core damage and threshold bands, so its numbers differ from the printed book. | You want a signature item a character keeps for the whole campaign. |
+| `Arazo's Artifacts` | 78 | A third-party book of 27 magic items that grow with the bearer: 10 items and 68 pieces of equipment. Each of the 17 pieces of equipment is four records (base, Improved, Advanced, Legendary), rebalanced to the Core damage and threshold bands, so its numbers differ from the printed book. A line rolls once, at its head, so the roll is 1-27. | You want a signature item a character keeps for the whole campaign. |
 | `Many Worlds Tavern` | 109 | Six third-party card sets, one per realm (Sporopolis 20, Wagerwood 20, Warrin' Warrens 21, Godsvale 20, Hornet Hold 11, The Drome 17): 62 items, 12 consumables and 35 pieces of equipment, stats as printed. A record's `realm` names its set. | The party travels that realm, or you want a themed deck. |
-| `Pistolheart` | 93 | Three third-party volumes of Wild West gear: 16 firearms and frontier weapons that grow with the bearer (four records each: base, Improved, Advanced, Legendary), 4 armors, 7 consumables, 6 magic saddles, 9 Infusions and 3 items; stats as printed. A record's `vol` names its volume. | A western or frontier campaign, or a gunslinger character. |
+| `Pistolheart` | 93 | Three third-party volumes of Wild West gear: 16 firearms and frontier weapons that grow with the bearer (four records each: base, Improved, Advanced, Legendary), 4 armors, 7 consumables, 6 magic saddles, 9 Infusions and 3 items; stats as printed. A record's `vol` names its volume. A line rolls once, at its head, so the roll is 1-45. | A western or frontier campaign, or a gunslinger character. |
 | `The Last Round Table` | 26 | A third-party supplement about a living tavern: 11 items, 12 consumables and 3 Tier 2 weapons, many tied to the tavern itself. | The party visits or owns the tavern, or you want drinks and tavern oddities. |
-| `Escape the Veiled Halls` | 15 | A third-party one-shot adventure with four room loot tables (The Basement, The Dressing Room, The Laboratory, The Library): 7 items and 8 consumables, mostly potions. A record's `room` names its table. | You run the adventure, or want small one-session rewards. |
+| `Escape the Veiled Halls` | 15 | A third-party one-shot adventure's loot as one flat list: 7 items and 8 consumables, mostly potions, rolled 1-15. | You run the adventure, or want small one-session rewards. |
 | `Community` | 90 | Community Magic Items, a fan-made set from the community spreadsheet. Unplaytested — treat it as homebrew. | The GM asked for it, or nothing else fits. Say where it came from. |
 
 Three practical consequences:
@@ -242,7 +243,7 @@ new links as paths.
   `/roll/vault_of_ages`; `/roll/dragons_vault`; `/roll/arazos_artifacts`;
   `/roll/community_items`; `/roll/many_worlds_tavern` (a realm, then a roll
   inside it); `/roll/pistolheart`; `/roll/last_round_table`;
-  `/roll/escape_the_veiled_halls` (a room, then a roll inside it)
+  `/roll/escape_the_veiled_halls`
 - `/tables/<table>` — `core_item`, `core_consumable`, `hope_and_fear_item`,
   `hope_and_fear_consumable`, `wondrous_environments`, `dread_gm_toolbox`,
   `vault_of_ages`, `dragons_vault`, `arazos_artifacts`, `community_items`,
@@ -265,8 +266,7 @@ new links as paths.
   (`item`/`consumable`/`equip`), plus `tier` on `voa` (`1`–`4`, `A`, `C`),
   `frame` on `other_frames`, `comm` on `community`, `realm` on `mwt`
   (`sporopolis`, `wagerwood`, `warrens`, `godsvale`, `hornet`, `drome`), `vol` on `ph`
-  (`1`, `2`, `3`), `room` on `vh` (`basement`, `dressing`, `laboratory`,
-  `library`), `src` and `sect` on
+  (`1`, `2`, `3`), `src` and `sect` on
   `homebrew`. On `homebrew` and the equipment tables `src` also takes `hb`, an
   own source key or (`sect`) a section key: these live in one account, so you
   cannot build them. On `homebrew`, `src` holds one value and picks the
@@ -957,7 +957,7 @@ GM's own items live only in their account.
 
 ### What a homebrew file never carries
 
-`img` (art), `roll`, `frame`, `starting`, `recall`, `community`, `realm`, `vol`, `room`, row ids
+`img` (art), `roll`, `frame`, `starting`, `recall`, `community`, `realm`, `vol`, row ids
 and edit dates. The file carries no art.
 
 ### How to hand a homebrew file over

@@ -22,6 +22,7 @@ import {
   type Loot
 } from './data.js';
 import { recordOf, withRecords, type HomebrewRecord } from './homebrew.js';
+import { rollPool } from './roll.js';
 import { CHARACTER_TRAITS, type Record_ } from './types.js';
 import { readLoot } from '../test/loot.js';
 
@@ -51,10 +52,7 @@ function rollPools(loot: Loot): RollPool[] {
     } else if (name === 'mwt') {
       for (const realm of new Set(rows.map((row) => row.realm)))
         pools.push(rows.filter((row) => row.realm === realm));
-    } else if (name === 'vh') {
-      for (const room of new Set(rows.map((row) => row.room)))
-        pools.push(rows.filter((row) => row.room === room));
-    } else pools.push(rows);
+    } else pools.push(rollPool(rows));
   }
   return pools;
 }
@@ -131,6 +129,17 @@ describe('the index over the real dataset', () => {
     rowAt(gap.items['dread'], 0).roll = 30;
     expect(() => {
       expectRollPools(gap);
+    }).toThrow();
+  });
+
+  it('refuses a roll on a rung of an upgrade line', () => {
+    const rung = structuredClone(LOOT);
+    /* aa2 is the Improved tier of the line headed by aa1. */
+    const aa2 = rowAt(rung.items['arazo'], 1);
+    expect(aa2.eq?.line).toBe('aa1');
+    aa2.roll = 2;
+    expect(() => {
+      expectRollPools(rung);
     }).toThrow();
   });
 
