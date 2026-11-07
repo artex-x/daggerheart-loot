@@ -6,7 +6,12 @@
   as `9db714b4`.
 - Batch S3 (`plan-s3.md`, the remediation of the three whole-app reviews `reviews/whole-app-prod.md`,
   `whole-app-signed-in.md`, `whole-app-owner-chrome.md`; previous sha `9db714b4`) is implemented on `claude/57`,
-  committed and pushed. The AFK defaults A1-A8 of 2026-11-06 (`C:\Users\Ignat\.dhloot\notes\57\afk-decisions-2026-11-06.md`)
+  committed and pushed. CI fix pass for run 42315540634 (one pass): (a) states case 86 failed because `d.media(undefined)`
+  drops the emulated reduced motion, so the header's 0.2s slide ran after a print and the read landed mid-slide (an
+  app-correct transition; `driver.js` `media` now restores the emulation on the switch back); (b) the goldens
+  `#/i/q1 ~ own set as gm1` and `#/homebrew/hb_engravedringaaaa ~ deleted as gm1` gain `main [focused=true]`, the
+  expected result of rule 20 (the pressed control left with its page, the focus goes to `#main`); both re-seeded
+  with `--update --only=<state>`. The AFK defaults A1-A8 of 2026-11-06 (`C:\Users\Ignat\.dhloot\notes\57\afk-decisions-2026-11-06.md`)
   were applied as settled. CI of the tip is the full gate (CI-first policy, `context.md` decision 41).
 - Review: the orchestrator's call (whole-app remediation; triggers in `orchestrate.prompt.md`).
 - NEEDS_HUMAN_CONFIRMATION: no.

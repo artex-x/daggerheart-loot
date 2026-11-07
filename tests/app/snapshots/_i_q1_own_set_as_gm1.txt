@@ -17,7 +17,7 @@ RootWebArea "Палаш - Генератор лута Daggerheart" [url=/i/q1?as
       link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
-  main ""
+  main "" [focused=true]
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
     heading "Палаш" [level=1]
     StaticText "Снаряжение · Оружие · Ранг 1 "
@@ -79,7 +79,7 @@ RootWebArea "Broadsword - Daggerheart Loot Generator" [url=/i/en/q1?as=gm1&v=<v>
       link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
-  main ""
+  main "" [focused=true]
     StaticText "PRIMARY WEAPON"
     heading "Broadsword" [level=1]
     StaticText "Equipment · Weapons · Tier 1 "
