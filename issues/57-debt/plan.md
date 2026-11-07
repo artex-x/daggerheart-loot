@@ -5,6 +5,7 @@ This file is the plan for task `57-debt`, the task that follows task 57. It list
 ## Status
 
 - Planned 2026-11-06 (orchestrator, with the owner's yes on the grouping and the recommendations). Task 57 closed on 2026-11-07; step 0 is done (the entries are in `docs/specs/DEBT.md`, this plan is moved here). Steps 1 to 5 are not started.
+- Plan review: not required (no trigger fired). Batch VW1 (`plan-views.md`) is one routine batch with no open design question.
 - Owner decisions: the 2026-11-06 AFK decisions 24-28 are recorded as decisions in `docs/decisions/` (the newest file of 2026-11-06 and the files it amends) and as rules in DESIGN.md and FEATURES.md.
 
 ## Steps, in order
@@ -17,6 +18,7 @@ This file is the plan for task `57-debt`, the task that follows task 57. It list
 | 3 | Visual leftovers | one batch, mock first | reviewer, owner sees the mock |
 | 4 | Code cleanup | folded into steps 2 and 3 where files overlap; otherwise an issue list | none |
 | 5 | Impeccable `polish` and `harden`, detector re-run | after step 3, on the pages TD, N and P touched | none |
+| V | One control for the view or mode on `/roll`, `/tables`, `/homebrew`: batch VW1, after step 1 and before step 2 (`plan-views.md`) | one batch | reviewer optional (no trigger) |
 
 Recommended order: 1, 2, 3 (4 and 5 ride on them). Step 1 first because it shortens every later CI wait.
 
