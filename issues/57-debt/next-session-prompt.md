@@ -20,6 +20,12 @@ Shipped to production (each `main` run green through `deploy` and `migrate-prod`
 
 Open, in this order:
 
+0. **Quick data fix (owner finding 2026-11-07)**: `ph76` bolds only half of its cost: EN "**Mark a Hit Point** and a Stress",
+   RU «**Отметьте Рану** и Стресс». Every other cost bolds the whole phrase. Bold the whole cost in both languages:
+   "**Mark a Hit Point and a Stress**" / «**Отметьте Рану и Стресс**». Use the data-edit approach (one script keyed by
+   id, assertions that only `ende` and `rud` of `ph76` change, `data.js` is one line), then `node tools/desc-style.mjs`,
+   `node tools/build.js`, re-seed any golden that prints `ph76`'s text (`git grep -l "Hit Point" tests/app/snapshots`),
+   `check:fast` and both lints. A scan of all 1593 records found no other split cost.
 1. **`readme-screens` B1** (branch `claude/readme-screens`, worktree `.claude/worktrees/haiku-workflow-integration-cf5a13`,
    base `62070925`, two docs commits, not pushed). The plan is implement-ready (`issues/readme-screens/plan.md`, owner
    accepted Q1-Q4 on 2026-11-07). One command makes 8 README screenshots and both READMEs show them. Run it as one
