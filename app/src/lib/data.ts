@@ -254,6 +254,8 @@ export function plainFacets(it: Record_): Record<string, string> {
     frame: it.frame ?? '',
     comm: it.community ?? '',
     realm: it.realm ?? '',
+    vol: it.vol == null ? '' : String(it.vol),
+    room: it.room ?? '',
     src: srcOf(it),
     sect: isHomebrewRecord(it) ? (it.book?.section?.key ?? '') : ''
   };

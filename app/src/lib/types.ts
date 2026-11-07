@@ -3,6 +3,8 @@
 
 import type { FrameId } from './frames.js';
 import type { Realm } from './realms.js';
+import type { Room } from './rooms.js';
+import type { Volume } from './sectionProps.js';
 
 export type Lang = 'ru' | 'en';
 
@@ -51,6 +53,9 @@ export const TABLE_IDS = [
   'dv',
   'arazo',
   'mwt',
+  'ph',
+  'lr',
+  'vh',
   'other_starting',
   'other_frames',
   'alt_item',
@@ -70,7 +75,7 @@ export function isTableId(v: string): v is TableId {
   return (TABLE_IDS as readonly string[]).includes(v);
 }
 
-/** The twelve sections: what may be pinned as the start. The tab bar draws five tabs
+/** The fifteen sections: what may be pinned as the start. The tab bar draws five tabs
  *  over them; the supplements share one (`nav.ts`). */
 export const SECTIONS = [
   'roll/std',
@@ -82,6 +87,9 @@ export const SECTIONS = [
   'roll/arazo',
   'roll/community',
   'roll/mwt',
+  'roll/ph',
+  'roll/lr',
+  'roll/vh',
   'tables',
   'lists',
   'search'
@@ -172,6 +180,10 @@ export interface Record_ {
   community_ru?: string;
   /** The Many Worlds Tavern realm, the card set the record is printed in. */
   realm?: Realm;
+  /** The Pistolheart volume the record is printed in. */
+  vol?: Volume;
+  /** The Escape the Veiled Halls room whose loot table the record is in. */
+  room?: Room;
   /** The set this record belongs to; members are derived by grouping, never
    *  stored. A lowercase key, `[a-z0-9-]+`. */
   set?: string;

@@ -44,10 +44,11 @@ export const STAT_HEADS = new Set(['Attack', 'Advantage on', 'Атака']);
 /** Rule cards whose `Name:` lines are features: two beastforms and one transformation. */
 export const FEATURE_REFS = new Set(['powerful-beast', 'pack-predator', 'vampire']);
 
-/** An adversary stat block names a feature `<Name> - <Passive|Action|Reaction>:`. */
+/** An adversary stat block names a feature `<Name> - <Passive|Action|Reaction>:`; The Last
+ *  Round Table names an item's feature the same way, and adds `Rest Move`. */
 const STAT_BLOCK_FEATURE = {
-  en: /^.+ - (Passive|Action|Reaction)$/,
-  ru: /^.+ - (Пассивный|Пассивно|Действие|Реакция)$/
+  en: /^.+ - (Passive|Action|Reaction|Rest Move)$/,
+  ru: /^.+ - (Пассивный|Пассивно|Действие|Реакция|Ход Отдыха)$/
 };
 
 /**
@@ -79,6 +80,11 @@ export const FEATURE_CONDITIONS = [
   },
   { en: ['Enveloped'], ru: [], src: 'ref huge-green-ooze; SRD p. 137' },
   { en: ['Hexed'], ru: ['Проклясть', 'Проклятое'], src: 'dv22; SRD p. 29' },
+  {
+    en: ['Impaired'],
+    ru: ['Ослаблен', 'Ослаблено', 'Ослабленным'],
+    src: 'ref lr-fruitcake'
+  },
   { en: ['Horrified'], ru: ['Устрашена', 'Устрашённое'], src: 'voa4_t2e; SRD p. 218' },
   {
     en: ['Incorporeal'],
@@ -251,6 +257,15 @@ export const OVERRIDES = [
     as: 'plain',
     why: 'another payer: "A creature creating a magical tune can mark a Stress to maintain it"'
   })),
+  {
+    id: 'ref lr-fruitcake',
+    lang: 'ru',
+    rule: 'cost',
+    text: 'Отметьте 1 Стресс',
+    n: 1,
+    as: 'plain',
+    why: 'a penalty of a failed roll, not an option («Провал со Страхом: Отметьте 1 Стресс»)'
+  },
   {
     id: 'w59',
     lang: 'ru',
@@ -425,9 +440,9 @@ function wordsRe(words, lang) {
 const CONDITION_RE = { en: wordsRe(CONDITIONS.en, 'en'), ru: wordsRe(CONDITIONS.ru, 'ru') };
 
 /** Returns whether a record's text names its properties, as a catalog book does:
- *  equipment, Vault of Ages, Arazo's Artifacts and Many Worlds Tavern. */
+ *  equipment, Vault of Ages, Arazo's Artifacts, Many Worlds Tavern and The Last Round Table. */
 export function isLabelled(record) {
-  return !!record.eq || record.src === 'voa' || record.src === 'arazo' || record.src === 'mwt';
+  return !!record.eq || ['voa', 'arazo', 'mwt', 'lr'].includes(record.src);
 }
 
 /** Returns the label of a line by the rule the app used before 2026-10-15
@@ -455,8 +470,12 @@ function headOf(body, inList, lang, ctx, n) {
   let head = '';
   if (LABELS.has(key)) head = body.slice(0, Math.max(0, body.indexOf(': ')));
   else if (STRUCK.has(key)) head = '';
-  else if (ctx.labelled) head = labelOf(body, inList);
-  else if (ctx.ref) {
+  else if (ctx.labelled) {
+    /* A `<Name> - Action` head is a feature at any length. */
+    const i = body.indexOf(': ');
+    const h = i < 0 ? '' : body.slice(0, i);
+    head = STAT_BLOCK_FEATURE[lang].test(h) ? h : labelOf(body, inList);
+  } else if (ctx.ref) {
     const i = body.indexOf(': ');
     const h = i < 0 ? '' : body.slice(0, i);
     if (STAT_BLOCK_FEATURE[lang].test(h)) head = h;

@@ -128,6 +128,42 @@
     }
   },
   {
+    "hash": "#/roll/pistolheart",
+    "why": "Pistolheart, one pool of 93",
+    "resolves": {
+      "hash": "#/roll/pistolheart",
+      "tab": "roll",
+      "mode": "#/roll/pistolheart",
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/roll/last_round_table",
+    "why": "The Last Round Table, one pool of 26",
+    "resolves": {
+      "hash": "#/roll/last_round_table",
+      "tab": "roll",
+      "mode": "#/roll/last_round_table",
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/roll/escape_the_veiled_halls",
+    "why": "Escape the Veiled Halls, a room, then a roll inside it",
+    "resolves": {
+      "hash": "#/roll/escape_the_veiled_halls",
+      "tab": "roll",
+      "mode": "#/roll/escape_the_veiled_halls",
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
     "hash": "#/roll/core",
     "why": "legacy: folds into roll/std with only Core picked",
     "resolves": {
@@ -194,10 +230,10 @@
       "hash": "#/tables/eq_weapon",
       "tab": "tables",
       "mode": null,
-      "rows": 458,
+      "rows": 512,
       "printCards": 0,
       "picked": [],
-      "count": "458"
+      "count": "512"
     }
   },
   {
@@ -270,6 +306,75 @@
     }
   },
   {
+    "hash": "#/tables/pistolheart",
+    "why": "a table sectioned by volume",
+    "resolves": {
+      "hash": "#/tables/pistolheart",
+      "tab": "tables",
+      "mode": null,
+      "rows": 93,
+      "printCards": 0,
+      "picked": [],
+      "count": "93"
+    }
+  },
+  {
+    "hash": "#/tables/pistolheart/f_vol-2",
+    "why": "a volume filter",
+    "resolves": {
+      "hash": "#/tables/pistolheart/f_vol-2",
+      "tab": "tables",
+      "mode": null,
+      "rows": 35,
+      "printCards": 0,
+      "picked": [
+        "vol:2"
+      ],
+      "count": "35 из 93"
+    }
+  },
+  {
+    "hash": "#/tables/last_round_table",
+    "why": "a plain table by name, the ninth supplement",
+    "resolves": {
+      "hash": "#/tables/last_round_table",
+      "tab": "tables",
+      "mode": null,
+      "rows": 26,
+      "printCards": 0,
+      "picked": [],
+      "count": "26"
+    }
+  },
+  {
+    "hash": "#/tables/escape_the_veiled_halls",
+    "why": "a table sectioned by room",
+    "resolves": {
+      "hash": "#/tables/escape_the_veiled_halls",
+      "tab": "tables",
+      "mode": null,
+      "rows": 15,
+      "printCards": 0,
+      "picked": [],
+      "count": "15"
+    }
+  },
+  {
+    "hash": "#/tables/escape_the_veiled_halls/f_room-laboratory",
+    "why": "a room filter, the three-entry table",
+    "resolves": {
+      "hash": "#/tables/escape_the_veiled_halls/f_room-laboratory",
+      "tab": "tables",
+      "mode": null,
+      "rows": 3,
+      "printCards": 0,
+      "picked": [
+        "room:laboratory"
+      ],
+      "count": "3 из 15"
+    }
+  },
+  {
     "hash": "#/tables/alt_item/rare",
     "why": "table plus an anchor",
     "resolves": {
@@ -301,13 +406,13 @@
       "hash": "#/tables/eq_weapon/f_tier-2.cls-mag",
       "tab": "tables",
       "mode": null,
-      "rows": 45,
+      "rows": 49,
       "printCards": 0,
       "picked": [
         "tier:2",
         "cls:mag"
       ],
-      "count": "45 из 458"
+      "count": "49 из 512"
     }
   },
   {
@@ -317,12 +422,12 @@
       "hash": "#/tables/eq_weapon/f_range-melee",
       "tab": "tables",
       "mode": null,
-      "rows": 210,
+      "rows": 214,
       "printCards": 0,
       "picked": [
         "range:melee"
       ],
-      "count": "210 из 458"
+      "count": "214 из 512"
     }
   },
   {
@@ -332,12 +437,12 @@
       "hash": "#/tables/eq_weapon/f_burden-2",
       "tab": "tables",
       "mode": null,
-      "rows": 248,
+      "rows": 274,
       "printCards": 0,
       "picked": [
         "burden:2"
       ],
-      "count": "248 из 458"
+      "count": "274 из 512"
     }
   },
   {
@@ -347,13 +452,13 @@
       "hash": "#/tables/eq_weapon/f_tier-1-2",
       "tab": "tables",
       "mode": null,
-      "rows": 219,
+      "rows": 247,
       "printCards": 0,
       "picked": [
         "tier:1",
         "tier:2"
       ],
-      "count": "219 из 458"
+      "count": "247 из 512"
     }
   },
   {
@@ -368,7 +473,7 @@
       "picked": [
         "tier:A"
       ],
-      "count": "1 из 458"
+      "count": "1 из 512"
     }
   },
   {
@@ -432,13 +537,13 @@
       "hash": "#/tables/eq_weapon/f_tier-1_cls-phy",
       "tab": "tables",
       "mode": null,
-      "rows": 60,
+      "rows": 70,
       "printCards": 0,
       "picked": [
         "tier:1",
         "cls:phy"
       ],
-      "count": "60 из 458"
+      "count": "70 из 512"
     }
   },
   {
@@ -448,10 +553,10 @@
       "hash": "#/tables/eq_weapon/f_nosuch-1",
       "tab": "tables",
       "mode": null,
-      "rows": 458,
+      "rows": 512,
       "printCards": 0,
       "picked": [],
-      "count": "458"
+      "count": "512"
     }
   },
   {
@@ -1055,6 +1160,42 @@
     }
   },
   {
+    "hash": "#/roll/ph",
+    "why": "the old id of #/roll/pistolheart, read as it without rewriting the address",
+    "resolves": {
+      "hash": "#/roll/ph",
+      "tab": "roll",
+      "mode": "#/roll/pistolheart",
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/roll/lr",
+    "why": "the old id of #/roll/last_round_table, read as it without rewriting the address",
+    "resolves": {
+      "hash": "#/roll/lr",
+      "tab": "roll",
+      "mode": "#/roll/last_round_table",
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/roll/vh",
+    "why": "the old id of #/roll/escape_the_veiled_halls, read as it without rewriting the address",
+    "resolves": {
+      "hash": "#/roll/vh",
+      "tab": "roll",
+      "mode": "#/roll/escape_the_veiled_halls",
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
     "hash": "#/roll/community",
     "why": "the old id of #/roll/community_items, read as it without rewriting the address",
     "resolves": {
@@ -1232,6 +1373,45 @@
       "printCards": 0,
       "picked": [],
       "count": "78"
+    }
+  },
+  {
+    "hash": "#/tables/ph",
+    "why": "the old id of #/tables/pistolheart, read as it without rewriting the address",
+    "resolves": {
+      "hash": "#/tables/ph",
+      "tab": "tables",
+      "mode": null,
+      "rows": 93,
+      "printCards": 0,
+      "picked": [],
+      "count": "93"
+    }
+  },
+  {
+    "hash": "#/tables/lr",
+    "why": "the old id of #/tables/last_round_table, read as it without rewriting the address",
+    "resolves": {
+      "hash": "#/tables/lr",
+      "tab": "tables",
+      "mode": null,
+      "rows": 26,
+      "printCards": 0,
+      "picked": [],
+      "count": "26"
+    }
+  },
+  {
+    "hash": "#/tables/vh",
+    "why": "the old id of #/tables/escape_the_veiled_halls, read as it without rewriting the address",
+    "resolves": {
+      "hash": "#/tables/vh",
+      "tab": "tables",
+      "mode": null,
+      "rows": 15,
+      "printCards": 0,
+      "picked": [],
+      "count": "15"
     }
   },
   {

@@ -584,9 +584,9 @@ describe('the Display section', () => {
     expect(d.queryByRole('checkbox')).toBeNull();
     const select = d.getByLabelText<HTMLSelectElement>('Раздел при запуске');
     expect(select.value).toBe('#/roll/std');
-    expect([...select.options].map((o) => o.textContent)).toHaveLength(13);
-    expect(select.options[12]).toHaveTextContent('Мои предметы');
-    expect(select.options[12]).toHaveValue('#/homebrew');
+    expect([...select.options].map((o) => o.textContent)).toHaveLength(16);
+    expect(select.options[15]).toHaveTextContent('Мои предметы');
+    expect(select.options[15]).toHaveValue('#/homebrew');
     await expectNoA11yViolations(container);
 
     await userEvent.selectOptions(select, 'Поиск');

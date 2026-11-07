@@ -41,7 +41,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       button "Все" [pressed=true]
       button "1" [pressed=false]
       button "2" [pressed=false]
-      ... button x10 of 14 same-shape siblings elided
+      ... button x11 of 15 same-shape siblings elided
       StaticText "ИСТОЧНИК"
       button "Все" [pressed=true]
       StaticText "УЛУЧШЕНИЯ И УНИКАЛЬНЫЕ"
@@ -49,12 +49,12 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       button "Есть улучшение" [pressed=false]
       button "Уникальные" [pressed=false]
     heading "Ранг 1" [level=2]
-    ... button x116 of 120 same-shape siblings elided
+    ... button x120 of 124 same-shape siblings elided
     heading "Ранг 2" [level=2]
     heading "Ранг 3" [level=2]
     heading "Ранг 4" [level=2]
-    button "73 Легендарная Кольчуга из Змиевой Чешуи ARAZO'S ARTIFACTS Порог..." [namelen=233 namehash=eb24f04a]
     button "5 Панцирь Тарана УНИКАЛЬНОЕ ОПЛОТ ШЕРШНЕЙ Пороги 18/48 · Броня 6..." [namelen=184 namehash=f433ca55]
+    button "75 Пыльник Неумолимого УНИКАЛЬНОЕ PISTOLHEART Пороги 14/35 · Бро..." [namelen=204 namehash=1e9fe4f3]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -92,8 +92,12 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 6Кожаный Доспех ПерфекционистаУникальноеЛес ПариПороги 7/16 · Бр... [namelen=212 namehash=93e788d2]
 70Кольчуга из Змиевой ЧешуиArazo's ArtifactsПороги 7/15 · Броня ... [namelen=216 namehash=22ef642c]
 71Улучшенная Кольчуга из Змиевой ЧешуиArazo's ArtifactsПороги 10... [namelen=228 namehash=380d265d]
+72Кожаный Доспех Чёрной ШляпыУникальноеPistolheartПороги 6/12 · ... [namelen=188 namehash=dc535cea]
 72Продвинутая Кольчуга из Змиевой ЧешуиArazo's ArtifactsПороги 1... [namelen=229 namehash=7f12e476]
+73Латы Бурового ЧервяУникальноеPistolheartПороги 11/24 · Броня 5... [namelen=218 namehash=f35a72b4]
 73Легендарная Кольчуга из Змиевой ЧешуиArazo's ArtifactsПороги 1... [namelen=229 namehash=2386de46]
+74Позолоченная Грудная КлеткаУникальноеPistolheartПороги 13/31 ·... [namelen=156 namehash=0da31ba4]
+75Пыльник НеумолимогоУникальноеPistolheartПороги 14/35 · Броня 6... [namelen=199 namehash=edf8e9cf]
 8Грибной Кожаный ДоспехУникальноеСпорополисПороги 12/30 · Броня ... [namelen=161 namehash=829f3f85]
 8Латы СилачаУникальноеВоюющие НорыПороги 10/25 · Броня 5Безрукав... [namelen=104 namehash=9ff7c54b]
 ?Об этих данных
@@ -102,6 +106,7 @@ Core
 EN
 Hope & Fear
 Many Worlds Tavern
+Pistolheart
 RU
 The Dragon's Vault
 Vault of Ages
@@ -259,7 +264,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_armor]
       button "All" [pressed=true]
       button "1" [pressed=false]
       button "2" [pressed=false]
-      ... button x10 of 14 same-shape siblings elided
+      ... button x11 of 15 same-shape siblings elided
       StaticText "SOURCE"
       button "All" [pressed=true]
       StaticText "UPGRADES AND UNIQUES"
@@ -267,12 +272,12 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_armor]
       button "Upgradable" [pressed=false]
       button "Unique" [pressed=false]
     heading "Tier 1" [level=2]
-    ... button x116 of 120 same-shape siblings elided
+    ... button x120 of 124 same-shape siblings elided
     heading "Tier 2" [level=2]
     heading "Tier 3" [level=2]
     heading "Tier 4" [level=2]
-    button "73 Legendary Wyrmscale Hauberk ARAZO'S ARTIFACTS Thresholds 14/3..." [namelen=201 namehash=c8614a00]
     button "5 Charger's Carapace UNIQUE HORNET HOLD Thresholds 18/48 · Armor..." [namelen=168 namehash=a5385586]
+    button "75 The Inexorable's Duster UNIQUE PISTOLHEART Thresholds 14/35 ·..." [namelen=197 namehash=0d97c5fd]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -311,7 +316,11 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_armor]
 70Wyrmscale HauberkArazo's ArtifactsThresholds 7/15 · Armor 3Gua... [namelen=186 namehash=ce3a30d3]
 71Improved Wyrmscale HauberkArazo's ArtifactsThresholds 10/22 · ... [namelen=196 namehash=15e63692]
 72Advanced Wyrmscale HauberkArazo's ArtifactsThresholds 12/29 · ... [namelen=196 namehash=7d6f2a10]
+72Black Hat LeathersUniquePistolheartThresholds 6/12 · Armor 3Tu... [namelen=147 namehash=b52bf53c]
+73Boreworm PlateUniquePistolheartThresholds 11/24 · Armor 5Sand ... [namelen=175 namehash=132a5eac]
 73Legendary Wyrmscale HauberkArazo's ArtifactsThresholds 14/38 ·... [namelen=197 namehash=d7b233a5]
+74Gilded RibcageUniquePistolheartThresholds 13/31 · Armor 6Macab... [namelen=148 namehash=df682450]
+75The Inexorable's DusterUniquePistolheartThresholds 14/35 · Arm... [namelen=192 namehash=55c9ba7c]
 8Fungal LeathersUniqueSporopolisThresholds 12/30 · Armor 6The nu... [namelen=153 namehash=daea3979]
 8Gunshow PlateUniqueWarrin' WarrensThresholds 10/25 · Armor 5Arm... [namelen=118 namehash=f4f014bb]
 ?About this data
@@ -401,6 +410,7 @@ Many Worlds Tavern
 Monett's CloakUniqueThresholds 16/39 · Armor 6Magic: You can't m... [namelen=108 namehash=a2afdb8a]
 Open on start
 Other
+Pistolheart
 Privacy
 Quilted ClothingUniqueBeast FeastThresholds 5/11 · Armor 3Flexib... [namelen=81 namehash=c2f4a646]
 RU

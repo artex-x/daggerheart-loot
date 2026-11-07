@@ -5,7 +5,7 @@
   shared list, print set and table cards with it at request time.
 
   Pure: no imports, no file system, no window. The words are copies of the
-  app's (app/src/lib/dict.ts, i18n.ts, frames.ts, realms.ts, tables.ts, label.ts,
+  app's (app/src/lib/dict.ts, i18n.ts, frames.ts, realms.ts, sectionProps.ts, tables.ts, label.ts,
   filters.ts, plural.ts), pinned equal by app/src/lib/i18n.test.ts.
 */
 
@@ -49,7 +49,9 @@ export const TEXT = {
     communityLabel: 'Сообщество',
     commF: 'Сообщество',
     frameF: 'Сеттинг',
-    realmF: 'Мир'
+    realmF: 'Мир',
+    volF: 'Том',
+    roomF: 'Комната'
   },
   en: {
     site: 'Daggerheart Loot Generator',
@@ -80,7 +82,9 @@ export const TEXT = {
     communityLabel: 'Community',
     commF: 'Community',
     frameF: 'Frame',
-    realmF: 'Realm'
+    realmF: 'Realm',
+    volF: 'Volume',
+    roomF: 'Room'
   }
 };
 
@@ -98,6 +102,20 @@ export const REALM_LABEL = {
   godsvale: ['Долина Богов', 'Godsvale'],
   hornet: ['Оплот Шершней', 'Hornet Hold'],
   drome: ['Дром', 'The Drome']
+};
+
+/* app/src/lib/sectionProps.ts: the Pistolheart volumes and the Escape the Veiled Halls rooms. */
+export const VOLUME_LABEL = {
+  1: ['Том 1', 'Volume 1'],
+  2: ['Том 2', 'Volume 2'],
+  3: ['Том 3', 'Volume 3']
+};
+
+export const ROOM_LABEL = {
+  basement: ['Подвал', 'The Basement'],
+  dressing: ['Гардеробная', 'The Dressing Room'],
+  laboratory: ['Лаборатория', 'The Laboratory'],
+  library: ['Библиотека', 'The Library']
 };
 
 export const EQ_TYPE = {
@@ -184,6 +202,9 @@ export const PATH_TEXT = {
     arazo: "Arazo's Artifacts",
     community: 'Предметы сообществ',
     mwt: 'Many Worlds Tavern',
+    ph: 'Pistolheart',
+    lr: 'The Last Round Table',
+    vh: 'Escape the Veiled Halls',
     eq: 'Снаряжение',
     other: 'Прочее',
     alt: 'Альт. таблицы',
@@ -209,6 +230,9 @@ export const PATH_TEXT = {
     arazo: "Arazo's Artifacts",
     community: 'Community items',
     mwt: 'Many Worlds Tavern',
+    ph: 'Pistolheart',
+    lr: 'The Last Round Table',
+    vh: 'Escape the Veiled Halls',
     eq: 'Equipment',
     other: 'Other',
     alt: 'Alt. tables',
@@ -239,6 +263,9 @@ export const TABLE_PATH = {
   arazo: ['arazo'],
   community: ['community'],
   mwt: ['mwt'],
+  ph: ['ph'],
+  lr: ['lr'],
+  vh: ['vh'],
   eq_weapon: ['eq', 'weapon'],
   eq_secondary: ['eq', 'secondary'],
   eq_armor: ['eq', 'armor'],
@@ -258,7 +285,10 @@ export const TABLE_SLUG = {
   dv: 'dragons_vault',
   arazo: 'arazos_artifacts',
   community: 'community_items',
-  mwt: 'many_worlds_tavern'
+  mwt: 'many_worlds_tavern',
+  ph: 'pistolheart',
+  lr: 'last_round_table',
+  vh: 'escape_the_veiled_halls'
 };
 const EQ_TABLE_OF = { weapon: 'eq_weapon', secondary: 'eq_secondary', armor: 'eq_armor' };
 
@@ -267,7 +297,7 @@ export function tableOf(it) {
   if (it.starting) return 'other_starting';
   if (it.src === 'voa') return 'voa';
   if (it.src === 'arazo') return 'arazo';
-  if (it.src === 'mwt') return 'mwt';
+  if (['mwt', 'ph', 'lr', 'vh'].includes(it.src)) return it.src;
   if (it.eq && !it.roll) return EQ_TABLE_OF[it.eq.t];
   if (['wondrous', 'dread', 'dv', 'community'].includes(it.src)) return it.src;
   if (it.src === 'core' || it.src === 'hnf')
@@ -288,10 +318,12 @@ export function where(it, lang) {
   const table = tableOf(it);
   if (!table) throw new Error('No table for record ' + it.id + '; extend tableOf');
   const bits = [tablePath(table, lang)];
-  // the three tables sectioned by a value the record carries name its section
+  // the tables sectioned by a value the record carries name its section
   if (it.frame) bits.push(pick(FRAME_LABEL[it.frame], lang) || it.frame);
   else if (it.community) bits.push(lang === 'ru' ? it.community_ru : it.community);
   else if (it.realm) bits.push(pick(REALM_LABEL[it.realm], lang) || it.realm);
+  else if (it.src === 'ph' && it.vol) bits.push(pick(VOLUME_LABEL[it.vol], lang) || it.vol);
+  else if (it.src === 'vh' && it.room) bits.push(pick(ROOM_LABEL[it.room], lang) || it.room);
   if (it.tier === 'A') bits.push(p.artifact);
   else if (it.tier === 'C') bits.push(p.cursed);
   if (it.roll) bits.push(p.rollNo + ' ' + it.roll);
@@ -351,12 +383,14 @@ export function decodeFilter(segment, groups) {
   return out;
 }
 
-/** The filter groups of the three tables whose labels a table card draws:
+/** The filter groups of the tables whose labels a table card draws:
  *  app/src/lib/filters.ts `groupsFor`. */
 export const LABEL_GROUPS = {
   community: ['comm'],
   other_frames: ['kind', 'frame'],
-  mwt: ['kind', 'realm']
+  mwt: ['kind', 'realm'],
+  ph: ['kind', 'vol'],
+  vh: ['kind', 'room']
 };
 
 const UTF8 = new TextEncoder();

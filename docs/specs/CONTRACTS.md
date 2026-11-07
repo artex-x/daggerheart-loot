@@ -40,8 +40,8 @@ rewrite answers. `tests/contracts.js` checks that each
 route of `routes.json` is covered and that the worker takes no rewritten path.
 `routes.json` pins each route's resolved address, its lit job and its lit mode. In particular:
 
-- the twelve section names, and the three legacy ones that fold into `roll/std`
-- the URL ids of the source products (owner, 2026-10-21): the sections `roll/wondrous_environments`, `roll/dread_gm_toolbox`, `roll/vault_of_ages`, `roll/dragons_vault`, `roll/arazos_artifacts`, `roll/community_items` and `roll/many_worlds_tavern`, and the tables `hope_and_fear_item`, `hope_and_fear_consumable`, `wondrous_environments`, `dread_gm_toolbox`, `vault_of_ages`, `dragons_vault`, `arazos_artifacts`, `community_items` and `many_worlds_tavern`; the app writes these. An old id still opens the same page (`roll/dread`, `#/tables/dv`, `hnf_item` and the rest, which are the internal ids); the address is not rewritten
+- the fifteen section names, and the three legacy ones that fold into `roll/std`
+- the URL ids of the source products (owner, 2026-10-21): the sections `roll/wondrous_environments`, `roll/dread_gm_toolbox`, `roll/vault_of_ages`, `roll/dragons_vault`, `roll/arazos_artifacts`, `roll/community_items`, `roll/many_worlds_tavern`, `roll/pistolheart`, `roll/last_round_table` and `roll/escape_the_veiled_halls` (2026-11-07), and the tables `hope_and_fear_item`, `hope_and_fear_consumable`, `wondrous_environments`, `dread_gm_toolbox`, `vault_of_ages`, `dragons_vault`, `arazos_artifacts`, `community_items`, `many_worlds_tavern`, `pistolheart`, `last_round_table` and `escape_the_veiled_halls`; the app writes these. An old id still opens the same page (`roll/dread`, `#/tables/dv`, `hnf_item` and the rest, which are the internal ids); the address is not rewritten
 - the table names in `#/tables/<table>`, including `other_starting` and `other_frames`; legacy `frames` resolves to `other_frames` without rewriting the pasted hash; the tables page's three copy buttons (the table, its filter, one block) hand out the preview host's address of the table (section 5), except on `homebrew`, and `<site>#/tables/...` keeps opening
 - the filter grammar `f_group-value[-value][.group-value]`, **including the
   group key spelling**: `range` and `burden`, not `rg` and `bu`
@@ -117,6 +117,9 @@ shared list. Never renumber a record that has shipped.
 | `dv` / `dve` | The Dragon's Vault loot / equipment |
 | `aa` | Arazo's Artifacts, book order, an upgrade line's rungs after its head |
 | `mw` | Many Worlds Tavern, realm by realm in release order, card order inside a realm; Hornet Hold and The Drome print no number, so kind, then name |
+| `ph` | Pistolheart, book order over the three volumes, an upgrade line's rungs after its head; the id number is the roll |
+| `lr` | The Last Round Table, book order; the id number is the roll |
+| `vh` | Escape the Veiled Halls, room by room in the adventure's order, table order inside a room; the roll is the place in the room's table |
 | `cm` | Community items |
 | `f` | Campaign frame equipment |
 | `q` | Core and Hope & Fear equipment |
@@ -147,11 +150,13 @@ shared list. Never renumber a record that has shipped.
   fetch (`llms.txt`, "Read this first"): the columns of `catalog.csv` without
   `url`, `text_ru` and `text_en`, in the same order, with the same rows, row
   order and quoting, from `tools/derived.js`'s `catalogIndexCsv(L)`. Budget:
-  at most 196608 bytes, which `tests/derived.js` holds; 163562 bytes at 1459
-  records, measured 2026-10-21, about 112 bytes a row, so the budget holds
-  about 1750 records, about 296 more than today. A column may be added at
+  at most 196608 bytes, which `tests/derived.js` holds; 183817 bytes at 1593
+  records, measured 2026-11-07, about 115 bytes a row, so the budget holds
+  about 1700 records, about 110 more than today. A column may be added at
   the end, as `realm` was (2026-10-21, the last column of both files: a Many
-  Worlds Tavern record's realm in English, empty elsewhere); any other change
+  Worlds Tavern record's realm in English, empty elsewhere), then `volume` and
+  `room` (2026-11-07: a Pistolheart record's volume number and an Escape the
+  Veiled Halls record's room in English, empty elsewhere); any other change
   is a new file name. An ingest that passes the
   budget raises `INDEX_BUDGET` and the `llms.txt` words "under 200 KB" in
   one commit, or publishes a new file name. Not committed, like `names.json`.
@@ -165,10 +170,12 @@ shared list. Never renumber a record that has shipped.
   each catalog table id (no `homebrew`) to `{ n }`, the rows the signed-out
   tables page draws; `communities` maps a community's English name to `ru`
   and `n`; `frames` maps a frame key to `{ n }`; `realms` maps a Many
-  Worlds Tavern realm key to `{ n }`. A new key may be added; any other
+  Worlds Tavern realm key to `{ n }`; `volumes` maps a Pistolheart volume
+  number to `{ n }` and `rooms` an Escape the Veiled Halls room key to
+  `{ n }` (2026-11-07). A new key may be added; any other
   change is `version` 2. Budget: at most 196608 bytes, which
-  `tests/derived.js` holds; 99779 bytes at 1459 records, measured
-  2026-10-21. Not committed, like `i/`.
+  `tests/derived.js` holds; 110056 bytes at 1593 records, measured
+  2026-11-07. Not committed, like `i/`.
 - `i/<id>.html` - a stub page per record with Open Graph markup, in Russian;
   `i/en/<id>.html` - the same page in English. Each redirects to the record's
   path on the site. The old host's mirror publishes them; the site publishes,

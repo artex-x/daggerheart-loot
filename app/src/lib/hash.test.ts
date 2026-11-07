@@ -678,6 +678,12 @@ describe('the URL ids of the source products', () => {
     expect(tablesHash('mwt', { filter: { realm: ['drome'] } })).toBe(
       '#/tables/many_worlds_tavern/f_realm-drome'
     );
+    expect(sectionHash('roll/ph')).toBe('#/roll/pistolheart');
+    expect(sectionHash('roll/lr')).toBe('#/roll/last_round_table');
+    expect(tablesHash('vh', { filter: { room: ['library'] } })).toBe(
+      '#/tables/escape_the_veiled_halls/f_room-library'
+    );
+    expect(tablesHash('ph', { anchor: '2' })).toBe('#/tables/pistolheart/2');
     expect(tablesHash('hnf_item')).toBe('#/tables/hope_and_fear_item');
     expect(tablesHash('core_item')).toBe('#/tables/core_item');
   });

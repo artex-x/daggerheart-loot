@@ -1,4 +1,4 @@
-/* The three roll pages that choose a part of their book first.
+/* The four roll pages that choose a part of their book first.
  *
  * Driven through App, which is what covers the picker components with them:
  * a select with a name and a value, and a test that asserts that in isolation
@@ -84,6 +84,26 @@ const LOOT: Loot = {
       rec({ id: 'h2', src: 'mwt', realm: 'hornet', roll: 2, ru: 'Второй шершневый' }),
       rec({ id: 'd1', src: 'mwt', realm: 'drome', roll: 1, ru: 'Первый дромовый' }),
       rec({ id: 'd2', src: 'mwt', realm: 'drome', roll: 2, ru: 'Второй дромовый' })
+    ],
+    vh: [
+      ...[1, 2, 3, 4].map((n) =>
+        rec({
+          id: `b${String(n)}`,
+          src: 'vh',
+          room: 'basement',
+          roll: n,
+          ru: `Подвальный ${String(n)}`
+        })
+      ),
+      ...[1, 2, 3].map((n) =>
+        rec({
+          id: `l${String(n)}`,
+          src: 'vh',
+          room: 'laboratory',
+          roll: n,
+          ru: `Лабораторный ${String(n)}`
+        })
+      )
     ]
   },
   eq: [],
@@ -263,6 +283,35 @@ describe('Many Worlds Tavern', () => {
   });
 });
 
+describe('Escape the Veiled Halls', () => {
+  it('opens on The Basement with a d4 and offers the four rooms', () => {
+    render(App, { env: at('#/roll/vh') });
+    expectPage('Escape the Veiled Halls');
+    for (const name of ['Подвал', 'Гардеробная', 'Лаборатория', 'Библиотека'])
+      expect(screen.getByRole('option', { name })).toBeInTheDocument();
+    expect(chosen('Подвал')).toBeInTheDocument();
+    expect(within(screen.getByRole('main')).getByText('Комната')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Бросить d4/ })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Подвальный 1' })).toBeInTheDocument();
+  });
+
+  it('picks 1-3 at random in The Laboratory, where the book rolls a d3', async () => {
+    render(App, { env: at('#/roll/vh', { random: () => 0.999 }) });
+    await pick('Лаборатория');
+    expect(screen.getByText('Результат броска (1-3)')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: /Бросить 1-3/ }));
+    expect(field().value).toBe('3');
+    expect(screen.getByRole('link', { name: 'Лабораторный 3' })).toBeInTheDocument();
+  });
+
+  it('names the rooms in the language on screen', async () => {
+    render(App, { env: at('#/roll/vh') });
+    await userEvent.click(screen.getByRole('button', { name: 'EN' }));
+    expect(screen.getByRole('option', { name: 'The Dressing Room' })).toBeInTheDocument();
+    expect(within(screen.getByRole('main')).getByText('Room')).toBeInTheDocument();
+  });
+});
+
 describe('a dataset that did not load', () => {
   /* data.js served as HTML by a broken deploy, or missing from one. Both
      pages read the catalog twice - once to build the picker, once to roll -
@@ -270,7 +319,8 @@ describe('a dataset that did not load', () => {
   it.each([
     ['#/roll/voa', 'Vault of Ages'],
     ['#/roll/community', 'Предметы сообществ'],
-    ['#/roll/mwt', 'Many Worlds Tavern']
+    ['#/roll/mwt', 'Many Worlds Tavern'],
+    ['#/roll/vh', 'Escape the Veiled Halls']
   ])('says so on %s rather than rendering an empty picker', (route, heading) => {
     render(App, { env: fakeEnv({ router: memoryRouter(route), data: noData() }) });
     expectPage(heading);
@@ -292,6 +342,12 @@ describe('accessibility', () => {
 
   it('has no axe violations on communities', async () => {
     const { container } = render(App, { env: at('#/roll/community') });
+    await expectNoA11yViolations(container);
+  });
+
+  it('has no axe violations on Escape the Veiled Halls with a room picked', async () => {
+    const { container } = render(App, { env: at('#/roll/vh') });
+    await pick('Лаборатория');
     await expectNoA11yViolations(container);
   });
 

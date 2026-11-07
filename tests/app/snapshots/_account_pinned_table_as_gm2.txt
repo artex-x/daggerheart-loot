@@ -27,7 +27,7 @@ RootWebArea "Аккаунт - Генератор лута Daggerheart" [url=/acc
     combobox "Раздел при запуске" [value=Таблицы expanded=false haspopup=menu]
       option "Обычные правила" [selected=false]
       option "Альтернативные таблицы" [selected=false]
-      ... option x8 of 12 same-shape siblings elided
+      ... option x11 of 15 same-shape siblings elided
       option "Таблицы" [selected=true]
       option "Поиск" [selected=false]
       option "Мои предметы" [selected=false]
@@ -73,7 +73,7 @@ daggerheart.com
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
-Обычные правилаАльтернативные таблицыWondrous EnvironmentsDread ... [namelen=192 namehash=5e7c637f]
+Обычные правилаАльтернативные таблицыWondrous EnvironmentsDread ... [namelen=246 namehash=24225ce8]
 Подключить Discord
 Поиск
 Сетка
@@ -111,7 +111,7 @@ RootWebArea "Account - Daggerheart Loot Generator" [url=/en/account?as=gm2]
     combobox "Section on start" [value=Tables expanded=false haspopup=menu]
       option "Standard rules" [selected=false]
       option "Alternate tables" [selected=false]
-      ... option x8 of 12 same-shape siblings elided
+      ... option x11 of 15 same-shape siblings elided
       option "Tables" [selected=true]
       option "Search" [selected=false]
       option "My items" [selected=false]
@@ -166,7 +166,7 @@ Search
 Sign out
 Sign out everywhere
 Skip to content
-Standard rulesAlternate tablesWondrous EnvironmentsDread GM Tool... [namelen=176 namehash=1c0e3b5e]
+Standard rulesAlternate tablesWondrous EnvironmentsDread GM Tool... [namelen=230 namehash=36881ebc]
 Tables
 Terms of use
 daggerheart.com

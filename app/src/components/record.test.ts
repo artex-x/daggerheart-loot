@@ -1242,6 +1242,45 @@ describe('a feature an item grants an adversary', () => {
   });
 });
 
+describe("a supplement's rule card", () => {
+  /* The Deed from the real data: its rule card lives on the product page, not on
+     daggerheart.su, so the link keeps its address in both languages and reads the host. */
+  const REAL = readLoot();
+
+  it('links to the product page by its host, in both languages', async () => {
+    const { container } = render(App, {
+      env: fakeEnv({ router: memoryRouter('#/i/lr6'), data: fakeData(REAL) })
+    });
+    expect(container.textContent).toContain('The Last Round Table');
+    const summary = screen
+      .getByText('Купчая на Последний Круглый Стол: Настроение таверны', { selector: '.ref-n' })
+      .closest('summary');
+    if (!summary) throw new Error('no rule card summary');
+    await userEvent.click(summary);
+    const details = summary.closest('details') as HTMLElement;
+    const link = within(details).getByRole('link', { name: 'heartofdaggers.com' });
+    expect(link).toHaveAttribute(
+      'href',
+      'https://heartofdaggers.com/products/the-last-round-table/'
+    );
+    expect(link).toHaveAttribute('rel', 'noopener');
+    expect(within(details).queryByRole('link', { name: 'daggerheart.su' })).toBeNull();
+    await expectNoA11yViolations(container);
+    await userEvent.click(screen.getByRole('button', { name: 'EN' }));
+    expect(screen.getByRole('link', { name: 'heartofdaggers.com' })).toHaveAttribute(
+      'href',
+      'https://heartofdaggers.com/products/the-last-round-table/'
+    );
+  });
+
+  it('names the volume of a Pistolheart weapon in the path line', () => {
+    const { container } = render(App, {
+      env: fakeEnv({ router: memoryRouter('#/i/ph38'), data: fakeData(REAL) })
+    });
+    expect(container.textContent).toContain('Pistolheart · Том 2 · номер 38');
+  });
+});
+
 describe('a consumable artifact', () => {
   /* Narvik Contract from the real data: the book prints it among the
      artifacts, so its section names it, with its roll inside that section. */

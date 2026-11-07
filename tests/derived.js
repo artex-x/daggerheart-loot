@@ -1023,8 +1023,8 @@ ok(
   'equipment grew a new kind: ' + Object.keys(BY_T).join()
 );
 ok(
-  EVERY_EQ.length === L.eq.length + 326,
-  'equipment outside the two base books is not 326, but ' + (EVERY_EQ.length - L.eq.length)
+  EVERY_EQ.length === L.eq.length + 397,
+  'equipment outside the two base books is not 397, but ' + (EVERY_EQ.length - L.eq.length)
 );
 /* Every piece of equipment must carry a tier. Wondrous's is derived from the
    book: the "Loot items by environment" table ties an item to a location,
@@ -2589,8 +2589,90 @@ ok(
 const mw47 = parsed.find((r) => r[idx.id] === 'mw47');
 ok(!!mw47 && mw47[idx.trait] === 'Any', 'catalog.csv mw47 trait is not Any');
 ok(
-  head[head.length - 1] === 'realm' && !!mw47 && mw47[idx.realm] === "Warrin' Warrens",
-  "catalog.csv: realm is not the last column, or mw47 is not in Warrin' Warrens"
+  head.slice(-3).join() === 'realm,volume,room' &&
+    !!mw47 &&
+    mw47[idx.realm] === "Warrin' Warrens",
+  "catalog.csv: realm, volume and room are not the last columns, or mw47 is not in Warrin' Warrens"
+);
+
+console.log('Pistolheart, The Last Round Table and Escape the Veiled Halls');
+const ph = L.items.ph;
+ok(ph.length === 93, 'items.ph is not 93, but ' + ph.length);
+ok(
+  ph.every((x, i) => x.id === 'ph' + (i + 1) && x.roll === i + 1),
+  'items.ph is not ph1..ph93 with rolls 1..93 in book order'
+);
+const phByKind = {};
+ph.forEach(
+  (x) => (phByKind[x.eq ? x.eq.t : x.kind] = (phByKind[x.eq ? x.eq.t : x.kind] || 0) + 1)
+);
+ok(
+  JSON.stringify(phByKind) ===
+    JSON.stringify({ weapon: 52, secondary: 12, item: 18, consumable: 7, armor: 4 }),
+  'ph records by kind: ' + JSON.stringify(phByKind)
+);
+const phLines = {};
+ph.filter((x) => x.eq && x.eq.line).forEach(
+  (x) => (phLines[x.eq.line] = (phLines[x.eq.line] || []).concat(x))
+);
+ok(Object.keys(phLines).length === 16, 'ph lines are not 16');
+Object.entries(phLines).forEach(([head, rungs]) =>
+  ok(
+    rungs.map((x) => x.eq.tier).join() === '1,2,3,4' &&
+      rungs.every((x) => x.img === head + '.webp') &&
+      rungs[0].id === head,
+    'ph line ' + head + ' is not four rungs from its head with the head art'
+  )
+);
+ok(
+  JSON.stringify([1, 2, 3].map((v) => ph.filter((x) => x.vol === v).length)) === '[36,35,22]',
+  'ph records by volume are not 36/35/22'
+);
+const lr = L.items.lr;
+ok(lr.length === 26, 'items.lr is not 26, but ' + lr.length);
+ok(
+  lr.every((x, i) => x.id === 'lr' + (i + 1) && x.roll === i + 1),
+  'items.lr is not lr1..lr26 with rolls 1..26 in book order'
+);
+ok(
+  lr.filter((x) => x.eq).every((x) => x.eq.tier === 2 && !x.eq.line) &&
+    lr.filter((x) => x.eq).length === 3,
+  'lr does not hold three unlined Tier 2 weapons'
+);
+const vh = L.items.vh;
+ok(vh.length === 15, 'items.vh is not 15, but ' + vh.length);
+ok(
+  vh.every((x, i) => x.id === 'vh' + (i + 1)) && vh.every((x) => !x.eq),
+  'items.vh is not vh1..vh15 in room order, or holds equipment'
+);
+ok(
+  JSON.stringify(vh.filter((x) => x.craft).map((x) => [x.id, x.craft])) ===
+    JSON.stringify([
+      ['vh2', ['vh6']],
+      ['vh8', ['vh15']]
+    ]),
+  'vh potions do not upgrade vh2 to vh6 and vh8 to vh15'
+);
+[
+  'ph-mounted',
+  'ph-saddles',
+  'ph-infusions',
+  'ph-most-wanted',
+  'lr-recipes',
+  'lr-deed',
+  'lr-fruitcake'
+].forEach((k) =>
+  ok(
+    !!L.refs[k] &&
+      /^https:\/\/(www\.drivethrurpg\.com|heartofdaggers\.com)\//.test(L.refs[k].url),
+    'rule card ' + k + ' does not link to its product page'
+  )
+);
+const phRow = parsed.find((r) => r[idx.id] === 'ph40');
+const vhRow = parsed.find((r) => r[idx.id] === 'vh9');
+ok(
+  !!phRow && phRow[idx.volume] === '2' && !!vhRow && vhRow[idx.room] === 'The Laboratory',
+  'catalog.csv: ph40 is not in volume 2, or vh9 is not in The Laboratory'
 );
 
 console.log('Vault of Ages Volume 4');

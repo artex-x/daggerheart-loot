@@ -34,7 +34,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     button "Список" [pressed=true]
     button "Сетка" [pressed=false]
     button "Ссылка на таблицу"
-    StaticText "Показано 0 из 114"
+    StaticText "Показано 0 из 118"
     complementary "Фильтры"
       heading "Фильтры · 1" [level=2]
       button "Сбросить"
@@ -43,7 +43,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       button "Все" [pressed=true]
       button "1" [pressed=false]
       button "2" [pressed=false]
-      ... button x10 of 14 same-shape siblings elided
+      ... button x11 of 15 same-shape siblings elided
       StaticText "ИСТОЧНИК"
       button "Все" [pressed=true]
       StaticText "УЛУЧШЕНИЯ И УНИКАЛЬНЫЕ"
@@ -71,6 +71,7 @@ Core
 EN
 Hope & Fear
 Many Worlds Tavern
+Pistolheart
 RU
 The Dragon's Vault
 Vault of Ages
@@ -137,7 +138,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_armor/f_lin
     button "List" [pressed=true]
     button "Grid" [pressed=false]
     button "Link to this table"
-    StaticText "0 of 114 shown"
+    StaticText "0 of 118 shown"
     complementary "Filters"
       heading "Filters · 1" [level=2]
       button "Reset"
@@ -146,7 +147,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_armor/f_lin
       button "All" [pressed=true]
       button "1" [pressed=false]
       button "2" [pressed=false]
-      ... button x10 of 14 same-shape siblings elided
+      ... button x11 of 15 same-shape siblings elided
       StaticText "SOURCE"
       button "All" [pressed=true]
       StaticText "UPGRADES AND UNIQUES"
@@ -188,6 +189,7 @@ LootDaggerheart
 Many Worlds Tavern
 Open on start
 Other
+Pistolheart
 Privacy
 RU
 Reset

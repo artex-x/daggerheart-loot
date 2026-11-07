@@ -84,11 +84,22 @@ const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
   /* The URL ids follow the source products and the old ids still resolve
      (CONTRACTS.md section 1): an agent builds the new id and reads an old link. */
   const { TABLE_SLUG } = require('../tools/share-card.mjs');
-  const SECTION_IDS = ['wondrous', 'dread', 'voa', 'dv', 'arazo', 'community', 'mwt'];
+  const SECTION_IDS = [
+    'wondrous',
+    'dread',
+    'voa',
+    'dv',
+    'arazo',
+    'community',
+    'mwt',
+    'ph',
+    'lr',
+    'vh'
+  ];
   const slugs = Object.values(TABLE_SLUG).concat(
     SECTION_IDS.map((id) => 'roll/' + TABLE_SLUG[id])
   );
-  ok(slugs.length === 16, 'the URL ids are not 9 tables and 7 sections, but ' + slugs.length);
+  ok(slugs.length === 22, 'the URL ids are not 12 tables and 10 sections, but ' + slugs.length);
   [
     ['llms.txt', machine],
     ['CONTRACTS.md', contractsText],
