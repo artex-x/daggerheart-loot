@@ -2,55 +2,73 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (planned and implement-ready; all B0 translations done; B1, all three sources in one batch, waits for task 57 and for the lr and vh pictures)
-- Last agent: orchestrator (2026-11-05)
+- Task status: in_progress (B1 committed and pushed; V1 is required: the ten supplement tabs take two lines from 761 to about 1380 px, finding F1)
+- Last agent: add-source (2026-11-07)
 - NEEDS_HUMAN_CONFIRMATION: no
-- Branch: `claude/new-items` (worktree `.claude/worktrees/new-items`; renamed from `claude/pistolheart`, nothing was pushed)
-- Base / starting commit: b6f153a5 (`main`, task 57 wave 2b)
-- Pushed: no
+- Branch: `claude/new-items` (worktree `.claude/worktrees/new-items`)
+- Base / starting commit: f381d0df (main with task 57 closed, merged in)
+- Pushed: yes (B1 commit; the sha is in the push report)
 
 ## Completed
-- B0-ph (`8a88092`): ph draft translated, reviewed (`reviews/B0-ph.md`), fix pass applied.
-- B0-lr and B0-vh: both drafts translated, reviewed (`reviews/B0-lr.md`, `reviews/B0-vh.md`, both fix-then-continue) and fixed; no second review. Notes: `lr-translation-notes.md`, `vh-translation-notes.md`.
-- Kits for lr and vh built outside the repository; drafts copied here (`lr-draft.json`, `vh-draft.json`).
-- Files changed: `issues/new-items/` only.
-- Previous sha (batch diff base): b6f153a5
-- Deviations and rationale: the task grew from one source to three (owner, 2026-11-05).
-- Review: not required for repository code (none yet).
+- B1: the three sources ph (93), lr (26) and vh (15), 134 records, 7 rule cards, 86 pictures (45 + 26 + 15) by `ingest`; the shared section property (`app/src/lib/sectionProps.ts`, `rooms.ts`) for `realm`, `vol` and `room`; the vh room picker; the rule card link to a product host; specs, fixtures, goldens (63 re-seeded, 10 new), decisions.
+- Files changed: `data.js`, `img/`, `img/thumb/`, `og/` (86 each), app lib and components, tools, preview worker, tests, docs (about 400 files with art).
+- Previous sha (batch diff base): f381d0df
+- Deviations and rationale:
+  - context.md said ph has 29 items and vh 6 items / 9 consumables; the drafts (book) hold ph 25 non-equipment records (18 items, 7 consumables) and vh 7 items / 8 consumables. The drafts win; the totals 93 and 15 hold.
+  - `lr-recipes`: the table became a list `- Name (rating N): effect` (the style tool refuses table lines; owner precedent 2026-10-14). Recorded in the decision file.
+  - lr items are labelled (`isLabelled`), and a `<Name> - Action|Reaction|Passive|Rest Move:` head is a label at any length (`desc-style.mjs`); no existing record changed.
+  - `Impaired`/«Ослаблен» joined `FEATURE_CONDITIONS`; one override keeps «Отметьте 1 Стресс» plain in `ref lr-fruitcake` (a penalty).
+  - vh6 English "an experience" became "an Experience" (the catalog capitalizes it).
+  - The Laboratory (d3) picks 1-3 at random: `REAL_DICE` stays (a d3 would relabel every 3-row roll).
+  - Volume filter chips read «1», «2», «3» under the row «Том» (`SectionProp.chip`); sections and the path read «Том 2».
+  - `catalog.csv` adds `volume` and `room` after `realm`; `names.json` adds `volumes` and `rooms`.
+  - The unconfigured bundle budget rose 271 -> 273 kB (measured 272.3); the configured one 328 -> 330 kB (estimated 329.4; no `.env.test.local` in this worktree, CI's `e2e` measures it).
+- Review: required (triggers: public contracts and routes changed, new source mechanics, large data ingest, new UI), report `issues/new-items/reviews/B1.md` (R1, not run yet).
 
 ## Verification
-- Commands run (exact): draft generators and text checks in the session scratchpad (each English text against its PDF text); a name and id collision check against `data.js`.
-- Results: ph 93, lr 26 and vh 15 records, 0 text misses beyond listed typo fixes, 0 collisions.
-- Gates: none.
+- Commands run (exact): `node tests/run-all.js dataint,derived,contracts`; `VITEST_MAX_WORKERS=2 rtk npm run check:fast` (Bash timeout 600000); `npm run build:test`; `node tests/app/golden.js --update --shard=n/4` for n = 1-4; `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub`; `node tests/app/sweep.js <w>` for 360, 390, 768, 1180; `node --test preview/worker.test.mjs tools/desc-style.test.mjs`.
+- Results: dataint, derived, contracts ok; check:fast PASS (1064 s); goldens re-seeded (73 files); browser suite: app/contracts, app/print, app/typo, app/hues, stub ok; app/states shards 1 and 4 ok, shard 2 one timing miss (68: `#/homebrew` at 300 items 520.6 ms over 500, 8 suites in parallel, not related), shard 3 six failures of check 101 (F1); sweep 360, 390 and 768 pass; sweep 1180 fails 48 checks, all "the catalog head 130px, cap 110" on every table in both languages (F1).
+- Gates: check:fast green; CI is the full gate.
+
+## Acceptance (B1)
+
+| Line | Outcome |
+|---|---|
+| Every record of `context.md` "Goal" in `data.js` with Russian text | met: ph 93, lr 26, vh 15, total 1593 (`dataint`) |
+| The seven refs render with their product link | met: `record.test.ts` ("a supplement's rule card"), golden `#/i/lr6 ~ ref open` |
+| 86 pictures installed, no `unsourced` | met: `ingest` created 86 assets, 134 record links, 0 shared, 0 unarted; the Mournguard badge picture not shipped (owner) |
+| `dataint` reports 1593 records | met |
+| Roll (incl. the vh room picker), tables, search, stub, print card for ph, lr, vh | met in unit tests, goldens and the browser suite; print strips through `app/print` (no new trait or range word) |
+| `check:fast` green | met |
+| B0 checks: `lr-recipes` table | reshaped to a list (see Deviations) |
+| B0 checks: «Ослаблен» and `Name - Kind:` labels | settled in `desc-style.mjs` (see Deviations) |
+| B0 checks: ref `shambling-zombie` for lr12 | met: the key exists (dv66's card) |
+| B0 checks: `ph-mounted` nesting | fixed: the subset has no nested list, and the three indented ability lines drew as paragraphs with a literal dash; they are now items of the one list (9 items), in both languages |
+| B0 checks: vh6 "Experience" | capitalized |
+| UI pass at ten supplements | done; F1 needs V1, F2 fixed (below) |
+| lr owner decisions recorded | met: `docs/decisions/2026-11-07-pistolheart-last-round-table-and-veiled-halls-are-sources-ph-lr-vh.md` |
+
+## UI pass findings (screenshots in `mocks/`)
+- F1 (needs V1): the supplements tabs row on the tables page. Ten tabs need 1331 px in one line (1169 px of names + 9 x 18 px gaps); from 761 to about 1380 px they take two lines on every table, since the tab slot is reserved for the tallest group. Measured RU: 768x1024 head 130 px (cap 140, ok; two lines before too); 1000x720 first row at 331 px, against the First-Screen Rule's 288 px at 720 (was 288); 1180x720 first row at 287 px (ok) but the head exceeds the 110 px cap from 1140 px; 1366 287 px against 244 px at 1440 (states check 101). Mock `f1-supp-tabs-two-lines-1180x720-ru.jpg`. No local fix: gaps or padding cannot win 200 px. V1 options: (a, recommended) from 761 px show the supplements group's books in the same picker the narrow layout uses, the other groups keep their tabs; (b) shorter tab captions (rejected by the source-name decision); (c) accept two lines and lower the First-Screen Rule (changes a design law).
+- F2 (fixed): the supplements menu «Дополнения» at 360x640 RU is 498 px tall from 177 px and ended at 674 px, past the window. `ModeRow.svelte` caps it at the window less 186 px with its own scroll; it now ends at 617 px. Mocks `f2-supmenu-360x640-ru-before.jpg`, `-after.jpg`. FEATURES.md and DESIGN.md say so.
+- F3 (by design, noted): the equipment tables' «Источник» row now holds three more books, so it folds behind «и ещё 3» (the existing fold); the frame chips sit behind it.
+- OK: 360x640 RU and EN, no horizontal scroll and no clipped visible text on `/i/ph7` («Продвинутый Револьвер Вестника Войны»), `/i/lr6`, `/i/lr17`, `/i/lr23`, `/i/vh15`, the three tables, the three roll pages and search; first result at 250 px on the roll pages and first row at 230 px on the tables (rule 256 px); the table picker sheet at 360x640 holds the ten books (`ok-picker-sheet-360x640-ru.jpg`).
+- Not covered by hand: 390-700, 999/1000/1050 in EN, list and print previews by hand (the browser suite and the sweep cover them).
 
 ## Next batch (implement-ready)
-- B0 is done for ph, lr and vh. Next is B1.
-- Name: B1 - add the three sources ph, lr and vh in one batch (after task 57)
-- Objective: 134 records, 7 references, 86 pictures, three sources wired in the app, tools, tests and docs; the shared section mechanism built once.
-- In scope: `plan.md`, "Design", "Touchpoints", "B1 order of work", "Checks that B0 left for B1".
-- Out of scope: lr and vh, review, closeout, any redesign of tables or filters, new roll modes.
-- Files expected: about 150 (45 pictures x 3 files, `data.js`, derived files, app, tests, goldens, specs).
-- Acceptance criteria: every record of `context.md`, "Goal" is in `data.js` with Russian text; the seven refs render with their product link; 86 pictures installed with no `unsourced`; `dataint` reports 1593 records; roll (incl. the vh room picker), tables, search, share stub and print card work for `ph`, `lr` and `vh`; `check:fast` green.
-- UI pass (owner, 2026-11-05): `plan.md`, "UI verification at every width": tables, roll, the supplements menu and panel, search, record, list and print at 360-1440 in both languages; findings listed here with route, width, language and number; screenshots in `mocks/`. The pass runs once, at ten supplements; V1 only if a local fix is not enough.
-- Verification commands: `node tests/run-all.js dataint,derived,contracts`, `rtk npm run check:fast` (Bash timeout 600000); then `npm run build:test`, the browser suite and `node tests/app/sweep.js <width>` for 360, 390, 768, 1180.
-- Risks / do-nots: `plan.md`, "Do-nots". Start only when task 57 is closed.
-- Fallback: a flat `ph` table if the volume sections cost more than about 10 files.
-- Then: R1 (reviewer, one remediation commit), V1 only if needed, then B3 closeout.
+- Name: R1, then V1
+- Objective: R1 reviews B1 (one remediation commit). V1 fixes F1 inside the existing system and makes `app/states` check 101 and the sweep's head cap green.
+- In scope: `TablesPage.svelte` / `TableNav` tab slot from 761 px, `FEATURES.md` "Tables and search" head caps, `DESIGN.md`, `tests/app/sweep.js` `headCap`, goldens of the tables head.
+- Acceptance criteria: the First-Screen Rule holds at 1000x720 and 1180x720; the head caps hold or are re-measured with the owner's recommended option; CI green.
+- Verification commands: `rtk npm run check:fast`, `npm run build:test`, `node tests/app/sweep.js 768`, `node tests/app/sweep.js 1180`, `node tests/run-all.js app/states`.
 
 ## Blockers
-- Task 57 is not closed (waves 2b done, batch 9a pending).
-- lr and vh pictures are not generated (the owner is generating them; B1 counts them before the ingest).
+- None for R1. V1 changes visible UI: its option (a) is the recommended default while the owner is away.
 
 ## Deferred
-- B1 decides whether vh6's English "an experience" is capitalized (the corpus capitalizes Experience; B0 may not change English).
+- `catalog-index.csv` is 183817 of 196608 bytes; about 110 more records fit (`CONTRACTS.md` section 4).
 
 ## Notes
-- Start prompt for B1 (paste into a new session):
-
-  TASK: new-items. Read CLAUDE.md, then `issues/new-items/context.md`, `plan.md`, `handoff.md`. Check the start gate: `issues/57/` must be gone from `main`; if not, stop and say so. Then in `.claude/worktrees/new-items` run `git merge main`, refresh the touchpoint list as the plan says, and run `.claude/prompts/add-source.prompt.md` for batch B1 (source ph) only. Commit, push the branch, stop.
-
-- One prompt for the whole task (owner, 2026-11-05; the owner generates the lr and vh pictures while it runs):
-
-  TASK: new-items. Work in `.claude/worktrees/new-items` (branch `claude/new-items`). Read CLAUDE.md, then `issues/new-items/context.md`, `plan.md`, `handoff.md`. Start gate: `issues/57/` must be gone from `main`; if not, stop and say so. Run the task as the orchestrator (`.claude/prompts/orchestrate.prompt.md`) and spawn subagents for the work. The owner settled the lr questions on 2026-11-05 (no record for the Mournguard Mark Badge and the letters; one roll pool of 26): record them in the decision file. Order: (1) `git merge main`, refresh the touchpoints, read `docs/DECISIONS.md` for task 57 decisions; (2) B1, all three sources in one batch per `plan.md` (build the shared mechanism with ph first, then lr and vh, the checks B0 left, the UI verification pass at ten supplements); before the ingest of lr and vh count the pictures: `Last Round Table\images` must hold 26 and `Escape the Veiled Halls\images` 15 (the badge picture is not needed); if they are not there, stop, report which are missing, and wait for me; push; (3) R1 reviewer, one remediation commit, push, green CI; (4) V1 only if the UI pass needs more than a local fix; (5) B3 closeout with `/handoff`, squash after green CI. Stop for the human only on a critical case. Report after each batch.
-
-- Durable items written to their homes this batch (file, section): none.
+- Mocks path: `issues/new-items/mocks/`.
+- Owner defaults taken (AFK): the d3 room rolls 1-3 at random; recipes as a list; volume chips as numbers; `lr` labelled; vh6 capitalized; budget raised; F2 fixed locally; F1 goes to V1 with option (a).
+- Durable items written to their homes this batch (file, section): `docs/decisions/2026-11-07-*.md` (two files); `docs/specs/FEATURES.md` ("Rolling", "Tables and search", "Chrome"); `ROUTES.md`; `CONTRACTS.md` sections 1, 2, 4; `STATE.md`; `DESIGN.md` mode row; `.claude/README.md` bundle budget; `llms.txt`; both READMEs; `PRODUCT.md`.

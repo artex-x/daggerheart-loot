@@ -19,7 +19,7 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search]
   main ""
     heading "Поиск" [level=1]
     button "Открывать при запуске" [pressed=false]
-    StaticText "Поиск сразу по 1459 позициям - добыча, расходники и снаряжение."
+    StaticText "Поиск сразу по 1593 позициям - добыча, расходники и снаряжение."
     searchbox "Поиск по названию или описанию..." [value=меч focused=true]
     button "Выбрать"
     button "Все" [pressed=false]
@@ -28,7 +28,7 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search]
     button "Снаряжение" [pressed=true]
     StaticText "Снаряжение"
     StaticText " · "
-    StaticText "Показано 91 из 139"
+    StaticText "Показано 91 из 145"
     button "№ 89 Меч Хрустального Духа ОСНОВНОЕ ОРУЖИЕ УНИКАЛЬНОЕ THE DRAGON..." [namelen=290 namehash=c785ce3e]
     ... button x88 of 92 same-shape siblings elided
     button "Божественный Пластинчатый Доспех БРОНЯ УНИКАЛЬНОЕ HOPE & FEAR Ра..." [namelen=155 namehash=7bbcaef6]
@@ -169,7 +169,7 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search]
   main ""
     heading "Search" [level=1]
     button "Open on start" [pressed=false]
-    StaticText "Search all 1459 entries at once - loot, consumables and equipmen..." [namelen=66 namehash=99988b56]
+    StaticText "Search all 1593 entries at once - loot, consumables and equipmen..." [namelen=66 namehash=b8916354]
     searchbox "Search by name or description..." [value=меч focused=true]
     button "Select"
     button "All" [pressed=false]
@@ -178,7 +178,7 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search]
     button "Equipment" [pressed=true]
     StaticText "Equipment"
     StaticText " · "
-    StaticText "91 of 139 shown"
+    StaticText "91 of 145 shown"
     button "No. 89 Crystal Spirit Sword PRIMARY WEAPON UNIQUE THE DRAGON'S V..." [namelen=267 namehash=a2138fa0]
     ... button x88 of 92 same-shape siblings elided
     button "Godbound Laminar ARMOR UNIQUE HOPE & FEAR Tier 4 · Thresholds 13..." [namelen=127 namehash=9ea4610b]

@@ -45,6 +45,9 @@ const TABLES = [
   'dragons_vault',
   'arazos_artifacts',
   'many_worlds_tavern',
+  'pistolheart',
+  'last_round_table',
+  'escape_the_veiled_halls',
   'frames',
   'community_items',
   'alt_item',
@@ -102,6 +105,9 @@ const PAGES = [
   ['#/roll/arazos_artifacts', "arazo's artifacts"],
   ['#/roll/community_items', 'предметы сообществ'],
   ['#/roll/many_worlds_tavern', 'many worlds tavern'],
+  ['#/roll/pistolheart', 'pistolheart'],
+  ['#/roll/last_round_table', 'the last round table'],
+  ['#/roll/escape_the_veiled_halls', 'escape the veiled halls'],
   ['#/lists', 'списки без входа'],
   ['#/lists/00000000-0000-4000-8000-000000000103', 'вторая сумка', 'gm1'],
   ['#/lists/nope', 'списка нет'],
@@ -164,7 +170,9 @@ const PAGES = [
     ['#/tables/eq_weapon/t3', 'якорь раздела'],
     ['#/tables/eq_weapon/f_tier-2_cls-mag', 'ссылка на фильтры'],
     ['#/tables/community_items/Seaborne', 'якорь сообщества'],
-    ['#/tables/many_worlds_tavern/warrens', 'якорь мира']
+    ['#/tables/many_worlds_tavern/warrens', 'якорь мира'],
+    ['#/tables/pistolheart/2', 'якорь тома'],
+    ['#/tables/escape_the_veiled_halls/laboratory', 'якорь комнаты']
   ])
   /* The print page's states, three drawn sheets and the two print prompts, at every
      width. The sheets are seeded print sets (`tests/app/lib.js`, `PRINT_SETS`). */
@@ -628,7 +636,7 @@ function headCap(width) {
               .replace(/^\/en\//, '/')
               .slice(1);
             const known =
-              /^(roll\/(std|alt|wondrous_environments|dread_gm_toolbox|vault_of_ages|dragons_vault|arazos_artifacts|community_items|many_worlds_tavern)|tables|lists|search|print\/|i\/|h\/|l\/|lists\/|account$|homebrew(\/|$))/.test(
+              /^(roll\/(std|alt|wondrous_environments|dread_gm_toolbox|vault_of_ages|dragons_vault|arazos_artifacts|community_items|many_worlds_tavern|pistolheart|last_round_table|escape_the_veiled_halls)|tables|lists|search|print\/|i\/|h\/|l\/|lists\/|account$|homebrew(\/|$))/.test(
                 h
               );
             if (!known) out.badLinks.push(h);

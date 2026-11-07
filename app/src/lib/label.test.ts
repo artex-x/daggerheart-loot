@@ -134,6 +134,9 @@ describe('naming a source key with no record behind it', () => {
     expect(srcName('voa', 'ru')).toBe('Vault of Ages');
     expect(srcName('dv', 'ru')).toBe("The Dragon's Vault");
     expect(srcName('arazo', 'en')).toBe("Arazo's Artifacts");
+    expect(srcName('ph', 'ru')).toBe('Pistolheart');
+    expect(srcName('lr', 'en')).toBe('The Last Round Table');
+    expect(srcName('vh', 'ru')).toBe('Escape the Veiled Halls');
   });
 
   it('names the community loot, which a share link offers as a source', () => {
@@ -195,6 +198,13 @@ describe('which table a record is printed in', () => {
     expect(tableOf(index.byId.get('aa1') as Record_)).toBe('arazo');
   });
 
+  it('sends Pistolheart, The Last Round Table and Escape the Veiled Halls to their own tables', () => {
+    expect(tableOf(index.byId.get('ph2') as Record_)).toBe('ph');
+    expect(tableOf(index.byId.get('ph72') as Record_)).toBe('ph');
+    expect(tableOf(index.byId.get('lr3') as Record_)).toBe('lr');
+    expect(tableOf(index.byId.get('vh9') as Record_)).toBe('vh');
+  });
+
   it('places every record in the data somewhere', () => {
     for (const it of index.searchable) {
       expect(tableOf(it), it.id).not.toBe(null);
@@ -225,6 +235,16 @@ describe('the line under the heading', () => {
     /* The stubs under i/ print this path; the supplements group is navigation only. */
     expect(whereFrom(rec({ src: 'arazo' }), 'en')).toBe("Arazo's Artifacts");
     expect(whereFrom(rec({ src: 'dv' }), 'ru')).toBe("The Dragon's Vault");
+  });
+
+  it('names the volume of a Pistolheart record and the room of an Escape the Veiled Halls record', () => {
+    expect(whereFrom(rec({ src: 'ph', vol: 2 }), 'ru')).toBe('Pistolheart · Том 2');
+    expect(whereFrom(rec({ src: 'vh', room: 'library' }), 'en')).toBe(
+      'Escape the Veiled Halls · The Library'
+    );
+    expect(whereFrom(rec({ src: 'lr' }), 'en')).toBe('The Last Round Table');
+    expect(srcLabel(rec({ src: 'ph', vol: 2 }), 'ru')).toBe('Pistolheart');
+    expect(printSrc(rec({ src: 'vh', room: 'library' }), 'en')).toBe('Escape the Veiled Halls');
   });
 
   it('names the equipment slice, whichever piece (the last un-pinned group)', () => {

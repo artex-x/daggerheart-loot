@@ -34,7 +34,7 @@
 import { equipFacets, kindOf, listFacets, srcOf, type Index } from './data.js';
 import { EQ_GROUPS, EQ_TABLE, groupsFor, LIST_GROUPS, type FilterState } from './filters.js';
 import { FRAME_ORDER, frameName } from './frames.js';
-import { REALM_ORDER, realmName } from './realms.js';
+import { SECTION_PROP } from './sectionProps.js';
 import { isHomebrewRecord } from './homebrew.js';
 import { srcName } from './label.js';
 import { communities, communityName, voaSectionName, VOA_SECTIONS } from './sections.js';
@@ -89,7 +89,10 @@ const BOOK_SRC: readonly string[] = [
   'voa',
   'dv',
   'arazo',
-  'mwt'
+  'mwt',
+  'ph',
+  'lr',
+  'vh'
 ];
 
 /* The equipment `src` row's candidates, off `EQ_SRC` in app.js: the books
@@ -277,6 +280,7 @@ export function facetRows(
   const rows: FacetRow[] = [];
   const kind = kindRow(index, table, t);
   if (kind) rows.push(kind);
+  const prop = SECTION_PROP[table];
 
   if (table === 'voa') {
     rows.push({
@@ -296,11 +300,14 @@ export function facetRows(
       label: t.commF,
       values: communities(index).map((c) => ({ value: c.id, label: communityName(c, lang) }))
     });
-  } else if (table === 'mwt') {
+  } else if (prop) {
     rows.push({
-      group: 'realm',
-      label: t.realmF,
-      values: REALM_ORDER.map((id) => ({ value: id, label: realmName(id, lang) }))
+      group: prop.group,
+      label: t[prop.label],
+      values: prop.order.map((id) => ({
+        value: id,
+        label: prop.chip?.(id) ?? prop.name(id, lang)
+      }))
     });
   } else if (table === 'homebrew') {
     const sect = homebrewSectValues(index.rows.get('homebrew') ?? [], lang, hbSource);

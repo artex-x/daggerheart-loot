@@ -1,9 +1,10 @@
 # Daggerheart Loot Generator
 
-> A bilingual (Russian/English) loot reference and roller for Daggerheart: 1459
+> A bilingual (Russian/English) loot reference and roller for Daggerheart: 1593
 > records covering items, consumables, weapons and armor from the Core Set,
 > Hope & Fear, Wondrous Environments, the Dread GM Toolbox, Vault of Ages, The
-> Dragon's Vault, Arazo's Artifacts, Many Worlds Tavern and community items. Static site
+> Dragon's Vault, Arazo's Artifacts, Many Worlds Tavern, Pistolheart, The Last Round
+> Table, Escape the Veiled Halls and community items. Static site
 > with an optional account (Google or Discord sign-in); no public API.
 
 Site: https://daggerheart-loot.pages.dev/
@@ -39,7 +40,7 @@ Four things trip agents up here, in order of how often:
    build `/l/` links: that format stopped opening on 2026-10-26.
 
 Start with `catalog-index.csv`: one row per record, every column of
-`catalog.csv` but the two texts and the page link, under 200 KB. It holds 1459
+`catalog.csv` but the two texts and the page link, under 200 KB. It holds 1593
 records, the rows of `catalog.csv`; if your tool returns fewer, it cut the
 file: read the rest in parts or filter its rows by column. Pick the ids there, then read a record's text on its page,
 `i/en/<id>` or `i/<id>` (the page is the app; it holds the record's plain text
@@ -63,12 +64,14 @@ text, not the rules those items refer to.
   — the catalog without its text, for one fetch: the same rows in the same
   order, columns `id, kind, source, name_ru, name_en, tier, rarity, roll,
   class, trait, range, damage, burden, armor_score, thresholds, crafts_into,
-  community, realm`.
-- [catalog.csv](https://daggerheart-loot.pages.dev/catalog.csv) — 1459
+  community, realm, volume, room`.
+- [catalog.csv](https://daggerheart-loot.pages.dev/catalog.csv) — 1593
   rows, one per record. Columns: `id, kind, source, name_ru, name_en, tier,
   rarity, roll, class, trait, range, damage, burden, armor_score, thresholds,
-  crafts_into, community, url, text_ru, text_en, realm`. `realm` names a
-  Many Worlds Tavern record's realm in English and is empty elsewhere. A set member's `text_ru`
+  crafts_into, community, url, text_ru, text_en, realm, volume, room`. `realm` names a
+  Many Worlds Tavern record's realm in English, `volume` a Pistolheart record's
+  volume number and `room` an Escape the Veiled Halls record's room in English;
+  each is empty elsewhere. A set member's `text_ru`
   and `text_en` end with the set's shared bonus: `<bonus name> (Set:
   <members>): <text>`, with `Комплект` for `Set` in Russian.
   `crafts_into` holds the ids a record upgrades into, joined with `;`.
@@ -77,10 +80,11 @@ text, not the rules those items refer to.
   extension.
 - [data.json](https://daggerheart-loot.pages.dev/data.json) — the same
   records in full (a record's `craft` is a list of the ids it upgrades
-  into), plus the rarity tables (`alt`), the text of the fourteen
+  into), plus the rarity tables (`alt`), the text of the twenty-one
   rulebook cards some records refer to (`refs`: domain cards, two beastforms,
-  two ancestry features, an adversary feature, a transformation and three
-  adversary stat blocks), and
+  two ancestry features, an adversary feature, a transformation, three
+  adversary stat blocks, and seven rule cards of Pistolheart and The Last Round
+  Table, each linked to its product page), and
   the shared bonus of an item set (`sets`).
 - [names.json](https://daggerheart-loot.pages.dev/names.json) — catalog id to
   Russian and English name, for the link-preview host.
@@ -115,10 +119,10 @@ example: `***Grappling:*** On a successful attack, you can **spend a Hope** to
 Stress") or that a sentence only mentions ("when you would spend a Hope") stays
 plain.
 
-## The nine sources, and when to reach for each
+## The twelve sources, and when to reach for each
 
 `source` is not decoration on the record — it is the best single predictor of
-whether a thing will fit the table you are furnishing. The nine sets are not
+whether a thing will fit the table you are furnishing. The twelve sets are not
 interchangeable, and mixing them without saying so is how a selection goes
 wrong.
 
@@ -133,6 +137,9 @@ wrong.
 | `The Dragon's Vault` | 145 | A third-party supplement: 77 loot entries and 68 pieces of equipment, including a Frostwyrd upgrade chain and the paired Ember/Spark weapons. | You want more of the same shape as Wondrous Environments plus named, feature-heavy equipment. |
 | `Arazo's Artifacts` | 78 | A third-party book of 27 magic items that grow with the bearer: 10 items and 68 pieces of equipment. Each of the 17 pieces of equipment is four records (base, Improved, Advanced, Legendary), rebalanced to the Core damage and threshold bands, so its numbers differ from the printed book. | You want a signature item a character keeps for the whole campaign. |
 | `Many Worlds Tavern` | 109 | Six third-party card sets, one per realm (Sporopolis 20, Wagerwood 20, Warrin' Warrens 21, Godsvale 20, Hornet Hold 11, The Drome 17): 62 items, 12 consumables and 35 pieces of equipment, stats as printed. A record's `realm` names its set. | The party travels that realm, or you want a themed deck. |
+| `Pistolheart` | 93 | Three third-party volumes of Wild West gear: 16 firearms and frontier weapons that grow with the bearer (four records each: base, Improved, Advanced, Legendary), 4 armors, 7 consumables, 6 magic saddles and 9 Infusions; stats as printed. A record's `vol` names its volume. | A western or frontier campaign, or a gunslinger character. |
+| `The Last Round Table` | 26 | A third-party supplement about a living tavern: 11 items, 12 consumables and 3 Tier 2 weapons, many tied to the tavern itself. | The party visits or owns the tavern, or you want drinks and tavern oddities. |
+| `Escape the Veiled Halls` | 15 | A third-party one-shot adventure with four room loot tables (The Basement, The Dressing Room, The Laboratory, The Library): 7 items and 8 consumables, mostly potions. A record's `room` names its table. | You run the adventure, or want small one-session rewards. |
 | `Community` | 90 | Community Magic Items, a fan-made set from the community spreadsheet. Unplaytested — treat it as homebrew. | The GM asked for it, or nothing else fits. Say where it came from. |
 
 Three practical consequences:
@@ -141,7 +148,8 @@ Three practical consequences:
   If a request is for "official items", it means those two. The rest were not
   written by Darrington Press.
 - **Equipment lives in `Core`, `Hope & Fear`, `Campaign Frames`,
-  `The Dragon's Vault`, `Arazo's Artifacts` and `Many Worlds Tavern`.** Wondrous Environments, Dread GM Toolbox and
+  `The Dragon's Vault`, `Arazo's Artifacts`, `Many Worlds Tavern`, `Pistolheart` and
+  `The Last Round Table`.** Wondrous Environments, Dread GM Toolbox and
   Vault of Ages carry a few pieces each. A question about weapons or armor
   has no answer in Community items — do not go looking there.
 - **`Campaign Frames` is the one to filter out by default.** Its entries look
@@ -233,17 +241,19 @@ new links as paths.
   `/roll/wondrous_environments`; `/roll/dread_gm_toolbox`;
   `/roll/vault_of_ages`; `/roll/dragons_vault`; `/roll/arazos_artifacts`;
   `/roll/community_items`; `/roll/many_worlds_tavern` (a realm, then a roll
-  inside it)
+  inside it); `/roll/pistolheart`; `/roll/last_round_table`;
+  `/roll/escape_the_veiled_halls` (a room, then a roll inside it)
 - `/tables/<table>` — `core_item`, `core_consumable`, `hope_and_fear_item`,
   `hope_and_fear_consumable`, `wondrous_environments`, `dread_gm_toolbox`,
   `vault_of_ages`, `dragons_vault`, `arazos_artifacts`, `community_items`,
-  `many_worlds_tavern`, `other_starting`, `other_frames`, `eq_weapon`,
+  `many_worlds_tavern`, `pistolheart`, `last_round_table`,
+  `escape_the_veiled_halls`, `other_starting`, `other_frames`, `eq_weapon`,
   `eq_secondary`, `eq_armor`, and `homebrew`: `/tables/homebrew` is a
   signed-in GM's own items; signed out it asks to sign in
 - Old ids: `/roll/wondrous`, `/roll/dread`, `/roll/voa`, `/roll/dv`,
-  `/roll/arazo`, `/roll/community`, `/roll/mwt` and the tables `hnf_item`,
-  `hnf_consumable`, `wondrous`, `dread`, `voa`, `dv`, `arazo`, `community`,
-  `mwt`. An old id still opens the same page; the address is not rewritten.
+  `/roll/arazo`, `/roll/community`, `/roll/mwt`, `/roll/ph`, `/roll/lr`, `/roll/vh`
+  and the tables `hnf_item`, `hnf_consumable`, `wondrous`, `dread`, `voa`, `dv`,
+  `arazo`, `community`, `mwt`, `ph`, `lr`, `vh`. An old id still opens the same page; the address is not rewritten.
   Build new links with the ids above. Filter values keep the old keys
   (`src-dread`, `src-community`), and the filter keys below name a table by
   its old id
@@ -254,7 +264,9 @@ new links as paths.
   `src`, `trait`, `range`, `burden`, `line`. Other tables: `kind`
   (`item`/`consumable`/`equip`), plus `tier` on `voa` (`1`–`4`, `A`, `C`),
   `frame` on `other_frames`, `comm` on `community`, `realm` on `mwt`
-  (`sporopolis`, `wagerwood`, `warrens`, `godsvale`, `hornet`, `drome`), `src` and `sect` on
+  (`sporopolis`, `wagerwood`, `warrens`, `godsvale`, `hornet`, `drome`), `vol` on `ph`
+  (`1`, `2`, `3`), `room` on `vh` (`basement`, `dressing`, `laboratory`,
+  `library`), `src` and `sect` on
   `homebrew`. On `homebrew` and the equipment tables `src` also takes `hb`, an
   own source key or (`sect`) a section key: these live in one account, so you
   cannot build them. On `homebrew`, `src` holds one value and picks the
@@ -945,7 +957,7 @@ GM's own items live only in their account.
 
 ### What a homebrew file never carries
 
-`img` (art), `roll`, `frame`, `starting`, `recall`, `community`, `realm`, row ids
+`img` (art), `roll`, `frame`, `starting`, `recall`, `community`, `realm`, `vol`, `room`, row ids
 and edit dates. The file carries no art.
 
 ### How to hand a homebrew file over

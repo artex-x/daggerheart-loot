@@ -1128,7 +1128,7 @@ describe('copyContentOf', () => {
   };
 
   it('maps every catalog record to content with no problems', () => {
-    expect(loot.byId.size).toBe(1459);
+    expect(loot.byId.size).toBe(1593);
     for (const id of loot.byId.keys()) {
       expect([id, contentProblems(of(id))]).toEqual([id, []]);
     }

@@ -109,7 +109,7 @@ describe('the supplements menu', () => {
     return { ...r, menu, items: within(menu).getAllByRole('menuitem') };
   }
 
-  it('holds the seven supplements in order with the open one checked, the first focused', async () => {
+  it('holds the ten supplements in order with the open one checked, the first focused', async () => {
     const { view, menu, items } = await open('#/roll/vault_of_ages');
     expect(items.map((i) => i.textContent)).toEqual(
       SUPPLEMENTS.map((s) => dict('ru')[SECTION_LABEL[s]])
@@ -141,11 +141,11 @@ describe('the supplements menu', () => {
     await userEvent.keyboard('{ArrowDown}');
     expect(items[1]).toHaveFocus();
     await userEvent.keyboard('{ArrowUp}{ArrowUp}');
-    expect(items[6]).toHaveFocus();
+    expect(items[9]).toHaveFocus();
     await userEvent.keyboard('{Home}');
     expect(items[0]).toHaveFocus();
     await userEvent.keyboard('{End}');
-    expect(items[6]).toHaveFocus();
+    expect(items[9]).toHaveFocus();
     await userEvent.keyboard('{Escape}');
     expect(screen.queryByRole('menu')).toBeNull();
     expect(button(nav)).toHaveFocus();

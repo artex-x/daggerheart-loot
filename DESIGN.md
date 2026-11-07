@@ -1,6 +1,6 @@
 ---
 name: Daggerheart Loot Generator
-description: A dark bilingual catalog of 1459 Daggerheart records, with one gold accent that marks only what was chosen.
+description: A dark bilingual catalog of 1593 Daggerheart records, with one gold accent that marks only what was chosen.
 colors:
   seal-gold: "#d8ab5e"
   seal-gold-soft: "#f0d091"
@@ -215,7 +215,7 @@ else.
 
 The mood is quiet, exact and solemn. Nothing here is staged: the type scale is
 small and even, the contrast values were measured rather than guessed, and the
-one accent is rationed. The catalog holds 1459 records in two languages, so
+one accent is rationed. The catalog holds 1593 records in two languages, so
 density is a requirement, not a preference. The design earns its ceremony from
 the numbering and the tagging, which are real information, and never from
 ornament.
@@ -443,7 +443,7 @@ at 320); a 280px window scrolls sideways.
 The page is a vertical stack: a sticky translucent header (`rgb(14 12 21 / 86%)`
 over a 14px backdrop blur) that holds the brand row and the three jobs (63px from
 761px, 111px at 360px; up to 760px it leaves on a scroll down and returns on a
-scroll up), the mode row on the nine roll pages up to 760px (53px, scrolling with
+scroll up), the mode row on the twelve roll pages up to 760px (53px, scrolling with
 the page), the content, then the footer. `main`
 carries 26px of top padding, 48px of bottom padding, and a 60vh minimum so a
 short route does not collapse. `scrollbar-gutter: stable` on `html` reserves the
@@ -488,7 +488,7 @@ query in the code belongs to one component and its own measured problem. Do
 not add another system breakpoint. `/account` signed in uses the 1000px step too:
 one column below it, two from it, in the DOM order of the one column.
 
-**The Roll Page Rule.** The nine roll pages share one layout. Up to 760px: a read-only
+**The Roll Page Rule.** The twelve roll pages share one layout. Up to 760px: a read-only
 `h1`, the controls, one results line («Бросок N», «Настроить», «Ещё»); the pin, the
 help and the copy of every option are items of «Ещё». From 761px: the head (The Head
 Order Rule) with the `h1` «Бросок», the three mode pills and the labeled pin and help, a
@@ -817,14 +817,15 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
   «Поиск» / "Search", each with its icon before the label (the die, the table,
   the magnifier), at 14px weight 560 in Ash Violet with a 2px transparent bottom
   border. The lit job turns that border gold and the label Seal Gold Soft.
-  «Бросок» stands for the nine roll pages and opens the last one of the tab.
-- **Mode row:** up to 760px, under the sticky header on the nine roll pages only,
+  «Бросок» stands for the twelve roll pages and opens the last one of the tab.
+- **Mode row:** up to 760px, under the sticky header on the twelve roll pages only,
   scrolling with the page; from 761px the same three controls are the page head's pills
   after «Бросок»: «Обычные правила», «Альтернативные таблицы» and the menu button
   «Дополнения ▾», which shows the open supplement's name. The controls compose
   the chip's tokens; the lit one takes the Seal Gold fill of the current place.
-  The menu under the button lists the seven supplements, 44px items, the open
-  one with a check; no sheet and no grab handle.
+  The menu under the button lists the ten supplements, 44px items, the open
+  one with a check, at most the window less 186px tall, scrolling inside; no sheet
+  and no grab handle.
 - **Header:** sticky, translucent, blurred, with a one-pixel seam under it; 63px
   from 761px, 111px at 360px. The DOM order is the brand, the language switch, the
   account control, then the jobs, the reading order of the two rows up to 760px; from
@@ -1089,7 +1090,7 @@ it.
 
 - **Don't** drift toward a neon dark mode: no saturated purple or cyan glow, no
   gradient text, no colored drop shadow. The ground is violet, which makes this
-  a short slide, and the palette's restraint is what keeps 1459 records legible.
+  a short slide, and the palette's restraint is what keeps 1593 records legible.
 - **Don't** drift toward a SaaS dashboard: no generic blue accent, no oversized
   rounded cards, no illustrated empty states (the only picture an empty state
   draws is the kind glyph in its art well), no marketing gradient. The density

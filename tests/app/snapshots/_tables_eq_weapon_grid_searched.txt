@@ -34,7 +34,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     button "Список" [pressed=false]
     button "Сетка" [pressed=true]
     button "Ссылка на таблицу"
-    StaticText "Показано 61 из 458"
+    StaticText "Показано 61 из 512"
     button "Выбрать"
     complementary "Фильтры"
       heading "Фильтры" [level=2]
@@ -42,9 +42,10 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       button "Все" [pressed=true]
       button "1" [pressed=false]
       button "2" [pressed=false]
-      ... button x29 of 33 same-shape siblings elided
+      ... button x28 of 32 same-shape siblings elided
       StaticText "ИСТОЧНИК"
       button "Все" [pressed=true]
+      button "и ещё 3" [expanded=false]
       ... StaticText x3 of 7 same-shape siblings elided
       ... button x3 of 7 same-shape siblings elided
       StaticText "ХВАТ"
@@ -114,8 +115,10 @@ Dread GM Toolbox
 EN
 Hope & Fear
 Many Worlds Tavern
+Pistolheart
 RU
 The Dragon's Vault
+The Last Round Table
 Vault of Ages
 Wondrous Environments
 daggerheart.com
@@ -141,7 +144,6 @@ daggerheart.com
 Искусность
 К содержимому
 Колдующий МечМагическое · Сила · Вплотную · d10+4 маг · Двуручно... [namelen=65 namehash=9aeffaff]
-Колоссы Сухоземья
 Конфиденциальность
 Легендарный Двуручный МечФизическое · Сила · Вплотную · d10+12 ф... [namelen=78 namehash=b8252127]
 Легендарный Длинный мечФизическое · Проворность · Вплотную · d10... [namelen=83 namehash=bc19b689]
@@ -160,7 +162,6 @@ daggerheart.com
 Оружие
 Открывать при запуске
 Очень далеко
-Пир зверей
 Поиск
 Поиск по названию или описанию...
 Поющий МечФизическое · Влияние · Близко · d8+5 физ · Одноручное
@@ -180,7 +181,6 @@ daggerheart.com
 Ссылка на раздел
 Ссылка на таблицу
 Таблицы
-Тёмное сердце Андалурии
 Улучшенный Двуручный МечФизическое · Сила · Вплотную · d10+6 физ... [namelen=76 namehash=6a4b81dc]
 Улучшенный Длинный МечФизическое · Проворность · Вплотную · d10+... [namelen=81 namehash=5cc8d7b3]
 Улучшенный Меч СветаМагическое · Сила · Вплотную · d10+6 маг · Д... [namelen=72 namehash=59f0f97b]
@@ -191,6 +191,7 @@ daggerheart.com
 Установить как приложение
 Физическое
 Эфирный Двуручный МечМагическое · Инстинкт · Близко · d10+9 маг ... [namelen=75 namehash=55121bb3]
+и ещё 3
 
 ## en :: tree
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon]
@@ -224,7 +225,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon]
     button "List" [pressed=false]
     button "Grid" [pressed=true]
     button "Link to this table"
-    StaticText "61 of 458 shown"
+    StaticText "61 of 512 shown"
     button "Select"
     complementary "Filters"
       heading "Filters" [level=2]
@@ -232,9 +233,10 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon]
       button "All" [pressed=true]
       button "1" [pressed=false]
       button "2" [pressed=false]
-      ... button x29 of 33 same-shape siblings elided
+      ... button x28 of 32 same-shape siblings elided
       StaticText "SOURCE"
       button "All" [pressed=true]
+      button "and 3 more" [expanded=false]
       ... StaticText x3 of 7 same-shape siblings elided
       ... button x3 of 7 same-shape siblings elided
       StaticText "BURDEN"
@@ -309,15 +311,12 @@ Alt. tables
 Arazo's Artifacts
 Armor
 Artifacts
-Beast Feast
 BraveswordPhysical · Strength · Melee · d12+7 phy · Two-Handed
 BrightswordMagic · Strength · Melee · d10+3 mag · Two-Handed
 Cane SwordPhysical · Finesse · Melee · d8+4 phy · One-Handed
 Casting SwordMagic · Strength · Melee · d10+4 mag · Two-Handed
 Close
-Colossus of the Drylands
 Core
-Dark Heart of Andaluria
 Dread GM Toolbox
 Dual-Ended SwordPhysical · Agility · Melee · d10+9 phy · Two-Han... [namelen=67 namehash=1c782d42]
 EN
@@ -353,6 +352,7 @@ One-Handed
 Open on start
 Other
 Physical
+Pistolheart
 Presence
 Privacy
 RU
@@ -371,6 +371,7 @@ Supplements
 Tables
 Terms of use
 The Dragon's Vault
+The Last Round Table
 Two-Handed
 Unique
 Upgradable
@@ -380,4 +381,5 @@ Very Far
 Weapons
 WhipswordPhysical · Finesse · Very Close · d8 phy · One-Handed
 Wondrous Environments
+and 3 more
 daggerheart.com

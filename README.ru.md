@@ -14,7 +14,7 @@
 ссылка на неё в подвале рядом с политикой конфиденциальности
 (`pages/privacy.html`) и условиями использования (`pages/terms.html`).
 
-Всего 1459 записей - 1078 предметов и расходников плюс 381 единица снаряжения, - у
+Всего 1593 записи - 1212 предметов и расходников плюс 381 единица снаряжения, - у
 каждой название, описание, строка характеристик, если она есть, и картинка.
 Слежки нет; вход в аккаунт необязателен, и без него ничего о вас не попадает
 на сервер.
@@ -44,6 +44,9 @@
 | Arazo's Artifacts | 1-78 | 1 предмет |
 | Предметы сообществ | сообщество + 1-10 | 1 предмет |
 | Many Worlds Tavern | мир + бросок внутри него (от 1-11 до 1-21) | 1 предмет |
+| Pistolheart | 1-93 | 1 предмет |
+| The Last Round Table | 1-26 | 1 предмет |
+| Escape the Veiled Halls | комната + бросок внутри неё (d4, в Лаборатории 1-3) | 1 предмет |
 
 Core и Hope & Fear - это один и тот же бросок Nd12 по таблице 1-60, поэтому
 они собраны в один режим с переключателем источника. Редкость там влияет только
@@ -61,7 +64,7 @@ Core и Hope & Fear - это один и тот же бросок Nd12 по та
 
 **Таблицы** - это все таблицы целиком, включая альтернативные и три таблицы
 снаряжения (оружие, вторичное оружие, броня), у каждой свой поиск и переключение
-списком или сеткой. **Поиск** идёт сразу по 1459 записям: названия,
+списком или сеткой. **Поиск** идёт сразу по 1593 записям: названия,
 описания и характеристики, на обоих языках.
 
 Разделы адресуются напрямую, и у каждого заголовка есть кнопка копирования
@@ -213,6 +216,9 @@ https://daggerheart-loot.pages.dev/i/ci15?v=<версия>
 | `dv` / `dve` | The Dragon's Vault, добыча / снаряжение | `dv26`, `dve19` |
 | `aa` | Arazo's Artifacts | `aa7` |
 | `mw` | Many Worlds Tavern | `mw47` |
+| `ph` | Pistolheart | `ph37` |
+| `lr` | The Last Round Table | `lr12` |
+| `vh` | Escape the Veiled Halls | `vh9` |
 | `cm` | Предметы сообществ | `cm81` |
 | `f` | Снаряжение фреймов | `f7` |
 | `q` | Снаряжение Core и Hope & Fear | `q26` |
@@ -222,7 +228,11 @@ Loreborne `cm11`-`cm20` и так далее. Many Worlds Tavern идёт по �
 выхода наборов: Спорополис `mw1`-`mw20`, Лес Пари `mw21`-`mw40`, Воюющие Норы
 `mw41`-`mw61`, Долина Богов `mw62`-`mw81`, Оплот Шершней `mw82`-`mw92`, Дром
 `mw93`-`mw109`. На карточках Оплота Шершней и Дрома номеров нет, поэтому внутри
-каждого мира порядок такой: вид, потом название.
+каждого мира порядок такой: вид, потом название. Pistolheart идёт `ph1`-`ph93` в
+порядке книг по трём томам, The Last Round Table - `lr1`-`lr26`, номер в id - это
+бросок. Escape the Veiled Halls идёт по комнатам: Подвал `vh1`-`vh4`, Гардеробная
+`vh5`-`vh8`, Лаборатория `vh9`-`vh11`, Библиотека `vh12`-`vh15`; бросок - место в
+таблице комнаты.
 
 Ссылка на собственный предмет, ссылка для доступа к списку, ссылка на набор
 для печати и ссылка на таблицу - карточки на том же хосте
@@ -306,10 +316,10 @@ app/src/styles/       tokens.css и общие стили
 app/index.html        входной документ, собирается в dist/index.html
 data.js               данные: window.LOOT
 card/*.svg            36 векторов для печатных карточек, экспорт из Figma
-img/*.webp            1192 картинки, 640x640, ~35 МБ
+img/*.webp            1278 картинок, 640x640, ~35 МБ
 img/thumb/*.webp      по одной миниатюре 160x160 на картинку, для строк
 og/*.jpg              те же картинки в JPEG для превью ссылок, ~37 МБ
-i/*.html              1459 страниц-заглушек на каждом языке с Open Graph разметкой:
+i/*.html              1593 страницы-заглушки на каждом языке с Open Graph разметкой:
                       i/ на русском, i/en/ на английском; их публикует зеркало старого
                       хоста, сайт публикует приложение с той же карточкой (dist/i/);
                       генерируются, не в репозитории
@@ -508,10 +518,10 @@ Wondrous Environments (12) и два улучшения Фроствирда.
 туда.
 
 Снаряжение лежит не только в `eq`. Одиннадцать записей Wondrous Environments, все 68
-единиц оружия и брони The Dragon's Vault, все 68 единиц Arazo's Artifacts, все 35 единиц Many Worlds Tavern, всё снаряжение фреймов, часть Vault
+единиц оружия и брони The Dragon's Vault, все 68 единиц Arazo's Artifacts, все 35 единиц Many Worlds Tavern, все 68 единиц Pistolheart, три единицы оружия The Last Round Table, всё снаряжение фреймов, часть Vault
 of Ages и Dread GM Toolbox несут такой же блок `eq`,
 оставаясь в `items`; фреймы кампаний не образуют таблицу бросков. Три таблицы снаряжения собирают их
-все: основного оружия там 458, вторичного 135, брони 114. До двух книг их сужает
+все: основного оружия там 512, вторичного 148, брони 118. До двух книг их сужает
 фильтр по источнику (239 / 73 / 69).
 
 ## Цвета категорий
@@ -539,6 +549,9 @@ of Ages и Dread GM Toolbox несут такой же блок `eq`,
 | The Dragon's Vault | 145 | [The Dragon's Vault](https://www.drivethrurpg.com/en/product/581246/the-dragon-s-vault) | любительский перевод |
 | Arazo's Artifacts | 78 | [The Guide to Arazo's Artifacts](https://www.drivethrurpg.com/en/product/581640/the-guide-to-arazo-s-artifacts) | любительский перевод |
 | Many Worlds Tavern | 109 | [Sporopolis](https://heartofdaggers.com/products/sporopolis-item-and-domain-cards/), [Wagerwood](https://heartofdaggers.com/products/wagerwood-item-and-domain-cards/), [Warrin' Warrens](https://heartofdaggers.com/products/warrin-warrens-items-and-domains/), [Godsvale](https://heartofdaggers.com/products/godsvale-items-and-domains/), [Hornet Hold](https://heartofdaggers.com/products/hornet-hold-items-and-domains/), [The Drome](https://heartofdaggers.com/products/the-drome-items-and-domains/) | любительский перевод |
+| Pistolheart | 93 | [Pistolheart Volume 1](https://www.drivethrurpg.com/en/product/547537/pistolheart-volume-1), [2](https://www.drivethrurpg.com/en/product/564429/pistolheart-volume-2), [3](https://www.drivethrurpg.com/en/product/578612/pistolheart-volume-3) | любительский перевод |
+| The Last Round Table | 26 | [The Last Round Table](https://heartofdaggers.com/products/the-last-round-table/) | любительский перевод |
+| Escape the Veiled Halls | 15 | [Escape the Veiled Halls](https://heartofdaggers.com/products/escape-the-veiled-halls/) | любительский перевод |
 | Предметы сообществ | 90 | [Community Magic Items](https://www.drivethrurpg.com/en/product/558159/community-magic-items-a-daggerheart-compatible-toolkit) | любительский перевод, названия сообществ по [daggerheart.su](https://ru.daggerheart.su/community) |
 | Снаряжение фреймов | 94 | Beast Feast, Colossus, Dark Heart, Motherboard | любительский перевод |
 | Оружие | 239 | Daggerheart SRD, Hope & Fear | Core - [daggerheart.su](https://ru.daggerheart.su/), H&F - таблица сообщества |
@@ -585,6 +598,7 @@ d119 совпадает со степенями свободы, перекос �
   материалов, выпущенных до этого.
 - **Wondrous Environments**, **Dread GM Toolbox**, **Vault of Ages**,
   **The Dragon's Vault**, **The Guide to Arazo's Artifacts**, наборы карточек **Many Worlds Tavern**,
+  **Pistolheart**, **The Last Round Table**, **Escape the Veiled Halls**,
   **Community Magic Items** и **Alternate Loot &
   Consumable Tables** под эту лицензию не подпадают: это платные и фанатские
   дополнения, права на тексты которых принадлежат их авторам.

@@ -58,6 +58,9 @@ export const TABLE_GROUPS: readonly TableGroup[] = [
   { id: 'arazo', label: 'arazo', top: 'arazo', subs: ['arazo'] },
   { id: 'comm', label: 'pageCommunity', top: 'community', subs: ['community'] },
   { id: 'mwt', label: 'mwt', top: 'mwt', subs: ['mwt'] },
+  { id: 'ph', label: 'ph', top: 'ph', subs: ['ph'] },
+  { id: 'lr', label: 'lr', top: 'lr', subs: ['lr'] },
+  { id: 'vh', label: 'vh', top: 'vh', subs: ['vh'] },
   {
     id: 'eq',
     label: 'grpEquipment',
@@ -98,7 +101,7 @@ export function groupOf(table: TableId): TableGroup {
   return TABLE_GROUPS.find((g) => g.subs.includes(table)) ?? CORE_GROUP;
 }
 
-/* The groups the tables page draws, a second layer over `TABLE_GROUPS`. The seven
+/* The groups the tables page draws, a second layer over `TABLE_GROUPS`. The ten
    supplement books share one chip, as their roll sections share one header tab
    (`nav.ts`), and their own names move to the second row. `TABLE_GROUPS` and
    `SUB_LABEL` stay the record path words: `whereFrom`, and through it every
@@ -107,7 +110,7 @@ const SUPP_GROUP: TableGroup = {
   id: 'supp',
   label: 'grpSupplements',
   top: 'wondrous',
-  subs: ['wondrous', 'dread', 'voa', 'dv', 'arazo', 'community', 'mwt']
+  subs: ['wondrous', 'dread', 'voa', 'dv', 'arazo', 'community', 'mwt', 'ph', 'lr', 'vh']
 };
 
 /** The tables page's group chips, in order. Each `TableId` sits in one group. */

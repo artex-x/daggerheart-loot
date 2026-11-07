@@ -6559,7 +6559,11 @@ async function rollPageLayout() {
           );
         }
 
-        for (const route of ['#/roll/many_worlds_tavern', '#/roll/vault_of_ages']) {
+        for (const route of [
+          '#/roll/many_worlds_tavern',
+          '#/roll/vault_of_ages',
+          '#/roll/escape_the_veiled_halls'
+        ]) {
           await d.open(route, { lang });
           const longest = await page.$eval(
             '.pick select',
@@ -6994,6 +6998,9 @@ const NAV_TABLES = [
   'arazo',
   'community',
   'mwt',
+  'ph',
+  'lr',
+  'vh',
   'eq_weapon',
   'eq_secondary',
   'eq_armor',

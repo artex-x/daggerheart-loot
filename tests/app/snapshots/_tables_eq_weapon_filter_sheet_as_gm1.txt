@@ -14,9 +14,10 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     button "Все" [pressed=true]
     button "1" [pressed=false]
     button "2" [pressed=false]
-    ... button x30 of 34 same-shape siblings elided
+    ... button x28 of 32 same-shape siblings elided
     ... StaticText x4 of 8 same-shape siblings elided
     button "Все" [pressed=true]
+    button "и ещё 4" [expanded=false]
     ... button x3 of 7 same-shape siblings elided
     StaticText "ХВАТ"
     button "Все" [pressed=true]
@@ -25,7 +26,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     button "Есть улучшение" [pressed=false]
     button "Уникальные" [pressed=false]
     button "Сбросить" [disabled=true]
-    button "Показать 459"
+    button "Показать 513"
 
 ## ru :: controls
 1
@@ -40,6 +41,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 109Метеор ХиларадаФизическое · Сила · Близко · d12+12 физ · Двур... [namelen=69 namehash=eaab6171]
 10Клинок ШаманаМагическое · Инстинкт · Вплотную · d8+5 маг · Одн... [namelen=71 namehash=cec59c6e]
 10НимойрасФизическое · Искусность · Близко · d10+6 физ · Двуручн... [namelen=66 namehash=5f48b54d]
+10Улучшенный Арк-ПистолетМагическое · Знание · Далеко · d6+3 маг... [namelen=77 namehash=0e8af633]
 111Клинок ГидрыФизическое · Проворность · Вплотную · d8+6 физ · ... [namelen=74 namehash=4db31e2e]
 112Инфернальные КастетыФизическое · Сила · Вплотную · d8+1 физ ·... [namelen=75 namehash=ab1ae9e8]
 113Кинетическое ЛезвиеФизическое · Проворность · Вплотную · d8+4... [namelen=81 namehash=a0936314]
@@ -51,12 +53,15 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 119ПробникФизическое · Искусность · Вплотную · d4+5 физ · Однору... [namelen=68 namehash=f431619e]
 11Воля ГлашатаяМагическое · Знание · Далеко · d6+9 маг · Двуручн... [namelen=66 namehash=e4195284]
 11Кортик МёртвыхФизическое · Искусность · Вплотную · d6+2 физ · ... [namelen=74 namehash=01ef7ea9]
+11Продвинутый Арк-ПистолетМагическое · Знание · Далеко · d6+6 ма... [namelen=78 namehash=9e7e8ea7]
 121Меч-РазрушительФизическое · Проворность · Вплотную · d10+5 фи... [namelen=78 namehash=f57a96cc]
 124Кирка Небесного ГномаФизическое · Сила · Вплотную · d8+5 физ ... [namelen=76 namehash=b91433aa]
 125Клинок СомнусаФизическое · Сила · Вплотную · d10+7 физ · Двур... [namelen=69 namehash=fcd319e3]
 126Боевой Посох Душевного ОгняМагическое · Инстинкт · Вплотную ·... [namelen=86 namehash=834e1cf6]
 127Заклинательный КлинокМагическое · Характеристика Заклинателя ... [namelen=98 namehash=ae8c3caa]
 129Посох ЛейтисаМагическое · Влияние · Далеко · d6+9 маг · Двуру... [namelen=68 namehash=d148144f]
+12Весло Растущего БроженияФизическое · Сила · Близко · d8+6 физ ... [namelen=75 namehash=55ec3996]
+12Легендарный Арк-ПистолетМагическое · Знание · Далеко · d6+10 м... [namelen=79 namehash=411c1768]
 12Посох Мохового ЦветкаМагическое · Инстинкт · Вплотную · d10+9 ... [namelen=79 namehash=82c463f6]
 12Улучшенный Кортик МёртвыхФизическое · Искусность · Вплотную · ... [namelen=85 namehash=eb8ce5d7]
 130Звёздное КопьёФизическое · Сила · Близко · d10+4 физ · Двуруч... [namelen=67 namehash=cb88b320]
@@ -69,40 +74,58 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 137Глефа ТиранаФизическое · Сила · Близко · d10+5 физ · Двуручно... [namelen=65 namehash=aac3b64f]
 138Двуручный Меч ВайатыФизическое · Сила · Вплотную · d10+6 физ ... [namelen=75 namehash=39cd178e]
 139Жезл Нестабильной АрканыМагическое · Знание · Далеко · d6+4 м... [namelen=79 namehash=43de6c53]
+13Винтовка с ПрицеломФизическое · Инстинкт · Очень далеко · d8+2... [namelen=80 namehash=8f27ef54]
 13Продвинутый Кортик МёртвыхФизическое · Искусность · Вплотную ·... [namelen=87 namehash=acd9650d]
 13ХаррокливФизическое · Сила · Вплотную · d12+7 физ · Двуручное
 140Жало ОсыФизическое · Влияние · Вплотную · d8+3 физ · Одноручн... [namelen=66 namehash=9e5cb6a1]
 141Дротик Гребня ВолныФизическое · Проворность · Средне · d8+4 ф... [namelen=79 namehash=016a68d4]
 14Легендарный Кортик МёртвыхФизическое · Искусность · Вплотную ·... [namelen=87 namehash=12be9a45]
+14Улучшенная Винтовка с ПрицеломФизическое · Инстинкт · Очень да... [namelen=91 namehash=4341f288]
 15Драконий ЛукФизическое · Искусность · Очень далеко · d8 физ · ... [namelen=74 namehash=de21d7eb]
+15Продвинутая Винтовка с ПрицеломФизическое · Инстинкт · Очень д... [namelen=92 namehash=a7387968]
+16Легендарная Винтовка с ПрицеломФизическое · Инстинкт · Очень д... [namelen=93 namehash=44d7e7c7]
 16Улучшенный Драконий ЛукФизическое · Искусность · Очень далеко ... [namelen=87 namehash=8f8c91d1]
+17Затворная ВинтовкаФизическое · Искусность · Очень далеко · d8+... [namelen=81 namehash=e65abdde]
 17Клинок БраксусаФизическое · Сила · Вплотную · d10+9 физ · Двур... [namelen=69 namehash=28e63509]
 17Продвинутый Драконий ЛукФизическое · Искусность · Очень далеко... [namelen=88 namehash=bf1c1a85]
 17Церебральный ШипМагическое · Инстинкт · Вплотную · d8+10 маг ·... [namelen=75 namehash=bbde83d7]
 18Легендарный Драконий ЛукФизическое · Искусность · Очень далеко... [namelen=88 namehash=8ea4ea06]
+18Улучшенная Затворная ВинтовкаФизическое · Искусность · Очень д... [namelen=92 namehash=7d6c6baa]
 19Лук из Эльфийских ВолосФизическое · Проворность · Очень далеко... [namelen=88 namehash=40091633]
 19Мясницкий ТесакФизическое · Влияние · Близко · d8+7 физ · Двур... [namelen=69 namehash=3c98ced3]
+19Продвинутая Затворная ВинтовкаФизическое · Искусность · Очень ... [namelen=93 namehash=c0116d2f]
 1Благословенный Нож Шеф-ПовараФизическое · Искусность · Вплотную... [namelen=88 namehash=604294c9]
 1Верная МотыгаМагическое · Инстинкт · Средне · d8+2 маг · Двуруч... [namelen=67 namehash=38eb9365]
 1Искатель ВраговМагическое · Инстинкт · Близко · d8+4 маг · Двур... [namelen=69 namehash=a3c02cd0]
+1Короткоствольный РевольверФизическое · Проворность · Средне · d... [namelen=84 namehash=8fcf4015]
 1Нестареющее Око ЗверяФизическое · Проворность · Вплотную · d10 ... [namelen=80 namehash=2c33e1dc]
 1Одолженная ЛапаМагическое · Знание · Далеко · d6+6 маг · Двуруч... [namelen=67 namehash=66e4e5c6]
 1ЧаккаФизическое · Проворность · Далеко · d6+3 физ · Одноручное
 1Эфирная ВинтовкаМагическое · Инстинкт · Очень далеко · d8+8 маг... [namelen=76 namehash=10d5613e]
 2
 20Железный КонстебльФизическое · Сила · Вплотную · d8+5 физ · Од... [namelen=72 namehash=e83830d0]
+20Легендарная Затворная ВинтовкаФизическое · Искусность · Очень ... [namelen=94 namehash=935f4191]
 20Улучшенный Лук из Эльфийских ВолосФизическое · Проворность · О... [namelen=99 namehash=5794981a]
+21ОбрезФизическое · Сила · Близко · d6+1 физ · Одноручное
 21Продвинутый Лук из Эльфийских ВолосФизическое · Проворность · ... [namelen=100 namehash=b4612eb2]
 22Легендарный Лук из Эльфийских ВолосФизическое · Проворность · ... [namelen=100 namehash=9a6dabe4]
+22Улучшенный ОбрезФизическое · Сила · Близко · d6+3 физ · Однору... [namelen=68 namehash=55fe97d5]
 23Всадник ВолнМагическое · Инстинкт · Вплотную · d8+7 маг · Одно... [namelen=70 namehash=802201c8]
+23Продвинутый ОбрезФизическое · Сила · Близко · d6+6 физ · Однор... [namelen=69 namehash=e6b96a9c]
 24Дубина из Зубов ОграФизическое · Сила · Близко · d12+1 физ · Д... [namelen=72 namehash=f256b389]
+24Легендарный ОбрезФизическое · Сила · Близко · d6+9 физ · Однор... [namelen=69 namehash=94679ae4]
+25Жаканное РужьёФизическое · Сила · Средне · d10+1 физ · Двуручн... [namelen=66 namehash=71adf85e]
 25Когти ИфангаМагическое · Влияние · Далеко · d8+4 маг · Одноруч... [namelen=67 namehash=3345eacd]
 25Улучшенная Дубина из Зубов ОграФизическое · Сила · Близко · d1... [namelen=83 namehash=3512e017]
 26Губитель из СухостояФизическое · Инстинкт · Вплотную · d8+1 фи... [namelen=78 namehash=1520a4a5]
 26Продвинутая Дубина из Зубов ОграФизическое · Сила · Близко · d... [namelen=84 namehash=4fc6bc8e]
+26Улучшенное Жаканное РужьёФизическое · Сила · Средне · d10+3 фи... [namelen=77 namehash=5ad30ee9]
 27Легендарная Дубина из Зубов ОграФизическое · Сила · Близко · d... [namelen=84 namehash=0505f3c3]
 27Посох Чёрной ДырыМагическое · Знание · Далеко · d20+7 маг · Дв... [namelen=71 namehash=ed6b0408]
+27Продвинутое Жаканное РужьёФизическое · Сила · Средне · d10+6 ф... [namelen=78 namehash=6b5682e2]
+28Легендарное Жаканное РужьёФизическое · Сила · Средне · d10+9 ф... [namelen=78 namehash=8c880035]
 29Праща ФениксаФизическое · Искусность · Далеко · d10+1 физ · Дв... [namelen=71 namehash=1fe4e4e3]
+29Рычажная ВинтовкаФизическое · Влияние · Далеко · d6+2 физ · Дв... [namelen=71 namehash=dd9736a3]
 29Святой КлинокФизическое · Сила · Вплотную · d10+10 физ · Однор... [namelen=69 namehash=ed9d0452]
 2Бабушкина СкалкаФизическое · Влияние · Вплотную · d4+3 физ · Од... [namelen=72 namehash=511a2596]
 2Животворная СабляФизическое · Инстинкт · Вплотную · d6+4 физ · ... [namelen=74 namehash=a7aa4ecb]
@@ -111,21 +134,32 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 2Рассекатель НебесФизическое · Сила · Очень далеко · d10+10 физ ... [namelen=75 namehash=d9700f28]
 2Скрт-ПалкаМагическое · Искусность · Близко · d10+5 маг · Двуруч... [namelen=67 namehash=bc0396db]
 2Улучшенное Нестареющее Око ЗверяФизическое · Проворность · Впло... [namelen=93 namehash=35e7f664]
+2Улучшенный Короткоствольный РевольверФизическое · Проворность ·... [namelen=95 namehash=24066201]
 3
 30Крушитель МонолитовФизическое · Сила · Вплотную · d8+5 физ · О... [namelen=73 namehash=928a8b5e]
 30ТенерубФизическое · Искусность · Вплотную · d10+9 физ · Однору... [namelen=68 namehash=50029c62]
 30Улучшенная Праща ФениксаФизическое · Искусность · Далеко · d10... [namelen=82 namehash=d3618ace]
+30Улучшенная Рычажная ВинтовкаФизическое · Влияние · Далеко · d6... [namelen=82 namehash=995a9670]
 31Войнарианский АрбалетФизическое · Искусность · Далеко · d6+8 ф... [namelen=79 namehash=cb3bdc9c]
 31Молот Инфернального КузнецаМагическое · Сила · Вплотную · d6+3... [namelen=81 namehash=a64d67e8]
 31Посох ПоганкиФизическое · Инстинкт · Вплотную · d10+9 физ · Дв... [namelen=71 namehash=558cc015]
 31Продвинутая Праща ФениксаФизическое · Искусность · Далеко · d1... [namelen=83 namehash=1bd26580]
+31Продвинутая Рычажная ВинтовкаФизическое · Влияние · Далеко · d... [namelen=83 namehash=2c22515f]
 32Вихревой РезакФизическое · Проворность · Близко · d6+8 физ · О... [namelen=73 namehash=87019d02]
 32Легендарная Праща ФениксаФизическое · Искусность · Далеко · d1... [namelen=83 namehash=0e97974b]
+32Легендарная Рычажная ВинтовкаФизическое · Влияние · Далеко · d... [namelen=84 namehash=c6f26aa8]
+33Карманный ПистолетФизическое · Влияние · Близко · d4+2 физ · О... [namelen=73 namehash=b6f70c72]
 33Ярость ЗантакаФизическое · Сила · Вплотную · d10+9 физ · Двуру... [namelen=68 namehash=57a42a63]
 34Дочь ЗелениФизическое · Проворность · Очень далеко · d8+12 физ... [namelen=76 namehash=3eb06c41]
+34Улучшенный Карманный ПистолетФизическое · Влияние · Близко · d... [namelen=84 namehash=e5f06da3]
+35Продвинутый Карманный ПистолетФизическое · Влияние · Близко · ... [namelen=85 namehash=625f3078]
+36Легендарный Карманный ПистолетФизическое · Влияние · Близко · ... [namelen=86 namehash=0ce6489b]
 37Жезл СопротивленияМагическое · Характеристика Заклинателя · Да... [namelen=95 namehash=a8cf0131]
+37Револьвер Жеребёнок .44Физическое · Проворность · Далеко · d6 ... [namelen=80 namehash=cd963d89]
 38Улучшенный Жезл СопротивленияМагическое · Характеристика Закли... [namelen=106 namehash=354de05c]
+38Улучшенный Револьвер Жеребёнок .44Физическое · Проворность · Д... [namelen=93 namehash=e1c255ba]
 39Продвинутый Жезл СопротивленияМагическое · Характеристика Закл... [namelen=109 namehash=f43007f0]
+39Продвинутый Револьвер Жеребёнок .44Физическое · Проворность · ... [namelen=94 namehash=aee0fdbd]
 3Длинный Лук ФираМагическое · Проворность · Далеко · d6+10 маг ·... [namelen=74 namehash=f42b275b]
 3Дырявый КлинокФизическое · Сила · Вплотную · d8+6 физ · Одноруч... [namelen=67 namehash=6a68a570]
 3Кулаки РазорителяМагическое · Сила · Вплотную · d10+15 маг · Дв... [namelen=71 namehash=12da615e]
@@ -133,18 +167,33 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 3Посох УченикаМагическое · Знание · Далеко · d6+7 маг · Двуручно... [namelen=65 namehash=f458dc7d]
 3Пробиватель ЛатФизическое · Сила · Близко · d10+9 физ · Двуручн... [namelen=66 namehash=cb27be69]
 3Продвинутое Нестареющее Око ЗверяФизическое · Проворность · Впл... [namelen=94 namehash=b71563b7]
+3Продвинутый Короткоствольный РевольверФизическое · Проворность ... [namelen=96 namehash=7683b1b8]
 3ШугалкаФизическое · Искусность · Далеко · d4+4 физ · Двуручное
 4
 40Легендарный Жезл СопротивленияМагическое · Характеристика Закл... [namelen=109 namehash=6e77babc]
+40Легендарный Револьвер Жеребёнок .44Физическое · Проворность · ... [namelen=94 namehash=211e560a]
+41Топорик на ВерёвкеФизическое · Инстинкт · Средне · d8 физ · Дв... [namelen=71 namehash=9e6ae297]
+42Улучшенный Топорик на ВерёвкеФизическое · Инстинкт · Средне · ... [namelen=84 namehash=1df1a3ae]
+43Продвинутый Топорик на ВерёвкеФизическое · Инстинкт · Средне ·... [namelen=85 namehash=d0409994]
+44Легендарный Топорик на ВерёвкеФизическое · Инстинкт · Средне ·... [namelen=85 namehash=be31a212]
+45Кошель СтарателяМагическое · Влияние · Вплотную · d6+3 маг · О... [namelen=73 namehash=0340928f]
+46Улучшенный Кошель СтарателяМагическое · Влияние · Вплотную · d... [namelen=84 namehash=1c03a581]
 47Посох Запредельной ПустотыМагическое · Характеристика Заклинат... [namelen=104 namehash=5c2e2147]
+47Продвинутый Кошель СтарателяМагическое · Влияние · Вплотную · ... [namelen=85 namehash=e394802a]
+48Легендарный Кошель СтарателяМагическое · Влияние · Вплотную · ... [namelen=85 namehash=26139b08]
 48Улучшенный Посох Запредельной ПустотыМагическое · Характеристи... [namelen=117 namehash=e6ba4cc9]
 49Продвинутый Посох Запредельной ПустотыМагическое · Характерист... [namelen=118 namehash=318d1fc3]
+49Тасовка МаверикаМагическое · Знание · Близко · d10+2 маг · Дву... [namelen=70 namehash=01d11161]
 4Легендарное Нестареющее Око ЗверяФизическое · Проворность · Впл... [namelen=94 namehash=09236051]
+4Легендарный Короткоствольный РевольверФизическое · Проворность ... [namelen=97 namehash=648361c7]
 4Многоударный КромсательФизическое · Сила · Вплотную · d4+4 физ ... [namelen=76 namehash=5160aa33]
 4СнаксФизическое · Сила · Вплотную · d10+6 физ · Двуручное
 4Туманный Проектор Ми-ГоМагическое · Знание · Средне · d8+10 маг... [namelen=77 namehash=95679b85]
 50Легендарный Посох Запредельной ПустотыМагическое · Характерист... [namelen=118 namehash=18a8ca40]
+50Улучшенная Тасовка МаверикаМагическое · Знание · Близко · d10+... [namelen=81 namehash=6f6ebcc4]
 51Гарпун ЛевиафанаФизическое · Искусность · Далеко · d8+3 физ · ... [namelen=73 namehash=c851584c]
+51Продвинутая Тасовка МаверикаМагическое · Знание · Близко · d10... [namelen=82 namehash=f7186292]
+52Легендарная Тасовка МаверикаМагическое · Знание · Близко · d10... [namelen=82 namehash=721e6cfc]
 52Моргенштерн ТарианаФизическое · Сила · Близко · d10+2 физ · Дв... [namelen=71 namehash=9e07a742]
 53Улучшенный Моргенштерн ТарианаФизическое · Сила · Близко · d10... [namelen=82 namehash=78e48ff7]
 54Жезл ЖизниМагическое · Знание · Далеко · d6+4 маг · Одноручное
@@ -157,6 +206,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 5ИнееметательМагическое · Знание · Далеко · d6+1 маг · Одноручно... [namelen=65 namehash=2ee24a21]
 5Копьё-СкорпионФизическое · Проворность · Далеко · d6+2 физ · Од... [namelen=72 namehash=fe52ff6c]
 5Посох Тайного ПламениМагическое · Инстинкт · Далеко · d6+7 маг ... [namelen=75 namehash=be217081]
+5Револьвер Вестника ВойныФизическое · Искусность · Далеко · d6+3... [namelen=81 namehash=9f35d2ee]
 5Топор РассветаФизическое · Сила · Вплотную · d12+2 физ · Двуруч... [namelen=67 namehash=5ace8759]
 60Продвинутое Копьё-КамертонФизическое · Искусность · Близко · d... [namelen=84 namehash=3e33d3c9]
 61Легендарное Копьё-КамертонФизическое · Искусность · Близко · d... [namelen=84 namehash=058d9ac2]
@@ -170,6 +220,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 69Легендарный Боевой Молот БазаФизическое · Сила · Вплотную · d1... [namelen=83 namehash=ce421a7f]
 6Гнилозубый КинжалМагическое · Искусность · Вплотную · d6+6 маг ... [namelen=76 namehash=1c1d1f06]
 6Последний РубежФизическое · Искусность · Близко · d10+5 физ · Д... [namelen=72 namehash=b4d7ab19]
+6Улучшенный Револьвер Вестника ВойныФизическое · Искусность · Да... [namelen=92 namehash=e4cb08bc]
 6Улучшенный Топор РассветаФизическое · Сила · Вплотную · d12+4 ф... [namelen=78 namehash=7288f7ce]
 74Кнут из Хвоста ВиверныФизическое · Проворность · Близко · d10 ... [namelen=80 namehash=ed8c8847]
 75Улучшенный Кнут из Хвоста ВиверныФизическое · Проворность · Бл... [namelen=93 namehash=80e8a20e]
@@ -178,6 +229,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 79Кислотное ЛезвиеФизическое · Проворность · Вплотную · d8+3 физ... [namelen=77 namehash=0dbfcbc0]
 79Лук ИскателяФизическое · Искусность · Далеко · d6+4 физ · Двур... [namelen=69 namehash=a325b6f2]
 7Молниевая Пушка ЙитианцевМагическое · Знание · Очень далеко · d... [namelen=86 namehash=4019c8aa]
+7Продвинутый Револьвер Вестника ВойныФизическое · Искусность · Д... [namelen=93 namehash=663ef485]
 7Продвинутый Топор РассветаФизическое · Сила · Вплотную · d12+6 ... [namelen=79 namehash=be75e5a2]
 7Табельный СекачФизическое · Любая · Вплотную · d6 физ · Одноруч... [namelen=67 namehash=6f636493]
 80Янтарный МолотФизическое · Сила · Вплотную · d8+7 физ · Однору... [namelen=68 namehash=936cd5f3]
@@ -192,6 +244,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 88Посох Шепчущего АрхиваМагическое · Знание · Далеко · d8+6 маг ... [namelen=75 namehash=aade3bad]
 88ХладноклинокФизическое · Искусность · Вплотную · d8+4 физ · Од... [namelen=72 namehash=a5a990c0]
 89Меч Хрустального ДухаФизическое · Искусность · Вплотную · d10+... [namelen=82 namehash=7043a9ca]
+8Легендарный Револьвер Вестника ВойныФизическое · Искусность · Д... [namelen=94 namehash=4dcb6025]
 8Легендарный Топор РассветаФизическое · Сила · Вплотную · d12+8 ... [namelen=79 namehash=dcd4da69]
 8ТемпрусФизическое · Сила · Вплотную · d8+9 физ · Одноручное
 91Драконий КлыкФизическое · Сила · Вплотную · d8+4 физ · Одноруч... [namelen=67 namehash=40a3dbec]
@@ -201,15 +254,19 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 95Стихийный Длинный ЛукФизическое · Проворность · Очень далеко ·... [namelen=85 namehash=df85b976]
 96УголёкМагическое · Проворность · Вплотную · d8+5 маг · Одноруч... [namelen=67 namehash=337f2577]
 98Булава СкверныФизическое · Сила · Вплотную · d8+6 физ · Однору... [namelen=68 namehash=21df6c22]
+9Арк-ПистолетМагическое · Знание · Далеко · d6+1 маг · Одноручно... [namelen=65 namehash=8587c48a]
 9Клятва РавновесияМагическое · Инстинкт · Далеко · d12+12 маг · ... [namelen=73 namehash=8fc135fd]
+9Омерзительная ЛютняМагическое · Влияние · Далеко · d8+6 маг · Д... [namelen=72 namehash=3161aa02]
 Arazo's Artifacts
 Core
 Dread GM Toolbox
 EN
 Hope & Fear
 Many Worlds Tavern
+Pistolheart
 RU
 The Dragon's Vault
+The Last Round Table
 Vault of Ages
 Wondrous Environments
 daggerheart.com
@@ -295,7 +352,6 @@ daggerheart.com
 Кованый КрюкФизическое · Сила · Близко · d8+2 физ · Двуручное
 Колдующий КинжалМагическое · Инстинкт · Средне · d6 маг · Однору... [namelen=68 namehash=d614a608]
 Колдующий МечМагическое · Сила · Вплотную · d10+4 маг · Двуручно... [namelen=65 namehash=9aeffaff]
-Колоссы Сухоземья
 Колючий ЛукМагическое · Инстинкт · Далеко · d6+13 маг · Двуручно... [namelen=65 namehash=596fb305]
 Конфиденциальность
 КопьёФизическое · Искусность · Близко · d8+3 физ · Двуручное
@@ -358,7 +414,6 @@ daggerheart.com
 Магическая СфераМагическое · Знание · Далеко · d6+7 маг · Однору... [namelen=68 namehash=ab354cdf]
 Магические НаручиМагическое · Сила · Вплотную · d10+3 маг · Двур... [namelen=69 namehash=800a63d1]
 Магическое
-Мастерская Ольхи
 Метательное КопьеФизическое · Проворность · Близко · d6+6 физ · ... [namelen=74 namehash=cfb4246a]
 Меч СветаМагическое · Сила · Вплотную · d10+3 маг · Двуручное
 Меч ТьмыМагическое · Влияние · Вплотную · d8 физ/маг · Одноручно... [namelen=65 namehash=62361007]
@@ -381,7 +436,6 @@ daggerheart.com
 Палочка ЭссекаМагическое · Знание · Далеко · d8+13 маг · Одноруч... [namelen=67 namehash=3fb83385]
 Парящие Осколки КлинкаМагическое · Инстинкт · Средне · d8+9 маг ... [namelen=76 namehash=423ceaa8]
 Перчатки СлиянияМагическое · Знание · Очень далеко · d6+9 маг · ... [namelen=73 namehash=38645e42]
-Пир зверей
 Платиновый ЭстокФизическое · Искусность · Вплотную · d8+7 физ · ... [namelen=74 namehash=715ac01d]
 Поглощающие РукавицыМагическое · Влияние · Вплотную · d10+9 маг ... [namelen=75 namehash=e5895f77]
 Пожирающий КинжалМагическое · Искусность · Вплотную · d8+4 маг ·... [namelen=75 namehash=ce6a5a7f]
@@ -389,7 +443,7 @@ daggerheart.com
 Позолоченный ФальшионФизическое · Сила · Вплотную · d10+4 физ · ... [namelen=74 namehash=0c617ad7]
 Поиск
 Поиск по названию или описанию...
-Показать 459
+Показать 513
 Пороховая СерпантинаФизическое · Сила · Далеко · d8+12 физ · Дву... [namelen=70 namehash=e14fd257]
 Посох АугмыМагическое · Инстинкт · Далеко · d6+7 маг · Одноручно... [namelen=65 namehash=1b203b4b]
 Посох БесконечностиФизическое · Влияние · Вплотную · d10+9 физ ·... [namelen=74 namehash=ee7ac665]
@@ -486,7 +540,6 @@ daggerheart.com
 Топор Тлеющих УглейМагическое · Характеристика Заклинателя · Впл... [namelen=93 namehash=8940453c]
 Топоры РикошетаФизическое · Проворность · Далеко · d6+11 физ · Д... [namelen=72 namehash=737ec0a1]
 Тяжелое КопьеФизическое · Инстинкт · Близко · d10+5 физ · Двуруч... [namelen=67 namehash=aa179423]
-Тёмное сердце Андалурии
 Ударная ПерчаткаФизическое · Сила · Вплотную · d10+11 физ · Одно... [namelen=70 namehash=6beb400d]
 Удлинённая ГлефаФизическое · Искусность · Близко · d8+10 физ · Д... [namelen=72 namehash=188199f8]
 УдочкаФизическое · Проворность · Далеко · d6+3 физ · Двуручное
@@ -545,6 +598,7 @@ daggerheart.com
 ШэнбяоФизическое · Влияние · Средне · d8+9 физ · Двуручное
 Шёлковый ЛукФизическое · Проворность · Очень далеко · d6+5 физ ·... [namelen=74 namehash=c5bde405]
 Эфирный Двуручный МечМагическое · Инстинкт · Близко · d10+9 маг ... [namelen=75 namehash=55121bb3]
+и ещё 4
 
 ## en :: tree
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon?as=gm1]
@@ -557,9 +611,10 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon?as=g
     button "All" [pressed=true]
     button "1" [pressed=false]
     button "2" [pressed=false]
-    ... button x30 of 34 same-shape siblings elided
+    ... button x28 of 32 same-shape siblings elided
     ... StaticText x4 of 8 same-shape siblings elided
     button "All" [pressed=true]
+    button "and 4 more" [expanded=false]
     ... button x3 of 7 same-shape siblings elided
     StaticText "BURDEN"
     button "All" [pressed=true]
@@ -568,7 +623,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon?as=g
     button "Upgradable" [pressed=false]
     button "Unique" [pressed=false]
     button "Reset" [disabled=true]
-    button "Show 459"
+    button "Show 513"
 
 ## en :: controls
 1
@@ -581,6 +636,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon?as=g
 107Gryphon HammerPhysical · Strength · Melee · d10+4 phy · One/T... [namelen=73 namehash=5945c064]
 108Hellfire SwordMagic · Strength · Melee · d10+12 mag · Two-Han... [namelen=67 namehash=71bf8d4a]
 109Hilarad's MeteorPhysical · Strength · Very Close · d12+12 phy... [namelen=77 namehash=7c07d064]
+10Improved ArcpistolMagic · Knowledge · Far · d6+3 mag · One-Han... [namelen=67 namehash=418bfb07]
 10NimoirasPhysical · Finesse · Very Close · d10+6 phy · Two-Hand... [namelen=66 namehash=1b71ba65]
 10Shaman's BladeMagic · Instinct · Melee · d8+5 mag · One-Handed
 111Hydra BladePhysical · Agility · Melee · d8+6 phy · One-Handed
@@ -592,6 +648,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon?as=g
 117Rod of Flaming SkullsMagic · Presence · Far · d6+3 mag · Two-... [namelen=70 namehash=63909a68]
 118RosebladePhysical · Presence · Melee · d8+4 phy · One-Handed
 119SamplerPhysical · Finesse · Melee · d4+5 phy · One-Handed
+11Advanced ArcpistolMagic · Knowledge · Far · d6+6 mag · One-Han... [namelen=67 namehash=4a2d749b]
 11Dirk of the DeadPhysical · Finesse · Melee · d6+2 phy · One-Ha... [namelen=68 namehash=3aca5e29]
 11Herald's WillMagic · Knowledge · Far · d6+9 mag · Two-Handed
 121ShatterswordPhysical · Agility · Melee · d10+5 phy · One-Hand... [namelen=66 namehash=ce70e640]
@@ -601,7 +658,9 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon?as=g
 127SpellbladeMagic · Spellcast · Melee · d10+4 mag · Two-Handed
 129Staff of LaethysMagic · Presence · Far · d6+9 mag · Two-Hande... [namelen=65 namehash=d26447bd]
 12Improved Dirk of the DeadPhysical · Finesse · Melee · d6+6 phy... [namelen=77 namehash=1eddbc8a]
+12Legendary ArcpistolMagic · Knowledge · Far · d6+10 mag · One-H... [namelen=69 namehash=1ccc0958]
 12Mossblossom StaffMagic · Instinct · Melee · d10+9 mag · Two-Ha... [namelen=68 namehash=562507e2]
+12Paddle of Rising FermentPhysical · Strength · Very Close · d8+... [namelen=82 namehash=12db208d]
 130Star LancePhysical · Strength · Very Close · d10+4 phy · Two-... [namelen=70 namehash=771c3313]
 131Steampowered GauntletsPhysical · Strength · Melee · d10+4 phy... [namelen=77 namehash=fb8129e4]
 132Striking FangsPhysical · Agility · Very Close · d8+2 phy · Tw... [namelen=72 namehash=342f662a]
@@ -614,15 +673,22 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon?as=g
 139Wand of Unstable ArcanaMagic · Knowledge · Far · d6+4 mag · O... [namelen=73 namehash=03d76557]
 13Advanced Dirk of the DeadPhysical · Finesse · Melee · d6+10 ph... [namelen=78 namehash=48637f45]
 13HarrowcleavePhysical · Strength · Melee · d12+7 phy · Two-Hand... [namelen=66 namehash=973bbb56]
+13Scoped RiflePhysical · Instinct · Very Far · d8+2 phy · Two-Ha... [namelen=68 namehash=75f404e2]
 140Wasp's StingPhysical · Presence · Melee · d8+3 phy · One-Hand... [namelen=66 namehash=189dceba]
 141Wavecrest JavelinPhysical · Agility · Close · d8+4 phy · One-... [namelen=70 namehash=b2148ff4]
+14Improved Scoped RiflePhysical · Instinct · Very Far · d8+5 phy... [namelen=77 namehash=732183ac]
 14Legendary Dirk of the DeadPhysical · Finesse · Melee · d6+14 p... [namelen=79 namehash=b4deabd3]
+15Advanced Scoped RiflePhysical · Instinct · Very Far · d8+8 phy... [namelen=77 namehash=a3dcda76]
 15DrakebowPhysical · Finesse · Very Far · d8 phy · One-Handed
 16Improved DrakebowPhysical · Finesse · Very Far · d8+2 phy · On... [namelen=72 namehash=e74f0156]
+16Legendary Scoped RiflePhysical · Instinct · Very Far · d8+11 p... [namelen=79 namehash=348e7286]
 17Advanced DrakebowPhysical · Finesse · Very Far · d8+4 phy · On... [namelen=72 namehash=44a59ef5]
 17Blade of BraxusPhysical · Strength · Melee · d10+9 phy · Two-H... [namelen=69 namehash=f01bc5d6]
+17Bolt Action RiflePhysical · Finesse · Very Far · d8+2 phy · Tw... [namelen=72 namehash=a72d0ba8]
 17Cerebral SpikeMagic · Instinct · Melee · d8+10 mag · One-Hande... [namelen=65 namehash=0ff675fe]
+18Improved Bolt Action RiflePhysical · Finesse · Very Far · d8+5... [namelen=81 namehash=489dd060]
 18Legendary DrakebowPhysical · Finesse · Very Far · d8+6 phy · O... [namelen=73 namehash=e8689b6f]
+19Advanced Bolt Action RiflePhysical · Finesse · Very Far · d8+8... [namelen=81 namehash=c62863b3]
 19Elfhair BowPhysical · Agility · Very Far · d10+1 phy · Two-Han... [namelen=67 namehash=2ea5e489]
 19Meat CleaverPhysical · Presence · Very Close · d8+7 phy · Two-... [namelen=70 namehash=a767f82e]
 1Aether RifleMagic · Instinct · Very Far · d8+8 mag · Two-Handed
@@ -630,46 +696,69 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon?as=g
 1ChukkaPhysical · Agility · Far · d6+3 phy · One-Handed
 1FoeseekerMagic · Instinct · Very Close · d8+4 mag · Two-Handed
 1Lent LegMagic · Knowledge · Far · d6+6 mag · Two-Handed
+1Snubnose RevolverPhysical · Agility · Close · d8+2 phy · One-Ha... [namelen=68 namehash=0907e495]
 1The Ageless Eye of the BeastPhysical · Agility · Melee · d10 ph... [namelen=78 namehash=a9da0014]
 1Trusty CultivatorMagic · Instinct · Close · d8+2 mag · Two-Hand... [namelen=66 namehash=9fc98146]
 2
 20Improved Elfhair BowPhysical · Agility · Very Far · d10+1 phy ... [namelen=76 namehash=5f28ec6f]
 20Iron ConstablePhysical · Strength · Melee · d8+5 phy · One-Han... [namelen=67 namehash=7b16ea34]
+20Legendary Bolt Action RiflePhysical · Finesse · Very Far · d8+... [namelen=83 namehash=00e8272f]
 21Advanced Elfhair BowPhysical · Agility · Very Far · d10+2 phy ... [namelen=76 namehash=4fcde204]
+21Sawed OffPhysical · Strength · Very Close · d6+1 phy · One-Han... [namelen=67 namehash=0d4267c6]
+22Improved Sawed OffPhysical · Strength · Very Close · d6+3 phy ... [namelen=76 namehash=dc3214b7]
 22Legendary Elfhair BowPhysical · Agility · Very Far · d10+2 phy... [namelen=77 namehash=42e9ef08]
+23Advanced Sawed OffPhysical · Strength · Very Close · d6+6 phy ... [namelen=76 namehash=ca05c178]
 23WaveriderMagic · Instinct · Melee · d8+7 mag · One-Handed
+24Legendary Sawed OffPhysical · Strength · Very Close · d6+9 phy... [namelen=77 namehash=17ce1d79]
 24Ogre-teeth ClubPhysical · Strength · Very Close · d12+1 phy · ... [namelen=74 namehash=253eadf6]
 25Claws of YifangMagic · Presence · Far · d8+4 mag · One-Handed
 25Improved Ogre-teeth ClubPhysical · Strength · Very Close · d12... [namelen=83 namehash=a0226d72]
+25Slug GunPhysical · Strength · Close · d10+1 phy · Two-Handed
 26Advanced Ogre-teeth ClubPhysical · Strength · Very Close · d12... [namelen=83 namehash=b80e4871]
 26Deadwood SlayerPhysical · Instinct · Melee · d8+1 phy · One-Ha... [namelen=68 namehash=20e6a762]
+26Improved Slug GunPhysical · Strength · Close · d10+3 phy · Two... [namelen=71 namehash=1e13fb18]
+27Advanced Slug GunPhysical · Strength · Close · d10+6 phy · Two... [namelen=71 namehash=d9338911]
 27Black Hole StaffMagic · Knowledge · Far · d20+7 mag · Two-Hand... [namelen=66 namehash=a2b4f465]
 27Legendary Ogre-teeth ClubPhysical · Strength · Very Close · d1... [namelen=84 namehash=37888d5c]
+28Legendary Slug GunPhysical · Strength · Close · d10+9 phy · Tw... [namelen=72 namehash=439d67d0]
+29Lever-Load RiflePhysical · Presence · Far · d6+2 phy · Two-Han... [namelen=67 namehash=3dd78ca7]
 29Phoenix SlingPhysical · Finesse · Far · d10+1 phy · Two-Handed
 29Saintly BladePhysical · Strength · Melee · d10+10 phy · One-Ha... [namelen=68 namehash=baf85690]
 2Blade of the LivingMagic · Strength · Melee · d10+11 mag · Two-... [namelen=70 namehash=1b4ac40a]
 2Generative CutlassPhysical · Instinct · Melee · d6+4 phy · One-... [namelen=70 namehash=6a7c2a0e]
 2Grandma's Rolling PinPhysical · Presence · Melee · d4+3 phy · O... [namelen=73 namehash=fb61e495]
 2Improved Ageless Eye of the BeastPhysical · Agility · Melee · d... [namelen=85 namehash=39fde5fb]
+2Improved Snubnose RevolverPhysical · Agility · Close · d8+5 phy... [namelen=77 namehash=b5097335]
 2Mantis BladesPhysical · Strength · Very Close · d10+9 phy · Two... [namelen=71 namehash=65ead5de]
 2SkrtstickMagic · Finesse · Very Close · d10+5 mag · Two-Handed
 2SkycutterPhysical · Strength · Very Far · d10+10 phy · Two-Hand... [namelen=66 namehash=dc927a4e]
 3
+30Improved Lever-Load RiflePhysical · Presence · Far · d6+5 phy ... [namelen=76 namehash=a0d9a6cc]
 30Improved Phoenix SlingPhysical · Finesse · Far · d10+2 phy · T... [namelen=73 namehash=64b756d8]
 30Monolith SmasherPhysical · Strength · Melee · d8+5 phy · One-H... [namelen=69 namehash=075d41bc]
 30ShadowcullPhysical · Finesse · Melee · d10+9 phy · One-Handed
+31Advanced Lever-Load RiflePhysical · Presence · Far · d6+8 phy ... [namelen=76 namehash=3e552cd5]
 31Advanced Phoenix SlingPhysical · Finesse · Far · d10+3 phy · T... [namelen=73 namehash=62c6da06]
 31Devil's Smithing HammerMagic · Strength · Melee · d6+3 mag · O... [namelen=73 namehash=85a4da94]
 31Toadstool StaffPhysical · Instinct · Melee · d10+9 phy · Two-H... [namelen=69 namehash=4d9df0f5]
 31Voynarian CrossbowPhysical · Finesse · Far · d6+8 phy · One-Ha... [namelen=68 namehash=e89ca151]
+32Legendary Lever-Load RiflePhysical · Presence · Far · d6+11 ph... [namelen=78 namehash=ff4b8433]
 32Legendary Phoenix SlingPhysical · Finesse · Far · d10+4 phy · ... [namelen=74 namehash=a6138128]
 32Whirlwind SlasherPhysical · Agility · Very Close · d6+8 phy · ... [namelen=74 namehash=46cad4f1]
+33Pocket PistolPhysical · Presence · Very Close · d4+2 phy · One... [namelen=71 namehash=7677f9bc]
 33Zanthak's RagePhysical · Strength · Melee · d10+9 phy · Two-Ha... [namelen=68 namehash=fb7b490a]
+34Improved Pocket PistolPhysical · Presence · Very Close · d4+5 ... [namelen=80 namehash=1fe8202c]
 34Verdant DaughterPhysical · Agility · Very Far · d8+12 phy · Tw... [namelen=72 namehash=9a964031]
+35Advanced Pocket PistolPhysical · Presence · Very Close · d4+8 ... [namelen=80 namehash=b8bd68d5]
+36Legendary Pocket PistolPhysical · Presence · Very Close · d4+1... [namelen=82 namehash=9e3d557a]
+37Foal .44 RevolverPhysical · Agility · Far · d6 phy · One-Hande... [namelen=65 namehash=7a362533]
 37Rod of ResistanceMagic · Spellcast · Far · d10 phy/mag · One-H... [namelen=69 namehash=0856a29f]
+38Improved Foal .44 RevolverPhysical · Agility · Far · d6+3 phy ... [namelen=76 namehash=ef5318e7]
 38Improved Rod of ResistanceMagic · Spellcast · Far · d10 phy/ma... [namelen=78 namehash=928e4f6e]
+39Advanced Foal .44 RevolverPhysical · Agility · Far · d6+5 phy ... [namelen=76 namehash=3a58d37b]
 39Advanced Rod of ResistanceMagic · Spellcast · Far · d10+1 phy/... [namelen=80 namehash=5afdf912]
 3Advanced Ageless Eye of the BeastPhysical · Agility · Melee · d... [namelen=85 namehash=df53e8af]
+3Advanced Snubnose RevolverPhysical · Agility · Close · d8+8 phy... [namelen=77 namehash=8dd8412d]
 3Fists of the RavagerMagic · Strength · Melee · d10+15 mag · Two... [namelen=71 namehash=87f2e766]
 3Hole-y BladePhysical · Strength · Melee · d8+6 phy · One-Handed
 3Hollowstone StaffMagic · Knowledge · Far · d6+4 mag · Two-Hande... [namelen=65 namehash=8fc01b5b]
@@ -678,16 +767,30 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon?as=g
 3Student's StaffMagic · Knowledge · Far · d6+7 mag · Two-Handed
 3The ScrammerPhysical · Finesse · Far · d4+4 phy · Two-Handed
 4
+40Legendary Foal .44 RevolverPhysical · Agility · Far · d6+9 phy... [namelen=77 namehash=79357b6d]
 40Legendary Rod of ResistanceMagic · Spellcast · Far · d10+2 phy... [namelen=81 namehash=23cef157]
+41Rope HatchetPhysical · Instinct · Close · d8 phy · Two-Handed
+42Improved Rope HatchetPhysical · Instinct · Close · d8+3 phy · ... [namelen=74 namehash=b428536d]
+43Advanced Rope HatchetPhysical · Instinct · Close · d8+5 phy · ... [namelen=74 namehash=bd3ae4be]
+44Legendary Rope HatchetPhysical · Instinct · Close · d8+8 phy ·... [namelen=75 namehash=ac672513]
+45Prospector's PouchMagic · Presence · Melee · d6+3 mag · One-Ha... [namelen=68 namehash=0f1722bc]
+46Improved Prospector's PouchMagic · Presence · Melee · d6+5 mag... [namelen=77 namehash=1ed319cf]
+47Advanced Prospector's PouchMagic · Presence · Melee · d6+7 mag... [namelen=77 namehash=9a89af01]
 47Staff of the Void BeyondMagic · Spellcast · Very Far · d10 mag... [namelen=77 namehash=bce06811]
 48Improved Staff of the Void BeyondMagic · Spellcast · Very Far ... [namelen=88 namehash=25bc328f]
+48Legendary Prospector's PouchMagic · Presence · Melee · d6+9 ma... [namelen=78 namehash=e74ccc4c]
 49Advanced Staff of the Void BeyondMagic · Spellcast · Very Far ... [namelen=88 namehash=a35a6afd]
+49Maverick's ShuffleMagic · Knowledge · Very Close · d10+2 mag ·... [namelen=75 namehash=838eeb20]
 4Legendary Ageless Eye of the BeastPhysical · Agility · Melee · ... [namelen=86 namehash=22f576fc]
+4Legendary Snubnose RevolverPhysical · Agility · Close · d8+11 p... [namelen=79 namehash=4b3c9ce8]
 4Many-Hit ManglerPhysical · Strength · Melee · d4+4 phy · One-Ha... [namelen=68 namehash=cc93c9e3]
 4Mi-Go Mist ProjectorMagic · Knowledge · Close · d8+10 mag · One... [namelen=71 namehash=da91268f]
 4SnaxPhysical · Strength · Melee · d10+6 phy · Two-Handed
+50Improved Maverick's ShuffleMagic · Knowledge · Very Close · d1... [namelen=84 namehash=03101a96]
 50Legendary Staff of the Void BeyondMagic · Spellcast · Very Far... [namelen=89 namehash=baa7e1b8]
+51Advanced Maverick's ShuffleMagic · Knowledge · Very Close · d1... [namelen=84 namehash=e60b5a77]
 51Leviathan HarpoonPhysical · Finesse · Far · d8+3 phy · Two-Han... [namelen=67 namehash=20bee335]
+52Legendary Maverick's ShuffleMagic · Knowledge · Very Close · d... [namelen=85 namehash=20d93fcc]
 52Taryan's MorningstarPhysical · Strength · Very Close · d10+2 p... [namelen=79 namehash=978ac6ab]
 53Improved Taryan's MorningstarPhysical · Strength · Very Close ... [namelen=88 namehash=c9c5cc57]
 54Advanced Taryan's MorningstarPhysical · Strength · Very Close ... [namelen=88 namehash=aeb328a4]
@@ -701,6 +804,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon?as=g
 5SplitshooterPhysical · Agility · Very Far · d6+6 phy · Two-Hand... [namelen=66 namehash=040b1cb4]
 5Staff of the Secret FlameMagic · Instinct · Far · d6+7 mag · Tw... [namelen=72 namehash=1e99c427]
 5Wagerwood DefenderPhysical · Agility · Melee · d8+3 phy · One-H... [namelen=69 namehash=9b0498d8]
+5Warbringer RevolverPhysical · Finesse · Far · d6+3 phy · One-Ha... [namelen=68 namehash=9c8f7d66]
 60Advanced Tuning SpearPhysical · Finesse · Very Close · d10+6 p... [namelen=79 namehash=645f5304]
 61Legendary Tuning SpearPhysical · Finesse · Very Close · d10+8 ... [namelen=80 namehash=1bfc8db3]
 62Urzo's HalberdPhysical · Presence · Very Close · d12+1 phy · T... [namelen=73 namehash=4be3995d]
@@ -712,6 +816,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon?as=g
 68Advanced Warhammer of BazPhysical · Strength · Melee · d12+6 p... [namelen=79 namehash=6fc4f323]
 69Legendary Warhammer of BazPhysical · Strength · Melee · d12+8 ... [namelen=80 namehash=59920d43]
 6Improved Axe of the DawnPhysical · Strength · Melee · d12+4 phy... [namelen=77 namehash=6efe6b62]
+6Improved Warbringer RevolverPhysical · Finesse · Far · d6+5 phy... [namelen=77 namehash=153008f0]
 6Last StandPhysical · Finesse · Very Close · d10+5 phy · Two-Han... [namelen=67 namehash=7b0ebbd6]
 6Rottooth DaggerMagic · Finesse · Melee · d6+6 mag · One-Handed
 74Wyverntail WhipPhysical · Agility · Very Close · d10 phy · One... [namelen=71 namehash=c3dae450]
@@ -721,6 +826,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon?as=g
 79Acid EdgePhysical · Agility · Melee · d8+3 phy · One-Handed
 79Seeker's BowPhysical · Finesse · Far · d6+4 phy · Two-Handed
 7Advanced Axe of the DawnPhysical · Strength · Melee · d12+6 phy... [namelen=77 namehash=7f9ad920]
+7Advanced Warbringer RevolverPhysical · Finesse · Far · d6+8 phy... [namelen=77 namehash=4b04f8b3]
 7Standard Issue SlicerPhysical · Any · Melee · d6 phy · One-Hand... [namelen=66 namehash=7845e797]
 7Yithian Lightning GunMagic · Knowledge · Very Far · d12+10 mag ... [namelen=76 namehash=70b61809]
 80Amber HammerPhysical · Strength · Melee · d8+7 phy · One-Hande... [namelen=65 namehash=a518164b]
@@ -736,6 +842,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon?as=g
 88Staff of the Whispering ArchiveMagic · Knowledge · Far · d8+6 ... [namelen=80 namehash=ab6c0314]
 89Crystal Spirit SwordPhysical · Finesse · Melee · d10+10 phy · ... [namelen=74 namehash=ae5a6712]
 8Legendary Axe of the DawnPhysical · Strength · Melee · d12+8 ph... [namelen=78 namehash=ff0918cb]
+8Legendary Warbringer RevolverPhysical · Finesse · Far · d6+10 p... [namelen=79 namehash=4a426df1]
 8TemprusPhysical · Strength · Melee · d8+9 phy · One-Handed
 91DraketoothPhysical · Strength · Melee · d8+4 phy · One-Handed
 92Dryad's ThornPhysical · Finesse · Melee · d8+5 phy · One-Hande... [namelen=65 namehash=3ee54e7c]
@@ -744,6 +851,8 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon?as=g
 95Elemental LongbowPhysical · Agility · Very Far · d6+8 phy · Tw... [namelen=72 namehash=bae78698]
 96EmberMagic · Agility · Melee · d8+5 mag · One-Handed
 98Filth MacePhysical · Strength · Melee · d8+6 phy · One-Handed
+9ArcpistolMagic · Knowledge · Far · d6+1 mag · One-Handed
+9Loathsome LuteMagic · Presence · Far · d8+6 mag · Two-Handed
 9Oath of BalanceMagic · Instinct · Far · d12+12 mag · Two-Handed
 Aantari BowPhysical · Finesse · Far · d6+11 phy · Two-Handed
 Account: gm1@example.test
@@ -792,7 +901,6 @@ Advanced WandMagic · Knowledge · Far · d6+7 mag · One-Handed
 Advanced WarhammerPhysical · Strength · Melee · d12+9 phy · Two-... [namelen=70 namehash=ae0a55bf]
 Advanced WhipswordPhysical · Finesse · Very Close · d8+6 phy · O... [namelen=73 namehash=502f67e3]
 Agility
-Alder Workshop
 All
 Arazo's Artifacts
 Arc WandMagic · Presence · Close · d8+6 mag · One-Handed
@@ -802,7 +910,6 @@ ArquebusPhysical · Knowledge · Far · d8+10 phy · Two-Handed
 Artifacts
 Axe of FortunisMagic · Strength · Melee · d10+8 mag · Two-Handed
 BattleaxePhysical · Strength · Melee · d10+3 phy · Two-Handed
-Beast Feast
 Bec de CorbinPhysical · Agility · Very Close · d10+9 phy · Two-H... [namelen=69 namehash=aac4598f]
 Black Powder RevolverPhysical · Finesse · Far · d6+8 phy · One-H... [namelen=69 namehash=ef4bb605]
 Black Powder SerpentinePhysical · Strength · Far · d8+12 phy · T... [namelen=73 namehash=c797dd4a]
@@ -826,7 +933,6 @@ Chained ScythePhysical · Instinct · Very Close · d10+5 phy · Two... [namelen
 CleaverPhysical · Agility · Melee · d8 phy · One-Handed
 Clockwork CrossbowPhysical · Finesse · Far · d6+11 phy · One-Han... [namelen=67 namehash=ecd942bd]
 Close
-Colossus of the Drylands
 Cooking KnifePhysical · Finesse · Melee · d8+1 phy · One-Handed
 Core
 Crop ScythePhysical · Finesse · Very Close · d8+2 phy · Two-Hand... [namelen=66 namehash=e79e22b4]
@@ -836,7 +942,6 @@ Curved DaggerPhysical · Finesse · Melee · d8+9 phy · One-Handed
 CutlassPhysical · Presence · Melee · d8+1 phy · One-Handed
 Cyrurgien's ScalpelPhysical · Knowledge · Melee · d8+3 phy · One... [namelen=71 namehash=97ee01b8]
 DaggerPhysical · Finesse · Melee · d8+1 phy · One-Handed
-Dark Heart of Andaluria
 Demon's EdgeMagic · Presence · Melee · d8+10 mag · One-Handed
 Devouring DaggerMagic · Finesse · Melee · d8+4 mag · One-Handed
 Displacement RazorMagic · Finesse · Melee · d8+3 mag · Two-Hande... [namelen=65 namehash=155ffae0]
@@ -1006,6 +1111,7 @@ Midas ScytheMagic · Knowledge · Melee · d10+9 mag · Two-Handed
 More
 One-Handed
 Physical
+Pistolheart
 PitchforkPhysical · Strength · Melee · d10+3 phy · Two-Handed
 Platinum EstocPhysical · Finesse · Melee · d8+7 phy · One-Handed
 Presence
@@ -1039,7 +1145,7 @@ Sharpened RakePhysical · Agility · Melee · d8+3 phy · Two-Handed
 ShortbowPhysical · Agility · Far · d6+3 phy · Two-Handed
 ShortstaffMagic · Instinct · Close · d8+1 mag · One-Handed
 ShotgunPhysical · Strength · Very Close · d6+2 phy · Two-Handed
-Show 459
+Show 513
 SicklePhysical · Presence · Melee · d8 phy · One-Handed
 Singing SwordPhysical · Presence · Very Close · d8+5 phy · One-H... [namelen=69 namehash=67701df7]
 Siphoning GauntletsMagic · Presence · Melee · d10+9 mag · Two-Ha... [namelen=68 namehash=c5606a53]
@@ -1065,6 +1171,7 @@ Tables
 Talon BladesPhysical · Finesse · Close · d10+7 phy · Two-Handed
 Terms of use
 The Dragon's Vault
+The Last Round Table
 ThistlebowMagic · Instinct · Far · d6+13 mag · Two-Handed
 Twisted DaggerPhysical · Knowledge · Melee · d8 phy · One-Handed
 Two-Handed
@@ -1086,4 +1193,5 @@ Whisk WandMagic · Knowledge · Far · d6+1 mag · One-Handed
 Widogast PendantMagic · Knowledge · Close · d10+5 mag · One-Hand... [namelen=66 namehash=674579fd]
 Wondrous Environments
 Yutari BloodbowMagic · Finesse · Far · d6+4 mag · Two-Handed
+and 4 more
 daggerheart.com

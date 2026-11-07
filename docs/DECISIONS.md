@@ -14,6 +14,8 @@ deleted.
 
 ## Index
 
+- 2026-11-07 - [A table sectioned by a record property reads one descriptor](decisions/2026-11-07-a-table-sectioned-by-a-record-property-reads-one-descriptor.md)
+- 2026-11-07 - [Pistolheart, The Last Round Table and Veiled Halls are sources ph, lr and vh](decisions/2026-11-07-pistolheart-last-round-table-and-veiled-halls-are-sources-ph-lr-vh.md)
 - 2026-11-06 - [One scrim, one shadow and a tool row that follows its search box](decisions/2026-11-06-one-scrim-one-shadow-and-a-tool-row-that-follows-its-search-box.md)
 - 2026-11-06 - [The print card prints in the UI face at 7.1 pt, fitted after it loads](decisions/2026-11-06-the-print-card-prints-in-the-ui-face-fitted-after-it-loads.md)
 - 2026-11-05 - [A row's text takes its row's free width; rows stay one column](decisions/2026-11-05-a-row-text-takes-its-row-s-free-width-rows-stay-one-column.md)

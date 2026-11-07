@@ -26,9 +26,9 @@ RootWebArea "Vault of Ages - Генератор лута Daggerheart" [url=/roll
         menuitem "Wondrous Environments" [focused=true]
         menuitem "Dread GM Toolbox"
         menuitem "Vault of Ages"
-        ... menuitem x2 of 6 same-shape siblings elided
-        menuitem "Предметы сообществ"
-        menuitem "Many Worlds Tavern"
+        ... menuitem x5 of 9 same-shape siblings elided
+        menuitem "The Last Round Table"
+        menuitem "Escape the Veiled Halls"
     button "Открывать при запуске" [pressed=false]
     button "Об этой книге" [expanded=false]
     combobox "Раздел книги" [value=Ранг 1 expanded=false haspopup=menu]
@@ -67,9 +67,12 @@ RootWebArea "Vault of Ages - Генератор лута Daggerheart" [url=/roll
 Arazo's Artifacts
 Dread GM Toolbox
 EN
+Escape the Veiled Halls
 Many Worlds Tavern
+Pistolheart
 RU
 The Dragon's Vault
+The Last Round Table
 Vault of Ages
 Wondrous Environments
 daggerheart.com

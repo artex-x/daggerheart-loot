@@ -6,7 +6,7 @@
 </script>
 
 <script lang="ts">
-  /* The mode row of the nine roll sections: the Core rules, the alternate tables and
+  /* The mode row of the twelve roll sections: the Core rules, the alternate tables and
      the supplements menu (docs/specs/FEATURES.md, "Chrome"); up to 760 px under the header,
      from 761 px the pills of the roll page's head. Its own controls, not
      `Chip`: `Chip`'s button form is a pressed toggle, and the menu button is a menu
@@ -216,6 +216,14 @@
 
   .sup {
     padding-right: 9px;
+  }
+
+  /* Ten 44 px items are 498 px: at 360x640 the menu starts at 177 px, so it scrolls inside
+     the window rather than past it (measured 2026-11-07). */
+  .supwrap :global(.menu.supmenu) {
+    max-height: calc(100dvh - 186px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   .cap {

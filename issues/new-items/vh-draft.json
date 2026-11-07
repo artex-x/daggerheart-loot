@@ -1,220 +1,216 @@
 {
- "note": "Draft records for source vh. English only; ru/rud are null. roll is the place in its room table (printed). Room keys: basement, dressing, laboratory, library. craft: the plain potion upgrades into its stronger version.",
- "product": "https://heartofdaggers.com/products/escape-the-veiled-halls/",
- "craft": {
-  "vh2": [
-   "vh6"
-  ],
-  "vh8": [
-   "vh15"
+  "note": "Draft records for source vh. English only; ru/rud are null. roll is the place in its room table (printed). Room keys: basement, dressing, laboratory, library. craft: the plain potion upgrades into its stronger version.",
+  "product": "https://heartofdaggers.com/products/escape-the-veiled-halls/",
+  "craft": {
+    "vh2": ["vh6"],
+    "vh8": ["vh15"]
+  },
+  "rooms": {
+    "basement": {
+      "name": "The Basement",
+      "die": "d4",
+      "page": 6,
+      "ru": "Подвал"
+    },
+    "dressing": {
+      "name": "The Dressing Room",
+      "die": "d4",
+      "page": 8,
+      "ru": "Гардеробная"
+    },
+    "laboratory": {
+      "name": "The Laboratory",
+      "die": "d3",
+      "page": 10,
+      "ru": "Лаборатория"
+    },
+    "library": {
+      "name": "The Library",
+      "die": "d4",
+      "page": 12,
+      "ru": "Библиотека"
+    }
+  },
+  "records": [
+    {
+      "id": "vh1",
+      "src": "vh",
+      "room": "basement",
+      "roll": 1,
+      "kind": "item",
+      "en": "Resilience Charm",
+      "ende": "Once per long rest, when you would mark your last Hit Point, you can instead mark a Stress.",
+      "ru": "Оберег Стойкости",
+      "rud": "Один раз за продолжительный отдых, когда вы должны отметить свою последнюю Рану, вы можете вместо этого отметить Стресс.",
+      "img": "vh1.webp"
+    },
+    {
+      "id": "vh2",
+      "src": "vh",
+      "room": "basement",
+      "roll": 2,
+      "kind": "consumable",
+      "en": "Remembrance Potion",
+      "ende": "You gain a +1 bonus the next time you utilize an Experience.",
+      "ru": "Зелье Воспоминаний",
+      "rud": "В следующий раз, когда вы используете Опыт, вы получаете бонус +1.",
+      "img": "vh2.webp"
+    },
+    {
+      "id": "vh3",
+      "src": "vh",
+      "room": "basement",
+      "roll": 3,
+      "kind": "item",
+      "en": "Demonic Book",
+      "ende": "Once per session, you can flip this book to a random page and roll a d12. On a 1-6, nothing happens. On a 7-9, you mark a Stress. On a 10-12, you can add a d6 to your next attack roll.",
+      "ru": "Демоническая Книга",
+      "rud": "Один раз за сессию вы можете открыть эту книгу на случайной странице и бросить d12. При результате 1-6 ничего не происходит. При результате 7-9 вы отмечаете Стресс. При результате 10-12 вы можете добавить d6 к вашему следующему Броску Атаки.",
+      "img": "vh3.webp"
+    },
+    {
+      "id": "vh4",
+      "src": "vh",
+      "room": "basement",
+      "roll": 4,
+      "kind": "consumable",
+      "en": "Bravery Potion",
+      "ende": "The next time you roll with Fear, you can change it to a roll with Hope instead.",
+      "ru": "Зелье Храбрости",
+      "rud": "В следующий раз, когда вы совершаете Бросок со Страхом, вы можете вместо этого превратить его в Бросок с Надеждой.",
+      "img": "vh4.webp"
+    },
+    {
+      "id": "vh5",
+      "src": "vh",
+      "room": "dressing",
+      "roll": 1,
+      "kind": "item",
+      "en": "Music Box",
+      "ende": "When opened, the music box plays a nostalgic tune from your childhood. If used during downtime, you gain a Hope.",
+      "ru": "Музыкальная Шкатулка",
+      "rud": "При открытии музыкальная шкатулка играет ностальгическую мелодию из вашего детства. Если вы используете её во время отдыха, вы получаете Надежду.",
+      "img": "vh5.webp"
+    },
+    {
+      "id": "vh6",
+      "src": "vh",
+      "room": "dressing",
+      "roll": 2,
+      "kind": "consumable",
+      "en": "Major Remembrance Potion",
+      "ende": "You gain a +1 bonus to an experience of your choice until your next rest.",
+      "ru": "Большое Зелье Воспоминаний",
+      "rud": "Вы получаете бонус +1 к Опыту по вашему выбору до следующего отдыха.",
+      "img": "vh6.webp"
+    },
+    {
+      "id": "vh7",
+      "src": "vh",
+      "room": "dressing",
+      "roll": 3,
+      "kind": "item",
+      "en": "Holy Relic",
+      "ende": "Once per session, you can hold this relic up to an adversary within Very Close range and cause them to mark a Stress.",
+      "ru": "Святая Реликвия",
+      "rud": "Один раз за сессию вы можете поднять эту реликвию перед противником в пределах Близкой дистанции и заставить его отметить Стресс.",
+      "img": "vh7.webp"
+    },
+    {
+      "id": "vh8",
+      "src": "vh",
+      "room": "dressing",
+      "roll": 4,
+      "kind": "consumable",
+      "en": "Foresight Potion",
+      "ende": "You gain advantage on your next action roll.",
+      "ru": "Зелье Предвидения",
+      "rud": "Вы получаете преимущество на следующий Бросок Действия.",
+      "img": "vh8.webp"
+    },
+    {
+      "id": "vh9",
+      "src": "vh",
+      "room": "laboratory",
+      "roll": 1,
+      "kind": "consumable",
+      "en": "Awareness Potion",
+      "ende": "You gain a +1 bonus to your next Reaction Roll.",
+      "ru": "Зелье Внимательности",
+      "rud": "Вы получаете бонус +1 к следующему Броску Реакции.",
+      "img": "vh9.webp"
+    },
+    {
+      "id": "vh10",
+      "src": "vh",
+      "room": "laboratory",
+      "roll": 2,
+      "kind": "consumable",
+      "en": "Radioactive Syringe",
+      "ende": "Until your next rest, you temporarily gain one additional Hit Point slot.",
+      "ru": "Радиоактивный Шприц",
+      "rud": "До следующего отдыха вы временно получаете одну дополнительную Ячейку Раны.",
+      "img": "vh10.webp"
+    },
+    {
+      "id": "vh11",
+      "src": "vh",
+      "room": "laboratory",
+      "roll": 3,
+      "kind": "item",
+      "en": "Mutated Specimen",
+      "ende": "Once per long rest, you can force all adversaries within Very Close range to make a Presence Reaction Roll (15). For each failure, the GM loses a Fear.",
+      "ru": "Мутировавший Образец",
+      "rud": "Один раз за продолжительный отдых вы можете заставить всех противников в пределах Близкой дистанции совершить Бросок Реакции Влияния (15). За каждый провал Мастер теряет Страх.",
+      "img": "vh11.webp"
+    },
+    {
+      "id": "vh12",
+      "src": "vh",
+      "room": "library",
+      "roll": 1,
+      "kind": "item",
+      "en": "War Horn",
+      "ende": "Once per long rest, the GM must use their next spotlight move to attack you with any adversary within Far range.",
+      "ru": "Боевой Рог",
+      "rud": "Один раз за продолжительный отдых Мастер должен в свой следующий ход активировать любого противника в пределах Далекой дистанции, чтобы тот атаковал вас.",
+      "img": "vh12.webp"
+    },
+    {
+      "id": "vh13",
+      "src": "vh",
+      "room": "library",
+      "roll": 2,
+      "kind": "consumable",
+      "en": "Blink Potion",
+      "ende": "After drinking this potion, you can teleport once to a point you can see within Far range.",
+      "ru": "Зелье Мерцания",
+      "rud": "Выпив это зелье, вы можете один раз телепортироваться в точку, которую видите, в пределах Далекой дистанции.",
+      "img": "vh13.webp"
+    },
+    {
+      "id": "vh14",
+      "src": "vh",
+      "room": "library",
+      "roll": 3,
+      "kind": "item",
+      "en": "Ring of Aid",
+      "ende": "Once per short rest, you can Help an Ally without spending Hope.",
+      "ru": "Кольцо Помощи",
+      "rud": "Один раз за короткий отдых вы можете помочь союзнику, не тратя Надежду.",
+      "img": "vh14.webp"
+    },
+    {
+      "id": "vh15",
+      "src": "vh",
+      "room": "library",
+      "roll": 4,
+      "kind": "consumable",
+      "en": "Legendary Foresight Potion",
+      "ende": "You gain advantage on all action rolls until your next rest.",
+      "ru": "Легендарное Зелье Предвидения",
+      "rud": "Вы получаете преимущество на все Броски Действия до следующего отдыха.",
+      "img": "vh15.webp"
+    }
   ]
- },
- "rooms": {
-  "basement": {
-   "name": "The Basement",
-   "die": "d4",
-   "page": 6,
-   "ru": "Подвал"
-  },
-  "dressing": {
-   "name": "The Dressing Room",
-   "die": "d4",
-   "page": 8,
-   "ru": "Гардеробная"
-  },
-  "laboratory": {
-   "name": "The Laboratory",
-   "die": "d3",
-   "page": 10,
-   "ru": "Лаборатория"
-  },
-  "library": {
-   "name": "The Library",
-   "die": "d4",
-   "page": 12,
-   "ru": "Библиотека"
-  }
- },
- "records": [
-  {
-   "id": "vh1",
-   "src": "vh",
-   "room": "basement",
-   "roll": 1,
-   "kind": "item",
-   "en": "Resilience Charm",
-   "ende": "Once per long rest, when you would mark your last Hit Point, you can instead mark a Stress.",
-   "ru": "Оберег Стойкости",
-   "rud": "Один раз за продолжительный отдых, когда вы должны отметить свою последнюю Рану, вы можете вместо этого отметить Стресс.",
-   "img": "vh1.webp"
-  },
-  {
-   "id": "vh2",
-   "src": "vh",
-   "room": "basement",
-   "roll": 2,
-   "kind": "consumable",
-   "en": "Remembrance Potion",
-   "ende": "You gain a +1 bonus the next time you utilize an Experience.",
-   "ru": "Зелье Воспоминаний",
-   "rud": "В следующий раз, когда вы используете Опыт, вы получаете бонус +1.",
-   "img": "vh2.webp"
-  },
-  {
-   "id": "vh3",
-   "src": "vh",
-   "room": "basement",
-   "roll": 3,
-   "kind": "item",
-   "en": "Demonic Book",
-   "ende": "Once per session, you can flip this book to a random page and roll a d12. On a 1-6, nothing happens. On a 7-9, you mark a Stress. On a 10-12, you can add a d6 to your next attack roll.",
-   "ru": "Демоническая Книга",
-   "rud": "Один раз за сессию вы можете открыть эту книгу на случайной странице и бросить d12. При результате 1-6 ничего не происходит. При результате 7-9 вы отмечаете Стресс. При результате 10-12 вы можете добавить d6 к вашему следующему Броску Атаки.",
-   "img": "vh3.webp"
-  },
-  {
-   "id": "vh4",
-   "src": "vh",
-   "room": "basement",
-   "roll": 4,
-   "kind": "consumable",
-   "en": "Bravery Potion",
-   "ende": "The next time you roll with Fear, you can change it to a roll with Hope instead.",
-   "ru": "Зелье Храбрости",
-   "rud": "В следующий раз, когда вы совершаете Бросок со Страхом, вы можете вместо этого превратить его в Бросок с Надеждой.",
-   "img": "vh4.webp"
-  },
-  {
-   "id": "vh5",
-   "src": "vh",
-   "room": "dressing",
-   "roll": 1,
-   "kind": "item",
-   "en": "Music Box",
-   "ende": "When opened, the music box plays a nostalgic tune from your childhood. If used during downtime, you gain a Hope.",
-   "ru": "Музыкальная Шкатулка",
-   "rud": "При открытии музыкальная шкатулка играет ностальгическую мелодию из вашего детства. Если вы используете её во время отдыха, вы получаете Надежду.",
-   "img": "vh5.webp"
-  },
-  {
-   "id": "vh6",
-   "src": "vh",
-   "room": "dressing",
-   "roll": 2,
-   "kind": "consumable",
-   "en": "Major Remembrance Potion",
-   "ende": "You gain a +1 bonus to an experience of your choice until your next rest.",
-   "ru": "Большое Зелье Воспоминаний",
-   "rud": "Вы получаете бонус +1 к Опыту по вашему выбору до следующего отдыха.",
-   "img": "vh6.webp"
-  },
-  {
-   "id": "vh7",
-   "src": "vh",
-   "room": "dressing",
-   "roll": 3,
-   "kind": "item",
-   "en": "Holy Relic",
-   "ende": "Once per session, you can hold this relic up to an adversary within Very Close range and cause them to mark a Stress.",
-   "ru": "Святая Реликвия",
-   "rud": "Один раз за сессию вы можете поднять эту реликвию перед противником в пределах Близкой дистанции и заставить его отметить Стресс.",
-   "img": "vh7.webp"
-  },
-  {
-   "id": "vh8",
-   "src": "vh",
-   "room": "dressing",
-   "roll": 4,
-   "kind": "consumable",
-   "en": "Foresight Potion",
-   "ende": "You gain advantage on your next action roll.",
-   "ru": "Зелье Предвидения",
-   "rud": "Вы получаете преимущество на следующий Бросок Действия.",
-   "img": "vh8.webp"
-  },
-  {
-   "id": "vh9",
-   "src": "vh",
-   "room": "laboratory",
-   "roll": 1,
-   "kind": "consumable",
-   "en": "Awareness Potion",
-   "ende": "You gain a +1 bonus to your next Reaction Roll.",
-   "ru": "Зелье Внимательности",
-   "rud": "Вы получаете бонус +1 к следующему Броску Реакции.",
-   "img": "vh9.webp"
-  },
-  {
-   "id": "vh10",
-   "src": "vh",
-   "room": "laboratory",
-   "roll": 2,
-   "kind": "consumable",
-   "en": "Radioactive Syringe",
-   "ende": "Until your next rest, you temporarily gain one additional Hit Point slot.",
-   "ru": "Радиоактивный Шприц",
-   "rud": "До следующего отдыха вы временно получаете одну дополнительную Ячейку Раны.",
-   "img": "vh10.webp"
-  },
-  {
-   "id": "vh11",
-   "src": "vh",
-   "room": "laboratory",
-   "roll": 3,
-   "kind": "item",
-   "en": "Mutated Specimen",
-   "ende": "Once per long rest, you can force all adversaries within Very Close range to make a Presence Reaction Roll (15). For each failure, the GM loses a Fear.",
-   "ru": "Мутировавший Образец",
-   "rud": "Один раз за продолжительный отдых вы можете заставить всех противников в пределах Близкой дистанции совершить Бросок Реакции Влияния (15). За каждый провал Мастер теряет Страх.",
-   "img": "vh11.webp"
-  },
-  {
-   "id": "vh12",
-   "src": "vh",
-   "room": "library",
-   "roll": 1,
-   "kind": "item",
-   "en": "War Horn",
-   "ende": "Once per long rest, the GM must use their next spotlight move to attack you with any adversary within Far range.",
-   "ru": "Боевой Рог",
-   "rud": "Один раз за продолжительный отдых Мастер должен в свой следующий ход активировать любого противника в пределах Далекой дистанции, чтобы тот атаковал вас.",
-   "img": "vh12.webp"
-  },
-  {
-   "id": "vh13",
-   "src": "vh",
-   "room": "library",
-   "roll": 2,
-   "kind": "consumable",
-   "en": "Blink Potion",
-   "ende": "After drinking this potion, you can teleport once to a point you can see within Far range.",
-   "ru": "Зелье Мерцания",
-   "rud": "Выпив это зелье, вы можете один раз телепортироваться в точку, которую видите, в пределах Далекой дистанции.",
-   "img": "vh13.webp"
-  },
-  {
-   "id": "vh14",
-   "src": "vh",
-   "room": "library",
-   "roll": 3,
-   "kind": "item",
-   "en": "Ring of Aid",
-   "ende": "Once per short rest, you can Help an Ally without spending Hope.",
-   "ru": "Кольцо Помощи",
-   "rud": "Один раз за короткий отдых вы можете помочь союзнику, не тратя Надежду.",
-   "img": "vh14.webp"
-  },
-  {
-   "id": "vh15",
-   "src": "vh",
-   "room": "library",
-   "roll": 4,
-   "kind": "consumable",
-   "en": "Legendary Foresight Potion",
-   "ende": "You gain advantage on all action rolls until your next rest.",
-   "ru": "Легендарное Зелье Предвидения",
-   "rud": "Вы получаете преимущество на все Броски Действия до следующего отдыха.",
-   "img": "vh15.webp"
-  }
- ]
 }

@@ -19,7 +19,7 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search]
   main ""
     heading "Поиск" [level=1]
     button "Открывать при запуске" [pressed=false]
-    StaticText "Поиск сразу по 1459 позициям - добыча, расходники и снаряжение."
+    StaticText "Поиск сразу по 1593 позициям - добыча, расходники и снаряжение."
     searchbox "Поиск по названию или описанию..." [value=меч]
     button "Все" [pressed=true]
     button "Предметы" [pressed=false]
@@ -30,8 +30,8 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search]
     checkbox "Меч Призрачного Касания" [checked=false]
     button "№ 105 Меч Призрачного Касания ОСНОВНОЕ ОРУЖИЕ УНИКАЛЬНОЕ THE DRA..." [namelen=284 namehash=0429d5e8]
     checkbox "Меч Адского Пламени" [checked=false]
-    ... button x135 of 139 same-shape siblings elided
-    ... checkbox x134 of 138 same-shape siblings elided
+    ... button x141 of 145 same-shape siblings elided
+    ... checkbox x140 of 144 same-shape siblings elided
     checkbox "Божественный Пластинчатый Доспех" [checked=false]
     button "Божественный Пластинчатый Доспех БРОНЯ УНИКАЛЬНОЕ HOPE & FEAR Ра..." [namelen=155 namehash=7bbcaef6]
     checkbox "Латы Ужаса" [checked=false]
@@ -75,6 +75,7 @@ daggerheart.com
 Двуручный Меч
 Двуручный Меч Вайаты
 Двуручный МечОсновное оружиеРанг 1 · Физическое · Сила · Вплотну... [namelen=215 namehash=1ad2dc4e]
+Демоническая Книга
 Динамит
 ДинамитРасходникКолоссы СухоземьяВы можете поджечь эту динамитну... [namelen=355 namehash=d20016fc]
 Длинный Меч
@@ -87,6 +88,7 @@ daggerheart.com
 Доспех из Гробового ДереваБроняТёмное сердце АндалурииРанг 1 · П... [namelen=172 namehash=805186ca]
 Дочь Зелени
 Зелье Судного Дня
+Инфузия Мудрости
 К содержимому
 Камень Доблести
 Карманные Часы Странника Времени
@@ -135,6 +137,7 @@ daggerheart.com
 Мантия Архимага
 Маска Фаибоса
 Масло Зелёной Слизи
+Медово-Масляное Мыло Святого Бунгуса
 Меч Адского Пламени
 Меч Ангелов
 Меч Нежити
@@ -200,7 +203,10 @@ daggerheart.com
 Продвинутый Меч-Хлыст
 Продвинутый Меч-ХлыстОсновное оружиеHope & FearРанг 3 · Физическ... [namelen=227 namehash=b76e1686]
 Проклятая Голова
+Промасленное Длиннополое Пальто
 Расходники
+Ром Кричащей Сирены
+Роскошный Конский Доспех
 Ртутный Фамильяр
 Рукавицы Убийцы
 Руны Укрепления
@@ -274,6 +280,7 @@ daggerheart.com
 № 114Рукавицы УбийцыОсновное оружиеУникальноеThe Dragon's VaultР... [namelen=401 namehash=f46bdfca]
 № 116Неугомонное ВозмездиеОсновное оружиеУникальноеThe Dragon's ... [namelen=460 namehash=c9b67a02]
 № 11Кортик МёртвыхОсновное оружиеArazo's ArtifactsРанг 1 · Физич... [namelen=326 namehash=60b650ad]
+№ 11Промасленное Длиннополое ПальтоПредметThe Last Round TableТя... [namelen=351 namehash=36b87ce2]
 № 121Меч-РазрушительОсновное оружиеУникальноеThe Dragon's VaultР... [namelen=452 namehash=a5041157]
 № 12Улучшенный Кортик МёртвыхОсновное оружиеArazo's ArtifactsРан... [namelen=337 namehash=7d5958d0]
 № 133Меч АнгеловОсновное оружиеУникальноеThe Dragon's VaultРанг ... [namelen=395 namehash=f517626b]
@@ -302,6 +309,8 @@ daggerheart.com
 № 21Перчатка Ползучего КороляПредметThe Dragon's VaultЧтобы испо... [namelen=569 namehash=f4969e4a]
 № 23Голодный Кулачный КлинокВторичное оружиеУникальноеVault of A... [namelen=426 namehash=f9f9b5fd]
 № 23Карманные Часы Странника ВремениПредметVault of AgesСтоимост... [namelen=394 namehash=abe1fd3e]
+№ 23Медово-Масляное Мыло Святого БунгусаРасходникThe Last Round ... [namelen=649 namehash=29cf00bc]
+№ 24Ром Кричащей СиреныРасходникThe Last Round TableТёмный пряны... [namelen=390 namehash=5e692138]
 № 26Мантия АрхимагаБроняУникальноеVault of AgesРанг 4 · Пороги 1... [namelen=338 namehash=abb338c9]
 № 27Посох Чёрной ДырыОсновное оружиеУникальноеVault of AgesРанг ... [namelen=668 namehash=8906634e]
 № 29Успокаивающий КулонПредметКогда вы должны отметить последний... [namelen=129 namehash=efbb6373]
@@ -317,6 +326,7 @@ daggerheart.com
 № 35Осколок ЭмберитаРасходникHope & FearВыберите точку в предела... [namelen=393 namehash=8d49da12]
 № 37Перчатки РасторопностиПредметHope & FearКогда вы должны отме... [namelen=124 namehash=2fcb78c2]
 № 3Агатовый ПаукПредметThe Dragon's VaultВы можете приказать укр... [namelen=268 namehash=9f114f20]
+№ 3Демоническая КнигаПредметEscape the Veiled HallsОдин раз за с... [namelen=292 namehash=73878521]
 № 3Лист Исполинского ДереваПредметЛесноеОгромный лист, прочный к... [namelen=222 namehash=22f215c9]
 № 41Перчатка СкорпионаПредметArazo's ArtifactsКогда вы держите в... [namelen=276 namehash=b209f622]
 № 4Амулет Праведной ЯростиПредметThe Dragon's VaultПризовите зак... [namelen=302 namehash=cee06049]
@@ -344,9 +354,11 @@ daggerheart.com
 № 79Лук ИскателяОсновное оружиеУникальноеWondrous EnvironmentsРа... [namelen=387 namehash=7f1ed9d1]
 № 7Амулет из Пальца ДьяволаПредметАртефактVault of AgesСтоимость... [namelen=519 namehash=6ba69d4a]
 № 7Щит ОтталкиванияВторичное оружиеУникальноеVault of AgesРанг 3... [namelen=367 namehash=250525b3]
+№ 82Роскошный Конский ДоспехПредметPistolheartПока вы верхом, вы... [namelen=137 namehash=0bb00243]
 № 84Топор Чёрной ПорчиОсновное оружиеУникальноеThe Dragon's Vaul... [namelen=474 namehash=d01d1d3f]
 № 85КровоглотОсновное оружиеУникальноеThe Dragon's VaultРанг 2 ·... [namelen=376 namehash=60c89be3]
 № 89Меч Хрустального ДухаОсновное оружиеУникальноеThe Dragon's V... [namelen=284 namehash=94af0ae1]
+№ 91Инфузия МудростиПредметPistolheartОдин раз до следующего отд... [namelen=237 namehash=5a70c68e]
 № 94Сумеречное КрылоОсновное оружиеУникальноеThe Dragon's VaultР... [namelen=258 namehash=a6f2e8a9]
 № 95Стихийный Длинный ЛукОсновное оружиеУникальноеThe Dragon's V... [namelen=507 namehash=9cfee318]
 № 9Клятва РавновесияОсновное оружиеУникальноеАртефактVault of Ag... [namelen=839 namehash=9266635c]
@@ -371,7 +383,7 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search]
   main ""
     heading "Search" [level=1]
     button "Open on start" [pressed=false]
-    StaticText "Search all 1459 entries at once - loot, consumables and equipmen..." [namelen=66 namehash=99988b56]
+    StaticText "Search all 1593 entries at once - loot, consumables and equipmen..." [namelen=66 namehash=b8916354]
     searchbox "Search by name or description..." [value=меч]
     button "All" [pressed=true]
     button "Items" [pressed=false]
@@ -382,8 +394,8 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search]
     checkbox "Ghost Touch Sword" [checked=false]
     button "No. 105 Ghost Touch Sword PRIMARY WEAPON UNIQUE THE DRAGON'S VAU..." [namelen=240 namehash=468f2bf9]
     checkbox "Hellfire Sword" [checked=false]
-    ... button x135 of 139 same-shape siblings elided
-    ... checkbox x134 of 138 same-shape siblings elided
+    ... button x141 of 145 same-shape siblings elided
+    ... checkbox x140 of 144 same-shape siblings elided
     checkbox "Godbound Laminar" [checked=false]
     button "Godbound Laminar ARMOR UNIQUE HOPE & FEAR Tier 4 · Thresholds 13..." [namelen=127 namehash=9ea4610b]
     checkbox "Circle-Forged Dreadplate" [checked=false]
@@ -468,6 +480,7 @@ Copy text
 Crawling King's Gauntlet
 Crystal Spirit Sword
 Cursed Head
+Demonic Book
 Devil-Finger Charm
 Dirk of the Dead
 Doomsday Potion
@@ -569,6 +582,7 @@ No. 113Kinetic EdgePrimary weaponUniqueThe Dragon's VaultTier 2 ... [namelen=316
 No. 114Murderer's GauntletsPrimary weaponUniqueThe Dragon's Vaul... [namelen=401 namehash=3424bb02]
 No. 116Restless VengeancePrimary weaponUniqueThe Dragon's VaultT... [namelen=470 namehash=3605c1f4]
 No. 11Dirk of the DeadPrimary weaponArazo's ArtifactsTier 1 · Ph... [namelen=329 namehash=92fa09c6]
+No. 11Oiled LongcoatItemThe Last Round TableA heavy lanolin trea... [namelen=314 namehash=6ede0c76]
 No. 121ShatterswordPrimary weaponUniqueThe Dragon's VaultTier 3 ... [namelen=390 namehash=569c5368]
 No. 12Improved Dirk of the DeadPrimary weaponArazo's ArtifactsTi... [namelen=338 namehash=bd39a2dc]
 No. 133Sword of AngelsPrimary weaponUniqueThe Dragon's VaultTier... [namelen=330 namehash=062461e9]
@@ -596,7 +610,9 @@ No. 20Sprite BottleConsumableHope & FearWhen you mark your last ... [namelen=200
 No. 21Crawling King's GauntletItemThe Dragon's VaultTo use this ... [namelen=521 namehash=9641d922]
 No. 21Poison-Colored PaintConsumableWarrin' WarrensYou can put t... [namelen=247 namehash=5492c8c3]
 No. 23Hungry Fist BladeSecondary weaponUniqueVault of AgesTier 4... [namelen=414 namehash=7ced0f60]
+No. 23Saint Bungus Honey Butter SoapConsumableThe Last Round Tab... [namelen=600 namehash=5175273c]
 No. 23Timewalker PocketwatchItemVault of AgesRecall Cost: 1Once ... [namelen=341 namehash=7869f875]
+No. 24Screaming Siren RumConsumableThe Last Round TableA dark sp... [namelen=391 namehash=a31d8231]
 No. 26Arch-Magus's RobesArmorUniqueVault of AgesTier 4 · Thresho... [namelen=298 namehash=0af06daf]
 No. 27Black Hole StaffPrimary weaponUniqueVault of AgesTier 4 · ... [namelen=602 namehash=787fb2ec]
 No. 29Calming PendantItemWhen you would mark your last Stress, r... [namelen=116 namehash=0ad32303]
@@ -612,6 +628,7 @@ No. 34Verdant DaughterPrimary weaponUniqueVault of AgesTier 4 · ... [namelen=66
 No. 35Emberite ShardConsumableHope & FearChoose a point within F... [namelen=378 namehash=ab04b607]
 No. 37Gloves of AlacrityItemHope & FearWhen you would mark a Str... [namelen=106 namehash=94bc4e2b]
 No. 3Agate SpiderItemThe Dragon's VaultYou can command this spid... [namelen=245 namehash=53277eb6]
+No. 3Demonic BookItemEscape the Veiled HallsOnce per session, yo... [namelen=228 namehash=18ff62c0]
 No. 3Leaf of the Giant TreeItemWildborneA massive leaf sturdy as... [namelen=197 namehash=163e7a31]
 No. 41Scorpion GauntletItemArazo's ArtifactsWhen you hold a weap... [namelen=276 namehash=34da3d64]
 No. 4Amulet of Righteous FuryItemThe Dragon's VaultWhen you invo... [namelen=292 namehash=e43ecc0c]
@@ -639,9 +656,11 @@ No. 78A Thousand CutsSecondary weaponUniqueThe Dragon's VaultTie... [namelen=425
 No. 79Seeker's BowPrimary weaponUniqueWondrous EnvironmentsTier ... [namelen=374 namehash=863c7277]
 No. 7Devil-Finger CharmItemArtifactVault of AgesRecall Cost: 3En... [namelen=497 namehash=135fc142]
 No. 7Shield of RepulsionSecondary weaponUniqueVault of AgesTier ... [namelen=364 namehash=1886e4ea]
+No. 82Opulent BardingItemPistolheartWhile mounted, you can spend... [namelen=117 namehash=a48a77fa]
 No. 84Black Corruption AxePrimary weaponUniqueThe Dragon's Vault... [namelen=460 namehash=18ffe1d4]
 No. 85BloodgorgerPrimary weaponUniqueThe Dragon's VaultTier 2 · ... [namelen=368 namehash=abee486b]
 No. 89Crystal Spirit SwordPrimary weaponUniqueThe Dragon's Vault... [namelen=261 namehash=ec43f609]
+No. 91Sage InfusionItemPistolheartOnce per rest, gain a special ... [namelen=193 namehash=c86fde21]
 No. 94Dusk WingPrimary weaponUniqueThe Dragon's VaultTier 2 · Ph... [namelen=240 namehash=49bdeb61]
 No. 95Elemental LongbowPrimary weaponUniqueThe Dragon's VaultTie... [namelen=433 namehash=433e49ab]
 No. 9Bracers of the Sun and MoonItemArazo's ArtifactsBracer of t... [namelen=253 namehash=27d751ae]
@@ -649,7 +668,9 @@ No. 9Oath of BalancePrimary weaponUniqueArtifactVault of AgesArt... [namelen=756
 No. 9Pirate's Treasure MapItemSeaborneThis enchanted map constan... [namelen=301 namehash=a02b0d4a]
 No. 9Timekeeper's WatchItemVault of AgesRecall Cost: 2If you hav... [namelen=267 namehash=c4da6931]
 Oath of Balance
+Oiled Longcoat
 Open on start
+Opulent Barding
 Phaibos Mask
 Pirate's Treasure Map
 Poison-Colored Paint
@@ -666,7 +687,10 @@ Rings of Camaraderie
 Roll
 Runes of Fortification
 Runes of FortificationArmorUniqueTier 3 · Thresholds 17/43 · Arm... [namelen=134 namehash=919b8f12]
+Sage Infusion
+Saint Bungus Honey Butter Soap
 Scorpion Gauntlet
+Screaming Siren Rum
 Search
 Search by name or description...
 Seeker's Bow

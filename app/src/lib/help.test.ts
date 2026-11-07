@@ -6,7 +6,20 @@ import type { Help, HelpLink, HelpPart } from './help.js';
 import type { Lang } from './types.js';
 
 const LANGS: Lang[] = ['ru', 'en'];
-const SECTIONS = ['std', 'alt', 'wondrous', 'dread', 'voa', 'dv', 'arazo', 'community', 'mwt'];
+const SECTIONS = [
+  'std',
+  'alt',
+  'wondrous',
+  'dread',
+  'voa',
+  'dv',
+  'arazo',
+  'community',
+  'mwt',
+  'ph',
+  'lr',
+  'vh'
+];
 
 /** What one part reads as, so a paragraph can be compared as plain text. */
 const partText = (part: HelpPart): string => {
@@ -96,6 +109,9 @@ describe('the help for a section', () => {
       dv: ['Об этой книге', 'About this book'],
       arazo: ['Об этой книге', 'About this book'],
       mwt: ['Об этой книге', 'About this book'],
+      ph: ['Об этой книге', 'About this book'],
+      lr: ['Об этой книге', 'About this book'],
+      vh: ['Об этой книге', 'About this book'],
       community: ['Об этих предметах', 'About these items']
     };
     for (const section of SECTIONS) {
@@ -116,6 +132,24 @@ describe('the help for a section', () => {
       ]);
     }
     expect(linksOf(helpFor('alt', 'ru'))[1]?.label).toBe('пост на Reddit');
+  });
+
+  it('links Pistolheart, The Last Round Table and Escape the Veiled Halls to their product pages', () => {
+    for (const lang of LANGS) {
+      expect(linksOf(helpFor('ph', lang)).map((l) => l.href)).toEqual([
+        'https://www.drivethrurpg.com/en/product/547537/pistolheart-volume-1',
+        'https://www.drivethrurpg.com/en/product/564429/pistolheart-volume-2',
+        'https://www.drivethrurpg.com/en/product/578612/pistolheart-volume-3'
+      ]);
+      expect(linksOf(helpFor('lr', lang)).map((l) => l.href)).toEqual([
+        'https://heartofdaggers.com/products/the-last-round-table/'
+      ]);
+      expect(linksOf(helpFor('vh', lang)).map((l) => l.href)).toEqual([
+        'https://heartofdaggers.com/products/escape-the-veiled-halls/'
+      ]);
+    }
+    expect(textOf(helpFor('vh', 'ru'), 0)).toContain('Лаборатория - 3');
+    expect(textOf(helpFor('vh', 'en'), 0)).toContain('The Laboratory 3');
   });
 
   it('links each Many Worlds Tavern realm to its own product page', () => {

@@ -41,9 +41,10 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       button "Все" [pressed=true]
       button "1" [pressed=false]
       button "2" [pressed=false]
-      ... button x26 of 30 same-shape siblings elided
+      ... button x25 of 29 same-shape siblings elided
       StaticText "ИСТОЧНИК"
       button "Все" [pressed=true]
+      button "и ещё 3" [expanded=false]
       ... StaticText x2 of 6 same-shape siblings elided
       ... button x2 of 6 same-shape siblings elided
       StaticText "ДИСТАНЦИЯ"
@@ -53,12 +54,12 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       button "Есть улучшение" [pressed=false]
       button "Уникальные" [pressed=false]
     heading "Ранг 1" [level=2]
-    ... button x137 of 141 same-shape siblings elided
+    ... button x150 of 154 same-shape siblings elided
     heading "Ранг 2" [level=2]
     heading "Ранг 3" [level=2]
     heading "Ранг 4" [level=2]
-    button "32 Нож Единорога УНИКАЛЬНОЕ VAULT OF AGES Физическое · Искусност..." [namelen=320 namehash=6603521f]
-    button "46 Легендарный Щит Арктура ARAZO'S ARTIFACTS Физическое · Сила ·..." [namelen=271 namehash=be3c1029]
+    button "60 Легендарный Дровяной Топор PISTOLHEART Физическое · Сила · Вп..." [namelen=254 namehash=1819c0a2]
+    button "64 Легендарный Мешочек с Песком PISTOLHEART Физическое · Сила · ..." [namelen=195 namehash=1858796b]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -86,6 +87,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 2Взыскательный БаклерУникальноеВоюющие НорыФизическое · Искуснос... [namelen=250 namehash=a6fd4f87]
 3
 32Нож ЕдинорогаУникальноеVault of AgesФизическое · Искусность · ... [namelen=313 namehash=5c57c0aa]
+3Ведьмина СковородаУникальноеThe Last Round TableФизическое · Вл... [namelen=194 namehash=fd321e33]
 3Наручный КлинокУникальноеДромФизическое · Проворность · Вплотну... [namelen=143 namehash=000340b5]
 4
 43Щит АрктураArazo's ArtifactsФизическое · Сила · Вплотную · d8 ... [namelen=254 namehash=df106c24]
@@ -94,7 +96,19 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 46Легендарный Щит АрктураArazo's ArtifactsФизическое · Сила · Вп... [namelen=266 namehash=c0287a7a]
 4Неприметный НожУникальноеЛес ПариФизическое · Искусность · Впло... [namelen=239 namehash=e941b238]
 4Щит СкарабеяУникальноеОплот ШершнейФизическое · Сила · Вплотную... [namelen=194 namehash=2a37192a]
+53Разделочный НожPistolheartФизическое · Проворность · Вплотную ... [namelen=246 namehash=fdc006a7]
+54Улучшенный Разделочный НожPistolheartФизическое · Проворность ... [namelen=257 namehash=d29c5fe0]
+55Продвинутый Разделочный НожPistolheartФизическое · Проворность... [namelen=258 namehash=9e89b59c]
+56Легендарный Разделочный НожPistolheartФизическое · Проворность... [namelen=258 namehash=c5e61c2d]
+57Дровяной ТопорPistolheartФизическое · Сила · Вплотную · d6+1 ф... [namelen=238 namehash=649bfb36]
 57Кандальные БоласУникальноеWondrous EnvironmentsФизическое · Ис... [namelen=264 namehash=f3706d8a]
+58Улучшенный Дровяной ТопорPistolheartФизическое · Сила · Вплотн... [namelen=249 namehash=cf85ed9b]
+59Продвинутый Дровяной ТопорPistolheartФизическое · Сила · Вплот... [namelen=250 namehash=f9a7dc68]
+60Легендарный Дровяной ТопорPistolheartФизическое · Сила · Вплот... [namelen=250 namehash=ccd64583]
+61Мешочек с ПескомPistolheartФизическое · Сила · Вплотную · d4+3... [namelen=179 namehash=bf02145e]
+62Улучшенный Мешочек с ПескомPistolheartФизическое · Сила · Впло... [namelen=190 namehash=866446be]
+63Продвинутый Мешочек с ПескомPistolheartФизическое · Сила · Впл... [namelen=191 namehash=56bd9fa8]
+64Легендарный Мешочек с ПескомPistolheartФизическое · Сила · Впл... [namelen=191 namehash=2af8a039]
 6Второй РезакУникальноеВоюющие НорыФизическое · Искусность · Впл... [namelen=229 namehash=17d696ef]
 6Ритуальный Клинок СехметУникальноеVault of AgesМагическое · Иск... [namelen=275 namehash=0d422fab]
 6Щит СолнцаУникальноеDread GM ToolboxМагическое · Сила · Вплотну... [namelen=189 namehash=039083ba]
@@ -113,8 +127,10 @@ Dread GM Toolbox
 EN
 Hope & Fear
 Many Worlds Tavern
+Pistolheart
 RU
 The Dragon's Vault
+The Last Round Table
 Vault of Ages
 Wondrous Environments
 daggerheart.com
@@ -146,7 +162,6 @@ daggerheart.com
 Искусность
 К содержимому
 Клинок ЭхаУникальноеHope & FearМагическое · Влияние · Вплотную ·... [namelen=194 namehash=52b72adf]
-Колоссы Сухоземья
 Колючая ПроволокаУникальноеHope & FearФизическое · Искусность · ... [namelen=241 namehash=effa3fae]
 Конфиденциальность
 Короткий МечФизическое · Проворность · Вплотную · d8 физ · Однор... [namelen=129 namehash=93d14068]
@@ -186,7 +201,6 @@ daggerheart.com
 Открывать при запуске
 Очень далеко
 Парирующий КинжалУникальноеФизическое · Искусность · Вплотную · ... [namelen=338 namehash=79dc25ff]
-Пир зверей
 Плеть ДушУникальноеHope & FearМагическое · Влияние · Близко · d6... [namelen=214 namehash=0adcf1ba]
 Поиск
 Поиск по названию или описанию...
@@ -228,7 +242,6 @@ daggerheart.com
 Таблицы
 ТомагавкHope & FearФизическое · Проворность · Вплотную · d8 физ ... [namelen=207 namehash=96d85ec2]
 Тройной Цепной ПосохУникальноеHope & FearФизическое · Проворност... [namelen=188 namehash=8aa9c19c]
-Тёмное сердце Андалурии
 Улучшенное ЛассоКолоссы СухоземьяФизическое · Проворность · Близ... [namelen=394 namehash=4e4639f5]
 Улучшенные Метательные НожиHope & FearФизическое · Искусность · ... [namelen=269 namehash=7a967fbe]
 Улучшенные Руны КонцентрацииHope & FearМагическое · Инстинкт · Б... [namelen=175 namehash=47c28a5e]
@@ -260,6 +273,7 @@ daggerheart.com
 Щит из СтолаУникальноеПир зверейФизическое · Сила · Вплотную · d... [namelen=127 namehash=ffda927f]
 Щиток Крышки БочкиУникальноеПир зверейФизическое · Сила · Вплотн... [namelen=119 namehash=41915bac]
 Щупальце Черной КровиУникальноеHope & FearМагическое · Инстинкт ... [namelen=215 namehash=1c481bbc]
+и ещё 3
 
 ## en :: tree
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_secondary]
@@ -300,9 +314,10 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_secondary]
       button "All" [pressed=true]
       button "1" [pressed=false]
       button "2" [pressed=false]
-      ... button x26 of 30 same-shape siblings elided
+      ... button x25 of 29 same-shape siblings elided
       StaticText "SOURCE"
       button "All" [pressed=true]
+      button "and 3 more" [expanded=false]
       ... StaticText x2 of 6 same-shape siblings elided
       ... button x2 of 6 same-shape siblings elided
       StaticText "RANGE"
@@ -312,12 +327,12 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_secondary]
       button "Upgradable" [pressed=false]
       button "Unique" [pressed=false]
     heading "Tier 1" [level=2]
-    ... button x137 of 141 same-shape siblings elided
+    ... button x150 of 154 same-shape siblings elided
     heading "Tier 2" [level=2]
     heading "Tier 3" [level=2]
     heading "Tier 4" [level=2]
-    button "32 Unicorn Knife UNIQUE VAULT OF AGES Physical · Finesse · Melee..." [namelen=286 namehash=cbca2f28]
-    button "46 Legendary Shield of Arcturus ARAZO'S ARTIFACTS Physical · Str..." [namelen=242 namehash=fcb6e15b]
+    button "60 Legendary Wood Axe PISTOLHEART Physical · Strength · Melee · ..." [namelen=249 namehash=63f06068]
+    button "64 Legendary Sand Pouch PISTOLHEART Physical · Strength · Melee ..." [namelen=198 namehash=7f6e3d9d]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -345,6 +360,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_secondary]
 2Exacting BucklerUniqueWarrin' WarrensPhysical · Finesse · Melee... [namelen=219 namehash=f1218215]
 3
 32Unicorn KnifeUniqueVault of AgesPhysical · Finesse · Melee · d... [namelen=279 namehash=9340a7e6]
+3Witch's SkilletUniqueThe Last Round TablePhysical · Presence · ... [namelen=171 namehash=cd428424]
 3WristbladeUniqueThe DromePhysical · Agility · Melee · d8+2 phy ... [namelen=134 namehash=d6f4da1b]
 4
 43Shield of ArcturusArazo's ArtifactsPhysical · Strength · Melee... [namelen=227 namehash=c64fc42b]
@@ -353,7 +369,19 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_secondary]
 46Legendary Shield of ArcturusArazo's ArtifactsPhysical · Streng... [namelen=237 namehash=7891787f]
 4An Unassuming KnifeUniqueWagerwoodPhysical · Finesse · Melee · ... [namelen=222 namehash=f2ed8904]
 4Scarab ShieldUniqueHornet HoldPhysical · Strength · Melee · d6+... [namelen=182 namehash=9ae769c7]
+53Carving KnifePistolheartPhysical · Agility · Melee · d6+1 phy ... [namelen=239 namehash=11a59f2a]
+54Improved Carving KnifePistolheartPhysical · Agility · Melee · ... [namelen=248 namehash=002f8d2d]
+55Advanced Carving KnifePistolheartPhysical · Agility · Melee · ... [namelen=248 namehash=64312d97]
+56Legendary Carving KnifePistolheartPhysical · Agility · Melee ·... [namelen=249 namehash=04b2f068]
 57Manacle BolasUniqueWondrous EnvironmentsPhysical · Finesse · C... [namelen=233 namehash=c4fa44a7]
+57Wood AxePistolheartPhysical · Strength · Melee · d6+1 phy · On... [namelen=235 namehash=208c557f]
+58Improved Wood AxePistolheartPhysical · Strength · Melee · d6+2... [namelen=244 namehash=faa1f45f]
+59Advanced Wood AxePistolheartPhysical · Strength · Melee · d6+3... [namelen=244 namehash=9989ca81]
+60Legendary Wood AxePistolheartPhysical · Strength · Melee · d6+... [namelen=245 namehash=f8c6372f]
+61Sand PouchPistolheartPhysical · Strength · Melee · d4+3 phy · ... [namelen=184 namehash=3c849e4e]
+62Improved Sand PouchPistolheartPhysical · Strength · Melee · d4... [namelen=193 namehash=58c69006]
+63Advanced Sand PouchPistolheartPhysical · Strength · Melee · d4... [namelen=193 namehash=5c6827a9]
+64Legendary Sand PouchPistolheartPhysical · Strength · Melee · d... [namelen=194 namehash=a2d82b2f]
 6Ritual Blade of SekhmetUniqueVault of AgesMagic · Finesse · Mel... [namelen=249 namehash=2c492114]
 6Second SlasherUniqueWarrin' WarrensPhysical · Finesse · Melee ·... [namelen=208 namehash=f143b104]
 6Shield of the SunUniqueDread GM ToolboxMagic · Strength · Melee... [namelen=179 namehash=68f65c70]
@@ -390,16 +418,13 @@ Alt. tables
 Arazo's Artifacts
 Armor
 Barrel Lid ShieldUniqueBeast FeastPhysical · Strength · Melee · ... [namelen=112 namehash=c516429a]
-Beast Feast
 Blackblood TendrilUniqueHope & FearMagic · Instinct · Close · d6... [namelen=212 namehash=935a5e1f]
 BraveshieldUniquePhysical · Agility · Melee · d4+6 phy · One-Han... [namelen=200 namehash=d41564d6]
 BucklerUniquePhysical · Agility · Melee · d4+4 phy · One-HandedD... [namelen=212 namehash=5f238a39]
 Chain WhipDark Heart of AndaluriaPhysical · Presence · Very Clos... [namelen=162 namehash=45dfcd6b]
 Close
 Collapsible BatonUniqueHope & FearPhysical · Strength · Melee · ... [namelen=221 namehash=8f3a485e]
-Colossus of the Drylands
 Core
-Dark Heart of Andaluria
 Dread GM Toolbox
 EN
 Echo BladeUniqueHope & FearMagic · Presence · Melee · d4+6 mag ·... [namelen=200 namehash=58ccee32]
@@ -474,6 +499,7 @@ Other
 Paring KnifeUniqueBeast FeastPhysical · Finesse · Melee · d8 phy... [namelen=142 namehash=ae1456a3]
 Parrying DaggerUniquePhysical · Finesse · Melee · d6+2 phy · One... [namelen=311 namehash=a58341ec]
 Physical
+Pistolheart
 Powered GauntletUniquePhysical · Knowledge · Close · d6+4 phy · ... [namelen=163 namehash=898c37f3]
 Presence
 Primer ShardUniquePhysical · Instinct · Very Close · d4 phy · On... [namelen=196 namehash=745bfaec]
@@ -502,6 +528,7 @@ Table ShieldUniqueBeast FeastPhysical · Strength · Melee · d6 ph... [namelen=
 Tables
 Terms of use
 The Dragon's Vault
+The Last Round Table
 Throwing KnivesHope & FearPhysical · Finesse · Melee · d8 phy · ... [namelen=237 namehash=598f2251]
 Tinker's HammerUniqueHope & FearPhysical · Strength · Melee · d8... [namelen=139 namehash=9983508c]
 Tower ShieldPhysical · Strength · Melee · d6 phy · One-HandedBar... [namelen=102 namehash=18d3ccef]
@@ -518,4 +545,5 @@ Weapons
 WhipPhysical · Presence · Very Close · d6 phy · One-HandedStartl... [namelen=166 namehash=386db8a1]
 Wondrous Environments
 Wooden StakeDark Heart of AndaluriaPhysical · Strength · Melee ·... [namelen=183 namehash=93a8f98c]
+and 3 more
 daggerheart.com

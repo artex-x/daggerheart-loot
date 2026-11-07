@@ -962,6 +962,48 @@ const STATES = [
       await d.click('Об этой книге');
     }
   },
+
+  /* Pistolheart and The Last Round Table roll one pool each; Escape the Veiled Halls rolls
+     inside one room's table, a d4 or, in The Laboratory, 1-3 at random. */
+  {
+    id: '#/roll/ph',
+    route: '#/roll/pistolheart',
+    why: 'Pistolheart: one pool of 93, the button picks 1-93 at random, the first rung of a line'
+  },
+  {
+    id: '#/roll/ph ~ help',
+    route: '#/roll/pistolheart',
+    why: 'the help panel, unfolded: three volumes, sixteen lines, the rule cards, one link per volume',
+    enter: async (d) => {
+      await d.click('Об этой книге');
+    }
+  },
+  {
+    id: '#/roll/lr',
+    route: '#/roll/last_round_table',
+    why: 'The Last Round Table: one pool of 26, the button picks 1-26 at random'
+  },
+  {
+    id: '#/roll/vh',
+    route: '#/roll/escape_the_veiled_halls',
+    why: 'Escape the Veiled Halls on its first room, The Basement: «Комната» and a d4, the ten supplements'
+  },
+  {
+    id: '#/roll/vh ~ laboratory',
+    route: '#/roll/escape_the_veiled_halls',
+    why: 'The Laboratory: three entries, the button picks 1-3 at random',
+    enter: async (d) => {
+      await d.part('Лаборатория');
+    }
+  },
+  {
+    id: '#/roll/vh ~ help',
+    route: '#/roll/escape_the_veiled_halls',
+    why: 'the help panel, unfolded: the four room tables, the d3 room, the two potion upgrades',
+    enter: async (d) => {
+      await d.click('Об этой книге');
+    }
+  },
   {
     id: '#/tables/wondrous',
     route: '#/tables/wondrous_environments',
@@ -1330,6 +1372,24 @@ const STATES = [
     why: 'the realm section anchor'
   },
   {
+    id: '#/tables/ph',
+    route: '#/tables/pistolheart',
+    why: 'a sectioned body: Pistolheart by volume, three volume headings, 93 rows'
+  },
+  {
+    id: '#/tables/lr',
+    route: '#/tables/last_round_table',
+    why: 'a plain body with a kind row, 26 rows in book order'
+  },
+  {
+    id: '#/tables/vh ~ library picked',
+    route: '#/tables/escape_the_veiled_halls',
+    why: 'the filter column with its kind and room rows, The Library picked: 4 rows',
+    enter: async (d) => {
+      await d.click('Библиотека');
+    }
+  },
+  {
     id: '#/tables/other_starting',
     route: '#/tables/other_starting',
     why: 'the plain starting-items subtable'
@@ -1491,6 +1551,14 @@ const STATES = [
     why: 'the referenced ancestry feature «Сеть фангрилов», unfolded',
     enter: async (d) => {
       await d.click('Сеть фангрилов');
+    }
+  },
+  {
+    id: '#/i/lr6 ~ ref open',
+    route: '#/i/lr6',
+    why: 'a supplement rule card, unfolded: its link reads the product host, heartofdaggers.com',
+    enter: async (d) => {
+      await d.click('Купчая на Последний Круглый Стол: Настроение таверны');
     }
   },
 

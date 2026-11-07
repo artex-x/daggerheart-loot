@@ -20,7 +20,7 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search?
   main ""
     heading "Поиск" [level=1]
     button "Открывать при запуске" [pressed=false]
-    StaticText "Поиск сразу по 1459 позициям - добыча, расходники и снаряжение. ..." [namelen=83 namehash=e24d3080]
+    StaticText "Поиск сразу по 1593 позициям - добыча, расходники и снаряжение. ..." [namelen=83 namehash=b3470252]
     searchbox "Поиск по названию или описанию..." [value=топор focused=true]
     button "Выбрать"
     button "Все" [pressed=true]
@@ -30,7 +30,7 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search?
     switch "Свои предметы" [checked=true]
     StaticText "Свои предметы"
     button "№ 10 Топор-Пила Лесоруба ПРЕДМЕТ ГОРНОЕ Этот массивный гибридный..." [namelen=233 namehash=f5686d56]
-    ... button x15 of 19 same-shape siblings elided
+    ... button x23 of 27 same-shape siblings elided
     button "№ 49 Стопорный Ключ ПРЕДМЕТ WONDROUS ENVIRONMENTS При успешном Б..." [namelen=374 namehash=e6b79b6d]
     button "№ 116 Неугомонное Возмездие ОСНОВНОЕ ОРУЖИЕ УНИКАЛЬНОЕ THE DRAGO..." [namelen=467 namehash=dd052ef7]
   contentinfo ""
@@ -71,9 +71,17 @@ daggerheart.com
 Установить как приложение
 № 10Топор-Пила ЛесорубаПредметГорноеЭтот массивный гибридный инс... [namelen=229 namehash=5452ed42]
 № 116Неугомонное ВозмездиеОсновное оружиеУникальноеThe Dragon's ... [namelen=460 namehash=c9b67a02]
+№ 41Топорик на ВерёвкеОсновное оружиеPistolheartРанг 1 · Физичес... [namelen=249 namehash=7c9b81d9]
+№ 42Улучшенный Топорик на ВерёвкеОсновное оружиеPistolheartРанг ... [namelen=262 namehash=ac209118]
+№ 43Продвинутый Топорик на ВерёвкеОсновное оружиеPistolheartРанг... [namelen=263 namehash=380b6b66]
+№ 44Легендарный Топорик на ВерёвкеОсновное оружиеPistolheartРанг... [namelen=263 namehash=a72b3bdd]
 № 49Стопорный КлючПредметWondrous EnvironmentsПри успешном Броск... [namelen=370 namehash=339de642]
 № 4Топор Лесного СтражаПредметЛесноеЭтот внешне обычный топор не... [namelen=230 namehash=80cb2373]
+№ 57Дровяной ТопорВторичное оружиеPistolheartРанг 1 · Физическое... [namelen=265 namehash=8476f583]
+№ 58Улучшенный Дровяной ТопорВторичное оружиеPistolheartРанг 2 ·... [namelen=276 namehash=f91be766]
+№ 59Продвинутый Дровяной ТопорВторичное оружиеPistolheartРанг 3 ... [namelen=277 namehash=37830a61]
 № 5Топор РассветаОсновное оружиеArazo's ArtifactsРанг 1 · Физиче... [namelen=311 namehash=30ee32c9]
+№ 60Легендарный Дровяной ТопорВторичное оружиеPistolheartРанг 4 ... [namelen=277 namehash=a06698fb]
 № 6Улучшенный Топор РассветаОсновное оружиеArazo's ArtifactsРанг... [namelen=322 namehash=25405803]
 № 7Продвинутый Топор РассветаОсновное оружиеArazo's ArtifactsРан... [namelen=323 namehash=16dda3b3]
 № 84Топор Чёрной ПорчиОсновное оружиеУникальноеThe Dragon's Vaul... [namelen=474 namehash=d01d1d3f]
@@ -96,7 +104,7 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search?as=gm1]
   main ""
     heading "Search" [level=1]
     button "Open on start" [pressed=false]
-    StaticText "Search all 1459 entries at once - loot, consumables and equipmen..." [namelen=91 namehash=e6bf5329]
+    StaticText "Search all 1593 entries at once - loot, consumables and equipmen..." [namelen=91 namehash=0287f6fc]
     searchbox "Search by name or description..." [value=топор focused=true]
     button "Select"
     button "All" [pressed=true]
@@ -106,7 +114,7 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search?as=gm1]
     switch "Own items" [checked=true]
     StaticText "Own items"
     button "No. 10 Felling Axe-Saw ITEM RIDGEBORNE This massive hybrid tool ..." [namelen=238 namehash=2023cb75]
-    ... button x15 of 19 same-shape siblings elided
+    ... button x23 of 27 same-shape siblings elided
     button "No. 49 Jamming Spanner ITEM WONDROUS ENVIRONMENTS Make a success..." [namelen=356 namehash=b4a195b2]
     button "No. 116 Restless Vengeance PRIMARY WEAPON UNIQUE THE DRAGON'S VA..." [namelen=477 namehash=978882c7]
   contentinfo ""
@@ -134,9 +142,17 @@ Legendary Hallowed AxePrimary weaponTier 4 · Magic · Strength · ... [namelen=
 LootDaggerheart
 No. 10Felling Axe-SawItemRidgeborneThis massive hybrid tool cuts... [namelen=234 namehash=ac3afa6c]
 No. 116Restless VengeancePrimary weaponUniqueThe Dragon's VaultT... [namelen=470 namehash=3605c1f4]
+No. 41Rope HatchetPrimary weaponPistolheartTier 1 · Physical · I... [namelen=232 namehash=16abe9f6]
+No. 42Improved Rope HatchetPrimary weaponPistolheartTier 2 · Phy... [namelen=243 namehash=8e3ba2b1]
+No. 43Advanced Rope HatchetPrimary weaponPistolheartTier 3 · Phy... [namelen=243 namehash=944837c6]
+No. 44Legendary Rope HatchetPrimary weaponPistolheartTier 4 · Ph... [namelen=244 namehash=36d0f437]
 No. 49Jamming SpannerItemWondrous EnvironmentsMake a successful ... [namelen=352 namehash=5bd388b3]
 No. 4Forestwarden's AxeItemWildborneThis seemingly ordinary axe ... [namelen=200 namehash=317c298c]
+No. 57Wood AxeSecondary weaponPistolheartTier 1 · Physical · Str... [namelen=264 namehash=893bfb09]
+No. 58Improved Wood AxeSecondary weaponPistolheartTier 2 · Physi... [namelen=273 namehash=887b90fc]
+No. 59Advanced Wood AxeSecondary weaponPistolheartTier 3 · Physi... [namelen=273 namehash=284bc753]
 No. 5Axe of the DawnPrimary weaponArazo's ArtifactsTier 1 · Phys... [namelen=270 namehash=7d1546d3]
+No. 60Legendary Wood AxeSecondary weaponPistolheartTier 4 · Phys... [namelen=274 namehash=221f8974]
 No. 6Improved Axe of the DawnPrimary weaponArazo's ArtifactsTier... [namelen=279 namehash=832440db]
 No. 7Advanced Axe of the DawnPrimary weaponArazo's ArtifactsTier... [namelen=279 namehash=2c1197e8]
 No. 84Black Corruption AxePrimary weaponUniqueThe Dragon's Vault... [namelen=460 namehash=18ffe1d4]

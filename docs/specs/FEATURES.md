@@ -21,8 +21,11 @@ across.
 | Arazo's Artifacts | 1-78 | 1 | `arazo {n}` |
 | Community items | community + 1-10 | 1 | `comm {c, n}` |
 | Many Worlds Tavern | realm + a roll inside it (1-11 to 1-21) | 1 | `mwt {r, n}` |
+| Pistolheart | 1-93 | 1 | `ph {n}` |
+| The Last Round Table | 1-26 | 1 | `lr {n}` |
+| Escape the Veiled Halls | room + a roll inside it (d4, or 1-3 in The Laboratory) | 1 | `vh {r, n}` |
 
-- The nine roll pages share one layout (`RollPage`). Up to 760 px the `h1` and
+- The twelve roll pages share one layout (`RollPage`). Up to 760 px the `h1` and
   the lead are read, not drawn; the roll controls sit under the mode row; one
   results line holds «Бросок N» / "Roll N", «Настроить» / "Set up" and «Ещё».
   «Настроить» opens the settings over the results: the manual entry and, on the
@@ -31,7 +34,7 @@ across.
   "Roll" at every width. From 761 px the head holds the `h1`, the three mode pills,
   the labeled pin and help (DESIGN.md, "The Head Order Rule"; from 761 to 999 px the
   pills take the row under them), and the lead. Only `/roll/std` and `/roll/alt` draw a
-  lead, a description of the two books they combine; the other seven draw none, since
+  lead, a description of the two books they combine; the other ten draw none, since
   their pill names the book and the field label and the roll button say what to do
   (DESIGN.md, "The Clarity Rule"; owner, 2026-11-06). A 320 px pane holds the roll
   controls and the settings, and the results line beside it holds «Бросок N» and
@@ -53,7 +56,7 @@ across.
   rows, three over two, with the count over the rarities; from 761 px a list under
   the group label «Бросить». The other modes have one gold roll button.
 - A choice among parts is a native select with the name over the value: Vault of
-  Ages, Community items and Many Worlds Tavern at every width, the rarity on the
+  Ages, Community items, Many Worlds Tavern and Escape the Veiled Halls at every width, the rarity on the
   alternate tables up to 760 px. From 761 px the rarity is a row of neutral chips
   with no tier line.
 - The source and type chips toggle; a row with every chip on draws each neutral
@@ -94,11 +97,11 @@ across.
   drawn). The reserved tab row holds the tabs of every group but the homebrew
   one: that group's source tabs hold the GM's own text, so `/tables/homebrew`
   alone may draw a taller row.
-- The nine roll sections share the header's roll job «Бросок» / "Roll" and draw
+- The twelve roll sections share the header's roll job «Бросок» / "Roll" and draw
   the mode row under the header up to 760 px and the same controls as the page head's
   pills from 761 px ("Chrome";
   `docs/decisions/2026-10-29-the-header-has-three-jobs-and-a-mode-row.md`). The
-  seven supplement modes (Wondrous Environments to Many Worlds Tavern) are the
+  ten supplement modes (Wondrous Environments to Escape the Veiled Halls) are the
   items of its «Дополнения» / "Supplements" menu, in table order, each a link to
   its section; the open one is checked and the current page, and the menu
   button shows its name. A mode switch keeps the keyboard focus on the lit
@@ -123,11 +126,11 @@ across.
 - Each card on the alternate tables says which die found it, and its number
   badge is the face that die showed rather than the row the record has in the
   book it was printed in.
-- Vault of Ages sections, communities and Many Worlds Tavern realms are
-  different lengths, so changing the part resets the roll to 1: a number from
-  one part would point past the end of another. One panel draws the three
-  pickers (`PickerRollPanel.svelte`). A realm is a fixed chip: with no
-  `mwt` rows (a `data.js` from before the source, held in the HTTP cache) the
+- Vault of Ages sections, communities, Many Worlds Tavern realms and Escape the
+  Veiled Halls rooms are different lengths, so changing the part resets the roll to
+  1: a number from one part would point past the end of another. One panel draws the
+  four pickers (`PickerRollPanel.svelte`). A realm or a room is a fixed chip: with no
+  `mwt` or `vh` rows (a `data.js` from before the source, held in the HTTP cache) the
   page says that the data did not load, as every roll page does with no rows.
 - Many Worlds Tavern is six card sets, one per realm, in release order:
   Sporopolis (20), Wagerwood (20), Warrin' Warrens (21), Godsvale (20), Hornet
@@ -141,6 +144,14 @@ across.
   its frame; the equipment `src` chip reads "Many Worlds Tavern", one value
   for the six realms. The printed rarity is not shipped, and the domain cards
   of the sets are not loot.
+- Pistolheart is one pool of 93 over its three volumes and The Last Round Table one
+  pool of 26, each in book order (a Pistolheart line's rungs after its head), rolled at
+  random (as Arazo's Artifacts; owner, 2026-11-05). Escape the Veiled Halls prints one loot
+  table per room: The Basement (d4), The Dressing Room (d4), The Laboratory (d3, so
+  the button picks 1-3 at random) and The Library (d4). The tables page sections
+  `mwt` by realm, `ph` by volume and `vh` by room (`sectionProps.ts`), and a record's
+  path ends with that section («Pistolheart · Том 2»); its badge and print card name
+  the book. Their rule cards link to the product page, the host as the link text.
 - The number field accepts digits only, clamps to the range, and keeps the caret
   where the person put it. On the list page an empty field means "no roll yet";
   on roll pages it waits for `change`.
@@ -158,8 +169,8 @@ across.
 
 ## Tables and search
 
-- 19 tables (`TABLE_IDS`), each with its own search box and a list/grid switch;
-  the nineteenth, `homebrew`, has its group chip signed in only.
+- 22 tables (`TABLE_IDS`), each with its own search box and a list/grid switch;
+  the twenty-second, `homebrew`, has its group chip signed in only.
 - The navigation has two levels. The group chips are Core, Hope & Fear, the
   alternate tables, «Дополнения» / "Supplements", Equipment, Other and, signed
   in, Homebrew (`TABLE_NAV`), a group labeled «Группа» / "Group" for
@@ -167,7 +178,7 @@ across.
   underlined tabs, a group labeled by the group's name; the current tab is
   gold text on a gold underline (`aria-current="page"`). «Дополнения» opens
   Wondrous Environments and is lit on each supplement table; its tabs are the
-  seven books by their own names, in `SUPPLEMENTS` order. A record's path
+  ten books by their own names, in `SUPPLEMENTS` order. A record's path
   (`whereFrom`, the stubs under `i/`) keeps the book and never says
   «Дополнения». Below 761 px both levels are the table picker's bottom sheet:
   the picker button, named «Таблица: <name>» / "Table: <name>", reads the
@@ -247,7 +258,7 @@ across.
   "Nothing found", one cause sentence that names the query, the chosen values
   or both («Нет совпадений с «%q» среди фильтров: %v.»), and the primary
   «Сбросить фильтры» / "Reset the filters" while a filter is chosen.
-- Search covers all 1459 records: names, descriptions and stat lines, both
+- Search covers all 1593 records: names, descriptions and stat lines, both
   languages at once; `#/search` shows the first 300 matches - the cap is that
   page's alone, a table's own box is not capped. A signed-in author's own items
   rank with the catalog's matches, the catalog's record first on a tie, and the
@@ -281,8 +292,8 @@ across.
   chips («зелье», «меч», «лечения зелья»; "potion", "sword", "healing
   potions"), each of which finds a record. A press fills the box and the box
   keeps the focus. The plate is the one place that states both languages: from 761 px
-  the page lead reads «Поиск сразу по 1459 позициям - добыча, расходники и снаряжение.» /
-  "Search all 1459 entries at once - loot, consumables and equipment." (owner,
+  the page lead reads «Поиск сразу по 1593 позициям - добыча, расходники и снаряжение.» /
+  "Search all 1593 entries at once - loot, consumables and equipment." (owner,
   2026-11-06).
 - **Nothing found** on `#/search`: the plate, «Ничего не найдено», one cause
   naming the query («Нет совпадений с «%q» в названиях и описаниях.»), or the
@@ -330,7 +341,8 @@ across.
   card: the table's name in the stub's words («Core · Предметы»), «N
   позиций» / "N items" of the table, a community or frame block's label and
   count («Сообщество: Великородное. 10 позиций»), a realm block's label and
-  count («Мир: Воюющие Норы. 21 позиция»), the `comm`, `frame` and `realm`
+  count («Мир: Воюющие Норы. 21 позиция»), a volume or room block's label and count
+  («Комната: Библиотека. 4 позиции»), the `comm`, `frame`, `realm`, `vol` and `room`
   filter labels with no count on a filter, and the site picture. A table card
   keeps its old count in a message until the link is sent again.
 - **The three equipment tables hold equipment from every source, not only the
@@ -2871,7 +2883,7 @@ right, so the tab order and the reading order agree
   are the starting-section select and the pin ("Chrome"). The section has no
   lead line and no hint: five rows with six controls, each saving the account
   row, every segmented control neutral: «Язык» (the RU/EN switch); «Раздел при
-  запуске» / "Section on start" (a select over the twelve sections and «Мои
+  запуске» / "Section on start" (a select over the fifteen sections and «Мои
   предметы» last, which pins `#/homebrew`; choosing
   «Таблицы» pins `#/tables/core_item`, the table a bare `#/tables` opens
   on, never the bare address (`STATE.md`, "localStorage keys"); a pinned
@@ -3044,7 +3056,7 @@ right, so the tab order and the reading order agree
   «Поиск» / "Search" (the magnifier). «Бросок» opens the last roll section of
   the tab, else the pinned start section when it is a roll section, else
   `#/roll/std`. The lit job carries `aria-current="page"`, gold text and the
-  gold underline: «Бросок» on the nine roll sections, «Таблицы» on every table,
+  gold underline: «Бросок» on the twelve roll sections, «Таблицы» on every table,
   «Поиск» on search. No job is lit on a record, an item, a print sheet, a share
   link, the lists, a list page, the account page or «Мои предметы».
   `#/lists` is reached from the account menu (`ROUTES.md`, "Sections"). The
@@ -3059,7 +3071,7 @@ right, so the tab order and the reading order agree
   short page, after a navigation and while a menu, a sheet, a dialog, a text field
   or a drag owns the page; a keyboard focus inside it brings it back. A focused control and
   a linked target stop clear of its full height, so a Tab never lands under it.
-- The nine roll sections draw the mode row under the sticky header up to 760 px; it
+- The twelve roll sections draw the mode row under the sticky header up to 760 px; it
   scrolls with the page. From 761 px the same three controls are the pills of the page
   head, after the `h1` «Бросок» / "Roll" (DESIGN.md, "The Head Order Rule"). It holds
   three controls: «Обычные правила» / "Standard rules", «Альтернативные таблицы» /
@@ -3070,8 +3082,9 @@ right, so the tab order and the reading order agree
   controls share the row, 40 px tall, and a long name takes two lines: the
   row is 53 px at 360 px in both languages (measured 2026-10-30).
 - The supplements menu «Дополнения» / "Supplements" opens under its button
-  with a muted caption and the seven supplements, 44 px items, the open one
-  checked with `aria-current="page"`; it is 367 px tall. Its keys and its
+  with a muted caption and the ten supplements, 44 px items, the open one
+  checked with `aria-current="page"`; it is 498 px tall, at most the window's height
+  less 186 px, and scrolls inside itself past that (at 360x640 it starts at 177 px). Its keys and its
   closing are the account menu's (one `Menu.svelte`), and a navigation closes
   it.
 - Under `prefers-reduced-motion: reduce` every transition and animation stops
@@ -3142,9 +3155,9 @@ Each rule keeps its number: a review cites it by number.
   the tab title, the start-section option and the buttons to it; `/roll/alt` is
   «Альтернативные таблицы» / "Alternate tables" in the lit mode pill, the tab title
   and the start-section option. The lit pill reads its page's name. Departures: the
-  nine roll pages and `/tables/*` are headed by their job, «Бросок» / "Roll" and
+  twelve roll pages and `/tables/*` are headed by their job, «Бросок» / "Roll" and
   «Таблицы» / "Tables", and the lit pill or tab names the page; the menu button
-  «Дополнения» / "Supplements" names the seven supplement pages as one group and
+  «Дополнения» / "Supplements" names the ten supplement pages as one group and
   shows the open supplement's name.
 - **5. Toasts**: a create says «<Что> «%s» создан(а)» / "<What> "%s"
   created", an update «Сохранено: «%s»» / "Saved: "%s"", a delete «<Что>

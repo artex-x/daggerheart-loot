@@ -439,6 +439,126 @@ const MWT: Record<Lang, Help> = {
   }
 };
 
+const PH_V1: HelpLink = {
+  href: 'https://www.drivethrurpg.com/en/product/547537/pistolheart-volume-1',
+  label: 'Pistolheart Volume 1'
+};
+const PH_V2: HelpLink = {
+  href: 'https://www.drivethrurpg.com/en/product/564429/pistolheart-volume-2',
+  label: 'Volume 2'
+};
+const PH_V3: HelpLink = {
+  href: 'https://www.drivethrurpg.com/en/product/578612/pistolheart-volume-3',
+  label: 'Volume 3'
+};
+
+const PH: Record<Lang, Help> = {
+  ru: {
+    button: 'Об этой книге',
+    paragraphs: [
+      p(
+        'В таблице 93 позиции из трёх томов - 18 предметов, 7 расходников и 68 единиц оружия и брони, в порядке книг. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно.'
+      ),
+      p(
+        'Шестнадцать видов оружия растут вместе с владельцем: у каждого четыре версии - базовая, Улучшенная, Продвинутая и Легендарная. У каждой версии свой номер, поэтому оружие выпадает чаще предметов. Оружие и броня есть и в таблицах снаряжения - там их отбирает фильтр «Источник».'
+      ),
+      p(
+        'Третий том добавляет магические сёдла и инфузии. Правила верховой езды, сёдел, инфузий и состояния Особо Разыскиваемый - в карточках правил на записях, которые на них ссылаются.'
+      ),
+      { parts: ['Источник: три тома Карлоса Сиско - ', PH_V1, ', ', PH_V2, ', ', PH_V3, '.'] }
+    ]
+  },
+  en: {
+    button: 'About this book',
+    paragraphs: [
+      p(
+        "The table holds 93 entries from three volumes - 18 items, 7 consumables and 68 weapons and armor, in the books' own order. No die covers that range, so the button picks an entry at random."
+      ),
+      p(
+        'Sixteen weapons grow with their bearer: each has four versions - base, Improved, Advanced and Legendary. Each version has its own number, so weapons come up more often than items. The weapons and armor are in the equipment tables too - the "Source" filter picks them out there.'
+      ),
+      p(
+        'Volume 3 adds magic saddles and Infusions. The rules for mounts, saddles, Infusions and the Most Wanted condition are rule cards on the records that point at them.'
+      ),
+      {
+        parts: [
+          'Source: three volumes by Carlos Cisco - ',
+          PH_V1,
+          ', ',
+          PH_V2,
+          ', ',
+          PH_V3,
+          '.'
+        ]
+      }
+    ]
+  }
+};
+
+const LR_LINK: HelpLink = {
+  href: 'https://heartofdaggers.com/products/the-last-round-table/',
+  label: 'The Last Round Table'
+};
+
+const LR: Record<Lang, Help> = {
+  ru: {
+    button: 'Об этой книге',
+    paragraphs: [
+      p(
+        'В таблице 26 позиций - 11 предметов, 12 расходников и 3 единицы оружия, в порядке книги. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно.'
+      ),
+      p(
+        'Книга описывает живую таверну, и многие находки связаны с ней. Рецепты, купчая на таверну и фруктовый кекс ссылаются на карточки правил. Оружие есть и в таблицах снаряжения - там его отбирает фильтр «Источник».'
+      ),
+      { parts: ['Источник: дополнение ', LR_LINK, '.'] }
+    ]
+  },
+  en: {
+    button: 'About this book',
+    paragraphs: [
+      p(
+        "The table holds 26 entries - 11 items, 12 consumables and 3 weapons, in the book's own order. No die covers that range, so the button picks an entry at random."
+      ),
+      p(
+        'The book describes a living tavern, and many finds belong to it. The recipes, the deed to the tavern and the fruitcake point at rule cards. The weapons are in the equipment tables too - the "Source" filter picks them out there.'
+      ),
+      { parts: ['Source: the ', LR_LINK, ' supplement.'] }
+    ]
+  }
+};
+
+const VH_LINK: HelpLink = {
+  href: 'https://heartofdaggers.com/products/escape-the-veiled-halls/',
+  label: 'Escape the Veiled Halls'
+};
+
+const VH: Record<Lang, Help> = {
+  ru: {
+    button: 'Об этой книге',
+    paragraphs: [
+      p(
+        'В разделе четыре комнаты приключения, у каждой своя таблица добычи: Подвал - 4 позиции, Гардеробная - 4, Лаборатория - 3, Библиотека - 4. Сначала выберите комнату, потом бросьте кость: в таблице из 4 позиций это d4. В Лаборатории книга бросает d3; такой кости у кнопки нет, поэтому там она выбирает позицию случайно.'
+      ),
+      p(
+        'Зелье Воспоминаний улучшается до Большого Зелья Воспоминаний, а Зелье Предвидения - до Легендарного Зелья Предвидения.'
+      ),
+      { parts: ['Источник: приключение ', VH_LINK, '.'] }
+    ]
+  },
+  en: {
+    button: 'About this book',
+    paragraphs: [
+      p(
+        'This section holds the four rooms of the adventure, each with its own loot table: The Basement has 4 entries, The Dressing Room 4, The Laboratory 3 and The Library 4. Pick a room, then roll: a 4-entry table rolls a d4. The book rolls a d3 in The Laboratory; the button has no such die, so there it picks an entry at random.'
+      ),
+      p(
+        'The Remembrance Potion upgrades to the Major Remembrance Potion, and the Foresight Potion to the Legendary Foresight Potion.'
+      ),
+      { parts: ['Source: the ', VH_LINK, ' adventure.'] }
+    ]
+  }
+};
+
 const STD: Record<Lang, Help> = {
   ru: {
     button: 'Где какая редкость',
@@ -597,6 +717,9 @@ const HELP: Record<string, Record<Lang, Help>> = {
   arazo: ARAZO,
   community: COMMUNITY,
   mwt: MWT,
+  ph: PH,
+  lr: LR,
+  vh: VH,
   tables: TABLES
 };
 

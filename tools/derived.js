@@ -11,6 +11,7 @@ const SITE = 'https://daggerheart-loot.pages.dev/';
 /* The csv carries record text as it reads: no markup (docs/specs/CONTRACTS.md section 4). */
 const { markupText } = require('../app/src/lib/markup.ts');
 const { realmName } = require('../app/src/lib/realms.ts');
+const { roomName } = require('../app/src/lib/rooms.ts');
 
 /* Spelled out into human names: the csv and json are read aloud from the
    source, not matched against the code. A forgotten key used to leak out
@@ -27,7 +28,10 @@ const SRC = {
   voa: 'Vault of Ages',
   dv: "The Dragon's Vault",
   arazo: "Arazo's Artifacts",
-  mwt: 'Many Worlds Tavern'
+  mwt: 'Many Worlds Tavern',
+  ph: 'Pistolheart',
+  lr: 'The Last Round Table',
+  vh: 'Escape the Veiled Halls'
 };
 const RANGE = {
   melee: 'Melee',
@@ -92,7 +96,9 @@ const CSV_HEAD = [
   'url',
   'text_ru',
   'text_en',
-  'realm'
+  'realm',
+  'volume',
+  'room'
 ];
 
 /* An item's description with two properties is stored across two lines. In
@@ -132,7 +138,9 @@ function catalogRow(L, rarity, sets, x) {
     url: SITE + 'i/' + x.id,
     text_ru: markupText(x.rud || '') + set.ru,
     text_en: markupText(x.ende || '') + set.en,
-    realm: x.realm ? realmName(x.realm, 'en') : ''
+    realm: x.realm ? realmName(x.realm, 'en') : '',
+    volume: x.vol || '',
+    room: x.room ? roomName(x.room, 'en') : ''
   };
 }
 
@@ -201,6 +209,9 @@ const CARD_TABLES = [
   'dv',
   'arazo',
   'mwt',
+  'ph',
+  'lr',
+  'vh',
   'other_starting',
   'other_frames',
   'alt_item',
@@ -276,6 +287,16 @@ function namesJson(L) {
     if (!x.realm) return;
     realms[x.realm] = { n: ((realms[x.realm] && realms[x.realm].n) || 0) + 1 };
   });
+  const volumes = {};
+  (L.items.ph || []).forEach(function (x) {
+    if (!x.vol) return;
+    volumes[x.vol] = { n: ((volumes[x.vol] && volumes[x.vol].n) || 0) + 1 };
+  });
+  const rooms = {};
+  (L.items.vh || []).forEach(function (x) {
+    if (!x.room) return;
+    rooms[x.room] = { n: ((rooms[x.room] && rooms[x.room].n) || 0) + 1 };
+  });
   return (
     JSON.stringify({
       format: 'daggerheart-loot/names',
@@ -285,7 +306,9 @@ function namesJson(L) {
       tables,
       communities,
       frames,
-      realms
+      realms,
+      volumes,
+      rooms
     }) + '\n'
   );
 }

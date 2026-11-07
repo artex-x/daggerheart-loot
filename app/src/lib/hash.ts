@@ -83,7 +83,10 @@ export const TABLE_SLUG: Partial<Record<TableId, string>> = {
   dv: 'dragons_vault',
   arazo: 'arazos_artifacts',
   community: 'community_items',
-  mwt: 'many_worlds_tavern'
+  mwt: 'many_worlds_tavern',
+  ph: 'pistolheart',
+  lr: 'last_round_table',
+  vh: 'escape_the_veiled_halls'
 };
 export const SECTION_SLUG: Partial<Record<Section, string>> = {
   'roll/wondrous': 'roll/wondrous_environments',
@@ -92,7 +95,10 @@ export const SECTION_SLUG: Partial<Record<Section, string>> = {
   'roll/dv': 'roll/dragons_vault',
   'roll/arazo': 'roll/arazos_artifacts',
   'roll/community': 'roll/community_items',
-  'roll/mwt': 'roll/many_worlds_tavern'
+  'roll/mwt': 'roll/many_worlds_tavern',
+  'roll/ph': 'roll/pistolheart',
+  'roll/lr': 'roll/last_round_table',
+  'roll/vh': 'roll/escape_the_veiled_halls'
 };
 const TABLE_OF_SLUG = new Map(
   Object.entries(TABLE_SLUG).map(([id, slug]) => [slug, id as TableId])

@@ -1402,7 +1402,7 @@ describe('the chip nav', () => {
     });
   });
 
-  it.each(['wondrous', 'dread', 'voa', 'dv', 'arazo', 'community', 'mwt'])(
+  it.each(['wondrous', 'dread', 'voa', 'dv', 'arazo', 'community', 'mwt', 'ph', 'lr', 'vh'])(
     'lights «Дополнения» on %s and draws the book row with that book current',
     async (table) => {
       const { container } = render(App, {
@@ -1421,7 +1421,10 @@ describe('the chip nav', () => {
         "The Dragon's Vault",
         "Arazo's Artifacts",
         'Предметы сообществ',
-        'Many Worlds Tavern'
+        'Many Worlds Tavern',
+        'Pistolheart',
+        'The Last Round Table',
+        'Escape the Veiled Halls'
       ];
       expect(books).toEqual(names.map((name) => within(row).getByRole('link', { name })));
       expect(row).toHaveAttribute('aria-label', 'Дополнения');
