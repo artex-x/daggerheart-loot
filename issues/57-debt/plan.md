@@ -21,7 +21,9 @@ This file is the plan for task `57-debt`, the task that follows task 57. It list
 | V | One control for the view or mode on `/roll`, `/tables`, `/homebrew`: batch VW1, after step 1 and before step 2 (`plan-views.md`) | one batch | reviewer optional (no trigger) |
 | D | Catalog data fixes from the owner's findings of 2026-11-07 (section "Step D" below) | one small batch, data only; first, before step 1 | none (no trigger); a second pair of eyes is the owner's production look |
 
-Recommended order: D, 1, V, 2, 3 (4 and 5 ride on them). Step D first because it is small and the owner saw the defects on production. Step 1 next because it shortens every later CI wait.
+| E | The share button's output carries the link, not only the picture and the text (owner, 2026-11-07; section "Step E" below) | one small code batch with unit tests | none (no trigger) |
+
+Recommended order: D, E, 1, V, 2, 3 (4 and 5 ride on them). Steps D and E first because they are small and the owner saw the defects on production. Step 1 next because it shortens every later CI wait.
 
 ## Step D - Catalog data fixes (owner findings, 2026-11-07)
 
@@ -62,6 +64,27 @@ print these records (`git grep -l` over `tests/app/snapshots`), `check:fast` and
   the owner signs; follow the `daggerheart-ru-terms` conventions (rules terms, capitalization of game terms stays).
 - Acceptance: each record's changed fields are the only diff (the script's assertions); `dataint` still counts 1593 records; the changed golden set
   is the list the `git grep` found, each diff read; `craft` passes with 34 chains; CI green.
+
+## Step E - The share button carries the link (owner, 2026-11-07)
+
+Today (`app/src/components/RecordActions.svelte`, `send()`): «Поделиться» builds `{ title, text, url, file }` and hands it to the system share
+sheet through the share port. `url` is the record link (`app.linkToRecord(it)`) when the record is linked; `file` is the picture as a PNG when
+there is art. Many share targets (messengers, some Android and desktop targets) drop `url` when a `file` is attached, so the person receives
+the picture and the text and no link. Proposed (default, owner may change): the link is also the last line of the shared `text` whenever the
+record has a link, so every target keeps it; `url` stays for the targets that read it, with no duplicate when a target shows both (the share
+port or the component checks that the text does not already end with the link). A record with no link (a build with no preview host) sends the
+address `<site>[en/]#/i/<id>` the same way as the clipboard fallback does, so the output always names a place to open the record.
+Check the same hand-off in the other share buttons that carry a record or a link: the roll result row (`size sm`), the dialog dock «Поделиться»,
+the list «Поделиться» and the share panel (`SharePanel`), the own homebrew item (the preview link `/h/<uuid>?v=<v>`, `/en/h/` in English).
+
+- Files expected: `RecordActions.svelte`, `app/src/lib/share.ts` (if the text builder is the better home), their tests (`record.test.ts`
+  share cases, `ports` share port test), `docs/specs/FEATURES.md` (the share lines at "Records" and "Share links"), `docs/specs/COVERAGE.md`.
+- Acceptance: with a picture the payload's `text` ends with the link and `file` is set; without a picture `text` ends with the link and `url`
+  is set; no record shows the link twice in the target's preview where it reads both (document what the port does: pass the link once in
+  `text` and leave `url` empty when a file is attached); an unlinked record sends the site address; RU and EN texts; one unit test per case, axe
+  unchanged; `check:fast` and both lints.
+- Not verifiable here: how each messenger renders the payload. Say in the handoff which targets were tried, and that the owner checks one
+  phone share (Telegram and one more) on production.
 
 ## Step 1 - Tooling and CI
 

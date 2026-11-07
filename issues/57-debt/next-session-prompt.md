@@ -33,10 +33,15 @@ Open, in this order:
      drop the card (refs 7 to 6: update the counts); the scan found no other dangling lead. D6 Russian copy edit of the 21 trimmed
      `lr` records (the owner finds «Встречается в буханках примерно по 4,5 кг...» stiff): show a before and after table to the
      owner first, apply only what the owner signs. Both are in `plan.md` "Step D".
-   Method: one script keyed by id with assertions (only the named fields of the named records change; `data.js` is one
+   Method for D: one script keyed by id with assertions (only the named fields of the named records change; `data.js` is one
    line), then `node tools/desc-style.mjs`, `node tools/build.js`, `node tests/run-all.js dataint,derived,contracts,craft`,
    the golden re-seed of the states that print these records (`git grep -l` over `tests/app/snapshots`), `check:fast` and both
-   lints. Then the order of the debt plan is: D, 1, V (VW1), 2, 3 (4 and 5 ride on them).
+   lints.
+   - Step E (after step D; a small code batch, `plan.md` "Step E"): the share button «Поделиться» builds `{title, text, url, file}`
+     and many share targets drop `url` when a picture file is attached, so the link is lost. Default: the link is also the
+     last line of the shared `text` whenever the record has a link (no link: the site address); unit tests per case; the
+     owner checks one phone share on production.
+   Then the order of the debt plan is: D, E, 1, V (VW1), 2, 3 (4 and 5 ride on them).
 1. **`readme-screens` B1** (branch `claude/readme-screens`, worktree `.claude/worktrees/haiku-workflow-integration-cf5a13`,
    base `62070925`, two docs commits, not pushed). The plan is implement-ready (`issues/readme-screens/plan.md`, owner
    accepted Q1-Q4 on 2026-11-07). One command makes 8 README screenshots and both READMEs show them. Run it as one
