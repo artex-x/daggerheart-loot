@@ -93,6 +93,14 @@ and D140 are two more short-window layouts; D137 to D139 are focus and scroll ru
 - **How to verify the fix**: a states case opens `#/tables/core_item/ci1` at 1000x720 and
   1180x720, opens «Ещё» and reads the card's `scrollTop` unchanged and the menu inside the
   window.
+- **Same class, owner-seen 2026-11-07 (screenshot)**: the add-to-list popover «В список» in the
+  record dialog (`AddToList.svelte`, its `placeMenu` and `up` rule) opens upward inside the card
+  on a short card, and the card's edge crops its top: the search field and the first rows are
+  cut. Fix both overlays together, not one rule each: the menu and the popover render in the
+  top layer or a portal outside the card's clip, are placed by the window, take focus with
+  `preventScroll`, and never scroll or move the card. Add the popover case to the states case
+  (open «В список» on the same record at 1000x720 and 1180x720: its search field is in the
+  window and the card's `scrollTop` is unchanged).
 
 ### D133 - the shared page's selection bar takes a third of a phone
 
