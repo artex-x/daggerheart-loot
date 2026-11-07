@@ -13,6 +13,10 @@ Then read, in order: `CLAUDE.md`, `issues/57-debt/handoff.md` (Status, "Order of
 `issues/57-debt/plan.md` (Step D, Step E, Step E2, the steps table), `issues/57-debt/plan-views.md` (batch VW1). Merge `main`
 into `claude/57-debt`.
 
+The owner's findings of 2026-11-07 are planned, not built: step D (catalog data), step E (share link, Windows), D132 and D141 in
+`docs/specs/DEBT.md` (overlays cropped by the dialog card, the filter column and the editor preview cut below the fold, with a
+probe sweep), VW1. Nothing from the last session is half-done: no uncommitted work.
+
 Do: the "Order of work" of the handoff, from step 1: D (catalog data fixes), E (the share link and Windows), `readme-screens`
 B1 (stop for the owner to look at the screenshots before any image is committed), debt step 1 (tooling and CI, with eslint in
 `check:fast`), VW1, debt steps 2 and 3 after one triage pass, the `persistent-storage` closeout audit, the `ai-mcp` plan (ask
