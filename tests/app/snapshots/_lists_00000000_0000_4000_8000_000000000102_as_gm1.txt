@@ -1,6 +1,6 @@
 # #/lists/00000000-0000-4000-8000-000000000102 as gm1
 # route: #/lists/00000000-0000-4000-8000-000000000102
-# why: «Пустой список»: «0 позиций из 100 · Сохранено», the empty hint ending «Свой предмет можно создать здесь же, кнопкой ниже.», then the row «Добавить свой предмет» folded
+# why: «Пустой список»: «0 позиций из 100 · Сохранено» and no instruction sentence (DESIGN.md, "The Clarity Rule"), then the row «Добавить свой предмет» folded
 # as: gm1
 
 ## ru :: tree
@@ -26,8 +26,6 @@ RootWebArea "Пустой список - Генератор лута Daggerheart
     button "Ещё" [expanded=false haspopup=menu]
     button "Заметки" [expanded=false]
     status ""
-    StaticText "Пока пусто. Откройте «Таблицы» или «Поиск», отметьте нужное гало..." [namelen=136 namehash=e00354fc]
-    StaticText " Свой предмет можно создать здесь же, кнопкой ниже."
     button "Добавить свой предмет" [expanded=false]
     status ""
     status ""
@@ -80,8 +78,6 @@ RootWebArea "Пустой список - Daggerheart Loot Generator" [url=/en/li
     button "More" [expanded=false haspopup=menu]
     button "Notes" [expanded=false]
     status ""
-    StaticText "Nothing here yet. Open Tables or Search, tick what you need and ..." [namelen=122 namehash=3ef243ba]
-    StaticText " You can also make an item of your own here, with the button bel..." [namelen=67 namehash=44bdc08a]
     button "Add your own item" [expanded=false]
     status ""
     status ""

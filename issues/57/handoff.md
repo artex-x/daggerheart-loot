@@ -2,28 +2,26 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress. Waves 1, 2, 2b and 3 are on `main`: wave 3 landed as `10011729`, `claude/57` merged it
-  back as `45050594`.
-- Batch PW3 (`plan-pw3.md` part B, the wave 3 review remediation, the second squash S2) is implemented on `claude/57`
-  (previous sha `c8d25b27`) and pushed; no merge commit (`origin/main` was already an ancestor through `45050594`).
-  The one fix pass (review B1, R1, N1-N6) is committed and pushed after it: the side plate's name textarea takes the
-  input's field box and focus ring, a pressed «Повторить» on `#/lists` keeps the status drawn, N1-N6. CI of the tip
-  is the full gate (CI-first policy, `context.md`). The detector was not run (the policy leaves it to CI).
-- Review: done (`reviews/PW3.md`, fix-then-continue); the fix pass is shipped; CI of its tip next.
+- Task status: in_progress. Waves 1, 2, 2b and 3 and PW3 (S2, `02a50c39`) are on `main`; `claude/57` merged S2 back
+  as `9db714b4`.
+- Batch S3 (`plan-s3.md`, the remediation of the three whole-app reviews `reviews/whole-app-prod.md`,
+  `whole-app-signed-in.md`, `whole-app-owner-chrome.md`; previous sha `9db714b4`) is implemented on `claude/57`,
+  committed and pushed. CI fix pass for run 42315540634 (one pass): (a) states case 86 failed because `d.media(undefined)`
+  drops the emulated reduced motion, so the header's 0.2s slide ran after a print and the read landed mid-slide (an
+  app-correct transition; `driver.js` `media` now restores the emulation on the switch back); (b) the goldens
+  `#/i/q1 ~ own set as gm1` and `#/homebrew/hb_engravedringaaaa ~ deleted as gm1` gain `main [focused=true]`, the
+  expected result of rule 20 (the pressed control left with its page, the focus goes to `#main`); both re-seeded
+  with `--update --only=<state>`. The AFK defaults A1-A8 of 2026-11-06 (`C:\Users\Ignat\.dhloot\notes\57\afk-decisions-2026-11-06.md`)
+  were applied as settled. CI of the tip is the full gate (CI-first policy, `context.md` decision 41).
+- Review: the orchestrator's call (whole-app remediation; triggers in `orchestrate.prompt.md`).
 - NEEDS_HUMAN_CONFIRMATION: no.
-- Writer tier: `opus` (writer test 3).
-- Main checkout `E:\dev\daggerheart-loot`: on `claude/roll-per-line` (not `main`); the squash needs it switched to
-  `main` and back (it was clean).
-- Branch: `claude/57` (worktree `.claude/worktrees/57`). Pushed: the PW3 commit and the fix pass.
-- Next step, in order (CI-first policy, owner 2026-11-06, `context.md`: a writer runs only `check:fast`, the golden
-  re-seeds and the affected vitest files, then pushes; CI and one fix pass find the rest):
-  (1) done: PW3 committed and pushed; (2) CI credit of the tip (`node .claude/hooks/ci-credit.mjs <sha>`); batch review and
-  the one fix pass are done; (3) S2: merge `origin/main`, push, squash onto `main` in the main checkout (the wave 3
-  landing's steps: `git switch main`, `pull --ff-only`, `merge --squash claude/57`, credit, commit, push, watch the
-  `main` run, merge back, switch the main checkout back to `claude/roll-per-line`); (4) the owner checks the signed-in
-  list on production; (5) the whole-app blind review with the new prompt (`plan-pw3.md` part C): production reviewer
-  signed out plus the fixture-build reviewer signed in, and its remediation as S3; (6) closeout (`/handoff`): Impeccable
-  `document` to regenerate `.impeccable/design.json` (review finding 10-R2), move `plan-debt.md` to `issues/57-debt/`,
+- Writer tier: `opus`.
+- Main checkout `E:\dev\daggerheart-loot`: on `claude/roll-per-line` (not `main`); a squash needs it switched to
+  `main` and back.
+- Branch: `claude/57` (worktree `.claude/worktrees/57`).
+- Next step, in order: (1) CI credit of the S3 tip (`node .claude/hooks/ci-credit.mjs <sha>`); (2) the S3 review if the
+  orchestrator runs one, and its one fix pass; (3) the S3 squash onto `main` (the S2 steps); (4) closeout (`/handoff`):
+  Impeccable `document` to regenerate `.impeccable/design.json` (10-R2), move `plan-debt.md` to `issues/57-debt/`,
   delete `issues/57/`, last squash S4. Deleting the remote branch waits for the owner.
 
 ## Completed
@@ -456,7 +454,57 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
   the requests strip of `SHOP ~ requests` (304 px). The app is right and the row first lacked the strip's named
   exception; it takes `exception: 304`, and DESIGN.md "The First-Screen Rule" names the notices strip.
 
+- Batch S3 - the whole-app review remediation (`plan-s3.md`, previous sha `9db714b4`). Ids: P = `whole-app-prod.md`,
+  S = `whole-app-signed-in.md`, O = `whole-app-owner-chrome.md`. Acceptance:
+
+  | Line | Outcome |
+  |---|---|
+  | 1 Focus after a navigation (P B1, S B3, O 4) | Done: `Shell` notes the last focused element (`focusin`); after a navigation (`app.navigations`) and the new page's own placing (one `tick`), a focus on `body` whose element left the DOM goes to `#main` (`preventScroll`). No heading takes a `tabindex`. FEATURES.md rule 20 lists the cases. `shell.test.ts` "the focus after an in-app navigation" (red at `9db714b4`, green); case 116 (12 reds at `9db714b4`: the not-found page's two links, «показать в таблице», a roll result's name, a `/lists` card, «Новый предмет», at 360 and 1180; green; the mode pill keeps its focus) |
+  | 2 One scrim, the crop shape (P B2, S B7, S B8) | Done: `--scrim` in `tokens.css`, no blur, on `RecordModal`, `Sheet` and `CropDialog`. Way and reason: no blur on all three, because two of three had none, depth is tonal (DESIGN.md "Elevation & Depth"), the 78% veil already parts the modal, and a blur costs a phone a frame for no meaning. The crop dialog takes the `Sheet` shape: bottom-attached with top corners up to 760 px, `min(100%, 560px)` centered with four corners and the plate shadow from 761 px; it keeps `max-height: 100dvh` (named in DESIGN.md "Sheet"). Case 117 (red at `9db714b4`: blur, 12 px inset card, 520 px; green); case 72 passes |
+  | 3 One «Ещё» (P B3, S R6) | Done: `/tables/*` draws «Ещё» through `MoreMenu` (`.morebtn`, `moreOpen`, `closeMore` gone; the help box's close returns to it); `/lists` lost its 44 px override. Every small «Ещё» up to 600 px is one box in `MoreMenu`: 40 px, 6 px side padding, 4 px icon gap (57x40 RU, 61x40 EN at 360); the `/lists` primary is 40 px with the same padding, so the `h1`, the primary and «Ещё» keep one row at 360 (RU 16-329 of 313 px of column, first card 234 px, as before). The Thumb Rule decides 40 px, not 44 (DESIGN.md "The Phone-First Rule"). Case 102 asserts 40 px; FEATURES.md "Lists" |
+  | 4 Import and «Выбрать» (O 1, S B4) | Done, option B (A1): beside the search box the `/lists` tool group follows the box and the count (`:global(.lfind) .end { margin-left: 0 }`), with no box it ends the row, as on «Мои предметы»; the import toggle is 40 px (`.end .btn.sm`). FEATURES.md rule 9 and "Lists"; PW-2's line holds (the import is still the last control before «Выбрать») |
+  | 5 Bar pinned, toasts clear (S B1, S B2) | Done: `.selbarwrap` is `position: fixed` at the window's bottom; the footer's bottom padding adds `--selbar-h`, so the page ends above the bar; the `Shell` comment rewritten. A dialog's toast copy sits `26px + --dock-h` up to 760 px: `RecordModal` writes its dock's height and `Sheet` its foot's on the dialog (`watchBarHeight` takes a root). DESIGN.md "Selection bar", "Toast"; FEATURES.md "Chrome". Case 118 (red at `9db714b4`: bar bottom 564 of 720 and 746 of 1024, footer under it, toast 624 over a dock at 515; green); cases 16, 84, 85, 32 pass |
+  | 6 Plus, pills, gutter, citation (S B5, B6, B9, N2) | Done: «Новый предмет» draws the plus at both sizes (case 91's stale "no plus" check inverted, FEATURES.md "Homebrew"); the mode pills take the body line height from 601 px, 37 px at 1180 and 700 as the chips (up to 600 px the 1.25 line height stays, two lines in 40 px, `/roll/std` first screen unchanged); the dialog's add-to-list popover is inset 16 px (`RecordModal`); `Menu.svelte` cites FEATURES.md "Chrome", the account menu |
+  | 7 Shadow, empty list, chip check (A3, A4, A5) | Done: `Menu` and `AddToList` take `var(--shadow)` (no other copy of the old shadow); the empty owner's list draws no plate and no sentence, `listEmptyHint` and `listEmptyHintOwn` gone in RU and EN (`i18n.test.ts` GONE), FEATURES.md "Lists", the inventory `why`; `Chip` `place` draws no check on the picker sheet's group chips (`chip.test.ts`, red at `9db714b4`), DESIGN.md "The Check Rule" |
+  | 8 A7 | Done: the list row tick is 17 px with no margin, as the catalog's: axe `target-size` 10 nodes at 640, 768 and 1180 before, 0 after (`scratchpad/s3-axe.cjs`); `TextInput` cuts with an ellipsis while it has no focus (DESIGN.md "The Whole Message Rule" exception) |
+  | 9 Deferred (A6, A8) | Done: DEBT.md D132 (the dialog «Ещё» scroll), D133 (the 212 px `/s/` bar), D134 (four sign-in prompt shapes), D135 (the `/lists/<uuid>` lead); N1 (DESIGN.md "Shapes" toast radius text) in Deferred |
+
+  Deviations: (1) up to 600 px the compact padding is `MoreMenu`'s for every caller, not only the heads: one look.
+  (2) From 601 to 760 px the picker rows (`/tables/*`, «Мои предметы») draw «Ещё» 40 px tall as their picker; the
+  heads with no picker (`/search`, `/lists`) keep the 32 px small button of the Thumb Rule. (3) A sheet's toast clears
+  its foot at every height up to 760 px; the record dialog's only from 481 px (its dock joins the scroll below).
+  (4) Prod N2 (the roll result name link's `title`) was not in the dispatch: in Deferred.
+
 ## Verification
+- Batch S3, 2026-11-06 (previous sha `9db714b4`), each in the foreground or one background run at a time:
+  - `npm run build:test`: exit 0 (after each source change before a browser read).
+  - Red before, in a detached worktree at `9db714b4` with the new tests copied in (`node_modules` by junction, removed
+    after): states cases 116 (12 FAIL), 117 (5 FAIL), 118 (5 FAIL); vitest `shell.test.ts` "moves to the main
+    landmark" FAIL, `chip.test.ts` place chip FAIL, `listPage.test.ts` empty list FAIL. All green here.
+  - `node tests/app/states.js --shard=k/108`, each `all 1 runs passed`: cases 16, 23, 32, 42, 72, 83, 84, 85, 88, 89,
+    90, 91 (after its stale "no plus" check was inverted), 92, 93, 96, 100, 102, 103, 108, 109 (319.6 s), 112, 116,
+    117, 118.
+  - Probes (`scratchpad/s3-probe.cjs`, `s3-first.cjs`, `s3-axe.cjs`, `s3-tools.cjs`): `/lists` RU at 360 the `h1`
+    16-136, the primary 151-268, «Ещё» 272-329 on one row, first card 234 px (RU and EN, as before; 281 when the row
+    wrapped with the uniform «Ещё» at 11 px padding); `/tables/eq_weapon` 230 at 360 and 244 at 1180, `#/homebrew as
+    gm3` 242 and 231 (unchanged); the mode pills 37 px at 1180 and 700 as the chips, 40-41 at 360 (unchanged); the bar
+    on `/lists` as gm1 at the window's bottom at 360x640, 768x1024, 1180x720 and 1920x1080, the bar's column at
+    `main`'s left edge (232.5 at 1920); axe `target-size` on the list's selection mode 10 nodes before, 0 after. The
+    tool group at 1920: `/lists` with 30 lists import 1062-1224 and «Выбрать» 1232-1307 after the 720 px box and the
+    count (`/homebrew` 1088-1250, 1260-1335); with 3 lists (no box) at the row's end; the import 40 px tall in both.
+  - Goldens: `--update --only=#/lists/00000000-0000-4000-8000-000000000102` (the two empty-list text lines gone per
+    language and the `why`); compared, unchanged: `#/tables/eq_weapon ~` (15), `#/homebrew ~` (25), `#/lists ~` (23).
+    The golden captures at 1100 px, so the narrow-only changes move no other file; the full golden job is CI's.
+  - Vitest, `VITEST_MAX_WORKERS=2`: `shell` + `chip` + `i18n` + `sheet` + `selectionBar` + `cropDialog` + `tableNav`
+    246; `listPage` 141; `listsPage` + `tables` 188; `homebrewPage` + `modeRow` + `recordHost` + `record` +
+    `accountMenu` + `lists` 338 (one stale "no plus" case in `homebrewPage.test.ts` inverted, then green).
+  - `npm run lint:untyped`, `npm run lint:typed`: exit 0. `npm run check:built`: pass, 270.1 kB of 271.
+    `node tests/run-all.js derived,contracts`: ok. Not run (CI-first): the detector, the full sweep and golden jobs.
+  - `VITEST_MAX_WORKERS=2 rtk npm run check:fast`: the first run failed at vitest, `a11y.test.ts` "an empty account
+    list with its hint" (it waited for the removed sentence; it now waits for «Добавить свой предмет», 2981 others
+    passed); the second failed only at `facets.timed.test.ts` (148 ms against 100, host load, no S3 file); the third
+    PASS in 1002 s (2982 tests, budget within 271 kB), gate credit armed.
+
 - Batch PW3, 2026-11-06 (previous sha `c8d25b27`), each in the foreground, one heavy command at a time, over two
   sessions (the owner's restart between them). The batch 10 fix pass block: `git show c8d25b27:issues/57/handoff.md`,
   "Verification".
@@ -513,9 +561,8 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
     columns (260 / 467) at 1180; widths 621, 561, 615 and 555 give one column at 1060, 1000, 700 and 640.
 
 ## Next batch (implement-ready)
-- None until the PW3 review: CI credit of the pushed tip, the batch review (reviewer, opus) and its one fix pass.
-- Then: green CI, the S2 squash; then the whole-app blind review with `plan-pw3.md`
-  part C in its dispatch, its remediation, the closeout (`plan.md` section 16).
+- None: CI credit of the S3 tip, the orchestrator's review call and its one fix pass, the S3 squash, then the
+  closeout (`plan.md` section 16).
 
 ## Blockers
 - None.
@@ -528,6 +575,9 @@ print cards D131). The rows with no user-visible defect are under Notes, "For th
 section: `git show 5147cd01:issues/57/handoff.md`, "Deferred".
 
 - `plan-debt.md` is the follow-up task's plan (steps 1-5); the closeout moves it to that task's directory.
+- S3 (AFK A6, A8): the user-visible rows are DEBT.md D132-D135. Not a defect, named here: S N1, DESIGN.md "Shapes"
+  lists the toast with the 999px pill radius while DESIGN.md "Toast" and `Toast.svelte` use `--r` (a doc sentence);
+  P N2, a roll result's name link carries a hover-only `title` (removing it re-seeds every roll golden).
 - Batch 8 (`plan-8.md`): the signed-out add-to-list menu keeps its two steps (L13); the `HomebrewPage` search row keeps
   its own `.tools` beside `ListFind` (L8). Kept designs, not defects.
 

@@ -1216,8 +1216,13 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
      *  printer would, `undefined` to switch back before the next shot. Runs
      *  before the shots on the same page: leaving print media on would
      *  photograph the wrong medium. */
-    media(type) {
-      return page.emulateMediaType(type);
+    async media(type) {
+      await page.emulateMediaType(type);
+      if (type !== undefined) return;
+      /* Switching back drops the emulated features, and the header's 0.2s slide then runs
+         after a print and moves the page under a read. Setting the features also clears
+         the media type, so a print keeps them off. */
+      await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
     },
 
     /**

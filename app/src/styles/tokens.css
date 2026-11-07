@@ -64,6 +64,8 @@
   --r: 14px;
   --r-sm: 9px;
   --shadow: 0 10px 34px -14px rgb(0 0 0 / 85%);
+  /* The one scrim of every modal (DESIGN.md, "Sheet"): a dark veil, no blur. */
+  --scrim: rgb(6 4 12 / 78%);
 
   /* The UI face is self-hosted from the build's own origin
      (`@fontsource-variable/source-sans-3`, imported in `main.ts`); the system

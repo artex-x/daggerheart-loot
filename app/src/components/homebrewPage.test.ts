@@ -1663,7 +1663,7 @@ describe('the head from 761 px', () => {
 describe('the head up to 760 px', () => {
   const narrow = { env: { viewport: fakeViewport('narrow') } };
 
-  it('reads the heading, and draws the picker, the primary with no plus and «Ещё»', async () => {
+  it('reads the heading, and draws the picker, the primary with its plus and «Ещё»', async () => {
     const { container } = page('gm1', narrow);
     const picker = await screen.findByRole('button', { name: 'Мои предметы: Предметы' });
     const h1 = screen.getByRole('heading', { level: 1, name: t.myItems });
@@ -1672,7 +1672,7 @@ describe('the head up to 760 px', () => {
     const row = container.querySelector('.pickrow') as HTMLElement;
     expect(row).toContainElement(picker);
     const primary = within(row).getByRole('link', { name: t.hbNewItem });
-    expect(primary.querySelector('svg')).toBeNull();
+    expect(primary.querySelector('svg')).not.toBeNull();
     await expectNoA11yViolations(container);
   });
 

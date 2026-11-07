@@ -535,7 +535,7 @@
     border-radius: var(--r);
     background: var(--surface);
     padding: 10px;
-    box-shadow: 0 16px 40px -14px rgb(0 0 0 / 85%);
+    box-shadow: var(--shadow);
     display: flex;
     flex-direction: column;
     gap: 6px;

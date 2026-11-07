@@ -76,6 +76,9 @@
     border: 1px solid var(--line2);
     color: var(--txt);
     font: inherit;
+    /* A value past the box shows its cut while the field has no focus (DESIGN.md, "The
+       Whole Message Rule"). */
+    text-overflow: ellipsis;
   }
 
   input:focus {

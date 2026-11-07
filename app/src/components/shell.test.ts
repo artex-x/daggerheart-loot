@@ -1461,6 +1461,33 @@ describe('the page of an address with no page', () => {
   });
 });
 
+describe('the focus after an in-app navigation (rule 20)', () => {
+  it('moves to the main landmark when the pressed link left with its page', async () => {
+    const router = memoryRouter('#/l/abc');
+    const { container } = render(App, { env: fakeEnv({ router, data: fakeData(LOOT) }) });
+    const link = within(container.querySelector('.erracts') as HTMLElement).getByRole('link', {
+      name: 'Открыть таблицы'
+    });
+    link.focus();
+    expect(router.click(link.getAttribute('href') ?? '')).toBe(true);
+    await waitFor(() => {
+      expect(screen.getByRole('main')).toHaveFocus();
+    });
+    expect(link.isConnected).toBe(false);
+  });
+
+  it('keeps the focus on a pressed link that stays', async () => {
+    const router = memoryRouter('#/tables/core_item');
+    const { container } = render(App, { env: fakeEnv({ router, data: fakeData(LOOT) }) });
+    const brand = container.querySelector<HTMLAnchorElement>('a.brand') as HTMLAnchorElement;
+    brand.focus();
+    expect(router.click(brand.getAttribute('href') ?? '')).toBe(true);
+    await tick();
+    await tick();
+    expect(brand).toHaveFocus();
+  });
+});
+
 describe('a page that throws', () => {
   it('draws the error page with the message, and «Обновить страницу» draws the page again', async () => {
     const broken = vi

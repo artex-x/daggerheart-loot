@@ -5275,7 +5275,7 @@ async function homebrewHeadAndBar() {
         at + width + ': the row leaves the window - ' + JSON.stringify(m)
       );
       ok(m.lines <= 2, at + width + ': the row takes ' + m.lines + ' lines');
-      ok(!m.plus, at + width + ': the primary draws a plus');
+      ok(m.plus, at + width + ': the primary draws no plus (rule 8)');
       ok(!(await sideways(page)), at + width + ': the page scrolls sideways');
     } finally {
       await ctx.close();
@@ -7980,7 +7980,8 @@ async function listHeadAndBars() {
 /** 102. The lists page holds from 320 to 1440 px (docs/specs/FEATURES.md, "Lists"): no
  *  sideways scroll; up to 760 px the `h1`, «Новый список» and «Ещё» share one row from 360 px
  *  (at 320 px the primary and «Ещё» share the row under the `h1`); the
- *  primary is 44 px tall up to 760 px, and from 761 px it ends at the column's right edge;
+ *  primary and «Ещё» are the thumb's 40 px up to 600 px, and from 761 px the primary ends at
+ *  the column's right edge;
  *  the cards of a grid row share one height and never pass the grid; a 120-character name
  *  wraps inside its card; the bar takes at most 45% of 640x360 and starts at `main` from
  *  1180 px; the count is red at the limit. */
@@ -8037,7 +8038,10 @@ async function listsPageHolds() {
                 'the h1, the primary and «Ещё» do not share one row - ' +
                 JSON.stringify(m)
             );
-            ok(m.prim.h >= 43.5, where + 'the primary is ' + m.prim.h + ' px tall');
+            ok(
+              !!m.more && Math.abs(m.prim.h - 40) <= 0.5 && Math.abs(m.more.h - 40) <= 0.5,
+              where + 'the primary and «Ещё» are not 40 px tall - ' + JSON.stringify(m)
+            );
           } else {
             ok(
               Math.abs(m.prim.right - m.head.right) <= 1,
@@ -10170,6 +10174,212 @@ async function printFaceWait() {
   }
 }
 
+/** 116. The focus after an in-app navigation (docs/specs/FEATURES.md, rule 20): a keyboard
+ *  press on a link that leaves with its page puts the focus on `#main`, not on `body`; a
+ *  mode pill of the roll head keeps the focus on the lit pill. RU, 360 and 1180 px. */
+async function focusAfterNavigation() {
+  const at = '116 (the focus after a navigation): ';
+  const focusOf = (page) =>
+    page.evaluate(() => {
+      const a = document.activeElement;
+      if (!a || a === document.body) return 'BODY';
+      return a.id === 'main' ? '#main' : a.tagName + ' ' + a.textContent.trim().slice(0, 30);
+    });
+  /* [route, as, the link to press, the address it leads to] */
+  const LINKS = [
+    ['#/l/abc', undefined, '.erracts a[href="/tables"]', /^\/tables/],
+    ['#/l/abc', undefined, '.erracts a[href="/roll/std"]', /^\/roll\/std/],
+    ['#/i/ci1', undefined, 'main a[href^="/tables/"]', /^\/tables\//],
+    ['#/roll/std', undefined, 'main .rp-res a[href^="/i/"]', /^\/i\//],
+    ['#/lists', 'gm1', 'main .listcard a[href^="/lists/"]', /^\/lists\/[0-9a-f-]+/],
+    ['#/homebrew', 'gm3', 'main a[href="/homebrew/new"]', /^\/homebrew\/new/]
+  ];
+  for (const width of [360, 1180]) {
+    const { ctx, page, d } = await fresh({ width, height: 720 });
+    try {
+      for (const [route, as, sel, to] of LINKS) {
+        const where = at + route + ' ' + sel + ' ' + width + ': ';
+        await d.open(route, as ? { as } : {});
+        await d.settled(where);
+        const found = await waitIn(page, (s) => !!document.querySelector(s), sel);
+        ok(found, where + 'no link to press');
+        if (!found) continue;
+        await page.focus(sel);
+        await page.keyboard.press('Enter');
+        ok(
+          await waitIn(page, (re) => new RegExp(re).test(location.pathname), to.source),
+          where + 'the press did not navigate'
+        );
+        await d.settle();
+        const got = await focusOf(page);
+        ok(got === '#main', where + 'the focus is on ' + got);
+      }
+      if (width === 1180) {
+        await d.open('#/roll/std');
+        await page.focus('main nav.modes a[href="/roll/alt"]');
+        await page.keyboard.press('Enter');
+        await waitIn(page, () => location.pathname.startsWith('/roll/alt'));
+        await d.settle();
+        const got = await focusOf(page);
+        ok(/^A Альтернативные/.test(got), at + 'a mode pill: the focus is on ' + got);
+      }
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
+/** 117. One scrim and one modal shape (DESIGN.md, "Sheet"): the record dialog, a sheet and
+ *  the crop dialog draw the same backdrop with no blur; the crop dialog sits on the window's
+ *  bottom with its top corners at 360 px, and is the sheet's 560 px centered from 761 px. */
+async function oneScrimAndShape() {
+  const at = '117 (one scrim and shape): ';
+  const scrim = (page, sel) =>
+    page.evaluate((s) => {
+      const el = document.querySelector(s);
+      if (!el) return null;
+      const cs = getComputedStyle(el, '::backdrop');
+      return cs.backgroundColor + ' / ' + (cs.backdropFilter || 'none');
+    }, sel);
+  const shape = (page) =>
+    page.evaluate(() => {
+      const dlg = document.querySelector('dialog.cropdlg');
+      const r = dlg.getBoundingClientRect();
+      const cs = getComputedStyle(dlg);
+      return {
+        left: r.left,
+        right: r.right,
+        top: r.top,
+        bottom: r.bottom,
+        w: r.width,
+        /* The window less the reserved scrollbar gutter, as a fixed box sees it. */
+        vw: document.body.getBoundingClientRect().width,
+        vh: innerHeight,
+        tl: cs.borderTopLeftRadius,
+        bl: cs.borderBottomLeftRadius
+      };
+    });
+  for (const width of [360, 1180]) {
+    const where = at + width + ': ';
+    const { ctx, page, d } = await fresh({ width, height: width === 360 ? 640 : 720 });
+    try {
+      await d.open('#/tables/core_item');
+      await d.press('Первоклассный Спальный Мешок');
+      await waitIn(page, () => !!document.querySelector('dialog[open]:not(.sheet)'));
+      const record = await scrim(page, 'dialog[open]:not(.sheet)');
+      await page.keyboard.press('Escape');
+      await d.settle();
+      /* The catalog's filters are a sheet below 1000 px; one sheet rule serves every width. */
+      let sheet = record;
+      if (width === 360) {
+        await d.open('#/tables/eq_weapon');
+        await d.press('Фильтры');
+        await waitIn(page, () => !!document.querySelector('dialog.sheet[open]'));
+        sheet = await scrim(page, 'dialog.sheet[open]');
+        await page.keyboard.press('Escape');
+        await d.settle();
+      }
+      ok(await cropOpen(page, d, where), where + 'the crop dialog did not draw');
+      const crop = await scrim(page, 'dialog.cropdlg[open]');
+      ok(
+        !!record && record === sheet && sheet === crop && /\/ none$/.test(record),
+        where + 'the scrims differ - ' + JSON.stringify({ record, sheet, crop })
+      );
+      const m = await shape(page);
+      if (width === 360) {
+        ok(
+          Math.abs(m.bottom - m.vh) <= 0.5 && m.left <= 0.5 && Math.abs(m.right - m.vw) <= 0.5,
+          where + 'the crop dialog is not on the bottom edge - ' + JSON.stringify(m)
+        );
+        ok(m.tl === '14px' && m.bl === '0px', where + 'the corners - ' + JSON.stringify(m));
+      } else {
+        ok(
+          Math.abs(m.w - 560) <= 0.5 &&
+            Math.abs(m.left + m.right - m.vw) <= 1 &&
+            Math.abs(m.top - (m.vh - m.bottom)) <= 1,
+          where + 'the crop dialog is not the 560 px centered sheet - ' + JSON.stringify(m)
+        );
+        ok(m.tl === '14px' && m.bl === '14px', where + 'the corners - ' + JSON.stringify(m));
+      }
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
+/** 118. The selection bar on a short page and the toasts beside docks (DESIGN.md,
+ *  "Selection bar", "Toast"): on `/lists` with three lists and one tick the bar's bottom is
+ *  the window's bottom at 1180x720 and 768x1024, and at the page's end the footer ends above
+ *  it; a toast in the record dialog at 360x640 ends above the dialog's dock. */
+async function barPinnedAndToastsClear() {
+  const at = '118 (the bar pinned, the toasts clear): ';
+  for (const [width, height] of [
+    [1180, 720],
+    [768, 1024]
+  ]) {
+    const where = at + width + 'x' + height + ': ';
+    const { ctx, page, d } = await fresh({ width, height });
+    try {
+      await d.open('#/lists', { as: 'gm1' });
+      await d.settled(where);
+      await d.press('Выбрать');
+      await page.evaluate(() => document.querySelector('main .listcard input')?.click());
+      ok(
+        await waitIn(page, () =>
+          /1/.test(document.querySelector('.selbarwrap .selcount')?.textContent ?? '')
+        ),
+        where + 'no tick'
+      );
+      const m = await page.evaluate(async () => {
+        const bar = () => document.querySelector('.selbarwrap').getBoundingClientRect();
+        const top = { bottom: bar().bottom, vh: innerHeight };
+        scrollTo(0, document.documentElement.scrollHeight);
+        await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+        const foot = document
+          .querySelector('footer.foot')
+          .lastElementChild.getBoundingClientRect();
+        return { ...top, endBottom: bar().bottom, barTop: bar().top, footEnd: foot.bottom };
+      });
+      ok(
+        Math.abs(m.bottom - m.vh) <= 0.5 && Math.abs(m.endBottom - m.vh) <= 0.5,
+        where + 'the bar is not on the window bottom - ' + JSON.stringify(m)
+      );
+      ok(
+        m.footEnd <= m.barTop + 0.5,
+        where + 'the footer ends under the bar - ' + JSON.stringify(m)
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+
+  const where = at + 'the record dialog at 360x640: ';
+  const { ctx, page, d } = await fresh({ width: 360, height: 640 });
+  try {
+    await d.open('#/tables/core_item');
+    await d.press('Первоклассный Спальный Мешок');
+    await waitIn(page, () => !!document.querySelector('dialog[open] .cardpick'));
+    await page.evaluate(() =>
+      document.querySelector('dialog[open] .cardpick .morewrap > .btn')?.click()
+    );
+    await waitIn(page, () => !!document.querySelector('dialog[open] [role="menu"]'));
+    await page.evaluate(() =>
+      document.querySelector('dialog[open] [role="menu"] [role="menuitem"]')?.click()
+    );
+    ok(
+      await waitIn(page, () => !!document.querySelector('dialog[open] .toast[role]')),
+      where + 'no toast after the first «Ещё» item'
+    );
+    const m = await page.evaluate(() => ({
+      toast: document.querySelector('dialog[open] .toast[role]').getBoundingClientRect().bottom,
+      dock: document.querySelector('dialog[open] .cardpick').getBoundingClientRect().top
+    }));
+    ok(m.toast <= m.dock + 0.5, where + 'the toast covers the dock - ' + JSON.stringify(m));
+  } finally {
+    await ctx.close();
+  }
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -10278,7 +10488,10 @@ const CASES = [
   ['112 (the head order)', headOrder],
   ['113 (the die marks)', dieMarks],
   ['114 (the print page head and dock)', printHead],
-  ['115 (the face wait)', printFaceWait]
+  ['115 (the face wait)', printFaceWait],
+  ['116 (the focus after a navigation)', focusAfterNavigation],
+  ['117 (one scrim and shape)', oneScrimAndShape],
+  ['118 (the bar pinned, the toasts clear)', barPinnedAndToastsClear]
 ];
 
 /* The interleave spreads the slow layout cases at the end of the list over

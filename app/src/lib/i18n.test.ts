@@ -210,7 +210,9 @@ describe('the interface words', () => {
       'subWondrous',
       'subVoa',
       'subCommunity',
-      'rollHint'
+      'rollHint',
+      'listEmptyHint',
+      'listEmptyHintOwn'
     ];
     for (const lang of ['ru', 'en'] as const) {
       const t: Record<string, string> = dict(lang);

@@ -1814,7 +1814,7 @@ const STATES = [
     id: EMPTY_LIST + ' as gm1',
     route: EMPTY_LIST,
     as: 'gm1',
-    why: '«Пустой список»: «0 позиций из 100 · Сохранено», the empty hint ending «Свой предмет можно создать здесь же, кнопкой ниже.», then the row «Добавить свой предмет» folded'
+    why: '«Пустой список»: «0 позиций из 100 · Сохранено» and no instruction sentence (DESIGN.md, "The Clarity Rule"), then the row «Добавить свой предмет» folded'
   },
   {
     id: GM2_LIST + ' as gm2',

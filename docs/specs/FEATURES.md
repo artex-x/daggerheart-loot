@@ -505,9 +505,10 @@ across.
   (Q8.1). From 761 px the pin and the primary «Новый список» (plus icon) share its row,
   the primary at the column's right edge; «Импорт из файла» (while the account lists are
   read) is the last control before «Выбрать» in the count row, or in the search row from
-  the eighth list, as on every tab of «Мои предметы» (rule 9). The head follows DESIGN.md's Head Order Rule: no siblings, so the
+  the eighth list, where the two follow the box and the count, as on every tab of «Мои
+  предметы» (rule 9). The head follows DESIGN.md's Head Order Rule: no siblings, so the
   pin follows the heading and the primary ends the row. Up to 760 px the row holds the `h1`, the primary (`sm`, plus
-  icon, 44 px tall) and «Ещё» (at 320 px the primary and «Ещё» wrap under the `h1`
+  icon) and «Ещё», the head buttons of every page (at 320 px the primary and «Ещё» wrap under the `h1`
   together), which holds «Импорт из файла» (while the lists are
   read) and the pin (`PinItem`); no round pin draws. Signed out, the head draws no
   primary and no import, and up to 760 px «Ещё» holds the pin alone.
@@ -925,8 +926,9 @@ address kept, and no add-to-list control is drawn.
   draws the entry limit text under the buttons, so no item is made that the
   list would refuse; with no limit known the press writes as before. A press
   sent again after a lost answer makes no second item. Escape and «Отмена»
-  close the panel, drop the typed text and focus the row. An empty account list draws the row under its hint, which adds «Свой
-  предмет можно создать здесь же, кнопкой ниже.».
+  close the panel, drop the typed text and focus the row. An empty account list draws the row under its sub
+  («0 позиций из 100»), with no instruction sentence (DESIGN.md, "The Clarity Rule";
+  2026-11-06).
 - **Share links**: «Поделиться» reads pressed and expanded and opens a panel
   under the actions with two rows, «Ссылка для игроков» and «Ссылка для
   мастера», both ready on open: the panel reads the list's links (stopped
@@ -1833,7 +1835,7 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   search"), on every tab. Up to 760 px, once the items are read, the heading
   «Мои предметы» and its lead line are read, not drawn; one row holds the tab
   picker (named «Мои предметы: Предметы» / "My items: Items"), on the Items tab
-  «Новый предмет» with no plus icon, and «Ещё» («Импорт из файла» and the pin).
+  «Новый предмет» with the plus icon (rule 8), and «Ещё» («Импорт из файла» and the pin).
   The picker opens a sheet with the four tabs, their counts and the limit
   counter; a tab press closes it. From 761 px the head holds the heading, the four
   tabs as pills with their counts («Предметы 44»), the labeled pin and, on the Items
@@ -2982,7 +2984,9 @@ right, so the tab order and the reading order agree
 - The toast is a plate: `--surface` with a 1px `--muted2` border, `--txt`
   text, the Float shadow and `--r` corners, at most the window's width less
   16 px a side and the line measure, 26 px off the bottom and 26 px above the selection
-  bar while the bar shows; its action button is `--surface2` with a
+  bar while the bar shows (the bar is fixed to the window's bottom on a page of any
+  length); inside a modal up to 760 px, 26 px above the record dialog's dock or the
+  sheet's foot; its action button is `--surface2` with a
   `--line2` border. The error toast takes the Alarm Red fill (`--danger`) with
   dark ink (`--ink-on-gold`, about 5.6:1). No toast is gold.
 - The footer carries the full DPCGL license notice (`dict.ts`'s
@@ -3185,7 +3189,9 @@ Each rule keeps its number: a review cites it by number.
   management panel. Departures: the Items tab of «Мои предметы» and `/lists`
   draw their primary in the head; from 761 px the import is the last control before
   «Выбрать» in the collection's tool row on `/lists` and on every tab of «Мои предметы»,
-  and an item of the head's «Ещё» up to 760 px (owner, 2026-11-06); on the other tabs the create button is the
+  40 px tall as «Выбрать», and an item of the head's «Ещё» up to 760 px (owner, 2026-11-06);
+  the group follows the search box and the count where the row has a box, and ends the row
+  where it has none (DESIGN.md, "The Field Measure Rule"); on the other tabs the create button is the
   first control under the tab row; an account list's page makes an own
   item from the row after its entries; the print page `#/p/<id>` draws
   «Назад» and its heading on one row, then from 761 px «Напечатать» first in
@@ -3331,7 +3337,12 @@ Each rule keeps its number: a review cites it by number.
   `#/lists`, the panel head in the requests panel), else `#main`; the save status
   «Повторить» when it leaves - the list «Ещё» on a list page, «Новый список» on `#/lists`
   (never the name field: a phone would open its keyboard), and back on «Повторить» when
-  the retry fails; the list page's «Печать» - `#main` of the print page; on the
+  the retry fails; the list page's «Печать» - `#main` of the print page; an in-app
+  navigation that takes the pressed link or button away with its page (a roll result's
+  name, «На главную», «Открыть таблицы», «показать в таблице», a `/lists` card, a homebrew
+  row, «Новый предмет», the editor's «Мои предметы», a source name, the editor's save that
+  opens the item page) - `#main`, unless the new page places the focus itself (the head's
+  mode pills, a dialog); a navigation that keeps the pressed control keeps the focus; on the
   homebrew tabs a source's «Удалить» - the next row's «Ещё», the one before,
   «Новый источник»; a section's «Удалить» - the next row's «Удалить», the one
   before, that source's «Новый раздел»; a card's «Удалить» - the next card's, the previous card's, the

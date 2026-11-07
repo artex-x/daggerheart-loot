@@ -224,9 +224,25 @@
   }
 
   /* The page's toast floats above the selection bar, the editor's bottom bar and the print
-     page's dock (each sets its height); the dialog's copy keeps its place. */
+     page's dock (each sets its height). */
   .toast.page {
     bottom: calc(26px + var(--selbar-h, 0px) + var(--ebar-h, 0px) + var(--pdock-h, 0px));
+  }
+
+  /* Up to 760 px a dialog's copy floats above the record dialog's dock or a sheet's foot,
+     which sit at the window's bottom (`--dock-h` on the dialog); a short window's dock joins
+     the scroll (`RecordModal`). From 761 px the modal is centered and the copy keeps its place. */
+  @media (max-width: 760px) and (min-height: 481px) {
+    .toast:not(.page) {
+      bottom: calc(26px + var(--dock-h, 0px));
+    }
+  }
+
+  /* A sheet's foot stays on the window's bottom at every height. */
+  @media (max-width: 760px) {
+    :global(dialog.sheet) .toast:not(.page) {
+      bottom: calc(26px + var(--dock-h, 0px));
+    }
   }
 
   /* Under 481 px of height the editor's bar stays in the flow (`tokens.css`). */

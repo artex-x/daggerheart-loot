@@ -90,12 +90,13 @@
 </section>
 
 <style>
-  /* The sticky bottom place, the safe-area padding and the blur of the bar before it;
-     the ground and the top border are neutral (no gold). */
+  /* Fixed to the window's bottom on a page of any length; the footer keeps `--selbar-h`
+     clear under the page, and the toast floats over the bar. The safe-area padding and the
+     blur of the bar before it; the ground and the top border are neutral (no gold). */
   .selbarwrap {
     padding-bottom: env(safe-area-inset-bottom);
-    position: sticky;
-    bottom: 0;
+    position: fixed;
+    inset: auto 0 0;
     z-index: 45;
     background: rgb(16 14 24 / 96%);
     border-top: 1px solid var(--muted2);

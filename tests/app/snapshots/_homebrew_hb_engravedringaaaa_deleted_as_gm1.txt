@@ -17,7 +17,7 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
       link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
-  main ""
+  main "" [focused=true]
     heading "Мои предметы" [level=1]
     navigation "Мои предметы"
       link "Предметы 3" [url=/homebrew]
@@ -91,7 +91,7 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm1]
       link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
-  main ""
+  main "" [focused=true]
     heading "My items" [level=1]
     navigation "My items"
       link "Items 3" [url=/en/homebrew]

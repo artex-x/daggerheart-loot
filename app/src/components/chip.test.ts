@@ -29,6 +29,20 @@ describe('the button form', () => {
     expect(screen.getByRole('button', { name: 'Редкая' }).querySelector('svg')).toBeNull();
     await expectNoA11yViolations(container);
   });
+
+  it('draws no check on a pressed place chip of the picker sheet, and stays pressed', async () => {
+    const { container } = render(Chip, {
+      label: 'Оружие',
+      on: true,
+      place: true,
+      onclick: vi.fn()
+    });
+    const btn = screen.getByRole('button', { name: 'Оружие' });
+    expect(btn).toHaveAttribute('aria-pressed', 'true');
+    expect(btn).toHaveClass('on');
+    expect(btn.querySelector('svg')).toBeNull();
+    await expectNoA11yViolations(container);
+  });
 });
 
 describe('the link form', () => {

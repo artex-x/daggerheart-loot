@@ -182,7 +182,6 @@
     font: inherit;
     font-size: var(--t-data);
     font-weight: 540;
-    line-height: 1.25;
     text-align: center;
     transition: 0.15s;
     cursor: pointer;
@@ -253,10 +252,13 @@
       padding: 4px 0;
     }
 
+    /* Two lines of a long name hold 40 px here; from 601 px the pills take the body line
+       height of the group chips (DESIGN.md, "Sibling pills"). */
     .mode {
       min-height: 40px;
       padding: 3px 4px;
       width: 100%;
+      line-height: 1.25;
     }
 
     .modes-in > .mode:first-child {

@@ -80,6 +80,57 @@ D125 is a sideways overflow and D126 is a dialog layout; the same batch takes th
 - **How to verify the fix**: a states case at 600x500 and 760x560 opens the dialog of a
   record with a picture: the dock's bottom is inside the viewport at scroll 0.
 
+### D132 - the record dialog's «Ещё» scrolls the dossier on a short wide window
+
+- **Where**: `app/src/components/Menu.svelte` (`place`, the `flip` rule), in `RecordModal`.
+- **What**: at 1000x720 and 1180x720, for a short record, the 264 px menu fits neither under
+  «Ещё» nor above it inside the card, so it stays down and the focus on its first item scrolls
+  the card about 30 px: the picture's top and the badge row are cut (measured 2026-11-06 on
+  production, signed out).
+- **Why deferred**: FEATURES.md "Records" names only the two places; a menu with room in
+  neither needs a third rule (open outside the card, or grow the card), a layout decision.
+- **How to verify the fix**: a states case opens `#/tables/core_item/ci1` at 1000x720 and
+  1180x720, opens «Ещё» and reads the card's `scrollTop` unchanged and the menu inside the
+  window.
+
+### D133 - the shared page's selection bar takes a third of a phone
+
+- **Where**: `app/src/components/SelBar.svelte` on `/s/<token>` up to 760 px.
+- **What**: at 360x640 the bar is 212 px tall: «Все», then «В список» on its own line,
+  «Печать» and «Скопировать текст», then «Сообщить владельцу» on its own line; the
+  add-to-list popover above it reaches up to 324 px. The owner's list page folds its rare
+  actions into «Ещё» and stays at 137 px (measured 2026-11-06).
+- **Why deferred**: DESIGN.md folds only the owner's page; which actions of the player's page
+  fold is a layout decision for the owner (The Phone-First Rule).
+- **How to verify the fix**: at 360x640, RU and EN, `#/s/player-token-1 ~ selecting` draws a
+  bar no taller than the owner's page's (137 px), every action still reachable.
+
+## Copy and prompt leftovers (task `57-debt`, owner first)
+
+### D134 - four shapes of the sign-in prompt on sibling pages
+
+- **Where**: `ListsPage.svelte` (the empty plate with the glyph), `HomebrewPage.svelte` and
+  the `/tables/homebrew` page (a bare line and «Войти»), `ListPage.svelte` signed out (the
+  error page with two actions).
+- **What**: signed out, `/lists`, `/homebrew`, `/tables/homebrew` and `/lists/<uuid>` draw
+  the same prompt in four shapes; each is named in FEATURES.md, none with a reason for the
+  difference (production review, 2026-11-06).
+- **Why deferred**: one shape changes four page layouts and their first screens; the owner
+  picks the shape (AFK default A6, 2026-11-06).
+- **How to verify the fix**: one `SignInPrompt` shape on the four routes at 360 and 1180 px,
+  RU and EN; case 83's rows for them unchanged or lower.
+
+### D135 - the signed-out list page repeats its heading as an instruction
+
+- **Where**: `app/src/lib/dict.ts` (the lead of the signed-out `/lists/<uuid>` page),
+  FEATURES.md "Lists".
+- **What**: the lead ends «Войдите в него.», which repeats the heading «Войдите, чтобы
+  открыть список» and the «Войти» button (DESIGN.md, "The Clarity Rule").
+- **Why deferred**: the sentence is FEATURES.md text, so its removal is a spec change for
+  the owner (AFK default A8, 2026-11-06).
+- **How to verify the fix**: the lead holds no instruction in RU and EN; the golden of the
+  signed-out list page re-seeded, one line.
+
 ## Visual leftovers (task `57-debt`, mock first)
 
 ### D127 - a wide table row with a short description stays half empty

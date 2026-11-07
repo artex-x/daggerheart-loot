@@ -442,11 +442,11 @@ const STATES: {
     }
   },
   {
-    what: 'an empty account list with its hint and the own-item row',
+    what: 'an empty account list with the own-item row',
     route: '#/lists/00000000-0000-4000-8000-000000000102',
     cloud: () => fakeCloud(SEED, 'gm1'),
     enter: async () => {
-      await screen.findByText(/Свой предмет можно создать здесь же/);
+      await screen.findByRole('button', { name: 'Добавить свой предмет', expanded: false });
     }
   },
   {

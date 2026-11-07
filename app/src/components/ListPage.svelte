@@ -1843,10 +1843,6 @@
                 </div>
               {/each}
             </div>
-          {:else}
-            <Empty
-              >{t.listEmptyHint}{#if app.homebrew}{' ' + t.listEmptyHintOwn}{/if}</Empty
-            >
           {/if}
           <!-- eslint-enable @typescript-eslint/no-confusing-void-expression -->
           {#if app.homebrew}
@@ -2636,6 +2632,16 @@
     min-width: max(32px, var(--thumb));
     padding: 0 2px 0 10px;
     flex: none;
+  }
+
+  /* The catalog row's tick (`TableRows`): a 13 px box failed axe `target-size` beside the
+     position field from 601 px (measured 2026-11-06). */
+  .lrow-pick input {
+    accent-color: var(--txt);
+    width: 17px;
+    height: 17px;
+    margin: 0;
+    cursor: pointer;
   }
 
   /* Up to 999 px the head is the name, «Выбрать» and «Ещё» on one row, the meta line under

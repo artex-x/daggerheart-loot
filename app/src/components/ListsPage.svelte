@@ -576,18 +576,21 @@
     margin-left: auto;
   }
 
-  /* Up to 760 px the `h1`, the primary and «Ещё» share one line from 360 px (RU 307 of 313 px,
-     measured 2026-11-05); at 320 px the primary and «Ещё» wrap under the `h1` together. 44 px:
-     the page's primary is a full touch target. */
+  /* Up to 760 px the `h1`, the primary and «Ещё» share one line from 360 px (RU 308 of 313 px,
+     measured 2026-11-06); at 320 px the primary and «Ещё» wrap under the `h1` together. Both
+     are the small button of every head, 40 px up to 600 px (DESIGN.md, "The Phone-First
+     Rule"); the primary takes the compact padding of «Ещё» (`MoreMenu`). */
   @media (max-width: 760px) {
     .headx {
       gap: 4px;
     }
 
-    /* `.btn.btn`: `Button's` own `.btn.sm` rule ties this one on specificity. */
-    .headx :global(.btn.btn.sm) {
+    .headx :global(.btn) {
       flex: none;
-      height: 44px;
+    }
+
+    /* `.btn.btn`: `Button`'s own `.btn.sm` rule ties this one on specificity. */
+    .headx > :global(.btn.btn.sm) {
       gap: 4px;
       padding-inline: 6px;
     }
@@ -634,6 +637,18 @@
   .end {
     display: flex;
     margin-left: auto;
+  }
+
+  /* Beside the search box the group follows the box and the count, as on «Мои предметы»
+     (DESIGN.md, "The Field Measure Rule"); with no box it ends the row. */
+  :global(.lfind) .end {
+    margin-left: 0;
+  }
+
+  /* The import is as tall as «Выбрать» beside it, as on «Мои предметы». `.btn.btn`: `Button`'s
+     own `.btn.sm` rule ties this one on specificity. */
+  .end :global(.btn.btn.sm) {
+    height: 40px;
   }
 
   .count {
