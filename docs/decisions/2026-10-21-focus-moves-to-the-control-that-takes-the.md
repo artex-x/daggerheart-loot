@@ -1,5 +1,6 @@
 # 2026-10-21 - Focus moves to the control that takes the place of a removed one
 
+- Amended by "One scrim, one shadow and a tool row that follows its search box" (2026-11-06): an in-app navigation that removes the pressed control lands on `#main`.
 - Task: `debt-cleanup` (owner, 2026-10-01: the focus of a control that removes itself; planner default, 2026-10-16).
 - Decision: when a press removes the pressed control, focus moves to the control that now holds its place in the same
   group, else the nearest one before it, else the group's lead control, else `#main` (the shell's main landmark, which

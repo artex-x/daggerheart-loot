@@ -281,7 +281,7 @@ export const MARK = {
 // hand-made og/_share.jpg of 7fd046c carried; the ground, the text colors
 // and the gold budget are the app's (app/src/styles/tokens.css: the page
 // ground, --txt, --muted, --muted2, and the gold of the mark only). The mark sits in an
-// 84 px box at (50, 258), the box of issues/57's mark stage.
+// 84 px box at (50, 258), the box of the vault-die mark stage in the task 57 mocks.
 export function shareCardSvg(lang) {
   const text = CARD_TEXT[lang];
   if (!text) throw new Error('No share card text for language "' + lang + '". Use ru or en');

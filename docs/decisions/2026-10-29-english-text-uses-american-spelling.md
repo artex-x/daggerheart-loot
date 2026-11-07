@@ -12,6 +12,6 @@
   names (`~ colour for this visit`); decision file names, titles and earlier bodies; the frozen
   `schema/*.json` wording; quotations and records (commit messages, the DPCGL text, source-book
   text in `data.js`); `aria-labelledby`; `cancelled`; `smoulder`; lock files and third-party
-  licence texts; the generated `.impeccable/design.json`; the `issues/57/` scratch.
+  licence texts; the generated `.impeccable/design.json`; the task 57 scratch directory (deleted at closeout).
 - Rejected: British everywhere (the source books and the web platform are American); American in
   the UI only (two spellings for one word across the repository).

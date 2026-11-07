@@ -1842,6 +1842,10 @@ Four exceptions skip a tool on purpose. Each is kept with its reason (task 57,
 | `['.impeccable/', false]` in the `VITEST` rule | `tools/check/lib.mjs` | Vitest reads no `.impeccable/` file, as for `DESIGN.md`; the rule suppresses no check, it keeps the gate from selecting tests for a change there |
 | `issues/*/mocks/**` in `ignores` | `eslint.config.mjs` | A task's mock pages are scratch that its closeout deletes (owner, 2026-10-23) |
 
+The Impeccable skills (`polish`, `harden`, `document`) run from the orchestrator session only: a
+subagent has no Skill tool for them, and `impeccable:impeccable-finish-reviewer` is a read-only agent that
+returns fixes (task 57, 2026-10-23).
+
 ## Decisions registry
 
 A decision is one file, `docs/decisions/<YYYY-MM-DD>-<slug>.md` (the slug:
