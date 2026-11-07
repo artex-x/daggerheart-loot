@@ -253,6 +253,20 @@ describe('the whole-table supplements over the real data', () => {
     }
   });
 
+  it('opens the card of a rolled head and finds its other tiers there', async () => {
+    await typed('#/roll/arazo', '7');
+    await userEvent.click(screen.getAllByRole('button', { name: 'Открыть карточку' })[0]!);
+    const dialog = screen.getByRole('dialog');
+    for (const name of [
+      'Улучшенный Лук из Эльфийских Волос',
+      'Продвинутый Лук из Эльфийских Волос',
+      'Легендарный Лук из Эльфийских Волос'
+    ]) {
+      expect(within(dialog).getByRole('button', { name }), name).toBeInTheDocument();
+    }
+    await expectNoA11yViolations(dialog);
+  });
+
   it('rolls Pistolheart over 45 entries and draws a head at 14 and the last entry at 45', async () => {
     open('#/roll/ph');
     expect(screen.getByRole('button', { name: 'Бросить 1-45' })).toBeInTheDocument();

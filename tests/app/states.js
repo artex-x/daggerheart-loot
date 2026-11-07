@@ -5615,7 +5615,7 @@ const FIRST_SCREEN = [
   { state: '#/roll/alt ~ crit', shipped: true },
   { state: '#/roll/voa', shipped: true },
   { state: '#/roll/wondrous', shipped: true },
-  /* A whole-table roll with no picker since its rooms were retired (2026-11-07). */
+  /* A whole-table roll with no picker, so the first screen is the roll controls. */
   { state: '#/roll/vh', shipped: true },
   { state: '#/tables/eq_weapon', shipped: true },
   { state: '#/tables/eq_weapon ~ two filters', shipped: true },

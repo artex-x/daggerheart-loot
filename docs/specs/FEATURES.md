@@ -27,10 +27,8 @@ across.
 
 - One roll row per item: an upgrade line is rolled once, at its head, so a line and a
   single item have the same chance. Its other tiers open from the card, whose «Ранг» /
-  "Tier" row lists them. A rung has no `roll`; it keeps its row in its table, in search
-  and in every link (owner, 2026-11-05;
+  "Tier" row lists them. A rung has no `roll` (owner, 2026-11-05;
   `docs/decisions/2026-11-07-one-roll-row-per-item-an-upgrade-line-is-rolled-at-its-head.md`).
-
 - The twelve roll pages share one layout (`RollPage`). Up to 760 px the `h1` and
   the lead are read, not drawn; the roll controls sit under the mode row; one
   results line holds «Бросок N» / "Roll N", «Настроить» / "Set up" and «Ещё».

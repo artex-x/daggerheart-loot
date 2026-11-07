@@ -48,6 +48,8 @@
 Standing checks: scale, error scenarios, consistency and RU/EN parity are answered in `plan.md`, "Batch B1", "Standing checks"; the implementation follows them with no departure (help text in both languages with the same counts; four dictionary lines removed in both).
 
 ## Verification
+- Gates: `rtk npm run check:fast`, `npm run lint:typed`, `npm run lint:untyped` before the push; CI of the tip is the full gate. Review report: `issues/roll-per-line/reviews/B1-B2.md` (approve, no blocker).
+- Fix pass: `roll.test.ts` gains the head-card ladder case (Risk 1); FEATURES.md rule trimmed to 3 lines (Nits 1, 2); `states.js` comment reworded (Nit 3); Nit 4 (ph twin) not done.
 - B2 commands and results:
   - `node C:/.../scratchpad/lr-trim.js` - all assertions pass; 26 lengths equal the plan table.
   - `node tools/desc-style.mjs` - "0 texts differ in EN and RU shape with no exception", "0 texts in 0 records change"; `node tools/build.js` - 1593 pages; `node tools/decisions.js` - 323 decisions.
