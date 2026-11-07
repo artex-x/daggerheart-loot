@@ -152,6 +152,8 @@ across.
   `mwt` by realm, `ph` by volume and `vh` by room (`sectionProps.ts`), and a record's
   path ends with that section («Pistolheart · Том 2»); its badge and print card name
   the book. Their rule cards link to the product page, the host as the link text.
+  The volume filter row reads «Том» with the chips «1», «2» and «3» (`SectionProp.chip`);
+  the sections and the path read «Том 2».
 - The number field accepts digits only, clamps to the range, and keeps the caret
   where the person put it. On the list page an empty field means "no roll yet";
   on roll pages it waits for `change`.
