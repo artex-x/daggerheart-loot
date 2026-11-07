@@ -1,6 +1,6 @@
 # #/search ~ kind picked
 # route: #/search
-# why: «Снаряжение» picked from «Все»: the gear rows alone, the chip lit, the count line «Снаряжение · Показано 91 из 139»
+# why: «Снаряжение» picked from «Все»: the gear rows alone, the chip lit, the count line «Снаряжение · Показано 91 из 144»
 
 ## ru :: tree
 RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search]
@@ -28,7 +28,7 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search]
     button "Снаряжение" [pressed=true]
     StaticText "Снаряжение"
     StaticText " · "
-    StaticText "Показано 91 из 145"
+    StaticText "Показано 91 из 144"
     button "№ 89 Меч Хрустального Духа ОСНОВНОЕ ОРУЖИЕ УНИКАЛЬНОЕ THE DRAGON..." [namelen=290 namehash=c785ce3e]
     ... button x88 of 92 same-shape siblings elided
     button "Божественный Пластинчатый Доспех БРОНЯ УНИКАЛЬНОЕ HOPE & FEAR Ра..." [namelen=155 namehash=7bbcaef6]
@@ -178,7 +178,7 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search]
     button "Equipment" [pressed=true]
     StaticText "Equipment"
     StaticText " · "
-    StaticText "91 of 145 shown"
+    StaticText "91 of 144 shown"
     button "No. 89 Crystal Spirit Sword PRIMARY WEAPON UNIQUE THE DRAGON'S V..." [namelen=267 namehash=a2138fa0]
     ... button x88 of 92 same-shape siblings elided
     button "Godbound Laminar ARMOR UNIQUE HOPE & FEAR Tier 4 · Thresholds 13..." [namelen=127 namehash=9ea4610b]

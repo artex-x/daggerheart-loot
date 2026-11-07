@@ -16,7 +16,7 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search?
     button "Расходники" [pressed=false]
     button "Снаряжение" [pressed=false]
     button "Сбросить" [disabled=true]
-    button "Показать 146"
+    button "Показать 145"
 
 ## ru :: controls
 EN
@@ -62,7 +62,7 @@ daggerheart.com
 Плетённый Углями ДоспехБроняУникальноеРанг 4 · Пороги 13/36 · Бр... [namelen=140 namehash=6e1a5c7f]
 Поиск
 Поиск по названию или описанию...
-Показать 146
+Показать 145
 Поющий МечОсновное оружиеУникальноеHope & FearРанг 3 · Физическо... [namelen=242 namehash=d74104bb]
 Предметы
 Продвинутая Кольчуга из Змиевой ЧешуиБроняArazo's ArtifactsРанг ... [namelen=241 namehash=3e238855]
@@ -110,7 +110,7 @@ daggerheart.com
 № 113Кинетическое ЛезвиеОсновное оружиеУникальноеThe Dragon's Va... [namelen=341 namehash=6cf12dd1]
 № 114Рукавицы УбийцыОсновное оружиеУникальноеThe Dragon's VaultР... [namelen=401 namehash=f46bdfca]
 № 116Неугомонное ВозмездиеОсновное оружиеУникальноеThe Dragon's ... [namelen=460 namehash=c9b67a02]
-№ 11Промасленное Длиннополое ПальтоПредметThe Last Round TableТя... [namelen=351 namehash=36b87ce2]
+№ 11Промасленное Длиннополое ПальтоПредметThe Last Round TableСп... [namelen=177 namehash=2bd0dd00]
 № 121Меч-РазрушительОсновное оружиеУникальноеThe Dragon's VaultР... [namelen=452 namehash=a5041157]
 № 133Меч АнгеловОсновное оружиеУникальноеThe Dragon's VaultРанг ... [namelen=395 namehash=f517626b]
 № 134Меч НежитиОсновное оружиеУникальноеThe Dragon's VaultРанг 1... [namelen=222 namehash=843fd306]
@@ -137,8 +137,7 @@ daggerheart.com
 № 21Перчатка Ползучего КороляПредметThe Dragon's VaultЧтобы испо... [namelen=569 namehash=f4969e4a]
 № 23Голодный Кулачный КлинокВторичное оружиеУникальноеVault of A... [namelen=426 namehash=f9f9b5fd]
 № 23Карманные Часы Странника ВремениПредметVault of AgesСтоимост... [namelen=394 namehash=abe1fd3e]
-№ 23Медово-Масляное Мыло Святого БунгусаРасходникThe Last Round ... [namelen=649 namehash=29cf00bc]
-№ 24Ром Кричащей СиреныРасходникThe Last Round TableТёмный пряны... [namelen=390 namehash=5e692138]
+№ 24Ром Кричащей СиреныРасходникThe Last Round TableЭгей - Реакц... [namelen=335 namehash=afa8ad92]
 № 25Кольчуга из Змиевой ЧешуиБроняArazo's ArtifactsРанг 1 · Поро... [namelen=232 namehash=cda03de6]
 № 26Кнут из Хвоста ВиверныОсновное оружиеArazo's ArtifactsРанг 1... [namelen=333 namehash=ecbca414]
 № 26Мантия АрхимагаБроняУникальноеVault of AgesРанг 4 · Пороги 1... [namelen=338 namehash=abb338c9]
@@ -202,7 +201,7 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search?as=gm1]
     button "Consumables" [pressed=false]
     button "Equipment" [pressed=false]
     button "Reset" [disabled=true]
-    button "Show 146"
+    button "Show 145"
 
 ## en :: controls
 Account: gm1@example.test
@@ -277,7 +276,7 @@ No. 10Little Forest SpiritItemWildborneA playful forest spirit f... [namelen=292
 No. 113Kinetic EdgePrimary weaponUniqueThe Dragon's VaultTier 2 ... [namelen=316 namehash=4231bd06]
 No. 114Murderer's GauntletsPrimary weaponUniqueThe Dragon's Vaul... [namelen=401 namehash=3424bb02]
 No. 116Restless VengeancePrimary weaponUniqueThe Dragon's VaultT... [namelen=470 namehash=3605c1f4]
-No. 11Oiled LongcoatItemThe Last Round TableA heavy lanolin trea... [namelen=314 namehash=6ede0c76]
+No. 11Oiled LongcoatItemThe Last Round TableTraveller's Companio... [namelen=149 namehash=0d393b25]
 No. 121ShatterswordPrimary weaponUniqueThe Dragon's VaultTier 3 ... [namelen=390 namehash=569c5368]
 No. 133Sword of AngelsPrimary weaponUniqueThe Dragon's VaultTier... [namelen=330 namehash=062461e9]
 No. 134Sword of UndeathPrimary weaponUniqueThe Dragon's VaultTie... [namelen=237 namehash=eba9b22f]
@@ -303,9 +302,8 @@ No. 20Sprite BottleConsumableHope & FearWhen you mark your last ... [namelen=200
 No. 21Crawling King's GauntletItemThe Dragon's VaultTo use this ... [namelen=521 namehash=9641d922]
 No. 21Poison-Colored PaintConsumableWarrin' WarrensYou can put t... [namelen=247 namehash=5492c8c3]
 No. 23Hungry Fist BladeSecondary weaponUniqueVault of AgesTier 4... [namelen=414 namehash=7ced0f60]
-No. 23Saint Bungus Honey Butter SoapConsumableThe Last Round Tab... [namelen=600 namehash=5175273c]
 No. 23Timewalker PocketwatchItemVault of AgesRecall Cost: 1Once ... [namelen=341 namehash=7869f875]
-No. 24Screaming Siren RumConsumableThe Last Round TableA dark sp... [namelen=391 namehash=a31d8231]
+No. 24Screaming Siren RumConsumableThe Last Round TableWay Hay -... [namelen=336 namehash=36d0a292]
 No. 25Wyrmscale HauberkArmorArazo's ArtifactsTier 1 · Thresholds... [namelen=204 namehash=c947c2fa]
 No. 26Arch-Magus's RobesArmorUniqueVault of AgesTier 4 · Thresho... [namelen=298 namehash=0af06daf]
 No. 26Wyverntail WhipPrimary weaponArazo's ArtifactsTier 1 · Phy... [namelen=291 namehash=c68f5705]
@@ -366,7 +364,7 @@ Search by name or description...
 Select
 ShadowbladePrimary weaponHope & FearTier 1 · Magic · Presence · ... [namelen=171 namehash=fa6df3d2]
 ShortswordSecondary weaponTier 1 · Physical · Agility · Melee · ... [namelen=148 namehash=1bd545e4]
-Show 146
+Show 145
 Singing SwordPrimary weaponUniqueHope & FearTier 3 · Physical · ... [namelen=202 namehash=cf053f4f]
 Skip to content
 Tables

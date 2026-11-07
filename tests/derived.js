@@ -2656,6 +2656,26 @@ ok(
     lr.filter((x) => x.eq).length === 3,
   'lr does not hold three unlined Tier 2 weapons'
 );
+// The lr records ship rule text only (docs/decisions, 2026-11-07, "The Last Round Table
+// records keep rule text and lose lore"); 450 / 520 sit just above the longest kept text.
+ok(
+  lr.every(
+    (x) => x.ende.length > 0 && x.rud.length > 0 && x.ende.length <= 450 && x.rud.length <= 520
+  ),
+  'an lr record is empty or longer than 450 (EN) / 520 (RU) characters: lore came back'
+);
+ok(
+  lr[0].ende === 'Sitting in Anklebiter as part of a Short Rest clears 1 Stress.' &&
+    lr[0].rud === 'Если сидеть в Лодыжкогрызе во время короткого отдыха, вы очищаете 1 Стресс.',
+  'lr1 is not the one rule sentence'
+);
+ok(
+  lr[22].ende ===
+    '***Rub a Dub - Rest Move:*** When used as part of a rest, you clear 1d4 Stress. Each bar of soap lasts 1 bath.' &&
+    lr[22].rud ===
+      '***Тру-Тру-Тру - Ход Отдыха:*** Если использовать его во время отдыха, вы очищаете 1d4 Стресса. Одного куска мыла хватает на 1 купание.',
+  'lr23 is not the rest move with 1d4 Stress and 1 bath'
+);
 const vh = L.items.vh;
 ok(vh.length === 15, 'items.vh is not 15, but ' + vh.length);
 ok(

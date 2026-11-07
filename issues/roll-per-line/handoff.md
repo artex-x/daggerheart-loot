@@ -1,13 +1,13 @@
 # Handoff - TASK roll-per-line
 
 ## Status
-- Task status: in progress (B1 implemented and committed 2026-11-07; B2 next; the code review of B1 and B2 after B2)
-- Last agent: implementer (B1, 2026-11-07)
+- Task status: in progress (B1 and B2 implemented and committed 2026-11-07; the code review of B1 and B2 together is next; the owner reads `lr-trim.diff`)
+- Last agent: implementer (B2, 2026-11-07)
 - NEEDS_HUMAN_CONFIRMATION: no
 - Plan review: required before B1 (trigger: public contract change) - done 2026-11-07, `reviews/plan-B1.md` (fix-then-continue, applied). B2: not required (no trigger fired).
 - Branch: `claude/roll-per-line`
 - Base / starting commit: `f278eeee` (`main` merged at `62070925`; `origin/main` had not moved on 2026-11-07)
-- Pushed: yes (B1 commit; the orchestrator waits on CI)
+- Pushed: yes (B1 and B2 commits; the orchestrator waits on CI)
 
 ## Completed
 - Batch name/id: B1 - `vh` is one flat list, and one roll row per item (one commit, Parts A and B, D6).
@@ -48,7 +48,14 @@
 Standing checks: scale, error scenarios, consistency and RU/EN parity are answered in `plan.md`, "Batch B1", "Standing checks"; the implementation follows them with no departure (help text in both languages with the same counts; four dictionary lines removed in both).
 
 ## Verification
-- Commands run (exact) and results:
+- B2 commands and results:
+  - `node C:/.../scratchpad/lr-trim.js` - all assertions pass; 26 lengths equal the plan table.
+  - `node tools/desc-style.mjs` - "0 texts differ in EN and RU shape with no exception", "0 texts in 0 records change"; `node tools/build.js` - 1593 pages; `node tools/decisions.js` - 323 decisions.
+  - `node tests/run-all.js dataint,derived,contracts` - pass (after re-flowing the older decision file to 15 lines).
+  - `npm run build:test`; `golden.js --update --only=<id>` for the eight states of T6 (PowerShell, the `#` ids); `searched` and `kind picked` re-seeded a second time after the inventory `why` edit; `golden.js --shard=n/4` n=1..3 exit 0; shard 4 failed one state (below), re-seeded.
+  - Ninth golden, not in the plan: `_homebrew_sets_hb_aldersetaaaaaaaa_official_picker_open_as_gm1` ("Ещё 138" to "Ещё 137", RU and EN): the state types «меч», `lr23` left that result set. The state's `why` names no count, so no inventory edit. Changed set: the plan's eight plus this one.
+  - `rtk npm run check:fast` - first run failed on prettier (`tests/derived.js`), fixed with `prettier --write`; second run PASS, gate credit armed.
+- B1 commands and results:
   - `node C:/.../scratchpad/b1-data.js` - arazo pool 27, ph pool 45, roll maps equal the plan's "Facts"; `node tools/build.js` - 1593 stubs.
   - `node --test preview/worker.test.mjs` - 181 pass.
   - `node tests/run-all.js dataint,derived,contracts` - all suites passed.
@@ -59,13 +66,28 @@ Standing checks: scale, error scenarios, consistency and RU/EN parity are answer
   - `node tests/app/states.js --shard=73/108` (case 83, first screen) - pass; `--shard=79/108` (case 89, roll page layout) - pass.
 - CI must still show: the `browser` matrix with `app/contracts` (the `routes.json` replay, the `PROBE` entry for `vh`, the stub-path check with `aa20` and `ph38`), the rest of `app/states`, `app/sweep`, `e2e`.
 
+### B2 Completed
+- What shipped: `ende` and `rud` of the 26 `lr` records cut to rule text by a scratchpad script (`lr-trim.js`, not committed): 21 records changed, `lr3`, `lr6`, `lr9`, `lr12`, `lr16` untouched. The lengths equal the plan's "Records" table for all 26. `lr1` and `lr21` as the plan's exact texts, `lr23` the new rest move (EN and RU). Pins in `tests/derived.js` (ceilings 450 / 520, `lr1`, `lr23`); decision `2026-11-07-the-last-round-table-records-keep-rule-text-and-lose-lore.md` with the `Amended by` mirror; two `why` counts in `tests/app/inventory.js`.
+- Patch for the owner: `C:/Users/Ignat/AppData/Local/Temp/claude/97bbd0b98c47ced0/33951b0e-389b-4f3e-901a-6827167c86d6/scratchpad/lr-trim.diff`; reverse: `.../scratchpad/lr-trim-undo.json`. Permanent copy of the removed text: `git show 1af46a61:data.js`.
+- Owner defaults taken (owner AFK): `lr6` and the feature paragraphs stay whole; `lr2` keeps the sentence that names the charm; T8 (the `add-source.prompt.md` clause) is NOT written because the owner has not said the rule is general.
+- Deviations: `desc-style` and the other tools needed none. The 2026-11-07 source decision file went to 16 body lines with the new pointer; its `Rejected` line was re-flowed onto two lines (no word changed). Inventory `why` counts written from the run: `searched` "145 rows" (the golden's same-shape row count, was 146 before the trim), `kind picked` "из 144".
+- Standing checks: scale (the longest `lr` text falls to 431 EN / 510 RU, the shortest is `lr1` 62 / 75; no row grows), error scenarios (no stored shape; a stale tab shows the long text until reload; `git revert` restores), consistency (`desc-style` clean; `lr` now differs from sources that keep descriptive text, Deferred), RU/EN parity (same paragraphs and sentences, RU cut not re-translated, `lr23` has both languages with the same facts) - as in `plan.md`, "Batch B2", "Standing checks".
+
+### B2 acceptance
+| Line | Outcome | Proof |
+|---|---|---|
+| T1 | done | script lengths equal the table for all 26; pins `lr1`, `lr23` |
+| T2 | done | script output assertions (1593 records, all other fields and records identical); `dataint`, `derived` |
+| T3 | done | `node tools/desc-style.mjs`: "0 texts differ in EN and RU shape", "0 texts in 0 records change" |
+| T4 | done | `tests/derived.js` ceiling pin |
+| T5 | done | `node tools/build.js` (1593 pages), `derived` |
+| T6 | done | the changed golden set is the eight files of the plan, no other (see Verification) |
+| T7 | done | `node tools/decisions.js` 323 decisions; `derived` registry check |
+| T8 | not written (owner has not said the rule is general) | decision file records the rule |
+| T9 | done | "Standing checks" above |
+
 ## Next batch (implement-ready)
-- Name: B2 - the `lr` records keep rules, not lore (`plan.md`, "Batch B2").
-- Objective: cut the lore text of the 26 `lr` records to rule text, per the "Records" table.
-- In scope / Out of scope / Files / Steps / Acceptance: `plan.md`, "Batch B2" (T1-T9).
-- Verification commands: `plan.md`, "Batch B2", steps 3, 6 and 7.
-- Risks / do-nots: `plan.md`, "Batch B2", "Risks, do-nots". The search goldens B1 re-seeded are re-seeded again on top of B1's tree.
-- After B2: the reviewer reads B1 and B2 together; one remediation commit.
+- None. The reviewer reads B1 and B2 together; one remediation commit.
 
 ## Blockers
 - None.

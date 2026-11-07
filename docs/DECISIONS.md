@@ -18,6 +18,7 @@ deleted.
 - 2026-11-07 - [Escape the Veiled Halls is one flat list with no rooms](decisions/2026-11-07-escape-the-veiled-halls-is-one-flat-list-with-no-rooms.md)
 - 2026-11-07 - [One roll row per item: an upgrade line is rolled at its head](decisions/2026-11-07-one-roll-row-per-item-an-upgrade-line-is-rolled-at-its-head.md)
 - 2026-11-07 - [Pistolheart, The Last Round Table and Veiled Halls are sources ph, lr and vh](decisions/2026-11-07-pistolheart-last-round-table-and-veiled-halls-are-sources-ph-lr-vh.md) - superseded in part
+- 2026-11-07 - [The Last Round Table records keep rule text and lose lore](decisions/2026-11-07-the-last-round-table-records-keep-rule-text-and-lose-lore.md)
 - 2026-11-07 - [The supplements' books are the table picker at every width](decisions/2026-11-07-the-supplements-books-are-the-table-picker-at-every-width.md)
 - 2026-11-06 - [One scrim, one shadow and a tool row that follows its search box](decisions/2026-11-06-one-scrim-one-shadow-and-a-tool-row-that-follows-its-search-box.md)
 - 2026-11-06 - [The print card prints in the UI face at 7.1 pt, fitted after it loads](decisions/2026-11-06-the-print-card-prints-in-the-ui-face-fitted-after-it-loads.md)

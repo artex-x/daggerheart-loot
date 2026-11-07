@@ -2962,7 +2962,7 @@ const STATES = [
   {
     id: '#/search ~ searched',
     route: '#/search',
-    why: '139 rows of loot and gear together, ranked: the names with «меч» at a word start first and marked, «№ N» on the rolled rows; no ticks and no select-all strip',
+    why: '145 rows of loot and gear together, ranked: the names with «меч» at a word start first and marked, «№ N» on the rolled rows; no ticks and no select-all strip',
     enter: async (d) => {
       await d.type('Поиск по названию или описанию...', 'меч');
     }
@@ -2970,7 +2970,7 @@ const STATES = [
   {
     id: '#/search ~ kind picked',
     route: '#/search',
-    why: '«Снаряжение» picked from «Все»: the gear rows alone, the chip lit, the count line «Снаряжение · Показано 91 из 139»',
+    why: '«Снаряжение» picked from «Все»: the gear rows alone, the chip lit, the count line «Снаряжение · Показано 91 из 144»',
     enter: async (d) => {
       await d.type('Поиск по названию или описанию...', 'меч');
       await d.click('Снаряжение');
