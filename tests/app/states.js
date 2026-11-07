@@ -9576,7 +9576,7 @@ function headProbe() {
  *  the sibling pages, the pin, the help and the primary, in this DOM order and in this
  *  reading order; from 761 to 999 px the pills take the row under the others. The first
  *  content of each family against the First-Screen Rule at 768 and 900 px, `/tables/*` at
- *  900x720 under its named ceiling of 336 px. */
+ *  900x720 under its named ceiling of 294 px. */
 async function headOrder() {
   const at = '112 (the head order): ';
   /* The pills' place per language and size, on the roll routes; each pill's width, and the
@@ -9713,7 +9713,7 @@ async function headOrder() {
                 width === 768
                   ? 410
                   : family === 'tables' && width === 900
-                    ? 336
+                    ? 294
                     : width === 1000
                       ? null
                       : 288;

@@ -88,15 +88,16 @@ across.
   truncating, horizontal scroll and any other layout change were rejected -
   the short wording is the fix. The catalog head is measured, not the old
   strip: below 761 px the picker row is at most 64 px tall; from 761 px the
-  group chips and the tabs together are at most 140 px below 1000 px (the seven
-  supplement tabs take two lines: 130 px at 768, 2026-10-30), 180 px from 1000 to
+  group chips and the tabs together are at most 110 px below 1000 px (87 px at 768
+  and 900, measured 2026-11-07, since the supplements' books moved to the picker), 140 px from 1000 to
   1139 px in Russian (the chips take two lines inside the head row up to about
-  1139 px; the rows start at 288 px at 1000x720, measured 2026-11-05, and 287.5 px at
-  1050x720, measured 2026-11-06) and 110 px from 1140 px (`tests/app/sweep.js`,
+  1139 px: 131 px at 1000; the rows start at 288 px at 1000x720, measured 2026-11-05 and 2026-11-07) and
+  110 px from 1140 px (`tests/app/sweep.js`,
   at 500, 600, 700, 768, 1050 and the run widths, as gm2, the seventh group chip
   drawn). The reserved tab row holds the tabs of every group but the homebrew
-  one: that group's source tabs hold the GM's own text, so `/tables/homebrew`
-  alone may draw a taller row.
+  one and the supplements: the homebrew group's source tabs hold the GM's own
+  text, so `/tables/homebrew` alone may draw a taller row, and the supplements
+  draw one tab, the picker.
 - The twelve roll sections share the header's roll job «Бросок» / "Roll" and draw
   the mode row under the header up to 760 px and the same controls as the page head's
   pills from 761 px ("Chrome";
@@ -108,9 +109,8 @@ across.
   control (the pressed pill, or the menu button after a supplement), and a focused
   pill stays focused when the row moves at 761 px. The name is the source's product name
   (`docs/decisions/2026-10-21-source-names-follow-the-source-product.md`). The
-  roll pages draw no supplements panel. The catalog's tabs draw each book by
-  its full name at every width; below 761 px the books are in the picker's
-  sheet.
+  roll pages draw no supplements panel. The catalog's picker and its sheet draw
+  each book by its full name at every width.
 - The consumable/item kind filter is one toggle shared by Core rules and the
   alternate tables (`AppState.kinds`, memory only) - switching consumables off
   on one switches them off on the other, not per page. Search keeps its own
@@ -177,10 +177,16 @@ across.
   assistive technology. Under them the book or section of the group are
   underlined tabs, a group labeled by the group's name; the current tab is
   gold text on a gold underline (`aria-current="page"`). «Дополнения» opens
-  Wondrous Environments and is lit on each supplement table; its tabs are the
-  ten books by their own names, in `SUPPLEMENTS` order. A record's path
-  (`whereFrom`, the stubs under `i/`) keeps the book and never says
-  «Дополнения». Below 761 px both levels are the table picker's bottom sheet:
+  Wondrous Environments and is lit on each supplement table. Its ten books, by
+  their own names in `SUPPLEMENTS` order, are the table picker's at every
+  width: ten tabs need 1331 px for one line, and a second line puts the rows
+  below the First-Screen Rule up to about 1380 px
+  (`docs/decisions/2026-11-07-the-supplements-books-are-the-table-picker-at-every-width.md`). From 761 px the supplements' tab row is one lit tab, the picker
+  button, that names the open book with a chevron and opens the picker's sheet
+  (centered from 761 px); a pick closes it and returns the focus to the
+  button. A record's path (`whereFrom`, the stubs under `i/`) keeps the book
+  and never says «Дополнения». Below 761 px both levels are the table picker's
+  bottom sheet:
   the picker button, named «Таблица: <name>» / "Table: <name>", reads the
   tab's caption, or the book over «Предметы» / «Расходники» on two lines where
   the caption names no book (`pickerParts`, its name `pickerLabel`); the sheet holds the group chips and
@@ -204,8 +210,8 @@ across.
   at the same place (owner, 2026-11-04). From 1000 px the group chips follow the `h1`
   in the head row, before the pin and «Об этих данных», and wrap inside their own box;
   from 761 px to 999 px they take the row under them; the tabs follow under the head.
-  From 761 to 999 px the rows start at 334 px in a 720 px window, a named exception of
-  the First-Screen Rule (DESIGN.md). The tab row keeps the
+  From 761 to 999 px the rows start at 291 px in a 720 px window (measured
+  2026-11-07), a named exception of the First-Screen Rule held to 294 px (DESIGN.md). The tab row keeps the
   height of the tallest group's tabs on every table, a table with no tabs included
   (`docs/decisions/2026-11-04-the-table-head-is-set-by-the-band-not-the-table.md`). The search row follows: the search first (placeholder
   «Поиск» / "Search", named by the long `searchPh`, at least 140 px at 360),

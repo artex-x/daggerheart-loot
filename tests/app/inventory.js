@@ -1377,6 +1377,14 @@ const STATES = [
     why: 'a sectioned body: Pistolheart by volume, three volume headings, 93 rows'
   },
   {
+    id: '#/tables/ph ~ table picker',
+    route: '#/tables/pistolheart',
+    why: 'from 761 px the supplements tab is the picker: its sheet, «Дополнения» pressed, ten books, Pistolheart current',
+    enter: async (d) => {
+      await d.click('Таблица: Pistolheart');
+    }
+  },
+  {
     id: '#/tables/lr',
     route: '#/tables/last_round_table',
     why: 'a plain body with a kind row, 26 rows in book order'

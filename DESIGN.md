@@ -526,7 +526,8 @@ row is short the pills wrap inside their own box (the catalog's chips in Russian
 about 1139px); from 761px to 999px the pills take the next row, under the heading, the
 pin, the help and the primary, so the DOM order is the reading order in each band. A
 third level (a table group's books, the homebrew sources) is underlined tabs under the
-head. Up to 760px a page with siblings reads its heading, not draws it, and the mode row
+head; the ten supplements, 1331px of tabs, are one lit tab that opens the table picker's
+sheet. Up to 760px a page with siblings reads its heading, not draws it, and the mode row
 or the picker row names the page. The head's geometry follows the band only, never the content: the heading
 is constant, so a switch between siblings moves no pill, a row that some contents lack
 keeps its reserved space (on «Мои предметы» from 1000px the Sources, Sets and Rules tabs keep
@@ -535,8 +536,8 @@ on every tab), late content (a picture, a count) reserves its box, and the
 catalog's tab row keeps the height of the tallest group's tabs on every table; the
 homebrew sources are not reserved, because they hold the GM's own text (up to 12 names of
 80 characters), so `/tables/homebrew` may draw a taller row. From 1000px to 1139px in
-Russian the chips and the reserved tab row take two lines each (the rows start at 288px
-at 1000x720 and 287.5px at 1050x720). The lit pill takes the gold fill of the current
+Russian the chips take two lines (the rows start at 288px at 1000x720, measured
+2026-11-07). The lit pill takes the gold fill of the current
 place and no check (The Check Rule), and keeps its rest width: its label reserves the width
 of its lit weight, so lighting it moves no neighbor. Owner, 2026-11-05.
 
@@ -569,9 +570,10 @@ name at 1180x720 starts at 312px, because from 761px the name takes three lines 
 760px) and its search row at 360x640 starts at 304px (the notices strip measured 260px on
 2026-11-06; measured 2026-11-05 while the owner was
 away, the owner's figure was 292px). From 761px to 999px the rule is checked at 768x1024
-and 900x720 too, with one more exception: `/tables/*` in a 720px window starts at 334px,
-the reserved tab row of The Head Order Rule, held to 336px (measured 2026-11-05 and
-2026-11-06; owner, 2026-11-05). A design aims at 240px and 270px, so a small face or
+and 900x720 too, with one more exception: `/tables/*` in a 720px window starts at 291px,
+the pills' own row under the heading (The Head Order Rule), held to 294px (measured
+2026-11-07, when the supplements' tabs became the picker; it was 334px with their two lines;
+owner, 2026-11-05). A design aims at 240px and 270px, so a small face or
 line-box difference does not fail the rule. The primary content is the first
 roll result on a roll page, the table on `/tables/*`, the item on `/i/` and
 `/h/`, the first result on `/search`, the first settings panel on `/account`,
@@ -727,7 +729,9 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
 - **Two-level navigation:** the catalog's group chips in the head row, then the book
   or section of the group as underlined tabs under the head: Ash Violet text, the current tab
   gold text on a 2px gold underline. Each level is a group named for
-  assistive technology («Группа», the group's name, «Источник»).
+  assistive technology («Группа», the group's name, «Источник»). The supplements'
+  ten books are the table picker: one current tab, the open book's name and a chevron,
+  that opens the picker's sheet.
 
 ### Segmented control
 

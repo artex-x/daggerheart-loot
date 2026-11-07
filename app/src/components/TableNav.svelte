@@ -2,7 +2,8 @@
   /* The catalog's two-level navigation (docs/specs/FEATURES.md, "Tables and search"):
      the group chips, then the book or section of the group as tabs. Below 761 px both
      levels are the table picker's sheet: the picker, a group, a table - three taps to
-     another group's table. On `#/tables/homebrew` with two sources or more the tabs are
+     another group's table. From 761 px the supplements group opens the same sheet from
+     one tab that names its current book. On `#/tables/homebrew` with two sources or more the tabs are
      the sources, folded past `CHIP_FOLD_AT` (rule 12). */
   import { tick } from 'svelte';
   import Chip from './Chip.svelte';
@@ -68,11 +69,17 @@
       })
     );
 
+  /* From 761 px the supplements' books are the picker, not tabs: ten tabs need 1331 px for
+     one line, and a second line breaks The First-Screen Rule up to 1380 px (DESIGN.md). */
+  const picks = (g: TableGroup): boolean => g.id === 'supp';
+
   /* The captions of a group's tabs, or none: what the unseen copies in the tab slot draw.
      The homebrew group has none: its source tabs hold the GM's own text, up to 12 names of
      80 characters, and would push the rows of every table (DESIGN.md, "The Head Order Rule"). */
   function tabLabels(g: TableGroup): string[] {
-    return g.id !== 'hb' && g.subs.length > 1 ? g.subs.map((sub) => t[navSubLabel(sub)]) : [];
+    return g.id !== 'hb' && !picks(g) && g.subs.length > 1
+      ? g.subs.map((sub) => t[navSubLabel(sub)])
+      : [];
   }
 
   const picker = $derived(pickerLabel(table, t));
@@ -124,13 +131,64 @@
   {/if}
 {/snippet}
 
+{#snippet sheet()}
+  {#if picking}
+    <Sheet
+      {app}
+      label={t.tablePick.replace('%s', picker)}
+      title={t.tables}
+      onclose={() => {
+        picking = false;
+      }}
+    >
+      <div class="groups" role="group" aria-label={t.groupLabel}>
+        {#each groups as g (g.id)}
+          <Chip
+            label={t[g.label]}
+            on={g.id === shownGroup.id}
+            place
+            onclick={() => {
+              sheetGroup = g;
+            }}
+          />
+        {/each}
+      </div>
+      {@render tabs(shownGroup, picked)}
+    </Sheet>
+  {/if}
+{/snippet}
+
+{#snippet pickerBody()}
+  <span class="picker-t"
+    >{#if parts.book}<span class="picker-book">{parts.book}</span>{/if}{parts.name}</span
+  ><Icon name="chevron" />
+{/snippet}
+
 {#if part === 'tabs'}
   <!-- Up to 760 px the tabs live in the picker's sheet. The slot holds every group's tabs unseen, so it takes the tallest row's height on
        every table, and a table with fewer tabs or none starts its rows where the others
        do (DESIGN.md, "The Head Order Rule"). -->
   {#if app.band !== 'narrow'}
     <div class="tabslot">
-      {@render tabs(group, null)}
+      {#if picks(group)}
+        <!-- One lit tab that names the current book and opens the picker's sheet. -->
+        <div class="tabs">
+          <button
+            bind:this={pickerButton}
+            type="button"
+            class="tab picktab"
+            aria-haspopup="dialog"
+            aria-label={t.tablePick.replace('%s', picker)}
+            onclick={() => {
+              sheetGroup = null;
+              picking = true;
+            }}>{@render pickerBody()}</button
+          >
+        </div>
+        {@render sheet()}
+      {:else}
+        {@render tabs(group, null)}
+      {/if}
       <div class="ghosts" aria-hidden="true">
         {#each groups as g (g.id)}
           {@const labels = tabLabels(g)}
@@ -155,35 +213,9 @@
         onclick={() => {
           sheetGroup = null;
           picking = true;
-        }}
-        ><span class="picker-t"
-          >{#if parts.book}<span class="picker-book">{parts.book}</span>{/if}{parts.name}</span
-        ><Icon name="chevron" /></button
+        }}>{@render pickerBody()}</button
       >
-      {#if picking}
-        <Sheet
-          {app}
-          label={t.tablePick.replace('%s', picker)}
-          title={t.tables}
-          onclose={() => {
-            picking = false;
-          }}
-        >
-          <div class="groups" role="group" aria-label={t.groupLabel}>
-            {#each groups as g (g.id)}
-              <Chip
-                label={t[g.label]}
-                on={g.id === shownGroup.id}
-                place
-                onclick={() => {
-                  sheetGroup = g;
-                }}
-              />
-            {/each}
-          </div>
-          {@render tabs(shownGroup, picked)}
-        </Sheet>
-      {/if}
+      {@render sheet()}
     {:else}
       <div class="groups" role="group" aria-label={t.groupLabel}>
         {#each groups as g (g.id)}
@@ -260,9 +292,21 @@
     color: var(--txt);
   }
 
-  .tab[aria-current='page'] {
+  .tab[aria-current='page'],
+  .tab.picktab {
     color: var(--gold);
     border-bottom-color: var(--gold);
+  }
+
+  .tab.picktab {
+    gap: 2px;
+    border-top: 0;
+    border-right: 0;
+    border-left: 0;
+    background: none;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
   }
 
   /* The picker: the table's name as the page's visible heading below 761 px. */

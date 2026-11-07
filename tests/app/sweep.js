@@ -507,11 +507,11 @@ function headHeight(page) {
 }
 
 /** Returns the head's cap at `width`: 64 px for the picker row; for the two levels 140 px
- *  below 1000 px, where the seven supplement tabs take two lines (130 px at 768,
- *  measured 2026-10-30); 180 px from 1000 to 1139 px in RU, where the chips and the tab
- *  slot take two lines each (about 173 px at 1050, measured); 110 px from 1140 px. */
+ *  from 1000 to 1139 px, where the Russian chips take two lines (131 px at 1000, measured
+ *  2026-11-07), and 110 px elsewhere (87 px at 768 and 1180): the tab slot is one row, as
+ *  the supplements' books are the picker. */
 function headCap(width) {
-  return width <= 760 ? 64 : width < 1000 ? 140 : width < 1140 ? 180 : 110;
+  return width <= 760 ? 64 : width >= 1000 && width < 1140 ? 140 : 110;
 }
 
 (async () => {
