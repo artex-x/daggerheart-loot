@@ -1,5 +1,5 @@
 <script lang="ts">
-  /* «Импорт из файла JSON» in the lists index's «Новый список» panel: the
+  /* «Импорт из файла JSON», the panel under the lists index's head: the
      file, its preview with the skips grouped by list, or the reason it is
      refused, and the press that imports every list or none
      (docs/specs/FEATURES.md, "Lists"). A zip's `lists.json` is read by
@@ -253,9 +253,13 @@
     };
   }
 
+  /* A skip names the position and, where the data knows the record, its name; never the
+     raw id, which an author already has in the file (docs/specs/FEATURES.md, "Lists"). */
   function skipLine(s: Skipped): Line {
+    const it = app.index?.byId.get(s.id);
     return {
-      ...where(s.entry, s.id),
+      pos: t.importPos.replace('%n', String(s.entry + 1)),
+      ...(it ? { name: nameOf(it, app.lang) } : {}),
       text:
         s.why === 'unknown'
           ? t.importSkipUnknown
@@ -293,18 +297,15 @@
       if (list) list.push(s);
       else byList.set(s.list, [s]);
     }
-    const lists = view.lists.map((l, i) => {
-      const lines = (byList.get(i) ?? []).map(skipLine);
-      if (held.has(l.name.trim())) lines.push({ text: t.importNameTaken });
-      return {
-        head: `${String(i + 1)}. ${listName(l.name)}`,
-        size: l.entries.length
-          ? plural(l.entries.length, t.importWillN, app.lang)
-          : t.importListEmpty,
-        lines
-      };
-    });
-    return lists.some((l) => l.lines.length) ? lists : null;
+    const lists = view.lists.map((l, i) => ({
+      head: `${String(i + 1)}. ${listName(l.name)}`,
+      size: l.entries.length
+        ? plural(l.entries.length, t.importWillN, app.lang)
+        : t.importListEmpty,
+      skips: (byList.get(i) ?? []).map(skipLine),
+      taken: held.has(l.name.trim())
+    }));
+    return lists.some((l) => l.skips.length || l.taken) ? lists : null;
   });
 
   /* The preview's head: the texts with each number in bold (the odd parts). */
@@ -351,6 +352,7 @@
     /* An own item deleted since the preview gains its copy, with the same ids. */
     const fresh = app.importPlan(lists, plan) ?? plan;
     if (fresh !== plan && view.kind === 'preview') view = { ...view, plan: fresh };
+    app.closeErrorToast();
     sending = true;
     const answer = await app.importLists(fresh);
     sending = false;
@@ -445,7 +447,13 @@
         {#each allLists ? report : report.slice(0, LISTS_SHOWN) as l (l.head)}
           <div class="rep-list">
             <b>{l.head}</b><small>{l.size}</small>
-            {#if l.lines.length}<ImportLines lines={l.lines} more={moreLines} cls="skip" />{/if}
+            {#if l.taken}<p class="taken">{t.importNameTaken}</p>{/if}
+            {#if l.skips.length}
+              <details class="skips">
+                <summary>{t.importSkippedList.replace('%n', String(l.skips.length))}</summary>
+                <ImportLines lines={l.skips} more={moreLines} cls="skip" />
+              </details>
+            {/if}
           </div>
         {/each}
         {#if report.length > LISTS_SHOWN}
@@ -529,8 +537,35 @@
     color: var(--danger-text);
   }
 
-  .rep-list :global(.skip) {
+  .rep-list :global(.skip),
+  .taken {
     color: var(--muted);
+  }
+
+  .taken {
+    margin: 4px 0 0;
+  }
+
+  /* A list's skips are details on request (D6): closed on arrival, the count in the summary. */
+  .skips {
+    margin-top: 4px;
+  }
+
+  .skips summary {
+    width: fit-content;
+    color: var(--muted2);
+    cursor: pointer;
+  }
+
+  .skips summary:hover {
+    color: var(--txt);
+  }
+
+  @media screen and (max-width: 600px) {
+    .skips summary {
+      padding-block: max(0px, calc((var(--thumb) - 1lh) / 2));
+      margin-block: min(0px, calc((1lh - var(--thumb)) / 2));
+    }
   }
 
   /* The count of errors past the kept ones. */

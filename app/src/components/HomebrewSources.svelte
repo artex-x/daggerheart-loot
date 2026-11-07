@@ -597,6 +597,15 @@
     color: var(--txt);
   }
 
+  /* The name link reaches the thumb target by its padded box. */
+  @media screen and (max-width: 600px) {
+    a.name {
+      display: inline-block;
+      padding-block: max(0px, calc((var(--thumb) - 1lh) / 2));
+      margin-block: min(0px, calc((1lh - var(--thumb)) / 2));
+    }
+  }
+
   .count {
     min-width: 0;
     font-size: var(--t-data);

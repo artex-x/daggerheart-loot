@@ -16,15 +16,14 @@ RootWebArea "Arazo's Artifacts - Генератор лута Daggerheart" [url=/
       link "Бросок" [url=/roll/arazos_artifacts]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
-  navigation "Режим броска"
-    link "Обычные правила" [url=/roll/std]
-    link "Альтернативные таблицы" [url=/roll/alt]
-    button "Arazo's Artifacts" [expanded=false haspopup=menu]
   main ""
-    heading "The Guide to Arazo's Artifacts" [level=1]
+    heading "Бросок" [level=1]
+    navigation "Режим броска"
+      link "Обычные правила" [url=/roll/std]
+      link "Альтернативные таблицы" [url=/roll/alt]
+      button "Arazo's Artifacts" [expanded=false haspopup=menu]
     button "Открывать при запуске" [pressed=false]
     button "Об этой книге" [expanded=false]
-    StaticText "Введите результат броска или получите случайную позицию."
     button "Бросить 1-78"
     StaticText "РЕЗУЛЬТАТ БРОСКА (1-78)"
     button "На единицу меньше" [disabled=true]
@@ -34,7 +33,8 @@ RootWebArea "Arazo's Artifacts - Генератор лута Daggerheart" [url=/
     status ""
       StaticText "Нестареющее Око Зверя"
     button "Открыть карточку"
-    ... StaticText x13 of 17 same-shape siblings elided
+    StaticText "1"
+    ... StaticText x12 of 16 same-shape siblings elided
     link "Нестареющее Око Зверя" [description=Открыть страницу url=/i/aa1]
     StaticText "потратить Надежду"
     StaticText ", чтобы цель отметила дополнительную Рану. Если вы это делаете, ..." [namelen=130 namehash=5ae96141]
@@ -90,15 +90,14 @@ RootWebArea "Arazo's Artifacts - Daggerheart Loot Generator" [url=/en/roll/arazo
       link "Roll" [url=/en/roll/arazos_artifacts]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
-  navigation "Roll mode"
-    link "Standard rules" [url=/en/roll/std]
-    link "Alternate tables" [url=/en/roll/alt]
-    button "Arazo's Artifacts" [expanded=false haspopup=menu]
   main ""
-    heading "The Guide to Arazo's Artifacts" [level=1]
+    heading "Roll" [level=1]
+    navigation "Roll mode"
+      link "Standard rules" [url=/en/roll/std]
+      link "Alternate tables" [url=/en/roll/alt]
+      button "Arazo's Artifacts" [expanded=false haspopup=menu]
     button "Open on start" [pressed=false]
     button "About this book" [expanded=false]
-    StaticText "Enter your roll result, or pick a random entry."
     button "Roll 1-78"
     StaticText "ROLL RESULT (1-78)"
     button "One lower" [disabled=true]
@@ -108,7 +107,8 @@ RootWebArea "Arazo's Artifacts - Daggerheart Loot Generator" [url=/en/roll/arazo
     status ""
       StaticText "The Ageless Eye of the Beast"
     button "Open card"
-    ... StaticText x13 of 17 same-shape siblings elided
+    StaticText "1"
+    ... StaticText x12 of 16 same-shape siblings elided
     link "The Ageless Eye of the Beast" [description=Open page url=/i/en/aa1]
     StaticText "spend a Hope"
     StaticText " to cause the target to mark an additional HP. If you do so, unt..." [namelen=135 namehash=f28e27a4]

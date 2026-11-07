@@ -20,6 +20,8 @@
   --line2: #3f3758;
 
   --txt: #ece8f6;
+  /* Prose a step under Chalk: a description, a help panel, the markup preview. */
+  --txt-soft: #cfc8e0;
   --muted: #9b93b3;
   /* 4.93:1 on a panel, 5.41:1 on the page background. The #736b8c this
      replaced was 3.89:1, and it carried every section label, placeholder and
@@ -62,17 +64,14 @@
   --r: 14px;
   --r-sm: 9px;
   --shadow: 0 10px 34px -14px rgb(0 0 0 / 85%);
+  /* The one scrim of every modal (DESIGN.md, "Sheet"): a dark veil, no blur. */
+  --scrim: rgb(6 4 12 / 78%);
 
   /* The UI face is self-hosted from the build's own origin
      (`@fontsource-variable/source-sans-3`, imported in `main.ts`); the system
      stack after it draws while the face loads (`font-display: swap`). */
   --ui:
     'Source Sans 3 Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  /* The print card keeps the stack it was fitted with, apart from `--ui`:
-     a face change there needs its own print batch (DESIGN.md, "The Local Font Rule"). */
-  --print-ui:
-    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
-    sans-serif;
   --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
   /* The ten type steps (DESIGN.md, "The Ten Steps Rule"); `tests/app/typo.js`
@@ -101,11 +100,23 @@
      dossier; its width is stated in DESIGN.md, "The One Width Rule". */
   --dossier-w: 980px;
 
+  /* The Measure Rule (DESIGN.md, "Typography"): a line, and a passage read line after line. */
+  --measure-line: 120ch;
+  --measure-text: 70ch;
+
   /* The page heading's weight and tracking; its size is `--t-page`. */
   --h-page-weight: 680;
   --h-page-spacing: -0.01em;
 
   --gap-sm: 6px;
+
+  /* The space above an empty plate: twice a chip row's gap, so the plate reads as the next
+     block (DESIGN.md, "Empty state"). */
+  --gap-plate: 16px;
+
+  /* The thumb target up to 600px (DESIGN.md, "The Phone-First Rule"); 0 lets a floor of
+     `max(<size>, var(--thumb))` keep the size from 601px. */
+  --thumb: 0px;
 
   /* The color every gold-filled control prints its own text in - a button,
      a chip, the home pin, a toast action. Not `--bg`/`--surface`: darker than
@@ -135,6 +146,13 @@
   }
 }
 
+/* `screen`: print never takes the thumb floor. */
+@media screen and (max-width: 600px) {
+  :root {
+    --thumb: 40px;
+  }
+}
+
 *,
 *::before,
 *::after {
@@ -153,15 +171,17 @@ html {
   /* A focused control and a linked target stop clear of the header at its full height,
      whether it is shown or hidden (WCAG 2.4.11). */
   scroll-padding-top: var(--sticky-h);
-  /* A focused control scrolls clear of the sticky selection bar and the editor's bar
-     (`SelectionBar.svelte` and `HomebrewEditor.svelte` set the heights while mounted). */
-  scroll-padding-bottom: calc(var(--selbar-h, 0px) + var(--ebar-h, 0px));
+  /* A focused control scrolls clear of the sticky selection bar, the editor's bottom bar
+     and the print page's dock (`SelectionBar.svelte`, `HomebrewEditor.svelte` and
+     `PrintPage.svelte` set the heights while mounted). */
+  scroll-padding-bottom: calc(var(--selbar-h, 0px) + var(--ebar-h, 0px) + var(--pdock-h, 0px));
 }
 
-/* Under 481 px of height the editor's bar stays in the flow (`HomebrewEditor.svelte`). */
+/* Under 481 px of height the editor's bar stays in the flow (`HomebrewEditor.svelte`); the
+   print page's dock sticks at every height. */
 @media (max-height: 480px) {
   html {
-    scroll-padding-bottom: var(--selbar-h, 0px);
+    scroll-padding-bottom: calc(var(--selbar-h, 0px) + var(--pdock-h, 0px));
   }
 }
 

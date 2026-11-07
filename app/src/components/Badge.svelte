@@ -71,12 +71,10 @@
     border-color: #5ec9c473;
   }
 
-  /* Dashed, because it is a property of the thing rather than a category;
-     neutral, because nobody chose it (DESIGN.md, "The Seal Rule"). */
+  /* Neutral, because nobody chose it (The Seal Rule); its word says it is a property. */
   .badge.uniq {
     color: var(--muted);
     border-color: var(--line2);
-    border-style: dashed;
   }
 
   .badge.tier {

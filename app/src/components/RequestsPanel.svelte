@@ -24,7 +24,7 @@
   import { itemHash } from '../lib/hash.js';
   import { nameOf } from '../lib/i18n.js';
   import type { StoredList } from '../lib/lists.js';
-  import { moneyMode, priceText, totalParts } from '../lib/money.js';
+  import { moneyMode, priceText } from '../lib/money.js';
   import { plural } from '../lib/plural.js';
   import { ageText, noticeName, requestTotal, shortText, whoText } from '../lib/requests.js';
   import type { AppState } from '../state/app.svelte.js';
@@ -48,6 +48,9 @@
   const NOTICES_SHOWN = 3;
 
   let open = $state(false);
+  /* The panel folds to its head on every page visit (docs/specs/FEATURES.md, "Lists");
+     memory only. */
+  let folded = $state(true);
   let head = $state<HTMLHeadingElement | undefined>(undefined);
   let panel = $state<HTMLElement | undefined>(undefined);
   /* The requests whose every line is drawn, and whether every request is. */
@@ -86,6 +89,7 @@
   $effect(() => {
     if (!owner || app.requestsFocus !== list.id) return;
     if (head) {
+      folded = false;
       head.focus();
       app.requestsFocus = null;
     } else if (owner.status === 'ready' || owner.status === 'error') {
@@ -151,7 +155,8 @@
      the list's own notices read, in a visible tab: a folded or background row never starts
      its last hour unseen (docs/specs/FEATURES.md, "Account and browser lists"). */
   const unread = $derived(
-    !!owner?.noticesRead &&
+    !folded &&
+      !!owner?.noticesRead &&
       shown.length === pending.length &&
       shownNotices.length === notices.length &&
       (pending.some((r) => r.readAt === null) || notices.some((n) => n.readAt === null))
@@ -185,184 +190,226 @@
   </div>
 {/if}
 {#if owner && (pending.length || decided.length || notices.length)}
-  <section class="reqpanel" aria-labelledby="reqpanel-h" bind:this={panel}>
-    <h2 id="reqpanel-h" tabindex="-1" bind:this={head}>
-      {t.inboxHead.replace('%n', String(pending.length + notices.length))}
-    </h2>
-    {#each shown as r (r.id)}
-      {@const short = owner.short[r.id]}
-      {@const total = totalParts(requestTotal(r.lines), mode, app.lang, t)}
-      {@const all = linesOpen.has(r.id)}
-      {@const rest = r.lines.length - LINES_SHOWN}
-      <div class="req">
-        <div class="who">{whoText(r, app.now, app.lang, t)}</div>
-        <table>
-          <tbody>
-            {#each all ? r.lines : r.lines.slice(0, LINES_SHOWN) as l (l.item)}
-              {@const stock = stockOf(l.item)}
-              <tr>
-                <td>{itemName(l.item)}</td>
-                <td class="n" class:short={l.qty > (stock ?? 0)}
-                  >{stock === null
-                    ? t.requestNotInList
-                    : t.requestOf.replace('%w', String(l.qty)).replace('%h', String(stock))}</td
+  <section class="reqpanel" class:folded aria-labelledby="reqpanel-h" bind:this={panel}>
+    <div class="reqhead">
+      <h2 id="reqpanel-h" tabindex="-1" bind:this={head}>
+        {t.inboxHead.replace('%n', String(pending.length + notices.length))}
+      </h2>
+      <Button
+        size="sm"
+        variant="bare"
+        expanded={!folded}
+        controls="reqpanel-body"
+        onclick={() => {
+          folded = !folded;
+        }}>{folded ? t.requestsOpen : t.requestsFold}</Button
+      >
+    </div>
+    {#if !folded}
+      <div id="reqpanel-body">
+        {#each shown as r, i (r.id)}
+          {@const short = owner.short[r.id]}
+          {@const total = requestTotal(r.lines)}
+          {@const all = linesOpen.has(r.id)}
+          {@const rest = r.lines.length - LINES_SHOWN}
+          <div class="req">
+            <div class="who">{whoText(r, app.now, app.lang, t)}</div>
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">{t.reqItem}</th>
+                  <th scope="col" class="n">{t.reqWas}</th>
+                  <th scope="col" class="n">{t.reqTaken}</th>
+                  <th scope="col" class="n">{t.reqBecomes}</th>
+                  <th scope="col" class="n">{t.reqPrice}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {#each all ? r.lines : r.lines.slice(0, LINES_SHOWN) as l (l.item)}
+                  {@const stock = stockOf(l.item)}
+                  {@const took = stock === null ? 0 : Math.min(l.qty, stock)}
+                  <tr>
+                    <td
+                      >{itemName(l.item)}{#if stock !== null && l.qty > stock}<span
+                          class="shortline"
+                          >{t.reqShortLine
+                            .replace('%w', String(l.qty))
+                            .replace('%h', String(stock))
+                            .replace('%t', String(took))}</span
+                        >{/if}</td
+                    >
+                    {#if stock === null}
+                      <td class="n short" colspan="3">{t.requestNotInList}</td>
+                    {:else}
+                      <td class="n" data-h={t.reqWas}>{stock}</td>
+                      <td class="n" data-h={t.reqTaken}>{took}</td>
+                      <td class="n" data-h={t.reqBecomes}>{stock - took}</td>
+                    {/if}
+                    <td class="n" data-h={t.reqPrice}
+                      >{l.price === null
+                        ? t.reqNoPrice
+                        : priceText(l.price * l.qty, mode, app.lang)}</td
+                    >
+                  </tr>
+                {/each}
+              </tbody>
+            </table>
+            {#if rest > 0}
+              <div class="more">
+                <FoldButton
+                  open={all}
+                  more={plural(rest, t.requestLinesMoreN, app.lang)}
+                  {t}
+                  ontoggle={() => {
+                    if (all) linesOpen.delete(r.id);
+                    else linesOpen.add(r.id);
+                  }}
+                />
+              </div>
+            {/if}
+            {#if total.coins > 0}
+              <div class="total">
+                {t.total}: <b>{priceText(total.coins, mode, app.lang)}</b>{total.unpriced
+                  ? ' · ' + plural(total.unpriced, t.reqUnpricedN, app.lang)
+                  : ''}
+              </div>
+            {/if}
+            {#if short}
+              <p class="shortmsg" role="alert">{shortText(short, itemName, t)}</p>
+            {/if}
+            <Actions>
+              <!-- One gold action in the panel: the first request's (DESIGN.md, "The Seal Rule"). -->
+              {#if !short}
+                <Button
+                  size="sm"
+                  variant={i === 0 ? 'primary' : 'plain'}
+                  disabled={owner.busy !== null}
+                  onclick={() => void answer(r.id, () => owner.apply(r.id, false))}
+                  >{t.requestApply}</Button
                 >
-                <td class="n"
-                  >{l.price === null ? '-' : priceText(l.price * l.qty, mode, app.lang)}</td
+              {:else if r.lines.some((l) => (stockOf(l.item) ?? 0) > 0)}
+                <Button
+                  size="sm"
+                  variant={i === 0 ? 'primary' : 'plain'}
+                  disabled={owner.busy !== null}
+                  onclick={() => void answer(r.id, () => owner.apply(r.id, true))}
+                  >{t.requestApplyAvailable}</Button
                 >
-              </tr>
-            {/each}
-          </tbody>
-        </table>
-        {#if rest > 0}
+              {/if}
+              <Button
+                size="sm"
+                disabled={owner.busy !== null}
+                onclick={() => void answer(r.id, () => owner.decline(r.id))}
+                >{t.requestDecline}</Button
+              >
+            </Actions>
+          </div>
+        {/each}
+        {#if pending.length > REQUESTS_SHOWN}
           <div class="more">
             <FoldButton
-              open={all}
-              more={plural(rest, t.requestLinesMoreN, app.lang)}
+              open={allOpen}
+              more={plural(pending.length - REQUESTS_SHOWN, t.requestsMoreN, app.lang)}
               {t}
               ontoggle={() => {
-                if (all) linesOpen.delete(r.id);
-                else linesOpen.add(r.id);
+                allOpen = !allOpen;
               }}
             />
           </div>
         {/if}
-        {#if total}
-          <div class="total">
-            {total.label} <b>{total.value}</b>{total.unpriced ? ' ' + total.unpriced : ''}
-          </div>
-        {/if}
-        {#if short}
-          <p class="shortmsg" role="alert">{shortText(short, itemName, t)}</p>
-        {/if}
-        <Actions>
-          {#if !short}
-            <Button
-              size="sm"
-              variant="primary"
-              disabled={owner.busy !== null}
-              onclick={() => void answer(r.id, () => owner.apply(r.id, false))}
-              >{t.requestApply}</Button
-            >
-          {:else if r.lines.some((l) => (stockOf(l.item) ?? 0) > 0)}
-            <Button
-              size="sm"
-              variant="primary"
-              disabled={owner.busy !== null}
-              onclick={() => void answer(r.id, () => owner.apply(r.id, true))}
-              >{t.requestApplyAvailable}</Button
-            >
-          {/if}
-          <Button
-            size="sm"
-            disabled={owner.busy !== null}
-            onclick={() => void answer(r.id, () => owner.decline(r.id))}
-            >{t.requestDecline}</Button
-          >
-        </Actions>
-      </div>
-    {/each}
-    {#if pending.length > REQUESTS_SHOWN}
-      <div class="more">
-        <FoldButton
-          open={allOpen}
-          more={plural(pending.length - REQUESTS_SHOWN, t.requestsMoreN, app.lang)}
-          {t}
-          ontoggle={() => {
-            allOpen = !allOpen;
-          }}
-        />
-      </div>
-    {/if}
-    {#if notices.length}
-      <ul class="notices">
-        {#each shownNotices as n (n.id)}
-          {@const name = noticeName(n, app.lang)}
-          <li class="notice">
-            <span class="ntext">
-              {#if fresh.has(stamp(n))}
-                <span class="nnew">{t.noticeNew}</span>
-              {/if}
-              {#if n.kind === 'changed'}
-                {t.noticeChanged.replace('%s', name)}
-                {#if n.hid}
-                  <a href={app.href(itemHash(n.hid))}>{t.noticeOpen}</a>
-                {/if}
-              {:else}
-                {t.noticeDeleted.replace('%s', name)}
-              {/if}
-            </span>
-            <Button
-              size="sm"
-              variant="bare"
-              label={t.noticeHideName.replace('%s', name)}
-              onclick={() => void hideNotices([n.id])}>{t.requestsHide}</Button
-            >
-          </li>
-        {/each}
-      </ul>
-      {#if notices.length > 1}
-        <div class="more nfold">
-          {#if notices.length > NOTICES_SHOWN}
-            <FoldButton
-              open={noticesOpen}
-              more={plural(notices.length - NOTICES_SHOWN, t.noticesMoreN, app.lang)}
-              {t}
-              ontoggle={() => {
-                noticesOpen = !noticesOpen;
-              }}
-            />
-          {/if}
-          <span class="hide"
-            ><Button
-              size="sm"
-              variant="bare"
-              onclick={() => void hideNotices(notices.map((n) => n.id))}>{t.noticesHide}</Button
-            ></span
-          >
-        </div>
-      {/if}
-    {/if}
-    {#if decided.length}
-      <div class="decided">
-        <div class="dhead">
-          <Button
-            size="sm"
-            variant="bare"
-            caret
-            expanded={open}
-            onclick={() => {
-              open = !open;
-            }}>{t.requestsDecided.replace('%n', String(decided.length))}</Button
-          >
-          <span class="hide"
-            ><Button
-              size="sm"
-              variant="bare"
-              label={t.requestsHideName}
-              onclick={() => void hide()}>{t.requestsHide}</Button
-            ></span
-          >
-        </div>
-        {#if open}
-          <ul>
-            {#each decided as d (d.id)}
-              <li>
-                {ageText(d, app.now, app.lang, t)} ·
-                {#if d.verdict === 'declined'}<span class="st-no">{t.requestDeclinedLine}</span
-                  >{:else if d.verdict === 'taken'}<span class="st-ok"
-                    >{t.requestTakenLine.replace('%n', String(d.taken))}</span
-                  >{:else}<span class="st-ok">{t.requestAppliedLine}</span>{/if}
-                <table class="dlines">
-                  <tbody>
-                    {#each d.lines as l (l.item)}
-                      <tr><td>{itemName(l.item)}</td><td class="n">×{l.qty}</td></tr>
-                    {/each}
-                  </tbody>
-                </table>
+        {#if notices.length}
+          <ul class="notices">
+            {#each shownNotices as n (n.id)}
+              {@const name = noticeName(n, app.lang)}
+              <li class="notice">
+                <span class="ntext">
+                  {#if fresh.has(stamp(n))}
+                    <span class="nnew">{t.noticeNew}</span>
+                  {/if}
+                  {#if n.kind === 'changed'}
+                    {t.noticeChanged.replace('%s', name)}
+                    {#if n.hid}
+                      <a href={app.href(itemHash(n.hid))}>{t.noticeOpen}</a>
+                    {/if}
+                  {:else}
+                    {t.noticeDeleted.replace('%s', name)}
+                  {/if}
+                </span>
+                <Button
+                  size="sm"
+                  variant="bare"
+                  label={t.noticeHideName.replace('%s', name)}
+                  onclick={() => void hideNotices([n.id])}>{t.requestsHide}</Button
+                >
               </li>
             {/each}
           </ul>
+          {#if notices.length > 1}
+            <div class="more nfold">
+              {#if notices.length > NOTICES_SHOWN}
+                <FoldButton
+                  open={noticesOpen}
+                  more={plural(notices.length - NOTICES_SHOWN, t.noticesMoreN, app.lang)}
+                  {t}
+                  ontoggle={() => {
+                    noticesOpen = !noticesOpen;
+                  }}
+                />
+              {/if}
+              <span class="hide"
+                ><Button
+                  size="sm"
+                  variant="bare"
+                  onclick={() => void hideNotices(notices.map((n) => n.id))}
+                  >{t.noticesHide}</Button
+                ></span
+              >
+            </div>
+          {/if}
+        {/if}
+        {#if decided.length}
+          <div class="decided">
+            <div class="dhead">
+              <Button
+                size="sm"
+                variant="bare"
+                caret
+                expanded={open}
+                onclick={() => {
+                  open = !open;
+                }}>{t.requestsDecided.replace('%n', String(decided.length))}</Button
+              >
+              <span class="hide"
+                ><Button
+                  size="sm"
+                  variant="bare"
+                  label={t.requestsHideName}
+                  onclick={() => void hide()}>{t.requestsHide}</Button
+                ></span
+              >
+            </div>
+            {#if open}
+              <ul>
+                {#each decided as d (d.id)}
+                  <li>
+                    {ageText(d, app.now, app.lang, t)} ·
+                    {#if d.verdict === 'declined'}<span class="st-no"
+                        >{t.requestDeclinedLine}</span
+                      >{:else if d.verdict === 'taken'}<span class="st-ok"
+                        >{t.requestTakenLine.replace('%n', String(d.taken))}</span
+                      >{:else}<span class="st-ok">{t.requestAppliedLine}</span>{/if}
+                    <table class="dlines">
+                      <tbody>
+                        {#each d.lines as l (l.item)}
+                          <tr><td>{itemName(l.item)}</td><td class="n">×{l.qty}</td></tr>
+                        {/each}
+                      </tbody>
+                    </table>
+                  </li>
+                {/each}
+              </ul>
+            {/if}
+          </div>
         {/if}
       </div>
     {/if}
@@ -386,18 +433,54 @@
     margin: 0 0 18px;
   }
 
+  /* The `Panel` ground: a waiting request is nobody's choice, so no gold frame. */
   .reqpanel {
     margin: 0 0 18px;
-    border: 1px solid rgb(var(--gold-rgb) / 45%);
+    border: 1px solid var(--line);
     border-radius: var(--r);
-    background: rgb(var(--gold-rgb) / 6%);
+    background: linear-gradient(180deg, var(--surface2), var(--surface));
+    box-shadow: var(--shadow);
     padding: 12px 14px;
   }
 
-  .reqpanel > h2 {
-    margin: 0 0 8px;
+  /* The head stays drawn while the panel is folded: the arrival toast focuses its `h2`. */
+  .reqhead {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .reqhead h2 {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
     font-size: var(--t-body);
     font-weight: 650;
+  }
+
+  .reqhead + div {
+    margin-top: 8px;
+  }
+
+  th {
+    padding: 3px 0;
+    text-align: left;
+    font-size: var(--t-badge);
+    font-weight: 650;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted2);
+  }
+
+  th.n {
+    text-align: right;
+    padding-left: 12px;
+  }
+
+  .shortline {
+    display: block;
+    font-size: var(--t-data);
+    color: var(--danger-text);
   }
 
   .req {
@@ -439,7 +522,7 @@
 
   .total {
     font-size: var(--t-small);
-    color: var(--gold-soft);
+    color: var(--txt);
     margin-bottom: 8px;
   }
 
@@ -481,13 +564,25 @@
   .ntext {
     flex: 1 1 auto;
     min-width: 0;
+    max-width: var(--measure-text);
     overflow-wrap: anywhere;
+  }
+
+  /* «Открыть» after the notice: the thumb target up to 600 px and 24 px from 601 px by a
+     padded box, the growth given back (DESIGN.md, "The Phone-First Rule"). */
+  .ntext a {
+    position: relative;
+    display: inline-block;
+    min-width: var(--thumb);
+    text-align: center;
+    padding-block: max(0px, calc((max(24px, var(--thumb)) - 1lh) / 2));
+    margin-block: min(0px, calc((1lh - max(24px, var(--thumb))) / 2));
   }
 
   .nnew {
     font-size: var(--t-label);
     font-weight: 650;
-    color: var(--gold-soft);
+    color: var(--muted2);
   }
 
   .nfold {
@@ -533,25 +628,80 @@
   }
 
   .st-ok {
-    color: var(--gold-soft);
+    color: var(--muted2);
   }
 
   .st-no {
     color: var(--danger-text);
   }
 
+  /* Up to 760 px the folded strip is one short line above the rows (DESIGN.md, "The
+     First-Screen Rule"). */
+  @media (max-width: 760px) {
+    .reqpanel.folded {
+      padding: 6px 12px;
+      margin-bottom: 10px;
+    }
+  }
+
+  /* Up to 600 px each line is its own block: the name, then the four values, each under
+     its own caption; the head row stays for a screen reader only, and a price stays whole. */
   @media (max-width: 600px) {
+    thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+    }
+
+    tbody tr {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(max-content, 1.3fr);
+      gap: 1px 8px;
+      padding: 4px 0;
+    }
+
+    td {
+      padding: 0;
+    }
+
+    tbody td:first-child {
+      grid-column: 1 / -1;
+      font-weight: 600;
+      overflow-wrap: break-word;
+      /* A long name or short line would widen the price track it spans. */
+      contain: inline-size;
+    }
+
+    td.n {
+      padding-left: 0;
+      text-align: left;
+    }
+
+    td.n[colspan] {
+      grid-column: span 3;
+      white-space: normal;
+    }
+
+    td.n::before {
+      content: attr(data-h) / '';
+      display: block;
+      font-size: var(--t-badge);
+      line-height: 1.3;
+      font-weight: 650;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted2);
+    }
+
+    td.n[colspan]::before {
+      content: none;
+    }
+
     .req :global(.btn) {
       flex: 1 1 0;
       justify-content: center;
-    }
-
-    /* A touch target at phone width, as every control here (DESIGN.md, "The Two
-       Breakpoints Rule"). */
-    .decided :global(.btn),
-    .notice :global(.btn),
-    .more :global(.btn) {
-      min-height: 36px;
     }
   }
 </style>

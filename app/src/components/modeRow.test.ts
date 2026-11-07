@@ -48,17 +48,34 @@ describe('the mode row', () => {
     );
   });
 
-  /* Rule 4: the lit control reads the page's heading. The one departure is Arazo's
-     Artifacts, whose heading is the book's full title. */
-  it.each(ROLL.filter((s) => s !== 'roll/arazo'))(
-    'reads the heading of %s on its lit control',
+  /* Rule 4: the heading names the job, «Бросок»; the lit control reads the page's name,
+     as the tab title does. */
+  it.each(ROLL)(
+    'reads the tab title of %s on its lit control under the heading «Бросок»',
     async (s) => {
       render(App, { env: fakeEnv({ router: memoryRouter(sectionHash(s)) }) });
       const h1 = await screen.findByRole('heading', { level: 1 });
+      expect(h1.textContent).toBe('Бросок');
       const nav = screen.getByRole('navigation', { name: 'Режим броска' });
-      expect(nav.querySelector('[aria-current="page"]')?.textContent).toBe(h1.textContent);
+      const lit = nav.querySelector('[aria-current="page"]')?.textContent ?? '';
+      expect(lit).not.toBe('');
+      expect(document.title.startsWith(`${lit} - `)).toBe(true);
     }
   );
+
+  it('draws the same three controls with no row of its own in the page head', async () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/roll/alt') }));
+    const view = render(ModeRow, { app, inhead: true });
+    const nav = screen.getByRole('navigation', { name: 'Режим броска' });
+    expect(nav).toHaveClass('inhead');
+    expect(
+      within(nav)
+        .getAllByRole('link')
+        .map((a) => a.textContent)
+    ).toEqual(['Обычные правила', 'Альтернативные таблицы']);
+    expect(button(nav).textContent).toBe('Дополнения');
+    await expectNoA11yViolations(view.container);
+  });
 
   it.each(['#/tables', '#/search', '#/lists', '#/i/ci1', '#/account'])(
     'draws no mode row on %s',
@@ -130,6 +147,18 @@ describe('the supplements menu', () => {
     await userEvent.keyboard('{End}');
     expect(items[6]).toHaveFocus();
     await userEvent.keyboard('{Escape}');
+    expect(screen.queryByRole('menu')).toBeNull();
+    expect(button(nav)).toHaveFocus();
+  });
+
+  it('returns the focus to its button after a supplement is picked', async () => {
+    const { nav, items } = await open('#/roll/std');
+    const noNavigation = (e: MouseEvent): void => {
+      e.preventDefault();
+    };
+    document.addEventListener('click', noNavigation);
+    await userEvent.click(items[3] as HTMLElement);
+    document.removeEventListener('click', noNavigation);
     expect(screen.queryByRole('menu')).toBeNull();
     expect(button(nav)).toHaveFocus();
   });

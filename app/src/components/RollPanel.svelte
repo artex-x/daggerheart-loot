@@ -28,9 +28,6 @@
     app: AppState;
     /** The section, which is what the help panel is written against. */
     section: string;
-    title: string;
-    /** The line under the heading. */
-    sub: string;
     /** What this roll picks from, already narrowed by any picker above. */
     rows: readonly Record_[];
     /** The choice beside the roll button, where the section has one. */
@@ -43,7 +40,7 @@
     pickerValue?: unknown;
   }
 
-  const { app, section, title, sub, rows, picker, pickerValue }: Props = $props();
+  const { app, section, rows, picker, pickerValue }: Props = $props();
 
   const t = $derived(app.t);
   const index = $derived(app.index);
@@ -86,8 +83,7 @@
 <RollPage
   {app}
   {index}
-  {title}
-  {sub}
+  sub=""
   {help}
   rolled={String(n)}
   said={shown ? [shown.it] : []}

@@ -19,40 +19,36 @@ RootWebArea "Трофеи - Генератор лута Daggerheart" [url=/lists
       link "Поиск" [url=/search]
   main ""
     StaticText "Трофеи"
-    textbox "Название списка" [value=Трофеи multiline=false readonly=false required=false]
+    textbox "Название списка" [value=Трофеи multiline=true readonly=false required=false]
     StaticText "2 позиции из 100 · "
     ... StaticText x7 of 11 same-shape siblings elided
     button "Поделиться" [expanded=true]
-    button "Скопировать текст"
-    button "Скачать JSON"
     button "Печать" [description=Собрать карточки для печати: девять на лист A4]
-    ... button x5 of 9 same-shape siblings elided
+    button "Бросить по списку" [expanded=false]
+    button "Ещё" [expanded=false haspopup=menu]
+    button "Заметки" [expanded=false]
+    heading "Поделиться" [level=2]
     link "/s/share-token-1" [url=/s/share-token-1]
+    button "Скопировать"
+    button "Удалить ссылку"
     link "/s/share-token-2" [url=/s/share-token-2]
+    ... button x3 of 7 same-shape siblings elided
     status ""
-    DisclosureTriangle "ЗАМЕТКИ" [expanded=false]
-    DisclosureTriangle "БРОСОК ПО СПИСКУ" [expanded=false]
-    checkbox "Выбрать все" [checked=false]
-    generic ""
-    checkbox "Палаш" [checked=false]
     spinbutton "Позиция в списке" [value=1 valuetext=1 required=false valuemin=1 valuemax=2]
     button "Палаш ОСНОВНОЕ ОРУЖИЕ Ранг 1 · Физическое · Проворность · Вплотн..." [namelen=117 namehash=bd6b3505]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
-    button "Заметка" [description=Заметка]
-    button "Только для мастера: Палаш" [description=Только для мастера pressed=false]
-    button "Убрать из списка" [description=Убрать из списка]
-    checkbox "Первоклассный Спальный Мешок" [checked=false]
+    button "Заметка" [expanded=false]
+    button "Ещё: Палаш" [expanded=false haspopup=menu]
     spinbutton "Позиция в списке" [value=2 valuetext=2 required=false valuemin=1 valuemax=2]
     button "Первоклассный Спальный Мешок ПРЕДМЕТ Во время отдыха вы автомати..." [namelen=86 namehash=8341b15c]
     StaticText "КОЛ-ВО"
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     StaticText "ЦЕНА"
     spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
-    button "Заметка" [description=Заметка]
-    button "Только для мастера: Первоклассный Спальный Мешок" [description=Только для мастера pressed=false]
-    button "Убрать из списка" [description=Убрать из списка]
-    button "Свой предмет" [expanded=false]
+    button "Заметка" [expanded=false]
+    button "Ещё: Первоклассный Спальный Мешок" [expanded=false haspopup=menu]
+    button "Добавить свой предмет" [expanded=false]
     status ""
     status ""
   contentinfo ""
@@ -69,41 +65,27 @@ EN
 RU
 daggerheart.com
 Аккаунт: gm1@example.test
-Бросить 1-2
+Бросить по списку
 Бросок
-Выбрать все
-Жирный
+Выбрать
+Добавить свой предмет
+Ещё
+Ещё: Палаш
+Ещё: Первоклассный Спальный Мешок
 Заметка
+Заметки
 К содержимому
 Конфиденциальность
-Курсив
 ЛутDaggerheart
-На единицу больше
-На единицу меньше
 Название списка
-Нумерованный список
-Палаш
 ПалашОсновное оружиеРанг 1 · Физическое · Проворность · Вплотную... [namelen=114 namehash=e80c7800]
-Первоклассный Спальный Мешок
 Первоклассный Спальный МешокПредметВо время отдыха вы автоматиче... [namelen=84 namehash=f15473c8]
 Печать
 Поделиться
-Подсказка: Для игроков
-Подсказка: Только для мастера
 Позиция в списке
 Поиск
-Просмотр
-Результат броска
-Свой предмет
-Скачать JSON
 Скопировать
-Скопировать текст
-Список
 Таблицы
-Только для мастера: Палаш
-Только для мастера: Первоклассный Спальный Мешок
-Убрать из списка
-Удалить
 Удалить ссылку
 Условия использования
 Установить как приложение
@@ -125,40 +107,36 @@ RootWebArea "Трофеи - Daggerheart Loot Generator" [url=/en/lists/00000000-
       link "Search" [url=/en/search]
   main ""
     StaticText "Трофеи"
-    textbox "List name" [value=Трофеи multiline=false readonly=false required=false]
+    textbox "List name" [value=Трофеи multiline=true readonly=false required=false]
     StaticText "2 items of 100 · "
     ... StaticText x7 of 11 same-shape siblings elided
     button "Share" [expanded=true]
-    button "Copy text"
-    button "Download JSON"
     button "Print" [description=Lay these out for printing: nine to an A4 sheet]
-    ... button x5 of 9 same-shape siblings elided
+    button "Roll on this list" [expanded=false]
+    button "More" [expanded=false haspopup=menu]
+    button "Notes" [expanded=false]
+    heading "Share" [level=2]
     link "/en/s/share-token-1" [url=/en/s/share-token-1]
+    button "Copy"
+    button "Delete link"
     link "/en/s/share-token-2" [url=/en/s/share-token-2]
+    ... button x3 of 7 same-shape siblings elided
     status ""
-    DisclosureTriangle "NOTES" [expanded=false]
-    DisclosureTriangle "ROLL ON THIS LIST" [expanded=false]
-    checkbox "Select all" [checked=false]
-    generic ""
-    checkbox "Broadsword" [checked=false]
     spinbutton "Position in the list" [value=1 valuetext=1 required=false valuemin=1 valuemax=2]
     button "Broadsword PRIMARY WEAPON Tier 1 · Physical · Agility · Melee · ..." [namelen=112 namehash=52e4c04f]
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]
-    button "Note" [description=Note]
-    button "GM only: Broadsword" [description=GM only pressed=false]
-    button "Remove from the list" [description=Remove from the list]
-    checkbox "Premium Bedroll" [checked=false]
+    button "Note" [expanded=false]
+    button "More: Broadsword" [expanded=false haspopup=menu]
     spinbutton "Position in the list" [value=2 valuetext=2 required=false valuemin=1 valuemax=2]
     button "Premium Bedroll ITEM During downtime, you automatically clear a ..." [namelen=71 namehash=f1054083]
     StaticText "QTY"
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     StaticText "PRICE"
     spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]
-    button "Note" [description=Note]
-    button "GM only: Premium Bedroll" [description=GM only pressed=false]
-    button "Remove from the list" [description=Remove from the list]
-    button "Own item" [expanded=false]
+    button "Note" [expanded=false]
+    button "More: Premium Bedroll" [expanded=false haspopup=menu]
+    button "Add your own item" [expanded=false]
     status ""
     status ""
   contentinfo ""
@@ -172,43 +150,29 @@ RootWebArea "Трофеи - Daggerheart Loot Generator" [url=/en/lists/00000000-
 /en/s/share-token-1
 /en/s/share-token-2
 Account: gm1@example.test
-Bold
-Broadsword
+Add your own item
 BroadswordPrimary weaponTier 1 · Physical · Agility · Melee · d8... [namelen=109 namehash=926e89b9]
-Bulleted list
 Copy
-Copy text
-Delete
 Delete link
-Download JSON
 EN
-GM only: Broadsword
-GM only: Premium Bedroll
-Help: For players
-Help: GM only
 Install as an app
-Italic
 List name
 LootDaggerheart
+More
+More: Broadsword
+More: Premium Bedroll
 Note
-Numbered list
-One higher
-One lower
-Own item
+Notes
 Position in the list
-Premium Bedroll
 Premium BedrollItemDuring downtime, you automatically clear a St... [namelen=69 namehash=b98fcd07]
-Preview
 Price
 Print
 Privacy
 RU
-Remove from the list
 Roll
-Roll 1-2
-Roll result
+Roll on this list
 Search
-Select all
+Select
 Share
 Skip to content
 Tables

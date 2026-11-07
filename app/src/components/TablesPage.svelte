@@ -30,12 +30,13 @@
   import HelpItem from './HelpItem.svelte';
   import Icon from './Icon.svelte';
   import LoadState from './LoadState.svelte';
-  import Menu from './Menu.svelte';
+  import MoreMenu from './MoreMenu.svelte';
   import NoData from './NoData.svelte';
   import PageHead from './PageHead.svelte';
   import PinItem from './PinItem.svelte';
   import RecordHost from './RecordHost.svelte';
   import SearchBox from './SearchBox.svelte';
+  import SelMode from './SelMode.svelte';
   import SectionHead from './SectionHead.svelte';
   import Seg from './Seg.svelte';
   import SignInPrompt from './SignInPrompt.svelte';
@@ -345,16 +346,8 @@
     );
   }
 
-  /* The «Ещё» menu below 761 px: the table link, the pin and «Об этих данных». */
-  let moreOpen = $state(false);
-  let moreButton = $state<HTMLButtonElement | undefined>(undefined);
+  /* The «Ещё» menu below 761 px (`MoreMenu`): the table link, the pin and «Об этих данных». */
   const home = $derived(tablesHash(table));
-
-  /* Rule 20: the pressed item leaves with the menu, so the focus returns to «Ещё». */
-  function closeMore(): void {
-    moreOpen = false;
-    moreButton?.focus();
-  }
 
   /* A band change takes the menu or a sheet away with no `close` event, so its flag is
      reset here and a lost focus is placed. `TableNav` remounts, which resets the picker;
@@ -366,8 +359,7 @@
       const moved = seenBand !== null && seenBand !== now;
       seenBand = now;
       if (!moved) return;
-      const open = moreOpen || filterOpen || app.dialogOpen;
-      if (now !== 'narrow') moreOpen = false;
+      const open = !!document.getElementById('tables-more') || filterOpen || app.dialogOpen;
       if (now === 'wide') filterOpen = false;
       if (!open) return;
       void tick().then(() => {
@@ -583,7 +575,7 @@
      row 8px low - `[data-row="ci1"]`'s absolute top reads 493.97 at effect
      time against 485.97 once the page settles, and `scrollHeight` 5909
      against 5890 - so `#/tables/core_item ~ row anchor` went from exact to
-     6-8% at 1100 and 768 when this was tried. `document.fonts.ready` is doing
+     6-8% at 1100 and 768 when this was tried. The font set's `ready` is doing
      duty as "the document has finished loading", which is what it actually
      tracks with an empty font set, and by then the layout is final.
 
@@ -595,9 +587,8 @@
      8.47%, for `#/tables/core_item ~ row anchor @ en 375`. That is fixed
      where it belongs, in `tests/app/driver.js`: `ready()` now waits for
      the same promise, so the sweep cannot start before this scroll has
-     happened.
-     `document.fonts` does not exist in jsdom, so component tests fall through
-     to an already-resolved promise. */
+     happened. The wait goes through the fonts port (`app.env.fonts`); either answer
+     means the layout is final. */
   let flashKey = $state('');
   /* An anchor's target and every row above it draw in the first task (`TableRows`). */
   const anchored = $derived(app.route.kind === 'tables' && !!app.route.anchor);
@@ -635,11 +626,7 @@
       flashTimer = setTimeout(() => {
         flashKey = '';
       }, 1600);
-      /* `document.fonts` is declared non-optional in lib.dom, but jsdom does
-         not implement it - the cast is what lets a component test run this
-         effect without FontFaceSet existing at all. */
-      const fonts = (document as unknown as { fonts?: { ready: Promise<unknown> } }).fonts;
-      void (fonts?.ready ?? Promise.resolve()).then(() => {
+      void app.env.fonts.settled().then(() => {
         /* The lookup happens here, not above: the element the effect saw at
            trigger time can be replaced by a keyed re-render (a language
            switch swaps the row's text nodes; a view switch swaps list rows
@@ -701,6 +688,19 @@
   <TableNav {app} {table} sources={hbSources} source={hbSource} filter={filterState} />
 {/snippet}
 
+<!-- From 761 px the head holds the group chips and the tabs follow under it (DESIGN.md,
+     "The Head Order Rule"). -->
+{#snippet tabsRow()}
+  <TableNav
+    {app}
+    {table}
+    sources={hbSources}
+    source={hbSource}
+    filter={filterState}
+    part="tabs"
+  />
+{/snippet}
+
 <!-- From 1000 px the column shows the picks, so the line is the count alone. -->
 {#snippet countLine()}
   <p class="count" class:line={band === 'narrow'}>
@@ -718,69 +718,57 @@
   <div class="pickrow">
     {@render nav()}
     {@render viewSwitch()}
-    <div class="morewrap">
-      <button
-        type="button"
-        class="morebtn"
-        aria-haspopup="menu"
-        aria-expanded={moreOpen}
-        aria-controls={moreOpen ? 'tables-more' : undefined}
-        bind:this={moreButton}
-        onclick={() => {
-          moreOpen = !moreOpen;
-        }}><Icon name="more" /><span>{t.moreMenu}</span></button
-      >
-      {#if moreOpen && moreButton}
-        <Menu
-          control={moreButton}
-          label={t.moreMenu}
-          id="tables-more"
-          cls="moremenu"
-          onclose={() => {
-            moreOpen = false;
-          }}
-        >
-          {#if linkable}
-            <button
-              type="button"
-              role="menuitem"
-              tabindex="-1"
-              onclick={() => {
-                closeMore();
-                void copyTableLink();
-              }}><Icon name="link" />{t.tableLink}</button
-            >
-          {/if}
-          <PinItem {app} {home} onpicked={closeMore} />
-          {#if help}
-            <HelpItem
-              {t}
-              {help}
-              open={helpOpen}
-              onpicked={closeMore}
-              ontoggle={() => {
-                helpOpen = !helpOpen;
-              }}
-            />
-          {/if}
-        </Menu>
-      {/if}
-    </div>
+    <MoreMenu {app} id="tables-more" size="sm">
+      {#snippet children(close: () => void)}
+        {#if linkable}
+          <button
+            type="button"
+            role="menuitem"
+            tabindex="-1"
+            onclick={() => {
+              close();
+              void copyTableLink();
+            }}><Icon name="link" />{t.tableLink}</button
+          >
+        {/if}
+        <PinItem {app} {home} onpicked={close} />
+        {#if help}
+          <HelpItem
+            {help}
+            open={helpOpen}
+            onpicked={close}
+            ontoggle={() => {
+              helpOpen = !helpOpen;
+            }}
+          />
+        {/if}
+      {/snippet}
+    </MoreMenu>
   </div>
   {#if help && helpOpen}
+    <!-- «Закрыть» returns the focus to «Ещё», which held the item (rule 20). -->
     <HelpBox
       {help}
       close={{
         label: t.close,
         onclose: () => {
           helpOpen = false;
-          moreButton?.focus();
+          document.querySelector<HTMLElement>('.pickrow .morewrap > .btn')?.focus();
         }
       }}
     />
   {/if}
 {:else}
-  <PageHead {app} title={t.tables} sub="" {help} {home} extra={nav} />
+  <PageHead
+    {app}
+    title={t.tables}
+    sub=""
+    {help}
+    {home}
+    {nav}
+    navBelow={band === 'mid'}
+    below={tabsRow}
+  />
 {/if}
 
 <RecordHost {app} {index}>
@@ -850,13 +838,12 @@
           {#if narrowed}{@render countLine()}{/if}
         {/if}
         {#if !app.selecting && drawnIds.length > 0}
-          <button
-            type="button"
-            class="selmode"
+          <SelMode
+            label={t.selectMode}
             onclick={() => {
               void startSelecting();
-            }}>{t.selectMode}</button
-          >
+            }}
+          />
         {/if}
       </div>
       {#if band === 'narrow' && narrowed}{@render countLine()}{/if}
@@ -1008,7 +995,9 @@
   }
 
   /* Below 761 px: the picker, the view switch and «Ещё» on one row. */
+  /* The row anchors the «Ещё» menu up to 760 px (`MoreMenu`). */
   .pickrow {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 4px;
@@ -1020,26 +1009,21 @@
     padding-inline: 6px;
   }
 
-  .morewrap {
-    position: relative;
+  /* Up to 600 px the 42 px switch track takes its 2 px from this margin (DESIGN.md, "The
+     First-Screen Rule"). */
+  @media (max-width: 600px) {
+    .pickrow {
+      margin-bottom: 4px;
+    }
+  }
+
+  /* As tall as the picker, as in the picker row of «Мои предметы». */
+  .pickrow :global(.morewrap) {
     flex: none;
   }
 
-  .morebtn {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    min-height: 40px;
-    padding: 0 7px;
-    border: 1px solid var(--line2);
-    border-radius: var(--r-sm);
-    background: var(--surface);
-    color: var(--txt);
-    font: 600 var(--t-data) / 1 var(--ui);
-  }
-
-  .morebtn:hover {
-    border-color: var(--muted2);
+  .pickrow :global(.morewrap .btn.sm) {
+    height: 40px;
   }
 
   /* The search row: the search first, «Выбрать» last, every control at one height. */
@@ -1053,8 +1037,7 @@
 
   .searchrow :global(input[type='search']),
   .searchrow :global(.btn.sm),
-  .searchrow :global(.switch),
-  .selmode {
+  .searchrow :global(.switch) {
     height: 40px;
   }
 
@@ -1065,19 +1048,6 @@
   .searchrow .grow {
     flex: 1 1 140px;
     min-width: 140px;
-  }
-
-  .selmode {
-    padding: 0 11px;
-    border: 1px solid var(--line2);
-    border-radius: var(--r-sm);
-    background: var(--surface);
-    color: var(--txt);
-    font: 600 var(--t-data) / 1 var(--ui);
-  }
-
-  .selmode:hover {
-    border-color: var(--muted2);
   }
 
   /* The count line: the chosen values cut to one line, the count never cut. */
@@ -1110,6 +1080,13 @@
     line-height: 16px;
   }
 
+  /* DESIGN.md "Components", "The Field Measure Rule": the next controls follow the box. */
+  @media (min-width: 761px) {
+    .searchrow .grow {
+      max-width: 720px;
+    }
+  }
+
   /* Below 761 px the search row is one line: the search, «Фильтры», «Выбрать». */
   @media (max-width: 760px) {
     .searchrow {
@@ -1118,8 +1095,7 @@
     }
 
     .searchrow :global(input[type='search']),
-    .searchrow :global(.btn.sm),
-    .selmode {
+    .searchrow :global(.btn.sm) {
       padding: 0 9px;
     }
   }
@@ -1140,13 +1116,24 @@
     min-width: 0;
   }
 
+  /* Beside the filter column the plate's margin cannot collapse: the body takes the gap,
+     so the column and the plate share one top (DESIGN.md, "Empty state"). */
+  .body.withcol:has(> .rowscol > :global(.empty:first-child)) {
+    margin-top: var(--gap-plate);
+  }
+
+  .body.withcol > .rowscol > :global(.empty:first-child) {
+    margin-top: 0;
+  }
+
   .tsection + .tsection {
     margin-top: 22px;
   }
 
   .cause {
     margin: 0;
-    max-width: 60ch;
+    max-width: var(--measure-line);
+    text-wrap: balance;
   }
 
   /* off `.tsection` and its flash keyframes - `git show 23c00a6^:style.css`. The heading
@@ -1188,7 +1175,7 @@
   /* off `.altcol` */
   .altcol {
     margin: 16px 0 8px;
-    font: 650 var(--t-label)/1 var(--mono);
+    font: 650 var(--t-label)/1 var(--ui);
     letter-spacing: 0.09em;
     text-transform: uppercase;
   }

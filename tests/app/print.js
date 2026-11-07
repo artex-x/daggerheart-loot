@@ -15,7 +15,7 @@
  * wires its color/black-and-white switch and its "back" control through
  * Svelte `onclick` handlers on plain buttons, not through attributes a CSS
  * selector can grip. This is the same fallback `tests/parity/specs.js` used
- * for the same buttons (`d.click('Чёрно-белая')`, `NAME[lang].printLink`),
+ * for the same buttons (`d.click('Ч/б')`, `NAME[lang].printLink`),
  * recorded here as a design change rather than substituted silently. The one
  * other id the rewrite dropped, `#selBar`, is `.selbarwrap` here - the same
  * substitution `tests/app/states.js`'s case 16 already made.
@@ -192,9 +192,9 @@ const { ok } = rep;
 
 (async () => {
   const { ctx, page, d } = await fresh({ width: 1180, height: 950 });
-  const bw = () => d.click('Чёрно-белая');
-  const colour = () => d.click('Цветная');
-  const compact = () => d.click('Компактная');
+  const bw = () => d.click('Ч/б');
+  const colour = () => d.click('Цвет');
+  const compact = () => d.click('44×63');
   /* Opens a route in the layout and sheet size a state names. `d.open`
      reloads the page, so both switches start at color and standard. */
   const openAs = async (d2, route, isBw, isCompact, bwFn, compactFn) => {
@@ -469,8 +469,8 @@ const { ok } = rep;
     'the One/Two-Handed caption does not read the value: ' + burdenCaption
   );
   ok(
-    /Daggerheart/.test(parts.bottom) && /Core/i.test(parts.bottom),
-    'the caption is missing the book: ' + parts.bottom
+    !/Daggerheart/.test(parts.bottom) && /Core/i.test(parts.bottom),
+    'the bottom line is not the book alone: ' + parts.bottom
   );
   /* A community item's caption names the book, not only the community: the
      card leaves the table on its own, and "Великородное" does not say where
@@ -483,8 +483,8 @@ const { ok } = rep;
   );
 
   /* gm4's item in a source and section of 80 code points each: the source line wraps
-     inside the card on both sheets, in color and in black and white, and
-     «Daggerheart» keeps its one line (FEATURES.md, "Print"). */
+     inside the card on both sheets, in color and in black and white, right-aligned in
+     the whole width of the content box, with no «Daggerheart» (FEATURES.md, "Print"). */
   console.log('a long source line');
   for (const [isBw, isCompact] of [
     [false, false],
@@ -504,23 +504,29 @@ const { ok } = rep;
     const fit = await page.$eval('.pcard', (c) => {
       const box = c.querySelector('.pc-content').getBoundingClientRect();
       const bottom = c.querySelector('.pc-bottom');
-      const src = bottom.querySelector('.pc-src').getBoundingClientRect();
-      const game = bottom.querySelector('.pc-game');
+      const srcEl = bottom.querySelector('.pc-src');
+      const src = srcEl.getBoundingClientRect();
+      const inner = bottom.getBoundingClientRect();
       return {
         inside:
           src.left >= box.left - 0.5 &&
           src.right <= box.right + 0.5 &&
           src.bottom <= box.bottom + 0.5,
         wide: bottom.scrollWidth > bottom.clientWidth + 1,
-        gameLines: game.getClientRects().length,
-        srcLines: Math.round(src.height / parseFloat(getComputedStyle(game).lineHeight))
+        whole: Math.abs(src.width - inner.width) < 0.5,
+        children: bottom.children.length,
+        game: /Daggerheart/.test(bottom.textContent),
+        srcLines: Math.round(src.height / parseFloat(getComputedStyle(srcEl).lineHeight))
       };
     });
     ok(
       fit.inside && !fit.wide,
       where + ': the long source line leaves the card: ' + JSON.stringify(fit)
     );
-    ok(fit.gameLines === 1, where + ': «Daggerheart» broke over lines: ' + JSON.stringify(fit));
+    ok(
+      fit.whole && fit.children === 1 && !fit.game,
+      where + ': the source line is not alone in the whole width: ' + JSON.stringify(fit)
+    );
     ok(
       fit.srcLines >= 2,
       where + ': the long source line did not wrap: ' + JSON.stringify(fit)
@@ -696,7 +702,7 @@ const { ok } = rep;
       how + 'Standard Issue Slicer source line: ' + src
     );
     await colour();
-    await d.click('Обычная');
+    await d.click('63×88');
     await d.settle();
   }
 
@@ -1502,6 +1508,107 @@ const { ok } = rep;
     'a sliver of picture remains above the name: ' + slivers.map((v) => v.toFixed(1)).join(', ')
   );
 
+  /* A color card whose picture gave way draws no tag and no name line under a mark it
+     draws over the art: the tier band, the burden mark and its label, the armor mark and
+     its label (FEATURES.md, "Print"). Rectangles, not tops: the marks sit in the corners. */
+  const crowded = async (where) => {
+    const gaveWay = await page.$$eval('.pcard:not(.blank):not(.bw)', (cards) =>
+      cards
+        .filter((c) => c.querySelector('.pc-art')?.style.display === 'none')
+        .map((c) => {
+          const marks = [
+            ...c.querySelectorAll(
+              '.pc-tier svg, .pc-tier b, .pc-tier i, .pc-burden img, .pc-burden small, .pc-shield img, .pc-shield i'
+            )
+          ].map((e) => e.getBoundingClientRect());
+          const rng = document.createRange();
+          rng.selectNodeContents(c.querySelector('.pc-name'));
+          const text = [
+            ...[...c.querySelectorAll('.pc-tag')].map((e) => e.getBoundingClientRect()),
+            ...[...rng.getClientRects()].filter((r) => r.width > 0)
+          ];
+          let hit = null;
+          for (const m of marks)
+            for (const t of text) {
+              const w = Math.min(m.right, t.right) - Math.max(m.left, t.left);
+              const h = Math.min(m.bottom, t.bottom) - Math.max(m.top, t.top);
+              if (w > 0.5 && h > 0.5 && !hit) hit = w.toFixed(1) + 'x' + h.toFixed(1);
+            }
+          const box = c.querySelector('.pc-content');
+          const size = parseFloat(getComputedStyle(c.querySelector('.pc-text')).fontSize);
+          return {
+            id: c.dataset.pid,
+            lift: box.style.getPropertyValue('--pcpad'),
+            text: ((size / c.clientWidth) * 100).toFixed(1) + 'cqw',
+            hit
+          };
+        })
+    );
+    ok(
+      gaveWay.every((c) => !c.hit),
+      where +
+        ': a card whose picture gave way draws a mark over a tag or its name: ' +
+        JSON.stringify(gaveWay.filter((c) => c.hit))
+    );
+    console.log(
+      '  ' +
+        where +
+        ', cards whose picture gave way (lift, text): ' +
+        gaveWay.map((c) => c.id + ' ' + c.lift + ' ' + c.text).join(', ')
+    );
+    return gaveWay;
+  };
+  await crowded('LONG');
+  /* The two catalog cards whose text is still cut at its floor under a burden mark on the
+     RU compact color sheet: they go under the floor, not under the mark. */
+  await openAs(d, 'voa4_t4i-voa4_a3', false, true, bw, compact);
+  const short = await crowded('voa4_t4i-voa4_a3 compact');
+  ok(
+    short.length === 2 && short.every((c) => c.lift !== '5.8cqw' && parseFloat(c.text) < 3.7),
+    'voa4_t4i and voa4_a3 no longer reach the shortfall under a mark: ' + JSON.stringify(short)
+  );
+  const unclipped = await page.$$eval('.pc-text', (e) =>
+    e.map((x) => x.scrollHeight - x.clientHeight)
+  );
+  ok(
+    unclipped.every((v) => v <= 1),
+    'voa4_t4i-voa4_a3 compact: the text spills: ' + unclipped.join(',')
+  );
+  await openPrint(d, 'voa2_a3-voa2_a1-voa2_c4-voa2_c3-voa2_t4e-voa2_t4d-voa2_c1-voa2_a6-di11');
+
+  /* The list marker is a black en dash, not the default disc (FEATURES.md, "Print"). */
+  const marker = await page.$eval('.pcard[data-pid="voa2_a3"]', (c) => {
+    const li = c.querySelector('.pc-text ul li');
+    if (!li) return null;
+    return {
+      type: getComputedStyle(li.parentElement).listStyleType,
+      color: getComputedStyle(li, '::marker').color
+    };
+  });
+  ok(
+    !!marker && /^"– +"$/.test(marker.type) && marker.color === 'rgb(0, 0, 0)',
+    'voa2_a3: the list marker is not a black en dash: ' + JSON.stringify(marker)
+  );
+
+  /* The card prints in the UI face on every machine: the platform face of the rules text
+     (FEATURES.md, "Print"). */
+  {
+    const cdp = await page.createCDPSession();
+    await cdp.send('DOM.enable');
+    await cdp.send('CSS.enable');
+    const { root } = await cdp.send('DOM.getDocument');
+    const { nodeId } = await cdp.send('DOM.querySelector', {
+      nodeId: root.nodeId,
+      selector: '.pcard:not(.blank) .pc-text'
+    });
+    const { fonts } = await cdp.send('CSS.getPlatformFontsForNode', { nodeId });
+    ok(
+      fonts.length > 0 && fonts.every((f) => /Source Sans 3/.test(f.familyName)),
+      'the rules text is not set in Source Sans 3: ' + JSON.stringify(fonts)
+    );
+    await cdp.detach();
+  }
+
   /* ---------- short text grows in black and white ----------
      Up to `GROW_CAP` (FEATURES.md, "Print"). Only short cards are pinned to
      the cap: where a long card lands depends on the host's font metrics. */
@@ -1510,14 +1617,18 @@ const { ok } = rep;
     page.$$eval('.pcard:not(.blank) .pc-text', (e) =>
       e.map((x) => ({
         id: x.closest('.pcard').getAttribute('data-pid'),
+        compact: x.closest('.pcard').classList.contains('compact'),
         size: x.style.fontSize,
         over: x.scrollHeight - x.clientHeight
       }))
     );
+  /* The rules text's floor and base per sheet (`PrintCard.svelte`, FEATURES.md, "Print"). */
+  const FLOOR = { std: 2.6, compact: 3.7 };
+  const BASE = { std: 4, compact: 4.6 };
   const inGrowRange = (t) => {
     if (!t.size) return true;
     const v = parseFloat(t.size);
-    return v >= 2.6 && v <= 5;
+    return v >= (t.compact ? FLOOR.compact : FLOOR.std) - 0.01 && v <= 5;
   };
   for (const isCompact of [false, true]) {
     const tag = isCompact ? 'NINE compact bw: ' : 'NINE bw: ';
@@ -1539,12 +1650,12 @@ const { ok } = rep;
           .map((t) => t.id + ' ' + t.over)
           .join(', ')
     );
-    /* 2.6, not 3.5: `voa2_a3` is on this route and may be tight at 3.5cqw on
+    /* The floor, not the base: `voa2_a3` is on this route and may be tight at the base on
        another host's fonts, which sends it down the shrink ladder instead. */
     ok(
       nineBw.every(inGrowRange),
       tag +
-        'a text size is outside 2.6..5: ' +
+        'a text size is outside floor..5: ' +
         nineBw.map((t) => t.id + ' ' + t.size).join(', ')
     );
   }
@@ -1562,7 +1673,7 @@ const { ok } = rep;
   );
   ok(
     longBw.every(inGrowRange),
-    'LONG bw: a text size is outside 2.6..5: ' +
+    'LONG bw: a text size is outside floor..5: ' +
       longBw.map((t) => t.id + ' ' + t.size).join(', ')
   );
   await openPrint(d, DV_SET);
@@ -1579,7 +1690,7 @@ const { ok } = rep;
   );
   ok(
     dvBw.every(inGrowRange),
-    'DV_SET bw: a text size is outside 2.6..5: ' +
+    'DV_SET bw: a text size is outside floor..5: ' +
       dvBw.map((t) => t.id + ' ' + t.size).join(', ')
   );
   for (const isCompact of [false, true]) {
@@ -1587,8 +1698,10 @@ const { ok } = rep;
     await openAs(d, NINE, false, isCompact, bw, compact);
     const nineColour = await grown();
     ok(
-      nineColour.every((t) => !t.size || parseFloat(t.size) <= 3.5),
-      tag + 'text grew above 3.5cqw: ' + nineColour.map((t) => t.id + ' ' + t.size).join(', ')
+      nineColour.every(
+        (t) => !t.size || parseFloat(t.size) <= (t.compact ? BASE.compact : BASE.std) + 0.01
+      ),
+      tag + 'text grew above its base: ' + nineColour.map((t) => t.id + ' ' + t.size).join(', ')
     );
     ok(
       nineColour.every((t) => t.over <= 1),
@@ -1742,19 +1855,73 @@ const { ok } = rep;
   }
 
   /* ---------- the sheet fits a phone window ----------
-     Below about 840 px the screen draws each sheet scaled to the column by a
-     transform, so nothing scrolls sideways; at 1180 the sheet is the paper
-     size with no transform (FEATURES.md, "Print"). */
+     Up to 760 px the screen draws one card per row, `min(column, 420)` px wide, each
+     card scaled by a transform; from 761 px to about 840 px each sheet is scaled to
+     the column; nothing scrolls sideways; at 1180 the sheet is the paper size with no
+     transform (FEATURES.md, "Print"). */
   console.log('the sheet fits a phone window');
   const PHONE_STATES = [
     { route: TEN, label: 'TEN', sheets: 2 },
     { route: TEN, compact: true, label: 'TEN ~ compact', sheets: 1 }
   ];
   try {
-    for (const [w, h] of [
-      [360, 800],
-      [768, 900]
-    ]) {
+    await d.viewport(360, 800);
+    for (const s of PHONE_STATES) {
+      await openAs(d, s.route, false, s.compact, bw, compact);
+      const tag = s.label + ' @ 360: ';
+      const m = await page.evaluate(() => {
+        const main = document.querySelector('main');
+        const cs = getComputedStyle(main);
+        const fit = document.querySelector('.pfit');
+        const cards = [...document.querySelectorAll('.pcard')].filter(
+          (c) => getComputedStyle(c).display !== 'none'
+        );
+        const rects = cards.map((c) => c.getBoundingClientRect());
+        const left = main.getBoundingClientRect().left + parseFloat(cs.paddingLeft);
+        const column =
+          main.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+        const footer = document.querySelector('footer').getBoundingClientRect();
+        const dock = document.querySelector('.pdock');
+        const pfoot = document.querySelector('.pfoot').getBoundingClientRect();
+        return {
+          scroll: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+          one: !!fit && fit.classList.contains('one'),
+          column,
+          n: cards.length,
+          widths: rects.map((r) => r.width),
+          offCentre: rects.map((r) => Math.abs(r.left - left + r.right - left - column) / 2),
+          rows: rects.every((r, i) => i === 0 || r.top >= rects[i - 1].bottom),
+          label: [...document.querySelectorAll('.psheet-n')].map((e) => e.textContent.trim()),
+          dock: !!dock,
+          footAfter: footer.top >= pfoot.bottom - 0.5
+        };
+      });
+      const want = Math.min(m.column, 420);
+      ok(m.scroll <= 0, tag + 'the page scrolls sideways by ' + m.scroll + ' px');
+      ok(m.one, tag + 'the sheet is not one card per row');
+      ok(m.n === 10, tag + 'blank places are drawn, or cards are missing: ' + m.n);
+      ok(m.rows, tag + 'two cards share a row');
+      ok(
+        /* The scale is cut to two decimals (`previewScale`), so a card is up to 2.4 px
+           narrower than its column, never wider. */
+        m.widths.every((w) => w <= want + 0.5 && want - w < 2.5),
+        tag +
+          'a card is not ' +
+          want +
+          ' px wide: ' +
+          m.widths.map((w) => w.toFixed(1)).join(',')
+      );
+      ok(
+        m.offCentre.every((v) => v <= 1),
+        tag + 'a card is off the column centre: ' + m.offCentre.join(',')
+      );
+      ok(
+        JSON.stringify(m.label) === JSON.stringify(s.sheets > 1 ? ['Лист 2 из 2'] : []),
+        tag + 'the sheet labels are ' + JSON.stringify(m.label)
+      );
+      ok(m.dock && m.footAfter, tag + 'the dock or the footer is out of place');
+    }
+    for (const [w, h] of [[768, 900]]) {
       await d.viewport(w, h);
       for (const s of PHONE_STATES) {
         await openAs(d, s.route, false, s.compact, bw, compact);
@@ -1778,10 +1945,16 @@ const { ok } = rep;
             k,
             fitH: fit ? fit.getBoundingClientRect().height : 0,
             n: document.querySelectorAll('.psheet').length,
+            /* The sub line follows the sheets, then the footer. */
             gap:
               footer && fit
-                ? footer.getBoundingClientRect().top - fit.getBoundingClientRect().bottom
+                ? footer.getBoundingClientRect().top -
+                  document.querySelector('.pfoot').getBoundingClientRect().bottom
                 : null,
+            subAfter:
+              !!fit &&
+              document.querySelector('.pfoot').getBoundingClientRect().top >=
+                fit.getBoundingClientRect().bottom - 0.5,
             unit: (297 * mm + 18) * k
           };
         }, MM);
@@ -1810,8 +1983,8 @@ const { ok } = rep;
             (m.n * m.unit).toFixed(1)
         );
         ok(
-          m.gap !== null && m.gap >= 0 && m.gap < 80,
-          tag + 'the footer does not follow the sheets: ' + m.gap
+          m.subAfter && m.gap !== null && m.gap >= 0 && m.gap < 80,
+          tag + 'the sub line and the footer do not follow the sheets: ' + m.gap
         );
       }
     }
@@ -1898,8 +2071,9 @@ const { ok } = rep;
               for (const c of document.querySelectorAll('.pcard:not(.blank)')) {
                 const id = c.dataset.pid + ' ';
                 const cqw = c.clientWidth / 100;
-                /* The floors: labels 4.5pt, values and numbers 5pt, the
-                   tier word 4pt. The ribbon's cells set two shortfalls on
+                /* The floors: labels and the tier word 4.5pt, values and numbers 5pt,
+                   the rules text 2.6cqw (3.7cqw, 4.5pt, on the compact card). The ribbon's
+                   cells set two shortfalls on
                    the compact sheet: a Russian value that is one long word,
                    and the English damage-type label beside a modifier. */
                 for (const sel of LABEL) {
@@ -1929,7 +2103,19 @@ const { ok } = rep;
                   }
                 }
                 for (const e of c.querySelectorAll('.pc-tier i')) {
-                  if (pt(e) < 3.99) out.push(id + 'tier word ' + pt(e).toFixed(2) + 'pt');
+                  if (pt(e) < 4.49) out.push(id + 'tier word ' + pt(e).toFixed(2) + 'pt');
+                }
+                /* The named rules-text shortfall: two RU compact color cards cut at their
+                   floor under a burden mark print at 3.4cqw. */
+                const under =
+                  ru &&
+                  compactSheet &&
+                  !c.classList.contains('bw') &&
+                  ['voa4_t4i', 'voa4_a3'].includes(c.dataset.pid);
+                for (const e of c.querySelectorAll('.pc-text')) {
+                  const size = parseFloat(getComputedStyle(e).fontSize) / cqw;
+                  if (size < (under ? 3.4 : compactSheet ? 3.7 : 2.6) - 0.05)
+                    out.push(id + 'rules text ' + size.toFixed(2) + 'cqw');
                 }
                 /* The weight scale: only the name and the tier number are
                    900. */
@@ -2243,10 +2429,12 @@ const { ok } = rep;
         text.forEach((t) => {
           if (!t.style['font-size']) return;
           const v = parseFloat(t.style['font-size']);
-          /* The text ladder's floor is 2.6cqw, not the strip's 2.2; the top is
-             3.5cqw in color and `GROW_CAP` (5cqw) in black and white. */
+          /* The text ladder's floor is 2.6cqw (3.7 compact), not the strip's 2.2; the top
+             is the base (4.0, 4.6 compact) in color and `GROW_CAP` (5cqw) in black and
+             white. */
+          const sheet = s.compact ? 'compact' : 'std';
           ok(
-            v >= 2.6 && v <= (s.bw ? 5 : 3.5),
+            v >= FLOOR[sheet] - 0.01 && v <= (s.bw ? 5 : BASE[sheet]) + 0.01,
             tag + 'text size is off the ladder: ' + t.style['font-size']
           );
         });
@@ -2263,7 +2451,9 @@ const { ok } = rep;
              pad > (bw ? 3 : 8)) pad -= 1.5;` steps 5.8 -> 4.3 -> 2.8 in
              black-and-white, one step past the loop's own `> 3` guard -
              `printPage.test.ts` pins the same 2.8 floor. */
-          ok(v >= 2.8 && v <= 23, tag + 'padding is off the ladder: ' + b.style['--pcpad']);
+          /* A color card whose picture gave way lifts its text to its marks' clearance, up
+             to about 23.4cqw under a burden mark and its label on the compact card. */
+          ok(v >= 2.8 && v <= 25, tag + 'padding is off the ladder: ' + b.style['--pcpad']);
         });
 
         const art = await d2.eachAt('.pc-art', ['height', '--artw', 'display']);
@@ -2346,9 +2536,9 @@ const { ok } = rep;
     page: pageEn,
     d: dEn
   } = await fresh({ width: 1180, height: 950, lang: 'en' });
-  const bwEn = () => dEn.click('Black and white');
+  const bwEn = () => dEn.click('B&W');
   const colourEn = () => dEn.click('Color');
-  const compactEn = () => dEn.click('Compact');
+  const compactEn = () => dEn.click('44×63');
   const pageErrsEn = [];
   pageEn.on('pageerror', (e) => pageErrsEn.push(e.message));
   await cardFit(dEn, bwEn, colourEn, compactEn, ' en');
@@ -2367,7 +2557,7 @@ const { ok } = rep;
         for (const bwOn of [false, true]) {
           await openPrint(d2, route);
           if (bwOn) {
-            await d2.click(langTag === ' en' ? 'Black and white' : 'Чёрно-белая');
+            await d2.click(langTag === ' en' ? 'B&W' : 'Ч/б');
             await d2.settle();
           }
           for (const pid of ['cm26', 'f60', 'hi62', 'ci81']) {
@@ -2645,6 +2835,8 @@ const { ok } = rep;
   }
 
   await d.open('#/lists/00000000-0000-4000-8000-000000000101', { as: 'gm1' });
+  /* From 761 px the removal is an item of the row's «Ещё». */
+  await d.openMore('.lrow-acts .morewrap > [aria-haspopup="menu"]');
   await d.click('Убрать из списка');
   await d.media('print');
   try {
@@ -2828,8 +3020,8 @@ const { ok } = rep;
         VECTOR_SET,
         isBw,
         isCompact,
-        () => pv.d.click('Чёрно-белая'),
-        () => pv.d.click('Компактная')
+        () => pv.d.click('Ч/б'),
+        () => pv.d.click('44×63')
       );
       await pv.page.addStyleTag({
         content:
@@ -2999,8 +3191,8 @@ const { ok } = rep;
         [true, true]
       ]) {
         const name = label + ', ' + (isBw ? 'bw' : 'color') + (isCompact ? ' compact' : '');
-        await d.click(isBw ? 'Чёрно-белая' : 'Цветная');
-        await d.click(isCompact ? 'Компактная' : 'Обычная');
+        await d.click(isBw ? 'Ч/б' : 'Цвет');
+        await d.click(isCompact ? '44×63' : '63×88');
         await new Promise((r) => setTimeout(r, 300));
         await d.settle();
         const shown = await fitOf('.preview .pframe .pcard');
@@ -3094,7 +3286,7 @@ const { ok } = rep;
       'Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. '
         .repeat(40)
         .slice(0, 3000);
-    const b = await editorCut('Свиток долгой ночи', long, ['Цветная', 'Обычная']);
+    const b = await editorCut('Свиток долгой ночи', long, ['Цвет', '63×88']);
     console.log('  3000 characters: ' + JSON.stringify(b));
     ok(
       b.text && b.warned,
@@ -3103,7 +3295,7 @@ const { ok } = rep;
 
     /* (e) The longest name in compact color: counted when the head leaves the card. */
     const name120 = 'Очень длинное название предмета '.repeat(4).slice(0, 120);
-    const e = await editorCut(name120, '', ['Цветная', 'Компактная']);
+    const e = await editorCut(name120, '', ['Цвет', '44×63']);
     console.log('  the 120-character name, compact color: ' + JSON.stringify(e));
     ok(
       e.warned === (e.text || e.box),
@@ -3111,7 +3303,7 @@ const { ok } = rep;
     );
 
     /* (f) One unbroken 200-letter word: cut off across, and warned. */
-    const f = await editorCut('Слово', 'а'.repeat(200), ['Цветная', 'Обычная']);
+    const f = await editorCut('Слово', 'а'.repeat(200), ['Цвет', '63×88']);
     console.log('  one 200-letter word: ' + JSON.stringify(f));
     ok(f.text && f.warned, 'a long unbroken word is not counted across - ' + JSON.stringify(f));
   }

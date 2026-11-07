@@ -9,10 +9,10 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     link "Открыть страницу" [url=/i/ci56]
     StaticText "56"
     StaticText "ПРЕДМЕТ"
-    StaticText "CORE"
+    ... StaticText x2 of 6 same-shape siblings elided
     heading "Самоцвет Чутья" [level=2]
-    StaticText "Вы можете прикрепить этот самоцвет к оружию, что позволит вам ис..." [namelen=118 namehash=200f82d5]
     button "В список" [expanded=true]
+    StaticText "СПИСКИ"
     StaticText "Войдите, чтобы создать список."
     button "Войти" [focused=true]
     button "Отмена"
@@ -123,10 +123,13 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables]
     link "Open page" [url=/i/en/ci56]
     StaticText "56"
     StaticText "ITEM"
-    StaticText "CORE"
+    ... StaticText x2 of 6 same-shape siblings elided
     heading "Gem of Insight" [level=2]
-    StaticText "You can attach this gem to a weapon, allowing you to use your In..." [namelen=110 namehash=2c5a78d3]
-    button "Add to list" [expanded=false]
+    button "Add to list" [expanded=true]
+    StaticText "LISTS"
+    StaticText "Sign in to create a list."
+    button "Sign in" [focused=true]
+    button "Cancel"
     button "Share"
     button "Print" [description=Lay these out for printing: nine to an A4 sheet expanded=false]
     button "More" [expanded=false haspopup=menu]
@@ -195,6 +198,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables]
 ?About this data
 Add to list
 Alt. tables
+Cancel
 Close
 Consumables
 Core

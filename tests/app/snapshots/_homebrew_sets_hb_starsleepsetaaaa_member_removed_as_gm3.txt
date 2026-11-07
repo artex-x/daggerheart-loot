@@ -19,7 +19,6 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
       link "Поиск" [url=/search]
   main ""
     heading "Мои предметы" [level=1]
-    button "Открывать при запуске" [pressed=false]
     navigation "Мои предметы"
       link "Предметы 39" [url=/homebrew]
         StaticText "Предметы"
@@ -33,6 +32,7 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
       link "Карты правил 0" [url=/homebrew/rules]
         StaticText "Карты правил"
         StaticText "0"
+    button "Открывать при запуске" [pressed=false]
     StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
     button "Новый комплект"
     StaticText "1 комплект · 1 карта из 100"
@@ -74,6 +74,7 @@ daggerheart.com
 Конфиденциальность
 ЛутDaggerheart
 Новый комплект
+Новый предмет
 Открывать при запуске
 Поиск
 Походный плед
@@ -103,7 +104,6 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew/sets/hb_st
       link "Search" [url=/en/search]
   main ""
     heading "My items" [level=1]
-    button "Open on start" [pressed=false]
     navigation "My items"
       link "Items 39" [url=/en/homebrew]
         StaticText "Items"
@@ -117,6 +117,7 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew/sets/hb_st
       link "Rule cards 0" [url=/en/homebrew/rules]
         StaticText "Rule cards"
         StaticText "0"
+    button "Open on start" [pressed=false]
     StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
     button "New set"
     StaticText "1 set · 1 card of 100"
@@ -152,6 +153,7 @@ Import from file
 Install as an app
 Items 39
 LootDaggerheart
+New item
 New set
 Open on start
 Privacy

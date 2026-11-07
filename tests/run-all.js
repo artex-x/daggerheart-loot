@@ -5,6 +5,7 @@
      node tests/run-all.js --jobs 1        one at a time, for debugging
      node tests/run-all.js --exclude=app/golden   everything but that one suite
      node tests/run-all.js --shard=2/4     one balanced quarter of the pool
+     node tests/run-all.js --shard=2/5 --list   the rows of that shard, run nothing
 
    Needs NODE_PATH and LD_LIBRARY_PATH for puppeteer.
 
@@ -33,14 +34,26 @@ const path = require('path');
 const HERE = __dirname;
 
 /* Weight column: CI seconds, not a local guess. Measured on GitHub's
-   ubuntu-latest runners, the mean of runs 36229149582 and 36230695846,
-   2026-09-26 (each suite prints `ok  <name> <what> <secs>s`) - a local run is
-   advisory, the same doctrine `.claude/README.md` states for every other
-   cost table in this repository. These numbers are the input to
-   `--shard`'s bin packer below, so an entry that is off by multiples
-   mis-packs a shard, not just a sort order. The slowest suite step passed
-   360 s on both runs, so ci.yml's `browser` matrix went from four shards to
-   five (roadmap, "the shard trigger").
+   ubuntu-latest runners, the mean of runs 42036663681 and 42102518161,
+   2026-11-05 (each suite prints `ok  <name> <what> <secs>s`); `app/golden`
+   4/4 is the mean of runs 42036663681 and 42083009049, because shard 3 of
+   run 42102518161 did not finish; `app/states` is about 1760 s / 4, from
+   1742.8 s in run 42083009049 plus the 360 px block of case 107. Run
+   42116078717 measured 542.6, 318.6, 491.3 and 411.3 s (sum 1764), three of
+   them with a failed case, so the four rows keep 440 until a green run. A
+   local run is advisory, the same doctrine
+   `.claude/README.md` states for every other cost table in this repository.
+   These numbers are the input to `--shard`'s bin packer below, so an entry
+   that is off by multiples mis-packs a shard, not just a sort order. The
+   slowest suite step passed 360 s on runs 36229149582 and 36230695846
+   (2026-09-26), so ci.yml's `browser` matrix went from four shards to five
+   (roadmap, "the shard trigger").
+
+   `app/states` runs as four rows of interleaved cases (its own
+   `--shard=n/4`), since one serial row passed the job's 30-minute limit at
+   97 cases. Inside a shard the rows run four at a time, so a shard lasts as
+   long as its longest row: splitting the longest row is the lever, not the
+   weights (docs/decisions/2026-11-05-app-states-runs-as-four-interleaved-rows.md).
 
    `app/sweep`'s 1180 row is split into a `ru` and an `en` row: axe runs
    both languages there, plus the RU-only focus walk, which made the unsplit
@@ -52,25 +65,28 @@ const HERE = __dirname;
    other row (`--exclude=app/golden`, still supported below, is for a local
    run that wants to skip them). */
 const SUITES = [
-  ['app/sweep', 'dist-test/: page sweep 360', 382.9, ['360']],
-  ['app/sweep', 'dist-test/: page sweep 390', 381.6, ['390']],
-  ['app/sweep', 'dist-test/: page sweep 768', 357.9, ['768']],
-  ['app/print', 'dist-test/: card printing', 340.8],
-  ['app/contracts', 'dist-test/: contracts and fixtures', 328.4],
-  ['app/sweep', 'dist-test/: page sweep 1180 ru', 223.3, ['1180', 'ru']],
-  ['app/sweep', 'dist-test/: page sweep 1180 en', 204.4, ['1180', 'en']],
-  ['app/states', 'dist-test/: real input', 179.3],
-  ['app/golden', 'dist-test/: structural snapshots 3/4', 158.1, ['--shard=3/4']],
-  ['app/golden', 'dist-test/: structural snapshots 1/4', 157.5, ['--shard=1/4']],
-  ['app/golden', 'dist-test/: structural snapshots 4/4', 156, ['--shard=4/4']],
-  ['app/golden', 'dist-test/: structural snapshots 2/4', 151.5, ['--shard=2/4']],
-  ['app/typo', 'dist-test/: fonts and scale', 89.6],
-  ['app/hues', 'dist-test/: label colors', 77],
-  ['stub', 'stub pages i/', 4],
-  ['derived', 'derived files and catalog', 1.8],
-  ['dataint', 'data.js invariants', 0.4],
+  ['app/sweep', 'dist-test/: page sweep 768', 838.7, ['768']],
+  ['app/sweep', 'dist-test/: page sweep 390', 670.2, ['390']],
+  ['app/sweep', 'dist-test/: page sweep 360', 639.1, ['360']],
+  ['app/contracts', 'dist-test/: contracts and fixtures', 555.8],
+  ['app/print', 'dist-test/: card printing', 472.1],
+  ['app/states', 'dist-test/: real input 1/4', 440, ['--shard=1/4']],
+  ['app/states', 'dist-test/: real input 2/4', 440, ['--shard=2/4']],
+  ['app/states', 'dist-test/: real input 3/4', 440, ['--shard=3/4']],
+  ['app/states', 'dist-test/: real input 4/4', 440, ['--shard=4/4']],
+  ['app/golden', 'dist-test/: structural snapshots 4/4', 396.1, ['--shard=4/4']],
+  ['app/sweep', 'dist-test/: page sweep 1180 en', 386.9, ['1180', 'en']],
+  ['app/sweep', 'dist-test/: page sweep 1180 ru', 380.5, ['1180', 'ru']],
+  ['app/golden', 'dist-test/: structural snapshots 2/4', 368.6, ['--shard=2/4']],
+  ['app/golden', 'dist-test/: structural snapshots 3/4', 361.4, ['--shard=3/4']],
+  ['app/golden', 'dist-test/: structural snapshots 1/4', 351.5, ['--shard=1/4']],
+  ['app/typo', 'dist-test/: fonts and scale', 191.5],
+  ['app/hues', 'dist-test/: label colors', 85.5],
+  ['stub', 'stub pages i/', 6.8],
+  ['derived', 'derived files and catalog', 2.5],
+  ['dataint', 'data.js invariants', 1.4],
   ['craft', 'upgrade chains', 0.2],
-  ['contracts', 'contracts and golden fixtures', 0.1]
+  ['contracts', 'contracts and golden fixtures', 0.2]
 ];
 
 const args = process.argv.slice(2);
@@ -82,22 +98,24 @@ if (args.includes('--help') || args.includes('-h')) {
   node tests/run-all.js --jobs 1               one at a time, for debugging
   node tests/run-all.js --exclude=app/golden   everything but that one suite
   node tests/run-all.js --shard=2/4            one balanced quarter of the pool
+  node tests/run-all.js --shard=2/5 --list     the rows of that shard and their
+                                               weights; runs nothing
   node tests/run-all.js --help, -h             this message
 
 Suites: ${SUITES.map((s) => s[0])
     .filter((v, i, a) => a.indexOf(v) === i)
     .join(', ')}
 
-app/golden and app/sweep are unsharded/all-widths when named bare and each
-takes past the Bash tool's 600s foreground cap - see .claude/README.md,
-"Batch size and the fixed cost of a run". Run app/golden with
-node tests/app/golden.js --shard=n/4 and app/sweep with
+app/golden, app/states and app/sweep run as several rows; named bare, each
+selects all its rows and takes past the Bash tool's 600s foreground cap - see
+.claude/README.md, "Batch size and the fixed cost of a run". Run one row with
+node tests/app/golden.js --shard=n/4, node tests/app/states.js --shard=n/4 or
 node tests/app/sweep.js <width> [ru|en], one call each.
 
 --shard=n/m (1-indexed) packs the whole queue longest-first over the weight
 column into m bins and runs only bin n - disjoint and exhaustive across
 n=1..m, the same contract tests/app/golden.js's own --shard=n/of promises for
-its states. This is what ci.yml's browser matrix runs, five times.`);
+its states. ci.yml's browser matrix runs it once per shard.`);
   process.exit(0);
 }
 const jobsArg = args.indexOf('--jobs');
@@ -128,28 +146,22 @@ let queue = SUITES.filter(
    exhaustive by construction - every suite lands in exactly one bin - the
    same promise tests/app/golden.js's own --shard=n/of makes for its states,
    generalised here from one suite's states to the whole pool. ci.yml's
-   `browser` matrix is four calls of this.
+   `browser` matrix is five calls of this.
 
-   Four separate `node` processes, one per matrix job, each sort and pack
+   Five separate `node` processes, one per matrix job, each sort and pack
    this same array independently and have to agree on the result without
    talking to each other - which they do only because `Array.prototype.sort`
-   is a stable sort and this table currently has two exact ties (the
-   `app/sweep` 1180 rows at 275/275, `dataint`/`derived` at 0.3/0.3): a
+   is a stable sort and this table currently has two exact ties (the four
+   `app/states` rows at 440, `craft`/`contracts` at 0.2/0.2): a
    stable sort keeps tied rows in their original SUITES order on every
    process, so "lightest bin first" breaks the tie identically everywhere. An
    unstable sort could let one process assign a tied suite to a different bin
-   than another, and the four `--shard` calls would silently stop being
+   than another, and the five `--shard` calls would silently stop being
    disjoint and exhaustive. Load-bearing and otherwise invisible - nothing
    else in this file depends on sort stability. */
-const shardArg = args.find((a) => a.startsWith('--shard='));
-if (shardArg) {
-  const m = /^--shard=(\d+)\/(\d+)$/.exec(shardArg);
-  const n = m && Number(m[1]);
-  const of = m && Number(m[2]);
-  if (!n || !of || n < 1 || n > of) {
-    throw new Error(`--shard must look like --shard=1/4 (got "${shardArg}")`);
-  }
-  const bins = Array.from({ length: of }, () => ({ items: [], total: 0 }));
+const SHARD = require('./app/shard.js').shardOf(args);
+if (SHARD) {
+  const bins = Array.from({ length: SHARD.of }, () => ({ items: [], total: 0 }));
   const byWeight = queue.slice().sort((a, b) => b[2] - a[2]);
   for (const suite of byWeight) {
     let lightest = 0;
@@ -158,8 +170,17 @@ if (shardArg) {
     bins[lightest].items.push(suite);
     bins[lightest].total += suite[2];
   }
-  const mine = new Set(bins[n - 1].items);
+  const mine = new Set(bins[SHARD.n].items);
   queue = queue.filter((s) => mine.has(s));
+}
+const shardName = SHARD ? SHARD.n + 1 + '/' + SHARD.of : '';
+/* Report key: several rows share one suite name (app/sweep, app/golden,
+   app/states) */
+const keyOf = (s) => s[0] + (s[3] ? ':' + s[3].join('-') : '');
+if (args.includes('--list')) {
+  for (const s of queue) console.log(keyOf(s) + ' ' + s[2]);
+  console.log('sum ' + queue.reduce((t, s) => t + s[2], 0).toFixed(1));
+  process.exit(0);
 }
 /* The build's outputs are not committed (docs/specs/CONTRACTS.md sections 4
    and 5): derived, contracts and the app/* suites (through tests/app/serve.js
@@ -182,21 +203,22 @@ if (missing) {
     process.exit(1);
   }
 }
-/* Report key: several rows share one suite name (app/sweep, app/golden) */
-const keyOf = (s) => s[0] + (s[3] ? ':' + s[3].join('-') : '');
 /* The key tells two runs of one suite apart with a colon, which is fine on
    screen and not fine in a file name: GitHub's artifact upload refuses a colon
    outright, because NTFS does, and one bad name fails the whole upload - which
    is exactly the log somebody needed to read. */
 const fileOf = (s) => keyOf(s).replace(/[^\w.-]+/g, '-');
 if (!queue.length) {
-  if (shardArg) {
-    console.log('shard ' + shardArg + ' is empty: fewer suites than bins');
+  if (SHARD) {
+    console.log('shard ' + shardName + ' is empty: fewer suites than bins');
   } else {
     console.log('no such suites: ' + only.join(', '));
   }
   process.exit(1);
 }
+/* A job cancelled by its timeout prints no summary; this line still names
+   the rows that ran in it. */
+if (SHARD) console.log('shard ' + shardName + ': ' + queue.map(keyOf).join(', '));
 
 /* Every suite's whole output goes to a file, not just the dozen lines the
    summary shows. On a machine you are sitting at the difference hardly matters;

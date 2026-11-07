@@ -1,6 +1,6 @@
 # #/p/set-voa4wrst ~ black and white as gm2
 # route: #/p/set-voa4wrst
-# why: the same nine, the other layout; the note under the bar
+# why: the same nine, the other layout
 # as: gm2
 
 ## ru :: tree
@@ -18,19 +18,18 @@ RootWebArea "Генератор лута Daggerheart" [url=/p/set-voa4wrst?as=gm
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
+    link "Назад" [url=/roll/std]
     heading "Печать карточек" [level=1]
-    StaticText "Карточек: 9. Листов A4: 1. Размер карты 63×88 мм - как у обычной..." [namelen=75 namehash=c0ea1b66]
-    button "Назад"
-    button "Отправить на печать"
-    button "Цветная" [pressed=false]
-    button "Чёрно-белая" [pressed=true]
-    button "Обычная" [pressed=true]
-    button "Компактная" [pressed=false]
+    button "Напечатать"
+    button "Цвет" [pressed=false]
+    button "Ч/б" [pressed=true]
+    button "63×88" [pressed=true]
+    button "44×63" [pressed=false]
     button "Ссылка на набор"
-    StaticText "Только до перезагрузки. Чтобы сохранить, измените в "
-    link "настройках аккаунта" [url=/account]
-    ... StaticText x184 of 188 same-shape siblings elided
     status ""
+    StaticText "АРТЕФАКТ"
+    StaticText "МАГИЧЕСКОЕ"
+    ... StaticText x172 of 176 same-shape siblings elided
     heading "КЛЯТВА РАВНОВЕСИЯ" [level=2]
     LineBreak " "
     LineBreak " "
@@ -41,8 +40,8 @@ RootWebArea "Генератор лута Daggerheart" [url=/p/set-voa4wrst?as=gm
     LineBreak " "
     heading "АМУЛЕТ ИЗ ПАЛЬЦА ДЬЯВОЛА" [level=2]
     LineBreak " "
-    StaticText "Daggerheart"
     StaticText "Vault of Ages"
+    StaticText "Карточек: 9. Листов A4: 1. Размер карты 63×88 мм - как у обычной..." [namelen=75 namehash=c0ea1b66]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -51,26 +50,25 @@ RootWebArea "Генератор лута Daggerheart" [url=/p/set-voa4wrst?as=gm
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
+44×63
+63×88
 EN
 RU
 daggerheart.com
 Аккаунт: gm2@example.test
 Бросок
 К содержимому
-Компактная
 Конфиденциальность
 ЛутDaggerheart
 Назад
-Обычная
-Отправить на печать
+Напечатать
 Поиск
 Ссылка на набор
 Таблицы
 Условия использования
 Установить как приложение
-Цветная
-Чёрно-белая
-настройках аккаунта
+Цвет
+Ч/б
 
 ## en :: tree
 RootWebArea "Daggerheart Loot Generator" [url=/en/p/set-voa4wrst?as=gm2]
@@ -87,19 +85,18 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/p/set-voa4wrst?as=gm2]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
+    link "Back" [url=/en/roll/std]
     heading "Printing cards" [level=1]
-    StaticText "Cards: 9. A4 sheets: 1. Card size 63×88 mm - the size of a playi..." [namelen=72 namehash=97b0ce82]
-    button "Back"
-    button "Send to printer"
+    button "Print"
     button "Color" [pressed=false]
-    button "Black and white" [pressed=true]
-    button "Standard" [pressed=true]
-    button "Compact" [pressed=false]
+    button "B&W" [pressed=true]
+    button "63×88" [pressed=true]
+    button "44×63" [pressed=false]
     button "Link to this set"
-    StaticText "Only until the page reloads. To keep it, change it in "
-    link "your account settings" [url=/en/account]
-    ... StaticText x185 of 189 same-shape siblings elided
     status ""
+    StaticText "ARTIFACT"
+    StaticText "MAGIC"
+    ... StaticText x173 of 177 same-shape siblings elided
     heading "OATH OF BALANCE" [level=2]
     LineBreak " "
     LineBreak " "
@@ -110,8 +107,8 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/p/set-voa4wrst?as=gm2]
     LineBreak " "
     heading "DEVIL-FINGER CHARM" [level=2]
     LineBreak " "
-    StaticText "Daggerheart"
     StaticText "Vault of Ages"
+    StaticText "Cards: 9. A4 sheets: 1. Card size 63×88 mm - the size of a playi..." [namelen=72 namehash=97b0ce82]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -120,23 +117,22 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/p/set-voa4wrst?as=gm2]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
+44×63
+63×88
 Account: gm2@example.test
+B&W
 Back
-Black and white
 Color
-Compact
 EN
 Install as an app
 Link to this set
 LootDaggerheart
+Print
 Privacy
 RU
 Roll
 Search
-Send to printer
 Skip to content
-Standard
 Tables
 Terms of use
 daggerheart.com
-your account settings

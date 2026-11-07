@@ -1,6 +1,6 @@
 # #/lists/00000000-0000-4000-8000-000000000102 as gm1
 # route: #/lists/00000000-0000-4000-8000-000000000102
-# why: «Пустой список»: «0 позиций из 100 · Сохранено», the empty hint ending «Свой предмет можно создать здесь же, кнопкой ниже.», then the row «Свой предмет» folded
+# why: «Пустой список»: «0 позиций из 100 · Сохранено» and no instruction sentence (DESIGN.md, "The Clarity Rule"), then the row «Добавить свой предмет» folded
 # as: gm1
 
 ## ru :: tree
@@ -19,18 +19,14 @@ RootWebArea "Пустой список - Генератор лута Daggerheart
       link "Поиск" [url=/search]
   main ""
     StaticText "Пустой список"
-    textbox "Название списка" [value=Пустой список multiline=false readonly=false required=false]
+    textbox "Название списка" [value=Пустой список multiline=true readonly=false required=false]
     StaticText "0 позиций из 100 · "
     StaticText "Сохранено"
     button "Поделиться" [expanded=false]
-    button "Скопировать текст"
-    button "Скачать JSON"
-    button "Удалить"
+    button "Ещё" [expanded=false haspopup=menu]
+    button "Заметки" [expanded=false]
     status ""
-    DisclosureTriangle "ЗАМЕТКИ" [expanded=false]
-    StaticText "Пока пусто. Откройте «Таблицы» или «Поиск», отметьте нужное гало..." [namelen=136 namehash=e00354fc]
-    StaticText " Свой предмет можно создать здесь же, кнопкой ниже."
-    button "Свой предмет" [expanded=false]
+    button "Добавить свой предмет" [expanded=false]
     status ""
     status ""
   contentinfo ""
@@ -46,24 +42,16 @@ RU
 daggerheart.com
 Аккаунт: gm1@example.test
 Бросок
-Жирный
+Добавить свой предмет
+Ещё
+Заметки
 К содержимому
 Конфиденциальность
-Курсив
 ЛутDaggerheart
 Название списка
-Нумерованный список
 Поделиться
-Подсказка: Для игроков
-Подсказка: Только для мастера
 Поиск
-Просмотр
-Свой предмет
-Скачать JSON
-Скопировать текст
-Список
 Таблицы
-Удалить
 Условия использования
 Установить как приложение
 
@@ -83,18 +71,14 @@ RootWebArea "Пустой список - Daggerheart Loot Generator" [url=/en/li
       link "Search" [url=/en/search]
   main ""
     StaticText "Пустой список"
-    textbox "List name" [value=Пустой список multiline=false readonly=false required=false]
+    textbox "List name" [value=Пустой список multiline=true readonly=false required=false]
     StaticText "0 items of 100 · "
     StaticText "Saved"
     button "Share" [expanded=false]
-    button "Copy text"
-    button "Download JSON"
-    button "Delete"
+    button "More" [expanded=false haspopup=menu]
+    button "Notes" [expanded=false]
     status ""
-    DisclosureTriangle "NOTES" [expanded=false]
-    StaticText "Nothing here yet. Open Tables or Search, tick what you need and ..." [namelen=122 namehash=3ef243ba]
-    StaticText " You can also make an item of your own here, with the button bel..." [namelen=67 namehash=44bdc08a]
-    button "Own item" [expanded=false]
+    button "Add your own item" [expanded=false]
     status ""
     status ""
   contentinfo ""
@@ -106,21 +90,13 @@ RootWebArea "Пустой список - Daggerheart Loot Generator" [url=/en/li
 
 ## en :: controls
 Account: gm1@example.test
-Bold
-Bulleted list
-Copy text
-Delete
-Download JSON
+Add your own item
 EN
-Help: For players
-Help: GM only
 Install as an app
-Italic
 List name
 LootDaggerheart
-Numbered list
-Own item
-Preview
+More
+Notes
 Privacy
 RU
 Roll

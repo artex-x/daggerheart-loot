@@ -20,24 +20,16 @@ RootWebArea "Мои списки - Генератор лута Daggerheart" [url
   main ""
     heading "Мои списки" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
-    StaticText "Соберите добычу в список и отправьте игрокам одной ссылкой."
-    StaticText "НОВЫЙ СПИСОК"
-    textbox "Новый список" [multiline=false readonly=false required=false]
-    button "Создать"
-    button "Импорт из файла" [expanded=false]
+    button "Новый список" [expanded=false]
     status ""
-    heading "ВАШ АККАУНТ" [level=2]
     StaticText "1 список из 50"
-    checkbox "Выбрать все" [checked=false]
-    StaticText "ВЫБРАТЬ ВСЕ"
-    generic ""
-    checkbox "Выбрать: Список второго ГМа" [checked=false]
-    link "Список второго ГМа, 2 позиции, изменён позавчера, 2 изменения" [url=/lists/00000000-0000-4000-8000-000000000201]
+    button "Импорт из файла" [expanded=false]
+    button "Выбрать"
+    link "Список второго ГМа, 2 позиции, изменён позавчера, Новое в списке..." [url=/lists/00000000-0000-4000-8000-000000000201 namelen=68 namehash=8240dd25]
       StaticText "Список второго ГМа"
       StaticText "2 позиции · изменён позавчера"
-      StaticText "2 изменения"
-    button "Удалить"
+      StaticText "Новое в списке (2)"
+    button "Ещё: Список второго ГМа" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -46,14 +38,13 @@ RootWebArea "Мои списки - Генератор лута Daggerheart" [url
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-?Справка
 EN
 RU
 daggerheart.com
 Аккаунт: gm2@example.test
 Бросок
-Выбрать все
-Выбрать: Список второго ГМа
+Выбрать
+Ещё: Список второго ГМа
 Импорт из файла
 К содержимому
 Конфиденциальность
@@ -61,10 +52,8 @@ daggerheart.com
 Новый список
 Открывать при запуске
 Поиск
-Создать
-Список второго ГМа, 2 позиции, изменён позавчера, 2 изменения
+Список второго ГМа, 2 позиции, изменён позавчера, Новое в списке... [namelen=68 namehash=8240dd25]
 Таблицы
-Удалить
 Условия использования
 Установить как приложение
 
@@ -85,24 +74,16 @@ RootWebArea "My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm2]
   main ""
     heading "My lists" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
-    StaticText "Collect loot into a list and send it to your players as a single..." [namelen=70 namehash=7a94568a]
-    StaticText "NEW LIST"
-    textbox "New list" [multiline=false readonly=false required=false]
-    button "Create"
-    button "Import from file" [expanded=false]
+    button "New list" [expanded=false]
     status ""
-    heading "YOUR ACCOUNT" [level=2]
     StaticText "1 list of 50"
-    checkbox "Select all" [checked=false]
-    StaticText "SELECT ALL"
-    generic ""
-    checkbox "Select: Список второго ГМа" [checked=false]
-    link "Список второго ГМа, 2 items, edited 2 days ago, 2 changes" [url=/en/lists/00000000-0000-4000-8000-000000000201]
+    button "Import from file" [expanded=false]
+    button "Select"
+    link "Список второго ГМа, 2 items, edited 2 days ago, New in this list..." [url=/en/lists/00000000-0000-4000-8000-000000000201 namelen=68 namehash=84b70fc4]
       StaticText "Список второго ГМа"
       StaticText "2 items · edited 2 days ago"
-      StaticText "2 changes"
-    button "Delete"
+      StaticText "New in this list (2)"
+    button "More: Список второго ГМа" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -111,24 +92,21 @@ RootWebArea "My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm2]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-?Help
 Account: gm2@example.test
-Create
-Delete
 EN
 Import from file
 Install as an app
 LootDaggerheart
+More: Список второго ГМа
 New list
 Open on start
 Privacy
 RU
 Roll
 Search
-Select all
-Select: Список второго ГМа
+Select
 Skip to content
 Tables
 Terms of use
 daggerheart.com
-Список второго ГМа, 2 items, edited 2 days ago, 2 changes
+Список второго ГМа, 2 items, edited 2 days ago, New in this list... [namelen=68 namehash=84b70fc4]

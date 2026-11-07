@@ -6,8 +6,9 @@
  * and every legacy suite uses - because a handful of real defects only show
  * up on the far side of a browser's own microtask checkpoint (the
  * `isConnected` guard) or need a real network, a real clipboard stub, or a
- * real second tab to mean anything at all. Eighty-six cases in
- * eighty-five runs (4 and 5 share one), no ancestor. Like every suite here it drives
+ * real second tab to mean anything at all. One run per `CASES` entry (4 and 5
+ * share one), no ancestor; `--shard=n/of` runs every `of`-th entry, as
+ * `golden.js` does. Like every suite here it drives
  * dist-test/, the test build (docs/specs/COVERAGE.md, "Test layers"): signed
  * out it draws the sign-in prompt where a list would be made, so the cases
  * that make one open as the seed's `gm2`. */
@@ -15,7 +16,18 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { PNG } = require('pngjs');
-const { axe, baseUrl, fresh, sharedPage, reporter, closeBrowser } = require('./lib.js');
+const { shardOf } = require('./shard.js');
+/* Read before lib.js, whose require checks the build: a bad `--shard` names itself first. */
+const SHARD = shardOf(process.argv);
+const {
+  axe,
+  baseUrl,
+  fresh,
+  sharedPage,
+  reporter,
+  closeBrowser,
+  targets
+} = require('./lib.js');
 const { TARGETS, ready } = require('./driver.js');
 const { HB_FILE, STATES, hbImportOpen } = require('./inventory.js');
 
@@ -23,8 +35,13 @@ const { HB_FILE, STATES, hbImportOpen } = require('./inventory.js');
  *  the fake hands a new list, `uuid(5000)`. */
 const SHOP = '#/lists/00000000-0000-4000-8000-000000000101';
 const FIRST_NEW = '#/lists/00000000-0000-4000-8000-000000005000';
+/** The fake seed's `gm2` list, `uuid(201)`, with its change notices. */
+const GM2_LIST_ID = '#/lists/00000000-0000-4000-8000-000000000201';
 /** The fake seed's `gm1` list «Трофеи», `uuid(103)`, with no share link. */
 const TROPHIES = '#/lists/00000000-0000-4000-8000-000000000103';
+/** The owner's list page «Ещё»: in the head's row up to 760 px, in the action row from 761 px. */
+const LIST_MORE =
+  '.lhead-acts .morewrap > [aria-haspopup="menu"], .lacts .morewrap > [aria-haspopup="menu"]';
 
 /** Opens `#/lists` signed in as `as`, makes the account list `spec` (`driver.js`,
  *  `accountLists`) and goes to its page; answers the list's id. A new `d.open` resets the
@@ -90,7 +107,7 @@ async function newListFromCard() {
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/i/ci1', { as: 'gm2' });
   await d.press('В список');
-  await d.press('+ Новый список');
+  await d.press('Новый список');
   const box = await newListInputBox(page);
   ok(!!box, '1 (card): the new-list form did not open');
   ok(!!box?.focused, '1 (card): the input is not focused');
@@ -104,7 +121,7 @@ async function newListFromBar() {
   await d.open('#/tables', { as: 'gm2' });
   await d.tick('Первоклассный Спальный Мешок'); // ticking a row is not this case's point
   await d.press('В список');
-  await d.press('+ Новый список');
+  await d.press('Новый список');
   const box = await newListInputBox(page);
   ok(!!box, '2 (selection bar): the new-list form did not open');
   ok(!!box?.focused, '2 (selection bar): the input is not focused');
@@ -119,7 +136,7 @@ async function newListFromModal() {
   await d.press('Самоцвет Чутья');
   ok(await d.has('В список'), '3 (modal): the modal did not open');
   await d.press('В список');
-  await d.press('+ Новый список');
+  await d.press('Новый список');
   const box = await newListInputBox(page);
   ok(!!box, '3 (modal): the new-list form did not open');
   ok(!!box?.focused, '3 (modal): the input is not focused');
@@ -181,7 +198,7 @@ async function addToListMenuStaysInModal() {
     ok(inside(menu, card), '23 (menu in the modal): the menu sits outside .modal-card');
   }
 
-  await d.press('+ Новый список');
+  await d.press('Новый список');
   const input = await newListInputBox(page);
   ok(!!input, '23 (menu in the modal): the new-list form did not open');
   ok(!!input?.focused, '23 (menu in the modal): the input is not focused');
@@ -449,39 +466,31 @@ async function noteTextareaHeight() {
     );
   }
 
-  /* The list's own note group (the legacy notes.js) - a second, independent
-   * pair of boxes at `.lnote`, closed by default until its summary is
-   * pressed, plus the clear cross's `:has(:placeholder-shown)` visibility
-   * (also notes.js) - a real-CSS read jsdom cannot make. */
+  /* The list's own note area (docs/specs/FEATURES.md, "Lists"): one field at a time, three
+   * lines while empty, grown to fit and held at 320 px - a real-CSS read jsdom cannot make. */
   await d.press('Заметки');
   const LIST_PH = 'Например: лавка закрыта до утра';
   const boxLines = () =>
-    page.$$eval('.lnote textarea', (els) =>
-      els.map((t) => {
-        const cs = getComputedStyle(t);
-        const pad = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
-        return Math.round((t.clientHeight - pad) / parseFloat(cs.lineHeight));
-      })
-    );
+    page.$eval('.lnotes .narea textarea', (t) => {
+      const cs = getComputedStyle(t);
+      const pad = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+      return Math.round((t.clientHeight - pad) / parseFloat(cs.lineHeight));
+    });
   let lnoteLines = await boxLines();
   ok(
-    lnoteLines.length === 2 && lnoteLines.every((n) => n === 3),
-    '13 (list notes): an empty note does not open at three lines - ' + lnoteLines.join(',')
+    lnoteLines === 3,
+    '13 (list notes): an empty note does not open at three lines - ' + lnoteLines
   );
 
   await d.type(LIST_PH, Array.from({ length: 8 }, (_, i) => 'строка ' + i).join('\n'));
   lnoteLines = await boxLines();
   ok(
-    lnoteLines[0] >= 8,
-    '13 (list notes): the public field did not grow to fit the text - ' + lnoteLines[0]
-  );
-  ok(
-    lnoteLines[1] === 3,
-    '13 (list notes): the neighboring field grew along with it - ' + lnoteLines[1]
+    lnoteLines >= 8,
+    '13 (list notes): the field did not grow to fit the text - ' + lnoteLines
   );
 
   await d.type(LIST_PH, Array.from({ length: 80 }, (_, i) => 'строка ' + i).join('\n'));
-  const tall = await page.$eval('.lnote .n-pub textarea', (t) => ({
+  const tall = await page.$eval('.lnotes .narea textarea', (t) => ({
     h: t.offsetHeight,
     over: t.scrollHeight > t.clientHeight
   }));
@@ -491,16 +500,8 @@ async function noteTextareaHeight() {
   await d.type(LIST_PH, 'одна строка');
   lnoteLines = await boxLines();
   ok(
-    lnoteLines[0] === 3,
-    '13 (list notes): the field did not return to three lines - ' + lnoteLines[0]
-  );
-
-  const crossVisible = await page.evaluate(() =>
-    [...document.querySelectorAll('.lnote .note-x')].map((x) => getComputedStyle(x).display)
-  );
-  ok(
-    crossVisible.length === 2 && crossVisible[0] !== 'none' && crossVisible[1] === 'none',
-    '13 (list notes): the clear cross is shown on the wrong field - ' + crossVisible.join(',')
+    lnoteLines === 3,
+    '13 (list notes): the field did not return to three lines - ' + lnoteLines
   );
 
   await ctx.close();
@@ -561,7 +562,7 @@ async function historyBackForward() {
   await page.goBack();
   await d.settle();
   const chip = await page.evaluate(
-    () => document.querySelector('.tablenav .tabs [aria-current="page"]')?.textContent
+    () => document.querySelector('.tabslot .tabs [aria-current="page"]')?.textContent
   );
   ok(chip === 'Броня', '15 (navigation): back returned the wrong table - ' + chip);
   await page.goForward();
@@ -829,8 +830,9 @@ async function dragReorder() {
 
   /* Outside the zone a live drag is refused, over the list's own note too,
    * which would otherwise take the row's `text/plain` index as text. */
-  if (!(await page.evaluate(() => document.querySelector('.lnote')?.open))) {
-    await d.press('Заметки');
+  if (!(await d.count('.lnotes .narea'))) {
+    await page.evaluate(() => document.querySelector('.lnotes .nopen button')?.click());
+    await d.settle();
   }
   await page.evaluate(() => {
     const grip = document.querySelector('.lrow [data-drag]');
@@ -840,7 +842,7 @@ async function dragReorder() {
   });
   await d.settle();
   const overNote = await page.evaluate(() => {
-    const ta = document.querySelector('.lnote textarea');
+    const ta = document.querySelector('.lnotes textarea');
     const r = ta.getBoundingClientRect();
     const e = new DragEvent('dragover', {
       bubbles: true,
@@ -891,9 +893,9 @@ async function dragReorder() {
     '17 (drag reorder, notes)'
   );
 
-  /** Gold pixels (within 24/255 of `--gold`, `216,171,94`) in a 200x3 px
-   *  strip at row `i`'s bottom edge - the same probe docs/DECISIONS.md,
-   *  "A drop indicator redraws...", measured against `dist/`. */
+  /** Gold pixels (within 24/255 of `--gold`, `216,171,94`) in a 200x2 px strip of the
+   *  8 px gap under row `i`, where the 2 px drop mark draws (docs/specs/FEATURES.md,
+   *  "Lists") - the probe of docs/DECISIONS.md, "A drop indicator redraws...". */
   async function goldStripAt(i) {
     /* `getBoundingClientRect()` returns a `DOMRect` whose fields are
        prototype getters, not own properties - puppeteer's own JSON
@@ -901,10 +903,14 @@ async function dragReorder() {
        object built from them, not the `DOMRect` itself. */
     const rect = await notePage.evaluate((idx) => {
       const r = document.querySelectorAll('.lrow')[idx].getBoundingClientRect();
-      return { x: r.x, y: r.bottom - 3, width: 200, height: 3, sx: scrollX, sy: scrollY };
+      return { x: r.x, y: r.bottom + 3, width: 200, height: 2, sx: scrollX, sy: scrollY };
     }, i);
     const clip = pageClip(rect);
-    const png = PNG.sync.read(await notePage.screenshot({ type: 'png', clip }));
+    /* By default puppeteer resizes the view for a clip, through 1x1 px: the list redraws as
+       compact rows, and the dragged grip leaves, which ends the drag. */
+    const png = PNG.sync.read(
+      await notePage.screenshot({ type: 'png', clip, captureBeyondViewport: false })
+    );
     let n = 0;
     for (let p = 0; p < png.width * png.height; p++) {
       const r = png.data[p * 4];
@@ -940,8 +946,8 @@ async function dragReorder() {
   await noteD.settle();
   const midGold = await goldStripAt(2);
   ok(
-    midGold > 300,
-    '17 (drag reorder): an open note box hides the gold line mid-list - ' + midGold + '/600'
+    midGold > 200,
+    '17 (drag reorder): no gold line in the gap mid-list - ' + midGold + '/400'
   );
 
   /* Defect superseded (git log --grep=dnd4, was dnd3): the mark used to fade
@@ -1007,10 +1013,8 @@ async function dragReorder() {
   await noteD.settle();
   const endGold = await goldStripAt(3);
   ok(
-    endGold > 300,
-    '17 (drag reorder): an open note box hides the gold line at the end of the list - ' +
-      endGold +
-      '/600'
+    endGold > 200,
+    '17 (drag reorder): no gold line in the gap after the last row - ' + endGold + '/400'
   );
 
   await notePage.evaluate(() => {
@@ -1023,43 +1027,45 @@ async function dragReorder() {
   await noteCtx.close();
 }
 
-/** 18. A folded `<details>` surviving a select-all/money-mode re-render,
- *  ported from the legacy `lists2.js`. */
+/** 18. The open note area and roll panel survive a select-all and a money-mode re-render
+ *  (page memory, docs/specs/FEATURES.md, "Lists"), ported from the legacy `lists2.js`. */
 async function foldedDetailsSurviveRerender() {
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await openAccountList(
     d,
     { n: 1, name: 'Тайник', ids: ['ci1', 'ci2', 'ci3'], meta: { ci1: { gold: 70 } } },
-    '18 (folded panels)'
+    '18 (open panels)'
   );
-  await page.$eval('.lnote', (e) => {
-    e.open = false;
-  });
-  await page.$eval('.lroll', (e) => {
-    e.open = false;
-  });
+  await d.press('Бросить по списку');
+  await page.evaluate(() => document.querySelector('.lnotes .nopen button')?.click());
   await d.settle();
 
   const openState = () =>
     page.evaluate(() => ({
-      note: document.querySelector('.lnote')?.open,
-      roll: document.querySelector('.lroll')?.open
+      note: !!document.querySelector('.lnotes .narea'),
+      roll: !!document.querySelector('.lroll-h')
     }));
-
-  await page.evaluate(() => document.querySelector('.batch-all input')?.click());
-  await d.settle();
-  let open1 = await openState();
+  const open0 = await openState();
   ok(
-    open1.note === false && open1.roll === false,
-    '18 (folded panels): "select all" unfolded something folded - ' + JSON.stringify(open1)
+    open0.note && open0.roll,
+    '18 (open panels): the panels did not open - ' + JSON.stringify(open0)
+  );
+
+  await page.evaluate(() => document.querySelector('button.selmode')?.click());
+  await d.settle();
+  await page.evaluate(() => document.querySelector('.selbarwrap .selall input')?.click());
+  await d.settle();
+  const open1 = await openState();
+  ok(
+    open1.note && open1.roll,
+    '18 (open panels): "select all" folded something open - ' + JSON.stringify(open1)
   );
 
   await d.click('Монетами');
   const open2 = await openState();
   ok(
-    open2.note === false && open2.roll === false,
-    '18 (folded panels): switching price mode unfolded something folded - ' +
-      JSON.stringify(open2)
+    open2.note && open2.roll,
+    '18 (open panels): switching price mode folded something open - ' + JSON.stringify(open2)
   );
   await ctx.close();
 }
@@ -1137,8 +1143,8 @@ async function buttonFocusSurvivesRerender() {
   await ctx.close();
 }
 
-/** 22. The money help box measured against its container, and the pressed
- *  add-to-list button's own color, ported from the legacy `lists2.js`. */
+/** 22. The price switch with no «?» on the list page (docs/specs/FEATURES.md, rule 15 (c)),
+ *  and the pressed add-to-list button's own color, ported from the legacy `lists2.js`. */
 async function moneyHelpAndPressedPicker() {
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await openAccountList(
@@ -1146,32 +1152,15 @@ async function moneyHelpAndPressedPicker() {
     { n: 1, name: 'Клад', ids: ['ci1'], meta: { ci1: { gold: 70 } } },
     '22 (help and list pick)'
   );
-  await d.press('Справка');
-  const helpBox = await page.evaluate(() => {
-    const h = document.querySelector('.money-help');
-    /* The rewrite has no global `.wrap` container (SelBar.svelte's own
-     * comment) - every frame element composes the same width off `--wrap`
-     * instead, `main` (Shell.svelte) included, which is what the help box
-     * sits inside here. */
-    const c = document.querySelector('main');
-    if (!h || !c) return null;
-    return {
-      box: h.classList.contains('helpbox'),
-      w: h.getBoundingClientRect().width,
-      cw: c.getBoundingClientRect().width
-    };
-  });
-  ok(!!helpBox, '22 (help and list pick): .money-help did not open');
-  if (helpBox) {
-    ok(helpBox.box, '22 (help and list pick): the gold help is not the right frame');
-    ok(
-      Math.abs(helpBox.w - helpBox.cw) < 2,
-      '22 (help and list pick): the gold help is not the width of its container - ' +
-        helpBox.w +
-        ' of ' +
-        helpBox.cw
-    );
-  }
+  const prices = await page.evaluate(() => ({
+    seg: !!document.querySelector('.lprices [role="group"]'),
+    help: document.querySelectorAll('main .helpbtn, main .money-help').length
+  }));
+  ok(prices.seg, '22 (help and list pick): the price switch is not drawn');
+  ok(
+    prices.help === 0,
+    '22 (help and list pick): the list page still draws a «?» - ' + prices.help
+  );
   await ctx.close();
 
   const { ctx: ctx2, page: page2, d: d2 } = await fresh({ width: 1180, height: 900 });
@@ -1247,6 +1236,11 @@ async function announceOnTouchAndHideInertGrip() {
   const { ctx, page, d } = await fresh({ width: 390, height: 900 });
   await page.setViewport({ width: 390, height: 900, isMobile: true, hasTouch: true });
   await openAccountList(d, spec, '26 (touch device)');
+  /* Up to 760 px the grip and the position field sit in the unfolded compact row. */
+  await page.evaluate(() => {
+    for (const b of document.querySelectorAll('button.cbody')) b.click();
+  });
+  await d.settle();
 
   const grip = await page.evaluate(() => {
     const g = document.querySelector('.lrow-grip');
@@ -1302,8 +1296,8 @@ async function announceOnTouchAndHideInertGrip() {
   await ctx2.close();
 }
 
-/** 27. At 50 lists the menu keeps its label, search and «+ Новый список» in
- *  view and scrolls only its chips; the lists holding the record lead
+/** 27. At 50 lists the menu keeps its heading, search and «Новый список» in
+ *  view and scrolls only its rows; the lists holding the record lead
  *  (docs/specs/FEATURES.md, "Lists"). */
 async function listMenuKeepsItsControlsInView() {
   /* gm2 holds one list of its own; 49 more make the fake's limit of 50. */
@@ -1335,17 +1329,15 @@ async function listMenuKeepsItsControlsInView() {
       };
       const menu = document.querySelector('.dropmenu');
       const chips = menu?.querySelector('.pickchips');
-      const newChip = [...(menu?.querySelectorAll(':scope > .chip') ?? [])].find(
-        (c) => c.textContent === '+ Новый список'
-      );
+      const newChip = menu?.querySelector(':scope > .lnew');
       return {
         menu: box(menu),
         search: box(menu?.querySelector('input[type="search"]')),
         newChip: box(newChip),
         scrolls: !!chips && chips.scrollHeight > chips.clientHeight,
-        firstOn: [...(chips?.querySelectorAll('.chip') ?? [])]
+        firstOn: [...(chips?.querySelectorAll('.lrow') ?? [])]
           .slice(0, 6)
-          .map((c) => c.classList.contains('on')),
+          .map((c) => c.getAttribute('aria-pressed') === 'true'),
         view: { x: 0, y: 0, w: innerWidth, h: innerHeight }
       };
     });
@@ -1354,7 +1346,7 @@ async function listMenuKeepsItsControlsInView() {
       ok(m.menu.h <= 342, at + 'the menu is ' + String(m.menu.h) + ' px tall, over 342');
       for (const [name, b] of [
         ['the search box', m.search],
-        ['«+ Новый список»', m.newChip]
+        ['«Новый список»', m.newChip]
       ]) {
         ok(
           !!b && inside(b, m.menu),
@@ -1367,14 +1359,14 @@ async function listMenuKeepsItsControlsInView() {
         ok(!!b && b.shown, at + name + ' is covered or clipped - ' + JSON.stringify(b));
       }
     }
-    ok(m.scrolls, at + 'the chips do not scroll on their own');
+    ok(m.scrolls, at + 'the rows do not scroll on their own');
     ok(
       JSON.stringify(m.firstOn) === JSON.stringify([true, true, true, true, true, false]),
       at + 'the five lists holding the record do not lead - ' + JSON.stringify(m.firstOn)
     );
 
     await d.type('Найти список', 'Шкатулка');
-    await d.press('+ Новый список');
+    await d.press('Новый список');
     const input = await page.evaluate(() => {
       const el = document.querySelector('.picker-new input[type="text"]');
       return el && { value: el.value, focused: el === document.activeElement };
@@ -1731,41 +1723,40 @@ async function guideBackLink() {
   }
 }
 
-/** 30. The note clear button's 44px target yields to the formatting toolbar under
- *  it: a point just inside the toolbar's top edge, under the button's center, hits a
- *  toolbar button; the button's own center hits the button. */
+/** 30. The note area's «Очистить» and the toolbar take their own presses: each toolbar
+ *  button's center and «Очистить»'s center hit that control, with no target over another
+ *  (the clear cross whose 44 px target reached into the toolbar went with the note area,
+ *  docs/specs/FEATURES.md, "Lists"). */
 async function noteClearTargetYieldsToTheToolbar() {
   const at = '30 (note clear target): ';
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await openAccountList(d, { n: 1, name: 'Тайник', ids: ['ci1'], note: 'текст' }, '30');
-  /* A list with a note opens its note group already; a press would fold it. */
-  if (!(await page.evaluate(() => document.querySelector('.lnote')?.open))) {
-    await d.press('Заметки');
-  }
+  await page.evaluate(() => document.querySelector('.lnotes .nopen button')?.click());
+  await d.settle();
   const hits = await page.evaluate(() => {
-    const btn = [...document.querySelectorAll('.lnote .note-x')].find(
-      (b) => getComputedStyle(b).display !== 'none'
-    );
-    if (!btn) return null;
-    const bar = btn.closest('.nfield').querySelector('[role="toolbar"]');
-    const b = btn.getBoundingClientRect();
-    const t = bar.getBoundingClientRect();
-    const cx = b.x + b.width / 2;
-    const edge = document.elementFromPoint(cx, t.top + 3);
-    const centre = document.elementFromPoint(cx, b.y + b.height / 2);
+    const area = document.querySelector('.lnotes .narea');
+    if (!area) return null;
+    const own = (el) => {
+      const r = el.getBoundingClientRect();
+      const hit = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+      return !!hit && (hit === el || el.contains(hit));
+    };
+    const tools = [...area.querySelectorAll('[role="toolbar"] button')];
+    const clear = [...area.querySelectorAll('.nacts button')].at(-1);
     return {
-      overlap: b.y + b.height / 2 + 22 - t.top,
-      edgeIsTool: !!edge && !!edge.closest('button') && bar.contains(edge),
-      centreIsButton: !!centre && (centre === btn || btn.contains(centre)),
-      target: getComputedStyle(btn, '::after').width
+      tools: tools.length,
+      toolsOwn: tools.every(own),
+      clearOwn: !!clear && own(clear),
+      clear: clear?.textContent.trim()
     };
   });
-  ok(!!hits, at + 'no visible clear button on the list note');
+  ok(!!hits, at + 'the list note area did not open');
   if (hits) {
-    ok(hits.overlap > 3, at + 'no overlap left to test - ' + hits.overlap);
-    ok(hits.edgeIsTool, at + 'the toolbar edge under the button does not hit a toolbar button');
-    ok(hits.centreIsButton, at + 'the button center does not hit the button');
-    ok(hits.target === '44px', at + 'the target is not 44px - ' + hits.target);
+    ok(hits.tools > 0 && hits.toolsOwn, at + 'a toolbar button does not take its own press');
+    ok(
+      hits.clearOwn && hits.clear === 'Очистить',
+      at + '«Очистить» does not take its own press'
+    );
   }
 
   await ctx.close();
@@ -1995,9 +1986,8 @@ async function dragSourceRemovedMidDrag() {
     '33'
   );
   const order = () => d.listKeys(listId);
-  if (!(await page.evaluate(() => document.querySelector('.lnote')?.open))) {
-    await d.press('Заметки');
-  }
+  await page.evaluate(() => document.querySelector('.lnotes .nopen button')?.click());
+  await d.settle();
 
   await page.evaluate(() => {
     const grip = document.querySelectorAll('.lrow')[1].querySelector('[data-drag]');
@@ -2050,7 +2040,7 @@ async function dragSourceRemovedMidDrag() {
 
   const accepted = await page.evaluate(() => {
     window.__grip.dispatchEvent(new DragEvent('dragend', { bubbles: true }));
-    const ta = document.querySelector('.lnote textarea');
+    const ta = document.querySelector('.lnotes textarea');
     if (!ta) return null;
     const e = new DragEvent('dragenter', {
       bubbles: true,
@@ -2173,7 +2163,12 @@ async function accountPreferences() {
     await waitIn(page, () => !!document.querySelector('.psheet'));
     return page.evaluate(() => ({
       bw: document.querySelector('.psheet.bw') !== null,
-      note: document.querySelector('.keepnote a')?.getAttribute('href') ?? null
+      /* No note under the bar: the switch shows the visit's pick alone. */
+      note: document.querySelector('.printbar a[href="/account"]') !== null,
+      pressed:
+        [...document.querySelectorAll('.printbar .seg button')]
+          .find((b) => b.textContent.trim() === 'Ч/б')
+          ?.getAttribute('aria-pressed') ?? null
     }));
   };
   const accountPrefs = () =>
@@ -2181,28 +2176,30 @@ async function accountPreferences() {
   await c.d.open('#/p/set-twocards', { as: 'gm2' });
   await sheet(c.page);
   const before = await accountPrefs();
-  await c.d.click('Чёрно-белая');
+  await c.d.click('Ч/б');
   const kept = await c.d.storage('dhloot.prefs.v1');
   ok(kept === SEEDED, at + 'c: the print page press changed dhloot.prefs.v1 - ' + kept);
   const account = await accountPrefs();
   ok(account === before, at + 'c: the print page press changed the account row - ' + account);
   let seen = await sheet(c.page);
   ok(
-    seen.bw && seen.note === '/account',
-    at + 'c: the press did not draw black and white with the note - ' + JSON.stringify(seen)
+    seen.bw && !seen.note && seen.pressed === 'true',
+    at +
+      'c: the press did not draw black and white, pressed, with no note - ' +
+      JSON.stringify(seen)
   );
   await c.d.go('#/lists');
   await c.d.go('#/p/set-twocards');
   seen = await sheet(c.page);
   ok(
-    seen.bw && seen.note === '/account',
+    seen.bw && !seen.note && seen.pressed === 'true',
     at + 'c: the pick did not survive a return from #/lists - ' + JSON.stringify(seen)
   );
   await c.d.open('#/p/set-twocards', { as: 'gm2' });
   seen = await sheet(c.page);
   ok(
-    !seen.bw && seen.note === null,
-    at + 'c: a reload did not draw the color default without the note - ' + JSON.stringify(seen)
+    !seen.bw && !seen.note && seen.pressed === 'false',
+    at + 'c: a reload did not draw the color default - ' + JSON.stringify(seen)
   );
   await c.ctx.close();
 }
@@ -2213,7 +2210,7 @@ async function pressPromptSignIn(page) {
   await ready(page);
 }
 
-/** 37. A signed-out selection's «+ Новый список» is the sign-in prompt; its
+/** 37. A signed-out selection's «Новый список» is the sign-in prompt; its
  *  «Войти» opens #/account, whose Google sign-in comes back to the table with
  *  the same row ticked and the bar's menu open over the account's lists.
  *  Leaving #/account by a tab first forgets it (docs/specs/FEATURES.md,
@@ -2224,7 +2221,7 @@ async function signInFromTheBar() {
   await d.open('#/tables');
   await d.tick('Первоклассный Спальный Мешок');
   await d.press('В список');
-  await d.press('+ Новый список');
+  await d.press('Новый список');
   ok(
     (await page.evaluate(() => document.body.innerText)).includes(
       'Войдите, чтобы создать список.'
@@ -2246,15 +2243,14 @@ async function signInFromTheBar() {
     ticked: [...document.querySelectorAll('input[type="checkbox"]')].some(
       (c) => c.checked && c.getAttribute('aria-label') === 'Первоклассный Спальный Мешок'
     ),
-    chips: [...document.querySelectorAll('.dropmenu .chip')].map((c) => c.textContent)
+    chips: [...document.querySelectorAll('.dropmenu .lrow .ln, .dropmenu .lnew')].map(
+      (c) => c.textContent
+    )
   }));
   ok(back.ticked, at + 'the row is no longer ticked');
   ok(
-    back.chips.some((c) => c.includes('Лавка кузнеца')) &&
-      back.chips.includes('+ Новый список'),
-    at +
-      "the menu lacks the account's lists or «+ Новый список» - " +
-      JSON.stringify(back.chips)
+    back.chips.some((c) => c.includes('Лавка кузнеца')) && back.chips.includes('Новый список'),
+    at + "the menu lacks the account's lists or «Новый список» - " + JSON.stringify(back.chips)
   );
   await ctx.close();
 
@@ -2262,7 +2258,7 @@ async function signInFromTheBar() {
   await again.d.open('#/tables');
   await again.d.tick('Первоклассный Спальный Мешок');
   await again.d.press('В список');
-  await again.d.press('+ Новый список');
+  await again.d.press('Новый список');
   await pressPromptSignIn(again.page);
   await again.d.press('Поиск');
   await again.page.click('header a[href="/account"]');
@@ -2322,10 +2318,7 @@ async function signOutOnAccountList() {
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open(SHOP, { as: 'gm1' });
   ok(
-    await waitIn(
-      page,
-      () => document.querySelector('input.titleinput')?.value === 'Лавка кузнеца'
-    ),
+    await waitIn(page, () => document.querySelector('.titleinput')?.value === 'Лавка кузнеца'),
     at + 'the account list did not open'
   );
   await d.fake('auth.signOut');
@@ -2346,10 +2339,7 @@ async function notSavedThenRetried() {
   const at = '40 (not saved, then retried): ';
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open(SHOP, { as: 'gm1' });
-  await waitIn(
-    page,
-    () => document.querySelector('input.titleinput')?.value === 'Лавка кузнеца'
-  );
+  await waitIn(page, () => document.querySelector('.titleinput')?.value === 'Лавка кузнеца');
   await d.fake('setOffline', true);
   await d.type('Название списка', 'Лавка у моста');
   ok(
@@ -2364,7 +2354,7 @@ async function notSavedThenRetried() {
     at + 'the sub does not say «Не сохранено» with «Повторить»'
   );
   ok(
-    (await page.evaluate(() => document.querySelector('input.titleinput')?.value)) ===
+    (await page.evaluate(() => document.querySelector('.titleinput')?.value)) ===
       'Лавка у моста',
     at + 'the edit left the screen'
   );
@@ -2384,19 +2374,15 @@ async function notSavedThenRetried() {
   await ctx.close();
 }
 
-/** 41. Deleting an account list on the index: the browser's confirm names
+/** 41. Deleting an account list from its card's «Ещё»: the browser's confirm names
  *  the share links, the card goes, and the toast offers no undo. */
 async function deleteAccountList() {
   const at = '41 (delete an account list): ';
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/lists', { as: 'gm1' });
   await waitIn(page, () => document.body.innerText.includes('Трофеи'));
-  const index = await page.evaluate(() =>
-    [...document.querySelectorAll('.listcard')].findIndex((c) =>
-      c.textContent.includes('Трофеи')
-    )
-  );
-  await d.press('Удалить', index);
+  await d.press('Ещё: Трофеи');
+  await d.press('Удалить список');
   ok(
     (d.dialog() ?? '').includes('перестанут работать'),
     at + 'the confirm does not name the links - ' + JSON.stringify(d.dialog())
@@ -2421,7 +2407,7 @@ async function promptInDialogMenuAt360() {
   await d.open('#/tables');
   await d.press('Кольцо Тишины');
   await d.press('В список');
-  await d.press('+ Новый список');
+  await d.press('Новый список');
   await d.settle();
   const m = await page.evaluate(() => {
     const box = (el) => {
@@ -2463,7 +2449,7 @@ async function shareLinksOfAnAccountList() {
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   const copied = [];
   await d.open(TROPHIES, { as: 'gm1' });
-  await waitIn(page, () => document.querySelector('input.titleinput')?.value === 'Трофеи');
+  await waitIn(page, () => document.querySelector('.titleinput')?.value === 'Трофеи');
   await d.press('Поделиться');
   ok(
     await waitIn(
@@ -2512,7 +2498,7 @@ async function shareLinksOfAnAccountList() {
     at + 'the new link does not open the list with the owner line'
   );
   await d.go(TROPHIES);
-  await waitIn(page, () => document.querySelector('input.titleinput')?.value === 'Трофеи');
+  await waitIn(page, () => document.querySelector('.titleinput')?.value === 'Трофеи');
   await d.press('Поделиться');
   await waitIn(
     page,
@@ -2548,6 +2534,7 @@ async function shareLinksOfAnAccountList() {
   );
   await d.press('Скопировать', 1);
   copied.push((await d.clipboard())?.text ?? '');
+  await d.openMore(LIST_MORE);
   await d.press('Скопировать текст');
   copied.push((await d.clipboard())?.text ?? '');
   ok(
@@ -2578,13 +2565,17 @@ async function saveShareLinkAfterSignIn() {
       page,
       (p) =>
         location.pathname === p &&
-        document.querySelector('input.titleinput')?.value === 'Лавка кузнеца',
+        document.querySelector('.titleinput')?.value === 'Лавка кузнеца',
       FIRST_NEW.slice(1)
     ),
     at + 'the sign-in did not open the copy - ' + (await d.hash())
   );
+  /* A closed note area draws each filled note read-only (docs/specs/FEATURES.md, "Lists");
+     an open one holds it in its field. */
   const notes = await page.evaluate(() =>
-    [...document.querySelectorAll('textarea')].map((t) => t.value).join('\n')
+    [...document.querySelectorAll('main .hitnote, main textarea')]
+      .map((e) => (e instanceof HTMLTextAreaElement ? e.value : e.textContent))
+      .join('\n')
   );
   ok(
     notes.includes('Открыта с рассвета до заката.'),
@@ -2710,7 +2701,7 @@ async function liveAccountList() {
     await waitIn(page, () => !!document.querySelector('.said[data-live="live"]')),
     at + 'the owner topic did not join'
   );
-  const title = (name) => document.querySelector('input.titleinput')?.value === name;
+  const title = (name) => document.querySelector('.titleinput')?.value === name;
   await d.fake('play', SHOP_ID, { name: 'Лавка у моста' });
   ok(
     await waitWithin(page, 1000, title, 'Лавка у моста'),
@@ -2765,6 +2756,10 @@ async function countRequestReads(page) {
   });
 }
 
+/* The index card's chip, which counts the pending requests with the unread notices. */
+const cardSays = (text) =>
+  [...document.querySelectorAll('.listcard-new')].some((e) => e.textContent.trim() === text);
+
 /** 54. A purchase request reaches the owner's open list page and the index within a
  *  second while the owner topic is joined; with Realtime down it waits for the tab to
  *  be shown again. */
@@ -2783,8 +2778,8 @@ async function liveRequests() {
   );
   await d.go('#/lists');
   ok(
-    await waitIn(page, bodyHas, '1 запрос ждёт ответа'),
-    at + 'the index does not say «1 запрос ждёт ответа»'
+    await waitIn(page, cardSays, 'Новое в списке (1)'),
+    at + 'the index card does not say «Новое в списке (1)»'
   );
   /* The loss re-reads the requests once by itself; the next request comes after it. */
   await countRequestReads(page);
@@ -2795,12 +2790,12 @@ async function liveRequests() {
   );
   await d.fake('request', 'gm-token-1', [{ item: 'cc1', qty: 1 }]);
   ok(
-    !(await waitWithin(page, 1000, bodyHas, '2 запроса ждут ответа')),
+    !(await waitWithin(page, 1000, cardSays, 'Новое в списке (2)')),
     at + 'the second request showed with Realtime down and no signal'
   );
   await d.shownAgain();
   ok(
-    await waitIn(page, bodyHas, '2 запроса ждут ответа'),
+    await waitIn(page, cardSays, 'Новое в списке (2)'),
     at + 'the second request did not show when the tab was shown again'
   );
   await ctx.close();
@@ -2868,6 +2863,9 @@ async function applyARequest() {
   ]);
   ok(await waitIn(page, bodyHas, 'Новое в списке (1)'), at + 'the request is not on the page');
   const rows = await d.count('.lrow');
+  /* The panel folds on each page visit (docs/specs/FEATURES.md, "Lists"). */
+  await page.evaluate(() => document.querySelector('.reqhead button')?.click());
+  await d.settle();
   await d.press('Принять');
   ok(await waitIn(page, bodyHas, 'Запрос принят'), at + 'no «Запрос принят»');
   ok(
@@ -2926,10 +2924,7 @@ async function accountEditsWaitThenGoOnce() {
   const at = '49 (account edits wait two seconds, then go once): ';
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open(SHOP, { as: 'gm1' });
-  await waitIn(
-    page,
-    () => document.querySelector('input.titleinput')?.value === 'Лавка кузнеца'
-  );
+  await waitIn(page, () => document.querySelector('.titleinput')?.value === 'Лавка кузнеца');
   const shopRow = async () => {
     const read = await d.fake('lists.rows', ['00000000-0000-4000-8000-000000000101']);
     const shop = read?.ok
@@ -2947,8 +2942,13 @@ async function accountEditsWaitThenGoOnce() {
     [...document.querySelectorAll('textarea')].some(
       (t) => t.placeholder === 'Например: лавка закрыта до утра' && t.offsetParent !== null
     );
-  /* «Лавка кузнеца» has a list note, so its notes may already be open. */
-  if (!(await page.evaluate(noteShown))) await d.press('Заметки');
+  /* The list notes open from the side column («Изменить»), or «Заметки» up to 760 px. */
+  if (!(await page.evaluate(noteShown))) {
+    await page.evaluate(() =>
+      document.querySelector('.lnotes .nopen button, .lhead .metat')?.click()
+    );
+    await d.settle();
+  }
   ok(await page.evaluate(noteShown), at + 'the list note field is not on screen');
   await page.focus('[data-qty]');
   for (let i = 0; i < 10; i++) await page.keyboard.press('ArrowUp');
@@ -3060,10 +3060,7 @@ async function accountMenu() {
 
   await d.open(SHOP, { as: 'gm1' });
   ok(
-    await waitIn(
-      page,
-      () => document.querySelector('input.titleinput')?.value === 'Лавка кузнеца'
-    ),
+    await waitIn(page, () => document.querySelector('.titleinput')?.value === 'Лавка кузнеца'),
     at + 'the account list did not open'
   );
   await d.press(CONTROL);
@@ -3130,10 +3127,10 @@ async function accountMenu() {
 
 /** A file of docs/fixtures/import/. */
 const IMPORT_FILE = (name) => path.join(__dirname, '../../docs/fixtures/import', name);
-/** The account cards' pick boxes that are ticked, and the strip's summary. */
+/** The account cards' pick boxes that are ticked, and the selection bar's count. */
 const picks = () => ({
   ticked: document.querySelectorAll('.listcard-pick input:checked').length,
-  summary: document.querySelector('.batch-summ')?.textContent.trim() ?? ''
+  summary: document.querySelector('.selbarwrap .selcount')?.textContent.trim() ?? ''
 });
 
 /** 58. The ticked lists download as one lists file: two account cards ticked,
@@ -3144,7 +3141,7 @@ async function ticksDownloadAsOneFile() {
   const at = '58 (the ticked lists download as one lists file): ';
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/lists', { as: 'gm1' });
-  await waitIn(page, () => !!document.querySelector('.listcard-pick'));
+  await waitIn(page, () => !!document.querySelector('.listcard'));
   await d.tick('Выбрать: Пустой список');
   await d.tick('Выбрать: Лавка кузнеца');
   await d.press('Скачать JSON (2)');
@@ -3221,7 +3218,7 @@ async function dataZipReadsBack() {
   fs.writeFileSync(tmp, bytes);
   try {
     await d.go('#/lists');
-    await waitIn(page, () => !!document.querySelector('.listcard-pick'));
+    await waitIn(page, () => !!document.querySelector('.listcard'));
     await d.press('Импорт из файла');
     await d.upload(tmp);
     ok(
@@ -3250,7 +3247,7 @@ async function importedListOpens() {
   const at = '60 (an imported list opens with its rows in file order): ';
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/lists', { as: 'gm1' });
-  await waitIn(page, () => !!document.querySelector('.listcard-pick'));
+  await waitIn(page, () => !!document.querySelector('.listcard'));
   await d.press('Импорт из файла');
   await d.upload(IMPORT_FILE('example.json'));
   await waitIn(page, bodyHas, 'Импортировать (1)');
@@ -3275,9 +3272,7 @@ async function importedListOpens() {
   await waitIn(page, () => document.querySelectorAll('.lrow').length === 3);
   const shown = await page.evaluate(() => ({
     sub: document.querySelector('.page-sub')?.textContent ?? '',
-    rows: [...document.querySelectorAll('.lrow .lrow-pick input')].map((i) =>
-      i.getAttribute('aria-label')
-    ),
+    rows: [...document.querySelectorAll('.lrow .rname')].map((e) => e.textContent),
     qty: document.querySelector('.lrow input[data-qty]')?.value ?? '',
     gold: document.querySelector('.lrow input[data-gold]')?.value ?? ''
   }));
@@ -3301,7 +3296,7 @@ async function tickedListsDeletedTogether() {
   const at = '61 (ticked lists are deleted together after one confirm): ';
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/lists', { as: 'gm1' });
-  await waitIn(page, () => !!document.querySelector('.listcard-pick'));
+  await waitIn(page, () => !!document.querySelector('.listcard'));
   await d.tick('Выбрать: Пустой список');
   await d.tick('Выбрать: Трофеи');
   await d.press('Удалить (2)');
@@ -3337,7 +3332,7 @@ async function tickedListsDeletedTogether() {
   await ctx.close();
 }
 
-/** 62. A search prunes the ticks and «Выбрать все» ticks the drawn cards
+/** 62. A search prunes the ticks and the bar's «Все» ticks the drawn cards
  *  only: gm1's three lists and nine made through the fake; a tick the query hides is dropped for good,
  *  and the checked boxes always equal the summary's number. */
 async function searchPrunesTicks() {
@@ -3353,8 +3348,8 @@ async function searchPrunesTicks() {
   await d.settled('62');
   await d.accountLists(names.map((name, n) => ({ n: n + 1, name, ids: [] })));
   ok(
-    (await d.count('.listcard-pick')) === 12,
-    at + 'twelve account cards are not drawn - ' + String(await d.count('.listcard-pick'))
+    (await d.count('.listcard')) === 12,
+    at + 'twelve account cards are not drawn - ' + String(await d.count('.listcard'))
   );
   const agree = async (step, summary) => {
     const p = await page.evaluate(picks);
@@ -3367,10 +3362,10 @@ async function searchPrunesTicks() {
   };
   await d.tick('Выбрать: Порт Ветров');
   await d.tick('Выбрать: Рынок');
-  await agree('two ticked', 'Выбрано 2');
+  await agree('two ticked', 'Выбрано: 2');
   await d.type('Найти список', 'порт');
-  await agree('the query', 'Выбрано 1');
-  ok((await d.text()).includes('Удалить (1)'), at + 'the query does not leave «Удалить (1)»');
+  await agree('the query', 'Выбрано: 1');
+  ok(await d.has('Удалить (1)'), at + 'the query does not leave «Удалить (1)»');
   await d.type('Найти список', '');
   const rynok = await page.evaluate(
     () =>
@@ -3379,14 +3374,11 @@ async function searchPrunesTicks() {
       )?.checked
   );
   ok(rynok === false, at + '«Рынок» came back ticked');
-  await agree('the query cleared', 'Выбрано 1');
+  await agree('the query cleared', 'Выбрано: 1');
   await d.type('Найти список', 'порт');
   await d.tick('Выбрать все');
-  await agree('select-all over the query', 'Выбрано 2');
-  ok(
-    (await d.text()).includes('Скачать JSON (2)'),
-    at + 'select-all does not offer «Скачать JSON (2)»'
-  );
+  await agree('select-all over the query', 'Выбрано: 2');
+  ok(await d.has('Скачать JSON (2)'), at + 'select-all does not offer «Скачать JSON (2)»');
   await ctx.close();
 }
 
@@ -3631,10 +3623,10 @@ async function relationFolds() {
   }
 }
 
-/** 64. The «Свой предмет» row after the entries at 360x640 as `gm1`: the open
+/** 64. The «Добавить свой предмет» row after the entries at 360x640 as `gm1`: the open
  *  panel's «Название» in view, nothing sideways, «Добавить в список» not
- *  covered at the maximum scroll with a row ticked (the list page's batch bar
- *  is in flow, not sticky), and a 120-character name keeping
+ *  covered at the maximum scroll with a row ticked (the selection bar sits after the
+ *  footer there), and a 120-character name keeping
  *  the toast's «Изменить» on screen; then at 1180 a hand-resized row note box
  *  keeps its height across a fold and an unfold. */
 async function ownItemRowAndNoteBox() {
@@ -3644,10 +3636,10 @@ async function ownItemRowAndNoteBox() {
     await d.open(SHOP, { as: 'gm1' });
     ok(
       await waitIn(page, () => !!document.querySelector('button.addrow')),
-      at + 'the row «Свой предмет» did not draw'
+      at + 'the row «Добавить свой предмет» did not draw'
     );
     await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
-    await d.press('Свой предмет');
+    await d.press('Добавить свой предмет');
     const opened = await page.evaluate(() => {
       const name = document.getElementById('qi-name');
       const r = name?.getBoundingClientRect();
@@ -3661,8 +3653,8 @@ async function ownItemRowAndNoteBox() {
     ok(opened.nameInView, at + '«Название» is out of view after the press');
     ok(!opened.sideways, at + 'the open panel scrolls the page sideways');
 
-    const first = await page.evaluate(() =>
-      document.querySelector('.lrow input[type="checkbox"]')?.getAttribute('aria-label')
+    const first = await page.evaluate(
+      () => document.querySelector('.lrow .cname')?.textContent
     );
     await d.tick(first ?? '');
     await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
@@ -3674,9 +3666,9 @@ async function ownItemRowAndNoteBox() {
       const r = btn?.getBoundingClientRect();
       if (!btn || !r) return null;
       const hit = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
-      return { hit: !!hit && btn.contains(hit), bar: !!document.querySelector('.batch.on') };
+      return { hit: !!hit && btn.contains(hit), bar: !!document.querySelector('.selbarwrap') };
     });
-    ok(!!add?.bar, at + 'the ticked row raised no batch bar');
+    ok(!!add?.bar, at + 'the ticked row raised no selection bar');
     ok(
       !!add?.hit,
       at + '«Добавить в список» is covered at the maximum scroll - ' + JSON.stringify(add)
@@ -3691,6 +3683,9 @@ async function ownItemRowAndNoteBox() {
       name.value = v;
       name.dispatchEvent(new Event('input', { bubbles: true }));
     }, long);
+    /* The focus scrolled «Название» into view, and the button can sit under the bar again. */
+    await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+    await d.settle();
     const press = await page.evaluateHandle(() =>
       [...document.querySelectorAll('.quick button')].find(
         (b) => b.textContent.trim() === 'Добавить в список'
@@ -3762,6 +3757,10 @@ async function requestsPanelFolds() {
     await waitIn(page, () => document.body.innerText.includes('Новое в списке (4)')),
     at + 'the panel did not count four requests'
   );
+  await page.evaluate(() =>
+    document.querySelector('.reqhead button[aria-expanded="false"]')?.click()
+  );
+  await d.settle();
   const m = await page.evaluate(() => {
     const panel = document.querySelector('.reqpanel');
     const head = panel?.querySelector('h2')?.getBoundingClientRect();
@@ -3837,7 +3836,8 @@ async function longListName() {
   );
   ok(index >= 0, at + 'the long name has no card after the return');
   if (index >= 0) {
-    await d.press('Удалить', index);
+    await d.press('Ещё: ' + long);
+    await d.press('Удалить список');
     ok(
       await waitIn(page, () => !!document.querySelector('.toast:popover-open')),
       at + 'the delete toast did not show'
@@ -3906,33 +3906,42 @@ async function fieldHelpAt360() {
   await ctx.close();
 }
 
-/** 69. The GM-only toggle at 1180 and 360 as `gm1` on «Лавка кузнеца»: at 1180x900 the
- *  pressed row's three action buttons are each at least 24 px tall, and at both widths its
- *  visually hidden ", Только для мастера" box is at most 1x1 px; on a 360x640 phone a
- *  120-character own item's row keeps note, eye and cross at 44 px on the meta box's line
- *  inside 0..360, and «Скрыть от игроков (2)» lies inside 0..360; nothing scrolls
- *  sideways (docs/specs/FEATURES.md, "Account and browser lists"). */
+/** 69. The GM-only toggle at 1180 and 360 as `gm1` on «Лавка кузнеца»: at 1180x900 the row
+ *  «Ещё» hides the entry, the row's two buttons («Заметка», «Ещё») are each at least 24 px
+ *  tall, and at both widths its
+ *  visually hidden ", Только для мастера" box is at most 1x1 px; on a 360x640 phone the open
+ *  compact row of a 120-character own item hides it from its «Ещё», every control of the
+ *  open row is inside 0..360 and at least 24 px tall, and the bar's «Скрыть от игроков (2)»
+ *  lies inside 0..360; nothing scrolls sideways (docs/specs/FEATURES.md, "Account and
+ *  browser lists"). */
 async function gmOnlyToggle() {
   const at = '69 (the GM-only toggle at 1180 and 360): ';
   const sideways = (page) =>
     page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
-  /* The action buttons of the row whose eye ends with `tail`, after a press on that eye. */
+  /* The buttons of the row whose «Ещё» ends with `tail`, after its «Скрыть от игроков». */
   const pressAndMeasure = (page, tail) =>
     page.evaluate(async (v) => {
-      const eye = [...document.querySelectorAll('.lrow-acts .lrow-gm')].find((b) =>
+      const frames = () =>
+        new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      const more = [...document.querySelectorAll('.lrow-acts .morewrap > button')].find((b) =>
         (b.getAttribute('aria-label') ?? '').endsWith(v)
       );
-      if (!eye) return null;
-      eye.click();
+      if (!more) return null;
+      more.click();
+      await frames();
+      const item = [...document.querySelectorAll('[role="menuitem"]')].find(
+        (b) => b.textContent.trim() === 'Скрыть от игроков'
+      );
+      if (!item) return null;
+      item.click();
       /* Two frames: the store's redraw, then the layout it moves. */
-      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-      const row = eye.closest('.lrow');
+      await frames();
+      const row = more.closest('.lrow');
       const acts = row.querySelector('.lrow-acts').getBoundingClientRect();
       const meta = row.querySelector('.lrow-meta').getBoundingClientRect();
       const state = row.querySelector('.gmstate')?.getBoundingClientRect();
       return {
-        pressed: eye.getAttribute('aria-pressed'),
-        dashed: row.classList.contains('gm-only'),
+        gmOnly: row.classList.contains('gm-only'),
         state: state ? { w: state.width, h: state.height } : null,
         rowRight: row.getBoundingClientRect().right,
         actsTop: acts.top,
@@ -3947,18 +3956,18 @@ async function gmOnlyToggle() {
     const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
     await d.open(SHOP, { as: 'gm1' });
     ok(
-      await waitIn(page, () => !!document.querySelector('.lrow-acts .lrow-gm')),
-      at + 'the eye did not draw at 1180'
+      await waitIn(page, () => !!document.querySelector('.lrow-acts .morewrap > button')),
+      at + 'the row «Ещё» did not draw at 1180'
     );
     const m = await pressAndMeasure(page, 'Брошюра по Истории Искусства');
     console.log('  69 at 1180: ' + JSON.stringify(m));
-    ok(!!m && m.pressed === 'true' && m.dashed, at + 'the eye did not mark the row at 1180');
+    ok(!!m && m.gmOnly, at + 'the row «Ещё» did not mark the row at 1180');
     ok(
       !!m?.state && m.state.w <= 1 && m.state.h <= 1,
       at + 'the GM-only words draw at 1180 - ' + JSON.stringify(m?.state)
     );
     ok(
-      !!m && m.buttons.length === 3 && m.buttons.every((b) => b.h >= 24),
+      !!m && m.buttons.length === 2 && m.buttons.every((b) => b.h >= 24),
       at + 'an action button is under 24 px tall at 1180 - ' + JSON.stringify(m)
     );
     ok(!(await sideways(page)), at + 'the page scrolls sideways at 1180');
@@ -3966,16 +3975,15 @@ async function gmOnlyToggle() {
   }
   {
     const { ctx, page, d } = await fresh({ width: 360, height: 640 });
-    /* A phone: its scrollbar overlays the page. A desktop window's 15 px scrollbar takes
-       the row's room, and the buttons wrap under the meta box there. */
+    /* A phone: its scrollbar overlays the page. */
     await page.setViewport({ width: 360, height: 640, isMobile: true, hasTouch: true });
     await d.open(SHOP, { as: 'gm1' });
     ok(
       await waitIn(page, () => !!document.querySelector('button.addrow')),
-      at + 'the row «Свой предмет» did not draw'
+      at + 'the row «Добавить свой предмет» did not draw'
     );
     await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
-    await d.press('Свой предмет');
+    await d.press('Добавить свой предмет');
     const long = 'Ж'.repeat(120);
     await page.evaluate((v) => {
       const name = document.getElementById('qi-name');
@@ -3993,43 +4001,67 @@ async function gmOnlyToggle() {
     ok(
       await waitIn(
         page,
-        (v) =>
-          [...document.querySelectorAll('.lrow-acts .lrow-gm')].some((b) =>
-            (b.getAttribute('aria-label') ?? '').endsWith(v)
-          ),
+        (v) => [...document.querySelectorAll('.crow .cname')].some((e) => e.textContent === v),
         long
       ),
       at + 'the 120-character row did not draw'
     );
-    const m = await pressAndMeasure(page, long);
+    /* Up to 760 px the toggle is the open compact row's «Ещё» item. */
+    const m = await page.evaluate(async (v) => {
+      const frames = () =>
+        new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      const name = [...document.querySelectorAll('.crow .cname')].find(
+        (e) => e.textContent === v
+      );
+      const row = name?.closest('.lrow');
+      if (!row) return null;
+      row.querySelector('button.cbody').click();
+      await frames();
+      row.querySelector('.cfull .morewrap > button')?.click();
+      await frames();
+      const item = [...document.querySelectorAll('[role="menuitem"]')].find(
+        (b) => b.textContent.trim() === 'Скрыть от игроков'
+      );
+      if (!item) return null;
+      item.click();
+      await frames();
+      const state = row.querySelector('.cmark .vh')?.getBoundingClientRect();
+      return {
+        gmOnly: row.classList.contains('gm-only'),
+        state: state ? { w: state.width, h: state.height } : null,
+        rowRight: row.getBoundingClientRect().right,
+        controls: [...row.querySelectorAll('.cfull button, .cfull input, .cqf')].map((b) => {
+          const r = b.getBoundingClientRect();
+          return { h: Math.round(r.height), right: r.right };
+        })
+      };
+    }, long);
     console.log('  69 at 360: ' + JSON.stringify(m));
-    ok(!!m && m.pressed === 'true' && m.dashed, at + 'the eye did not mark the row at 360');
+    ok(!!m && m.gmOnly, at + 'the row «Ещё» did not mark the row at 360');
     ok(
       !!m?.state && m.state.w <= 1 && m.state.h <= 1,
       at + 'the GM-only words draw at 360 - ' + JSON.stringify(m?.state)
     );
     ok(
-      !!m && m.rowRight <= 360 && m.buttons.every((b) => b.right <= 360),
-      at + 'the row passes the right edge at 360 - ' + JSON.stringify(m)
-    );
-    ok(
-      !!m && m.buttons.length === 3 && m.buttons.every((b) => b.w === 44),
-      at + 'an action button is not 44 px wide at 360 - ' + JSON.stringify(m)
-    );
-    ok(
-      !!m && m.actsTop < m.metaBottom,
-      at + 'the action buttons wrapped under the meta box at 360 - ' + JSON.stringify(m)
+      !!m && m.rowRight <= 360 && m.controls.every((b) => b.right <= 360 && b.h >= 24),
+      at + 'a control of the open row passes 360 or is under 24 px - ' + JSON.stringify(m)
     );
     ok(!(await sideways(page)), at + 'the page scrolls sideways at 360');
 
+    await page.evaluate(() => document.querySelector('button.selmode')?.click());
+    await d.settle();
     const names = await page.evaluate(() =>
       [...document.querySelectorAll('.lrow input[type="checkbox"]')]
         .slice(0, 2)
         .map((c) => c.getAttribute('aria-label') ?? '')
     );
     for (const n of names) await d.tick(n);
+    await page.evaluate(() =>
+      document.querySelector('.selbarwrap .bulkmore .morewrap > button')?.click()
+    );
+    await d.settle();
     const hide = await page.evaluate(() => {
-      const b = [...document.querySelectorAll('.batch-acts button')].find(
+      const b = [...document.querySelectorAll('[role="menuitem"]')].find(
         (x) => x.textContent.trim() === 'Скрыть от игроков (2)'
       );
       const r = b?.getBoundingClientRect();
@@ -4490,25 +4522,28 @@ async function drawsListNotesAsFormattedText() {
     },
     '76'
   );
+  /* Up to 760 px the list notes and the roll open from the head. */
+  await d.press('Заметки');
   await d.press('Просмотр');
   ok(
-    await waitIn(page, () => !!document.querySelector('.lnote .pane ul')),
+    await waitIn(page, () => !!document.querySelector('.lnotes .pane ul')),
     at + 'the pane drew no list'
   );
   const pane = await page.evaluate(() => {
-    const ul = document.querySelector('.lnote .pane ul');
+    const ul = document.querySelector('.lnotes .pane ul');
     const cs = ul ? getComputedStyle(ul) : null;
     return {
       padding: cs?.paddingLeft,
       margin: cs?.marginTop,
-      italic: document.querySelector('.lnote .pane i')?.textContent
+      italic: document.querySelector('.lnotes .pane i')?.textContent
     };
   });
   ok(
     pane.padding === '18px' && pane.margin === '4px' && pane.italic === 'закрыта',
     at + 'the pane does not take the list rules - ' + JSON.stringify(pane)
   );
-  await d.press('Бросок по списку');
+  await d.openMore(LIST_MORE);
+  await d.press('Бросить по списку');
   await d.press('На единицу больше');
   await d.press('На единицу больше');
   ok(
@@ -4538,11 +4573,12 @@ async function drawsListNotesAsFormattedText() {
   await ctx.close();
 }
 
-/** 77. A shared row's tick column runs through its note and its take line at
- *  360 and 1180: the select box ends at the row's inner bottom, the checkbox
- *  sits on the main line, and a press low in the column unticks the row
- *  (docs/specs/FEATURES.md, "Lists"). The players' link of «Лавка кузнеца», whose ci1
- *  counts 2, gets a players' note on ci1 as another device would write it. */
+/** 77. A shared row's tick column runs through its take line at 360 and through its note
+ *  too at 1180, in the selection mode: the select box ends at the row's inner bottom, the
+ *  checkbox sits on the main line (the compact row at 360), and a press low in the column
+ *  unticks the row (docs/specs/FEATURES.md, "Lists"). The players' link of «Лавка
+ *  кузнеца», whose ci1 counts 2, gets a players' note on ci1 as another device would write
+ *  it; up to 760 px the note sits in the unfolded row. */
 async function sharedRowTickColumn() {
   for (const width of [360, 1180]) {
     const at = `77 (the shared row's tick column) at ${width}: `;
@@ -4550,9 +4586,18 @@ async function sharedRowTickColumn() {
     await d.open('#/s/player-token-1');
     await d.fake('playEntry', SHOP_ID, 'ci1', { player_note: 'Видно игрокам' });
     ok(
-      await waitIn(page, () => !!document.querySelector('[data-row="ci1"] > .rnotes')),
+      await waitIn(
+        page,
+        (wide) =>
+          wide
+            ? !!document.querySelector('[data-row="ci1"] > .rnotes')
+            : !!document.querySelector('[data-row="ci1"] .cmark'),
+        width > 760
+      ),
       at + 'the ci1 row never drew its note'
     );
+    await page.click('button.selmode');
+    await d.settle();
     await page.click('[data-row="ci1"] .selbox input');
     ok(
       await waitIn(page, () => !!document.querySelector('[data-row="ci1"] > .pickrow')),
@@ -4564,10 +4609,12 @@ async function sharedRowTickColumn() {
       row.scrollIntoView({ block: 'start' });
       const box = row.querySelector(':scope > .selbox').getBoundingClientRect();
       const tick = row.querySelector(':scope > .selbox input').getBoundingClientRect();
-      const main = row.querySelector(':scope > .row-main').getBoundingClientRect();
+      const main = row
+        .querySelector(':scope > .row-main, :scope > .crow > .cbody')
+        .getBoundingClientRect();
       const r = row.getBoundingClientRect();
       return {
-        notes: !!row.querySelector(':scope > .rnotes'),
+        notes: !!row.querySelector(':scope > .rnotes, .cmark'),
         inner: r.bottom - parseFloat(getComputedStyle(row).borderBottomWidth),
         boxBottom: box.bottom,
         boxX: box.left + box.width / 2,
@@ -4846,7 +4893,7 @@ async function recordActionsFit() {
     return {
       menu: box(menu),
       search: box(menu.querySelector('.pickq')),
-      add: box(menu.querySelector(':scope > .chip') ?? menu.lastElementChild),
+      add: box(menu.querySelector(':scope > .lnew') ?? menu.lastElementChild),
       scrolls: chips.scrollHeight > chips.clientHeight,
       view: { x: 0, y: 0, w: innerWidth, h: innerHeight }
     };
@@ -5108,10 +5155,7 @@ async function addressBarPathForm() {
 
     /* The owner's panel copies the seeded players link; a reader opens it. */
     await d.open(SHOP, { as: 'gm1' });
-    await waitIn(
-      page,
-      () => document.querySelector('input.titleinput')?.value === 'Лавка кузнеца'
-    );
+    await waitIn(page, () => document.querySelector('.titleinput')?.value === 'Лавка кузнеца');
     await d.press('Поделиться');
     await waitIn(page, () => document.querySelectorAll('.sharelink').length === 2);
     await d.press('Скопировать');
@@ -5188,7 +5232,7 @@ async function homebrewItemsFilterAddress() {
 
 /** 91. The list head of `#/homebrew` (docs/specs/FEATURES.md, "`#/homebrew` and its tabs"):
  *  up to 760 px the read-only heading, the picker row and «Ещё», the sheet and the one bar;
- *  from 761 px the head with the tab links; the 300-item page. */
+ *  from 761 px the head with the tab pills; the 300-item page. */
 async function homebrewHeadAndBar() {
   const at = '91 (the homebrew head, tabs and bar): ';
   const sideways = (page) =>
@@ -5231,7 +5275,7 @@ async function homebrewHeadAndBar() {
         at + width + ': the row leaves the window - ' + JSON.stringify(m)
       );
       ok(m.lines <= 2, at + width + ': the row takes ' + m.lines + ' lines');
-      ok(!m.plus, at + width + ': the primary draws a plus');
+      ok(m.plus, at + width + ': the primary draws no plus (rule 8)');
       ok(!(await sideways(page)), at + width + ': the page scrolls sideways');
     } finally {
       await ctx.close();
@@ -5244,9 +5288,9 @@ async function homebrewHeadAndBar() {
       await d.open('#/homebrew', { as: 'gm1', lang });
       await opened(page);
       const m = await page.evaluate(() => ({
-        tabs: [...document.querySelectorAll('.hbtabs .tab')].map((a) => a.offsetTop),
+        tabs: [...document.querySelectorAll('.hbtabs .chip')].map((a) => a.offsetTop),
         current: document.querySelectorAll('.hbtabs [aria-current="page"]').length,
-        broken: [...document.querySelectorAll('.hbtabs .tab')].some(
+        broken: [...document.querySelectorAll('.hbtabs .chip')].some(
           (a) => a.scrollWidth > a.clientWidth
         )
       }));
@@ -5561,8 +5605,9 @@ async function editorLayoutAndSheet() {
 
 /** The route families of DESIGN.md, "The First-Screen Rule": the inventory state that
  *  opens each. A row whose surface is not yet under the rule is measured and logged,
- *  not asserted (`shipped: false`). `exception` is a named limit at 360 px, in px; `wideOnly`
- *  measures the row at 1180 px alone. A roll page draws its result for the number
+ *  not asserted (`shipped: false`); `shipped: 360` asserts at 360 px and logs at 1180 px and
+ *  at the wide window of 1920x1080. `exception` is a named limit at 360 px, in px; `wideOnly`
+ *  measures the row at 1180 px alone; `mid` adds 768x1024 and 900x720, the mid band. A roll page draws its result for the number
  *  field's first value, so no roll is made and the offset is deterministic. */
 const FIRST_SCREEN = [
   { state: '#/roll/std', shipped: true, exception: 325 },
@@ -5577,15 +5622,50 @@ const FIRST_SCREEN = [
   { state: '#/search ~ searched', shipped: true },
   /* Its enter presses a kind chip, which draws from 761 px only. */
   { state: '#/search ~ kind picked', shipped: true, wideOnly: true },
+  { state: '#/account', shipped: true },
   { state: '#/account as gm1', shipped: true },
-  { state: '#/p/set-emberaxe as gm2', shipped: false },
+  { state: '#/p/set-emberaxe as gm2', shipped: true },
   { state: '#/homebrew as gm3', shipped: true },
   { state: '#/homebrew/sets ~ long name as gm4', shipped: true },
   { state: '#/homebrew/new as gm1', shipped: true },
   { state: '#/homebrew/hb_longsrcaaaaaaaaa as gm4', shipped: true },
-  { state: '#/lists as gm1', shipped: false },
-  { state: '#/lists/00000000-0000-4000-8000-000000008001 as gm4', shipped: false },
-  { state: '#/s/player-token-1', shipped: false }
+  { state: '#/lists as gm1', shipped: true },
+  { state: '#/lists ~ many lists as gm4', shipped: true },
+  { state: '#/lists/00000000-0000-4000-8000-000000008001 as gm4', shipped: true, mid: true },
+  {
+    state: '#/lists/00000000-0000-4000-8000-000000008001 ~ many as gm4',
+    shipped: true,
+    mid: true
+  },
+  {
+    state: '#/lists/00000000-0000-4000-8000-000000008001 ~ long name as gm4',
+    shipped: true,
+    mid: true
+  },
+  /* Up to 999 px the owner's list page draws the compact head (docs/specs/FEATURES.md, "Lists"). */
+  { state: '#/lists/00000000-0000-4000-8000-000000000101 as gm1', shipped: true, mid: true },
+  /* Its folded notices strip above the rows takes the strip's exception at 360 px. */
+  {
+    state: '#/lists/00000000-0000-4000-8000-000000000201 as gm2',
+    shipped: true,
+    mid: true,
+    exception: 304
+  },
+  /* The thumb-size «Сохранить себе» (DESIGN.md, "The First-Screen Rule", 2026-11-06). */
+  { state: '#/s/player-token-1', shipped: true, exception: 309 },
+  /* From 761 px the 120-character name takes three lines (DESIGN.md, "The First-Screen Rule"). */
+  {
+    state: '#/s/player-token-1 ~ long name',
+    shipped: true,
+    exception: { 360: 309, 1180: 312 }
+  },
+  /* The folded requests strip above the rows (docs/specs/FEATURES.md, "Lists"). */
+  {
+    state: '#/lists/00000000-0000-4000-8000-000000000101 ~ requests as gm1',
+    shipped: true,
+    mid: true,
+    exception: 304
+  }
 ];
 
 /** Returns the top of the first `[data-primary]` with a nonzero height, at scroll 0
@@ -5828,7 +5908,7 @@ async function searchHeadAndRows() {
 }
 
 /** 94. The account holds its layout and its delete confirm (docs/specs/FEATURES.md,
- *  "Account"): one column at 360, two from 1000 px, the print row inside the window, the
+ *  "Account"): one column at 360, two from 1000 px, the two print rows inside the window, the
  *  filled final button and the focus of the confirm. */
 async function accountLayoutAndConfirm() {
   const at = '94 (the account layout and confirm): ';
@@ -5843,9 +5923,13 @@ async function accountLayoutAndConfirm() {
         await d.open('#/account', { as: 'gm1', lang });
         await waitIn(page, () => !!document.querySelector('.acc .ids li'));
         const m = await page.evaluate(() => {
-          const segs = [...document.querySelectorAll('.wb .seg')].map((s) =>
-            s.getBoundingClientRect()
-          );
+          const segs = [...document.querySelectorAll('main .set .seg')]
+            .filter((s) =>
+              /^(Цвет печати|Размер карты|Print color|Card size)$/.test(
+                s.getAttribute('aria-label') ?? ''
+              )
+            )
+            .map((s) => s.getBoundingClientRect());
           const a = document.querySelector('.colA')?.getBoundingClientRect();
           const b = document.querySelector('.colB')?.getBoundingClientRect();
           return {
@@ -5859,7 +5943,7 @@ async function accountLayoutAndConfirm() {
           };
         });
         ok(!m.chk, at + where + ': a checkbox is drawn');
-        ok(m.segs === 2 && m.inside, at + where + ': the print row - ' + JSON.stringify(m));
+        ok(m.segs === 2 && m.inside, at + where + ': the print rows - ' + JSON.stringify(m));
         ok(
           !m.heads.some((h) => /Вы вошли как|Signed in as/.test(h)),
           at + where + ': a «Вы вошли как» panel is drawn'
@@ -5923,11 +6007,20 @@ async function primaryContentInFirstScreen() {
     const state = states.get(row.state);
     ok(!!state, '83 (first screen): no inventory state ' + row.state);
     if (!state) continue;
-    for (const [width, height] of [
+    const sizes = [
       [360, 640],
-      [1180, 720]
-    ]) {
+      [1180, 720],
+      ...(row.shipped === 360 ? [[1920, 1080]] : []),
+      ...(row.mid
+        ? [
+            [768, 1024],
+            [900, 720]
+          ]
+        : [])
+    ];
+    for (const [width, height] of sizes) {
       if (row.wideOnly && width < 761) continue;
+      const asserted = row.shipped === true || row.shipped === width;
       for (const lang of ['ru', 'en']) {
         const { ctx, page, d } = await fresh({ width, height, storage: state.storage });
         try {
@@ -5946,7 +6039,14 @@ async function primaryContentInFirstScreen() {
           const where = row.state + ' ' + width + 'x' + height + ' ' + lang;
           ok(!!got, '83 (first screen): ' + where + ' marks no [data-primary] with a height');
           if (!got) continue;
-          const limit = width === 360 && row.exception ? row.exception : 0.4 * got.vh;
+          /* A number is the 360 px exception; an object names one per width. */
+          const exception =
+            typeof row.exception === 'object'
+              ? row.exception[width]
+              : width === 360
+                ? row.exception
+                : undefined;
+          const limit = exception ?? 0.4 * got.vh;
           const pass = got.top <= limit;
           fs.writeSync(
             1,
@@ -5956,12 +6056,12 @@ async function primaryContentInFirstScreen() {
               got.top.toFixed(0) +
               ' / ' +
               limit.toFixed(0) +
-              (width === 360 && row.exception ? ' (exception)' : '') +
+              (exception ? ' (exception)' : '') +
               (pass ? ' pass' : ' over') +
-              (row.shipped ? '' : ' (logged)') +
+              (asserted ? '' : ' (logged)') +
               '\n'
           );
-          if (row.shipped) ok(pass, '83 (first screen): ' + where + ' starts at ' + got.top);
+          if (asserted) ok(pass, '83 (first screen): ' + where + ' starts at ' + got.top);
         } finally {
           await ctx.close();
         }
@@ -6156,6 +6256,16 @@ async function headerHidesAndReturns() {
   );
 
   await home();
+  /* A loaded runner can draw the scroll to 0 after `settle()`. Motion that comes on before
+     the header is back slides it in; that slide's end then answers the wait below, and the
+     read lands 4 frames into the slide out (top -54.3, measured on CI 2026-11-05). */
+  ok(
+    await waitIn(page, () => {
+      const bar = document.querySelector('.topbar');
+      return !bar.classList.contains('away') && bar.getBoundingClientRect().top === 0;
+    }),
+    at + 'the header did not return at scroll 0'
+  );
   const declared = () => d.computed('.topbar', ['transition-duration', 'transition-property']);
   try {
     await page.emulateMediaFeatures([
@@ -6174,7 +6284,8 @@ async function headerHidesAndReturns() {
              bubbles a `transitionend` too, which can arrive while the header is mid-way. */
           const bar = document.querySelector('.topbar');
           bar.addEventListener('transitionend', (e) => {
-            if (e.target === bar && e.propertyName === 'transform') done(true);
+            const away = bar.classList.contains('away');
+            if (e.target === bar && e.propertyName === 'transform' && away) done(true);
           });
           setTimeout(() => done(false), 3000);
         })
@@ -6531,7 +6642,8 @@ async function rollPageLayout() {
 
 /** 90. A result's row at 360x640 and 1180x720: three labeled controls inside the card's width;
  *  its «Ещё» holds the copies inside the window and a copy returns the focus to it; the
- *  add-to-list menu stays in the window, under the header, and with 150 lists scrolls with
+ *  add-to-list menu stays in the window, under the header (near the page top it opens down,
+ *  since no scroll uncovers a menu above the page top), and with 150 lists scrolls with
  *  «+ Новый список» in view; the dialog over the result opens its own add menu
  *  (docs/specs/FEATURES.md, "Records"). */
 async function resultRowAndMenus() {
@@ -6604,7 +6716,7 @@ async function resultRowAndMenus() {
         const chips = list.querySelector('.pickchips');
         return {
           menu: box(list),
-          add: box(list.querySelector(':scope > .chip') ?? list.lastElementChild),
+          add: box(list.querySelector(':scope > .lnew') ?? list.lastElementChild),
           scrolls: chips.scrollHeight > chips.clientHeight,
           header: document.querySelector('.topbar').getBoundingClientRect().bottom
         };
@@ -6890,7 +7002,7 @@ const NAV_TABLES = [
   'homebrew'
 ];
 
-/** 96. The table head holds still between tables (DESIGN.md, "Layout", "A steady head"): per
+/** 96. The table head holds still between tables (DESIGN.md, "The Head Order Rule"): per
  *  band, the title row, the group chips, the tab slot, the search row and the rows region
  *  start at one Y on every table, and the chips at one X. */
 async function tableHeadHoldsStill() {
@@ -6921,7 +7033,7 @@ async function tableHeadHoldsStill() {
             return {
               title: y('.page-head') ?? y('.pickrow'),
               groups: y('.page-head .groups'),
-              tabs: y('.page-head .tabslot') ?? y('.page-head .tabs'),
+              tabs: y('.page-below .tabslot') ?? y('.page-head .tabs'),
               searchrow: y('.searchrow'),
               rowscol: y('.rowscol'),
               groupsX: box('.page-head .groups')
@@ -7086,7 +7198,7 @@ async function rollFitsByCount() {
 
 /** 101. The page column grows with the window to 1440 px and stays centered past it; a reading
  *  surface keeps its measure at the column's left edge (DESIGN.md, "The One Width Rule"). The
- *  single counter of the roll pages keeps at most 240 px, the alt roll's two boxes fill their
+ *  single counter of the roll pages keeps at most 480 px, the alt roll's two boxes fill their
  *  blocks (DESIGN.md, "Layout"). */
 const WIDE_STATES = [
   '#/roll/std',
@@ -7178,8 +7290,8 @@ async function pageColumnOnWideWindows() {
     for (const lang of ['ru', 'en']) base[id + lang] = await run(id, 1180, 720, lang);
     const b = base[id + 'ru'];
     ok(
-      b.numbox.every((w) => w <= 240.5),
-      at + id + ' 1180: the number box is wider than 240 px - ' + JSON.stringify(b.numbox)
+      b.numbox.every((w) => w <= 480.5),
+      at + id + ' 1180: the number box is wider than 480 px - ' + JSON.stringify(b.numbox)
     );
     for (const [width, height, lang] of [
       [1366, 768, 'ru'],
@@ -7287,8 +7399,8 @@ async function pageColumnOnWideWindows() {
         where + 'the header changed height: ' + m.topbarH + ' vs ' + was.topbarH
       );
       ok(
-        m.numbox.every((w) => w <= 240.5),
-        where + 'the number box is wider than 240 px'
+        m.numbox.every((w) => w <= 480.5),
+        where + 'the number box is wider than 480 px'
       );
       /* Each of the three surfaces starts at the column's left edge, so none is centered. */
       for (const key of ['dossierL', 'formL', 'accountL'])
@@ -7299,7 +7411,7 @@ async function pageColumnOnWideWindows() {
     }
   }
   /* The cap is the single-box counter's; the two die boxes of the alt roll fill their blocks at
-     every width, also in the phone settings panel where a block is wider than 240 px. */
+     every width, also in the phone settings panel where a block is wider than 480 px. */
   for (const width of [360, 700]) {
     const where = at + '#/roll/alt ' + width + ' ru, settings open: ';
     const { ctx, page, d } = await openState('#/roll/alt', width, 800, 'ru');
@@ -7335,6 +7447,3013 @@ async function pageColumnOnWideWindows() {
   }
 }
 
+const LIST_A_ID = '#/lists/00000000-0000-4000-8000-000000008001';
+
+/** The geometry of every compact row of the page: its height, the quantity field's box and
+ *  whether the field's center hits the field. */
+const compactGeometry = () =>
+  [...document.querySelectorAll('.lrow')].map((row) => {
+    const r = row.getBoundingClientRect();
+    const f = row.querySelector('.cqf');
+    const b = f?.getBoundingClientRect();
+    const hit = b ? document.elementFromPoint(b.x + b.width / 2, b.y + b.height / 2) : null;
+    const name = row.querySelector('.cname')?.getBoundingClientRect().height ?? 0;
+    return {
+      h: r.height,
+      line: !!row.querySelector('.cfx') && name <= 21,
+      field: b ? [Math.round(b.width), Math.round(b.height)] : null,
+      hits: !!f && hit === f,
+      inside: r.left >= 0 && r.right <= innerWidth
+    };
+  });
+
+/** 98. The compact row holds from 320 to 760 px (docs/specs/FEATURES.md, "Lists"; DESIGN.md,
+ *  "Compact row"), as `gm4` on `LIST_A ~ many`, RU and EN: a row with its line is at most
+ *  80 px, the quantity field is 42x44 and takes a press at its center, the Tab order is the
+ *  body, the field, then the unfolded part, ten ArrowUp keys make one write, a write with
+ *  no network keeps the number and says «Не сохранено», a touch device draws no grip and a
+ *  typed position moves the row; from 761 px, at 1440 and at 1920 px the full row draws. */
+async function compactRowHolds() {
+  const at = '98 (the compact row from 320 to 760 px): ';
+  const many = LIST_A_ID + ' ~ many as gm4';
+  for (const [width, height] of [
+    [360, 640],
+    [320, 568]
+  ]) {
+    for (const lang of ['ru', 'en']) {
+      const where = at + width + ' ' + lang + ': ';
+      const { ctx, page } = await openState(many, width, height, lang);
+      try {
+        await page.evaluate(() => {
+          scrollTo(0, 400);
+        });
+        const rows = await page.evaluate(compactGeometry);
+        ok(rows.length === 14, where + 'not 14 compact rows - ' + rows.length);
+        ok(
+          rows.some((r) => r.line) && rows.every((r) => !r.line || r.h <= 80),
+          where +
+            'a one-line row with its line is over 80 px - ' +
+            JSON.stringify(rows.map((r) => [r.h, r.line]))
+        );
+        ok(
+          rows.every((r) => r.field?.[0] === 42 && r.field?.[1] === 44),
+          where + 'a quantity field is not 42x44 - ' + JSON.stringify(rows.map((r) => r.field))
+        );
+        const visible = await page.evaluate(
+          () =>
+            [...document.querySelectorAll('.cqf')].filter((f) => {
+              const r = f.getBoundingClientRect();
+              return r.top > 120 && r.bottom < innerHeight - 10;
+            }).length
+        );
+        ok(visible > 0, where + 'no quantity field in view');
+        const hits = await page.evaluate(() =>
+          [...document.querySelectorAll('.cqf')]
+            .filter((f) => {
+              const r = f.getBoundingClientRect();
+              return r.top > 120 && r.bottom < innerHeight - 10;
+            })
+            .every((f) => {
+              const r = f.getBoundingClientRect();
+              return document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2) === f;
+            })
+        );
+        ok(hits, where + 'a press at a field center lands on another element');
+        ok(
+          rows.every((r) => r.inside) &&
+            !(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)),
+          where + 'a row or the page passes the window sideways'
+        );
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+
+  /* The keyboard order, the one write and the unfold, at 360 RU. */
+  {
+    const { ctx, page, d } = await openState(many, 360, 640, 'ru');
+    try {
+      const order = async (n) =>
+        page.evaluate(async (count) => {
+          const out = [];
+          for (let i = 0; i < count; i++) {
+            const a = document.activeElement;
+            out.push(
+              a?.classList.contains('cbody')
+                ? 'body'
+                : a?.classList.contains('cqf')
+                  ? 'field'
+                  : a?.classList.contains('lrow-n')
+                    ? 'position'
+                    : a?.matches('[data-gold]')
+                      ? 'price'
+                      : a?.classList.contains('cnote')
+                        ? 'note'
+                        : a?.closest('.morewrap')
+                          ? 'more'
+                          : (a?.tagName ?? '')
+            );
+            await new Promise((r) => setTimeout(r, 0));
+            out.push('|');
+          }
+          return out;
+        }, n);
+      await page.focus('button.cbody');
+      const seq = [];
+      for (let i = 0; i < 3; i++) {
+        seq.push((await order(1))[0]);
+        await page.keyboard.press('Tab');
+      }
+      ok(
+        JSON.stringify(seq) === JSON.stringify(['body', 'field', 'body']),
+        at + 'the folded Tab order - ' + JSON.stringify(seq)
+      );
+      await page.focus('button.cbody');
+      await page.keyboard.press('Enter');
+      await d.settle();
+      const opened = await page.evaluate(() => ({
+        expanded: document.querySelector('button.cbody')?.getAttribute('aria-expanded'),
+        focus: document.activeElement === document.querySelector('button.cbody')
+      }));
+      ok(
+        opened.expanded === 'true' && opened.focus,
+        at + 'the press did not unfold the row and keep the focus - ' + JSON.stringify(opened)
+      );
+      const open = [];
+      for (let i = 0; i < 7; i++) {
+        open.push((await order(1))[0]);
+        await page.keyboard.press('Tab');
+      }
+      ok(
+        JSON.stringify(open) ===
+          JSON.stringify(['body', 'field', 'position', 'price', 'note', 'more', 'body']),
+        at + 'the unfolded Tab order - ' + JSON.stringify(open)
+      );
+
+      await d.writesSettled();
+      const c0 = await d.fake('writeCount');
+      await page.focus('.lrow:nth-child(2) .cqf');
+      await d.writesSettled();
+      ok((await d.fake('writeCount')) === c0, at + 'a focus alone wrote');
+      for (let i = 0; i < 10; i++) await page.keyboard.press('ArrowUp');
+      await d.writesSettled();
+      const writes = (await d.fake('writeCount')) - c0;
+      const value = await page.evaluate(
+        () => document.querySelector('.lrow:nth-child(2) .cqf')?.value
+      );
+      ok(
+        writes === 1 && value === '10',
+        at + `ten keys made ${writes} writes and the field reads ${value}`
+      );
+
+      await d.fake('setOffline', true);
+      await page.focus('.lrow:nth-child(3) .cqf');
+      await page.keyboard.type('4');
+      ok(
+        await waitIn(page, () =>
+          document.querySelector('.page-sub')?.textContent.includes('Не сохранено')
+        ),
+        at + 'a write with no network does not say «Не сохранено»'
+      );
+      ok(
+        (await page.evaluate(
+          () => document.querySelector('.lrow:nth-child(3) .cqf')?.value
+        )) === '4',
+        at + 'the failed write lost the number'
+      );
+      await d.fake('setOffline', false);
+      await d.press('Повторить');
+      ok(
+        await waitIn(page, () =>
+          document.querySelector('.page-sub')?.textContent.includes('Сохранено')
+        ),
+        at + 'the retry did not save the number'
+      );
+
+      /* From 761 px the full row draws with the same number. */
+      await d.viewport(761, 768);
+      ok(
+        await waitIn(
+          page,
+          () =>
+            !document.querySelector('.crow') &&
+            document.querySelectorAll('.lrow-meta input[data-qty]')[2]?.value === '4'
+        ),
+        at + 'at 761 px the full row did not draw with the typed number'
+      );
+      for (const [w, h] of [
+        [1440, 900],
+        [1920, 1080]
+      ]) {
+        await d.viewport(w, h);
+        ok(
+          await waitIn(
+            page,
+            () => !document.querySelector('.crow') && !!document.querySelector('.lrow-meta')
+          ),
+          at + w + ' px does not draw the full row'
+        );
+      }
+    } finally {
+      await ctx.close();
+    }
+  }
+
+  /* A touch device: no grip; a typed position moves the row and the region says it. */
+  {
+    /* A touch viewport reloads the page, so it is set before the list is made. */
+    const state = STATES.find((s) => s.id === many);
+    const { ctx, page, d } = await fresh({ width: 390, height: 844 });
+    try {
+      await page.setViewport({ width: 390, height: 844, isMobile: true, hasTouch: true });
+      await d.open(state.route, { as: state.as });
+      await state.enter(d);
+      await d.settled(state.id);
+      await d.unfold(3);
+      const grip = await page.evaluate(() => {
+        const g = document.querySelector('.lrow-grip');
+        return g ? getComputedStyle(g).display : 'none';
+      });
+      ok(grip === 'none', at + 'a touch device draws the grip - ' + grip);
+      const name = await page.evaluate(
+        () => document.querySelectorAll('.lrow')[3]?.querySelector('.cname')?.textContent
+      );
+      await page.evaluate(() => {
+        const pos = document.querySelectorAll('.lrow')[3].querySelector('.lrow-n');
+        pos.value = '1';
+        pos.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+      await d.settle();
+      const moved = await page.evaluate(() => ({
+        first: document.querySelector('.lrow .cname')?.textContent,
+        said: [...document.querySelectorAll('.said')].map((s) => s.textContent).join(' ')
+      }));
+      ok(
+        moved.first === name && moved.said.includes('позиция 1 из 14'),
+        at + 'the typed position did not move the row - ' + JSON.stringify(moved)
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
+/** 99. Search and filter on the owner's page (docs/specs/FEATURES.md, "Account and browser
+ *  lists"), as `gm4` at 360x640 and 1180x720: the search row from 8 entries and not at 7,
+ *  the filter a sheet with no link, a pick lights «Фильтры · 1» and the meta line reads
+ *  «Показано 3 из 14», the numbers stay true and the grip goes, a ticked row the filter
+ *  hides leaves the bar's count, «Все» ticks the drawn rows only; at 1920 px the search box
+ *  is no wider than `/search`'s. */
+async function listSearchAndFilter() {
+  const at = '99 (search and filter on the owner page): ';
+  for (const [width, height] of [
+    [360, 640],
+    [1180, 720]
+  ]) {
+    const where = at + width + ': ';
+    {
+      const { ctx, page } = await openState(LIST_A_ID + ' as gm4', width, height, 'ru');
+      try {
+        ok(
+          !(await page.evaluate(() => !!document.querySelector('.lfind'))),
+          where + 'a search row at 7 entries'
+        );
+      } finally {
+        await ctx.close();
+      }
+    }
+    const { ctx, page, d } = await openState(LIST_A_ID + ' ~ many as gm4', width, height, 'ru');
+    try {
+      const row = await page.evaluate(() => {
+        const f = document.querySelector('.lfind');
+        return {
+          box: !!f?.querySelector('input[type="search"]'),
+          last: f?.lastElementChild?.classList.contains('selmode') ?? false
+        };
+      });
+      ok(
+        row.box && row.last,
+        where + 'no search row with «Выбрать» last - ' + JSON.stringify(row)
+      );
+      await d.tick('Первоклассный Спальный Мешок');
+      await d.click('Фильтры');
+      const sheet = await page.evaluate(() => ({
+        open: !!document.querySelector('dialog.sheet[open]'),
+        link: [...document.querySelectorAll('dialog.sheet button')].some(
+          (b) => b.textContent.trim() === 'Ссылка на фильтры'
+        )
+      }));
+      ok(sheet.open && !sheet.link, where + 'the filter sheet - ' + JSON.stringify(sheet));
+      await d.click('Расходники');
+      await d.click('Закрыть');
+      const narrowed = await page.evaluate(() => ({
+        toggle: [...document.querySelectorAll('.lfind button')].map((b) =>
+          b.textContent.trim()
+        ),
+        sub: (document.querySelector('.page-sub')?.textContent ?? '')
+          .replace(/\s+/g, ' ')
+          .trim(),
+        numbers: [...document.querySelectorAll('.lrow')].map(
+          (r) => Number(r.dataset.index) + 1
+        ),
+        grips: document.querySelectorAll('.lrow-grip').length,
+        count: document.querySelector('.selbarwrap .selcount')?.textContent ?? ''
+      }));
+      ok(
+        narrowed.toggle.includes('Фильтры · 1') &&
+          narrowed.sub.startsWith('Показано 3 из 14') &&
+          JSON.stringify(narrowed.numbers) === '[9,10,11]' &&
+          narrowed.grips === 0 &&
+          narrowed.count.startsWith('Выбрано 0'),
+        where + 'the narrowed page - ' + JSON.stringify(narrowed)
+      );
+      await page.evaluate(() => document.querySelector('.selbarwrap .selall input')?.click());
+      await d.settle();
+      const all = await page.evaluate(
+        () => document.querySelector('.selbarwrap .selcount')?.textContent ?? ''
+      );
+      ok(all.startsWith('Выбрано 3'), where + '«Все» ticked more than the drawn rows - ' + all);
+    } finally {
+      await ctx.close();
+    }
+  }
+
+  /* At 1920 px the list's box is no wider than the search page's. */
+  {
+    const { ctx, page } = await openState(LIST_A_ID + ' ~ many as gm4', 1920, 1080, 'ru');
+    const list = await page.evaluate(
+      () => document.querySelector('.lfind input[type="search"]')?.getBoundingClientRect().width
+    );
+    await ctx.close();
+    const s = await fresh({ width: 1920, height: 1080 });
+    await s.d.open('#/search');
+    await s.d.settled('#/search');
+    const search = await s.page.evaluate(
+      () => document.querySelector('main input[type="search"]')?.getBoundingClientRect().width
+    );
+    await s.ctx.close();
+    console.log('  99 at 1920: list box ' + list + ', search box ' + search);
+    ok(
+      typeof list === 'number' && typeof search === 'number' && list <= search + 0.5,
+      at + '1920: the list box is wider than the search page box - ' + list + ' / ' + search
+    );
+  }
+}
+
+/** 100. The list head and the bars (docs/specs/FEATURES.md, "Lists"; DESIGN.md, "Selection
+ *  bar"): at 360x640 the list «Ещё» opens inside the window with its items in order and
+ *  opens the share panel, the roll and the notes; the bar is one bar at most 45% of a
+ *  640x360 window; the price sheet's foot is in view at 360x480; «Снять выделение» gives
+ *  the focus back to «Выбрать»; a `/s/` row unfolds and «Открыть карточку» opens the card;
+ *  no select-all strip and no pill; at 1920 px the bar starts at `main`'s left edge on both
+ *  pages. */
+async function listHeadAndBars() {
+  const at = '100 (the list head and the bars): ';
+  {
+    const { ctx, page, d } = await openState(LIST_A_ID + ' ~ noted as gm4', 360, 640, 'ru');
+    try {
+      await d.openMore('.lhead-acts .morewrap > [aria-haspopup="menu"]');
+      const menu = await page.evaluate(() => {
+        const m = document.querySelector('[role="menu"]');
+        const r = m?.getBoundingClientRect();
+        return {
+          items: [...(m?.querySelectorAll('[role="menuitem"]') ?? [])].map((b) =>
+            b.textContent.trim()
+          ),
+          inside:
+            !!r && r.left >= 0 && r.right <= innerWidth && r.top >= 0 && r.bottom <= innerHeight
+        };
+      });
+      ok(
+        menu.inside &&
+          JSON.stringify(menu.items) ===
+            JSON.stringify([
+              'Поделиться',
+              'Печать',
+              'Бросить по списку',
+              'Цены: монетами',
+              'Скопировать текст',
+              'Скачать JSON',
+              'Удалить список'
+            ]),
+        at + 'the list «Ещё» at 360 - ' + JSON.stringify(menu)
+      );
+      await d.click('Бросить по списку');
+      ok(!!(await d.count('.lroll-h')), at + '«Бросить по списку» opened no roll');
+      await d.openMore('.lhead-acts .morewrap > [aria-haspopup="menu"]');
+      await d.click('Поделиться');
+      ok(
+        (await d.text()).includes('Ссылка для игроков'),
+        at + '«Поделиться» opened no share panel'
+      );
+      await d.click('Заметки');
+      ok(!!(await d.count('.lnotes .narea textarea')), at + '«Заметки» opened no list notes');
+      ok(
+        !(await d.count('main .selall')) && !(await d.count('.fpill')),
+        at + 'a strip or a pill'
+      );
+
+      await d.click('Выбрать');
+      await d.tick('Пронзительная Свирель');
+      await d.viewport(640, 360);
+      const bar = await page.evaluate(() => ({
+        bars: document.querySelectorAll('.selbarwrap').length,
+        h: document.querySelector('.selbarwrap')?.getBoundingClientRect().height ?? 0
+      }));
+      ok(
+        bar.bars === 1 && bar.h <= 0.45 * 360,
+        at + 'the bar at 640x360 - ' + JSON.stringify(bar)
+      );
+      await d.viewport(360, 480);
+      await d.click('Цены');
+      const foot = await page.evaluate(() => {
+        const f = document.querySelector('dialog.sheet .sheet-foot');
+        const r = f?.getBoundingClientRect();
+        return r ? { top: r.top, bottom: r.bottom, vh: innerHeight } : null;
+      });
+      ok(
+        !!foot && foot.top >= 0 && foot.bottom <= foot.vh,
+        at + 'the price sheet foot is out of view at 360x480 - ' + JSON.stringify(foot)
+      );
+      await d.click('Закрыть');
+      await d.viewport(360, 640);
+      await d.click('Снять выделение');
+      ok(
+        await waitIn(
+          page,
+          () => document.activeElement?.classList.contains('selmode') ?? false
+        ),
+        at + '«Снять выделение» did not return the focus to «Выбрать»'
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+  /* Fourteen ticks: the sheet's body reaches its height cap, and the foot stays in view. */
+  {
+    const { ctx, page, d } = await openState(LIST_A_ID + ' ~ many as gm4', 360, 640, 'ru');
+    try {
+      await d.click('Выбрать');
+      await page.evaluate(() => document.querySelector('.selbarwrap .selall input')?.click());
+      await d.settle();
+      await d.viewport(360, 480);
+      await d.click('Цены');
+      const sheet = await page.evaluate(() => {
+        const f = document.querySelector('dialog.sheet .sheet-foot')?.getBoundingClientRect();
+        return {
+          rows: document.querySelectorAll('dialog.sheet .guess-row').length,
+          foot: f ? { top: f.top, bottom: f.bottom } : null,
+          vh: innerHeight
+        };
+      });
+      ok(
+        sheet.rows === 14 &&
+          !!sheet.foot &&
+          sheet.foot.top >= 0 &&
+          sheet.foot.bottom <= sheet.vh,
+        at + 'the price sheet of 14 rows at 360x480 - ' + JSON.stringify(sheet)
+      );
+      /* From 761 px a sheet is centered with four round corners (DESIGN.md, "Sheet"). */
+      await d.viewport(1180, 720);
+      await d.settle();
+      const wide = await page.evaluate(() => {
+        const s = document.querySelector('dialog.sheet[open]');
+        const r = s?.getBoundingClientRect();
+        const cs = s ? getComputedStyle(s) : null;
+        const root = getComputedStyle(document.documentElement);
+        return r && cs
+          ? {
+              top: r.top,
+              gap: innerHeight - r.bottom,
+              radius: cs.borderBottomLeftRadius,
+              r: root.getPropertyValue('--r').trim()
+            }
+          : null;
+      });
+      ok(
+        !!wide &&
+          Math.abs(wide.top - wide.gap) <= 1 &&
+          wide.gap >= 16 &&
+          wide.radius === wide.r,
+        at + 'the price sheet of 14 rows at 1180x720 is not centered - ' + JSON.stringify(wide)
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+  {
+    const { ctx, page, d } = await openState('#/s/player-token-1 ~ compact', 360, 640, 'ru');
+    try {
+      await d.unfold(0);
+      await d.click('Открыть карточку');
+      ok(
+        await waitIn(page, () => !!document.querySelector('dialog[open]:not(.sheet)')),
+        at + '«Открыть карточку» opened no card on /s/'
+      );
+      ok(
+        !(await d.count('main .selall')) && !(await d.count('.fpill')),
+        at + '/s/: a strip or a pill'
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+  /* At 1920 px the bar shares `main`'s left edge on both pages. */
+  for (const id of [LIST_A_ID + ' ~ selecting as gm4', '#/s/player-token-1 ~ selecting']) {
+    const { ctx, page } = await openState(id, 1920, 1080, 'ru');
+    try {
+      const edge = await page.evaluate(() => ({
+        bar: document.querySelector('.selbarwrap .selbar')?.getBoundingClientRect().left,
+        main: document.querySelector('main')?.getBoundingClientRect().left
+      }));
+      ok(
+        typeof edge.bar === 'number' && Math.abs(edge.bar - edge.main) <= 0.5,
+        at + id + ' 1920: the bar does not start at main - ' + JSON.stringify(edge)
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
+/** 102. The lists page holds from 320 to 1440 px (docs/specs/FEATURES.md, "Lists"): no
+ *  sideways scroll; up to 760 px the `h1`, «Новый список» and «Ещё» share one row from 360 px
+ *  (at 320 px the primary and «Ещё» share the row under the `h1`); the
+ *  primary and «Ещё» are the thumb's 40 px up to 600 px, and from 761 px the primary ends at
+ *  the column's right edge;
+ *  the cards of a grid row share one height and never pass the grid; a 120-character name
+ *  wraps inside its card; the bar takes at most 45% of 640x360 and starts at `main` from
+ *  1180 px; the count is red at the limit. */
+async function listsPageHolds() {
+  const at = '102 (the lists page): ';
+  for (const id of ['#/lists as gm1', '#/lists ~ many lists as gm4']) {
+    for (const lang of ['ru', 'en']) {
+      for (const [width, height] of [
+        [320, 568],
+        [360, 640],
+        [390, 844],
+        [768, 1024],
+        [1180, 720],
+        [1440, 900]
+      ]) {
+        const where = at + id + ' ' + width + ' ' + lang + ': ';
+        const { ctx, page } = await openState(id, width, height, lang);
+        try {
+          const m = await page.evaluate(() => {
+            const box = (el) => {
+              if (!el) return null;
+              const r = el.getBoundingClientRect();
+              return {
+                top: r.top,
+                bottom: r.bottom,
+                left: r.left,
+                right: r.right,
+                h: r.height
+              };
+            };
+            const head = document.querySelector('main .page-head');
+            const grid = document.querySelector('.listgrid');
+            return {
+              sideways:
+                document.documentElement.scrollWidth > document.documentElement.clientWidth,
+              head: box(head),
+              h1: box(head?.querySelector('h1')),
+              prim: box(head?.querySelector('.btn.primary')),
+              more: box(head?.querySelector('.headx [aria-haspopup="menu"]')),
+              grid: box(grid),
+              cards: [...(grid?.querySelectorAll('.listcard') ?? [])].map(box)
+            };
+          });
+          ok(!m.sideways, where + 'the page scrolls sideways');
+          ok(!!m.h1 && !!m.prim, where + 'no h1 or primary in the head - ' + JSON.stringify(m));
+          if (!m.h1 || !m.prim) continue;
+          const mid = (b) => b.top + b.h / 2;
+          if (width <= 760) {
+            ok(
+              !!m.more &&
+                Math.abs(mid(m.prim) - mid(m.more)) <= 1 &&
+                (width < 360 || (mid(m.prim) > m.h1.top && mid(m.prim) < m.h1.bottom)),
+              where +
+                'the h1, the primary and «Ещё» do not share one row - ' +
+                JSON.stringify(m)
+            );
+            ok(
+              !!m.more && Math.abs(m.prim.h - 40) <= 0.5 && Math.abs(m.more.h - 40) <= 0.5,
+              where + 'the primary and «Ещё» are not 40 px tall - ' + JSON.stringify(m)
+            );
+          } else {
+            ok(
+              Math.abs(m.prim.right - m.head.right) <= 1,
+              where + 'the primary does not end at the column edge - ' + JSON.stringify(m)
+            );
+          }
+          const rows = new Map();
+          for (const c of m.cards) {
+            const key = Math.round(c.top);
+            rows.set(key, [...(rows.get(key) ?? []), c.h]);
+          }
+          ok(
+            [...rows.values()].every((hs) => Math.max(...hs) - Math.min(...hs) <= 1),
+            where + 'the cards of a row differ in height - ' + JSON.stringify([...rows])
+          );
+          ok(
+            !!m.grid &&
+              m.cards.every(
+                (c) => c.left >= m.grid.left - 0.5 && c.right <= m.grid.right + 0.5
+              ),
+            where + 'a card passes the grid'
+          );
+        } finally {
+          await ctx.close();
+        }
+      }
+    }
+  }
+  {
+    const where = at + '360, a name of 120 characters: ';
+    const long = 'Сокровищница '.repeat(10).slice(0, 120);
+    const { ctx, page, d } = await openState('#/lists as gm1', 360, 640, 'ru');
+    try {
+      await d.fake('setLive', false);
+      await d.fake('lists.apply', [
+        { op: 'update', id: '00000000-0000-4000-8000-000000000103', patch: { name: long } }
+      ]);
+      await d.shownAgain();
+      await waitIn(page, (v) => document.body.innerText.includes(v), long);
+      const m = await page.evaluate((v) => {
+        const card = [...document.querySelectorAll('.listcard')].find((c) =>
+          c.textContent.includes(v)
+        );
+        const name = card?.querySelector('.listcard-top b');
+        const grid = document.querySelector('.listgrid')?.getBoundingClientRect();
+        const r = card?.getBoundingClientRect();
+        return {
+          sideways: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+          inGrid: !!r && !!grid && r.right <= grid.right + 0.5,
+          lines: name
+            ? Math.round(
+                name.getBoundingClientRect().height /
+                  parseFloat(getComputedStyle(name).lineHeight)
+              )
+            : 0
+        };
+      }, long);
+      ok(!m.sideways && m.inGrid && m.lines >= 2, where + JSON.stringify(m));
+    } finally {
+      await ctx.close();
+    }
+  }
+  {
+    const { ctx, page } = await openState('#/lists ~ lists selected as gm1', 640, 360, 'ru');
+    try {
+      const h = await page.evaluate(
+        () => document.querySelector('.selbarwrap')?.getBoundingClientRect().height ?? 0
+      );
+      ok(h > 0 && h <= 0.45 * 360, at + 'the bar at 640x360 is ' + h + ' px');
+    } finally {
+      await ctx.close();
+    }
+  }
+  for (const width of [1180, 1440]) {
+    const { ctx, page } = await openState('#/lists ~ selecting as gm1', width, 900, 'ru');
+    try {
+      const edge = await page.evaluate(() => ({
+        bar: document.querySelector('.selbarwrap .selbar')?.getBoundingClientRect().left,
+        main: document.querySelector('main')?.getBoundingClientRect().left
+      }));
+      ok(
+        typeof edge.bar === 'number' && Math.abs(edge.bar - edge.main) <= 0.5,
+        at + width + ': the bar does not start at main - ' + JSON.stringify(edge)
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+  {
+    const { ctx, page } = await openState('#/lists ~ list limit as gm2', 1180, 720, 'ru');
+    try {
+      const m = await page.evaluate(() => {
+        const c = document.querySelector('.count');
+        return {
+          over: !!c?.classList.contains('over'),
+          color: c ? getComputedStyle(c).color : ''
+        };
+      });
+      const [r, g] = (m.color.match(/[\d.]+/g) ?? []).map(Number);
+      ok(m.over && r - g > 40, at + 'the count at the limit is not red - ' + JSON.stringify(m));
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
+/** 103. The add-to-list menu keeps its place and its keys (docs/specs/FEATURES.md, "Lists"):
+ *  on `/i/ci1` and a `/roll/std` result as gm1, at 360 and 1180, RU and EN: the heading, the
+ *  checked rows that hold the record, rows of 44 px up to 760 px and 36 px from 761 px, the
+ *  menu inside the window and uncovered, Tab and Shift+Tab in DOM order to «Новый список»,
+ *  Escape back to the toggle. */
+async function addToListMenuKeys() {
+  const at = '103 (the add-to-list menu): ';
+  for (const route of ['#/i/ci1', '#/roll/std']) {
+    for (const lang of ['ru', 'en']) {
+      for (const [width, height] of [
+        [360, 640],
+        [1180, 720]
+      ]) {
+        const where = at + route + ' ' + width + ' ' + lang + ': ';
+        const { ctx, page, d } = await fresh({ width, height, lang });
+        try {
+          await d.open(route, { as: 'gm1', lang });
+          await d.settled(where);
+          if (route === '#/i/ci1') await d.press(lang === 'en' ? 'Add to list' : 'В список');
+          else await d.openCardList();
+          await d.settle();
+          const m = await page.evaluate(() => {
+            const menu = document.querySelector('.dropmenu');
+            const r = menu?.getBoundingClientRect();
+            const rows = [...(menu?.querySelectorAll('.lrow') ?? [])];
+            const covered = rows.some((row) => {
+              const b = row.getBoundingClientRect();
+              const hit = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2);
+              return b.bottom <= innerHeight && !(hit && row.contains(hit));
+            });
+            return {
+              head: menu?.querySelector('.lbl')?.textContent ?? '',
+              pressed: rows
+                .filter((row) => row.getAttribute('aria-pressed') === 'true')
+                .map((row) => [
+                  row.querySelector('.ln')?.textContent,
+                  !!row.querySelector('svg')
+                ]),
+              heights: rows.map((row) => row.getBoundingClientRect().height),
+              inside:
+                !!r &&
+                r.left >= 0 &&
+                r.right <= innerWidth &&
+                r.top >= 0 &&
+                r.bottom <= innerHeight,
+              covered
+            };
+          });
+          ok(
+            m.head === (lang === 'en' ? 'Lists' : 'Списки'),
+            where + 'the heading - ' + m.head
+          );
+          ok(
+            route !== '#/i/ci1' ||
+              (m.pressed.length >= 1 && m.pressed.every(([, check]) => check)),
+            where + 'no checked row holds the record - ' + JSON.stringify(m.pressed)
+          );
+          const want = width <= 760 ? 44 : 36;
+          ok(
+            m.heights.length > 0 && m.heights.every((h) => Math.abs(h - want) <= 0.5),
+            where + 'the rows are not ' + want + ' px - ' + JSON.stringify(m.heights)
+          );
+          ok(m.inside, where + 'the menu leaves the window');
+          ok(!m.covered, where + 'a row is covered');
+          await page.evaluate(() =>
+            document
+              .querySelector('.dropmenu')
+              ?.closest('.seldrop')
+              ?.querySelector(':scope > .btn')
+              ?.focus()
+          );
+          const walk = [];
+          for (let i = 0; i < m.heights.length + 1; i++) {
+            await page.keyboard.press('Tab');
+            walk.push(
+              await page.evaluate(() => document.activeElement?.className.split(' ')[0] ?? '')
+            );
+          }
+          ok(
+            walk.slice(0, -1).every((c) => c === 'lrow') && walk.at(-1) === 'lnew',
+            where + 'Tab does not walk the rows to «Новый список» - ' + JSON.stringify(walk)
+          );
+          await page.keyboard.down('Shift');
+          await page.keyboard.press('Tab');
+          await page.keyboard.up('Shift');
+          ok(
+            await page.evaluate(() => document.activeElement?.classList.contains('lrow')),
+            where + 'Shift+Tab does not return to the last row'
+          );
+          await page.keyboard.press('Escape');
+          await d.settle();
+          ok(
+            await page.evaluate(
+              () =>
+                !document.querySelector('.dropmenu') &&
+                !!document.activeElement?.matches('.seldrop > .btn')
+            ),
+            where + 'Escape does not close the menu onto its toggle'
+          );
+        } finally {
+          await ctx.close();
+        }
+      }
+    }
+  }
+}
+
+/** 104. The number stepper is laid out as a stepper (owner, 2026-11-05; docs/specs/FEATURES.md,
+ *  "Rolling"): on `/roll/std`, `/roll/wondrous` and `/roll/alt` at 360, 390, 768 and 1180,
+ *  RU and EN, the value is centered in its box within 1.5 px, «+» ends at the box's right
+ *  edge, and the box is `min(480, column)` wide (the alt pair: its block); the field is 46 px
+ *  tall. The list page's price-sheet steppers keep their own narrow size. */
+async function numberStepperLayout() {
+  const at = '104 (the number stepper): ';
+  for (const id of ['#/roll/std', '#/roll/wondrous', '#/roll/alt']) {
+    for (const lang of ['ru', 'en']) {
+      for (const [width, height] of [
+        [360, 800],
+        [390, 844],
+        [768, 1024],
+        [1180, 800]
+      ]) {
+        const where = at + id + ' ' + width + ' ' + lang + ': ';
+        const { ctx, page, d } = await openState(id, width, height, lang);
+        try {
+          if (width <= 760) {
+            await d.click(lang === 'en' ? 'Set up' : 'Настроить');
+            await d.settle();
+          }
+          const m = await page.evaluate(() =>
+            [...document.querySelectorAll('.numbox')]
+              .filter((n) => n.getBoundingClientRect().width > 0)
+              .map((n) => {
+                const b = n.getBoundingClientRect();
+                const input = n.querySelector('input').getBoundingClientRect();
+                const plus = n.querySelector('button:last-of-type').getBoundingClientRect();
+                const col = n.parentElement.getBoundingClientRect().width;
+                return {
+                  alt: !!n.closest('.dieblock'),
+                  center: input.left + input.width / 2 - (b.left + b.width / 2),
+                  plusGap: b.right - plus.right,
+                  w: b.width,
+                  col,
+                  h: input.height
+                };
+              })
+          );
+          ok(m.length > 0, where + 'no number box');
+          for (const n of m) {
+            /* A lone field fills its column up to 480 px (DESIGN.md "Components", "The
+               Stepper Rule"); the alt roll's pair takes its die block. */
+            const want = n.alt ? n.col : Math.min(480, n.col);
+            ok(
+              Math.abs(n.center) <= 1.5 &&
+                n.plusGap >= 0 &&
+                n.plusGap <= 2 &&
+                Math.abs(n.w - want) <= 1 &&
+                Math.abs(n.h - 46) <= 0.5,
+              where + JSON.stringify(n)
+            );
+          }
+          ok(
+            !(await page.evaluate(
+              () => document.documentElement.scrollWidth > document.documentElement.clientWidth
+            )),
+            where + 'the page scrolls sideways'
+          );
+        } finally {
+          await ctx.close();
+        }
+      }
+    }
+  }
+  {
+    const { ctx, page } = await openState(LIST_A_ID + ' ~ price sheet as gm4', 1180, 720, 'ru');
+    try {
+      const m = await page.evaluate(() =>
+        [...document.querySelectorAll('.money-act .numbox')].map((n) => {
+          const kids = [...n.children].reduce((s, k) => s + k.getBoundingClientRect().width, 0);
+          return {
+            input: n.querySelector('input').getBoundingClientRect().width,
+            grew: n.getBoundingClientRect().width - kids
+          };
+        })
+      );
+      ok(
+        m.length > 0 && m.every((n) => Math.abs(n.input - 52) <= 0.5 && n.grew <= 2.5),
+        at + 'the price-sheet steppers changed size - ' + JSON.stringify(m)
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+  /* The list roll's field sits in a row with its button: it keeps its content width. */
+  for (const width of [768, 1180]) {
+    /* Up to 999 px «Бросить по списку» is an item of the list «Ещё»: entered at 1180. */
+    const { ctx, page } = await openState(
+      LIST_A_ID + ' ~ roll panel as gm4',
+      width,
+      800,
+      'ru',
+      width < 1000
+    );
+    try {
+      const w = await page.evaluate(
+        () => document.querySelector('.numbox')?.getBoundingClientRect().width ?? null
+      );
+      ok(w !== null && w <= 160, at + 'the list roll field grew at ' + width + ' - ' + w);
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
+/** 105. The list page layout (docs/specs/FEATURES.md, "Lists"; DESIGN.md, "The Two
+ *  Breakpoints Rule"): at 768 px the compact head sits above the rows, no side column, and
+ *  each row's controls take a line under its body; at 1000 and 1180 px the 330 px side column is at the
+ *  right of the rows, first in the DOM, and at 1180 a row's controls are inline; at 1920 and
+ *  2560 px the side column keeps 330 px and a row's text ends within 24 px of its quantity
+ *  field. `#/s/` keeps one column and its row text takes the row. Nothing scrolls sideways. */
+async function listPageLayout() {
+  const at = '105 (the list page layout): ';
+  const SIZES = [
+    [768, 1024],
+    [1000, 800],
+    [1180, 800],
+    [1920, 1080],
+    [2560, 1440]
+  ];
+  for (const id of [LIST_A_ID + ' ~ many as gm4', '#/s/player-token-1']) {
+    for (const lang of ['ru', 'en']) {
+      for (const [width, height] of SIZES) {
+        const where = at + id + ' ' + width + ' ' + lang + ': ';
+        const { ctx, page } = await openState(id, width, height, lang);
+        try {
+          const m = await page.evaluate(() => {
+            /* A plain object: a DOMRect's fields are getters puppeteer does not carry. */
+            const box = (e) => {
+              if (!e) return null;
+              const r = e.getBoundingClientRect();
+              return {
+                top: r.top,
+                bottom: r.bottom,
+                left: r.left,
+                right: r.right,
+                width: r.width
+              };
+            };
+            const side = document.querySelector('.lside');
+            const head = document.querySelector('.lhead');
+            const main = document.querySelector('.lmain');
+            const rows = [...document.querySelectorAll('.lrows > .lrow, .rows > .row')];
+            return {
+              side: box(side),
+              head: box(head),
+              main: box(main),
+              sideFirst:
+                !!side &&
+                !!main &&
+                !!(side.compareDocumentPosition(main) & Node.DOCUMENT_POSITION_FOLLOWING),
+              rowsTop: box(document.querySelector('.lrows, .rows'))?.top ?? null,
+              rows: rows.slice(0, 6).map((r) => {
+                const body = box(r.querySelector('.row-main'));
+                const rt = box(r.querySelector('.row-main .rt'));
+                const ctl = box(r.querySelector('.lrow-ctl'));
+                const qty = box(r.querySelector('.lrow-meta label'));
+                const rtMax = r.querySelector('.row-main .rt')
+                  ? getComputedStyle(r.querySelector('.row-main .rt')).maxWidth
+                  : null;
+                return { body, rt, ctl, qty, rtMax, rowRight: r.getBoundingClientRect().right };
+              }),
+              sideways:
+                document.documentElement.scrollWidth > document.documentElement.clientWidth
+            };
+          });
+          ok(!m.sideways, where + 'the page scrolls sideways');
+          ok(m.rows.length > 0, where + 'no rows');
+          if (id.startsWith('#/s/')) {
+            ok(!m.side, where + 'the shared page draws a side column');
+            for (const r of m.rows) {
+              ok(r.rtMax === 'none', where + 'a row text keeps a cap - ' + r.rtMax);
+              ok(
+                !!r.body && !!r.rt && r.body.right - r.rt.right <= 16,
+                where + 'a row text stops short of its row - ' + JSON.stringify(r)
+              );
+            }
+            continue;
+          }
+          if (width < 1000) {
+            ok(
+              !m.side && !!m.head && m.head.bottom <= m.rowsTop + 1,
+              where +
+                'the compact head is not above the rows - ' +
+                JSON.stringify([m.side, m.head])
+            );
+            for (const r of m.rows) {
+              ok(
+                !!r.ctl && !!r.body && r.ctl.top >= r.body.bottom - 1,
+                where + "a row's controls are not under its body - " + JSON.stringify(r)
+              );
+            }
+          } else {
+            ok(!!m.side && m.sideFirst, where + 'the side column is not first in the DOM');
+            ok(
+              !!m.side && Math.abs(m.side.width - 330) <= 1 && m.side.left >= m.main.right,
+              where + 'the side column is not 330 px at the right - ' + JSON.stringify(m.side)
+            );
+            if (width >= 1180) {
+              for (const r of m.rows) {
+                ok(
+                  !!r.ctl && !!r.body && r.ctl.top < r.body.bottom,
+                  where + "a row's controls are not inline - " + JSON.stringify(r)
+                );
+              }
+            }
+            if (width >= 1920) {
+              for (const r of m.rows) {
+                ok(
+                  !!r.rt && !!r.qty && r.qty.left - r.rt.right <= 24,
+                  where + 'a row text ends short of its quantity - ' + JSON.stringify(r)
+                );
+              }
+            }
+          }
+        } finally {
+          await ctx.close();
+        }
+      }
+    }
+  }
+}
+
+/** The description box of a row (`RowMain.svelte`). */
+const DESC = '.row-main:not(.full) .rt > span:not(.rh):not(.rstats)';
+
+/** Reads every drawn row's text box on the page once the rows stop drawing. */
+function rowTextOf(page) {
+  return page.evaluate(async (DESC) => {
+    await document.fonts.ready;
+    for (let i = 0; i < 60 && document.querySelector('[data-drawing]'); i++)
+      await new Promise((r) => setTimeout(r, 100));
+    scrollTo(0, 0);
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    const out = { described: 0, clamped: 0, capped: [], freeCut: 0, hOver: 0, wrapBreak: 0 };
+    out.partial = 0;
+    out.lineHeights = [];
+    out.names = [];
+    for (const r of document.querySelectorAll('.rows > .row, .lrows > .lrow')) {
+      const rt = r.querySelector('.row-main .rt');
+      if (!rt) continue;
+      const body = r.querySelector('.row-main');
+      const bs = getComputedStyle(body);
+      const cs = getComputedStyle(rt);
+      if (cs.maxWidth !== 'none') out.capped.push(cs.maxWidth);
+      const contentRight = body.getBoundingClientRect().right - parseFloat(bs.paddingRight);
+      if (contentRight - rt.getBoundingClientRect().right > 16) out.capped.push('short');
+      const d = r.querySelector(DESC);
+      if (!d) continue;
+      out.described++;
+      const ds = getComputedStyle(d);
+      const lh = parseFloat(ds.lineHeight);
+      out.lineHeights.push(Math.round((lh / parseFloat(ds.fontSize)) * 100) / 100);
+      if (d.scrollWidth > d.clientWidth + 1) out.hOver++;
+      if (/anywhere|break-word/.test(ds.overflowWrap) || ds.wordBreak === 'break-all')
+        out.wrapBreak++;
+      if (d.scrollHeight > d.clientHeight + 1) {
+        out.clamped++;
+        out.names.push(r.querySelector('.rname')?.textContent ?? '');
+        const lines = d.clientHeight / lh;
+        if (Math.abs(lines - Math.round(lines)) > 0.05) out.partial++;
+        /* Cut while free: a clamped box 40 px or more short of its row's content edge,
+           the width a cap would take (a multi-paragraph text ends its lines early by
+           content, so the text's own last line is no measure). */
+        if (contentRight - d.getBoundingClientRect().right >= 40) out.freeCut++;
+      }
+    }
+    return out;
+  }, DESC);
+}
+
+/** 106. The Row Text Rule and the Field Measure Rule (DESIGN.md "Components", "Named
+ *  Rules"): at 1180, 1440 and 1920 px a row's text takes the free width of its row (no cap),
+ *  a clamped description is cut only when it is longer than its clamp, at most 15% of the
+ *  described rows clamp (the Vault of Ages rules text and the ten rows of `/s/` are logged
+ *  only), whole lines, no sideways cut and no word break, the owner's two rows whole at 1440
+ *  and 1920; the clamp is 3 lines up to 600 px and from 1000 px, 2 between, with a 1.55
+ *  line height from 1000 px; the `/s/` tail and its GM note hold no gold; a search box is at
+ *  most 720 px from 761 px with its next control right after it. */
+async function rowTextAndFieldMeasure() {
+  const at = '106 (row text and field measure): ';
+  const LOGGED = new Set(['#/tables/voa', '#/s/player-token-1']);
+  for (const id of [
+    '#/search ~ searched',
+    '#/search ~ capped',
+    '#/tables/eq_weapon',
+    '#/tables/wondrous',
+    '#/tables/hnf_consumable',
+    '#/tables/voa',
+    '#/s/player-token-1'
+  ]) {
+    for (const lang of ['ru', 'en']) {
+      for (const [width, height] of [
+        [1180, 720],
+        [1440, 900],
+        [1920, 1080]
+      ]) {
+        const where = at + id + ' ' + width + ' ' + lang + ': ';
+        const { ctx, page } = await openState(id, width, height, lang);
+        try {
+          const m = await rowTextOf(page);
+          const share = m.described ? (100 * m.clamped) / m.described : 0;
+          fs.writeSync(
+            1,
+            '  row text: ' +
+              id +
+              ' ' +
+              width +
+              ' ' +
+              lang +
+              ' clamped ' +
+              m.clamped +
+              '/' +
+              m.described +
+              ' (' +
+              share.toFixed(1) +
+              '%)\n'
+          );
+          ok(
+            !m.capped.length,
+            where + 'a row text is capped - ' + m.capped.slice(0, 3).join(',')
+          );
+          ok(!m.freeCut, where + m.freeCut + ' rows are cut while their line has room');
+          ok(!m.hOver && !m.wrapBreak, where + 'a row text is cut inside a word');
+          ok(!m.partial, where + m.partial + ' clamped rows show a part line');
+          ok(
+            m.lineHeights.every((x) => Math.abs(x - 1.55) <= 0.01),
+            where + 'the description line height is not 1.55 - ' + m.lineHeights.slice(0, 3)
+          );
+          if (!LOGGED.has(id) && m.described >= 20)
+            ok(share <= 15, where + 'more than 15% of described rows clamp - ' + share);
+          if (width >= 1440)
+            for (const name of ['Фляга Путника', 'Мешок Собирателя', "Wanderer's Flask"])
+              ok(!m.names.includes(name), where + '«' + name + '» is clamped');
+        } finally {
+          await ctx.close();
+        }
+      }
+    }
+  }
+
+  /* The clamp and the line height by width, on one table. */
+  {
+    const { ctx, page, d } = await openState('#/tables/eq_weapon', 1180, 800, 'ru');
+    try {
+      for (const [w, lines, lh] of [
+        [360, '3', 1.45],
+        [390, '3', 1.45],
+        [600, '3', 1.45],
+        [601, '2', 1.45],
+        [768, '2', 1.45],
+        [999, '2', 1.45],
+        [1000, '3', 1.55],
+        [1180, '3', 1.55]
+      ]) {
+        await d.viewport(w, 800);
+        const got = await page.evaluate((DESC) => {
+          const e = document.querySelector(DESC);
+          if (!e) return null;
+          const c = getComputedStyle(e);
+          return {
+            clamp: c.webkitLineClamp,
+            lh: Math.round((parseFloat(c.lineHeight) / parseFloat(c.fontSize)) * 100) / 100
+          };
+        }, DESC);
+        ok(
+          !!got && got.clamp === lines && Math.abs(got.lh - lh) <= 0.01,
+          at + 'at ' + w + ' px the clamp or the line height is off - ' + JSON.stringify(got)
+        );
+      }
+    } finally {
+      await ctx.close();
+    }
+  }
+
+  /* The `/s/` tail is monospace and neutral; the GM note box draws no gold. */
+  {
+    const { ctx, page } = await openState('#/s/gm-token-1', 1180, 800, 'ru');
+    try {
+      const got = await page.evaluate(() => {
+        const tail = document.querySelector('.rtail');
+        const note = document.querySelector('.hitnote.gm');
+        const gold = (c) => /216,\s*171,\s*94|240,\s*208,\s*145/.test(c);
+        return {
+          tail: tail
+            ? { color: getComputedStyle(tail).color, font: getComputedStyle(tail).fontFamily }
+            : null,
+          noteGold: note
+            ? gold(getComputedStyle(note).borderTopColor) ||
+              gold(getComputedStyle(note).backgroundColor)
+            : null
+        };
+      });
+      ok(
+        !!got.tail &&
+          !/240,\s*208,\s*145/.test(got.tail.color) &&
+          /monospace/.test(got.tail.font),
+        at + 'the /s/ tail is gold or proportional - ' + JSON.stringify(got.tail)
+      );
+      ok(got.noteGold === false, at + 'the GM note box draws gold - ' + JSON.stringify(got));
+    } finally {
+      await ctx.close();
+    }
+  }
+
+  /* Field Measure: the box is at most 720 px from 761 px, its next control follows it; up to
+     760 px it fills its row as before. */
+  for (const id of [
+    '#/search ~ searched',
+    '#/tables/eq_weapon',
+    '#/homebrew as gm3',
+    '#/lists ~ many lists as gm4',
+    LIST_A_ID + ' ~ many as gm4'
+  ]) {
+    for (const [width, height] of [
+      [390, 844],
+      [768, 1024],
+      [1920, 1080]
+    ]) {
+      const where = at + id + ' ' + width + ': ';
+      const { ctx, page } = await openState(id, width, height, 'ru');
+      try {
+        const m = await page.evaluate(() => {
+          const input = document.querySelector('main input[type="search"]');
+          const grow = input?.closest('.grow');
+          if (!grow) return null;
+          const g = grow.getBoundingClientRect();
+          const next = grow.nextElementSibling?.getBoundingClientRect();
+          return { w: g.width, gap: next && next.top < g.bottom ? next.left - g.right : null };
+        });
+        ok(!!m, where + 'no search box');
+        if (!m) continue;
+        ok(m.w <= 720.5, where + 'the search box is wider than 720 px - ' + m.w);
+        if (width >= 1920 && m.gap !== null)
+          ok(m.gap <= 16, where + 'the next control does not follow the box - ' + m.gap);
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+}
+
+/** 107. The note switch, the requests fold and the price switch in a real browser: a typed
+ *  players' note kept across a switch made inside the store's quiet time and a reload; the
+ *  requests panel opens and folds by its head; the price switch moves every drawn price. */
+async function noteSwitchInABrowser() {
+  const at = '107 (the note switch): ';
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  const listId = await openAccountList(
+    d,
+    { n: 1, name: 'Тайник', ids: ['ci1', 'ci2'], meta: { ci2: { gold: 750, qty: 2 } } },
+    '107'
+  );
+  await page.evaluate(() => document.querySelector('.lnotes .nopen button')?.click());
+  await d.settle();
+  await d.type('Например: лавка закрыта до утра', 'Закрыто до рассвета');
+  await d.click('Только для мастера');
+  await d.click('Для игроков, заполнена');
+  const kept = await page.evaluate(
+    () => document.querySelector('.lnotes .narea textarea')?.value ?? null
+  );
+  ok(kept === 'Закрыто до рассвета', at + 'the switch dropped the typed note - ' + kept);
+  /* Away and back: the fake cloud lives in the page, so a reload would reset it. */
+  await d.writesSettled();
+  await d.go('#/lists');
+  await d.go('#/lists/' + listId);
+  ok(
+    await waitIn(page, bodyHas, 'Закрыто до рассвета'),
+    at + 'the note did not survive leaving the page'
+  );
+
+  const priceOf = () =>
+    page.evaluate(() => document.querySelector('.lprices .pex')?.textContent.trim() ?? '');
+  const bag = await priceOf();
+  await d.click('Монетами');
+  const coin = await priceOf();
+  ok(
+    bag !== coin && /750/.test(coin),
+    at + 'the price switch did not move the example - ' + coin
+  );
+  await ctx.close();
+
+  /* At 360 px the notes of an unfolded compact row, read-only and open, take the width of
+     the unfolded part: no second indent under it, and no sideways scroll. */
+  for (const lang of ['ru', 'en']) {
+    const n = await fresh({ width: 360, height: 640 });
+    try {
+      await openAccountList(
+        n.d,
+        {
+          n: 1,
+          name: 'Тайник',
+          ids: ['ci1', 'ci2'],
+          meta: { ci1: { note: 'Светится в темноте', hnote: 'Проклят' } }
+        },
+        '107'
+      );
+      if (lang === 'en') await n.d.click('EN');
+      await n.d.unfold(0);
+      const width = () =>
+        n.page.evaluate(() => {
+          const body = document.querySelector('.lrow .cfull');
+          const note = body?.querySelector('.rnote');
+          /* The content box: a padded note box is as wide as its row and still narrow. */
+          const inner = (e) => {
+            const cs = getComputedStyle(e);
+            return e.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+          };
+          return {
+            row: body ? inner(body) : 0,
+            note: note ? inner(note) : 0,
+            scroll: document.documentElement.scrollWidth - document.documentElement.clientWidth
+          };
+        });
+      const ro = await width();
+      ok(
+        ro.note >= ro.row - 24 && ro.scroll <= 0,
+        at + '360 ' + lang + ': the read-only row notes are narrow - ' + JSON.stringify(ro)
+      );
+      await n.page.click('.lrow .cfull [data-note-open]');
+      await n.d.settle();
+      const open = await width();
+      ok(
+        open.note >= open.row - 24 && open.scroll <= 0,
+        at + '360 ' + lang + ': the open note area is narrow - ' + JSON.stringify(open)
+      );
+    } finally {
+      await n.ctx.close();
+    }
+  }
+
+  const r = await fresh({ width: 1180, height: 900 });
+  try {
+    await r.d.open(SHOP, { as: 'gm1' });
+    await waitIn(r.page, () => !!document.querySelector('h1 input'));
+    await r.d.fake('request', 'player-token-1', [{ item: 'ci1', qty: 1 }]);
+    ok(await waitIn(r.page, bodyHas, 'Новое в списке (1)'), at + 'the request did not draw');
+    const state = () =>
+      r.page.evaluate(() => ({
+        expanded: document.querySelector('.reqhead button')?.getAttribute('aria-expanded'),
+        reqs: document.querySelectorAll('.reqpanel .req').length
+      }));
+    const folded = await state();
+    ok(
+      folded.expanded === 'false' && folded.reqs === 0,
+      at + 'not folded - ' + JSON.stringify(folded)
+    );
+    await r.page.evaluate(() => document.querySelector('.reqhead button')?.click());
+    await r.d.settle();
+    const open = await state();
+    ok(
+      open.expanded === 'true' && open.reqs === 1,
+      at + 'did not open - ' + JSON.stringify(open)
+    );
+    await r.page.evaluate(() => document.querySelector('.reqhead button')?.click());
+    await r.d.settle();
+    const again = await state();
+    ok(again.reqs === 0, at + 'did not fold again - ' + JSON.stringify(again));
+  } finally {
+    await r.ctx.close();
+  }
+}
+
+/** Opens inventory state `id` at 360x640 in `lang` and records in the page when the first
+ *  toast shows (`__toastAt`, the page clock), so a case reads a toast's age. */
+async function openToasting(id, lang) {
+  const state = STATES.find((s) => s.id === id);
+  if (!state) throw new Error('no inventory state ' + id);
+  const got = await fresh({ width: 360, height: 640, storage: state.storage });
+  await got.page.evaluateOnNewDocument(() => {
+    new MutationObserver(() => {
+      const t = document.querySelector('.toast.page[role]');
+      if (t && window.__toastAt === undefined) window.__toastAt = performance.now();
+    }).observe(document, { subtree: true, attributes: true, attributeFilter: ['role'] });
+  });
+  await got.d.open(state.route, {
+    as: state.as,
+    items: state.items,
+    sections: state.sections,
+    sources: state.sources,
+    hold: state.hold
+  });
+  if (state.enter) await state.enter(got.d);
+  await got.d.settled(state.id);
+  /* The switch redraws a shown toast in English and keeps its deadline. */
+  if (lang === 'en') await got.d.click('EN');
+  return got;
+}
+
+/** Waits until the shown toast is `ms` old and answers whether a toast still shows. */
+function toastAt(page, ms) {
+  return page.evaluate(async (at) => {
+    for (let i = 0; i < 400 && window.__toastAt === undefined; i++)
+      await new Promise((r) => setTimeout(r, 25));
+    if (window.__toastAt === undefined) return null;
+    const wait = window.__toastAt + at - performance.now();
+    if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+    return !!document.querySelector('.toast.page[role]');
+  }, ms);
+}
+
+/** 108. The toasts in a real browser (DESIGN.md, "The Reading Time Rule"), 360x640: a plain
+ *  toast lives 4000 ms, an error 7000 ms, a long one 10000 ms and takes three lines; a
+ *  pointer on a toast holds it and it runs on when the pointer leaves; the page's toast sits
+ *  above the selection bar. The toast over a result's «Ещё» is measured, not asserted. */
+async function toastsInABrowser() {
+  const at = '108 (the toasts): ';
+  for (const lang of ['ru', 'en']) {
+    const en = lang === 'en';
+    const plain = async () => {
+      const o = await openToasting('#/tables/eq_weapon', lang);
+      await o.page.evaluate(() => document.querySelector('main .tsec-link')?.click());
+      return o;
+    };
+    const runs = [
+      /* (a) A plain toast: a section link copied. */
+      async () => {
+        const o = await plain();
+        try {
+          const a = await toastAt(o.page, 3500);
+          const b = await toastAt(o.page, 4600);
+          ok(
+            a === true && b === false,
+            at + lang + ' (a): the plain toast at 3.5 s / 4.6 s - ' + a + ' / ' + b
+          );
+        } finally {
+          await o.ctx.close();
+        }
+      },
+      /* (b) An error toast: the last source pressed off. */
+      async () => {
+        const o = await openToasting('#/roll/std ~ set up', lang);
+        try {
+          for (let i = 0; i < 3; i++) {
+            const pressed = await o.page.evaluate(() => {
+              if (document.querySelector('.toast.page[role="alert"]')) return false;
+              const on = document.querySelector('button.chip[data-val][aria-pressed="true"]');
+              on?.click();
+              return !!on;
+            });
+            if (!pressed) break;
+            await o.d.settle();
+          }
+          const a = await toastAt(o.page, 5000);
+          const b = await toastAt(o.page, 6500);
+          const c = await toastAt(o.page, 7600);
+          ok(
+            a === true && b === true && c === false,
+            at + lang + ' (b): the error toast at 5 / 6.5 / 7.6 s - ' + [a, b, c].join(' / ')
+          );
+        } finally {
+          await o.ctx.close();
+        }
+      },
+      /* (c) A pointer on a plain toast holds it; it runs on with the time it had left. */
+      async () => {
+        const o = await plain();
+        try {
+          await toastAt(o.page, 1000);
+          const box = await o.page.evaluate(() => {
+            const r = document.querySelector('.toast.page[role]')?.getBoundingClientRect();
+            return r ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : null;
+          });
+          ok(!!box, at + lang + ' (c): no toast to point at');
+          if (!box) return;
+          await o.page.mouse.move(box.x, box.y);
+          const held = await toastAt(o.page, 6000);
+          await o.page.mouse.move(5, 300);
+          const left = await o.page.evaluate(() => performance.now());
+          const gone = await o.page.evaluate(async () => {
+            for (let i = 0; i < 200 && document.querySelector('.toast.page[role]'); i++)
+              await new Promise((r) => setTimeout(r, 25));
+            return performance.now();
+          });
+          ok(
+            held === true && gone - left <= 3600 && gone - left >= 2000,
+            at +
+              lang +
+              ' (c): held ' +
+              held +
+              ', gone ' +
+              Math.round(gone - left) +
+              ' ms after the pointer left'
+          );
+        } finally {
+          await o.ctx.close();
+        }
+      },
+      /* (d) A long toast: the list limit with its email address. */
+      async () => {
+        const o = await openToasting('#/lists ~ list limit as gm2', lang);
+        try {
+          const lines = await o.page.evaluate(() => {
+            const t = document.querySelector('.toast.page[role]');
+            if (!t) return 0;
+            const cs = getComputedStyle(t);
+            const inner =
+              t.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+            return Math.round(inner / parseFloat(cs.lineHeight));
+          });
+          const a = await toastAt(o.page, 9000);
+          const b = await toastAt(o.page, 10600);
+          ok(
+            a === true && b === false,
+            at + lang + ' (d): the long toast at 9 / 10.6 s - ' + a + ' / ' + b
+          );
+          if (!en)
+            ok(lines >= 3, at + 'ru (d): the long toast takes ' + lines + ' lines at 360');
+        } finally {
+          await o.ctx.close();
+        }
+      }
+    ];
+    await Promise.all(runs.map((f) => f()));
+
+    /* (e) The page's toast floats above the selection bar. */
+    {
+      const { ctx, page } = await openState('#/tables/eq_weapon ~ selecting', 360, 640, lang);
+      try {
+        await page.evaluate(() => {
+          const boxes = [...document.querySelectorAll('main .selbox input')].slice(0, 2);
+          for (const b of boxes) b.click();
+        });
+        await page.evaluate(
+          (name) => {
+            const b = [...document.querySelectorAll('.selbarwrap button')].find(
+              (x) => x.textContent.trim() === name
+            );
+            b?.click();
+          },
+          en ? 'Copy text' : 'Скопировать текст'
+        );
+        ok(
+          await waitIn(page, () => !!document.querySelector('.toast.page[role]')),
+          at + lang + ' (e): no toast after «Скопировать текст»'
+        );
+        const m = await page.evaluate(() => ({
+          toast: document.querySelector('.toast.page[role]')?.getBoundingClientRect().bottom,
+          bar: document.querySelector('.selbarwrap')?.getBoundingClientRect().top
+        }));
+        ok(
+          m.toast !== undefined && m.bar !== undefined && m.toast <= m.bar + 0.5,
+          at + lang + ' (e): the toast covers the selection bar - ' + JSON.stringify(m)
+        );
+      } finally {
+        await ctx.close();
+      }
+    }
+
+    /* (f) A toast over a roll result's open «Ещё»: logged for DEBT.md, not asserted. */
+    {
+      const { ctx, page, d } = await openState('#/roll/std ~ card more', 360, 640, lang);
+      try {
+        /* The press on «EN» closes the menu: open it again. */
+        if (!(await page.$('[role="menu"] [role="menuitem"]'))) await d.openCardMore();
+        await page.evaluate(() =>
+          document.querySelector('[role="menu"] [role="menuitem"]')?.click()
+        );
+        await d.settle();
+        await d.openCardMore();
+        const m = await page.evaluate(() => {
+          const t = document.querySelector('.toast.page[role]')?.getBoundingClientRect();
+          const items = [...document.querySelectorAll('[role="menu"] [role="menuitem"]')];
+          const last = items.at(-1)?.getBoundingClientRect();
+          if (!t || !last) return { toast: !!t, last: !!last };
+          const v = Math.max(0, Math.min(t.bottom, last.bottom) - Math.max(t.top, last.top));
+          const h = Math.max(0, Math.min(t.right, last.right) - Math.max(t.left, last.left));
+          return {
+            toastTop: Math.round(t.top),
+            lastBottom: Math.round(last.bottom),
+            overlap: Math.round(v * h)
+          };
+        });
+        fs.writeSync(1, '  toast over «Ещё» (f) 360 ' + lang + ': ' + JSON.stringify(m) + '\n');
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+}
+
+/** The open layers `sweep.js` does not open, read by case 109. */
+const TARGET_LAYERS = [
+  '#/tables/eq_weapon ~ filter sheet',
+  '#/tables/eq_weapon ~ table picker',
+  '#/tables/eq_weapon ~ more menu',
+  '#/tables/eq_weapon ~ selecting',
+  '#/tables ~ a row opened',
+  '#/tables/eq_weapon ~ a row opened, actions menu',
+  '#/tables ~ a row opened, list menu as gm4',
+  '#/tables ~ bar menu as gm4',
+  '#/i/ci1 ~ list menu as gm1',
+  '#/i/q1 ~ more as gm3',
+  '#/roll/std ~ set up',
+  '#/roll/std ~ more',
+  '#/roll/std ~ card more',
+  '#/roll/vault_of_ages ~ supplements menu',
+  '#/search ~ more',
+  '#/search ~ selecting',
+  '#/lists ~ more as gm1',
+  '#/lists ~ card menu as gm1',
+  '#/lists ~ selecting as gm1',
+  '#/lists ~ import panel as gm1',
+  '#/s/player-token-1 ~ selecting',
+  '#/homebrew ~ more as gm3',
+  '#/homebrew ~ filter sheet as gm3',
+  '#/homebrew ~ select narrow as gm3',
+  '#/homebrew ~ bar more as gm3',
+  '#/homebrew/new ~ preview sheet as gm1',
+  '#/homebrew/new ~ picker open as gm1',
+  '#/homebrew/new ~ crop dialog as gm1',
+  '#/account ~ delete confirmation as gm1',
+  LIST_A_ID + ' ~ more as gm4',
+  LIST_A_ID + ' ~ row more as gm4',
+  LIST_A_ID + ' ~ note open as gm4',
+  LIST_A_ID + ' ~ selecting as gm4',
+  LIST_A_ID + ' ~ compact, selecting as gm4',
+  LIST_A_ID + ' ~ price sheet as gm4',
+  /* «Макс» and the take field; «Мин» is in `~ compact, selecting`. */
+  LIST_A_ID + ' ~ picked as gm4',
+  SHOP + ' ~ requests open as gm1',
+  SHOP + ' ~ share as gm1',
+  SHOP + ' ~ many requests as gm1',
+  SHOP + ' ~ not saved as gm1',
+  GM2_LIST_ID + ' ~ notices open as gm2',
+  '#/i/ci1',
+  '#/h/00000000-0000-4000-8000-000000000513 as gm1'
+];
+
+/** The layers case 109 also reads at 1180x720 with the 24 px floor and its spacing. */
+const TARGET_LAYERS_WIDE = [
+  SHOP + ' ~ share as gm1',
+  SHOP + ' ~ not saved as gm1',
+  GM2_LIST_ID + ' ~ notices open as gm2',
+  '#/i/ci1',
+  '#/h/00000000-0000-4000-8000-000000000513 as gm1'
+];
+
+/** 109. Every open layer at 360x640 holds thumb targets (DESIGN.md, "The Phone-First
+ *  Rule"): `targets` finds no control under 40 px (44 px for a menu item) that its hit test
+ *  does not prove, in RU and EN; the wide layers hold 24 px targets at 1180x720. */
+async function targetsInOpenLayers() {
+  const at = '109 (the targets of open layers): ';
+  for (const id of TARGET_LAYERS) {
+    for (const lang of ['ru', 'en']) {
+      /* A state whose control draws from 761 px only is entered there (`wideEnter`). */
+      const { ctx, page } = await openState(
+        id,
+        360,
+        640,
+        lang,
+        /~ (note open|share|not saved) as gm[14]$/.test(id)
+      );
+      try {
+        const got = await targets(page, { floor: 40, menuFloor: 44 });
+        for (const t of got)
+          ok(
+            false,
+            at + id + ' ' + lang + ': ' + t.sel + ' «' + t.name + '» ' + t.w + 'x' + t.h
+          );
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+  for (const id of TARGET_LAYERS_WIDE) {
+    for (const lang of ['ru', 'en']) {
+      const { ctx, page } = await openState(id, 1180, 720, lang);
+      try {
+        const got = await targets(page, { floor: 24, spacing: true });
+        for (const t of got)
+          ok(
+            false,
+            at + id + ' 1180 ' + lang + ': ' + t.sel + ' «' + t.name + '» ' + t.w + 'x' + t.h
+          );
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+}
+
+/** The empty plates of DESIGN.md, "Empty state": the inventory states that draw one. */
+const PLATES = [
+  '#/search',
+  '#/search ~ narrow',
+  '#/search ~ nothing found',
+  '#/search ~ nothing found, kind picked',
+  '#/tables ~ nothing found',
+  '#/tables/eq_armor ~ nothing found',
+  '#/tables/wondrous ~ nothing found',
+  '#/tables/homebrew as gm2',
+  '#/homebrew ~ no match as gm3',
+  '#/homebrew/sets ~ empty as gm4',
+  '#/homebrew/rules ~ empty as gm4',
+  '#/lists',
+  '#/lists ~ empty as gm4',
+  '#/lists ~ nothing found as gm4',
+  LIST_A_ID + ' ~ no match as gm4',
+  '#/s/player-token-1 ~ no match'
+];
+
+/** Reads the first drawn plate in `main`: its four border styles, its ground, the gap from
+ *  the lowest block above it that overlaps it sideways, and the filter column's top. */
+function plateProbe() {
+  const vis = (e) => {
+    const r = e.getBoundingClientRect();
+    const cs = getComputedStyle(e);
+    return r.width > 0 && r.height > 0 && cs.visibility !== 'hidden' && cs.display !== 'none';
+  };
+  const plate = [...document.querySelectorAll('main .empty')].find(vis);
+  if (!plate) return null;
+  const pr = plate.getBoundingClientRect();
+  let above = null;
+  for (const e of document.querySelectorAll('main *')) {
+    if (e === plate || e.contains(plate) || plate.contains(e) || !vis(e)) continue;
+    /* An open sheet lies over the page, not above the plate. */
+    if (e.closest('dialog')) continue;
+    const r = e.getBoundingClientRect();
+    if (r.bottom > pr.top + 0.5 || r.right <= pr.left || r.left >= pr.right) continue;
+    if (!above || r.bottom > above.bottom) above = { bottom: r.bottom, el: e.className };
+  }
+  const cs = getComputedStyle(plate);
+  const col = document.querySelector('main .fcol');
+  return {
+    borders: [cs.borderTopStyle, cs.borderRightStyle, cs.borderBottomStyle, cs.borderLeftStyle],
+    ground: cs.backgroundColor,
+    gap: above ? Math.round((pr.top - above.bottom) * 10) / 10 : null,
+    above: above ? String(above.el).slice(0, 60) : null,
+    colTop: col && vis(col) ? col.getBoundingClientRect().top - pr.top : null
+  };
+}
+
+/** 110. The empty plate (DESIGN.md, "Empty state", "The Drop Rule"): a solid border on
+ *  every side on the Vault Wall ground, 16 px under the block above it, and beside the
+ *  filter column on the column's top. */
+async function emptyPlate() {
+  const at = '110 (the empty plate): ';
+  for (const id of PLATES) {
+    for (const [width, height] of [
+      [360, 640],
+      [1180, 720]
+    ]) {
+      for (const lang of ['ru', 'en']) {
+        const where = at + id + ' ' + width + ' ' + lang + ': ';
+        /* A state whose controls draw from 761 px or 1000 px is entered at 1180 px. */
+        const wide = width < 761 && /kind picked|eq_armor|wondrous/.test(id);
+        const { ctx, page } = await openState(id, width, height, lang, wide);
+        try {
+          const m = await page.evaluate(plateProbe);
+          fs.writeSync(1, '  plate: ' + where + JSON.stringify(m) + '\n');
+          ok(!!m, where + 'no plate');
+          if (!m) continue;
+          ok(
+            m.borders.every((b) => b === 'solid'),
+            where + 'the border is not solid - ' + m.borders.join(' ')
+          );
+          ok(m.ground === 'rgb(20, 17, 29)', where + 'the ground is ' + m.ground);
+          ok(
+            m.gap !== null && Math.abs(m.gap - 16) <= 0.5,
+            where + 'the gap above the plate is ' + m.gap + ' (under ' + m.above + ')'
+          );
+          if (m.colTop !== null)
+            ok(
+              Math.abs(m.colTop) <= 0.5,
+              where + 'the filter column starts ' + m.colTop + ' px off the plate'
+            );
+        } finally {
+          await ctx.close();
+        }
+      }
+    }
+  }
+}
+
+/** Reads a text block's measure: its max-width and the width of 120ch and 70ch in its own
+ *  font, its drawn lines (the line boxes of its text), its widest line, its one-line width
+ *  and the free width of its parent. */
+function measureProbe(sel) {
+  const els = [...document.querySelectorAll(sel)].filter((e) => {
+    const r = e.getBoundingClientRect();
+    return r.width > 0 && r.height > 0 && getComputedStyle(e).visibility !== 'hidden';
+  });
+  return els.map((e) => {
+    const cs = getComputedStyle(e);
+    const probe = document.createElement('span');
+    probe.textContent = '0'.repeat(100);
+    probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;font:inherit';
+    e.appendChild(probe);
+    const ch = probe.getBoundingClientRect().width / 100;
+    probe.remove();
+    const range = document.createRange();
+    range.selectNodeContents(e);
+    const rects = [...range.getClientRects()].filter((r) => r.width > 0);
+    const tops = new Set(rects.map((r) => Math.round(r.top + r.height / 2)));
+    const lines = [];
+    for (const t of tops) {
+      const on = rects.filter((r) => Math.round(r.top + r.height / 2) === t);
+      lines.push(Math.max(...on.map((r) => r.right)) - Math.min(...on.map((r) => r.left)));
+    }
+    const clone = e.cloneNode(true);
+    clone.style.cssText =
+      'position:absolute;visibility:hidden;white-space:nowrap;max-width:none;width:auto;left:0;top:0';
+    e.parentElement.appendChild(clone);
+    const natural = clone.getBoundingClientRect().width;
+    clone.remove();
+    const p = e.parentElement;
+    const pcs = getComputedStyle(p);
+    const free = p.clientWidth - parseFloat(pcs.paddingLeft) - parseFloat(pcs.paddingRight);
+    const box = e.getBoundingClientRect();
+    const lh = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.6;
+    return {
+      cls: String(e.className).slice(0, 40),
+      max: cs.maxWidth === 'none' ? null : parseFloat(cs.maxWidth),
+      line: ch * 120,
+      text: ch * 70,
+      balance: /balance/.test(cs.textWrapStyle || cs.textWrap || ''),
+      lines: box.height < lh * 1.5 ? 1 : lines.length,
+      widest: lines.length ? Math.max(...lines) : 0,
+      natural,
+      free,
+      box: box.width,
+      right: box.right,
+      pright: p.getBoundingClientRect().right,
+      sideways: document.documentElement.scrollWidth > document.documentElement.clientWidth
+    };
+  });
+}
+
+const MEASURE_SIZES = [
+  [360, 640],
+  [768, 1024],
+  [1180, 720],
+  [1440, 900],
+  [1920, 1080]
+];
+
+/** 111. The text measure (DESIGN.md, "The Measure Rule"): a line takes one line while its
+ *  column allows it and wraps in the column at 360; a passage keeps 70ch, and a box that
+ *  holds only a passage is as wide as its text; a box with actions follows its text. */
+async function textMeasure() {
+  const at = '111 (the text measure): ';
+  /* (a) The line class: a lead, a sign-in lead, a plate's cause and hint, an error sentence. */
+  const LINES = [
+    ['#/search', 'main .page-sub'],
+    ['#/homebrew as gm3', 'main .page-sub'],
+    ['#/roll/alt', 'main .page-sub'],
+    ['#/lists', 'main .page-sub, main .signin-lead'],
+    ['#/account', 'main .page-sub'],
+    ['#/search ~ nothing found', 'main .cause'],
+    ['#/lists ~ empty as gm4', 'main .hint'],
+    ['#/i/nope', 'main .errtext']
+  ];
+  for (const [id, sel] of LINES) {
+    for (const lang of ['ru', 'en']) {
+      const { ctx, page, d } = await openState(id, 1180, 720, lang);
+      try {
+        for (const [width, height] of MEASURE_SIZES) {
+          await d.viewport(width, height);
+          await d.settle();
+          const where = at + id + ' ' + sel + ' ' + width + ' ' + lang + ': ';
+          const got = await page.evaluate(measureProbe, sel);
+          fs.writeSync(
+            1,
+            '  line: ' +
+              where +
+              got
+                .map((g) => g.cls + ' ' + g.lines + 'L ' + Math.round(g.widest) + '/' + g.free)
+                .join('; ') +
+              '\n'
+          );
+          /* Up to 760 px a roll page and `/search` hide the lead. */
+          if (!got.length && width <= 760) continue;
+          ok(got.length > 0, where + 'no block drawn');
+          for (const g of got) {
+            ok(
+              g.max !== null && Math.abs(g.max - g.line) <= 1,
+              where + g.cls + ': its max-width is ' + g.max + ', not 120ch (' + g.line + ')'
+            );
+            ok(g.balance, where + g.cls + ': its wrap is not balanced');
+            if (width >= 768 && g.natural <= Math.min(g.free, g.line) - 1)
+              ok(
+                g.lines === 1,
+                where + g.cls + ': it fits its column and takes ' + g.lines + ' lines'
+              );
+            if (width === 360)
+              ok(
+                g.right <= g.pright + 0.5 && !g.sideways,
+                where + g.cls + ': it does not wrap in its column'
+              );
+          }
+        }
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+
+  /* (a2) A box with actions: the sign-in button follows the lead's widest line. */
+  for (const lang of ['ru', 'en']) {
+    for (const [width, height] of [
+      [1180, 720],
+      [1920, 1080]
+    ]) {
+      const where = at + '#/lists signed out ' + width + ' ' + lang + ': ';
+      const { ctx, page } = await openState('#/lists', width, height, lang);
+      try {
+        const m = await page.evaluate(() => {
+          const lead = document.querySelector('main .signin-lead');
+          const btn = document.querySelector('main .signin .btn, main .signin button');
+          if (!lead || !btn) return null;
+          const range = document.createRange();
+          range.selectNodeContents(lead);
+          const right = Math.max(...[...range.getClientRects()].map((r) => r.right));
+          return { gap: btn.getBoundingClientRect().left - right };
+        });
+        ok(
+          !!m && m.gap >= 0 && m.gap <= 12,
+          where + 'the button does not follow the lead - ' + JSON.stringify(m)
+        );
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+
+  /* (b) The passage class: help panels, a note, the footer license. Each width opens its
+     own page: a help panel folds when the page head leaves at 760 px. */
+  const PASSAGES = [
+    ['#/roll/std ~ help', 'main .helpbox p', 'main .helpbox'],
+    ['#/roll/arazo ~ help', 'main .helpbox p', 'main .helpbox'],
+    ['#/s/gm-token-1', 'main .hitnote .htext', 'main .hitnote'],
+    ['#/roll/std', '.foot-licence p', null]
+  ];
+  for (const [id, sel, boxSel] of PASSAGES) {
+    for (const lang of ['ru', 'en']) {
+      for (const [width, height] of MEASURE_SIZES) {
+        const { ctx, page } = await openState(id, width, height, lang, width < 761);
+        try {
+          if (!boxSel)
+            await page.evaluate(() => (document.querySelector('.foot-licence').open = true));
+          const where = at + id + ' ' + sel + ' ' + width + ' ' + lang + ': ';
+          const got = await page.evaluate(measureProbe, sel);
+          /* Up to 760 px a help panel is an item of «Ещё» and the `/s/` notes sit on the
+             lead line: nothing to read there. */
+          if (!got.length && width < 761) continue;
+          ok(got.length > 0, where + 'no passage drawn');
+          for (const g of got)
+            ok(
+              g.widest <= g.text + 1,
+              where + 'a line is ' + Math.round(g.widest) + ' px, past 70ch (' + g.text + ')'
+            );
+          if (!boxSel) continue;
+          /* The box against the extent of what it holds: a band inside it is the defect. */
+          const box = await page.evaluate(
+            (b) =>
+              [...document.querySelectorAll(b)].map((e) => {
+                const cs = getComputedStyle(e);
+                const inner =
+                  e.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+                const kids = [...e.children].map((k) => k.getBoundingClientRect());
+                const widest =
+                  Math.max(...kids.map((k) => k.right)) - Math.min(...kids.map((k) => k.left));
+                const p = e.parentElement;
+                const pcs = getComputedStyle(p);
+                const col =
+                  p.clientWidth - parseFloat(pcs.paddingLeft) - parseFloat(pcs.paddingRight);
+                return { inner, widest, outer: e.getBoundingClientRect().width, col };
+              }),
+            boxSel
+          );
+          fs.writeSync(1, '  passage: ' + where + JSON.stringify(box) + '\n');
+          for (const b of box) {
+            if (width === 360)
+              ok(
+                b.outer >= b.col - 1 || b.inner <= b.widest + 1,
+                where + 'the box is neither its text nor the column - ' + JSON.stringify(b)
+              );
+            else
+              ok(
+                b.inner <= b.widest + 1,
+                where + 'the box is wider than its text - ' + JSON.stringify(b)
+              );
+          }
+        } finally {
+          await ctx.close();
+        }
+      }
+    }
+  }
+
+  /* The dossier's text column is the measure of a record's text: at most 80ch. */
+  for (const lang of ['ru', 'en']) {
+    const { ctx, page, d } = await fresh({ width: 1180, height: 900, lang });
+    try {
+      await d.open('#/i/voa2_a3');
+      const got = await page.evaluate(measureProbe, 'main .card-desc');
+      ok(
+        got.length > 0 && got.every((g) => g.box <= (g.line * 80) / 120 + 1),
+        at + '#/i/voa2_a3 ' + lang + ': the record text is past 80ch - ' + JSON.stringify(got)
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+
+  /* The list page's side column: its read-only notes fill it, a hugging note would not. */
+  {
+    const { ctx, page } = await openState(LIST_A_ID + ' ~ noted as gm4', 1180, 720, 'ru');
+    try {
+      const m = await page.evaluate(() =>
+        [...document.querySelectorAll('.lnotes > .hitnote')].map((n) => {
+          const col = n.parentElement;
+          return { note: n.getBoundingClientRect().width, col: col.clientWidth };
+        })
+      );
+      ok(
+        m.length > 0 && m.every((x) => x.note >= x.col - 1),
+        at + 'the side column notes are narrower than the column - ' + JSON.stringify(m)
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
+/** The routes of case 112: the family, the route, who is signed in. */
+const HEAD_ROUTES = [
+  ['roll', '#/roll/std', null],
+  ['roll', '#/roll/alt', null],
+  ['roll', '#/roll/community', null],
+  ['roll', '#/roll/mwt', null],
+  ['tables', '#/tables/eq_weapon', null],
+  ['tables', '#/tables/eq_armor', null],
+  ['tables', '#/tables/wondrous', null],
+  ['homebrew', '#/homebrew', 'gm3'],
+  ['homebrew', '#/homebrew/sources', 'gm3'],
+  ['homebrew', '#/homebrew/sets', 'gm3'],
+  ['homebrew', '#/homebrew/rules', 'gm3'],
+  ['lists', '#/lists', 'gm4'],
+  ['search', '#/search', null]
+];
+const HEAD_SIZES = [
+  [1180, 720],
+  [1000, 720],
+  [900, 720],
+  [768, 1024],
+  [360, 640]
+];
+const HEADINGS = {
+  roll: { ru: 'Бросок', en: 'Roll' },
+  tables: { ru: 'Таблицы', en: 'Tables' },
+  homebrew: { ru: 'Мои предметы', en: 'My items' }
+};
+
+/** Reads the page head of case 112: its parts' boxes, their DOM order and the lit pills. */
+function headProbe() {
+  const head = document.querySelector('main .page-head');
+  const box = (el) => {
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    return { top: r.top, bottom: r.bottom, left: r.left, right: r.right, h: r.height };
+  };
+  const h1 = document.querySelector('main h1');
+  const nav = head?.querySelector('.headnav') ?? null;
+  const pin = head?.querySelector('.homebtn') ?? null;
+  const help = head?.querySelector('.helpbtn') ?? null;
+  const primary = head?.querySelector('.btn.primary') ?? null;
+  const parts = [
+    ['h1', h1],
+    ['nav', nav],
+    ['pin', pin],
+    ['help', help],
+    ['primary', primary]
+  ].filter(([, el]) => el);
+  const order = [...parts]
+    .sort(([, a], [, b]) =>
+      a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
+    )
+    .map(([k]) => k);
+  /* The head's own controls outside the pills, in DOM order: the primary ends them. */
+  const controls = head
+    ? [...head.querySelectorAll('a, button')].filter((el) => !el.closest('.headnav'))
+    : [];
+  const lit = [...document.querySelectorAll('main .headnav .on, main .headnav [aria-current]')];
+  const checks = lit.filter((el) => {
+    const svgs = el.querySelectorAll('svg').length;
+    return el.classList.contains('sup') ? svgs > 1 : svgs > 0;
+  }).length;
+  const mainEl = document.querySelector('main');
+  const mcs = getComputedStyle(mainEl);
+  const mr = mainEl.getBoundingClientRect();
+  const lead = document.querySelector('main .page-sub');
+  const modesLit = document.querySelector('nav.modes [aria-current="page"]');
+  return {
+    boxes: Object.fromEntries(parts.map(([k, el]) => [k, box(el)])),
+    order,
+    lastIsPrimary: !primary || controls[controls.length - 1] === primary,
+    below: !!nav?.classList.contains('below'),
+    h1: h1 ? { text: h1.textContent.trim(), w: h1.getBoundingClientRect().width } : null,
+    checks,
+    contentRight: mr.right - parseFloat(mcs.paddingRight),
+    lead: box(lead),
+    title: document.title,
+    modeLit: modesLit?.textContent.trim() ?? null
+  };
+}
+
+/** 112. The Head Order Rule (DESIGN.md): every page head draws the heading, the pills of
+ *  the sibling pages, the pin, the help and the primary, in this DOM order and in this
+ *  reading order; from 761 to 999 px the pills take the row under the others. The first
+ *  content of each family against the First-Screen Rule at 768 and 900 px, `/tables/*` at
+ *  900x720 under its named ceiling of 336 px. */
+async function headOrder() {
+  const at = '112 (the head order): ';
+  /* The pills' place per language and size, on the roll routes; each pill's width, and the
+     homebrew pills' first top and line count per tab. */
+  const pills = {};
+  const widths = {};
+  const hbPills = {};
+  for (const [family, route, as] of HEAD_ROUTES) {
+    for (const lang of ['ru', 'en']) {
+      const { ctx, page, d } = await fresh({ width: 1180, height: 720, lang });
+      try {
+        await d.open(route, { as, lang });
+        await d.settled(route);
+        for (const [width, height] of HEAD_SIZES) {
+          await d.viewport(width, height);
+          await d.settle();
+          const presses =
+            width >= 1000 && ['roll', 'tables', 'homebrew'].includes(family)
+              ? [false, true]
+              : [false];
+          for (const pressed of presses) {
+            if (pressed) {
+              await page.evaluate(() =>
+                document.querySelector('main .page-head .homebtn')?.click()
+              );
+              await d.settle();
+            }
+            const where =
+              at +
+              route +
+              ' ' +
+              width +
+              'x' +
+              height +
+              ' ' +
+              lang +
+              (pressed ? ' pinned' : '') +
+              ': ';
+            const top = await primaryTop(page);
+            const m = await page.evaluate(headProbe);
+            fs.writeSync(
+              1,
+              '  head: ' +
+                where +
+                'order ' +
+                m.order.join(',') +
+                ', first content ' +
+                (top ? top.top.toFixed(1) : 'none') +
+                '\n'
+            );
+            /* (f) The heading. */
+            if (HEADINGS[family]) {
+              ok(
+                m.h1?.text === HEADINGS[family][lang],
+                where + 'the heading reads ' + m.h1?.text
+              );
+              if (width === 360) ok(m.h1.w <= 1, where + 'the heading is drawn at 360 px');
+            }
+            if (width === 360) continue;
+            /* (a), (b) The DOM order. */
+            const hasNav = ['roll', 'tables', 'homebrew'].includes(family);
+            ok(
+              !!m.boxes.h1 && m.order[0] === 'h1',
+              where + 'the heading is not first - ' + m.order
+            );
+            ok(
+              hasNav === !!m.boxes.nav,
+              where + 'the pills box is ' + (m.boxes.nav ? 'drawn' : 'missing')
+            );
+            ok(!!m.boxes.pin, where + 'no pin in the head');
+            const want = m.order.filter((k) => k !== 'nav');
+            const pinAt = want.indexOf('pin');
+            ok(pinAt === 1, where + 'the pin does not follow the heading - ' + m.order);
+            ok(m.lastIsPrimary, where + 'a control follows the primary');
+            if (hasNav) {
+              const navAt = m.order.indexOf('nav');
+              ok(
+                m.below ? navAt === m.order.length - 1 : navAt === 1,
+                where + 'the pills are out of place - ' + m.order
+              );
+              ok(
+                m.below === width < 1000,
+                where + 'the pills row is ' + (m.below ? 'below' : 'in the row')
+              );
+            }
+            /* (c) The reading order equals the DOM order. */
+            const center = (b) => (b.top + b.bottom) / 2;
+            const row = Object.entries(m.boxes).filter(([k]) => !(m.below && k === 'nav'));
+            const c0 = center(m.boxes.h1);
+            for (const [k, b] of row)
+              ok(
+                Math.abs(center(b) - c0) <= 8,
+                where + k + ' is off the title row by ' + (center(b) - c0).toFixed(1)
+              );
+            for (let i = 1; i < row.length; i++)
+              ok(
+                row[i][1].left >= row[i - 1][1].right - 1,
+                where + row[i][0] + ' reads before ' + row[i - 1][0]
+              );
+            if (m.below) {
+              const rowBottom = Math.max(...row.map(([, b]) => b.bottom));
+              ok(
+                m.boxes.nav.top >= rowBottom - 0.5,
+                where + 'the pills are not under the title row'
+              );
+              /* (i) The pills stand closer to the title row than to the lead. */
+              if (route === '#/roll/alt' && m.lead) {
+                const up = m.boxes.nav.top - rowBottom;
+                const down = m.lead.top - m.boxes.nav.bottom;
+                ok(
+                  down >= up - 0.5,
+                  where +
+                    'the pills-to-lead gap ' +
+                    down.toFixed(1) +
+                    ' is under ' +
+                    up.toFixed(1)
+                );
+              }
+            }
+            /* (d) The primary ends the row. */
+            if (m.boxes.primary && (width === 1180 || width === 768))
+              ok(
+                m.contentRight - m.boxes.primary.right <= 16,
+                where +
+                  'the primary ends ' +
+                  (m.contentRight - m.boxes.primary.right).toFixed(1) +
+                  ' px short'
+              );
+            /* (h) No lit pill draws a check. */
+            ok(m.checks === 0, where + m.checks + ' lit pills draw a check');
+            /* (e) The first screen. */
+            if (top && !pressed) {
+              const limit =
+                width === 768
+                  ? 410
+                  : family === 'tables' && width === 900
+                    ? 336
+                    : width === 1000
+                      ? null
+                      : 288;
+              if (limit !== null)
+                ok(
+                  top.top <= limit,
+                  where +
+                    'the first content starts at ' +
+                    top.top.toFixed(1) +
+                    ', past ' +
+                    limit
+                );
+            }
+            /* (g) The pill row holds still on the roll routes; the title names the mode. */
+            if (family === 'roll' && !pressed) {
+              const key = lang + ' ' + width;
+              const p = { left: m.boxes.nav.left, top: m.boxes.nav.top };
+              pills[key] ??= p;
+              ok(
+                Math.abs(pills[key].left - p.left) <= 1 &&
+                  Math.abs(pills[key].top - p.top) <= 1,
+                where + 'the pills moved - ' + JSON.stringify([pills[key], p])
+              );
+              ok(
+                !!m.modeLit && m.title.startsWith(m.modeLit),
+                where + 'the title ' + m.title + ' does not name ' + m.modeLit
+              );
+            }
+            /* (g) A lit pill keeps its rest width (DESIGN.md, "Chips", "Sibling pills"): each
+               mode pill, and each catalog group chip, is as wide on every route. */
+            if ((family === 'roll' || family === 'tables') && !pressed) {
+              const key = family + ' ' + lang + ' ' + width;
+              const ws = await page.evaluate(() =>
+                [
+                  ...document.querySelectorAll(
+                    'main .page-head .headnav .mode:not(.sup), main .page-head .headnav a.chip'
+                  )
+                ].map((e) => e.getBoundingClientRect().width)
+              );
+              widths[key] ??= ws;
+              ok(
+                ws.length === widths[key].length &&
+                  ws.every((w, i) => Math.abs(w - (widths[key][i] ?? 0)) <= 0.5),
+                where + 'a pill changed its width - ' + JSON.stringify([widths[key], ws])
+              );
+            }
+            /* (j) From 1000 px every homebrew tab wraps its pills alike (the reserved primary). */
+            if (family === 'homebrew' && width >= 1000 && !pressed) {
+              const key = lang + ' ' + width;
+              const hp = await page.evaluate(() => {
+                const tops = [
+                  ...document.querySelectorAll('main .page-head .headnav a.chip')
+                ].map((e) => Math.round(e.getBoundingClientRect().top));
+                return { top: tops[0] ?? null, lines: new Set(tops).size };
+              });
+              hbPills[key] ??= hp;
+              ok(
+                hp.lines === hbPills[key].lines &&
+                  hp.top !== null &&
+                  Math.abs(hp.top - (hbPills[key].top ?? 0)) <= 1,
+                where +
+                  'the homebrew pills differ from the Items tab - ' +
+                  JSON.stringify([hbPills[key], hp])
+              );
+            }
+          }
+          if (presses.length > 1) {
+            await page.evaluate(() =>
+              document.querySelector('main .page-head .homebtn')?.click()
+            );
+            await d.settle();
+          }
+        }
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+}
+
+/** 113. The die marks of `/roll/alt` (docs/specs/FEATURES.md, "Rolling"; DESIGN.md, "Colors",
+ *  "Tertiary"): each die label starts with the page's d12 in its die's color, hidden from a
+ *  reader, and no letter; the word names the die and the field. */
+async function dieMarks() {
+  const at = '113 (the die marks): ';
+  for (const [width, height] of [
+    [360, 640],
+    [1180, 720]
+  ]) {
+    for (const lang of ['ru', 'en']) {
+      const { ctx, page, d } = await fresh({ width, height, lang });
+      try {
+        await d.open('#/roll/alt', { lang });
+        await d.settle();
+        if (width === 360) await d.click(lang === 'ru' ? 'Настроить' : 'Set up');
+        const where = at + width + ' ' + lang + ': ';
+        const m = await page.evaluate(() => {
+          const probe = (v) => {
+            const s = document.createElement('span');
+            s.style.color = v;
+            document.body.append(s);
+            const c = getComputedStyle(s).color;
+            s.remove();
+            return c;
+          };
+          const tones = {
+            hope: probe('var(--hope)'),
+            fear: probe('var(--fear)'),
+            gold: probe('var(--gold)')
+          };
+          const labels = [...document.querySelectorAll('main .dielbl')].map((l) => {
+            const dv = l.querySelector('.dv');
+            const svg = dv?.querySelector('svg.dieicon');
+            const lr = l.getBoundingClientRect();
+            const sr = svg?.getBoundingClientRect();
+            return {
+              text: l.textContent.trim(),
+              hidden: dv?.getAttribute('aria-hidden'),
+              svgs: dv ? dv.querySelectorAll('svg.dieicon').length : 0,
+              own: dv ? dv.textContent.trim() : null,
+              color: svg ? getComputedStyle(svg).color : null,
+              dy: sr ? sr.top + sr.height / 2 - (lr.top + lr.height / 2) : null
+            };
+          });
+          const field = document.querySelector('main .dieblock input');
+          return { tones, labels, field: field?.getAttribute('aria-label') ?? null };
+        });
+        const words =
+          lang === 'ru' ? ['Кость Надежды', 'Кость Страха'] : ['Hope Die', 'Fear Die'];
+        ok(m.labels.length === 2, where + m.labels.length + ' die labels');
+        m.labels.forEach((l, i) => {
+          const tone = i === 0 ? m.tones.hope : m.tones.fear;
+          ok(l.text === words[i], where + 'the label reads ' + l.text);
+          ok(
+            l.hidden === 'true' && l.svgs === 1 && l.own === '',
+            where + 'the mark - ' + JSON.stringify(l)
+          );
+          ok(
+            l.color === tone && l.color !== m.tones.gold,
+            where + 'the mark is ' + l.color + ', not ' + tone
+          );
+          ok(
+            l.dy !== null && Math.abs(l.dy) <= 1,
+            where + 'the mark is off the label line by ' + l.dy
+          );
+        });
+        const name =
+          lang === 'ru' ? 'Кость Надежды: Результат броска' : 'Hope Die: Roll result';
+        ok(m.field === name, where + 'the Hope field is named ' + m.field);
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+}
+
+/** 114. The print page head and dock (docs/specs/FEATURES.md, "Print"; DESIGN.md, "The Two
+ *  Breakpoints Rule"): the way back and the heading on one row; from 761 px the primary,
+ *  the two switches and the link in one row under it; up to 760 px the switches under it,
+ *  one card per row and a dock with the primary and «Ещё», in view at every window height
+ *  (740x360 included); the sheet inside the first screen; «Лист 2 из 2» before a second
+ *  sheet; the Thumb Rule at 360 and 390 px. */
+async function printHead() {
+  const at = '114 (the print page head and dock): ';
+  const WORDS = {
+    ru: { print: 'Напечатать', more: 'Ещё', link: 'Ссылка на набор', sheet2: 'Лист 2 из 2' },
+    en: { print: 'Print', more: 'More', link: 'Link to this set', sheet2: 'Sheet 2 of 2' }
+  };
+  /* 740x360: a phone on its side, where the dock still sticks. */
+  for (const [width, height] of [
+    [360, 640],
+    [390, 844],
+    [740, 360],
+    [768, 1024],
+    [1180, 720]
+  ]) {
+    for (const lang of ['ru', 'en']) {
+      const w = WORDS[lang];
+      const narrow = width <= 760;
+      const short = height < 481;
+      const where = at + width + ' ' + lang + ': ';
+      const { ctx, page, d } = await fresh({ width, height, lang });
+      try {
+        await d.open('#/p/set-emberaxe', { as: 'gm2', lang });
+        await waitIn(page, () => !!document.querySelector('.psheet'));
+        await d.settle();
+        const m = await page.evaluate(() => {
+          const name = (e) => e.textContent.trim();
+          const bar = document.querySelector('.printbar');
+          const crumb = bar?.querySelector('.crumb');
+          const row = bar?.querySelector('.prow');
+          const first = document.querySelector('.psheet').getBoundingClientRect();
+          const main = document.querySelector('main');
+          const cs = getComputedStyle(main);
+          const column =
+            main.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+          const left = main.getBoundingClientRect().left + parseFloat(cs.paddingLeft);
+          const cards = [...document.querySelectorAll('.pcard')]
+            .filter((c) => getComputedStyle(c).display !== 'none')
+            .map((c) => c.getBoundingClientRect());
+          const dock = document.querySelector('.pdock');
+          return {
+            crumb: crumb ? [...crumb.children].map((e) => e.tagName + ':' + name(e)) : [],
+            row: row
+              ? [...row.children].map((e) =>
+                  e.matches('.seg') ? 'group:' + e.getAttribute('aria-label') : name(e)
+                )
+              : [],
+            rowTops: row
+              ? new Set([...row.children].map((e) => Math.round(e.getBoundingClientRect().top)))
+                  .size
+              : 0,
+            top: first.top,
+            column,
+            widths: cards.map((r) => r.width),
+            offCentre: cards.map((r) => Math.abs(r.left - left + r.right - left - column) / 2),
+            scroll: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+            dock: dock ? [...dock.querySelectorAll('button')].map(name) : null
+          };
+        });
+        /* (a) the DOM order */
+        ok(
+          m.crumb.length === 2 && /^A:/.test(m.crumb[0]) && /^H1:/.test(m.crumb[1]),
+          where + 'the crumb is ' + JSON.stringify(m.crumb)
+        );
+        const groups = m.row.filter((x) => x.startsWith('group:'));
+        ok(groups.length === 2, where + 'the row holds ' + JSON.stringify(m.row));
+        if (narrow) {
+          ok(m.row.length === 2, where + 'the row up to 760 px is ' + JSON.stringify(m.row));
+        } else {
+          ok(
+            m.row.length === 4 &&
+              m.row[0].endsWith(w.print) &&
+              m.row[3].endsWith(w.link) &&
+              m.row[1].startsWith('group:') &&
+              m.row[2].startsWith('group:'),
+            where + 'the row from 761 px is ' + JSON.stringify(m.row)
+          );
+        }
+        ok(m.rowTops === 1, where + 'the row takes ' + m.rowTops + ' lines');
+        /* (c) the first sheet inside the first screen */
+        ok(
+          short || m.top <= height * 0.4,
+          where + 'the first sheet starts at ' + m.top.toFixed(1) + ' px'
+        );
+        if (width === 390 || width === 768)
+          console.log(
+            '  114 ' + width + ' ' + lang + ': the first sheet at ' + m.top.toFixed(1)
+          );
+        /* (f) no sideways scroll */
+        ok(m.scroll <= 0, where + 'the page scrolls sideways by ' + m.scroll + ' px');
+        if (!narrow) {
+          ok(m.dock === null, where + 'a dock is drawn from 761 px');
+          continue;
+        }
+        /* (d) one card per row, its width cut to two decimals of scale */
+        const want = Math.min(m.column, 420);
+        ok(
+          m.widths.length > 0 && m.widths.every((x) => x <= want + 0.5 && want - x < 2.5),
+          where + 'a card is not ' + want + ' px wide: ' + m.widths.join(',')
+        );
+        ok(
+          m.offCentre.every((v) => v <= 1),
+          where + 'a card is off centre: ' + m.offCentre.join(',')
+        );
+        /* (b) the dock */
+        ok(
+          JSON.stringify(m.dock) === JSON.stringify([w.print, w.more]),
+          where + 'the dock holds ' + JSON.stringify(m.dock)
+        );
+        const dockAt = () =>
+          page.evaluate(() => {
+            const r = document.querySelector('.pdock').getBoundingClientRect();
+            return {
+              top: r.top,
+              bottom: r.bottom,
+              h: r.height,
+              inner: innerHeight,
+              pdock: getComputedStyle(document.documentElement).getPropertyValue('--pdock-h'),
+              pad: getComputedStyle(document.documentElement).scrollPaddingBottom
+            };
+          });
+        let k = await dockAt();
+        ok(
+          k.top >= 0 && k.bottom <= k.inner + 0.5,
+          where + 'the dock is out of view at scroll 0: ' + JSON.stringify(k)
+        );
+        /* The page's scroll padding holds the dock at every height, the short window too. */
+        ok(
+          Math.abs(parseFloat(k.pdock) - k.h) <= 1 && Math.abs(parseFloat(k.pad) - k.h) <= 1,
+          where +
+            '--pdock-h is ' +
+            k.pdock +
+            ', the scroll padding ' +
+            k.pad +
+            ' for a ' +
+            k.h +
+            ' px dock'
+        );
+        await page.evaluate(() => {
+          const cards = document.querySelectorAll('.pcard:not(.blank)');
+          cards[cards.length - 1].scrollIntoView({ block: 'end' });
+        });
+        await d.settle();
+        k = await dockAt();
+        ok(
+          k.top >= 0 && k.bottom <= k.inner + 0.5,
+          where + 'the dock is out of view at the last card: ' + JSON.stringify(k)
+        );
+        await page.evaluate(() => window.scrollTo(0, 0));
+        await d.settle();
+        /* (g) the Thumb Rule at 360 and 390 px (`--thumb` holds up to 600 px only) */
+        const small = width <= 600 ? await targets(page, { floor: 40, menuFloor: 44 }) : [];
+        for (const t of small)
+          ok(false, where + t.sel + ' «' + t.name + '» ' + t.w + 'x' + t.h);
+        await page.evaluate(() => document.querySelector('.pdock .morewrap button').click());
+        await d.settle();
+        const menu = await page.evaluate(() => {
+          const btn = document.querySelector('.pdock .morewrap button');
+          const box = document.getElementById('print-more');
+          if (!box) return null;
+          return {
+            items: [...box.querySelectorAll('[role=menuitem]')].map((e) =>
+              e.textContent.trim()
+            ),
+            up: box.getBoundingClientRect().bottom <= btn.getBoundingClientRect().top + 0.5
+          };
+        });
+        ok(
+          !!menu && menu.up && JSON.stringify(menu.items) === JSON.stringify([w.link]),
+          where + '«' + w.more + '» does not open up with the link: ' + JSON.stringify(menu)
+        );
+        if (width === 360) {
+          const open = await targets(page, { floor: 40, menuFloor: 44 });
+          for (const t of open)
+            ok(false, where + 'menu open: ' + t.sel + ' «' + t.name + '» ' + t.w + 'x' + t.h);
+        }
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+  /* (e) the label before the second sheet of the ten-card set */
+  for (const lang of ['ru', 'en']) {
+    for (const width of [360, 1180]) {
+      const { ctx, page, d } = await fresh({ width, height: 720, lang });
+      try {
+        await d.open('#/p/set-tencards', { as: 'gm2', lang });
+        await waitIn(page, () => !!document.querySelector('.psheet'));
+        const m = await page.evaluate(() => ({
+          labels: [...document.querySelectorAll('.psheet-n')].map((e) => e.textContent.trim()),
+          next: document
+            .querySelector('.psheet-n')
+            ?.nextElementSibling?.getAttribute('data-next')
+        }));
+        ok(
+          JSON.stringify(m.labels) === JSON.stringify([WORDS[lang].sheet2]) && m.next === '1',
+          at + width + ' ' + lang + ': the sheet label is ' + JSON.stringify(m)
+        );
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+}
+
+/** 115. The face wait (docs/specs/FEATURES.md, "Print"): «Напечатать» waits while the face
+ *  loads and the cards fit again once it arrives, from the fallback face's numbers to those
+ *  of a warm open; a failed face still enables the button and the sheet fits in the
+ *  fallback face. */
+async function printFaceWait() {
+  const at = '115 (the face wait): ';
+  const fitOf = (page) =>
+    page.evaluate(() =>
+      [...document.querySelectorAll('.pcard:not(.blank)')].map((c) => [
+        c.querySelector('.pc-text')?.style.fontSize ?? '',
+        c.querySelector('.pc-content')?.style.getPropertyValue('--pcpad') ?? ''
+      ])
+    );
+  const button = (page) =>
+    page.evaluate(() => {
+      const b = [...document.querySelectorAll('.printbar .prow button')].find((e) =>
+        /Напечатать/.test(e.textContent)
+      );
+      return b ? b.disabled : null;
+    });
+  const { ctx, page, d } = await fresh({ width: 1180, height: 720 });
+  try {
+    /* Nine long cards: their fit in the fallback face differs from the warm one, so the
+       held open proves the refit ran. */
+    await d.open('#/p/set-longtext', { as: 'gm2' });
+    await waitIn(page, () => !!document.querySelector('.psheet'));
+    ok(
+      await waitIn(page, () =>
+        [...document.querySelectorAll('.printbar .prow button')].some(
+          (b) => /Напечатать/.test(b.textContent) && !b.disabled
+        )
+      ),
+      at + 'the warm open never enabled «Напечатать»'
+    );
+    const warm = await fitOf(page);
+    const url = page.url();
+
+    for (const mode of ['held', 'failed']) {
+      const p2 = await ctx.newPage();
+      await p2.setViewport({ width: 1180, height: 720 });
+      await p2.setBypassServiceWorker(true);
+      await p2.setCacheEnabled(false);
+      await p2.setRequestInterception(true);
+      p2.on('request', (req) => {
+        if (!/\.woff2(\?|$)/.test(req.url())) {
+          req.continue().catch(() => {});
+          return;
+        }
+        if (mode === 'failed') req.abort().catch(() => {});
+        else setTimeout(() => req.continue().catch(() => {}), 1500);
+      });
+      try {
+        await p2.goto(url, { waitUntil: 'domcontentloaded' });
+        await waitIn(p2, () => !!document.querySelector('.psheet'));
+        let early = null;
+        if (mode === 'held') {
+          const [disabled, fitted] = await Promise.all([button(p2), fitOf(p2)]);
+          early = fitted;
+          ok(disabled === true, at + 'held: «Напечатать» is not disabled while the face loads');
+        }
+        ok(
+          await waitIn(p2, () =>
+            [...document.querySelectorAll('.printbar .prow button')].some(
+              (b) => /Напечатать/.test(b.textContent) && !b.disabled
+            )
+          ),
+          at + mode + ': «Напечатать» never enabled'
+        );
+        await new Promise((r) => setTimeout(r, 200));
+        if (mode === 'held') {
+          const cold = await fitOf(p2);
+          ok(
+            JSON.stringify(cold) === JSON.stringify(warm),
+            at +
+              'held: the fit after the face ' +
+              JSON.stringify(cold) +
+              ' is not the warm ' +
+              JSON.stringify(warm)
+          );
+          ok(
+            JSON.stringify(early) !== JSON.stringify(warm),
+            at + 'held: the fit in the fallback face already equals the warm one'
+          );
+        } else {
+          const spill = await p2.evaluate(
+            () =>
+              [...document.querySelectorAll('.pcard:not(.blank) .pc-text')].filter(
+                (e) => e.scrollHeight > e.clientHeight + 1
+              ).length
+          );
+          ok(spill === 0, at + 'failed: ' + spill + ' cards spill in the fallback face');
+        }
+      } finally {
+        await p2.close();
+      }
+    }
+  } finally {
+    await ctx.close();
+  }
+}
+
+/** 116. The focus after an in-app navigation (docs/specs/FEATURES.md, rule 20): a keyboard
+ *  press on a link that leaves with its page puts the focus on `#main`, not on `body`; a
+ *  mode pill of the roll head keeps the focus on the lit pill. RU, 360 and 1180 px. */
+async function focusAfterNavigation() {
+  const at = '116 (the focus after a navigation): ';
+  const focusOf = (page) =>
+    page.evaluate(() => {
+      const a = document.activeElement;
+      if (!a || a === document.body) return 'BODY';
+      return a.id === 'main' ? '#main' : a.tagName + ' ' + a.textContent.trim().slice(0, 30);
+    });
+  /* [route, as, the link to press, the address it leads to] */
+  const LINKS = [
+    ['#/l/abc', undefined, '.erracts a[href="/tables"]', /^\/tables/],
+    ['#/l/abc', undefined, '.erracts a[href="/roll/std"]', /^\/roll\/std/],
+    ['#/i/ci1', undefined, 'main a[href^="/tables/"]', /^\/tables\//],
+    ['#/roll/std', undefined, 'main .rp-res a[href^="/i/"]', /^\/i\//],
+    ['#/lists', 'gm1', 'main .listcard a[href^="/lists/"]', /^\/lists\/[0-9a-f-]+/],
+    ['#/homebrew', 'gm3', 'main a[href="/homebrew/new"]', /^\/homebrew\/new/]
+  ];
+  for (const width of [360, 1180]) {
+    const { ctx, page, d } = await fresh({ width, height: 720 });
+    try {
+      for (const [route, as, sel, to] of LINKS) {
+        const where = at + route + ' ' + sel + ' ' + width + ': ';
+        await d.open(route, as ? { as } : {});
+        await d.settled(where);
+        const found = await waitIn(page, (s) => !!document.querySelector(s), sel);
+        ok(found, where + 'no link to press');
+        if (!found) continue;
+        await page.focus(sel);
+        await page.keyboard.press('Enter');
+        ok(
+          await waitIn(page, (re) => new RegExp(re).test(location.pathname), to.source),
+          where + 'the press did not navigate'
+        );
+        await d.settle();
+        const got = await focusOf(page);
+        ok(got === '#main', where + 'the focus is on ' + got);
+      }
+      if (width === 1180) {
+        await d.open('#/roll/std');
+        await page.focus('main nav.modes a[href="/roll/alt"]');
+        await page.keyboard.press('Enter');
+        await waitIn(page, () => location.pathname.startsWith('/roll/alt'));
+        await d.settle();
+        const got = await focusOf(page);
+        ok(/^A Альтернативные/.test(got), at + 'a mode pill: the focus is on ' + got);
+      }
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
+/** 117. One scrim and one modal shape (DESIGN.md, "Sheet"): the record dialog, a sheet and
+ *  the crop dialog draw the same backdrop with no blur; the crop dialog sits on the window's
+ *  bottom with its top corners at 360 px, and is the sheet's 560 px centered from 761 px. */
+async function oneScrimAndShape() {
+  const at = '117 (one scrim and shape): ';
+  const scrim = (page, sel) =>
+    page.evaluate((s) => {
+      const el = document.querySelector(s);
+      if (!el) return null;
+      const cs = getComputedStyle(el, '::backdrop');
+      return cs.backgroundColor + ' / ' + (cs.backdropFilter || 'none');
+    }, sel);
+  const shape = (page) =>
+    page.evaluate(() => {
+      const dlg = document.querySelector('dialog.cropdlg');
+      const r = dlg.getBoundingClientRect();
+      const cs = getComputedStyle(dlg);
+      return {
+        left: r.left,
+        right: r.right,
+        top: r.top,
+        bottom: r.bottom,
+        w: r.width,
+        /* The window less the reserved scrollbar gutter, as a fixed box sees it. */
+        vw: document.body.getBoundingClientRect().width,
+        vh: innerHeight,
+        tl: cs.borderTopLeftRadius,
+        bl: cs.borderBottomLeftRadius
+      };
+    });
+  for (const width of [360, 1180]) {
+    const where = at + width + ': ';
+    const { ctx, page, d } = await fresh({ width, height: width === 360 ? 640 : 720 });
+    try {
+      await d.open('#/tables/core_item');
+      await d.press('Первоклассный Спальный Мешок');
+      await waitIn(page, () => !!document.querySelector('dialog[open]:not(.sheet)'));
+      const record = await scrim(page, 'dialog[open]:not(.sheet)');
+      await page.keyboard.press('Escape');
+      await d.settle();
+      /* The catalog's filters are a sheet below 1000 px; one sheet rule serves every width. */
+      let sheet = record;
+      if (width === 360) {
+        await d.open('#/tables/eq_weapon');
+        await d.press('Фильтры');
+        await waitIn(page, () => !!document.querySelector('dialog.sheet[open]'));
+        sheet = await scrim(page, 'dialog.sheet[open]');
+        await page.keyboard.press('Escape');
+        await d.settle();
+      }
+      ok(await cropOpen(page, d, where), where + 'the crop dialog did not draw');
+      const crop = await scrim(page, 'dialog.cropdlg[open]');
+      ok(
+        !!record && record === sheet && sheet === crop && /\/ none$/.test(record),
+        where + 'the scrims differ - ' + JSON.stringify({ record, sheet, crop })
+      );
+      const m = await shape(page);
+      if (width === 360) {
+        ok(
+          Math.abs(m.bottom - m.vh) <= 0.5 && m.left <= 0.5 && Math.abs(m.right - m.vw) <= 0.5,
+          where + 'the crop dialog is not on the bottom edge - ' + JSON.stringify(m)
+        );
+        ok(m.tl === '14px' && m.bl === '0px', where + 'the corners - ' + JSON.stringify(m));
+      } else {
+        ok(
+          Math.abs(m.w - 560) <= 0.5 &&
+            Math.abs(m.left + m.right - m.vw) <= 1 &&
+            Math.abs(m.top - (m.vh - m.bottom)) <= 1,
+          where + 'the crop dialog is not the 560 px centered sheet - ' + JSON.stringify(m)
+        );
+        ok(m.tl === '14px' && m.bl === '14px', where + 'the corners - ' + JSON.stringify(m));
+      }
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
+/** 118. The selection bar on a short page and the toasts beside docks (DESIGN.md,
+ *  "Selection bar", "Toast"): on `/lists` with three lists and one tick the bar's bottom is
+ *  the window's bottom at 1180x720 and 768x1024, and at the page's end the footer ends above
+ *  it; a toast in the record dialog at 360x640 ends above the dialog's dock. */
+async function barPinnedAndToastsClear() {
+  const at = '118 (the bar pinned, the toasts clear): ';
+  for (const [width, height] of [
+    [1180, 720],
+    [768, 1024]
+  ]) {
+    const where = at + width + 'x' + height + ': ';
+    const { ctx, page, d } = await fresh({ width, height });
+    try {
+      await d.open('#/lists', { as: 'gm1' });
+      await d.settled(where);
+      await d.press('Выбрать');
+      await page.evaluate(() => document.querySelector('main .listcard input')?.click());
+      ok(
+        await waitIn(page, () =>
+          /1/.test(document.querySelector('.selbarwrap .selcount')?.textContent ?? '')
+        ),
+        where + 'no tick'
+      );
+      const m = await page.evaluate(async () => {
+        const bar = () => document.querySelector('.selbarwrap').getBoundingClientRect();
+        const top = { bottom: bar().bottom, vh: innerHeight };
+        scrollTo(0, document.documentElement.scrollHeight);
+        await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+        const foot = document
+          .querySelector('footer.foot')
+          .lastElementChild.getBoundingClientRect();
+        return { ...top, endBottom: bar().bottom, barTop: bar().top, footEnd: foot.bottom };
+      });
+      ok(
+        Math.abs(m.bottom - m.vh) <= 0.5 && Math.abs(m.endBottom - m.vh) <= 0.5,
+        where + 'the bar is not on the window bottom - ' + JSON.stringify(m)
+      );
+      ok(
+        m.footEnd <= m.barTop + 0.5,
+        where + 'the footer ends under the bar - ' + JSON.stringify(m)
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+
+  const where = at + 'the record dialog at 360x640: ';
+  const { ctx, page, d } = await fresh({ width: 360, height: 640 });
+  try {
+    await d.open('#/tables/core_item');
+    await d.press('Первоклассный Спальный Мешок');
+    await waitIn(page, () => !!document.querySelector('dialog[open] .cardpick'));
+    await page.evaluate(() =>
+      document.querySelector('dialog[open] .cardpick .morewrap > .btn')?.click()
+    );
+    await waitIn(page, () => !!document.querySelector('dialog[open] [role="menu"]'));
+    await page.evaluate(() =>
+      document.querySelector('dialog[open] [role="menu"] [role="menuitem"]')?.click()
+    );
+    ok(
+      await waitIn(page, () => !!document.querySelector('dialog[open] .toast[role]')),
+      where + 'no toast after the first «Ещё» item'
+    );
+    const m = await page.evaluate(() => ({
+      toast: document.querySelector('dialog[open] .toast[role]').getBoundingClientRect().bottom,
+      dock: document.querySelector('dialog[open] .cardpick').getBoundingClientRect().top
+    }));
+    ok(m.toast <= m.dock + 0.5, where + 'the toast covers the dock - ' + JSON.stringify(m));
+  } finally {
+    await ctx.close();
+  }
+
+  /* Every «Ещё» menu at 360 px keeps the 16 px gutter of the window (DESIGN.md, "Sheet"):
+     the record dialog's dock and the list page's head were the two that met the edge. */
+  const menuAt = 'the «Ещё» gutter at 360x640: ';
+  const SPOTS = [
+    ['#/tables/core_item', undefined, 'record'],
+    ['#/tables/core_item', undefined, 'record', 440],
+    ['#/tables/eq_weapon', undefined, 'main'],
+    ['#/search', undefined, 'main'],
+    ['#/roll/std', undefined, 'main'],
+    ['#/lists', 'gm1', 'main'],
+    [SHOP, 'gm1', 'main'],
+    ['#/homebrew', 'gm1', 'main'],
+    ['#/homebrew/hb_emberaxeaaaaaaaa', 'gm1', 'main'],
+    ['#/p/set-twocards', 'gm2', 'main']
+  ];
+  for (const [route, as, scope, height = 640] of SPOTS) {
+    const here = at + menuAt + route + ' at height ' + height + ': ';
+    const s = await fresh({ width: 360, height });
+    try {
+      await s.d.open(route, as ? { as } : undefined);
+      await s.d.settled(here);
+      if (scope === 'record') {
+        await s.d.press('Первоклассный Спальный Мешок');
+        await waitIn(s.page, () => !!document.querySelector('dialog[open] .cardpick'));
+      }
+      const count = await s.page.evaluate(
+        (sc) =>
+          document.querySelectorAll(
+            (sc === 'record' ? 'dialog[open] ' : 'main ') + '.morewrap > [aria-haspopup="menu"]'
+          ).length,
+        scope
+      );
+      ok(count > 0, here + 'no «Ещё» on the page');
+      for (let i = 0; i < count; i++) {
+        const m = await s.page.evaluate(
+          async (sc, n) => {
+            const btn = document.querySelectorAll(
+              (sc === 'record' ? 'dialog[open] ' : 'main ') +
+                '.morewrap > [aria-haspopup="menu"]'
+            )[n];
+            btn.scrollIntoView({ block: 'center' });
+            btn.click();
+            await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+            const menu = document.querySelector('[role="menu"]');
+            if (!menu) return null;
+            await Promise.all(menu.getAnimations().map((a) => a.finished));
+            const r = menu.getBoundingClientRect();
+            /* The dialog's card is the box the menu must stay inside: its scrollbar takes
+               width from the window. */
+            const card = menu.closest('.modal-card');
+            const out = {
+              left: r.left,
+              right: r.right,
+              vw: card
+                ? card.getBoundingClientRect().left + card.clientWidth
+                : document.documentElement.clientWidth
+            };
+            btn.click();
+            return out;
+          },
+          scope,
+          i
+        );
+        if (!m) continue;
+        ok(
+          m.left >= 16 - 0.5 && m.right <= m.vw - 16 + 0.5,
+          here + 'menu ' + i + ' leaves no 16 px gutter - ' + JSON.stringify(m)
+        );
+      }
+    } finally {
+      await s.ctx.close();
+    }
+  }
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -7350,7 +10469,7 @@ const CASES = [
   ['15 (navigation)', historyBackForward],
   ['16 (selection bar)', selectionBarGeometry],
   ['17 (drag reorder)', dragReorder],
-  ['18 (folded panels)', foldedDetailsSurviveRerender],
+  ['18 (open panels)', foldedDetailsSurviveRerender],
   ['19 (tiles with no pictures)', tileGeometryNoArt],
   ['21 (button focus)', buttonFocusSurvivesRerender],
   ['22 (help and list pick)', moneyHelpAndPressedPicker],
@@ -7426,8 +10545,32 @@ const CASES = [
   ['95 (a badge is one box and keeps clear of the lines around it)', badgeIsOneBox],
   ['96 (the table head holds still between tables)', tableHeadHoldsStill],
   ['97 (a roll fits the first screen by its count)', rollFitsByCount],
-  ['101 (the page column grows to 1440 px and stays centered)', pageColumnOnWideWindows]
+  ['98 (the compact row holds from 320 to 760 px)', compactRowHolds],
+  ["99 (search and filter on the owner's page)", listSearchAndFilter],
+  ['100 (the list head and bars)', listHeadAndBars],
+  ['101 (the page column grows to 1440 px and stays centered)', pageColumnOnWideWindows],
+  ['102 (the lists page holds from 320 to 1440 px)', listsPageHolds],
+  ['103 (the add-to-list menu keeps its place and its keys)', addToListMenuKeys],
+  ['104 (the number stepper is laid out as a stepper)', numberStepperLayout],
+  ['105 (the list page layout)', listPageLayout],
+  ['106 (row text and field measure)', rowTextAndFieldMeasure],
+  ['107 (the note switch in a real browser)', noteSwitchInABrowser],
+  ['108 (the toasts in a real browser)', toastsInABrowser],
+  ['109 (the targets of open layers at 360)', targetsInOpenLayers],
+  ['110 (the empty plate)', emptyPlate],
+  ['111 (the text measure)', textMeasure],
+  ['112 (the head order)', headOrder],
+  ['113 (the die marks)', dieMarks],
+  ['114 (the print page head and dock)', printHead],
+  ['115 (the face wait)', printFaceWait],
+  ['116 (the focus after a navigation)', focusAfterNavigation],
+  ['117 (one scrim and shape)', oneScrimAndShape],
+  ['118 (the bar pinned, the toasts clear)', barPinnedAndToastsClear]
 ];
+
+/* The interleave spreads the slow layout cases at the end of the list over
+ * every piece, as `golden.js` spreads its states. */
+const MINE = CASES.filter((c, i) => !SHARD || i % SHARD.of === SHARD.n);
 
 (async () => {
   /* Each case gets its own try/catch: a hung CDP call under host load
@@ -7435,20 +10578,27 @@ const CASES = [
    * take the other cases down with it, and a synchronous write - not
    * console.log's own buffering - is what survives a crash that follows
    * immediately after. */
-  for (const [label, fn] of CASES) {
+  for (const [label, fn] of MINE) {
     fs.writeSync(1, 'running: ' + label + '\n');
+    const t0 = Date.now();
     try {
       await fn();
     } catch (e) {
       rep.ok(false, label + ': threw - ' + (e && e.message ? e.message : String(e)));
     }
+    fs.writeSync(1, 'took: ' + label + ' ' + ((Date.now() - t0) / 1000).toFixed(1) + 's\n');
   }
 
   await closeBrowser().catch(() => {});
   console.log(
     rep.failed
       ? '\n' + rep.failed + ' FAILED'
-      : '\nreal-input states (dist-test/): all ' + CASES.length + ' runs passed'
+      : '\nreal-input states (dist-test/): all ' +
+          MINE.length +
+          ' runs passed' +
+          (SHARD
+            ? ' (shard ' + (SHARD.n + 1) + '/' + SHARD.of + ' of ' + CASES.length + ')'
+            : '')
   );
   process.exit(rep.failed ? 1 : 0);
 })();

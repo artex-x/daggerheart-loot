@@ -603,6 +603,7 @@
       x.kind === 'custom' ? { ...x, name: custom[i] ?? '', lang } : x
     );
     const callRows = toHomebrewRows(file, rows, sent, store, update, importIds);
+    app.closeErrorToast();
     sending = true;
     const r = await store.import(callRows);
     sending = false;
@@ -981,5 +982,14 @@
     gap: 14px;
     margin-left: auto;
     font-size: var(--t-data);
+  }
+
+  /* A text link reaches the thumb target by its padded box (DESIGN.md, "The Phone-First
+     Rule"). */
+  @media screen and (max-width: 600px) {
+    .links a {
+      padding-block: max(0px, calc((var(--thumb) - 1lh) / 2));
+      margin-block: min(0px, calc((1lh - var(--thumb)) / 2));
+    }
   }
 </style>

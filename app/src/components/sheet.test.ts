@@ -1,4 +1,4 @@
-/* Sheet.svelte: the bottom sheet's name, its three ways to close, the dialog flag and the
+/* Sheet.svelte: the sheet's name, its three ways to close, the dialog flag and the
    head and foot snippets (DESIGN.md, "Components"). */
 import { cleanup, render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
@@ -36,7 +36,7 @@ function open(): {
   };
 }
 
-describe('the bottom sheet', () => {
+describe('the sheet', () => {
   it('opens as a named modal with its head, body and foot, the focus on «Закрыть»', async () => {
     const { app, dialog } = open();
     expect(dialog.open).toBe(true);

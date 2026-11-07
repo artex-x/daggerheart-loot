@@ -373,7 +373,7 @@
   }
 
   .cardform :global(input) {
-    height: 38px;
+    height: max(38px, var(--thumb));
   }
 
   /* The language switch keeps its own width, as on the item form. */
@@ -406,7 +406,7 @@
   }
 
   select {
-    height: 38px;
+    height: max(38px, var(--thumb));
     width: auto;
     max-width: 100%;
     padding: 0 10px;

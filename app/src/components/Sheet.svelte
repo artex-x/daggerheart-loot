@@ -1,13 +1,14 @@
 <script lang="ts">
-  /* A bottom sheet: a native modal `<dialog>` attached to the bottom of the screen, its
-     head and foot fixed and its body scrolling (DESIGN.md, "Components"). The filter
-     sheet and the table picker are its callers. No grab handle: nothing drags it.
+  /* A sheet: a native modal `<dialog>`, attached to the bottom of the screen up to 760 px
+     and centered from 761 px, its head and foot fixed and its body scrolling (DESIGN.md,
+     "Sheet"). No grab handle: nothing drags it.
 
      Opened with `showModal()` for the focus trap, the inert page and Escape, as
      `RecordModal.svelte` is; the toast is drawn inside it while it is open. */
   import type { Snippet } from 'svelte';
   import DialogClose from './DialogClose.svelte';
   import Toast from './Toast.svelte';
+  import { watchBarHeight } from './barHeight.js';
   import type { AppState } from '../state/app.svelte.js';
 
   interface Props {
@@ -38,6 +39,10 @@
       app.dialogOpen = false;
     };
   });
+
+  /* Up to 760 px the toast floats over the foot, not over its buttons (`Toast`). */
+  let footEl = $state<HTMLElement | undefined>(undefined);
+  $effect(() => (dialog && footEl ? watchBarHeight(footEl, '--dock-h', dialog) : undefined));
 </script>
 
 <!-- The scrim is not an element: a press on it arrives on the dialog itself. -->
@@ -62,7 +67,7 @@
       />
     </div>
     <div class="sheet-body">{@render children()}</div>
-    {#if foot}<div class="sheet-foot">{@render foot()}</div>{/if}
+    {#if foot}<div class="sheet-foot" bind:this={footEl}>{@render foot()}</div>{/if}
   </div>
   <Toast {app} inDialog />
 </dialog>
@@ -86,8 +91,20 @@
     overflow: hidden;
   }
 
+  /* From 761 px a sheet takes the record dialog's place: centered, four round corners. */
+  @media (min-width: 761px) {
+    dialog[open] {
+      inset: 0;
+      margin: auto;
+      height: fit-content;
+      border-bottom: 1px solid var(--line2);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+    }
+  }
+
   dialog::backdrop {
-    background: rgb(6 4 12 / 78%);
+    background: var(--scrim);
   }
 
   .sheet-card {

@@ -74,8 +74,10 @@
     margin: 0;
     font-size: var(--t-small);
     color: var(--txt);
-    max-width: 62ch;
-    flex: 1 1 240px;
+    /* The button follows the text, not the cap (DESIGN.md, "The Measure Rule"). */
+    max-width: var(--measure-line);
+    flex: 0 1 auto;
+    text-wrap: balance;
   }
 
   .signin-acts {

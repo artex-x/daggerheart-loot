@@ -38,18 +38,7 @@ const ONLY = onlyArg ? onlyArg.slice('--only='.length) : null;
  * `stateIdx % of !== n` interleave (ported from the deleted parity harness,
  * issue 47), which spreads the ~7s `#/tables*` arrivals evenly instead of
  * piling them into one shard. */
-const shardArg = process.argv.find((a) => a.startsWith('--shard='));
-const SHARD = shardArg
-  ? (() => {
-      const m = /^--shard=(\d+)\/(\d+)$/.exec(shardArg);
-      const n = m && Number(m[1]);
-      const of = m && Number(m[2]);
-      if (!n || !of || n < 1 || n > of) {
-        throw new Error(`--shard must look like --shard=1/4 (got "${shardArg}")`);
-      }
-      return { n: n - 1, of };
-    })()
-  : null;
+const SHARD = require('./shard.js').shardOf(process.argv);
 
 /** The file name a state's golden is written under - the deleted `parity.js`'s
  *  own rule, so a state id and its golden's basename always agree by eye. */
@@ -422,8 +411,8 @@ if (require.main === module) {
    *  enter, snapshot ru, press EN, snapshot en - a snapshot is a read and does
    *  not perturb the page, so nothing forces a second arrival. `timed` states
    *  arrive fresh per language instead, each raising its own toast. That split
-   *  kept the capture inside the 1600ms toast lifetime; the toast hold has made
-   *  that window moot, and the split stays because the goldens are recorded so. */
+   *  kept the capture inside the toast's lifetime; the toast hold has made that window
+   *  moot, and the split stays because the goldens are recorded so. */
   const captureState = async (state) => {
     if (!state.timed) {
       const { ctx, page, d } = await fresh({
@@ -463,7 +452,7 @@ if (require.main === module) {
         storage: state.storage
       });
       try {
-        /* Held: a toast raised at mount lives 1600 ms, less than a slow host
+        /* Held: a toast raised at mount lives 4000 ms, less than a slow host
            takes to arrive (docs/decisions/2026-09-30-a-timed-golden-holds-its-toast-until-the.md). */
         await d.open(state.route, {
           as: state.as,

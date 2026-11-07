@@ -288,11 +288,9 @@ const STATES: {
         }),
         'gm4'
       ),
-    /* `press` grips buttons; the roll panel folds open on its `<summary>`,
-       which jsdom does not expose as role "button" the way a browser does, so it
-       is clicked by its text. */
     enter: async () => {
-      await userEvent.click(await screen.findByText('Бросок по списку'));
+      await screen.findByRole('textbox', { name: 'Название списка' });
+      await press('Бросить по списку');
     }
   },
   {
@@ -336,6 +334,8 @@ const STATES: {
     route: '#/s/gm-token-1',
     cloud: () => fakeCloud(SEED),
     enter: async () => {
+      await userEvent.click(await screen.findByRole('button', { name: 'Заметка' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Заметка мастера' }));
       await screen.findByText('Кузнец торгуется, если назвать имя его брата.');
     }
   },
@@ -361,9 +361,9 @@ const STATES: {
     route: '#/lists',
     cloud: () => fakeCloud(SEED, 'gm1'),
     enter: async () => {
-      await userEvent.click(
-        await screen.findByRole('checkbox', { name: 'Выбрать: Пустой список' })
-      );
+      await screen.findByText('Пустой список');
+      await userEvent.click(screen.getByRole('button', { name: 'Выбрать' }));
+      await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать: Пустой список' }));
       await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать: Трофеи' }));
       await screen.findByRole('button', { name: 'Удалить (2)' });
     }
@@ -426,7 +426,9 @@ const STATES: {
     route: '#/lists/00000000-0000-4000-8000-000000000101',
     cloud: () => fakeCloud(SEED, 'gm1'),
     enter: async () => {
-      await userEvent.click(await screen.findByRole('button', { name: 'Свой предмет' }));
+      await userEvent.click(
+        await screen.findByRole('button', { name: 'Добавить свой предмет' })
+      );
       await userEvent.click(screen.getByRole('button', { name: 'Добавить в список' }));
       await screen.findByText('Введите название.');
     }
@@ -436,15 +438,15 @@ const STATES: {
     route: '#/lists/00000000-0000-4000-8000-000000000101',
     cloud: () => fakeCloud(SEED, 'gm1'),
     enter: async () => {
-      await screen.findByRole('button', { name: 'Свой предмет', expanded: false });
+      await screen.findByRole('button', { name: 'Добавить свой предмет', expanded: false });
     }
   },
   {
-    what: 'an empty account list with its hint and the own-item row',
+    what: 'an empty account list with the own-item row',
     route: '#/lists/00000000-0000-4000-8000-000000000102',
     cloud: () => fakeCloud(SEED, 'gm1'),
     enter: async () => {
-      await screen.findByText(/Свой предмет можно создать здесь же/);
+      await screen.findByRole('button', { name: 'Добавить свой предмет', expanded: false });
     }
   },
   {
@@ -452,7 +454,9 @@ const STATES: {
     route: '#/lists/00000000-0000-4000-8000-000000000101',
     cloud: () => fakeCloud(SEED, 'gm1'),
     enter: async () => {
-      await userEvent.click(await screen.findByRole('button', { name: 'Свой предмет' }));
+      await userEvent.click(
+        await screen.findByRole('button', { name: 'Добавить свой предмет' })
+      );
       await userEvent.type(screen.getByRole('textbox', { name: 'Название' }), 'Фляга{Enter}');
       await screen.findByRole('link', { name: 'Изменить' });
     }
@@ -551,16 +555,20 @@ const COVERED: Record<string, string> = {
   'Toast.svelte':
     'the toast the add-to-list press raises, in the state above, and shell.test.ts',
   'DiceBar.svelte': 'the Core rules panel - std.test.ts and the state below',
-  'FilterBar.svelte':
-    'tables.test.ts, filterBar.test.ts with the fold closed and open, and the filter panel state below',
   'FoldButton.svelte':
-    'filterBar.test.ts with the fold closed and open, and the source chip fold closed and open in homebrewCatalog.test.ts',
+    'the source chip fold closed and open in homebrewCatalog.test.ts, and the filter panel state below',
+  'CompactRow.svelte':
+    'compactRow.test.ts folded and unfolded, listPage.test.ts and sharedListPage.test.ts at the narrow band',
+  'ListFind.svelte': 'listFind.test.ts with the sheet closed and open, and both list pages',
+  'SelMode.svelte':
+    'tables.test.ts, searchPage.test.ts, homebrewPage.test.ts and both list pages',
   'HelpBox.svelte': "PageHead's help panel states above",
   'HomebrewEditor.svelte':
     'homebrewEditor.test.ts in every kind, the problems and the banners; the failed save above',
   'HomebrewBulk.svelte':
     "homebrewBulk.test.ts: the bar's menu and the move sheet up to 760 px; homebrewPage.test.ts: the buttons from 761 px",
-  'HomebrewTabs.svelte': 'homebrewTabs.test.ts: the links, the picker and its sheet',
+  'HomebrewTabs.svelte':
+    'homebrewTabs.test.ts: the pills with counts, the picker and its sheet',
   'HomebrewImport.svelte':
     'homebrewImport.test.ts: the panel empty, a preview with every row note, a refused file, the update chosen',
   'HomebrewPage.svelte':
@@ -588,23 +596,21 @@ const COVERED: Record<string, string> = {
   'RollSelect.svelte': 'rollSelect.test.ts, and the pickers in sections.test.ts',
   'PickRow.svelte': 'record.test.ts on a catalog and an own record, and inside the modal above',
   'QuickItem.svelte': 'quickItem.test.ts, and the refused own-item panel above',
-  'FormField.svelte':
-    'the own-item panel above, and every field of homebrewEditor.test.ts with each «?» closed and open',
+  'FormField.svelte': 'the own-item panel above, and every field of homebrewEditor.test.ts',
   'TextArea.svelte': 'the own-item panel above, and the description in homebrewEditor.test.ts',
-  'HelpButton.svelte':
-    "PageHead's help panel states above, the list page's own priced entry below, and each field «?» of homebrewEditor.test.ts closed and open",
+  'HelpButton.svelte': "PageHead's help panel states above, closed and open",
   'HitNote.svelte':
     "the list page's priced, noted entry with the roll panel open above, the shared list below, and a formatted note in sharedListPage.test.ts",
   'ListPage.svelte': 'listPage.test.ts, and both list-page states below',
-  'ListCard.svelte': 'listsPage.test.ts, signed out, signed in and with a failed read',
+  'ListCard.svelte':
+    'listsPage.test.ts, its cards with «Ещё», ticked and with the waiting chip',
   'OrGrid.svelte': 'the Core rules panel, which is the only screen with a choice',
   'StdPanel.svelte': 'std.test.ts, and both pressed states below',
   'Button.svelte':
     'the roll button and the card actions, on every roll page; the second set disclosure in homebrewEditor.test.ts',
-  'Chip.svelte': 'the source and kind rows of std.test.ts and the rarity row of alt.test.ts',
+  'Chip.svelte':
+    'the source and kind rows of std.test.ts, the rarity row of alt.test.ts, and chip.test.ts with a count',
   'AltPanel.svelte': 'alt.test.ts, and the critical-success state below',
-  'BatchBar.svelte':
-    'batchBar.test.ts idle, some and all ticked; the lists index with two ticked above; listPage.test.ts',
   'ImportPanel.svelte':
     'importPanel.test.ts empty, previewed, refused and with errors; the preview and error reports above',
   'ArtWell.svelte':
@@ -621,10 +627,10 @@ const COVERED: Record<string, string> = {
   'Sheet.svelte':
     'sheet.test.ts open with its head and foot, and the filter and picker sheets in tables.test.ts',
   'TableNav.svelte':
-    'tableNav.test.ts in the three bands with the picker sheet open, and tables.test.ts',
+    'tableNav.test.ts: the picker sheet open, the groups and the tabs parts at mid and wide; tables.test.ts',
   'Field.svelte': 'the number field on every roll page, and the rows above it',
   'Icon.svelte': 'the card actions and the pin toggle',
-  'KeepNote.svelte': 'the note under the print bar in printPage.test.ts',
+  'Crumb.svelte': 'crumb.test.ts, and the editor and print page heads in their own tests',
   'ListsPage.svelte': 'listsPage.test.ts, and the state above',
   'LoadState.svelte':
     'the loading and failed account reads above; homebrewCatalog.test.ts failed, with axe; homebrewPage.test.ts, homebrewEditor.test.ts and record.test.ts loading and failed',
@@ -637,7 +643,7 @@ const COVERED: Record<string, string> = {
   'NumberField.svelte': 'the number row on every roll page',
   'NumRow.svelte': 'the number row on every roll page, and the lists index above',
   'PageHead.svelte':
-    'the heading of every roll page, with both help states above; homebrewPage.test.ts pinned and open',
+    'pageHead.test.ts with the pills in the row and below it; the heading of every roll page, with both help states above; homebrewPage.test.ts pinned and open',
   'PickerRollPanel.svelte':
     'sections.test.ts: Vault of Ages, communities and the realms, and in English above',
   'PageTitle.svelte':
@@ -682,7 +688,10 @@ const COVERED: Record<string, string> = {
   'Marked.svelte': 'searchPage.test.ts and tables.test.ts, the marked rows and tiles',
   'Markup.svelte': 'markup.test.ts: every block, a lead, and markup characters as text',
   'Menu.svelte': 'accountMenu.test.ts and modeRow.test.ts with each menu open',
-  'ModeRow.svelte': 'modeRow.test.ts on the nine roll sections, the menu closed and open',
+  'MetaToggle.svelte':
+    "metaToggle.test.ts closed and open, the owner's list page at the mid band (listPage.test.ts) and the /s/ note toggles (sharedListPage.test.ts)",
+  'ModeRow.svelte':
+    'modeRow.test.ts on the nine roll sections and in the page head, the menu closed and open',
   'MarkupInline.svelte': 'markup.test.ts inside every block, and the record card above',
   'MarkupField.svelte':
     'markupField.test.ts with the toolbar, with «Просмотр» pressed and read-only; homebrewEditor.test.ts and listPage.test.ts with the hint open',

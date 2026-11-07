@@ -32,7 +32,7 @@
     display: inline-flex;
     align-items: center;
     gap: var(--gap-sm);
-    min-height: 32px;
+    min-height: max(32px, var(--thumb));
     font-size: var(--t-small);
     color: var(--muted);
     cursor: pointer;

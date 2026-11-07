@@ -281,7 +281,7 @@ export const MARK = {
 // hand-made og/_share.jpg of 7fd046c carried; the ground, the text colors
 // and the gold budget are the app's (app/src/styles/tokens.css: the page
 // ground, --txt, --muted, --muted2, and the gold of the mark only). The mark sits in an
-// 84 px box at (50, 258), the box of issues/57's mark stage.
+// 84 px box at (50, 258), the box of the vault-die mark stage in the task 57 mocks.
 export function shareCardSvg(lang) {
   const text = CARD_TEXT[lang];
   if (!text) throw new Error('No share card text for language "' + lang + '". Use ru or en');
@@ -811,22 +811,13 @@ export const REVIEW_ART_SIZES = [
     declarations: ['aspect-ratio: 4 / 3']
   },
   {
-    label: 'list card 132',
-    px: 132,
-    dir: 'img/',
-    radius: 0,
-    file: COMPONENTS + 'RecordCard.svelte',
-    selector: '.card.compact .card-media',
-    declarations: ['width: 132px']
-  },
-  {
-    label: 'phone card 96',
+    label: 'roll row face 96',
     px: 96,
     dir: 'img/',
-    radius: 0,
+    radius: 8,
     file: COMPONENTS + 'RecordCard.svelte',
-    selector: '.card.compact .card-media',
-    declarations: ['width: 96px']
+    selector: '.card.face .card-media',
+    declarations: ['width: 96px', 'border-radius: 8px']
   },
   {
     label: 'row 60, thumb',
@@ -841,10 +832,10 @@ export const REVIEW_ART_SIZES = [
     label: 'lists 40, thumb',
     px: 40,
     dir: 'img/thumb/',
-    radius: 7,
+    radius: 8,
     file: COMPONENTS + 'ListCard.svelte',
     selector: '.listcard-thumbs .thumb',
-    declarations: ['width: 40px', 'border-radius: 7px']
+    declarations: ['width: 40px', 'border-radius: 8px']
   }
 ];
 

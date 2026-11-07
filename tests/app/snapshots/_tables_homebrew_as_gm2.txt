@@ -19,8 +19,6 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Поиск" [url=/search]
   main ""
     heading "Таблицы" [level=1]
-    button "Открывать при запуске" [pressed=false]
-    button "Об этих данных" [expanded=false]
     navigation "Таблицы"
       link "Core" [url=/tables/core_item]
       link "Hope & Fear" [url=/tables/hope_and_fear_item]
@@ -29,6 +27,8 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Снаряжение" [url=/tables/eq_weapon]
       link "Прочее" [url=/tables/other_starting]
       link "Хоумбрю" [url=/tables/homebrew]
+    button "Открывать при запуске" [pressed=false]
+    button "Об этих данных" [expanded=false]
     StaticText "Своих предметов пока нет"
     link "Новый предмет" [url=/homebrew/new]
   contentinfo ""
@@ -78,8 +78,6 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/homebrew?as=gm
       link "Search" [url=/en/search]
   main ""
     heading "Tables" [level=1]
-    button "Open on start" [pressed=false]
-    button "About this data" [expanded=false]
     navigation "Tables"
       link "Core" [url=/en/tables/core_item]
       link "Hope & Fear" [url=/en/tables/hope_and_fear_item]
@@ -88,6 +86,8 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/homebrew?as=gm
       link "Equipment" [url=/en/tables/eq_weapon]
       link "Other" [url=/en/tables/other_starting]
       link "Homebrew" [url=/en/tables/homebrew]
+    button "Open on start" [pressed=false]
+    button "About this data" [expanded=false]
     StaticText "No items of your own yet"
     link "New item" [url=/en/homebrew/new]
   contentinfo ""

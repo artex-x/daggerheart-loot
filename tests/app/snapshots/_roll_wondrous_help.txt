@@ -16,17 +16,17 @@ RootWebArea "Wondrous Environments - Генератор лута Daggerheart" [u
       link "Бросок" [url=/roll/wondrous_environments]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
-  navigation "Режим броска"
-    link "Обычные правила" [url=/roll/std]
-    link "Альтернативные таблицы" [url=/roll/alt]
-    button "Wondrous Environments" [expanded=false haspopup=menu]
   main ""
-    heading "Wondrous Environments" [level=1]
+    heading "Бросок" [level=1]
+    navigation "Режим броска"
+      link "Обычные правила" [url=/roll/std]
+      link "Альтернативные таблицы" [url=/roll/alt]
+      button "Wondrous Environments" [expanded=false haspopup=menu]
     button "Открывать при запуске" [pressed=false]
     button "Об этой таблице" [expanded=true]
-    StaticText "Введите результат броска или получите случайную позицию."
     StaticText "В таблице 119 позиций, а не 100 - столько предметов описано в са..." [namelen=236 namehash=4bb228e3]
-    ... StaticText x8 of 12 same-shape siblings elided
+    StaticText "Порядок взят из книги: там предметы отсортированы по английскому..." [namelen=183 namehash=25326146]
+    ... StaticText x7 of 11 same-shape siblings elided
     link "Wondrous Environments" [url=https://www.drivethrurpg.com/en/product/552648/wondrous-environments]
     button "Бросить 1-119"
     button "На единицу меньше" [disabled=true]
@@ -92,17 +92,17 @@ RootWebArea "Wondrous Environments - Daggerheart Loot Generator" [url=/en/roll/w
       link "Roll" [url=/en/roll/wondrous_environments]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
-  navigation "Roll mode"
-    link "Standard rules" [url=/en/roll/std]
-    link "Alternate tables" [url=/en/roll/alt]
-    button "Wondrous Environments" [expanded=false haspopup=menu]
   main ""
-    heading "Wondrous Environments" [level=1]
+    heading "Roll" [level=1]
+    navigation "Roll mode"
+      link "Standard rules" [url=/en/roll/std]
+      link "Alternate tables" [url=/en/roll/alt]
+      button "Wondrous Environments" [expanded=false haspopup=menu]
     button "Open on start" [pressed=false]
     button "About this table" [expanded=true]
-    StaticText "Enter your roll result, or pick a random entry."
     StaticText "The table holds 119 entries rather than 100 - that is how many i..." [namelen=244 namehash=06610566]
-    ... StaticText x8 of 12 same-shape siblings elided
+    StaticText "The order is the book's own: alphabetical by English name, not b..." [namelen=105 namehash=baa1636d]
+    ... StaticText x7 of 11 same-shape siblings elided
     link "Wondrous Environments" [url=https://www.drivethrurpg.com/en/product/552648/wondrous-environments]
     button "Roll 1-119"
     button "One lower" [disabled=true]

@@ -315,27 +315,43 @@
 </dialog>
 
 <style>
-  /* off m41's `.cropdlg` */
+  /* The `Sheet`'s shape and place (DESIGN.md, "Sheet"): attached to the bottom with its top
+     corners up to 760 px, centered with four corners and the plate shadow from 761 px. It
+     keeps the window's height: the square stage needs it on a landscape phone. */
   .cropdlg {
-    width: min(520px, calc(100% - 24px));
+    position: fixed;
+    inset: auto 0 0;
+    width: min(100%, 560px);
     max-width: none;
     max-height: 100dvh;
+    margin: 0 auto;
     overflow-y: auto;
     padding: 0;
     border: 1px solid var(--line2);
-    border-radius: var(--r);
+    border-bottom: 0;
+    border-radius: var(--r) var(--r) 0 0;
     background: var(--surface);
     color: var(--txt);
-    box-shadow: var(--shadow);
+  }
+
+  @media (min-width: 761px) {
+    .cropdlg {
+      inset: 0;
+      margin: auto;
+      height: fit-content;
+      border-bottom: 1px solid var(--line2);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+    }
   }
 
   /* The padding sits on the box, so the dialog element's own area is only the backdrop. */
   .box {
-    padding: 16px;
+    padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
   }
 
   .cropdlg::backdrop {
-    background: rgb(6 4 12 / 78%);
+    background: var(--scrim);
   }
 
   h2 {
@@ -372,7 +388,7 @@
     position: absolute;
     inset: 6%;
     border: 2px solid var(--gold);
-    border-radius: 4px;
+    border-radius: 6px;
     box-shadow: 0 0 0 9999px rgb(7 6 11 / 62%);
     pointer-events: none;
   }

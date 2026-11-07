@@ -1,6 +1,6 @@
 # #/lists ~ created as gm2
 # route: #/lists
-# why: the new account list first in «Ваш аккаунт», «0 позиций · изменён только что», the field cleared, the toast
+# why: the new account list first, «0 позиций · изменён только что», the field closed, the focus on «Новый список», the toast
 # as: gm2
 
 ## ru :: tree
@@ -20,30 +20,21 @@ RootWebArea "Мои списки - Генератор лута Daggerheart" [url
   main ""
     heading "Мои списки" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
-    StaticText "Соберите добычу в список и отправьте игрокам одной ссылкой."
-    StaticText "НОВЫЙ СПИСОК"
-    textbox "Новый список" [focused=true multiline=false readonly=false required=false]
-    button "Создать"
-    button "Импорт из файла" [expanded=false]
+    button "Новый список" [expanded=false focused=true]
     status ""
-    heading "ВАШ АККАУНТ" [level=2]
     StaticText "2 списка из 50"
-    checkbox "Выбрать все" [checked=false]
-    StaticText "ВЫБРАТЬ ВСЕ"
-    generic ""
-    checkbox "Выбрать: Тайник" [checked=false]
+    button "Импорт из файла" [expanded=false]
+    button "Выбрать"
     link "Тайник, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000005000]
       StaticText "Тайник"
       StaticText "0 позиций · изменён только что"
       StaticText "Список пуст"
-    button "Удалить"
-    checkbox "Выбрать: Список второго ГМа" [checked=false]
-    link "Список второго ГМа, 2 позиции, изменён позавчера, 2 изменения" [url=/lists/00000000-0000-4000-8000-000000000201]
+    button "Ещё: Тайник" [expanded=false haspopup=menu]
+    link "Список второго ГМа, 2 позиции, изменён позавчера, Новое в списке..." [url=/lists/00000000-0000-4000-8000-000000000201 namelen=68 namehash=8240dd25]
       StaticText "Список второго ГМа"
       StaticText "2 позиции · изменён позавчера"
-      StaticText "2 изменения"
-    button "Удалить"
+      StaticText "Новое в списке (2)"
+    button "Ещё: Список второго ГМа" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -54,15 +45,14 @@ RootWebArea "Мои списки - Генератор лута Daggerheart" [url
     StaticText "Список «Тайник» создан"
 
 ## ru :: controls
-?Справка
 EN
 RU
 daggerheart.com
 Аккаунт: gm2@example.test
 Бросок
-Выбрать все
-Выбрать: Список второго ГМа
-Выбрать: Тайник
+Выбрать
+Ещё: Список второго ГМа
+Ещё: Тайник
 Импорт из файла
 К содержимому
 Конфиденциальность
@@ -70,11 +60,9 @@ daggerheart.com
 Новый список
 Открывать при запуске
 Поиск
-Создать
-Список второго ГМа, 2 позиции, изменён позавчера, 2 изменения
+Список второго ГМа, 2 позиции, изменён позавчера, Новое в списке... [namelen=68 namehash=8240dd25]
 Таблицы
 Тайник, 0 позиций, изменён только что
-Удалить
 Условия использования
 Установить как приложение
 
@@ -95,30 +83,21 @@ RootWebArea "My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm2]
   main ""
     heading "My lists" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
-    StaticText "Collect loot into a list and send it to your players as a single..." [namelen=70 namehash=7a94568a]
-    StaticText "NEW LIST"
-    textbox "New list" [focused=true multiline=false readonly=false required=false]
-    button "Create"
-    button "Import from file" [expanded=false]
+    button "New list" [expanded=false focused=true]
     status ""
-    heading "YOUR ACCOUNT" [level=2]
     StaticText "2 lists of 50"
-    checkbox "Select all" [checked=false]
-    StaticText "SELECT ALL"
-    generic ""
-    checkbox "Select: Тайник" [checked=false]
+    button "Import from file" [expanded=false]
+    button "Select"
     link "Тайник, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000005000]
       StaticText "Тайник"
       StaticText "0 items · edited just now"
       StaticText "The list is empty"
-    button "Delete"
-    checkbox "Select: Список второго ГМа" [checked=false]
-    link "Список второго ГМа, 2 items, edited 2 days ago, 2 changes" [url=/en/lists/00000000-0000-4000-8000-000000000201]
+    button "More: Тайник" [expanded=false haspopup=menu]
+    link "Список второго ГМа, 2 items, edited 2 days ago, New in this list..." [url=/en/lists/00000000-0000-4000-8000-000000000201 namelen=68 namehash=84b70fc4]
       StaticText "Список второго ГМа"
       StaticText "2 items · edited 2 days ago"
-      StaticText "2 changes"
-    button "Delete"
+      StaticText "New in this list (2)"
+    button "More: Список второго ГМа" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -129,26 +108,23 @@ RootWebArea "My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm2]
     StaticText "List "Тайник" created"
 
 ## en :: controls
-?Help
 Account: gm2@example.test
-Create
-Delete
 EN
 Import from file
 Install as an app
 LootDaggerheart
+More: Список второго ГМа
+More: Тайник
 New list
 Open on start
 Privacy
 RU
 Roll
 Search
-Select all
-Select: Список второго ГМа
-Select: Тайник
+Select
 Skip to content
 Tables
 Terms of use
 daggerheart.com
-Список второго ГМа, 2 items, edited 2 days ago, 2 changes
+Список второго ГМа, 2 items, edited 2 days ago, New in this list... [namelen=68 namehash=84b70fc4]
 Тайник, 0 items, edited just now

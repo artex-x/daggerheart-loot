@@ -3,8 +3,8 @@
      `git show 23c00a6^:app.js` and `.toast`/`.toast.err`/`.toast.act`/`.toast-act`/
      `toastIn` in style.css. An action is an undo button, which takes focus, a
      link opened in a new tab, or a move to another page (the new-request toast);
-     the last two never take it. An action toast pauses while
-     hovered or while the person has moved focus into it (docs/specs/FEATURES.md,
+     the last two never take it. Every toast pauses while a pointer or a finger is
+     on it or while the person has moved focus into it (docs/specs/FEATURES.md,
      the accessibility toast rule).
 
      A modal dialog makes everything outside it inert, the top layer
@@ -57,7 +57,7 @@
   });
 
   /* A toast with an undo takes focus, or a keyboard user could not reach the
-     button before its 7000ms run out; a plain notice never does. `pre`, so
+     button before its time runs out (7000 or 10000 ms); a plain notice never does. `pre`, so
      "was focus inside" is read before the button leaves the DOM. The origin
      may already be gone when this runs (a removed row leaves first, and focus
      is then on `body`), so the toast falls back to `#main`, or to the
@@ -125,9 +125,9 @@
     });
   }
 
-  /* An action toast holds its clock while hovered or while the person moved focus
+  /* Every toast holds its clock while hovered or touched or while the person moved focus
      into it (`app.holdToast`). The undo's own `.focus()` above does not count
-     (`selfFocus`), so it still runs out at 7000 ms and returns focus. */
+     (`selfFocus`), so it still runs out at its own time and returns focus. */
   let hover = $state(false);
   let focused = $state(false);
   let selfFocus = false;
@@ -141,7 +141,7 @@
 
   $effect(() => {
     const on = hover || focused;
-    if (toast?.mode === 'act') app.holdToast(on);
+    if (toast) app.holdToast(on);
   });
 </script>
 
@@ -149,6 +149,7 @@
   bind:this={el}
   popover="manual"
   class="toast"
+  class:page={!inDialog}
   class:err={toast?.mode === 'err'}
   class:act={toast?.mode === 'act'}
   role={toast ? (toast.mode === 'err' ? 'alert' : 'status') : undefined}
@@ -207,7 +208,8 @@
     /* Left at 50%, a shrink-to-fit box gets half the window: a long name then
        stacks the toast up over the controls (docs/specs/FEATURES.md, rule 16). */
     width: max-content;
-    max-width: calc(100% - 32px);
+    max-width: min(var(--measure-line), calc(100% - 32px));
+    text-wrap: balance;
     background: var(--surface);
     border: 1px solid var(--muted2);
     color: var(--txt);
@@ -219,6 +221,35 @@
     z-index: 200;
     animation: toastIn 0.2s ease both;
     overflow-wrap: anywhere;
+  }
+
+  /* The page's toast floats above the selection bar, the editor's bottom bar and the print
+     page's dock (each sets its height). */
+  .toast.page {
+    bottom: calc(26px + var(--selbar-h, 0px) + var(--ebar-h, 0px) + var(--pdock-h, 0px));
+  }
+
+  /* Up to 760 px a dialog's copy floats above the record dialog's dock or a sheet's foot,
+     which sit at the window's bottom (`--dock-h` on the dialog); a short window's dock joins
+     the scroll (`RecordModal`). From 761 px the modal is centered and the copy keeps its place. */
+  @media (max-width: 760px) and (min-height: 481px) {
+    .toast:not(.page) {
+      bottom: calc(26px + var(--dock-h, 0px));
+    }
+  }
+
+  /* A sheet's foot stays on the window's bottom at every height. */
+  @media (max-width: 760px) {
+    :global(dialog.sheet) .toast:not(.page) {
+      bottom: calc(26px + var(--dock-h, 0px));
+    }
+  }
+
+  /* Under 481 px of height the editor's bar stays in the flow (`tokens.css`). */
+  @media (max-height: 480px) {
+    .toast.page {
+      bottom: calc(26px + var(--selbar-h, 0px) + var(--pdock-h, 0px));
+    }
   }
 
   /* The alarm fill with dark ink, about 5.6:1 (DESIGN.md, "Toast"). */
@@ -252,6 +283,14 @@
 
   .toast-act:hover {
     border-color: var(--gold);
+  }
+
+  @media screen and (max-width: 600px) {
+    .toast-act {
+      display: inline-flex;
+      align-items: center;
+      min-height: var(--thumb);
+    }
   }
 
   @keyframes toastIn {

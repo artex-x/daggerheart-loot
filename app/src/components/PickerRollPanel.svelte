@@ -17,9 +17,6 @@
     app: AppState;
     /** The section, which is what the help panel is written against. */
     section: 'voa' | 'community' | 'mwt';
-    title: string;
-    /** The line under the heading. */
-    sub: string;
     /** The caption above the picker. */
     label: string;
     parts: readonly Part[];
@@ -27,7 +24,7 @@
     rowsOf: (id: string) => readonly Record_[];
   }
 
-  const { app, section, title, sub, label, parts, rowsOf }: Props = $props();
+  const { app, section, label, parts, rowsOf }: Props = $props();
 
   let chosen = $state('');
   /* The first part until somebody picks another, which is what the live app
@@ -37,7 +34,7 @@
   const rows = $derived(current ? rowsOf(current) : []);
 </script>
 
-<RollPanel {app} {section} {title} {sub} {rows} pickerValue={current}>
+<RollPanel {app} {section} {rows} pickerValue={current}>
   {#snippet picker()}
     <RollSelect
       {label}

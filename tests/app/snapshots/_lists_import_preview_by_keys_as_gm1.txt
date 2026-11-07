@@ -1,6 +1,6 @@
 # #/lists ~ import preview by keys as gm1
 # route: #/lists
-# why: keys-only-v2.json chosen: «Списков: 2, позиций: 3. Пропущено позиций: 4.», «Своих предметов, которых нет в аккаунте: 1 - ...», block 1 «2 позиции будут импортированы» with the lamp skipped as not held and the axe repeat, block 2 «1 позиция будет импортирована» with the lamp skipped as not held and its repeat, then «Импортировать (2)» and «Отмена»
+# why: keys-only-v2.json chosen: «Списков: 2, позиций: 3. Пропущено позиций: 4.», «Своих предметов, которых нет в аккаунте: 1 - ...», block 1 «2 позиции будут импортированы» and block 2 «1 позиция будет импортирована», each with a closed «Пропущено: 2», then «Импортировать (2)» and «Отмена»
 # as: gm1
 
 ## ru :: tree
@@ -20,38 +20,35 @@ RootWebArea "Мои списки - Генератор лута Daggerheart" [url
   main ""
     heading "Мои списки" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
-    StaticText "Соберите добычу в список и отправьте игрокам одной ссылкой."
-    StaticText "НОВЫЙ СПИСОК"
-    textbox "Новый список" [multiline=false readonly=false required=false]
-    button "Создать"
-    button "Импорт из файла" [expanded=true]
-    ... StaticText x40 of 44 same-shape siblings elided
+    button "Новый список" [expanded=false]
+    status ""
+    StaticText "ИМПОРТ ИЗ ФАЙЛА JSON"
     button "Выбрать файл..."
-    ... button x3 of 7 same-shape siblings elided
+    StaticText "keys-only-v2.json"
+    ... StaticText x15 of 19 same-shape siblings elided
+    DisclosureTriangle "Пропущено: 2" [expanded=false]
+    DisclosureTriangle "Пропущено: 2" [expanded=false]
+    button "Импортировать (2)"
+    button "Отмена"
     link "схеме import-v3" [url=/schema/import-v3.json]
     link "описание для ИИ-помощников" [url=/llms.txt]
-    status ""
-    heading "ВАШ АККАУНТ" [level=2]
+    StaticText "), или архив ZIP из «Скачать мои данные». Списки добавятся как н..." [namelen=96 namehash=cade2d7e]
     StaticText "3 списка из 50"
-    checkbox "Выбрать все" [checked=false]
-    StaticText "ВЫБРАТЬ ВСЕ"
-    generic ""
-    checkbox "Выбрать: Пустой список" [checked=false]
+    button "Импорт из файла" [expanded=true]
+    button "Выбрать"
     link "Пустой список, 0 позиций, изменён 1 час назад" [url=/lists/00000000-0000-4000-8000-000000000102]
       StaticText "Пустой список"
       StaticText "0 позиций · изменён 1 час назад"
       StaticText "Список пуст"
-    checkbox "Выбрать: Лавка кузнеца" [checked=false]
+    button "Ещё: Пустой список" [expanded=false haspopup=menu]
     link "Лавка кузнеца, 10 позиций, изменён 3 дня назад" [url=/lists/00000000-0000-4000-8000-000000000101]
       StaticText "Лавка кузнеца"
       StaticText "10 позиций · изменён 3 дня назад"
-    button "Удалить"
-    checkbox "Выбрать: Трофеи" [checked=false]
+    button "Ещё: Лавка кузнеца" [expanded=false haspopup=menu]
     link "Трофеи, 2 позиции, изменён в прошлом месяце" [url=/lists/00000000-0000-4000-8000-000000000103]
       StaticText "Трофеи"
       StaticText "2 позиции · изменён в прошлом месяце"
-    button "Удалить"
+    button "Ещё: Трофеи" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -60,17 +57,16 @@ RootWebArea "Мои списки - Генератор лута Daggerheart" [url
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-?Справка
 EN
 RU
 daggerheart.com
 Аккаунт: gm1@example.test
 Бросок
-Выбрать все
+Выбрать
 Выбрать файл...
-Выбрать: Лавка кузнеца
-Выбрать: Пустой список
-Выбрать: Трофеи
+Ещё: Лавка кузнеца
+Ещё: Пустой список
+Ещё: Трофеи
 Импорт из файла
 Импортировать (2)
 К содержимому
@@ -82,10 +78,8 @@ daggerheart.com
 Отмена
 Поиск
 Пустой список, 0 позиций, изменён 1 час назад
-Создать
 Таблицы
 Трофеи, 2 позиции, изменён в прошлом месяце
-Удалить
 Условия использования
 Установить как приложение
 описание для ИИ-помощников
@@ -108,38 +102,35 @@ RootWebArea "My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm1]
   main ""
     heading "My lists" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
-    StaticText "Collect loot into a list and send it to your players as a single..." [namelen=70 namehash=7a94568a]
-    StaticText "NEW LIST"
-    textbox "New list" [multiline=false readonly=false required=false]
-    button "Create"
-    button "Import from file" [expanded=true]
-    ... StaticText x40 of 44 same-shape siblings elided
+    button "New list" [expanded=false]
+    status ""
+    StaticText "IMPORT FROM A JSON FILE"
     button "Choose a file..."
-    ... button x3 of 7 same-shape siblings elided
+    StaticText "keys-only-v2.json"
+    ... StaticText x15 of 19 same-shape siblings elided
+    DisclosureTriangle "Skipped: 2" [expanded=false]
+    DisclosureTriangle "Skipped: 2" [expanded=false]
+    button "Import (2)"
+    button "Cancel"
     link "import-v3 schema" [url=/schema/import-v3.json]
     link "a description for AI assistants" [url=/llms.txt]
-    status ""
-    heading "YOUR ACCOUNT" [level=2]
+    StaticText "), or the ZIP archive from "Download my data". The lists are add..." [namelen=113 namehash=069a136e]
     StaticText "3 lists of 50"
-    checkbox "Select all" [checked=false]
-    StaticText "SELECT ALL"
-    generic ""
-    checkbox "Select: Пустой список" [checked=false]
+    button "Import from file" [expanded=true]
+    button "Select"
     link "Пустой список, 0 items, edited 1 hour ago" [url=/en/lists/00000000-0000-4000-8000-000000000102]
       StaticText "Пустой список"
       StaticText "0 items · edited 1 hour ago"
       StaticText "The list is empty"
-    checkbox "Select: Лавка кузнеца" [checked=false]
+    button "More: Пустой список" [expanded=false haspopup=menu]
     link "Лавка кузнеца, 10 items, edited 3 days ago" [url=/en/lists/00000000-0000-4000-8000-000000000101]
       StaticText "Лавка кузнеца"
       StaticText "10 items · edited 3 days ago"
-    button "Delete"
-    checkbox "Select: Трофеи" [checked=false]
+    button "More: Лавка кузнеца" [expanded=false haspopup=menu]
     link "Трофеи, 2 items, edited last month" [url=/en/lists/00000000-0000-4000-8000-000000000103]
       StaticText "Трофеи"
       StaticText "2 items · edited last month"
-    button "Delete"
+    button "More: Трофеи" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -148,27 +139,24 @@ RootWebArea "My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm1]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-?Help
 Account: gm1@example.test
 Cancel
 Choose a file...
-Create
-Delete
 EN
 Import (2)
 Import from file
 Install as an app
 LootDaggerheart
+More: Лавка кузнеца
+More: Пустой список
+More: Трофеи
 New list
 Open on start
 Privacy
 RU
 Roll
 Search
-Select all
-Select: Лавка кузнеца
-Select: Пустой список
-Select: Трофеи
+Select
 Skip to content
 Tables
 Terms of use

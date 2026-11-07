@@ -20,30 +20,21 @@ RootWebArea "Мои списки - Генератор лута Daggerheart" [url
   main ""
     heading "Мои списки" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
-    StaticText "Соберите добычу в список и отправьте игрокам одной ссылкой."
-    StaticText "НОВЫЙ СПИСОК"
-    textbox "Новый список" [multiline=false readonly=false required=false]
-    button "Создать"
-    button "Импорт из файла" [expanded=false]
-    searchbox "Найти список" [value=порт focused=true]
+    button "Новый список" [expanded=false]
     status ""
-    heading "ВАШ АККАУНТ" [level=2]
+    searchbox "Найти список" [value=порт focused=true]
     StaticText "30 списков из 50"
-    checkbox "Выбрать все" [checked=false]
-    StaticText "ВЫБРАТЬ ВСЕ"
-    generic ""
-    checkbox "Выбрать: Порт Ветров" [checked=false]
+    button "Импорт из файла" [expanded=false]
+    button "Выбрать"
     link "Порт Ветров, 1 позиция, изменён только что" [url=/lists/00000000-0000-4000-8000-000000008005]
       StaticText "Порт Ветров"
       StaticText "1 позиция · изменён только что"
-    button "Удалить"
-    checkbox "Выбрать: Лавка в порту" [checked=false]
+    button "Ещё: Порт Ветров" [expanded=false haspopup=menu]
     link "Лавка в порту, 0 позиций, изменён только что" [url=/lists/00000000-0000-4000-8000-000000008002]
       StaticText "Лавка в порту"
       StaticText "0 позиций · изменён только что"
       StaticText "Список пуст"
-    button "Удалить"
+    button "Ещё: Лавка в порту" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -52,27 +43,25 @@ RootWebArea "Мои списки - Генератор лута Daggerheart" [url
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-?Справка
 EN
 RU
 daggerheart.com
 Аккаунт: gm4@example.test
 Бросок
-Выбрать все
-Выбрать: Лавка в порту
-Выбрать: Порт Ветров
+Выбрать
+Ещё: Лавка в порту
+Ещё: Порт Ветров
 Импорт из файла
 К содержимому
 Конфиденциальность
 Лавка в порту, 0 позиций, изменён только что
 ЛутDaggerheart
+Найти список
 Новый список
 Открывать при запуске
 Поиск
 Порт Ветров, 1 позиция, изменён только что
-Создать
 Таблицы
-Удалить
 Условия использования
 Установить как приложение
 
@@ -93,30 +82,21 @@ RootWebArea "My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm4]
   main ""
     heading "My lists" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
-    StaticText "Collect loot into a list and send it to your players as a single..." [namelen=70 namehash=7a94568a]
-    StaticText "NEW LIST"
-    textbox "New list" [multiline=false readonly=false required=false]
-    button "Create"
-    button "Import from file" [expanded=false]
-    searchbox "Find a list" [value=порт focused=true]
+    button "New list" [expanded=false]
     status ""
-    heading "YOUR ACCOUNT" [level=2]
+    searchbox "Find a list" [value=порт focused=true]
     StaticText "30 lists of 50"
-    checkbox "Select all" [checked=false]
-    StaticText "SELECT ALL"
-    generic ""
-    checkbox "Select: Порт Ветров" [checked=false]
+    button "Import from file" [expanded=false]
+    button "Select"
     link "Порт Ветров, 1 item, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000008005]
       StaticText "Порт Ветров"
       StaticText "1 item · edited just now"
-    button "Delete"
-    checkbox "Select: Лавка в порту" [checked=false]
+    button "More: Порт Ветров" [expanded=false haspopup=menu]
     link "Лавка в порту, 0 items, edited just now" [url=/en/lists/00000000-0000-4000-8000-000000008002]
       StaticText "Лавка в порту"
       StaticText "0 items · edited just now"
       StaticText "The list is empty"
-    button "Delete"
+    button "More: Лавка в порту" [expanded=false haspopup=menu]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -125,23 +105,21 @@ RootWebArea "My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm4]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-?Help
 Account: gm4@example.test
-Create
-Delete
 EN
+Find a list
 Import from file
 Install as an app
 LootDaggerheart
+More: Лавка в порту
+More: Порт Ветров
 New list
 Open on start
 Privacy
 RU
 Roll
 Search
-Select all
-Select: Лавка в порту
-Select: Порт Ветров
+Select
 Skip to content
 Tables
 Terms of use

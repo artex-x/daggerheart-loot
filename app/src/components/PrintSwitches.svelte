@@ -28,7 +28,7 @@
   neutral
   options={ART}
   value={app.shownPrintBW ? 'bw' : 'color'}
-  label={t.printTitle}
+  label={t.printInk}
   onchange={(v: 'color' | 'bw') => {
     app.showPrintBW(v === 'bw');
   }}

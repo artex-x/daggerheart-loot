@@ -182,3 +182,31 @@ export function chosenLabels(rows: readonly FacetRow[], picked: FilterState): Ch
       }))
   );
 }
+
+/** Returns the picks that are in force: a picked value no row offers is dropped, and
+ *  each group keeps its row's order (docs/specs/ROUTES.md, "Filter grammar"). */
+export function inForceOf(rows: readonly FacetRow[], picked: FilterState): FilterState {
+  const out: FilterState = {};
+  for (const row of rows) {
+    const on = picked[row.group] ?? [];
+    const kept = row.values.map((v) => v.value).filter((v) => on.includes(v));
+    if (kept.length) out[row.group] = kept;
+  }
+  return out;
+}
+
+/** Returns `state` with `value` of `group` picked, or dropped when it was picked; the
+ *  group keeps its row's order. */
+export function toggledFilter(
+  rows: readonly FacetRow[],
+  state: FilterState,
+  group: string,
+  value: string
+): FilterState {
+  const order = rows.find((r) => r.group === group)?.values.map((v) => v.value) ?? [];
+  const current = state[group] ?? [];
+  const next = current.includes(value)
+    ? current.filter((v) => v !== value)
+    : order.filter((v) => current.includes(v) || v === value);
+  return { ...state, [group]: next };
+}

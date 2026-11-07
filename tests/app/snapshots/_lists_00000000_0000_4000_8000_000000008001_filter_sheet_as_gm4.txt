@@ -1,0 +1,178 @@
+# #/lists/00000000-0000-4000-8000-000000008001 ~ filter sheet as gm4
+# route: #/lists
+# why: 14 entries and «Фильтры» pressed: the sheet with its rows, no filter link, «Сбросить» and «Показать 14»
+# as: gm4
+
+## ru :: tree
+RootWebArea "Клад дракона - Генератор лута Daggerheart" [url=/lists/00000000-0000-4000-8000-000000008001?as=gm4]
+  dialog "Фильтры" [modal=true]
+    heading "Фильтры" [level=2]
+    button "Закрыть" [focused=true]
+    StaticText "ТИП"
+    button "Все" [pressed=true]
+    button "Предметы" [pressed=false]
+    button "Расходники" [pressed=false]
+    ... button x7 of 11 same-shape siblings elided
+    StaticText "РАНГ"
+    button "Все" [pressed=true]
+    ... StaticText x3 of 7 same-shape siblings elided
+    ... button x3 of 7 same-shape siblings elided
+    StaticText "ХВАТ"
+    button "Все" [pressed=true]
+    button "Двуручное" [pressed=false]
+    StaticText "УЛУЧШЕНИЯ И УНИКАЛЬНЫЕ"
+    button "Все" [pressed=true]
+    button "Есть улучшение" [pressed=false]
+    button "Сбросить" [disabled=true]
+    button "Показать 14"
+
+## ru :: controls
+1
+1 Первоклассный Спальный МешокПредмет Во время отдыха вы автомат... [namelen=87 namehash=d9eb177e]
+10 Зелье УсиленияРасходник Вы получаете бонус +1 к следующему Бр... [namelen=74 namehash=345dbf38]
+11 Зелье СосредоточенностиРасходник Вы получаете бонус +1 к след... [namelen=89 namehash=f2ae431c]
+12 ПалашОсновное оружие d8 физ · Вплотную · Одноручное · Проворн... [namelen=68 namehash=cdbebcd5]
+13 Длинный МечОсновное оружие d10+3 физ · Вплотную · Двуручное ·... [namelen=76 namehash=0b4dd188]
+14 СекираОсновное оружие d10+3 физ · Вплотную · Двуручное · Сила
+2 Пронзительная СвирельПредмет Эта свирель ручной работы имеет х... [namelen=164 namehash=cd6f8526]
+3 Заряжающий КолчанПредмет Когда вы успешно наносите удар стрело... [namelen=144 namehash=19e5c89d]
+4 Факел АлистераПредмет Вы можете зажигать этот магический факел... [namelen=192 namehash=67a9056f]
+5 Разговаривающие СферыПредмет Эта пара сфер позволяет существам... [namelen=128 namehash=c239bef7]
+6 НаручникиПредмет Эта пара наручников с замком поставляется с к... [namelen=70 namehash=1628b6df]
+7 Мистический ПлащПредмет Существо с Характеристикой Заклинателя... [namelen=146 namehash=a6b93435]
+8 Плетёная СетьПредмет Вы можете совершить Бросок Искусности, ис... [namelen=185 namehash=ef5e7127]
+9 Зелье Быстрого ШагаРасходник Вы получаете бонус +1 к следующем... [namelen=85 namehash=b17c4179]
+EN
+RU
+daggerheart.com
+Аккаунт: gm4@example.test
+Бросок
+Вплотную
+Все
+Выбрать
+Двуручное
+Добавить свой предмет
+Есть улучшение
+Ещё
+Закрыть
+Заметки
+К содержимому
+Кол-во: Длинный Меч
+Кол-во: Заряжающий Колчан
+Кол-во: Зелье Быстрого Шага
+Кол-во: Зелье Сосредоточенности
+Кол-во: Зелье Усиления
+Кол-во: Мистический Плащ
+Кол-во: Наручники
+Кол-во: Палаш
+Кол-во: Первоклассный Спальный Мешок
+Кол-во: Плетёная Сеть
+Кол-во: Пронзительная Свирель
+Кол-во: Разговаривающие Сферы
+Кол-во: Секира
+Кол-во: Факел Алистера
+Конфиденциальность
+ЛутDaggerheart
+Название списка
+Одноручное
+Оружие
+Поиск
+Поиск по названию или описанию...
+Показать 14
+Предметы
+Проворность
+Расходники
+Сбросить
+Сила
+Таблицы
+Условия использования
+Установить как приложение
+Физическое
+Фильтры
+
+## en :: tree
+RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/lists/00000000-0000-4000-8000-000000008001?as=gm4]
+  dialog "Filters" [modal=true]
+    heading "Filters" [level=2]
+    button "Close" [focused=true]
+    StaticText "TYPE"
+    button "All" [pressed=true]
+    button "Items" [pressed=false]
+    button "Consumables" [pressed=false]
+    ... button x7 of 11 same-shape siblings elided
+    StaticText "TIER"
+    button "All" [pressed=true]
+    ... StaticText x3 of 7 same-shape siblings elided
+    ... button x3 of 7 same-shape siblings elided
+    StaticText "BURDEN"
+    button "All" [pressed=true]
+    button "Two-Handed" [pressed=false]
+    StaticText "UPGRADES AND UNIQUES"
+    button "All" [pressed=true]
+    button "Upgradable" [pressed=false]
+    button "Reset" [disabled=true]
+    button "Show 14"
+
+## en :: controls
+1
+1 Premium BedrollItem During downtime, you automatically clear a... [namelen=72 namehash=728ff125]
+10 Bolster PotionConsumable You gain a +1 bonus to your next Str... [namelen=75 namehash=5a3170b0]
+11 Control PotionConsumable You gain a +1 bonus to your next Fin... [namelen=74 namehash=bd20e97d]
+12 BroadswordPrimary weapon d8 phy · Melee · One-Handed · Agilit... [namelen=65 namehash=7020221c]
+13 LongswordPrimary weapon d10+3 phy · Melee · Two-Handed · Agil... [namelen=67 namehash=bbe2e19e]
+14 BattleaxePrimary weapon d10+3 phy · Melee · Two-Handed · Stre... [namelen=68 namehash=2fb67c76]
+2 Piper WhistleItem This handcrafted whistle has a distinctive s... [namelen=152 namehash=8b03b4da]
+3 Charging QuiverItem When you succeed on an attack with an arro... [namelen=148 namehash=ff4e88f7]
+4 Alistair's TorchItem You can light this magic torch at will. T... [namelen=165 namehash=43d36318]
+5 Speaking OrbsItem This pair of orbs allows any creatures holdi... [namelen=123 namehash=0d3f0b27]
+6 ManaclesItem This pair of locking cuffs comes with a key.
+7 Arcane CloakItem A creature with a Spellcast trait wearing thi... [namelen=120 namehash=76e58e85]
+8 Woven NetItem You can make a Finesse Roll using this net to tr... [namelen=152 namehash=bb720c23]
+9 Stride PotionConsumable You gain a +1 bonus to your next Agili... [namelen=72 namehash=87a125d5]
+Account: gm4@example.test
+Add your own item
+Agility
+All
+Close
+Consumables
+EN
+Filters
+Install as an app
+Items
+List name
+LootDaggerheart
+Melee
+More
+Notes
+One-Handed
+Physical
+Privacy
+Qty: Alistair's Torch
+Qty: Arcane Cloak
+Qty: Battleaxe
+Qty: Bolster Potion
+Qty: Broadsword
+Qty: Charging Quiver
+Qty: Control Potion
+Qty: Longsword
+Qty: Manacles
+Qty: Piper Whistle
+Qty: Premium Bedroll
+Qty: Speaking Orbs
+Qty: Stride Potion
+Qty: Woven Net
+RU
+Reset
+Roll
+Search
+Search by name or description...
+Select
+Show 14
+Skip to content
+Strength
+Tables
+Terms of use
+Two-Handed
+Upgradable
+Weapons
+daggerheart.com

@@ -60,10 +60,13 @@ async function openCard(lists: SeedList[]) {
   return { ...view, cloud, page };
 }
 
-/** Opens the menu and waits for its first chip, the newest list. */
+/** A list row's name: the list's own; its count in words is the row's description. */
+const rowName = (name: string): string => name;
+
+/** Opens the menu and waits for its first row, the newest list. */
 async function openMenuOn(first: string): Promise<void> {
   await openMenu();
-  await screen.findByRole('button', { name: first });
+  await screen.findByRole('button', { name: rowName(first) });
 }
 
 /** Sends the account's buffer and answers the stored list called `name`. */
@@ -108,25 +111,60 @@ describe('the row under a full card', () => {
     });
   });
 
-  it('opens the menu newest list first, naming a single record "лежит в списках"', async () => {
-    await openCard(TWO_LISTS);
+  it('opens the menu newest list first under «Списки», each row with its count in words', async () => {
+    const { container } = await openCard(TWO_LISTS);
     await openMenuOn('Лавка в порту');
 
-    expect(screen.getByText('Лежит в списках')).toBeInTheDocument();
-    const chips = screen.getAllByRole('button', { name: /Лавка в порту|Клад дракона/ });
-    expect(chips.map((c) => c.textContent)).toEqual(['Лавка в порту', 'Клад дракона']);
+    expect(screen.getByText('Списки')).toHaveClass('lbl');
+    expect(chipNames(container)).toEqual(['Лавка в порту', 'Клад дракона']);
+    expect(
+      [...container.querySelectorAll('.pickchips .lrow .lc')].map((c) => c.textContent)
+    ).toEqual(['0 позиций', '0 позиций']);
     expect(screen.getByRole('button', { name: 'В список' })).toHaveAttribute(
       'aria-expanded',
       'true'
     );
   });
 
+  it('draws a 120-character list name whole in its row, never cut', async () => {
+    const long = 'Длинное имя списка '.repeat(7).slice(0, 119) + 'я';
+    await openCard([listOf(901, long, [])]);
+    await openMenuOn(long);
+    const row = screen.getByRole('button', { name: long });
+    expect(row.querySelector('.ln')?.textContent).toBe(long);
+  });
+
+  it('marks a list that holds the record with a check and aria-pressed, never a gold fill', async () => {
+    const holding = listOf(811, 'Клад дракона', [{ key: 'w1' }, { key: 'ci1' }], {
+      createdAgoMs: 2 * DAY,
+      editedAgoMs: 2 * DAY
+    });
+    const { container } = await openCard([holding, TWO_LISTS[1] as SeedList]);
+    await openMenuOn('Клад дракона');
+    const on = screen.getByRole('button', { name: rowName('Клад дракона') });
+    const off = screen.getByRole('button', { name: rowName('Лавка в порту') });
+    expect(on).toHaveAttribute('aria-pressed', 'true');
+    expect(on.querySelector('svg')).not.toBeNull();
+    /* `w1` is not in this dataset: the row counts the records the data still knows, as the
+       list's card on `/lists` does. */
+    expect(on).toHaveAccessibleDescription('1 позиция');
+    expect(on).not.toHaveClass('on');
+    expect(off).toHaveAttribute('aria-pressed', 'false');
+    expect(off.querySelector('svg')).toBeNull();
+    expect(container.querySelector('.dropmenu .chip')).toBeNull();
+    /* «Новый список» is a button under a separator, outside the rows. */
+    const add = screen.getByRole('button', { name: 'Новый список' });
+    expect(add).toHaveClass('lnew');
+    expect(add.previousElementSibling).toHaveClass('lsep');
+    await expectNoA11yViolations(container);
+  });
+
   it('adds on a chip press, ticks it, keeps the menu open, and toasts', async () => {
     const { cloud, page } = await openCard(TWO_LISTS);
     await openMenuOn('Лавка в порту');
 
-    await userEvent.click(screen.getByRole('button', { name: 'Клад дракона' }));
-    expect(screen.getByRole('button', { name: 'Клад дракона' })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: rowName('Клад дракона') }));
+    expect(screen.getByRole('button', { name: rowName('Клад дракона') })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'В список' })).toHaveAttribute(
       'aria-expanded',
       'true'
@@ -143,8 +181,8 @@ describe('the row under a full card', () => {
     const { cloud, page } = await openCard([inList, TWO_LISTS[1] as SeedList]);
     await openMenuOn('Лавка в порту');
 
-    await userEvent.click(screen.getByRole('button', { name: 'Клад дракона' }));
-    expect(screen.getByRole('button', { name: 'Клад дракона' })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: rowName('Клад дракона') }));
+    expect(screen.getByRole('button', { name: rowName('Клад дракона') })).toBeInTheDocument();
     expect(screen.getByText('Убрано из «Клад дракона»')).toBeInTheDocument();
     expect((await readList(cloud, page, uuid(811)))?.ids).toEqual(['w1']);
 
@@ -166,8 +204,8 @@ describe('the row under a full card', () => {
 
     const search = screen.getByRole('searchbox', { name: 'Найти список' });
     await userEvent.type(search, 'порта');
-    expect(screen.getByRole('button', { name: 'Лавка у порта' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Список 0' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: rowName('Лавка у порта') })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: rowName('Список 0') })).not.toBeInTheDocument();
 
     await userEvent.clear(search);
     await userEvent.type(search, 'zzz');
@@ -184,8 +222,8 @@ describe('the row under a full card', () => {
     const { cloud, page } = await openCard(TWO_LISTS);
     await openMenuOn('Лавка в порту');
 
-    await userEvent.click(screen.getByRole('button', { name: '+ Новый список' }));
-    const input = screen.getByPlaceholderText('Например: клад дракона');
+    await userEvent.click(screen.getByRole('button', { name: 'Новый список' }));
+    const input = screen.getByPlaceholderText('Клад дракона');
     expect(input).toHaveFocus();
 
     await userEvent.click(screen.getByRole('button', { name: 'Создать' }));
@@ -194,17 +232,31 @@ describe('the row under a full card', () => {
     await userEvent.type(input, 'Новый клад');
     await userEvent.click(screen.getByRole('button', { name: 'Создать' }));
 
-    expect(screen.queryByPlaceholderText('Например: клад дракона')).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText('Клад дракона')).not.toBeInTheDocument();
     expect((await listNamed(cloud, page, 'Новый клад')).ids).toEqual(['ci1']);
+    /* The create closes the error toast it answers, so its own toast shows at once. */
+    expect(
+      await screen.findByText('Добавлено в «Новый клад»', undefined, { timeout: 500 })
+    ).toBeInTheDocument();
+  });
+
+  it('creates the list on Enter in the new-list field', async () => {
+    const { cloud, page } = await openCard(TWO_LISTS);
+    await openMenuOn('Лавка в порту');
+    await userEvent.click(screen.getByRole('button', { name: 'Новый список' }));
+    await userEvent.type(screen.getByPlaceholderText('Клад дракона'), 'Добыча{Enter}');
+    expect(screen.queryByPlaceholderText('Клад дракона')).not.toBeInTheDocument();
+    expect(screen.getByText('Добавлено в «Добыча»')).toBeInTheDocument();
+    expect((await listNamed(cloud, page, 'Добыча')).ids).toEqual(['ci1']);
   });
 
   it('folds the new-list form on cancel', async () => {
     await openCard(TWO_LISTS);
     await openMenuOn('Лавка в порту');
-    await userEvent.click(screen.getByRole('button', { name: '+ Новый список' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Новый список' }));
     await userEvent.click(screen.getByRole('button', { name: 'Отмена' }));
-    expect(screen.queryByPlaceholderText('Например: клад дракона')).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '+ Новый список' })).toBeInTheDocument();
+    expect(screen.queryByPlaceholderText('Клад дракона')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Новый список' })).toBeInTheDocument();
   });
 
   it('opens the new-list form under a real browser event ordering', async () => {
@@ -226,13 +278,13 @@ describe('the row under a full card', () => {
     };
     document.body.addEventListener('click', onBubble);
     try {
-      await userEvent.click(screen.getByRole('button', { name: '+ Новый список' }));
-      expect(screen.getByPlaceholderText('Например: клад дракона')).toHaveFocus();
-      expect(screen.getByText('Лежит в списках')).toBeInTheDocument();
+      await userEvent.click(screen.getByRole('button', { name: 'Новый список' }));
+      expect(screen.getByPlaceholderText('Клад дракона')).toHaveFocus();
+      expect(screen.getByText('Списки')).toBeInTheDocument();
 
       await userEvent.click(screen.getByRole('button', { name: 'Отмена' }));
-      expect(screen.getByText('Лежит в списках')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: '+ Новый список' })).toBeInTheDocument();
+      expect(screen.getByText('Списки')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Новый список' })).toBeInTheDocument();
     } finally {
       document.body.removeEventListener('click', onBubble);
     }
@@ -242,10 +294,10 @@ describe('the row under a full card', () => {
   it('closes on a click outside the control', async () => {
     await openCard(TWO_LISTS);
     await openMenuOn('Лавка в порту');
-    expect(screen.getByText('Лежит в списках')).toBeInTheDocument();
+    expect(screen.getByText('Списки')).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('heading', { level: 1 }));
-    expect(screen.queryByText('Лежит в списках')).not.toBeInTheDocument();
+    expect(screen.queryByText('Списки')).not.toBeInTheDocument();
   });
 });
 
@@ -270,7 +322,7 @@ const EIGHT_LISTS: SeedList[] = manyLists(
 );
 
 const chipNames = (container: HTMLElement): string[] =>
-  [...container.querySelectorAll('.pickchips .chip')].map((c) => c.textContent);
+  [...container.querySelectorAll('.pickchips .lrow .ln')].map((c) => c.textContent);
 
 describe('many lists in the menu', () => {
   it('puts the lists holding the record first, newest first in each group', async () => {
@@ -291,8 +343,8 @@ describe('many lists in the menu', () => {
   it('keeps a pressed chip in its place until the menu opens again', async () => {
     const { container } = await openCard(EIGHT_LISTS);
     await openMenuOn('Порт Ветров');
-    await userEvent.click(screen.getByRole('button', { name: 'Кузнец' }));
-    await userEvent.click(screen.getByRole('button', { name: 'Порт Ветров' }));
+    await userEvent.click(screen.getByRole('button', { name: rowName('Кузнец') }));
+    await userEvent.click(screen.getByRole('button', { name: rowName('Порт Ветров') }));
     expect(chipNames(container)).toEqual([
       'Порт Ветров',
       'Сундук мага',
@@ -328,17 +380,17 @@ describe('many lists in the menu', () => {
     expect(chips?.contains(screen.getByRole('searchbox', { name: 'Найти список' }))).toBe(
       false
     );
-    expect(chips?.contains(screen.getByRole('button', { name: '+ Новый список' }))).toBe(false);
-    expect(chips?.contains(screen.getByRole('button', { name: 'Рынок' }))).toBe(true);
+    expect(chips?.contains(screen.getByRole('button', { name: 'Новый список' }))).toBe(false);
+    expect(chips?.contains(screen.getByRole('button', { name: rowName('Рынок') }))).toBe(true);
   });
 
   it('starts the new-list form with the query, and a create clears the query', async () => {
     const { container, cloud, page } = await openCard(EIGHT_LISTS);
     await openMenuOn('Порт Ветров');
     await userEvent.type(screen.getByRole('searchbox', { name: 'Найти список' }), 'Сундук ');
-    await userEvent.click(screen.getByRole('button', { name: '+ Новый список' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Новый список' }));
 
-    const input = screen.getByPlaceholderText('Например: клад дракона');
+    const input = screen.getByPlaceholderText('Клад дракона');
     expect(input).toHaveValue('Сундук');
     expect(input).toHaveFocus();
 
@@ -360,14 +412,14 @@ describe('accessibility', () => {
   it('has no axe violations with a chip ticked and the toast showing', async () => {
     const { container } = await openCard(TWO_LISTS);
     await openMenuOn('Лавка в порту');
-    await userEvent.click(screen.getByRole('button', { name: 'Клад дракона' }));
+    await userEvent.click(screen.getByRole('button', { name: rowName('Клад дракона') }));
     await expectNoA11yViolations(container);
   });
 
   it('has no axe violations with the new-list form open', async () => {
     const { container } = await openCard(TWO_LISTS);
     await openMenuOn('Лавка в порту');
-    await userEvent.click(screen.getByRole('button', { name: '+ Новый список' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Новый список' }));
     await expectNoA11yViolations(container);
   });
 
@@ -409,7 +461,7 @@ describe("a remove that waits for the list's entries", () => {
     const { cloud, page, container } = await openCard([HOLDING, TWO_LISTS[1] as SeedList]);
     const held = holdRows(cloud);
     await openMenuOn('Лавка в порту');
-    const chip = screen.getByRole('button', { name: 'Клад дракона' });
+    const chip = screen.getByRole('button', { name: rowName('Клад дракона') });
     await userEvent.click(chip);
     expect(chip).toHaveAttribute('aria-busy', 'true');
     expect(chip).toHaveAttribute('aria-disabled', 'true');
@@ -435,7 +487,7 @@ describe("a remove that waits for the list's entries", () => {
     let fail = true;
     cloud.lists.rows = (ids) => (fail ? Promise.resolve({ ok: false }) : real(ids));
     await openMenuOn('Лавка в порту');
-    const chip = screen.getByRole('button', { name: 'Клад дракона' });
+    const chip = screen.getByRole('button', { name: rowName('Клад дракона') });
     await userEvent.click(chip);
     expect(
       await screen.findByText('Не получилось загрузить списки аккаунта.')
@@ -450,9 +502,9 @@ describe("a remove that waits for the list's entries", () => {
     const { cloud, page } = await openCard([HOLDING, TWO_LISTS[1] as SeedList]);
     const held = holdRows(cloud);
     await openMenuOn('Лавка в порту');
-    await userEvent.click(screen.getByRole('button', { name: 'Клад дракона' }));
+    await userEvent.click(screen.getByRole('button', { name: rowName('Клад дракона') }));
     await userEvent.keyboard('{Escape}');
-    expect(screen.queryByRole('button', { name: 'Клад дракона' })).toBeNull();
+    expect(screen.queryByRole('button', { name: rowName('Клад дракона') })).toBeNull();
     held.release();
     expect(await screen.findByText('Убрано из «Клад дракона»')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Вернуть' })).toBeInTheDocument();
@@ -471,7 +523,7 @@ describe("a remove that waits for the list's entries", () => {
     const [row] = screen.getAllByRole('checkbox').filter((cb) => !cb.closest('.selall'));
     await userEvent.click(row as HTMLElement);
     await openMenuOn('Клад дракона');
-    await userEvent.click(screen.getByRole('button', { name: 'Клад дракона' }));
+    await userEvent.click(screen.getByRole('button', { name: rowName('Клад дракона') }));
     await userEvent.click(row as HTMLElement);
     held.release();
     expect(await screen.findByText('Убрано из «Клад дракона»')).toBeInTheDocument();
@@ -503,18 +555,18 @@ describe('with sign-in configured', () => {
     const { container } = withCloud(fakeCloud(SEED));
     await screen.findByRole('link', { name: 'Войти' });
     await openMenu();
-    await userEvent.click(screen.getByRole('button', { name: '+ Новый список' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Новый список' }));
     expect(screen.getByText('Войдите, чтобы создать список.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Войти' })).toHaveFocus();
-    expect(screen.queryByPlaceholderText('Например: клад дракона')).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText('Клад дракона')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Войти через/ })).not.toBeInTheDocument();
     await expectNoA11yViolations(container);
     expect(chipNames(container)).toEqual([]);
     await userEvent.click(screen.getByRole('button', { name: 'Отмена' }));
-    expect(screen.getByRole('button', { name: '+ Новый список' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Новый список' })).toBeInTheDocument();
   });
 
-  it('opens on the create slot alone signed out: no label and no empty line, in both languages', async () => {
+  it('opens on the heading and the create slot alone signed out, no empty line, in both languages', async () => {
     for (const lang of ['ru', 'en'] as const) {
       const storage = memoryStorage({ 'dhloot.lang.v1': lang });
       const router = memoryRouter('#/i/ci1');
@@ -529,13 +581,14 @@ describe('with sign-in configured', () => {
         })
       );
       const menu = container.querySelector('.dropmenu') as HTMLElement;
-      expect(menu.querySelector('.lbl')).toBeNull();
+      expect(menu.querySelector('.lbl')).toHaveTextContent(lang === 'ru' ? 'Списки' : 'Lists');
       expect(menu.querySelector('.picker-none')).toBeNull();
+      expect(menu.querySelector('.lsep')).toBeNull();
       expect(
         within(menu)
           .getAllByRole('button')
           .map((b) => b.textContent)
-      ).toEqual([lang === 'ru' ? '+ Новый список' : '+ New list']);
+      ).toEqual([lang === 'ru' ? 'Новый список' : 'New list']);
       await expectNoA11yViolations(container);
       cleanup();
     }
@@ -546,23 +599,23 @@ describe('with sign-in configured', () => {
     cloud.auth.session = () => new Promise(() => undefined);
     const { container } = withCloud(cloud);
     await openMenu();
-    expect(screen.getByText('Лежит в списках')).toBeInTheDocument();
+    expect(screen.getByText('Списки')).toBeInTheDocument();
     expect(chipNames(container)).toEqual([]);
-    expect(screen.queryByRole('button', { name: '+ Новый список' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Новый список' })).not.toBeInTheDocument();
   });
 
   it("returns to the record's page after sign-in, the menu open, the lists holding it first", async () => {
     const { container, router } = withCloud(fakeCloud(SEED));
     await screen.findByRole('link', { name: 'Войти' });
     await openMenu();
-    await userEvent.click(screen.getByRole('button', { name: '+ Новый список' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Новый список' }));
     await signInThroughAccount();
     await waitFor(() => {
       expect(router.hash()).toBe('#/i/ci1');
     });
-    await screen.findByRole('button', { name: 'Лавка кузнеца' });
+    await screen.findByRole('button', { name: rowName('Лавка кузнеца') });
     expect(chipNames(container)).toEqual(['Лавка кузнеца', 'Трофеи', 'Пустой список']);
-    expect(screen.getByRole('button', { name: '+ Новый список' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Новый список' })).toBeInTheDocument();
   });
 
   it("returns to the table with the bar's rows ticked and its menu open", async () => {
@@ -572,12 +625,12 @@ describe('with sign-in configured', () => {
     const [row] = screen.getAllByRole('checkbox').filter((cb) => !cb.closest('.selall'));
     await userEvent.click(row as HTMLElement);
     await openMenu();
-    await userEvent.click(screen.getByRole('button', { name: '+ Новый список' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Новый список' }));
     await signInThroughAccount();
     await waitFor(() => {
       expect(router.hash()).toBe('#/tables');
     });
-    expect(await screen.findByRole('button', { name: 'Трофеи' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: rowName('Трофеи') })).toBeInTheDocument();
     const ticked = screen.getAllByRole('checkbox').filter((cb) => !cb.closest('.selall'));
     expect(ticked[0]).toBeChecked();
   });
@@ -588,14 +641,14 @@ describe('with sign-in configured', () => {
     await userEvent.click(screen.getByRole('button', { name: /Спальный мешок/ }));
     const dialog = screen.getByRole('dialog');
     await userEvent.click(within(dialog).getByRole('button', { name: 'В список' }));
-    await userEvent.click(within(dialog).getByRole('button', { name: '+ Новый список' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Новый список' }));
     await userEvent.click(within(dialog).getByRole('button', { name: 'Войти' }));
     expect(router.hash()).toBe('#/account');
     await userEvent.click(await screen.findByRole('button', { name: 'Войти через Google' }));
     await waitFor(() => {
       expect(router.hash()).toBe('#/i/ci1');
     });
-    expect(await screen.findByRole('button', { name: 'Трофеи' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: rowName('Трофеи') })).toBeInTheDocument();
   });
 
   it('makes an account list signed in', async () => {
@@ -604,8 +657,8 @@ describe('with sign-in configured', () => {
     await signedInAs('gm2');
     await openMenu();
     expect(chipNames(container)).toEqual(['Список второго ГМа']);
-    await userEvent.click(screen.getByRole('button', { name: '+ Новый список' }));
-    await userEvent.type(screen.getByPlaceholderText('Например: клад дракона'), 'Тайник');
+    await userEvent.click(screen.getByRole('button', { name: 'Новый список' }));
+    await userEvent.type(screen.getByPlaceholderText('Клад дракона'), 'Тайник');
     await userEvent.click(screen.getByRole('button', { name: 'Создать' }));
     expect(screen.getByText('Добавлено в «Тайник»')).toBeInTheDocument();
     page.fireHidden();
@@ -631,7 +684,7 @@ describe('with sign-in configured', () => {
       await screen.findByRole('heading', { level: 1, name: 'Своя вещь' })
     ).toBeInTheDocument();
     await openMenu();
-    await userEvent.click(screen.getByRole('button', { name: 'Список второго ГМа' }));
+    await userEvent.click(screen.getByRole('button', { name: rowName('Список второго ГМа') }));
     expect(screen.getByText('Добавлено в «Список второго ГМа»')).toBeInTheDocument();
     page.fireHidden();
     await waitFor(async () => {
@@ -666,8 +719,8 @@ describe('with sign-in configured', () => {
       );
       const dialog = screen.getByRole('dialog');
       await userEvent.click(within(dialog).getByRole('button', { name: 'В список' }));
-      await userEvent.click(within(dialog).getByRole('button', { name: '+ Новый список' }));
-      await userEvent.type(within(dialog).getByPlaceholderText('Например: клад дракона'), 'Т');
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Новый список' }));
+      await userEvent.type(within(dialog).getByPlaceholderText('Клад дракона'), 'Т');
       await userEvent.click(within(dialog).getByRole('button', { name: 'Создать' }));
       expect(within(dialog).getByText(text)).toBeInTheDocument();
       page.fireHidden();
@@ -694,12 +747,14 @@ describe('with sign-in configured', () => {
     const { page } = withCloud(cloud);
     await signedInAs('gm2');
     await openMenu();
-    await userEvent.click(screen.getByRole('button', { name: 'Список второго ГМа' }));
-    await userEvent.click(screen.getByRole('button', { name: 'Список второго ГМа' }));
+    await userEvent.click(screen.getByRole('button', { name: rowName('Список второго ГМа') }));
+    await userEvent.click(screen.getByRole('button', { name: rowName('Список второго ГМа') }));
     expect(screen.getByText('Убрано из «Список второго ГМа»')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
     await openMenu();
-    expect(screen.getByRole('button', { name: 'Список второго ГМа' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: rowName('Список второго ГМа') })
+    ).toBeInTheDocument();
     page.fireHidden();
     await waitFor(async () => {
       const read = await cloud.lists.list();
@@ -717,8 +772,8 @@ describe('with sign-in configured', () => {
     const { container } = withCloud(cloud);
     await signedInAs('gm2');
     await openMenu();
-    await userEvent.click(screen.getByRole('button', { name: '+ Новый список' }));
-    const input = screen.getByPlaceholderText('Например: клад дракона');
+    await userEvent.click(screen.getByRole('button', { name: 'Новый список' }));
+    const input = screen.getByPlaceholderText('Клад дракона');
     await userEvent.type(input, 'Второй');
     await userEvent.click(screen.getByRole('button', { name: 'Создать' }));
     expect(

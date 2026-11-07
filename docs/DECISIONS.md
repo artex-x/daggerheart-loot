@@ -14,6 +14,13 @@ deleted.
 
 ## Index
 
+- 2026-11-06 - [One scrim, one shadow and a tool row that follows its search box](decisions/2026-11-06-one-scrim-one-shadow-and-a-tool-row-that-follows-its-search-box.md)
+- 2026-11-06 - [The print card prints in the UI face at 7.1 pt, fitted after it loads](decisions/2026-11-06-the-print-card-prints-in-the-ui-face-fitted-after-it-loads.md)
+- 2026-11-05 - [A row's text takes its row's free width; rows stay one column](decisions/2026-11-05-a-row-text-takes-its-row-s-free-width-rows-stay-one-column.md)
+- 2026-11-05 - [app/states runs as four interleaved rows; the browser job keeps 30 minutes](decisions/2026-11-05-app-states-runs-as-four-interleaved-rows.md)
+- 2026-11-05 - [List rows fold on a phone and the list filter stays in memory](decisions/2026-11-05-list-rows-fold-on-a-phone-and-the-list-filter-stays-in-memory.md)
+- 2026-11-05 - [The add-to-list menu stays a popover](decisions/2026-11-05-the-add-to-list-menu-stays-a-popover.md)
+- 2026-11-05 - [The unconfigured bundle ceiling rises to 300 kB](decisions/2026-11-05-the-unconfigured-bundle-ceiling-rises-to-300-kb.md)
 - 2026-11-04 - [A long table draws its first 60 rows in the first task and the rest after it](decisions/2026-11-04-a-long-table-draws-its-rows-over-several-tasks.md)
 - 2026-11-04 - [A roll result is the tall face only when the roll fits one line](decisions/2026-11-04-a-roll-result-is-the-tall-face-only-when-the-roll-fits-one-line.md)
 - 2026-11-04 - [Relations and the Core tag draw on the full record card only](decisions/2026-11-04-relations-and-the-core-tag-draw-on-the-full-card-only.md)

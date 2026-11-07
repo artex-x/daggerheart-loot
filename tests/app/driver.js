@@ -609,6 +609,14 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
       await settle(page);
     },
 
+    /** Unfolds the compact list row `nth` (from 0), up to 760 px. */
+    async unfold(nth = 0) {
+      await page.evaluate((i) => {
+        document.querySelectorAll('button.cbody')[i]?.click();
+      }, nth);
+      await settle(page);
+    },
+
     /** Opens the add-to-list menu of the first roll result. */
     async openCardList() {
       await page.click('.resacts .seldrop > .btn');
@@ -1208,8 +1216,13 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
      *  printer would, `undefined` to switch back before the next shot. Runs
      *  before the shots on the same page: leaving print media on would
      *  photograph the wrong medium. */
-    media(type) {
-      return page.emulateMediaType(type);
+    async media(type) {
+      await page.emulateMediaType(type);
+      if (type !== undefined) return;
+      /* Switching back drops the emulated features, and the header's 0.2s slide then runs
+         after a print and moves the page under a read. Setting the features also clears
+         the media type, so a print keeps them off. */
+      await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
     },
 
     /**

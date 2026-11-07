@@ -107,7 +107,7 @@
   .row :global(input) {
     flex: 1 1 200px;
     width: auto;
-    height: 38px;
+    height: max(38px, var(--thumb));
   }
 
   .err {

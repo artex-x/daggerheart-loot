@@ -93,12 +93,20 @@ describe('the share panel', () => {
     ).toEqual([ru.shareCopy, ru.shareDelete]);
     const gm = await row(ru.shareLinkGm);
     expect(within(gm).getByRole('link', { name: '/s/gm-token-1' })).toBeInTheDocument();
-    expect(screen.getByText(ru.shareHint)).toBeInTheDocument();
+    /* Two labeled rows, each with its own delete, and no gold primary in the panel. */
+    expect(players).toHaveTextContent(ru.shareNoGm);
+    expect(gm).toHaveTextContent(ru.shareWithGm);
+    expect(within(gm).getByRole('button', { name: ru.shareDelete })).toBeInTheDocument();
+    const box = players.closest('.panel')!;
+    expect(
+      within(box as HTMLElement).getByRole('heading', { name: ru.share, level: 2 })
+    ).toBeInTheDocument();
+    expect(box.querySelector('.btn.primary')).toBeNull();
     expect(create).not.toHaveBeenCalled();
     await expectNoA11yViolations(container);
     await userEvent.click(button);
     expect(button).toHaveAttribute('aria-expanded', 'false');
-    expect(screen.queryByText(ru.shareHint)).not.toBeInTheDocument();
+    expect(screen.queryByText(ru.shareNoGm)).not.toBeInTheDocument();
   });
 
   it('makes both links on open for a list that has none, players first', async () => {
@@ -162,11 +170,6 @@ describe('the share panel', () => {
   it('copies the full address and says which link, naming the GM notes and the GM-only items', async () => {
     const { clipboard, container } = openShare(SHOP);
     await pressShare();
-    expect(
-      screen.getByText(
-        '«Удалить ссылку» закрывает доступ: по удалённой ссылке список больше не откроется. «Создать ссылку» даёт новую. Ссылка для игроков скрывает заметки и позиции «Только для мастера», ссылка для мастера показывает их - давайте её только мастерам.'
-      )
-    ).toBeInTheDocument();
     await userEvent.click(
       within(await row(ru.shareLinkPlayers)).getByRole('button', { name: ru.shareCopy })
     );
@@ -192,11 +195,7 @@ describe('the share panel', () => {
     await expectNoA11yViolations(container);
 
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
-    expect(
-      await screen.findByText(
-        `"Delete link" ends access: a deleted link no longer opens the list. "Create link" makes a new one. The players' link hides the "GM only" notes and items; the GM's link shows them - give it to GMs only.`
-      )
-    ).toBeInTheDocument();
+    expect(await screen.findByText('Without GM notes and hidden entries')).toBeInTheDocument();
     await userEvent.click(
       within(await row("Players' link")).getByRole('button', { name: 'Copy' })
     );
@@ -345,6 +344,7 @@ describe('a list made a moment ago', () => {
     });
     await screen.findByRole('button', { name: 'Аккаунт: gm1@example.test' });
     await screen.findByText('Лавка кузнеца');
+    await userEvent.click(screen.getByRole('button', { name: ru.newList }));
     await userEvent.type(screen.getByPlaceholderText(ru.listNamePh), 'Лавка');
     await userEvent.click(screen.getByRole('button', { name: ru.create }));
     router.navigate('#/lists/' + uuid(5000));

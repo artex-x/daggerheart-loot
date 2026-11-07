@@ -1,5 +1,6 @@
 # 2026-09-23 - Print card small text keeps the ribbon and gets one paper floor in every view
 
+- Amended by "The print card prints in the UI face at 7.1 pt, fitted after it loads" (2026-11-06): the tier word at 4.5 pt, the compact rules text floor 3.7cqw.
 - Task: `61`, human decision (find it with `git log --grep="Task: 61"`).
 - Decision: the ribbon stays; every view gets a `pt` floor (4.5pt labels,
   5pt values and numbers), black ink, no clip on a value, vector halos,

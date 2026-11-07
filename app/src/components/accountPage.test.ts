@@ -41,7 +41,7 @@ describe('signed out', () => {
     expect(await screen.findByRole('heading', { name: 'Войти', level: 2 })).toBeInTheDocument();
     expect(
       screen.getByText(
-        'Войдите, чтобы ваши данные были доступны на всех устройствах. Всё остальное работает и без входа.'
+        'Войдите, чтобы данные были на всех устройствах. Остальное работает без входа.'
       )
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Войти через Google' })).toBeInTheDocument();
@@ -451,7 +451,8 @@ describe('signed in as gm2', () => {
     ).toBeInTheDocument();
     expect(screen.getByLabelText('Section on start')).toBeInTheDocument();
     expect(screen.getByRole('group', { name: 'Default table view' })).toBeInTheDocument();
-    expect(screen.getByRole('group', { name: 'Default print' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Print color' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Card size' })).toBeInTheDocument();
     const notify = screen.getByLabelText<HTMLSelectElement>(
       "When I take from someone else's list"
     );
@@ -560,14 +561,16 @@ describe('the Display section', () => {
       expect(pressed(d, 'Вид таблиц по умолчанию')).toBe('Сетка');
     });
     expect(pressed(d, 'Язык')).toBe('RU');
-    expect(pressed(d, 'Печать по умолчанию')).toBe('Чёрно-белая');
-    expect(pressed(d, 'Размер карты')).toBe('Компактная');
-    for (const g of [
-      'Язык',
-      'Вид таблиц по умолчанию',
-      'Печать по умолчанию',
-      'Размер карты'
-    ]) {
+    /* Two named rows, the group names of the `/p/` toolbar. */
+    expect(pressed(d, 'Цвет печати')).toBe('Ч/б');
+    expect(pressed(d, 'Размер карты')).toBe('44×63');
+    const ink = d.getByRole('group', { name: 'Цвет печати' }).closest('.set');
+    const size = d.getByRole('group', { name: 'Размер карты' }).closest('.set');
+    expect(ink).not.toBe(size);
+    expect(ink?.querySelector('.setname')).toHaveTextContent('Цвет печати');
+    expect(size?.querySelector('.setname')).toHaveTextContent('Размер карты');
+    await expectNoA11yViolations(container);
+    for (const g of ['Язык', 'Вид таблиц по умолчанию', 'Цвет печати', 'Размер карты']) {
       expect(d.getByRole('group', { name: g })).toHaveClass('neutral');
     }
     const notify = d.getByLabelText<HTMLSelectElement>('Когда беру из чужого списка');
@@ -589,8 +592,8 @@ describe('the Display section', () => {
     await userEvent.selectOptions(select, 'Поиск');
     expect(storage.get(HOME_KEY)).toBe('#/search');
     await userEvent.click(d.getByRole('button', { name: 'Список' }));
-    await userEvent.click(d.getByRole('button', { name: 'Цветная' }));
-    await userEvent.click(d.getByRole('button', { name: 'Обычная' }));
+    await userEvent.click(d.getByRole('button', { name: 'Цвет' }));
+    await userEvent.click(d.getByRole('button', { name: '63×88' }));
     expect(storage.get(PREFS_KEY)).toBe('{"view":"list","printBw":false,"printCompact":false}');
     await userEvent.selectOptions(notify, 'always');
     expect(notify.value).toBe('always');
@@ -632,18 +635,21 @@ describe('the Display section', () => {
   });
 
   it("drops a page's print pick when the default is set here", async () => {
+    /* A switch differs from its default for this visit. */
+    const changed = (a: AppState): boolean =>
+      a.shownPrintBW !== a.printBW || a.shownPrintCompact !== a.printCompact;
     const app = new AppState(
       fakeEnv({ cloud: as('gm2'), router: memoryRouter('#/account'), storage: memoryStorage() })
     );
     app.start();
     app.showPrintBW(true);
-    expect(app.printChanged).toBe(true);
+    expect(changed(app)).toBe(true);
     render(AccountPage, { app });
     const d = await section();
-    await userEvent.click(d.getByRole('button', { name: 'Чёрно-белая' }));
-    await userEvent.click(d.getByRole('button', { name: 'Цветная' }));
+    await userEvent.click(d.getByRole('button', { name: 'Ч/б' }));
+    await userEvent.click(d.getByRole('button', { name: 'Цвет' }));
     expect(app.shownPrintBW).toBe(false);
-    expect(app.printChanged).toBe(false);
+    expect(changed(app)).toBe(false);
     app.stop();
   });
 
