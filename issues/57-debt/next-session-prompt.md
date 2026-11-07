@@ -20,12 +20,18 @@ Shipped to production (each `main` run green through `deploy` and `migrate-prod`
 
 Open, in this order:
 
-0. **Quick data fix (owner finding 2026-11-07)**: `ph76` bolds only half of its cost: EN "**Mark a Hit Point** and a Stress",
-   RU «**Отметьте Рану** и Стресс». Every other cost bolds the whole phrase. Bold the whole cost in both languages:
-   "**Mark a Hit Point and a Stress**" / «**Отметьте Рану и Стресс**». Use the data-edit approach (one script keyed by
-   id, assertions that only `ende` and `rud` of `ph76` change, `data.js` is one line), then `node tools/desc-style.mjs`,
-   `node tools/build.js`, re-seed any golden that prints `ph76`'s text (`git grep -l "Hit Point" tests/app/snapshots`),
-   `check:fast` and both lints. A scan of all 1593 records found no other split cost.
+0. **`57-debt` step D, catalog data fixes (owner findings 2026-11-07; first, small, data only)**, planned in
+   `issues/57-debt/plan.md` "Step D" (run it in the `57-debt` worktree, after merging `main`):
+   - D1 `ph76` bolds half of its cost: EN "**Mark a Hit Point** and a Stress", RU «**Отметьте Рану** и Стресс». Bold the whole
+     cost in both languages ("**Mark a Hit Point and a Stress**" / «**Отметьте Рану и Стресс**»). A scan of all 1593
+     records found no other split cost.
+   - D2 `lr2` (Alewife Almanac) summons the Witch's Skillet (`lr3`) and links nothing: add `craft: ["lr3"]` to `lr2`, like the
+     potion recipes (`ci18`, `ci19`, `ci24`, `ci51`); the `craft` suite pin goes from 33 chains to 34; no rule card.
+   - D3 owner notes on the `lr` trim (`lr1`, `lr25`; restore or keep); D4 stale "seven supplements" `why` texts.
+   Method: one script keyed by id with assertions (only the named fields of the named records change; `data.js` is one
+   line), then `node tools/desc-style.mjs`, `node tools/build.js`, `node tests/run-all.js dataint,derived,contracts,craft`,
+   the golden re-seed of the states that print these records (`git grep -l` over `tests/app/snapshots`), `check:fast` and both
+   lints. Then the order of the debt plan is: D, 1, V (VW1), 2, 3 (4 and 5 ride on them).
 1. **`readme-screens` B1** (branch `claude/readme-screens`, worktree `.claude/worktrees/haiku-workflow-integration-cf5a13`,
    base `62070925`, two docs commits, not pushed). The plan is implement-ready (`issues/readme-screens/plan.md`, owner
    accepted Q1-Q4 on 2026-11-07). One command makes 8 README screenshots and both READMEs show them. Run it as one

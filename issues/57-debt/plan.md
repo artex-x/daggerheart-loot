@@ -19,8 +19,31 @@ This file is the plan for task `57-debt`, the task that follows task 57. It list
 | 4 | Code cleanup | folded into steps 2 and 3 where files overlap; otherwise an issue list | none |
 | 5 | Impeccable `polish` and `harden`, detector re-run | after step 3, on the pages TD, N and P touched | none |
 | V | One control for the view or mode on `/roll`, `/tables`, `/homebrew`: batch VW1, after step 1 and before step 2 (`plan-views.md`) | one batch | reviewer optional (no trigger) |
+| D | Catalog data fixes from the owner's findings of 2026-11-07 (section "Step D" below) | one small batch, data only; first, before step 1 | none (no trigger); a second pair of eyes is the owner's production look |
 
-Recommended order: 1, 2, 3 (4 and 5 ride on them). Step 1 first because it shortens every later CI wait.
+Recommended order: D, 1, V, 2, 3 (4 and 5 ride on them). Step D first because it is small and the owner saw the defects on production. Step 1 next because it shortens every later CI wait.
+
+## Step D - Catalog data fixes (owner findings, 2026-11-07)
+
+`data.js` is one line: one script keyed by id edits it, with assertions that only the named fields of the named records change; then
+`node tools/desc-style.mjs`, `node tools/build.js`, `node tests/run-all.js dataint,derived,contracts,craft`, the golden re-seed of the states that
+print these records (`git grep -l` over `tests/app/snapshots`), `check:fast` and both lints (`npm run lint:typed`, `npm run lint:untyped`).
+
+- D1. `ph76` bolds half of its cost. EN "**Mark a Hit Point** and a Stress", RU «**Отметьте Рану** и Стресс». Bold the whole cost in both
+  languages: "**Mark a Hit Point and a Stress**" / «**Отметьте Рану и Стресс**». A scan of all 1593 records found no other split cost. The printed
+  book may bold only the first half; bold is markup the PDF text does not carry, and the catalog convention (the whole cost bold) wins.
+- D2. `lr2` (Alewife Almanac) names the Witch's Skillet (`lr3`) in plain text and links nothing. The Almanac works like the potion recipes
+  (`ci18` to `cc8`, `ci19` to `cc7`, `ci24` to `cc16`, `ci51` to `cc35`), which already use `craft` and draw «Улучшается до» / "Upgrades to". Add
+  `craft: ["lr3"]` to `lr2` (owner, 2026-11-07, recipe-like). `lr3` then draws «Получается из» / "Made from". The `craft` suite pins the chain
+  count at 33 (`tests/craft.js`): it becomes 34, with the reason in the one-line comment. No rule card: `lr3` holds Double Duty. The label stretch
+  is the one every recipe has; a «Вызывает» label would be a new relation across the card, row, stub and contracts (not planned).
+- D3. The `lr` trim notes for the owner (decision file `2026-11-07-the-last-round-table-records-keep-rule-text-and-lose-lore`): `lr1` lost "cannot
+  move on its own" and "stays animated outside the Tower"; `lr25` kept the Doppelcrock sentence but lost who she is. Owner decides whether to restore
+  either; the removed text is `git show 1af46a61:data.js`. The trim rule for another source (Vault of Ages averages 319 characters, `dv` 228) is a
+  separate owner decision.
+- D4. Stale `why` texts "seven supplements" at `tests/app/inventory.js` (two places; the second sits in a golden header: a re-seed).
+- Acceptance: each record's changed fields are the only diff (the script's assertions); `dataint` still counts 1593 records; the changed golden set
+  is the list the `git grep` found, each diff read; `craft` passes with 34 chains; CI green.
 
 ## Step 1 - Tooling and CI
 
