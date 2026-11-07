@@ -59,7 +59,7 @@
     if (!open) return;
     document
       .querySelector<HTMLElement>('#supplements-menu [aria-current="page"]')
-      ?.scrollIntoView?.({ block: 'nearest' });
+      ?.scrollIntoView({ block: 'nearest' });
   });
 
   function close(): void {

@@ -2,7 +2,7 @@
  * (docs/specs/FEATURES.md, "Chrome"). */
 import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import { SECTION_LABEL, dict } from '../lib/dict.js';
 import { sectionHash } from '../lib/hash.js';
@@ -14,6 +14,9 @@ import { expectNoA11yViolations } from '../test/a11y.js';
 import ModeRow from './ModeRow.svelte';
 
 afterEach(cleanup);
+
+/* jsdom does not implement scrollIntoView: the supplements menu calls it once open. */
+Element.prototype.scrollIntoView = vi.fn();
 
 const ROLL: readonly Section[] = ['roll/std', 'roll/alt', ...SUPPLEMENTS];
 
