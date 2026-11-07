@@ -1,6 +1,6 @@
 # #/roll/vh ~ help
 # route: #/roll/escape_the_veiled_halls
-# why: the help panel, unfolded: the four room tables, the d3 room, the two potion upgrades
+# why: the help panel, unfolded: the 15 entries, the two potion upgrades
 
 ## ru :: tree
 RootWebArea "Escape the Veiled Halls - Генератор лута Daggerheart" [url=/roll/escape_the_veiled_halls]
@@ -24,16 +24,11 @@ RootWebArea "Escape the Veiled Halls - Генератор лута Daggerheart" 
       button "Escape the Veiled Halls" [expanded=false haspopup=menu]
     button "Открывать при запуске" [pressed=false]
     button "Об этой книге" [expanded=true]
-    StaticText "В разделе четыре комнаты приключения, у каждой своя таблица добы..." [namelen=316 namehash=7e58a843]
+    StaticText "В разделе 15 позиций приключения - 7 предметов и 8 расходников, ..." [namelen=157 namehash=67a30fb4]
     StaticText "Зелье Воспоминаний улучшается до Большого Зелья Воспоминаний, а ..." [namelen=118 namehash=5deedc1e]
     ... StaticText x7 of 11 same-shape siblings elided
     link "Escape the Veiled Halls" [url=https://heartofdaggers.com/products/escape-the-veiled-halls/]
-    combobox "Комната" [value=Подвал expanded=false haspopup=menu]
-      option "Подвал" [selected=true]
-      option "Гардеробная" [selected=false]
-      option "Лаборатория" [selected=false]
-      option "Библиотека" [selected=false]
-    button "Бросить d4"
+    button "Бросить 1-15"
     button "На единицу меньше" [disabled=true]
     textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
     button "На единицу больше"
@@ -61,13 +56,12 @@ Escape the Veiled Halls
 RU
 daggerheart.com
 Альтернативные таблицы
-Бросить d4
+Бросить 1-15
 Бросок
 В список
 Войти
 Ещё
 К содержимому
-Комната
 Конфиденциальность
 ЛутDaggerheart
 На единицу больше
@@ -105,16 +99,11 @@ RootWebArea "Escape the Veiled Halls - Daggerheart Loot Generator" [url=/en/roll
       button "Escape the Veiled Halls" [expanded=false haspopup=menu]
     button "Open on start" [pressed=false]
     button "About this book" [expanded=true]
-    StaticText "This section holds the four rooms of the adventure, each with it..." [namelen=323 namehash=20bf377d]
+    StaticText "This section holds the adventure's 15 entries - 7 items and 8 co..." [namelen=165 namehash=20bce823]
     StaticText "The Remembrance Potion upgrades to the Major Remembrance Potion,..." [namelen=124 namehash=7c403382]
     ... StaticText x7 of 11 same-shape siblings elided
     link "Escape the Veiled Halls" [url=https://heartofdaggers.com/products/escape-the-veiled-halls/]
-    combobox "Room" [value=The Basement expanded=false haspopup=menu]
-      option "The Basement" [selected=true]
-      option "The Dressing Room" [selected=false]
-      option "The Laboratory" [selected=false]
-      option "The Library" [selected=false]
-    button "Roll d4"
+    button "Roll 1-15"
     button "One lower" [disabled=true]
     textbox "Roll result" [value=1 multiline=false readonly=false required=false]
     button "One higher"
@@ -152,9 +141,8 @@ Privacy
 RU
 Resilience Charm
 Roll
-Roll d4
+Roll 1-15
 Roll result
-Room
 Search
 Share
 Sign in

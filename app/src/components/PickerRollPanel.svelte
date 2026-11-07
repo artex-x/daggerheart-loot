@@ -1,13 +1,12 @@
 <script lang="ts">
   /* A roll inside a chosen part of a book: pick the part, then roll inside it.
 
-     Four sections share this shape. Vault of Ages has no roll table of its
+     Three sections share this shape. Vault of Ages has no roll table of its
      own, so its six divisions are the choice - a tier 1 reward and an artifact
      are not rewards of the same weight, and one die over both would mix them.
      Community items roll a d10 inside one community, whose records run from
      the plainest to the strongest. Many Worlds Tavern rolls inside one realm's
-     deck, Escape the Veiled Halls inside one room's loot table. The parts and their
-     rows come from the caller; see lib/sections.ts. */
+     deck. The parts and their rows come from the caller; see lib/sections.ts. */
   import RollPanel from './RollPanel.svelte';
   import RollSelect from './RollSelect.svelte';
   import type { AppState } from '../state/app.svelte.js';
@@ -17,7 +16,7 @@
   interface Props {
     app: AppState;
     /** The section, which is what the help panel is written against. */
-    section: 'voa' | 'community' | 'mwt' | 'vh';
+    section: 'voa' | 'community' | 'mwt';
     /** The caption above the picker. */
     label: string;
     parts: readonly Part[];

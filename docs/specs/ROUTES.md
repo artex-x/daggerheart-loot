@@ -52,12 +52,12 @@ and the screen stays right.
 | `#/roll/dread_gm_toolbox` | Dread GM Toolbox, 1-29 |
 | `#/roll/vault_of_ages` | Vault of Ages, by section |
 | `#/roll/dragons_vault` | The Dragon's Vault, 1-145 |
-| `#/roll/arazos_artifacts` | Arazo's Artifacts, 1-78 |
+| `#/roll/arazos_artifacts` | Arazo's Artifacts, 1-27 |
 | `#/roll/community_items` | Community items, community plus 1-10 |
 | `#/roll/many_worlds_tavern` | Many Worlds Tavern, realm plus a roll inside it (1-11 to 1-21) |
-| `#/roll/pistolheart` | Pistolheart, 1-93 |
+| `#/roll/pistolheart` | Pistolheart, 1-45 |
 | `#/roll/last_round_table` | The Last Round Table, 1-26 |
-| `#/roll/escape_the_veiled_halls` | Escape the Veiled Halls, room plus a roll inside it (1-3 or d4) |
+| `#/roll/escape_the_veiled_halls` | Escape the Veiled Halls, 1-15 |
 | `#/tables` | Tables index |
 | `#/lists` | Lists index |
 | `#/search` | Search |
@@ -136,7 +136,9 @@ Changing to a different, valid table folds the filter panel and clears the
 filter.
 
 A tail that does not start with `f_` is an anchor - a block to scroll to, such
-as `rare` on `alt_item`, `Seaborne` on `community`, `warrens` on `mwt`, `2` on `ph` or `library` on `vh`.
+as `rare` on `alt_item`, `Seaborne` on `community`, `warrens` on `mwt` or `2` on `ph`.
+The old room anchors of `vh` (`basement`, `dressing`, `laboratory`, `library`) scroll to
+nothing since 2026-11-07; the table opens whole.
 
 ### Filter grammar
 
@@ -150,7 +152,9 @@ older `_` group separator are still read, but only when the segment has no `.`
 and every piece names a group the table offers; anything else is treated as
 the current format. A retired group name ahead of a live one makes the whole
 body one unknown group, so the live narrowing is dropped and the table stays
-whole: unknown groups fail open, never empty.
+whole: unknown groups fail open, never empty. `room` on `vh` is a retired group
+(2026-11-07): `f_room-laboratory` opens the whole table, with no redirect
+(`docs/fixtures/urls/routes.json`).
 
 Group keys, by table:
 
@@ -167,7 +171,7 @@ Group keys, by table:
 | `mwt` | `kind`, `realm` |
 | `ph` | `kind`, `vol` |
 | `lr` | `kind` |
-| `vh` | `kind`, `room` |
+| `vh` | `kind` |
 | `homebrew` | `kind`, `src` (one value: the source chip), `sect` |
 | `#/homebrew/f_` (the Items tab) | `kind`, `src` (any number of values, OR'd), `sect` |
 | `core_item` and the other loot tables | `kind` where the table holds more than one kind |
@@ -180,7 +184,7 @@ whose kind has an artifact record); `cls` `phy`/`mag`; `trait`
 `line`/`uniq`; `kind` `item`/`consumable`/`equip`; `src` one of the source keys;
 `frame` `beast_feast`, `colossus`, `dark_heart`, `motherboard`; `comm` a
 community name; `realm` `sporopolis`, `wagerwood`, `warrens`, `godsvale`, `hornet`, `drome`;
-`vol` `1`, `2`, `3`; `room` `basement`, `dressing`, `laboratory`, `library`. A
+`vol` `1`, `2`, `3`. A
 weapon of trait `any` answers every `trait` value, as a `spellcast` one does;
 `any` is no value of its own. On `homebrew` and the equipment tables `src` also takes `hb`
 (own items with no source) and an own source's key; `sect` takes an own

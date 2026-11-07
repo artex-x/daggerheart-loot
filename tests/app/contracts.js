@@ -299,9 +299,10 @@ const { ok } = rep;
 
   console.log('a share stub names the path its record page does');
   /* The stub builder copies the record page's path words (tools/share-card.mjs,
-     PATH_TEXT); one record per table in each language catches a drift. */
+     PATH_TEXT); one record per table in each language catches a drift, and a rung of
+     each lined roll pool, which names its tier and no roll. */
   const stubs = require('../../tools/build-share-pages.js');
-  const firstOf = {};
+  const firstOf = { 'arazo rung': 'aa20', 'ph rung': 'ph38' };
   for (const arr of Object.values(global.window.LOOT.items).concat([global.window.LOOT.eq])) {
     for (const it of arr) {
       const table = stubs.tableOf(it);
@@ -367,9 +368,9 @@ const { ok } = rep;
     ['mwt', 'realm-drome'],
     ['ph', 'vol-2'],
     ['lr', 'kind-equip'],
-    ['vh', 'room-library']
+    ['vh', 'kind-consumable']
   ];
-  /* One context reused across all 33 opens (22 probes, 11 whole tables) - same
+  /* One context reused across all 34 opens (22 probes, 12 whole tables) - same
    * reasoning as the address-grammar loop above: no probe here seeds
    * storage, so a full `d.open` navigation already starts each one clean. */
   const { ctx: pCtx, page: pPage, d: pD } = await fresh({ width: 1280, height: 900 });

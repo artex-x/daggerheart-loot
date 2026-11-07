@@ -1,5 +1,6 @@
 # 2026-11-07 - A table sectioned by a record property reads one descriptor
 
+- Amended by "Escape the Veiled Halls is one flat list with no rooms" (2026-11-07): `vh` leaves `SECTION_PROP`, which keeps `mwt` and `ph`.
 - Task: `new-items` (the plan, 2026-11-05: extract the shared mechanism on its second real use).
 - Decision: `app/src/lib/sectionProps.ts` `SECTION_PROP` names, per table, the record field that
   sections it (`mwt` `realm`, `ph` `vol`, `vh` `room`), its values in book order and their names.

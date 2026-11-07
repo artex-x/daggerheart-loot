@@ -148,8 +148,25 @@ describe('the help for a section', () => {
         'https://heartofdaggers.com/products/escape-the-veiled-halls/'
       ]);
     }
-    expect(textOf(helpFor('vh', 'ru'), 0)).toContain('Лаборатория - 3');
-    expect(textOf(helpFor('vh', 'en'), 0)).toContain('The Laboratory 3');
+    expect(textOf(helpFor('vh', 'ru'), 0)).toContain('В разделе 15 позиций');
+    expect(textOf(helpFor('vh', 'en'), 0)).toContain("the adventure's 15 entries");
+  });
+
+  it('counts the roll pool of Arazo and Pistolheart and sends the other tiers to the card', () => {
+    expect(textOf(helpFor('arazo', 'ru'), 0)).toContain('Бросок выбирает из 27 позиций');
+    expect(textOf(helpFor('arazo', 'en'), 0)).toContain('A roll picks from 27 entries');
+    expect(textOf(helpFor('ph', 'ru'), 0)).toContain('Бросок выбирает из 45 позиций');
+    expect(textOf(helpFor('ph', 'en'), 0)).toContain('A roll picks from 45 entries');
+    expect(textOf(helpFor('arazo', 'ru'), 2)).toContain('в ряду «Ранг»');
+    expect(textOf(helpFor('arazo', 'en'), 2)).toContain('in its "Tier" row');
+    expect(textOf(helpFor('ph', 'ru'), 1)).toContain('в ряду «Ранг»');
+    expect(textOf(helpFor('ph', 'en'), 1)).toContain('in its "Tier" row');
+    for (const lang of LANGS)
+      for (const key of ['arazo', 'ph']) {
+        const help = helpFor(key, lang);
+        const all = (help?.paragraphs ?? []).map((_, i) => textOf(help, i)).join(' ');
+        expect(all, `${key}/${lang}`).not.toMatch(/свой номер|its own number/);
+      }
   });
 
   it('links each Many Worlds Tavern realm to its own product page', () => {

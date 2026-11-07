@@ -191,7 +191,6 @@ const ru = {
      one community. */
   communityLabel: 'Сообщество',
   realmLabel: 'Мир',
-  roomLabel: 'Комната',
 
   notFound: 'Предмет не найден',
   notFoundSub: 'Возможно, ссылка устарела или данные были изменены.',
@@ -306,7 +305,6 @@ const ru = {
   commF: 'Сообщество',
   realmF: 'Мир',
   volF: 'Том',
-  roomF: 'Комната',
   resetAll: 'Сбросить всё',
   filterLink: 'Ссылка на фильтры',
   filterLinkCopied: 'Ссылка на фильтры скопирована',
@@ -1299,7 +1297,6 @@ const en: Dict = {
   rollLabelFor: 'Roll result',
   communityLabel: 'Community',
   realmLabel: 'Realm',
-  roomLabel: 'Room',
 
   notFound: 'Item not found',
   notFoundSub: 'The link may be out of date, or the data has changed.',
@@ -1385,7 +1382,6 @@ const en: Dict = {
   commF: 'Community',
   realmF: 'Realm',
   volF: 'Volume',
-  roomF: 'Room',
   resetAll: 'Reset all',
   filterLink: 'Filter link',
   filterLinkCopied: 'Filter link copied',

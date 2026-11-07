@@ -117,9 +117,9 @@ shared list. Never renumber a record that has shipped.
 | `dv` / `dve` | The Dragon's Vault loot / equipment |
 | `aa` | Arazo's Artifacts, book order, an upgrade line's rungs after its head |
 | `mw` | Many Worlds Tavern, realm by realm in release order, card order inside a realm; Hornet Hold and The Drome print no number, so kind, then name |
-| `ph` | Pistolheart, book order over the three volumes, an upgrade line's rungs after its head; the id number is the roll |
+| `ph` | Pistolheart, book order over the three volumes, an upgrade line's rungs after its head |
 | `lr` | The Last Round Table, book order; the id number is the roll |
-| `vh` | Escape the Veiled Halls, room by room in the adventure's order, table order inside a room; the roll is the place in the room's table |
+| `vh` | Escape the Veiled Halls, one flat list in the adventure's order; the id number is the roll |
 | `cm` | Community items |
 | `f` | Campaign frame equipment |
 | `q` | Core and Hope & Fear equipment |
@@ -150,14 +150,17 @@ shared list. Never renumber a record that has shipped.
   fetch (`llms.txt`, "Read this first"): the columns of `catalog.csv` without
   `url`, `text_ru` and `text_en`, in the same order, with the same rows, row
   order and quoting, from `tools/derived.js`'s `catalogIndexCsv(L)`. Budget:
-  at most 196608 bytes, which `tests/derived.js` holds; 183817 bytes at 1593
-  records, measured 2026-11-07, about 115 bytes a row, so the budget holds
-  about 1700 records, about 110 more than today. A column may be added at
+  at most 196608 bytes, which `tests/derived.js` holds; 181825 bytes at 1593
+  records, measured 2026-11-07, about 114 bytes a row, so the budget holds
+  about 1720 records, about 130 more than today. A column may be added at
   the end, as `realm` was (2026-10-21, the last column of both files: a Many
-  Worlds Tavern record's realm in English, empty elsewhere), then `volume` and
-  `room` (2026-11-07: a Pistolheart record's volume number and an Escape the
-  Veiled Halls record's room in English, empty elsewhere); any other change
-  is a new file name. An ingest that passes the
+  Worlds Tavern record's realm in English, empty elsewhere), then `volume`
+  (2026-11-07: a Pistolheart record's volume number, empty elsewhere); any
+  other change is a new file name, with one exception: the `room` column,
+  added on 2026-11-07 after `volume`, left both files on the same day with
+  no new file name, because Escape the Veiled Halls became one flat list
+  (`docs/decisions/2026-11-07-escape-the-veiled-halls-is-one-flat-list-with-no-rooms.md`).
+  The `roll` column is empty on an upgrade line's rungs. An ingest that passes the
   budget raises `INDEX_BUDGET` and the `llms.txt` words "under 200 KB" in
   one commit, or publishes a new file name. Not committed, like `names.json`.
 - `names.json` - what the preview host reads at request time
@@ -171,10 +174,11 @@ shared list. Never renumber a record that has shipped.
   tables page draws; `communities` maps a community's English name to `ru`
   and `n`; `frames` maps a frame key to `{ n }`; `realms` maps a Many
   Worlds Tavern realm key to `{ n }`; `volumes` maps a Pistolheart volume
-  number to `{ n }` and `rooms` an Escape the Veiled Halls room key to
-  `{ n }` (2026-11-07). A new key may be added; any other
-  change is `version` 2. Budget: at most 196608 bytes, which
-  `tests/derived.js` holds; 110056 bytes at 1593 records, measured
+  number to `{ n }` (2026-11-07). A new key may be added; any other
+  change is `version` 2, with one exception: the `rooms` key, added on
+  2026-11-07, left the file on the same day in `version` 1, for the reason
+  that `catalog.csv` lost its `room` column. Budget: at most 196608 bytes, which
+  `tests/derived.js` holds; 109969 bytes at 1593 records, measured
   2026-11-07. Not committed, like `i/`.
 - `i/<id>.html` - a stub page per record with Open Graph markup, in Russian;
   `i/en/<id>.html` - the same page in English. Each redirects to the record's

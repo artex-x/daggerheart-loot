@@ -31,17 +31,17 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 1
 100Фрикционные ОбмоткиУникальноеThe Dragon's VaultФизическое · П... [namelen=242 namehash=8df6a66a]
 112Инфернальные КастетыУникальноеThe Dragon's VaultФизическое · ... [namelen=221 namehash=fa8832f6]
-11Кортик МёртвыхArazo's ArtifactsФизическое · Искусность · Вплот... [namelen=300 namehash=0d96174d]
+12Кошель СтарателяPistolheartМагическое · Влияние · Вплотную · d... [namelen=190 namehash=a470b05a]
 134Меч НежитиУникальноеThe Dragon's VaultФизическое · Проворност... [namelen=196 namehash=bd73f149]
 1Благословенный Нож Шеф-ПовараУникальноеVault of AgesФизическое ... [namelen=317 namehash=12c52ab3]
 1Нестареющее Око ЗверяArazo's ArtifactsФизическое · Проворность ... [namelen=345 namehash=e194794c]
 2
+24Боевой Молот БазаArazo's ArtifactsФизическое · Сила · Вплотную... [namelen=223 namehash=1c0c1fd5]
 26Губитель из СухостояУникальноеVault of AgesФизическое · Инстин... [namelen=722 namehash=910211e5]
+2Топор РассветаArazo's ArtifactsФизическое · Сила · Вплотную · d... [namelen=285 namehash=7f38f6f6]
 3
 4
-45Кошель СтарателяPistolheartМагическое · Влияние · Вплотную · d... [namelen=190 namehash=507100d9]
-5Топор РассветаArazo's ArtifactsФизическое · Сила · Вплотную · d... [namelen=285 namehash=9f823a38]
-66Боевой Молот БазаArazo's ArtifactsФизическое · Сила · Вплотную... [namelen=223 namehash=53491553]
+5Кортик МёртвыхArazo's ArtifactsФизическое · Искусность · Вплотн... [namelen=299 namehash=d9977b45]
 7Табельный СекачУникальноеВоюющие НорыФизическое · Любая · Вплот... [namelen=165 namehash=9421328e]
 Arazo's Artifacts
 Core
@@ -158,17 +158,17 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_ti
 1
 100Friction WrapsUniqueThe Dragon's VaultPhysical · Agility · Me... [namelen=227 namehash=a6d52767]
 112Infernal KnucklesUniqueThe Dragon's VaultPhysical · Strength ... [namelen=217 namehash=d7c153db]
-11Dirk of the DeadArazo's ArtifactsPhysical · Finesse · Melee · ... [namelen=302 namehash=10b9a935]
+12Prospector's PouchPistolheartMagic · Presence · Melee · d6+3 m... [namelen=187 namehash=484a957d]
 134Sword of UndeathUniqueThe Dragon's VaultPhysical · Agility · ... [namelen=210 namehash=a2aee32c]
 1Blessed Chef's KnifeUniqueVault of AgesPhysical · Finesse · Mel... [namelen=282 namehash=2fa65250]
 1The Ageless Eye of the BeastArazo's ArtifactsPhysical · Agility... [namelen=343 namehash=b3812d37]
 2
+24Warhammer of BazArazo's ArtifactsPhysical · Strength · Melee ·... [namelen=202 namehash=007d863d]
 26Deadwood SlayerUniqueVault of AgesPhysical · Instinct · Melee ... [namelen=644 namehash=d01069a5]
+2Axe of the DawnArazo's ArtifactsPhysical · Strength · Melee · d... [namelen=243 namehash=91c70a79]
 3
 4
-45Prospector's PouchPistolheartMagic · Presence · Melee · d6+3 m... [namelen=187 namehash=301cf916]
-5Axe of the DawnArazo's ArtifactsPhysical · Strength · Melee · d... [namelen=243 namehash=8a48c2ff]
-66Warhammer of BazArazo's ArtifactsPhysical · Strength · Melee ·... [namelen=202 namehash=96b3cab3]
+5Dirk of the DeadArazo's ArtifactsPhysical · Finesse · Melee · d... [namelen=301 namehash=4cba7bac]
 7Standard Issue SlicerUniqueWarrin' WarrensPhysical · Any · Mele... [namelen=139 namehash=2dbd9f99]
 Agility
 All

@@ -2,6 +2,7 @@
 
 - Superseded in part by "Arazo's Artifacts rebalanced to Core bands: every piece a line, ids aa1-aa78" (2026-10-08): ids, rolls and the artifact rule.
 - Amended by "Arazo's Artifacts drop the book's GM notes; aa23 is «Волшебное Зеркало»" (2026-10-08): GM notes are not shipped either.
+- Superseded in part by "One roll row per item: an upgrade line is rolled at its head" (2026-11-07): roll numbers on the base records only, rejected here, now hold.
 - Task: `arazos-arifacts`, owner decisions 2026-10-07.
 - Decision: source key and table id `arazo`, section `roll/arazo` (a random pick over 51 rows, as `roll/dv`),
   ids `aa1`-`aa51` and `roll` 1-51 in book order with an upgrade line's rungs directly after its head. A piece

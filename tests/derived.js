@@ -2457,9 +2457,20 @@ ok(
 console.log("Arazo's Artifacts");
 const arazo = L.items.arazo;
 ok(arazo.length === 78, 'items.arazo is not 78, but ' + arazo.length);
+/* An upgrade line is one roll row, its head: the 51 rungs carry no roll, and the 17 heads
+   and 10 items roll 1..27 in book order (docs/specs/FEATURES.md, "Rolling"). */
+const isRung = (x) => !!(x.eq && x.eq.line) && x.eq.line !== x.id;
 ok(
-  arazo.every((x, i) => x.id === 'aa' + (i + 1) && x.roll === i + 1),
-  'items.arazo is not aa1..aa78 with rolls 1..78 in book order'
+  arazo.every((x, i) => x.id === 'aa' + (i + 1)),
+  'items.arazo is not aa1..aa78 in book order'
+);
+ok(
+  arazo.filter(isRung).length === 51 && arazo.filter(isRung).every((x) => x.roll == null),
+  'items.arazo does not hold 51 rungs without a roll'
+);
+ok(
+  arazo.filter((x) => !isRung(x)).every((x, i, pool) => pool.length === 27 && x.roll === i + 1),
+  'items.arazo heads and items do not roll 1..27 in book order'
 );
 ok(arazo.filter((x) => x.kind === 'item').length === 10, 'items.arazo items are not 10');
 const aaEq = arazo.filter((x) => x.eq);
@@ -2589,18 +2600,24 @@ ok(
 const mw47 = parsed.find((r) => r[idx.id] === 'mw47');
 ok(!!mw47 && mw47[idx.trait] === 'Any', 'catalog.csv mw47 trait is not Any');
 ok(
-  head.slice(-3).join() === 'realm,volume,room' &&
-    !!mw47 &&
-    mw47[idx.realm] === "Warrin' Warrens",
-  "catalog.csv: realm, volume and room are not the last columns, or mw47 is not in Warrin' Warrens"
+  head.slice(-2).join() === 'realm,volume' && !!mw47 && mw47[idx.realm] === "Warrin' Warrens",
+  "catalog.csv: realm and volume are not the last columns, or mw47 is not in Warrin' Warrens"
 );
 
 console.log('Pistolheart, The Last Round Table and Escape the Veiled Halls');
 const ph = L.items.ph;
 ok(ph.length === 93, 'items.ph is not 93, but ' + ph.length);
 ok(
-  ph.every((x, i) => x.id === 'ph' + (i + 1) && x.roll === i + 1),
-  'items.ph is not ph1..ph93 with rolls 1..93 in book order'
+  ph.every((x, i) => x.id === 'ph' + (i + 1)),
+  'items.ph is not ph1..ph93 in book order'
+);
+ok(
+  ph.filter(isRung).length === 48 && ph.filter(isRung).every((x) => x.roll == null),
+  'items.ph does not hold 48 rungs without a roll'
+);
+ok(
+  ph.filter((x) => !isRung(x)).every((x, i, pool) => pool.length === 45 && x.roll === i + 1),
+  'items.ph heads and items do not roll 1..45 in book order'
 );
 const phByKind = {};
 ph.forEach(
@@ -2639,11 +2656,31 @@ ok(
     lr.filter((x) => x.eq).length === 3,
   'lr does not hold three unlined Tier 2 weapons'
 );
+// The lr records ship rule text only (docs/decisions, 2026-11-07, "The Last Round Table
+// records keep rule text and lose lore"); 450 / 520 sit just above the longest kept text.
+ok(
+  lr.every(
+    (x) => x.ende.length > 0 && x.rud.length > 0 && x.ende.length <= 450 && x.rud.length <= 520
+  ),
+  'an lr record is empty or longer than 450 (EN) / 520 (RU) characters: lore came back'
+);
+ok(
+  lr[0].ende === 'Sitting in Anklebiter as part of a Short Rest clears 1 Stress.' &&
+    lr[0].rud === 'Если сидеть в Лодыжкогрызе во время короткого отдыха, вы очищаете 1 Стресс.',
+  'lr1 is not the one rule sentence'
+);
+ok(
+  lr[22].ende ===
+    '***Rub a Dub - Rest Move:*** When used as part of a rest, you clear 1d4 Stress. Each bar of soap lasts 1 bath.' &&
+    lr[22].rud ===
+      '***Тру-Тру-Тру - Ход Отдыха:*** Если использовать его во время отдыха, вы очищаете 1d4 Стресса. Одного куска мыла хватает на 1 купание.',
+  'lr23 is not the rest move with 1d4 Stress and 1 bath'
+);
 const vh = L.items.vh;
 ok(vh.length === 15, 'items.vh is not 15, but ' + vh.length);
 ok(
-  vh.every((x, i) => x.id === 'vh' + (i + 1)) && vh.every((x) => !x.eq),
-  'items.vh is not vh1..vh15 in room order, or holds equipment'
+  vh.every((x, i) => x.id === 'vh' + (i + 1) && x.roll === i + 1 && !x.eq && !('room' in x)),
+  'items.vh is not one flat list vh1..vh15 with rolls 1..15, or holds equipment or a room'
 );
 ok(
   JSON.stringify(vh.filter((x) => x.craft).map((x) => [x.id, x.craft])) ===
@@ -2671,8 +2708,12 @@ ok(
 const phRow = parsed.find((r) => r[idx.id] === 'ph40');
 const vhRow = parsed.find((r) => r[idx.id] === 'vh9');
 ok(
-  !!phRow && phRow[idx.volume] === '2' && !!vhRow && vhRow[idx.room] === 'The Laboratory',
-  'catalog.csv: ph40 is not in volume 2, or vh9 is not in The Laboratory'
+  !!phRow &&
+    phRow[idx.volume] === '2' &&
+    !!vhRow &&
+    vhRow[idx.volume] === '' &&
+    !('room' in idx),
+  'catalog.csv: ph40 is not in volume 2, vh9 has a volume, or a room column is left'
 );
 
 console.log('Vault of Ages Volume 4');

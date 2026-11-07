@@ -237,14 +237,12 @@ describe('the line under the heading', () => {
     expect(whereFrom(rec({ src: 'dv' }), 'ru')).toBe("The Dragon's Vault");
   });
 
-  it('names the volume of a Pistolheart record and the room of an Escape the Veiled Halls record', () => {
+  it('names the volume of a Pistolheart record and no section for an Escape the Veiled Halls record', () => {
     expect(whereFrom(rec({ src: 'ph', vol: 2 }), 'ru')).toBe('Pistolheart · Том 2');
-    expect(whereFrom(rec({ src: 'vh', room: 'library' }), 'en')).toBe(
-      'Escape the Veiled Halls · The Library'
-    );
+    expect(whereFrom(rec({ src: 'vh' }), 'en')).toBe('Escape the Veiled Halls');
     expect(whereFrom(rec({ src: 'lr' }), 'en')).toBe('The Last Round Table');
     expect(srcLabel(rec({ src: 'ph', vol: 2 }), 'ru')).toBe('Pistolheart');
-    expect(printSrc(rec({ src: 'vh', room: 'library' }), 'en')).toBe('Escape the Veiled Halls');
+    expect(printSrc(rec({ src: 'vh' }), 'en')).toBe('Escape the Veiled Halls');
   });
 
   it('names the equipment slice, whichever piece (the last un-pinned group)', () => {

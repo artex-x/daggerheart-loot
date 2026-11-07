@@ -58,8 +58,8 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       button "Уникальные" [pressed=false]
     heading "Ранг 1" [level=2]
     ... button x53 of 57 same-shape siblings elided
-    button "41 Топорик на Верёвке PISTOLHEART Физическое · Инстинкт · Средне..." [namelen=227 namehash=53832814]
-    button "49 Тасовка Маверика PISTOLHEART Магическое · Знание · Близко · d..." [namelen=176 namehash=b04c97bc]
+    button "11 Топорик на Верёвке PISTOLHEART Физическое · Инстинкт · Средне..." [namelen=227 namehash=55157148]
+    button "13 Тасовка Маверика PISTOLHEART Магическое · Знание · Близко · d..." [namelen=176 namehash=f1d6237a]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -70,25 +70,25 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 ## ru :: controls
 1
 100Фрикционные ОбмоткиУникальноеThe Dragon's VaultФизическое · П... [namelen=242 namehash=8df6a66a]
+11Праща ФениксаArazo's ArtifactsФизическое · Искусность · Далеко... [namelen=219 namehash=b58d4f21]
+11Топорик на ВерёвкеPistolheartФизическое · Инстинкт · Средне · ... [namelen=223 namehash=c8192470]
 132Разящие КлыкиУникальноеThe Dragon's VaultФизическое · Проворн... [namelen=239 namehash=6eae51d9]
-13Винтовка с ПрицеломPistolheartФизическое · Инстинкт · Очень да... [namelen=197 namehash=c53bc255]
-17Затворная ВинтовкаPistolheartФизическое · Искусность · Очень д... [namelen=212 namehash=01c4babb]
-19Лук из Эльфийских ВолосArazo's ArtifactsФизическое · Проворнос... [namelen=222 namehash=f225d2c8]
+13Тасовка МаверикаPistolheartМагическое · Знание · Близко · d10+... [namelen=172 namehash=aabd3fdc]
+17Посох Запредельной ПустотыArazo's ArtifactsМагическое · Характ... [namelen=184 namehash=be792096]
+19Моргенштерн ТарианаArazo's ArtifactsФизическое · Сила · Близко... [namelen=262 namehash=5fd109e4]
 2
-24Дубина из Зубов ОграArazo's ArtifactsФизическое · Сила · Близк... [namelen=289 namehash=2148b589]
-25Жаканное РужьёPistolheartФизическое · Сила · Средне · d10+1 фи... [namelen=192 namehash=163ff276]
-29Праща ФениксаArazo's ArtifactsФизическое · Искусность · Далеко... [namelen=219 namehash=777a5e45]
-29Рычажная ВинтовкаPistolheartФизическое · Влияние · Далеко · d6... [namelen=211 namehash=2865113d]
+22Копьё-КамертонArazo's ArtifactsФизическое · Искусность · Близк... [namelen=324 namehash=c7314e1c]
+23Алебарда УрзоArazo's ArtifactsФизическое · Влияние · Близко · ... [namelen=183 namehash=06bc92ea]
+24Боевой Молот БазаArazo's ArtifactsФизическое · Сила · Вплотную... [namelen=223 namehash=1c0c1fd5]
+2Топор РассветаArazo's ArtifactsФизическое · Сила · Вплотную · d... [namelen=285 namehash=7f38f6f6]
 3
 4
-41Топорик на ВерёвкеPistolheartФизическое · Инстинкт · Средне · ... [namelen=223 namehash=15a7637a]
-47Посох Запредельной ПустотыArazo's ArtifactsМагическое · Характ... [namelen=184 namehash=6fa00a43]
-49Тасовка МаверикаPistolheartМагическое · Знание · Близко · d10+... [namelen=172 namehash=f6275ded]
-52Моргенштерн ТарианаArazo's ArtifactsФизическое · Сила · Близко... [namelen=262 namehash=9d1bd6d2]
-58Копьё-КамертонArazo's ArtifactsФизическое · Искусность · Близк... [namelen=324 namehash=7759ba50]
-5Топор РассветаArazo's ArtifactsФизическое · Сила · Вплотную · d... [namelen=285 namehash=9f823a38]
-62Алебарда УрзоArazo's ArtifactsФизическое · Влияние · Близко · ... [namelen=183 namehash=d5424ebb]
-66Боевой Молот БазаArazo's ArtifactsФизическое · Сила · Вплотную... [namelen=223 namehash=53491553]
+4Винтовка с ПрицеломPistolheartФизическое · Инстинкт · Очень дал... [namelen=196 namehash=aa87ca2e]
+5Затворная ВинтовкаPistolheartФизическое · Искусность · Очень да... [namelen=211 namehash=bea9661e]
+7Жаканное РужьёPistolheartФизическое · Сила · Средне · d10+1 физ... [namelen=191 namehash=3804931a]
+7Лук из Эльфийских ВолосArazo's ArtifactsФизическое · Проворност... [namelen=221 namehash=6b5e772a]
+8Рычажная ВинтовкаPistolheartФизическое · Влияние · Далеко · d6+... [namelen=210 namehash=153d06f7]
+9Дубина из Зубов ОграArazo's ArtifactsФизическое · Сила · Близко... [namelen=288 namehash=3105c616]
 ?Об этих данных
 Arazo's Artifacts
 Core
@@ -242,8 +242,8 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_ti
       button "Unique" [pressed=false]
     heading "Tier 1" [level=2]
     ... button x53 of 57 same-shape siblings elided
-    button "41 Rope Hatchet PISTOLHEART Physical · Instinct · Close · d8 phy..." [namelen=209 namehash=42c5f016]
-    button "49 Maverick's Shuffle PISTOLHEART Magic · Knowledge · Very Close..." [namelen=175 namehash=12b9c605]
+    button "11 Rope Hatchet PISTOLHEART Physical · Instinct · Close · d8 phy..." [namelen=209 namehash=5fc4e6ae]
+    button "13 Maverick's Shuffle PISTOLHEART Magic · Knowledge · Very Close..." [namelen=175 namehash=4ef89280]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -254,25 +254,25 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_ti
 ## en :: controls
 1
 100Friction WrapsUniqueThe Dragon's VaultPhysical · Agility · Me... [namelen=227 namehash=a6d52767]
+11Phoenix SlingArazo's ArtifactsPhysical · Finesse · Far · d10+1... [namelen=211 namehash=90f47c13]
+11Rope HatchetPistolheartPhysical · Instinct · Close · d8 phy · ... [namelen=205 namehash=5ad64f32]
 132Striking FangsUniqueThe Dragon's VaultPhysical · Agility · Ve... [namelen=237 namehash=555f1d47]
-13Scoped RiflePistolheartPhysical · Instinct · Very Far · d8+2 p... [namelen=169 namehash=9fab82fa]
-17Bolt Action RiflePistolheartPhysical · Finesse · Very Far · d8... [namelen=199 namehash=d9efc310]
-19Elfhair BowArazo's ArtifactsPhysical · Agility · Very Far · d1... [namelen=207 namehash=ebfcca27]
+13Maverick's ShufflePistolheartMagic · Knowledge · Very Close · ... [namelen=171 namehash=0ef6a989]
+17Staff of the Void BeyondArazo's ArtifactsMagic · Spellcast · V... [namelen=159 namehash=2a8c5c63]
+19Taryan's MorningstarArazo's ArtifactsPhysical · Strength · Ver... [namelen=271 namehash=378e9795]
 2
-24Ogre-teeth ClubArazo's ArtifactsPhysical · Strength · Very Clo... [namelen=264 namehash=c4fd130b]
-25Slug GunPistolheartPhysical · Strength · Close · d10+1 phy · T... [namelen=192 namehash=ca49d297]
-29Lever-Load RiflePistolheartPhysical · Presence · Far · d6+2 ph... [namelen=185 namehash=2a8b9e6a]
-29Phoenix SlingArazo's ArtifactsPhysical · Finesse · Far · d10+1... [namelen=211 namehash=c234c376]
+22Tuning SpearArazo's ArtifactsPhysical · Finesse · Very Close ·... [namelen=301 namehash=c9b07f22]
+23Urzo's HalberdArazo's ArtifactsPhysical · Presence · Very Clos... [namelen=187 namehash=1f17c7e7]
+24Warhammer of BazArazo's ArtifactsPhysical · Strength · Melee ·... [namelen=202 namehash=007d863d]
+2Axe of the DawnArazo's ArtifactsPhysical · Strength · Melee · d... [namelen=243 namehash=91c70a79]
 3
 4
-41Rope HatchetPistolheartPhysical · Instinct · Close · d8 phy · ... [namelen=205 namehash=3b39e6c1]
-47Staff of the Void BeyondArazo's ArtifactsMagic · Spellcast · V... [namelen=159 namehash=909177bc]
-49Maverick's ShufflePistolheartMagic · Knowledge · Very Close · ... [namelen=171 namehash=ce9888a6]
-52Taryan's MorningstarArazo's ArtifactsPhysical · Strength · Ver... [namelen=271 namehash=5631a300]
-58Tuning SpearArazo's ArtifactsPhysical · Finesse · Very Close ·... [namelen=301 namehash=cd5df7c5]
-5Axe of the DawnArazo's ArtifactsPhysical · Strength · Melee · d... [namelen=243 namehash=8a48c2ff]
-62Urzo's HalberdArazo's ArtifactsPhysical · Presence · Very Clos... [namelen=187 namehash=fba32b44]
-66Warhammer of BazArazo's ArtifactsPhysical · Strength · Melee ·... [namelen=202 namehash=96b3cab3]
+4Scoped RiflePistolheartPhysical · Instinct · Very Far · d8+2 ph... [namelen=168 namehash=40ef7dfc]
+5Bolt Action RiflePistolheartPhysical · Finesse · Very Far · d8+... [namelen=198 namehash=bf6ee6b4]
+7Elfhair BowArazo's ArtifactsPhysical · Agility · Very Far · d10... [namelen=206 namehash=f8f41924]
+7Slug GunPistolheartPhysical · Strength · Close · d10+1 phy · Tw... [namelen=191 namehash=16c04dec]
+8Lever-Load RiflePistolheartPhysical · Presence · Far · d6+2 phy... [namelen=184 namehash=cf37df05]
+9Ogre-teeth ClubArazo's ArtifactsPhysical · Strength · Very Clos... [namelen=263 namehash=e2be2ed4]
 ?About this data
 Agility
 All
