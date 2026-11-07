@@ -29,5 +29,11 @@ its head. The tier selector on the result card (`RecordCard.svelte`, "ladder") r
 
 - 2026-11-05: one roll row per item. Task id `roll-per-line`.
 - 2026-11-05: the task runs after `new-items` and fixes `arazo` and `ph` together. `new-items` is not changed.
+- 2026-11-07 (owner, chat): `vh` (Escape the Veiled Halls) becomes a single flat list with no rooms breakout. This
+  task owns it. `new-items` B1 ships `vh` with its room sections, its room picker on the roll page and its random d3
+  room (`app/src/lib/rooms.ts`, the `room` column of `catalog.csv`, the `rooms` entry of `names.json`); this task
+  removes them where nothing else reads them, makes the `vh` roll one pool over its 15 records, amends the B1
+  decision files, and re-seeds the `vh` tables and roll goldens. Plan it with the per-line roll work: both change
+  how a roll pool is built.
 - Taken as the default by the planner (owner may veto): the public roll ranges shrink (`arazo` 1-78 to 1-27,
   `ph` 1-93 to 1-49), and the result shows the head (Tier 1). A random tier is a different feature.
