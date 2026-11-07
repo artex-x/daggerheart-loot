@@ -48,7 +48,9 @@
 6. Steps 2 and 3 (phone overlays and scroll; visual leftovers, mock first), with `docs/specs/DEBT.md` D122-D140. Default for D132 (the
    record dialog's «Ещё» scrolls the card, and the «В список» popover is cropped at the card's top, owner screenshot 2026-11-07):
    both overlays render on top and never move the card (focus the first item with `preventScroll`, choose up or down by the
-   window, let them extend past the card edge: top layer or a portal into the dialog); one fix for both, see `DEBT.md` D132. One
+   window, let them extend past the card edge: top layer or a portal into the dialog); one fix for both, see `DEBT.md` D132. Also D141 (owner screenshot 2026-11-07): the desktop filter column's last section is below
+   the fold at page top (its cap fits the window only when stuck; `overscroll-behavior: contain` blocks the wheel): default fix A
+   (let the wheel pass to the page) and B (cap follows the column's real top). One
    triage pass first (planner, opus, medium effort) folds the new rows and steps D, E and VW1 into batches by shared component and
    filter, sized by their gates. Then steps 4 and 5.
 7. `persistent-storage` closeout audit: `issues/persistent-storage/` says "R3 next" (September 30) but R10 shipped (`e02364d3`) after the

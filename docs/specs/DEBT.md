@@ -177,6 +177,26 @@ and D140 are two more short-window layouts; D137 to D139 are focus and scroll ru
 - **How to verify the fix**: at 740x360 RU and EN the crop dialog's «Готово» is inside the
   window with no scroll in the dialog.
 
+### D141 - the filter column's last section is below the fold until the page scrolls
+
+- **Where**: `app/src/components/FilterPanel.svelte` (`.fcol`: `position: sticky`, `top: var(--anchor-top)`,
+  `max-height: calc(100dvh - var(--anchor-top) - var(--selbar-h, 0px) - 16px)`, `overflow: auto`,
+  `overscroll-behavior: contain`), on `/tables/*`, `/search` and the lists' filters from 1000 px.
+- **What**: owner-seen 2026-11-07 (screenshot, `#/tables/eq_weapon`, RU, about 1920x950). The cap fits the
+  window only when the column is stuck. At page top the column starts at about 247 px, not at the sticky top
+  of about 79 px, so its bottom is about 168 px below the fold; scrolled to its end, the inner scroll still
+  hides the last section («Улучшаемое» / «Уникальное»), and `overscroll-behavior: contain` stops the wheel from
+  passing to the page, so the reader must move the pointer off the column to scroll the page.
+- **Why deferred**: not yet planned; two fixes, a layout choice.
+- **Default fix (owner may change)**: A, remove `overscroll-behavior: contain` on the desktop column so the wheel
+  continues to the page at the ends (the column then sticks and shows its full height); and B, make the cap
+  follow the column's real top while it is unstuck (a measured custom property such as `--fcol-top`, updated on
+  scroll and resize, `max-height: calc(100dvh - max(var(--anchor-top), var(--fcol-top)) - ...)`), so the last
+  section is in the window at scroll 0 with no page scroll. Check the phone sheet (it is not this column) is unchanged.
+- **How to verify the fix**: a states case opens `#/tables/eq_weapon` at 1920x950 and 1180x720, scrolls the
+  column to its end and reads the last section's bottom inside the window at page scroll 0; the column's bottom
+  never extends past the window while the page scrolls.
+
 ## Copy and prompt leftovers (task `57-debt`, owner first)
 
 ### D134 - four shapes of the sign-in prompt on sibling pages
