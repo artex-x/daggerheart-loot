@@ -15,7 +15,8 @@ the task that owes them".
 All figures are at 360x640 unless stated. Task 57 measured each one and built no fix. D122
 to D124 share one cause family (a menu, a focus return or a toast that moves or covers the
 page under the hide-and-show header), and one batch with mobile probes fixes them together.
-D125 is a sideways overflow and D126 is a dialog layout; the same batch takes them.
+D125 is a sideways overflow and D126 is a dialog layout; the same batch takes them. D136
+and D140 are two more short-window layouts; D137 to D139 are focus and scroll rules.
 
 ### D122 - a focus on a header control moves the page up
 
@@ -104,6 +105,69 @@ D125 is a sideways overflow and D126 is a dialog layout; the same batch takes th
   fold is a layout decision for the owner (The Phone-First Rule).
 - **How to verify the fix**: at 360x640, RU and EN, `#/s/player-token-1 ~ selecting` draws a
   bar no taller than the owner's page's (137 px), every action still reachable.
+
+### D136 - the record dialog's toast covers the dock under 481 px of height
+
+- **Where**: `app/src/components/Toast.svelte` (the `min-height: 481px` rule of the dialog
+  copy), `RecordModal.svelte` (the dock that joins the scroll).
+- **What**: under 481 px of window height the dock moves with the card, and the dialog's toast
+  keeps its 26 px off the window bottom: at 740x360 the toast (290 to 334 px) covers the dock
+  (244 to 344 px), and at 360x460 it covers 344 to 444 px, with «Печать» and «Ещё» under it for
+  4000 ms (7000 ms for an undo; measured 2026-11-07).
+- **Why deferred**: the dock is not at a fixed place there, so a lift by `--dock-h` would
+  float the toast above empty card; a short phone in landscape is the only window it shows in.
+- **How to verify the fix**: a states case at 740x360 and 360x460 presses the first «Ещё» item
+  of an open record and reads the toast's bottom at or above the dock's top, or the dock out of
+  view.
+
+### D137 - another device removes the ticked row that holds the focus
+
+- **Where**: `app/src/components/ListPage.svelte` and `HomebrewPage.svelte`, the selection mode
+  with a live list (`playRemove` in the fake cloud).
+- **What**: while a row is ticked and focused, another device removes it; the bar reads
+  «Выбрано 0 позиций» and the focus falls to `body` at 360 and 1180 px (measured 2026-11-07).
+  FEATURES.md "Consistency rules", rule 20, covers a control that removes itself, not a
+  removal by a remote write.
+- **Why deferred**: it needs a new rule for the place of the focus after a remote removal.
+- **How to verify the fix**: a states case ticks and focuses a row, plays the remote removal,
+  and reads the focus on a control of the list (the next row or the bar's clear control).
+
+### D138 - an in-app navigation keeps the old scroll offset
+
+- **Where**: `app/src/App.svelte` (the page swap), `app/src/ports/`'s scroll handling.
+- **What**: the new page opens at the old offset, cut to its own height: from
+  `/tables/core_item` at y 1139 (360x720) a record link opens `/i/ci13` at y 190, its
+  maximum, and a header job opens `/search` at y 39. With the focus on `#main` above the
+  viewport (`preventScroll`), the reader lands in the middle or at the end of the page
+  (measured 2026-11-07). No spec line says where a new page opens.
+- **Why deferred**: the place of a new page (top, or the restored offset on Back only) is the
+  owner's decision.
+- **How to verify the fix**: a states case scrolls `/tables/core_item` to 1139 and follows a
+  record link, then reads `scrollY` 0 (or the spec's value) on the new page.
+
+### D139 - after Back the focus is on `#main` while the scroll is restored
+
+- **Where**: `app/src/App.svelte` (the focus after a navigation), `ports/` history handling.
+- **What**: after Back the focus is on `#main` and the scroll returns to 1139 at 360 px (929 at
+  1180 px); the first Tab goes to the first control of `main` and scrolls the page to y 0
+  (measured 2026-11-07). Before commit `f883e6fc` the focus was on `body` and Tab started at the
+  top of the document, so it is no regression.
+- **Why deferred**: the better place is the row that opened the page, which needs the row's
+  key kept across the navigation.
+- **How to verify the fix**: a states case opens a record from a catalog row, presses Back, and
+  reads the focus on that row with `scrollY` unchanged.
+
+### D140 - the crop dialog needs a scroll to reach «Готово» at 740x360
+
+- **Where**: `app/src/components/CropDialog.svelte` (the stage `min(100%, 70dvh)`).
+- **What**: at 740x360 «Готово» ends at 451 px in a 360 px window, so the dialog scrolls
+  inside itself to reach it. DESIGN.md "Sheet" says the dialog keeps the window's height "which
+  its square stage needs on a landscape phone"; the stage still overflows there (measured
+  2026-11-07). At 360x640, 768x1024, 1000x720 and 1180x720 the buttons are in view.
+- **Why deferred**: a landscape phone is the only window it shows in; the fix is a layout
+  choice (a smaller stage, or the buttons beside it).
+- **How to verify the fix**: at 740x360 RU and EN the crop dialog's «Готово» is inside the
+  window with no scroll in the dialog.
 
 ## Copy and prompt leftovers (task `57-debt`, owner first)
 

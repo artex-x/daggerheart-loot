@@ -4,25 +4,21 @@
 ## Status
 - Task status: in_progress. Waves 1, 2, 2b and 3 and PW3 (S2, `02a50c39`) are on `main`; `claude/57` merged S2 back
   as `9db714b4`.
-- Batch S3 (`plan-s3.md`, the remediation of the three whole-app reviews `reviews/whole-app-prod.md`,
-  `whole-app-signed-in.md`, `whole-app-owner-chrome.md`; previous sha `9db714b4`) is implemented on `claude/57`,
-  committed and pushed. CI fix pass for run 42315540634 (one pass): (a) states case 86 failed because `d.media(undefined)`
-  drops the emulated reduced motion, so the header's 0.2s slide ran after a print and the read landed mid-slide (an
-  app-correct transition; `driver.js` `media` now restores the emulation on the switch back); (b) the goldens
-  `#/i/q1 ~ own set as gm1` and `#/homebrew/hb_engravedringaaaa ~ deleted as gm1` gain `main [focused=true]`, the
-  expected result of rule 20 (the pressed control left with its page, the focus goes to `#main`); both re-seeded
-  with `--update --only=<state>`. The AFK defaults A1-A8 of 2026-11-06 (`C:\Users\Ignat\.dhloot\notes\57\afk-decisions-2026-11-06.md`)
-  were applied as settled. CI of the tip is the full gate (CI-first policy, `context.md` decision 41).
+- Batch S3 (`plan-s3.md`) is on `main` (`f883e6fc`) and merged back as `cf472814`; the S3 verification
+  (`reviews/s3-verify.md`, approve) found no blocker. The closeout fix pass (below, Completed) is committed and pushed on
+  `claude/57`: Risk 1 (the 16 px gutter of two `Ещё` menus), Risk 2 as the named exception D136, Nits 1 and 2, and the
+  DEBT.md rows D137 to D140 (Risk 3, Nits 3 to 5). The AFK defaults A1-A10 of 2026-11-06
+  (the afk-decisions note of the owner's notes directory, `.dhloot/notes/57`) are settled. CI of the tip is the full gate (CI-first, `context.md` decision 41).
 - Review: the orchestrator's call (whole-app remediation; triggers in `orchestrate.prompt.md`).
 - NEEDS_HUMAN_CONFIRMATION: no.
 - Writer tier: `opus`.
 - Main checkout `E:\dev\daggerheart-loot`: on `claude/roll-per-line` (not `main`); a squash needs it switched to
   `main` and back.
 - Branch: `claude/57` (worktree `.claude/worktrees/57`).
-- Next step, in order: (1) CI credit of the S3 tip (`node .claude/hooks/ci-credit.mjs <sha>`); (2) the S3 review if the
-  orchestrator runs one, and its one fix pass; (3) the S3 squash onto `main` (the S2 steps); (4) closeout (`/handoff`):
-  Impeccable `document` to regenerate `.impeccable/design.json` (10-R2), move `plan-debt.md` to `issues/57-debt/`,
-  delete `issues/57/`, last squash S4. Deleting the remote branch waits for the owner.
+- Next step, in order: (1) CI credit of the tip of this pass (`node .claude/hooks/ci-credit.mjs <sha>`); (2) the squash
+  onto `main` (the S2 steps); (3) closeout (`/handoff`): Impeccable `document` to regenerate `.impeccable/design.json`
+  (10-R2), move `plan-debt.md` to `issues/57-debt/`, delete `issues/57/`, last squash S4. Deleting the remote branch waits
+  for the owner.
 
 ## Completed
 One line per shipped batch. The full acceptance tables, deviations and measurements of batches 1 to 9a are in
@@ -474,6 +470,16 @@ One line per shipped batch. The full acceptance tables, deviations and measureme
   heads with no picker (`/search`, `/lists`) keep the 32 px small button of the Thumb Rule. (3) A sheet's toast clears
   its foot at every height up to 760 px; the record dialog's only from 481 px (its dock joins the scroll below).
   (4) Prod N2 (the roll result name link's `title`) was not in the dispatch: in Deferred.
+
+- Closeout fix pass after the S3 verification (previous sha `cf472814`):
+
+  | Finding | Outcome |
+  |---|---|
+  | Risk 1 | Fixed: `RecordModal` insets the sticky dock `.recmenu` 16 px (`right: 0` again under 481 px of height, where the dock sits inside the card padding); `ListPage` `.lhead` is `position: relative` up to 760 px so the list head menu stays inside the column. Every `MoreMenu` caller measured at 360x640: tables, search, roll, lists, list, homebrew item, print keep 16 px. Case 118 gained the gutter probe (red before on the dock, 345 of 345, and the list head, 345 of 360; green after) |
+  | Risk 2 (A9) | Named, not built: FEATURES.md "Chrome", DESIGN.md "Toast", DEBT.md D136 |
+  | Nit 1 | Fixed: rule 20 no longer lists the editor save |
+  | Nit 2 | Fixed: `ListsPage` `:global(.lfind):has(.end)` gap 10 px from 761 px; measured 10, 10, 10 at 1180 |
+  | Risk 3, Nits 3-5 (A10) | Filed: DEBT.md D137, D138, D139, D140 |
 
 ## Verification
 - Batch S3, 2026-11-06 (previous sha `9db714b4`), each in the foreground or one background run at a time:

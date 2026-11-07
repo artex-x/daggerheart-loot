@@ -10378,6 +10378,80 @@ async function barPinnedAndToastsClear() {
   } finally {
     await ctx.close();
   }
+
+  /* Every «Ещё» menu at 360 px keeps the 16 px gutter of the window (DESIGN.md, "Sheet"):
+     the record dialog's dock and the list page's head were the two that met the edge. */
+  const menuAt = 'the «Ещё» gutter at 360x640: ';
+  const SPOTS = [
+    ['#/tables/core_item', undefined, 'record'],
+    ['#/tables/core_item', undefined, 'record', 440],
+    ['#/tables/eq_weapon', undefined, 'main'],
+    ['#/search', undefined, 'main'],
+    ['#/roll/std', undefined, 'main'],
+    ['#/lists', 'gm1', 'main'],
+    [SHOP, 'gm1', 'main'],
+    ['#/homebrew', 'gm1', 'main'],
+    ['#/homebrew/hb_emberaxeaaaaaaaa', 'gm1', 'main'],
+    ['#/p/set-twocards', 'gm2', 'main']
+  ];
+  for (const [route, as, scope, height = 640] of SPOTS) {
+    const here = at + menuAt + route + ' at height ' + height + ': ';
+    const s = await fresh({ width: 360, height });
+    try {
+      await s.d.open(route, as ? { as } : undefined);
+      await s.d.settled(here);
+      if (scope === 'record') {
+        await s.d.press('Первоклассный Спальный Мешок');
+        await waitIn(s.page, () => !!document.querySelector('dialog[open] .cardpick'));
+      }
+      const count = await s.page.evaluate(
+        (sc) =>
+          document.querySelectorAll(
+            (sc === 'record' ? 'dialog[open] ' : 'main ') + '.morewrap > [aria-haspopup="menu"]'
+          ).length,
+        scope
+      );
+      ok(count > 0, here + 'no «Ещё» on the page');
+      for (let i = 0; i < count; i++) {
+        const m = await s.page.evaluate(
+          async (sc, n) => {
+            const btn = document.querySelectorAll(
+              (sc === 'record' ? 'dialog[open] ' : 'main ') +
+                '.morewrap > [aria-haspopup="menu"]'
+            )[n];
+            btn.scrollIntoView({ block: 'center' });
+            btn.click();
+            await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+            const menu = document.querySelector('[role="menu"]');
+            if (!menu) return null;
+            await Promise.all(menu.getAnimations().map((a) => a.finished));
+            const r = menu.getBoundingClientRect();
+            /* The dialog's card is the box the menu must stay inside: its scrollbar takes
+               width from the window. */
+            const card = menu.closest('.modal-card');
+            const out = {
+              left: r.left,
+              right: r.right,
+              vw: card
+                ? card.getBoundingClientRect().left + card.clientWidth
+                : document.documentElement.clientWidth
+            };
+            btn.click();
+            return out;
+          },
+          scope,
+          i
+        );
+        if (!m) continue;
+        ok(
+          m.left >= 16 - 0.5 && m.right <= m.vw - 16 + 0.5,
+          here + 'menu ' + i + ' leaves no 16 px gutter - ' + JSON.stringify(m)
+        );
+      }
+    } finally {
+      await s.ctx.close();
+    }
+  }
 }
 
 const CASES = [

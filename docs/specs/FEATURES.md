@@ -2986,7 +2986,8 @@ right, so the tab order and the reading order agree
   16 px a side and the line measure, 26 px off the bottom and 26 px above the selection
   bar while the bar shows (the bar is fixed to the window's bottom on a page of any
   length); inside a modal up to 760 px, 26 px above the record dialog's dock or the
-  sheet's foot; its action button is `--surface2` with a
+  sheet's foot (under 481 px of window height the record dialog's dock moves with the
+  card, so its toast can cover the dock: `docs/specs/DEBT.md`, D136); its action button is `--surface2` with a
   `--line2` border. The error toast takes the Alarm Red fill (`--danger`) with
   dark ink (`--ink-on-gold`, about 5.6:1). No toast is gold.
 - The footer carries the full DPCGL license notice (`dict.ts`'s
@@ -3340,8 +3341,8 @@ Each rule keeps its number: a review cites it by number.
   the retry fails; the list page's «Печать» - `#main` of the print page; an in-app
   navigation that takes the pressed link or button away with its page (a roll result's
   name, «На главную», «Открыть таблицы», «показать в таблице», a `/lists` card, a homebrew
-  row, «Новый предмет», the editor's «Мои предметы», a source name, the editor's save that
-  opens the item page) - `#main`, unless the new page places the focus itself (the head's
+  row, «Новый предмет», the editor's «Мои предметы», a source name)
+  - `#main`, unless the new page places the focus itself (the head's
   mode pills, a dialog); a navigation that keeps the pressed control keeps the focus; on the
   homebrew tabs a source's «Удалить» - the next row's «Ещё», the one before,
   «Новый источник»; a section's «Удалить» - the next row's «Удалить», the one

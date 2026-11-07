@@ -957,7 +957,8 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
 
 - **Style:** a fixed plate 26px off the bottom, centered, and 26px above the selection
   bar while the bar shows; inside a modal up to 760px, 26px above the record dialog's
-  dock or the sheet's foot: Vault Wall fill, a
+  dock or the sheet's foot (under 481px of window height the record dialog's dock moves
+  with the card, so its toast can cover the dock: `docs/specs/DEBT.md`, D136): Vault Wall fill, a
   1px Ash Violet Low (`--muted2`) border, Chalk text, `--r` corners and the
   Float shadow, entering on a 0.2s rise. No toast is gold. The error flavor is
   the Alarm Red fill with Ink on Gold text (about 5.6:1). The action flavor

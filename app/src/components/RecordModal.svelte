@@ -276,6 +276,11 @@
       bottom: calc(100% + 8px);
       left: 16px;
     }
+
+    /* The sticky dock spans the card edge to edge: «Ещё» opens inside the same 16 px gutter. */
+    .modal-card :global(.cardpick .recmenu) {
+      right: 16px;
+    }
   }
 
   /* A dock of two rows would take almost half of a window this short, so it joins the
@@ -286,6 +291,11 @@
       margin: 12px 0 16px;
       padding: 0;
       border-top: 0;
+    }
+
+    /* The dock is inside the card's padding here: the gutter is already there. */
+    .modal-card :global(.cardpick .recmenu) {
+      right: 0;
     }
   }
 

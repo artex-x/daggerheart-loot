@@ -2675,6 +2675,14 @@
     margin-bottom: 8px;
   }
 
+  /* Up to 760 px `MoreMenu`'s wrap is static: the head anchors the menu, so it keeps the
+     page's 16 px gutter. */
+  @media (max-width: 760px) {
+    .lhead {
+      position: relative;
+    }
+  }
+
   .lhead-acts {
     grid-column: 2;
     grid-row: 1;
