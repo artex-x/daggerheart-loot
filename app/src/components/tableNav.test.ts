@@ -98,6 +98,33 @@ describe('the table navigation', () => {
     await expectNoA11yViolations(document.body);
   });
 
+  it("moves the focus to the new group's current tab when a pick leaves the supplements at wide", async () => {
+    const app = new AppState(fakeEnv({ viewport: fakeViewport('wide') }));
+    const main = document.body.appendChild(document.createElement('main'));
+    const props = { app, sources: [], source: null, filter: {} };
+    render(TableNav, { target: main, props: { ...props, table: 'voa' as TableId } });
+    const tabs = render(TableNav, {
+      target: main,
+      props: { ...props, table: 'voa' as TableId, part: 'tabs' as const }
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Таблица: Vault of Ages' }));
+    const sheet = within(screen.getByRole('dialog'));
+    await userEvent.click(sheet.getByRole('button', { name: 'Снаряжение' }));
+    const link = sheet.getByRole('link', { name: 'Оружие' });
+    /* The page's route change lands before the sheet's own handler runs. */
+    link.addEventListener('click', () => {
+      void tabs.rerender({ ...props, table: 'eq_weapon' as TableId, part: 'tabs' as const });
+    });
+    await userEvent.click(link);
+    await waitFor(() => {
+      expect(document.activeElement).toBe(
+        within(screen.getByRole('group', { name: 'Снаряжение' })).getByRole('link', {
+          name: 'Оружие'
+        })
+      );
+    });
+  });
+
   it('names a one-table group by its book in the picker', () => {
     nav('voa', 'narrow');
     expect(screen.getByRole('button', { name: 'Таблица: Vault of Ages' })).toBeInTheDocument();

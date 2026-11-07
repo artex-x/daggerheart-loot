@@ -585,8 +585,10 @@ function tableCtx(table, tail, lang, names, env, run) {
     const s = SECTIONED[table];
     const name = s.name(tail, lang);
     title += ' · ' + name;
+    /* The anchor after the row word is the chip ("2"), not the section name ("Volume 2"). */
+    const anchor = (s.chip && s.chip(tail)) || name;
     desc =
-      t[s.word] + ': ' + name + '. ' + plural(n(names[s.counts], tail) ?? 0, t.itemsN, lang);
+      t[s.word] + ': ' + anchor + '. ' + plural(n(names[s.counts], tail) ?? 0, t.itemsN, lang);
   }
   const path = run + (tail ? '/' + tail : '');
   return siteCtx(env, lang, {

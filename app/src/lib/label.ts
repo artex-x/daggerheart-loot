@@ -113,7 +113,7 @@ export function rarityKey(r: string): keyof Dict {
 /**
  * The name a source *key* takes, off `srcName` in app.js - not a record's own
  * source, which `srcLabel` below already names. The equipment facet's `src`
- * row picks a value out of `EQ_SRC` (the eight books plus the four frames), a
+ * row picks a value out of `EQ_SRC` (the eleven books plus the four frames), a
  * share link's adds `community`, and each needs a name for the key alone, with
  * no record behind it.
  */
@@ -133,7 +133,7 @@ export function srcName(key: string, lang: Lang): string {
     vh: t.srcVh,
     community: t.srcComm
   };
-  /* Anything not one of the eight books above or `community` is assumed to be
+  /* Anything not one of the eleven books above or `community` is assumed to be
      a frame id - the same assumption `EQ_SRC` bakes into the facet's own value list. */
   return named[key] ?? frameName(key as FrameId, lang);
 }

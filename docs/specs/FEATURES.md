@@ -348,7 +348,7 @@ across.
   позиций» / "N items" of the table, a community or frame block's label and
   count («Сообщество: Великородное. 10 позиций»), a realm block's label and
   count («Мир: Воюющие Норы. 21 позиция»), a volume or room block's label and count
-  («Комната: Библиотека. 4 позиции»), the `comm`, `frame`, `realm`, `vol` and `room`
+  («Комната: Библиотека. 4 позиции», «Том: 2. 35 позиций»), the `comm`, `frame`, `realm`, `vol` and `room`
   filter labels with no count on a filter, and the site picture. A table card
   keeps its old count in a message until the link is sent again.
 - **The three equipment tables hold equipment from every source, not only the

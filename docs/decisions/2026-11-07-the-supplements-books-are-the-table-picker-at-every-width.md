@@ -1,5 +1,6 @@
 # 2026-11-07 - The supplements' books are the table picker at every width
 
+- Amends "The table head is set by the band, not the table" (2026-11-04): from 761 px the supplements' two tab lines are gone, so the accepted trade-off of two reserved tab lines no longer holds; the reserved row is one line.
 - Task: `new-items` (the owner was away; the orchestrator took the recommended option, 2026-11-07).
 - Decision: from 761 px the tables page's supplements group draws one lit tab, the table
   picker's button, which names the open book and opens the picker's sheet, the same sheet as

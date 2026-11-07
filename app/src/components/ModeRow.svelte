@@ -54,6 +54,14 @@
     open = false;
   });
 
+  /* The menu scrolls at a short window: the checked book may start below the fold. */
+  $effect(() => {
+    if (!open) return;
+    document
+      .querySelector<HTMLElement>('#supplements-menu [aria-current="page"]')
+      ?.scrollIntoView?.({ block: 'nearest' });
+  });
+
   function close(): void {
     open = false;
   }

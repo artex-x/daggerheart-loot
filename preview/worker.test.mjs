@@ -1662,7 +1662,7 @@ describe('/tables/: a catalog table', () => {
     assert.equal(meta(room.body, 'og:description'), 'Комната: Лаборатория. 3 позиции');
     const vol = await card('/en/tables/pistolheart/2');
     assert.equal(meta(vol.body, 'og:title'), 'Pistolheart · Volume 2');
-    assert.equal(meta(vol.body, 'og:description'), 'Volume: Volume 2. 35 items');
+    assert.equal(meta(vol.body, 'og:description'), 'Volume: 2. 35 items');
   });
 
   it('labels a filter with no count', async () => {

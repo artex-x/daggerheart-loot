@@ -54,11 +54,20 @@
   let pickerButton = $state<HTMLButtonElement | undefined>(undefined);
 
   /* Rule 20: a pick closes the sheet with no `close` event, and the pressed link leaves
-     with it, so the focus returns to the picker once the sheet is gone. */
+     with it, so the focus returns to the picker once the sheet is gone. From 761 px a pick
+     into another group unmounts the picker tab: the focus goes to the new group's current
+     tab, or to its lit pill when the group has one table. */
   function picked(): void {
     picking = false;
     void tick().then(() => {
-      pickerButton?.focus();
+      if (pickerButton?.isConnected) {
+        pickerButton.focus();
+        return;
+      }
+      (
+        document.querySelector<HTMLElement>('.tabslot [aria-current="page"]') ??
+        document.querySelector<HTMLElement>('.tablenav [aria-current="page"]')
+      )?.focus();
     });
   }
 

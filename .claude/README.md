@@ -2419,8 +2419,8 @@ drops every `E2E_*` name, the secret key included, before the build:
 node --env-file=.env.test.local --input-type=module -e "import { buildEnv } from './tests/e2e/lib.mjs'; import { spawnSync } from 'node:child_process'; process.exit(spawnSync('npm run build && npm run budget', { shell: true, stdio: 'inherit', env: buildEnv(process.env) }).status ?? 1);"
 ```
 
-Expected: `within the 330 kB budget (with the account client chunk)`; task `new-items`
-on 2026-11-07 raised both limits: 272.3 kB unconfigured, measured, and about 329.4 kB
+Expected: `within the 330 kB budget (with the account client chunk)`; on 2026-11-07 both
+limits rose: 272.3 kB unconfigured, measured, and about 329.4 kB
 configured, estimated (no `.env.test.local` in that worktree; CI's `e2e` job measures it); 327.3 kB
 locally on 2026-11-06 after task 57 batch P (the print page's dock and crumb, the fonts
 port; it passed 327, so the limit rose to 328), 269.8 kB unconfigured; 326.7 kB
