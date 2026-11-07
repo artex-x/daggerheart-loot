@@ -67,15 +67,39 @@ print these records (`git grep -l` over `tests/app/snapshots`), `check:fast` and
 
 ## Step E - The share button carries the link (owner, 2026-11-07)
 
-Today (`app/src/components/RecordActions.svelte`, `send()`): «Поделиться» builds `{ title, text, url, file }` and hands it to the system share
-sheet through the share port. `url` is the record link (`app.linkToRecord(it)`) when the record is linked; `file` is the picture as a PNG when
-there is art. Many share targets (messengers, some Android and desktop targets) drop `url` when a `file` is attached, so the person receives
-the picture and the text and no link. Proposed (default, owner may change): the link is also the last line of the shared `text` whenever the
-record has a link, so every target keeps it; `url` stays for the targets that read it, with no duplicate when a target shows both (the share
-port or the component checks that the text does not already end with the link). A record with no link (a build with no preview host) sends the
-address `<site>[en/]#/i/<id>` the same way as the clipboard fallback does, so the output always names a place to open the record.
+Today (`app/src/components/RecordActions.svelte`, `send()`): «Поделиться» builds `{ title, text, url, file }` and hands it to the share port
+(`app/src/ports/share.ts`). `url` is the record link (`app.linkToRecord(it)`) when the record is linked; `file` is the picture as a PNG when
+there is art. **The cause is in the port, not in the targets:** when a file is attached and `canShare({ files })` is true, `browserShare` calls
+`nav.share({ files: [file], text: what.text })` (line 42): `url` and `title` are not passed, so the link never leaves the app. Without a file
+(`plain`) it sends `{ title, text, url }`. So every file share loses the link, on the phone too if the target shows only the text. Proposed
+(default, owner may change): when a file is attached, the link goes in the shared `text` as its last line (the port or the component adds it,
+once: check that the text does not already end with the link), and `url` is passed with it only where it does not duplicate (the Web Share API
+accepts `files`, `text`, `title` and `url` together; a target shows what it understands). A record with no link (a build with no preview host)
+sends the address `<site>[en/]#/i/<id>` the same way as the clipboard fallback does, so the output always names a place to open the record.
 Check the same hand-off in the other share buttons that carry a record or a link: the roll result row (`size sm`), the dialog dock «Поделиться»,
 the list «Поделиться» and the share panel (`SharePanel`), the own homebrew item (the preview link `/h/<uuid>?v=<v>`, `/en/h/` in English).
+
+### Step E2 - Windows (owner, 2026-11-07)
+
+The owner sees only the picture when pressing «Поделиться» on Windows; on a phone it works. Two causes stack: the port omission above, and the
+Windows share UI, which hands a shared file to the chosen app and, for many apps (Mail, Teams, Nearby sharing), shows the file and drops the
+text. What can be done here is limited; what to try, in this order, each a measured result on a Windows machine with Edge and Chrome (the
+implementer cannot run a Windows share sheet: the owner tries it):
+
+1. Fix the port omission first (above). If the Windows targets show text next to a file, that is enough.
+2. If the Windows sheet still shows only the picture: on a desktop (a fine pointer, no touch: `matchMedia('(pointer: fine)')` and
+   `!matchMedia('(any-pointer: coarse)')`, or `navigator.userAgentData?.platform === 'Windows'`) send the share WITHOUT the file, as
+   `{ title, text, url }`, so Windows targets receive the link and the text; the picture stays one press away in «Ещё» («Копировать картинку»,
+   already in the menu) and the phone keeps the file share. Trade-off: a desktop reader no longer shares the picture and the link in one press.
+3. Alternatives, not the default: a desktop split button «Поделиться» (link and text) and «Поделиться картинкой»; bake the link into the PNG as a
+   caption line (works in every target, changes the picture and the print/stub art rules); copy the picture and the link to the clipboard together
+   (`ClipboardItem` with `image/png`, `text/html` with the link and `text/plain`; the target decides what it pastes) and toast it, then open the
+   share sheet with the text only.
+4. The port keeps the three levels of its own header comment (files, text and link, none); the Windows rule is a fourth input, not a branch in
+   the component: `SharePort` decides it (as it decides `canShare` today), with a unit test per environment (`fakeShare` options) so a test
+   reads which fields each environment sends.
+
+Open owner choice after the owner has tried it on Windows: option 2 (default if step 1 is not enough) or the split button of option 3.
 
 - Files expected: `RecordActions.svelte`, `app/src/lib/share.ts` (if the text builder is the better home), their tests (`record.test.ts`
   share cases, `ports` share port test), `docs/specs/FEATURES.md` (the share lines at "Records" and "Share links"), `docs/specs/COVERAGE.md`.

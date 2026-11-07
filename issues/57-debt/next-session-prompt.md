@@ -37,10 +37,13 @@ Open, in this order:
    line), then `node tools/desc-style.mjs`, `node tools/build.js`, `node tests/run-all.js dataint,derived,contracts,craft`,
    the golden re-seed of the states that print these records (`git grep -l` over `tests/app/snapshots`), `check:fast` and both
    lints.
-   - Step E (after step D; a small code batch, `plan.md` "Step E"): the share button «Поделиться» builds `{title, text, url, file}`
-     and many share targets drop `url` when a picture file is attached, so the link is lost. Default: the link is also the
-     last line of the shared `text` whenever the record has a link (no link: the site address); unit tests per case; the
-     owner checks one phone share on production.
+   - Step E (after step D; a small code batch, `plan.md` "Step E" and "Step E2"): the share button «Поделиться» builds
+     `{title, text, url, file}`, but the share port (`app/src/ports/share.ts` line 42) sends `{ files, text }` only when a picture is
+     attached: `url` and `title` are dropped by the app itself, so the link is lost (the owner also sees only the picture on
+     Windows). Default: the link is the last line of the shared `text` whenever the record has a link (no link: the site address);
+     E2: if the Windows share sheet still shows only the picture, on a desktop (fine pointer, no touch) share without the file
+     (link and text) and keep the picture in «Ещё» («Копировать картинку»); the port decides it, unit tests per environment; the
+     owner tries one phone share (Telegram and one more) and one Windows share (Edge and Chrome) on production.
    Then the order of the debt plan is: D, E, 1, V (VW1), 2, 3 (4 and 5 ride on them).
 1. **`readme-screens` B1** (branch `claude/readme-screens`, worktree `.claude/worktrees/haiku-workflow-integration-cf5a13`,
    base `62070925`, two docs commits, not pushed). The plan is implement-ready (`issues/readme-screens/plan.md`, owner
