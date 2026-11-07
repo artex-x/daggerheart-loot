@@ -9,12 +9,14 @@ Shipped to production (each `main` run green through `deploy` and `migrate-prod`
 
 - Task 57, the redesign: S2 `02a50c39`, S3 `f883e6fc`, closeout `49528e95`.
 - Task `new-items` (Pistolheart ph, The Last Round Table lr, Escape the Veiled Halls vh): `62070925`.
-- Task `roll-per-line` (one roll row per upgrade line, `vh` one flat list, the `lr` trim): branch `claude/roll-per-line`,
-  tip `e74adffd` at the time of writing; its CI run `42382886784` was running. If the squash is not on `main` yet, finish
-  it first: `git log main --oneline -3`, `gh run list --branch claude/roll-per-line --limit 3`; after a green run of the
-  tip, `node <worktree>/.claude/hooks/ci-credit.mjs <sha>`, `git switch main`, `pull --ff-only`, `merge --squash
-  claude/roll-per-line`, credit again, commit, push, watch the `main` run, `git merge main` into the branch, switch the
-  main checkout back (it sits on `claude/roll-per-line`: switch to `main` and back, it was clean).
+- Task `roll-per-line` (one roll row per upgrade line, `vh` one flat list, the `lr` trim): `06f848fc`. The first `main` run
+  failed in `e2e` ("contract: live: no owner message named the list, its revision and this port's tab", a hosted
+  realtime check; no `supabase/` or cloud code changed); one rerun of the failed `e2e` passed and `deploy` and
+  `migrate-prod` ran. `main` is merged back into `claude/roll-per-line` (`342c91c4`). The main checkout sits on
+  `claude/roll-per-line` and is clean: switch to `main` before any squash and back after.
+- Gate facts learned: the CI credit accepts a rerun only of a failed `e2e`; a flaky `check` job needs a new run on a new
+  commit (an empty commit with the same tree worked). `homebrew.timed.test.ts` failed three times on loaded runners
+  (16.7, 17.4, 16.96 ms against 16 ms): widen its bound in the debt plan, step 1.
 
 Open, in this order:
 
