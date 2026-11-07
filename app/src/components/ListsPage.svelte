@@ -645,6 +645,12 @@
     margin-left: 0;
   }
 
+  /* The tool group spaces its controls 10 px, as `HomebrewPage`'s `.tools`; the import shows
+     from 761 px only, where `ListFind` otherwise spaces them 8 px. */
+  :global(.lfind):has(.end) {
+    gap: 10px;
+  }
+
   /* The import is as tall as «Выбрать» beside it, as on «Мои предметы». `.btn.btn`: `Button`'s
      own `.btn.sm` rule ties this one on specificity. */
   .end :global(.btn.btn.sm) {

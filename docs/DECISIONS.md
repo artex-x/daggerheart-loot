@@ -14,6 +14,7 @@ deleted.
 
 ## Index
 
+- 2026-11-06 - [One scrim, one shadow and a tool row that follows its search box](decisions/2026-11-06-one-scrim-one-shadow-and-a-tool-row-that-follows-its-search-box.md)
 - 2026-11-06 - [The print card prints in the UI face at 7.1 pt, fitted after it loads](decisions/2026-11-06-the-print-card-prints-in-the-ui-face-fitted-after-it-loads.md)
 - 2026-11-05 - [A row's text takes its row's free width; rows stay one column](decisions/2026-11-05-a-row-text-takes-its-row-s-free-width-rows-stay-one-column.md)
 - 2026-11-05 - [app/states runs as four interleaved rows; the browser job keeps 30 minutes](decisions/2026-11-05-app-states-runs-as-four-interleaved-rows.md)
