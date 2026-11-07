@@ -18,6 +18,8 @@ import {
   groupHits,
   groupIsAny,
   groupsFor,
+  inForceOf,
+  toggledFilter,
   LIST_GROUPS,
   passes
 } from './filters.js';
@@ -310,5 +312,35 @@ describe('the chosen values, named', () => {
       { group: 'burden', value: '2', label: 'Двуручное' }
     ]);
     expect(chosenLabels(rows, {})).toEqual([]);
+  });
+});
+
+describe('the picks in force and a toggled pick', () => {
+  const rows = [
+    {
+      group: 'kind',
+      label: 'Kind',
+      values: [
+        { value: 'item', label: 'Item' },
+        { value: 'weapon', label: 'Weapon' }
+      ]
+    }
+  ] as never;
+
+  it('drops a value no row offers and keeps the row order', () => {
+    expect(inForceOf(rows, { kind: ['weapon', 'gone', 'item'], src: ['core'] })).toEqual({
+      kind: ['item', 'weapon']
+    });
+    expect(inForceOf(rows, { kind: ['gone'] })).toEqual({});
+  });
+
+  it('adds a value in the row order and drops a picked one', () => {
+    expect(toggledFilter(rows, { kind: ['weapon'] }, 'kind', 'item')).toEqual({
+      kind: ['item', 'weapon']
+    });
+    expect(toggledFilter(rows, { kind: ['item', 'weapon'] }, 'kind', 'item')).toEqual({
+      kind: ['weapon']
+    });
+    expect(toggledFilter(rows, {}, 'src', 'core')).toEqual({ src: [] });
   });
 });

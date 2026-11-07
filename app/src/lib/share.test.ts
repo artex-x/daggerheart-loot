@@ -468,7 +468,7 @@ describe('a list selection, with its taken counts and total', () => {
     const a = rec('ci1');
     const b = rec('ci2');
     const { text, html } = shareSelection([a, b], index, 'ru', priced({ ci1: 2, ci2: 3 }));
-    const pa = share(a, index, 'ru', { suffix: ' ×2 — по 5 горстей' });
+    const pa = share(a, index, 'ru', { suffix: ' ×2 — 5 горстей за штуку' });
     const pb = share(b, index, 'ru', { suffix: ' ×3' });
     expect(text).toBe([pa.text, pb.text, 'Итого: 1 мешок (без цены: 1)'].join('\n\n'));
     expect(html).toBe(
@@ -553,7 +553,7 @@ describe('shareList, off listAsText/listAsHtml of the live app', () => {
     const a = share(ci1, index, 'ru', { skip: new Set(l.ids) });
     const b = share(ci2, index, 'ru', {
       skip: new Set(l.ids),
-      suffix: ' ×2 — по 7 мешков 5 горстей',
+      suffix: ' ×2 — 7 мешков 5 горстей за штуку',
       extra: [{ head: t.noteHead, body: 'Светится в темноте', md: true }]
     });
 

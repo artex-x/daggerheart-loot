@@ -30,8 +30,8 @@ export interface HelpPara {
 }
 
 export interface Help {
-  /** The name of the help's button, where it is not «Справка» (the Same Label Rule). */
-  button?: string;
+  /** The name of the help's button: what the help is about (the Same Label Rule). */
+  button: string;
   paragraphs: HelpPara[];
 }
 
@@ -190,7 +190,7 @@ const VOA: Record<Lang, Help> = {
       {
         lead: 'Стоимость Призыва.',
         parts: [
-          ' Вещи из этой книги сильнее того, что лежит в корнике, поэтому у большинства есть Стоимость Призыва. Если баланс важен, пусть игрок платит её Стрессом и меняет предмет на одну из карт домена в Руке - только тогда предмет считается снаряжённым. Если баланс не важен, правило можно не применять.'
+          ' Вещи из этой книги сильнее того, что лежит в Core, поэтому у большинства есть Стоимость Призыва. Если баланс важен, пусть игрок платит её Стрессом и меняет предмет на одну из карт домена в Руке - только тогда предмет считается снаряжённым. Если баланс не важен, правило можно не применять.'
         ]
       },
       {
@@ -219,7 +219,7 @@ const VOA: Record<Lang, Help> = {
       {
         lead: 'Recall Cost.',
         parts: [
-          ' Items in this book are often stronger than those in the core book, so most carry a Recall Cost. If balance matters at your table, have the player pay it in Stress and swap the item for one of the domain cards in their loadout - only then does it count as equipped. If balance does not matter, skip the rule.'
+          ' Items in this book are often stronger than those in Core, so most carry a Recall Cost. If balance matters at your table, have the player pay it in Stress and swap the item for one of the domain cards in their loadout - only then does it count as equipped. If balance does not matter, skip the rule.'
         ]
       },
       {
@@ -295,7 +295,7 @@ const ARAZO: Record<Lang, Help> = {
         'Своей таблицы броска у книги нет, вместо неё - «Предназначение»: на нулевой сессии каждый игрок выбирает из всех карточек четыре интересные, а мастер раскладывает их по ролям в кампании. Слух - о предмете только говорят; Немезида - им владеет враг; Приз - его нужно заслужить или купить; Суждённый - он найдётся сам, в нужный момент. Кнопка здесь только на случай, когда бросок всё же нужен.'
       ),
       p(
-        'Все семнадцать единиц снаряжения растут вместе с владельцем: у каждой четыре версии - базовая, Улучшенная, Продвинутая и Легендарная. У каждой версии свой номер, поэтому снаряжение выпадает чаще предметов. Урон, пороги и часть свойств мы подогнали под оружие и броню корника, поэтому они отличаются от книги.'
+        'Все семнадцать единиц снаряжения растут вместе с владельцем: у каждой четыре версии - базовая, Улучшенная, Продвинутая и Легендарная. У каждой версии свой номер, поэтому снаряжение выпадает чаще предметов. Урон, пороги и часть свойств мы подогнали под оружие и броню из Core, поэтому они отличаются от книги.'
       ),
       { parts: ['Источник: дополнение ', ARAZO_LINK, '.'] }
     ]
@@ -435,6 +435,126 @@ const MWT: Record<Lang, Help> = {
           ' card sets by Many Worlds Tavern.'
         ]
       }
+    ]
+  }
+};
+
+const PH_V1: HelpLink = {
+  href: 'https://www.drivethrurpg.com/en/product/547537/pistolheart-volume-1',
+  label: 'Pistolheart Volume 1'
+};
+const PH_V2: HelpLink = {
+  href: 'https://www.drivethrurpg.com/en/product/564429/pistolheart-volume-2',
+  label: 'Volume 2'
+};
+const PH_V3: HelpLink = {
+  href: 'https://www.drivethrurpg.com/en/product/578612/pistolheart-volume-3',
+  label: 'Volume 3'
+};
+
+const PH: Record<Lang, Help> = {
+  ru: {
+    button: 'Об этой книге',
+    paragraphs: [
+      p(
+        'В таблице 93 позиции из трёх томов - 18 предметов, 7 расходников и 68 единиц оружия и брони, в порядке книг. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно.'
+      ),
+      p(
+        'Шестнадцать видов оружия растут вместе с владельцем: у каждого четыре версии - базовая, Улучшенная, Продвинутая и Легендарная. У каждой версии свой номер, поэтому оружие выпадает чаще предметов. Оружие и броня есть и в таблицах снаряжения - там их отбирает фильтр «Источник».'
+      ),
+      p(
+        'Третий том добавляет магические сёдла и инфузии. Правила верховой езды, сёдел, инфузий и состояния Особо Разыскиваемый - в карточках правил на записях, которые на них ссылаются.'
+      ),
+      { parts: ['Источник: три тома Карлоса Сиско - ', PH_V1, ', ', PH_V2, ', ', PH_V3, '.'] }
+    ]
+  },
+  en: {
+    button: 'About this book',
+    paragraphs: [
+      p(
+        "The table holds 93 entries from three volumes - 18 items, 7 consumables and 68 weapons and armor, in the books' own order. No die covers that range, so the button picks an entry at random."
+      ),
+      p(
+        'Sixteen weapons grow with their bearer: each has four versions - base, Improved, Advanced and Legendary. Each version has its own number, so weapons come up more often than items. The weapons and armor are in the equipment tables too - the "Source" filter picks them out there.'
+      ),
+      p(
+        'Volume 3 adds magic saddles and Infusions. The rules for mounts, saddles, Infusions and the Most Wanted condition are rule cards on the records that point at them.'
+      ),
+      {
+        parts: [
+          'Source: three volumes by Carlos Cisco - ',
+          PH_V1,
+          ', ',
+          PH_V2,
+          ', ',
+          PH_V3,
+          '.'
+        ]
+      }
+    ]
+  }
+};
+
+const LR_LINK: HelpLink = {
+  href: 'https://heartofdaggers.com/products/the-last-round-table/',
+  label: 'The Last Round Table'
+};
+
+const LR: Record<Lang, Help> = {
+  ru: {
+    button: 'Об этой книге',
+    paragraphs: [
+      p(
+        'В таблице 26 позиций - 11 предметов, 12 расходников и 3 единицы оружия, в порядке книги. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно.'
+      ),
+      p(
+        'Книга описывает живую таверну, и многие находки связаны с ней. Рецепты, купчая на таверну и фруктовый кекс ссылаются на карточки правил. Оружие есть и в таблицах снаряжения - там его отбирает фильтр «Источник».'
+      ),
+      { parts: ['Источник: дополнение ', LR_LINK, '.'] }
+    ]
+  },
+  en: {
+    button: 'About this book',
+    paragraphs: [
+      p(
+        "The table holds 26 entries - 11 items, 12 consumables and 3 weapons, in the book's own order. No die covers that range, so the button picks an entry at random."
+      ),
+      p(
+        'The book describes a living tavern, and many finds belong to it. The recipes, the deed to the tavern and the fruitcake point at rule cards. The weapons are in the equipment tables too - the "Source" filter picks them out there.'
+      ),
+      { parts: ['Source: the ', LR_LINK, ' supplement.'] }
+    ]
+  }
+};
+
+const VH_LINK: HelpLink = {
+  href: 'https://heartofdaggers.com/products/escape-the-veiled-halls/',
+  label: 'Escape the Veiled Halls'
+};
+
+const VH: Record<Lang, Help> = {
+  ru: {
+    button: 'Об этой книге',
+    paragraphs: [
+      p(
+        'В разделе четыре комнаты приключения, у каждой своя таблица добычи: Подвал - 4 позиции, Гардеробная - 4, Лаборатория - 3, Библиотека - 4. Сначала выберите комнату, потом бросьте кость: в таблице из 4 позиций это d4. В Лаборатории книга бросает d3; такой кости у кнопки нет, поэтому там она выбирает позицию случайно.'
+      ),
+      p(
+        'Зелье Воспоминаний улучшается до Большого Зелья Воспоминаний, а Зелье Предвидения - до Легендарного Зелья Предвидения.'
+      ),
+      { parts: ['Источник: приключение ', VH_LINK, '.'] }
+    ]
+  },
+  en: {
+    button: 'About this book',
+    paragraphs: [
+      p(
+        'This section holds the four rooms of the adventure, each with its own loot table: The Basement has 4 entries, The Dressing Room 4, The Laboratory 3 and The Library 4. Pick a room, then roll: a 4-entry table rolls a d4. The book rolls a d3 in The Laboratory; the button has no such die, so there it picks an entry at random.'
+      ),
+      p(
+        'The Remembrance Potion upgrades to the Major Remembrance Potion, and the Foresight Potion to the Legendary Foresight Potion.'
+      ),
+      { parts: ['Source: the ', VH_LINK, ' adventure.'] }
     ]
   }
 };
@@ -587,125 +707,6 @@ const TABLES: Record<Lang, Help> = {
   }
 };
 
-/**
- * The lists index's help. Paragraph 3 carries two bold words and
- * paragraph 4 one, mid-sentence rather than a `lead` - each sits inside
- * running prose, not at the paragraph's head, so each is a run of parts.
- */
-const LISTS: Record<Lang, Help> = {
-  ru: {
-    paragraphs: [
-      p(
-        'Соберите список: отметьте нужное галочками в «Таблицах» или «Поиске» и нажмите «В список». То же самое можно сделать прямо с карточки предмета - меню остаётся открытым, поэтому один предмет легко положить сразу в несколько списков.'
-      ),
-      p(
-        'Войдите - и списки будут храниться в аккаунте: они сохраняются сами и открываются на любом устройстве.'
-      ),
-      {
-        parts: [
-          'У списка и у каждой позиции две заметки. ',
-          { b: 'Для игроков' },
-          ' уезжает вместе с текстом и ссылкой для игроков. ',
-          { b: 'Только для мастера' },
-          ' остаётся у вас: ни в текст, ни в ссылку для игроков она не попадает.'
-        ]
-      },
-      {
-        parts: [
-          'Списком из аккаунта делятся кнопкой ',
-          { b: 'Поделиться' },
-          ': в ней ссылка для игроков и ссылка для мастера, в которой видны и заметки «Только для мастера». По ссылке всегда открывается список таким, какой он сейчас. «Удалить ссылку» закрывает доступ по ней, «Создать ссылку» даёт новую.'
-        ]
-      },
-      p(
-        'Списки аккаунта можно отметить и скачать файлом JSON или удалить разом, а «Импорт из файла» добавляет списки из такого файла - например, чтобы перенести их в другой аккаунт. Формат файла описан для ИИ-помощников в llms.txt.'
-      )
-    ]
-  },
-  en: {
-    paragraphs: [
-      p(
-        'Build a list: tick what you need in Tables or Search and press "Add to list". The same works straight from an item card - the menu stays open, so one item goes into several lists without reopening anything.'
-      ),
-      p(
-        'Sign in and your lists are kept in your account: they save themselves and open on any device.'
-      ),
-      {
-        parts: [
-          'A list and every entry in it carry two notes. ',
-          { b: 'For players' },
-          " travels with the copied text and with the players' link. ",
-          { b: 'GM only' },
-          ' stays with you: it reaches neither.'
-        ]
-      },
-      {
-        parts: [
-          'Share a list from your account with ',
-          { b: 'Share' },
-          ': it holds a players\' link and a GM\'s link, which also shows the "GM only" notes. A link always opens the list as it is now. "Delete link" ends access through it, "Create link" makes a new one.'
-        ]
-      },
-      p(
-        'Tick account lists to download them as a JSON file or delete them together; "Import from file" adds lists from such a file - to move them to another account, for example. The file format is described for AI assistants in llms.txt.'
-      )
-    ]
-  }
-};
-
-/**
- * The money picker's own help, off the `moneyHelp` string in app.js - one
- * paragraph with five bold runs mid-sentence: the three-unit list, then each
- * of the three worked examples' rounded answer. Not a section's help (no
- * page has a route called "money"), so it stays out of `HELP` and is read
- * through `moneyHelpFor` instead.
- */
-const MONEY: Record<Lang, Help> = {
-  ru: {
-    paragraphs: [
-      {
-        parts: [
-          'Корник считает золото ',
-          { b: 'горстями, мешками и сундуками' },
-          ': 10 горстей = 1 мешок, 10 мешков = 1 сундук. Монеты - опциональное правило, по которому 1 горсть = 10 монет, значит мешок = 100, а сундук = 1000. Цена вводится монетами в любом случае: режим меняет только то, как её прочитают. Читается она так, как о деньгах говорят за столом - двумя старшими единицами и с округлением до ближайшей: 750 - это ',
-          { b: '7 мешков 5 горстей' },
-          ', 894 - ',
-          { b: '8 мешков 9 горстей' },
-          ', а 899 - уже ',
-          { b: '9 мешков' },
-          '. Монет в этом виде нет вовсе: 804 - просто ',
-          { b: '8 мешков' },
-          '.'
-        ]
-      }
-    ]
-  },
-  en: {
-    paragraphs: [
-      {
-        parts: [
-          'The core book counts gold in ',
-          { b: 'handfuls, bags and chests' },
-          ': 10 handfuls = 1 bag, 10 bags = 1 chest. Coins are an optional rule where 1 handful = 10 coins, so a bag is 100 and a chest 1000. A price is always typed in coins: the mode only changes how it reads. It reads the way money is spoken of at the table - two units at most, rounded to the nearest: 750 is ',
-          { b: '7 bags 5 handfuls' },
-          ', 894 is ',
-          { b: '8 bags 9 handfuls' },
-          ', and 899 is already ',
-          { b: '9 bags' },
-          '. There are no coins in this reading at all: 804 is simply ',
-          { b: '8 bags' },
-          '.'
-        ]
-      }
-    ]
-  }
-};
-
-/** The money picker's help, in the given language. */
-export function moneyHelpFor(lang: Lang): Help {
-  return MONEY[lang];
-}
-
 const HELP: Record<string, Record<Lang, Help>> = {
   std: STD,
   alt: ALT,
@@ -716,8 +717,10 @@ const HELP: Record<string, Record<Lang, Help>> = {
   arazo: ARAZO,
   community: COMMUNITY,
   mwt: MWT,
-  tables: TABLES,
-  lists: LISTS
+  ph: PH,
+  lr: LR,
+  vh: VH,
+  tables: TABLES
 };
 
 /** What this section explains about itself, or null where nothing is written. */

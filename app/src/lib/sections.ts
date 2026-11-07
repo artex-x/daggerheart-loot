@@ -1,11 +1,11 @@
-/* The three sections that roll inside a chosen part of their book.
+/* The four sections that roll inside a chosen part of their book.
  *
  * Vault of Ages has no roll table of its own, so the book's own six divisions
  * are the choice: four tiers, then artifacts and cursed objects, which are
  * categories rather than tiers and exist nowhere else. Community items are
  * grouped by the community they belong to, and the roll is a d10 inside one.
  * Many Worlds Tavern is one card set per realm, and the roll is inside
- * one realm's deck.
+ * one realm's deck; Escape the Veiled Halls prints one loot table per room.
  *
  * The list of communities is derived from the records rather than written down
  * again. app.js keeps a hardcoded pair list, and a second copy of nine proper
@@ -15,8 +15,8 @@
 
 import type { Index } from './data.js';
 import type { Dict } from './dict.js';
-import { REALM_ORDER, realmName } from './realms.js';
-import type { Lang, Record_, VoaTier } from './types.js';
+import { SECTION_PROP } from './sectionProps.js';
+import type { Lang, Record_, TableId, VoaTier } from './types.js';
 
 /** One choice of a picker: the id the rows are looked up by, and its chip caption. */
 export interface Part {
@@ -88,13 +88,16 @@ export function communityParts(index: Index | null, lang: Lang): Part[] {
     : [];
 }
 
-/** The realms as picker choices, in release order. A fixed set: it does not wait
- *  for the index. */
-export function realmParts(lang: Lang): Part[] {
-  return REALM_ORDER.map((id) => ({ id, label: realmName(id, lang) }));
+/** The sections of a sectioned table as picker choices, in book order: the realms of Many
+ *  Worlds Tavern, the rooms of Escape the Veiled Halls. A fixed set: it does not wait for
+ *  the index. */
+export function sectionParts(table: TableId, lang: Lang): Part[] {
+  const prop = SECTION_PROP[table];
+  return prop ? prop.order.map((id) => ({ id, label: prop.name(id, lang) })) : [];
 }
 
-/** The records of one realm, in card order: what its roll picks from. */
-export function realmGroup(index: Index, id: string): readonly Record_[] {
-  return (index.rows.get('mwt') ?? []).filter((x) => x.realm === id);
+/** The records of one section of a sectioned table, in card order: what its roll picks from. */
+export function sectionGroup(index: Index, table: TableId, id: string): readonly Record_[] {
+  const prop = SECTION_PROP[table];
+  return prop ? (index.rows.get(table) ?? []).filter((x) => prop.valueOf(x) === id) : [];
 }

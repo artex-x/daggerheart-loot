@@ -1,15 +1,9 @@
-<script lang="ts" module>
-  /** Which row of the card a button belongs to, as the live app splits them. */
-  export type ActionRow = 'name' | 'card' | 'share' | 'menu';
-</script>
-
 <script lang="ts">
-  /* Everything a person does with one record. A compact card draws two icon buttons
-     beside the name - copy the name, copy the link - and a labeled row under the
-     description: send, picture, text. The record page, the dialog and a roll result draw
-     «Поделиться» on the action row and the four copies as items of its «Ещё» menu.
+  /* Everything a person does with one record. The record page, the dialog and a roll
+     result draw «Поделиться» on the action row and the four copies as items of its «Ещё»
+     menu.
 
-     One component renders every row, because the handlers are shared and
+     One component renders both rows, because the handlers are shared and
      splitting them would mean two copies of the clipboard logic.
 
      It takes the record and the index rather than reading them off `app`, so
@@ -30,7 +24,8 @@
     app: AppState;
     index: Index;
     it: Record_;
-    row: ActionRow;
+    /** «Поделиться» on the action row, or the copies as items of «Ещё». */
+    row: 'share' | 'menu';
     /** The live `contextNote` (`git show 23c00a6^:app.js`): while a list is open, copying
      *  one of its entries appends the players' note it carries there. Passed
      *  in rather than looked up here - this component does not know what a
@@ -180,7 +175,7 @@
 
 {#if row === 'share'}
   <Button {size} onclick={() => void send()}><Icon name="share" />{t.share}</Button>
-{:else if row === 'menu'}
+{:else}
   {#each menuItems as m (m.label)}
     <button
       type="button"
@@ -192,75 +187,4 @@
       }}><Icon name={m.icon} />{m.label}</button
     >
   {/each}
-{:else if row === 'name'}
-  <button
-    type="button"
-    class="iconbtn"
-    title={t.copyName}
-    aria-label={t.copyName}
-    onclick={() => void copyName()}
-  >
-    <Icon name="copy" />
-  </button>
-  {#if linked}
-    <button
-      type="button"
-      class="iconbtn"
-      title={t.copyLink}
-      aria-label={t.copyLink}
-      onclick={() => void copyLink()}
-    >
-      <Icon name="link" />
-    </button>
-  {/if}
-{:else}
-  <Button
-    variant="primary"
-    size="sm"
-    title={t.sendAll}
-    label={t.sendAll}
-    onclick={() => void send()}
-  >
-    <Icon name="share" /><span class="btn-lbl">{t.sendAll}</span>
-  </Button>
-  {#if hasImage}
-    <!-- A record with no art has nothing to copy, so the live app leaves the
-         button out rather than offering a placeholder - and it drops the
-         button again once that art fails to load (app.js hasImage). -->
-    <Button size="sm" title={t.copyImg} label={t.copyImg} onclick={() => void copyImage()}>
-      <Icon name="image" /><span class="btn-lbl">{t.sImg}</span>
-    </Button>
-  {/if}
-  <Button size="sm" title={t.copyText} label={t.copyText} onclick={() => void copyText()}>
-    <Icon name="copy" /><span class="btn-lbl">{t.sText}</span>
-  </Button>
 {/if}
-
-<style>
-  /* The icon pair beside the name, off `.card-name button` in style.css. */
-  .iconbtn {
-    border: 0;
-    background: transparent;
-    padding: 3px;
-    border-radius: 6px;
-    color: var(--muted2);
-    flex: none;
-    line-height: 0;
-    transition: 0.15s;
-    cursor: pointer;
-  }
-
-  .iconbtn:hover {
-    color: var(--gold);
-    background: var(--surface2);
-  }
-
-  /* Bare icon buttons came out at about 20px, too small to hit reliably on a
-     phone - off the mobile block in style.css. */
-  @media (max-width: 600px) {
-    .iconbtn {
-      padding: 11px;
-      margin-bottom: 2px;
-    }
-  }
-</style>

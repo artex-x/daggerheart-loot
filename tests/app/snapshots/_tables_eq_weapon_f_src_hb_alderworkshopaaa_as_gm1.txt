@@ -19,8 +19,6 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Поиск" [url=/search]
   main ""
     heading "Таблицы" [level=1]
-    button "Открывать при запуске" [pressed=false]
-    button "Об этих данных" [expanded=false]
     navigation "Таблицы"
       link "Core" [url=/tables/core_item]
       link "Hope & Fear" [url=/tables/hope_and_fear_item]
@@ -29,16 +27,18 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Снаряжение" [url=/tables/eq_weapon]
       link "Прочее" [url=/tables/other_starting]
       link "Хоумбрю" [url=/tables/homebrew]
-      link "Оружие" [url=/tables/eq_weapon]
-      link "Вторичное" [url=/tables/eq_secondary]
-      link "Броня" [url=/tables/eq_armor]
+    button "Открывать при запуске" [pressed=false]
+    button "Об этих данных" [expanded=false]
+    link "Оружие" [url=/tables/eq_weapon]
+    link "Вторичное" [url=/tables/eq_secondary]
+    link "Броня" [url=/tables/eq_armor]
     searchbox "Поиск по названию или описанию..."
     button "Список" [pressed=false]
     button "Сетка" [pressed=true]
     switch "Свои предметы" [checked=true]
     StaticText "Свои предметы"
     button "Ссылка на таблицу"
-    StaticText "Показано 1 из 459"
+    StaticText "Показано 1 из 513"
     button "Выбрать"
     complementary "Фильтры"
       heading "Фильтры · 1" [level=2]
@@ -48,9 +48,10 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       button "Все" [pressed=true]
       button "1" [pressed=false]
       button "2" [pressed=false]
-      ... button x30 of 34 same-shape siblings elided
+      ... button x29 of 33 same-shape siblings elided
       StaticText "ИСТОЧНИК"
       button "Мастерская Ольхи" [pressed=true]
+      button "и ещё 3" [expanded=false]
       ... StaticText x3 of 7 same-shape siblings elided
       ... button x3 of 7 same-shape siblings elided
       StaticText "ХВАТ"
@@ -81,8 +82,10 @@ Dread GM Toolbox
 EN
 Hope & Fear
 Many Worlds Tavern
+Pistolheart
 RU
 The Dragon's Vault
+The Last Round Table
 Vault of Ages
 Wondrous Environments
 daggerheart.com
@@ -105,7 +108,6 @@ daggerheart.com
 Инстинкт
 Искусность
 К содержимому
-Колоссы Сухоземья
 Конфиденциальность
 ЛутDaggerheart
 Магическое
@@ -114,7 +116,6 @@ daggerheart.com
 Оружие
 Открывать при запуске
 Очень далеко
-Пир зверей
 Поиск
 Поиск по названию или описанию...
 Проворность
@@ -130,12 +131,12 @@ daggerheart.com
 Ссылка на фильтры
 Таблицы
 Топор Тлеющих УглейМагическое · Характеристика Заклинателя · Впл... [namelen=93 namehash=8940453c]
-Тёмное сердце Андалурии
 Уникальные
 Условия использования
 Установить как приложение
 Физическое
 Хоумбрю
+и ещё 3
 
 ## en :: tree
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_src-hb_alderworkshopaaa?as=gm1]
@@ -153,8 +154,6 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_sr
       link "Search" [url=/en/search]
   main ""
     heading "Tables" [level=1]
-    button "Open on start" [pressed=false]
-    button "About this data" [expanded=false]
     navigation "Tables"
       link "Core" [url=/en/tables/core_item]
       link "Hope & Fear" [url=/en/tables/hope_and_fear_item]
@@ -163,16 +162,18 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_sr
       link "Equipment" [url=/en/tables/eq_weapon]
       link "Other" [url=/en/tables/other_starting]
       link "Homebrew" [url=/en/tables/homebrew]
-      link "Weapons" [url=/en/tables/eq_weapon]
-      link "Secondary" [url=/en/tables/eq_secondary]
-      link "Armor" [url=/en/tables/eq_armor]
+    button "Open on start" [pressed=false]
+    button "About this data" [expanded=false]
+    link "Weapons" [url=/en/tables/eq_weapon]
+    link "Secondary" [url=/en/tables/eq_secondary]
+    link "Armor" [url=/en/tables/eq_armor]
     searchbox "Search by name or description..."
     button "List" [pressed=false]
     button "Grid" [pressed=true]
     switch "Own items" [checked=true]
     StaticText "Own items"
     button "Link to this table"
-    StaticText "1 of 459 shown"
+    StaticText "1 of 513 shown"
     button "Select"
     complementary "Filters"
       heading "Filters · 1" [level=2]
@@ -182,9 +183,10 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_sr
       button "All" [pressed=true]
       button "1" [pressed=false]
       button "2" [pressed=false]
-      ... button x30 of 34 same-shape siblings elided
+      ... button x29 of 33 same-shape siblings elided
       StaticText "SOURCE"
       button "Alder Workshop" [pressed=true]
+      button "and 3 more" [expanded=false]
       ... StaticText x3 of 7 same-shape siblings elided
       ... button x3 of 7 same-shape siblings elided
       StaticText "BURDEN"
@@ -217,11 +219,8 @@ Alt. tables
 Arazo's Artifacts
 Armor
 Artifacts
-Beast Feast
 Close
-Colossus of the Drylands
 Core
-Dark Heart of Andaluria
 Dread GM Toolbox
 EN
 Ember AxeMagic · Spellcast · Melee · d10+2 mag · Two-Handed
@@ -246,6 +245,7 @@ One-Handed
 Open on start
 Other
 Physical
+Pistolheart
 Presence
 Privacy
 RU
@@ -261,6 +261,7 @@ Supplements
 Tables
 Terms of use
 The Dragon's Vault
+The Last Round Table
 Two-Handed
 Unique
 Upgradable
@@ -269,4 +270,5 @@ Very Close
 Very Far
 Weapons
 Wondrous Environments
+and 3 more
 daggerheart.com

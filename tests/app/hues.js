@@ -160,7 +160,8 @@ const gap = (a, b) => {
     '#/roll/vault_of_ages',
     '#/roll/dragons_vault',
     '#/roll/arazos_artifacts',
-    '#/roll/many_worlds_tavern'
+    '#/roll/many_worlds_tavern',
+    '#/roll/escape_the_veiled_halls'
   ]) {
     const one = await rollLook(h);
     ok(one.length === 1, h + ': not exactly one roll button');
@@ -265,6 +266,44 @@ const gap = (a, b) => {
   ok(
     !!tileFill && selFill !== tileFill,
     'the selected tile does not differ in its fill: ' + selFill + ' vs ' + tileFill
+  );
+
+  /* A ticked row of the owner's list page is lit and neutral, as a catalog row: no gold in
+   * its border or its fill (DESIGN.md, "The Seal Rule"). */
+  console.log('ticked list row');
+  await d.open('#/lists/00000000-0000-4000-8000-000000000101', { as: 'gm1' });
+  await d.tick('Первоклассный Спальный Мешок');
+  const listSel = await page.evaluate(() => {
+    const el = document.querySelector('.lrow.sel');
+    if (!el) return null;
+    const cs = getComputedStyle(el);
+    return [cs.borderTopColor, cs.backgroundColor];
+  });
+  ok(!!listSel, 'ticked list row: .lrow.sel not found');
+  const goldish = (c) => {
+    const [r, g, b] = (c.match(/[\d.]+/g) ?? []).map(Number);
+    return r - b > 40 && g - b > 20;
+  };
+  ok(
+    !!listSel && !listSel.some(goldish),
+    'a ticked list row is gold: ' + JSON.stringify(listSel)
+  );
+
+  /* A ticked card of the lists index is neutral too: a lit border, no gold. */
+  console.log('ticked list card');
+  await d.open('#/lists', { as: 'gm1' });
+  for (let i = 0; i < 40 && !(await d.count('.listcard')); i++) await d.settle();
+  await d.tick('Выбрать: Трофеи');
+  const cardSel = await page.evaluate(() => {
+    const el = document.querySelector('.listcard.picked');
+    if (!el) return null;
+    const cs = getComputedStyle(el);
+    return [cs.borderTopColor, cs.backgroundColor];
+  });
+  ok(!!cardSel, 'ticked list card: .listcard.picked not found');
+  ok(
+    !!cardSel && !cardSel.some(goldish),
+    'a ticked list card is gold: ' + JSON.stringify(cardSel)
   );
 
   await ctx.close();

@@ -16,15 +16,14 @@ RootWebArea "Предметы сообществ - Генератор лута D
       link "Бросок" [url=/roll/community_items]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
-  navigation "Режим броска"
-    link "Обычные правила" [url=/roll/std]
-    link "Альтернативные таблицы" [url=/roll/alt]
-    button "Предметы сообществ" [expanded=false haspopup=menu]
   main ""
-    heading "Предметы сообществ" [level=1]
+    heading "Бросок" [level=1]
+    navigation "Режим броска"
+      link "Обычные правила" [url=/roll/std]
+      link "Альтернативные таблицы" [url=/roll/alt]
+      button "Предметы сообществ" [expanded=false haspopup=menu]
     button "Открывать при запуске" [pressed=false]
     button "Об этих предметах" [expanded=false]
-    StaticText "Выберите происхождение и бросьте d10."
     combobox "Сообщество" [value=Великородное expanded=false haspopup=menu]
       option "Великородное" [selected=true]
       option "Научное" [selected=false]
@@ -41,7 +40,8 @@ RootWebArea "Предметы сообществ - Генератор лута D
     status ""
       StaticText "Королевская Брошь"
     button "Открыть карточку"
-    ... StaticText x2 of 6 same-shape siblings elided
+    StaticText "1"
+    StaticText "ПРЕДМЕТ"
     StaticText "ВЕЛИКОРОДНОЕ"
     link "Королевская Брошь" [description=Открыть страницу url=/i/cm1]
     StaticText "Пока вы открыто носите эту брошь во владениях или поселении Вели..." [namelen=187 namehash=d75660e2]
@@ -98,15 +98,14 @@ RootWebArea "Community items - Daggerheart Loot Generator" [url=/en/roll/communi
       link "Roll" [url=/en/roll/community_items]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
-  navigation "Roll mode"
-    link "Standard rules" [url=/en/roll/std]
-    link "Alternate tables" [url=/en/roll/alt]
-    button "Community items" [expanded=false haspopup=menu]
   main ""
-    heading "Community items" [level=1]
+    heading "Roll" [level=1]
+    navigation "Roll mode"
+      link "Standard rules" [url=/en/roll/std]
+      link "Alternate tables" [url=/en/roll/alt]
+      button "Community items" [expanded=false haspopup=menu]
     button "Open on start" [pressed=false]
     button "About these items" [expanded=false]
-    StaticText "Pick an origin and roll d10."
     combobox "Community" [value=Highborne expanded=false haspopup=menu]
       option "Highborne" [selected=true]
       option "Loreborne" [selected=false]
@@ -123,7 +122,8 @@ RootWebArea "Community items - Daggerheart Loot Generator" [url=/en/roll/communi
     status ""
       StaticText "Royal Brooch"
     button "Open card"
-    ... StaticText x2 of 6 same-shape siblings elided
+    StaticText "1"
+    StaticText "ITEM"
     StaticText "HIGHBORNE"
     link "Royal Brooch" [description=Open page url=/i/en/cm1]
     StaticText "Wearing this brooch openly while within a Highborne domain or se..." [namelen=155 namehash=642af9c6]

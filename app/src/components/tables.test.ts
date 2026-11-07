@@ -10,7 +10,6 @@ import userEvent from '@testing-library/user-event';
 import { flushSync, tick } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
-import FilterBar from './FilterBar.svelte';
 import RowMain from './RowMain.svelte';
 import SelBar from './SelBar.svelte';
 import TablesPage from './TablesPage.svelte';
@@ -36,7 +35,6 @@ import { ART_BASE } from '../lib/art.js';
 import { buildIndex, type Loot } from '../lib/data.js';
 import { ICONS } from '../lib/icons.js';
 import { dict } from '../lib/dict.js';
-import type { FacetRow } from '../lib/facets.js';
 import { recordOf, withRecords } from '../lib/homebrew.js';
 import { tablesHash } from '../lib/hash.js';
 import type { Record_, TableId } from '../lib/types.js';
@@ -213,10 +211,9 @@ describe('the index', () => {
       await tick();
       expect(container.querySelector('.tablenav'), hash).toBe(before);
     }
-    expect(screen.getByRole('link', { name: 'Wondrous Environments' })).toHaveAttribute(
-      'aria-current',
-      'page'
-    );
+    expect(
+      screen.getByRole('button', { name: 'Таблица: Wondrous Environments' })
+    ).toBeInTheDocument();
   });
 
   it('opens on core_item, with the book chip on and its two sub-chips shown', () => {
@@ -433,13 +430,11 @@ describe('the view switch', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Сетка' }));
     expect(document.querySelector('.tilewrap')).toBeInTheDocument();
     expect(env.storage.get('dhloot.prefs.v1')).toBeNull();
-    expect(document.querySelector('.keepnote')).toBeNull();
   });
 
-  it('draws no note under the view switch, which carries the choice alone', async () => {
+  it('has no violations with the view switched, signed in', async () => {
     const { container } = render(App, { env: at({ cloud: fakeCloud(SEED) }) });
     await userEvent.click(screen.getByRole('button', { name: 'Сетка' }));
-    expect(document.querySelector('.keepnote')).toBeNull();
     await expectNoA11yViolations(container);
   });
 
@@ -651,20 +646,24 @@ describe('the selection bar', () => {
     expect(container.querySelector('.selcount')).toHaveTextContent('Выбрано: 6');
   });
 
-  it('the menu names a single ticked record "лежит в списках"', async () => {
+  it('heads the menu «Списки» and toggles its rows for a single ticked record', async () => {
     await openBar();
     await userEvent.click(rowCheckboxes()[0] as HTMLElement);
     await openBarMenu();
-    expect(screen.getByText('Лежит в списках')).toBeInTheDocument();
+    expect(screen.getByText('Списки')).toHaveClass('lbl');
+    expect(document.querySelector('.dropmenu .lrow')).toHaveAttribute('aria-pressed');
   });
 
-  it('the menu names two or more ticked records "Добавить в"', async () => {
+  it('heads the menu «Списки» for two ticked records, its rows only adding: no pressed state', async () => {
     await openBar();
     const boxes = rowCheckboxes();
     await userEvent.click(boxes[0] as HTMLElement);
     await userEvent.click(boxes[1] as HTMLElement);
     await openBarMenu();
-    expect(screen.getByText('Добавить в')).toBeInTheDocument();
+    expect(screen.getByText('Списки')).toHaveClass('lbl');
+    const rows = [...document.querySelectorAll('.dropmenu .lrow')];
+    expect(rows.length).toBeGreaterThan(0);
+    for (const r of rows) expect(r).not.toHaveAttribute('aria-pressed');
   });
 
   it('keeps the menu newest first for two ticked records, even where a list holds one of them', async () => {
@@ -678,7 +677,10 @@ describe('the selection bar', () => {
     await userEvent.click(boxes[1] as HTMLElement);
     await openBarMenu();
     const chips = screen.getAllByRole('button', { name: /Клад дракона|Лавка в порту/ });
-    expect(chips.map((c) => c.textContent)).toEqual(['Лавка в порту', 'Клад дракона']);
+    expect(chips.map((c) => c.querySelector('.ln')?.textContent)).toEqual([
+      'Лавка в порту',
+      'Клад дракона'
+    ]);
   });
 
   it('a chip adds every ticked id in one press, keeps the ticks, and toasts the count', async () => {
@@ -826,32 +828,6 @@ describe('the table link', () => {
 describe('the filter', () => {
   const wond = (over: Partial<Env> = {}): Env =>
     fakeEnv({ router: memoryRouter('#/tables/wondrous'), data: fakeData(LOOT), ...over });
-
-  it('draws no link button without a copy action, and the pills and the reset still', async () => {
-    const t = dict('ru');
-    const rows: FacetRow[] = [
-      { group: 'kind', label: t.kindF, values: [{ value: 'item', label: t.fItems }] }
-    ];
-    const props = {
-      rows,
-      picked: { kind: ['item'] },
-      shown: 1,
-      total: 2,
-      open: false,
-      t,
-      ontoggle: vi.fn(),
-      onpick: vi.fn(),
-      onreset: vi.fn()
-    };
-    const { container } = render(FilterBar, props);
-    expect(container.querySelector('.fpill')).toHaveTextContent(t.fItems);
-    expect(screen.getByRole('button', { name: 'Сбросить всё' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: t.filterLink })).not.toBeInTheDocument();
-    await expectNoA11yViolations(container);
-    cleanup();
-    render(FilterBar, { ...props, oncopylink: vi.fn() });
-    expect(screen.getByRole('button', { name: t.filterLink })).toBeInTheDocument();
-  });
 
   it('draws the column from 1000 px with «Все» pressed, and no count line', async () => {
     const { container } = render(App, { env: wond() });
@@ -1354,7 +1330,9 @@ describe('the chip nav', () => {
     const nav = screen.getByRole('group', { name: 'Группа' });
     return [...nav.querySelectorAll('a')].map((a) => a.textContent);
   };
-  const bookRow = (): HTMLElement | null => document.querySelector('.tablenav .tabs');
+  /** The third level: the tabs under the head (DESIGN.md, "The Head Order Rule"). */
+  const bookRow = (): HTMLElement | null =>
+    document.querySelector('.page-below .tabslot > .tabs');
 
   it('draws six group chips signed out, the supplements under one', () => {
     render(App, {
@@ -1371,7 +1349,7 @@ describe('the chip nav', () => {
   });
 
   it.each(['many_worlds_tavern', 'core_item'])(
-    'holds the group and book chips of %s in one navigation landmark named by the tab',
+    'holds the group chips of %s in one navigation landmark, the book tabs after the help',
     async (table) => {
       const { container } = render(App, {
         env: fakeEnv({ router: memoryRouter(`#/tables/${table}`), data: fakeData(LOOT) })
@@ -1382,8 +1360,20 @@ describe('the chip nav', () => {
       expect(
         within(navs[0] as HTMLElement).getByRole('link', { name: 'Core' })
       ).toBeInTheDocument();
+      /* The head order: the heading, the chips, the pin, the help, then the tabs. */
+      const h1 = screen.getByRole('heading', { level: 1, name: 'Таблицы' });
+      const pin = screen.getByRole('button', { name: 'Открывать при запуске' });
+      const help = screen.getByRole('button', { name: 'Об этих данных' });
+      const order: Element[] = [h1, navs[0] as HTMLElement, pin, help];
       if (table === 'many_worlds_tavern') {
-        expect(navs[0]).toContainElement(bookRow());
+        const row = bookRow() as HTMLElement;
+        expect(navs[0]).not.toContainElement(row);
+        order.push(row);
+      }
+      for (let i = 1; i < order.length; i++) {
+        expect(order[i - 1]?.compareDocumentPosition(order[i] as Node)).toBe(
+          Node.DOCUMENT_POSITION_FOLLOWING
+        );
       }
       await expectNoA11yViolations(container);
       cleanup();
@@ -1411,8 +1401,8 @@ describe('the chip nav', () => {
     });
   });
 
-  it.each(['wondrous', 'dread', 'voa', 'dv', 'arazo', 'community', 'mwt'])(
-    'lights «Дополнения» on %s and draws the book row with that book current',
+  it.each(['wondrous', 'dread', 'voa', 'dv', 'arazo', 'community', 'mwt', 'ph', 'lr', 'vh'])(
+    'lights «Дополнения» on %s and names that book on the picker tab, its sheet holding the ten',
     async (table) => {
       const { container } = render(App, {
         env: fakeEnv({ router: memoryRouter(`#/tables/${table}`), data: fakeData(LOOT) })
@@ -1421,7 +1411,14 @@ describe('the chip nav', () => {
       const group = within(tablenav).getByRole('link', { name: 'Дополнения' });
       expect(group).toHaveAttribute('aria-current', 'page');
       expect(group).toHaveAttribute('href', '/tables/wondrous_environments');
-      const row = bookRow() as HTMLElement;
+      /* Ten tabs would take two lines up to about 1380 px: the row is the picker. */
+      const tabRow = bookRow() as HTMLElement;
+      expect(within(tabRow).queryAllByRole('link')).toHaveLength(0);
+      const picker = within(tabRow).getByRole('button', { name: /^Таблица: / });
+      expect(picker).toHaveAttribute('aria-haspopup', 'dialog');
+      if (table === 'voa') await expectNoA11yViolations(container);
+      await userEvent.click(picker);
+      const row = within(screen.getByRole('dialog')).getByRole('group', { name: 'Дополнения' });
       const books = within(row).getAllByRole('link');
       const names = [
         'Wondrous Environments',
@@ -1430,16 +1427,18 @@ describe('the chip nav', () => {
         "The Dragon's Vault",
         "Arazo's Artifacts",
         'Предметы сообществ',
-        'Many Worlds Tavern'
+        'Many Worlds Tavern',
+        'Pistolheart',
+        'The Last Round Table',
+        'Escape the Veiled Halls'
       ];
       expect(books).toEqual(names.map((name) => within(row).getByRole('link', { name })));
-      expect(row).toHaveAttribute('aria-label', 'Дополнения');
-      expect(
-        books
-          .filter((a) => a.getAttribute('aria-current') === 'page')
-          .map((a) => a.getAttribute('href'))
-      ).toEqual([tablesHash(table as TableId).slice(1)]);
-      if (table === 'voa') await expectNoA11yViolations(container);
+      const current = books.filter((a) => a.getAttribute('aria-current') === 'page');
+      expect(current.map((a) => a.getAttribute('href'))).toEqual([
+        tablesHash(table as TableId).slice(1)
+      ]);
+      expect(picker).toHaveAccessibleName('Таблица: ' + String(current[0]?.textContent));
+      expect(picker).toHaveTextContent(String(current[0]?.textContent));
     }
   );
 

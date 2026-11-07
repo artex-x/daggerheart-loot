@@ -14,7 +14,10 @@ export const SUPPLEMENTS = [
   'roll/dv',
   'roll/arazo',
   'roll/community',
-  'roll/mwt'
+  'roll/mwt',
+  'roll/ph',
+  'roll/lr',
+  'roll/vh'
 ] as const satisfies readonly Section[];
 
 /** The three jobs of the header. */
@@ -25,7 +28,7 @@ export function isSupplement(s: Section | null): boolean {
   return s !== null && (SUPPLEMENTS as readonly Section[]).includes(s);
 }
 
-/** Returns whether a section is one of the nine roll sections. */
+/** Returns whether a section is one of the twelve roll sections. */
 export function isRoll(s: Section | null): boolean {
   return s !== null && s.startsWith('roll/');
 }

@@ -8,6 +8,7 @@ import { browserClock, fixedClock, queryClock, TEST_NOW } from './clock.js';
 import { browserDialog, fakeDialog } from './dialog.js';
 import { edgeSpeed, fakeDrag, nativeDrag, noDrag } from './drag.js';
 import { browserMotion, fakeMotion } from './motion.js';
+import { browserFonts, fakeFonts } from './fonts.js';
 import { browserScroll, fakeScroll } from './scroll.js';
 import { browserViewport, fakeViewport } from './viewport.js';
 import { browserPage, fakePage } from './page.js';
@@ -1501,6 +1502,54 @@ describe('the motion port', () => {
   it('has a fake that answers what it is told', () => {
     expect(fakeMotion(true).reduced()).toBe(true);
     expect(fakeMotion().reduced()).toBe(false);
+  });
+});
+
+describe('the fonts port', () => {
+  const stubFonts = (fonts: unknown): void => {
+    Object.defineProperty(document, 'fonts', { configurable: true, value: fonts });
+  };
+  afterEach(() => {
+    Reflect.deleteProperty(document, 'fonts');
+  });
+
+  it('answers true after a face that was loading, and false when none was', async () => {
+    let settle: () => void = () => {};
+    const ready = new Promise<void>((r) => {
+      settle = r;
+    });
+    stubFonts({ status: 'loading', ready });
+    let answer: boolean | undefined;
+    void browserFonts()
+      .settled()
+      .then((a) => {
+        answer = a;
+      });
+    await Promise.resolve();
+    expect(answer).toBeUndefined();
+    settle();
+    await ready;
+    await Promise.resolve();
+    expect(answer).toBe(true);
+
+    stubFonts({ status: 'loaded', ready: Promise.resolve() });
+    expect(await browserFonts().settled()).toBe(false);
+  });
+
+  it('answers false at once where the document has no font set (jsdom)', async () => {
+    expect('fonts' in document).toBe(false);
+    expect(await browserFonts().settled()).toBe(false);
+  });
+
+  it('has a fake that answers at once, or holds until released', async () => {
+    expect(await fakeFonts().settled()).toBe(false);
+    const held = fakeFonts(true);
+    const first = held.settled();
+    const second = held.settled();
+    held.release(true);
+    expect(await Promise.all([first, second])).toEqual([true, true]);
+    expect(fakeEnv().fonts).toBeDefined();
+    expect(await fakeEnv().fonts.settled()).toBe(false);
   });
 });
 

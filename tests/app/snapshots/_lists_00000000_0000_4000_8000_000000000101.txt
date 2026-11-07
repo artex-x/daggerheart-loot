@@ -1,6 +1,6 @@
 # #/lists/00000000-0000-4000-8000-000000000101
 # route: #/lists/00000000-0000-4000-8000-000000000101
-# why: signed out on an account address: «Список не найден», the line asking to sign in, one «Войти»
+# why: signed out on an account address: the error page «Войдите, чтобы открыть список», its cause, «Войти» and «Открыть таблицы»
 
 ## ru :: tree
 RootWebArea "Генератор лута Daggerheart" [url=/lists/00000000-0000-4000-8000-000000000101]
@@ -17,9 +17,12 @@ RootWebArea "Генератор лута Daggerheart" [url=/lists/00000000-0000-
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
-    heading "Список не найден" [level=1]
-    StaticText "Если это список из вашего аккаунта, войдите, чтобы открыть его."
+    heading "Войдите, чтобы открыть список" [level=1]
+    StaticText "Списки открываются только в аккаунте, где их создали. Войдите в ..." [namelen=69 namehash=32433df5]
     button "Войти"
+    link "Открыть таблицы" [url=/tables]
+    status ""
+      StaticText "Войдите, чтобы открыть список"
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -36,6 +39,7 @@ daggerheart.com
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
+Открыть таблицы
 Поиск
 Таблицы
 Условия использования
@@ -56,9 +60,12 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/lists/00000000-0000-4000-8000-
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
-    heading "List not found" [level=1]
-    StaticText "If this list is in your account, sign in to open it."
+    heading "Sign in to open this list" [level=1]
+    StaticText "A list opens only in the account where it was made. Sign in to t..." [namelen=76 namehash=ed4d5344]
     button "Sign in"
+    link "Open the tables" [url=/en/tables]
+    status ""
+      StaticText "Sign in to open this list"
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -70,6 +77,7 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/lists/00000000-0000-4000-8000-
 EN
 Install as an app
 LootDaggerheart
+Open the tables
 Privacy
 RU
 Roll

@@ -36,22 +36,25 @@
     (
       | {
           href: string;
+          /** A count after the label, as the homebrew pills draw it. */
+          count?: number | undefined;
           onclick?: never;
-          busy?: never;
           neutral?: never;
           filter?: never;
+          place?: never;
         }
       | {
           href?: never;
+          count?: never;
           onclick: () => void;
-          /** A choice whose read runs: dimmed, announced busy, and a press does nothing; the
-           *  focus stays on it. */
-          busy?: boolean | undefined;
           /** The neutral pressed default (DESIGN.md, "Chips"): a check and a lit ground,
            *  never gold. A filter row's «Все» is its caller. */
           neutral?: boolean | undefined;
           /** A filter value, `<group>:<value>`, as `data-fval` for the browser suites. */
           filter?: string | undefined;
+          /** A table chip of the picker sheet: the group is a place, shown by its fill with
+           *  no check (DESIGN.md, "The Check Rule"). */
+          place?: boolean | undefined;
         }
     );
 
@@ -61,12 +64,15 @@
     title,
     size = 'md',
     href,
+    count,
     onclick,
     value,
-    busy,
     neutral,
-    filter
+    filter,
+    place = false
   }: Props = $props();
+  /* The space keeps the count apart in the accessible name («Предметы 44»). */
+  const gap = $derived(count === undefined ? '' : ' ');
 </script>
 
 {#if href}
@@ -77,7 +83,10 @@
     aria-current={on ? 'page' : undefined}
     data-val={value}
     {title}
-    {href}>{label}</a
+    {href}
+    ><span class="pl" data-label={label}>{label}</span>{gap}{#if count !== undefined}<span
+        class="n">{count}</span
+      >{/if}</a
   >
 {:else}
   <button
@@ -89,13 +98,9 @@
     aria-pressed={on}
     data-val={value}
     data-fval={filter}
-    aria-busy={busy ? 'true' : undefined}
-    aria-disabled={busy ? 'true' : undefined}
     {title}
-    onclick={() => {
-      if (!busy) onclick?.();
-    }}
-    >{#if neutral && on}<Icon name="check" />{/if}{label}</button
+    {onclick}
+    >{#if on && !place}<Icon name="check" />{/if}{label}</button
   >
 {/if}
 
@@ -118,14 +123,9 @@
     overflow-wrap: anywhere;
   }
 
-  .chip:hover:not([aria-disabled='true']) {
+  .chip:hover {
     border-color: var(--gold);
     color: var(--txt);
-  }
-
-  .chip[aria-disabled='true'] {
-    opacity: 0.5;
-    cursor: default;
   }
 
   .chip.on {
@@ -135,11 +135,41 @@
     font-weight: 650;
   }
 
-  /* The neutral pressed default: the check and the label share one center. */
-  .chip.neutral.on {
+  /* The label keeps the width of its lit weight, so a lit pill does not move its neighbors
+     (DESIGN.md, "Sibling pills"). */
+  .pl {
+    display: inline-grid;
+  }
+
+  .pl::after {
+    content: attr(data-label) / '';
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    font-weight: 650;
+  }
+
+  .chip .n {
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: var(--muted2);
+  }
+
+  /* Ink on Gold on the lit pill (DESIGN.md, "The Ink Rule"). */
+  .chip.on .n {
+    color: inherit;
+  }
+
+  /* A pressed chip draws the check (DESIGN.md "Components", "The Check Rule"); the check
+     and the label share one center. A link chip marks a place and draws none. */
+  button.chip.on {
     display: inline-flex;
     align-items: center;
     gap: 6px;
+  }
+
+  /* The neutral pressed default. */
+  .chip.neutral.on {
     background: var(--surface2);
     border-color: var(--muted2);
     color: var(--txt);
@@ -150,5 +180,16 @@
   .chip.sm {
     padding: 5px 11px;
     font-size: var(--t-data);
+  }
+
+  /* The thumb target (DESIGN.md, "The Phone-First Rule"); the label keeps its center. */
+  @media screen and (max-width: 600px) {
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: var(--thumb);
+      min-width: var(--thumb);
+    }
   }
 </style>

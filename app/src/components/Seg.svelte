@@ -10,6 +10,9 @@
   interface Option<T> {
     value: T;
     label: string;
+    /** A dot after the label and this hidden text: the option holds something (the list
+     *  page's filled note). */
+    filled?: string | undefined;
   }
 
   interface Props<T> {
@@ -67,7 +70,10 @@
       onclick={() => {
         onchange(o.value === value && none !== undefined ? none : o.value);
       }}
-      >{#if neutral && o.value === value}<Icon name="check" />{/if}{o.label}</button
+      >{#if o.value === value}<Icon name="check" />{/if}{o.label}{#if o.filled}<span
+          class="dot"
+          aria-hidden="true"
+        ></span><span class="vh">{o.filled}</span>{/if}</button
     >
   {/each}
 </div>
@@ -109,11 +115,19 @@
     color: var(--ink-on-gold);
   }
 
-  /* The icon and the label share one center (DESIGN.md, "Buttons"). */
-  .seg.neutral button {
+  /* Every pressed option draws the check (DESIGN.md "Components", "The Check Rule"); the
+     icon and the label share one center (DESIGN.md, "Buttons"). */
+  .seg button {
     display: inline-flex;
     align-items: center;
     gap: 6px;
+  }
+
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentcolor;
   }
 
   .seg.neutral button.on {
@@ -130,10 +144,19 @@
      global `:focus-visible` rule (tokens.css) already reaches every
      control, at the one radius the owner chose. */
 
+  /* The thumb target; the track gives up its inset so the header keeps its height
+     (DESIGN.md, "The Phone-First Rule"), and the pressed option fills it. */
   @media (max-width: 600px) {
+    .seg {
+      padding: 0 1px;
+    }
+
     .seg button,
     .seg.small button {
       padding: 8px 14px;
+      min-height: var(--thumb);
+      min-width: var(--thumb);
+      justify-content: center;
     }
   }
 </style>

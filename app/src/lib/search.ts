@@ -12,7 +12,7 @@
  * the same stem, so «зелёный» (stem "зелен") never answers "зелье" (stem
  * "зел"). A phrase in quotes matches as typed, with no word forms.
  *
- * No index: 1459 records are few enough to scan on every keystroke, and an
+ * No index: 1593 records are few enough to scan on every keystroke, and an
  * own item is searchable the moment it exists.
  *
  * Never a near miss: a fuzzy match would offer "клык" for "лук"
@@ -196,7 +196,7 @@ export interface HayParts {
 }
 
 /* One folded string per field, so no term can bleed across a field boundary. */
-type Hay = (it: Record_) => HayParts;
+export type Hay = (it: Record_) => HayParts;
 
 const folded = (fields: readonly (string | undefined)[]): string[] =>
   fields.filter((s): s is string => !!s).map(foldQuery);

@@ -38,5 +38,6 @@
   .lead {
     flex: 1 1 320px;
     min-width: 0;
+    max-width: var(--measure-line);
   }
 </style>

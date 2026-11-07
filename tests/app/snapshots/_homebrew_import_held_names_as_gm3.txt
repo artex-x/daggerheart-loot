@@ -19,7 +19,6 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
       link "Поиск" [url=/search]
   main ""
     heading "Мои предметы" [level=1]
-    button "Открывать при запуске" [pressed=false]
     navigation "Мои предметы"
       link "Предметы 39" [url=/homebrew]
         StaticText "Предметы"
@@ -33,6 +32,7 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
       link "Карты правил 0" [url=/homebrew/rules]
         StaticText "Карты правил"
         StaticText "0"
+    button "Открывать при запуске" [pressed=false]
     link "Новый предмет" [url=/homebrew/new]
     StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
     StaticText "ИМПОРТ ПРЕДМЕТОВ ИЗ ФАЙЛА JSON"
@@ -158,7 +158,6 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm3]
       link "Search" [url=/en/search]
   main ""
     heading "My items" [level=1]
-    button "Open on start" [pressed=false]
     navigation "My items"
       link "Items 39" [url=/en/homebrew]
         StaticText "Items"
@@ -172,6 +171,7 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm3]
       link "Rule cards 0" [url=/en/homebrew/rules]
         StaticText "Rule cards"
         StaticText "0"
+    button "Open on start" [pressed=false]
     link "New item" [url=/en/homebrew/new]
     StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
     StaticText "IMPORT ITEMS FROM A JSON FILE"

@@ -128,7 +128,7 @@
 
   /* off the editor's select (`HomebrewEditor.svelte`) */
   select {
-    height: 38px;
+    height: max(38px, var(--thumb));
     width: 100%;
     min-width: 0;
     max-width: 100%;

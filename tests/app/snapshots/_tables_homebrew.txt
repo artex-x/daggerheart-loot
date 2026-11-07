@@ -18,8 +18,6 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Поиск" [url=/search]
   main ""
     heading "Таблицы" [level=1]
-    button "Открывать при запуске" [pressed=false]
-    button "Об этих данных" [expanded=false]
     navigation "Таблицы"
       link "Core" [url=/tables/core_item]
       link "Hope & Fear" [url=/tables/hope_and_fear_item]
@@ -27,6 +25,8 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Дополнения" [url=/tables/wondrous_environments]
       link "Снаряжение" [url=/tables/eq_weapon]
       link "Прочее" [url=/tables/other_starting]
+    button "Открывать при запуске" [pressed=false]
+    button "Об этих данных" [expanded=false]
     StaticText "Войдите, чтобы видеть свои предметы в таблицах."
     button "Войти"
   contentinfo ""
@@ -74,8 +74,6 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/homebrew]
       link "Search" [url=/en/search]
   main ""
     heading "Tables" [level=1]
-    button "Open on start" [pressed=false]
-    button "About this data" [expanded=false]
     navigation "Tables"
       link "Core" [url=/en/tables/core_item]
       link "Hope & Fear" [url=/en/tables/hope_and_fear_item]
@@ -83,6 +81,8 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/homebrew]
       link "Supplements" [url=/en/tables/wondrous_environments]
       link "Equipment" [url=/en/tables/eq_weapon]
       link "Other" [url=/en/tables/other_starting]
+    button "Open on start" [pressed=false]
+    button "About this data" [expanded=false]
     StaticText "Sign in to see your own items in the tables."
     button "Sign in"
   contentinfo ""

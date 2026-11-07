@@ -77,7 +77,9 @@ const NAMES = {
     godsvale: { n: 20 },
     hornet: { n: 11 },
     drome: { n: 17 }
-  }
+  },
+  volumes: { 1: { n: 36 }, 2: { n: 35 }, 3: { n: 22 } },
+  rooms: { basement: { n: 4 }, dressing: { n: 4 }, laboratory: { n: 3 }, library: { n: 4 } }
 };
 
 /* get_item_preview's item keys: the record's drawn keys only. */
@@ -1655,6 +1657,12 @@ describe('/tables/: a catalog table', () => {
     assert.equal(meta(drome.body, 'og:title'), 'Many Worlds Tavern · Дром');
     assert.equal(meta(drome.body, 'og:description'), 'Мир: Дром. 17 позиций');
     assertRedirect(drome.body, SITE + '#/tables/many_worlds_tavern/drome');
+    const room = await card('/tables/escape_the_veiled_halls/laboratory');
+    assert.equal(meta(room.body, 'og:title'), 'Escape the Veiled Halls · Лаборатория');
+    assert.equal(meta(room.body, 'og:description'), 'Комната: Лаборатория. 3 позиции');
+    const vol = await card('/en/tables/pistolheart/2');
+    assert.equal(meta(vol.body, 'og:title'), 'Pistolheart · Volume 2');
+    assert.equal(meta(vol.body, 'og:description'), 'Volume: 2. 35 items');
   });
 
   it('labels a filter with no count', async () => {
@@ -1679,6 +1687,10 @@ describe('/tables/: a catalog table', () => {
     assert.equal(meta(realm.body, 'og:title'), 'Many Worlds Tavern');
     assert.equal(meta(realm.body, 'og:description'), 'Мир: Спорополис, Долина Богов');
     assertRedirect(realm.body, SITE + '#/tables/mwt/f_kind-equip.realm-sporopolis-godsvale');
+    const rooms = await card('/tables/vh/f_room-basement-library');
+    assert.equal(meta(rooms.body, 'og:description'), 'Комната: Подвал, Библиотека');
+    const vols = await card('/tables/ph/f_vol-1-3');
+    assert.equal(meta(vols.body, 'og:description'), 'Том: 1, 3');
   });
 
   it('draws the open line for a filter with no labeled group, and the plain card for an unlabeled anchor', async () => {

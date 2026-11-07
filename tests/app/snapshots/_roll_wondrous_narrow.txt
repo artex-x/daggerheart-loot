@@ -21,8 +21,7 @@ RootWebArea "Wondrous Environments - Генератор лута Daggerheart" [u
     link "Альтернативные таблицы" [url=/roll/alt]
     button "Wondrous Environments" [expanded=false haspopup=menu]
   main ""
-    heading "Wondrous Environments" [level=1]
-    StaticText "Введите результат броска или получите случайную позицию."
+    heading "Бросок" [level=1]
     button "Бросить 1-119"
     heading "Бросок 1" [level=2]
     button "Настроить" [expanded=false]
@@ -88,8 +87,7 @@ RootWebArea "Wondrous Environments - Daggerheart Loot Generator" [url=/en/roll/w
     link "Alternate tables" [url=/en/roll/alt]
     button "Wondrous Environments" [expanded=false haspopup=menu]
   main ""
-    heading "Wondrous Environments" [level=1]
-    StaticText "Enter your roll result, or pick a random entry."
+    heading "Roll" [level=1]
     button "Roll 1-119"
     heading "Roll 1" [level=2]
     button "Set up" [expanded=false]

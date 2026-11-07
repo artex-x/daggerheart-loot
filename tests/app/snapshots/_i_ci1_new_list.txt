@@ -23,6 +23,7 @@ RootWebArea "Первоклассный Спальный Мешок - Генер
     link "показать в таблице" [url=/tables/core_item/ci1]
     StaticText "Во время отдыха вы автоматически очищаете Стресс."
     button "В список" [expanded=true]
+    StaticText "СПИСКИ"
     StaticText "Войдите, чтобы создать список."
     button "Войти" [focused=true]
     button "Отмена"
@@ -76,7 +77,11 @@ RootWebArea "Premium Bedroll - Daggerheart Loot Generator" [url=/i/en/ci1?v=<v>]
     StaticText "Core · Items · roll 1 "
     link "show in the table" [url=/en/tables/core_item/ci1]
     StaticText "During downtime, you automatically clear a Stress."
-    button "Add to list" [expanded=false]
+    button "Add to list" [expanded=true]
+    StaticText "LISTS"
+    StaticText "Sign in to create a list."
+    button "Sign in" [focused=true]
+    button "Cancel"
     button "Share"
     button "Print" [description=Lay these out for printing: nine to an A4 sheet expanded=false]
     button "More" [expanded=false haspopup=menu]
@@ -89,6 +94,7 @@ RootWebArea "Premium Bedroll - Daggerheart Loot Generator" [url=/i/en/ci1?v=<v>]
 
 ## en :: controls
 Add to list
+Cancel
 EN
 Install as an app
 LootDaggerheart

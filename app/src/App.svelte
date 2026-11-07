@@ -2,8 +2,8 @@
   import {
     communityGroup,
     communityParts,
-    realmGroup,
-    realmParts,
+    sectionGroup,
+    sectionParts,
     voaGroup,
     voaParts
   } from './lib/sections.js';
@@ -13,21 +13,21 @@
   import type { Lang, Record_, Section } from './lib/types.js';
 
   /* The sections that roll a single number over a whole table. Vault of Ages,
-     Communities and Many Worlds Tavern roll one number too, but inside a part of
-     their book, so `PICKER_ROLL` names the part and its rows for one shared panel.
-     Core rules and the alternate tables roll several cards at once, and the
+     Communities, Many Worlds Tavern and Escape the Veiled Halls roll one number too, but
+     inside a part of their book, so `PICKER_ROLL` names the part and its rows for one
+     shared panel. Core rules and the alternate tables roll several cards at once, and the
      alternate tables roll two dice, so both have panels of their own. */
-  const ROLL_TABLE: Partial<Record<Section, { table: string; title: keyof Dict }>> = {
-    'roll/wondrous': { table: 'wondrous', title: 'pageWondrous' },
-    'roll/dread': { table: 'dread', title: 'pageDread' },
-    'roll/dv': { table: 'dv', title: 'pageDv' },
-    'roll/arazo': { table: 'arazo', title: 'pageArazo' }
+  const ROLL_TABLE: Partial<Record<Section, { table: string }>> = {
+    'roll/wondrous': { table: 'wondrous' },
+    'roll/dread': { table: 'dread' },
+    'roll/dv': { table: 'dv' },
+    'roll/arazo': { table: 'arazo' },
+    'roll/ph': { table: 'ph' },
+    'roll/lr': { table: 'lr' }
   };
 
   interface PickerRoll {
-    section: 'voa' | 'community' | 'mwt';
-    title: keyof Dict;
-    sub: keyof Dict;
+    section: 'voa' | 'community' | 'mwt' | 'vh';
     label: keyof Dict;
     parts: (t: Dict, lang: Lang, index: Index | null) => Part[];
     rows: (index: Index, id: string) => readonly Record_[];
@@ -36,27 +36,27 @@
   const PICKER_ROLL: Partial<Record<Section, PickerRoll>> = {
     'roll/voa': {
       section: 'voa',
-      title: 'pageVoa',
-      sub: 'subVoa',
       label: 'voaSection',
       parts: (t) => voaParts(t),
       rows: voaGroup
     },
     'roll/community': {
       section: 'community',
-      title: 'pageCommunity',
-      sub: 'subCommunity',
       label: 'communityLabel',
       parts: (_t, lang, index) => communityParts(index, lang),
       rows: communityGroup
     },
     'roll/mwt': {
       section: 'mwt',
-      title: 'pageMwt',
-      sub: 'subMwt',
       label: 'realmLabel',
-      parts: (_t, lang) => realmParts(lang),
-      rows: realmGroup
+      parts: (_t, lang) => sectionParts('mwt', lang),
+      rows: (index, id) => sectionGroup(index, 'mwt', id)
+    },
+    'roll/vh': {
+      section: 'vh',
+      label: 'roomLabel',
+      parts: (_t, lang) => sectionParts('vh', lang),
+      rows: (index, id) => sectionGroup(index, 'vh', id)
     }
   };
 </script>
@@ -122,29 +122,21 @@
       {@const cfg = ROLL_TABLE[app.route.section]}
       {@const pr = PICKER_ROLL[app.route.section]}
       {#if cfg}
-        <!-- The three whole-table rolls share this branch; a number kept from one table
+        <!-- The whole-table rolls share this branch; a number kept from one table
              points past the end of a shorter one (docs/specs/FEATURES.md, "Rolling"). -->
         {#key app.route.section}
-          <RollPanel
-            {app}
-            section={cfg.table}
-            title={app.t[cfg.title]}
-            sub={app.t.subWondrous}
-            rows={app.index?.rows.get(cfg.table) ?? []}
-          />
+          <RollPanel {app} section={cfg.table} rows={app.index?.rows.get(cfg.table) ?? []} />
         {/key}
       {:else if app.route.section === 'roll/std'}
         <StdPanel {app} />
       {:else if app.route.section === 'roll/alt'}
         <AltPanel {app} />
       {:else if pr}
-        <!-- One panel serves three sections; the key gives each its own pick. -->
+        <!-- One panel serves four sections; the key gives each its own pick. -->
         {#key app.route.section}
           <PickerRollPanel
             {app}
             section={pr.section}
-            title={app.t[pr.title]}
-            sub={app.t[pr.sub]}
             label={app.t[pr.label]}
             parts={pr.parts(app.t, app.lang, app.index)}
             rowsOf={(id: string) => (app.index ? pr.rows(app.index, id) : [])}

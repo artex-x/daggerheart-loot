@@ -19,8 +19,6 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Поиск" [url=/search]
   main ""
     heading "Таблицы" [level=1]
-    button "Открывать при запуске" [pressed=false]
-    button "Об этих данных" [expanded=false]
     navigation "Таблицы"
       link "Core" [url=/tables/core_item]
       link "Hope & Fear" [url=/tables/hope_and_fear_item]
@@ -29,13 +27,9 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Снаряжение" [url=/tables/eq_weapon]
       link "Прочее" [url=/tables/other_starting]
       link "Хоумбрю" [url=/tables/homebrew]
-      link "Wondrous Environments" [url=/tables/wondrous_environments]
-      link "Dread GM Toolbox" [url=/tables/dread_gm_toolbox]
-      link "Vault of Ages" [url=/tables/vault_of_ages]
-      link "The Dragon's Vault" [url=/tables/dragons_vault]
-      link "Arazo's Artifacts" [url=/tables/arazos_artifacts]
-      link "Предметы сообществ" [url=/tables/community_items]
-      link "Many Worlds Tavern" [url=/tables/many_worlds_tavern]
+    button "Открывать при запуске" [pressed=false]
+    button "Об этих данных" [expanded=false]
+    button "Таблица: Dread GM Toolbox" [haspopup=dialog]
     searchbox "Поиск по названию или описанию..."
     button "Список" [pressed=false]
     button "Сетка" [pressed=true]
@@ -89,16 +83,10 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 8ПредметАмулет ЗариAmulet of the Dawn
 9ПредметАмулет ЖизнестойкостиAmulet of Vitality
 ?Об этих данных
-Arazo's Artifacts
 Core
-Dread GM Toolbox
 EN
 Hope & Fear
-Many Worlds Tavern
 RU
-The Dragon's Vault
-Vault of Ages
-Wondrous Environments
 daggerheart.com
 Аккаунт: gm1@example.test
 Альт. таблицы
@@ -113,13 +101,13 @@ daggerheart.com
 Поиск
 Поиск по названию или описанию...
 Предметы
-Предметы сообществ
 Прочее
 Расходники
 Сетка
 Снаряжение
 Список
 Ссылка на таблицу
+Таблица: Dread GM Toolbox
 Таблицы
 Условия использования
 Установить как приложение
@@ -141,8 +129,6 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/dread_gm_toolb
       link "Search" [url=/en/search]
   main ""
     heading "Tables" [level=1]
-    button "Open on start" [pressed=false]
-    button "About this data" [expanded=false]
     navigation "Tables"
       link "Core" [url=/en/tables/core_item]
       link "Hope & Fear" [url=/en/tables/hope_and_fear_item]
@@ -151,13 +137,9 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/dread_gm_toolb
       link "Equipment" [url=/en/tables/eq_weapon]
       link "Other" [url=/en/tables/other_starting]
       link "Homebrew" [url=/en/tables/homebrew]
-      link "Wondrous Environments" [url=/en/tables/wondrous_environments]
-      link "Dread GM Toolbox" [url=/en/tables/dread_gm_toolbox]
-      link "Vault of Ages" [url=/en/tables/vault_of_ages]
-      link "The Dragon's Vault" [url=/en/tables/dragons_vault]
-      link "Arazo's Artifacts" [url=/en/tables/arazos_artifacts]
-      link "Community items" [url=/en/tables/community_items]
-      link "Many Worlds Tavern" [url=/en/tables/many_worlds_tavern]
+    button "Open on start" [pressed=false]
+    button "About this data" [expanded=false]
+    button "Table: Dread GM Toolbox" [haspopup=dialog]
     searchbox "Search by name or description..."
     button "List" [pressed=false]
     button "Grid" [pressed=true]
@@ -214,11 +196,8 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/dread_gm_toolb
 Account: gm1@example.test
 All
 Alt. tables
-Arazo's Artifacts
-Community items
 Consumables
 Core
-Dread GM Toolbox
 EN
 Equipment
 Grid
@@ -229,7 +208,6 @@ Items
 Link to this table
 List
 LootDaggerheart
-Many Worlds Tavern
 Open on start
 Other
 Privacy
@@ -240,9 +218,7 @@ Search by name or description...
 Select
 Skip to content
 Supplements
+Table: Dread GM Toolbox
 Tables
 Terms of use
-The Dragon's Vault
-Vault of Ages
-Wondrous Environments
 daggerheart.com

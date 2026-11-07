@@ -349,30 +349,32 @@
                   }}
                 />
               </div>
+              <!-- The two print defaults carry the group names of the `/p/` toolbar. -->
               <div class="set">
-                <span class="setname">{t.defaultPrint}</span>
-                <div class="wb">
-                  <Seg
-                    neutral
-                    small
-                    options={art}
-                    value={app.printBW ? 'bw' : 'color'}
-                    label={t.defaultPrint}
-                    onchange={(v: 'color' | 'bw') => {
-                      app.setPrintBW(v === 'bw');
-                    }}
-                  />
-                  <Seg
-                    neutral
-                    small
-                    options={sizes}
-                    value={app.printCompact ? 'compact' : 'std'}
-                    label={t.printSize}
-                    onchange={(v: 'std' | 'compact') => {
-                      app.setPrintCompact(v === 'compact');
-                    }}
-                  />
-                </div>
+                <span class="setname">{t.printInk}</span>
+                <Seg
+                  neutral
+                  small
+                  options={art}
+                  value={app.printBW ? 'bw' : 'color'}
+                  label={t.printInk}
+                  onchange={(v: 'color' | 'bw') => {
+                    app.setPrintBW(v === 'bw');
+                  }}
+                />
+              </div>
+              <div class="set">
+                <span class="setname">{t.printSize}</span>
+                <Seg
+                  neutral
+                  small
+                  options={sizes}
+                  value={app.printCompact ? 'compact' : 'std'}
+                  label={t.printSize}
+                  onchange={(v: 'std' | 'compact') => {
+                    app.setPrintCompact(v === 'compact');
+                  }}
+                />
               </div>
               <!-- A select at every width: three answers of the owner's length do not
                    fit a segmented control at 360 px. -->
@@ -558,10 +560,15 @@
 <!-- eslint-enable @typescript-eslint/no-confusing-void-expression -->
 
 <style>
-  /* The page reads as one column at `.page-sub`'s own measure; signed in, two columns
-     from 1000 px, the left one first in the DOM, so the tab order reads as the page. */
-  .col {
-    max-width: 70ch;
+  /* Signed out the sign-in panel keeps the passage measure and the lead takes the line
+     measure (DESIGN.md, "The Measure Rule"); signed in, one column at the passage measure,
+     two from 1000 px, the left one first in the DOM, so the tab order reads as the page. */
+  .col:has(.acc) {
+    max-width: var(--measure-text);
+  }
+
+  .col:not(:has(.acc)) > :global(.panel) {
+    max-width: var(--measure-text);
   }
 
   @media (min-width: 1000px) {
@@ -650,7 +657,7 @@
 
   /* TextInput.svelte's box at a button's height. */
   select {
-    height: 38px;
+    height: max(38px, var(--thumb));
     width: auto;
     max-width: 100%;
     padding: 0 10px;
@@ -665,13 +672,6 @@
     outline: none;
     border-color: var(--gold);
     box-shadow: 0 0 0 3px rgb(216 171 94 / 14%);
-  }
-
-  /* The two print defaults wrap inside 360 px. */
-  .wb {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
   }
 
   @media (max-width: 600px) {

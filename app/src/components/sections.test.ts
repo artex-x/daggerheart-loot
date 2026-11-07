@@ -1,4 +1,4 @@
-/* The three roll pages that choose a part of their book first.
+/* The four roll pages that choose a part of their book first.
  *
  * Driven through App, which is what covers the picker components with them:
  * a select with a name and a value, and a test that asserts that in isolation
@@ -15,6 +15,15 @@ import type { Loot } from '../lib/data.js';
 import type { Record_ } from '../lib/types.js';
 
 afterEach(cleanup);
+
+/** The roll page's heading names the job; the lit control of the mode row names the page. */
+function expectPage(name: string): void {
+  expect(
+    screen.getByRole('heading', { level: 1, name: /^(Бросок|Roll)$/ })
+  ).toBeInTheDocument();
+  const modes = screen.getByRole('navigation', { name: /^(Режим броска|Roll mode)$/ });
+  expect(modes.querySelector('[aria-current="page"]')).toHaveTextContent(name);
+}
 
 const rec = (over: Partial<Record_>): Record_ => ({
   id: 'x',
@@ -75,6 +84,26 @@ const LOOT: Loot = {
       rec({ id: 'h2', src: 'mwt', realm: 'hornet', roll: 2, ru: 'Второй шершневый' }),
       rec({ id: 'd1', src: 'mwt', realm: 'drome', roll: 1, ru: 'Первый дромовый' }),
       rec({ id: 'd2', src: 'mwt', realm: 'drome', roll: 2, ru: 'Второй дромовый' })
+    ],
+    vh: [
+      ...[1, 2, 3, 4].map((n) =>
+        rec({
+          id: `b${String(n)}`,
+          src: 'vh',
+          room: 'basement',
+          roll: n,
+          ru: `Подвальный ${String(n)}`
+        })
+      ),
+      ...[1, 2, 3].map((n) =>
+        rec({
+          id: `l${String(n)}`,
+          src: 'vh',
+          room: 'laboratory',
+          roll: n,
+          ru: `Лабораторный ${String(n)}`
+        })
+      )
     ]
   },
   eq: [],
@@ -99,9 +128,7 @@ const chosen = (name: string): HTMLElement =>
 describe('Vault of Ages', () => {
   it('opens on the first tier and shows what is in it', () => {
     render(App, { env: at('#/roll/voa') });
-    expect(
-      screen.getByRole('heading', { level: 1, name: 'Vault of Ages' })
-    ).toBeInTheDocument();
+    expectPage('Vault of Ages');
     expect(chosen('Ранг 1')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Камень первого ранга' })).toBeInTheDocument();
   });
@@ -148,9 +175,7 @@ describe('Vault of Ages', () => {
 describe('community items', () => {
   it('opens on the first community the records mention', () => {
     render(App, { env: at('#/roll/community') });
-    expect(
-      screen.getByRole('heading', { level: 1, name: 'Предметы сообществ' })
-    ).toBeInTheDocument();
+    expectPage('Предметы сообществ');
     expect(chosen('Научное')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Первое научное' })).toBeInTheDocument();
   });
@@ -166,9 +191,7 @@ describe('community items', () => {
     render(App, { env: at('#/roll/community') });
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
     expect(screen.getByRole('option', { name: 'Loreborne' })).toBeInTheDocument();
-    expect(
-      screen.getByRole('heading', { level: 1, name: 'Community items' })
-    ).toBeInTheDocument();
+    expectPage('Community items');
   });
 
   it('labels the picker with the singular, not the book’s name', () => {
@@ -183,9 +206,7 @@ describe('community items', () => {
 describe('Many Worlds Tavern', () => {
   it('opens on the first realm and offers the six realms', () => {
     render(App, { env: at('#/roll/mwt') });
-    expect(
-      screen.getByRole('heading', { level: 1, name: 'Many Worlds Tavern' })
-    ).toBeInTheDocument();
+    expectPage('Many Worlds Tavern');
     for (const name of [
       'Спорополис',
       'Лес Пари',
@@ -244,22 +265,50 @@ describe('Many Worlds Tavern', () => {
     expect(screen.getByRole('link', { name: 'Первый шершневый' })).toBeInTheDocument();
   });
 
-  it('names the realms in the language on screen', async () => {
+  it('names the realms in the language on screen, with no lead', async () => {
     render(App, { env: at('#/roll/mwt') });
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
     expect(screen.getByRole('option', { name: "Warrin' Warrens" })).toBeInTheDocument();
     expect(within(screen.getByRole('main')).getByText('Realm')).toBeInTheDocument();
-    expect(screen.getByText('Pick a realm and roll within it.')).toBeInTheDocument();
+    /* The realm picker and the roll button say it: the page draws no lead. */
+    expect(document.querySelector('main .page-sub')).toBeNull();
   });
 
   it('says the data is missing when the catalog has no realm rows', () => {
     render(App, {
       env: fakeEnv({ router: memoryRouter('#/roll/mwt'), data: fakeData(NO_MWT) })
     });
-    expect(
-      screen.getByRole('heading', { level: 1, name: 'Many Worlds Tavern' })
-    ).toBeInTheDocument();
+    expectPage('Many Worlds Tavern');
     expect(screen.getByText('Данные не загрузились. Обновите страницу.')).toBeInTheDocument();
+  });
+});
+
+describe('Escape the Veiled Halls', () => {
+  it('opens on The Basement with a d4 and offers the four rooms', () => {
+    render(App, { env: at('#/roll/vh') });
+    expectPage('Escape the Veiled Halls');
+    for (const name of ['Подвал', 'Гардеробная', 'Лаборатория', 'Библиотека'])
+      expect(screen.getByRole('option', { name })).toBeInTheDocument();
+    expect(chosen('Подвал')).toBeInTheDocument();
+    expect(within(screen.getByRole('main')).getByText('Комната')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Бросить d4/ })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Подвальный 1' })).toBeInTheDocument();
+  });
+
+  it('picks 1-3 at random in The Laboratory, where the book rolls a d3', async () => {
+    render(App, { env: at('#/roll/vh', { random: () => 0.999 }) });
+    await pick('Лаборатория');
+    expect(screen.getByText('Результат броска (1-3)')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: /Бросить 1-3/ }));
+    expect(field().value).toBe('3');
+    expect(screen.getByRole('link', { name: 'Лабораторный 3' })).toBeInTheDocument();
+  });
+
+  it('names the rooms in the language on screen', async () => {
+    render(App, { env: at('#/roll/vh') });
+    await userEvent.click(screen.getByRole('button', { name: 'EN' }));
+    expect(screen.getByRole('option', { name: 'The Dressing Room' })).toBeInTheDocument();
+    expect(within(screen.getByRole('main')).getByText('Room')).toBeInTheDocument();
   });
 });
 
@@ -270,18 +319,17 @@ describe('a dataset that did not load', () => {
   it.each([
     ['#/roll/voa', 'Vault of Ages'],
     ['#/roll/community', 'Предметы сообществ'],
-    ['#/roll/mwt', 'Many Worlds Tavern']
+    ['#/roll/mwt', 'Many Worlds Tavern'],
+    ['#/roll/vh', 'Escape the Veiled Halls']
   ])('says so on %s rather than rendering an empty picker', (route, heading) => {
     render(App, { env: fakeEnv({ router: memoryRouter(route), data: noData() }) });
-    expect(screen.getByRole('heading', { level: 1, name: heading })).toBeInTheDocument();
+    expectPage(heading);
     expect(screen.getByText('Данные не загрузились. Обновите страницу.')).toBeInTheDocument();
   });
 
   it('says so on #/roll/dv, a whole-table roll with no picker', () => {
     render(App, { env: fakeEnv({ router: memoryRouter('#/roll/dv'), data: noData() }) });
-    expect(
-      screen.getByRole('heading', { level: 1, name: "The Dragon's Vault" })
-    ).toBeInTheDocument();
+    expectPage("The Dragon's Vault");
     expect(screen.getByText('Данные не загрузились. Обновите страницу.')).toBeInTheDocument();
   });
 });
@@ -294,6 +342,12 @@ describe('accessibility', () => {
 
   it('has no axe violations on communities', async () => {
     const { container } = render(App, { env: at('#/roll/community') });
+    await expectNoA11yViolations(container);
+  });
+
+  it('has no axe violations on Escape the Veiled Halls with a room picked', async () => {
+    const { container } = render(App, { env: at('#/roll/vh') });
+    await pick('Лаборатория');
     await expectNoA11yViolations(container);
   });
 

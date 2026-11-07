@@ -1,6 +1,6 @@
 # #/homebrew/hb_emberaxeaaaaaaaa ~ print preview as gm1
 # route: #/homebrew/hb_emberaxeaaaaaaaa
-# why: «На печати» of «Показать карточку» pressed: the print groups on «Чёрно-белая» and «Компактная», the 44x63 mm black-and-white print card in place of the screen card, no «В список», no warning
+# why: «На печати» of «Показать карточку» pressed: the print groups on «Ч/б» and «44×63», the 44x63 mm black-and-white print card in place of the screen card, no «В список», no warning
 # as: gm1
 
 ## ru :: tree
@@ -112,14 +112,14 @@ RootWebArea "Топор Тлеющих Углей - Генератор лута 
       StaticText "Предмет есть в 1 списке: изменения появятся в нём сразу, в том ч..." [namelen=89 namehash=99b77b9e]
     button "На экране" [pressed=false]
     button "На печати" [pressed=true]
-    button "Цветная" [pressed=false]
-    button "Чёрно-белая" [pressed=true]
-    button "Обычная" [pressed=false]
-    button "Компактная" [pressed=true]
+    button "Цвет" [pressed=false]
+    button "Ч/б" [pressed=true]
+    button "63×88" [pressed=false]
+    button "44×63" [pressed=true]
     StaticText "2"
-    ... StaticText x13 of 17 same-shape siblings elided
+    ... StaticText x12 of 16 same-shape siblings elided
     heading "ТОПОР ТЛЕЮЩИХ УГЛЕЙ" [level=2]
-    StaticText "Daggerheart"
+    StaticText "Лезвие тлеет и не гаснет под дождём."
     StaticText "Хоумбрю · Мастерская Ольхи · Холодное оружие"
   contentinfo ""
     navigation "Страницы сайта"
@@ -133,6 +133,8 @@ RootWebArea "Топор Тлеющих Углей - Генератор лута 
 2
 3
 4
+44×63
+63×88
 EN
 RU
 daggerheart.com
@@ -155,7 +157,6 @@ daggerheart.com
 Искусность
 К содержимому
 Карты правил
-Компактная
 Конфиденциальность
 Костьd4d6d8d10d12d20
 Курсив
@@ -171,7 +172,6 @@ daggerheart.com
 Новая линия
 Нумерованный список
 Оба
-Обычная
 Одноручное
 Одноручное/двуручное
 Основное оружие
@@ -198,8 +198,8 @@ daggerheart.com
 Физическое
 Характеристика Заклинателя
 ХоумбрюМастерская Ольхи+ Новый источник...
-Цветная
-Чёрно-белая
+Цвет
+Ч/б
 
 ## en :: tree
 RootWebArea "Ember Axe - Daggerheart Loot Generator" [url=/en/homebrew/hb_emberaxeaaaaaaaa?as=gm1]
@@ -311,13 +311,13 @@ RootWebArea "Ember Axe - Daggerheart Loot Generator" [url=/en/homebrew/hb_embera
     button "On screen" [pressed=false]
     button "In print" [pressed=true]
     button "Color" [pressed=false]
-    button "Black and white" [pressed=true]
-    button "Standard" [pressed=false]
-    button "Compact" [pressed=true]
+    button "B&W" [pressed=true]
+    button "63×88" [pressed=false]
+    button "44×63" [pressed=true]
     StaticText "2"
-    ... StaticText x13 of 17 same-shape siblings elided
+    ... StaticText x12 of 16 same-shape siblings elided
     heading "ТОПОР ТЛЕЮЩИХ УГЛЕЙ" [level=2]
-    StaticText "Daggerheart"
+    StaticText "Лезвие тлеет и не гаснет под дождём."
     StaticText "Хоумбрю · Мастерская Ольхи · Холодное оружие"
   contentinfo ""
     navigation "Site pages"
@@ -331,17 +331,18 @@ RootWebArea "Ember Axe - Daggerheart Loot Generator" [url=/en/homebrew/hb_embera
 2
 3
 4
+44×63
+63×88
 Account: gm1@example.test
 Agility
 Any
 Armor
-Black and white
+B&W
 Bold
 Both
 Bulleted list
 Close
 Color
-Compact
 Consumable
 Delete
 Died4d6d8d10d12d20
@@ -385,7 +386,6 @@ Second stat set
 Secondary weapon
 Skip to content
 Spellcast
-Standard
 Strength
 Table
 Tables

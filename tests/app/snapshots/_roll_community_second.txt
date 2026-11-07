@@ -16,15 +16,14 @@ RootWebArea "Предметы сообществ - Генератор лута D
       link "Бросок" [url=/roll/community_items]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
-  navigation "Режим броска"
-    link "Обычные правила" [url=/roll/std]
-    link "Альтернативные таблицы" [url=/roll/alt]
-    button "Предметы сообществ" [expanded=false haspopup=menu]
   main ""
-    heading "Предметы сообществ" [level=1]
+    heading "Бросок" [level=1]
+    navigation "Режим броска"
+      link "Обычные правила" [url=/roll/std]
+      link "Альтернативные таблицы" [url=/roll/alt]
+      button "Предметы сообществ" [expanded=false haspopup=menu]
     button "Открывать при запуске" [pressed=false]
     button "Об этих предметах" [expanded=false]
-    StaticText "Выберите происхождение и бросьте d10."
     combobox "Сообщество" [value=Научное expanded=false haspopup=menu]
       option "Великородное" [selected=false]
       option "Научное" [selected=true]
@@ -41,7 +40,8 @@ RootWebArea "Предметы сообществ - Генератор лута D
     status ""
       StaticText "Вечная Свеча"
     button "Открыть карточку"
-    ... StaticText x2 of 6 same-shape siblings elided
+    StaticText "1"
+    StaticText "ПРЕДМЕТ"
     StaticText "НАУЧНОЕ"
     link "Вечная Свеча" [description=Открыть страницу url=/i/cm11]
     StaticText "Когда эта свеча горит, она создаёт ауру в пределах Средней диста..." [namelen=206 namehash=e8ef12ea]
@@ -98,15 +98,14 @@ RootWebArea "Community items - Daggerheart Loot Generator" [url=/en/roll/communi
       link "Roll" [url=/en/roll/community_items]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
-  navigation "Roll mode"
-    link "Standard rules" [url=/en/roll/std]
-    link "Alternate tables" [url=/en/roll/alt]
-    button "Community items" [expanded=false haspopup=menu]
   main ""
-    heading "Community items" [level=1]
+    heading "Roll" [level=1]
+    navigation "Roll mode"
+      link "Standard rules" [url=/en/roll/std]
+      link "Alternate tables" [url=/en/roll/alt]
+      button "Community items" [expanded=false haspopup=menu]
     button "Open on start" [pressed=false]
     button "About these items" [expanded=false]
-    StaticText "Pick an origin and roll d10."
     combobox "Community" [value=Loreborne expanded=false haspopup=menu]
       option "Highborne" [selected=false]
       option "Loreborne" [selected=true]
@@ -123,7 +122,8 @@ RootWebArea "Community items - Daggerheart Loot Generator" [url=/en/roll/communi
     status ""
       StaticText "Everlasting Candle"
     button "Open card"
-    ... StaticText x2 of 6 same-shape siblings elided
+    StaticText "1"
+    StaticText "ITEM"
     StaticText "LOREBORNE"
     link "Everlasting Candle" [description=Open page url=/i/en/cm11]
     StaticText "When lit, this candle creates an aura within Close range. Creatu..." [namelen=201 namehash=cc0855de]

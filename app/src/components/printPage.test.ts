@@ -8,12 +8,11 @@
  * particular record. Equipment lives in `Loot.eq`, off the same records
  * `listPage.test.ts`'s fixture already establishes the convention for. */
 
-import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
-import KeepNote from './KeepNote.svelte';
 import PrintCard from './PrintCard.svelte';
 import type { Loot } from '../lib/data.js';
 import { dict } from '../lib/dict.js';
@@ -25,6 +24,8 @@ import {
   fakeData,
   fakeDialog,
   fakeEnv,
+  fakeFonts,
+  fakeViewport,
   memoryRouter,
   memoryStorage,
   noData
@@ -32,11 +33,12 @@ import {
 import type { Env } from '../ports/index.js';
 import { fakeCloud, type FakeCloud } from '../ports/fake-cloud.js';
 import { SEED, uuid, type Seed } from '../ports/fake-cloud-seed.js';
-import { AppState } from '../state/app.svelte.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 import { emptyRanges, fakeLayout } from '../test/layout.js';
 
 afterEach(cleanup);
+/* jsdom does not implement scrollIntoView: the dock's «Ещё» calls it once open. */
+Element.prototype.scrollIntoView = vi.fn();
 
 emptyRanges();
 
@@ -338,20 +340,23 @@ describe('arrival, color', () => {
       screen.queryByRole('button', { name: /Открывать при запуске/ })
     ).not.toBeInTheDocument();
 
-    const back = screen.getByRole('button', { name: 'Назад' });
-    const printNow = screen.getByRole('button', { name: 'Отправить на печать' });
-    const color = screen.getByRole('button', { name: 'Цветная' });
-    const bw = screen.getByRole('button', { name: 'Чёрно-белая' });
-    const std = screen.getByRole('button', { name: 'Обычная' });
-    const compact = screen.getByRole('button', { name: 'Компактная' });
+    const back = screen.getByRole('link', { name: 'Назад' });
+    const heading = screen.getByRole('heading', { name: 'Печать карточек' });
+    expect(back.closest('.crumb')).toContainElement(heading);
+    expect(screen.getByRole('group', { name: 'Цвет печати' })).toBeInTheDocument();
+    const printNow = screen.getByRole('button', { name: 'Напечатать' });
+    const color = screen.getByRole('button', { name: 'Цвет' });
+    const bw = screen.getByRole('button', { name: 'Ч/б' });
+    const std = screen.getByRole('button', { name: '63×88' });
+    const compact = screen.getByRole('button', { name: '44×63' });
     const link = screen.getByRole('button', { name: 'Ссылка на набор' });
     expect(color).toHaveAttribute('aria-pressed', 'true');
     expect(bw).toHaveAttribute('aria-pressed', 'false');
     expect(std).toHaveAttribute('aria-pressed', 'true');
     expect(compact).toHaveAttribute('aria-pressed', 'false');
     expect(screen.getByRole('group', { name: 'Размер карты' })).toContainElement(std);
-    const order = [back, printNow, color, bw, std, compact, link].map((el) =>
-      Array.from(document.querySelectorAll<HTMLElement>('button')).indexOf(el)
+    const order = [back, heading, printNow, color, bw, std, compact, link].map((el) =>
+      Array.from(document.querySelectorAll<HTMLElement>('a, h1, button')).indexOf(el)
     );
     expect(order).toEqual([...order].sort((a, b) => a - b));
 
@@ -384,7 +389,9 @@ describe('the loot card', () => {
     expect(card?.querySelector('.pc-thstrip')).toBeNull();
     expect(card?.querySelector('.pc-burden')).toBeNull();
     expect(card?.querySelector('.pc-shield')).toBeNull();
-    expect(card?.querySelector('.pc-bottom')?.textContent).toBe('DaggerheartCore');
+    /* The source alone on the bottom line, no «Daggerheart» (FEATURES.md, "Print"). */
+    expect(card?.querySelector('.pc-bottom')?.textContent).toBe('Core');
+    expect(card?.querySelectorAll('.pc-bottom > *')).toHaveLength(1);
     expect(card?.innerHTML).not.toContain('Крафт');
     expect(card?.innerHTML).not.toContain('Craft');
   });
@@ -408,14 +415,14 @@ describe('no art', () => {
     expect(art).not.toHaveClass('none');
     expect(art?.querySelector('.pc-img')).toHaveAttribute('src', '/img/ci1.webp');
     expect(art?.querySelector('svg')).toBeNull();
-    await userEvent.click(screen.getByRole('button', { name: 'Компактная' }));
+    await userEvent.click(screen.getByRole('button', { name: '44×63' }));
     await waitFor(() => {
       expect(document.querySelector('.psheet.compact')).not.toBeNull();
     });
     expect(bare()?.querySelector('.pc-img')).toBeNull();
     expect(glyphOf(bare())).toBe(ICONS.kindItem.d);
     await expectNoA11yViolations(container);
-    await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Ч/б' }));
     await waitFor(() => {
       expect(bare()?.querySelector('.pc-art')).toBeNull();
     });
@@ -677,10 +684,9 @@ describe('the community card', () => {
     render(App, { env: await atSet('cm1') });
     await opened();
     const card = document.querySelector('.pcard[data-pid="cm1"]');
-    const spans = card?.querySelectorAll('.pc-bottom span');
-    // spans[1] is positional on purpose: it isolates the source line's own
-    // span from its sibling in `.pc-bottom`.
-    expect(spans?.[1]?.textContent).toBe('Предметы сообществ · Великородное');
+    expect(card?.querySelector('.pc-bottom .pc-src')?.textContent).toBe(
+      'Предметы сообществ · Великородное'
+    );
   });
 });
 
@@ -688,12 +694,9 @@ describe('black and white', () => {
   it('switches every card, hides the art, and reorders the head', async () => {
     render(App, { env: await atSet('q1-a1') });
     await opened();
-    await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
-    expect(screen.getByRole('button', { name: 'Чёрно-белая' })).toHaveAttribute(
-      'aria-pressed',
-      'true'
-    );
-    expect(screen.getByRole('button', { name: 'Цветная' })).toHaveAttribute(
+    await userEvent.click(screen.getByRole('button', { name: 'Ч/б' }));
+    expect(screen.getByRole('button', { name: 'Ч/б' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'Цвет' })).toHaveAttribute(
       'aria-pressed',
       'false'
     );
@@ -727,20 +730,20 @@ describe('black and white', () => {
     const loot = document.querySelector('.pcard[data-pid="ci1"]');
     expect(loot).toBeNull();
 
-    await userEvent.click(screen.getByRole('button', { name: 'Цветная' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Цвет' }));
     expect(document.querySelector('.pc-art')).toBeInTheDocument();
   });
 
   it('sizes the head marks before their images load, so the fit measures the real head', async () => {
     render(App, { env: await atSet('q1-a1') });
     await opened();
-    await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Ч/б' }));
     const marks = Array.from(
       document.querySelectorAll('.pc-head .pc-shield img, .pc-head .pc-burden img')
     );
     expect(marks.map((img) => [img.getAttribute('width'), img.getAttribute('height')])).toEqual(
       [
-        ['62', '36'],
+        ['62', '37'],
         ['33', '36']
       ]
     );
@@ -751,7 +754,7 @@ describe('black and white', () => {
     const first = render(App, { env });
     await opened();
     const hash = env.router.hash();
-    await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Ч/б' }));
     expect(document.querySelector('.psheet.bw')).toBeInTheDocument();
 
     env.router.navigate('#/roll/std', 'ru');
@@ -783,39 +786,6 @@ describe('black and white', () => {
   });
 });
 
-describe('the note under the bar', () => {
-  const note = (): Element | null => document.querySelector('.keepnote');
-
-  it('draws nothing in a build without sign-in, which has no place to set a default', () => {
-    render(KeepNote, { app: new AppState(fakeEnv()) });
-    expect(note()).toBeNull();
-  });
-
-  it('links the account while either switch differs from the default, and goes when both are back', async () => {
-    const { container } = render(App, { env: await atSet('ci1-q1') });
-    await opened();
-    expect(note()).toBeNull();
-
-    await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
-    expect(note()).toHaveTextContent(
-      'Только до перезагрузки. Чтобы сохранить, измените в настройках аккаунта.'
-    );
-    expect(screen.getByRole('link', { name: 'настройках аккаунта' })).toHaveAttribute(
-      'href',
-      '/account'
-    );
-    expect(document.querySelector('.printbar')).toContainElement(note() as HTMLElement);
-    expect(note()).not.toHaveClass('printnote');
-    await expectNoA11yViolations(container);
-
-    await userEvent.click(screen.getByRole('button', { name: 'Компактная' }));
-    await userEvent.click(screen.getByRole('button', { name: 'Цветная' }));
-    expect(note()).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Обычная' }));
-    expect(note()).toBeNull();
-  });
-});
-
 describe('compact', () => {
   const pressed = (name: string): string | null =>
     screen.getByRole('button', { name }).getAttribute('aria-pressed');
@@ -823,11 +793,11 @@ describe('compact', () => {
   it('prints sixteen places to a sheet in either layout, independent of the color switch', async () => {
     render(App, { env: await atSet('ci1-q1') });
     await opened();
-    await userEvent.click(screen.getByRole('button', { name: 'Компактная' }));
-    expect(pressed('Компактная')).toBe('true');
-    expect(pressed('Обычная')).toBe('false');
-    expect(pressed('Цветная')).toBe('true');
-    expect(pressed('Чёрно-белая')).toBe('false');
+    await userEvent.click(screen.getByRole('button', { name: '44×63' }));
+    expect(pressed('44×63')).toBe('true');
+    expect(pressed('63×88')).toBe('false');
+    expect(pressed('Цвет')).toBe('true');
+    expect(pressed('Ч/б')).toBe('false');
     expect(document.querySelector('.psheet.compact:not(.bw)')).toBeInTheDocument();
     expect(document.querySelectorAll('.psheet')).toHaveLength(1);
     expect(document.querySelectorAll('.pcard')).toHaveLength(16);
@@ -839,16 +809,16 @@ describe('compact', () => {
       )
     ).toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Ч/б' }));
     expect(document.querySelector('.psheet.compact.bw')).toBeInTheDocument();
     expect(document.querySelector('.pc-art')).toBeNull();
-    expect(pressed('Компактная')).toBe('true');
+    expect(pressed('44×63')).toBe('true');
 
-    await userEvent.click(screen.getByRole('button', { name: 'Обычная' }));
+    await userEvent.click(screen.getByRole('button', { name: '63×88' }));
     expect(document.querySelector('.psheet.compact')).toBeNull();
     expect(document.querySelector('.psheet.bw')).toBeInTheDocument();
     expect(document.querySelectorAll('.pcard')).toHaveLength(9);
-    expect(pressed('Чёрно-белая')).toBe('true');
+    expect(pressed('Ч/б')).toBe('true');
     expect(
       screen.getByText(
         'Карточек: 2. Листов A4: 1. Размер карты 63×88 мм - как у обычной игральной.'
@@ -861,7 +831,7 @@ describe('compact', () => {
     const first = render(App, { env });
     await opened();
     const hash = env.router.hash();
-    await userEvent.click(screen.getByRole('button', { name: 'Компактная' }));
+    await userEvent.click(screen.getByRole('button', { name: '44×63' }));
     env.router.navigate('#/roll/std', 'ru');
     await tick();
     env.router.navigate(hash, 'ru');
@@ -872,7 +842,7 @@ describe('compact', () => {
     render(App, { env: await atSet('q1-a1') });
     await opened();
     expect(document.querySelector('.psheet.compact')).toBeNull();
-    expect(pressed('Обычная')).toBe('true');
+    expect(pressed('63×88')).toBe('true');
   });
 });
 
@@ -914,7 +884,7 @@ describe('a second sheet', () => {
   it('fits the same ten on one compact sheet, six blank, with no page break', async () => {
     render(App, { env: await atSet(ids, { data: fakeData(TEN) }) });
     await opened();
-    await userEvent.click(screen.getByRole('button', { name: 'Компактная' }));
+    await userEvent.click(screen.getByRole('button', { name: '44×63' }));
     expect(document.querySelectorAll('.psheet.compact')).toHaveLength(1);
     expect(document.querySelectorAll('.pcard.blank')).toHaveLength(6);
     expect(document.querySelector('.psheet[data-next]')).toBeNull();
@@ -988,7 +958,7 @@ describe('the cap', () => {
   it('prints the same 180 cards on twelve compact sheets', async () => {
     render(App, { env: await atSet(ids180, { data: fakeData(MANY) }) });
     await opened();
-    await userEvent.click(screen.getByRole('button', { name: 'Компактная' }));
+    await userEvent.click(screen.getByRole('button', { name: '44×63' }));
     expect(document.querySelectorAll('.pcard:not(.blank)')).toHaveLength(180);
     expect(document.querySelectorAll('.psheet.compact')).toHaveLength(12);
     expect(document.querySelectorAll('.pcard.blank')).toHaveLength(12);
@@ -1017,16 +987,34 @@ describe('back', () => {
     const env = await atSet('ci1', { from: '#/roll/std' });
     render(App, { env });
     await opened();
-    await userEvent.click(screen.getByRole('button', { name: 'Назад' }));
+    const back = screen.getByRole('link', { name: 'Назад' });
+    expect(await fireEvent.click(back)).toBe(false);
     expect(env.router.hash()).toBe('#/roll/std');
   });
 
-  it('goes home when there is nowhere to go back to', async () => {
+  it('leaves the press to its link home when there is nowhere to go back to', async () => {
     const env = await atSet('ci1');
     render(App, { env });
     await opened();
-    await userEvent.click(screen.getByRole('button', { name: 'Назад' }));
-    expect(env.router.hash()).toBe('#/roll/std');
+    const back = screen.getByRole('link', { name: 'Назад' });
+    expect(back).toHaveAttribute('href', '/roll/std');
+    /* Not prevented: the router follows the link (`ports/router.ts`). */
+    expect(await fireEvent.click(back)).toBe(true);
+  });
+
+  it.each([
+    ['ctrlKey', { ctrlKey: true }],
+    ['metaKey', { metaKey: true }],
+    ['shiftKey', { shiftKey: true }],
+    ['altKey', { altKey: true }],
+    ['the middle button', { button: 1 }]
+  ])('leaves a click with %s to the browser', async (_, init) => {
+    const env = await atSet('ci1', { from: '#/roll/std' });
+    render(App, { env });
+    await opened();
+    const at = env.router.hash();
+    expect(await fireEvent.click(screen.getByRole('link', { name: 'Назад' }), init)).toBe(true);
+    expect(env.router.hash()).toBe(at);
   });
 });
 
@@ -1035,7 +1023,7 @@ describe('print', () => {
     const dialog = fakeDialog();
     render(App, { env: await atSet('ci1', { dialog }) });
     await opened();
-    await userEvent.click(screen.getByRole('button', { name: 'Отправить на печать' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Напечатать' }));
     expect(dialog.printed).toBe(1);
   });
 });
@@ -1124,7 +1112,7 @@ describe('a count from a list', () => {
   it('keeps the count in black and white', async () => {
     const { container } = render(App, { env: await atSet('ci1*3-q1') });
     await opened();
-    await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Ч/б' }));
     expect(document.querySelector('.psheet.bw')).not.toBeNull();
     expectCounted();
     await expectNoA11yViolations(container);
@@ -1143,29 +1131,61 @@ describe('the fit is wired', () => {
       expect(card?.querySelector('.pc-strip .pc-box b')).toHaveStyle({ fontSize: '2.2cqw' });
       expect(card?.querySelector('.pc-text')).toHaveStyle({ fontSize: '2.6cqw' });
       const content = card?.querySelector<HTMLElement>('.pc-content');
-      expect(content?.style.getPropertyValue('--pcpad')).toBe('8cqw');
+      /* The picture gave way, so the text moves up to the marks' clearance; jsdom draws
+         no mark, so the clearance is its least, 5.8cqw. */
+      expect(content?.style.getPropertyValue('--pcpad')).toBe('5.8cqw');
       const art = card?.querySelector<HTMLElement>('.pc-art');
       expect(art?.style.height).toBe('14cqw');
       expect(art?.style.getPropertyValue('--artw')).toBe('7cqw');
       expect(art?.style.display).toBe('none');
 
-      await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Ч/б' }));
       const content2 = document.querySelector<HTMLElement>('.pcard[data-pid="q1"] .pc-content');
       expect(content2?.style.getPropertyValue('--pcpad')).toBe('2.8cqw');
       expect(document.querySelector('.pcard[data-pid="q1"] .pc-text')).toHaveStyle({
         fontSize: '2.6cqw'
       });
 
-      /* The ladder is size-blind: every dimension is `cqw`. */
-      await userEvent.click(screen.getByRole('button', { name: 'Компактная' }));
-      await userEvent.click(screen.getByRole('button', { name: 'Цветная' }));
+      /* The compact card stops at its own floor, 3.7cqw (4.5 pt). */
+      await userEvent.click(screen.getByRole('button', { name: '44×63' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Цвет' }));
       const compact = document.querySelector('.pcard[data-pid="q1"]');
-      expect(compact?.querySelector('.pc-text')).toHaveStyle({ fontSize: '2.6cqw' });
+      expect(compact).toHaveClass('compact');
+      expect(compact?.querySelector('.pc-text')).toHaveStyle({ fontSize: '3.7cqw' });
       expect(
         compact?.querySelector<HTMLElement>('.pc-content')?.style.getPropertyValue('--pcpad')
-      ).toBe('8cqw');
+      ).toBe('5.8cqw');
       expect(compact?.querySelector<HTMLElement>('.pc-art')?.style.display).toBe('none');
     } finally {
+      restore();
+    }
+  });
+
+  it('takes text cut at its floor under a mark below the floor, not under the mark', async () => {
+    /* Tight down to 3.0cqw: past the compact floor (3.7), so only the shortfall rung fits it. */
+    const restore = fakeLayout((text) => {
+      const size = parseFloat(text.style.fontSize);
+      return !size || size >= 3 ? 140 : 50;
+    }, 0);
+    /* The burden label ends 50 px under the card's top: 22.3cqw of clearance. */
+    const rect = vi
+      .spyOn(Element.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: Element) {
+        const bottom = this.matches('.pc-burden small') ? 50 : 0;
+        return { top: 0, bottom, left: 0, right: 0, width: 0, height: bottom } as DOMRect;
+      });
+    try {
+      render(App, { env: await atSet('q1') });
+      await opened();
+      await userEvent.click(screen.getByRole('button', { name: '44×63' }));
+      const card = document.querySelector('.pcard.compact[data-pid="q1"]');
+      expect(card?.querySelector<HTMLElement>('.pc-art')?.style.display).toBe('none');
+      expect(
+        card?.querySelector<HTMLElement>('.pc-content')?.style.getPropertyValue('--pcpad')
+      ).toBe('22.3cqw');
+      expect(card?.querySelector('.pc-text')).toHaveStyle({ fontSize: '2.9cqw' });
+    } finally {
+      rect.mockRestore();
       restore();
     }
   });
@@ -1247,7 +1267,7 @@ describe('the fit is wired', () => {
         document.querySelector<HTMLElement>('.pcard[data-pid="q1"] .pc-text');
       expect(text()?.style.fontSize).toBe('');
 
-      await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Ч/б' }));
       /* The CSSOM reads the written `5.0cqw` back as `5cqw`. */
       expect(text()?.style.fontSize).toBe('5cqw');
       const content = document.querySelector<HTMLElement>('.pcard[data-pid="q1"] .pc-content');
@@ -1256,7 +1276,7 @@ describe('the fit is wired', () => {
       /* A size change fits the card again at its new size. */
       const before = text();
       if (before) before.style.fontSize = '';
-      await userEvent.click(screen.getByRole('button', { name: 'Компактная' }));
+      await userEvent.click(screen.getByRole('button', { name: '44×63' }));
       expect(text()?.style.fontSize).toBe('5cqw');
     } finally {
       restore();
@@ -1268,7 +1288,7 @@ describe('the fit is wired', () => {
        does under the sheet's screen transform; the fit divides the scale out. A value
        300 px wide passes the 238 px cell at full size and fits it at half size. Both
        runs fit again after a layout switch, once the scale is known. */
-    const run = async (k: number): Promise<string[]> => {
+    const run = async (k: number, narrow = false): Promise<string[]> => {
       const restore = fakeLayout(
         () => 50,
         0,
@@ -1288,18 +1308,19 @@ describe('the fit is wired', () => {
                 : null;
           return rects?.map((r) => ({ width: r.width * k, top: r.top * k })) ?? null;
         },
-        k === 1 ? 0 : 397
+        narrow ? 328 : k === 1 ? 0 : 397
       );
       try {
-        const { unmount } = render(App, { env: await atSet('q8b3') });
+        const viewport = fakeViewport(narrow ? 'narrow' : 'wide');
+        const { unmount } = render(App, { env: await atSet('q8b3', { viewport }) });
         await opened();
         if (k !== 1) {
           await waitFor(() => {
-            expect(document.querySelector('.pfit')).toHaveClass('scaled');
+            expect(document.querySelector('.pfit')).toHaveClass(narrow ? 'one' : 'scaled');
           });
         }
-        await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
-        await userEvent.click(screen.getByRole('button', { name: 'Цветная' }));
+        await userEvent.click(screen.getByRole('button', { name: 'Ч/б' }));
+        await userEvent.click(screen.getByRole('button', { name: 'Цвет' }));
         const card = document.querySelector('.pcard[data-pid="q8b3"]');
         const styles = [card, ...(card?.querySelectorAll('*') ?? [])].map(
           (e) => e?.getAttribute('style') ?? ''
@@ -1314,18 +1335,21 @@ describe('the fit is wired', () => {
     const half = await run(0.5);
     expect(half).toEqual(full);
     expect(full.some((s) => s.includes('font-size'))).toBe(true);
+    /* The phone draws each card larger than it prints: 328 px over 238.11 px. */
+    const phone = await run(1.37, true);
+    expect(phone).toEqual(full);
   });
 
   it('steps back below the first size that spills', async () => {
     /* Tight above 4.04cqw: 4.0 measures 100, 4.1 measures 102. */
     const restore = fakeLayout(
-      (el) => Math.round(parseFloat(el.style.fontSize || '3.5') * 25),
+      (el) => Math.round(parseFloat(el.style.fontSize || '4') * 25),
       0
     );
     try {
       render(App, { env: await atSet('q1') });
       await opened();
-      await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Ч/б' }));
       expect(
         document.querySelector<HTMLElement>('.pcard[data-pid="q1"] .pc-text')?.style.fontSize
       ).toBe('4cqw');
@@ -1361,8 +1385,11 @@ describe('the clip warning', () => {
       expect(warning()).toHaveClass('warn');
       expect(warning()?.closest('.warnnote')).toBeNull();
       expect(document.querySelector('[role="alert"]')).toBeNull();
-      const send = screen.getByRole('button', { name: 'Отправить на печать' });
-      expect(send).toBeEnabled();
+      const send = screen.getByRole('button', { name: 'Напечатать' });
+      /* Enabled once the fonts port answers (`fakeFonts`: at once). */
+      await waitFor(() => {
+        expect(send).toBeEnabled();
+      });
       await userEvent.click(send);
       expect(dialog.printed).toBe(1);
       await expectNoA11yViolations(container);
@@ -1432,7 +1459,7 @@ describe('the clip warning', () => {
     }
   });
 
-  it('draws the red deleted note, then the warning, then the gray note', async () => {
+  it('draws the red deleted note, then the warning, and the sub line under the sheets', async () => {
     const restore = tightOn('ci1');
     try {
       render(App, { env: at('#/p/set-missing1', { cloud: fakeCloud(SEED, 'gm2') }) });
@@ -1451,7 +1478,14 @@ describe('the clip warning', () => {
                 : null
         )
         .filter(Boolean);
-      expect(order).toEqual(['deleted', 'warning', 'note']);
+      expect(order).toEqual(['deleted', 'warning']);
+      /* No gray hint: the sheet prints its fills without the dialog's background option. */
+      expect(document.querySelectorAll('p.printnote:not(.warnnote)')).toHaveLength(0);
+      const sheets = document.querySelector('.pfit') as HTMLElement;
+      const sub = document.querySelector('.pfoot .psub') as HTMLElement;
+      expect(
+        sheets.compareDocumentPosition(sub) & Node.DOCUMENT_POSITION_FOLLOWING
+      ).toBeTruthy();
     } finally {
       restore();
     }
@@ -1471,12 +1505,12 @@ describe('the clip warning', () => {
         expect(warning()).toHaveTextContent(ru.printClipped.replace('%d', '1'));
       });
       tight = false;
-      await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Ч/б' }));
       await waitFor(() => {
         expect(document.querySelector('.clipwarn')).toBeNull();
       });
       tight = true;
-      await userEvent.click(screen.getByRole('button', { name: 'Компактная' }));
+      await userEvent.click(screen.getByRole('button', { name: '44×63' }));
       await waitFor(() => {
         expect(warning()).toHaveTextContent(ru.printClipped.replace('%d', '1'));
       });
@@ -1502,6 +1536,51 @@ describe('no data', () => {
   });
 });
 
+describe('the fit after the face loads', () => {
+  const sheet = async (fonts: ReturnType<typeof fakeFonts>): Promise<() => number> => {
+    let reads = 0;
+    const restore = fakeLayout(() => {
+      reads++;
+      return 50;
+    }, 0);
+    restores.push(restore);
+    render(App, { env: await atSet('ci1-q1', { fonts }) });
+    await opened();
+    return () => reads;
+  };
+  const restores: (() => void)[] = [];
+  afterEach(() => {
+    for (const restore of restores.splice(0)) restore();
+  });
+
+  it('holds «Напечатать» until a loading face arrives, then fits every card again', async () => {
+    const fonts = fakeFonts(true);
+    const reads = await sheet(fonts);
+    const send = screen.getByRole('button', { name: 'Напечатать' });
+    await new Promise((r) => setTimeout(r, 20));
+    expect(send).toBeDisabled();
+    const once = reads();
+    expect(once).toBeGreaterThan(0);
+    fonts.release(true);
+    await waitFor(() => {
+      expect(send).toBeEnabled();
+    });
+    expect(reads()).toBe(once * 2);
+  });
+
+  it('fits once when no face was loading', async () => {
+    const fonts = fakeFonts(true);
+    const reads = await sheet(fonts);
+    await new Promise((r) => setTimeout(r, 20));
+    const once = reads();
+    fonts.release(false);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Напечатать' })).toBeEnabled();
+    });
+    expect(reads()).toBe(once);
+  });
+});
+
 describe('English', () => {
   it('translates the bar, the note and the card text', async () => {
     render(App, { env: await atSet('q1-a1') });
@@ -1513,12 +1592,14 @@ describe('English', () => {
         'Cards: 2. A4 sheets: 1. Card size 63×88 mm - the size of a playing card.'
       )
     ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Back' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Send to printer' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Back' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Print color' })).toBeInTheDocument();
+    expect(document.querySelector('.pfoot .printnote')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Print' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Color' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Black and white' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Standard' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Compact' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'B&W' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '63×88' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '44×63' })).toBeInTheDocument();
     expect(screen.getByRole('group', { name: 'Card size' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Link to this set' })).toBeInTheDocument();
 
@@ -1542,7 +1623,7 @@ describe('English', () => {
 
     expect(document.title).toBe('Daggerheart Loot Generator');
 
-    await userEvent.click(screen.getByRole('button', { name: 'Compact' }));
+    await userEvent.click(screen.getByRole('button', { name: '44×63' }));
     expect(
       screen.getByText('Cards: 2. A4 sheets: 1. Card size 44×63 mm - sixteen to a sheet.')
     ).toBeInTheDocument();
@@ -1703,20 +1784,20 @@ describe('axe', () => {
 
     const bwRender = render(App, { env: await atSet('ci1-q1') });
     await opened();
-    await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Ч/б' }));
     await expectNoA11yViolations(bwRender.container);
     bwRender.unmount();
 
     const compactColour = render(App, { env: await atSet('ci1-q1') });
     await opened();
-    await userEvent.click(screen.getByRole('button', { name: 'Компактная' }));
+    await userEvent.click(screen.getByRole('button', { name: '44×63' }));
     await expectNoA11yViolations(compactColour.container);
     compactColour.unmount();
 
     const compactBw = render(App, { env: await atSet('ci1-q1') });
     await opened();
-    await userEvent.click(screen.getByRole('button', { name: 'Компактная' }));
-    await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
+    await userEvent.click(screen.getByRole('button', { name: '44×63' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Ч/б' }));
     expect(document.querySelector('.psheet.compact.bw')).toBeInTheDocument();
     await expectNoA11yViolations(compactBw.container);
   });
@@ -1752,6 +1833,73 @@ describe('axe', () => {
 
 describe('the sheet on a narrow screen', () => {
   const sheetOf = (): HTMLElement | null => document.querySelector<HTMLElement>('.pfit');
+
+  it('draws one card per row up to 760 px, at the column width, and the dock', async () => {
+    const restore = fakeLayout(() => 0, 0, undefined, 328);
+    try {
+      const { container } = render(App, {
+        env: await atSet('ci1-q1', { viewport: fakeViewport('narrow') })
+      });
+      await opened();
+      await waitFor(() => {
+        expect(sheetOf()?.style.getPropertyValue('--pfit')).toBe('1.37');
+      });
+      expect(sheetOf()).toHaveClass('one');
+      expect(sheetOf()).not.toHaveClass('scaled');
+      expect(sheetOf()?.style.getPropertyValue('--pfit-n')).toBe('');
+      /* The row under the heading holds the switches alone; the dock the primary. */
+      const row = document.querySelector('.printbar .prow') as HTMLElement;
+      expect(within(row).queryByRole('button', { name: 'Напечатать' })).toBeNull();
+      expect(within(row).queryByRole('button', { name: 'Ссылка на набор' })).toBeNull();
+      const dock = document.querySelector('.pdock') as HTMLElement;
+      const pfoot = document.querySelector('.pfoot') as HTMLElement;
+      const after =
+        (sheetOf()?.compareDocumentPosition(pfoot) ?? 0) & Node.DOCUMENT_POSITION_FOLLOWING;
+      expect(after).toBeTruthy();
+      const send = within(dock).getByRole('button', { name: 'Напечатать' });
+      await waitFor(() => {
+        expect(send).toBeEnabled();
+      });
+      await userEvent.click(within(dock).getByRole('button', { name: 'Ещё' }));
+      expect(screen.getByRole('menuitem', { name: 'Ссылка на набор' })).toBeInTheDocument();
+      await expectNoA11yViolations(container);
+    } finally {
+      restore();
+    }
+  });
+
+  it("copies the set's link from the dock's menu", async () => {
+    const clipboard = fakeClipboard();
+    const env = await atSet('ci1', { viewport: fakeViewport('narrow'), clipboard });
+    render(App, { env });
+    await opened();
+    await userEvent.click(screen.getByRole('button', { name: 'Ещё' }));
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Ссылка на набор' }));
+    expect(clipboard.last.text).toBe('https://example.test' + env.router.hash().slice(1));
+    expect(screen.getByText('Ссылка скопирована')).toBeInTheDocument();
+  });
+
+  it('labels every sheet from the second', async () => {
+    const TEN: Loot = {
+      items: {
+        core_item: Array.from({ length: 10 }, (_, i) =>
+          row({
+            id: `m${String(i + 1)}`,
+            en: `Multi ${String(i + 1)}`,
+            ru: `Штука ${String(i + 1)}`
+          })
+        )
+      },
+      eq: [],
+      refs: {}
+    };
+    const ids = Array.from({ length: 10 }, (_, i) => `m${String(i + 1)}`).join('-');
+    render(App, { env: await atSet(ids, { data: fakeData(TEN) }) });
+    await opened();
+    const labels = [...document.querySelectorAll('.psheet-n')].map((e) => e.textContent.trim());
+    expect(labels).toEqual(['Лист 2 из 2']);
+    expect(document.querySelector('.psheet-n + .psheet')).toHaveAttribute('data-next', '1');
+  });
 
   it('scales the sheet to a column narrower than A4, by the count of sheets', async () => {
     const restore = fakeLayout(() => 0, 0, undefined, 397);

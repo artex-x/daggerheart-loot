@@ -8,7 +8,6 @@ import { flushSync } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import HelpItem from './HelpItem.svelte';
-import { dict } from '../lib/dict.js';
 import {
   fakeClipboard,
   fakeData,
@@ -77,16 +76,98 @@ describe('the heading', () => {
       const { container } = render(App, { env: at(hash) });
       const h1 = screen.getByRole('heading', { level: 1 });
       expect(h1).toHaveClass('vh');
+      expect(h1.textContent).toBe('Бросок');
       expect(container.querySelector('.page-head')).toBeNull();
+      /* The mode row names the page, above `main`. */
+      const modes = screen.getByRole('navigation', { name: 'Режим броска' });
+      expect(container.querySelector('main')?.contains(modes)).toBe(false);
     }
   );
 
-  it('is drawn in the head from 761 px', () => {
+  /* DESIGN.md, "The Head Order Rule": the heading, the pills, the pin, the help. */
+  it.each([
+    ['wide', false],
+    ['mid', true]
+  ] as const)('is drawn in the head at %s, the pills in their place', async (band, below) => {
     const { container } = render(App, {
-      env: at('#/roll/std', { viewport: fakeViewport('mid') })
+      env: at('#/roll/alt', { viewport: fakeViewport(band) })
     });
-    expect(screen.getByRole('heading', { level: 1 })).toHaveClass('page-h');
-    expect(container.querySelector('.page-head')).not.toBeNull();
+    const h1 = screen.getByRole('heading', { level: 1 });
+    expect(h1).toHaveClass('page-h');
+    expect(h1.textContent).toBe('Бросок');
+    const head = container.querySelector('.page-head') as HTMLElement;
+    const modes = within(head).getByRole('navigation', { name: 'Режим броска' });
+    expect(screen.getAllByRole('navigation', { name: 'Режим броска' })).toHaveLength(1);
+    const pin = within(head).getByRole('button', { name: 'Открывать при запуске' });
+    const help = within(head).getByRole('button', { name: 'Об этих таблицах' });
+    const order = [h1, ...(below ? [pin, help, modes] : [modes, pin, help])];
+    for (let i = 1; i < order.length; i++) {
+      expect(order[i - 1]?.compareDocumentPosition(order[i] as Node)).toBe(
+        Node.DOCUMENT_POSITION_FOLLOWING
+      );
+    }
+    expect(modes.closest('.headnav')?.classList.contains('below')).toBe(below);
+    await expectNoA11yViolations(container);
+  });
+
+  /* Each mode draws its own panel, so the head is drawn again: the text holds still, and
+     the browser case 112 holds the place. */
+  it('keeps the heading text across a switch between modes and lights the new pill', async () => {
+    const router = memoryRouter('#/roll/std');
+    render(App, { env: at('#/roll/std', { router, viewport: fakeViewport('wide') }) });
+    router.navigate('#/roll/alt');
+    await waitFor(() => {
+      expect(
+        within(screen.getByRole('navigation', { name: 'Режим броска' })).getByRole('link', {
+          name: 'Альтернативные таблицы'
+        })
+      ).toHaveAttribute('aria-current', 'page');
+    });
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Бросок');
+  });
+
+  describe.each(['wide', 'mid'] as const)('a mode switch at %s', (band) => {
+    /* The real router takes a link press from the document; the fake takes `click`. */
+    const noNavigation = (e: MouseEvent): void => {
+      e.preventDefault();
+    };
+    afterEach(() => {
+      document.removeEventListener('click', noNavigation);
+    });
+
+    const page = () => {
+      document.addEventListener('click', noNavigation);
+      const router = memoryRouter('#/roll/std');
+      render(App, { env: at('#/roll/std', { router, viewport: fakeViewport(band) }) });
+      const modes = (): HTMLElement => screen.getByRole('navigation', { name: 'Режим броска' });
+      return { router, modes };
+    };
+
+    it('keeps the focus on the pressed pill, lit', async () => {
+      const { router, modes } = page();
+      const alt = within(modes()).getByRole('link', { name: 'Альтернативные таблицы' });
+      alt.focus();
+      await userEvent.keyboard('{Enter}');
+      router.click(alt.getAttribute('href') ?? '');
+      await waitFor(() => {
+        const lit = within(modes()).getByRole('link', { name: 'Альтернативные таблицы' });
+        expect(lit).toHaveAttribute('aria-current', 'page');
+        expect(lit).toHaveFocus();
+      });
+    });
+
+    it('puts the focus on the supplements button after a supplement is picked', async () => {
+      const { router, modes } = page();
+      await userEvent.click(within(modes()).getByRole('button', { name: 'Дополнения' }));
+      const item = screen.getByRole('menuitem', { name: 'Vault of Ages' });
+      await userEvent.click(item);
+      router.click(item.getAttribute('href') ?? '');
+      await waitFor(() => {
+        const sup = within(modes()).getByRole('button', { name: 'Vault of Ages' });
+        expect(sup).toHaveAttribute('aria-current', 'page');
+        expect(sup).toHaveFocus();
+      });
+    });
   });
 
   it('stays with nothing to roll, in both bands', () => {
@@ -231,15 +312,14 @@ describe('the two panes from 761 px', () => {
 });
 
 describe('the help item', () => {
-  it('reads «Справка» where the panel has no name of its own', () => {
+  it('reads the name of its panel', () => {
     render(HelpItem, {
-      help: { paragraphs: [] },
+      help: { button: 'Об этой книге', paragraphs: [] },
       open: false,
-      t: dict('ru'),
       ontoggle: vi.fn(),
       onpicked: vi.fn()
     });
-    expect(screen.getByRole('menuitem', { name: 'Справка' })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'Об этой книге' })).toBeInTheDocument();
   });
 });
 
@@ -267,6 +347,25 @@ describe('a band change', () => {
     viewport.set('narrow');
     await waitFor(() => {
       expect(button('Настроить')).toHaveFocus();
+    });
+  });
+
+  it.each([
+    ['narrow', 'mid'],
+    ['mid', 'narrow']
+  ] as const)('keeps a focused mode pill on the same pill from %s to %s', async (from, to) => {
+    const viewport: FakeViewport = fakeViewport(from);
+    render(App, { env: at('#/roll/std', { viewport }) });
+    const alt = (): HTMLElement =>
+      within(screen.getByRole('navigation', { name: 'Режим броска' })).getByRole('link', {
+        name: 'Альтернативные таблицы'
+      });
+    const before = alt();
+    before.focus();
+    viewport.set(to);
+    await waitFor(() => {
+      expect(alt()).not.toBe(before);
+      expect(alt()).toHaveFocus();
     });
   });
 });

@@ -75,14 +75,11 @@ const { ok } = rep;
               : [];
           })
         ),
-        /* Two forms while `FilterBar` lives: the shared page's pills and the
-           catalog's pressed chips (its column is open at this suite's width). */
-        picked: [
-          ...[...document.querySelectorAll('.fpill')].map((e) => e.dataset.val),
-          ...[...document.querySelectorAll('[data-fval][aria-pressed="true"]')].map(
-            (e) => e.dataset.fval
-          )
-        ],
+        /* The pressed chips: the catalog's column, or the sheet a filter link opens on
+           the shared page. */
+        picked: [...document.querySelectorAll('[data-fval][aria-pressed="true"]')].map(
+          (e) => e.dataset.fval
+        ),
         source: srcBtns.length
           ? srcBtns.map(
               (e) =>
@@ -367,9 +364,12 @@ const { ok } = rep;
     ['arazo', 'kind-equip'],
     ['mwt', 'kind-equip'],
     ['mwt', 'realm-warrens'],
-    ['mwt', 'realm-drome']
+    ['mwt', 'realm-drome'],
+    ['ph', 'vol-2'],
+    ['lr', 'kind-equip'],
+    ['vh', 'room-library']
   ];
-  /* One context reused across all 27 opens (19 probes, 8 whole tables) - same
+  /* One context reused across all 33 opens (22 probes, 11 whole tables) - same
    * reasoning as the address-grammar loop above: no probe here seeds
    * storage, so a full `d.open` navigation already starts each one clean. */
   const { ctx: pCtx, page: pPage, d: pD } = await fresh({ width: 1280, height: 900 });

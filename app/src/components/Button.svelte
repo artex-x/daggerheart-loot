@@ -18,11 +18,12 @@
      *  `danger-fill` is the one irreversible press of a confirm, the account's
      *  «Удалить навсегда» (DESIGN.md, "Buttons"). */
     variant?: 'plain' | 'primary' | 'toggle' | 'ghost' | 'danger' | 'danger-fill' | 'bare';
-    /** `sm` is the 32px row on a card; the default 46px is the panel's. */
+    /** `sm` is the 32px row on a card (40px up to 600px, the thumb target); the default
+     *  46px is the panel's. */
     size?: 'md' | 'sm';
     title?: string;
     /** For a button whose visible text is not its name. */
-    label?: string;
+    label?: string | undefined;
     /** `aria-expanded`, for a button that folds a panel open. */
     expanded?: boolean | undefined;
     /** `aria-haspopup="menu"`, for a button that opens a `Menu`. */
@@ -136,7 +137,7 @@
 
   /* off `.btn.sm` */
   .btn.sm {
-    height: 32px;
+    height: max(32px, var(--thumb));
     padding: 0 11px;
     font-size: var(--t-data);
     border-radius: 8px;
@@ -242,6 +243,18 @@
     color: var(--txt);
   }
 
+  /* Text alone reaches the target by its padded box and gives the growth back by a
+     negative margin, so no line moves: 24 px from 601 px, the thumb target up to 600 px
+     (DESIGN.md, "The Phone-First Rule"). */
+  @media screen {
+    .btn.bare {
+      min-height: max(24px, var(--thumb));
+      min-width: var(--thumb);
+      justify-content: center;
+      margin-block: min(0px, calc((1lh - max(24px, var(--thumb))) / 2));
+    }
+  }
+
   /* off `.btn.on` / `.btn.primary.on` in style.css: gold outline on a plain
      button, a pushed-in look on a gold one - the add-to-list button while its
      menu is open. */
@@ -258,8 +271,8 @@
     box-shadow: inset 0 2px 5px rgb(0 0 0 / 35%);
   }
 
-  /* off `.caret` in style.css - moved here from FilterBar.svelte, its first
-     use, now that the add-to-list button wants the same down/up arrow. */
+  /* off `.caret` in style.css: the filter toggle's and the add-to-list button's down/up
+     arrow. */
   .caret {
     width: 0;
     height: 0;

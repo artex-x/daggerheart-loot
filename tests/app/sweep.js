@@ -13,7 +13,7 @@
  * languages and ran the focus walk, which made it 1.7x its siblings; the
  * language split is what `run-all.js`'s two 1180 rows pass). No language
  * argument means both, the original shape. */
-const { fresh, axe, reporter, closeBrowser } = require('./lib.js');
+const { fresh, axe, reporter, closeBrowser, targets } = require('./lib.js');
 /* The app's own reading of an address, so a landed path compares as its route key. */
 const { addressOf } = require('../../app/src/lib/address.ts');
 const {
@@ -45,6 +45,9 @@ const TABLES = [
   'dragons_vault',
   'arazos_artifacts',
   'many_worlds_tavern',
+  'pistolheart',
+  'last_round_table',
+  'escape_the_veiled_halls',
   'frames',
   'community_items',
   'alt_item',
@@ -102,6 +105,9 @@ const PAGES = [
   ['#/roll/arazos_artifacts', "arazo's artifacts"],
   ['#/roll/community_items', 'предметы сообществ'],
   ['#/roll/many_worlds_tavern', 'many worlds tavern'],
+  ['#/roll/pistolheart', 'pistolheart'],
+  ['#/roll/last_round_table', 'the last round table'],
+  ['#/roll/escape_the_veiled_halls', 'escape the veiled halls'],
   ['#/lists', 'списки без входа'],
   ['#/lists/00000000-0000-4000-8000-000000000103', 'вторая сумка', 'gm1'],
   ['#/lists/nope', 'списка нет'],
@@ -110,14 +116,24 @@ const PAGES = [
   /* Both notes inside the rows of a shared page, and the price «?»'s conversion line
      open (FEATURES.md, "Lists"). */
   ['#/s/gm-token-1', 'общий список: заметки в строках'],
-  /* gm1's shop is in coin mode, which has no conversion line: switch it to bag mode first. */
+  /* The list notes' area and a row's note area open, in bag mode (FEATURES.md, "Lists"). */
   [
     '#/lists/00000000-0000-4000-8000-000000000101',
-    'цена: подсказка открыта',
+    'список: заметки открыты',
     'gm1',
     async (d) => {
-      await either(d, 'click', 'Как в книге', 'As in the book');
-      await either(d, 'click', 'Подсказка: Цена', 'Help: Price');
+      /* Up to 999 px the price mode is in the head's «Ещё» and the list notes open from the
+         meta line; up to 760 px a row's «Заметка» is in its unfolded part. */
+      if (await d.count('.lhead')) {
+        await d.openMore('.lhead-acts .morewrap > [aria-haspopup="menu"]');
+        await either(d, 'click', 'Цены: как в книге', 'Prices: as in the book');
+        await either(d, 'click', 'Заметки', 'Notes');
+      } else {
+        await either(d, 'click', 'Как в книге', 'As in the book');
+        await either(d, 'click', 'Изменить', 'Edit');
+      }
+      if (await d.count('button.cbody')) await d.unfold(0);
+      await either(d, 'click', 'Заметка', 'Note');
     }
   ],
   ['#/i/ci1', 'карточка Кольцо Тишины'],
@@ -154,7 +170,9 @@ const PAGES = [
     ['#/tables/eq_weapon/t3', 'якорь раздела'],
     ['#/tables/eq_weapon/f_tier-2_cls-mag', 'ссылка на фильтры'],
     ['#/tables/community_items/Seaborne', 'якорь сообщества'],
-    ['#/tables/many_worlds_tavern/warrens', 'якорь мира']
+    ['#/tables/many_worlds_tavern/warrens', 'якорь мира'],
+    ['#/tables/pistolheart/2', 'якорь тома'],
+    ['#/tables/escape_the_veiled_halls/laboratory', 'якорь комнаты']
   ])
   /* The print page's states, three drawn sheets and the two print prompts, at every
      width. The sheets are seeded print sets (`tests/app/lib.js`, `PRINT_SETS`). */
@@ -264,6 +282,15 @@ const PAGES = [
         await d.upload(IMPORT('keys-only-v2.json'));
         for (let i = 0; i < 40 && !/Пропущено позиций|Items skipped/.test(await d.text()); i++)
           await d.settle();
+        /* Each list's skip lines sit in a closed fold: open every fold, or the long line is
+           never laid out. */
+        const folds = (await d.text()).match(/(?:Пропущено|Skipped): \d+/g) ?? [];
+        const seen = new Map();
+        for (const f of folds) {
+          await d.press(f, seen.get(f) ?? 0);
+          seen.set(f, (seen.get(f) ?? 0) + 1);
+        }
+        if (!folds.length) throw new Error('no skip fold to open');
       }
     ],
     /* A fifth element seeds the fake: the Items tab's filter with a section row of 22
@@ -465,29 +492,26 @@ async function landedUnderHeader(page, id) {
 }
 
 /** Returns the catalog head's measure at the current width: the picker row below 761 px,
- *  else the group chips and the tabs (docs/specs/FEATURES.md, "Tables and search").
- *  From 1000 px `.tablenav` is `display: contents` and has no box, so the read runs from
- *  the top of its chips to the bottom of its tab slot. */
+ *  else from the top of the group chips in the page head to the bottom of the tab slot
+ *  under it (DESIGN.md, "The Head Order Rule"; docs/specs/FEATURES.md, "Tables and search"). */
 function headHeight(page) {
   return page.evaluate(() => {
     const pick = document.querySelector('.pickrow');
     if (pick) return Math.round(pick.getBoundingClientRect().height);
-    const nav = document.querySelector('.tablenav');
-    if (!nav) return 0;
-    const box = nav.getBoundingClientRect();
-    if (box.height > 0) return Math.round(box.height);
-    const top = nav.querySelector(':scope > .groups')?.getBoundingClientRect().top;
-    const bottom = nav.querySelector(':scope > .tabslot')?.getBoundingClientRect().bottom;
+    const top = document.querySelector('.tablenav .groups')?.getBoundingClientRect().top;
+    const bottom = document
+      .querySelector('.page-below .tabslot')
+      ?.getBoundingClientRect().bottom;
     return top === undefined || bottom === undefined ? 0 : Math.round(bottom - top);
   });
 }
 
 /** Returns the head's cap at `width`: 64 px for the picker row; for the two levels 140 px
- *  below 1000 px, where the seven supplement tabs take two lines (130 px at 768,
- *  measured 2026-10-30); 180 px from 1000 to 1139 px in RU, where the chips and the tab
- *  slot take two lines each (about 173 px at 1050, measured); 110 px from 1140 px. */
+ *  from 1000 to 1139 px, where the Russian chips take two lines (131 px at 1000, measured
+ *  2026-11-07), and 110 px elsewhere (87 px at 768 and 1180): the tab slot is one row, as
+ *  the supplements' books are the picker. */
 function headCap(width) {
-  return width <= 760 ? 64 : width < 1000 ? 140 : width < 1140 ? 180 : 110;
+  return width <= 760 ? 64 : width >= 1000 && width < 1140 ? 140 : 110;
 }
 
 (async () => {
@@ -569,7 +593,7 @@ function headCap(width) {
 
           document
             .querySelectorAll(
-              '.card-name a, .card-name span, .badge, .chip, .fpill, .btn, .lbl, .rnum, .tab, ' +
+              '.card-name a, .card-name span, .badge, .chip, .btn, .lbl, .rnum, .tab, ' +
                 '.craft, .dicebar, .numrow'
             )
             .forEach((e) => {
@@ -612,7 +636,7 @@ function headCap(width) {
               .replace(/^\/en\//, '/')
               .slice(1);
             const known =
-              /^(roll\/(std|alt|wondrous_environments|dread_gm_toolbox|vault_of_ages|dragons_vault|arazos_artifacts|community_items|many_worlds_tavern)|tables|lists|search|print\/|i\/|h\/|l\/|lists\/|account$|homebrew(\/|$))/.test(
+              /^(roll\/(std|alt|wondrous_environments|dread_gm_toolbox|vault_of_ages|dragons_vault|arazos_artifacts|community_items|many_worlds_tavern|pistolheart|last_round_table|escape_the_veiled_halls)|tables|lists|search|print\/|i\/|h\/|l\/|lists\/|account$|homebrew(\/|$))/.test(
                 h
               );
             if (!known) out.badLinks.push(h);
@@ -656,6 +680,28 @@ function headCap(width) {
           const cap = headCap(width);
           ok(head > 0 && head <= cap, where + ': the catalog head ' + head + 'px, cap ' + cap);
         }
+
+        /* Every pressable control is a thumb target up to 600 px, else at least 24 px or
+           spaced (DESIGN.md, "The Phone-First Rule"); `targets` names what fails its hit test. */
+        const floor = width <= 600 ? 40 : 24;
+        for (const t of await targets(
+          page,
+          width <= 600 ? { floor: 40, menuFloor: 44 } : { floor: 24, spacing: true }
+        ))
+          ok(
+            false,
+            where +
+              ': a target under ' +
+              floor +
+              ' px - ' +
+              t.sel +
+              ' «' +
+              t.name +
+              '» ' +
+              t.w +
+              'x' +
+              t.h
+          );
 
         const broken = await page.evaluate(() =>
           [...document.images]

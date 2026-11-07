@@ -1,7 +1,7 @@
 /* The interface dictionary.
  *
  * docs/specs/I18N.md keeps this separate from record text on purpose: this is
- * small, typed and reviewed, while record text is 1459 pairs maintained with
+ * small, typed and reviewed, while record text is 1593 pairs maintained with
  * the data. Only interface strings belong here.
  *
  * Parity is a compile error rather than a test. `Dict` is derived from the
@@ -29,7 +29,7 @@ const ru = {
   /* The header's wordmark. It follows the language in the header only; the tab
      title, the manifest and the static pages keep their own names. */
   brandWord: 'Лут',
-  /* The first job of the header: a group of nine roll pages with no heading of its own. */
+  /* The first job of the header: a group of twelve roll pages with no heading of its own. */
   jobRoll: 'Бросок',
 
   /* The sections, in `SECTIONS` order. */
@@ -40,6 +40,9 @@ const ru = {
   dv: "Dragon's Vault",
   arazo: "Arazo's Artifacts",
   mwt: 'Many Worlds Tavern',
+  ph: 'Pistolheart',
+  lr: 'The Last Round Table',
+  vh: 'Escape the Veiled Halls',
   tables: 'Таблицы',
   search: 'Поиск',
 
@@ -56,8 +59,6 @@ const ru = {
   copyName: 'Скопировать название',
   copyText: 'Скопировать текст',
   copyImg: 'Скопировать изображение',
-  sImg: 'Картинка',
-  sText: 'Текст',
   openPage: 'Открыть страницу',
   openCard: 'Открыть карточку',
   showInTable: 'показать в таблице',
@@ -72,13 +73,15 @@ const ru = {
   srcDv: "The Dragon's Vault",
   srcArazo: "Arazo's Artifacts",
   srcMwt: 'Many Worlds Tavern',
+  srcPh: 'Pistolheart',
+  srcLr: 'The Last Round Table',
+  srcVh: 'Escape the Veiled Halls',
   /* Matches `frameF`/`subFrames` below - one word for the concept in
      Russian, verified against ru.daggerheart.su/frame ("Сеттинги" is both
      that page's own title and its term for one entry on it). */
   srcFrame: 'Сеттинг',
   srcComm: 'Предметы сообществ',
   copyLink: 'Скопировать ссылку',
-  sendAll: 'Отправить',
   nameCopied: 'Название скопировано',
   imgCopied: 'Картинка скопирована',
   textCopied: 'Текст скопирован',
@@ -109,7 +112,7 @@ const ru = {
      markup in a string. The verbatim citation lives entirely in the first
      part - tests/derived.js pins it in app.js, and it must read the same here. */
   footBefore:
-    "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Environments, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, The Guide to Arazo's Artifacts, Many Worlds Tavern: Sporopolis, Wagerwood, Warrin' Warrens, Godsvale, Hornet Hold, The Drome, Community Magic Items, Alternate Loot & Consumable Tables. Перевод: daggerheart.su и собственные материалы. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at ",
+    "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Environments, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, The Guide to Arazo's Artifacts, Many Worlds Tavern: Sporopolis, Wagerwood, Warrin' Warrens, Godsvale, Hornet Hold, The Drome, Pistolheart Volumes 1-3, The Last Round Table, Escape the Veiled Halls, Community Magic Items, Alternate Loot & Consumable Tables. Перевод: daggerheart.su и собственные материалы. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at ",
   footLink: 'daggerheart.com',
   footAfter: '. There are no previous modifications by others.',
   /* The folded notice's one visible line; the full text above sits under it. */
@@ -125,13 +128,10 @@ const ru = {
      сообществ» included (docs/decisions/2026-10-21-source-names-follow-the-source-product.md). */
   pageWondrous: 'Wondrous Environments',
   pageDread: 'Dread GM Toolbox',
-  pageVoa: 'Vault of Ages',
   pageDv: "The Dragon's Vault",
-  pageArazo: "The Guide to Arazo's Artifacts",
   pageCommunity: 'Предметы сообществ',
-  pageMwt: 'Many Worlds Tavern',
   pageStd: 'Обычные правила',
-  subStd: 'Бросок по таблицам корника и дополнения Hope & Fear.',
+  subStd: 'Бросок по таблицам Core и дополнения Hope & Fear.',
   /* The five dice buttons say which rarity band they cover */
   common: 'Обычная',
   uncommon: 'Необычная',
@@ -147,10 +147,6 @@ const ru = {
   keepOneKind: 'Нужен хотя бы один тип',
   or: 'ИЛИ',
   copyRoll: 'Скопировать все варианты',
-  subWondrous: 'Введите результат броска или получите случайную позицию.',
-  subVoa: 'Выберите раздел книги и бросьте кость по нему.',
-  subCommunity: 'Выберите происхождение и бросьте d10.',
-  subMwt: 'Выберите мир и бросьте кость по нему.',
 
   /* The alternate tables. Two dice with names instead of a sum, so each one
      is labeled and the card says which of them found it. */
@@ -159,8 +155,6 @@ const ru = {
   rarity: 'Редкость',
   hopeDie: 'Кость Надежды',
   fearDie: 'Кость Страха',
-  hopeLetter: 'Н',
-  fearLetter: 'С',
   rollDuality: 'Бросить кости',
   hope: 'Надежда',
   fear: 'Страх',
@@ -192,13 +186,12 @@ const ru = {
   /* The same button once it is on: the live app renames it rather than only
      filling it in, so a screen reader hears the state and not just the offer. */
   homeOn: 'Открывается при запуске',
-  helpHint: 'Справка',
-  fieldHelp: 'Подсказка: %s',
   rollLabelFor: 'Результат броска',
   /* Singular: the chip names the book, the label above the picker asks for
      one community. */
   communityLabel: 'Сообщество',
   realmLabel: 'Мир',
+  roomLabel: 'Комната',
 
   notFound: 'Предмет не найден',
   notFoundSub: 'Возможно, ссылка устарела или данные были изменены.',
@@ -247,11 +240,9 @@ const ru = {
   subSecondary: 'Вторичное',
   subArmor: 'Броня',
 
-  subLists: 'Соберите добычу в список и отправьте игрокам одной ссылкой.',
   /* "по всем N позициям" needs "всем" to agree with the numeral, so the
      sentence leaves it out and reads for any count. */
-  subSearch:
-    'Поиск сразу по 1459 позициям - добыча, расходники и снаряжение, на русском и на английском.',
+  subSearch: 'Поиск сразу по 1593 позициям - добыча, расходники и снаряжение.',
   subSearchOwn: 'И %n ваш предмет.|И %n ваших предмета.|И %n ваших предметов.',
 
   searchPh: 'Поиск по названию или описанию...',
@@ -294,7 +285,6 @@ const ru = {
   allShort: 'Все',
   selCount: 'Выбрано: %n',
   selRegion: 'Выбранные записи',
-  copySel: 'Скопировать',
   selCopied: 'Выбранное скопировано',
 
   /* The table filter: the strip, the panel it folds open, and the link that
@@ -315,9 +305,8 @@ const ru = {
   frameF: 'Сеттинг',
   commF: 'Сообщество',
   realmF: 'Мир',
-  anyValue: 'любое',
-  outOf: 'из',
-  dropValue: 'Убрать из фильтра',
+  volF: 'Том',
+  roomF: 'Комната',
   resetAll: 'Сбросить всё',
   filterLink: 'Ссылка на фильтры',
   filterLinkCopied: 'Ссылка на фильтры скопирована',
@@ -334,10 +323,12 @@ const ru = {
      button both raise - `git show 23c00a6^:app.js`. */
   addToList: 'Добавить в список',
   toList: 'В список',
-  addTo: 'Добавить в',
-  inLists: 'Лежит в списках',
+  listsHead: 'Списки',
   newList: 'Новый список',
-  listNamePh: 'Например: клад дракона',
+  listNameLabel: 'Название списка',
+  listNamePh: 'Клад дракона',
+  listsNoneTitle: 'Списков пока нет',
+  listsNoneHint: 'Нажмите «Новый список» - или «В список» у предмета в таблице или в броске.',
   create: 'Создать',
   cancel: 'Отмена',
   findList: 'Найти список',
@@ -350,23 +341,22 @@ const ru = {
     'Не удалось сохранить: браузер не дал записать в локальное хранилище - оно заблокировано или переполнено',
   /* The shared page - `git show 23c00a6^:app.js`: a list from another player, and the
      button that saves the shared list as a new own list. */
-  sharedList: 'Список от другого игрока',
   saveShared: 'Сохранить себе',
   toStart: 'На главную',
   print: 'Печать',
   printHint: 'Собрать карточки для печати: девять на лист A4',
-  printColor: 'Цветная',
-  printBW: 'Чёрно-белая',
-  printStd: 'Обычная',
-  printCompact: 'Компактная',
+  printColor: 'Цвет',
+  printBW: 'Ч/б',
+  printStd: '63×88',
+  printCompact: '44×63',
   printSize: 'Размер карты',
-  printNow: 'Отправить на печать',
+  printInk: 'Цвет печати',
+  printNow: 'Напечатать',
+  printSheetN: 'Лист %n из %m',
   printLink: 'Ссылка на набор',
   printTitle: 'Печать карточек',
   printSub: 'Карточек: %n. Листов A4: %p. Размер карты 63×88 мм - как у обычной игральной.',
   printSubCompact: 'Карточек: %n. Листов A4: %p. Размер карты 44×63 мм - шестнадцать на лист.',
-  printNote:
-    'В окне печати выберите A4, книжную ориентацию и поля «нет». Лист светлый нарочно: так он читается и на чёрно-белом принтере, и не съедает картридж.',
   printEmpty: 'Печатать нечего: в наборе не осталось карточек.',
   back: 'Назад',
   printTooMany:
@@ -394,13 +384,13 @@ const ru = {
      the roll panel and a row's own controls. */
   rename: 'Название списка',
   listCopied: 'Список скопирован',
-  listEmptyHint:
-    'Пока пусто. Откройте «Таблицы» или «Поиск», отметьте нужное галочками и нажмите «В список» - или сделайте это прямо с карточки предмета.',
   itemNotLoaded: 'Предмет не загружен',
-  listNotFound: 'Список не найден',
-  listNotFoundSub: 'Возможно, он удалён или открыт в другом браузере.',
+  listGoneSignedOut: 'Войдите, чтобы открыть список',
+  listGoneSignedOutSub: 'Списки открываются только в аккаунте, где их создали. Войдите в него.',
+  listGoneAccount: 'Этого списка нет в вашем аккаунте',
+  listGoneAccountSub: 'Его удалили, или он сохранён в другом аккаунте.',
+  listGoneAs: 'Вы вошли как %s.',
   rollBy: 'Бросок по списку',
-  rollHint: 'Бросьте кубик и введите результат - или нажмите кнопку',
   clear: 'Сбросить',
   note: 'Заметка',
   listNote: 'Заметки',
@@ -413,14 +403,22 @@ const ru = {
   gmOnlyShow: 'Показать игрокам (%n)',
   gmOnlyHidden: 'Скрыто от игроков: %n',
   gmOnlyShown: 'Показано игрокам: %n',
-  notePubHint: 'уедет с текстом и ссылкой для игроков',
-  noteHidHint: 'останется у вас',
   listNotePhPub: 'Например: лавка закрыта до утра',
   listNotePhHid: 'Например: позиции 9-10 лежат под прилавком',
   notePhPub: 'Как предмет выглядит, что о нём знают',
   notePhHid: 'Хоумбрю, подвох, что знает только мастер',
-  noteClear: 'Очистить заметку',
+  noteClear: 'Очистить',
   noteCleared: 'Заметка очищена',
+  /* The note area of the list page (docs/specs/FEATURES.md, "Lists"). */
+  noteSeenByPlayers: 'Видна по ссылке для игроков',
+  noteNotSeen: 'Игроки не видят',
+  noteDone: 'Готово',
+  /* Hidden text after «Заметка» when a note of the entry is filled. */
+  noteFilled: ', заполнена',
+  noteKind: 'Чья заметка',
+  pricesLabel: 'Цены:',
+  priceExample: 'Например: %s',
+  showInList: 'Показать в списке',
   qty: 'Кол-во',
   price: 'Цена',
   position: 'Позиция в списке',
@@ -443,12 +441,23 @@ const ru = {
   pickMinOf: 'Мин, взять 1: %s',
   pickMaxOf: 'Макс, взять все: %s',
   pcsN: '%n шт.',
-  eachPrice: 'по %s',
-  moneyAs: 'Отображение цен',
+  eachPrice: '%s за штуку',
   money_bag: 'Как в книге',
   money_coin: 'Монетами',
   goldUnit: 'зол.',
   batchMoney: 'Цены',
+  /* The list page up to 760 px (docs/specs/FEATURES.md, "Lists"). */
+  qtyOf: 'Кол-во: %s',
+  moreOf: 'Ещё: %s',
+  rollFromList: 'Бросить по списку',
+  listOpen: 'Открыть',
+  listDeleteItem: 'Удалить список',
+  moneyTo_bag: 'Цены: как в книге',
+  moneyTo_coin: 'Цены: монетами',
+  priceSelTitle: 'Цены выбранных',
+  noteGmLink: 'Заметка мастера',
+  rowHide: 'Скрыть от игроков',
+  rowShow: 'Показать игрокам',
   batchNoPrice: 'Убрать цену',
   repricePct: 'Изменить на, %',
   repriceDown: 'Сделать скидку',
@@ -473,17 +482,12 @@ const ru = {
   menuLists: 'Мои списки',
   displayHead: 'Отображение на всех устройствах',
   defaultTablesView: 'Вид таблиц по умолчанию',
-  defaultPrint: 'Печать по умолчанию',
-  keepBefore: 'Только до перезагрузки. Чтобы сохранить, измените в ',
-  keepLink: 'настройках аккаунта',
-  keepAfter: '.',
   displayHome: 'Раздел при запуске',
   displayNotify: 'Когда беру из чужого списка',
   notifyAsk: 'Спрашивать',
   notifyAlways: 'Сообщать владельцу',
   notifyNever: 'Не сообщать',
-  signInLead:
-    'Войдите, чтобы ваши данные были доступны на всех устройствах. Всё остальное работает и без входа.',
+  signInLead: 'Войдите, чтобы данные были на всех устройствах. Остальное работает без входа.',
   signInWith: 'Войти через %s',
   consentBefore: 'Входя, вы принимаете ',
   consentTerms: 'условия',
@@ -521,10 +525,8 @@ const ru = {
   exportData: 'Скачать мои данные (ZIP)',
   zipNoArt: 'Картинок в архиве нет: после переноса добавьте их заново.',
 
-  /* Account lists: the index groups, the save status, the sign-in prompts,
-     the delete confirm and the limits (docs/specs/FEATURES.md, "Lists"). */
-  groupAccount: 'Ваш аккаунт',
-  noCloudLists: 'В аккаунте пока нет списков - создайте первый выше.',
+  /* Account lists: the save status, the sign-in prompts, the delete confirm and the
+     limits (docs/specs/FEATURES.md, "Lists"). */
   cloudLoading: 'Загружаем...',
   cloudLoadFailed: 'Не получилось загрузить списки аккаунта.',
   retry: 'Повторить',
@@ -537,7 +539,6 @@ const ru = {
     'Войдите, чтобы создавать списки: они хранятся в аккаунте и открываются на любом устройстве.',
   signInToCreateShort: 'Войдите, чтобы создать список.',
   signInToSave: 'Войдите, и список сохранится в ваш аккаунт.',
-  signInToOpen: 'Если это список из вашего аккаунта, войдите, чтобы открыть его.',
   deleteCloudConfirm:
     'Удалить список «%s»? Ссылки для игроков и мастера перестанут работать. Отменить удаление нельзя.',
   limitLists:
@@ -583,14 +584,12 @@ const ru = {
   edit: 'Изменить',
   hbNotAdded: 'Свой предмет нельзя добавить в этот список.',
   hbNotReady: 'Ваши предметы ещё загружаются - это может занять минуту. Повторите чуть позже.',
-  quickOwn: 'Свой предмет',
-  quickRowHint: 'название и описание, остальное потом в редакторе',
+  quickOwn: 'Добавить свой предмет',
   quickHead: 'Свой предмет в этот список',
   quickNote:
     'Предмет сохранится в «Мои предметы», в «Хоумбрю». Вид, источник и остальное можно задать потом в редакторе.',
   quickAdded: 'Предмет «%s» создан и добавлен в список',
   quickFailed: 'Не получилось создать предмет. Проверьте соединение - текст остался в форме.',
-  listEmptyHintOwn: 'Свой предмет можно создать здесь же, кнопкой ниже.',
   hbErrBookGone: 'Этот источник удалили - выберите другой.',
   hbOptional: 'необязательно',
   hbGroupItem: 'Предмет',
@@ -641,10 +640,6 @@ const ru = {
   mdPreviewOf: 'Просмотр: %s',
   mdPreviewEmpty: 'Текста пока нет.',
   mdCapped: 'Достигнут предел в %n знаков: правка не поместилась.',
-  mdHelp:
-    'Жирный - **текст**, курсив - *текст*; в каталоге свойство пишется ***Название:***, плата по выбору - **потратьте Надежду**, состояние - *Уязвим*.\n' +
-    'Строка с «- » - пункт списка, с «1. » - пункт нумерованного списка; таблица - строки вида «| a | б |», под первой строкой «|---|---|»; \\* пишет звёздочку как есть.\n' +
-    'Разметка входит в %n символов.',
   textEnOnly: 'Текст только на английском',
   textRuOnly: 'Текст только на русском',
   hbNone: 'Нет',
@@ -968,6 +963,7 @@ const ru = {
     '), или архив ZIP из «Скачать мои данные». Списки добавятся как новые; существующие не изменятся.',
   importPreview: 'Списков: %l, позиций: %n.',
   importSkippedN: 'Пропущено позиций: %n.',
+  importSkippedList: 'Пропущено: %n',
   importWillN:
     '%n позиция будет импортирована|%n позиции будут импортированы|%n позиций будут импортированы',
   importListEmpty: 'без позиций',
@@ -1028,8 +1024,8 @@ const ru = {
   shareDeleteConfirm:
     'Удалить ссылку? Те, у кого она есть, больше не откроют список. Отменить удаление нельзя.',
   shareStopped: 'Ссылка удалена',
-  shareHint:
-    '«Удалить ссылку» закрывает доступ: по удалённой ссылке список больше не откроется. «Создать ссылку» даёт новую. Ссылка для игроков скрывает заметки и позиции «Только для мастера», ссылка для мастера показывает их - давайте её только мастерам.',
+  shareNoGm: 'Без заметок мастера и скрытых позиций',
+  shareWithGm: 'С заметками «Только для мастера»',
   shareLoadFailed: 'Не получилось загрузить ссылки.',
   requestsLoadFailed: 'Не получилось загрузить запросы.',
   shareCreated: 'Ссылка создана.',
@@ -1083,7 +1079,17 @@ const ru = {
   requestByGm: 'По ссылке для мастера',
   requestJustNow: 'только что',
   requestExpires: 'истечёт %s',
-  requestOf: '×%w из %h',
+  /* The columns of a request: the stock now, the count taken, the stock after. */
+  reqItem: 'Позиция',
+  reqWas: 'Было',
+  reqTaken: 'Возьмут',
+  reqBecomes: 'Станет',
+  reqPrice: 'Цена',
+  reqShortLine: 'Просили %w, в списке %h: возьмут %t',
+  reqNoPrice: 'без цены',
+  reqUnpricedN: '%n позиция без цены|%n позиции без цены|%n позиций без цены',
+  requestsOpen: 'Открыть',
+  requestsFold: 'Свернуть',
   requestNotInList: 'нет в списке',
   requestApply: 'Принять',
   requestApplyAvailable: 'Принять доступное',
@@ -1179,6 +1185,9 @@ const en: Dict = {
   dv: "Dragon's Vault",
   arazo: "Arazo's Artifacts",
   mwt: 'Many Worlds Tavern',
+  ph: 'Pistolheart',
+  lr: 'The Last Round Table',
+  vh: 'Escape the Veiled Halls',
   tables: 'Tables',
   search: 'Search',
 
@@ -1191,8 +1200,6 @@ const en: Dict = {
   copyName: 'Copy name',
   copyText: 'Copy text',
   copyImg: 'Copy image',
-  sImg: 'Image',
-  sText: 'Text',
   openPage: 'Open page',
   openCard: 'Open card',
   showInTable: 'show in the table',
@@ -1206,10 +1213,12 @@ const en: Dict = {
   srcDv: "The Dragon's Vault",
   srcArazo: "Arazo's Artifacts",
   srcMwt: 'Many Worlds Tavern',
+  srcPh: 'Pistolheart',
+  srcLr: 'The Last Round Table',
+  srcVh: 'Escape the Veiled Halls',
   srcFrame: 'Frame',
   srcComm: 'Community items',
   copyLink: 'Copy link',
-  sendAll: 'Share',
   nameCopied: 'Name copied',
   imgCopied: 'Image copied',
   textCopied: 'Text copied',
@@ -1229,7 +1238,7 @@ const en: Dict = {
   stepUp: 'One higher',
 
   footBefore:
-    "Data: Daggerheart Core Set, Hope & Fear, Wondrous Environments, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, The Guide to Arazo's Artifacts, Many Worlds Tavern: Sporopolis, Wagerwood, Warrin' Warrens, Godsvale, Hornet Hold, The Drome, Community Magic Items, Alternate Loot & Consumable Tables. Russian text: daggerheart.su and custom material. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at ",
+    "Data: Daggerheart Core Set, Hope & Fear, Wondrous Environments, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, The Guide to Arazo's Artifacts, Many Worlds Tavern: Sporopolis, Wagerwood, Warrin' Warrens, Godsvale, Hornet Hold, The Drome, Pistolheart Volumes 1-3, The Last Round Table, Escape the Veiled Halls, Community Magic Items, Alternate Loot & Consumable Tables. Russian text: daggerheart.su and custom material. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at ",
   footLink: 'daggerheart.com',
   footAfter: '. There are no previous modifications by others.',
   footSummary: 'Daggerheart © Darrington Press - DPCGL - Sources and license',
@@ -1240,13 +1249,10 @@ const en: Dict = {
 
   pageWondrous: 'Wondrous Environments',
   pageDread: 'Dread GM Toolbox',
-  pageVoa: 'Vault of Ages',
   pageDv: "The Dragon's Vault",
-  pageArazo: "The Guide to Arazo's Artifacts",
   pageCommunity: 'Community items',
-  pageMwt: 'Many Worlds Tavern',
   pageStd: 'Standard rules',
-  subStd: 'A roll over the core book and the Hope & Fear tables.',
+  subStd: 'A roll over the Core and Hope & Fear tables.',
   common: 'Common',
   uncommon: 'Uncommon',
   rare: 'Rare',
@@ -1261,18 +1267,12 @@ const en: Dict = {
   keepOneKind: 'At least one type has to stay on',
   or: 'OR',
   copyRoll: 'Copy every option',
-  subWondrous: 'Enter your roll result, or pick a random entry.',
-  subVoa: 'Pick a section of the book and roll within it.',
-  subCommunity: 'Pick an origin and roll d10.',
-  subMwt: 'Pick a realm and roll within it.',
 
   pageAlt: 'Alternate tables',
   subAlt: 'A Duality Dice roll over both books merged into one set of tables.',
   rarity: 'Rarity',
   hopeDie: 'Hope Die',
   fearDie: 'Fear Die',
-  hopeLetter: 'H',
-  fearLetter: 'F',
   rollDuality: 'Roll the dice',
   hope: 'Hope',
   fear: 'Fear',
@@ -1296,11 +1296,10 @@ const en: Dict = {
   uniqueHint: 'Printed at a single tier - this one has no upgrade ladder',
   homeHint: 'Open on start',
   homeOn: 'Opens on start',
-  helpHint: 'Help',
-  fieldHelp: 'Help: %s',
   rollLabelFor: 'Roll result',
   communityLabel: 'Community',
   realmLabel: 'Realm',
+  roomLabel: 'Room',
 
   notFound: 'Item not found',
   notFoundSub: 'The link may be out of date, or the data has changed.',
@@ -1336,9 +1335,7 @@ const en: Dict = {
   subSecondary: 'Secondary',
   subArmor: 'Armor',
 
-  subLists: 'Collect loot into a list and send it to your players as a single link.',
-  subSearch:
-    'Search all 1459 entries at once - loot, consumables and equipment, in Russian and English.',
+  subSearch: 'Search all 1593 entries at once - loot, consumables and equipment.',
   subSearchOwn: 'And %n item of your own.|And %n items of your own.',
 
   searchPh: 'Search by name or description...',
@@ -1372,7 +1369,6 @@ const en: Dict = {
   allShort: 'All',
   selCount: '%n selected',
   selRegion: 'Selected records',
-  copySel: 'Copy',
   selCopied: 'Selection copied',
 
   filters: 'Filters',
@@ -1388,9 +1384,8 @@ const en: Dict = {
   frameF: 'Frame',
   commF: 'Community',
   realmF: 'Realm',
-  anyValue: 'any',
-  outOf: 'of',
-  dropValue: 'Remove from the filter',
+  volF: 'Volume',
+  roomF: 'Room',
   resetAll: 'Reset all',
   filterLink: 'Filter link',
   filterLinkCopied: 'Filter link copied',
@@ -1402,10 +1397,12 @@ const en: Dict = {
 
   addToList: 'Add to list',
   toList: 'Add to list',
-  addTo: 'Add to',
-  inLists: 'Sits in lists',
+  listsHead: 'Lists',
   newList: 'New list',
-  listNamePh: 'For example: dragon hoard',
+  listNameLabel: 'List name',
+  listNamePh: "Dragon's hoard",
+  listsNoneTitle: 'No lists yet',
+  listsNoneHint: 'Press "New list" - or "Add to list" on an item in a table or a roll.',
   create: 'Create',
   cancel: 'Cancel',
   findList: 'Find a list',
@@ -1416,23 +1413,22 @@ const en: Dict = {
   untitled: 'Untitled',
   saveFailed:
     'Could not save: the browser refused the write - local storage is blocked or full',
-  sharedList: 'A list from another player',
   saveShared: 'Save to my lists',
   toStart: 'Home',
   print: 'Print',
   printHint: 'Lay these out for printing: nine to an A4 sheet',
   printColor: 'Color',
-  printBW: 'Black and white',
-  printStd: 'Standard',
-  printCompact: 'Compact',
+  printBW: 'B&W',
+  printStd: '63×88',
+  printCompact: '44×63',
   printSize: 'Card size',
-  printNow: 'Send to printer',
+  printInk: 'Print color',
+  printNow: 'Print',
+  printSheetN: 'Sheet %n of %m',
   printLink: 'Link to this set',
   printTitle: 'Printing cards',
   printSub: 'Cards: %n. A4 sheets: %p. Card size 63×88 mm - the size of a playing card.',
   printSubCompact: 'Cards: %n. A4 sheets: %p. Card size 44×63 mm - sixteen to a sheet.',
-  printNote:
-    'In the print dialog pick A4, portrait, and margins "none". The sheet is light on purpose: it reads on a black-and-white printer and does not drain the cartridge.',
   printEmpty: 'Nothing to print: no card is left in the set.',
   back: 'Back',
   printTooMany:
@@ -1453,13 +1449,14 @@ const en: Dict = {
 
   rename: 'List name',
   listCopied: 'List copied',
-  listEmptyHint:
-    'Nothing here yet. Open Tables or Search, tick what you need and press "Add to list" - or do it straight from an item card.',
   itemNotLoaded: 'Item not loaded',
-  listNotFound: 'List not found',
-  listNotFoundSub: 'It may have been deleted, or it lives in another browser.',
+  listGoneSignedOut: 'Sign in to open this list',
+  listGoneSignedOutSub:
+    'A list opens only in the account where it was made. Sign in to that account.',
+  listGoneAccount: 'This list is not in your account',
+  listGoneAccountSub: 'It was deleted, or it is in another account.',
+  listGoneAs: 'You are signed in as %s.',
   rollBy: 'Roll on this list',
-  rollHint: 'Roll a die and type the result - or press the button',
   clear: 'Clear',
   note: 'Note',
   listNote: 'Notes',
@@ -1472,14 +1469,20 @@ const en: Dict = {
   gmOnlyShow: 'Show to players (%n)',
   gmOnlyHidden: 'Hidden from players: %n',
   gmOnlyShown: 'Shown to players: %n',
-  notePubHint: "travels with the text and the players' link",
-  noteHidHint: 'stays with you',
   listNotePhPub: 'e.g. the shop is shut until morning',
   listNotePhHid: 'e.g. entries 9-10 are kept under the counter',
   notePhPub: 'What it looks like, what is known about it',
   notePhHid: 'Homebrew, the catch, what only the GM knows',
-  noteClear: 'Clear the note',
+  noteClear: 'Clear',
   noteCleared: 'Note cleared',
+  noteSeenByPlayers: "Shown on the players' link",
+  noteNotSeen: 'Players do not see it',
+  noteDone: 'Done',
+  noteFilled: ', filled',
+  noteKind: 'Whose note',
+  pricesLabel: 'Prices:',
+  priceExample: 'For example: %s',
+  showInList: 'Show in the list',
   qty: 'Qty',
   price: 'Price',
   position: 'Position in the list',
@@ -1500,11 +1503,21 @@ const en: Dict = {
   pickMaxOf: 'Max, take all: %s',
   pcsN: '%n pcs',
   eachPrice: '%s each',
-  moneyAs: 'Price display',
   money_bag: 'As in the book',
   money_coin: 'In coins',
   goldUnit: 'gp',
   batchMoney: 'Prices',
+  qtyOf: 'Qty: %s',
+  moreOf: 'More: %s',
+  rollFromList: 'Roll on this list',
+  listOpen: 'Open',
+  listDeleteItem: 'Delete the list',
+  moneyTo_bag: 'Prices: as in the book',
+  moneyTo_coin: 'Prices: in coins',
+  priceSelTitle: 'Prices of the selected',
+  noteGmLink: "GM's note",
+  rowHide: 'Hide from players',
+  rowShow: 'Show to players',
   batchNoPrice: 'Clear price',
   repricePct: 'Change by, %',
   repriceDown: 'Discount',
@@ -1527,10 +1540,6 @@ const en: Dict = {
   menuLists: 'My lists',
   displayHead: 'Display on all your devices',
   defaultTablesView: 'Default table view',
-  defaultPrint: 'Default print',
-  keepBefore: 'Only until the page reloads. To keep it, change it in ',
-  keepLink: 'your account settings',
-  keepAfter: '.',
   displayHome: 'Section on start',
   displayNotify: "When I take from someone else's list",
   notifyAsk: 'Ask',
@@ -1574,8 +1583,6 @@ const en: Dict = {
   exportData: 'Download my data (ZIP)',
   zipNoArt: 'The archive holds no pictures: add them again after the move.',
 
-  groupAccount: 'Your account',
-  noCloudLists: 'No lists in your account yet - create one above.',
   cloudLoading: 'Loading...',
   cloudLoadFailed: 'Could not load the lists in your account.',
   retry: 'Retry',
@@ -1588,7 +1595,6 @@ const en: Dict = {
     'Sign in to create lists: they are kept in your account and open on any device.',
   signInToCreateShort: 'Sign in to create a list.',
   signInToSave: 'Sign in and the list is saved to your account.',
-  signInToOpen: 'If this list is in your account, sign in to open it.',
   deleteCloudConfirm:
     'Delete the list "%s"? Its player and GM links will stop working. This cannot be undone.',
   limitLists:
@@ -1632,14 +1638,12 @@ const en: Dict = {
   edit: 'Edit',
   hbNotAdded: 'Your own item cannot go into this list.',
   hbNotReady: 'Your items are still loading - this can take a minute. Try again shortly.',
-  quickOwn: 'Own item',
-  quickRowHint: 'a name and a description, the rest later in the editor',
+  quickOwn: 'Add your own item',
   quickHead: 'An own item for this list',
   quickNote:
     'The item is saved in "My items", under "Homebrew". Its kind, source and the rest can be set later in the editor.',
   quickAdded: 'Item "%s" created and added to the list',
   quickFailed: 'Could not create the item. Check the connection - the text stays in the form.',
-  listEmptyHintOwn: 'You can also make an item of your own here, with the button below.',
   hbErrBookGone: 'This source was deleted - choose another one.',
   hbOptional: 'optional',
   hbGroupItem: 'Item',
@@ -1690,10 +1694,6 @@ const en: Dict = {
   mdPreviewOf: 'Preview: %s',
   mdPreviewEmpty: 'No text yet.',
   mdCapped: 'The field is at its limit of %n characters: the edit did not fit.',
-  mdHelp:
-    'Bold is **text**, italic is *text*; the catalog writes ***Name:*** for a feature, **spend a Hope** for a cost by choice and *Vulnerable* for a condition.\n' +
-    'A line that starts with "- " is a list item, with "1. " a numbered item; a table is lines like "| a | b |" with "|---|---|" under the first line; \\* writes a star as is.\n' +
-    'Markup counts toward the %n characters.',
   textEnOnly: 'Text in English only',
   textRuOnly: 'Text in Russian only',
   hbNone: 'None',
@@ -2007,6 +2007,7 @@ const en: Dict = {
     '), or the ZIP archive from "Download my data". The lists are added as new ones; the lists you have do not change.',
   importPreview: 'Lists: %l, items: %n.',
   importSkippedN: 'Items skipped: %n.',
+  importSkippedList: 'Skipped: %n',
   importWillN: '%n item will be imported|%n items will be imported',
   importListEmpty: 'no items',
   importNoName: '(no name)',
@@ -2068,8 +2069,8 @@ const en: Dict = {
   shareDeleteConfirm:
     'Delete the link? Anyone who has it can no longer open the list. This cannot be undone.',
   shareStopped: 'Link deleted',
-  shareHint:
-    '"Delete link" ends access: a deleted link no longer opens the list. "Create link" makes a new one. The players\' link hides the "GM only" notes and items; the GM\'s link shows them - give it to GMs only.',
+  shareNoGm: 'Without GM notes and hidden entries',
+  shareWithGm: 'With the GM-only notes',
   shareLoadFailed: 'Could not load the links.',
   requestsLoadFailed: 'Could not load the requests.',
   shareCreated: 'Link created.',
@@ -2117,7 +2118,16 @@ const en: Dict = {
   requestByGm: 'Through the GM link',
   requestJustNow: 'just now',
   requestExpires: 'expires %s',
-  requestOf: '×%w of %h',
+  reqItem: 'Item',
+  reqWas: 'Was',
+  reqTaken: 'Taken',
+  reqBecomes: 'Becomes',
+  reqPrice: 'Price',
+  reqShortLine: 'Asked %w, the list has %h: %t taken',
+  reqNoPrice: 'no price',
+  reqUnpricedN: '%n entry without a price|%n entries without a price',
+  requestsOpen: 'Open',
+  requestsFold: 'Show less',
   requestNotInList: 'not in the list',
   requestApply: 'Apply',
   requestApplyAvailable: 'Apply what is there',
@@ -2203,6 +2213,9 @@ export const SECTION_LABEL: Record<Section, keyof Dict> = {
   'roll/arazo': 'arazo',
   'roll/community': 'pageCommunity',
   'roll/mwt': 'mwt',
+  'roll/ph': 'ph',
+  'roll/lr': 'lr',
+  'roll/vh': 'vh',
   tables: 'tables',
   lists: 'menuLists',
   search: 'search'

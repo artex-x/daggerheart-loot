@@ -164,14 +164,20 @@ describe('the rarity and the two dice', () => {
     expect(screen.queryByRole('button', { name: 'Необычная' })).not.toBeInTheDocument();
   });
 
-  it('gives each die field a letter badge beside its word, not a hue alone', () => {
+  it('marks each die field with its d12 beside its word, not a hue alone', () => {
     const { container } = render(App, { env: at() });
     expect([...container.querySelectorAll('.dielbl')].map((l) => l.textContent)).toEqual([
-      'НКость Надежды',
-      'СКость Страха'
+      'Кость Надежды',
+      'Кость Страха'
     ]);
-    expect(container.querySelector('.dv.h')).toHaveTextContent('Н');
-    expect(container.querySelector('.dv.f')).toHaveTextContent('С');
+    for (const box of container.querySelectorAll('.dv')) {
+      expect(box).toHaveAttribute('aria-hidden', 'true');
+      expect(box.querySelectorAll('svg.dieicon')).toHaveLength(1);
+      expect(box.textContent).toBe('');
+    }
+    expect(container.querySelector('.dv.h')).not.toBeNull();
+    expect(container.querySelector('.dv.f')).not.toBeNull();
+    expect(screen.getByLabelText('Кость Надежды: Результат броска')).toBeInTheDocument();
   });
 
   it('reads both faces in the heading', () => {
@@ -272,9 +278,12 @@ describe('the other language', () => {
   it('names both dice and the tables the crit opens', async () => {
     render(App, { env: at() });
     await press('EN');
-    expect(
-      screen.getByRole('heading', { level: 1, name: 'Alternate tables' })
-    ).toBeInTheDocument();
+    /* The heading names the job; the lit pill names the page. */
+    expect(screen.getByRole('heading', { level: 1, name: 'Roll' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Alternate tables' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
     expect(screen.getByText('Hope Die')).toBeInTheDocument();
     expect(screen.getByText('Fear Die')).toBeInTheDocument();
     await press('Fear Die: One lower');
@@ -307,9 +316,11 @@ describe('a rarity the data has no columns for', () => {
 describe('a dataset that did not load', () => {
   it('says so rather than drawing an empty roll', () => {
     render(App, { env: fakeEnv({ router: memoryRouter('#/roll/alt'), data: noData() }) });
-    expect(
-      screen.getByRole('heading', { level: 1, name: 'Альтернативные таблицы' })
-    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Бросок' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Альтернативные таблицы' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
     expect(options()).toHaveLength(0);
   });
 });

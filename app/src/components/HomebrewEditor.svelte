@@ -21,7 +21,7 @@
   import ErrorPage from './ErrorPage.svelte';
   import FormField from './FormField.svelte';
   import HomebrewRelations from './HomebrewRelations.svelte';
-  import Icon from './Icon.svelte';
+  import Crumb from './Crumb.svelte';
   import LoadState from './LoadState.svelte';
   import MarkupField from './MarkupField.svelte';
   import MoreMenu from './MoreMenu.svelte';
@@ -37,6 +37,7 @@
   import SignInPrompt from './SignInPrompt.svelte';
   import StatusRegion from './StatusRegion.svelte';
   import TextInput from './TextInput.svelte';
+  import { watchBarHeight } from './barHeight.js';
   import { newArtName, shownArt, type ArtValue } from '../lib/art.js';
   import { limitText } from '../lib/cloudLists.js';
   import { lineMembers } from '../lib/data.js';
@@ -92,6 +93,8 @@
   const { app, store, key }: Props = $props();
 
   const t = $derived(app.t);
+  /* The lead of the sign-in and read-failure heads, drawn from 761 px. */
+  const headSub = $derived(app.band === 'narrow' ? undefined : t.subHomebrew);
   const lang = $derived(app.lang);
 
   /* The item this form edits: `key`, or the key of the item it created. */
@@ -800,19 +803,7 @@
     });
   }
 
-  $effect(() => {
-    const el = ebar;
-    if (!el || !narrow || typeof ResizeObserver !== 'function') return;
-    const root = document.documentElement;
-    const watch = new ResizeObserver(() => {
-      root.style.setProperty('--ebar-h', `${String(el.offsetHeight)}px`);
-    });
-    watch.observe(el);
-    return () => {
-      watch.disconnect();
-      root.style.removeProperty('--ebar-h');
-    };
-  });
+  $effect(() => (ebar && narrow ? watchBarHeight(ebar, '--ebar-h') : undefined));
 </script>
 
 <!-- eslint-disable @typescript-eslint/no-confusing-void-expression -- a `{@render}` tag
@@ -920,6 +911,7 @@
         lang={editIn}
         bw={app.shownPrintBW}
         compact={app.shownPrintCompact}
+        fonts={app.env.fonts}
         artBroken={previewBroken}
         onartfail={() => {
           previewBroken = true;
@@ -946,16 +938,17 @@
 
 <svelte:window {onkeydown} />
 
+<!-- Up to 760 px the lead is not drawn, as on `#/homebrew`. -->
 {#if app.user === null}
-  <PageTitle title={t.myItems} sub={t.subHomebrew} />
+  <PageTitle title={t.myItems} sub={headSub} />
   <SignInPrompt {app} lead={t.hbSignIn} after={{ hash: app.hash }} />
 {:else if app.user === undefined}
   <!-- The session is not known yet. -->
 {:else if store.status === 'error' && !formLoaded}
-  <PageTitle title={t.myItems} sub={t.subHomebrew} />
+  <PageTitle title={t.myItems} sub={headSub} />
   <LoadState {t} failed text={t.hbLoadFailed} onretry={() => void store.load()} />
 {:else if !formLoaded && !missing}
-  <PageTitle title={t.myItems} sub={t.subHomebrew} />
+  <PageTitle title={t.myItems} sub={headSub} />
   <LoadState {t} failed={false} text={t.hbLoadFailed} onretry={() => void store.load()} />
 {:else if missing}
   <ErrorPage title={t.notFound} said>
@@ -965,10 +958,7 @@
     {/snippet}
   </ErrorPage>
 {:else}
-  <div class="crumb">
-    <a class="back" href={app.href(HOMEBREW_HASH)}><Icon name="back" />{t.myItems}</a>
-    <h1 class="ttl" {title}>{title}</h1>
-  </div>
+  <Crumb href={app.href(HOMEBREW_HASH)} label={t.myItems} {title} />
   <p class="esub">{sub}</p>
   <div class="hbedit">
     <Panel>
@@ -1506,58 +1496,11 @@
 {/if}
 
 <style>
-  /* The way back and the item's name on one row (`.page-h`, `.page-sub`). */
-  .crumb {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-    min-width: 0;
-    margin-bottom: 4px;
-  }
-
-  .back {
-    display: inline-flex;
-    align-items: center;
-    flex: none;
-    gap: 4px;
-    min-height: 24px;
-    color: var(--muted);
-    font-size: var(--t-small);
-    text-decoration: none;
-  }
-
-  .back:hover {
-    color: var(--txt);
-  }
-
-  .ttl {
-    min-width: 0;
-    margin: 0;
-    overflow: hidden;
-    font-size: var(--t-page);
-    font-weight: var(--h-page-weight);
-    letter-spacing: var(--h-page-spacing);
-    line-height: 1.25;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-
-  @media (min-width: 761px) {
-    .ttl {
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 3;
-      line-clamp: 3;
-      overflow-wrap: anywhere;
-      white-space: normal;
-    }
-  }
-
   .esub {
     margin: 0 0 12px;
     color: var(--muted);
     font-size: var(--t-small);
-    max-width: 70ch;
+    max-width: var(--measure-line);
     overflow-wrap: anywhere;
   }
 
@@ -1671,7 +1614,7 @@
   }
 
   select {
-    height: 38px;
+    height: max(38px, var(--thumb));
     width: auto;
     max-width: 100%;
     padding: 0 10px;
@@ -1763,6 +1706,18 @@
 
   .rel[open] summary {
     margin-bottom: 12px;
+  }
+
+  /* The fold's summary reaches the thumb target by its padded box. */
+  @media screen and (max-width: 600px) {
+    .rel summary {
+      padding-block: max(0px, calc((var(--thumb) - 1lh) / 2));
+      margin-block: min(0px, calc((1lh - var(--thumb)) / 2));
+    }
+
+    .rel[open] summary {
+      margin-bottom: calc(12px + min(0px, calc((1lh - var(--thumb)) / 2)));
+    }
   }
 
   .ebar {

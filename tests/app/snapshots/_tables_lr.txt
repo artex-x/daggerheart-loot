@@ -1,0 +1,213 @@
+# #/tables/lr
+# route: #/tables/last_round_table
+# why: a plain body with a kind row, 26 rows in book order
+
+## ru :: tree
+RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tables/last_round_table]
+  link "К содержимому" [url=/tables/last_round_table#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    link "Войти" [url=/account]
+    navigation "Разделы"
+      link "Бросок" [url=/roll/std]
+      link "Таблицы" [url=/tables]
+      link "Поиск" [url=/search]
+  main ""
+    heading "Таблицы" [level=1]
+    navigation "Таблицы"
+      link "Core" [url=/tables/core_item]
+      link "Hope & Fear" [url=/tables/hope_and_fear_item]
+      link "Альт. таблицы" [url=/tables/alt_item]
+      link "Дополнения" [url=/tables/wondrous_environments]
+      link "Снаряжение" [url=/tables/eq_weapon]
+      link "Прочее" [url=/tables/other_starting]
+    button "Открывать при запуске" [pressed=false]
+    button "Об этих данных" [expanded=false]
+    button "Таблица: The Last Round Table" [haspopup=dialog]
+    searchbox "Поиск по названию или описанию..."
+    button "Список" [pressed=true]
+    button "Сетка" [pressed=false]
+    button "Ссылка на таблицу"
+    button "Выбрать"
+    complementary "Фильтры"
+      heading "Фильтры" [level=2]
+      StaticText "ТИП"
+      button "Все" [pressed=true]
+      button "Предметы" [pressed=false]
+      button "Расходники" [pressed=false]
+      button "Снаряжение" [pressed=false]
+    ... button x24 of 28 same-shape siblings elided
+    button "25 Банка Святой Матери РАСХОДНИК Толстая стеклянная банка, запеч..." [namelen=658 namehash=035def27]
+    button "26 Свиток Жатвы РАСХОДНИК Чёрный пергаментный свиток, исписанный..." [namelen=343 namehash=df2b0073]
+  contentinfo ""
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=/pages/install.html]
+      link "Конфиденциальность" [url=/pages/privacy.html]
+      link "Условия использования" [url=/pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+
+## ru :: controls
+10Хмельные СапогиПредметПотрёпанные стоптанные кожаные сапоги с ... [namelen=272 namehash=304a55a8]
+11Промасленное Длиннополое ПальтоПредметТяжёлое шерстяное длинно... [namelen=329 namehash=056ab483]
+12Весло Растущего БроженияОсновное оружиеУникальноеРанг 2 · Физи... [namelen=326 namehash=f65d35a3]
+13Фонарь-РозаПредметМагический фонарь из красной тонированной ме... [namelen=412 namehash=172f7414]
+14Охотничий Оберег из Волчьего РогаПредметНебольшой рог лютого в... [namelen=356 namehash=52ff9b39]
+15Эль АпокалипсисаРасходникТёмно-янтарное ячменное вино, тревожн... [namelen=530 namehash=e8d3664f]
+16Пропуск за КулисыРасходникПуф - Действие: Вы разрываете этот м... [namelen=206 namehash=260451a4]
+17Благословленные Бочонки Пылающей БочкиРасходникНебольшой дубов... [namelen=363 namehash=5268965a]
+18Ферментный ОбезвреживательРасходникМаленькая стеклянная склянк... [namelen=377 namehash=6881020f]
+19Эль Могильного ХолодаРасходникЭтот тёмно-синий эль болезненно ... [namelen=377 namehash=bd11d588]
+1ЛодыжкогрызПредметЭто божественно оживлённое кресло-качалка цел... [namelen=524 namehash=b3256ab4]
+20Фруктовый Кекс Долгого ОгняРасходникПлотный, как кирпич, фрукт... [namelen=725 namehash=0eecb62f]
+21Уголь Железного ДереваРасходникПлотный уголь с металлическим о... [namelen=510 namehash=edfad0ce]
+22Мешочек Карманного ПескаРасходникОсобая смесь быстро рассеиваю... [namelen=315 namehash=6b3bf037]
+23Медово-Масляное Мыло Святого БунгусаРасходникЭти крошечные кус... [namelen=627 namehash=7bffa5a2]
+24Ром Кричащей СиреныРасходникТёмный пряный ром, достаточно креп... [namelen=368 namehash=84cc94e4]
+25Банка Святой МатериРасходникТолстая стеклянная банка, запечата... [namelen=653 namehash=17552ff1]
+26Свиток ЖатвыРасходникЧёрный пергаментный свиток, исписанный кр... [namelen=339 namehash=c50a2856]
+2Альманах ПивоварихиПредметКомпактная, успокаивающе пузатая книг... [namelen=424 namehash=e4f3d615]
+3Ведьмина СковородаВторичное оружиеУникальноеРанг 2 · Физическое... [namelen=199 namehash=06fbe9aa]
+4Благословленная ПодковаПредметБлестящая латунная подкова с отти... [namelen=308 namehash=aefaa87d]
+5Чёрный ГроссбухПредметЧёрная кожаная книга, окованная холодным ... [namelen=312 namehash=9842759f]
+6Купчая на Последний Круглый СтолПредметЭтот тяжёлый пергамент с... [namelen=472 namehash=32f70aae]
+7Сборник Гимнов Святого БунгусаПредметПриземистый, весь в пятнах... [namelen=548 namehash=89a1603f]
+8Рецепты Последнего КругаПредметХрупкая старая рукописная книга,... [namelen=375 namehash=43cd2218]
+9Омерзительная ЛютняОсновное оружиеУникальноеРанг 2 · Магическое... [namelen=340 namehash=2e44437e]
+?Об этих данных
+Core
+EN
+Hope & Fear
+RU
+daggerheart.com
+Альт. таблицы
+Бросок
+Войти
+Все
+Выбрать
+Дополнения
+К содержимому
+Конфиденциальность
+ЛутDaggerheart
+Открывать при запуске
+Поиск
+Поиск по названию или описанию...
+Предметы
+Прочее
+Расходники
+Сетка
+Снаряжение
+Список
+Ссылка на таблицу
+Таблица: The Last Round Table
+Таблицы
+Условия использования
+Установить как приложение
+
+## en :: tree
+RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/last_round_table]
+  link "Skip to content" [url=/en/tables/last_round_table#main]
+  banner ""
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    link "Sign in" [url=/en/account]
+    navigation "Sections"
+      link "Roll" [url=/en/roll/std]
+      link "Tables" [url=/en/tables]
+      link "Search" [url=/en/search]
+  main ""
+    heading "Tables" [level=1]
+    navigation "Tables"
+      link "Core" [url=/en/tables/core_item]
+      link "Hope & Fear" [url=/en/tables/hope_and_fear_item]
+      link "Alt. tables" [url=/en/tables/alt_item]
+      link "Supplements" [url=/en/tables/wondrous_environments]
+      link "Equipment" [url=/en/tables/eq_weapon]
+      link "Other" [url=/en/tables/other_starting]
+    button "Open on start" [pressed=false]
+    button "About this data" [expanded=false]
+    button "Table: The Last Round Table" [haspopup=dialog]
+    searchbox "Search by name or description..."
+    button "List" [pressed=true]
+    button "Grid" [pressed=false]
+    button "Link to this table"
+    button "Select"
+    complementary "Filters"
+      heading "Filters" [level=2]
+      StaticText "TYPE"
+      button "All" [pressed=true]
+      button "Items" [pressed=false]
+      button "Consumables" [pressed=false]
+      button "Equipment" [pressed=false]
+    ... button x24 of 28 same-shape siblings elided
+    button "25 Sacred Mother Jar CONSUMABLE A thick glass jar sealed with pi..." [namelen=622 namehash=58516ec2]
+    button "26 Scroll of Reaping CONSUMABLE A black vellum scroll written wi..." [namelen=330 namehash=1377a92e]
+  contentinfo ""
+    navigation "Site pages"
+      link "Install as an app" [url=/pages/en/install.html]
+      link "Privacy" [url=/pages/en/privacy.html]
+      link "Terms of use" [url=/pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
+
+## en :: controls
+10Noggin' BootsItemRagged worn-down leather jackboots, etched wi... [namelen=223 namehash=db429d07]
+11Oiled LongcoatItemA heavy lanolin treated wool longcoat, with ... [namelen=290 namehash=2f88db53]
+12Paddle of Rising FermentPrimary weaponUniqueTier 2 · Physical ... [namelen=339 namehash=244a5962]
+13Rose LanternItemA magical lantern made from red tinted copper ... [namelen=391 namehash=f094e5a8]
+14Wolfhorn Hunting CharmItemA small scrimshawed horn, taken from... [namelen=307 namehash=af7608f3]
+15Apocalypse AleConsumableA deep amber barleywine, that's unsett... [namelen=556 namehash=37ca1c30]
+16Backstage PassConsumablePoof - Action: You tear this magical t... [namelen=172 namehash=eecb2922]
+17Blessed Kegs of the Blazing BarrelConsumableA small oaken keg ... [namelen=336 namehash=eb4ff713]
+18Enzymatic DisablerConsumableSmall glass vial in a brass safety... [namelen=338 namehash=dce85901]
+19Gravedraught AleConsumableThis deep blue ale is painfully cold... [namelen=347 namehash=90945148]
+1AnklebiterItemThis divinely animated rocking chair is made enti... [namelen=472 namehash=d591d082]
+20Longfire FruitcakeConsumableA brick-dense loaf of fruitcake so... [namelen=602 namehash=1257762e]
+21Ironwood CoalConsumableA dense coal veined with metallic sheen... [namelen=464 namehash=0213e645]
+22Pocket Sand PouchConsumableA special mixture of rapidly disper... [namelen=281 namehash=1666c4c6]
+23Saint Bungus Honey Butter SoapConsumableThese tiny bars of soa... [namelen=576 namehash=084860a5]
+24Screaming Siren RumConsumableA dark spiced rum, high enough in... [namelen=367 namehash=4ada641d]
+25Sacred Mother JarConsumableA thick glass jar sealed with pitch... [namelen=617 namehash=c57d473b]
+26Scroll of ReapingConsumableA black vellum scroll written with ... [namelen=326 namehash=7b78c8f5]
+2Alewife AlmanacItemA compact clothbound reassuringly stout book... [namelen=356 namehash=672b55b8]
+3Witch's SkilletSecondary weaponUniqueTier 2 · Physical · Presen... [namelen=176 namehash=4811a975]
+4Blessed HorseshoeItemA shining brass horseshoe stamped with the... [namelen=267 namehash=e7da6c71]
+5Black LedgerItemA black leather book bound with cold iron, its ... [namelen=256 namehash=4b4064ea]
+6Deed to the Last Round TableItemThis heavy parchment, stamped w... [namelen=463 namehash=2cbe779b]
+7Hymnal of Saint BungusItemA squat stained hymnal, that smells f... [namelen=477 namehash=ce79bafc]
+8Last Round RecipesItemA brittle old loosely stitched handwritte... [namelen=342 namehash=599cfe0b]
+9Loathsome LutePrimary weaponUniqueTier 2 · Magic · Presence · F... [namelen=329 namehash=b917d194]
+?About this data
+All
+Alt. tables
+Consumables
+Core
+EN
+Equipment
+Grid
+Hope & Fear
+Install as an app
+Items
+Link to this table
+List
+LootDaggerheart
+Open on start
+Other
+Privacy
+RU
+Roll
+Search
+Search by name or description...
+Select
+Sign in
+Skip to content
+Supplements
+Table: The Last Round Table
+Tables
+Terms of use
+daggerheart.com

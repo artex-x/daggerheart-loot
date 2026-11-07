@@ -16,15 +16,14 @@ RootWebArea "Vault of Ages - Генератор лута Daggerheart" [url=/roll
       link "Бросок" [url=/roll/vault_of_ages]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
-  navigation "Режим броска"
-    link "Обычные правила" [url=/roll/std]
-    link "Альтернативные таблицы" [url=/roll/alt]
-    button "Vault of Ages" [expanded=false haspopup=menu]
   main ""
-    heading "Vault of Ages" [level=1]
+    heading "Бросок" [level=1]
+    navigation "Режим броска"
+      link "Обычные правила" [url=/roll/std]
+      link "Альтернативные таблицы" [url=/roll/alt]
+      button "Vault of Ages" [expanded=false haspopup=menu]
     button "Открывать при запуске" [pressed=false]
     button "Об этой книге" [expanded=false]
-    StaticText "Выберите раздел книги и бросьте кость по нему."
     combobox "Раздел книги" [value=Артефакты expanded=false haspopup=menu]
       option "Ранг 1" [selected=false]
       option "Ранг 2" [selected=false]
@@ -41,7 +40,8 @@ RootWebArea "Vault of Ages - Генератор лута Daggerheart" [url=/roll
     status ""
       StaticText "Узы Души"
     button "Открыть карточку"
-    ... StaticText x15 of 19 same-shape siblings elided
+    StaticText "1"
+    ... StaticText x14 of 18 same-shape siblings elided
     link "Узы Души" [description=Открыть страницу url=/i/voa2_a1]
     StaticText "потратить Надежду"
     StaticText ", чтобы освободить душу. Она немедленно возвращается к владельцу..." [namelen=131 namehash=171fc9e9]
@@ -98,15 +98,14 @@ RootWebArea "Vault of Ages - Daggerheart Loot Generator" [url=/en/roll/vault_of_
       link "Roll" [url=/en/roll/vault_of_ages]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
-  navigation "Roll mode"
-    link "Standard rules" [url=/en/roll/std]
-    link "Alternate tables" [url=/en/roll/alt]
-    button "Vault of Ages" [expanded=false haspopup=menu]
   main ""
-    heading "Vault of Ages" [level=1]
+    heading "Roll" [level=1]
+    navigation "Roll mode"
+      link "Standard rules" [url=/en/roll/std]
+      link "Alternate tables" [url=/en/roll/alt]
+      button "Vault of Ages" [expanded=false haspopup=menu]
     button "Open on start" [pressed=false]
     button "About this book" [expanded=false]
-    StaticText "Pick a section of the book and roll within it."
     combobox "Section" [value=Artifacts expanded=false haspopup=menu]
       option "Tier 1" [selected=false]
       option "Tier 2" [selected=false]
@@ -123,7 +122,8 @@ RootWebArea "Vault of Ages - Daggerheart Loot Generator" [url=/en/roll/vault_of_
     status ""
       StaticText "Anima Colligationem"
     button "Open card"
-    ... StaticText x15 of 19 same-shape siblings elided
+    StaticText "1"
+    ... StaticText x14 of 18 same-shape siblings elided
     link "Anima Colligationem" [description=Open page url=/i/en/voa2_a1]
     StaticText "spend a Hope"
     StaticText " to free the soul. It returns to the owner immediately, regardle..." [namelen=116 namehash=b9bbbffb]

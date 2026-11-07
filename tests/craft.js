@@ -27,7 +27,8 @@ ALL.forEach((x) => {
 const withCraft = ALL.filter((x) => x.craft);
 
 console.log('data (' + withCraft.length + ' chains)');
-ok(withCraft.length === 31, 'expected 31 chains, got ' + withCraft.length);
+// 31 before the Veiled Halls added vh2>vh6 and vh8>vh15
+ok(withCraft.length === 33, 'expected 33 chains, got ' + withCraft.length);
 
 withCraft.forEach((x) => {
   const c = x.craft;

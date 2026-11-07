@@ -1,8 +1,9 @@
 <script lang="ts">
-  /* The four tabs of «Мои предметы» (docs/specs/FEATURES.md, "Homebrew"): from 761 px links
-     with their counts; up to 760 px a picker whose sheet holds the links and the limit
-     counter. The tab and picker rules are `TableNav.svelte`'s. */
+  /* The four tabs of «Мои предметы» (docs/specs/FEATURES.md, "Homebrew"): from 761 px the
+     page head's pills with their counts; up to 760 px a picker whose sheet holds the links
+     and the limit counter. The picker rules are `TableNav.svelte`'s. */
   import { tick } from 'svelte';
+  import Chip from './Chip.svelte';
   import Icon from './Icon.svelte';
   import Sheet from './Sheet.svelte';
   import { homebrewTabHash, type HomebrewTab } from '../lib/hash.js';
@@ -42,15 +43,14 @@
 
 <!-- eslint-disable @typescript-eslint/no-confusing-void-expression -- a `{@render}` tag of a
      local snippet reads as a void expression to this rule. -->
-{#snippet links(sheet: boolean)}
+{#snippet links()}
   {#each TABS as x (x)}
     <a
       class="tab"
       href={app.href(homebrewTabHash(x))}
       aria-current={x === tab ? 'page' : undefined}
-      onclick={() => {
-        if (sheet) void close();
-      }}><span>{labels[x]}</span>&#32;<span class="n">{counts[x]}</span></a
+      onclick={() => void close()}
+      ><span>{labels[x]}</span>&#32;<span class="n">{counts[x]}</span></a
     >
   {/each}
 {/snippet}
@@ -69,12 +69,21 @@
     >
     {#if picking}
       <Sheet {app} label={pickLabel} title={t.myItems} onclose={() => void close()}>
-        <div class="sheetlinks">{@render links(true)}</div>
+        <div class="sheetlinks">{@render links()}</div>
         <p class="limit">{limitText}</p>
       </Sheet>
     {/if}
   {:else}
-    <div class="tabs">{@render links(false)}</div>
+    <div class="pills">
+      {#each TABS as x (x)}
+        <Chip
+          label={labels[x]}
+          count={counts[x]}
+          on={x === tab}
+          href={app.href(homebrewTabHash(x))}
+        />
+      {/each}
+    </div>
   {/if}
 </nav>
 
@@ -87,23 +96,20 @@
     flex: 1 1 auto;
   }
 
-  .tabs {
+  /* The gap of the catalog's group chips. */
+  .pills {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
-    gap: 4px 18px;
+    gap: 7px;
   }
 
   .tab {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    min-height: 40px;
     max-width: 100%;
     padding: 0 2px;
-    border-bottom: 2px solid transparent;
     color: var(--muted);
-    font-size: var(--t-small);
     font-weight: 600;
     text-decoration: none;
     white-space: nowrap;
@@ -115,10 +121,9 @@
 
   .tab[aria-current='page'] {
     color: var(--gold);
-    border-bottom-color: var(--gold);
   }
 
-  .n {
+  .tab .n {
     font-size: var(--t-data);
     font-weight: 500;
     font-variant-numeric: tabular-nums;
@@ -161,7 +166,6 @@
     justify-content: space-between;
     min-height: 44px;
     font-size: var(--t-control);
-    border-bottom: 0;
   }
 
   .limit {

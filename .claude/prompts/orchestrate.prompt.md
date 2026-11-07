@@ -262,7 +262,7 @@ blocker on its own schedule, even when that means waiting for the tree.
 
 **Persist a review's findings when the review lands.** The reviewer writes
 its full report to `issues/<id>/reviews/<batch>.md` (a plan review:
-`plan-<batch>.md`; a second look: `<name>-2.md`) from
+`plan-<batch>.md`; a second look at a plan: `plan-<batch>-<n>.md`) from
 `.claude/templates/review.template.md`; `edit-guard.mjs` allows it that one
 path. You keep the register `issues/<id>/reviews.md`, one row per finding:
 the id `<batch>-<n>`, the severity, `local` or `deferred-scope`, and the

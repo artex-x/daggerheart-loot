@@ -1,5 +1,6 @@
-/* TableNav.svelte on its own: the group chips and the tabs from 761 px, the picker and
-   its sheet below it, the source tabs of the own items table and their fold. */
+/* TableNav.svelte on its own: from 761 px the group chips (the page head's pills) and the
+   tabs (under the head) as two parts, the picker and its sheet below it, the source tabs
+   of the own items table and their fold. */
 import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -12,7 +13,10 @@ import { fakeEnv, fakeViewport, type Band } from '../ports/index.js';
 import { AppState } from '../state/app.svelte.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  for (const main of document.querySelectorAll('body > main')) main.remove();
+});
 
 function nav(
   table: TableId,
@@ -21,7 +25,15 @@ function nav(
   source: string | null = null
 ) {
   const app = new AppState(fakeEnv({ viewport: fakeViewport(band) }));
-  return render(TableNav, { app, table, sources, source, filter: {} });
+  /* In the page the tabs sit in `main`, as axe's region rule needs. */
+  const main = document.body.appendChild(document.createElement('main'));
+  render(TableNav, { target: main, props: { app, table, sources, source, filter: {} } });
+  if (band !== 'narrow')
+    render(TableNav, {
+      target: main,
+      props: { app, table, sources, source, filter: {}, part: 'tabs' }
+    });
+  return { container: document.body };
 }
 
 describe('the table navigation', () => {
@@ -29,7 +41,9 @@ describe('the table navigation', () => {
     'draws the group chips and the tabs at %s',
     async (band) => {
       const { container } = nav('eq_weapon', band);
-      const groups = within(screen.getByRole('group', { name: 'Группа' }));
+      /* One landmark: the chips; the tabs follow it, a group named by the chips' group. */
+      const landmark = screen.getByRole('navigation', { name: 'Таблицы' });
+      const groups = within(within(landmark).getByRole('group', { name: 'Группа' }));
       expect(groups.getByRole('link', { name: 'Снаряжение' })).toHaveAttribute(
         'aria-current',
         'page'
@@ -40,6 +54,10 @@ describe('the table navigation', () => {
         'page'
       );
       expect(tabs.getByRole('link', { name: 'Броня' })).not.toHaveAttribute('aria-current');
+      expect(landmark.contains(screen.getByRole('group', { name: 'Снаряжение' }))).toBe(false);
+      expect(
+        landmark.compareDocumentPosition(screen.getByRole('group', { name: 'Снаряжение' }))
+      ).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
       await expectNoA11yViolations(container);
     }
   );
@@ -80,10 +98,66 @@ describe('the table navigation', () => {
     await expectNoA11yViolations(document.body);
   });
 
+  it("moves the focus to the new group's current tab when a pick leaves the supplements at wide", async () => {
+    const app = new AppState(fakeEnv({ viewport: fakeViewport('wide') }));
+    const main = document.body.appendChild(document.createElement('main'));
+    const props = { app, sources: [], source: null, filter: {} };
+    render(TableNav, { target: main, props: { ...props, table: 'voa' as TableId } });
+    const tabs = render(TableNav, {
+      target: main,
+      props: { ...props, table: 'voa' as TableId, part: 'tabs' as const }
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Таблица: Vault of Ages' }));
+    const sheet = within(screen.getByRole('dialog'));
+    await userEvent.click(sheet.getByRole('button', { name: 'Снаряжение' }));
+    const link = sheet.getByRole('link', { name: 'Оружие' });
+    /* The page's route change lands before the sheet's own handler runs. */
+    link.addEventListener('click', () => {
+      void tabs.rerender({ ...props, table: 'eq_weapon' as TableId, part: 'tabs' as const });
+    });
+    await userEvent.click(link);
+    await waitFor(() => {
+      expect(document.activeElement).toBe(
+        within(screen.getByRole('group', { name: 'Снаряжение' })).getByRole('link', {
+          name: 'Оружие'
+        })
+      );
+    });
+  });
+
   it('names a one-table group by its book in the picker', () => {
     nav('voa', 'narrow');
     expect(screen.getByRole('button', { name: 'Таблица: Vault of Ages' })).toBeInTheDocument();
   });
+
+  it.each(['wide', 'mid'] as const)(
+    "draws the supplements' books as one lit picker tab at %s that opens the sheet",
+    async (band) => {
+      const { container } = nav('voa', band);
+      expect(screen.queryByRole('link', { name: 'Wondrous Environments' })).toBeNull();
+      const picker = screen.getByRole('button', { name: 'Таблица: Vault of Ages' });
+      expect(picker).toHaveAttribute('aria-haspopup', 'dialog');
+      expect(picker).toHaveTextContent('Vault of Ages');
+      expect(picker).toHaveClass('tab');
+      expect(container.querySelector('.tabslot')?.contains(picker)).toBe(true);
+      await expectNoA11yViolations(container);
+      await userEvent.click(picker);
+      const sheet = within(screen.getByRole('dialog'));
+      expect(sheet.getByRole('button', { name: 'Дополнения' })).toHaveAttribute(
+        'aria-pressed',
+        'true'
+      );
+      expect(sheet.getAllByRole('link')).toHaveLength(10);
+      expect(sheet.getByRole('link', { name: 'Vault of Ages' })).toHaveAttribute(
+        'aria-current',
+        'page'
+      );
+      await expectNoA11yViolations(document.body);
+      await userEvent.click(sheet.getByRole('link', { name: 'Wondrous Environments' }));
+      expect(screen.queryByRole('dialog')).toBeNull();
+      expect(document.activeElement).toBe(picker);
+    }
+  );
 
   it('draws the sources of the own items as tabs, folded past twelve', async () => {
     const sources = Array.from({ length: 14 }, (_, i) => ({
@@ -114,7 +188,9 @@ describe('the tab slot', () => {
       expect(ghosts).toHaveAttribute('aria-hidden', 'true');
       expect(ghosts?.querySelector('a, button')).toBeNull();
       expect(ghosts?.querySelectorAll('.tabs').length).toBeGreaterThanOrEqual(5);
-      expect(ghosts).toHaveTextContent('Wondrous Environments');
+      expect(ghosts).toHaveTextContent('Оружие');
+      /* The supplements' books are the picker, one tab high: their row would take two lines. */
+      expect(ghosts).not.toHaveTextContent('Wondrous Environments');
       await expectNoA11yViolations(container);
     }
   );
@@ -132,18 +208,21 @@ describe('the tab slot', () => {
     await waitFor(() => {
       expect(app.user).toBeTruthy();
     });
-    const without = render(TableNav, {
-      app,
-      table: 'eq_weapon',
-      sources: [],
-      source: null,
-      filter: {}
-    });
+    render(TableNav, { app, table: 'eq_weapon', sources: [], source: null, filter: {} });
     expect(
       within(screen.getByRole('group', { name: 'Группа' })).getByRole('link', {
         name: 'Хоумбрю'
       })
     ).toBeInTheDocument();
+    cleanup();
+    const without = render(TableNav, {
+      app,
+      table: 'eq_weapon',
+      sources: [],
+      source: null,
+      filter: {},
+      part: 'tabs'
+    });
     const base = ghostsOf(without.container);
     cleanup();
     const crowded = render(TableNav, {
@@ -151,7 +230,8 @@ describe('the tab slot', () => {
       table: 'eq_weapon',
       sources,
       source: null,
-      filter: {}
+      filter: {},
+      part: 'tabs'
     });
     expect(ghostsOf(crowded.container)).toBe(base);
     expect(ghostsOf(crowded.container)).not.toContain('ИИИ');

@@ -19,7 +19,9 @@ import { EQ_TABLE, decodeFilter, groupsFor } from './filters.js';
 import { TABLE_SLUG } from './hash.js';
 import { whereFrom } from './label.js';
 import type { Rarity } from './money.js';
-import { communities, communityGroup, realmGroup } from './sections.js';
+import { communities, communityGroup, sectionGroup } from './sections.js';
+import { ROOM_ORDER, roomName } from './rooms.js';
+import { VOLUME_ORDER, volumeName } from './sectionProps.js';
 import {
   descOf,
   eqLine,
@@ -170,7 +172,7 @@ describe('the interface words', () => {
         expect(sectionLabel(s, t)).toBe(t[key]);
       }
     }
-    expect(Object.keys(SECTION_LABEL)).toHaveLength(12);
+    expect(Object.keys(SECTION_LABEL)).toHaveLength(15);
     expect(sectionLabel('lists', dict('ru'))).toBe('Мои списки');
     expect(sectionLabel('lists', dict('en'))).toBe('My lists');
     expect(sectionLabel('roll/alt', dict('ru'))).toBe('Альтернативные таблицы');
@@ -191,7 +193,8 @@ describe('the interface words', () => {
       'nowhereSub',
       'printLoadFailedTitle',
       'defaultTablesView',
-      'defaultPrint',
+      'printInk',
+      'printSize',
       'signedInNow',
       'deleteGoes',
       'deleteGoesRest'
@@ -204,7 +207,14 @@ describe('the interface words', () => {
       'signedInAs',
       'accountSub',
       'printCompactBox',
-      'hbEmptyTable'
+      'hbEmptyTable',
+      'defaultPrint',
+      'subWondrous',
+      'subVoa',
+      'subCommunity',
+      'rollHint',
+      'listEmptyHint',
+      'listEmptyHintOwn'
     ];
     for (const lang of ['ru', 'en'] as const) {
       const t: Record<string, string> = dict(lang);
@@ -475,6 +485,8 @@ describe('the preview card quotes the app', () => {
     decodeFilter: (segment: string, groups: readonly string[]) => Record<string, string[]>;
     LABEL_GROUPS: Record<string, readonly string[]>;
     REALM_LABEL: Record<string, readonly [string, string]>;
+    VOLUME_LABEL: Record<string, readonly [string, string]>;
+    ROOM_LABEL: Record<string, readonly [string, string]>;
     TABLE_SLUG: Record<string, string>;
   };
   const derived = require_('../../../tools/derived.js') as {
@@ -497,7 +509,9 @@ describe('the preview card quotes the app', () => {
     'communityLabel',
     'commF',
     'frameF',
-    'realmF'
+    'realmF',
+    'volF',
+    'roomF'
   ] as const;
 
   it.each(['ru', 'en'] as const)('copies the words of dict.ts (%s)', (lang) => {
@@ -505,6 +519,9 @@ describe('the preview card quotes the app', () => {
     for (const key of WORDS) expect(share.TEXT[lang][key], key).toBe(t[key]);
     expect(share.PATH_TEXT[lang]['alt']).toBe(t.alt);
     expect(share.PATH_TEXT[lang]['mwt']).toBe(t.mwt);
+    expect(share.PATH_TEXT[lang]['ph']).toBe(t.ph);
+    expect(share.PATH_TEXT[lang]['lr']).toBe(t.lr);
+    expect(share.PATH_TEXT[lang]['vh']).toBe(t.vh);
     expect(share.PATH_TEXT[lang]['wondrous']).toBe(t.pageWondrous);
     expect(share.PATH_TEXT[lang]['dread']).toBe(t.pageDread);
     expect(share.PATH_TEXT[lang]['dv']).toBe(t.pageDv);
@@ -516,6 +533,17 @@ describe('the preview card quotes the app', () => {
       REALM_ORDER.map((id) => [id, [realmName(id, 'ru'), realmName(id, 'en')]])
     );
     expect(share.REALM_LABEL).toEqual(want);
+  });
+
+  it('names every volume and room as the app does, in both languages', () => {
+    expect(share.VOLUME_LABEL).toEqual(
+      Object.fromEntries(
+        VOLUME_ORDER.map((v) => [String(v), [volumeName(v, 'ru'), volumeName(v, 'en')]])
+      )
+    );
+    expect(share.ROOM_LABEL).toEqual(
+      Object.fromEntries(ROOM_ORDER.map((id) => [id, [roomName(id, 'ru'), roomName(id, 'en')]]))
+    );
   });
 
   it('gives every table the URL id hash.ts gives it', () => {
@@ -586,7 +614,7 @@ describe('the preview card quotes the app', () => {
     }
   );
 
-  it('reads a filter as decodeFilter does on the three labeled tables', () => {
+  it('reads a filter as decodeFilter does on the labeled tables', () => {
     const cases: [TableId, string][] = [
       ['community', 'f_comm-Loreborne-Orderborne'],
       ['community', 'f_comm-Highborne-Highborne'],
@@ -598,7 +626,11 @@ describe('the preview card quotes the app', () => {
       ['other_frames', 'tail'],
       ['mwt', 'f_realm-warrens'],
       ['mwt', 'f_kind-equip.realm-sporopolis-godsvale'],
-      ['mwt', 'f_kind-item_realm-wagerwood']
+      ['mwt', 'f_kind-item_realm-wagerwood'],
+      ['ph', 'f_vol-2'],
+      ['ph', 'f_kind-equip.vol-1-3'],
+      ['vh', 'f_room-library'],
+      ['vh', 'f_kind-consumable.room-basement-laboratory']
     ];
     for (const [table, segment] of cases) {
       expect(share.LABEL_GROUPS[table]).toEqual(groupsFor(table));
@@ -614,6 +646,8 @@ describe('the preview card quotes the app', () => {
       communities: Record<string, { ru: string; n: number }>;
       frames: Record<string, { n: number }>;
       realms: Record<string, { n: number }>;
+      volumes: Record<string, { n: number }>;
+      rooms: Record<string, { n: number }>;
     };
     const altCount = (kind: 'item' | 'consumable'): number =>
       (Object.keys(LOOT.alt?.[kind] ?? {}) as Rarity[]).reduce(
@@ -633,7 +667,7 @@ describe('the preview card quotes the app', () => {
       else if (EQ_TABLE[t]) want[t] = equipOfKind(index, EQ_TABLE[t]).length;
       else want[t] = index.rows.get(t)?.length ?? -1;
     }
-    expect(Object.keys(want)).toHaveLength(18);
+    expect(Object.keys(want)).toHaveLength(21);
     expect(Object.fromEntries(Object.entries(names.tables).map(([k, v]) => [k, v.n]))).toEqual(
       want
     );
@@ -652,7 +686,17 @@ describe('the preview card quotes the app', () => {
       )
     );
     expect(names.realms).toEqual(
-      Object.fromEntries(REALM_ORDER.map((r) => [r, { n: realmGroup(index, r).length }]))
+      Object.fromEntries(
+        REALM_ORDER.map((r) => [r, { n: sectionGroup(index, 'mwt', r).length }])
+      )
+    );
+    expect(names.volumes).toEqual(
+      Object.fromEntries(
+        VOLUME_ORDER.map((v) => [String(v), { n: sectionGroup(index, 'ph', String(v)).length }])
+      )
+    );
+    expect(names.rooms).toEqual(
+      Object.fromEntries(ROOM_ORDER.map((r) => [r, { n: sectionGroup(index, 'vh', r).length }]))
     );
   });
 });

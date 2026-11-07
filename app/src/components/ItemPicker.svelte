@@ -295,8 +295,8 @@
 
   .x {
     flex: none;
-    width: 32px;
-    height: 32px;
+    width: max(32px, var(--thumb));
+    height: max(32px, var(--thumb));
     border: 0;
     border-radius: var(--r-sm);
     background: none;
@@ -319,7 +319,7 @@
 
   input {
     width: 100%;
-    height: 38px;
+    height: max(38px, var(--thumb));
     padding: 0 14px;
     border-radius: var(--r-sm);
     background: var(--bg2);

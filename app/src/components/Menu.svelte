@@ -1,6 +1,6 @@
 <script lang="ts">
   /* The menu box: the account menu, the supplements menu, the catalog's and the record's
-     «Ещё» (docs/specs/FEATURES.md, "Chrome", rule 11). The first item takes the focus; Up,
+     «Ещё» (docs/specs/FEATURES.md, "Chrome", the account menu). The first item takes the focus; Up,
      Down, Home and End move it; Escape and a click outside close the menu. */
   import type { Snippet } from 'svelte';
 
@@ -96,7 +96,7 @@
     border-radius: var(--r);
     background: var(--surface);
     padding: 6px;
-    box-shadow: 0 16px 40px -14px rgb(0 0 0 / 85%);
+    box-shadow: var(--shadow);
     display: flex;
     flex-direction: column;
     gap: 2px;

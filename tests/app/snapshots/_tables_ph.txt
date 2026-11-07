@@ -1,0 +1,369 @@
+# #/tables/ph
+# route: #/tables/pistolheart
+# why: a sectioned body: Pistolheart by volume, three volume headings, 93 rows
+
+## ru :: tree
+RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tables/pistolheart]
+  link "К содержимому" [url=/tables/pistolheart#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    link "Войти" [url=/account]
+    navigation "Разделы"
+      link "Бросок" [url=/roll/std]
+      link "Таблицы" [url=/tables]
+      link "Поиск" [url=/search]
+  main ""
+    heading "Таблицы" [level=1]
+    navigation "Таблицы"
+      link "Core" [url=/tables/core_item]
+      link "Hope & Fear" [url=/tables/hope_and_fear_item]
+      link "Альт. таблицы" [url=/tables/alt_item]
+      link "Дополнения" [url=/tables/wondrous_environments]
+      link "Снаряжение" [url=/tables/eq_weapon]
+      link "Прочее" [url=/tables/other_starting]
+    button "Открывать при запуске" [pressed=false]
+    button "Об этих данных" [expanded=false]
+    button "Таблица: Pistolheart" [haspopup=dialog]
+    searchbox "Поиск по названию или описанию..."
+    button "Список" [pressed=true]
+    button "Сетка" [pressed=false]
+    button "Ссылка на таблицу"
+    button "Выбрать"
+    complementary "Фильтры"
+      heading "Фильтры" [level=2]
+      StaticText "ТИП"
+      button "Все" [pressed=true]
+      button "Предметы" [pressed=false]
+      button "Расходники" [pressed=false]
+      ... button x2 of 6 same-shape siblings elided
+      StaticText "ТОМ"
+      button "Все" [pressed=true]
+      button "2" [pressed=false]
+      button "3" [pressed=false]
+    heading "Том 1" [level=2]
+    ... button x94 of 98 same-shape siblings elided
+    heading "Том 2" [level=2]
+    heading "Том 3" [level=2]
+    button "92 Инфузия Величия ПРЕДМЕТ Один раз за сессию, когда вы очищаете..." [namelen=165 namehash=8be0e226]
+    button "93 Инфузия Доблести ПРЕДМЕТ Один раз за сцену вы можете потратит..." [namelen=138 namehash=6cddbd93]
+  contentinfo ""
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=/pages/install.html]
+      link "Конфиденциальность" [url=/pages/privacy.html]
+      link "Условия использования" [url=/pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+
+## ru :: controls
+1
+10Улучшенный Арк-ПистолетОсновное оружиеРанг 2 · Магическое · Зн... [namelen=152 namehash=b93ea27b]
+11Продвинутый Арк-ПистолетОсновное оружиеРанг 3 · Магическое · З... [namelen=153 namehash=1111b889]
+12Легендарный Арк-ПистолетОсновное оружиеРанг 4 · Магическое · З... [namelen=154 namehash=23e81fc7]
+13Винтовка с ПрицеломОсновное оружиеРанг 1 · Физическое · Инстин... [namelen=210 namehash=a314d443]
+14Улучшенная Винтовка с ПрицеломОсновное оружиеРанг 2 · Физическ... [namelen=221 namehash=37818a80]
+15Продвинутая Винтовка с ПрицеломОсновное оружиеРанг 3 · Физичес... [namelen=222 namehash=c000a88e]
+16Легендарная Винтовка с ПрицеломОсновное оружиеРанг 4 · Физичес... [namelen=223 namehash=d9f63573]
+17Затворная ВинтовкаОсновное оружиеРанг 1 · Физическое · Искусно... [namelen=225 namehash=62cdeb5a]
+18Улучшенная Затворная ВинтовкаОсновное оружиеРанг 2 · Физическо... [namelen=236 namehash=7f097e5f]
+19Продвинутая Затворная ВинтовкаОсновное оружиеРанг 3 · Физическ... [namelen=237 namehash=3c52af0b]
+1Короткоствольный РевольверОсновное оружиеРанг 1 · Физическое · ... [namelen=234 namehash=8dc6b4ba]
+2
+20Легендарная Затворная ВинтовкаОсновное оружиеРанг 4 · Физическ... [namelen=238 namehash=38251018]
+21ОбрезОсновное оружиеРанг 1 · Физическое · Сила · Близко · d6+1... [namelen=234 namehash=8fcf6e16]
+22Улучшенный ОбрезОсновное оружиеРанг 2 · Физическое · Сила · Бл... [namelen=245 namehash=9596106a]
+23Продвинутый ОбрезОсновное оружиеРанг 3 · Физическое · Сила · Б... [namelen=246 namehash=65adceca]
+24Легендарный ОбрезОсновное оружиеРанг 4 · Физическое · Сила · Б... [namelen=246 namehash=32d916e7]
+25Жаканное РужьёОсновное оружиеРанг 1 · Физическое · Сила · Сред... [namelen=205 namehash=f7de0c04]
+26Улучшенное Жаканное РужьёОсновное оружиеРанг 2 · Физическое · ... [namelen=216 namehash=95e3692d]
+27Продвинутое Жаканное РужьёОсновное оружиеРанг 3 · Физическое ·... [namelen=217 namehash=795ec1f3]
+28Легендарное Жаканное РужьёОсновное оружиеРанг 4 · Физическое ·... [namelen=217 namehash=c040e4ea]
+29Рычажная ВинтовкаОсновное оружиеРанг 1 · Физическое · Влияние ... [namelen=224 namehash=55a78b2b]
+2Улучшенный Короткоствольный РевольверОсновное оружиеРанг 2 · Фи... [namelen=245 namehash=3bf2d0cc]
+3
+30Улучшенная Рычажная ВинтовкаОсновное оружиеРанг 2 · Физическое... [namelen=235 namehash=6c9357a3]
+31Продвинутая Рычажная ВинтовкаОсновное оружиеРанг 3 · Физическо... [namelen=236 namehash=a980dedd]
+32Легендарная Рычажная ВинтовкаОсновное оружиеРанг 4 · Физическо... [namelen=237 namehash=eae25fa1]
+33Карманный ПистолетОсновное оружиеРанг 1 · Физическое · Влияние... [namelen=163 namehash=0e71044e]
+34Улучшенный Карманный ПистолетОсновное оружиеРанг 2 · Физическо... [namelen=174 namehash=d01494e1]
+35Продвинутый Карманный ПистолетОсновное оружиеРанг 3 · Физическ... [namelen=175 namehash=c1de7542]
+36Легендарный Карманный ПистолетОсновное оружиеРанг 4 · Физическ... [namelen=176 namehash=0a513766]
+37Револьвер Жеребёнок .44Основное оружиеРанг 1 · Физическое · Пр... [namelen=174 namehash=22206d7e]
+38Улучшенный Револьвер Жеребёнок .44Основное оружиеРанг 2 · Физи... [namelen=187 namehash=b8887703]
+39Продвинутый Револьвер Жеребёнок .44Основное оружиеРанг 3 · Физ... [namelen=188 namehash=6d805040]
+3Продвинутый Короткоствольный РевольверОсновное оружиеРанг 3 · Ф... [namelen=246 namehash=8d88bc42]
+40Легендарный Револьвер Жеребёнок .44Основное оружиеРанг 4 · Физ... [namelen=188 namehash=d057ef4a]
+41Топорик на ВерёвкеОсновное оружиеРанг 1 · Физическое · Инстинк... [namelen=236 namehash=01836f59]
+42Улучшенный Топорик на ВерёвкеОсновное оружиеРанг 2 · Физическо... [namelen=249 namehash=ae4a9575]
+43Продвинутый Топорик на ВерёвкеОсновное оружиеРанг 3 · Физическ... [namelen=250 namehash=d39da782]
+44Легендарный Топорик на ВерёвкеОсновное оружиеРанг 4 · Физическ... [namelen=250 namehash=173e2f2c]
+45Кошель СтарателяОсновное оружиеРанг 1 · Магическое · Влияние ·... [namelen=203 namehash=ac6b4ecc]
+46Улучшенный Кошель СтарателяОсновное оружиеРанг 2 · Магическое ... [namelen=214 namehash=c25af090]
+47Продвинутый Кошель СтарателяОсновное оружиеРанг 3 · Магическое... [namelen=215 namehash=7d9fd44e]
+48Легендарный Кошель СтарателяОсновное оружиеРанг 4 · Магическое... [namelen=215 namehash=81fee8b0]
+49Тасовка МаверикаОсновное оружиеРанг 1 · Магическое · Знание · ... [namelen=185 namehash=b0046a91]
+4Легендарный Короткоствольный РевольверОсновное оружиеРанг 4 · Ф... [namelen=247 namehash=13b94d26]
+50Улучшенная Тасовка МаверикаОсновное оружиеРанг 2 · Магическое ... [namelen=196 namehash=5f0222ac]
+51Продвинутая Тасовка МаверикаОсновное оружиеРанг 3 · Магическое... [namelen=197 namehash=42d19f11]
+52Легендарная Тасовка МаверикаОсновное оружиеРанг 4 · Магическое... [namelen=197 namehash=04ca84ac]
+53Разделочный НожВторичное оружиеРанг 1 · Физическое · Проворнос... [namelen=260 namehash=0690c5a4]
+54Улучшенный Разделочный НожВторичное оружиеРанг 2 · Физическое ... [namelen=271 namehash=bf445776]
+55Продвинутый Разделочный НожВторичное оружиеРанг 3 · Физическое... [namelen=272 namehash=1646224a]
+56Легендарный Разделочный НожВторичное оружиеРанг 4 · Физическое... [namelen=272 namehash=071090cc]
+57Дровяной ТопорВторичное оружиеРанг 1 · Физическое · Сила · Впл... [namelen=252 namehash=ab982344]
+58Улучшенный Дровяной ТопорВторичное оружиеРанг 2 · Физическое ·... [namelen=263 namehash=34b2dba3]
+59Продвинутый Дровяной ТопорВторичное оружиеРанг 3 · Физическое ... [namelen=264 namehash=fc14bfd3]
+5Револьвер Вестника ВойныОсновное оружиеРанг 1 · Физическое · Ис... [namelen=191 namehash=1c53d89f]
+60Легендарный Дровяной ТопорВторичное оружиеРанг 4 · Физическое ... [namelen=264 namehash=4c387d71]
+61Мешочек с ПескомВторичное оружиеРанг 1 · Физическое · Сила · В... [namelen=193 namehash=dc6e997f]
+62Улучшенный Мешочек с ПескомВторичное оружиеРанг 2 · Физическое... [namelen=204 namehash=ebf59359]
+63Продвинутый Мешочек с ПескомВторичное оружиеРанг 3 · Физическо... [namelen=205 namehash=eb96e067]
+64Легендарный Мешочек с ПескомВторичное оружиеРанг 4 · Физическо... [namelen=205 namehash=8928d55e]
+65Патронташ ПроклинателяПредметПока вы носите этот патронташ, вы... [namelen=253 namehash=7970954d]
+66Маска БандитаПредметПока вы носите эту бандитскую маску, вы не... [namelen=135 namehash=206e7584]
+67Белая ШляпаПредметЭта сверкающая ковбойская шляпа с широкими п... [namelen=307 namehash=41e89d5a]
+68Рогожный Мешок БандитаРасходникВы быстро распаковываете снаряж... [namelen=279 namehash=dda6d58c]
+69Рикошетный ПатронРасходникКогда вы проваливаете Бросок Атаки о... [namelen=215 namehash=611d04ce]
+6Улучшенный Револьвер Вестника ВойныОсновное оружиеРанг 2 · Физи... [namelen=202 namehash=6811fc71]
+70Сомнительный ТонизаторРасходникВы можете выпить эту подозрител... [namelen=275 namehash=9c4c08b1]
+71ЛауданумРасходникВы можете принять глоток этой настойки, чтобы... [namelen=184 namehash=a46d540a]
+72Кожаный Доспех Чёрной ШляпыБроняУникальноеРанг 1 · Пороги 6/12... [namelen=191 namehash=135efd70]
+73Латы Бурового ЧервяБроняУникальноеРанг 2 · Пороги 11/24 · Брон... [namelen=221 namehash=caf075d8]
+74Позолоченная Грудная КлеткаБроняУникальноеРанг 3 · Пороги 13/3... [namelen=159 namehash=8f54baad]
+75Пыльник НеумолимогоБроняУникальноеРанг 4 · Пороги 14/35 · Брон... [namelen=202 namehash=47b02701]
+76Виски с ПорохомРасходникОтметьте Рану и Стресс, чтобы выпить э... [namelen=156 namehash=257d0f2c]
+77Бумажный КоньРасходникРазорвите эту оригами-лошадку, чтобы нем... [namelen=228 namehash=d2dcce8f]
+78Лапка КоатиРасходникЕсли персонаж, держащий эту лапку, провали... [namelen=187 namehash=9e087a0c]
+79Седло ПегасаПредметПотратьте Надежду, чтобы у вашего скакуна в... [namelen=253 namehash=acb34a74]
+7Продвинутый Револьвер Вестника ВойныОсновное оружиеРанг 3 · Физ... [namelen=203 namehash=58dd99c8]
+80Боевое СедлоПредметКогда вы совершаете «Ях!» (Pistolheart, том... [namelen=235 namehash=ce07d3b9]
+81Седло ХраненияПредметВ качестве действия вы можете сделать так... [namelen=146 namehash=e87271f8]
+82Роскошный Конский ДоспехПредметПока вы верхом, вы можете потра... [namelen=124 namehash=843ab476]
+83Пузырчатая СбруяПредметОдин раз за сцену, будучи верхом, вы мо... [namelen=332 namehash=48a93fe5]
+84Седло для РодеоПредметВы получаете бонус, равный вашему Рангу,... [namelen=148 namehash=d76e39e3]
+85Инфузия АрканыПредметОдин раз за сцену при успешной атаке, нан... [namelen=197 namehash=22e247cd]
+86Инфузия КлинкаПредметОдин раз за сцену при успешной атаке, нан... [namelen=197 namehash=f5d55829]
+87Инфузия КостиПредметВ начале сцены вы получаете бонус +1 к Укл... [namelen=155 namehash=01ae89fd]
+88Инфузия КодексаПредметОдин раз за продолжительный отдых вы мож... [namelen=309 namehash=479ba858]
+89Инфузия ГрацииПредметОдин раз за сцену, когда вы заставляете п... [namelen=168 namehash=34207ae2]
+8Легендарный Револьвер Вестника ВойныОсновное оружиеРанг 4 · Физ... [namelen=204 namehash=77da731c]
+90Инфузия ПолночиПредметОдин раз до следующего отдыха, если вы с... [namelen=214 namehash=4e82261d]
+91Инфузия МудростиПредметОдин раз до следующего отдыха получите ... [namelen=224 namehash=bf139410]
+92Инфузия ВеличияПредметОдин раз за сессию, когда вы очищаете лю... [namelen=162 namehash=efc22d31]
+93Инфузия ДоблестиПредметОдин раз за сцену вы можете потратить Н... [namelen=135 namehash=f3368e69]
+9Арк-ПистолетОсновное оружиеРанг 1 · Магическое · Знание · Далек... [namelen=140 namehash=4a773de2]
+?Об этих данных
+Core
+EN
+Hope & Fear
+RU
+daggerheart.com
+Альт. таблицы
+Бросок
+Войти
+Все
+Выбрать
+Дополнения
+К содержимому
+Конфиденциальность
+ЛутDaggerheart
+Открывать при запуске
+Поиск
+Поиск по названию или описанию...
+Предметы
+Прочее
+Расходники
+Сетка
+Снаряжение
+Список
+Ссылка на раздел
+Ссылка на таблицу
+Таблица: Pistolheart
+Таблицы
+Условия использования
+Установить как приложение
+
+## en :: tree
+RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/pistolheart]
+  link "Skip to content" [url=/en/tables/pistolheart#main]
+  banner ""
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    link "Sign in" [url=/en/account]
+    navigation "Sections"
+      link "Roll" [url=/en/roll/std]
+      link "Tables" [url=/en/tables]
+      link "Search" [url=/en/search]
+  main ""
+    heading "Tables" [level=1]
+    navigation "Tables"
+      link "Core" [url=/en/tables/core_item]
+      link "Hope & Fear" [url=/en/tables/hope_and_fear_item]
+      link "Alt. tables" [url=/en/tables/alt_item]
+      link "Supplements" [url=/en/tables/wondrous_environments]
+      link "Equipment" [url=/en/tables/eq_weapon]
+      link "Other" [url=/en/tables/other_starting]
+    button "Open on start" [pressed=false]
+    button "About this data" [expanded=false]
+    button "Table: Pistolheart" [haspopup=dialog]
+    searchbox "Search by name or description..."
+    button "List" [pressed=true]
+    button "Grid" [pressed=false]
+    button "Link to this table"
+    button "Select"
+    complementary "Filters"
+      heading "Filters" [level=2]
+      StaticText "TYPE"
+      button "All" [pressed=true]
+      button "Items" [pressed=false]
+      button "Consumables" [pressed=false]
+      ... button x2 of 6 same-shape siblings elided
+      StaticText "VOLUME"
+      button "All" [pressed=true]
+      button "2" [pressed=false]
+      button "3" [pressed=false]
+    heading "Volume 1" [level=2]
+    ... button x94 of 98 same-shape siblings elided
+    heading "Volume 2" [level=2]
+    heading "Volume 3" [level=2]
+    button "92 Splendor Infusion ITEM Once per session, when you make yourse..." [namelen=167 namehash=1bf31b23]
+    button "93 Valor Infusion ITEM Once per scene, you can spend Hope instea..." [namelen=119 namehash=408d23bb]
+  contentinfo ""
+    navigation "Site pages"
+      link "Install as an app" [url=/pages/en/install.html]
+      link "Privacy" [url=/pages/en/privacy.html]
+      link "Terms of use" [url=/pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
+
+## en :: controls
+1
+10Improved ArcpistolPrimary weaponTier 2 · Magic · Knowledge · F... [namelen=129 namehash=24767620]
+11Advanced ArcpistolPrimary weaponTier 3 · Magic · Knowledge · F... [namelen=129 namehash=b972ba01]
+12Legendary ArcpistolPrimary weaponTier 4 · Magic · Knowledge · ... [namelen=131 namehash=02e1c81d]
+13Scoped RiflePrimary weaponTier 1 · Physical · Instinct · Very ... [namelen=181 namehash=bf5d7b28]
+14Improved Scoped RiflePrimary weaponTier 2 · Physical · Instinc... [namelen=190 namehash=9103b364]
+15Advanced Scoped RiflePrimary weaponTier 3 · Physical · Instinc... [namelen=190 namehash=87ddcca3]
+16Legendary Scoped RiflePrimary weaponTier 4 · Physical · Instin... [namelen=192 namehash=61489efb]
+17Bolt Action RiflePrimary weaponTier 1 · Physical · Finesse · V... [namelen=211 namehash=f4ccb85d]
+18Improved Bolt Action RiflePrimary weaponTier 2 · Physical · Fi... [namelen=220 namehash=15bf9c51]
+19Advanced Bolt Action RiflePrimary weaponTier 3 · Physical · Fi... [namelen=220 namehash=423c01ef]
+1Snubnose RevolverPrimary weaponTier 1 · Physical · Agility · Cl... [namelen=197 namehash=7d9c952b]
+2
+20Legendary Bolt Action RiflePrimary weaponTier 4 · Physical · F... [namelen=222 namehash=c91826ef]
+21Sawed OffPrimary weaponTier 1 · Physical · Strength · Very Clo... [namelen=242 namehash=88f86a1a]
+22Improved Sawed OffPrimary weaponTier 2 · Physical · Strength ·... [namelen=251 namehash=d49d048e]
+23Advanced Sawed OffPrimary weaponTier 3 · Physical · Strength ·... [namelen=251 namehash=2de0e7c9]
+24Legendary Sawed OffPrimary weaponTier 4 · Physical · Strength ... [namelen=252 namehash=6e3a9366]
+25Slug GunPrimary weaponTier 1 · Physical · Strength · Close · d... [namelen=204 namehash=f08c087c]
+26Improved Slug GunPrimary weaponTier 2 · Physical · Strength · ... [namelen=213 namehash=be355c49]
+27Advanced Slug GunPrimary weaponTier 3 · Physical · Strength · ... [namelen=213 namehash=0f3caaf2]
+28Legendary Slug GunPrimary weaponTier 4 · Physical · Strength ·... [namelen=214 namehash=4308da5a]
+29Lever-Load RiflePrimary weaponTier 1 · Physical · Presence · F... [namelen=197 namehash=4bd3b0de]
+2Improved Snubnose RevolverPrimary weaponTier 2 · Physical · Agi... [namelen=206 namehash=7f9ab2af]
+3
+30Improved Lever-Load RiflePrimary weaponTier 2 · Physical · Pre... [namelen=206 namehash=319eb4ed]
+31Advanced Lever-Load RiflePrimary weaponTier 3 · Physical · Pre... [namelen=206 namehash=7c0cb6b3]
+32Legendary Lever-Load RiflePrimary weaponTier 4 · Physical · Pr... [namelen=208 namehash=d111f14e]
+33Pocket PistolPrimary weaponTier 1 · Physical · Presence · Very... [namelen=175 namehash=e16ab31b]
+34Improved Pocket PistolPrimary weaponTier 2 · Physical · Presen... [namelen=184 namehash=e683b931]
+35Advanced Pocket PistolPrimary weaponTier 3 · Physical · Presen... [namelen=184 namehash=ca429bf4]
+36Legendary Pocket PistolPrimary weaponTier 4 · Physical · Prese... [namelen=186 namehash=cca52192]
+37Foal .44 RevolverPrimary weaponTier 1 · Physical · Agility · F... [namelen=157 namehash=661c1d24]
+38Improved Foal .44 RevolverPrimary weaponTier 2 · Physical · Ag... [namelen=168 namehash=414e91fa]
+39Advanced Foal .44 RevolverPrimary weaponTier 3 · Physical · Ag... [namelen=168 namehash=bd3b4873]
+3Advanced Snubnose RevolverPrimary weaponTier 3 · Physical · Agi... [namelen=206 namehash=e4ef1457]
+40Legendary Foal .44 RevolverPrimary weaponTier 4 · Physical · A... [namelen=169 namehash=d7c6ca36]
+41Rope HatchetPrimary weaponTier 1 · Physical · Instinct · Close... [namelen=217 namehash=6459707d]
+42Improved Rope HatchetPrimary weaponTier 2 · Physical · Instinc... [namelen=228 namehash=fa435880]
+43Advanced Rope HatchetPrimary weaponTier 3 · Physical · Instinc... [namelen=228 namehash=edfdda2c]
+44Legendary Rope HatchetPrimary weaponTier 4 · Physical · Instin... [namelen=229 namehash=a46b1f89]
+45Prospector's PouchPrimary weaponTier 1 · Magic · Presence · Me... [namelen=199 namehash=0f7966f2]
+46Improved Prospector's PouchPrimary weaponTier 2 · Magic · Pres... [namelen=208 namehash=fd617750]
+47Advanced Prospector's PouchPrimary weaponTier 3 · Magic · Pres... [namelen=208 namehash=b66e5f74]
+48Legendary Prospector's PouchPrimary weaponTier 4 · Magic · Pre... [namelen=209 namehash=07a31ef2]
+49Maverick's ShufflePrimary weaponTier 1 · Magic · Knowledge · V... [namelen=183 namehash=b50c70a2]
+4Legendary Snubnose RevolverPrimary weaponTier 4 · Physical · Ag... [namelen=208 namehash=056235ed]
+50Improved Maverick's ShufflePrimary weaponTier 2 · Magic · Know... [namelen=192 namehash=c41e2b02]
+51Advanced Maverick's ShufflePrimary weaponTier 3 · Magic · Know... [namelen=192 namehash=1380ad2b]
+52Legendary Maverick's ShufflePrimary weaponTier 4 · Magic · Kno... [namelen=193 namehash=02acf427]
+53Carving KnifeSecondary weaponTier 1 · Physical · Agility · Mel... [namelen=253 namehash=0168e50c]
+54Improved Carving KnifeSecondary weaponTier 2 · Physical · Agil... [namelen=262 namehash=dab9872a]
+55Advanced Carving KnifeSecondary weaponTier 3 · Physical · Agil... [namelen=262 namehash=78b676ad]
+56Legendary Carving KnifeSecondary weaponTier 4 · Physical · Agi... [namelen=263 namehash=59f93708]
+57Wood AxeSecondary weaponTier 1 · Physical · Strength · Melee ·... [namelen=249 namehash=711b2711]
+58Improved Wood AxeSecondary weaponTier 2 · Physical · Strength ... [namelen=258 namehash=d5fad6f1]
+59Advanced Wood AxeSecondary weaponTier 3 · Physical · Strength ... [namelen=258 namehash=ab3a5a8b]
+5Warbringer RevolverPrimary weaponTier 1 · Physical · Finesse · ... [namelen=173 namehash=b29de79f]
+60Legendary Wood AxeSecondary weaponTier 4 · Physical · Strength... [namelen=259 namehash=84d955e9]
+61Sand PouchSecondary weaponTier 1 · Physical · Strength · Melee... [namelen=198 namehash=c9d07a71]
+62Improved Sand PouchSecondary weaponTier 2 · Physical · Strengt... [namelen=207 namehash=62f7b8b0]
+63Advanced Sand PouchSecondary weaponTier 3 · Physical · Strengt... [namelen=207 namehash=8f9fa3fd]
+64Legendary Sand PouchSecondary weaponTier 4 · Physical · Streng... [namelen=208 namehash=234b7df2]
+65Hexer's BandolierItemWhile wearing this bandolier, you can spe... [namelen=218 namehash=2ad418f7]
+66Bandit MaskItemWhile wearing this bandit mask, you don't count... [namelen=121 namehash=a7c8b77c]
+67White HatItemThis gleaming, wide-brimmed cowboy hat never seem... [namelen=261 namehash=907034d5]
+68Bandit's Gunny SackConsumableYou save time quickly unpacking y... [namelen=252 namehash=4f9e1de9]
+69Ricochet RoundConsumableWhen you fail an attack roll made with... [namelen=202 namehash=3089afca]
+6Improved Warbringer RevolverPrimary weaponTier 2 · Physical · F... [namelen=182 namehash=5803a4db]
+70Questionable InvigoratorConsumableYou can drink this dubious l... [namelen=289 namehash=af495753]
+71LaudanumConsumableYou can imbibe a dram of this tincture to cl... [namelen=166 namehash=37813b1c]
+72Black Hat LeathersArmorUniqueTier 1 · Thresholds 6/12 · Armor ... [namelen=150 namehash=a78d95c8]
+73Boreworm PlateArmorUniqueTier 2 · Thresholds 11/24 · Armor 5Sa... [namelen=178 namehash=f969fa31]
+74Gilded RibcageArmorUniqueTier 3 · Thresholds 13/31 · Armor 6Ma... [namelen=151 namehash=9ccabd5e]
+75The Inexorable's DusterArmorUniqueTier 4 · Thresholds 14/35 · ... [namelen=195 namehash=72c31496]
+76Gunpowder WhiskeyConsumableMark a Hit Point and a Stress to dr... [namelen=151 namehash=333b684e]
+77Paper HorseConsumableShred this origami horse to immediately b... [namelen=215 namehash=97579e78]
+78Coati PawConsumableIf the PC holding this paw fails a roll, th... [namelen=185 namehash=9a305d1a]
+79Pegasus SaddleItemSpend a Hope to make your mount sprout wings... [namelen=219 namehash=e801097f]
+7Advanced Warbringer RevolverPrimary weaponTier 3 · Physical · F... [namelen=182 namehash=487ceb61]
+80War SaddleItemWhen you Yah! (PHv1, pg7), you can mark a Stress... [namelen=164 namehash=77a5e410]
+81Preservation SaddleItemAs an action, you can make your mount d... [namelen=125 namehash=4cbc3be1]
+82Opulent BardingItemWhile mounted, you can spend a handful of g... [namelen=102 namehash=a1c94c55]
+83Bubble TackItemOnce per scene, while mounted, you can extend a... [namelen=293 namehash=51ba6f72]
+84Rodeo SaddleItemYou gain a bonus equal to your tier on Strengt... [namelen=136 namehash=a7e641ce]
+85Arcana InfusionItemOnce per scene, on a successful attack that... [namelen=185 namehash=8cbbaad5]
+86Blade InfusionItemOnce per scene, on a successful attack that ... [namelen=190 namehash=56c48c29]
+87Bone InfusionItemAt the beginning of a scene, you gain a +1 bo... [namelen=163 namehash=7a0d5475]
+88Codex InfusionItemOnce per long rest, you can add an additiona... [namelen=259 namehash=053ff507]
+89Grace InfusionItemOnce per scene, when you make an Adversary m... [namelen=138 namehash=528152e3]
+8Legendary Warbringer RevolverPrimary weaponTier 4 · Physical · ... [namelen=184 namehash=ea463169]
+90Midnight InfusionItemOnce per rest, if you roll a success with... [namelen=170 namehash=eee93fb2]
+91Sage InfusionItemOnce per rest, gain a special Armor Slot that... [namelen=178 namehash=ea4496dd]
+92Splendor InfusionItemOnce per session, when you make yourself ... [namelen=164 namehash=37575d81]
+93Valor InfusionItemOnce per scene, you can spend Hope instead o... [namelen=116 namehash=760950be]
+9ArcpistolPrimary weaponTier 1 · Magic · Knowledge · Far · d6+1 ... [namelen=119 namehash=fbd1a9aa]
+?About this data
+All
+Alt. tables
+Consumables
+Core
+EN
+Equipment
+Grid
+Hope & Fear
+Install as an app
+Items
+Link to this section
+Link to this table
+List
+LootDaggerheart
+Open on start
+Other
+Privacy
+RU
+Roll
+Search
+Search by name or description...
+Select
+Sign in
+Skip to content
+Supplements
+Table: Pistolheart
+Tables
+Terms of use
+daggerheart.com

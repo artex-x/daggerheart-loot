@@ -13,7 +13,7 @@
   import { headerAt, nextHeader } from '../lib/headerScroll.js';
   import { nameOf } from '../lib/i18n.js';
   import { modeOf } from '../lib/nav.js';
-  import { untrack } from 'svelte';
+  import { tick, untrack } from 'svelte';
   import type { Snippet } from 'svelte';
   import type { AppState } from '../state/app.svelte.js';
   import type { Lang } from '../lib/types.js';
@@ -163,6 +163,26 @@
     );
   }
 
+  /* The mode row moves between the header and the roll page's head at 761 px; a focused
+     pill keeps the focus by its index. Read here, before any part of the frame redraws:
+     the row under the header goes before the page's own effects run. */
+  const PILLS = 'nav.modes .mode';
+  let wasNarrow: boolean | null = null;
+  $effect.pre(() => {
+    const now = app.band === 'narrow';
+    untrack(() => {
+      const moved = wasNarrow !== null && wasNarrow !== now;
+      wasNarrow = now;
+      const active = document.activeElement;
+      const at = moved && active ? [...document.querySelectorAll(PILLS)].indexOf(active) : -1;
+      if (at < 0) return;
+      void tick().then(() => {
+        if (document.activeElement === document.body)
+          document.querySelectorAll<HTMLElement>(PILLS)[at]?.focus();
+      });
+    });
+  });
+
   /* The header hides up to 760 px only (DESIGN.md, "The Hidden Header Rule"). */
   $effect(() => {
     if (app.band !== 'narrow') return;
@@ -173,6 +193,34 @@
         max: scroll.max(),
         height: topbar?.offsetHeight ?? 0,
         held
+      });
+    });
+  });
+
+  /* Rule 20: a navigation that takes the pressed link or button away with its page puts the
+     focus on `#main`, after the new page placed its own (`ModeRow`, a dialog). */
+  let lastFocus: Element | null = null;
+  $effect(() => {
+    const note = (e: FocusEvent): void => {
+      lastFocus = e.target instanceof Element ? e.target : null;
+    };
+    document.addEventListener('focusin', note);
+    return () => {
+      document.removeEventListener('focusin', note);
+    };
+  });
+  let seenNavigations: number | null = null;
+  $effect(() => {
+    const now = app.navigations;
+    untrack(() => {
+      const moved = seenNavigations !== null && seenNavigations !== now;
+      seenNavigations = now;
+      if (!moved) return;
+      void tick().then(() => {
+        const active = document.activeElement;
+        if (active && active !== document.body) return;
+        if (!lastFocus || lastFocus.isConnected) return;
+        document.getElementById('main')?.focus({ preventScroll: true });
       });
     });
   });
@@ -313,7 +361,8 @@
   </div>
 </header>
 
-{#if modeOf(app.section)}
+<!-- From 761 px the roll page's head draws the same controls as its pills. -->
+{#if modeOf(app.section) && app.band === 'narrow'}
   <ModeRow {app} />
 {/if}
 
@@ -332,18 +381,9 @@
   {@render children()}
 </main>
 
-<!-- The selection bar comes before the footer now, not after - it is
-     `position: sticky`, not fixed, and z-index (SelBar.svelte's own
-     `.selbarwrap`, 45) is what paints it over the footer whenever it is
-     open, so a keyboard user tabbing forward used to reach the footer's
-     license link before the bar's own buttons, the reverse of what is on
-     top of what on screen. A sticky box also has a flow position, unlike a
-     fixed one: with a selection open the footer is pushed down by exactly
-     the bar's own height (measured at 1180: 5885px page height with no
-     selection, 5938px with one - the 53px difference is `.selbarwrap`'s own
-     height there), and at maximum scroll the bar rests above the footer
-     with a ~20px gap rather than overlapping it (measured at both 1180 and
-     375). -->
+<!-- The selection bar comes before the footer: it paints over the footer (z-index 45), so a
+     forward Tab reaches its buttons before the footer's links. It is fixed to the window's
+     bottom, and the footer's bottom padding keeps its height clear under the page. -->
 <SelBar {app} />
 
 <!-- The license notice is on every page on purpose: the terms ask for it, and
@@ -391,7 +431,7 @@
     color: var(--ink-on-gold);
     font-weight: 700;
     padding: 10px 16px;
-    border-radius: 0 0 10px 0;
+    border-radius: 0 0 var(--r-sm) 0;
   }
 
   /* off `.topbar` in style.css. Sticky and translucent: the tabs stay reachable
@@ -596,7 +636,8 @@
     width: var(--wrap);
     margin-inline: auto;
     margin-top: 20px;
-    padding: 22px 0 40px;
+    /* The selection bar is fixed over the window's bottom: the page ends above it. */
+    padding: 22px 0 calc(40px + var(--selbar-h, 0px));
     color: var(--muted2);
     font-size: var(--t-data);
     border-top: 1px solid var(--line);
@@ -611,11 +652,46 @@
     width: fit-content;
   }
 
+  .foot-licence p {
+    max-width: var(--measure-text);
+  }
+
   /* Footer links are muted and underlined: they are not the page's action
      (DESIGN.md, "The Seal Rule"). */
   .foot a {
     color: var(--muted);
     text-decoration: underline;
+  }
+
+  /* A text link reaches the target by its padded box and keeps its line: 24 px from 601 px,
+     the thumb target up to 600 px (DESIGN.md, "The Phone-First Rule"); the license's
+     summary is the footer's last line. */
+  @media screen {
+    .foot-nav a {
+      display: inline-block;
+      padding-block: max(0px, calc((max(24px, var(--thumb)) - 1lh) / 2));
+      margin-block: min(0px, calc((1lh - max(24px, var(--thumb))) / 2));
+    }
+  }
+
+  @media screen and (min-width: 601px) {
+    .foot-licence summary {
+      padding-block: max(0px, calc((24px - 1lh) / 2));
+      margin-block: min(0px, calc((1lh - 24px) / 2));
+    }
+  }
+
+  @media screen and (max-width: 600px) {
+    .brand {
+      padding-block: 5px;
+      margin-block: -5px;
+    }
+
+    .foot-licence summary {
+      display: flex;
+      align-items: center;
+      min-height: var(--thumb);
+    }
   }
 
   /* The gap is `.topbar-in`'s, the bottom margin `.brand`'s gap. */

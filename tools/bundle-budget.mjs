@@ -1,6 +1,6 @@
 /* The bundle size budget.
  *
- * Gzip of the code, data excluded: `data.js` is 1459 records, big by definition
+ * Gzip of the code, data excluded: `data.js` is 1593 records, big by definition
  * and unaffected by how the app is written. The code, on the other hand, grows
  * invisibly - one convenient dependency at a time - and a number is the only way
  * to notice.
@@ -32,17 +32,16 @@ const code = walk(DIST).filter(
 /* Two limits by what was built: the configured build (`deploy`'s, and the
    one `npm run e2e` leaves) adds the account client (auth-js,
    postgrest-js, realtime-js and storage-js) as a chunk loaded after first
-   paint - 321.4 kB in all here and about 0.1 kB more on CI's `e2e` job, so
-   under 322 - while the unconfigured one `check:built` measures, 264.1 kB,
-   must stay under 265 (measured 2026-11-04 after the blind review of wave 2: the
-   chunked first draw of a long table, the picture's three forms, the prompts'
-   «Отмена» and the help panel's «Закрыть»; 263.3 kB before them). A batch
-   whose total passes a budget raises it to its measured total rounded up
-   to the next whole kB, never past 350 configured and 270 unconfigured
-   (owner, 2026-10-22; decisions "The configured bundle ceiling rises to
-   350 kB" and "The unconfigured bundle ceiling rises to 270 kB"). */
+   paint - 327.3 kB on 2026-11-06, about 329.4 kB with the three sources of 2026-11-07
+   (the unconfigured growth added), so under 330 - while the unconfigured one
+   `check:built` measures, 272.3 kB (270.2 before the three sources), must stay
+   under 273 (measured 2026-11-07). A batch whose total passes a
+   budget raises it to its measured total rounded up to the next whole kB, never past
+   350 configured and 300 unconfigured (owner, 2026-10-22 and 2026-11-04; decisions
+   "The configured bundle ceiling rises to 350 kB" and "The unconfigured bundle
+   ceiling rises to 300 kB"). */
 const withAccount = code.some((f) => /[\\/]assets[\\/]supabase-[^\\/]*\.js$/.test(f));
-const BUDGET_KB = withAccount ? 322 : 265; // gzip, code only
+const BUDGET_KB = withAccount ? 330 : 273; // gzip, code only
 const WHICH = withAccount ? 'with the account client chunk' : 'no account client chunk';
 
 let total = 0;

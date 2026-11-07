@@ -122,13 +122,13 @@
 
   .ordiv i {
     font-style: normal;
-    font: 700 var(--t-label)/1 var(--mono);
+    font: 700 var(--t-label)/1 var(--ui);
     letter-spacing: 0.18em;
-    color: var(--gold);
-    border: 1px solid var(--gold);
+    color: var(--muted);
+    border: 1px solid var(--line2);
     border-radius: 999px;
     padding: 8px 11px;
-    background: rgb(216 171 94 / 8%);
+    background: var(--bg2);
     white-space: nowrap;
   }
 

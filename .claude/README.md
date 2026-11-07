@@ -1004,15 +1004,16 @@ documented; the parity rows below are replaced by the gates that survive.
 
 | gate | idle host | loaded host |
 |---|---|---|
-| a CI run (push to the last gate job) | 10.5-11.5 min, about 65 runner-minutes, no Actions cost (public repository; runs 39563712504 and 39599556984, 2026-10-21) | remote; the orchestrator waits with one background `ci-credit.mjs` call ("CI credit") |
+| a CI run (push to the last gate job) | about 15 min, about 80 runner-minutes, no Actions cost (public repository; run 42116078717, 2026-11-05: `browser (1)` 15.0 min with `app/sweep` 768 as its floor, the other four `browser` jobs 10.3-12.2 min) | remote; the orchestrator waits with one background `ci-credit.mjs` call ("CI credit") |
 | `npm run check:fast` | 215-310 s (2026-10-07); 474-479 s when a merge of `main` puts every vitest file in the related run (2026-10-21), 841 s for the merge of R10 and CF1 (2026-10-28); 657-710 s when the changed files reach `app.test.ts` and the component suites (2026-10-22, catalog-copy, host idle); 676-840 s for changes to `app.svelte.ts`, `dict.ts` or `i18n.ts` (2026-10-29, request-notices, 1704-4032 tests); 564 s for changes to `RecordCard.svelte`, `router.ts` and `redirect.ts` that reach `app.test.ts` and the component suites (2026-10-29, path-urls-followups, 2286 tests); the local floor before every task-branch commit |
 | `npm run check:db` | 752 s, 548 tests, with a cold `supabase start` after `rdctl start` (2026-10-29, request-notices); the commit gate for `supabase/` and `tests/db/` | longer; stop the stack and Rancher (`rdctl shutdown`) before `check:fast` | longer; 792 s with WSL and Rancher up (2026-10-15), past 600 s it runs on in the background and still arms by its exit |
 | `npm run check` | 10-18 min with nothing cached (2026-10-07); the offline path only, in the main session with `run_in_background` or the owner's terminal | past the Bash tool's 600s foreground cap; it arms the commit gate by its own exit ("Gate credit") - wait for its exit, then confirm `.check-cache.json` before the commit |
 | `npm run check:built` | a few minutes | longer |
-| `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub` | ~260-290s pooled | longer; 723 s with WSL and Rancher up (2026-10-15) |
+| `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub` | past the 600 s foreground cap: on CI `app/contracts` alone takes 552-567 s and each `app/states` row 319-543 s (runs 42102518161 and 42116078717, 2026-11-05) | longer; run it in the background or leave it to CI's `browser` matrix |
 | `node tests/app/sweep.js <width>` | ~320-590s per width | longer; CI's `browser` matrix runs every width; locally (the offline path) run `node tests/run-all.js --shard=n/5` per call |
 | `node tests/app/golden.js --shard=n/4` | ~100-290s per shard | longer; CI's `browser` matrix runs every shard; a batch that adds states re-seeds them with `--update --only=<id>` or takes CI's text ("CI credit") |
-| `node tests/run-all.js <suites> --shard=n/m` | varies with what the packer bins together - measured up to ~372s for one bin (`sweep1180-ru`: 371.9s(ru)/172.7s(en), CI run `35232880507`) | longer; a shard's own bins are not interchangeable with `ci.yml`'s matrix count (`tests/derived.js` asserts the two agree) |
+| `node tests/app/states.js --shard=n/4` | 319-543 s per row on CI (542.6, 318.6, 491.3 and 411.3 s for 1/4 to 4/4, run 42116078717, 2026-11-05; 1742.8 s for all 97 cases in one row, run 42083009049) | longer; CI's `browser` matrix runs every row; one case's time is its `took:` line in `test-output/` |
+| `node tests/run-all.js <suites> --shard=n/m` | varies with what the packer bins together: a bin of `--shard=n/5` holds 1459-1586 s of weight, and a shard lasts as long as its longest row (824, 617 and 649 s for shards 1 to 3, the rows `app/sweep` 768, 390 and 360, CI run 42116078717, 2026-11-05) | longer; a shard's own bins are not interchangeable with `ci.yml`'s matrix count (`tests/derived.js` asserts the two agree) |
 
 Re-measured on this host on 2026-09-25, at the end of the accounts release:
 `npm run check` 348 s (vitest with coverage 200 s of it, 52 files and 1517
@@ -1124,11 +1125,14 @@ fit the Bash tool's 600000 ms maximum at all - the long-check reminder's
 above is the only one that belongs in a foreground call.
 
 This table is about a **local** foreground call. A CI job's fixed cost is
-about twenty seconds (checkout, setup-node, `npm ci`, `npm run build`), not
-minutes - `tests/run-all.js`'s `--shard=n/m` and `ci.yml`'s `browser` matrix
+about seventy seconds (checkout, setup-node, `npm ci`, `npm run build:test`;
+2026-11-05), not ten minutes - `tests/run-all.js`'s `--shard=n/m` and `ci.yml`'s `browser` matrix
 split the real-Chrome suites across five such jobs for exactly that reason
 (four until 2026-09-26, when the slowest suite step passed 360 s on two
-consecutive runs, 36229149582 and 36230695846).
+consecutive runs, 36229149582 and 36230695846). On 2026-11-05 the one
+`app/states` row passed the job's 30-minute limit (1742.8 s at 97 cases),
+so it runs as four rows of interleaved cases (decision "app/states runs as
+four interleaved rows; the browser job keeps 30 minutes").
 CI run 36105652165 (2026-09-25): the `browser` shards' suite steps 361, 367,
 367 and 224 s; the `e2e` job's `npm run e2e` step 20 s. CI run 36124766953
 (2026-09-25): `migrate-test` 1 s when the test project is up to date, `npm
@@ -1416,6 +1420,10 @@ adversary:
   a bare `git branch <name>` or `git tag <name>`, which creates a ref:
   to tell it from a list form (`git tag -l <pattern>`, `git branch
   --contains <sha>`) the rule would need each subcommand's option grammar.
+- A reviewer may run read-only probes through stdin or `node -e` against the
+  built app (`dist-test/`): a script that opens a page, measures and prints,
+  and writes no file (owner, 2026-11-04; `.claude/prompts/review.prompt.md`).
+  No hook judges the difference: the habit guards above stay as they are.
 - The orphan-task-directory rule (row 40) is invisible to a deletion through
   `git clean`, through `node -e "fs.rmSync(...)"`, through an unexpanded glob
   (`rm issues/<id>/*` reaches the hook as the literal token), or from the
@@ -1821,6 +1829,22 @@ Facts settled during implementation (`persist-usage-monitoring`,
   string, so the column holds a jsonb string, not an object; two
   `tests/db/usage.test.mjs` cases failed on it. Pass `${sql.json(x)}` (or `tx.json(x)`), as
   every `tests/db/` file and `tools/supabase/usage.mjs` do.
+
+## Kept tooling exceptions
+
+Four exceptions skip a tool on purpose. Each is kept with its reason (task 57,
+2026-11-06); the design detector keeps none (DESIGN.md, "Notes").
+
+| Line | Where | Reason |
+|---|---|---|
+| `.impeccable/hook.cache.json`, `.impeccable/hook.pending.json` | `.gitignore` | The Impeccable hook writes them during a session. Prettier reads `.gitignore` but not `.git/info/exclude`, so without these tracked lines `format:check` fails in every session where the hook ran (owner, 2026-10-29) |
+| `.impeccable/config.local.json` | `.gitignore` | A local config with no tracked ignore is how a credential gets committed (owner, 2026-10-29) |
+| `['.impeccable/', false]` in the `VITEST` rule | `tools/check/lib.mjs` | Vitest reads no `.impeccable/` file, as for `DESIGN.md`; the rule suppresses no check, it keeps the gate from selecting tests for a change there |
+| `issues/*/mocks/**` in `ignores` | `eslint.config.mjs` | A task's mock pages are scratch that its closeout deletes (owner, 2026-10-23) |
+
+The Impeccable skills (`polish`, `harden`, `document`) run from the orchestrator session only: a
+subagent has no Skill tool for them, and `impeccable:impeccable-finish-reviewer` is a read-only agent that
+returns fixes (task 57, 2026-10-23).
 
 ## Decisions registry
 
@@ -2376,14 +2400,14 @@ the database's part. `docs/DECISIONS.md`, 2026-09-30, "The list_entries
 touch and limit triggers run once per statement".
 
 **The configured bundle budget.** `tools/bundle-budget.mjs` has two limits:
-265 kB for the unconfigured build and 322 kB for the configured one, which
+273 kB for the unconfigured build and 330 kB for the configured one, which
 carries the account client chunk. A batch whose total passes a budget raises
 it to the measured total rounded up to the next whole kB (a printed 250.3
 gives 251; the tool compares the unrounded total, so a printed whole number
-such as 251.0 can pass 251: add 1 kB), never past 350 kB configured and 270 kB
-unconfigured (owner, 2026-10-22: "we can increase it up to 270
-defensively"). `npm run check:built` builds `dist/`
-unconfigured and so measures only the 265 kB limit. The 322 kB limit runs in
+such as 251.0 can pass 251: add 1 kB), never past 350 kB configured and 300 kB
+unconfigured (owner, 2026-10-22, and 2026-11-04: "we can increase budget up to
+300"). `npm run check:built` builds `dist/`
+unconfigured and so measures only the 273 kB limit. The 330 kB limit runs in
 CI's `e2e` job, after `npm run e2e` leaves the configured build in `dist/`,
 and in `deploy`. The lists release passed `check:built` locally and failed
 this step in CI (run 36228323330). A batch that adds code to the app or to
@@ -2395,7 +2419,18 @@ drops every `E2E_*` name, the secret key included, before the build:
 node --env-file=.env.test.local --input-type=module -e "import { buildEnv } from './tests/e2e/lib.mjs'; import { spawnSync } from 'node:child_process'; process.exit(spawnSync('npm run build && npm run budget', { shell: true, stdio: 'inherit', env: buildEnv(process.env) }).status ?? 1);"
 ```
 
-Expected: `within the 322 kB budget (with the account client chunk)`; 321.4 kB
+Expected: `within the 330 kB budget (with the account client chunk)`; on 2026-11-07 both
+limits rose: 272.3 kB unconfigured, measured, and about 329.4 kB
+configured, estimated (no `.env.test.local` in that worktree; CI's `e2e` job measures it); 327.3 kB
+locally on 2026-11-06 after task 57 batch P (the print page's dock and crumb, the fonts
+port; it passed 327, so the limit rose to 328), 269.8 kB unconfigured; 326.7 kB
+locally on 2026-11-06 after task 57 batch N's fix pass (the mode row's focus return, the
+add menu's side), 269.2 kB unconfigured (it passed 269, so that limit rose to 270); 326.3 kB
+locally on 2026-11-06 after task 57 batch N (one head order on every page; it passed 326,
+so the limit rose to 327), 268.8 kB unconfigured; 325.7 kB
+locally on 2026-11-05 after task 57 batch 8 (the lists page, its cards and the
+add-to-list menu), 268.3 kB unconfigured; 325.5 kB
+locally on 2026-11-05 after task 57 batch 9a (the list pages on a phone), 268.1 kB unconfigured; 321.4 kB
 locally on 2026-11-04 after task 57's blind review of wave 2 (a long table's chunked first
 draw, the record picture's three forms, the prompts' «Отмена»), 264.1 kB unconfigured; 320.7 kB
 locally on 2026-11-04 at task 57 batch 7 (search, account and the error pages), 263.3 kB
@@ -2443,7 +2478,8 @@ configured bundle budget is 210 kB; the unconfigured stays 150 kB", amended by
 "The bundle budget steps up per batch to 250 kB configured and 190
 unconfigured", amended by "The bundle ceilings rise to 300 kB configured and
 250 unconfigured", amended by "The configured bundle ceiling rises to 350 kB",
-amended by "The unconfigured bundle ceiling rises to 270 kB".
+amended by "The unconfigured bundle ceiling rises to 270 kB", amended by "The
+unconfigured bundle ceiling rises to 300 kB".
 
 Branch migrations on the test project: `migrate-test` runs on every
 branch's `e2e`, so a migration that a branch pushed is in the test project
@@ -3520,6 +3556,34 @@ re-litigates them:
 - No hook guards an artwork install: the standing bar for a new hook is a
   repeated mistake, and no artwork operation has produced one a path test
   could catch - the `og/`-orphan gap was a test gap, closed as a test.
+
+### Source kits of Pistolheart, The Last Round Table and Escape the Veiled Halls
+
+A refresh of the `ph`, `lr` or `vh` text or art starts from the owner's kits,
+which stay outside the repository (never commit a PDF or a PNG). Text
+extraction: `pdftotext` from `C:\tools\poppler\poppler-26.02.0\Library\bin`.
+
+| Source | Kit folder (owner's machine) | Book and where the loot is |
+|---|---|---|
+| `ph` | `C:\Users\Ignat\Downloads\Telegram Desktop\Pistolheart` | three volume PDFs; `images/` holds 45 PNGs (1254x1254, `<Name> v<N>.png`; Laudanum and Maverick's Shuffle are v2), `final-art-registry.json`, `references.md/json`, `image-context/` |
+| `lr` | `C:\Users\Ignat\Downloads\Last Round Table` | `LastRoundTable_PDF_v2.pdf`, "Items & Extras", printed pages 38-41 (PDF 41-44) |
+| `vh` | `C:\Users\Ignat\Downloads\Escape the Veiled Halls` | `Escape_The_Veiled_Halls.pdf` (Kate Balding, Fear Fest 2026), loot tables on printed pages 6, 8, 10, 12 |
+
+Source quirks that a text refresh meets again:
+
+- `ph`: Volume 3 says "Yah! (PHv1, pg7)" where Volume 1 says Charge; War Saddle
+  keeps "Yah!" as printed and the mounted-rules card names both. The table name
+  Lever-Load Rifle wins over the art caption. Book typos fixed in the data:
+  "Very close", "d10 +9", "d6+1phy", "d4+3phy"; the Foal .44 Revolver prints
+  `d6` at Tier 1.
+- `lr`: book typos "Almenac" and "an Difficulty 12" are fixed; "social roles"
+  and "unsettingly" are kept as printed. The Witch's Skillet is summoned by the
+  Alewife Almanac. `lr-deed` depends on the Living Pub Mood countdown of the
+  book's Environments section.
+- `vh`: the PDF text layer loses the Demonic Book's hyphens (1-6, 7-9, 10-12
+  on the printed page).
+- Product names stay Latin in Russian text. Every English text was matched
+  word for word against its PDF.
 
 ## Preview host
 

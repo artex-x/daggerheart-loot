@@ -18,18 +18,18 @@ RootWebArea "Генератор лута Daggerheart" [url=/p/set-dragonvt?as=gm
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
+    link "Назад" [url=/roll/std]
     heading "Печать карточек" [level=1]
-    StaticText "Карточек: 7. Листов A4: 1. Размер карты 63×88 мм - как у обычной..." [namelen=75 namehash=07440980]
-    button "Назад"
-    button "Отправить на печать"
-    button "Цветная" [pressed=true]
-    button "Чёрно-белая" [pressed=false]
-    button "Обычная" [pressed=true]
-    button "Компактная" [pressed=false]
+    button "Напечатать"
+    button "Цвет" [pressed=true]
+    button "Ч/б" [pressed=false]
+    button "63×88" [pressed=true]
+    button "44×63" [pressed=false]
     button "Ссылка на набор"
     status ""
-    StaticText "В окне печати выберите A4, книжную ориентацию и поля «нет». Лист..." [namelen=147 namehash=0731b4fd]
-    ... StaticText x155 of 159 same-shape siblings elided
+    StaticText "3"
+    StaticText "РАНГ"
+    ... StaticText x147 of 151 same-shape siblings elided
     heading "УГОЛЁК" [level=2]
     LineBreak " "
     heading "ИСКРА" [level=2]
@@ -40,8 +40,8 @@ RootWebArea "Генератор лута Daggerheart" [url=/p/set-dragonvt?as=gm
     heading "ПАРОВЫЕ РУКАВИЦЫ" [level=2]
     heading "ЧАША ХАОСА" [level=2]
     LineBreak " "
-    StaticText "Daggerheart"
     StaticText "The Dragon's Vault"
+    StaticText "Карточек: 7. Листов A4: 1. Размер карты 63×88 мм - как у обычной..." [namelen=75 namehash=07440980]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -50,25 +50,25 @@ RootWebArea "Генератор лута Daggerheart" [url=/p/set-dragonvt?as=gm
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
+44×63
+63×88
 EN
 RU
 daggerheart.com
 Аккаунт: gm2@example.test
 Бросок
 К содержимому
-Компактная
 Конфиденциальность
 ЛутDaggerheart
 Назад
-Обычная
-Отправить на печать
+Напечатать
 Поиск
 Ссылка на набор
 Таблицы
 Условия использования
 Установить как приложение
-Цветная
-Чёрно-белая
+Цвет
+Ч/б
 
 ## en :: tree
 RootWebArea "Daggerheart Loot Generator" [url=/en/p/set-dragonvt?as=gm2]
@@ -85,18 +85,18 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/p/set-dragonvt?as=gm2]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
+    link "Back" [url=/en/roll/std]
     heading "Printing cards" [level=1]
-    StaticText "Cards: 7. A4 sheets: 1. Card size 63×88 mm - the size of a playi..." [namelen=72 namehash=34335542]
-    button "Back"
-    button "Send to printer"
+    button "Print"
     button "Color" [pressed=true]
-    button "Black and white" [pressed=false]
-    button "Standard" [pressed=true]
-    button "Compact" [pressed=false]
+    button "B&W" [pressed=false]
+    button "63×88" [pressed=true]
+    button "44×63" [pressed=false]
     button "Link to this set"
     status ""
-    StaticText "In the print dialog pick A4, portrait, and margins "none". The s..." [namelen=161 namehash=6a7c87df]
-    ... StaticText x155 of 159 same-shape siblings elided
+    StaticText "3"
+    StaticText "TIER"
+    ... StaticText x147 of 151 same-shape siblings elided
     heading "EMBER" [level=2]
     LineBreak " "
     heading "SPARK" [level=2]
@@ -107,8 +107,8 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/p/set-dragonvt?as=gm2]
     heading "STEAMPOWERED GAUNTLETS" [level=2]
     heading "CHALICE OF CHAOS" [level=2]
     LineBreak " "
-    StaticText "Daggerheart"
     StaticText "The Dragon's Vault"
+    StaticText "Cards: 7. A4 sheets: 1. Card size 63×88 mm - the size of a playi..." [namelen=72 namehash=34335542]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -117,22 +117,22 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/p/set-dragonvt?as=gm2]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
+44×63
+63×88
 Account: gm2@example.test
+B&W
 Back
-Black and white
 Color
-Compact
 EN
 Install as an app
 Link to this set
 LootDaggerheart
+Print
 Privacy
 RU
 Roll
 Search
-Send to printer
 Skip to content
-Standard
 Tables
 Terms of use
 daggerheart.com

@@ -13,6 +13,7 @@
   import PickRow from './PickRow.svelte';
   import RecordCard from './RecordCard.svelte';
   import Toast from './Toast.svelte';
+  import { watchBarHeight } from './barHeight.js';
   import { isHomebrewRecord } from '../lib/homebrew.js';
   import { nameOf } from '../lib/i18n.js';
   import type { ShareBlock } from '../lib/share.js';
@@ -62,6 +63,13 @@
     return () => {
       app.dialogOpen = false;
     };
+  });
+
+  /* Up to 760 px the toast floats over the action dock, not over its buttons (`Toast`). */
+  $effect(() => {
+    void it;
+    const dock = dialog?.querySelector<HTMLElement>('.cardpick');
+    return dialog && dock ? watchBarHeight(dock, '--dock-h', dialog) : undefined;
   });
 
   /* Every way this dialog closes - the close button, the backdrop, Escape -
@@ -147,8 +155,7 @@
   }
 
   dialog::backdrop {
-    background: rgb(6 4 12 / 78%);
-    backdrop-filter: blur(5px);
+    background: var(--scrim);
   }
 
   .modal-card {
@@ -262,11 +269,17 @@
       position: static;
     }
 
+    /* The dock spans the sheet; the popover keeps the 16 px gutter of every caller. */
     .modal-card :global(.cardpick .dropmenu) {
       top: auto;
-      right: 0;
+      right: 16px;
       bottom: calc(100% + 8px);
-      left: 0;
+      left: 16px;
+    }
+
+    /* The sticky dock spans the card edge to edge: «Ещё» opens inside the same 16 px gutter. */
+    .modal-card :global(.cardpick .recmenu) {
+      right: 16px;
     }
   }
 
@@ -278,6 +291,11 @@
       margin: 12px 0 16px;
       padding: 0;
       border-top: 0;
+    }
+
+    /* The dock is inside the card's padding here: the gutter is already there. */
+    .modal-card :global(.cardpick .recmenu) {
+      right: 0;
     }
   }
 

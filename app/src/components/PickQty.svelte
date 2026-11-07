@@ -117,13 +117,13 @@
   }
 
   /* The count and its two ends as one box, off `.numbox` in `NumberField.svelte`
-     at the shipped field's 30 px and 7 px radius. */
+     at the shipped field's 30 px and the compact control's 8 px radius. */
   .qgroup {
     display: inline-flex;
     align-items: stretch;
     height: 30px;
     border: 1px solid var(--line2);
-    border-radius: 7px;
+    border-radius: 8px;
     background: var(--bg2);
     overflow: hidden;
   }
@@ -192,10 +192,16 @@
     color: var(--muted2);
   }
 
-  /* A touch target at phone width (DESIGN.md, "The Two Breakpoints Rule"). */
+  /* The thumb target at phone width: each part is 40 px tall inside the box's border
+     (DESIGN.md, "The Phone-First Rule"). */
   @media (max-width: 600px) {
     .qgroup {
-      height: 36px;
+      height: auto;
+    }
+
+    .qgroup button,
+    .qgroup input {
+      min-height: max(34px, var(--thumb));
     }
 
     .qgroup button {

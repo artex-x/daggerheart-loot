@@ -18,8 +18,6 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Поиск" [url=/search]
   main ""
     heading "Таблицы" [level=1]
-    button "Открывать при запуске" [pressed=false]
-    button "Об этих данных" [expanded=false]
     navigation "Таблицы"
       link "Core" [url=/tables/core_item]
       link "Hope & Fear" [url=/tables/hope_and_fear_item]
@@ -27,14 +25,16 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Дополнения" [url=/tables/wondrous_environments]
       link "Снаряжение" [url=/tables/eq_weapon]
       link "Прочее" [url=/tables/other_starting]
-      link "Оружие" [url=/tables/eq_weapon]
-      link "Вторичное" [url=/tables/eq_secondary]
-      link "Броня" [url=/tables/eq_armor]
+    button "Открывать при запуске" [pressed=false]
+    button "Об этих данных" [expanded=false]
+    link "Оружие" [url=/tables/eq_weapon]
+    link "Вторичное" [url=/tables/eq_secondary]
+    link "Броня" [url=/tables/eq_armor]
     searchbox "Поиск по названию или описанию..."
     button "Список" [pressed=true]
     button "Сетка" [pressed=false]
     button "Ссылка на таблицу"
-    StaticText "Показано 41 из 458"
+    StaticText "Показано 42 из 512"
     button "Выбрать"
     complementary "Фильтры"
       heading "Фильтры · 2" [level=2]
@@ -44,9 +44,10 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       button "Все" [pressed=false]
       button "1" [pressed=true]
       button "2" [pressed=false]
-      ... button x29 of 33 same-shape siblings elided
+      ... button x28 of 32 same-shape siblings elided
       StaticText "ИСТОЧНИК"
       button "Все" [pressed=true]
+      button "и ещё 3" [expanded=false]
       ... StaticText x3 of 7 same-shape siblings elided
       ... button x3 of 7 same-shape siblings elided
       StaticText "ХВАТ"
@@ -56,9 +57,9 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       button "Есть улучшение" [pressed=false]
       button "Уникальные" [pressed=false]
     heading "Ранг 1" [level=2]
-    ... button x40 of 44 same-shape siblings elided
-    button "66 Боевой Молот База ARAZO'S ARTIFACTS Физическое · Сила · Вплот..." [namelen=227 namehash=11615096]
+    ... button x41 of 45 same-shape siblings elided
     button "7 Табельный Секач УНИКАЛЬНОЕ ВОЮЮЩИЕ НОРЫ Физическое · Любая · В..." [namelen=170 namehash=153727b1]
+    button "45 Кошель Старателя PISTOLHEART Магическое · Влияние · Вплотную ..." [namelen=194 namehash=8c11a59b]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -78,6 +79,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 26Губитель из СухостояУникальноеVault of AgesФизическое · Инстин... [namelen=722 namehash=910211e5]
 3
 4
+45Кошель СтарателяPistolheartМагическое · Влияние · Вплотную · d... [namelen=190 namehash=507100d9]
 5Топор РассветаArazo's ArtifactsФизическое · Сила · Вплотную · d... [namelen=285 namehash=9f823a38]
 66Боевой Молот БазаArazo's ArtifactsФизическое · Сила · Вплотную... [namelen=223 namehash=53491553]
 7Табельный СекачУникальноеВоюющие НорыФизическое · Любая · Вплот... [namelen=165 namehash=9421328e]
@@ -88,8 +90,10 @@ Dread GM Toolbox
 EN
 Hope & Fear
 Many Worlds Tavern
+Pistolheart
 RU
 The Dragon's Vault
+The Last Round Table
 Vault of Ages
 Wondrous Environments
 daggerheart.com
@@ -127,7 +131,6 @@ daggerheart.com
 КастетHope & FearФизическое · Сила · Вплотную · d8+1 физ · Однор... [namelen=69 namehash=5ec52643]
 КатанаHope & FearФизическое · Проворность · Вплотную · d10+3 физ... [namelen=198 namehash=4c3dacc4]
 КинжалФизическое · Искусность · Вплотную · d8+1 физ · Одноручное
-Колоссы Сухоземья
 Конфиденциальность
 КувалдаУникальноеПир зверейФизическое · Сила · Вплотную · d10+3 ... [namelen=207 namehash=d141b9b4]
 Кухонный НожУникальноеПир зверейФизическое · Искусность · Вплотн... [namelen=90 namehash=e6753e35]
@@ -142,7 +145,6 @@ daggerheart.com
 Открывать при запуске
 Очень далеко
 ПалашФизическое · Проворность · Вплотную · d8 физ · ОдноручноеНа... [namelen=90 namehash=c9de5a1e]
-Пир зверей
 Поиск
 Поиск по названию или описанию...
 Походная ПалкаУникальноеПир зверейФизическое · Инстинкт · Вплотн... [namelen=90 namehash=379d1411]
@@ -166,11 +168,11 @@ daggerheart.com
 Ссылка на фильтры
 Таблицы
 ТесакУникальноеПир зверейФизическое · Проворность · Вплотную · d... [namelen=110 namehash=005d3a40]
-Тёмное сердце Андалурии
 Уникальные
 Условия использования
 Установить как приложение
 Физическое
+и ещё 3
 
 ## en :: tree
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_tier-1.range-melee]
@@ -188,8 +190,6 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_ti
       link "Search" [url=/en/search]
   main ""
     heading "Tables" [level=1]
-    button "Open on start" [pressed=false]
-    button "About this data" [expanded=false]
     navigation "Tables"
       link "Core" [url=/en/tables/core_item]
       link "Hope & Fear" [url=/en/tables/hope_and_fear_item]
@@ -197,14 +197,16 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_ti
       link "Supplements" [url=/en/tables/wondrous_environments]
       link "Equipment" [url=/en/tables/eq_weapon]
       link "Other" [url=/en/tables/other_starting]
-      link "Weapons" [url=/en/tables/eq_weapon]
-      link "Secondary" [url=/en/tables/eq_secondary]
-      link "Armor" [url=/en/tables/eq_armor]
+    button "Open on start" [pressed=false]
+    button "About this data" [expanded=false]
+    link "Weapons" [url=/en/tables/eq_weapon]
+    link "Secondary" [url=/en/tables/eq_secondary]
+    link "Armor" [url=/en/tables/eq_armor]
     searchbox "Search by name or description..."
     button "List" [pressed=true]
     button "Grid" [pressed=false]
     button "Link to this table"
-    StaticText "41 of 458 shown"
+    StaticText "42 of 512 shown"
     button "Select"
     complementary "Filters"
       heading "Filters · 2" [level=2]
@@ -214,9 +216,10 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_ti
       button "All" [pressed=false]
       button "1" [pressed=true]
       button "2" [pressed=false]
-      ... button x29 of 33 same-shape siblings elided
+      ... button x28 of 32 same-shape siblings elided
       StaticText "SOURCE"
       button "All" [pressed=true]
+      button "and 3 more" [expanded=false]
       ... StaticText x3 of 7 same-shape siblings elided
       ... button x3 of 7 same-shape siblings elided
       StaticText "BURDEN"
@@ -226,9 +229,9 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_ti
       button "Upgradable" [pressed=false]
       button "Unique" [pressed=false]
     heading "Tier 1" [level=2]
-    ... button x40 of 44 same-shape siblings elided
-    button "66 Warhammer of Baz ARAZO'S ARTIFACTS Physical · Strength · Mele..." [namelen=206 namehash=7501052f]
+    ... button x41 of 45 same-shape siblings elided
     button "7 Standard Issue Slicer UNIQUE WARRIN' WARRENS Physical · Any · ..." [namelen=144 namehash=aecd1e16]
+    button "45 Prospector's Pouch PISTOLHEART Magic · Presence · Melee · d6+..." [namelen=191 namehash=9ce07f54]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -248,6 +251,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_ti
 26Deadwood SlayerUniqueVault of AgesPhysical · Instinct · Melee ... [namelen=644 namehash=d01069a5]
 3
 4
+45Prospector's PouchPistolheartMagic · Presence · Melee · d6+3 m... [namelen=187 namehash=301cf916]
 5Axe of the DawnArazo's ArtifactsPhysical · Strength · Melee · d... [namelen=243 namehash=8a48c2ff]
 66Warhammer of BazArazo's ArtifactsPhysical · Strength · Melee ·... [namelen=202 namehash=96b3cab3]
 7Standard Issue SlicerUniqueWarrin' WarrensPhysical · Any · Mele... [namelen=139 namehash=2dbd9f99]
@@ -260,7 +264,6 @@ Arcane GauntletsMagic · Strength · Melee · d10+3 mag · Two-Hande... [namelen
 Armor
 Artifacts
 BattleaxePhysical · Strength · Melee · d10+3 phy · Two-Handed
-Beast Feast
 Blessed Brass KnucklesDark Heart of AndaluriaMagic · Strength · ... [namelen=93 namehash=bef1d0b8]
 Brass KnucklesHope & FearPhysical · Strength · Melee · d8+1 phy ... [namelen=76 namehash=ffe9c5f5]
 BrightswordHope & FearMagic · Strength · Melee · d10+3 mag · Two... [namelen=71 namehash=958c1c84]
@@ -268,12 +271,10 @@ BroadswordPhysical · Agility · Melee · d8 phy · One-HandedReliab... [namelen
 Butcher's AxeUniqueBeast FeastPhysical · Strength · Melee · d12+... [namelen=102 namehash=17a16751]
 CleaverUniqueBeast FeastPhysical · Agility · Melee · d8 phy · On... [namelen=100 namehash=eb0a3ab2]
 Close
-Colossus of the Drylands
 Cooking KnifeUniqueBeast FeastPhysical · Finesse · Melee · d8+1 ... [namelen=80 namehash=4f9db700]
 Core
 CutlassPhysical · Presence · Melee · d8+1 phy · One-Handed
 DaggerPhysical · Finesse · Melee · d8+1 phy · One-Handed
-Dark Heart of Andaluria
 Dread GM Toolbox
 EN
 Enchanted HammerUniqueBeast FeastMagic · Strength · Melee · d10+... [namelen=82 namehash=5447a503]
@@ -304,6 +305,7 @@ One-Handed
 Open on start
 Other
 Physical
+Pistolheart
 PitchforkUniqueBeast FeastPhysical · Strength · Melee · d10+3 ph... [namelen=78 namehash=d6e51167]
 Presence
 Privacy
@@ -329,6 +331,7 @@ Supplements
 Tables
 Terms of use
 The Dragon's Vault
+The Last Round Table
 Twisted DaggerHope & FearPhysical · Knowledge · Melee · d8 phy ·... [namelen=174 namehash=0987e4fe]
 Two-Handed
 Unique
@@ -340,4 +343,5 @@ Walking StaffUniqueBeast FeastPhysical · Instinct · Melee · d10+... [namelen=
 WarhammerPhysical · Strength · Melee · d12+3 phy · Two-HandedHea... [namelen=81 namehash=bd7189fa]
 Weapons
 Wondrous Environments
+and 3 more
 daggerheart.com

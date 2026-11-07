@@ -22,20 +22,16 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/player-token-1?as=
     StaticText "Только для мастера: 1 - по этой ссылке их не видно. "
     link "Открыть для правки" [url=/lists/00000000-0000-4000-8000-000000000101]
     heading "Лавка кузнеца" [level=1]
-    ... StaticText x6 of 10 same-shape siblings elided
+    ... StaticText x3 of 7 same-shape siblings elided
+    button "Заметка" [expanded=false]
     button "Сохранить себе"
     searchbox "Поиск по названию или описанию..."
     button "Фильтры" [expanded=false]
-    checkbox "Выбрать все (9)" [checked=false]
-    checkbox "Первоклассный Спальный Мешок" [checked=false]
-    button "1 Первоклассный Спальный Мешок ×2 · 150 зол. ПРЕДМЕТ Во время от..." [namelen=102 namehash=5f098004]
-    ... checkbox x6 of 10 same-shape siblings elided
-    ... button x6 of 10 same-shape siblings elided
+    button "Выбрать"
+    ... button x7 of 11 same-shape siblings elided
     StaticText "ДЛЯ ИГРОКОВ"
     StaticText "Последний в наличии."
-    checkbox "Колдующий Кинжал" [checked=false]
     button "Колдующий Кинжал ОСНОВНОЕ ОРУЖИЕ HOPE & FEAR Ранг 1 · Магическое..." [namelen=217 namehash=26fb60d0]
-    checkbox "Топор Тлеющих Углей" [checked=false]
     button "Топор Тлеющих Углей 800 зол. ОСНОВНОЕ ОРУЖИЕ УНИКАЛЬНОЕ МАСТЕРСК..." [namelen=198 namehash=61329d72]
     status ""
       StaticText "Список обновлён"
@@ -58,26 +54,20 @@ RU
 daggerheart.com
 Аккаунт: gm1@example.test
 Бросок
-Гарпун Левиафана
-Зелье Быстрого Шага
+Выбрать
+Заметка
 К содержимому
-Колдующий Кинжал
 Колдующий КинжалОсновное оружиеHope & FearРанг 1 · Магическое · ... [namelen=213 namehash=9cd182eb]
-Колода Сумерек
 Конфиденциальность
 ЛутDaggerheart
 Открыть для правки
-Палаш
 ПалашОсновное оружиеРанг 1 · Физическое · Проворность · Вплотную... [namelen=114 namehash=e80c7800]
-Первоклассный Спальный Мешок
 Поиск
-Скипетр
+Поиск по названию или описанию...
 СкипетрОсновное оружиеРанг 1 · Магическое · Влияние · Далеко · d... [namelen=186 namehash=9aee2e9c]
 Сохранить себе
-Стеганый Доспех
 Стеганый ДоспехБроняРанг 1 · Пороги 5/11 · Броня 3Гибкое: +1 к У... [namelen=72 namehash=ad6956c1]
 Таблицы
-Топор Тлеющих Углей
 Топор Тлеющих Углей800 зол.Основное оружиеУникальноеМастерская О... [namelen=192 namehash=b0fae9a0]
 Условия использования
 Установить как приложение
@@ -102,20 +92,16 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-1?as=gm1&v=<v>]
     StaticText "GM only: 1 - this link does not show them. "
     link "Open to edit" [url=/en/lists/00000000-0000-4000-8000-000000000101]
     heading "Лавка кузнеца" [level=1]
-    ... StaticText x6 of 10 same-shape siblings elided
+    ... StaticText x3 of 7 same-shape siblings elided
+    button "Note" [expanded=false]
     button "Save to my lists"
     searchbox "Search by name or description..."
     button "Filters" [expanded=false]
-    checkbox "Select all (9)" [checked=false]
-    checkbox "Premium Bedroll" [checked=false]
-    button "1 Premium Bedroll ×2 · 150 gp ITEM During downtime, you automati..." [namelen=85 namehash=ab96007a]
-    ... checkbox x6 of 10 same-shape siblings elided
-    ... button x6 of 10 same-shape siblings elided
+    button "Select"
+    ... button x7 of 11 same-shape siblings elided
     StaticText "FOR PLAYERS"
     StaticText "Последний в наличии."
-    checkbox "Casting Dagger" [checked=false]
     button "Casting Dagger PRIMARY WEAPON HOPE & FEAR Tier 1 · Magic · Insti..." [namelen=180 namehash=610850d0]
-    checkbox "Ember Axe" [checked=false]
     button "Ember Axe 800 gp PRIMARY WEAPON UNIQUE ALDER WORKSHOP (HB) Tier ..." [namelen=171 namehash=8de947c8]
     status ""
       StaticText "The list was updated"
@@ -134,31 +120,25 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-1?as=gm1&v=<v>]
 3Twilight DeckItemArtifactVault of AgesRecall Cost: 2This deck e... [namelen=871 namehash=aad79704]
 51Leviathan Harpoon99999 gpPrimary weaponUniqueWondrous Environm... [namelen=364 namehash=9219003b]
 Account: gm1@example.test
-Broadsword
 BroadswordPrimary weaponTier 1 · Physical · Agility · Melee · d8... [namelen=109 namehash=926e89b9]
-Casting Dagger
 Casting DaggerPrimary weaponHope & FearTier 1 · Magic · Instinct... [namelen=176 namehash=08dad18c]
 EN
-Ember Axe
 Ember Axe800 gpPrimary weaponUniqueAlder Workshop (HB)Tier 2 · M... [namelen=165 namehash=770926f6]
 Filters
-Gambeson Armor
 Gambeson ArmorArmorTier 1 · Thresholds 5/11 · Armor 3Flexible: +... [namelen=76 namehash=55bf2d62]
 Install as an app
-Leviathan Harpoon
 LootDaggerheart
+Note
 Open to edit
-Premium Bedroll
 Privacy
 RU
 Roll
 Save to my lists
-Scepter
 ScepterPrimary weaponTier 1 · Magic · Presence · Far · d6 mag · ... [namelen=156 namehash=5cf0702e]
 Search
+Search by name or description...
+Select
 Skip to content
-Stride Potion
 Tables
 Terms of use
-Twilight Deck
 daggerheart.com

@@ -19,7 +19,6 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
       link "Поиск" [url=/search]
   main ""
     heading "Мои предметы" [level=1]
-    button "Открывать при запуске" [pressed=false]
     navigation "Мои предметы"
       link "Предметы 4" [url=/homebrew]
         StaticText "Предметы"
@@ -33,6 +32,7 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
       link "Карты правил 1" [url=/homebrew/rules]
         StaticText "Карты правил"
         StaticText "1"
+    button "Открывать при запуске" [pressed=false]
     StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
     button "Новый источник"
     StaticText "1 источник из 20"
@@ -72,6 +72,7 @@ daggerheart.com
 ЛутDaggerheart
 Мастерская Ольхи
 Новый источник
+Новый предмет
 Открывать при запуске
 Переименовать
 Поиск
@@ -100,7 +101,6 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew/sources?as
       link "Search" [url=/en/search]
   main ""
     heading "My items" [level=1]
-    button "Open on start" [pressed=false]
     navigation "My items"
       link "Items 4" [url=/en/homebrew]
         StaticText "Items"
@@ -114,6 +114,7 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew/sources?as
       link "Rule cards 1" [url=/en/homebrew/rules]
         StaticText "Rule cards"
         StaticText "1"
+    button "Open on start" [pressed=false]
     StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
     button "New source"
     StaticText "1 source of 20"
@@ -149,6 +150,7 @@ Install as an app
 Items 4
 LootDaggerheart
 More
+New item
 New source
 Open on start
 Privacy

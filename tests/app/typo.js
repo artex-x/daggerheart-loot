@@ -5,8 +5,8 @@
  *
  * Five grips reach the parts that only exist after a click on the live app -
  * `[data-act="fOpen"]`, `.cardpick [data-act="menu"]`, `.helpbtn`,
- * `[data-note-toggle]`, `.lnote summary` there. Two of the five survive here
- * as the same raw selector (`.helpbtn`, `.lnote summary`); the other three -
+ * `[data-note-toggle]`, `.lnote summary` there. Two of the five have a raw selector
+ * here (`.helpbtn`, `.lnotes .nopen button`); the other three -
  * the filter toggle, the card's add-to-list menu, and a list row's note
  * toggle - have no class the port kept, so they are pressed by the
  * accessible name a person reads instead, through the shared driver
@@ -33,8 +33,8 @@ const SCALE = [23, 20, 19, 18, 16, 15, 14, 13, 12, 11.5];
    this range must have loaded on a page in that language. */
 const FACE_RANGE = { ru: [0x0400, 0x045f], en: [0x0000, 0x00ff] };
 
-/* The three mode toggles that draw the neutral pressed state (DESIGN.md,
-   "Segmented control"), each opened where it lives. */
+/* The pressed switches and chips, each opened where it lives: every pressed one draws the
+   check (DESIGN.md "Components", "The Check Rule"), gold and neutral alike. */
 const SWITCHES = [
   { route: '#/roll/std', group: { ru: 'Язык', en: 'Language' } },
   { route: '#/tables/core_item', group: { ru: 'Вид', en: 'View' } },
@@ -42,7 +42,7 @@ const SWITCHES = [
   {
     route: '#/p/set-emberaxe',
     as: 'gm1',
-    group: { ru: 'Печать карточек', en: 'Printing cards' }
+    group: { ru: 'Цвет печати', en: 'Print color' }
   },
   {
     route: '#/p/set-emberaxe',
@@ -55,7 +55,31 @@ const SWITCHES = [
     route: '#/tables/eq_weapon',
     group: { ru: 'Ранг', en: 'Tier' },
     sheet: { ru: 'Фильтры', en: 'Filters' }
+  },
+  /* The search page's kind row from 761 px, its sheet up to 760 px: «Все» pressed. */
+  {
+    route: '#/search',
+    group: { ru: 'Тип', en: 'Type' },
+    sheet: { ru: 'Фильтры', en: 'Filters' }
+  },
+  /* A gold pick from the address: «2» pressed, «Все» not. */
+  {
+    route: '#/tables/eq_weapon/f_tier-2',
+    group: { ru: 'Ранг', en: 'Tier' },
+    sheet: { ru: 'Фильтры · 1', en: 'Filters · 1' }
   }
+];
+
+/* The Whole Message Rule (DESIGN.md, "Typography"): a heading, a control label, an error
+   line, a status line and a toast are never cut. Each allowed cut, with its reason. */
+const WHOLE =
+  'h1, h2, h3, button, label, [role="menuitem"], [role="alert"], [role="status"], .toast';
+const CUT_ALLOWED = [
+  /* A row's description: a clamped snippet, one press opens the record. */
+  '.row-main .rt > span',
+  /* A compact row's name and line: one press unfolds the row. */
+  '.cbody .cname',
+  '.cbody .cfx'
 ];
 
 /* The account list `accountLists` makes first (`n: 1`): `uuid(8001)`. */
@@ -69,11 +93,13 @@ const PAGES = [
   '#/roll/arazos_artifacts',
   '#/roll/community_items',
   '#/roll/many_worlds_tavern',
+  '#/roll/escape_the_veiled_halls',
   '#/tables/core_item',
   '#/tables/eq_weapon',
   '#/tables/alt_item',
   '#/tables/community_items',
   '#/tables/many_worlds_tavern',
+  '#/tables/pistolheart',
   '#/lists',
   LIST,
   '#/i/w1',
@@ -104,9 +130,9 @@ const SPECS = [
  * (its filters are a column), so no table here offers 'filters';
  * `AddToList.svelte`'s trigger sits on `RecordPage` alone among these pages,
  * not on a roll/tables card, which only opens it inside a modal `typo.js`
- * never presses; `.lnote`/the per-row note toggle are `ListPage.svelte`
+ * never presses; the list notes and the per-row note toggle are `ListPage.svelte`
  * only, so `#/lists` (no entries of its own) gets neither; every `PageHead`
- * caller among these routes has help text except `SearchPage`
+ * caller among these routes has help text except `SearchPage` and `ListsPage`
  * (`help={null}`), and `RecordPage`/`ListPage`/`AccountPage` render no
  * `PageHead` at all. */
 const EXPECTED = {
@@ -117,12 +143,14 @@ const EXPECTED = {
   '#/roll/arazos_artifacts': ['help'],
   '#/roll/community_items': ['help'],
   '#/roll/many_worlds_tavern': ['help'],
+  '#/roll/escape_the_veiled_halls': ['help'],
   '#/tables/core_item': ['help'],
   '#/tables/eq_weapon': ['help'],
   '#/tables/alt_item': ['help'],
   '#/tables/community_items': ['help'],
   '#/tables/many_worlds_tavern': ['help'],
-  '#/lists': ['help'],
+  '#/tables/pistolheart': ['help'],
+  '#/lists': [],
   [LIST]: ['note', 'listNote'],
   '#/i/w1': ['addToList'],
   '#/i/q1': ['addToList'],
@@ -229,7 +257,7 @@ async function iconCentres(page, groupName) {
           if (e) e.click();
           return !!e;
         };
-        return { help: press('.helpbtn'), listNote: press('.lnote summary') };
+        return { help: press('.helpbtn'), listNote: press('.lnotes .nopen button') };
       });
       Object.assign(found, hit);
       await new Promise((r) => setTimeout(r, 300));
@@ -293,6 +321,26 @@ async function iconCentres(page, groupName) {
         );
       }
 
+      const cut = await page.evaluate(
+        ({ WHOLE, CUT_ALLOWED }) => {
+          const out = [];
+          for (const host of document.querySelectorAll(WHOLE)) {
+            for (const e of [host, ...host.querySelectorAll('*')]) {
+              if (CUT_ALLOWED.some((a) => e.matches(a))) continue;
+              const c = getComputedStyle(e);
+              const clamp = c.webkitLineClamp && c.webkitLineClamp !== 'none';
+              const wide = c.textOverflow === 'ellipsis' && e.scrollWidth > e.clientWidth + 1;
+              const tall = clamp && e.scrollHeight > e.clientHeight + 1;
+              if (wide || tall)
+                out.push(e.tagName.toLowerCase() + '.' + String(e.className).split(' ')[0]);
+            }
+          }
+          return out;
+        },
+        { WHOLE, CUT_ALLOWED }
+      );
+      ok(!cut.length, where + ': a whole message is cut - ' + cut.slice(0, 3).join(', '));
+
       ok(!bad.fam.length, where + ': wrong font — ' + bad.fam.slice(0, 3).join(', '));
       ok(
         !bad.size.length,
@@ -312,7 +360,7 @@ async function iconCentres(page, groupName) {
     await ctx.close();
   }
 
-  /* The icon and the label share one center on each neutral switch, at both widths. */
+  /* The check and the label share one center on each pressed switch, at both widths. */
   for (const lang of ['ru', 'en']) {
     for (const width of [360, 1180]) {
       const { ctx, page, d } = await fresh({ width, height: 900, lang });

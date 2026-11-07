@@ -20,6 +20,7 @@ import {
   relName,
   relOrder,
   relText,
+  rowLine,
   setFolds,
   srcLabel,
   srcName,
@@ -133,6 +134,9 @@ describe('naming a source key with no record behind it', () => {
     expect(srcName('voa', 'ru')).toBe('Vault of Ages');
     expect(srcName('dv', 'ru')).toBe("The Dragon's Vault");
     expect(srcName('arazo', 'en')).toBe("Arazo's Artifacts");
+    expect(srcName('ph', 'ru')).toBe('Pistolheart');
+    expect(srcName('lr', 'en')).toBe('The Last Round Table');
+    expect(srcName('vh', 'ru')).toBe('Escape the Veiled Halls');
   });
 
   it('names the community loot, which a share link offers as a source', () => {
@@ -194,6 +198,13 @@ describe('which table a record is printed in', () => {
     expect(tableOf(index.byId.get('aa1') as Record_)).toBe('arazo');
   });
 
+  it('sends Pistolheart, The Last Round Table and Escape the Veiled Halls to their own tables', () => {
+    expect(tableOf(index.byId.get('ph2') as Record_)).toBe('ph');
+    expect(tableOf(index.byId.get('ph72') as Record_)).toBe('ph');
+    expect(tableOf(index.byId.get('lr3') as Record_)).toBe('lr');
+    expect(tableOf(index.byId.get('vh9') as Record_)).toBe('vh');
+  });
+
   it('places every record in the data somewhere', () => {
     for (const it of index.searchable) {
       expect(tableOf(it), it.id).not.toBe(null);
@@ -224,6 +235,16 @@ describe('the line under the heading', () => {
     /* The stubs under i/ print this path; the supplements group is navigation only. */
     expect(whereFrom(rec({ src: 'arazo' }), 'en')).toBe("Arazo's Artifacts");
     expect(whereFrom(rec({ src: 'dv' }), 'ru')).toBe("The Dragon's Vault");
+  });
+
+  it('names the volume of a Pistolheart record and the room of an Escape the Veiled Halls record', () => {
+    expect(whereFrom(rec({ src: 'ph', vol: 2 }), 'ru')).toBe('Pistolheart · Том 2');
+    expect(whereFrom(rec({ src: 'vh', room: 'library' }), 'en')).toBe(
+      'Escape the Veiled Halls · The Library'
+    );
+    expect(whereFrom(rec({ src: 'lr' }), 'en')).toBe('The Last Round Table');
+    expect(srcLabel(rec({ src: 'ph', vol: 2 }), 'ru')).toBe('Pistolheart');
+    expect(printSrc(rec({ src: 'vh', room: 'library' }), 'en')).toBe('Escape the Veiled Halls');
   });
 
   it('names the equipment slice, whichever piece (the last un-pinned group)', () => {
@@ -468,5 +489,72 @@ describe('kindGlyph', () => {
   it('draws the gem for any other item', () => {
     expect(kindGlyph('item', undefined)).toBe('kindItem');
     expect(kindGlyph('equip', undefined)).toBe('kindItem');
+  });
+});
+
+describe('rowLine, the one line of a compact list row', () => {
+  const rec = (over: Partial<Record_>): Record_ => ({
+    id: 'x',
+    src: 'core',
+    kind: 'item',
+    en: 'X',
+    ru: 'Х',
+    ende: '',
+    rud: '',
+    ...over
+  });
+  const sword = rec({
+    eq: {
+      t: 'weapon',
+      tier: 1,
+      cls: 'phy',
+      bu: 2,
+      dmg: 'd8+1',
+      dt: 'phy',
+      tr: 'agility',
+      rg: 'melee'
+    }
+  });
+
+  it('gives a weapon its damage, range, burden and trait in that order', () => {
+    expect(rowLine(sword, 'en', dict('en'))).toBe('d8+1 phy · Melee · Two-Handed · Agility');
+    expect(rowLine(sword, 'ru', dict('ru'))).toMatch(/^d8\+1 физ · Вплотную · Двуручное · Про/);
+  });
+
+  it('drops a blank piece and keeps the rest in order', () => {
+    const bare = rec({ eq: { t: 'secondary', tier: 1, dmg: 'd6', rg: 'close' } as never });
+    expect(rowLine(bare, 'en', dict('en'))).toBe('d6 · Close');
+  });
+
+  it('gives armor its thresholds, then its score', () => {
+    const armor = rec({ eq: { t: 'armor', tier: 2, th: [7, 15], as: 4 } as never });
+    expect(rowLine(armor, 'en', dict('en'))).toBe('Thresholds 7/15 · Armor 4');
+  });
+
+  it('gives an item the first line of its text with no markup', () => {
+    const potion = rec({
+      kind: 'consumable',
+      ende: '**Drink** to heal.\nSecond line.',
+      rud: 'Выпейте, чтобы *лечиться*.'
+    });
+    expect(rowLine(potion, 'en', dict('en'))).toBe('Drink to heal.');
+    expect(rowLine(potion, 'ru', dict('ru'))).toBe('Выпейте, чтобы лечиться.');
+  });
+
+  it('reads a list or a table that opens the text', () => {
+    expect(rowLine(rec({ ende: '- one\n- two' }), 'en', dict('en'))).toBe('- one');
+    expect(rowLine(rec({ ende: '| a | b |\n|---|---|\n| 1 | 2 |' }), 'en', dict('en'))).toBe(
+      'a | b'
+    );
+  });
+
+  it('falls to the text for an own equipment record with no stats', () => {
+    const own = rec({ id: 'hb_x', src: 'homebrew', kind: 'equip', ende: 'Shiny.' });
+    expect(rowLine(own, 'en', dict('en'))).toBe('Shiny.');
+  });
+
+  it('gives a record with no text and no stats no line', () => {
+    expect(rowLine(rec({}), 'en', dict('en'))).toBe('');
+    expect(rowLine(rec({ ende: '\n  \n' }), 'ru', dict('ru'))).toBe('');
   });
 });

@@ -16,7 +16,7 @@
   interface Props {
     title: string | Snippet;
     /** None where a load line under the heading says it all. */
-    sub?: string | Snippet;
+    sub?: string | Snippet | undefined;
     /** The id of the element that names the heading, where its content would name it
      *  twice. */
     labelledby?: string | undefined;
@@ -61,7 +61,8 @@
     margin: 0 0 18px;
     color: var(--muted);
     font-size: var(--t-small);
-    max-width: 70ch;
+    max-width: var(--measure-line);
+    text-wrap: balance;
     overflow-wrap: anywhere;
   }
 </style>

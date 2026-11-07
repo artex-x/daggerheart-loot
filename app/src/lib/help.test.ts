@@ -1,12 +1,25 @@
 /* What a roll page explains about itself. */
 
 import { describe, expect, it } from 'vitest';
-import { helpFor, isBold, isLink, moneyHelpFor } from './help.js';
+import { helpFor, isBold, isLink } from './help.js';
 import type { Help, HelpLink, HelpPart } from './help.js';
 import type { Lang } from './types.js';
 
 const LANGS: Lang[] = ['ru', 'en'];
-const SECTIONS = ['std', 'alt', 'wondrous', 'dread', 'voa', 'dv', 'arazo', 'community', 'mwt'];
+const SECTIONS = [
+  'std',
+  'alt',
+  'wondrous',
+  'dread',
+  'voa',
+  'dv',
+  'arazo',
+  'community',
+  'mwt',
+  'ph',
+  'lr',
+  'vh'
+];
 
 /** What one part reads as, so a paragraph can be compared as plain text. */
 const partText = (part: HelpPart): string => {
@@ -96,6 +109,9 @@ describe('the help for a section', () => {
       dv: ['Об этой книге', 'About this book'],
       arazo: ['Об этой книге', 'About this book'],
       mwt: ['Об этой книге', 'About this book'],
+      ph: ['Об этой книге', 'About this book'],
+      lr: ['Об этой книге', 'About this book'],
+      vh: ['Об этой книге', 'About this book'],
       community: ['Об этих предметах', 'About these items']
     };
     for (const section of SECTIONS) {
@@ -118,6 +134,24 @@ describe('the help for a section', () => {
     expect(linksOf(helpFor('alt', 'ru'))[1]?.label).toBe('пост на Reddit');
   });
 
+  it('links Pistolheart, The Last Round Table and Escape the Veiled Halls to their product pages', () => {
+    for (const lang of LANGS) {
+      expect(linksOf(helpFor('ph', lang)).map((l) => l.href)).toEqual([
+        'https://www.drivethrurpg.com/en/product/547537/pistolheart-volume-1',
+        'https://www.drivethrurpg.com/en/product/564429/pistolheart-volume-2',
+        'https://www.drivethrurpg.com/en/product/578612/pistolheart-volume-3'
+      ]);
+      expect(linksOf(helpFor('lr', lang)).map((l) => l.href)).toEqual([
+        'https://heartofdaggers.com/products/the-last-round-table/'
+      ]);
+      expect(linksOf(helpFor('vh', lang)).map((l) => l.href)).toEqual([
+        'https://heartofdaggers.com/products/escape-the-veiled-halls/'
+      ]);
+    }
+    expect(textOf(helpFor('vh', 'ru'), 0)).toContain('Лаборатория - 3');
+    expect(textOf(helpFor('vh', 'en'), 0)).toContain('The Laboratory 3');
+  });
+
   it('links each Many Worlds Tavern realm to its own product page', () => {
     for (const lang of LANGS) {
       expect(linksOf(helpFor('mwt', lang)).map((l) => l.label)).toEqual([
@@ -135,94 +169,24 @@ describe('the help for a section', () => {
     expect(textOf(helpFor('mwt', 'en'), 0)).toContain('Hornet Hold 11 and The Drome 17');
   });
 
-  it('writes no help for «Мои предметы»', () => {
-    for (const lang of LANGS) expect(helpFor('homebrew', lang)).toBeNull();
+  it('writes no help for «Мои предметы» and «Мои списки»', () => {
+    for (const lang of LANGS) {
+      expect(helpFor('homebrew', lang)).toBeNull();
+      expect(helpFor('lists', lang)).toBeNull();
+    }
   });
 
   it('has nothing to say about a section nobody wrote one for', () => {
     expect(helpFor('nonsense', 'ru')).toBe(null);
   });
 
-  it('bolds both roles the two notes and the share button play, mid-sentence', () => {
-    /* "Для игроков"/"Только для мастера" and "Поделиться" sit inside running prose
-       rather than opening their paragraph, so each is a run of parts rather than a
-       `lead`. */
-    const bold = (lang: 'ru' | 'en', at: number) =>
-      helpFor('lists', lang)
-        ?.paragraphs[at]?.parts.filter(isBold)
-        .map((b) => b.b);
-    for (const lang of LANGS) {
-      const lists = helpFor('lists', lang);
-      expect(lists?.paragraphs.length, lang).toBe(5);
-      expect(lists?.paragraphs[0]?.lead, lang).toBeUndefined();
-      expect(lists?.paragraphs[1]?.parts.filter(isBold), lang).toHaveLength(0);
-    }
-    expect(bold('ru', 2)).toEqual(['Для игроков', 'Только для мастера']);
-    expect(bold('ru', 3)).toEqual(['Поделиться']);
-    expect(bold('en', 2)).toEqual(['For players', 'GM only']);
-    expect(bold('en', 3)).toEqual(['Share']);
-  });
-
-  it('says what ticked account lists and «Импорт из файла» do, and where the format is', () => {
-    expect(textOf(helpFor('lists', 'ru'), 4)).toBe(
-      'Списки аккаунта можно отметить и скачать файлом JSON или удалить разом, а «Импорт из файла» добавляет списки из такого файла - например, чтобы перенести их в другой аккаунт. Формат файла описан для ИИ-помощников в llms.txt.'
-    );
-    expect(textOf(helpFor('lists', 'en'), 4)).toContain('"Import from file" adds lists');
-    expect(textOf(helpFor('lists', 'en'), 4)).toContain(
-      'described for AI assistants in llms.txt'
-    );
-  });
-
-  it('names no old list link button', () => {
-    for (const lang of LANGS) {
-      const all = (helpFor('lists', lang)?.paragraphs ?? []).map((_, i) =>
-        textOf(helpFor('lists', lang), i)
-      );
-      expect(all.join(' '), lang).not.toMatch(
-        /Ссылка игрокам|Ссылка себе|Players' link|Your own link/
-      );
-    }
-  });
-
-  it('says the lists are kept in the account, and nothing of a move or a date', () => {
-    expect(textOf(helpFor('lists', 'ru'), 1)).toBe(
-      'Войдите - и списки будут храниться в аккаунте: они сохраняются сами и открываются на любом устройстве.'
-    );
-    expect(textOf(helpFor('lists', 'en'), 1)).toBe(
-      'Sign in and your lists are kept in your account: they save themselves and open on any device.'
-    );
-  });
-
-  it('bolds the three-unit list and the three worked examples in the money help', () => {
-    /* Not a section's help (no page route is called "money"), so it is read
-       through its own function rather than helpFor. */
-    for (const lang of LANGS) {
-      const help = moneyHelpFor(lang);
-      expect(help.paragraphs.length, lang).toBe(1);
-      expect(help.paragraphs[0]?.parts.filter(isBold), lang).toHaveLength(5);
-    }
-    expect(
-      moneyHelpFor('ru')
-        .paragraphs[0]?.parts.filter(isBold)
-        .map((b) => b.b)
-    ).toEqual([
-      'горстями, мешками и сундуками',
-      '7 мешков 5 горстей',
-      '8 мешков 9 горстей',
-      '9 мешков',
-      '8 мешков'
-    ]);
-    expect(
-      moneyHelpFor('en')
-        .paragraphs[0]?.parts.filter(isBold)
-        .map((b) => b.b)
-    ).toEqual([
-      'handfuls, bags and chests',
-      '7 bags 5 handfuls',
-      '8 bags 9 handfuls',
-      '9 bags',
-      '8 bags'
-    ]);
+  it('tells a bold word, a link and a plain run apart', () => {
+    expect(isBold({ b: 'word' })).toBe(true);
+    expect(isBold({ href: '/x', label: 'x' })).toBe(false);
+    expect(isBold('plain')).toBe(false);
+    expect(isLink({ href: '/x', label: 'x' })).toBe(true);
+    expect(isLink({ b: 'word' })).toBe(false);
+    expect(isLink('plain')).toBe(false);
   });
 });
 
@@ -233,9 +197,5 @@ describe('the tables help, «Об этих данных»', () => {
     expect(help?.paragraphs.every((para) => !!para.lead)).toBe(true);
     expect(help?.button).toBe(lang === 'ru' ? 'Об этих данных' : 'About this data');
     expect(linksOf(help).map((l) => l.label)).toEqual(['daggerheart.su']);
-  });
-
-  it('leaves the list help on the default button name', () => {
-    for (const lang of LANGS) expect(helpFor('lists', lang)?.button).toBeUndefined();
   });
 });

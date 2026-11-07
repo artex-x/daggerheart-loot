@@ -18,32 +18,33 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/player-token-1?v=<
       link "Поиск" [url=/search]
   main ""
     heading "Лавка кузнеца" [level=1]
-    StaticText "Список от другого игрока · 10 позиций"
-    StaticText "Обновлено 3 дня назад"
+    StaticText "10 позиций"
+    StaticText " · Обновлено 3 дня назад"
+    ... StaticText x7 of 11 same-shape siblings elided
+    button "Заметка" [expanded=false]
     button "Сохранить себе"
-    ... StaticText x10 of 14 same-shape siblings elided
     searchbox "Поиск по названию или описанию..."
     button "Фильтры" [expanded=false]
-    checkbox "Выбрать все (10)" [checked=false]
     checkbox "Первоклассный Спальный Мешок" [checked=true]
     button "1 Первоклассный Спальный Мешок ×2 · 150 зол. ПРЕДМЕТ Во время от..." [namelen=102 namehash=5f098004]
     ... button x9 of 13 same-shape siblings elided
     spinbutton "Взять: Первоклассный Спальный Мешок" [value=2 valuetext=2 required=false valuemin=1 valuemax=2]
     button "Макс, взять все: Первоклассный Спальный Мешок" [disabled=true]
     checkbox "Палаш" [checked=false]
-    ... checkbox x5 of 9 same-shape siblings elided
+    checkbox "Стеганый Доспех" [checked=false]
     checkbox "Зелье Быстрого Шага" [checked=true]
     spinbutton "Взять: Зелье Быстрого Шага" [value=5 valuetext=5 required=false valuemin=1 valuemax=5]
     button "Макс, взять все: Зелье Быстрого Шага" [disabled=true]
     StaticText "из 5"
     StaticText "= 100 зол."
+    ... checkbox x4 of 8 same-shape siblings elided
     checkbox "Брошюра по Истории Искусства" [checked=false]
     button "11 Брошюра по Истории Искусства ПРЕДМЕТ DREAD GM TOOLBOX Это пре..." [namelen=627 namehash=a4f000a3]
     checkbox "Топор Тлеющих Углей" [checked=false]
     button "Топор Тлеющих Углей 800 зол. ОСНОВНОЕ ОРУЖИЕ УНИКАЛЬНОЕ МАСТЕРСК..." [namelen=198 namehash=61329d72]
     status ""
   region "Выбранные записи"
-    checkbox "Выбрать все" [checked=mixed]
+    checkbox "Выбрать все" [focused=true checked=mixed]
     generic ""
       StaticText "Выбрано 2 позиции · 7 шт."
       StaticText "Итого: "
@@ -80,6 +81,7 @@ daggerheart.com
 Войти
 Выбрать все
 Гарпун Левиафана
+Заметка
 Запрос отправлен
 Зелье Быстрого Шага
 К содержимому
@@ -97,6 +99,7 @@ daggerheart.com
 Первоклассный Спальный Мешок
 Печать
 Поиск
+Поиск по названию или описанию...
 Скипетр
 СкипетрОсновное оружиеРанг 1 · Магическое · Влияние · Далеко · d... [namelen=186 namehash=9aee2e9c]
 Скопировать текст
@@ -127,32 +130,33 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-1?v=<v>]
       link "Search" [url=/en/search]
   main ""
     heading "Лавка кузнеца" [level=1]
-    StaticText "A list from another player · 10 items"
-    StaticText "Updated 3 days ago"
+    StaticText "10 items"
+    StaticText " · Updated 3 days ago"
+    ... StaticText x7 of 11 same-shape siblings elided
+    button "Note" [expanded=false]
     button "Save to my lists"
-    ... StaticText x10 of 14 same-shape siblings elided
     searchbox "Search by name or description..."
     button "Filters" [expanded=false]
-    checkbox "Select all (10)" [checked=false]
     checkbox "Premium Bedroll" [checked=true]
     button "1 Premium Bedroll ×2 · 150 gp ITEM During downtime, you automati..." [namelen=85 namehash=ab96007a]
     ... button x9 of 13 same-shape siblings elided
     spinbutton "Take: Premium Bedroll" [value=2 valuetext=2 required=false valuemin=1 valuemax=2]
     button "Max, take all: Premium Bedroll" [disabled=true]
     checkbox "Broadsword" [checked=false]
-    ... checkbox x5 of 9 same-shape siblings elided
+    checkbox "Gambeson Armor" [checked=false]
     checkbox "Stride Potion" [checked=true]
     spinbutton "Take: Stride Potion" [value=5 valuetext=5 required=false valuemin=1 valuemax=5]
     button "Max, take all: Stride Potion" [disabled=true]
     StaticText "of 5"
     StaticText "= 100 gp"
+    ... checkbox x4 of 8 same-shape siblings elided
     checkbox "Art History Booklet" [checked=false]
     button "11 Art History Booklet ITEM DREAD GM TOOLBOX This is a finely il..." [namelen=549 namehash=c71a35a2]
     checkbox "Ember Axe" [checked=false]
     button "Ember Axe 800 gp PRIMARY WEAPON UNIQUE ALDER WORKSHOP (HB) Tier ..." [namelen=171 namehash=8de947c8]
     status ""
   region "Selected records"
-    checkbox "Select all" [checked=mixed]
+    checkbox "Select all" [focused=true checked=mixed]
     generic ""
       StaticText "Selected 2 items · 7 pcs"
       StaticText "Total: "
@@ -199,6 +203,7 @@ Max, take all: Premium Bedroll
 Max, take all: Stride Potion
 Min, take 1: Premium Bedroll
 Min, take 1: Stride Potion
+Note
 Premium Bedroll
 Print
 Privacy
@@ -209,6 +214,7 @@ Save to my lists
 Scepter
 ScepterPrimary weaponTier 1 · Magic · Presence · Far · d6 mag · ... [namelen=156 namehash=5cf0702e]
 Search
+Search by name or description...
 Select all
 Sign in
 Skip to content

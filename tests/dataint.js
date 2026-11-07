@@ -20,7 +20,7 @@ ALL.forEach((x) => {
   ok(!byId[x.id], 'duplicate id: ' + x.id);
   byId[x.id] = x;
 });
-ok(ALL.length === 1459, 'records are not 1459, but ' + ALL.length);
+ok(ALL.length === 1593, 'records are not 1593, but ' + ALL.length);
 /* Vault of Ages numbers its cards by book volume and section, not straight
    through: voa2_a1 - volume two, first artifact. Links, filenames and list
    codes all hang on id, so the book's own scheme is different but just as
@@ -53,7 +53,10 @@ ALL.forEach((x) => {
       'frame',
       'community',
       'arazo',
-      'mwt'
+      'mwt',
+      'ph',
+      'lr',
+      'vh'
     ].indexOf(x.src) >= 0,
     x.id + ': unknown src ' + x.src
   );
@@ -64,6 +67,21 @@ ALL.forEach((x) =>
     x.id + ': a realm off mwt, or mwt with none'
   )
 );
+/* A Pistolheart record names the volume it is printed in, an Escape the Veiled Halls
+   record the room whose table it is in; no other record carries either. */
+ALL.forEach((x) => {
+  ok(
+    (x.src === 'ph') === (x.vol !== undefined) &&
+      (x.vol === undefined || [1, 2, 3].includes(x.vol)),
+    x.id + ': a volume off ph, ph with none, or an unknown volume ' + x.vol
+  );
+  ok(
+    (x.src === 'vh') === (x.room !== undefined) &&
+      (x.room === undefined ||
+        ['basement', 'dressing', 'laboratory', 'library'].includes(x.room)),
+    x.id + ': a room off vh, vh with none, or an unknown room ' + x.room
+  );
+});
 
 console.log('text hygiene');
 function hygiene(x) {
@@ -283,6 +301,23 @@ Object.keys(DATA).forEach((table) => {
     Object.entries(byR).forEach(([realm, rows]) =>
       ROLL_POOLS.push([table + '/' + realm, rows])
     );
+  } else if (table === 'vh') {
+    /* Each room prints its own loot table: d4, d4, d3, d4. */
+    const byR = {};
+    DATA[table].forEach((x) => {
+      (byR[x.room] = byR[x.room] || []).push(x);
+    });
+    ok(
+      JSON.stringify(Object.keys(byR)) ===
+        JSON.stringify(['basement', 'dressing', 'laboratory', 'library']),
+      'Escape the Veiled Halls rooms are not the four in the adventure order: ' +
+        Object.keys(byR)
+    );
+    ok(
+      JSON.stringify(Object.values(byR).map((rows) => rows.length)) === '[4,4,3,4]',
+      'Escape the Veiled Halls room tables are not 4/4/3/4'
+    );
+    Object.entries(byR).forEach(([room, rows]) => ROLL_POOLS.push([table + '/' + room, rows]));
   } else {
     ROLL_POOLS.push([table, DATA[table]]);
   }
@@ -412,8 +447,8 @@ Object.keys(lines).forEach((head) => {
   ok(byId[head].eq.tier === 1, 'line ' + head + ' does not start at tier 1');
 });
 ok(
-  Object.keys(lines).length === 89,
-  'upgrade lines are not 89, but ' + Object.keys(lines).length
+  Object.keys(lines).length === 105,
+  'upgrade lines are not 105, but ' + Object.keys(lines).length
 );
 
 console.log('sets');

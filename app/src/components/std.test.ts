@@ -256,9 +256,11 @@ describe('the other language', () => {
 describe('a dataset that did not load', () => {
   it('says so rather than drawing an empty roll', () => {
     render(App, { env: fakeEnv({ router: memoryRouter('#/roll/std'), data: noData() }) });
-    expect(
-      screen.getByRole('heading', { level: 1, name: 'Обычные правила' })
-    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Бросок' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Обычные правила' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
     expect(options()).toHaveLength(0);
     expect(
       screen.queryByRole('button', { name: 'Скопировать все варианты' })

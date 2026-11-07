@@ -26,7 +26,7 @@ import {
 } from '../ports/index.js';
 import type { Env } from '../ports/index.js';
 import type { Loot } from '../lib/data.js';
-import { AppState } from '../state/app.svelte.js';
+import { AppState, TOAST_MS } from '../state/app.svelte.js';
 import { fakeCloud } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
 
@@ -487,6 +487,21 @@ describe('which job is lit', () => {
     );
   });
 
+  /* From 761 px the roll page's head draws the same controls (DESIGN.md, "The Head Order
+     Rule"). */
+  it.each([
+    ['narrow', false],
+    ['mid', true],
+    ['wide', true]
+  ] as const)('draws the mode row once, inside main: %s', (band, inside) => {
+    const { container } = render(App, {
+      env: at('#/roll/alt', { viewport: fakeViewport(band) })
+    });
+    const modes = screen.getAllByRole('navigation', { name: 'Режим броска' });
+    expect(modes).toHaveLength(1);
+    expect(container.querySelector('main')?.contains(modes[0] as Node)).toBe(inside);
+  });
+
   it('lights «Бросок» and the supplements button with its name on a supplement', () => {
     for (const [hash, name] of [
       ['#/roll/voa', 'Vault of Ages'],
@@ -675,13 +690,50 @@ describe('the toast component, directly', () => {
       await tick();
       expect(screen.getByRole('alert')).toHaveTextContent('Не получилось');
       expect(screen.queryByText('Скопировано')).toBeNull();
-      vi.advanceTimersByTime(2600);
+      vi.advanceTimersByTime(TOAST_MS.error);
       await tick();
       expect(screen.getByRole('status')).toHaveTextContent('Скопировано');
       expect(screen.queryByRole('alert')).toBeNull();
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it('holds a plain toast while a pointer is on it and runs on after it leaves', async () => {
+    vi.useFakeTimers();
+    try {
+      const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+      const { container } = render(Toast, { app });
+      app.say(() => 'Скопировано');
+      await tick();
+      const box = container.querySelector('.toast');
+      if (!(box instanceof HTMLElement)) throw new Error('no toast');
+      await fireEvent.pointerEnter(box);
+      vi.advanceTimersByTime(TOAST_MS.plain + 1000);
+      await tick();
+      expect(screen.getByRole('status')).toHaveTextContent('Скопировано');
+      await fireEvent.pointerLeave(box);
+      vi.advanceTimersByTime(TOAST_MS.plain);
+      await tick();
+      expect(screen.queryByText('Скопировано')).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("floats the page's toast above the selection bar and keeps the dialog's copy in place", async () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+    const page = render(Toast, { app });
+    app.say(() => 'Скопировано');
+    await tick();
+    expect(page.container.querySelector('.toast')).toHaveClass('page');
+    page.unmount();
+    app.dialogOpen = true;
+    const inDialog = render(Toast, { app, inDialog: true });
+    app.say(() => 'Ещё раз');
+    await tick();
+    expect(inDialog.container.querySelector('.toast')).not.toHaveClass('page');
+    await expectNoA11yViolations(inDialog.container);
   });
 
   it('runs the action and hides the toast when its button is pressed', async () => {
@@ -1107,6 +1159,12 @@ describe('the unread requests count in the tab title', () => {
     });
     await expectNoA11yViolations(container);
     router.navigate('#/lists/' + uuid(101));
+    /* The requests panel folds on arrival and reads the requests once it is open
+       (docs/specs/FEATURES.md, "Lists"). */
+    await waitFor(() => {
+      expect(document.title).toBe('(2) Лавка кузнеца - Генератор лута Daggerheart');
+    });
+    await userEvent.click(await screen.findByRole('button', { name: 'Открыть' }));
     await waitFor(() => {
       expect(document.title).toBe('Лавка кузнеца - Генератор лута Daggerheart');
     });
@@ -1400,6 +1458,33 @@ describe('the page of an address with no page', () => {
     expect(container.querySelector('.errtext code')?.textContent).toBe(
       '/en/l/' + 'x'.repeat(74) + '...'
     );
+  });
+});
+
+describe('the focus after an in-app navigation (rule 20)', () => {
+  it('moves to the main landmark when the pressed link left with its page', async () => {
+    const router = memoryRouter('#/l/abc');
+    const { container } = render(App, { env: fakeEnv({ router, data: fakeData(LOOT) }) });
+    const link = within(container.querySelector('.erracts') as HTMLElement).getByRole('link', {
+      name: 'Открыть таблицы'
+    });
+    link.focus();
+    expect(router.click(link.getAttribute('href') ?? '')).toBe(true);
+    await waitFor(() => {
+      expect(screen.getByRole('main')).toHaveFocus();
+    });
+    expect(link.isConnected).toBe(false);
+  });
+
+  it('keeps the focus on a pressed link that stays', async () => {
+    const router = memoryRouter('#/tables/core_item');
+    const { container } = render(App, { env: fakeEnv({ router, data: fakeData(LOOT) }) });
+    const brand = container.querySelector<HTMLAnchorElement>('a.brand') as HTMLAnchorElement;
+    brand.focus();
+    expect(router.click(brand.getAttribute('href') ?? '')).toBe(true);
+    await tick();
+    await tick();
+    expect(brand).toHaveFocus();
   });
 });
 

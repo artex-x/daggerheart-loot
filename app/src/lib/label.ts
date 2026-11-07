@@ -23,7 +23,9 @@ import { frameName } from './frames.js';
 import type { FrameId } from './frames.js';
 import { isHomebrewKey, isHomebrewRecord } from './homebrew.js';
 import { realmName } from './realms.js';
-import { EQ_TYPE, eqWord, nameOf } from './i18n.js';
+import { sectionLeaf } from './sectionProps.js';
+import { EQ_TYPE, descOf, eqRowParts, eqWord, nameOf } from './i18n.js';
+import { markupText } from './markup.js';
 import { SUB_LABEL, groupOf } from './tables.js';
 import type { Dict } from './dict.js';
 import type { IconName } from './icons.js';
@@ -111,7 +113,7 @@ export function rarityKey(r: string): keyof Dict {
 /**
  * The name a source *key* takes, off `srcName` in app.js - not a record's own
  * source, which `srcLabel` below already names. The equipment facet's `src`
- * row picks a value out of `EQ_SRC` (the eight books plus the four frames), a
+ * row picks a value out of `EQ_SRC` (the eleven books plus the four frames), a
  * share link's adds `community`, and each needs a name for the key alone, with
  * no record behind it.
  */
@@ -126,9 +128,12 @@ export function srcName(key: string, lang: Lang): string {
     dv: t.srcDv,
     arazo: t.srcArazo,
     mwt: t.srcMwt,
+    ph: t.srcPh,
+    lr: t.srcLr,
+    vh: t.srcVh,
     community: t.srcComm
   };
-  /* Anything not one of the eight books above or `community` is assumed to be
+  /* Anything not one of the eleven books above or `community` is assumed to be
      a frame id - the same assumption `EQ_SRC` bakes into the facet's own value list. */
   return named[key] ?? frameName(key as FrameId, lang);
 }
@@ -170,6 +175,9 @@ export function srcLabel(it: Record_, lang: Lang): string {
     case 'dv':
     case 'arazo':
     case 'mwt':
+    case 'ph':
+    case 'lr':
+    case 'vh':
       return srcName(it.src, lang);
     case 'frame':
       /* `it.frame` is checked, and returned on, above - reachable here only
@@ -199,8 +207,8 @@ const EQ_TABLE_OF = {
 /**
  * Which table a record is printed in, off `tableIdOf` in app.js.
  *
- * Starting inventory, Vault of Ages, Arazo's Artifacts, Many Worlds Tavern and campaign frames are checked before
- * equipment on purpose:
+ * Starting inventory, Vault of Ages, Arazo's Artifacts, Many Worlds Tavern, Pistolheart, The Last
+ * Round Table and campaign frames are checked before equipment on purpose:
  * their pieces carry stat blocks but live in their source tables, and sending
  * the "show in the table" link to a weapons table would land the reader in a
  * section their record is not in.
@@ -212,6 +220,9 @@ export function tableOf(it: Record_): TableId | null {
   if (it.src === 'voa') return 'voa';
   if (it.src === 'arazo') return 'arazo';
   if (it.src === 'mwt') return 'mwt';
+  if (it.src === 'ph') return 'ph';
+  if (it.src === 'lr') return 'lr';
+  if (it.src === 'vh') return 'vh';
   if (it.eq && !it.roll) return EQ_TABLE_OF[it.eq.t];
   if (it.src === 'wondrous') return 'wondrous';
   if (it.src === 'dread') return 'dread';
@@ -226,10 +237,11 @@ export function tableOf(it: Record_): TableId | null {
 
 /**
  * Where a record sits, as the line under the heading says it: the group, its
- * sub-table, and - for the three tables sectioned by a value the record itself
- * carries, `other_frames` by `frame`, `community` by `community` and `mwt` by
- * `realm` - the record's own section leaf. No other table is sectioned by a
- * record property, so no other table appends one.
+ * sub-table, and - for the tables sectioned by a value the record itself
+ * carries, `other_frames` by `frame`, `community` by `community` and the tables
+ * of `SECTION_PROP` (`mwt` by `realm`, `ph` by `vol`, `vh` by `room`) - the
+ * record's own section leaf. No other table is sectioned by a record property,
+ * so no other table appends one.
  *
  * The group and sub names are the same ones the table page's own chips read,
  * off `tables.ts`'s `groupOf`/`SUB_LABEL` - not a second copy of the taxonomy.
@@ -254,7 +266,8 @@ export function whereFrom(it: Record_, lang: Lang): string {
   const subKey = SUB_LABEL[table];
   const base = subKey ? `${head} · ${t[subKey]}` : head;
 
-  return it.frame || it.community || it.realm ? `${base} · ${srcLabel(it, lang)}` : base;
+  const leaf = it.frame || it.community ? srcLabel(it, lang) : sectionLeaf(it, lang);
+  return leaf ? `${base} · ${leaf}` : base;
 }
 
 /** The most homebrew records a folded relation draws besides the record itself. */
@@ -313,4 +326,23 @@ export function relText(
   const { shown, more } = foldOwn(relOrder(list, lang), keep, self, folds);
   const head = shown.map((r) => relName(r, lang)).join(', ');
   return more > 0 ? head + ' ' + dict(lang).andMore.replace('%n', String(more)) : head;
+}
+
+/** Returns the one line of a list's compact row: the stats of a weapon or armor, else the
+ *  first line of the text with no markup, else `''` (docs/specs/FEATURES.md, "Lists"). */
+export function rowLine(it: Record_, lang: Lang, t: Dict): string {
+  const stats = eqRowParts(it, lang, {
+    tier: t.tier,
+    thresholds: t.eqTh,
+    armorScore: t.eqScore,
+    artifact: t.voaArtifact1
+  }).join(' · ');
+  if (stats) return stats;
+  const text = markupText(descOf(it, lang) || '');
+  return (
+    text
+      .split('\n')
+      .map((l) => l.trim())
+      .find(Boolean) ?? ''
+  );
 }

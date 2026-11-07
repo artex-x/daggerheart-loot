@@ -16,7 +16,11 @@
     /** Sits at the window's bottom (the selection bar, the editor's bar): it opens up. */
     up?: boolean;
     size?: 'md' | 'sm';
+    /** `bare`: text alone, the `/lists` card's corner draws no box around «Ещё». */
+    variant?: 'plain' | 'bare';
     disabled?: boolean;
+    /** The button's name where «Ещё» alone would not say whose menu it is (a list row). */
+    label?: string | undefined;
     /** Draws the items; receives `close`, which closes the menu and returns the focus. */
     children: Snippet<[() => void]>;
   }
@@ -27,7 +31,9 @@
     flip = false,
     up = false,
     size = 'md',
+    variant = 'plain',
     disabled = false,
+    label,
     children
   }: Props = $props();
 
@@ -65,7 +71,9 @@
 <span class="morewrap">
   <Button
     {size}
+    {variant}
     {disabled}
+    {label}
     haspopup
     expanded={open}
     controls={open ? id : undefined}
@@ -101,6 +109,16 @@
   @media (max-width: 760px) {
     .morewrap {
       position: static;
+    }
+  }
+
+  /* Up to 600 px every small «Ещё» is one box: the thumb height and a compact padding, so a
+     page head holds its `h1`, its primary and «Ещё» on one row at 360 px (`/lists`).
+     `.btn.btn`: `Button`'s own `.btn.sm` rule ties this one on specificity. */
+  @media (max-width: 600px) {
+    .morewrap :global(.btn.btn.sm) {
+      gap: 4px;
+      padding-inline: 6px;
     }
   }
 

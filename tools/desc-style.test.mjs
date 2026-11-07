@@ -48,6 +48,8 @@ describe('the label rule (S1)', () => {
     assert.equal(isLabelled({ eq: { t: 'weapon' }, src: 'core' }), true);
     assert.equal(isLabelled({ src: 'voa' }), true);
     assert.equal(isLabelled({ src: 'arazo' }), true);
+    assert.equal(isLabelled({ src: 'lr' }), true);
+    assert.equal(isLabelled({ src: 'vh' }), false);
     assert.equal(isLabelled({ src: 'mwt' }), true);
     assert.equal(isLabelled({ src: 'wondrous' }), false);
     assert.equal(en('Sharp: very'), 'Sharp: very');
@@ -56,6 +58,17 @@ describe('the label rule (S1)', () => {
   it('keeps a head with an edge space as it is', () => {
     assert.equal(en(' Lead: x', EQUIP), ' Lead: x');
     assert.equal(en(': x', EQUIP), ': x');
+  });
+
+  it('labels a long "<Name> - Action" head of a labelled record', () => {
+    assert.equal(
+      en('The Gift that Keeps Giving - Action: Eat a slice.', EQUIP),
+      '***The Gift that Keeps Giving - Action:*** Eat a slice.'
+    );
+    assert.equal(
+      en('Draw Down the Day - Rest Move: Sing.', EQUIP),
+      '***Draw Down the Day - Rest Move:*** Sing.'
+    );
   });
 
   it('labels a forced line that the length rule misses', () => {

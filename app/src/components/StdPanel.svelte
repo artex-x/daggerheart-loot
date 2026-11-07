@@ -100,7 +100,6 @@
 <RollPage
   {app}
   {index}
-  title={t.pageStd}
   sub={t.subStd}
   {help}
   rolled={String(n)}
