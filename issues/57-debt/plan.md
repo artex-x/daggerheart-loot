@@ -42,6 +42,24 @@ print these records (`git grep -l` over `tests/app/snapshots`), `check:fast` and
   either; the removed text is `git show 1af46a61:data.js`. The trim rule for another source (Vault of Ages averages 319 characters, `dv` 228) is a
   separate owner decision.
 - D4. Stale `why` texts "seven supplements" at `tests/app/inventory.js` (two places; the second sits in a golden header: a re-seed).
+- D5. `lr20` (Longfire Fruitcake) is not readable alone: its move ends "applying the following results:" and the four results and the
+  Impaired condition live only in the rule card `lr-fruitcake`, so the page, the share link and the print card show a lead with nothing
+  after it (owner, 2026-11-07). A scan of all 1593 records found no other dangling lead: every other line that ends in a colon or says
+  "the following" has its list in the same description (for example `w6`, `voa2_t2a`, `mw16`); the records that depend on a rule card
+  (`lr6`, `lr8`, `ph66`, `ph77`, `ph79`-`ph84`, `ph85`-`ph93`) read complete without it and the card only adds general rules.
+  Default (owner may change): option A, a self-contained description. `lr20` holds the move, the four outcomes as a list, the Impaired line
+  and the light line, in both languages; the card `lr-fruitcake` and `refs: ["lr-fruitcake"]` go (refs 7 to 6: update the counts that
+  `tests/derived.js` `COUNT_BEARING_FILES` names, the READMEs, `llms.txt` and `CONTRACTS.md`). The print card may shrink its text for the
+  longer description (the owner accepts it: card size gives way; check `app/print` and the named shortfall in FEATURES.md "Print").
+  Option B (keep the card, point to it and let the card carry the trigger line) was not chosen: the reader still goes to a separate piece,
+  and the share page and print show it apart. Proposed RU: the move line «Съешьте ломоть кекса, затем совершите Бросок Реакции Силы (10):»,
+  then the outcomes with lower-case verbs after the colon, then «*Ослаблен*: ...», then «Кроме того, ломоть можно поджечь: он горит 1 час и даёт
+  тусклый свет.» EN keeps the book's words.
+- D6. Russian copy edit of the `lr` kept text (owner, 2026-11-07: «Встречается в буханках примерно по 4,5 кг, заранее нарезанных на 5
+  ломтей...» reads stiff). Proposed first case, `lr20`: «Продаётся буханками примерно по 4,5 кг, заранее нарезанными на 5 ломтей. Фруктовый Кекс
+  Долгого Огня не плесневеет, не сохнет и не черствеет. Одного ломтя хватает, чтобы заменить дневной рацион.» Scope: the 21 trimmed `lr`
+  records; EN is the book's text and stays. Show the owner a before and after table of every changed RU sentence first and apply only what
+  the owner signs; follow the `daggerheart-ru-terms` conventions (rules terms, capitalization of game terms stays).
 - Acceptance: each record's changed fields are the only diff (the script's assertions); `dataint` still counts 1593 records; the changed golden set
   is the list the `git grep` found, each diff read; `craft` passes with 34 chains; CI green.
 

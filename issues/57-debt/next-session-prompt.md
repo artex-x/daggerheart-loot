@@ -28,6 +28,11 @@ Open, in this order:
    - D2 `lr2` (Alewife Almanac) summons the Witch's Skillet (`lr3`) and links nothing: add `craft: ["lr3"]` to `lr2`, like the
      potion recipes (`ci18`, `ci19`, `ci24`, `ci51`); the `craft` suite pin goes from 33 chains to 34; no rule card.
    - D3 owner notes on the `lr` trim (`lr1`, `lr25`; restore or keep); D4 stale "seven supplements" `why` texts.
+   - D5 `lr20` (Longfire Fruitcake) dangles: "applying the following results:" with the results only in the rule card `lr-fruitcake`.
+     Default: put the move, the four outcomes, the Impaired line and the light line into the description in both languages and
+     drop the card (refs 7 to 6: update the counts); the scan found no other dangling lead. D6 Russian copy edit of the 21 trimmed
+     `lr` records (the owner finds «Встречается в буханках примерно по 4,5 кг...» stiff): show a before and after table to the
+     owner first, apply only what the owner signs. Both are in `plan.md` "Step D".
    Method: one script keyed by id with assertions (only the named fields of the named records change; `data.js` is one
    line), then `node tools/desc-style.mjs`, `node tools/build.js`, `node tests/run-all.js dataint,derived,contracts,craft`,
    the golden re-seed of the states that print these records (`git grep -l` over `tests/app/snapshots`), `check:fast` and both
