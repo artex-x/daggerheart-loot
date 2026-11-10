@@ -304,7 +304,7 @@ the next session and is reverted when the task closes.
 
 ### Usage profile
 
-Usage profile: max
+Usage profile: pro
 
 This line is the one switch between the columns below. Set it to `pro` on
 the day the account moves to the Pro plan; the owner sets the main session
