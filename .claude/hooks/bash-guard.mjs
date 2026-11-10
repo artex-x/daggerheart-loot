@@ -2396,7 +2396,9 @@ const LONG_CHECKS = [
     match: (joined) =>
       /^node tests\/app\/states\.js\b/.test(joined) && !/--shard=/.test(joined),
     family: 'states',
-    cost: 'about 30 min serial for a bare call; a call cannot finish in one call - run --shard=n/4 (440-840s each)'
+    cost: 'about 30 min serial for a bare call; a shard takes 440-807 s (CI, run 42821823209)',
+    message: (joined, cost) =>
+      `\`${joined}\` runs every case in one process (${cost}). A 600 s foreground call cannot hold the slowest shard (755-807 s). Run one \`--shard=n/4\` with run_in_background and read its result when it exits, one shard at a time, or leave the suite to CI's run on the pushed commit.`
   },
   {
     match: (joined) =>

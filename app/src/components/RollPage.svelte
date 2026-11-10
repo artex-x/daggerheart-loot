@@ -1,9 +1,9 @@
 <script lang="ts">
   /* The shell of the twelve roll pages (DESIGN.md, "The Roll Page Rule"). The `h1` names the
-     job, «Бросок»; up to 760 px it is read, not drawn, the controls sit under the mode row
-     and one line holds «Бросок N», «Настроить» and «Ещё». From 761 px: the head with the mode
-     pills, the control pane and the results. The DOM differs by band: both at once would draw
-     every field and id twice. */
+     job, «Бросок»; up to 760 px it is read, not drawn, the picker row (the mode picker and
+     «Ещё») comes first, the controls follow and one line holds «Бросок N» and «Настроить».
+     From 761 px: the head with the mode pills, the control pane and the results. The DOM
+     differs by band: both at once would draw every field and id twice. */
   import { tick, untrack } from 'svelte';
   import type { Snippet } from 'svelte';
   import Button from './Button.svelte';
@@ -15,6 +15,7 @@
   import NoData from './NoData.svelte';
   import PageHead from './PageHead.svelte';
   import Panel from './Panel.svelte';
+  import PickerRow from './PickerRow.svelte';
   import PinItem from './PinItem.svelte';
   import RecordHost from './RecordHost.svelte';
   import StatusRegion from './StatusRegion.svelte';
@@ -98,11 +99,54 @@
 
 <!-- eslint-disable @typescript-eslint/no-confusing-void-expression -- a `{@render}` tag of a
      local snippet reads as a void expression to this rule. -->
-{#snippet modes()}<ModeRow {app} inhead />{/snippet}
+{#snippet modes()}<ModeRow {app} />{/snippet}
 
 {#if narrow}
   <h1 class="vh">{t.jobRoll}</h1>
   {#if sub}<p class="vh">{sub}</p>{/if}
+  <PickerRow>
+    <ModeRow {app} />
+    <MoreMenu {app} id="rp-more" size="sm">
+      {#snippet children(close: () => void)}
+        {#if copy}
+          {@const copyAll = copy}
+          <button
+            type="button"
+            role="menuitem"
+            tabindex="-1"
+            onclick={() => {
+              close();
+              copyAll();
+            }}><Icon name="copy" />{t.copyRoll}</button
+          >
+        {/if}
+        <PinItem {app} onpicked={close} />
+        {#if help}
+          <HelpItem
+            {help}
+            open={helpOpen}
+            onpicked={close}
+            ontoggle={() => {
+              helpOpen = !helpOpen;
+            }}
+          />
+        {/if}
+      {/snippet}
+    </MoreMenu>
+  </PickerRow>
+  {#if help && helpOpen}
+    <!-- «Закрыть» returns the focus to «Ещё», which held the item (rule 20). -->
+    <HelpBox
+      {help}
+      close={{
+        label: t.close,
+        onclose: () => {
+          helpOpen = false;
+          document.querySelector<HTMLElement>('.pickrow .morewrap > .btn')?.focus();
+        }
+      }}
+    />
+  {/if}
 {:else}
   <PageHead {app} title={t.jobRoll} {sub} {help} nav={modes} navBelow={app.band === 'mid'} />
 {/if}
@@ -135,50 +179,10 @@
                   cfgOpen = !cfgOpen;
                 }}><Icon name="tune" />{lit || t.setUp}</Button
               >
-              <MoreMenu {app} id="rp-more" size="sm">
-                {#snippet children(close: () => void)}
-                  {#if copy}
-                    {@const copyAll = copy}
-                    <button
-                      type="button"
-                      role="menuitem"
-                      tabindex="-1"
-                      onclick={() => {
-                        close();
-                        copyAll();
-                      }}><Icon name="copy" />{t.copyRoll}</button
-                    >
-                  {/if}
-                  <PinItem {app} onpicked={close} />
-                  {#if help}
-                    <HelpItem
-                      {help}
-                      open={helpOpen}
-                      onpicked={close}
-                      ontoggle={() => {
-                        helpOpen = !helpOpen;
-                      }}
-                    />
-                  {/if}
-                {/snippet}
-              </MoreMenu>
             {:else if copy}
               <Button size="sm" onclick={copy}><Icon name="copy" />{t.copyRoll}</Button>
             {/if}
           </div>
-          {#if narrow && help && helpOpen}
-            <!-- «Закрыть» returns the focus to «Ещё», which held the item (rule 20). -->
-            <HelpBox
-              {help}
-              close={{
-                label: t.close,
-                onclose: () => {
-                  helpOpen = false;
-                  root?.querySelector<HTMLElement>('.reshead .morewrap > .btn')?.focus();
-                }
-              }}
-            />
-          {/if}
           {#if narrow && cfgOpen}
             <div id="rp-set" class="rp-open"><Panel>{@render settings()}</Panel></div>
           {/if}
@@ -191,12 +195,6 @@
 {/if}
 
 <style>
-  /* The mode row sits right above: the spacing keeps the first result on the first screen
-     (DESIGN.md, "The First-Screen Rule"). */
-  :global(#main:has(> .rp:not(.two))) {
-    padding-top: 6px;
-  }
-
   .rp.two {
     display: grid;
     grid-template-columns: 320px minmax(0, 1fr);
@@ -261,8 +259,7 @@
     line-height: 1.2;
   }
 
-  .reshead > :global(.btn),
-  .reshead :global(.morewrap > .btn) {
+  .reshead > :global(.btn) {
     height: max(28px, var(--thumb));
   }
 

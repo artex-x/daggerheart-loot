@@ -1,5 +1,5 @@
 <script lang="ts">
-  /* The menu box: the account menu, the supplements menu, the catalog's and the record's
+  /* The menu box: the account menu, the catalog's and the record's
      «Ещё» (docs/specs/FEATURES.md, "Chrome", the account menu). The first item takes the focus; Up,
      Down, Home and End move it; Escape and a click outside close the menu. */
   import type { Snippet } from 'svelte';

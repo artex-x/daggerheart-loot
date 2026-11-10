@@ -16,13 +16,16 @@ RootWebArea "Обычные правила - Генератор лута Daggerh
       link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
-  navigation "Режим броска"
-    link "Обычные правила" [url=/roll/std]
-    link "Альтернативные таблицы" [url=/roll/alt]
-    button "Дополнения" [expanded=false haspopup=menu]
   main ""
     heading "Бросок" [level=1]
     StaticText "Бросок по таблицам Core и дополнения Hope & Fear."
+    navigation "Режим броска"
+      button "Режим броска: Обычные правила" [haspopup=dialog]
+    button "Ещё" [expanded=true haspopup=menu]
+    menu "Ещё" [orientation=vertical]
+      menuitem "Скопировать все варианты" [focused=true]
+      menuitem "Открывается при запуске"
+      menuitem "Где какая редкость" [expanded=false]
     StaticText "БРОСИТЬ"
     button "1d12 Обычная" [description=Бросить 1d12 - Обычная]
     button "2d12 Обычная - Необычная" [description=Бросить 2d12 - Обычная - Необычная]
@@ -31,11 +34,6 @@ RootWebArea "Обычные правила - Генератор лута Daggerh
     button "5d12 Легендарная" [description=Бросить 5d12 - Легендарная]
     heading "Бросок 1" [level=2]
     button "Настроить" [expanded=false]
-    button "Ещё" [expanded=true haspopup=menu]
-    menu "Ещё" [orientation=vertical]
-      menuitem "Скопировать все варианты" [focused=true]
-      menuitem "Открывается при запуске"
-      menuitem "Где какая редкость" [expanded=false]
     status ""
       StaticText "Первоклассный Спальный Мешок, Зелье Быстрого Шага, Шипы, Оберега..." [namelen=74 namehash=92c425c9]
     button "Открыть карточку"
@@ -74,12 +72,10 @@ RootWebArea "Обычные правила - Генератор лута Daggerh
 EN
 RU
 daggerheart.com
-Альтернативные таблицы
 Бросок
 В список
 Войти
 Где какая редкость
-Дополнения
 Ещё
 Зелье Быстрого Шага
 К содержимому
@@ -87,12 +83,12 @@ daggerheart.com
 ЛутDaggerheart
 Настроить
 Оберегающая Свеча
-Обычные правила
 Открывается при запуске
 Открыть карточку
 Первоклассный Спальный Мешок
 Поделиться
 Поиск
+Режим броска: Обычные правила
 Скопировать все варианты
 Таблицы
 Условия использования
@@ -113,13 +109,16 @@ RootWebArea "Standard rules - Daggerheart Loot Generator" [url=/en/roll/std]
       link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
-  navigation "Roll mode"
-    link "Standard rules" [url=/en/roll/std]
-    link "Alternate tables" [url=/en/roll/alt]
-    button "Supplements" [expanded=false haspopup=menu]
   main ""
     heading "Roll" [level=1]
     StaticText "A roll over the Core and Hope & Fear tables."
+    navigation "Roll mode"
+      button "Roll mode: Standard rules" [haspopup=dialog]
+    button "More" [expanded=true haspopup=menu]
+    menu "More" [orientation=vertical]
+      menuitem "Copy every option" [focused=true]
+      menuitem "Opens on start"
+      menuitem "Where each rarity is" [expanded=false]
     StaticText "ROLL"
     button "1d12 Common" [description=Roll 1d12 - Common]
     button "2d12 Common - Uncommon" [description=Roll 2d12 - Common - Uncommon]
@@ -128,11 +127,6 @@ RootWebArea "Standard rules - Daggerheart Loot Generator" [url=/en/roll/std]
     button "5d12 Legendary" [description=Roll 5d12 - Legendary]
     heading "Roll 1" [level=2]
     button "Set up" [expanded=false]
-    button "More" [expanded=true haspopup=menu]
-    menu "More" [orientation=vertical]
-      menuitem "Copy every option" [focused=true]
-      menuitem "Opens on start"
-      menuitem "Where each rarity is" [expanded=false]
     status ""
       StaticText "Premium Bedroll, Stride Potion, Caltrops, Warding Candle"
     button "Open card"
@@ -169,7 +163,6 @@ RootWebArea "Standard rules - Daggerheart Loot Generator" [url=/en/roll/std]
 4d12 Rare - Legendary
 5d12 Legendary
 Add to list
-Alternate tables
 Caltrops
 Copy every option
 EN
@@ -182,14 +175,13 @@ Premium Bedroll
 Privacy
 RU
 Roll
+Roll mode: Standard rules
 Search
 Set up
 Share
 Sign in
 Skip to content
-Standard rules
 Stride Potion
-Supplements
 Tables
 Terms of use
 Warding Candle

@@ -21,7 +21,7 @@ RootWebArea "Many Worlds Tavern - Генератор лута Daggerheart" [url=
     navigation "Режим броска"
       link "Обычные правила" [url=/roll/std]
       link "Альтернативные таблицы" [url=/roll/alt]
-      button "Many Worlds Tavern" [expanded=false haspopup=menu]
+      button "Many Worlds Tavern" [haspopup=dialog]
     button "Открывать при запуске" [pressed=false]
     button "Об этой книге" [expanded=true]
     StaticText "В разделе шесть миров Many Worlds Tavern, у каждого своя колода:..." [namelen=337 namehash=7f81e4cd]
@@ -115,7 +115,7 @@ RootWebArea "Many Worlds Tavern - Daggerheart Loot Generator" [url=/en/roll/many
     navigation "Roll mode"
       link "Standard rules" [url=/en/roll/std]
       link "Alternate tables" [url=/en/roll/alt]
-      button "Many Worlds Tavern" [expanded=false haspopup=menu]
+      button "Many Worlds Tavern" [haspopup=dialog]
     button "Open on start" [pressed=false]
     button "About this book" [expanded=true]
     StaticText "This section holds the six realms of Many Worlds Tavern, each wi..." [namelen=312 namehash=1bacacf5]

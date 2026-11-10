@@ -1600,7 +1600,7 @@ function testLongCheck() {
     check('#30 long-check: once per session', isSilent(result), result.stdout);
   }
   // #31 - a run-all shard is not exempt: it packs a whole `browser` matrix
-  // row (up to ~380s measured), not a small slice like golden/sweep's own
+  // row (440-840s measured), not a small slice like golden/sweep's own
   // --shard/width arguments, so it must still get the reminder.
   {
     const result = runHook(

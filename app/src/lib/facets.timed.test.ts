@@ -17,7 +17,7 @@ describe('the offer rule at three times the own-item limit', () => {
       shown,
       (it, g) => plainFacets(it)[g] ?? ''
     );
-    /* Widened with the other timed bounds, whose CI readings ran over theirs; no failure of this one was seen. */
+    /* 250 ms is a precaution: the other timed bounds flaked on CI near their limits; this one has not. */
     expect(performance.now() - start).toBeLessThan(250);
     expect(rows.map((r) => r.group)).toEqual(['kind', 'sect']);
   });

@@ -5274,7 +5274,12 @@ async function homebrewHeadAndBar() {
         m.kids === 3 && m.inside,
         at + width + ': the row leaves the window - ' + JSON.stringify(m)
       );
-      ok(m.lines <= 2, at + width + ': the row takes ' + m.lines + ' lines');
+      ok(m.lines === 1, at + width + ': the row takes ' + m.lines + ' lines');
+      const face = await page.evaluate(pickerFace);
+      ok(
+        face.size && face.high <= 41,
+        at + width + ': the picker face is not the tables - ' + JSON.stringify(face)
+      );
       ok(m.plus, at + width + ': the primary draws no plus (rule 8)');
       ok(!(await sideways(page)), at + width + ': the page scrolls sideways');
     } finally {
@@ -5610,7 +5615,7 @@ async function editorLayoutAndSheet() {
  *  measures the row at 1180 px alone; `mid` adds 768x1024 and 900x720, the mid band. A roll page draws its result for the number
  *  field's first value, so no roll is made and the offset is deterministic. */
 const FIRST_SCREEN = [
-  { state: '#/roll/std', shipped: true, exception: 325 },
+  { state: '#/roll/std', shipped: true, exception: 322 },
   { state: '#/roll/alt', shipped: true },
   { state: '#/roll/alt ~ crit', shipped: true },
   { state: '#/roll/voa', shipped: true },
@@ -6380,6 +6385,23 @@ async function backwardTabClearsTheHeader() {
 /** Returns the window's box for `inside`. */
 const viewBox = (page) => page.evaluate(() => ({ x: 0, y: 0, w: innerWidth, h: innerHeight }));
 
+/** Answers the face of the page's picker (`PickerButton`): the table picker's size (`--t-small`)
+ *  and its height, the one face on the roll pages, the tables and «Мои предметы». Runs in the
+ *  page. */
+function pickerFace() {
+  const picker = document.querySelector('main .picker');
+  if (!picker) return { size: false, high: 0 };
+  const probe = document.createElement('span');
+  probe.style.cssText = 'position:absolute;visibility:hidden;font-size:var(--t-small)';
+  document.body.append(probe);
+  const small = getComputedStyle(probe).fontSize;
+  probe.remove();
+  return {
+    size: getComputedStyle(picker).fontSize === small,
+    high: Math.round(picker.getBoundingClientRect().height)
+  };
+}
+
 /** Answers the words of the result's name that a line break cuts. */
 const brokenWords = (page) =>
   page.evaluate(() => {
@@ -6429,9 +6451,10 @@ async function showLongestTitle(page, d, parts) {
   return best.name;
 }
 
-/** 89. The nine roll pages share one layout (docs/specs/FEATURES.md, "Rolling"): at 761 px the
+/** 89. The twelve roll pages share one layout (docs/specs/FEATURES.md, "Rolling"): at 761 px the
  *  heading, the pin and the help share one line; up to 760 px the heading is read, not drawn,
- *  and the results line holds its three parts; «Ещё» holds the pin and the help; the dice are
+ *  the picker row (the mode picker, «Ещё») comes first and the results line holds «Бросок N»
+ *  and «Настроить»; «Ещё» holds the pin and the help; the dice are
  *  two rows at 360; the card is the tall face from a 641 px results column; a picker never
  *  cuts the roll button; the longest title of «Проклятые предметы» and of Many Worlds Tavern breaks no word. */
 async function rollPageLayout() {
@@ -6474,11 +6497,9 @@ async function rollPageLayout() {
         const where = route + ' ' + lang + ' ' + width + ': ';
         await d.open(route, { lang });
         const line = await page.evaluate(() => {
-          const parts = [
-            ...document.querySelectorAll(
-              '.reshead h2, .reshead > .btn, .reshead .morewrap > .btn'
-            )
-          ].map((e) => e.getBoundingClientRect());
+          const parts = [...document.querySelectorAll('.reshead h2, .reshead > .btn')].map(
+            (e) => e.getBoundingClientRect()
+          );
           return {
             h1: document.querySelector('main h1').getBoundingClientRect().width,
             round: document.querySelectorAll('main .homebtn, main .helpbtn').length,
@@ -6491,13 +6512,124 @@ async function rollPageLayout() {
         });
         ok(line.h1 <= 1, at + where + 'the h1 is drawn, ' + line.h1 + ' px wide');
         ok(line.round === 0, at + where + 'the head buttons are drawn');
-        ok(line.count === 3, at + where + 'the results line holds ' + line.count + ' parts');
+        ok(line.count === 2, at + where + 'the results line holds ' + line.count + ' parts');
         ok(!line.out, at + where + 'a part of the results line leaves the window');
-        ok(
-          line.lines === 1 || (width === 320 && line.lines === 2),
-          at + where + 'the results line takes ' + line.lines + ' lines'
-        );
+        ok(line.lines === 1, at + where + 'the results line takes ' + line.lines + ' lines');
         ok(!line.sideways, at + where + 'the page scrolls sideways');
+      }
+
+      /* The picker row: the picker first, «Ещё» last, 8 px under the header's place, the
+         longest names on two lines with no word cut, «Ещё» holding still across modes. */
+      const moreRights = [];
+      for (const route of ['#/roll/alt', '#/roll/std', '#/roll/vault_of_ages', '#/roll/vh']) {
+        const where = route + ' ' + lang + ' ' + width + ': ';
+        await d.open(route, { lang });
+        const pick = await page.evaluate(() => {
+          const main = document.querySelector('main');
+          const row = main.querySelector(':scope > .pickrow');
+          const nav = row?.querySelector(':scope > nav.modes');
+          const btn = nav?.querySelector('button.picker');
+          const text = btn?.querySelector('.picker-t');
+          const more = row?.lastElementChild?.querySelector('.btn');
+          const node = text?.firstChild;
+          const cut = (text?.textContent.trim().split(/\s+/) ?? []).filter((word) => {
+            const range = document.createRange();
+            const from = node.textContent.indexOf(word);
+            range.setStart(node, from);
+            range.setEnd(node, from + word.length);
+            return range.getClientRects().length > 1;
+          });
+          const r = (e) => e.getBoundingClientRect();
+          return {
+            row: !!row,
+            first: row?.firstElementChild === nav,
+            modes: document.querySelectorAll('nav.modes').length,
+            more: more?.getAttribute('aria-haspopup') === 'menu',
+            gap: row ? Math.round(r(row).top - r(main).top) : -1,
+            high: btn ? Math.round(r(btn).height) : 0,
+            clamped: text ? text.scrollHeight > text.clientHeight + 1 : true,
+            cut,
+            inside: btn && more ? r(btn).left >= 0 && r(more).right <= innerWidth : false,
+            moreRight: more ? Math.round(r(more).right) : 0
+          };
+        });
+        ok(
+          pick.row && pick.first && pick.modes === 1,
+          at + where + 'the picker row - ' + JSON.stringify(pick)
+        );
+        ok(pick.more, at + where + 'the row does not end with «Ещё»');
+        ok(
+          pick.gap === 8,
+          at + where + 'the row is ' + pick.gap + ' px under the header, not 8'
+        );
+        ok(pick.high <= 41, at + where + 'the picker is ' + pick.high + ' px tall');
+        ok(!pick.clamped, at + where + 'the picker name takes more than two lines');
+        ok(!pick.cut.length, at + where + 'the picker name breaks a word: ' + pick.cut);
+        ok(pick.inside, at + where + 'the row leaves the window');
+        const face = await page.evaluate(pickerFace);
+        ok(
+          face.size && face.high <= 41,
+          at + where + 'the picker face is not the tables - ' + JSON.stringify(face)
+        );
+        moreRights.push(pick.moreRight);
+      }
+      ok(
+        new Set(moreRights).size === 1,
+        at + lang + ' ' + width + ': «Ещё» moves between modes - ' + moreRights
+      );
+
+      /* A narrowed row lights «Настроить · 2»: the results line stays one line. */
+      if (lang === 'ru' && (width === 360 || width === 320)) {
+        await d.open('#/roll/std', { lang });
+        await d.click('Настроить');
+        await d.click('Расходники');
+        await d.click('Hope & Fear');
+        await d.click('Настроить');
+        const lit = await page.evaluate(() => {
+          const parts = [...document.querySelectorAll('.reshead h2, .reshead > .btn')].map(
+            (e) => e.getBoundingClientRect()
+          );
+          return {
+            text: document.querySelector('.reshead > .btn')?.textContent.trim(),
+            lines: new Set(parts.map((r) => Math.round(r.top + r.height / 2))).size
+          };
+        });
+        ok(
+          lit.lines === 1 && /·/.test(lit.text ?? ''),
+          at + width + ': the lit «Настроить» line - ' + JSON.stringify(lit)
+        );
+      }
+
+      /* The mode sheet: the picker opens twelve links, Escape returns the focus. */
+      if (width === 360) {
+        await d.open('#/roll/vault_of_ages', { lang });
+        await d.click(
+          lang === 'en' ? 'Roll mode: Vault of Ages' : 'Режим броска: Vault of Ages'
+        );
+        const sheet = await page.evaluate(() => {
+          const dlg = document.querySelector('dialog[open]');
+          return {
+            title: dlg?.querySelector('h2')?.textContent.trim(),
+            links: dlg ? dlg.querySelectorAll('a').length : 0,
+            current: dlg?.querySelector('a[aria-current="page"]')?.getAttribute('href')
+          };
+        });
+        ok(
+          sheet.title === (lang === 'en' ? 'Roll' : 'Бросок') &&
+            sheet.links === 12 &&
+            sheet.current === '/roll/vault_of_ages',
+          at + lang + ': the mode sheet - ' + JSON.stringify(sheet)
+        );
+        await page.keyboard.press('Escape');
+        ok(
+          await waitIn(
+            page,
+            () =>
+              !document.querySelector('dialog[open]') &&
+              document.activeElement === document.querySelector('nav.modes button.picker')
+          ),
+          at + lang + ': Escape did not close the mode sheet onto the picker'
+        );
       }
 
       if (width === 360) {
@@ -6511,7 +6643,7 @@ async function rollPageLayout() {
             page,
             () =>
               !document.querySelector('[role="menu"]') &&
-              document.activeElement === document.querySelector('.reshead .morewrap > .btn')
+              document.activeElement === document.querySelector('.pickrow .morewrap > .btn')
           ),
           at + lang + ': Escape did not close «Ещё» onto its button'
         );
@@ -6522,7 +6654,7 @@ async function rollPageLayout() {
             page,
             () =>
               !document.querySelector('[role="menu"]') &&
-              document.activeElement === document.querySelector('.reshead .morewrap > .btn') &&
+              document.activeElement === document.querySelector('.pickrow .morewrap > .btn') &&
               !!document.querySelector('.helpbox')
           ),
           at + lang + ': the help item did not open the box and return the focus'
@@ -7037,6 +7169,9 @@ async function tableHeadHoldsStill() {
             };
             return {
               title: y('.page-head') ?? y('.pickrow'),
+              picker: box('.pickrow .picker')
+                ? Math.round(box('.pickrow .picker').height)
+                : null,
               groups: y('.page-head .groups'),
               tabs: y('.page-below .tabslot') ?? y('.page-head .tabs'),
               searchrow: y('.searchrow'),
@@ -7047,6 +7182,18 @@ async function tableHeadHoldsStill() {
             };
           });
           for (const [k, v] of Object.entries(m)) (seen[k] ??= []).push([table, v]);
+          if (width === 390 && table === NAV_TABLES[0]) {
+            const face = await page.evaluate(pickerFace);
+            ok(
+              face.size && face.high <= 41,
+              at +
+                width +
+                ' ' +
+                lang +
+                ': the picker face is not the one face - ' +
+                JSON.stringify(face)
+            );
+          }
         }
         for (const [k, vals] of Object.entries(seen)) {
           const drawn = vals.filter(([, v]) => v !== null);
@@ -9058,7 +9205,7 @@ const TARGET_LAYERS = [
   '#/roll/std ~ set up',
   '#/roll/std ~ more',
   '#/roll/std ~ card more',
-  '#/roll/vault_of_ages ~ supplements menu',
+  '#/roll/vault_of_ages ~ picker sheet',
   '#/search ~ more',
   '#/search ~ selecting',
   '#/lists ~ more as gm1',
@@ -9093,6 +9240,7 @@ const TARGET_LAYERS = [
 
 /** The layers case 109 also reads at 1180x720 with the 24 px floor and its spacing. */
 const TARGET_LAYERS_WIDE = [
+  '#/roll/vault_of_ages ~ supplements sheet',
   SHOP + ' ~ share as gm1',
   SHOP + ' ~ not saved as gm1',
   GM2_LIST_ID + ' ~ notices open as gm2',
@@ -10181,7 +10329,8 @@ async function printFaceWait() {
 
 /** 116. The focus after an in-app navigation (docs/specs/FEATURES.md, rule 20): a keyboard
  *  press on a link that leaves with its page puts the focus on `#main`, not on `body`; a
- *  mode pill of the roll head keeps the focus on the lit pill. RU, 360 and 1180 px. */
+ *  mode pill of the roll head keeps the focus on the lit pill, and up to 760 px the mode
+ *  picker takes it. RU, 360 and 1180 px. */
 async function focusAfterNavigation() {
   const at = '116 (the focus after a navigation): ';
   const focusOf = (page) =>
@@ -10227,6 +10376,36 @@ async function focusAfterNavigation() {
         await d.settle();
         const got = await focusOf(page);
         ok(/^A Альтернативные/.test(got), at + 'a mode pill: the focus is on ' + got);
+      }
+      /* Up to 760 px the roll picker's sheet: Escape returns the focus to the picker, a pick
+         puts it on the new page's picker. */
+      if (width === 360) {
+        const PICKER = 'nav.modes button.picker';
+        await d.open('#/roll/std');
+        await page.click(PICKER);
+        await page.waitForSelector('dialog[open] a[href="/roll/alt"]');
+        await page.keyboard.press('Escape');
+        ok(
+          await waitIn(
+            page,
+            (sel) =>
+              !document.querySelector('dialog[open]') &&
+              document.activeElement === document.querySelector(sel),
+            PICKER
+          ),
+          at + 'the mode sheet: Escape did not return the focus to the picker'
+        );
+        await page.click(PICKER);
+        await page.waitForSelector('dialog[open] a[href="/roll/alt"]');
+        await page.focus('dialog[open] a[href="/roll/alt"]');
+        await page.keyboard.press('Enter');
+        await waitIn(page, () => location.pathname.startsWith('/roll/alt'));
+        await d.settle();
+        const got = await focusOf(page);
+        ok(
+          /^BUTTON Альтернативные/.test(got),
+          at + 'the mode sheet: the new page focuses ' + got + ', not its picker'
+        );
       }
     } finally {
       await ctx.close();

@@ -30,11 +30,13 @@ across.
   "Tier" row lists them. A rung has no `roll` (owner, 2026-11-05;
   `docs/decisions/2026-11-07-one-roll-row-per-item-an-upgrade-line-is-rolled-at-its-head.md`).
 - The twelve roll pages share one layout (`RollPage`). Up to 760 px the `h1` and
-  the lead are read, not drawn; the roll controls sit under the mode row; one
-  results line holds «Бросок N» / "Roll N", «Настроить» / "Set up" and «Ещё».
+  the lead are read, not drawn; the picker row comes first (the mode picker and
+  «Ещё»), then the roll controls; one results line holds «Бросок N» / "Roll N" and
+  «Настроить» / "Set up".
   «Настроить» opens the settings over the results: the manual entry and, on the
-  two own modes, the source and type rows. «Ещё» holds «Скопировать все варианты»
-  (where the roll is a choice), the pin and the help. The `h1` reads «Бросок» /
+  two own modes, the source and type rows. «Ещё», the last control of the picker row,
+  holds «Скопировать все варианты» (where the roll is a choice), the pin and the help;
+  its help panel opens under the row. The `h1` reads «Бросок» /
   "Roll" at every width. From 761 px the head holds the `h1`, the three mode pills,
   the labeled pin and help (DESIGN.md, "The Head Order Rule"; from 761 to 999 px the
   pills take the row under them), and the lead. Only `/roll/std` and `/roll/alt` draw a
@@ -104,15 +106,16 @@ across.
   text, so `/tables/homebrew` alone may draw a taller row, and the supplements
   draw one tab, the picker.
 - The twelve roll sections share the header's roll job «Бросок» / "Roll" and draw
-  the mode row under the header up to 760 px and the same controls as the page head's
-  pills from 761 px ("Chrome";
-  `docs/decisions/2026-10-29-the-header-has-three-jobs-and-a-mode-row.md`). The
+  the mode picker in the picker row up to 760 px and the three mode pills of the page
+  head from 761 px ("Chrome";
+  `docs/decisions/2026-11-10-the-roll-modes-are-a-picker-row-up-to-760-px.md`, which
+  amends `docs/decisions/2026-10-29-the-header-has-three-jobs-and-a-mode-row.md`). The
   ten supplement modes (Wondrous Environments to Escape the Veiled Halls) are the
-  items of its «Дополнения» / "Supplements" menu, in table order, each a link to
-  its section; the open one is checked and the current page, and the menu
-  button shows its name. A mode switch keeps the keyboard focus on the lit
-  control (the pressed pill, or the menu button after a supplement), and a focused
-  pill stays focused when the row moves at 761 px. The name is the source's product name
+  links of the sheet's «Дополнения» / "Supplements" group, in table order, each a
+  link to its section; the open one is current. A mode switch keeps the keyboard
+  focus on the lit control (the picker up to 760 px; the pressed pill, or the
+  «Дополнения» button after a supplement, from 761 px), and a focused control stays
+  focused when the row changes form at 761 px. The name is the source's product name
   (`docs/decisions/2026-10-21-source-names-follow-the-source-product.md`). The
   roll pages draw no supplements panel. The catalog's picker and its sheet draw
   each book by its full name at every width.
@@ -203,7 +206,8 @@ across.
   ("Account"), and the switch carries no note (owner, 2026-10-29).
 - The list head (`docs/decisions/2026-10-30-list-pages-share-one-head-and-one-selection-bar.md`).
   The page name «Таблицы» is the `h1` at every width; below 761 px it is read,
-  not drawn, and the head is the picker row: the picker, the view switch and
+  not drawn, and the head is the picker row (8 px under the header, the one picker face
+  of the roll pages and «Мои предметы»): the picker, the view switch and
   «··· Ещё» / "··· More" (the three-dot icon and the word), whose menu holds
   «Ссылка на таблицу» (not on `homebrew`), the pin and «Об этих данных». That item
   opens and folds the panel under the head; while it is open the item draws a check
@@ -1869,8 +1873,9 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
 
 - **`#/homebrew` and its tabs**: the list head of the catalog ("Tables and
   search"), on every tab. Up to 760 px, once the items are read, the heading
-  «Мои предметы» and its lead line are read, not drawn; one row holds the tab
-  picker (named «Мои предметы: Предметы» / "My items: Items"), on the Items tab
+  «Мои предметы» and its lead line are read, not drawn; one row, the picker row (8 px
+  under the header, one line at 320 px, the picker face of the tables and the roll pages),
+  holds the tab picker (named «Мои предметы: Предметы» / "My items: Items"), on the Items tab
   «Новый предмет» with the plus icon (rule 8), and «Ещё» («Импорт из файла» and the pin).
   The picker opens a sheet with the four tabs, their counts and the limit
   counter; a tab press closes it. From 761 px the head holds the heading, the four
@@ -3095,22 +3100,28 @@ right, so the tab order and the reading order agree
   short page, after a navigation and while a menu, a sheet, a dialog, a text field
   or a drag owns the page; a keyboard focus inside it brings it back. A focused control and
   a linked target stop clear of its full height, so a Tab never lands under it.
-- The twelve roll sections draw the mode row under the sticky header up to 760 px; it
-  scrolls with the page. From 761 px the same three controls are the pills of the page
-  head, after the `h1` «Бросок» / "Roll" (DESIGN.md, "The Head Order Rule"). It holds
-  three controls: «Обычные правила» / "Standard rules", «Альтернативные таблицы» /
-  "Alternate tables" (the pages' names) and the menu button «Дополнения ▾» / "Supplements ▾", which
-  on a supplement page shows that supplement's name. The lit control takes
-  the current place's gold fill and `aria-current="page"`; each carries
-  `data-section`, the section's canonical key. At 600 px and below the
-  controls share the row, 40 px tall, and a long name takes two lines: the
-  row is 53 px at 360 px in both languages (measured 2026-10-30).
-- The supplements menu «Дополнения» / "Supplements" opens under its button
-  with a muted caption and the ten supplements, 44 px items, the open one
-  checked with `aria-current="page"`; it is 498 px tall, at most the window's height
-  less 186 px, and scrolls inside itself past that (at 360x640 it starts at 177 px). Its keys and its
-  closing are the account menu's (one `Menu.svelte`), and a navigation closes
-  it.
+- The twelve roll sections draw the picker row up to 760 px: the first row of `main`,
+  8 px under the header, 40 px tall (DESIGN.md, "The Head Order Rule"). It holds the
+  mode picker, named «Режим броска: <имя>» / "Roll mode: <name>", which reads the page's
+  name (one or two lines, no book line, `aria-haspopup="dialog"`, `data-section` the
+  section's canonical key, no `aria-current`), and «Ещё» last; the picker takes the free
+  width, so «Ещё» holds still on a switch. The row holds no tool, because «Настроить»
+  belongs to the results line (a departure from the tables' row, which holds the view
+  switch). On a page with no data the row draws the picker and «Ещё». From 761 px the
+  same three controls are the pills of the page head, after the `h1` «Бросок» / "Roll":
+  «Обычные правила» / "Standard rules", «Альтернативные таблицы» / "Alternate tables"
+  (the pages' names) and the button «Дополнения ▾» / "Supplements ▾", which on a
+  supplement page shows that supplement's name. The lit control takes the current place's
+  gold fill and `aria-current="page"`; each carries `data-section`.
+- The picker, and from 761 px the «Дополнения» button, opens the mode sheet: a `Sheet`
+  titled «Бросок» / "Roll", with «Закрыть» / "Close", the links «Обычные правила» and
+  «Альтернативные таблицы», the caption «Дополнения» / "Supplements" and the ten
+  supplements in table order. A row is 44 px, the open one gold with
+  `aria-current="page"`, and the body scrolls at a short window (at 360x640 the list is
+  taller than the sheet) with the open row in view. A press opens the mode and closes the
+  sheet; Escape and «Закрыть» close it and return the focus to the control that opened it
+  (rule 20). Two taps lead from Core rules to the alternate tables on a phone. The sheet is
+  centered from 761 px.
 - Under `prefers-reduced-motion: reduce` every transition and animation stops
   moving and waits out no delay - a blanket kill (`tokens.css`), not the live
   app's own two named exceptions - including the table page's scroll to a
@@ -3182,7 +3193,8 @@ Each rule keeps its number: a review cites it by number.
   twelve roll pages and `/tables/*` are headed by their job, «Бросок» / "Roll" and
   «Таблицы» / "Tables", and the lit pill or tab names the page; the menu button
   «Дополнения» / "Supplements" names the ten supplement pages as one group and
-  shows the open supplement's name.
+  shows the open supplement's name from 761 px; up to 760 px the roll picker reads the
+  page's name and has no group button.
 - **5. Toasts**: a create says «<Что> «%s» создан(а)» / "<What> "%s"
   created", an update «Сохранено: «%s»» / "Saved: "%s"", a delete «<Что>
   «%s» удалён(а)» / "<What> "%s" deleted"; a rename is silent. A bulk write

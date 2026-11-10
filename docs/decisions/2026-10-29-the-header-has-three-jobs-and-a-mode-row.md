@@ -13,3 +13,4 @@
   bottom bar (a second navigation model on the phone).
 - Accepted trade-off: a switch between two supplements takes one more tap (open the menu).
 - Supersedes "Supplement roll sections share one tab and a chip panel" (2026-10-20).
+- Amended by "The roll modes are a picker row up to 760 px" (2026-11-10): up to 760 px the mode row is a picker in the picker row, and «Дополнения ▾» opens a sheet, not a menu.

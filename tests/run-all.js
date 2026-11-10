@@ -148,8 +148,7 @@ let queue = SUITES.filter(
    Five separate `node` processes, one per matrix job, each sort and pack
    this same array independently and have to agree on the result without
    talking to each other - which they do only because `Array.prototype.sort`
-   is a stable sort and this table may hold exact ties (it had two before the
-   2026-11-10 refresh): a
+   is a stable sort and this table may hold exact ties: a
    stable sort keeps tied rows in their original SUITES order on every
    process, so "lightest bin first" breaks the tie identically everywhere. An
    unstable sort could let one process assign a tied suite to a different bin

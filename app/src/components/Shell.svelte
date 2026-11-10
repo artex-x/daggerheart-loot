@@ -3,7 +3,6 @@
      account control, then the mode row on the roll sections. */
   import AccountMenu from './AccountMenu.svelte';
   import Icon from './Icon.svelte';
-  import ModeRow from './ModeRow.svelte';
   import Seg from './Seg.svelte';
   import SelBar from './SelBar.svelte';
   import TabBar from './TabBar.svelte';
@@ -12,7 +11,6 @@
   import { ACCOUNT_HASH } from '../lib/hash.js';
   import { headerAt, nextHeader } from '../lib/headerScroll.js';
   import { nameOf } from '../lib/i18n.js';
-  import { modeOf } from '../lib/nav.js';
   import { tick, untrack } from 'svelte';
   import type { Snippet } from 'svelte';
   import type { AppState } from '../state/app.svelte.js';
@@ -163,10 +161,10 @@
     );
   }
 
-  /* The mode row moves between the header and the roll page's head at 761 px; a focused
-     pill keeps the focus by its index. Read here, before any part of the frame redraws:
-     the row under the header goes before the page's own effects run. */
-  const PILLS = 'nav.modes .mode';
+  /* The mode controls change form at 761 px (the picker, the head's pills); a focused one
+     keeps the focus by its index, the last when the new form has fewer. Read here, before
+     any part of the frame redraws. */
+  const PILLS = 'nav.modes .mode, nav.modes .picker';
   let wasNarrow: boolean | null = null;
   $effect.pre(() => {
     const now = app.band === 'narrow';
@@ -177,8 +175,9 @@
       const at = moved && active ? [...document.querySelectorAll(PILLS)].indexOf(active) : -1;
       if (at < 0) return;
       void tick().then(() => {
-        if (document.activeElement === document.body)
-          document.querySelectorAll<HTMLElement>(PILLS)[at]?.focus();
+        if (document.activeElement !== document.body) return;
+        const found = document.querySelectorAll<HTMLElement>(PILLS);
+        (found[at] ?? found[found.length - 1])?.focus();
       });
     });
   });
@@ -360,11 +359,6 @@
     <TabBar {app} />
   </div>
 </header>
-
-<!-- From 761 px the roll page's head draws the same controls as its pills. -->
-{#if modeOf(app.section) && app.band === 'narrow'}
-  <ModeRow {app} />
-{/if}
 
 <!-- `data-lists`, `data-homebrew` and `data-requests` are what the browser suites wait on
      before a capture (docs/specs/COVERAGE.md, "Test layers"): `pending` while the session
