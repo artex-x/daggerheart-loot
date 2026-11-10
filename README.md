@@ -456,7 +456,7 @@ Thirty-four records carry `craft`, the list of `id`s they turn into - Core
 ingredients that become potions and the Core recipes (17), the Wondrous Environments
 ingredients (12), the two Frostwyrd upgrades, the two Veiled Halls potions and the Alewife Almanac. Only one
 direction is stored; the reverse ("Made from") is built at load, so the two
-halves cannot drift apart. Thirty-five descriptions point at rulebook cards and
+halves cannot drift apart. Thirty-six descriptions point at rulebook cards and
 adversaries through `refs`; that text travels with the item into copies and
 shares, so a player gets everything in one message.
 

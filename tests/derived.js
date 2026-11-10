@@ -2694,13 +2694,20 @@ ok(
     ]),
   'vh potions do not upgrade vh2 to vh6 and vh8 to vh15'
 );
-['ph-mounted', 'ph-saddles', 'ph-infusions', 'ph-most-wanted', 'lr-recipes', 'lr-deed'].forEach(
-  (k) =>
-    ok(
-      !!L.refs[k] &&
-        /^https:\/\/(www\.drivethrurpg\.com|heartofdaggers\.com)\//.test(L.refs[k].url),
-      'rule card ' + k + ' does not link to its product page'
-    )
+[
+  'ph-mounted',
+  'ph-saddles',
+  'ph-infusions',
+  'ph-most-wanted',
+  'lr-recipes',
+  'lr-deed',
+  'lr-impaired'
+].forEach((k) =>
+  ok(
+    !!L.refs[k] &&
+      /^https:\/\/(www\.drivethrurpg\.com|heartofdaggers\.com)\//.test(L.refs[k].url),
+    'rule card ' + k + ' does not link to its product page'
+  )
 );
 const phRow = parsed.find((r) => r[idx.id] === 'ph40');
 const vhRow = parsed.find((r) => r[idx.id] === 'vh9');
