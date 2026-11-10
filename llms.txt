@@ -81,10 +81,10 @@ text, not the rules those items refer to.
   extension.
 - [data.json](https://daggerheart-loot.pages.dev/data.json) — the same
   records in full (a record's `craft` is a list of the ids it upgrades
-  into), plus the rarity tables (`alt`), the text of the twenty
+  into), plus the rarity tables (`alt`), the text of the twenty-one
   rulebook cards some records refer to (`refs`: domain cards, two beastforms,
   two ancestry features, an adversary feature, a transformation, three
-  adversary stat blocks, and six rule cards of Pistolheart and The Last Round
+  adversary stat blocks, and seven rule cards of Pistolheart and The Last Round
   Table, each linked to its product page), and
   the shared bonus of an item set (`sets`).
 - [names.json](https://daggerheart-loot.pages.dev/names.json) — catalog id to

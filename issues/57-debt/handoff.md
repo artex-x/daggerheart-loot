@@ -9,6 +9,9 @@
   the list, `SharePanel` and the selection bar copy to the clipboard, not the sheet. Tests: `ports.test.ts` per environment via
   `fakeShare({ desktop, canShareFiles }).last.sent`; `record.test.ts`. `vitest` ports+record 260 pass; `lint:typed` and `lint:untyped` clean;
   `check:fast` see the commit. Not tried here: a real phone share (Telegram) and a Windows share sheet (Edge, Chrome): the owner tries both on production.
+- D7 (owner idea 2026-11-10): the "Impaired Condition" line moved out of `lr20` into the new rule card `lr-impaired` (`lr20` has `refs: ["lr-impaired"]`);
+  rule cards 20 to 21, refs-pointing records 35 to 36 (`data.test.ts`, `llms.txt`, `README.md`, `README.ru.md`, `tests/derived.js` card list).
+  The `lr20` exemption from the 450/520 cap stays: it is still 776 (EN) and 758 (RU) characters. Golden `_tables_lr.txt` re-seeded. Not pushed.
 - Last agent: implementer (2026-11-10). D1, D2, D4, D5 (option A) shipped in one commit on `claude/57-debt`, not pushed.
 - D results: `node tools/desc-style.mjs` 0 changes after `--write`; `node tools/build.js` ok; `node tests/run-all.js dataint,derived,contracts,craft` all ok
   (craft pin 34); `node tests/app/golden.js --update` for `#/tables/lr`, `#/tables/ph`, `#/tables/eq_secondary`, `#/search ~ capped`, the supplements menu:

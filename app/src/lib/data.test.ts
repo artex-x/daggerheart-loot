@@ -521,16 +521,16 @@ describe("a weapon that uses its wielder's Spellcast trait", () => {
 
 describe('referenced cards', () => {
   it('are kept beside the items that point at them', () => {
-    expect(Object.keys(index.refs)).toHaveLength(20);
+    expect(Object.keys(index.refs)).toHaveLength(21);
   });
 
   it('are pointed at by records that exist', () => {
     /* `index.all` holds the roll tables, equipment with a roll included:
        w88, voa4_t1b, dve38 and dve59 carry a stat block, dve66 an adversary feature;
        mw9 and mw15 are Many Worlds Tavern loot; Pistolheart has 17 and The Last
-       Round Table 3 (lr12 a weapon). */
+       Round Table 4 (lr12 a weapon). */
     const pointing = index.all.filter((it) => it.refs?.length);
-    expect(pointing).toHaveLength(35);
+    expect(pointing).toHaveLength(36);
     for (const it of pointing) {
       for (const key of it.refs ?? []) expect(index.refs).toHaveProperty(key);
     }
