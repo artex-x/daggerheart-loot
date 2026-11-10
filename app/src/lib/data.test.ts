@@ -22,6 +22,7 @@ import {
   type Loot
 } from './data.js';
 import { recordOf, withRecords, type HomebrewRecord } from './homebrew.js';
+import { rollPool } from './roll.js';
 import { CHARACTER_TRAITS, type Record_ } from './types.js';
 import { readLoot } from '../test/loot.js';
 
@@ -51,7 +52,7 @@ function rollPools(loot: Loot): RollPool[] {
     } else if (name === 'mwt') {
       for (const realm of new Set(rows.map((row) => row.realm)))
         pools.push(rows.filter((row) => row.realm === realm));
-    } else pools.push(rows);
+    } else pools.push(rollPool(rows));
   }
   return pools;
 }
@@ -73,12 +74,12 @@ function expectRollPools(loot: Loot): void {
 
 describe('the index over the real dataset', () => {
   it('holds every record under its id', () => {
-    expect(index.byId.size).toBe(1459);
-    expect(index.searchable).toHaveLength(1459);
+    expect(index.byId.size).toBe(1593);
+    expect(index.searchable).toHaveLength(1593);
   });
 
   it('separates loot from equipment the way the data does', () => {
-    expect(index.all).toHaveLength(1078);
+    expect(index.all).toHaveLength(1212);
     expect(LOOT.eq).toHaveLength(381);
   });
 
@@ -89,8 +90,8 @@ describe('the index over the real dataset', () => {
     expect(frames).toHaveLength(95);
     expect(new Set([...starting, ...frames]).size).toBe(124);
     expect(index.rows.get('frames')).toHaveLength(94);
-    expect(index.all).toHaveLength(1078);
-    expect(index.searchable).toHaveLength(1459);
+    expect(index.all).toHaveLength(1212);
+    expect(index.searchable).toHaveLength(1593);
   });
 
   it('keeps roll numbers only in complete, independent roll pools', () => {
@@ -131,12 +132,23 @@ describe('the index over the real dataset', () => {
     }).toThrow();
   });
 
+  it('refuses a roll on a rung of an upgrade line', () => {
+    const rung = structuredClone(LOOT);
+    /* aa2 is the Improved tier of the line headed by aa1. */
+    const aa2 = rowAt(rung.items['arazo'], 1);
+    expect(aa2.eq?.line).toBe('aa1');
+    aa2.roll = 2;
+    expect(() => {
+      expectRollPools(rung);
+    }).toThrow();
+  });
+
   it('finds equipment wherever it lives, not only in eq', () => {
-    /* 381 in `eq`, and another 317 keeping their source-table placement. */
+    /* 381 in `eq`, and another 397 keeping their source-table placement. */
     expect(index.allEquip.length).toBeGreaterThan(LOOT.eq?.length ?? 0);
-    expect(equipOfKind(index, 'weapon')).toHaveLength(458);
-    expect(equipOfKind(index, 'secondary')).toHaveLength(135);
-    expect(equipOfKind(index, 'armor')).toHaveLength(114);
+    expect(equipOfKind(index, 'weapon')).toHaveLength(512);
+    expect(equipOfKind(index, 'secondary')).toHaveLength(148);
+    expect(equipOfKind(index, 'armor')).toHaveLength(118);
   });
 
   it('narrows to the two books through the source, as the tables do', () => {
@@ -193,7 +205,7 @@ describe('the index over the real dataset', () => {
 
 describe('upgrade chains', () => {
   it('derives the reverse link rather than storing it', () => {
-    expect(index.craftedFrom.size).toBe(31);
+    expect(index.craftedFrom.size).toBe(33);
   });
 
   it.each([
@@ -509,15 +521,16 @@ describe("a weapon that uses its wielder's Spellcast trait", () => {
 
 describe('referenced cards', () => {
   it('are kept beside the items that point at them', () => {
-    expect(Object.keys(index.refs)).toHaveLength(14);
+    expect(Object.keys(index.refs)).toHaveLength(21);
   });
 
   it('are pointed at by records that exist', () => {
     /* `index.all` holds the roll tables, equipment with a roll included:
        w88, voa4_t1b, dve38 and dve59 carry a stat block, dve66 an adversary feature;
-       mw9 and mw15 are Many Worlds Tavern loot. */
+       mw9 and mw15 are Many Worlds Tavern loot; Pistolheart has 17 and The Last
+       Round Table 4 (lr12 a weapon). */
     const pointing = index.all.filter((it) => it.refs?.length);
-    expect(pointing).toHaveLength(15);
+    expect(pointing).toHaveLength(36);
     for (const it of pointing) {
       for (const key of it.refs ?? []) expect(index.refs).toHaveProperty(key);
     }
@@ -525,7 +538,14 @@ describe('referenced cards', () => {
 
   it('are pointed at by equipment that exists', () => {
     const pointing = index.allEquip.filter((it) => it.refs?.length);
-    expect(pointing.map((it) => it.id)).toEqual(['w88', 'voa4_t1b', 'dve38', 'dve59', 'dve66']);
+    expect(pointing.map((it) => it.id)).toEqual([
+      'w88',
+      'voa4_t1b',
+      'dve38',
+      'dve59',
+      'dve66',
+      'lr12'
+    ]);
     for (const it of pointing) {
       for (const key of it.refs ?? []) expect(index.refs).toHaveProperty(key);
     }

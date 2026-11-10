@@ -14,6 +14,12 @@ deleted.
 
 ## Index
 
+- 2026-11-07 - [A table sectioned by a record property reads one descriptor](decisions/2026-11-07-a-table-sectioned-by-a-record-property-reads-one-descriptor.md)
+- 2026-11-07 - [Escape the Veiled Halls is one flat list with no rooms](decisions/2026-11-07-escape-the-veiled-halls-is-one-flat-list-with-no-rooms.md)
+- 2026-11-07 - [One roll row per item: an upgrade line is rolled at its head](decisions/2026-11-07-one-roll-row-per-item-an-upgrade-line-is-rolled-at-its-head.md)
+- 2026-11-07 - [Pistolheart, The Last Round Table and Veiled Halls are sources ph, lr and vh](decisions/2026-11-07-pistolheart-last-round-table-and-veiled-halls-are-sources-ph-lr-vh.md) - superseded in part
+- 2026-11-07 - [The Last Round Table records keep rule text and lose lore](decisions/2026-11-07-the-last-round-table-records-keep-rule-text-and-lose-lore.md)
+- 2026-11-07 - [The supplements' books are the table picker at every width](decisions/2026-11-07-the-supplements-books-are-the-table-picker-at-every-width.md)
 - 2026-11-06 - [One scrim, one shadow and a tool row that follows its search box](decisions/2026-11-06-one-scrim-one-shadow-and-a-tool-row-that-follows-its-search-box.md)
 - 2026-11-06 - [The print card prints in the UI face at 7.1 pt, fitted after it loads](decisions/2026-11-06-the-print-card-prints-in-the-ui-face-fitted-after-it-loads.md)
 - 2026-11-05 - [A row's text takes its row's free width; rows stay one column](decisions/2026-11-05-a-row-text-takes-its-row-s-free-width-rows-stay-one-column.md)
@@ -109,7 +115,7 @@ deleted.
 - 2026-10-08 - [A usage-profile line picks Max or Pro routing; review tier follows the writer](decisions/2026-10-08-a-usage-profile-line-picks-max-or-pro.md)
 - 2026-10-08 - [An own set or rule card holds book items; only its account sees them](decisions/2026-10-08-an-own-card-holds-book-items-the-owner-sees-them.md)
 - 2026-10-08 - [Arazo's Artifacts drop the book's GM notes; aa23 is «Волшебное Зеркало»](decisions/2026-10-08-arazos-artifacts-drop-the-gm-notes-aa23-is-volshebnoe-zerkalo.md)
-- 2026-10-08 - [Arazo's Artifacts rebalanced to Core bands: every piece a line, ids aa1-aa78](decisions/2026-10-08-arazos-artifacts-rebalanced-to-core-bands.md)
+- 2026-10-08 - [Arazo's Artifacts rebalanced to Core bands: every piece a line, ids aa1-aa78](decisions/2026-10-08-arazos-artifacts-rebalanced-to-core-bands.md) - superseded in part
 - 2026-10-08 - [Every print is a stored set; long print links are retired](decisions/2026-10-08-every-print-is-a-stored-set-long-print.md)
 - 2026-10-08 - [«Мои предметы» holds four tabs: items, sources, sets and rule cards](decisions/2026-10-08-my-items-holds-four-tabs-items-sources-sets-and-rule-cards.md)
 - 2026-10-08 - [The own-items filter is a labelled switch, «Свои предметы»](decisions/2026-10-08-the-own-items-filter-is-a-labelled-switch.md)

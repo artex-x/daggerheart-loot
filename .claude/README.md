@@ -753,6 +753,13 @@ commit gate; ...` or `check:fast: FAIL at <step>`. A change to a module that
 most files import (`lib/dict.ts`, `state/app.svelte.ts`) makes the related
 run close to the whole vitest stage. Measured 215-310 s (2026-10-07).
 
+`check:fast` does not run ESLint. Run `npm run lint:typed` and `npm run
+lint:untyped` before every push; the CI `check` job runs both inside `npm run
+check` and fails the push on a finding (two CI failures on `roll-per-line`
+came from skipping them). `lib/homebrew.timed.test.ts` ("300 cards in under
+50 ms") measured 56-58 ms on this host on 2026-11-07 and passed on a re-run;
+a failure with a time near the bound is that flake, not a regression.
+
 **Stage cache.** Between `begin` and `arm`, the `npm run check` chain runs
 `node --test tools/check/lib.test.mjs` (`check:fast` does not, so the guards
 G1-G3 below run only in `npm run check` and in CI) and then
@@ -2400,14 +2407,14 @@ the database's part. `docs/DECISIONS.md`, 2026-09-30, "The list_entries
 touch and limit triggers run once per statement".
 
 **The configured bundle budget.** `tools/bundle-budget.mjs` has two limits:
-271 kB for the unconfigured build and 328 kB for the configured one, which
+273 kB for the unconfigured build and 330 kB for the configured one, which
 carries the account client chunk. A batch whose total passes a budget raises
 it to the measured total rounded up to the next whole kB (a printed 250.3
 gives 251; the tool compares the unrounded total, so a printed whole number
 such as 251.0 can pass 251: add 1 kB), never past 350 kB configured and 300 kB
 unconfigured (owner, 2026-10-22, and 2026-11-04: "we can increase budget up to
 300"). `npm run check:built` builds `dist/`
-unconfigured and so measures only the 271 kB limit. The 328 kB limit runs in
+unconfigured and so measures only the 273 kB limit. The 330 kB limit runs in
 CI's `e2e` job, after `npm run e2e` leaves the configured build in `dist/`,
 and in `deploy`. The lists release passed `check:built` locally and failed
 this step in CI (run 36228323330). A batch that adds code to the app or to
@@ -2419,7 +2426,9 @@ drops every `E2E_*` name, the secret key included, before the build:
 node --env-file=.env.test.local --input-type=module -e "import { buildEnv } from './tests/e2e/lib.mjs'; import { spawnSync } from 'node:child_process'; process.exit(spawnSync('npm run build && npm run budget', { shell: true, stdio: 'inherit', env: buildEnv(process.env) }).status ?? 1);"
 ```
 
-Expected: `within the 328 kB budget (with the account client chunk)`; 327.3 kB
+Expected: `within the 330 kB budget (with the account client chunk)`; on 2026-11-07 both
+limits rose: 272.3 kB unconfigured, measured, and about 329.4 kB
+configured, estimated (no `.env.test.local` in that worktree; CI's `e2e` job measures it); 327.3 kB
 locally on 2026-11-06 after task 57 batch P (the print page's dock and crumb, the fonts
 port; it passed 327, so the limit rose to 328), 269.8 kB unconfigured; 326.7 kB
 locally on 2026-11-06 after task 57 batch N's fix pass (the mode row's focus return, the
@@ -3554,6 +3563,34 @@ re-litigates them:
 - No hook guards an artwork install: the standing bar for a new hook is a
   repeated mistake, and no artwork operation has produced one a path test
   could catch - the `og/`-orphan gap was a test gap, closed as a test.
+
+### Source kits of Pistolheart, The Last Round Table and Escape the Veiled Halls
+
+A refresh of the `ph`, `lr` or `vh` text or art starts from the owner's kits,
+which stay outside the repository (never commit a PDF or a PNG). Text
+extraction: `pdftotext` from `C:\tools\poppler\poppler-26.02.0\Library\bin`.
+
+| Source | Kit folder (owner's machine) | Book and where the loot is |
+|---|---|---|
+| `ph` | `C:\Users\Ignat\Downloads\Telegram Desktop\Pistolheart` | three volume PDFs; `images/` holds 45 PNGs (1254x1254, `<Name> v<N>.png`; Laudanum and Maverick's Shuffle are v2), `final-art-registry.json`, `references.md/json`, `image-context/` |
+| `lr` | `C:\Users\Ignat\Downloads\Last Round Table` | `LastRoundTable_PDF_v2.pdf`, "Items & Extras", printed pages 38-41 (PDF 41-44) |
+| `vh` | `C:\Users\Ignat\Downloads\Escape the Veiled Halls` | `Escape_The_Veiled_Halls.pdf` (Kate Balding, Fear Fest 2026), loot tables on printed pages 6, 8, 10, 12 |
+
+Source quirks that a text refresh meets again:
+
+- `ph`: Volume 3 says "Yah! (PHv1, pg7)" where Volume 1 says Charge; War Saddle
+  keeps "Yah!" as printed and the mounted-rules card names both. The table name
+  Lever-Load Rifle wins over the art caption. Book typos fixed in the data:
+  "Very close", "d10 +9", "d6+1phy", "d4+3phy"; the Foal .44 Revolver prints
+  `d6` at Tier 1.
+- `lr`: book typos "Almenac" and "an Difficulty 12" are fixed; "social roles"
+  and "unsettingly" are kept as printed. The Witch's Skillet is summoned by the
+  Alewife Almanac. `lr-deed` depends on the Living Pub Mood countdown of the
+  book's Environments section.
+- `vh`: the PDF text layer loses the Demonic Book's hyphens (1-6, 7-9, 10-12
+  on the printed page).
+- Product names stay Latin in Russian text. Every English text was matched
+  word for word against its PDF.
 
 ## Preview host
 

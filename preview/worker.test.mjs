@@ -62,7 +62,8 @@ const NAMES = {
     eq_weapon: { n: 437 },
     community: { n: 90 },
     other_frames: { n: 95 },
-    mwt: { n: 109 }
+    mwt: { n: 109 },
+    vh: { n: 15 }
   },
   communities: {
     Highborne: { ru: 'Великородное', n: 10 },
@@ -77,7 +78,8 @@ const NAMES = {
     godsvale: { n: 20 },
     hornet: { n: 11 },
     drome: { n: 17 }
-  }
+  },
+  volumes: { 1: { n: 36 }, 2: { n: 35 }, 3: { n: 22 } }
 };
 
 /* get_item_preview's item keys: the record's drawn keys only. */
@@ -1655,6 +1657,19 @@ describe('/tables/: a catalog table', () => {
     assert.equal(meta(drome.body, 'og:title'), 'Many Worlds Tavern · Дром');
     assert.equal(meta(drome.body, 'og:description'), 'Мир: Дром. 17 позиций');
     assertRedirect(drome.body, SITE + '#/tables/many_worlds_tavern/drome');
+    /* The rooms of Escape the Veiled Halls are retired (2026-11-07): an old room anchor
+       draws the whole table's card. */
+    for (const path of [
+      '/tables/escape_the_veiled_halls',
+      '/tables/escape_the_veiled_halls/laboratory'
+    ]) {
+      const flat = await card(path);
+      assert.equal(meta(flat.body, 'og:title'), 'Escape the Veiled Halls', path);
+      assert.equal(meta(flat.body, 'og:description'), '15 позиций', path);
+    }
+    const vol = await card('/en/tables/pistolheart/2');
+    assert.equal(meta(vol.body, 'og:title'), 'Pistolheart · Volume 2');
+    assert.equal(meta(vol.body, 'og:description'), 'Volume: 2. 35 items');
   });
 
   it('labels a filter with no count', async () => {
@@ -1679,6 +1694,8 @@ describe('/tables/: a catalog table', () => {
     assert.equal(meta(realm.body, 'og:title'), 'Many Worlds Tavern');
     assert.equal(meta(realm.body, 'og:description'), 'Мир: Спорополис, Долина Богов');
     assertRedirect(realm.body, SITE + '#/tables/mwt/f_kind-equip.realm-sporopolis-godsvale');
+    const vols = await card('/tables/ph/f_vol-1-3');
+    assert.equal(meta(vols.body, 'og:description'), 'Том: 1, 3');
   });
 
   it('draws the open line for a filter with no labeled group, and the plain card for an unlabeled anchor', async () => {
@@ -1691,6 +1708,8 @@ describe('/tables/: a catalog table', () => {
     assertRedirect(a.body, SITE + '#/tables/alt_item/rare');
     const unknown = await card('/tables/community/f_comm-Loreborne-Nowhere');
     assert.equal(meta(unknown.body, 'og:description'), 'Открыть в генераторе лута');
+    const retired = await card('/tables/vh/f_room-basement-library');
+    assert.equal(meta(retired.body, 'og:description'), 'Открыть в генераторе лута');
   });
 
   it('reads a prototype key as an unknown one', async () => {

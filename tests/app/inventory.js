@@ -866,12 +866,12 @@ const STATES = [
   {
     id: '#/roll/arazo',
     route: '#/roll/arazos_artifacts',
-    why: "a roll on Arazo's Artifacts, the eleventh section"
+    why: "a roll on Arazo's Artifacts, the eleventh section: one pool of 27, an upgrade line rolls at its head"
   },
   {
     id: '#/roll/arazo ~ help',
     route: '#/roll/arazos_artifacts',
-    why: 'the help panel, unfolded: Destiny instead of a roll table, and the four versions of every piece of equipment',
+    why: 'the help panel, unfolded: Destiny instead of a roll table, and the four versions of every piece of equipment, the other three opened from the card',
     enter: async (d) => {
       await d.click('Об этой книге');
     }
@@ -958,6 +958,40 @@ const STATES = [
     id: '#/roll/mwt ~ help',
     route: '#/roll/many_worlds_tavern',
     why: 'the help panel, unfolded: the six decks, the die, no domain cards and no rarity, one link per realm',
+    enter: async (d) => {
+      await d.click('Об этой книге');
+    }
+  },
+
+  /* Pistolheart, The Last Round Table and Escape the Veiled Halls roll one pool each; an
+     upgrade line is one entry, its head. */
+  {
+    id: '#/roll/ph',
+    route: '#/roll/pistolheart',
+    why: 'Pistolheart: one pool of 45, the button picks 1-45 at random, the head of a line'
+  },
+  {
+    id: '#/roll/ph ~ help',
+    route: '#/roll/pistolheart',
+    why: 'the help panel, unfolded: three volumes, sixteen lines, the rule cards, one link per volume',
+    enter: async (d) => {
+      await d.click('Об этой книге');
+    }
+  },
+  {
+    id: '#/roll/lr',
+    route: '#/roll/last_round_table',
+    why: 'The Last Round Table: one pool of 26, the button picks 1-26 at random'
+  },
+  {
+    id: '#/roll/vh',
+    route: '#/roll/escape_the_veiled_halls',
+    why: 'Escape the Veiled Halls: one pool of 15, no picker, the button picks 1-15 at random, the ten supplements'
+  },
+  {
+    id: '#/roll/vh ~ help',
+    route: '#/roll/escape_the_veiled_halls',
+    why: 'the help panel, unfolded: the 15 entries, the two potion upgrades',
     enter: async (d) => {
       await d.click('Об этой книге');
     }
@@ -1330,6 +1364,29 @@ const STATES = [
     why: 'the realm section anchor'
   },
   {
+    id: '#/tables/ph',
+    route: '#/tables/pistolheart',
+    why: 'a sectioned body: Pistolheart by volume, three volume headings, 93 rows'
+  },
+  {
+    id: '#/tables/ph ~ table picker',
+    route: '#/tables/pistolheart',
+    why: 'from 761 px the supplements tab is the picker: its sheet, «Дополнения» pressed, ten books, Pistolheart current',
+    enter: async (d) => {
+      await d.click('Таблица: Pistolheart');
+    }
+  },
+  {
+    id: '#/tables/lr',
+    route: '#/tables/last_round_table',
+    why: 'a plain body with a kind row, 26 rows in book order'
+  },
+  {
+    id: '#/tables/vh',
+    route: '#/tables/escape_the_veiled_halls',
+    why: 'a plain body with a kind row, 15 rows in book order'
+  },
+  {
     id: '#/tables/other_starting',
     route: '#/tables/other_starting',
     why: 'the plain starting-items subtable'
@@ -1491,6 +1548,14 @@ const STATES = [
     why: 'the referenced ancestry feature «Сеть фангрилов», unfolded',
     enter: async (d) => {
       await d.click('Сеть фангрилов');
+    }
+  },
+  {
+    id: '#/i/lr6 ~ ref open',
+    route: '#/i/lr6',
+    why: 'a supplement rule card, unfolded: its link reads the product host, heartofdaggers.com',
+    enter: async (d) => {
+      await d.click('Купчая на Последний Круглый Стол: Настроение таверны');
     }
   },
 
@@ -2897,7 +2962,7 @@ const STATES = [
   {
     id: '#/search ~ searched',
     route: '#/search',
-    why: '139 rows of loot and gear together, ranked: the names with «меч» at a word start first and marked, «№ N» on the rolled rows; no ticks and no select-all strip',
+    why: '145 rows of loot and gear together, ranked: the names with «меч» at a word start first and marked, «№ N» on the rolled rows; no ticks and no select-all strip',
     enter: async (d) => {
       await d.type('Поиск по названию или описанию...', 'меч');
     }
@@ -2905,7 +2970,7 @@ const STATES = [
   {
     id: '#/search ~ kind picked',
     route: '#/search',
-    why: '«Снаряжение» picked from «Все»: the gear rows alone, the chip lit, the count line «Снаряжение · Показано 91 из 139»',
+    why: '«Снаряжение» picked from «Все»: the gear rows alone, the chip lit, the count line «Снаряжение · Показано 91 из 144»',
     enter: async (d) => {
       await d.type('Поиск по названию или описанию...', 'меч');
       await d.click('Снаряжение');

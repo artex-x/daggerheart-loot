@@ -21,6 +21,7 @@ import {
   TEXT,
   FRAME_LABEL,
   REALM_LABEL,
+  VOLUME_LABEL,
   LABEL_GROUPS,
   TABLE_PATH,
   TABLE_SLUG,
@@ -522,6 +523,23 @@ function realmLabel(r, lang) {
   return has(REALM_LABEL, r) ? pick(REALM_LABEL[r], lang) : null;
 }
 
+function volumeLabel(v, lang) {
+  return has(VOLUME_LABEL, v) ? pick(VOLUME_LABEL[v], lang) : null;
+}
+
+/* The tables sectioned by a record property: the filter group, its word, the names and
+   the `names.json` counts of its sections (app/src/lib/sectionProps.ts). */
+const SECTIONED = {
+  mwt: { group: 'realm', word: 'realmF', name: realmLabel, counts: 'realms' },
+  ph: {
+    group: 'vol',
+    word: 'volF',
+    name: volumeLabel,
+    chip: (v) => (has(VOLUME_LABEL, v) ? v : null),
+    counts: 'volumes'
+  }
+};
+
 /** Returns the card of the catalog table `table`, with the anchor or the filter `tail`. */
 function tableCtx(table, tail, lang, names, env, run) {
   const t = TEXT[lang];
@@ -539,7 +557,10 @@ function tableCtx(table, tail, lang, names, env, run) {
     };
     if (table === 'community') label('comm', t.commF, (c) => communityLabel(names, c, lang));
     if (table === 'other_frames') label('frame', t.frameF, (f) => frameLabel(f, lang));
-    if (table === 'mwt') label('realm', t.realmF, (r) => realmLabel(r, lang));
+    if (has(SECTIONED, table)) {
+      const s = SECTIONED[table];
+      label(s.group, t[s.word], (v) => (s.chip ? s.chip(v) : s.name(v, lang)));
+    }
     desc = parts.length ? parts.join('. ') : t.open;
   } else if (tail && table === 'community' && communityLabel(names, tail, lang)) {
     const name = communityLabel(names, tail, lang);
@@ -554,10 +575,14 @@ function tableCtx(table, tail, lang, names, env, run) {
     const name = frameLabel(tail, lang);
     title += ' · ' + name;
     desc = t.frameF + ': ' + name + '. ' + plural(n(names.frames, tail) ?? 0, t.itemsN, lang);
-  } else if (tail && table === 'mwt' && realmLabel(tail, lang)) {
-    const name = realmLabel(tail, lang);
+  } else if (tail && has(SECTIONED, table) && SECTIONED[table].name(tail, lang)) {
+    const s = SECTIONED[table];
+    const name = s.name(tail, lang);
     title += ' · ' + name;
-    desc = t.realmF + ': ' + name + '. ' + plural(n(names.realms, tail) ?? 0, t.itemsN, lang);
+    /* The anchor after the row word is the chip ("2"), not the section name ("Volume 2"). */
+    const anchor = (s.chip && s.chip(tail)) || name;
+    desc =
+      t[s.word] + ': ' + anchor + '. ' + plural(n(names[s.counts], tail) ?? 0, t.itemsN, lang);
   }
   const path = run + (tail ? '/' + tail : '');
   return siteCtx(env, lang, {

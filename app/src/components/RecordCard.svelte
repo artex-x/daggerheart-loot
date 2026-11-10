@@ -214,8 +214,9 @@
       return card ? [{ key, card }] : [];
     })
   );
-  /* An own rule card links to its address as written, with the host as the text; a
-     catalog card links to daggerheart.su in the language on screen. */
+  /* A daggerheart.su card links to it in the language on screen; any other card, an own
+     one or a supplement's rule card, links to its address as written, with the host as the
+     text. */
   const hostOf = (url: string): string => {
     try {
       return new URL(url).host;
@@ -466,7 +467,7 @@
             <div class="ref-text mdtext" lang={refLang}>
               <Markup blocks={parseMarkup(lang === 'ru' ? r.rud : r.ende)} />
             </div>
-            {#if !isHomebrewKey(key)}
+            {#if !isHomebrewKey(key) && r.url.startsWith('https://ru.daggerheart.su/')}
               <a
                 href={lang === 'ru' ? r.url : r.url.replace('//ru.', '//en.')}
                 target="_blank"

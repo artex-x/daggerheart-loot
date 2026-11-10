@@ -27,13 +27,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Прочее" [url=/tables/other_starting]
     button "Открывать при запуске" [pressed=false]
     button "Об этих данных" [expanded=false]
-    link "Wondrous Environments" [url=/tables/wondrous_environments]
-    link "Dread GM Toolbox" [url=/tables/dread_gm_toolbox]
-    link "Vault of Ages" [url=/tables/vault_of_ages]
-    link "The Dragon's Vault" [url=/tables/dragons_vault]
-    link "Arazo's Artifacts" [url=/tables/arazos_artifacts]
-    link "Предметы сообществ" [url=/tables/community_items]
-    link "Many Worlds Tavern" [url=/tables/many_worlds_tavern]
+    button "Таблица: Wondrous Environments" [haspopup=dialog]
     searchbox "Поиск по названию или описанию..."
     button "Список" [pressed=true]
     button "Сетка" [pressed=false]
@@ -177,16 +171,10 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 99Лепестки Цветка ТроицыРасходникЗаварите эти лепестки в чай, ко... [namelen=215 namehash=435d1bf9]
 9Архивная ГнильРасходникНа время сцены вы получаете преимущество... [namelen=147 namehash=1b4e31af]
 ?Об этих данных
-Arazo's Artifacts
 Core
-Dread GM Toolbox
 EN
 Hope & Fear
-Many Worlds Tavern
 RU
-The Dragon's Vault
-Vault of Ages
-Wondrous Environments
 daggerheart.com
 Альт. таблицы
 Бросок
@@ -201,13 +189,13 @@ daggerheart.com
 Поиск
 Поиск по названию или описанию...
 Предметы
-Предметы сообществ
 Прочее
 Расходники
 Сетка
 Снаряжение
 Список
 Ссылка на таблицу
+Таблица: Wondrous Environments
 Таблицы
 Условия использования
 Установить как приложение
@@ -237,13 +225,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/wondrous_envir
       link "Other" [url=/en/tables/other_starting]
     button "Open on start" [pressed=false]
     button "About this data" [expanded=false]
-    link "Wondrous Environments" [url=/en/tables/wondrous_environments]
-    link "Dread GM Toolbox" [url=/en/tables/dread_gm_toolbox]
-    link "Vault of Ages" [url=/en/tables/vault_of_ages]
-    link "The Dragon's Vault" [url=/en/tables/dragons_vault]
-    link "Arazo's Artifacts" [url=/en/tables/arazos_artifacts]
-    link "Community items" [url=/en/tables/community_items]
-    link "Many Worlds Tavern" [url=/en/tables/many_worlds_tavern]
+    button "Table: Wondrous Environments" [haspopup=dialog]
     searchbox "Search by name or description..."
     button "List" [pressed=true]
     button "Grid" [pressed=false]
@@ -389,11 +371,8 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/wondrous_envir
 ?About this data
 All
 Alt. tables
-Arazo's Artifacts
-Community items
 Consumables
 Core
-Dread GM Toolbox
 EN
 Equipment
 Grid
@@ -403,7 +382,6 @@ Items
 Link to this table
 List
 LootDaggerheart
-Many Worlds Tavern
 Open on start
 Other
 Privacy
@@ -415,9 +393,7 @@ Select
 Sign in
 Skip to content
 Supplements
+Table: Wondrous Environments
 Tables
 Terms of use
-The Dragon's Vault
-Vault of Ages
-Wondrous Environments
 daggerheart.com

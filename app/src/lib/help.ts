@@ -289,13 +289,13 @@ const ARAZO: Record<Lang, Help> = {
     button: 'Об этой книге',
     paragraphs: [
       p(
-        'В таблице 78 позиций - 10 предметов и 68 единиц оружия и брони, в порядке книги. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно.'
+        'Бросок выбирает из 27 позиций - 10 предметов и 17 единиц снаряжения (оружие и броня), в порядке книги. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно.'
       ),
       p(
         'Своей таблицы броска у книги нет, вместо неё - «Предназначение»: на нулевой сессии каждый игрок выбирает из всех карточек четыре интересные, а мастер раскладывает их по ролям в кампании. Слух - о предмете только говорят; Немезида - им владеет враг; Приз - его нужно заслужить или купить; Суждённый - он найдётся сам, в нужный момент. Кнопка здесь только на случай, когда бросок всё же нужен.'
       ),
       p(
-        'Все семнадцать единиц снаряжения растут вместе с владельцем: у каждой четыре версии - базовая, Улучшенная, Продвинутая и Легендарная. У каждой версии свой номер, поэтому снаряжение выпадает чаще предметов. Урон, пороги и часть свойств мы подогнали под оружие и броню из Core, поэтому они отличаются от книги.'
+        'Все семнадцать единиц снаряжения растут вместе с владельцем: у каждой четыре версии - базовая, Улучшенная, Продвинутая и Легендарная. Бросок даёт базовую версию; остальные три открываются из карточки, в ряду «Ранг». Урон, пороги и часть свойств мы подогнали под оружие и броню из Core, поэтому они отличаются от книги.'
       ),
       { parts: ['Источник: дополнение ', ARAZO_LINK, '.'] }
     ]
@@ -304,13 +304,13 @@ const ARAZO: Record<Lang, Help> = {
     button: 'About this book',
     paragraphs: [
       p(
-        "The table holds 78 entries - 10 items and 68 weapons and armor, in the book's own order. No die covers that range, so the button picks an entry at random."
+        "A roll picks from 27 entries - 10 items and 17 pieces of equipment (weapons and armor), in the book's own order. No die covers that range, so the button picks an entry at random."
       ),
       p(
         'The book has no roll table; it offers Destiny instead: at session zero each player picks four cards that interest them from the whole set, and the GM gives each a role in the campaign. A Rumor is only talked about; a Nemesis item is borne by an enemy; a Prize must be earned or bought; a Fated item turns up on its own, at the right moment. The button is here only for when a roll is still wanted.'
       ),
       p(
-        'All seventeen pieces of equipment grow with their bearer: each has four versions - base, Improved, Advanced and Legendary. Each version has its own number, so equipment comes up more often than items. Damage, thresholds and some feature text are matched to the Core weapons and armor by this site, so they differ from the book.'
+        'All seventeen pieces of equipment grow with their bearer: each has four versions - base, Improved, Advanced and Legendary. A roll gives the base version; open the card to reach the other three in its "Tier" row. Damage, thresholds and some feature text are matched to the Core weapons and armor by this site, so they differ from the book.'
       ),
       { parts: ['Source: the ', ARAZO_LINK, ' supplement.'] }
     ]
@@ -435,6 +435,126 @@ const MWT: Record<Lang, Help> = {
           ' card sets by Many Worlds Tavern.'
         ]
       }
+    ]
+  }
+};
+
+const PH_V1: HelpLink = {
+  href: 'https://www.drivethrurpg.com/en/product/547537/pistolheart-volume-1',
+  label: 'Pistolheart Volume 1'
+};
+const PH_V2: HelpLink = {
+  href: 'https://www.drivethrurpg.com/en/product/564429/pistolheart-volume-2',
+  label: 'Volume 2'
+};
+const PH_V3: HelpLink = {
+  href: 'https://www.drivethrurpg.com/en/product/578612/pistolheart-volume-3',
+  label: 'Volume 3'
+};
+
+const PH: Record<Lang, Help> = {
+  ru: {
+    button: 'Об этой книге',
+    paragraphs: [
+      p(
+        'Бросок выбирает из 45 позиций трёх томов - 18 предметов, 7 расходников, 16 единиц оружия и 4 доспеха, в порядке книг. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно.'
+      ),
+      p(
+        'Шестнадцать видов оружия растут вместе с владельцем: у каждого четыре версии - базовая, Улучшенная, Продвинутая и Легендарная. Бросок даёт базовую версию; остальные открываются из карточки, в ряду «Ранг». Оружие и броня есть и в таблицах снаряжения - там их отбирает фильтр «Источник».'
+      ),
+      p(
+        'Третий том добавляет магические сёдла и инфузии. Правила верховой езды, сёдел, инфузий и состояния Особо Разыскиваемый - в карточках правил на записях, которые на них ссылаются.'
+      ),
+      { parts: ['Источник: три тома Карлоса Сиско - ', PH_V1, ', ', PH_V2, ', ', PH_V3, '.'] }
+    ]
+  },
+  en: {
+    button: 'About this book',
+    paragraphs: [
+      p(
+        "A roll picks from 45 entries over three volumes - 18 items, 7 consumables, 16 weapons and 4 armors, in the books' own order. No die covers that range, so the button picks an entry at random."
+      ),
+      p(
+        'Sixteen weapons grow with their bearer: each has four versions - base, Improved, Advanced and Legendary. A roll gives the base version; open the card to reach the others in its "Tier" row. The weapons and armor are in the equipment tables too - the "Source" filter picks them out there.'
+      ),
+      p(
+        'Volume 3 adds magic saddles and Infusions. The rules for mounts, saddles, Infusions and the Most Wanted condition are rule cards on the records that point at them.'
+      ),
+      {
+        parts: [
+          'Source: three volumes by Carlos Cisco - ',
+          PH_V1,
+          ', ',
+          PH_V2,
+          ', ',
+          PH_V3,
+          '.'
+        ]
+      }
+    ]
+  }
+};
+
+const LR_LINK: HelpLink = {
+  href: 'https://heartofdaggers.com/products/the-last-round-table/',
+  label: 'The Last Round Table'
+};
+
+const LR: Record<Lang, Help> = {
+  ru: {
+    button: 'Об этой книге',
+    paragraphs: [
+      p(
+        'В таблице 26 позиций - 11 предметов, 12 расходников и 3 единицы оружия, в порядке книги. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно.'
+      ),
+      p(
+        'Книга описывает живую таверну, и многие находки связаны с ней. Рецепты, купчая на таверну и фруктовый кекс ссылаются на карточки правил. Оружие есть и в таблицах снаряжения - там его отбирает фильтр «Источник».'
+      ),
+      { parts: ['Источник: дополнение ', LR_LINK, '.'] }
+    ]
+  },
+  en: {
+    button: 'About this book',
+    paragraphs: [
+      p(
+        "The table holds 26 entries - 11 items, 12 consumables and 3 weapons, in the book's own order. No die covers that range, so the button picks an entry at random."
+      ),
+      p(
+        'The book describes a living tavern, and many finds belong to it. The recipes, the deed to the tavern and the fruitcake point at rule cards. The weapons are in the equipment tables too - the "Source" filter picks them out there.'
+      ),
+      { parts: ['Source: the ', LR_LINK, ' supplement.'] }
+    ]
+  }
+};
+
+const VH_LINK: HelpLink = {
+  href: 'https://heartofdaggers.com/products/escape-the-veiled-halls/',
+  label: 'Escape the Veiled Halls'
+};
+
+const VH: Record<Lang, Help> = {
+  ru: {
+    button: 'Об этой книге',
+    paragraphs: [
+      p(
+        'В разделе 15 позиций приключения - 7 предметов и 8 расходников, в порядке книги. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно.'
+      ),
+      p(
+        'Зелье Воспоминаний улучшается до Большого Зелья Воспоминаний, а Зелье Предвидения - до Легендарного Зелья Предвидения.'
+      ),
+      { parts: ['Источник: приключение ', VH_LINK, '.'] }
+    ]
+  },
+  en: {
+    button: 'About this book',
+    paragraphs: [
+      p(
+        "This section holds the adventure's 15 entries - 7 items and 8 consumables, in the book's own order. No die covers that range, so the button picks an entry at random."
+      ),
+      p(
+        'The Remembrance Potion upgrades to the Major Remembrance Potion, and the Foresight Potion to the Legendary Foresight Potion.'
+      ),
+      { parts: ['Source: the ', VH_LINK, ' adventure.'] }
     ]
   }
 };
@@ -597,6 +717,9 @@ const HELP: Record<string, Record<Lang, Help>> = {
   arazo: ARAZO,
   community: COMMUNITY,
   mwt: MWT,
+  ph: PH,
+  lr: LR,
+  vh: VH,
   tables: TABLES
 };
 

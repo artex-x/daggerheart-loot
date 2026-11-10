@@ -361,6 +361,37 @@ describe('the realm row', () => {
   });
 });
 
+describe('the volume row', () => {
+  it('follows the kind row on Pistolheart, in book order; Escape the Veiled Halls has the kind row only', () => {
+    const index = buildIndex({
+      items: {
+        ph: [
+          row({ id: 'p1', src: 'ph', kind: 'item', vol: 3 }),
+          row({ id: 'p2', src: 'ph', kind: 'consumable', vol: 1 })
+        ],
+        vh: [
+          row({ id: 'v1', src: 'vh', kind: 'item' }),
+          row({ id: 'v2', src: 'vh', kind: 'consumable' })
+        ]
+      },
+      eq: []
+    });
+    const ph = facetRows(index, 'ph', t, 'ru');
+    expect(ph.map((r) => r.group)).toEqual(['kind', 'vol']);
+    expect(ph[1]).toEqual({
+      group: 'vol',
+      label: 'Том',
+      values: [
+        { value: '1', label: '1' },
+        { value: '2', label: '2' },
+        { value: '3', label: '3' }
+      ]
+    });
+    const vh = facetRows(index, 'vh', dict('en'), 'en');
+    expect(vh.map((r) => r.group)).toEqual(['kind']);
+  });
+});
+
 describe('the comm row', () => {
   it("lists every community that has records, in the data's own order", () => {
     const index = buildIndex({
@@ -774,8 +805,8 @@ describe("a share link's facet rows", () => {
         for (const [g, most] of Object.entries(bound))
           expect(size(g), g).toBeLessThanOrEqual(most);
         const ownSources = new Set(records.filter((it) => it.src === 'homebrew').map(srcOf));
-        /* Nine books and four campaign frames. */
-        expect(size('src')).toBeLessThanOrEqual(13 + ownSources.size);
+        /* Twelve books and four campaign frames. */
+        expect(size('src')).toBeLessThanOrEqual(16 + ownSources.size);
         const picked = { kind: ['weapon'], tier: ['2'] };
         const passed = records.filter((it) =>
           passes(picked, LIST_GROUPS, (g) => listFacets(it)[g] ?? '')

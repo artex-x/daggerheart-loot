@@ -6,7 +6,20 @@ import type { Help, HelpLink, HelpPart } from './help.js';
 import type { Lang } from './types.js';
 
 const LANGS: Lang[] = ['ru', 'en'];
-const SECTIONS = ['std', 'alt', 'wondrous', 'dread', 'voa', 'dv', 'arazo', 'community', 'mwt'];
+const SECTIONS = [
+  'std',
+  'alt',
+  'wondrous',
+  'dread',
+  'voa',
+  'dv',
+  'arazo',
+  'community',
+  'mwt',
+  'ph',
+  'lr',
+  'vh'
+];
 
 /** What one part reads as, so a paragraph can be compared as plain text. */
 const partText = (part: HelpPart): string => {
@@ -96,6 +109,9 @@ describe('the help for a section', () => {
       dv: ['Об этой книге', 'About this book'],
       arazo: ['Об этой книге', 'About this book'],
       mwt: ['Об этой книге', 'About this book'],
+      ph: ['Об этой книге', 'About this book'],
+      lr: ['Об этой книге', 'About this book'],
+      vh: ['Об этой книге', 'About this book'],
       community: ['Об этих предметах', 'About these items']
     };
     for (const section of SECTIONS) {
@@ -116,6 +132,41 @@ describe('the help for a section', () => {
       ]);
     }
     expect(linksOf(helpFor('alt', 'ru'))[1]?.label).toBe('пост на Reddit');
+  });
+
+  it('links Pistolheart, The Last Round Table and Escape the Veiled Halls to their product pages', () => {
+    for (const lang of LANGS) {
+      expect(linksOf(helpFor('ph', lang)).map((l) => l.href)).toEqual([
+        'https://www.drivethrurpg.com/en/product/547537/pistolheart-volume-1',
+        'https://www.drivethrurpg.com/en/product/564429/pistolheart-volume-2',
+        'https://www.drivethrurpg.com/en/product/578612/pistolheart-volume-3'
+      ]);
+      expect(linksOf(helpFor('lr', lang)).map((l) => l.href)).toEqual([
+        'https://heartofdaggers.com/products/the-last-round-table/'
+      ]);
+      expect(linksOf(helpFor('vh', lang)).map((l) => l.href)).toEqual([
+        'https://heartofdaggers.com/products/escape-the-veiled-halls/'
+      ]);
+    }
+    expect(textOf(helpFor('vh', 'ru'), 0)).toContain('В разделе 15 позиций');
+    expect(textOf(helpFor('vh', 'en'), 0)).toContain("the adventure's 15 entries");
+  });
+
+  it('counts the roll pool of Arazo and Pistolheart and sends the other tiers to the card', () => {
+    expect(textOf(helpFor('arazo', 'ru'), 0)).toContain('Бросок выбирает из 27 позиций');
+    expect(textOf(helpFor('arazo', 'en'), 0)).toContain('A roll picks from 27 entries');
+    expect(textOf(helpFor('ph', 'ru'), 0)).toContain('Бросок выбирает из 45 позиций');
+    expect(textOf(helpFor('ph', 'en'), 0)).toContain('A roll picks from 45 entries');
+    expect(textOf(helpFor('arazo', 'ru'), 2)).toContain('в ряду «Ранг»');
+    expect(textOf(helpFor('arazo', 'en'), 2)).toContain('in its "Tier" row');
+    expect(textOf(helpFor('ph', 'ru'), 1)).toContain('в ряду «Ранг»');
+    expect(textOf(helpFor('ph', 'en'), 1)).toContain('in its "Tier" row');
+    for (const lang of LANGS)
+      for (const key of ['arazo', 'ph']) {
+        const help = helpFor(key, lang);
+        const all = (help?.paragraphs ?? []).map((_, i) => textOf(help, i)).join(' ');
+        expect(all, `${key}/${lang}`).not.toMatch(/свой номер|its own number/);
+      }
   });
 
   it('links each Many Worlds Tavern realm to its own product page', () => {

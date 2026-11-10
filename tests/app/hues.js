@@ -160,7 +160,8 @@ const gap = (a, b) => {
     '#/roll/vault_of_ages',
     '#/roll/dragons_vault',
     '#/roll/arazos_artifacts',
-    '#/roll/many_worlds_tavern'
+    '#/roll/many_worlds_tavern',
+    '#/roll/escape_the_veiled_halls'
   ]) {
     const one = await rollLook(h);
     ok(one.length === 1, h + ': not exactly one roll button');

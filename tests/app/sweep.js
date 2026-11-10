@@ -45,6 +45,9 @@ const TABLES = [
   'dragons_vault',
   'arazos_artifacts',
   'many_worlds_tavern',
+  'pistolheart',
+  'last_round_table',
+  'escape_the_veiled_halls',
   'frames',
   'community_items',
   'alt_item',
@@ -102,6 +105,9 @@ const PAGES = [
   ['#/roll/arazos_artifacts', "arazo's artifacts"],
   ['#/roll/community_items', 'предметы сообществ'],
   ['#/roll/many_worlds_tavern', 'many worlds tavern'],
+  ['#/roll/pistolheart', 'pistolheart'],
+  ['#/roll/last_round_table', 'the last round table'],
+  ['#/roll/escape_the_veiled_halls', 'escape the veiled halls'],
   ['#/lists', 'списки без входа'],
   ['#/lists/00000000-0000-4000-8000-000000000103', 'вторая сумка', 'gm1'],
   ['#/lists/nope', 'списка нет'],
@@ -164,7 +170,8 @@ const PAGES = [
     ['#/tables/eq_weapon/t3', 'якорь раздела'],
     ['#/tables/eq_weapon/f_tier-2_cls-mag', 'ссылка на фильтры'],
     ['#/tables/community_items/Seaborne', 'якорь сообщества'],
-    ['#/tables/many_worlds_tavern/warrens', 'якорь мира']
+    ['#/tables/many_worlds_tavern/warrens', 'якорь мира'],
+    ['#/tables/pistolheart/2', 'якорь тома']
   ])
   /* The print page's states, three drawn sheets and the two print prompts, at every
      width. The sheets are seeded print sets (`tests/app/lib.js`, `PRINT_SETS`). */
@@ -499,11 +506,11 @@ function headHeight(page) {
 }
 
 /** Returns the head's cap at `width`: 64 px for the picker row; for the two levels 140 px
- *  below 1000 px, where the seven supplement tabs take two lines (130 px at 768,
- *  measured 2026-10-30); 180 px from 1000 to 1139 px in RU, where the chips and the tab
- *  slot take two lines each (about 173 px at 1050, measured); 110 px from 1140 px. */
+ *  from 1000 to 1139 px, where the Russian chips take two lines (131 px at 1000, measured
+ *  2026-11-07), and 110 px elsewhere (87 px at 768 and 1180): the tab slot is one row, as
+ *  the supplements' books are the picker. */
 function headCap(width) {
-  return width <= 760 ? 64 : width < 1000 ? 140 : width < 1140 ? 180 : 110;
+  return width <= 760 ? 64 : width >= 1000 && width < 1140 ? 140 : 110;
 }
 
 (async () => {
@@ -628,7 +635,7 @@ function headCap(width) {
               .replace(/^\/en\//, '/')
               .slice(1);
             const known =
-              /^(roll\/(std|alt|wondrous_environments|dread_gm_toolbox|vault_of_ages|dragons_vault|arazos_artifacts|community_items|many_worlds_tavern)|tables|lists|search|print\/|i\/|h\/|l\/|lists\/|account$|homebrew(\/|$))/.test(
+              /^(roll\/(std|alt|wondrous_environments|dread_gm_toolbox|vault_of_ages|dragons_vault|arazos_artifacts|community_items|many_worlds_tavern|pistolheart|last_round_table|escape_the_veiled_halls)|tables|lists|search|print\/|i\/|h\/|l\/|lists\/|account$|homebrew(\/|$))/.test(
                 h
               );
             if (!known) out.badLinks.push(h);

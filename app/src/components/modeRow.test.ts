@@ -2,7 +2,7 @@
  * (docs/specs/FEATURES.md, "Chrome"). */
 import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import { SECTION_LABEL, dict } from '../lib/dict.js';
 import { sectionHash } from '../lib/hash.js';
@@ -14,6 +14,9 @@ import { expectNoA11yViolations } from '../test/a11y.js';
 import ModeRow from './ModeRow.svelte';
 
 afterEach(cleanup);
+
+/* jsdom does not implement scrollIntoView: the supplements menu calls it once open. */
+Element.prototype.scrollIntoView = vi.fn();
 
 const ROLL: readonly Section[] = ['roll/std', 'roll/alt', ...SUPPLEMENTS];
 
@@ -109,7 +112,7 @@ describe('the supplements menu', () => {
     return { ...r, menu, items: within(menu).getAllByRole('menuitem') };
   }
 
-  it('holds the seven supplements in order with the open one checked, the first focused', async () => {
+  it('holds the ten supplements in order with the open one checked, the first focused', async () => {
     const { view, menu, items } = await open('#/roll/vault_of_ages');
     expect(items.map((i) => i.textContent)).toEqual(
       SUPPLEMENTS.map((s) => dict('ru')[SECTION_LABEL[s]])
@@ -141,11 +144,11 @@ describe('the supplements menu', () => {
     await userEvent.keyboard('{ArrowDown}');
     expect(items[1]).toHaveFocus();
     await userEvent.keyboard('{ArrowUp}{ArrowUp}');
-    expect(items[6]).toHaveFocus();
+    expect(items[9]).toHaveFocus();
     await userEvent.keyboard('{Home}');
     expect(items[0]).toHaveFocus();
     await userEvent.keyboard('{End}');
-    expect(items[6]).toHaveFocus();
+    expect(items[9]).toHaveFocus();
     await userEvent.keyboard('{Escape}');
     expect(screen.queryByRole('menu')).toBeNull();
     expect(button(nav)).toHaveFocus();

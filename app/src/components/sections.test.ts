@@ -277,10 +277,14 @@ describe('a dataset that did not load', () => {
     expect(screen.getByText('Данные не загрузились. Обновите страницу.')).toBeInTheDocument();
   });
 
-  it('says so on #/roll/dv, a whole-table roll with no picker', () => {
-    render(App, { env: fakeEnv({ router: memoryRouter('#/roll/dv'), data: noData() }) });
-    expectPage("The Dragon's Vault");
+  it.each([
+    ['#/roll/dv', "The Dragon's Vault"],
+    ['#/roll/vh', 'Escape the Veiled Halls']
+  ])('says so on %s, a whole-table roll with no picker', (route, heading) => {
+    render(App, { env: fakeEnv({ router: memoryRouter(route), data: noData() }) });
+    expectPage(heading);
     expect(screen.getByText('Данные не загрузились. Обновите страницу.')).toBeInTheDocument();
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
   });
 });
 

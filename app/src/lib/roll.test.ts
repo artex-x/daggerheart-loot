@@ -9,14 +9,17 @@ import {
   die,
   hasRealDie,
   isCrit,
+  isRung,
   nextRarity,
   pick,
   RARITY_ORDER,
   rollDuality,
   rollLabel,
   rollNd12,
+  rollPool,
   type Random
 } from './roll.js';
+import type { Record_ } from './types.js';
 
 /** Always the lowest face, always the highest, and a cycle in between. */
 const lowest: Random = () => 0;
@@ -135,6 +138,32 @@ describe('rollLabel', () => {
   it('says "random 1-N" with an en dash for a range that is not a die', () => {
     expect(rollLabel(119, dict('ru'))).toBe('Бросить 1-119');
     expect(rollLabel(29, dict('en'))).toBe('Roll 1-29');
+  });
+});
+
+describe('rollPool', () => {
+  const rec = (id: string, line?: string): Record_ => ({
+    id,
+    src: 'arazo',
+    kind: 'equip',
+    ru: id,
+    en: id,
+    rud: '',
+    ende: '',
+    ...(line ? { eq: { t: 'weapon', tier: 1, line } } : {})
+  });
+
+  it('drops the rungs of an upgrade line and keeps its head and the single items, in order', () => {
+    const rows = [rec('a1', 'a1'), rec('a2', 'a1'), rec('a3', 'a1'), rec('b'), rec('c1', 'c1')];
+    expect(rollPool(rows).map((it) => it.id)).toEqual(['a1', 'b', 'c1']);
+    expect(isRung(rec('a2', 'a1'))).toBe(true);
+    expect(isRung(rec('a1', 'a1'))).toBe(false);
+    expect(isRung(rec('b'))).toBe(false);
+  });
+
+  it('leaves a table without lines unchanged', () => {
+    const rows = [rec('x'), rec('y'), rec('z')];
+    expect(rollPool(rows)).toEqual(rows);
   });
 });
 

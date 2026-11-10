@@ -98,10 +98,66 @@ describe('the table navigation', () => {
     await expectNoA11yViolations(document.body);
   });
 
+  it("moves the focus to the new group's current tab when a pick leaves the supplements at wide", async () => {
+    const app = new AppState(fakeEnv({ viewport: fakeViewport('wide') }));
+    const main = document.body.appendChild(document.createElement('main'));
+    const props = { app, sources: [], source: null, filter: {} };
+    render(TableNav, { target: main, props: { ...props, table: 'voa' as TableId } });
+    const tabs = render(TableNav, {
+      target: main,
+      props: { ...props, table: 'voa' as TableId, part: 'tabs' as const }
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Таблица: Vault of Ages' }));
+    const sheet = within(screen.getByRole('dialog'));
+    await userEvent.click(sheet.getByRole('button', { name: 'Снаряжение' }));
+    const link = sheet.getByRole('link', { name: 'Оружие' });
+    /* The page's route change lands before the sheet's own handler runs. */
+    link.addEventListener('click', () => {
+      void tabs.rerender({ ...props, table: 'eq_weapon' as TableId, part: 'tabs' as const });
+    });
+    await userEvent.click(link);
+    await waitFor(() => {
+      expect(document.activeElement).toBe(
+        within(screen.getByRole('group', { name: 'Снаряжение' })).getByRole('link', {
+          name: 'Оружие'
+        })
+      );
+    });
+  });
+
   it('names a one-table group by its book in the picker', () => {
     nav('voa', 'narrow');
     expect(screen.getByRole('button', { name: 'Таблица: Vault of Ages' })).toBeInTheDocument();
   });
+
+  it.each(['wide', 'mid'] as const)(
+    "draws the supplements' books as one lit picker tab at %s that opens the sheet",
+    async (band) => {
+      const { container } = nav('voa', band);
+      expect(screen.queryByRole('link', { name: 'Wondrous Environments' })).toBeNull();
+      const picker = screen.getByRole('button', { name: 'Таблица: Vault of Ages' });
+      expect(picker).toHaveAttribute('aria-haspopup', 'dialog');
+      expect(picker).toHaveTextContent('Vault of Ages');
+      expect(picker).toHaveClass('tab');
+      expect(container.querySelector('.tabslot')?.contains(picker)).toBe(true);
+      await expectNoA11yViolations(container);
+      await userEvent.click(picker);
+      const sheet = within(screen.getByRole('dialog'));
+      expect(sheet.getByRole('button', { name: 'Дополнения' })).toHaveAttribute(
+        'aria-pressed',
+        'true'
+      );
+      expect(sheet.getAllByRole('link')).toHaveLength(10);
+      expect(sheet.getByRole('link', { name: 'Vault of Ages' })).toHaveAttribute(
+        'aria-current',
+        'page'
+      );
+      await expectNoA11yViolations(document.body);
+      await userEvent.click(sheet.getByRole('link', { name: 'Wondrous Environments' }));
+      expect(screen.queryByRole('dialog')).toBeNull();
+      expect(document.activeElement).toBe(picker);
+    }
+  );
 
   it('draws the sources of the own items as tabs, folded past twelve', async () => {
     const sources = Array.from({ length: 14 }, (_, i) => ({
@@ -132,7 +188,9 @@ describe('the tab slot', () => {
       expect(ghosts).toHaveAttribute('aria-hidden', 'true');
       expect(ghosts?.querySelector('a, button')).toBeNull();
       expect(ghosts?.querySelectorAll('.tabs').length).toBeGreaterThanOrEqual(5);
-      expect(ghosts).toHaveTextContent('Wondrous Environments');
+      expect(ghosts).toHaveTextContent('Оружие');
+      /* The supplements' books are the picker, one tab high: their row would take two lines. */
+      expect(ghosts).not.toHaveTextContent('Wondrous Environments');
       await expectNoA11yViolations(container);
     }
   );

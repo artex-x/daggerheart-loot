@@ -44,7 +44,8 @@ export interface Index {
    * The source tables, each in its own order.
    *
    * `all` flattens them, which is right for search and wrong for a roll: a roll
-   * is a number within one roll pool. Campaign frames are source tables, not
+   * is a number within one roll pool. A rung of an upgrade line is in its table
+   * here but not in the pool (`rollPool`). Campaign frames are source tables, not
    * roll pools. The key `homebrew` holds the signed-in author's own items
    * (`withRecords`), never a catalog record.
    */
@@ -254,6 +255,7 @@ export function plainFacets(it: Record_): Record<string, string> {
     frame: it.frame ?? '',
     comm: it.community ?? '',
     realm: it.realm ?? '',
+    vol: it.vol == null ? '' : String(it.vol),
     src: srcOf(it),
     sect: isHomebrewRecord(it) ? (it.book?.section?.key ?? '') : ''
   };

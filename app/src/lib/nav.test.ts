@@ -20,7 +20,7 @@ describe('the jobs and the mode row', () => {
     }
   });
 
-  it('counts only the seven supplements as supplements', () => {
+  it('counts only the ten supplements as supplements', () => {
     for (const s of SUPPLEMENTS) expect(isSupplement(s), s).toBe(true);
     for (const s of [...ROLL_OWN, 'tables', 'lists', 'search'] as const) {
       expect(isSupplement(s), s).toBe(false);
@@ -44,6 +44,6 @@ describe('the jobs and the mode row', () => {
 
   it('lists the supplement books in the order of the tables page row', () => {
     expect(SUPPLEMENTS.map((s) => s.slice(5))).toEqual(navGroupOf('wondrous').subs);
-    expect(SUPPLEMENTS.at(-1)).toBe('roll/mwt');
+    expect(SUPPLEMENTS.at(-1)).toBe('roll/vh');
   });
 });

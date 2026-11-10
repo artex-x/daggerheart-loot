@@ -2,8 +2,8 @@
   import {
     communityGroup,
     communityParts,
-    realmGroup,
-    realmParts,
+    sectionGroup,
+    sectionParts,
     voaGroup,
     voaParts
   } from './lib/sections.js';
@@ -13,15 +13,18 @@
   import type { Lang, Record_, Section } from './lib/types.js';
 
   /* The sections that roll a single number over a whole table. Vault of Ages,
-     Communities and Many Worlds Tavern roll one number too, but inside a part of
-     their book, so `PICKER_ROLL` names the part and its rows for one shared panel.
-     Core rules and the alternate tables roll several cards at once, and the
-     alternate tables roll two dice, so both have panels of their own. */
+     Communities and Many Worlds Tavern roll one number too, but inside a part of their
+     book, so `PICKER_ROLL` names the part and its rows for one shared panel. Core rules
+     and the alternate tables roll several cards at once, and the alternate tables roll
+     two dice, so both have panels of their own. */
   const ROLL_TABLE: Partial<Record<Section, { table: string }>> = {
     'roll/wondrous': { table: 'wondrous' },
     'roll/dread': { table: 'dread' },
     'roll/dv': { table: 'dv' },
-    'roll/arazo': { table: 'arazo' }
+    'roll/arazo': { table: 'arazo' },
+    'roll/ph': { table: 'ph' },
+    'roll/lr': { table: 'lr' },
+    'roll/vh': { table: 'vh' }
   };
 
   interface PickerRoll {
@@ -47,8 +50,8 @@
     'roll/mwt': {
       section: 'mwt',
       label: 'realmLabel',
-      parts: (_t, lang) => realmParts(lang),
-      rows: realmGroup
+      parts: (_t, lang) => sectionParts('mwt', lang),
+      rows: (index, id) => sectionGroup(index, 'mwt', id)
     }
   };
 </script>
@@ -114,7 +117,7 @@
       {@const cfg = ROLL_TABLE[app.route.section]}
       {@const pr = PICKER_ROLL[app.route.section]}
       {#if cfg}
-        <!-- The three whole-table rolls share this branch; a number kept from one table
+        <!-- The whole-table rolls share this branch; a number kept from one table
              points past the end of a shorter one (docs/specs/FEATURES.md, "Rolling"). -->
         {#key app.route.section}
           <RollPanel {app} section={cfg.table} rows={app.index?.rows.get(cfg.table) ?? []} />

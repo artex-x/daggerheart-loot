@@ -10,6 +10,7 @@
 import type { Dict } from './dict.js';
 import { clamp } from './numField.js';
 import type { Rarity } from './money.js';
+import type { Record_ } from './types.js';
 
 /** Re-exported because `roll.test.ts` imports it alongside the engines it
  *  exercises - `coreRoll` (below) clamps its dice total into the 1-60 table
@@ -83,6 +84,18 @@ export function nextRarity(r: Rarity): Rarity {
  */
 export function pick(count: number, rnd: Random = Math.random): number {
   return count > 0 ? die(count, rnd) : 0;
+}
+
+/** Whether a record is a rung of an upgrade line: a tier past the line's head, which names
+ *  the line. The twin of `isRung` in tests/dataint.js; change both together. */
+export function isRung(it: Record_): boolean {
+  return !!it.eq?.line && it.eq.line !== it.id;
+}
+
+/** Returns the rows a roll draws from: a table's rows without the rungs of its upgrade
+ *  lines, so a line is one roll row, its head (docs/specs/FEATURES.md, "Rolling"). */
+export function rollPool(rows: readonly Record_[]): readonly Record_[] {
+  return rows.filter((it) => !isRung(it));
 }
 
 /** Whether a range has a die of its own, which is what the label turns on. */

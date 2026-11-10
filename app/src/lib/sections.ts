@@ -15,8 +15,8 @@
 
 import type { Index } from './data.js';
 import type { Dict } from './dict.js';
-import { REALM_ORDER, realmName } from './realms.js';
-import type { Lang, Record_, VoaTier } from './types.js';
+import { SECTION_PROP } from './sectionProps.js';
+import type { Lang, Record_, TableId, VoaTier } from './types.js';
 
 /** One choice of a picker: the id the rows are looked up by, and its chip caption. */
 export interface Part {
@@ -88,13 +88,15 @@ export function communityParts(index: Index | null, lang: Lang): Part[] {
     : [];
 }
 
-/** The realms as picker choices, in release order. A fixed set: it does not wait
- *  for the index. */
-export function realmParts(lang: Lang): Part[] {
-  return REALM_ORDER.map((id) => ({ id, label: realmName(id, lang) }));
+/** The sections of a sectioned table as picker choices, in book order: the realms of Many
+ *  Worlds Tavern. A fixed set: it does not wait for the index. */
+export function sectionParts(table: TableId, lang: Lang): Part[] {
+  const prop = SECTION_PROP[table];
+  return prop ? prop.order.map((id) => ({ id, label: prop.name(id, lang) })) : [];
 }
 
-/** The records of one realm, in card order: what its roll picks from. */
-export function realmGroup(index: Index, id: string): readonly Record_[] {
-  return (index.rows.get('mwt') ?? []).filter((x) => x.realm === id);
+/** The records of one section of a sectioned table, in card order: what its roll picks from. */
+export function sectionGroup(index: Index, table: TableId, id: string): readonly Record_[] {
+  const prop = SECTION_PROP[table];
+  return prop ? (index.rows.get(table) ?? []).filter((x) => prop.valueOf(x) === id) : [];
 }

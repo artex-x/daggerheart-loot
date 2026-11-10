@@ -122,7 +122,7 @@ describe('the head', () => {
   it('draws the page head from 761 px with the lead and the labeled pin, the box focused', () => {
     render(App, { env: at() });
     expect(screen.getByRole('heading', { level: 1, name: 'Поиск' })).toBeVisible();
-    expect(screen.getByText(/Поиск сразу по 1459 позициям/)).toBeInTheDocument();
+    expect(screen.getByText(/Поиск сразу по 1593 позициям/)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Справка' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Открывать при запуске/ })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: ru.moreMenu })).toBeNull();
@@ -136,7 +136,7 @@ describe('the head', () => {
     const h1 = screen.getByRole('heading', { level: 1, name: 'Поиск' });
     expect(h1.closest('.headrow')).not.toBeNull();
     expect(container.querySelector('.homebtn')).toBeNull();
-    expect(container.querySelector('p.vh')).toHaveTextContent(/Поиск сразу по 1459 позициям/);
+    expect(container.querySelector('p.vh')).toHaveTextContent(/Поиск сразу по 1593 позициям/);
     const more = screen.getByRole('button', { name: ru.moreMenu });
     expect(h1.closest('.headrow')?.contains(more)).toBe(true);
     await userEvent.click(more);

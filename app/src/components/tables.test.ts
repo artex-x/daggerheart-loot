@@ -211,10 +211,9 @@ describe('the index', () => {
       await tick();
       expect(container.querySelector('.tablenav'), hash).toBe(before);
     }
-    expect(screen.getByRole('link', { name: 'Wondrous Environments' })).toHaveAttribute(
-      'aria-current',
-      'page'
-    );
+    expect(
+      screen.getByRole('button', { name: 'Таблица: Wondrous Environments' })
+    ).toBeInTheDocument();
   });
 
   it('opens on core_item, with the book chip on and its two sub-chips shown', () => {
@@ -1402,8 +1401,8 @@ describe('the chip nav', () => {
     });
   });
 
-  it.each(['wondrous', 'dread', 'voa', 'dv', 'arazo', 'community', 'mwt'])(
-    'lights «Дополнения» on %s and draws the book row with that book current',
+  it.each(['wondrous', 'dread', 'voa', 'dv', 'arazo', 'community', 'mwt', 'ph', 'lr', 'vh'])(
+    'lights «Дополнения» on %s and names that book on the picker tab, its sheet holding the ten',
     async (table) => {
       const { container } = render(App, {
         env: fakeEnv({ router: memoryRouter(`#/tables/${table}`), data: fakeData(LOOT) })
@@ -1412,7 +1411,14 @@ describe('the chip nav', () => {
       const group = within(tablenav).getByRole('link', { name: 'Дополнения' });
       expect(group).toHaveAttribute('aria-current', 'page');
       expect(group).toHaveAttribute('href', '/tables/wondrous_environments');
-      const row = bookRow() as HTMLElement;
+      /* Ten tabs would take two lines up to about 1380 px: the row is the picker. */
+      const tabRow = bookRow() as HTMLElement;
+      expect(within(tabRow).queryAllByRole('link')).toHaveLength(0);
+      const picker = within(tabRow).getByRole('button', { name: /^Таблица: / });
+      expect(picker).toHaveAttribute('aria-haspopup', 'dialog');
+      if (table === 'voa') await expectNoA11yViolations(container);
+      await userEvent.click(picker);
+      const row = within(screen.getByRole('dialog')).getByRole('group', { name: 'Дополнения' });
       const books = within(row).getAllByRole('link');
       const names = [
         'Wondrous Environments',
@@ -1421,16 +1427,18 @@ describe('the chip nav', () => {
         "The Dragon's Vault",
         "Arazo's Artifacts",
         'Предметы сообществ',
-        'Many Worlds Tavern'
+        'Many Worlds Tavern',
+        'Pistolheart',
+        'The Last Round Table',
+        'Escape the Veiled Halls'
       ];
       expect(books).toEqual(names.map((name) => within(row).getByRole('link', { name })));
-      expect(row).toHaveAttribute('aria-label', 'Дополнения');
-      expect(
-        books
-          .filter((a) => a.getAttribute('aria-current') === 'page')
-          .map((a) => a.getAttribute('href'))
-      ).toEqual([tablesHash(table as TableId).slice(1)]);
-      if (table === 'voa') await expectNoA11yViolations(container);
+      const current = books.filter((a) => a.getAttribute('aria-current') === 'page');
+      expect(current.map((a) => a.getAttribute('href'))).toEqual([
+        tablesHash(table as TableId).slice(1)
+      ]);
+      expect(picker).toHaveAccessibleName('Таблица: ' + String(current[0]?.textContent));
+      expect(picker).toHaveTextContent(String(current[0]?.textContent));
     }
   );
 
@@ -1956,6 +1964,33 @@ describe('accessibility', () => {
     const { container } = render(App, {
       env: fakeEnv({ router: memoryRouter('#/tables/voa'), data: fakeData(LOOT) })
     });
+    await expectNoA11yViolations(container);
+  });
+});
+
+/* A rung of an upgrade line keeps its row but has no roll (docs/specs/FEATURES.md, "Rolling"). */
+describe('an upgrade line on a rolled table', () => {
+  const REAL = readLoot();
+  const open = (): void => {
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/arazo'), data: fakeData(REAL) })
+    });
+  };
+
+  it('draws the roll number on the head row and no number on a rung row', () => {
+    open();
+    expect(document.querySelector('[data-row="aa19"] .rnum')).toHaveTextContent('7');
+    expect(document.querySelector('[data-row="aa20"]')).toBeInTheDocument();
+    expect(document.querySelector('[data-row="aa20"] .rnum')).toBeNull();
+  });
+
+  it('draws the tier on a rung tile and the roll number on the head tile', async () => {
+    const { container } = render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/arazo'), data: fakeData(REAL) })
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Сетка' }));
+    expect(document.querySelector('[data-row="aa19"] .tile-n')).toHaveTextContent('7');
+    expect(document.querySelector('[data-row="aa20"] .tile-n')).toHaveTextContent('Ранг 2');
     await expectNoA11yViolations(container);
   });
 });

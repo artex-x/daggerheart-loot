@@ -1,7 +1,7 @@
 /* The interface dictionary.
  *
  * docs/specs/I18N.md keeps this separate from record text on purpose: this is
- * small, typed and reviewed, while record text is 1459 pairs maintained with
+ * small, typed and reviewed, while record text is 1593 pairs maintained with
  * the data. Only interface strings belong here.
  *
  * Parity is a compile error rather than a test. `Dict` is derived from the
@@ -29,7 +29,7 @@ const ru = {
   /* The header's wordmark. It follows the language in the header only; the tab
      title, the manifest and the static pages keep their own names. */
   brandWord: 'Лут',
-  /* The first job of the header: a group of nine roll pages with no heading of its own. */
+  /* The first job of the header: a group of twelve roll pages with no heading of its own. */
   jobRoll: 'Бросок',
 
   /* The sections, in `SECTIONS` order. */
@@ -40,6 +40,9 @@ const ru = {
   dv: "Dragon's Vault",
   arazo: "Arazo's Artifacts",
   mwt: 'Many Worlds Tavern',
+  ph: 'Pistolheart',
+  lr: 'The Last Round Table',
+  vh: 'Escape the Veiled Halls',
   tables: 'Таблицы',
   search: 'Поиск',
 
@@ -70,6 +73,9 @@ const ru = {
   srcDv: "The Dragon's Vault",
   srcArazo: "Arazo's Artifacts",
   srcMwt: 'Many Worlds Tavern',
+  srcPh: 'Pistolheart',
+  srcLr: 'The Last Round Table',
+  srcVh: 'Escape the Veiled Halls',
   /* Matches `frameF`/`subFrames` below - one word for the concept in
      Russian, verified against ru.daggerheart.su/frame ("Сеттинги" is both
      that page's own title and its term for one entry on it). */
@@ -106,7 +112,7 @@ const ru = {
      markup in a string. The verbatim citation lives entirely in the first
      part - tests/derived.js pins it in app.js, and it must read the same here. */
   footBefore:
-    "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Environments, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, The Guide to Arazo's Artifacts, Many Worlds Tavern: Sporopolis, Wagerwood, Warrin' Warrens, Godsvale, Hornet Hold, The Drome, Community Magic Items, Alternate Loot & Consumable Tables. Перевод: daggerheart.su и собственные материалы. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at ",
+    "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Environments, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, The Guide to Arazo's Artifacts, Many Worlds Tavern: Sporopolis, Wagerwood, Warrin' Warrens, Godsvale, Hornet Hold, The Drome, Pistolheart Volumes 1-3, The Last Round Table, Escape the Veiled Halls, Community Magic Items, Alternate Loot & Consumable Tables. Перевод: daggerheart.su и собственные материалы. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at ",
   footLink: 'daggerheart.com',
   footAfter: '. There are no previous modifications by others.',
   /* The folded notice's one visible line; the full text above sits under it. */
@@ -235,7 +241,7 @@ const ru = {
 
   /* "по всем N позициям" needs "всем" to agree with the numeral, so the
      sentence leaves it out and reads for any count. */
-  subSearch: 'Поиск сразу по 1459 позициям - добыча, расходники и снаряжение.',
+  subSearch: 'Поиск сразу по 1593 позициям - добыча, расходники и снаряжение.',
   subSearchOwn: 'И %n ваш предмет.|И %n ваших предмета.|И %n ваших предметов.',
 
   searchPh: 'Поиск по названию или описанию...',
@@ -298,6 +304,7 @@ const ru = {
   frameF: 'Сеттинг',
   commF: 'Сообщество',
   realmF: 'Мир',
+  volF: 'Том',
   resetAll: 'Сбросить всё',
   filterLink: 'Ссылка на фильтры',
   filterLinkCopied: 'Ссылка на фильтры скопирована',
@@ -1176,6 +1183,9 @@ const en: Dict = {
   dv: "Dragon's Vault",
   arazo: "Arazo's Artifacts",
   mwt: 'Many Worlds Tavern',
+  ph: 'Pistolheart',
+  lr: 'The Last Round Table',
+  vh: 'Escape the Veiled Halls',
   tables: 'Tables',
   search: 'Search',
 
@@ -1201,6 +1211,9 @@ const en: Dict = {
   srcDv: "The Dragon's Vault",
   srcArazo: "Arazo's Artifacts",
   srcMwt: 'Many Worlds Tavern',
+  srcPh: 'Pistolheart',
+  srcLr: 'The Last Round Table',
+  srcVh: 'Escape the Veiled Halls',
   srcFrame: 'Frame',
   srcComm: 'Community items',
   copyLink: 'Copy link',
@@ -1223,7 +1236,7 @@ const en: Dict = {
   stepUp: 'One higher',
 
   footBefore:
-    "Data: Daggerheart Core Set, Hope & Fear, Wondrous Environments, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, The Guide to Arazo's Artifacts, Many Worlds Tavern: Sporopolis, Wagerwood, Warrin' Warrens, Godsvale, Hornet Hold, The Drome, Community Magic Items, Alternate Loot & Consumable Tables. Russian text: daggerheart.su and custom material. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at ",
+    "Data: Daggerheart Core Set, Hope & Fear, Wondrous Environments, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, The Guide to Arazo's Artifacts, Many Worlds Tavern: Sporopolis, Wagerwood, Warrin' Warrens, Godsvale, Hornet Hold, The Drome, Pistolheart Volumes 1-3, The Last Round Table, Escape the Veiled Halls, Community Magic Items, Alternate Loot & Consumable Tables. Russian text: daggerheart.su and custom material. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at ",
   footLink: 'daggerheart.com',
   footAfter: '. There are no previous modifications by others.',
   footSummary: 'Daggerheart © Darrington Press - DPCGL - Sources and license',
@@ -1319,7 +1332,7 @@ const en: Dict = {
   subSecondary: 'Secondary',
   subArmor: 'Armor',
 
-  subSearch: 'Search all 1459 entries at once - loot, consumables and equipment.',
+  subSearch: 'Search all 1593 entries at once - loot, consumables and equipment.',
   subSearchOwn: 'And %n item of your own.|And %n items of your own.',
 
   searchPh: 'Search by name or description...',
@@ -1368,6 +1381,7 @@ const en: Dict = {
   frameF: 'Frame',
   commF: 'Community',
   realmF: 'Realm',
+  volF: 'Volume',
   resetAll: 'Reset all',
   filterLink: 'Filter link',
   filterLinkCopied: 'Filter link copied',
@@ -2195,6 +2209,9 @@ export const SECTION_LABEL: Record<Section, keyof Dict> = {
   'roll/arazo': 'arazo',
   'roll/community': 'pageCommunity',
   'roll/mwt': 'mwt',
+  'roll/ph': 'ph',
+  'roll/lr': 'lr',
+  'roll/vh': 'vh',
   tables: 'tables',
   lists: 'menuLists',
   search: 'search'

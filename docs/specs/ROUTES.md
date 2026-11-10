@@ -52,42 +52,46 @@ and the screen stays right.
 | `#/roll/dread_gm_toolbox` | Dread GM Toolbox, 1-29 |
 | `#/roll/vault_of_ages` | Vault of Ages, by section |
 | `#/roll/dragons_vault` | The Dragon's Vault, 1-145 |
-| `#/roll/arazos_artifacts` | Arazo's Artifacts, 1-78 |
+| `#/roll/arazos_artifacts` | Arazo's Artifacts, 1-27 |
 | `#/roll/community_items` | Community items, community plus 1-10 |
 | `#/roll/many_worlds_tavern` | Many Worlds Tavern, realm plus a roll inside it (1-11 to 1-21) |
+| `#/roll/pistolheart` | Pistolheart, 1-45 |
+| `#/roll/last_round_table` | The Last Round Table, 1-26 |
+| `#/roll/escape_the_veiled_halls` | Escape the Veiled Halls, 1-15 |
 | `#/tables` | Tables index |
 | `#/lists` | Lists index |
 | `#/search` | Search |
 
-These twelve (`SECTIONS`) are what a person may pin as their starting
-section - eleven pin as their own hash; `#/tables` pins as
+These fifteen (`SECTIONS`) are what a person may pin as their starting
+section - fourteen pin as their own hash; `#/tables` pins as
 whichever table is on screen (`#/tables/<table>`), never as the bare tab
 address itself. See `STATE.md`, `dhloot.home.v1`, for what a pin actually
 stores and reads back.
 
 ## URL ids and old ids
 
-The seven supplement sections and nine tables have a URL id from the name of
+The ten supplement sections and twelve tables have a URL id from the name of
 their source product (owner, 2026-10-21;
 `docs/decisions/2026-10-21-source-names-follow-the-source-product.md`); the
 app writes it (`hash.ts` `SECTION_SLUG`, `TABLE_SLUG`). The internal id is the
 old address: `roll/wondrous`, `roll/dread`, `roll/voa`, `roll/dv`,
-`roll/arazo`, `roll/community`, `roll/mwt`, and the tables `hnf_item` ->
+`roll/arazo`, `roll/community`, `roll/mwt`, `roll/ph`, `roll/lr`, `roll/vh`, and the tables `hnf_item` ->
 `hope_and_fear_item`, `hnf_consumable` -> `hope_and_fear_consumable`,
 `wondrous` -> `wondrous_environments`, `dread` -> `dread_gm_toolbox`, `voa` ->
 `vault_of_ages`, `dv` -> `dragons_vault`, `arazo` -> `arazos_artifacts`,
-`community` -> `community_items`, `mwt` -> `many_worlds_tavern`.
+`community` -> `community_items`, `mwt` -> `many_worlds_tavern`, `ph` -> `pistolheart`,
+`lr` -> `last_round_table`, `vh` -> `escape_the_veiled_halls`.
 An old id still opens the same page, with its anchor or filter tail; the
 address is not rewritten. Filter values (`f_src-dread`) keep the internal keys.
 
 The header draws three jobs over them in every build: «Бросок» / "Roll" for the
-nine roll sections, «Таблицы» / "Tables" and «Поиск» / "Search"
+twelve roll sections, «Таблицы» / "Tables" and «Поиск» / "Search"
 (`app/src/lib/nav.ts`). «Бросок» opens the last roll section of the tab, else the
-pinned start section when it is a roll section, else `#/roll/std`. The nine roll
+pinned start section when it is a roll section, else `#/roll/std`. The twelve roll
 sections draw a mode row under the header up to 760 px and the same controls in the page
 head from 761 px: Core rules, the alternate tables and
-one «Дополнения» / "Supplements" menu of the seven supplement sections
-(`roll/wondrous_environments` to `roll/many_worlds_tavern`); every supplement
+one «Дополнения» / "Supplements" menu of the ten supplement sections
+(`roll/wondrous_environments` to `roll/escape_the_veiled_halls`); every supplement
 address stays its own section (`FEATURES.md`, "Chrome"). `#/lists` has no job: it
 stays a section route, reached from the account menu's «Мои списки», a bookmark or
 a pin. A build
@@ -113,7 +117,8 @@ working and keeps its own text.
 Table names in an address: `core_item`, `core_consumable`, `hope_and_fear_item`,
 `hope_and_fear_consumable`, `wondrous_environments`, `community_items`,
 `dread_gm_toolbox`, `vault_of_ages`, `dragons_vault`, `arazos_artifacts`,
-`many_worlds_tavern`, `other_starting`, `other_frames`, `alt_item`,
+`many_worlds_tavern`, `pistolheart`, `last_round_table`, `escape_the_veiled_halls`,
+`other_starting`, `other_frames`, `alt_item`,
 `alt_consumable`, `eq_weapon`, `eq_secondary`, `eq_armor`, `homebrew`. The
 internal ids (`TABLE_IDS`) still parse ("URL ids and old ids" above). The
 tables below name a table by its internal id.
@@ -131,7 +136,9 @@ Changing to a different, valid table folds the filter panel and clears the
 filter.
 
 A tail that does not start with `f_` is an anchor - a block to scroll to, such
-as `rare` on `alt_item`, `Seaborne` on `community` or `warrens` on `mwt`.
+as `rare` on `alt_item`, `Seaborne` on `community`, `warrens` on `mwt` or `2` on `ph`.
+The old room anchors of `vh` (`basement`, `dressing`, `laboratory`, `library`) scroll to
+nothing since 2026-11-07; the table opens whole.
 
 ### Filter grammar
 
@@ -145,7 +152,9 @@ older `_` group separator are still read, but only when the segment has no `.`
 and every piece names a group the table offers; anything else is treated as
 the current format. A retired group name ahead of a live one makes the whole
 body one unknown group, so the live narrowing is dropped and the table stays
-whole: unknown groups fail open, never empty.
+whole: unknown groups fail open, never empty. `room` on `vh` is a retired group
+(2026-11-07): `f_room-laboratory` opens the whole table, with no redirect
+(`docs/fixtures/urls/routes.json`).
 
 Group keys, by table:
 
@@ -160,6 +169,9 @@ Group keys, by table:
 | `other_frames` | `kind`, `frame` |
 | `community` | `comm` |
 | `mwt` | `kind`, `realm` |
+| `ph` | `kind`, `vol` |
+| `lr` | `kind` |
+| `vh` | `kind` |
 | `homebrew` | `kind`, `src` (one value: the source chip), `sect` |
 | `#/homebrew/f_` (the Items tab) | `kind`, `src` (any number of values, OR'd), `sect` |
 | `core_item` and the other loot tables | `kind` where the table holds more than one kind |
@@ -171,7 +183,8 @@ whose kind has an artifact record); `cls` `phy`/`mag`; `trait`
 `melee`, `veryclose`, `close`, `far`, `veryfar`; `burden` `1`/`2`; `line`
 `line`/`uniq`; `kind` `item`/`consumable`/`equip`; `src` one of the source keys;
 `frame` `beast_feast`, `colossus`, `dark_heart`, `motherboard`; `comm` a
-community name; `realm` `sporopolis`, `wagerwood`, `warrens`, `godsvale`, `hornet`, `drome`. A
+community name; `realm` `sporopolis`, `wagerwood`, `warrens`, `godsvale`, `hornet`, `drome`;
+`vol` `1`, `2`, `3`. A
 weapon of trait `any` answers every `trait` value, as a `spellcast` one does;
 `any` is no value of its own. On `homebrew` and the equipment tables `src` also takes `hb`
 (own items with no source) and an own source's key; `sect` takes an own

@@ -1,6 +1,6 @@
 # #/roll/arazo ~ help
 # route: #/roll/arazos_artifacts
-# why: the help panel, unfolded: Destiny instead of a roll table, and the four versions of every piece of equipment
+# why: the help panel, unfolded: Destiny instead of a roll table, and the four versions of every piece of equipment, the other three opened from the card
 
 ## ru :: tree
 RootWebArea "Arazo's Artifacts - Генератор лута Daggerheart" [url=/roll/arazos_artifacts]
@@ -24,11 +24,11 @@ RootWebArea "Arazo's Artifacts - Генератор лута Daggerheart" [url=/
       button "Arazo's Artifacts" [expanded=false haspopup=menu]
     button "Открывать при запуске" [pressed=false]
     button "Об этой книге" [expanded=true]
-    StaticText "В таблице 78 позиций - 10 предметов и 68 единиц оружия и брони, ..." [namelen=157 namehash=cce2a6c7]
+    StaticText "Бросок выбирает из 27 позиций - 10 предметов и 17 единиц снаряже..." [namelen=179 namehash=58da23ad]
     StaticText "Своей таблицы броска у книги нет, вместо неё - «Предназначение»:..." [namelen=391 namehash=dc1447ed]
     ... StaticText x17 of 21 same-shape siblings elided
     link "The Guide to Arazo's Artifacts" [url=https://www.drivethrurpg.com/en/product/581640/the-guide-to-arazo-s-artifacts]
-    button "Бросить 1-78"
+    button "Бросить 1-27"
     button "На единицу меньше" [disabled=true]
     textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
     button "На единицу больше"
@@ -57,7 +57,7 @@ RU
 The Guide to Arazo's Artifacts
 daggerheart.com
 Альтернативные таблицы
-Бросить 1-78
+Бросить 1-27
 Бросок
 В список
 Войти
@@ -100,11 +100,11 @@ RootWebArea "Arazo's Artifacts - Daggerheart Loot Generator" [url=/en/roll/arazo
       button "Arazo's Artifacts" [expanded=false haspopup=menu]
     button "Open on start" [pressed=false]
     button "About this book" [expanded=true]
-    StaticText "The table holds 78 entries - 10 items and 68 weapons and armor, ..." [namelen=154 namehash=80f65c5e]
+    StaticText "A roll picks from 27 entries - 10 items and 17 pieces of equipme..." [namelen=178 namehash=7fc83d9d]
     StaticText "The book has no roll table; it offers Destiny instead: at sessio..." [namelen=397 namehash=95d13785]
     ... StaticText x17 of 21 same-shape siblings elided
     link "The Guide to Arazo's Artifacts" [url=https://www.drivethrurpg.com/en/product/581640/the-guide-to-arazo-s-artifacts]
-    button "Roll 1-78"
+    button "Roll 1-27"
     button "One lower" [disabled=true]
     textbox "Roll result" [value=1 multiline=false readonly=false required=false]
     button "One higher"
@@ -141,7 +141,7 @@ Open on start
 Privacy
 RU
 Roll
-Roll 1-78
+Roll 1-27
 Roll result
 Search
 Share

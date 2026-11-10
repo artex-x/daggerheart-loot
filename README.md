@@ -14,7 +14,7 @@ The site installs as an app on a phone or a desktop; the guide is at
 in the footer beside the privacy policy (`pages/privacy.html`) and the terms
 of use (`pages/terms.html`).
 
-1459 records in all - 1078 items and consumables plus 381 pieces of equipment -
+1593 records in all - 1212 items and consumables plus 381 pieces of equipment -
 each with a name, a description, a stat line where it has one, and an
 illustration. No tracking; signing in is optional, and without it nothing about
 you reaches a server.
@@ -40,9 +40,12 @@ you reaches a server.
 | Dread GM Toolbox | 1-29 | 1 item |
 | Vault of Ages | 1-144 | 1 item |
 | The Dragon's Vault | 1-145 | 1 item |
-| Arazo's Artifacts | 1-78 | 1 item |
+| Arazo's Artifacts | 1-27 | 1 item |
 | Community items | community + 1-10 | 1 item |
 | Many Worlds Tavern | realm + a roll inside it (1-11 to 1-21) | 1 item |
+| Pistolheart | 1-45 | 1 item |
+| The Last Round Table | 1-26 | 1 item |
+| Escape the Veiled Halls | 1-15 | 1 item |
 
 Core and Hope & Fear are the same Nd12 roll against the same 1-60 table, so they
 share one mode with a source switch. Rarity there only sets how many dice you
@@ -59,7 +62,7 @@ an item of the "More" menu.
 
 **Tables** holds every table in full, including the alternate ones and the three
 equipment tables (weapons, secondary weapons, armor), each with its own search
-box and a list/grid switch. **Search** covers all 1459 records at once - names,
+box and a list/grid switch. **Search** covers all 1593 records at once - names,
 descriptions and stat lines, in both languages.
 
 Sections are addressable, and every heading has a copy-link button:
@@ -208,6 +211,9 @@ will not show WebP in `og:image`. Ids are stable and match `id` in `data.js`:
 | `dv` / `dve` | The Dragon's Vault, loot / equipment | `dv26`, `dve19` |
 | `aa` | Arazo's Artifacts | `aa7` |
 | `mw` | Many Worlds Tavern | `mw47` |
+| `ph` | Pistolheart | `ph37` |
+| `lr` | The Last Round Table | `lr12` |
+| `vh` | Escape the Veiled Halls | `vh9` |
 | `cm` | Community items | `cm81` |
 | `f` | Campaign frame equipment | `f7` |
 | `q` | Core and Hope & Fear equipment | `q26` |
@@ -217,7 +223,10 @@ Loreborne `cm11`-`cm20`, and so on. Many Worlds Tavern runs realm by realm in
 release order: Sporopolis `mw1`-`mw20`, Wagerwood `mw21`-`mw40`, Warrin' Warrens
 `mw41`-`mw61`, Godsvale `mw62`-`mw81`, Hornet Hold `mw82`-`mw92`, The Drome
 `mw93`-`mw109`. Hornet Hold and The Drome print no card number, so inside each
-the order is kind, then name.
+the order is kind, then name. Pistolheart runs `ph1`-`ph93` in book order over its
+three volumes, an upgrade line's rungs after its head; only a line's head and a single
+item carry a roll, 1-45. The Last Round Table runs `lr1`-`lr26` and Escape the Veiled
+Halls `vh1`-`vh15`, one flat list each, the id number the roll.
 
 A homebrew item link, a share link, a print set link and a table link are
 link cards on the same host `daggerheart-loot.pages.dev`: each address answers
@@ -296,10 +305,10 @@ app/src/styles/       tokens.css and shared styles
 app/index.html        entry document, built into dist/index.html
 data.js               the data: window.LOOT
 card/*.svg            36 vectors for the print cards, exported from Figma
-img/*.webp            1192 pictures, 640x640, ~35 MB
+img/*.webp            1278 pictures, 640x640, ~35 MB
 img/thumb/*.webp      one 160x160 thumbnail per picture, drawn in rows
 og/*.jpg              the same pictures as JPEG for link previews, ~37 MB
-i/*.html              1459 stub pages per language with Open Graph markup: i/ Russian,
+i/*.html              1593 stub pages per language with Open Graph markup: i/ Russian,
                       i/en/ English; the old host's mirror publishes them, the site
                       publishes the app with the same card (dist/i/); generated,
                       not committed
@@ -429,7 +438,7 @@ stop working entirely. Training scrapers are excluded separately in `robots.txt`
 |---|---|
 | `en` / `ende` | English name and description |
 | `ru` / `rud` | Russian name and description |
-| `roll` | number in its own table |
+| `roll` | number in its own table; empty on an upgrade line's rungs |
 | `kind` | `item`, `consumable` or `equip` |
 | `img` | file name in `img/`, same as `id`; may be empty |
 | `craft` | optional: a list of the `id`s this upgrades into, for example `["cc8"]` |
@@ -494,10 +503,10 @@ it deals. They usually agree, but the Shadowblade and the Ghostblade are
 
 Equipment is not only in `eq`. Eleven Wondrous Environments records, all 68 of The
 Dragon's Vault's weapons and armor, all 68 of Arazo's Artifacts', all 35 of Many Worlds
-Tavern's, and every campaign
+Tavern's, all 68 of Pistolheart's, the three weapons of The Last Round Table, and every campaign
 frame entry, plus some of Vault of Ages and Dread GM Toolbox, carry the same `eq` block
 while staying in `items`; campaign frames are not a roll table. The three equipment tables
-gather all of them: 458 weapons, 135 secondary weapons, 114 armor. The source
+gather all of them: 512 weapons, 148 secondary weapons, 118 armor. The source
 filter is what narrows those to the two books (239 / 73 / 69).
 
 ## Category colors
@@ -525,6 +534,9 @@ is a caption, not a category - and the stat line carries no color of its own.
 | The Dragon's Vault | 145 | [The Dragon's Vault](https://www.drivethrurpg.com/en/product/581246/the-dragon-s-vault) | fan translation |
 | Arazo's Artifacts | 78 | [The Guide to Arazo's Artifacts](https://www.drivethrurpg.com/en/product/581640/the-guide-to-arazo-s-artifacts) | fan translation |
 | Many Worlds Tavern | 109 | [Sporopolis](https://heartofdaggers.com/products/sporopolis-item-and-domain-cards/), [Wagerwood](https://heartofdaggers.com/products/wagerwood-item-and-domain-cards/), [Warrin' Warrens](https://heartofdaggers.com/products/warrin-warrens-items-and-domains/), [Godsvale](https://heartofdaggers.com/products/godsvale-items-and-domains/), [Hornet Hold](https://heartofdaggers.com/products/hornet-hold-items-and-domains/), [The Drome](https://heartofdaggers.com/products/the-drome-items-and-domains/) | fan translation |
+| Pistolheart | 93 | [Pistolheart Volume 1](https://www.drivethrurpg.com/en/product/547537/pistolheart-volume-1), [2](https://www.drivethrurpg.com/en/product/564429/pistolheart-volume-2), [3](https://www.drivethrurpg.com/en/product/578612/pistolheart-volume-3) | fan translation |
+| The Last Round Table | 26 | [The Last Round Table](https://heartofdaggers.com/products/the-last-round-table/) | fan translation |
+| Escape the Veiled Halls | 15 | [Escape the Veiled Halls](https://heartofdaggers.com/products/escape-the-veiled-halls/) | fan translation |
 | Community items | 90 | [Community Magic Items](https://www.drivethrurpg.com/en/product/558159/community-magic-items-a-daggerheart-compatible-toolkit) | fan translation, community names per [daggerheart.su](https://ru.daggerheart.su/community) |
 | Campaign frames | 94 | Beast Feast, Colossus, Dark Heart, Motherboard | fan translation |
 | Weapons | 239 | Daggerheart SRD, Hope & Fear | Core from [daggerheart.su](https://ru.daggerheart.su/), H&F from a community sheet |
@@ -569,6 +581,7 @@ play at the table:
   material published before that.
 - **Wondrous Environments**, **Dread GM Toolbox**, **Vault of Ages**,
   **The Dragon's Vault**, **The Guide to Arazo's Artifacts**, the **Many Worlds Tavern** card sets,
+  **Pistolheart**, **The Last Round Table**, **Escape the Veiled Halls**,
   **Community Magic Items** and the **Alternate Loot &
   Consumable Tables** fall outside that license: they are paid and fan
   supplements whose text belongs to their own authors.

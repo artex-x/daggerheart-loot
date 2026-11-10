@@ -62,7 +62,7 @@
     type FilterState
   } from '../lib/filters.js';
   import { FRAME_ORDER, frameName } from '../lib/frames.js';
-  import { REALM_ORDER, realmName } from '../lib/realms.js';
+  import { SECTION_PROP } from '../lib/sectionProps.js';
   import { homebrewItemHash, tablesHash } from '../lib/hash.js';
   import { helpFor } from '../lib/help.js';
   import {
@@ -392,10 +392,11 @@
   }
 
   /* Which body shape this table draws, off `renderTables()`'s own branches:
-     a plain list, or one split by tier, frame, community, realm, the equipment
+     a plain list, or one split by tier, frame, community, a record property
+     (`SECTION_PROP`: realm, volume), the equipment
      tables' own tier sections, or the alternate tables' rarity/hope-fear
      columns. */
-  type BodyKind = 'plain' | 'tier' | 'other' | 'comm' | 'realm' | 'eq' | 'alt' | 'hb';
+  type BodyKind = 'plain' | 'tier' | 'other' | 'comm' | 'prop' | 'eq' | 'alt' | 'hb';
   const bodyKind = $derived<BodyKind>(
     eqKind
       ? 'eq'
@@ -407,8 +408,8 @@
             ? 'other'
             : table === 'community'
               ? 'comm'
-              : table === 'mwt'
-                ? 'realm'
+              : SECTION_PROP[table]
+                ? 'prop'
                 : table === 'alt_item' || table === 'alt_consumable'
                   ? 'alt'
                   : 'plain'
@@ -451,15 +452,17 @@
       .filter((s) => s.entries.length > 0);
   });
 
-  const realmSections = $derived.by<Section[]>(() =>
-    bodyKind !== 'realm'
-      ? []
-      : REALM_ORDER.map((id) => ({
-          key: id,
-          label: realmName(id, app.lang),
-          entries: filtered.filter((it) => it.realm === id).map((it) => ({ it }))
-        })).filter((s) => s.entries.length > 0)
-  );
+  const propSections = $derived.by<Section[]>(() => {
+    const prop = SECTION_PROP[table];
+    if (bodyKind !== 'prop' || !prop) return [];
+    return prop.order
+      .map((id) => ({
+        key: id,
+        label: prop.name(id, app.lang),
+        entries: filtered.filter((it) => prop.valueOf(it) === id).map((it) => ({ it }))
+      }))
+      .filter((s) => s.entries.length > 0);
+  });
 
   /* The equipment tables' own tier sections, off `renderEquipTable`
      (`git show 23c00a6^:app.js`): `voa`'s tier body without cursed objects (`t1`-`t4`,
@@ -502,8 +505,8 @@
         ? otherSections
         : bodyKind === 'comm'
           ? commSections
-          : bodyKind === 'realm'
-            ? realmSections
+          : bodyKind === 'prop'
+            ? propSections
             : bodyKind === 'eq'
               ? eqSections
               : bodyKind === 'hb'
@@ -924,7 +927,7 @@
                 >
               {/if}
             </Empty>
-          {:else if bodyKind === 'tier' || bodyKind === 'other' || bodyKind === 'comm' || bodyKind === 'realm' || bodyKind === 'eq' || bodyKind === 'hb'}
+          {:else if bodyKind === 'tier' || bodyKind === 'other' || bodyKind === 'comm' || bodyKind === 'prop' || bodyKind === 'eq' || bodyKind === 'hb'}
             {#each activeSections as s (s.key)}
               <div class="tsection" class:flash={flashKey === s.key} id={'sec-' + s.key}>
                 <SectionHead

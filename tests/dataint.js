@@ -13,6 +13,8 @@ const DATA = L.items,
   ALT = L.alt,
   REFS = L.refs;
 const ALL = [].concat(...Object.values(DATA), EQ);
+/* A tier past an upgrade line's head; the twin of `isRung` in app/src/lib/roll.ts. */
+const isRung = (x) => !!(x.eq && x.eq.line) && x.eq.line !== x.id;
 
 console.log('identifiers');
 const byId = {};
@@ -20,7 +22,7 @@ ALL.forEach((x) => {
   ok(!byId[x.id], 'duplicate id: ' + x.id);
   byId[x.id] = x;
 });
-ok(ALL.length === 1459, 'records are not 1459, but ' + ALL.length);
+ok(ALL.length === 1593, 'records are not 1593, but ' + ALL.length);
 /* Vault of Ages numbers its cards by book volume and section, not straight
    through: voa2_a1 - volume two, first artifact. Links, filenames and list
    codes all hang on id, so the book's own scheme is different but just as
@@ -53,7 +55,10 @@ ALL.forEach((x) => {
       'frame',
       'community',
       'arazo',
-      'mwt'
+      'mwt',
+      'ph',
+      'lr',
+      'vh'
     ].indexOf(x.src) >= 0,
     x.id + ': unknown src ' + x.src
   );
@@ -64,6 +69,14 @@ ALL.forEach((x) =>
     x.id + ': a realm off mwt, or mwt with none'
   )
 );
+/* A Pistolheart record names the volume it is printed in; no other record carries one. */
+ALL.forEach((x) => {
+  ok(
+    (x.src === 'ph') === (x.vol !== undefined) &&
+      (x.vol === undefined || [1, 2, 3].includes(x.vol)),
+    x.id + ': a volume off ph, ph with none, or an unknown volume ' + x.vol
+  );
+});
 
 console.log('text hygiene');
 function hygiene(x) {
@@ -284,7 +297,8 @@ Object.keys(DATA).forEach((table) => {
       ROLL_POOLS.push([table + '/' + realm, rows])
     );
   } else {
-    ROLL_POOLS.push([table, DATA[table]]);
+    /* An upgrade line is one roll row, its head (docs/specs/FEATURES.md, "Rolling"). */
+    ROLL_POOLS.push([table, DATA[table].filter((x) => !isRung(x))]);
   }
 });
 const ROLLED = new Set(ROLL_POOLS.flatMap(([, rows]) => rows));
@@ -301,6 +315,29 @@ ROLL_POOLS.forEach(([name, rows]) => {
   ok(
     [...rolls].sort((a, b) => a - b).join() === rows.map((_, i) => i + 1).join(),
     name + ': numbers do not cover 1-' + rows.length
+  );
+  ok(
+    rolls.every((n, i) => n === i + 1),
+    name + ': roll numbers do not ascend in table order'
+  );
+});
+/* Every line inside a roll pool has exactly one rolled record, its head; every other
+   line (the campaign frames, the Core equipment) has none. */
+const LINES = new Map();
+ALL.forEach((x) => {
+  if (x.eq && x.eq.line)
+    (LINES.get(x.eq.line) || LINES.set(x.eq.line, []).get(x.eq.line)).push(x);
+});
+LINES.forEach((rows, line) => {
+  const rolled = rows.filter((x) => x.roll != null);
+  const pooled = rows.some((x) => ROLLED.has(x));
+  ok(
+    pooled ? rolled.length === 1 && rolled[0].id === line : rolled.length === 0,
+    'line ' +
+      line +
+      ': rolled records are ' +
+      rolled.map((x) => x.id).join() +
+      ', not its head only'
   );
 });
 
@@ -412,8 +449,8 @@ Object.keys(lines).forEach((head) => {
   ok(byId[head].eq.tier === 1, 'line ' + head + ' does not start at tier 1');
 });
 ok(
-  Object.keys(lines).length === 89,
-  'upgrade lines are not 89, but ' + Object.keys(lines).length
+  Object.keys(lines).length === 105,
+  'upgrade lines are not 105, but ' + Object.keys(lines).length
 );
 
 console.log('sets');

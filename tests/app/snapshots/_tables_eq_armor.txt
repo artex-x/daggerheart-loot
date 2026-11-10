@@ -41,7 +41,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       button "Все" [pressed=true]
       button "1" [pressed=false]
       button "2" [pressed=false]
-      ... button x10 of 14 same-shape siblings elided
+      ... button x11 of 15 same-shape siblings elided
       StaticText "ИСТОЧНИК"
       button "Все" [pressed=true]
       StaticText "УЛУЧШЕНИЯ И УНИКАЛЬНЫЕ"
@@ -49,12 +49,12 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       button "Есть улучшение" [pressed=false]
       button "Уникальные" [pressed=false]
     heading "Ранг 1" [level=2]
-    ... button x116 of 120 same-shape siblings elided
+    ... button x120 of 124 same-shape siblings elided
     heading "Ранг 2" [level=2]
     heading "Ранг 3" [level=2]
     heading "Ранг 4" [level=2]
-    button "73 Легендарная Кольчуга из Змиевой Чешуи ARAZO'S ARTIFACTS Порог..." [namelen=233 namehash=eb24f04a]
     button "5 Панцирь Тарана УНИКАЛЬНОЕ ОПЛОТ ШЕРШНЕЙ Пороги 18/48 · Броня 6..." [namelen=184 namehash=f433ca55]
+    button "27 Пыльник Неумолимого УНИКАЛЬНОЕ PISTOLHEART Пороги 14/35 · Бро..." [namelen=204 namehash=5ffec9f6]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -64,6 +64,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 
 ## ru :: controls
 1
+12Латы ПринцаArazo's ArtifactsПороги 8/17 · Броня 2Крепость: Ког... [namelen=172 namehash=3e7d6d6c]
 12Одеяние ПосланникаУникальноеVault of AgesПороги 11/24 · Броня ... [namelen=272 namehash=29a9618f]
 142Непробиваемые ОдеянияУникальноеThe Dragon's VaultПороги 15/38... [namelen=227 namehash=3c5b0501]
 143Ночной ПокровУникальноеThe Dragon's VaultПороги 8/18 · Броня ... [namelen=287 namehash=437009e5]
@@ -72,28 +73,25 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 17Одеяния Повелителя ТруповУникальноеVault of AgesПороги 9/19 · ... [namelen=396 namehash=23841db9]
 19Латный Доспех ДемоностражаУникальноеVault of AgesПороги 17/44 ... [namelen=312 namehash=66ef5ca8]
 2
+24Кожаный Доспех Чёрной ШляпыУникальноеPistolheartПороги 6/12 · ... [namelen=188 namehash=b8c1a380]
 24Панцирь Подземного ОбитателяУникальноеVault of AgesПороги 10/2... [namelen=246 namehash=287a2628]
+25Кольчуга из Змиевой ЧешуиArazo's ArtifactsПороги 7/15 · Броня ... [namelen=216 namehash=a413c45f]
+25Латы Бурового ЧервяУникальноеPistolheartПороги 11/24 · Броня 5... [namelen=218 namehash=aa0e260f]
 26Мантия АрхимагаУникальноеVault of AgesПороги 10/30 · Броня 2Ст... [namelen=322 namehash=dccfd021]
+26Позолоченная Грудная КлеткаУникальноеPistolheartПороги 13/31 ·... [namelen=156 namehash=6cf12f20]
 26ПылестранникУникальноеVault of AgesПороги 8/16 · Броня 4Стоимо... [namelen=525 namehash=f7b3c981]
+27Пыльник НеумолимогоУникальноеPistolheartПороги 14/35 · Броня 6... [namelen=199 namehash=38947fa9]
 28Славная КирасаУникальноеVault of AgesПороги 12/24 · Броня 4Сто... [namelen=352 namehash=5128a19d]
 28Эпидермальное ОдеяниеУникальноеVault of AgesПороги 8/28 · Брон... [namelen=525 namehash=e8a92062]
 29НейроплащУникальноеVault of AgesПороги 13/36 · Броня 5Стоимост... [namelen=492 namehash=0e0713e2]
 3
 30Святое ОблачениеУникальноеVault of AgesПороги 9/24 · Броня 4Ст... [namelen=255 namehash=dd1836c8]
-33Латы ПринцаArazo's ArtifactsПороги 8/17 · Броня 2Крепость: Ког... [namelen=172 namehash=d57b1878]
-34Улучшенные Латы ПринцаArazo's ArtifactsПороги 13/28 · Броня 4К... [namelen=184 namehash=b3b23189]
-35Продвинутые Латы ПринцаArazo's ArtifactsПороги 15/35 · Броня 6... [namelen=185 namehash=52c473ec]
-36Легендарные Латы ПринцаArazo's ArtifactsПороги 17/44 · Броня 8... [namelen=185 namehash=3cda33ea]
 3Доспех Морозного ПоцелуяУникальноеVault of AgesПороги 7/14 · Бр... [namelen=205 namehash=0ca8c499]
 4
 4Сердце Небесного ПоэтаУникальноеДолина БоговПороги 9/20 · Броня... [namelen=156 namehash=276ee9b7]
 5Панцирь ТаранаУникальноеОплот ШершнейПороги 18/48 · Броня 6Бычь... [namelen=178 namehash=472d84fd]
 6Гибкие ЛатыУникальноеОплот ШершнейПороги 10/25 · Броня 4Гибкое:... [namelen=107 namehash=e40c9621]
 6Кожаный Доспех ПерфекционистаУникальноеЛес ПариПороги 7/16 · Бр... [namelen=212 namehash=93e788d2]
-70Кольчуга из Змиевой ЧешуиArazo's ArtifactsПороги 7/15 · Броня ... [namelen=216 namehash=22ef642c]
-71Улучшенная Кольчуга из Змиевой ЧешуиArazo's ArtifactsПороги 10... [namelen=228 namehash=380d265d]
-72Продвинутая Кольчуга из Змиевой ЧешуиArazo's ArtifactsПороги 1... [namelen=229 namehash=7f12e476]
-73Легендарная Кольчуга из Змиевой ЧешуиArazo's ArtifactsПороги 1... [namelen=229 namehash=2386de46]
 8Грибной Кожаный ДоспехУникальноеСпорополисПороги 12/30 · Броня ... [namelen=161 namehash=829f3f85]
 8Латы СилачаУникальноеВоюющие НорыПороги 10/25 · Броня 5Безрукав... [namelen=104 namehash=9ff7c54b]
 ?Об этих данных
@@ -102,6 +100,7 @@ Core
 EN
 Hope & Fear
 Many Worlds Tavern
+Pistolheart
 RU
 The Dragon's Vault
 Vault of Ages
@@ -137,8 +136,10 @@ daggerheart.com
 Латный ДоспехПороги 8/17 · Броня 4Очень тяжелое: −2 к Уклонению;... [namelen=81 namehash=d37fc6fd]
 Латы КровокамняУникальноеHope & FearПороги 13/35 · Броня 6Кровож... [namelen=152 namehash=824a6d40]
 Латы УжасаУникальноеHope & FearПороги 14/38 · Броня 6Проклятое: ... [namelen=188 namehash=e0e464ea]
+Легендарная Кольчуга из Змиевой ЧешуиArazo's ArtifactsПороги 14/... [namelen=227 namehash=de64c657]
 Легендарная Мантия МагаHope & FearПороги 10/31 · Броня 5Зачарова... [namelen=146 namehash=3d9f96e4]
 Легендарная Среброшелковая БроняТёмное сердце АндалурииПороги 11... [namelen=224 namehash=8c829c9f]
+Легендарные Латы ПринцаArazo's ArtifactsПороги 17/44 · Броня 8Кр... [namelen=183 namehash=a674cb70]
 Легендарный Бригантный ДоспехHope & FearПороги 13/35 · Броня 6Об... [namelen=123 namehash=98fadfc9]
 Легендарный Доспех из Гробового ДереваТёмное сердце АндалурииПор... [namelen=171 namehash=c9a7356c]
 Легендарный Кожаный Длинный ПлащТёмное сердце АндалурииПороги 12... [namelen=142 namehash=ef629d12]
@@ -171,8 +172,10 @@ daggerheart.com
 Поиск по названию или описанию...
 Покров ТьмыУникальноеHope & FearПороги 13/36 · Броня 5Призрачное... [namelen=181 namehash=1d115c03]
 Проводящий ДоспехУникальноеПороги 13/36 · Броня 5Проводящее: +1 ... [namelen=84 namehash=e199bb25]
+Продвинутая Кольчуга из Змиевой ЧешуиArazo's ArtifactsПороги 12/... [namelen=227 namehash=4c492837]
 Продвинутая Мантия МагаHope & FearПороги 8/22 · Броня 4Зачарован... [namelen=145 namehash=d831b024]
 Продвинутая Среброшелковая БроняТёмное сердце АндалурииПороги 9/... [namelen=223 namehash=94c18f0e]
+Продвинутые Латы ПринцаArazo's ArtifactsПороги 15/35 · Броня 6Кр... [namelen=183 namehash=6a7f9c56]
 Продвинутый Бригантный ДоспехHope & FearПороги 11/26 · Броня 5Об... [namelen=123 namehash=f65b52aa]
 Продвинутый Доспех из Гробового ДереваТёмное сердце АндалурииПор... [namelen=170 namehash=9ef9b51f]
 Продвинутый Кожаный Длинный ПлащТёмное сердце АндалурииПороги 10... [namelen=142 namehash=e09c8a77]
@@ -200,8 +203,10 @@ daggerheart.com
 Туника из Паучьего ШелкаУникальноеHope & FearПороги 9/20 · Броня... [namelen=151 namehash=6b244c23]
 Тёмное сердце Андалурии
 Укреплённый Полный ДоспехУникальноеПороги 15/40 · Броня 4Укрепле... [namelen=159 namehash=179a967e]
+Улучшенная Кольчуга из Змиевой ЧешуиArazo's ArtifactsПороги 10/2... [namelen=226 namehash=50a0be9d]
 Улучшенная Мантия МагаHope & FearПороги 6/15 · Броня 3Зачарованн... [namelen=144 namehash=77059607]
 Улучшенная Среброшелковая БроняТёмное сердце АндалурииПороги 7/1... [namelen=222 namehash=4795c85b]
+Улучшенные Латы ПринцаArazo's ArtifactsПороги 13/28 · Броня 4Кре... [namelen=182 namehash=0a596016]
 Улучшенный Бригантный ДоспехHope & FearПороги 9/19 · Броня 4Обли... [namelen=121 namehash=07531405]
 Улучшенный Доспех из Гробового ДереваТёмное сердце АндалурииПоро... [namelen=169 namehash=1e82f97d]
 Улучшенный Кожаный Длинный ПлащТёмное сердце АндалурииПороги 8/1... [namelen=140 namehash=ab4594d7]
@@ -259,7 +264,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_armor]
       button "All" [pressed=true]
       button "1" [pressed=false]
       button "2" [pressed=false]
-      ... button x10 of 14 same-shape siblings elided
+      ... button x11 of 15 same-shape siblings elided
       StaticText "SOURCE"
       button "All" [pressed=true]
       StaticText "UPGRADES AND UNIQUES"
@@ -267,12 +272,12 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_armor]
       button "Upgradable" [pressed=false]
       button "Unique" [pressed=false]
     heading "Tier 1" [level=2]
-    ... button x116 of 120 same-shape siblings elided
+    ... button x120 of 124 same-shape siblings elided
     heading "Tier 2" [level=2]
     heading "Tier 3" [level=2]
     heading "Tier 4" [level=2]
-    button "73 Legendary Wyrmscale Hauberk ARAZO'S ARTIFACTS Thresholds 14/3..." [namelen=201 namehash=c8614a00]
     button "5 Charger's Carapace UNIQUE HORNET HOLD Thresholds 18/48 · Armor..." [namelen=168 namehash=a5385586]
+    button "27 The Inexorable's Duster UNIQUE PISTOLHEART Thresholds 14/35 ·..." [namelen=197 namehash=963b581c]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -283,6 +288,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_armor]
 ## en :: controls
 1
 12Envoy's AttireUniqueVault of AgesThresholds 11/24 · Armor 5Rec... [namelen=237 namehash=d10ff272]
+12Plate of the PrinceArazo's ArtifactsThresholds 8/17 · Armor 2F... [namelen=158 namehash=a7d28ce0]
 142Impervious VestmentsUniqueThe Dragon's VaultThresholds 15/38 ... [namelen=205 namehash=474da1db]
 143NightshroudUniqueThe Dragon's VaultThresholds 8/18 · Armor 4S... [namelen=267 namehash=b706ce07]
 144Ordo Draconis ScaleUniqueThe Dragon's VaultThresholds 13/31 ·... [namelen=226 namehash=920f8cdf]
@@ -290,28 +296,25 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_armor]
 17Corpse Lord's RaimentsUniqueVault of AgesThresholds 9/19 · Arm... [namelen=346 namehash=64584337]
 19Demonguard PlatemailUniqueVault of AgesThresholds 17/44 · Armo... [namelen=287 namehash=53c780ad]
 2
+24Black Hat LeathersUniquePistolheartThresholds 6/12 · Armor 3Tu... [namelen=147 namehash=427dbc69]
 24Underdweller CarapaceUniqueVault of AgesThresholds 10/22 · Arm... [namelen=225 namehash=2008d8b1]
+25Boreworm PlateUniquePistolheartThresholds 11/24 · Armor 5Sand ... [namelen=175 namehash=f5305792]
+25Wyrmscale HauberkArazo's ArtifactsThresholds 7/15 · Armor 3Gua... [namelen=186 namehash=f928d19b]
 26Arch-Magus's RobesUniqueVault of AgesThresholds 10/30 · Armor ... [namelen=280 namehash=1321161e]
 26DustwanderUniqueVault of AgesThresholds 8/16 · Armor 4Recall C... [namelen=429 namehash=72f17535]
+26Gilded RibcageUniquePistolheartThresholds 13/31 · Armor 6Macab... [namelen=148 namehash=30f02815]
+27The Inexorable's DusterUniquePistolheartThresholds 14/35 · Arm... [namelen=192 namehash=6e8388dc]
 28Epidermal RobeUniqueVault of AgesThresholds 8/28 · Armor 1Reca... [namelen=472 namehash=730e3f7a]
 28Glorious CuirassUniqueVault of AgesThresholds 12/24 · Armor 4R... [namelen=305 namehash=28bb5af3]
 29NeuromantleUniqueVault of AgesThresholds 13/36 · Armor 5Recall... [namelen=435 namehash=2cbc0b12]
 3
 30Saintly VestmentsUniqueVault of AgesThresholds 9/24 · Armor 4R... [namelen=216 namehash=8c675975]
-33Plate of the PrinceArazo's ArtifactsThresholds 8/17 · Armor 2F... [namelen=158 namehash=2426c354]
-34Improved Plate of the PrinceArazo's ArtifactsThresholds 13/28 ... [namelen=168 namehash=89e0334b]
-35Advanced Plate of the PrinceArazo's ArtifactsThresholds 15/35 ... [namelen=168 namehash=30395382]
-36Legendary Plate of the PrinceArazo's ArtifactsThresholds 17/44... [namelen=169 namehash=e49ca2b1]
 3Frost-Kissed ArmorUniqueVault of AgesThresholds 7/14 · Armor 3R... [namelen=183 namehash=c07d8494]
 4
 4The Sky-Poet's HeartUniqueGodsvaleThresholds 9/20 · Armor 2Expe... [namelen=144 namehash=0a463ce3]
 5Charger's CarapaceUniqueHornet HoldThresholds 18/48 · Armor 6Bu... [namelen=162 namehash=7f27326a]
 6Flexible PlateUniqueHornet HoldThresholds 10/25 · Armor 4Flexib... [namelen=110 namehash=2cc6a250]
 6Perfectionist's LeathersUniqueWagerwoodThresholds 7/16 · Armor ... [namelen=210 namehash=73e340e3]
-70Wyrmscale HauberkArazo's ArtifactsThresholds 7/15 · Armor 3Gua... [namelen=186 namehash=ce3a30d3]
-71Improved Wyrmscale HauberkArazo's ArtifactsThresholds 10/22 · ... [namelen=196 namehash=15e63692]
-72Advanced Wyrmscale HauberkArazo's ArtifactsThresholds 12/29 · ... [namelen=196 namehash=7d6f2a10]
-73Legendary Wyrmscale HauberkArazo's ArtifactsThresholds 14/38 ·... [namelen=197 namehash=d7b233a5]
 8Fungal LeathersUniqueSporopolisThresholds 12/30 · Armor 6The nu... [namelen=153 namehash=daea3979]
 8Gunshow PlateUniqueWarrin' WarrensThresholds 10/25 · Armor 5Arm... [namelen=118 namehash=f4f014bb]
 ?About this data
@@ -324,8 +327,10 @@ Advanced Gambeson ArmorThresholds 9/23 · Armor 5Flexible: +1 to ... [namelen=71
 Advanced Leather ArmorThresholds 11/27 · Armor 5
 Advanced Leather LongcoatDark Heart of AndaluriaThresholds 10/25... [namelen=132 namehash=42c89d17]
 Advanced Mage RobesHope & FearThresholds 8/22 · Armor 4Enchanted... [namelen=135 namehash=850ee337]
+Advanced Plate of the PrinceArazo's ArtifactsThresholds 15/35 · ... [namelen=166 namehash=640331fe]
 Advanced Scale Mail ArmorHope & FearThresholds 13/30 · Armor 5Cu... [namelen=87 namehash=a93571fe]
 Advanced Silverweave ArmorDark Heart of AndaluriaThresholds 9/23... [namelen=180 namehash=6e490c3c]
+Advanced Wyrmscale HauberkArazo's ArtifactsThresholds 12/29 · Ar... [namelen=194 namehash=2f9d8a9f]
 All
 Alt. tables
 Arazo's Artifacts
@@ -374,8 +379,10 @@ Improved Gambeson ArmorThresholds 7/16 · Armor 4Flexible: +1 to ... [namelen=71
 Improved Leather ArmorThresholds 9/20 · Armor 4
 Improved Leather LongcoatDark Heart of AndaluriaThresholds 8/18 ... [namelen=131 namehash=5ccd1aa3]
 Improved Mage RobesHope & FearThresholds 6/15 · Armor 3Enchanted... [namelen=135 namehash=ed37c8a4]
+Improved Plate of the PrinceArazo's ArtifactsThresholds 13/28 · ... [namelen=166 namehash=8f186a0b]
 Improved Scale Mail ArmorHope & FearThresholds 11/23 · Armor 4Cu... [namelen=87 namehash=f30fc59d]
 Improved Silverweave ArmorDark Heart of AndaluriaThresholds 7/16... [namelen=180 namehash=000856fb]
+Improved Wyrmscale HauberkArazo's ArtifactsThresholds 10/22 · Ar... [namelen=194 namehash=3cc78c5e]
 Install as an app
 Irontree Breastplate ArmorUniqueThresholds 9/20 · Armor 4Reinfor... [namelen=181 namehash=7dcc4b03]
 Leather ApronUniqueBeast FeastThresholds 6/13 · Armor 3
@@ -390,8 +397,10 @@ Legendary Gambeson ArmorThresholds 11/32 · Armor 6Flexible: +1 t... [namelen=73
 Legendary Leather ArmorThresholds 13/36 · Armor 6
 Legendary Leather LongcoatDark Heart of AndaluriaThresholds 12/3... [namelen=133 namehash=a1ee8670]
 Legendary Mage RobesHope & FearThresholds 10/31 · Armor 5Enchant... [namelen=137 namehash=9b118f7f]
+Legendary Plate of the PrinceArazo's ArtifactsThresholds 17/44 ·... [namelen=167 namehash=47d07069]
 Legendary Scale Mail ArmorHope & FearThresholds 15/39 · Armor 6C... [namelen=88 namehash=bdee6904]
 Legendary Silverweave ArmorDark Heart of AndaluriaThresholds 11/... [namelen=182 namehash=c878a4de]
+Legendary Wyrmscale HauberkArazo's ArtifactsThresholds 14/38 · A... [namelen=195 namehash=ec2c20b6]
 Link to this section
 Link to this table
 List
@@ -401,6 +410,7 @@ Many Worlds Tavern
 Monett's CloakUniqueThresholds 16/39 · Armor 6Magic: You can't m... [namelen=108 namehash=a2afdb8a]
 Open on start
 Other
+Pistolheart
 Privacy
 Quilted ClothingUniqueBeast FeastThresholds 5/11 · Armor 3Flexib... [namelen=81 namehash=c2f4a646]
 RU
