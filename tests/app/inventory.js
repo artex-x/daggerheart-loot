@@ -817,7 +817,7 @@ const STATES = [
     why: 'the two dice agreeing, which is the offer of a whole rarity',
     enter: async (d) => {
       /* Up to 760 px the steppers are in «Настроить»: case 83 enters this state at 360. */
-      const narrow = (await d.count('.reshead .morewrap')) > 0;
+      const narrow = (await d.count('.pickrow .morewrap')) > 0;
       if (narrow) await d.click('Настроить');
       await d.click('На единицу больше');
       if (narrow) await d.click('Настроить');
@@ -3327,12 +3327,21 @@ const STATES = [
   },
   /* The English half is captured after the EN press, an outside click that
      closes the menu, as it closes the add-to-list menu. */
-  /* The supplements menu of the mode row (FEATURES.md, "Chrome"), open on a supplement page:
-     the nine supplements with the open one checked. Its axe case is modeRow.test.ts. */
+  /* The roll's mode sheet (FEATURES.md, "Chrome"), open on a supplement page: up to 760 px
+     from the picker, from 761 px from «Дополнения». Its axe case is modeRow.test.ts. */
   {
-    id: '#/roll/vault_of_ages ~ supplements menu',
+    id: '#/roll/vault_of_ages ~ picker sheet',
     route: '#/roll/vault_of_ages',
-    why: 'the supplements menu open on Vault of Ages: the caption, nine supplements in table order, Vault of Ages checked and current',
+    width: 360,
+    why: 'the mode picker sheet open on Vault of Ages: the title «Бросок», the two own modes, the caption «Дополнения» and ten supplements in table order, Vault of Ages current',
+    enter: async (d) => {
+      await d.click('Режим броска: Vault of Ages');
+    }
+  },
+  {
+    id: '#/roll/vault_of_ages ~ supplements sheet',
+    route: '#/roll/vault_of_ages',
+    why: 'from 761 px «Дополнения» opens the same sheet, centered: the title «Бросок», the two own modes, the caption and ten supplements, Vault of Ages current',
     enter: async (d) => {
       await d.press('Vault of Ages');
     }

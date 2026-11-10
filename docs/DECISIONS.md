@@ -14,6 +14,7 @@ deleted.
 
 ## Index
 
+- 2026-11-10 - [The roll modes are a picker row up to 760 px](decisions/2026-11-10-the-roll-modes-are-a-picker-row-up-to-760-px.md)
 - 2026-11-07 - [A table sectioned by a record property reads one descriptor](decisions/2026-11-07-a-table-sectioned-by-a-record-property-reads-one-descriptor.md)
 - 2026-11-07 - [Escape the Veiled Halls is one flat list with no rooms](decisions/2026-11-07-escape-the-veiled-halls-is-one-flat-list-with-no-rooms.md)
 - 2026-11-07 - [One roll row per item: an upgrade line is rolled at its head](decisions/2026-11-07-one-roll-row-per-item-an-upgrade-line-is-rolled-at-its-head.md)

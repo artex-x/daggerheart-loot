@@ -250,6 +250,7 @@ const ru = {
   /* The catalog's list head: the table picker below 761 px and the two levels of the
      navigation, named for assistive technology. */
   tablePick: 'Таблица: %s',
+  rollPick: 'Режим броска: %s',
   groupLabel: 'Группа',
   sourceLabel: 'Источник',
   /* The three-dot menu of a page's rare actions (the icon and the word). */
@@ -1338,6 +1339,7 @@ const en: Dict = {
   searchPh: 'Search by name or description...',
   searchShort: 'Search',
   tablePick: 'Table: %s',
+  rollPick: 'Roll mode: %s',
   groupLabel: 'Group',
   sourceLabel: 'Source',
   moreMenu: 'More',
@@ -2197,7 +2199,7 @@ export function dict(lang: Lang): Dict {
 
 /** Which dictionary key names a section, for the tab title
  *  (`<section label> - <docTitle>`), the start-section select and the
- *  supplements menu. The exhaustive `Record<Section, ...>` makes a new
+ *  mode picker. The exhaustive `Record<Section, ...>` makes a new
  *  section name its word here. */
 export const SECTION_LABEL: Record<Section, keyof Dict> = {
   'roll/std': 'pageStd',

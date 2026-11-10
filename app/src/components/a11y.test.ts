@@ -687,11 +687,15 @@ const COVERED: Record<string, string> = {
   'SharePanel.svelte': 'sharePanel.test.ts open, with a deleted link, and with a failed read',
   'Marked.svelte': 'searchPage.test.ts and tables.test.ts, the marked rows and tiles',
   'Markup.svelte': 'markup.test.ts: every block, a lead, and markup characters as text',
-  'Menu.svelte': 'accountMenu.test.ts and modeRow.test.ts with each menu open',
+  'Menu.svelte': 'accountMenu.test.ts with the menu open',
   'MetaToggle.svelte':
     "metaToggle.test.ts closed and open, the owner's list page at the mid band (listPage.test.ts) and the /s/ note toggles (sharedListPage.test.ts)",
-  'ModeRow.svelte':
-    'modeRow.test.ts on the nine roll sections and in the page head, the menu closed and open',
+  'ModeRow.svelte': 'modeRow.test.ts: the picker and the pills, the sheet closed and open',
+  'PickerButton.svelte':
+    'modeRow.test.ts, tableNav.test.ts and homebrewTabs.test.ts, the picker closed and its sheet open',
+  'PickerRow.svelte':
+    'rollPage.test.ts, tables.test.ts and homebrewPage.test.ts, the row with its menu closed and open',
+  'SheetLinks.svelte': 'modeRow.test.ts and homebrewTabs.test.ts with the sheet open',
   'MarkupInline.svelte': 'markup.test.ts inside every block, and the record card above',
   'MarkupField.svelte':
     'markupField.test.ts with the toolbar, with «Просмотр» pressed and read-only; homebrewEditor.test.ts and listPage.test.ts with the hint open',

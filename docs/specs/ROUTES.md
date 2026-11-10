@@ -88,9 +88,9 @@ The header draws three jobs over them in every build: «Бросок» / "Roll" 
 twelve roll sections, «Таблицы» / "Tables" and «Поиск» / "Search"
 (`app/src/lib/nav.ts`). «Бросок» opens the last roll section of the tab, else the
 pinned start section when it is a roll section, else `#/roll/std`. The twelve roll
-sections draw a mode row under the header up to 760 px and the same controls in the page
+sections draw the mode picker in the picker row up to 760 px and the same controls in the page
 head from 761 px: Core rules, the alternate tables and
-one «Дополнения» / "Supplements" menu of the ten supplement sections
+one «Дополнения» / "Supplements" group of the ten supplement sections (the picker's sheet)
 (`roll/wondrous_environments` to `roll/escape_the_veiled_halls`); every supplement
 address stays its own section (`FEATURES.md`, "Chrome"). `#/lists` has no job: it
 stays a section route, reached from the account menu's «Мои списки», a bookmark or

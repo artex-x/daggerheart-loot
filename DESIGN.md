@@ -426,8 +426,8 @@ face prints in the system stack behind it.
 ## Layout
 
 One width governs everything: `--wrap: min(1440px, 100% - 32px)`. The header
-bar, the job row, the mode row, `main` and the footer all take it, so the brand,
-the first mode control (up to 760px) and the first word of the page share a left edge
+bar, the job row, `main` and the footer all take it, so the brand,
+the first control of the picker row (up to 760px) and the first word of the page share a left edge
 at every viewport. The 32px
 subtraction is the gutter, and `viewport-fit=cover` plus `env(safe-area-inset-*)`
 keeps the selection bar clear of a display cutout. The column grows with the
@@ -443,9 +443,10 @@ at 320); a 280px window scrolls sideways.
 The page is a vertical stack: a sticky translucent header (`rgb(14 12 21 / 86%)`
 over a 14px backdrop blur) that holds the brand row and the three jobs (63px from
 761px, 111px at 360px; up to 760px it leaves on a scroll down and returns on a
-scroll up), the mode row on the twelve roll pages up to 760px (53px, scrolling with
-the page), the content, then the footer. `main`
-carries 26px of top padding, 48px of bottom padding, and a 60vh minimum so a
+scroll up), the content, then the footer. Up to 760px the picker row of the roll pages,
+the tables and «Мои предметы» is the first row of `main`, 8px under the header (The Head
+Order Rule). `main`
+carries 26px of top padding (8px where a picker row is its first child), 48px of bottom padding, and a 60vh minimum so a
 short route does not collapse. `scrollbar-gutter: stable` on `html` reserves the
 scrollbar whether a route needs one or not; without it a short page after a long
 one shifts the content fifteen pixels sideways.
@@ -477,7 +478,7 @@ from 601px (The Roll Page Rule). The catalog adds one step, 1000px: from it the 
 column sits beside the rows; from 761px it draws the wide head (the `h1`, the
 group chips, the labeled pin and «Об этих данных», then the tabs) with the filters
 in the sheet; below 761px the picker row, the sheet and «··· Ещё»
-replace them. The list pages fold each row to the compact row up to 760px and draw the
+replace them, on the roll pages and «Мои предметы» too (The Head Order Rule). The list pages fold each row to the compact row up to 760px and draw the
 full row from 761px; the owner's list page draws the compact head up to 999px and its 330px
 side column at the right of the rows from 1000px (owner, 2026-11-06), and the rows
 column is a size container: under 760px of it a row's controls take a line under its
@@ -489,8 +490,8 @@ not add another system breakpoint. `/account` signed in uses the 1000px step too
 one column below it, two from it, in the DOM order of the one column.
 
 **The Roll Page Rule.** The twelve roll pages share one layout. Up to 760px: a read-only
-`h1`, the controls, one results line («Бросок N», «Настроить», «Ещё»); the pin, the
-help and the copy of every option are items of «Ещё». From 761px: the head (The Head
+`h1`, the picker row (the mode picker, «Ещё»), the controls, one results line («Бросок N»,
+«Настроить»); the pin, the help and the copy of every option are items of «Ещё». From 761px: the head (The Head
 Order Rule) with the `h1` «Бросок», the three mode pills and the labeled pin and help, a
 320px control pane, the results. The `h1` names the job at every width; the lit pill and
 the tab title name the mode. The roller has one gold
@@ -527,8 +528,13 @@ about 1139px); from 761px to 999px the pills take the next row, under the headin
 pin, the help and the primary, so the DOM order is the reading order in each band. A
 third level (a table group's books, the homebrew sources) is underlined tabs under the
 head; the ten supplements, 1331px of tabs, are one lit tab that opens the table picker's
-sheet. Up to 760px a page with siblings reads its heading, not draws it, and the mode row
-or the picker row names the page. The head's geometry follows the band only, never the content: the heading
+sheet, and the roll's «Дополнения ▾» opens the roll picker's sheet: one overflow control,
+one sheet. Up to 760px a page with siblings reads its heading, not draws it, and the
+picker row names the page: the picker, the page's own tools, «Ещё» last (the tables' view
+switch, «Новый предмет» on the Items tab; the roll row holds none, because «Настроить»
+belongs to the results line). The row sits 8px under the header, 40px tall, 4px (6px from
+601px) above the page's first row, and the picker takes the free width, so «Ещё» holds still
+on a switch. The three pages draw one picker face (`--t-small`, two lines at most). The head's geometry follows the band only, never the content: the heading
 is constant, so a switch between siblings moves no pill, a row that some contents lack
 keeps its reserved space (on «Мои предметы» from 1000px the Sources, Sets and Rules tabs keep
 the Items tab's «Новый предмет» as a hidden, unreachable copy, so the pills wrap at one width
@@ -560,8 +566,9 @@ are items of «Ещё» on the catalog, the roller, `/homebrew`, `/search` and
 **The First-Screen Rule.** At 360x640 and at 1180x720, in Russian and in
 English, at scroll 0, the primary content of a route starts no lower than 40%
 of the viewport height (256px at 640, 288px at 720); the header counts as a
-control above it. Named exceptions: `/roll/std` at 360x640 starts at 325px, for
-the rarities on the dice (owner, 2026-10-29); `/s/<token>` at 360x640 with its search
+control above it. Named exceptions: `/roll/std` at 360x640 starts at 322px, for
+the rarities on the dice (owner, 2026-10-29; it was 325px before the roll's picker row
+took the tables' place, 319.2px measured 2026-11-07); `/s/<token>` at 360x640 with its search
 row starts at 309px (owner, 2026-11-03, 286px; the built page measured 301px on 2026-11-05
 and 308.2px on 2026-11-06, when «Сохранить себе» took the thumb size, and the exception took
 it while the owner was away); `/s/<token>` with a 120-character list
@@ -720,7 +727,7 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
   (with their counts, tabular, in `--muted2`) are link chips in the page head (The Head
   Order Rule); the lit one takes the Seal Gold fill of the current place and draws no
   check, and keeps its rest width: the label reserves its 650 weight's width in a hidden
-  line. Up to 600px the roll's three share the mode row, 40px tall, and a long name
+  line. Up to 760px the roll's three are one picker in the picker row, and a long name
   takes two lines.
 - **Neutral pressed (`Chip neutral`):** the `check` icon before the label, the
   Vault Wall Lit fill, a Chalk label at weight 600 and a lit `--muted2`
@@ -822,14 +829,15 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
   the magnifier), at 14px weight 560 in Ash Violet with a 2px transparent bottom
   border. The lit job turns that border gold and the label Seal Gold Soft.
   «Бросок» stands for the twelve roll pages and opens the last one of the tab.
-- **Mode row:** up to 760px, under the sticky header on the twelve roll pages only,
-  scrolling with the page; from 761px the same three controls are the page head's pills
-  after «Бросок»: «Обычные правила», «Альтернативные таблицы» and the menu button
-  «Дополнения ▾», which shows the open supplement's name. The controls compose
-  the chip's tokens; the lit one takes the Seal Gold fill of the current place.
-  The menu under the button lists the ten supplements, 44px items, the open
-  one with a check, at most the window less 186px tall, scrolling inside; no sheet
-  and no grab handle.
+- **Picker row:** up to 760px the first row of `main` on the twelve roll pages, the
+  tables and «Мои предметы», 8px under the header (the one picker face above). On a roll
+  page the picker names the mode («Обычные правила ▾»); it opens a sheet titled «Бросок»
+  with the two own modes, the caption «Дополнения» and the ten supplements, 44px rows,
+  the open one gold with `aria-current`, the body scrolling at a short window. From 761px
+  the same three controls are the page head's pills after «Бросок»: «Обычные правила»,
+  «Альтернативные таблицы» and the button «Дополнения ▾», which shows the open
+  supplement's name and opens the same sheet, centered. The controls compose the chip's
+  tokens; the lit one takes the Seal Gold fill of the current place.
 - **Header:** sticky, translucent, blurred, with a one-pixel seam under it; 63px
   from 761px, 111px at 360px. The DOM order is the brand, the language switch, the
   account control, then the jobs, the reading order of the two rows up to 760px; from
@@ -848,8 +856,8 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
   (the account, the lists and «Мои предметы»), where no job is lit, and while
   its menu is open.
 
-- **List head:** `/homebrew` draws the catalog's: up to 760px the picker row with
-  the `h1` read, not drawn; from 761px the head with the four tabs as pills with their
+- **List head:** `/homebrew` draws the catalog's: up to 760px the picker row (the shared
+  picker face) with the `h1` read, not drawn; from 761px the head with the four tabs as pills with their
   counts, the pin and the primary.
 
 ### Filter chips and the count line

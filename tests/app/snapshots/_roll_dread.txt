@@ -21,7 +21,7 @@ RootWebArea "Dread GM Toolbox - Генератор лута Daggerheart" [url=/r
     navigation "Режим броска"
       link "Обычные правила" [url=/roll/std]
       link "Альтернативные таблицы" [url=/roll/alt]
-      button "Dread GM Toolbox" [expanded=false haspopup=menu]
+      button "Dread GM Toolbox" [haspopup=dialog]
     button "Открывать при запуске" [pressed=false]
     button "Об этой книге" [expanded=false]
     button "Бросить 1-29"
@@ -95,7 +95,7 @@ RootWebArea "Dread GM Toolbox - Daggerheart Loot Generator" [url=/en/roll/dread_
     navigation "Roll mode"
       link "Standard rules" [url=/en/roll/std]
       link "Alternate tables" [url=/en/roll/alt]
-      button "Dread GM Toolbox" [expanded=false haspopup=menu]
+      button "Dread GM Toolbox" [haspopup=dialog]
     button "Open on start" [pressed=false]
     button "About this book" [expanded=false]
     button "Roll 1-29"

@@ -200,7 +200,7 @@ and D140 are two more short-window layouts; D137 to D139 are focus and scroll ru
   where the filter column uses `--anchor-top` (the header is 63, 105 or 111 px by band), and uses `100vh` where the
   others use `100dvh`. Fix with the same measured top and the `--sticky-h` / `--anchor-top` tokens.
   The scan found no other sticky column with a capped inner scroll (the sticky bottom bars of the editor and
-  `PrintPage` are not columns). `overscroll-behavior: contain` also sits on `Menu.svelte`, `ModeRow.svelte` and
+  `PrintPage` are not columns). `overscroll-behavior: contain` also sits on `Menu.svelte` and
   `Sheet.svelte`: those are overlays, where containing the scroll is right; only the page-level column is wrong.
 - **How to verify the fix**: a states case opens `#/tables/eq_weapon` at 1920x950 and 1180x720, scrolls the
   column to its end and reads the last section's bottom inside the window at page scroll 0; the column's bottom
@@ -212,8 +212,7 @@ and D140 are two more short-window layouts; D137 to D139 are focus and scroll ru
   scroll 0 and after a scroll, read (a) the element's bottom against the window, (b) whether its last child is
   reachable with its own scroll only, (c) for an overlay, whether an ancestor's clip (`overflow` not `visible`)
   crops it and whether its opening scrolls any ancestor. Candidates: `FilterPanel` column, the editor preview, the
-  record dialog's «Ещё» menu and «В список» popover, `ModeRow` supplements menu (cap `100dvh - 186px` assumes a
-  control near the top), `MoreMenu` callers, `HelpBox`, `SharePanel`, `RequestsPanel`, the print dock and the
+  record dialog's «Ещё» menu and «В список» popover, `MoreMenu` callers, `HelpBox`, `SharePanel`, `RequestsPanel`, the print dock and the
   editor bar.
 
 ## Copy and prompt leftovers (task `57-debt`, owner first)

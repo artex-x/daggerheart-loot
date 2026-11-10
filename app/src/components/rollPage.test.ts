@@ -59,9 +59,9 @@ const at = (hash: string, over: Partial<Env> = {}): Env =>
   });
 
 const button = (name: string | RegExp): HTMLElement => screen.getByRole('button', { name });
-/** «Ещё» of the results line: every result has its own. */
+/** «Ещё» of the picker row, the last control of the row. */
 const more = (): HTMLElement =>
-  within(document.querySelector<HTMLElement>('.reshead') as HTMLElement).getByRole('button', {
+  within(document.querySelector<HTMLElement>('.pickrow') as HTMLElement).getByRole('button', {
     name: 'Ещё'
   });
 const menuNames = (): string[] =>
@@ -78,9 +78,11 @@ describe('the heading', () => {
       expect(h1).toHaveClass('vh');
       expect(h1.textContent).toBe('Бросок');
       expect(container.querySelector('.page-head')).toBeNull();
-      /* The mode row names the page, above `main`. */
+      /* The picker names the page, first in the picker row of `main`. */
       const modes = screen.getByRole('navigation', { name: 'Режим броска' });
-      expect(container.querySelector('main')?.contains(modes)).toBe(false);
+      const row = container.querySelector('main > .pickrow') as HTMLElement;
+      expect(row.firstElementChild).toBe(modes);
+      expect(within(row).getAllByRole('button').at(-1)).toHaveAccessibleName('Ещё');
     }
   );
 
@@ -159,7 +161,7 @@ describe('the heading', () => {
     it('puts the focus on the supplements button after a supplement is picked', async () => {
       const { router, modes } = page();
       await userEvent.click(within(modes()).getByRole('button', { name: 'Дополнения' }));
-      const item = screen.getByRole('menuitem', { name: 'Vault of Ages' });
+      const item = screen.getByRole('link', { name: 'Vault of Ages' });
       await userEvent.click(item);
       router.click(item.getAttribute('href') ?? '');
       await waitFor(() => {
@@ -174,6 +176,12 @@ describe('the heading', () => {
     const { container } = render(App, { env: at('#/roll/wondrous', { data: noData() }) });
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
     expect(container.querySelector('.rp')).toBeNull();
+    const row = container.querySelector('main > .pickrow') as HTMLElement;
+    expect(
+      within(row)
+        .getAllByRole('button')
+        .map((b) => b.getAttribute('aria-label') ?? b.textContent.trim())
+    ).toEqual(['Режим броска: Wondrous Environments', 'Ещё']);
     cleanup();
     render(App, {
       env: at('#/roll/wondrous', { data: noData(), viewport: fakeViewport('wide') })
@@ -183,7 +191,7 @@ describe('the heading', () => {
 });
 
 describe('the results line up to 760 px', () => {
-  it('holds «Бросок N», «Настроить» and «Ещё»', () => {
+  it('holds «Бросок N» and «Настроить»', () => {
     const { container } = render(App, { env: at('#/roll/std') });
     const line = container.querySelector('.reshead') as HTMLElement;
     expect(within(line).getByRole('heading', { level: 2 })).toHaveTextContent('Бросок 1');
@@ -191,7 +199,7 @@ describe('the results line up to 760 px', () => {
       within(line)
         .getAllByRole('button')
         .map((b) => b.textContent.trim())
-    ).toEqual(['Настроить', 'Ещё']);
+    ).toEqual(['Настроить']);
     expect(button('Настроить').className).not.toContain('toggle');
   });
 
@@ -350,22 +358,25 @@ describe('a band change', () => {
     });
   });
 
-  it.each([
-    ['narrow', 'mid'],
-    ['mid', 'narrow']
-  ] as const)('keeps a focused mode pill on the same pill from %s to %s', async (from, to) => {
-    const viewport: FakeViewport = fakeViewport(from);
+  it('keeps a focused mode picker on the first pill from narrow to mid', async () => {
+    const viewport: FakeViewport = fakeViewport('narrow');
     render(App, { env: at('#/roll/std', { viewport }) });
-    const alt = (): HTMLElement =>
-      within(screen.getByRole('navigation', { name: 'Режим броска' })).getByRole('link', {
-        name: 'Альтернативные таблицы'
-      });
-    const before = alt();
-    before.focus();
-    viewport.set(to);
+    const modes = (): HTMLElement => screen.getByRole('navigation', { name: 'Режим броска' });
+    within(modes()).getByRole('button').focus();
+    viewport.set('mid');
     await waitFor(() => {
-      expect(alt()).not.toBe(before);
-      expect(alt()).toHaveFocus();
+      expect(within(modes()).getByRole('link', { name: 'Обычные правила' })).toHaveFocus();
+    });
+  });
+
+  it('keeps a focused mode pill on the picker from mid to narrow', async () => {
+    const viewport: FakeViewport = fakeViewport('mid');
+    render(App, { env: at('#/roll/std', { viewport }) });
+    const modes = (): HTMLElement => screen.getByRole('navigation', { name: 'Режим броска' });
+    within(modes()).getByRole('link', { name: 'Альтернативные таблицы' }).focus();
+    viewport.set('narrow');
+    await waitFor(() => {
+      expect(within(modes()).getByRole('button')).toHaveFocus();
     });
   });
 });

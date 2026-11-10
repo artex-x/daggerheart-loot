@@ -21,7 +21,7 @@ RootWebArea "Many Worlds Tavern - Генератор лута Daggerheart" [url=
     navigation "Режим броска"
       link "Обычные правила" [url=/roll/std]
       link "Альтернативные таблицы" [url=/roll/alt]
-      button "Many Worlds Tavern" [expanded=false haspopup=menu]
+      button "Many Worlds Tavern" [haspopup=dialog]
     button "Открывать при запуске" [pressed=false]
     button "Об этой книге" [expanded=false]
     combobox "Мир" [value=Долина Богов expanded=false haspopup=menu]
@@ -103,7 +103,7 @@ RootWebArea "Many Worlds Tavern - Daggerheart Loot Generator" [url=/en/roll/many
     navigation "Roll mode"
       link "Standard rules" [url=/en/roll/std]
       link "Alternate tables" [url=/en/roll/alt]
-      button "Many Worlds Tavern" [expanded=false haspopup=menu]
+      button "Many Worlds Tavern" [haspopup=dialog]
     button "Open on start" [pressed=false]
     button "About this book" [expanded=false]
     combobox "Realm" [value=Godsvale expanded=false haspopup=menu]

@@ -131,7 +131,7 @@ Known costs in this repo:
 | `npm run check` | 10-18 min cold (2026-10-07) | no; yours, in the background, on the offline path |
 | `npm run check:built` | a few minutes | yes |
 | `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub` | ~260-290s pooled | yes |
-| `node tests/run-all.js --shard=n/5` | up to ~380 s per shard | yes, one shard per call, on the offline path |
+| `node tests/run-all.js --shard=n/5` | 440-840 s per shard (up to 807 s on CI) | no for the slowest shards (a 600 s call cannot hold 755-807 s): one shard in the background, or CI |
 | any of the above, in a claude.ai/code cloud session | that host's own measured table: `.claude/README.md`, "Cloud sessions" | as there |
 
 So, before dispatching:

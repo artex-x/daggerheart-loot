@@ -21,7 +21,7 @@ RootWebArea "Vault of Ages - Генератор лута Daggerheart" [url=/roll
     navigation "Режим броска"
       link "Обычные правила" [url=/roll/std]
       link "Альтернативные таблицы" [url=/roll/alt]
-      button "Vault of Ages" [expanded=false haspopup=menu]
+      button "Vault of Ages" [haspopup=dialog]
     button "Открывать при запуске" [pressed=false]
     button "Об этой книге" [expanded=false]
     combobox "Раздел книги" [value=Ранг 1 expanded=false haspopup=menu]
@@ -103,7 +103,7 @@ RootWebArea "Vault of Ages - Daggerheart Loot Generator" [url=/en/roll/vault_of_
     navigation "Roll mode"
       link "Standard rules" [url=/en/roll/std]
       link "Alternate tables" [url=/en/roll/alt]
-      button "Vault of Ages" [expanded=false haspopup=menu]
+      button "Vault of Ages" [haspopup=dialog]
     button "Open on start" [pressed=false]
     button "About this book" [expanded=false]
     combobox "Section" [value=Tier 1 expanded=false haspopup=menu]

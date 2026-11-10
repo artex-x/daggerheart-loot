@@ -9,6 +9,7 @@
   import Chip from './Chip.svelte';
   import FoldButton from './FoldButton.svelte';
   import Icon from './Icon.svelte';
+  import PickerButton from './PickerButton.svelte';
   import Sheet from './Sheet.svelte';
   import type { FilterState } from '../lib/filters.js';
   import { CHIP_FOLD_AT, CHIP_FOLD_SHOWN, foldRows } from '../lib/folds.js';
@@ -213,17 +214,16 @@
 {:else}
   <nav class="tablenav" class:narrow={app.band === 'narrow'} aria-label={t.tables}>
     {#if app.band === 'narrow'}
-      <button
-        bind:this={pickerButton}
-        type="button"
-        class="picker"
-        aria-haspopup="dialog"
-        aria-label={t.tablePick.replace('%s', picker)}
+      <PickerButton
+        bind:el={pickerButton}
+        label={t.tablePick.replace('%s', picker)}
+        name={parts.name}
+        book={parts.book ?? undefined}
         onclick={() => {
           sheetGroup = null;
           picking = true;
-        }}>{@render pickerBody()}</button
-      >
+        }}
+      />
       {@render sheet()}
     {:else}
       <div class="groups" role="group" aria-label={t.groupLabel}>
@@ -318,24 +318,7 @@
     cursor: pointer;
   }
 
-  /* The picker: the table's name as the page's visible heading below 761 px. */
-  .picker {
-    display: inline-flex;
-    align-items: center;
-    gap: 2px;
-    max-width: 100%;
-    min-height: 40px;
-    padding: 0;
-    border: 0;
-    background: none;
-    color: var(--txt);
-    font: var(--h-page-weight) var(--t-small) / 1.2 var(--ui);
-    letter-spacing: var(--h-page-spacing);
-    text-align: left;
-  }
-
-  /* Two lines fit the row's 40 px. The Russian row leaves 94 px at 360 (measured
-     2026-11-03): a larger face cuts «Расходники» and «Environments». */
+  /* The supplements tab's name, as `PickerButton`'s: two lines at most. */
   .picker-t {
     display: -webkit-box;
     -webkit-box-orient: vertical;

@@ -33,6 +33,7 @@
   import MoreMenu from './MoreMenu.svelte';
   import NoData from './NoData.svelte';
   import PageHead from './PageHead.svelte';
+  import PickerRow from './PickerRow.svelte';
   import PinItem from './PinItem.svelte';
   import RecordHost from './RecordHost.svelte';
   import SearchBox from './SearchBox.svelte';
@@ -718,7 +719,7 @@
      name is read, not drawn, and the picker row holds the table, the view and «Ещё». -->
 {#if band === 'narrow'}
   <h1 class="vh">{t.tables}</h1>
-  <div class="pickrow">
+  <PickerRow>
     {@render nav()}
     {@render viewSwitch()}
     <MoreMenu {app} id="tables-more" size="sm">
@@ -747,7 +748,7 @@
         {/if}
       {/snippet}
     </MoreMenu>
-  </div>
+  </PickerRow>
   {#if help && helpOpen}
     <!-- «Закрыть» returns the focus to «Ещё», which held the item (rule 20). -->
     <HelpBox
@@ -997,36 +998,9 @@
     margin-top: 16px;
   }
 
-  /* Below 761 px: the picker, the view switch and «Ещё» on one row. */
-  /* The row anchors the «Ещё» menu up to 760 px (`MoreMenu`). */
-  .pickrow {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    margin-bottom: 6px;
-  }
-
   /* The picker is the page's only visible name here: the switch gives it the width. */
-  .pickrow :global(.seg.small button) {
+  :global(.pickrow .seg.small button) {
     padding-inline: 6px;
-  }
-
-  /* Up to 600 px the 42 px switch track takes its 2 px from this margin (DESIGN.md, "The
-     First-Screen Rule"). */
-  @media (max-width: 600px) {
-    .pickrow {
-      margin-bottom: 4px;
-    }
-  }
-
-  /* As tall as the picker, as in the picker row of «Мои предметы». */
-  .pickrow :global(.morewrap) {
-    flex: none;
-  }
-
-  .pickrow :global(.morewrap .btn.sm) {
-    height: 40px;
   }
 
   /* The search row: the search first, «Выбрать» last, every control at one height. */

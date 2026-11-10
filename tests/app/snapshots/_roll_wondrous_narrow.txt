@@ -16,16 +16,14 @@ RootWebArea "Wondrous Environments - Генератор лута Daggerheart" [u
       link "Бросок" [url=/roll/wondrous_environments]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
-  navigation "Режим броска"
-    link "Обычные правила" [url=/roll/std]
-    link "Альтернативные таблицы" [url=/roll/alt]
-    button "Wondrous Environments" [expanded=false haspopup=menu]
   main ""
     heading "Бросок" [level=1]
+    navigation "Режим броска"
+      button "Режим броска: Wondrous Environments" [haspopup=dialog]
+    button "Ещё" [expanded=false haspopup=menu]
     button "Бросить 1-119"
     heading "Бросок 1" [level=2]
     button "Настроить" [expanded=false]
-    button "Ещё" [expanded=false haspopup=menu]
     status ""
       StaticText "Смола Бездны"
     button "Открыть карточку"
@@ -47,9 +45,7 @@ RootWebArea "Wondrous Environments - Генератор лута Daggerheart" [u
 ## ru :: controls
 EN
 RU
-Wondrous Environments
 daggerheart.com
-Альтернативные таблицы
 Бросить 1-119
 Бросок
 В список
@@ -59,10 +55,10 @@ daggerheart.com
 Конфиденциальность
 ЛутDaggerheart
 Настроить
-Обычные правила
 Открыть карточку
 Поделиться
 Поиск
+Режим броска: Wondrous Environments
 Смола Бездны
 Таблицы
 Условия использования
@@ -82,16 +78,14 @@ RootWebArea "Wondrous Environments - Daggerheart Loot Generator" [url=/en/roll/w
       link "Roll" [url=/en/roll/wondrous_environments]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
-  navigation "Roll mode"
-    link "Standard rules" [url=/en/roll/std]
-    link "Alternate tables" [url=/en/roll/alt]
-    button "Wondrous Environments" [expanded=false haspopup=menu]
   main ""
     heading "Roll" [level=1]
+    navigation "Roll mode"
+      button "Roll mode: Wondrous Environments" [haspopup=dialog]
+    button "More" [expanded=false haspopup=menu]
     button "Roll 1-119"
     heading "Roll 1" [level=2]
     button "Set up" [expanded=false]
-    button "More" [expanded=false haspopup=menu]
     status ""
       StaticText "Abyssal Sap"
     button "Open card"
@@ -113,7 +107,6 @@ RootWebArea "Wondrous Environments - Daggerheart Loot Generator" [url=/en/roll/w
 ## en :: controls
 Abyssal Sap
 Add to list
-Alternate tables
 EN
 Install as an app
 LootDaggerheart
@@ -123,13 +116,12 @@ Privacy
 RU
 Roll
 Roll 1-119
+Roll mode: Wondrous Environments
 Search
 Set up
 Share
 Sign in
 Skip to content
-Standard rules
 Tables
 Terms of use
-Wondrous Environments
 daggerheart.com
