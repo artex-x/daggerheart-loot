@@ -2,7 +2,13 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: step D done except D3 (owner decision) and D6 (owner signs a table first); next step E.
+- Task status: step D done except D3 (owner decision) and D6 (owner signs a table first); step E and E2 shipped in one commit (not pushed); next: the `readme-screens` B1 / step 1.
+- E results: `SharePort` (`app/src/ports/share.ts`) puts the link last in `text` once; with a file it sends `{ files, title, text }` (no `url`);
+  without a file `{ title, text, url }`; on a desktop (`desktopNow`: fine pointer and no coarse any-pointer, or Windows platform) it skips the file.
+  `RecordActions` passes the site address (`app.linkTo('#/')`) for an unlinked item. The other buttons (roll row, dock) are the same component;
+  the list, `SharePanel` and the selection bar copy to the clipboard, not the sheet. Tests: `ports.test.ts` per environment via
+  `fakeShare({ desktop, canShareFiles }).last.sent`; `record.test.ts`. `vitest` ports+record 260 pass; `lint:typed` and `lint:untyped` clean;
+  `check:fast` see the commit. Not tried here: a real phone share (Telegram) and a Windows share sheet (Edge, Chrome): the owner tries both on production.
 - Last agent: implementer (2026-11-10). D1, D2, D4, D5 (option A) shipped in one commit on `claude/57-debt`, not pushed.
 - D results: `node tools/desc-style.mjs` 0 changes after `--write`; `node tools/build.js` ok; `node tests/run-all.js dataint,derived,contracts,craft` all ok
   (craft pin 34); `node tests/app/golden.js --update` for `#/tables/lr`, `#/tables/ph`, `#/tables/eq_secondary`, `#/search ~ capped`, the supplements menu:
