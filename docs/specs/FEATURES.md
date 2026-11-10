@@ -1493,6 +1493,17 @@ address kept, and no add-to-list control is drawn.
   line; a pressed item and Escape return the focus to «Ещё», and in the dialog
   Escape closes only the menu. The menu opens down on a page; in the dialog it
   opens up where the room is only above, so from the dock.
+  «Поделиться» (the page, the dialog dock and a roll result's row; the same
+  component) hands the system share sheet `{ title, text, url }`, and the record
+  link is the last line of `text`, once. With a picture the phone shares the file
+  and `text` only (`url` empty, so a target that reads both does not print the link
+  twice). A desktop (a fine pointer and no coarse pointer, or a Windows platform;
+  decided in `SharePort`) shares without the file: Windows share targets show a file
+  and drop the text, so the picture stays in «Ещё» as «Скопировать изображение».
+  A record with no address of its own sends the site address. Without a share sheet
+  the link, or for an item with none the text, goes to the clipboard. The list,
+  the share-link panel and the selection bar copy to the clipboard and do not use
+  the share sheet.
 - A roll result has the add control, «Поделиться» and «Ещё» under its plate, and no
   «Печать»; the copies are in «Ещё», without «Сохранить себе». The add menu opens
   down, and up where the window has no room below and the page above the control

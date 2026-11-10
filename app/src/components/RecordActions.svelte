@@ -132,10 +132,13 @@
    * The same three-level payload the live `sendItem` builds - the full
    * share text always, a picture attached where there is art and the
    * environment can take a file (`SharePort` itself decides that with
-   * `canShare`; this only ever offers one when there is a picture to offer).
+   * `canShare` and with the desktop rule, and puts the link at the end of the
+   * text; this only ever offers a file when there is a picture to offer).
    */
   async function send(): Promise<void> {
-    const link = linked ? app.linkToRecord(it) : undefined;
+    /* An item with no address of its own sends the site address, so the shared
+       message always names a place to open. */
+    const link = linked ? app.linkToRecord(it) : app.linkTo('#/');
     const name = shareName(it, app.lang);
     const { text } = share(it, index, app.lang, { extra });
     const hasArt = it.img && !app.artBroken(it.id);
@@ -149,7 +152,7 @@
     const r = await app.env.share.share({
       title: name,
       text,
-      ...(link === undefined ? {} : { url: link }),
+      url: link,
       ...(file ? { file } : {})
     });
     /* A dismissal is somebody changing their mind, not a failure, and saying

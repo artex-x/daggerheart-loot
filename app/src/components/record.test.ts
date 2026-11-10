@@ -849,6 +849,31 @@ describe('taking a record somewhere else', () => {
     expect(share.last.text).not.toBe('Зелье выносливости (расходник)');
   });
 
+  it('ends the shared text with the record link, with a picture or without', async () => {
+    const plain = fakeShare();
+    render(App, { env: at('cc1', { share: plain }) });
+    await userEvent.click(screen.getByRole('button', { name: 'Поделиться' }));
+    expect(plain.last.sent?.text?.endsWith('\nhttps://example.test/i/cc1')).toBe(true);
+    expect(plain.last.sent?.url).toBe('https://example.test/i/cc1');
+    cleanup();
+    const art = fakeShare();
+    render(App, { env: at('ci1', { share: art }) });
+    await userEvent.click(screen.getByRole('button', { name: 'Поделиться' }));
+    expect(art.last.sent?.files).toHaveLength(1);
+    expect(art.last.sent?.text?.endsWith('\nhttps://example.test/i/ci1')).toBe(true);
+    expect(art.last.sent?.url).toBeUndefined();
+  });
+
+  it('shares the text and the link without the picture on a desktop', async () => {
+    const share = fakeShare({ desktop: true });
+    render(App, { env: at('ci1', { share }) });
+    await userEvent.click(screen.getByRole('button', { name: 'Поделиться' }));
+    expect(share.last.sent?.files).toBeUndefined();
+    expect(share.last.sent?.url).toBe('https://example.test/i/ci1');
+    await pressMore('Скопировать изображение');
+    expect(screen.getByText('Картинка скопирована')).toBeInTheDocument();
+  });
+
   it('attaches no file for a record with no art', async () => {
     const share = fakeShare();
     render(App, { env: at('cc1', { share }) });
@@ -1606,6 +1631,23 @@ describe('an own homebrew item', () => {
     render(App, { env: own({ share: fakeShare({ available: false }), clipboard: clip }) });
     await userEvent.click(await screen.findByRole('button', { name: 'Поделиться' }));
     expect(clip.last.text).toMatch(ITEM_URL);
+  });
+
+  it('sends the site address for an item with no address of its own', async () => {
+    const share = fakeShare();
+    const app = new AppState(own({ share }));
+    app.start();
+    await waitFor(() => {
+      expect(app.index?.byId.has('hb_engravedringaaaa')).toBe(true);
+    });
+    const index = app.index!;
+    const ring = index.byId.get('hb_engravedringaaaa')!;
+    const unlinked = { ...ring, hid: undefined } as typeof ring;
+    render(RecordModal, { app, index, it: unlinked, onclose: () => {} });
+    await userEvent.click(screen.getByRole('button', { name: 'Поделиться' }));
+    expect(share.last.url).toBe('https://example.test/');
+    expect(share.last.sent?.text?.endsWith('\nhttps://example.test/')).toBe(true);
+    app.stop();
   });
 
   it("hands out the preview link with the record's version from «Поделиться» and the link item", async () => {

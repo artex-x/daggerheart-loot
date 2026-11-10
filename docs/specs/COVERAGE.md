@@ -2129,7 +2129,11 @@ Not blocking, recorded so they are not mistaken for coverage:
   happy paths run for real in `tests/app/states.js` (B12), which
   is why the `src/ports/**` bar could move; the share sheet's success path is
   the one still without an answer - no headless browser exposes one to drive,
-  so the fallback stays what is tested.
+  so the fallback stays what is tested. What the port hands the browser is
+  tested: `ports.test.ts` ("the payload of each environment") reads
+  `fakeShare().last.sent` for a text-only sheet, a file (phone) and a desktop,
+  and `desktopNow` per pointer and platform. A real Windows share sheet is tried
+  by the owner.
 - Color contrast is switched off in the axe pass, because jsdom lays nothing
   out and resolves no cascade. Before R0c, contrast was measured for real only
   on the live app (the deleted `qa` and `typo` suites); `tests/app/sweep.js`

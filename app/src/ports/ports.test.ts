@@ -13,7 +13,7 @@ import { browserScroll, fakeScroll } from './scroll.js';
 import { browserViewport, fakeViewport } from './viewport.js';
 import { browserPage, fakePage } from './page.js';
 import { memoryRouter, pathRouter } from './router.js';
-import { browserShare } from './share.js';
+import { browserShare, desktopNow, fakeShare } from './share.js';
 import { brokenStorage, browserStorage, memoryStorage } from './storage.js';
 import { browserData, fakeData, noData } from './data.js';
 import { browserImage } from './image.js';
@@ -261,6 +261,57 @@ describe('sharing', () => {
     expect(await browserShare(nav).share({ ...what, file })).toBe('shared');
     expect(calls[0]?.files).toBeUndefined();
     expect(calls[0]?.url).toBe(what.url);
+  });
+
+  describe('the payload of each environment', () => {
+    const file = (): Promise<File> => Promise.resolve(new File([''], 'x.png'));
+    const withArt = { ...what, text: 'Name\nBody', file };
+    const link = what.url;
+
+    it('puts the link last in the text and passes url on a text-only sheet', async () => {
+      const s = fakeShare({ canShareFiles: false });
+      await s.share({ ...withArt });
+      expect(s.last.sent).toEqual({ title: 'T', text: 'Name\nBody\n' + link, url: link });
+    });
+
+    it('puts the link last in the text once and passes no url with a file (phone)', async () => {
+      const s = fakeShare();
+      await s.share(withArt);
+      expect(s.last.sent?.files).toHaveLength(1);
+      expect(s.last.sent?.text).toBe('Name\nBody\n' + link);
+      expect(s.last.sent?.url).toBeUndefined();
+    });
+
+    it('does not repeat a link the text already ends with', async () => {
+      const s = fakeShare();
+      await s.share({ ...withArt, text: 'Name\n' + link });
+      expect(s.last.sent?.text).toBe('Name\n' + link);
+    });
+
+    it('shares without the file on a desktop and keeps title, text and url', async () => {
+      const s = fakeShare({ desktop: true });
+      await s.share(withArt);
+      expect(s.last.sent?.files).toBeUndefined();
+      expect(s.last.sent).toEqual({ title: 'T', text: 'Name\nBody\n' + link, url: link });
+    });
+
+    it('detects a desktop by a fine pointer, no coarse pointer or the Windows platform', () => {
+      const media = (match: Record<string, boolean>) =>
+        vi.fn((q: string) => ({ matches: match[q] ?? false }) as MediaQueryList);
+      vi.stubGlobal('matchMedia', media({ '(pointer: fine)': true }));
+      expect(desktopNow()).toBe(true);
+      vi.stubGlobal(
+        'matchMedia',
+        media({ '(pointer: fine)': true, '(any-pointer: coarse)': true })
+      );
+      expect(desktopNow(), 'a laptop with a touch screen is not a desktop').toBe(false);
+      vi.stubGlobal('matchMedia', media({ '(pointer: coarse)': true }));
+      expect(desktopNow(), 'a phone').toBe(false);
+      vi.stubGlobal('navigator', { userAgentData: { platform: 'Windows' } });
+      expect(desktopNow(), 'Windows').toBe(true);
+      vi.unstubAllGlobals();
+      expect(desktopNow(), 'no matchMedia at all').toBe(false);
+    });
   });
 
   it('sends the text when the picture itself fails to load', async () => {
