@@ -6531,10 +6531,19 @@ async function rollPageLayout() {
           const btn = nav?.querySelector('button.picker');
           const text = btn?.querySelector('.picker-t');
           const more = row?.lastElementChild?.querySelector('.btn');
-          const node = text?.firstChild;
+          /* Svelte leaves an empty text node first, so take the first node that holds text. */
+          const walker = text && document.createTreeWalker(text, NodeFilter.SHOW_TEXT);
+          let node = null;
+          while (walker?.nextNode()) {
+            if (walker.currentNode.textContent.trim()) {
+              node = walker.currentNode;
+              break;
+            }
+          }
           const cut = (text?.textContent.trim().split(/\s+/) ?? []).filter((word) => {
+            const from = node ? node.textContent.indexOf(word) : -1;
+            if (from < 0) return true;
             const range = document.createRange();
-            const from = node.textContent.indexOf(word);
             range.setStart(node, from);
             range.setEnd(node, from + word.length);
             return range.getClientRects().length > 1;
@@ -6617,7 +6626,7 @@ async function rollPageLayout() {
         ok(
           sheet.title === (lang === 'en' ? 'Roll' : 'Бросок') &&
             sheet.links === 12 &&
-            sheet.current === '/roll/vault_of_ages',
+            sheet.current === (lang === 'en' ? '/en' : '') + '/roll/vault_of_ages',
           at + lang + ': the mode sheet - ' + JSON.stringify(sheet)
         );
         await page.keyboard.press('Escape');
