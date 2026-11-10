@@ -3328,11 +3328,11 @@ const STATES = [
   /* The English half is captured after the EN press, an outside click that
      closes the menu, as it closes the add-to-list menu. */
   /* The supplements menu of the mode row (FEATURES.md, "Chrome"), open on a supplement page:
-     the seven supplements with the open one checked. Its axe case is modeRow.test.ts. */
+     the nine supplements with the open one checked. Its axe case is modeRow.test.ts. */
   {
     id: '#/roll/vault_of_ages ~ supplements menu',
     route: '#/roll/vault_of_ages',
-    why: 'the supplements menu open on Vault of Ages: the caption, seven supplements in table order, Vault of Ages checked and current',
+    why: 'the supplements menu open on Vault of Ages: the caption, nine supplements in table order, Vault of Ages checked and current',
     enter: async (d) => {
       await d.press('Vault of Ages');
     }

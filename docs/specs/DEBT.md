@@ -93,6 +93,14 @@ and D140 are two more short-window layouts; D137 to D139 are focus and scroll ru
 - **How to verify the fix**: a states case opens `#/tables/core_item/ci1` at 1000x720 and
   1180x720, opens «Ещё» and reads the card's `scrollTop` unchanged and the menu inside the
   window.
+- **Same class, owner-seen 2026-11-07 (screenshot)**: the add-to-list popover «В список» in the
+  record dialog (`AddToList.svelte`, its `placeMenu` and `up` rule) opens upward inside the card
+  on a short card, and the card's edge crops its top: the search field and the first rows are
+  cut. Fix both overlays together, not one rule each: the menu and the popover render in the
+  top layer or a portal outside the card's clip, are placed by the window, take focus with
+  `preventScroll`, and never scroll or move the card. Add the popover case to the states case
+  (open «В список» on the same record at 1000x720 and 1180x720: its search field is in the
+  window and the card's `scrollTop` is unchanged).
 
 ### D133 - the shared page's selection bar takes a third of a phone
 
@@ -168,6 +176,45 @@ and D140 are two more short-window layouts; D137 to D139 are focus and scroll ru
   choice (a smaller stage, or the buttons beside it).
 - **How to verify the fix**: at 740x360 RU and EN the crop dialog's «Готово» is inside the
   window with no scroll in the dialog.
+
+### D141 - the filter column's last section is below the fold until the page scrolls
+
+- **Where**: `app/src/components/FilterPanel.svelte` (`.fcol`: `position: sticky`, `top: var(--anchor-top)`,
+  `max-height: calc(100dvh - var(--anchor-top) - var(--selbar-h, 0px) - 16px)`, `overflow: auto`,
+  `overscroll-behavior: contain`), on `/tables/*`, `/search` and the lists' filters from 1000 px.
+- **What**: owner-seen 2026-11-07 (screenshot, `#/tables/eq_weapon`, RU, about 1920x950). The cap fits the
+  window only when the column is stuck. At page top the column starts at about 247 px, not at the sticky top
+  of about 79 px, so its bottom is about 168 px below the fold; scrolled to its end, the inner scroll still
+  hides the last section («Улучшаемое» / «Уникальное»), and `overscroll-behavior: contain` stops the wheel from
+  passing to the page, so the reader must move the pointer off the column to scroll the page.
+- **Why deferred**: not yet planned; two fixes, a layout choice.
+- **Default fix (owner may change)**: A, remove `overscroll-behavior: contain` on the desktop column so the wheel
+  continues to the page at the ends (the column then sticks and shows its full height); and B, make the cap
+  follow the column's real top while it is unstuck (a measured custom property such as `--fcol-top`, updated on
+  scroll and resize, `max-height: calc(100dvh - max(var(--anchor-top), var(--fcol-top)) - ...)`), so the last
+  section is in the window at scroll 0 with no page scroll. Check the phone sheet (it is not this column) is unchanged.
+- **Same pattern found by a code scan, 2026-11-07** (to measure before fixing): the sticky preview of the
+  homebrew editor, `HomebrewEditor.svelte` `.preview` from 800 px (`position: sticky; top: 130px;
+  max-height: calc(100vh - 146px); overflow-y: auto`). The cap fits the window only when stuck, so at page top
+  (the preview's natural top is below 130 px) its bottom can sit below the fold; it also hardcodes 130 and 146 px
+  where the filter column uses `--anchor-top` (the header is 63, 105 or 111 px by band), and uses `100vh` where the
+  others use `100dvh`. Fix with the same measured top and the `--sticky-h` / `--anchor-top` tokens.
+  The scan found no other sticky column with a capped inner scroll (the sticky bottom bars of the editor and
+  `PrintPage` are not columns). `overscroll-behavior: contain` also sits on `Menu.svelte`, `ModeRow.svelte` and
+  `Sheet.svelte`: those are overlays, where containing the scroll is right; only the page-level column is wrong.
+- **How to verify the fix**: a states case opens `#/tables/eq_weapon` at 1920x950 and 1180x720, scrolls the
+  column to its end and reads the last section's bottom inside the window at page scroll 0; the column's bottom
+  never extends past the window while the page scrolls. The same read on the editor preview
+  (`#/homebrew/new ~ equipment` with a long record, 1180x720 and 1920x950). The sweep (below) lists every
+  other candidate.
+- **Sweep to run with the fix** (a probe script in the scratchpad, then a states case for what it finds): for
+  each sticky or capped column and each overlay, at 360x640, 768x1024, 1000x720, 1180x720 and 1920x950, at page
+  scroll 0 and after a scroll, read (a) the element's bottom against the window, (b) whether its last child is
+  reachable with its own scroll only, (c) for an overlay, whether an ancestor's clip (`overflow` not `visible`)
+  crops it and whether its opening scrolls any ancestor. Candidates: `FilterPanel` column, the editor preview, the
+  record dialog's «Ещё» menu and «В список» popover, `ModeRow` supplements menu (cap `100dvh - 186px` assumes a
+  control near the top), `MoreMenu` callers, `HelpBox`, `SharePanel`, `RequestsPanel`, the print dock and the
+  editor bar.
 
 ## Copy and prompt leftovers (task `57-debt`, owner first)
 

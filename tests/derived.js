@@ -2658,9 +2658,13 @@ ok(
 );
 // The lr records ship rule text only (docs/decisions, 2026-11-07, "The Last Round Table
 // records keep rule text and lose lore"); 450 / 520 sit just above the longest kept text.
+// lr20 is exempt: its four roll outcomes are rule text, kept in the record rather than a card.
 ok(
   lr.every(
-    (x) => x.ende.length > 0 && x.rud.length > 0 && x.ende.length <= 450 && x.rud.length <= 520
+    (x) =>
+      x.ende.length > 0 &&
+      x.rud.length > 0 &&
+      (x.id === 'lr20' || (x.ende.length <= 450 && x.rud.length <= 520))
   ),
   'an lr record is empty or longer than 450 (EN) / 520 (RU) characters: lore came back'
 );
@@ -2690,20 +2694,13 @@ ok(
     ]),
   'vh potions do not upgrade vh2 to vh6 and vh8 to vh15'
 );
-[
-  'ph-mounted',
-  'ph-saddles',
-  'ph-infusions',
-  'ph-most-wanted',
-  'lr-recipes',
-  'lr-deed',
-  'lr-fruitcake'
-].forEach((k) =>
-  ok(
-    !!L.refs[k] &&
-      /^https:\/\/(www\.drivethrurpg\.com|heartofdaggers\.com)\//.test(L.refs[k].url),
-    'rule card ' + k + ' does not link to its product page'
-  )
+['ph-mounted', 'ph-saddles', 'ph-infusions', 'ph-most-wanted', 'lr-recipes', 'lr-deed'].forEach(
+  (k) =>
+    ok(
+      !!L.refs[k] &&
+        /^https:\/\/(www\.drivethrurpg\.com|heartofdaggers\.com)\//.test(L.refs[k].url),
+      'rule card ' + k + ' does not link to its product page'
+    )
 );
 const phRow = parsed.find((r) => r[idx.id] === 'ph40');
 const vhRow = parsed.find((r) => r[idx.id] === 'vh9');
