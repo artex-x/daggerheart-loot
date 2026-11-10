@@ -2,7 +2,11 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Step 1 (tooling and CI) done in one commit on `claude/57-debt`, not pushed: `fast.mjs` runs `lint:untyped` and `lint:typed`; timing bounds widened
+- 2026-11-10: D, E, D7 and step 1 are on `main` (`a68e40f5`, `95c770d6`, `b96e0640`, `89e4c348`; each `main` run green through `deploy`). Step 1's CI run: longest
+  browser job 15 min 11 s against the 15 min acceptance. VW1 (picker row, `PickerButton`, `PickerRow`, `SheetLinks`, the roll sheet) plus the step 1 review nits are
+  one commit `211aae2` on `claude/57-debt`; `check:fast` passed (719 s, bundle 272.4 of 273 kB: 0.6 kB room); the browser suites and the golden diffs wait for CI.
+  Next: CI on VW1, then step 2 and 3 after one triage pass, then `readme-screens` B1, the `persistent-storage` audit, the read-only inventory. D6 waits for the owner.
+- (older, superseded) Step 1 (tooling and CI) done in one commit on `claude/57-debt`: `fast.mjs` runs `lint:untyped` and `lint:typed`; timing bounds widened
   (`homebrew.timed` 50 to 150 ms and 16 to 40 ms, `facets.timed` 100 to 250 ms, e2e `IMPORT_MS` 6000 to 15000 ms); `ci.yml` fixed cost ~70 s;
   `bash-guard.mjs` run-all cost 440-840 s and a bare `states.js` reminder (selftest #31, #31b, #31c); `run-all.js` weights from run 42821823209;
   `.claude/README.md` notes the `in_progress` run. Next: `readme-screens` B1 (item 3), then VW1 (item 5).
