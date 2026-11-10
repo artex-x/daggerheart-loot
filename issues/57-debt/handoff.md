@@ -2,6 +2,10 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
+- Step 1 (tooling and CI) done in one commit on `claude/57-debt`, not pushed: `fast.mjs` runs `lint:untyped` and `lint:typed`; timing bounds widened
+  (`homebrew.timed` 50 to 150 ms and 16 to 40 ms, `facets.timed` 100 to 250 ms, e2e `IMPORT_MS` 6000 to 15000 ms); `ci.yml` fixed cost ~70 s;
+  `bash-guard.mjs` run-all cost 440-840 s and a bare `states.js` reminder (selftest #31, #31b, #31c); `run-all.js` weights from run 42821823209;
+  `.claude/README.md` notes the `in_progress` run. Next: `readme-screens` B1 (item 3), then VW1 (item 5).
 - Task status: step D done except D3 (owner decision) and D6 (owner signs a table first); step E and E2 shipped in one commit (not pushed); next: the `readme-screens` B1 / step 1.
 - E results: `SharePort` (`app/src/ports/share.ts`) puts the link last in `text` once; with a file it sends `{ files, title, text }` (no `url`);
   without a file `{ title, text, url }`; on a desktop (`desktopNow`: fine pointer and no coarse any-pointer, or Windows platform) it skips the file.
@@ -40,7 +44,7 @@
 - Steps: see `plan.md`.
 - Acceptance criteria: each step's "Acceptance" lines in `plan.md`.
 - Verification commands: `node tools/desc-style.mjs`, `node tools/build.js`, `node tests/run-all.js dataint,derived,contracts,craft`,
-  `rtk npm run check:fast` (Bash timeout 600000), `npm run lint:typed`, `npm run lint:untyped` (check:fast does NOT run eslint).
+  `rtk npm run check:fast` (Bash timeout 600000), `npm run lint:typed`, `npm run lint:untyped` (check:fast runs both since step 1).
 - Risks / do-nots: `data.js` is one line (two branches that edit it conflict); never hand-edit it; D6 shows the owner a before and after
   table first.
 
@@ -93,6 +97,8 @@
 ## Deferred
 - Applying the `lr` trim rule to other sources (Vault of Ages averages 319 characters per description, `dv` 228): a separate owner decision.
 - The `lr` trim notes of `lr1` and `lr25` (step D3).
+- Step 1 leftovers: case speed-ups (five slowest `app/states` cases, one context with `setViewport` against `fresh()`), `run-all.js` output
+  streaming (a cancelled job keeps nothing of the running row), the fake-limit suite (3x default limits on the list pages).
 
 ## Notes (rules that bit in the 2026-11-07 session)
 - One session at a time per working tree, per local Supabase stack, per hosted test project. One writer per tree.
