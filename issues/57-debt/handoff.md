@@ -2,8 +2,13 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: planned, not started (written 2026-11-07, end of the session that shipped task 57, `new-items` and `roll-per-line`).
-- Last agent: orchestrator (2026-11-07)
+- Task status: step D done except D3 (owner decision) and D6 (owner signs a table first); next step E.
+- Last agent: implementer (2026-11-10). D1, D2, D4, D5 (option A) shipped in one commit on `claude/57-debt`, not pushed.
+- D results: `node tools/desc-style.mjs` 0 changes after `--write`; `node tools/build.js` ok; `node tests/run-all.js dataint,derived,contracts,craft` all ok
+  (craft pin 34); `node tests/app/golden.js --update` for `#/tables/lr`, `#/tables/ph`, `#/tables/eq_secondary`, `#/search ~ capped`, the supplements menu:
+  only `_tables_lr.txt` (lr20 namelen/hash) and the supplements header changed; `node tests/run-all.js app/print,app/contracts` ok (the other four browser
+  suites were stopped after 20 min on this host, not run); `rtk npm run check:fast` pass; `npm run test` pass; `lint:typed` and `lint:untyped` clean.
+- `desc-style.mjs` changed: an override may widen a cost match at the same start (ph76 "Mark a Hit Point and a Stress"); the lr-fruitcake override now keys `lr20`.
 - NEEDS_HUMAN_CONFIRMATION: no for steps D, E, 1, V, 2, 3; yes for `ai-mcp` (product law)
 - Branch: `claude/57-debt` (worktree `.claude/worktrees/57-debt`, pushed). Merge `main` into it first.
 - Plan: `plan.md` (steps D, E, 1, V, 2-5; "Step D", "Step E", "Step E2" hold the details), `plan-views.md` (batch VW1).

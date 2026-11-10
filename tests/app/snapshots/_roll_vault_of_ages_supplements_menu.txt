@@ -1,6 +1,6 @@
 # #/roll/vault_of_ages ~ supplements menu
 # route: #/roll/vault_of_ages
-# why: the supplements menu open on Vault of Ages: the caption, seven supplements in table order, Vault of Ages checked and current
+# why: the supplements menu open on Vault of Ages: the caption, nine supplements in table order, Vault of Ages checked and current
 
 ## ru :: tree
 RootWebArea "Vault of Ages - Генератор лута Daggerheart" [url=/roll/vault_of_ages]

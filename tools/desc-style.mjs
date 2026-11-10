@@ -83,7 +83,7 @@ export const FEATURE_CONDITIONS = [
   {
     en: ['Impaired'],
     ru: ['Ослаблен', 'Ослаблено', 'Ослабленным'],
-    src: 'ref lr-fruitcake'
+    src: 'lr20'
   },
   { en: ['Horrified'], ru: ['Устрашена', 'Устрашённое'], src: 'voa4_t2e; SRD p. 218' },
   {
@@ -157,6 +157,15 @@ export const OVERRIDES = [
     n: 1,
     as: 'bold',
     why: 'an option for an effect: "You can use this stitcher to spend any number of Hope and clear"'
+  })),
+  ...['en', 'ru'].map((lang) => ({
+    id: 'ph76',
+    lang,
+    rule: 'cost',
+    text: lang === 'en' ? 'Mark a Hit Point and a Stress' : 'Отметьте Рану и Стресс',
+    n: 1,
+    as: 'bold',
+    why: 'the whole cost is paid together: "Mark a Hit Point and a Stress to drink this spirit"'
   })),
   ...['en', 'ru'].map((lang) => ({
     id: 'w11',
@@ -258,13 +267,13 @@ export const OVERRIDES = [
     why: 'another payer: "A creature creating a magical tune can mark a Stress to maintain it"'
   })),
   {
-    id: 'ref lr-fruitcake',
+    id: 'lr20',
     lang: 'ru',
     rule: 'cost',
-    text: 'Отметьте 1 Стресс',
+    text: 'отметьте 1 Стресс',
     n: 1,
     as: 'plain',
-    why: 'a penalty of a failed roll, not an option («Провал со Страхом: Отметьте 1 Стресс»)'
+    why: 'a penalty of a failed roll, not an option («Провал со Страхом: отметьте 1 Стресс»)'
   },
   {
     id: 'w59',
@@ -554,8 +563,10 @@ export function styleText(plain, lang, ctx, overrides = OVERRIDES) {
         by: 'term'
       });
     for (const { o, at } of targets[k]) {
-      const found = marks.find((x) => x.start === at && x.end === at + o.text.length);
-      if (found) Object.assign(found, { as: o.as, by: 'override', why: o.why });
+      /* An override may widen a match that starts at the same place ("Mark a Hit Point and a Stress"). */
+      const found = marks.find((x) => x.start === at && x.end <= at + o.text.length);
+      if (found)
+        Object.assign(found, { end: at + o.text.length, as: o.as, by: 'override', why: o.why });
       else
         marks.push({
           start: at,
