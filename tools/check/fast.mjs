@@ -56,7 +56,10 @@ function main(argv) {
       () =>
         spawnSync(
           process.execPath,
-          ['tools/check/run.mjs', '--only=format,typecheck,test:golden'],
+          [
+            'tools/check/run.mjs',
+            '--only=format,lint:untyped,lint:typed,typecheck,test:golden'
+          ],
           { cwd: ROOT, stdio: 'inherit' }
         )
     ]

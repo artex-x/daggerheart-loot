@@ -738,10 +738,11 @@ check:fast exited 0)`. Rule 2e accepts that record on a branch other than
 `tools/check/fast.mjs` takes the paths changed against `HEAD` (or
 `--base=<rev>`) and untracked files, then runs, stopping at the first
 failure:
-1. `stages`: `node tools/check/run.mjs --only=format,typecheck,test:golden`
-   (prettier, svelte-check, and the 1 s test that reads every golden
-   snapshot). A passing typecheck is recorded, so a later local `npm run
-   check` skips it.
+1. `stages`: `node tools/check/run.mjs --only=format,lint:untyped,lint:typed,typecheck,test:golden`
+   (prettier, both ESLint halves, svelte-check, and the 1 s test that reads
+   every golden snapshot). A passing `lint:typed` or typecheck is recorded,
+   so a later local `npm run check` skips it, and an unchanged tree skips
+   both again (about 85 s saved for `lint:typed`).
 2. `vitest` (when a path under `app/src/` changed): `vitest related` on the
    changed files, with coverage and its per-file thresholds limited to the
    changed sources.
@@ -753,12 +754,18 @@ commit gate; ...` or `check:fast: FAIL at <step>`. A change to a module that
 most files import (`lib/dict.ts`, `state/app.svelte.ts`) makes the related
 run close to the whole vitest stage. Measured 215-310 s (2026-10-07).
 
-`check:fast` does not run ESLint. Run `npm run lint:typed` and `npm run
-lint:untyped` before every push; the CI `check` job runs both inside `npm run
-check` and fails the push on a finding (two CI failures on `roll-per-line`
-came from skipping them). `lib/homebrew.timed.test.ts` ("300 cards in under
-50 ms") measured 56-58 ms on this host on 2026-11-07 and passed on a re-run;
-a failure with a time near the bound is that flake, not a regression.
+`check:fast` runs both ESLint halves (`lint:untyped`, `lint:typed`) in step 1;
+the CI `check` job runs them inside `npm run check` and fails the push on a
+finding (two CI failures on `roll-per-line` came from skipping them). The
+timing bounds in `lib/homebrew.timed.test.ts` and `lib/facets.timed.test.ts`
+and the e2e `IMPORT_MS` flaked on CI near their old limits; their margins
+were widened on 2026-11-10 from the CI readings. A failure with a time near
+a bound is that flake, not a regression.
+
+**A run that stays `in_progress`.** GitHub can keep a run `in_progress` after
+every job has finished (run 42360480441). `gh run view <id> --json jobs`
+shows each job's `conclusion`; the run-level status is the wrong signal, and
+a watcher on it hangs. Read the jobs, then rerun or push a new commit.
 
 **Stage cache.** Between `begin` and `arm`, the `npm run check` chain runs
 `node --test tools/check/lib.test.mjs` (`check:fast` does not, so the guards
