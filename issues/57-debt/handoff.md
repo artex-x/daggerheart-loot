@@ -3,6 +3,10 @@
 
 ## Status
 - 2026-11-10: steps D, E (with E2), D7, 1 and VW1 are on `main` and merged into `claude/57-debt` (`a8307bf7`). D6 waits for the owner's table.
+- PH1 (implementer, 2026-11-11): committed on `claude/57-debt` (`68655c3`), NOT pushed; the bundle budget is 274 kB (build 273.3 kB).
+  - Passed: `npm run build:test`; `node tests/app/golden.js` (only the two new states diverged; both seeded and read: the menu is in the tree, focus on the first item); `rtk npm run check:fast` (after fixes: Prettier, a `matchMedia` guard in `RecordModal`, five stale component tests, three new dock-clearance tests); `npm run lint:typed`; `npm run lint:untyped`. States cases 3, 23, 27, 32, 42, 50, 63, 72, 90-92, 100, 102, 103, 105, 108, 109, 116, 118 and 119-123 passed on the dist-test of this tree.
+  - Not run: each new case failing on the VW1 build first (that build is gone); the D141 sweep probe of the other overlay families, so case 123 (e) has no rows (DEFERRED to the review; no finding is known); the other states shards and the configured 330 kB limit (CI).
+  - Next: the orchestrator's PH1 review (UI batch), push, CI; then PH2.
 - Steps 2 and 3 are planned (triage pass, planner, 2026-11-10) as three batches in `plan-phone.md`: PH1 (overlays, the record dialog, the sticky
   columns, short windows), PH2 (focus, Escape, navigation scroll, list-page fields), PH3 (stat columns, the shared page, the roll number). None is started.
 - Plan review: not required (no trigger fired); `plan.md` Status says so. Batch reviews: each of PH1-PH3 changes UI.
