@@ -11198,6 +11198,531 @@ async function shortWindows() {
   }
 }
 
+/** 124. The focus after a remote removal (docs/specs/FEATURES.md, rule 20): another device removes
+ *  the ticked row that has the focus. (a) Seven rows, the third removed: the focus goes to the
+ *  tick of the new third row and the count follows; (b) a one-row list: the focus goes to the
+ *  bar's clear control. At 360 and 1180 px, RU and EN for (a). */
+async function focusAfterRemoteRemoval() {
+  const at = '124 (the focus after a remote removal): ';
+  const LIST = '00000000-0000-4000-8000-000000008001';
+  const TICKS = '.lrow .lrow-pick input';
+  for (const [width, height] of [
+    [360, 640],
+    [1180, 720]
+  ]) {
+    for (const lang of ['ru', 'en']) {
+      const where = at + '(a) ' + width + ' ' + lang + ': ';
+      const { ctx, page, d } = await openState(
+        LIST_A_ID + ' ~ selecting as gm4',
+        width,
+        height,
+        lang
+      );
+      try {
+        const names = await page.evaluate(
+          (sel) => [...document.querySelectorAll(sel)].map((i) => i.getAttribute('aria-label')),
+          TICKS
+        );
+        ok(names.length === 7, where + names.length + ' ticks, not 7');
+        await page.evaluate((sel) => {
+          const box = document.querySelectorAll(sel)[2];
+          box.click();
+          box.focus();
+        }, TICKS);
+        await d.settle();
+        ok(await d.fake('playRemove', LIST, 'ci3'), where + 'the fake removed no entry');
+        ok(
+          await waitIn(page, () => document.querySelectorAll('.lrow').length === 6),
+          where + "the other device's removal was not drawn"
+        );
+        ok(
+          await waitIn(
+            page,
+            (name, sel) => {
+              const a = document.activeElement;
+              return (
+                a?.matches(sel) &&
+                a.getAttribute('aria-label') === name &&
+                [...document.querySelectorAll('.lrow')].indexOf(a.closest('.lrow')) === 2
+              );
+            },
+            names[3],
+            TICKS
+          ),
+          where +
+            'the focus is not on the tick of the new third row - ' +
+            (await page.evaluate(() => {
+              const a = document.activeElement;
+              return a ? a.tagName + ' ' + (a.getAttribute('aria-label') ?? '') : 'none';
+            }))
+        );
+        const count = await page.evaluate(
+          () => document.querySelector('.selcount')?.textContent
+        );
+        ok(/\b0\b/.test(count ?? ''), where + 'the count did not follow - ' + count);
+      } finally {
+        await ctx.close();
+      }
+    }
+    {
+      const where = at + '(b) ' + width + ': ';
+      const { ctx, page, d } = await fresh({ width, height });
+      try {
+        const listId = await openAccountList(
+          d,
+          { n: 1, name: 'Тайник', ids: ['ci1'] },
+          '124 (b)'
+        );
+        await d.settled(where);
+        await d.click('Выбрать');
+        await page.evaluate((sel) => {
+          const box = document.querySelector(sel);
+          box.click();
+          box.focus();
+        }, TICKS);
+        await d.settle();
+        ok(await d.fake('playRemove', listId, 'ci1'), where + 'the fake removed no entry');
+        ok(
+          await waitIn(page, () => document.querySelectorAll('.lrow').length === 0),
+          where + 'the removal was not drawn'
+        );
+        ok(
+          await waitIn(page, () => !!document.activeElement?.closest('.selbarwrap .selclear')),
+          where +
+            'the focus is not on the bar clear control - ' +
+            (await page.evaluate(() => document.activeElement?.tagName))
+        );
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+}
+
+/** 125. Escape in a selection and with «Настроить» open (docs/specs/FEATURES.md, "Chrome"): on the
+ *  catalog, `/search`, `/lists` and a list, two ticks, then Escape: «Выбрано: 0» with the focus
+ *  kept; the next Escape leaves the mode with the focus on «Выбрать». An open sheet or menu takes
+ *  the first Escape alone. `/roll/std` and `/roll/alt` at 360: Escape folds «Настроить» and keeps
+ *  the focus on it. */
+async function escapeInASelection() {
+  const at = '125 (Escape in a selection): ';
+  const SPECS = [
+    { n: 1, name: 'Тайник', ids: ['ci1', 'ci2', 'ci3'] },
+    { n: 2, name: 'Лавка', ids: ['ci1'] }
+  ];
+  const PAGES = [
+    ['catalog', async (d) => d.open('#/tables/core_item')],
+    [
+      'search',
+      async (d) => {
+        await d.open('#/search');
+        await d.type('Поиск по названию или описанию...', 'меч');
+      }
+    ],
+    [
+      'lists',
+      async (d) => {
+        await d.open('#/lists', { as: 'gm4' });
+        await d.settled('125 lists');
+        await d.accountLists(SPECS);
+      }
+    ],
+    [
+      'list',
+      async (d) => {
+        await d.open('#/lists', { as: 'gm4' });
+        await d.settled('125 list');
+        const made = await d.accountLists(SPECS);
+        await d.go(made[0].hash);
+      }
+    ]
+  ];
+  const state = (page) =>
+    page.evaluate(() => {
+      const a = document.activeElement;
+      return {
+        count: document.querySelector('.selcount')?.textContent ?? null,
+        bar: !!document.querySelector('.selbarwrap'),
+        focus:
+          !a || a === document.body
+            ? 'BODY'
+            : a.matches('button.selmode')
+              ? 'SELMODE'
+              : 'OTHER',
+        box: a?.matches('main input[type="checkbox"]') ?? false
+      };
+    });
+  const tickTwo = async (page, d) => {
+    await page.evaluate(() => document.querySelector('button.selmode').click());
+    await d.settle();
+    await page.evaluate(() => {
+      const boxes = [...document.querySelectorAll('main input[type="checkbox"]')];
+      boxes[0].click();
+      boxes[1].click();
+      boxes[1].focus();
+    });
+    await d.settle();
+  };
+  for (const [width, height] of [
+    [360, 640],
+    [1180, 720]
+  ]) {
+    for (const [name, prepare] of PAGES) {
+      const where = at + name + ' ' + width + ': ';
+      const { ctx, page, d } = await fresh({ width, height });
+      try {
+        await prepare(d);
+        await d.settled(where);
+        ok(
+          await waitIn(page, () => !!document.querySelector('button.selmode')),
+          where + 'no «Выбрать»'
+        );
+        await tickTwo(page, d);
+        const two = await state(page);
+        ok(/\b2\b/.test(two.count ?? ''), where + 'two ticks not counted - ' + two.count);
+
+        await page.keyboard.press('Escape');
+        ok(
+          await waitIn(page, () =>
+            /\b0\b/.test(document.querySelector('.selcount')?.textContent ?? '')
+          ),
+          where + 'the first Escape did not clear the ticks'
+        );
+        const one = await state(page);
+        ok(
+          one.bar && one.box,
+          where + 'the mode or the focus did not stay - ' + JSON.stringify(one)
+        );
+
+        await page.keyboard.press('Escape');
+        ok(
+          await waitIn(page, () => !document.querySelector('.selbarwrap')),
+          where + 'the second Escape did not leave the mode'
+        );
+        const none = await state(page);
+        ok(none.focus === 'SELMODE', where + 'the focus is not on «Выбрать» - ' + none.focus);
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+  {
+    /* An open layer takes the first Escape alone. */
+    const where = at + 'sheet 360: ';
+    const { ctx, page, d } = await fresh({ width: 360, height: 640 });
+    try {
+      await d.open('#/tables/eq_weapon');
+      await d.settled(where);
+      await tickTwo(page, d);
+      await d.press('Фильтры');
+      ok(
+        !!(await page.waitForSelector('dialog.sheet[open]', { timeout: 5000 })),
+        where + 'no sheet'
+      );
+      await page.keyboard.press('Escape');
+      ok(
+        await waitIn(page, () => !document.querySelector('dialog[open]')),
+        where + 'Escape did not close the sheet'
+      );
+      const kept = await state(page);
+      ok(
+        /\b2\b/.test(kept.count ?? ''),
+        where + 'the same Escape cleared the ticks - ' + kept.count
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+  {
+    const where = at + 'menu 1180: ';
+    const { ctx, page, d } = await fresh({ width: 1180, height: 720 });
+    try {
+      await d.open('#/tables/core_item');
+      await d.settled(where);
+      await tickTwo(page, d);
+      await d.press('В список');
+      ok(
+        await waitIn(page, () => !!document.querySelector('.dropmenu')),
+        where + 'the add-to-list menu did not open'
+      );
+      await page.keyboard.press('Escape');
+      ok(
+        await waitIn(page, () => !document.querySelector('.dropmenu')),
+        where + 'Escape did not close the menu'
+      );
+      const kept = await state(page);
+      ok(
+        /\b2\b/.test(kept.count ?? ''),
+        where + 'the same Escape cleared the ticks - ' + kept.count
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+  for (const route of ['#/roll/std', '#/roll/alt']) {
+    const where = at + route + ' 360: ';
+    const { ctx, page, d } = await fresh({ width: 360, height: 640 });
+    try {
+      await d.open(route);
+      await d.settled(where);
+      await d.press('Настроить');
+      ok(
+        await waitIn(page, () => !!document.querySelector('#rp-set')),
+        where + 'the settings did not open'
+      );
+      await page.focus('#rp-set input, #rp-set button');
+      await page.keyboard.press('Escape');
+      ok(
+        await waitIn(page, () => !document.querySelector('#rp-set')),
+        where + 'Escape did not fold the settings'
+      );
+      const got = await page.evaluate(() => {
+        const a = document.activeElement;
+        return a ? a.tagName + ' ' + a.getAttribute('aria-expanded') : 'none';
+      });
+      ok(got === 'BUTTON false', where + 'the focus is on ' + got);
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
+/** 126. A page a link opens starts at the top, and Back returns to the row (docs/specs/FEATURES.md,
+ *  "Chrome"): `/tables/core_item` scrolled to 1139 px at 360x720 and 929 px at 1180x720; the
+ *  record page link in ci13's dialog and a header job each land at `scrollY` 0; Back restores the
+ *  offset and puts the focus on the row of ci13; a filter pick (a `replace`) keeps the page. */
+async function newPageOpensAtTheTop() {
+  const at = '126 (the new page opens at the top): ';
+  const scrollTo = (page, y) =>
+    page.evaluate(async (to) => {
+      window.scrollTo(0, to);
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      return scrollY;
+    }, y);
+  for (const [width, y] of [
+    [360, 1139],
+    [1180, 929]
+  ]) {
+    const where = at + width + ': ';
+    const { ctx, page, d } = await fresh({ width, height: 720 });
+    try {
+      await d.open('#/tables/core_item');
+      await d.settled(where);
+      const from = await scrollTo(page, y);
+      ok(from > 0, where + 'the page does not scroll');
+      await openRecordDialog(page, 'ci13');
+      await page.evaluate(() => document.querySelector('dialog[open] a.card-media').click());
+      ok(
+        await waitIn(page, () => location.pathname === '/i/ci13'),
+        where + 'the page link did not open /i/ci13'
+      );
+      await d.settle();
+      const top = await page.evaluate(() => scrollY);
+      ok(top === 0, where + '/i/ci13 opened at ' + top);
+
+      await page.goBack();
+      ok(
+        await waitIn(page, () => location.pathname === '/tables/core_item'),
+        where + 'Back did not return'
+      );
+      await d.settle();
+      ok(
+        await waitIn(
+          page,
+          () =>
+            document.activeElement?.closest('[data-row]')?.getAttribute('data-row') === 'ci13'
+        ),
+        where +
+          'the focus is not on the row of ci13 - ' +
+          (await page.evaluate(
+            () => document.activeElement?.tagName + '#' + document.activeElement?.id
+          ))
+      );
+      const back = await page.evaluate(() => scrollY);
+      ok(Math.abs(back - from) <= 60, where + 'Back restored ' + back + ', not about ' + from);
+
+      await scrollTo(page, from);
+      await page.evaluate(() => document.querySelector('header a[data-job="search"]').click());
+      ok(
+        await waitIn(page, () => location.pathname === '/search'),
+        where + 'the header job did not open /search'
+      );
+      await d.settle();
+      const job = await page.evaluate(() => scrollY);
+      ok(job === 0, where + '/search opened at ' + job);
+    } finally {
+      await ctx.close();
+    }
+  }
+  {
+    /* A filter pick rewrites the address and keeps the page where it is. */
+    const where = at + 'filter pick 1180: ';
+    const { ctx, page, d } = await fresh({ width: 1180, height: 720 });
+    try {
+      await d.open('#/tables/eq_weapon');
+      await d.settled(where);
+      const from = await scrollTo(page, 400);
+      const before = await page.evaluate(() => location.pathname + location.search);
+      await page.evaluate(() =>
+        document.querySelector('.fcol button[data-fval][aria-pressed="false"]')?.click()
+      );
+      await d.settle();
+      const after = await page.evaluate(() => ({
+        y: scrollY,
+        max: document.documentElement.scrollHeight - innerHeight,
+        path: location.pathname + location.search
+      }));
+      ok(after.path !== before, where + 'the pick did not change the address');
+      ok(
+        Math.abs(after.y - Math.min(from, after.max)) <= 2,
+        where + 'the pick moved the page - ' + JSON.stringify({ from, ...after })
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
+/** 127. The list page's fields stop the iOS zoom and the row controls follow the text column:
+ *  at 360x640 the position, the price, the quantity, the note, «Взять» and the new-list field
+ *  compute 16 px; at 1180 they keep 12 to 13 px; the price keeps its five digits; at 768 px
+ *  the controls' and the notes' left edge is the text column's, in the selection mode too. */
+async function listFieldsAndInset() {
+  const at = '127 (fields at 16 px): ';
+  const size = (page, sel) =>
+    page.evaluate((s) => {
+      const el = document.querySelector(s);
+      return el ? parseFloat(getComputedStyle(el).fontSize) : null;
+    }, sel);
+  {
+    const where = at + '360: ';
+    const { ctx, page, d } = await openState(
+      LIST_A_ID + ' ~ compact, row open as gm4',
+      360,
+      640,
+      'ru'
+    );
+    try {
+      for (const sel of ['.cfields .lrow-n', '.cfields input[data-gold]', '.crow > .cqf']) {
+        const got = await size(page, sel);
+        ok(got === 16, where + sel + ' is ' + got + ' px');
+      }
+      const fit = await page.evaluate(() => {
+        const el = document.querySelector('.cfields input[data-gold]');
+        el.value = '99999';
+        return { sw: el.scrollWidth, cw: el.clientWidth };
+      });
+      ok(
+        fit.sw <= fit.cw + 1,
+        where + 'five digits of the price are cut - ' + JSON.stringify(fit)
+      );
+      await d.click('Заметка, заполнена');
+      ok(
+        await waitIn(page, () => !!document.querySelector('.narea textarea')),
+        where + 'the note area did not open'
+      );
+      const note = await size(page, '.narea textarea');
+      ok(note === 16, where + 'the note field is ' + note + ' px');
+    } finally {
+      await ctx.close();
+    }
+  }
+  {
+    const where = at + '360 take: ';
+    const { ctx, page } = await openState(
+      LIST_A_ID + ' ~ compact, selecting as gm4',
+      360,
+      640,
+      'ru'
+    );
+    try {
+      const got = await size(page, '.lrow-take .qgroup input');
+      ok(got === 16, where + 'the take field is ' + got + ' px');
+    } finally {
+      await ctx.close();
+    }
+  }
+  {
+    const where = at + '360 new list: ';
+    const { ctx, page, d } = await fresh({ width: 360, height: 640 });
+    try {
+      await d.open('#/tables/core_item', { as: 'gm4' });
+      await d.settled(where);
+      await page.evaluate(() => document.querySelector('button.selmode').click());
+      await d.settle();
+      await page.evaluate(() => document.querySelector('main input[type="checkbox"]').click());
+      await d.settle();
+      await d.press('В список');
+      await d.press('Новый список');
+      ok(
+        await waitIn(page, () => !!document.querySelector('.picker-new input')),
+        where + 'the new-list field did not open'
+      );
+      const got = await size(page, '.picker-new input');
+      ok(got === 16, where + 'the new-list field is ' + got + ' px');
+    } finally {
+      await ctx.close();
+    }
+  }
+  {
+    const where = at + '1180: ';
+    const { ctx, page } = await openState(LIST_A_ID + ' ~ noted as gm4', 1180, 720, 'ru');
+    try {
+      for (const [sel, want] of [
+        ['.lrow-meta input[data-qty]', 13],
+        ['.lrow-meta input[data-gold]', 13],
+        ['.lrow-n', 12]
+      ]) {
+        const got = await size(page, sel);
+        ok(got === want, where + sel + ' is ' + got + ' px');
+      }
+      const w = await page.evaluate(
+        () => document.querySelector('.lrow-n').getBoundingClientRect().width
+      );
+      ok(Math.abs(w - 40) <= 0.5, where + 'the position column is ' + w + ' px');
+    } finally {
+      await ctx.close();
+    }
+  }
+  {
+    const where = at + 'inset 768: ';
+    const { ctx, page, d } = await openState(LIST_A_ID + ' ~ noted as gm4', 768, 1024, 'ru');
+    try {
+      const edges = () =>
+        page.evaluate(() => {
+          const pad = (el) =>
+            el.getBoundingClientRect().left + parseFloat(getComputedStyle(el).paddingLeft);
+          const row = document.querySelector('.lrow');
+          const ctl = row.querySelector('.lrow-ctl');
+          const noted = document.querySelector('.rnote');
+          return {
+            text: row.querySelector('.row-main .rt').getBoundingClientRect().left,
+            ctl: ctl ? pad(ctl) : null,
+            note: noted ? pad(noted) : null
+          };
+        });
+      for (const mode of ['plain', 'selecting']) {
+        if (mode === 'selecting') {
+          await page.evaluate(() => document.querySelector('button.selmode').click());
+          await d.settle();
+        }
+        const e = await edges();
+        ok(e.ctl !== null, where + mode + ': no .lrow-ctl');
+        ok(
+          e.ctl !== null && Math.abs(e.ctl - e.text) <= 1,
+          where + mode + ': the controls start at ' + e.ctl + ', the text at ' + e.text
+        );
+        ok(
+          e.note === null || Math.abs(e.note - e.text) <= 1,
+          where + mode + ': the notes start at ' + e.note + ', the text at ' + e.text
+        );
+      }
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -11314,7 +11839,11 @@ const CASES = [
   ['120 (the add-to-list popover in the dialog)', dialogPopoverStaysInWindow],
   ['121 (the sticky columns fit)', stickyColumnsFit],
   ['122 (the header focus keeps the place)', headerFocusKeepsThePlace],
-  ['123 (short windows)', shortWindows]
+  ['123 (short windows)', shortWindows],
+  ['124 (the focus after a remote removal)', focusAfterRemoteRemoval],
+  ['125 (Escape in a selection)', escapeInASelection],
+  ['126 (the new page opens at the top)', newPageOpensAtTheTop],
+  ['127 (fields at 16 px)', listFieldsAndInset]
 ];
 
 /* The interleave spreads the slow layout cases at the end of the list over

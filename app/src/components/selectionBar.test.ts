@@ -14,6 +14,7 @@ const html = (s: string) => createRawSnippet(() => ({ render: () => s }));
 function bar(picked: number, total = 3, idle = false) {
   const onall = vi.fn();
   const onclear = vi.fn();
+  const onuntick = vi.fn();
   const view = render(SelectionBar, {
     label: 'Выбранные записи',
     total,
@@ -24,11 +25,12 @@ function bar(picked: number, total = 3, idle = false) {
     clearText: 'Снять выделение',
     onall,
     onclear,
+    onuntick,
     idle,
     actions: html('<button type="button">Печать</button>')
   });
   const all = screen.queryByRole('checkbox', { name: 'Выбрать все' }) as HTMLInputElement;
-  return { ...view, onall, onclear, all };
+  return { ...view, onall, onclear, onuntick, all };
 }
 
 describe('the selection bar', () => {
@@ -72,6 +74,53 @@ describe('the selection bar', () => {
     const { container } = bar(0, 3, true);
     expect(container.querySelector('input, button, a')).toBeNull();
     expect(container.querySelector('.selsumm')).toHaveAttribute('aria-live', 'polite');
+  });
+
+  describe('Escape', () => {
+    it('drops the ticks first and leaves the mode on the next press', async () => {
+      const first = bar(2);
+      await userEvent.keyboard('{Escape}');
+      expect(first.onuntick).toHaveBeenCalledOnce();
+      expect(first.onclear).not.toHaveBeenCalled();
+      cleanup();
+      const second = bar(0);
+      await userEvent.keyboard('{Escape}');
+      expect(second.onclear).toHaveBeenCalledOnce();
+      expect(second.onuntick).not.toHaveBeenCalled();
+    });
+
+    it('does nothing while idle, with a layer open, once prevented or in a field holding text', async () => {
+      const idle = bar(0, 3, true);
+      await userEvent.keyboard('{Escape}');
+      expect(idle.onclear).not.toHaveBeenCalled();
+      cleanup();
+
+      const layered = bar(2);
+      const menu = document.body.appendChild(document.createElement('div'));
+      menu.setAttribute('role', 'menu');
+      await userEvent.keyboard('{Escape}');
+      menu.remove();
+      expect(layered.onuntick).not.toHaveBeenCalled();
+
+      const claimed = (e: KeyboardEvent): void => {
+        e.preventDefault();
+      };
+      window.addEventListener('keydown', claimed, true);
+      await userEvent.keyboard('{Escape}');
+      window.removeEventListener('keydown', claimed, true);
+      expect(layered.onuntick).not.toHaveBeenCalled();
+
+      const field = document.body.appendChild(document.createElement('input'));
+      field.type = 'search';
+      field.value = 'меч';
+      field.focus();
+      await userEvent.keyboard('{Escape}');
+      expect(layered.onuntick).not.toHaveBeenCalled();
+      field.value = '';
+      await userEvent.keyboard('{Escape}');
+      expect(layered.onuntick).toHaveBeenCalledOnce();
+      field.remove();
+    });
   });
 
   it('reads the largest table: every one of 458 ids ticked, the box checked', () => {

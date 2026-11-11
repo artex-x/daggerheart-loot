@@ -2950,6 +2950,23 @@ right, so the tab order and the reading order agree
   focused it is a gold plate pinned over the page's top-left corner, matching
   the live app rather than a gray chip that pushed the header down while
   focused.
+- **Where a navigation lands.** A page a link or a job opens (a record's page link, a header
+  job, a card) starts at the top of the window; a row or section anchor in the address scrolls
+  to its target instead. Back, Forward and a reload keep the browser's own scroll restore, and
+  a Back puts the focus on the row of the record that was left (`[data-row]`, kept in memory
+  for the session; the row of an open record dialog counts), else on `#main`. A record dialog
+  opening, a filter pick and a language switch are not navigations and keep the page where it
+  is.
+- **Escape.** It undoes the last layer a person opened: it closes an open menu, popover,
+  sheet or dialog and does nothing else on that press. With no layer open, in a selection it
+  clears the ticks («Выбрано: 0», the focus kept); at 0 ticks the next Escape leaves the
+  selection mode on the pages that have one (the catalog, `/search`, `/lists`, a list, «Мои
+  предметы») and puts the focus on «Выбрать»; the shared page has no mode and keeps its bar. A
+  text field that holds text takes its own Escape first. Up to 760 px an open «Настроить»
+  folds on Escape while the focus is on it or inside it, and the focus stays on «Настроить».
+- Text fields are 16 px up to 600 px, so a phone does not zoom the page on focus (the list
+  rows' position, price and quantity, the note boxes, «Взять», the add-to-list menu's search
+  and new-list name).
 - Chips and segmented switches expose their on/off state as `aria-pressed` -
   the money chips and the two view switches (tables list/grid, print color/
   black-and-white) gained it in the rewrite, where the live app wrote
@@ -3410,7 +3427,11 @@ Each rule keeps its number: a review cites it by number.
   name, «На главную», «Открыть таблицы», «показать в таблице», a `/lists` card, a homebrew
   row, «Новый предмет», the editor's «Мои предметы», a source name)
   - `#main`, unless the new page places the focus itself (the head's
-  mode pills, a dialog); a navigation that keeps the pressed control keeps the focus; on the
+  mode pills, a dialog) or the arrival is a Back to a catalog, whose row of the left record
+  takes it ("Chrome"); a navigation that keeps the pressed control keeps the focus; a row that
+  another device removes while it holds the focus (a ticked row on an account list or the
+  shared page) - the tick of the row now at its place, else the last row's, else the bar's
+  «Снять выделение», and the count follows; on the
   homebrew tabs a source's «Удалить» - the next row's «Ещё», the one before,
   «Новый источник»; a section's «Удалить» - the next row's «Удалить», the one
   before, that source's «Новый раздел»; a card's «Удалить» - the next card's, the previous card's, the

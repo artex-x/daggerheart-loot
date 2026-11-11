@@ -685,5 +685,11 @@
       width: calc(100% - 32px);
       max-width: none;
     }
+
+    /* 16 px: a smaller field makes iOS zoom the page on focus (as `RollSelect.svelte`). */
+    .picker-new input,
+    input.pickq {
+      font-size: 16px;
+    }
   }
 </style>

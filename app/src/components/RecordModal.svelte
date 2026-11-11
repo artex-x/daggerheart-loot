@@ -128,6 +128,7 @@
 <dialog
   bind:this={dialog}
   aria-label={nameOf(it, app.lang)}
+  data-record={it.id}
   onclose={handleClose}
   onclick={(e) => {
     if (e.target === dialog) dialog?.close();

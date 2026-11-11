@@ -1829,6 +1829,20 @@ describe('the scroll port', () => {
     expect(port.busy()).toBe(false);
   });
 
+  it('scrolls to the top at once and settles', () => {
+    vi.useFakeTimers();
+    const to = vi.fn();
+    vi.stubGlobal('scrollTo', to);
+    try {
+      const port = browserScroll();
+      port.top();
+      expect(to).toHaveBeenCalledWith({ top: 0, behavior: 'instant' });
+      expect(port.busy()).toBe(true);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('has a fake that moves when told, holds until quiet and lets a listener go', () => {
     const port = fakeScroll();
     const fn = vi.fn();
@@ -1851,6 +1865,10 @@ describe('the scroll port', () => {
     port.into(el, { block: 'start' });
     expect(moved).toHaveBeenCalledWith({ block: 'start' });
     expect(port.busy()).toBe(true);
+    port.to(500);
+    port.quiet();
+    port.top();
+    expect([port.y(), port.busy()]).toEqual([0, true]);
   });
 });
 

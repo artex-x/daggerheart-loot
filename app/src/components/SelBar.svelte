@@ -173,6 +173,9 @@
     clearText={t.clearSel}
     onall={all}
     onclear={() => void clear()}
+    onuntick={() => {
+      app.untick();
+    }}
     idle={!n && !app.selecting}
   >
     {#snippet summary()}
