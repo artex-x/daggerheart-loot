@@ -85,12 +85,12 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 2
 22Щит Охотника на ЖуковУникальноеWondrous EnvironmentsФизическое... [namelen=231 namehash=d3b36315]
 23Голодный Кулачный КлинокУникальноеVault of AgesФизическое · Ис... [namelen=399 namehash=bfa05c40]
-25Зуб Аку-ХаптлекаУникальноеVault of AgesФизическое · Проворност... [namelen=677 namehash=ff2de90d]
+25Зуб Аку-ХаптлекаУникальноеVault of AgesФизическое · Проворност... [namelen=672 namehash=b9758087]
 27Щит Стекла СудьбыУникальноеVault of AgesФизическое · Инстинкт ... [namelen=479 namehash=f4cc5605]
 28Святой ЩитУникальноеVault of AgesМагическое · Инстинкт · Вплот... [namelen=331 namehash=a68f9d75]
 2Взыскательный БаклерУникальноеВоюющие НорыФизическое · Искуснос... [namelen=250 namehash=a6fd4f87]
 3
-32Нож ЕдинорогаУникальноеVault of AgesФизическое · Искусность · ... [namelen=313 namehash=5c57c0aa]
+32Нож ЕдинорогаУникальноеVault of AgesМагическое · Искусность · ... [namelen=313 namehash=bc210dc4]
 3Ведьмина СковородаУникальноеThe Last Round TableФизическое · Вл... [namelen=194 namehash=fd321e33]
 3Наручный КлинокУникальноеДромФизическое · Проворность · Вплотну... [namelen=143 namehash=000340b5]
 4
@@ -358,12 +358,12 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_secondary]
 2
 22Bug Hunter's AegisUniqueWondrous EnvironmentsPhysical · Streng... [namelen=215 namehash=467a86b9]
 23Hungry Fist BladeUniqueVault of AgesPhysical · Finesse · Melee... [namelen=385 namehash=ef7d5d83]
-25Aku-Haptlek's ToothUniqueVault of AgesPhysical · Agility · Mel... [namelen=617 namehash=182c8181]
+25Aku-Haptlek's ToothUniqueVault of AgesPhysical · Agility · Mel... [namelen=603 namehash=ec615d95]
 27Fateglass ShieldUniqueVault of AgesPhysical · Instinct · Melee... [namelen=408 namehash=eaeeda9a]
 28Saintly GuardUniqueVault of AgesMagic · Instinct · Melee · d6+... [namelen=298 namehash=7b118434]
 2Exacting BucklerUniqueWarrin' WarrensPhysical · Finesse · Melee... [namelen=219 namehash=f1218215]
 3
-32Unicorn KnifeUniqueVault of AgesPhysical · Finesse · Melee · d... [namelen=279 namehash=9340a7e6]
+32Unicorn KnifeUniqueVault of AgesMagic · Finesse · Melee · d8+6... [namelen=276 namehash=9439c6af]
 3Witch's SkilletUniqueThe Last Round TablePhysical · Presence · ... [namelen=171 namehash=cd428424]
 3WristbladeUniqueThe DromePhysical · Agility · Melee · d8+2 phy ... [namelen=134 namehash=d6f4da1b]
 4

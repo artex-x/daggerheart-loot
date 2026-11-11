@@ -53,7 +53,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 ## ru :: controls
 10Хмельные СапогиПредметЗаряд Бодрости - Реакция: Один раз за пр... [namelen=171 namehash=0c961864]
 11Промасленное Длиннополое ПальтоПредметСпутник Путника - Пассив... [namelen=155 namehash=7c2a052c]
-12Весло Растущего БроженияОсновное оружиеУникальноеРанг 2 · Физи... [namelen=326 namehash=f65d35a3]
+12Весло Растущего БроженияОсновное оружиеУникальноеРанг 2 · Маги... [namelen=326 namehash=e08c8cd0]
 13Фонарь-РозаПредметЛюбовь витает в воздухе - Действие: Когда пр... [namelen=260 namehash=2ab6c00f]
 14Охотничий Оберег из Волчьего РогаПредметСтойка Преследователя ... [namelen=215 namehash=6b3e9de4]
 15Эль АпокалипсисаРасходникТяжёлый Выпивоха - Реакция: Выпив бок... [namelen=445 namehash=0a6bbf2a]
@@ -158,7 +158,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/last_round_tab
 ## en :: controls
 10Noggin' BootsItemPumped Up - Reaction: Once per Long Rest, whe... [namelen=125 namehash=b555fd9b]
 11Oiled LongcoatItemTraveller's Companion - Passive: When you go... [namelen=125 namehash=c15199f2]
-12Paddle of Rising FermentPrimary weaponUniqueTier 2 · Physical ... [namelen=339 namehash=244a5962]
+12Paddle of Rising FermentPrimary weaponUniqueTier 2 · Magic · S... [namelen=336 namehash=c055f13f]
 13Rose LanternItemLove is in the Air - Action: When invoked with... [namelen=238 namehash=fb79d725]
 14Wolfhorn Hunting CharmItemStalker's Stance - Action: Gain adva... [namelen=169 namehash=5d1cb17d]
 15Apocalypse AleConsumableHeavy Drinker - Reaction: Drinking a g... [namelen=448 namehash=7fe588d3]

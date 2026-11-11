@@ -145,7 +145,7 @@ daggerheart.com
 КопьёФизическое · Искусность · Близко · d8+3 физ · Двуручное
 Короткий ЛукФизическое · Проворность · Далеко · d6+3 физ · Двуру... [namelen=68 namehash=98cc24d2]
 КосаУникальноеПир зверейФизическое · Искусность · Близко · d8+2 ... [namelen=79 namehash=f5c4cb43]
-КувалдаУникальноеПир зверейФизическое · Сила · Вплотную · d10+3 ... [namelen=207 namehash=d141b9b4]
+КувалдаУникальноеПир зверейФизическое · Сила · Вплотную · d10+3 ... [namelen=205 namehash=a34f7428]
 ЛутDaggerheart
 Магическая ВинтовкаHope & FearМагическое · Проворность · Очень д... [namelen=276 namehash=3320deb0]
 Магические НаручиМагическое · Сила · Вплотную · d10+3 маг · Двур... [namelen=69 namehash=800a63d1]
@@ -347,7 +347,7 @@ ShortbowPhysical · Agility · Far · d6+3 phy · Two-Handed
 ShotgunColossus of the DrylandsPhysical · Strength · Very Close ... [namelen=175 namehash=22dab244]
 Sign in
 Skip to content
-SledgehammerUniqueBeast FeastPhysical · Strength · Melee · d10+3... [namelen=189 namehash=12b74316]
+SledgehammerUniqueBeast FeastPhysical · Strength · Melee · d10+3... [namelen=189 namehash=3d807e9d]
 SlingshotUniqueBeast FeastPhysical · Finesse · Far · d6+3 phy · ... [namelen=74 namehash=b55fd3bc]
 Sparkling StaffUniqueBeast FeastMagic · Knowledge · Very Far · d... [namelen=176 namehash=f390691c]
 SpearPhysical · Finesse · Very Close · d8+3 phy · Two-Handed

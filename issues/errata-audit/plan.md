@@ -3,10 +3,8 @@
 ## Status
 
 - Mode: A (first pass, 2026-11-11).
-- Batches: B1 implement-ready; no other batch. B2 exists only if the owner picks a
-  rule-card option in O5 (section 6).
-- NEEDS_HUMAN_CONFIRMATION: yes - O1-O5 (section 5). Each has a recommended default; with the
-  owner away the orchestrator takes the default and logs it (memory "Owner AFK").
+- Batches: B1 implemented (2026-11-12, not pushed); no other batch. O5-A, so no B2.
+- NEEDS_HUMAN_CONFIRMATION: no - the owner answered O1-O5 on 2026-11-11, option A for each.
 - Plan review: not required (no trigger fired). B1 changes no id, route, count, migration,
   write path or stored shape; `data.js` values are not a frozen contract (`docs/specs/CONTRACTS.md`).
 - Batch review: B1 fires "generated artifacts changed" (`data.json`, `catalog.csv`, `i/*.html`).
