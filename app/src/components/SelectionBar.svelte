@@ -194,8 +194,7 @@
   }
 
   /* On a phone held upright the add control has its own line; in landscape the actions
-     share one, which holds the bar under 45% of the height with no scroll: a scroll here
-     would clip the add menu that opens upward (189 px at 640x360, measured 2026-11-03). */
+     share one, which holds the bar under 45% of the height with no scroll. */
   @media (max-width: 760px) and (min-height: 481px) {
     .selacts :global(.seldrop) {
       flex: 1 1 100%;

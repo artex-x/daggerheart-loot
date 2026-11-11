@@ -22,7 +22,7 @@ import type { Record_ } from '../lib/types.js';
 
 afterEach(cleanup);
 
-/* jsdom does not implement scrollIntoView: both menus call it once open. */
+/* jsdom does not implement scrollIntoView: the stub keeps a component call from throwing. */
 Element.prototype.scrollIntoView = vi.fn();
 
 const record = (over: Partial<Record_> = {}): Record_ => ({

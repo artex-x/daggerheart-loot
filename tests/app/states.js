@@ -4719,8 +4719,9 @@ async function catalogCopyPerPress() {
  *  window and uncut, at most three lines, «В список» the only gold primary, and «Ещё» opens
  *  a menu inside the window with 44 px items at 360. In the dialog at 360x640, 640x360 and
  *  1180x720: the dock holds the card's bottom, or joins the scroll below 481 px of height and
- *  from 761 px, takes at most 0.45 of the window, «Ещё» opens up from the dock, or down from
- *  the row, inside the card, and a toast leaves the dock in place; a prompt leaves «Ещё»'s
+ *  from 761 px, takes at most 0.45 of the window, «Ещё» opens up from a held dock, or on the
+ *  side with room from the row, inside the window with its 16 px gutter (the top-layer menu may pass the card),
+ *  and a toast leaves the dock in place; a prompt leaves «Ещё»'s
  *  menu under the button, and a rule card draws its chevron; with 150 lists the add menu scrolls inside the window with its search and
  *  «+ Новый список» in view (docs/specs/FEATURES.md, "Records"). */
 async function recordActionsFit() {
@@ -4827,20 +4828,19 @@ async function recordActionsFit() {
       const menu = await page.evaluate(() => {
         const box = (r) => ({ x: r.x, y: r.y, w: r.width, h: r.height });
         const m = document.querySelector('[role="menu"]');
-        const card = document.querySelector('.modal-card').getBoundingClientRect();
         return {
-          up: m.classList.contains('up'),
+          up: m.dataset.side === 'up',
           box: box(m.getBoundingClientRect()),
-          card: box(card),
-          view: { x: 0, y: 0, w: innerWidth, h: innerHeight }
+          view: { x: 16, y: 0, w: document.documentElement.clientWidth - 32, h: innerHeight }
         };
       });
-      ok(menu.up === first.sticky, at + where + 'the menu opens up: ' + menu.up);
+      /* Joined to the scroll the menu takes the side with room, which a 360 px tall window
+         leaves above the row. */
+      ok(!first.sticky || menu.up, at + where + 'the menu opens up: ' + menu.up);
       ok(
-        inside(menu.box, menu.card),
-        at + where + 'menu outside the card ' + JSON.stringify(menu)
+        inside(menu.box, menu.view),
+        at + where + 'menu outside the window or its 16 px gutter ' + JSON.stringify(menu)
       );
-      ok(inside(menu.box, menu.view), at + where + 'menu outside the window');
       await d.press(lang === 'ru' ? 'Скопировать название' : 'Copy name');
       ok(
         await waitIn(page, () => !!document.querySelector('dialog[open] .toast')),
@@ -7968,6 +7968,46 @@ async function listSearchAndFilter() {
  *  pages. */
 async function listHeadAndBars() {
   const at = '100 (the list head and the bars): ';
+  /* The list «Ещё» never scrolls the page (FEATURES.md, "Chrome", the overlay rule): not on
+     open, not on Escape, not on a tap outside, and its button stays below the header. */
+  for (const lang of ['ru', 'en']) {
+    const where = at + 'no scroll, ' + lang + ': ';
+    const { ctx, page, d } = await openState(LIST_A_ID + ' ~ noted as gm4', 360, 640, lang);
+    try {
+      const sel = '.lhead-acts .morewrap > [aria-haspopup="menu"]';
+      const read = (what) =>
+        page.evaluate(
+          ([s, w]) => ({
+            what: w,
+            sy: scrollY,
+            top: document.querySelector(s)?.getBoundingClientRect().top ?? -1,
+            header: document.querySelector('.topbar').getBoundingClientRect().bottom
+          }),
+          [sel, what]
+        );
+      const clean = (r) => r.sy === 0 && r.top >= r.header - 0.5;
+      await d.openMore(sel);
+      const opened = await read('open');
+      ok(
+        clean(opened),
+        where + 'scrolled or under the header on open - ' + JSON.stringify(opened)
+      );
+      await page.keyboard.press('Escape');
+      await d.settle();
+      const esc = await read('Escape');
+      ok(clean(esc), where + 'scrolled or under the header on Escape - ' + JSON.stringify(esc));
+      await d.openMore(sel);
+      await page.mouse.click(8, 632);
+      await d.settle();
+      const tap = await read('tap outside');
+      ok(
+        clean(tap),
+        where + 'scrolled or under the header on a tap outside - ' + JSON.stringify(tap)
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
   {
     const { ctx, page, d } = await openState(LIST_A_ID + ' ~ noted as gm4', 360, 640, 'ru');
     try {

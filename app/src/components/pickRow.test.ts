@@ -25,7 +25,7 @@ import { expectNoA11yViolations } from '../test/a11y.js';
 
 afterEach(cleanup);
 
-/* jsdom does not implement scrollIntoView: the add-to-list menu calls it once open. */
+/* jsdom does not implement scrollIntoView: the stub keeps a component call from throwing. */
 Element.prototype.scrollIntoView = vi.fn();
 
 const t = dict('ru');

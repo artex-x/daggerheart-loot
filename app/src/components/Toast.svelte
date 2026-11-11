@@ -16,10 +16,9 @@
      styles this component's own `.toast` rule below undoes.
 
      The element stays mounted whether or not a toast is showing - `hidePopover`
-     needs it to exist - and carries its `role` and `aria-live` before any text arrives,
-     so a screen reader's live region exists when the first message is written. An idle
-     popover is `display: none` and leaves the accessibility tree; a test that means "a
-     shown toast" reads `.toast:popover-open`.
+     needs it to exist - and always sets its `role` and `aria-live`. An idle popover is
+     `display: none` and leaves the accessibility tree; a test that means "a shown toast"
+     reads `.toast:popover-open`.
 
      jsdom (v30) applies the UA default `[popover]:not(:popover-open){display:
      none}` from CSS alone, but implements neither `showPopover`/`hidePopover`

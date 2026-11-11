@@ -3,10 +3,12 @@
 
 ## Status
 - 2026-11-10: steps D, E (with E2), D7, 1 and VW1 are on `main` and merged into `claude/57-debt` (`a8307bf7`). D6 waits for the owner's table.
-- PH1 (implementer, 2026-11-11): committed on `claude/57-debt` (`68655c3`), NOT pushed; the bundle budget is 274 kB (build 273.3 kB).
-  - Passed: `npm run build:test`; `node tests/app/golden.js` (only the two new states diverged; both seeded and read: the menu is in the tree, focus on the first item); `rtk npm run check:fast` (after fixes: Prettier, a `matchMedia` guard in `RecordModal`, five stale component tests, three new dock-clearance tests); `npm run lint:typed`; `npm run lint:untyped`. States cases 3, 23, 27, 32, 42, 50, 63, 72, 90-92, 100, 102, 103, 105, 108, 109, 116, 118 and 119-123 passed on the dist-test of this tree.
-  - Not run: each new case failing on the VW1 build first (that build is gone); the D141 sweep probe of the other overlay families, so case 123 (e) has no rows (DEFERRED to the review; no finding is known); the other states shards and the configured 330 kB limit (CI).
-  - Next: the orchestrator's PH1 review (UI batch), push, CI; then PH2.
+- PH1 (2026-11-11): `68655c35`, then the fix pass for CI run 42954673078 and the reviewer's blockers (commit after `17a9e0b0`), NOT pushed. Next: push, CI, then PH2.
+  - Fix pass: B1 the configured limit is 331 kB (`tools/bundle-budget.mjs`, `.claude/README.md`; CI measured 330.7 to 330.8 kB; the unconfigured limit stays 274); B2 states case 88 reads `dataset.side` and checks the menu inside the window with the 16 px gutter (a joined dock at 640x360 now opens up by room); B3 case 100 reads scrollY 0 and the control under the header on open, Escape and a tap outside, RU and EN; R1 the toast text claims only `role` and `aria-live` always set; the comment nits.
+  - Verification: `npm run build:test`; all four `app/states` shards pass (shard 2 re-run after the case 88 fix: 28 runs; shards 1, 3, 4: 29, passed); `node tests/app/golden.js` (438 states, no divergence); `rtk npm run check:fast`; `npm run lint:typed`; `npm run lint:untyped`. Not run: the configured-build budget line (no `.env.test.local` in the worktree; CI's `e2e` measures it).
+  - Deviations: `homebrewEditor.test.ts` lost the `toBeInTheDocument` line (states cases 91/92/109 prove the upward menu).
+  - D141 sweep (reviewer): 14 overlay opens at 360x640 RU/EN, 768x1024, 1180x720, 1920x950 and 740x360 are all clean. HelpBox, SharePanel and RequestsPanel are inline panels, not overlays. Case 123 (e) needs no rows.
+  - Previous sha: `17a9e0b0`.
 - Steps 2 and 3 are planned (triage pass, planner, 2026-11-10) as three batches in `plan-phone.md`: PH1 (overlays, the record dialog, the sticky
   columns, short windows), PH2 (focus, Escape, navigation scroll, list-page fields), PH3 (stat columns, the shared page, the roll number). None is started.
 - Plan review: not required (no trigger fired); `plan.md` Status says so. Batch reviews: each of PH1-PH3 changes UI.
@@ -26,21 +28,20 @@
 - 57-debt steps D (D1, D2, D4, D5), E and E2, D7, 1 and VW1: on `main` (`a68e40f5`, `95c770d6`, `b96e0640`, `89e4c348`, `25493a0d`).
 
 ## Next batch (implement-ready)
-- Name: PH1 - overlays, the record dialog and the sticky columns (`plan-phone.md`, "PH1").
-- In scope: D122, D123, D124, D125, D126, D132 (the «Ещё» menu and the «В список» popover), D136, D140, D141 (the filter column and the
-  editor preview), the toast live region, the D141 sweep.
-- Out of scope: PH2 and PH3 items; `Sheet`, `ItemPicker` and `ModeRow` scrolling; a bottom sheet for menus.
-- Files expected: new `app/src/components/overlay.ts` and `stickyTop.ts`; `Menu`, `MoreMenu`, `AccountMenu`, `AddToList`, `RecordModal`,
-  `Toast`, `Shell`, `FilterPanel`, `HomebrewEditor`, `TabBar`, `CropDialog` and the callers that pass `flip` or `up`; their tests;
-  `tests/app/states.js` (cases 119-123, 108 (f), and cases 3, 23, 32, 90 updated), `inventory.js`; FEATURES.md, DESIGN.md, DEBT.md,
-  COVERAGE.md; the bundle budget only if passed.
-- Steps: `plan-phone.md`, "PH1", "Steps" 1-14.
-- Acceptance criteria: `plan-phone.md`, "PH1", "Acceptance" (each new case fails on the VW1 build first; the paid DEBT rows deleted).
-- Verification commands: `npm run build:test`; the probe `issues/57-debt/mocks/phone/probe2.cjs` as the sweep's start; `node tests/app/states.js
-  --shard=n/4` for the shards with the changed cases, in the background, one at a time; `node tests/app/golden.js --update --only=<id>` per
-  changed golden (or CI's text); `rtk npm run check:fast` (Bash timeout 600000); `npm run lint:typed`; `npm run lint:untyped`; push; CI.
-- Risks / do-nots: reset the popover UA styles in `Menu` and `.dropmenu` as `Toast` does; a fixed overlay must follow its control on
-  scroll; keep the DOM order (the Tab order); every caller's `flip` and `up` go in the same commit.
+- Name: PH2 - focus, Escape, navigation scroll and the list-page fields (`plan-phone.md`, "PH2").
+- In scope: D137, D138, D139, Escape in a selection and with «Настроить» open, the five fields at 16 px, 9b-N13.
+- Out of scope: PH1 and PH3 items.
+- Files expected: `plan-phone.md`, "PH2", "Files".
+- Steps: `plan-phone.md`, "PH2", "Steps" 1-8.
+- Acceptance criteria: `plan-phone.md`, "PH2", "Acceptance" (cases 124-127 fail on the PH1 build first).
+- Verification commands: `npm run build:test`; `node tests/app/states.js --shard=n/4` for the shards with the changed cases, in the
+  background, one at a time; `node tests/app/golden.js`; `rtk npm run check:fast` (Bash timeout 600000); `npm run lint:typed`;
+  `npm run lint:untyped`; push; CI.
+- Risks / do-nots: `plan-phone.md`, "PH2", "Risks". The bundle limits are 274 kB unconfigured and 331 kB configured (the configured build
+  measured 330.7 to 330.8 kB after PH1): a PH2 total past either raises both files in the same commit.
+- Verification (PH1 fix pass): see Status.
+- Deviations: none for PH2 yet.
+- Pushed: no. Previous sha: the PH1 fix commit in Status.
 
 ## Order of work
 1. Steps D, E, D7, 1 and VW1: done (on `main`). D3: the owner keeps `lr1` and `lr25` trimmed. D6 waits for the owner's table (add
@@ -76,6 +77,10 @@
   streaming (a cancelled job keeps nothing of the running row), the fake-limit suite (3x default limits on the list pages).
 - Step 4 issue list: `HomebrewTabs` copies `TableNav` CSS, `EQ_DT`, one `RollPage` per roll mode, `review.prompt.md` naming against
   `agent-guard.mjs` (a prompt change: writer test 2), the `typo.js` note and price switches.
+
+- R2 (PH1 review): the toast clearance band (`--overlay-clear`) is a fixed 80 px; a 3-line toast is 110-130 px tall, so a menu that
+  ends 80 to 130 px above the bottom can still sit under it.
+- R3 (PH1 review): `place()` re-chooses the side on every call, so a menu can flip from down to up in the middle of a scroll.
 
 ## Notes (rules that bit in the 2026-11-07 session)
 - One session at a time per working tree, per local Supabase stack, per hosted test project. One writer per tree.

@@ -500,12 +500,9 @@
     background: linear-gradient(180deg, var(--surface2), var(--surface));
     border: 1px solid var(--line);
     border-radius: var(--r);
-    /* `clip` rather than `hidden`: the add-to-list menu's
-       placement effect no longer calls `scrollIntoView` on the wrong button
-       and pulls this article's own scroll position along with it, but
-       `clip` is what stops a programmatic scroll from moving the content at
-       all - `hidden` still creates a scroll container a script can scroll.
-       The rounded corners still clip either way. */
+    /* `clip` rather than `hidden`: `hidden` still creates a scroll container a
+       script can scroll, and `clip` stops any programmatic scroll from moving
+       the content. */
     overflow: clip;
     display: flex;
     box-shadow: var(--shadow);

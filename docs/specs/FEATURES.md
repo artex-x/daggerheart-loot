@@ -3032,8 +3032,8 @@ right, so the tab order and the reading order agree
   card, and the toast's bottom rises above the dock's top while the dock is in view);
   while an open menu or popover reaches into the bottom 80 px of the window, the toast's
   bottom rises to 8 px above the overlay's top (`--overlay-clear`). The element carries
-  `role` (`status`, `alert` for an error) and `aria-live` before its text arrives, so the
-  first message is read out; its action button is `--surface2` with a
+  `role` (`status`, `alert` for an error) and `aria-live` at all times; an idle toast is
+  `display: none` and leaves the accessibility tree; its action button is `--surface2` with a
   `--line2` border. The error toast takes the Alarm Red fill (`--danger`) with
   dark ink (`--ink-on-gold`, about 5.6:1). No toast is gold.
 - The footer carries the full DPCGL license notice (`dict.ts`'s

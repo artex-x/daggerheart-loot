@@ -469,8 +469,8 @@ const LONG_LIST_NAME = Array.from({ length: 12 }, () => 'Сокровищниц�
   .slice(0, 120);
 const LONG_NAME_SPECS = [{ ...KLAD, name: LONG_LIST_NAME, ids: SEVEN_IDS }, LAVKA];
 
-/** Opens the «Ещё» `sel` again after the EN press closed it, from the page's top: the
- *  menu scrolled the page, and up to 760 px the header covers a control under it. */
+/** Opens the «Ещё» `sel` again after the EN press closed it, from the page's top: up to
+ *  760 px the header covers a control that sits under it. */
 const reopen = (sel) => async (d) => {
   if (await d.count('[role="menu"]')) return;
   await d.scrollPage(0);

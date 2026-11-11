@@ -986,8 +986,8 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
 - **Time:** The Reading Time Rule.
 - It is a `popover="manual"` element so it survives the inertness of a native
   `<dialog>`, and it is `display: none !important` under print. It carries `role` and
-  `aria-live` before its text arrives, so a screen reader holds the region when the first
-  message is written. It rises above an open menu or popover that reaches the bottom 80px of
+  `aria-live` at all times; an idle toast is `display: none` and leaves the accessibility
+  tree. It rises above an open menu or popover that reaches the bottom 80px of
   the window (`--overlay-clear`).
 
 ### Signature component: the print card
