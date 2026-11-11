@@ -4,8 +4,8 @@ This file is the plan for task `57-debt`, the task that follows task 57. It list
 
 ## Status
 
-- Planned 2026-11-06 (orchestrator, with the owner's yes on the grouping and the recommendations). Task 57 closed on 2026-11-07; step 0 is done (the entries are in `docs/specs/DEBT.md`, this plan is moved here). Steps 1 to 5 are not started.
-- Plan review: not required (no trigger fired). Batch VW1 (`plan-views.md`) is one routine batch with no open design question.
+- Planned 2026-11-06 (orchestrator, with the owner's yes on the grouping and the recommendations). Task 57 closed on 2026-11-07; step 0 is done. Steps D, E (with E2), D7, 1 and V (VW1) are on `main`. Steps 2 and 3 are planned as batches PH1, PH2 and PH3 in `plan-phone.md` (triage pass, 2026-11-10); none is started. Next: PH1.
+- Plan review: not required (no trigger fired). PH1, PH2 and PH3 (`plan-phone.md`) add no migration, no SECURITY DEFINER function, no public contract file change, no stored row or `localStorage` key, and no write or sync protocol; VW1 was the same.
 - Owner decisions: the 2026-11-06 AFK decisions 24-28 are recorded as decisions in `docs/decisions/` (the newest file of 2026-11-06 and the files it amends) and as rules in DESIGN.md and FEATURES.md.
 
 ## Steps, in order
@@ -13,17 +13,16 @@ This file is the plan for task `57-debt`, the task that follows task 57. It list
 | Step | Content | Home | Review |
 |---|---|---|---|
 | 0 | Closeout of task 57: write the DEBT.md entries below (sections "Phone overlays" and "Wide-screen text"), move this plan, delete the task 57 directory (done 2026-11-07) | task 57 closeout | none |
-| 1 | Tooling and CI | its own small task, no UI | reviewer (hooks change) |
-| 2 | Phone overlays and scroll | one batch | reviewer, mobile probes at 360x640 |
-| 3 | Visual leftovers | one batch, mock first | reviewer, owner sees the mock |
-| 4 | Code cleanup | folded into steps 2 and 3 where files overlap; otherwise an issue list | none |
-| 5 | Impeccable `polish` and `harden`, detector re-run | after step 3, on the pages TD, N and P touched | none |
-| V | One control for the view or mode on `/roll`, `/tables`, `/homebrew`: batch VW1, after step 1 and before step 2 (`plan-views.md`) | one batch | reviewer optional (no trigger) |
-| D | Catalog data fixes from the owner's findings of 2026-11-07 (section "Step D" below) | one small batch, data only; first, before step 1 | none (no trigger); a second pair of eyes is the owner's production look |
+| 1 | Tooling and CI (done, on `main`) | its own small task, no UI | reviewer (hooks change) |
+| 2 | Phone overlays, focus and scroll: batches PH1 and PH2 (`plan-phone.md`) | two batches, split by review size | reviewer per batch, PH1 with the mobile probes |
+| 3 | Visual leftovers: batch PH3 (`plan-phone.md`); the mock is the measured prototype of `plan-phone.md` section 3 (owner AFK) | one batch, last | reviewer; the owner looks at the shots if back before it ships |
+| 4 | Code cleanup | folded into PH1-PH3 where files overlap (`plan-phone.md` section 2); otherwise an issue list | none |
+| 5 | Impeccable `polish` and `harden`, detector re-run | after PH3, on the pages PH1-PH3 touched | none |
+| V | One control for the view or mode on `/roll`, `/tables`, `/homebrew`: batch VW1 (done, on `main`; `plan-views.md`) | one batch | reviewer optional (no trigger) |
+| D | Catalog data fixes from the owner's findings of 2026-11-07 (done except D6, which waits for the owner's table; section "Step D" below) | one small batch, data only | none (no trigger) |
+| E | The share button's output carries the link (done, on `main`; section "Step E" below) | one small code batch with unit tests | none (no trigger) |
 
-| E | The share button's output carries the link, not only the picture and the text (owner, 2026-11-07; section "Step E" below) | one small code batch with unit tests | none (no trigger) |
-
-Recommended order: D, E, 1, V, 2, 3 (4 and 5 ride on them). Steps D and E first because they are small and the owner saw the defects on production. Step 1 next because it shortens every later CI wait.
+Recommended order: D, E, 1, V, then PH1, PH2, PH3 (4 and 5 ride on them). Steps D and E first because they are small and the owner saw the defects on production. Step 1 next because it shortens every later CI wait.
 
 ## Step D - Catalog data fixes (owner findings, 2026-11-07)
 
@@ -123,7 +122,7 @@ Open owner choice after the owner has tried it on Windows: option 2 (default if 
 
 ## Step 2 - Phone overlays and scroll
 
-Items (all measured at 360x640 unless stated):
+Planned in `plan-phone.md` (PH1, PH2), which holds the decisions and the 2026-11-10 measurements; the list below is the input it triaged. Items (all measured at 360x640 unless stated):
 
 - The toast covers the end of an open «Ещё» for 7 to 10 s (TD measured 4829 px² RU, 3405 px² EN on a roll result).
 - After the list «Ещё» closes, the page sits at scroll 83-87 and the shown header covers «Ещё»; Escape returns to scroll 0, a tap outside does not.
@@ -136,6 +135,8 @@ Items (all measured at 360x640 unless stated):
 - Acceptance: a case per item that fails before and passes after; no new first-screen exception; RU/EN parity; the target-size sweep clean at 360, 390, 768 and 1180.
 
 ## Step 3 - Visual leftovers (mock first)
+
+Planned in `plan-phone.md` (PH3). The monospace, capitals and `404.html` items below were already done (`plan-phone.md` section 2); the EN title, manifest, wordmark and Worker cards are a look for the owner. The input list:
 
 - `/s/` shows the bare list position «1» where `/search` shows «№ 89».
 - Tabular stat columns on table rows from 1440 px (owner: a mock first, then the owner's yes).
@@ -167,4 +168,4 @@ Run `polish` and `harden` on `/roll/alt`, `/tables/eq_weapon`, `#/homebrew` at 3
 
 ## Gate cost
 
-Step 1: about 60-90 min. Step 2: about 150-200 min. Step 3: about 120-170 min plus the owner's time on the mock. Steps 4 and 5 ride on 2 and 3.
+Steps 2 and 3 as PH1, PH2 and PH3: 185-290 min in all (`plan-phone.md` section 4). Steps 4 and 5 ride on them.

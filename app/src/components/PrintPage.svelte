@@ -309,7 +309,7 @@
         ><Icon name="print" />{t.printNow}</Button
       >
       <span class="dockmore">
-        <MoreMenu {app} id="print-more" up>
+        <MoreMenu {app} id="print-more">
           {#snippet children(close: () => void)}
             <button
               type="button"
@@ -383,6 +383,12 @@
   .pdock > :global(.btn) {
     flex: 1 1 auto;
     justify-content: center;
+  }
+
+  /* The dock's controls sit inside the `scroll-padding-bottom` band of `tokens.css`: the negative
+     margin cancels it, so a focus does not scroll the page. */
+  .pdock :global(:is(a, button, input, select)) {
+    scroll-margin-bottom: calc(-1 * var(--pdock-h, 0px));
   }
 
   /* The dock's button sits at the window's edge: this box anchors the menu. */

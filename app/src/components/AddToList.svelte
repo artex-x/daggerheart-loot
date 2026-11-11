@@ -8,10 +8,11 @@
      is the opener: a record id on a card, or the selection bar's own key.
      `menuScope` tells the open menu apart where the same record can be drawn
      twice at once. `ids` is what a chip acts on. */
-  import { tick, flushSync, onDestroy, untrack } from 'svelte';
+  import { onDestroy, untrack } from 'svelte';
   import Button from './Button.svelte';
   import Icon from './Icon.svelte';
   import SignInPrompt from './SignInPrompt.svelte';
+  import { focusBack, openOverlay } from './overlay.js';
   import { knownItems, NAME_MAX } from '../lib/cloudLists.js';
   import type { Msg } from '../lib/dict.js';
   import { recordHref } from '../lib/hash.js';
@@ -107,16 +108,6 @@
   let newInput = $state<HTMLInputElement | undefined>(undefined);
 
   let root = $state<HTMLDivElement | undefined>(undefined);
-  let up = $state(false);
-
-  /** Answers whether `el` sits in a fixed or sticky box, which a page scroll does not move. */
-  function pinned(el: HTMLElement): boolean {
-    for (let p = el.parentElement; p; p = p.parentElement) {
-      const { position } = getComputedStyle(p);
-      if (position === 'fixed' || position === 'sticky') return true;
-    }
-    return false;
-  }
 
   /* On the rising edge of `open`, whoever opened it - the button, or a
      sign-in that reopens the menu through `app.menuFor`. */
@@ -269,7 +260,7 @@
     const name = draft.trim();
     if (!name) {
       app.say((t) => t.nameFirst, { error: true });
-      newInput?.focus();
+      newInput?.focus({ preventScroll: true });
       return;
     }
     const store = app.cloudLists;
@@ -288,58 +279,19 @@
      out, the prompt's «Войти» that took the pressed chip's place. */
   $effect(() => {
     if (!newListFor) return;
-    if (newInput) newInput.focus();
-    else root?.querySelector<HTMLElement>('.signin button')?.focus();
+    if (newInput) newInput.focus({ preventScroll: true });
+    else root?.querySelector<HTMLElement>('.signin button')?.focus({ preventScroll: true });
   });
 
-  /* `placeMenu` in app.js, run after every render while the menu is open:
-     flip it to whichever side has room, then scroll it into view. Reads
-     `shown.length` and `newListFor` too, because either can change the
-     menu's height without changing `open` itself. */
+  /* The popover draws in the top layer, placed by the window's room (`overlay.ts`); it
+     re-places itself when its height changes. A card's or a result's own row opens it from
+     the control's left edge, the selection bar from its right. */
   $effect(() => {
-    if (!open) return;
-    void shown.length;
-    void newListFor;
-    /* app.js redraws the menu's markup on every render, so `placeMenu` always
-       measures from the default (downward) side; re-measuring from wherever
-       the menu already sits reads a different `below` and can flip the wrong
-       way once the form grows the menu. */
-    up = false;
-    void tick().then(() => {
-      if (!root) return;
-      const menu = root.querySelector<HTMLElement>('.dropmenu');
-      /* The toggle, not whichever `.btn` happens to render
-         first - `.dropmenu` now sits after the toggle in the markup, but
-         `:scope >` makes the intent explicit rather than relying on order. */
-      const btn = root.querySelector<HTMLElement>(':scope > .btn');
-      if (!menu || !btn) return;
-      /* Measured against the tightest clipping box - a plate
-         record card (`overflow: clip` in RecordCard.svelte), the modal's own
-         card, the window - rather than always against the window, which let
-         `scrollIntoView` look for room past the modal's edge and drag the
-         card's scroll position along, and let a menu on a record page at 360
-         wide open down past the card and lose its lower part (issue 68). */
-      const from = root;
-      const clips = ['.card:not(.dossier)', '.modal-card'].map(
-        (sel) => from.closest(sel)?.getBoundingClientRect().bottom ?? Infinity
-      );
-      const clipBottom = Math.min(window.innerHeight, ...clips);
-      const at = btn.getBoundingClientRect();
-      const below = clipBottom - at.bottom;
-      const need = menu.getBoundingClientRect().height + 16;
-      /* A toggle in the page's own scroll opens up only where the page above it holds the
-         menu under the header: near the page top no scroll uncovers it, while a scroll down
-         always can (states.js case 90). A pinned bar or a clipping card keeps the old rule. */
-      const header = parseFloat(
-        getComputedStyle(document.documentElement).getPropertyValue('--sticky-h')
-      );
-      const above = at.top + window.scrollY - (Number.isNaN(header) ? 0 : header);
-      up = below < need && (clips.some(Number.isFinite) || pinned(btn) || above >= need);
-      /* `classList.toggle` precedes `scrollIntoView` in `placeMenu` - the class
-         has to be on the menu before it is scrolled into view. */
-      flushSync();
-      menu.scrollIntoView({ block: 'nearest' });
-    });
+    if (!open || !root) return;
+    const menu = root.querySelector<HTMLElement>('.dropmenu');
+    const btn = root.querySelector<HTMLElement>(':scope > .btn');
+    if (!menu || !btn) return;
+    return openOverlay(menu, btn, root.closest('.cardpick, .resacts') ? 'start' : 'end');
   });
 
   /* Escape closes the menu and returns focus to the toggle that
@@ -361,7 +313,7 @@
     e.preventDefault();
     app.menuFor = '';
     newListFor = false;
-    root?.querySelector<HTMLElement>(':scope > .btn')?.focus();
+    focusBack(root?.querySelector<HTMLElement>(':scope > .btn'));
   }
 
   /* Any click outside `.seldrop`/`.dropmenu` closes the menu - checked
@@ -424,7 +376,7 @@
       onclick={toggle}><Icon name="plus" />{t.toList}</Button
     >
     {#if open}
-      <div class="dropmenu" class:long={showSearch} class:up>
+      <div class="dropmenu" class:long={showSearch}>
         <span class="lbl">{t.listsHead}</span>
         {#if showSearch}
           <input
@@ -513,21 +465,18 @@
 {/if}
 
 <style>
-  /* off `.seldrop`/`.dropmenu` in style.css - the add-to-list menu, shared by
-     the card and the selection bar. The base rule below (`bottom: calc(100% +
-     8px)`) opens upward, which is the bar's own default - `placeMenu` in
-     app.js always adds `up` at the bottom of the window, and style.css has no
-     base `.dropmenu.up` rule to flip it, only `.cardpick .dropmenu.up`. The
-     card's own `.cardpick :global(.dropmenu)` rules in RecordCard.svelte are
-     what flip which side the card's copy opens on. */
+  /* off `.seldrop`/`.dropmenu` in style.css - the add-to-list menu, shared by the card and
+     the selection bar. A popover in the top layer: `overlay.ts` sets its `top` and `left`, and
+     the UA's `inset`, `margin`, `color` and `overflow` are reset as `Toast` does. */
   .seldrop {
     position: relative;
   }
 
   .dropmenu {
-    position: absolute;
-    bottom: calc(100% + 8px);
-    right: 0;
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    color: var(--txt);
     min-width: 280px;
     max-width: min(320px, 90vw);
     z-index: 60;
@@ -540,6 +489,22 @@
     flex-direction: column;
     gap: 6px;
     animation: pop 0.16s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+  }
+
+  .dropmenu:global([data-side='up']) {
+    animation-name: popUp;
+  }
+
+  @keyframes popUp {
+    from {
+      opacity: 0;
+      transform: translateY(-10px) scale(0.985);
+    }
+
+    to {
+      opacity: 1;
+      transform: none;
+    }
   }
 
   @keyframes pop {
@@ -717,8 +682,7 @@
      phone rather than spilling past the edge of the screen. */
   @media (max-width: 600px) {
     .dropmenu {
-      left: 0;
-      right: 0;
+      width: calc(100% - 32px);
       max-width: none;
     }
   }

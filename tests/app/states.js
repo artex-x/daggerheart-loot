@@ -140,21 +140,14 @@ async function newListFromModal() {
   const box = await newListInputBox(page);
   ok(!!box, '3 (modal): the new-list form did not open');
   ok(!!box?.focused, '3 (modal): the input is not focused');
-  const card = await page.evaluate(() => {
-    const el = document.querySelector('.modal-card');
-    if (!el) return null;
-    const r = el.getBoundingClientRect();
-    return { x: r.x, y: r.y, w: r.width, h: r.height };
-  });
-  ok(!!card, '3 (modal): .modal-card not found');
-  if (box && card) {
-    ok(inside(box, card), '3 (modal): the input sits outside .modal-card');
-  }
+  /* The popover draws in the top layer by the window's room: it may leave the card. */
+  const view = await page.evaluate(() => ({ x: 0, y: 0, w: innerWidth, h: innerHeight }));
+  if (box) ok(inside(box, view), '3 (modal): the input sits outside the window');
   await ctx.close();
 }
 
 /** 23. The add-to-list menu inside the record modal must not force a scroll
- *  on the card article, nor spill outside the modal:
+ *  on the card article, and lies inside the window (it draws in the top layer):
  *  the toggle (`:scope > .btn`), not whichever button happens to render
  *  first, is what the placement effect measures, and the modal's own card is
  *  what it clips against. Кольцо Тишины at 1100x900 with no browser list is
@@ -192,18 +185,19 @@ async function addToListMenuStaysInModal() {
 
   const card = await box('.modal-card');
   ok(!!card, '23 (menu in the modal): .modal-card not found');
+  const view = await page.evaluate(() => ({ x: 0, y: 0, w: innerWidth, h: innerHeight }));
   const menu = await box('.dropmenu');
   ok(!!menu, '23 (menu in the modal): .dropmenu not found');
-  if (menu && card) {
-    ok(inside(menu, card), '23 (menu in the modal): the menu sits outside .modal-card');
+  if (menu) {
+    ok(inside(menu, view), '23 (menu in the modal): the menu sits outside the window');
   }
 
   await d.press('Новый список');
   const input = await newListInputBox(page);
   ok(!!input, '23 (menu in the modal): the new-list form did not open');
   ok(!!input?.focused, '23 (menu in the modal): the input is not focused');
-  if (input && card) {
-    ok(inside(input, card), '23 (menu in the modal): the input sits outside .modal-card');
+  if (input) {
+    ok(inside(input, view), '23 (menu in the modal): the input sits outside the window');
   }
   await ctx.close();
 }
@@ -1892,7 +1886,7 @@ async function undoToastInRecordDialog() {
       dialog: !!dialog,
       shown: shown.length,
       inDialog: !!dialog && shown.length === 1 && dialog.contains(shown[0]),
-      roles: document.querySelectorAll('.toast[role]').length,
+      roles: shown.filter((t) => t.hasAttribute('role')).length,
       focused: !!act && document.activeElement === act,
       hit: !!act && hit === act
     };
@@ -2428,8 +2422,10 @@ async function promptInDialogMenuAt360() {
     ['the menu', m.menu],
     ['«Войти»', m.signIn]
   ]) {
-    ok(!!b && !!m.card && inside(b, m.card), at + name + ' lies outside .modal-card');
-    ok(!!b && inside(b, m.view), at + name + ' lies outside the window');
+    ok(
+      !!b && inside(b, { x: 16, y: 0, w: m.view.w - 32, h: m.view.h }),
+      at + name + ' lies outside the 16 px gutter of the window'
+    );
   }
   ok(!!m.signIn?.shown, at + '«Войти» is covered or clipped - ' + JSON.stringify(m.signIn));
   await ctx.close();
@@ -4358,7 +4354,8 @@ async function cropDialogOnPhones() {
   const wide = await measure();
   console.log('  72 at 640x360: ' + JSON.stringify(wide));
   ok(inside(wide), at + 'the dialog leaves the viewport at 640x360 - ' + JSON.stringify(wide));
-  ok(wide.scrolls, at + 'the dialog does not scroll inside itself at 640x360');
+  /* From 600 px of width under 481 px of height the stage stands beside the buttons (DESIGN.md, "Sheet"). */
+  ok(!wide.scrolls, at + 'the dialog scrolls inside itself at 640x360');
   ok(!wide.sideways, at + 'the page scrolls sideways at 640x360');
   ok(Math.abs(wide.stage.w - wide.stage.h) < 1, at + 'the stage is not square at 640x360');
   await ctx.close();
@@ -4722,8 +4719,9 @@ async function catalogCopyPerPress() {
  *  window and uncut, at most three lines, «В список» the only gold primary, and «Ещё» opens
  *  a menu inside the window with 44 px items at 360. In the dialog at 360x640, 640x360 and
  *  1180x720: the dock holds the card's bottom, or joins the scroll below 481 px of height and
- *  from 761 px, takes at most 0.45 of the window, «Ещё» opens up from the dock, or down from
- *  the row, inside the card, and a toast leaves the dock in place; a prompt leaves «Ещё»'s
+ *  from 761 px, takes at most 0.45 of the window, «Ещё» opens up from a held dock, or on the
+ *  side with room from the row, inside the window with its 16 px gutter (the top-layer menu may pass the card),
+ *  and a toast leaves the dock in place; a prompt leaves «Ещё»'s
  *  menu under the button, and a rule card draws its chevron; with 150 lists the add menu scrolls inside the window with its search and
  *  «+ Новый список» in view (docs/specs/FEATURES.md, "Records"). */
 async function recordActionsFit() {
@@ -4830,20 +4828,19 @@ async function recordActionsFit() {
       const menu = await page.evaluate(() => {
         const box = (r) => ({ x: r.x, y: r.y, w: r.width, h: r.height });
         const m = document.querySelector('[role="menu"]');
-        const card = document.querySelector('.modal-card').getBoundingClientRect();
         return {
-          up: m.classList.contains('up'),
+          up: m.dataset.side === 'up',
           box: box(m.getBoundingClientRect()),
-          card: box(card),
-          view: { x: 0, y: 0, w: innerWidth, h: innerHeight }
+          view: { x: 16, y: 0, w: document.documentElement.clientWidth - 32, h: innerHeight }
         };
       });
-      ok(menu.up === first.sticky, at + where + 'the menu opens up: ' + menu.up);
+      /* Joined to the scroll the menu takes the side with room, which a 360 px tall window
+         leaves above the row. */
+      ok(!first.sticky || menu.up, at + where + 'the menu opens up: ' + menu.up);
       ok(
-        inside(menu.box, menu.card),
-        at + where + 'menu outside the card ' + JSON.stringify(menu)
+        inside(menu.box, menu.view),
+        at + where + 'menu outside the window or its 16 px gutter ' + JSON.stringify(menu)
       );
-      ok(inside(menu.box, menu.view), at + where + 'menu outside the window');
       await d.press(lang === 'ru' ? 'Скопировать название' : 'Copy name');
       ok(
         await waitIn(page, () => !!document.querySelector('dialog[open] .toast')),
@@ -7971,6 +7968,46 @@ async function listSearchAndFilter() {
  *  pages. */
 async function listHeadAndBars() {
   const at = '100 (the list head and the bars): ';
+  /* The list «Ещё» never scrolls the page (FEATURES.md, "Chrome", the overlay rule): not on
+     open, not on Escape, not on a tap outside, and its button stays below the header. */
+  for (const lang of ['ru', 'en']) {
+    const where = at + 'no scroll, ' + lang + ': ';
+    const { ctx, page, d } = await openState(LIST_A_ID + ' ~ noted as gm4', 360, 640, lang);
+    try {
+      const sel = '.lhead-acts .morewrap > [aria-haspopup="menu"]';
+      const read = (what) =>
+        page.evaluate(
+          ([s, w]) => ({
+            what: w,
+            sy: scrollY,
+            top: document.querySelector(s)?.getBoundingClientRect().top ?? -1,
+            header: document.querySelector('.topbar').getBoundingClientRect().bottom
+          }),
+          [sel, what]
+        );
+      const clean = (r) => r.sy === 0 && r.top >= r.header - 0.5;
+      await d.openMore(sel);
+      const opened = await read('open');
+      ok(
+        clean(opened),
+        where + 'scrolled or under the header on open - ' + JSON.stringify(opened)
+      );
+      await page.keyboard.press('Escape');
+      await d.settle();
+      const esc = await read('Escape');
+      ok(clean(esc), where + 'scrolled or under the header on Escape - ' + JSON.stringify(esc));
+      await d.openMore(sel);
+      await page.mouse.click(8, 632);
+      await d.settle();
+      const tap = await read('tap outside');
+      ok(
+        clean(tap),
+        where + 'scrolled or under the header on a tap outside - ' + JSON.stringify(tap)
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
   {
     const { ctx, page, d } = await openState(LIST_A_ID + ' ~ noted as gm4', 360, 640, 'ru');
     try {
@@ -8988,10 +9025,20 @@ async function openToasting(id, lang) {
   if (!state) throw new Error('no inventory state ' + id);
   const got = await fresh({ width: 360, height: 640, storage: state.storage });
   await got.page.evaluateOnNewDocument(() => {
-    new MutationObserver(() => {
-      const t = document.querySelector('.toast.page[role]');
-      if (t && window.__toastAt === undefined) window.__toastAt = performance.now();
-    }).observe(document, { subtree: true, attributes: true, attributeFilter: ['role'] });
+    /* `toggle` does not bubble: the capture listener sees the page's toast open. The element
+       carries its `role` from the start, so no attribute marks the first show. */
+    document.addEventListener(
+      'toggle',
+      (e) => {
+        if (
+          e.newState === 'open' &&
+          e.target.matches?.('.toast.page') &&
+          window.__toastAt === undefined
+        )
+          window.__toastAt = performance.now();
+      },
+      true
+    );
   });
   await got.d.open(state.route, {
     as: state.as,
@@ -9015,14 +9062,14 @@ function toastAt(page, ms) {
     if (window.__toastAt === undefined) return null;
     const wait = window.__toastAt + at - performance.now();
     if (wait > 0) await new Promise((r) => setTimeout(r, wait));
-    return !!document.querySelector('.toast.page[role]');
+    return !!document.querySelector('.toast.page:popover-open');
   }, ms);
 }
 
 /** 108. The toasts in a real browser (DESIGN.md, "The Reading Time Rule"), 360x640: a plain
  *  toast lives 4000 ms, an error 7000 ms, a long one 10000 ms and takes three lines; a
  *  pointer on a toast holds it and it runs on when the pointer leaves; the page's toast sits
- *  above the selection bar. The toast over a result's «Ещё» is measured, not asserted. */
+ *  above the selection bar, and clear of a result's open «Ещё». */
 async function toastsInABrowser() {
   const at = '108 (the toasts): ';
   for (const lang of ['ru', 'en']) {
@@ -9053,7 +9100,8 @@ async function toastsInABrowser() {
         try {
           for (let i = 0; i < 3; i++) {
             const pressed = await o.page.evaluate(() => {
-              if (document.querySelector('.toast.page[role="alert"]')) return false;
+              if (document.querySelector('.toast.page:popover-open[role="alert"]'))
+                return false;
               const on = document.querySelector('button.chip[data-val][aria-pressed="true"]');
               on?.click();
               return !!on;
@@ -9078,7 +9126,9 @@ async function toastsInABrowser() {
         try {
           await toastAt(o.page, 1000);
           const box = await o.page.evaluate(() => {
-            const r = document.querySelector('.toast.page[role]')?.getBoundingClientRect();
+            const r = document
+              .querySelector('.toast.page:popover-open')
+              ?.getBoundingClientRect();
             return r ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : null;
           });
           ok(!!box, at + lang + ' (c): no toast to point at');
@@ -9088,7 +9138,7 @@ async function toastsInABrowser() {
           await o.page.mouse.move(5, 300);
           const left = await o.page.evaluate(() => performance.now());
           const gone = await o.page.evaluate(async () => {
-            for (let i = 0; i < 200 && document.querySelector('.toast.page[role]'); i++)
+            for (let i = 0; i < 200 && document.querySelector('.toast.page:popover-open'); i++)
               await new Promise((r) => setTimeout(r, 25));
             return performance.now();
           });
@@ -9111,7 +9161,7 @@ async function toastsInABrowser() {
         const o = await openToasting('#/lists ~ list limit as gm2', lang);
         try {
           const lines = await o.page.evaluate(() => {
-            const t = document.querySelector('.toast.page[role]');
+            const t = document.querySelector('.toast.page:popover-open');
             if (!t) return 0;
             const cs = getComputedStyle(t);
             const inner =
@@ -9151,11 +9201,12 @@ async function toastsInABrowser() {
           en ? 'Copy text' : 'Скопировать текст'
         );
         ok(
-          await waitIn(page, () => !!document.querySelector('.toast.page[role]')),
+          await waitIn(page, () => !!document.querySelector('.toast.page:popover-open')),
           at + lang + ' (e): no toast after «Скопировать текст»'
         );
         const m = await page.evaluate(() => ({
-          toast: document.querySelector('.toast.page[role]')?.getBoundingClientRect().bottom,
+          toast: document.querySelector('.toast.page:popover-open')?.getBoundingClientRect()
+            .bottom,
           bar: document.querySelector('.selbarwrap')?.getBoundingClientRect().top
         }));
         ok(
@@ -9167,7 +9218,7 @@ async function toastsInABrowser() {
       }
     }
 
-    /* (f) A toast over a roll result's open «Ещё»: logged for DEBT.md, not asserted. */
+    /* (f) A toast beside a roll result's open «Ещё» does not cover it (`--overlay-clear`). */
     {
       const { ctx, page, d } = await openState('#/roll/std ~ card more', 360, 640, lang);
       try {
@@ -9178,8 +9229,10 @@ async function toastsInABrowser() {
         );
         await d.settle();
         await d.openCardMore();
-        const m = await page.evaluate(() => {
-          const t = document.querySelector('.toast.page[role]')?.getBoundingClientRect();
+        const m = await page.evaluate(async () => {
+          const toast = document.querySelector('.toast.page:popover-open');
+          await Promise.all((toast?.getAnimations() ?? []).map((a) => a.finished));
+          const t = toast?.getBoundingClientRect();
           const items = [...document.querySelectorAll('[role="menu"] [role="menuitem"]')];
           const last = items.at(-1)?.getBoundingClientRect();
           if (!t || !last) return { toast: !!t, last: !!last };
@@ -9191,7 +9244,10 @@ async function toastsInABrowser() {
             overlap: Math.round(v * h)
           };
         });
-        fs.writeSync(1, '  toast over «Ещё» (f) 360 ' + lang + ': ' + JSON.stringify(m) + '\n');
+        ok(
+          m.toastTop !== undefined && m.overlap === 0,
+          at + lang + ' (f): the toast covers the open «Ещё» - ' + JSON.stringify(m)
+        );
       } finally {
         await ctx.close();
       }
@@ -10560,11 +10616,12 @@ async function barPinnedAndToastsClear() {
       document.querySelector('dialog[open] [role="menu"] [role="menuitem"]')?.click()
     );
     ok(
-      await waitIn(page, () => !!document.querySelector('dialog[open] .toast[role]')),
+      await waitIn(page, () => !!document.querySelector('dialog[open] .toast:popover-open')),
       where + 'no toast after the first «Ещё» item'
     );
     const m = await page.evaluate(() => ({
-      toast: document.querySelector('dialog[open] .toast[role]').getBoundingClientRect().bottom,
+      toast: document.querySelector('dialog[open] .toast:popover-open').getBoundingClientRect()
+        .bottom,
       dock: document.querySelector('dialog[open] .cardpick').getBoundingClientRect().top
     }));
     ok(m.toast <= m.dock + 0.5, where + 'the toast covers the dock - ' + JSON.stringify(m));
@@ -10643,6 +10700,500 @@ async function barPinnedAndToastsClear() {
       }
     } finally {
       await s.ctx.close();
+    }
+  }
+}
+
+/** Opens the record `id` from its row on the current table and waits for the dialog's dock. */
+async function openRecordDialog(page, id) {
+  await page.evaluate((i) => {
+    /* A signed-in account can keep the grid view: its tile is the row's first button. */
+    const row = document.querySelector(`[data-row="${i}"]`);
+    (row?.querySelector('.row-main') ?? row?.querySelector('button'))?.click();
+  }, id);
+  await page.waitForSelector('dialog[open] .cardpick', { timeout: 5000 });
+  await page.evaluate(
+    () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
+  );
+}
+
+/** 119. A menu in the record dialog stays put (docs/specs/FEATURES.md, "Chrome", the overlay
+ *  rule): «Ещё» draws in the top layer inside the window with 16 px gutters, the card never
+ *  scrolls and the picture stays where it was, and Escape returns the focus to «Ещё». At
+ *  1000x720, 1180x720 and 1920x950, signed out and as gm1; the English page at 1180x720. */
+async function dialogMenuStaysPut() {
+  const at = '119 (the dialog menu stays put): ';
+  const runs = [];
+  for (const [width, height] of [
+    [1000, 720],
+    [1180, 720],
+    [1920, 950]
+  ]) {
+    for (const as of [undefined, 'gm1']) runs.push([width, height, as, 'ru']);
+  }
+  runs.push([1180, 720, undefined, 'en'], [1180, 720, 'gm1', 'en']);
+  const more = 'dialog[open] .cardpick .morewrap > [aria-haspopup="menu"]';
+  for (const [width, height, as, lang] of runs) {
+    const where = at + width + 'x' + height + (as ? ' as ' + as : '') + ' ' + lang + ': ';
+    const { ctx, page, d } = await fresh({ width, height });
+    try {
+      await d.open('#/tables/core_item', { ...(as ? { as } : {}), lang });
+      await d.settled(where);
+      /* `lang` reaches a signed-in account's preferences only. */
+      if (lang === 'en' && !as) await d.click('EN');
+      await openRecordDialog(page, 'ci1');
+      const m = await page.evaluate(async (sel) => {
+        const card = document.querySelector('dialog[open] .modal-card');
+        const pic = document.querySelector('dialog[open] .card-media');
+        const before = { st: card.scrollTop, pic: pic.getBoundingClientRect().top };
+        document.querySelector(sel).click();
+        await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+        const menu = document.querySelector('dialog[open] [role="menu"]');
+        if (!menu) return null;
+        await Promise.all(menu.getAnimations().map((a) => a.finished));
+        const r = menu.getBoundingClientRect();
+        return {
+          before,
+          after: { st: card.scrollTop, pic: pic.getBoundingClientRect().top },
+          left: r.left,
+          right: r.right,
+          top: r.top,
+          bottom: r.bottom,
+          vw: document.documentElement.clientWidth,
+          vh: innerHeight,
+          layer: menu.matches(':popover-open')
+        };
+      }, more);
+      ok(!!m, where + 'the menu did not open');
+      if (!m) continue;
+      ok(m.layer, where + 'the menu is not in the top layer - ' + JSON.stringify(m));
+      ok(
+        m.before.st === 0 && m.after.st === 0 && Math.abs(m.after.pic - m.before.pic) < 0.5,
+        where + 'the card moved - ' + JSON.stringify([m.before, m.after])
+      );
+      ok(
+        m.left >= 16 - 0.5 && m.right <= m.vw - 16 + 0.5 && m.top >= 0 && m.bottom <= m.vh,
+        where + 'the menu leaves the window or its gutters - ' + JSON.stringify(m)
+      );
+      await page.keyboard.press('Escape');
+      const after = await page.evaluate(
+        (sel) => ({
+          menu: !!document.querySelector('[role="menu"]'),
+          dialog: !!document.querySelector('dialog[open]'),
+          focus: document.activeElement === document.querySelector(sel),
+          st: document.querySelector('dialog[open] .modal-card')?.scrollTop
+        }),
+        more
+      );
+      ok(
+        !after.menu && after.dialog && after.focus && after.st === 0,
+        where +
+          'Escape did not return the focus to «Ещё» without a scroll - ' +
+          JSON.stringify(after)
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
+/** The account lists cases 120 and the sweep make: `n` lists, `ci1` in the first two. */
+const manyLists = (n) =>
+  Array.from({ length: n }, (_, i) => ({
+    n: i + 1,
+    name: 'Список ' + (i + 1),
+    ids: i < 2 ? ['ci1'] : []
+  }));
+
+/** 120. The add-to-list popover in the record dialog (FEATURES.md, "Chrome"): with 12 lists the
+ *  search field is inside the window and the card never scrolls at 1000x720, 1180x720 and
+ *  1920x950; with no list it opens down at 85 px; at 360x640 with the field focused and the
+ *  window cut to 380 px (a keyboard) the field stays inside the window. */
+async function dialogPopoverStaysInWindow() {
+  const at = '120 (the add-to-list popover in the dialog): ';
+  const read = (page) =>
+    page.evaluate(() => {
+      const menu = document.querySelector('dialog[open] .dropmenu');
+      if (!menu) return null;
+      const m = menu.getBoundingClientRect();
+      const f = menu.querySelector('.pickq')?.getBoundingClientRect();
+      return {
+        menu: { top: m.top, bottom: m.bottom, left: m.left, right: m.right, h: m.height },
+        field: f ? { top: f.top, bottom: f.bottom } : null,
+        side: menu.dataset.side,
+        st: document.querySelector('dialog[open] .modal-card').scrollTop,
+        vw: document.documentElement.clientWidth,
+        vh: innerHeight
+      };
+    });
+  for (const lang of ['ru', 'en']) {
+    for (const [width, height] of [
+      [1000, 720],
+      [1180, 720],
+      [1920, 950]
+    ]) {
+      const where = at + '12 lists ' + width + 'x' + height + ' ' + lang + ': ';
+      const { ctx, page, d } = await fresh({ width, height });
+      try {
+        await d.open('#/tables/core_item', { as: 'gm4', lang });
+        await d.settled(where);
+        await d.accountLists(manyLists(12));
+        await openRecordDialog(page, 'ci1');
+        await page.click('dialog[open] .seldrop > .btn');
+        await d.settle();
+        const m = await read(page);
+        ok(!!m?.field, where + 'no popover or no search field');
+        if (!m?.field) continue;
+        ok(
+          m.field.top >= 0 &&
+            m.field.bottom <= m.vh &&
+            m.menu.top >= 0 &&
+            m.menu.bottom <= m.vh,
+          where + 'the search field leaves the window - ' + JSON.stringify(m)
+        );
+        ok(m.st === 0, where + 'the card scrolled - ' + JSON.stringify(m));
+      } finally {
+        await ctx.close();
+      }
+    }
+
+    const where = at + 'no list 1180x720 ' + lang + ': ';
+    const { ctx, page, d } = await fresh({ width: 1180, height: 720 });
+    try {
+      await d.open('#/tables/core_item', { as: 'gm4', lang });
+      await d.settled(where);
+      await openRecordDialog(page, 'ci1');
+      await page.click('dialog[open] .seldrop > .btn');
+      await d.settle();
+      const m = await read(page);
+      ok(!!m, where + 'no popover');
+      if (m) {
+        ok(
+          m.side === 'down' && m.menu.h > 60 && m.menu.h < 130 && m.st === 0,
+          where + 'not a short popover that opens down - ' + JSON.stringify(m)
+        );
+      }
+    } finally {
+      await ctx.close();
+    }
+
+    const kb = at + 'keyboard 360x640 ' + lang + ': ';
+    const k = await fresh({ width: 360, height: 640 });
+    try {
+      await k.d.open('#/tables/core_item', { as: 'gm4', lang });
+      await k.d.settled(kb);
+      await k.d.accountLists(manyLists(12));
+      await openRecordDialog(k.page, 'ci1');
+      await k.page.click('dialog[open] .seldrop > .btn');
+      await k.d.settle();
+      await k.page.focus('dialog[open] .dropmenu .pickq');
+      await k.d.viewport(360, 380);
+      await new Promise((r) => setTimeout(r, 400));
+      const m = await read(k.page);
+      ok(!!m?.field, kb + 'no popover or no search field');
+      if (m?.field) {
+        ok(
+          m.field.top >= 0 && m.field.bottom <= m.vh,
+          kb + 'the search field leaves the window - ' + JSON.stringify(m)
+        );
+      }
+    } finally {
+      await k.ctx.close();
+    }
+  }
+}
+
+/** 121. The sticky columns fit the window (FEATURES.md, "Tables and search", "Homebrew"): the
+ *  filter column on `/tables/eq_weapon` and the editor's preview with a 3000-character item end
+ *  at or above the window's bottom less 16 px at page scroll 0 and 400, the column's own scroll
+ *  reaches its last section, and a wheel at its end moves the page. At 360x640 the filter is
+ *  a sheet. */
+async function stickyColumnsFit() {
+  const at = '121 (the sticky columns fit): ';
+  const fits = async (page, sel, where) => {
+    for (const y of [0, 400]) {
+      const m = await page.evaluate(
+        async (s, top) => {
+          scrollTo(0, top);
+          await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+          const el = document.querySelector(s);
+          if (!el) return null;
+          const r = el.getBoundingClientRect();
+          const before = scrollY;
+          el.scrollTop = el.scrollHeight;
+          const last = el.lastElementChild.getBoundingClientRect();
+          return {
+            bottom: r.bottom,
+            vh: innerHeight,
+            lastBottom: last.bottom,
+            before,
+            x: r.x + r.width / 2,
+            y: r.y + 40
+          };
+        },
+        sel,
+        y
+      );
+      ok(!!m, where + sel + ' not found');
+      if (!m) return;
+      ok(
+        m.bottom <= m.vh - 16 + 0.5,
+        where + 'at scroll ' + y + ' the bottom is under the fold - ' + JSON.stringify(m)
+      );
+      ok(
+        m.lastBottom <= m.vh,
+        where + 'at scroll ' + y + ' the last section is out of reach - ' + JSON.stringify(m)
+      );
+      await page.mouse.move(m.x, m.y);
+      await page.mouse.wheel({ deltaY: 300 });
+      await new Promise((r) => setTimeout(r, 400));
+      const moved = await page.evaluate(() => scrollY);
+      ok(
+        moved > m.before,
+        where + 'at scroll ' + y + ' the wheel at the end did not move the page - ' + moved
+      );
+    }
+  };
+  for (const [width, height] of [
+    [1920, 950],
+    [1180, 720],
+    [1000, 720]
+  ]) {
+    const where = at + 'filter column ' + width + 'x' + height + ': ';
+    const { ctx, page, d } = await fresh({ width, height });
+    try {
+      await d.open('#/tables/eq_weapon');
+      await d.settled(where);
+      await fits(page, '.fcol', where);
+    } finally {
+      await ctx.close();
+    }
+  }
+  for (const [width, height] of [
+    [1180, 720],
+    [1920, 950]
+  ]) {
+    const where = at + 'editor preview ' + width + 'x' + height + ': ';
+    const { ctx, page, d } = await fresh({ width, height });
+    try {
+      await d.open('#/homebrew/hb_longtextaaaaaaaa', { as: 'gm4' });
+      await d.settled(where);
+      await fits(page, '.preview', where);
+    } finally {
+      await ctx.close();
+    }
+  }
+  const where = at + 'sheet 360x640: ';
+  const { ctx, page, d } = await fresh({ width: 360, height: 640 });
+  try {
+    await d.open('#/tables/eq_weapon');
+    await d.settled(where);
+    ok(!(await page.$('.fcol')), where + 'a filter column draws at 360');
+    await d.press('Фильтры');
+    ok(!!(await page.waitForSelector('dialog.sheet', { timeout: 5000 })), where + 'no sheet');
+  } finally {
+    await ctx.close();
+  }
+}
+
+/** 122. A header control's focus keeps the place (DESIGN.md, "The Hidden Header Rule"): on a long
+ *  page scrolled to 1500 px, focusing each header control at 320, 360 and 1180 px leaves
+ *  `scrollY` as it was; so does the first control of the editor's bar and of the print dock. */
+async function headerFocusKeepsThePlace() {
+  const at = '122 (the header focus keeps the place): ';
+  for (const [width, height] of [
+    [320, 568],
+    [360, 640],
+    [1180, 720]
+  ]) {
+    const where = at + width + ': ';
+    const { ctx, page, d } = await fresh({ width, height });
+    try {
+      await d.open('#/tables/core_item', { as: 'gm1' });
+      await d.settled(where);
+      await page.evaluate(async () => {
+        scrollTo(0, 1500);
+        await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      });
+      const m = await page.evaluate(async () => {
+        const y = scrollY;
+        const els = [...document.querySelectorAll('header.topbar :is(a, button)')].filter(
+          (e) => e.offsetParent !== null
+        );
+        const moved = [];
+        for (const el of els) {
+          el.focus();
+          await new Promise((r) => requestAnimationFrame(r));
+          if (Math.abs(scrollY - y) > 0.5)
+            moved.push([el.textContent.trim().slice(0, 20), scrollY]);
+          scrollTo(0, y);
+          await new Promise((r) => requestAnimationFrame(r));
+        }
+        return { y, n: els.length, moved };
+      });
+      ok(m.n > 0, where + 'no header control');
+      ok(m.moved.length === 0, where + 'a focus scrolled the page - ' + JSON.stringify(m));
+    } finally {
+      await ctx.close();
+    }
+  }
+  for (const [route, as, bar] of [
+    ['#/homebrew/new', 'gm1', '.ebar'],
+    ['#/p/set-twocards', 'gm2', '.pdock']
+  ]) {
+    const where = at + route + ' bar: ';
+    const { ctx, page, d } = await fresh({ width: 360, height: 640 });
+    try {
+      await d.open(route, as ? { as } : undefined);
+      await d.settled(where);
+      await page.waitForSelector(bar, { timeout: 5000 });
+      const m = await page.evaluate(async (sel) => {
+        const el = document.querySelector(sel + ' :is(a, button:not(:disabled), input)');
+        if (!el) return null;
+        scrollTo(0, Math.max(0, (document.documentElement.scrollHeight - innerHeight) / 2));
+        await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+        const y = scrollY;
+        el.focus();
+        await new Promise((r) => requestAnimationFrame(r));
+        return { y, after: scrollY };
+      }, bar);
+      ok(!!m, where + 'no control in ' + bar);
+      if (m)
+        ok(Math.abs(m.after - m.y) < 0.5, where + 'the focus scrolled - ' + JSON.stringify(m));
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
+/** 123. Short windows: (a) the record dialog's dock is in view at 600x500, 760x560 and 700x481 and
+ *  the picture at 360x640 is unchanged; (b) the dialog's toast ends above the dock (or the dock is
+ *  out of view) at 740x360 and 360x460; (c) the RU tabs fit the body at 320x568; (d) the crop
+ *  dialog's «Готово» is in the window at 740x360, RU and EN, and the dialog does not scroll. */
+async function shortWindows() {
+  const at = '123 (short windows): ';
+  for (const [width, height] of [
+    [600, 500],
+    [760, 560],
+    [700, 481]
+  ]) {
+    const where = at + 'dock ' + width + 'x' + height + ': ';
+    const { ctx, page, d } = await fresh({ width, height });
+    try {
+      await d.open('#/tables/core_item');
+      await d.settled(where);
+      await openRecordDialog(page, 'ci1');
+      const m = await page.evaluate(() => ({
+        dock: document.querySelector('dialog[open] .cardpick').getBoundingClientRect().bottom,
+        vh: innerHeight,
+        st: document.querySelector('dialog[open] .modal-card').scrollTop
+      }));
+      ok(m.dock <= m.vh + 0.5, where + 'the dock is out of view - ' + JSON.stringify(m));
+    } finally {
+      await ctx.close();
+    }
+  }
+  {
+    const where = at + 'picture 360x640: ';
+    const { ctx, page, d } = await fresh({ width: 360, height: 640 });
+    try {
+      await d.open('#/tables/core_item');
+      await d.settled(where);
+      await openRecordDialog(page, 'ci1');
+      const m = await page.evaluate(() => {
+        const r = document.querySelector('dialog[open] .card-media').getBoundingClientRect();
+        return { w: Math.round(r.width), h: Math.round(r.height) };
+      });
+      ok(
+        m.w >= 300 && m.w <= 330 && Math.abs(m.h - (m.w * 3) / 4) <= 1.5,
+        where + 'the picture changed - ' + JSON.stringify(m)
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+  for (const [width, height] of [
+    [740, 360],
+    [360, 460]
+  ]) {
+    const where = at + 'toast ' + width + 'x' + height + ': ';
+    const { ctx, page, d } = await fresh({ width, height });
+    try {
+      await d.open('#/tables/core_item');
+      await d.settled(where);
+      await openRecordDialog(page, 'ci1');
+      await page.evaluate(() =>
+        document.querySelector('dialog[open] .cardpick .morewrap > .btn')?.click()
+      );
+      await waitIn(page, () => !!document.querySelector('dialog[open] [role="menu"]'));
+      await page.evaluate(() =>
+        document.querySelector('dialog[open] [role="menu"] [role="menuitem"]')?.click()
+      );
+      ok(
+        await waitIn(page, () => !!document.querySelector('dialog[open] .toast:popover-open')),
+        where + 'no toast after the first «Ещё» item'
+      );
+      const m = await page.evaluate(async () => {
+        const toast = document.querySelector('dialog[open] .toast:popover-open');
+        /* The entrance moves the toast 10 px while it runs. */
+        await Promise.all(toast.getAnimations().map((a) => a.finished));
+        return {
+          toast: toast.getBoundingClientRect().bottom,
+          dock: document.querySelector('dialog[open] .cardpick').getBoundingClientRect().top,
+          vh: innerHeight
+        };
+      });
+      ok(
+        m.dock >= m.vh || m.toast <= m.dock + 0.5,
+        where + 'the toast covers the dock - ' + JSON.stringify(m)
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+  for (const route of ['#/search', '#/roll/std']) {
+    const where = at + 'tabs 320x568 ' + route + ': ';
+    const { ctx, page, d } = await fresh({ width: 320, height: 568 });
+    try {
+      await d.open(route);
+      await d.settled(where);
+      const m = await page.evaluate(() => ({
+        tabs: document.querySelector('nav.tabs').getBoundingClientRect().right,
+        body: document.body.getBoundingClientRect().right
+      }));
+      ok(m.tabs <= m.body + 0.5, where + 'the tabs pass the body - ' + JSON.stringify(m));
+    } finally {
+      await ctx.close();
+    }
+  }
+  for (const lang of ['ru', 'en']) {
+    const where = at + 'crop dialog 740x360 ' + lang + ': ';
+    const { ctx, page } = await openState(
+      '#/homebrew/new ~ crop dialog as gm1',
+      740,
+      360,
+      lang,
+      true
+    );
+    try {
+      const m = await page.evaluate(() => {
+        const dlg = document.querySelector('dialog[open]');
+        const done = [...dlg.querySelectorAll('button')].find((b) =>
+          ['Готово', 'Done'].includes(b.textContent.trim())
+        );
+        const r = done?.getBoundingClientRect();
+        return {
+          done: r ? { top: r.top, bottom: r.bottom } : null,
+          vh: innerHeight,
+          scrolls: dlg.scrollHeight > dlg.clientHeight + 1
+        };
+      });
+      ok(
+        !!m.done && m.done.top >= 0 && m.done.bottom <= m.vh && !m.scrolls,
+        where + '«Готово» is out of the window or the dialog scrolls - ' + JSON.stringify(m)
+      );
+    } finally {
+      await ctx.close();
     }
   }
 }
@@ -10758,7 +11309,12 @@ const CASES = [
   ['115 (the face wait)', printFaceWait],
   ['116 (the focus after a navigation)', focusAfterNavigation],
   ['117 (one scrim and shape)', oneScrimAndShape],
-  ['118 (the bar pinned, the toasts clear)', barPinnedAndToastsClear]
+  ['118 (the bar pinned, the toasts clear)', barPinnedAndToastsClear],
+  ['119 (the dialog menu stays put)', dialogMenuStaysPut],
+  ['120 (the add-to-list popover in the dialog)', dialogPopoverStaysInWindow],
+  ['121 (the sticky columns fit)', stickyColumnsFit],
+  ['122 (the header focus keeps the place)', headerFocusKeepsThePlace],
+  ['123 (short windows)', shortWindows]
 ];
 
 /* The interleave spreads the slow layout cases at the end of the list over

@@ -735,6 +735,19 @@ describe('the toast component, directly', () => {
     await expectNoA11yViolations(inDialog.container);
   });
 
+  it('is a live region before its text arrives, and an alert only for an error', async () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+    const { container } = render(Toast, { app });
+    const box = container.querySelector('.toast');
+    expect(box).toHaveAttribute('role', 'status');
+    expect(box).toHaveAttribute('aria-live', 'polite');
+    app.say(() => 'Не получилось', { error: true });
+    await tick();
+    expect(box).toHaveAttribute('role', 'alert');
+    expect(box).toHaveAttribute('aria-live', 'assertive');
+    await expectNoA11yViolations(container);
+  });
+
   it('runs the action and hides the toast when its button is pressed', async () => {
     const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
     const run = vi.fn();

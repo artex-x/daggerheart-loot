@@ -440,6 +440,12 @@
     border-bottom: 1px solid var(--line);
   }
 
+  /* A control in the header sits inside the `scroll-padding-top` band of `tokens.css`: the
+     negative margin cancels it, so a focus or a Tab does not scroll the page. */
+  .topbar :global(:is(a, button, input, select, [tabindex])) {
+    scroll-margin-top: calc(-1 * var(--sticky-h, 0px));
+  }
+
   /* From 761 px one row: the brand, the jobs, then the language and the account
      control. The jobs come last in the source, so `order` keeps the narrow tab order. */
   .topbar-in {

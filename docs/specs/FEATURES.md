@@ -426,7 +426,9 @@ across.
   draw them. It is memory only (`STATE.md`).
 - The catalog's filters (`FilterPanel`) are a column beside the rows from
   1000 px, sticky under the header and scrolling inside itself, and a bottom
-  sheet below it; the Items tab of «Мои предметы» draws them too ("Homebrew");
+  sheet below it. The column ends at or above the window's bottom less 16 px at every
+  page scroll (its cap follows its real top while it is not yet stuck), and the wheel
+  passes to the page at the column's ends; the Items tab of «Мои предметы» draws them too ("Homebrew");
   both list pages draw them as the sheet at every width ("Lists"). Where a table has
   nothing to filter by, there is neither. A row offers only values the drawn
   rows answer and shows only when it can narrow; a picked value stays offered
@@ -501,14 +503,12 @@ across.
   opens: a pressed row keeps its place until the menu opens again, and a
   list that appears while it is open (created here or in another tab)
   joins the first group. A selection's menu
-  stays newest first. The menu opens on
-  the side of the toggle button with room in the tightest clipping box it
-  sits in - the record card, the record modal's own card, the window -
-  re-measured from the toggle itself (not whichever button happens to render
-  first) whenever it opens or grows, so it neither spills past the modal's
-  edge nor drags the card's own scroll position along with it. Escape closes
-  it and returns focus to the toggle, the same as any other disclosure on
-  the page. It is a popover at every width, also at 360 px (no bottom sheet:
+  stays newest first. The popover opens by the overlay rule
+  ("Chrome"): in the top layer, placed by the window's room around the toggle
+  (the toggle, not whichever button happens to render first), and it re-places
+  itself whenever it grows, so a record dialog's card neither crops it nor
+  scrolls. Escape closes it and returns focus to the toggle, the same as any
+  other disclosure on the page. It is a popover at every width, also at 360 px (no bottom sheet:
   `docs/decisions/2026-11-05-the-add-to-list-menu-stays-a-popover.md`).
 - The menu is headed «Списки» / "Lists". A list is a row: a check where it holds the
   record, the name, wrapped (DESIGN.md, "The Whole Message Rule"), and its count in words at
@@ -1495,8 +1495,8 @@ address kept, and no add-to-list control is drawn.
   «Скопировать название», «Скопировать изображение» (with a picture only),
   «Скопировать ссылку» (with a link only) and «Сохранить себе» with its second
   line; a pressed item and Escape return the focus to «Ещё», and in the dialog
-  Escape closes only the menu. The menu opens down on a page; in the dialog it
-  opens up where the room is only above, so from the dock.
+  Escape closes only the menu. The menu opens by the overlay rule ("Chrome"),
+  on a page and in the dialog alike: it never scrolls the page or the dialog's card.
   «Поделиться» (the page, the dialog dock and a roll result's row; the same
   component) hands the system share sheet `{ title, text, url }`, and the record
   link is the last line of `text`, once. With a picture the phone shares the file
@@ -1510,9 +1510,8 @@ address kept, and no add-to-list control is drawn.
   the share sheet.
 - A roll result has the add control, «Поделиться» and «Ещё» under its plate, and no
   «Печать»; the copies are in «Ещё», without «Сохранить себе». The add menu opens
-  down, and up where the window has no room below and the page above the control
-  holds the whole menu under the header; near the page top it opens down and the
-  page scrolls to it.
+  by the overlay rule ("Chrome"): down where the window has room below, else up,
+  and the page never scrolls to it.
 - An own homebrew item opens at `#/i/<key>` for its author only; any other
   reader, signed out included, gets the not-found page, and «Загружаем...»
   draws until the session and the author's items are known. Its path reads
@@ -2116,7 +2115,9 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   save keeps that key.
 - **The editor** (`#/homebrew/new`, `#/homebrew/<key>`): the form beside a
   live full card of the item from 800 px; 761-799 px the card under the form; up
-  to 760 px the card is in the sheet «Предпросмотр». An item with no name yet
+  to 760 px the card is in the sheet «Предпросмотр». The preview column is sticky under the
+  header and ends at or above the window's bottom less 16 px at every page scroll, scrolling
+  inside itself (the filter column's cap rule, "Tables and search"). An item with no name yet
   reads «Новый предмет» on it. While the items load the page draws the heading
   «Мои предметы» and «Загружаем...». The heading row is a breadcrumb: the link
   «Мои предметы» (the way back at every width, under the guard), then the item's
@@ -3028,7 +3029,11 @@ right, so the tab order and the reading order agree
   bar while the bar shows (the bar is fixed to the window's bottom on a page of any
   length); inside a modal up to 760 px, 26 px above the record dialog's dock or the
   sheet's foot (under 481 px of window height the record dialog's dock moves with the
-  card, so its toast can cover the dock: `docs/specs/DEBT.md`, D136); its action button is `--surface2` with a
+  card, and the toast's bottom rises above the dock's top while the dock is in view);
+  while an open menu or popover reaches into the bottom 80 px of the window, the toast's
+  bottom rises to 8 px above the overlay's top (`--overlay-clear`). The element carries
+  `role` (`status`, `alert` for an error) and `aria-live` at all times; an idle toast is
+  `display: none` and leaves the accessibility tree; its action button is `--surface2` with a
   `--line2` border. The error toast takes the Alarm Red fill (`--danger`) with
   dark ink (`--ink-on-gold`, about 5.6:1). No toast is gold.
 - The footer carries the full DPCGL license notice (`dict.ts`'s
@@ -3065,6 +3070,19 @@ right, so the tab order and the reading order agree
   `#/account` it carries `aria-current="page"`. The button also carries the
   ring while its menu is open. A build with no sign-in draws no control at
   all.
+- **The overlay rule.** A menu or a popover (the account menu, «Ещё», the add-to-list
+  popover) is a `popover="manual"` box in the top layer. It is placed by the window's
+  room around its control: down where the room below holds it, else up, else on the
+  larger side with its own scroll; its right edge is the control's (the add-to-list
+  popover of a record's or a result's row, its left edge), and it keeps a 16 px gutter at
+  each window edge. The room excludes the shown page header (outside a dialog), the selection
+  bar and the print dock. It follows its control while the page or the dialog's card
+  scrolls, and re-places itself on a resize and on the on-screen keyboard. Opening one
+  never scrolls the page or a dialog's card: the first item takes the focus with
+  `preventScroll`, and a close returns the focus to the control with `preventScroll`
+  while the control is in the window. A control in the sticky header, the editor's bar or
+  the print dock keeps the page where it is on a focus (a negative `scroll-margin` that
+  cancels the page's `scroll-padding`).
 - The account menu «Меню аккаунта» / "Account menu" opens under the
   signed-in control, right-aligned, and holds, in this order, «Аккаунт» /
   "Account" (`#/account`), «Мои списки» / "My lists" (`#/lists`), «Мои

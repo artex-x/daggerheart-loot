@@ -500,12 +500,9 @@
     background: linear-gradient(180deg, var(--surface2), var(--surface));
     border: 1px solid var(--line);
     border-radius: var(--r);
-    /* `clip` rather than `hidden`: the add-to-list menu's
-       placement effect no longer calls `scrollIntoView` on the wrong button
-       and pulls this article's own scroll position along with it, but
-       `clip` is what stops a programmatic scroll from moving the content at
-       all - `hidden` still creates a scroll container a script can scroll.
-       The rounded corners still clip either way. */
+    /* `clip` rather than `hidden`: `hidden` still creates a scroll container a
+       script can scroll, and `clip` stops any programmatic scroll from moving
+       the content. */
     overflow: clip;
     display: flex;
     box-shadow: var(--shadow);
@@ -834,24 +831,6 @@
     gap: 6px;
     flex-wrap: wrap;
     align-items: center;
-  }
-
-  /* off `.cardpick .dropmenu` / `.cardpick .dropmenu.up`: the card opens its
-     menu downward by default and flips up only when there is no room below,
-     the opposite of `AddToList.svelte`'s own base rule (the future selection
-     bar's). Two classes deep, same as the live rule, so this beats both the
-     bare `.dropmenu` and its own 600px override at equal specificity - see
-     issue 47. */
-  .cardpick :global(.dropmenu) {
-    bottom: auto;
-    top: calc(100% + 8px);
-    left: 0;
-    right: auto;
-  }
-
-  .cardpick :global(.dropmenu.up) {
-    top: auto;
-    bottom: calc(100% + 8px);
   }
 
   /* ---------- referenced rulebook cards ---------- */

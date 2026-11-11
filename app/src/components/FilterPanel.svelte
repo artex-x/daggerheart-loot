@@ -15,6 +15,7 @@
   import Icon from './Icon.svelte';
   import Sheet from './Sheet.svelte';
   import Switch from './Switch.svelte';
+  import { watchStickyTop } from './stickyTop.js';
   import type { FacetRow } from '../lib/facets.js';
   import { chosenLabels, groupIsAny, type FilterState } from '../lib/filters.js';
   import { CHIP_FOLD_AT, CHIP_FOLD_SHOWN, foldRows } from '../lib/folds.js';
@@ -62,6 +63,8 @@
 
   const unfolded = new SvelteSet<string>();
   let column = $state<HTMLElement | undefined>(undefined);
+
+  $effect(() => (column ? watchStickyTop(column) : undefined));
 
   /* Rule 20: after «Сбросить» the focus lands on the first row's «Все» in the column,
      or on the sheet's «Закрыть». */
@@ -181,9 +184,11 @@
     width: 250px;
     flex: none;
     align-self: flex-start;
-    max-height: calc(100dvh - var(--anchor-top) - var(--selbar-h, 0px) - 16px);
+    max-height: calc(
+      100dvh - max(var(--anchor-top), var(--real-top, var(--anchor-top))) -
+        var(--selbar-h, 0px) - 16px
+    );
     overflow: auto;
-    overscroll-behavior: contain;
     padding: 14px;
     background: var(--surface);
     border: 1px solid var(--line);
