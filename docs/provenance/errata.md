@@ -10,9 +10,9 @@ Authority order for Darrington Press equipment: the official errata, then SRD 2.
 printed book (`docs/DECISIONS.md`, "Errata over SRD 2.0 over the printed book for Darrington
 Press equipment"). For Vault of Ages Volumes 1-3 the description page wins over the card sheet
 ("Vault of Ages Volumes 1-3: the description page over the card"). The sources are the Core
-errata of 2026-09-09 (page numbers marked NEW are in its list), SRD 2.0 of 2026-08-25, Vault of
+errata of 2025-09-09 (page numbers marked NEW are in its list), SRD 2.0 of 2026-08-25, Vault of
 Ages Volumes 1-2 v1.5 and Volume 3 v1.6, Dragon's Vault 10.7, The Last Round Table, Many Worlds
-Tavern and the Dread Source kit. A `-1` in a shipped cell is written with U+2212.
+Tavern and the Dread GM Toolbox. A `-1` in a shipped cell is written with U+2212.
 
 ## Errata applied (the printed Core book is a pre-errata printing)
 
@@ -20,12 +20,12 @@ Tavern and the Dread Source kit. A `-1` in a shipped cell is written with U+2212
 |---|---|---|---|---|
 | f37-f40 Revolver line | eq.dmg | `d6+1`, `d6+4`, `d6+7`, `d6+10` | `d8+1`, `d8+4`, `d8+7`, `d8+10` | NEW p. 317 |
 | f6 Sledgehammer | ende, rud | `Massive: -1 to Agility` | `-1 to Evasion` / `-1 к Уклонению`, the line of every other Massive weapon | NEW p. 275 |
-| q18 Glowing Rings | eq.dmg | the pre-errata damage | `d10+2` (tier 1) | NEW p. 115 |
-| q12, q49, q116, q184 Spear line | eq.dmg, ende | `d10+2` with `Cumbersome` | `d8+3`, `d8+6`, `d8+9`, `d8+12`; no Cumbersome | NEW pp. 115-120 |
-| q2, q39, q106, q174 Longsword line | eq.dmg | the pre-errata damage | `d10+3`, `d10+6`, `d10+9`, `d10+12` | NEW pp. 115-120 |
+| q18 Glowing Rings | eq.dmg | `d10+1` (tier 1) | `d10+2` (tier 1) | NEW p. 115 |
+| q12, q49, q116, q184 Spear line | eq.dmg, ende | `d10+2`, `d10+5`, `d10+8`, `d10+11` with `Cumbersome` | `d8+3`, `d8+6`, `d8+9`, `d8+12`; no Cumbersome | NEW pp. 115-120 |
+| q2, q39, q106, q174 Longsword line | eq.dmg | `d8+3`, `d8+6`, `d8+9`, `d8+12` | `d10+3`, `d10+6`, `d10+9`, `d10+12` | NEW pp. 115-120 |
 | q301 Knuckle Claws | eq.bu | two-handed | one-handed | p. 125 |
 | cc56 Sweet Moss | ende | the pre-errata amount | `1d10 HP or 1d10 Stress` | NEW p. 133 |
-| `refs['powerful-beast']` | stats | the pre-errata pair | `Strength +3, Evasion +1` | NEW p. 33 |
+| `refs['powerful-beast']` | stats | `Strength +1, Evasion +3` | `Strength +3, Evasion +1` | NEW p. 33 |
 
 ## Errata over SRD 2.0
 

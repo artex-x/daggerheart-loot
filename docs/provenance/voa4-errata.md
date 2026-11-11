@@ -56,8 +56,7 @@ modifiers.
 | Record | Field | Page (shipped) | Card | Class | Audit |
 |---|---|---|---|---|---|
 | voa4_t2e | ende, rud | the target is Horrified `until the scene ends` | `until after its next long rest` | D | 15 |
-| voa4_t3f | recall, ende | Recall Cost 2, `Gilded: +1 to Presence` | Recall 1, no Gilded | D | 4 |
-| voa4_t3e | ende | no Gilded line | adds `Gilded: +1 to Presence` | D | 5 |
+| voa4_t3f | recall | Recall Cost 2 | Recall 1 | D | 4 |
 | voa4_t4g | eq.tr | Finesse | Presence | D | 7 |
 | voa4_a3 | ende | Skewed Balance: allies choose the resource; Reserve Power `mark a Hit Point instead, and gain advantage` | `you choose the split`; `instead to gain advantage` | D | 12 |
 | voa4_t3a | ende | the GM's Fear escape | no Fear escape | D | 18 |
@@ -85,7 +84,8 @@ modifiers.
 ## Fixed by the author in v1.2 (no row)
 
 Audit 3, 5, 6, 8, 9, 10, 16, 17 and 19 (card and page values, the Impact Burst
-`Major` clause, the Voynarian Crossbow advantage clause) and the typos 32 to
+`Major` clause, the Voynarian Crossbow advantage clause; of 19 only the advantage
+clause, the half-Agility row above stands) and the typos 32 to
 39 and 41 (the page now prints the shipped text). The Spellcast Rolls case of
 Narvik Contract (audit 40) and the voa4_t4e `critical hit` line now ship as the
 page prints them. The Unicorn Knife damage type (`magical`, audit 7) now
