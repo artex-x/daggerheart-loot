@@ -2,15 +2,21 @@
 
 ## Status
 
-- Mode: B (refresh of the plan of 2026-11-10 at `342c91c4`).
-- Batches: B0 and B1 implement-ready; B2, B3 and B5 outlines; B4 dropped
-  (section 6).
+- Mode: B (design pass of 2026-11-11 at `8f194abd`: the account tier B5,
+  split into B5a and B5b, and the B1/B2 touchpoints it forces).
+- Batches: B0 and B1 implement-ready; B2 and B3 outlines; B5a and B5b
+  design settled, implement-ready outlines (B5a keeps one `Open design
+  question:`, its screen layout); B4 dropped (section 6).
 - NEEDS_HUMAN_CONFIRMATION: no. Q1-Q7 are settled (Q6 = C, Q7 = A on
-  2026-11-10). B1's implementation waits on nothing; B1's publication and
-  squash wait on B0 and on the owner's review of the audit table (an
-  owner step, not a question). B3 waits on a measurement; B5 is planned
-  when expanded. No batch and no gate waits on the Charkeeper author.
+  2026-11-10); the B5 defaults of 2026-11-11 are "default taken (owner
+  AFK)" (section 7, Q8-Q11). B1's publication and squash wait on B0 and
+  on the owner's review of the audit table (an owner step, not a
+  question). B3 waits on a measurement. B5a stops for the owner only on
+  its step 1 stop rule (a client token that changes the email or the
+  password, links or unlinks an identity, or enrolls a factor). No
+  batch and no gate waits on the Charkeeper author.
 - Plan review: required before B1 (trigger: a public contract change - the read API `/api/v1/`; a product-law change). The CORS rule of 2026-11-10 is part of the same contract change. B0 changes `llms.txt` (a public-contract file of the orchestrate "Plan review" list), which this review covers, and `.claude/agents/add-source.md` (an agent definition), so B0 fires the batch-review trigger and runs a batch review (plan-B1-2-R2).
+- Plan review: required before B5a (trigger: a migration that changes the PostgREST role config and adds restrictive table and storage policies and a SECURITY DEFINER helper; a new write and sync protocol; possible loss of stored data by a connected app's delete; a public contract change - `/api/v1/me/`, `/mcp/me`, a new app route). `agent-guard.mjs` reads every `required` line, so this line blocks every implementer dispatch, B0 and B1 included, until `reviews/plan-B5a.md` approves or its findings are applied: intended, because the same review reads the B1 delta of this pass. The B1 delta (section 6, B1, "B5 touchpoints and the second consumer": the public bulk catalog `/api/v1/catalog/`, record `key`, `Authorization` ignored on T0 paths, the unknown-`code` rule, the `/.well-known/oauth-protected-resource/` reservation, the failing CORS probes, the B2 tool filter) is additive, adds no trigger kind that the B1 review did not cover (a public contract change), and is named in the B5a review's scope; so the B1 review needs no fourth look, and the B5a reviewer reads that paragraph as part of "plan before B5a".
 - Plan review findings applied: reviews/plan-B1.md
   - plan-B1-1: section 6 B1 "Files expected", step 5, "Verification commands": stage `test:preview` of `tools/check/lib.mjs` runs the ts hooks and the three test files; `lib.test.mjs` holds the stage to every preview test and to the `preview/package.json` script.
   - plan-B1-2: sections 3.4, 3.5, 5.4, B1 step 4 and Standing check 1: `eq` leaves the table rows; each `eq_*` table is split by tier into `apidata/table/<table>/<tier>.json` and `part` is required on it (400 with the part list); counts 512 / 1536 rows written.
@@ -35,22 +41,13 @@
   - plan-B1-N7: section 5.3, B1 step 3: `tier` reads `eq.tier` when both exist; a test holds the 45 records with both to equal values.
   - plan-B1-N8: section 5.1, B1 step 8: a `POST` whose `Content-Type` is not `application/json` answers 415 `unsupported_media_type`.
   - plan-B1-N9: sections 3.4 and 4, B1 step 11: the owner rule "OpenAPI is the one source for the MCP tools; no extension point before a second consumer" goes into D3 in B1.
-- Plan refresh 2026-11-10 (owner decisions): Q1 (no mapping, no `format=`), CORS on `/api/v1/*`, a license-alignment batch B0, publication right after B1, no issue-72 post before the API is live, and two entry points kept.
-  - Sections 2, 3.3, 3.4, 5.3, 6 (B1 "Out of scope"), 9, 10: no `format=` parameter and no published mapping; every consumer maps the neutral record (owner Q1); the Charkeeper field table of 5.3 is an internal design check, not published.
-  - Section 4, D3: Q1 recorded; "CORS now" moves from rejected to decided; the rejected options name no CORS and a T0 allowlist.
-  - Sections 2, 3.4, 5.1, 10, D3; B1 steps 7, 8, 9, 10, 11, acceptance, Standing check 2: `Access-Control-Allow-Origin: *` on the public `/api/v1/` answers, no credentials, `OPTIONS` answers 204 with `Allow-Methods`, `Allow-Headers`, `Max-Age: 86400`; `nosniff` and the CSP `sandbox` stay; `Allow` names `OPTIONS`; `/apidata/` stays internal; the quota note counts preflights.
-  - B2 outline: `/mcp` keeps no CORS headers and answers 403 for a browser `Origin`. B5 outline: `/api/v1/me/` takes an explicit `Origin` allowlist, never `*`; the v1 CORS rule excludes `/api/v1/me/` from day one.
-  - Section 6, B4: dropped (criterion: Q1 removes its deliverable, and no batch waits on the author); the issue-72 announcement is an owner step after B1 is live.
-  - Section 6, new B0 (implement-ready): every copy of the license statement aligned, `LICENSE` included; `tests/derived.js` holds `LICENSE` and the terms pages to the citation; the `rights` decision file; B1 step 11's `llms.txt` "License" list moves to B0.
-  - Section 5.3 and B1 step 3: the field is `rights.license` (American spelling, `docs/decisions/`, 2026-10-29), not `rights.licence`; the `RIGHTS` table equals B0's decision (new acceptance line).
-  - Section 7: Q1, Q3, Q4, Q5 settled; new Q6 and Q7 (the legal call), recommended option first.
-  - Section 8: the draft reply becomes the announcement to post after B1 is live: working URLs, no mapping offer, no CORS question.
-  - New section 3.8 and D2: maintaining two entry points (one rule implementation, one data source, tests as enforcement, residual cost, the revisit rule); B1 gains an acceptance line for `tests/contracts.js`.
-  - New section 11: what v1 freezes at publication and what is safe to add later.
-  - Owner answers Q6 = C and Q7 = A (second message of 2026-11-10): section 6, B0 becomes "License statement and per-record rights audit": a per-record audit of the 745 `core`, `hnf` and `frame` records against the SRD 2.0, the stored table `docs/rights/records.json` and its test; one batch with the alignment (no split criterion: same gates, same landing with B1's squash; the owner's review follows the commit).
-  - Sections 3.4, 4 (D5), 5.3; B1 "Depends on", steps 3 and 4, acceptance: `rights.license` comes per record from the build-time table through `licenseOf`; no value in code; the pinned catalog carries its own audit slice; B1's squash requires `reviewed`.
-  - Section 7: Q6 and Q7 settled, no open question; sections 9, 10, 11 follow. The audit adds no plan-review trigger: the table is a committed source file, not a published contract, no migration, no stored user data, no write protocol.
-  - Second look: `reviews/plan-B1-2.md` (verdict incomplete, findings final, leaning fix-then-continue); its findings are applied once, below.
+- Plan refresh 2026-11-10 (owner decisions; applied, reviewed by `reviews/plan-B1-2.md` and `plan-B1-3.md`): Q1 (no mapping, no `format=`), CORS on `/api/v1/*`, B0 (license statement and per-record rights audit, Q6 = C, Q7 = A), publication right after B1 (section 11, D6), no issue-72 post before the API is live (section 8), two entry points kept (section 3.8, D2), B4 dropped. The sections carry the result; the per-section change list is in git history at `8f194abd`.
+- Design pass 2026-11-11 (B5, the orchestrator's dispatch; owner AFK):
+  - Section 6: B5 becomes B5a (the account connection: the client-token guard migration, the consent route, "Connected apps" on `#/account`, D7) and B5b (the account API `/api/v1/me/` and `/mcp/me`); criterion and gate cost in each. "B5" elsewhere names both.
+  - Section 3.4: sync is pull by heads (`{ id, rev }`, one design for catalog and account data); account writes are commands with client-made ids and `If-Match`; the T2 row, the CORS paragraph and the `/me` row name B5a/B5b.
+  - Sections 3.4, 3.5, 5.1, 5.3, 5.4, 11, B1 (new "B5 touchpoints" and "Second consumer" paragraphs, steps 3, 4, 7, 9, acceptance): the public bulk catalog `/api/v1/catalog/index.json` (static, no Functions request) with a `rev` per record; record v1 `key`; `Authorization` ignored on T0 paths; the unknown-`code` rule; `/.well-known/oauth-protected-resource/` reserved; the CORS probes on `/img/*` and the catalog fail, not report.
+  - B2 outline: `/mcp` lists only operations without `security`, never answers 401 and never reads `Authorization`; `/mcp/me` is B5b's.
+  - Section 4: D7 (B5a). Section 7: Q8-Q11, "default taken (owner AFK)". Section 8: the bacchus-atlas migration note (the second worked example). Section 10: per-client read-only grants, books and cards writes, art writes.
 - Total gate cost (".claude/README.md", "Batch size and the fixed cost of a
   run"): B0 about 55 min: the batch commit about 20 min (`check:fast` a
   few minutes, because `tests/derived.js` changes; one CI run 15 min; not
@@ -65,9 +62,12 @@
   landing about 23 min (the merge-back commit: `check:fast` 474-479 s,
   because a merge of `main` puts every vitest file in the related run,
   and one CI run 15 min); B2 about 20 min; B3 about 20 min plus an owner
-  measurement deploy; B5 about 45 min (`check:fast`, `check:db`, CI,
-  goldens). The B2, B3 and B5 figures do not include their reviews. Sum:
-  about 3 h 30 min of gates (B0 replaces B4's 20 min).
+  measurement deploy; B5a about 45 min (`check:fast` about 12 min,
+  `check:db` 752 s, CI 15 min with the golden re-seed from CI's text);
+  B5b about 25 min (`check:fast`, CI); the plan review before B5a about
+  15 min (estimate), run before B0 and B1 (Status, "Plan review"). The
+  B2, B3, B5a and B5b figures do not include their batch reviews. Sum:
+  about 4 h 10 min of gates.
 - Plan review findings applied: reviews/plan-B1-2.md
   - plan-B1-2-1: section 6 B0 steps 6-9 and acceptance, section 8: the covered clause names "the Core, Hope & Fear and campaign frame records whose text the SRD 2.0 holds; `docs/rights/records.json` names each"; the outside clause adds "any Core, Hope & Fear or campaign frame record that the SRD 2.0 does not hold"; the test holds the whole-book entry absent (`**Hope & Fear**` in the READMEs; in the plain-text `LICENSE` and `llms.txt`, the clause with the record phrase removed), not the bare string; section 8 uses the reviewer's sentence.
   - plan-B1-2-2: section 5.3 (`rights`), section 6 B0 table (`reviewed`, resolution) and step 5, B1 steps 3 and 4 and acceptance, section 11: `licenseOf` returns `owner` for every record while `audit.reviewed` is null; an `apiRecord.test.ts` case; the acceptance line "an unreviewed audit renders no `dpcgl`"; the pinned audit slice in `catalog.json` carries a `reviewed` date; an early squash claims too little, never too much.
@@ -96,6 +96,29 @@
   - plan-B1-3-N7: B1 "Files expected", steps 4 and 5, acceptance: `tools/api-data.mjs` exits 1 when `docs/rights/records.json` is missing or not valid; when B1 runs first, the implementer commits the starting file once by hand.
   - plan-B1-3-N8: section 6 B5 outline: the "because" clause is deleted; the placed plan-B1-2-N5 line stays.
   - plan-B1-3-N9: section 6 B0 step 2, `handoff.md` "Next batch": the skill is the user-level `anthropic-skills:daggerheart-source-audit` (this host's session list); step 2's match rule is the full procedure, and the skill supplies only terminology.
+- Plan review findings applied: reviews/plan-B5a.md
+  - plan-B5a-1: B5a steps 2 and 3, D7, acceptance: restrictive `<table>_no_client` policies on every out-of-scope `public` table bound embedding; step 3 adds an embedding case per foreign-key path; the fallback keeps only its RPC half.
+  - plan-B5a-2: B5a step 1, section 7 "Owner stop", section 9, Status: step 1 measures the Auth endpoints (user, identities, factors, global logout) and both discovery URLs; the stop rule covers email, password, identity link or unlink and factor enrollment.
+  - plan-B5a-3: B5a step 5 (scope sentence, Russian twin), steps 7 and Standing check 4, section 3.6, B5b `DELETE` rows, `PUT` row (`art` kept), tool descriptions, Standing check 2: the list and item delete cascades and the picture clear are named.
+  - plan-B5a-R1: B5a step 2 (`api_client_session_live()`, definer), step 3, Standing check 2, D7, section 7, Status trigger text: a revoked grant's unexpired token is refused; default taken (owner AFK).
+  - plan-B5a-R2: B5a acceptance (the `print_sets` probe after `migrate-test`), step 8 (the production probe; "Restore production (owner)" re-applies the role setting), step 2 fallback, section 9.
+  - plan-B5a-R3: section 3.4 "Sync", B5b `openapi.json` bullet: an account `rev` covers the row's own fields, not the parts of `record` from other rows; `If-Match` stays on the row revision.
+  - plan-B5a-R4: sections 3.4, 3.5, 5.4, 11, B1 step 5 and acceptance: `rev` is an opaque string compared for equality, may change at other times; account `rev` in decimal; the step 5 test names the records whose JSON embeds the edited one.
+  - plan-B5a-R5: B5a steps 1, 5 and 7, section 3.6: step 1 records the token claims; email and name join the consent and privacy text when present.
+  - plan-B5a-R6: B5a steps 1 and 8: step 1 checks the pinned CLI's `config.toml` for an OAuth server section; settings go there, or step 8 records that `config:push` leaves them.
+  - plan-B5a-R7: B5b `PATCH /me/lists/{id}` row, B5a step 2 (`PATCH` on `lists`), B5b tests and Standing check 2, section 3.4, section 7: an optional `If-Match` with the read-back rule; the remaining last-writer loss is named; default taken (owner AFK).
+  - plan-B5a-N1: B5b `PUT` row and tests: `key` optional on create, ignored on replace; a duplicate key or another account's id is 409 `conflict`.
+  - plan-B5a-N2: section 5.3, `key` row: a homebrew key is unique per account; `id` is the key across accounts.
+  - plan-B5a-N3: B5a step 2: `grant execute` to `anon, authenticated, service_role`, exact path equality, `HEAD` as `GET`, the reversal file under `check:db`'s up-down-up gate.
+  - plan-B5a-N4: section 3.5 (`version.json` row), B1 step 4: the hash is over every output rendered with `data_version` empty, then stamped into each file.
+  - plan-B5a-N5: section 5.1 (headers bullet, 404 bullet), B1 step 10 and acceptance: a miss under `/api/v1/catalog/` is Pages' `404.html`; `tests/contracts.js` compares operations and lists the static catalog apart.
+  - plan-B5a-N6: B1 step 9: the image probe takes the first record with a non-null `image.full` from the first chunk the index names.
+  - plan-B5a-N7: section 3.5 (index row), B1 Standing check 1: the index is about 69 KB today and 210 KB at 3x.
+  - plan-B5a-N8: sections 3.4 (CORS) and 11: the `*` promise covers the catalog image URLs under `<site>img/` and `<site>og/` only.
+  - plan-B5a-N9: B5a step 4: `AppsRepository` becomes `AppRepository`.
+  - plan-B5a-N10: B5b `GET /me/homebrew-items` and `{id}` rows, tests, section 7: `?ids=` accepts only ids in the reader's heads (else 400); `?ids=` uses one index over the answer and names the `craft.from` difference; `{id}` equals the T0 record; default taken (owner AFK).
+  - plan-B5a-N11: section 4 heading (D7 in B5a, D5 in B0, D4 in B2), B5a step 5 fixture paths `docs/fixtures/urls/routes.json` and `paths.json`.
+  - plan-B5a-N12 (deferred-scope): section 3.4 "Sync and the quota" states the ceiling (about 500 polling users; one read per changed list); section 10 and `handoff.md` "Deferred" record that nothing shows when the quota is near.
 
 ## 1. Objective and current state
 
@@ -248,11 +271,12 @@ additively.
 | `GET /api/v1/tables` | list the catalog tables | B1 | `daggerheart-loot/api-tables` v1 |
 | `GET /api/v1/tables/{table}` | one table's rows; `part` (required on `eq_weapon`, `eq_secondary`, `eq_armor`) | B1; `filter` B3 | `daggerheart-loot/api-table` v1 |
 | `GET /api/v1/records/{id}` | one catalog record | B1 | `daggerheart-loot/record` v1 |
+| `GET /api/v1/catalog/index.json`, then the chunk URLs it names | every catalog record, in few reads; static files, no Functions request | B1 | `daggerheart-loot/api-catalog` v1; chunks `daggerheart-loot/api-catalog-chunk` v1 |
 | `GET /api/v1/homebrew-items/{uuid}` | one homebrew item | B1 | `daggerheart-loot/record` v1 |
 | `GET /api/v1/shared-lists/{token}` | one share link's list | B1 | `daggerheart-loot/api-shared-list` v1 |
 | `GET /api/v1/records?q=&kind=&source=&table=&tier=&rarity=&limit=` | search and filter the catalog | B3 | `daggerheart-loot/api-records` v1 |
 | `POST /api/v1/file-checks` | check a lists or homebrew file | B3 | `daggerheart-loot/api-file-check` v1 |
-| `/api/v1/me/...` | the reader's lists and homebrew | B5 | B5 designs it |
+| `/api/v1/me/...` | the reader's lists and homebrew items, read and write (section 6, B5b) | B5b | `api-my-lists`, `api-my-list`, `api-my-items`, `api-my-item` v1 |
 
 Versioning and the frozen-contract policy (decision D3, below): the paths,
 parameter names, field names, the values of each answer's `format` field
@@ -284,8 +308,11 @@ POST, OPTIONS`, `Access-Control-Allow-Headers: Content-Type` and
 with no proxy. The account paths `/api/v1/me/` (B5) are outside the
 promise of this rule: in v1 the prefix is reserved and holds no data, so
 its JSON 404 and its preflight carry `*` only as the one responder's
-default (section 5.1); B5 replaces both answers with an explicit
-`Origin` allowlist, never `*`, and states its reason. `/mcp` (B2) sends no
+default (section 5.1); B5b replaces both answers with an explicit
+`Origin` allowlist, never `*` (empty at B5b; the reason is in B5b). The
+static catalog files under `/api/v1/catalog/` and the catalog image URLs
+under `<site>img/` and `<site>og/` answer `Access-Control-Allow-Origin: *` from Pages, which
+the `check-site` probe holds (B1 step 9). `/mcp` (B2) sends no
 CORS headers and answers 403 to a browser `Origin` (MCP spec, DNS
 rebinding). `apidata/` stays internal (`CONTRACTS.md` section 5): a
 browser client has the frozen `/api/v1/` and no reason to bind to it.
@@ -294,9 +321,41 @@ Auth tiers:
 
 | Tier | Serves | Status |
 |---|---|---|
-| T0 public read, no key | rolls, tables, records, homebrew items by id, shared lists by token, file checks | B1-B3 |
+| T0 public read, no key | rolls, tables, records, the bulk catalog, homebrew items by id, shared lists by token, file checks; an `Authorization` header is ignored and never forwarded, so a T0 answer never depends on the caller | B1-B3 |
 | T1 API key | higher limits or revocation for one client | left out: a key needs a store (a table and an issue screen) or a Pages secret per client (a deploy per key), and the worker cannot count a quota per key without a store |
-| T2 OAuth 2.1 (Supabase Auth server) | the reader's own lists and homebrew, read and write | B5 |
+| T2 OAuth 2.1 (Supabase Auth server) | the reader's own lists and homebrew items, read and write, under `/api/v1/me/` and `/mcp/me`; an OAuth client token only (a token with `client_id`) | B5a (the guard and consent), B5b (the API) |
+
+Sync (one design for catalog and account data, 2026-11-11): a consumer
+pulls; daggerheart-loot is the authority and never pushes. Each
+collection has a head list of `{ id, rev }`: the client diffs it against
+what it holds, re-reads each id whose `rev` moved in batches, and drops
+each id the head no longer lists (a delete; no tombstones exist, so
+`updated_since` is not offered). The catalog's head is
+`/api/v1/catalog/index.json` (`rev` per record, `data_version` for the
+whole: an equal `data_version` skips the diff); the account's heads are
+`GET /api/v1/me/lists` and `GET /api/v1/me/homebrew-items` (`rev` is the
+row's `revision`; an account `rev` covers the row's own fields - `book`
+and `content` for an item, the list fields and entries for a list - not
+the parts of `record` drawn from other rows; a client that keeps
+`record` reads it again when it reads that row, and reads each linked
+item by the item heads), the pattern of the app's own re-read
+(`docs/decisions/`, 2026-10-02, "The account re-read fetches only lists
+whose revision moved"). Every head gives `rev` as an opaque string (an
+account row: its revision in decimal), compared for equality only;
+`ETag` is `"<rev>"`. Account writes are commands, not replication:
+each create carries a client-made uuid (a retry is idempotent, as the
+app's `upsert ... ignoreDuplicates` and `on conflict (id) do nothing`),
+each homebrew-item update and each delete carries `If-Match: "<rev>"`
+(on the row revision), and a list `PATCH` takes an optional `If-Match`;
+without it, list fields follow the app's last-writer-wins rule (section
+6, B5b).
+Rejected: two-way replication (a merge on a third party's model); an
+`updated_since` cursor (deletes are invisible without a tombstone table,
+a migration, and clock skew); a collection `ETag` (a 304 costs the same
+Functions request and Supabase read). A record's `id` is the sync key:
+a catalog id is never renumbered (`CLAUDE.md`), a homebrew `id` is its
+row uuid for the row's life, and `key` (section 5.3) is the value every
+relation field holds.
 
 Rate limits: none per client, because counting needs state the worker may
 not keep, and the free `pages.dev` host has no Cloudflare rate-limit rule
@@ -320,6 +379,21 @@ preflight per 2 hours on Chromium. Browser traffic now reaches the quota
 directly; the guard is the same fair-use text, and a quota burn has the
 same effect as from a server.
 
+Sync and the quota: a catalog pull reads static files only (no Functions
+request at any rate). An account sync costs two head reads plus one read
+per 10 changed items and one read per changed list (a list has no batch
+read), each a Functions request (and one to three
+PostgREST calls on Supabase, which has no request quota on the Free plan,
+egress apart). A background poll every 15 minutes is 96 x 2 = 192
+requests a day per user, so 100 polling users take about 19 % of the
+shared 100,000; every 5 minutes, about 58 %. The ceiling: at one poll
+per 15 minutes the shared quota holds about 500 polling users in all
+(100,000 / 192), less the app's card traffic; nothing shows when the
+quota is near (section 10). The fair-use text of B5b
+therefore says: sync on a user action; a background sync at most once
+per 15 minutes per user. Token refresh goes from the client to Supabase
+Auth directly and costs no Functions request.
+
 Payload formats: one neutral record, `daggerheart-loot/record` v1
 (section 5.3), with normalized stats (damage dice and bonus apart, named
 thresholds, numeric burden, enum traits and ranges), so a target mapping is
@@ -332,7 +406,9 @@ writes into `apidata/version.json`). A projection answer carries `ETag:
 "<data_version>"` of the files this answer read, and answers 304 to a
 matching `If-None-Match`; a 304 still costs one Functions request, so the
 saving is bytes and CPU, not quota. Homebrew, shared lists and rolls
-answer `Cache-Control: no-store`.
+answer `Cache-Control: no-store`; every `/api/v1/me/` answer (B5b)
+answers `Cache-Control: private, no-store`. The static catalog files
+carry the `ETag` and `Cache-Control` that Pages sends (free).
 
 OpenAPI as the one source: `preview/api/openapi.json` (hand-written,
 committed) names every operation, parameter and schema. The REST adapter
@@ -347,7 +423,9 @@ ahead of need): API keys and quotas per key;
 one tier part for an `eq_*` table: the largest answer is 145 rows today,
 `dv` and the tier 3 part of `eq_weapon`, and 435 at 3x; `eq_weapon` whole
 is 512 rows today and 1536 at 3x, which is why its `part` is required);
-`sort` and `fields` parameters; batch reads by many ids; clipboard text;
+`sort` and `fields` parameters; batch reads of catalog records by many
+ids (the bulk catalog serves the whole catalog in few static reads; B5b's
+`?ids=` serves the reader's own items); clipboard text;
 prices; GraphQL; client
 SDKs; a Discord interactions endpoint (a bot is a REST client); localized
 error messages (English text and a stable `code`).
@@ -386,9 +464,10 @@ file at most 131072 B, and a request reads at most five files:
 | `apidata/roll/<section>.json` | a lean loot of the tables one roll section reads; each record carries its chunk number `c` | 131072 B | at most about 30 KB (`std`: four tables), est. | about 90 KB |
 | `apidata/table/<table>.json` | a table's rows: id, n, name, kind, part, tier, rarity, rung; no `eq` | 131072 B | at most 20,816 B (`dv`, 145 rows), measured | about 63 KB |
 | `apidata/table/<eq table>/<tier>.json` | one tier part (`1`-`4`, `A`) of `eq_weapon`, `eq_secondary` or `eq_armor`, the same row fields | 131072 B | at most 21,511 B (`eq_weapon` tier 3, 145 rows), measured | about 65 KB (435 rows) |
-| `apidata/records/<n>.json` | neutral records, packed in id order to at most 65536 B a file | 65536 B each | about 36-46 files (2.3-3.0 MB), est. | about 110-140 files |
-| `apidata/records/index.json` | `chunks`: the ids of each record file, one list per file | 65536 B | about 16 KB, est. | about 57 KB, near the budget |
-| `apidata/version.json` | the data version | - | 40 B | 40 B |
+| `api/v1/catalog/<n>.json` (public, static; the worker reads the same files) | `{ format: "daggerheart-loot/api-catalog-chunk", version, data_version, records: [<record v1>] }`, packed in id order to at most 65536 B a file | 65536 B each | about 36-46 files (2.3-3.0 MB), est. | about 110-140 files |
+| `api/v1/catalog/index.json` (public, static, not read by the worker) | `{ format: "daggerheart-loot/api-catalog", version, data_version, chunks: ["<site>api/v1/catalog/<n>.json", ...], records: [{ "id", "rev", "chunk" }] }`; `rev` is an opaque string, today the first 8 hex of SHA-256 over the record's JSON; `chunk` indexes `chunks` | 262144 B | about 69 KB (1593 rows such as `{"id":"ci12","rev":"0123abcd","chunk":12},`, about 43 B), est. | about 210 KB (longer synthetic ids) |
+| `apidata/records/index.json` (internal) | `chunks`: the ids of each record file, one list per file | 65536 B | about 16 KB, est. | about 57 KB, near the budget |
+| `apidata/version.json` | the data version: a hash over every other output rendered with `data_version` empty, then stamped into each file | - | 40 B | 40 B |
 
 Every file is `{ format, version, data_version, ... }`. The build reports
 the real chunk count and the size of `records/index.json`; B1 writes both
@@ -432,7 +511,8 @@ cached file again once; a second mismatch answers 503 `unavailable`.
   the only server that stores data; one stateless Worker renders link cards
   and answers the read API and the MCP endpoint, and stores nothing. Add no
   other backend, upload endpoint or paste service." (B1; B2 needs no second
-  edit.)
+  edit; B5b adds "and relays a connected app's account calls to Supabase
+  with the reader's token" to the sentence and its copies.)
 - The copies of that law change in the same commit: `PRODUCT.md` (line
   78); `META.md` section 3, first paragraph (line 104) and last paragraph
   (lines 243-258), where "an answer stays a few KB at any set size" and
@@ -449,7 +529,10 @@ cached file again once; a second mismatch answers 503 `unavailable`.
   stays in the 404 list until B2.
 - `CONTRACTS.md`: a new section 6, "The read API", with the paths, the
   freeze policy and the fixtures `docs/fixtures/api/`; section 5 reserves
-  `/api/` beside `/mcp` and calls `apidata/` internal, changed without
+  `/api/` beside `/mcp` (whose `/mcp/me` B5b takes) and
+  `/.well-known/oauth-protected-resource/` for B5b, names
+  `/api/v1/catalog/` as the published static part of `/api/`, and calls
+  `apidata/` internal, changed without
   notice, like `img/thumb/`; the "Fixtures:" paragraph names
   `docs/fixtures/api/v1/`; B2 adds the MCP endpoint and
   `docs/fixtures/mcp/`.
@@ -462,9 +545,13 @@ cached file again once; a second mismatch answers 503 `unavailable`.
   owner answer of 2026-11-10: B1 adds one sentence to "Link previews" in
   both pages, with the same facts: shared lists and homebrew items are
   readable by programs through the public API, to anyone who holds the
-  link. The "Last changed" date in both pages becomes the B1 date. B5
-  changes them again: a reader's lists and homebrew reach the AI vendor or
-  app the reader connects.
+  link. The "Last changed" date in both pages becomes the B1 date. B5a
+  changes them again: a reader's lists and homebrew items reach the app
+  or AI vendor the reader connects, under that party's own policy, until
+  the reader disconnects it on `#/account`; both pages also state the
+  same facts as the consent page's scope sentence (B5a step 5), and the
+  account's email and name when B5a step 1 finds them in the client
+  token (plan-B5a-R5).
 - The Cloudflare token keeps "Workers Scripts Edit"? The worker stays a
   Pages Function, so B1 does not need it; the owner may remove it after B2
   (`.claude/README.md`, "Preview host" asks `ai-mcp` to decide).
@@ -525,13 +612,7 @@ not call the API. Checked against the repository at `342c91c4`:
    finds one rule implemented twice (in `preview/api/` and in
    `app/src/`). D2 records the rule.
 
-What exists and what is new: points 1, 2, 3 (fixtures, parity) and 5
-were already in B1 (steps 2-6 and 10, the acceptance lines on fixtures,
-pools and `rowsOf`, D2's rejected options). New in this refresh: the
-`tests/contracts.js` acceptance line in B1, the residual cost of point 4
-and the revisit rule of point 6 in D2.
-
-## 4. Decisions settled by this plan (to `docs/decisions/` in B1)
+## 4. Decisions settled by this plan (to `docs/decisions/`: D1-D3 and D6 in B1, D5 in B0, D4 in B2, D7 in B5a)
 
 - D1 "The read API and MCP are one stateless worker over build-time
   projections". Rejected: (a) MCP-only logic (a second consumer
@@ -603,6 +684,30 @@ and the revisit rule of point 6 in D2.
   (a dependency in a package that holds only `wrangler`, bundle size, and
   its `2026-07-28` support is not confirmed); `McpAgent` (a Durable Object,
   stored state).
+- D7 (B5a) "A connected app reaches only the API's account scope, and the
+  database enforces it". A Supabase OAuth access token is a normal
+  `authenticated` JWT plus `client_id` (no custom scopes; verified
+  2026-11-11, `context.md`), so its holder can call PostgREST at
+  `<ref>.supabase.co` directly, past the worker. The guard therefore
+  lives in Postgres: a PostgREST pre-request function refuses a token
+  with `client_id` on every table and RPC outside the API's list,
+  restrictive policies on the other tables refuse it too (they bound
+  resource embedding, which the pre-request function cannot see), and
+  restrictive storage policies refuse its writes; the pre-request
+  function also refuses a client token whose session a revoke ended,
+  so "Disconnect" stops an unexpired token at once. One grant level ("read
+  and change your lists and homebrew items"); sync by heads, commands
+  with client ids and `If-Match` (section 3.4); the worker relays only a
+  token with `client_id`, keeps none, and never sees a refresh token; the
+  `/me` CORS allowlist is empty until a browser client is reviewed.
+  Rejected: scope enforced by the worker only (the token works without
+  it); a per-client read-only level (needs a client table; Supabase has
+  no custom scopes); accepting the app's own session token on the API (it
+  carries the whole account, sign-in and deletion included); `*` on
+  `/me`; audience binding by a custom access token hook (it would change
+  the app's own tokens; one project is both the authorization server and
+  the resource behind the worker); two-way replication; an
+  `updated_since` cursor.
 
 ## 5. Contracts in detail (B1)
 
@@ -633,7 +738,8 @@ and the revisit rule of point 6 in D2.
   follows gets its own 404 or 405. It sends no
   `Access-Control-Allow-Credentials` and no `Vary: Origin` (the value is
   `*` for every origin).
-- Answer headers on every answer under `/api/`, an error, a 304 and a
+- Answer headers on every answer under `/api/` (the static catalog
+  apart, below), an error, a 304 and a
   thrown error included: `Access-Control-Allow-Origin: *` (bare `/api` and
   an unknown path too: one rule in one responder, so a browser client can
   read every error), `Content-Type: application/json; charset=utf-8`,
@@ -656,7 +762,19 @@ and the revisit rule of point 6 in D2.
   is reserved and holds no data in v1; v1 promises no CORS rule for it.
   `CONTRACTS.md` section 6 states this, and that B5 replaces both answers
   with an explicit `Origin` allowlist instead of `*`.
-- Bare `/api` and any unknown path under `/api/` answer the JSON 404.
+- Bare `/api` and any unknown path under `/api/` answer the JSON 404,
+  except under `/api/v1/catalog/`: there a miss is Pages' `404.html` with
+  status 404.
+- The static catalog files (`/api/v1/catalog/*`, section 3.5) are the
+  one part of `/api/v1/` that Pages serves: `_routes.json` excludes the
+  prefix, so they cost no Functions request and carry the Pages headers
+  (`Access-Control-Allow-Origin: *`, held by the `check-site` probe),
+  plus a `_headers` rule with `X-Robots-Tag: noindex` and
+  `X-Content-Type-Options: nosniff`. They take no `OPTIONS` answer of
+  this section and no CSP `sandbox` (a static JSON file is not run).
+- T0 paths ignore an `Authorization` header and never forward it: every
+  Supabase read of B1-B3 runs as `anon`, so a T0 answer never depends on
+  the caller, and `*` stays safe. Only `/api/v1/me/` (B5b) reads it.
 - A path run past 2048 characters reads as empty (the cards' rule). A
   request body past 4096 bytes (rolls) answers 413 before parsing.
 - Errors: `{ "format": "daggerheart-loot/api-error", "version": 1, "error":
@@ -673,6 +791,13 @@ and the revisit rule of point 6 in D2.
 | 415 | `unsupported_media_type` | a `POST` body that is not `application/json` |
 | 422 | `answer_too_large` | a Supabase answer past the service's 65536 B cap (a shared list or a homebrew item with very many entries or related rows); the message gives the app link |
 | 503 | `unavailable` | an `env.ASSETS` read or a Supabase read failed, timed out or was not valid JSON; a second `data_version` mismatch |
+
+The `code` list widens in place with new resources and cases (B5b adds
+401 `unauthorized`, 403 `forbidden`, 409 `conflict` and `limit_reached`,
+412 `precondition_failed`, 428 `precondition_required`); a code keeps its
+status and meaning for good. `openapi.json` and `CONTRACTS.md` section 6
+say from B1: a client that meets a `code` it does not know acts on the
+HTTP status.
 
 - Every text a person reads is a pair `{ "ru": "...", "en": "..." }` built
   by the app's own functions, so it follows the app's rule: an empty
@@ -734,6 +859,7 @@ for a homebrew item at request time:
   "format": "daggerheart-loot/record",
   "version": 1,
   "id": "ci12",
+  "key": "ci12",
   "origin": "catalog",
   "kind": "item",
   "name": { "ru": "...", "en": "..." },
@@ -757,7 +883,8 @@ for a homebrew item at request time:
 
 | Field | Rule |
 |---|---|
-| `origin` | `catalog` or `homebrew`; a homebrew `id` is the item's uuid, and `link` is `<site>h/<uuid>` and `<site>en/h/<uuid>` |
+| `origin` | `catalog` or `homebrew`; a homebrew `id` is the item's row uuid, stable for the row's life and never reused, and `link` is `<site>h/<uuid>` and `<site>en/h/<uuid>` |
+| `key` | the value that relation fields (`craft.into`, `craft.from`, `set.members`) and list entries hold: a catalog record's `key` equals its `id`; a homebrew record's is its `hb_` key, which never changes (`homebrew_items_before_update`). A homebrew key is unique within one account only (`CONTRACTS.md`, `hb_` row, "per account"); `id` is the key across accounts. A homebrew record carries no owner, no `mine` and no visibility field: an item is unlisted, readable by anyone who holds its id (`get_homebrew_item`), and `/api/v1/me/` answers hold only the reader's own rows |
 | `kind` | `item`, `consumable`, `weapon`, `secondary` or `armor`: `eq.t` when the record has a stat block, else `kind` |
 | `name`, `text` | `nameOf`, `descOf` per language: an empty Russian side takes the English text, English never takes Russian (section 5.1) |
 | `rights` | `{ "license": "dpcgl" or "owner", "notice": "<English text>" }` (`license`, American spelling: `docs/decisions/`, 2026-10-29; the vocabulary is frozen with v1), per record from the build-time table `docs/rights/records.json` (B0's per-record SRD 2.0 audit, owner Q6 = C): `records[id]`, else the source row, which is always `owner`; while the table's `reviewed` is null, every record is `owner`. `dpcgl` means "the English text is SRD 2.0 Public Game Content" (the Russian text is a third-party translation, credited in `README.md`, "Sources", and not covered by the value; `openapi.json`'s `rights` schema description says so). `dpcgl` carries the DPCGL notice of `README.md`, "Rights" (SRD 2.0 text); a catalog `owner` carries "Text (c) its rights holders; not covered by the DPCGL; served as a play aid."; a homebrew item is `owner` with "Written by a daggerheart-loot user, who holds the rights." |
@@ -766,7 +893,7 @@ for a homebrew item at request time:
 | `stats` | `null`, or `{ "type", "tier", "class", "trait", "range", "damage": { "dice": "d8", "bonus": 2, "type": "phy" }, "burden": 1, "armor_score": 4, "thresholds": { "major": 5, "severe": 11 }, "line": "<head id>" or null, "alt": { "trait", "range", "damage" } or null, "statline": { "ru": "<eqLine>", "en": "<eqLine>" } }`; an absent value is `null`; `dmg` is always `dN` or `dN+K` (the catalog today; homebrew `/^d(4\|6\|8\|10\|12\|20)(\+[1-9][0-9]?)?$/`, `homebrew.ts`), so `damage.dice` is the `dN` part and `bonus` the integer 0-99 after `+` (0 when none, never negative); `burden` is `1`, `2` or `"any"` |
 | `thresholds` | `eq.th[0]` is the Major threshold and `eq.th[1]` the Severe one (`dict.ts` `thMajor`, `thSevere`; `i18n.ts` draws `th[0]/th[1]`); B1 corrects the stale `types.ts` comment "Minor and major" |
 | `craft` | `into`: `craft`; `from`: `index.craftedFrom` ids; homebrew keys stay keys |
-| `set` | `null`, or `{ "key", "name": {...}, "bonus": {...} (Markdown subset), "members": [ids] }` |
+| `set` | `null`, or `{ "key", "name": {...}, "bonus": {...} (Markdown subset), "members": [keys] }` (a catalog member's key is its id) |
 | `refs` | the record's rule cards: `{ "key", "name": {...}, "subtitle": {...}, "text": {...}, "url": { "ru", "en" } }` |
 | `image` | `null` when the record has no picture; a homebrew own picture is `site.art` (the Storage public base from `env.SUPABASE_URL`, `artBaseOf`) plus `p/` and `t/` names for `full` and `thumb`, `card` null |
 
@@ -805,8 +932,20 @@ needs, and nothing in the repository depends on it after B1):
   record is one more call; a client that needs many uses the shared
   `records/{id}` reads with `ETag`.
 - `GET /api/v1/records/{id}`: the neutral record from
-  `apidata/records/<n>.json`, the file the cached `records/index.json`
-  names; an id the index does not hold is 404.
+  `api/v1/catalog/<n>.json`, the file the cached `apidata/records/index.json`
+  names; an id the index does not hold is 404. The record files live at
+  `api/v1/catalog/<n>.json`, the public chunks, so one file set serves
+  both.
+- The bulk catalog (static, section 3.5): a client reads
+  `/api/v1/catalog/index.json`, compares `data_version` and each
+  record's `rev` with what it holds, and reads only the chunks of the
+  changed ids. Frozen: the index URL, both schemas, the `rev` rule
+  (`rev` is an opaque string, compared for equality only; it changes
+  whenever the record's JSON changes, and may change at other times, and
+  a client then reads an unchanged record again), and each `chunks` entry
+  being an absolute URL. Not frozen: the chunk names, their count and which ids
+  a chunk holds (a client follows the index). A whole pull today is
+  about 37-47 static reads (2.3-3.0 MB) and no Functions request.
 - `GET /api/v1/homebrew-items/{uuid}`: the id is read as the cards read it
   (leading run of `[0-9A-Fa-f-]`, lowercased, `UUID` pattern), then
   `get_homebrew_item(p_id)` as `anon`, a byte cap of 65536 (past it 422
@@ -1183,6 +1322,21 @@ checks (B3); OAuth and `/api/v1/me/` (B5); the license statement copies
 (B0); any change of what the app draws. No `format=` parameter exists
 (owner Q1).
 
+B5 touchpoints and the second consumer (design pass 2026-11-11): the
+account tier (B5a, B5b) and the second worked consumer, bacchus-atlas
+(section 8), need no v2 if B1 ships these, all additive and all in the
+steps below: (1) the public bulk catalog `/api/v1/catalog/` (section
+5.4; steps 4, 7, 9, 11), the one change-detection design of section
+3.4; (2) record v1 `key` (section 5.3; step 3); (3) T0 paths ignore
+`Authorization` (section 5.1; steps 8, 10); (4) the unknown-`code` rule
+(section 5.1; steps 7, 11); (5) the reservation of
+`/.well-known/oauth-protected-resource/` (step 11); (6) failing CORS
+probes on `/img/*` and the catalog index (step 9). Not in B1, on
+purpose: the service's `ctx` argument (B5b adds `op(input, ctx)` with
+`ctx.token`; the service is internal, and `CLAUDE.md` adds no variant
+before use), `securitySchemes` in `openapi.json` (B5b adds them; a T0
+operation never gets `security`), and any 401 or 403 answer.
+
 Depends on: B1's implementation does not wait on B0's audit. B1's
 publication and squash do: they need B0 committed and
 `docs/rights/records.json` `reviewed` set by the owner. The rights values
@@ -1314,7 +1468,9 @@ Steps:
    built as section 5.4 builds a shared list's, every snapshot as
    `linked`: `set.bonus` is that embedded card) (plan-B1-3-1); it asserts every text field
    has both keys and `rights` for a `dpcgl` record, an `owner` catalog
-   record and homebrew. `licenseOf` tests: a `records` entry wins over the
+   record and homebrew, and `key` (a catalog record's `key` equals its
+   `id`; a homebrew record's `key` is its `hb_` key and its `id` the row
+   uuid; a homebrew `craft` and `set.members` hold keys). `licenseOf` tests: a `records` entry wins over the
    source row; a record with no entry takes its source row; an unknown
    source is `owner`; an audit with `reviewed: null` resolves a record
    whose entry is `dpcgl` to `owner` (plan-B1-2-2). A test holds the 45 records with both tiers to
@@ -1344,12 +1500,19 @@ Steps:
    `community_ru`, `realm`, `vol`, `frame`, `starting`, plus `c`, the
    record file that holds it; `alt` for `alt`), `table/<table>.json` for
    every table but the three `eq_*` ones and `table/<eq table>/<tier>.json`
-   for those (rows without `eq`), `records/<n>.json` (records in
+   for those (rows without `eq`), the record chunks under
+   `api/v1/catalog/<n>.json` (not under `apidata/`: they are the public
+   chunks; records in
    `[...byId.keys()]` order, the "`data.js` order" of B0 step 3, packed while a file stays at most 65536
-   bytes), `records/index.json` (`chunks`: one id list per record file)
-   and `version.json` (the first 16 hex of SHA-256 over every other output
-   in path order). Every file is `JSON.stringify(v) + '\n'` with `format`,
-   `version` and `data_version`. With `--check` it renders to memory and
+   bytes), `apidata/records/index.json` (`chunks`: one id list per record file),
+   `api/v1/catalog/index.json` (section 3.5: absolute chunk URLs from
+   `site.base`, and per record `id`, `rev` = the first 8 hex of SHA-256
+   over `JSON.stringify(record)`, and `chunk`; budget 262144 B)
+   and `apidata/version.json` (the first 16 hex of SHA-256 over every other output
+   rendered with `data_version` empty, in path order; the value is then
+   stamped into each file, the public chunks and index included). Every file is `JSON.stringify(v) + '\n'` with `format`,
+   `version` and `data_version`. `renderApiData` returns both trees by
+   their published paths; add `/api/` to `.gitignore` beside `/apidata/`. With `--check` it renders to memory and
    exits 1 naming each file that differs from disk or passes its budget,
    and prints the record file count and the size of `records/index.json`.
    `tools/build.js` runs it with `execFileSync(process.execPath,
@@ -1366,6 +1529,11 @@ Steps:
    full index for every part (`rowsOf`, `rollPool`, `poolFor` for dice
    1-5, `altPicks` for each rarity and face 1-12); every record of `byId`
    is in exactly one record file and its roll rows' `c` names that file;
+   `api/v1/catalog/index.json` lists every record once, its `chunk` names
+   the file that holds it, and its `rev` is the hash of that copy; an
+   edit of one record's text changes its `rev` and the `rev` of each
+   record whose JSON holds that record (craft, set, refs), and no other
+   (plus `data_version`);
    every file has the schema of its `format` and stays within its budget;
    a synthetic catalog of three times `data.js` (each record, rule card
    and set copied with a suffixed id or key) still fits every per-file
@@ -1421,8 +1589,14 @@ Steps:
    public operations without credentials, the preflight answer, that each
    preflight counts against the shared quota and `Max-Age` 86400 reduces
    them, and that `/api/v1/me/` is reserved, holds no data in v1, carries
-   `*` only for that reason, and will take an `Origin` allowlist in B5) in
-   `info.description`. `OPTIONS` is not listed as an operation. There is
+   `*` only for that reason, and will take an `Origin` allowlist in B5b),
+   the rule "a client that meets an unknown error `code` acts on the HTTP
+   status", that T0 operations ignore `Authorization`, and the bulk
+   catalog (the index URL, both schemas, the sync rule of section 3.4,
+   and that its files are static and cost no quota) in
+   `info.description`; the two catalog schemas go in `components` (a
+   static file is not an operation, so it has no `x-mcp-tool`). No
+   `securitySchemes` in B1. `OPTIONS` is not listed as an operation. There is
    no `format` parameter and no mapping to a consumer's schema. Give each
    operation an
    `x-mcp-tool` name for B2 (`list_rolls`, `roll`, `list_tables`,
@@ -1440,17 +1614,30 @@ Steps:
    answers the JSON 503, never the HTML card. `worker.mjs`'s `handle` calls it for `/api` and every path
    under `/api/` before the language split and before its own `GET`/`HEAD`
    check; the host guard stays first.
-9. Routing and publishing: `_routes.json` includes `/api/*`;
-   `_headers` sends `X-Robots-Tag: noindex` on `/apidata/*`;
-   `tools/collect-site.sh` copies `apidata/` beside `names.json` (Vite
-   copies neither); the guard refuses a published `api` file or folder;
+9. Routing and publishing: `_routes.json` includes `/api/*` and
+   excludes `/api/v1/catalog/*` (Pages serves the static catalog);
+   `_headers` sends `X-Robots-Tag: noindex` on `/apidata/*`, and
+   `X-Robots-Tag: noindex` with `X-Content-Type-Options: nosniff` on
+   `/api/v1/catalog/*` (no `Access-Control-Allow-Origin` line: Pages sends
+   `*` on static files, and a second value would break CORS);
+   `tools/collect-site.sh` copies `apidata/` and `api/v1/catalog/` beside
+   `names.json` (Vite copies neither); the guard refuses any other
+   published file under `api/` and a published
+   `.well-known/oauth-protected-resource`;
    `tests/app/serve.js` skips the `/api/*` include, so it stays a miss;
-   `.claude/hooks/edit-guard.mjs` blocks a write under `apidata/` with the
+   `.claude/hooks/edit-guard.mjs` blocks a write under `apidata/` and the
+   root `api/` (generated; `preview/api/` stays writable) with the
    `names.json` message pattern, and `selftest.mjs` gets the matching
    case; `tools/check-site.lib.mjs` probes `apidata/version.json` (static,
    and it records the `Access-Control-Allow-Origin` header it sees, a
    report line, not a failure: `apidata/` is internal whatever the host
-   sends) and, with `--preview`, `/api/v1/rolls` (200, `format`, and with
+   sends), and two failing static checks with an `Origin:
+   https://example.org` header: `api/v1/catalog/index.json` (200, its
+   `format`, `Access-Control-Allow-Origin: *`) and one record's
+   `image.full` under `/img/` (the index holds no image URLs: the probe
+   reads the first chunk the index names and takes its first record with
+   a non-null `image.full`; 200, `Access-Control-Allow-Origin:
+   *`; a canvas client needs it, section 8), and, with `--preview`, `/api/v1/rolls` (200, `format`, and with
    an `Origin: https://example.org` header, `Access-Control-Allow-Origin:
    *` and no `Access-Control-Allow-Credentials`), `OPTIONS
    /api/v1/rolls/std` with that `Origin` and `Access-Control-Request-Method:
@@ -1480,13 +1667,17 @@ Steps:
     a 404, a 405 and a thrown-error 503 each carry
     `Access-Control-Allow-Origin: *`, no
     `Access-Control-Allow-Credentials`, `nosniff` and the CSP; a 405's
-    `Allow` names `OPTIONS`; `/api/v1/me/x` is the JSON 404. A test holds every parameter name and enum of
+    `Allow` names `OPTIONS`; `/api/v1/me/x` is the JSON 404. A shared
+    list and a homebrew item read with an `Authorization: Bearer x`
+    header give the same bytes as without it, and the stub RPC server
+    sees the anon bearer only. A test holds every parameter name and enum of
     `openapi.json` to the parsers' accept and refuse cases. The answer
     builder of the shared-list cases measures how many catalog and
     homebrew entries fit under 65536 B. `tests/contracts.js` checks the
     fixtures parse, `preview.json`'s `routes` equals `_routes.json` with
-    `/api/*`, and `openapi.json`'s paths equal `CONTRACTS.md` section 6's
-    list.
+    `/api/*`, and `openapi.json`'s operations equal `CONTRACTS.md` section
+    6's operation list; that section lists the static catalog apart,
+    because it is not an operation.
 11. Documents: the law text of section 3.6 into `CLAUDE.md` and every copy
     section 3.6 lists (`PRODUCT.md`, `META.md` section 3 both paragraphs,
     `.claude/README.md` "Preview host", `README.md` and `README.ru.md`
@@ -1497,14 +1688,18 @@ Steps:
     as a file (homebrew-v2)", which becomes "there is no write API");
     `CONTRACTS.md` section 6 (paths, freeze policy, the CORS rule, the
     `/api/v1/me/` prefix as reserved with no data in v1, its 404 and
-    preflight carrying `*` only for that reason, and B5 replacing both
-    answers with an allowlist, fixtures),
-    section 5 (`/api/` reserved, `apidata/` internal and changed without
-    notice, like `img/thumb/`) and the "Fixtures:" paragraph; `llms.txt`:
+    preflight carrying `*` only for that reason, and B5b replacing both
+    answers with an allowlist, the bulk catalog and what of it is frozen
+    (section 5.4), the unknown-`code` rule, T0 ignoring `Authorization`,
+    fixtures),
+    section 5 (`/api/` reserved, `/api/v1/catalog/` its static part,
+    `/.well-known/oauth-protected-resource/` reserved for B5b, `apidata/`
+    internal and changed without notice, like `img/thumb/`) and the
+    "Fixtures:" paragraph; `llms.txt`:
     a new section "The read API (v1)" (each operation with one `curl`
-    example, that a browser may call it directly, the fair-use text, the
-    neutral record fields, `rights`; no mapping to any consumer's
-    schema), the counting route stays as it is; the "License" list moved
+    example, the bulk catalog and its sync rule, that a browser may call
+    it directly, the fair-use text, the neutral record fields, `rights`;
+    no mapping to any consumer's schema), the counting route stays as it is; the "License" list moved
     to B0; the privacy sentence of
     section 3.6 in both pages, same facts, the "Last changed" date in both;
     `.claude/README.md`: routes, the shared quota, the file-count margin
@@ -1514,15 +1709,10 @@ Steps:
     `docs/decisions/` with the texts of section 4 (D2 with section 3.8, D3
     with Q1 and CORS) and the amended-by pointer in the 2026-10-14 file;
     D6 "ai-mcp lands on main in two squashes" from
-    `.claude/templates/decision.template.md` (plan-B1-3-R1): Task `ai-mcp`
-    (owner, 2026-11-10: "publish as soon as B1 ships"); Decision: the
-    two squashes and the four steps of "Landing mid-task", with the task
-    directory on `main` with the first squash and deleted there at
-    closeout; Rejected: one squash at closeout (publication waits on
-    B2-B5), a squash per batch (a review and a landing per batch), the
-    task directory left out of the squash (a squash merge carries the
-    whole branch tree, so leaving it out needs a hand-edited squash);
-    Precedent: "Task 57 lands on main in three waves" (2026-10-29);
+    `.claude/templates/decision.template.md` with the text of section 4
+    and the four steps of "Landing mid-task" (plan-B1-3-R1; a squash
+    merge carries the whole branch tree, so the task directory goes with
+    it);
     `- Amends "A task branch pushes every batch; a green CI run of the
     same tree gates main" (2026-10-21): for ai-mcp, two squashes.`, and
     the mirror `- Amended by "ai-mcp lands on main in two squashes"
@@ -1583,8 +1773,8 @@ Acceptance criteria:
   checks that `openapi.json` has no `format` query parameter).
 - `tests/contracts.js` holds the fixtures (each parses and names its
   `format` and `version`), `preview.json`'s `routes` to `_routes.json`
-  with `/api/*`, and `openapi.json`'s paths to `CONTRACTS.md` section 6
-  (section 3.8, point 3).
+  with `/api/*`, and `openapi.json`'s operations to `CONTRACTS.md`
+  section 6, which lists the static catalog apart (section 3.8, point 3).
 - A homebrew record that names a catalog rule card and a catalog set
   resolves both: `set.members` holds the catalog member ids and
   `set.bonus` is the catalog card; an own picture URL starts with
@@ -1599,6 +1789,22 @@ Acceptance criteria:
   JSON headers (tests, plan-B1-3-N5, plan-B1-3-N6).
 - `tools/api-data.mjs` exits 1 when `docs/rights/records.json` is missing
   or not valid (test, plan-B1-3-N7).
+- The bulk catalog: `api/v1/catalog/index.json` and its chunks render
+  from the pinned catalog to fixtures byte for byte; on the real build
+  the index lists every record once with a `rev` that moves with that
+  record's JSON (an edit of one record's text moves its `rev` and those
+  of the records whose JSON holds it, and no other), and stays within
+  262144 B today and at 3x;
+  `_routes.json` excludes `/api/v1/catalog/*`; the `check-site` static
+  checks of the index and of one `/img/` URL fail without
+  `Access-Control-Allow-Origin: *` (tests).
+- Every record carries `key` (catalog: equal to `id`; homebrew: the `hb_`
+  key, `id` the row uuid) (test).
+- A T0 answer is the same with and without an `Authorization` header,
+  which is never forwarded (test); `openapi.json` and `CONTRACTS.md`
+  section 6 state the unknown-`code` rule; `CONTRACTS.md` section 5
+  reserves `/.well-known/oauth-protected-resource/`, and the deploy guard
+  refuses a published file there.
 - `GET /api/v1/tables/eq_weapon` without `part` answers 400 with the part
   list; with `part=3` it answers the tier 3 rows (tests).
 - A request with a run past 2048 characters, a body past 4096 bytes, a
@@ -1666,7 +1872,10 @@ Gate cost about 47 min, and the merge-back commit of the landing about
 Standing checks:
 
 1. Scale: no screen changes, so no States table. Collections the API
-   answers: roll sections 12 (3x 36, one file); a table's rows whole, at
+   answers: roll sections 12 (3x 36, one file); the bulk catalog index,
+   1593 records today and 4779 at 3x, within 262144 B (about 69 KB today
+   and 210 KB at 3x), with 36-46 chunks
+   (110-140 at 3x); a table's rows whole, at
    most 145 today (`dv`) and 435 at 3x; an `eq_*` table by tier part only:
    `eq_weapon` 512 rows today and 1536 at 3x in all, its largest part 145
    (tier 3) and 435 at 3x, each part within 131072 bytes; a roll at most 4
@@ -1680,7 +1889,10 @@ Standing checks:
 2. Error scenarios: no write path and no stored shape. Loading: n/a
    (server). A failed read: 503 `unavailable`, nothing stored. A deleted
    homebrew item or a stopped share: 404. A data deploy between two calls:
-   the `ETag` changes, record ids stay. Two data versions inside one
+   the `ETag` changes, record ids stay. A bulk pull across a deploy: a
+   chunk's `data_version` differs from the index's, or a chunk URL
+   answers 404; the client reads the index again and starts over
+   (`openapi.json` says so); nothing is stored on our side. Two data versions inside one
    isolate: one re-read, then 503 (section 3.5). A thrown error: the JSON
    503, never the HTML card. A stale client: v1 answers stay; new fields
    are additive. A revert of B1: `/api/*` answers the 404 page and no data
@@ -1727,7 +1939,10 @@ Risks and do-nots:
   `rights`); Q1 (no `format=`, no published mapping); CORS `*` without
   credentials on the public paths (owner, 2026-11-10).
 - Do not add `Access-Control-Allow-Credentials`, `Vary: Origin` or an
-  `Origin` check under `/api/`; the `Origin` check belongs to `/mcp` (B2).
+  `Origin` check under `/api/`; the `Origin` check belongs to `/mcp` (B2),
+  and B5b alone adds the `/api/v1/me/` allowlist with `Vary: Origin`.
+- Do not add an `Access-Control-Allow-Origin` line to `_headers`; do not
+  read or forward `Authorization` on a T0 path.
 
 Fallback: if the bundled lib modules break the worker bundle or pass the
 size limit, the build renders every roll pool into `apidata/roll/` as id
@@ -1742,8 +1957,13 @@ For the CPU of a `std` roll, the line-sliced record files of section 3.5.
   `2025-06-18`/`2025-11-25` shape (`initialize`, `tools/list`,
   `tools/call`, 202 for a notification) and the `2026-07-28` shape
   (`server/discover`, `_meta` versions, `resultType`, `ttlMs`/`cacheScope`).
-  `tools/list` is built from `openapi.json`'s `x-mcp-tool` operations; a
-  call runs the same service function as REST. Input past 256 KB refused
+  `tools/list` is built from `openapi.json`'s `x-mcp-tool` operations
+  that carry no `security` (B5b's account operations carry it and are
+  listed on `/mcp/me` only); a call runs the same service function as
+  REST. `/mcp` never reads `Authorization` and never answers 401, so a
+  connector added with "No sign in" keeps working when B5b ships;
+  `/mcp/me` stays the reserved 404 (`CONTRACTS.md` section 5 reserves
+  every path under `/mcp`). Input past 256 KB refused
   before parsing; a request with a browser `Origin` answers 403 (MCP spec,
   DNS rebinding); `/mcp` sends no CORS headers and answers no `OPTIONS`
   preflight (405), unlike `/api/v1/`. Tool annotations `readOnlyHint`; descriptions mark homebrew
@@ -1778,86 +1998,378 @@ For the CPU of a `std` roll, the line-sliced record files of section 3.5.
 
 ### B4 - dropped (2026-11-10)
 
-- Was: the Charkeeper worked example, either a published mapping table or
-  `format=charkeeper-v1`. Dropped because owner Q1 removes both
-  deliverables (no
-  mapping is published, no `format=` parameter exists; Charkeeper maps
-  the neutral record on its side), and the owner made no batch or gate
-  depend on the author's answers.
-- What remains, and where: the internal field check of section 5.3 shows
-  that record v1 carries every field Charkeeper's import needs (done in
-  this plan, no batch); the announcement on issue 72 is an owner step
-  after B1 is live (section 8); fields an outside consumer asks for later
-  are additive (section 11) and a new batch that the owner plans. The id
-  B4 is not reused; B5 keeps its id.
+- Was the Charkeeper mapping or `format=charkeeper-v1`; owner Q1 removes
+  both, and no gate waits on the author. What remains: the field checks
+  of sections 5.3 and 8, the announcement (an owner step), additive
+  fields later (section 11). The id B4 is not reused.
 
-### B5 - The account tier (outline; Open design question; Q4 settled: B5 of this task)
+### B5 - The account tier (design settled 2026-11-11; two batches)
 
-- Supabase Auth's OAuth 2.1 server (PKCE; Client ID Metadata Documents or
-  dynamic registration); the app's consent screen and a list of connected
-  apps with revoke on `#/account`; the worker forwards the reader's bearer
-  token to PostgREST and holds none; REST `/api/v1/me/...` and MCP account
-  tools, read and write, idempotent by a client-made id where the RPCs
-  allow, `destructiveHint` on deletes; privacy pages in both languages;
-  possibly a migration (client and consent rows).
-- CORS constraint (owner, 2026-11-10): `/api/v1/me/` answers CORS only to
-  an explicit `Origin` allowlist (the origin echoed, `Vary: Origin`,
-  `Access-Control-Allow-Headers: Authorization, Content-Type`), never `*`.
-  B1 already keeps
-  the prefix out of the public rule's promise (`CONTRACTS.md` section 6),
-  and B5 replaces the v1 404 and preflight answers that carry `*`.
-- Placed (plan-B1-2-N5, deferred-scope), its own acceptance line when B5
-  is expanded: restate the reason for the `/me/` allowlist. "It carries
-  the reader's token" is weak, because a bearer token is not an ambient
-  credential that a browser sends by itself; name the real reason.
-- Owner precondition: verified 2026-11-10 (`context.md`): the OAuth 2.1
-  server is available on the Free plan with dynamic registration; B5
-  still measures the flow on the test project.
-- Split criterion: a different route and filter set (an app screen, browser
-  suites, goldens, `check:db`). A planner refresh expands it, with its own
-  plan review (a migration, a definer, a new write protocol).
+Facts: `context.md`, "B5 design facts (2026-11-11)" (the token, the
+account writes that exist, what a client token reaches). A client token
+works at PostgREST directly, so the database, not the worker, bounds it
+(D7). B5 needs one migration (B5a) and no new table: the head pattern
+needs no tombstones, and one grant level needs no client table.
+
+Split criterion: B5a is a different route and filter set (an app route
+and screen, browser suites, goldens, `check:db`); B5b is a public-contract
+change of its own (the account API and `/mcp/me`, stub tests only). B5a
+goes first: the guard must hold before a client token can exist. Both
+land with the closeout squash (D6); the owner switches the production
+OAuth server on after it (B5a step 8). The plan review before B5a covers
+both (Status).
+
+#### B5a - The account connection (implement-ready outline; Open design question: the screen layout)
+
+Open design question: the layout of the consent page and of the
+"Connected apps" section, a mock grounded in `#/account` (its connected
+providers section is the sibling) under `issues/ai-mcp/mocks/`; a planner
+refresh draws it when B5a is next. Behavior, states and string facts
+below are settled.
+
+Objective: a reader connects an app or AI assistant through the Supabase
+OAuth 2.1 server, sees and disconnects it on `#/account`, and the
+database bounds every client token to the API's account scope; D7.
+
+Steps:
+
+1. Measure on the test project (the owner switches "OAuth Server" on,
+   authorization path `/connect`, dynamic registration on), with the auth
+   settings of `supabase/config.toml` pushed to it: a token from the flow
+   with a seeded account. Record its claims (`email`, `phone`,
+   `app_metadata`, `user_metadata` with the provider name and picture;
+   plan-B5a-R5); whether a `resource` parameter is accepted and changes
+   `aud`; whether PostgREST still accepts the access token after
+   `revokeGrant` until `exp` (step 2 refuses it either way); and what the
+   client token can do on Auth: `PUT /auth/v1/user` (email; password;
+   `data`), `GET /auth/v1/user/identities/authorize` (link an identity),
+   `DELETE /auth/v1/user/identities/{id}` (unlink), `POST
+   /auth/v1/factors` (enroll), `POST /auth/v1/logout?scope=global`, and
+   `GET /auth/v1/user` (which personal fields it answers). Also record
+   which of `<SUPABASE_URL>/.well-known/oauth-authorization-server/auth/v1`
+   (RFC 8414 path insertion, which MCP clients try) and
+   `<SUPABASE_URL>/auth/v1/.well-known/oauth-authorization-server`
+   answer, and whether the pinned CLI's `config.toml` has an OAuth server
+   section: if it does, the settings (enabled, authorization path
+   `/connect`, dynamic registration) go into `supabase/config.toml`, and
+   the local stack serves them; if not, step 8 records that `config:push`
+   leaves them (plan-B5a-R6). Stop rule: if a client token changes the
+   email or the password, links or unlinks an identity, or enrolls a
+   factor, stop and return to the owner (a connected app could take or
+   lock the account); a global logout and a `data` change are recorded,
+   not a stop. This is B5's one owner stop. Also check whether the local
+   CLI stack serves the OAuth server; if not, `tests/db` mints client
+   tokens (a JWT with `client_id` and a `session_id` whose
+   `auth.sessions` row the test inserts, signed with the local JWT
+   secret). Results go to `.claude/README.md`, "Supabase configuration".
+2. Migration `supabase/migrations/<date>_api_client_guard.sql`:
+   `public.api_client_guard()` (invoker), set by `alter role authenticator
+   set pgrst.db_pre_request` and `notify pgrst, 'reload config'`, with
+   `grant execute on function public.api_client_guard() to anon,
+   authenticated, service_role` (the repository's `revoke ... from
+   public` pattern would fail every request). With `auth.jwt() ->>
+   'client_id'` not null it first refuses a token whose session ended:
+   `public.api_client_session_live()`, SECURITY DEFINER, `set
+   search_path = public, pg_temp`, `revoke execute ... from public,
+   anon`, `grant execute ... to authenticated`, answers whether the
+   token's `session_id` has a row in `auth.sessions` (one indexed read per
+   client-token request; an app token skips it; plan-B5a-R1). Then it
+   allows only (by `request.method`, `HEAD` judged as `GET`, and
+   `request.path` by exact equality, `/lists` and not a prefix): `GET` on
+   `lists`, `list_entries`, `homebrew_items`, `homebrew_books`,
+   `homebrew_cards`; `POST`, `PATCH`, `DELETE` on `homebrew_items`;
+   `PATCH` and `DELETE` on `lists`; `POST` on `rpc/apply_list_writes`,
+   `rpc/get_homebrew_items`, `rpc/my_limit` (the B5b reads and writes; T0
+   reads run as `anon` and pass); else it raises 42501 `api_client_guard:
+   not allowed for a connected app`. Restrictive policies on every
+   `public` table outside the scope list (`list_shares`,
+   `purchase_requests`, `purchase_request_lines`, `list_notices`,
+   `print_sets`, `user_prefs` and every other table that `authenticated`
+   can select; the step 3 query enumerates them): `create policy
+   <table>_no_client as restrictive for all to authenticated using
+   ((select auth.jwt() ->> 'client_id') is null) with check ((select
+   auth.jwt() ->> 'client_id') is null)`. The pre-request function bounds
+   RPCs and the write methods; the restrictive policies bound embedding
+   and live in the schema dump. Restrictive policies on `storage.objects`
+   refuse a client token's insert, update and delete. The reversal
+   `supabase/reversals/<same name>.sql` (`alter role authenticator reset
+   pgrst.db_pre_request; notify pgrst, 'reload config';`, drop the
+   policies, drop both functions) runs under the up-down-up gate of
+   `check:db`. Named fallback, if the probe of the acceptance shows that
+   the hosted project refuses or ignores the role setting: a guard call
+   at the top of each other RPC `authenticated` may execute, held by the
+   same test (the restrictive table policies already bound the tables).
+3. `tests/db/api-client-guard.test.mjs`: it enumerates every table and
+   function `authenticated` can reach (`pg_class`, `pg_proc` grants) and
+   asserts that a client token is refused on each one outside step 2's
+   list, and on storage writes; an embedding case from each allowed
+   table to each out-of-scope table it has a foreign-key path to (for
+   example `lists?select=*,list_shares(*)`) answers empty embedded
+   arrays or 403 for a client token, and the full rows for an app token;
+   a revoked grant's unexpired token is refused; a client token reads
+   and writes its own lists and items and never another account's; an
+   app token and `anon` behave as before (the existing suites pass
+   unchanged); a deleted account leaves no grant.
+4. Ports: an `AppRepository` in `ports/types.ts` (`details(id)`,
+   `approve(id)`, `deny(id)`, `list()`, `revoke(clientId)`), in
+   `ports/supabase.ts` over `auth.oauth` of auth-js 2.117.1
+   (`getAuthorizationDetails`, `approveAuthorization` and
+   `denyAuthorization` with `skipBrowserRedirect`, `listGrants`,
+   `revokeGrant`), the fake in `fake-cloud.ts` with seeded grants and one
+   pending authorization, `cloud.contract.ts` cases.
+5. Route `#/connect` (`/connect`, `/en/connect`; `ROUTES.md`, fixtures
+   `docs/fixtures/urls/routes.json` and `docs/fixtures/urls/paths.json`):
+   its `authorization_id` query stays in
+   the address while on the route, so a reload reads it again; signed
+   out, the sign-in prompt returns to the same address
+   (`dhloot.auth.return`); a build with no sign-in draws the not-found
+   page. The page: the client's name and redirect host, the signed-in
+   account, the scope sentence ("read, change and delete your lists and
+   homebrew items; deleting a list also ends its share links and the
+   players' requests on it; deleting an item removes it from every list
+   that holds it and deletes its picture. It never changes your sign-in,
+   deletes your account, uploads pictures or makes share links."; Russian
+   with the same facts: «Читать, менять и удалять ваши списки и предметы
+   из «Мои предметы»; удаление списка закрывает и его ссылки, и запросы
+   игроков по нему; удаление предмета убирает его из всех списков, где он
+   есть, и удаляет его картинку. Приложение не меняет ваш вход, не
+   удаляет аккаунт, не загружает картинки и не создаёт ссылки.»; if step
+   1 finds `email` or a name in the client token, both add "and your
+   account's email and name" / «а также почту и имя вашего аккаунта» to
+   what the app reads, plan-B5a-R5), «Разрешить» / "Allow" (primary) and
+   «Отказать» / "Deny"; an approve or a deny goes to the client's
+   redirect URL.
+6. `#/account`: a "Connected apps" («Подключённые приложения») section
+   after the connected providers: one row per grant (name, date granted),
+   «Отключить» / "Disconnect" behind the app's confirm, then the row
+   leaves; an empty line; a failed read with a retry; a failed revoke
+   toast.
+7. Privacy pages (both): the B5a sentence of section 3.6 with the same
+   facts as the step 5 scope sentence (and the email and name when step
+   1 finds them), one new "Last changed" date. `FEATURES.md` "Account",
+   `META.md` section 3 (the OAuth server, the guard), D7, `node
+   tools/decisions.js`.
+8. `.claude/README.md`, "Supabase configuration": the dashboard settings
+   (or, by step 1, the `config.toml` section; else the fact that
+   `config:push` leaves them) and the production order (owner, after the
+   closeout squash: the migration applied, `/connect` live, then the
+   switch on; then the owner runs the acceptance probe on production).
+   "Restore production (owner)" gains a step that re-applies the role
+   setting and runs the probe: the nightly backup leaves out roles
+   (`.github/workflows/backup.yml`), so a restore drops
+   `pgrst.db_pre_request` with no error (the restrictive table policies
+   survive in the schema dump; the RPC half depends on this step).
+   Revert order: switch the OAuth server off (or revoke every grant)
+   before the down migration, which would give client tokens the whole
+   account back.
+
+Acceptance: each step 2-6 line holds by its test; every state of the
+table below is a `tests/app/inventory.js` entry with a golden; the
+component tests end with `expectNoA11yViolations`; step 1's results
+(the Auth endpoints, the claims, the discovery URLs, the `config.toml`
+section, a revoked token at PostgREST) are recorded and its stop rule
+did not fire; after `migrate-test` applies the migration, a client token
+from step 1 gets 403 `api_client_guard` from `GET
+/rest/v1/print_sets?limit=1` on the test project, and an app token gets
+200 (recorded in `.claude/README.md`, "Supabase configuration"); an
+embedding from an allowed table to an out-of-scope one and a revoked
+grant's unexpired token are refused (test); the placed line of
+plan-B1-2-N5 is answered in B5b ("CORS"); privacy pages and D7 exist.
+
+Standing checks:
+
+1. Scale (States; proof: goldens at 360 and 1180 px, component tests):
+   consent - loading, details, signed out, no or unknown id (one "this
+   request expired; start again in the app" state), already consented
+   (redirect, no draw), approve in flight (buttons disabled), failed read,
+   failed approve, the longest client name (200 characters, wrapped);
+   connected apps - empty, one, many (no limit row exists; 30 rows in the
+   test), the longest name, a revoke failure. The primary action stays
+   at the bottom of the consent card; nothing sticky.
+2. Errors: a failed read shows its retry and stores nothing; a failed
+   approve or deny keeps the page and toasts; offline is a failed read; a
+   grant revoked in another tab leaves on the next read of the section;
+   a stale tab (the previous bundle) has no `/connect` and draws the
+   not-found page, and a reload fixes it; a frontend revert draws the
+   same, so the owner switches the server off first (step 8); the down
+   migration follows step 8's order. No stored data is lost: a revoke
+   ends the sessions and refresh tokens, never rows, and the guard
+   refuses the app's unexpired access token on its next request
+   (step 2).
+3. Consistency: section heading, row and confirm follow the connected
+   providers section; verbs «Отключить» and «Разрешить» as the app's
+   other confirms; toasts as the account page's.
+4. RU/EN parity: every string in `dict.ts` in both languages with the
+   same facts; both privacy pages; the scope sentence (step 5) names the
+   same facts in both languages and both privacy pages: what the app
+   reads, changes and deletes, the list-delete cascade, the item-delete
+   cascade, and the four things it never does (and the email and name
+   when step 1 finds them).
+
+Gate cost about 45 min (`check:fast`, `check:db`, CI with the golden
+re-seed). Review: required (a migration; a public contract - the route).
+
+#### B5b - The account API (implement-ready outline)
+
+Objective: `/api/v1/me/` and `/mcp/me` over the service, relaying a
+connected app's token, by the sync rule of section 3.4.
+
+| Operation | Rule |
+|---|---|
+| `GET /me/lists` | heads `{ id, rev, name, entries, updated_at }` (`api-my-lists`) |
+| `POST /me/lists` | `{ id, name, money_mode?, player_note?, gm_note? }`; 201; the same id again 200; another account's id 409 `conflict`; past the limit 409 `limit_reached` |
+| `GET /me/lists/{id}` | `api-my-list`: the list fields and `entries` (`id`, `key`, `origin`, `record_id`, `quantity`, `price_coins`, `player_note`, `gm_note`, `gm_only`, in list order); `ETag: "<rev>"`; records come from T0 reads or `?ids=` |
+| `PATCH /me/lists/{id}` | `name`, `money_mode`, notes; an optional `If-Match`: a direct `lists` update with `eq('revision', r)` and the read-back rule of `homebrewUpdate` (412 with the current `ETag` when the revision moved; the guard allows `PATCH` on `lists`); without `If-Match`, last writer wins, as the app (`apply_list_writes` `update`) |
+| `DELETE /me/lists/{id}` | `If-Match` required (428 without); `delete ... revision = r`; 204; gone 204; moved 412 with the current `ETag`; the delete also deletes the list's share links, the players' requests and its notices (`on delete cascade`) |
+| `POST /me/lists/{id}/entries` | `{ entries: [{ id, record_id, quantity?, price_coins?, player_note?, gm_note?, gm_only? }] }`, 1-100, the `add` op the app builds (`lib/cloudLists.ts`); a retry is idempotent |
+| `PATCH`, `DELETE /me/lists/{id}/entries/{entry}` | the entry fields, last writer wins; a delete of a gone entry is 204 |
+| `GET /me/homebrew-items` | heads `{ id, key, rev, updated_at }` (`api-my-items`); `?ids=` (1-10 own ids) adds `records`. The service accepts only ids in the reader's heads of the same request (another id is 400 `bad_request`: `get_homebrew_items` is SECURITY DEFINER and answers any id with no owner filter and no `related`). `records` is built from `get_homebrew_items` with one index over the answered records, every one as `linked` (a shared list's composition), so its `craft.from` holds only the keys among that answer; named difference: a client that mirrors every item gets the full `craft.from` by inverting `craft.into` over its copy, or reads `{id}` |
+| `GET /me/homebrew-items/{id}` | `api-my-item`: `id`, `key`, `rev`, `updated_at`, `book`, `content` (the editable form), `record`; `ETag`; `record` is built as `GET /api/v1/homebrew-items/{id}` builds it (`get_homebrew_item`, `itemOf`, `withRecords(base, [record, ...related], [])`), so it equals the T0 record |
+| `PUT /me/homebrew-items/{id}` | `{ book, content, key? }`: `content` is a `homebrew-v2` item's content (catalog field names), checked by `lib/homebrew.ts` as the editor checks it, then by the database; `key` optional on create (made by the service as `lib/homebrew.ts` makes it), ignored on replace; `art` is never written (the update omits it, as `updateItem` does when `patch.art` is undefined), so a replace keeps the stored picture; `If-None-Match: *` creates (201; an equal row 200; another row 412; a duplicate key 409 `conflict`; an id of another account, where the upsert inserts nothing and the read-back sees no row, 409 `conflict`), `If-Match` replaces by `homebrewUpdate`'s rule (412 with the current `ETag`, gone 404, already applied 200); neither 428; body cap 32768 B |
+| `DELETE /me/homebrew-items/{id}` | `If-Match` required; 204; gone 204; moved 412; the delete also removes the item from every list that links it, other accounts' lists included (they get a notice), and deletes its picture |
+| `GET /.well-known/oauth-protected-resource/api/v1/me` and `.../mcp/me` | RFC 9728: `resource`, `authorization_servers: ["<SUPABASE_URL>/auth/v1"]`, `bearer_methods_supported: ["header"]`, `resource_documentation`; CORS `*`; `public, max-age=3600` |
+
+- Token: the worker decodes the payload without a signature check
+  (PostgREST verifies it) and refuses before any read: none, 401
+  `unauthorized` with `WWW-Authenticate: Bearer
+  resource_metadata="<site>.well-known/oauth-protected-resource/api/v1/me"`;
+  not a JWT, another `iss` or a past `exp`, the same with
+  `error="invalid_token"`; no `client_id`, 403 `forbidden` (the app's own
+  session token is refused). It forwards the token with the publishable
+  `apikey`; a PostgREST 401 is 401 `invalid_token`, the guard's 42501 is
+  403. It never logs, caches by or echoes the token; refresh is the
+  client's. `aud` is not checked (D7).
+- The service: `/me` operations take `op(input, ctx)` with `ctx.token`;
+  `rpc` and a PostgREST table helper take the token; T0 operations stay
+  as B1 wrote them.
+- CORS on `/me`: `ME_ORIGINS` in `rest.mjs`, empty at B5b. A listed
+  `Origin` is echoed with `Vary: Origin`, methods `GET, POST, PUT, PATCH,
+  DELETE, OPTIONS`, headers `Authorization, Content-Type, If-Match,
+  If-None-Match`, `Access-Control-Expose-Headers: ETag,
+  WWW-Authenticate`, `Max-Age` 86400, no credentials; any other gets no
+  `Access-Control-*` header. Reason (placed, plan-B1-2-N5): a bearer token
+  is not ambient, so cross-site request forgery is not it; a browser
+  client keeps a token that reads, changes and deletes a whole account
+  in page script, where any script on that page can take it, and a public
+  client also holds a refresh token. The allowlist makes each browser
+  client a reviewed decision (one deploy and a `CONTRACTS.md` line); the
+  known clients are servers (Charkeeper, the vendors' connectors) and
+  need no CORS. Answers: `Cache-Control: private, no-store`, `nosniff`,
+  the CSP `sandbox`.
+- `/mcp/me`: B2's dispatcher listing every `x-mcp-tool` operation; a
+  request without a valid client token is HTTP 401 with the
+  `WWW-Authenticate` above (`.../mcp/me`); the `Origin` 403 holds. Tools
+  `list_my_lists`, `create_list`, `get_my_list`, `update_list`,
+  `delete_list`, `add_to_list`, `update_list_entry`, `remove_from_list`,
+  `list_my_homebrew_items`, `get_my_homebrew_item`, `save_homebrew_item`,
+  `delete_homebrew_item`; an omitted `id` is made by the adapter and
+  returned; `destructiveHint` on deletes; the descriptions of
+  `delete_list` and `delete_homebrew_item` name the cascades of their
+  `DELETE` rows; descriptions mark notes and homebrew text as data.
+- `openapi.json`: `components.securitySchemes.supabaseOAuth` (`oauth2`,
+  `authorizationCode`, the production URLs, `scopes: {}`, "discover them
+  from the protected-resource metadata"), `security` on each `/me`
+  operation, the new error codes (section 5.1), the sync fair use and
+  what an account `rev` covers (section 3.4). Also: `_routes.json` adds
+  `/.well-known/oauth-protected-resource/*`; fixtures
+  `docs/fixtures/api/v1/me-*.json` and `docs/fixtures/mcp/me-*.json`;
+  `tests/contracts.js`; `CONTRACTS.md` section 6; `llms.txt` (how to
+  connect; the sync rule); the law sentence of section 3.6 in
+  `CLAUDE.md` and its copies; `check-site` (`/api/v1/me/lists` 401 with
+  `WWW-Authenticate`, both metadata documents 200).
+- Tests (stubs): every row above; each 401 and 403 case; 409, 412, 428;
+  a repeated create, a repeated update after a lost answer and a
+  repeated delete converge; 11 ids is 400, and an id outside the
+  reader's heads is 400; a list `PATCH` with a stale `If-Match` is 412;
+  a create with a duplicate key or another account's id is 409; a `PUT`
+  replace keeps `art`; a list past 65536 B is 422;
+  a listed `Origin` echoed with `Vary`, another without headers;
+  `/mcp/me` `initialize` without a token is 401; `/mcp` lists no account
+  tool; no answer or error holds the token.
+- Owner steps after the closeout squash: the production switch (B5a step
+  8); the `/mcp/me` connector in Claude with sign-in; a client for
+  Charkeeper only when its author asks.
+
+Standing checks: 1. Scale: no screen. Heads at the limits: lists 50 (150
+at 3x), items 100 (300, about 33 KB), entries 100 a list (300); `?ids=`
+at most 10; an add at most 100 entries; a list at 3x with long notes can
+pass 65536 B and answers 422 with the app link, as a shared list. 2.
+Errors: a failed write is 503 and the retry converges (a create by its
+id; an update by the row read again, never a copy held from before; a
+delete by 204); a conflict is 412 with the current `ETag`, and the client
+reads the row again; a deleted list or item is 404 on a read and 204 on
+a delete; the app's open tab gets the broadcast that the API's write
+fires, as from another tab (`STATE.md`, the two-tab merge); a stale
+client meets only added fields; a revert of B5b answers `/me` with the
+JSON 404 again and keeps every row. Possible loss: a connected app's
+delete is permanent (no undo), hence `If-Match`, `destructiveHint` and
+the consent sentence; a list delete also deletes its share links, the
+players' requests and its notices; an item delete also removes it from
+every list that links it, other accounts' lists included (they get a
+notice), and deletes its picture; a client token can clear an item's
+picture at PostgREST (`PATCH` on `homebrew_items` with `art` null).
+These are the app's own delete semantics; no copy is kept, and the
+reader's only recovery is a lists file or a homebrew file saved before
+(`FEATURES.md`, "Exports"). Remaining loss by last writer wins: an entry
+`PATCH`, and a list `PATCH` without `If-Match`, can write a field from a
+copy the client held from before another write; a list `PATCH` with
+`If-Match` answers 412 instead. A plan-review trigger (Status). 3. Consistency:
+the app's own semantics (limits, ids, keys, last writer wins, the
+read-back rule); resource names as the app's tabs. 4. RU/EN parity:
+records are pairs; error messages and `openapi.json` are English.
+
+Gate cost about 25 min (`check:fast`, CI). Review: required (a public
+contract; the write protocol).
 
 ## 7. Owner decisions
 
-The owner left the architecture to the planner: option (c), the split of
-section 3.3 and the contract of section 3.4 are decided, and the owner may
-veto them. Settled on 2026-11-10 (owner, chat and interactive;
-`context.md`):
+The owner left the architecture to the planner (option (c), sections 3.3
+and 3.4) and may veto it. Settled on 2026-11-10 (owner; `context.md`
+holds each answer and its home): Q1 (the neutral record only; no mapping,
+no `format=`; D3); Q2 = A (every source, `rights`, the DPCGL notice in
+`openapi.json`; D3); Q3 replaced (nothing posted on issue 72 before the
+API is live; section 8); Q4 = B5 of this task (the Free-plan check done);
+Q5 = yes (the shared 100,000 a day, no keys, no per-client limit); CORS
+(`*` on public `/api/v1/`, none on `/mcp`, an allowlist on `/me`);
+publication right after B1 (section 11, D6); Risk 6 (the privacy
+sentence, section 3.6); two entry points (section 3.8, D2); Q6 = C (the
+per-record audit, B0; rejected A and B); Q7 = A (the Russian text on the
+site's reading, D5; rejected B and C).
 
-- Q1: the API serves the neutral record and the contract only. No mapping
-  table is published and no `format=` parameter exists; every consumer
-  maps as it wants. B1 writes it into D3.
-- Q2 = A: the API serves every source `data.json` publishes, each record
-  with `source`, `link` and `rights` (record v1), and `openapi.json`
-  carries the DPCGL notice. B1 writes it (section 5.3, D3).
-- Q3, replaced: nothing is posted on issue 72 until the API is live; then
-  the owner posts the announcement of section 8 and tells the Charkeeper
-  author. No batch and no gate depends on the author's answers.
-- Q4 = B5 of this task; the Free-plan check of the OAuth server is done.
-- Q5 = yes: the shared 100,000 requests a day, no API keys, no per-client
-  limit in v1.
-- CORS: `Access-Control-Allow-Origin: *` without credentials on the public
-  `/api/v1/` answers, the `OPTIONS` answer of section 3.4; `/mcp` without
-  CORS; an allowlist for `/api/v1/me/` in B5. B1 writes it.
-- Publication: the owner publishes as soon as B1 ships and then iterates
-  on the contract; section 11 lists what v1 freezes.
-- Risk 6 of the plan review: one sentence in both privacy pages says that
-  shared lists and homebrew items are readable by programs through the
-  public API. B1 writes it (section 3.6).
-- Two entry points: the app stays independent of the API (section 3.8,
-  D2).
+Defaults taken (owner AFK), 2026-11-11, each the recommended option of a
+B5 question; the owner may reverse any before B5a:
 
-- Q6 = C (the legal call): a per-record audit against the SRD 2.0 decides
-  each record's `rights.license`; B0 does it and writes
-  `docs/rights/records.json`; the owner reviews the table before B1's
-  squash. Rejected: A (a value per source) and B (frames `dpcgl`).
-- Q7 = A: the API serves the Russian text (Adaptive Content, DPCGL 1.7) on
-  the same reading as the site and `data.json`; the takedown promise of
-  `README.md` covers the API. Rejected: B (ask Darrington Press first) and
-  C (English only for `dpcgl` records).
+- Q8, the grant: one level, "read and change, and delete, your lists and
+  homebrew items", bounded in the database (D7). Not chosen: a
+  read-only level per client (a client table and a second consent text;
+  Supabase has no custom scopes). Accepted: a reader cannot connect an
+  app for reading only.
+- Q9, the writes in v1: lists (create, rename and notes, delete) and
+  their entries (add, change, remove), homebrew items (create, replace,
+  delete). Not chosen: sources, cards, pictures, share links, purchase
+  requests (more surface before a consumer asks; section 10). Accepted:
+  an assistant cannot make a homebrew source or a picture.
+- Q10, the token: only a connected app's token (with `client_id`); the
+  app's own session token is refused with 403. Not chosen: accepting
+  both (a pasted session token carries sign-in and deletion past the
+  guard). Accepted: a script needs the consent flow.
+- Q11, browser clients on `/me`: the allowlist is empty at B5b. Not
+  chosen: `*` (any page that holds a token reads the account, section 6,
+  B5b, "CORS"). Accepted: the first browser client waits for a deploy.
+- From `reviews/plan-B5a.md` (default taken (owner AFK), the report's
+  recommended option): R1, the guard refuses a client token whose
+  session ended (`api_client_session_live()`, B5a step 2); not chosen:
+  stating an up-to-an-hour window after "Disconnect"; accepted: one more
+  definer function. R7, an optional `If-Match` on `PATCH /me/lists/{id}`;
+  not chosen: last writer wins only; accepted: one more guard row. N10,
+  `?ids=` builds `records` from one index over the answer and names the
+  `craft.from` difference; not chosen: one `get_homebrew_item` per id
+  (up to 10 RPCs and their CPU); accepted: a mirror inverts `craft.into`.
 
-No owner question is open. The owner's review of the audit table is an
-owner step (B0 step 11), not a question.
+Owner stop, not a question: B5a step 1 (a client token that changes the
+email or the password, links or unlinks an identity, or enrolls a factor
+stops B5; a global logout and a `data` change are recorded, not a stop).
+The owner's review of the audit table is an owner step (B0 step 11).
 
 ## 8. Announcement for issue 72 (the owner posts it after B1 is live)
 
@@ -1878,7 +2390,9 @@ offers no mapping and asks nothing a batch waits on.
 >   rolls one and returns the dice and the resulting items; it also takes
 >   the number a player rolled at the table.
 > - `GET https://daggerheart-loot.pages.dev/api/v1/records/{id}` - one
->   item.
+>   item; `GET https://daggerheart-loot.pages.dev/api/v1/catalog/index.json`
+>   - every item in a few static files, with a version per item, so a
+>   mirror refreshes only what changed.
 > - `GET https://daggerheart-loot.pages.dev/api/v1/tables` and
 >   `/api/v1/tables/{table}` - every table and its rows, if you prefer to
 >   roll on your side; the equipment tables answer one tier at a time.
@@ -1902,6 +2416,31 @@ offers no mapping and asks nothing a batch waits on.
 > 2.0; each item's `rights` names its license; the rest is not covered.
 >
 > Tell us what is missing for your integration.
+
+Second worked example: bacchus-atlas (`Machenspieler/bacchus-atlas`, a
+static GitHub Pages site in JS with no backend; read 2026-11-11 by the
+orchestrator; nothing is posted there). It mirrors 264 catalog items
+(`core` 120, `hnf` 120, `wondrous` 19, `dread` 5) from our old
+`data.json` into its `data/items.json`, links
+`https://artex-x.github.io/daggerheart-loot/i/{id}.html`, loads art from
+that host's `img/`, and draws it on a canvas (`crossOrigin` anonymous),
+so the image bytes need `Access-Control-Allow-Origin: *`. The record v1
+field check: its `id`, `kind` (`item`, `consumable`: record v1 gives the same
+values, because these records have no stat block; equipment would be
+`weapon`, `secondary` or `armor`), `src` (`source.id`), `roll`, `en`/`ru` name and description
+(`name`, `text` or `plain`), `img` (`image.full`, `image.thumb`), the
+page link (`link.ru`, `link.en`) and the craft id (`craft.into`,
+`craft.from`) all exist; no field is missing. Its refresh is a build-time
+pull of `/api/v1/catalog/index.json` and the changed chunks (no account,
+no write, no Functions request). The note the owner may send with the
+announcement: replace the three dependencies by the record fields above;
+the host is `daggerheart-loot.pages.dev` (the old `artex-x.github.io`
+host is outside v1); the `image` URLs answer `Access-Control-Allow-Origin:
+*`, which v1 freezes and `check-site` holds (section 11); a client stores
+the URL from the record, not a path it builds; `data.json` stays a
+frozen contract (`CONTRACTS.md` section 4) for a mirror that keeps it.
+Measured by the orchestrator 2026-11-11: `pages.dev/img/cc7.webp` sends
+`*`; `/i/cc7.html` answers 308 to `/i/cc7`, also with `*`.
 
 ## 9. Risks, assumptions, dependencies
 
@@ -1929,6 +2468,15 @@ offers no mapping and asks nothing a batch waits on.
   Press reads it otherwise.
 - The DPCGL 2.0 can change (clause 11.1); D5 names the version and date
   it read.
+- B5: the Supabase OAuth server is BETA; the guard's RPC half relies on
+  PostgREST's pre-request setting, which a restore drops and the hosted
+  project may refuse or ignore (the probe of B5a's acceptance, step 8's
+  restore step, the named fallback of step 2); whether a client token
+  can change the email or the password, link or unlink an identity, or
+  enroll a factor on Auth is unmeasured (B5a step 1 stop rule); the
+  token's personal claims are unmeasured (step 1); Supabase does not
+  bind `aud` to the resource (D7 accepts it); a quota burn also stops
+  account sync until 00:00 UTC.
 
 ## 10. Deferred
 
@@ -1939,8 +2487,15 @@ offers no mapping and asks nothing a batch waits on.
   `Access-Control-Allow-Headers` (for example `If-None-Match`): until a
   consumer asks. Export formats and published mappings are not deferred;
   owner Q1 rules them out.
+- Account tier, until a consumer asks (owner defaults Q8-Q11): a
+  read-only grant per client, writes of sources, cards and pictures,
+  share links and purchase requests through the API, a browser client on
+  the `/me` allowlist, webhooks or a push channel for sync.
 - Usage numbers for the shared quota in the nightly usage report (Cloudflare
-  analytics token): until the quota is near.
+  analytics token): until the quota is near. Nothing shows today when it
+  is near; the ceiling is about 500 users polling every 15 minutes
+  (section 3.4), so B5b's first consumer with background sync reopens
+  this item (plan-B5a-N12).
 - Pages CORS on `/apidata/*` (plan review Risk 7): B1's probe records the
   header. With CORS on `/api/v1/` (owner, 2026-11-10), a browser client has
   the frozen API and no reason to bind to `apidata/`, which `CONTRACTS.md`
@@ -1954,7 +2509,23 @@ iterates on the contract. v1 is frozen at that moment (D3), so these must
 be right before B1's squash:
 
 - The paths, the path parameters and the reserved prefixes (`/api/v1/me/`
-  for B5, `/mcp` for B2).
+  for B5b, `/mcp` for B2 with `/mcp/me` for B5b,
+  `/.well-known/oauth-protected-resource/` for B5b).
+- The bulk catalog: the URL `/api/v1/catalog/index.json`, the
+  `api-catalog` and `api-catalog-chunk` schemas, the `rev` rule (an
+  opaque string compared for equality only; it changes whenever its
+  record's JSON changes and may change at other times), absolute chunk
+  URLs; not frozen: chunk
+  names, count and grouping (section 5.4). With it the sync rule of
+  section 3.4 (heads of `{ id, rev }`, a dropped id is a delete), which
+  B5b's account heads follow.
+- `Access-Control-Allow-Origin: *` on the catalog files and on the
+  catalog image URLs under `<site>img/` and `<site>og/` (a canvas client
+  needs it, section 8; a homebrew `site.art` URL is Supabase's and
+  outside the promise); the URLs are values a client stores, not a path
+  form it builds.
+- T0 answers never depend on the caller: `Authorization` is ignored on
+  every T0 path.
 - Every parameter name and value list: `dice`, `total`, `sources`,
   `kinds`, `rarity`, `hope`, `fear`, `part`, `value`; which are required
   (`part` on the `eq_*` tables and the `part` sections).
@@ -1963,19 +2534,22 @@ be right before B1's squash:
   `api-roll`, `api-tables`, `api-table`, `record`, `api-shared-list` and
   `api-error`. The value lists include the roll `mode` (`std`, `alt`,
   `table`, `part`), the dice `kind` (`nd12`, `typed`, `duality`, `pick`),
-  `col`, the record `origin` and `kind`, `rarity`, `tier`, the stats
+  `col`, the record `origin`, `kind` and `key` (the value relation fields
+  hold), `rarity`, `tier`, the stats
   enums, the shared-list audience, and `rights.license` with its
   vocabulary `dpcgl` and `owner` (the values per record come from B0's
   audit table).
 - The error envelope, the `code` values and the status of each case (400,
-  404, 405, 413, 415, 422, 503), and the caps that a client can meet
+  404, 405, 413, 415, 422, 503; the list widens in place with new cases,
+  and a client acts on the status of a code it does not know, section
+  5.1), and the caps that a client can meet
   (65536 B on a shared list and a homebrew item, 4096 B on a roll body):
   a cap may rise later, never fall.
 - The link forms (`<site>i/<id>`, `<site>i/en/<id>`, `<site>h/<uuid>`).
 - The CORS rule: `*` without credentials on the public paths, the methods
   and headers of the preflight. Not frozen: the `/api/v1/me/` answers,
   which carry `*` in v1 only because the path is reserved and holds no
-  data; B5 replaces both its 404 and its preflight (plan-B1-2-R3).
+  data; B5b replaces both its 404 and its preflight (plan-B1-2-R3).
   Removing CORS or narrowing it to an allowlist later breaks every
   browser client.
 - The host: `daggerheart-loot.pages.dev`; a custom domain comes beside
@@ -1989,7 +2563,9 @@ be right before B1's squash:
 
 Safe to add later, inside v1 (section 3.4, the 2026-10-21 rule on value
 lists): a new resource (`/mcp`, `/api/v1/records` search, file checks,
-`/api/v1/me/`), a new optional parameter (`q`, `filter`), a new field (for
+`/api/v1/me/`, `/mcp/me`, the protected-resource metadata), a new error
+`code` for a new case, `securitySchemes` and `security` on the new
+operations only, a new optional parameter (`q`, `filter`), a new field (for
 example a translation credit in `rights`), a widened value list (a new
 source id, a new roll section), `Access-Control-Expose-Headers`, more
 allowed request headers, a higher cap, a longer `Max-Age`, a changed

@@ -43,3 +43,20 @@ Third look: `reviews/plan-B1-3.md` (verdict fix-then-continue; the 13 findings o
 | plan-B1-3-R3 | risk | local | fixed plan (B0 match rule must strip all whitespace, hyphens, soft hyphens and expand ligatures) |
 | plan-B1-3-N1..N9 | nit | local | fixed plan (745 = items 364 + eq 381, order; llms.txt and README clause wording; apiRecord signature; `ApiSite = Site & { art }`; request check order; host-guard 301 exception; `api-data.mjs` exit 1; B5 weak reason; source-audit skill step) |
 
+Scoped plan review of the B5 design and the changed B1/B2/section 11 touchpoints: `reviews/plan-B5a.md` (verdict fix-then-continue; Reviewed 8f194abd plus the working tree). Applying it once unblocks every implementer dispatch (`agent-guard.mjs` reads each `required before` line).
+
+| Id | Severity | Scope | Status |
+|---|---|---|---|
+| plan-B5a-1 | blocker | local | fixed plan (pre-request guard does not bound PostgREST embedding: restrictive policies on out-of-scope tables, embedding test) |
+| plan-B5a-2 | blocker | local | fixed plan (step 1 stop rule must also test identity link/unlink, factor enrollment, global logout) |
+| plan-B5a-3 | blocker | local | fixed plan (name what a delete takes with it; consent sentence in both languages; guard and `art` clear) |
+| plan-B5a-R1 | risk | local | fixed plan (disconnect leaves the access token valid up to 1 h: guard checks `auth.sessions`) |
+| plan-B5a-R2 | risk | local | fixed plan (guard proved on local stack only; 403 probe after `migrate-test`; restore runbook step) |
+| plan-B5a-R3 | risk | local | fixed plan (account `rev` omits derived `record` changes: state the limit in 3.4) |
+| plan-B5a-R4 | risk | local | fixed plan (freeze `rev` as an opaque string compared for equality; fix B1 step 5 test) |
+| plan-B5a-R5 | risk | local | fixed plan (client token personal claims named on consent and privacy pages) |
+| plan-B5a-R6 | risk | local | fixed plan (`config:push` can reset the OAuth server switch) |
+| plan-B5a-R7 | risk | local | fixed plan (retried list `PATCH` writes a stale copy: optional `If-Match` or name the loss) |
+| plan-B5a-N1..N11 | nit | local | fixed plan (PUT body `key`; `hb_` key per account; guard grants, exact path, HEAD, reversal file; `data_version` hash; static 404 under catalog; image probe reads a chunk; index size; narrow `*` promise; `AppRepository`; `?ids=` owner filter; D7 heading and fixture paths) |
+| plan-B5a-N12 | nit | deferred-scope | fixed plan (state the quota ceiling, about 500 polling users) |
+

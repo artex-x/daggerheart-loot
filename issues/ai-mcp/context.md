@@ -57,8 +57,9 @@ Orchestrator (or first worker) maintains this file so later steps do not re-fetc
   - Q7 = A: the API serves the Russian text on the same reading as the site
     and `data.json`; the takedown promise covers the API. Home: D5;
     written in B0.
-- Open questions: the outline below, "Open design questions". No owner
-  question is open in `plan.md`.
+- Open questions: none for the owner in `plan.md` (B5 questions Q8-Q11
+  are "default taken (owner AFK)", 2026-11-11). Open design questions:
+  B3's search strategy; B5a's screen layout (a mock).
 
 ## Issue 72 and the layered-architecture question (owner, 2026-11-10)
 
@@ -327,6 +328,95 @@ measurement:
   Server" (BETA) with the enable switch off and available. Dynamic client
   registration is documented for MCP clients. B5's free-plan precondition
   holds; B5 still measures the flow on the test project.
+
+## B5 design facts (2026-11-11)
+
+- Supabase OAuth 2.1 server (docs fetched 2026-11-11,
+  https://supabase.com/docs/guides/auth/oauth-server/token-security and
+  `.../oauth-flows`): the access token is a normal JWT, `role` and `aud`
+  `authenticated`, plus `client_id` (and `session_id`); no custom scopes
+  (`openid`, `email`, `profile`, `phone` control OIDC data, not database
+  access); "your existing RLS policies continue to work"; restrict a
+  client by `auth.jwt() ->> 'client_id'`. `expires_in` default 3600;
+  refresh tokens may rotate. Endpoints
+  `<ref>.supabase.co/auth/v1/oauth/authorize`, `.../oauth/token`,
+  discovery `.../auth/v1/.well-known/oauth-authorization-server`.
+  `revokeGrant` ends that client's sessions and refresh tokens at once;
+  no revocation endpoint is documented.
+- auth-js 2.117.1 (the repository's pin) has `auth.oauth`:
+  `getAuthorizationDetails`, `approveAuthorization`,
+  `denyAuthorization` (`skipBrowserRedirect`), `listGrants`,
+  `revokeGrant`.
+- Account writes that exist (migrations at `8f194abd`, `ports/supabase.ts`):
+  lists by `apply_list_writes` (invoker, at most 200 ops; `create`/`add`
+  `on conflict (id) do nothing`; field updates without a revision check)
+  and direct `lists` deletes; homebrew books, items and cards by direct
+  table writes under RLS (create `upsert ignoreDuplicates` with a client
+  uuid; update `eq('revision', r)` with the read-back rule of
+  `homebrewUpdate`; delete by id), `import_homebrew`,
+  `move_homebrew_items`, `delete_homebrew_items`; plus shares, purchase
+  requests, print sets, `user_prefs`, art uploads (Storage),
+  `delete_account`, `delete_account_requests`. Every one of them is
+  reachable by any `authenticated` token, so by a client token too.
+- Rows carry `revision` (bigint, +1 per edit) and `updated_at`; deletes
+  leave no tombstone; the app re-reads by `id,revision` heads.
+  `get_homebrew_item` answers `hid`, `mine`, an md5 `revision`, `item`,
+  `related`, `updated_at`, never `owner_id`. Limits: `lists_per_owner`
+  50, `entries_per_list` 100, `homebrew_items_per_owner` 100.
+- Planner defaults taken (owner AFK), `plan.md` section 7: Q8 one grant
+  level; Q9 writes of lists, entries and homebrew items only; Q10 client
+  tokens only; Q11 an empty `/me` allowlist. B5 split into B5a and B5b.
+- Plan review `reviews/plan-B5a.md` (2026-11-11), facts read from the
+  repository: PostgREST resource embedding reads other tables through
+  foreign keys under RLS on an allowed path (`lists?select=*,list_shares(*)`),
+  so path checks alone do not bound a client token; `list_notices` is
+  written only by SECURITY DEFINER functions. `supabase/config.toml` has
+  `enable_manual_linking = true` and TOTP `enroll_enabled = true`, and no
+  OAuth server section. Cascades: a list delete deletes its
+  `list_shares`, `purchase_requests` (and lines) and `list_notices`; an
+  item delete deletes every `list_entries` row that links it, other
+  accounts' lists too, and releases its picture; `PATCH` of
+  `homebrew_items.art` to null deletes the picture. The nightly backup
+  leaves out roles, so a restore drops `pgrst.db_pre_request`.
+  `lists` grants `update` to `authenticated`. `get_homebrew_items` is
+  SECURITY DEFINER, answers any id, has no owner filter and no `related`.
+- Unverified (the reviewer's reading; B5a step 1 measures): a Supabase
+  access token carries `email`, `phone`, `app_metadata`, `user_metadata`
+  whatever OIDC scope is asked; PostgREST checks a JWT by signature only,
+  so an issued access token stays valid until `exp` after `revokeGrant`.
+- B5a step 1 measurement list: token claims; `resource` and `aud`; a
+  revoked token at PostgREST; on Auth with the client token: `PUT
+  /auth/v1/user` (email, password, `data`), `GET
+  /auth/v1/user/identities/authorize`, `DELETE
+  /auth/v1/user/identities/{id}`, `POST /auth/v1/factors`, `POST
+  /auth/v1/logout?scope=global`, `GET /auth/v1/user`; the discovery URLs
+  `<SUPABASE_URL>/.well-known/oauth-authorization-server/auth/v1` and
+  `<SUPABASE_URL>/auth/v1/.well-known/oauth-authorization-server`;
+  whether the pinned CLI's `config.toml` has an OAuth server section;
+  whether the local stack serves the OAuth server. Stop: email, password,
+  identity link or unlink, factor enrollment.
+- Defaults taken (owner AFK) from that review, `plan.md` section 7: R1
+  (the guard refuses an ended session), R7 (optional `If-Match` on a list
+  `PATCH`), N10 (`?ids=` names the `craft.from` difference).
+
+## Second consumer: bacchus-atlas (orchestrator, 2026-11-11)
+
+- `github.com/Machenspieler/bacchus-atlas`: static GitHub Pages site, JS,
+  no backend, a Daggerheart environments guide. Nothing is posted there.
+- It mirrors 264 catalog items into `data/items.json` (id such as `cc7`,
+  `w62`; kind; src `core` 120, `hnf` 120, `wondrous` 19, `dread` 5; roll;
+  img; en/ru name and description; optional craft id) from our old
+  `data.json`; its Prep picker uses a 240-entry item table by id; it
+  builds plant-name aliases itself.
+- It links `https://artex-x.github.io/daggerheart-loot/i/{id}.html` and
+  loads art from that host's `img/`, drawn on a canvas (`crossOrigin`
+  anonymous) for a PNG copy, so image bytes need
+  `Access-Control-Allow-Origin: *`. Verified 2026-11-11:
+  `daggerheart-loot.pages.dev/img/cc7.webp` sends `*`; `/i/cc7.html`
+  answers 308 to `/i/cc7`, also `*`.
+- It needs stable ids, RU/EN name and description, kind, src, roll,
+  image URL, page link, craft, and a build-time pull refresh (no
+  account, no write).
 
 ## Do not re-fetch unless
 - Human provides new info

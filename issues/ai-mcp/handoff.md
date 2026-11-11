@@ -2,53 +2,46 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (B0 and B1 implement-ready; neither waits on an owner answer; B1's publication and squash wait on B0 and the owner's review of the rights audit table)
-- Last agent: planner
-- NEEDS_HUMAN_CONFIRMATION: no (Q1-Q7 settled; Q6 = C and Q7 = A on 2026-11-10)
-- Branch: claude/roll-per-line (no task branch yet; the orchestrator cuts `claude/ai-mcp` from `main` before B0 or B1)
-- Base / starting commit: 342c91c4
-- Pushed: no
+- Task status: in_progress (B0 and B1 implement-ready; B5a and B5b design settled; `reviews/plan-B5a.md` is fix-then-continue and its findings are applied, `plan.md` Status, so B0 or B1 may be dispatched)
+- Last agent: planner (plan-B5a findings pass, 2026-11-11)
+- NEEDS_HUMAN_CONFIRMATION: no (Q1-Q7 settled; Q8-Q11 and the R1, R7 and N10 options of `reviews/plan-B5a.md` "default taken (owner AFK)", `plan.md` section 7)
+- Branch: claude/ai-mcp
+- Base / starting commit: 8f194abd
+- Pushed: no (the orchestrator commits this pass)
 
 ## Completed
-- Batch name/id: plan refresh for the owner decisions of 2026-11-10 (Q1, CORS, licenses, publication, issue 72, two entry points, Q6 = C, Q7 = A).
-- What shipped: `plan.md` Status, "Plan refresh 2026-11-10 (owner decisions)", one sub-bullet per change: no `format=` and no published mapping; CORS on `/api/v1/*`; B0 (license statement and per-record rights audit, new); B4 dropped; section 3.8 and D2; section 8 as the announcement after B1 is live; section 11 (the v1 freeze); `rights.license` from the build-time table `docs/rights/records.json`. `context.md`: every owner decision under "Decisions already settled", the license sources.
+- B5 design pass (planning only, 2026-11-11, with the bacchus-atlas input): B5 split into B5a and B5b, the B1 delta (bulk catalog, `key`, T0 ignores `Authorization`, unknown-`code` rule, `.well-known` reservation, failing CORS probes), D7, Q8-Q11; uncommitted on `8f194abd`.
+- Batch name/id: plan-B5a findings pass (planning only, the same day, uncommitted on `8f194abd`).
+- What shipped: every finding of `reviews/plan-B5a.md` applied once (blockers 1-3, R1-R7, N1-N11; N12 stated in section 3.4 and deferred in section 10); `plan.md` Status line "Plan review findings applied: reviews/plan-B5a.md" with one sub-bullet per finding; the B5a `Plan review:` trigger text names the restrictive table policies and the definer helper. `context.md` "B5 design facts" gains the review's facts.
 - Files changed: `issues/ai-mcp/plan.md`, `issues/ai-mcp/handoff.md`, `issues/ai-mcp/context.md`.
-- Previous sha (batch diff base): 342c91c4
-- Deviations and rationale: Q1 is recorded in D3 (the contract decision), not D1. The field is `rights.license` (American spelling, 2026-10-29 decision). The audit and the statement alignment are one batch: no split criterion applies (same gates, same landing with B1's squash), and the owner's review follows the commit. Planner defaults kept from Q6's option A: `preview/` in the MIT code list and a Russian-text credit by the sources of the `README.md` "Sources" table (plan-B1-2-R1). No production code written.
-- Review: required before B1 (trigger: a public contract change; a product-law change), report issues/ai-mcp/reviews/plan-B1.md (fix-then-continue, findings applied). Second look: issues/ai-mcp/reviews/plan-B1-2.md (verdict incomplete, findings final), findings applied once (`plan.md` Status, "Plan review findings applied: reviews/plan-B1-2.md"). Third look: issues/ai-mcp/reviews/plan-B1-3.md (fix-then-continue), findings applied once (`plan.md` Status, "Plan review findings applied: reviews/plan-B1-3.md"); no further look. CORS falls under the same trigger; B0 fires the batch-review trigger (an agent definition; `llms.txt`).
+- Previous sha (batch diff base): 8f194abd
+- Deviations and rationale: N12 is both stated (section 3.4, the ceiling) and deferred (section 10 and Deferred below: nothing shows when the quota is near), as the report's finding text and its "Suggested next action" say. `plan.md` is about 189 KB, past the 150 KB warning line (warn only, 300 KB collapses); the compaction after B1 lands collapses B0 and B1 to their outcome and commit.
+- Review: `reviews/plan-B5a.md` fix-then-continue, applied; no second look (`docs/decisions/`, 2026-10-01). Earlier: plan-B1, plan-B1-2, plan-B1-3 applied.
 
 ## Verification
-- Commands run (exact): `git grep` for the license statement copies; a Node count of `data.js` records per `src`; WebFetch of https://darringtonpress.com/license/, the DPCGL 2.0 PDF and https://www.daggerheart.com/srd/; `pdftotext -layout` of `DH_SRD_2_2026_08_25.pdf` (session scratchpad) and a name search for frame, Core and Hope & Fear records; `git grep` for the filter and search composition in `app/src/`.
-- Results: `LICENSE` is the only copy with the SRD 1.0 notice and Hope & Fear outside; no copy names the campaign frames; `tests/derived.js` never reads `LICENSE` or the terms pages. The name search is inconclusive (239 of 367 Core names found), so B0 audits by text and stats. `core` 367, `hnf` 283, `frame` 95 records (745 to audit).
+- Commands run (exact): reads of `supabase/config.toml` (`enable_manual_linking = true`, `[auth.mfa.totp] enroll_enabled = true`, no OAuth server section), `get_homebrew_item` and `get_homebrew_items` (`20261014120000_homebrew_art.sql`), the `lists` grants and policies (`20260925130100_lists.sql`: `update` granted), the `list_notices` writers (SECURITY DEFINER, `20261007130000_homebrew_links.sql`); a `node -e` run of `agent-guard.mjs`'s `APPLIED_RE` over `plan.md` Status.
+- Results: the regex reads `plan-B1.md`, `plan-B1-2.md`, `plan-B1-3.md` and `plan-B5a.md` as applied; both `Plan review:` lines parse.
 - Gates: none (planning only).
 
 ## Next batch (implement-ready)
-- Name: B0 - License statement and per-record rights audit. B1 (API core and REST v1 reads) is also implement-ready and does not wait on B0; either may go first.
-- Objective: one license statement in every copy, `LICENSE` included, and the stored, checked table `docs/rights/records.json` giving each record its `rights.license` from a per-record SRD 2.0 audit; D5.
-- In scope: `plan.md` section 6, B0, "In scope".
-- Out of scope: the ten non-DRP sources (one `owner` row each, no per-record check), the footer and terms text, `data.js`, `apiRecord.ts`.
-- Files expected: `docs/rights/records.json`, `LICENSE`, `README.md`, `README.ru.md`, `llms.txt`, `tests/derived.js`, `.claude/agents/add-source.md`, D5 under `docs/decisions/`, `docs/DECISIONS.md`.
-- Steps: `plan.md` section 6, B0, steps 1-11 (step 2's match rule is the full audit procedure; the user-level skill `anthropic-skills:daggerheart-source-audit` supplies only terminology when the session lists it; the PDF stays in a scratch directory).
-- Acceptance criteria: `plan.md` section 6, B0, "Acceptance criteria".
-- Verification commands: `node tests/derived.js`; `node tools/decisions.js`; `rtk npm run check:fast` (Bash timeout 600000); push and CI.
-- Review: required (trigger: an agent definition changed; llms.txt), report issues/ai-mcp/reviews/B0.md. Gate cost about 55 min: the commit (about 20 min), the review run (about 15 min, estimate) and the follow-up commit that sets `reviewed` (about 20 min).
-- B1 verification: `plan.md` section 6, B1, "Verification commands".
-- B1 review: required (trigger: a public contract; a hook; tools/check/; a package.json check script), report issues/ai-mcp/reviews/B1.md. B1 gate cost about 47 min with the review run; the merge-back commit of the mid-task landing about 23 min. Total gate cost of the plan: about 3 h 30 min (`plan.md` Status; the B2, B3 and B5 figures exclude their reviews).
-- Risks / do-nots: do not commit the SRD PDF or its text; do not mark a record `dpcgl` from its name or source; do not change the verbatim notice; do not set `reviewed`.
+- First: B0 - License statement and per-record rights audit, or B1 (API core and REST v1 reads); either may go first. The plan review before B5a is applied; no second look.
+- B0 objective, scope, files, steps, acceptance: `plan.md` section 6, B0. Verification: `node tests/derived.js`; `node tools/decisions.js`; `rtk npm run check:fast` (Bash timeout 600000); push and CI. Review: required (trigger: an agent definition changed; llms.txt), report issues/ai-mcp/reviews/B0.md; gate cost about 55 min.
+- B1: `plan.md` section 6, B1 (now with the bulk catalog `/api/v1/catalog/`, record `key`, T0 ignoring `Authorization`, the unknown-`code` rule, the `.well-known` reservation, failing CORS probes; from plan-B5a: `rev` an opaque string and the step 5 test of the records that embed an edited one (R4), the `version.json` hash over outputs with `data_version` empty (N4), the catalog miss as `404.html` and `tests/contracts.js` comparing operations (N5), the image probe from the first chunk (N6)). Review: required (trigger: a public contract; a hook; tools/check/; a package.json check script), report issues/ai-mcp/reviews/B1.md; gate cost about 47 min; the merge-back commit about 23 min.
+- Risks / do-nots: do not commit the SRD PDF or its text; do not set `reviewed`; do not add an `Access-Control-Allow-Origin` line to `_headers`; do not forward `Authorization` on a T0 path.
 - Fallback (optional): none.
 
 ## Blockers
-- B0, B1 implementation, B2: none.
-- B1 publication and squash: B0 committed, the owner's review of `docs/rights/records.json` (its `reviewed` date set on the owner's word; the orchestrator confirms the date before the squash), B1's approving batch review and a green CI run of the tip (`plan.md` section 6, B1, "Landing mid-task"; D6).
-- B3: the owner's CPU readings of B1/B2 (`deployment tail`).
-- No batch or gate waits on the Charkeeper author; the issue-72 announcement is an owner step after B1 is live.
+- B1 publication and squash: B0 committed, the owner's review of `docs/rights/records.json`, B1's approving batch review, a green CI run of the tip (D6).
+- B3: the owner's CPU readings of B1/B2. B5a: the screen mock (planner refresh), then step 1's measurement on the test project (stop rule: a client token that changes the email or the password, links or unlinks an identity, or enrolls a factor); after `migrate-test`, the `print_sets` probe of B5a's acceptance.
+- No batch or gate waits on the Charkeeper or bacchus-atlas authors.
 
 ## Deferred
-- `plan.md` section 10 (Pages CORS on `/apidata/*`: recommended to accept).
+- `plan.md` section 10 (Pages CORS on `/apidata/*`; the account-tier items of Q8-Q11).
+- plan-B5a-N12: nothing shows when the shared quota is near (about 500 users polling every 15 minutes, `plan.md` section 3.4); the usage report stays deferred in section 10 until B5b's first consumer with background sync.
 
 ## Notes
-- Mocks path: none (B0-B3 change no screen; B5 designs its screen when expanded).
+- Mocks path: `issues/ai-mcp/mocks/` (B5a's consent page and "Connected apps", drawn when B5a is next).
 - Screenshot findings: none.
-- Cleanup performed / retained artifacts: the SRD 2.0 text extraction and measurement scripts are in the session scratchpad only.
+- Cleanup performed / retained artifacts: scratch files only in the session scratchpad.
 - Session end partial progress (if any): none.
-- Durable items written to their homes this batch (file, section): none; D1-D3, D6 and the CORS rule go to their homes in B1, D5, the audit table and the license copies in B0.
+- Durable items written to their homes this batch (file, section): none; D7 goes to `docs/decisions/` in B5a, the sync and bulk-catalog rules to `CONTRACTS.md` section 6 in B1.
