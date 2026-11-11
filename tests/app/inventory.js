@@ -99,10 +99,10 @@ const CLIPPED_TEXT =
 /** The print controls' name: the driver names a titled button by its text. */
 const PRINT = 'Печать';
 
-/** Waits until a `#/p/` page has left «Загружаем...»: its sheet, its sub or its error page. */
+/** Waits until a `#/p/` page has left «Загружаем...»: its sheet, its sub, its sign-in plate or its error page. */
 async function sheet(d) {
   for (let i = 0; i < 200; i++) {
-    if ((await d.count('.printbar, .page-sub, .errpage')) > 0) return;
+    if ((await d.count('.printbar, .page-sub, .signin-lead, .errpage')) > 0) return;
     await new Promise((r) => setTimeout(r, 50));
   }
   throw new Error('a #/p/ state never left its loading line');
@@ -2254,7 +2254,7 @@ const STATES = [
   {
     id: SHOP,
     route: SHOP,
-    why: 'signed out on an account address: the error page «Войдите, чтобы открыть список», its cause, «Войти» and «Открыть таблицы»'
+    why: 'signed out on an account address: the heading «Мои списки» and the sign-in plate with «Войдите, чтобы открыть список: он открывается только в аккаунте, где его создали.» and «Войти»'
   },
   {
     id: LIST_GONE + ' as gm1',
@@ -2710,7 +2710,7 @@ const STATES = [
   {
     id: '#/lists/nope',
     route: '#/lists/nope',
-    why: 'not an account address, signed out: «Войдите, чтобы открыть список», «Войти» and «Открыть таблицы»; the address not rewritten'
+    why: 'not an account address, signed out: the same plate as on an account address; the address not rewritten'
   },
   {
     /* The players' payload of the old `qty-and-price` fixture, as a link written before
@@ -3956,6 +3956,11 @@ const STATES = [
     id: '#/homebrew',
     route: '#/homebrew',
     why: 'signed out: the heading and «Войдите, чтобы создавать свои предметы.» with «Войти»'
+  },
+  {
+    id: '#/homebrew/new',
+    route: '#/homebrew/new',
+    why: 'signed out: the heading «Мои предметы» and the sign-in plate with «Войдите, чтобы создавать свои предметы.» and «Войти»'
   },
   {
     id: '#/homebrew/new as gm1',

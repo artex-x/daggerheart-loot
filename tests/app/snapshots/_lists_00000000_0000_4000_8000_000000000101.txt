@@ -1,9 +1,9 @@
 # #/lists/00000000-0000-4000-8000-000000000101
 # route: #/lists/00000000-0000-4000-8000-000000000101
-# why: signed out on an account address: the error page «Войдите, чтобы открыть список», its cause, «Войти» and «Открыть таблицы»
+# why: signed out on an account address: the heading «Мои списки» and the sign-in plate with «Войдите, чтобы открыть список: он открывается только в аккаунте, где его создали.» and «Войти»
 
 ## ru :: tree
-RootWebArea "Генератор лута Daggerheart" [url=/lists/00000000-0000-4000-8000-000000000101]
+RootWebArea "Мои списки - Генератор лута Daggerheart" [url=/lists/00000000-0000-4000-8000-000000000101]
   link "К содержимому" [url=/lists/00000000-0000-4000-8000-000000000101#main]
   banner ""
     link "Лут DAGGERHEART" [url=/roll/std]
@@ -17,12 +17,9 @@ RootWebArea "Генератор лута Daggerheart" [url=/lists/00000000-0000-
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
-    heading "Войдите, чтобы открыть список" [level=1]
-    StaticText "Списки открываются только в аккаунте, где их создали."
+    heading "Мои списки" [level=1]
+    StaticText "Войдите, чтобы открыть список: он открывается только в аккаунте,..." [namelen=81 namehash=1dd1fa19]
     button "Войти"
-    link "Открыть таблицы" [url=/tables]
-    status ""
-      StaticText "Войдите, чтобы открыть список"
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -39,14 +36,13 @@ daggerheart.com
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
-Открыть таблицы
 Поиск
 Таблицы
 Условия использования
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=/en/lists/00000000-0000-4000-8000-000000000101]
+RootWebArea "My lists - Daggerheart Loot Generator" [url=/en/lists/00000000-0000-4000-8000-000000000101]
   link "Skip to content" [url=/en/lists/00000000-0000-4000-8000-000000000101#main]
   banner ""
     link "Loot DAGGERHEART" [url=/en/roll/std]
@@ -60,12 +56,9 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/lists/00000000-0000-4000-8000-
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
-    heading "Sign in to open this list" [level=1]
-    StaticText "A list opens only in the account where it was made."
+    heading "My lists" [level=1]
+    StaticText "Sign in to open this list: it opens only in the account where it..." [namelen=74 namehash=ca4eb23a]
     button "Sign in"
-    link "Open the tables" [url=/en/tables]
-    status ""
-      StaticText "Sign in to open this list"
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -77,7 +70,6 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/lists/00000000-0000-4000-8000-
 EN
 Install as an app
 LootDaggerheart
-Open the tables
 Privacy
 RU
 Roll

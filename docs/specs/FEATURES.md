@@ -420,8 +420,8 @@ across.
   section's key, a source anchor its key (the source's items outside its
   sections), `hb` the items with no source; a row anchor that arrives with
   the page plays once the own items load. Signed out the page
-  draws the sign-in prompt «Войдите, чтобы видеть свои предметы в таблицах.»
-  and no toolbar; while the session or the items load, «Загружаем...»; a
+  draws the sign-in plate (the kind glyph, «Войдите, чтобы видеть свои предметы в
+  таблицах.» and «Войти») under the head and no toolbar; while the session or the items load, «Загружаем...»; a
   failed read, «Не получилось загрузить ваши предметы.» and «Повторить»; no
   own item, the plate «Своих предметов пока нет» with the item glyph and a primary
   «Новый предмет»; a build with no sign-in
@@ -832,8 +832,12 @@ address kept, and no add-to-list control is drawn.
   boxed prompt under a pressed control (the shared page's «Сохранить себе», the
   record's «Печать» and «Сохранить себе») give «Войти» the focus and offer
   «Отмена», which closes the prompt and returns the focus to the control that had
-  it. A page-level prompt (`#/lists`, «Мои предметы», `#/p/<id>`) leaves the focus
-  where it is and has no «Отмена».
+  it. A page-level prompt (`#/lists`, `#/lists/<id>`, «Мои предметы» with its
+  editor, `#/tables/homebrew`, `#/p/<id>`) is one plate, in every one of them: the
+  kind glyph, the lead and one «Войти» (the default form of `SignInPrompt`). It
+  leaves the focus where it is and has no «Отмена». Only a prompt that answers a
+  press is the compact or the boxed form
+  (owner, 2026-11-11; `docs/decisions/2026-11-11-a-page-level-sign-in-prompt-is-one-plate.md`).
 - **The return after sign-in**: «Войти» opens `#/account` and remembers the
   page and the started action; the account page's sign-in carries both
   through the provider redirect (`STATE.md`, `dhloot.auth.return`). Back on
@@ -1187,12 +1191,15 @@ address kept, and no add-to-list control is drawn.
   has no facets: a picked value or a query hides it, and the meta line counts
   it. No match draws «Ничего не найдено» and «Сбросить всё». A reload or
   another list clears the search and the filter.
-- **Not found** (A18, `ErrorPage`): an account address signed out, or an address
-  that is no account id, draws «Войдите, чтобы открыть список» / "Sign in to open
-  this list", «Списки открываются только в аккаунте, где их создали.» / "A list opens
-  only in the account where it was made." (no instruction: the heading and the button
-  say it),
-  the primary «Войти», which returns to that address, and «Открыть таблицы»; nothing while the session is
+- **Signed out**: an account address, or an address that is no account id, draws
+  the heading «Мои списки» / "My lists" (the tab title says the same) and the
+  sign-in plate: the kind glyph, «Войдите, чтобы открыть список: он открывается
+  только в аккаунте, где его создали.» / "Sign in to open this list: it opens only
+  in the account where it was made." and the one action «Войти», which returns to
+  that address. There is no error page, no status line and no second action (the
+  header's «Таблицы» is the way out). While the session is unknown nothing is drawn
+  and the tab title stays plain.
+- **Not found** (A18, `ErrorPage`): nothing while the session is
   unknown; «Загружаем...» while the session's account read runs;
   the heading «Список не загрузился», «Не получилось
   загрузить списки аккаунта.» and a primary «Повторить» when the read failed
@@ -1242,7 +1249,8 @@ address kept, and no add-to-list control is drawn.
   owner" last in the selection bar's actions; up to 760 px it is the second item of
   «Ещё» (after «Скопировать текст»), so the bar is one action row, «В список»,
   «Печать» and «Ещё», 118 px at 360 px (DESIGN.md, "The Phone-First Rule"). The item
-  closes the menu when pressed and keeps its states for the next opening. It sends the owner a request for the ticked entries with their taken
+  closes the menu when pressed and keeps its states for the next opening. It
+  sends the owner a request for the ticked entries with their taken
   counts; while it runs it reads «Отправляем...» and is disabled. Success
   keeps the selection and its counts, toasts «Запрос отправлен владельцу
   списка.», and the button reads «Запрос отправлен» / "Request sent",
@@ -1983,7 +1991,8 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   with the sentence «Свой предмет ищется вместе с книгами, виден в «Таблицах» и
   попадает в списки.» and no button (the head holds the primary).
   Signed out: the head and the
-  sign-in prompt «Войдите, чтобы создавать свои предметы.». A failed read: «Не
+  sign-in plate (the kind glyph, «Войдите, чтобы создавать свои предметы.» and
+  «Войти»). A failed read: «Не
   получилось загрузить ваши предметы.» and a small «Повторить». A pin may hold
   the page; with no sign-in configured the route draws the not-found page and
   keeps the address, as `#/tables/homebrew`. A stored `#/homebrew` pin opens the
@@ -2557,7 +2566,7 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
 - `#/p/<id>` reads the set once when it opens (no live re-read; a reload reads
   it again). Each state keeps the heading «Печать карточек»: while the session
   is not known, the heading alone; when the data did not load, «Данные не
-  загрузились. Обновите страницу.» under it; signed out, the sub «Войдите,
+  загрузились. Обновите страницу.» under it; signed out, the sign-in plate with the lead «Войдите,
   чтобы печатать карточки.» and one «Войти», which returns here;
   while it reads, «Загружаем...»; an unknown, expired or malformed id
   (a malformed one signed out too, with no read), «Набор не найден: ссылку не

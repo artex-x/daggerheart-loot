@@ -700,7 +700,7 @@ const COVERED: Record<string, string> = {
   'MarkupField.svelte':
     'markupField.test.ts with the toolbar, with «Просмотр» pressed and read-only; homebrewEditor.test.ts and listPage.test.ts with the hint open',
   'SignInPrompt.svelte':
-    'signInPrompt.test.ts in its three forms, and inside the add-to-list menu (lists.test.ts)',
+    'signInPrompt.test.ts in its three forms (the page plate, compact, boxed), and inside the add-to-list menu (lists.test.ts)',
   'Shell.svelte': 'shell.test.ts',
   'Switch.svelte':
     'switch.test.ts on and off, and «Свои предметы» on search and the equipment tables (homebrewCatalog.test.ts)',

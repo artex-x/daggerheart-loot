@@ -592,6 +592,8 @@ describe('#/tables/homebrew', () => {
   it('asks a signed-out reader to sign in, with no group chip and no search box', async () => {
     const { container, router } = page('#/tables/homebrew', { as: null });
     expect(await screen.findByText(t.hbTablesSignIn)).toBeInTheDocument();
+    expect(container.querySelector('.empty .glyph')).not.toBeNull();
+    expect(container.querySelector('.empty .signin-lead')).toHaveTextContent(t.hbTablesSignIn);
     expect(screen.getByRole('button', { name: t.signIn })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: t.srcHomebrew })).toBeNull();
     expect(screen.queryByPlaceholderText(t.searchPh)).toBeNull();

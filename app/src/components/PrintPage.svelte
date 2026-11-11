@@ -16,6 +16,7 @@
   import PageTitle from './PageTitle.svelte';
   import PrintCard from './PrintCard.svelte';
   import PrintSwitches from './PrintSwitches.svelte';
+  import SignInPrompt from './SignInPrompt.svelte';
   import StatusRegion from './StatusRegion.svelte';
   import { watchBarHeight } from './barHeight.js';
   import { printSetHash, sectionHash } from '../lib/hash.js';
@@ -181,13 +182,8 @@
   <!-- The session is not known yet: the heading alone, so no other state flashes (rule 7). -->
   <PageTitle title={t.printTitle} />
 {:else if app.user === null}
-  <PageTitle title={t.printTitle} sub={t.signInToPrint} />
-  <Button
-    variant="primary"
-    onclick={() => {
-      app.askSignIn({ hash: app.hash });
-    }}>{t.signIn}</Button
-  >
+  <PageTitle title={t.printTitle} />
+  <SignInPrompt {app} lead={t.signInToPrint} after={{ hash: app.hash }} />
 {:else if read === 'failed'}
   <!-- The failure replaces the page (docs/specs/FEATURES.md, rule 6). -->
   <ErrorPage title={t.printLoadFailedTitle} said>

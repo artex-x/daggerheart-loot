@@ -34,6 +34,7 @@
   import SelectionBar from './SelectionBar.svelte';
   import SelMode from './SelMode.svelte';
   import SharePanel from './SharePanel.svelte';
+  import SignInPrompt from './SignInPrompt.svelte';
   import Sheet from './Sheet.svelte';
   import StatusRegion from './StatusRegion.svelte';
   import SyncSaid from './SyncSaid.svelte';
@@ -1134,18 +1135,8 @@
       {/snippet}
     </ErrorPage>
   {:else}
-    <ErrorPage title={t.listGoneSignedOut} said>
-      {t.listGoneSignedOutSub}
-      {#snippet actions()}
-        <Button
-          variant="primary"
-          onclick={() => {
-            app.askSignIn({ hash: app.hash });
-          }}>{t.signIn}</Button
-        >
-        <Button href={app.href(sectionHash('tables'))} sameTab>{t.openTables}</Button>
-      {/snippet}
-    </ErrorPage>
+    <PageTitle title={sectionLabel('lists', t)} />
+    <SignInPrompt {app} lead={t.listSignInLead} after={{ hash: app.hash }} />
   {/if}
 {/snippet}
 

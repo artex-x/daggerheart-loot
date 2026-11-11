@@ -775,6 +775,8 @@ describe('the states around the form', () => {
   it('asks a signed-out reader to sign in, the lead drawn from 761 px only', async () => {
     const { container } = await editor(AXE, { as: null });
     expect(screen.getByText(t.hbSignIn)).toBeInTheDocument();
+    expect(container.querySelector('.empty .glyph')).not.toBeNull();
+    expect(container.querySelector('.empty .signin-lead')).toHaveTextContent(t.hbSignIn);
     expect(screen.getByText(t.subHomebrew)).toBeInTheDocument();
     await expectNoA11yViolations(container);
     cleanup();

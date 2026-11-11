@@ -784,9 +784,7 @@
     {#if !index}
       <NoData>{t.noData}</NoData>
     {:else if table === 'homebrew' && app.user === null}
-      <div class="hbstate">
-        <SignInPrompt {app} lead={t.hbTablesSignIn} after={{ hash: tablesHash('homebrew') }} />
-      </div>
+      <SignInPrompt {app} lead={t.hbTablesSignIn} after={{ hash: tablesHash('homebrew') }} />
     {:else if table === 'homebrew' && app.homebrew?.status === 'error'}
       <div class="hbstate">
         <LoadState {t} failed text={t.hbLoadFailed} onretry={() => void app.homebrew?.load()} />

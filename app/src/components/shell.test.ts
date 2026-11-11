@@ -1418,6 +1418,23 @@ describe('the three jobs and the lists in every build', () => {
     expect(document.title).toBe('My lists - Daggerheart Loot Generator');
   });
 
+  it('titles a signed-out account list address «Мои списки» and "My lists"', async () => {
+    render(App, { env: at('#/lists/' + uuid(101), { cloud: fakeCloud(SEED) }) });
+    await waitFor(() => {
+      expect(document.title).toBe('Мои списки - Генератор лута Daggerheart');
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'EN' }));
+    expect(document.title).toBe('My lists - Daggerheart Loot Generator');
+  });
+
+  it('keeps the plain title of an account list address while the session is unknown', async () => {
+    const cloud = fakeCloud(SEED);
+    cloud.auth.session = () => new Promise(() => undefined);
+    render(App, { env: at('#/lists/' + uuid(101), { cloud }) });
+    await new Promise((r) => setTimeout(r, 0));
+    expect(document.title).toBe('Генератор лута Daggerheart');
+  });
+
   it.each(['#/lists', '#/lists/' + uuid(101), '#/l/abc'])(
     'draws the not-found page on %s with no sign-in, keeps the address and the plain title',
     (hash) => {

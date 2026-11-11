@@ -9530,6 +9530,9 @@ async function textMeasure() {
     ['#/homebrew as gm3', 'main .page-sub'],
     ['#/roll/alt', 'main .page-sub'],
     ['#/lists', 'main .page-sub, main .signin-lead'],
+    ['#/homebrew', 'main .signin-lead'],
+    ['#/tables/homebrew', 'main .signin-lead'],
+    [SHOP, 'main .signin-lead'],
     ['#/account', 'main .page-sub'],
     ['#/search ~ nothing found', 'main .cause'],
     ['#/lists ~ empty as gm4', 'main .hint'],
@@ -9581,29 +9584,31 @@ async function textMeasure() {
   }
 
   /* (a2) A box with actions: the sign-in button follows the lead's widest line. */
-  for (const lang of ['ru', 'en']) {
-    for (const [width, height] of [
-      [1180, 720],
-      [1920, 1080]
-    ]) {
-      const where = at + '#/lists signed out ' + width + ' ' + lang + ': ';
-      const { ctx, page } = await openState('#/lists', width, height, lang);
-      try {
-        const m = await page.evaluate(() => {
-          const lead = document.querySelector('main .signin-lead');
-          const btn = document.querySelector('main .signin .btn, main .signin button');
-          if (!lead || !btn) return null;
-          const range = document.createRange();
-          range.selectNodeContents(lead);
-          const right = Math.max(...[...range.getClientRects()].map((r) => r.right));
-          return { gap: btn.getBoundingClientRect().left - right };
-        });
-        ok(
-          !!m && m.gap >= 0 && m.gap <= 12,
-          where + 'the button does not follow the lead - ' + JSON.stringify(m)
-        );
-      } finally {
-        await ctx.close();
+  for (const id of ['#/lists', '#/homebrew', '#/lists/nope']) {
+    for (const lang of ['ru', 'en']) {
+      for (const [width, height] of [
+        [1180, 720],
+        [1920, 1080]
+      ]) {
+        const where = at + id + ' signed out ' + width + ' ' + lang + ': ';
+        const { ctx, page } = await openState(id, width, height, lang);
+        try {
+          const m = await page.evaluate(() => {
+            const lead = document.querySelector('main .signin-lead');
+            const btn = document.querySelector('main .signin .btn, main .signin button');
+            if (!lead || !btn) return null;
+            const range = document.createRange();
+            range.selectNodeContents(lead);
+            const right = Math.max(...[...range.getClientRects()].map((r) => r.right));
+            return { gap: btn.getBoundingClientRect().left - right };
+          });
+          ok(
+            !!m && m.gap >= 0 && m.gap <= 12,
+            where + 'the button does not follow the lead - ' + JSON.stringify(m)
+          );
+        } finally {
+          await ctx.close();
+        }
       }
     }
   }
@@ -12051,6 +12056,236 @@ async function rollPartShowsWhole() {
   }
 }
 
+/** 131. A signed-out page that needs an account draws one sign-in plate (docs/specs/FEATURES.md,
+ *  "Lists"; DESIGN.md, "Empty state"): the kind glyph, the lead and one «Войти», the same
+ *  shape on seven routes, in both languages, from 320 to 1920 px. */
+async function oneSignInPlate() {
+  const at = '131 (one sign-in plate): ';
+  const TWO = '#/p/set-twocards';
+  const LEADS = {
+    '#/lists': {
+      ru: 'Войдите, чтобы создавать списки: они хранятся в аккаунте и открываются на любом устройстве.',
+      en: 'Sign in to create lists: they are kept in your account and open on any device.'
+    },
+    [SHOP]: {
+      ru: 'Войдите, чтобы открыть список: он открывается только в аккаунте, где его создали.',
+      en: 'Sign in to open this list: it opens only in the account where it was made.'
+    },
+    '#/homebrew': {
+      ru: 'Войдите, чтобы создавать свои предметы.',
+      en: 'Sign in to create your own items.'
+    },
+    '#/tables/homebrew': {
+      ru: 'Войдите, чтобы видеть свои предметы в таблицах.',
+      en: 'Sign in to see your own items in the tables.'
+    },
+    [TWO]: { ru: 'Войдите, чтобы печатать карточки.', en: 'Sign in to print cards.' }
+  };
+  LEADS['#/lists/nope'] = LEADS[SHOP];
+  LEADS['#/homebrew/new'] = LEADS['#/homebrew'];
+  const IDS = [
+    '#/lists',
+    SHOP,
+    '#/lists/nope',
+    '#/homebrew',
+    '#/homebrew/new',
+    '#/tables/homebrew',
+    TWO
+  ];
+  const SIZES = [
+    [320, 568],
+    [360, 640],
+    [768, 1024],
+    [1180, 720],
+    [1920, 1080]
+  ];
+  const probe = () => {
+    const vis = (e) => {
+      const r = e.getBoundingClientRect();
+      return r.width > 0 && r.height > 0 && getComputedStyle(e).visibility !== 'hidden';
+    };
+    const plates = [...document.querySelectorAll('main .empty')].filter(vis);
+    const plate = plates[0];
+    if (!plate) return { plates: 0 };
+    const pr = plate.getBoundingClientRect();
+    const lead = plate.querySelector('p.signin-lead');
+    const buttons = [...plate.querySelectorAll('button, a, input, select, textarea')];
+    const btn = plate.querySelector('button');
+    const lr = lead?.getBoundingClientRect();
+    const br = btn?.getBoundingClientRect();
+    const pcs = getComputedStyle(plate);
+    let above = null;
+    for (const e of document.querySelectorAll('main *')) {
+      if (e === plate || e.contains(plate) || plate.contains(e) || !vis(e)) continue;
+      const r = e.getBoundingClientRect();
+      if (r.bottom > pr.top + 0.5 || r.right <= pr.left || r.left >= pr.right) continue;
+      if (!above || r.bottom > above.bottom) above = { bottom: r.bottom, el: e.className };
+    }
+    const range = document.createRange();
+    if (lead) range.selectNodeContents(lead);
+    const leadRight = lead ? Math.max(...[...range.getClientRects()].map((r) => r.right)) : 0;
+    return {
+      plates: plates.length,
+      glyphs: plate.querySelectorAll(':scope > .glyph').length,
+      leads: plate.querySelectorAll('p.signin-lead').length,
+      leadText: lead?.textContent.trim() ?? null,
+      buttonNames: [...plate.querySelectorAll('button')].map((b) => b.textContent.trim()),
+      focusables: buttons.length,
+      errpage: document.querySelectorAll('.errpage').length,
+      openTables: [...document.querySelectorAll('main a')].filter((a) =>
+        /Открыть таблицы|Open tables/.test(a.textContent)
+      ).length,
+      leadSize: lead ? getComputedStyle(lead).fontSize : null,
+      btnHeight: br ? Math.round(br.height * 10) / 10 : null,
+      align: pcs.textAlign,
+      stacked: !!(lr && br && br.top >= lr.bottom - 1),
+      btnCenter: br ? (br.left + br.right) / 2 : null,
+      plateCenter: (pr.left + pr.right) / 2,
+      btnBottom: br ? br.bottom : null,
+      plateTop: pr.top,
+      leadInside: lead ? leadRight <= pr.right - parseFloat(pcs.paddingRight) + 0.5 : false,
+      sideways: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+      border: [
+        pcs.borderTopStyle,
+        pcs.borderRightStyle,
+        pcs.borderBottomStyle,
+        pcs.borderLeftStyle
+      ],
+      ground: pcs.backgroundColor,
+      gap: above ? Math.round((pr.top - above.bottom) * 10) / 10 : null,
+      above: above ? String(above.el).slice(0, 60) : null,
+      h1: [...document.querySelectorAll('h1')].map((h) => h.textContent.trim()),
+      title: document.title,
+      inPlate: !!document.activeElement?.closest('main .empty')
+    };
+  };
+  /* (b) the numbers one window shares across the seven states. */
+  const shared = new Map();
+  for (const lang of ['ru', 'en']) {
+    const label = lang === 'ru' ? 'Войти' : 'Sign in';
+    for (const id of IDS) {
+      const { ctx, page, d } = await openState(id, 360, 640, lang);
+      try {
+        for (const [width, height] of SIZES) {
+          await d.viewport(width, height);
+          await d.settle();
+          const m = await page.evaluate(probe);
+          const where = at + id + ' ' + width + ' ' + lang + ': ';
+          fs.writeSync(1, '  plate: ' + where + JSON.stringify(m) + '\n');
+          /* (a) the shape. */
+          ok(m.plates === 1, where + m.plates + ' plates in main');
+          if (m.plates !== 1) continue;
+          ok(m.glyphs === 1, where + m.glyphs + ' glyphs');
+          ok(
+            m.leads === 1 && m.leadText === LEADS[id][lang],
+            where + 'the lead is ' + m.leadText
+          );
+          ok(
+            m.buttonNames.length === 1 && m.buttonNames[0] === label && m.focusables === 1,
+            where +
+              'the plate holds ' +
+              JSON.stringify(m.buttonNames) +
+              ' and ' +
+              m.focusables +
+              ' controls'
+          );
+          ok(m.errpage === 0, where + 'an error page is drawn');
+          ok(m.openTables === 0, where + 'a link «Открыть таблицы» is drawn in main');
+          /* (c) the long lead wraps inside the window. */
+          if (width <= 360) ok(!m.sideways, where + 'the page scrolls sideways');
+          ok(m.leadInside, where + 'the lead runs past the plate');
+          /* (e) the gap above, the border and the ground. */
+          ok(
+            m.gap !== null &&
+              (Math.abs(m.gap - 16) <= 0.5 ||
+                (Math.abs(m.gap - 18) <= 0.5 && /page-sub/.test(m.above))),
+            where + 'the gap above the plate is ' + m.gap + ' (under ' + m.above + ')'
+          );
+          ok(
+            m.border.every((b) => b === 'solid'),
+            where + 'the border is not solid'
+          );
+          ok(m.ground === 'rgb(20, 17, 29)', where + 'the ground is ' + m.ground);
+          /* (b) the button in the window, centered when it wraps under the lead. */
+          if (m.stacked)
+            ok(
+              Math.abs(m.btnCenter - m.plateCenter) <= 1,
+              where + 'the button is ' + (m.btnCenter - m.plateCenter) + ' px off the center'
+            );
+          if ((width === 360 && height === 640) || (width === 1180 && height === 720))
+            ok(
+              m.btnBottom <= height,
+              where + 'the button ends at ' + m.btnBottom + ', under the window'
+            );
+          const key = lang + ' ' + width;
+          const row = shared.get(key) ?? [];
+          row.push({ id, size: m.leadSize, h: m.btnHeight, align: m.align });
+          shared.set(key, row);
+          /* (g) the headings. */
+          if (id === SHOP)
+            ok(
+              m.h1.length === 1 &&
+                m.h1[0] === (lang === 'ru' ? 'Мои списки' : 'My lists') &&
+                m.title.startsWith(lang === 'ru' ? 'Мои списки' : 'My lists'),
+              where + 'the heading is ' + JSON.stringify(m.h1) + ', the title ' + m.title
+            );
+          if (id === TWO)
+            ok(
+              m.h1.length === 1 &&
+                m.h1[0] === (lang === 'ru' ? 'Печать карточек' : 'Printing cards'),
+              where + 'the heading is ' + JSON.stringify(m.h1)
+            );
+        }
+        /* (d) the focus stays where it was, and Tab reaches «Войти» before the footer. */
+        await d.viewport(1180, 720);
+        await d.settle();
+        const where = at + id + ' ' + lang + ': ';
+        const idle = await page.evaluate(() => !document.activeElement?.closest('main .empty'));
+        ok(idle, where + 'the focus is inside the plate');
+        await page.evaluate(() => {
+          document.activeElement?.blur();
+          scrollTo(0, 0);
+        });
+        let reached = null;
+        for (let i = 0; i < 80 && !reached; i++) {
+          await page.keyboard.press('Tab');
+          reached = await page.evaluate(() => {
+            const a = document.activeElement;
+            if (a?.closest('main .empty')) return 'plate';
+            if (a?.closest('footer')) return 'footer';
+            return null;
+          });
+        }
+        ok(reached === 'plate', where + 'Tab reached ' + reached + ' first');
+        /* (f) «Войти» opens the account page. */
+        await page.keyboard.press('Enter');
+        await d.settle();
+        const path = new URL(page.url()).pathname;
+        ok(
+          path === (lang === 'ru' ? '/account' : '/en/account'),
+          where + '«Войти» opened ' + path
+        );
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+  for (const [key, row] of shared) {
+    for (const field of ['size', 'h', 'align']) {
+      const values = new Set(row.map((r) => r[field]));
+      ok(
+        values.size === 1,
+        at +
+          key +
+          ': the ' +
+          field +
+          ' differs - ' +
+          JSON.stringify(row.map((r) => [r.id, r[field]]))
+      );
+    }
+  }
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -12174,7 +12409,8 @@ const CASES = [
   ['127 (fields at 16 px)', listFieldsAndInset],
   ['128 (the stat columns)', statColumns],
   ['129 (the shared bar on a phone)', sharedBarFolds],
-  ['130 (the roll part shows whole)', rollPartShowsWhole]
+  ['130 (the roll part shows whole)', rollPartShowsWhole],
+  ['131 (one sign-in plate)', oneSignInPlate]
 ];
 
 /* `--only=<text>` keeps the cases whose label holds the text, as `golden.js` narrows its states. */

@@ -1667,8 +1667,12 @@ describe('the states of #/p/', () => {
   it('asks a signed-out reader to sign in, and «Войти» opens the account page', async () => {
     const env = at('#/p/set-twocards', { cloud: fakeCloud(SEED) });
     render(App, { env });
-    expect(await screen.findByText(ru.signInToPrint)).toBeInTheDocument();
+    expect(await screen.findByText(ru.signInToPrint)).toHaveClass('signin-lead');
+    expect(document.querySelector('main .empty .signin-lead')).toHaveTextContent(
+      ru.signInToPrint
+    );
     expect(screen.getByRole('heading', { name: 'Печать карточек' })).toBeInTheDocument();
+    expect(document.querySelector('main .page-sub')).toBeNull();
     expect(document.querySelector('.psheet')).toBeNull();
     await userEvent.click(
       within(document.querySelector('main') as HTMLElement).getByRole('button', {
