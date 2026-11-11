@@ -14,7 +14,7 @@
   import MarkupInline from './MarkupInline.svelte';
   import { artSrc, descBlocks } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
-  import { descOf, eqParts, nameOf } from '../lib/i18n.js';
+  import { descOf, eqCells, eqParts, nameOf } from '../lib/i18n.js';
   import { cardBadges, isCoreBook, kindGlyph, srcLabel } from '../lib/label.js';
   import { isHomebrewRecord, oneLangOf } from '../lib/homebrew.js';
   import type { HiddenTags } from '../lib/rowTags.js';
@@ -45,6 +45,9 @@
     /** The unfolded part of a list's compact row: no picture, no name, no press, the text
      *  whole. */
     full?: boolean;
+    /** The stat parts draw as one cell each (`eqCells`); the table page's stat-column
+     *  rule (docs/specs/FEATURES.md, "Tables and search") aligns them from 1440 px. */
+    cols?: boolean | undefined;
   }
 
   const {
@@ -59,7 +62,8 @@
     hide,
     terms,
     numLabeled,
-    full = false
+    full = false,
+    cols
   }: Props = $props();
 
   const t = $derived(dict(lang));
@@ -95,13 +99,30 @@
         ).join('\u00a0· ')
       : ''
   );
+
+  /* The same parts, one slot each: a missing part leaves its cell empty and no separator. */
+  const cells = $derived(
+    cols && it.eq
+      ? eqCells(it, lang, {
+          tier: t.tier,
+          thresholds: t.eqTh,
+          armorScore: t.eqScore,
+          artifact: t.voaArtifact1
+        })
+      : []
+  );
+  const firstCell = $derived(cells.findIndex(Boolean));
 </script>
 
 {#snippet tagList()}{#each tags as b, i (i)}<Badge cls={b.cls} title={b.title}>{b.text}</Badge
     >{/each}{#if nameLang}<span class="lt" lang={nameLang}>{nameLang.toUpperCase()}</span
     >{/if}{/snippet}
 
-{#snippet textColumn()}{#if it.eq && stats}<span class="rstats {eqClass(it.eq)}">{stats}</span
+{#snippet textColumn()}{#if it.eq && stats}<span class="rstats {eqClass(it.eq)}" class:cols
+      >{#if cols}{#each cells as c, i (i)}{#if c && i > firstCell}<span class="sep"
+              >&nbsp;·&#32;</span
+            >{/if}<span class="sc c{i + 1}" class:none={!c}>{c}</span
+          >{/each}{:else}{stats}{/if}</span
     >{/if}{#if descOf(it, lang)}{@const blocks = descBlocks(it, lang)}<span
       >{#each blocks as b, i (i)}{#if i > 0}<br />{/if}{#if b.t === 'p'}<MarkupInline
             c={b.c}
@@ -130,6 +151,7 @@
   <button
     type="button"
     class="row-main"
+    class:cols
     onclick={() => {
       onopen(it);
     }}

@@ -96,6 +96,8 @@
     /** Draws every row in the first task: an anchor scrolls to its row once, and rows
      *  drawn above it later would move it. */
     whole?: boolean;
+    /** A list row draws its equipment stats as cells (`RowMain`'s `cols`); the page aligns them. */
+    cols?: boolean | undefined;
   }
 
   const {
@@ -115,7 +117,8 @@
     hide,
     terms,
     numLabeled,
-    whole = false
+    whole = false,
+    cols
   }: Props = $props();
 
   const t = $derived(dict(lang));
@@ -206,6 +209,7 @@
             {hide}
             {terms}
             {numLabeled}
+            {cols}
           />{/if}
         {#if inside}{@render inside(it)}{/if}
       </div>

@@ -27,12 +27,7 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/player-token-1?v=<
 
 ## ru :: controls
 1
-11Брошюра по Истории ИскусстваПредметDread GM ToolboxЭто прекрас... [namelen=623 namehash=750fe14d]
-1Зелье Быстрого Шага×5 · 20 зол.РасходникВы получаете бонус +1 к... [namelen=95 namehash=4e19ef8d]
-1Первоклассный Спальный Мешок×2 · 150 зол.ПредметВо время отдыха... [namelen=98 namehash=b507a4b6]
 2
-3Колода СумерекПредметАртефактVault of AgesСтоимость Призыва: 2Э... [namelen=848 namehash=0d8f84be]
-51Гарпун Левиафана99999 зол.Основное оружиеУникальноеWondrous En... [namelen=384 namehash=f8da7a98]
 Core
 Dread GM Toolbox
 EN
@@ -84,6 +79,11 @@ daggerheart.com
 Установить как приложение
 Физическое
 Фильтры
+№ 11Брошюра по Истории ИскусстваПредметDread GM ToolboxЭто прекр... [namelen=625 namehash=2d80c566]
+№ 1Зелье Быстрого Шага×5 · 20 зол.РасходникВы получаете бонус +1... [namelen=97 namehash=e1581606]
+№ 1Первоклассный Спальный Мешок×2 · 150 зол.ПредметВо время отды... [namelen=100 namehash=3f0a7394]
+№ 3Колода СумерекПредметАртефактVault of AgesСтоимость Призыва: ... [namelen=850 namehash=8a050d11]
+№ 51Гарпун Левиафана99999 зол.Основное оружиеУникальноеWondrous ... [namelen=386 namehash=123c02fd]
 
 ## en :: tree
 RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-1?v=<v>]
@@ -110,12 +110,7 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-1?v=<v>]
 
 ## en :: controls
 1
-11Art History BookletItemDread GM ToolboxThis is a finely illust... [namelen=545 namehash=b9986a21]
-1Premium Bedroll×2 · 150 gpItemDuring downtime, you automaticall... [namelen=81 namehash=00225364]
-1Stride Potion×5 · 20 gpConsumableYou gain a +1 bonus to your ne... [namelen=80 namehash=7d8891e6]
 2
-3Twilight DeckItemArtifactVault of AgesRecall Cost: 2This deck e... [namelen=871 namehash=aad79704]
-51Leviathan Harpoon99999 gpPrimary weaponUniqueWondrous Environm... [namelen=364 namehash=9219003b]
 Agility
 Alder Workshop
 All
@@ -140,6 +135,11 @@ Knowledge
 LootDaggerheart
 Magic
 Melee
+No. 11Art History BookletItemDread GM ToolboxThis is a finely il... [namelen=549 namehash=bac00790]
+No. 1Premium Bedroll×2 · 150 gpItemDuring downtime, you automati... [namelen=85 namehash=6dedca5f]
+No. 1Stride Potion×5 · 20 gpConsumableYou gain a +1 bonus to you... [namelen=84 namehash=1f213b8f]
+No. 3Twilight DeckItemArtifactVault of AgesRecall Cost: 2This de... [namelen=875 namehash=f69fdaee]
+No. 51Leviathan Harpoon99999 gpPrimary weaponUniqueWondrous Envi... [namelen=368 namehash=67ec9120]
 Note
 One-Handed
 Physical

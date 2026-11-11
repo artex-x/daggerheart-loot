@@ -48,7 +48,7 @@
     const bits = [whereFrom(it, app.lang)];
     if (it.tier === 'A') bits.push(t.voaArtifact1);
     else if (it.tier === 'C') bits.push(t.voaCursed1);
-    if (it.roll) bits.push(`${t.rollNo} ${String(it.roll)}`);
+    if (it.roll) bits.push(t.rowNo.replace('%n', String(it.roll)));
     /* An artifact's section word above already stands where its tier would. */
     else if (it.eq && it.eq.tier !== 'A') bits.push(`${t.tier} ${String(it.eq.tier)}`);
     return bits.join(' · ');

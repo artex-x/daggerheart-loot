@@ -390,9 +390,8 @@ damage dice. A number a person reads as prose takes neither.
 
 **The Whole Message Rule.** A heading, a control label, an error line, a status line and
 a toast wrap; they are never cut. A name, a description or a list of chosen values may be
-cut to its clamp when one press shows it whole: up to 760px a roll page's picker cuts a long
-chosen part (the select shows it whole), so the roll button keeps its line and the first
-result its first screen; from 761px the button wraps instead. Exceptions: the editor's
+cut to its clamp when one press shows it whole: a roll page's picker shows a long chosen
+part on up to two lines at every width (case 130). Exceptions: the editor's
 record name, one line with an ellipsis while it has no focus, at every width (owner,
 2026-10-29; the heading above it shows the whole name), and the owner's list name, one line
 with an ellipsis while it has no focus up to 999px; in the side plate from 1000px the field
@@ -912,6 +911,9 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
   actions the next. Zero ticks: the actions off, the clear on. The owner's list
   page draws its own bar in the same place (`app.pageBar`); up to 760px its rare
   actions fold into «Ещё», which opens up by the overlay rule; the lists index draws its bar the same way.
+  The shared page folds «Скопировать текст» and «Сообщить владельцу» of a reader's link into
+  «Ещё» likewise, so its bar is «Все» and the count over «В список», «Печать» and «Ещё» on
+  one row (118px at 360px).
   The add-to-list menu is a popover at every width, headed «Списки», a neutral row
   per list with a check where it holds the record and its count in words. A panel a bar action opens is a
   `Sheet`, because the bar is pinned and a panel under it would grow past the
@@ -1051,9 +1053,29 @@ The Measure Rule: a clamped snippet with no measure. The clamp is three lines up
 600px and from 1000px, and two lines between; a cut always has one press to the whole,
 the record. From 1000px the description's line height is 1.55, so a long second line has
 room for the eye's return. Rows stay one column at every width, and the layouts from 360px
-to 760px do not change. A row with a short description stays partly empty: tabular stat
-columns are a proposed rule (The Stat Columns Rule). Owner, 2026-11-05.
+to 760px do not change. A row with a short description stays partly empty on the pages
+that keep the stat sentence; the equipment tables from 1440px draw stat columns (The Stat
+Columns Rule), where the description is four lines. Owner, 2026-11-05.
 `tests/app/states.js` case 106 measures it.
+
+**The Stat Columns Rule.** From 1440px a weapon or armor row on `/tables/eq_*` draws its
+stat parts in aligned columns right of its text, in place of the stat sentence: a weapon
+five (class, trait, range, damage, burden), an armor two (thresholds, score), each as wide
+as its widest value in the whole table, right-aligned with tabular figures and a 16px gap.
+The page column is the one grid and the sections, rows and row bodies are subgrids of it, so
+the right edges are equal in every row of every section. A missing part leaves its cell
+empty. The description keeps the free width left of the columns and clamps at four lines,
+the line the sentence freed (the Row Text Rule's three lines otherwise). Departures from
+the draft of 2026-11-05, each decided by the AFK defaults of 2026-11-10: the cells carry no
+header row and read as the sentence wrote them («Пороги 7/15», «Броня 4», «Сила»,
+«Ближняя»), in the page's language; the DOM order stays name, stats, description, so a
+screen reader reads the stats before the description while the grid draws them last (the
+separators `·` stay as visually hidden text, so a row's accessible name is unchanged); the
+cells align to the name line, not the row's center; the weapon class is the first column.
+Below 1440px, in the tile view, on `/search`, on the list page and on `/s/` the stat
+sentence stays. The values come from the source book data (`CLAUDE.md`, "Product laws").
+One CSS block in `TablesPage.svelte` and the `cols` prop of `RowMain` are the whole rule.
+`tests/app/states.js` case 128 measures it.
 
 **The Field Measure Rule.** A search box is at most 720px from 761px, and the controls of
 its row follow it on the same line; up to 760px it takes the row's free width. Source:
@@ -1152,7 +1174,6 @@ source.
 | Window size classes | https://developer.android.com/develop/ui/compose/layouts/adaptive/window-size-classes | Not proposed: the project's 600, 760 and 1000px steps follow the same principle; only the 1600px class is of use, as the Detail Pane's threshold. | - | - |
 | A step of ten | https://developer.apple.com/design/human-interface-guidelines/steppers | Not proposed: a Shift-press step of ten is a shortcut with no label (The Clarity Rule). | - | - |
 | A 24px gutter | https://primer.style/product/getting-started/foundations/layout/ | Not proposed: from 1280px a 24px gutter would move every number of the 1440px column for 8px a side. | - | - |
-| The Stat Columns Rule | https://m2.material.io/components/data-tables (numerical data is right-aligned; the page was not re-fetched when this row was written) | From 1440px a weapon or armor row on `/tables/eq_*` draws trait, range, damage and burden in tabular columns right of its text, right-aligned with tabular figures and labeled in both languages, in place of the stat sentence; the description keeps the free width left of them. Rows stay one column. Below 1440px, on `/search`, on the list page and on `/s/` the stat sentence stays. The values come from the source book data (`CLAUDE.md`, "Product laws"). Owner, 2026-11-05: "plan stat columns later". | a states case at 1440 and 1920px on `#/tables/eq_weapon` and `eq_armor`: the column edges equal within 1px in every row, the labels exist in RU and EN, and case 106's clamp share does not rise | a task after wave 3, with its own mock (recommended; not batch 10, a docs-only lock) |
 
 ## Notes
 

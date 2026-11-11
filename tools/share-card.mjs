@@ -208,7 +208,7 @@ export const PATH_TEXT = {
     frames: 'Сеттинги',
     artifact: 'Артефакт',
     cursed: 'Проклятый предмет',
-    rollNo: 'номер',
+    rowNo: '№ %n',
     tier: 'Ранг'
   },
   en: {
@@ -236,7 +236,7 @@ export const PATH_TEXT = {
     frames: 'Frames',
     artifact: 'Artifact',
     cursed: 'Cursed object',
-    rollNo: 'roll',
+    rowNo: 'No. %n',
     tier: 'Tier'
   }
 };
@@ -316,7 +316,7 @@ export function where(it, lang) {
   else if (it.src === 'ph' && it.vol) bits.push(pick(VOLUME_LABEL[it.vol], lang) || it.vol);
   if (it.tier === 'A') bits.push(p.artifact);
   else if (it.tier === 'C') bits.push(p.cursed);
-  if (it.roll) bits.push(p.rollNo + ' ' + it.roll);
+  if (it.roll) bits.push(p.rowNo.replace('%n', String(it.roll)));
   else if (it.eq && it.eq.tier !== 'A') bits.push(p.tier + ' ' + it.eq.tier);
   return bits.join(' · ');
 }

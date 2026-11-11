@@ -1,4 +1,4 @@
-﻿/* The focus a removed row leaves behind (docs/specs/FEATURES.md, rule 20): the tick of the
+/* The focus a removed row leaves behind (docs/specs/FEATURES.md, rule 20): the tick of the
    row now at the same place, else the last row's, else the bar's clear control. */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { keepRowFocus } from './keepRowFocus.js';
@@ -23,7 +23,7 @@ function page(ids: string): { list: HTMLElement; tick: (id: string) => HTMLInput
   const bar = document.createElement('section');
   bar.className = 'selbarwrap';
   bar.innerHTML =
-    '<span class="selclear"><button type="button">РЎРЅСЏС‚СЊ РІС‹РґРµР»РµРЅРёРµ</button></span>';
+    '<span class="selclear"><button type="button">Снять выделение</button></span>';
   document.body.append(list, bar);
   const tick = (id: string): HTMLInputElement =>
     list.querySelector(`[data-id="${id}"] input`) as HTMLInputElement;

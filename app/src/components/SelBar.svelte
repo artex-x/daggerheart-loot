@@ -13,6 +13,7 @@
   import Button from './Button.svelte';
   import HomebrewBulk from './HomebrewBulk.svelte';
   import Icon from './Icon.svelte';
+  import MoreMenu from './MoreMenu.svelte';
   import SelectionBar from './SelectionBar.svelte';
   import SignInPrompt from './SignInPrompt.svelte';
   import type { ListEntryMeta } from '../lib/lists.js';
@@ -102,6 +103,9 @@
   const asking = $derived(
     sender?.asking && token !== null && sender.asking.token === token ? sender.asking : null
   );
+  /* Up to 760 px a reader's «Скопировать текст» and «Сообщить владельцу» fold into «Ещё»: the
+     bar is one action row, 118 px tall at 360 px, not four rows. */
+  const folded = $derived(token !== null && !!sender && app.band === 'narrow');
   let remember = $state(false);
   let question = $state<HTMLParagraphElement | undefined>(undefined);
   /* Signed out, «Печать» replaces the action row with the sign-in prompt, as the notify
@@ -229,15 +233,51 @@
             onclick={pressPrint}><Icon name="print" />{t.print}</Button
           >
         {/if}
-        {#if !hb || app.band !== 'narrow'}
-          <Button size="sm" disabled={!n} onclick={() => void copySel()}
-            ><Icon name="copy" />{t.copyText}</Button
-          >
+        {#if folded && token !== null && sender}
+          <!-- Up to 760 px a reader's rare actions share one «Ещё», as the owner's page
+               folds its own (DESIGN.md, "The Phone-First Rule"). -->
+          <span class="sharemore">
+            <MoreMenu {app} id="share-more" size="sm">
+              {#snippet children(close: () => void)}
+                <button
+                  type="button"
+                  role="menuitem"
+                  tabindex="-1"
+                  disabled={!n}
+                  onclick={() => {
+                    close();
+                    void copySel();
+                  }}><Icon name="copy" />{t.copyText}</button
+                >
+                <button
+                  type="button"
+                  role="menuitem"
+                  tabindex="-1"
+                  disabled={!n || sender.sending || sent}
+                  onclick={() => {
+                    close();
+                    void sender.send(token, lines);
+                  }}
+                  >{sent
+                    ? t.requestSentDone
+                    : sender.sending
+                      ? t.requestSending
+                      : t.requestSend}</button
+                >
+              {/snippet}
+            </MoreMenu>
+          </span>
+        {:else}
+          {#if !hb || app.band !== 'narrow'}
+            <Button size="sm" disabled={!n} onclick={() => void copySel()}
+              ><Icon name="copy" />{t.copyText}</Button
+            >
+          {/if}
+          {#if hb}
+            <HomebrewBulk {app} store={hb} {ids} copy={() => void copySel()} />
+          {/if}
         {/if}
-        {#if hb}
-          <HomebrewBulk {app} store={hb} {ids} copy={() => void copySel()} />
-        {/if}
-        {#if token !== null && sender}
+        {#if !folded && token !== null && sender}
           <span class="notify"
             ><Button
               size="sm"
@@ -321,6 +361,27 @@
   @media (max-width: 760px) and (min-height: 481px) {
     .notify {
       flex: 1 1 100%;
+    }
+  }
+
+  /* This box anchors the «Ещё» menu, as `HomebrewBulk`'s `.bulkmore` does. */
+  .sharemore {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+  }
+
+  .sharemore :global(.morewrap) {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* The actions share one row: «В список» gives up the line it has elsewhere. */
+  @media (max-width: 760px) {
+    :global(.selbarwrap .selacts:has(.sharemore) .seldrop) {
+      flex: 1.5 1 0;
+      min-width: 0;
     }
   }
 

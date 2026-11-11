@@ -62,7 +62,6 @@ const ru = {
   openPage: 'Открыть страницу',
   openCard: 'Открыть карточку',
   showInTable: 'показать в таблице',
-  rollNo: 'номер',
 
   /* The book a record comes from, as the badge and the metadata line name it */
   srcCore: 'Core',
@@ -385,7 +384,7 @@ const ru = {
   listCopied: 'Список скопирован',
   itemNotLoaded: 'Предмет не загружен',
   listGoneSignedOut: 'Войдите, чтобы открыть список',
-  listGoneSignedOutSub: 'Списки открываются только в аккаунте, где их создали. Войдите в него.',
+  listGoneSignedOutSub: 'Списки открываются только в аккаунте, где их создали.',
   listGoneAccount: 'Этого списка нет в вашем аккаунте',
   listGoneAccountSub: 'Его удалили, или он сохранён в другом аккаунте.',
   listGoneAs: 'Вы вошли как %s.',
@@ -1202,7 +1201,6 @@ const en: Dict = {
   openPage: 'Open page',
   openCard: 'Open card',
   showInTable: 'show in the table',
-  rollNo: 'roll',
 
   srcCore: 'Core',
   srcHnf: 'Hope & Fear',
@@ -1449,8 +1447,7 @@ const en: Dict = {
   listCopied: 'List copied',
   itemNotLoaded: 'Item not loaded',
   listGoneSignedOut: 'Sign in to open this list',
-  listGoneSignedOutSub:
-    'A list opens only in the account where it was made. Sign in to that account.',
+  listGoneSignedOutSub: 'A list opens only in the account where it was made.',
   listGoneAccount: 'This list is not in your account',
   listGoneAccountSub: 'It was deleted, or it is in another account.',
   listGoneAs: 'You are signed in as %s.',
