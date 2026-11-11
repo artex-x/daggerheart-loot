@@ -14,6 +14,7 @@ deleted.
 
 ## Index
 
+- 2026-11-11 - [Errata over SRD 2.0 over the printed book for Darrington Press equipment](decisions/2026-11-11-errata-over-srd-2-over-the-printed-book-for-darrington-equipment.md)
 - 2026-11-07 - [A table sectioned by a record property reads one descriptor](decisions/2026-11-07-a-table-sectioned-by-a-record-property-reads-one-descriptor.md)
 - 2026-11-07 - [Escape the Veiled Halls is one flat list with no rooms](decisions/2026-11-07-escape-the-veiled-halls-is-one-flat-list-with-no-rooms.md)
 - 2026-11-07 - [One roll row per item: an upgrade line is rolled at its head](decisions/2026-11-07-one-roll-row-per-item-an-upgrade-line-is-rolled-at-its-head.md)
