@@ -229,6 +229,14 @@ across.
   «Фильтры» below 1000 px (plain at no pick, «Фильтры · N» lit while a value
   is picked: a gold label on a 45% gold border), from 761 px the view switch,
   the «Свои предметы» switch and «Ссылка на таблицу», then «Выбрать» last.
+- **Stat columns** (`/tables/eq_weapon`, `eq_secondary`, `eq_armor`, list view, from 1440 px;
+  DESIGN.md "The Stat Columns Rule"): a row draws its stat parts in aligned columns at its right
+  in place of the stat sentence: a weapon five (class, trait, range, damage, burden), an
+  armor two (thresholds, score), each column as wide as the widest value of the whole table,
+  right-aligned, the right edges equal in every row of every tier section. A part the record
+  lacks leaves its cell empty. The description takes the free width left of the columns, up
+  to four lines. Below 1440 px, in the tile view, on `/search`, on the list page and on
+  `/s/` the sentence stays. A row's accessible name is the same at every width.
 - A long table paints before all of it is built: the first 60 rows of the page draw in
   the first task and 60 more in each task after it; rows that arrive later (a filter
   cleared) and an anchored table draw at once. The counts, «Все» and the selection read
@@ -302,7 +310,10 @@ across.
   kind row, where a long line takes a line of its own. M counts the matches
   over all kinds, N the rows drawn.
 - **A search row** draws the roll number as «№ 89» / "No. 89" in its number
-  box: no table is named on this page. A table row keeps the bare number.
+  box: no table is named on this page. A table row keeps the bare number. A `/s/` row
+  from 761 px draws «№ N» too (the compact row keeps the bare number, "Lists"); the record
+  page's meta line and the share card's subtitle write «№ 1» / "No. 1", one term for the
+  number on every page.
 - **The start state** of `#/search` (no query): the plate with the item glyph,
   «Что ищем?» / "What are you looking for?", one sentence (search reads names
   and descriptions in both languages at once) and three example queries as
@@ -1178,7 +1189,9 @@ address kept, and no add-to-list control is drawn.
   another list clears the search and the filter.
 - **Not found** (A18, `ErrorPage`): an account address signed out, or an address
   that is no account id, draws «Войдите, чтобы открыть список» / "Sign in to open
-  this list", «Списки открываются только в аккаунте, где их создали. Войдите в него.»,
+  this list", «Списки открываются только в аккаунте, где их создали.» / "A list opens
+  only in the account where it was made." (no instruction: the heading and the button
+  say it),
   the primary «Войти», which returns to that address, and «Открыть таблицы»; nothing while the session is
   unknown; «Загружаем...» while the session's account read runs;
   the heading «Список не загрузился», «Не получилось
@@ -1226,8 +1239,10 @@ address kept, and no add-to-list control is drawn.
   назад» move with the same 45 s clock while the page stays open.
 - **Purchase requests: the send**: on a `#/s/` page every reader but the
   list's owner, signed in or not, has «Сообщить владельцу» / "Notify the
-  owner" last in the selection bar's actions, on its own line at 600 px or
-  less. It sends the owner a request for the ticked entries with their taken
+  owner" last in the selection bar's actions; up to 760 px it is the second item of
+  «Ещё» (after «Скопировать текст»), so the bar is one action row, «В список»,
+  «Печать» and «Ещё», 118 px at 360 px (DESIGN.md, "The Phone-First Rule"). The item
+  closes the menu when pressed and keeps its states for the next opening. It sends the owner a request for the ticked entries with their taken
   counts; while it runs it reads «Отправляем...» and is disabled. Success
   keeps the selection and its counts, toasts «Запрос отправлен владельцу
   списка.», and the button reads «Запрос отправлен» / "Request sent",

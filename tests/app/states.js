@@ -5655,7 +5655,8 @@ const FIRST_SCREEN = [
     mid: true,
     exception: 304
   },
-  /* The thumb-size «Сохранить себе» (DESIGN.md, "The First-Screen Rule", 2026-11-06). */
+  /* The thumb-size «Сохранить себе» (DESIGN.md, "The First-Screen Rule", 2026-11-06); the 309 px
+     stays by docs/decisions/2026-11-11-craft-links-and-the-shared-first-entry-stay.md. */
   { state: '#/s/player-token-1', shipped: true, exception: 309 },
   /* From 761 px the 120-character name takes three lines (DESIGN.md, "The First-Screen Rule"). */
   {
@@ -8700,8 +8701,14 @@ function rowTextOf(page) {
       const bs = getComputedStyle(body);
       const cs = getComputedStyle(rt);
       if (cs.maxWidth !== 'none') out.capped.push(cs.maxWidth);
-      const contentRight = body.getBoundingClientRect().right - parseFloat(bs.paddingRight);
-      if (contentRight - rt.getBoundingClientRect().right > 16) out.capped.push('short');
+      /* A row in the stat columns draws its text left of the first cell (`.rt` is `display:
+         contents` there): that cell's left edge is the text's free edge. */
+      const c1 = cs.display === 'contents' ? r.querySelector('.sc.c1') : null;
+      const contentRight = c1
+        ? c1.getBoundingClientRect().left
+        : body.getBoundingClientRect().right - parseFloat(bs.paddingRight);
+      const rtRight = c1 ? c1.getBoundingClientRect().left : rt.getBoundingClientRect().right;
+      if (contentRight - rtRight > 16) out.capped.push('short');
       const d = r.querySelector(DESC);
       if (!d) continue;
       out.described++;
@@ -11723,6 +11730,327 @@ async function listFieldsAndInset() {
   }
 }
 
+/** 128. The stat columns (docs/specs/FEATURES.md, "Tables and search"; DESIGN.md "The Stat
+ *  Columns Rule"): on `/tables/eq_weapon` and `eq_armor` at 1440 and 1920 px in RU and EN every
+ *  row draws its stat parts as cells (5 and 2), each column's right edge equal in every row of
+ *  every section within 1 px, the description left of the cells; of the first 60 rows no more
+ *  descriptions are cut than with the sentence, the rows are no taller in all, and none is
+ *  taller than with the sentence by over a description line plus 4 px (a text of one wide line
+ *  wraps in the narrower column). At 1439 px the sentence stays, its separators visible. The sentence layout is the same
+ *  page with the `statcols` class taken off. */
+async function statColumns() {
+  const at = '128 (stat columns): ';
+  const measure = (page, expectCells) =>
+    page.evaluate(async (want) => {
+      await document.fonts.ready;
+      for (let i = 0; i < 60 && document.querySelector('[data-drawing]'); i++)
+        await new Promise((r) => setTimeout(r, 100));
+      const frames = () =>
+        new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      await frames();
+      const col = document.querySelector('.rowscol');
+      const rows = [...document.querySelectorAll('.rows > .row')];
+      const descOf = (row) => row.querySelector('.row-main .rt > span:not(.rh):not(.rstats)');
+      const take = async () => {
+        await frames();
+        return rows.slice(0, 60).map((row) => {
+          const d = descOf(row);
+          return {
+            h: row.getBoundingClientRect().height,
+            cut: d ? d.scrollHeight > d.clientHeight + 1 : false
+          };
+        });
+      };
+      const out = {
+        rows: rows.length,
+        sections: document.querySelectorAll('.tsection').length,
+        mode: [
+          ...new Set(rows.map((r) => getComputedStyle(r.querySelector('.rstats')).display))
+        ],
+        cells: [...new Set(rows.map((r) => r.querySelectorAll('.sc').length))],
+        statcols: !!col?.classList.contains('statcols'),
+        sepShown: rows.some((r) => {
+          const s = r.querySelector('.sep');
+          return !!s && s.getBoundingClientRect().width > 2;
+        }),
+        spread: [],
+        overlap: 0,
+        want
+      };
+      if (!out.statcols) return out;
+      const edges = {};
+      for (const row of rows) {
+        for (const sc of row.querySelectorAll('.sc')) {
+          const k = /\bc(\d)\b/.exec(sc.className)?.[1] ?? '?';
+          (edges[k] ||= []).push(sc.getBoundingClientRect().right);
+        }
+        const d = descOf(row);
+        const c1 = row.querySelector('.sc.c1');
+        if (d && c1 && d.getBoundingClientRect().right > c1.getBoundingClientRect().left + 1)
+          out.overlap++;
+      }
+      out.spread = Object.entries(edges).map(([k, v]) => [k, Math.max(...v) - Math.min(...v)]);
+      out.after = await take();
+      col.classList.remove('statcols');
+      out.before = await take();
+      col.classList.add('statcols');
+      return out;
+    }, expectCells);
+
+  for (const [table, want] of [
+    ['#/tables/eq_weapon', 5],
+    ['#/tables/eq_armor', 2]
+  ]) {
+    for (const lang of ['ru', 'en']) {
+      for (const [width, height] of [
+        [1440, 900],
+        [1920, 1080]
+      ]) {
+        const where = at + table + ' ' + width + ' ' + lang + ': ';
+        const { ctx, page } = await openState(table, width, height, lang);
+        try {
+          const m = await measure(page, want);
+          ok(m.statcols, where + 'the rows are not in the stat columns');
+          ok(
+            m.sections >= 2,
+            where + 'a table of ' + m.sections + ' sections cannot prove one edge set'
+          );
+          ok(
+            m.mode.length === 1 && m.mode[0] === 'contents',
+            where + 'the stats are not cells - ' + m.mode
+          );
+          ok(
+            m.cells.length === 1 && m.cells[0] === want,
+            where + 'the rows hold ' + m.cells + ' cells, not ' + want
+          );
+          ok(
+            m.spread.length === want && m.spread.every(([, s]) => s <= 1),
+            where + 'the right edges differ - ' + JSON.stringify(m.spread)
+          );
+          ok(m.overlap === 0, where + m.overlap + ' descriptions run under the cells');
+          if (!m.after || !m.before) continue;
+          const cutAfter = m.after.filter((r) => r.cut).length;
+          const cutBefore = m.before.filter((r) => r.cut).length;
+          const sumAfter = m.after.reduce((n, r) => n + r.h, 0);
+          const sumBefore = m.before.reduce((n, r) => n + r.h, 0);
+          const taller = m.after.filter((r, i) => r.h > (m.before[i]?.h ?? 0) + 25).length;
+          fs.writeSync(
+            1,
+            '  stat columns: ' +
+              table +
+              ' ' +
+              width +
+              ' ' +
+              lang +
+              ' rows ' +
+              m.rows +
+              ', cut ' +
+              cutBefore +
+              ' to ' +
+              cutAfter +
+              ', taller ' +
+              taller +
+              '\n'
+          );
+          ok(
+            cutAfter <= cutBefore,
+            where + 'more descriptions are cut: ' + cutBefore + ' to ' + cutAfter
+          );
+          ok(
+            sumAfter <= sumBefore,
+            where + 'the 60 rows are taller in all: ' + sumBefore + ' to ' + sumAfter
+          );
+          ok(
+            taller === 0,
+            where +
+              taller +
+              ' rows are taller than with the sentence by over a description line'
+          );
+        } finally {
+          await ctx.close();
+        }
+      }
+    }
+  }
+
+  /* One pixel under the rule the sentence stays. */
+  for (const lang of ['ru', 'en']) {
+    const where = at + '1439 ' + lang + ': ';
+    const { ctx, page } = await openState('#/tables/eq_weapon', 1439, 900, lang);
+    try {
+      const m = await measure(page, 5);
+      ok(!m.statcols || m.mode[0] !== 'contents', where + 'the cells are drawn - ' + m.mode);
+      ok(m.mode.length === 1 && m.mode[0] === 'block', where + 'the sentence is ' + m.mode);
+      ok(m.sepShown, where + 'the separators of the sentence are not shown');
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
+/** 129. The shared page's bar on a phone (docs/specs/FEATURES.md, "Shared lists"; DESIGN.md "The
+ *  Phone-First Rule"): at 360x640 and 320x568, RU and EN, with two entries ticked the bar is at
+ *  most 137 px, «В список», «Печать» and «Ещё» share one row inside the bar, «Скопировать текст»
+ *  and «Сообщить владельцу» are the two items of «Ещё», inside the window; the notify item sends
+ *  and then reads sent and disabled. */
+async function sharedBarFolds() {
+  const at = '129 (the shared bar on a phone): ';
+  for (const lang of ['ru', 'en']) {
+    for (const [width, height] of [
+      [360, 640],
+      [320, 568]
+    ]) {
+      const where = at + width + ' ' + lang + ': ';
+      const { ctx, page } = await openState(
+        '#/s/player-token-1 ~ ticked, compact',
+        width,
+        height,
+        lang
+      );
+      try {
+        const bar = await page.evaluate(() => {
+          const r = (e) => e.getBoundingClientRect();
+          const wrap = document.querySelector('.selbarwrap');
+          const inner = document.querySelector('.selbar');
+          const acts = [...document.querySelectorAll('.selacts .btn')].map((b) => ({
+            name: b.textContent.trim(),
+            top: Math.round(r(b).top),
+            left: r(b).left,
+            right: r(b).right
+          }));
+          return {
+            h: r(inner).height,
+            top: r(wrap).top,
+            bottom: r(wrap).bottom,
+            left: r(wrap).left,
+            right: r(wrap).right,
+            acts,
+            more: !!document.querySelector('.selacts .morewrap > .btn[aria-haspopup]'),
+            sideways:
+              document.documentElement.scrollWidth > document.documentElement.clientWidth
+          };
+        });
+        ok(bar.h <= 137, where + 'the bar is ' + bar.h + ' px tall, over 137');
+        ok(
+          bar.acts.length === 3,
+          where + 'the bar holds ' + bar.acts.length + ' action buttons'
+        );
+        ok(
+          new Set(bar.acts.map((a) => a.top)).size === 1,
+          where + 'the actions are not one row - ' + JSON.stringify(bar.acts)
+        );
+        ok(
+          bar.acts.every((a) => a.left >= bar.left && a.right <= bar.right),
+          where + 'an action leaves the bar - ' + JSON.stringify(bar.acts)
+        );
+        ok(bar.more && !bar.sideways, where + '«Ещё» is missing or the page scrolls sideways');
+
+        await page.click('.selacts .morewrap > .btn');
+        ok(
+          await waitIn(page, () => !!document.querySelector('[role="menu"]')),
+          where + 'the menu did not open'
+        );
+        const menu = await page.evaluate(
+          (w, h) => {
+            const m = document.querySelector('[role="menu"]');
+            const b = m.getBoundingClientRect();
+            return {
+              items: [...m.querySelectorAll('[role="menuitem"]')].map((i) => ({
+                text: i.textContent.trim(),
+                off: i.disabled
+              })),
+              inside: b.left >= 0 && b.right <= w && b.top >= 0 && b.bottom <= h
+            };
+          },
+          width,
+          height
+        );
+        ok(menu.items.length === 2, where + 'the menu holds ' + menu.items.length + ' items');
+        ok(
+          menu.items.every((i) => !i.off),
+          where + 'an item is disabled with two ticks'
+        );
+        ok(menu.inside, where + 'the menu leaves the window');
+
+        await page.click('[role="menu"] [role="menuitem"]:last-of-type');
+        ok(
+          await waitIn(
+            page,
+            () =>
+              !document.querySelector('[role="menu"]') && !!document.querySelector('.sentline')
+          ),
+          where + 'the notify item did not send and close the menu'
+        );
+        await page.click('.selacts .morewrap > .btn');
+        ok(
+          await waitIn(page, () => !!document.querySelector('[role="menu"]')),
+          where + 'the menu did not reopen'
+        );
+        const sent = await page.evaluate(() => {
+          const i = document.querySelectorAll('[role="menu"] [role="menuitem"]')[1];
+          return { off: i.disabled, text: i.textContent.trim() };
+        });
+        ok(sent.off, where + 'the notify item is enabled after the send - ' + sent.text);
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+}
+
+/** 130. A roll page's picker shows the chosen part whole (docs/specs/FEATURES.md, "Rolling";
+ *  DESIGN.md "The Whole Message Rule"): at 360 and 390 px, RU and EN, every option of the three
+ *  picker pages draws its chosen part with no sideways cut and no third line, the roll button
+ *  inside the window. */
+async function rollPartShowsWhole() {
+  const at = '130 (the roll part shows whole): ';
+  for (const lang of ['ru', 'en']) {
+    for (const [width, height] of [
+      [360, 640],
+      [390, 844]
+    ]) {
+      const { ctx, page, d } = await fresh({ width, height, lang });
+      try {
+        for (const route of [
+          '#/roll/vault_of_ages',
+          '#/roll/community_items',
+          '#/roll/many_worlds_tavern'
+        ]) {
+          await d.open(route, { lang });
+          const options = await page.$eval('.pick select', (s) =>
+            [...s.options].map((o) => [o.value, o.textContent.trim()])
+          );
+          ok(
+            options.length > 1,
+            at + route + ': the picker holds ' + options.length + ' options'
+          );
+          for (const [value, label] of options) {
+            await d.choose('.pick select', value);
+            const got = await page.evaluate(() => {
+              const pv = document.querySelector('.pick .pv');
+              const btn = document.querySelector('.rp-ctrl .btn.primary');
+              const pick = document.querySelector('.pick').getBoundingClientRect();
+              return {
+                sideways: pv.scrollWidth - pv.clientWidth,
+                tall: pv.scrollHeight - pv.clientHeight,
+                right: Math.max(pick.right, btn?.getBoundingClientRect().right ?? 0),
+                btnCut: btn ? btn.scrollWidth > btn.clientWidth : false
+              };
+            });
+            const where = at + route + ' ' + width + ' ' + lang + ' «' + label + '»: ';
+            ok(got.sideways <= 0, where + 'cut sideways by ' + got.sideways + ' px');
+            /* Glyphs overhang a one-line box by 2 px; a third line adds about 18. */
+            ok(got.tall <= 4, where + 'cut under the second line by ' + got.tall + ' px');
+            ok(got.right <= width && !got.btnCut, where + 'the roll row leaves the window');
+          }
+        }
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -11843,12 +12171,20 @@ const CASES = [
   ['124 (the focus after a remote removal)', focusAfterRemoteRemoval],
   ['125 (Escape in a selection)', escapeInASelection],
   ['126 (the new page opens at the top)', newPageOpensAtTheTop],
-  ['127 (fields at 16 px)', listFieldsAndInset]
+  ['127 (fields at 16 px)', listFieldsAndInset],
+  ['128 (the stat columns)', statColumns],
+  ['129 (the shared bar on a phone)', sharedBarFolds],
+  ['130 (the roll part shows whole)', rollPartShowsWhole]
 ];
+
+/* `--only=<text>` keeps the cases whose label holds the text, as `golden.js` narrows its states. */
+const ONLY = process.argv.find((a) => a.startsWith('--only='))?.slice('--only='.length) ?? null;
 
 /* The interleave spreads the slow layout cases at the end of the list over
  * every piece, as `golden.js` spreads its states. */
-const MINE = CASES.filter((c, i) => !SHARD || i % SHARD.of === SHARD.n);
+const MINE = CASES.filter(
+  (c, i) => (!SHARD || i % SHARD.of === SHARD.n) && (ONLY === null || c[0].includes(ONLY))
+);
 
 (async () => {
   /* Each case gets its own try/catch: a hung CDP call under host load

@@ -1843,9 +1843,7 @@ describe('an account list', () => {
   it('draws the error page signed out, «Войти» and «Открыть таблицы», and «Войти» opens the account page', async () => {
     const { container, router } = openAs(fakeCloud(SEED));
     expect(
-      await screen.findByText(
-        'Списки открываются только в аккаунте, где их создали. Войдите в него.'
-      )
+      await screen.findByText('Списки открываются только в аккаунте, где их создали.')
     ).toHaveClass('errtext');
     expect(screen.getAllByRole('heading', { level: 1 }).map((h) => h.textContent)).toEqual([
       'Войдите, чтобы открыть список'

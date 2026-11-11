@@ -533,6 +533,7 @@
       {:else}
         <TableRows
           primary
+          numLabeled
           {entries}
           view="list"
           lang={app.lang}

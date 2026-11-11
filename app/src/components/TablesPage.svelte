@@ -335,6 +335,10 @@
     hiddenTags(table, facetState, bodyKind === 'tier' || bodyKind === 'eq')
   );
 
+  /* The equipment rows draw their stats as cells, aligned from 1440 px (the block at the end of
+     the styles); other widths and the tile view keep the sentence. */
+  const statCols = $derived(!!eqKind && view === 'list' && hide.tier);
+
   async function copyTableLink(): Promise<void> {
     await app.copied(
       () =>
@@ -876,7 +880,11 @@
         {/if}
         <!-- The table, its section heads included, is the page's primary content (DESIGN.md,
              "The First-Screen Rule"); the filter column beside it is not. -->
-        <div class="rowscol" data-primary>
+        <div
+          class="rowscol"
+          class:statcols={statCols && bodyKind === 'eq' && filtered.length > 0}
+          data-primary
+        >
           {#if bodyKind === 'alt'}
             {#if altSections.length === 0}
               <Empty title={t.nothing} glyph={emptyGlyph}>
@@ -949,6 +957,7 @@
                   ticks={app.selecting}
                   {hide}
                   {terms}
+                  cols={statCols}
                   selected={(id: string) => app.sel.has(id)}
                   artBroken={(id: string) => app.artBroken(id)}
                   ontoggle={(id: string) => {
@@ -1163,5 +1172,121 @@
 
   .altcol.fear {
     color: var(--fear);
+  }
+
+  /* The stat columns (DESIGN.md, "The Stat Columns Rule"): from 1440 px the equipment rows
+     draw each stat part in its own right-aligned column, one edge set for the whole table.
+     The page column is the one grid and every level below it is a subgrid of it, so the
+     sections share their column widths. A row keeps the DOM order: name, stats, description.
+     This block and the `cols` prop of `RowMain` are the whole rule. */
+  @media (min-width: 1440px) {
+    .rowscol.statcols {
+      display: grid;
+      grid-template-columns:
+        [sel] auto [art] 72px [text] minmax(0, 1fr)
+        [s1] auto [s2] auto [s3] auto [s4] auto [s5] auto
+        [end];
+    }
+
+    .statcols > .tsection {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: subgrid;
+    }
+
+    .statcols > .tsection > :global(*) {
+      grid-column: 1 / -1;
+    }
+
+    .statcols :global(.rows) {
+      display: grid;
+      grid-template-columns: subgrid;
+      row-gap: 8px;
+    }
+
+    .statcols :global(.rows > .row) {
+      grid-column: 1 / -1;
+      grid-template-columns: subgrid;
+    }
+
+    .statcols :global(.row > .selbox) {
+      grid-column: sel;
+    }
+
+    .statcols :global(.row-main.cols) {
+      grid-column: art / end;
+      grid-row: 1;
+      display: grid;
+      grid-template-columns: subgrid;
+      grid-template-rows: auto 1fr;
+      gap: 0;
+      align-items: start;
+    }
+
+    .statcols :global(.row-main.cols .ra) {
+      grid-column: art;
+      grid-row: 1 / span 2;
+    }
+
+    .statcols :global(.row-main.cols .rt),
+    .statcols :global(.row-main.cols .rstats) {
+      display: contents;
+    }
+
+    .statcols :global(.row-main.cols .rh) {
+      grid-column: text;
+      grid-row: 1;
+    }
+
+    /* Four lines: the description takes the line the stat sentence freed. */
+    .statcols :global(.row-main.cols .rt > span:not(.rh):not(.rstats)) {
+      grid-column: text;
+      grid-row: 2;
+      -webkit-line-clamp: 4;
+      line-clamp: 4;
+    }
+
+    .statcols :global(.row-main.cols .sc) {
+      grid-row: 1 / span 2;
+      justify-self: end;
+      padding: 2px 0 0 16px;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .statcols :global(.row-main.cols .sc.none) {
+      padding-left: 0;
+    }
+
+    .statcols :global(.sc.c1) {
+      grid-column: s1;
+    }
+
+    .statcols :global(.sc.c2) {
+      grid-column: s2;
+    }
+
+    .statcols :global(.sc.c3) {
+      grid-column: s3;
+    }
+
+    .statcols :global(.sc.c4) {
+      grid-column: s4;
+    }
+
+    .statcols :global(.sc.c5) {
+      grid-column: s5;
+    }
+
+    /* The separators of the sentence stay for a screen reader, as the `.vh` rule. */
+    .statcols :global(.row-main.cols .sep) {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: 0;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
   }
 </style>

@@ -1322,6 +1322,18 @@ const STATES = [
     why: 'the third kind, three facet groups, the shortest'
   },
   {
+    id: '#/tables/eq_weapon ~ stat columns',
+    route: '#/tables/eq_weapon',
+    width: 1440,
+    why: 'from 1440 px the weapon rows draw class, trait, range, damage and burden as five aligned columns at the right; the accessible name of a row is the same sentence as at 1100 px'
+  },
+  {
+    id: '#/tables/eq_armor ~ stat columns',
+    route: '#/tables/eq_armor',
+    width: 1440,
+    why: 'from 1440 px the armor rows draw thresholds and score as two aligned columns at the right'
+  },
+  {
     id: '#/tables/eq_weapon ~ filtered',
     route: '#/tables/eq_weapon',
     why: 'both branches of the chosen-value rule in the count line - "Ранг 1" and "Двуручное" - and a two-group address',
@@ -2794,6 +2806,27 @@ const STATES = [
     enter: async (d) => {
       await d.tick('Первоклассный Спальный Мешок');
       await d.tick('Зелье Быстрого Шага');
+    }
+  },
+  {
+    id: '#/s/player-token-1 ~ ticked, compact',
+    route: '#/s/player-token-1',
+    width: 360,
+    why: 'signed out, ci1 and cc1 ticked up to 760 px: the bar is one action row, «В список», «Печать» and «Ещё», with «Скопировать текст» and «Сообщить владельцу» folded into «Ещё»',
+    enter: async (d) => {
+      await d.tick('Первоклассный Спальный Мешок');
+      await d.tick('Зелье Быстрого Шага');
+    }
+  },
+  {
+    id: '#/s/player-token-1 ~ ticked, compact, more open',
+    route: '#/s/player-token-1',
+    width: 360,
+    why: 'the same bar with «Ещё» open upward: «Скопировать текст» and «Сообщить владельцу», both enabled',
+    enter: async (d) => {
+      await d.tick('Первоклассный Спальный Мешок');
+      await d.tick('Зелье Быстрого Шага');
+      await d.click('Ещё');
     }
   },
   /* The search box and the filter (docs/specs/FEATURES.md, "Lists"): the seeded share

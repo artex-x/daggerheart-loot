@@ -19,7 +19,7 @@ RootWebArea "Мицелиевый Плащ - Генератор лута Daggerh
   main ""
     StaticText "ПРЕДМЕТ"
     heading "Мицелиевый Плащ" [level=1]
-    StaticText "Many Worlds Tavern · Спорополис · номер 9 "
+    StaticText "Many Worlds Tavern · Спорополис · № 9 "
     link "показать в таблице" [url=/tables/many_worlds_tavern/mw9]
     StaticText "Пока вы носите этот плащ, вы получаете преимущество на Бросок Ин..." [namelen=128 namehash=36fdddc8]
     DisclosureTriangle "Сеть фангрилов ФАНГРИЛ · СВОЙСТВО РОДОСЛОВНОЙ" [expanded=true]
@@ -73,7 +73,7 @@ RootWebArea "Mycelial Cloak - Daggerheart Loot Generator" [url=/i/en/mw9?v=<v>]
   main ""
     StaticText "ITEM"
     heading "Mycelial Cloak" [level=1]
-    StaticText "Many Worlds Tavern · Sporopolis · roll 9 "
+    StaticText "Many Worlds Tavern · Sporopolis · No. 9 "
     link "show in the table" [url=/en/tables/many_worlds_tavern/mw9]
     StaticText "While wearing this, gain advantage on your Instinct Roll to use ..." [namelen=104 namehash=41090fcb]
     DisclosureTriangle "Fungril Network FUNGRIL · ANCESTRY FEATURE" [expanded=true]

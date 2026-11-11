@@ -1365,7 +1365,7 @@ describe("a supplement's rule card", () => {
     const { container } = render(App, {
       env: fakeEnv({ router: memoryRouter('#/i/ph37'), data: fakeData(REAL) })
     });
-    expect(container.textContent).toContain('Pistolheart · Том 2 · номер 10');
+    expect(container.textContent).toContain('Pistolheart · Том 2 · № 10');
   });
 });
 
@@ -1378,7 +1378,7 @@ describe('a consumable artifact', () => {
       env: fakeEnv({ router: memoryRouter('#/i/voa4_a2'), data: fakeData(REAL) })
     });
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Контракт Нарвиков');
-    expect(container.textContent).toContain('Vault of Ages · Артефакт · номер 8');
+    expect(container.textContent).toContain('Vault of Ages · Артефакт · № 8');
     expect(container.textContent).not.toContain('Ранг');
     await expectNoA11yViolations(container);
   });

@@ -19,7 +19,7 @@ RootWebArea "Королевская Брошь - Генератор лута Dag
   main ""
     StaticText "ПРЕДМЕТ"
     heading "Королевская Брошь" [level=1]
-    StaticText "Предметы сообществ · Великородное · номер 1 "
+    StaticText "Предметы сообществ · Великородное · № 1 "
     link "показать в таблице" [url=/tables/community_items/cm1]
     StaticText "Пока вы открыто носите эту брошь во владениях или поселении Вели..." [namelen=187 namehash=d75660e2]
     button "В список" [expanded=false]
@@ -69,7 +69,7 @@ RootWebArea "Royal Brooch - Daggerheart Loot Generator" [url=/i/en/cm1?v=<v>]
   main ""
     StaticText "ITEM"
     heading "Royal Brooch" [level=1]
-    StaticText "Community items · Highborne · roll 1 "
+    StaticText "Community items · Highborne · No. 1 "
     link "show in the table" [url=/en/tables/community_items/cm1]
     StaticText "Wearing this brooch openly while within a Highborne domain or se..." [namelen=155 namehash=642af9c6]
     button "Add to list" [expanded=false]

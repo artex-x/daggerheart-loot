@@ -18,7 +18,7 @@ RootWebArea "Генератор лута Daggerheart" [url=/lists/nope]
       link "Поиск" [url=/search]
   main ""
     heading "Войдите, чтобы открыть список" [level=1]
-    StaticText "Списки открываются только в аккаунте, где их создали. Войдите в ..." [namelen=69 namehash=32433df5]
+    StaticText "Списки открываются только в аккаунте, где их создали."
     button "Войти"
     link "Открыть таблицы" [url=/tables]
     status ""
@@ -61,7 +61,7 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/lists/nope]
       link "Search" [url=/en/search]
   main ""
     heading "Sign in to open this list" [level=1]
-    StaticText "A list opens only in the account where it was made. Sign in to t..." [namelen=76 namehash=ed4d5344]
+    StaticText "A list opens only in the account where it was made."
     button "Sign in"
     link "Open the tables" [url=/en/tables]
     status ""
