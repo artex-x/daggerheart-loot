@@ -1105,6 +1105,57 @@ describe('the tier ladder', () => {
   });
 });
 
+describe('the dock clearance of the dialog toast in a short window', () => {
+  let app: AppState | undefined;
+  const dockAt = (top: number, short: boolean): HTMLElement => {
+    vi.stubGlobal('matchMedia', (q: string) => ({ matches: short, media: q }));
+    vi.spyOn(window, 'innerHeight', 'get').mockReturnValue(360);
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: Element
+    ) {
+      return { top: this.classList.contains('cardpick') ? top : 0 } as DOMRect;
+    });
+    app = new AppState(at('ci1'));
+    app.start();
+    const ci1 = app.index?.byId.get('ci1');
+    if (!app.index || !ci1) throw new Error('The test data has no ci1.');
+    render(RecordModal, { app, index: app.index, it: ci1, onclose: () => {} });
+    return screen.getByRole('dialog');
+  };
+
+  afterEach(() => {
+    app?.stop();
+    app = undefined;
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it('lifts the toast above a dock that is in view', () => {
+    const dialog = dockAt(300, true);
+    expect(dialog.style.getPropertyValue('--dock-clear')).toBe('68px');
+  });
+
+  it('writes nothing while the dock is out of view, and drops the value on a resize', () => {
+    const dialog = dockAt(400, true);
+    expect(dialog.style.getPropertyValue('--dock-clear')).toBe('');
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockReturnValue({
+      top: 300
+    } as DOMRect);
+    window.dispatchEvent(new Event('resize'));
+    expect(dialog.style.getPropertyValue('--dock-clear')).toBe('68px');
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockReturnValue({
+      top: 400
+    } as DOMRect);
+    window.dispatchEvent(new Event('resize'));
+    expect(dialog.style.getPropertyValue('--dock-clear')).toBe('');
+  });
+
+  it('writes nothing in a window that is not short', () => {
+    const dialog = dockAt(300, false);
+    expect(dialog.style.getPropertyValue('--dock-clear')).toBe('');
+  });
+});
+
 describe('the undo toast while the record dialog is open', () => {
   /* A modal dialog makes everything outside it inert, so the toast an action
      inside it raises is drawn inside it (docs/DECISIONS.md, 2026-09-24). */
@@ -1135,7 +1186,11 @@ describe('the undo toast while the record dialog is open', () => {
     const status = within(dialog).getByRole('status');
     const undo = within(status).getByRole('button', { name: 'Вернуть' });
     expect(undo).toHaveFocus();
-    expect(document.querySelectorAll('.toast[role]')).toHaveLength(1);
+    /* Both regions carry a role before any text (the live region exists first); one holds text. */
+    const shown = [...document.querySelectorAll('.toast[role]')].filter(
+      (el) => el.textContent.trim() !== ''
+    );
+    expect(shown).toHaveLength(1);
     await expectNoA11yViolations(dialog);
 
     await userEvent.click(undo);

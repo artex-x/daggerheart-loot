@@ -93,31 +93,4 @@
     width: 100%;
     justify-content: center;
   }
-
-  /* `.cardpick`'s sides (RecordCard.svelte): down by default, up where the window has no
-     room below. The margin takes in the entrance's 10 px, which `scrollIntoView` measures, so
-     a long list stops clear of the header. */
-  .resacts :global(.dropmenu) {
-    scroll-margin-block: 16px;
-    bottom: auto;
-    top: calc(100% + 8px);
-    left: 0;
-    right: auto;
-  }
-
-  .resacts :global(.dropmenu.up) {
-    top: auto;
-    bottom: calc(100% + 8px);
-  }
-
-  /* The row anchors the menu on a phone, so it takes the row's width. */
-  @media (max-width: 600px) {
-    .resacts :global(.seldrop) {
-      position: static;
-    }
-
-    .resacts :global(.dropmenu) {
-      right: 0;
-    }
-  }
 </style>

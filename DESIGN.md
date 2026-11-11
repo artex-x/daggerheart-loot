@@ -514,8 +514,9 @@ height: a component rule, not a breakpoint. «В список», «Подели�
 «Ещё» are the same four labeled controls on every record surface at every width;
 «Изменить» joins for the author. One exception: a roll result holds three controls, no
 «Печать», and a plain «В список», because the page's gold primary is the roll. The
-copies and «Сохранить себе» live in «Ещё», a `Menu` that opens down on a page and, in
-the dialog, up where the room is only above, so from the dock. «В список» is the one
+copies and «Сохранить себе» live in «Ещё», a `Menu` that opens by the window's room in the
+top layer, on a page and in the dialog alike (FEATURES.md "Chrome", the overlay rule). Up to
+760px the dialog's picture is at most 45dvh tall, so the dock is in view in a short window. «В список» is the one
 gold primary; an open «Ещё» is not drawn pressed, because gold marks a choice. A label
 never gives way to an icon (The Same Label Rule).
 
@@ -552,7 +553,8 @@ and returns on a scroll up, on every page, because a phone reader needs the rows
 more than the jobs. It slides in 0.2s, or appears at once under reduced motion. It
 is shown at the top of a page, on a short page and after a navigation; a menu, a
 sheet, a dialog, a text field or a drag freezes it; a keyboard focus inside brings it back.
-It never leaves the tab order.
+It never leaves the tab order. A focus on a header control keeps the page where it is: the
+header's controls carry a negative `scroll-margin-top` that cancels the page's `scroll-padding-top`.
 
 **The Same Label Rule.** A label does not change with the width, and a control
 is never only an icon where its label fits: the three jobs keep their labels at
@@ -890,7 +892,9 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
   already parts the modal from the page, depth stays tonal, and a blur of the page costs a
   phone a frame for no meaning (2026-11-06).
 - The crop dialog takes the sheet's shape and place at every width and keeps the window's
-  height, which its square stage needs on a landscape phone.
+  height, which its square stage needs on a landscape phone. Under 481px of height from 600px
+  of width its stage stands on the left and the zoom and the buttons on the right, so «Готово»
+  stays in the window.
 - The record dialog has the sheet's look up to 760px and is not a `Sheet`: one
   element at every width, so a window that crosses 760px remounts nothing. «Ещё» is
   a `Menu` at every width, in the dialog too. Both close with `DialogClose`.
@@ -905,7 +909,7 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
   last. Below 761px the box, the summary and the clear are one row and the
   actions the next. Zero ticks: the actions off, the clear on. The owner's list
   page draws its own bar in the same place (`app.pageBar`); up to 760px its rare
-  actions fold into «Ещё», which opens up; the lists index draws its bar the same way.
+  actions fold into «Ещё», which opens up by the overlay rule; the lists index draws its bar the same way.
   The add-to-list menu is a popover at every width, headed «Списки», a neutral row
   per list with a check where it holds the record and its count in words. A panel a bar action opens is a
   `Sheet`, because the bar is pinned and a panel under it would grow past the
@@ -971,7 +975,7 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
 - **Style:** a fixed plate 26px off the bottom, centered, and 26px above the selection
   bar while the bar shows; inside a modal up to 760px, 26px above the record dialog's
   dock or the sheet's foot (under 481px of window height the record dialog's dock moves
-  with the card, so its toast can cover the dock: `docs/specs/DEBT.md`, D136): Vault Wall fill, a
+  with the card, and its toast rises above the dock while the dock is in view): Vault Wall fill, a
   1px Ash Violet Low (`--muted2`) border, Chalk text, `--r` corners and the
   Float shadow, entering on a 0.2s rise. No toast is gold. The error flavor is
   the Alarm Red fill with Ink on Gold text (about 5.6:1). The action flavor
@@ -981,7 +985,10 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
   name wraps inside it, so it stays a few lines high at 360px.
 - **Time:** The Reading Time Rule.
 - It is a `popover="manual"` element so it survives the inertness of a native
-  `<dialog>`, and it is `display: none !important` under print.
+  `<dialog>`, and it is `display: none !important` under print. It carries `role` and
+  `aria-live` before its text arrives, so a screen reader holds the region when the first
+  message is written. It rises above an open menu or popover that reaches the bottom 80px of
+  the window (`--overlay-clear`).
 
 ### Signature component: the print card
 

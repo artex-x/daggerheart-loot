@@ -1110,6 +1110,28 @@ const STATES = [
     again: (d) => d.click('Add to list')
   },
   {
+    id: '#/tables ~ a row opened, list menu with search as gm4',
+    route: '#/tables',
+    as: 'gm4',
+    why: 'the add-to-list popover in the modal over twelve lists: in the top layer, the search field and the pinned rows inside the window, the card unscrolled',
+    enter: async (d) => {
+      await onAccount(d, TWELVE_SPECS, false);
+      await d.click('Кольцо Тишины');
+      await d.click('В список');
+    },
+    again: (d) => d.click('Add to list')
+  },
+  {
+    id: '#/tables ~ a row opened, more menu',
+    route: '#/tables',
+    why: 'the record dialog at desktop width with «Ещё» open: the menu in the top layer, the card unscrolled',
+    enter: async (d) => {
+      await d.click('Кольцо Тишины');
+      await d.openMore();
+    },
+    again: (d) => d.openMore()
+  },
+  {
     id: '#/tables ~ a row opened, new list',
     route: '#/tables',
     // No lists: with two lists every card opens up and the divergence is
@@ -3888,7 +3910,7 @@ const STATES = [
         await d.settle();
       /* The golden holds no toast: the 4000ms «Сохранено» toast runs out first, or a fast
          host captures it. */
-      for (let i = 0; i < 80 && (await d.count('.toast[role]')); i++) await d.settle();
+      for (let i = 0; i < 80 && (await d.count('.toast:popover-open')); i++) await d.settle();
     }
   },
   {

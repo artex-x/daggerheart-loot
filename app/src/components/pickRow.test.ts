@@ -116,66 +116,6 @@ describe('the action row', () => {
     app.stop();
   });
 
-  describe('«Ещё» under a prompt up to 760 px', () => {
-    const box = (top: number, bottom: number) => ({ top, bottom }) as DOMRect;
-    /* jsdom lays nothing out: the row is the menu's anchor, and it ends under the button. */
-    const laidOut = (anchor: (menu: HTMLElement) => Element | null): void => {
-      vi.spyOn(HTMLElement.prototype, 'offsetParent', 'get').mockImplementation(function (
-        this: HTMLElement
-      ) {
-        return anchor(this);
-      });
-      vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
-        this: Element
-      ) {
-        if (this.getAttribute('aria-haspopup')) return box(100, 146);
-        return this.classList.contains('modal-card') ? box(0, 400) : box(50, 400);
-      });
-    };
-    const more = (): Promise<void> =>
-      userEvent.click(screen.getByRole('button', { name: t.moreMenu }));
-
-    afterEach(() => {
-      vi.restoreAllMocks();
-    });
-
-    it('opens the menu from the button, not from the bottom of the row', async () => {
-      const app = await started(fakeCloud(SEED));
-      const { container } = render(PickRow, { app, index: app.index!, it: rope(app) });
-      laidOut(() => container);
-      await more();
-      expect(screen.getByRole('menu').style.top).toBe('104px');
-      app.stop();
-    });
-
-    it('leaves a menu anchored to its own wrap to the stylesheet', async () => {
-      const app = await started(fakeCloud(SEED));
-      render(PickRow, { app, index: app.index!, it: rope(app) });
-      laidOut((menu) => menu.parentElement);
-      await more();
-      expect(screen.getByRole('menu').style.top).toBe('');
-      app.stop();
-    });
-
-    it('leaves a menu opened up to the stylesheet', async () => {
-      const app = await started(fakeCloud(SEED));
-      const card = document.body.appendChild(document.createElement('div'));
-      card.className = 'modal-card';
-      const row = card.appendChild(document.createElement('div'));
-      render(PickRow, {
-        target: row,
-        props: { app, index: app.index!, it: rope(app), inModal: true }
-      });
-      laidOut(() => row);
-      await more();
-      const menu = screen.getByRole('menu');
-      expect(menu).toHaveClass('up');
-      expect(menu.style.top).toBe('');
-      app.stop();
-      card.remove();
-    });
-  });
-
   it('draws «Изменить» before «Ещё» for the author', async () => {
     const { container } = page('#/i/' + AXE_KEY, fakeCloud(SEED, 'gm1'));
     const edit = await screen.findByRole('link', { name: t.edit });

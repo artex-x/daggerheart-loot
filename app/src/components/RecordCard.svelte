@@ -836,24 +836,6 @@
     align-items: center;
   }
 
-  /* off `.cardpick .dropmenu` / `.cardpick .dropmenu.up`: the card opens its
-     menu downward by default and flips up only when there is no room below,
-     the opposite of `AddToList.svelte`'s own base rule (the future selection
-     bar's). Two classes deep, same as the live rule, so this beats both the
-     bare `.dropmenu` and its own 600px override at equal specificity - see
-     issue 47. */
-  .cardpick :global(.dropmenu) {
-    bottom: auto;
-    top: calc(100% + 8px);
-    left: 0;
-    right: auto;
-  }
-
-  .cardpick :global(.dropmenu.up) {
-    top: auto;
-    bottom: calc(100% + 8px);
-  }
-
   /* ---------- referenced rulebook cards ---------- */
   .refs {
     display: flex;

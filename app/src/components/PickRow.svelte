@@ -96,7 +96,7 @@
 {#if app.homebrew?.has(it.id) && !foreign}
   <Button href={app.href(homebrewItemHash(it.id))} sameTab><Icon name="note" />{t.edit}</Button>
 {/if}
-<MoreMenu {app} id={menuId} flip={inModal}>
+<MoreMenu {app} id={menuId}>
   {#snippet children(close: () => void)}
     <RecordActions {app} {index} {it} row="menu" {extra} onpicked={close} />
     {#if offered}

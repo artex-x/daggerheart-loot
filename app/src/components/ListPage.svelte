@@ -1056,7 +1056,7 @@
         >
         {#if narrow}
           <span class="bulkmore">
-            <MoreMenu {app} id="list-bulk" up size="sm" disabled={!ticked.length}>
+            <MoreMenu {app} id="list-bulk" size="sm" disabled={!ticked.length}>
               {#snippet children(close: () => void)}
                 <button
                   type="button"

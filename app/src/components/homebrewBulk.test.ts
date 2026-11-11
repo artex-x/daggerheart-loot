@@ -41,7 +41,6 @@ describe('the bar up to 760 px', () => {
       'Скачать JSON (2)',
       'Удалить (2)'
     ]);
-    expect(document.getElementById('hb-bulk')).toHaveClass('up');
     expect(menu.getByRole('separator')).toBeInTheDocument();
     expect(menu.getByRole('menuitem', { name: 'Удалить (2)' })).toHaveClass('danger');
     await expectNoA11yViolations(container);

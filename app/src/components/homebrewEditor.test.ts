@@ -1198,10 +1198,10 @@ describe('the bar and the preview sheet up to 760 px', () => {
     expect(open).toHaveFocus();
   });
 
-  it('holds «Удалить» of a stored item in the upward «Ещё»', async () => {
+  it('holds «Удалить» of a stored item in «Ещё»', async () => {
     const { container, dialog } = await editor(RING, { band: 'narrow', answer: false });
     await userEvent.click(screen.getByRole('button', { name: t.moreMenu }));
-    expect(document.getElementById('hb-bar-more')).toHaveClass('up');
+    expect(document.getElementById('hb-bar-more')).toBeInTheDocument();
     await expectNoA11yViolations(container);
     await userEvent.click(screen.getByRole('menuitem', { name: t.del }));
     expect(dialog.asked.at(-1)).toContain('Кольцо');

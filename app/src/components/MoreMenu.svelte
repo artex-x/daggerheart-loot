@@ -6,15 +6,12 @@
   import Button from './Button.svelte';
   import Icon from './Icon.svelte';
   import Menu from './Menu.svelte';
+  import { focusBack } from './overlay.js';
   import type { AppState } from '../state/app.svelte.js';
 
   interface Props {
     app: AppState;
     id: string;
-    /** Sits in the record dialog's scroll box (`Menu`'s `flip`). */
-    flip?: boolean;
-    /** Sits at the window's bottom (the selection bar, the editor's bar): it opens up. */
-    up?: boolean;
     size?: 'md' | 'sm';
     /** `bare`: text alone, the `/lists` card's corner draws no box around «Ещё». */
     variant?: 'plain' | 'bare';
@@ -28,8 +25,6 @@
   const {
     app,
     id,
-    flip = false,
-    up = false,
     size = 'md',
     variant = 'plain',
     disabled = false,
@@ -38,33 +33,13 @@
   }: Props = $props();
 
   const t = $derived(app.t);
-  /* `.menu`'s distance from its control. */
-  const MENU_GAP = 8;
   let open = $state(false);
   let button = $state<HTMLButtonElement | undefined>(undefined);
-
-  /* Up to 760 px the row anchors the menu, and a prompt under the row would push it away
-     from «Ещё». A menu opened up already sits above the row. */
-  function underMore(box: HTMLElement): void {
-    const row = box.offsetParent;
-    if (!row || !button || row === button.parentElement) return;
-    if (box.classList.contains('up')) return;
-    const top = button.getBoundingClientRect().bottom - row.getBoundingClientRect().top;
-    box.style.top = `${String(top + MENU_GAP)}px`;
-  }
-
-  /* The row can sit at the window's bottom, and the menu opens past it. */
-  $effect(() => {
-    const box = open ? document.getElementById(id) : null;
-    if (!box) return;
-    underMore(box);
-    box.scrollIntoView({ block: 'nearest' });
-  });
 
   /* A pressed item leaves the DOM, so the focus goes back to «Ещё» (rule 20). */
   function close(): void {
     open = false;
-    button?.focus();
+    focusBack(button);
   }
 </script>
 
@@ -87,8 +62,7 @@
       control={button}
       label={t.moreMenu}
       {id}
-      cls={up ? 'recmenu up' : 'recmenu'}
-      {flip}
+      cls="recmenu"
       onclose={() => {
         open = false;
       }}
@@ -102,14 +76,6 @@
   .morewrap {
     position: relative;
     display: inline-flex;
-  }
-
-  /* Up to 760 px «Ещё» can wrap to the row's left, and the menu is wider than the button:
-     the row anchors it, so it stays inside the window. */
-  @media (max-width: 760px) {
-    .morewrap {
-      position: static;
-    }
   }
 
   /* Up to 600 px every small «Ещё» is one box: the thumb height and a compact padding, so a
