@@ -62,7 +62,6 @@ const ru = {
   openPage: 'Открыть страницу',
   openCard: 'Открыть карточку',
   showInTable: 'показать в таблице',
-  rollNo: 'номер',
 
   /* The book a record comes from, as the badge and the metadata line name it */
   srcCore: 'Core',
@@ -250,6 +249,7 @@ const ru = {
   /* The catalog's list head: the table picker below 761 px and the two levels of the
      navigation, named for assistive technology. */
   tablePick: 'Таблица: %s',
+  rollPick: 'Режим броска: %s',
   groupLabel: 'Группа',
   sourceLabel: 'Источник',
   /* The three-dot menu of a page's rare actions (the icon and the word). */
@@ -383,8 +383,8 @@ const ru = {
   rename: 'Название списка',
   listCopied: 'Список скопирован',
   itemNotLoaded: 'Предмет не загружен',
-  listGoneSignedOut: 'Войдите, чтобы открыть список',
-  listGoneSignedOutSub: 'Списки открываются только в аккаунте, где их создали. Войдите в него.',
+  listSignInLead:
+    'Войдите, чтобы открыть список: он открывается только в аккаунте, где его создали.',
   listGoneAccount: 'Этого списка нет в вашем аккаунте',
   listGoneAccountSub: 'Его удалили, или он сохранён в другом аккаунте.',
   listGoneAs: 'Вы вошли как %s.',
@@ -1201,7 +1201,6 @@ const en: Dict = {
   openPage: 'Open page',
   openCard: 'Open card',
   showInTable: 'show in the table',
-  rollNo: 'roll',
 
   srcCore: 'Core',
   srcHnf: 'Hope & Fear',
@@ -1338,6 +1337,7 @@ const en: Dict = {
   searchPh: 'Search by name or description...',
   searchShort: 'Search',
   tablePick: 'Table: %s',
+  rollPick: 'Roll mode: %s',
   groupLabel: 'Group',
   sourceLabel: 'Source',
   moreMenu: 'More',
@@ -1446,9 +1446,7 @@ const en: Dict = {
   rename: 'List name',
   listCopied: 'List copied',
   itemNotLoaded: 'Item not loaded',
-  listGoneSignedOut: 'Sign in to open this list',
-  listGoneSignedOutSub:
-    'A list opens only in the account where it was made. Sign in to that account.',
+  listSignInLead: 'Sign in to open this list: it opens only in the account where it was made.',
   listGoneAccount: 'This list is not in your account',
   listGoneAccountSub: 'It was deleted, or it is in another account.',
   listGoneAs: 'You are signed in as %s.',
@@ -2197,7 +2195,7 @@ export function dict(lang: Lang): Dict {
 
 /** Which dictionary key names a section, for the tab title
  *  (`<section label> - <docTitle>`), the start-section select and the
- *  supplements menu. The exhaustive `Record<Section, ...>` makes a new
+ *  mode picker. The exhaustive `Record<Section, ...>` makes a new
  *  section name its word here. */
 export const SECTION_LABEL: Record<Section, keyof Dict> = {
   'roll/std': 'pageStd',

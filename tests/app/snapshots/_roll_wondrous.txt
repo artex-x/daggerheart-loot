@@ -21,7 +21,7 @@ RootWebArea "Wondrous Environments - Генератор лута Daggerheart" [u
     navigation "Режим броска"
       link "Обычные правила" [url=/roll/std]
       link "Альтернативные таблицы" [url=/roll/alt]
-      button "Wondrous Environments" [expanded=false haspopup=menu]
+      button "Wondrous Environments" [haspopup=dialog]
     button "Открывать при запуске" [pressed=false]
     button "Об этой таблице" [expanded=false]
     button "Бросить 1-119"
@@ -96,7 +96,7 @@ RootWebArea "Wondrous Environments - Daggerheart Loot Generator" [url=/en/roll/w
     navigation "Roll mode"
       link "Standard rules" [url=/en/roll/std]
       link "Alternate tables" [url=/en/roll/alt]
-      button "Wondrous Environments" [expanded=false haspopup=menu]
+      button "Wondrous Environments" [haspopup=dialog]
     button "Open on start" [pressed=false]
     button "About this table" [expanded=false]
     button "Roll 1-119"

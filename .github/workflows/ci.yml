@@ -119,7 +119,7 @@ jobs:
   # five runners by CI-measured weight instead of one `check`-job step owning
   # 84% of that job plus a separate `golden` matrix that then sat idle for
   # 9m21s waiting on it. `--shard=n/5` packs the whole pool, goldens
-  # included; five jobs because a CI job's fixed cost is ~20 s, not minutes,
+  # included; five jobs because a CI job's fixed cost is ~70 s, not minutes,
   # and the slowest suite step passed 360 s at four (runs 36229149582 and
   # 36230695846). `tests/derived.js` asserts the shard count matches. See
   # tests/run-all.js's own weight comment.

@@ -113,10 +113,13 @@ const { ok } = rep;
         fx.hash + ': heading ' + JSON.stringify(heading) + ', the fixture says ' + want.heading
       );
     }
-    /* Every #/p/ state draws one heading, so its sub names the state. */
+    /* Every #/p/ state draws one heading, so its sub (signed out, the sign-in plate's lead)
+       names the state. */
     if (want.sub) {
       const sub = await rPage.evaluate(
-        () => document.querySelector('main .page-sub')?.textContent?.trim() ?? null
+        () =>
+          document.querySelector('main .page-sub, main .signin-lead')?.textContent?.trim() ??
+          null
       );
       ok(
         sub === want.sub,

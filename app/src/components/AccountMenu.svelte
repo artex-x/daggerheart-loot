@@ -5,6 +5,7 @@
      add-to-list menu. The box and its keys are `Menu.svelte`'s. */
   import { tick } from 'svelte';
   import Menu from './Menu.svelte';
+  import { focusBack } from './overlay.js';
   import { ACCOUNT_HASH, HOMEBREW_HASH, sectionHash } from '../lib/hash.js';
   import type { AppState } from '../state/app.svelte.js';
 
@@ -27,7 +28,7 @@
   function signOut(): void {
     const after = onsignedout;
     onclose();
-    control.focus();
+    focusBack(control);
     void app.signOut('local').then(async (r) => {
       app.say(r.ok ? (t) => t.signedOut : (t) => t.accountFailed, { error: !r.ok });
       await tick();

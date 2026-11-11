@@ -203,6 +203,29 @@ async function softClick(d, name) {
   return has;
 }
 
+/** Returns the elements of `WHOLE` that cut their text with an ellipsis or a line clamp,
+ *  except the allowed cuts. */
+function cutsOf(page) {
+  return page.evaluate(
+    ({ WHOLE, CUT_ALLOWED }) => {
+      const out = [];
+      for (const host of document.querySelectorAll(WHOLE)) {
+        for (const e of [host, ...host.querySelectorAll('*')]) {
+          if (CUT_ALLOWED.some((a) => e.matches(a))) continue;
+          const c = getComputedStyle(e);
+          const clamp = c.webkitLineClamp && c.webkitLineClamp !== 'none';
+          const wide = c.textOverflow === 'ellipsis' && e.scrollWidth > e.clientWidth + 1;
+          const tall = clamp && e.scrollHeight > e.clientHeight + 1;
+          if (wide || tall)
+            out.push(e.tagName.toLowerCase() + '.' + String(e.className).split(' ')[0]);
+        }
+      }
+      return out;
+    },
+    { WHOLE, CUT_ALLOWED }
+  );
+}
+
 /** Returns the icon's vertical center against its label's first line box, for
  *  each button with an icon in the group of that accessible name. */
 async function iconCentres(page, groupName) {
@@ -321,24 +344,7 @@ async function iconCentres(page, groupName) {
         );
       }
 
-      const cut = await page.evaluate(
-        ({ WHOLE, CUT_ALLOWED }) => {
-          const out = [];
-          for (const host of document.querySelectorAll(WHOLE)) {
-            for (const e of [host, ...host.querySelectorAll('*')]) {
-              if (CUT_ALLOWED.some((a) => e.matches(a))) continue;
-              const c = getComputedStyle(e);
-              const clamp = c.webkitLineClamp && c.webkitLineClamp !== 'none';
-              const wide = c.textOverflow === 'ellipsis' && e.scrollWidth > e.clientWidth + 1;
-              const tall = clamp && e.scrollHeight > e.clientHeight + 1;
-              if (wide || tall)
-                out.push(e.tagName.toLowerCase() + '.' + String(e.className).split(' ')[0]);
-            }
-          }
-          return out;
-        },
-        { WHOLE, CUT_ALLOWED }
-      );
+      const cut = await cutsOf(page);
       ok(!cut.length, where + ': a whole message is cut - ' + cut.slice(0, 3).join(', '));
 
       ok(!bad.fam.length, where + ': wrong font — ' + bad.fam.slice(0, 3).join(', '));
@@ -357,6 +363,23 @@ async function iconCentres(page, groupName) {
       !foreign.length,
       lang + ': a font from outside /assets/ — ' + foreign.slice(0, 3).join(', ')
     );
+    await ctx.close();
+  }
+
+  /* The Whole Message step at 360 px on the roll pages, where the picker holds a long chosen
+     part («Проклятые предметы») on two lines. The other steps stay at 1180 px: the grips differ
+     at 360 px. */
+  for (const lang of ['ru', 'en']) {
+    const { ctx, page, d } = await fresh({ width: 360, height: 900, lang });
+    for (const hash of PAGES.filter((p) => p.startsWith('#/roll/'))) {
+      await d.open(hash);
+      await new Promise((r) => setTimeout(r, 300));
+      const cut = await cutsOf(page);
+      ok(
+        !cut.length,
+        hash + ' ' + lang + ' 360: a whole message is cut - ' + cut.slice(0, 3).join(', ')
+      );
+    }
     await ctx.close();
   }
 

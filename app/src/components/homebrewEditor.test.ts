@@ -775,6 +775,8 @@ describe('the states around the form', () => {
   it('asks a signed-out reader to sign in, the lead drawn from 761 px only', async () => {
     const { container } = await editor(AXE, { as: null });
     expect(screen.getByText(t.hbSignIn)).toBeInTheDocument();
+    expect(container.querySelector('.empty .glyph')).not.toBeNull();
+    expect(container.querySelector('.empty .signin-lead')).toHaveTextContent(t.hbSignIn);
     expect(screen.getByText(t.subHomebrew)).toBeInTheDocument();
     await expectNoA11yViolations(container);
     cleanup();
@@ -1198,10 +1200,9 @@ describe('the bar and the preview sheet up to 760 px', () => {
     expect(open).toHaveFocus();
   });
 
-  it('holds «Удалить» of a stored item in the upward «Ещё»', async () => {
+  it('holds «Удалить» of a stored item in «Ещё»', async () => {
     const { container, dialog } = await editor(RING, { band: 'narrow', answer: false });
     await userEvent.click(screen.getByRole('button', { name: t.moreMenu }));
-    expect(document.getElementById('hb-bar-more')).toHaveClass('up');
     await expectNoA11yViolations(container);
     await userEvent.click(screen.getByRole('menuitem', { name: t.del }));
     expect(dialog.asked.at(-1)).toContain('Кольцо');

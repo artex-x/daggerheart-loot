@@ -158,7 +158,7 @@
 <StatusRegion text={deletingSaid} />
 {#if app.band === 'narrow'}
   <span class="bulkmore">
-    <MoreMenu {app} id="hb-bulk" up size="sm" disabled={deleting}>
+    <MoreMenu {app} id="hb-bulk" size="sm" disabled={deleting}>
       {#snippet children(close: () => void)}
         <button
           type="button"

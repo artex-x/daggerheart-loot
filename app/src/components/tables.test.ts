@@ -1086,6 +1086,39 @@ describe('the equipment tables', () => {
     expect(document.getElementById('sec-t4')).toBeNull();
   });
 
+  it('draws each stat part of an equipment row as a cell, and keeps the sentence for its name', async () => {
+    const { container } = render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/eq_weapon'), data: fakeData(LOOT) })
+    });
+    expect(container.querySelector('.rowscol')).toHaveClass('statcols');
+    const rowsOf = (): HTMLElement[] => [...container.querySelectorAll<HTMLElement>('.row')];
+    expect(rowsOf().length).toBeGreaterThan(0);
+    for (const row of rowsOf()) {
+      const stats = row.querySelector('.rstats');
+      expect(stats).toHaveClass('cols');
+      expect(stats?.querySelectorAll('.sc')).toHaveLength(5);
+      const cells = [...(stats?.querySelectorAll('.sc') ?? [])].map((c) => c.textContent);
+      const sentence = [...(stats?.children ?? [])].map((c) => c.textContent).join('');
+      expect(sentence).toBe(cells.filter(Boolean).join('\u00a0· '));
+    }
+    cleanup();
+    const armor = render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/eq_armor'), data: fakeData(LOOT) })
+    });
+    expect(armor.container.querySelector('.rowscol')).toHaveClass('statcols');
+    for (const row of armor.container.querySelectorAll('.row .rstats'))
+      expect(row.querySelectorAll('.sc')).toHaveLength(2);
+    await userEvent.click(screen.getByRole('button', { name: 'Сетка' }));
+    expect(armor.container.querySelector('.rowscol')).not.toHaveClass('statcols');
+    expect(armor.container.querySelector('.sc')).toBeNull();
+  });
+
+  it('keeps the stat sentence on a table of no equipment', () => {
+    const { container } = render(App, { env: at() });
+    expect(container.querySelector('.rowscol')).not.toHaveClass('statcols');
+    expect(container.querySelector('.sc')).toBeNull();
+  });
+
   it('draws no count line with nothing picked, and names the pool once narrowed', async () => {
     const { container } = render(App, {
       env: fakeEnv({ router: memoryRouter('#/tables/eq_weapon'), data: fakeData(LOOT) })

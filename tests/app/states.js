@@ -140,21 +140,14 @@ async function newListFromModal() {
   const box = await newListInputBox(page);
   ok(!!box, '3 (modal): the new-list form did not open');
   ok(!!box?.focused, '3 (modal): the input is not focused');
-  const card = await page.evaluate(() => {
-    const el = document.querySelector('.modal-card');
-    if (!el) return null;
-    const r = el.getBoundingClientRect();
-    return { x: r.x, y: r.y, w: r.width, h: r.height };
-  });
-  ok(!!card, '3 (modal): .modal-card not found');
-  if (box && card) {
-    ok(inside(box, card), '3 (modal): the input sits outside .modal-card');
-  }
+  /* The popover draws in the top layer by the window's room: it may leave the card. */
+  const view = await page.evaluate(() => ({ x: 0, y: 0, w: innerWidth, h: innerHeight }));
+  if (box) ok(inside(box, view), '3 (modal): the input sits outside the window');
   await ctx.close();
 }
 
 /** 23. The add-to-list menu inside the record modal must not force a scroll
- *  on the card article, nor spill outside the modal:
+ *  on the card article, and lies inside the window (it draws in the top layer):
  *  the toggle (`:scope > .btn`), not whichever button happens to render
  *  first, is what the placement effect measures, and the modal's own card is
  *  what it clips against. Кольцо Тишины at 1100x900 with no browser list is
@@ -192,18 +185,19 @@ async function addToListMenuStaysInModal() {
 
   const card = await box('.modal-card');
   ok(!!card, '23 (menu in the modal): .modal-card not found');
+  const view = await page.evaluate(() => ({ x: 0, y: 0, w: innerWidth, h: innerHeight }));
   const menu = await box('.dropmenu');
   ok(!!menu, '23 (menu in the modal): .dropmenu not found');
-  if (menu && card) {
-    ok(inside(menu, card), '23 (menu in the modal): the menu sits outside .modal-card');
+  if (menu) {
+    ok(inside(menu, view), '23 (menu in the modal): the menu sits outside the window');
   }
 
   await d.press('Новый список');
   const input = await newListInputBox(page);
   ok(!!input, '23 (menu in the modal): the new-list form did not open');
   ok(!!input?.focused, '23 (menu in the modal): the input is not focused');
-  if (input && card) {
-    ok(inside(input, card), '23 (menu in the modal): the input sits outside .modal-card');
+  if (input) {
+    ok(inside(input, view), '23 (menu in the modal): the input sits outside the window');
   }
   await ctx.close();
 }
@@ -1892,7 +1886,7 @@ async function undoToastInRecordDialog() {
       dialog: !!dialog,
       shown: shown.length,
       inDialog: !!dialog && shown.length === 1 && dialog.contains(shown[0]),
-      roles: document.querySelectorAll('.toast[role]').length,
+      roles: shown.filter((t) => t.hasAttribute('role')).length,
       focused: !!act && document.activeElement === act,
       hit: !!act && hit === act
     };
@@ -2428,8 +2422,10 @@ async function promptInDialogMenuAt360() {
     ['the menu', m.menu],
     ['«Войти»', m.signIn]
   ]) {
-    ok(!!b && !!m.card && inside(b, m.card), at + name + ' lies outside .modal-card');
-    ok(!!b && inside(b, m.view), at + name + ' lies outside the window');
+    ok(
+      !!b && inside(b, { x: 16, y: 0, w: m.view.w - 32, h: m.view.h }),
+      at + name + ' lies outside the 16 px gutter of the window'
+    );
   }
   ok(!!m.signIn?.shown, at + '«Войти» is covered or clipped - ' + JSON.stringify(m.signIn));
   await ctx.close();
@@ -4358,7 +4354,8 @@ async function cropDialogOnPhones() {
   const wide = await measure();
   console.log('  72 at 640x360: ' + JSON.stringify(wide));
   ok(inside(wide), at + 'the dialog leaves the viewport at 640x360 - ' + JSON.stringify(wide));
-  ok(wide.scrolls, at + 'the dialog does not scroll inside itself at 640x360');
+  /* From 600 px of width under 481 px of height the stage stands beside the buttons (DESIGN.md, "Sheet"). */
+  ok(!wide.scrolls, at + 'the dialog scrolls inside itself at 640x360');
   ok(!wide.sideways, at + 'the page scrolls sideways at 640x360');
   ok(Math.abs(wide.stage.w - wide.stage.h) < 1, at + 'the stage is not square at 640x360');
   await ctx.close();
@@ -4722,8 +4719,9 @@ async function catalogCopyPerPress() {
  *  window and uncut, at most three lines, «В список» the only gold primary, and «Ещё» opens
  *  a menu inside the window with 44 px items at 360. In the dialog at 360x640, 640x360 and
  *  1180x720: the dock holds the card's bottom, or joins the scroll below 481 px of height and
- *  from 761 px, takes at most 0.45 of the window, «Ещё» opens up from the dock, or down from
- *  the row, inside the card, and a toast leaves the dock in place; a prompt leaves «Ещё»'s
+ *  from 761 px, takes at most 0.45 of the window, «Ещё» opens up from a held dock, or on the
+ *  side with room from the row, inside the window with its 16 px gutter (the top-layer menu may pass the card),
+ *  and a toast leaves the dock in place; a prompt leaves «Ещё»'s
  *  menu under the button, and a rule card draws its chevron; with 150 lists the add menu scrolls inside the window with its search and
  *  «+ Новый список» in view (docs/specs/FEATURES.md, "Records"). */
 async function recordActionsFit() {
@@ -4830,20 +4828,19 @@ async function recordActionsFit() {
       const menu = await page.evaluate(() => {
         const box = (r) => ({ x: r.x, y: r.y, w: r.width, h: r.height });
         const m = document.querySelector('[role="menu"]');
-        const card = document.querySelector('.modal-card').getBoundingClientRect();
         return {
-          up: m.classList.contains('up'),
+          up: m.dataset.side === 'up',
           box: box(m.getBoundingClientRect()),
-          card: box(card),
-          view: { x: 0, y: 0, w: innerWidth, h: innerHeight }
+          view: { x: 16, y: 0, w: document.documentElement.clientWidth - 32, h: innerHeight }
         };
       });
-      ok(menu.up === first.sticky, at + where + 'the menu opens up: ' + menu.up);
+      /* Joined to the scroll the menu takes the side with room, which a 360 px tall window
+         leaves above the row. */
+      ok(!first.sticky || menu.up, at + where + 'the menu opens up: ' + menu.up);
       ok(
-        inside(menu.box, menu.card),
-        at + where + 'menu outside the card ' + JSON.stringify(menu)
+        inside(menu.box, menu.view),
+        at + where + 'menu outside the window or its 16 px gutter ' + JSON.stringify(menu)
       );
-      ok(inside(menu.box, menu.view), at + where + 'menu outside the window');
       await d.press(lang === 'ru' ? 'Скопировать название' : 'Copy name');
       ok(
         await waitIn(page, () => !!document.querySelector('dialog[open] .toast')),
@@ -5274,7 +5271,12 @@ async function homebrewHeadAndBar() {
         m.kids === 3 && m.inside,
         at + width + ': the row leaves the window - ' + JSON.stringify(m)
       );
-      ok(m.lines <= 2, at + width + ': the row takes ' + m.lines + ' lines');
+      ok(m.lines === 1, at + width + ': the row takes ' + m.lines + ' lines');
+      const face = await page.evaluate(pickerFace);
+      ok(
+        face.size && face.high <= 41,
+        at + width + ': the picker face is not the tables - ' + JSON.stringify(face)
+      );
       ok(m.plus, at + width + ': the primary draws no plus (rule 8)');
       ok(!(await sideways(page)), at + width + ': the page scrolls sideways');
     } finally {
@@ -5610,7 +5612,7 @@ async function editorLayoutAndSheet() {
  *  measures the row at 1180 px alone; `mid` adds 768x1024 and 900x720, the mid band. A roll page draws its result for the number
  *  field's first value, so no roll is made and the offset is deterministic. */
 const FIRST_SCREEN = [
-  { state: '#/roll/std', shipped: true, exception: 325 },
+  { state: '#/roll/std', shipped: true, exception: 322 },
   { state: '#/roll/alt', shipped: true },
   { state: '#/roll/alt ~ crit', shipped: true },
   { state: '#/roll/voa', shipped: true },
@@ -5653,7 +5655,8 @@ const FIRST_SCREEN = [
     mid: true,
     exception: 304
   },
-  /* The thumb-size «Сохранить себе» (DESIGN.md, "The First-Screen Rule", 2026-11-06). */
+  /* The thumb-size «Сохранить себе» (DESIGN.md, "The First-Screen Rule", 2026-11-06); the 309 px
+     stays by docs/decisions/2026-11-11-craft-links-and-the-shared-first-entry-stay.md. */
   { state: '#/s/player-token-1', shipped: true, exception: 309 },
   /* From 761 px the 120-character name takes three lines (DESIGN.md, "The First-Screen Rule"). */
   {
@@ -6380,6 +6383,23 @@ async function backwardTabClearsTheHeader() {
 /** Returns the window's box for `inside`. */
 const viewBox = (page) => page.evaluate(() => ({ x: 0, y: 0, w: innerWidth, h: innerHeight }));
 
+/** Answers the face of the page's picker (`PickerButton`): the table picker's size (`--t-small`)
+ *  and its height, the one face on the roll pages, the tables and «Мои предметы». Runs in the
+ *  page. */
+function pickerFace() {
+  const picker = document.querySelector('main .picker');
+  if (!picker) return { size: false, high: 0 };
+  const probe = document.createElement('span');
+  probe.style.cssText = 'position:absolute;visibility:hidden;font-size:var(--t-small)';
+  document.body.append(probe);
+  const small = getComputedStyle(probe).fontSize;
+  probe.remove();
+  return {
+    size: getComputedStyle(picker).fontSize === small,
+    high: Math.round(picker.getBoundingClientRect().height)
+  };
+}
+
 /** Answers the words of the result's name that a line break cuts. */
 const brokenWords = (page) =>
   page.evaluate(() => {
@@ -6429,9 +6449,10 @@ async function showLongestTitle(page, d, parts) {
   return best.name;
 }
 
-/** 89. The nine roll pages share one layout (docs/specs/FEATURES.md, "Rolling"): at 761 px the
+/** 89. The twelve roll pages share one layout (docs/specs/FEATURES.md, "Rolling"): at 761 px the
  *  heading, the pin and the help share one line; up to 760 px the heading is read, not drawn,
- *  and the results line holds its three parts; «Ещё» holds the pin and the help; the dice are
+ *  the picker row (the mode picker, «Ещё») comes first and the results line holds «Бросок N»
+ *  and «Настроить»; «Ещё» holds the pin and the help; the dice are
  *  two rows at 360; the card is the tall face from a 641 px results column; a picker never
  *  cuts the roll button; the longest title of «Проклятые предметы» and of Many Worlds Tavern breaks no word. */
 async function rollPageLayout() {
@@ -6474,11 +6495,9 @@ async function rollPageLayout() {
         const where = route + ' ' + lang + ' ' + width + ': ';
         await d.open(route, { lang });
         const line = await page.evaluate(() => {
-          const parts = [
-            ...document.querySelectorAll(
-              '.reshead h2, .reshead > .btn, .reshead .morewrap > .btn'
-            )
-          ].map((e) => e.getBoundingClientRect());
+          const parts = [...document.querySelectorAll('.reshead h2, .reshead > .btn')].map(
+            (e) => e.getBoundingClientRect()
+          );
           return {
             h1: document.querySelector('main h1').getBoundingClientRect().width,
             round: document.querySelectorAll('main .homebtn, main .helpbtn').length,
@@ -6491,13 +6510,133 @@ async function rollPageLayout() {
         });
         ok(line.h1 <= 1, at + where + 'the h1 is drawn, ' + line.h1 + ' px wide');
         ok(line.round === 0, at + where + 'the head buttons are drawn');
-        ok(line.count === 3, at + where + 'the results line holds ' + line.count + ' parts');
+        ok(line.count === 2, at + where + 'the results line holds ' + line.count + ' parts');
         ok(!line.out, at + where + 'a part of the results line leaves the window');
-        ok(
-          line.lines === 1 || (width === 320 && line.lines === 2),
-          at + where + 'the results line takes ' + line.lines + ' lines'
-        );
+        ok(line.lines === 1, at + where + 'the results line takes ' + line.lines + ' lines');
         ok(!line.sideways, at + where + 'the page scrolls sideways');
+      }
+
+      /* The picker row: the picker first, «Ещё» last, 8 px under the header's place, the
+         longest names on two lines with no word cut, «Ещё» holding still across modes. */
+      const moreRights = [];
+      for (const route of ['#/roll/alt', '#/roll/std', '#/roll/vault_of_ages', '#/roll/vh']) {
+        const where = route + ' ' + lang + ' ' + width + ': ';
+        await d.open(route, { lang });
+        const pick = await page.evaluate(() => {
+          const main = document.querySelector('main');
+          const row = main.querySelector(':scope > .pickrow');
+          const nav = row?.querySelector(':scope > nav.modes');
+          const btn = nav?.querySelector('button.picker');
+          const text = btn?.querySelector('.picker-t');
+          const more = row?.lastElementChild?.querySelector('.btn');
+          /* Svelte leaves an empty text node first, so take the first node that holds text. */
+          const walker = text && document.createTreeWalker(text, NodeFilter.SHOW_TEXT);
+          let node = null;
+          while (walker?.nextNode()) {
+            if (walker.currentNode.textContent.trim()) {
+              node = walker.currentNode;
+              break;
+            }
+          }
+          const cut = (text?.textContent.trim().split(/\s+/) ?? []).filter((word) => {
+            const from = node ? node.textContent.indexOf(word) : -1;
+            if (from < 0) return true;
+            const range = document.createRange();
+            range.setStart(node, from);
+            range.setEnd(node, from + word.length);
+            return range.getClientRects().length > 1;
+          });
+          const r = (e) => e.getBoundingClientRect();
+          return {
+            row: !!row,
+            first: row?.firstElementChild === nav,
+            modes: document.querySelectorAll('nav.modes').length,
+            more: more?.getAttribute('aria-haspopup') === 'menu',
+            gap: row ? Math.round(r(row).top - r(main).top) : -1,
+            high: btn ? Math.round(r(btn).height) : 0,
+            clamped: text ? text.scrollHeight > text.clientHeight + 1 : true,
+            cut,
+            inside: btn && more ? r(btn).left >= 0 && r(more).right <= innerWidth : false,
+            moreRight: more ? Math.round(r(more).right) : 0
+          };
+        });
+        ok(
+          pick.row && pick.first && pick.modes === 1,
+          at + where + 'the picker row - ' + JSON.stringify(pick)
+        );
+        ok(pick.more, at + where + 'the row does not end with «Ещё»');
+        ok(
+          pick.gap === 8,
+          at + where + 'the row is ' + pick.gap + ' px under the header, not 8'
+        );
+        ok(pick.high <= 41, at + where + 'the picker is ' + pick.high + ' px tall');
+        ok(!pick.clamped, at + where + 'the picker name takes more than two lines');
+        ok(!pick.cut.length, at + where + 'the picker name breaks a word: ' + pick.cut);
+        ok(pick.inside, at + where + 'the row leaves the window');
+        const face = await page.evaluate(pickerFace);
+        ok(
+          face.size && face.high <= 41,
+          at + where + 'the picker face is not the tables - ' + JSON.stringify(face)
+        );
+        moreRights.push(pick.moreRight);
+      }
+      ok(
+        new Set(moreRights).size === 1,
+        at + lang + ' ' + width + ': «Ещё» moves between modes - ' + moreRights
+      );
+
+      /* A narrowed row lights «Настроить · 2»: the results line stays one line. */
+      if (lang === 'ru' && (width === 360 || width === 320)) {
+        await d.open('#/roll/std', { lang });
+        await d.click('Настроить');
+        await d.click('Расходники');
+        await d.click('Hope & Fear');
+        await d.click('Настроить');
+        const lit = await page.evaluate(() => {
+          const parts = [...document.querySelectorAll('.reshead h2, .reshead > .btn')].map(
+            (e) => e.getBoundingClientRect()
+          );
+          return {
+            text: document.querySelector('.reshead > .btn')?.textContent.trim(),
+            lines: new Set(parts.map((r) => Math.round(r.top + r.height / 2))).size
+          };
+        });
+        ok(
+          lit.lines === 1 && /·/.test(lit.text ?? ''),
+          at + width + ': the lit «Настроить» line - ' + JSON.stringify(lit)
+        );
+      }
+
+      /* The mode sheet: the picker opens twelve links, Escape returns the focus. */
+      if (width === 360) {
+        await d.open('#/roll/vault_of_ages', { lang });
+        await d.click(
+          lang === 'en' ? 'Roll mode: Vault of Ages' : 'Режим броска: Vault of Ages'
+        );
+        const sheet = await page.evaluate(() => {
+          const dlg = document.querySelector('dialog[open]');
+          return {
+            title: dlg?.querySelector('h2')?.textContent.trim(),
+            links: dlg ? dlg.querySelectorAll('a').length : 0,
+            current: dlg?.querySelector('a[aria-current="page"]')?.getAttribute('href')
+          };
+        });
+        ok(
+          sheet.title === (lang === 'en' ? 'Roll' : 'Бросок') &&
+            sheet.links === 12 &&
+            sheet.current === (lang === 'en' ? '/en' : '') + '/roll/vault_of_ages',
+          at + lang + ': the mode sheet - ' + JSON.stringify(sheet)
+        );
+        await page.keyboard.press('Escape');
+        ok(
+          await waitIn(
+            page,
+            () =>
+              !document.querySelector('dialog[open]') &&
+              document.activeElement === document.querySelector('nav.modes button.picker')
+          ),
+          at + lang + ': Escape did not close the mode sheet onto the picker'
+        );
       }
 
       if (width === 360) {
@@ -6511,7 +6650,7 @@ async function rollPageLayout() {
             page,
             () =>
               !document.querySelector('[role="menu"]') &&
-              document.activeElement === document.querySelector('.reshead .morewrap > .btn')
+              document.activeElement === document.querySelector('.pickrow .morewrap > .btn')
           ),
           at + lang + ': Escape did not close «Ещё» onto its button'
         );
@@ -6522,7 +6661,7 @@ async function rollPageLayout() {
             page,
             () =>
               !document.querySelector('[role="menu"]') &&
-              document.activeElement === document.querySelector('.reshead .morewrap > .btn') &&
+              document.activeElement === document.querySelector('.pickrow .morewrap > .btn') &&
               !!document.querySelector('.helpbox')
           ),
           at + lang + ': the help item did not open the box and return the focus'
@@ -7037,6 +7176,9 @@ async function tableHeadHoldsStill() {
             };
             return {
               title: y('.page-head') ?? y('.pickrow'),
+              picker: box('.pickrow .picker')
+                ? Math.round(box('.pickrow .picker').height)
+                : null,
               groups: y('.page-head .groups'),
               tabs: y('.page-below .tabslot') ?? y('.page-head .tabs'),
               searchrow: y('.searchrow'),
@@ -7047,6 +7189,18 @@ async function tableHeadHoldsStill() {
             };
           });
           for (const [k, v] of Object.entries(m)) (seen[k] ??= []).push([table, v]);
+          if (width === 390 && table === NAV_TABLES[0]) {
+            const face = await page.evaluate(pickerFace);
+            ok(
+              face.size && face.high <= 41,
+              at +
+                width +
+                ' ' +
+                lang +
+                ': the picker face is not the one face - ' +
+                JSON.stringify(face)
+            );
+          }
         }
         for (const [k, vals] of Object.entries(seen)) {
           const drawn = vals.filter(([, v]) => v !== null);
@@ -7815,6 +7969,46 @@ async function listSearchAndFilter() {
  *  pages. */
 async function listHeadAndBars() {
   const at = '100 (the list head and the bars): ';
+  /* The list «Ещё» never scrolls the page (FEATURES.md, "Chrome", the overlay rule): not on
+     open, not on Escape, not on a tap outside, and its button stays below the header. */
+  for (const lang of ['ru', 'en']) {
+    const where = at + 'no scroll, ' + lang + ': ';
+    const { ctx, page, d } = await openState(LIST_A_ID + ' ~ noted as gm4', 360, 640, lang);
+    try {
+      const sel = '.lhead-acts .morewrap > [aria-haspopup="menu"]';
+      const read = (what) =>
+        page.evaluate(
+          ([s, w]) => ({
+            what: w,
+            sy: scrollY,
+            top: document.querySelector(s)?.getBoundingClientRect().top ?? -1,
+            header: document.querySelector('.topbar').getBoundingClientRect().bottom
+          }),
+          [sel, what]
+        );
+      const clean = (r) => r.sy === 0 && r.top >= r.header - 0.5;
+      await d.openMore(sel);
+      const opened = await read('open');
+      ok(
+        clean(opened),
+        where + 'scrolled or under the header on open - ' + JSON.stringify(opened)
+      );
+      await page.keyboard.press('Escape');
+      await d.settle();
+      const esc = await read('Escape');
+      ok(clean(esc), where + 'scrolled or under the header on Escape - ' + JSON.stringify(esc));
+      await d.openMore(sel);
+      await page.mouse.click(8, 632);
+      await d.settle();
+      const tap = await read('tap outside');
+      ok(
+        clean(tap),
+        where + 'scrolled or under the header on a tap outside - ' + JSON.stringify(tap)
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
   {
     const { ctx, page, d } = await openState(LIST_A_ID + ' ~ noted as gm4', 360, 640, 'ru');
     try {
@@ -8507,8 +8701,14 @@ function rowTextOf(page) {
       const bs = getComputedStyle(body);
       const cs = getComputedStyle(rt);
       if (cs.maxWidth !== 'none') out.capped.push(cs.maxWidth);
-      const contentRight = body.getBoundingClientRect().right - parseFloat(bs.paddingRight);
-      if (contentRight - rt.getBoundingClientRect().right > 16) out.capped.push('short');
+      /* A row in the stat columns draws its text left of the first cell (`.rt` is `display:
+         contents` there): that cell's left edge is the text's free edge. */
+      const c1 = cs.display === 'contents' ? r.querySelector('.sc.c1') : null;
+      const contentRight = c1
+        ? c1.getBoundingClientRect().left
+        : body.getBoundingClientRect().right - parseFloat(bs.paddingRight);
+      const rtRight = c1 ? c1.getBoundingClientRect().left : rt.getBoundingClientRect().right;
+      if (contentRight - rtRight > 16) out.capped.push('short');
       const d = r.querySelector(DESC);
       if (!d) continue;
       out.described++;
@@ -8832,10 +9032,20 @@ async function openToasting(id, lang) {
   if (!state) throw new Error('no inventory state ' + id);
   const got = await fresh({ width: 360, height: 640, storage: state.storage });
   await got.page.evaluateOnNewDocument(() => {
-    new MutationObserver(() => {
-      const t = document.querySelector('.toast.page[role]');
-      if (t && window.__toastAt === undefined) window.__toastAt = performance.now();
-    }).observe(document, { subtree: true, attributes: true, attributeFilter: ['role'] });
+    /* `toggle` does not bubble: the capture listener sees the page's toast open. The element
+       carries its `role` from the start, so no attribute marks the first show. */
+    document.addEventListener(
+      'toggle',
+      (e) => {
+        if (
+          e.newState === 'open' &&
+          e.target.matches?.('.toast.page') &&
+          window.__toastAt === undefined
+        )
+          window.__toastAt = performance.now();
+      },
+      true
+    );
   });
   await got.d.open(state.route, {
     as: state.as,
@@ -8859,14 +9069,14 @@ function toastAt(page, ms) {
     if (window.__toastAt === undefined) return null;
     const wait = window.__toastAt + at - performance.now();
     if (wait > 0) await new Promise((r) => setTimeout(r, wait));
-    return !!document.querySelector('.toast.page[role]');
+    return !!document.querySelector('.toast.page:popover-open');
   }, ms);
 }
 
 /** 108. The toasts in a real browser (DESIGN.md, "The Reading Time Rule"), 360x640: a plain
  *  toast lives 4000 ms, an error 7000 ms, a long one 10000 ms and takes three lines; a
  *  pointer on a toast holds it and it runs on when the pointer leaves; the page's toast sits
- *  above the selection bar. The toast over a result's «Ещё» is measured, not asserted. */
+ *  above the selection bar, and clear of a result's open «Ещё». */
 async function toastsInABrowser() {
   const at = '108 (the toasts): ';
   for (const lang of ['ru', 'en']) {
@@ -8897,7 +9107,8 @@ async function toastsInABrowser() {
         try {
           for (let i = 0; i < 3; i++) {
             const pressed = await o.page.evaluate(() => {
-              if (document.querySelector('.toast.page[role="alert"]')) return false;
+              if (document.querySelector('.toast.page:popover-open[role="alert"]'))
+                return false;
               const on = document.querySelector('button.chip[data-val][aria-pressed="true"]');
               on?.click();
               return !!on;
@@ -8922,7 +9133,9 @@ async function toastsInABrowser() {
         try {
           await toastAt(o.page, 1000);
           const box = await o.page.evaluate(() => {
-            const r = document.querySelector('.toast.page[role]')?.getBoundingClientRect();
+            const r = document
+              .querySelector('.toast.page:popover-open')
+              ?.getBoundingClientRect();
             return r ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : null;
           });
           ok(!!box, at + lang + ' (c): no toast to point at');
@@ -8932,7 +9145,7 @@ async function toastsInABrowser() {
           await o.page.mouse.move(5, 300);
           const left = await o.page.evaluate(() => performance.now());
           const gone = await o.page.evaluate(async () => {
-            for (let i = 0; i < 200 && document.querySelector('.toast.page[role]'); i++)
+            for (let i = 0; i < 200 && document.querySelector('.toast.page:popover-open'); i++)
               await new Promise((r) => setTimeout(r, 25));
             return performance.now();
           });
@@ -8955,7 +9168,7 @@ async function toastsInABrowser() {
         const o = await openToasting('#/lists ~ list limit as gm2', lang);
         try {
           const lines = await o.page.evaluate(() => {
-            const t = document.querySelector('.toast.page[role]');
+            const t = document.querySelector('.toast.page:popover-open');
             if (!t) return 0;
             const cs = getComputedStyle(t);
             const inner =
@@ -8995,11 +9208,12 @@ async function toastsInABrowser() {
           en ? 'Copy text' : 'Скопировать текст'
         );
         ok(
-          await waitIn(page, () => !!document.querySelector('.toast.page[role]')),
+          await waitIn(page, () => !!document.querySelector('.toast.page:popover-open')),
           at + lang + ' (e): no toast after «Скопировать текст»'
         );
         const m = await page.evaluate(() => ({
-          toast: document.querySelector('.toast.page[role]')?.getBoundingClientRect().bottom,
+          toast: document.querySelector('.toast.page:popover-open')?.getBoundingClientRect()
+            .bottom,
           bar: document.querySelector('.selbarwrap')?.getBoundingClientRect().top
         }));
         ok(
@@ -9011,7 +9225,7 @@ async function toastsInABrowser() {
       }
     }
 
-    /* (f) A toast over a roll result's open «Ещё»: logged for DEBT.md, not asserted. */
+    /* (f) A toast beside a roll result's open «Ещё» does not cover it (`--overlay-clear`). */
     {
       const { ctx, page, d } = await openState('#/roll/std ~ card more', 360, 640, lang);
       try {
@@ -9022,8 +9236,10 @@ async function toastsInABrowser() {
         );
         await d.settle();
         await d.openCardMore();
-        const m = await page.evaluate(() => {
-          const t = document.querySelector('.toast.page[role]')?.getBoundingClientRect();
+        const m = await page.evaluate(async () => {
+          const toast = document.querySelector('.toast.page:popover-open');
+          await Promise.all((toast?.getAnimations() ?? []).map((a) => a.finished));
+          const t = toast?.getBoundingClientRect();
           const items = [...document.querySelectorAll('[role="menu"] [role="menuitem"]')];
           const last = items.at(-1)?.getBoundingClientRect();
           if (!t || !last) return { toast: !!t, last: !!last };
@@ -9035,7 +9251,10 @@ async function toastsInABrowser() {
             overlap: Math.round(v * h)
           };
         });
-        fs.writeSync(1, '  toast over «Ещё» (f) 360 ' + lang + ': ' + JSON.stringify(m) + '\n');
+        ok(
+          m.toastTop !== undefined && m.overlap === 0,
+          at + lang + ' (f): the toast covers the open «Ещё» - ' + JSON.stringify(m)
+        );
       } finally {
         await ctx.close();
       }
@@ -9058,7 +9277,7 @@ const TARGET_LAYERS = [
   '#/roll/std ~ set up',
   '#/roll/std ~ more',
   '#/roll/std ~ card more',
-  '#/roll/vault_of_ages ~ supplements menu',
+  '#/roll/vault_of_ages ~ picker sheet',
   '#/search ~ more',
   '#/search ~ selecting',
   '#/lists ~ more as gm1',
@@ -9093,6 +9312,7 @@ const TARGET_LAYERS = [
 
 /** The layers case 109 also reads at 1180x720 with the 24 px floor and its spacing. */
 const TARGET_LAYERS_WIDE = [
+  '#/roll/vault_of_ages ~ supplements sheet',
   SHOP + ' ~ share as gm1',
   SHOP + ' ~ not saved as gm1',
   GM2_LIST_ID + ' ~ notices open as gm2',
@@ -9310,6 +9530,9 @@ async function textMeasure() {
     ['#/homebrew as gm3', 'main .page-sub'],
     ['#/roll/alt', 'main .page-sub'],
     ['#/lists', 'main .page-sub, main .signin-lead'],
+    ['#/homebrew', 'main .signin-lead'],
+    ['#/tables/homebrew', 'main .signin-lead'],
+    [SHOP, 'main .signin-lead'],
     ['#/account', 'main .page-sub'],
     ['#/search ~ nothing found', 'main .cause'],
     ['#/lists ~ empty as gm4', 'main .hint'],
@@ -9361,29 +9584,31 @@ async function textMeasure() {
   }
 
   /* (a2) A box with actions: the sign-in button follows the lead's widest line. */
-  for (const lang of ['ru', 'en']) {
-    for (const [width, height] of [
-      [1180, 720],
-      [1920, 1080]
-    ]) {
-      const where = at + '#/lists signed out ' + width + ' ' + lang + ': ';
-      const { ctx, page } = await openState('#/lists', width, height, lang);
-      try {
-        const m = await page.evaluate(() => {
-          const lead = document.querySelector('main .signin-lead');
-          const btn = document.querySelector('main .signin .btn, main .signin button');
-          if (!lead || !btn) return null;
-          const range = document.createRange();
-          range.selectNodeContents(lead);
-          const right = Math.max(...[...range.getClientRects()].map((r) => r.right));
-          return { gap: btn.getBoundingClientRect().left - right };
-        });
-        ok(
-          !!m && m.gap >= 0 && m.gap <= 12,
-          where + 'the button does not follow the lead - ' + JSON.stringify(m)
-        );
-      } finally {
-        await ctx.close();
+  for (const id of ['#/lists', '#/homebrew', '#/lists/nope']) {
+    for (const lang of ['ru', 'en']) {
+      for (const [width, height] of [
+        [1180, 720],
+        [1920, 1080]
+      ]) {
+        const where = at + id + ' signed out ' + width + ' ' + lang + ': ';
+        const { ctx, page } = await openState(id, width, height, lang);
+        try {
+          const m = await page.evaluate(() => {
+            const lead = document.querySelector('main .signin-lead');
+            const btn = document.querySelector('main .signin .btn, main .signin button');
+            if (!lead || !btn) return null;
+            const range = document.createRange();
+            range.selectNodeContents(lead);
+            const right = Math.max(...[...range.getClientRects()].map((r) => r.right));
+            return { gap: btn.getBoundingClientRect().left - right };
+          });
+          ok(
+            !!m && m.gap >= 0 && m.gap <= 12,
+            where + 'the button does not follow the lead - ' + JSON.stringify(m)
+          );
+        } finally {
+          await ctx.close();
+        }
       }
     }
   }
@@ -10181,7 +10406,8 @@ async function printFaceWait() {
 
 /** 116. The focus after an in-app navigation (docs/specs/FEATURES.md, rule 20): a keyboard
  *  press on a link that leaves with its page puts the focus on `#main`, not on `body`; a
- *  mode pill of the roll head keeps the focus on the lit pill. RU, 360 and 1180 px. */
+ *  mode pill of the roll head keeps the focus on the lit pill, and up to 760 px the mode
+ *  picker takes it. RU, 360 and 1180 px. */
 async function focusAfterNavigation() {
   const at = '116 (the focus after a navigation): ';
   const focusOf = (page) =>
@@ -10227,6 +10453,36 @@ async function focusAfterNavigation() {
         await d.settle();
         const got = await focusOf(page);
         ok(/^A Альтернативные/.test(got), at + 'a mode pill: the focus is on ' + got);
+      }
+      /* Up to 760 px the roll picker's sheet: Escape returns the focus to the picker, a pick
+         puts it on the new page's picker. */
+      if (width === 360) {
+        const PICKER = 'nav.modes button.picker';
+        await d.open('#/roll/std');
+        await page.click(PICKER);
+        await page.waitForSelector('dialog[open] a[href="/roll/alt"]');
+        await page.keyboard.press('Escape');
+        ok(
+          await waitIn(
+            page,
+            (sel) =>
+              !document.querySelector('dialog[open]') &&
+              document.activeElement === document.querySelector(sel),
+            PICKER
+          ),
+          at + 'the mode sheet: Escape did not return the focus to the picker'
+        );
+        await page.click(PICKER);
+        await page.waitForSelector('dialog[open] a[href="/roll/alt"]');
+        await page.focus('dialog[open] a[href="/roll/alt"]');
+        await page.keyboard.press('Enter');
+        await waitIn(page, () => location.pathname.startsWith('/roll/alt'));
+        await d.settle();
+        const got = await focusOf(page);
+        ok(
+          /^BUTTON Альтернативные/.test(got),
+          at + 'the mode sheet: the new page focuses ' + got + ', not its picker'
+        );
       }
     } finally {
       await ctx.close();
@@ -10372,11 +10628,12 @@ async function barPinnedAndToastsClear() {
       document.querySelector('dialog[open] [role="menu"] [role="menuitem"]')?.click()
     );
     ok(
-      await waitIn(page, () => !!document.querySelector('dialog[open] .toast[role]')),
+      await waitIn(page, () => !!document.querySelector('dialog[open] .toast:popover-open')),
       where + 'no toast after the first «Ещё» item'
     );
     const m = await page.evaluate(() => ({
-      toast: document.querySelector('dialog[open] .toast[role]').getBoundingClientRect().bottom,
+      toast: document.querySelector('dialog[open] .toast:popover-open').getBoundingClientRect()
+        .bottom,
       dock: document.querySelector('dialog[open] .cardpick').getBoundingClientRect().top
     }));
     ok(m.toast <= m.dock + 0.5, where + 'the toast covers the dock - ' + JSON.stringify(m));
@@ -10455,6 +10712,1576 @@ async function barPinnedAndToastsClear() {
       }
     } finally {
       await s.ctx.close();
+    }
+  }
+}
+
+/** Opens the record `id` from its row on the current table and waits for the dialog's dock. */
+async function openRecordDialog(page, id) {
+  await page.evaluate((i) => {
+    /* A signed-in account can keep the grid view: its tile is the row's first button. */
+    const row = document.querySelector(`[data-row="${i}"]`);
+    (row?.querySelector('.row-main') ?? row?.querySelector('button'))?.click();
+  }, id);
+  await page.waitForSelector('dialog[open] .cardpick', { timeout: 5000 });
+  await page.evaluate(
+    () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
+  );
+}
+
+/** 119. A menu in the record dialog stays put (docs/specs/FEATURES.md, "Chrome", the overlay
+ *  rule): «Ещё» draws in the top layer inside the window with 16 px gutters, the card never
+ *  scrolls and the picture stays where it was, and Escape returns the focus to «Ещё». At
+ *  1000x720, 1180x720 and 1920x950, signed out and as gm1; the English page at 1180x720. */
+async function dialogMenuStaysPut() {
+  const at = '119 (the dialog menu stays put): ';
+  const runs = [];
+  for (const [width, height] of [
+    [1000, 720],
+    [1180, 720],
+    [1920, 950]
+  ]) {
+    for (const as of [undefined, 'gm1']) runs.push([width, height, as, 'ru']);
+  }
+  runs.push([1180, 720, undefined, 'en'], [1180, 720, 'gm1', 'en']);
+  const more = 'dialog[open] .cardpick .morewrap > [aria-haspopup="menu"]';
+  for (const [width, height, as, lang] of runs) {
+    const where = at + width + 'x' + height + (as ? ' as ' + as : '') + ' ' + lang + ': ';
+    const { ctx, page, d } = await fresh({ width, height });
+    try {
+      await d.open('#/tables/core_item', { ...(as ? { as } : {}), lang });
+      await d.settled(where);
+      /* `lang` reaches a signed-in account's preferences only. */
+      if (lang === 'en' && !as) await d.click('EN');
+      await openRecordDialog(page, 'ci1');
+      const m = await page.evaluate(async (sel) => {
+        const card = document.querySelector('dialog[open] .modal-card');
+        const pic = document.querySelector('dialog[open] .card-media');
+        const before = { st: card.scrollTop, pic: pic.getBoundingClientRect().top };
+        document.querySelector(sel).click();
+        await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+        const menu = document.querySelector('dialog[open] [role="menu"]');
+        if (!menu) return null;
+        await Promise.all(menu.getAnimations().map((a) => a.finished));
+        const r = menu.getBoundingClientRect();
+        return {
+          before,
+          after: { st: card.scrollTop, pic: pic.getBoundingClientRect().top },
+          left: r.left,
+          right: r.right,
+          top: r.top,
+          bottom: r.bottom,
+          vw: document.documentElement.clientWidth,
+          vh: innerHeight,
+          layer: menu.matches(':popover-open')
+        };
+      }, more);
+      ok(!!m, where + 'the menu did not open');
+      if (!m) continue;
+      ok(m.layer, where + 'the menu is not in the top layer - ' + JSON.stringify(m));
+      ok(
+        m.before.st === 0 && m.after.st === 0 && Math.abs(m.after.pic - m.before.pic) < 0.5,
+        where + 'the card moved - ' + JSON.stringify([m.before, m.after])
+      );
+      ok(
+        m.left >= 16 - 0.5 && m.right <= m.vw - 16 + 0.5 && m.top >= 0 && m.bottom <= m.vh,
+        where + 'the menu leaves the window or its gutters - ' + JSON.stringify(m)
+      );
+      await page.keyboard.press('Escape');
+      const after = await page.evaluate(
+        (sel) => ({
+          menu: !!document.querySelector('[role="menu"]'),
+          dialog: !!document.querySelector('dialog[open]'),
+          focus: document.activeElement === document.querySelector(sel),
+          st: document.querySelector('dialog[open] .modal-card')?.scrollTop
+        }),
+        more
+      );
+      ok(
+        !after.menu && after.dialog && after.focus && after.st === 0,
+        where +
+          'Escape did not return the focus to «Ещё» without a scroll - ' +
+          JSON.stringify(after)
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
+/** The account lists cases 120 and the sweep make: `n` lists, `ci1` in the first two. */
+const manyLists = (n) =>
+  Array.from({ length: n }, (_, i) => ({
+    n: i + 1,
+    name: 'Список ' + (i + 1),
+    ids: i < 2 ? ['ci1'] : []
+  }));
+
+/** 120. The add-to-list popover in the record dialog (FEATURES.md, "Chrome"): with 12 lists the
+ *  search field is inside the window and the card never scrolls at 1000x720, 1180x720 and
+ *  1920x950; with no list it opens down at 85 px; at 360x640 with the field focused and the
+ *  window cut to 380 px (a keyboard) the field stays inside the window. */
+async function dialogPopoverStaysInWindow() {
+  const at = '120 (the add-to-list popover in the dialog): ';
+  const read = (page) =>
+    page.evaluate(() => {
+      const menu = document.querySelector('dialog[open] .dropmenu');
+      if (!menu) return null;
+      const m = menu.getBoundingClientRect();
+      const f = menu.querySelector('.pickq')?.getBoundingClientRect();
+      return {
+        menu: { top: m.top, bottom: m.bottom, left: m.left, right: m.right, h: m.height },
+        field: f ? { top: f.top, bottom: f.bottom } : null,
+        side: menu.dataset.side,
+        st: document.querySelector('dialog[open] .modal-card').scrollTop,
+        vw: document.documentElement.clientWidth,
+        vh: innerHeight
+      };
+    });
+  for (const lang of ['ru', 'en']) {
+    for (const [width, height] of [
+      [1000, 720],
+      [1180, 720],
+      [1920, 950]
+    ]) {
+      const where = at + '12 lists ' + width + 'x' + height + ' ' + lang + ': ';
+      const { ctx, page, d } = await fresh({ width, height });
+      try {
+        await d.open('#/tables/core_item', { as: 'gm4', lang });
+        await d.settled(where);
+        await d.accountLists(manyLists(12));
+        await openRecordDialog(page, 'ci1');
+        await page.click('dialog[open] .seldrop > .btn');
+        await d.settle();
+        const m = await read(page);
+        ok(!!m?.field, where + 'no popover or no search field');
+        if (!m?.field) continue;
+        ok(
+          m.field.top >= 0 &&
+            m.field.bottom <= m.vh &&
+            m.menu.top >= 0 &&
+            m.menu.bottom <= m.vh,
+          where + 'the search field leaves the window - ' + JSON.stringify(m)
+        );
+        ok(m.st === 0, where + 'the card scrolled - ' + JSON.stringify(m));
+      } finally {
+        await ctx.close();
+      }
+    }
+
+    const where = at + 'no list 1180x720 ' + lang + ': ';
+    const { ctx, page, d } = await fresh({ width: 1180, height: 720 });
+    try {
+      await d.open('#/tables/core_item', { as: 'gm4', lang });
+      await d.settled(where);
+      await openRecordDialog(page, 'ci1');
+      await page.click('dialog[open] .seldrop > .btn');
+      await d.settle();
+      const m = await read(page);
+      ok(!!m, where + 'no popover');
+      if (m) {
+        ok(
+          m.side === 'down' && m.menu.h > 60 && m.menu.h < 130 && m.st === 0,
+          where + 'not a short popover that opens down - ' + JSON.stringify(m)
+        );
+      }
+    } finally {
+      await ctx.close();
+    }
+
+    const kb = at + 'keyboard 360x640 ' + lang + ': ';
+    const k = await fresh({ width: 360, height: 640 });
+    try {
+      await k.d.open('#/tables/core_item', { as: 'gm4', lang });
+      await k.d.settled(kb);
+      await k.d.accountLists(manyLists(12));
+      await openRecordDialog(k.page, 'ci1');
+      await k.page.click('dialog[open] .seldrop > .btn');
+      await k.d.settle();
+      await k.page.focus('dialog[open] .dropmenu .pickq');
+      await k.d.viewport(360, 380);
+      await new Promise((r) => setTimeout(r, 400));
+      const m = await read(k.page);
+      ok(!!m?.field, kb + 'no popover or no search field');
+      if (m?.field) {
+        ok(
+          m.field.top >= 0 && m.field.bottom <= m.vh,
+          kb + 'the search field leaves the window - ' + JSON.stringify(m)
+        );
+      }
+    } finally {
+      await k.ctx.close();
+    }
+  }
+}
+
+/** 121. The sticky columns fit the window (FEATURES.md, "Tables and search", "Homebrew"): the
+ *  filter column on `/tables/eq_weapon` and the editor's preview with a 3000-character item end
+ *  at or above the window's bottom less 16 px at page scroll 0 and 400, the column's own scroll
+ *  reaches its last section, and a wheel at its end moves the page. At 360x640 the filter is
+ *  a sheet. */
+async function stickyColumnsFit() {
+  const at = '121 (the sticky columns fit): ';
+  const fits = async (page, sel, where) => {
+    for (const y of [0, 400]) {
+      const m = await page.evaluate(
+        async (s, top) => {
+          scrollTo(0, top);
+          await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+          const el = document.querySelector(s);
+          if (!el) return null;
+          const r = el.getBoundingClientRect();
+          const before = scrollY;
+          el.scrollTop = el.scrollHeight;
+          const last = el.lastElementChild.getBoundingClientRect();
+          return {
+            bottom: r.bottom,
+            vh: innerHeight,
+            lastBottom: last.bottom,
+            before,
+            x: r.x + r.width / 2,
+            y: r.y + 40
+          };
+        },
+        sel,
+        y
+      );
+      ok(!!m, where + sel + ' not found');
+      if (!m) return;
+      ok(
+        m.bottom <= m.vh - 16 + 0.5,
+        where + 'at scroll ' + y + ' the bottom is under the fold - ' + JSON.stringify(m)
+      );
+      ok(
+        m.lastBottom <= m.vh,
+        where + 'at scroll ' + y + ' the last section is out of reach - ' + JSON.stringify(m)
+      );
+      await page.mouse.move(m.x, m.y);
+      await page.mouse.wheel({ deltaY: 300 });
+      await new Promise((r) => setTimeout(r, 400));
+      const moved = await page.evaluate(() => scrollY);
+      ok(
+        moved > m.before,
+        where + 'at scroll ' + y + ' the wheel at the end did not move the page - ' + moved
+      );
+    }
+  };
+  for (const [width, height] of [
+    [1920, 950],
+    [1180, 720],
+    [1000, 720]
+  ]) {
+    const where = at + 'filter column ' + width + 'x' + height + ': ';
+    const { ctx, page, d } = await fresh({ width, height });
+    try {
+      await d.open('#/tables/eq_weapon');
+      await d.settled(where);
+      await fits(page, '.fcol', where);
+    } finally {
+      await ctx.close();
+    }
+  }
+  for (const [width, height] of [
+    [1180, 720],
+    [1920, 950]
+  ]) {
+    const where = at + 'editor preview ' + width + 'x' + height + ': ';
+    const { ctx, page, d } = await fresh({ width, height });
+    try {
+      await d.open('#/homebrew/hb_longtextaaaaaaaa', { as: 'gm4' });
+      await d.settled(where);
+      await fits(page, '.preview', where);
+    } finally {
+      await ctx.close();
+    }
+  }
+  const where = at + 'sheet 360x640: ';
+  const { ctx, page, d } = await fresh({ width: 360, height: 640 });
+  try {
+    await d.open('#/tables/eq_weapon');
+    await d.settled(where);
+    ok(!(await page.$('.fcol')), where + 'a filter column draws at 360');
+    await d.press('Фильтры');
+    ok(!!(await page.waitForSelector('dialog.sheet', { timeout: 5000 })), where + 'no sheet');
+  } finally {
+    await ctx.close();
+  }
+}
+
+/** 122. A header control's focus keeps the place (DESIGN.md, "The Hidden Header Rule"): on a long
+ *  page scrolled to 1500 px, focusing each header control at 320, 360 and 1180 px leaves
+ *  `scrollY` as it was; so does the first control of the editor's bar and of the print dock. */
+async function headerFocusKeepsThePlace() {
+  const at = '122 (the header focus keeps the place): ';
+  for (const [width, height] of [
+    [320, 568],
+    [360, 640],
+    [1180, 720]
+  ]) {
+    const where = at + width + ': ';
+    const { ctx, page, d } = await fresh({ width, height });
+    try {
+      await d.open('#/tables/core_item', { as: 'gm1' });
+      await d.settled(where);
+      await page.evaluate(async () => {
+        scrollTo(0, 1500);
+        await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      });
+      const m = await page.evaluate(async () => {
+        const y = scrollY;
+        const els = [...document.querySelectorAll('header.topbar :is(a, button)')].filter(
+          (e) => e.offsetParent !== null
+        );
+        const moved = [];
+        for (const el of els) {
+          el.focus();
+          await new Promise((r) => requestAnimationFrame(r));
+          if (Math.abs(scrollY - y) > 0.5)
+            moved.push([el.textContent.trim().slice(0, 20), scrollY]);
+          scrollTo(0, y);
+          await new Promise((r) => requestAnimationFrame(r));
+        }
+        return { y, n: els.length, moved };
+      });
+      ok(m.n > 0, where + 'no header control');
+      ok(m.moved.length === 0, where + 'a focus scrolled the page - ' + JSON.stringify(m));
+    } finally {
+      await ctx.close();
+    }
+  }
+  for (const [route, as, bar] of [
+    ['#/homebrew/new', 'gm1', '.ebar'],
+    ['#/p/set-twocards', 'gm2', '.pdock']
+  ]) {
+    const where = at + route + ' bar: ';
+    const { ctx, page, d } = await fresh({ width: 360, height: 640 });
+    try {
+      await d.open(route, as ? { as } : undefined);
+      await d.settled(where);
+      await page.waitForSelector(bar, { timeout: 5000 });
+      const m = await page.evaluate(async (sel) => {
+        const el = document.querySelector(sel + ' :is(a, button:not(:disabled), input)');
+        if (!el) return null;
+        scrollTo(0, Math.max(0, (document.documentElement.scrollHeight - innerHeight) / 2));
+        await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+        const y = scrollY;
+        el.focus();
+        await new Promise((r) => requestAnimationFrame(r));
+        return { y, after: scrollY };
+      }, bar);
+      ok(!!m, where + 'no control in ' + bar);
+      if (m)
+        ok(Math.abs(m.after - m.y) < 0.5, where + 'the focus scrolled - ' + JSON.stringify(m));
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
+/** 123. Short windows: (a) the record dialog's dock is in view at 600x500, 760x560 and 700x481 and
+ *  the picture at 360x640 is unchanged; (b) the dialog's toast ends above the dock (or the dock is
+ *  out of view) at 740x360 and 360x460; (c) the RU tabs fit the body at 320x568; (d) the crop
+ *  dialog's «Готово» is in the window at 740x360, RU and EN, and the dialog does not scroll. */
+async function shortWindows() {
+  const at = '123 (short windows): ';
+  for (const [width, height] of [
+    [600, 500],
+    [760, 560],
+    [700, 481]
+  ]) {
+    const where = at + 'dock ' + width + 'x' + height + ': ';
+    const { ctx, page, d } = await fresh({ width, height });
+    try {
+      await d.open('#/tables/core_item');
+      await d.settled(where);
+      await openRecordDialog(page, 'ci1');
+      const m = await page.evaluate(() => ({
+        dock: document.querySelector('dialog[open] .cardpick').getBoundingClientRect().bottom,
+        vh: innerHeight,
+        st: document.querySelector('dialog[open] .modal-card').scrollTop
+      }));
+      ok(m.dock <= m.vh + 0.5, where + 'the dock is out of view - ' + JSON.stringify(m));
+    } finally {
+      await ctx.close();
+    }
+  }
+  {
+    const where = at + 'picture 360x640: ';
+    const { ctx, page, d } = await fresh({ width: 360, height: 640 });
+    try {
+      await d.open('#/tables/core_item');
+      await d.settled(where);
+      await openRecordDialog(page, 'ci1');
+      const m = await page.evaluate(() => {
+        const r = document.querySelector('dialog[open] .card-media').getBoundingClientRect();
+        return { w: Math.round(r.width), h: Math.round(r.height) };
+      });
+      ok(
+        m.w >= 300 && m.w <= 330 && Math.abs(m.h - (m.w * 3) / 4) <= 1.5,
+        where + 'the picture changed - ' + JSON.stringify(m)
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+  for (const [width, height] of [
+    [740, 360],
+    [360, 460]
+  ]) {
+    const where = at + 'toast ' + width + 'x' + height + ': ';
+    const { ctx, page, d } = await fresh({ width, height });
+    try {
+      await d.open('#/tables/core_item');
+      await d.settled(where);
+      await openRecordDialog(page, 'ci1');
+      await page.evaluate(() =>
+        document.querySelector('dialog[open] .cardpick .morewrap > .btn')?.click()
+      );
+      await waitIn(page, () => !!document.querySelector('dialog[open] [role="menu"]'));
+      await page.evaluate(() =>
+        document.querySelector('dialog[open] [role="menu"] [role="menuitem"]')?.click()
+      );
+      ok(
+        await waitIn(page, () => !!document.querySelector('dialog[open] .toast:popover-open')),
+        where + 'no toast after the first «Ещё» item'
+      );
+      const m = await page.evaluate(async () => {
+        const toast = document.querySelector('dialog[open] .toast:popover-open');
+        /* The entrance moves the toast 10 px while it runs. */
+        await Promise.all(toast.getAnimations().map((a) => a.finished));
+        return {
+          toast: toast.getBoundingClientRect().bottom,
+          dock: document.querySelector('dialog[open] .cardpick').getBoundingClientRect().top,
+          vh: innerHeight
+        };
+      });
+      ok(
+        m.dock >= m.vh || m.toast <= m.dock + 0.5,
+        where + 'the toast covers the dock - ' + JSON.stringify(m)
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+  for (const route of ['#/search', '#/roll/std']) {
+    const where = at + 'tabs 320x568 ' + route + ': ';
+    const { ctx, page, d } = await fresh({ width: 320, height: 568 });
+    try {
+      await d.open(route);
+      await d.settled(where);
+      const m = await page.evaluate(() => ({
+        tabs: document.querySelector('nav.tabs').getBoundingClientRect().right,
+        body: document.body.getBoundingClientRect().right
+      }));
+      ok(m.tabs <= m.body + 0.5, where + 'the tabs pass the body - ' + JSON.stringify(m));
+    } finally {
+      await ctx.close();
+    }
+  }
+  for (const lang of ['ru', 'en']) {
+    const where = at + 'crop dialog 740x360 ' + lang + ': ';
+    const { ctx, page } = await openState(
+      '#/homebrew/new ~ crop dialog as gm1',
+      740,
+      360,
+      lang,
+      true
+    );
+    try {
+      const m = await page.evaluate(() => {
+        const dlg = document.querySelector('dialog[open]');
+        const done = [...dlg.querySelectorAll('button')].find((b) =>
+          ['Готово', 'Done'].includes(b.textContent.trim())
+        );
+        const r = done?.getBoundingClientRect();
+        return {
+          done: r ? { top: r.top, bottom: r.bottom } : null,
+          vh: innerHeight,
+          scrolls: dlg.scrollHeight > dlg.clientHeight + 1
+        };
+      });
+      ok(
+        !!m.done && m.done.top >= 0 && m.done.bottom <= m.vh && !m.scrolls,
+        where + '«Готово» is out of the window or the dialog scrolls - ' + JSON.stringify(m)
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
+/** 124. The focus after a remote removal (docs/specs/FEATURES.md, rule 20): another device removes
+ *  the ticked row that has the focus. (a) Seven rows, the third removed: the focus goes to the
+ *  tick of the new third row and the count follows; (b) a one-row list: the focus goes to the
+ *  bar's clear control. At 360 and 1180 px, RU and EN for (a). */
+async function focusAfterRemoteRemoval() {
+  const at = '124 (the focus after a remote removal): ';
+  const LIST = '00000000-0000-4000-8000-000000008001';
+  const TICKS = '.lrow .lrow-pick input';
+  for (const [width, height] of [
+    [360, 640],
+    [1180, 720]
+  ]) {
+    for (const lang of ['ru', 'en']) {
+      const where = at + '(a) ' + width + ' ' + lang + ': ';
+      const { ctx, page, d } = await openState(
+        LIST_A_ID + ' ~ selecting as gm4',
+        width,
+        height,
+        lang
+      );
+      try {
+        const names = await page.evaluate(
+          (sel) => [...document.querySelectorAll(sel)].map((i) => i.getAttribute('aria-label')),
+          TICKS
+        );
+        ok(names.length === 7, where + names.length + ' ticks, not 7');
+        await page.evaluate((sel) => {
+          const box = document.querySelectorAll(sel)[2];
+          box.click();
+          box.focus();
+        }, TICKS);
+        await d.settle();
+        ok(await d.fake('playRemove', LIST, 'ci3'), where + 'the fake removed no entry');
+        ok(
+          await waitIn(page, () => document.querySelectorAll('.lrow').length === 6),
+          where + "the other device's removal was not drawn"
+        );
+        ok(
+          await waitIn(
+            page,
+            (name, sel) => {
+              const a = document.activeElement;
+              return (
+                a?.matches(sel) &&
+                a.getAttribute('aria-label') === name &&
+                [...document.querySelectorAll('.lrow')].indexOf(a.closest('.lrow')) === 2
+              );
+            },
+            names[3],
+            TICKS
+          ),
+          where +
+            'the focus is not on the tick of the new third row - ' +
+            (await page.evaluate(() => {
+              const a = document.activeElement;
+              return a ? a.tagName + ' ' + (a.getAttribute('aria-label') ?? '') : 'none';
+            }))
+        );
+        const count = await page.evaluate(
+          () => document.querySelector('.selcount')?.textContent
+        );
+        ok(/\b0\b/.test(count ?? ''), where + 'the count did not follow - ' + count);
+      } finally {
+        await ctx.close();
+      }
+    }
+    {
+      const where = at + '(b) ' + width + ': ';
+      const { ctx, page, d } = await fresh({ width, height });
+      try {
+        const listId = await openAccountList(
+          d,
+          { n: 1, name: 'Тайник', ids: ['ci1'] },
+          '124 (b)'
+        );
+        await d.settled(where);
+        await d.click('Выбрать');
+        await page.evaluate((sel) => {
+          const box = document.querySelector(sel);
+          box.click();
+          box.focus();
+        }, TICKS);
+        await d.settle();
+        ok(await d.fake('playRemove', listId, 'ci1'), where + 'the fake removed no entry');
+        ok(
+          await waitIn(page, () => document.querySelectorAll('.lrow').length === 0),
+          where + 'the removal was not drawn'
+        );
+        ok(
+          await waitIn(page, () => !!document.activeElement?.closest('.selbarwrap .selclear')),
+          where +
+            'the focus is not on the bar clear control - ' +
+            (await page.evaluate(() => document.activeElement?.tagName))
+        );
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+}
+
+/** 125. Escape in a selection and with «Настроить» open (docs/specs/FEATURES.md, "Chrome"): on the
+ *  catalog, `/search`, `/lists` and a list, two ticks, then Escape: «Выбрано: 0» with the focus
+ *  kept; the next Escape leaves the mode with the focus on «Выбрать». An open sheet or menu takes
+ *  the first Escape alone. `/roll/std` and `/roll/alt` at 360: Escape folds «Настроить» and keeps
+ *  the focus on it. */
+async function escapeInASelection() {
+  const at = '125 (Escape in a selection): ';
+  const SPECS = [
+    { n: 1, name: 'Тайник', ids: ['ci1', 'ci2', 'ci3'] },
+    { n: 2, name: 'Лавка', ids: ['ci1'] }
+  ];
+  const PAGES = [
+    ['catalog', async (d) => d.open('#/tables/core_item')],
+    [
+      'search',
+      async (d) => {
+        await d.open('#/search');
+        await d.type('Поиск по названию или описанию...', 'меч');
+      }
+    ],
+    [
+      'lists',
+      async (d) => {
+        await d.open('#/lists', { as: 'gm4' });
+        await d.settled('125 lists');
+        await d.accountLists(SPECS);
+      }
+    ],
+    [
+      'list',
+      async (d) => {
+        await d.open('#/lists', { as: 'gm4' });
+        await d.settled('125 list');
+        const made = await d.accountLists(SPECS);
+        await d.go(made[0].hash);
+      }
+    ]
+  ];
+  const state = (page) =>
+    page.evaluate(() => {
+      const a = document.activeElement;
+      return {
+        count: document.querySelector('.selcount')?.textContent ?? null,
+        bar: !!document.querySelector('.selbarwrap'),
+        focus:
+          !a || a === document.body
+            ? 'BODY'
+            : a.matches('button.selmode')
+              ? 'SELMODE'
+              : 'OTHER',
+        box: a?.matches('main input[type="checkbox"]') ?? false
+      };
+    });
+  const tickTwo = async (page, d) => {
+    await page.evaluate(() => document.querySelector('button.selmode').click());
+    await d.settle();
+    await page.evaluate(() => {
+      const boxes = [...document.querySelectorAll('main input[type="checkbox"]')];
+      boxes[0].click();
+      boxes[1].click();
+      boxes[1].focus();
+    });
+    await d.settle();
+  };
+  for (const [width, height] of [
+    [360, 640],
+    [1180, 720]
+  ]) {
+    for (const [name, prepare] of PAGES) {
+      const where = at + name + ' ' + width + ': ';
+      const { ctx, page, d } = await fresh({ width, height });
+      try {
+        await prepare(d);
+        await d.settled(where);
+        ok(
+          await waitIn(page, () => !!document.querySelector('button.selmode')),
+          where + 'no «Выбрать»'
+        );
+        await tickTwo(page, d);
+        const two = await state(page);
+        ok(/\b2\b/.test(two.count ?? ''), where + 'two ticks not counted - ' + two.count);
+
+        await page.keyboard.press('Escape');
+        ok(
+          await waitIn(page, () =>
+            /\b0\b/.test(document.querySelector('.selcount')?.textContent ?? '')
+          ),
+          where + 'the first Escape did not clear the ticks'
+        );
+        const one = await state(page);
+        ok(
+          one.bar && one.box,
+          where + 'the mode or the focus did not stay - ' + JSON.stringify(one)
+        );
+
+        await page.keyboard.press('Escape');
+        ok(
+          await waitIn(page, () => !document.querySelector('.selbarwrap')),
+          where + 'the second Escape did not leave the mode'
+        );
+        const none = await state(page);
+        ok(none.focus === 'SELMODE', where + 'the focus is not on «Выбрать» - ' + none.focus);
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+  {
+    /* An open layer takes the first Escape alone. */
+    const where = at + 'sheet 360: ';
+    const { ctx, page, d } = await fresh({ width: 360, height: 640 });
+    try {
+      await d.open('#/tables/eq_weapon');
+      await d.settled(where);
+      await tickTwo(page, d);
+      await d.press('Фильтры');
+      ok(
+        !!(await page.waitForSelector('dialog.sheet[open]', { timeout: 5000 })),
+        where + 'no sheet'
+      );
+      await page.keyboard.press('Escape');
+      ok(
+        await waitIn(page, () => !document.querySelector('dialog[open]')),
+        where + 'Escape did not close the sheet'
+      );
+      const kept = await state(page);
+      ok(
+        /\b2\b/.test(kept.count ?? ''),
+        where + 'the same Escape cleared the ticks - ' + kept.count
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+  {
+    const where = at + 'menu 1180: ';
+    const { ctx, page, d } = await fresh({ width: 1180, height: 720 });
+    try {
+      await d.open('#/tables/core_item');
+      await d.settled(where);
+      await tickTwo(page, d);
+      await d.press('В список');
+      ok(
+        await waitIn(page, () => !!document.querySelector('.dropmenu')),
+        where + 'the add-to-list menu did not open'
+      );
+      await page.keyboard.press('Escape');
+      ok(
+        await waitIn(page, () => !document.querySelector('.dropmenu')),
+        where + 'Escape did not close the menu'
+      );
+      const kept = await state(page);
+      ok(
+        /\b2\b/.test(kept.count ?? ''),
+        where + 'the same Escape cleared the ticks - ' + kept.count
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+  for (const route of ['#/roll/std', '#/roll/alt']) {
+    const where = at + route + ' 360: ';
+    const { ctx, page, d } = await fresh({ width: 360, height: 640 });
+    try {
+      await d.open(route);
+      await d.settled(where);
+      await d.press('Настроить');
+      ok(
+        await waitIn(page, () => !!document.querySelector('#rp-set')),
+        where + 'the settings did not open'
+      );
+      await page.focus('#rp-set input, #rp-set button');
+      await page.keyboard.press('Escape');
+      ok(
+        await waitIn(page, () => !document.querySelector('#rp-set')),
+        where + 'Escape did not fold the settings'
+      );
+      const got = await page.evaluate(() => {
+        const a = document.activeElement;
+        return a ? a.tagName + ' ' + a.getAttribute('aria-expanded') : 'none';
+      });
+      ok(got === 'BUTTON false', where + 'the focus is on ' + got);
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
+/** 126. A page a link opens starts at the top, and Back returns to the row (docs/specs/FEATURES.md,
+ *  "Chrome"): `/tables/core_item` scrolled to 1139 px at 360x720 and 929 px at 1180x720; the
+ *  record page link in ci13's dialog and a header job each land at `scrollY` 0; Back restores the
+ *  offset and puts the focus on the row of ci13; a filter pick (a `replace`) keeps the page. */
+async function newPageOpensAtTheTop() {
+  const at = '126 (the new page opens at the top): ';
+  const scrollTo = (page, y) =>
+    page.evaluate(async (to) => {
+      window.scrollTo(0, to);
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      return scrollY;
+    }, y);
+  for (const [width, y] of [
+    [360, 1139],
+    [1180, 929]
+  ]) {
+    const where = at + width + ': ';
+    const { ctx, page, d } = await fresh({ width, height: 720 });
+    try {
+      await d.open('#/tables/core_item');
+      await d.settled(where);
+      const from = await scrollTo(page, y);
+      ok(from > 0, where + 'the page does not scroll');
+      await openRecordDialog(page, 'ci13');
+      await page.evaluate(() => document.querySelector('dialog[open] a.card-media').click());
+      ok(
+        await waitIn(page, () => location.pathname === '/i/ci13'),
+        where + 'the page link did not open /i/ci13'
+      );
+      await d.settle();
+      const top = await page.evaluate(() => scrollY);
+      ok(top === 0, where + '/i/ci13 opened at ' + top);
+
+      await page.goBack();
+      ok(
+        await waitIn(page, () => location.pathname === '/tables/core_item'),
+        where + 'Back did not return'
+      );
+      await d.settle();
+      ok(
+        await waitIn(
+          page,
+          () =>
+            document.activeElement?.closest('[data-row]')?.getAttribute('data-row') === 'ci13'
+        ),
+        where +
+          'the focus is not on the row of ci13 - ' +
+          (await page.evaluate(
+            () => document.activeElement?.tagName + '#' + document.activeElement?.id
+          ))
+      );
+      const back = await page.evaluate(() => scrollY);
+      ok(Math.abs(back - from) <= 60, where + 'Back restored ' + back + ', not about ' + from);
+
+      await scrollTo(page, from);
+      await page.evaluate(() => document.querySelector('header a[data-job="search"]').click());
+      ok(
+        await waitIn(page, () => location.pathname === '/search'),
+        where + 'the header job did not open /search'
+      );
+      await d.settle();
+      const job = await page.evaluate(() => scrollY);
+      ok(job === 0, where + '/search opened at ' + job);
+    } finally {
+      await ctx.close();
+    }
+  }
+  {
+    /* A filter pick rewrites the address and keeps the page where it is. */
+    const where = at + 'filter pick 1180: ';
+    const { ctx, page, d } = await fresh({ width: 1180, height: 720 });
+    try {
+      await d.open('#/tables/eq_weapon');
+      await d.settled(where);
+      const from = await scrollTo(page, 400);
+      const before = await page.evaluate(() => location.pathname + location.search);
+      await page.evaluate(() =>
+        document.querySelector('.fcol button[data-fval][aria-pressed="false"]')?.click()
+      );
+      await d.settle();
+      const after = await page.evaluate(() => ({
+        y: scrollY,
+        max: document.documentElement.scrollHeight - innerHeight,
+        path: location.pathname + location.search
+      }));
+      ok(after.path !== before, where + 'the pick did not change the address');
+      ok(
+        Math.abs(after.y - Math.min(from, after.max)) <= 2,
+        where + 'the pick moved the page - ' + JSON.stringify({ from, ...after })
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
+/** 127. The list page's fields stop the iOS zoom and the row controls follow the text column:
+ *  at 360x640 the position, the price, the quantity, the note, «Взять» and the new-list field
+ *  compute 16 px; at 1180 they keep 12 to 13 px; the price keeps its five digits; at 768 px
+ *  the controls' and the notes' left edge is the text column's, in the selection mode too. */
+async function listFieldsAndInset() {
+  const at = '127 (fields at 16 px): ';
+  const size = (page, sel) =>
+    page.evaluate((s) => {
+      const el = document.querySelector(s);
+      return el ? parseFloat(getComputedStyle(el).fontSize) : null;
+    }, sel);
+  {
+    const where = at + '360: ';
+    const { ctx, page, d } = await openState(
+      LIST_A_ID + ' ~ compact, row open as gm4',
+      360,
+      640,
+      'ru'
+    );
+    try {
+      for (const sel of ['.cfields .lrow-n', '.cfields input[data-gold]', '.crow > .cqf']) {
+        const got = await size(page, sel);
+        ok(got === 16, where + sel + ' is ' + got + ' px');
+      }
+      const fit = await page.evaluate(() => {
+        const el = document.querySelector('.cfields input[data-gold]');
+        el.value = '99999';
+        return { sw: el.scrollWidth, cw: el.clientWidth };
+      });
+      ok(
+        fit.sw <= fit.cw + 1,
+        where + 'five digits of the price are cut - ' + JSON.stringify(fit)
+      );
+      await d.click('Заметка, заполнена');
+      ok(
+        await waitIn(page, () => !!document.querySelector('.narea textarea')),
+        where + 'the note area did not open'
+      );
+      const note = await size(page, '.narea textarea');
+      ok(note === 16, where + 'the note field is ' + note + ' px');
+    } finally {
+      await ctx.close();
+    }
+  }
+  {
+    const where = at + '360 take: ';
+    const { ctx, page } = await openState(
+      LIST_A_ID + ' ~ compact, selecting as gm4',
+      360,
+      640,
+      'ru'
+    );
+    try {
+      const got = await size(page, '.lrow-take .qgroup input');
+      ok(got === 16, where + 'the take field is ' + got + ' px');
+    } finally {
+      await ctx.close();
+    }
+  }
+  {
+    const where = at + '360 new list: ';
+    const { ctx, page, d } = await fresh({ width: 360, height: 640 });
+    try {
+      await d.open('#/tables/core_item', { as: 'gm4' });
+      await d.settled(where);
+      await page.evaluate(() => document.querySelector('button.selmode').click());
+      await d.settle();
+      await page.evaluate(() => document.querySelector('main input[type="checkbox"]').click());
+      await d.settle();
+      await d.press('В список');
+      await d.press('Новый список');
+      ok(
+        await waitIn(page, () => !!document.querySelector('.picker-new input')),
+        where + 'the new-list field did not open'
+      );
+      const got = await size(page, '.picker-new input');
+      ok(got === 16, where + 'the new-list field is ' + got + ' px');
+    } finally {
+      await ctx.close();
+    }
+  }
+  {
+    const where = at + '1180: ';
+    const { ctx, page } = await openState(LIST_A_ID + ' ~ noted as gm4', 1180, 720, 'ru');
+    try {
+      for (const [sel, want] of [
+        ['.lrow-meta input[data-qty]', 13],
+        ['.lrow-meta input[data-gold]', 13],
+        ['.lrow-n', 12]
+      ]) {
+        const got = await size(page, sel);
+        ok(got === want, where + sel + ' is ' + got + ' px');
+      }
+      const w = await page.evaluate(
+        () => document.querySelector('.lrow-n').getBoundingClientRect().width
+      );
+      ok(Math.abs(w - 40) <= 0.5, where + 'the position column is ' + w + ' px');
+    } finally {
+      await ctx.close();
+    }
+  }
+  {
+    const where = at + 'inset 768: ';
+    const { ctx, page, d } = await openState(LIST_A_ID + ' ~ noted as gm4', 768, 1024, 'ru');
+    try {
+      const edges = () =>
+        page.evaluate(() => {
+          const pad = (el) =>
+            el.getBoundingClientRect().left + parseFloat(getComputedStyle(el).paddingLeft);
+          const row = document.querySelector('.lrow');
+          const ctl = row.querySelector('.lrow-ctl');
+          const noted = document.querySelector('.rnote');
+          return {
+            text: row.querySelector('.row-main .rt').getBoundingClientRect().left,
+            ctl: ctl ? pad(ctl) : null,
+            note: noted ? pad(noted) : null
+          };
+        });
+      for (const mode of ['plain', 'selecting']) {
+        if (mode === 'selecting') {
+          await page.evaluate(() => document.querySelector('button.selmode').click());
+          await d.settle();
+        }
+        const e = await edges();
+        ok(e.ctl !== null, where + mode + ': no .lrow-ctl');
+        ok(
+          e.ctl !== null && Math.abs(e.ctl - e.text) <= 1,
+          where + mode + ': the controls start at ' + e.ctl + ', the text at ' + e.text
+        );
+        ok(
+          e.note === null || Math.abs(e.note - e.text) <= 1,
+          where + mode + ': the notes start at ' + e.note + ', the text at ' + e.text
+        );
+      }
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
+/** 128. The stat columns (docs/specs/FEATURES.md, "Tables and search"; DESIGN.md "The Stat
+ *  Columns Rule"): on `/tables/eq_weapon` and `eq_armor` at 1440 and 1920 px in RU and EN every
+ *  row draws its stat parts as cells (5 and 2), each column's right edge equal in every row of
+ *  every section within 1 px, the description left of the cells; of the first 60 rows no more
+ *  descriptions are cut than with the sentence, the rows are no taller in all, and none is
+ *  taller than with the sentence by over a description line plus 4 px (a text of one wide line
+ *  wraps in the narrower column). At 1439 px the sentence stays, its separators visible. The sentence layout is the same
+ *  page with the `statcols` class taken off. */
+async function statColumns() {
+  const at = '128 (stat columns): ';
+  const measure = (page, expectCells) =>
+    page.evaluate(async (want) => {
+      await document.fonts.ready;
+      for (let i = 0; i < 60 && document.querySelector('[data-drawing]'); i++)
+        await new Promise((r) => setTimeout(r, 100));
+      const frames = () =>
+        new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      await frames();
+      const col = document.querySelector('.rowscol');
+      const rows = [...document.querySelectorAll('.rows > .row')];
+      const descOf = (row) => row.querySelector('.row-main .rt > span:not(.rh):not(.rstats)');
+      const take = async () => {
+        await frames();
+        return rows.slice(0, 60).map((row) => {
+          const d = descOf(row);
+          return {
+            h: row.getBoundingClientRect().height,
+            cut: d ? d.scrollHeight > d.clientHeight + 1 : false
+          };
+        });
+      };
+      const out = {
+        rows: rows.length,
+        sections: document.querySelectorAll('.tsection').length,
+        mode: [
+          ...new Set(rows.map((r) => getComputedStyle(r.querySelector('.rstats')).display))
+        ],
+        cells: [...new Set(rows.map((r) => r.querySelectorAll('.sc').length))],
+        statcols: !!col?.classList.contains('statcols'),
+        sepShown: rows.some((r) => {
+          const s = r.querySelector('.sep');
+          return !!s && s.getBoundingClientRect().width > 2;
+        }),
+        spread: [],
+        overlap: 0,
+        want
+      };
+      if (!out.statcols) return out;
+      const edges = {};
+      for (const row of rows) {
+        for (const sc of row.querySelectorAll('.sc')) {
+          const k = /\bc(\d)\b/.exec(sc.className)?.[1] ?? '?';
+          (edges[k] ||= []).push(sc.getBoundingClientRect().right);
+        }
+        const d = descOf(row);
+        const c1 = row.querySelector('.sc.c1');
+        if (d && c1 && d.getBoundingClientRect().right > c1.getBoundingClientRect().left + 1)
+          out.overlap++;
+      }
+      out.spread = Object.entries(edges).map(([k, v]) => [k, Math.max(...v) - Math.min(...v)]);
+      out.after = await take();
+      col.classList.remove('statcols');
+      out.before = await take();
+      col.classList.add('statcols');
+      return out;
+    }, expectCells);
+
+  for (const [table, want] of [
+    ['#/tables/eq_weapon', 5],
+    ['#/tables/eq_armor', 2]
+  ]) {
+    for (const lang of ['ru', 'en']) {
+      for (const [width, height] of [
+        [1440, 900],
+        [1920, 1080]
+      ]) {
+        const where = at + table + ' ' + width + ' ' + lang + ': ';
+        const { ctx, page } = await openState(table, width, height, lang);
+        try {
+          const m = await measure(page, want);
+          ok(m.statcols, where + 'the rows are not in the stat columns');
+          ok(
+            m.sections >= 2,
+            where + 'a table of ' + m.sections + ' sections cannot prove one edge set'
+          );
+          ok(
+            m.mode.length === 1 && m.mode[0] === 'contents',
+            where + 'the stats are not cells - ' + m.mode
+          );
+          ok(
+            m.cells.length === 1 && m.cells[0] === want,
+            where + 'the rows hold ' + m.cells + ' cells, not ' + want
+          );
+          ok(
+            m.spread.length === want && m.spread.every(([, s]) => s <= 1),
+            where + 'the right edges differ - ' + JSON.stringify(m.spread)
+          );
+          ok(m.overlap === 0, where + m.overlap + ' descriptions run under the cells');
+          if (!m.after || !m.before) continue;
+          const cutAfter = m.after.filter((r) => r.cut).length;
+          const cutBefore = m.before.filter((r) => r.cut).length;
+          const sumAfter = m.after.reduce((n, r) => n + r.h, 0);
+          const sumBefore = m.before.reduce((n, r) => n + r.h, 0);
+          const taller = m.after.filter((r, i) => r.h > (m.before[i]?.h ?? 0) + 25).length;
+          fs.writeSync(
+            1,
+            '  stat columns: ' +
+              table +
+              ' ' +
+              width +
+              ' ' +
+              lang +
+              ' rows ' +
+              m.rows +
+              ', cut ' +
+              cutBefore +
+              ' to ' +
+              cutAfter +
+              ', taller ' +
+              taller +
+              '\n'
+          );
+          ok(
+            cutAfter <= cutBefore,
+            where + 'more descriptions are cut: ' + cutBefore + ' to ' + cutAfter
+          );
+          ok(
+            sumAfter <= sumBefore,
+            where + 'the 60 rows are taller in all: ' + sumBefore + ' to ' + sumAfter
+          );
+          ok(
+            taller === 0,
+            where +
+              taller +
+              ' rows are taller than with the sentence by over a description line'
+          );
+        } finally {
+          await ctx.close();
+        }
+      }
+    }
+  }
+
+  /* One pixel under the rule the sentence stays. */
+  for (const lang of ['ru', 'en']) {
+    const where = at + '1439 ' + lang + ': ';
+    const { ctx, page } = await openState('#/tables/eq_weapon', 1439, 900, lang);
+    try {
+      const m = await measure(page, 5);
+      ok(!m.statcols || m.mode[0] !== 'contents', where + 'the cells are drawn - ' + m.mode);
+      ok(m.mode.length === 1 && m.mode[0] === 'block', where + 'the sentence is ' + m.mode);
+      ok(m.sepShown, where + 'the separators of the sentence are not shown');
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
+/** 129. The shared page's bar on a phone (docs/specs/FEATURES.md, "Shared lists"; DESIGN.md "The
+ *  Phone-First Rule"): at 360x640 and 320x568, RU and EN, with two entries ticked the bar is at
+ *  most 137 px, «В список», «Печать» and «Ещё» share one row inside the bar, «Скопировать текст»
+ *  and «Сообщить владельцу» are the two items of «Ещё», inside the window; the notify item sends
+ *  and then reads sent and disabled. */
+async function sharedBarFolds() {
+  const at = '129 (the shared bar on a phone): ';
+  for (const lang of ['ru', 'en']) {
+    for (const [width, height] of [
+      [360, 640],
+      [320, 568]
+    ]) {
+      const where = at + width + ' ' + lang + ': ';
+      const { ctx, page } = await openState(
+        '#/s/player-token-1 ~ ticked, compact',
+        width,
+        height,
+        lang
+      );
+      try {
+        const bar = await page.evaluate(() => {
+          const r = (e) => e.getBoundingClientRect();
+          const wrap = document.querySelector('.selbarwrap');
+          const inner = document.querySelector('.selbar');
+          const acts = [...document.querySelectorAll('.selacts .btn')].map((b) => ({
+            name: b.textContent.trim(),
+            top: Math.round(r(b).top),
+            left: r(b).left,
+            right: r(b).right
+          }));
+          return {
+            h: r(inner).height,
+            top: r(wrap).top,
+            bottom: r(wrap).bottom,
+            left: r(wrap).left,
+            right: r(wrap).right,
+            acts,
+            more: !!document.querySelector('.selacts .morewrap > .btn[aria-haspopup]'),
+            sideways:
+              document.documentElement.scrollWidth > document.documentElement.clientWidth
+          };
+        });
+        ok(bar.h <= 137, where + 'the bar is ' + bar.h + ' px tall, over 137');
+        ok(
+          bar.acts.length === 3,
+          where + 'the bar holds ' + bar.acts.length + ' action buttons'
+        );
+        ok(
+          new Set(bar.acts.map((a) => a.top)).size === 1,
+          where + 'the actions are not one row - ' + JSON.stringify(bar.acts)
+        );
+        ok(
+          bar.acts.every((a) => a.left >= bar.left && a.right <= bar.right),
+          where + 'an action leaves the bar - ' + JSON.stringify(bar.acts)
+        );
+        ok(bar.more && !bar.sideways, where + '«Ещё» is missing or the page scrolls sideways');
+
+        await page.click('.selacts .morewrap > .btn');
+        ok(
+          await waitIn(page, () => !!document.querySelector('[role="menu"]')),
+          where + 'the menu did not open'
+        );
+        const menu = await page.evaluate(
+          (w, h) => {
+            const m = document.querySelector('[role="menu"]');
+            const b = m.getBoundingClientRect();
+            return {
+              items: [...m.querySelectorAll('[role="menuitem"]')].map((i) => ({
+                text: i.textContent.trim(),
+                off: i.disabled
+              })),
+              inside: b.left >= 0 && b.right <= w && b.top >= 0 && b.bottom <= h
+            };
+          },
+          width,
+          height
+        );
+        ok(menu.items.length === 2, where + 'the menu holds ' + menu.items.length + ' items');
+        ok(
+          menu.items.every((i) => !i.off),
+          where + 'an item is disabled with two ticks'
+        );
+        ok(menu.inside, where + 'the menu leaves the window');
+
+        await page.click('[role="menu"] [role="menuitem"]:last-of-type');
+        ok(
+          await waitIn(
+            page,
+            () =>
+              !document.querySelector('[role="menu"]') && !!document.querySelector('.sentline')
+          ),
+          where + 'the notify item did not send and close the menu'
+        );
+        await page.click('.selacts .morewrap > .btn');
+        ok(
+          await waitIn(page, () => !!document.querySelector('[role="menu"]')),
+          where + 'the menu did not reopen'
+        );
+        const sent = await page.evaluate(() => {
+          const i = document.querySelectorAll('[role="menu"] [role="menuitem"]')[1];
+          return { off: i.disabled, text: i.textContent.trim() };
+        });
+        ok(sent.off, where + 'the notify item is enabled after the send - ' + sent.text);
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+}
+
+/** 130. A roll page's picker shows the chosen part whole (docs/specs/FEATURES.md, "Rolling";
+ *  DESIGN.md "The Whole Message Rule"): at 360 and 390 px, RU and EN, every option of the three
+ *  picker pages draws its chosen part with no sideways cut and no third line, the roll button
+ *  inside the window. */
+async function rollPartShowsWhole() {
+  const at = '130 (the roll part shows whole): ';
+  for (const lang of ['ru', 'en']) {
+    for (const [width, height] of [
+      [360, 640],
+      [390, 844]
+    ]) {
+      const { ctx, page, d } = await fresh({ width, height, lang });
+      try {
+        for (const route of [
+          '#/roll/vault_of_ages',
+          '#/roll/community_items',
+          '#/roll/many_worlds_tavern'
+        ]) {
+          await d.open(route, { lang });
+          const options = await page.$eval('.pick select', (s) =>
+            [...s.options].map((o) => [o.value, o.textContent.trim()])
+          );
+          ok(
+            options.length > 1,
+            at + route + ': the picker holds ' + options.length + ' options'
+          );
+          for (const [value, label] of options) {
+            await d.choose('.pick select', value);
+            const got = await page.evaluate(() => {
+              const pv = document.querySelector('.pick .pv');
+              const btn = document.querySelector('.rp-ctrl .btn.primary');
+              const pick = document.querySelector('.pick').getBoundingClientRect();
+              return {
+                sideways: pv.scrollWidth - pv.clientWidth,
+                tall: pv.scrollHeight - pv.clientHeight,
+                right: Math.max(pick.right, btn?.getBoundingClientRect().right ?? 0),
+                btnCut: btn ? btn.scrollWidth > btn.clientWidth : false
+              };
+            });
+            const where = at + route + ' ' + width + ' ' + lang + ' «' + label + '»: ';
+            ok(got.sideways <= 0, where + 'cut sideways by ' + got.sideways + ' px');
+            /* Glyphs overhang a one-line box by 2 px; a third line adds about 18. */
+            ok(got.tall <= 4, where + 'cut under the second line by ' + got.tall + ' px');
+            ok(got.right <= width && !got.btnCut, where + 'the roll row leaves the window');
+          }
+        }
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+}
+
+/** 131. A signed-out page that needs an account draws one sign-in plate (docs/specs/FEATURES.md,
+ *  "Lists"; DESIGN.md, "Empty state"): the kind glyph, the lead and one «Войти», the same
+ *  shape on seven routes, in both languages, from 320 to 1920 px. */
+async function oneSignInPlate() {
+  const at = '131 (one sign-in plate): ';
+  const TWO = '#/p/set-twocards';
+  const LEADS = {
+    '#/lists': {
+      ru: 'Войдите, чтобы создавать списки: они хранятся в аккаунте и открываются на любом устройстве.',
+      en: 'Sign in to create lists: they are kept in your account and open on any device.'
+    },
+    [SHOP]: {
+      ru: 'Войдите, чтобы открыть список: он открывается только в аккаунте, где его создали.',
+      en: 'Sign in to open this list: it opens only in the account where it was made.'
+    },
+    '#/homebrew': {
+      ru: 'Войдите, чтобы создавать свои предметы.',
+      en: 'Sign in to create your own items.'
+    },
+    '#/tables/homebrew': {
+      ru: 'Войдите, чтобы видеть свои предметы в таблицах.',
+      en: 'Sign in to see your own items in the tables.'
+    },
+    [TWO]: { ru: 'Войдите, чтобы печатать карточки.', en: 'Sign in to print cards.' }
+  };
+  LEADS['#/lists/nope'] = LEADS[SHOP];
+  LEADS['#/homebrew/new'] = LEADS['#/homebrew'];
+  const IDS = [
+    '#/lists',
+    SHOP,
+    '#/lists/nope',
+    '#/homebrew',
+    '#/homebrew/new',
+    '#/tables/homebrew',
+    TWO
+  ];
+  const SIZES = [
+    [320, 568],
+    [360, 640],
+    [768, 1024],
+    [1180, 720],
+    [1920, 1080]
+  ];
+  const probe = () => {
+    const vis = (e) => {
+      const r = e.getBoundingClientRect();
+      return r.width > 0 && r.height > 0 && getComputedStyle(e).visibility !== 'hidden';
+    };
+    const plates = [...document.querySelectorAll('main .empty')].filter(vis);
+    const plate = plates[0];
+    if (!plate) return { plates: 0 };
+    const pr = plate.getBoundingClientRect();
+    const lead = plate.querySelector('p.signin-lead');
+    const buttons = [...plate.querySelectorAll('button, a, input, select, textarea')];
+    const btn = plate.querySelector('button');
+    const lr = lead?.getBoundingClientRect();
+    const br = btn?.getBoundingClientRect();
+    const pcs = getComputedStyle(plate);
+    let above = null;
+    for (const e of document.querySelectorAll('main *')) {
+      if (e === plate || e.contains(plate) || plate.contains(e) || !vis(e)) continue;
+      const r = e.getBoundingClientRect();
+      if (r.bottom > pr.top + 0.5 || r.right <= pr.left || r.left >= pr.right) continue;
+      if (!above || r.bottom > above.bottom) above = { bottom: r.bottom, el: e.className };
+    }
+    const range = document.createRange();
+    if (lead) range.selectNodeContents(lead);
+    const leadRight = lead ? Math.max(...[...range.getClientRects()].map((r) => r.right)) : 0;
+    return {
+      plates: plates.length,
+      glyphs: plate.querySelectorAll(':scope > .glyph').length,
+      leads: plate.querySelectorAll('p.signin-lead').length,
+      leadText: lead?.textContent.trim() ?? null,
+      buttonNames: [...plate.querySelectorAll('button')].map((b) => b.textContent.trim()),
+      focusables: buttons.length,
+      errpage: document.querySelectorAll('.errpage').length,
+      openTables: [...document.querySelectorAll('main a')].filter((a) =>
+        /Открыть таблицы|Open tables/.test(a.textContent)
+      ).length,
+      leadSize: lead ? getComputedStyle(lead).fontSize : null,
+      btnHeight: br ? Math.round(br.height * 10) / 10 : null,
+      align: pcs.textAlign,
+      stacked: !!(lr && br && br.top >= lr.bottom - 1),
+      btnCenter: br ? (br.left + br.right) / 2 : null,
+      plateCenter: (pr.left + pr.right) / 2,
+      btnBottom: br ? br.bottom : null,
+      plateTop: pr.top,
+      leadInside: lead ? leadRight <= pr.right - parseFloat(pcs.paddingRight) + 0.5 : false,
+      sideways: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+      border: [
+        pcs.borderTopStyle,
+        pcs.borderRightStyle,
+        pcs.borderBottomStyle,
+        pcs.borderLeftStyle
+      ],
+      ground: pcs.backgroundColor,
+      gap: above ? Math.round((pr.top - above.bottom) * 10) / 10 : null,
+      above: above ? String(above.el).slice(0, 60) : null,
+      h1: [...document.querySelectorAll('h1')].map((h) => h.textContent.trim()),
+      title: document.title,
+      inPlate: !!document.activeElement?.closest('main .empty')
+    };
+  };
+  /* (b) the numbers one window shares across the seven states. */
+  const shared = new Map();
+  for (const lang of ['ru', 'en']) {
+    const label = lang === 'ru' ? 'Войти' : 'Sign in';
+    for (const id of IDS) {
+      const { ctx, page, d } = await openState(id, 360, 640, lang);
+      try {
+        for (const [width, height] of SIZES) {
+          await d.viewport(width, height);
+          await d.settle();
+          const m = await page.evaluate(probe);
+          const where = at + id + ' ' + width + ' ' + lang + ': ';
+          fs.writeSync(1, '  plate: ' + where + JSON.stringify(m) + '\n');
+          /* (a) the shape. */
+          ok(m.plates === 1, where + m.plates + ' plates in main');
+          if (m.plates !== 1) continue;
+          ok(m.glyphs === 1, where + m.glyphs + ' glyphs');
+          ok(
+            m.leads === 1 && m.leadText === LEADS[id][lang],
+            where + 'the lead is ' + m.leadText
+          );
+          ok(
+            m.buttonNames.length === 1 && m.buttonNames[0] === label && m.focusables === 1,
+            where +
+              'the plate holds ' +
+              JSON.stringify(m.buttonNames) +
+              ' and ' +
+              m.focusables +
+              ' controls'
+          );
+          ok(m.errpage === 0, where + 'an error page is drawn');
+          ok(m.openTables === 0, where + 'a link «Открыть таблицы» is drawn in main');
+          /* (c) the long lead wraps inside the window. */
+          if (width <= 360) ok(!m.sideways, where + 'the page scrolls sideways');
+          ok(m.leadInside, where + 'the lead runs past the plate');
+          /* (e) the gap above, the border and the ground. */
+          ok(
+            m.gap !== null &&
+              (Math.abs(m.gap - 16) <= 0.5 ||
+                (Math.abs(m.gap - 18) <= 0.5 && /page-sub/.test(m.above))),
+            where + 'the gap above the plate is ' + m.gap + ' (under ' + m.above + ')'
+          );
+          ok(
+            m.border.every((b) => b === 'solid'),
+            where + 'the border is not solid'
+          );
+          ok(m.ground === 'rgb(20, 17, 29)', where + 'the ground is ' + m.ground);
+          /* (b) the button in the window, centered when it wraps under the lead. */
+          if (m.stacked)
+            ok(
+              Math.abs(m.btnCenter - m.plateCenter) <= 1,
+              where + 'the button is ' + (m.btnCenter - m.plateCenter) + ' px off the center'
+            );
+          if ((width === 360 && height === 640) || (width === 1180 && height === 720))
+            ok(
+              m.btnBottom <= height,
+              where + 'the button ends at ' + m.btnBottom + ', under the window'
+            );
+          const key = lang + ' ' + width;
+          const row = shared.get(key) ?? [];
+          row.push({ id, size: m.leadSize, h: m.btnHeight, align: m.align });
+          shared.set(key, row);
+          /* (g) the headings. */
+          if (id === SHOP)
+            ok(
+              m.h1.length === 1 &&
+                m.h1[0] === (lang === 'ru' ? 'Мои списки' : 'My lists') &&
+                m.title.startsWith(lang === 'ru' ? 'Мои списки' : 'My lists'),
+              where + 'the heading is ' + JSON.stringify(m.h1) + ', the title ' + m.title
+            );
+          if (id === TWO)
+            ok(
+              m.h1.length === 1 &&
+                m.h1[0] === (lang === 'ru' ? 'Печать карточек' : 'Printing cards'),
+              where + 'the heading is ' + JSON.stringify(m.h1)
+            );
+        }
+        /* (d) the focus stays where it was, and Tab reaches «Войти» before the footer. */
+        await d.viewport(1180, 720);
+        await d.settle();
+        const where = at + id + ' ' + lang + ': ';
+        const idle = await page.evaluate(() => !document.activeElement?.closest('main .empty'));
+        ok(idle, where + 'the focus is inside the plate');
+        await page.evaluate(() => {
+          document.activeElement?.blur();
+          scrollTo(0, 0);
+        });
+        let reached = null;
+        for (let i = 0; i < 80 && !reached; i++) {
+          await page.keyboard.press('Tab');
+          reached = await page.evaluate(() => {
+            const a = document.activeElement;
+            if (a?.closest('main .empty')) return 'plate';
+            if (a?.closest('footer')) return 'footer';
+            return null;
+          });
+        }
+        ok(reached === 'plate', where + 'Tab reached ' + reached + ' first');
+        /* (f) «Войти» opens the account page. */
+        await page.keyboard.press('Enter');
+        await d.settle();
+        const path = new URL(page.url()).pathname;
+        ok(
+          path === (lang === 'ru' ? '/account' : '/en/account'),
+          where + '«Войти» opened ' + path
+        );
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+  for (const [key, row] of shared) {
+    for (const field of ['size', 'h', 'align']) {
+      const values = new Set(row.map((r) => r[field]));
+      ok(
+        values.size === 1,
+        at +
+          key +
+          ': the ' +
+          field +
+          ' differs - ' +
+          JSON.stringify(row.map((r) => [r.id, r[field]]))
+      );
     }
   }
 }
@@ -10570,12 +12397,30 @@ const CASES = [
   ['115 (the face wait)', printFaceWait],
   ['116 (the focus after a navigation)', focusAfterNavigation],
   ['117 (one scrim and shape)', oneScrimAndShape],
-  ['118 (the bar pinned, the toasts clear)', barPinnedAndToastsClear]
+  ['118 (the bar pinned, the toasts clear)', barPinnedAndToastsClear],
+  ['119 (the dialog menu stays put)', dialogMenuStaysPut],
+  ['120 (the add-to-list popover in the dialog)', dialogPopoverStaysInWindow],
+  ['121 (the sticky columns fit)', stickyColumnsFit],
+  ['122 (the header focus keeps the place)', headerFocusKeepsThePlace],
+  ['123 (short windows)', shortWindows],
+  ['124 (the focus after a remote removal)', focusAfterRemoteRemoval],
+  ['125 (Escape in a selection)', escapeInASelection],
+  ['126 (the new page opens at the top)', newPageOpensAtTheTop],
+  ['127 (fields at 16 px)', listFieldsAndInset],
+  ['128 (the stat columns)', statColumns],
+  ['129 (the shared bar on a phone)', sharedBarFolds],
+  ['130 (the roll part shows whole)', rollPartShowsWhole],
+  ['131 (one sign-in plate)', oneSignInPlate]
 ];
+
+/* `--only=<text>` keeps the cases whose label holds the text, as `golden.js` narrows its states. */
+const ONLY = process.argv.find((a) => a.startsWith('--only='))?.slice('--only='.length) ?? null;
 
 /* The interleave spreads the slow layout cases at the end of the list over
  * every piece, as `golden.js` spreads its states. */
-const MINE = CASES.filter((c, i) => !SHARD || i % SHARD.of === SHARD.n);
+const MINE = CASES.filter(
+  (c, i) => (!SHARD || i % SHARD.of === SHARD.n) && (ONLY === null || c[0].includes(ONLY))
+);
 
 (async () => {
   /* Each case gets its own try/catch: a hung CDP call under host load

@@ -59,6 +59,13 @@
     gap: 7px;
   }
 
+  /* The RU bar is 8 px past the body at 320 px with a classic scrollbar (measured 2026-11-10). */
+  @media (max-width: 340px) {
+    a {
+      padding-inline: 11px;
+    }
+  }
+
   a:hover {
     color: var(--txt);
   }

@@ -20,6 +20,7 @@
   import MoreMenu from './MoreMenu.svelte';
   import PageHead from './PageHead.svelte';
   import PageTitle from './PageTitle.svelte';
+  import PickerRow from './PickerRow.svelte';
   import Panel from './Panel.svelte';
   import PinItem from './PinItem.svelte';
   import SearchBox from './SearchBox.svelte';
@@ -330,7 +331,7 @@
 {#if band === 'narrow' && ready}
   <h1 class="vh">{t.myItems}</h1>
   <p class="vh">{t.subHomebrew}</p>
-  <div class="pickrow">
+  <PickerRow>
     {@render tabs()}
     {#if tab === 'items'}{@render newItem(false)}{/if}
     <MoreMenu {app} id="hb-more" size="sm">
@@ -348,7 +349,7 @@
         <PinItem {app} home={HOMEBREW_HASH} onpicked={close} />
       {/snippet}
     </MoreMenu>
-  </div>
+  </PickerRow>
 {:else if band === 'narrow'}
   <PageTitle title={t.myItems} />
 {:else}
@@ -557,21 +558,6 @@
 
   .headnew.reserve {
     visibility: hidden;
-  }
-
-  /* Positioned: up to 760 px the row anchors the menu of «Ещё» (`MoreMenu.svelte`). */
-  .pickrow {
-    position: relative;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .pickrow :global(.btn.sm) {
-    flex: none;
-    height: 40px;
-    padding-inline: 11px;
   }
 
   /* The search row, as the catalog's: the search first, «Выбрать» last, one height. */

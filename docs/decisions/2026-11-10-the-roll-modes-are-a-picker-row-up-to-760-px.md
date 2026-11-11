@@ -1,0 +1,8 @@
+# 2026-11-10 - The roll modes are a picker row up to 760 px
+
+- Amends "The header has three jobs and a mode row" (2026-10-29): up to 760 px the mode row of three pills is one picker in the picker row, and from 761 px «Дополнения ▾» opens a sheet, not a menu.
+- Task: `57-debt` (owner, 2026-11-07, answers N6 and N7: unify the roll pages with the tables; "I like the tables option more").
+- Decision: up to 760 px the roll pages, the tables and «Мои предметы» draw one picker row, 8 px under the header, with one picker face (`PickerButton.svelte`, `PickerRow.svelte`). On a roll page it holds the mode picker and «Ещё»; the picker opens the sheet «Бросок» with all twelve modes (`SheetLinks.svelte`). From 761 px the pills stay in the head and «Дополнения ▾» opens the same sheet (docs/specs/FEATURES.md, "Rolling"; DESIGN.md, "The Head Order Rule").
+- Rejected: one picker at every width (breaks the pills that hold still from 761 px); pills and an overflow menu at every width (fails the First-Screen Rule on the tables and «Мои предметы» at 360 px); a mixed rule by count (not one shape); one scrolling pill strip, a bottom bar and a rail (rejected 2026-10-29); «Настроить» inside the roll's picker row (breaks «Альтернативные» at 360 px); the picker row at the tables' old place, 26 px under the header (std at 337 px against the 325 px exception).
+- Evidence: measured 2026-11-07 on the test build at 360x640: std 322.7 to 319.2 px, alt 253.9 to 250.4, the supplements 249.9 to 246.4, the tables 230.4 to 212.4, «Мои предметы» 242.4 to 224.4.
+- Accepted trade-off: on a phone, Core rules to the alternate tables take two taps, not one.

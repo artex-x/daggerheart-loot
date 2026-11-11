@@ -21,7 +21,7 @@ RootWebArea "Arazo's Artifacts - Генератор лута Daggerheart" [url=/
     navigation "Режим броска"
       link "Обычные правила" [url=/roll/std]
       link "Альтернативные таблицы" [url=/roll/alt]
-      button "Arazo's Artifacts" [expanded=false haspopup=menu]
+      button "Arazo's Artifacts" [haspopup=dialog]
     button "Открывать при запуске" [pressed=false]
     button "Об этой книге" [expanded=false]
     button "Бросить 1-27"
@@ -95,7 +95,7 @@ RootWebArea "Arazo's Artifacts - Daggerheart Loot Generator" [url=/en/roll/arazo
     navigation "Roll mode"
       link "Standard rules" [url=/en/roll/std]
       link "Alternate tables" [url=/en/roll/alt]
-      button "Arazo's Artifacts" [expanded=false haspopup=menu]
+      button "Arazo's Artifacts" [haspopup=dialog]
     button "Open on start" [pressed=false]
     button "About this book" [expanded=false]
     button "Roll 1-27"
