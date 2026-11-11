@@ -515,6 +515,8 @@ describe('#/homebrew', () => {
   it('asks a signed-out reader to sign in, and draws not found with no sign-in configured', async () => {
     const { container, router } = page(null);
     expect(await screen.findByText(t.hbSignIn)).toBeInTheDocument();
+    expect(container.querySelector('.empty .glyph')).not.toBeNull();
+    expect(container.querySelector('.empty .signin-lead')).toHaveTextContent(t.hbSignIn);
     await expectNoA11yViolations(container);
     cleanup();
     const none = page(null, { cloud: null });

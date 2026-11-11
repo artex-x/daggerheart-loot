@@ -963,6 +963,8 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
   queries as chips; the syntax lives in the examples, not in an instruction.
 - A search's nothing-found state: the cause (the query, the picked kinds or both) and
   one reset («Сбросить фильтры» or «Очистить поиск»). A plate holds one primary at most.
+- A signed-out page that needs an account draws `SignInPrompt`: the plate with the kind
+  glyph, the lead and one «Войти». A prompt that answers a press is the compact or boxed form.
 
 ### Error page
 

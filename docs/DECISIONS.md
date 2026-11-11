@@ -14,6 +14,7 @@ deleted.
 
 ## Index
 
+- 2026-11-11 - [A page-level sign-in prompt is one plate with the glyph, the lead and «Войти»](decisions/2026-11-11-a-page-level-sign-in-prompt-is-one-plate.md)
 - 2026-11-11 - [Craft links and the shared page's first entry stay as they are](decisions/2026-11-11-craft-links-and-the-shared-first-entry-stay.md)
 - 2026-11-10 - [The roll modes are a picker row up to 760 px](decisions/2026-11-10-the-roll-modes-are-a-picker-row-up-to-760-px.md)
 - 2026-11-07 - [A table sectioned by a record property reads one descriptor](decisions/2026-11-07-a-table-sectioned-by-a-record-property-reads-one-descriptor.md)

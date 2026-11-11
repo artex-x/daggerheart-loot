@@ -1,12 +1,13 @@
 <script lang="ts">
-  /* The sign-in prompt, in the slot of a control that needs an account: one
-     line and one «Войти» that opens `#/account`, where the providers are
-     listed (docs/DECISIONS.md, 2026-09-25, "A sign-in prompt opens the
-     account page ..."). `compact` is the add-to-list menu's form, `boxed` the
-     form under a pressed button. A prompt with «Отмена» answers a press: it takes the
+  /* The sign-in prompt: one line and one «Войти» that opens `#/account`, where the
+     providers are listed (docs/DECISIONS.md, 2026-09-25, "A sign-in prompt opens the
+     account page ..."). The default form is the page plate with the kind glyph, for a
+     signed-out page that needs an account. `compact` is the add-to-list menu's form,
+     `boxed` the form under a pressed button. A prompt with «Отмена» answers a press: it takes the
      focus to «Войти», and «Отмена» returns it to what had it (rule 20). */
   import { untrack } from 'svelte';
   import Button from './Button.svelte';
+  import Empty from './Empty.svelte';
   import type { SignInAfter } from '../lib/pending.js';
   import type { AppState } from '../state/app.svelte.js';
 
@@ -43,7 +44,7 @@
   }
 </script>
 
-<div class="signin" class:compact class:boxed>
+{#snippet body()}
   <p class="signin-lead">{lead}</p>
   <div class="signin-acts">
     <Button
@@ -60,7 +61,21 @@
       >
     {/if}
   </div>
-</div>
+{/snippet}
+
+<!-- eslint-disable @typescript-eslint/no-confusing-void-expression --
+     a `{@render}` tag reads as a void expression to this rule. -->
+{#if compact || boxed}
+  <div class="signin" class:compact class:boxed>
+    {@render body()}
+  </div>
+{:else}
+  <Empty glyph="kindItem">
+    <div class="signin page">
+      {@render body()}
+    </div>
+  </Empty>
+{/if}
 
 <style>
   .signin {
@@ -84,6 +99,12 @@
     display: flex;
     gap: 6px;
     flex-wrap: wrap;
+  }
+
+  /* The page plate centers its text, so «Войти» centers too when it wraps under the lead. */
+  .signin.page {
+    width: 100%;
+    justify-content: center;
   }
 
   /* Inside the add-to-list menu: the line above its buttons. */

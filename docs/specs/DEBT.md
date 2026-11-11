@@ -10,21 +10,6 @@ user-visible defect does not belong here. Why this file is the home:
 `docs/DECISIONS.md`, "Kept defects live in `docs/specs/DEBT.md`, grouped by
 the task that owes them".
 
-## Copy and prompt leftovers (task `57-debt`, owner first)
-
-### D134 - four shapes of the sign-in prompt on sibling pages
-
-- **Where**: `ListsPage.svelte` (the empty plate with the glyph), `HomebrewPage.svelte` and
-  the `/tables/homebrew` page (a bare line and «Войти»), `ListPage.svelte` signed out (the
-  error page with two actions).
-- **What**: signed out, `/lists`, `/homebrew`, `/tables/homebrew` and `/lists/<uuid>` draw
-  the same prompt in four shapes; each is named in FEATURES.md, none with a reason for the
-  difference (production review, 2026-11-06).
-- **Why deferred**: one shape changes four page layouts and their first screens; the owner
-  picks the shape (AFK default A6, 2026-11-06).
-- **How to verify the fix**: one `SignInPrompt` shape on the four routes at 360 and 1180 px,
-  RU and EN; case 83's rows for them unchanged or lower.
-
 ## Visual leftovers (task `57-debt`, owner first)
 
 ### D131 - two compact color print cards print their rules text under the floor

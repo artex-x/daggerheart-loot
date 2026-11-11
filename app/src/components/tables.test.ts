@@ -1099,7 +1099,7 @@ describe('the equipment tables', () => {
       expect(stats?.querySelectorAll('.sc')).toHaveLength(5);
       const cells = [...(stats?.querySelectorAll('.sc') ?? [])].map((c) => c.textContent);
       const sentence = [...(stats?.children ?? [])].map((c) => c.textContent).join('');
-      expect(sentence).toBe(cells.filter(Boolean).join(' · '));
+      expect(sentence).toBe(cells.filter(Boolean).join('\u00a0· '));
     }
     cleanup();
     const armor = render(App, {

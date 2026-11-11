@@ -119,14 +119,16 @@
           ? sectionLabel(app.section, app.t)
           : !app.env.cloud
             ? undefined
-            : route.kind === 'account'
-              ? app.t.account
-              : route.kind === 'homebrew' ||
-                  (route.kind === 'homebrewItem' && app.user === null)
-                ? app.t.myItems
-                : route.kind === 'homebrewItem'
-                  ? homebrewTitle(route.key)
-                  : undefined;
+            : route.kind === 'storedList' && app.user === null
+              ? app.t.menuLists
+              : route.kind === 'account'
+                ? app.t.account
+                : route.kind === 'homebrew' ||
+                    (route.kind === 'homebrewItem' && app.user === null)
+                  ? app.t.myItems
+                  : route.kind === 'homebrewItem'
+                    ? homebrewTitle(route.key)
+                    : undefined;
     /* The owner's unread purchase requests count before the page's name (docs/specs/FEATURES.md,
        "Purchase requests: the owner"). */
     const unread = app.ownerRequests?.unreadCount(app.now) ?? 0;
