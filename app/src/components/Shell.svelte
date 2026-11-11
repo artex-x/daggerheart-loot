@@ -12,6 +12,7 @@
   import { headerAt, nextHeader } from '../lib/headerScroll.js';
   import { nameOf } from '../lib/i18n.js';
   import { tick, untrack } from 'svelte';
+  import { SvelteMap } from 'svelte/reactivity';
   import type { Snippet } from 'svelte';
   import type { AppState } from '../state/app.svelte.js';
   import type { Lang } from '../lib/types.js';
@@ -209,28 +210,88 @@
     };
   });
   let seenNavigations: number | null = null;
+
+  /* Back puts the focus on the row of the record that was left (docs/specs/FEATURES.md,
+     "Chrome"). The row is noted before the new page draws, under the address of the page
+     being left; memory only, so a reload falls back to `#main`. `onScreen` follows a
+     `replace()` too, so the key sits under the address Back returns to. */
+  const rowOf = new SvelteMap<string, string>();
+  let onScreen = untrack(() => app.hash);
+  let navSeen = untrack(() => app.navigations);
+  $effect.pre(() => {
+    const nav = app.navigations;
+    const hash = app.hash;
+    untrack(() => {
+      if (nav !== navSeen) {
+        navSeen = nav;
+        if (app.arrival === 'go') {
+          const id =
+            lastFocus?.closest('[data-row]')?.getAttribute('data-row') ??
+            document.querySelector('dialog[open][data-record]')?.getAttribute('data-record');
+          if (id) rowOf.set(onScreen, id);
+          else rowOf.delete(onScreen);
+        }
+      }
+      onScreen = hash;
+    });
+  });
+
+  /* A row's own control: its body button, or a tile. */
+  function rowControl(id: string): HTMLElement | null {
+    const row = [...document.querySelectorAll<HTMLElement>('[data-row]')].find(
+      (r) => r.getAttribute('data-row') === id
+    );
+    return row?.querySelector<HTMLElement>('button.row-main, .tile') ?? null;
+  }
+
   $effect(() => {
     const now = app.navigations;
     untrack(() => {
       const moved = seenNavigations !== null && seenNavigations !== now;
       seenNavigations = now;
       if (!moved) return;
-      void tick().then(() => {
+      const back = app.arrival === 'history' ? rowOf.get(app.hash) : undefined;
+      /* Rows past the first draw later, so Back looks for its row a few times. */
+      const place = (tries: number): void => {
+        if (app.navigations !== now) return;
         const active = document.activeElement;
-        if (active && active !== document.body) return;
-        if (!lastFocus || lastFocus.isConnected) return;
-        document.getElementById('main')?.focus({ preventScroll: true });
+        /* Back from a page that took the focus to `#main`: the row still comes first. */
+        const parked = active === document.getElementById('main');
+        if (active && active !== document.body && !(back && parked)) return;
+        const row = back ? rowControl(back) : null;
+        if (row) {
+          row.focus({ preventScroll: true });
+          return;
+        }
+        if (lastFocus && !lastFocus.isConnected) {
+          document.getElementById('main')?.focus({ preventScroll: true });
+        }
+        if (back && tries > 0) {
+          setTimeout(() => {
+            place(tries - 1);
+          }, 50);
+        }
+      };
+      void tick().then(() => {
+        place(10);
       });
     });
   });
 
   /* An arrival shows the header and waits out the scroll that comes with it: a linked
-     target, the browser's restore on Back or a reload, a shorter page. */
+     target, the browser's restore on Back or a reload, a shorter page. A page a link
+     opened starts at the top, unless its address names a row or a section to scroll to. */
+  let topSeen = untrack(() => app.navigations);
   $effect(() => {
-    void app.navigations;
+    const nav = app.navigations;
     void app.band;
     untrack(() => {
-      app.env.scroll.settle();
+      const r = app.route;
+      const anchored = r.kind === 'tables' && r.anchor !== '';
+      const arrived = nav !== topSeen;
+      topSeen = nav;
+      if (arrived && app.arrival === 'go' && !anchored) app.env.scroll.top();
+      else app.env.scroll.settle();
       head = headerAt(app.env.scroll.y());
     });
   });

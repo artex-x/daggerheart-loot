@@ -820,7 +820,9 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
   9px radius.
 - **Number field:** a 46px row holding a monospace input at 19px weight 650
   between two 40px steppers; a lone field fills its column up to 480px (The Stepper
-  Rule).
+  Rule). Every text and number field is 16px up to 600px, so iOS does not zoom the page on
+  focus (the list row's position, price and quantity, the note box, «Взять», the
+  add-to-list menu's two fields).
 - **Focus:** border to Seal Gold plus a 3px gold glow at 14 per cent. On the
   duality fields the glow takes that die's own color instead.
 
@@ -1064,6 +1066,15 @@ limit is disabled, and the value stays a text field. A field in a row with its b
 keeps its content width. Owner, 2026-11-05. Source:
 https://playbook.ebay.com/design-system/components/numeric-stepper.
 
+**The Escape Rule.** Escape undoes the last layer a person opened: it closes a menu, a popover,
+a sheet or a dialog, and only that on its press. With no layer open, in a selection it clears
+the ticks, and at 0 ticks it leaves the selection mode where the page has one; an open
+«Настроить» folds. The focus stays on its control, or goes to «Выбрать» when the mode ends. A
+text field that holds text takes its own Escape first. Source:
+https://developer.android.com/docs/quality-guidelines/adaptive-app-quality/tier-2
+(Keyboard_Exit). `tests/app/states.js` case 125 measures it; the rule's home is
+`FEATURES.md` "Chrome".
+
 **The Check Rule.** Every pressed chip and segment draws the check before its label, a
 gold pick and a neutral default alike: gold says "this narrows the view", the check says
 "this is on". A state never rests on color alone. A link chip marks a place and draws
@@ -1135,7 +1146,6 @@ source.
 
 | Rule | Source | Draft | Check | Built by |
 |---|---|---|---|---|
-| The Escape Rule | https://developer.android.com/docs/quality-guidelines/adaptive-app-quality/tier-2 (Keyboard_Exit) | Escape undoes the last layer a person opened: it closes a menu, a sheet or a dialog, clears a search box that holds text, and in a selection with no layer open clears the ticks. The focus stays on its control, or goes to `main` when that control leaves. | `tests/app/states.js` on `/tables/core_item`, `/search`, `/lists` and `/lists/<uuid>` at 360 and 1180px: two ticks, Escape, «Выбрано: 0» and the focus kept; with the filter sheet open the first Escape closes only the sheet | a later task, with its mock; home `FEATURES.md` "Chrome" |
 | The Tablet Screen | https://developer.android.com/docs/quality-guidelines/adaptive-app-quality/tier-2 (test devices) | The First-Screen Rule adds 1024x640, Russian and English, as a third viewport: logged first, then asserted route by route at 256px. | `FIRST_SCREEN` gains the viewport with logged rows; each route past 256px is named to the owner | a later task |
 | The Detail Pane | https://developer.android.com/develop/ui/compose/layouts/adaptive/canonical-layouts (list-detail) | From a 1600px window a picked row on `/tables/*` and `/search` may open its dossier in a pane beside the rows, at the dialog's address; below 1600px the dialog stays. A direction, not a rule of task 57. | a states case at 1600 and 1920px: the `h1` in the pane, `aria-current` on the row, Escape and Back close it, print prints the sheet only | a later task, with its mock |
 | The Error Line | https://developer.apple.com/design/human-interface-guidelines/accessibility ("Minimize use of time-boxed interface elements") | An error that a person must act on is also a line on the page, not a toast alone. | an audit of the error toasts of `FEATURES.md` rule 2, each with its page line | a later task |

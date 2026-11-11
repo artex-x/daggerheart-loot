@@ -1500,6 +1500,78 @@ describe('the focus after an in-app navigation (rule 20)', () => {
   });
 });
 
+describe('the scroll and the focus after a navigation or a Back', () => {
+  const rowButton = (): HTMLElement | null =>
+    document.querySelector<HTMLElement>('[data-row="ci1"] button.row-main');
+
+  it('opens a page a link followed at the top, and leaves a Back to the browser', async () => {
+    const scroll = fakeScroll();
+    const router = memoryRouter('#/tables/core_item');
+    render(App, { env: fakeEnv({ router, data: fakeData(LOOT), scroll }) });
+    await tick();
+    scroll.to(1139);
+    expect(router.click('/i/ci1')).toBe(true);
+    await tick();
+    expect(scroll.y()).toBe(0);
+    scroll.to(700);
+    router.back();
+    await tick();
+    expect(scroll.y()).toBe(700);
+  });
+
+  it('keeps the page where it is for a row link, whose address names the scroll', async () => {
+    const scroll = fakeScroll();
+    const router = memoryRouter('#/tables/core_item');
+    render(App, { env: fakeEnv({ router, data: fakeData(LOOT), scroll }) });
+    await tick();
+    scroll.to(800);
+    Element.prototype.scrollIntoView = (): void => undefined;
+    expect(router.click('/tables/core_item/ci1')).toBe(true);
+    await tick();
+    expect(scroll.y()).toBe(800);
+  });
+
+  it('puts the focus on the row of the record that was left, after Back', async () => {
+    const router = memoryRouter('#/tables/core_item');
+    render(App, { env: fakeEnv({ router, data: fakeData(LOOT) }) });
+    await waitFor(() => {
+      expect(rowButton()).not.toBeNull();
+    });
+    rowButton()?.focus();
+    expect(router.click('/i/ci1')).toBe(true);
+    await waitFor(() => {
+      expect(screen.getByRole('main')).toHaveFocus();
+    });
+    router.back();
+    await waitFor(() => {
+      expect(rowButton()).toHaveFocus();
+    });
+  });
+
+  it('puts the focus on the row of the record whose dialog the page link left', async () => {
+    const router = memoryRouter('#/tables/core_item');
+    render(App, { env: fakeEnv({ router, data: fakeData(LOOT) }) });
+    await waitFor(() => {
+      expect(rowButton()).not.toBeNull();
+    });
+    await userEvent.click(rowButton() as HTMLElement);
+    const dialog = await waitFor(() => {
+      const d = document.querySelector<HTMLElement>('dialog[data-record="ci1"]');
+      expect(d).not.toBeNull();
+      return d as HTMLElement;
+    });
+    dialog.querySelector<HTMLElement>('button')?.focus();
+    expect(router.click('/i/ci1')).toBe(true);
+    await waitFor(() => {
+      expect(screen.getByRole('main')).toHaveFocus();
+    });
+    router.back();
+    await waitFor(() => {
+      expect(rowButton()).toHaveFocus();
+    });
+  });
+});
+
 describe('a page that throws', () => {
   it('draws the error page with the message, and «Обновить страницу» draws the page again', async () => {
     const broken = vi

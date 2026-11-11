@@ -12,8 +12,7 @@ the task that owes them".
 
 ## Phone overlays and scroll (task `57-debt`)
 
-All figures are at 360x640 unless stated. D133 is the shared page's bar; D137 to D139 are focus
-and scroll rules.
+All figures are at 360x640 unless stated. D133 is the shared page's bar.
 
 ### D133 - the shared page's selection bar takes a third of a phone
 
@@ -26,43 +25,6 @@ and scroll rules.
   fold is a layout decision for the owner (The Phone-First Rule).
 - **How to verify the fix**: at 360x640, RU and EN, `#/s/player-token-1 ~ selecting` draws a
   bar no taller than the owner's page's (137 px), every action still reachable.
-
-### D137 - another device removes the ticked row that holds the focus
-
-- **Where**: `app/src/components/ListPage.svelte` and `HomebrewPage.svelte`, the selection mode
-  with a live list (`playRemove` in the fake cloud).
-- **What**: while a row is ticked and focused, another device removes it; the bar reads
-  «Выбрано 0 позиций» and the focus falls to `body` at 360 and 1180 px (measured 2026-11-07).
-  FEATURES.md "Consistency rules", rule 20, covers a control that removes itself, not a
-  removal by a remote write.
-- **Why deferred**: it needs a new rule for the place of the focus after a remote removal.
-- **How to verify the fix**: a states case ticks and focuses a row, plays the remote removal,
-  and reads the focus on a control of the list (the next row or the bar's clear control).
-
-### D138 - an in-app navigation keeps the old scroll offset
-
-- **Where**: `app/src/App.svelte` (the page swap), `app/src/ports/`'s scroll handling.
-- **What**: the new page opens at the old offset, cut to its own height: from
-  `/tables/core_item` at y 1139 (360x720) a record link opens `/i/ci13` at y 190, its
-  maximum, and a header job opens `/search` at y 39. With the focus on `#main` above the
-  viewport (`preventScroll`), the reader lands in the middle or at the end of the page
-  (measured 2026-11-07). No spec line says where a new page opens.
-- **Why deferred**: the place of a new page (top, or the restored offset on Back only) is the
-  owner's decision.
-- **How to verify the fix**: a states case scrolls `/tables/core_item` to 1139 and follows a
-  record link, then reads `scrollY` 0 (or the spec's value) on the new page.
-
-### D139 - after Back the focus is on `#main` while the scroll is restored
-
-- **Where**: `app/src/App.svelte` (the focus after a navigation), `ports/` history handling.
-- **What**: after Back the focus is on `#main` and the scroll returns to 1139 at 360 px (929 at
-  1180 px); the first Tab goes to the first control of `main` and scrolls the page to y 0
-  (measured 2026-11-07). Before commit `f883e6fc` the focus was on `body` and Tab started at the
-  top of the document, so it is no regression.
-- **Why deferred**: the better place is the row that opened the page, which needs the row's
-  key kept across the navigation.
-- **How to verify the fix**: a states case opens a record from a catalog row, presses Back, and
-  reads the focus on that row with `scrollY` unchanged.
 
 ## Copy and prompt leftovers (task `57-debt`, owner first)
 

@@ -3,7 +3,11 @@
 
 ## Status
 - 2026-11-10: steps D, E (with E2), D7, 1 and VW1 are on `main` and merged into `claude/57-debt` (`a8307bf7`). D6 waits for the owner's table.
-- PH1 (2026-11-11): `68655c35`, then the fix pass for CI run 42954673078 and the reviewer's blockers (commit after `17a9e0b0`), NOT pushed. Next: push, CI, then PH2.
+- PH2 (2026-11-11): committed on `claude/57-debt` (the commit after the PH1 fix pass), NOT pushed. Next: push, CI, batch review, then PH3.
+  - Verification: `npm run build:test`; all four `app/states` shards pass (30, 29, 29, 29 runs; cases 124-127 included); `node tests/app/golden.js` (438 states, structural snapshots unchanged); `rtk npm run check:fast` (2457 tests; green on the third run); `npm run lint:typed`; `npm run lint:untyped`. Not run: the configured-build budget line (no `.env.test.local`).
+  - Bundle: unconfigured 274.4 kB (limit 274 failed by 0.4), so both limits rose in this commit: 275 unconfigured, 332 configured (estimate about 331.4 kB: 274.4 plus the 57 kB account chunk; CI's `e2e` measures it).
+  - Deviations: `prettier --write tests/app/states.js`; Shell's `rowOf` is a `SvelteMap` and `keepRowFocus.test.ts` uses `kept.destroy()` (lint). Both were made after the states shards and the golden ran, so only `check:fast` covers them.
+- PH1 (2026-11-11): `68655c35`, then the fix pass for CI run 42954673078 and the reviewer's blockers (commit after `17a9e0b0`), NOT pushed. Pushed with PH2.
   - Fix pass: B1 the configured limit is 331 kB (`tools/bundle-budget.mjs`, `.claude/README.md`; CI measured 330.7 to 330.8 kB; the unconfigured limit stays 274); B2 states case 88 reads `dataset.side` and checks the menu inside the window with the 16 px gutter (a joined dock at 640x360 now opens up by room); B3 case 100 reads scrollY 0 and the control under the header on open, Escape and a tap outside, RU and EN; R1 the toast text claims only `role` and `aria-live` always set; the comment nits.
   - Verification: `npm run build:test`; all four `app/states` shards pass (shard 2 re-run after the case 88 fix: 28 runs; shards 1, 3, 4: 29, passed); `node tests/app/golden.js` (438 states, no divergence); `rtk npm run check:fast`; `npm run lint:typed`; `npm run lint:untyped`. Not run: the configured-build budget line (no `.env.test.local` in the worktree; CI's `e2e` measures it).
   - Deviations: `homebrewEditor.test.ts` lost the `toBeInTheDocument` line (states cases 91/92/109 prove the upward menu).
@@ -16,7 +20,7 @@
 - NEEDS_HUMAN_CONFIRMATION: no for PH1-PH3; D131 and D134 stay with the owner (`plan-phone.md` section 5) and block nothing; `ai-mcp` is postponed.
 - AFK defaults of this pass: items 8-28 of `C:\Users\Ignat\.dhloot\notes\57\afk-decisions-57-debt-2026-11-10.md`.
 - Branch: `claude/57-debt` (worktree `.claude/worktrees/57-debt`). Plans: `plan.md` (steps), `plan-views.md` (VW1, done), `plan-phone.md` (PH1-PH3).
-- Bundle: 272.4 of 273 kB (VW1). A batch past 273 kB raises `tools/bundle-budget.mjs` and `.claude/README.md` to its rounded-up total in the same commit.
+- Bundle: 274.4 of 275 kB unconfigured; configured limit 332 (PH2). A batch past a limit raises `tools/bundle-budget.mjs` and `.claude/README.md` to its rounded-up total in the same commit.
 
 ## Completed (shipped to production; each `main` run green through `deploy` and `migrate-prod`)
 - Task 57, the redesign: S2 `02a50c39`, S3 `f883e6fc`, closeout `49528e95`.
@@ -28,19 +32,15 @@
 - 57-debt steps D (D1, D2, D4, D5), E and E2, D7, 1 and VW1: on `main` (`a68e40f5`, `95c770d6`, `b96e0640`, `89e4c348`, `25493a0d`).
 
 ## Next batch (implement-ready)
-- Name: PH2 - focus, Escape, navigation scroll and the list-page fields (`plan-phone.md`, "PH2").
-- In scope: D137, D138, D139, Escape in a selection and with «Настроить» open, the five fields at 16 px, 9b-N13.
-- Out of scope: PH1 and PH3 items.
-- Files expected: `plan-phone.md`, "PH2", "Files".
-- Steps: `plan-phone.md`, "PH2", "Steps" 1-8.
-- Acceptance criteria: `plan-phone.md`, "PH2", "Acceptance" (cases 124-127 fail on the PH1 build first).
+- Name: PH3 - stat columns, the shared page and the roll number (`plan-phone.md`, "PH3"). PH2 is done (see Status).
+- In scope, out of scope, files, steps, acceptance: `plan-phone.md`, "PH3". Run the PH2 batch review first (the orchestrator).
 - Verification commands: `npm run build:test`; `node tests/app/states.js --shard=n/4` for the shards with the changed cases, in the
   background, one at a time; `node tests/app/golden.js`; `rtk npm run check:fast` (Bash timeout 600000); `npm run lint:typed`;
   `npm run lint:untyped`; push; CI.
-- Risks / do-nots: `plan-phone.md`, "PH2", "Risks". The bundle limits are 274 kB unconfigured and 331 kB configured (the configured build
-  measured 330.7 to 330.8 kB after PH1): a PH2 total past either raises both files in the same commit.
-- Verification (PH1 fix pass): see Status.
-- Deviations: none for PH2 yet.
+- Risks / do-nots: `plan-phone.md`, "PH3", "Risks". The bundle limits are 275 kB unconfigured and 332 kB configured (PH2): a PH3 total
+  past either raises both files in the same commit.
+- Verification (PH2): see Status.
+- Deviations: none for PH3 yet.
 - Pushed: no. Previous sha: the PH1 fix commit in Status.
 
 ## Order of work

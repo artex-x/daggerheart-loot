@@ -372,6 +372,9 @@
     clearText={t.clearSel}
     onall={pickAllCards}
     onclear={() => void leaveSelecting()}
+    onuntick={() => {
+      pickAllCards(false);
+    }}
   >
     {#snippet actions()}
       <Button

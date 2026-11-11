@@ -23,7 +23,10 @@
     count: string;
     clearText: string;
     onall: (checked: boolean) => void;
+    /** «Снять выделение»: drops the ticks and leaves the selection mode. */
     onclear: () => void;
+    /** Escape with ticks: drops the ticks and keeps the mode. */
+    onuntick: () => void;
     /** More of the summary after the count (the shared page's total). */
     summary?: Snippet | undefined;
     actions: Snippet;
@@ -43,6 +46,7 @@
     clearText,
     onall,
     onclear,
+    onuntick,
     summary,
     actions,
     below,
@@ -51,10 +55,32 @@
 
   let wrap = $state<HTMLElement | undefined>(undefined);
 
+  /* A layer that has its own Escape: a menu, a popover, a sheet or a dialog. */
+  const LAYER = '[role="menu"], dialog[open], .dropmenu';
+  /* A text field holding text: Escape belongs to the field first. */
+  const TEXT = 'input:not([type="checkbox"], [type="radio"], [type="button"]), textarea';
+
+  /* Escape closes the open layer first (it prevents the default, or is still in the page
+     while this runs); then it drops the ticks, and at 0 ticks it leaves the mode. An idle
+     bar is no mode: the shared page keeps it mounted and hidden. */
+  function onKeydown(e: KeyboardEvent): void {
+    if (e.key !== 'Escape' || e.defaultPrevented || e.isComposing || idle) return;
+    if (document.querySelector(LAYER)) return;
+    const at = document.activeElement;
+    if (at instanceof HTMLInputElement || at instanceof HTMLTextAreaElement) {
+      if (at.matches(TEXT) && at.value !== '') return;
+    }
+    e.preventDefault();
+    if (picked > 0) onuntick();
+    else onclear();
+  }
+
   /* The page's scroll padding follows the bar's height, so a tab stop under it scrolls
      into view (WCAG 2.4.11). */
   $effect(() => (wrap ? watchBarHeight(wrap, '--selbar-h') : undefined));
 </script>
+
+<svelte:window onkeydown={onKeydown} />
 
 <!-- A labeled region: the bar sits after the footer, outside every other landmark. -->
 <section class="selbarwrap" class:idle class:vh={idle} aria-label={label} bind:this={wrap}>

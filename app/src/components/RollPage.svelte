@@ -72,6 +72,20 @@
   let cfgOpen = $state(false);
   let helpOpen = $state(false);
   let root = $state<HTMLDivElement | undefined>(undefined);
+  let cfgBtn = $state<HTMLButtonElement | undefined>(undefined);
+
+  /* Escape folds the open «Настроить» when the focus is on it or inside it, and the focus
+     stays on the button. A menu, a sheet or a dialog takes the key first. */
+  function onKeydown(e: KeyboardEvent): void {
+    if (e.key !== 'Escape' || e.defaultPrevented || !cfgOpen) return;
+    if (document.querySelector('[role="menu"], dialog[open], .dropmenu')) return;
+    const at = document.activeElement;
+    if (!at || !(cfgBtn?.contains(at) || document.getElementById('rp-set')?.contains(at)))
+      return;
+    e.preventDefault();
+    cfgOpen = false;
+    cfgBtn?.focus();
+  }
 
   /* A band change draws the other layout. The panels keep the values; only these two flags
      reset, and a focus lost with the old DOM goes to the results line. */
@@ -96,6 +110,8 @@
     });
   });
 </script>
+
+<svelte:window onkeydown={onKeydown} />
 
 <!-- eslint-disable @typescript-eslint/no-confusing-void-expression -- a `{@render}` tag of a
      local snippet reads as a void expression to this rule. -->
@@ -174,6 +190,7 @@
                 variant={lit ? 'toggle' : 'plain'}
                 expanded={cfgOpen}
                 controls={cfgOpen ? 'rp-set' : undefined}
+                bind:el={cfgBtn}
                 caret
                 onclick={() => {
                   cfgOpen = !cfgOpen;

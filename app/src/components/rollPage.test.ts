@@ -216,6 +216,30 @@ describe('the results line up to 760 px', () => {
     expect(screen.queryByRole('textbox', { name: 'Результат броска' })).not.toBeInTheDocument();
   });
 
+  it('folds the settings on Escape and keeps the focus on «Настроить»', async () => {
+    render(App, { env: at('#/roll/std') });
+    await userEvent.click(button('Настроить'));
+    const field = screen.getByRole('textbox', { name: 'Результат броска' });
+    field.focus();
+    await userEvent.keyboard('{Escape}');
+    expect(screen.queryByRole('textbox', { name: 'Результат броска' })).not.toBeInTheDocument();
+    expect(button('Настроить')).toHaveAttribute('aria-expanded', 'false');
+    expect(button('Настроить')).toHaveFocus();
+    /* Closed already: the key is nobody's. */
+    await userEvent.keyboard('{Escape}');
+    expect(button('Настроить')).toHaveFocus();
+  });
+
+  it('leaves Escape to the menu that is open over the settings', async () => {
+    render(App, { env: at('#/roll/std') });
+    await userEvent.click(button('Настроить'));
+    await userEvent.click(more());
+    expect(screen.getByRole('menu')).toBeInTheDocument();
+    await userEvent.keyboard('{Escape}');
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(button('Настроить')).toHaveAttribute('aria-expanded', 'true');
+  });
+
   it('holds the copy, the pin and the help in «Ещё», in this order', async () => {
     render(App, { env: at('#/roll/std') });
     await userEvent.click(more());

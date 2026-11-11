@@ -207,5 +207,10 @@
     .qgroup button {
       min-width: 44px;
     }
+
+    /* 16 px: a smaller field makes iOS zoom the page on focus (as `RollSelect.svelte`). */
+    .qgroup input {
+      font-size: 16px;
+    }
   }
 </style>
