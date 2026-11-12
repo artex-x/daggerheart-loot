@@ -59,8 +59,10 @@ Orchestrator (or first worker) maintains this file so later steps do not re-fetc
     written in B0.
 - Open questions: none for the owner in `plan.md` (B5 questions Q8-Q11
   are "default taken (owner AFK)", 2026-11-11). Open design question:
-  B5a's screen layout (a mock). B3's search strategy was settled on
-  2026-11-12 (plan D10).
+  B5a's screen layout (a mock). B3's search projection and file-check
+  line names: a planner pass before B3 (the plan review of 2026-11-12
+  showed that D10's draft cost model misses `foldQuery` and the line
+  split; measurements below).
 
 ## Issue 72 and the layered-architecture question (owner, 2026-11-10)
 
@@ -534,6 +536,34 @@ measurement:
   The footer nav (`Shell.svelte`) has install, privacy and terms through
   `app.pagesDir`; the static pages come from `tools/build-pages.js`
   `PAGES` and `pages/src/<id>.html`.
+
+## Plan review measurements (reviewer, 2026-11-12, `reviews/plan-B2a.md`)
+
+Read-only probes on this host (Node 24); production is about 4-10 times
+slower than this host (B1's `std` roll: 7.5-17.5 ms there, 1.78 ms here).
+
+| Probe | Result |
+|---|---|
+| `cardVersions()` from the `api-data.mjs` process under `ts-hooks` | works, 1.2 s; 1593 ids, every `buildIndex` id held, values 6-8 characters |
+| B1 `std` roll CPU in memory (roll parse, `buildIndex`, 4 x 64 KB chunk parse) | 1.78 ms |
+| B2a design, warm (cached index, 4 x decode and split, one line parse per result) | 0.50 ms (28 % of B1) |
+| B2a design, cold (roll parse and `buildIndex` once more) | 0.84 ms (47 % of B1) |
+| `foldQuery` over B3's search text (156 KB of `id`...`ru`,`en` lines) | 36 ms; 79 ms at 3x (470 KB) |
+| `foldQuery` over the names only (87 KB) | 10.9 ms; `toLowerCase` of the same text 0.62 ms |
+| split every B3 line into columns (244 KB today, 730 KB at 3x) | 1.9 ms today, 5.3 ms at 3x |
+| names whose `foldQuery` differs from `toLowerCase` | 76 of 3186 |
+
+- The live check of 2026-11-12 showed `/api/*` in `_routes.json` taking
+  bare `/api` (the JSON 404); both `routed` test helpers assumed the
+  opposite.
+- `tests/app/states.js` asserts the footer's `.foot-nav a` hrefs
+  (install, privacy, terms).
+- `ImportPanel.svelte` `where()` and `skipLine()` name records through
+  `app.index?.byId.get(id)` and `nameOf`; the report builders return
+  structured lines (`pos`, `name`, `item`, `text`, `path`).
+- The merge-back `1b99e6d4` differs from `origin/main` (`aeb68c0e`) only
+  under `issues/` (`git diff --stat`); `1b99e6d4` and the planner commits
+  are not pushed.
 
 ## Do not re-fetch unless
 - Human provides new info

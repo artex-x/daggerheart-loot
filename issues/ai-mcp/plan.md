@@ -7,10 +7,13 @@
   documentation notes folded in; B5a and B5b unchanged but for B5b's
   placed lines).
 - Batches: B0 and B1 done (first squash `aeb68c0e`, live on production
-  2026-11-12); B2a implement-ready (next); B3 implement-ready; B2b
-  implement-ready; B5a and B5b implement-ready outlines, blocked on owner
-  steps (`handoff.md`, "Blockers"); B4 dropped. Order and landings:
-  section 6, "Order of the remaining batches" (D8).
+  2026-11-12); B2a implement-ready (next; the plan review's findings are
+  applied, no second look); B3 needs a planner pass on the search
+  projection and the file-check line names, then its own plan review; B2b
+  implement-ready, but it waits for B3 (they land together at landing 3);
+  B5a and B5b implement-ready outlines, blocked on owner steps
+  (`handoff.md`, "Blockers"); B4 dropped. Order and landings: section 6,
+  "Order of the remaining batches" (D8).
 - NEEDS_HUMAN_CONFIRMATION: no. Q1-Q7 settled; Q8-Q11 and the R1, R7 and
   N10 options are "default taken (owner AFK)" (section 7); this pass adds
   five more defaults (section 7, "Defaults taken (owner AFK), 2026-11-12").
@@ -18,7 +21,35 @@
   already names the MCP endpoint).
 - Plan review: required before B1 (trigger: a public contract change - the read API `/api/v1/`; a product-law change). The CORS rule of 2026-11-10 is part of the same contract change.
 - Plan review: required before B5a (trigger: a migration that changes the PostgREST role config and adds restrictive table and storage policies and a SECURITY DEFINER helper; a new write and sync protocol; possible loss of stored data by a connected app's delete; a public contract change - `/api/v1/me/`, `/mcp/me`, a new app route).
-- Plan review: required before B2a (trigger: a public contract change - the MCP endpoint `/mcp`, its tool names and shapes, the record `link` value, `docs/fixtures/mcp/`, `CONTRACTS.md` sections 5 and 6, `llms.txt`; B3's two operations and two tools; B2b's `llms.txt` links). One review reads B2a, B3 and B2b (all three are implement-ready), so B3 and B2b need no line of their own.
+- Plan review: required before B2a (trigger: a public contract change - the MCP endpoint `/mcp`, its tool names and shapes, the record `link` value, `docs/fixtures/mcp/`, `CONTRACTS.md` sections 5 and 6, `llms.txt`; B3's two operations and two tools; B2b's `llms.txt` links). The review `reviews/plan-B2a.md` read B2a, B3 and B2b; it covers B2a and B2b, and B3 takes a review of its own after its planner pass (next line).
+- B3's plan review: required before B3 (trigger: a public contract change - two operations, two tools); it runs after B3's planner pass. The B3 planner pass writes the guard line "Plan review: required before B3" into this Status, not this pass: `agent-guard.mjs` blocks every implementer dispatch, B2a's included, while any required line lacks an approving or applied review, and B3 has no review yet.
+- Plan review findings applied: reviews/plan-B2a.md
+  - plan-B2a-1: B2a step 4, acceptance, `handoff.md` "After B2a": every burst goes out with `curl` (no `Origin`); Chrome reads the dashboard only; the MCP burst is a named legacy `tools/call` `roll` with `MCP-Protocol-Version: 2025-06-18`; each status is recorded, no `isError`; a bucket count other than 10 repeats the burst.
+  - plan-B2a-2: B2a step 3.3, acceptance, Standing check 1, the `too-large` fixture, D4, section 11: the `/mcp` body cap is 65536 B, may rise and never fall.
+  - plan-B2a-3: B2a step 3.6, acceptance: the `preview.json` `/mcp` row becomes `GET /mcp` 405 (a worker row); both `routed` helpers match bare `/x` for `/x/*`.
+  - plan-B2a-4: B3 heading and its new "Status" paragraph, this Status, `context.md` "Plan review measurements (2026-11-12)": B3 needs a planner pass on the search projection; the measurements and the redesign inputs are written down; B3's review line is above.
+  - plan-B2a-5: B3 "Status" paragraph: the file-check line names go to the B3 pass with default (a), owner AFK: item ids and no names, a written departure.
+  - plan-B2a-6: B3 "Status" paragraph: the file cap is 32768 B as UTF-8 in `runOperation` for both adapters.
+  - plan-B2a-R1: B2a step 4 and acceptance, B3 "Status" paragraph: one warm-up, a new bucket, then the burst; p50, p75 and p99 recorded; the cost model on p50, the limit on p99.
+  - plan-B2a-R2: section 3.5, B2a step 2.2 and "Fallbacks": an isolate cache of each chunk's split lines is the first fallback, before the 60 per-total files.
+  - plan-B2a-R3: B2a step 3.3, step 3.5, acceptance: a missing or non-string argument is a 400 `bad_request` `isError` result naming the field; each `inputSchema` property takes its parameter's description; the `tools-call-bad-argument` fixture.
+  - plan-B2a-R4: B3 "Status" paragraph: local `parseBundle` and `parseHomebrew` CPU at 32768 B and an MCP `check_file` burst, for the B3 pass.
+  - plan-B2a-R5: B2b files, step 6, acceptance, verification, gate cost: `tests/app/states.js` asserts the five footer links; `app/states` runs after `build:test`.
+  - plan-B2a-R6: B2a "Risks / do-nots", D4: the owner's connector test stays the proof; the four-step allowlist fallback is written down.
+  - plan-B2a-N1: B2a step 1.6: the two `llms.txt` "ignore it" sentences read "ignore it when you read the id; to hand a record on, give the API's `link` as it is".
+  - plan-B2a-N2: B2a step 3.9: "Read this first" item 3 accepts names and ids from the MCP tools and the read API; the summary blockquote names the MCP endpoint.
+  - plan-B2a-N3: sections 3.2 and 5.1: the CPU cell and the link bullet point to section 3.5 and D9.
+  - plan-B2a-N4: B2a step 1.3: the 3x test passes an 8-character version for every synthetic id.
+  - plan-B2a-N5: B2a step 3.3 and 3.5: a legacy request without `MCP-Protocol-Version` is served as `2025-03-26`; fixtures `initialize-2025-03-26` and `tools-list-legacy-no-header`.
+  - plan-B2a-N6: B2a step 3.5: `content[0].text + '\n'` equals the REST body; `structuredContent` equals the parsed body.
+  - plan-B2a-N7: B2a step 3.3, D4: a modern request that names a legacy version gets `UnsupportedProtocolVersion`; a legacy version is reached through `initialize`.
+  - plan-B2a-N8: B2b constraints: the panels' "AI assistants" link is `app.pagesDir + 'ai.html'`.
+  - plan-B2a-N9: B2b files, constraints, step 4, acceptance, Standing check 3: one shared `ImportFileRow.svelte` for both panels, with its own test.
+  - plan-B2a-N10: B3 "Status" paragraph: the `TablesPage.svelte` facet-composition extraction promised by section 3.8 is an input of the B3 pass.
+  - plan-B2a-N11: `handoff.md` "Completed": a "Files changed" line and the merge-back facts (`1b99e6d4` differs from `origin/main` only under `issues/`; the commits are not pushed).
+  - plan-B2a-N12 (deferred-scope): `handoff.md` "Deferred": `/mcp/` with a trailing slash answers 404 in B2a; serving it as `/mcp` is a later choice.
+  - plan-B2a-N13: B2b files, step 6, acceptance: the `collect-site.sh` guard names the four new pages.
+  - Deviation note of the review: D8 says what happens when B3 slips (the planner decides whether B2b waits or lands alone).
 - Plan review findings applied: reviews/plan-B1.md
   - plan-B1-1 to plan-B1-N9: applied 2026-11-10 and shipped in B1 (`aeb68c0e`); the per-finding list is in `git show 93eac0ae:issues/ai-mcp/plan.md`, Status.
 - Plan review findings applied: reviews/plan-B1-2.md
@@ -55,7 +86,7 @@
   - Sections 7, 9, 10 and 11: the new defaults, risks, deferred items and freeze rows.
   - B5b: the placed lines (export link, account text on the pages, the file-check cap, issue 72).
 - Total gate cost of the remaining work (`.claude/README.md`, "Batch size and the fixed cost of a run"; review runs are estimates of about 15 min):
-  the plan review before B2a about 15 min; B2a about 70 min (`check:fast` 5-8 min, CI 15, its review 15, landing 2 about 23, the production readings about 10); B3 about 45 min (`check:fast` 11-14 min, CI 15, its review 15); B2b about 95 min (`check:fast` about 14 min, golden re-seed 10-20 min or a second CI run, `check:built` a few minutes, CI 15, its review 15, landing 3 about 23, the readings about 10); B5a about 45 min and B5b about 25 min (as planned 2026-11-11, without their reviews), plus their reviews (about 30 min) and the closeout squash (about 23 min). Sum: about 5 h 50 min of gates, of which about 3 h 45 min before B5 starts.
+  the plan review before B2a about 15 min (done; findings applied); B2a about 70 min (`check:fast` 5-8 min, CI 15, its review 15, landing 2 about 23, the production readings about 10); B3's planner pass and its plan review about 30 min (estimate); B3 about 45 min (`check:fast` 11-14 min, CI 15, its review 15; to be restated by its planner pass); B2b about 105 min (`check:fast` about 14 min, golden re-seed 10-20 min or a second CI run, `check:built` a few minutes, `app/states` about 10-15 min in the background or CI's matrix, CI 15, its review 15, landing 3 about 23, the readings about 10); B5a about 45 min and B5b about 25 min (as planned 2026-11-11, without their reviews), plus their reviews (about 30 min) and the closeout squash (about 23 min). Sum of what remains after this pass: about 6 h 10 min of gates, of which about 4 h 10 min before B5 starts.
 
 ## 1. Objective and current state
 
@@ -134,7 +165,7 @@ and gives no isolation, because both run in one deployment.
 |---|---|---|---|
 | Where | `/mcp` in the Pages worker | Postgres functions or Edge Functions at `<ref>.supabase.co`; `/mcp` in the worker relays | `/api/v1/*` and `/mcp` in the Pages worker over one service layer |
 | Product law | amended once (settled Q3 = A) | Edge Functions are inside Supabase, so the store law holds; the relay still amends the worker sentence | amended once, the same sentence as (a) plus "the read API" |
-| CPU | 10 ms a request | Edge Function: 2 s CPU (Supabase docs, not measured here); Postgres: statement timeout 3 s | 10 ms a request; each projection file at most 65536 B, a roll, table or cards file at most 131072 B; a request reads at most five files and parses at most about 290 KB today (a `std` roll, section 3.5) |
+| CPU | 10 ms a request | Edge Function: 2 s CPU (Supabase docs, not measured here); Postgres: statement timeout 3 s | 10 ms a request; each projection file at most 65536 B, a roll, table or cards file at most 131072 B; a request reads at most five files; since B2a it parses one record per result (a `std` roll about 38 KB, section 3.5) |
 | Quota | 100,000 a day, shared with the cards | Edge: about 500,000 a month (about 16,000 a day, Supabase docs, not verified), plus 100,000 a day for each relayed MCP call; egress counts against 5 GB | 100,000 a day, shared with the cards; static files free |
 | Catalog source | static files | the catalog must enter Postgres (a second authority, a sync per data change) or be bundled into the function (a deploy per data change) | build-time static files from `data.js`, the same deploy as the site |
 | Public URL | frozen on the site's host | a REST URL with the project ref: a restore into a new project breaks every client; a custom domain is a paid add-on | frozen on the site's host |
@@ -429,9 +460,11 @@ ms and p99 about 17.5 ms of CPU, a record read 2-3 ms (context.md). So
 B2a applies what was the fallback: the record files hold one record per
 line, the roll rows carry `c` and `l` (the position), and the service
 parses only the lines of its results; a warm isolate also keeps each roll
-section's built index. The contract does not change. The next fallback,
-if landing 2's `std` p99 stays above 5 ms: `apidata/roll/std/<total>.json`
-with the full records of each total (60 files, B2a "Fallback").
+section's built index. The contract does not change. The next fallbacks,
+if landing 2's `std` p99 stays above 5 ms, in order (B2a "Fallbacks"):
+an isolate cache of each chunk's split lines (no file, about 10 MB at
+3x), then `apidata/roll/std/<total>.json` with the full records of each
+total (60 files).
 
 File count: about 90-100 files today against Cloudflare's 20,000 a
 deployment (6573 today, about 19,700 at 3x before this task); at 3x the
@@ -629,7 +662,10 @@ not call the API. Checked against the repository at `342c91c4`:
   `2026-07-28`, with `server/discover` and the header checks), tools from
   the `x-mcp-tool` operations without `security`, each call through the
   REST adapter's `runOperation`; no session, no SSE, no CORS, `Origin`
-  403, no `Authorization`. Rejected: `createMcpHandler` of the `agents`
+  403 (an allowlist of named cloud-client origins only if the owner's
+  connector test needs it), no `Authorization`, a 65536 B body cap. A
+  legacy version is reached through `initialize`: a modern request that
+  names one gets `UnsupportedProtocolVersion`. Rejected: `createMcpHandler` of the `agents`
   package (a dependency in a package that holds only `wrangler`, bundle
   size, and its dual-era `2026-07-28` support is not confirmed);
   `McpAgent` (a Durable Object, stored state); the official SDK's
@@ -640,7 +676,10 @@ not call the API. Checked against the repository at `342c91c4`:
   is B2a alone, because production's `std` roll runs at 7.5-17.5 ms of CPU
   against 10 ms and the fix and MCP can be measured only on the deployed
   worker; landing 3 is B3 and B2b, after their reviews, measured the same
-  way; the closeout squash carries B5a and B5b. Each landing follows D6's
+  way (if B3's planner pass or its plan review slips, the planner decides
+  whether B2b waits or lands alone as landing 3, and B3 then lands with
+  the closeout or a landing of its own); the closeout squash carries B5a
+  and B5b. Each landing follows D6's
   steps (an approving batch review, a green CI run of the tip, the squash,
   the merge-back with `check:fast` and CI, no force-push). Amends D6
   (both pointers). Rejected: B2a waiting for the closeout (the CPU defect
@@ -653,8 +692,10 @@ not call the API. Checked against the repository at `342c91c4`:
   version); the `?v` is opaque; the canonical `og:url` has no query.
   Rejected: the bare URL (a pasted link keeps a stale messenger preview);
   a second field for the versioned URL (two URLs for one thing).
-- D10 (B3) "API search matches names and facets, and file checks start at
-  32 KB". The search reads a text projection of names and facet columns
+- D10 (B3; a draft that B3's planner pass revises: the plan review of
+  2026-11-12 measured the request-time fold and line split past 10 ms on
+  the worker, plan-B2a-4) "API search matches names and facets, and file
+  checks start at 32 KB". The search reads a text projection of names and facet columns
   and ranks with `search.ts`; the file check reads a lean context and
   starts at a 32768 B cap, raised only after a production reading.
   Rejected: names and stat lines as JSON (past 10 ms at 3x); a Hay with
@@ -793,7 +834,9 @@ HTTP status.
   an empty English side stays `""`. The `rights.notice` and the error
   messages are English only (section 5.3).
 - Links are the site's path form, `{ "ru": "<site>i/<id>", "en":
-  "<site>i/en/<id>" }` (no `?v`, as `catalog.csv`'s `url`).
+  "<site>i/en/<id>" }`; since B2a with the opaque `?v` of the app's links
+  when the record has a card version (D9; `catalog.csv`'s `url` stays
+  without it).
 
 ### 5.2 Rolls
 
@@ -901,7 +944,9 @@ touchpoints" paragraph: `git show 93eac0ae:issues/ai-mcp/plan.md`.
 
 ### Order of the remaining batches (planner, 2026-11-12)
 
-B2a, then B3, then B2b, then B5a and B5b. B3 runs before B2b so that the
+B2a, then B3's planner pass and its plan review, then B3, then B2b, then
+B5a and B5b (plan review `reviews/plan-B2a.md`: B3 is not implement-ready
+until its pass). B3 runs before B2b so that the
 developer page is written once, over the final pre-account surface (every
 operation of `openapi.json`, B3's included), and both land together
 (landing 3, D8). Landings (D8, default taken (owner AFK)): landing 2 is
@@ -1014,7 +1059,9 @@ Steps:
       `v`, `appUrl(..., cardVersion(it))`), and the `id` of the no-`hid`
       case. `tools/api-data.test.mjs`: for every record of the real
       build, `link.ru` and `link.en` equal `recordUrl({ base: SITE }, id,
-      lang, cardVersions()[id])`, and the map holds every id.
+      lang, cardVersions()[id])`, and the map holds every id. The 3x test
+      passes a versions map with an 8-character value for every synthetic
+      id, so the 3x budgets count the `?v` bytes (plan-B2a-N4).
    4. Fixtures: `docs/fixtures/api/v1/catalog.json` gains `versions` for
       its records except `q23` (so `record-q23.json` pins the bare link and
       `record-ci1.json` the versioned one); re-pin every answer fixture with
@@ -1034,7 +1081,10 @@ Steps:
       the canonical `og:url`; a shared-list answer has no link of its own").
       `llms.txt`, "The read API (v1)", the record bullet: "`link` (its page
       on the site, with the `?v` the app's links carry; store it as
-      given)".
+      given)". The two `llms.txt` sentences that say a `?v=...` "is a
+      version for a messenger's cache; ignore it" ("Data" and "URL
+      grammar") become "ignore it when you read the id; to hand a record
+      on, give the API's `link` as it is" (plan-B2a-N1).
 2. Roll and record CPU: one record per line.
    1. `tools/api-data.mjs`: write each `api/v1/catalog/<n>.json` as
       line 0 `{"format":...,"version":1,"data_version":"...","records":[`,
@@ -1060,7 +1110,9 @@ Steps:
       each distinct chunk of the results is read as text once; each result
       record comes from `(c, l)`; a `data_version` that differs from the
       roll file's, or a missing record, forces one re-read of the roll file
-      and the chunks, then 503 (the B1 loop).
+      and the chunks, then 503 (the B1 loop). Not in this batch: an
+      isolate cache of each chunk's split lines (the first fallback,
+      below).
    3. Tests. `tools/api-data.test.mjs`: every chunk's whole-file
       `JSON.parse` deep-equals the records parsed line by line, line `l + 1`
       is record `l`, and every roll row's `(c, l)` names its own id.
@@ -1074,7 +1126,9 @@ Steps:
       ['item','consumable'] })` and of `service.getRecord('ci12')` on the
       real `apidata/` and `api/v1/catalog/` through stub `assets` and
       `text` that read from disk; write both pairs of numbers into the
-      handoff. Expected: the `std` roll at most 40 % of its B1 cost.
+      handoff. Expected: the `std` roll at most 40 % of its B1 cost warm
+      and at most 50 % cold (the plan review measured 1.78 ms for B1, 0.50
+      ms warm and 0.84 ms cold for this design on this host).
    5. `.claude/README.md`, "Quotas, recovery and failure": write the B1
       production readings (context.md, "Live readings after the B1
       deploy") under "CPU readings to take", and replace "the fallback:
@@ -1105,7 +1159,9 @@ Steps:
       `x-mcp-tool` and no `security`, in document order; `inputSchema` is
       `{ type: 'object', properties, required }` from the path and query
       parameters and, for `roll`, the properties of `RollBody` (resolve its
-      one `$ref` level by hand), with `section` required; no
+      one `$ref` level by hand), with `section` required; each property
+      takes its parameter's `description` (it sits on the parameter
+      object in `openapi.json`, not in its `schema`; plan-B2a-R3); no
       `additionalProperties` rule (REST ignores unknown fields too); no
       `outputSchema` in v1; `annotations` `{ readOnlyHint: true,
       destructiveHint: false, idempotentHint: <false for roll, else true>,
@@ -1114,8 +1170,10 @@ Steps:
       body; any `Origin` header 403 with a JSON-RPC error without `id`
       (code -32000); a method other than `POST` 405, `Allow: POST`, no
       body; a media type other than `application/json` 415 (JSON-RPC
-      error without `id`, -32600); a body past 262144 B 413 before any
-      parse (`readText` with that cap; -32600); a body that is not JSON
+      error without `id`, -32600); a body past 65536 B 413 before any
+      parse (`readText` with that cap; -32600; plan-B2a-2: about 2-3 ms of
+      parse on the worker, room for B3's 32768 B file with JSON escaping;
+      the cap may rise later, never fall); a body that is not JSON
       400 (-32700, `id` null); a JSON array, a value that is not an
       object, `jsonrpc` other than `"2.0"` or a `method` that is not a
       string 400 (-32600, `id` null); a message without an `id` member
@@ -1126,7 +1184,10 @@ Steps:
       Modern: a version other than `2026-07-28` 400 with
       `UnsupportedProtocolVersion` (-32022, `data: { supported, requested
       }`, `supported` = `["2026-07-28", "2025-11-25", "2025-06-18",
-      "2025-03-26"]`); a missing or different `MCP-Protocol-Version`,
+      "2025-03-26"]`; a modern request that names a legacy version gets
+      this error too, with that version in `supported`: a legacy version is
+      reached through `initialize`, and D4 states the rule, plan-B2a-N7); a
+      missing or different `MCP-Protocol-Version`,
       `Mcp-Method`, or (on `tools/call`) `Mcp-Name` 400 with
       `HeaderMismatch` (-32020; `Mcp-Name` decoded from the
       `=?base64?...?=` form first); methods `server/discover`,
@@ -1138,7 +1199,9 @@ Steps:
       `instructions`, `ttlMs: 3600000`, `cacheScope: "public"`;
       `tools/list` adds `ttlMs: 3600000` and `cacheScope: "public"`.
       Legacy: an `MCP-Protocol-Version` header outside the three legacy
-      versions 400 (-32600, `data: { supported }`); `initialize` answers
+      versions 400 (-32600, `data: { supported }`); a legacy request with
+      no `MCP-Protocol-Version` header is served as `2025-03-26`, as the
+      spec allows; `initialize` answers
       `protocolVersion` (the requested one when it is a legacy version,
       else `2025-11-25`), `capabilities: { tools: { listChanged: false }
       }`, `serverInfo`, `instructions`, and no `Mcp-Session-Id`; `ping`
@@ -1146,7 +1209,12 @@ Steps:
       -32601. No legacy result carries `resultType`.
       `tools/call` (both eras): an unknown `name` or `arguments` that is not
       an object (absent reads as `{}`) is a JSON-RPC error -32602 with
-      status 200; otherwise `runOperation` runs and the result is `{
+      status 200; a missing required argument, or a path or query argument
+      that is not a string (a number `part`, for one), is an `isError`
+      result with the 400 `bad_request` envelope that names the field,
+      before `runOperation` (plan-B2a-R3; REST path values are always
+      strings, so the check is MCP's own); otherwise `runOperation` runs
+      and the result is `{
       content: [{ type: 'text', text: JSON.stringify(body) }],
       structuredContent: body }`; an `ApiError` gives the same shape with
       the `api-error` envelope and `isError: true`; any other throw the 503
@@ -1161,20 +1229,27 @@ Steps:
       `check-site` probe proves the same for `/mcp`).
    5. `preview/api/mcp.test.mjs`: one case per row of the check order and
       per method of each era; the tool list equals the `x-mcp-tool`
-      operations without `security`; a `tools/call` of every tool returns
-      the REST answer's bytes for the same input (a fixed `random` for
-      `roll`, injected as `api.test.mjs` injects it); an `ApiError` gives
+      operations without `security`; for a `tools/call` of every tool,
+      `content[0].text + '\n'` equals the REST body's bytes for the same
+      input (REST writes `JSON.stringify(body) + '\n'`; plan-B2a-N6) and
+      `structuredContent` equals the parsed REST body (a fixed `random` for
+      `roll`, injected as `api.test.mjs` injects it); a missing `id` and a
+      number `part` give the 400 `bad_request` `isError` result; an `ApiError` gives
       `isError`; `Authorization` changes no byte and no answer is 401;
       `/mcp/me` and `/mcp/` are 404; no answer carries
       `Access-Control-Allow-Origin`. Fixtures `docs/fixtures/mcp/*.json`,
       one file per case `{ request: { method, headers, body }, answer: {
       status, headers, body } }` (headers: the ones the case pins), written
       by `UPDATE_MCP_FIXTURES=1` and compared byte for byte: at least
-      `initialize-2025-06-18`, `initialize-2025-11-25`,
-      `notification-initialized`, `tools-list-legacy`, `tools-call-legacy-roll`,
-      `server-discover`, `tools-list-2026-07-28`, `tools-call-get-record`,
-      `tools-call-error`, `unsupported-version`, `header-mismatch`,
-      `method-not-found`, `origin-403`, `get-405`, `too-large`.
+      `initialize-2025-03-26`, `initialize-2025-06-18`,
+      `initialize-2025-11-25`, `tools-list-legacy-no-header` (a legacy
+      request with no `MCP-Protocol-Version`, served as `2025-03-26`;
+      plan-B2a-N5), `notification-initialized`, `tools-list-legacy`,
+      `tools-call-legacy-roll`, `server-discover`, `tools-list-2026-07-28`,
+      `tools-call-get-record`, `tools-call-error`, `tools-call-bad-argument`
+      (plan-B2a-R3), `unsupported-version`, `header-mismatch`,
+      `method-not-found`, `origin-403`, `get-405`, `too-large` (past 65536
+      B).
    6. Wiring: `preview/package.json` `test` and `tools/check/lib.mjs`
       stage `test:preview` add `preview/api/mcp.test.mjs`
       (`lib.test.mjs` holds the stage to every preview test).
@@ -1183,7 +1258,15 @@ Steps:
       the `tools-list-*` fixtures name exactly the tools of `openapi.json`;
       `CONTRACTS.md` section 6 names each tool, and its MCP URL equals
       `info["x-mcp-endpoint"]` and `SITE + 'mcp'`.
-      `docs/fixtures/urls/preview.json` `routes` gains `/mcp/*`.
+      `docs/fixtures/urls/preview.json` `routes` gains `/mcp/*`, and its
+      `serve` row `{ url: <site>mcp, static: true, status: 404, why:
+      "reserved for the ai-mcp task" }` becomes a worker row: `GET /mcp`
+      405, `why` "the MCP endpoint takes POST only" (plan-B2a-3). Both
+      `routed` helpers (`tests/contracts.js` and `preview/worker.test.mjs`)
+      change to `p === r.slice(0, -2) || p.startsWith(r.slice(0, -1))`, with
+      the comment "as the live probe of `/api` shows, Pages matches it", so
+      `/x/*` also matches bare `/x`; the step 3.7 probe proves the same on
+      the deploy.
    7. `tools/check-site.lib.mjs` and its test: the static `mcp` 404 probe
       goes; the `--preview` list gains `/mcp` GET 405 with `Allow: POST`
       and no `Access-Control-Allow-Origin`, a legacy `tools/list` POST
@@ -1223,7 +1306,11 @@ Steps:
       MCP endpoint" after "The read API (v1)": the URL, "No sign in", read
       only, the tool names with one line each, the data warning, the fair
       use line. "What this site cannot do", first bullet: MCP writes
-      nothing either. The file-format sections stay as they are.
+      nothing either. Item 3 ("Never name an item from memory") adds "or
+      from an answer of the MCP tools or the read API" as a source of names
+      and ids; the summary blockquote under the title names the MCP endpoint
+      beside the read API (plan-B2a-N2). The file-format sections stay as
+      they are.
    10. Decisions (`.claude/templates/decision.template.md`, at most 15 body
       lines): D4 "The MCP endpoint is a hand-written dispatcher over the
       OpenAPI document" (section 4); D8 "ai-mcp lands on main at four named
@@ -1233,21 +1320,32 @@ Steps:
 4. After landing 2 (the orchestrator; not a commit). After the deploy's
    `check-site` runs pass: the API and MCP probes with `curl` (the
    `--preview` list plus a modern `server/discover`, a legacy and a modern
-   `tools/call get_record`); then the measurement in the owner's Chrome:
-   send 10 `POST /api/v1/rolls/std` with `{"dice":3}` 1 s apart, wait 3
-   minutes, open Cloudflare Pages > daggerheart-loot > Metrics, Production,
-   a 3-minute range, and read the CPU p50 and p99 of the newest bucket;
-   repeat, 3 minutes apart, for 10 `GET /api/v1/records/<id>` (10
-   different ids from different chunks) and for 10 MCP `tools/call roll`
-   of `std`. The axis says ms and the values are almost certainly
+   `tools/call get_record`); then the measurement. Every request goes out
+   with `curl` from the shell, with no `Origin` header (a request a page
+   script sends from Chrome carries `Origin` and meets the 403 path,
+   which Pages Metrics does not count as an error; plan-B2a-1); Chrome is
+   used only to read the dashboard. Per case: send one warm-up request,
+   wait for a new bucket, then send the burst of 10, 1 s apart, and record
+   the status of each answer (plan-B2a-R1). Cases, 3 minutes apart: (a) 10
+   `POST /api/v1/rolls/std` with `{"dice":3}`; (b) 10 `GET
+   /api/v1/records/<id>`, 10 different ids from different chunks; (c) 10
+   legacy MCP calls: `POST /mcp` with `Content-Type: application/json`,
+   `Accept: application/json, text/event-stream`, `MCP-Protocol-Version:
+   2025-06-18` and the body `{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"roll","arguments":{"section":"std","dice":3}}}`,
+   each answer 200 with no `isError` in its result. After each burst, wait
+   3 minutes, open Cloudflare Pages > daggerheart-loot > Metrics,
+   Production, a 3-minute range, and read the newest bucket's request
+   count and its CPU p50, p75 and p99; when the count is not 10, send the
+   burst again. The axis says ms and the values are almost certainly
    microseconds (a record read reads 2,000-3,000): record the raw numbers
-   and the unit as shown. Pass: `std` roll p99 at most 5 ms, record read
-   p99 at most 2 ms, MCP roll p99 at most 6 ms, no error and no
+   and the unit as shown. Judge the cost model on p50 and the limit on
+   p99. Pass: `std` roll p99 at most 5 ms, record read p99 at most 2 ms,
+   MCP roll p99 at most 6 ms, every status as expected, no error and no
    exceeded-CPU count. Write the readings into `.claude/README.md`
    ("Quotas, recovery and failure") in the merge-back commit and into
    `context.md`. Owner step (an account setting, so the owner's): add the
    connector in Claude ("No sign in") and ask for a roll; a 403 there
-   means the client sends `Origin` (Risks).
+   means the client sends `Origin` (Risks: the allowlist fallback).
 
 Acceptance criteria:
 - A catalog record's `link` equals `recordUrl({ base: SITE }, id, lang,
@@ -1260,14 +1358,19 @@ Acceptance criteria:
   before; every roll row's `(c, l)` names its record; `getRecord` and
   `roll` parse one record per result; a mismatch re-reads once, then 503;
   a warm isolate builds a roll section's index once per cache period.
-- The local `std` roll costs at most 40 % of its B1 cost (numbers in the
-  handoff).
+- The local `std` roll costs at most 40 % of its B1 cost warm and at most
+  50 % cold (numbers in the handoff).
+- A `tools/call` with a missing required argument or a non-string path or
+  query argument is a 400 `bad_request` `isError` result that names the
+  field; every `inputSchema` property carries its parameter's description.
+- `docs/fixtures/urls/preview.json` holds `GET /mcp` 405 as a worker row,
+  and both `routed` helpers match bare `/x` for `/x/*`.
 - `POST /mcp` answers both eras as step 3.3 says, each case pinned by a
   fixture; `tools/list` lists exactly the seven `x-mcp-tool` operations
   without `security`, in document order; each `tools/call` returns the
   REST answer's JSON; an operation error is a result with `isError`.
 - `/mcp` sends no CORS header, answers 403 to a request with `Origin`, 405
-  to every method but `POST`, 413 past 262144 B before parsing, never reads
+  to every method but `POST`, 413 past 65536 B before parsing, never reads
   `Authorization`, never answers 401; `/mcp/me` answers 404.
 - `_routes.json` routes `/mcp/*`; the `--preview` probes of step 3.7 pass
   in `check-site.test.mjs` and on the first deploy.
@@ -1276,8 +1379,9 @@ Acceptance criteria:
   code; the two `CONTRACTS.md` wording nits are fixed.
 - D4, D8 and D9 exist, D6 carries the "Amended by" pointer, and
   `docs/DECISIONS.md` is rebuilt.
-- After landing 2: the readings of step 4 are written down and pass, or
-  the fallback below is the next batch.
+- After landing 2: the readings of step 4 (curl only, a warm-up, a bucket
+  count of 10, p50, p75 and p99, each status, no `isError`) are written
+  down and pass, or the first fallback below is the next batch.
 
 Verification commands:
 - `node tools/build.js`
@@ -1293,7 +1397,7 @@ Standing checks:
    from 54 to 55-56 and, at three times the records, the file margin from
    about 98 to about 93; the 3x test of `tools/api-data.test.mjs` holds
    every budget and the new numbers go into `.claude/README.md`, "The CI
-   deploy". An MCP body is capped at 262144 B; a tool answer is the REST
+   deploy". An MCP body is capped at 65536 B; a tool answer is the REST
    answer (at most about 30 KB, a table part).
 2. Error scenarios: no screen, no write path, no stored shape. A failed
    file or Supabase read gives the 503 envelope in REST and `isError` in
@@ -1317,16 +1421,27 @@ Risks / do-nots:
   fixtures may move only in `link`, `rev`, `data_version` and ETags.
 - Do not hand-edit `apidata/` or `api/` (generated; the edit guard blocks
   it); do not commit them.
-- A cloud client (Claude, ChatGPT) may send an `Origin` header: if the
-  owner's connector test gets 403, the fallback is an allowlist of those
-  clients' origins in `mcp.mjs` (a deploy), recorded in D4; the MCP spec
-  allows a valid `Origin`.
+- A cloud client (Claude, ChatGPT) may send an `Origin` header
+  (plan-B2a-R6). The owner's connector test after landing 2 is the only
+  proof; keep it. If it gets 403, the fallback plan is: (1) find the
+  `Origin` value the client sends, from the client's documentation or
+  from the client's own network view of the refused request (the worker
+  keeps no log, and none is added); (2) add an
+  allowlist constant in `mcp.mjs` with that exact origin (for example
+  `https://claude.ai`), still with no CORS header; (3) a fixture for an
+  allowed and a refused origin; (4) record the allowlist and its reason in
+  D4. A deploy; no contract change (a wider set of accepted requests).
 - The `HeaderMismatch` rule binds modern clients only; a legacy client
   that omits the headers is served (its revision did not require
   `Mcp-Method`).
 
-Fallback (named): if landing 2's `std` p99 stays above 5 ms, the next
-batch renders `apidata/roll/std/<total>.json` (totals 1-60, each the full
+Fallbacks (named, in order; plan-B2a-R2): if landing 2's `std` p99 stays
+above 5 ms, (1) keep each chunk's split lines in the isolate cache for
+`CACHE_MS`, with the same `data_version` check (about 3.5 MB at most today
+and about 10 MB at 3x, against the 128 MB isolate): no file and no
+contract change, and it removes the decode and split of four 64 KB texts
+(about 0.5 ms here, the rest of the warm cost); (2) only if that is not
+enough, render `apidata/roll/std/<total>.json` (totals 1-60, each the full
 records of that total, at most four, about 8 KB), so a `std` roll reads
 one small file; 60 more files today and at 3x (the margin falls to about
 33). Same contract.
@@ -1339,7 +1454,49 @@ min, the batch review about 15 min (estimate), landing 2 about 23 min
 (the merge-back commit's `check:fast` 474-479 s and one CI run), the
 readings about 10 min: about 70 min.
 
-### B3 - Search, table filters and file checks (implement-ready)
+### B3 - Search, table filters and file checks (needs a planner pass on the search projection and the file-check line names)
+
+Status (plan review `reviews/plan-B2a.md`, 2026-11-12): not
+implement-ready. The text below is the design of 2026-11-12 and is the
+starting point of the B3 planner pass, which runs before B3 and before
+its own plan review (Status, "Plan review: required before B3"). Do not
+dispatch an implementer on it. Inputs of that pass (the review's
+findings; measurements in `context.md`, "Plan review measurements
+(2026-11-12)"):
+
+- plan-B2a-4: a request-time `foldQuery` over the shards costs 36 ms here
+  today (79 ms at 3x), 10.9 ms over the names alone, and splitting every
+  line into columns 1.9 ms today and 5.3 ms at 3x; production is about
+  4-10 times slower than this host. Redesign the search projection: fold
+  at build time, and use an access path that does not touch every line
+  per request (for example a folded names blob scanned with `indexOf` and
+  mapped to its lines, and build-time id lists per facet value for a
+  facet-only query); restate the shard budget and the "at most five
+  files" rule.
+- plan-B2a-5: the file-check lines name records through the app's index
+  (`where()`, `skipLine()`, `nameOf`), which the lean context does not
+  hold, and the builders return structured `Line`s. Default (a), owner
+  AFK: the builders take a name lookup that the app fills from its index
+  and the API leaves empty, so the API lines carry item ids and no names,
+  a written departure in Standing check 3 and `openapi.json` (no new
+  read). Also write one pure function that joins a `Line` into the
+  answer's `{ ru, en }` text, and the parity test over the structured
+  lines. Not chosen: (b) a lean id-to-name projection (a new read; its
+  size at 3x).
+- plan-B2a-6: `check_file` and REST both cap the file at 32768 B as UTF-8,
+  checked in `runOperation`, so both adapters answer the same `too_large`
+  (MCP as an `isError` result); not "32768 characters".
+- plan-B2a-R4: measure `parseBundle` and `parseHomebrew` locally at 32768
+  B with `process.cpuUsage()` (validation and the report builders
+  included), as B2a step 2.4 does, and add an MCP `check_file` burst to
+  the landing-3 readings (an MCP call parses the file twice: the envelope
+  and the file).
+- plan-B2a-N10: section 3.8 point 4 promises the extraction of the
+  `TablesPage.svelte` facet composition into `lib/` (a `facetValueOf(table)`
+  beside `passes`); the build's `f` field and the worker must use it.
+- plan-B2a-R1: B3 step 1 and the landing-3 readings use the corrected
+  method of B2a step 4 (curl, a warm-up, the bucket count, p50 for the
+  cost model and p99 for the limit).
 
 Objective: `GET /api/v1/records` (a name and facet search), `filter` on
 `GET /api/v1/tables/{table}`, `POST /api/v1/file-checks`, and the MCP
@@ -1600,6 +1757,10 @@ Files expected:
 - `app/src/lib/dict.ts` (both languages)
 - `tests/contracts.js`, `tests/derived.js` (the credit sentence)
 - `README.md`, `README.ru.md`, `llms.txt`
+- new `app/src/components/ImportFileRow.svelte` and its test (the file
+  row both import panels draw; plan-B2a-N9)
+- `tests/app/states.js` (the footer links assertion; plan-B2a-R5)
+- `tools/collect-site.sh` (the guard's page list; plan-B2a-N13)
 - `tests/app/snapshots/*` (re-seeded goldens), `docs/specs/FEATURES.md`
   ("Chrome": the footer row), `docs/specs/I18N.md` if it lists the
   pages, `docs/specs/COVERAGE.md`
@@ -1639,7 +1800,14 @@ Behavior and UI constraints:
   static page template draws the same nav, the same two links go there.
 - Import panels (owner revision 7b): each panel's file row holds two
   links, "Формат файла" / "File format" (its schema) and "ИИ-ассистенты" /
-  "AI assistants" (`ai.html`), both `target="_blank" rel="noopener"`.
+  "AI assistants" (`app.pagesDir + 'ai.html'`, as the footer link, so the
+  English UI opens `pages/en/ai.html`; plan-B2a-N8), both
+  `target="_blank" rel="noopener"`. Both panels draw the row through one
+  new component, `ImportFileRow.svelte` (the `ImportFile` button and the
+  `.links` span; props: the schema `href`, the file name and the pick and
+  read callbacks the panels pass today); the inline copy in
+  `HomebrewImport.svelte` goes (`CLAUDE.md`: extract shared UI on its
+  second real use; plan-B2a-N9).
   `HomebrewImport.svelte` keeps its row (the `llms.txt` link becomes the
   user page). `ImportPanel.svelte` takes the same row shape (`.filerow`
   and `.links`, as the sibling My items panel draws it) and its hint loses
@@ -1684,7 +1852,9 @@ Steps:
 4. Import panels as the constraints say; `importPanel.test.ts` and
    `homebrewImport.test.ts` assert both links, their `href` and target,
    the new hint text in both languages, and that no `/llms.txt` link is
-   left in either panel; axe at the end.
+   left in either panel; axe at the end. `ImportFileRow.svelte` gets its
+   own test (both links, the English `pages/en/ai.html` href, axe at the
+   end).
 5. Links elsewhere: `README.md` and `README.ru.md` link both pages (beside
    the read API mention); `llms.txt` links both pages in its first
    "Read this first" item and in "The MCP endpoint"; the developer page
@@ -1697,7 +1867,14 @@ Steps:
    `llms.txt` and the English `footBefore`, and the Russian one the same in
    `README.ru.md` and the Russian `footBefore`; read the current copies
    first, and if they differ, align them to the `dict.ts` wording and say
-   so in the handoff.
+   so in the handoff. `tests/app/states.js`: the assertion that `.foot-nav
+   a` equals `['/pages/install.html', '/pages/privacy.html',
+   '/pages/terms.html']` gains `/pages/ai.html` and
+   `/pages/developers.html` (plan-B2a-R5). `tools/collect-site.sh`: the
+   guard's list of published pages names `pages/ai.html`,
+   `pages/en/ai.html`, `pages/developers.html` and
+   `pages/en/developers.html`, so a missing page fails the deploy
+   (plan-B2a-N13).
 7. Goldens: `npm run build:test`, then re-seed the states whose text
    changed (every state that shows the footer or an import panel) with
    `MSYS_NO_PATHCONV=1 node tests/app/golden.js --update` by shard, or
@@ -1719,13 +1896,20 @@ Acceptance criteria:
 - The Russian-credit sentence test holds the five copies (placed from
   Deferred).
 - The goldens are re-seeded, and only the footer and import rows moved.
+- Both panels draw their file row through `ImportFileRow.svelte`, and the
+  "AI assistants" link goes through `app.pagesDir`.
+- `tests/app/states.js` asserts the five footer links; the
+  `collect-site.sh` guard names the four new pages.
 
 Verification commands: `node tools/build.js`; `npx vitest run
 app/src/components/shell.test.ts app/src/components/importPanel.test.ts
-app/src/components/homebrewImport.test.ts`; `node tests/derived.js`;
+app/src/components/homebrewImport.test.ts
+app/src/components/importFileRow.test.ts`; `node tests/derived.js`;
 `node tests/run-all.js contracts,dataint`; `rtk npm run check:fast`
 (`dict.ts` and `Shell.svelte`: about 11-14 min); `npm run build:test`
-then the golden re-seed; `npm run check:built`; push, CI.
+then the golden re-seed and `node tests/run-all.js app/states` (past the
+600 s foreground cap: run it in the background, or leave it to CI's
+`browser` matrix); `npm run check:built`; push, CI.
 
 Standing checks:
 1. Scale (States table):
@@ -1747,7 +1931,7 @@ Standing checks:
    the old footer until it reloads; harmless.
 3. Consistency: the footer row keeps one name per page ("ИИ-ассистенты"
    everywhere: footer, panels, page title "С ИИ-ассистентами"); the two
-   import panels now share one link row shape and the same two link texts
+   import panels now share one file-row component and the same two link texts
    (a FEATURES.md rule: one name for one thing); the pages follow the
    privacy and terms pages.
 4. RU/EN parity: every new string has both languages with the same facts;
@@ -1760,8 +1944,10 @@ in a commit that does not hold the page.
 Review: required (trigger: new and changed UI; `llms.txt`, a public
 contract file). Gate cost: `check:fast` about 14 min, the golden re-seed
 about 10-20 min locally (or a second CI run of 15 min with CI's text),
-`check:built` a few minutes, one CI run 15 min, the batch review about 15
-min, landing 3 about 23 min, B3's readings about 10 min: about 95 min.
+`check:built` a few minutes, `app/states` about 10-15 min in the
+background (or CI's `browser` matrix), one CI run 15 min, the batch review
+about 15 min, landing 3 about 23 min, B3's readings about 10 min: about
+105 min.
 
 Closeout lines placed now (the closeout's acceptance, with B5b):
 - Raise the file-check cap to 65536 B only if landing 3's 32 KB reading is
@@ -2339,7 +2525,7 @@ be right before B1's squash:
   field names), the result as the REST answer's JSON, `isError` for an
   operation error, no sign-in on `/mcp`, and the supported protocol
   versions (a version may be added, never removed while a client uses
-  it). From B3: `api-records` and `api-file-check` v1, the `q`, `kind`,
+  it), and the 65536 B body cap (it may rise, never fall). From B3: `api-records` and `api-file-check` v1, the `q`, `kind`,
   `source`, `table`, `tier`, `rarity`, `limit` and `filter` parameters,
   and the caps (`q` 200 characters, `limit` 50, a file check 32768 B;
   each may rise, never fall).
