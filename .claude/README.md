@@ -3652,7 +3652,8 @@ runs it with `--check`. The worker bundles the pure modules of `app/src/lib/`
 `_headers` line may add it, because a second value breaks CORS, and
 `tools/check-site.mjs` fails when either lacks it. The worker is the CPU budget
 of `docs/specs/CONTRACTS.md` section 6: a file is read through `env.ASSETS`
-with a 2 s timeout and a 131072-byte cap, a Supabase answer with a 65536-byte
+with a 2 s timeout and the read cap of its budget (131072 bytes; 196,608 for
+`apidata/cards.json` and `names.json`), a Supabase answer with a 65536-byte
 cap.
 The worker runs in Pages Functions advanced mode: `preview/public/_worker.js` re-exports
 `preview/worker.mjs`, which draws the cards with `tools/share-card.mjs` and
@@ -3823,16 +3824,19 @@ assembly (`collect`, `guard`, `old-host`); the job's three steps call it.
   `i/` and `i/en/` grow by one document each per record, so at three
   times the records the site is about 19,700 files against Cloudflare's
   20,000 per deployment. The guard prints the count and does not fail on it.
-- The read API adds files (task `ai-mcp`, B1, measured 2026-11-12): `apidata/`
-  and `api/v1/catalog/` hold 102 files today (51 catalog chunks of at most 65536 B,
-  3.35 MB in all; `apidata/records/index.json` is 11,555 B and
-  `api/v1/catalog/index.json` 69,910 B), and 205 at three times the records
-  (154 chunks; 40,841 B and 218,466 B). The site is then about 19,900 files
-  against 20,000, so about 95 files are left; `tools/api-data.test.mjs` prints
+- The read API adds files (task `ai-mcp`, measured 2026-11-12): `apidata/`
+  and `api/v1/catalog/` hold 105 files today (54 catalog chunks of at most 65536 B,
+  3.97 MiB in all; `apidata/records/index.json` is 11,561 B and
+  `api/v1/catalog/index.json` 70,114 B), and 207 at three times the records
+  (156 chunks; 40,845 B and 218,639 B). The site is then about 19,900 files
+  against 20,000, so about 98 files are left; `tools/api-data.test.mjs` prints
   both counts. The guard refuses any published file under `api/` outside
   `api/v1/catalog/` and a published `.well-known/oauth-protected-resource`.
   `apidata/cards.json` is 43,900 B (131,600 B at three times; its budget is
-  196,608 B, the one budget above 131072 B).
+  196,608 B). The worker reads each file with the cap of its own budget
+  (`readCapOf` in `preview/api/rest.mjs`; a test holds every `apidata/` budget
+  to its read cap); `api/v1/catalog/index.json` (262,144 B) is above 131072 B
+  too, and the worker does not read it.
 
 - The preview check asks for a 404 card on `s/` and 43 `A`, a well-formed
   token that no list holds, and on `h/00000000-0000-4000-8000-000000000000`,

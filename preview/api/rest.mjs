@@ -21,6 +21,7 @@ export { clearCache };
 
 const ASSET_MS = 2000;
 const FILE_MAX = 131072;
+const CARDS_MAX = 196608;
 const NAMES_MAX = 196608;
 const BODY_MAX = 4096;
 const RUN_MAX = 2048;
@@ -200,6 +201,26 @@ async function readBody(request) {
 
 /* ---------- the entry ---------- */
 
+/** Returns the read cap in bytes of a file the service reads: the cap of its own budget. */
+export function readCapOf(path) {
+  if (path === 'names.json') return NAMES_MAX;
+  if (path === 'apidata/cards.json') return CARDS_MAX;
+  return FILE_MAX;
+}
+
+/** Returns a short hash of a text (FNV-1a, 32 bit) for an ETag; no crypto import needed. */
+function hashOf(text) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return h.toString(16).padStart(8, '0');
+}
+
+/** The ETag of the OpenAPI document: its version and a hash of its bytes. */
+export const OPENAPI_ETAG = `${openapi.info.version}-${hashOf(JSON.stringify(openapi))}`;
+
 async function readAsset(env, path) {
   const res = await env.ASSETS.fetch(env.SITE + path, {
     signal: AbortSignal.timeout(ASSET_MS)
@@ -208,7 +229,7 @@ async function readAsset(env, path) {
     drop(res.body);
     throw new Error('status');
   }
-  const got = await readJson(res, path === 'names.json' ? NAMES_MAX : FILE_MAX);
+  const got = await readJson(res, readCapOf(path));
   if (got.fail) throw new Error(got.fail);
   return got.value;
 }
@@ -241,7 +262,7 @@ async function dispatch(request, env, url) {
   let result;
   switch (hit.op) {
     case 'openapi':
-      result = { body: openapi, etag: openapi.info.version };
+      result = { body: openapi, etag: OPENAPI_ETAG };
       break;
     case 'listRolls':
       result = await service.listRolls();

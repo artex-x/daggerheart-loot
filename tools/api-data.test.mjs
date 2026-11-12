@@ -18,6 +18,7 @@ import { rollPool } from '../app/src/lib/roll.ts';
 import { PICKER_ROLL, ROLL_MODES, rowsOf } from '../app/src/lib/rollTables.ts';
 import { poolFor } from '../app/src/lib/std.ts';
 import { SECTIONS } from '../app/src/lib/types.ts';
+import { readCapOf } from '../preview/api/rest.mjs';
 import { BUDGET, budgetOf, readAudit, renderApiData, rollIdOf } from './api-data.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -210,11 +211,23 @@ describe('the catalog chunks', () => {
   });
 
   it('changes data_version with the rights table', () => {
-    const reviewed = renderApiData(LOOT, { ...AUDIT, reviewed: '2026-12-01' });
+    const unreviewed = renderApiData(LOOT, { ...AUDIT, reviewed: null });
     assert.notEqual(
-      parsed(reviewed, 'apidata/version.json').data_version,
+      parsed(unreviewed, 'apidata/version.json').data_version,
       parsed(FILES, 'apidata/version.json').data_version
     );
+    assert.equal(AUDIT.reviewed, '2026-11-12');
+    const licenseIn = (files, id) => {
+      for (const [path] of files) {
+        if (!/^api\/v1\/catalog\/\d+\.json$/.test(path)) continue;
+        const rec = parsed(files, path).records.find((r) => r.id === id);
+        if (rec) return rec.rights.license;
+      }
+      return null;
+    };
+    assert.equal(licenseIn(FILES, 'f49'), 'dpcgl');
+    assert.equal(licenseIn(FILES, 'q140'), 'owner');
+    assert.equal(licenseIn(unreviewed, 'f49'), 'owner');
   });
 });
 
@@ -283,6 +296,24 @@ describe('every file keeps its schema and its budget', () => {
       `3x: cards.json ${String(Buffer.byteLength(big.get('apidata/cards.json')))} B`
     );
     assert.equal(parsed(big, 'api/v1/catalog/index.json').records.length, 3 * 1593);
+  });
+
+  it('is read by the worker with a cap at least as large as the budget of each file', () => {
+    const big = renderApiData(tripled(LOOT), AUDIT);
+    for (const files of [FILES, big]) {
+      for (const [path, body] of files) {
+        if (!path.startsWith('apidata/')) continue;
+        const budget = budgetOf(path);
+        const cap = readCapOf(path);
+        if (budget !== null) {
+          assert.ok(budget <= cap, `${path}: budget ${String(budget)} past cap ${String(cap)}`);
+        }
+        assert.ok(
+          Buffer.byteLength(body) <= cap,
+          `${path} is ${String(Buffer.byteLength(body))} B, past the read cap ${String(cap)}`
+        );
+      }
+    }
   });
 });
 

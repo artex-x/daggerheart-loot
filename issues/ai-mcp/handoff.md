@@ -2,8 +2,8 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (B0 and B1 implemented and committed; B1 batch review required before the first squash; B2 and B3 outlines; B5a and B5b design settled)
-- Last agent: implementer (B1, 2026-11-12)
+- Task status: in_progress (B0 and B1 implemented and committed; the B1 review (fix-then-continue) findings are applied in the fix pass of 2026-11-12: the cards.json read cap with a test, the OpenAPI ETag as a hash, the measured entry counts and the CORS wording in openapi.json and CONTRACTS.md, the batch citations; the owner's decisions of 2026-11-12: Lasso f49-f52 text fixed to the SRD wording and marked dpcgl, the dict.ts footers aligned to the credit sentence, `reviewed` set to 2026-11-12 in docs/rights/records.json. Fix-pass gates run by the orchestrator: build, derived, contracts and dataint, api-data --check, the preview and check tests, selftest, build:test, states shard 1 (shards 2-4 passed in the implementer's run), golden compare (443 states), check:fast, lint:typed, lint:untyped: all exit 0. Next: push, CI, a short re-check of the fix pass, then the B1 squash and the live checks of `C:\Users\Ignat\.dhloot\notes\57\ai-mcp-live-checks.md`, then the posts of `ai-mcp-closeout-posts.md`; B2 needs a planner expansion that includes `ai-mcp-docs-page.md`; B3 waits for the CPU readings (the orchestrator reads them in the owner's Chrome after the deploy); B5a and B5b design settled)
+- Last agent: implementer (B1 fix pass, 2026-11-12) and the orchestrator (gates)
 - NEEDS_HUMAN_CONFIRMATION: no (Q1-Q7 settled; Q8-Q11 and the R1, R7 and N10 options of `reviews/plan-B5a.md` "default taken (owner AFK)", `plan.md` section 7). The owner reviews `docs/rights/records.json` (Notes below) before B1's squash.
 - Branch: claude/ai-mcp
 - Base / starting commit: 8f194abd

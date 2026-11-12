@@ -577,7 +577,8 @@ person reads is a pair `{ "ru", "en" }` built by the app's own functions: an emp
 Russian side takes the English text, English never takes Russian. The error answer
 is `{ "format": "daggerheart-loot/api-error", "version": 1, "error": { "code",
 "message" } }`; the message is English, names a field and never echoes a value.
-Projection answers carry `ETag: "<data_version>"` and `Cache-Control: public,
+Projection answers carry `ETag: "<data_version>"` (the OpenAPI document: its version and
+a hash of its bytes) and `Cache-Control: public,
 max-age=300` and answer 304 to a matching `If-None-Match`; rolls, homebrew items and
 shared lists are `no-store`.
 
@@ -597,9 +598,10 @@ a branch alias; the one answer without the JSON headers), `OPTIONS` 204, the pat
 schema 400. A path run past 2048 characters reads as empty.
 
 **CORS.** Every answer under `/api/` carries `Access-Control-Allow-Origin: *`, none
-carries `Access-Control-Allow-Credentials` or `Vary: Origin`, and every one also
-carries `X-Content-Type-Options: nosniff` and a CSP with `sandbox`. `OPTIONS` on
-bare `/api` and on any path under `/api/` answers 204 with
+carries `Access-Control-Allow-Credentials` or `Vary: Origin`, and every worker answer
+(all of `/api/` outside `/api/v1/catalog/`) also carries `X-Content-Type-Options:
+nosniff` and a CSP with `sandbox`. `OPTIONS` on bare `/api` and on any path under
+`/api/` outside `/api/v1/catalog/` answers 204 with
 `Access-Control-Allow-Methods: GET, POST, OPTIONS`,
 `Access-Control-Allow-Headers: Content-Type` and `Access-Control-Max-Age: 86400`,
 and reads no file. Each preflight is one Functions request on the shared quota.
@@ -612,7 +614,7 @@ answers with an explicit `Origin` allowlist. `/mcp` stays reserved (section 5).
 
 **Rights.** Every record carries `rights.license`, `dpcgl` or `owner`, read at build
 time from `docs/rights/records.json` (decision "Game text rights follow a per-record
-SRD audit"); while the table's `reviewed` is null every record is `owner`. `dpcgl`
+SRD audit"); a table with `reviewed` null (not yet accepted) makes every record `owner`; the table is accepted since 2026-11-12. `dpcgl`
 means the English text is SRD 2.0 Public Game Content; the Russian text is a
 third-party translation the value does not cover. A homebrew item is `owner`.
 

@@ -65,7 +65,7 @@ guard() {
     if [ -e "_site/$f" ]; then echo "::error::$f must not be published"; exit 1; fi
   done
   # api/ holds the bulk catalog and nothing else: any other file there would shadow a route
-  # of the worker (/api/*), and the OAuth discovery path is reserved for a later batch.
+  # of the worker (/api/*), and the OAuth discovery path is reserved (docs/specs/CONTRACTS.md section 5).
   if [ -n "$(find _site/api -type f -not -path '_site/api/v1/catalog/*')" ]; then
     echo "::error::_site/api holds a file outside api/v1/catalog/"; exit 1
   fi

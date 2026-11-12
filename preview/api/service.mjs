@@ -2,7 +2,7 @@
   The read API's service layer: one async function per operation of
   docs/specs/CONTRACTS.md section 6, over the build-time projections (apidata/, read
   through the `assets` function) and the two Supabase reads (the `rpc` function, as the
-  anon reader). The REST adapter (rest.mjs) calls it in process; B2's MCP adapter will too.
+  anon reader). The REST adapter (rest.mjs) calls it in process; the MCP adapter will too.
 
   Every rule here is a pure module of app/src/lib/, bundled into the worker: a roll
   builds the same index the panels build and calls the same functions (rollTables.ts

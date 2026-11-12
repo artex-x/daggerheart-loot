@@ -9,7 +9,7 @@ import { afterEach, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 import { renderApiData } from '../../tools/api-data.mjs';
-import { parseRollBody, clearCache } from './rest.mjs';
+import { parseRollBody, clearCache, OPENAPI_ETAG } from './rest.mjs';
 import { ROLL_MODES } from '../../app/src/lib/rollTables.ts';
 
 const { default: worker } = await import('../worker.mjs');
@@ -290,6 +290,16 @@ describe('reads', () => {
     const res = await call('/api/v1/openapi.json');
     assert.equal(res.status, 200);
     assert.deepEqual(await res.json(), OPENAPI);
+  });
+
+  it('derives the OpenAPI ETag from the document, so an edit without a version bump revalidates', async () => {
+    const res = await call('/api/v1/openapi.json');
+    const etag = res.headers.get('etag');
+    assert.equal(etag, `"${OPENAPI_ETAG}"`);
+    assert.ok(etag.startsWith(`"${OPENAPI.info.version}-`));
+    assert.notEqual(etag, `"${OPENAPI.info.version}"`);
+    const again = await call('/api/v1/openapi.json', { headers: { 'If-None-Match': etag } });
+    assert.equal(again.status, 304);
   });
 });
 
