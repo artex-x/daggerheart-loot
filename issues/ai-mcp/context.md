@@ -60,9 +60,9 @@ Orchestrator (or first worker) maintains this file so later steps do not re-fetc
 - Open questions: none for the owner in `plan.md` (B5 questions Q8-Q11
   are "default taken (owner AFK)", 2026-11-11). Open design question:
   B5a's screen layout (a mock). B3's search projection and file-check
-  line names: a planner pass before B3 (the plan review of 2026-11-12
-  showed that D10's draft cost model misses `foldQuery` and the line
-  split; measurements below).
+  line names: settled by the B3 planner pass of 2026-11-12 (`plan.md`
+  B3, section 7 "Defaults taken (owner AFK), B3 pass"; measurements in
+  "B3 planner measurements (2026-11-12)" below).
 
 ## Issue 72 and the layered-architecture question (owner, 2026-11-10)
 
@@ -564,6 +564,40 @@ slower than this host (B1's `std` roll: 7.5-17.5 ms there, 1.78 ms here).
 - The merge-back `1b99e6d4` differs from `origin/main` (`aeb68c0e`) only
   under `issues/` (`git diff --stat`); `1b99e6d4` and the planner commits
   are not pushed.
+
+## B3 planner measurements (2026-11-12, at `8019493d`)
+
+Local, this host (Node 24, `process.hrtime` medians of 60-200 warm runs;
+the host was busy with the orchestrator's readings, so single runs
+varied up to 2x). 3x is the tripled catalog of `tools/api-data.test.mjs`.
+Scratch scripts, not committed (session scratchpad `b3bench.mjs`,
+`b3bench2.mjs`, `b3f.mjs`).
+
+| Probe | Today (1593 records) | 3x (4779) |
+|---|---|---|
+| search text, one line a record (5 codes, folded names, id, version, display names) | 204,426 B; display names alone 86,979 B | 619,650 B |
+| shards at 262144 B | 1 | 3 (262,107, 262,108, 95,435 B) |
+| code list sizes (source, kind, table, tier, rarity) | 16, 5, 19, 7, 6 | the same |
+| cold prepare (UTF-8 decode, line starts) | 0.27-0.35 ms (decode 0.20 ms) | 0.85-1.17 ms (decode 0.73 ms) |
+| warm query, real words (`меч`, `яд`, `зелье лечения`, `посох огня`, `armor plate`) | 0.07-0.26 ms | 0.17-0.72 ms |
+| warm query `а` (1244 / 3732 matches, uncapped) | 1.66 ms | 4.59 ms |
+| caps 300 kept lines and 3000 positions: worst accepted query of a 66-query sample (top 15 one-, two- and three-letter fragments of the names and 21 real words) | 0.51 ms (`ная`, 130 matches) | 0.55 ms (`armor plate`); one noisy run 1.22 ms |
+| the same caps: refused queries | 28 of 66, all fragments; each refusal 0.2-0.7 ms | 45 of 66, all fragments; every real word answers |
+| facet-only `kind=weapon` (`limit` 50) | 0.07 ms | 0.19 ms |
+| parity with `rankHits` and a names-only Hay over every record, 20 queries | 20 of 20 | 20 of 20 |
+| `f` on `apidata/table/eq_weapon/3.json` (the largest) | 24,305 to 39,493 B | about 118,479 B (budget 131072) |
+| `parseBundle`, 32,607 B lists file, ok / 50 errors | 0.44-0.52 / 0.73-0.75 ms (CPU 0.47-0.78 ms a call) | - |
+| `parseHomebrew`, 31 KB file with 2900-character texts, 1 / 19 errors | 0.52-0.58 / 0.50-0.53 ms | - |
+| lists parser first, then the homebrew parser | 0.42-0.43 ms | - |
+
+- A first scan design missed lines whose word holds the term's
+  `stemPrefix` but not its `text` (`зелье лечения` 3 of 4); the needle
+  rule of `plan.md` B3 (`[stemPrefix]` when it is a substring of `text`)
+  fixed it, and a position inside the five code characters must not count.
+- `apidata/records/index.json` already uses the format id
+  `daggerheart-loot/api-records`, so the search answer is `api-search`.
+- The production factor (local to Pages Metrics): B1's `std` roll 1.78
+  ms here against p50 7.5 and p99 17.5 ms there (4.2x and 9.8x).
 
 ## Do not re-fetch unless
 - Human provides new info
