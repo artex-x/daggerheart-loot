@@ -1,4 +1,4 @@
-/* The fake cloud's fixed world: four users with fixed ids, so a golden that
+/* The fake cloud's fixed world: five users with fixed ids, so a golden that
  * signs in holds the same text on every run. `gm1` has two identities (the
  * unlink guard has something to allow), `gm2` has one (it has something to
  * refuse). `gm1` keeps a preferences row, `gm2` none (a first sign-in
@@ -14,7 +14,10 @@
  * filter threshold. `gm4` holds no list, one item in a source at the longest name,
  * which «Склад» links, a formatted item and an item whose text the print card cuts off;
  * the formatted item's states sign in as `gm4`. `gm4` made the 16 seeded print sets,
- * which the goldens open as `gm2`, `gm1` and `gm4`.
+ * which the goldens open as `gm2`, `gm1` and `gm4`. `gm5` exists for the README
+ * screenshots (`tools/screens.mjs`) only: one list of 8 entries with a players' link
+ * (`showcase-player`) and one source of three items with pictures; no suite but the seed
+ * test opens it.
  * `gm2`'s list holds two unread notices: gm1 changed the axe, and deleted an item at the
  * longest name. docs/specs/COVERAGE.md, "Test layers". */
 
@@ -68,6 +71,11 @@ const USERS = {
     id: uuid(4),
     email: 'gm4@example.test',
     identities: [{ id: uuid(41), provider: 'google', email: 'gm4@example.test' }]
+  },
+  gm5: {
+    id: uuid(5),
+    email: 'gm5@example.test',
+    identities: [{ id: uuid(51), provider: 'google', email: 'gm5@example.test' }]
   }
 } satisfies Record<string, SeedUser>;
 
@@ -207,6 +215,10 @@ const LONG_TEXT: HomebrewContent = {
 const LONG_SRC_ITEM_KEY = 'hb_longsrcaaaaaaaaa';
 const LONG_SRC_ITEM_ID = uuid(461);
 
+/* gm5's own item: its picture is the catalog's whistle, so the list shows that an own item
+   has a picture. */
+const WHISTLE_KEY = 'hb_watchwhistleaaaa';
+
 /* gm1: a full list with both notes, two shares and prices in coins; an
    empty list; an old list. gm2: one list of its own. The offsets keep
    away from the boundaries of an "edited N ago" text. */
@@ -290,7 +302,31 @@ const LISTS = {
       editedAgoMs: 2 * DAY
     }
   ],
-  gm4: []
+  gm4: [],
+  /* The README screenshots' list: prices between 5 and 300 gold, one quantity, one own
+     item with a picture, second so that the first screen shows it. docs/specs/COVERAGE.md,
+     "Test layers". */
+  gm5: [
+    {
+      id: uuid(901),
+      name: 'Лавка у дороги',
+      money: 'coin',
+      note: 'Торгуемся до заката. Сдачи нет.',
+      hnote: 'Хозяин лавки уступает пять золотых тем, кто назовёт пароль дозорных.',
+      entries: [
+        { id: uuid(9101), itemKey: 'ci1', position: 0, qty: 2, gold: 40 },
+        { id: uuid(9102), itemKey: WHISTLE_KEY, position: 1, gold: 5, source: 'homebrew' },
+        { id: uuid(9103), itemKey: 'q1', position: 2, gold: 150 },
+        { id: uuid(9104), itemKey: 'q313', position: 3, gold: 120 },
+        { id: uuid(9105), itemKey: 'cc1', position: 4, qty: 5, gold: 25 },
+        { id: uuid(9106), itemKey: 'q23', position: 5, gold: 300 },
+        { id: uuid(9107), itemKey: 'q35', position: 6, gold: 60, note: 'Последний в наличии.' },
+        { id: uuid(9108), itemKey: 'w1', position: 7, gold: 200 }
+      ],
+      createdAgoMs: 6 * DAY,
+      editedAgoMs: 2 * HOUR
+    }
+  ]
 } satisfies Record<SeedUserId, SeedList[]>;
 
 const SHARES: SeedShare[] = [
@@ -314,6 +350,13 @@ const SHARES: SeedShare[] = [
     audience: 'player',
     token: 'player-token-3',
     topicKey: uuid(312)
+  },
+  {
+    id: uuid(911),
+    listId: uuid(901),
+    audience: 'player',
+    token: 'showcase-player',
+    topicKey: uuid(912)
   }
 ];
 
@@ -632,6 +675,74 @@ const HOMEBREW = {
         content: LONG_TEXT,
         createdAgoMs: DAY,
         editedAgoMs: DAY
+      }
+    ],
+    cards: []
+  },
+  /* gm5: one source with one section and three items, each with a catalog picture that
+     matches it; the whistle is on gm5's list. */
+  gm5: {
+    books: [
+      {
+        id: uuid(931),
+        key: 'hb_roadsidesrcaaaaa',
+        content: {
+          ru: 'Дорожные находки',
+          en: 'Roadside Finds',
+          sections: [{ key: 'hb_sectgearaaaaaaaa', ru: 'Снаряжение', en: 'Gear' }]
+        },
+        createdAgoMs: 6 * DAY,
+        editedAgoMs: 3 * DAY
+      }
+    ],
+    items: [
+      {
+        id: uuid(941),
+        key: WHISTLE_KEY,
+        bookId: uuid(931),
+        content: {
+          kind: 'item',
+          ru: 'Свисток дозорного',
+          en: "Watchman's Whistle",
+          rud: 'Раз за отдых подайте сигнал: союзники в пределах Дальней дистанции слышат его сквозь шум боя.',
+          ende: 'Once per rest, sound a signal: allies within Far range hear it over the noise of battle.',
+          section: 'hb_sectgearaaaaaaaa'
+        },
+        art: 'ci2.webp',
+        createdAgoMs: 6 * DAY,
+        editedAgoMs: 3 * DAY
+      },
+      {
+        id: uuid(942),
+        key: 'hb_wayfarerdraughta',
+        bookId: uuid(931),
+        content: {
+          kind: 'consumable',
+          ru: 'Настой путника',
+          en: "Wayfarer's Draught",
+          rud: 'Выпейте, чтобы снять один отмеченный Стресс.',
+          ende: 'Drink to clear one marked Stress.',
+          section: 'hb_sectgearaaaaaaaa'
+        },
+        art: 'w1.webp',
+        createdAgoMs: 5 * DAY,
+        editedAgoMs: 5 * DAY
+      },
+      {
+        id: uuid(943),
+        key: 'hb_roadsidedaggeraa',
+        bookId: uuid(931),
+        content: {
+          kind: 'item',
+          ru: 'Кинжал придорожника',
+          en: "Roadsider's Dagger",
+          rud: 'Лёгкий клинок с красной жилой в стали.',
+          ende: 'A light blade with a red vein in the steel.',
+          section: 'hb_sectgearaaaaaaaa'
+        },
+        art: 'q35.webp',
+        createdAgoMs: 4 * DAY,
+        editedAgoMs: 4 * DAY
       }
     ],
     cards: []

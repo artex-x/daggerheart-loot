@@ -42,10 +42,11 @@ silently. The test build defines the two `VITE_SUPABASE_*` values empty, so
 it never loads the real client. The mode is gated on `command ===
 'build'` too, because vitest's own default mode is also `test`.
 
-- The fake is in memory, seeded from `app/src/ports/fake-cloud-seed.ts`: four
+- The fake is in memory, seeded from `app/src/ports/fake-cloud-seed.ts`: five
   users with fixed ids (`00000000-0000-4000-8000-0000000000nn`) - `gm1`
-  (Google and Discord identities, the default a sign-in picks), `gm2`, `gm3`
-  and `gm4` (Google only; no state signs in as `gm4`). The seed grows with each release's port member. It also
+  (Google and Discord identities, the default a sign-in picks), `gm2`, `gm3`,
+  `gm4` (Google only; no state signs in as `gm4`) and `gm5` (the README
+  screenshots' list and homebrew; no suite opens it). The seed grows with each release's port member. It also
   holds cloud lists - `gm1` a full list with both notes, a player and a GM
   share link and prices in coins, an empty list and an old one; `gm2` one
   list - whose times are offsets back from boot, so "edited N ago" reads
@@ -1614,6 +1615,14 @@ condition, an override and a stale one, the refusal of a star or a table in
 the plain text, a second run that changes nothing, and the refusal of a
 `data.js` that is not one `JSON.stringify` line. `dataint`'s "catalog style"
 check holds the real `data.js` to the same rules.
+
+`tools/screens.lib.test.mjs` is a separate suite, run under `node --test` as the
+stage `test:screens` of `npm run check`: it covers the shot table of
+`tools/screens.mjs`, the size budgets (400 KB a file, 2.5 MB the set), that every
+image exists, that the folder holds no unnamed file, and that `README.md` shows
+the English images and `README.ru.md` the Russian ones. `tools/screens.mjs`
+itself (the browser half) is not run by CI: it is run by hand with
+`npm run screens`, and it does not detect a stale image.
 
 `tools/artwork/lib.test.mjs` is a separate suite again, run under `node
 --test` as its own step in `npm run check`: it covers the artwork refresh tool's pure

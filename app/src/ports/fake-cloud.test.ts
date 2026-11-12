@@ -1969,6 +1969,17 @@ describe('the seeded homebrew', () => {
       book: { key: 'hb_longsourceaaaaaa' }
     });
   });
+
+  it("gives gm5 a list with no price above 1000, a players' link and a picture on every own item", async () => {
+    const list = SEED.lists.gm5[0];
+    const prices = list?.entries.map((e) => e.gold ?? 0) ?? [];
+    expect(Math.max(...prices)).toBeLessThanOrEqual(1000);
+    expect(SEED.homebrew.gm5.items.filter((i) => !i.art)).toEqual([]);
+    const read = await fakeCloud(SEED).shares.read('showcase-player');
+    expect(read.ok && read.shared?.entries.map((e) => e.item_key)).toEqual(
+      list?.entries.map((e) => e.itemKey)
+    );
+  });
 });
 
 describe("the fake's homebrew re-read", () => {

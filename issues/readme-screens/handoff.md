@@ -2,47 +2,43 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (planned, not started)
-- Last agent: planner
-- NEEDS_HUMAN_CONFIRMATION: no (owner accepted the recommended Q1-Q4, 2026-11-07)
+- Task status: B1 implemented; the eight images are on disk and untracked (owner rule).
+- Last agent: implementer
+- NEEDS_HUMAN_CONFIRMATION: yes - the owner looks at the images, then commits them and pushes
 - Branch: `claude/readme-screens`
-- Base / starting commit: `62070925`
 - Pushed: no
 
 ## Completed
-- Batch name/id: plan
-- What shipped: `issues/readme-screens/context.md`, `plan.md`, `handoff.md`.
-- Files changed: the three files above. No production code.
-- Previous sha (batch diff base): `62070925`
-- Deviations and rationale: none.
-- Review: not required (no trigger fired; plan review not declared)
+- Batch name/id: B1
+- What shipped: seed user `gm5` (list «Лавка у дороги», players' link `showcase-player`,
+  homebrew source with three pictured items) and one seed test; `tools/screens.mjs`,
+  `tools/screens.lib.mjs`, `tools/screens.lib.test.mjs`; stage `test:screens` in
+  `tools/check/lib.mjs`; `npm run screens`; both READMEs show the four screens;
+  COVERAGE.md, `.claude/README.md` "Screenshots", a decision file and its index entry.
+- Images (untracked, in `docs/img/screens/`, bytes): `roll-ru.webp` 159092,
+  `roll-en.webp` 138884, `table-ru.webp` 112804, `table-en.webp` 103304,
+  `list-ru.webp` 160958, `list-en.webp` 142128, `shared-ru.webp` 80086,
+  `shared-en.webp` 75634 (total 972890).
+- Review: required (a check stage changed); not run.
 
 ## Verification
-- Commands run (exact): none; the plan changes no code.
-- Gates: none.
+- `node --test tools/screens.lib.test.mjs`: 9 pass. A README reference edited to a wrong
+  name made it fail (1 fail), then reverted.
+- `npm run screens` twice: the second run printed `unchanged` 8 times.
+- `check:fast`, `lint:typed`, `lint:untyped`: see the final report of the batch.
+- The `test:screens` stage fails in CI until the images are committed: the test reads
+  the files. Commit the images before the push.
 
-## Next batch (implement-ready)
-- Name: B1
-- Objective: one command makes 8 README screenshots; both READMEs show them.
-- In scope: plan.md D1-D5 and the B1 acceptance list.
-- Out of scope: promotional banners; screenshots for other documents; a CI
-  capture; a change to `gm1`-`gm4`.
-- Files expected: `app/src/ports/fake-cloud-seed.ts`,
-  `app/src/ports/fake-cloud.test.ts`, `tools/screens.mjs`,
-  `tools/screens.lib.mjs`, `tools/screens.lib.test.mjs`,
-  `tools/check/lib.mjs`, `package.json`, `docs/img/screens/*.webp`,
-  `README.md`, `README.ru.md`, `docs/specs/COVERAGE.md`, `.claude/README.md`,
-  a new file under `docs/decisions/`, `docs/DECISIONS.md`.
-- Steps: plan.md, "Design" D1 to D5, in that order.
-- Acceptance criteria: plan.md, "Batch B1 - acceptance", items 1-9.
-- Verification commands: `rtk npm run check:fast` (timeout 600000);
-  `npm run screens` twice (the second prints `unchanged` 8 times);
-  `node --test tools/screens.lib.test.mjs`; push, then the CI credit.
-- Risks / do-nots: pass a native path to `serveDist`; do not edit `gm1`-`gm4`;
-  do not commit images before the owner looks at them; the build guard fails
-  after `npm run check` moves data mtimes - rebuild first.
-- Fallback: if a `gm5` homebrew picture cannot match its item, drop the
-  homebrew entry from the list and say so in the handoff.
+## Deviations
+- Q1-Q4: took the recommended option each time (owner away).
+- `gm5` has no `prefs`: a `lang: 'ru'` row made the `/en/` list open in Russian.
+- English shots use the `/en/` path, not `&lang=en` (the query does not set a language).
+- Each capture runs in its own browser context (a stored language leaked between shots).
+- The homebrew whistle is the second list entry so the first screen shows its picture.
+- Images are not committed (owner rule); the README references them already.
+
+## Next batch
+- Owner looks at the eight images, commits them, pushes; then CI and the reviewer.
 
 ## Blockers
 - None.
