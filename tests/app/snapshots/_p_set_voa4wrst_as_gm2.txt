@@ -29,7 +29,7 @@ RootWebArea "Генератор лута Daggerheart" [url=/p/set-voa4wrst?as=gm
     status ""
     StaticText "ХВАТ"
     StaticText "АРТЕФАКТ"
-    ... StaticText x172 of 176 same-shape siblings elided
+    ... StaticText x171 of 175 same-shape siblings elided
     heading "КЛЯТВА РАВНОВЕСИЯ" [level=2]
     LineBreak " "
     LineBreak " "

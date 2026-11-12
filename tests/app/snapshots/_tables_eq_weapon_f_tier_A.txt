@@ -58,7 +58,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       button "Уникальные" [pressed=false]
     heading "Артефакты" [level=2]
     button "Ссылка на раздел"
-    button "9 Клятва Равновесия УНИКАЛЬНОЕ VAULT OF AGES Магическое · Инстин..." [namelen=851 namehash=94ee1ece]
+    button "9 Клятва Равновесия УНИКАЛЬНОЕ VAULT OF AGES Магическое · Инстин..." [namelen=799 namehash=829a3f78]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -71,7 +71,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 2
 3
 4
-9Клятва РавновесияУникальноеVault of AgesМагическое · Инстинкт ·... [namelen=843 namehash=8cd188b9]
+9Клятва РавновесияУникальноеVault of AgesМагическое · Инстинкт ·... [namelen=791 namehash=8ae36cb0]
 ?Об этих данных
 Arazo's Artifacts
 Core

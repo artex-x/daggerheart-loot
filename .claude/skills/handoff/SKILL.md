@@ -32,7 +32,7 @@ worktree until the next session.
 
 ## Finishing a task
 
-1. Start no new work; code at a committed boundary.
+1. Start no new work; code at a committed boundary. After a UI change that a README screen shows (roll, tables, list, shared list), run `npm run screens` and commit the changed images; see `.claude/README.md` "Screenshots".
 2. Audit every file in the directory against the durable list (below). For
    each qualifying item: grep the candidate home for a distinctive phrase
    first (it may already be there), then write it there, self-contained.

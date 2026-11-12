@@ -55,6 +55,7 @@ If plan/handoff is missing, stop and say review cannot proceed.
 - RU/EN parity: section I, check 4
 - Visual parity rules respected unless plan changes look
 - No unrelated chrome redesign
+- After a UI change that a README screen shows (roll, tables, list, shared list), run `npm run screens` and commit the changed images; see `.claude/README.md` "Screenshots".
 
 ### E. Tests and gates
 - Commands claimed in handoff were the right ones
