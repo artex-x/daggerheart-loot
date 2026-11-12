@@ -2805,6 +2805,14 @@ carries `?v` (D9).
   webhooks or a push channel for sync, a picture upload through MCP (X9).
   The writes of sources, cards, pictures, share links and requests are no
   longer deferred (owner, 2026-11-12: B5b-B5d).
+- Developer tokens (owner, chat, 2026-11-12): not built. Reason: needs a
+  token table and migration, a screen, and a second guarded write path
+  outside D7; OAuth clients and the public tier cover assistants and
+  scripts. Revisit when two or more users ask for unattended access to
+  their own account; then plan it as its own batch with a scope narrower
+  than the OAuth client scope, an expiry and a revoke button. Open
+  question to measure in B5a step 1: whether the Supabase OAuth server
+  offers a machine-to-machine grant.
 - Usage numbers for the shared quota in the nightly usage report (Cloudflare
   analytics token): until the quota is near. Nothing shows today when it
   is near; the ceiling is about 500 users polling every 15 minutes
