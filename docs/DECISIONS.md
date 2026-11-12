@@ -14,6 +14,7 @@ deleted.
 
 ## Index
 
+- 2026-11-12 - [README screenshots use a showcase seed user and are captured by hand](decisions/2026-11-12-readme-screens-use-a-showcase-seed-user.md)
 - 2026-11-11 - [A page-level sign-in prompt is one plate with the glyph, the lead and «Войти»](decisions/2026-11-11-a-page-level-sign-in-prompt-is-one-plate.md)
 - 2026-11-11 - [Craft links and the shared page's first entry stay as they are](decisions/2026-11-11-craft-links-and-the-shared-first-entry-stay.md)
 - 2026-11-11 - [Errata over SRD 2.0 over the printed book for Darrington Press equipment](decisions/2026-11-11-errata-over-srd-2-over-the-printed-book-for-darrington-equipment.md)
