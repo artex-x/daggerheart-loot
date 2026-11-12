@@ -8,7 +8,8 @@
   signed-out reader reads. It answers only the families that
   public/_routes.json routes to it; Pages serves the site's files on every
   other path. It also answers the read API under /api/ (preview/api/rest.mjs,
-  docs/specs/CONTRACTS.md section 6), with its own JSON responder.
+  docs/specs/CONTRACTS.md section 6), with its own JSON responder, and the MCP endpoint
+  at /mcp (preview/api/mcp.mjs).
 
   Routes, each also under /en/: /h/<uuid> (a homebrew item), /s/<token>
   (a shared list), /p/<id> (a print set), /tables/<table>[/<tail>] (a catalog
@@ -42,6 +43,7 @@ import {
 /* A card draws record text as it reads: no markup (docs/specs/CONTRACTS.md section 4).
    The Pages deploy bundles this import with esbuild, which reads TypeScript. */
 import { markupText } from '../app/src/lib/markup.ts';
+import { handleMcp } from './api/mcp.mjs';
 import { handleApi } from './api/rest.mjs';
 import { drop, readJson, readText, rpc } from './api/read.mjs';
 
@@ -567,6 +569,10 @@ async function handle(request, env) {
      language split and the cards' GET and HEAD check (preview/api/rest.mjs). */
   if (url.pathname === '/api' || url.pathname.startsWith('/api/')) {
     return handleApi(request, env, url);
+  }
+  /* The MCP endpoint answers JSON-RPC with no CORS header (preview/api/mcp.mjs). */
+  if (url.pathname === '/mcp' || url.pathname.startsWith('/mcp/')) {
+    return handleMcp(request, env, url);
   }
   if (method !== 'GET' && method !== 'HEAD') {
     return answer(method, 405, null, { Allow: 'GET, HEAD' });

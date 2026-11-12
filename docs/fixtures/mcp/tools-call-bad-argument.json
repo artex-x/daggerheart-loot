@@ -1,0 +1,63 @@
+{
+  "request": {
+    "method": "POST",
+    "headers": {
+      "Content-Type": "application/json",
+      "MCP-Protocol-Version": "2026-07-28",
+      "Mcp-Method": "tools/call",
+      "Mcp-Name": "get_record"
+    },
+    "body": {
+      "jsonrpc": "2.0",
+      "id": 9,
+      "method": "tools/call",
+      "params": {
+        "name": "get_record",
+        "arguments": {},
+        "_meta": {
+          "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+          "io.modelcontextprotocol/clientCapabilities": {},
+          "io.modelcontextprotocol/clientInfo": {
+            "name": "test",
+            "version": "1"
+          }
+        }
+      }
+    }
+  },
+  "answer": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store"
+    },
+    "body": {
+      "jsonrpc": "2.0",
+      "id": 9,
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"format\":\"daggerheart-loot/api-error\",\"version\":1,\"error\":{\"code\":\"bad_request\",\"message\":\"The field id is required. Send it as a string.\"}}"
+          }
+        ],
+        "structuredContent": {
+          "format": "daggerheart-loot/api-error",
+          "version": 1,
+          "error": {
+            "code": "bad_request",
+            "message": "The field id is required. Send it as a string."
+          }
+        },
+        "isError": true,
+        "resultType": "complete",
+        "_meta": {
+          "io.modelcontextprotocol/serverInfo": {
+            "name": "daggerheart-loot",
+            "version": "1.1.0"
+          }
+        }
+      }
+    }
+  }
+}

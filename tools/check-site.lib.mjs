@@ -460,8 +460,8 @@ export function mirrorChecks() {
 }
 
 /** The preview host's checks (docs/specs/CONTRACTS.md section 5), in the shape of
- *  `checks()`: the site's own robots.txt and the text files' X-Robots-Tag, the reserved
- *  `/mcp`, the record's app document at its versioned extensionless link, a 404 app
+ *  `checks()`: the site's own robots.txt and the text files' X-Robots-Tag, the MCP
+ *  endpoint, the record's app document at its versioned extensionless link, a 404 app
  *  document for each malformed run, for a well-formed uuid no item has and for a
  *  well-formed token no list holds - which prove the secrets, both card reads and the
  *  worker's read of the app document - a table card that read names.json, and the
@@ -507,11 +507,7 @@ export function previewChecks() {
       test: (body, meta) => /noindex/.test(meta.robots ?? ''),
       message: (meta) => `${f} has no X-Robots-Tag: noindex (got "${meta.robots ?? ''}")`
     })),
-    {
-      path: 'mcp',
-      test: (body, meta) => meta.status === 404,
-      message: (meta) => `mcp returned ${meta.status}, not 404 - the path is reserved`
-    },
+    ...mcpChecks(),
     ...apiChecks(),
     /* One 308 for a frozen `.html` stub URL (docs/fixtures/urls/record.json, `serve`). */
     {
@@ -588,6 +584,81 @@ export function previewChecks() {
           (/<meta property="og:description" content="([^"]*)"/.exec(body) || ['', ''])[1]
         ),
       message: 'tables/core_item has no count in its og:description - names.json was not read'
+    }
+  ];
+}
+
+/** The tool names of the MCP endpoint: the `x-mcp-tool` operations of openapi.json without
+ *  `security`, in document order. */
+function mcpToolNames() {
+  const openapi = JSON.parse(
+    readFileSync(new URL('../preview/api/openapi.json', import.meta.url), 'utf8')
+  );
+  return Object.values(openapi.paths)
+    .flatMap((ops) => Object.values(ops))
+    .filter((op) => op['x-mcp-tool'] && !op.security)
+    .map((op) => op['x-mcp-tool']);
+}
+
+/** The MCP endpoint's probes on the preview host (docs/specs/CONTRACTS.md section 6): `GET` is
+ *  405 with `Allow: POST` and no CORS header, a legacy `tools/list` lists the tools of
+ *  openapi.json, the same request with an `Origin` is 403, and `/mcp/me` stays reserved. */
+function mcpChecks() {
+  const body = JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' });
+  const headers = { 'Content-Type': 'application/json', 'MCP-Protocol-Version': '2025-06-18' };
+  const LIST = { method: 'POST', headers, body };
+  const FROM_PAGE = {
+    method: 'POST',
+    headers: { ...headers, Origin: 'https://example.org' },
+    body
+  };
+  return [
+    {
+      path: 'mcp',
+      test: (b, meta) => meta.status === 405,
+      message: (meta) =>
+        `GET mcp returned ${meta.status}, not 405 - the endpoint takes POST only`
+    },
+    {
+      path: 'mcp',
+      test: (b, meta) => meta.allow === 'POST',
+      message: (meta) => `GET mcp sends Allow "${meta.allow ?? ''}", not POST`
+    },
+    {
+      path: 'mcp',
+      test: (b, meta) => !meta.cors,
+      message: 'GET mcp sends Access-Control-Allow-Origin; the endpoint sends no CORS header'
+    },
+    {
+      path: 'mcp',
+      init: LIST,
+      test: (b, meta) => meta.status === 200,
+      message: (meta) => `POST mcp tools/list returned ${meta.status}, not 200`
+    },
+    {
+      path: 'mcp',
+      init: LIST,
+      test: (b) =>
+        JSON.stringify(jsonOf(b)?.result?.tools?.map((t) => t.name)) ===
+        JSON.stringify(mcpToolNames()),
+      message: 'POST mcp tools/list does not list the tools of openapi.json'
+    },
+    {
+      path: 'mcp',
+      init: LIST,
+      test: (b, meta) => !meta.cors,
+      message: 'POST mcp sends Access-Control-Allow-Origin; the endpoint sends no CORS header'
+    },
+    {
+      path: 'mcp',
+      init: FROM_PAGE,
+      test: (b, meta) => meta.status === 403,
+      message: (meta) => `POST mcp with an Origin header returned ${meta.status}, not 403`
+    },
+    {
+      path: 'mcp/me',
+      test: (b, meta) => meta.status === 404,
+      message: (meta) => `mcp/me returned ${meta.status}, not 404 - the path is reserved`
     }
   ];
 }
@@ -735,6 +806,7 @@ export function fetchReader(root, timeoutMs = 15_000) {
       location: res.headers.get('location') || '',
       cors: res.headers.get('access-control-allow-origin') || '',
       credentials: res.headers.get('access-control-allow-credentials') || '',
+      allow: res.headers.get('allow') || '',
       allowMethods: res.headers.get('access-control-allow-methods') || '',
       allowHeaders: res.headers.get('access-control-allow-headers') || '',
       maxAge: res.headers.get('access-control-max-age') || '',

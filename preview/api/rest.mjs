@@ -27,7 +27,7 @@ const BODY_MAX = 4096;
 const RUN_MAX = 2048;
 const CACHE_PUBLIC = 'public, max-age=300';
 
-const SECURITY = {
+export const SECURITY = {
   'X-Content-Type-Options': 'nosniff',
   'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none'; sandbox",
   'X-Robots-Tag': 'noindex, nofollow',
@@ -221,7 +221,7 @@ function hashOf(text) {
 /** The ETag of the OpenAPI document: its version and a hash of its bytes. */
 export const OPENAPI_ETAG = `${openapi.info.version}-${hashOf(JSON.stringify(openapi))}`;
 
-async function readAsset(env, path) {
+async function fetchAsset(env, path) {
   const res = await env.ASSETS.fetch(env.SITE + path, {
     signal: AbortSignal.timeout(ASSET_MS)
   });
@@ -229,9 +229,74 @@ async function readAsset(env, path) {
     drop(res.body);
     throw new Error('status');
   }
-  const got = await readJson(res, readCapOf(path));
+  return res;
+}
+
+async function readAsset(env, path) {
+  const got = await readJson(await fetchAsset(env, path), readCapOf(path));
   if (got.fail) throw new Error(got.fail);
   return got.value;
+}
+
+/** Reads a published file as text under its read cap: a catalog chunk is read one line at a time. */
+async function readAssetText(env, path) {
+  const got = await readText(await fetchAsset(env, path), readCapOf(path));
+  if (got.fail) throw new Error(got.fail);
+  return got.value;
+}
+
+/** Returns the service over this worker's files and Supabase reads. */
+export function serviceOf(env) {
+  return createService({
+    assets: (path) => readAsset(env, path),
+    text: (path) => readAssetText(env, path),
+    rpc: (name, args, max) => rpc(env, name, args, max),
+    random: Math.random,
+    site: { base: env.SITE, art: artBaseOf(String(env.SUPABASE_URL ?? '')) }
+  });
+}
+
+/**
+ * Runs one service operation from parsed input and returns its `{ body, etag? }`; the REST and
+ * the MCP adapter share it, so both answer the same bytes. `param` is the path value, `part`
+ * the table part (a string or null), `body` the parsed roll body.
+ */
+export async function runOperation(service, op, { param, part = null, body = {} }) {
+  switch (op) {
+    case 'listRolls':
+      return service.listRolls();
+    case 'listTables':
+      return service.listTables();
+    case 'roll': {
+      const section = rollSectionOf(param);
+      if (section === null)
+        throw new ApiError(404, 'not_found', 'The roll section does not exist.');
+      return service.roll(param, parseRollBody(ROLL_MODES[section], body));
+    }
+    case 'getTable':
+      if (tableOf(param) === null)
+        throw new ApiError(404, 'not_found', 'The table does not exist.');
+      if (part !== null && (part === '' || part.length > 64)) {
+        throw new ApiError(404, 'not_found', 'The part does not exist.');
+      }
+      return service.getTable(param, part ?? undefined);
+    case 'getRecord':
+      if (!RECORD_ID.test(param))
+        throw new ApiError(404, 'not_found', 'The record does not exist.');
+      return service.getRecord(param);
+    case 'getHomebrewItem': {
+      const run = (/^[0-9A-Fa-f-]*/.exec(param)?.[0] ?? '').toLowerCase();
+      if (!UUID.test(run))
+        throw new ApiError(404, 'not_found', 'The homebrew item does not exist.');
+      return service.getHomebrewItem(run);
+    }
+    default: {
+      const run = /^[A-Za-z0-9_-]*/.exec(param)?.[0] ?? '';
+      if (run.length !== 43)
+        throw new ApiError(404, 'not_found', 'The shared list does not exist.');
+      return service.getSharedList(run);
+    }
+  }
 }
 
 const matches = (header, etag) =>
@@ -252,62 +317,25 @@ async function dispatch(request, env, url) {
       Allow: hit.allow
     });
   }
-  const service = createService({
-    assets: (path) => readAsset(env, path),
-    rpc: (name, args, max) => rpc(env, name, args, max),
-    random: Math.random,
-    site: { base: env.SITE, art: artBaseOf(String(env.SUPABASE_URL ?? '')) }
-  });
-  const param = hit.param;
+  const service = serviceOf(env);
   let result;
-  switch (hit.op) {
-    case 'openapi':
-      result = { body: openapi, etag: OPENAPI_ETAG };
-      break;
-    case 'listRolls':
-      result = await service.listRolls();
-      break;
-    case 'listTables':
-      result = await service.listTables();
-      break;
-    case 'roll': {
-      const section = rollSectionOf(param);
-      if (section === null) {
+  if (hit.op === 'openapi') {
+    result = { body: openapi, etag: OPENAPI_ETAG };
+  } else {
+    let body = {};
+    if (hit.op === 'roll') {
+      /* The section is checked before the body is read: a 404 never waits for the body. */
+      if (rollSectionOf(hit.param) === null) {
         drop(request.body);
         throw new ApiError(404, 'not_found', 'The roll section does not exist.');
       }
-      const body = await readBody(request);
-      result = await service.roll(param, parseRollBody(ROLL_MODES[section], body));
-      break;
+      body = await readBody(request);
     }
-    case 'getTable': {
-      if (tableOf(param) === null)
-        throw new ApiError(404, 'not_found', 'The table does not exist.');
-      const part = url.searchParams.get('part');
-      if (part !== null && (part === '' || part.length > 64)) {
-        throw new ApiError(404, 'not_found', 'The part does not exist.');
-      }
-      result = await service.getTable(param, part ?? undefined);
-      break;
-    }
-    case 'getRecord':
-      if (!RECORD_ID.test(param))
-        throw new ApiError(404, 'not_found', 'The record does not exist.');
-      result = await service.getRecord(param);
-      break;
-    case 'getHomebrewItem': {
-      const run = (/^[0-9A-Fa-f-]*/.exec(param)?.[0] ?? '').toLowerCase();
-      if (!UUID.test(run))
-        throw new ApiError(404, 'not_found', 'The homebrew item does not exist.');
-      result = await service.getHomebrewItem(run);
-      break;
-    }
-    default: {
-      const run = /^[A-Za-z0-9_-]*/.exec(param)?.[0] ?? '';
-      if (run.length !== 43)
-        throw new ApiError(404, 'not_found', 'The shared list does not exist.');
-      result = await service.getSharedList(run);
-    }
+    result = await runOperation(service, hit.op, {
+      param: hit.param,
+      part: url.searchParams.get('part'),
+      body
+    });
   }
   if (result.etag === undefined) {
     return respond(method, 200, result.body, { 'Cache-Control': 'no-store' });

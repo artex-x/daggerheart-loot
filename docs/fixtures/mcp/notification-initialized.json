@@ -1,0 +1,19 @@
+{
+  "request": {
+    "method": "POST",
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "jsonrpc": "2.0",
+      "method": "notifications/initialized"
+    }
+  },
+  "answer": {
+    "status": 202,
+    "headers": {
+      "cache-control": "no-store"
+    },
+    "body": null
+  }
+}

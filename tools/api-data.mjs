@@ -78,6 +78,19 @@ export const BUDGET = {
 const CHUNK_MAX = BUDGET.small;
 /** A stand-in the width of a real `data_version`, so chunk packing never depends on it. */
 const DV_WIDTH = 'x'.repeat(16);
+const CHUNK_PATH = /^api\/v1\/catalog\/\d+\.json$/;
+
+/** Returns the first line of a chunk file: everything up to the open `records` array. */
+const chunkHead = (dv) =>
+  `{"format":"daggerheart-loot/api-catalog-chunk","version":1,"data_version":${JSON.stringify(dv)},"records":[`;
+
+/** Returns a chunk file: line 0 is the head, line `l + 1` is record `l` (every record line but
+ *  the last ends with a comma), the last line closes the array. The file stays one JSON value;
+ *  the worker reads one record by its line (preview/api/service.mjs). */
+function chunkText(lines, dv) {
+  const body = lines.map((j, i) => (i < lines.length - 1 ? j + ',' : j)).join('\n');
+  return chunkHead(dv) + '\n' + body + '\n]}\n';
+}
 
 const ROLL_SECTIONS = SECTIONS.filter((s) => s.startsWith('roll/'));
 const EQ_TABLES = { eq_weapon: 'weapon', eq_secondary: 'secondary', eq_armor: 'armor' };
@@ -362,14 +375,15 @@ function cardsFile(loot, index) {
 }
 
 /** Returns the records of a lean loot cut to the fields a roll reads, with their chunk. */
-function lean(it, chunkOf) {
+function lean(it, chunkOf, lineOf) {
   const out = {};
   for (const f of LEAN_FIELDS) if (it[f] !== undefined) out[f] = it[f];
   out.c = chunkOf.get(it.id);
+  out.l = lineOf.get(it.id);
   return out;
 }
 
-function rollFiles(loot, index, chunkOf) {
+function rollFiles(loot, index, chunkOf, lineOf) {
   const out = new Map();
   const tableOfRecord = new Map();
   for (const [key, rows] of Object.entries(loot.items)) {
@@ -381,7 +395,7 @@ function rollFiles(loot, index, chunkOf) {
     let alt;
     if (mode === 'std') {
       for (const key of ['core_item', 'core_consumable', 'hnf_item', 'hnf_consumable']) {
-        items[key] = (loot.items[key] ?? []).map((it) => lean(it, chunkOf));
+        items[key] = (loot.items[key] ?? []).map((it) => lean(it, chunkOf, lineOf));
       }
     } else if (mode === 'alt') {
       alt = loot.alt ?? {};
@@ -392,13 +406,13 @@ function rollFiles(loot, index, chunkOf) {
       );
       for (const [key, rows] of Object.entries(loot.items)) {
         const kept = rows.filter((it) => ids.has(it.id));
-        if (kept.length) items[key] = kept.map((it) => lean(it, chunkOf));
+        if (kept.length) items[key] = kept.map((it) => lean(it, chunkOf, lineOf));
       }
       const inEq = (loot.eq ?? []).filter((it) => ids.has(it.id) && !tableOfRecord.has(it.id));
-      if (inEq.length) items.equipment = inEq.map((it) => lean(it, chunkOf));
+      if (inEq.length) items.equipment = inEq.map((it) => lean(it, chunkOf, lineOf));
     } else {
       const table = ROLL_TABLE[section]?.table ?? PICKER_ROLL[section]?.section;
-      items[table] = (loot.items[table] ?? []).map((it) => lean(it, chunkOf));
+      items[table] = (loot.items[table] ?? []).map((it) => lean(it, chunkOf, lineOf));
     }
     const file = { format: 'daggerheart-loot/api-roll-data', version: 1, items };
     if (alt) file.alt = alt;
@@ -409,27 +423,24 @@ function rollFiles(loot, index, chunkOf) {
 
 /* ---------- the catalog ---------- */
 
-function catalogFiles(index, audit) {
+function catalogFiles(index, audit, versions) {
   const ids = [...index.byId.keys()];
   const records = ids.map((id) => {
     const it = index.byId.get(id);
-    return apiRecord(index, it, SITE_OF_RECORDS, licenseOf(audit, it));
+    const v = Object.hasOwn(versions, id) ? versions[id] : undefined;
+    return apiRecord(index, it, SITE_OF_RECORDS, licenseOf(audit, it), v);
   });
   const json = records.map((r) => JSON.stringify(r));
   /* Packed in order while a file stays within CHUNK_MAX; the stand-in has the width of a
      real data_version, so the layout never moves with it. */
   const chunks = [];
-  const head = JSON.stringify({
-    format: 'daggerheart-loot/api-catalog-chunk',
-    version: 1,
-    data_version: DV_WIDTH,
-    records: []
-  });
-  const overhead = Buffer.byteLength(head) + 1;
+  /* The head line and its newline, and the closing `]}` and newline. */
+  const overhead = Buffer.byteLength(chunkHead(DV_WIDTH)) + 1 + 3;
   let current = null;
   let size = 0;
   json.forEach((j, i) => {
-    const bytes = Buffer.byteLength(j) + 1;
+    /* The record, its comma and its newline. */
+    const bytes = Buffer.byteLength(j) + 2;
     if (current === null || size + bytes > CHUNK_MAX) {
       current = [];
       chunks.push(current);
@@ -439,8 +450,14 @@ function catalogFiles(index, audit) {
     size += bytes;
   });
   const chunkOf = new Map();
-  chunks.forEach((list, n) => list.forEach((i) => chunkOf.set(ids[i], n)));
-  return { ids, records, json, chunks, chunkOf };
+  const lineOf = new Map();
+  chunks.forEach((list, n) =>
+    list.forEach((i, l) => {
+      chunkOf.set(ids[i], n);
+      lineOf.set(ids[i], l);
+    })
+  );
+  return { ids, records, json, chunks, chunkOf, lineOf };
 }
 
 /* ---------- the whole tree ---------- */
@@ -450,17 +467,19 @@ function catalogFiles(index, audit) {
  *
  * @param loot The catalog as `data.js` holds it.
  * @param audit The rights table (`readAudit`); a change of it changes `data_version`.
+ * @param versions The build's card versions by record id (`cardVersions()` of
+ *   tools/build-share-pages.js); a record it does not hold has a link without `?v`.
  */
-export function renderApiData(loot, audit) {
+export function renderApiData(loot, audit, versions = {}) {
   const index = buildIndex(loot);
-  const catalog = catalogFiles(index, audit);
+  const catalog = catalogFiles(index, audit, versions);
   const files = new Map();
   const add = (path, value) => files.set(path, value);
 
   add('apidata/rolls.json', rollsFile(index));
   add('apidata/tables.json', tablesFile(index));
   add('apidata/cards.json', cardsFile(loot, index));
-  for (const [path, v] of rollFiles(loot, index, catalog.chunkOf)) add(path, v);
+  for (const [path, v] of rollFiles(loot, index, catalog.chunkOf, catalog.lineOf)) add(path, v);
   for (const [path, v] of tableFiles(index)) add(path, v);
   add('apidata/records/index.json', {
     format: 'daggerheart-loot/api-records',
@@ -468,11 +487,7 @@ export function renderApiData(loot, audit) {
     chunks: catalog.chunks.map((list) => list.map((i) => catalog.ids[i]))
   });
   catalog.chunks.forEach((list, n) => {
-    add(`api/v1/catalog/${n}.json`, {
-      format: 'daggerheart-loot/api-catalog-chunk',
-      version: 1,
-      records: list.map((i) => catalog.records[i])
-    });
+    add(`api/v1/catalog/${n}.json`, { lines: list.map((i) => catalog.json[i]) });
   });
   add('api/v1/catalog/index.json', {
     format: 'daggerheart-loot/api-catalog',
@@ -490,7 +505,10 @@ export function renderApiData(loot, audit) {
   const render = (dv) =>
     new Map(
       [...files]
-        .map(([path, v]) => [path, text({ ...stamp(v, dv) })])
+        .map(([path, v]) => [
+          path,
+          CHUNK_PATH.test(path) ? chunkText(v.lines, dv) : text({ ...stamp(v, dv) })
+        ])
         .sort(([a], [b]) => (a < b ? -1 : 1))
     );
   const empty = render('');
@@ -544,7 +562,8 @@ function main() {
   }
   globalThis.window = {};
   createRequire(import.meta.url)(join(ROOT, 'data.js'));
-  const out = renderApiData(globalThis.window.LOOT, audit);
+  const versions = createRequire(import.meta.url)('./build-share-pages.js').cardVersions();
+  const out = renderApiData(globalThis.window.LOOT, audit, versions);
 
   if (check) {
     const bad = [];

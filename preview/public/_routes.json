@@ -9,7 +9,8 @@
     "/en/s/*",
     "/en/p/*",
     "/en/tables/*",
-    "/api/*"
+    "/api/*",
+    "/mcp/*"
   ],
   "exclude": ["/tables", "/tables/", "/en/tables", "/en/tables/", "/api/v1/catalog/*"]
 }

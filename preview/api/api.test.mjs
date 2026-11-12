@@ -9,6 +9,8 @@ import { afterEach, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 import { renderApiData } from '../../tools/api-data.mjs';
+import { createService } from './service.mjs';
+import { buildIndex } from '../../app/src/lib/data.ts';
 import { parseRollBody, clearCache, OPENAPI_ETAG } from './rest.mjs';
 import { ROLL_MODES } from '../../app/src/lib/rollTables.ts';
 
@@ -28,13 +30,13 @@ const HID = '0b8f2c1e-1234-4abc-8def-0123456789ab';
 const HB = 'hb_abcdefghijklmnop';
 const TOKEN = 'A'.repeat(20) + 'b_c-' + 'z'.repeat(19);
 
-const FILES = renderApiData(CATALOG.loot, CATALOG.audit);
+const FILES = renderApiData(CATALOG.loot, CATALOG.audit, CATALOG.versions);
 
 /* An edited catalog: the text of one record differs, so every data_version differs. */
 function editedFiles() {
   const loot = structuredClone(CATALOG.loot);
   loot.items.core_item[0].ende = 'An edited description.';
-  return renderApiData(loot, CATALOG.audit);
+  return renderApiData(loot, CATALOG.audit, CATALOG.versions);
 }
 
 const NAMES = {
@@ -677,7 +679,7 @@ describe('CORS and routing', () => {
   });
 
   it('leaves the cards and the other paths to the worker', async () => {
-    assert.equal((await call('/mcp')).status, 302);
+    assert.equal((await call('/mcp')).status, 405);
     assert.equal((await call('/api/v1/catalog/index.json')).status, 404);
   });
 });
@@ -702,6 +704,78 @@ describe('two data versions', () => {
     const res = await call('/api/v1/records/ci1');
     assert.equal(res.status, 503);
     assertApiHeaders(res);
+  });
+});
+
+describe('one record per line', () => {
+  const chunkOf = (id) => {
+    const index = JSON.parse(FILES.get('apidata/records/index.json'));
+    return index.chunks.findIndex((ids) => ids.includes(id));
+  };
+
+  it('answers a record from the line that holds it', async () => {
+    const res = await call('/api/v1/records/ci1');
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.id, 'ci1');
+    assert.match(body.link.ru, /\/i\/ci1\?v=[0-9a-z]+$/);
+    const n = chunkOf('ci1');
+    assert.deepEqual(
+      state.fetches.filter((p) => p.startsWith('api/v1/catalog/')),
+      [`api/v1/catalog/${String(n)}.json`]
+    );
+  });
+
+  it('answers 503 after one re-read when the line holds another id', async () => {
+    const n = chunkOf('ci1');
+    const path = `api/v1/catalog/${String(n)}.json`;
+    const lines = FILES.get(path).split('\n');
+    const pos = JSON.parse(FILES.get('apidata/records/index.json')).chunks[n].indexOf('ci1');
+    [lines[pos + 1], lines[pos + 2]] = [lines[pos + 2], lines[pos + 1]];
+    const broken = new Map(FILES);
+    broken.set(path, lines.join('\n'));
+    state.files = broken;
+    const res = await call('/api/v1/records/ci1');
+    assert.equal(res.status, 503);
+    assert.equal(state.fetches.filter((p) => p === path).length, 2);
+  });
+
+  it('builds the index of a roll file once while the isolate keeps the file', async () => {
+    const first = await post('/api/v1/rolls/std', { total: 3 });
+    assert.equal(first.status, 200);
+    assert.equal((await post('/api/v1/rolls/std', { total: 3 })).status, 200);
+    assert.equal(state.fetches.filter((p) => p === 'apidata/roll/std.json').length, 1);
+    const chunkReads = state.fetches.filter((p) => p.startsWith('api/v1/catalog/')).length;
+    assert.ok(chunkReads >= 2);
+  });
+
+  it('calls the index builder once for two rolls of one cached file', async () => {
+    let builds = 0;
+    const service = createService({
+      assets: async (path) => JSON.parse(FILES.get(path)),
+      text: async (path) => FILES.get(path),
+      rpc: async () => ({ value: null }),
+      site: { base: SITE, art: SITE },
+      cache: new Map(),
+      build: (data) => {
+        builds += 1;
+        return buildIndex(data);
+      }
+    });
+    await service.roll('std', parseRollBody('std', { total: 3 }));
+    await service.roll('std', parseRollBody('std', { total: 3 }));
+    assert.equal(builds, 1);
+  });
+
+  it('answers 503 when a roll row names a line that holds another id', async () => {
+    const roll = JSON.parse(FILES.get('apidata/roll/std.json'));
+    for (const rows of Object.values(roll.items)) for (const r of rows) r.l += 1;
+    const broken = new Map(FILES);
+    broken.set('apidata/roll/std.json', JSON.stringify(roll) + '\n');
+    state.files = broken;
+    const res = await post('/api/v1/rolls/std', { total: 3 });
+    assert.equal(res.status, 503);
+    assert.equal(state.fetches.filter((p) => p === 'apidata/roll/std.json').length, 2);
   });
 });
 

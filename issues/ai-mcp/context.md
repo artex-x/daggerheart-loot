@@ -58,8 +58,11 @@ Orchestrator (or first worker) maintains this file so later steps do not re-fetc
     and `data.json`; the takedown promise covers the API. Home: D5;
     written in B0.
 - Open questions: none for the owner in `plan.md` (B5 questions Q8-Q11
-  are "default taken (owner AFK)", 2026-11-11). Open design questions:
-  B3's search strategy; B5a's screen layout (a mock).
+  are "default taken (owner AFK)", 2026-11-11). Open design question:
+  B5a's screen layout (a mock). B3's search projection and file-check
+  line names: a planner pass before B3 (the plan review of 2026-11-12
+  showed that D10's draft cost model misses `foldQuery` and the line
+  split; measurements below).
 
 ## Issue 72 and the layered-architecture question (owner, 2026-11-10)
 
@@ -417,6 +420,150 @@ measurement:
 - It needs stable ids, RU/EN name and description, kind, src, roll,
   image URL, page link, craft, and a build-time pull refresh (no
   account, no write).
+
+## Owner decisions (2026-11-12)
+
+- Documentation (owner note `C:\Users\Ignat\.dhloot\notes\57\ai-mcp-docs-page.md`):
+  a user page "With AI assistants" (`pages/src/ai.html`, `en/ai.html`)
+  and a developer page "API" (`developers.html`), two footer links next
+  to privacy and terms, links from both READMEs and `llms.txt`; a test
+  that every `openapi.json` operation is on the developer page and that
+  the user page's MCP URL is the shipped one. `llms.txt` stays the
+  AI-facing entry and the import-file spec: a new first "Read this first"
+  item (read through MCP or `/api/v1`, never by fetching files; import
+  files stay the way to create lists and items), the crawl line reworded
+  (it is about crawling, not tool calls). Import panels keep two links,
+  "Формат файла" and "ИИ-ассистенты" (revision 7b): the direct
+  `llms.txt` link leaves the panels, the hint ends "или файл, собранный
+  ИИ-ассистентом" / "or a file an AI assistant built", the validation
+  messages keep `llms.txt` as plain text. The export-flow link: default
+  B5. Home: plan B2b and B5b; then the pages themselves.
+- Record links (via the orchestrator, 2026-11-12): the API record `link`
+  carries `?v=<v>` as the app's links do (`linkToRecord`); a record
+  outside the card map has no `?v`; the `?v` is opaque; the unversioned
+  URL is the canonical `og:url`. v1 being one day old, changing the
+  value is acceptable. Home: D9 and `CONTRACTS.md` section 6 (B2a).
+- Issue 72 (owner note `ai-mcp-closeout-posts.md`, the owner's final
+  line): the orchestrator posts comment A and the bacchus-atlas issue B
+  once B1 is live and the live checks pass, with no further confirmation;
+  issue 72 stays open until the account-level read ships, then the
+  follow-up A2 and the close (placed in B5b).
+
+## Live readings after the B1 deploy (orchestrator, 2026-11-12)
+
+- Production `aeb68c0e`: live checks 1-11 of `ai-mcp-live-checks.md`
+  passed (openapi.json ETag `"1.0.0-c0de2047"` and 304, CORS `*`,
+  preflight 204, catalog index 54 chunks, rights values, `Authorization`
+  ignored, JSON 404s, rolls, image `*`, `apidata/version.json` `*`;
+  `link.en` is `/i/en/<id>`, and `/en/i/<id>` answers 301 to it).
+- CPU, Cloudflare Pages Metrics, Production: baseline 24 h before: 58
+  requests, p50 3,103, p75 6,297, p99 11,294. A mixed read load (33
+  requests), last 30 min: p50 2,248, p75 3,900, p99 25,846. A burst of 10
+  `std` rolls (3-minute view): p50 up to about 7,500, p99 17,531. 0 errors,
+  0 exceeded-CPU in 95 requests. The axis says ms; the values read as
+  microseconds: a record read about 2-3 ms, a `std` roll about 7-17 ms.
+- Method (for the next readings): a controlled burst with `curl`, wait,
+  Metrics tab of `/pages/view/daggerheart-loot`, Production, a 3-minute
+  range for a burst, read requests, errors and the CPU percentiles.
+
+## MCP spec facts (read 2026-11-12, revision 2026-07-28)
+
+- Sources: https://modelcontextprotocol.io/specification/latest/changelog,
+  `.../2026-07-28/basic/lifecycle` (versioning), `.../2026-07-28/server/discover`,
+  `.../2026-07-28/basic/transports/streamable-http`.
+- Modern requests carry `_meta` keys `io.modelcontextprotocol/protocolVersion`,
+  `io.modelcontextprotocol/clientCapabilities`, `io.modelcontextprotocol/clientInfo`;
+  results carry `resultType` (`"complete"`) and SHOULD carry
+  `_meta["io.modelcontextprotocol/serverInfo"]`. `server/discover` (MUST)
+  answers `supportedVersions`, `capabilities`, `instructions`, `ttlMs`,
+  `cacheScope`. `tools/list` (and resource and prompt lists) carry
+  `ttlMs` and `cacheScope` (`"public"` or `"private"`); tools in a
+  deterministic order.
+- HTTP: every POST carries `MCP-Protocol-Version` (equal to the `_meta`
+  value), `Mcp-Method`, and `Mcp-Name` on `tools/call`
+  (`=?base64?...?=` for unsafe values); a mismatch or a missing header is
+  400 with `HeaderMismatch` -32020; an unsupported version 400 with
+  `UnsupportedProtocolVersion` -32022 and `data: { supported, requested }`;
+  an unknown method 404 with -32601; a notification 202 with no body; an
+  invalid `Origin` 403 (body MAY be a JSON-RPC error without `id`); GET or
+  DELETE 405; `Mcp-Session-Id` and `Last-Event-ID` ignored, never minted.
+- Dual era: an `initialize` request selects legacy semantics
+  (`2025-11-25` and earlier); a request with modern `_meta` is served
+  statelessly. A legacy client cannot fall forward; a modern client falls
+  back on a 4xx without a recognized modern error. `ping`,
+  `logging/setLevel` and the handshake are removed in the modern era.
+- Tool errors are results with `isError`; `inputSchema` and
+  `outputSchema` take any JSON Schema 2020-12; `x-mcp-header` is optional
+  for servers.
+
+## Planner facts (2026-11-12, at `1b99e6d4`)
+
+- Built sizes: `apidata/` and `api/v1/catalog/` 105 files (54 chunks,
+  average 63.6 KB, the largest file `api/v1/catalog/index.json` 70,114 B,
+  3.97 MiB in all), 207 files at 3x, about 98 files left under 20,000;
+  `apidata/roll/std.json` 30,125 B, `apidata/roll/alt.json` 32,103 B,
+  `apidata/cards.json` 43,900 B, `apidata/records/index.json` 11,561 B.
+- The service at `1b99e6d4` reads each roll file fresh and builds its
+  index per request, and parses each result's whole chunk
+  (`preview/api/service.mjs` `roll`, `getRecord`): the four chunk parses
+  of a `std` roll are most of its CPU.
+- `openapi.json` already names the tools: `list_rolls`, `roll`,
+  `list_tables`, `get_table`, `get_record`, `get_homebrew_item`,
+  `get_shared_list` (`x-mcp-tool`; no operation has `security`).
+- The card-version map: `tools/build-share-pages.js` `cardVersions()`
+  (40 bits of SHA-256 in base 36 over the og text of both stubs and the og
+  picture bytes); `tools/build.js` writes it to `card-versions.json` after
+  `tools/api-data.mjs` runs; the app reads it as `window.LOOT_V`
+  (`data.cardVersion(id)`). The app's homebrew `?v` is `hash.ts`
+  `cardVersion(record)`; a share link's is `cardVersion([name, note, n])`.
+- `search.ts`: `rankHits(records, terms, statLine, hay)` and `matches`
+  take a custom `Hay` (`{ names, texts }`, folded); `hitsAny` needs the
+  term's `text` or `stemPrefix` as a substring of a field; `foldQuery`
+  lowercases, folds Latin diacritics, `ё` to `е`, quotes and the minus.
+  `#/search` also reads descriptions and, for equipment, the stat line.
+- Filters: `filters.ts` `decodeFilter`, `groupsFor`, `passes`; the
+  per-record values are `data.ts` `equipFacets` and `plainFacets` (pure);
+  `TablesPage.svelte` composes them.
+- File checks: `parseBundle(text, knows, owns)` and `parseHomebrew(text,
+  ctx)` (`FileContext`: `catalogHas`, `catalogSet`, `catalogRef`,
+  `ownItem`, `ownCard`, `lineMembers`); the report lines are built inline
+  in `ImportPanel.svelte` (`fill(t.importErr...)`) and
+  `HomebrewImport.svelte` (`hbImportErr...`).
+- Import panels at `1b99e6d4`: `HomebrewImport.svelte` has a `.filerow`
+  with `.links` ("Формат файла" to `/schema/homebrew-v2.json` and
+  `llms.txt`); `ImportPanel.svelte` has a hint with inline links (the
+  `import-v3` schema and "описание для ИИ-помощников" to `/llms.txt`).
+  The footer nav (`Shell.svelte`) has install, privacy and terms through
+  `app.pagesDir`; the static pages come from `tools/build-pages.js`
+  `PAGES` and `pages/src/<id>.html`.
+
+## Plan review measurements (reviewer, 2026-11-12, `reviews/plan-B2a.md`)
+
+Read-only probes on this host (Node 24); production is about 4-10 times
+slower than this host (B1's `std` roll: 7.5-17.5 ms there, 1.78 ms here).
+
+| Probe | Result |
+|---|---|
+| `cardVersions()` from the `api-data.mjs` process under `ts-hooks` | works, 1.2 s; 1593 ids, every `buildIndex` id held, values 6-8 characters |
+| B1 `std` roll CPU in memory (roll parse, `buildIndex`, 4 x 64 KB chunk parse) | 1.78 ms |
+| B2a design, warm (cached index, 4 x decode and split, one line parse per result) | 0.50 ms (28 % of B1) |
+| B2a design, cold (roll parse and `buildIndex` once more) | 0.84 ms (47 % of B1) |
+| `foldQuery` over B3's search text (156 KB of `id`...`ru`,`en` lines) | 36 ms; 79 ms at 3x (470 KB) |
+| `foldQuery` over the names only (87 KB) | 10.9 ms; `toLowerCase` of the same text 0.62 ms |
+| split every B3 line into columns (244 KB today, 730 KB at 3x) | 1.9 ms today, 5.3 ms at 3x |
+| names whose `foldQuery` differs from `toLowerCase` | 76 of 3186 |
+
+- The live check of 2026-11-12 showed `/api/*` in `_routes.json` taking
+  bare `/api` (the JSON 404); both `routed` test helpers assumed the
+  opposite.
+- `tests/app/states.js` asserts the footer's `.foot-nav a` hrefs
+  (install, privacy, terms).
+- `ImportPanel.svelte` `where()` and `skipLine()` name records through
+  `app.index?.byId.get(id)` and `nameOf`; the report builders return
+  structured lines (`pos`, `name`, `item`, `text`, `path`).
+- The merge-back `1b99e6d4` differs from `origin/main` (`aeb68c0e`) only
+  under `issues/` (`git diff --stat`); `1b99e6d4` and the planner commits
+  are not pushed.
 
 ## Do not re-fetch unless
 - Human provides new info

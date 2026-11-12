@@ -463,9 +463,9 @@ answers every route path with the app document (section 1), and an unknown
 path answers `404.html` with status 404 (an unknown record id `/i/zzzz` too). A `.html` path answers
 308 to the same path without `.html` (`i/<id>.html` to `i/<id>`,
 `en/index.html` to `en/`), so every frozen `.html` URL keeps opening through
-one redirect. The path `/mcp` and every path under it are reserved for the
-task `ai-mcp`; until then `/mcp` answers the 404 page, and the deploy refuses a
-published `mcp`. The path `/api/` is reserved for the read API (section 6), whose
+one redirect. The path `/mcp` is the MCP endpoint (section 6); `/mcp/me` and
+every other path under `/mcp/` stay reserved for the account tier of the task
+`ai-mcp` and answer 404, and the deploy refuses a published `mcp`. The path `/api/` is reserved for the read API (section 6), whose
 static part is `/api/v1/catalog/`; the deploy refuses any other published file under
 `api/`. `/.well-known/oauth-protected-resource/` is reserved for the account tier of
 that task, and the deploy refuses a published file there. `apidata/` is internal:
@@ -536,7 +536,8 @@ frozen, with a v2 beside it for a break"). It needs no key. Every operation is
 tier T0: it ignores an `Authorization` header and never forwards it, so every
 Supabase read runs as the anon reader and an answer never depends on the caller.
 Fixtures: `docs/fixtures/api/v1/`, checked by `preview/api/api.test.mjs` byte for
-byte and by `tests/contracts.js`.
+byte and by `tests/contracts.js`; the MCP endpoint's are `docs/fixtures/mcp/`, checked
+by `preview/api/mcp.test.mjs`.
 
 | Operation | Answer |
 |---|---|
@@ -572,13 +573,21 @@ beside v1. A client ignores unknown fields. A client that meets an error `code` 
 does not know acts on the HTTP status; a `code` keeps its status and meaning for
 good. Every answer names its `format` and `version`.
 
+**Links.** A record's `link` is what the app's `linkToRecord` hands out (section 5, "The
+record link"): `<site>i/<id>?v=<v>` and `<site>i/en/<id>?v=<v>` for a catalog record, with
+`<v>` from the build's card-version map, `<site>h/<uuid>?v=<v>` and `<site>en/h/<uuid>?v=<v>`
+for a homebrew item. A record the map does not hold has no `?v`. A homebrew entry without an item
+id (a `hid`) has no `?v` too: it keeps its `hb_` key as `id` and links `<site>i/<key>`. The `?v` is opaque; the unversioned URL is the canonical `og:url`. A client
+stores the link as given. A shared-list answer has no link of its own. The 422 messages keep
+their bare app links.
+
 **Answers.** JSON, `Content-Type: application/json; charset=utf-8`. Every text a
 person reads is a pair `{ "ru", "en" }` built by the app's own functions: an empty
 Russian side takes the English text, English never takes Russian. The error answer
 is `{ "format": "daggerheart-loot/api-error", "version": 1, "error": { "code",
 "message" } }`; the message is English, names a field and never echoes a value.
-Projection answers carry `ETag: "<data_version>"` (the OpenAPI document: its version and
-a hash of its bytes) and `Cache-Control: public,
+Projection answers carry `ETag: "<data_version>"`; the OpenAPI document's `ETag` is its
+version and a hash of its bytes. They carry `Cache-Control: public,
 max-age=300` and answer 304 to a matching `If-None-Match`; rolls, homebrew items and
 shared lists are `no-store`.
 
@@ -610,11 +619,48 @@ and reads no file. Each preflight is one Functions request on the shared quota.
 **Reserved.** `/api/v1/me/` is reserved for the account tier. It holds no data in
 v1, answers the JSON 404, and its 404 and preflight carry `*` only because it is
 reserved; v1 promises no CORS rule for it, and the account tier replaces both
-answers with an explicit `Origin` allowlist. `/mcp` stays reserved (section 5).
+answers with an explicit `Origin` allowlist. `/mcp/me` stays reserved (section 5).
+
+**MCP.** `https://daggerheart-loot.pages.dev/mcp` is a read-only MCP server over the same
+service (`preview/api/mcp.mjs`; decision "The MCP endpoint is a hand-written dispatcher over
+the OpenAPI document"). Streamable HTTP, `POST` only, one `application/json` answer per
+request, no stream, no session id, no sign in. It speaks the legacy era (`initialize`;
+`2025-03-26`, `2025-06-18`, `2025-11-25`) and the modern era (`2026-07-28`: `server/discover`,
+the version in `_meta`, the `MCP-Protocol-Version`, `Mcp-Method` and `Mcp-Name` headers,
+`resultType`, `ttlMs` and `cacheScope`). A legacy version is reached through `initialize`: a
+modern request that names one gets `UnsupportedProtocolVersion` (-32022). A legacy request
+without `MCP-Protocol-Version` is served as `2025-03-26`. A missing or different modern
+header is `HeaderMismatch` (-32020, status 400); an unknown modern method is -32601 with
+status 404 (legacy: status 200). A notification answers 202 with no body.
+
+| Tool | Operation |
+|---|---|
+| `list_rolls` | `GET /api/v1/rolls` |
+| `roll` | `POST /api/v1/rolls/{section}`; `section` and the roll fields are the arguments |
+| `list_tables` | `GET /api/v1/tables` |
+| `get_table` | `GET /api/v1/tables/{table}`; `part` is an optional argument |
+| `get_record` | `GET /api/v1/records/{id}` |
+| `get_homebrew_item` | `GET /api/v1/homebrew-items/{uuid}` |
+| `get_shared_list` | `GET /api/v1/shared-lists/{token}` |
+
+The tools are the operations of `openapi.json` that carry `x-mcp-tool` and no `security`, in
+document order; the description of a tool is its summary and description, and each argument
+takes its parameter's description. A call returns the REST answer: `content[0].text` is its
+JSON, `structuredContent` its value, and an operation error is a result with `isError` and the
+`api-error` body (REST: the HTTP status). A missing or non-string path or query argument is a
+400 `bad_request` result; an unknown tool or arguments that are not an object are -32602
+with status 200. The check order, pinned by the fixtures: the host guard's 301, a path other
+than exactly `/mcp` 404 with no body, any `Origin` header 403 (DNS rebinding; JSON-RPC
+-32000), a method other than `POST` 405 with `Allow: POST`, a body that is not
+`application/json` 415, a body past 65536 bytes 413 before any parse, a body that is not JSON
+400 (-32700), not a JSON-RPC 2.0 request 400 (-32600), a message without `id` 202, then the
+era. `/mcp` sends no CORS header, never reads `Authorization`, `Mcp-Session-Id` or
+`Last-Event-ID`, and never answers 401. The URL equals `info["x-mcp-endpoint"]` of
+`openapi.json`.
 
 **Rights.** Every record carries `rights.license`, `dpcgl` or `owner`, read at build
 time from `docs/rights/records.json` (decision "Game text rights follow a per-record
-SRD audit"); a table with `reviewed` null (not yet accepted) makes every record `owner`; the table is accepted since 2026-11-12. `dpcgl`
+SRD audit"); a table with `reviewed` null (not yet accepted) makes every record `owner`; the owner accepted the table on 2026-11-12. `dpcgl`
 means the English text is SRD 2.0 Public Game Content; the Russian text is a
 third-party translation the value does not cover. A homebrew item is `owner`.
 

@@ -2,7 +2,7 @@
   The read API's service layer: one async function per operation of
   docs/specs/CONTRACTS.md section 6, over the build-time projections (apidata/, read
   through the `assets` function) and the two Supabase reads (the `rpc` function, as the
-  anon reader). The REST adapter (rest.mjs) calls it in process; the MCP adapter will too.
+  anon reader). The REST adapter (rest.mjs) and the MCP adapter (mcp.mjs) call it in process.
 
   Every rule here is a pure module of app/src/lib/, bundled into the worker: a roll
   builds the same index the panels build and calls the same functions (rollTables.ts
@@ -80,6 +80,8 @@ export const rollIdOf = (section) => (SECTION_SLUG[section] ?? section).slice(5)
 export const modeOf = (section) => ROLL_MODES[section];
 
 const SHARED_CACHE = new Map();
+/** The index built from each cached roll file, kept as long as the cache keeps the file. */
+const ROLL_INDEX = new WeakMap();
 
 /** Empties the isolate's cached files (tests). */
 export function clearCache() {
@@ -87,24 +89,53 @@ export function clearCache() {
 }
 
 /**
+ * Splits the text of a catalog chunk once: line 0 is the head that holds `data_version`,
+ * line `l + 1` is record `l` (tools/api-data.mjs `chunkText`). Returns `null` when the text
+ * has no such head.
+ */
+function splitChunk(text) {
+  const lines = text.split('\n');
+  const dv = /"data_version":"([^"]*)"/.exec(lines[0] ?? '')?.[1];
+  return dv === undefined ? null : { dv, lines };
+}
+
+/** Returns record `pos` of a split chunk when its `id` is `id`, else null. Parses one line. */
+function recordAt(chunk, pos, id) {
+  if (!Number.isInteger(pos) || pos < 0) return null;
+  const line = chunk.lines[pos + 1];
+  if (typeof line !== 'string' || line === ']}' || line === '') return null;
+  try {
+    const record = JSON.parse(line.endsWith(',') ? line.slice(0, -1) : line);
+    return record.id === id ? record : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Returns the operations.
  *
  * @param deps.assets Reads one published file and returns its parsed JSON; throws when it
  *   cannot (a path under apidata/, api/v1/catalog/, or names.json).
+ * @param deps.text Reads one published file and returns its text; throws when it cannot
+ *   (a catalog chunk, which is read one line at a time).
  * @param deps.rpc Reads a Supabase function as the anon reader: `(name, args, max)`
  *   answers `{ value }` or `{ fail: 'big' | ... }`.
  * @param deps.random The source of randomness of a roll.
  * @param deps.site The `ApiSite` the links and pictures are built on.
  * @param deps.cache The isolate's cached files; one shared map by default.
  * @param deps.now The clock, in ms.
+ * @param deps.build Builds the index of a roll file (tests count its calls).
  */
 export function createService({
   assets,
+  text,
   rpc,
   random = Math.random,
   site,
   cache = SHARED_CACHE,
-  now = Date.now
+  now = Date.now,
+  build = buildIndex
 }) {
   async function read(path) {
     let file;
@@ -122,6 +153,19 @@ export function createService({
       throw unavailable('A data file');
     }
     return file;
+  }
+
+  /** Returns the split chunk `n`; a failed read or a text without a head is a 503. */
+  async function readChunk(n) {
+    let body;
+    try {
+      body = await text(chunkPath(n));
+    } catch {
+      throw unavailable('A data file');
+    }
+    const chunk = typeof body === 'string' ? splitChunk(body) : null;
+    if (chunk === null) throw unavailable('A data file');
+    return chunk;
   }
 
   /** Returns a file kept for CACHE_MS; `force` reads it again. */
@@ -204,14 +248,16 @@ export function createService({
   /* ---------- a catalog record ---------- */
 
   async function getRecord(id) {
-    const [, chunk] = await consistent(async (force) => {
+    let record = null;
+    const [, head] = await consistent(async (force) => {
       const idx = await cached('apidata/records/index.json', force);
       const n = idx.chunks.findIndex((ids) => ids.includes(id));
       if (n < 0) throw notFound('The record');
-      const data = await read(chunkPath(n));
-      return { files: [idx, data], ok: data.records.some((r) => r.id === id) };
+      const chunk = await readChunk(n);
+      record = recordAt(chunk, idx.chunks[n].indexOf(id), id);
+      return { files: [idx, { data_version: chunk.dv }], ok: record !== null };
     });
-    return { body: chunk.records.find((r) => r.id === id), etag: chunk.data_version };
+    return { body: record, etag: head.data_version };
   }
 
   /* ---------- rolls ---------- */
@@ -291,16 +337,22 @@ export function createService({
     if (section === null) throw notFound('The roll section');
     const mode = ROLL_MODES[section];
     for (let attempt = 0; ; attempt++) {
-      const data = await read(`apidata/roll/${rollIdOf(section)}.json`);
-      const index = buildIndex(data);
+      const path = `apidata/roll/${rollIdOf(section)}.json`;
+      const data = await cached(path, attempt > 0);
+      let index = ROLL_INDEX.get(data);
+      if (index === undefined) {
+        index = build(data);
+        ROLL_INDEX.set(data, index);
+      }
       const drawn = rolled(section, mode, index, input);
       const wanted = [...new Set(drawn.results.map((r) => r.it.c))];
-      const chunks = await Promise.all(wanted.map((c) => read(chunkPath(c))));
+      const chunks = await Promise.all(wanted.map((c) => readChunk(c)));
       const byChunk = new Map(wanted.map((c, i) => [c, chunks[i]]));
-      const records = drawn.results.map((r) =>
-        byChunk.get(r.it.c)?.records.find((x) => x.id === r.it.id)
-      );
-      const same = chunks.every((c) => c.data_version === data.data_version);
+      const records = drawn.results.map((r) => {
+        const chunk = byChunk.get(r.it.c);
+        return chunk ? recordAt(chunk, r.it.l, r.it.id) : null;
+      });
+      const same = chunks.every((c) => c.dv === data.data_version);
       if (same && records.every(Boolean)) {
         return {
           body: {

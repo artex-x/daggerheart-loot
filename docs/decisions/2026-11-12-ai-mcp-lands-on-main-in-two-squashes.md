@@ -1,5 +1,6 @@
 # 2026-11-12 - ai-mcp lands on main in two squashes
 
+- Amended by "ai-mcp lands on main at four named landings" (2026-11-12): four landings, not two squashes.
 - Task: `ai-mcp` (owner, 2026-11-10: "publish as soon as B1 ships"; planner, 2026-11-12).
 - Decision: the first squash follows B1's approving batch review (`reviews/B1.md`) and a green CI run of the
   `claude/ai-mcp` tip that holds B0, B0's follow-up commit and B1, after the orchestrator confirms that

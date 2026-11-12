@@ -8,7 +8,7 @@ import { isOwnArt, thumbOf } from './art.js';
 import { madeFrom, refsOf, setBonusOf, setKeyOf, setOf, upgradesTo } from './data.js';
 import type { Index } from './data.js';
 import { dict } from './dict.js';
-import { appUrl, itemHash, recordUrl } from './hash.js';
+import { appUrl, cardVersion, itemHash, recordUrl } from './hash.js';
 import type { Site } from './hash.js';
 import { isHomebrewRecord } from './homebrew.js';
 import { descOf, eqLine, nameOf } from './i18n.js';
@@ -221,12 +221,14 @@ function setOfRecord(index: Index, it: Record_): ApiRecord['set'] {
  * @param it The record.
  * @param site The site's links and the picture bucket.
  * @param license The rights value the caller resolved (`licenseOf`; `owner` for homebrew).
+ * @param v The card version of a catalog record from the build's map; absent for none.
  */
 export function apiRecord(
   index: Index,
   it: Record_,
   site: ApiSite,
-  license: License
+  license: License,
+  v?: string
 ): ApiRecord {
   const homebrew = isHomebrewRecord(it);
   const hid = homebrew && typeof it.hid === 'string' ? it.hid : it.id;
@@ -264,8 +266,11 @@ export function apiRecord(
     set: setOfRecord(index, it),
     refs: refsOfRecord(index, it),
     image: imageOf(it, site),
-    link: homebrew
-      ? pair((lang) => appUrl(site, itemHash(hid), lang))
-      : pair((lang) => recordUrl(site, it.id, lang))
+    /* The app's `linkToRecord`: a catalog record carries the build's card version, a homebrew
+       item with an id its own, and a homebrew entry without an id has none. */
+    link:
+      homebrew && typeof it.hid === 'string'
+        ? pair((lang) => appUrl(site, itemHash(hid), lang, cardVersion(it)))
+        : pair((lang) => recordUrl(site, it.id, lang, homebrew ? undefined : v))
   };
 }

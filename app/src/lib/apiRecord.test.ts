@@ -8,6 +8,7 @@ import { apiRecord, licenseOf, parseDamage, RIGHTS } from './apiRecord.js';
 import type { ApiRecord, ApiSite, RightsAudit } from './apiRecord.js';
 import { buildIndex } from './data.js';
 import type { Index } from './data.js';
+import { appUrl, cardVersion, itemHash, recordUrl } from './hash.js';
 import { withRecords } from './homebrew.js';
 import type { HomebrewRecord } from './homebrew.js';
 import type { Record_ } from './types.js';
@@ -67,13 +68,22 @@ describe('apiRecord of a catalog record', () => {
     for (const f of [r.name, r.text, r.plain, r.path, r.link, r.source.name]) {
       expect(isPair(f)).toBe(true);
     }
+    expect(r.link.ru).toBe(recordUrl(SITE, 'ci1', 'ru'));
+    expect(r.link.en).toBe(recordUrl(SITE, 'ci1', 'en'));
     expect(r.link.ru).toBe('https://daggerheart-loot.pages.dev/i/ci1');
-    expect(r.link.en).toBe('https://daggerheart-loot.pages.dev/i/en/ci1');
     expect(r.image).toEqual({
       full: 'https://daggerheart-loot.pages.dev/img/ci1.webp',
       thumb: 'https://daggerheart-loot.pages.dev/img/thumb/ci1.webp',
       card: 'https://daggerheart-loot.pages.dev/og/ci1.jpg'
     });
+  });
+
+  it('links a catalog record with the build card version when it has one', () => {
+    const r = apiRecord(index, byId('ci1'), SITE, 'owner', 'abc123');
+    expect(r.link.ru).toBe(recordUrl(SITE, 'ci1', 'ru', 'abc123'));
+    expect(r.link.en).toBe(recordUrl(SITE, 'ci1', 'en', 'abc123'));
+    expect(r.link.ru).toBe('https://daggerheart-loot.pages.dev/i/ci1?v=abc123');
+    expect(r.link.en).toBe('https://daggerheart-loot.pages.dev/i/en/ci1?v=abc123');
   });
 
   it('carries the notice of its rights value', () => {
@@ -195,9 +205,27 @@ describe('apiRecord of a homebrew item', () => {
     const r = apiRecord(ix, item, SITE, 'owner');
     expect(r).toMatchObject({ id: HID, key: HB_KEY, origin: 'homebrew' });
     expect(r.rights).toEqual({ license: 'owner', notice: RIGHTS.homebrew });
-    expect(r.link.ru).toBe(`https://daggerheart-loot.pages.dev/h/${HID}`);
-    expect(r.link.en).toBe(`https://daggerheart-loot.pages.dev/en/h/${HID}`);
     expect(r.image).toBeNull();
+  });
+
+  it('links an item with an id as the app does, with its card version', () => {
+    const item = hb();
+    const r = apiRecord(withRecords(index, [item], []), item, SITE, 'owner', 'ignored');
+    const v = cardVersion(item);
+    expect(r.link.ru).toBe(appUrl(SITE, itemHash(HID), 'ru', v));
+    expect(r.link.en).toBe(appUrl(SITE, itemHash(HID), 'en', v));
+    expect(r.link.ru).toBe(`https://daggerheart-loot.pages.dev/h/${HID}?v=${v}`);
+    expect(r.link.en).toBe(`https://daggerheart-loot.pages.dev/en/h/${HID}?v=${v}`);
+  });
+
+  it('links an entry without an id by its key, with no version, and keeps the key as id', () => {
+    const item = hb();
+    delete (item as { hid?: string }).hid;
+    const r = apiRecord(withRecords(index, [item], []), item, SITE, 'owner', 'ignored');
+    expect(r.id).toBe(HB_KEY);
+    expect(r.link.ru).toBe(recordUrl(SITE, HB_KEY, 'ru'));
+    expect(r.link.en).toBe(recordUrl(SITE, HB_KEY, 'en'));
+    expect(r.link.ru).toBe(`https://daggerheart-loot.pages.dev/i/${HB_KEY}`);
   });
 
   it('builds an own picture from the bucket base', () => {

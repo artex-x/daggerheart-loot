@@ -1,0 +1,14 @@
+{
+  "request": {
+    "method": "GET",
+    "headers": {}
+  },
+  "answer": {
+    "status": 405,
+    "headers": {
+      "cache-control": "no-store",
+      "allow": "POST"
+    },
+    "body": null
+  }
+}

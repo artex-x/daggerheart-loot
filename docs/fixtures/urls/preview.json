@@ -10,7 +10,8 @@
     "/en/s/*",
     "/en/p/*",
     "/en/tables/*",
-    "/api/*"
+    "/api/*",
+    "/mcp/*"
   ],
   "build": [
     {
@@ -355,9 +356,8 @@
     },
     {
       "url": "https://daggerheart-loot.pages.dev/mcp",
-      "static": true,
-      "status": 404,
-      "why": "reserved for the ai-mcp task; the 404 page until then"
+      "status": 405,
+      "why": "the MCP endpoint takes POST only"
     }
   ]
 }
