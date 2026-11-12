@@ -3531,6 +3531,8 @@ catalog.csv`, then `node tools/build.js` - push it, and restart at (a);
 images in `docs/img/screens/` (`tools/screens.mjs`; `--only=<name>` recaptures one
 shot). The shot table is `tools/screens.lib.mjs`. A file is rewritten only when
 more than 0.1 % of its pixels change, so a second run prints `unchanged` eight times.
+A change below that share (one price or label) is not written: delete the file and run
+`npm run screens -- --only=<name>` to force it.
 
 1. After a UI change that a screen shows, run `npm run screens`.
 2. Look at the changed files, then commit them with the change or in a `docs` commit.

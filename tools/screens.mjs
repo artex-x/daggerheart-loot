@@ -1,7 +1,8 @@
 // Captures the README screenshots from the built app: npm run screens
 // (builds both directories first), or node tools/screens.mjs [--only=<name>] after a build.
 // A file is rewritten only when more than 0.1 % of its pixels change, so a recapture
-// of an unchanged screen leaves git alone. The procedure: .claude/README.md, "Screenshots".
+// of an unchanged screen leaves git alone. A smaller change is not written: to force it,
+// delete the file and run --only=<name>. The procedure: .claude/README.md, "Screenshots".
 
 import { mkdirSync, readFileSync, statSync, writeFileSync, existsSync } from 'node:fs';
 import { createRequire } from 'node:module';

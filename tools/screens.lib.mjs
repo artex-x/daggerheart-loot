@@ -20,7 +20,7 @@ export const LANGS = ['ru', 'en'];
 const SHOWCASE_LIST = '00000000-0000-4000-8000-000000000901';
 
 /** The roll value of the `roll` shot: a Core rules result that has a picture on every card. */
-export const ROLL_VALUE = '37';
+const ROLL_VALUE = '37';
 
 /* `build` is the built directory that holds the page: `dist` is what is published,
    `dist-test` carries the fake cloud (`?as=<user>`). A route per language is the path in the
