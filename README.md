@@ -452,11 +452,11 @@ and renumber `roll` on the rest. Where `img` is empty the app draws the glyph of
 the record's kind and hides the **Image** button, so a record can be added before
 its illustration exists; the same happens when a listed file fails to load.
 
-Thirty-one records carry `craft`, the list of `id`s they turn into - Core
+Thirty-four records carry `craft`, the list of `id`s they turn into - Core
 ingredients that become potions and the Core recipes (17), the Wondrous Environments
-ingredients (12), and the two Frostwyrd upgrades. Only one
+ingredients (12), the two Frostwyrd upgrades, the two Veiled Halls potions and the Alewife Almanac. Only one
 direction is stored; the reverse ("Made from") is built at load, so the two
-halves cannot drift apart. Fifteen descriptions point at rulebook cards and
+halves cannot drift apart. Thirty-six descriptions point at rulebook cards and
 adversaries through `refs`; that text travels with the item into copies and
 shares, so a player gets everything in one message.
 

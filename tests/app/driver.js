@@ -522,10 +522,16 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
     },
 
     /** Opens the «Ещё» menu `more` selects, by default the record's: of the open dialog,
-     *  else of the page; on a roll page the results line's. */
-    async openMore(more = '.cardpick [aria-haspopup="menu"], .reshead [aria-haspopup="menu"]') {
+     *  else of the page; on a roll page the picker row's. */
+    async openMore(more = '.cardpick [aria-haspopup="menu"], .pickrow [aria-haspopup="menu"]') {
       const handle = await page.evaluateHandle(
-        (sel) => document.querySelector('dialog[open] ' + sel) ?? document.querySelector(sel),
+        (sel) =>
+          document.querySelector(
+            sel
+              .split(', ')
+              .map((one) => 'dialog[open] ' + one)
+              .join(', ')
+          ) ?? document.querySelector(sel),
         more
       );
       const el = handle.asElement();

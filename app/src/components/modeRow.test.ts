@@ -1,5 +1,5 @@
-/* The mode row of the nine roll sections and its supplements menu
- * (docs/specs/FEATURES.md, "Chrome"). */
+/* The modes of the twelve roll sections: the picker and its sheet up to 760 px, the three
+ * pills from 761 px (docs/specs/FEATURES.md, "Chrome"). */
 import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -8,33 +8,41 @@ import { SECTION_LABEL, dict } from '../lib/dict.js';
 import { sectionHash } from '../lib/hash.js';
 import { SUPPLEMENTS } from '../lib/nav.js';
 import type { Section } from '../lib/types.js';
-import { fakeEnv, memoryRouter, memoryStorage } from '../ports/index.js';
+import {
+  fakeEnv,
+  fakeViewport,
+  memoryRouter,
+  memoryStorage,
+  type Band
+} from '../ports/index.js';
 import { AppState } from '../state/app.svelte.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 import ModeRow from './ModeRow.svelte';
 
 afterEach(cleanup);
 
-/* jsdom does not implement scrollIntoView: the supplements menu calls it once open. */
-Element.prototype.scrollIntoView = vi.fn();
+/* jsdom does not implement scrollIntoView: the sheet calls it once open. */
+const scrolled = vi.fn();
+Element.prototype.scrollIntoView = scrolled;
 
 const ROLL: readonly Section[] = ['roll/std', 'roll/alt', ...SUPPLEMENTS];
 
-function row(hash: string, lang: 'ru' | 'en' = 'ru') {
+function row(hash: string, band: Band, lang: 'ru' | 'en' = 'ru') {
   const app = new AppState(
-    fakeEnv({ router: memoryRouter(hash), storage: memoryStorage({ 'dhloot.lang.v1': lang }) })
+    fakeEnv({
+      router: memoryRouter(hash),
+      viewport: fakeViewport(band),
+      storage: memoryStorage({ 'dhloot.lang.v1': lang })
+    })
   );
   const view = render(ModeRow, { app });
   const nav = screen.getByRole('navigation', { name: dict(lang).modesLabel });
   return { app, view, nav };
 }
 
-const button = (nav: HTMLElement): HTMLElement =>
-  within(nav).getByRole('button', { expanded: false });
-
-describe('the mode row', () => {
+describe('the mode pills from 761 px', () => {
   it.each(ROLL)('draws three controls on %s and lights the one for it', (s) => {
-    const { nav } = row(sectionHash(s));
+    const { nav } = row(sectionHash(s), 'wide');
     const links = within(nav).getAllByRole('link');
     expect(links.map((a) => a.textContent)).toEqual([
       'Обычные правила',
@@ -44,10 +52,10 @@ describe('the mode row', () => {
     const lit = [...nav.querySelectorAll('[aria-current="page"]')];
     expect(lit).toHaveLength(1);
     expect(lit[0]?.getAttribute('data-section')).toBe(sectionHash(s));
-    const sup = button(nav);
-    expect(sup).toHaveAttribute('aria-haspopup', 'menu');
-    expect(sup.textContent).toBe(
-      s.startsWith('roll/s') || s === 'roll/alt' ? 'Дополнения' : dict('ru')[SECTION_LABEL[s]]
+    const button = within(nav).getByRole('button');
+    expect(button).toHaveAttribute('aria-haspopup', 'dialog');
+    expect(button.textContent).toBe(
+      s === 'roll/std' || s === 'roll/alt' ? 'Дополнения' : dict('ru')[SECTION_LABEL[s]]
     );
   });
 
@@ -66,18 +74,14 @@ describe('the mode row', () => {
     }
   );
 
-  it('draws the same three controls with no row of its own in the page head', async () => {
-    const app = new AppState(fakeEnv({ router: memoryRouter('#/roll/alt') }));
-    const view = render(ModeRow, { app, inhead: true });
-    const nav = screen.getByRole('navigation', { name: 'Режим броска' });
-    expect(nav).toHaveClass('inhead');
+  it('names the controls in English', () => {
+    const { nav } = row('#/roll/dread_gm_toolbox', 'wide', 'en');
     expect(
       within(nav)
         .getAllByRole('link')
         .map((a) => a.textContent)
-    ).toEqual(['Обычные правила', 'Альтернативные таблицы']);
-    expect(button(nav).textContent).toBe('Дополнения');
-    await expectNoA11yViolations(view.container);
+    ).toEqual(['Standard rules', 'Alternate tables']);
+    expect(within(nav).getByRole('button').textContent).toBe('Dread GM Toolbox');
   });
 
   it.each(['#/tables', '#/search', '#/lists', '#/i/ci1', '#/account'])(
@@ -88,103 +92,117 @@ describe('the mode row', () => {
     }
   );
 
-  it('names the controls in English', () => {
-    const { nav } = row('#/roll/dread_gm_toolbox', 'en');
-    expect(
-      within(nav)
-        .getAllByRole('link')
-        .map((a) => a.textContent)
-    ).toEqual(['Standard rules', 'Alternate tables']);
-    expect(button(nav).textContent).toBe('Dread GM Toolbox');
-  });
-
-  it('passes axe with the menu closed', async () => {
-    const { view } = row('#/roll/vault_of_ages');
+  it('passes axe with the sheet closed and open', async () => {
+    const { view, nav } = row('#/roll/vault_of_ages', 'wide');
     await expectNoA11yViolations(view.container);
+    await userEvent.click(within(nav).getByRole('button'));
+    expect(
+      screen.getByRole('dialog', { name: 'Режим броска: Vault of Ages' })
+    ).toBeInTheDocument();
+    await expectNoA11yViolations(document.body);
   });
 });
 
-describe('the supplements menu', () => {
+describe('the mode picker up to 760 px', () => {
+  it.each(ROLL)('draws one picker named for %s and no link', (s) => {
+    const { nav } = row(sectionHash(s), 'narrow');
+    const picker = within(nav).getByRole('button');
+    expect(picker).toHaveAttribute('aria-haspopup', 'dialog');
+    expect(picker).toHaveAttribute('data-section', sectionHash(s));
+    expect(picker).not.toHaveAttribute('aria-current');
+    expect(picker.textContent).toBe(dict('ru')[SECTION_LABEL[s]]);
+    expect(picker.getAttribute('aria-label')).toBe(
+      `Режим броска: ${dict('ru')[SECTION_LABEL[s]]}`
+    );
+    expect(within(nav).queryByRole('link')).toBeNull();
+  });
+
+  it('names the picker in English', () => {
+    const { nav } = row('#/roll/alt', 'narrow', 'en');
+    expect(
+      within(nav).getByRole('button', { name: 'Roll mode: Alternate tables' })
+    ).toBeVisible();
+  });
+
   async function open(hash: string, lang: 'ru' | 'en' = 'ru') {
-    const r = row(hash, lang);
-    await userEvent.click(button(r.nav));
-    const menu = screen.getByRole('menu', { name: dict(lang).grpSupplements });
-    return { ...r, menu, items: within(menu).getAllByRole('menuitem') };
+    const r = row(hash, 'narrow', lang);
+    const picker = within(r.nav).getByRole('button');
+    await userEvent.click(picker);
+    const sheet = screen.getByRole('dialog', { name: picker.getAttribute('aria-label') ?? '' });
+    return { ...r, picker, sheet, links: within(sheet).getAllByRole('link') };
   }
 
-  it('holds the ten supplements in order with the open one checked, the first focused', async () => {
-    const { view, menu, items } = await open('#/roll/vault_of_ages');
-    expect(items.map((i) => i.textContent)).toEqual(
-      SUPPLEMENTS.map((s) => dict('ru')[SECTION_LABEL[s]])
+  it('opens a sheet titled «Бросок» with the twelve modes in order, the open one current', async () => {
+    const { sheet, links } = await open('#/roll/vault_of_ages');
+    expect(within(sheet).getByRole('heading', { name: 'Бросок' })).toBeInTheDocument();
+    expect(links.map((a) => a.textContent.trim())).toEqual(
+      ROLL.map((s) => dict('ru')[SECTION_LABEL[s]])
     );
-    expect(items.map((i) => i.getAttribute('href'))).toEqual(
-      SUPPLEMENTS.map((s) => sectionHash(s).slice(1))
+    expect(links.map((a) => a.getAttribute('href'))).toEqual(
+      ROLL.map((s) => sectionHash(s).slice(1))
     );
-    const current = items.filter((i) => i.getAttribute('aria-current') === 'page');
-    expect(current.map((i) => i.getAttribute('href'))).toEqual(['/roll/vault_of_ages']);
-    expect(current[0]?.querySelector('svg')).not.toBeNull();
-    expect(items.filter((i) => i.querySelector('svg'))).toHaveLength(1);
-    expect(menu).toHaveClass('supmenu');
+    const current = links.filter((a) => a.getAttribute('aria-current') === 'page');
+    expect(current.map((a) => a.getAttribute('href'))).toEqual(['/roll/vault_of_ages']);
+    expect(within(sheet).getByRole('group', { name: 'Дополнения' })).toBeInTheDocument();
+    expect(within(sheet).getByRole('button', { name: 'Закрыть' })).toHaveFocus();
+    expect(scrolled).toHaveBeenCalled();
+    await expectNoA11yViolations(document.body);
+  });
+
+  it('titles the sheet «Roll» in English', async () => {
+    const { sheet } = await open('#/roll/std', 'en');
+    expect(within(sheet).getByRole('heading', { name: 'Roll' })).toBeInTheDocument();
+    expect(within(sheet).getByRole('group', { name: 'Supplements' })).toBeInTheDocument();
+  });
+
+  it('closes by «Закрыть» and returns the focus to the picker', async () => {
+    const { picker } = await open('#/roll/std');
+    await userEvent.click(screen.getByRole('button', { name: 'Закрыть' }));
     await waitFor(() => {
-      expect(items[0]).toHaveFocus();
+      expect(screen.queryByRole('dialog')).toBeNull();
     });
-    await expectNoA11yViolations(view.container);
+    expect(picker).toHaveFocus();
   });
 
-  it('checks no item off a supplement page', async () => {
-    const { items } = await open('#/roll/std');
-    expect(items.filter((i) => i.getAttribute('aria-current'))).toHaveLength(0);
-  });
-
-  it('moves with Down, Up, Home and End, and closes on Escape to its button', async () => {
-    const { nav, items } = await open('#/roll/std', 'en');
-    await waitFor(() => {
-      expect(items[0]).toHaveFocus();
-    });
-    await userEvent.keyboard('{ArrowDown}');
-    expect(items[1]).toHaveFocus();
-    await userEvent.keyboard('{ArrowUp}{ArrowUp}');
-    expect(items[9]).toHaveFocus();
-    await userEvent.keyboard('{Home}');
-    expect(items[0]).toHaveFocus();
-    await userEvent.keyboard('{End}');
-    expect(items[9]).toHaveFocus();
-    await userEvent.keyboard('{Escape}');
-    expect(screen.queryByRole('menu')).toBeNull();
-    expect(button(nav)).toHaveFocus();
-  });
-
-  it('returns the focus to its button after a supplement is picked', async () => {
-    const { nav, items } = await open('#/roll/std');
+  it('closes on a press of the open mode and keeps the focus on the picker', async () => {
+    const { picker, links } = await open('#/roll/std');
     const noNavigation = (e: MouseEvent): void => {
       e.preventDefault();
     };
     document.addEventListener('click', noNavigation);
-    await userEvent.click(items[3] as HTMLElement);
+    await userEvent.click(links[0] as HTMLElement);
     document.removeEventListener('click', noNavigation);
-    expect(screen.queryByRole('menu')).toBeNull();
-    expect(button(nav)).toHaveFocus();
-  });
-
-  it('closes on a click outside it', async () => {
-    await open('#/roll/std');
-    await userEvent.click(document.body);
-    expect(screen.queryByRole('menu')).toBeNull();
-  });
-
-  it('closes when the focus moves elsewhere', async () => {
-    const { nav } = await open('#/roll/std');
-    within(nav).getAllByRole('link')[0]?.focus();
     await waitFor(() => {
-      expect(screen.queryByRole('menu')).toBeNull();
+      expect(screen.queryByRole('dialog')).toBeNull();
     });
+    expect(picker).toHaveFocus();
   });
 
-  it('closes when a navigation happens', async () => {
-    const { app } = await open('#/roll/std');
-    app.go('#/roll/dread_gm_toolbox');
-    await waitFor(() => {
-      expect(screen.queryByRole('menu')).toBeNull();
+  it('draws the picker in the page and opens the sheet there', async () => {
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/roll/alt'), viewport: fakeViewport('narrow') })
     });
+    const picker = await screen.findByRole('button', {
+      name: 'Режим броска: Альтернативные таблицы'
+    });
+    expect(picker.closest('#main')).not.toBeNull();
+    expect(screen.queryByRole('link', { name: 'Обычные правила' })).toBeNull();
+    await userEvent.click(picker);
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+});
+
+describe('the sheet from 761 px', () => {
+  it('opens from «Дополнения» with the same twelve modes', async () => {
+    const { nav } = row('#/roll/std', 'wide');
+    const button = within(nav).getByRole('button');
+    await userEvent.click(button);
+    const sheet = screen.getByRole('dialog', { name: 'Режим броска: Обычные правила' });
+    expect(within(sheet).getAllByRole('link')).toHaveLength(12);
+    await userEvent.click(screen.getByRole('button', { name: 'Закрыть' }));
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).toBeNull();
+    });
+    expect(button).toHaveFocus();
   });
 });

@@ -849,6 +849,31 @@ describe('taking a record somewhere else', () => {
     expect(share.last.text).not.toBe('Зелье выносливости (расходник)');
   });
 
+  it('ends the shared text with the record link, with a picture or without', async () => {
+    const plain = fakeShare();
+    render(App, { env: at('cc1', { share: plain }) });
+    await userEvent.click(screen.getByRole('button', { name: 'Поделиться' }));
+    expect(plain.last.sent?.text?.endsWith('\nhttps://example.test/i/cc1')).toBe(true);
+    expect(plain.last.sent?.url).toBe('https://example.test/i/cc1');
+    cleanup();
+    const art = fakeShare();
+    render(App, { env: at('ci1', { share: art }) });
+    await userEvent.click(screen.getByRole('button', { name: 'Поделиться' }));
+    expect(art.last.sent?.files).toHaveLength(1);
+    expect(art.last.sent?.text?.endsWith('\nhttps://example.test/i/ci1')).toBe(true);
+    expect(art.last.sent?.url).toBeUndefined();
+  });
+
+  it('shares the text and the link without the picture on a desktop', async () => {
+    const share = fakeShare({ desktop: true });
+    render(App, { env: at('ci1', { share }) });
+    await userEvent.click(screen.getByRole('button', { name: 'Поделиться' }));
+    expect(share.last.sent?.files).toBeUndefined();
+    expect(share.last.sent?.url).toBe('https://example.test/i/ci1');
+    await pressMore('Скопировать изображение');
+    expect(screen.getByText('Картинка скопирована')).toBeInTheDocument();
+  });
+
   it('attaches no file for a record with no art', async () => {
     const share = fakeShare();
     render(App, { env: at('cc1', { share }) });
@@ -1080,6 +1105,57 @@ describe('the tier ladder', () => {
   });
 });
 
+describe('the dock clearance of the dialog toast in a short window', () => {
+  let app: AppState | undefined;
+  const dockAt = (top: number, short: boolean): HTMLElement => {
+    vi.stubGlobal('matchMedia', (q: string) => ({ matches: short, media: q }));
+    vi.spyOn(window, 'innerHeight', 'get').mockReturnValue(360);
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: Element
+    ) {
+      return { top: this.classList.contains('cardpick') ? top : 0 } as DOMRect;
+    });
+    app = new AppState(at('ci1'));
+    app.start();
+    const ci1 = app.index?.byId.get('ci1');
+    if (!app.index || !ci1) throw new Error('The test data has no ci1.');
+    render(RecordModal, { app, index: app.index, it: ci1, onclose: () => {} });
+    return screen.getByRole('dialog');
+  };
+
+  afterEach(() => {
+    app?.stop();
+    app = undefined;
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it('lifts the toast above a dock that is in view', () => {
+    const dialog = dockAt(300, true);
+    expect(dialog.style.getPropertyValue('--dock-clear')).toBe('68px');
+  });
+
+  it('writes nothing while the dock is out of view, and drops the value on a resize', () => {
+    const dialog = dockAt(400, true);
+    expect(dialog.style.getPropertyValue('--dock-clear')).toBe('');
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockReturnValue({
+      top: 300
+    } as DOMRect);
+    window.dispatchEvent(new Event('resize'));
+    expect(dialog.style.getPropertyValue('--dock-clear')).toBe('68px');
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockReturnValue({
+      top: 400
+    } as DOMRect);
+    window.dispatchEvent(new Event('resize'));
+    expect(dialog.style.getPropertyValue('--dock-clear')).toBe('');
+  });
+
+  it('writes nothing in a window that is not short', () => {
+    const dialog = dockAt(300, false);
+    expect(dialog.style.getPropertyValue('--dock-clear')).toBe('');
+  });
+});
+
 describe('the undo toast while the record dialog is open', () => {
   /* A modal dialog makes everything outside it inert, so the toast an action
      inside it raises is drawn inside it (docs/DECISIONS.md, 2026-09-24). */
@@ -1110,7 +1186,11 @@ describe('the undo toast while the record dialog is open', () => {
     const status = within(dialog).getByRole('status');
     const undo = within(status).getByRole('button', { name: 'Вернуть' });
     expect(undo).toHaveFocus();
-    expect(document.querySelectorAll('.toast[role]')).toHaveLength(1);
+    /* Both regions carry a role before any text (the live region exists first); one holds text. */
+    const shown = [...document.querySelectorAll('.toast[role]')].filter(
+      (el) => el.textContent.trim() !== ''
+    );
+    expect(shown).toHaveLength(1);
     await expectNoA11yViolations(dialog);
 
     await userEvent.click(undo);
@@ -1285,7 +1365,7 @@ describe("a supplement's rule card", () => {
     const { container } = render(App, {
       env: fakeEnv({ router: memoryRouter('#/i/ph37'), data: fakeData(REAL) })
     });
-    expect(container.textContent).toContain('Pistolheart · Том 2 · номер 10');
+    expect(container.textContent).toContain('Pistolheart · Том 2 · № 10');
   });
 });
 
@@ -1298,7 +1378,7 @@ describe('a consumable artifact', () => {
       env: fakeEnv({ router: memoryRouter('#/i/voa4_a2'), data: fakeData(REAL) })
     });
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Контракт Нарвиков');
-    expect(container.textContent).toContain('Vault of Ages · Артефакт · номер 8');
+    expect(container.textContent).toContain('Vault of Ages · Артефакт · № 8');
     expect(container.textContent).not.toContain('Ранг');
     await expectNoA11yViolations(container);
   });
@@ -1606,6 +1686,23 @@ describe('an own homebrew item', () => {
     render(App, { env: own({ share: fakeShare({ available: false }), clipboard: clip }) });
     await userEvent.click(await screen.findByRole('button', { name: 'Поделиться' }));
     expect(clip.last.text).toMatch(ITEM_URL);
+  });
+
+  it('sends the site address for an item with no address of its own', async () => {
+    const share = fakeShare();
+    const app = new AppState(own({ share }));
+    app.start();
+    await waitFor(() => {
+      expect(app.index?.byId.has('hb_engravedringaaaa')).toBe(true);
+    });
+    const index = app.index!;
+    const ring = index.byId.get('hb_engravedringaaaa')!;
+    const unlinked = { ...ring, hid: undefined } as typeof ring;
+    render(RecordModal, { app, index, it: unlinked, onclose: () => {} });
+    await userEvent.click(screen.getByRole('button', { name: 'Поделиться' }));
+    expect(share.last.url).toBe('https://example.test/');
+    expect(share.last.sent?.text?.endsWith('\nhttps://example.test/')).toBe(true);
+    app.stop();
   });
 
   it("hands out the preview link with the record's version from «Поделиться» and the link item", async () => {

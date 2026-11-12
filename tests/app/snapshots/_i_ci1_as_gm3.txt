@@ -20,7 +20,7 @@ RootWebArea "Первоклассный Спальный Мешок - Генер
   main ""
     StaticText "ПРЕДМЕТ"
     heading "Первоклассный Спальный Мешок" [level=1]
-    StaticText "Core · Предметы · номер 1 "
+    StaticText "Core · Предметы · № 1 "
     link "показать в таблице" [url=/tables/core_item/ci1]
     ... StaticText x8 of 12 same-shape siblings elided
     link "Мешок спокойных снов" [url=/h/00000000-0000-4000-8000-000000000609]
@@ -80,7 +80,7 @@ RootWebArea "Premium Bedroll - Daggerheart Loot Generator" [url=/i/en/ci1?as=gm3
   main ""
     StaticText "ITEM"
     heading "Premium Bedroll" [level=1]
-    StaticText "Core · Items · roll 1 "
+    StaticText "Core · Items · No. 1 "
     link "show in the table" [url=/en/tables/core_item/ci1]
     ... StaticText x8 of 12 same-shape siblings elided
     link "Ash Bedroll" [url=/en/h/00000000-0000-4000-8000-000000000604]

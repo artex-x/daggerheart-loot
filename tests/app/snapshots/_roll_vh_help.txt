@@ -21,7 +21,7 @@ RootWebArea "Escape the Veiled Halls - Генератор лута Daggerheart" 
     navigation "Режим броска"
       link "Обычные правила" [url=/roll/std]
       link "Альтернативные таблицы" [url=/roll/alt]
-      button "Escape the Veiled Halls" [expanded=false haspopup=menu]
+      button "Escape the Veiled Halls" [haspopup=dialog]
     button "Открывать при запуске" [pressed=false]
     button "Об этой книге" [expanded=true]
     StaticText "В разделе 15 позиций приключения - 7 предметов и 8 расходников, ..." [namelen=157 namehash=67a30fb4]
@@ -96,7 +96,7 @@ RootWebArea "Escape the Veiled Halls - Daggerheart Loot Generator" [url=/en/roll
     navigation "Roll mode"
       link "Standard rules" [url=/en/roll/std]
       link "Alternate tables" [url=/en/roll/alt]
-      button "Escape the Veiled Halls" [expanded=false haspopup=menu]
+      button "Escape the Veiled Halls" [haspopup=dialog]
     button "Open on start" [pressed=false]
     button "About this book" [expanded=true]
     StaticText "This section holds the adventure's 15 entries - 7 items and 8 co..." [namelen=165 namehash=20bce823]

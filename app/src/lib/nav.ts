@@ -23,7 +23,7 @@ export const SUPPLEMENTS = [
 /** The three jobs of the header. */
 export type Job = 'roll' | 'tables' | 'search';
 
-/** Returns whether a section is a supplement, that is, reached through the supplements menu. */
+/** Returns whether a section is a supplement, that is, reached through the mode picker's sheet. */
 export function isSupplement(s: Section | null): boolean {
   return s !== null && (SUPPLEMENTS as readonly Section[]).includes(s);
 }

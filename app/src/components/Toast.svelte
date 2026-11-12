@@ -16,9 +16,9 @@
      styles this component's own `.toast` rule below undoes.
 
      The element stays mounted whether or not a toast is showing - `hidePopover`
-     needs it to exist - so `role`/`aria-live` are only set while `toast`
-     is not null. Without that a component test's `getByRole('status')` would
-     match this alongside the storage warning even while idle.
+     needs it to exist - and always sets its `role` and `aria-live`. An idle popover is
+     `display: none` and leaves the accessibility tree; a test that means "a shown toast"
+     reads `.toast:popover-open`.
 
      jsdom (v30) applies the UA default `[popover]:not(:popover-open){display:
      none}` from CSS alone, but implements neither `showPopover`/`hidePopover`
@@ -152,8 +152,8 @@
   class:page={!inDialog}
   class:err={toast?.mode === 'err'}
   class:act={toast?.mode === 'act'}
-  role={toast ? (toast.mode === 'err' ? 'alert' : 'status') : undefined}
-  aria-live={toast ? (toast.mode === 'err' ? 'assertive' : 'polite') : undefined}
+  role={toast?.mode === 'err' ? 'alert' : 'status'}
+  aria-live={toast?.mode === 'err' ? 'assertive' : 'polite'}
   onpointerenter={() => (hover = true)}
   onpointerleave={() => (hover = false)}
   onfocusin={(e) => {
@@ -202,6 +202,7 @@
   .toast {
     position: fixed;
     inset: auto auto 26px 50%;
+    bottom: max(26px, var(--overlay-clear, 0px));
     margin: 0;
     overflow: visible;
     transform: translateX(-50%);
@@ -226,7 +227,10 @@
   /* The page's toast floats above the selection bar, the editor's bottom bar and the print
      page's dock (each sets its height). */
   .toast.page {
-    bottom: calc(26px + var(--selbar-h, 0px) + var(--ebar-h, 0px) + var(--pdock-h, 0px));
+    bottom: max(
+      calc(26px + var(--selbar-h, 0px) + var(--ebar-h, 0px) + var(--pdock-h, 0px)),
+      var(--overlay-clear, 0px)
+    );
   }
 
   /* Up to 760 px a dialog's copy floats above the record dialog's dock or a sheet's foot,
@@ -234,21 +238,32 @@
      the scroll (`RecordModal`). From 761 px the modal is centered and the copy keeps its place. */
   @media (max-width: 760px) and (min-height: 481px) {
     .toast:not(.page) {
-      bottom: calc(26px + var(--dock-h, 0px));
+      bottom: max(calc(26px + var(--dock-h, 0px)), var(--overlay-clear, 0px));
+    }
+  }
+
+  /* A short window's dock joins the card's scroll: while it is in view the copy rises above it
+     (`RecordModal` writes `--dock-clear`). */
+  @media (max-width: 760px) and (max-height: 480px) {
+    .toast:not(.page) {
+      bottom: max(26px, var(--dock-clear, 0px), var(--overlay-clear, 0px));
     }
   }
 
   /* A sheet's foot stays on the window's bottom at every height. */
   @media (max-width: 760px) {
     :global(dialog.sheet) .toast:not(.page) {
-      bottom: calc(26px + var(--dock-h, 0px));
+      bottom: max(calc(26px + var(--dock-h, 0px)), var(--overlay-clear, 0px));
     }
   }
 
   /* Under 481 px of height the editor's bar stays in the flow (`tokens.css`). */
   @media (max-height: 480px) {
     .toast.page {
-      bottom: calc(26px + var(--selbar-h, 0px) + var(--pdock-h, 0px));
+      bottom: max(
+        calc(26px + var(--selbar-h, 0px) + var(--pdock-h, 0px)),
+        var(--overlay-clear, 0px)
+      );
     }
   }
 

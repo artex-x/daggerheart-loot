@@ -24,6 +24,7 @@ import { VOLUME_ORDER, volumeName } from './sectionProps.js';
 import {
   descOf,
   eqLine,
+  eqCells,
   eqParts,
   EQ_BURDEN,
   EQ_CLS,
@@ -361,6 +362,49 @@ describe('a stat block with gaps in it', () => {
     const { eq, ...loot } = gear({ t: 'weapon', tier: 1 });
     void eq;
     expect(eqParts(loot, 'ru', LABELS.ru)).toEqual([]);
+    expect(eqCells(loot, 'ru', LABELS.ru)).toEqual([]);
+  });
+
+  it('gives a weapon five fixed cells and keeps an empty one for a missing part', () => {
+    const full = gear({
+      t: 'weapon',
+      tier: 1,
+      cls: 'phy',
+      tr: 'strength',
+      rg: 'melee',
+      dmg: 'd8',
+      dt: 'phy',
+      bu: 2
+    });
+    const cells = eqCells(full, 'en', LABELS.en);
+    expect(cells).toHaveLength(5);
+    expect(cells.every((c) => c !== '')).toBe(true);
+    expect(cells[3]).toMatch(/^d8 \S+/);
+    const bare = eqCells(gear({ t: 'weapon', tier: 1, dmg: 'd6' }), 'en', LABELS.en);
+    expect(bare).toHaveLength(5);
+    expect(bare).toEqual(['', '', '', 'd6', '']);
+  });
+
+  it('gives an armor two cells, thresholds then score, and the cells match the sentence', () => {
+    const armor = gear({ t: 'armor', tier: 2, th: [7, 15], as: 4 });
+    expect(eqCells(armor, 'ru', LABELS.ru)).toEqual([
+      `${LABELS.ru.thresholds} 7/15`,
+      `${LABELS.ru.armorScore} 4`
+    ]);
+    expect(eqCells(gear({ t: 'armor', tier: 2 }), 'ru', LABELS.ru)).toEqual(['', '']);
+    for (const lang of ['ru', 'en'] as const) {
+      const sword = gear({
+        t: 'weapon',
+        tier: 1,
+        cls: 'mag',
+        tr: 'finesse',
+        rg: 'close',
+        bu: 1
+      });
+      expect(eqCells(sword, lang, LABELS[lang]).filter(Boolean)).toEqual(
+        eqParts(sword, lang, LABELS[lang], { noType: true, noTier: true })
+      );
+    }
   });
 });
 

@@ -21,7 +21,7 @@ RootWebArea "Escape the Veiled Halls - Генератор лута Daggerheart" 
     navigation "Режим броска"
       link "Обычные правила" [url=/roll/std]
       link "Альтернативные таблицы" [url=/roll/alt]
-      button "Escape the Veiled Halls" [expanded=false haspopup=menu]
+      button "Escape the Veiled Halls" [haspopup=dialog]
     button "Открывать при запуске" [pressed=false]
     button "Об этой книге" [expanded=false]
     button "Бросить 1-15"
@@ -95,7 +95,7 @@ RootWebArea "Escape the Veiled Halls - Daggerheart Loot Generator" [url=/en/roll
     navigation "Roll mode"
       link "Standard rules" [url=/en/roll/std]
       link "Alternate tables" [url=/en/roll/alt]
-      button "Escape the Veiled Halls" [expanded=false haspopup=menu]
+      button "Escape the Veiled Halls" [haspopup=dialog]
     button "Open on start" [pressed=false]
     button "About this book" [expanded=false]
     button "Roll 1-15"

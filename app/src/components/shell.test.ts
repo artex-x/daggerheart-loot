@@ -487,20 +487,19 @@ describe('which job is lit', () => {
     );
   });
 
-  /* From 761 px the roll page's head draws the same controls (DESIGN.md, "The Head Order
-     Rule"). */
-  it.each([
-    ['narrow', false],
-    ['mid', true],
-    ['wide', true]
-  ] as const)('draws the mode row once, inside main: %s', (band, inside) => {
-    const { container } = render(App, {
-      env: at('#/roll/alt', { viewport: fakeViewport(band) })
-    });
-    const modes = screen.getAllByRole('navigation', { name: 'Режим броска' });
-    expect(modes).toHaveLength(1);
-    expect(container.querySelector('main')?.contains(modes[0] as Node)).toBe(inside);
-  });
+  /* Up to 760 px the picker row draws the picker; from 761 px the page's head draws the
+     pills (DESIGN.md, "The Head Order Rule"). */
+  it.each(['narrow', 'mid', 'wide'] as const)(
+    'draws the mode row once, inside main: %s',
+    (band) => {
+      const { container } = render(App, {
+        env: at('#/roll/alt', { viewport: fakeViewport(band) })
+      });
+      const modes = screen.getAllByRole('navigation', { name: 'Режим броска' });
+      expect(modes).toHaveLength(1);
+      expect(container.querySelector('main')?.contains(modes[0] as Node)).toBe(true);
+    }
+  );
 
   it('lights «Бросок» and the supplements button with its name on a supplement', () => {
     for (const [hash, name] of [
@@ -734,6 +733,19 @@ describe('the toast component, directly', () => {
     await tick();
     expect(inDialog.container.querySelector('.toast')).not.toHaveClass('page');
     await expectNoA11yViolations(inDialog.container);
+  });
+
+  it('is a live region before its text arrives, and an alert only for an error', async () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+    const { container } = render(Toast, { app });
+    const box = container.querySelector('.toast');
+    expect(box).toHaveAttribute('role', 'status');
+    expect(box).toHaveAttribute('aria-live', 'polite');
+    app.say(() => 'Не получилось', { error: true });
+    await tick();
+    expect(box).toHaveAttribute('role', 'alert');
+    expect(box).toHaveAttribute('aria-live', 'assertive');
+    await expectNoA11yViolations(container);
   });
 
   it('runs the action and hides the toast when its button is pressed', async () => {
@@ -1406,6 +1418,23 @@ describe('the three jobs and the lists in every build', () => {
     expect(document.title).toBe('My lists - Daggerheart Loot Generator');
   });
 
+  it('titles a signed-out account list address «Мои списки» and "My lists"', async () => {
+    render(App, { env: at('#/lists/' + uuid(101), { cloud: fakeCloud(SEED) }) });
+    await waitFor(() => {
+      expect(document.title).toBe('Мои списки - Генератор лута Daggerheart');
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'EN' }));
+    expect(document.title).toBe('My lists - Daggerheart Loot Generator');
+  });
+
+  it('keeps the plain title of an account list address while the session is unknown', async () => {
+    const cloud = fakeCloud(SEED);
+    cloud.auth.session = () => new Promise(() => undefined);
+    render(App, { env: at('#/lists/' + uuid(101), { cloud }) });
+    await new Promise((r) => setTimeout(r, 0));
+    expect(document.title).toBe('Генератор лута Daggerheart');
+  });
+
   it.each(['#/lists', '#/lists/' + uuid(101), '#/l/abc'])(
     'draws the not-found page on %s with no sign-in, keeps the address and the plain title',
     (hash) => {
@@ -1485,6 +1514,78 @@ describe('the focus after an in-app navigation (rule 20)', () => {
     await tick();
     await tick();
     expect(brand).toHaveFocus();
+  });
+});
+
+describe('the scroll and the focus after a navigation or a Back', () => {
+  const rowButton = (): HTMLElement | null =>
+    document.querySelector<HTMLElement>('[data-row="ci1"] button.row-main');
+
+  it('opens a page a link followed at the top, and leaves a Back to the browser', async () => {
+    const scroll = fakeScroll();
+    const router = memoryRouter('#/tables/core_item');
+    render(App, { env: fakeEnv({ router, data: fakeData(LOOT), scroll }) });
+    await tick();
+    scroll.to(1139);
+    expect(router.click('/i/ci1')).toBe(true);
+    await tick();
+    expect(scroll.y()).toBe(0);
+    scroll.to(700);
+    router.back();
+    await tick();
+    expect(scroll.y()).toBe(700);
+  });
+
+  it('keeps the page where it is for a row link, whose address names the scroll', async () => {
+    const scroll = fakeScroll();
+    const router = memoryRouter('#/tables/core_item');
+    render(App, { env: fakeEnv({ router, data: fakeData(LOOT), scroll }) });
+    await tick();
+    scroll.to(800);
+    Element.prototype.scrollIntoView = (): void => undefined;
+    expect(router.click('/tables/core_item/ci1')).toBe(true);
+    await tick();
+    expect(scroll.y()).toBe(800);
+  });
+
+  it('puts the focus on the row of the record that was left, after Back', async () => {
+    const router = memoryRouter('#/tables/core_item');
+    render(App, { env: fakeEnv({ router, data: fakeData(LOOT) }) });
+    await waitFor(() => {
+      expect(rowButton()).not.toBeNull();
+    });
+    rowButton()?.focus();
+    expect(router.click('/i/ci1')).toBe(true);
+    await waitFor(() => {
+      expect(screen.getByRole('main')).toHaveFocus();
+    });
+    router.back();
+    await waitFor(() => {
+      expect(rowButton()).toHaveFocus();
+    });
+  });
+
+  it('puts the focus on the row of the record whose dialog the page link left', async () => {
+    const router = memoryRouter('#/tables/core_item');
+    render(App, { env: fakeEnv({ router, data: fakeData(LOOT) }) });
+    await waitFor(() => {
+      expect(rowButton()).not.toBeNull();
+    });
+    await userEvent.click(rowButton() as HTMLElement);
+    const dialog = await waitFor(() => {
+      const d = document.querySelector<HTMLElement>('dialog[data-record="ci1"]');
+      expect(d).not.toBeNull();
+      return d as HTMLElement;
+    });
+    dialog.querySelector<HTMLElement>('button')?.focus();
+    expect(router.click('/i/ci1')).toBe(true);
+    await waitFor(() => {
+      expect(screen.getByRole('main')).toHaveFocus();
+    });
+    router.back();
+    await waitFor(() => {
+      expect(rowButton()).toHaveFocus();
+    });
   });
 });
 

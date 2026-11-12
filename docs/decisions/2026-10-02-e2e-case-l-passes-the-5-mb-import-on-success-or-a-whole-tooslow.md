@@ -4,7 +4,7 @@
 - Task: `persist-7d-homebrew-files` (the planner, 2026-10-02; the owner: retry first, then plan a fix).
 - Decision: case L of `app/src/ports/cloud.contract.ts` passes the notes-heavy import (about 5.5 MB of rows) when it
   answers `ok`, or `refused` with `reason: 'tooSlow'` and no list written, and logs which with the time; any other
-  answer fails. The import of 50 lists of 100 entries keeps its 6000 ms bound. The product does not change: a timeout
+  answer fails. The import of 50 lists of 100 entries keeps its bound; `IMPORT_MS` is now 15000 ms (2026-11-10). The product does not change: a timeout
   already answers «Файл слишком большой для одного импорта: разделите его на несколько.» and writes nothing.
 - Rejected: a retry in the case (each try costs 8 s of a swapping host, and a pass proves no more than the first
   answer); a smaller notes-heavy import (it hides the 5 MiB file that the app accepts); a contract that continues past

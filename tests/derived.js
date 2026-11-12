@@ -1330,6 +1330,42 @@ Object.keys(lines).forEach((k) =>
     'missing the Russian step word ' + w
   )
 );
+/* Errata and source corrections (docs/provenance/errata.md). The Core errata, NEW p. 317
+   replaces the Revolver d6 with a d8, and NEW p. 275 gives the Sledgehammer Massive
+   line -1 to Evasion; the printed Core book still shows the old values. */
+const errataById = Object.fromEntries(ALL.map((x) => [x.id, x]));
+[
+  ['f37', 'd8+1'],
+  ['f38', 'd8+4'],
+  ['f39', 'd8+7'],
+  ['f40', 'd8+10']
+].forEach(([id, dmg]) =>
+  ok(errataById[id].eq.dmg === dmg, id + ': Revolver damage is not ' + dmg)
+);
+ok(
+  errataById.f6.ende.indexOf('−1 to Evasion') >= 0 &&
+    errataById.f6.rud.indexOf('−1 к Уклонению') >= 0,
+  'f6: the Sledgehammer Massive line is not -1 to Evasion in both languages'
+);
+/* The book prints the Paddle under "Magic Weapon"; class follows the printed table. */
+ok(
+  errataById.lr12.eq.cls === 'mag' && errataById.lr12.eq.dt === 'phy',
+  'lr12: expected class mag and damage type phy'
+);
+/* Vault of Ages 3 description page: physical damage, "Psionic Spike". */
+ok(
+  errataById.voa3_t4a.eq.dt === 'phy' &&
+    errataById.voa3_t4a.eq.cls === 'phy' &&
+    errataById.voa3_t4a.ende.indexOf('***Psionic Spike:***') >= 0 &&
+    errataById.voa3_t4a.rud.indexOf('***Псионический Шип:***') >= 0,
+  'voa3_t4a: expected physical damage and the Psionic Spike feature'
+);
+/* The game has damage thresholds only; both languages name them. */
+ok(
+  errataById.mw87.ende.indexOf('damage thresholds') >= 0 &&
+    errataById.mw87.ende.indexOf('Armor Thresholds') < 0,
+  'mw87: the English text does not name damage thresholds'
+);
 
 console.log('counters in the text');
 /* The record count is spelled out in words in the meta descriptions, in the
@@ -2658,9 +2694,13 @@ ok(
 );
 // The lr records ship rule text only (docs/decisions, 2026-11-07, "The Last Round Table
 // records keep rule text and lose lore"); 450 / 520 sit just above the longest kept text.
+// lr20 is exempt: its four roll outcomes are rule text, kept in the record rather than a card.
 ok(
   lr.every(
-    (x) => x.ende.length > 0 && x.rud.length > 0 && x.ende.length <= 450 && x.rud.length <= 520
+    (x) =>
+      x.ende.length > 0 &&
+      x.rud.length > 0 &&
+      (x.id === 'lr20' || (x.ende.length <= 450 && x.rud.length <= 520))
   ),
   'an lr record is empty or longer than 450 (EN) / 520 (RU) characters: lore came back'
 );
@@ -2697,7 +2737,7 @@ ok(
   'ph-most-wanted',
   'lr-recipes',
   'lr-deed',
-  'lr-fruitcake'
+  'lr-impaired'
 ].forEach((k) =>
   ok(
     !!L.refs[k] &&
@@ -2734,6 +2774,23 @@ Object.entries(VOA4_REFS).forEach(([key, id]) => {
   ok(!!L.refs[key], key + ': ref not found');
   ok((voa4ById[id].refs || []).indexOf(key) >= 0, id + ': expected to reference ' + key);
 });
+/* Volume 4 follows v1.2 (docs/provenance/voa4-errata.md). */
+ok(
+  voa4ById.voa4_t2a.eq.dmg === 'd8+4' &&
+    voa4ById.voa4_t3e.eq.dmg === 'd10+7' &&
+    voa4ById.voa4_t4g.eq.dt === 'mag' &&
+    voa4ById.voa4_t4g.eq.cls === 'mag',
+  'Volume 4 damage values do not follow v1.2'
+);
+ok(
+  L.sets['saints-ensemble'].ende.indexOf('+2 Evasion') >= 0 &&
+    L.sets['saints-ensemble'].rud.indexOf('+2 к Уклонению') >= 0,
+  "Saint's Ensemble does not give +2 Evasion in both languages"
+);
+ok(
+  voa4ById.voa4_a2.ende.indexOf('place this card in your vault') < 0,
+  'voa4_a2 still sends the card to the vault'
+);
 /* The book prints the set bonus as a line on each member; it lives on the set. */
 ['voa4_t3d', 'voa4_t3e', 'voa4_t3f'].forEach((id) => {
   const x = voa4ById[id];

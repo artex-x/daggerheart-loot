@@ -2385,11 +2385,20 @@ const LONG_CHECKS = [
   {
     // No `--shard=` exemption, unlike `golden`/`sweep` below: a run-all
     // shard packs a whole `browser` matrix row of suites, not one small
-    // slice - a local `--shard=4/4` measured 384s, so this is exactly the
-    // shape the reminder exists for, not an exception to it.
+    // slice - a CI row of `app/states` took 505-807 s (run 42821823209), so
+    // this is exactly the shape the reminder exists for, not an exception.
     match: (joined) => /^node tests\/run-all\.js\b/.test(joined),
     family: 'run-all',
-    cost: '~260-290s pooled when filtered to one route/filter set, up to ~380s for one --shard=n/4 row; an unfiltered, unsharded run cannot finish in one call'
+    cost: '~260-290s pooled when filtered to one route/filter set, 440-840s for one row (an `app/states` or `app/sweep` row); an unfiltered, unsharded run cannot finish in one call'
+  },
+  {
+    // A bare call runs all cases serially; `--shard=n/m` is the one-row form.
+    match: (joined) =>
+      /^node tests\/app\/states\.js\b/.test(joined) && !/--shard=/.test(joined),
+    family: 'states',
+    cost: 'about 30 min serial for a bare call; a shard takes 440-807 s (CI, run 42821823209)',
+    message: (joined, cost) =>
+      `\`${joined}\` runs every case in one process (${cost}). A 600 s foreground call cannot hold the slowest shard (755-807 s). Run one \`--shard=n/4\` with run_in_background and read its result when it exits, one shard at a time, or leave the suite to CI's run on the pushed commit.`
   },
   {
     match: (joined) =>

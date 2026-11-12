@@ -282,6 +282,8 @@ export interface ScrollPort {
   onscroll(fn: () => void): () => void;
   /** Scrolls `el` into view; `busy()` answers true until the scroll settles. */
   into(el: Element, options: ScrollIntoViewOptions): void;
+  /** Moves the page to its top at once, then marks it as moved until the scroll settles. */
+  top(): void;
   /** Marks the page as moved by the app or the browser, until the scroll settles. */
   settle(): void;
   /** Whether a scroll that no reader asked for is still running. */

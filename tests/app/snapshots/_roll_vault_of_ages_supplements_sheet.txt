@@ -1,0 +1,117 @@
+# #/roll/vault_of_ages ~ supplements sheet
+# route: #/roll/vault_of_ages
+# why: from 761 px «Дополнения» opens the same sheet, centered: the title «Бросок», the two own modes, the caption and ten supplements, Vault of Ages current
+
+## ru :: tree
+RootWebArea "Vault of Ages - Генератор лута Daggerheart" [url=/roll/vault_of_ages]
+  dialog "Режим броска: Vault of Ages" [modal=true]
+    heading "Бросок" [level=2]
+    button "Закрыть" [focused=true]
+    link "Обычные правила" [url=/roll/std]
+    link "Альтернативные таблицы" [url=/roll/alt]
+    link "Wondrous Environments" [url=/roll/wondrous_environments]
+    link "Dread GM Toolbox" [url=/roll/dread_gm_toolbox]
+    link "Vault of Ages" [url=/roll/vault_of_ages]
+    link "The Dragon's Vault" [url=/roll/dragons_vault]
+    link "Arazo's Artifacts" [url=/roll/arazos_artifacts]
+    link "Предметы сообществ" [url=/roll/community_items]
+    link "Many Worlds Tavern" [url=/roll/many_worlds_tavern]
+    link "Pistolheart" [url=/roll/pistolheart]
+    link "The Last Round Table" [url=/roll/last_round_table]
+    link "Escape the Veiled Halls" [url=/roll/escape_the_veiled_halls]
+
+## ru :: controls
+?Об этой книге
+Arazo's Artifacts
+Dread GM Toolbox
+EN
+Escape the Veiled Halls
+Many Worlds Tavern
+Pistolheart
+RU
+The Dragon's Vault
+The Last Round Table
+Vault of Ages
+Wondrous Environments
+daggerheart.com
+Альтернативные таблицы
+Благословенный Нож Шеф-Повара
+Бросить 1-30
+Бросок
+В список
+Войти
+Ещё
+Закрыть
+К содержимому
+Конфиденциальность
+ЛутDaggerheart
+На единицу больше
+На единицу меньше
+Обычные правила
+Открывать при запуске
+Открыть карточку
+Поделиться
+Поиск
+Предметы сообществ
+Раздел книги
+Результат броска
+Таблицы
+Условия использования
+Установить как приложение
+
+## en :: tree
+RootWebArea "Vault of Ages - Daggerheart Loot Generator" [url=/en/roll/vault_of_ages]
+  dialog "Roll mode: Vault of Ages" [modal=true]
+    heading "Roll" [level=2]
+    button "Close" [focused=true]
+    link "Standard rules" [url=/en/roll/std]
+    link "Alternate tables" [url=/en/roll/alt]
+    link "Wondrous Environments" [url=/en/roll/wondrous_environments]
+    link "Dread GM Toolbox" [url=/en/roll/dread_gm_toolbox]
+    link "Vault of Ages" [url=/en/roll/vault_of_ages]
+    link "The Dragon's Vault" [url=/en/roll/dragons_vault]
+    link "Arazo's Artifacts" [url=/en/roll/arazos_artifacts]
+    link "Community items" [url=/en/roll/community_items]
+    link "Many Worlds Tavern" [url=/en/roll/many_worlds_tavern]
+    link "Pistolheart" [url=/en/roll/pistolheart]
+    link "The Last Round Table" [url=/en/roll/last_round_table]
+    link "Escape the Veiled Halls" [url=/en/roll/escape_the_veiled_halls]
+
+## en :: controls
+?About this book
+Add to list
+Alternate tables
+Arazo's Artifacts
+Blessed Chef's Knife
+Close
+Community items
+Dread GM Toolbox
+EN
+Escape the Veiled Halls
+Install as an app
+LootDaggerheart
+Many Worlds Tavern
+More
+One higher
+One lower
+Open card
+Open on start
+Pistolheart
+Privacy
+RU
+Roll
+Roll 1-30
+Roll result
+Search
+Section
+Share
+Sign in
+Skip to content
+Standard rules
+Tables
+Terms of use
+The Dragon's Vault
+The Last Round Table
+Vault of Ages
+Wondrous Environments
+daggerheart.com

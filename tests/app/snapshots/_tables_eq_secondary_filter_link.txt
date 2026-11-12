@@ -34,7 +34,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     button "Список" [pressed=true]
     button "Сетка" [pressed=false]
     button "Ссылка на таблицу"
-    StaticText "Показано 26 из 148"
+    StaticText "Показано 27 из 148"
     button "Выбрать"
     complementary "Фильтры"
       heading "Фильтры · 1" [level=2]
@@ -57,12 +57,12 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       button "Есть улучшение" [pressed=false]
       button "Уникальные" [pressed=false]
     heading "Ранг 1" [level=2]
-    ... button x28 of 32 same-shape siblings elided
+    ... button x29 of 33 same-shape siblings elided
     heading "Ранг 2" [level=2]
     heading "Ранг 3" [level=2]
     heading "Ранг 4" [level=2]
-    button "Щупальце Черной Крови УНИКАЛЬНОЕ HOPE & FEAR Магическое · Инстин..." [namelen=219 namehash=9e5916ff]
     button "Легендарный Священный Щит ТЁМНОЕ СЕРДЦЕ АНДАЛУРИИ Магическое · И..." [namelen=203 namehash=6e5410ac]
+    button "32 Нож Единорога УНИКАЛЬНОЕ VAULT OF AGES Магическое · Искусност..." [namelen=320 namehash=394e5d30]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -77,6 +77,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 2
 28Святой ЩитУникальноеVault of AgesМагическое · Инстинкт · Вплот... [namelen=331 namehash=a68f9d75]
 3
+32Нож ЕдинорогаУникальноеVault of AgesМагическое · Искусность · ... [namelen=313 namehash=bc210dc4]
 4
 6Ритуальный Клинок СехметУникальноеVault of AgesМагическое · Иск... [namelen=275 namehash=0d422fab]
 6Щит СолнцаУникальноеDread GM ToolboxМагическое · Сила · Вплотну... [namelen=189 namehash=039083ba]
@@ -190,7 +191,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_secondary/f
     button "List" [pressed=true]
     button "Grid" [pressed=false]
     button "Link to this table"
-    StaticText "26 of 148 shown"
+    StaticText "27 of 148 shown"
     button "Select"
     complementary "Filters"
       heading "Filters · 1" [level=2]
@@ -213,12 +214,12 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_secondary/f
       button "Upgradable" [pressed=false]
       button "Unique" [pressed=false]
     heading "Tier 1" [level=2]
-    ... button x28 of 32 same-shape siblings elided
+    ... button x29 of 33 same-shape siblings elided
     heading "Tier 2" [level=2]
     heading "Tier 3" [level=2]
     heading "Tier 4" [level=2]
-    button "Blackblood Tendril UNIQUE HOPE & FEAR Magic · Instinct · Close ·..." [namelen=216 namehash=5a932907]
     button "Legendary Hallowed Shield DARK HEART OF ANDALURIA Magic · Instin..." [namelen=193 namehash=3d7680b2]
+    button "32 Unicorn Knife UNIQUE VAULT OF AGES Magic · Finesse · Melee · ..." [namelen=283 namehash=061948f5]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -233,6 +234,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_secondary/f
 2
 28Saintly GuardUniqueVault of AgesMagic · Instinct · Melee · d6+... [namelen=298 namehash=7b118434]
 3
+32Unicorn KnifeUniqueVault of AgesMagic · Finesse · Melee · d8+6... [namelen=276 namehash=9439c6af]
 4
 6Ritual Blade of SekhmetUniqueVault of AgesMagic · Finesse · Mel... [namelen=249 namehash=2c492114]
 6Shield of the SunUniqueDread GM ToolboxMagic · Strength · Melee... [namelen=179 namehash=68f65c70]

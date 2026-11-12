@@ -38,6 +38,7 @@
   import StatusRegion from './StatusRegion.svelte';
   import TextInput from './TextInput.svelte';
   import { watchBarHeight } from './barHeight.js';
+  import { watchStickyTop } from './stickyTop.js';
   import { newArtName, shownArt, type ArtValue } from '../lib/art.js';
   import { limitText } from '../lib/cloudLists.js';
   import { lineMembers } from '../lib/data.js';
@@ -148,6 +149,8 @@
      padding follows (WCAG 2.4.11). */
   let previewing = $state(false);
   let previewButton = $state<HTMLButtonElement | undefined>(undefined);
+  let previewColumn = $state<HTMLDivElement | undefined>(undefined);
+  $effect(() => (previewColumn ? watchStickyTop(previewColumn) : undefined));
   let ebar = $state<HTMLDivElement | undefined>(undefined);
   let summary = $state<HTMLDivElement | undefined>(undefined);
   let formEl = $state<HTMLFormElement | undefined>(undefined);
@@ -1451,7 +1454,7 @@
             >
             {#if stored}
               <span class="barmore">
-                <MoreMenu {app} id="hb-bar-more" up size="sm">
+                <MoreMenu {app} id="hb-bar-more" size="sm">
                   {#snippet children(close: () => void)}
                     <button
                       type="button"
@@ -1483,7 +1486,11 @@
       </form>
     </Panel>
     {#if !narrow}
-      <div class="preview" lang={editIn === app.lang ? undefined : editIn}>
+      <div
+        class="preview"
+        bind:this={previewColumn}
+        lang={editIn === app.lang ? undefined : editIn}
+      >
         {@render previewBody()}
       </div>
     {/if}
@@ -1522,8 +1529,10 @@
        scrolls inside, or its bottom stays out of reach. */
     .preview {
       position: sticky;
-      top: 130px;
-      max-height: calc(100vh - 146px);
+      top: var(--anchor-top);
+      max-height: calc(
+        100dvh - max(var(--anchor-top), var(--real-top, var(--anchor-top))) - 16px
+      );
       overflow-y: auto;
     }
   }
@@ -1772,6 +1781,12 @@
       position: sticky;
       bottom: 0;
       z-index: 3;
+    }
+
+    /* The bar's controls sit inside the `scroll-padding-bottom` band of `tokens.css`: the negative
+       margin cancels it, so a focus does not scroll the page. */
+    .ebar :global(:is(a, button, input, select)) {
+      scroll-margin-bottom: calc(-1 * var(--ebar-h, 0px));
     }
   }
 

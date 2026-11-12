@@ -72,6 +72,43 @@
     return dialog && dock ? watchBarHeight(dock, '--dock-h', dialog) : undefined;
   });
 
+  /* Under 481 px of height the dock joins the card's scroll, and the toast rises above it
+     while it is in view (`Toast`'s `--dock-clear`). */
+  $effect(() => {
+    void it;
+    const box = dialog;
+    const dock = box?.querySelector<HTMLElement>('.cardpick');
+    const card = box?.querySelector<HTMLElement>('.modal-card');
+    if (!box || !dock || !card) return;
+    /* jsdom has no `matchMedia`: there the window is never short. */
+    const short =
+      typeof matchMedia === 'function'
+        ? matchMedia('(max-width: 760px) and (max-height: 480px)')
+        : undefined;
+    const write = (): void => {
+      const top = dock.getBoundingClientRect().top;
+      if (short?.matches && top < window.innerHeight) {
+        box.style.setProperty('--dock-clear', `${String(window.innerHeight - top + 8)}px`);
+      } else box.style.removeProperty('--dock-clear');
+    };
+    write();
+    /* The card's entrance moves the dock, and the picture and the text change its top as they
+       load. */
+    const watch = typeof ResizeObserver === 'function' ? new ResizeObserver(write) : undefined;
+    const content = card.querySelector('.card');
+    if (content) watch?.observe(content);
+    card.addEventListener('scroll', write, { passive: true });
+    card.addEventListener('animationend', write);
+    window.addEventListener('resize', write);
+    return () => {
+      watch?.disconnect();
+      card.removeEventListener('scroll', write);
+      card.removeEventListener('animationend', write);
+      window.removeEventListener('resize', write);
+      box.style.removeProperty('--dock-clear');
+    };
+  });
+
   /* Every way this dialog closes - the close button, the backdrop, Escape -
      ends in the browser firing the dialog's own "close" event, so one handler
      on it reaches all three paths. `app.menuFor` is folded first, matching the
@@ -91,6 +128,7 @@
 <dialog
   bind:this={dialog}
   aria-label={nameOf(it, app.lang)}
+  data-record={it.id}
   onclose={handleClose}
   onclick={(e) => {
     if (e.target === dialog) dialog?.close();
@@ -269,17 +307,13 @@
       position: static;
     }
 
-    /* The dock spans the sheet; the popover keeps the 16 px gutter of every caller. */
-    .modal-card :global(.cardpick .dropmenu) {
-      top: auto;
-      right: 16px;
-      bottom: calc(100% + 8px);
-      left: 16px;
-    }
-
-    /* The sticky dock spans the card edge to edge: «Ещё» opens inside the same 16 px gutter. */
-    .modal-card :global(.cardpick .recmenu) {
-      right: 16px;
+    /* The picture fills the card in a short window and pushes the dock out of view (measured
+       at 600x500, 760x560 and 700x481, 2026-11-10): at most 45dvh, its width by 4:3. */
+    .modal-card :global(.card.dossier .card-media) {
+      max-height: 45dvh;
+      width: auto;
+      max-width: 100%;
+      justify-self: center;
     }
   }
 
@@ -291,11 +325,6 @@
       margin: 12px 0 16px;
       padding: 0;
       border-top: 0;
-    }
-
-    /* The dock is inside the card's padding here: the gutter is already there. */
-    .modal-card :global(.cardpick .recmenu) {
-      right: 0;
     }
   }
 

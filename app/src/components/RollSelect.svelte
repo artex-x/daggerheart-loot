@@ -42,7 +42,7 @@
     flex: 1 1 auto;
     min-width: 0;
     min-height: 40px;
-    padding: 2px 8px 2px 12px;
+    padding: 1px 8px 1px 12px;
     border: 1px solid var(--line2);
     border-radius: var(--r-sm);
     background: var(--surface);
@@ -68,14 +68,22 @@
     color: var(--muted2);
   }
 
+  /* The chosen part shows on up to two lines: «Проклятые предметы» was cut by 31 px at 360 px
+     (measured 2026-11-10 on this host). */
   .pv {
     grid-area: 2 / 1;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
     overflow: hidden;
+    overflow-wrap: break-word;
+    /* Keeps the glyphs' 2 px overhang inside the box, so a whole name is not read as cut. */
+    padding-bottom: 2px;
+    line-height: 1.1;
     font-size: var(--t-control);
     font-weight: 600;
     color: var(--txt);
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
 
   .pick :global(svg) {

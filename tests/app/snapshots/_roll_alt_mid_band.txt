@@ -23,7 +23,7 @@ RootWebArea "Альтернативные таблицы - Генератор л
     navigation "Режим броска"
       link "Обычные правила" [url=/roll/std]
       link "Альтернативные таблицы" [url=/roll/alt]
-      button "Дополнения" [expanded=false haspopup=menu]
+      button "Дополнения" [haspopup=dialog]
     StaticText "Бросок Костей Дуальности по объединённым таблицам обеих книг."
     StaticText "РЕДКОСТЬ"
     button "Обычная" [pressed=true]
@@ -129,7 +129,7 @@ RootWebArea "Alternate tables - Daggerheart Loot Generator" [url=/en/roll/alt]
     navigation "Roll mode"
       link "Standard rules" [url=/en/roll/std]
       link "Alternate tables" [url=/en/roll/alt]
-      button "Supplements" [expanded=false haspopup=menu]
+      button "Supplements" [haspopup=dialog]
     StaticText "A Duality Dice roll over both books merged into one set of table..." [namelen=66 namehash=f9462005]
     StaticText "RARITY"
     button "Common" [pressed=true]

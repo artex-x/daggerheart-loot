@@ -86,7 +86,7 @@ daggerheart.com
 Коса МидасаОсновное оружиеУникальноеРанг 4 · Магическое · Знание... [namelen=186 namehash=c1e01982]
 КосаОсновное оружиеУникальноеПир зверейРанг 1 · Физическое · Иск... [namelen=103 namehash=51e6f44c]
 Кровавый Лук ЮтариОсновное оружиеУникальноеРанг 2 · Магическое ·... [namelen=212 namehash=8efd1fbf]
-КувалдаОсновное оружиеУникальноеПир зверейРанг 1 · Физическое · ... [namelen=231 namehash=fc4f4254]
+КувалдаОсновное оружиеУникальноеПир зверейРанг 1 · Физическое · ... [namelen=229 namehash=71b025c7]
 Легендарная Алебарда УрзоОсновное оружиеArazo's ArtifactsРанг 4 ... [namelen=217 namehash=5ff6f9bb]
 Легендарная АлебардаОсновное оружиеРанг 4 · Физическое · Сила · ... [namelen=122 namehash=6b1fcb1e]
 Легендарная Винтовка с ПрицеломОсновное оружиеPistolheartРанг 4 ... [namelen=232 namehash=f3901e93]
@@ -272,7 +272,7 @@ daggerheart.com
 № 126Боевой Посох Душевного ОгняОсновное оружиеУникальноеThe Dra... [namelen=472 namehash=6237c208]
 № 127Заклинательный КлинокОсновное оружиеУникальноеThe Dragon's ... [namelen=400 namehash=978ed07d]
 № 129Посох ЛейтисаОсновное оружиеУникальноеThe Dragon's VaultРан... [namelen=435 namehash=6017f0e8]
-№ 12Весло Растущего БроженияОсновное оружиеУникальноеThe Last Ro... [namelen=348 namehash=2ca079e8]
+№ 12Весло Растущего БроженияОсновное оружиеУникальноеThe Last Ro... [namelen=348 namehash=4e6cffb7]
 № 12Посох Мохового ЦветкаОсновное оружиеУникальноеVault of AgesР... [namelen=356 namehash=6c48cc21]
 № 130Звёздное КопьёОсновное оружиеУникальноеThe Dragon's VaultРа... [namelen=381 namehash=2eaf30bd]
 № 131Паровые РукавицыОсновное оружиеУникальноеThe Dragon's Vault... [namelen=381 namehash=32c9d4b3]
@@ -329,7 +329,7 @@ daggerheart.com
 № 94Сумеречное КрылоОсновное оружиеУникальноеThe Dragon's VaultР... [namelen=258 namehash=a6f2e8a9]
 № 95Стихийный Длинный ЛукОсновное оружиеУникальноеThe Dragon's V... [namelen=507 namehash=9cfee318]
 № 9Дубина из Зубов ОграОсновное оружиеArazo's ArtifactsРанг 1 · ... [namelen=314 namehash=bc0dd15f]
-№ 9Клятва РавновесияОсновное оружиеУникальноеАртефактVault of Ag... [namelen=839 namehash=9266635c]
+№ 9Клятва РавновесияОсновное оружиеУникальноеАртефактVault of Ag... [namelen=879 namehash=dd3ba50c]
 № 9Омерзительная ЛютняОсновное оружиеУникальноеThe Last Round Ta... [namelen=362 namehash=22343bf0]
 
 ## en :: tree

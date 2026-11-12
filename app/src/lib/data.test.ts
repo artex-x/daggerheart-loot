@@ -205,7 +205,7 @@ describe('the index over the real dataset', () => {
 
 describe('upgrade chains', () => {
   it('derives the reverse link rather than storing it', () => {
-    expect(index.craftedFrom.size).toBe(33);
+    expect(index.craftedFrom.size).toBe(34);
   });
 
   it.each([

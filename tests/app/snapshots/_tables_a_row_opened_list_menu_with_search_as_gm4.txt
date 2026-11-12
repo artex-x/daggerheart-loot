@@ -1,0 +1,276 @@
+# #/tables ~ a row opened, list menu with search as gm4
+# route: #/tables
+# why: the add-to-list popover in the modal over twelve lists: in the top layer, the search field and the pinned rows inside the window, the card unscrolled
+# as: gm4
+
+## ru :: tree
+RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tables?as=gm4]
+  dialog "Кольцо Тишины" [modal=true]
+    button "Закрыть" [focused=true]
+    link "Открыть страницу" [url=/i/ci28]
+    StaticText "28"
+    StaticText "ПРЕДМЕТ"
+    ... StaticText x2 of 6 same-shape siblings elided
+    heading "Кольцо Тишины" [level=2]
+    StaticText ", чтобы активировать это кольцо. Ваши шаги будут бесшумными до с..." [namelen=81 namehash=29328dad]
+    button "В список" [expanded=true]
+    StaticText "СПИСКИ"
+    searchbox "Найти список"
+    button "Ёлочная ярмарка" [description=0 позиций pressed=false]
+    button "Сундук мага" [description=0 позиций pressed=false]
+    ... button x5 of 9 same-shape siblings elided
+    button "Сессия 3" [description=1 позиция pressed=false]
+    button "Порт Ветров" [description=1 позиция pressed=false]
+    button "Храм Солнца" [description=0 позиций pressed=false]
+    button "Лавка в порту" [description=0 позиций pressed=false]
+    button "Клад дракона" [description=1 позиция pressed=false]
+    button "Новый список"
+    button "Поделиться"
+    button "Печать" [description=Собрать карточки для печати: девять на лист A4]
+    button "Ещё" [expanded=false haspopup=menu]
+
+## ru :: controls
+10Подвешенный ЖезлЭтот плоский жезл исписан рунами. Когда вы акт... [namelen=212 namehash=0646e468]
+11Камень ОбликаАктивируйте этот камень размером с гальку, чтобы ... [namelen=198 namehash=1879d150]
+12Пустой СундукЭтот магический сундук кажется пустым. Скажите кл... [namelen=144 namehash=8813eef8]
+13Футляр для КомпаньонаВ этот футляр можно поместить маленького ... [namelen=147 namehash=22f2b49d]
+14Пронзающие СтрелыТри раза за отдых, когда вы успешно наносите ... [namelen=140 namehash=6aed82f7]
+15Камень ДоблестиВы можете прикрепить этот камень к доспеху, кот... [namelen=279 namehash=15159a82]
+16Скелетный КлючКогда вы используете этот ключ, чтобы открыть за... [namelen=125 namehash=6a6d1728]
+17Магическая ПризмаПоместите эту призму в выбранное вами место и... [namelen=320 namehash=cdad333c]
+18Рецепт Малого Зелья ВыносливостиВ качестве Хода Отдыха вы може... [namelen=134 namehash=13012a9b]
+19Рецепт Малого Зелья ЛеченияВ качестве Хода Отдыха вы можете ис... [namelen=125 namehash=1ca88b7d]
+1Первоклассный Спальный МешокВо время отдыха вы автоматически оч... [namelen=78 namehash=d542e7db]
+20Компасы СвязиЭти два компаса указывают друг на друга, независи... [namelen=115 namehash=366e7e2e]
+21Исправляющий ДухЭтот крошечный дух сидит в изгибе вашего ушног... [namelen=187 namehash=cce65cff]
+22Перчатки ГекконаВы можете лазать по вертикальным поверхностям ... [namelen=75 namehash=47e2887d]
+23Хранитель ЗнанийВы можете сохранить в этой книге имена и подро... [namelen=168 namehash=7e26f7c5]
+24Рецепт Флакона с Чёрным ДымомВ качестве Хода Отдыха вы можете ... [namelen=120 namehash=e3b4914d]
+25Кровавый КаменьВы можете прикрепить этот камень к оружию, кото... [namelen=232 namehash=4b865025]
+26Самоцвет ВеликанаВы можете прикрепить этот камень к оружию, ко... [namelen=224 namehash=b953500e]
+27ПарашютВо время падения вы можете отметить Стресс, чтобы разве... [namelen=127 namehash=14988ba6]
+28Кольцо ТишиныПотратьте Надежду, чтобы активировать это кольцо.... [namelen=113 namehash=6d93761b]
+29Успокаивающий КулонКогда вы должны отметить последний Стресс, ... [namelen=120 namehash=cdba94c8]
+2Пронзительная СвирельЭта свирель ручной работы имеет характерны... [namelen=155 namehash=cf5069e0]
+30Двойная ФлягаВ эту флягу можно налить две разные жидкости. Пер... [namelen=152 namehash=3479cc15]
+31Мешочек Своенравного ПескаВы можете убедить этот маленький меш... [namelen=274 namehash=ee4d7f13]
+32Кольцо СопротивленияОдин раз за продолжительный отдых вы может... [namelen=157 namehash=77fa5cd4]
+33Перо ФениксаЕсли у вас есть хотя бы одно Перо Феникса, когда в... [namelen=177 namehash=637bd719]
+34Коробка Многих ВещейОдин раз за продолжительный отдых вы может... [namelen=276 namehash=9fb57ddc]
+35Амулет Воздушного КлинкаВы можете прикрепить этот амулет к ору... [namelen=185 namehash=ed6964f7]
+36Семя ПорталаВы можете посадить это семя в землю, чтобы вырасти... [namelen=319 namehash=356dad1b]
+37Цепь ПарагонаВ качестве Хода Отдыха вы можете помедитировать н... [namelen=310 namehash=9f1146d2]
+38Амулет СкрытностиОдин раз за продолжительный отдых вы можете а... [namelen=272 namehash=09f44398]
+39Медальон Хранения НадеждВо время продолжительного отдыха, если... [namelen=364 namehash=3481753d]
+3Заряжающий КолчанКогда вы успешно наносите удар стрелой из этог... [namelen=135 namehash=1bb93364]
+40Бездонная СумкаКогда вы храните предметы в этом мешке, они нах... [namelen=170 namehash=ac9b02e2]
+41Реликвия Быстрого ШагаВы получаете бонус +1 к Проворности. Вы ... [namelen=99 namehash=110fbdf6]
+42Реликвия УсиленияВы получаете бонус +1 к Силе. Вы можете носит... [namelen=87 namehash=0a97d7db]
+43Реликвия БалансаВы получаете бонус +1 к Искусности. Вы можете ... [namelen=92 namehash=46cbe343]
+44Реликвия ГармонииВы получаете бонус +1 к Инстинкту. Вы можете ... [namelen=92 namehash=9db25726]
+45Реликвия ОчарованияВы получаете бонус +1 к Влиянию. Вы можете ... [namelen=92 namehash=9ebb65bd]
+46Реликвия ПрозренияВы получаете бонус +1 к Знаниям. Вы можете н... [namelen=91 namehash=cff21214]
+47Реликвия НаставленияВы получаете бонус +1 к Опыту по вашему вы... [namelen=108 namehash=1c3a1477]
+48Кулон СветлячкаПока вы носите этот кулон, ваше оружие с дистан... [namelen=183 namehash=6b662c7d]
+49Ботинки Хождения по ВодеВы можете ходить по поверхности воды, ... [namelen=84 namehash=9c72b8fd]
+4Факел АлистераВы можете зажигать этот магический факел по желан... [namelen=183 namehash=05f38a25]
+50Глиняный СпутникКогда вы лепите из этого шарика глины глиняног... [namelen=327 namehash=0848b81e]
+51Рецепт Мифической ПылиВ качестве Хода Отдыха вы можете использ... [namelen=126 namehash=b5709424]
+52Осколок ПамятиОдин раз за продолжительный отдых вы можете потр... [namelen=177 namehash=2905d481]
+53Самоцвет ПроворстваВы можете прикрепить этот самоцвет к оружию... [namelen=142 namehash=7a22dd74]
+54Самоцвет МощиВы можете прикрепить этот самоцвет к оружию, что ... [namelen=129 namehash=4360b2eb]
+55Самоцвет ТочностиВы можете прикрепить этот самоцвет к оружию, ... [namelen=139 namehash=801954e1]
+56Самоцвет ЧутьяВы можете прикрепить этот самоцвет к оружию, что... [namelen=134 namehash=d9e66b0c]
+57Самоцвет ДерзостиВы можете прикрепить этот самоцвет к оружию, ... [namelen=136 namehash=4e7cbc5f]
+58Самоцвет РассудительностиВы можете прикрепить этот самоцвет к ... [namelen=143 namehash=5d0db404]
+59Кольцо Несокрушимой РешимостиОдин раз за сессию, когда Мастер ... [namelen=151 namehash=5f4dcf0e]
+5Разговаривающие СферыЭта пара сфер позволяет существам, которые... [namelen=119 namehash=852813ef]
+60Пояс ЕдинстваОдин раз за сессию вы можете потратить 5 Надежды,... [namelen=129 namehash=cf193a73]
+6НаручникиЭта пара наручников с замком поставляется с ключом.
+7Мистический ПлащСущество с Характеристикой Заклинателя, носящее... [namelen=137 namehash=4d3c9b7d]
+8Плетёная СетьВы можете совершить Бросок Искусности, используя э... [namelen=176 namehash=42bf4aa4]
+9Банка с ОгнёмВы можете вылить странную жидкость из этой банки, ... [namelen=154 namehash=74289744]
+?Об этих данных
+Core
+EN
+Hope & Fear
+RU
+daggerheart.com
+Ёлочная ярмарка
+Аккаунт: gm4@example.test
+Альт. таблицы
+Бросок
+В список
+Выбрать
+Дополнения
+Ещё
+Закрыть
+К содержимому
+Клад дракона
+Конфиденциальность
+Кузнец
+Лавка в порту
+Логово
+ЛутDaggerheart
+Найти список
+Новый список
+Открывать при запуске
+Открыть страницу
+Печать
+Поделиться
+Поиск
+Поиск по названию или описанию...
+Порт Ветров
+Предметы
+Прочее
+Расходники
+Рынок
+Сессия 3
+Сессия 4
+Сетка
+Снаряжение
+Список
+Ссылка на таблицу
+Сундук мага
+Таблицы
+Трофеи
+Условия использования
+Установить как приложение
+Хоумбрю
+Храм Солнца
+
+## en :: tree
+RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables?as=gm4]
+  dialog "Ring of Silence" [modal=true]
+    button "Close" [focused=true]
+    link "Open page" [url=/i/en/ci28]
+    StaticText "28"
+    StaticText "ITEM"
+    ... StaticText x2 of 6 same-shape siblings elided
+    heading "Ring of Silence" [level=2]
+    StaticText " to activate this ring. Your footsteps are silent until your nex..." [namelen=71 namehash=01eb3998]
+    button "Add to list" [expanded=true]
+    StaticText "LISTS"
+    searchbox "Find a list"
+    button "Ёлочная ярмарка" [description=0 items pressed=false]
+    button "Сундук мага" [description=0 items pressed=false]
+    ... button x5 of 9 same-shape siblings elided
+    button "Сессия 3" [description=1 item pressed=false]
+    button "Порт Ветров" [description=1 item pressed=false]
+    button "Храм Солнца" [description=0 items pressed=false]
+    button "Лавка в порту" [description=0 items pressed=false]
+    button "Клад дракона" [description=1 item pressed=false]
+    button "New list"
+    button "Share"
+    button "Print" [description=Lay these out for printing: nine to an A4 sheet]
+    button "More" [expanded=false haspopup=menu]
+
+## en :: controls
+10Suspended RodThis flat rod is inscribed with runes. When you a... [namelen=224 namehash=240e3b9d]
+11Glamour StoneActivate this pebble-sized stone to memorize the ... [namelen=172 namehash=15a4826a]
+12Empty ChestThis magical chest appears empty. When you speak a ... [namelen=155 namehash=6fea4181]
+13Companion CaseThis case can fit a small animal companion. Whil... [namelen=156 namehash=3875e748]
+14Piercing ArrowsThree times per rest when you succeed on an att... [namelen=142 namehash=b21eb923]
+15ValorstoneYou can attach this stone to armor that doesn't alre... [namelen=268 namehash=67b03075]
+16Skeleton KeyWhen you use this key to open a locked door, you g... [namelen=98 namehash=47d328b1]
+17Arcane PrismPosition this prism in a location of your choosing... [namelen=288 namehash=339ebb3e]
+18Minor Stamina Potion RecipeAs a downtime move, you can use the... [namelen=116 namehash=a3bef30c]
+19Minor Health Potion RecipeAs a downtime move, you can use a vi... [namelen=107 namehash=29630444]
+1Premium BedrollDuring downtime, you automatically clear a Stres... [namelen=66 namehash=d7be6b7c]
+20Homing CompassesThese two compasses point toward each other no... [namelen=95 namehash=e0f17ea0]
+21Corrector SpriteThis tiny sprite sits in the curve of your ear... [namelen=176 namehash=5464afa9]
+22Gecko GlovesYou can climb up vertical surfaces and across ceil... [namelen=69 namehash=998d82a9]
+23LorekeeperYou can store the name and details of up to three ho... [namelen=158 namehash=94440ec3]
+24Vial of Darksmoke RecipeAs a downtime move, you can mark a Str... [namelen=97 namehash=89571c11]
+25BloodstoneYou can attach this stone to a weapon that doesn't a... [namelen=214 namehash=c7b420e7]
+26GreatstoneYou can attach this stone to a weapon that doesn't a... [namelen=221 namehash=257f9416]
+27GliderWhile falling, you can mark a Stress to deploy this smal... [namelen=107 namehash=68750fec]
+28Ring of SilenceSpend a Hope to activate this ring. Your footst... [namelen=100 namehash=357548a1]
+29Calming PendantWhen you would mark your last Stress, roll a d6... [namelen=108 namehash=96246d3e]
+2Piper WhistleThis handcrafted whistle has a distinctive sound. ... [namelen=146 namehash=2dbafc6c]
+30Dual FlaskThis flask can hold two different liquids. You can s... [namelen=128 namehash=6cd02b03]
+31Bag of FicklesandYou can convince this small bag of sand to be... [namelen=260 namehash=0753c5cd]
+32Ring of ResistanceOnce per long rest, you can activate this ri... [namelen=125 namehash=8ec47785]
+33Phoenix FeatherIf you have at least one Phoenix Feather on you... [namelen=170 namehash=31202030]
+34Box of Many GoodsOnce per long rest, you can open this small b... [namelen=242 namehash=41f63d5a]
+35Airblade CharmYou can attach this charm to a weapon with a Mel... [namelen=162 namehash=50528b17]
+36Portal SeedYou can plant this seed in the ground to grow a por... [namelen=281 namehash=fee2dbe8]
+37Paragon's ChainAs a downtime move, you can meditate on an idea... [namelen=252 namehash=ae3832b9]
+38Elusive AmuletOnce per long rest, you can activate this amulet... [namelen=206 namehash=4cf0d6fe]
+39Hopekeeper LocketDuring a long rest, if you have 6 Hope, you c... [namelen=269 namehash=66fb1ab1]
+3Charging QuiverWhen you succeed on an attack with an arrow stor... [namelen=142 namehash=f7940d3d]
+40Infinite BagWhen you store items in this bag, they are kept in... [namelen=151 namehash=67df5dd1]
+41Stride RelicYou gain a +1 bonus to your Agility. You can only ... [namelen=80 namehash=387b2c14]
+42Bolster RelicYou gain a +1 bonus to your Strength. You can onl... [namelen=82 namehash=026c03ba]
+43Control RelicYou gain a +1 bonus to your Finesse. You can only... [namelen=81 namehash=6bc41bc6]
+44Attune RelicYou gain a +1 bonus to your Instinct. You can only... [namelen=81 namehash=ea61015e]
+45Charm RelicYou gain a +1 bonus to your Presence. You can only ... [namelen=80 namehash=a3336dab]
+46Enlighten RelicYou gain a +1 bonus to your Knowledge. You can ... [namelen=85 namehash=6df6e6cf]
+47Honing RelicYou gain a +1 bonus to an Experience of your choic... [namelen=96 namehash=162e7746]
+48Flickerfly PendantWhile you carry this pendant, your weapons w... [namelen=177 namehash=5939a286]
+49Lakestrider BootsYou can walk on the surface of water as if it... [namelen=82 namehash=a0eeb3e3]
+4Alistair's TorchYou can light this magic torch at will. The fla... [namelen=159 namehash=a9f8057c]
+50Clay CompanionWhen you sculpt this ball of clay into a clay an... [namelen=302 namehash=e31ede46]
+51Mythic Dust RecipeAs a downtime move, you can use a handful of... [namelen=101 namehash=f9dfb9e7]
+52Shard of MemoryOnce per long rest, you can spend 2 Hope to rec... [namelen=132 namehash=3874c94b]
+53Gem of AlacrityYou can attach this gem to a weapon, allowing y... [namelen=126 namehash=5d93b4d7]
+54Gem of MightYou can attach this gem to a weapon, allowing you ... [namelen=124 namehash=bff314fe]
+55Gem of PrecisionYou can attach this gem to a weapon, allowing ... [namelen=127 namehash=95d8d282]
+56Gem of InsightYou can attach this gem to a weapon, allowing yo... [namelen=126 namehash=49d11302]
+57Gem of AudacityYou can attach this gem to a weapon, allowing y... [namelen=127 namehash=bbeb3e88]
+58Gem of SagacityYou can attach this gem to a weapon, allowing y... [namelen=128 namehash=c47a0aa2]
+59Ring of Unbreakable ResolveOnce per session, when the GM spend... [namelen=136 namehash=c55b2263]
+5Speaking OrbsThis pair of orbs allows any creatures holding the... [namelen=117 namehash=c1eb4d09]
+60Belt of UnityOnce per session, you can spend 5 Hope to lead a ... [namelen=108 namehash=40a51b5f]
+6ManaclesThis pair of locking cuffs comes with a key.
+7Arcane CloakA creature with a Spellcast trait wearing this cloa... [namelen=114 namehash=0fc56ea7]
+8Woven NetYou can make a Finesse Roll using this net to trap a s... [namelen=146 namehash=728f2f60]
+9Fire JarYou can pour out the strange liquid contents of this ja... [namelen=143 namehash=0f8f20e0]
+?About this data
+Account: gm4@example.test
+Add to list
+Alt. tables
+Close
+Consumables
+Core
+EN
+Equipment
+Find a list
+Grid
+Homebrew
+Hope & Fear
+Install as an app
+Items
+Link to this table
+List
+LootDaggerheart
+More
+New list
+Open on start
+Open page
+Other
+Print
+Privacy
+RU
+Roll
+Search
+Search by name or description...
+Select
+Share
+Skip to content
+Supplements
+Tables
+Terms of use
+daggerheart.com
+Ёлочная ярмарка
+Клад дракона
+Кузнец
+Лавка в порту
+Логово
+Порт Ветров
+Рынок
+Сессия 3
+Сессия 4
+Сундук мага
+Трофеи
+Храм Солнца

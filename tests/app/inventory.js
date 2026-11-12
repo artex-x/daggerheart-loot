@@ -99,10 +99,10 @@ const CLIPPED_TEXT =
 /** The print controls' name: the driver names a titled button by its text. */
 const PRINT = 'Печать';
 
-/** Waits until a `#/p/` page has left «Загружаем...»: its sheet, its sub or its error page. */
+/** Waits until a `#/p/` page has left «Загружаем...»: its sheet, its sub, its sign-in plate or its error page. */
 async function sheet(d) {
   for (let i = 0; i < 200; i++) {
-    if ((await d.count('.printbar, .page-sub, .errpage')) > 0) return;
+    if ((await d.count('.printbar, .page-sub, .signin-lead, .errpage')) > 0) return;
     await new Promise((r) => setTimeout(r, 50));
   }
   throw new Error('a #/p/ state never left its loading line');
@@ -469,8 +469,8 @@ const LONG_LIST_NAME = Array.from({ length: 12 }, () => 'Сокровищниц�
   .slice(0, 120);
 const LONG_NAME_SPECS = [{ ...KLAD, name: LONG_LIST_NAME, ids: SEVEN_IDS }, LAVKA];
 
-/** Opens the «Ещё» `sel` again after the EN press closed it, from the page's top: the
- *  menu scrolled the page, and up to 760 px the header covers a control under it. */
+/** Opens the «Ещё» `sel` again after the EN press closed it, from the page's top: up to
+ *  760 px the header covers a control that sits under it. */
 const reopen = (sel) => async (d) => {
   if (await d.count('[role="menu"]')) return;
   await d.scrollPage(0);
@@ -817,7 +817,7 @@ const STATES = [
     why: 'the two dice agreeing, which is the offer of a whole rarity',
     enter: async (d) => {
       /* Up to 760 px the steppers are in «Настроить»: case 83 enters this state at 360. */
-      const narrow = (await d.count('.reshead .morewrap')) > 0;
+      const narrow = (await d.count('.pickrow .morewrap')) > 0;
       if (narrow) await d.click('Настроить');
       await d.click('На единицу больше');
       if (narrow) await d.click('Настроить');
@@ -1110,6 +1110,28 @@ const STATES = [
     again: (d) => d.click('Add to list')
   },
   {
+    id: '#/tables ~ a row opened, list menu with search as gm4',
+    route: '#/tables',
+    as: 'gm4',
+    why: 'the add-to-list popover in the modal over twelve lists: in the top layer, the search field and the pinned rows inside the window, the card unscrolled',
+    enter: async (d) => {
+      await onAccount(d, TWELVE_SPECS, false);
+      await d.click('Кольцо Тишины');
+      await d.click('В список');
+    },
+    again: (d) => d.click('Add to list')
+  },
+  {
+    id: '#/tables ~ a row opened, more menu',
+    route: '#/tables',
+    why: 'the record dialog at desktop width with «Ещё» open: the menu in the top layer, the card unscrolled',
+    enter: async (d) => {
+      await d.click('Кольцо Тишины');
+      await d.openMore();
+    },
+    again: (d) => d.openMore()
+  },
+  {
     id: '#/tables ~ a row opened, new list',
     route: '#/tables',
     // No lists: with two lists every card opens up and the divergence is
@@ -1298,6 +1320,18 @@ const STATES = [
     id: '#/tables/eq_armor',
     route: '#/tables/eq_armor',
     why: 'the third kind, three facet groups, the shortest'
+  },
+  {
+    id: '#/tables/eq_weapon ~ stat columns',
+    route: '#/tables/eq_weapon',
+    width: 1440,
+    why: 'from 1440 px the weapon rows draw class, trait, range, damage and burden as five aligned columns at the right; the accessible name of a row is the same sentence as at 1100 px'
+  },
+  {
+    id: '#/tables/eq_armor ~ stat columns',
+    route: '#/tables/eq_armor',
+    width: 1440,
+    why: 'from 1440 px the armor rows draw thresholds and score as two aligned columns at the right'
   },
   {
     id: '#/tables/eq_weapon ~ filtered',
@@ -2220,7 +2254,7 @@ const STATES = [
   {
     id: SHOP,
     route: SHOP,
-    why: 'signed out on an account address: the error page «Войдите, чтобы открыть список», its cause, «Войти» and «Открыть таблицы»'
+    why: 'signed out on an account address: the heading «Мои списки» and the sign-in plate with «Войдите, чтобы открыть список: он открывается только в аккаунте, где его создали.» and «Войти»'
   },
   {
     id: LIST_GONE + ' as gm1',
@@ -2676,7 +2710,7 @@ const STATES = [
   {
     id: '#/lists/nope',
     route: '#/lists/nope',
-    why: 'not an account address, signed out: «Войдите, чтобы открыть список», «Войти» and «Открыть таблицы»; the address not rewritten'
+    why: 'not an account address, signed out: the same plate as on an account address; the address not rewritten'
   },
   {
     /* The players' payload of the old `qty-and-price` fixture, as a link written before
@@ -2772,6 +2806,27 @@ const STATES = [
     enter: async (d) => {
       await d.tick('Первоклассный Спальный Мешок');
       await d.tick('Зелье Быстрого Шага');
+    }
+  },
+  {
+    id: '#/s/player-token-1 ~ ticked, compact',
+    route: '#/s/player-token-1',
+    width: 360,
+    why: 'signed out, ci1 and cc1 ticked up to 760 px: the bar is one action row, «В список», «Печать» and «Ещё», with «Скопировать текст» and «Сообщить владельцу» folded into «Ещё»',
+    enter: async (d) => {
+      await d.tick('Первоклассный Спальный Мешок');
+      await d.tick('Зелье Быстрого Шага');
+    }
+  },
+  {
+    id: '#/s/player-token-1 ~ ticked, compact, more open',
+    route: '#/s/player-token-1',
+    width: 360,
+    why: 'the same bar with «Ещё» open upward: «Скопировать текст» and «Сообщить владельцу», both enabled',
+    enter: async (d) => {
+      await d.tick('Первоклассный Спальный Мешок');
+      await d.tick('Зелье Быстрого Шага');
+      await d.click('Ещё');
     }
   },
   /* The search box and the filter (docs/specs/FEATURES.md, "Lists"): the seeded share
@@ -3327,12 +3382,21 @@ const STATES = [
   },
   /* The English half is captured after the EN press, an outside click that
      closes the menu, as it closes the add-to-list menu. */
-  /* The supplements menu of the mode row (FEATURES.md, "Chrome"), open on a supplement page:
-     the seven supplements with the open one checked. Its axe case is modeRow.test.ts. */
+  /* The roll's mode sheet (FEATURES.md, "Chrome"), open on a supplement page: up to 760 px
+     from the picker, from 761 px from «Дополнения». Its axe case is modeRow.test.ts. */
   {
-    id: '#/roll/vault_of_ages ~ supplements menu',
+    id: '#/roll/vault_of_ages ~ picker sheet',
     route: '#/roll/vault_of_ages',
-    why: 'the supplements menu open on Vault of Ages: the caption, seven supplements in table order, Vault of Ages checked and current',
+    width: 360,
+    why: 'the mode picker sheet open on Vault of Ages: the title «Бросок», the two own modes, the caption «Дополнения» and ten supplements in table order, Vault of Ages current',
+    enter: async (d) => {
+      await d.click('Режим броска: Vault of Ages');
+    }
+  },
+  {
+    id: '#/roll/vault_of_ages ~ supplements sheet',
+    route: '#/roll/vault_of_ages',
+    why: 'from 761 px «Дополнения» opens the same sheet, centered: the title «Бросок», the two own modes, the caption and ten supplements, Vault of Ages current',
     enter: async (d) => {
       await d.press('Vault of Ages');
     }
@@ -3879,7 +3943,7 @@ const STATES = [
         await d.settle();
       /* The golden holds no toast: the 4000ms «Сохранено» toast runs out first, or a fast
          host captures it. */
-      for (let i = 0; i < 80 && (await d.count('.toast[role]')); i++) await d.settle();
+      for (let i = 0; i < 80 && (await d.count('.toast:popover-open')); i++) await d.settle();
     }
   },
   {
@@ -3892,6 +3956,11 @@ const STATES = [
     id: '#/homebrew',
     route: '#/homebrew',
     why: 'signed out: the heading and «Войдите, чтобы создавать свои предметы.» with «Войти»'
+  },
+  {
+    id: '#/homebrew/new',
+    route: '#/homebrew/new',
+    why: 'signed out: the heading «Мои предметы» and the sign-in plate with «Войдите, чтобы создавать свои предметы.» and «Войти»'
   },
   {
     id: '#/homebrew/new as gm1',

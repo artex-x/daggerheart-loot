@@ -21,7 +21,7 @@ RootWebArea "Pistolheart - Генератор лута Daggerheart" [url=/roll/p
     navigation "Режим броска"
       link "Обычные правила" [url=/roll/std]
       link "Альтернативные таблицы" [url=/roll/alt]
-      button "Pistolheart" [expanded=false haspopup=menu]
+      button "Pistolheart" [haspopup=dialog]
     button "Открывать при запуске" [pressed=false]
     button "Об этой книге" [expanded=true]
     StaticText "Бросок выбирает из 45 позиций трёх томов - 18 предметов, 7 расхо..." [namelen=194 namehash=01868e54]
@@ -101,7 +101,7 @@ RootWebArea "Pistolheart - Daggerheart Loot Generator" [url=/en/roll/pistolheart
     navigation "Roll mode"
       link "Standard rules" [url=/en/roll/std]
       link "Alternate tables" [url=/en/roll/alt]
-      button "Pistolheart" [expanded=false haspopup=menu]
+      button "Pistolheart" [haspopup=dialog]
     button "Open on start" [pressed=false]
     button "About this book" [expanded=true]
     StaticText "A roll picks from 45 entries over three volumes - 18 items, 7 co..." [namelen=190 namehash=005d3501]

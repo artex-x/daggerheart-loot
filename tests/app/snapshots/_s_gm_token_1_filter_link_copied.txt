@@ -31,7 +31,6 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/gm-token-1/f_kind-
 ## ru :: controls
 1
 2
-51Гарпун Левиафана99999 зол.Основное оружиеУникальноеWondrous En... [namelen=384 namehash=f8da7a98]
 Core
 Dread GM Toolbox
 EN
@@ -84,6 +83,7 @@ daggerheart.com
 Установить как приложение
 Физическое
 Фильтры · 1
+№ 51Гарпун Левиафана99999 зол.Основное оружиеУникальноеWondrous ... [namelen=386 namehash=123c02fd]
 
 ## en :: tree
 RootWebArea "Daggerheart Loot Generator" [url=/en/s/gm-token-1/f_kind-weapon?v=<v>]
@@ -114,7 +114,6 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/gm-token-1/f_kind-weapon?v=<
 ## en :: controls
 1
 2
-51Leviathan Harpoon99999 gpPrimary weaponUniqueWondrous Environm... [namelen=364 namehash=9219003b]
 Agility
 Alder Workshop
 All
@@ -140,6 +139,7 @@ Knowledge
 LootDaggerheart
 Magic
 Melee
+No. 51Leviathan Harpoon99999 gpPrimary weaponUniqueWondrous Envi... [namelen=368 namehash=67ec9120]
 Note
 One-Handed
 Physical

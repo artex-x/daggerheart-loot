@@ -390,9 +390,8 @@ damage dice. A number a person reads as prose takes neither.
 
 **The Whole Message Rule.** A heading, a control label, an error line, a status line and
 a toast wrap; they are never cut. A name, a description or a list of chosen values may be
-cut to its clamp when one press shows it whole: up to 760px a roll page's picker cuts a long
-chosen part (the select shows it whole), so the roll button keeps its line and the first
-result its first screen; from 761px the button wraps instead. Exceptions: the editor's
+cut to its clamp when one press shows it whole: a roll page's picker shows a long chosen
+part on up to two lines at every width (case 130). Exceptions: the editor's
 record name, one line with an ellipsis while it has no focus, at every width (owner,
 2026-10-29; the heading above it shows the whole name), and the owner's list name, one line
 with an ellipsis while it has no focus up to 999px; in the side plate from 1000px the field
@@ -426,8 +425,8 @@ face prints in the system stack behind it.
 ## Layout
 
 One width governs everything: `--wrap: min(1440px, 100% - 32px)`. The header
-bar, the job row, the mode row, `main` and the footer all take it, so the brand,
-the first mode control (up to 760px) and the first word of the page share a left edge
+bar, the job row, `main` and the footer all take it, so the brand,
+the first control of the picker row (up to 760px) and the first word of the page share a left edge
 at every viewport. The 32px
 subtraction is the gutter, and `viewport-fit=cover` plus `env(safe-area-inset-*)`
 keeps the selection bar clear of a display cutout. The column grows with the
@@ -443,9 +442,10 @@ at 320); a 280px window scrolls sideways.
 The page is a vertical stack: a sticky translucent header (`rgb(14 12 21 / 86%)`
 over a 14px backdrop blur) that holds the brand row and the three jobs (63px from
 761px, 111px at 360px; up to 760px it leaves on a scroll down and returns on a
-scroll up), the mode row on the twelve roll pages up to 760px (53px, scrolling with
-the page), the content, then the footer. `main`
-carries 26px of top padding, 48px of bottom padding, and a 60vh minimum so a
+scroll up), the content, then the footer. Up to 760px the picker row of the roll pages,
+the tables and «Мои предметы» is the first row of `main`, 8px under the header (The Head
+Order Rule). `main`
+carries 26px of top padding (8px where a picker row is its first child), 48px of bottom padding, and a 60vh minimum so a
 short route does not collapse. `scrollbar-gutter: stable` on `html` reserves the
 scrollbar whether a route needs one or not; without it a short page after a long
 one shifts the content fifteen pixels sideways.
@@ -477,7 +477,7 @@ from 601px (The Roll Page Rule). The catalog adds one step, 1000px: from it the 
 column sits beside the rows; from 761px it draws the wide head (the `h1`, the
 group chips, the labeled pin and «Об этих данных», then the tabs) with the filters
 in the sheet; below 761px the picker row, the sheet and «··· Ещё»
-replace them. The list pages fold each row to the compact row up to 760px and draw the
+replace them, on the roll pages and «Мои предметы» too (The Head Order Rule). The list pages fold each row to the compact row up to 760px and draw the
 full row from 761px; the owner's list page draws the compact head up to 999px and its 330px
 side column at the right of the rows from 1000px (owner, 2026-11-06), and the rows
 column is a size container: under 760px of it a row's controls take a line under its
@@ -489,8 +489,8 @@ not add another system breakpoint. `/account` signed in uses the 1000px step too
 one column below it, two from it, in the DOM order of the one column.
 
 **The Roll Page Rule.** The twelve roll pages share one layout. Up to 760px: a read-only
-`h1`, the controls, one results line («Бросок N», «Настроить», «Ещё»); the pin, the
-help and the copy of every option are items of «Ещё». From 761px: the head (The Head
+`h1`, the picker row (the mode picker, «Ещё»), the controls, one results line («Бросок N»,
+«Настроить»); the pin, the help and the copy of every option are items of «Ещё». From 761px: the head (The Head
 Order Rule) with the `h1` «Бросок», the three mode pills and the labeled pin and help, a
 320px control pane, the results. The `h1` names the job at every width; the lit pill and
 the tab title name the mode. The roller has one gold
@@ -513,8 +513,9 @@ height: a component rule, not a breakpoint. «В список», «Подели�
 «Ещё» are the same four labeled controls on every record surface at every width;
 «Изменить» joins for the author. One exception: a roll result holds three controls, no
 «Печать», and a plain «В список», because the page's gold primary is the roll. The
-copies and «Сохранить себе» live in «Ещё», a `Menu` that opens down on a page and, in
-the dialog, up where the room is only above, so from the dock. «В список» is the one
+copies and «Сохранить себе» live in «Ещё», a `Menu` that opens by the window's room in the
+top layer, on a page and in the dialog alike (FEATURES.md "Chrome", the overlay rule). Up to
+760px the dialog's picture is at most 45dvh tall, so the dock is in view in a short window. «В список» is the one
 gold primary; an open «Ещё» is not drawn pressed, because gold marks a choice. A label
 never gives way to an icon (The Same Label Rule).
 
@@ -527,8 +528,13 @@ about 1139px); from 761px to 999px the pills take the next row, under the headin
 pin, the help and the primary, so the DOM order is the reading order in each band. A
 third level (a table group's books, the homebrew sources) is underlined tabs under the
 head; the ten supplements, 1331px of tabs, are one lit tab that opens the table picker's
-sheet. Up to 760px a page with siblings reads its heading, not draws it, and the mode row
-or the picker row names the page. The head's geometry follows the band only, never the content: the heading
+sheet, and the roll's «Дополнения ▾» opens the roll picker's sheet: one overflow control,
+one sheet. Up to 760px a page with siblings reads its heading, not draws it, and the
+picker row names the page: the picker, the page's own tools, «Ещё» last (the tables' view
+switch, «Новый предмет» on the Items tab; the roll row holds none, because «Настроить»
+belongs to the results line). The row sits 8px under the header, 40px tall, 4px (6px from
+601px) above the page's first row, and the picker takes the free width, so «Ещё» holds still
+on a switch. The three pages draw one picker face (`--t-small`, two lines at most). The head's geometry follows the band only, never the content: the heading
 is constant, so a switch between siblings moves no pill, a row that some contents lack
 keeps its reserved space (on «Мои предметы» from 1000px the Sources, Sets and Rules tabs keep
 the Items tab's «Новый предмет» as a hidden, unreachable copy, so the pills wrap at one width
@@ -546,7 +552,8 @@ and returns on a scroll up, on every page, because a phone reader needs the rows
 more than the jobs. It slides in 0.2s, or appears at once under reduced motion. It
 is shown at the top of a page, on a short page and after a navigation; a menu, a
 sheet, a dialog, a text field or a drag freezes it; a keyboard focus inside brings it back.
-It never leaves the tab order.
+It never leaves the tab order. A focus on a header control keeps the page where it is: the
+header's controls carry a negative `scroll-margin-top` that cancels the page's `scroll-padding-top`.
 
 **The Same Label Rule.** A label does not change with the width, and a control
 is never only an icon where its label fits: the three jobs keep their labels at
@@ -560,8 +567,9 @@ are items of «Ещё» on the catalog, the roller, `/homebrew`, `/search` and
 **The First-Screen Rule.** At 360x640 and at 1180x720, in Russian and in
 English, at scroll 0, the primary content of a route starts no lower than 40%
 of the viewport height (256px at 640, 288px at 720); the header counts as a
-control above it. Named exceptions: `/roll/std` at 360x640 starts at 325px, for
-the rarities on the dice (owner, 2026-10-29); `/s/<token>` at 360x640 with its search
+control above it. Named exceptions: `/roll/std` at 360x640 starts at 322px, for
+the rarities on the dice (owner, 2026-10-29; it was 325px before the roll's picker row
+took the tables' place, 319.2px measured 2026-11-07); `/s/<token>` at 360x640 with its search
 row starts at 309px (owner, 2026-11-03, 286px; the built page measured 301px on 2026-11-05
 and 308.2px on 2026-11-06, when «Сохранить себе» took the thumb size, and the exception took
 it while the owner was away); `/s/<token>` with a 120-character list
@@ -720,7 +728,7 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
   (with their counts, tabular, in `--muted2`) are link chips in the page head (The Head
   Order Rule); the lit one takes the Seal Gold fill of the current place and draws no
   check, and keeps its rest width: the label reserves its 650 weight's width in a hidden
-  line. Up to 600px the roll's three share the mode row, 40px tall, and a long name
+  line. Up to 760px the roll's three are one picker in the picker row, and a long name
   takes two lines.
 - **Neutral pressed (`Chip neutral`):** the `check` icon before the label, the
   Vault Wall Lit fill, a Chalk label at weight 600 and a lit `--muted2`
@@ -811,7 +819,9 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
   9px radius.
 - **Number field:** a 46px row holding a monospace input at 19px weight 650
   between two 40px steppers; a lone field fills its column up to 480px (The Stepper
-  Rule).
+  Rule). Every text and number field is 16px up to 600px, so iOS does not zoom the page on
+  focus (the list row's position, price and quantity, the note box, «Взять», the
+  add-to-list menu's two fields).
 - **Focus:** border to Seal Gold plus a 3px gold glow at 14 per cent. On the
   duality fields the glow takes that die's own color instead.
 
@@ -822,14 +832,15 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
   the magnifier), at 14px weight 560 in Ash Violet with a 2px transparent bottom
   border. The lit job turns that border gold and the label Seal Gold Soft.
   «Бросок» stands for the twelve roll pages and opens the last one of the tab.
-- **Mode row:** up to 760px, under the sticky header on the twelve roll pages only,
-  scrolling with the page; from 761px the same three controls are the page head's pills
-  after «Бросок»: «Обычные правила», «Альтернативные таблицы» and the menu button
-  «Дополнения ▾», which shows the open supplement's name. The controls compose
-  the chip's tokens; the lit one takes the Seal Gold fill of the current place.
-  The menu under the button lists the ten supplements, 44px items, the open
-  one with a check, at most the window less 186px tall, scrolling inside; no sheet
-  and no grab handle.
+- **Picker row:** up to 760px the first row of `main` on the twelve roll pages, the
+  tables and «Мои предметы», 8px under the header (the one picker face above). On a roll
+  page the picker names the mode («Обычные правила ▾»); it opens a sheet titled «Бросок»
+  with the two own modes, the caption «Дополнения» and the ten supplements, 44px rows,
+  the open one gold with `aria-current`, the body scrolling at a short window. From 761px
+  the same three controls are the page head's pills after «Бросок»: «Обычные правила»,
+  «Альтернативные таблицы» and the button «Дополнения ▾», which shows the open
+  supplement's name and opens the same sheet, centered. The controls compose the chip's
+  tokens; the lit one takes the Seal Gold fill of the current place.
 - **Header:** sticky, translucent, blurred, with a one-pixel seam under it; 63px
   from 761px, 111px at 360px. The DOM order is the brand, the language switch, the
   account control, then the jobs, the reading order of the two rows up to 760px; from
@@ -848,8 +859,8 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
   (the account, the lists and «Мои предметы»), where no job is lit, and while
   its menu is open.
 
-- **List head:** `/homebrew` draws the catalog's: up to 760px the picker row with
-  the `h1` read, not drawn; from 761px the head with the four tabs as pills with their
+- **List head:** `/homebrew` draws the catalog's: up to 760px the picker row (the shared
+  picker face) with the `h1` read, not drawn; from 761px the head with the four tabs as pills with their
   counts, the pin and the primary.
 
 ### Filter chips and the count line
@@ -882,7 +893,9 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
   already parts the modal from the page, depth stays tonal, and a blur of the page costs a
   phone a frame for no meaning (2026-11-06).
 - The crop dialog takes the sheet's shape and place at every width and keeps the window's
-  height, which its square stage needs on a landscape phone.
+  height, which its square stage needs on a landscape phone. Under 481px of height from 600px
+  of width its stage stands on the left and the zoom and the buttons on the right, so «Готово»
+  stays in the window.
 - The record dialog has the sheet's look up to 760px and is not a `Sheet`: one
   element at every width, so a window that crosses 760px remounts nothing. «Ещё» is
   a `Menu` at every width, in the dialog too. Both close with `DialogClose`.
@@ -897,7 +910,10 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
   last. Below 761px the box, the summary and the clear are one row and the
   actions the next. Zero ticks: the actions off, the clear on. The owner's list
   page draws its own bar in the same place (`app.pageBar`); up to 760px its rare
-  actions fold into «Ещё», which opens up; the lists index draws its bar the same way.
+  actions fold into «Ещё», which opens up by the overlay rule; the lists index draws its bar the same way.
+  The shared page folds «Скопировать текст» and «Сообщить владельцу» of a reader's link into
+  «Ещё» likewise, so its bar is «Все» and the count over «В список», «Печать» and «Ещё» on
+  one row (118px at 360px).
   The add-to-list menu is a popover at every width, headed «Списки», a neutral row
   per list with a check where it holds the record and its count in words. A panel a bar action opens is a
   `Sheet`, because the bar is pinned and a panel under it would grow past the
@@ -947,6 +963,8 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
   queries as chips; the syntax lives in the examples, not in an instruction.
 - A search's nothing-found state: the cause (the query, the picked kinds or both) and
   one reset («Сбросить фильтры» or «Очистить поиск»). A plate holds one primary at most.
+- A signed-out page that needs an account draws `SignInPrompt`: the plate with the kind
+  glyph, the lead and one «Войти». A prompt that answers a press is the compact or boxed form.
 
 ### Error page
 
@@ -963,7 +981,7 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
 - **Style:** a fixed plate 26px off the bottom, centered, and 26px above the selection
   bar while the bar shows; inside a modal up to 760px, 26px above the record dialog's
   dock or the sheet's foot (under 481px of window height the record dialog's dock moves
-  with the card, so its toast can cover the dock: `docs/specs/DEBT.md`, D136): Vault Wall fill, a
+  with the card, and its toast rises above the dock while the dock is in view): Vault Wall fill, a
   1px Ash Violet Low (`--muted2`) border, Chalk text, `--r` corners and the
   Float shadow, entering on a 0.2s rise. No toast is gold. The error flavor is
   the Alarm Red fill with Ink on Gold text (about 5.6:1). The action flavor
@@ -973,7 +991,10 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
   name wraps inside it, so it stays a few lines high at 360px.
 - **Time:** The Reading Time Rule.
 - It is a `popover="manual"` element so it survives the inertness of a native
-  `<dialog>`, and it is `display: none !important` under print.
+  `<dialog>`, and it is `display: none !important` under print. It carries `role` and
+  `aria-live` at all times; an idle toast is `display: none` and leaves the accessibility
+  tree. It rises above an open menu or popover that reaches the bottom 80px of
+  the window (`--overlay-clear`).
 
 ### Signature component: the print card
 
@@ -1034,9 +1055,29 @@ The Measure Rule: a clamped snippet with no measure. The clamp is three lines up
 600px and from 1000px, and two lines between; a cut always has one press to the whole,
 the record. From 1000px the description's line height is 1.55, so a long second line has
 room for the eye's return. Rows stay one column at every width, and the layouts from 360px
-to 760px do not change. A row with a short description stays partly empty: tabular stat
-columns are a proposed rule (The Stat Columns Rule). Owner, 2026-11-05.
+to 760px do not change. A row with a short description stays partly empty on the pages
+that keep the stat sentence; the equipment tables from 1440px draw stat columns (The Stat
+Columns Rule), where the description is four lines. Owner, 2026-11-05.
 `tests/app/states.js` case 106 measures it.
+
+**The Stat Columns Rule.** From 1440px a weapon or armor row on `/tables/eq_*` draws its
+stat parts in aligned columns right of its text, in place of the stat sentence: a weapon
+five (class, trait, range, damage, burden), an armor two (thresholds, score), each as wide
+as its widest value in the whole table, right-aligned with tabular figures and a 16px gap.
+The page column is the one grid and the sections, rows and row bodies are subgrids of it, so
+the right edges are equal in every row of every section. A missing part leaves its cell
+empty. The description keeps the free width left of the columns and clamps at four lines,
+the line the sentence freed (the Row Text Rule's three lines otherwise). Departures from
+the draft of 2026-11-05, each decided by the AFK defaults of 2026-11-10: the cells carry no
+header row and read as the sentence wrote them («Пороги 7/15», «Броня 4», «Сила»,
+«Ближняя»), in the page's language; the DOM order stays name, stats, description, so a
+screen reader reads the stats before the description while the grid draws them last (the
+separators `·` stay as visually hidden text, so a row's accessible name is unchanged); the
+cells align to the name line, not the row's center; the weapon class is the first column.
+Below 1440px, in the tile view, on `/search`, on the list page and on `/s/` the stat
+sentence stays. The values come from the source book data (`CLAUDE.md`, "Product laws").
+One CSS block in `TablesPage.svelte` and the `cols` prop of `RowMain` are the whole rule.
+`tests/app/states.js` case 128 measures it.
 
 **The Field Measure Rule.** A search box is at most 720px from 761px, and the controls of
 its row follow it on the same line; up to 760px it takes the row's free width. Source:
@@ -1048,6 +1089,15 @@ edge, «+» at its right edge, the value centered between them, 46px tall; a but
 limit is disabled, and the value stays a text field. A field in a row with its button
 keeps its content width. Owner, 2026-11-05. Source:
 https://playbook.ebay.com/design-system/components/numeric-stepper.
+
+**The Escape Rule.** Escape undoes the last layer a person opened: it closes a menu, a popover,
+a sheet or a dialog, and only that on its press. With no layer open, in a selection it clears
+the ticks, and at 0 ticks it leaves the selection mode where the page has one; an open
+«Настроить» folds. The focus stays on its control, or goes to «Выбрать» when the mode ends. A
+text field that holds text takes its own Escape first. Source:
+https://developer.android.com/docs/quality-guidelines/adaptive-app-quality/tier-2
+(Keyboard_Exit). `tests/app/states.js` case 125 measures it; the rule's home is
+`FEATURES.md` "Chrome".
 
 **The Check Rule.** Every pressed chip and segment draws the check before its label, a
 gold pick and a neutral default alike: gold says "this narrows the view", the check says
@@ -1120,14 +1170,12 @@ source.
 
 | Rule | Source | Draft | Check | Built by |
 |---|---|---|---|---|
-| The Escape Rule | https://developer.android.com/docs/quality-guidelines/adaptive-app-quality/tier-2 (Keyboard_Exit) | Escape undoes the last layer a person opened: it closes a menu, a sheet or a dialog, clears a search box that holds text, and in a selection with no layer open clears the ticks. The focus stays on its control, or goes to `main` when that control leaves. | `tests/app/states.js` on `/tables/core_item`, `/search`, `/lists` and `/lists/<uuid>` at 360 and 1180px: two ticks, Escape, «Выбрано: 0» and the focus kept; with the filter sheet open the first Escape closes only the sheet | a later task, with its mock; home `FEATURES.md` "Chrome" |
 | The Tablet Screen | https://developer.android.com/docs/quality-guidelines/adaptive-app-quality/tier-2 (test devices) | The First-Screen Rule adds 1024x640, Russian and English, as a third viewport: logged first, then asserted route by route at 256px. | `FIRST_SCREEN` gains the viewport with logged rows; each route past 256px is named to the owner | a later task |
 | The Detail Pane | https://developer.android.com/develop/ui/compose/layouts/adaptive/canonical-layouts (list-detail) | From a 1600px window a picked row on `/tables/*` and `/search` may open its dossier in a pane beside the rows, at the dialog's address; below 1600px the dialog stays. A direction, not a rule of task 57. | a states case at 1600 and 1920px: the `h1` in the pane, `aria-current` on the row, Escape and Back close it, print prints the sheet only | a later task, with its mock |
 | The Error Line | https://developer.apple.com/design/human-interface-guidelines/accessibility ("Minimize use of time-boxed interface elements") | An error that a person must act on is also a line on the page, not a toast alone. | an audit of the error toasts of `FEATURES.md` rule 2, each with its page line | a later task |
 | Window size classes | https://developer.android.com/develop/ui/compose/layouts/adaptive/window-size-classes | Not proposed: the project's 600, 760 and 1000px steps follow the same principle; only the 1600px class is of use, as the Detail Pane's threshold. | - | - |
 | A step of ten | https://developer.apple.com/design/human-interface-guidelines/steppers | Not proposed: a Shift-press step of ten is a shortcut with no label (The Clarity Rule). | - | - |
 | A 24px gutter | https://primer.style/product/getting-started/foundations/layout/ | Not proposed: from 1280px a 24px gutter would move every number of the 1440px column for 8px a side. | - | - |
-| The Stat Columns Rule | https://m2.material.io/components/data-tables (numerical data is right-aligned; the page was not re-fetched when this row was written) | From 1440px a weapon or armor row on `/tables/eq_*` draws trait, range, damage and burden in tabular columns right of its text, right-aligned with tabular figures and labeled in both languages, in place of the stat sentence; the description keeps the free width left of them. Rows stay one column. Below 1440px, on `/search`, on the list page and on `/s/` the stat sentence stays. The values come from the source book data (`CLAUDE.md`, "Product laws"). Owner, 2026-11-05: "plan stat columns later". | a states case at 1440 and 1920px on `#/tables/eq_weapon` and `eq_armor`: the column edges equal within 1px in every row, the labels exist in RU and EN, and case 106's clamp share does not rise | a task after wave 3, with its own mock (recommended; not batch 10, a docs-only lock) |
 
 ## Notes
 

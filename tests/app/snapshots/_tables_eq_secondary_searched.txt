@@ -86,12 +86,12 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 2
 22Щит Охотника на ЖуковУникальноеWondrous EnvironmentsФизическое... [namelen=231 namehash=d3b36315]
 23Голодный Кулачный КлинокУникальноеVault of AgesФизическое · Ис... [namelen=399 namehash=bfa05c40]
-25Зуб Аку-ХаптлекаУникальноеVault of AgesФизическое · Проворност... [namelen=677 namehash=ff2de90d]
+25Зуб Аку-ХаптлекаУникальноеVault of AgesФизическое · Проворност... [namelen=672 namehash=b9758087]
 27Щит Стекла СудьбыУникальноеVault of AgesФизическое · Инстинкт ... [namelen=479 namehash=f4cc5605]
 28Святой ЩитУникальноеVault of AgesМагическое · Инстинкт · Вплот... [namelen=331 namehash=a68f9d75]
 2Взыскательный БаклерУникальноеВоюющие НорыФизическое · Искуснос... [namelen=250 namehash=a6fd4f87]
 3
-32Нож ЕдинорогаУникальноеVault of AgesФизическое · Искусность · ... [namelen=313 namehash=5c57c0aa]
+32Нож ЕдинорогаУникальноеVault of AgesМагическое · Искусность · ... [namelen=313 namehash=bc210dc4]
 3Ведьмина СковородаУникальноеThe Last Round TableФизическое · Вл... [namelen=194 namehash=fd321e33]
 3Наручный КлинокУникальноеДромФизическое · Проворность · Вплотну... [namelen=143 namehash=000340b5]
 4

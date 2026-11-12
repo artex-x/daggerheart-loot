@@ -1,5 +1,6 @@
 # 2026-10-29 - The header has three jobs and a mode row
 
+- Amended by "The roll modes are a picker row up to 760 px" (2026-11-10): up to 760 px the mode row is a picker in the picker row, and «Дополнения ▾» opens a sheet, not a menu.
 - Task: `57` (owner, 2026-10-23: direction R, the mode row of three controls; 2026-10-29: R7, «Бросок» opens the start section).
 - Decision: the header draws three jobs with icons, «Бросок» / "Roll", «Таблицы» / "Tables" and
   «Поиск» / "Search" (`TabBar.svelte`, `app/src/lib/nav.ts`). «Бросок» is lit on the nine roll

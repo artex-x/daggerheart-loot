@@ -39,6 +39,7 @@
   import ArtWell from './ArtWell.svelte';
   import Badge from './Badge.svelte';
   import Marked from './Marked.svelte';
+  import { keepRowFocus } from './keepRowFocus.js';
   import RowMain from './RowMain.svelte';
   import { artSrc } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
@@ -95,6 +96,8 @@
     /** Draws every row in the first task: an anchor scrolls to its row once, and rows
      *  drawn above it later would move it. */
     whole?: boolean;
+    /** A list row draws its equipment stats as cells (`RowMain`'s `cols`); the page aligns them. */
+    cols?: boolean | undefined;
   }
 
   const {
@@ -114,7 +117,8 @@
     hide,
     terms,
     numLabeled,
-    whole = false
+    whole = false,
+    cols
   }: Props = $props();
 
   const t = $derived(dict(lang));
@@ -167,6 +171,7 @@
   class={view === 'list' ? 'rows' : 'tgrid'}
   data-primary={primary ? '' : undefined}
   data-drawing={drawing ? '' : undefined}
+  use:keepRowFocus={{ row: '.row, .tilewrap', tick: '.selbox input' }}
 >
   {#each shown as entry (entry.it.id)}
     {@const it = entry.it}
@@ -204,6 +209,7 @@
             {hide}
             {terms}
             {numLabeled}
+            {cols}
           />{/if}
         {#if inside}{@render inside(it)}{/if}
       </div>

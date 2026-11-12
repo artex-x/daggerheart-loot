@@ -34,13 +34,10 @@ const path = require('path');
 const HERE = __dirname;
 
 /* Weight column: CI seconds, not a local guess. Measured on GitHub's
-   ubuntu-latest runners, the mean of runs 42036663681 and 42102518161,
-   2026-11-05 (each suite prints `ok  <name> <what> <secs>s`); `app/golden`
-   4/4 is the mean of runs 42036663681 and 42083009049, because shard 3 of
-   run 42102518161 did not finish; `app/states` is about 1760 s / 4, from
-   1742.8 s in run 42083009049 plus the 360 px block of case 107. Run
-   42116078717 measured 542.6, 318.6, 491.3 and 411.3 s (sum 1764), three of
-   them with a failed case, so the four rows keep 440 until a green run. A
+   ubuntu-latest runners in run 42821823209 (the green `main` run of
+   2026-11-10; each suite prints `ok  <name> <what> <secs>s`), one reading
+   per row. The four `app/states` rows took 755.8, 504.9, 807.0 and 675.0 s
+   there, and the job's longest shard lasted about 14 min. A
    local run is advisory, the same doctrine
    `.claude/README.md` states for every other cost table in this repository.
    These numbers are the input to `--shard`'s bin packer below, so an entry
@@ -65,28 +62,28 @@ const HERE = __dirname;
    other row (`--exclude=app/golden`, still supported below, is for a local
    run that wants to skip them). */
 const SUITES = [
-  ['app/sweep', 'dist-test/: page sweep 768', 838.7, ['768']],
-  ['app/sweep', 'dist-test/: page sweep 390', 670.2, ['390']],
-  ['app/sweep', 'dist-test/: page sweep 360', 639.1, ['360']],
-  ['app/contracts', 'dist-test/: contracts and fixtures', 555.8],
-  ['app/print', 'dist-test/: card printing', 472.1],
-  ['app/states', 'dist-test/: real input 1/4', 440, ['--shard=1/4']],
-  ['app/states', 'dist-test/: real input 2/4', 440, ['--shard=2/4']],
-  ['app/states', 'dist-test/: real input 3/4', 440, ['--shard=3/4']],
-  ['app/states', 'dist-test/: real input 4/4', 440, ['--shard=4/4']],
-  ['app/golden', 'dist-test/: structural snapshots 4/4', 396.1, ['--shard=4/4']],
-  ['app/sweep', 'dist-test/: page sweep 1180 en', 386.9, ['1180', 'en']],
-  ['app/sweep', 'dist-test/: page sweep 1180 ru', 380.5, ['1180', 'ru']],
-  ['app/golden', 'dist-test/: structural snapshots 2/4', 368.6, ['--shard=2/4']],
-  ['app/golden', 'dist-test/: structural snapshots 3/4', 361.4, ['--shard=3/4']],
-  ['app/golden', 'dist-test/: structural snapshots 1/4', 351.5, ['--shard=1/4']],
-  ['app/typo', 'dist-test/: fonts and scale', 191.5],
-  ['app/hues', 'dist-test/: label colors', 85.5],
-  ['stub', 'stub pages i/', 6.8],
-  ['derived', 'derived files and catalog', 2.5],
-  ['dataint', 'data.js invariants', 1.4],
+  ['app/sweep', 'dist-test/: page sweep 768', 826.6, ['768']],
+  ['app/states', 'dist-test/: real input 3/4', 807.0, ['--shard=3/4']],
+  ['app/states', 'dist-test/: real input 1/4', 755.8, ['--shard=1/4']],
+  ['app/sweep', 'dist-test/: page sweep 390', 726.7, ['390']],
+  ['app/sweep', 'dist-test/: page sweep 360', 724.9, ['360']],
+  ['app/states', 'dist-test/: real input 4/4', 675.0, ['--shard=4/4']],
+  ['app/contracts', 'dist-test/: contracts and fixtures', 647.5],
+  ['app/states', 'dist-test/: real input 2/4', 504.9, ['--shard=2/4']],
+  ['app/print', 'dist-test/: card printing', 492.2],
+  ['app/sweep', 'dist-test/: page sweep 1180 ru', 455.1, ['1180', 'ru']],
+  ['app/sweep', 'dist-test/: page sweep 1180 en', 453.6, ['1180', 'en']],
+  ['app/golden', 'dist-test/: structural snapshots 2/4', 407.4, ['--shard=2/4']],
+  ['app/golden', 'dist-test/: structural snapshots 1/4', 383.8, ['--shard=1/4']],
+  ['app/golden', 'dist-test/: structural snapshots 3/4', 373.7, ['--shard=3/4']],
+  ['app/golden', 'dist-test/: structural snapshots 4/4', 336.1, ['--shard=4/4']],
+  ['app/typo', 'dist-test/: fonts and scale', 240.7],
+  ['app/hues', 'dist-test/: label colors', 89.2],
+  ['stub', 'stub pages i/', 7.0],
+  ['derived', 'derived files and catalog', 2.3],
+  ['dataint', 'data.js invariants', 0.6],
   ['craft', 'upgrade chains', 0.2],
-  ['contracts', 'contracts and golden fixtures', 0.2]
+  ['contracts', 'contracts and golden fixtures', 0.1]
 ];
 
 const args = process.argv.slice(2);
@@ -151,8 +148,7 @@ let queue = SUITES.filter(
    Five separate `node` processes, one per matrix job, each sort and pack
    this same array independently and have to agree on the result without
    talking to each other - which they do only because `Array.prototype.sort`
-   is a stable sort and this table currently has two exact ties (the four
-   `app/states` rows at 440, `craft`/`contracts` at 0.2/0.2): a
+   is a stable sort and this table may hold exact ties: a
    stable sort keeps tied rows in their original SUITES order on every
    process, so "lightest bin first" breaks the tie identically everywhere. An
    unstable sort could let one process assign a tied suite to a different bin

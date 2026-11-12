@@ -372,6 +372,9 @@
     clearText={t.clearSel}
     onall={pickAllCards}
     onclear={() => void leaveSelecting()}
+    onuntick={() => {
+      pickAllCards(false);
+    }}
   >
     {#snippet actions()}
       <Button
@@ -399,13 +402,7 @@
 {#if !index}
   <NoData>{t.noData}</NoData>
 {:else if target === 'prompt'}
-  <div class="stack">
-    <Empty glyph="kindItem">
-      <div class="signedout">
-        <SignInPrompt {app} lead={t.signInToCreate} after={{ hash: '#/lists' }} />
-      </div>
-    </Empty>
-  </div>
+  <SignInPrompt {app} lead={t.signInToCreate} after={{ hash: '#/lists' }} />
 {:else if signedIn && cloud}
   <!-- Outside the grid: an empty region would take a row and its gap. -->
   <SyncSaid {app} />
@@ -678,15 +675,6 @@
     .stack {
       margin-top: 8px;
     }
-  }
-
-  /* The plate centers its text, so «Войти» centers too when it wraps under the lead. */
-  .signedout {
-    width: 100%;
-  }
-
-  .signedout :global(.signin) {
-    justify-content: center;
   }
 
   .hint {
