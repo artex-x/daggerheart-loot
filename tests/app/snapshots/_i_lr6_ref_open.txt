@@ -19,7 +19,7 @@ RootWebArea "Купчая на Последний Круглый Стол - Ге
   main ""
     StaticText "ПРЕДМЕТ"
     heading "Купчая на Последний Круглый Стол" [level=1]
-    StaticText "The Last Round Table · номер 6 "
+    StaticText "The Last Round Table · № 6 "
     link "показать в таблице" [url=/tables/last_round_table/lr6]
     ... StaticText x13 of 17 same-shape siblings elided
     DisclosureTriangle "Купчая на Последний Круглый Стол: Настроение таверны THE LAST RO..." [expanded=true namelen=91 namehash=6d2faacc]
@@ -74,7 +74,7 @@ RootWebArea "Deed to the Last Round Table - Daggerheart Loot Generator" [url=/i/
   main ""
     StaticText "ITEM"
     heading "Deed to the Last Round Table" [level=1]
-    StaticText "The Last Round Table · roll 6 "
+    StaticText "The Last Round Table · No. 6 "
     link "show in the table" [url=/en/tables/last_round_table/lr6]
     ... StaticText x13 of 17 same-shape siblings elided
     DisclosureTriangle "Deed to the Last Round Table: the tavern's Mood THE LAST ROUND T..." [expanded=true namelen=84 namehash=5ee6cf2c]

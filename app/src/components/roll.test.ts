@@ -206,40 +206,112 @@ describe("The Dragon's Vault over the real data", () => {
   });
 });
 
-describe("Arazo's Artifacts over the real data", () => {
-  /* An upgrade line's rungs roll as their own rows, right after the head,
-     and keep their stat block in the result card. */
+/* An upgrade line is one roll row, its head; the other tiers open from the card
+   (docs/specs/FEATURES.md, "Rolling"). */
+describe('the whole-table supplements over the real data', () => {
   const REAL = readLoot();
   const field = (): HTMLInputElement =>
     screen.getByRole<HTMLInputElement>('textbox', { name: 'Результат броска' });
-  const typed = async (n: string): Promise<void> => {
-    render(App, {
-      env: fakeEnv({ router: memoryRouter('#/roll/arazo'), data: fakeData(REAL) })
-    });
+  const open = (route: string): void => {
+    render(App, { env: fakeEnv({ router: memoryRouter(route), data: fakeData(REAL) }) });
+  };
+  const typed = async (route: string, n: string): Promise<void> => {
+    open(route);
     await userEvent.clear(field());
     await userEvent.type(field(), n);
     await userEvent.tab();
   };
+  const heading = (name: string): HTMLElement =>
+    screen.getByRole('heading', { level: 2, name });
 
-  it('names the whole range on the button', () => {
-    render(App, {
-      env: fakeEnv({ router: memoryRouter('#/roll/arazo'), data: fakeData(REAL) })
-    });
-    expect(screen.getByRole('button', { name: 'Бросить 1-78' })).toBeInTheDocument();
+  it("rolls Arazo's Artifacts over 27 entries, one per item", () => {
+    open('#/roll/arazo');
+    expect(screen.getByRole('button', { name: 'Бросить 1-27' })).toBeInTheDocument();
+    expect(screen.getByText('Результат броска (1-27)')).toBeInTheDocument();
   });
 
-  it('draws an upgrade rung, stat line and all, at 20', async () => {
-    await typed('20');
-    expect(
-      screen.getByRole('heading', { level: 2, name: 'Улучшенный Лук из Эльфийских Волос' })
-    ).toBeInTheDocument();
+  it('draws the head of an upgrade line, stat line and all, at 7', async () => {
+    await typed('#/roll/arazo', '7');
+    expect(heading('Лук из Эльфийских Волос')).toBeInTheDocument();
     expect(screen.getByText(/d10\+1/)).toBeInTheDocument();
   });
 
-  it('draws the last row at 78', async () => {
-    await typed('78');
-    expect(field().value).toBe('78');
-    expect(screen.getByRole('heading', { level: 2, name: 'Ларец Зерана' })).toBeInTheDocument();
+  it('clamps a 28 to the last entry, 27', async () => {
+    await typed('#/roll/arazo', '28');
+    expect(field().value).toBe('27');
+    expect(heading('Ларец Зерана')).toBeInTheDocument();
+  });
+
+  it('reaches no rung: every one of the 27 entries is a head or a single item', async () => {
+    open('#/roll/arazo');
+    const up = screen.getByRole('button', { name: 'На единицу больше' });
+    for (let n = 1; n <= 27; n++) {
+      const name = document.querySelector('.card-name')?.textContent ?? '';
+      expect(name, String(n)).not.toBe('');
+      expect(name, String(n)).not.toMatch(/^(Улучшенн|Продвинут|Легендарн)/);
+      if (n < 27) await userEvent.click(up);
+    }
+  });
+
+  it('opens the card of a rolled head and finds its other tiers there', async () => {
+    await typed('#/roll/arazo', '7');
+    await userEvent.click(screen.getAllByRole('button', { name: 'Открыть карточку' })[0]!);
+    const dialog = screen.getByRole('dialog');
+    for (const name of [
+      'Улучшенный Лук из Эльфийских Волос',
+      'Продвинутый Лук из Эльфийских Волос',
+      'Легендарный Лук из Эльфийских Волос'
+    ]) {
+      expect(within(dialog).getByRole('button', { name }), name).toBeInTheDocument();
+    }
+    await expectNoA11yViolations(dialog);
+  });
+
+  it('rolls Pistolheart over 45 entries and draws a head at 14 and the last entry at 45', async () => {
+    open('#/roll/ph');
+    expect(screen.getByRole('button', { name: 'Бросить 1-45' })).toBeInTheDocument();
+    cleanup();
+    await typed('#/roll/ph', '14');
+    expect(heading('Разделочный Нож')).toBeInTheDocument();
+    cleanup();
+    await typed('#/roll/ph', '46');
+    expect(field().value).toBe('45');
+    expect(heading('Инфузия Доблести')).toBeInTheDocument();
+  });
+
+  it('rolls Escape the Veiled Halls over its 15 entries, with no room picker', async () => {
+    open('#/roll/vh');
+    expect(screen.getByRole('button', { name: 'Бросить 1-15' })).toBeInTheDocument();
+    expect(screen.getByText('Результат броска (1-15)')).toBeInTheDocument();
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+    expect(screen.queryByText('Комната')).not.toBeInTheDocument();
+    cleanup();
+    await typed('#/roll/vh', '9');
+    expect(heading('Зелье Внимательности')).toBeInTheDocument();
+    cleanup();
+    await typed('#/roll/vh', '50');
+    expect(field().value).toBe('15');
+    expect(heading('Легендарное Зелье Предвидения')).toBeInTheDocument();
+  });
+
+  it('rolls Escape the Veiled Halls the same way in English', async () => {
+    open('#/roll/vh');
+    await userEvent.click(screen.getByRole('button', { name: 'EN' }));
+    expect(screen.getByRole('button', { name: 'Roll 1-15' })).toBeInTheDocument();
+    expect(screen.getByText('Roll result (1-15)')).toBeInTheDocument();
+    expect(screen.queryByText('Room')).not.toBeInTheDocument();
+    const en = screen.getByRole<HTMLInputElement>('textbox', { name: 'Roll result' });
+    await userEvent.clear(en);
+    await userEvent.type(en, '15');
+    await userEvent.tab();
+    expect(heading('Legendary Foresight Potion')).toBeInTheDocument();
+  });
+
+  it('has no axe violations on Escape the Veiled Halls', async () => {
+    const { container } = render(App, {
+      env: fakeEnv({ router: memoryRouter('#/roll/vh'), data: fakeData(REAL) })
+    });
+    await expectNoA11yViolations(container);
   });
 });
 
@@ -452,7 +524,7 @@ describe('accessibility', () => {
   });
 });
 
-/* The three whole-table rolls share one branch of App.svelte; a number kept from one
+/* The whole-table rolls share one branch of App.svelte; a number kept from one
    table pointed past the end of a shorter one and drew nothing. */
 describe('switching between two tables', () => {
   it('starts the next table at its first row after a switch from a longer one', async () => {

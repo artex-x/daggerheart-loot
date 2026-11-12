@@ -21,7 +21,7 @@ RootWebArea "The Last Round Table - Генератор лута Daggerheart" [ur
     navigation "Режим броска"
       link "Обычные правила" [url=/roll/std]
       link "Альтернативные таблицы" [url=/roll/alt]
-      button "The Last Round Table" [expanded=false haspopup=menu]
+      button "The Last Round Table" [haspopup=dialog]
     button "Открывать при запуске" [pressed=false]
     button "Об этой книге" [expanded=false]
     button "Бросить 1-26"
@@ -34,9 +34,9 @@ RootWebArea "The Last Round Table - Генератор лута Daggerheart" [ur
       StaticText "Лодыжкогрыз"
     button "Открыть карточку"
     StaticText "1"
-    ... StaticText x3 of 7 same-shape siblings elided
+    StaticText "ПРЕДМЕТ"
+    StaticText "THE LAST ROUND TABLE"
     link "Лодыжкогрыз" [description=Открыть страницу url=/i/lr1]
-    StaticText "Как ни странно, в отличие от других мебельчан, оживлённых Благос..." [namelen=201 namehash=0c63849e]
     StaticText "Если сидеть в Лодыжкогрызе во время короткого отдыха, вы очищает..." [namelen=75 namehash=699b006a]
     button "В список" [expanded=false]
     button "Поделиться"
@@ -95,7 +95,7 @@ RootWebArea "The Last Round Table - Daggerheart Loot Generator" [url=/en/roll/la
     navigation "Roll mode"
       link "Standard rules" [url=/en/roll/std]
       link "Alternate tables" [url=/en/roll/alt]
-      button "The Last Round Table" [expanded=false haspopup=menu]
+      button "The Last Round Table" [haspopup=dialog]
     button "Open on start" [pressed=false]
     button "About this book" [expanded=false]
     button "Roll 1-26"
@@ -108,9 +108,9 @@ RootWebArea "The Last Round Table - Daggerheart Loot Generator" [url=/en/roll/la
       StaticText "Anklebiter"
     button "Open card"
     StaticText "1"
-    ... StaticText x3 of 7 same-shape siblings elided
+    StaticText "ITEM"
+    StaticText "THE LAST ROUND TABLE"
     link "Anklebiter" [description=Open page url=/i/en/lr1]
-    StaticText "Strangely, unlike other Sitizens animated by the Saint's Blessin..." [namelen=166 namehash=60786f4f]
     StaticText "Sitting in Anklebiter as part of a Short Rest clears 1 Stress."
     button "Add to list" [expanded=false]
     button "Share"

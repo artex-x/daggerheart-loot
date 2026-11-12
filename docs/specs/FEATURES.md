@@ -6,7 +6,7 @@ in `CONTRACTS.md`.
 
 ## Rolling
 
-Nine modes. Each keeps its own input in memory only. A mode starts at its
+Twelve modes. Each keeps its own input in memory only. A mode starts at its
 first row on every visit: a switch between two modes carries no number
 across.
 
@@ -18,19 +18,25 @@ across.
 | Dread GM Toolbox | 1-29 | 1 | `dread {n}` |
 | Vault of Ages | section + roll within it | 1 | `voa {k, n}` |
 | The Dragon's Vault | 1-145 | 1 | `dv {n}` |
-| Arazo's Artifacts | 1-78 | 1 | `arazo {n}` |
+| Arazo's Artifacts | 1-27 | 1 | `arazo {n}` |
 | Community items | community + 1-10 | 1 | `comm {c, n}` |
 | Many Worlds Tavern | realm + a roll inside it (1-11 to 1-21) | 1 | `mwt {r, n}` |
-| Pistolheart | 1-93 | 1 | `ph {n}` |
+| Pistolheart | 1-45 | 1 | `ph {n}` |
 | The Last Round Table | 1-26 | 1 | `lr {n}` |
-| Escape the Veiled Halls | room + a roll inside it (d4, or 1-3 in The Laboratory) | 1 | `vh {r, n}` |
+| Escape the Veiled Halls | 1-15 | 1 | `vh {n}` |
 
+- One roll row per item: an upgrade line is rolled once, at its head, so a line and a
+  single item have the same chance. Its other tiers open from the card, whose «Ранг» /
+  "Tier" row lists them. A rung has no `roll` (owner, 2026-11-05;
+  `docs/decisions/2026-11-07-one-roll-row-per-item-an-upgrade-line-is-rolled-at-its-head.md`).
 - The twelve roll pages share one layout (`RollPage`). Up to 760 px the `h1` and
-  the lead are read, not drawn; the roll controls sit under the mode row; one
-  results line holds «Бросок N» / "Roll N", «Настроить» / "Set up" and «Ещё».
+  the lead are read, not drawn; the picker row comes first (the mode picker and
+  «Ещё»), then the roll controls; one results line holds «Бросок N» / "Roll N" and
+  «Настроить» / "Set up".
   «Настроить» opens the settings over the results: the manual entry and, on the
-  two own modes, the source and type rows. «Ещё» holds «Скопировать все варианты»
-  (where the roll is a choice), the pin and the help. The `h1` reads «Бросок» /
+  two own modes, the source and type rows. «Ещё», the last control of the picker row,
+  holds «Скопировать все варианты» (where the roll is a choice), the pin and the help;
+  its help panel opens under the row. The `h1` reads «Бросок» /
   "Roll" at every width. From 761 px the head holds the `h1`, the three mode pills,
   the labeled pin and help (DESIGN.md, "The Head Order Rule"; from 761 to 999 px the
   pills take the row under them), and the lead. Only `/roll/std` and `/roll/alt` draw a
@@ -48,7 +54,8 @@ across.
   roll). Up to 600 px that is every roll; from 761 px a four-result roll and every
   roll in a results column under 641 px (owner, 2026-11-04). A result draws no
   relation line, no set line and no tier ladder, and no «Core» badge; another book
-  keeps its badge. Under the plate sits a row of «В список», «Поделиться» and
+  keeps its badge. A rolled line head is no exception: its other tiers open from
+  «Открыть карточку» / "Open card" (owner, 2026-11-07). Under the plate sits a row of «В список», «Поделиться» and
   «Ещё», which holds the copies. A roll is page memory, so a sign-in from the row's
   «В список» returns to the record's own page, with the menu open there.
 - The five dice of Core rules are plain buttons, none gold and none lit: a die is
@@ -56,7 +63,7 @@ across.
   rows, three over two, with the count over the rarities; from 761 px a list under
   the group label «Бросить». The other modes have one gold roll button.
 - A choice among parts is a native select with the name over the value: Vault of
-  Ages, Community items, Many Worlds Tavern and Escape the Veiled Halls at every width, the rarity on the
+  Ages, Community items and Many Worlds Tavern at every width, the rarity on the
   alternate tables up to 760 px. From 761 px the rarity is a row of neutral chips
   with no tier line.
 - The source and type chips toggle; a row with every chip on draws each neutral
@@ -99,15 +106,16 @@ across.
   text, so `/tables/homebrew` alone may draw a taller row, and the supplements
   draw one tab, the picker.
 - The twelve roll sections share the header's roll job «Бросок» / "Roll" and draw
-  the mode row under the header up to 760 px and the same controls as the page head's
-  pills from 761 px ("Chrome";
-  `docs/decisions/2026-10-29-the-header-has-three-jobs-and-a-mode-row.md`). The
+  the mode picker in the picker row up to 760 px and the three mode pills of the page
+  head from 761 px ("Chrome";
+  `docs/decisions/2026-11-10-the-roll-modes-are-a-picker-row-up-to-760-px.md`, which
+  amends `docs/decisions/2026-10-29-the-header-has-three-jobs-and-a-mode-row.md`). The
   ten supplement modes (Wondrous Environments to Escape the Veiled Halls) are the
-  items of its «Дополнения» / "Supplements" menu, in table order, each a link to
-  its section; the open one is checked and the current page, and the menu
-  button shows its name. A mode switch keeps the keyboard focus on the lit
-  control (the pressed pill, or the menu button after a supplement), and a focused
-  pill stays focused when the row moves at 761 px. The name is the source's product name
+  links of the sheet's «Дополнения» / "Supplements" group, in table order, each a
+  link to its section; the open one is current. A mode switch keeps the keyboard
+  focus on the lit control (the picker up to 760 px; the pressed pill, or the
+  «Дополнения» button after a supplement, from 761 px), and a focused control stays
+  focused when the row changes form at 761 px. The name is the source's product name
   (`docs/decisions/2026-10-21-source-names-follow-the-source-product.md`). The
   roll pages draw no supplements panel. The catalog's picker and its sheet draw
   each book by its full name at every width.
@@ -126,12 +134,12 @@ across.
 - Each card on the alternate tables says which die found it, and its number
   badge is the face that die showed rather than the row the record has in the
   book it was printed in.
-- Vault of Ages sections, communities, Many Worlds Tavern realms and Escape the
-  Veiled Halls rooms are different lengths, so changing the part resets the roll to
-  1: a number from one part would point past the end of another. One panel draws the
-  four pickers (`PickerRollPanel.svelte`). A realm or a room is a fixed chip: with no
-  `mwt` or `vh` rows (a `data.js` from before the source, held in the HTTP cache) the
-  page says that the data did not load, as every roll page does with no rows.
+- Vault of Ages sections, communities and Many Worlds Tavern realms are different
+  lengths, so changing the part resets the roll to 1: a number from one part would
+  point past the end of another. One panel draws the three pickers
+  (`PickerRollPanel.svelte`). A realm is a fixed chip: with no `mwt` rows (a `data.js`
+  from before the source, held in the HTTP cache) the page says that the data did not
+  load, as every roll page does with no rows.
 - Many Worlds Tavern is six card sets, one per realm, in release order:
   Sporopolis (20), Wagerwood (20), Warrin' Warrens (21), Godsvale (20), Hornet
   Hold (11) and The Drome (17). 11, 17 and 21 cards are not a die, so on those
@@ -144,13 +152,13 @@ across.
   its frame; the equipment `src` chip reads "Many Worlds Tavern", one value
   for the six realms. The printed rarity is not shipped, and the domain cards
   of the sets are not loot.
-- Pistolheart is one pool of 93 over its three volumes and The Last Round Table one
-  pool of 26, each in book order (a Pistolheart line's rungs after its head), rolled at
-  random (as Arazo's Artifacts; owner, 2026-11-05). Escape the Veiled Halls prints one loot
-  table per room: The Basement (d4), The Dressing Room (d4), The Laboratory (d3, so
-  the button picks 1-3 at random) and The Library (d4). The tables page sections
-  `mwt` by realm, `ph` by volume and `vh` by room (`sectionProps.ts`), and a record's
-  path ends with that section («Pistolheart · Том 2»); its badge and print card name
+- Pistolheart is one pool of 45 over its three volumes (93 rows: its 16 lines roll at
+  their heads), The Last Round Table one pool of 26 and Escape the Veiled Halls one pool
+  of 15, each in book order, rolled at random (as Arazo's Artifacts; owner, 2026-11-05).
+  Escape the Veiled Halls is one flat list with no rooms (owner, 2026-11-07;
+  `docs/decisions/2026-11-07-escape-the-veiled-halls-is-one-flat-list-with-no-rooms.md`).
+  The tables page sections `mwt` by realm and `ph` by volume (`sectionProps.ts`), and a
+  record's path ends with that section («Pistolheart · Том 2»); its badge and print card name
   the book. Their rule cards link to the product page, the host as the link text.
   The volume filter row reads «Том» with the chips «1», «2» and «3» (`SectionProp.chip`);
   the sections and the path read «Том 2».
@@ -198,7 +206,8 @@ across.
   ("Account"), and the switch carries no note (owner, 2026-10-29).
 - The list head (`docs/decisions/2026-10-30-list-pages-share-one-head-and-one-selection-bar.md`).
   The page name «Таблицы» is the `h1` at every width; below 761 px it is read,
-  not drawn, and the head is the picker row: the picker, the view switch and
+  not drawn, and the head is the picker row (8 px under the header, the one picker face
+  of the roll pages and «Мои предметы»): the picker, the view switch and
   «··· Ещё» / "··· More" (the three-dot icon and the word), whose menu holds
   «Ссылка на таблицу» (not on `homebrew`), the pin and «Об этих данных». That item
   opens and folds the panel under the head; while it is open the item draws a check
@@ -220,6 +229,14 @@ across.
   «Фильтры» below 1000 px (plain at no pick, «Фильтры · N» lit while a value
   is picked: a gold label on a 45% gold border), from 761 px the view switch,
   the «Свои предметы» switch and «Ссылка на таблицу», then «Выбрать» last.
+- **Stat columns** (`/tables/eq_weapon`, `eq_secondary`, `eq_armor`, list view, from 1440 px;
+  DESIGN.md "The Stat Columns Rule"): a row draws its stat parts in aligned columns at its right
+  in place of the stat sentence: a weapon five (class, trait, range, damage, burden), an
+  armor two (thresholds, score), each column as wide as the widest value of the whole table,
+  right-aligned, the right edges equal in every row of every tier section. A part the record
+  lacks leaves its cell empty. The description takes the free width left of the columns, up
+  to four lines. Below 1440 px, in the tile view, on `/search`, on the list page and on
+  `/s/` the sentence stays. A row's accessible name is the same at every width.
 - A long table paints before all of it is built: the first 60 rows of the page draw in
   the first task and 60 more in each task after it; rows that arrive later (a filter
   cleared) and an anchored table draw at once. The counts, «Все» and the selection read
@@ -293,7 +310,10 @@ across.
   kind row, where a long line takes a line of its own. M counts the matches
   over all kinds, N the rows drawn.
 - **A search row** draws the roll number as «№ 89» / "No. 89" in its number
-  box: no table is named on this page. A table row keeps the bare number.
+  box: no table is named on this page. A table row keeps the bare number. A `/s/` row
+  from 761 px draws «№ N» too (the compact row keeps the bare number, "Lists"); the record
+  page's meta line and the share card's subtitle write «№ 1» / "No. 1", one term for the
+  number on every page.
 - **The start state** of `#/search` (no query): the plate with the item glyph,
   «Что ищем?» / "What are you looking for?", one sentence (search reads names
   and descriptions in both languages at once) and three example queries as
@@ -349,8 +369,8 @@ across.
   card: the table's name in the stub's words («Core · Предметы»), «N
   позиций» / "N items" of the table, a community or frame block's label and
   count («Сообщество: Великородное. 10 позиций»), a realm block's label and
-  count («Мир: Воюющие Норы. 21 позиция»), a volume or room block's label and count
-  («Комната: Библиотека. 4 позиции», «Том: 2. 35 позиций»), the `comm`, `frame`, `realm`, `vol` and `room`
+  count («Мир: Воюющие Норы. 21 позиция»), a volume block's label and count
+  («Том: 2. 35 позиций»), the `comm`, `frame`, `realm` and `vol`
   filter labels with no count on a filter, and the site picture. A table card
   keeps its old count in a message until the link is sent again.
 - **The three equipment tables hold equipment from every source, not only the
@@ -400,9 +420,9 @@ across.
   section's key, a source anchor its key (the source's items outside its
   sections), `hb` the items with no source; a row anchor that arrives with
   the page plays once the own items load. Signed out the page
-  draws the sign-in prompt «Войдите, чтобы видеть свои предметы в таблицах.»
-  and no toolbar; while the session or the items load, «Загружаем...»; a
-  failed read, «Не получилось загрузить ваши предметы.» and «Повторить»; no
+  draws the sign-in plate (the kind glyph, «Войдите, чтобы видеть свои предметы в
+  таблицах.» and «Войти») under the head and no toolbar; while the session or the
+  items load, «Загружаем...»; a failed read, «Не получилось загрузить ваши предметы.» and «Повторить»; no
   own item, the plate «Своих предметов пока нет» with the item glyph and a primary
   «Новый предмет»; a build with no sign-in
   configured, the not-found page with the address kept. A pin may hold it.
@@ -417,7 +437,9 @@ across.
   draw them. It is memory only (`STATE.md`).
 - The catalog's filters (`FilterPanel`) are a column beside the rows from
   1000 px, sticky under the header and scrolling inside itself, and a bottom
-  sheet below it; the Items tab of «Мои предметы» draws them too ("Homebrew");
+  sheet below it. The column ends at or above the window's bottom less 16 px at every
+  page scroll (its cap follows its real top while it is not yet stuck), and the wheel
+  passes to the page at the column's ends; the Items tab of «Мои предметы» draws them too ("Homebrew");
   both list pages draw them as the sheet at every width ("Lists"). Where a table has
   nothing to filter by, there is neither. A row offers only values the drawn
   rows answer and shows only when it can narrow; a picked value stays offered
@@ -492,14 +514,12 @@ across.
   opens: a pressed row keeps its place until the menu opens again, and a
   list that appears while it is open (created here or in another tab)
   joins the first group. A selection's menu
-  stays newest first. The menu opens on
-  the side of the toggle button with room in the tightest clipping box it
-  sits in - the record card, the record modal's own card, the window -
-  re-measured from the toggle itself (not whichever button happens to render
-  first) whenever it opens or grows, so it neither spills past the modal's
-  edge nor drags the card's own scroll position along with it. Escape closes
-  it and returns focus to the toggle, the same as any other disclosure on
-  the page. It is a popover at every width, also at 360 px (no bottom sheet:
+  stays newest first. The popover opens by the overlay rule
+  ("Chrome"): in the top layer, placed by the window's room around the toggle
+  (the toggle, not whichever button happens to render first), and it re-places
+  itself whenever it grows, so a record dialog's card neither crops it nor
+  scrolls. Escape closes it and returns focus to the toggle, the same as any
+  other disclosure on the page. It is a popover at every width, also at 360 px (no bottom sheet:
   `docs/decisions/2026-11-05-the-add-to-list-menu-stays-a-popover.md`).
 - The menu is headed «Списки» / "Lists". A list is a row: a check where it holds the
   record, the name, wrapped (DESIGN.md, "The Whole Message Rule"), and its count in words at
@@ -812,8 +832,12 @@ address kept, and no add-to-list control is drawn.
   boxed prompt under a pressed control (the shared page's «Сохранить себе», the
   record's «Печать» and «Сохранить себе») give «Войти» the focus and offer
   «Отмена», which closes the prompt and returns the focus to the control that had
-  it. A page-level prompt (`#/lists`, «Мои предметы», `#/p/<id>`) leaves the focus
-  where it is and has no «Отмена».
+  it. A page-level prompt (`#/lists`, `#/lists/<id>`, «Мои предметы» with its
+  editor, `#/tables/homebrew`, `#/p/<id>`) is one plate, in every one of them: the
+  kind glyph, the lead and one «Войти» (the default form of `SignInPrompt`). It
+  leaves the focus where it is and has no «Отмена». Only a prompt that answers a
+  press is the compact or the boxed form
+  (owner, 2026-11-11; `docs/decisions/2026-11-11-a-page-level-sign-in-prompt-is-one-plate.md`).
 - **The return after sign-in**: «Войти» opens `#/account` and remembers the
   page and the started action; the account page's sign-in carries both
   through the provider redirect (`STATE.md`, `dhloot.auth.return`). Back on
@@ -1167,10 +1191,15 @@ address kept, and no add-to-list control is drawn.
   has no facets: a picked value or a query hides it, and the meta line counts
   it. No match draws «Ничего не найдено» and «Сбросить всё». A reload or
   another list clears the search and the filter.
-- **Not found** (A18, `ErrorPage`): an account address signed out, or an address
-  that is no account id, draws «Войдите, чтобы открыть список» / "Sign in to open
-  this list", «Списки открываются только в аккаунте, где их создали. Войдите в него.»,
-  the primary «Войти», which returns to that address, and «Открыть таблицы»; nothing while the session is
+- **Signed out**: an account address, or an address that is no account id, draws
+  the heading «Мои списки» / "My lists" (the tab title says the same) and the
+  sign-in plate: the kind glyph, «Войдите, чтобы открыть список: он открывается
+  только в аккаунте, где его создали.» / "Sign in to open this list: it opens only
+  in the account where it was made." and the one action «Войти», which returns to
+  that address. There is no error page, no status line and no second action (the
+  header's «Таблицы» is the way out). While the session is unknown nothing is drawn
+  and the tab title stays plain.
+- **Not found** (A18, `ErrorPage`): nothing while the session is
   unknown; «Загружаем...» while the session's account read runs;
   the heading «Список не загрузился», «Не получилось
   загрузить списки аккаунта.» and a primary «Повторить» when the read failed
@@ -1217,8 +1246,11 @@ address kept, and no add-to-list control is drawn.
   назад» move with the same 45 s clock while the page stays open.
 - **Purchase requests: the send**: on a `#/s/` page every reader but the
   list's owner, signed in or not, has «Сообщить владельцу» / "Notify the
-  owner" last in the selection bar's actions, on its own line at 600 px or
-  less. It sends the owner a request for the ticked entries with their taken
+  owner" last in the selection bar's actions; up to 760 px it is the second item of
+  «Ещё» (after «Скопировать текст»), so the bar is one action row, «В список»,
+  «Печать» and «Ещё», 118 px at 360 px (DESIGN.md, "The Phone-First Rule"). The item
+  closes the menu when pressed and keeps its states for the next opening. It
+  sends the owner a request for the ticked entries with their taken
   counts; while it runs it reads «Отправляем...» and is disabled. Success
   keeps the selection and its counts, toasts «Запрос отправлен владельцу
   списка.», and the button reads «Запрос отправлен» / "Request sent",
@@ -1486,13 +1518,23 @@ address kept, and no add-to-list control is drawn.
   «Скопировать название», «Скопировать изображение» (with a picture only),
   «Скопировать ссылку» (with a link only) and «Сохранить себе» with its second
   line; a pressed item and Escape return the focus to «Ещё», and in the dialog
-  Escape closes only the menu. The menu opens down on a page; in the dialog it
-  opens up where the room is only above, so from the dock.
+  Escape closes only the menu. The menu opens by the overlay rule ("Chrome"),
+  on a page and in the dialog alike: it never scrolls the page or the dialog's card.
+  «Поделиться» (the page, the dialog dock and a roll result's row; the same
+  component) hands the system share sheet `{ title, text, url }`, and the record
+  link is the last line of `text`, once. With a picture the phone shares the file
+  and `text` only (`url` empty, so a target that reads both does not print the link
+  twice). A desktop (a fine pointer and no coarse pointer, or a Windows platform;
+  decided in `SharePort`) shares without the file: Windows share targets show a file
+  and drop the text, so the picture stays in «Ещё» as «Скопировать изображение».
+  A record with no address of its own sends the site address. Without a share sheet
+  the link, or for an item with none the text, goes to the clipboard. The list,
+  the share-link panel and the selection bar copy to the clipboard and do not use
+  the share sheet.
 - A roll result has the add control, «Поделиться» and «Ещё» under its plate, and no
   «Печать»; the copies are in «Ещё», without «Сохранить себе». The add menu opens
-  down, and up where the window has no room below and the page above the control
-  holds the whole menu under the header; near the page top it opens down and the
-  page scrolls to it.
+  by the overlay rule ("Chrome"): down where the window has room below, else up,
+  and the page never scrolls to it.
 - An own homebrew item opens at `#/i/<key>` for its author only; any other
   reader, signed out included, gets the not-found page, and «Загружаем...»
   draws until the session and the author's items are known. Its path reads
@@ -1853,8 +1895,9 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
 
 - **`#/homebrew` and its tabs**: the list head of the catalog ("Tables and
   search"), on every tab. Up to 760 px, once the items are read, the heading
-  «Мои предметы» and its lead line are read, not drawn; one row holds the tab
-  picker (named «Мои предметы: Предметы» / "My items: Items"), on the Items tab
+  «Мои предметы» and its lead line are read, not drawn; one row, the picker row (8 px
+  under the header, one line at 320 px, the picker face of the tables and the roll pages),
+  holds the tab picker (named «Мои предметы: Предметы» / "My items: Items"), on the Items tab
   «Новый предмет» with the plus icon (rule 8), and «Ещё» («Импорт из файла» and the pin).
   The picker opens a sheet with the four tabs, their counts and the limit
   counter; a tab press closes it. From 761 px the head holds the heading, the four
@@ -1948,7 +1991,8 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   with the sentence «Свой предмет ищется вместе с книгами, виден в «Таблицах» и
   попадает в списки.» and no button (the head holds the primary).
   Signed out: the head and the
-  sign-in prompt «Войдите, чтобы создавать свои предметы.». A failed read: «Не
+  sign-in plate (the kind glyph, «Войдите, чтобы создавать свои предметы.» and
+  «Войти»). A failed read: «Не
   получилось загрузить ваши предметы.» and a small «Повторить». A pin may hold
   the page; with no sign-in configured the route draws the not-found page and
   keeps the address, as `#/tables/homebrew`. A stored `#/homebrew` pin opens the
@@ -2095,7 +2139,9 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   save keeps that key.
 - **The editor** (`#/homebrew/new`, `#/homebrew/<key>`): the form beside a
   live full card of the item from 800 px; 761-799 px the card under the form; up
-  to 760 px the card is in the sheet «Предпросмотр». An item with no name yet
+  to 760 px the card is in the sheet «Предпросмотр». The preview column is sticky under the
+  header and ends at or above the window's bottom less 16 px at every page scroll, scrolling
+  inside itself (the filter column's cap rule, "Tables and search"). An item with no name yet
   reads «Новый предмет» on it. While the items load the page draws the heading
   «Мои предметы» and «Загружаем...». The heading row is a breadcrumb: the link
   «Мои предметы» (the way back at every width, under the guard), then the item's
@@ -2520,8 +2566,8 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
 - `#/p/<id>` reads the set once when it opens (no live re-read; a reload reads
   it again). Each state keeps the heading «Печать карточек»: while the session
   is not known, the heading alone; when the data did not load, «Данные не
-  загрузились. Обновите страницу.» under it; signed out, the sub «Войдите,
-  чтобы печатать карточки.» and one «Войти», which returns here;
+  загрузились. Обновите страницу.» under it; signed out, the sign-in plate with the
+  lead «Войдите, чтобы печатать карточки.» and one «Войти», which returns here;
   while it reads, «Загружаем...»; an unknown, expired or malformed id
   (a malformed one signed out too, with no read), «Набор не найден: ссылку не
   открывали 90 дней, или в адресе ошибка.» and «На главную»; a set with no
@@ -2928,6 +2974,23 @@ right, so the tab order and the reading order agree
   focused it is a gold plate pinned over the page's top-left corner, matching
   the live app rather than a gray chip that pushed the header down while
   focused.
+- **Where a navigation lands.** A page a link or a job opens (a record's page link, a header
+  job, a card) starts at the top of the window; a row or section anchor in the address scrolls
+  to its target instead. Back, Forward and a reload keep the browser's own scroll restore, and
+  a Back puts the focus on the row of the record that was left (`[data-row]`, kept in memory
+  for the session; the row of an open record dialog counts), else on `#main`. A record dialog
+  opening, a filter pick and a language switch are not navigations and keep the page where it
+  is.
+- **Escape.** It undoes the last layer a person opened: it closes an open menu, popover,
+  sheet or dialog and does nothing else on that press. With no layer open, in a selection it
+  clears the ticks («Выбрано: 0», the focus kept); at 0 ticks the next Escape leaves the
+  selection mode on the pages that have one (the catalog, `/search`, `/lists`, a list, «Мои
+  предметы») and puts the focus on «Выбрать»; the shared page has no mode and keeps its bar. A
+  text field that holds text takes its own Escape first. Up to 760 px an open «Настроить»
+  folds on Escape while the focus is on it or inside it, and the focus stays on «Настроить».
+- Text fields are 16 px up to 600 px, so a phone does not zoom the page on focus (the list
+  rows' position, price and quantity, the note boxes, «Взять», the add-to-list menu's search
+  and new-list name).
 - Chips and segmented switches expose their on/off state as `aria-pressed` -
   the money chips and the two view switches (tables list/grid, print color/
   black-and-white) gained it in the rewrite, where the live app wrote
@@ -3007,7 +3070,11 @@ right, so the tab order and the reading order agree
   bar while the bar shows (the bar is fixed to the window's bottom on a page of any
   length); inside a modal up to 760 px, 26 px above the record dialog's dock or the
   sheet's foot (under 481 px of window height the record dialog's dock moves with the
-  card, so its toast can cover the dock: `docs/specs/DEBT.md`, D136); its action button is `--surface2` with a
+  card, and the toast's bottom rises above the dock's top while the dock is in view);
+  while an open menu or popover reaches into the bottom 80 px of the window, the toast's
+  bottom rises to 8 px above the overlay's top (`--overlay-clear`). The element carries
+  `role` (`status`, `alert` for an error) and `aria-live` at all times; an idle toast is
+  `display: none` and leaves the accessibility tree; its action button is `--surface2` with a
   `--line2` border. The error toast takes the Alarm Red fill (`--danger`) with
   dark ink (`--ink-on-gold`, about 5.6:1). No toast is gold.
 - The footer carries the full DPCGL license notice (`dict.ts`'s
@@ -3044,6 +3111,19 @@ right, so the tab order and the reading order agree
   `#/account` it carries `aria-current="page"`. The button also carries the
   ring while its menu is open. A build with no sign-in draws no control at
   all.
+- **The overlay rule.** A menu or a popover (the account menu, «Ещё», the add-to-list
+  popover) is a `popover="manual"` box in the top layer. It is placed by the window's
+  room around its control: down where the room below holds it, else up, else on the
+  larger side with its own scroll; its right edge is the control's (the add-to-list
+  popover of a record's or a result's row, its left edge), and it keeps a 16 px gutter at
+  each window edge. The room excludes the shown page header (outside a dialog), the selection
+  bar and the print dock. It follows its control while the page or the dialog's card
+  scrolls, and re-places itself on a resize and on the on-screen keyboard. Opening one
+  never scrolls the page or a dialog's card: the first item takes the focus with
+  `preventScroll`, and a close returns the focus to the control with `preventScroll`
+  while the control is in the window. A control in the sticky header, the editor's bar or
+  the print dock keeps the page where it is on a focus (a negative `scroll-margin` that
+  cancels the page's `scroll-padding`).
 - The account menu «Меню аккаунта» / "Account menu" opens under the
   signed-in control, right-aligned, and holds, in this order, «Аккаунт» /
   "Account" (`#/account`), «Мои списки» / "My lists" (`#/lists`), «Мои
@@ -3079,22 +3159,28 @@ right, so the tab order and the reading order agree
   short page, after a navigation and while a menu, a sheet, a dialog, a text field
   or a drag owns the page; a keyboard focus inside it brings it back. A focused control and
   a linked target stop clear of its full height, so a Tab never lands under it.
-- The twelve roll sections draw the mode row under the sticky header up to 760 px; it
-  scrolls with the page. From 761 px the same three controls are the pills of the page
-  head, after the `h1` «Бросок» / "Roll" (DESIGN.md, "The Head Order Rule"). It holds
-  three controls: «Обычные правила» / "Standard rules", «Альтернативные таблицы» /
-  "Alternate tables" (the pages' names) and the menu button «Дополнения ▾» / "Supplements ▾", which
-  on a supplement page shows that supplement's name. The lit control takes
-  the current place's gold fill and `aria-current="page"`; each carries
-  `data-section`, the section's canonical key. At 600 px and below the
-  controls share the row, 40 px tall, and a long name takes two lines: the
-  row is 53 px at 360 px in both languages (measured 2026-10-30).
-- The supplements menu «Дополнения» / "Supplements" opens under its button
-  with a muted caption and the ten supplements, 44 px items, the open one
-  checked with `aria-current="page"`; it is 498 px tall, at most the window's height
-  less 186 px, and scrolls inside itself past that (at 360x640 it starts at 177 px). Its keys and its
-  closing are the account menu's (one `Menu.svelte`), and a navigation closes
-  it.
+- The twelve roll sections draw the picker row up to 760 px: the first row of `main`,
+  8 px under the header, 40 px tall (DESIGN.md, "The Head Order Rule"). It holds the
+  mode picker, named «Режим броска: <имя>» / "Roll mode: <name>", which reads the page's
+  name (one or two lines, no book line, `aria-haspopup="dialog"`, `data-section` the
+  section's canonical key, no `aria-current`), and «Ещё» last; the picker takes the free
+  width, so «Ещё» holds still on a switch. The row holds no tool, because «Настроить»
+  belongs to the results line (a departure from the tables' row, which holds the view
+  switch). On a page with no data the row draws the picker and «Ещё». From 761 px the
+  same three controls are the pills of the page head, after the `h1` «Бросок» / "Roll":
+  «Обычные правила» / "Standard rules", «Альтернативные таблицы» / "Alternate tables"
+  (the pages' names) and the button «Дополнения ▾» / "Supplements ▾", which on a
+  supplement page shows that supplement's name. The lit control takes the current place's
+  gold fill and `aria-current="page"`; each carries `data-section`.
+- The picker, and from 761 px the «Дополнения» button, opens the mode sheet: a `Sheet`
+  titled «Бросок» / "Roll", with «Закрыть» / "Close", the links «Обычные правила» and
+  «Альтернативные таблицы», the caption «Дополнения» / "Supplements" and the ten
+  supplements in table order. A row is 44 px, the open one gold with
+  `aria-current="page"`, and the body scrolls at a short window (at 360x640 the list is
+  taller than the sheet) with the open row in view. A press opens the mode and closes the
+  sheet; Escape and «Закрыть» close it and return the focus to the control that opened it
+  (rule 20). Two taps lead from Core rules to the alternate tables on a phone. The sheet is
+  centered from 761 px.
 - Under `prefers-reduced-motion: reduce` every transition and animation stops
   moving and waits out no delay - a blanket kill (`tokens.css`), not the live
   app's own two named exceptions - including the table page's scroll to a
@@ -3166,7 +3252,8 @@ Each rule keeps its number: a review cites it by number.
   twelve roll pages and `/tables/*` are headed by their job, «Бросок» / "Roll" and
   «Таблицы» / "Tables", and the lit pill or tab names the page; the menu button
   «Дополнения» / "Supplements" names the ten supplement pages as one group and
-  shows the open supplement's name.
+  shows the open supplement's name from 761 px; up to 760 px the roll picker reads the
+  page's name and has no group button.
 - **5. Toasts**: a create says «<Что> «%s» создан(а)» / "<What> "%s"
   created", an update «Сохранено: «%s»» / "Saved: "%s"", a delete «<Что>
   «%s» удалён(а)» / "<What> "%s" deleted"; a rename is silent. A bulk write
@@ -3364,7 +3451,11 @@ Each rule keeps its number: a review cites it by number.
   name, «На главную», «Открыть таблицы», «показать в таблице», a `/lists` card, a homebrew
   row, «Новый предмет», the editor's «Мои предметы», a source name)
   - `#main`, unless the new page places the focus itself (the head's
-  mode pills, a dialog); a navigation that keeps the pressed control keeps the focus; on the
+  mode pills, a dialog) or the arrival is a Back to a catalog, whose row of the left record
+  takes it ("Chrome"); a navigation that keeps the pressed control keeps the focus; a row that
+  another device removes while it holds the focus (a ticked row on an account list or the
+  shared page) - the tick of the row now at its place, else the last row's, else the bar's
+  «Снять выделение», and the count follows; on the
   homebrew tabs a source's «Удалить» - the next row's «Ещё», the one before,
   «Новый источник»; a section's «Удалить» - the next row's «Удалить», the one
   before, that source's «Новый раздел»; a card's «Удалить» - the next card's, the previous card's, the

@@ -50,8 +50,7 @@ export const TEXT = {
     commF: 'Сообщество',
     frameF: 'Сеттинг',
     realmF: 'Мир',
-    volF: 'Том',
-    roomF: 'Комната'
+    volF: 'Том'
   },
   en: {
     site: 'Daggerheart Loot Generator',
@@ -83,8 +82,7 @@ export const TEXT = {
     commF: 'Community',
     frameF: 'Frame',
     realmF: 'Realm',
-    volF: 'Volume',
-    roomF: 'Room'
+    volF: 'Volume'
   }
 };
 
@@ -104,18 +102,11 @@ export const REALM_LABEL = {
   drome: ['Дром', 'The Drome']
 };
 
-/* app/src/lib/sectionProps.ts: the Pistolheart volumes and the Escape the Veiled Halls rooms. */
+/* app/src/lib/sectionProps.ts: the Pistolheart volumes. */
 export const VOLUME_LABEL = {
   1: ['Том 1', 'Volume 1'],
   2: ['Том 2', 'Volume 2'],
   3: ['Том 3', 'Volume 3']
-};
-
-export const ROOM_LABEL = {
-  basement: ['Подвал', 'The Basement'],
-  dressing: ['Гардеробная', 'The Dressing Room'],
-  laboratory: ['Лаборатория', 'The Laboratory'],
-  library: ['Библиотека', 'The Library']
 };
 
 export const EQ_TYPE = {
@@ -217,7 +208,7 @@ export const PATH_TEXT = {
     frames: 'Сеттинги',
     artifact: 'Артефакт',
     cursed: 'Проклятый предмет',
-    rollNo: 'номер',
+    rowNo: '№ %n',
     tier: 'Ранг'
   },
   en: {
@@ -245,7 +236,7 @@ export const PATH_TEXT = {
     frames: 'Frames',
     artifact: 'Artifact',
     cursed: 'Cursed object',
-    rollNo: 'roll',
+    rowNo: 'No. %n',
     tier: 'Tier'
   }
 };
@@ -323,10 +314,9 @@ export function where(it, lang) {
   else if (it.community) bits.push(lang === 'ru' ? it.community_ru : it.community);
   else if (it.realm) bits.push(pick(REALM_LABEL[it.realm], lang) || it.realm);
   else if (it.src === 'ph' && it.vol) bits.push(pick(VOLUME_LABEL[it.vol], lang) || it.vol);
-  else if (it.src === 'vh' && it.room) bits.push(pick(ROOM_LABEL[it.room], lang) || it.room);
   if (it.tier === 'A') bits.push(p.artifact);
   else if (it.tier === 'C') bits.push(p.cursed);
-  if (it.roll) bits.push(p.rollNo + ' ' + it.roll);
+  if (it.roll) bits.push(p.rowNo.replace('%n', String(it.roll)));
   else if (it.eq && it.eq.tier !== 'A') bits.push(p.tier + ' ' + it.eq.tier);
   return bits.join(' · ');
 }
@@ -389,8 +379,7 @@ export const LABEL_GROUPS = {
   community: ['comm'],
   other_frames: ['kind', 'frame'],
   mwt: ['kind', 'realm'],
-  ph: ['kind', 'vol'],
-  vh: ['kind', 'room']
+  ph: ['kind', 'vol']
 };
 
 const UTF8 = new TextEncoder();

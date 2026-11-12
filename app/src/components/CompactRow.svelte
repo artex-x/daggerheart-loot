@@ -299,6 +299,13 @@
     border-color: var(--gold);
   }
 
+  /* 16 px: a smaller field makes iOS zoom the page on focus (as `RollSelect.svelte`). */
+  @media (max-width: 600px) {
+    .crow > :global(.cqf) {
+      font-size: 16px;
+    }
+  }
+
   .cqv {
     height: 44px;
     line-height: 44px;

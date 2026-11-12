@@ -26,7 +26,7 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/player-token-1?v=<
     searchbox "Поиск по названию или описанию..."
     button "Фильтры" [expanded=false]
     checkbox "Первоклассный Спальный Мешок" [checked=true]
-    button "1 Первоклассный Спальный Мешок ×2 · 150 зол. ПРЕДМЕТ Во время от..." [namelen=102 namehash=5f098004]
+    button "№ 1 Первоклассный Спальный Мешок ×2 · 150 зол. ПРЕДМЕТ Во время ..." [namelen=104 namehash=adcc3bb3]
     ... button x9 of 13 same-shape siblings elided
     spinbutton "Взять: Первоклассный Спальный Мешок" [value=2 valuetext=2 required=false valuemin=1 valuemax=2]
     button "Макс, взять все: Первоклассный Спальный Мешок" [disabled=true]
@@ -39,7 +39,7 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/player-token-1?v=<
     StaticText "= 100 зол."
     ... checkbox x4 of 8 same-shape siblings elided
     checkbox "Брошюра по Истории Искусства" [checked=false]
-    button "11 Брошюра по Истории Искусства ПРЕДМЕТ DREAD GM TOOLBOX Это пре..." [namelen=627 namehash=a4f000a3]
+    button "№ 11 Брошюра по Истории Искусства ПРЕДМЕТ DREAD GM TOOLBOX Это п..." [namelen=629 namehash=fa509e33]
     checkbox "Топор Тлеющих Углей" [checked=false]
     button "Топор Тлеющих Углей 800 зол. ОСНОВНОЕ ОРУЖИЕ УНИКАЛЬНОЕ МАСТЕРСК..." [namelen=198 namehash=61329d72]
     status ""
@@ -65,11 +65,6 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/player-token-1?v=<
     StaticText "Запрос отправлен владельцу списка."
 
 ## ru :: controls
-11Брошюра по Истории ИскусстваПредметDread GM ToolboxЭто прекрас... [namelen=623 namehash=750fe14d]
-1Зелье Быстрого Шага×5 · 20 зол.РасходникВы получаете бонус +1 к... [namelen=95 namehash=4e19ef8d]
-1Первоклассный Спальный Мешок×2 · 150 зол.ПредметВо время отдыха... [namelen=98 namehash=b507a4b6]
-3Колода СумерекПредметАртефактVault of AgesСтоимость Призыва: 2Э... [namelen=848 namehash=0d8f84be]
-51Гарпун Левиафана99999 зол.Основное оружиеУникальноеWondrous En... [namelen=384 namehash=f8da7a98]
 EN
 RU
 daggerheart.com
@@ -113,6 +108,11 @@ daggerheart.com
 Условия использования
 Установить как приложение
 Фильтры
+№ 11Брошюра по Истории ИскусстваПредметDread GM ToolboxЭто прекр... [namelen=625 namehash=2d80c566]
+№ 1Зелье Быстрого Шага×5 · 20 зол.РасходникВы получаете бонус +1... [namelen=97 namehash=e1581606]
+№ 1Первоклассный Спальный Мешок×2 · 150 зол.ПредметВо время отды... [namelen=100 namehash=3f0a7394]
+№ 3Колода СумерекПредметАртефактVault of AgesСтоимость Призыва: ... [namelen=850 namehash=8a050d11]
+№ 51Гарпун Левиафана99999 зол.Основное оружиеУникальноеWondrous ... [namelen=386 namehash=123c02fd]
 
 ## en :: tree
 RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-1?v=<v>]
@@ -138,7 +138,7 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-1?v=<v>]
     searchbox "Search by name or description..."
     button "Filters" [expanded=false]
     checkbox "Premium Bedroll" [checked=true]
-    button "1 Premium Bedroll ×2 · 150 gp ITEM During downtime, you automati..." [namelen=85 namehash=ab96007a]
+    button "No. 1 Premium Bedroll ×2 · 150 gp ITEM During downtime, you auto..." [namelen=89 namehash=f2fed1a2]
     ... button x9 of 13 same-shape siblings elided
     spinbutton "Take: Premium Bedroll" [value=2 valuetext=2 required=false valuemin=1 valuemax=2]
     button "Max, take all: Premium Bedroll" [disabled=true]
@@ -151,7 +151,7 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-1?v=<v>]
     StaticText "= 100 gp"
     ... checkbox x4 of 8 same-shape siblings elided
     checkbox "Art History Booklet" [checked=false]
-    button "11 Art History Booklet ITEM DREAD GM TOOLBOX This is a finely il..." [namelen=549 namehash=c71a35a2]
+    button "No. 11 Art History Booklet ITEM DREAD GM TOOLBOX This is a finel..." [namelen=553 namehash=365e44b1]
     checkbox "Ember Axe" [checked=false]
     button "Ember Axe 800 gp PRIMARY WEAPON UNIQUE ALDER WORKSHOP (HB) Tier ..." [namelen=171 namehash=8de947c8]
     status ""
@@ -177,11 +177,6 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-1?v=<v>]
     StaticText "The request was sent to the list's owner."
 
 ## en :: controls
-11Art History BookletItemDread GM ToolboxThis is a finely illust... [namelen=545 namehash=b9986a21]
-1Premium Bedroll×2 · 150 gpItemDuring downtime, you automaticall... [namelen=81 namehash=00225364]
-1Stride Potion×5 · 20 gpConsumableYou gain a +1 bonus to your ne... [namelen=80 namehash=7d8891e6]
-3Twilight DeckItemArtifactVault of AgesRecall Cost: 2This deck e... [namelen=871 namehash=aad79704]
-51Leviathan Harpoon99999 gpPrimary weaponUniqueWondrous Environm... [namelen=364 namehash=9219003b]
 Add to list
 Art History Booklet
 Broadsword
@@ -203,6 +198,11 @@ Max, take all: Premium Bedroll
 Max, take all: Stride Potion
 Min, take 1: Premium Bedroll
 Min, take 1: Stride Potion
+No. 11Art History BookletItemDread GM ToolboxThis is a finely il... [namelen=549 namehash=bac00790]
+No. 1Premium Bedroll×2 · 150 gpItemDuring downtime, you automati... [namelen=85 namehash=6dedca5f]
+No. 1Stride Potion×5 · 20 gpConsumableYou gain a +1 bonus to you... [namelen=84 namehash=1f213b8f]
+No. 3Twilight DeckItemArtifactVault of AgesRecall Cost: 2This de... [namelen=875 namehash=f69fdaee]
+No. 51Leviathan Harpoon99999 gpPrimary weaponUniqueWondrous Envi... [namelen=368 namehash=67ec9120]
 Note
 Premium Bedroll
 Print

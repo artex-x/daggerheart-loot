@@ -40,12 +40,12 @@ you reaches a server.
 | Dread GM Toolbox | 1-29 | 1 item |
 | Vault of Ages | 1-144 | 1 item |
 | The Dragon's Vault | 1-145 | 1 item |
-| Arazo's Artifacts | 1-78 | 1 item |
+| Arazo's Artifacts | 1-27 | 1 item |
 | Community items | community + 1-10 | 1 item |
 | Many Worlds Tavern | realm + a roll inside it (1-11 to 1-21) | 1 item |
-| Pistolheart | 1-93 | 1 item |
+| Pistolheart | 1-45 | 1 item |
 | The Last Round Table | 1-26 | 1 item |
-| Escape the Veiled Halls | room + a roll inside it (d4, or 1-3 in The Laboratory) | 1 item |
+| Escape the Veiled Halls | 1-15 | 1 item |
 
 Core and Hope & Fear are the same Nd12 roll against the same 1-60 table, so they
 share one mode with a source switch. Rarity there only sets how many dice you
@@ -224,9 +224,9 @@ release order: Sporopolis `mw1`-`mw20`, Wagerwood `mw21`-`mw40`, Warrin' Warrens
 `mw41`-`mw61`, Godsvale `mw62`-`mw81`, Hornet Hold `mw82`-`mw92`, The Drome
 `mw93`-`mw109`. Hornet Hold and The Drome print no card number, so inside each
 the order is kind, then name. Pistolheart runs `ph1`-`ph93` in book order over its
-three volumes and The Last Round Table `lr1`-`lr26`, the id number the roll. Escape the
-Veiled Halls runs room by room: The Basement `vh1`-`vh4`, The Dressing Room `vh5`-`vh8`,
-The Laboratory `vh9`-`vh11`, The Library `vh12`-`vh15`; its roll is the place in the room.
+three volumes, an upgrade line's rungs after its head; only a line's head and a single
+item carry a roll, 1-45. The Last Round Table runs `lr1`-`lr26` and Escape the Veiled
+Halls `vh1`-`vh15`, one flat list each, the id number the roll.
 
 A homebrew item link, a share link, a print set link and a table link are
 link cards on the same host `daggerheart-loot.pages.dev`: each address answers
@@ -438,7 +438,7 @@ stop working entirely. Training scrapers are excluded separately in `robots.txt`
 |---|---|
 | `en` / `ende` | English name and description |
 | `ru` / `rud` | Russian name and description |
-| `roll` | number in its own table |
+| `roll` | number in its own table; empty on an upgrade line's rungs |
 | `kind` | `item`, `consumable` or `equip` |
 | `img` | file name in `img/`, same as `id`; may be empty |
 | `craft` | optional: a list of the `id`s this upgrades into, for example `["cc8"]` |
@@ -452,11 +452,11 @@ and renumber `roll` on the rest. Where `img` is empty the app draws the glyph of
 the record's kind and hides the **Image** button, so a record can be added before
 its illustration exists; the same happens when a listed file fails to load.
 
-Thirty-one records carry `craft`, the list of `id`s they turn into - Core
+Thirty-four records carry `craft`, the list of `id`s they turn into - Core
 ingredients that become potions and the Core recipes (17), the Wondrous Environments
-ingredients (12), and the two Frostwyrd upgrades. Only one
+ingredients (12), the two Frostwyrd upgrades, the two Veiled Halls potions and the Alewife Almanac. Only one
 direction is stored; the reverse ("Made from") is built at load, so the two
-halves cannot drift apart. Fifteen descriptions point at rulebook cards and
+halves cannot drift apart. Thirty-six descriptions point at rulebook cards and
 adversaries through `refs`; that text travels with the item into copies and
 shares, so a player gets everything in one message.
 

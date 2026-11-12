@@ -25,6 +25,7 @@
   import PageTitle from './PageTitle.svelte';
   import Panel from './Panel.svelte';
   import PickQty from './PickQty.svelte';
+  import { keepRowFocus } from './keepRowFocus.js';
   import RecordHost from './RecordHost.svelte';
   import RollResult from './RollResult.svelte';
   import RowMain from './RowMain.svelte';
@@ -33,6 +34,7 @@
   import SelectionBar from './SelectionBar.svelte';
   import SelMode from './SelMode.svelte';
   import SharePanel from './SharePanel.svelte';
+  import SignInPrompt from './SignInPrompt.svelte';
   import Sheet from './Sheet.svelte';
   import StatusRegion from './StatusRegion.svelte';
   import SyncSaid from './SyncSaid.svelte';
@@ -1039,6 +1041,9 @@
       clearText={t.clearSel}
       onall={pickAll}
       onclear={() => void leaveSelecting()}
+      onuntick={() => {
+        pickAll(false);
+      }}
     >
       {#snippet summary()}{#if total}<span class="batch-total"
             >{total.label} <b>{total.value}</b>&#32;{#if total.unpriced}
@@ -1056,7 +1061,7 @@
         >
         {#if narrow}
           <span class="bulkmore">
-            <MoreMenu {app} id="list-bulk" up size="sm" disabled={!ticked.length}>
+            <MoreMenu {app} id="list-bulk" size="sm" disabled={!ticked.length}>
               {#snippet children(close: () => void)}
                 <button
                   type="button"
@@ -1130,18 +1135,8 @@
       {/snippet}
     </ErrorPage>
   {:else}
-    <ErrorPage title={t.listGoneSignedOut} said>
-      {t.listGoneSignedOutSub}
-      {#snippet actions()}
-        <Button
-          variant="primary"
-          onclick={() => {
-            app.askSignIn({ hash: app.hash });
-          }}>{t.signIn}</Button
-        >
-        <Button href={app.href(sectionHash('tables'))} sameTab>{t.openTables}</Button>
-      {/snippet}
-    </ErrorPage>
+    <PageTitle title={sectionLabel('lists', t)} />
+    <SignInPrompt {app} lead={t.listSignInLead} after={{ hash: app.hash }} />
   {/if}
 {/snippet}
 
@@ -1568,7 +1563,13 @@
               <Button size="sm" onclick={() => void resetFromEmpty()}>{t.resetAll}</Button>
             </Empty>
           {:else if rows.length}
-            <div class="rows lrows" data-primary bind:this={rowsEl}>
+            <div
+              class="rows lrows"
+              class:picking={app.selecting}
+              data-primary
+              bind:this={rowsEl}
+              use:keepRowFocus={{ row: '.lrow', tick: '.lrow-pick input' }}
+            >
               {#each shownRows as row (row.id)}
                 {@const it = row.it}
                 {@const id = row.id}
@@ -2403,10 +2404,20 @@
     border-bottom-left-radius: 10px;
   }
 
+  /* The text column's left edge in a full row: the grip, the position and the art. The
+     selection mode adds the tick column, so the notes and the controls follow the text. */
+  .lrows {
+    --lrow-text: 146px;
+  }
+
+  .lrows.picking {
+    --lrow-text: calc(146px + max(32px, var(--thumb)));
+  }
+
   /* A row's notes under its text: read-only boxes, or the open area. */
   .rnote {
     flex: 0 0 100%;
-    padding: 0 11px 11px 146px;
+    padding: 0 11px 11px var(--lrow-text);
   }
 
   .rnote.ro > :global(.hitnote:first-child) {
@@ -2558,7 +2569,7 @@
       flex: 0 0 100%;
       flex-wrap: wrap;
       align-items: flex-end;
-      padding: 0 10px 10px 146px;
+      padding: 0 10px 10px var(--lrow-text);
     }
 
     .lrow-acts {
@@ -2789,6 +2800,24 @@
   @media (max-width: 760px) {
     .lrow-take {
       padding-left: 11px;
+    }
+  }
+
+  /* 16 px: a smaller field makes iOS zoom the page on focus (as `RollSelect.svelte`). The
+     price grows to keep its five digits. */
+  @media (max-width: 600px) {
+    .cfields .lrow-n,
+    .cfields input[data-gold] {
+      font-size: 16px;
+    }
+
+    .cfields input[data-gold] {
+      width: 74px;
+      padding: 0 4px;
+    }
+
+    .narea :global(textarea) {
+      font-size: 16px;
     }
   }
 </style>

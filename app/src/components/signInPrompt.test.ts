@@ -31,6 +31,8 @@ describe('SignInPrompt', () => {
     };
     const { container } = render(SignInPrompt, { app, lead: LEAD, after });
     expect(screen.getByText(LEAD)).toBeInTheDocument();
+    expect(container.querySelectorAll('.empty > .glyph')).toHaveLength(1);
+    expect(container.querySelectorAll('.empty .signin.page .signin-lead')).toHaveLength(1);
     expect(screen.getAllByRole('button').map((b) => b.textContent)).toEqual(['Войти']);
     await expectNoA11yViolations(container);
     await userEvent.click(screen.getByRole('button', { name: 'Войти' }));
@@ -50,6 +52,7 @@ describe('SignInPrompt', () => {
       oncancel
     });
     expect(container.querySelector('.signin.compact')).not.toBeNull();
+    expect(container.querySelector('.empty')).toBeNull();
     await expectNoA11yViolations(container);
     await userEvent.click(screen.getByRole('button', { name: 'Отмена' }));
     expect(oncancel).toHaveBeenCalledOnce();
@@ -70,6 +73,7 @@ describe('SignInPrompt', () => {
       oncancel
     });
     expect(container.querySelector('.signin.boxed')).not.toBeNull();
+    expect(container.querySelector('.empty')).toBeNull();
     expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Войти' }));
     await expectNoA11yViolations(container);
     await userEvent.click(screen.getByRole('button', { name: 'Отмена' }));
@@ -83,7 +87,9 @@ describe('SignInPrompt', () => {
     const before = document.createElement('button');
     document.body.append(before);
     before.focus();
-    render(SignInPrompt, { app, lead: LEAD, after: { hash: '#/lists' } });
+    const { container } = render(SignInPrompt, { app, lead: LEAD, after: { hash: '#/lists' } });
+    expect(container.querySelectorAll('.empty > .glyph')).toHaveLength(1);
+    expect(container.querySelectorAll('.signin-lead')).toHaveLength(1);
     expect(document.activeElement).toBe(before);
     expect(screen.queryByRole('button', { name: 'Отмена' })).toBeNull();
     before.remove();

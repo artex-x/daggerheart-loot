@@ -28,7 +28,8 @@ const withCraft = ALL.filter((x) => x.craft);
 
 console.log('data (' + withCraft.length + ' chains)');
 // 31 before the Veiled Halls added vh2>vh6 and vh8>vh15
-ok(withCraft.length === 33, 'expected 33 chains, got ' + withCraft.length);
+// 34: the 33 potion and Veiled Halls chains plus lr2 (Alewife Almanac) to lr3 (Witch's Skillet).
+ok(withCraft.length === 34, 'expected 34 chains, got ' + withCraft.length);
 
 withCraft.forEach((x) => {
   const c = x.craft;

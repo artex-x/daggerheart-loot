@@ -21,7 +21,7 @@ RootWebArea "Предметы сообществ - Генератор лута D
     navigation "Режим броска"
       link "Обычные правила" [url=/roll/std]
       link "Альтернативные таблицы" [url=/roll/alt]
-      button "Предметы сообществ" [expanded=false haspopup=menu]
+      button "Предметы сообществ" [haspopup=dialog]
     button "Открывать при запуске" [pressed=false]
     button "Об этих предметах" [expanded=false]
     combobox "Сообщество" [value=Великородное expanded=false haspopup=menu]
@@ -103,7 +103,7 @@ RootWebArea "Community items - Daggerheart Loot Generator" [url=/en/roll/communi
     navigation "Roll mode"
       link "Standard rules" [url=/en/roll/std]
       link "Alternate tables" [url=/en/roll/alt]
-      button "Community items" [expanded=false haspopup=menu]
+      button "Community items" [haspopup=dialog]
     button "Open on start" [pressed=false]
     button "About these items" [expanded=false]
     combobox "Community" [value=Highborne expanded=false haspopup=menu]

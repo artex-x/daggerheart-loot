@@ -22,6 +22,7 @@ import {
   type Loot
 } from './data.js';
 import { recordOf, withRecords, type HomebrewRecord } from './homebrew.js';
+import { rollPool } from './roll.js';
 import { CHARACTER_TRAITS, type Record_ } from './types.js';
 import { readLoot } from '../test/loot.js';
 
@@ -51,10 +52,7 @@ function rollPools(loot: Loot): RollPool[] {
     } else if (name === 'mwt') {
       for (const realm of new Set(rows.map((row) => row.realm)))
         pools.push(rows.filter((row) => row.realm === realm));
-    } else if (name === 'vh') {
-      for (const room of new Set(rows.map((row) => row.room)))
-        pools.push(rows.filter((row) => row.room === room));
-    } else pools.push(rows);
+    } else pools.push(rollPool(rows));
   }
   return pools;
 }
@@ -134,6 +132,17 @@ describe('the index over the real dataset', () => {
     }).toThrow();
   });
 
+  it('refuses a roll on a rung of an upgrade line', () => {
+    const rung = structuredClone(LOOT);
+    /* aa2 is the Improved tier of the line headed by aa1. */
+    const aa2 = rowAt(rung.items['arazo'], 1);
+    expect(aa2.eq?.line).toBe('aa1');
+    aa2.roll = 2;
+    expect(() => {
+      expectRollPools(rung);
+    }).toThrow();
+  });
+
   it('finds equipment wherever it lives, not only in eq', () => {
     /* 381 in `eq`, and another 397 keeping their source-table placement. */
     expect(index.allEquip.length).toBeGreaterThan(LOOT.eq?.length ?? 0);
@@ -196,7 +205,7 @@ describe('the index over the real dataset', () => {
 
 describe('upgrade chains', () => {
   it('derives the reverse link rather than storing it', () => {
-    expect(index.craftedFrom.size).toBe(33);
+    expect(index.craftedFrom.size).toBe(34);
   });
 
   it.each([

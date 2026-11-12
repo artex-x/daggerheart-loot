@@ -21,7 +21,7 @@ RootWebArea "The Dragon's Vault - Генератор лута Daggerheart" [url=
     navigation "Режим броска"
       link "Обычные правила" [url=/roll/std]
       link "Альтернативные таблицы" [url=/roll/alt]
-      button "The Dragon's Vault" [expanded=false haspopup=menu]
+      button "The Dragon's Vault" [haspopup=dialog]
     button "Открывать при запуске" [pressed=false]
     button "Об этой книге" [expanded=false]
     button "Бросить 1-145"
@@ -95,7 +95,7 @@ RootWebArea "The Dragon's Vault - Daggerheart Loot Generator" [url=/en/roll/drag
     navigation "Roll mode"
       link "Standard rules" [url=/en/roll/std]
       link "Alternate tables" [url=/en/roll/alt]
-      button "The Dragon's Vault" [expanded=false haspopup=menu]
+      button "The Dragon's Vault" [haspopup=dialog]
     button "Open on start" [pressed=false]
     button "About this book" [expanded=false]
     button "Roll 1-145"

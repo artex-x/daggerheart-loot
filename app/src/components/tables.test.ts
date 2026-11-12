@@ -1086,6 +1086,39 @@ describe('the equipment tables', () => {
     expect(document.getElementById('sec-t4')).toBeNull();
   });
 
+  it('draws each stat part of an equipment row as a cell, and keeps the sentence for its name', async () => {
+    const { container } = render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/eq_weapon'), data: fakeData(LOOT) })
+    });
+    expect(container.querySelector('.rowscol')).toHaveClass('statcols');
+    const rowsOf = (): HTMLElement[] => [...container.querySelectorAll<HTMLElement>('.row')];
+    expect(rowsOf().length).toBeGreaterThan(0);
+    for (const row of rowsOf()) {
+      const stats = row.querySelector('.rstats');
+      expect(stats).toHaveClass('cols');
+      expect(stats?.querySelectorAll('.sc')).toHaveLength(5);
+      const cells = [...(stats?.querySelectorAll('.sc') ?? [])].map((c) => c.textContent);
+      const sentence = [...(stats?.children ?? [])].map((c) => c.textContent).join('');
+      expect(sentence).toBe(cells.filter(Boolean).join('\u00a0· '));
+    }
+    cleanup();
+    const armor = render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/eq_armor'), data: fakeData(LOOT) })
+    });
+    expect(armor.container.querySelector('.rowscol')).toHaveClass('statcols');
+    for (const row of armor.container.querySelectorAll('.row .rstats'))
+      expect(row.querySelectorAll('.sc')).toHaveLength(2);
+    await userEvent.click(screen.getByRole('button', { name: 'Сетка' }));
+    expect(armor.container.querySelector('.rowscol')).not.toHaveClass('statcols');
+    expect(armor.container.querySelector('.sc')).toBeNull();
+  });
+
+  it('keeps the stat sentence on a table of no equipment', () => {
+    const { container } = render(App, { env: at() });
+    expect(container.querySelector('.rowscol')).not.toHaveClass('statcols');
+    expect(container.querySelector('.sc')).toBeNull();
+  });
+
   it('draws no count line with nothing picked, and names the pool once narrowed', async () => {
     const { container } = render(App, {
       env: fakeEnv({ router: memoryRouter('#/tables/eq_weapon'), data: fakeData(LOOT) })
@@ -1964,6 +1997,33 @@ describe('accessibility', () => {
     const { container } = render(App, {
       env: fakeEnv({ router: memoryRouter('#/tables/voa'), data: fakeData(LOOT) })
     });
+    await expectNoA11yViolations(container);
+  });
+});
+
+/* A rung of an upgrade line keeps its row but has no roll (docs/specs/FEATURES.md, "Rolling"). */
+describe('an upgrade line on a rolled table', () => {
+  const REAL = readLoot();
+  const open = (): void => {
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/arazo'), data: fakeData(REAL) })
+    });
+  };
+
+  it('draws the roll number on the head row and no number on a rung row', () => {
+    open();
+    expect(document.querySelector('[data-row="aa19"] .rnum')).toHaveTextContent('7');
+    expect(document.querySelector('[data-row="aa20"]')).toBeInTheDocument();
+    expect(document.querySelector('[data-row="aa20"] .rnum')).toBeNull();
+  });
+
+  it('draws the tier on a rung tile and the roll number on the head tile', async () => {
+    const { container } = render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/arazo'), data: fakeData(REAL) })
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Сетка' }));
+    expect(document.querySelector('[data-row="aa19"] .tile-n')).toHaveTextContent('7');
+    expect(document.querySelector('[data-row="aa20"] .tile-n')).toHaveTextContent('Ранг 2');
     await expectNoA11yViolations(container);
   });
 });

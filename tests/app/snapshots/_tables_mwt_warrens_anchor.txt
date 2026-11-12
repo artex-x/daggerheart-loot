@@ -350,7 +350,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/many_worlds_ta
 5SplitshooterPrimary weaponUniqueTier 3 · Physical · Agility · V... [namelen=189 namehash=b7d2d127]
 5Wagerwood DefenderPrimary weaponUniqueTier 3 · Physical · Agili... [namelen=193 namehash=aed729fa]
 6Arcane BatteryItemWhen recalling a domain card from your vault,... [namelen=138 namehash=42a659c7]
-6Flexible PlateArmorUniqueTier 3 · Thresholds 10/25 · Armor 4Fle... [namelen=113 namehash=00875b51]
+6Flexible PlateArmorUniqueTier 3 · Thresholds 10/25 · Armor 4Fle... [namelen=114 namehash=89c2ae30]
 6Perfectionist's LeathersArmorUniqueTier 3 · Thresholds 7/16 · A... [namelen=215 namehash=a2e5ddec]
 6Rottooth DaggerPrimary weaponUniqueTier 3 · Magic · Finesse · M... [namelen=155 namehash=54c7fa88]
 6Second SlasherSecondary weaponUniqueTier 3 · Physical · Finesse... [namelen=218 namehash=6ee2230a]

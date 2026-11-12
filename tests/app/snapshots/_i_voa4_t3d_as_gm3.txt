@@ -30,7 +30,7 @@ RootWebArea "Святой Щит - Генератор лута Daggerheart" [url
     link "Святые Перчатки" [url=/h/00000000-0000-4000-8000-000000000644]
     button "и ещё 1" [expanded=false]
     StaticText "Убранство Святого:"
-    StaticText " Когда все предметы этого комплекта в вашей Руке, получите +1 к ..." [namelen=74 namehash=1545d78d]
+    StaticText " Когда все предметы этого комплекта в вашей Руке, получите +2 к ..." [namelen=74 namehash=64182a94]
     button "В список" [expanded=false]
     button "Поделиться"
     button "Печать" [description=Собрать карточки для печати: девять на лист A4]
@@ -94,7 +94,7 @@ RootWebArea "Saintly Guard - Daggerheart Loot Generator" [url=/i/en/voa4_t3d?as=
     link "Saintly Circlet" [url=/en/h/00000000-0000-4000-8000-000000000643]
     button "and 1 more" [expanded=false]
     StaticText "Saint's Ensemble:"
-    StaticText " When every piece of this set is in your loadout, gain +1 Evasio..." [namelen=66 namehash=cd4678aa]
+    StaticText " When every piece of this set is in your loadout, gain +2 Evasio..." [namelen=66 namehash=21f4a133]
     button "Add to list" [expanded=false]
     button "Share"
     button "Print" [description=Lay these out for printing: nine to an A4 sheet]

@@ -58,6 +58,10 @@ export function browserScroll(): ScrollPort {
       settle();
       el.scrollIntoView(options);
     },
+    top() {
+      settle();
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    },
     settle,
     busy: () => busy
   };
@@ -87,6 +91,11 @@ export function fakeScroll(): FakeScroll {
     into(el, options) {
       busy = true;
       el.scrollIntoView(options);
+    },
+    top() {
+      busy = true;
+      y = 0;
+      for (const fn of subs) fn();
     },
     settle() {
       busy = true;

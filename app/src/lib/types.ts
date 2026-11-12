@@ -3,7 +3,6 @@
 
 import type { FrameId } from './frames.js';
 import type { Realm } from './realms.js';
-import type { Room } from './rooms.js';
 import type { Volume } from './sectionProps.js';
 
 export type Lang = 'ru' | 'en';
@@ -182,8 +181,6 @@ export interface Record_ {
   realm?: Realm;
   /** The Pistolheart volume the record is printed in. */
   vol?: Volume;
-  /** The Escape the Veiled Halls room whose loot table the record is in. */
-  room?: Room;
   /** The set this record belongs to; members are derived by grouping, never
    *  stored. A lowercase key, `[a-z0-9-]+`. */
   set?: string;

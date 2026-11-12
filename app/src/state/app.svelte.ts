@@ -339,6 +339,14 @@ export class AppState {
    */
   navigations = $state(0);
 
+  /**
+   * How the last navigation came: `go` for a link or a job the app followed, `history`
+   * for Back, Forward and a typed address. A `go` opens its page at the top; a
+   * `history` arrival keeps the browser's own scroll restore (docs/specs/FEATURES.md,
+   * "Chrome").
+   */
+  arrival: 'go' | 'history' = 'go';
+
   /** The signed-in owner's account lists; null in a build with no sign-in configured. */
   readonly cloudLists: CloudLists | null;
   /** The list behind the open share link; null in a build with no sign-in configured. */
@@ -738,6 +746,7 @@ export class AppState {
       this.#forgetSignIn();
       this.#forgetPending();
       this.#forgetRequestsFocus();
+      this.arrival = 'history';
       this.navigations++;
       this.menuFor = '';
       this.#clearTicksOnLeave(from);
@@ -2167,10 +2176,18 @@ export class AppState {
     this.#forgetSignIn();
     this.#forgetPending();
     this.#forgetRequestsFocus();
+    this.arrival = 'go';
     this.navigations++;
     this.menuFor = '';
     this.#clearTicksOnLeave(from);
     this.#applySource();
+  }
+
+  /** Drops the ticks and their taken counts and keeps the selection mode - Escape in a selection. */
+  untick(): void {
+    this.sel.clear();
+    this.picked.clear();
+    this.requestSender?.dismiss();
   }
 
   /** Clears the selection and folds its menu - the live `clearSel` action. */

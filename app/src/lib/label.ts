@@ -239,7 +239,7 @@ export function tableOf(it: Record_): TableId | null {
  * Where a record sits, as the line under the heading says it: the group, its
  * sub-table, and - for the tables sectioned by a value the record itself
  * carries, `other_frames` by `frame`, `community` by `community` and the tables
- * of `SECTION_PROP` (`mwt` by `realm`, `ph` by `vol`, `vh` by `room`) - the
+ * of `SECTION_PROP` (`mwt` by `realm`, `ph` by `vol`) - the
  * record's own section leaf. No other table is sectioned by a record property,
  * so no other table appends one.
  *

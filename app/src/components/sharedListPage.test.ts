@@ -1299,6 +1299,55 @@ describe('a purchase request', () => {
     await expectNoA11yViolations(container);
   });
 
+  it('folds «Скопировать текст» and «Сообщить владельцу» into «Ещё» up to 760 px', async () => {
+    const viewport = fakeViewport('narrow');
+    const { cloud, container } = open('#/s/player-token-1', fakeCloud(SEED), { viewport });
+    const send = vi.spyOn(cloud.requests, 'send');
+    await tickFirst();
+    expect(notify()).toBeNull();
+    expect(within(bar()).queryByRole('button', { name: 'Скопировать текст' })).toBeNull();
+    expect(within(bar()).getByRole('button', { name: 'В список' })).toBeEnabled();
+    const more = within(bar()).getByRole('button', { name: 'Ещё' });
+    await userEvent.click(more);
+    const items = within(screen.getByRole('menu')).getAllByRole('menuitem');
+    expect(items.map((i) => i.textContent)).toEqual([
+      'Скопировать текст',
+      'Сообщить владельцу'
+    ]);
+    expect(items.every((i) => !(i as HTMLButtonElement).disabled)).toBe(true);
+    await expectNoA11yViolations(container);
+    await userEvent.click(items[1] as HTMLElement);
+    expect(send).toHaveBeenCalledWith(uuid(5000), 'player-token-1', [{ item: 'ci1', qty: 2 }]);
+    expect(await screen.findByText('Запрос отправлен владельцу списка.')).toBeInTheDocument();
+    expect(screen.queryByRole('menu')).toBeNull();
+    await userEvent.click(within(bar()).getByRole('button', { name: 'Ещё' }));
+    expect(screen.getByRole('menuitem', { name: 'Запрос отправлен' })).toBeDisabled();
+    viewport.set('wide');
+    await waitFor(() => {
+      expect(
+        within(bar()).getByRole('button', { name: 'Скопировать текст' })
+      ).toBeInTheDocument();
+    });
+    expect(within(bar()).getByRole('button', { name: 'Запрос отправлен' })).toBeDisabled();
+  });
+
+  it('writes a row number as «№ N» from 761 px, as /search does', async () => {
+    open('#/s/player-token-1');
+    await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' });
+    const nums = [...document.querySelectorAll('.row-main .rnum')].map((n) => n.textContent);
+    expect(nums.length).toBeGreaterThan(0);
+    expect(nums.every((n) => /^№ \d+$/.test(n))).toBe(true);
+  });
+
+  it('disables both items of «Ещё» until an entry is ticked', async () => {
+    open('#/s/player-token-1', fakeCloud(SEED), { viewport: fakeViewport('narrow') });
+    await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' });
+    await selecting();
+    await userEvent.click(within(bar()).getByRole('button', { name: 'Ещё' }));
+    const items = within(screen.getByRole('menu')).getAllByRole('menuitem');
+    expect(items.map((i) => (i as HTMLButtonElement).disabled)).toEqual([true, true]);
+  });
+
   it('drops a ticked entry the list no longer holds after the owner applies the request', async () => {
     const { cloud, container } = open('#/s/player-token-1');
     await tickFirst();

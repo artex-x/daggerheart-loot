@@ -83,10 +83,10 @@ async function longSet(d) {
   for (let i = 0; i < 40 && !/Комплект «Ж|Set "Ж/.test(await d.text()); i++) await d.settle();
 }
 
-/** Waits until a `#/p/` page has left its loading line: its sheet, or its sub. */
+/** Waits until a `#/p/` page has left its loading line: its sheet, its sub or its sign-in plate. */
 async function printed(d) {
   for (let i = 0; i < 200; i++) {
-    if ((await d.count('.printbar, .page-sub')) > 0) return;
+    if ((await d.count('.printbar, .page-sub, .signin-lead')) > 0) return;
     await new Promise((r) => setTimeout(r, 50));
   }
   throw new Error('the print page never left its loading line');
@@ -109,6 +109,9 @@ const PAGES = [
   ['#/roll/last_round_table', 'the last round table'],
   ['#/roll/escape_the_veiled_halls', 'escape the veiled halls'],
   ['#/lists', 'списки без входа'],
+  ['#/homebrew', 'мои предметы без входа'],
+  ['#/homebrew/new', 'новый предмет без входа'],
+  ['#/tables/homebrew', 'таблица своих предметов без входа'],
   ['#/lists/00000000-0000-4000-8000-000000000103', 'вторая сумка', 'gm1'],
   ['#/lists/nope', 'списка нет'],
   ['#/s/player-token-1', 'чужой список'],
@@ -171,8 +174,7 @@ const PAGES = [
     ['#/tables/eq_weapon/f_tier-2_cls-mag', 'ссылка на фильтры'],
     ['#/tables/community_items/Seaborne', 'якорь сообщества'],
     ['#/tables/many_worlds_tavern/warrens', 'якорь мира'],
-    ['#/tables/pistolheart/2', 'якорь тома'],
-    ['#/tables/escape_the_veiled_halls/laboratory', 'якорь комнаты']
+    ['#/tables/pistolheart/2', 'якорь тома']
   ])
   /* The print page's states, three drawn sheets and the two print prompts, at every
      width. The sheets are seeded print sets (`tests/app/lib.js`, `PRINT_SETS`). */

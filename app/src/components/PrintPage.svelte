@@ -16,6 +16,7 @@
   import PageTitle from './PageTitle.svelte';
   import PrintCard from './PrintCard.svelte';
   import PrintSwitches from './PrintSwitches.svelte';
+  import SignInPrompt from './SignInPrompt.svelte';
   import StatusRegion from './StatusRegion.svelte';
   import { watchBarHeight } from './barHeight.js';
   import { printSetHash, sectionHash } from '../lib/hash.js';
@@ -181,13 +182,8 @@
   <!-- The session is not known yet: the heading alone, so no other state flashes (rule 7). -->
   <PageTitle title={t.printTitle} />
 {:else if app.user === null}
-  <PageTitle title={t.printTitle} sub={t.signInToPrint} />
-  <Button
-    variant="primary"
-    onclick={() => {
-      app.askSignIn({ hash: app.hash });
-    }}>{t.signIn}</Button
-  >
+  <PageTitle title={t.printTitle} />
+  <SignInPrompt {app} lead={t.signInToPrint} after={{ hash: app.hash }} />
 {:else if read === 'failed'}
   <!-- The failure replaces the page (docs/specs/FEATURES.md, rule 6). -->
   <ErrorPage title={t.printLoadFailedTitle} said>
@@ -309,7 +305,7 @@
         ><Icon name="print" />{t.printNow}</Button
       >
       <span class="dockmore">
-        <MoreMenu {app} id="print-more" up>
+        <MoreMenu {app} id="print-more">
           {#snippet children(close: () => void)}
             <button
               type="button"
@@ -383,6 +379,12 @@
   .pdock > :global(.btn) {
     flex: 1 1 auto;
     justify-content: center;
+  }
+
+  /* The dock's controls sit inside the `scroll-padding-bottom` band of `tokens.css`: the negative
+     margin cancels it, so a focus does not scroll the page. */
+  .pdock :global(:is(a, button, input, select)) {
+    scroll-margin-bottom: calc(-1 * var(--pdock-h, 0px));
   }
 
   /* The dock's button sits at the window's edge: this box anchors the menu. */

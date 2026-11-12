@@ -268,6 +268,7 @@ const TARGET_ALLOW = [
     test: 'inline'
   },
   { why: 'the skip link: shown on keyboard focus only (WCAG 2.4.1)', test: 'a.skip' },
+  /* Kept by a decision: docs/decisions/2026-11-11-craft-links-and-the-shared-first-entry-stay.md. */
   {
     why: 'a link or the «и ещё N» fold of a craft or relation line: the line height of its label sets its size (WCAG 2.5.8, "Inline")',
     test: '.craft a, .craft p .btn.bare'

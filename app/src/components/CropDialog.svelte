@@ -350,6 +350,32 @@
     padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
   }
 
+  /* A landscape phone: the square stage on the left, the zoom and the buttons beside it, so
+     «Готово» stays in the window (measured at 740x360, 2026-11-10). */
+  @media (max-height: 480px) and (min-width: 600px) {
+    .cropdlg {
+      width: min(100%, 720px);
+    }
+
+    .box {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      column-gap: 16px;
+      align-items: start;
+    }
+
+    .box > :global(*) {
+      grid-column: 2;
+    }
+
+    .box > .stage {
+      grid-column: 1;
+      grid-row: 1 / span 6;
+      width: min(calc(100dvh - 32px - env(safe-area-inset-bottom)), 45vw);
+      margin: 0;
+    }
+  }
+
   .cropdlg::backdrop {
     background: var(--scrim);
   }

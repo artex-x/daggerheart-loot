@@ -3,7 +3,7 @@
 import { cleanup, render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { createRawSnippet } from 'svelte';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 import App from '../App.svelte';
 import AccountMenu from './AccountMenu.svelte';
 import Menu from './Menu.svelte';
@@ -178,56 +178,48 @@ describe('the account menu', () => {
   });
 });
 
-describe('a menu in the record dialog', () => {
-  const rect = (top: number, bottom: number): DOMRect =>
-    ({ top, bottom, left: 0, right: 0, width: 0, height: bottom - top }) as DOMRect;
-
-  /* A control at `at` in a card from 100 to 600, and a menu of 200 px. */
-  function open(at: number, flip = true): HTMLElement {
-    const card = document.createElement('div');
-    card.className = 'modal-card';
-    document.body.append(card);
+describe('a menu never scrolls the page', () => {
+  function open(): { control: HTMLButtonElement; focus: MockInstance<HTMLElement['focus']> } {
     const control = document.createElement('button');
-    card.append(control);
-    card.getBoundingClientRect = () => rect(100, 600);
-    control.getBoundingClientRect = () => rect(at, at + 40);
-    vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(200);
+    document.body.append(control);
+    const focus = vi.spyOn(HTMLElement.prototype, 'focus');
     render(Menu, {
-      target: card,
       props: {
         control,
         label: 'Ещё',
         id: 'm',
         cls: 'recmenu',
-        flip,
         onclose: () => undefined,
         children: createRawSnippet(() => ({
           render: () => '<button role="menuitem" tabindex="-1">Один</button>'
         }))
       }
     });
-    return screen.getByRole('menu');
+    return { control, focus };
   }
 
   afterEach(() => {
     vi.restoreAllMocks();
-    document.querySelector('.modal-card')?.remove();
   });
 
-  it('opens up where the room is only above', () => {
-    expect(open(540)).toHaveClass('up');
+  it('gives the first item the focus without a scroll', () => {
+    const { control, focus } = open();
+    expect(focus).toHaveBeenCalledWith({ preventScroll: true });
+    expect(screen.getByRole('menuitem', { name: 'Один' })).toBe(
+      focus.mock.contexts[0] as HTMLElement
+    );
+    control.remove();
   });
 
-  it('opens down where the room below is enough', () => {
-    expect(open(200)).not.toHaveClass('up');
-  });
-
-  it('opens down where neither side has the room, as the box scrolls down', () => {
-    expect(open(160)).not.toHaveClass('up');
-  });
-
-  it('opens down without the prop', () => {
-    expect(open(540, false)).not.toHaveClass('up');
+  it('returns the focus to the control on Escape without moving a control that is in view', async () => {
+    const { control, focus } = open();
+    control.getBoundingClientRect = () =>
+      ({ top: 200, bottom: 240, left: 0, right: 80, width: 80, height: 40 }) as DOMRect;
+    await userEvent.keyboard('{Escape}');
+    expect(focus.mock.contexts).toContain(control);
+    const at = focus.mock.contexts.indexOf(control);
+    expect(focus.mock.calls[at]).toEqual([{ preventScroll: true }]);
+    control.remove();
   });
 });
 

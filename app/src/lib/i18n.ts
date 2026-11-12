@@ -136,20 +136,34 @@ export function eqParts(
   const out: string[] = opts.noType ? [] : [pick(EQ_TYPE[e.t], lang)];
   if (!opts.noTier)
     out.push(e.tier === 'A' ? labels.artifact : `${labels.tier} ${String(e.tier)}`);
-
-  if (e.t === 'armor') {
-    if (e.th) out.push(`${labels.thresholds} ${String(e.th[0])}/${String(e.th[1])}`);
-    if (e.as != null) out.push(`${labels.armorScore} ${String(e.as)}`);
-  } else {
-    /* A character without a Spellcast trait cannot equip a magic weapon, so every
-       weapon names its class, secondary too; it is never inferred from the damage type. */
-    if (e.cls) out.push(pick(EQ_CLS[e.cls], lang));
-    out.push(eqWord(EQ_TRAIT, e.tr, lang));
-    out.push(eqWord(EQ_RANGE, e.rg, lang));
-    out.push((e.dmg ?? '') + (e.dt ? ' ' + pick(EQ_DT[e.dt], lang) : ''));
-    out.push(eqWord(EQ_BURDEN, e.bu == null ? undefined : String(e.bu), lang));
-  }
+  out.push(...eqCells(it, lang, labels));
   return out.filter(Boolean);
+}
+
+/**
+ * Returns the stat parts of a table row's columns in fixed slots: a weapon's class,
+ * trait, range, damage and burden, an armor's thresholds and score. A part the record
+ * lacks is an empty string, so its column keeps its place (docs/specs/FEATURES.md,
+ * "Tables and search", "Stat columns"). A record with no `eq` returns none.
+ */
+export function eqCells(it: Record_, lang: Lang, labels: StatLabels): string[] {
+  const e = it.eq;
+  if (!e) return [];
+  if (e.t === 'armor') {
+    return [
+      e.th ? `${labels.thresholds} ${String(e.th[0])}/${String(e.th[1])}` : '',
+      e.as != null ? `${labels.armorScore} ${String(e.as)}` : ''
+    ];
+  }
+  /* A character without a Spellcast trait cannot equip a magic weapon, so every
+     weapon names its class, secondary too; it is never inferred from the damage type. */
+  return [
+    e.cls ? pick(EQ_CLS[e.cls], lang) : '',
+    eqWord(EQ_TRAIT, e.tr, lang),
+    eqWord(EQ_RANGE, e.rg, lang),
+    (e.dmg ?? '') + (e.dt ? ' ' + pick(EQ_DT[e.dt], lang) : ''),
+    eqWord(EQ_BURDEN, e.bu == null ? undefined : String(e.bu), lang)
+  ];
 }
 
 /**

@@ -16,13 +16,12 @@ RootWebArea "Обычные правила - Генератор лута Daggerh
       link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
-  navigation "Режим броска"
-    link "Обычные правила" [url=/roll/std]
-    link "Альтернативные таблицы" [url=/roll/alt]
-    button "Дополнения" [expanded=false haspopup=menu]
   main ""
     heading "Бросок" [level=1]
     StaticText "Бросок по таблицам Core и дополнения Hope & Fear."
+    navigation "Режим броска"
+      button "Режим броска: Обычные правила" [haspopup=dialog]
+    button "Ещё" [expanded=false haspopup=menu]
     StaticText "БРОСИТЬ"
     button "1d12 Обычная" [description=Бросить 1d12 - Обычная]
     button "2d12 Обычная - Необычная" [description=Бросить 2d12 - Обычная - Необычная]
@@ -31,7 +30,6 @@ RootWebArea "Обычные правила - Генератор лута Daggerh
     button "5d12 Легендарная" [description=Бросить 5d12 - Легендарная]
     heading "Бросок 1" [level=2]
     button "Настроить" [expanded=true]
-    button "Ещё" [expanded=false haspopup=menu]
     ... StaticText x14 of 18 same-shape siblings elided
     button "На единицу меньше" [disabled=true]
     textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
@@ -78,11 +76,9 @@ EN
 Hope & Fear
 RU
 daggerheart.com
-Альтернативные таблицы
 Бросок
 В список
 Войти
-Дополнения
 Ещё
 Зелье Быстрого Шага
 К содержимому
@@ -92,13 +88,13 @@ daggerheart.com
 На единицу меньше
 Настроить
 Оберегающая Свеча
-Обычные правила
 Открыть карточку
 Первоклассный Спальный Мешок
 Поделиться
 Поиск
 Предметы
 Расходники
+Режим броска: Обычные правила
 Результат броска
 Таблицы
 Условия использования
@@ -119,13 +115,12 @@ RootWebArea "Standard rules - Daggerheart Loot Generator" [url=/en/roll/std]
       link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
-  navigation "Roll mode"
-    link "Standard rules" [url=/en/roll/std]
-    link "Alternate tables" [url=/en/roll/alt]
-    button "Supplements" [expanded=false haspopup=menu]
   main ""
     heading "Roll" [level=1]
     StaticText "A roll over the Core and Hope & Fear tables."
+    navigation "Roll mode"
+      button "Roll mode: Standard rules" [haspopup=dialog]
+    button "More" [expanded=false haspopup=menu]
     StaticText "ROLL"
     button "1d12 Common" [description=Roll 1d12 - Common]
     button "2d12 Common - Uncommon" [description=Roll 2d12 - Common - Uncommon]
@@ -134,7 +129,6 @@ RootWebArea "Standard rules - Daggerheart Loot Generator" [url=/en/roll/std]
     button "5d12 Legendary" [description=Roll 5d12 - Legendary]
     heading "Roll 1" [level=2]
     button "Set up" [expanded=true]
-    button "More" [expanded=false haspopup=menu]
     ... StaticText x14 of 18 same-shape siblings elided
     button "One lower" [disabled=true]
     textbox "Roll result" [value=1 multiline=false readonly=false required=false]
@@ -177,7 +171,6 @@ RootWebArea "Standard rules - Daggerheart Loot Generator" [url=/en/roll/std]
 4d12 Rare - Legendary
 5d12 Legendary
 Add to list
-Alternate tables
 Caltrops
 Consumables
 Core
@@ -194,15 +187,14 @@ Premium Bedroll
 Privacy
 RU
 Roll
+Roll mode: Standard rules
 Roll result
 Search
 Set up
 Share
 Sign in
 Skip to content
-Standard rules
 Stride Potion
-Supplements
 Tables
 Terms of use
 Warding Candle

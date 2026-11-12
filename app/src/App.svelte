@@ -13,21 +13,22 @@
   import type { Lang, Record_, Section } from './lib/types.js';
 
   /* The sections that roll a single number over a whole table. Vault of Ages,
-     Communities, Many Worlds Tavern and Escape the Veiled Halls roll one number too, but
-     inside a part of their book, so `PICKER_ROLL` names the part and its rows for one
-     shared panel. Core rules and the alternate tables roll several cards at once, and the
-     alternate tables roll two dice, so both have panels of their own. */
+     Communities and Many Worlds Tavern roll one number too, but inside a part of their
+     book, so `PICKER_ROLL` names the part and its rows for one shared panel. Core rules
+     and the alternate tables roll several cards at once, and the alternate tables roll
+     two dice, so both have panels of their own. */
   const ROLL_TABLE: Partial<Record<Section, { table: string }>> = {
     'roll/wondrous': { table: 'wondrous' },
     'roll/dread': { table: 'dread' },
     'roll/dv': { table: 'dv' },
     'roll/arazo': { table: 'arazo' },
     'roll/ph': { table: 'ph' },
-    'roll/lr': { table: 'lr' }
+    'roll/lr': { table: 'lr' },
+    'roll/vh': { table: 'vh' }
   };
 
   interface PickerRoll {
-    section: 'voa' | 'community' | 'mwt' | 'vh';
+    section: 'voa' | 'community' | 'mwt';
     label: keyof Dict;
     parts: (t: Dict, lang: Lang, index: Index | null) => Part[];
     rows: (index: Index, id: string) => readonly Record_[];
@@ -51,12 +52,6 @@
       label: 'realmLabel',
       parts: (_t, lang) => sectionParts('mwt', lang),
       rows: (index, id) => sectionGroup(index, 'mwt', id)
-    },
-    'roll/vh': {
-      section: 'vh',
-      label: 'roomLabel',
-      parts: (_t, lang) => sectionParts('vh', lang),
-      rows: (index, id) => sectionGroup(index, 'vh', id)
     }
   };
 </script>
@@ -132,7 +127,7 @@
       {:else if app.route.section === 'roll/alt'}
         <AltPanel {app} />
       {:else if pr}
-        <!-- One panel serves four sections; the key gives each its own pick. -->
+        <!-- One panel serves three sections; the key gives each its own pick. -->
         {#key app.route.section}
           <PickerRollPanel
             {app}

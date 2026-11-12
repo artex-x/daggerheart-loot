@@ -16,13 +16,12 @@ RootWebArea "Альтернативные таблицы - Генератор л
       link "Бросок" [url=/roll/alt]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
-  navigation "Режим броска"
-    link "Обычные правила" [url=/roll/std]
-    link "Альтернативные таблицы" [url=/roll/alt]
-    button "Дополнения" [expanded=false haspopup=menu]
   main ""
     heading "Бросок" [level=1]
     StaticText "Бросок Костей Дуальности по объединённым таблицам обеих книг."
+    navigation "Режим броска"
+      button "Режим броска: Альтернативные таблицы" [haspopup=dialog]
+    button "Ещё" [expanded=false haspopup=menu]
     combobox "Редкость" [value=Обычная expanded=false haspopup=menu]
       option "Обычная" [selected=true]
       option "Необычная" [selected=false]
@@ -32,7 +31,6 @@ RootWebArea "Альтернативные таблицы - Генератор л
     button "Бросить кости"
     heading "Бросок 1 и 2" [level=2]
     button "Настроить" [expanded=false]
-    button "Ещё" [expanded=false haspopup=menu]
     status ""
       StaticText "Крюк-Кошка, Металлические Шарики, Зелье Быстрого Шага, Семя Верг..." [namelen=68 namehash=3f6f8db6]
     button "Открыть карточку"
@@ -66,12 +64,10 @@ RootWebArea "Альтернативные таблицы - Генератор л
 EN
 RU
 daggerheart.com
-Альтернативные таблицы
 Бросить кости
 Бросок
 В список
 Войти
-Дополнения
 Ещё
 Зелье Быстрого Шага
 К содержимому
@@ -80,11 +76,11 @@ daggerheart.com
 ЛутDaggerheart
 Металлические Шарики
 Настроить
-Обычные правила
 Открыть карточку
 Поделиться
 Поиск
 Редкость
+Режим броска: Альтернативные таблицы
 Семя Вергласа
 Таблицы
 Условия использования
@@ -104,13 +100,12 @@ RootWebArea "Alternate tables - Daggerheart Loot Generator" [url=/en/roll/alt]
       link "Roll" [url=/en/roll/alt]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
-  navigation "Roll mode"
-    link "Standard rules" [url=/en/roll/std]
-    link "Alternate tables" [url=/en/roll/alt]
-    button "Supplements" [expanded=false haspopup=menu]
   main ""
     heading "Roll" [level=1]
     StaticText "A Duality Dice roll over both books merged into one set of table..." [namelen=66 namehash=f9462005]
+    navigation "Roll mode"
+      button "Roll mode: Alternate tables" [haspopup=dialog]
+    button "More" [expanded=false haspopup=menu]
     combobox "Rarity" [value=Common expanded=false haspopup=menu]
       option "Common" [selected=true]
       option "Uncommon" [selected=false]
@@ -120,7 +115,6 @@ RootWebArea "Alternate tables - Daggerheart Loot Generator" [url=/en/roll/alt]
     button "Roll the dice"
     heading "Roll 1 and 2" [level=2]
     button "Set up" [expanded=false]
-    button "More" [expanded=false haspopup=menu]
     status ""
       StaticText "Grapnel, Ball Bearings, Stride Potion, Verglasian Seed"
     button "Open card"
@@ -152,7 +146,6 @@ RootWebArea "Alternate tables - Daggerheart Loot Generator" [url=/en/roll/alt]
 
 ## en :: controls
 Add to list
-Alternate tables
 Ball Bearings
 EN
 Grapnel
@@ -164,15 +157,14 @@ Privacy
 RU
 Rarity
 Roll
+Roll mode: Alternate tables
 Roll the dice
 Search
 Set up
 Share
 Sign in
 Skip to content
-Standard rules
 Stride Potion
-Supplements
 Tables
 Terms of use
 Verglasian Seed

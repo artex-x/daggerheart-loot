@@ -1840,30 +1840,23 @@ describe('an account list', () => {
     expect(router.hash()).toBe(SHOP);
   });
 
-  it('draws the error page signed out, «Войти» and «Открыть таблицы», and «Войти» opens the account page', async () => {
+  it('draws the sign-in plate signed out, headed «Мои списки», and «Войти» opens the account page', async () => {
     const { container, router } = openAs(fakeCloud(SEED));
     expect(
       await screen.findByText(
-        'Списки открываются только в аккаунте, где их создали. Войдите в него.'
+        'Войдите, чтобы открыть список: он открывается только в аккаунте, где его создали.'
       )
-    ).toHaveClass('errtext');
+    ).toHaveClass('signin-lead');
     expect(screen.getAllByRole('heading', { level: 1 }).map((h) => h.textContent)).toEqual([
-      'Войдите, чтобы открыть список'
+      'Мои списки'
     ]);
-    await waitFor(() => {
-      expect(container.querySelector('.errpage + .said')).toHaveTextContent(
-        'Войдите, чтобы открыть список'
-      );
-    });
-    expect(container.querySelector('.page-h')).toBeNull();
-    expect([...container.querySelectorAll('.erracts .btn')].map((b) => b.textContent)).toEqual([
-      'Войти',
-      'Открыть таблицы'
+    expect(container.querySelector('.empty .glyph')).not.toBeNull();
+    expect(container.querySelector('.errpage')).toBeNull();
+    expect(container.querySelector('.said')).toBeNull();
+    expect([...container.querySelectorAll('.empty button')].map((b) => b.textContent)).toEqual([
+      'Войти'
     ]);
-    expect(screen.getByRole('link', { name: 'Открыть таблицы' })).toHaveAttribute(
-      'href',
-      '/tables'
-    );
+    expect(screen.queryByRole('link', { name: 'Открыть таблицы' })).toBeNull();
     await expectNoA11yViolations(container);
     await userEvent.click(screen.getByRole('button', { name: 'Войти' }));
     expect(router.hash()).toBe('#/account');
@@ -1884,7 +1877,7 @@ describe('an account list', () => {
     expect(
       screen.getByRole('heading', { level: 1, name: 'Список не загрузился' })
     ).toBeInTheDocument();
-    expect(screen.queryByText('Войдите, чтобы открыть список')).toBeNull();
+    expect(screen.queryByText(/^Войдите, чтобы открыть список/)).toBeNull();
     await expectNoA11yViolations(container);
     cloud.setOffline(false);
     await userEvent.click(screen.getByRole('button', { name: 'Повторить' }));
@@ -2172,7 +2165,7 @@ describe('every stored entry of an account list', () => {
     open(unknown, uuid(101));
     await new Promise((r) => setTimeout(r, 20));
     expect(screen.queryByText('Загружаем...')).toBeNull();
-    expect(screen.queryByText('Войдите, чтобы открыть список')).toBeNull();
+    expect(screen.queryByText(/^Войдите, чтобы открыть список/)).toBeNull();
   });
 
   it("holds the list's name as text in its h1, the input keeping its label", async () => {

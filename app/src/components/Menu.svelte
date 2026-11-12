@@ -1,8 +1,9 @@
 <script lang="ts">
-  /* The menu box: the account menu, the supplements menu, the catalog's and the record's
+  /* The menu box: the account menu, the catalog's and the record's
      «Ещё» (docs/specs/FEATURES.md, "Chrome", the account menu). The first item takes the focus; Up,
      Down, Home and End move it; Escape and a click outside close the menu. */
   import type { Snippet } from 'svelte';
+  import { focusBack, openOverlay } from './overlay.js';
 
   interface Props {
     /** The button that opens the menu: a click on it is its own, and Escape returns focus to it. */
@@ -12,17 +13,10 @@
     onclose: () => void;
     /** The caller's class, which the browser suites read. */
     cls: string;
-    /** Sits in the record dialog's scroll box: it opens up where the room is only above. */
-    flip?: boolean;
     children: Snippet;
   }
 
-  const { control, label, id, onclose, cls, flip = false, children }: Props = $props();
-
-  /* The caps of `.menu.up` below, and its distance from the control. */
-  const UP_SHARE = 0.6;
-  const UP_MAX = 360;
-  const GAP = 8;
+  const { control, label, id, onclose, cls, children }: Props = $props();
 
   let menu = $state<HTMLDivElement | undefined>(undefined);
 
@@ -32,26 +26,19 @@
   const inside = (n: EventTarget | null): boolean =>
     n instanceof Node && (!!menu?.contains(n) || control.contains(n));
 
-  /* Decides the side before the focus, which would scroll the box to the first item. A
-     class, not state: the box must not move after the measure. */
-  function place(box: HTMLElement): void {
-    const room = box.closest('.modal-card')?.getBoundingClientRect();
-    if (!room) return;
-    const at = (box.offsetParent ?? control).getBoundingClientRect();
-    const need = Math.min(box.offsetHeight, window.innerHeight * UP_SHARE, UP_MAX) + GAP;
-    box.classList.toggle('up', room.bottom - at.bottom < need && at.top - room.top >= need);
-  }
-
+  /* Placed in the top layer before the focus, which must not scroll the page. */
   $effect(() => {
-    if (flip && menu) place(menu);
-    items()[0]?.focus();
+    if (!menu) return;
+    const stop = openOverlay(menu, control);
+    items()[0]?.focus({ preventScroll: true });
+    return stop;
   });
 
   function onKeydown(e: KeyboardEvent): void {
     if (e.key === 'Escape') {
       e.preventDefault();
       onclose();
-      control.focus();
+      focusBack(control);
       return;
     }
     const list = items();
@@ -84,11 +71,15 @@
 </div>
 
 <style>
-  /* Opens down, right-aligned under its control. */
+  /* A popover in the top layer, placed by `openOverlay`; the UA's `inset`, `margin`, `color`
+     and `overflow` are reset as `Toast` does. */
   .menu {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    color: var(--txt);
     min-width: 220px;
     max-width: min(320px, 90vw);
     z-index: 60;
@@ -142,11 +133,19 @@
     }
   }
 
-  .menu:global(.up) {
-    top: auto;
-    bottom: calc(100% + 8px);
-    max-height: min(60dvh, 360px);
-    overflow-y: auto;
-    overscroll-behavior: contain;
+  .menu:global([data-side='up']) {
+    animation-name: popUp;
+  }
+
+  @keyframes popUp {
+    from {
+      opacity: 0;
+      transform: translateY(-10px) scale(0.985);
+    }
+
+    to {
+      opacity: 1;
+      transform: none;
+    }
   }
 </style>

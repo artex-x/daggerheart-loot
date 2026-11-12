@@ -808,6 +808,28 @@ describe('replace vs navigate', () => {
     expect(app.navigations).toBe(1);
   });
 
+  it('tells a followed link from a Back or Forward in `arrival`', () => {
+    const router = memoryRouter('#/tables');
+    const app = new AppState(fakeEnv({ router }));
+    app.start();
+    app.go('#/lists');
+    expect(app.arrival).toBe('go');
+    router.navigate('#/search'); // the address moved under the app, as a Back does
+    expect(app.arrival).toBe('history');
+    app.go('#/tables');
+    expect(app.arrival).toBe('go');
+    app.stop();
+  });
+
+  it('drops the ticks and their taken counts in untick() and keeps the mode', () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/tables') }));
+    app.selecting = true;
+    app.sel.add('ci1');
+    app.picked.set('ci1', 2);
+    app.untick();
+    expect([app.sel.size, app.picked.size, app.selecting]).toEqual([0, 0, true]);
+  });
+
   it("does not swallow a later Back/Forward landing on go()'s own unchanged target", () => {
     /* go(X) used to set #expectHash unconditionally, even when X is already
        the address showing - a real browser then fires no hashchange for that

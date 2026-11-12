@@ -1600,7 +1600,7 @@ function testLongCheck() {
     check('#30 long-check: once per session', isSilent(result), result.stdout);
   }
   // #31 - a run-all shard is not exempt: it packs a whole `browser` matrix
-  // row (up to ~380s measured), not a small slice like golden/sweep's own
+  // row (440-840s measured), not a small slice like golden/sweep's own
   // --shard/width arguments, so it must still get the reminder.
   {
     const result = runHook(
@@ -1612,6 +1612,33 @@ function testLongCheck() {
       systemMessage(result).includes('stay in this turn'),
       systemMessage(result)
     );
+    check(
+      '#31 long-check: run-all names the 440-840s row cost',
+      systemMessage(result).includes('440-840s'),
+      systemMessage(result)
+    );
+  }
+  // #31b - a bare states.js call runs every case serially (about 30 min).
+  {
+    const result = runHook(
+      'bash-guard.mjs',
+      bashPayload('node tests/app/states.js', { session_id: 's-longcheck-states' })
+    );
+    check(
+      '#31b long-check: bare states.js gets the reminder with its cost',
+      systemMessage(result).includes('about 30 min serial'),
+      systemMessage(result)
+    );
+  }
+  // #31c - a sharded states.js call is the one-row form and gets no reminder.
+  {
+    const result = runHook(
+      'bash-guard.mjs',
+      bashPayload('node tests/app/states.js --shard=2/4', {
+        session_id: 's-longcheck-states-shard'
+      })
+    );
+    check('#31c long-check: states.js --shard is silent', isSilent(result), result.stdout);
   }
 }
 

@@ -46,7 +46,7 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
     combobox "Добавить предмет" [value=меч expanded=true focused=true required=false autocomplete=list haspopup=listbox]
     listbox "Добавить предмет" [multiselectable=false required=false orientation=vertical]
     status ""
-      StaticText "Ещё 138 - уточните запрос"
+      StaticText "Ещё 137 - уточните запрос"
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -123,7 +123,7 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew/sets/hb_al
     combobox "Add an item" [value=меч expanded=true focused=true required=false autocomplete=list haspopup=listbox]
     listbox "Add an item" [multiselectable=false required=false orientation=vertical]
     status ""
-      StaticText "138 more - narrow the search"
+      StaticText "137 more - narrow the search"
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]

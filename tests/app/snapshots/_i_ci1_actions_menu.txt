@@ -19,7 +19,7 @@ RootWebArea "Первоклассный Спальный Мешок - Генер
   main ""
     StaticText "ПРЕДМЕТ"
     heading "Первоклассный Спальный Мешок" [level=1]
-    StaticText "Core · Предметы · номер 1 "
+    StaticText "Core · Предметы · № 1 "
     link "показать в таблице" [url=/tables/core_item/ci1]
     StaticText "Во время отдыха вы автоматически очищаете Стресс."
     button "В список" [expanded=false]
@@ -80,7 +80,7 @@ RootWebArea "Premium Bedroll - Daggerheart Loot Generator" [url=/i/en/ci1?v=<v>]
   main ""
     StaticText "ITEM"
     heading "Premium Bedroll" [level=1]
-    StaticText "Core · Items · roll 1 "
+    StaticText "Core · Items · No. 1 "
     link "show in the table" [url=/en/tables/core_item/ci1]
     StaticText "During downtime, you automatically clear a Stress."
     button "Add to list" [expanded=false]
