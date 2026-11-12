@@ -65,7 +65,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     heading "Артефакты" [level=2]
     button "Ссылка на раздел"
     checkbox "Клятва Равновесия" [checked=false]
-    button "9 Клятва Равновесия УНИКАЛЬНОЕ VAULT OF AGES Магическое · Инстин..." [namelen=799 namehash=829a3f78]
+    button "9 Клятва Равновесия УНИКАЛЬНОЕ VAULT OF AGES Магическое · Инстин..." [namelen=851 namehash=94ee1ece]
   region "Выбранные записи"
     checkbox "Выбрать все" [focused=true checked=false]
     generic ""
@@ -171,7 +171,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 31Посох ПоганкиУникальноеVault of AgesФизическое · Инстинкт · Вп... [namelen=723 namehash=d390a6e6]
 32Вихревой РезакУникальноеVault of AgesФизическое · Проворность ... [namelen=554 namehash=3ed8c32c]
 33Ярость ЗантакаУникальноеVault of AgesФизическое · Сила · Вплот... [namelen=707 namehash=31674733]
-34Дочь ЗелениУникальноеVault of AgesФизическое · Проворность · О... [namelen=646 namehash=31f00334]
+34Дочь ЗелениУникальноеVault of AgesФизическое · Проворность · О... [namelen=681 namehash=17358962]
 3Арк-ПистолетPistolheartМагическое · Знание · Далеко · d6+1 маг ... [namelen=127 namehash=bc796ae6]
 3Длинный Лук ФираУникальноеDread GM ToolboxМагическое · Проворно... [namelen=174 namehash=dc4580a7]
 3Дырявый КлинокУникальноеВоюющие НорыФизическое · Сила · Вплотну... [namelen=198 namehash=4638d91f]
@@ -227,7 +227,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 98Булава СкверныУникальноеThe Dragon's VaultФизическое · Сила · ... [namelen=384 namehash=5ab535ef]
 9Дубина из Зубов ОграArazo's ArtifactsФизическое · Сила · Близко... [namelen=288 namehash=3105c616]
 9Карманный ПистолетPistolheartФизическое · Влияние · Близко · d4... [namelen=149 namehash=5b252d52]
-9Клятва РавновесияУникальноеVault of AgesМагическое · Инстинкт ·... [namelen=791 namehash=8ae36cb0]
+9Клятва РавновесияУникальноеVault of AgesМагическое · Инстинкт ·... [namelen=843 namehash=8cd188b9]
 9Омерзительная ЛютняУникальноеThe Last Round TableМагическое · В... [namelen=336 namehash=8ed82a06]
 ?Об этих данных
 Arazo's Artifacts

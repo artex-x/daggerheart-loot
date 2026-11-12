@@ -327,7 +327,7 @@ daggerheart.com
 № 32Нож ЕдинорогаВторичное оружиеУникальноеVault of AgesРанг 4 ·... [namelen=340 namehash=16c9c42e]
 № 33Шлем ВозмездияПредметVault of AgesСтоимость Призыва: 2Вы мож... [namelen=449 namehash=c858c830]
 № 33Ярость ЗантакаОсновное оружиеУникальноеVault of AgesРанг 3 ·... [namelen=733 namehash=cc072b8c]
-№ 34Дочь ЗелениОсновное оружиеУникальноеVault of AgesРанг 4 · Фи... [namelen=672 namehash=ab131752]
+№ 34Дочь ЗелениОсновное оружиеУникальноеVault of AgesРанг 4 · Фи... [namelen=707 namehash=997d7df4]
 № 34Роскошный Конский ДоспехПредметPistolheartПока вы верхом, вы... [namelen=137 namehash=86eb626e]
 № 35Осколок ЭмберитаРасходникHope & FearВыберите точку в предела... [namelen=393 namehash=8d49da12]
 № 37Перчатки РасторопностиПредметHope & FearКогда вы должны отме... [namelen=124 namehash=2fcb78c2]
@@ -360,7 +360,7 @@ daggerheart.com
 № 89Меч Хрустального ДухаОсновное оружиеУникальноеThe Dragon's V... [namelen=284 namehash=94af0ae1]
 № 94Сумеречное КрылоОсновное оружиеУникальноеThe Dragon's VaultР... [namelen=258 namehash=a6f2e8a9]
 № 95Стихийный Длинный ЛукОсновное оружиеУникальноеThe Dragon's V... [namelen=507 namehash=9cfee318]
-№ 9Клятва РавновесияОсновное оружиеУникальноеАртефактVault of Ag... [namelen=827 namehash=3662a607]
+№ 9Клятва РавновесияОсновное оружиеУникальноеАртефактVault of Ag... [namelen=879 namehash=dd3ba50c]
 № 9Пиратская Карта СокровищПредметМорскоеЭта зачарованная карта ... [namelen=300 namehash=25a39442]
 № 9Часы Хранителя ВремениПредметVault of AgesСтоимость Призыва: ... [namelen=316 namehash=d8f0d6fc]
 
