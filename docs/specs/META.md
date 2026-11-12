@@ -101,8 +101,8 @@ header after each deploy.
 The no-backend law was superseded on 2026-09-24 (`docs/DECISIONS.md`). A
 Supabase backend (Auth and Postgres, EU West) is the only server that
 stores the site's data: accounts, lists and homebrew, each shipped in its
-own release. One stateless preview Worker renders link cards and stores
-nothing (the last paragraph of this section). Sign-in (Google or Discord) and `#/account` exist in a build
+own release. One stateless Worker renders link cards, answers the read API and the MCP
+endpoint, and stores nothing (the last paragraph of this section). Sign-in (Google or Discord) and `#/account` exist in a build
 configured with the two `VITE_SUPABASE_*` values, and an account holds the
 reader's preferences and lists (`STATE.md`); a signed-in reader makes every
 new list there, and a signed-out one is asked to sign in first
@@ -241,16 +241,22 @@ on «Мои предметы» import only a file the reader chose, through the 
 Supabase backend.
 
 The Supabase backend is the only server that stores data; one stateless
-preview Worker renders link cards and stores nothing. It is the Cloudflare
-Pages project `daggerheart-loot` (`.claude/README.md`, "Preview host"). It
-makes three reads, each as a signed-out reader: `get_item_preview(uuid,
-text)`, `get_shared_list_preview(text)` and the site's generated
-`names.json`. The two card reads
+Worker renders link cards and answers the read API (`/api/v1/`,
+`docs/specs/CONTRACTS.md` section 6) and the MCP endpoint, and stores nothing.
+It is the Cloudflare Pages project `daggerheart-loot` (`.claude/README.md`,
+"Preview host"). It makes these reads, each as a signed-out reader: the two
+card reads `get_item_preview(uuid, text)` and `get_shared_list_preview(text)`,
+the API's reads `get_homebrew_item(uuid)` and `get_shared_list(text)`, and the
+site's generated files `names.json` and `apidata/` (the API's projections of
+the catalog), the files through `env.ASSETS`. The two card reads
 (`supabase/migrations/20261014120200_link_previews.sql`) answer only what a
 card draws, and nothing beyond what `get_homebrew_item` or `get_shared_list`
-shows to the same caller, so an answer stays a few KB at any set size or
-entry count. It keeps `names.json` in memory for 10 minutes and nothing
-else; it has no edge cache, no cookie and no persistent log. A GM link's
+shows to the same caller, so a card answer stays a few KB at any set size or
+entry count; an API read is capped at 65536 bytes, and past the cap the API
+answers 422 with the app link. It keeps `names.json` and four small files of
+`apidata/` (the roll sections, the tables, the rule cards and the record index) in
+memory for 10 minutes and nothing else; it has no edge cache, no cookie and no
+persistent log. A GM link's
 card read carries no GM note at all: a list card shows the list name, the
 count of the entries that the link's audience sees and the start of the
 players' note. Add no other

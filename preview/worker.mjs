@@ -7,7 +7,8 @@
   stores nothing, sets no cookie and caches nothing; it reads only what a
   signed-out reader reads. It answers only the families that
   public/_routes.json routes to it; Pages serves the site's files on every
-  other path.
+  other path. It also answers the read API under /api/ (preview/api/rest.mjs,
+  docs/specs/CONTRACTS.md section 6), with its own JSON responder.
 
   Routes, each also under /en/: /h/<uuid> (a homebrew item), /s/<token>
   (a shared list), /p/<id> (a print set), /tables/<table>[/<tail>] (a catalog
@@ -41,11 +42,12 @@ import {
 /* A card draws record text as it reads: no markup (docs/specs/CONTRACTS.md section 4).
    The Pages deploy bundles this import with esbuild, which reads TypeScript. */
 import { markupText } from '../app/src/lib/markup.ts';
+import { handleApi } from './api/rest.mjs';
+import { drop, readJson, readText, rpc } from './api/read.mjs';
 
 /** A card's caps, in escaped UTF-8 bytes (.claude/README.md, "Preview host", "Cross-host
  *  limits", "Page size"). get_item_preview cuts each line's names to `line`. */
 const CAPS = { meta: 480, line: 1200 };
-const READ_MS = 3000;
 const NAMES_MS = 2000;
 const NAMES_TTL_MS = 600000;
 const NAMES_MAX = 196608;
@@ -64,10 +66,6 @@ const CATALOG_ART = /^[A-Za-z0-9_-]+\.webp$/;
 
 const isObject = (o) => o !== null && typeof o === 'object' && !Array.isArray(o);
 const has = (o, k) => o != null && typeof o === 'object' && Object.hasOwn(o, k);
-/* Not awaited: a cancel resolves only once every reader of the stream lets go. */
-const drop = (body) => {
-  if (body) body.cancel().catch(() => {});
-};
 const flat = (s) => String(s).replace(/\s*\n\s*/g, ' ');
 
 const BASE_HEADERS = {
@@ -92,72 +90,6 @@ function answer(method, status, body, extra = {}, base = BASE_HEADERS) {
 }
 
 /* ---------- reads ---------- */
-
-/** Returns `{ value }`, the text of a response whose body is at most `max` bytes, or
- *  `{ fail: 'big' }`. The stream is cancelled past the cap, before any decode. */
-async function readText(res, max) {
-  const length = Number(res.headers.get('Content-Length'));
-  if (Number.isFinite(length) && length > max) {
-    drop(res.body);
-    return { fail: 'big' };
-  }
-  const chunks = [];
-  let size = 0;
-  if (res.body) {
-    const reader = res.body.getReader();
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      size += value.byteLength;
-      if (size > max) {
-        reader.cancel().catch(() => {});
-        return { fail: 'big' };
-      }
-      chunks.push(value);
-    }
-  }
-  const bytes = new Uint8Array(size);
-  let at = 0;
-  for (const c of chunks) {
-    bytes.set(c, at);
-    at += c.byteLength;
-  }
-  return { value: new TextDecoder().decode(bytes) };
-}
-
-/** Returns the parsed JSON of a response whose body is at most `max` bytes, or
- *  `{ fail: 'big' | 'bad' }`. */
-async function readJson(res, max) {
-  const text = await readText(res, max);
-  if (text.fail) return text;
-  try {
-    return { value: JSON.parse(text.value) };
-  } catch {
-    return { fail: 'bad' };
-  }
-}
-
-/** Returns `{ value }` for a 200 JSON answer of an RPC, else `{ fail }`. */
-async function rpc(env, name, args, max) {
-  try {
-    const res = await globalThis.fetch(
-      String(env.SUPABASE_URL).replace(/\/+$/, '') + '/rest/v1/rpc/' + name,
-      {
-        method: 'POST',
-        headers: { apikey: env.SUPABASE_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify(args),
-        signal: AbortSignal.timeout(READ_MS)
-      }
-    );
-    if (res.status !== 200) {
-      drop(res.body);
-      return { fail: 'status' };
-    }
-    return await readJson(res, max);
-  } catch {
-    return { fail: 'network' };
-  }
-}
 
 /* The parsed names.json, kept while the isolate is warm, so a Pages deploy
    of new data reaches the next request with no worker deploy. */
@@ -630,6 +562,11 @@ async function handle(request, env) {
     return answer(method, 301, null, {
       Location: 'https://' + env.PAGES_HOST + url.pathname + url.search
     });
+  }
+  /* The read API answers with its own JSON responder and its own method rules, before the
+     language split and the cards' GET and HEAD check (preview/api/rest.mjs). */
+  if (url.pathname === '/api' || url.pathname.startsWith('/api/')) {
+    return handleApi(request, env, url);
   }
   if (method !== 'GET' && method !== 'HEAD') {
     return answer(method, 405, null, { Allow: 'GET, HEAD' });

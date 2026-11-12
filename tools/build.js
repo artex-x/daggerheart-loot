@@ -10,6 +10,9 @@
                   (not committed: build output, like names.json)
     names.json    catalog names, sets and table counts for the preview host
                   (not committed: build output, like i/)
+    apidata/, api/v1/catalog/
+                  the read API's projections and bulk catalog (tools/api-data.mjs;
+                  not committed: build output)
     i/<id>.html   the share stubs
     card-versions.json
                   each record's card version, which the built data.js carries
@@ -40,6 +43,18 @@ const L = global.window.LOOT;
   fs.writeFileSync(path.join(ROOT, name), body);
   console.log(name + ' - ' + Math.round(Buffer.byteLength(body) / 1024) + ' KB');
 });
+
+/* The read API's projections: apidata/ and api/v1/catalog/ (tools/api-data.mjs). It imports the
+   app's TypeScript modules, so it runs under the ts hooks. */
+execFileSync(
+  process.execPath,
+  [
+    '--import',
+    require('url').pathToFileURL(path.join(__dirname, 'ts-hooks.mjs')).href,
+    path.join(__dirname, 'api-data.mjs')
+  ],
+  { stdio: 'inherit' }
+);
 
 execFileSync(process.execPath, [path.join(__dirname, 'build-share-pages.js')], {
   stdio: 'inherit'

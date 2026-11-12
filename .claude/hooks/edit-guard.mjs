@@ -41,6 +41,11 @@ const DENY = [
       'Blocked: names.json is generated from data.js. Edit data.js or tools/derived.js, then run `node tools/build.js`.'
   },
   {
+    test: (p) => p.startsWith('apidata/') || p.startsWith('api/'),
+    message:
+      'Blocked: apidata/ and api/v1/catalog/ are generated from data.js by tools/api-data.mjs. Edit data.js, docs/rights/records.json or app/src/lib/, then run `node tools/build.js`. The API code of the worker is preview/api/.'
+  },
+  {
     test: (p) => p === 'catalog-index.csv',
     message:
       'Blocked: catalog-index.csv is generated from data.js. Edit data.js or tools/derived.js, then run `node tools/build.js`.'

@@ -5,7 +5,8 @@
 > Hope & Fear, Wondrous Environments, the Dread GM Toolbox, Vault of Ages, The
 > Dragon's Vault, Arazo's Artifacts, Many Worlds Tavern, Pistolheart, The Last Round
 > Table, Escape the Veiled Halls and community items. Static site
-> with an optional account (Google or Discord sign-in); no public API.
+> with an optional account (Google or Discord sign-in) and a public read API
+> ("The read API (v1)" below; it writes nothing).
 
 Site: https://daggerheart-loot.pages.dev/
 Source: https://github.com/artex-x/daggerheart-loot
@@ -333,7 +334,7 @@ id, so read these links as the pages above describe them.
 
 A signed-in GM can load lists into their account from a JSON file. This is
 the only way to hand a GM a list you built. You cannot import the file
-yourself - there is no API. The GM saves it and presses «Импорт из файла»
+yourself - there is no write API. The GM saves it and presses «Импорт из файла»
 ("Import from file") in the «Новый список» ("New list") panel on the Lists
 page (`/lists`). Every list in the file is added as a new list; nothing
 already in the account changes.
@@ -683,7 +684,7 @@ A signed-in GM keeps their own items on the «Мои предметы» ("My ite
 setting) with sections, and their own set cards and rule cards. A homebrew
 file carries all of these. It is the way to hand a GM items you converted
 from a book or wrote for them. You cannot import it yourself - there is no
-API. The GM saves the file and presses «Импорт из файла» ("Import from
+write API. The GM saves the file and presses «Импорт из файла» ("Import from
 file") on the «Мои предметы» page.
 
 The site writes the same format when the GM downloads their items. A file a
@@ -1036,9 +1037,80 @@ If the GM has given you prices, use theirs. If not, offer these, say they are a
 starting point, and say where they come from. Do not present them as a rule
 from the book.
 
+## The read API (v1)
+
+A public, read-only API answers on the site's host, with no key. It returns JSON
+and needs no account. A browser tool may call it directly: every answer carries
+`Access-Control-Allow-Origin: *` and none carries credentials. It cannot write
+anything: lists and homebrew items change only in the app, or by a file the GM
+imports. The full description is `https://daggerheart-loot.pages.dev/api/v1/openapi.json`
+(OpenAPI 3.1).
+
+Fair use: cache the lists (rolls, tables, the catalog) and send at most one request
+per user action. Every request of the API and of the link cards shares one daily
+quota for the whole site; when it runs out, the API answers an error until 00:00 UTC
+and the app keeps working. A client ignores unknown fields, and acts on the HTTP
+status of an error `code` it does not know. The paths and fields of v1 are frozen;
+a break is `/api/v1/` beside a future `/api/v2/`.
+
+Every text a person reads is a pair `{ "ru": "...", "en": "..." }`; an empty Russian
+side repeats the English one. A record is `daggerheart-loot/record` v1:
+
+- `id`, `key` (the value other records use to point at it), `origin` (`catalog` or
+  `homebrew`), `kind` (`item`, `consumable`, `weapon`, `secondary`, `armor`);
+- `name`, `text` (Markdown subset), `plain` (plain text), `path` (where the book
+  prints it), `link` (its page on the site);
+- `source`, `table`, `roll`, `tier` (1-4, A or C; never guessed), `rarity`;
+- `stats` (`null` or `type`, `tier`, `class`, `trait`, `range`, `damage` with `dice`,
+  `bonus` and `type`, `burden`, `armor_score`, `thresholds` with `major` and
+  `severe`, `line`, `alt`, `statline`), `craft` (`into`, `from`), `set`, `refs`,
+  `image`;
+- `rights`: `license` is `dpcgl` where the English text is Daggerheart SRD 2.0
+  Public Game Content and `owner` where its rights holders keep it (the Russian text
+  is a translation that `dpcgl` does not cover), and `notice` is the English notice
+  to show with it. See "License".
+
+Homebrew text and list notes are written by users, in the same Markdown subset:
+escape them before you show them.
+
+The operations, each with a request you can run:
+
+```
+curl https://daggerheart-loot.pages.dev/api/v1/rolls
+curl -X POST -H 'Content-Type: application/json' -d '{"dice":3}' https://daggerheart-loot.pages.dev/api/v1/rolls/std
+curl https://daggerheart-loot.pages.dev/api/v1/tables
+curl 'https://daggerheart-loot.pages.dev/api/v1/tables/eq_weapon?part=2'
+curl https://daggerheart-loot.pages.dev/api/v1/records/ci12
+curl https://daggerheart-loot.pages.dev/api/v1/homebrew-items/<uuid>
+curl https://daggerheart-loot.pages.dev/api/v1/shared-lists/<token>
+```
+
+- `GET /api/v1/rolls` lists the twelve roll sections, their mode (`std`, `alt`,
+  `table` or `part`), parts and limits.
+- `POST /api/v1/rolls/{section}` rolls a section, or resolves a number you type, and
+  answers up to four records in the order the app draws them. The body is JSON.
+- `GET /api/v1/tables` lists the catalog tables; `GET /api/v1/tables/{table}` reads
+  one table's rows. The three equipment tables (`eq_weapon`, `eq_secondary`,
+  `eq_armor`) are read by tier with `part` (`1`, `2`, `3`, `4` or `A`).
+- `GET /api/v1/records/{id}` reads one catalog record.
+- `GET /api/v1/homebrew-items/{uuid}` reads one homebrew item whose author shared the
+  link, and `GET /api/v1/shared-lists/{token}` the list behind a share link, as the
+  link's audience sees it. A list larger than the API reads answers 422 with the
+  app's link.
+
+The whole catalog is also available as static files that cost the site nothing:
+`https://daggerheart-loot.pages.dev/api/v1/catalog/index.json` lists every record as
+`{ id, rev, chunk }` and the absolute URLs of the chunk files. Read the index; if its
+`data_version` equals the one you hold, stop; otherwise read the chunks of the
+records whose `rev` differs from yours (`rev` is opaque, compared for equality only)
+and drop the ids the index no longer lists. If a chunk's `data_version` differs from
+the index's, or a chunk answers 404, the site was updated between your reads: read the
+index again.
+
 ## What this site cannot do
 
-- No public API. Signing in is optional; a signed-in GM's lists live in the
+- No write API: the read API ("The read API (v1)") changes no list and no item.
+  Signing in is optional; a signed-in GM's lists live in the
   account and reach players through `/s/` links. A list reaches an account
   as a file ("Lists as a file (import-v1)"), and a GM's own items as a
   homebrew file ("Homebrew items as a file (homebrew-v2)"); you cannot import

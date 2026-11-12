@@ -330,7 +330,7 @@ tools/share-card.mjs        the card renderer of the stubs, the app documents an
 tools/app-documents.js      writes the record and English-root app documents into dist/
 tools/build-pages.js        generates pages/ from pages/src/
 tools/derived.js            how the derived files are assembled
-preview/                    the site host's worker: link cards for messengers (Cloudflare Pages)
+preview/                    the site host's worker: link cards for messengers and the read API (Cloudflare Pages)
 old-host/                   the old address's forwarding root and its unregistering sw.js
 tests/                tests/*.js (5 fs/node suites) plus tests/app/*.js
                       (7 real-Chrome suites against dist-test/) and the runner

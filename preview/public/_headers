@@ -11,3 +11,11 @@
   X-Robots-Tag: noindex
 /schema/*
   X-Robots-Tag: noindex
+# The read API's internal projections and its public bulk catalog (docs/specs/CONTRACTS.md
+# sections 5 and 6). No Access-Control-Allow-Origin line here: Pages sends * on its static files,
+# and a second value would break CORS; tools/check-site.mjs holds the header.
+/apidata/*
+  X-Robots-Tag: noindex
+/api/v1/catalog/*
+  X-Robots-Tag: noindex
+  X-Content-Type-Options: nosniff

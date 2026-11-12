@@ -1,6 +1,6 @@
 /* The cloud contract over the real adapter, on the test project: the same
  * `runCloudContract` vitest runs over the fake, here in Node (loaded through
- * ts-hooks.mjs). Each port gets its own store, holding a minted session or
+ * tools/ts-hooks.mjs). Each port gets its own store, holding a minted session or
  * none; the ports are used one after another, never interleaved. */
 
 import { newArtName, thumbOf } from '../../app/src/lib/art.ts';

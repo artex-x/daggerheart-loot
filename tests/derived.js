@@ -67,6 +67,24 @@ ok(
   );
 }
 
+/* The read API's projections (apidata/ and api/v1/catalog/, docs/specs/CONTRACTS.md section 6)
+   are rendered by an ESM script that imports the app's TypeScript, so it runs as a child
+   process under the ts hooks; --check names each file that is stale or past its budget. */
+console.log('read API projections match data.js and fit their budgets');
+{
+  const run = require('child_process').spawnSync(
+    process.execPath,
+    ['--import', './tools/ts-hooks.mjs', 'tools/api-data.mjs', '--check'],
+    { cwd: ROOT, encoding: 'utf8' }
+  );
+  ok(
+    run.status === 0,
+    'tools/api-data.mjs --check failed (run node tools/build.js): ' +
+      (run.stderr || run.stdout || String(run.error))
+  );
+  console.log('  ' + run.stdout.trim());
+}
+
 console.log('catalog reads clean');
 const catalogPath = path.join(ROOT, 'catalog.csv');
 const rows = fs.existsSync(catalogPath)
@@ -1719,6 +1737,15 @@ const RIGHTS_HOLDERS = {
   en: 'their text belongs to its rights holders',
   ru: 'права на эти тексты принадлежат их правообладателям'
 };
+/* The MIT code-folder list of each file, exactly: a bare "preview/" would also match a
+   file-tree line of the same README. */
+const CODE_FOLDERS = {
+  'README.md': 'The code (`app/`, `tools/`, `tests/`, `preview/`) is MIT',
+  'README.ru.md':
+    'Код (`app/`, `tools/`, `tests/`, `preview/`) распространяется по лицензии MIT',
+  LICENSE: 'application code: app/, tools/, tests/ and preview/.',
+  'llms.txt': 'The project code (app/, tools/, tests/, preview/) is MIT.'
+};
 /* [file, language, outside clause in the text, bold entries are possible] */
 [
   ['README.md', 'en', /^.*fall\s+outside that license[\s\S]*?\n\n/m, true],
@@ -1760,7 +1787,10 @@ const RIGHTS_HOLDERS = {
   );
   const all = plain.replace(/\s+/g, ' ');
   ok(all.indexOf(COVERED[lang]) >= 0, file + ': the covered clause went missing or changed');
-  ok(all.indexOf('preview/') >= 0, file + ': the MIT code folders omit preview/');
+  ok(
+    all.indexOf(CODE_FOLDERS[file]) >= 0,
+    file + ': the MIT code folders omit preview/ (' + CODE_FOLDERS[file] + ')'
+  );
   ok(
     all.indexOf('docs/rights/records.json') >= 0,
     file + ': it does not name the rights table'
@@ -1779,6 +1809,8 @@ console.log('rights audit');
     fs.readFileSync(path.join(ROOT, 'docs', 'rights', 'records.json'), 'utf8')
   );
   const AUDITED = ['core', 'hnf', 'frame'];
+  /* The SRD 2.0 PDF of 2026-08-25 has 224 pages. */
+  const SRD_PAGES = 224;
   const LICENSES = ['dpcgl', 'owner'];
   const everyRecord = D.everything(L);
   const srcIds = [...new Set(everyRecord.map((x) => x.src))];
@@ -1825,8 +1857,8 @@ console.log('rights audit');
     ok(LICENSES.includes(entry.license), 'rights: ' + id + ' has the license ' + entry.license);
     if (entry.license === 'dpcgl') {
       ok(
-        Number.isInteger(entry.page) && entry.page >= 1,
-        'rights: the dpcgl entry ' + id + ' has no integer page of 1 or more'
+        Number.isInteger(entry.page) && entry.page >= 1 && entry.page <= SRD_PAGES,
+        'rights: the dpcgl entry ' + id + ' has no integer page of 1 to ' + SRD_PAGES
       );
     } else if (AUDITED.includes(src)) {
       ok(
@@ -1835,7 +1867,10 @@ console.log('rights audit');
       );
     }
     if (entry.page !== undefined) {
-      ok(Number.isInteger(entry.page) && entry.page >= 1, 'rights: ' + id + ' has a bad page');
+      ok(
+        Number.isInteger(entry.page) && entry.page >= 1 && entry.page <= SRD_PAGES,
+        'rights: ' + id + ' has a bad page'
+      );
     }
     const key = src + ' ' + entry.license;
     counts[key] = (counts[key] || 0) + 1;

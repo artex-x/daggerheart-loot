@@ -3,7 +3,7 @@
 - Task: `persist-1-auth` (planner, 2026-09-25).
 - Decision: `tests/e2e/` imports the app's TypeScript ports
   (`cloud.contract.ts`, `supabase.ts`) straight into Node 24, which strips
-  erasable types. `tests/e2e/ts-hooks.mjs`, loaded by `--import`, maps a
+  erasable types. `tools/ts-hooks.mjs`, loaded by `--import`, maps a
   `.js` import inside a `.ts` file to its `.ts` sibling and loads `.ts` as
   a module; `tsconfig.json` sets `erasableSyntaxOnly`, so typecheck refuses
   what Node could not strip. Measured 2026-09-25: the contract over the

@@ -2118,6 +2118,16 @@ function testEditGuard() {
     ['#32 catalog.csv', path.join(scratchRoot, 'catalog.csv'), null],
     ['#32a names.json', path.join(scratchRoot, 'names.json'), 'node tools/build.js'],
     [
+      '#32c apidata/rolls.json',
+      path.join(scratchRoot, 'apidata', 'rolls.json'),
+      'node tools/build.js'
+    ],
+    [
+      '#32d api/v1/catalog/index.json',
+      path.join(scratchRoot, 'api', 'v1', 'catalog', 'index.json'),
+      'node tools/build.js'
+    ],
+    [
       '#32b catalog-index.csv',
       path.join(scratchRoot, 'catalog-index.csv'),
       'node tools/build.js'
@@ -2191,6 +2201,9 @@ function testEditGuard() {
     // bash-guard can deny `rm -rf .`. edit-guard must not start denying on
     // that sentinel, and its near-miss paths must stay clean.
     ['#39a repo root itself', scratchRoot],
+    // The worker's API code is source, not the generated apidata/ or api/v1/catalog/.
+    ['#39f preview/api/service.mjs', path.join(scratchRoot, 'preview', 'api', 'service.mjs')],
+    ['#39g tools/api-data.mjs', path.join(scratchRoot, 'tools', 'api-data.mjs')],
     ['#39b app/data.json', path.join(scratchRoot, 'app', 'data.json')],
     ['#39c docs/i/x.html', path.join(scratchRoot, 'docs', 'i', 'x.html')],
     ['#39d input/x.html', path.join(scratchRoot, 'input', 'x.html')],

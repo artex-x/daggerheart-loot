@@ -36,7 +36,11 @@ collect() {
   cp -r dist/index.html dist/assets dist/data.js dist/manifest.webmanifest \
         dist/sw.js dist/icons dist/i dist/en _site/
   cp -r data.json catalog.csv catalog-index.csv names.json llms.txt robots.txt LICENSE \
-        404.html img og card schema _site/
+        404.html img og card schema apidata _site/
+  # The read API's public bulk catalog: static files under api/v1/catalog/ only
+  # (tools/api-data.mjs). /api/* itself belongs to the worker; _routes.json excludes the
+  # catalog prefix so Pages serves these files.
+  mkdir -p _site/api/v1 && cp -r api/v1/catalog _site/api/v1/
   # Only the generated site pages, one copy per language: pages/src/
   # is their authored source, not site content (docs/specs/META.md
   # section 9).
@@ -60,6 +64,14 @@ guard() {
            roll search lists account homebrew print l; do
     if [ -e "_site/$f" ]; then echo "::error::$f must not be published"; exit 1; fi
   done
+  # api/ holds the bulk catalog and nothing else: any other file there would shadow a route
+  # of the worker (/api/*), and the OAuth discovery path is reserved for a later batch.
+  if [ -n "$(find _site/api -type f -not -path '_site/api/v1/catalog/*')" ]; then
+    echo "::error::_site/api holds a file outside api/v1/catalog/"; exit 1
+  fi
+  if [ -e _site/.well-known/oauth-protected-resource ]; then
+    echo "::error::.well-known/oauth-protected-resource must not be published"; exit 1
+  fi
   # en/ holds only the English root document: anything else there would
   # shadow an /en/ rewrite of _redirects.
   if [ "$(ls -A _site/en)" != "index.html" ]; then
@@ -73,7 +85,8 @@ guard() {
            sw.js icons/icon-192.png pages/install.html pages/en/install.html \
            pages/privacy.html pages/en/privacy.html pages/terms.html \
            pages/en/terms.html schema/import-v1.json schema/import-v2.json \
-           schema/import-v3.json schema/homebrew-v1.json schema/homebrew-v2.json; do
+           schema/import-v3.json schema/homebrew-v1.json schema/homebrew-v2.json \
+           apidata/version.json api/v1/catalog/index.json api/v1/catalog/0.json; do
     if [ ! -s "_site/$f" ]; then echo "::error::$f is missing or empty"; exit 1; fi
   done
   # assets/ holds hashed names only, so it is checked as a folder.

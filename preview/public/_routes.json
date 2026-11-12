@@ -8,7 +8,8 @@
     "/en/h/*",
     "/en/s/*",
     "/en/p/*",
-    "/en/tables/*"
+    "/en/tables/*",
+    "/api/*"
   ],
-  "exclude": ["/tables", "/tables/", "/en/tables", "/en/tables/"]
+  "exclude": ["/tables", "/tables/", "/en/tables", "/en/tables/", "/api/v1/catalog/*"]
 }

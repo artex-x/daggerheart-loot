@@ -73,6 +73,35 @@ function namesFormat(body) {
   }
 }
 
+/** The parsed JSON of a body, or null when it is not JSON. */
+function jsonOf(body) {
+  try {
+    return JSON.parse(body);
+  } catch {
+    return null;
+  }
+}
+
+/** The request of a cross-origin probe: a browser tool at another origin. */
+const FROM_OTHER_ORIGIN = { method: 'GET', headers: { Origin: 'https://example.org' } };
+
+/** Whether an answer is readable from another origin: `Access-Control-Allow-Origin: *` and no
+ *  credentials. A reader that does not measure headers (a directory, a memory site) leaves
+ *  `cors` undefined, and the check holds. */
+const corsOpen = (meta) => meta.cors === undefined || (meta.cors === '*' && !meta.credentials);
+
+/** The path of the first catalog record that has a picture, read through the bulk catalog:
+ *  the index holds no picture URLs, so the first chunk it names gives it. */
+async function firstPicture(root, get) {
+  const index = jsonOf((await get('api/v1/catalog/index.json')).body);
+  const url = String(index?.chunks?.[0] ?? '');
+  const chunk = jsonOf((await get(url.startsWith(SITE) ? url.slice(SITE.length) : url)).body);
+  const full = chunk?.records?.find((r) => r.image?.full)?.image?.full;
+  return typeof full === 'string' && full.startsWith(SITE)
+    ? full.slice(SITE.length)
+    : 'img/no-picture-found';
+}
+
 /* A path that is never on disk, so a page with no entry fails the entry's
    own status check with a readable message. */
 const NO_ENTRY = 'assets/no-entry-module.js';
@@ -211,6 +240,47 @@ export function fileChecks({ install = true, documents = false } = {}) {
       path: 'names.json',
       test: (body) => namesFormat(body) === 'daggerheart-loot/names',
       message: (meta) => `names.json names another format: ${String(namesFormat(meta.body))}`
+    },
+
+    /* The read API's static files (docs/specs/CONTRACTS.md sections 5 and 6): the version
+     * file is internal, so its CORS header is only reported; the bulk catalog's index and the
+     * pictures a canvas client loads are public, so Pages must send
+     * `Access-Control-Allow-Origin: *` on them (no line in _headers: a second value would break
+     * CORS). */
+    { path: 'apidata/version.json', ...status200('apidata/version.json') },
+    {
+      path: 'apidata/version.json',
+      test: (body) => jsonOf(body)?.format === 'daggerheart-loot/api-version',
+      message: 'apidata/version.json is not a daggerheart-loot/api-version file'
+    },
+    {
+      path: 'apidata/version.json',
+      init: FROM_OTHER_ORIGIN,
+      info: (meta) =>
+        `apidata/version.json sends Access-Control-Allow-Origin: ${meta.cors === undefined ? '(not measured)' : meta.cors || '(none)'}`,
+      test: () => true,
+      message: ''
+    },
+    { path: 'api/v1/catalog/index.json', ...status200('api/v1/catalog/index.json') },
+    {
+      path: 'api/v1/catalog/index.json',
+      test: (body) => jsonOf(body)?.format === 'daggerheart-loot/api-catalog',
+      message: 'api/v1/catalog/index.json is not a daggerheart-loot/api-catalog file'
+    },
+    {
+      path: 'api/v1/catalog/index.json',
+      init: FROM_OTHER_ORIGIN,
+      test: (body, meta) => corsOpen(meta),
+      message: (meta) =>
+        `api/v1/catalog/index.json sends Access-Control-Allow-Origin "${meta.cors ?? ''}" and credentials "${meta.credentials ?? ''}", not * and none - a browser client cannot read the catalog`
+    },
+    { path: firstPicture, ...status200('a catalog picture'), init: FROM_OTHER_ORIGIN },
+    {
+      path: firstPicture,
+      init: FROM_OTHER_ORIGIN,
+      test: (body, meta) => corsOpen(meta),
+      message: (meta) =>
+        `a catalog picture sends Access-Control-Allow-Origin "${meta.cors ?? ''}", not * - a canvas client cannot load it`
     },
 
     /* The file schemas are public contracts, each named by its own `$id`
@@ -442,6 +512,7 @@ export function previewChecks() {
       test: (body, meta) => meta.status === 404,
       message: (meta) => `mcp returned ${meta.status}, not 404 - the path is reserved`
     },
+    ...apiChecks(),
     /* One 308 for a frozen `.html` stub URL (docs/fixtures/urls/record.json, `serve`). */
     {
       path: 'i/w1.html',
@@ -521,24 +592,111 @@ export function previewChecks() {
   ];
 }
 
+/** The read API's probes on the preview host (docs/specs/CONTRACTS.md section 6): a read, the
+ *  CORS preflight, a record, the JSON 404 with its CORS header, bare `/api` and one roll. */
+function apiChecks() {
+  const errorCode = (body) => jsonOf(body)?.error?.code;
+  const ROLL = 'api/v1/rolls/std';
+  const PREFLIGHT = {
+    method: 'OPTIONS',
+    headers: { Origin: 'https://example.org', 'Access-Control-Request-Method': 'POST' }
+  };
+  const POST = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ total: 1 })
+  };
+  return [
+    { path: 'api/v1/rolls', ...status200('api/v1/rolls'), init: FROM_OTHER_ORIGIN },
+    {
+      path: 'api/v1/rolls',
+      init: FROM_OTHER_ORIGIN,
+      test: (body) => jsonOf(body)?.format === 'daggerheart-loot/api-rolls',
+      message: 'api/v1/rolls is not a daggerheart-loot/api-rolls answer'
+    },
+    {
+      path: 'api/v1/rolls',
+      init: FROM_OTHER_ORIGIN,
+      test: (body, meta) => corsOpen(meta),
+      message: (meta) =>
+        `api/v1/rolls sends Access-Control-Allow-Origin "${meta.cors ?? ''}" and credentials "${meta.credentials ?? ''}", not * and none`
+    },
+    {
+      path: ROLL,
+      init: PREFLIGHT,
+      test: (body, meta) => meta.status === 204,
+      message: (meta) => `the preflight of ${ROLL} returned ${meta.status}, not 204`
+    },
+    {
+      path: ROLL,
+      init: PREFLIGHT,
+      test: (body, meta) =>
+        meta.cors === undefined ||
+        (meta.cors === '*' &&
+          !meta.credentials &&
+          meta.allowMethods === 'GET, POST, OPTIONS' &&
+          meta.allowHeaders === 'Content-Type' &&
+          meta.maxAge === '86400'),
+      message: (meta) =>
+        `the preflight of ${ROLL} sends origin "${meta.cors ?? ''}", methods "${meta.allowMethods ?? ''}", headers "${meta.allowHeaders ?? ''}", max-age "${meta.maxAge ?? ''}"`
+    },
+    { path: 'api/v1/records/ci1', ...status200('api/v1/records/ci1') },
+    {
+      path: 'api/v1/records/zzzz',
+      init: FROM_OTHER_ORIGIN,
+      test: (body, meta) => meta.status === 404 && errorCode(body) === 'not_found',
+      message: (meta) =>
+        `api/v1/records/zzzz returned ${meta.status}, not the JSON 404 not_found`
+    },
+    {
+      path: 'api/v1/records/zzzz',
+      init: FROM_OTHER_ORIGIN,
+      test: (body, meta) => corsOpen(meta),
+      message:
+        'api/v1/records/zzzz sends no Access-Control-Allow-Origin: *, so a browser client cannot read the error'
+    },
+    {
+      path: 'api',
+      test: (body, meta) => meta.status === 404 && errorCode(body) === 'not_found',
+      message: (meta) => `api returned ${meta.status}, not the JSON 404 of the worker`
+    },
+    {
+      path: ROLL,
+      init: POST,
+      test: (body, meta) =>
+        meta.status === 200 && jsonOf(body)?.format === 'daggerheart-loot/api-roll',
+      message: (meta) =>
+        `POST ${ROLL} returned ${meta.status}, not a daggerheart-loot/api-roll answer`
+    },
+    {
+      path: ROLL,
+      init: POST,
+      test: (body) => (jsonOf(body)?.results?.length ?? 99) <= 4,
+      message: `POST ${ROLL} answered more than four results`
+    }
+  ];
+}
+
 /** Runs `list` (default: the whole `checks()`) against `read`, caching one
  *  read per distinct path - several checks share a path (root, for
  *  instance), and re-reading it once per check would be wasteful for a
  *  network reader and pointless for a filesystem one. A check with
  *  `manual: true` reads its path without following a redirect. Returns the
  *  list of failure messages, empty when everything held. */
-export async function runChecks(read, list = checks()) {
+export async function runChecks(read, list = checks(), { onInfo } = {}) {
   const cache = new Map();
-  const get = async (path, manual = false) => {
-    const key = (manual ? 'manual:' : '') + path;
-    if (!cache.has(key)) cache.set(key, await read(path, { manual }));
+  const get = async (path, manual = false, init = undefined) => {
+    const key = (manual ? 'manual:' : '') + (init ? JSON.stringify(init) + ' ' : '') + path;
+    if (!cache.has(key)) cache.set(key, await read(path, { manual, init }));
     return cache.get(key);
   };
   const bad = [];
   for (const c of list) {
-    /* A function path is read from the root page's body. */
-    const path = typeof c.path === 'function' ? c.path((await get('')).body) : c.path;
-    const meta = await get(path, c.manual === true);
+    /* A function path is read from the root page's body; it may read other paths too. */
+    const path =
+      typeof c.path === 'function' ? await c.path((await get('')).body, get) : c.path;
+    const meta = await get(path, c.manual === true, c.init);
+    if (c.info && onInfo) onInfo(c.info(meta));
     if (!c.test(meta.body, meta)) {
       bad.push(typeof c.message === 'function' ? c.message(meta) : c.message);
     }
@@ -560,9 +718,10 @@ export async function runChecks(read, list = checks()) {
  *  this retry loop actually exists for; the job timeout is still what bounds
  *  it in the end. */
 export function fetchReader(root, timeoutMs = 15_000) {
-  return async (path, { manual = false } = {}) => {
+  return async (path, { manual = false, init = {} } = {}) => {
     const url = root + path;
     const res = await fetch(url, {
+      ...init,
       cache: 'no-store',
       redirect: manual ? 'manual' : 'follow',
       signal: AbortSignal.timeout(timeoutMs)
@@ -574,6 +733,11 @@ export function fetchReader(root, timeoutMs = 15_000) {
       type: res.headers.get('content-type') || '',
       robots: res.headers.get('x-robots-tag') || '',
       location: res.headers.get('location') || '',
+      cors: res.headers.get('access-control-allow-origin') || '',
+      credentials: res.headers.get('access-control-allow-credentials') || '',
+      allowMethods: res.headers.get('access-control-allow-methods') || '',
+      allowHeaders: res.headers.get('access-control-allow-headers') || '',
+      maxAge: res.headers.get('access-control-max-age') || '',
       body
     };
   };

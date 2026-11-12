@@ -1,61 +1,3 @@
-<script lang="ts" module>
-  import {
-    communityGroup,
-    communityParts,
-    sectionGroup,
-    sectionParts,
-    voaGroup,
-    voaParts
-  } from './lib/sections.js';
-  import type { Index } from './lib/data.js';
-  import type { Dict } from './lib/dict.js';
-  import type { Part } from './lib/sections.js';
-  import type { Lang, Record_, Section } from './lib/types.js';
-
-  /* The sections that roll a single number over a whole table. Vault of Ages,
-     Communities and Many Worlds Tavern roll one number too, but inside a part of their
-     book, so `PICKER_ROLL` names the part and its rows for one shared panel. Core rules
-     and the alternate tables roll several cards at once, and the alternate tables roll
-     two dice, so both have panels of their own. */
-  const ROLL_TABLE: Partial<Record<Section, { table: string }>> = {
-    'roll/wondrous': { table: 'wondrous' },
-    'roll/dread': { table: 'dread' },
-    'roll/dv': { table: 'dv' },
-    'roll/arazo': { table: 'arazo' },
-    'roll/ph': { table: 'ph' },
-    'roll/lr': { table: 'lr' },
-    'roll/vh': { table: 'vh' }
-  };
-
-  interface PickerRoll {
-    section: 'voa' | 'community' | 'mwt';
-    label: keyof Dict;
-    parts: (t: Dict, lang: Lang, index: Index | null) => Part[];
-    rows: (index: Index, id: string) => readonly Record_[];
-  }
-
-  const PICKER_ROLL: Partial<Record<Section, PickerRoll>> = {
-    'roll/voa': {
-      section: 'voa',
-      label: 'voaSection',
-      parts: (t) => voaParts(t),
-      rows: voaGroup
-    },
-    'roll/community': {
-      section: 'community',
-      label: 'communityLabel',
-      parts: (_t, lang, index) => communityParts(index, lang),
-      rows: communityGroup
-    },
-    'roll/mwt': {
-      section: 'mwt',
-      label: 'realmLabel',
-      parts: (_t, lang) => sectionParts('mwt', lang),
-      rows: (index, id) => sectionGroup(index, 'mwt', id)
-    }
-  };
-</script>
-
 <script lang="ts">
   /* The application. Routes are matched here and nowhere else; every branch
      below will become its own component as the phases go on. */
@@ -81,6 +23,7 @@
   import StdPanel from './components/StdPanel.svelte';
   import TablesPage from './components/TablesPage.svelte';
   import { sectionHash } from './lib/hash.js';
+  import { PICKER_ROLL, ROLL_TABLE, rowsOf } from './lib/rollTables.js';
   import { AppState } from './state/app.svelte.js';
   import type { Env } from './ports/index.js';
 
@@ -116,11 +59,16 @@
     {#if app.route.kind === 'section'}
       {@const cfg = ROLL_TABLE[app.route.section]}
       {@const pr = PICKER_ROLL[app.route.section]}
+      {@const section = app.route.section}
       {#if cfg}
         <!-- The whole-table rolls share this branch; a number kept from one table
              points past the end of a shorter one (docs/specs/FEATURES.md, "Rolling"). -->
         {#key app.route.section}
-          <RollPanel {app} section={cfg.table} rows={app.index?.rows.get(cfg.table) ?? []} />
+          <RollPanel
+            {app}
+            section={cfg.table}
+            rows={app.index ? rowsOf(app.route.section, app.index) : []}
+          />
         {/key}
       {:else if app.route.section === 'roll/std'}
         <StdPanel {app} />
@@ -134,7 +82,7 @@
             section={pr.section}
             label={app.t[pr.label]}
             parts={pr.parts(app.t, app.lang, app.index)}
-            rowsOf={(id: string) => (app.index ? pr.rows(app.index, id) : [])}
+            rowsOf={(id: string) => (app.index ? rowsOf(section, app.index, id) : [])}
           />
         {/key}
       {:else if app.route.section === 'lists' && app.cloudLists}

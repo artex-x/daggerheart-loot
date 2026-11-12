@@ -52,7 +52,7 @@ function report(bad, where) {
 }
 
 async function runDir(dir, list) {
-  const bad = await runChecks(dirReader(dir), list);
+  const bad = await runChecks(dirReader(dir), list, { onInfo: console.log });
   report(bad, dir);
 }
 
@@ -61,7 +61,7 @@ async function runUrl(base, list) {
   let bad = [];
   for (let i = 1; i <= TRIES; i++) {
     try {
-      bad = await runChecks(fetchReader(root), list);
+      bad = await runChecks(fetchReader(root), list, { onInfo: console.log });
     } catch (e) {
       bad = ['request failed: ' + (e && e.message ? e.message : String(e))];
     }
