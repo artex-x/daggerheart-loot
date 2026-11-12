@@ -621,7 +621,7 @@ function mcpChecks() {
     },
     {
       path: 'mcp',
-      test: (b, meta) => meta.allow === undefined || meta.allow === 'POST',
+      test: (b, meta) => meta.allow === 'POST',
       message: (meta) => `GET mcp sends Allow "${meta.allow ?? ''}", not POST`
     },
     {

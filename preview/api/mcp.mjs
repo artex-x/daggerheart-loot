@@ -301,7 +301,7 @@ async function dispatch(request, env, url) {
 
 /**
  * Returns the answer for any request under `/mcp`: `POST /mcp` is the endpoint, every other
- * path (`/mcp/me` included, which B5 reserves) answers 404 with no body.
+ * path (`/mcp/me` included, which the account tier reserves, docs/specs/CONTRACTS.md section 5) answers 404 with no body.
  */
 export async function handleMcp(request, env, url) {
   try {

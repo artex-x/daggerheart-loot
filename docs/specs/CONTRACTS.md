@@ -576,8 +576,8 @@ good. Every answer names its `format` and `version`.
 **Links.** A record's `link` is what the app's `linkToRecord` hands out (section 5, "The
 record link"): `<site>i/<id>?v=<v>` and `<site>i/en/<id>?v=<v>` for a catalog record, with
 `<v>` from the build's card-version map, `<site>h/<uuid>?v=<v>` and `<site>en/h/<uuid>?v=<v>`
-for a homebrew item. A record the map does not hold, and a homebrew entry without an item
-id, has no `?v`. The `?v` is opaque; the unversioned URL is the canonical `og:url`. A client
+for a homebrew item. A record the map does not hold has no `?v`. A homebrew entry without an item
+id (a `hid`) has no `?v` too: it keeps its `hb_` key as `id` and links `<site>i/<key>`. The `?v` is opaque; the unversioned URL is the canonical `og:url`. A client
 stores the link as given. A shared-list answer has no link of its own. The 422 messages keep
 their bare app links.
 

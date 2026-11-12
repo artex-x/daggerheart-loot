@@ -7,7 +7,7 @@
   `security`; each call runs the REST adapter's `runOperation` in process.
 - Decision: no session, no SSE, no CORS, `Origin` 403, `Authorization` never read, body cap 65536 B (it may rise, never fall).
   A legacy version is reached through `initialize`: a modern request that names one gets `UnsupportedProtocolVersion`.
-- Decision: if the owner's connector test meets the `Origin` 403, the fallback is an allowlist of named cloud-client origins, in four steps, and nothing wider.
+- Decision: if the owner's connector test meets the `Origin` 403, the fallback is an allowlist of named cloud-client origins, and nothing wider: find the origin the client sends, add it as a constant, add a fixture for an allowed and a refused origin, and record the origin here.
 - Rejected: `createMcpHandler` of the `agents` package (a dependency in a package that holds only `wrangler`, bundle size, `2026-07-28` support not confirmed);
   `McpAgent` (a Durable Object, stored state); the official SDK server (the same bundle and era questions);
   an HTTP hop from MCP to REST (a second Functions request per call).

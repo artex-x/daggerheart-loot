@@ -3828,10 +3828,10 @@ assembly (`collect`, `guard`, `old-host`); the job's three steps call it.
   20,000 per deployment. The guard prints the count and does not fail on it.
 - The read API adds files (task `ai-mcp`, measured 2026-11-12): `apidata/`
   and `api/v1/catalog/` hold 105 files today (54 catalog chunks of at most 65536 B,
-  3.97 MiB in all; `apidata/records/index.json` is 11,561 B and
-  `api/v1/catalog/index.json` 70,114 B), and 207 at three times the records
-  (156 chunks; 40,845 B and 218,639 B). The site is then about 19,900 files
-  against 20,000, so about 98 files are left; `tools/api-data.test.mjs` prints
+  4.02 MiB in all; `apidata/records/index.json` is 11,561 B and
+  `api/v1/catalog/index.json` 70,117 B), and 209 at three times the records
+  (158 chunks; 40,849 B and 218,810 B). The site is then about 19,900 files
+  against 20,000, so about 96 files are left; `tools/api-data.test.mjs` prints
   both counts. The guard refuses any published file under `api/` outside
   `api/v1/catalog/` and a published `.well-known/oauth-protected-resource`.
   `apidata/cards.json` is 43,900 B (131,600 B at three times; its budget is
@@ -3846,7 +3846,7 @@ assembly (`collect`, `guard`, `old-host`); the job's three steps call it.
   card read are wrong, and the check names them. Neither proves the ICU
   collation: the read answers null before it sorts. It also asserts the
   site's `robots.txt`, the `X-Robots-Tag` header on `llms.txt` and
-  `catalog-index.csv`, `/mcp` 404, `i/w1?v=x` and a table card's count
+  `catalog-index.csv`, `GET /mcp` 405, a legacy `tools/list`, an `Origin` 403, `/mcp/me` 404, `i/w1?v=x` and a table card's count
   (which proves the `names.json` read). Every card answer must be the app
   document, which proves the worker's read of `index.html`; the route paths
   `roll/std`, `tables`, `lists/x`, `i/hb_<key>`, `en/search`, `en/tables` and
@@ -3898,20 +3898,20 @@ assembly (`collect`, `guard`, `old-host`); the job's three steps call it.
   holds the test project's secrets, `npx wrangler pages deployment tail
   <full deployment id> --format json`, each case fetched three times): a cold
   `std` roll with four results (the heaviest: about 30 KB plus up to four
-  64 KB chunks parsed), a record, an `eq_weapon` tier part, and a homebrew item
+  records parsed), a record, an `eq_weapon` tier part, and a homebrew item
   and a shared list sized just under 65536 B. A reading above 5 ms reopens the
   budgets of `docs/specs/CONTRACTS.md` section 6. The record files are one
-  record per line since this task, so a record read parses one record; the
+  record per line, so a record read parses one record; the
   next fallback is an isolate cache of each chunk's split lines, then
   per-total `apidata/roll/std/<total>.json` files. Write each reading here.
 - B1 production readings (Pages Metrics, 2026-11-12, values read as
   microseconds): baseline 58 requests p50 3,103, p75 6,297, p99 11,294; a
   mixed read load p99 25,846; a burst of 10 `std` rolls p50 up to about 7,500,
   p99 17,531; 0 errors, 0 exceeded-CPU in 95 requests. A record read took
-  about 2-3 ms and a `std` roll about 7-17 ms; this is why B2a reads one record
-  per line. Local before/after (200 calls, this host): `std` roll warm 1.565 to
+  about 2-3 ms and a `std` roll about 7-17 ms; this is why a record read parses one
+  record per line. Local before/after (200 calls, this host): `std` roll warm 1.565 to
   0.545 ms, cold 1.645 to 1.170 ms; record `ci12` warm 0.390 to 0.155 ms, cold
-  0.625 to 0.310 ms. The readings of the B2a deploy go here after landing 2.
+  0.625 to 0.310 ms. The readings of the deploy that carries the per-line files go here.
 - A failed read of `index.html` by the worker (a 2 s timeout, a status other
   than 200, more than 65536 bytes, no card markers) draws the card page with
   its redirect to `<site>#/...` and `Referrer-Policy: no-referrer`; the next

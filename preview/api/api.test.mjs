@@ -9,6 +9,8 @@ import { afterEach, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 import { renderApiData } from '../../tools/api-data.mjs';
+import { createService } from './service.mjs';
+import { buildIndex } from '../../app/src/lib/data.ts';
 import { parseRollBody, clearCache, OPENAPI_ETAG } from './rest.mjs';
 import { ROLL_MODES } from '../../app/src/lib/rollTables.ts';
 
@@ -745,6 +747,24 @@ describe('one record per line', () => {
     assert.equal(state.fetches.filter((p) => p === 'apidata/roll/std.json').length, 1);
     const chunkReads = state.fetches.filter((p) => p.startsWith('api/v1/catalog/')).length;
     assert.ok(chunkReads >= 2);
+  });
+
+  it('calls the index builder once for two rolls of one cached file', async () => {
+    let builds = 0;
+    const service = createService({
+      assets: async (path) => JSON.parse(FILES.get(path)),
+      text: async (path) => FILES.get(path),
+      rpc: async () => ({ value: null }),
+      site: { base: SITE, art: SITE },
+      cache: new Map(),
+      build: (data) => {
+        builds += 1;
+        return buildIndex(data);
+      }
+    });
+    await service.roll('std', parseRollBody('std', { total: 3 }));
+    await service.roll('std', parseRollBody('std', { total: 3 }));
+    assert.equal(builds, 1);
   });
 
   it('answers 503 when a roll row names a line that holds another id', async () => {

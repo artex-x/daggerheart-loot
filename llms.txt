@@ -17,8 +17,8 @@ files and forwards a person to the site; the file schemas keep their `$id`
 there.
 
 Not indexed by search engines on purpose — this is a personal tool. It is fine
-to read it when someone hands you the link; please do not add it to a crawl or
-a training set; reading it for a person, through the MCP tools or the API, is
+to read it when someone hands you the link; please do not add it to a crawl
+index or a training set; reading it for a person, through the MCP tools or the API, is
 welcome.
 
 ## Read this first
@@ -1123,8 +1123,8 @@ index again.
 
 `https://daggerheart-loot.pages.dev/mcp` is a Model Context Protocol server
 (Streamable HTTP, `POST` only, JSON answers). No sign in: add it as a connector
-with no authentication. It only reads. Each tool returns the JSON of the REST
-operation of the same name:
+with no authentication. It only reads. Each tool returns the JSON of its REST
+operation (`openapi.json`, `x-mcp-tool`):
 
 - `list_rolls` - the roll sections, their mode, parts and limits.
 - `roll` - rolls a section, or resolves a number you type (`section` required).

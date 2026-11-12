@@ -346,11 +346,12 @@ data, so nothing generates it) and published by `.github/workflows/ci.yml`'s
 collect step alongside `llms.txt`/`robots.txt`, to both hosts. Each host serves
 it verbatim, with a 404 status, for any request that does not match a real
 path - a share link truncated by a chat client, a hand-typed record id
-(`/i/zzzz`), a record path whose record a data change dropped, `/mcp/me` (reserved for the account tier), and
+(`/i/zzzz`), a record path whose record a data change dropped, and
 on the old host the install guide (section 9, "The old host"). Before this page
 existed, every one of those landed on GitHub's own generic 404, with no
 route back to the app in either language (verified live on `i/zzzz.html`
-before this page shipped).
+before this page shipped). Every path under `/mcp/` (`/mcp/me` included) goes to the worker, which answers
+an empty 404, not this page (`CONTRACTS.md` section 5).
 
 It carries `noindex, nofollow` like every other page (section 1) and both
 languages on the one page at once (`docs/specs/I18N.md`) rather than
