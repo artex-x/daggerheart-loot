@@ -20,6 +20,8 @@ the task that owes them".
   compact floor of 3.7cqw, so their burden and tier marks clear the tags and the name
   (`FEATURES.md`, "Print").
 - **Why deferred**: at the floor the text overruns the card, and a smaller mark or a cut text
-  changes the Figma layout.
+  changes the Figma layout. A shorter Russian text (6-7 % fewer characters, tried on
+  2026-11-12) did not lift either card above 3.4cqw (the fit steps by 0.1cqw, so 3.5cqw does
+  not fit either), so the owner had the previous wording restored.
 - **How to verify the fix**: `tests/app/print.js` on the RU compact color
   sheet reads no `.pc-text` under 3.7cqw and no mark over a tag or the name.

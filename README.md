@@ -32,6 +32,8 @@ you reaches a server.
 
 ## Rolling
 
+<img src="docs/img/screens/roll-en.webp" width="640" alt="The Core rules roll page with the result 37: four items and consumables from Core and from Hope &amp; Fear, each with a picture.">
+
 | Mode | Input | Result |
 |---|---|---|
 | Core rules | 1-60, or a roll of 1d12 to 5d12 | up to 4 results: an item and a consumable, from Core and from Hope & Fear |
@@ -59,6 +61,8 @@ a limit. From 761 px it is a labeled button in the page head; below that it is
 an item of the "More" menu.
 
 ## Tables, search and filters
+
+<img src="docs/img/screens/table-en.webp" width="640" alt="The weapons table, tier 1: a filter panel on the left and a list of weapons with pictures, stat lines and features.">
 
 **Tables** holds every table in full, including the alternate ones and the three
 equipment tables (weapons, secondary weapons, armor), each with its own search
@@ -92,6 +96,8 @@ be copied straight out of the browser bar:
 ## Lists
 
 **Lists** collects several records and hands them over as one link.
+
+<img src="docs/img/screens/list-en.webp" width="640" alt="An open list: entries with pictures, quantities and prices in gold, and a side panel with the share and print buttons and the two notes.">
 
 1. Create a list. The page you are on does not change.
 2. In Tables or Search, tick what you want and press **Add to list**.
@@ -140,6 +146,8 @@ A share link opens an account list as it is now, read-only:
 ```
 https://daggerheart-loot.pages.dev/s/<token>
 ```
+
+<img src="docs/img/screens/shared-en.webp" width="260" alt="A shared list on a phone: the list name, a Save to my lists button and the first entries with pictures and prices.">
 
 The token is opaque: only the list's owner makes one, one per audience, and
 **Delete link** ends access through it. Text and images come from `data.js` at
@@ -336,6 +344,7 @@ tests/                tests/*.js (5 fs/node suites) plus tests/app/*.js
                       (7 real-Chrome suites against dist-test/) and the runner
 docs/specs/           behavior and frozen contracts, for maintainers
 docs/fixtures/        golden fixtures the contract suite replays
+docs/img/screens/     the README screenshots; `npm run screens` recaptures them
 ```
 
 `docs/specs/CONTRACTS.md` is the one to read before changing anything public -

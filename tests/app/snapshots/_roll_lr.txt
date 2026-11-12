@@ -37,7 +37,7 @@ RootWebArea "The Last Round Table - Генератор лута Daggerheart" [ur
     StaticText "ПРЕДМЕТ"
     StaticText "THE LAST ROUND TABLE"
     link "Лодыжкогрыз" [description=Открыть страницу url=/i/lr1]
-    StaticText "Если сидеть в Лодыжкогрызе во время короткого отдыха, вы очищает..." [namelen=75 namehash=699b006a]
+    StaticText "Если вы сидите в Лодыжкогрызе во время короткого отдыха, вы очищ..." [namelen=78 namehash=445900db]
     button "В список" [expanded=false]
     button "Поделиться"
     button "Ещё" [expanded=false haspopup=menu]

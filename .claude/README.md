@@ -3525,6 +3525,28 @@ keeps the deletion: `git rm --cached --ignore-unmatch data.json
 catalog.csv`, then `node tools/build.js` - push it, and restart at (a);
 (d) push `main`, which runs `deploy`, and watch it; (e) delete the branch.
 
+## Screenshots
+
+`npm run screens` rebuilds `dist/` and `dist-test/` and recaptures the eight README
+images in `docs/img/screens/` (`tools/screens.mjs`; `--only=<name>` recaptures one
+shot). The shot table is `tools/screens.lib.mjs`. A file is rewritten only when
+more than 0.1 % of its pixels change, so a second run prints `unchanged` eight times.
+A change below that share (one price or label) is not written: delete the file and run
+`npm run screens -- --only=<name>` to force it.
+
+1. After a UI change that a screen shows, run `npm run screens`.
+2. Look at the changed files, then commit them with the change or in a `docs` commit.
+
+CI does not capture: Linux and Windows render fonts differently, so a CI capture
+would churn every file. CI runs only `tools/screens.lib.test.mjs` (stage `test:screens`):
+references, parity and size budgets. Host facts: the script passes a native path
+to `serveDist` (a forward-slash path on Windows makes every request a 404); each
+capture runs in its own browser context, because the stored language of one
+capture would reach the next; the account screens sign in as `gm5` (the list) and
+`gm2` (the shared page) through the test build's `?as=`; and the English shots use
+the `/en/` path, as the `lang` query does not set a language. The decision:
+`docs/decisions/2026-11-12-readme-screens-use-a-showcase-seed-user.md`.
+
 ## Artwork tooling
 
 `tools/artwork/` (task `art-tooling`) converts and installs catalog item

@@ -369,6 +369,7 @@ describe('the stage table', () => {
         'test:preview',
         'test:artwork',
         'test:desc-style',
+        'test:screens',
         'test:supabase',
         'test:check-site',
         'test:golden',

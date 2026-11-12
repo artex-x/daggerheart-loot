@@ -16,6 +16,7 @@ deleted.
 
 - 2026-11-12 - [ai-mcp lands on main in two squashes](decisions/2026-11-12-ai-mcp-lands-on-main-in-two-squashes.md)
 - 2026-11-12 - [API v1 is public read, frozen, with a v2 beside it for a break](decisions/2026-11-12-api-v1-is-public-read-frozen-with-a.md)
+- 2026-11-12 - [README screenshots use a showcase seed user and are captured by hand](decisions/2026-11-12-readme-screens-use-a-showcase-seed-user.md)
 - 2026-11-12 - [The app keeps its logic; the API runs the same pure modules](decisions/2026-11-12-the-app-keeps-its-logic-the-api-runs.md)
 - 2026-11-12 - [The read API and MCP are one stateless worker over build-time projections](decisions/2026-11-12-the-read-api-and-mcp-are-one-stateless.md)
 - 2026-11-11 - [A page-level sign-in prompt is one plate with the glyph, the lead and «Войти»](decisions/2026-11-11-a-page-level-sign-in-prompt-is-one-plate.md)
