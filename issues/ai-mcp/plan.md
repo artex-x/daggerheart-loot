@@ -22,6 +22,24 @@
 - Plan review: required before B5a (trigger: a migration that changes the PostgREST role config and adds restrictive table and storage policies and a SECURITY DEFINER helper; a new write and sync protocol; possible loss of stored data by a connected app's delete; a public contract change - `/api/v1/me/`, `/mcp/me`, a new app route).
 - Plan review: required before B2a (trigger: a public contract change - the MCP endpoint `/mcp`, its tool names and shapes, the record `link` value, `docs/fixtures/mcp/`, `CONTRACTS.md` sections 5 and 6, `llms.txt`; B2b's `llms.txt` links). Done: `reviews/plan-B2a.md`, fix-then-continue, applied (below); it covers B2b too.
 - Plan review: required before B3 (trigger: a public contract change - `GET /api/v1/records`, `POST /api/v1/file-checks`, the `filter` parameter of `GET /api/v1/tables/{table}`, the MCP tools `search_catalog` and `check_file`, the answer formats `api-search` and `api-file-check`, the error code `too_broad`, `openapi.json` 1.2.0, `CONTRACTS.md` section 6, `llms.txt`). No other trigger fires: no migration, no stored data, no write or sync protocol.
+- Plan review findings applied: reviews/plan-B3.md
+  - plan-B3-1 (B3 step 1, its acceptance line, the B3 risk bullet, section 9, `handoff.md` "Next batch"): the factor gate became the floor-cancelling slope test; K = 3.01, the 3x cold REST search predicts 9.4 ms against 10 ms; burst p99 is recorded, not gated.
+  - plan-B3-2 (B3 design "Facets", steps 10 and 12): `table` selects the records of that table (`eq_*` by `kind`, `alt_item`/`alt_consumable` by `rarity` and `kind`, the rest by `tableOf`); a parity test per table id of `apidata/tables.json`; the `openapi.json` description says so.
+  - plan-B3-3 (B3 step 14, its acceptance line): cases (f) and (g), cold readings only on the first case of a file family or after 11 minutes, the pass line cold at most 10 ms, burst p50 at most 8 ms and the 3x prediction at most 10 ms; p99 recorded.
+  - plan-B3-4 (section 7, section 3.5, the B2a outcome, `handoff.md` "Next batch", `context.md`): the owner decision that drops fallback 2 is recorded; fallback 2 and its R1 routing are removed, fallback 1 stays the only optional roll step; the landing-2 readings and the two slopes are in `context.md`.
+  - R1 (B3 risks, section 9): the 3x margin and the cold MCP extra of about 2.5 ms are recorded with the predictions (REST 7.4-9.4 ms, MCP `search_catalog` 10.0-10.8 ms, MCP `check_file` about 9-10 ms); case (g) reads it; a failure makes search fallback (1) the next batch.
+  - R2 (B3 design, search step 5): `total` is the length of `rankHits`'s result with `q`, the count of step 4 without it; the 300 cap counts kept lines before the rank.
+  - R3 (B3 "Bounds", step 12): a parameter given twice is 400 `bad_request` naming it; one `api.test.mjs` case.
+  - R4 (B3 design, search step 3, step 13): every anchor-needle hit in a shard counts toward the 3000; a hit counts for a line only inside its folded-names part, never in line 0; step 13 states and re-measures the refusal counts under that rule.
+  - N1 (B3 step 12): the parity reference is `rankHits(index.searchable, parseQuery(q), undefined, namesHay)`.
+  - N2 (B3 step 5): `lineText` writes the position part and ": " only when `pos` exists; the parity test has a line without `pos`.
+  - N3 (B3 design "Names", step 10, Standing check 3): a lists skip line carries its position only; only error lines name an entry by item id.
+  - N4 (B3 design, file-check `message`): `not_json` takes `importNotJson`; `version` and `empty` take the detected format's keys.
+  - N5 (B3 step 2): the shards are packed with the `DV_WIDTH` stand-in in the head, as `catalogFiles` packs the chunks.
+  - N6 (B3 "Bounds"): a `q` that parses to no terms reads as absent.
+  - N7 (B3 design, search step 3): a line found by two needles of the anchor counts once; kept lines are in line order.
+  - N8 (B3 design "MCP"): `check_file`'s description names the 65536 B `/mcp` body cap and the `\uXXXX` tripling.
+  - N9 (`handoff.md`): the heading is "## Next batch (implement-ready)".
 - Plan review findings applied: reviews/plan-B2a.md
   - plan-B2a-1 to plan-B2a-N13: applied 2026-11-12 and shipped in B2a (`89a55f1b`) or placed in B3 and B2b; the per-finding list is in `git show 8019493d:issues/ai-mcp/plan.md`, Status. The B3 inputs it raised (plan-B2a-4, -5, -6, -R1, -R4, -N10) are settled in B3 below.
 - Plan review findings applied: reviews/plan-B1.md
@@ -417,11 +435,11 @@ ms and p99 about 17.5 ms of CPU, a record read 2-3 ms (context.md). So
 B2a applies what was the fallback: the record files hold one record per
 line, the roll rows carry `c` and `l` (the position), and the service
 parses only the lines of its results; a warm isolate also keeps each roll
-section's built index. The contract does not change. The next fallbacks,
-if landing 2's `std` p99 stays above 5 ms, in order (B2a outcome):
-an isolate cache of each chunk's split lines (no file, about 10 MB at
-3x), then `apidata/roll/std/<total>.json` with the full records of each
-total (60 files).
+section's built index. The contract does not change. Landing 2 left the
+`std` burst p99 at 17.1 ms (p50 4.8 ms; `context.md`, "Landing 2
+readings"), and the owner keeps that tail with no batch (section 7,
+2026-11-12). The one optional step (B2a outcome) is an isolate cache of
+each chunk's split lines (no file, about 10 MB at 3x).
 
 File count: about 90-100 files today against Cloudflare's 20,000 a
 deployment (6573 today, about 19,700 at 3x before this task); at 3x the
@@ -807,16 +825,16 @@ and cold 71 % of B1 (the cold criterion of 50 % was not met; production
 decides). The brief, steps and acceptance:
 `git show 8019493d:issues/ai-mcp/plan.md`.
 
-Still open (the orchestrator's, `handoff.md` "After B2a"): the landing-2
-readings with curl, one warm-up as the cold reading of each case (R1),
-then a burst of 10; pass: `std` roll p99 at most 5 ms, record read p99 at
-most 2 ms, MCP roll p99 at most 6 ms, every status as expected, no error
-and no exceeded-CPU count; the readings go into `.claude/README.md`
-("Quotas, recovery and failure") and `context.md`. Fallbacks, in order,
-if the `std` p99 stays above 5 ms: (1) an isolate cache of each chunk's
-split lines (warm cost only); (2) `apidata/roll/std/<total>.json`, 60
-files of the full records of each total (removes the cold cost too; R1:
-if only the cold reading fails, take (2) directly). Owner step: the
+Landing-2 readings (orchestrator, 2026-11-12; `context.md`, "Landing 2
+readings"): every status as expected, 0 errors and 0 exceeded-CPU in 33
+requests; the three p99 lines failed (`std` roll 17.1 ms against 5,
+record read 8.1 ms against 2, MCP roll 7.4 ms against 6). A fixed floor
+of about 3-4 ms sits under every request, so a 2 ms line cannot be met.
+The owner accepted the roll as it is (section 7, 2026-11-12), and the
+floor-plus-slope model of B3 step 1 replaces those lines. Writing the
+readings into `.claude/README.md` ("Quotas, recovery and failure") stays
+the orchestrator's. The one optional roll step: an isolate cache of each
+chunk's split lines (warm cost only). Owner step: the
 Claude connector with "No sign in"; a 403 means the client sends
 `Origin`, and the fallback is an allowlist constant in `mcp.mjs` (find
 the origin, add the constant, a fixture for an allowed and a refused
@@ -889,28 +907,37 @@ Design (settled; do not reopen without a reading that fails):
      head whose `data_version` differs from the index's: read again once
      (`consistent`), then 503.
   2. Facets: each given facet becomes the set of code characters whose
-     value matches (`source` compares `id`; `table` compares the record's
-     table with `tableOf(param)` of `service.mjs`; `tier` compares
+     value matches (`source` compares `id`; `tier` compares
      `String(value)`); a line passes when each of its five code characters
-     is in its set.
+     is in its set. `table` selects the table's records: for an `eq_*`
+     table, the lines whose `kind` is the table's equipment kind
+     (`EQ_TABLES` of `tools/api-data.mjs`); for `alt_item` and
+     `alt_consumable`, the lines whose `rarity` is not null and whose
+     `kind` is `item` or `consumable`; for every other table, the lines
+     whose `table` code is `tableOf(param)` of `service.mjs`. The row
+     field `table` stays the record v1 value.
   3. With `q`: `parseQuery(q)` of `search.ts`; more than 8 terms is 400
      naming `q`. A term's needles: `[stemPrefix]` when its `stemPrefix`
      is a substring of its `text`, `[text, stemPrefix]` when the
      `stemPrefix` is another string, else `[text]` (the necessary
      condition of `hitsAny`). The anchor is the term whose shortest needle
      is longest (the first such term on a tie). Scan each shard with
-     `indexOf` for each anchor needle; past 3000 positions in all, answer
-     400 `too_broad`. A position counts for its line only when it starts
-     at or after the five codes and ends inside the folded-names part;
-     the line must also pass the facets. Keep a found line, in line order,
-     when every other term has a needle inside its folded-names part.
+     `indexOf` for each anchor needle. Every `indexOf` hit of an anchor
+     needle anywhere in a shard counts toward the 3000 (the scan cost is
+     per hit); past 3000 hits in all, answer 400 `too_broad`. A hit
+     counts for a line only inside that line's folded-names part, and a
+     hit in line 0 never counts for a line; the line must also pass the
+     facets. When the anchor term has two needles, a line found by both
+     counts once. Keep a found line, in line order, when every other term
+     has a needle inside its folded-names part.
      Past 300 kept lines in all, answer 400 `too_broad`. Rank the kept
      lines with `rankHits(kept, terms, undefined, hay)`, where `hay`
      returns `{ names: [fru, fen], texts: [] }` from the line (the stored
      text is already folded, and `foldQuery` is idempotent).
   4. Without `q`: every line that passes the facets, in catalog order.
-  5. `total` is the count of step 3 or 4; the first `limit` lines become
-     rows.
+  5. `total` is the length of `rankHits`'s result (with `q`) or the
+     count of step 4 (without `q`); the 300 cap counts kept lines before
+     the rank. The first `limit` lines become rows.
 - Search row: the record v1 fields of the same names, decoded from the
   line and the codes: `{ id, name, kind, source, table, tier, rarity,
   link }`; `link` is `recordUrl(site, id, lang, v || undefined)` per
@@ -942,8 +969,12 @@ Design (settled; do not reopen without a reading that fails):
     `version`, `empty` or `errors`.
   - `message`: for `not_json`, `unknown_format`, `version` and `empty`,
     the panel's own refusal text in both languages (`t[key].replace('%s',
-    version)`, the panels' expression); `unknown_format` joins
-    `importNotBundle` and `hbImportNotFile` with one space; else null.
+    version)`, the panels' expression); `not_json` takes `importNotJson`
+    (both panels use it); `version` and `empty` take the key of the
+    detected format (`importVersion`/`importNoVersion`/`importEmpty` or
+    `hbImportVersion`/`hbImportNoVersion`/`hbImportEmpty`);
+    `unknown_format` joins `importNotBundle` and `hbImportNotFile` with
+    one space; else null.
   - `lines`: for `errors`, the error lines; for an `ok` lists file, the
     skip lines; for an `ok` homebrew file, the note lines; each line's
     `text` is `lineText(line)` built once per language; `list` is the
@@ -957,10 +988,12 @@ Design (settled; do not reopen without a reading that fails):
   - Dispatch: run `parseBundle(text, knows)`; when its reason is
     `notBundle`, run `parseHomebrew(text, ctx)`; when that reason is
     `notHomebrew`, the answer is `unknown_format`.
-  - Names: a lists line names its entry by item id only (default (a),
-    owner AFK, plan-B2a-5): the builders take a name lookup, the app
-    passes its index, the API passes none; a homebrew line names its
-    object from the file itself, as the panel does.
+  - Names: a lists error line names its entry by item id only (default
+    (a), owner AFK, plan-B2a-5): the builders take a name lookup, the app
+    passes its index, the API passes none; a lists skip line never
+    carries the item id (`skipLine`: "never the raw id"), so without
+    names it carries its position only; a homebrew line names its object
+    from the file itself, as the panel does.
 - Bounds, each a 400 `bad_request` naming the field (the CONTRACTS
   rule; the message never echoes the value): `q` at most 200 characters
   (string length) and 8 terms; `limit` an integer 1-50, default 20;
@@ -968,7 +1001,10 @@ Design (settled; do not reopen without a reading that fails):
   `1 2 3 4 A C`; `rarity` one of the five rarities (`alt.ts`
   `RARITIES`); `source` an id of the codes list; `table` an id that
   `tableOf` resolves; at least one of `q` and the five facets (400
-  naming `q`); `filter` at most 512 characters and starting with `f_`.
+  naming `q`); a `q` that parses to no terms (`q=`, `q=%20`, `q=""`)
+  reads as absent, so that rule decides; a parameter given twice is 400
+  `bad_request` naming it; `filter` at most 512 characters and starting
+  with `f_`.
   `too_broad` (400): "The query q matches too many records to rank. Add
   a longer word or a filter (kind, source, table, tier or rarity)." The
   file: `Content-Type: application/json` else 415; past 32768 B as UTF-8,
@@ -983,7 +1019,11 @@ Design (settled; do not reopen without a reading that fails):
   file is the text the reader saves, the byte cap is on that text, and a
   union type is a schema some clients may refuse). The operation carries
   `"x-mcp-body-argument": "file"`; the adapter's generic rule makes the
-  property from it (no case by tool name).
+  property from it (no case by tool name). `check_file`'s description
+  says that the 65536 B `/mcp` body cap applies to the whole request: a
+  client that escapes non-ASCII as `\uXXXX` triples a Russian file's
+  bytes, so a 32768 B file can meet the HTTP 413 instead of the
+  `too_large` result (no cap change).
 
 Files expected:
 - `tools/api-data.mjs`, `tools/api-data.test.mjs`
@@ -1012,20 +1052,27 @@ Files expected:
 
 Steps:
 
-1. Gate on landing 2's readings (`handoff.md`, "After B2a"). Take the
-   production factor f as the larger of: the cold `std` roll's p50 over
-   1.170 ms, and the cold record read's p50 over 0.310 ms (the local cold
-   medians of B2a; the dashboard values read as microseconds). If f is
-   above 5.5, or a landing-2 pass line failed, stop and hand back to the
-   planner: at 3x the search's cold path (about 1.8 ms here) would pass
-   10 ms.
+1. Gate on landing 2's readings (`context.md`, "Landing 2 readings").
+   (a) Every status was as expected, with no error and no exceeded-CPU
+   count (met: 0 and 0 in 33 requests). (b) The slope K is the larger of
+   (cold `std` roll - cold record read) / (1.170 - 0.310) and (burst p50
+   `std` roll - burst p50 record read) / (0.545 - 0.155), each pair read
+   by the same method: 1.70 and 3.01, so K = 3.01. (c) The predicted cold
+   REST search at 3x, cold record read + K x (1.8 - 0.310) ms, is at most
+   10 ms: 9.4 ms, met. If (a) or (c) fails, stop and hand back to the
+   planner. The p99 of a burst of 10 is its slowest sample and is
+   recorded, not gated: landing 2 shows 1.6-3.6 times the p50 in every
+   case, with no exceeded-CPU count.
 2. Projections (`tools/api-data.mjs`). Add `searchFiles(catalog)` (the
    index and the shards, from `catalog.records` and the versions),
    `fileCheckFile(loot, index)`, and `f` in `rowOf` for a table with
    groups. Add `BUDGET.search = 262144`; `budgetOf` gives it to
    `apidata/search/<n>.txt` and `small` to `apidata/search/index.json`
    and `apidata/file-check.json`. `render()` stamps the shard head as it
-   stamps a chunk head (a `SEARCH_PATH` beside `CHUNK_PATH`). The CLI
+   stamps a chunk head (a `SEARCH_PATH` beside `CHUNK_PATH`). Pack the
+   shards with the `DV_WIDTH` stand-in in the head, as `catalogFiles`
+   packs the chunks (the 3x shards are 36 B under 262144 B, so a pack
+   without it can pass the budget once the version is stamped). The CLI
    line and `--check` also print the shard count.
 3. `rest.mjs` `readCapOf`: 262144 for `apidata/search/*.txt` (the test
    "is read by the worker with a cap at least as large as the budget"
@@ -1043,9 +1090,11 @@ Steps:
      nameOf)` (returns `{ file, lists: [{ index, head, lines }] }`, the
      `refused` derivation), `skipLine(s, t, nameOf)`, `listsRefusal(p)`
      (the `read()` mapping to `{ key, version? }`), and `lineText(l)`:
-     `pos`, then `, ` and `name (item)`, `item` or `name` when either
-     exists, then `: `, then `text`, then ` ` and `path` when it exists
-     (the `ImportLines.svelte` snippet). `nameOf` is `(id) => string |
+     only when `pos` exists, `pos`, then `, ` and `name (item)`, `item`
+     or `name` when either exists, then `: ` (`ImportLines.svelte` puts
+     this part inside `{#if l.pos}`; a homebrew file's own lines have no
+     `pos`); then `text`, then ` ` and `path` when it exists (the
+     `ImportLines.svelte` snippet). `nameOf` is `(id) => string |
      undefined`; the panel passes `(id) => { const it =
      app.index?.byId.get(id); return it ? nameOf(it, app.lang) : undefined
      }`.
@@ -1095,8 +1144,11 @@ Steps:
     parameter, `/api/v1/file-checks` last; schemas `Search`, `SearchRow`,
     `FileCheck`, `FileCheckLine`; `too_broad` wherever the document lists
     the codes; the descriptions say what the departures below say (names
-    and facets only, `too_broad`, item ids without names, `unheld`
-    without an account); one sentence on the two tools in
+    and facets only, `too_broad`, item ids without names in error lines,
+    a lists skip line with its position only, `unheld` without an
+    account); the description of `table` says "the records of that
+    table, as `GET /api/v1/tables/{table}` lists them"; one sentence on
+    the two tools in
     `x-mcp-instructions` (at most 600 characters in all, the test's cap).
     The OpenAPI `ETag` then starts `1.2.0-`: the orchestrator updates
     live check 1's expected value (as R2 of `reviews/B2a.md`).
@@ -1123,12 +1175,17 @@ Steps:
       service with in-memory `assets` and `text`): for 20 queries (Russian
       and English word forms, words in any order, a quoted phrase, `яд`,
       `zweihander`, an apostrophe, a query with a facet), the ids and
-      `total` equal `rankHits(every record, parseQuery(q), undefined,
-      namesHay)` in the same order; for each `eq_*` part and one value of
+      `total` equal `rankHits(index.searchable, parseQuery(q), undefined,
+      namesHay)` in the same order (`index.searchable` has the shard
+      order, so the stable sort gives `#/search`'s ties); for each table
+      id of `apidata/tables.json`, `?table=<id>` answers `total` equal to
+      the table's row count (all parts) and the same ids as its rows, in
+      catalog order; for each `eq_*` part and one value of
       each of its groups, and each plain table with groups, the rows equal
       the app's `passes` over `facetsOf`; each row equals the record v1
       cut to the row's fields.
-    - `preview/api/api.test.mjs`: each bound and its 400, both
+    - `preview/api/api.test.mjs`: each bound and its 400, a parameter
+      given twice (400 naming it), both
       `too_broad` caps (a stub shard with 301 kept lines; one with 3001
       positions), the facet-only order, a shard head of another data
       version (one re-read, then 503), 304 on a matching `ETag`, `f`
@@ -1138,8 +1195,9 @@ Steps:
       an account, `more` past 50 errors).
     - `importReport.test.ts`, `homebrewReport.test.ts`: each error kind,
       rule and refusal, ending with the RU and EN texts;
-      `importLines.test.ts`: for a line of each shape, the drawn `li`'s
-      text equals `lineText(line)`; `expectNoA11yViolations` at the end.
+      `importLines.test.ts`: for a line of each shape (a line without
+      `pos` included), the drawn `li`'s text equals `lineText(line)`;
+      `expectNoA11yViolations` at the end.
     - `preview/api/mcp.test.mjs`: nine tools in that order; `limit` as an
       integer and as a string (400); `file` missing or not a string
       (400); a 32769 B `file` is the `too_large` `isError` result;
@@ -1159,6 +1217,10 @@ Steps:
     prepare and its worst accepted warm query over the step 12 sample at
     today's size and at 3x, and `parseBundle` and `parseHomebrew` at
     32768 B with the builders (`process.cpuUsage()`, as B2a did);
+    state which position rule the planner's refusal counts (28 of 66
+    today, 45 of 66 at 3x; `context.md`, "B3 planner measurements")
+    used, and re-measure them with the rule of search step 3 (every
+    anchor-needle hit in a shard counts) if they differ;
     the worker's gzip size before and after (`npx esbuild
     preview/public/_worker.js --bundle --format=esm --minify` to the
     scratchpad, then gzip); write the numbers into the handoff.
@@ -1166,22 +1228,33 @@ Steps:
     (curl from the shell, no `Origin`; one warm-up recorded as the cold
     reading of its case; a new bucket; a burst of 10, 1 s apart, each
     status recorded; a bucket count other than 10 repeats the burst;
-    p50 for the cost model, p99 for the limit). Cases, 3 minutes apart:
-    (a) 10 `GET /api/v1/records?q=<two Russian words>`, each a
-    different query; (b) 10 `GET /api/v1/records?kind=weapon&tier=2&limit=50`;
-    (c) 10 `POST /api/v1/file-checks` of a 32768 B homebrew file with the
-    longest texts; (d) the same with a 32768 B lists file; (e) 10 MCP
+    p50 for the cost model). Cases, 3 minutes apart unless the 11-minute
+    rule below applies: (f) 10 `GET /api/v1/records/<id>` reads first
+    (the baseline of the same session), then (a) 10 `GET
+    /api/v1/records?q=<two Russian words>`, each a different query; (b)
+    10 `GET /api/v1/records?kind=weapon&tier=2&limit=50`; (c) 10 `POST
+    /api/v1/file-checks` of a 32768 B homebrew file with the longest
+    texts; (d) the same with a 32768 B lists file; (e) 10 MCP
     `tools/call` `check_file` with the homebrew file of (c) (the envelope
-    parse included, plan-B2a-R4). Pass: each p99 and each cold reading at
-    most 5 ms, every status as expected, no error and no exceeded-CPU
-    count. A search case above 5 ms: the search fallbacks below. A file
-    check above 5 ms: the cap stays 32768 B (a cap never falls), and the
+    parse included, plan-B2a-R4); plus (g) 10 MCP `tools/call`
+    `search_catalog` with the queries of (a). Only the first case that
+    reads a file family gives a cold reading (the shards: (a); the
+    file-check files: (c)); space a later case of the same family 11
+    minutes apart to read it cold (`CACHE_MS` is 10 minutes), or record
+    its warm-up as warm. Pass: every status as expected, no error and no
+    exceeded-CPU count; each cold reading at most 10 ms; each burst p50
+    at most 8 ms; and the 3x prediction, cold reading of (a) + K x (3x
+    local - today local) from step 13, at most 10 ms, where K is step 1's
+    K, or (cold (a) - cold (f)) / (local (a) - 0.310) when that is
+    larger. Record each p99; it is not a pass line. A search case that
+    fails the pass line: the search fallbacks below. A file-check case
+    that fails it: the cap stays 32768 B (a cap never falls), and the
     Edge Function option of section 3.2 goes to the owner. The closeout's
     cap raise reads case (c) (B5b placed line 3).
 
 Acceptance criteria:
-- Step 1's gate holds (f at most 5.5, the landing-2 pass lines met), or
-  the batch stopped there.
+- Step 1's gate holds: (a) and (c) of step 1, or the batch stopped
+  there.
 - `GET /api/v1/records` finds a record by a Russian and an English word
   form, words in any order and a quoted phrase, in `rankHits` order;
   without `q` it answers in catalog order; it never matches a
@@ -1214,8 +1287,11 @@ Acceptance criteria:
   `tests/contracts.js` and D10 match the code.
 - The step 13 numbers are in the handoff; the worker's gzip size is
   recorded before and after.
-- After landing 3: the step 14 readings are written down and pass, or the
-  named fallback is the next batch.
+- After landing 3: the step 14 readings of cases (a)-(g) are written down
+  and meet step 14's pass line (every status as expected, no error and
+  no exceeded-CPU count; each cold reading at most 10 ms; each burst p50
+  at most 8 ms; the 3x prediction at most 10 ms; each p99 recorded), or
+  the named fallback is the next batch.
 
 Verification commands:
 - `node tools/build.js`
@@ -1262,8 +1338,10 @@ Standing checks:
    file check's lines and refusals are the import panels' own;
    departures, named: no account, so a homebrew entry without a snapshot
    is `unheld` and the panels' held-name lines are absent; a lists
-   line names its entry by item id, where the panel adds the record's
-   name.
+   error line names its entry by item id, where the panel adds the
+   record's name; a lists skip line never carries the item id (the
+   panel's `skipLine` rule), so without names it carries its position
+   only.
 4. RU/EN parity: every `text` and `message` is a `dict.ts` pair through
    the shared builders; no new `dict.ts` string (`unknown_format` joins
    two existing pairs); error messages and `openapi.json` are English;
@@ -1289,8 +1367,17 @@ Risks / do-nots:
   that cache is bounded by the catalog's words and the queries of one
   isolate's life.
 - At 3x the cold search is about 1.8 ms here (prepare 0.9-1.2 ms, the
-  worst accepted query 0.5-0.6 ms), about 7.6 ms at B1's p50 factor of
-  4.2: inside 10 ms, with little room; step 1 and step 14 decide.
+  worst accepted query 0.5-0.6 ms), 7.4-9.4 ms at K 1.70-3.01 over the
+  4.9 ms cold record read: inside 10 ms, with little room (about 0.6 ms
+  at K 3.01); step 1 and step 14 decide.
+- A cold MCP call reads about 2.5 ms more than a cold REST call (one
+  sample each: the cold MCP roll 8.9 ms against 6.4 ms for the cold REST
+  roll; the bursts show no MCP extra, 4.66 against 4.80 ms p50). So a
+  cold `search_catalog` at 3x predicts 10.0-10.8 ms, and a cold MCP
+  `check_file` about 9-10 ms; at today's size, about 6.6 ms REST and
+  about 8 ms MCP. The isolate start may be part of each cold number. Step
+  14 case (g) reads it; if (g) or the 3x prediction fails, search
+  fallback (1) (the capitalization delta) is the next batch.
 
 Fallbacks (named, in order; same contract): if a search case of step 14
 fails, or the catalog passes twice today's records before a reading at
@@ -1943,11 +2030,17 @@ option; the owner may reverse any before its batch:
   (about 23 min each).
 - The CPU fix: one record per line in the chunk files plus an isolate
   cache of the roll section's index. Not chosen: precomputed per-total
-  `std` files (60 files of the 98 left at 3x; kept as the fallback); a
+  `std` files (60 files of the 98 left at 3x; dropped by the owner,
+  below); a
   second, lean record file set (54 more files today, about 156 at 3x:
   past the file margin); caching the parsed roll tables only (it leaves
   the four 64 KB chunk parses, the larger cost, on every request).
   Accepted: the chunk layout is one record per line from now on.
+  - Owner (chat, 2026-11-12): fallback 2 (per-total
+    `apidata/roll/std/<total>.json`) is dropped as over-engineering; the
+    `std` roll tail stays as measured at landing 2 (burst p99 17.1 ms,
+    p50 4.8 ms), with no batch; fallback 1 (an isolate cache of each
+    chunk's split lines) stays the only optional step.
 - Search (D10): names in both languages and the facet columns only. Not
   chosen: descriptions and stat lines (CPU at 3x). Accepted: `q` finds
   fewer records than `#/search`, which also reads descriptions.
@@ -2025,10 +2118,14 @@ carries `?v` (D9).
   from about 290 KB to about 38 KB. The unit is an assumption until a
   reading shows a value that only one unit explains; the landing-2
   readings record it as shown.
-- B3's cost model takes a production factor of about 4.2 (B1's `std`
-  roll, p50 7.5 ms against 1.78 ms here) from local medians: a search at
-  3x costs about 1.8 ms here cold, so about 7.6 ms there; B3 step 1 stops
-  above a factor of 5.5, and step 14 reads the real cost. The worker
+- B3's cost model is a fixed floor plus a slope (landing 2, `context.md`,
+  "Landing 2 readings"): about 4.4 ms cold and 3.2 ms warm under every
+  request, plus K times the local CPU, with K 1.70 from the cold readings
+  and 3.01 from the burst p50s. A search at 3x costs about 1.8 ms here
+  cold, so 7.4-9.4 ms there over the 4.9 ms cold record read (cold MCP
+  `search_catalog` 10.0-10.8 ms, one sample of the MCP extra); B3 step 1
+  stops when the prediction at K 3.01 passes 10 ms, and step 14 reads
+  the real cost. The worker
   bundle grows with the parsers, the validators and the two stemmers
   (B3 step 13 records the gzip size against the free plan's 3 MB,
   documentation, not verified).

@@ -598,6 +598,39 @@ Scratch scripts, not committed (session scratchpad `b3bench.mjs`,
   `daggerheart-loot/api-records`, so the search answer is `api-search`.
 - The production factor (local to Pages Metrics): B1's `std` roll 1.78
   ms here against p50 7.5 and p99 17.5 ms there (4.2x and 9.8x).
+  Superseded by the floor-plus-slope model of "Landing 2 readings" below.
+
+## Landing 2 readings (orchestrator, 2026-11-12)
+
+Production after the B2a squash `89a55f1b`; Cloudflare Pages Metrics,
+Production, 1-minute custom ranges; the unit shows as ms and reads as
+microseconds (values below in ms). One warm-up request per case (its own
+range is the cold reading), then a burst of 10, 1 s apart, in the next
+minute. Source: owner note
+`C:\Users\Ignat\.dhloot\notes\57\ai-mcp-live-checks.md`, "Landing 2
+readings".
+
+| Case | Cold (1 request) | Burst p50 | Burst p75 | Burst p99 |
+|---|---|---|---|---|
+| `POST /api/v1/rolls/std` `{"dice":3}` | 6.360 (4 subrequests) | 4.804 | 9.745 | 17.114 |
+| 10 record reads, different ids | 4.902 (2 subrequests) | 3.630 | 4.138 | 8.129 |
+| MCP legacy `roll` (`std`, dice 3, `2025-06-18`) | 8.913 (5 subrequests) | 4.662 | 5.189 | 7.397 |
+
+- Every request 200 (MCP: no `isError`); 0 errors and 0 exceeded-CPU in
+  33 requests; no 1102. B1's `std` burst for comparison: p50 about 7.5,
+  p99 17.531.
+- Slopes against the B2a local medians (record 0.310 cold, 0.155 warm;
+  `std` roll 1.170 cold, 0.545 warm): cold (6.360 - 4.902) / (1.170 -
+  0.310) = 1.70; burst p50 (4.804 - 3.630) / (0.545 - 0.155) = 3.01. The
+  fixed floor under a request (the reading less slope x local): about 4.4
+  ms cold, about 3.2 ms warm.
+- Predictions (`reviews/plan-B3.md`): cold REST search at 3x (local 1.8
+  ms) 4.902 + K x 1.49 = 7.4 ms (K 1.70) or 9.4 ms (K 3.01); at today's
+  size 5.9-6.6 ms; cold MCP search at 3x 8.913 + K x 0.63 = 10.0-10.8 ms.
+  The cold MCP extra of about 2.5 ms is one sample; whether each cold
+  reading came from a new isolate is not verified.
+- The three p99 pass lines of B2a failed; the owner accepted the roll as
+  it is and dropped fallback 2 (`plan.md` section 7, 2026-11-12).
 
 ## Do not re-fetch unless
 - Human provides new info
