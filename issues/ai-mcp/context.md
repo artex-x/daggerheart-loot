@@ -367,8 +367,9 @@ measurement:
   `related`, `updated_at`, never `owner_id`. Limits: `lists_per_owner`
   50, `entries_per_list` 100, `homebrew_items_per_owner` 100.
 - Planner defaults taken (owner AFK), `plan.md` section 7: Q8 one grant
-  level; Q9 writes of lists, entries and homebrew items only; Q10 client
-  tokens only; Q11 an empty `/me` allowlist. B5 split into B5a and B5b.
+  level; Q9 writes of lists, entries and homebrew items only (replaced by
+  the owner's parity rule, "B5 refresh facts" below); Q10 client tokens
+  only; Q11 an empty `/me` allowlist. B5 split into B5a-B5d (2026-11-12).
 - Plan review `reviews/plan-B5a.md` (2026-11-11), facts read from the
   repository: PostgREST resource embedding reads other tables through
   foreign keys under RLS on an allowed path (`lists?select=*,list_shares(*)`),
@@ -631,6 +632,61 @@ readings".
   reading came from a new isolate is not verified.
 - The three p99 pass lines of B2a failed; the owner accepted the roll as
   it is and dropped fallback 2 (`plan.md` section 7, 2026-11-12).
+
+## B5 refresh facts (2026-11-12)
+
+- Owner (afk-decisions note, 2026-11-12): "OAuth Server" is on in the test
+  project (`rdjxcjkhsklhprmzxajq`): path `/connect`, dynamic OAuth apps on.
+  Its Site URL stays `http://localhost:3000` with no redirect URLs; both
+  are owned by `supabase/config.toml` `[remotes.test.auth]`. The base
+  `[auth]` (production and local) has `site_url =
+  "https://daggerheart-loot.pages.dev/"` with a final `/`, so a consent
+  URL can come out `//connect` (B5a step 6 reads it as `/connect`).
+- Owner requirements (chat, 2026-11-12, via the orchestrator; home:
+  `plan.md` section 6 "B5" and section 7, batches B5a-B5d): full UI parity
+  through `/api/v1/me` and `/mcp/me` with named exceptions; list share
+  links (create, read, replace, revoke; lists only); every list operation;
+  homebrew items full CRUD and every item action; the items read paged
+  with `id`, `key`, `link`; import and export of both files; every bulk
+  operation; a "UI action coverage" table from `app/src` for an
+  independent auditor; B5 split, never reusing B4 or B2c/B2d.
+- An own homebrew item's link is `<site>h/<uuid>?v=<v>` whether or not a
+  list shares it: an item is unlisted, not secret (`CONTRACTS.md`,
+  `#/h/<uuid>`); anyone who holds the link reads it.
+- Grants to `authenticated` (migrations at `646b2c04`): tables `lists`,
+  `list_entries`, `homebrew_books`, `homebrew_items`, `homebrew_cards`
+  (all four verbs), `user_prefs` (select, insert, update), `list_shares`,
+  `purchase_requests`, `purchase_request_lines` (select), `list_notices`
+  (select, delete); `print_sets` grants nothing (so the old B5a probe on
+  it was defective: an app token is refused too). RPCs: `apply_list_writes`
+  (invoker), `import_lists`, `reorder_list`, `move_legacy_list`,
+  `create_list_share`, `revoke_list_share`, `clone_shared_list`,
+  `create_purchase_request`, `apply_purchase_request`,
+  `decline_purchase_request` (definer), `mark_list_read`, `import_homebrew`,
+  `move_homebrew_items`, `delete_homebrew_items`, `get_homebrew_item(s)`,
+  `my_limit`, `create_print_set`, `get_print_set` (definer),
+  `delete_account`, `delete_account_requests`, the `homebrew_*_ok` and
+  `*_valid` checks, `homebrew_art_room`, the preview RPCs.
+- `create_print_set(p_entries)`: 1-180 objects `{ k }` (a catalog key) or
+  `{ h }` (an item id) with an optional `q`, at most 16384 B; answers a
+  12-character id; sets live 90 days (`PRINT_SET_DAYS`).
+- Constants: `lib/art.ts` `ART_FULL` 640, `ART_THUMB` 160, `ART_BYTES_MAX`
+  204800; `lib/bundle.ts` `LISTS_MAX` 1000, `ENTRIES_MAX` 5000,
+  `FILE_MAX_BYTES` 5 MiB, format `daggerheart-loot/lists` versions 1-3;
+  `lib/homebrew.ts` `NAME_MAX` 120, `DESC_MAX` 3000, `SECTIONS_MAX` 30,
+  `CRAFT_MAX` 8, `REFS_MAX` 3, `CARD_ITEMS_MAX` 100; `lib/cloudLists.ts`
+  `NAME_MAX` 200, `NOTE_MAX` 4000, `PRICE_MAX` 99999, `BATCH_OPS` 200.
+- App source facts (an Explore helper's walk of `app/src`, 2026-11-12):
+  no "duplicate item" action (only «Сохранить как новый» in the gone banner
+  and «Сохранить себе» of a catalog record or another account's item);
+  «Сохранить себе» writes through `import_homebrew`, then copies the
+  picture (2 fetches, 2 uploads), `setArt`, and AL `relink` on each list;
+  AL `relink` has no other caller; the share panel's first open makes the
+  missing links; mark-read is automatic (`mark_list_read`); a notice
+  «Скрыть» is a direct `list_notices` delete; sources, sections and list
+  cards have no reorder; there are no browser-only lists (the
+  localStorage keys are `dhloot.lang.v1`, `dhloot.home.v1`,
+  `dhloot.prefs.v1`); removing a picture only nulls `art`.
 
 ## Do not re-fetch unless
 - Human provides new info
