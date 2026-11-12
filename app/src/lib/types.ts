@@ -117,7 +117,7 @@ export interface Equip {
   bu?: 1 | 2 | 'any';
   /** Armor Score and base thresholds - armor only. */
   as?: number | null;
-  /** Minor and major damage thresholds - the pair the data actually carries. */
+  /** Major and Severe damage thresholds - the pair the data actually carries. */
   th?: readonly [number, number] | null;
   /** `id` of the first item in the upgrade line; empty on one-offs. */
   line?: string;

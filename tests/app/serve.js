@@ -136,9 +136,11 @@ function readRedirects() {
     });
 }
 
-const CARD_ROUTES = JSON.parse(
-  fs.readFileSync(path.join(PUBLIC, '_routes.json'), 'utf8')
-).include.map(patternOf);
+/* `/api/*` is the read API, which answers JSON from the worker and never the app document:
+   here it stays a miss, so the static server never claims an answer the host does not give. */
+const CARD_ROUTES = JSON.parse(fs.readFileSync(path.join(PUBLIC, '_routes.json'), 'utf8'))
+  .include.filter((p) => p !== '/api/*')
+  .map(patternOf);
 
 /** How the host answers a path no file holds: `{ status, location }` for a redirect,
  *  `{ status: 200, doc }` for the app document at `doc` (a path under the root), or

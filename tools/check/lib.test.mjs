@@ -400,6 +400,29 @@ describe('the stage table', () => {
     assert.ok(!commands.includes('npm run lint'));
   });
 
+  it('runs every preview test file and the api-data test in stage test:preview, with the ts hooks', () => {
+    const command = STAGES.find((s) => s.name === 'test:preview').command;
+    assert.ok(command.includes('--import ./tools/ts-hooks.mjs'));
+    const dir = path.join(ROOT, 'preview');
+    const files = readdirSync(dir, { recursive: true })
+      .map((f) => f.split(path.sep).join('/'))
+      .filter((f) => f.endsWith('.test.mjs') && !f.startsWith('node_modules/'))
+      .map((f) => 'preview/' + f);
+    const named = command.split(' ').filter((w) => w.endsWith('.test.mjs'));
+    assert.deepEqual(named.filter((w) => w.startsWith('preview/')).sort(), files.sort());
+    assert.ok(named.includes('tools/api-data.test.mjs'));
+    const script = JSON.parse(readFileSync(path.join(dir, 'package.json'), 'utf8')).scripts
+      .test;
+    assert.ok(script.includes('--import ../tools/ts-hooks.mjs'));
+    assert.deepEqual(
+      script
+        .split(' ')
+        .filter((w) => w.endsWith('.test.mjs'))
+        .sort(),
+      files.map((f) => f.slice('preview/'.length)).sort()
+    );
+  });
+
   it('names only scripts that package.json has', () => {
     for (const s of STAGES) {
       const m = /^npm run (\S+)$/.exec(s.command);

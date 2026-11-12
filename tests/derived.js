@@ -67,6 +67,24 @@ ok(
   );
 }
 
+/* The read API's projections (apidata/ and api/v1/catalog/, docs/specs/CONTRACTS.md section 6)
+   are rendered by an ESM script that imports the app's TypeScript, so it runs as a child
+   process under the ts hooks; --check names each file that is stale or past its budget. */
+console.log('read API projections match data.js and fit their budgets');
+{
+  const run = require('child_process').spawnSync(
+    process.execPath,
+    ['--import', './tools/ts-hooks.mjs', 'tools/api-data.mjs', '--check'],
+    { cwd: ROOT, encoding: 'utf8' }
+  );
+  ok(
+    run.status === 0,
+    'tools/api-data.mjs --check failed (run node tools/build.js): ' +
+      (run.stderr || run.stdout || String(run.error))
+  );
+  console.log('  ' + run.stdout.trim());
+}
+
 console.log('catalog reads clean');
 const catalogPath = path.join(ROOT, 'catalog.csv');
 const rows = fs.existsSync(catalogPath)
@@ -1645,16 +1663,30 @@ console.log('folded print vectors');
    version is checked along with it - it was left at 1.0 in three places out
    of four, and there was nothing to notice it.
 
-   This also checks that Hope & Fear is no longer listed as outside the
-   license: on 25 August 2026 DPCGL 2.0 added it to the list of covered
-   games, and the old caveat became wrong. */
+   The same wording stands in LICENSE and in both terms pages, which this
+   block reads too. It also checks that the whole book Hope & Fear is not
+   listed as outside the license (on 25 August 2026 DPCGL 2.0 added it to the
+   list of covered games); only a record that the SRD 2.0 does not hold is
+   outside, and README.md, README.ru.md, LICENSE and llms.txt name those
+   records and the supplements the same way. */
 console.log('source citation');
 const CITE =
   'Daggerheart System Reference Document 2.0, © Critical Role, LLC.' +
   ' under the terms of the Darrington Press Community Gaming (DPCGL)' +
   ' License.';
-['README.md', 'README.ru.md', 'llms.txt'].forEach(function (file) {
-  const text = fs.readFileSync(path.join(ROOT, file), 'utf8').replace(/\s+/g, ' ');
+[
+  'README.md',
+  'README.ru.md',
+  'llms.txt',
+  'LICENSE',
+  'pages/src/terms.html',
+  'pages/src/en/terms.html'
+].forEach(function (file) {
+  const raw = fs.readFileSync(path.join(ROOT, file), 'utf8');
+  const text = (file.endsWith('.html') ? raw.replace(/<[^>]*>/g, ' ') : raw).replace(
+    /\s+/g,
+    ' '
+  );
   ok(text.indexOf(CITE) >= 0, file + ': missing the verbatim source citation');
   ok(
     text.indexOf('Reference Document 1.0') < 0,
@@ -1682,26 +1714,178 @@ const OUTSIDE = [
   'Dread GM Toolbox',
   'Vault of Ages',
   "The Dragon's Vault",
+  "The Guide to Arazo's Artifacts",
+  'Many Worlds Tavern',
+  'Pistolheart',
+  'The Last Round Table',
+  'Escape the Veiled Halls',
   'Community Magic Items',
   'Alternate Loot & Consumable Tables'
 ];
+/* The whole book Hope & Fear is covered; only a record the SRD 2.0 does not
+   hold is outside, so the bare string is allowed in the clause only inside
+   the outside-record phrase (docs/rights/records.json names the records). */
+const COVERED = {
+  en: 'the Core, Hope & Fear and campaign frame records whose text the SRD 2.0 holds',
+  ru: 'записи Core, Hope & Fear и фреймов кампаний, текст которых есть в SRD 2.0'
+};
+const OUTSIDE_RECORDS = {
+  en: 'any Core, Hope & Fear or campaign frame record that the SRD 2.0 does not hold',
+  ru: 'любые записи Core, Hope & Fear и фреймов кампаний, которых нет в SRD 2.0'
+};
+const RIGHTS_HOLDERS = {
+  en: 'their text belongs to its rights holders',
+  ru: 'права на эти тексты принадлежат их правообладателям'
+};
+/* The MIT code-folder list of each file, exactly: a bare "preview/" would also match a
+   file-tree line of the same README. */
+const CODE_FOLDERS = {
+  'README.md': 'The code (`app/`, `tools/`, `tests/`, `preview/`) is MIT',
+  'README.ru.md':
+    'Код (`app/`, `tools/`, `tests/`, `preview/`) распространяется по лицензии MIT',
+  LICENSE: 'application code: app/, tools/, tests/ and preview/.',
+  'llms.txt': 'The project code (app/, tools/, tests/, preview/) is MIT.'
+};
+/* [file, language, outside clause in the text, bold entries are possible] */
 [
-  ['README.md', /^.*fall\s+outside that license[\s\S]*?\n\n/m],
-  ['README.ru.md', /^.*под эту лицензию не подпадают[\s\S]*?\n\n/m]
-].forEach(function (pair) {
-  const file = pair[0];
-  const text = fs.readFileSync(path.join(ROOT, file), 'utf8').replace(/\n {2}/g, ' ');
-  const clause = (pair[1].exec(text) || [''])[0];
+  ['README.md', 'en', /^.*fall\s+outside that license[\s\S]*?\n\n/m, true],
+  ['README.ru.md', 'ru', /^.*под эту лицензию не подпадают[\s\S]*?\n\n/m, true],
+  ['LICENSE', 'en', /Wondrous Environments[\s\S]*?its rights holders\./, false],
+  ['llms.txt', 'en', /Wondrous Environments[\s\S]*?its rights holders\./, false]
+].forEach(function (row) {
+  const file = row[0];
+  const lang = row[1];
+  const plain = fs.readFileSync(path.join(ROOT, file), 'utf8').replace(/\r/g, '');
+  /* llms.txt names the supplements in many sections; its License section is
+     the last one. */
+  const scope = file === 'llms.txt' ? plain.slice(plain.indexOf('\n## License')) : plain;
+  const text = row[3] ? scope.replace(/\n {2}/g, ' ') : scope.replace(/\s+/g, ' ');
+  const clause = (row[2].exec(text) || [''])[0].replace(/\s+/g, ' ');
   ok(clause, file + ': the caveat about what falls outside the license went missing');
-  ok(
-    clause.indexOf('Hope & Fear') < 0,
-    file +
-      ': Hope & Fear is still listed as outside the license, though DPCGL 2.0 now includes it'
-  );
+  if (row[3]) {
+    ok(
+      clause.indexOf('**Hope & Fear**') < 0,
+      file +
+        ': Hope & Fear is still listed as outside the license, though DPCGL 2.0 now includes it'
+    );
+  } else {
+    ok(
+      clause.split(OUTSIDE_RECORDS[lang]).join('').indexOf('Hope & Fear') < 0,
+      file + ': the outside clause names Hope & Fear apart from the outside-record phrase'
+    );
+  }
   OUTSIDE.forEach(function (name) {
     ok(clause.indexOf(name) >= 0, file + ': ' + name + ' fell out of the outside-license list');
   });
+  ok(
+    clause.indexOf(OUTSIDE_RECORDS[lang]) >= 0,
+    file + ': the outside list does not name the records the SRD 2.0 does not hold'
+  );
+  ok(
+    clause.indexOf(RIGHTS_HOLDERS[lang]) >= 0,
+    file + ': the outside list does not end with the rights-holders clause'
+  );
+  const all = plain.replace(/\s+/g, ' ');
+  ok(all.indexOf(COVERED[lang]) >= 0, file + ': the covered clause went missing or changed');
+  ok(
+    all.indexOf(CODE_FOLDERS[file]) >= 0,
+    file + ': the MIT code folders omit preview/ (' + CODE_FOLDERS[file] + ')'
+  );
+  ok(
+    all.indexOf('docs/rights/records.json') >= 0,
+    file + ': it does not name the rights table'
+  );
 });
+
+/* docs/rights/records.json says, for each Core, Hope & Fear and campaign frame
+   record, whether its English text is SRD 2.0 Public Game Content (`dpcgl`,
+   with the 1-based PDF page that holds it) or stays the owner's (`owner`, with
+   the reason). A record of any other source resolves through its source row,
+   which is always `owner`. The table is hand-audited against the SRD PDF; this
+   block holds its shape, not the audit. */
+console.log('rights audit');
+{
+  const table = JSON.parse(
+    fs.readFileSync(path.join(ROOT, 'docs', 'rights', 'records.json'), 'utf8')
+  );
+  const AUDITED = ['core', 'hnf', 'frame'];
+  /* The SRD 2.0 PDF of 2026-08-25 has 224 pages. */
+  const SRD_PAGES = 224;
+  const LICENSES = ['dpcgl', 'owner'];
+  const everyRecord = D.everything(L);
+  const srcIds = [...new Set(everyRecord.map((x) => x.src))];
+  ok(table.format === 'daggerheart-loot/rights-audit', 'rights: the format name is wrong');
+  ok(table.version === 1, 'rights: the version is not 1');
+  ok(
+    table.srd && table.srd.file && table.srd.date && table.srd.url,
+    'rights: the srd block needs file, date and url'
+  );
+  ok(
+    table.license && table.license.name && table.license.date,
+    'rights: license needs name and date'
+  );
+  ok(/^\d{4}-\d{2}-\d{2}$/.test(table.audited), 'rights: audited is not a date');
+  ok(
+    table.reviewed === null || /^\d{4}-\d{2}-\d{2}$/.test(table.reviewed),
+    'rights: reviewed is neither null nor a date'
+  );
+  ok(
+    JSON.stringify(Object.keys(table.sources || {}).sort()) ===
+      JSON.stringify(srcIds.slice().sort()),
+    'rights: sources does not hold exactly the src ids of data.js'
+  );
+  srcIds.forEach(function (id) {
+    ok(table.sources[id] === 'owner', 'rights: source ' + id + ' is not owner');
+  });
+  const want = everyRecord.filter((x) => AUDITED.includes(x.src)).map((x) => x.id);
+  const have = Object.keys(table.records || {});
+  want.forEach(function (id) {
+    ok(table.records[id], 'rights: ' + id + ' has no entry');
+  });
+  const known = new Map(everyRecord.map((x) => [x.id, x]));
+  have.forEach(function (id) {
+    ok(known.has(id), 'rights: the entry ' + id + ' names no record of data.js');
+  });
+  ok(
+    JSON.stringify(have) === JSON.stringify(want),
+    'rights: the entries are not the audited records in data.js order'
+  );
+  const counts = {};
+  have.forEach(function (id) {
+    const entry = table.records[id];
+    const src = known.has(id) ? known.get(id).src : '?';
+    ok(LICENSES.includes(entry.license), 'rights: ' + id + ' has the license ' + entry.license);
+    if (entry.license === 'dpcgl') {
+      ok(
+        Number.isInteger(entry.page) && entry.page >= 1 && entry.page <= SRD_PAGES,
+        'rights: the dpcgl entry ' + id + ' has no integer page of 1 to ' + SRD_PAGES
+      );
+    } else if (AUDITED.includes(src)) {
+      ok(
+        typeof entry.reason === 'string' && entry.reason.length > 0,
+        'rights: the owner entry ' + id + ' has no reason'
+      );
+    }
+    if (entry.page !== undefined) {
+      ok(
+        Number.isInteger(entry.page) && entry.page >= 1 && entry.page <= SRD_PAGES,
+        'rights: ' + id + ' has a bad page'
+      );
+    }
+    const key = src + ' ' + entry.license;
+    counts[key] = (counts[key] || 0) + 1;
+  });
+  AUDITED.forEach(function (src) {
+    console.log(
+      '  ' +
+        src +
+        ': dpcgl ' +
+        (counts[src + ' dpcgl'] || 0) +
+        ', owner ' +
+        (counts[src + ' owner'] || 0)
+    );
+  });
+}
 
 /* Pages must wait for every quality matrix. Keep this dependency-free: the
    workflow is deliberately small here, and accepting a stray `browser`

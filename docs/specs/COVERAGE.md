@@ -337,7 +337,7 @@ value of those variables; CI's `e2e` job uploads nothing. In order:
   member ended.
 
 Node runs the app's TypeScript ports through its own type stripping:
-`tests/e2e/ts-hooks.mjs` maps a `.js` import inside a `.ts` file to its
+`tools/ts-hooks.mjs` maps a `.js` import inside a `.ts` file to its
 `.ts` source, and `tsconfig.json`'s `erasableSyntaxOnly` refuses syntax Node
 could not strip (docs/DECISIONS.md, "The hosted E2E runs `cloud.contract.ts`
 under Node's own type stripping"). In Node auth-js does not use
@@ -1312,6 +1312,7 @@ tracing a feature back through history).
 | Installable app: manifest, icons, service worker (picture and asset caches, no shell) | `tests/sw.test.mjs`, `ports.test.ts`, `derived`, `tests/app/states.js` case 28, `tools/smoke-http.mjs`, `tools/check-site.test.mjs` |
 | The old host (`old-host/`): the forwarding root (each forwarding state, the loop guard, the installed app, no script), the unregistering worker, the mirror's file list | `derived` ("the old host forwards to the site"), `tests/sw.test.mjs` ("the old host worker"), `tests/stub.js` (`old-host/index.html` at 320 and 390 px), `tools/check-site.test.mjs` (`mirrorChecks()`) |
 | The site's host: the Pages routes and headers files, `/mcp` reserved, `names.json` through `env.ASSETS` | `preview/worker.test.mjs` ("the Pages control files", "/h/: names.json"), `tests/contracts.js` (`preview.json` `routes` and `static` rows; every route path covered, none taken by the worker from a rewrite), `tools/check-site.test.mjs` (`previewChecks()`) |
+| The read API (`/api/v1/`): the neutral record, the roll pools, the rights values, the projections and their budgets, the worker's answers and CORS | `app/src/lib/apiRecord.test.ts`, `app/src/lib/rollTables.test.ts`, `tools/api-data.test.mjs` (the lean pool equals the app's pool; every record in one chunk; `rev`; schemas and budgets at today's and three times the size; the rights table), `preview/api/api.test.mjs` (every operation and error row against `docs/fixtures/api/v1/`, CORS, the data-version re-read, `openapi.json` against the parsers), `tests/contracts.js` ("read API"), `tests/derived.js` (`tools/api-data.mjs --check`), `tools/check-site.test.mjs` (the static and `--preview` API probes), `.claude/hooks/selftest.mjs` (the `apidata/` and `api/` guard) |
 | A card path answers the app document: the record and English-root documents the build writes, the worker's app document and its fallback card page | `derived` ("the app documents": the count, the card fields byte for byte, every record document's `<noscript>` text, `<html lang>`, no redirect), `preview/worker.test.mjs` ("the app document", with the app document read started together with the card's reads of `/h/`, `/s/` and `/tables/`; "a failed shell read", "cardHead and appDocument"), `tools/check-site.test.mjs` (`documents`, the route checks of `previewChecks()`), `tools/smoke-http.mjs` (`/i/ci1` and `/i/en/ci1`, card and `<noscript>` text), `tests/app/serve.js` (the browser suites open the built `i/` and `en/`) |
 | The record link's card version (`card-versions.json`, `window.LOOT_V`, `<site>i/<id>?v=<v>`) | `derived` ("the card version map is current"), `tools/data-script.js` through `tests/app/serve.js`'s byte guard, `ports/ports.test.ts` ("the record links' card versions"), `lib/hash.test.ts` (`docs/fixtures/urls/record.json`), `components/record.test.ts`, `state/app.test.ts`, `tests/contracts.js` |
 
@@ -1582,6 +1583,11 @@ exercises the clipboard's rich-text and image writes for exactly this reason
 (B12); the share sheet's success
 path stays a thin spot below, since no headless browser offers one to drive.
 The fallbacks, which is where the logic actually lives, are covered here.
+
+`preview/api/api.test.mjs` and `tools/api-data.test.mjs` run in the same stage under
+the ts hooks of `tools/ts-hooks.mjs` (`node --import ./tools/ts-hooks.mjs --test`,
+which maps the `.js` imports of the app's modules to their `.ts` files); they cover the
+read API (the row "The read API" of the table above).
 
 `preview/worker.test.mjs` is a separate suite again, run under `node
 --test` as the stage `test:preview` of `npm run check`: it covers the preview host's

@@ -9,7 +9,8 @@
     "/en/h/*",
     "/en/s/*",
     "/en/p/*",
-    "/en/tables/*"
+    "/en/tables/*",
+    "/api/*"
   ],
   "build": [
     {

@@ -259,6 +259,91 @@ const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
     'a route names /mcp, which is reserved for the ai-mcp task'
   );
 
+  /* The read API (CONTRACTS.md section 6): the answers are pinned in docs/fixtures/api/v1/,
+     the route and the operations of preview/api/openapi.json are the ones the section lists.
+     The static bulk catalog is listed apart: it is not an operation. */
+  console.log('read API');
+  ok(
+    /^Fixtures:[^\n]*(\n[^\n]+)*docs\/fixtures\/api\/v1\//m.test(contractsText),
+    "CONTRACTS.md's fixture list does not name docs/fixtures/api/v1/"
+  );
+  ok(routesFile.include.includes('/api/*'), '_routes.json does not route /api/* to the worker');
+  ok(
+    routesFile.exclude.includes('/api/v1/catalog/*'),
+    '_routes.json does not exclude /api/v1/catalog/* (Pages serves the static catalog)'
+  );
+  {
+    const apiDir = path.join(FIX, 'api', 'v1');
+    const walk = (dir) =>
+      fs
+        .readdirSync(dir, { withFileTypes: true })
+        .flatMap((e) =>
+          e.isDirectory() ? walk(path.join(dir, e.name)) : [path.join(dir, e.name)]
+        );
+    for (const file of walk(apiDir)) {
+      const name = path.relative(apiDir, file).split(path.sep).join('/');
+      if (name === 'catalog.json') continue;
+      let v = null;
+      try {
+        v = JSON.parse(fs.readFileSync(file, 'utf8'));
+      } catch {
+        /* reported below */
+      }
+      ok(
+        v !== null && /^daggerheart-loot\//.test(String(v.format)) && v.version === 1,
+        'docs/fixtures/api/v1/' +
+          name +
+          ' does not parse or does not name its format and version 1'
+      );
+      if (name.startsWith('error-')) {
+        ok(v.format === 'daggerheart-loot/api-error', name + ' is not an error answer');
+      }
+    }
+    const openapi = JSON.parse(
+      fs.readFileSync(path.join(__dirname, '..', 'preview', 'api', 'openapi.json'), 'utf8')
+    );
+    const listed = Object.entries(openapi.paths)
+      .flatMap(([p, ops]) => Object.keys(ops).map((m) => m.toUpperCase() + ' ' + p))
+      .sort();
+    const sec = /^## 6\. [\s\S]*?(?=^## \d|(?![\s\S]))/m.exec(contractsText);
+    ok(sec !== null, 'CONTRACTS.md has no section 6, "The read API"');
+    const documented = [
+      ...new Set((sec ? sec[0] : '').match(/`(?:GET|POST) \/api\/v1\/[^`]*`/g) || [])
+    ]
+      .map((s) => s.slice(1, -1))
+      .sort();
+    ok(
+      JSON.stringify(listed) === JSON.stringify(documented),
+      "openapi.json's operations are not CONTRACTS.md section 6's: " +
+        JSON.stringify(listed) +
+        ' against ' +
+        JSON.stringify(documented)
+    );
+    ok(
+      sec !== null && sec[0].includes('/api/v1/catalog/index.json'),
+      'CONTRACTS.md section 6 does not list the static catalog'
+    );
+    const params = Object.values(openapi.paths)
+      .flatMap((o) => Object.values(o))
+      .flatMap((op) => op.parameters || []);
+    ok(
+      !params.some((p) => p.name === 'format'),
+      'openapi.json has a format parameter; the API serves the neutral record only'
+    );
+    ok(
+      !(openapi.components && openapi.components.securitySchemes),
+      'openapi.json declares securitySchemes; a T0 operation never does'
+    );
+    for (const needle of [
+      'Access-Control-Allow-Origin',
+      '/api/v1/me/',
+      'Authorization',
+      '/.well-known/oauth-protected-resource/'
+    ]) {
+      ok(contractsText.includes(needle), 'CONTRACTS.md does not mention ' + needle);
+    }
+  }
+
   console.log('record links');
   ok(
     /^Fixtures:[^\n]*(\n[^\n]+)*docs\/fixtures\/urls\/record\.json/m.test(contractsText),

@@ -96,9 +96,9 @@ daggerheart.com
 Крюк для БуксировкиВторичное оружиеУникальноеРанг 1 · Физическое... [namelen=179 namehash=8e833ce1]
 КувалдаОсновное оружиеУникальноеРанг 1 · Физическое · Сила · Впл... [namelen=219 namehash=9bb1d618]
 Кухонный НожОсновное оружиеУникальноеРанг 1 · Физическое · Искус... [namelen=104 namehash=37c0586d]
-ЛассоВторичное оружиеРанг 1 · Физическое · Проворность · Близко ... [namelen=389 namehash=c62cbc47]
+ЛассоВторичное оружиеРанг 1 · Физическое · Проворность · Близко ... [namelen=394 namehash=b11e7f5e]
 Легендарная ВинтовкаОсновное оружиеРанг 4 · Физическое · Проворн... [namelen=192 namehash=9b6e6c33]
-Легендарное ЛассоВторичное оружиеРанг 4 · Физическое · Проворнос... [namelen=403 namehash=96be7789]
+Легендарное ЛассоВторичное оружиеРанг 4 · Физическое · Проворнос... [namelen=408 namehash=0435fc0a]
 Легендарный ДробовикОсновное оружиеРанг 4 · Физическое · Сила · ... [namelen=200 namehash=80f9f8f5]
 Легендарный Малый РевольверВторичное оружиеРанг 4 · Физическое ·... [namelen=195 namehash=e5edd499]
 Легендарный РевольверОсновное оружиеРанг 4 · Физическое · Искусн... [namelen=274 namehash=d4674764]
@@ -114,7 +114,7 @@ daggerheart.com
 Поиск по названию или описанию...
 Походная ПалкаОсновное оружиеУникальноеРанг 1 · Физическое · Инс... [namelen=104 namehash=3a51d3a7]
 Продвинутая ВинтовкаОсновное оружиеРанг 3 · Физическое · Проворн... [namelen=191 namehash=83743abe]
-Продвинутое ЛассоВторичное оружиеРанг 3 · Физическое · Проворнос... [namelen=403 namehash=635525d7]
+Продвинутое ЛассоВторичное оружиеРанг 3 · Физическое · Проворнос... [namelen=408 namehash=f3cbc901]
 Продвинутый ДробовикОсновное оружиеРанг 3 · Физическое · Сила · ... [namelen=199 namehash=1d19ee8a]
 Продвинутый Малый РевольверВторичное оружиеРанг 3 · Физическое ·... [namelen=195 namehash=b1bcb8fc]
 Продвинутый РевольверОсновное оружиеРанг 3 · Физическое · Искусн... [namelen=273 namehash=10ed0ebb]
@@ -140,7 +140,7 @@ daggerheart.com
 Тёмное сердце Андалурии
 УдочкаОсновное оружиеУникальноеРанг 1 · Физическое · Проворность... [namelen=96 namehash=e7227f4e]
 Улучшенная ВинтовкаОсновное оружиеРанг 2 · Физическое · Проворно... [namelen=190 namehash=d377d394]
-Улучшенное ЛассоВторичное оружиеРанг 2 · Физическое · Проворност... [namelen=402 namehash=1270b7b0]
+Улучшенное ЛассоВторичное оружиеРанг 2 · Физическое · Проворност... [namelen=407 namehash=14ab8d8d]
 Улучшенный ДробовикОсновное оружиеРанг 2 · Физическое · Сила · Б... [namelen=198 namehash=90491c0a]
 Улучшенный Малый РевольверВторичное оружиеРанг 2 · Физическое · ... [namelen=194 namehash=612a394a]
 Улучшенный РевольверОсновное оружиеРанг 2 · Физическое · Искусно... [namelen=272 namehash=a07d899e]
@@ -208,7 +208,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/other_frames/f
 
 ## en :: controls
 ?About this data
-Advanced LassoSecondary weaponTier 3 · Physical · Agility · Very... [namelen=411 namehash=6bcb8afe]
+Advanced LassoSecondary weaponTier 3 · Physical · Agility · Very... [namelen=416 namehash=bd7622dc]
 Advanced RevolverPrimary weaponTier 3 · Physical · Finesse · Far... [namelen=231 namehash=3b506821]
 Advanced RiflePrimary weaponTier 3 · Physical · Agility · Very F... [namelen=150 namehash=addad050]
 Advanced ShotgunPrimary weaponTier 3 · Physical · Strength · Ver... [namelen=183 namehash=81bd916f]
@@ -245,7 +245,7 @@ Forge PokerPrimary weaponUniqueTier 1 · Physical · Strength · Ve... [namelen=
 Frames
 Grid
 Hope & Fear
-Improved LassoSecondary weaponTier 2 · Physical · Agility · Very... [namelen=411 namehash=d1616c15]
+Improved LassoSecondary weaponTier 2 · Physical · Agility · Very... [namelen=416 namehash=2fa750c0]
 Improved RevolverPrimary weaponTier 2 · Physical · Finesse · Far... [namelen=231 namehash=f12108ab]
 Improved RiflePrimary weaponTier 2 · Physical · Agility · Very F... [namelen=150 namehash=2d1b910f]
 Improved ShotgunPrimary weaponTier 2 · Physical · Strength · Ver... [namelen=183 namehash=51693d3b]
@@ -253,9 +253,9 @@ Improved Small RevolverSecondary weaponTier 2 · Physical · Fines... [namelen=1
 Install as an app
 Iron SkilletPrimary weaponUniqueTier 1 · Physical · Strength · M... [namelen=92 namehash=8b56837d]
 Large ForkSecondary weaponUniqueTier 1 · Physical · Agility · Me... [namelen=154 namehash=788a733a]
-LassoSecondary weaponTier 1 · Physical · Agility · Very Close · ... [namelen=400 namehash=26b4189c]
+LassoSecondary weaponTier 1 · Physical · Agility · Very Close · ... [namelen=405 namehash=3804599f]
 Leather ApronArmorUniqueTier 1 · Thresholds 6/13 · Armor 3
-Legendary LassoSecondary weaponTier 4 · Physical · Agility · Ver... [namelen=412 namehash=b291e90b]
+Legendary LassoSecondary weaponTier 4 · Physical · Agility · Ver... [namelen=417 namehash=4be5e266]
 Legendary RevolverPrimary weaponTier 4 · Physical · Finesse · Fa... [namelen=233 namehash=58001a0b]
 Legendary RiflePrimary weaponTier 4 · Physical · Agility · Very ... [namelen=152 namehash=cf7a641e]
 Legendary ShotgunPrimary weaponTier 4 · Physical · Strength · Ve... [namelen=185 namehash=6a87c4c6]

@@ -61,6 +61,11 @@ i/
 # names.json is the preview host's name map, generated and published the same
 # way (docs/specs/CONTRACTS.md section 4); nothing reads it off disk before a build.
 /names.json
+# apidata/ (internal projections of the read API) and api/v1/catalog/ (its public bulk
+# catalog) are rendered from data.js by tools/api-data.mjs, which tools/build.js runs;
+# published, never committed, never hand-edited (.claude/hooks/edit-guard.mjs).
+/apidata/
+/api/
 # catalog-index.csv is catalog.csv without its text, generated and published
 # the same way.
 /catalog-index.csv

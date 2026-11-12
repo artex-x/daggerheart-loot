@@ -9,7 +9,8 @@ update the golden fixtures, the tests, this file and `llms.txt` together.
 
 Fixtures: `docs/fixtures/urls/routes.json`, `docs/fixtures/urls/paths.json`
 (section 1), `docs/fixtures/urls/preview.json` (section 5),
-`docs/fixtures/urls/record.json` (section 5), `docs/fixtures/import/` (section 4).
+`docs/fixtures/urls/record.json` (section 5), `docs/fixtures/import/` (section 4),
+`docs/fixtures/api/v1/` (section 6).
 Checked by `tests/contracts.js`. `docs/fixtures/share/records.json` is not a
 contract fixture in this sense - it is `share.test.ts`'s own golden,
 regenerated from `dist/` by `tools/capture-share-fixture.mjs` and last
@@ -464,7 +465,11 @@ path answers `404.html` with status 404 (an unknown record id `/i/zzzz` too). A 
 `en/index.html` to `en/`), so every frozen `.html` URL keeps opening through
 one redirect. The path `/mcp` and every path under it are reserved for the
 task `ai-mcp`; until then `/mcp` answers the 404 page, and the deploy refuses a
-published `mcp`.
+published `mcp`. The path `/api/` is reserved for the read API (section 6), whose
+static part is `/api/v1/catalog/`; the deploy refuses any other published file under
+`api/`. `/.well-known/oauth-protected-resource/` is reserved for the account tier of
+that task, and the deploy refuses a published file there. `apidata/` is internal:
+the projections of the worker, changed without notice, like `img/thumb/`.
 
 **The record link.** The app and every tool hand out a record as
 `<site>i/<id>?v=<v>` in Russian and `<site>i/en/<id>?v=<v>` in English
@@ -512,11 +517,108 @@ the page has read its card; a navigation drops it.
 The host ignores every query. A path run (an id, a token, a table or a
 tail) past 2048 characters reads as empty. Only `GET` and `HEAD` are
 answered; any other method answers 405 with `Allow: GET, HEAD`.
-`preview/public/_routes.json` sends only these families to the worker; every
-other path is a static file of the site or the 404 page. A deployment or
+`preview/public/_routes.json` sends only these families and the read API (`/api/*`,
+section 6) to the worker; every other path is a static file of the site or the 404 page. A deployment or
 branch host answers 301 to the same path and query on the production host
 for a family path. The fixture is `docs/fixtures/urls/preview.json`: `routes`
 is the routes file's list, `build` holds the links the app hands out, `serve`
 the host's answers (a `static` row is a path Pages serves, not the worker;
 `app` is the card page's redirect target, the answer when the app document
 cannot be read).
+
+## 6. The read API
+
+A public, read-only API on the site's host, served by the same stateless worker
+as the link cards (`preview/api/`, `preview/api/openapi.json`; decisions "The
+read API and MCP are one stateless worker over build-time projections", "The app
+keeps its logic; the API runs the same pure modules" and "API v1 is public read,
+frozen, with a v2 beside it for a break"). It needs no key. Every operation is
+tier T0: it ignores an `Authorization` header and never forwards it, so every
+Supabase read runs as the anon reader and an answer never depends on the caller.
+Fixtures: `docs/fixtures/api/v1/`, checked by `preview/api/api.test.mjs` byte for
+byte and by `tests/contracts.js`.
+
+| Operation | Answer |
+|---|---|
+| `GET /api/v1/openapi.json` | the OpenAPI 3.1 description |
+| `GET /api/v1/rolls` | `daggerheart-loot/api-rolls` v1 |
+| `POST /api/v1/rolls/{section}` | `daggerheart-loot/api-roll` v1 |
+| `GET /api/v1/tables` | `daggerheart-loot/api-tables` v1 |
+| `GET /api/v1/tables/{table}` | `daggerheart-loot/api-table` v1; `part` is required on `eq_weapon`, `eq_secondary` and `eq_armor` |
+| `GET /api/v1/records/{id}` | `daggerheart-loot/record` v1 |
+| `GET /api/v1/homebrew-items/{uuid}` | `daggerheart-loot/record` v1 |
+| `GET /api/v1/shared-lists/{token}` | `daggerheart-loot/api-shared-list` v1 |
+
+The bulk catalog is not an operation: `/api/v1/catalog/index.json`
+(`daggerheart-loot/api-catalog` v1) names the absolute URLs of its chunk files
+`/api/v1/catalog/<n>.json` (`daggerheart-loot/api-catalog-chunk` v1), and lists
+every catalog record as `{ id, rev, chunk }`. They are static files that Pages
+serves (`_routes.json` excludes the prefix), so a pull costs no Functions request.
+A client compares `data_version` and each `rev` with what it holds and reads only
+the chunks of the changed ids; a chunk whose `data_version` differs from the
+index's, or a chunk URL that answers 404, means a deploy happened between the
+reads, and the client reads the index again. Frozen: the index URL, both schemas,
+the `rev` rule (an opaque string, compared for equality only, changed whenever the
+record's JSON changes, and possibly at other times) and each `chunks` entry being
+an absolute URL. Not frozen: the chunk names, their count and the ids a chunk
+holds. A miss under `/api/v1/catalog/` is the 404 page of Pages, not JSON. The
+files answer `Access-Control-Allow-Origin: *` from Pages, which
+`tools/check-site.mjs` holds for the index and for one `img/` picture.
+
+**Frozen at v1.** The paths, the parameter names, the field names, the values of
+each answer's `format` and the CORS rule. A new optional parameter, a new field, a
+new resource and a wider value list change in place; anything else is `/api/v2/`
+beside v1. A client ignores unknown fields. A client that meets an error `code` it
+does not know acts on the HTTP status; a `code` keeps its status and meaning for
+good. Every answer names its `format` and `version`.
+
+**Answers.** JSON, `Content-Type: application/json; charset=utf-8`. Every text a
+person reads is a pair `{ "ru", "en" }` built by the app's own functions: an empty
+Russian side takes the English text, English never takes Russian. The error answer
+is `{ "format": "daggerheart-loot/api-error", "version": 1, "error": { "code",
+"message" } }`; the message is English, names a field and never echoes a value.
+Projection answers carry `ETag: "<data_version>"` (the OpenAPI document: its version and
+a hash of its bytes) and `Cache-Control: public,
+max-age=300` and answer 304 to a matching `If-None-Match`; rolls, homebrew items and
+shared lists are `no-store`.
+
+| Status | `code` | When |
+|---|---|---|
+| 400 | `bad_request` | a parameter or body field fails its schema; the message names the field |
+| 404 | `not_found` | an unknown path, section, table, part, record id, homebrew id or share token |
+| 405 | `method_not_allowed` | another method; `Allow` names the allowed ones, `OPTIONS` included |
+| 413 | `too_large` | a request body past 4096 bytes |
+| 415 | `unsupported_media_type` | a `POST` body that is not `application/json` |
+| 422 | `answer_too_large` | a Supabase answer past 65536 bytes; the message gives the app link |
+| 503 | `unavailable` | a file or Supabase read failed, timed out or was invalid; a second `data_version` mismatch |
+
+The check order, pinned by the fixtures: the host guard's 301 (a deployment host or
+a branch alias; the one answer without the JSON headers), `OPTIONS` 204, the path
+404, the method 405, the section or table id 404, 415, 413, then the body and
+schema 400. A path run past 2048 characters reads as empty.
+
+**CORS.** Every answer under `/api/` carries `Access-Control-Allow-Origin: *`, none
+carries `Access-Control-Allow-Credentials` or `Vary: Origin`, and every worker answer
+(all of `/api/` outside `/api/v1/catalog/`) also carries `X-Content-Type-Options:
+nosniff` and a CSP with `sandbox`. `OPTIONS` on bare `/api` and on any path under
+`/api/` outside `/api/v1/catalog/` answers 204 with
+`Access-Control-Allow-Methods: GET, POST, OPTIONS`,
+`Access-Control-Allow-Headers: Content-Type` and `Access-Control-Max-Age: 86400`,
+and reads no file. Each preflight is one Functions request on the shared quota.
+`_headers` never carries an `Access-Control-Allow-Origin` line.
+
+**Reserved.** `/api/v1/me/` is reserved for the account tier. It holds no data in
+v1, answers the JSON 404, and its 404 and preflight carry `*` only because it is
+reserved; v1 promises no CORS rule for it, and the account tier replaces both
+answers with an explicit `Origin` allowlist. `/mcp` stays reserved (section 5).
+
+**Rights.** Every record carries `rights.license`, `dpcgl` or `owner`, read at build
+time from `docs/rights/records.json` (decision "Game text rights follow a per-record
+SRD audit"); a table with `reviewed` null (not yet accepted) makes every record `owner`; the table is accepted since 2026-11-12. `dpcgl`
+means the English text is SRD 2.0 Public Game Content; the Russian text is a
+third-party translation the value does not cover. A homebrew item is `owner`.
+
+`apidata/` holds the internal projections the worker reads (`rolls.json`,
+`tables.json`, `cards.json`, `roll/`, `table/`, `records/index.json`,
+`version.json`). It is published beside the site and changed without notice, like
+`img/thumb/`; nothing outside the worker binds to it, and it is not a contract.

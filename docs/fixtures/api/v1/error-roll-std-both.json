@@ -1,0 +1,1 @@
+{"format":"daggerheart-loot/api-error","version":1,"error":{"code":"bad_request","message":"Send exactly one of the fields dice and total."}}

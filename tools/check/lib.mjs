@@ -100,7 +100,8 @@ export const STAGES = [
   },
   {
     name: 'test:preview',
-    command: 'node --test --test-reporter=dot preview/worker.test.mjs'
+    command:
+      'node --import ./tools/ts-hooks.mjs --test --test-reporter=dot preview/worker.test.mjs preview/api/api.test.mjs tools/api-data.test.mjs'
   },
   {
     name: 'test:artwork',

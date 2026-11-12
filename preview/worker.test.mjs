@@ -1135,7 +1135,7 @@ describe('the Pages control files', () => {
     assert.deepEqual(routes, {
       version: 1,
       include: FIXTURE.routes,
-      exclude: ['/tables', '/tables/', '/en/tables', '/en/tables/']
+      exclude: ['/tables', '/tables/', '/en/tables', '/en/tables/', '/api/v1/catalog/*']
     });
     assert.ok(!FIXTURE.routes.some((r) => r.startsWith('/mcp') || r.startsWith('/en/mcp')));
   });

@@ -11,11 +11,15 @@
 const ENV = import.meta.env as Partial<ImportMetaEnv> | undefined;
 const PROJECT = ENV?.VITE_SUPABASE_URL ?? '';
 
+/** Returns the public address of the bucket's files of a Supabase project URL; empty for
+ *  no project, where no own item exists. The read API's worker passes `env.SUPABASE_URL`. */
+export function artBaseOf(project: string): string {
+  return project ? `${project.replace(/\/+$/, '')}/storage/v1/object/public/homebrew-art/` : '';
+}
+
 /** The public address of the bucket's files; empty in a build with no sign-in, where no
  *  own item exists. */
-export const ART_BASE: string = PROJECT
-  ? `${PROJECT.replace(/\/+$/, '')}/storage/v1/object/public/homebrew-art/`
-  : '';
+export const ART_BASE: string = artBaseOf(PROJECT);
 
 const OWN = /^p\/[0-9a-f]{32}\.(webp|jpg)$/;
 const CATALOG = /^[A-Za-z0-9_-]+\.webp$/;

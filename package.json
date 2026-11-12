@@ -35,7 +35,7 @@
     "limits:set": "node tools/supabase/limits.mjs",
     "restore:drill": "node tools/supabase/restore-drill.mjs",
     "restore:prod": "node tools/supabase/restore-prod.mjs",
-    "e2e": "node --env-file-if-exists=.env.test.local --import ./tests/e2e/ts-hooks.mjs tests/e2e/run.mjs"
+    "e2e": "node --env-file-if-exists=.env.test.local --import ./tools/ts-hooks.mjs tests/e2e/run.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

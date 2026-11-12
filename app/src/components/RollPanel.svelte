@@ -3,7 +3,7 @@
      read what came up.
 
      Whole tables (Wondrous, Dread, The Dragon's Vault and the other supplements
-     of `ROLL_TABLE` in App.svelte) roll here directly; Vault of Ages, Communities
+     of `ROLL_TABLE` in lib/rollTables.ts) roll here directly; Vault of Ages, Communities
      and Many Worlds Tavern roll inside a part of one, and pass a `picker` that
      chooses which part. Core rules and the alternate tables roll several cards at
      once and get their own panels; what they share with this one is the number

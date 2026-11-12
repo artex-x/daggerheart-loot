@@ -1,0 +1,526 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Daggerheart Loot read API",
+    "version": "1.0.0",
+    "summary": "Rolls, tables, records, homebrew items and shared lists of the Daggerheart loot catalog.",
+    "description": "A public, read-only API over the catalog of daggerheart-loot.pages.dev. Every operation is T0: it needs no key, ignores an Authorization header and never forwards it, so an answer never depends on the caller.\n\nFair use: cache the lists (rolls, tables, the catalog) and send at most one request per user action. All Functions requests of the site share one daily quota (100,000); a quota burn stops this API and the link cards until 00:00 UTC, and the app keeps working.\n\nClients must ignore unknown fields: v1 widens in place (new optional parameters, fields and resources) and never removes or renames. A break is /api/v2/ beside v1. A client that meets an error `code` it does not know acts on the HTTP status.\n\nText: every text a person reads is a pair { \"ru\", \"en\" } built by the app's own functions; an empty Russian side takes the English text. Record text is a Markdown subset (`text`) with a plain-text twin (`plain`). Homebrew text and list notes are user content in the same Markdown subset: a client escapes them before display.\n\nRights: each record carries `rights.license`, `dpcgl` or `owner`. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at https://www.daggerheart.com. There are no previous modifications by others. Daggerheart © Darrington Press. This project is not affiliated with, or endorsed by, Darrington Press or Critical Role. The Russian text is credited by source (README.md, \"Sources\") and carries no license claim.\n\nCORS: every answer under /api/v1/ carries Access-Control-Allow-Origin: * and never Access-Control-Allow-Credentials, so a browser tool calls the API directly. OPTIONS on any path under /api/ outside /api/v1/catalog/ answers 204 with Access-Control-Allow-Methods: GET, POST, OPTIONS, Access-Control-Allow-Headers: Content-Type and Access-Control-Max-Age: 86400. Each preflight is one Functions request on the shared quota; Max-Age lets a browser reuse it. /api/v1/me/ is reserved for a later account tier, holds no data in v1, carries * only for that reason, and will take an Origin allowlist.\n\nBulk catalog: GET /api/v1/catalog/index.json lists every catalog record as { id, rev, chunk } with the absolute URLs of the chunk files (schemas CatalogIndex and CatalogChunk). The files are static and cost no Functions request. Sync rule: read the index; if data_version equals the one you hold, stop; else read again each record whose rev differs from yours, by reading its chunk, and drop each id the index no longer lists. rev is an opaque string, compared for equality only: it changes whenever the record changes and may change at other times. A chunk whose data_version differs from the index's, or a chunk URL that answers 404, means a deploy happened between your reads: read the index again and start over. Chunk names, their count and the ids a chunk holds are not frozen; follow the index.\n\nShared lists and homebrew items hold at most 65536 bytes of Supabase answer; a larger one answers 422 with the app link. At the longest text 13 homebrew entries fit in a shared list; with empty notes 399 catalog entries fit on a players' link and 339 on a GM link.",
+    "license": { "name": "MIT for the code; game text rights per record" }
+  },
+  "servers": [{ "url": "https://daggerheart-loot.pages.dev" }],
+  "paths": {
+    "/api/v1/openapi.json": {
+      "get": {
+        "operationId": "getOpenApi",
+        "summary": "Read this description.",
+        "description": "Returns this OpenAPI 3.1 document.",
+        "responses": {
+          "200": {
+            "description": "The document.",
+            "content": { "application/json": { "schema": { "type": "object" } } }
+          }
+        }
+      }
+    },
+    "/api/v1/rolls": {
+      "get": {
+        "operationId": "listRolls",
+        "x-mcp-tool": "list_rolls",
+        "summary": "List the roll sections.",
+        "description": "Returns the twelve roll sections with their mode, parts and options. Cache it: it changes with a data deploy only.",
+        "responses": {
+          "200": {
+            "description": "The sections.",
+            "headers": { "ETag": { "schema": { "type": "string" } } },
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Rolls" } }
+            }
+          },
+          "304": { "description": "Not modified." },
+          "503": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/api/v1/rolls/{section}": {
+      "post": {
+        "operationId": "roll",
+        "x-mcp-tool": "roll",
+        "summary": "Roll a section or resolve a typed number.",
+        "description": "Rolls the section's dice and answers the records the app's panel would draw, or resolves the number you type. The body is JSON only (415 otherwise) and at most 4096 bytes (413); an empty body reads as {}. Modes: std (exactly one of dice 1-5 and total 1-60; sources and kinds subsets), alt (rarity; hope and fear 1-12, both or neither; kinds), table (value) and part (part required; value). Results keep the app's order. The answer is never cached.",
+        "parameters": [
+          {
+            "name": "section",
+            "in": "path",
+            "required": true,
+            "description": "A section id from /api/v1/rolls, or its old id.",
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/RollBody" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The roll.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/RollAnswer" } }
+            }
+          },
+          "400": { "$ref": "#/components/responses/Error" },
+          "404": { "$ref": "#/components/responses/Error" },
+          "405": { "$ref": "#/components/responses/Error" },
+          "413": { "$ref": "#/components/responses/Error" },
+          "415": { "$ref": "#/components/responses/Error" },
+          "503": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/api/v1/tables": {
+      "get": {
+        "operationId": "listTables",
+        "x-mcp-tool": "list_tables",
+        "summary": "List the catalog tables.",
+        "description": "Returns every catalog table with its parts, row count and links. An equipment table (eq_weapon, eq_secondary, eq_armor) is read by tier part only.",
+        "responses": {
+          "200": {
+            "description": "The tables.",
+            "headers": { "ETag": { "schema": { "type": "string" } } },
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Tables" } }
+            }
+          },
+          "304": { "description": "Not modified." },
+          "503": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/api/v1/tables/{table}": {
+      "get": {
+        "operationId": "getTable",
+        "x-mcp-tool": "get_table",
+        "summary": "Read one table's rows.",
+        "description": "Returns a table's rows in the tables page's order, without stats (read a record for those). On eq_weapon, eq_secondary and eq_armor the part (the tier: 1, 2, 3, 4 or A) is required; without it the answer is 400 and names the part list. On a table with parts, part limits the rows to that part.",
+        "parameters": [
+          {
+            "name": "table",
+            "in": "path",
+            "required": true,
+            "description": "A table id from /api/v1/tables.",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "part",
+            "in": "query",
+            "required": false,
+            "description": "A part id from the table's parts.",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The rows.",
+            "headers": { "ETag": { "schema": { "type": "string" } } },
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Table" } }
+            }
+          },
+          "304": { "description": "Not modified." },
+          "400": { "$ref": "#/components/responses/Error" },
+          "404": { "$ref": "#/components/responses/Error" },
+          "503": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/api/v1/records/{id}": {
+      "get": {
+        "operationId": "getRecord",
+        "x-mcp-tool": "get_record",
+        "summary": "Read one catalog record.",
+        "description": "Returns the neutral record daggerheart-loot/record v1 of a catalog id. To read the whole catalog use the bulk catalog instead: it costs no Functions request.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "A catalog record id such as ci12 or q23.",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The record.",
+            "headers": { "ETag": { "schema": { "type": "string" } } },
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Record" } }
+            }
+          },
+          "304": { "description": "Not modified." },
+          "404": { "$ref": "#/components/responses/Error" },
+          "503": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/api/v1/homebrew-items/{uuid}": {
+      "get": {
+        "operationId": "getHomebrewItem",
+        "x-mcp-tool": "get_homebrew_item",
+        "summary": "Read one homebrew item.",
+        "description": "Returns the neutral record of a homebrew item that its author shares by link. The id is the item's uuid; the record's key is its hb_ key. The text is user content: a client escapes it before display. An item with very many related rows answers 422 with the app link. The answer is never cached.",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "description": "The item's id.",
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The item.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Record" } }
+            }
+          },
+          "404": { "$ref": "#/components/responses/Error" },
+          "422": { "$ref": "#/components/responses/Error" },
+          "503": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/api/v1/shared-lists/{token}": {
+      "get": {
+        "operationId": "getSharedList",
+        "x-mcp-tool": "get_shared_list",
+        "summary": "Read one shared list.",
+        "description": "Returns the list behind a share link, as the link's audience sees it: a players' link leaves out the GM note and the GM-only entries. Notes are user content: a client escapes them before display. A list past 65536 bytes of source answer is 422 with the app link. The answer is never cached.",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "description": "The 43-character share token.",
+            "schema": { "type": "string", "minLength": 43, "maxLength": 43 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The list.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/SharedList" } }
+            }
+          },
+          "404": { "$ref": "#/components/responses/Error" },
+          "422": { "$ref": "#/components/responses/Error" },
+          "503": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    }
+  },
+  "components": {
+    "responses": {
+      "Error": {
+        "description": "An error. The code is stable; a client that does not know it acts on the HTTP status.",
+        "content": {
+          "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
+        }
+      }
+    },
+    "schemas": {
+      "Pair": {
+        "type": "object",
+        "required": ["ru", "en"],
+        "properties": { "ru": { "type": "string" }, "en": { "type": "string" } },
+        "description": "A text in both languages."
+      },
+      "Error": {
+        "type": "object",
+        "required": ["format", "version", "error"],
+        "properties": {
+          "format": { "const": "daggerheart-loot/api-error" },
+          "version": { "const": 1 },
+          "error": {
+            "type": "object",
+            "required": ["code", "message"],
+            "properties": {
+              "code": {
+                "enum": [
+                  "bad_request",
+                  "not_found",
+                  "method_not_allowed",
+                  "too_large",
+                  "unsupported_media_type",
+                  "answer_too_large",
+                  "unavailable"
+                ]
+              },
+              "message": { "type": "string" }
+            }
+          }
+        },
+        "examples": [
+          {
+            "format": "daggerheart-loot/api-error",
+            "version": 1,
+            "error": { "code": "not_found", "message": "The record does not exist." }
+          }
+        ]
+      },
+      "Rights": {
+        "type": "object",
+        "required": ["license", "notice"],
+        "description": "The rights of a record's English text. dpcgl means the English text is SRD 2.0 Public Game Content. The Russian text is a third-party translation that the value does not cover; it is credited by source. owner means the text belongs to its rights holders (or to the homebrew author) and is served as a play aid. The notice is English only.",
+        "properties": {
+          "license": { "enum": ["dpcgl", "owner"] },
+          "notice": { "type": "string" }
+        }
+      },
+      "Record": {
+        "type": "object",
+        "required": [
+          "format",
+          "version",
+          "id",
+          "key",
+          "origin",
+          "kind",
+          "name",
+          "text",
+          "plain",
+          "source",
+          "rights",
+          "path",
+          "table",
+          "roll",
+          "tier",
+          "rarity",
+          "stats",
+          "craft",
+          "set",
+          "refs",
+          "image",
+          "link"
+        ],
+        "description": "daggerheart-loot/record v1. Ignore unknown fields.",
+        "properties": {
+          "format": { "const": "daggerheart-loot/record" },
+          "version": { "const": 1 },
+          "id": {
+            "type": "string",
+            "description": "The sync key: a catalog id, or a homebrew row uuid."
+          },
+          "key": {
+            "type": "string",
+            "description": "The value relation fields hold: equal to id for a catalog record, the hb_ key for a homebrew one."
+          },
+          "origin": { "enum": ["catalog", "homebrew"] },
+          "kind": { "enum": ["item", "consumable", "weapon", "secondary", "armor"] },
+          "name": { "$ref": "#/components/schemas/Pair" },
+          "text": { "$ref": "#/components/schemas/Pair" },
+          "plain": { "$ref": "#/components/schemas/Pair" },
+          "source": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "$ref": "#/components/schemas/Pair" }
+            }
+          },
+          "rights": { "$ref": "#/components/schemas/Rights" },
+          "path": { "$ref": "#/components/schemas/Pair" },
+          "table": { "type": ["string", "null"] },
+          "roll": { "type": ["integer", "null"] },
+          "tier": {
+            "type": ["integer", "string", "null"],
+            "description": "1-4, A or C; never inferred from stats."
+          },
+          "rarity": { "type": ["string", "null"] },
+          "stats": {
+            "type": ["object", "null"],
+            "description": "type, tier, class, trait, range, damage { dice, bonus, type }, burden, armor_score, thresholds { major, severe }, line, alt, statline."
+          },
+          "craft": {
+            "type": "object",
+            "properties": {
+              "into": { "type": "array", "items": { "type": "string" } },
+              "from": { "type": "array", "items": { "type": "string" } }
+            }
+          },
+          "set": {
+            "type": ["object", "null"],
+            "description": "key, name, bonus and members (keys)."
+          },
+          "refs": {
+            "type": "array",
+            "items": { "type": "object" },
+            "description": "Rule cards: key, name, subtitle, text, url."
+          },
+          "image": {
+            "type": ["object", "null"],
+            "description": "full, thumb and card picture URLs; card may be null."
+          },
+          "link": { "$ref": "#/components/schemas/Pair" }
+        }
+      },
+      "Rolls": {
+        "type": "object",
+        "required": ["format", "version", "data_version", "sections"],
+        "properties": {
+          "format": { "const": "daggerheart-loot/api-rolls" },
+          "version": { "const": 1 },
+          "data_version": { "type": "string" },
+          "sections": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "description": "id, ids (old ids that also resolve), name, mode (std, alt, table or part), link, parts [{ id, name, rows }] and options."
+            }
+          }
+        }
+      },
+      "RollBody": {
+        "type": "object",
+        "description": "The fields depend on the section's mode. Unknown fields are ignored.",
+        "properties": {
+          "dice": { "type": "integer", "minimum": 1, "maximum": 5 },
+          "total": { "type": "integer", "minimum": 1, "maximum": 60 },
+          "sources": { "type": "array", "items": { "enum": ["core", "hnf"] } },
+          "kinds": { "type": "array", "items": { "enum": ["item", "consumable"] } },
+          "rarity": { "enum": ["common", "uncommon", "rare", "very_rare", "legendary"] },
+          "hope": { "type": "integer", "minimum": 1, "maximum": 12 },
+          "fear": { "type": "integer", "minimum": 1, "maximum": 12 },
+          "part": { "type": "string" },
+          "value": { "type": "integer", "minimum": 1 }
+        },
+        "examples": [{ "dice": 3, "sources": ["core"], "kinds": ["item"] }]
+      },
+      "RollAnswer": {
+        "type": "object",
+        "required": ["format", "version", "section", "dice", "results"],
+        "properties": {
+          "format": { "const": "daggerheart-loot/api-roll" },
+          "version": { "const": 1 },
+          "section": { "type": "string" },
+          "part": { "type": "string" },
+          "dice": {
+            "type": "object",
+            "description": "kind nd12 (count, faces, total), typed (total), duality (hope, fear, crit) or pick (max, value)."
+          },
+          "bump": {
+            "type": "object",
+            "description": "On a critical success of the alt mode, the rarity one step up; absent at the top."
+          },
+          "results": {
+            "type": "array",
+            "maxItems": 4,
+            "items": {
+              "type": "object",
+              "required": ["record", "n"],
+              "properties": {
+                "record": { "$ref": "#/components/schemas/Record" },
+                "n": { "type": "integer" },
+                "col": { "enum": ["hope", "fear"] }
+              }
+            }
+          }
+        }
+      },
+      "Tables": {
+        "type": "object",
+        "required": ["format", "version", "data_version", "tables"],
+        "properties": {
+          "format": { "const": "daggerheart-loot/api-tables" },
+          "version": { "const": 1 },
+          "data_version": { "type": "string" },
+          "tables": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "description": "id, ids, name, book, rows, parts, part_required, link and roll (the roll section id that rolls the table, or null)."
+            }
+          }
+        }
+      },
+      "Table": {
+        "type": "object",
+        "required": ["format", "version", "data_version", "table", "rows"],
+        "properties": {
+          "format": { "const": "daggerheart-loot/api-table" },
+          "version": { "const": 1 },
+          "data_version": { "type": "string" },
+          "table": { "type": "string" },
+          "part": { "type": "string" },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "description": "id, n, name, kind, tier, rarity, part and rung (a rung of an upgrade line: in the table, never in a roll)."
+            }
+          }
+        }
+      },
+      "SharedList": {
+        "type": "object",
+        "required": ["format", "version", "audience", "name", "entries"],
+        "properties": {
+          "format": { "const": "daggerheart-loot/api-shared-list" },
+          "version": { "const": 1 },
+          "audience": { "enum": ["player", "gm"] },
+          "name": { "type": "string" },
+          "money_mode": { "type": "string" },
+          "note": { "type": "string", "description": "The players' note: user content." },
+          "gm_note": { "type": "string", "description": "Only on a GM link." },
+          "dropped": {
+            "type": "integer",
+            "description": "Entries this catalog version does not know."
+          },
+          "entries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "description": "id, key, origin, count, price_coins, note, name (catalog) or record (homebrew); on a GM link also gm_note and gm_only."
+            }
+          }
+        }
+      },
+      "CatalogIndex": {
+        "type": "object",
+        "required": ["format", "version", "data_version", "chunks", "records"],
+        "description": "GET /api/v1/catalog/index.json, a static file. Frozen: this URL, both schemas, the rev rule and the absolute chunk URLs.",
+        "properties": {
+          "format": { "const": "daggerheart-loot/api-catalog" },
+          "version": { "const": 1 },
+          "data_version": { "type": "string" },
+          "chunks": { "type": "array", "items": { "type": "string", "format": "uri" } },
+          "records": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "rev", "chunk"],
+              "properties": {
+                "id": { "type": "string" },
+                "rev": {
+                  "type": "string",
+                  "description": "Opaque; compare for equality only."
+                },
+                "chunk": { "type": "integer", "description": "An index into chunks." }
+              }
+            }
+          }
+        }
+      },
+      "CatalogChunk": {
+        "type": "object",
+        "required": ["format", "version", "data_version", "records"],
+        "properties": {
+          "format": { "const": "daggerheart-loot/api-catalog-chunk" },
+          "version": { "const": 1 },
+          "data_version": { "type": "string" },
+          "records": { "type": "array", "items": { "$ref": "#/components/schemas/Record" } }
+        }
+      }
+    }
+  }
+}

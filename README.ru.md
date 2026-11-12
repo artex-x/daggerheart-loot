@@ -350,7 +350,7 @@ tools/share-card.mjs        отрисовка карточки для стра�
 tools/app-documents.js      пишет в dist/ документы приложения для записей и английского корня
 tools/build-pages.js        генератор pages/ из pages/src/
 tools/derived.js            как собираются производные файлы
-preview/                    воркер хоста сайта: карточки ссылок для мессенджеров (Cloudflare Pages)
+preview/                    воркер хоста сайта: карточки ссылок для мессенджеров и API для чтения (Cloudflare Pages)
 old-host/                   переадресация со старого адреса и sw.js, который удаляет себя
 tests/                tests/*.js (5 наборов на fs/node) и tests/app/*.js
                       (7 наборов в реальном Chrome против dist-test/) и запускалка
@@ -590,7 +590,7 @@ d119 совпадает со степенями свободы, перекос �
 
 ## Права
 
-Код (`app/`, `tools/`, `tests/`) распространяется по лицензии MIT - см.
+Код (`app/`, `tools/`, `tests/`, `preview/`) распространяется по лицензии MIT - см.
 [LICENSE](LICENSE).
 
 **Изображения** в `img/` и `og/` сгенерированы автором проекта и являются
@@ -599,8 +599,10 @@ d119 совпадает со степенями свободы, перекос �
 **Игровые тексты** принадлежат правообладателям и включены как справочник для
 игры за столом:
 
-- **Core Rulebook** и **Hope & Fear** используются в соответствии с
-  [Darrington Press Community Gaming License](https://darringtonpress.com/license/).
+- Используются в соответствии с
+  [Darrington Press Community Gaming License](https://darringtonpress.com/license/):
+  записи Core, Hope & Fear и фреймов кампаний, текст которых есть в SRD 2.0;
+  каждую из них называет `docs/rights/records.json`.
   25 августа 2026 года вышла версия 2.0: она признаёт Public Game Content
   [Daggerheart SRD 2.0](https://daggerheart.com/srd) и добавляет Hope & Fear в
   число игр, на которые лицензия распространяется. SRD 1.0 остаётся в силе для
@@ -608,9 +610,14 @@ d119 совпадает со степенями свободы, перекос �
 - **Wondrous Environments**, **Dread GM Toolbox**, **Vault of Ages**,
   **The Dragon's Vault**, **The Guide to Arazo's Artifacts**, наборы карточек **Many Worlds Tavern**,
   **Pistolheart**, **The Last Round Table**, **Escape the Veiled Halls**,
-  **Community Magic Items** и **Alternate Loot &
-  Consumable Tables** под эту лицензию не подпадают: это платные и фанатские
-  дополнения, права на тексты которых принадлежат их авторам.
+  **Community Magic Items**, **Alternate Loot &
+  Consumable Tables** и любые записи Core, Hope & Fear и фреймов кампаний,
+  которых нет в SRD 2.0, под эту лицензию не подпадают: права на эти тексты
+  принадлежат их правообладателям.
+
+Русский текст указан по источникам; лицензия на него не заявляется:
+[daggerheart.su](https://ru.daggerheart.su/) для Core, любительский перевод для
+Hope & Fear и фреймов кампаний, таблица сообщества для снаряжения Hope & Fear.
 
 > This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at https://www.daggerheart.com. There are no previous modifications by others.
 

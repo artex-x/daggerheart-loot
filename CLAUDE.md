@@ -129,7 +129,7 @@ Deterministic guards run as Claude Code hooks (`.claude/hooks/`; the table is in
 
 ## Product laws that look negotiable but are not
 
-- The Supabase backend is the only server that stores data; one stateless preview Worker renders link cards and stores nothing. Add no other backend, upload endpoint or paste service.
+- The Supabase backend is the only server that stores data; one stateless Worker renders link cards and answers the read API and the MCP endpoint, and stores nothing. Add no other backend, upload endpoint or paste service.
 - Keep `noindex` while allowing crawling; crawler blocks hide `noindex` and break previews.
 - Never infer equipment tier from stats; use the source book data.
 - Printing is nine 63x88 mm cards per A4 sheet, or sixteen 44x63 mm cards on the opt-in compact sheet. Color and black-and-white are distinct layouts on either sheet; preserve browser-measured fitting. See `FEATURES.md`.

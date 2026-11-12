@@ -362,7 +362,7 @@ Host and tool facts behind this design, kept so nobody re-derives them:
 fingerprint drops every `isExempt()` path - `issues/<id>/` markdown,
 `.claude/README.md`, `docs/specs/` - so an edit confined to those cannot
 arm or break the gate; `tree-key.mjs`), a backgrounded `npm run check` in a subagent (rule 2g, plain or `rtk`-prefixed; only when `agent_id` is in the hook input, because a subagent's background run dies with its turn, while the main session is notified at the exit and the check arms the gate by its own exit), a `npm run check`/`check:built` inside a pipe or redirected to a file (rule 2k - the pipe hands the tool the last stage's status, so a failed check reads as a pass; the redirect hides the stdout the gate needs), and `grep -n`/`tail -c` in a shape `rtk 0.48.0` is measured never to rewrite (`grep -n`: a non-final pipe stage, inside `$(...)`/backtick, or wrapped by `xargs`/`nohup`/`time`; `tail -c`/`--bytes`: any position at all, chain or pipe - it has no byte-offset rewrite) - a bare, chained (`&&`/`;`/`cd`), or pipe-final-stage `grep -n` passes through for RTK's own hook to rewrite; restructure a denied one into `rtk grep`/`rtk read`. **2w** (right after 2j) denies `git status`, `git log` without `-p`/`-u`/`--patch`/`-L`, `git branch`, `git worktree list`, `ls`, `cat`, `grep`, `rg`, `vitest` or `npx vitest` without `--coverage`, `prettier`/`npx prettier` and `eslint`/`npx eslint` in a pipe stage whose next stage is `head` or `tail`, because `rtk 0.48.0` never rewrites a pipe stage that is not the last; the deny names the bounded form (`git log -<n>`, `rtk read <file> --max-lines <n>`, `rtk grep --max <n>`, the command without the pipe) and, for git, `git.exe` in an isolated `agent-*` worktree. Not judged: `git show` and `git diff` (RTK never truncates them, so dropping the pipe raises the output), `npm run <script>` (2k owns `check`), a `--coverage` vitest run (RTK drops the coverage table), `git.exe`, a wrapper (`time`, `nohup`, `xargs`, `env`, `command`; an env-var prefix is judged), a pipe into any program but `head`/`tail`, and a substitution (`docs/decisions/`, 2026-10-01, "An RTK command piped into head or tail is denied when RTK bounds it"). Reminds once per session per command family before a long check, including an unsharded `golden.js`/`sweep.js`/`states.js` call (a bare `states.js` gets its own message: one shard in the background, or CI) - a sharded `run-all.js --shard=n/m` call is not read as the safe form by contrast, it gets the same reminder on its own merits, since a single bin can itself run past the idle-host minute mark (`.claude/README.md`, "Batch size and the fixed cost of a run"). | **block** (+ one allow-and-remind case) |
-| `PreToolUse` | `Edit\|MultiEdit\|Write\|NotebookEdit` | `edit-guard.mjs` | Blocks writes to `data.json`, `catalog.csv`, `names.json`, `catalog-index.csv`, `i/*.html` (with `i/en/*.html`), `en/index.html`, `pages/*.html`, `pages/en/*.html`, `dist/`, `dist-test/`, `package-lock.json`, `tests/app/snapshots/**`, `docs/DECISIONS.md` (the generated index of `docs/decisions/`; the message names `node tools/decisions.js`), and a `supabase/migrations/<file>` that a remote-tracking ref holds (`git fetch --quiet origin` first when a remote `origin` exists - 5 s at most, `GIT_TERMINAL_PROMPT=0`, so a push from another clone is seen - then `git for-each-ref refs/remotes/`, then `git cat-file -e <ref>:<path>`; CI applies every pushed migration, so a pushed one is history - "write a new migration instead"). `lib.mjs`'s `remoteRefsHoldingMigration` is the lookup, shared with rule 2p. No file records applied migrations; a failed or slow fetch reads the local refs as they are, and a repository with no remote ref, or a git failure, blocks no migration (fail open). For `agent_type` `reviewer`, before every other rule: only `Write`, `Edit` or `MultiEdit` on `issues/<id>/reviews/<name>.md` is allowed, and every other write is denied, a path outside the repository included (`docs/decisions/`, 2026-09-27, "The reviewer writes its report to `issues/<id>/reviews/` and nowhere else"). Paths resolve against the session's own checkout, `lib.mjs`'s `checkoutRoot(cwd)`: the nearest ancestor of the payload's `cwd` with a `.git` file (a linked worktree; a nested `.git` directory does not count), when it is the repository root or inside it, else the repository root. The desktop app runs the main checkout's hook copy for a worktree session (measured 2026-09-30: a worktree write reached the main checkout's `.hook-state.json` as `.claude/worktrees/<name>/...`), so the hook file's own location names the wrong checkout. A reviewer's report in a linked worktree resolves against that worktree, because a reviewer dispatched from the main checkout keeps that `cwd` while the task lives in an `agent-*` worktree (measured 2026-10-07); a report in the main checkout from a worktree session is denied. For the generated-file rules, a path outside the session's checkout falls back to the repository root, so a worktree session still cannot write the main checkout's `data.json`. Selftest #301. | **block** |
+| `PreToolUse` | `Edit\|MultiEdit\|Write\|NotebookEdit` | `edit-guard.mjs` | Blocks writes to `data.json`, `catalog.csv`, `names.json`, `catalog-index.csv`, `apidata/` and the root `api/` (the read API's generated projections and bulk catalog, `tools/api-data.mjs`; `preview/api/` stays writable), `i/*.html` (with `i/en/*.html`), `en/index.html`, `pages/*.html`, `pages/en/*.html`, `dist/`, `dist-test/`, `package-lock.json`, `tests/app/snapshots/**`, `docs/DECISIONS.md` (the generated index of `docs/decisions/`; the message names `node tools/decisions.js`), and a `supabase/migrations/<file>` that a remote-tracking ref holds (`git fetch --quiet origin` first when a remote `origin` exists - 5 s at most, `GIT_TERMINAL_PROMPT=0`, so a push from another clone is seen - then `git for-each-ref refs/remotes/`, then `git cat-file -e <ref>:<path>`; CI applies every pushed migration, so a pushed one is history - "write a new migration instead"). `lib.mjs`'s `remoteRefsHoldingMigration` is the lookup, shared with rule 2p. No file records applied migrations; a failed or slow fetch reads the local refs as they are, and a repository with no remote ref, or a git failure, blocks no migration (fail open). For `agent_type` `reviewer`, before every other rule: only `Write`, `Edit` or `MultiEdit` on `issues/<id>/reviews/<name>.md` is allowed, and every other write is denied, a path outside the repository included (`docs/decisions/`, 2026-09-27, "The reviewer writes its report to `issues/<id>/reviews/` and nowhere else"). Paths resolve against the session's own checkout, `lib.mjs`'s `checkoutRoot(cwd)`: the nearest ancestor of the payload's `cwd` with a `.git` file (a linked worktree; a nested `.git` directory does not count), when it is the repository root or inside it, else the repository root. The desktop app runs the main checkout's hook copy for a worktree session (measured 2026-09-30: a worktree write reached the main checkout's `.hook-state.json` as `.claude/worktrees/<name>/...`), so the hook file's own location names the wrong checkout. A reviewer's report in a linked worktree resolves against that worktree, because a reviewer dispatched from the main checkout keeps that `cwd` while the task lives in an `agent-*` worktree (measured 2026-10-07); a report in the main checkout from a worktree session is denied. For the generated-file rules, a path outside the session's checkout falls back to the repository root, so a worktree session still cannot write the main checkout's `data.json`. Selftest #301. | **block** |
 | `PreToolUse` | `Agent\|Task\|SubagentDispatch` | `agent-guard.mjs` | Judges an `implementer` dispatch whose prompt names `TASK: <id>` against `issues/<id>/plan.md` Status: denies when it has no `- Plan review:` line or a malformed one ("declare it"), and for each `required before <batch>` line, the newest `issues/<id>/reviews/plan-<batch>.md` or `plan-<batch>-<n>.md` with a `Verdict:` line (numeric order; `lib.mjs`, `parseReviewHead`) decides: `approve` allows; `fix-then-continue` allows when a Status line `- Plan review findings applied: reviews/<that file>` names it; `replan` denies ("a replan needs a second look"); no such report denies ("dispatch the reviewer"); the deny names the file, each report seen with its verdict, and the dispatch tool (`docs/decisions/`, 2026-09-27, "A plan that changes schema, contracts, stored data or sync is reviewed first"; 2026-10-01, "A plan review's fix-then-continue is applied once, with no second look"). Silent for another agent type, no `TASK:` line, a `TASK: <id>` placeholder, no `plan.md`, and any throw; a resume (`SendMessage`) is not a dispatch. This host's dispatch tool is `Agent`; `Task` and `SubagentDispatch` are other builds' names. | **block** |
 | `PreToolUse` | `Read\|Grep` | `read-guard.mjs` | Denies the Read tool's `file_path`, and the Grep tool's `path` or `glob`, whose last path segment starts with `.env` (case folded, `\` read as `/`), from any checkout, because a `./` pattern in `permissions.deny` binds the session's working directory and an absolute path from a worktree passed it (`docs/decisions/`, 2026-09-27, "The Read and Grep tools are denied `.env` files by a hook, not only by settings"). A Grep by pattern over a directory is not judged ("Known limitations"). A worktree agent is guarded by its worktree's tree, cut from `origin/main`, so a change reaches it only after the push ("Known limitations"). No git and no file read; any throw allows. | **block** |
 | `PostToolUse` | `Bash\|PowerShell` | `check-observer.mjs` | `npm run check:db` from either tool: reads the output from `tool_response.stdout`, else `.output`, else a string response, plus `stderr`; a `check:db: BUSY` line (the local stack lock is held; tested before the FAIL markers, because npm prints its own error lines for exit 3) says BUSY and writes nothing, a `check:db: PASS` line writes `.check-db-cache.json` and says "Commit gate armed for supabase/ and tests/db/", a `check:db: FAIL` line or a failure marker says FAIL, neither says it cannot attribute the run. When a run cannot be attributed (`check:db` without its PASS line, `check` without its coverage summary) but the cache already holds the current tree key, the check's own exit armed the gate (`gate-credit.mjs`), and the line says `PASS - armed by the check's own exit.` An attributed pass does not rewrite a cache that already holds the current key, so a `by: "exit"` record stays. `npm run check` arms from Bash only, as follows. Records a passing `npm run check` against the current tree fingerprint, so the commit gate has something to check against. Accepts a leading `cd <dir> &&` or `cd <dir>;` (PowerShell 5.1 has no `&&`), `set -o pipefail;`, and `rtk `. States the verdict in one line - `PASS` and armed, or passed-but-unattributable - so the result needs no second run to establish. On this host a failed call never reaches it (see "Run a long check"), and no exit-code field reaches it at all. | warn (one line per passing check; silent otherwise) |
@@ -3635,6 +3635,26 @@ every other path is a static file, a `_redirects` rewrite to the app
 document, or `404.html`. A record path `/i/<id>` is the static app document
 with the record's card (task `path-urls`).
 `preview/public/_headers` sends `X-Robots-Tag: noindex` on the text files.
+The same worker answers the read API (task `ai-mcp`, `docs/specs/CONTRACTS.md`
+section 6): `_routes.json` also routes `/api/*` to it and excludes
+`/api/v1/catalog/*`, the public bulk catalog that Pages serves as static files.
+`preview/worker.mjs` hands any path under `/api` to `preview/api/rest.mjs`
+before its language split and its GET and HEAD check; `rest.mjs` has its own
+JSON responder, `service.mjs` holds one function per operation, `read.mjs` the
+byte-capped reads both files share, and `openapi.json` is the description the
+router and the tests follow. The build projections are `apidata/` (internal,
+`env.ASSETS`) and `api/v1/catalog/` (public), rendered by `tools/api-data.mjs`
+from `data.js` and `docs/rights/records.json` with the ts hooks of
+`tools/ts-hooks.mjs`; `node tools/build.js` runs it, and `tests/derived.js`
+runs it with `--check`. The worker bundles the pure modules of `app/src/lib/`
+(the deploy's esbuild maps their `.js` imports to `.ts`). The edge sends
+`Access-Control-Allow-Origin: *` on the static catalog and on `img/`; no
+`_headers` line may add it, because a second value breaks CORS, and
+`tools/check-site.mjs` fails when either lacks it. The worker is the CPU budget
+of `docs/specs/CONTRACTS.md` section 6: a file is read through `env.ASSETS`
+with a 2 s timeout and the read cap of its budget (131072 bytes; 196,608 for
+`apidata/cards.json` and `names.json`), a Supabase answer with a 65536-byte
+cap.
 The worker runs in Pages Functions advanced mode: `preview/public/_worker.js` re-exports
 `preview/worker.mjs`, which draws the cards with `tools/share-card.mjs` and
 reads record text as plain text through `app/src/lib/markup.ts` (no imports;
@@ -3804,6 +3824,19 @@ assembly (`collect`, `guard`, `old-host`); the job's three steps call it.
   `i/` and `i/en/` grow by one document each per record, so at three
   times the records the site is about 19,700 files against Cloudflare's
   20,000 per deployment. The guard prints the count and does not fail on it.
+- The read API adds files (task `ai-mcp`, measured 2026-11-12): `apidata/`
+  and `api/v1/catalog/` hold 105 files today (54 catalog chunks of at most 65536 B,
+  3.97 MiB in all; `apidata/records/index.json` is 11,561 B and
+  `api/v1/catalog/index.json` 70,114 B), and 207 at three times the records
+  (156 chunks; 40,845 B and 218,639 B). The site is then about 19,900 files
+  against 20,000, so about 98 files are left; `tools/api-data.test.mjs` prints
+  both counts. The guard refuses any published file under `api/` outside
+  `api/v1/catalog/` and a published `.well-known/oauth-protected-resource`.
+  `apidata/cards.json` is 43,900 B (131,600 B at three times; its budget is
+  196,608 B). The worker reads each file with the cap of its own budget
+  (`readCapOf` in `preview/api/rest.mjs`; a test holds every `apidata/` budget
+  to its read cap); `api/v1/catalog/index.json` (262,144 B) is above 131072 B
+  too, and the worker does not read it.
 
 - The preview check asks for a 404 card on `s/` and 43 `A`, a well-formed
   token that no list holds, and on `h/00000000-0000-4000-8000-000000000000`,
@@ -3846,6 +3879,27 @@ assembly (`collect`, `guard`, `old-host`); the job's three steps call it.
   routes file keeps the root, the record paths and every non-card route path
   out of Functions, so the burn does not reach them (unverified: a static
   request costs no Functions request).
+- The read API and the cards share the one daily quota of 100,000 Functions
+  requests; the bulk catalog (`api/v1/catalog/`) is static and costs none. A
+  browser client that rolls with `POST` sends a CORS preflight first, one more
+  Functions request: `Access-Control-Max-Age: 86400` lets a browser reuse it
+  (Chromium caps the reuse at 7200 s, Firefox at 86400 s, vendor documentation,
+  not verified here), so a browser tool pays at most one preflight per origin
+  and path per 2 hours on Chromium. A quota burn stops the cards, the API and
+  MCP until 00:00 UTC; the app keeps working.
+- What fits under the 65536-byte cap of a shared list (measured 2026-11-12 with
+  the answer builder of `preview/api/api.test.mjs`): 399 catalog entries with
+  empty notes on a players' link, 339 on a GM link, and 13 homebrew entries
+  with a 1500-character description in each language. A longer list answers 422
+  with the app link.
+- CPU readings to take (owner step, after the landing or on a hand deploy that
+  holds the test project's secrets, `npx wrangler pages deployment tail
+  <full deployment id> --format json`, each case fetched three times): a cold
+  `std` roll with four results (the heaviest: about 30 KB plus up to four
+  64 KB chunks parsed), a record, an `eq_weapon` tier part, and a homebrew item
+  and a shared list sized just under 65536 B. A reading above 5 ms reopens the
+  budgets of `docs/specs/CONTRACTS.md` section 6 (the fallback: record files
+  with one record per line). Write each reading here.
 - A failed read of `index.html` by the worker (a 2 s timeout, a status other
   than 200, more than 65536 bytes, no card markers) draws the card page with
   its redirect to `<site>#/...` and `Referrer-Policy: no-referrer`; the next

@@ -93,6 +93,30 @@ const GOOD = {
   'i/w1.html': { type: 'text/html', body: app('ru', stub('i/w1'), TEXT) },
   'i/en/w1.html': { type: 'text/html', body: app('en', stub('i/en/w1'), TEXT) },
   'en/index.html': { type: 'text/html', body: app('en', EN_TITLE) },
+  'apidata/version.json': {
+    type: 'application/json',
+    body: JSON.stringify({ format: 'daggerheart-loot/api-version', version: 1 })
+  },
+  'api/v1/catalog/index.json': {
+    type: 'application/json',
+    body: JSON.stringify({
+      format: 'daggerheart-loot/api-catalog',
+      version: 1,
+      chunks: [SITE + 'api/v1/catalog/0.json'],
+      records: [{ id: 'ci1', rev: 'a', chunk: 0 }]
+    })
+  },
+  'api/v1/catalog/0.json': {
+    type: 'application/json',
+    body: JSON.stringify({
+      format: 'daggerheart-loot/api-catalog-chunk',
+      version: 1,
+      records: [
+        { id: 'cx', image: null },
+        { id: 'ci1', image: { full: SITE + 'img/ci1.webp' } }
+      ]
+    })
+  },
   'img/ci1.webp': { type: 'image/webp', body: 'x' },
   'img/thumb/ci1.webp': { type: 'image/webp', body: 'x' },
   'og/_share.jpg': { type: 'image/jpeg', body: 'x' },
@@ -409,7 +433,7 @@ describe('checks() shape', () => {
     // a refactor, because a refactor that dropped several checks would
     // still pass it.
     // The exact count and the exact sorted distinct path set close that.
-    assert.equal(list.length, 71);
+    assert.equal(list.length, 79);
     assert.equal(list.length, appChecks().length + fileChecks({ documents: true }).length);
     const paths = [
       ...new Set(list.map((c) => (typeof c.path === 'function' ? '<entry>' : c.path)))
@@ -417,6 +441,8 @@ describe('checks() shape', () => {
     assert.deepEqual(paths, [
       '',
       '<entry>',
+      'api/v1/catalog/index.json',
+      'apidata/version.json',
       'card/die-d12-bw.svg',
       'catalog-index.csv',
       'catalog.csv',
@@ -556,6 +582,31 @@ describe('previewChecks() against the preview host', () => {
   /* The route paths that _redirects answers with the app document. */
   const ROUTES = ['roll/std', 'tables', 'tables/', 'lists/x', 'i/hb_aaaaaaaaaaaaaaaa'];
   const EN_ROUTES = ['en/search', 'en/tables', 'en/tables/', 'i/en/hb_aaaaaaaaaaaaaaaa'];
+  /* The read API's answers, each with the CORS headers the worker sends. */
+  const NOT_FOUND = JSON.stringify({ error: { code: 'not_found' } });
+  const API = {
+    'api/v1/rolls': {
+      status: 200,
+      cors: '*',
+      body: JSON.stringify({ format: 'daggerheart-loot/api-rolls' })
+    },
+    'OPTIONS api/v1/rolls/std': {
+      status: 204,
+      cors: '*',
+      allowMethods: 'GET, POST, OPTIONS',
+      allowHeaders: 'Content-Type',
+      maxAge: '86400',
+      body: ''
+    },
+    'api/v1/records/ci1': { status: 200, cors: '*', body: '{}' },
+    'api/v1/records/zzzz': { status: 404, cors: '*', body: NOT_FOUND },
+    api: { status: 404, cors: '*', body: NOT_FOUND },
+    'POST api/v1/rolls/std': {
+      status: 200,
+      cors: '*',
+      body: JSON.stringify({ format: 'daggerheart-loot/api-roll', results: [{}, {}] })
+    }
+  };
   /* A host that answers as the preview host does; `over` replaces one path's answer. */
   const host = (over = {}) => {
     const files = {
@@ -584,15 +635,22 @@ describe('previewChecks() against the preview host', () => {
         EN_ROUTES.map((p) => ['manual:' + p, { status: 200, body: app('en') }])
       ),
       'manual:en/i/w1': { status: 301, location: '/i/en/w1', body: '' },
+      ...API,
       ...over
     };
-    return async (path, { manual = false } = {}) => {
-      const f = files[(manual ? 'manual:' : '') + path];
+    return async (path, { manual = false, init } = {}) => {
+      const method = init?.method && init.method !== 'GET' ? init.method + ' ' : '';
+      const f = files[method + (manual ? 'manual:' : '') + path];
       return {
         status: f.status,
         type: 'text/html',
         robots: f.robots ?? '',
         location: f.location ?? '',
+        cors: f.cors,
+        credentials: f.credentials,
+        allowMethods: f.allowMethods,
+        allowHeaders: f.allowHeaders,
+        maxAge: f.maxAge,
         body: f.body
       };
     };
@@ -692,12 +750,86 @@ describe('previewChecks() against the preview host', () => {
     });
   }
 
+  for (const [path, answer, pattern] of [
+    [
+      'api/v1/rolls',
+      { status: 200, cors: '', body: '{"format":"daggerheart-loot/api-rolls"}' },
+      /api\/v1\/rolls sends Access-Control-Allow-Origin ""/
+    ],
+    [
+      'api/v1/rolls',
+      {
+        status: 200,
+        cors: '*',
+        credentials: 'true',
+        body: '{"format":"daggerheart-loot/api-rolls"}'
+      },
+      /credentials "true"/
+    ],
+    [
+      'OPTIONS api/v1/rolls/std',
+      { status: 200, cors: '*', body: '' },
+      /preflight of api\/v1\/rolls\/std returned 200, not 204/
+    ],
+    [
+      'OPTIONS api/v1/rolls/std',
+      {
+        status: 204,
+        cors: '*',
+        allowMethods: 'GET, POST, OPTIONS',
+        allowHeaders: 'Content-Type',
+        maxAge: '600',
+        body: ''
+      },
+      /max-age "600"/
+    ],
+    ['OPTIONS api/v1/rolls/std', { status: 204, cors: '', body: '' }, /sends origin ""/],
+    [
+      'api/v1/records/zzzz',
+      { status: 404, cors: '', body: NOT_FOUND },
+      /api\/v1\/records\/zzzz sends no Access-Control-Allow-Origin/
+    ],
+    [
+      'api/v1/records/zzzz',
+      { status: 404, cors: '*', body: '<html>' },
+      /not the JSON 404 not_found/
+    ],
+    ['api', { status: 302, cors: '*', body: '' }, /api returned 302, not the JSON 404/],
+    [
+      'POST api/v1/rolls/std',
+      { status: 415, cors: '*', body: '{}' },
+      /POST api\/v1\/rolls\/std returned 415/
+    ],
+    [
+      'POST api/v1/rolls/std',
+      {
+        status: 200,
+        cors: '*',
+        body: JSON.stringify({ format: 'daggerheart-loot/api-roll', results: [1, 2, 3, 4, 5] })
+      },
+      /more than four results/
+    ]
+  ]) {
+    it(`fails on the API path ${path} answering ${answer.status}`, async () => {
+      const bad = await runChecks(host({ [path]: answer }), previewChecks());
+      assert.ok(
+        bad.some((m) => pattern.test(m)),
+        bad.join('; ')
+      );
+    });
+  }
+
   it('is the exact set of preview paths', () => {
     const list = previewChecks();
-    assert.equal(list.length, 59);
+    assert.equal(list.length, 70);
     assert.deepEqual(
       [...new Set(list.map((c) => c.path))].sort(),
       [
+        'api',
+        'api/v1/records/ci1',
+        'api/v1/records/zzzz',
+        'api/v1/rolls',
+        'api/v1/rolls/std',
         'catalog-index.csv',
         ITEM,
         'h/not-a-uuid',
@@ -715,5 +847,63 @@ describe('previewChecks() against the preview host', () => {
         ...EN_ROUTES
       ].sort()
     );
+  });
+});
+
+describe('the static API probes of checks()', () => {
+  /* A site that measures headers: `cors` and `credentials` come from the answer. */
+  const measured = (over = {}) => {
+    const read = memoryReader(GOOD);
+    return async (path, opts) => ({
+      ...(await read(path, opts)),
+      cors: '*',
+      credentials: '',
+      ...(over[path] ?? {})
+    });
+  };
+
+  it('reports nothing when the catalog files answer Access-Control-Allow-Origin: *', async () => {
+    assert.deepEqual(await runChecks(measured(), checks()), []);
+  });
+
+  it('fails the catalog index and the picture that answer without the header', async () => {
+    const bad = await runChecks(
+      measured({
+        'api/v1/catalog/index.json': { cors: '' },
+        'img/ci1.webp': { cors: '' }
+      }),
+      checks()
+    );
+    assert.equal(bad.length, 2, bad.join('; '));
+    assert.match(bad[0], /api\/v1\/catalog\/index\.json sends Access-Control-Allow-Origin ""/);
+    assert.match(bad[1], /a catalog picture sends Access-Control-Allow-Origin ""/);
+  });
+
+  it('fails a catalog index that answers credentials', async () => {
+    const bad = await runChecks(
+      measured({ 'api/v1/catalog/index.json': { credentials: 'true' } }),
+      checks()
+    );
+    assert.equal(bad.length, 1);
+  });
+
+  it('only reports the header of the internal version file', async () => {
+    const lines = [];
+    const bad = await runChecks(measured({ 'apidata/version.json': { cors: '' } }), checks(), {
+      onInfo: (l) => lines.push(l)
+    });
+    assert.deepEqual(bad, []);
+    assert.deepEqual(lines, ['apidata/version.json sends Access-Control-Allow-Origin: (none)']);
+  });
+
+  it('fails a version file that is not one, and an index that is not the catalog', async () => {
+    const files = {
+      ...GOOD,
+      'apidata/version.json': { type: 'application/json', body: '{}' },
+      'api/v1/catalog/index.json': { type: 'application/json', body: '{"chunks":[]}' }
+    };
+    const bad = await runChecks(memoryReader(files), checks());
+    assert.ok(bad.some((m) => /apidata\/version\.json is not/.test(m)));
+    assert.ok(bad.some((m) => /api\/v1\/catalog\/index\.json is not/.test(m)));
   });
 });
