@@ -3,8 +3,8 @@
      providers are listed (docs/DECISIONS.md, 2026-09-25, "A sign-in prompt opens the
      account page ..."). The default form is the page plate with the kind glyph, for a
      signed-out page that needs an account. `compact` is the add-to-list menu's form,
-     `boxed` the form under a pressed button. A prompt with «Отмена» answers a press: it takes the
-     focus to «Войти», and «Отмена» returns it to what had it (rule 20). */
+     `boxed` the form under a pressed button. A prompt with «Отмена» answers a press: it takes
+     the focus to «Войти», and «Отмена» returns it to what had it (rule 20). */
   import { untrack } from 'svelte';
   import Button from './Button.svelte';
   import Empty from './Empty.svelte';

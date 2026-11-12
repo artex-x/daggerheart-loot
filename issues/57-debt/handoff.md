@@ -2,8 +2,10 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- 2026-11-11: PH1, PH2 and PH3 are on `main` (squash `bf0b1e17`) and merged into `claude/57-debt` (`5141e030`, clean). Steps D, E (with E2), D7, 1 and VW1 are on `main` since 2026-11-10. D6 waits for the owner's table.
-- SP1 (D134, one `SignInPrompt` plate on the signed-out page-level prompts) is implemented and committed, NOT pushed (the commit after `5141e030` and `b0de3e8`). Gates run by the orchestrator: `build:test`; all four `app/states` shards pass (31, 30, 30, 30 runs); goldens re-seeded with `--update` (443 states): exactly `_lists_..101` and `_lists_nope` changed and `_homebrew_new` is new, as the plan says; `rtk npm run check:fast` passes (bundle 275.0 of 276 kB); `lint:typed` and `lint:untyped` pass. The first implementer was stopped for wake-ups that burned usage; Prettier on `printPage.test.ts` and `states.js` was fixed by the orchestrator. The owner took the recommended option on 2026-11-11. Scope decided there: six routes (`/lists`, `/lists/<uuid>`, `/homebrew` with its editor, `/tables/homebrew`, `/p/<id>`), no «Открыть таблицы» on the signed-out list route, that route headed «Мои списки» with the tab title to match. It folds in the three PH3 review nits (the decision file's line 3, the NBSP in `tables.test.ts`, one unwrapped `FEATURES.md` line).
+- 2026-11-12: PH1-PH3, SP1 (`299596ef`) and the errata-audit are on `main` and merged here. Step 5 (the Impeccable pass) is done: no code or CSS change, no golden change. Steps D, E (with E2), D7, 1 and VW1 are on `main` since 2026-11-10. D6 waits for the owner's table.
+- Step 5 result: `impeccable detect --no-config --json app/src` reports 0 findings before and after (DESIGN.md "Notes" says the same since 2026-11-06; the "60" of the plan is stale). The built page `dist-test/index.html` reports 1 (`dark-glow`, `ListPage.svelte` `inset 0 0 0 1px var(--gold)`: an inset ring, not a glow; kept). `node tests/app/sweep.js 360 768 1000 1180` (both languages, every table incl. `eq_weapon`, `#/homebrew`, `/roll/alt`, the sign-in plate routes): 848 FAIL lines, all one check (`console error ... 404`, the font-origin fault of `dist-test` named below); zero overflow, clipping, axe/contrast, name, focus or target-floor (40 px phone, 24 px desktop) failures.
+- SP1 facts for the reviewer: `tables.test.ts` now expects `join(' · ')` for the stat sentence (the stat line separator is a no-break space before the dot, a PH3 nit); goldens `_lists_..101` and `_lists_nope` changed and `_homebrew_new` is new; states 31/30/30/30 runs pass; bundle 275.0 of 276 kB.
+- Carried: the owner took the recommended option on 2026-11-11 for SP1 (six routes, no «Открыть таблицы» on the signed-out list route, that route headed «Мои списки»).
 - Plan review: not required (no trigger fired); `plan.md` Status says so, and SP1 adds no migration, contract file, stored key or write protocol. Batch review: required for SP1 (trigger: visual parity / new or changed UI).
 - Writer tier: `sonnet` for SP1 (no `Open design question:` line).
 - NEEDS_HUMAN_CONFIRMATION: no. D131 stays with the owner (`plan-phone.md` section 5) and blocks nothing; `ai-mcp` is postponed.
@@ -23,12 +25,11 @@
 - 57-debt PH1-PH3 (overlays and sticky columns, focus and navigation scroll, stat columns / the shared bar / the roll number): on `main` as the squash `bf0b1e17`.
 
 ## Next batch (implement-ready)
-- Name: SP1 - one sign-in plate on the page-level prompts (D134) plus the three PH3 nits. The full batch (objective, scope, files, behavior per device and route, states case 131, goldens, standing checks, steps, acceptance, risks) is `plan-sp1.md`.
-- Steps in short: (1) the nits; (2) `dict.ts`: add `listSignInLead`, delete `listGoneSignedOut` and `listGoneSignedOutSub`; (3) `SignInPrompt.svelte`: the default form is the `Empty` plate, `compact` and `boxed` stay; (4) unwrap `ListsPage` and `TablesPage`, rewrite the signed-out branches of `ListPage.gone()` and `PrintPage`; (5) `Shell.svelte` title for a signed-out `storedList`; (6) unit tests; (7) inventory state `#/homebrew/new`, case 131, additions to case 111, three sweep rows; (8) specs, DESIGN.md, COVERAGE.md, delete D134, the decision file, `node tools/decisions.js`; (9) gates and goldens (two goldens change, one is new, the rest stay byte-identical); (10) handoff, commit, push.
-- Verification commands: `plan-sp1.md`, "Verification". The bundle limits are 276 kB unconfigured and 333 kB configured; print the figure with one decimal.
-- After SP1: push, CI, the batch review (UI change), then step 5 (Impeccable `polish` and `harden` on the pages PH1-PH3 and SP1 touched, the detector re-run) or `readme-screens` (Order of work 2).
-- Deviations: none recorded by the first implementer (stopped before its report); read the diff in the batch review.
-- Pushed: no. Previous sha: `5141e030`.
+- Name: push, CI on the tip, then step 4 (the issue list) or `readme-screens` (Order of work 2). Step 5 needs no further batch.
+- Verification commands for the step 5 commit: `rtk npm run check:fast` only (docs and one comment changed).
+- Deviations (AFK defaults of the step 5 pass): (1) the detector baseline is 0 on source, not 60; recorded as is. (2) The sweep's 1000 px run was added to the default widths by argument (`sweep.js 360 768 1000 1180`). (3) The 44 px target floor was not re-measured: the sweep's own floor (40 px phone, 44 px menus, 24 px desktop) passed, and the recorded exceptions stay. (4) The `dark-glow` hit in the built page is kept (an inset 1 px ring). (5) The SP1 review nits 1-5 went into this commit; the SignInPrompt header comment is the only source file touched.
+- Goldens: none changed.
+- Pushed: no. Previous sha: `30262bd7`.
 
 ## Order of work
 1. Steps D, E, D7, 1 and VW1: done (on `main`). D3: the owner keeps `lr1` and `lr25` trimmed. D6 waits for the owner's table (add

@@ -421,8 +421,8 @@ across.
   sections), `hb` the items with no source; a row anchor that arrives with
   the page plays once the own items load. Signed out the page
   draws the sign-in plate (the kind glyph, «Войдите, чтобы видеть свои предметы в
-  таблицах.» and «Войти») under the head and no toolbar; while the session or the items load, «Загружаем...»; a
-  failed read, «Не получилось загрузить ваши предметы.» and «Повторить»; no
+  таблицах.» and «Войти») under the head and no toolbar; while the session or the
+  items load, «Загружаем...»; a failed read, «Не получилось загрузить ваши предметы.» and «Повторить»; no
   own item, the plate «Своих предметов пока нет» with the item glyph and a primary
   «Новый предмет»; a build with no sign-in
   configured, the not-found page with the address kept. A pin may hold it.
@@ -2566,8 +2566,8 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
 - `#/p/<id>` reads the set once when it opens (no live re-read; a reload reads
   it again). Each state keeps the heading «Печать карточек»: while the session
   is not known, the heading alone; when the data did not load, «Данные не
-  загрузились. Обновите страницу.» under it; signed out, the sign-in plate with the lead «Войдите,
-  чтобы печатать карточки.» and one «Войти», which returns here;
+  загрузились. Обновите страницу.» under it; signed out, the sign-in plate with the
+  lead «Войдите, чтобы печатать карточки.» and one «Войти», which returns here;
   while it reads, «Загружаем...»; an unknown, expired or malformed id
   (a malformed one signed out too, with no read), «Набор не найден: ссылку не
   открывали 90 дней, или в адресе ошибка.» and «На главную»; a set with no
