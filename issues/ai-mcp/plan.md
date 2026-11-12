@@ -4,7 +4,7 @@
 
 - Mode: B (design pass of 2026-11-11 at `8f194abd`: the account tier B5,
   split into B5a and B5b, and the B1/B2 touchpoints it forces).
-- Batches: B0 and B1 implement-ready; B2 and B3 outlines; B5a and B5b
+- Batches: B0 implemented 2026-11-12 (owner review of the audit table pending, `docs/rights/records.json` `reviewed` null); B1 implement-ready; B2 and B3 outlines; B5a and B5b
   design settled, implement-ready outlines (B5a keeps one `Open design
   question:`, its screen layout); B4 dropped (section 6).
 - NEEDS_HUMAN_CONFIRMATION: no. Q1-Q7 are settled (Q6 = C, Q7 = A on

@@ -1053,8 +1053,18 @@ This product includes materials from the Daggerheart System Reference Document
 Gaming (DPCGL) License. More information can be found at
 https://www.daggerheart.com. There are no previous modifications by others.
 
-Core and Hope & Fear are covered by that license; Wondrous Environments, Dread GM
-Toolbox, Vault of Ages, The Dragon's Vault, The Guide to Arazo's Artifacts,
-the Many Worlds Tavern card sets, Community Magic Items and the Alternate Loot & Consumable Tables are not - they
-belong to their own authors.
-The project code is MIT.
+That license covers the Core, Hope & Fear and campaign frame records whose text
+the SRD 2.0 holds; docs/rights/records.json in the repository names each.
+
+Wondrous Environments, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, The
+Guide to Arazo's Artifacts, the Many Worlds Tavern card sets, Pistolheart, The
+Last Round Table, Escape the Veiled Halls, Community Magic Items, the Alternate
+Loot & Consumable Tables and any Core, Hope & Fear or campaign frame record that
+the SRD 2.0 does not hold are not covered by that license; their text belongs to
+its rights holders.
+
+The Russian text is credited by source and carries no license claim:
+daggerheart.su for Core, a fan translation for Hope & Fear and the campaign
+frames, and a community sheet for the Hope & Fear equipment.
+
+The project code (app/, tools/, tests/, preview/) is MIT.

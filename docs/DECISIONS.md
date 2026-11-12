@@ -20,6 +20,7 @@ deleted.
 - 2026-11-11 - [No rule card for core conditions; each record keeps its definition](decisions/2026-11-11-no-rule-card-for-core-conditions.md)
 - 2026-11-11 - [Vault of Ages Volume 4 moves to v1.2](decisions/2026-11-11-vault-of-ages-volume-4-moves-to-v1-2.md)
 - 2026-11-11 - [Vault of Ages Volumes 1-3: the description page over the card](decisions/2026-11-11-vault-of-ages-volumes-1-3-the-page-over-the-card.md)
+- 2026-11-10 - [Game text rights follow a per-record SRD 2.0 audit](decisions/2026-11-10-game-text-rights-follow-a-per-record-srd-audit.md)
 - 2026-11-10 - [The roll modes are a picker row up to 760 px](decisions/2026-11-10-the-roll-modes-are-a-picker-row-up-to-760-px.md)
 - 2026-11-07 - [A table sectioned by a record property reads one descriptor](decisions/2026-11-07-a-table-sectioned-by-a-record-property-reads-one-descriptor.md)
 - 2026-11-07 - [Escape the Veiled Halls is one flat list with no rooms](decisions/2026-11-07-escape-the-veiled-halls-is-one-flat-list-with-no-rooms.md)
