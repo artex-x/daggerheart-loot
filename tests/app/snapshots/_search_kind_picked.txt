@@ -136,7 +136,7 @@ daggerheart.com
 № 26Мантия АрхимагаБроняУникальноеVault of AgesРанг 4 · Пороги 1... [namelen=338 namehash=abb338c9]
 № 27Посох Чёрной ДырыОсновное оружиеУникальноеVault of AgesРанг ... [namelen=668 namehash=8906634e]
 № 2Клинок ЖивущихОсновное оружиеУникальноеDread GM ToolboxРанг 3... [namelen=229 namehash=283db90b]
-№ 32Нож ЕдинорогаВторичное оружиеУникальноеVault of AgesРанг 4 ·... [namelen=340 namehash=2c27e92e]
+№ 32Нож ЕдинорогаВторичное оружиеУникальноеVault of AgesРанг 4 ·... [namelen=340 namehash=16c9c42e]
 № 33Ярость ЗантакаОсновное оружиеУникальноеVault of AgesРанг 3 ·... [namelen=733 namehash=cc072b8c]
 № 34Дочь ЗелениОсновное оружиеУникальноеVault of AgesРанг 4 · Фи... [namelen=707 namehash=997d7df4]
 № 5Кортик МёртвыхОсновное оружиеArazo's ArtifactsРанг 1 · Физиче... [namelen=325 namehash=5b23812d]
@@ -150,7 +150,7 @@ daggerheart.com
 № 89Меч Хрустального ДухаОсновное оружиеУникальноеThe Dragon's V... [namelen=284 namehash=94af0ae1]
 № 94Сумеречное КрылоОсновное оружиеУникальноеThe Dragon's VaultР... [namelen=258 namehash=a6f2e8a9]
 № 95Стихийный Длинный ЛукОсновное оружиеУникальноеThe Dragon's V... [namelen=507 namehash=9cfee318]
-№ 9Клятва РавновесияОсновное оружиеУникальноеАртефактVault of Ag... [namelen=839 namehash=9266635c]
+№ 9Клятва РавновесияОсновное оружиеУникальноеАртефактVault of Ag... [namelen=879 namehash=dd3ba50c]
 
 ## en :: tree
 RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search]
@@ -268,7 +268,7 @@ No. 26Arch-Magus's RobesArmorUniqueVault of AgesTier 4 · Thresho... [namelen=29
 No. 26Wyverntail WhipPrimary weaponArazo's ArtifactsTier 1 · Phy... [namelen=291 namehash=c68f5705]
 No. 27Black Hole StaffPrimary weaponUniqueVault of AgesTier 4 · ... [namelen=602 namehash=787fb2ec]
 No. 2Blade of the LivingPrimary weaponUniqueDread GM ToolboxTier... [namelen=238 namehash=dfce0e68]
-No. 32Unicorn KnifeSecondary weaponUniqueVault of AgesTier 4 · P... [namelen=308 namehash=3b53d649]
+No. 32Unicorn KnifeSecondary weaponUniqueVault of AgesTier 4 · M... [namelen=305 namehash=32354209]
 No. 33Zanthak's RagePrimary weaponUniqueVault of AgesTier 3 · Ph... [namelen=646 namehash=b4cb8acd]
 No. 34Verdant DaughterPrimary weaponUniqueVault of AgesTier 4 · ... [namelen=662 namehash=9826f938]
 No. 5Charger's CarapaceArmorUniqueHornet HoldTier 4 · Thresholds... [namelen=180 namehash=4efeb1d3]
@@ -282,7 +282,7 @@ No. 85BloodgorgerPrimary weaponUniqueThe Dragon's VaultTier 2 · ... [namelen=36
 No. 89Crystal Spirit SwordPrimary weaponUniqueThe Dragon's Vault... [namelen=261 namehash=ec43f609]
 No. 94Dusk WingPrimary weaponUniqueThe Dragon's VaultTier 2 · Ph... [namelen=240 namehash=49bdeb61]
 No. 95Elemental LongbowPrimary weaponUniqueThe Dragon's VaultTie... [namelen=433 namehash=433e49ab]
-No. 9Oath of BalancePrimary weaponUniqueArtifactVault of AgesArt... [namelen=756 namehash=e8dbe653]
+No. 9Oath of BalancePrimary weaponUniqueArtifactVault of AgesArt... [namelen=777 namehash=217ebe3d]
 Open on start
 Privacy
 RU

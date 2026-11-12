@@ -89,7 +89,7 @@ daggerheart.com
 КатанаHope & FearФизическое · Проворность · Вплотную · d10+3 физ... [namelen=198 namehash=4c3dacc4]
 КинжалФизическое · Искусность · Вплотную · d8+1 физ · Одноручное
 Конфиденциальность
-КувалдаУникальноеПир зверейФизическое · Сила · Вплотную · d10+3 ... [namelen=207 namehash=d141b9b4]
+КувалдаУникальноеПир зверейФизическое · Сила · Вплотную · d10+3 ... [namelen=205 namehash=a34f7428]
 Кухонный НожУникальноеПир зверейФизическое · Искусность · Вплотн... [namelen=90 namehash=e6753e35]
 ЛутDaggerheart
 Магические НаручиМагическое · Сила · Вплотную · d10+3 маг · Двур... [namelen=69 namehash=800a63d1]
@@ -235,7 +235,7 @@ Show 42
 SickleUniqueBeast FeastPhysical · Presence · Melee · d8 phy · On... [namelen=166 namehash=741a3f4a]
 Sign in
 Skip to content
-SledgehammerUniqueBeast FeastPhysical · Strength · Melee · d10+3... [namelen=189 namehash=12b74316]
+SledgehammerUniqueBeast FeastPhysical · Strength · Melee · d10+3... [namelen=189 namehash=3d807e9d]
 Strength
 Table: Weapons
 Tables

@@ -206,7 +206,7 @@ const VOA: Record<Lang, Help> = {
         ]
       },
       voaSource(
-        'Источник: четыре тома Криса ДеШамплейна, тома 1-3 в версии 1.5, том 4 в версии 1.0 - '
+        'Источник: четыре тома Криса ДеШамплейна, тома 1-2 в версии 1.5, том 3 в версии 1.6, том 4 в версии 1.2 - '
       )
     ]
   },
@@ -235,7 +235,7 @@ const VOA: Record<Lang, Help> = {
         ]
       },
       voaSource(
-        'Source: four volumes by Chris DeChamplain, Volumes 1-3 at v1.5, Volume 4 at v1.0 - '
+        'Source: four volumes by Chris DeChamplain, Volumes 1-2 at v1.5, Volume 3 at v1.6, Volume 4 at v1.2 - '
       )
     ]
   }

@@ -58,7 +58,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       button "Уникальные" [pressed=false]
     heading "Артефакты" [level=2]
     button "Ссылка на раздел"
-    button "9 Клятва Равновесия УНИКАЛЬНОЕ VAULT OF AGES Магическое · Инстин..." [namelen=811 namehash=dfa7b807]
+    button "9 Клятва Равновесия УНИКАЛЬНОЕ VAULT OF AGES Магическое · Инстин..." [namelen=851 namehash=94ee1ece]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -71,7 +71,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 2
 3
 4
-9Клятва РавновесияУникальноеVault of AgesМагическое · Инстинкт ·... [namelen=803 namehash=3c144f1a]
+9Клятва РавновесияУникальноеVault of AgesМагическое · Инстинкт ·... [namelen=843 namehash=8cd188b9]
 ?Об этих данных
 Arazo's Artifacts
 Core
@@ -188,7 +188,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_ti
       button "Unique" [pressed=false]
     heading "Artifacts" [level=2]
     button "Link to this section"
-    button "9 Oath of Balance UNIQUE VAULT OF AGES Magic · Instinct · Far · ..." [namelen=727 namehash=a2f3e5fd]
+    button "9 Oath of Balance UNIQUE VAULT OF AGES Magic · Instinct · Far · ..." [namelen=748 namehash=59386e8b]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -201,7 +201,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_ti
 2
 3
 4
-9Oath of BalanceUniqueVault of AgesMagic · Instinct · Far · d12+... [namelen=719 namehash=7d9f9879]
+9Oath of BalanceUniqueVault of AgesMagic · Instinct · Far · d12+... [namelen=740 namehash=90e58cfe]
 ?About this data
 Agility
 All

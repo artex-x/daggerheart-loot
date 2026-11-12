@@ -13,3 +13,4 @@
   audit's fixes throughout (rules the author never printed; a v1.1 becomes
   a three-way merge).
 - Trade-off: the English is no longer a byte-for-byte quote of the book.
+- Amended by "Vault of Ages Volume 4 moves to v1.2" (2026-11-11): the source version is v1.2, not v1.0.
