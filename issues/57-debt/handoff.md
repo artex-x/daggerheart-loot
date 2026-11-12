@@ -39,10 +39,9 @@
    commit the images before the owner looks at them: stop and show the eight files (`SendUserFile`).
 3. PH1-PH3: done (on `main`). SP1 (`plan-sp1.md`) next. Then steps 4 (the issue list) and 5 (Impeccable `polish` and `harden` on the
    pages PH1-PH3 and SP1 touched, the detector re-run).
-4. `persistent-storage` closeout audit: `issues/persistent-storage/` says "R3 next" (September 30) but R10 shipped (`e02364d3`) after the
-   persistence review (`0b73fd5c`). Audit against `/handoff`'s durable list, move what qualifies, delete the directory in a closeout
-   commit; check `git log main --grep persist` for an open release first.
-5. `ai-mcp`: postponed by the owner (2026-11-10). No question, no planner.
+4. `persistent-storage`: done 2026-11-12 as a refresh, not a closeout (the commit "docs(issues): refresh the persistent-storage roadmap"). `ai-mcp` is the one open release, so the directory
+   stays and closes with `ai-mcp`.
+5. `ai-mcp`: the owner lifted the postponement on 2026-11-12; plan and handoff are `issues/ai-mcp/`.
 6. Inventory (read-only): branches and worktrees merged into `main` (`git branch --merged main`, `git worktree list`, about 50 worktrees)
    and the stale remote branches (`claude/task-58-implementation-plan-b14224`, `claude/task-planners-mockups-079cc9`,
    `claude/kind-curie-nxag95`, `claude/jolly-allen-ipojqp`, `claude/keen-noether-mpa4jq`, and the shipped `claude/57`,
