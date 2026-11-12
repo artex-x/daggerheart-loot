@@ -1,0 +1,29 @@
+{
+  "request": {
+    "method": "POST",
+    "headers": {
+      "Content-Type": "application/json",
+      "MCP-Protocol-Version": "2025-06-18",
+      "Origin": "https://example.org"
+    },
+    "body": {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "method": "tools/list"
+    }
+  },
+  "answer": {
+    "status": 403,
+    "headers": {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store"
+    },
+    "body": {
+      "jsonrpc": "2.0",
+      "error": {
+        "code": -32000,
+        "message": "A request with an Origin header is refused."
+      }
+    }
+  }
+}

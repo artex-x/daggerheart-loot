@@ -3636,8 +3636,10 @@ document, or `404.html`. A record path `/i/<id>` is the static app document
 with the record's card (task `path-urls`).
 `preview/public/_headers` sends `X-Robots-Tag: noindex` on the text files.
 The same worker answers the read API (task `ai-mcp`, `docs/specs/CONTRACTS.md`
-section 6): `_routes.json` also routes `/api/*` to it and excludes
-`/api/v1/catalog/*`, the public bulk catalog that Pages serves as static files.
+section 6): `_routes.json` also routes `/api/*` and `/mcp/*` (Pages matches the
+bare `/api` and `/mcp` too) to it and excludes `/api/v1/catalog/*`, the public
+bulk catalog that Pages serves as static files. `preview/api/mcp.mjs` is the
+MCP adapter at `POST /mcp`, built from `openapi.json` over the same service.
 `preview/worker.mjs` hands any path under `/api` to `preview/api/rest.mjs`
 before its language split and its GET and HEAD check; `rest.mjs` has its own
 JSON responder, `service.mjs` holds one function per operation, `read.mjs` the
@@ -3898,8 +3900,18 @@ assembly (`collect`, `guard`, `old-host`); the job's three steps call it.
   `std` roll with four results (the heaviest: about 30 KB plus up to four
   64 KB chunks parsed), a record, an `eq_weapon` tier part, and a homebrew item
   and a shared list sized just under 65536 B. A reading above 5 ms reopens the
-  budgets of `docs/specs/CONTRACTS.md` section 6 (the fallback: record files
-  with one record per line). Write each reading here.
+  budgets of `docs/specs/CONTRACTS.md` section 6. The record files are one
+  record per line since this task, so a record read parses one record; the
+  next fallback is an isolate cache of each chunk's split lines, then
+  per-total `apidata/roll/std/<total>.json` files. Write each reading here.
+- B1 production readings (Pages Metrics, 2026-11-12, values read as
+  microseconds): baseline 58 requests p50 3,103, p75 6,297, p99 11,294; a
+  mixed read load p99 25,846; a burst of 10 `std` rolls p50 up to about 7,500,
+  p99 17,531; 0 errors, 0 exceeded-CPU in 95 requests. A record read took
+  about 2-3 ms and a `std` roll about 7-17 ms; this is why B2a reads one record
+  per line. Local before/after (200 calls, this host): `std` roll warm 1.565 to
+  0.545 ms, cold 1.645 to 1.170 ms; record `ci12` warm 0.390 to 0.155 ms, cold
+  0.625 to 0.310 ms. The readings of the B2a deploy go here after landing 2.
 - A failed read of `index.html` by the worker (a 2 s timeout, a status other
   than 200, more than 65536 bytes, no card markers) draws the card page with
   its redirect to `<site>#/...` and `Referrer-Policy: no-referrer`; the next

@@ -14,23 +14,42 @@ import { fileURLToPath } from 'node:url';
 import { RARITIES, altPicks } from '../app/src/lib/alt.ts';
 import { buildIndex } from '../app/src/lib/data.ts';
 import { dict } from '../app/src/lib/dict.ts';
+import { recordUrl } from '../app/src/lib/hash.ts';
 import { rollPool } from '../app/src/lib/roll.ts';
 import { PICKER_ROLL, ROLL_MODES, rowsOf } from '../app/src/lib/rollTables.ts';
 import { poolFor } from '../app/src/lib/std.ts';
 import { SECTIONS } from '../app/src/lib/types.ts';
 import { readCapOf } from '../preview/api/rest.mjs';
-import { BUDGET, budgetOf, readAudit, renderApiData, rollIdOf } from './api-data.mjs';
+import { BUDGET, SITE, budgetOf, readAudit, renderApiData, rollIdOf } from './api-data.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 globalThis.window = {};
 createRequire(import.meta.url)(join(ROOT, 'data.js'));
 const LOOT = globalThis.window.LOOT;
 const AUDIT = readAudit(join(ROOT, 'docs', 'rights', 'records.json'));
-const FILES = renderApiData(LOOT, AUDIT);
+const VERSIONS = createRequire(import.meta.url)('./build-share-pages.js').cardVersions();
+const FILES = renderApiData(LOOT, AUDIT, VERSIONS);
 const parsed = (files, path) => JSON.parse(files.get(path));
 const ROLL_SECTIONS = SECTIONS.filter((s) => s.startsWith('roll/'));
 
 const ids = (rows) => rows.map((r) => r.id);
+const CHUNK = /^api\/v1\/catalog\/\d+\.json$/;
+
+/** Returns the records of a chunk file read line by line: line 0 is the head, line `l + 1` is
+ *  record `l`, and the last line closes the array. */
+function linesOf(text) {
+  const lines = text.split('\n');
+  assert.equal(lines.pop(), '', 'the file ends with a newline');
+  assert.equal(lines.pop(), ']}');
+  assert.match(
+    lines[0],
+    /^\{"format":"daggerheart-loot\/api-catalog-chunk","version":1,"data_version":"[0-9a-f]{0,16}","records":\[$/
+  );
+  return lines.slice(1).map((line, i, all) => {
+    assert.equal(line.endsWith(','), i < all.length - 1, `line ${String(i + 1)} comma`);
+    return JSON.parse(i < all.length - 1 ? line.slice(0, -1) : line);
+  });
+}
 
 /** Returns the catalog with every record, rule card and set copied under a suffixed id. */
 function tripled(loot) {
@@ -65,6 +84,16 @@ function tripled(loot) {
     sets: keyed(loot.sets),
     alt
   };
+}
+
+/** Renders the tripled catalog with an 8-character version for every synthetic id, so the
+ *  budgets count the ?v bytes. */
+function tripledFiles() {
+  const loot3 = tripled(LOOT);
+  const versions = Object.fromEntries(
+    [...buildIndex(loot3).byId.keys()].map((id) => [id, 'abcd1234'])
+  );
+  return renderApiData(loot3, AUDIT, versions);
 }
 
 describe('the projections hold the pools the app draws', () => {
@@ -163,6 +192,47 @@ describe('the catalog chunks', () => {
     }
   });
 
+  it('writes one record per line, the same JSON as the whole file, and names the line', () => {
+    index.chunks.forEach((_, n) => {
+      const path = `api/v1/catalog/${String(n)}.json`;
+      assert.deepEqual(linesOf(FILES.get(path)), parsed(FILES, path).records, path);
+    });
+    const records = parsed(FILES, 'apidata/records/index.json');
+    for (const section of ROLL_SECTIONS) {
+      const file = parsed(FILES, `apidata/roll/${rollIdOf(section)}.json`);
+      for (const row of Object.values(file.items).flat()) {
+        assert.ok(Number.isInteger(row.l) && row.l >= 0, `${section} ${row.id} has no line`);
+        assert.equal(records.chunks[row.c][row.l], row.id, `${section} ${row.id}`);
+        const line = FILES.get(`api/v1/catalog/${String(row.c)}.json`).split('\n')[row.l + 1];
+        assert.equal(JSON.parse(line.replace(/,$/, '')).id, row.id);
+      }
+    }
+  });
+
+  it('links every record as the app does, with the card version of the build', () => {
+    for (const id of byId.keys())
+      assert.ok(Object.hasOwn(VERSIONS, id), `${id} has no version`);
+    for (const [path] of FILES) {
+      if (!CHUNK.test(path)) continue;
+      for (const r of parsed(FILES, path).records) {
+        for (const lang of ['ru', 'en']) {
+          assert.equal(
+            r.link[lang],
+            recordUrl({ base: SITE }, r.id, lang, VERSIONS[r.id]),
+            `${r.id} ${lang}`
+          );
+        }
+      }
+    }
+  });
+
+  it('leaves a record that the version map does not hold without a ?v', () => {
+    const none = renderApiData(LOOT, AUDIT, {});
+    const rec = parsed(none, 'api/v1/catalog/0.json').records[0];
+    assert.equal(rec.link.ru, recordUrl({ base: SITE }, rec.id, 'ru'));
+    assert.ok(!rec.link.ru.includes('?'));
+  });
+
   it('lists every record once with the chunk that holds it and the hash of its copy', () => {
     assert.equal(index.records.length, byId.size);
     assert.equal(new Set(index.records.map((r) => r.id)).size, byId.size);
@@ -185,7 +255,7 @@ describe('the catalog chunks', () => {
   it('moves the rev of the records whose copy changed, and no other', () => {
     const loot = structuredClone(LOOT);
     loot.items.core_item[11].ende = 'An edited description.';
-    const edited = renderApiData(loot, AUDIT);
+    const edited = renderApiData(loot, AUDIT, VERSIONS);
     const after = parsed(edited, 'api/v1/catalog/index.json');
     const copies = (files, idx) =>
       new Map(
@@ -211,7 +281,7 @@ describe('the catalog chunks', () => {
   });
 
   it('changes data_version with the rights table', () => {
-    const unreviewed = renderApiData(LOOT, { ...AUDIT, reviewed: null });
+    const unreviewed = renderApiData(LOOT, { ...AUDIT, reviewed: null }, VERSIONS);
     assert.notEqual(
       parsed(unreviewed, 'apidata/version.json').data_version,
       parsed(FILES, 'apidata/version.json').data_version
@@ -219,7 +289,7 @@ describe('the catalog chunks', () => {
     assert.equal(AUDIT.reviewed, '2026-11-12');
     const licenseIn = (files, id) => {
       for (const [path] of files) {
-        if (!/^api\/v1\/catalog\/\d+\.json$/.test(path)) continue;
+        if (!CHUNK.test(path)) continue;
         const rec = parsed(files, path).records.find((r) => r.id === id);
         if (rec) return rec.rights.license;
       }
@@ -252,7 +322,7 @@ function checkFiles(files) {
     assert.equal(v.version, 1, path);
     assert.equal(v.data_version, dv, path);
     for (const field of SCHEMAS[v.format]) assert.ok(field in v, `${path} lacks ${field}`);
-    assert.equal(body, JSON.stringify(v) + '\n', path);
+    if (!CHUNK.test(path)) assert.equal(body, JSON.stringify(v) + '\n', path);
     const limit = budgetOf(path);
     if (limit !== null) {
       assert.ok(
@@ -280,7 +350,7 @@ describe('every file keeps its schema and its budget', () => {
   });
 
   it("at three times today's size", (t) => {
-    const big = renderApiData(tripled(LOOT), AUDIT);
+    const big = tripledFiles();
     checkFiles(big);
     const chunks = [...big.keys()].filter((p) =>
       /^api\/v1\/catalog\/\d+\.json$/.test(p)
@@ -299,7 +369,7 @@ describe('every file keeps its schema and its budget', () => {
   });
 
   it('is read by the worker with a cap at least as large as the budget of each file', () => {
-    const big = renderApiData(tripled(LOOT), AUDIT);
+    const big = tripledFiles();
     for (const files of [FILES, big]) {
       for (const [path, body] of files) {
         if (!path.startsWith('apidata/')) continue;

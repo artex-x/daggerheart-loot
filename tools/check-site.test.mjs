@@ -607,6 +607,15 @@ describe('previewChecks() against the preview host', () => {
       body: JSON.stringify({ format: 'daggerheart-loot/api-roll', results: [{}, {}] })
     }
   };
+  const TOOLS = [
+    'list_rolls',
+    'roll',
+    'list_tables',
+    'get_table',
+    'get_record',
+    'get_homebrew_item',
+    'get_shared_list'
+  ].map((name) => ({ name }));
   /* A host that answers as the preview host does; `over` replaces one path's answer. */
   const host = (over = {}) => {
     const files = {
@@ -616,7 +625,10 @@ describe('previewChecks() against the preview host', () => {
       },
       'llms.txt': { status: 200, robots: 'noindex', body: 'ok' },
       'catalog-index.csv': { status: 200, robots: 'noindex', body: 'id\n' },
-      mcp: { status: 404, body: '<div id="app-404"></div>' },
+      mcp: { status: 405, allow: 'POST', cors: '', body: '' },
+      'POST mcp': { status: 200, cors: '', body: JSON.stringify({ result: { tools: TOOLS } }) },
+      'POST mcp +Origin': { status: 403, cors: '', body: '{}' },
+      'mcp/me': { status: 404, body: '' },
       'i/w1?v=x': { status: 200, body: app('ru', stub('i/w1')) },
       'manual:i/w1.html': { status: 308, location: '/i/w1', body: '' },
       'h/not-a-uuid': { status: 404, body: app('ru', CARD) },
@@ -640,7 +652,8 @@ describe('previewChecks() against the preview host', () => {
     };
     return async (path, { manual = false, init } = {}) => {
       const method = init?.method && init.method !== 'GET' ? init.method + ' ' : '';
-      const f = files[method + (manual ? 'manual:' : '') + path];
+      const origin = init?.method === 'POST' && init.headers?.Origin ? ' +Origin' : '';
+      const f = files[method + (manual ? 'manual:' : '') + path + origin];
       return {
         status: f.status,
         type: 'text/html',
@@ -648,6 +661,7 @@ describe('previewChecks() against the preview host', () => {
         location: f.location ?? '',
         cors: f.cors,
         credentials: f.credentials,
+        allow: f.allow,
         allowMethods: f.allowMethods,
         allowHeaders: f.allowHeaders,
         maxAge: f.maxAge,
@@ -694,7 +708,38 @@ describe('previewChecks() against the preview host', () => {
       { status: 200, robots: 'all', body: 'id' },
       /catalog-index\.csv has no X-Robots-Tag: noindex \(got "all"\)/
     ],
-    ['mcp', { status: 200, body: '' }, /mcp returned 200, not 404 - the path is reserved/],
+    ['mcp', { status: 200, allow: 'POST', body: '' }, /GET mcp returned 200, not 405/],
+    ['mcp', { status: 405, allow: 'GET', body: '' }, /GET mcp sends Allow "GET", not POST/],
+    [
+      'mcp',
+      { status: 405, allow: 'POST', cors: '*', body: '' },
+      /GET mcp sends Access-Control/
+    ],
+    ['POST mcp', { status: 415, cors: '', body: '{}' }, /POST mcp tools\/list returned 415/],
+    [
+      'POST mcp',
+      {
+        status: 200,
+        cors: '',
+        body: JSON.stringify({ result: { tools: [{ name: 'roll' }] } })
+      },
+      /does not list the tools of openapi\.json/
+    ],
+    [
+      'POST mcp',
+      { status: 200, cors: '*', body: JSON.stringify({ result: { tools: TOOLS } }) },
+      /POST mcp sends Access-Control/
+    ],
+    [
+      'POST mcp +Origin',
+      { status: 200, cors: '', body: '{}' },
+      /with an Origin header returned 200, not 403/
+    ],
+    [
+      'mcp/me',
+      { status: 200, body: '' },
+      /mcp\/me returned 200, not 404 - the path is reserved/
+    ],
     ['i/w1?v=x', { status: 404, body: '' }, /i\/w1\?v=x returned 404/],
     [
       'manual:i/w1.html',
@@ -821,7 +866,7 @@ describe('previewChecks() against the preview host', () => {
 
   it('is the exact set of preview paths', () => {
     const list = previewChecks();
-    assert.equal(list.length, 70);
+    assert.equal(list.length, 77);
     assert.deepEqual(
       [...new Set(list.map((c) => c.path))].sort(),
       [
@@ -837,6 +882,7 @@ describe('previewChecks() against the preview host', () => {
         'i/w1?v=x',
         'llms.txt',
         'mcp',
+        'mcp/me',
         'p/x',
         'robots.txt',
         TOKEN,

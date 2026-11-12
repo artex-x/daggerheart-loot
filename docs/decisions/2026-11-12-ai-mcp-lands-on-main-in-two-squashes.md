@@ -9,4 +9,5 @@
   No force-push and no rebase. The second squash is the closeout after B5 and carries only the commits after the merge.
 - Rejected: one squash at closeout (publication waits for B2-B5); a squash per batch; leaving the task directory out of the squash.
 - Amends "A task branch pushes every batch; a green CI run of the same tree gates main" (2026-10-21): for ai-mcp, two squashes.
+- Amended by "ai-mcp lands on main at four named landings" (2026-11-12): four landings, not two squashes.
 - Evidence: the precedent is "Task 57 lands on main in three waves" (2026-10-29).

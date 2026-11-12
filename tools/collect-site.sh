@@ -53,7 +53,7 @@ guard() {
   # old app was deleted at R0c, issue 47, 23c00a6) - if either turns up
   # in _site anyway, some other step re-created it, and a stray root
   # file like that must never reach _site. The card families (h, s, p,
-  # tables) belong to the worker, mcp is reserved for the ai-mcp task,
+  # tables) and mcp belong to the worker (docs/specs/CONTRACTS.md section 5),
   # the Pages control files live in preview/public/ only, and old-host/
   # is the mirror's (docs/specs/CONTRACTS.md section 5). A file or a
   # folder named after a route that _redirects rewrites would shadow

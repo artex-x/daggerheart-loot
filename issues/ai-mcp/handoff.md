@@ -2,14 +2,17 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (B0 and B1 live on production since the first squash `aeb68c0e`; the plan review before B2a (`reviews/plan-B2a.md`, fix-then-continue) is applied in one pass on 2026-11-12, with no second look; B2a is next and implement-ready; B3 needs a planner pass and its own plan review; B2b is implement-ready and waits for B3, and the two land together at landing 3)
-- Last agent: planner (plan-review fix pass, 2026-11-12)
+- Task status: in_progress (B0 and B1 live on production since the first squash `aeb68c0e`; B2a is implemented and committed on `claude/ai-mcp`, pending its batch review (`reviews/B2a.md`, required) and landing 2; B3 needs a planner pass and its own plan review; B2b is implement-ready and waits for B3, and the two land together at landing 3)
+- Last agent: implementer (B2a, 2026-11-12)
 - NEEDS_HUMAN_CONFIRMATION: no (no product-law change; every new choice is "default taken (owner AFK)", `plan.md` section 7 and B3's "Status" paragraph)
 - Branch: claude/ai-mcp
 - Base / starting commit: 1b99e6d4 (main merged in after the B0 and B1 squash)
-- Pushed: no (the dispatch said not to push; `1b99e6d4` and the planner commits go out with B2a's push)
+- Pushed: yes, with B2a's commit (the planner commits go out with it)
 
 ## Completed
+- B2a - record links with `?v`, one record per line, the roll index cache and the MCP adapter (steps 1.1-3.10; step 4 is the orchestrator's). Commit: see `git log` on `claude/ai-mcp` ("feat(api): MCP endpoint, versioned record links ..."). Local CPU (200 calls, median of 9, this host): `std` roll warm 1.565 to 0.545 ms (35 %), cold 1.645 to 1.170 ms (71 %); record `ci12` warm 0.390 to 0.155 ms, cold 0.625 to 0.310 ms.
+- Deviation, cold criterion: "cold criterion 50 % not met locally: 71 % (min 63 %); not amended in plan.md; production readings decide" (orchestrator accepted it, owner AFK, recommended option; the Fallback applies only if landing 2's `std` p99 stays above 5 ms).
+- Also done: D4, D8, D9 and the D6 "Amended by" pointer in `docs/decisions/`, `docs/DECISIONS.md` rebuilt; `.claude/README.md` (Preview host, CPU readings), `META.md` sections 3 and 7, `COVERAGE.md` MCP rows, `llms.txt` MCP changes.
 - B0 - license statement and per-record rights audit: shipped in `aeb68c0e` (review `reviews/B0.md`, nits folded into B1).
 - B1 - API core and REST v1 reads: shipped in `aeb68c0e` after the fix pass `93eac0ae` (review `reviews/B1.md`, fix-then-continue, applied); live checks 1-11 passed on production on 2026-11-12. Sizes as `.claude/README.md` "The CI deploy" states them: 105 files (54 catalog chunks, 3.97 MiB; `apidata/records/index.json` 11,561 B, `api/v1/catalog/index.json` 70,114 B), 207 at three times the records, about 98 files left under 20,000.
 - Planner pass 2026-11-12 (`db90cd02`, no production code): `plan.md` Status, sections 3.2, 3.3, 3.5, 4 (D4, D8, D9, D10, decision drafts), 5.2 and 5.4 (collapsed), 6 (B0 and B1 collapsed; B2a, B3, B2b expanded; B5b placed lines), 7, 8 (collapsed), 9, 10, 11; `context.md` (owner decisions, live readings, MCP spec facts, planner facts).
@@ -23,7 +26,8 @@
 ## Verification
 - Commands run (exact): read-only: `git log`, `Get-ChildItem apidata`, `Get-ChildItem api\v1\catalog` (sizes), WebFetch of the MCP `2026-07-28` changelog, versioning, `server/discover` and Streamable HTTP pages; in the fix pass, a read of `.claude/hooks/agent-guard.mjs` (every "- Plan review: required before <batch>" Status line gates every implementer dispatch).
 - Results: sizes as in `context.md`, "Planner facts (2026-11-12)"; spec facts as in "MCP spec facts"; the reviewer's probes as in "Plan review measurements (2026-11-12)".
-- Gates: none (a docs-only commit under `issues/`).
+- B2a implementer commands and results: earlier session (before the usage stop): the preview/api/tools node tests (`preview/worker.test.mjs`, `api.test.mjs`, `mcp.test.mjs`, `tools/api-data.test.mjs`), `tools/check/lib.test.mjs`, `tools/check-site.test.mjs`, `node tests/derived.js`, `node tests/run-all.js contracts,dataint` all passed. This session: `npx prettier --write` on the touched code files; `npx vitest run app/src/lib/apiRecord.test.ts` 30 passed; step 2.4 bench (scratchpad script, not committed) numbers above; `node tools/decisions.js` 339 decisions; `VITEST_MAX_WORKERS=2 npm run check:fast` (hook ran it as `rtk`): PASS in 190 s (prettier, eslint, svelte-check 0 errors, node tests, vitest, build, bundle budget 275.2 kB within 276).
+- Gates: `check:fast` green on the B2a tree; CI is the full gate (the orchestrator runs the CI credit). Review `reviews/B2a.md` is still to be written by the reviewer.
 
 ## Next batch (implement-ready)
 - Name: B2a - Record links, roll CPU and the MCP adapter (`plan.md` section 6, B2a). Implement-ready after the plan-review fix pass; no second plan look. Writer: no open design question.
@@ -72,3 +76,11 @@
 - Session end partial progress (if any): none.
 - Durable items written to their homes this pass (file, section): none outside `issues/ai-mcp/` (a planner pass); D4, D8 and D9 go to `docs/decisions/` in B2a, D10 in B3.
 - Issue 72 stays open until the account-level read ships (`C:\Users\Ignat\.dhloot\notes\57\ai-mcp-closeout-posts.md`, A2; placed in B5b).
+
+## Session end partial progress (implementer, B2a, usage wrap-up)
+- Done (uncommitted, 43 `git status --short` paths): plan steps 1.1-1.6 (links with `?v`, fixtures re-pinned, openapi, CONTRACTS "Links"), 2.1-2.3 (one record per line, `(c, l)` rows, roll index cache, tests), 3.1-3.8 partly (openapi MCP fields, `rest.mjs` `runOperation`/`serviceOf`, `preview/api/mcp.mjs`, `mcp.test.mjs` plus 18 fixtures in `docs/fixtures/mcp/`, worker wiring, `_routes.json`, `preview.json`, both `routed` helpers, check-site probes, `tests/contracts.js` MCP checks, CONTRACTS section 5 and 6 MCP part).
+- Passed: preview/api/tools tests (worker, api, mcp, api-data), `tools/check/lib.test.mjs`, `tools/check-site.test.mjs`, `node tests/derived.js`, `node tests/run-all.js contracts,dataint`.
+- Not done: step 2.4 local before/after CPU measurement; 2.5 and `.claude/README.md` edits; `META.md` sections 3 and 7, `COVERAGE.md`; `llms.txt` (3.9); decisions D4, D8, D9 and D6 pointer, `node tools/decisions.js` (3.10); prettier run on touched files; vitest `apiRecord.test.ts`; `rtk npm run check:fast`; commit; push.
+- Next step: run `npx prettier --write` on touched files, vitest for `app/src/lib/apiRecord.test.ts`, do the not-done docs and decisions, then 2.4, then check:fast, one commit, push.
+- Second implementer session (2026-11-12): prettier --write run on the touched code files (rest.mjs, mcp.mjs, mcp.test.mjs, api-data.mjs and test, check-site lib and test, tests/contracts.js reformatted); `npx vitest run app/src/lib/apiRecord.test.ts` 30 passed. Step 2.4 measured (200 calls, median of 9 runs, `process.cpuUsage`, stub assets/text from `renderApiData` in memory, HEAD checked out to a scratch dir for "before"): std roll warm 1.565 ms before, 0.545 ms after (35 %, criterion 40 % met); std roll cold 1.645 ms before, 1.170 ms after (71 %, criterion 50 % NOT met; min 1.480 vs 0.935 = 63 %); getRecord ci12 warm 0.390 vs 0.155, cold 0.625 vs 0.310. Stopped there per the dispatch: steps 2.5, 3.8-3.10, check:fast, commit and push are not done.
+- Note: heredoc scripts lose doubled backslashes; use the Edit tool for regexes and `\n`.

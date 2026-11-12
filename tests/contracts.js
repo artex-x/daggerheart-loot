@@ -246,7 +246,9 @@ const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
     JSON.stringify(preview.routes) === JSON.stringify(routesFile.include),
     "preview.json's routes are not preview/public/_routes.json's include list"
   );
-  const routed = (p) => preview.routes.some((r) => p.startsWith(r.slice(0, -1)));
+  /* As the live probe of `/api` shows, Pages matches bare `/x` for the route `/x/*`. */
+  const routed = (p) =>
+    preview.routes.some((r) => p === r.slice(0, -2) || p.startsWith(r.slice(0, -1)));
   for (const c of preview.serve) {
     const p = new URL(c.url).pathname;
     ok(
@@ -254,9 +256,10 @@ const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
       'preview.json ' + c.url + (c.static ? ' is static but routed' : ' is not routed')
     );
   }
+  ok(preview.routes.includes('/mcp/*'), 'preview.json does not route /mcp/*');
   ok(
-    !preview.routes.some((r) => /^\/(en\/)?mcp/.test(r)),
-    'a route names /mcp, which is reserved for the ai-mcp task'
+    !preview.routes.some((r) => /^\/en\/mcp/.test(r)),
+    'a route names /en/mcp, which the MCP endpoint does not have'
   );
 
   /* The read API (CONTRACTS.md section 6): the answers are pinned in docs/fixtures/api/v1/,
@@ -341,6 +344,67 @@ const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
       '/.well-known/oauth-protected-resource/'
     ]) {
       ok(contractsText.includes(needle), 'CONTRACTS.md does not mention ' + needle);
+    }
+
+    /* The MCP endpoint (CONTRACTS.md section 6): its URL, its tools and its answers. The tools
+       are the operations of openapi.json that carry x-mcp-tool and no security. */
+    console.log('MCP endpoint');
+    const tools = Object.values(openapi.paths)
+      .flatMap((o) => Object.values(o))
+      .filter((op) => op['x-mcp-tool'] && !op.security)
+      .map((op) => op['x-mcp-tool']);
+    ok(tools.length === 7, 'openapi.json does not hold seven tools: ' + tools.join());
+    ok(
+      openapi.info['x-mcp-endpoint'] === PREVIEW_ORIGIN + '/mcp',
+      "openapi.json's x-mcp-endpoint is not " + PREVIEW_ORIGIN + '/mcp'
+    );
+    ok(
+      sec !== null && sec[0].includes('`' + PREVIEW_ORIGIN + '/mcp`'),
+      'CONTRACTS.md section 6 does not name the MCP URL ' + PREVIEW_ORIGIN + '/mcp'
+    );
+    for (const tool of tools) {
+      ok(
+        sec !== null && sec[0].includes('`' + tool + '`'),
+        'CONTRACTS.md section 6 does not name the MCP tool ' + tool
+      );
+    }
+    ok(
+      /^Fixtures:[^\n]*(\n[^\n]+)*docs\/fixtures\/mcp\//m.test(contractsText),
+      "CONTRACTS.md's fixture list does not name docs/fixtures/mcp/"
+    );
+    const mcpDir = path.join(FIX, 'mcp');
+    for (const file of fs.readdirSync(mcpDir)) {
+      let v = null;
+      try {
+        v = JSON.parse(fs.readFileSync(path.join(mcpDir, file), 'utf8'));
+      } catch {
+        /* reported below */
+      }
+      ok(
+        v !== null &&
+          typeof v.request?.method === 'string' &&
+          Number.isInteger(v.answer?.status) &&
+          !Object.keys(v.answer.headers ?? {}).some((h) => /^access-control-/.test(h)),
+        'docs/fixtures/mcp/' + file + ' is not { request, answer } without a CORS header'
+      );
+      if (file.startsWith('tools-list-')) {
+        const names = (v?.answer?.body?.result?.tools ?? []).map((t) => t.name);
+        ok(
+          JSON.stringify(names) === JSON.stringify(tools),
+          'docs/fixtures/mcp/' + file + " does not list openapi.json's tools"
+        );
+      }
+    }
+    for (const needle of [
+      '2026-07-28',
+      '2025-11-25',
+      'HeaderMismatch',
+      'UnsupportedProtocolVersion'
+    ]) {
+      ok(
+        sec !== null && sec[0].includes(needle),
+        'CONTRACTS.md section 6 does not mention ' + needle
+      );
     }
   }
 

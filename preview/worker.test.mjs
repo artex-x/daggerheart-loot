@@ -845,8 +845,10 @@ describe('docs/fixtures/urls/preview.json, serve', () => {
     null: () => json(null),
     list: () => json(listAnswer())
   };
-  /* A route `/x/*` matches a path that starts with `/x/`, as Pages matches it. */
-  const routed = (path) => FIXTURE.routes.some((r) => path.startsWith(r.slice(0, -1)));
+  /* A route `/x/*` matches a path that starts with `/x/`, and bare `/x`: as the live probe
+     of `/api` shows, Pages matches it. */
+  const routed = (path) =>
+    FIXTURE.routes.some((r) => path === r.slice(0, -2) || path.startsWith(r.slice(0, -1)));
 
   for (const c of FIXTURE.serve.filter((x) => x.static)) {
     it(`${c.url}: Pages serves it, not the worker: ${c.why}`, () => {
@@ -1137,7 +1139,8 @@ describe('the Pages control files', () => {
       include: FIXTURE.routes,
       exclude: ['/tables', '/tables/', '/en/tables', '/en/tables/', '/api/v1/catalog/*']
     });
-    assert.ok(!FIXTURE.routes.some((r) => r.startsWith('/mcp') || r.startsWith('/en/mcp')));
+    assert.ok(FIXTURE.routes.includes('/mcp/*'));
+    assert.ok(!FIXTURE.routes.some((r) => r.startsWith('/en/mcp')));
   });
 
   it('sends X-Robots-Tag: noindex on each text file', () => {

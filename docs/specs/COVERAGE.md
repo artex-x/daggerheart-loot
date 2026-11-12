@@ -1311,8 +1311,9 @@ tracing a feature back through history).
 | Row thumbnails | `desc.test.ts`, `tables.test.ts`, `listsPage.test.ts`, `dataint`, `tests/sw.test.mjs`, `tests/app/states.js` case 11 |
 | Installable app: manifest, icons, service worker (picture and asset caches, no shell) | `tests/sw.test.mjs`, `ports.test.ts`, `derived`, `tests/app/states.js` case 28, `tools/smoke-http.mjs`, `tools/check-site.test.mjs` |
 | The old host (`old-host/`): the forwarding root (each forwarding state, the loop guard, the installed app, no script), the unregistering worker, the mirror's file list | `derived` ("the old host forwards to the site"), `tests/sw.test.mjs` ("the old host worker"), `tests/stub.js` (`old-host/index.html` at 320 and 390 px), `tools/check-site.test.mjs` (`mirrorChecks()`) |
-| The site's host: the Pages routes and headers files, `/mcp` reserved, `names.json` through `env.ASSETS` | `preview/worker.test.mjs` ("the Pages control files", "/h/: names.json"), `tests/contracts.js` (`preview.json` `routes` and `static` rows; every route path covered, none taken by the worker from a rewrite), `tools/check-site.test.mjs` (`previewChecks()`) |
+| The site's host: the Pages routes and headers files, `/mcp/*` routed, `names.json` through `env.ASSETS` | `preview/worker.test.mjs` ("the Pages control files", "/h/: names.json"), `tests/contracts.js` (`preview.json` `routes` and `static` rows; every route path covered, none taken by the worker from a rewrite), `tools/check-site.test.mjs` (`previewChecks()`) |
 | The read API (`/api/v1/`): the neutral record, the roll pools, the rights values, the projections and their budgets, the worker's answers and CORS | `app/src/lib/apiRecord.test.ts`, `app/src/lib/rollTables.test.ts`, `tools/api-data.test.mjs` (the lean pool equals the app's pool; every record in one chunk; `rev`; schemas and budgets at today's and three times the size; the rights table), `preview/api/api.test.mjs` (every operation and error row against `docs/fixtures/api/v1/`, CORS, the data-version re-read, `openapi.json` against the parsers), `tests/contracts.js` ("read API"), `tests/derived.js` (`tools/api-data.mjs --check`), `tools/check-site.test.mjs` (the static and `--preview` API probes), `.claude/hooks/selftest.mjs` (the `apidata/` and `api/` guard) |
+| The MCP endpoint (`POST /mcp`): both protocol eras, the seven tools built from `openapi.json`, the check order, `Origin` 403, no CORS, no `Authorization`, the 65536 B body cap, `/mcp/me` 404 | `preview/api/mcp.test.mjs` (one case per check-order row and method of each era; each tool's `content` equals the REST bytes; every case against `docs/fixtures/mcp/`), `tests/contracts.js` (the `tools-list-*` fixtures name the tools of `openapi.json`; `CONTRACTS.md` names each tool and the endpoint URL; `/mcp/*` in `_routes.json`), `tools/check-site.test.mjs` (`previewChecks()`: `GET /mcp` 405, legacy `tools/list` 200, `Origin` 403, `/mcp/me` 404) |
 | A card path answers the app document: the record and English-root documents the build writes, the worker's app document and its fallback card page | `derived` ("the app documents": the count, the card fields byte for byte, every record document's `<noscript>` text, `<html lang>`, no redirect), `preview/worker.test.mjs` ("the app document", with the app document read started together with the card's reads of `/h/`, `/s/` and `/tables/`; "a failed shell read", "cardHead and appDocument"), `tools/check-site.test.mjs` (`documents`, the route checks of `previewChecks()`), `tools/smoke-http.mjs` (`/i/ci1` and `/i/en/ci1`, card and `<noscript>` text), `tests/app/serve.js` (the browser suites open the built `i/` and `en/`) |
 | The record link's card version (`card-versions.json`, `window.LOOT_V`, `<site>i/<id>?v=<v>`) | `derived` ("the card version map is current"), `tools/data-script.js` through `tests/app/serve.js`'s byte guard, `ports/ports.test.ts` ("the record links' card versions"), `lib/hash.test.ts` (`docs/fixtures/urls/record.json`), `components/record.test.ts`, `state/app.test.ts`, `tests/contracts.js` |
 
@@ -1597,7 +1598,7 @@ injection cases, the inline script's `<` escaped (`card`), the byte bounds
 with a cancelled stream, the lines and the fold, the path runs past 2048 characters, the catch-all 503, and every
 `serve` case of `docs/fixtures/urls/preview.json` (a `static` row only proves
 that no route of `public/_routes.json` matches it). It also covers the Pages
-control files: `_routes.json` names only the card families and never `/mcp`,
+control files: `_routes.json` names the card families, `/api/*` and `/mcp/*`,
 `_headers` sends `X-Robots-Tag: noindex` on the six text paths, `public/`
 holds no `robots.txt`, and `names.json` is read through `env.ASSETS`, not by
 a subrequest. Whether Pages applies `_headers` and answers `i/w1.html` with one
@@ -1819,7 +1820,7 @@ and its missing app shell, `data.js` without `window.LOOT_V`,
 `mirrorChecks()` against an assembled old-host directory (a root that is
 the app, the app's worker, an install guide left on, a missing
 `catalog-index.csv`), and `previewChecks()`'s robots file, the
-`X-Robots-Tag` header field, `/mcp`, the one 308 of `i/w1.html` (read with
+`X-Robots-Tag` header field, the `/mcp` probes, the one 308 of `i/w1.html` (read with
 `manual: true`), `i/w1?v=x` and the table card's count.
 The `--dir` and `--mirror --dir` forms run against the real collect output
 in CI's `deploy-replay` (every run outside `main`) and `deploy` (`main`).
