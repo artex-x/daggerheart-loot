@@ -35,8 +35,7 @@
 - Then: B3, then B2b; landing 3 carries both, then B3 step 14's readings (cases (f), (a)-(e), (g); the pass line of step 14).
 
 ## Blockers
-- B3: its plan review. Status carries "- Plan review: required before B3 (trigger: ...)"; `agent-guard.mjs` blocks every implementer dispatch until `reviews/plan-B3.md` (or `plan-B3-<n>.md`) reads `Verdict: approve`, or reads `fix-then-continue` and Status carries "- Plan review findings applied: reviews/plan-B3.md". The older required lines (B1, B5a, B2a) are satisfied and do not block.
-- B3 step 1 waits for landing 2's readings (orchestrator, in progress).
+- None for B3: its plan review is applied (`reviews/plan-B3.md`, fix-then-continue, `plan.md` Status) and the landing-2 readings are in `context.md`.
 - B2b: implement-ready, but it follows B3 (the developer page lists every operation once) and lands with it at landing 3; if B3's plan review answers `replan` or B3 step 1 stops, B2b lands alone (`plan.md` section 6, "Order of the remaining batches").
 - B5a and B5b cannot start until the owner has done these (only the owner may; the orchestrator does not change security settings):
   1. Switch on "OAuth Server" (BETA) in the Supabase test project `daggerheart-loot-test` (Authentication), with the settings B5a step 1 needs: the authorization path to the app's consent route and dynamic client registration (`plan.md` B5a step 1 lists what it measures).
@@ -61,6 +60,15 @@
 - Mocks path: `issues/ai-mcp/mocks/` (B5a's consent page and "Connected apps", drawn when B5a is next). B3 changes no screen. B2b needs no mock: the lists import panel takes the existing My items panel row (default taken (owner AFK)).
 - Screenshot findings: the owner's screenshot of the homebrew import panel (note 7 of `ai-mcp-docs-page.md`) shows "Формат файла" and "llms.txt" in the file row; B2b replaces the second link.
 - Cleanup performed / retained artifacts: the plan's B0, B1 and B2a briefs, sections 3.2, 3.6, 5.2, 5.4 and 8, the Charkeeper table of 5.3, the written decision drafts D1-D9 and the plan-review sub-bullets of B1, B2a and B5a are collapsed; the last pre-collapse commit of `issues/ai-mcp/` is `8019493d` (`git show 8019493d:issues/ai-mcp/plan.md`; the B0 and B1 texts: `93eac0ae`). Scratch files of this pass (`status.md`, `b2a.md`, `b3.md`, `s32.md`, `s36.md`, the splice and bench scripts) are in the session scratchpad only.
-- Session end partial progress (if any): none.
+- Session end partial progress (if any): B5 planner refresh (2026-11-12) stopped at the usage wrap-up after the reading step; no plan, context or mock file is written yet, 1 path dirty (this file). Findings to fold in, each still to write:
+  - The test project's `site_url` (`http://localhost:3000`) and redirect list are `supabase/config.toml` `[remotes.test.auth]`; only the owner runs `npm run config:push` (it needs a TTY). Recommended: keep them; step 1 reads the authorize redirect's `Location` in Node and never loads it.
+  - plan-B5a-R6: `.claude/README.md`, "Supabase configuration", rule 2 says CLI 2.117.0's template held `[auth.oauth_server]`, deleted as not owned, so `config:push` leaves it. Recommended: own it (base `enabled = false`, the test project's values under `[remotes.test.auth.oauth_server]`, field names read with `npm run config:diff -- --project test`).
+  - Production `site_url` ends in `/`, so the consent URL may come out `//connect`: probe it in step 8, with a router fallback.
+  - The section must not draw a failure line while the OAuth server is off: step 1 measures `listGrants` with the server off.
+  - The B5a acceptance probe is defective: `print_sets` has no grant to `authenticated`, so an app token also gets 403. Probe `GET /rest/v1/user_prefs?limit=1` instead.
+  - Print tool, default taken (owner AFK): add `POST rpc/create_print_set` alone to the guard's list (`get_print_set` stays refused). B5b adds `POST /api/v1/me/print-sets` and MCP `create_print_set`: 1-180 cards `{ id, count? }`, unknown catalog id 400, `limit_reached` 409, 200 with `<site>p/<id>`. No product-law or grant-level change, so NEEDS_HUMAN_CONFIRMATION stays no. A second plan look (`reviews/plan-B5a-2.md`) is recommended, but `agent-guard.mjs` cannot enforce it.
+  - Disconnect keeps the browser confirm (rule 10: the app cannot write a revoke back), then a toast.
+  - auth-js types: `client.name`, `uri`, `logo_uri`, `redirect_uri`, `user.email`; grants have `client`, `scopes`, `granted_at`.
+  - Next step: a fresh planner pass with this brief. Draw the mock under `issues/ai-mcp/mocks/`, then edit B5/B5a/B5b, section 7, the B5a guard line, the handoff Blockers and context.md, then commit.
 - Durable items written to their homes this pass (file, section): none outside `issues/ai-mcp/` (a planner pass); D10 goes to `docs/decisions/` in B3.
 - Issue 72 stays open until the account-level read ships (`C:\Users\Ignat\.dhloot\notes\57\ai-mcp-closeout-posts.md`, A2; placed in B5b).

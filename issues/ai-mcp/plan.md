@@ -7,9 +7,9 @@
   lines settled by this pass's own measurements; B2a collapsed to its
   outcome; the owner's print idea placed in B5b).
 - Batches: B0 and B1 done (landing 1, `aeb68c0e`); B2a done (landing 2,
-  `89a55f1b`, live on production; its readings are the orchestrator's,
-  in progress, `handoff.md` "After B2a"); B3 implement-ready (next, after
-  its plan review; its step 1 reads landing 2's readings); B2b
+  `89a55f1b`, live on production; its readings are taken, `context.md`
+  "Landing 2 readings"); B3 implement-ready (next; its plan review is
+  applied, `reviews/plan-B3.md`; its step 1 reads those readings); B2b
   implement-ready, after B3 (they land together at landing 3); B5a and B5b
   implement-ready outlines, blocked on owner steps (`handoff.md`,
   "Blockers"); B4 dropped. Order and landings: section 6, "Order of the
