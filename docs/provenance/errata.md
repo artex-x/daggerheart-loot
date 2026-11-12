@@ -24,7 +24,7 @@ Tavern and the Dread GM Toolbox. A `-1` in a shipped cell is written with U+2212
 | q12, q49, q116, q184 Spear line | eq.dmg, ende | `d10+2`, `d10+5`, `d10+8`, `d10+11` with `Cumbersome` | `d8+3`, `d8+6`, `d8+9`, `d8+12`; no Cumbersome | NEW pp. 115-120 |
 | q2, q39, q106, q174 Longsword line | eq.dmg | `d8+3`, `d8+6`, `d8+9`, `d8+12` | `d10+3`, `d10+6`, `d10+9`, `d10+12` | NEW pp. 115-120 |
 | q301 Knuckle Claws | eq.bu | two-handed | one-handed | p. 125 |
-| cc56 Sweet Moss | ende | the pre-errata amount | `1d10 HP or 1d10 Stress` | NEW p. 133 |
+| cc56 Sweet Moss | ende | `1d4 HP or 1d4 Stress` | `1d10 HP or 1d10 Stress` | NEW p. 133 |
 | `refs['powerful-beast']` | stats | `Strength +1, Evasion +3` | `Strength +3, Evasion +1` | NEW p. 33 |
 
 ## Errata over SRD 2.0
