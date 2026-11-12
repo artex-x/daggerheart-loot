@@ -22,7 +22,78 @@ Orchestrator (or first worker) maintains this file so later steps do not re-fetc
     Supabase OAuth, read and write.
   - Q3 = A: the route `/mcp` of the Pages project `daggerheart-loot`; the
     product-law sentence changes in this task.
-- Open questions: the outline below, "Open design questions".
+- Decisions already settled (owner, chat, 2026-11-10; plan `Q2` and the
+  plan review's Risk 6):
+  - Plan Q2 = A: the API serves every source `data.json` publishes, each
+    record with `source`, `link` and a `rights` field (record v1), and
+    `openapi.json` carries the DPCGL notice. Home: D3 under
+    `docs/decisions/` and `docs/specs/CONTRACTS.md` section 6 (not an
+    "Owner insights" rule, `.claude/README.md`); written in B1.
+  - Risk 6: one sentence in both privacy pages says that shared lists and
+    homebrew items are readable by programs through the public API. Home:
+    `pages/src/privacy.html` and `pages/src/en/privacy.html`, "Link
+    previews" (not an "Owner insights" rule); written in B1.
+- Decisions already settled (owner, interactive, 2026-11-10):
+  - Issue 72 (replaces the plan's Q3): nothing is posted on issue 72 until
+    the API is live; then the owner posts the announcement (`plan.md`
+    section 8: working URLs, no mapping offer, no CORS question) and tells
+    the Charkeeper author. No batch and no gate depends on the author's
+    answers.
+  - CORS: `/api/v1/*` answers `Access-Control-Allow-Origin: *` with no
+    credentials, `Access-Control-Allow-Methods: GET, POST, OPTIONS`,
+    `Access-Control-Allow-Headers: Content-Type`,
+    `Access-Control-Max-Age: 86400`, and `OPTIONS` answers 204. `/mcp`
+    keeps no CORS headers and answers 403 to a browser `Origin`. The B5
+    `/me` paths take an explicit allowlist, not `*`. Home: D3 and
+    `CONTRACTS.md` section 6; written in B1.
+  - Publication: the owner publishes as soon as B1 ships, then iterates on
+    the contract (`plan.md` section 11 lists what v1 freezes).
+  - The app stays independent of the API (`plan.md` section 3.8). Home:
+    D2; written in B1.
+  - Q6 = C: a per-record audit against the SRD 2.0 decides each record's
+    `rights.license`, stored in the build-time table
+    `docs/rights/records.json` with a test; the owner reviews the table
+    before B1's squash. Home: D5 and that table; written in B0.
+  - Q7 = A: the API serves the Russian text on the same reading as the site
+    and `data.json`; the takedown promise covers the API. Home: D5;
+    written in B0.
+- Open questions: none for the owner in `plan.md` (B5 questions Q8-Q11
+  are "default taken (owner AFK)", 2026-11-11). Open design questions:
+  B3's search strategy; B5a's screen layout (a mock).
+
+## Issue 72 and the layered-architecture question (owner, 2026-11-10)
+
+- Issue 72 (GitHub, fetched 2026-11-10): the Charkeeper author
+  (`kortirso/charkeeper`, Ruby, TTRPG character manager,
+  https://charkeeper.org) asks for an integration. Flow they propose: the
+  user selects external tables in Charkeeper; Charkeeper requests tables and
+  options from daggerheart-loot; the user clicks loot; daggerheart-loot
+  returns a result item; the user approves; Charkeeper creates the item from
+  that data. The owner replied: ai-mcp is planned next, a third-party API can
+  also be exposed, and asked what API and capabilities Charkeeper needs. No
+  answer from the author yet. The `charkeeper-homebrew-import` skill
+  describes Charkeeper's homebrew import JSON (Daggerheart items, weapons,
+  armor, consumables).
+- Owner request (2026-11-10): plan ai-mcp as a multi-layered architecture:
+  a backend (an HTTP API for third parties and the MCP server) with the MCP
+  server as a client of that backend, instead of the MCP endpoint reading
+  data on its own.
+- Owner addition (2026-11-10): the layered design may move logic from the
+  frontend to the backend (for example the roll logic) and data from static
+  files to the database (for example `data.json`). The owner accepts radical
+  changes and leaves the decision to the planner. The planner prices each
+  move against the product laws, the offline and static-host paths, the
+  RU/EN parity, the frozen contracts and the migration cost, and may
+  recommend a staged path.
+- Status of the predecessor (stale: see "Planner facts" below):
+  `cloudflare-pages` has no commits and no `issues/` directory on 2026-11-10; the Outline above says to plan ai-mcp
+  after it. The owner asked to plan now: the plan must say what it assumes
+  about the host and what moves if `cloudflare-pages` changes it.
+- Tension to resolve in the plan, not here: the Design inputs put the MCP
+  route in the stateless preview Worker (Q3 = A) and the product law allows
+  one stateless Worker and the Supabase backend as the only server that
+  stores data. A shared API layer must fit that law or amend it, with the
+  options and the quota (100,000 requests a day per account) priced.
 
 ## Design inputs (owner-settled, 2026-10-15)
 
@@ -83,7 +154,8 @@ Limits and security (all groups):
   stops cards and MCP alike until 00:00 UTC (accepted for the cards on
   2026-10-14); `<site>#/...` keeps working.
 - `Origin`: a request with a browser `Origin` that is not an allowed client
-  answers 403 (DNS rebinding, MCP MUST); no CORS headers.
+  answers 403 (DNS rebinding, MCP MUST); no CORS headers. This holds for
+  `/mcp` only; `/api/v1/` answers CORS (owner, 2026-11-10).
 - No log, no cookie, no stored state; the publishable key for `anon`
   reads.
 - Licence: the catalog tools serve what `data.json` already publishes.
@@ -176,6 +248,28 @@ measurement:
   covers that path; companion Markdown pages at `<page>.md` are a
   convention, not a requirement. https://llmstxt.org/
 
+## License sources (fetched 2026-11-10)
+
+- DPCGL 2.0 PDF (header "Last Updated 8/05/2026"; the license page dates
+  it 25 August 2026):
+  https://darringtonpress.com/wp-content/uploads/2026/08/DPCGL_2.0_AUG_26_2026.pdf.
+  1.1 DRP Games include Hope & Fear; 1.6 SRD 2.0 is Public Game Content,
+  SRD 1.0 stays for legacy content; 1.5(c) the exact text of Campaign
+  Frames is Prohibited Content; 1.7 translations are Adaptive Content;
+  1.9 Permitted Formats name no website or API; 1.9.1 VTT whitelist;
+  1.9.3 frames for actual play only; 4.1 the notice in shared material;
+  the combined Daggerheart notice equals `README.md`'s quote.
+- SRD page https://www.daggerheart.com/srd/: SRD 2.0 only, 25 August 2026,
+  `DH_SRD_2_2026_08_25.pdf`; adds Hope & Fear loot and equipment and "all
+  campaign frame mechanics". A text search of the PDF finds some frame
+  weapons (Cleaver, Sharpened Rake, Revolver, Shotgun, Holy Shotgun), not
+  `Hotspot` or the "Enchanted" items; the layout splits names, so a miss
+  is not proof.
+- Repository copies: `LICENSE` says SRD 1.0 and lists Hope & Fear outside;
+  `README.md`, `README.ru.md`, `llms.txt`, the footer and the terms pages
+  say SRD 2.0 with Hope & Fear covered; no copy names the campaign frames;
+  `tests/derived.js` never reads `LICENSE` or the terms pages.
+
 ## Reasons already disproved
 
 - "The training-crawler block in `robots.txt` protects the item text":
@@ -191,6 +285,138 @@ measurement:
   the only server that stores data; one stateless preview Worker renders
   link cards and stores nothing." This task changes the sentence (Q3 = A).
 - `noindex` stays and crawling stays allowed (`META.md` sections 1-2).
+
+## Planner facts and owner clarifications (2026-11-10)
+
+- Correction: `cloudflare-pages` shipped as `d0fd98bc` (2026-10-28), then
+  `path-urls` as `1ace55e7`; the site's host is `daggerheart-loot.pages.dev`,
+  `/mcp` is reserved and answers 404 (`CONTRACTS.md` section 5,
+  `tools/check-site.lib.mjs`). The "no commits" line above is stale.
+- Owner (2026-11-10, via the orchestrator): "what moves to the backend" is
+  every app function an API client would otherwise re-implement (search,
+  filters, sorting, tables, file checks, share-link resolution), each priced
+  as needed or desirable, one or two implementations.
+- Owner (2026-11-10): the API is a general platform (other VTTs, character
+  managers, Discord bots, GM tools, scripts, AI assistants); Charkeeper is
+  the first worked example the contract must satisfy. Resource-oriented,
+  versioned, auth tiers, rate limits, formats, caching, OpenAPI as the one
+  source for the MCP tools, and no extension point before a second consumer.
+- Measured 2026-11-10 (Node 24, this host, `data.js` 1,103,443 B as JSON):
+  largest full table `voa` 167,888 B (parse 1.2 ms), its lean rows (id,
+  roll, names, kind) 15,315 B; `eq` 186,019 B; `refs` 29,249 B.
+- Measured 2026-11-10 through `buildIndex` (plan-review fix pass):
+  `eq_weapon` 512 rows (tier 3 the largest part, 145 rows, 21,511 B lean),
+  lean rows 74,986 B without `eq` and 144,444 B with it; `eq_secondary`
+  148, `eq_armor` 118; `dv` 145 rows, 20,816 B lean; roll pools `arazo` 27
+  of 78 rows, `ph` 45 of 93, `frames` 52 of 94; `refs` and `sets` 29,854 B;
+  45 records carry both `tier` and `eq.tier`.
+
+## Owner answers, interactive (2026-11-10)
+
+- Q1: the API serves the neutral record and the contract only. No mapping
+  table is published, and no `format=` parameter: every consumer maps as it
+  wants. (Home: `docs/decisions/`, in the B1 decision D3, the contract
+  decision; D1 is the architecture.)
+- Q3: superseded by "Issue 72" under "Decisions already settled" above.
+- Q4 = B5 of this task, with the free-plan check done by the orchestrator.
+- Q5 = yes: the shared 100,000 requests a day, no API keys, no per-client
+  limit in v1.
+- Verified 2026-11-10 (docs and the owner's dashboard, read only; nothing
+  toggled): the Supabase OAuth 2.1 server has no separate charge and
+  counts users toward the MAU quota; the project `daggerheart-loot-test`
+  (org on the Free plan, 2,666 of 50,000 MAU) shows Authentication, "OAuth
+  Server" (BETA) with the enable switch off and available. Dynamic client
+  registration is documented for MCP clients. B5's free-plan precondition
+  holds; B5 still measures the flow on the test project.
+
+## B5 design facts (2026-11-11)
+
+- Supabase OAuth 2.1 server (docs fetched 2026-11-11,
+  https://supabase.com/docs/guides/auth/oauth-server/token-security and
+  `.../oauth-flows`): the access token is a normal JWT, `role` and `aud`
+  `authenticated`, plus `client_id` (and `session_id`); no custom scopes
+  (`openid`, `email`, `profile`, `phone` control OIDC data, not database
+  access); "your existing RLS policies continue to work"; restrict a
+  client by `auth.jwt() ->> 'client_id'`. `expires_in` default 3600;
+  refresh tokens may rotate. Endpoints
+  `<ref>.supabase.co/auth/v1/oauth/authorize`, `.../oauth/token`,
+  discovery `.../auth/v1/.well-known/oauth-authorization-server`.
+  `revokeGrant` ends that client's sessions and refresh tokens at once;
+  no revocation endpoint is documented.
+- auth-js 2.117.1 (the repository's pin) has `auth.oauth`:
+  `getAuthorizationDetails`, `approveAuthorization`,
+  `denyAuthorization` (`skipBrowserRedirect`), `listGrants`,
+  `revokeGrant`.
+- Account writes that exist (migrations at `8f194abd`, `ports/supabase.ts`):
+  lists by `apply_list_writes` (invoker, at most 200 ops; `create`/`add`
+  `on conflict (id) do nothing`; field updates without a revision check)
+  and direct `lists` deletes; homebrew books, items and cards by direct
+  table writes under RLS (create `upsert ignoreDuplicates` with a client
+  uuid; update `eq('revision', r)` with the read-back rule of
+  `homebrewUpdate`; delete by id), `import_homebrew`,
+  `move_homebrew_items`, `delete_homebrew_items`; plus shares, purchase
+  requests, print sets, `user_prefs`, art uploads (Storage),
+  `delete_account`, `delete_account_requests`. Every one of them is
+  reachable by any `authenticated` token, so by a client token too.
+- Rows carry `revision` (bigint, +1 per edit) and `updated_at`; deletes
+  leave no tombstone; the app re-reads by `id,revision` heads.
+  `get_homebrew_item` answers `hid`, `mine`, an md5 `revision`, `item`,
+  `related`, `updated_at`, never `owner_id`. Limits: `lists_per_owner`
+  50, `entries_per_list` 100, `homebrew_items_per_owner` 100.
+- Planner defaults taken (owner AFK), `plan.md` section 7: Q8 one grant
+  level; Q9 writes of lists, entries and homebrew items only; Q10 client
+  tokens only; Q11 an empty `/me` allowlist. B5 split into B5a and B5b.
+- Plan review `reviews/plan-B5a.md` (2026-11-11), facts read from the
+  repository: PostgREST resource embedding reads other tables through
+  foreign keys under RLS on an allowed path (`lists?select=*,list_shares(*)`),
+  so path checks alone do not bound a client token; `list_notices` is
+  written only by SECURITY DEFINER functions. `supabase/config.toml` has
+  `enable_manual_linking = true` and TOTP `enroll_enabled = true`, and no
+  OAuth server section. Cascades: a list delete deletes its
+  `list_shares`, `purchase_requests` (and lines) and `list_notices`; an
+  item delete deletes every `list_entries` row that links it, other
+  accounts' lists too, and releases its picture; `PATCH` of
+  `homebrew_items.art` to null deletes the picture. The nightly backup
+  leaves out roles, so a restore drops `pgrst.db_pre_request`.
+  `lists` grants `update` to `authenticated`. `get_homebrew_items` is
+  SECURITY DEFINER, answers any id, has no owner filter and no `related`.
+- Unverified (the reviewer's reading; B5a step 1 measures): a Supabase
+  access token carries `email`, `phone`, `app_metadata`, `user_metadata`
+  whatever OIDC scope is asked; PostgREST checks a JWT by signature only,
+  so an issued access token stays valid until `exp` after `revokeGrant`.
+- B5a step 1 measurement list: token claims; `resource` and `aud`; a
+  revoked token at PostgREST; on Auth with the client token: `PUT
+  /auth/v1/user` (email, password, `data`), `GET
+  /auth/v1/user/identities/authorize`, `DELETE
+  /auth/v1/user/identities/{id}`, `POST /auth/v1/factors`, `POST
+  /auth/v1/logout?scope=global`, `GET /auth/v1/user`; the discovery URLs
+  `<SUPABASE_URL>/.well-known/oauth-authorization-server/auth/v1` and
+  `<SUPABASE_URL>/auth/v1/.well-known/oauth-authorization-server`;
+  whether the pinned CLI's `config.toml` has an OAuth server section;
+  whether the local stack serves the OAuth server. Stop: email, password,
+  identity link or unlink, factor enrollment.
+- Defaults taken (owner AFK) from that review, `plan.md` section 7: R1
+  (the guard refuses an ended session), R7 (optional `If-Match` on a list
+  `PATCH`), N10 (`?ids=` names the `craft.from` difference).
+
+## Second consumer: bacchus-atlas (orchestrator, 2026-11-11)
+
+- `github.com/Machenspieler/bacchus-atlas`: static GitHub Pages site, JS,
+  no backend, a Daggerheart environments guide. Nothing is posted there.
+- It mirrors 264 catalog items into `data/items.json` (id such as `cc7`,
+  `w62`; kind; src `core` 120, `hnf` 120, `wondrous` 19, `dread` 5; roll;
+  img; en/ru name and description; optional craft id) from our old
+  `data.json`; its Prep picker uses a 240-entry item table by id; it
+  builds plant-name aliases itself.
+- It links `https://artex-x.github.io/daggerheart-loot/i/{id}.html` and
+  loads art from that host's `img/`, drawn on a canvas (`crossOrigin`
+  anonymous) for a PNG copy, so image bytes need
+  `Access-Control-Allow-Origin: *`. Verified 2026-11-11:
+  `daggerheart-loot.pages.dev/img/cc7.webp` sends `*`; `/i/cc7.html`
+  answers 308 to `/i/cc7`, also `*`.
+- It needs stable ids, RU/EN name and description, kind, src, roll,
+  image URL, page link, craft, and a build-time pull refresh (no
+  account, no write).
 
 ## Do not re-fetch unless
 - Human provides new info
