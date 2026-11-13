@@ -695,6 +695,12 @@ readings".
 - Owner instructions of 2026-11-13: proceed with the following batches as planned (the session was restarted, no handoff needed); the weekly 95 % usage stop is ignored; the B5 plan review and the UI-action audit run after B3 and B2b (now); the branch `claude/ai-mcp-b5plan` (temp worktree `ai-mcp-b5plan`, commits `3689701b` and `71c6827c`) is unmerged on purpose because its "Plan review: required before B5b" line blocks every implementer dispatch until the review approves; developer tokens are not built; fallback 2 (per-total roll files) is dropped.
 - Next: the owner's decision on the cold readings; the independent UI-action audit and a second look at the B5 plan; merge `claude/ai-mcp-b5plan` only on approve; B5a-B5d wait on the owner's OAuth steps; the branch and worktree inventory; the 57-debt closeout.
 
+## Plan review and audit facts (planner, 2026-11-13)
+- `reviews/plan-B5b.md` and `reviews/audit-ui-actions.md` (both fix-then-continue, `Reviewed` 71c6827c) are applied in `plan.md` (Status lists each finding). The audit found no gap that needs a guard name or a consent fact.
+- Reviewer probes on production (2026-11-13, one `curl` each): `//lists` answers 200 `text/html` as `/lists` does, so Pages applies a `_redirects` rule to a double-slash path; `/connect` and `//connect` answer 404 (no rule yet). Whether Pages applies a `_headers` rule to `//connect` is not read.
+- The "owner's OAuth steps" of the landing-3 note: the test-project switch is done (2026-11-12, "B5 refresh facts" above); the note was written on `claude/ai-mcp`, which did not hold that fact.
+- Code facts the reports cite: `ports/redirect.ts` `saveReturn` stores only the route key and the language, and `lib/address.ts` `addressOf` never reads `location.search`; `tools/bundle-budget.mjs` sums every `.js` and `.css` under `dist/` (275.2 of 276 kB after B2b; the configured limit 333 kB with about 1 kB of room); `lib/money.ts` holds `guessPrice` and `reprice`; `lib/homebrewFile.ts` `Target` has `home`, `held`, `new`, `file`, `custom`; `lib/homebrewForm.ts` `formProblems` checks the upgrade-line type, held names and `SECTIONS_MAX`.
+
 ## Do not re-fetch unless
 - Human provides new info
 - context.md is missing a fact you need
