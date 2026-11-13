@@ -29,25 +29,28 @@
   The steps are as each assistant's own help page gives them on 13 November 2026. If a menu has
   another name in your version, the help page is the source.
 </p>
-<h3>Claude (claude.ai)</h3>
+<h3>Claude (claude.ai and Claude Desktop)</h3>
 <ol>
   <li>Open Customize, then Connectors.</li>
   <li>
     Press "+ Add", then "Add custom connector". Enter a name and the address above, and press
     "Continue".
   </li>
-  <li>Under Authentication choose "No sign in", then press "Add".</li>
+  <li>
+    Press "Continue" on the detected settings. Under Authentication choose "No sign in", then
+    press "Add".
+  </li>
 </ol>
 <p>
-  Custom connectors work on the Free (one connector), Pro, Max, Team and Enterprise plans; on
-  Team and Enterprise an organization owner adds the connector first. The
+  Custom connectors work on the Free (one connector), Pro, Max, Ultra, Team and Enterprise
+  plans; on Team and Enterprise an organization owner adds the connector first. To use the
+  connector, switch it on in a chat with "+", then "Connectors". See the
   <a
     href="https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp"
     target="_blank"
     rel="noopener"
     >help page of Claude</a
-  >
-  gives the steps for claude.ai only.
+  >.
 </p>
 <h3>Cursor</h3>
 <ol>
@@ -89,8 +92,7 @@
 <h3>Another assistant</h3>
 <p>
   An assistant that lets you add a remote MCP server by its address, with no sign-in, takes the
-  address above in the same way. This page gives no steps for ChatGPT, because its help page
-  does not say today that it accepts a server with no sign-in.
+  address above in the same way. This page has no steps for ChatGPT yet.
 </p>
 <h2>What it can and cannot do</h2>
 <ul>
@@ -115,7 +117,8 @@
   The assistant's company receives what the assistant asks the site for and what the site
   answers. The site stores nothing about these calls and sets no cookie; Cloudflare, which hosts
   the site, receives the usual technical data of each request. Every request shares one daily
-  limit with the rest of the site, so ask for what you need and not more. The
+  limit with the API and the link previews of the site, so ask for what you need and not more.
+  The
   <a href="privacy.html">privacy page</a> has the details.
 </p>
 <h2>Example prompts</h2>
@@ -125,8 +128,8 @@
   <li>"Read me the full text of the item ci12 and give me its link."</li>
   <li>"Check this list file before I import it" (and paste the file).</li>
   <li>
-    "Build me a list file with five healing consumables from the catalog, then tell me how to
-    import it."
+    "Read https://daggerheart-loot.pages.dev/llms.txt, then build me a list file with five
+    healing consumables from the catalog and tell me how to import it."
   </li>
 </ul>
 <h2>The file for assistants</h2>

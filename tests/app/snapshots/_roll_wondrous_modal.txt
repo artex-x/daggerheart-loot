@@ -20,6 +20,7 @@ RootWebArea "Wondrous Environments - Генератор лута Daggerheart" [u
 
 ## ru :: controls
 ?Об этой таблице
+API
 EN
 RU
 Wondrous Environments
@@ -31,6 +32,7 @@ daggerheart.com
 Войти
 Ещё
 Закрыть
+ИИ-ассистенты
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
@@ -67,6 +69,8 @@ RootWebArea "Wondrous Environments - Daggerheart Loot Generator" [url=/en/roll/w
 
 ## en :: controls
 ?About this table
+AI assistants
+API
 Abyssal Sap
 Add to list
 Alternate tables

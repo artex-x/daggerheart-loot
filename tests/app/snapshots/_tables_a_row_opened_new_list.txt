@@ -82,6 +82,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 8Плетёная СетьВы можете совершить Бросок Искусности, используя э... [namelen=176 namehash=42bf4aa4]
 9Банка с ОгнёмВы можете вылить странную жидкость из этой банки, ... [namelen=154 namehash=74289744]
 ?Об этих данных
+API
 Core
 EN
 Hope & Fear
@@ -95,6 +96,7 @@ daggerheart.com
 Дополнения
 Ещё
 Закрыть
+ИИ-ассистенты
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
@@ -196,6 +198,8 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables]
 8Woven NetYou can make a Finesse Roll using this net to trap a s... [namelen=146 namehash=728f2f60]
 9Fire JarYou can pour out the strange liquid contents of this ja... [namelen=143 namehash=0f8f20e0]
 ?About this data
+AI assistants
+API
 Add to list
 Alt. tables
 Cancel

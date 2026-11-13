@@ -379,7 +379,10 @@ export function fileChecks({ install = true, documents = false } = {}) {
     /* The generated site pages (docs/specs/META.md section 9, "Static
      * pages"): a plain URL outside the app, one copy per language, kept out
      * of search results too. */
-    ...(install ? ['install', 'privacy', 'terms'] : ['privacy', 'terms'])
+    ...(install
+      ? ['install', 'privacy', 'terms', 'ai', 'developers']
+      : ['privacy', 'terms', 'ai', 'developers']
+    )
       .flatMap((id) => ['pages/' + id + '.html', 'pages/en/' + id + '.html'])
       .flatMap((f) => [
         { path: f, ...status200(f) },

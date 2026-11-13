@@ -24,6 +24,7 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search?
     button "Ещё" [expanded=false haspopup=menu]
 
 ## ru :: controls
+API
 EN
 RU
 daggerheart.com
@@ -35,6 +36,7 @@ daggerheart.com
 Выбрать
 Ещё
 Закрыть
+ИИ-ассистенты
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
@@ -92,6 +94,8 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search?as=gm3]
     button "More" [expanded=false haspopup=menu]
 
 ## en :: controls
+AI assistants
+API
 Account: gm3@example.test
 Add to list
 All

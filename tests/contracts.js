@@ -380,7 +380,7 @@ const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
       openapi.info['x-mcp-endpoint'] === PREVIEW_ORIGIN + '/mcp',
       "openapi.json's x-mcp-endpoint is not " + PREVIEW_ORIGIN + '/mcp'
     );
-    /* The two documentation pages (plan B2b): every operation on the developer page, in
+    /* The two documentation pages: every operation on the developer page, in
        both languages, and the user page's MCP address is the shipped one and the only one. */
     {
       const { PAGES } = require('../tools/build-pages.js');

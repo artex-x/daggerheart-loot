@@ -137,6 +137,10 @@ const GOOD = {
   'pages/en/install.html': { type: 'text/html', body: SITE_PAGE },
   'pages/terms.html': { type: 'text/html', body: SITE_PAGE },
   'pages/en/terms.html': { type: 'text/html', body: SITE_PAGE },
+  'pages/ai.html': { type: 'text/html', body: SITE_PAGE },
+  'pages/en/ai.html': { type: 'text/html', body: SITE_PAGE },
+  'pages/developers.html': { type: 'text/html', body: SITE_PAGE },
+  'pages/en/developers.html': { type: 'text/html', body: SITE_PAGE },
   'pages/privacy.html': { type: 'text/html', body: SITE_PAGE + CONTACT },
   'pages/en/privacy.html': { type: 'text/html', body: SITE_PAGE + CONTACT },
   '404.html': { type: 'text/html', body: `<!doctype html><div id="app-404"></div>` }
@@ -433,7 +437,7 @@ describe('checks() shape', () => {
     // a refactor, because a refactor that dropped several checks would
     // still pass it.
     // The exact count and the exact sorted distinct path set close that.
-    assert.equal(list.length, 79);
+    assert.equal(list.length, 87);
     assert.equal(list.length, appChecks().length + fileChecks({ documents: true }).length);
     const paths = [
       ...new Set(list.map((c) => (typeof c.path === 'function' ? '<entry>' : c.path)))
@@ -459,6 +463,10 @@ describe('checks() shape', () => {
       'names.json',
       'og/_share.jpg',
       'og/_share_en.jpg',
+      'pages/ai.html',
+      'pages/developers.html',
+      'pages/en/ai.html',
+      'pages/en/developers.html',
       'pages/en/install.html',
       'pages/en/privacy.html',
       'pages/en/terms.html',

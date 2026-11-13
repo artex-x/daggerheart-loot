@@ -420,8 +420,9 @@ keeps polling it; the worker stays registered and caches only pictures and
 hashed build files (`docs/specs/META.md` section 9).
 
 `pages/<name>.html` (Russian) and `pages/en/<name>.html` (English) are the
-site's static pages, one copy per language: `install`, `privacy` and
-`terms`. The `privacy` and `terms` URLs are frozen once submitted to the
+site's static pages, one copy per language: `install`, `privacy`, `terms`,
+`ai` (the user page of the MCP endpoint) and `developers` (the API
+reference). The `privacy` and `terms` URLs are frozen once submitted to the
 Google OAuth console. `tools/build-pages.js` generates them from
 `pages/src/<name>.html` and `pages/src/en/<name>.html` through
 `node tools/build.js`, and the deploy job publishes them from the build, like

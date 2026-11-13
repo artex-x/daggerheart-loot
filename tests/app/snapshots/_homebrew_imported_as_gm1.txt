@@ -50,11 +50,14 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
       link "Установить как приложение" [url=/pages/install.html]
       link "Конфиденциальность" [url=/pages/privacy.html]
       link "Условия использования" [url=/pages/terms.html]
+      link "ИИ-ассистенты" [url=/pages/ai.html]
+      link "API" [url=/pages/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
   status ""
     StaticText "Импортировано предметов: 3, новых карт: 2"
 
 ## ru :: controls
+API
 EN
 RU
 Whispering CapПредметENOnce per rest, hear one sentence spoken w... [namelen=80 namehash=dcd56acc]
@@ -63,6 +66,7 @@ daggerheart.com
 Бросок
 Выбрать
 Двуствольный пистольОсновное оружиеРанг 2 · Физическое · Искусно... [namelen=175 namehash=4e79cd09]
+ИИ-ассистенты
 Импорт из файла
 Источники 1
 К содержимому
@@ -130,11 +134,15 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm1]
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
+      link "AI assistants" [url=/pages/en/ai.html]
+      link "API" [url=/pages/en/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
   status ""
     StaticText "Items imported: 3, new cards: 2"
 
 ## en :: controls
+AI assistants
+API
 Account: gm1@example.test
 Double-Barrelled PistolPrimary weaponTier 2 · Physical · Finesse... [namelen=166 namehash=6680c668]
 EN

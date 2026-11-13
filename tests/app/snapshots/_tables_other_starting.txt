@@ -42,11 +42,14 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Установить как приложение" [url=/pages/install.html]
       link "Конфиденциальность" [url=/pages/privacy.html]
       link "Условия использования" [url=/pages/terms.html]
+      link "ИИ-ассистенты" [url=/pages/ai.html]
+      link "API" [url=/pages/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
 15 метров верёвкиСтартовый предмет базовой книги. Полезны, чтобы... [namelen=109 namehash=6a08bd1b]
 ?Об этих данных
+API
 Core
 EN
 Hope & Fear
@@ -60,6 +63,7 @@ daggerheart.com
 Выбрать
 Вырезанный символ вашего покровителяHope & FearСтартовый предмет... [namelen=146 namehash=129d87ab]
 Дополнения
+ИИ-ассистенты
 К содержимому
 Камень для прорицанияHope & FearСтартовый предмет Ведьмы. При со... [namelen=130 namehash=3b885798]
 Книга о вашем тайном увлеченииHope & FearСтартовый предмет Бойца... [namelen=138 namehash=5ee5bb63]
@@ -142,6 +146,8 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/other_starting
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
+      link "AI assistants" [url=/pages/en/ai.html]
+      link "API" [url=/pages/en/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
@@ -171,6 +177,8 @@ A tiny, harmless elemental petWizard starting item. Choose this ... [namelen=128
 A totem from your mentorGuardian starting item. Choose this or A... [namelen=102 namehash=9249fb2a]
 A trophy from your first killRanger starting item. Choose this o... [namelen=119 namehash=4e05e3f5]
 A whispering orbSorcerer starting item. Choose this or A family ... [namelen=99 namehash=5f40ca97]
+AI assistants
+API
 Alt. tables
 Basic suppliesCore starting item. Tent, bedroll, tinderbox, rati... [namelen=93 namehash=0f17556d]
 Core

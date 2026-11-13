@@ -47,6 +47,8 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Установить как приложение" [url=/pages/install.html]
       link "Конфиденциальность" [url=/pages/privacy.html]
       link "Условия использования" [url=/pages/terms.html]
+      link "ИИ-ассистенты" [url=/pages/ai.html]
+      link "API" [url=/pages/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
@@ -78,6 +80,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 8Волшебное ЗеркалоПредметВы получаете дополнительный Ход Отдыха:... [namelen=416 namehash=5a51b8a6]
 9Дубина из Зубов ОграОсновное оружиеРанг 1 · Физическое · Сила ·... [namelen=295 namehash=c14e0b30]
 ?Об этих данных
+API
 Core
 EN
 Hope & Fear
@@ -89,6 +92,7 @@ daggerheart.com
 Все
 Выбрать
 Дополнения
+ИИ-ассистенты
 К содержимому
 Конфиденциальность
 Легендарная Алебарда УрзоОсновное оружиеРанг 4 · Физическое · Вл... [namelen=200 namehash=679379be]
@@ -202,6 +206,8 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/arazos_artifac
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
+      link "AI assistants" [url=/pages/en/ai.html]
+      link "API" [url=/pages/en/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
@@ -233,6 +239,8 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/arazos_artifac
 8The Looking GlassItemYou gain an additional downtime move: Modi... [namelen=381 namehash=35e91515]
 9Ogre-teeth ClubPrimary weaponTier 1 · Physical · Strength · Ver... [namelen=269 namehash=381d2d35]
 ?About this data
+AI assistants
+API
 Advanced Ageless Eye of the BeastPrimary weaponTier 3 · Physical... [namelen=355 namehash=644a4012]
 Advanced Axe of the DawnPrimary weaponTier 3 · Physical · Streng... [namelen=257 namehash=80b25bb3]
 Advanced Dirk of the DeadPrimary weaponTier 3 · Physical · Fines... [namelen=316 namehash=69ee372c]

@@ -39,7 +39,7 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
     button "Выбрать файл..."
     ... StaticText x16 of 20 same-shape siblings elided
     link "Формат файла" [url=/schema/homebrew-v2.json]
-    link "llms.txt" [url=/llms.txt]
+    link "ИИ-ассистенты" [url=/pages/ai.html]
     combobox "Без источника 12 предметов" [value=В «Хоумбрю» expanded=false haspopup=menu]
       option "В «Хоумбрю»" [selected=true]
       option "+ Новый источник..." [selected=false]
@@ -66,19 +66,22 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
       link "Установить как приложение" [url=/pages/install.html]
       link "Конфиденциальность" [url=/pages/privacy.html]
       link "Условия использования" [url=/pages/terms.html]
+      link "ИИ-ассистенты" [url=/pages/ai.html]
+      link "API" [url=/pages/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
+API
 EN
 RU
 daggerheart.com
-llms.txt
 Аккаунт: gm3@example.test
 Бросок
 В «Хоумбрю»+ Новый источник...
 Все
 Выбрать
 Выбрать файл...
+ИИ-ассистенты
 Импорт из файла
 Импортировать (12)
 Источники 0
@@ -178,7 +181,7 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm3]
     button "Choose a file..."
     ... StaticText x16 of 20 same-shape siblings elided
     link "File format" [url=/schema/homebrew-v2.json]
-    link "llms.txt" [url=/llms.txt]
+    link "AI assistants" [url=/pages/en/ai.html]
     combobox "No source 12 items" [value=Into "Homebrew" expanded=false haspopup=menu]
       option "Into "Homebrew"" [selected=true]
       option "+ New source..." [selected=false]
@@ -205,9 +208,13 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm3]
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
+      link "AI assistants" [url=/pages/en/ai.html]
+      link "API" [url=/pages/en/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
+AI assistants
+API
 Account: gm3@example.test
 All
 Ash BedrollItemA bedroll for a long road.
@@ -278,5 +285,4 @@ Wanderer's BedrollItemA bedroll for a long road.
 Warden's BedrollItemA bedroll for a long road.
 Warm BedrollItemA bedroll for a long road.
 daggerheart.com
-llms.txt
 show less

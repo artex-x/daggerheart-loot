@@ -19,6 +19,7 @@ RootWebArea "Новый предмет - Генератор лута Daggerheart
 2
 3
 4
+API
 EN
 EN - пусто
 RU
@@ -31,6 +32,7 @@ daggerheart.com
 Выбрать файл
 Жирный
 Закрыть
+ИИ-ассистенты
 К содержимому
 Карты правил
 Конфиденциальность
@@ -73,6 +75,8 @@ RootWebArea "New item - Daggerheart Loot Generator" [url=/en/homebrew/new?as=gm1
 2
 3
 4
+AI assistants
+API
 Account: gm1@example.test
 Bold
 Bulleted list

@@ -34,10 +34,10 @@
 <h2>Fair use and the quota</h2>
 <p>
   Cache the lists (rolls, tables, the catalog) and send at most one request for each user
-  action. All the Functions requests of the site, the API and the link cards together, share one
-  daily quota of 100,000. When a burst uses it up, the API and the link cards answer an error
-  until 00:00 UTC; the app keeps working. To read the whole catalog without any request to the
-  quota, use the static mirror below.
+  action. The API, the MCP endpoint and the link cards share one daily quota of 100,000
+  Functions requests. When a burst uses it up, the API and the link cards answer an error until
+  00:00 UTC; the app keeps working. To read the whole catalog without any request to the quota,
+  use the static mirror below.
 </p>
 <h2>The v1 freeze</h2>
 <p>
@@ -65,7 +65,7 @@
   escape them before you show them.
 </p>
 <h2>Operations</h2>
-<p>Every operation of <code>openapi.json</code>, each with a request that you can run.</p>
+<p>Every operation of <code>openapi.json</code>, each with an example request.</p>
 <h3><code>GET /api/v1/openapi.json</code></h3>
 <p>Reads the description of the API.</p>
 <pre><code>curl https://daggerheart-loot.pages.dev/api/v1/openapi.json</code></pre>
@@ -107,8 +107,8 @@
 <pre><code>curl https://daggerheart-loot.pages.dev/api/v1/homebrew-items/00000000-0000-4000-8000-000000000000</code></pre>
 <h3><code>GET /api/v1/shared-lists/{token}</code></h3>
 <p>
-  Reads the list behind a share link, as the link's audience sees it. A list larger than 65536
-  bytes of database answer answers 422 with the link of the app.
+  Reads the list behind a share link, as the link's audience sees it. A list whose database
+  answer is larger than 65536 bytes answers 422 with the link of the app.
 </p>
 <pre><code>curl https://daggerheart-loot.pages.dev/api/v1/shared-lists/SHARE_TOKEN_OF_43_CHARACTERS</code></pre>
 <h3><code>POST /api/v1/file-checks</code></h3>
@@ -127,57 +127,59 @@
     }</code
   >. The message is English and never echoes a value.
 </p>
-<table>
-  <thead>
-    <tr>
-      <th>Status</th>
-      <th>Code</th>
-      <th>When</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>400</td>
-      <td><code>bad_request</code></td>
-      <td>A parameter or a body field fails its schema, or a parameter is given twice.</td>
-    </tr>
-    <tr>
-      <td>400</td>
-      <td><code>too_broad</code></td>
-      <td>A search matches too many records to rank.</td>
-    </tr>
-    <tr>
-      <td>404</td>
-      <td><code>not_found</code></td>
-      <td>An unknown path, section, table, record, homebrew id or share token.</td>
-    </tr>
-    <tr>
-      <td>405</td>
-      <td><code>method_not_allowed</code></td>
-      <td>Another method; the <code>Allow</code> header names the allowed ones.</td>
-    </tr>
-    <tr>
-      <td>413</td>
-      <td><code>too_large</code></td>
-      <td>A body past 4096 bytes, or a file to check past 32768 bytes.</td>
-    </tr>
-    <tr>
-      <td>415</td>
-      <td><code>unsupported_media_type</code></td>
-      <td>A POST body that is not <code>application/json</code>.</td>
-    </tr>
-    <tr>
-      <td>422</td>
-      <td><code>answer_too_large</code></td>
-      <td>A database answer past 65536 bytes.</td>
-    </tr>
-    <tr>
-      <td>503</td>
-      <td><code>unavailable</code></td>
-      <td>A read failed, timed out or was invalid.</td>
-    </tr>
-  </tbody>
-</table>
+<div class="scroll">
+  <table>
+    <thead>
+      <tr>
+        <th>Status</th>
+        <th>Code</th>
+        <th>When</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>400</td>
+        <td><code>bad_request</code></td>
+        <td>A parameter or a body field fails its schema, or a parameter is given twice.</td>
+      </tr>
+      <tr>
+        <td>400</td>
+        <td><code>too_broad</code></td>
+        <td>A search matches too many records to rank.</td>
+      </tr>
+      <tr>
+        <td>404</td>
+        <td><code>not_found</code></td>
+        <td>An unknown path, section, table, record, homebrew id or share token.</td>
+      </tr>
+      <tr>
+        <td>405</td>
+        <td><code>method_not_allowed</code></td>
+        <td>Another method; the <code>Allow</code> header names the allowed ones.</td>
+      </tr>
+      <tr>
+        <td>413</td>
+        <td><code>too_large</code></td>
+        <td>A body past 4096 bytes, or a file to check past 32768 bytes.</td>
+      </tr>
+      <tr>
+        <td>415</td>
+        <td><code>unsupported_media_type</code></td>
+        <td>A POST body that is not <code>application/json</code>.</td>
+      </tr>
+      <tr>
+        <td>422</td>
+        <td><code>answer_too_large</code></td>
+        <td>A database answer past 65536 bytes.</td>
+      </tr>
+      <tr>
+        <td>503</td>
+        <td><code>unavailable</code></td>
+        <td>A read failed, timed out or was invalid.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 <h2>Caching</h2>
 <p>
   The lists and the projections carry an <code>ETag</code> and
@@ -210,7 +212,7 @@
     >llms.txt</a
   >
   is the entry for assistants; it also holds the formats of the import files. The operations
-  above are also tools of a read-only MCP server at
+  above, except <code>openapi.json</code>, are also tools of a read-only MCP server at
   <code>https://daggerheart-loot.pages.dev/mcp</code>;
   <a href="ai.html">the page for users</a> shows how to connect it.
 </p>

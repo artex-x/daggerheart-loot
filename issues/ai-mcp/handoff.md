@@ -2,8 +2,8 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (B0 and B1 live since landing 1 `aeb68c0e`; B2a live since landing 2 `89a55f1b`; B3 implemented and pushed on `claude/ai-mcp` (this pass, one commit); B2b is implement-ready and follows B3; the two land together at landing 3; then B3 step 14's readings)
-- Last agent: implementer (B2b committed, 2026-11-13; B2b is done, landing 3 next)
+- Task status: in_progress (B0 and B1 live since landing 1 `aeb68c0e`; B2a live since landing 2 `89a55f1b`; B3 and B2b implemented and pushed on `claude/ai-mcp`; the two land together at landing 3; then B3 step 14's readings)
+- Last agent: implementer (B2b fix pass, 2026-11-13, review `reviews/B2b.md`; landing 3 next)
 - NEEDS_HUMAN_CONFIRMATION: no (no product-law change; the file-check line cap is a default taken (owner AFK), see Deviations)
 - Branch: claude/ai-mcp
 - Base / starting commit: 646b2c04 (the batch diff base); the unpushed planner and merge commits go out with this push
@@ -15,7 +15,8 @@
 - B2a - record links with `?v`, one record per line, the roll index cache and the MCP adapter: `22755cc1`, review `reviews/B2a.md` (fix-then-continue), fix pass `5b58edf8`, squash `89a55f1b` (landing 2), merge-back `8019493d`. Local CPU (200 calls, median of 9): `std` roll warm 1.565 to 0.545 ms (35 %), cold 1.645 to 1.170 ms (71 %); record `ci12` warm 0.390 to 0.155 ms, cold 0.625 to 0.310 ms. Deviation: the cold criterion of 50 % was not met locally (71 %); the orchestrator accepted it (owner AFK), and the production readings decide with R1's cold reading. Sizes after B2a: 105 files (54 chunks, 4.02 MiB, `api/v1/catalog/index.json` 70,117 B), 209 at 3x, about 96 files left under 20,000.
 - B3 - search, table filters and file checks (one commit, subject `feat(api): catalog search, table filters and file checks`): `GET /api/v1/records` (operation `searchRecords`, tool `search_catalog`), `filter` on `GET /api/v1/tables/{table}`, `POST /api/v1/file-checks` (operation `checkFile`, tool `check_file`), `openapi.json` 1.2.0, the projections `apidata/search/index.json`, `apidata/search/<n>.txt`, `apidata/file-check.json` and `f` on the table rows, `facetsOf` in `data.ts` (used by `TablesPage.svelte` and the build), the report builders `lib/importReport.ts` and `lib/homebrewReport.ts` (the components call them; markup unchanged), the specs (`CONTRACTS.md` section 6, `ROUTES.md`, `META.md`, `COVERAGE.md`), `llms.txt`, `.claude/README.md`, decision D10 (`docs/decisions/2026-11-12-api-search-scans-build-time-folded-names-and-file-checks-start-at-32-kb.md`, `docs/DECISIONS.md` rebuilt), the fixtures (10 new REST, 2 new MCP; the others moved in `data_version`, the tool list and `serverInfo.version` only).
 - Step 1 gate (landing 2 readings, `context.md`): (a) met (0 errors and 0 exceeded-CPU in 33 requests); (b) K = max(1.70, 3.01) = 3.01; (c) the predicted cold REST search at 3x = 4.902 + 3.01 x (1.8 - 0.310) = 9.39 ms, at most 10 ms: met. B3 went on.
-- Previous sha (batch diff base): 646b2c04
+- B2b - the two pages, the footer links and the import-row links: `ed3d8954` (base `4cc114e7`), review `reviews/B2b.md` (fix-then-continue), fix pass in the commit after it (all 443 goldens re-seeded, `CONTRACTS.md` page list, prompt 5 reads `llms.txt` first, nits 1-12; none skipped). Static pages looked at by the reviewer's puppeteer probe at 320, 360, 390 and 1180 px, and `tests/stub.js` now checks all four at 320 and 390 px.
+- Previous sha (batch diff base): ed3d8954
 - Files changed: see `git show --stat` of the commit.
 
 ## Verification
@@ -46,7 +47,8 @@
 - A parameter given twice is 400 on every query parameter (`part`, `filter` too), not only on the search ones.
 
 ## Next batch (implement-ready)
-- Name: B2b - the two pages, the footer, the import links (`plan.md` section 6). It needs no mock and follows B3 (the developer page lists every operation once, now eleven with `searchRecords` and `checkFile`).
+- Name: none implement-ready. B2b and B3 are done; landing 3 is next, then B5a (blocked on the owner steps below).
+- Owner step at landing 3: the Claude connector with "No sign in" answers a roll (review Risk 1; on a 403 remove the Claude block of the user page); the live check of the four page URLs.
 - After landing 3 (the orchestrator, not a commit): B3 step 14's readings (cases (f), (a)-(e), (g); the pass line of step 14); the OpenAPI `ETag` of live check 1 starts `1.2.0-`. K of step 1 is 3.01.
 - Fallbacks if a reading fails: search - display names as a capitalization delta, then shard skipping by facet codes (`plan.md` B3 "Fallbacks"); file check - the cap stays 32768 B and the Edge Function option goes to the owner.
 - A usable fact for step 14: a cold file check reads `apidata/records/index.json` and `apidata/file-check.json` (one extra file family), a cold search reads the index and the shards; cold file check locally 1.4-2.2 ms today.
