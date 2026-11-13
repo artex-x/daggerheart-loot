@@ -10,10 +10,11 @@
  * global, and that adapter lives outside this module (docs/specs/CONTRACTS.md,
  * section 4). */
 
+import { EQ_TABLE } from './filters.js';
 import { isHomebrewRecord } from './homebrew.js';
 import type { Rarity } from './money.js';
 import { CHARACTER_TRAITS } from './types.js';
-import type { EquipKind, Record_, RefCard, SetCard } from './types.js';
+import type { EquipKind, Record_, RefCard, SetCard, TableId } from './types.js';
 
 /** The shape of `window.LOOT`. */
 export interface Loot {
@@ -259,6 +260,15 @@ export function plainFacets(it: Record_): Record<string, string> {
     src: srcOf(it),
     sect: isHomebrewRecord(it) ? (it.book?.section?.key ?? '') : ''
   };
+}
+
+/** Returns the facet function a table's rows answer with: the equipment facets on an
+ *  equipment table, the plain facets on every other (the tables page and the read API's
+ *  `filter` share it). */
+export function facetsOf(
+  table: TableId
+): (it: Record_) => Record<string, string | readonly string[]> {
+  return EQ_TABLE[table] ? equipFacets : plainFacets;
 }
 
 /* Tier order; an artifact sorts last. */

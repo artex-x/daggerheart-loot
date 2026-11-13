@@ -1706,6 +1706,39 @@ feet.forEach(function (f, i) {
     'the ' + (i ? 'English' : 'Russian') + ' footer has no source citation'
   );
 });
+/* The sentence that credits the Russian text by source, word for word in every copy: the
+   English one in README.md, LICENSE, llms.txt and the English footer, the Russian one in
+   README.ru.md and the Russian footer. A markdown link counts as its text. */
+const RU_CREDIT = {
+  en:
+    'The Russian text is credited by source and carries no license claim: daggerheart.su for Core,' +
+    ' a fan translation for Hope & Fear and the campaign frames, and a community sheet for the' +
+    ' Hope & Fear equipment.',
+  ru:
+    'Русский текст указан по источникам; лицензия на него не заявляется: daggerheart.su для Core,' +
+    ' любительский перевод для Hope & Fear и фреймов кампаний, таблица сообщества для снаряжения' +
+    ' Hope & Fear.'
+};
+const flatText = (s) => s.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/\s+/g, ' ');
+[
+  ['README.md', 'en'],
+  ['LICENSE', 'en'],
+  ['llms.txt', 'en'],
+  ['README.ru.md', 'ru']
+].forEach(function (row) {
+  ok(
+    flatText(fs.readFileSync(path.join(ROOT, row[0]), 'utf8')).indexOf(RU_CREDIT[row[1]]) >= 0,
+    row[0] + ': the sentence that credits the Russian text differs from the footer wording'
+  );
+});
+['ru', 'en'].forEach(function (lang, i) {
+  ok(
+    flatText(feet[i] || '').indexOf(RU_CREDIT[lang]) >= 0,
+    'the ' +
+      (lang === 'ru' ? 'Russian' : 'English') +
+      ' footer sentence that credits the Russian text differs'
+  );
+});
 /* The old caveat listed Hope & Fear among what the license does not cover.
    The supplements that remain there are checked too: they must not be
    dropped from the list either. */

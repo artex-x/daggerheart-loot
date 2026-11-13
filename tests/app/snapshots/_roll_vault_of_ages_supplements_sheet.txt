@@ -22,6 +22,7 @@ RootWebArea "Vault of Ages - Генератор лута Daggerheart" [url=/roll
 
 ## ru :: controls
 ?Об этой книге
+API
 Arazo's Artifacts
 Dread GM Toolbox
 EN
@@ -42,6 +43,7 @@ daggerheart.com
 Войти
 Ещё
 Закрыть
+ИИ-ассистенты
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
@@ -79,6 +81,8 @@ RootWebArea "Vault of Ages - Daggerheart Loot Generator" [url=/en/roll/vault_of_
 
 ## en :: controls
 ?About this book
+AI assistants
+API
 Add to list
 Alternate tables
 Arazo's Artifacts

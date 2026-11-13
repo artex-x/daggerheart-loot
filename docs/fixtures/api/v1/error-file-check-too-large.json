@@ -1,0 +1,1 @@
+{"format":"daggerheart-loot/api-error","version":1,"error":{"code":"too_large","message":"The file is past 32768 bytes. Check a longer file in the app's import, which reads up to 5 MB."}}

@@ -52,6 +52,8 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Установить как приложение" [url=/pages/install.html]
       link "Конфиденциальность" [url=/pages/privacy.html]
       link "Условия использования" [url=/pages/terms.html]
+      link "ИИ-ассистенты" [url=/pages/ai.html]
+      link "API" [url=/pages/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
@@ -176,6 +178,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 9Рюкзак ГэдиманаHope & FearОдин раз до следующего отдыха вы може... [namelen=157 namehash=dbc02c00]
 9Утяжелённые КостиHope & FearПри успешном Броске Искусности (14)... [namelen=184 namehash=d7f86a48]
 ?Об этих данных
+API
 Core
 EN
 Hope & Fear
@@ -186,6 +189,7 @@ daggerheart.com
 Войти
 Выбрать
 Дополнения
+ИИ-ассистенты
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
@@ -254,6 +258,8 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/alt_item]
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
+      link "AI assistants" [url=/pages/en/ai.html]
+      link "API" [url=/pages/en/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
@@ -378,6 +384,8 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/alt_item]
 9Suspended RodThis flat rod is inscribed with runes. When you ac... [namelen=223 namehash=0c94038b]
 9Titan's GirdleHope & FearOnce per scene, you can activate this ... [namelen=131 namehash=0ca756d0]
 ?About this data
+AI assistants
+API
 Alt. tables
 Consumables
 Core

@@ -43,6 +43,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 4
 5Кортик МёртвыхArazo's ArtifactsФизическое · Искусность · Вплотн... [namelen=299 namehash=d9977b45]
 7Табельный СекачУникальноеВоюющие НорыФизическое · Любая · Вплот... [namelen=165 namehash=9421328e]
+API
 Arazo's Artifacts
 Core
 Dread GM Toolbox
@@ -82,6 +83,7 @@ daggerheart.com
 Зачарованная ШвабраУникальноеПир зверейМагическое · Сила · Вплот... [namelen=91 namehash=e0e17ecc]
 Зачарованный МолотУникальноеПир зверейМагическое · Сила · Вплотн... [namelen=91 namehash=f69ed2c6]
 Знание
+ИИ-ассистенты
 Инстинкт
 Искусность
 К содержимому
@@ -170,6 +172,8 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_ti
 4
 5Dirk of the DeadArazo's ArtifactsPhysical · Finesse · Melee · d... [namelen=301 namehash=4cba7bac]
 7Standard Issue SlicerUniqueWarrin' WarrensPhysical · Any · Mele... [namelen=139 namehash=2dbd9f99]
+AI assistants
+API
 Agility
 All
 Arazo's Artifacts

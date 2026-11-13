@@ -84,7 +84,8 @@ guard() {
            llms.txt robots.txt LICENSE 404.html manifest.webmanifest \
            sw.js icons/icon-192.png pages/install.html pages/en/install.html \
            pages/privacy.html pages/en/privacy.html pages/terms.html \
-           pages/en/terms.html schema/import-v1.json schema/import-v2.json \
+           pages/en/terms.html pages/ai.html pages/en/ai.html \
+           pages/developers.html pages/en/developers.html schema/import-v1.json schema/import-v2.json \
            schema/import-v3.json schema/homebrew-v1.json schema/homebrew-v2.json \
            apidata/version.json api/v1/catalog/index.json api/v1/catalog/0.json; do
     if [ ! -s "_site/$f" ]; then echo "::error::$f is missing or empty"; exit 1; fi

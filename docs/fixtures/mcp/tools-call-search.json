@@ -1,0 +1,87 @@
+{
+  "request": {
+    "method": "POST",
+    "headers": {
+      "Content-Type": "application/json",
+      "MCP-Protocol-Version": "2026-07-28",
+      "Mcp-Method": "tools/call",
+      "Mcp-Name": "search_catalog"
+    },
+    "body": {
+      "jsonrpc": "2.0",
+      "id": 10,
+      "method": "tools/call",
+      "params": {
+        "name": "search_catalog",
+        "arguments": {
+          "q": "bedroll",
+          "limit": 5
+        },
+        "_meta": {
+          "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+          "io.modelcontextprotocol/clientCapabilities": {},
+          "io.modelcontextprotocol/clientInfo": {
+            "name": "test",
+            "version": "1"
+          }
+        }
+      }
+    }
+  },
+  "answer": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store"
+    },
+    "body": {
+      "jsonrpc": "2.0",
+      "id": 10,
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"format\":\"daggerheart-loot/api-search\",\"version\":1,\"data_version\":\"c1bd0ac256ce4b60\",\"total\":1,\"rows\":[{\"id\":\"ci1\",\"name\":{\"ru\":\"Первоклассный Спальный Мешок\",\"en\":\"Premium Bedroll\"},\"kind\":\"item\",\"source\":{\"id\":\"core\",\"name\":{\"ru\":\"Core\",\"en\":\"Core\"}},\"table\":\"core_item\",\"tier\":null,\"rarity\":\"common\",\"link\":{\"ru\":\"https://daggerheart-loot.pages.dev/i/ci1?v=4024gqpj\",\"en\":\"https://daggerheart-loot.pages.dev/i/en/ci1?v=4024gqpj\"}}]}"
+          }
+        ],
+        "structuredContent": {
+          "format": "daggerheart-loot/api-search",
+          "version": 1,
+          "data_version": "c1bd0ac256ce4b60",
+          "total": 1,
+          "rows": [
+            {
+              "id": "ci1",
+              "name": {
+                "ru": "Первоклассный Спальный Мешок",
+                "en": "Premium Bedroll"
+              },
+              "kind": "item",
+              "source": {
+                "id": "core",
+                "name": {
+                  "ru": "Core",
+                  "en": "Core"
+                }
+              },
+              "table": "core_item",
+              "tier": null,
+              "rarity": "common",
+              "link": {
+                "ru": "https://daggerheart-loot.pages.dev/i/ci1?v=4024gqpj",
+                "en": "https://daggerheart-loot.pages.dev/i/en/ci1?v=4024gqpj"
+              }
+            }
+          ]
+        },
+        "resultType": "complete",
+        "_meta": {
+          "io.modelcontextprotocol/serverInfo": {
+            "name": "daggerheart-loot",
+            "version": "1.2.0"
+          }
+        }
+      }
+    }
+  }
+}

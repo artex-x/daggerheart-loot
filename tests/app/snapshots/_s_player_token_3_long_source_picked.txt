@@ -29,6 +29,7 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/player-token-3/f_s
 ## ru :: controls
 1
 2
+API
 Core
 EN
 RU
@@ -45,6 +46,7 @@ daggerheart.com
 Двуручное
 Есть улучшение
 Закрыть
+ИИ-ассистенты
 Искусность
 К содержимому
 Конфиденциальность
@@ -98,6 +100,8 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-3/f_src-hb_long
 ## en :: controls
 1
 2
+AI assistants
+API
 Agility
 All
 Armor

@@ -1,0 +1,82 @@
+{
+  "request": {
+    "method": "POST",
+    "headers": {
+      "Content-Type": "application/json",
+      "MCP-Protocol-Version": "2026-07-28",
+      "Mcp-Method": "tools/call",
+      "Mcp-Name": "check_file"
+    },
+    "body": {
+      "jsonrpc": "2.0",
+      "id": 11,
+      "method": "tools/call",
+      "params": {
+        "name": "check_file",
+        "arguments": {
+          "file": "{\"format\":\"daggerheart-loot/lists\",\"version\":1,\"lists\":[{\"name\":\"Loot\",\"entries\":[{\"id\":\"ci1\"},{\"id\":\"nope\"}]}]}"
+        },
+        "_meta": {
+          "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+          "io.modelcontextprotocol/clientCapabilities": {},
+          "io.modelcontextprotocol/clientInfo": {
+            "name": "test",
+            "version": "1"
+          }
+        }
+      }
+    }
+  },
+  "answer": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store"
+    },
+    "body": {
+      "jsonrpc": "2.0",
+      "id": 11,
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"format\":\"daggerheart-loot/api-file-check\",\"version\":1,\"file\":{\"format\":\"daggerheart-loot/lists\",\"version\":1},\"ok\":true,\"reason\":null,\"message\":null,\"lines\":[{\"list\":0,\"text\":{\"ru\":\"Позиция 2: пропущена - такой записи нет в данных\",\"en\":\"Item 2: skipped - the data has no such record\"}}],\"more\":0,\"counts\":{\"lists\":1,\"entries\":1,\"skipped\":1}}"
+          }
+        ],
+        "structuredContent": {
+          "format": "daggerheart-loot/api-file-check",
+          "version": 1,
+          "file": {
+            "format": "daggerheart-loot/lists",
+            "version": 1
+          },
+          "ok": true,
+          "reason": null,
+          "message": null,
+          "lines": [
+            {
+              "list": 0,
+              "text": {
+                "ru": "Позиция 2: пропущена - такой записи нет в данных",
+                "en": "Item 2: skipped - the data has no such record"
+              }
+            }
+          ],
+          "more": 0,
+          "counts": {
+            "lists": 1,
+            "entries": 1,
+            "skipped": 1
+          }
+        },
+        "resultType": "complete",
+        "_meta": {
+          "io.modelcontextprotocol/serverInfo": {
+            "name": "daggerheart-loot",
+            "version": "1.2.0"
+          }
+        }
+      }
+    }
+  }
+}

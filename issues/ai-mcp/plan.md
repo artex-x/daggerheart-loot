@@ -8,18 +8,18 @@
   outcome; the owner's print idea placed in B5b).
 - Batches: B0 and B1 done (landing 1, `aeb68c0e`); B2a done (landing 2,
   `89a55f1b`, live on production; its readings are taken, `context.md`
-  "Landing 2 readings"); B3 implement-ready (next; its plan review is
-  applied, `reviews/plan-B3.md`; its step 1 reads those readings); B2b
-  implement-ready, after B3 (they land together at landing 3); B5 split
-  into B5a (implement-ready), B5b (implement-ready), B5c (implement-ready
-  outline) and B5d (outline), after the plan review before B5b (B5
-  refresh, 2026-11-12); B4 dropped. Order and landings: section 6, "Order
-  of the remaining batches" (D8).
+  "Landing 2 readings"); B3 and B2b done (landing 3, `c4742c53`, live on
+  production; step 14's readings are in `context.md`, "Landing 3 readings
+  and owner instructions"); B5 split into B5a (implement-ready), B5b
+  (implement-ready), B5c (implement-ready outline) and B5d (outline),
+  after the plan review before B5b (B5 refresh, 2026-11-12); B4 dropped.
+  Order and landings: section 6, "Order of the remaining batches" (D8).
 - NEEDS_HUMAN_CONFIRMATION: no. Q1-Q7 settled; Q8, Q10, Q11, the R1, R7
   and N10 options and the defaults of 2026-11-12 are "default taken (owner
-  AFK)" (section 7); Q9 is replaced by the owner's parity rule; this pass
-  adds the B5 refresh defaults (section 7, "Defaults taken (owner AFK), B5
-  refresh"). No product law changes beyond section 3.6.
+  AFK)" (section 7); Q9 is replaced by the owner's parity rule; the B3
+  pass added the B3 defaults (section 7, "Defaults taken (owner AFK), B3
+  pass") and the B5 refresh its own (section 7, "Defaults taken (owner
+  AFK), B5 refresh"). No product law changes beyond section 3.6.
 - Plan review: required before B1 (trigger: a public contract change - the read API `/api/v1/`; a product-law change). The CORS rule of 2026-11-10 is part of the same contract change.
 - Plan review: required before B5a (trigger: a migration that changes the PostgREST role config and adds restrictive table and storage policies and a SECURITY DEFINER helper; a new write and sync protocol; possible loss of stored data by a connected app's delete; a public contract change - `/api/v1/me/`, `/mcp/me`, a new app route).
 - Plan review: required before B5b (trigger: the B5 refresh of 2026-11-12 widens B5a's migration to the whole parity scope - more RPCs, table writes and storage inserts for a client token; new public contracts B5b, B5c and B5d; possible loss of stored data by bulk deletes, an import that overwrites, and share-link revokes; a new write and sync protocol). The report is `reviews/plan-B5b.md` with "Scope: plan before B5b" and covers the B5a delta, B5b, B5c and B5d (the second plan look that `handoff.md` recommended as `plan-B5a-2.md`; this line makes `agent-guard.mjs` enforce it).
@@ -858,7 +858,7 @@ Claude connector with "No sign in"; a 403 means the client sends
 the origin, add the constant, a fixture for an allowed and a refused
 origin, record it in D4).
 
-### B3 - Search, table filters and file checks (implement-ready after its plan review)
+### B3 - Search, table filters and file checks (implemented, pushed; review and step 14 pending)
 
 Status: implement-ready (planner pass of 2026-11-12, after landing 2). The
 plan review before B3 is required (Status); `agent-guard.mjs` blocks the

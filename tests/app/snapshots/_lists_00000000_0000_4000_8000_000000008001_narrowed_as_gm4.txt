@@ -57,9 +57,12 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
       link "Установить как приложение" [url=/pages/install.html]
       link "Конфиденциальность" [url=/pages/privacy.html]
       link "Условия использования" [url=/pages/terms.html]
+      link "ИИ-ассистенты" [url=/pages/ai.html]
+      link "API" [url=/pages/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
+API
 EN
 RU
 daggerheart.com
@@ -77,6 +80,7 @@ daggerheart.com
 Зелье Быстрого ШагаРасходникВы получаете бонус +1 к следующему Б... [namelen=82 namehash=6ee20e58]
 Зелье СосредоточенностиРасходникВы получаете бонус +1 к следующе... [namelen=85 namehash=0c732b9e]
 Зелье УсиленияРасходникВы получаете бонус +1 к следующему Броску... [namelen=70 namehash=49062a42]
+ИИ-ассистенты
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
@@ -146,9 +150,13 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
+      link "AI assistants" [url=/pages/en/ai.html]
+      link "API" [url=/pages/en/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
+AI assistants
+API
 Account: gm4@example.test
 Add your own item
 Bolster PotionConsumableYou gain a +1 bonus to your next Strengt... [namelen=71 namehash=d5a3c692]

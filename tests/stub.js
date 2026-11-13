@@ -20,6 +20,10 @@ const FILES = [
   'en/index.html',
   'pages/install.html',
   'pages/en/install.html',
+  'pages/ai.html',
+  'pages/en/ai.html',
+  'pages/developers.html',
+  'pages/en/developers.html',
   'old-host/index.html'
 ];
 

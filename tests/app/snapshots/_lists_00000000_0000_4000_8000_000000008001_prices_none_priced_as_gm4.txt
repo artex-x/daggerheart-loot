@@ -15,6 +15,7 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
     button "Проставить эти цены"
 
 ## ru :: controls
+API
 EN
 RU
 daggerheart.com
@@ -36,6 +37,7 @@ daggerheart.com
 Заметки
 Заряжающий Колчан
 Заряжающий КолчанПредметКогда вы успешно наносите удар стрелой и... [namelen=141 namehash=b56c369b]
+ИИ-ассистенты
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
@@ -79,6 +81,8 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
     button "Set these prices"
 
 ## en :: controls
+AI assistants
+API
 Account: gm4@example.test
 Add your own item
 Alistair's Torch

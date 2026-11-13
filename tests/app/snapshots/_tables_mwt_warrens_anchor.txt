@@ -57,6 +57,8 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Установить как приложение" [url=/pages/install.html]
       link "Конфиденциальность" [url=/pages/privacy.html]
       link "Условия использования" [url=/pages/terms.html]
+      link "ИИ-ассистенты" [url=/pages/ai.html]
+      link "API" [url=/pages/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
@@ -170,6 +172,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 9Шляпа Мага-МотылькаПредметЗа каждую карту домена Полночи или Ве... [namelen=179 namehash=dde3f072]
 9Шляпа из Колючей КорыПредметОтметьте Стресс, чтобы дать помеху ... [namelen=95 namehash=5a7e3825]
 ?Об этих данных
+API
 Core
 EN
 Hope & Fear
@@ -184,6 +187,7 @@ daggerheart.com
 Долина Богов
 Дополнения
 Дром
+ИИ-ассистенты
 К содержимому
 Конфиденциальность
 Лес Пари
@@ -261,6 +265,8 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/many_worlds_ta
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
+      link "AI assistants" [url=/pages/en/ai.html]
+      link "API" [url=/pages/en/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
@@ -374,6 +380,8 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/many_worlds_ta
 9Mitts of YoreItemIf a weapon uses Knowledge as its trait, you c... [namelen=112 namehash=db57af8f]
 9Mycelial CloakItemWhile wearing this, gain advantage on your In... [namelen=123 namehash=36c70d0c]
 ?About this data
+AI assistants
+API
 All
 Alt. tables
 Consumables

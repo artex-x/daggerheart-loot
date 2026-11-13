@@ -25,14 +25,14 @@ RootWebArea "Мои списки - Генератор лута Daggerheart" [url
     StaticText "ИМПОРТ ИЗ ФАЙЛА JSON"
     button "Выбрать файл..."
     StaticText "keys-only-v2.json"
-    ... StaticText x15 of 19 same-shape siblings elided
+    link "Формат файла" [url=/schema/import-v3.json]
+    link "ИИ-ассистенты" [url=/pages/ai.html]
+    ... StaticText x13 of 17 same-shape siblings elided
     DisclosureTriangle "Пропущено: 2" [expanded=false]
     DisclosureTriangle "Пропущено: 2" [expanded=false]
     button "Импортировать (2)"
     button "Отмена"
-    link "схеме import-v3" [url=/schema/import-v3.json]
-    link "описание для ИИ-помощников" [url=/llms.txt]
-    StaticText "), или архив ZIP из «Скачать мои данные». Списки добавятся как н..." [namelen=96 namehash=cade2d7e]
+    StaticText "Файл JSON из «Скачать JSON», архив ZIP из «Скачать мои данные» и..." [namelen=153 namehash=fa7c2b54]
     StaticText "3 списка из 50"
     button "Импорт из файла" [expanded=true]
     button "Выбрать"
@@ -54,9 +54,12 @@ RootWebArea "Мои списки - Генератор лута Daggerheart" [url
       link "Установить как приложение" [url=/pages/install.html]
       link "Конфиденциальность" [url=/pages/privacy.html]
       link "Условия использования" [url=/pages/terms.html]
+      link "ИИ-ассистенты" [url=/pages/ai.html]
+      link "API" [url=/pages/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
+API
 EN
 RU
 daggerheart.com
@@ -67,6 +70,7 @@ daggerheart.com
 Ещё: Лавка кузнеца
 Ещё: Пустой список
 Ещё: Трофеи
+ИИ-ассистенты
 Импорт из файла
 Импортировать (2)
 К содержимому
@@ -82,8 +86,7 @@ daggerheart.com
 Трофеи, 2 позиции, изменён в прошлом месяце
 Условия использования
 Установить как приложение
-описание для ИИ-помощников
-схеме import-v3
+Формат файла
 
 ## en :: tree
 RootWebArea "My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm1]
@@ -107,14 +110,14 @@ RootWebArea "My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm1]
     StaticText "IMPORT FROM A JSON FILE"
     button "Choose a file..."
     StaticText "keys-only-v2.json"
-    ... StaticText x15 of 19 same-shape siblings elided
+    link "File format" [url=/schema/import-v3.json]
+    link "AI assistants" [url=/pages/en/ai.html]
+    ... StaticText x13 of 17 same-shape siblings elided
     DisclosureTriangle "Skipped: 2" [expanded=false]
     DisclosureTriangle "Skipped: 2" [expanded=false]
     button "Import (2)"
     button "Cancel"
-    link "import-v3 schema" [url=/schema/import-v3.json]
-    link "a description for AI assistants" [url=/llms.txt]
-    StaticText "), or the ZIP archive from "Download my data". The lists are add..." [namelen=113 namehash=069a136e]
+    StaticText "A JSON file from "Download JSON", the ZIP archive from "Download..." [namelen=173 namehash=7183a7cc]
     StaticText "3 lists of 50"
     button "Import from file" [expanded=true]
     button "Select"
@@ -136,13 +139,18 @@ RootWebArea "My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm1]
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
+      link "AI assistants" [url=/pages/en/ai.html]
+      link "API" [url=/pages/en/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
+AI assistants
+API
 Account: gm1@example.test
 Cancel
 Choose a file...
 EN
+File format
 Import (2)
 Import from file
 Install as an app
@@ -160,9 +168,7 @@ Select
 Skip to content
 Tables
 Terms of use
-a description for AI assistants
 daggerheart.com
-import-v3 schema
 Лавка кузнеца, 10 items, edited 3 days ago
 Пустой список, 0 items, edited 1 hour ago
 Трофеи, 2 items, edited last month

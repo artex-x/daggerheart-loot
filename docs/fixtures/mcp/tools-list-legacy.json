@@ -150,11 +150,84 @@
                 "part": {
                   "type": "string",
                   "description": "A part id from the table's parts."
+                },
+                "filter": {
+                  "type": "string",
+                  "description": "A filter segment of the tables page, such as f_tier-1-2.cls-mag (at most 512 characters, starting with f_). The rows keep the values the page's panel would keep. A group the table does not offer is ignored."
                 }
               },
               "required": [
                 "table"
               ]
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            }
+          },
+          {
+            "name": "search_catalog",
+            "description": "Search the catalog by name and facets.\n\nFinds catalog records by name, in Russian or English, and by facets. Words may come in any order, a word also finds its other forms (a Snowball stem), and a phrase in quotes matches as typed. It reads names only, never a description or a stat line, so a word that only a description holds finds nothing. The answer is ranked as the app's search ranks names, or in catalog order when q is absent. A query that matches too many records to rank (such as a single letter or a short fragment of a word) is 400 too_broad: add a longer word or a facet. Send q, or at least one facet. total counts every match; rows holds the first limit of them. A row has the fields of the record of the same names, and the same link. Own items and homebrew are not searched. Cache it for 5 minutes.",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "q": {
+                  "type": "string",
+                  "description": "Words to find in a name, at most 200 characters and 8 words. A phrase in quotes matches as typed."
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "item",
+                    "consumable",
+                    "weapon",
+                    "secondary",
+                    "armor"
+                  ],
+                  "description": "The record kind: item, consumable, weapon, secondary or armor."
+                },
+                "source": {
+                  "type": "string",
+                  "description": "A source id such as core, hnf or voa (the id of a record's source)."
+                },
+                "table": {
+                  "type": "string",
+                  "description": "A table id from /api/v1/tables: the records of that table, as GET /api/v1/tables/{table} lists them."
+                },
+                "tier": {
+                  "type": "string",
+                  "enum": [
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "A",
+                    "C"
+                  ],
+                  "description": "The tier of a record: 1, 2, 3, 4, A or C."
+                },
+                "rarity": {
+                  "type": "string",
+                  "enum": [
+                    "common",
+                    "uncommon",
+                    "rare",
+                    "very_rare",
+                    "legendary"
+                  ],
+                  "description": "The rarity of a loot record."
+                },
+                "limit": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 50,
+                  "default": 20,
+                  "description": "How many rows to answer, 1 to 50. Default 20."
+                }
+              },
+              "required": []
             },
             "annotations": {
               "readOnlyHint": true,
@@ -223,6 +296,28 @@
               },
               "required": [
                 "token"
+              ]
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            }
+          },
+          {
+            "name": "check_file",
+            "description": "Check an import file as the app would.\n\nChecks the text of a lists file (import-v1, v2 or v3) or a homebrew file (homebrew-v1 or v2) with the app's own parsers and answers its own errors, skips and notes in Russian and English. The body is the file itself (415 unless application/json) and at most 32768 bytes (413). Bytes that are not UTF-8 answer not_json, as the import reads them. The answer is always 200 once the body is read: look at ok. It checks the catalog only, with no account: a homebrew entry without a snapshot is skipped as unheld, an error line of a lists file names its entry by item id without the record's name, and a skip line of a lists file gives its position only. A zip file is not checked: send lists.json or homebrew.json. As an MCP tool the whole request is at most 65536 bytes, so a client that escapes non-ASCII text can meet the HTTP 413 before the too_large result. The answer is never cached.",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "file": {
+                  "type": "string",
+                  "description": "The text of the file to check, exactly as the app saved it."
+                }
+              },
+              "required": [
+                "file"
               ]
             },
             "annotations": {

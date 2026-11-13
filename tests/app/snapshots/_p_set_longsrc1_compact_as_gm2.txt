@@ -37,16 +37,20 @@ RootWebArea "Генератор лута Daggerheart" [url=/p/set-longsrc1?as=gm
       link "Установить как приложение" [url=/pages/install.html]
       link "Конфиденциальность" [url=/pages/privacy.html]
       link "Условия использования" [url=/pages/terms.html]
+      link "ИИ-ассистенты" [url=/pages/ai.html]
+      link "API" [url=/pages/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
 44×63
 63×88
+API
 EN
 RU
 daggerheart.com
 Аккаунт: gm2@example.test
 Бросок
+ИИ-ассистенты
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
@@ -94,11 +98,15 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/p/set-longsrc1?as=gm2]
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
+      link "AI assistants" [url=/pages/en/ai.html]
+      link "API" [url=/pages/en/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
 44×63
 63×88
+AI assistants
+API
 Account: gm2@example.test
 B&W
 Back

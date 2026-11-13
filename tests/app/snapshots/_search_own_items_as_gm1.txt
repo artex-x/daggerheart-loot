@@ -38,9 +38,12 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search?
       link "Установить как приложение" [url=/pages/install.html]
       link "Конфиденциальность" [url=/pages/privacy.html]
       link "Условия использования" [url=/pages/terms.html]
+      link "ИИ-ассистенты" [url=/pages/ai.html]
+      link "API" [url=/pages/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
+API
 EN
 RU
 daggerheart.com
@@ -49,6 +52,7 @@ daggerheart.com
 Возвращающийся ТопорВторичное оружиеУникальноеРанг 2 · Физическо... [namelen=221 namehash=f420b829]
 Все
 Выбрать
+ИИ-ассистенты
 К содержимому
 Конфиденциальность
 Легендарный Дровяной ТопорВторичное оружиеPistolheartРанг 4 · Фи... [namelen=273 namehash=bf5c7791]
@@ -122,9 +126,13 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search?as=gm1]
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
+      link "AI assistants" [url=/pages/en/ai.html]
+      link "API" [url=/pages/en/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
+AI assistants
+API
 Account: gm1@example.test
 Advanced Axe of the DawnPrimary weaponArazo's ArtifactsTier 3 · ... [namelen=274 namehash=b7367455]
 Advanced Hallowed AxePrimary weaponTier 3 · Magic · Strength · M... [namelen=92 namehash=f1b0c4ee]

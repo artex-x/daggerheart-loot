@@ -35,9 +35,10 @@ const resolve = (ref) =>
     .slice(1)
     .reduce((o, k) => o[k], openapi);
 
-/** Returns the tools of openapi.json in document order: `{ tool, op, path, query }`, where
- *  `tool` is the `tools/list` entry, `op` the operationId and `path` and `query` the names of
- *  the path and query parameters. */
+/** Returns the tools of openapi.json in document order: `{ tool, op, path, query, types, file }`,
+ *  where `tool` is the `tools/list` entry, `op` the operationId, `path` and `query` the names of
+ *  the path and query parameters, `types` their schema types and `file` the name of the
+ *  argument that carries the request body's text (`x-mcp-body-argument`), or null. */
 function buildTools() {
   const out = [];
   for (const ops of Object.values(openapi.paths)) {
@@ -47,15 +48,23 @@ function buildTools() {
       const required = [];
       const path = [];
       const query = [];
+      const types = {};
       for (const p of op.parameters ?? []) {
         properties[p.name] = { ...p.schema, description: p.description };
+        types[p.name] = p.schema.type;
         if (p.required) required.push(p.name);
         (p.in === 'path' ? path : query).push(p.name);
       }
+      const file = op['x-mcp-body-argument'] ?? null;
       const schema = op.requestBody?.content?.['application/json']?.schema;
       const body = schema?.$ref ? resolve(schema.$ref) : schema;
-      for (const [name, prop] of Object.entries(body?.properties ?? {})) {
-        properties[name] = prop;
+      if (file) {
+        properties[file] = { type: 'string', description: op.requestBody.description };
+        required.push(file);
+      } else {
+        for (const [name, prop] of Object.entries(body?.properties ?? {})) {
+          properties[name] = prop;
+        }
       }
       out.push({
         tool: {
@@ -71,7 +80,9 @@ function buildTools() {
         },
         op: op.operationId,
         path,
-        query
+        query,
+        types,
+        file
       });
     }
   }
@@ -121,15 +132,23 @@ const envelope = (status, code, message) => ({
 
 /* ---------- tools/call ---------- */
 
-/** Returns the 400 envelope that names the first bad argument, or null. */
+/** Returns the message of the 400 envelope that names the first bad argument, or null. An
+ *  argument is checked by its parameter's schema type: a JSON integer or a string. */
 function checkArguments(entry, args) {
   for (const name of [...entry.path, ...entry.query]) {
     const required = entry.tool.inputSchema.required.includes(name);
+    const integer = entry.types[name] === 'integer';
     if (args[name] === undefined || args[name] === null) {
-      if (required) return `The field ${name} is required. Send it as a string.`;
+      if (required)
+        return `The field ${name} is required. Send it as ${integer ? 'an integer' : 'a string'}.`;
       continue;
     }
-    if (typeof args[name] !== 'string') return `The field ${name} must be a string.`;
+    if (integer ? !Number.isInteger(args[name]) : typeof args[name] !== 'string') {
+      return `The field ${name} must be ${integer ? 'an integer' : 'a string'}.`;
+    }
+  }
+  if (entry.file && typeof args[entry.file] !== 'string') {
+    return `The field ${entry.file} is required. Send the file's text as a string.`;
   }
   return null;
 }
@@ -147,12 +166,20 @@ async function callTool(params, env, id) {
     return { result: toolResult(envelope(400, 'bad_request', message).body, true) };
   }
   const param = entry.path.length ? args[entry.path[0]] : '';
-  const part = entry.query.includes('part') && typeof args.part === 'string' ? args.part : null;
+  /* An integer argument reaches the operation as the string a REST query carries. */
+  const query = Object.fromEntries(
+    entry.query
+      .filter((k) => args[k] !== undefined && args[k] !== null)
+      .map((k) => [k, String(args[k])])
+  );
+  const file = entry.file ? args[entry.file] : undefined;
   const body = Object.fromEntries(
-    Object.entries(args).filter(([k]) => !entry.path.includes(k) && !entry.query.includes(k))
+    Object.entries(args).filter(
+      ([k]) => !entry.path.includes(k) && !entry.query.includes(k) && k !== entry.file
+    )
   );
   try {
-    const got = await runOperation(serviceOf(env), entry.op, { param, part, body });
+    const got = await runOperation(serviceOf(env), entry.op, { param, query, body, file });
     return { result: toolResult(got.body, false) };
   } catch (e) {
     if (e instanceof ApiError) {

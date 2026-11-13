@@ -39,6 +39,8 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/gm-token-1?v=<v>]
       link "Установить как приложение" [url=/pages/install.html]
       link "Конфиденциальность" [url=/pages/privacy.html]
       link "Условия использования" [url=/pages/terms.html]
+      link "ИИ-ассистенты" [url=/pages/ai.html]
+      link "API" [url=/pages/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
@@ -52,6 +54,7 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/gm-token-1?v=<v>]
 7 Гарпун ЛевиафанаОсновное оружие99999 зол. d8+3 физ · Далеко · ... [namelen=86 namehash=f41bcbe4]
 8 Колдующий КинжалОсновное оружиеHope & Fear d6 маг · Средне · О... [namelen=84 namehash=067834bf]
 9 Брошюра по Истории ИскусстваПредметDread GM Toolbox Это прекра... [namelen=624 namehash=37953bde]
+API
 EN
 RU
 daggerheart.com
@@ -60,6 +63,7 @@ daggerheart.com
 Выбрать
 Заметка
 Заметка мастера
+ИИ-ассистенты
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
@@ -108,6 +112,8 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/gm-token-1?v=<v>]
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
+      link "AI assistants" [url=/pages/en/ai.html]
+      link "API" [url=/pages/en/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
@@ -121,6 +127,8 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/gm-token-1?v=<v>]
 7 Leviathan HarpoonPrimary weapon99999 gp d8+3 phy · Far · Two-H... [namelen=79 namehash=34e62b83]
 8 Casting DaggerPrimary weaponHope & Fear d6 mag · Close · One-H... [namelen=80 namehash=354feb70]
 9 Art History BookletItemDread GM Toolbox This is a finely illus... [namelen=546 namehash=e313a64c]
+AI assistants
+API
 EN
 Filters
 GM's note

@@ -50,9 +50,12 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/player-token-1/f_k
       link "Установить как приложение" [url=/pages/install.html]
       link "Конфиденциальность" [url=/pages/privacy.html]
       link "Условия использования" [url=/pages/terms.html]
+      link "ИИ-ассистенты" [url=/pages/ai.html]
+      link "API" [url=/pages/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
+API
 EN
 RU
 daggerheart.com
@@ -61,6 +64,7 @@ daggerheart.com
 Войти
 Выбрать все
 Заметка
+ИИ-ассистенты
 К содержимому
 Колдующий Кинжал
 Колдующий КинжалОсновное оружиеHope & FearРанг 1 · Магическое · ... [namelen=213 namehash=9cd182eb]
@@ -130,9 +134,13 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-1/f_kind-weapon
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
+      link "AI assistants" [url=/pages/en/ai.html]
+      link "API" [url=/pages/en/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
+AI assistants
+API
 Add to list
 Broadsword
 BroadswordPrimary weaponTier 1 · Physical · Agility · Melee · d8... [namelen=109 namehash=926e89b9]
