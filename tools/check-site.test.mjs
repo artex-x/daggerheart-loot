@@ -636,6 +636,7 @@ describe('previewChecks() against the preview host', () => {
     'get_shared_list',
     'check_file'
   ].map((name) => ({ name }));
+  const CONNECT = 'connect/' + 'a'.repeat(32);
   /* A host that answers as the preview host does; `over` replaces one path's answer. */
   const host = (over = {}) => {
     const files = {
@@ -667,6 +668,12 @@ describe('previewChecks() against the preview host', () => {
         EN_ROUTES.map((p) => ['manual:' + p, { status: 200, body: app('en') }])
       ),
       'manual:en/i/w1': { status: 301, location: '/i/en/w1', body: '' },
+      ...Object.fromEntries(
+        [CONNECT, 'en/' + CONNECT].map((p) => [
+          'manual:' + p,
+          { status: 200, csp: "frame-ancestors 'none'", frame: 'DENY', body: app('ru') }
+        ])
+      ),
       ...API,
       ...over
     };
@@ -685,10 +692,21 @@ describe('previewChecks() against the preview host', () => {
         allowMethods: f.allowMethods,
         allowHeaders: f.allowHeaders,
         maxAge: f.maxAge,
+        frame: f.frame ?? '',
+        csp: f.csp ?? '',
         body: f.body
       };
     };
   };
+
+  it('names a consent page that a frame may hold', async () => {
+    const bad = await runChecks(
+      host({ ['manual:' + CONNECT]: { status: 200, csp: '', frame: '', body: app('ru') } }),
+      previewChecks()
+    );
+    assert.equal(bad.length, 1);
+    assert.match(bad[0], /not frame-ancestors 'none' and DENY/);
+  });
 
   it('reports nothing for a host that answers every check', async () => {
     assert.deepEqual(await runChecks(host(), previewChecks()), []);

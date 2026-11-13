@@ -19,7 +19,9 @@
  * (`showcase-player`) and one source of three items with pictures; no suite but the seed
  * test opens it.
  * `gm2`'s list holds two unread notices: gm1 changed the axe, and deleted an item at the
- * longest name. docs/specs/COVERAGE.md, "Test layers". */
+ * longest name. `gm1` has three connected apps; every other user none. Five connection
+ * requests open the consent page: Claude, a 200-character name, a custom-scheme and a
+ * loopback redirect, and one already answered. docs/specs/COVERAGE.md, "Test layers". */
 
 import type { BookContent, CardContent, CardKind, HomebrewContent } from '../lib/homebrew.js';
 import type { MoneyMode } from '../lib/money.js';
@@ -856,6 +858,112 @@ const PRINT_SETS: SeedPrintSet[] = [
   printSet('set-expired1', ks('ci1'), 91 * DAY)
 ];
 
+/** A 200-character client name, the longest the consent card and a row wrap. */
+export const LONG_APP_NAME = (
+  'Очень длинное название приложения, которое регистрирует себя само и пишет сюда всё ' +
+  'подряд: ассистент мастера, менеджер персонажей, бот для Discord и ещё один инструмент ' +
+  'для подготовки к сессии, всего 200 знаков'
+)
+  .slice(0, 199)
+  .trimEnd()
+  .padEnd(200, '.');
+
+/** A connected app of a seeded user: an OAuth grant. `grantedAt` is a fixed time, so a
+ *  golden reads the same date on every run. */
+export interface SeedGrant {
+  clientId: string;
+  name: string;
+  /** The client's own address. */
+  uri: string;
+  grantedAt: string;
+}
+
+/* gm1 holds three, newest first, gm4 one with a 200-character name; the other users none
+   (the empty section). */
+const GRANTS: Partial<Record<SeedUserId, SeedGrant[]>> = {
+  gm4: [
+    {
+      clientId: uuid(904),
+      name: LONG_APP_NAME,
+      uri: 'https://example.org',
+      grantedAt: '2026-11-01T10:00:00Z'
+    }
+  ],
+  gm1: [
+    {
+      clientId: uuid(901),
+      name: 'Claude',
+      uri: 'https://claude.ai',
+      grantedAt: '2026-11-12T10:00:00Z'
+    },
+    {
+      clientId: uuid(902),
+      name: 'Charkeeper',
+      uri: 'https://charkeeper.org',
+      grantedAt: '2026-11-03T10:00:00Z'
+    },
+    {
+      clientId: uuid(903),
+      name: 'ChatGPT',
+      uri: 'https://chatgpt.com',
+      grantedAt: '2026-10-28T10:00:00Z'
+    }
+  ]
+};
+
+/** A connection request the consent page reads by its id; `done` is one already answered,
+ *  which leaves for its address with no draw. Any signed-in user may answer one. */
+export interface SeedAuthorization {
+  id: string;
+  clientId: string;
+  name: string;
+  uri: string;
+  redirect: string;
+  done?: true;
+}
+
+const authId = (c: string): string => c.repeat(32);
+
+/* The ids the goldens, the route fixtures and the component tests open, by name. */
+export const AUTHORIZATIONS: SeedAuthorization[] = [
+  {
+    id: authId('a'),
+    clientId: uuid(911),
+    name: 'Claude',
+    uri: 'https://claude.ai',
+    redirect: 'https://claude.ai/api/mcp/auth_callback'
+  },
+  {
+    id: authId('b'),
+    clientId: uuid(912),
+    name: LONG_APP_NAME,
+    uri: 'https://example.org',
+    redirect: 'https://example.org/callback'
+  },
+  {
+    id: authId('c'),
+    clientId: uuid(913),
+    name: 'Cursor',
+    uri: 'https://cursor.com',
+    redirect: 'cursor://anysphere.cursor-retrieval/oauth/callback'
+  },
+  {
+    id: authId('d'),
+    clientId: uuid(914),
+    name: 'Local tool',
+    uri: 'https://example.org',
+    redirect: 'http://127.0.0.1:53682/cb'
+  },
+  {
+    id: authId('e'),
+    clientId: uuid(915),
+    name: 'Claude',
+    uri: 'https://claude.ai',
+    redirect: 'https://claude.ai/api/mcp/auth_callback',
+    done: true
+  }
+];
+
 export interface Seed {
   users: Record<SeedUserId, SeedUser>;
   defaultUser: SeedUserId;
@@ -864,6 +972,8 @@ export interface Seed {
   homebrew: Record<SeedUserId, SeedHomebrew>;
   notices: SeedNotice[];
   printSets: SeedPrintSet[];
+  grants: Partial<Record<SeedUserId, SeedGrant[]>>;
+  authorizations: SeedAuthorization[];
 }
 
 export const SEED: Seed = {
@@ -873,5 +983,7 @@ export const SEED: Seed = {
   shares: SHARES,
   homebrew: HOMEBREW,
   notices: NOTICES,
-  printSets: PRINT_SETS
+  printSets: PRINT_SETS,
+  grants: GRANTS,
+  authorizations: AUTHORIZATIONS
 };

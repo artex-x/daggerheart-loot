@@ -2846,7 +2846,8 @@ is a panel headed by an `h2`. Signed out its sign-in panel keeps the passage mea
 and its lead takes one line while the column allows it (DESIGN.md, "The Measure Rule");
 signed in it
 is one column below 1000 px and two columns from 1000 px (up to 1100 px wide):
-the left holds «Отображение на всех устройствах» and «Способы входа», the right
+the left holds «Отображение на всех устройствах», «Способы входа» and «Подключённые
+приложения», the right
 «Ваши данные», «Выход» and «Удаление аккаунта». The DOM order is left then
 right, so the tab order and the reading order agree
 (`docs/decisions/2026-11-04-search-and-account-follow-the-list-head-and-the-error-page.md`).
@@ -2955,6 +2956,90 @@ right, so the tab order and the reading order agree
   flow b ("Account and browser lists", "Purchase requests: flow b"), kept in
   the account only and «Спрашивать» by default. The page's account actions
   do not disable these controls.
+- **Connected apps** «Подключённые приложения» / "Connected apps", signed in
+  only, a panel right after «Способы входа» in the left column: one row per
+  app the reader allowed on the consent page ("Connect an app"), newest first,
+  in the providers' row shape - the name in bold (a self-registered name of up
+  to 200 characters wraps), a small line «<host> · подключено <date>» /
+  "<host> · connected <date>" (the host of the client's own address, a
+  non-https address as given with its scheme; the date in the interface
+  language, long form, «12 ноября 2026»), and a small ghost «Отключить»
+  labelled «Отключить <name>». The states: loading (the small
+  «Загружаем...»), a failed read («Не получилось загрузить подключённые
+  приложения.» / "Could not load the connected apps." and «Повторить»), empty
+  («Приложений нет. Здесь появятся те, кому вы разрешите доступ.» / "No apps.
+  The apps you allow show up here."), rows. A project whose OAuth server is
+  off draws no section. «Отключить» asks the browser's confirm «Отключить
+  «<name>»? Приложение больше не сможет читать и менять ваши данные на этом
+  сайте. Подключить его снова можно только из самого приложения.» / "Disconnect
+  "<name>"? ..." (rule 10: a revoke cannot be written back); «Отмена» changes
+  nothing. A revoke that succeeds removes the row and toasts «Приложение
+  «<name>» отключено» / "App "<name>" disconnected" (rule 5); the focus moves
+  to the next row's «Отключить», else the one before, else `#main` (rule 20).
+  A failed revoke keeps the row and toasts «Не получилось. Проверьте соединение
+  и попробуйте ещё раз.». The page's buttons are disabled while a revoke runs.
+  A revoke ends the app's sessions and refresh tokens, never a row; the
+  database refuses its unexpired access token on its next request
+  (`META.md` section 3). Named difference from «Способы входа»: a provider's
+  «Отключить» has no confirm, because the reader connects it again here.
+
+### Connect an app
+
+`#/connect/<id>` (`ROUTES.md`, "Connect an app"), drawn by `ConnectPage.svelte`
+in a build with sign-in configured: the consent page of the Supabase OAuth
+2.1 server. An app or AI assistant that the reader adds sends them here to
+allow or refuse its access to the account.
+
+- The title «Подключение приложения» / "Connect an app" in every state but
+  the expired one. **Signed out**: the lead «Войдите, чтобы ответить на запрос
+  приложения.» / "Sign in to answer the app's request." and the account page's
+  sign-in panel; the sign-in returns to the same `#/connect/<id>`.
+  **Loading**: the title and «Загружаем...». **A failed read**: the title,
+  «Не получилось загрузить запрос на подключение.» / "Could not load the
+  connection request." and a primary «Повторить» (rule 6).
+- **The request**: the lead «Приложение просит доступ к вашему аккаунту на этом
+  сайте.» / "An app asks for access to your account on this site.", then one
+  primary panel at the passage measure: the client's own name (`--t-title`,
+  wrapping) and «После ответа вы вернётесь на <host>» / "After your answer you
+  go back to <host>" with the host of the address the answer goes to (an
+  `https` host, any other address as given with its scheme: `cursor://...`,
+  `http://127.0.0.1:<port>`); «Аккаунт» / "Account" with the session line
+  (the email in bold, the provider's logo, «через <provider>»); «Приложение
+  сможет» / "The app can" with five lines:
+  «читать, менять и удалять ваши списки, их позиции и ссылки на них, отвечать
+  на запросы игроков;», «читать, менять и удалять ваши предметы, источники,
+  комплекты и карты правил, загружать и убирать их картинки;», «сохранять себе
+  чужие списки по ссылке и отправлять их владельцам запросы;», «импортировать
+  и скачивать ваши файлы списков и предметов, создавать наборы для печати;»,
+  «видеть почту и имя вашего аккаунта.» (an access token carries them,
+  measured 2026-11-13), and the cascade hint «Удаление списка закрывает его
+  ссылки и запросы игроков по нему; удаление предмета убирает его из всех
+  списков, где он есть, и удаляет его картинку. Вернуть удалённое нельзя.»;
+  «Не сможет» / "It cannot": «менять ваш пароль, почту и способы входа,
+  подключать другие приложения, удалять аккаунт и менять настройки
+  отображения.»; «Разрешить» (primary) and «Отказать» (ghost) at the bottom of
+  the card; then «Отключить приложение можно в любой момент на странице
+  «Аккаунт», в разделе «Подключённые приложения».». No client logo is drawn
+  (a third-party picture on an account page). The «Не сможет» line assumes
+  Supabase Auth's fix that refuses a client token on those endpoints; the
+  production server is switched on only after the probe proves it
+  (`.claude/README.md`, "Supabase configuration").
+- «Разрешить» and «Отказать» disable both buttons («Разрешить» reads
+  «Разрешаем...» / "Allowing...") and leave for the address Auth answers
+  (the client's redirect with a code, or with `access_denied`). A failed
+  answer keeps the card, enables the buttons and toasts «Не получилось.
+  Проверьте соединение и попробуйте ещё раз.». A request already answered
+  leaves for its address with no card drawn.
+- **Expired** (rule 7 departure: the cause is the title): «Запрос на
+  подключение устарел» / "This connection request has expired", «Начните
+  подключение заново в приложении.» and «На главную», for an id of another
+  shape, no id, an id Auth does not hold, a project whose OAuth server is
+  off, and a page another page frames (the host also answers
+  `frame-ancestors 'none'` and `X-Frame-Options: DENY` on these paths,
+  `CONTRACTS.md` section 1). A build with no sign-in configured draws the
+  not-found page.
+- The page has no input: no keyboard case beyond the two buttons; nothing is
+  sticky.
 
 ## Chrome
 

@@ -6,6 +6,7 @@ import {
   RETURN_KEY,
   RETURN_MS,
   saveReturn,
+  takeConnect,
   takeRedirect,
   type RedirectWindow
 } from './redirect.js';
@@ -275,5 +276,57 @@ describe('takeRedirect', () => {
 
   it('defaults to the real window and clock', () => {
     expect(takeRedirect()).toBeNull();
+  });
+});
+
+describe('takeConnect', () => {
+  const ID = 'a'.repeat(32);
+
+  it.each([
+    ['https://example.test/connect?authorization_id=' + ID, '/connect/' + ID],
+    ['https://example.test//connect?authorization_id=' + ID, '/connect/' + ID],
+    ['https://example.test/connect/?authorization_id=' + ID, '/connect/' + ID],
+    ['https://example.test/en/connect?authorization_id=' + ID, '/en/connect/' + ID],
+    [
+      'https://example.test/connect?authorization_id=' + ID + '&as=gm1',
+      '/connect/' + ID + '?as=gm1'
+    ]
+  ])('writes %s as the path form of #/connect/<id>: %s', (href, path) => {
+    const { win, replaceState } = stubWin(href);
+    takeConnect(win);
+    expect(replaceState).toHaveBeenCalledWith(null, '', path);
+  });
+
+  it('writes a built path, never one that starts with //', () => {
+    const { win, landed } = stubWin('https://example.test//connect?authorization_id=' + ID);
+    takeConnect(win);
+    expect(landed().startsWith('//')).toBe(false);
+  });
+
+  it('encodes an id of another shape, which the page then reads as expired', () => {
+    const { win, landed } = stubWin('https://example.test/connect?authorization_id=a/b%20c');
+    takeConnect(win);
+    expect(landed()).toBe('/connect/a%2Fb%20c');
+  });
+
+  it.each([
+    'https://example.test/connect',
+    'https://example.test/connect/' + ID,
+    'https://example.test/account?authorization_id=' + ID,
+    'https://example.test/lists/connect?authorization_id=' + ID
+  ])('touches nothing on %s', (href) => {
+    const { win, replaceState } = stubWin(href);
+    takeConnect(win);
+    expect(replaceState).not.toHaveBeenCalled();
+  });
+
+  it('keeps the id through a sign-in: the return record holds the route key', () => {
+    const { win, store } = stubWin('https://example.test/en/connect/' + ID);
+    saveReturn(win, { hash: '#/connect/' + ID, kind: 'signIn', provider: 'google' }, NOW);
+    const back = stubWin('https://example.test/?auth-callback=1&code=c', {
+      [RETURN_KEY]: store.get(RETURN_KEY) ?? ''
+    });
+    takeRedirect(back.win, NOW + 1000);
+    expect(back.landed()).toBe('https://example.test/en/#/connect/' + ID);
   });
 });

@@ -10,7 +10,8 @@
  * under `/en/` even where the language could not be stored.
  * docs/specs/FEATURES.md, "Account"; docs/specs/STATE.md. */
 
-import { addressOf } from '../lib/address.js';
+import { addressOf, pathOf } from '../lib/address.js';
+import { connectHash } from '../lib/hash.js';
 import { readPending, type PendingAction } from '../lib/pending.js';
 import type { Lang } from '../lib/types.js';
 import type { Provider } from './types.js';
@@ -113,6 +114,28 @@ function takeRecord(win: RedirectWindow, now: number): ReturnRecord | null {
     ...(pending ? { action: pending } : {}),
     ...(typeof lang === 'string' && LANGS.includes(lang) ? { lang: lang as Lang } : {})
   };
+}
+
+/* The address Supabase Auth sends a reader to: `<site_url>connect?authorization_id=<id>`.
+   Production's `site_url` ends in `/`, so the path can come as `//connect`. */
+const CONNECT_ENTRY = /^\/\/?(en\/)?connect\/?$/;
+
+/** Turns the consent entry `/connect?authorization_id=<id>` into the path form of the
+ *  route key `#/connect/<id>`, the other parameters kept, before the router reads the bar;
+ *  touches nothing on any other address. The written path is built, never the bar's own:
+ *  `replaceState` reads a path that starts with `//` as a host. */
+export function takeConnect(win: Pick<RedirectWindow, 'location' | 'history'> = window): void {
+  const url = new URL(win.location.href);
+  const id = url.searchParams.get('authorization_id');
+  const m = CONNECT_ENTRY.exec(url.pathname);
+  if (id === null || !m) return;
+  url.searchParams.delete('authorization_id');
+  const query = url.searchParams.toString();
+  win.history.replaceState(
+    null,
+    '',
+    pathOf(connectHash(encodeURIComponent(id)), m[1] ? 'en' : 'ru') + (query ? '?' + query : '')
+  );
 }
 
 /** Reads a returning redirect and cleans the address, or answers null and

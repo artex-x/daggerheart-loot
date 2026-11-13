@@ -1714,6 +1714,25 @@ describe('the page going out of sight', () => {
     off();
     expect(page.unloadAsks()).toBe(false);
   });
+
+  it('says whether another page frames this one, a cross-origin parent included', () => {
+    /* framed() reads only `top` and `self`. */
+    const at = (w: object) => browserPage(w as unknown as Parameters<typeof browserPage>[0]);
+    const self = {};
+    expect(at({ top: self, self }).framed()).toBe(false);
+    expect(at({ top: {}, self }).framed()).toBe(true);
+    expect(
+      at({
+        get top(): never {
+          throw new Error('SecurityError');
+        },
+        self
+      }).framed()
+    ).toBe(true);
+    expect(browserPage().framed()).toBe(false);
+    expect(fakePage().framed()).toBe(false);
+    expect(fakePage({ framed: true }).framed()).toBe(true);
+  });
 });
 
 describe('the clock', () => {

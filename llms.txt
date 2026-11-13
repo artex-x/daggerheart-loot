@@ -307,8 +307,11 @@ new links as paths.
   cannot build one, and fetching it gives you its link card, not the item.
   Ask the person for the item's text, or for an export
 - `/lists` - the lists page; a signed-in GM imports a file here
-- `/account` - the account page: sign in, connected providers, download
-  my data as a file, sign out, delete the account
+- `/account` - the account page: sign in, connected providers, connected
+  apps, download my data as a file, sign out, delete the account
+- `/connect/<id>` - the page where a signed-in person allows or refuses an
+  app's access to their account; the sign-in server makes the id, so you
+  cannot build one
 - `/homebrew` - a signed-in GM's own items («Мои предметы»), with
   `/homebrew/new` and `/homebrew/<key>` to edit one, and the tabs
   `/homebrew/sources`, `/homebrew/sets` and `/homebrew/rules` for the

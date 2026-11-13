@@ -44,7 +44,14 @@ const { client, ctors, rows } = vi.hoisted(() => {
       linkIdentity: vi.fn(),
       unlinkIdentity: vi.fn(),
       signOut: vi.fn(),
-      onAuthStateChange: vi.fn()
+      onAuthStateChange: vi.fn(),
+      oauth: {
+        getAuthorizationDetails: vi.fn(),
+        approveAuthorization: vi.fn(),
+        denyAuthorization: vi.fn(),
+        listGrants: vi.fn(),
+        revokeGrant: vi.fn()
+      }
     },
     rpc: vi.fn(),
     from: vi.fn<(table: string) => typeof rows>(() => rows),
@@ -3410,5 +3417,155 @@ describe('the print sets', () => {
     expect(await prints.create(ENTRIES)).toEqual({ ok: false, error: 'network' });
     expect(await prints.read('AbCdEf-_1234')).toEqual({ ok: true, set: null });
     expect(client.rpc).not.toHaveBeenCalled();
+  });
+});
+
+describe('connected apps', () => {
+  const ID = 'a'.repeat(32);
+  const oauth = client.auth.oauth;
+  const leaving = (): ReturnType<typeof vi.fn> => {
+    const assign = vi.fn();
+    win.location = { ...win.location, assign };
+    return assign;
+  };
+
+  it('reads a request as its client name and the host it goes back to', async () => {
+    oauth.getAuthorizationDetails.mockResolvedValue({
+      data: {
+        authorization_id: ID,
+        redirect_uri: 'https://claude.ai/api/mcp/auth_callback',
+        client: { id: 'c1', name: 'Claude', uri: 'https://other.example', logo_uri: '' },
+        user: { id: 'u1', email: 'gm1@example.test' },
+        scope: 'openid'
+      },
+      error: null
+    });
+    expect(await make().apps.details(ID)).toEqual({
+      ok: true,
+      request: { name: 'Claude', host: 'claude.ai' }
+    });
+    expect(oauth.getAuthorizationDetails).toHaveBeenCalledWith(ID);
+  });
+
+  it('leaves for an answered request with no draw', async () => {
+    const assign = leaving();
+    oauth.getAuthorizationDetails.mockResolvedValue({
+      data: { redirect_url: 'https://claude.ai/cb?code=x' },
+      error: null
+    });
+    expect(await make().apps.details(ID)).toEqual({
+      ok: true,
+      done: 'https://claude.ai/cb?code=x'
+    });
+    expect(assign).toHaveBeenCalledWith('https://claude.ai/cb?code=x');
+  });
+
+  it('reads an unknown request and a server that is off as gone, a 5xx or a throw as failed', async () => {
+    const cloud = make();
+    oauth.getAuthorizationDetails.mockResolvedValueOnce({
+      data: null,
+      error: { status: 404, code: 'oauth_authorization_not_found' }
+    });
+    expect(await cloud.apps.details(ID)).toEqual({ ok: true, gone: true });
+    oauth.getAuthorizationDetails.mockResolvedValueOnce({
+      data: null,
+      error: { status: 404, code: 'feature_disabled' }
+    });
+    expect(await cloud.apps.details(ID)).toEqual({ ok: true, gone: true });
+    oauth.getAuthorizationDetails.mockResolvedValueOnce({ data: null, error: { status: 500 } });
+    expect(await cloud.apps.details(ID)).toEqual({ ok: false });
+    oauth.getAuthorizationDetails.mockResolvedValueOnce({ data: null, error: { status: 401 } });
+    expect(await cloud.apps.details(ID)).toEqual({ ok: false });
+    oauth.getAuthorizationDetails.mockRejectedValueOnce(new Error('offline'));
+    expect(await cloud.apps.details(ID)).toEqual({ ok: false });
+  });
+
+  it('reads nothing signed out', async () => {
+    client.auth.getSession.mockResolvedValue(sessionWith(null));
+    const cloud = make();
+    expect(await cloud.apps.details(ID)).toEqual({ ok: false });
+    expect(await cloud.apps.list()).toEqual({ ok: false });
+    expect(oauth.getAuthorizationDetails).not.toHaveBeenCalled();
+    expect(oauth.listGrants).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['approve', 'approveAuthorization'],
+    ['deny', 'denyAuthorization']
+  ] as const)(
+    '%s skips the browser redirect and leaves for the answered address',
+    async (how, fn) => {
+      const assign = leaving();
+      oauth[fn].mockResolvedValue({
+        data: { redirect_url: 'https://claude.ai/cb?x=1' },
+        error: null
+      });
+      expect(await make().apps[how](ID)).toEqual({ ok: true, url: 'https://claude.ai/cb?x=1' });
+      expect(oauth[fn]).toHaveBeenCalledWith(ID, { skipBrowserRedirect: true });
+      expect(assign).toHaveBeenCalledWith('https://claude.ai/cb?x=1');
+      oauth[fn].mockResolvedValueOnce({ data: null, error: { status: 400 } });
+      expect(await make().apps[how](ID)).toEqual({ ok: false });
+      oauth[fn].mockRejectedValueOnce(new Error('offline'));
+      expect(await make().apps[how](ID)).toEqual({ ok: false });
+    }
+  );
+
+  it('lists the grants newest first with the host of the client address', async () => {
+    oauth.listGrants.mockResolvedValue({
+      data: [
+        {
+          client: { id: 'c2', name: 'Old', uri: 'http://127.0.0.1:5000', logo_uri: '' },
+          scopes: ['openid'],
+          granted_at: '2026-10-01T00:00:00Z'
+        },
+        {
+          client: { id: 'c1', name: 'New', uri: 'https://claude.ai', logo_uri: '' },
+          scopes: ['openid'],
+          granted_at: '2026-11-01T00:00:00Z'
+        }
+      ],
+      error: null
+    });
+    expect(await make().apps.list()).toEqual({
+      ok: true,
+      apps: [
+        { clientId: 'c1', name: 'New', host: 'claude.ai', grantedAt: '2026-11-01T00:00:00Z' },
+        {
+          clientId: 'c2',
+          name: 'Old',
+          host: 'http://127.0.0.1:5000',
+          grantedAt: '2026-10-01T00:00:00Z'
+        }
+      ]
+    });
+  });
+
+  it('reads a server that is off as off, any other failure as failed', async () => {
+    const cloud = make();
+    oauth.listGrants.mockResolvedValueOnce({
+      data: null,
+      error: { status: 404, code: 'feature_disabled' }
+    });
+    expect(await cloud.apps.list()).toEqual({ ok: true, off: true });
+    oauth.listGrants.mockResolvedValueOnce({ data: null, error: { status: 404, code: 'x' } });
+    expect(await cloud.apps.list()).toEqual({ ok: false });
+    oauth.listGrants.mockRejectedValueOnce(new Error('offline'));
+    expect(await cloud.apps.list()).toEqual({ ok: false });
+  });
+
+  it('revokes by the client id; a grant already gone counts as revoked', async () => {
+    const cloud = make();
+    oauth.revokeGrant.mockResolvedValueOnce({ data: {}, error: null });
+    expect(await cloud.apps.revoke('c1')).toBe(true);
+    expect(oauth.revokeGrant).toHaveBeenCalledWith({ clientId: 'c1' });
+    oauth.revokeGrant.mockResolvedValueOnce({
+      data: null,
+      error: { status: 404, code: 'oauth_consent_not_found' }
+    });
+    expect(await cloud.apps.revoke('c1')).toBe(true);
+    oauth.revokeGrant.mockResolvedValueOnce({ data: null, error: { status: 500 } });
+    expect(await cloud.apps.revoke('c1')).toBe(false);
+    oauth.revokeGrant.mockRejectedValueOnce(new Error('offline'));
+    expect(await cloud.apps.revoke('c1')).toBe(false);
   });
 });

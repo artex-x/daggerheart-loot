@@ -22,6 +22,7 @@ import {
   type ShareRow,
   withSnapshots
 } from '../lib/cloudLists.js';
+import { appHost, newestFirst } from '../lib/apps.js';
 import { newArtName, thumbOf } from '../lib/art.js';
 import {
   canonJson,
@@ -42,6 +43,8 @@ import {
 } from '../lib/requests.js';
 import { callbackUrl, saveReturn, type Redirect, type RedirectWindow } from './redirect.js';
 import type {
+  AppAnswer,
+  AppRepository,
   AuthError,
   AuthPort,
   AuthRedirect,
@@ -466,7 +469,36 @@ function decisionOf(f: RequestFailure): Exclude<RequestDeclined, { ok: true }> {
   return f.error === 'network' ? REQUEST_UNSENT : REQUEST_REFUSED;
 }
 
-type CloudWindow = RedirectWindow & Pick<Window, 'addEventListener' | 'removeEventListener'>;
+/* `assign` is optional so that a stub window of a test that never leaves needs none. */
+type CloudWindow = RedirectWindow & { location: { assign?: (url: string) => void } } & Pick<
+    Window,
+    'addEventListener' | 'removeEventListener'
+  >;
+
+/** The HTTP status of an auth-js error, 0 when it has none. */
+function statusOf(error: unknown): number {
+  const s: unknown = (error as { status?: unknown } | null)?.status;
+  return typeof s === 'number' ? s : 0;
+}
+
+/** Whether Auth refused the authorization itself (unknown, expired, answered, or the
+ *  server off), where a 401, a 429, a 5xx or no answer is a failure the page retries. */
+function appGone(error: unknown): boolean {
+  const s = statusOf(error);
+  return s >= 400 && s < 500 && s !== 401 && s !== 429;
+}
+
+/** The `error_code` of an auth-js error, '' when it has none. */
+function codeOf(error: unknown): string {
+  const c: unknown = (error as { code?: unknown } | null)?.code;
+  return typeof c === 'string' ? c : '';
+}
+
+/** Whether the grants read failed because the project's OAuth server is off: Auth answers
+ *  every OAuth route 404 `feature_disabled` (measured on the local stack, 2026-11-13). */
+function serverOff(error: unknown): boolean {
+  return codeOf(error) === 'feature_disabled';
+}
 
 export function createCloud(
   url: string,
@@ -1408,5 +1440,76 @@ export function createCloud(
       }
     }
   };
-  return { auth, prefs, lists, shares, events, requests, homebrew, prints };
+  /* Every answer leaves the page through the address Auth answers: the client's redirect
+     with a code, or with `access_denied`. */
+  const leaveFor = (url: string): AppAnswer => {
+    win.location.assign?.(url);
+    return { ok: true, url };
+  };
+  const answer = async (
+    id: string,
+    run: (id: string) => Promise<{ data: { redirect_url: string } | null; error: unknown }>
+  ): Promise<AppAnswer> => {
+    try {
+      const { data, error } = await run(id);
+      return error || !data?.redirect_url ? { ok: false } : leaveFor(data.redirect_url);
+    } catch {
+      return { ok: false };
+    }
+  };
+  const apps: AppRepository = {
+    async details(id) {
+      if (!(await userId())) return { ok: false };
+      try {
+        const { data, error } = await client.auth.oauth.getAuthorizationDetails(id);
+        if (error) return appGone(error) ? { ok: true, gone: true } : { ok: false };
+        if ('authorization_id' in data) {
+          return {
+            ok: true,
+            request: { name: data.client.name, host: appHost(data.redirect_uri) }
+          };
+        }
+        leaveFor(data.redirect_url);
+        return { ok: true, done: data.redirect_url };
+      } catch {
+        return { ok: false };
+      }
+    },
+    approve: (id) =>
+      answer(id, (i) =>
+        client.auth.oauth.approveAuthorization(i, { skipBrowserRedirect: true })
+      ),
+    deny: (id) =>
+      answer(id, (i) => client.auth.oauth.denyAuthorization(i, { skipBrowserRedirect: true })),
+    async list() {
+      if (!(await userId())) return { ok: false };
+      try {
+        const { data, error } = await client.auth.oauth.listGrants();
+        if (error) return serverOff(error) ? { ok: true, off: true } : { ok: false };
+        return {
+          ok: true,
+          apps: newestFirst(
+            data.map((g) => ({
+              clientId: g.client.id,
+              name: g.client.name,
+              host: appHost(g.client.uri),
+              grantedAt: g.granted_at
+            }))
+          )
+        };
+      } catch {
+        return { ok: false };
+      }
+    },
+    async revoke(clientId) {
+      try {
+        const { error } = await client.auth.oauth.revokeGrant({ clientId });
+        /* A grant another tab already ended is gone, as asked. */
+        return !error || codeOf(error) === 'oauth_consent_not_found';
+      } catch {
+        return false;
+      }
+    }
+  };
+  return { auth, prefs, lists, shares, events, requests, homebrew, prints, apps };
 }

@@ -14,6 +14,7 @@ deleted.
 
 ## Index
 
+- 2026-11-13 - [A connected app reaches only the API's account scope](decisions/2026-11-13-a-connected-app-reaches-only-the-api-s-account-scope.md)
 - 2026-11-12 - [ai-mcp lands on main at four named landings](decisions/2026-11-12-ai-mcp-lands-on-main-at-four-named-landings.md)
 - 2026-11-12 - [ai-mcp lands on main in two squashes](decisions/2026-11-12-ai-mcp-lands-on-main-in-two-squashes.md)
 - 2026-11-12 - [API record links carry the card version of the app's links](decisions/2026-11-12-api-record-links-carry-the-card-version-of-the-app-s-links.md)

@@ -31,7 +31,7 @@ RootWebArea "Аккаунт - Генератор лута Daggerheart" [url=/acc
       ... option x11 of 15 same-shape siblings elided
       option "Поиск" [selected=false]
       option "Мои предметы" [selected=false]
-    ... StaticText x10 of 14 same-shape siblings elided
+    ... StaticText x16 of 20 same-shape siblings elided
     button "Список" [pressed=false]
     button "Сетка" [pressed=true]
     button "Цвет" [pressed=false]
@@ -45,9 +45,9 @@ RootWebArea "Аккаунт - Генератор лута Daggerheart" [url=/acc
     heading "СПОСОБЫ ВХОДА" [level=2]
     button "Отключить Google"
     button "Отключить Discord"
-    heading "ВАШИ ДАННЫЕ" [level=2]
+    ... heading x2 of 6 same-shape siblings elided
+    ... button x4 of 8 same-shape siblings elided
     StaticText "Картинок в архиве нет: после переноса добавьте их заново."
-    button "Скачать мои данные (ZIP)"
     heading "ВЫХОД" [level=2]
     button "Выйти"
     button "Выйти на всех устройствах"
@@ -79,6 +79,9 @@ daggerheart.com
 Конфиденциальность
 ЛутDaggerheart
 Обычные правилаАльтернативные таблицыWondrous EnvironmentsDread ... [namelen=246 namehash=24225ce8]
+Отключить Charkeeper
+Отключить ChatGPT
+Отключить Claude
 Отключить Discord
 Отключить Google
 Поиск
@@ -121,7 +124,7 @@ RootWebArea "Account - Daggerheart Loot Generator" [url=/en/account?as=gm1]
       ... option x11 of 15 same-shape siblings elided
       option "Search" [selected=false]
       option "My items" [selected=false]
-    ... StaticText x10 of 14 same-shape siblings elided
+    ... StaticText x16 of 20 same-shape siblings elided
     button "List" [pressed=false]
     button "Grid" [pressed=true]
     button "Color" [pressed=false]
@@ -135,9 +138,9 @@ RootWebArea "Account - Daggerheart Loot Generator" [url=/en/account?as=gm1]
     heading "SIGN-IN METHODS" [level=2]
     button "Disconnect Google"
     button "Disconnect Discord"
-    heading "YOUR DATA" [level=2]
+    ... heading x2 of 6 same-shape siblings elided
+    ... button x4 of 8 same-shape siblings elided
     StaticText "The archive holds no pictures: add them again after the move."
-    button "Download my data (ZIP)"
     heading "SIGN OUT" [level=2]
     button "Sign out"
     button "Sign out everywhere"
@@ -163,6 +166,9 @@ AskNotify the ownerDon't notify
 B&W
 Color
 Delete account...
+Disconnect Charkeeper
+Disconnect ChatGPT
+Disconnect Claude
 Disconnect Discord
 Disconnect Google
 Download my data (ZIP)

@@ -38,6 +38,7 @@ import type {
   SharedRow,
   ShareRow
 } from '../lib/cloudLists.js';
+import type { AppGrant } from '../lib/apps.js';
 import type { ArtRect, ArtType, PictureSource } from '../lib/art.js';
 import type { Loot } from '../lib/data.js';
 import type {
@@ -303,6 +304,8 @@ export interface PagePort {
   guardUnload(dirty: () => boolean): () => void;
   /** Whether the page is in sight now. */
   visible(): boolean;
+  /** Whether another page frames this one: the consent page then draws no button. */
+  framed(): boolean;
 }
 
 /**
@@ -672,8 +675,45 @@ export interface PrintSetRepository {
   read(id: string): Promise<PrintSetRead>;
 }
 
+export type { AppGrant };
+
+/** A connection request on the consent page, read by its authorization id. */
+export interface AppRequest {
+  /** The client's own name, whatever it registered. */
+  name: string;
+  /** `appHost` of the address the answer goes back to. */
+  host: string;
+}
+
+/** `request` is a request to answer; `done` an authorization already answered, whose
+ *  address the page goes to with no draw; `gone` an id that opens nothing: unknown,
+ *  expired, or the server off. */
+export type AppRequestRead =
+  | { ok: true; request: AppRequest }
+  | { ok: true; done: string }
+  | { ok: true; gone: true }
+  | { ok: false };
+
+/** The address an answer goes back to, or a failure that keeps the page. */
+export type AppAnswer = { ok: true; url: string } | { ok: false };
+
+/** `off`: the project's OAuth server is off, so the account page draws no section. */
+export type AppsRead = { ok: true; apps: AppGrant[] } | { ok: true; off: true } | { ok: false };
+
+/** The reader's connected apps through the Supabase OAuth 2.1 server, signed in only
+ *  (docs/specs/FEATURES.md, "Connect an app"). */
+export interface AppRepository {
+  details(id: string): Promise<AppRequestRead>;
+  /** Approves the request; the caller leaves for the answered address. */
+  approve(id: string): Promise<AppAnswer>;
+  deny(id: string): Promise<AppAnswer>;
+  list(): Promise<AppsRead>;
+  /** Ends the grant, its sessions and its refresh tokens; rows stay. */
+  revoke(clientId: string): Promise<boolean>;
+}
+
 /** Grows one member per release (R1 auth, R1 prefs, R2 lists and shares, R3 events, R4
- *  requests, R7 homebrew, print sets, ...). */
+ *  requests, R7 homebrew, print sets, connected apps, ...). */
 export interface CloudPort {
   auth: AuthPort;
   prefs: PreferencesPort;
@@ -683,6 +723,7 @@ export interface CloudPort {
   requests: RequestRepository;
   homebrew: HomebrewRepository;
   prints: PrintSetRepository;
+  apps: AppRepository;
 }
 
 /**

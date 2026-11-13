@@ -2,62 +2,77 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (B0-B3 and B2b live: landing 1 `aeb68c0e`, landing 2 `89a55f1b`, landing 3 `c4742c53`; B5a-B5d planned; the plan review before B5b and the UI action audit are applied)
-- Last agent: planner (2026-11-13, on `claude/ai-mcp-b5plan`: `claude/ai-mcp` merged in, `reviews/plan-B5b.md` and `reviews/audit-ui-actions.md` applied, B3 and B2b collapsed)
-- NEEDS_HUMAN_CONFIRMATION: no (no product-law change and no grant-level change of D7; the consent-endpoint stop of B5a step 1 is an owner stop, not a question; the defaults of this pass are "default taken (owner AFK)", `plan.md` section 7)
-- Branch: claude/ai-mcp-b5plan (temporary; the orchestrator merges it into `claude/ai-mcp`)
-- Base / starting commit: 71c6827c; merge of `claude/ai-mcp` at `8571dbe0` in `51f830de`
-- Pushed: no (planner pass; the orchestrator pushes)
+- Task status: in_progress (B0-B3 and B2b live: landing 1 `aeb68c0e`, landing 2 `89a55f1b`, landing 3 `c4742c53`; B5a committed on the branch, unpushed, waiting for its batch review; B5b-B5d planned)
+- Last agent: implementer (2026-11-13, B5a steps 2-10)
+- NEEDS_HUMAN_CONFIRMATION: no (the step 1 stop is resolved by the owner's decision of 2026-11-13: build on Supabase's fix supabase/auth#2898 and release only after probes P1-P4 pass)
+- Branch: claude/ai-mcp
+- Base / starting commit: a2b4df21
+- Pushed: no (schema batch: the push waits for the review's approve)
 
 ## Completed
 - B0 - license statement and per-record rights audit: shipped in `aeb68c0e` (review `reviews/B0.md`).
 - B1 - API core and REST v1 reads: shipped in `aeb68c0e` after the fix pass `93eac0ae` (review `reviews/B1.md`); live checks 1-11 passed on 2026-11-12.
-- B2a - record links with `?v`, one record per line, the roll index cache and the MCP adapter: `22755cc1`, review `reviews/B2a.md`, fix pass `5b58edf8`, squash `89a55f1b` (landing 2). The cold criterion of 50 % was not met locally (71 %); accepted (owner AFK).
-- B3 - search, table filters and file checks: review `reviews/B3.md` (fix-then-continue; Blocker 1, the strict UTF-8 decode, fixed; N1-N4 done); step 1's gate held (K = 3.01); shipped at landing 3 `c4742c53`.
-- B2b - the two pages, the footer links and the import-row links: `ed3d8954` (base `4cc114e7`), review `reviews/B2b.md`, fix pass `a3448d16` (all goldens re-seeded, nits 1-12); shipped at landing 3 `c4742c53`.
-- Landing 3 step 14 readings: `context.md`, "Landing 3 readings and owner instructions"; the burst p50 lines met, the cold readings of search and the file checks past 10 ms (`plan.md` B3 outcome).
-- Previous sha (batch diff base): ed3d8954 (B2b); this pass changes only `issues/ai-mcp/`.
-- Files changed (this pass): `issues/ai-mcp/plan.md`, `handoff.md`, `context.md`, `reviews/plan-B5b.md`, `reviews/audit-ui-actions.md`.
-- Review: the plan review before B5b (`reviews/plan-B5b.md`, fix-then-continue) and the UI action audit (`reviews/audit-ui-actions.md`, fix-then-continue), both applied once (`plan.md` Status); no second look (the change does no more than the findings name).
+- B2a - record links with `?v`, one record per line, the roll index cache and the MCP adapter: `22755cc1`, review `reviews/B2a.md`, fix pass `5b58edf8`, squash `89a55f1b` (landing 2).
+- B3 - search, table filters and file checks: review `reviews/B3.md`; shipped at landing 3 `c4742c53`.
+- B2b - the two pages, the footer links and the import-row links: `ed3d8954`, review `reviews/B2b.md`, fix pass `a3448d16`; shipped at landing 3 `c4742c53`.
+- B5a - the account connection (steps 1-10): the OAuth server owned in `supabase/config.toml`; the guard migration `20261113120000_api_client_guard` and its reversal; `tests/db/api-client-guard.test.mjs`; `AppRepository` (types, Supabase port, fake, lazy port, contract case U); the route `#/connect/<id>` with the entry rewrite (`takeConnect`), `_redirects`, `_headers` and the `check-site` frame probe; `ConnectPage.svelte`; «Подключённые приложения» on `#/account`; the shared `ProviderLogo`, `SessionLine` and `SignInPanel` (second real use); both privacy pages; `FEATURES.md`, `ROUTES.md`, `META.md`, `CONTRACTS.md` section 1, `llms.txt`; D7 (`docs/decisions/2026-11-13-a-connected-app-reaches-only-the-api-s-account-scope.md`); `.claude/README.md` "Supabase configuration" ("OAuth server and the client token", the advisor counts, restore step 5); inventory states and goldens.
+- Previous sha (batch diff base): a2b4df21.
+- Review: required (a migration with a SECURITY DEFINER helper, restrictive policies and a role setting; config; a public route). The orchestrator runs it.
+- Acceptance lines of B5a (`plan.md`):
+  1. Done: step 1's results are in `.claude/README.md`; its stop rule fired and the owner resolved it (2026-11-13).
+  2. Pending (owner token): `config:diff -- --project test` needs `SUPABASE_ACCESS_TOKEN`, which only the owner's interactive use reads; the field names come from the CLI 2.117.0 template; the section matches the dashboard values the owner set on 2026-11-12.
+  3. Done: one `tests/db` case per allowed row (9 GET, 3 POST, 4 PATCH, 5 DELETE, 16 RPC) and the enumeration case over every table and function `authenticated` reaches.
+  4. Done: no foreign key joins an allowed table to an out-of-scope one (asserted), and the `user_prefs` join answers empty for a client token and the row for an app token.
+  5. Done: a deleted session refuses an unexpired client token.
+  6. Done: a client token's update and delete of `storage.objects` are refused where the app token's pass; its insert passes as the app token's.
+  7. Done: `rpc/delete_account`, `delete_account_requests`, `get_print_set`, `reorder_list`, `move_legacy_list` and `user_prefs` refused.
+  8. Done: `check:db` up-down-up passed with the migration (first run; the final run is in Verification).
+  9. Pending (after `migrate-test`): the hosted `user_prefs` probe; `.claude/README.md` "Pending readings".
+  10. Done: contract case U passes on the fake (`fake-cloud.test.ts`); the real port runs it in CI's `e2e`.
+  11. Done: `takeConnect` cases (`redirect.test.ts`), the route and path fixtures, `_redirects`; `tests/contracts.js` passes.
+  12. Done: consent states as inventory entries with goldens (details 1100 and 360, longest name 360, loading, failed read, signed out, expired); approving, failed answer, non-https, framed and already-answered states are component tests.
+  13. Done: account states (gm1 rows, gm2 empty, gm4 one with the longest name at 360, loading, failed) with goldens; `off` draws no section (component test).
+  14. Done: confirm, «Отмена», the row's removal, the toast, the focus and the failure toast (`accountPage.test.ts`).
+  15. Done: every new component case ends with `expectNoA11yViolations` where it draws a state.
+  16. Done: strings in `dict.ts` in both languages; `i18n.test.ts` case for the scope list and the cascade.
+  17. Done: both privacy pages (date 13 November 2026), `FEATURES.md`, `ROUTES.md`, `META.md`, D7; `node tools/decisions.js` ran.
+  18. Placed in B5b (unchanged).
+  19. Done: `redirect.test.ts` (the return record keeps `#/connect/<id>` and the English path) and `connectPage.test.ts` (a sign-in returns to the same card; the English bar keeps the id).
+  20. See Verification (budget).
+  21. Done: `_headers` lines and the `check-site` probe (`tools/check-site.test.mjs`); the framed page draws the expired page with no button (component test).
+  22. Done: no, a malformed, a numeric, an unknown, another user's and a timed-out session refused with no error.
+- Release checklist lines (owner decisions of 2026-11-13): `.claude/README.md`, "OAuth server and the client token", "Release checklist": P1-P4 PASS-BLOCKED on the hosted project before `config:push -- --project prod`; "the consent strings claim the token is bounded: do not switch production on before P1-P4 pass".
 
 ## Verification
-- B3 step 13 (local, `process.cpuUsage()`, medians of 9 runs; the host is noisy): search cold 0.63 ms today, 1.88 ms at 3x; the worst accepted warm query 0.47 / 0.78 ms; refusals 17 of 66 today and 36 of 66 at 3x (all fragments). File check (32 KB) cold / warm: lists ok 1.57 / 0.94 ms (3x 3.59), lists of 2000 unknown ids 2.65 / 2.03 ms (3x 3.91), homebrew 1.41 / 0.63-0.78 ms (3x 2.50-2.81).
-- Worker bundle after B3: 327,961 B, 80,280 B gzip (before 65,552 B gzip). App bundle after B2b: 275.2 kB of 276 kB (B5a step 10 raises it).
-- Sizes after B3: `apidata/` and `api/v1/catalog/` 108 files today (one search shard of 204,395 B), 214 at 3x; about 91 files left under 20,000 at 3x.
-- B2b client steps were checked on 2026-11-13 against: support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp, cursor.com/docs/context/mcp, code.claude.com/docs/en/mcp. ChatGPT has no block.
-- Commands of the B3 and B2b batches and their results: `git show 51f830de:issues/ai-mcp/handoff.md`, "Verification".
-- This pass (documents only): no heavy run; `wc -c issues/ai-mcp/plan.md` 143 KB.
-- Gates: CI's green run of the tip is the full gate (the orchestrator).
+- B5a (2026-11-13, this worktree, Rancher Desktop started for it):
+  - `npm run check:db` (PowerShell): first run FAIL 4 (two cases of the new file, the harness's anon list); fixed; final run: `check:db: PASS`, pass 603, fail 0 (db reset 37 s).
+  - `node --test tests/db/api-client-guard.test.mjs tests/db/harness.test.mjs` on the running stack: all passed.
+  - `npx vitest run app/src/ports app/src/lib/hash.test.ts app/src/lib/address.test.ts app/src/lib/i18n.test.ts app/src/lib/apps.test.ts app/src/components/accountPage.test.ts app/src/components/connectPage.test.ts`: 12 files, 1048 tests passed.
+  - `npx svelte-check --fail-on-warnings`: 0 errors, 0 warnings; `npx eslint` on the changed files: clean.
+  - `node tests/derived.js`: passed after `node tools/build.js`; `node tools/decisions.js`: 341 decisions.
+  - `node tests/run-all.js contracts,dataint`: both ok; `npm run build:test`, then `node tests/app/golden.js --update --only=account` (10 states; 5 re-seeded, 3 new) and `--only=connect` (7 new); `node tests/run-all.js app/contracts`: ok (702.6 s).
+  - Bundle: `npm run build && npm run budget` 278.9 kB (limit 279); configured with placeholder `VITE_SUPABASE_*` values 336.9 kB (limit 338).
+  - `rtk npm run check:fast`: see the batch's report (CHECKFAST_RESULT).
+  - Local measurements of the OAuth server (scratch probe, local stack): `.claude/README.md`, "OAuth server and the client token".
+- Commands of the earlier batches: `git show 51f830de:issues/ai-mcp/handoff.md`, "Verification".
 
 ## Deviations
-- B2b: the `Shell.svelte` footer CSS gained `min-width` for the short «API» link.
-- B3: file-check lines are capped at the first 50 for a good file too (`LINES_MAX`; `more` counts the rest, `counts` stay whole); default taken (owner AFK). Reason: a 32 KB lists file of 2000 unknown ids made 2108 skip lines, a 283 KB answer and 4.4 ms warm locally. Revert by removing `LINES_MAX` in `preview/api/service.mjs`.
-- B3: the file-check data sets are built once per cached `apidata/file-check.json` (a `WeakMap`); `table=alt_item` and `alt_consumable` select by `kind` and rarity; the step 12 parity tests live in `tools/api-data.test.mjs`; `parseSearch` parses `q` once in the adapter; a parameter given twice is 400 on every query parameter.
+- B5a: the grant row's host is `client.uri`'s (Auth's grant answer carries no redirect), the consent card's the redirect's; plan step 5 wanted one field for both.
+- B5a: the scope list always carries «видеть почту и имя вашего аккаунта.» (step 1 found the email and name in every client token), so there is no separate golden for that state.
+- B5a: «Не сможет» and both privacy pages name the password, the email, the sign-in methods and other apps (owner, 2026-11-13); the privacy pages also name the global sign-out, which the baseline probe allowed and the release gate does not cover.
+- B5a: «Отключить» treats Auth's `oauth_consent_not_found` as done (a grant another tab ended).
+- B5a: `PagePort.framed()` is new (the consent page reads no `window` itself); `ProviderLogo`, `SessionLine`, `SignInPanel` and `components/providers.ts` are extracted from `AccountPage` at their second use.
+- B5a: the configured bundle was measured with placeholder `VITE_SUPABASE_*` values (no `.env.test.local` in this worktree); the limit has 1 kB of room for CI's real values.
+- B3: file-check lines are capped at the first 50 for a good file too (`LINES_MAX`); default taken (owner AFK). Revert by removing `LINES_MAX` in `preview/api/service.mjs`.
 
 ## Next batch (implement-ready)
-- Name: B5a - The account connection (`plan.md` section 6, "B5a"; the plan text is the brief).
-- Objective: a reader connects an app through the Supabase OAuth 2.1 server on `/connect/<id>`, sees and disconnects it on `#/account`, and the database bounds every client token to the "UI action coverage" scope; Auth is bounded by step 1's measurement and stop rule; D7.
-- In scope / out of scope, files, steps 1-10, acceptance 1-22, standing checks: `plan.md` B5a.
-- Verification commands: `rtk npm run check:fast` (Bash timeout 600000); `npm run check:db` (PowerShell tool, the migration and `tests/db`); `npm run budget` in both builds (step 10); `npm run build:test`, then the golden re-seed of the new inventory states; `node tests/run-all.js contracts,dataint`; push, CI.
-- Risks / do-nots: stop and return to the owner if a client token changes the email or the password, links or unlinks an identity, enrolls a factor, or approves an OAuth authorization (step 1); never write `location.pathname` as given in the bar rewrite; never a restrictive storage policy `for all`; raise a bundle limit only by the README rule.
-- Fallback: the guard call at the top of each out-of-list RPC if the hosted project ignores `pgrst.db_pre_request` (step 3).
-- After B5a: B5b, B5c and B5d in order, each implement-ready in `plan.md`; no planner pass between them unless a batch changes a shared rule.
+- First: the orchestrator's batch review of B5a (schema, SECURITY DEFINER, RLS, config, a public route), one fix pass, then the push and the CI credit; `migrate-test` then applies the migration, and the two pending readings follow (`.claude/README.md`, "OAuth server and the client token", "Pending readings").
+- Then: B5b - the account API core and lists (`plan.md` section 6, "B5b"); B5c and B5d after it.
 
 ## Blockers
-- B5a STOPPED at step 1 (implementer, 2026-11-13): the owner stop fired. Measured on the test project in Node (scratch scripts, throwaway users and dynamic clients deleted after each run; no code changed). A client token (from the authorization code flow, PKCE, a dynamically registered public client):
-  - sets the account password: `PUT /auth/v1/user {password}` 200; a password sign-in with it then answers 200 with a session; the app's own session ends (403 `session_not_found`) and the client token keeps working (200).
-  - enrolls a factor: `POST /auth/v1/factors {factor_type: totp}` 200 with a factor id.
-  - reads and approves another app's pending authorization: `GET /oauth/authorizations/<id>` 200, `POST .../consent {action: approve}` 200 with `redirect_url` and a code; the code exchanges for a second client's token.
-  - lists grants (`GET /user/oauth/grants` 200) and revokes another app's grant (`DELETE /user/oauth/grants?client_id=` 204).
-  - changes `user_metadata` (`PUT /user {data}` 200, stored); `GET /user` 200.
-  - Not conclusive: an email change answered 400 `email_address_invalid` (the test project's address check, not a token bound); identity link answered 400 "provider is not enabled" and unlink 422 `single_identity_not_deletable` for the app token too; the revoked-token PostgREST read and a global logout were not reached (the password change ended the app session first).
-  - Other facts: discovery answers at both `<URL>/.well-known/oauth-authorization-server/auth/v1` and `<URL>/auth/v1/.well-known/oauth-authorization-server` (200, no apikey needed); `grant_types_supported` is `authorization_code`, `refresh_token`; `client_credentials` is refused (`unsupported_grant_type`; registration refuses the grant type); the authorize redirect is `http://localhost:3000/connect?authorization_id=<id>`, the id 32 characters of `[a-z0-9]`; an approve needs a details read first (else 404); details answer `authorization_id`, `redirect_uri`, `client {id, name, uri}` (no `logo_uri` when unset), `user {id, email}`, `scope`; a grant answers `client {id, name, uri}`, `scopes`, `granted_at`, no redirect URIs; the client token carries `email`, `phone`, `app_metadata`, `user_metadata`, `session_id`, `client_id`, `scope`, `aud` `authenticated`, 3600 s, also for `scope=openid` alone; a `resource` parameter is accepted and leaves `aud` `authenticated`.
-  - Effect: Auth does not bound a client token; a connected app can take over the account (set a password, add a second factor) and connect further apps. The database guard of step 3 cannot reach Auth. Owner decision needed before any further B5 step.
-- B5a can start once the orchestrator merges `claude/ai-mcp-b5plan` into `claude/ai-mcp` (the plan review and the audit are applied, `plan.md` Status). The owner's OAuth step on the test project is done: "OAuth Server" on (path `/connect`, dynamic apps on, 2026-11-12, `context.md` "B5 refresh facts"); the landing-3 note's "B5a-B5d wait on the owner's OAuth steps" predates that fact on this branch. The orchestrator confirms with the owner that no other OAuth step is meant before the dispatch.
-- B5a step 1 is B5's one owner stop: a client token that changes the email or the password, links or unlinks an identity, enrolls a factor, or approves an OAuth authorization (a connected app could connect another app that survives its revoke; plan-B5b-1). A list or revoke of grants, a global logout and a `data` change are recorded, not a stop.
-- Open owner decision (not a B5a block): the landing-3 cold readings past 10 ms (search 12.6, homebrew check 13.8, lists check 10.2, MCP `check_file` 19.5 ms); the orchestrator recommends accepting them as for the roll. B5b's import inherits that decision (`plan.md` "Common rules", "Imports").
-- Owner step after landing 2 (an account setting): add the connector in Claude with "No sign in" and ask for a roll; a 403 means the client sends `Origin` (`plan.md` B2a outcome).
-- Later, after the closeout squash (owner): `npm run config:diff -- --project prod` (only `auth.oauth_server` rows), then `npm run config:push -- --project prod`, the probe on production, the `/mcp/me` connector test with sign-in; then the orchestrator's closeout steps: the live `ETag` `1.3.0-` and the issue 72 follow-up A2 with the close (`plan.md` section 6, "B5").
+- None for B5b. Release gate (owner decisions 2026-11-13): production's OAuth switch (`config:push -- --project prod`) only after P1-P4 of `b5a-probe3.mjs` answer PASS-BLOCKED on the hosted project; the consent strings claim the token is bounded, so production stays off before P1-P4 pass (`.claude/README.md`, "Release checklist").
+- Open owner decision (not a block): the landing-3 cold readings past 10 ms; B5b's import inherits it.
+- Owner step after landing 2: the Claude connector with "No sign in" and a roll.
 
 ## Deferred
 - Not placed (named for a later batch or the human):
@@ -74,6 +89,6 @@
 - Cleanup performed / retained artifacts: B3, B2b, sections 1, 3.3, 3.4 (in part), 3.5, 3.8, 5.1, 5.3, 9 and 11, and the B3-era parts of Status and section 7 are collapsed to their outcomes; the last pre-collapse commit of `issues/ai-mcp/` is `51f830de` (`git show 51f830de:issues/ai-mcp/plan.md`; the earlier collapses: `8019493d`, `93eac0ae`). The splice scripts of this pass are in the session scratchpad only.
 - Defaults taken (owner AFK) this pass, `plan.md` section 7, "Defaults taken (owner AFK), plan review and audit, 2026-11-13": the audit findings go to the batch of their own row (R2, R3, R7 to B5b; R4, R5, R6 to B5c; R8 to B5d; cost: B5b gains 3 acceptance clauses and B5c 4, no new batch, gate run or migration); `/mcp/me` lists the public tools; a request to the reader's own list is 409 `conflict`; import ids are UUIDv5 names under `import_id`; the H11 body cap is 413696 B.
 - Not applied as worded: plan-B5b-4 says the cold cost is "in the class the owner accepted for landing 3"; the owner has not decided on the landing-3 cold readings yet (`context.md`), so the plan says the import inherits that decision.
-- Session end partial progress (if any): B5a step 1 of 10 done and its stop rule fired (Blockers); next: the owner's decision, no step 2.
+- Session end partial progress (if any): none
 - Durable items written to their homes this pass (file, section): none outside `issues/ai-mcp/` (a planner pass); D7 goes to `docs/decisions/` in B5a.
 - Issue 72 stays open until the account-level read ships (`C:\Users\Ignat\.dhloot\notes\57\ai-mcp-closeout-posts.md`, A2; a closeout step after the owner's production switch).

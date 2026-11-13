@@ -52,6 +52,10 @@ export type Route =
   /** In every build: with no sign-in configured it draws the not-found page,
    *  so the address never falls home (docs/specs/ROUTES.md, "Account"). */
   | { kind: 'account' }
+  /** The consent page of one connection request; `id` is the rest of the address as
+   *  written, read by the page only in the shape of an authorization id
+   *  (docs/specs/ROUTES.md, "Connect an app"). */
+  | { kind: 'connect'; id: string }
   /** The author's own items, one tab; like `account`, in every build. `key` opens one
    *  card and is only read on `sets` and `rules`; `filter` is the Items tab's `/f_`
    *  segment, `{}` on every other tab (docs/specs/ROUTES.md, "Homebrew"). */
@@ -169,6 +173,9 @@ export function parseHash(hash: string): Route {
     return { kind: 'item', id: (/^[0-9A-Fa-f-]*/.exec(h.slice(2))?.[0] ?? '').toLowerCase() };
   }
   if (h === 'account') return { kind: 'account' };
+  if (h === 'connect' || h.startsWith('connect/')) {
+    return { kind: 'connect', id: h.slice('connect/'.length) };
+  }
   if (h === 'homebrew') return { kind: 'homebrew', tab: 'items', key: null, filter: {} };
   const own = /^homebrew\/(f_[A-Za-z0-9_.-]*)$/.exec(h);
   if (own) {
@@ -252,6 +259,11 @@ export function recordHref(it: { id: string; src?: string; hid?: string }): stri
   return it.src === 'homebrew' && typeof it.hid === 'string'
     ? itemHash(it.hid)
     : recordHash(it.id);
+}
+
+/** The consent page of the connection request `id`. */
+export function connectHash(id: string): string {
+  return '#/connect/' + id;
 }
 
 /** The address of a stored print set. */

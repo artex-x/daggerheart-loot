@@ -468,7 +468,8 @@ export function mirrorChecks() {
  *  document for each malformed run, for a well-formed uuid no item has and for a
  *  well-formed token no list holds - which prove the secrets, both card reads and the
  *  worker's read of the app document - a table card that read names.json, and the
- *  route paths that _redirects answers with the app document. */
+ *  route paths that _redirects answers with the app document, and the consent page's two
+ *  frame headers. */
 export function previewChecks() {
   const isApp = (body) => /<div\s+id="app"/.test(body) && entryOf(body) !== null;
   const card404 = (path, why) => [
@@ -546,6 +547,17 @@ export function previewChecks() {
       /* Not following a redirect: a 302 home would read as the root's app document. */
       appDocumentChecks(path, en).map((c) => ({ ...c, manual: true }))
     ),
+    /* The consent page answers no frame (docs/specs/CONTRACTS.md section 1). */
+    ...['connect/' + 'a'.repeat(32), 'en/connect/' + 'a'.repeat(32)].map((path) => ({
+      path,
+      manual: true,
+      test: (body, meta) =>
+        meta.status === 200 &&
+        /frame-ancestors 'none'/.test(meta.csp ?? '') &&
+        /^DENY$/i.test(meta.frame ?? ''),
+      message: (meta) =>
+        `${path} answered ${meta.status} with Content-Security-Policy "${meta.csp ?? ''}" and X-Frame-Options "${meta.frame ?? ''}", not frame-ancestors 'none' and DENY`
+    })),
     /* The app never writes /en/i/; one 301 sends it to the record's English path. */
     {
       path: 'en/i/w1',
@@ -839,6 +851,8 @@ export function fetchReader(root, timeoutMs = 15_000) {
       allowMethods: res.headers.get('access-control-allow-methods') || '',
       allowHeaders: res.headers.get('access-control-allow-headers') || '',
       maxAge: res.headers.get('access-control-max-age') || '',
+      frame: res.headers.get('x-frame-options') || '',
+      csp: res.headers.get('content-security-policy') || '',
       body
     };
   };

@@ -1,280 +1,649 @@
 <!doctype html>
 <html lang="ru">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>B5a mocks</title>
-<!-- Planner mock (ai-mcp B5a, 2026-11-12): the consent page at /connect and the "Connected
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>B5a mocks</title>
+    <!-- Planner mock (ai-mcp B5a, 2026-11-12): the consent page at /connect and the "Connected
      apps" section on #/account. Values copied from app/src/styles/tokens.css and the CSS of
      Panel, Field, Button, LoadState, PageTitle and AccountPage.svelte. Not production code.
      URL parameters: screen=consent|apps, state=<id>, lang=ru|en, w=360|1180, shot=1 (no
      mock chrome), mark=1 (outline what is new). -->
-<style>
-:root {
-  color-scheme: dark;
-  --bg: #0e0c15; --bg2: #14111d; --surface: #1a1626; --surface2: #221d31;
-  --line: #312a45; --line2: #3f3758;
-  --txt: #ece8f6; --muted: #9b93b3; --muted2: #8a83a3;
-  --gold: #d8ab5e; --gold-soft: #f0d091; --ink-on-gold: #1a1206;
-  --danger: #e0685f; --danger-text: #f0a49d; --badge-bg: rgb(10 8 16 / 50%);
-  --r: 14px; --r-sm: 9px; --shadow: 0 10px 34px -14px rgb(0 0 0 / 85%);
-  --ui: 'Source Sans 3 Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --t-page: 23px; --t-title: 18px; --t-body: 16px; --t-control: 15px;
-  --t-small: 14px; --t-data: 13px; --t-label: 12px; --t-badge: 11.5px;
-  --measure-text: 70ch; --measure-line: 120ch; --thumb: 0px;
-}
-* { box-sizing: border-box; }
-html, body { margin: 0; }
-body {
-  background: linear-gradient(180deg, var(--bg2) 0, var(--bg) 520px) var(--bg);
-  color: var(--txt); font: var(--t-body) / 1.6 var(--ui);
-}
-a { color: var(--gold-soft); }
-.mockbar {
-  position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: 6px 14px;
-  align-items: center; padding: 8px 12px; background: #000; border-bottom: 1px solid #333;
-  font: 13px/1.4 system-ui, sans-serif; color: #ccc;
-}
-.mockbar .grp { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
-.mockbar button {
-  font: inherit; color: #ddd; background: #222; border: 1px solid #444; border-radius: 6px;
-  padding: 2px 8px; cursor: pointer;
-}
-.mockbar button[aria-pressed='true'] { background: #5a4520; border-color: var(--gold); color: #fff; }
-.note-mock {
-  max-width: 1180px; margin: 10px auto; padding: 8px 12px; border: 1px dashed #666;
-  font: 13px/1.5 system-ui, sans-serif; color: #bbb;
-}
-.viewport { margin: 12px auto 40px; border: 1px solid #333; overflow: hidden; }
-.viewport.w360 { width: 360px; --thumb: 40px; }
-.viewport.w1180 { width: 1180px; }
-.shot .mockbar, .shot .note-mock { display: none; }
-.shot .viewport { margin: 0; border: 0; }
-.hdr {
-  display: flex; align-items: center; justify-content: space-between; gap: 10px;
-  padding: 12px 16px; border-bottom: 1px solid var(--line); background: rgb(14 12 21 / 92%);
-}
-.brand { font-weight: 700; font-size: var(--t-title); }
-.brand span { color: var(--gold); }
-.hdr .acct { font-size: var(--t-small); color: var(--muted); }
-.wrap { width: min(1440px, 100% - 32px); margin: 0 auto; padding: 22px 0 40px; }
-.page-h { margin: 0 0 4px; font-size: var(--t-page); font-weight: 680; letter-spacing: -0.01em; overflow-wrap: anywhere; }
-.page-sub { margin: 0 0 18px; color: var(--muted); font-size: var(--t-small); max-width: var(--measure-line); text-wrap: balance; overflow-wrap: anywhere; }
-.err-p { margin: 0 0 18px; color: var(--muted); font-size: var(--t-body); }
-.panel {
-  background: linear-gradient(180deg, var(--surface2), var(--surface)); border: 1px solid var(--line);
-  border-radius: var(--r); padding: 18px; box-shadow: var(--shadow);
-}
-.panel + .panel { margin-top: 16px; }
-.field { margin-bottom: 16px; }
-.field:last-child { margin-bottom: 0; }
-.lbl { display: block; font-size: var(--t-label); font-weight: 650; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted2); margin: 0 0 8px; }
-.btn {
-  border: 1px solid var(--line2); background: var(--surface); color: var(--txt); padding: 0 18px;
-  height: 46px; border-radius: var(--r-sm); font: inherit; font-size: var(--t-control); font-weight: 600;
-  display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
-}
-.btn.sm { height: max(32px, var(--thumb)); padding: 0 11px; font-size: var(--t-data); border-radius: 8px; white-space: nowrap; }
-.btn.primary { background: linear-gradient(180deg, #e2b76c, var(--gold)); border-color: #e8c27c; color: var(--ink-on-gold); font-weight: 700; }
-.btn.ghost { background: transparent; border-color: var(--line); }
-.btn:disabled { opacity: 0.5; cursor: default; }
-.btn svg { width: 15px; height: 15px; flex: none; }
-.ls-note { margin: 0 0 14px; font-size: var(--t-small); color: var(--muted); }
-.ls-note.err { color: var(--danger-text); }
-.col { max-width: var(--measure-text); }
-.wide .col.acc-col { max-width: 1100px; }
-.wide .acc { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 16px; align-items: start; }
-.acc .panel { margin-top: 16px; }
-.hint { margin: 10px 0 0; font-size: var(--t-data); color: var(--muted); }
-.hint.lead { margin: 0 0 12px; }
-.row-btns { display: flex; flex-wrap: wrap; gap: 8px; }
-.ids { list-style: none; margin: 0; padding: 0; }
-.ids li { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 0; border-top: 1px solid var(--line); }
-.ids li:first-child { border-top: 0; padding-top: 2px; }
-.pv { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1 1 200px; }
-.pv > span { display: flex; flex-direction: column; line-height: 1.35; min-width: 0; }
-.pv b { overflow-wrap: anywhere; }
-.pv small { font-size: var(--t-data); color: var(--muted2); overflow-wrap: anywhere; }
-.pv svg { width: 18px; height: 18px; flex: none; }
-.badge { font-size: var(--t-badge); padding: 1px 7px; border-radius: 6px; background: var(--badge-bg); border: 1px solid var(--line2); color: var(--muted); margin-left: 6px; }
-.who { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; overflow-wrap: anywhere; }
-.who b { font-size: var(--t-body); font-weight: 650; }
-.via { display: inline-flex; align-items: center; gap: 6px; font-size: var(--t-data); color: var(--muted); }
-.via svg { width: 15px; height: 15px; }
-.stub { color: var(--muted2); font-size: var(--t-data); margin: 0; }
-.appname { margin: 0; font-size: var(--t-title); font-weight: 700; line-height: 1.35; overflow-wrap: anywhere; }
-.apphost { margin: 2px 0 0; font-size: var(--t-data); color: var(--muted); overflow-wrap: anywhere; }
-.scope { margin: 0; padding-left: 20px; font-size: var(--t-small); }
-.scope li + li { margin-top: 4px; }
-.small { margin: 0; font-size: var(--t-small); }
-.marknew .new { outline: 2px dashed #4fb3ff; outline-offset: 4px; }
-.toast {
-  margin: 16px auto 0; max-width: calc(100% - 32px); width: max-content; padding: 10px 14px;
-  border-radius: var(--r-sm); background: var(--surface2); border: 1px solid var(--line2);
-  box-shadow: var(--shadow); font-size: var(--t-small); overflow-wrap: anywhere;
-}
-.toast.bad { border-color: var(--danger); color: var(--danger-text); }
-.sysconfirm {
-  margin: 16px auto 0; max-width: 420px; background: #f3f3f3; color: #111; border-radius: 8px;
-  padding: 16px; font: 14px/1.45 system-ui, sans-serif; box-shadow: 0 8px 30px rgb(0 0 0 / 60%);
-}
-.sysconfirm .host { font-size: 12px; color: #555; margin-bottom: 6px; }
-.sysconfirm .acts { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
-.sysconfirm .acts span { padding: 4px 14px; border-radius: 4px; border: 1px solid #999; }
-.sysconfirm .acts span.ok { background: #1a73e8; color: #fff; border-color: #1a73e8; }
-</style>
-</head>
-<body>
-<div class="mockbar">
-  <div class="grp"><b>Screen</b> <span id="screens"></span></div>
-  <div class="grp"><b>State</b> <span id="states"></span></div>
-  <div class="grp"><b>Lang</b> <span id="langs"></span></div>
-  <div class="grp"><b>Width</b> <span id="widths"></span></div>
-  <div class="grp"><button id="mark" aria-pressed="false">Mark new</button></div>
-</div>
-<div class="note-mock" id="note"></div>
-<div class="viewport" id="vp"></div>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0e0c15;
+        --bg2: #14111d;
+        --surface: #1a1626;
+        --surface2: #221d31;
+        --line: #312a45;
+        --line2: #3f3758;
+        --txt: #ece8f6;
+        --muted: #9b93b3;
+        --muted2: #8a83a3;
+        --gold: #d8ab5e;
+        --gold-soft: #f0d091;
+        --ink-on-gold: #1a1206;
+        --danger: #e0685f;
+        --danger-text: #f0a49d;
+        --badge-bg: rgb(10 8 16 / 50%);
+        --r: 14px;
+        --r-sm: 9px;
+        --shadow: 0 10px 34px -14px rgb(0 0 0 / 85%);
+        --ui:
+          'Source Sans 3 Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          sans-serif;
+        --t-page: 23px;
+        --t-title: 18px;
+        --t-body: 16px;
+        --t-control: 15px;
+        --t-small: 14px;
+        --t-data: 13px;
+        --t-label: 12px;
+        --t-badge: 11.5px;
+        --measure-text: 70ch;
+        --measure-line: 120ch;
+        --thumb: 0px;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+      }
+      body {
+        background: linear-gradient(180deg, var(--bg2) 0, var(--bg) 520px) var(--bg);
+        color: var(--txt);
+        font: var(--t-body) / 1.6 var(--ui);
+      }
+      a {
+        color: var(--gold-soft);
+      }
+      .mockbar {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 14px;
+        align-items: center;
+        padding: 8px 12px;
+        background: #000;
+        border-bottom: 1px solid #333;
+        font:
+          13px/1.4 system-ui,
+          sans-serif;
+        color: #ccc;
+      }
+      .mockbar .grp {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .mockbar button {
+        font: inherit;
+        color: #ddd;
+        background: #222;
+        border: 1px solid #444;
+        border-radius: 6px;
+        padding: 2px 8px;
+        cursor: pointer;
+      }
+      .mockbar button[aria-pressed='true'] {
+        background: #5a4520;
+        border-color: var(--gold);
+        color: #fff;
+      }
+      .note-mock {
+        max-width: 1180px;
+        margin: 10px auto;
+        padding: 8px 12px;
+        border: 1px dashed #666;
+        font:
+          13px/1.5 system-ui,
+          sans-serif;
+        color: #bbb;
+      }
+      .viewport {
+        margin: 12px auto 40px;
+        border: 1px solid #333;
+        overflow: hidden;
+      }
+      .viewport.w360 {
+        width: 360px;
+        --thumb: 40px;
+      }
+      .viewport.w1180 {
+        width: 1180px;
+      }
+      .shot .mockbar,
+      .shot .note-mock {
+        display: none;
+      }
+      .shot .viewport {
+        margin: 0;
+        border: 0;
+      }
+      .hdr {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--line);
+        background: rgb(14 12 21 / 92%);
+      }
+      .brand {
+        font-weight: 700;
+        font-size: var(--t-title);
+      }
+      .brand span {
+        color: var(--gold);
+      }
+      .hdr .acct {
+        font-size: var(--t-small);
+        color: var(--muted);
+      }
+      .wrap {
+        width: min(1440px, 100% - 32px);
+        margin: 0 auto;
+        padding: 22px 0 40px;
+      }
+      .page-h {
+        margin: 0 0 4px;
+        font-size: var(--t-page);
+        font-weight: 680;
+        letter-spacing: -0.01em;
+        overflow-wrap: anywhere;
+      }
+      .page-sub {
+        margin: 0 0 18px;
+        color: var(--muted);
+        font-size: var(--t-small);
+        max-width: var(--measure-line);
+        text-wrap: balance;
+        overflow-wrap: anywhere;
+      }
+      .err-p {
+        margin: 0 0 18px;
+        color: var(--muted);
+        font-size: var(--t-body);
+      }
+      .panel {
+        background: linear-gradient(180deg, var(--surface2), var(--surface));
+        border: 1px solid var(--line);
+        border-radius: var(--r);
+        padding: 18px;
+        box-shadow: var(--shadow);
+      }
+      .panel + .panel {
+        margin-top: 16px;
+      }
+      .field {
+        margin-bottom: 16px;
+      }
+      .field:last-child {
+        margin-bottom: 0;
+      }
+      .lbl {
+        display: block;
+        font-size: var(--t-label);
+        font-weight: 650;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted2);
+        margin: 0 0 8px;
+      }
+      .btn {
+        border: 1px solid var(--line2);
+        background: var(--surface);
+        color: var(--txt);
+        padding: 0 18px;
+        height: 46px;
+        border-radius: var(--r-sm);
+        font: inherit;
+        font-size: var(--t-control);
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+      }
+      .btn.sm {
+        height: max(32px, var(--thumb));
+        padding: 0 11px;
+        font-size: var(--t-data);
+        border-radius: 8px;
+        white-space: nowrap;
+      }
+      .btn.primary {
+        background: linear-gradient(180deg, #e2b76c, var(--gold));
+        border-color: #e8c27c;
+        color: var(--ink-on-gold);
+        font-weight: 700;
+      }
+      .btn.ghost {
+        background: transparent;
+        border-color: var(--line);
+      }
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+      .btn svg {
+        width: 15px;
+        height: 15px;
+        flex: none;
+      }
+      .ls-note {
+        margin: 0 0 14px;
+        font-size: var(--t-small);
+        color: var(--muted);
+      }
+      .ls-note.err {
+        color: var(--danger-text);
+      }
+      .col {
+        max-width: var(--measure-text);
+      }
+      .wide .col.acc-col {
+        max-width: 1100px;
+      }
+      .wide .acc {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0 16px;
+        align-items: start;
+      }
+      .acc .panel {
+        margin-top: 16px;
+      }
+      .hint {
+        margin: 10px 0 0;
+        font-size: var(--t-data);
+        color: var(--muted);
+      }
+      .hint.lead {
+        margin: 0 0 12px;
+      }
+      .row-btns {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .ids {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .ids li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 10px 0;
+        border-top: 1px solid var(--line);
+      }
+      .ids li:first-child {
+        border-top: 0;
+        padding-top: 2px;
+      }
+      .pv {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+        flex: 1 1 200px;
+      }
+      .pv > span {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.35;
+        min-width: 0;
+      }
+      .pv b {
+        overflow-wrap: anywhere;
+      }
+      .pv small {
+        font-size: var(--t-data);
+        color: var(--muted2);
+        overflow-wrap: anywhere;
+      }
+      .pv svg {
+        width: 18px;
+        height: 18px;
+        flex: none;
+      }
+      .badge {
+        font-size: var(--t-badge);
+        padding: 1px 7px;
+        border-radius: 6px;
+        background: var(--badge-bg);
+        border: 1px solid var(--line2);
+        color: var(--muted);
+        margin-left: 6px;
+      }
+      .who {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        overflow-wrap: anywhere;
+      }
+      .who b {
+        font-size: var(--t-body);
+        font-weight: 650;
+      }
+      .via {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: var(--t-data);
+        color: var(--muted);
+      }
+      .via svg {
+        width: 15px;
+        height: 15px;
+      }
+      .stub {
+        color: var(--muted2);
+        font-size: var(--t-data);
+        margin: 0;
+      }
+      .appname {
+        margin: 0;
+        font-size: var(--t-title);
+        font-weight: 700;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
+      }
+      .apphost {
+        margin: 2px 0 0;
+        font-size: var(--t-data);
+        color: var(--muted);
+        overflow-wrap: anywhere;
+      }
+      .scope {
+        margin: 0;
+        padding-left: 20px;
+        font-size: var(--t-small);
+      }
+      .scope li + li {
+        margin-top: 4px;
+      }
+      .small {
+        margin: 0;
+        font-size: var(--t-small);
+      }
+      .marknew .new {
+        outline: 2px dashed #4fb3ff;
+        outline-offset: 4px;
+      }
+      .toast {
+        margin: 16px auto 0;
+        max-width: calc(100% - 32px);
+        width: max-content;
+        padding: 10px 14px;
+        border-radius: var(--r-sm);
+        background: var(--surface2);
+        border: 1px solid var(--line2);
+        box-shadow: var(--shadow);
+        font-size: var(--t-small);
+        overflow-wrap: anywhere;
+      }
+      .toast.bad {
+        border-color: var(--danger);
+        color: var(--danger-text);
+      }
+      .sysconfirm {
+        margin: 16px auto 0;
+        max-width: 420px;
+        background: #f3f3f3;
+        color: #111;
+        border-radius: 8px;
+        padding: 16px;
+        font:
+          14px/1.45 system-ui,
+          sans-serif;
+        box-shadow: 0 8px 30px rgb(0 0 0 / 60%);
+      }
+      .sysconfirm .host {
+        font-size: 12px;
+        color: #555;
+        margin-bottom: 6px;
+      }
+      .sysconfirm .acts {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 14px;
+      }
+      .sysconfirm .acts span {
+        padding: 4px 14px;
+        border-radius: 4px;
+        border: 1px solid #999;
+      }
+      .sysconfirm .acts span.ok {
+        background: #1a73e8;
+        color: #fff;
+        border-color: #1a73e8;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="mockbar">
+      <div class="grp"><b>Screen</b> <span id="screens"></span></div>
+      <div class="grp"><b>State</b> <span id="states"></span></div>
+      <div class="grp"><b>Lang</b> <span id="langs"></span></div>
+      <div class="grp"><b>Width</b> <span id="widths"></span></div>
+      <div class="grp"><button id="mark" aria-pressed="false">Mark new</button></div>
+    </div>
+    <div class="note-mock" id="note"></div>
+    <div class="viewport" id="vp"></div>
 
-<script>
-const GOOGLE = '<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>';
-const DISCORD = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#5865F2" d="M19.3 5.3A16.6 16.6 0 0 0 15.2 4l-.5 1a15.3 15.3 0 0 0-5.4 0l-.5-1a16.6 16.6 0 0 0-4.1 1.3C2.1 9.2 1.4 13 1.7 16.7a16.7 16.7 0 0 0 5 2.6l1.1-1.7a10.8 10.8 0 0 1-1.7-.8l.4-.3a11.9 11.9 0 0 0 11 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.7a16.6 16.6 0 0 0 5-2.6c.4-4.3-.7-8-3-11.4z"/></svg>';
-const LONG = 'Очень длинное название приложения, которое регистрирует себя само и пишет сюда всё подряд: ' +
-  'ассистент мастера, менеджер персонажей, бот для Discord и ещё один инструмент для подготовки к сессии, всего 200 знаков';
+    <script>
+      const GOOGLE =
+        '<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>';
+      const DISCORD =
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#5865F2" d="M19.3 5.3A16.6 16.6 0 0 0 15.2 4l-.5 1a15.3 15.3 0 0 0-5.4 0l-.5-1a16.6 16.6 0 0 0-4.1 1.3C2.1 9.2 1.4 13 1.7 16.7a16.7 16.7 0 0 0 5 2.6l1.1-1.7a10.8 10.8 0 0 1-1.7-.8l.4-.3a11.9 11.9 0 0 0 11 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.7a16.6 16.6 0 0 0 5-2.6c.4-4.3-.7-8-3-11.4z"/></svg>';
+      const LONG =
+        'Очень длинное название приложения, которое регистрирует себя само и пишет сюда всё подряд: ' +
+        'ассистент мастера, менеджер персонажей, бот для Discord и ещё один инструмент для подготовки к сессии, всего 200 знаков';
 
-/* The strings the plan fixes (plan.md, B5a, "Strings"). RU first, EN second. */
-const S = {
-  ru: {
-    brandWord: 'Лут', account: 'Аккаунт', toStart: 'На главную',
-    connectTitle: 'Подключение приложения',
-    connectLead: 'Приложение просит доступ к вашему аккаунту на этом сайте.',
-    connectBack: 'После ответа вы вернётесь на %s',
-    connectAccount: 'Аккаунт', via: 'через %s',
-    connectCan: 'Приложение сможет',
-    can: [
-      'читать, менять и удалять ваши списки, их позиции и ссылки на них, отвечать на запросы игроков;',
-      'читать, менять и удалять ваши предметы, источники, комплекты и карты правил, загружать и убирать их картинки;',
-      'сохранять себе чужие списки по ссылке и отправлять их владельцам запросы;',
-      'импортировать и скачивать ваши файлы списков и предметов, создавать наборы для печати.'
-    ],
-    canPersonal: 'видеть почту и имя вашего аккаунта.',
-    cascade: 'Удаление списка закрывает его ссылки и запросы игроков по нему; удаление предмета убирает его из всех списков, где он есть, и удаляет его картинку. Вернуть удалённое нельзя.',
-    connectCannot: 'Не сможет',
-    cannot: 'менять ваш вход, удалять аккаунт и менять настройки отображения.',
-    allow: 'Разрешить', allowing: 'Разрешаем...', deny: 'Отказать',
-    connectWhere: 'Отключить приложение можно на странице «Аккаунт», в разделе «Подключённые приложения».',
-    connectSignIn: 'Войдите, чтобы ответить на запрос приложения.',
-    signIn: 'Войти', signInWith: 'Войти через %s',
-    consent: 'Входя, вы принимаете <a href="#">условия</a> и <a href="#">политику конфиденциальности</a>.',
-    loading: 'Загружаем...', retry: 'Повторить',
-    connectLoadFailed: 'Не получилось загрузить запрос на подключение.',
-    connectExpired: 'Запрос на подключение устарел',
-    connectExpiredText: 'Начните подключение заново в приложении.',
-    accountFailed: 'Не получилось. Проверьте соединение и попробуйте ещё раз.',
-    apps: 'Подключённые приложения', appsEmpty: 'Приложений нет. Здесь появятся те, кому вы разрешите доступ.',
-    appsLoadFailed: 'Не получилось загрузить подключённые приложения.',
-    appsSince: 'подключено %s', disconnect: 'Отключить',
-    disconnectConfirm: 'Отключить «%s»? Приложение больше не сможет читать и менять ваши данные на этом сайте. Подключить его снова можно только из самого приложения.',
-    disconnected: 'Приложение «%s» отключено',
-    ok: 'ОК', cancel: 'Отмена',
-    providers: 'Способы входа', notConnected: 'не подключён', now: 'Сейчас', connect: 'Подключить %s',
-    display: 'Отображение на всех устройствах', yourData: 'Ваши данные', signOut: 'Выход', del: 'Удаление аккаунта',
-    stub: 'Существующий раздел, без изменений.', date: ['12 ноября 2026', '3 ноября 2026', '28 октября 2026']
-  },
-  en: {
-    brandWord: 'Loot', account: 'Account', toStart: 'Home',
-    connectTitle: 'Connect an app',
-    connectLead: 'An app asks for access to your account on this site.',
-    connectBack: 'After your answer you go back to %s',
-    connectAccount: 'Account', via: 'with %s',
-    connectCan: 'The app can',
-    can: [
-      'read, change and delete your lists, their entries and share links, and answer players\' requests;',
-      'read, change and delete your items, sources, sets and rule cards, and upload or remove their pictures;',
-      'save copies of shared lists and send requests to their owners;',
-      'import and download your list and item files, and make print sets.'
-    ],
-    canPersonal: 'see your account\'s email and name.',
-    cascade: 'Deleting a list also ends its share links and the players\' requests on it; deleting an item removes it from every list that holds it and deletes its picture. A deletion cannot be undone.',
-    connectCannot: 'It cannot',
-    cannot: 'change how you sign in, delete your account or change your display settings.',
-    allow: 'Allow', allowing: 'Allowing...', deny: 'Deny',
-    connectWhere: 'You can disconnect the app on the "Account" page, in "Connected apps".',
-    connectSignIn: 'Sign in to answer the app\'s request.',
-    signIn: 'Sign in', signInWith: 'Sign in with %s',
-    consent: 'By signing in you accept the <a href="#">terms</a> and the <a href="#">privacy policy</a>.',
-    loading: 'Loading...', retry: 'Retry',
-    connectLoadFailed: 'Could not load the connection request.',
-    connectExpired: 'This connection request has expired',
-    connectExpiredText: 'Start the connection again in the app.',
-    accountFailed: 'That did not work. Check the connection and try again.',
-    apps: 'Connected apps', appsEmpty: 'No apps. The apps you allow show up here.',
-    appsLoadFailed: 'Could not load the connected apps.',
-    appsSince: 'connected %s', disconnect: 'Disconnect',
-    disconnectConfirm: 'Disconnect "%s"? The app can no longer read or change your data on this site. You can connect it again only from the app.',
-    disconnected: 'App "%s" disconnected',
-    ok: 'OK', cancel: 'Cancel',
-    providers: 'Sign-in methods', notConnected: 'not connected', now: 'Current', connect: 'Connect %s',
-    display: 'Display on all your devices', yourData: 'Your data', signOut: 'Sign out', del: 'Delete the account',
-    stub: 'Existing section, unchanged.', date: ['12 November 2026', '3 November 2026', '28 October 2026']
-  }
-};
+      /* The strings the plan fixes (plan.md, B5a, "Strings"). RU first, EN second. */
+      const S = {
+        ru: {
+          brandWord: 'Лут',
+          account: 'Аккаунт',
+          toStart: 'На главную',
+          connectTitle: 'Подключение приложения',
+          connectLead: 'Приложение просит доступ к вашему аккаунту на этом сайте.',
+          connectBack: 'После ответа вы вернётесь на %s',
+          connectAccount: 'Аккаунт',
+          via: 'через %s',
+          connectCan: 'Приложение сможет',
+          can: [
+            'читать, менять и удалять ваши списки, их позиции и ссылки на них, отвечать на запросы игроков;',
+            'читать, менять и удалять ваши предметы, источники, комплекты и карты правил, загружать и убирать их картинки;',
+            'сохранять себе чужие списки по ссылке и отправлять их владельцам запросы;',
+            'импортировать и скачивать ваши файлы списков и предметов, создавать наборы для печати.'
+          ],
+          canPersonal: 'видеть почту и имя вашего аккаунта.',
+          cascade:
+            'Удаление списка закрывает его ссылки и запросы игроков по нему; удаление предмета убирает его из всех списков, где он есть, и удаляет его картинку. Вернуть удалённое нельзя.',
+          connectCannot: 'Не сможет',
+          cannot: 'менять ваш вход, удалять аккаунт и менять настройки отображения.',
+          allow: 'Разрешить',
+          allowing: 'Разрешаем...',
+          deny: 'Отказать',
+          connectWhere:
+            'Отключить приложение можно на странице «Аккаунт», в разделе «Подключённые приложения».',
+          connectSignIn: 'Войдите, чтобы ответить на запрос приложения.',
+          signIn: 'Войти',
+          signInWith: 'Войти через %s',
+          consent:
+            'Входя, вы принимаете <a href="#">условия</a> и <a href="#">политику конфиденциальности</a>.',
+          loading: 'Загружаем...',
+          retry: 'Повторить',
+          connectLoadFailed: 'Не получилось загрузить запрос на подключение.',
+          connectExpired: 'Запрос на подключение устарел',
+          connectExpiredText: 'Начните подключение заново в приложении.',
+          accountFailed: 'Не получилось. Проверьте соединение и попробуйте ещё раз.',
+          apps: 'Подключённые приложения',
+          appsEmpty: 'Приложений нет. Здесь появятся те, кому вы разрешите доступ.',
+          appsLoadFailed: 'Не получилось загрузить подключённые приложения.',
+          appsSince: 'подключено %s',
+          disconnect: 'Отключить',
+          disconnectConfirm:
+            'Отключить «%s»? Приложение больше не сможет читать и менять ваши данные на этом сайте. Подключить его снова можно только из самого приложения.',
+          disconnected: 'Приложение «%s» отключено',
+          ok: 'ОК',
+          cancel: 'Отмена',
+          providers: 'Способы входа',
+          notConnected: 'не подключён',
+          now: 'Сейчас',
+          connect: 'Подключить %s',
+          display: 'Отображение на всех устройствах',
+          yourData: 'Ваши данные',
+          signOut: 'Выход',
+          del: 'Удаление аккаунта',
+          stub: 'Существующий раздел, без изменений.',
+          date: ['12 ноября 2026', '3 ноября 2026', '28 октября 2026']
+        },
+        en: {
+          brandWord: 'Loot',
+          account: 'Account',
+          toStart: 'Home',
+          connectTitle: 'Connect an app',
+          connectLead: 'An app asks for access to your account on this site.',
+          connectBack: 'After your answer you go back to %s',
+          connectAccount: 'Account',
+          via: 'with %s',
+          connectCan: 'The app can',
+          can: [
+            "read, change and delete your lists, their entries and share links, and answer players' requests;",
+            'read, change and delete your items, sources, sets and rule cards, and upload or remove their pictures;',
+            'save copies of shared lists and send requests to their owners;',
+            'import and download your list and item files, and make print sets.'
+          ],
+          canPersonal: "see your account's email and name.",
+          cascade:
+            "Deleting a list also ends its share links and the players' requests on it; deleting an item removes it from every list that holds it and deletes its picture. A deletion cannot be undone.",
+          connectCannot: 'It cannot',
+          cannot:
+            'change how you sign in, delete your account or change your display settings.',
+          allow: 'Allow',
+          allowing: 'Allowing...',
+          deny: 'Deny',
+          connectWhere:
+            'You can disconnect the app on the "Account" page, in "Connected apps".',
+          connectSignIn: "Sign in to answer the app's request.",
+          signIn: 'Sign in',
+          signInWith: 'Sign in with %s',
+          consent:
+            'By signing in you accept the <a href="#">terms</a> and the <a href="#">privacy policy</a>.',
+          loading: 'Loading...',
+          retry: 'Retry',
+          connectLoadFailed: 'Could not load the connection request.',
+          connectExpired: 'This connection request has expired',
+          connectExpiredText: 'Start the connection again in the app.',
+          accountFailed: 'That did not work. Check the connection and try again.',
+          apps: 'Connected apps',
+          appsEmpty: 'No apps. The apps you allow show up here.',
+          appsLoadFailed: 'Could not load the connected apps.',
+          appsSince: 'connected %s',
+          disconnect: 'Disconnect',
+          disconnectConfirm:
+            'Disconnect "%s"? The app can no longer read or change your data on this site. You can connect it again only from the app.',
+          disconnected: 'App "%s" disconnected',
+          ok: 'OK',
+          cancel: 'Cancel',
+          providers: 'Sign-in methods',
+          notConnected: 'not connected',
+          now: 'Current',
+          connect: 'Connect %s',
+          display: 'Display on all your devices',
+          yourData: 'Your data',
+          signOut: 'Sign out',
+          del: 'Delete the account',
+          stub: 'Existing section, unchanged.',
+          date: ['12 November 2026', '3 November 2026', '28 October 2026']
+        }
+      };
 
-const SCREENS = {
-  consent: {
-    label: 'Consent /connect',
-    states: {
-      details: 'The request read: what the app can and cannot do, Allow and Deny.',
-      personal: 'The same, when B5a step 1 finds the email and the name in the client token: one more line.',
-      longname: 'A self-registered name of 200 characters wraps; nothing scrolls sideways.',
-      approving: 'Allow pressed: both buttons disabled, Allow reads "Allowing..." until the redirect.',
-      approvefail: 'Allow or Deny failed: the page stays, the account page\'s error toast.',
-      loading: 'The session or the request is being read.',
-      failed: 'The read failed: the failure replaces the card (rule 6, primary retry); the heading stays (rule 7).',
-      signedout: 'Signed out: the account page\'s sign-in panel with its own lead; the return keeps /connect?authorization_id=...',
-      expired: 'No, unknown or expired authorization_id: the error page (rule 7 departure), the cause as h1.'
-    }
-  },
-  apps: {
-    label: 'Connected apps #/account',
-    states: {
-      list: 'Three grants, newest first: name, redirect host and date; Disconnect per row.',
-      one: 'One grant.',
-      empty: 'No grant: one muted line.',
-      longname: 'A 200-character name wraps inside its row.',
-      loading: 'The grants are being read.',
-      failed: 'The read failed: the small load line and Retry (rule 6).',
-      confirm: 'Disconnect pressed: the browser confirm (rule 10: a revoke cannot be written back).',
-      done: 'Confirmed: the row leaves, the toast names the app (rule 5 delete form); focus by rule 20.',
-      revokefail: 'The revoke failed: the row stays, the account page\'s error toast.',
-      off: 'The OAuth server is off on this project: the section is not drawn (default taken (owner AFK)).'
-    }
-  }
-};
+      const SCREENS = {
+        consent: {
+          label: 'Consent /connect',
+          states: {
+            details: 'The request read: what the app can and cannot do, Allow and Deny.',
+            personal:
+              'The same, when B5a step 1 finds the email and the name in the client token: one more line.',
+            longname:
+              'A self-registered name of 200 characters wraps; nothing scrolls sideways.',
+            approving:
+              'Allow pressed: both buttons disabled, Allow reads "Allowing..." until the redirect.',
+            approvefail:
+              "Allow or Deny failed: the page stays, the account page's error toast.",
+            loading: 'The session or the request is being read.',
+            failed:
+              'The read failed: the failure replaces the card (rule 6, primary retry); the heading stays (rule 7).',
+            signedout:
+              "Signed out: the account page's sign-in panel with its own lead; the return keeps /connect?authorization_id=...",
+            expired:
+              'No, unknown or expired authorization_id: the error page (rule 7 departure), the cause as h1.'
+          }
+        },
+        apps: {
+          label: 'Connected apps #/account',
+          states: {
+            list: 'Three grants, newest first: name, redirect host and date; Disconnect per row.',
+            one: 'One grant.',
+            empty: 'No grant: one muted line.',
+            longname: 'A 200-character name wraps inside its row.',
+            loading: 'The grants are being read.',
+            failed: 'The read failed: the small load line and Retry (rule 6).',
+            confirm:
+              'Disconnect pressed: the browser confirm (rule 10: a revoke cannot be written back).',
+            done: 'Confirmed: the row leaves, the toast names the app (rule 5 delete form); focus by rule 20.',
+            revokefail: "The revoke failed: the row stays, the account page's error toast.",
+            off: 'The OAuth server is off on this project: the section is not drawn (default taken (owner AFK)).'
+          }
+        }
+      };
 
-const q = new URLSearchParams(location.search);
-let screen = q.get('screen') in SCREENS ? q.get('screen') : 'consent';
-let state = q.get('state') || Object.keys(SCREENS[screen].states)[0];
-let lang = q.get('lang') === 'en' ? 'en' : 'ru';
-let w = q.get('w') === '1180' ? '1180' : '360';
-let mark = q.get('mark') === '1';
-if (q.get('shot') === '1') document.body.classList.add('shot');
+      const q = new URLSearchParams(location.search);
+      let screen = q.get('screen') in SCREENS ? q.get('screen') : 'consent';
+      let state = q.get('state') || Object.keys(SCREENS[screen].states)[0];
+      let lang = q.get('lang') === 'en' ? 'en' : 'ru';
+      let w = q.get('w') === '1180' ? '1180' : '360';
+      let mark = q.get('mark') === '1';
+      if (q.get('shot') === '1') document.body.classList.add('shot');
 
-const f = (s, v) => s.replace('%s', v);
-const header = (t) => `<div class="hdr"><div class="brand">Daggerheart <span>${t.brandWord}</span></div><div class="acct">${t.account}</div></div>`;
+      const f = (s, v) => s.replace('%s', v);
+      const header = (t) =>
+        `<div class="hdr"><div class="brand">Daggerheart <span>${t.brandWord}</span></div><div class="acct">${t.account}</div></div>`;
 
-function consent(t) {
-  const title = `<h1 class="page-h">${t.connectTitle}</h1>`;
-  if (state === 'loading') return `${title}<p class="page-sub"></p><p class="ls-note" role="status">${t.loading}</p>`;
-  if (state === 'failed') return `${title}<p class="page-sub"></p><p class="ls-note err" role="alert">${t.connectLoadFailed}</p><button class="btn primary">${t.retry}</button>`;
-  if (state === 'expired') return `<h1 class="page-h">${t.connectExpired}</h1><p class="err-p">${t.connectExpiredText}</p><button class="btn">${t.toStart}</button>`;
-  if (state === 'signedout') return `${title}<p class="page-sub new">${t.connectSignIn}</p>
+      function consent(t) {
+        const title = `<h1 class="page-h">${t.connectTitle}</h1>`;
+        if (state === 'loading')
+          return `${title}<p class="page-sub"></p><p class="ls-note" role="status">${t.loading}</p>`;
+        if (state === 'failed')
+          return `${title}<p class="page-sub"></p><p class="ls-note err" role="alert">${t.connectLoadFailed}</p><button class="btn primary">${t.retry}</button>`;
+        if (state === 'expired')
+          return `<h1 class="page-h">${t.connectExpired}</h1><p class="err-p">${t.connectExpiredText}</p><button class="btn">${t.toStart}</button>`;
+        if (state === 'signedout')
+          return `${title}<p class="page-sub new">${t.connectSignIn}</p>
     <div class="panel col"><div class="field"><h2 class="lbl">${t.signIn}</h2>
     <div class="row-btns"><button class="btn">${GOOGLE}${f(t.signInWith, 'Google')}</button><button class="btn">${DISCORD}${f(t.signInWith, 'Discord')}</button></div>
     <p class="hint">${t.consent}</p></div></div>`;
-  const name = state === 'longname' ? LONG : 'Claude';
-  const busy = state === 'approving';
-  const can = t.can.map((l) => `<li>${l}</li>`).join('') + (state === 'personal' ? `<li>${t.canPersonal}</li>` : '');
-  return `${title}<p class="page-sub">${t.connectLead}</p>
+        const name = state === 'longname' ? LONG : 'Claude';
+        const busy = state === 'approving';
+        const can =
+          t.can.map((l) => `<li>${l}</li>`).join('') +
+          (state === 'personal' ? `<li>${t.canPersonal}</li>` : '');
+        return `${title}<p class="page-sub">${t.connectLead}</p>
   <div class="panel col new">
     <div class="field"><p class="appname">${name}</p><p class="apphost">${f(t.connectBack, 'claude.ai')}</p></div>
     <div class="field"><h2 class="lbl">${t.connectAccount}</h2>
@@ -288,67 +657,128 @@ function consent(t) {
       <p class="hint">${t.connectWhere}</p></div>
   </div>
   ${state === 'approvefail' ? `<div class="toast bad" role="alert">${t.accountFailed}</div>` : ''}`;
-}
+      }
 
-function appsPanel(t) {
-  if (state === 'off') return '';
-  let body;
-  const rows = (list) => `<ul class="ids">${list.map(([n, h, d]) =>
-    `<li><span class="pv"><span><b>${n}</b><small>${h} · ${f(t.appsSince, d)}</small></span></span>
-     <button class="btn ghost sm" aria-label="${t.disconnect} ${n}">${t.disconnect}</button></li>`).join('')}</ul>`;
-  const three = [['Claude', 'claude.ai', t.date[0]], ['Charkeeper', 'charkeeper.org', t.date[1]], ['ChatGPT', 'chatgpt.com', t.date[2]]];
-  if (state === 'loading') body = `<p class="ls-note" role="status">${t.loading}</p>`;
-  else if (state === 'failed') body = `<p class="ls-note err" role="alert">${t.appsLoadFailed}</p><button class="btn sm">${t.retry}</button>`;
-  else if (state === 'empty') body = `<p class="hint lead" style="margin:0">${t.appsEmpty}</p>`;
-  else if (state === 'one' || state === 'done') body = rows(state === 'done' ? three.slice(1) : three.slice(0, 1));
-  else if (state === 'longname') body = rows([[LONG, 'example.org', t.date[0]], three[1]]);
-  else body = rows(three);
-  return `<div class="panel new"><div class="field"><h2 class="lbl">${t.apps}</h2>${body}</div></div>`;
-}
+      function appsPanel(t) {
+        if (state === 'off') return '';
+        let body;
+        const rows = (list) =>
+          `<ul class="ids">${list
+            .map(
+              ([n, h, d]) =>
+                `<li><span class="pv"><span><b>${n}</b><small>${h} · ${f(t.appsSince, d)}</small></span></span>
+     <button class="btn ghost sm" aria-label="${t.disconnect} ${n}">${t.disconnect}</button></li>`
+            )
+            .join('')}</ul>`;
+        const three = [
+          ['Claude', 'claude.ai', t.date[0]],
+          ['Charkeeper', 'charkeeper.org', t.date[1]],
+          ['ChatGPT', 'chatgpt.com', t.date[2]]
+        ];
+        if (state === 'loading') body = `<p class="ls-note" role="status">${t.loading}</p>`;
+        else if (state === 'failed')
+          body = `<p class="ls-note err" role="alert">${t.appsLoadFailed}</p><button class="btn sm">${t.retry}</button>`;
+        else if (state === 'empty')
+          body = `<p class="hint lead" style="margin:0">${t.appsEmpty}</p>`;
+        else if (state === 'one' || state === 'done')
+          body = rows(state === 'done' ? three.slice(1) : three.slice(0, 1));
+        else if (state === 'longname')
+          body = rows([[LONG, 'example.org', t.date[0]], three[1]]);
+        else body = rows(three);
+        return `<div class="panel new"><div class="field"><h2 class="lbl">${t.apps}</h2>${body}</div></div>`;
+      }
 
-function account(t) {
-  const providers = `<div class="panel"><div class="field"><h2 class="lbl">${t.providers}</h2><ul class="ids">
+      function account(t) {
+        const providers = `<div class="panel"><div class="field"><h2 class="lbl">${t.providers}</h2><ul class="ids">
     <li><span class="pv">${GOOGLE}<span><span><b>Google</b><span class="badge">${t.now}</span></span><small>gm@example.com</small></span></span><button class="btn ghost sm">${t.disconnect}</button></li>
     <li><span class="pv">${DISCORD}<span><b>Discord</b><small>gm#0001</small></span></span><button class="btn ghost sm">${t.disconnect}</button></li>
   </ul></div></div>`;
-  const stub = (h) => `<div class="panel"><div class="field"><h2 class="lbl">${h}</h2><p class="stub">${t.stub}</p></div></div>`;
-  const tail = state === 'confirm'
-    ? `<div class="sysconfirm" role="dialog"><div class="host">daggerheart-loot.pages.dev</div>${f(t.disconnectConfirm, 'Claude')}<div class="acts"><span>${t.cancel}</span><span class="ok">${t.ok}</span></div></div>`
-    : state === 'done' ? `<div class="toast" role="status">${f(t.disconnected, 'Claude')}</div>`
-    : state === 'revokefail' ? `<div class="toast bad" role="alert">${t.accountFailed}</div>` : '';
-  return `<div class="col acc-col"><h1 class="page-h">${t.account}</h1><p class="page-sub"></p>
+        const stub = (h) =>
+          `<div class="panel"><div class="field"><h2 class="lbl">${h}</h2><p class="stub">${t.stub}</p></div></div>`;
+        const tail =
+          state === 'confirm'
+            ? `<div class="sysconfirm" role="dialog"><div class="host">daggerheart-loot.pages.dev</div>${f(t.disconnectConfirm, 'Claude')}<div class="acts"><span>${t.cancel}</span><span class="ok">${t.ok}</span></div></div>`
+            : state === 'done'
+              ? `<div class="toast" role="status">${f(t.disconnected, 'Claude')}</div>`
+              : state === 'revokefail'
+                ? `<div class="toast bad" role="alert">${t.accountFailed}</div>`
+                : '';
+        return `<div class="col acc-col"><h1 class="page-h">${t.account}</h1><p class="page-sub"></p>
     <div class="acc"><div>${stub(t.display)}${providers}${appsPanel(t)}</div>
     <div>${stub(t.yourData)}${stub(t.signOut)}${stub(t.del)}</div></div></div>${tail}`;
-}
+      }
 
-function render() {
-  const t = S[lang];
-  document.documentElement.lang = lang;
-  document.body.classList.toggle('marknew', mark);
-  const vp = document.getElementById('vp');
-  vp.className = 'viewport w' + w + (w === '1180' ? ' wide' : '');
-  vp.innerHTML = header(t) + `<main class="wrap">${screen === 'consent' ? consent(t) : account(t)}</main>`;
-  document.getElementById('note').textContent = SCREENS[screen].states[state];
-  const btns = (id, opts, cur, set) => {
-    const el = document.getElementById(id);
-    el.innerHTML = '';
-    for (const [k, label] of opts) {
-      const b = document.createElement('button');
-      b.textContent = label;
-      b.setAttribute('aria-pressed', String(k === cur));
-      b.onclick = () => { set(k); render(); };
-      el.append(b);
-    }
-  };
-  btns('screens', Object.entries(SCREENS).map(([k, v]) => [k, v.label]), screen, (k) => { screen = k; state = Object.keys(SCREENS[k].states)[0]; });
-  btns('states', Object.keys(SCREENS[screen].states).map((k) => [k, k]), state, (k) => { state = k; });
-  btns('langs', [['ru', 'RU'], ['en', 'EN']], lang, (k) => { lang = k; });
-  btns('widths', [['360', '360 px'], ['1180', '1180 px']], w, (k) => { w = k; });
-  document.getElementById('mark').setAttribute('aria-pressed', String(mark));
-}
-document.getElementById('mark').onclick = () => { mark = !mark; render(); };
-if (!(state in SCREENS[screen].states)) state = Object.keys(SCREENS[screen].states)[0];
-render();
-</script>
-</body>
+      function render() {
+        const t = S[lang];
+        document.documentElement.lang = lang;
+        document.body.classList.toggle('marknew', mark);
+        const vp = document.getElementById('vp');
+        vp.className = 'viewport w' + w + (w === '1180' ? ' wide' : '');
+        vp.innerHTML =
+          header(t) +
+          `<main class="wrap">${screen === 'consent' ? consent(t) : account(t)}</main>`;
+        document.getElementById('note').textContent = SCREENS[screen].states[state];
+        const btns = (id, opts, cur, set) => {
+          const el = document.getElementById(id);
+          el.innerHTML = '';
+          for (const [k, label] of opts) {
+            const b = document.createElement('button');
+            b.textContent = label;
+            b.setAttribute('aria-pressed', String(k === cur));
+            b.onclick = () => {
+              set(k);
+              render();
+            };
+            el.append(b);
+          }
+        };
+        btns(
+          'screens',
+          Object.entries(SCREENS).map(([k, v]) => [k, v.label]),
+          screen,
+          (k) => {
+            screen = k;
+            state = Object.keys(SCREENS[k].states)[0];
+          }
+        );
+        btns(
+          'states',
+          Object.keys(SCREENS[screen].states).map((k) => [k, k]),
+          state,
+          (k) => {
+            state = k;
+          }
+        );
+        btns(
+          'langs',
+          [
+            ['ru', 'RU'],
+            ['en', 'EN']
+          ],
+          lang,
+          (k) => {
+            lang = k;
+          }
+        );
+        btns(
+          'widths',
+          [
+            ['360', '360 px'],
+            ['1180', '1180 px']
+          ],
+          w,
+          (k) => {
+            w = k;
+          }
+        );
+        document.getElementById('mark').setAttribute('aria-pressed', String(mark));
+      }
+      document.getElementById('mark').onclick = () => {
+        mark = !mark;
+        render();
+      };
+      if (!(state in SCREENS[screen].states)) state = Object.keys(SCREENS[screen].states)[0];
+      render();
+    </script>
+  </body>
 </html>

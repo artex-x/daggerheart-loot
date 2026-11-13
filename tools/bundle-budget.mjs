@@ -34,15 +34,17 @@ const code = walk(DIST).filter(
    postgrest-js, realtime-js and storage-js) as a chunk loaded after first
    paint - 327.3 kB on 2026-11-06, 330.7 to 330.8 kB on 2026-11-11 (CI run 42954673078
    measured it), about 332.0 kB estimated on 2026-11-11 (the unconfigured total plus the
-   57 kB chunk; no .env.test.local on that host), so under 333 - while the unconfigured one
-   `check:built` measures, 275.0 kB on 2026-11-11 (272.3 on 2026-11-07), must stay
-   under 276. A batch whose total passes a
+   57 kB chunk; no .env.test.local on that host), 336.9 kB on 2026-11-13 (ai-mcp B5a, built
+   with placeholder VITE_SUPABASE_* values; CI's real values measured 0.1 kB more before, so
+   the limit is 338) - while the unconfigured one `check:built` measures, 275.0 kB on
+   2026-11-11 and 278.9 kB on 2026-11-13 (the consent page and the connected apps), must stay
+   under 279. A batch whose total passes a
    budget raises it to its measured total rounded up to the next whole kB, never past
    350 configured and 300 unconfigured (owner, 2026-10-22 and 2026-11-04; decisions
    "The configured bundle ceiling rises to 350 kB" and "The unconfigured bundle
    ceiling rises to 300 kB"). */
 const withAccount = code.some((f) => /[\\/]assets[\\/]supabase-[^\\/]*\.js$/.test(f));
-const BUDGET_KB = withAccount ? 333 : 276; // gzip, code only
+const BUDGET_KB = withAccount ? 338 : 279; // gzip, code only
 const WHICH = withAccount ? 'with the account client chunk' : 'no account client chunk';
 
 let total = 0;

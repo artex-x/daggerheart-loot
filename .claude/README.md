@@ -2006,7 +2006,7 @@ reaches a project through `config:push`. Decided 2026-09-24
    configuration is code; the dashboard is read-only; no Branching", stay;
    every hosted property
    the repository does not mean to own is deleted (`[db.pooler]`,
-   `[storage.vector]`, `[storage.analytics]`, `[auth.oauth_server]`,
+   `[storage.vector]`, `[storage.analytics]`,
    `[auth.sms.twilio]`, `[auth.external.apple]`, `[auth.web3.solana]`, the
    four `[auth.third_party.*]`, `auth.password_requirements`, the
    `[experimental]` S3 lines, `[studio]`'s OpenAI key), so a push leaves it
@@ -2269,11 +2269,11 @@ no `statements` (`tools/supabase/db.mjs`), so `supabase migration fetch`
 against the test project writes empty files; never fetch migrations from it.
 
 **Expected Security Advisor warnings.** Derived from `supabase/migrations/`
-at the commit that adds `20261028120000_drop_legacy_move.sql`:
-the Security Advisor reports 0 errors, 24 warnings and 5 info. A
+at the commit that adds `20261113120000_api_client_guard.sql`:
+the Security Advisor reports 0 errors, 25 warnings and 4 info. A
 SECURITY DEFINER function whose latest grant gives `execute` to
 `authenticated` is one warning, and `anon` is a second warning on the same
-function. 18 functions are such definers (18 warnings), and 5 of them are
+function. 19 functions are such definers (19 warnings), and 5 of them are
 also executable by `anon` (5 more); the reasons below:
 
 | Function | `anon` | Reason |
@@ -2290,6 +2290,7 @@ also executable by `anon` (5 more); the reasons below:
 | `get_homebrew_items` | no | Reads up to 1000 items of any owner by id for a signed-in caller, as `get_homebrew_item` reads one; row level security shows the caller only its own items. |
 | `homebrew_art_room` | no | Counts the caller's files in `storage.objects`, which the user cannot read. |
 | `create_print_set`, `get_print_set` | no | `print_sets` has no Data API grant; the functions store and read a sheet and move `opened_at`. |
+| `api_client_session_live` | no | Answers whether the caller's own token session still has its `auth.sessions` row, which the user cannot read; it takes no argument, so it says nothing about another session. |
 | `get_item_preview`, `get_shared_list_preview` | yes | The link-card Worker reads the card of an item or share link by its id or token, signed out, and never the table. |
 
 A definer that is a trigger function,
@@ -2297,13 +2298,94 @@ or that is revoked from `public`, `anon` and `authenticated`, adds no
 warning (the count and limit triggers, the broadcast triggers,
 `effective_limit`, `homebrew_links_touch`), and every `security invoker`
 function adds none (`reorder_list`, the two older `get_shared_list` forms and
-`delete_homebrew_items` among them). The 24th warning is
+`delete_homebrew_items` and the pre-request guard `api_client_guard` among them). The 25th warning is
 leaked password protection, which is off because there is no password
-sign-in (Google and Discord only). The five info are "RLS enabled, no
-policy" for `homebrew_art_released`, `limit_defaults`, `print_sets`,
-`usage_snapshots` and `user_limit_overrides`, by design: no Data API role
-reads them. A warning that is not in this list stops the release until a
+sign-in (Google and Discord only). The four info are "RLS enabled, no
+policy" for `homebrew_art_released`, `limit_defaults`, `usage_snapshots`
+and `user_limit_overrides`, by design: no Data API role reads them
+(`print_sets` has the restrictive `print_sets_no_client` since
+`20261113120000_api_client_guard`). A warning that is not in this list stops the release until a
 review accepts it and adds it here with its reason.
+
+**OAuth server and the client token.** `[auth.oauth_server]` is owned by the
+file since `ai-mcp` B5a (enabled, `authorization_url_path = "/connect"`,
+`allow_dynamic_registration = true`, the same in `[remotes.test.auth]`), so a
+`config:push` is the switch. The test project's server was switched on in the
+dashboard on 2026-11-12 (the same values); production's stays off until the
+release steps below. The CLI's field names come from the 2.117.0 template.
+`docs/decisions/2026-11-13-a-connected-app-reaches-only-the-api-s-account-scope.md`.
+
+Measured on the test project, 2026-11-13 (Node, auth-js 2.117.1, throwaway users
+and dynamically registered public clients, deleted after each run; the probe
+scripts are the owner's, `C:\Users\Ignat\.dhloot\notes\57\b5a-step1\`):
+
+- Discovery answers at `<URL>/.well-known/oauth-authorization-server/auth/v1`
+  and `<URL>/auth/v1/.well-known/oauth-authorization-server` (200, no apikey);
+  `grant_types_supported` is `authorization_code` and `refresh_token`; the token
+  endpoint refuses `client_credentials` (`unsupported_grant_type`), and
+  registration refuses that grant type.
+- The authorize redirect is `<site_url>connect?authorization_id=<id>`, the id
+  32 characters of `[a-z0-9]`. An approve needs a details read first (else 404).
+  Details answer `authorization_id`, `redirect_uri`, `client {id, name, uri}`
+  (no `logo_uri` when unset), `user {id, email}` and `scope`; a grant answers
+  `client {id, name, uri}`, `scopes` and `granted_at`, and no redirect address.
+- A client token is a normal `authenticated` JWT of 3600 s with `client_id`,
+  `session_id`, `scope`, `email`, `phone`, `app_metadata` and `user_metadata`,
+  also for `scope=openid` alone; a `resource` parameter is accepted and leaves
+  `aud` `authenticated`.
+- Before Supabase's fix (supabase/auth#2898, merged 2026-11-03, in
+  2.198.0-rc.38 and later, not on the hosted projects on 2026-11-13) a client
+  token sets the password (`PUT /auth/v1/user`; a password sign-in then works,
+  and the app's own session ends), enrolls a TOTP factor, reads and approves
+  another app's pending authorization, lists the grants, revokes another app's
+  grant, changes `user_metadata`, and ends every session (`POST
+  /logout?scope=global`). An email change answered 400 `email_address_invalid`
+  (the project's address check) and identity link and unlink answered for the
+  app token too, so neither is a bound. B5a step 1's stop rule fired; the owner
+  decided to build on the fix and to release only once Supabase deploys it.
+
+Measured on the local stack, 2026-11-13 (CLI 2.117.0, its Auth image serves the
+OAuth server): with the section off, every OAuth route, the grants list and a
+revoke answer 404 `feature_disabled` "OAuth server is disabled" (the app's
+account section then draws nothing); with it on, an unknown authorization
+answers 404 `oauth_authorization_not_found`, a revoke of a grant that is not
+there 404 `oauth_consent_not_found`. `alter role authenticator set
+pgrst.db_pre_request` runs as the migration's `postgres` on the local stack.
+`check:db` runs no PostgREST, so `tests/db/api-client-guard.test.mjs` sets the
+role, the claims, `request.method` and `request.path` itself and runs the guard,
+with client tokens minted as claims and an `auth.sessions` row the case inserts.
+
+Pending readings (the orchestrator, after `migrate-test` applies
+`20261113120000_api_client_guard` on the test project): a client token from the
+probe gets 403 `api_client_guard` from `GET /rest/v1/user_prefs?limit=1` and an
+app token 200; `npm run config:diff -- --project test` (the owner's token)
+prints `drift: none` with the owned section. If the hosted project ignores the
+role setting, the named fallback is a guard call at the top of each function
+`authenticated` may execute outside the list.
+
+Release checklist (owner, after the closeout squash; each line is a gate):
+
+1. The migration is applied by CI (`migrate-prod`), and `/connect` is live
+   (the closeout deploy).
+2. The orchestrator runs probes P1-P4 against the hosted project (`node
+   --env-file=E:/dev/daggerheart-loot/.env.test.local
+   C:\Users\Ignat\.dhloot\notes\57\b5a-step1\b5a-probe3.mjs --only
+   P1,P2,P3,P4`). Expected: every P1-P4 row of the client column
+   `PASS-BLOCKED` (a password set, a factor enroll, an approve of another
+   client, a grant revoke). The consent strings and both privacy pages claim
+   that the token is bounded: do not switch production on before P1-P4 pass.
+3. `npm run config:diff -- --project prod`. Expected: only `auth.oauth_server`
+   rows.
+4. `npm run config:push -- --project prod`, which switches the server on.
+5. The acceptance probe on production, and the consent URL opened once to see
+   that `//connect` reads as `/connect`; then the connector test with a sign-in.
+
+Before the closeout squash the orchestrator reads production's
+`/auth/v1/.well-known/oauth-authorization-server`. Expected: 404
+`feature_disabled` (the server is still off). To revert: switch the OAuth server
+off (or revoke every grant) before the down migration, which gives a client
+token the whole account back; a frontend revert alone draws the not-found page
+on `/connect`.
 
 **The local stack lock.** One local Supabase stack serves every checkout on
 this host, and `npm run check:db` and `npm run restore:drill` reset it.
@@ -2413,14 +2495,14 @@ the database's part. `docs/DECISIONS.md`, 2026-09-30, "The list_entries
 touch and limit triggers run once per statement".
 
 **The configured bundle budget.** `tools/bundle-budget.mjs` has two limits:
-276 kB for the unconfigured build and 333 kB for the configured one, which
+279 kB for the unconfigured build and 338 kB for the configured one, which
 carries the account client chunk. A batch whose total passes a budget raises
 it to the measured total rounded up to the next whole kB (a printed 250.3
 gives 251; the tool compares the unrounded total, so a printed whole number
 such as 251.0 can pass 251: add 1 kB), never past 350 kB configured and 300 kB
 unconfigured (owner, 2026-10-22, and 2026-11-04: "we can increase budget up to
 300"). `npm run check:built` builds `dist/`
-unconfigured and so measures only the 276 kB limit. The 333 kB limit runs in
+unconfigured and so measures only the 279 kB limit. The 338 kB limit runs in
 CI's `e2e` job, after `npm run e2e` leaves the configured build in `dist/`,
 and in `deploy`. The lists release passed `check:built` locally and failed
 this step in CI (run 36228323330). A batch that adds code to the app or to
@@ -2432,7 +2514,7 @@ drops every `E2E_*` name, the secret key included, before the build:
 node --env-file=.env.test.local --input-type=module -e "import { buildEnv } from './tests/e2e/lib.mjs'; import { spawnSync } from 'node:child_process'; process.exit(spawnSync('npm run build && npm run budget', { shell: true, stdio: 'inherit', env: buildEnv(process.env) }).status ?? 1);"
 ```
 
-Expected: `within the 333 kB budget (with the account client chunk)`; on 2026-11-11 both limits rose, to 276 (275.0 kB measured) and 333 (about 332.0 kB estimated; no .env.test.local here, CI's e2e measures it); earlier that day both rose to 275 (274.4 kB measured) and 332 (about 331.4 kB estimated), and before them the
+Expected: `within the 338 kB budget (with the account client chunk)`; on 2026-11-13 (`ai-mcp` B5a: the consent page, the connected apps and `AppRepository`) both limits rose, to 279 (278.9 kB measured) and 338 (336.9 kB measured with placeholder `VITE_SUPABASE_*` values, as no `.env.test.local` was in that worktree; 1 kB more for CI's real values); on 2026-11-11 both limits rose, to 276 (275.0 kB measured) and 333 (about 332.0 kB estimated; no .env.test.local here, CI's e2e measures it); earlier that day both rose to 275 (274.4 kB measured) and 332 (about 331.4 kB estimated), and before them the
 configured limit rose to 331 (330.7 to 330.8 kB measured by CI's e2e); on 2026-11-07 both
 limits rose: 272.3 kB unconfigured, measured, and about 329.4 kB
 configured, estimated (no `.env.test.local` in that worktree; CI's `e2e` job measures it); 327.3 kB
@@ -2925,6 +3007,15 @@ Steps:
    ('homebrew_cards_per_owner', 100), ('homebrew_items_per_owner', 100),
    ('snapshot_bytes_per_list', 1048576) on conflict (key) do nothing;`, and
    run the check again.
+5. Check the guard of connected apps in the same editor. The backup leaves out
+   roles, so a project rebuilt from it has no `pgrst.db_pre_request`, and
+   every connected app's token reaches the whole account with no error. Run
+   `select rolconfig from pg_roles where rolname = 'authenticator';`.
+   Expected: the array holds `pgrst.db_pre_request=public.api_client_guard`.
+   Without it, run `alter role authenticator set pgrst.db_pre_request =
+   'public.api_client_guard'; notify pgrst, 'reload config';`, then the
+   acceptance probe ("OAuth server and the client token": a client token gets
+   403 `api_client_guard` from `user_prefs`).
 
 Before it asks for the ref, the command checks the receipt, reads
 production's migrations, tables, keys, foreign keys and sequences, and
@@ -3334,8 +3425,8 @@ Owner setup, in order, after R11 is on `main`:
    production project. Expected: the dispatch day is not visibly above the
    days around it. If it is more than 1 GB above them, delete the secret
    `SUPABASE_USAGE_TOKEN_PROD`; the report then shows `requests: no token`.
-8. Re-run the Security Advisor on production. Expected: 0 errors, 24
-   warnings, 5 info ("Expected Security Advisor warnings").
+8. Re-run the Security Advisor on production. Expected: 0 errors, 25
+   warnings, 4 info ("Expected Security Advisor warnings").
 9. After seven nights, open the latest summary. Expected: a forecast on the
    Database row.
 

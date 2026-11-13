@@ -96,6 +96,10 @@ const CLIPPED_TEXT =
     .repeat(40)
     .slice(0, 3000);
 
+/* The fake cloud's connection requests: Claude, and a client name of 200 characters. */
+const CONNECT = '#/connect/' + 'a'.repeat(32);
+const CONNECT_LONG = '#/connect/' + 'b'.repeat(32);
+
 /** The print controls' name: the driver names a titled button by its text. */
 const PRINT = 'Печать';
 
@@ -3373,6 +3377,77 @@ const STATES = [
     },
     /* The English half types the English word: the word follows the interface language. */
     again: (d) => d.type('', 'delete')
+  },
+
+  /* Connected apps (docs/specs/FEATURES.md, "Connect an app"): «Подключённые приложения»
+     on `#/account` and the consent page `#/connect/<id>` of the fake cloud's requests
+     (`app/src/ports/fake-cloud-seed.ts`, `AUTHORIZATIONS`). gm1's three apps are in
+     '#/account as gm1', gm2's empty section in '#/account as gm2'. */
+  {
+    id: '#/account ~ one app with the longest name as gm4',
+    route: '#/account',
+    as: 'gm4',
+    width: 360,
+    why: 'one connected app whose 200-character name wraps in its row, «example.org · подключено 1 ноября 2026» under it and «Отключить»'
+  },
+  {
+    id: '#/account ~ apps loading as gm1',
+    route: '#/account',
+    as: 'gm1',
+    hold: 'apps:stall',
+    why: '«Подключённые приложения» with the small «Загружаем...» line in place of the rows'
+  },
+  {
+    id: '#/account ~ apps failed as gm1',
+    route: '#/account',
+    as: 'gm1',
+    hold: 'apps:fail',
+    why: '«Подключённые приложения» with «Не получилось загрузить подключённые приложения.» in the danger color and a small «Повторить»'
+  },
+  {
+    id: CONNECT + ' as gm1',
+    route: CONNECT,
+    as: 'gm1',
+    why: 'the consent card: «Подключение приложения» and its lead, the client name «Claude» and «После ответа вы вернётесь на claude.ai», «Аккаунт» with gm1@example.test через Google, «Приложение сможет» with five lines and the cascade hint, «Не сможет» with one line, «Разрешить» and «Отказать», the hint where to disconnect'
+  },
+  {
+    id: CONNECT + ' ~ narrow as gm1',
+    route: CONNECT,
+    as: 'gm1',
+    width: 360,
+    why: 'the consent card in one column at 360 px, the buttons at the bottom of the card'
+  },
+  {
+    id: CONNECT_LONG + ' ~ longest name as gm1',
+    route: CONNECT_LONG,
+    as: 'gm1',
+    width: 360,
+    why: 'a 200-character client name wraps inside the card at 360 px; nothing scrolls sideways'
+  },
+  {
+    id: CONNECT + ' ~ loading as gm1',
+    route: CONNECT,
+    as: 'gm1',
+    hold: 'connect:stall',
+    why: 'the request being read: the title «Подключение приложения» and «Загружаем...»'
+  },
+  {
+    id: CONNECT + ' ~ read failed as gm1',
+    route: CONNECT,
+    as: 'gm1',
+    hold: 'connect:fail',
+    why: 'the read failed: the title, «Не получилось загрузить запрос на подключение.» and a primary «Повторить»'
+  },
+  {
+    id: CONNECT,
+    route: CONNECT,
+    why: 'signed out: the title, «Войдите, чтобы ответить на запрос приложения.» and the sign-in panel with both providers and the consent line'
+  },
+  {
+    id: '#/connect/short as gm1',
+    route: '#/connect/short',
+    as: 'gm1',
+    why: 'an id not in the shape of an authorization id: the error page «Запрос на подключение устарел», «Начните подключение заново в приложении.» and «На главную»'
   },
   {
     id: '#/roll/std as gm1',

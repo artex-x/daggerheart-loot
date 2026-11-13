@@ -31,7 +31,7 @@ RootWebArea "Аккаунт - Генератор лута Daggerheart" [url=/acc
       option "Таблицы" [selected=true]
       option "Поиск" [selected=false]
       option "Мои предметы" [selected=false]
-    ... StaticText x10 of 14 same-shape siblings elided
+    ... StaticText x11 of 15 same-shape siblings elided
     button "Список" [pressed=true]
     button "Сетка" [pressed=false]
     button "Цвет" [pressed=true]
@@ -44,7 +44,7 @@ RootWebArea "Аккаунт - Генератор лута Daggerheart" [url=/acc
       option "Не сообщать" [selected=false]
     heading "СПОСОБЫ ВХОДА" [level=2]
     button "Подключить Discord"
-    heading "ВАШИ ДАННЫЕ" [level=2]
+    ... heading x2 of 6 same-shape siblings elided
     StaticText "Списки и свои предметы одним архивом ZIP."
     button "Скачать мои данные (ZIP)"
     heading "ВЫХОД" [level=2]
@@ -119,7 +119,7 @@ RootWebArea "Account - Daggerheart Loot Generator" [url=/en/account?as=gm2]
       option "Tables" [selected=true]
       option "Search" [selected=false]
       option "My items" [selected=false]
-    ... StaticText x10 of 14 same-shape siblings elided
+    ... StaticText x11 of 15 same-shape siblings elided
     button "List" [pressed=true]
     button "Grid" [pressed=false]
     button "Color" [pressed=true]
@@ -132,7 +132,7 @@ RootWebArea "Account - Daggerheart Loot Generator" [url=/en/account?as=gm2]
       option "Don't notify" [selected=false]
     heading "SIGN-IN METHODS" [level=2]
     button "Connect Discord"
-    heading "YOUR DATA" [level=2]
+    ... heading x2 of 6 same-shape siblings elided
     StaticText "Your lists and items in one ZIP archive."
     button "Download my data (ZIP)"
     heading "SIGN OUT" [level=2]

@@ -8,6 +8,7 @@
 
 import { keyFrom } from '../lib/homebrew.js';
 import type {
+  AppRepository,
   AuthPort,
   AuthResult,
   CloudPort,
@@ -177,5 +178,12 @@ export function lazyCloud(load: () => Promise<CloudPort>): CloudPort {
     create: async (entries) => (await port())?.prints.create(entries) ?? UNSENT,
     read: async (id) => (await port())?.prints.read(id) ?? NO_ITEMS
   };
-  return { auth, prefs, lists, shares, events, requests, homebrew, prints };
+  const apps: AppRepository = {
+    details: async (id) => (await port())?.apps.details(id) ?? NO_ITEMS,
+    approve: async (id) => (await port())?.apps.approve(id) ?? NO_ITEMS,
+    deny: async (id) => (await port())?.apps.deny(id) ?? NO_ITEMS,
+    list: async () => (await port())?.apps.list() ?? NO_ITEMS,
+    revoke: async (id) => (await port())?.apps.revoke(id) ?? false
+  };
+  return { auth, prefs, lists, shares, events, requests, homebrew, prints, apps };
 }

@@ -545,6 +545,13 @@ const COVERED: Record<string, string> = {
   'AccountMenu.svelte': 'the account menu open, in the state above, and accountMenu.test.ts',
   'AccountPage.svelte':
     'accountPage.test.ts in every state, the delete confirmation open and «Ваши данные» above',
+  'ConnectPage.svelte':
+    'connectPage.test.ts in every state: the card, approving, a failed answer, loading, failed, expired, framed, signed out',
+  'ProviderLogo.svelte':
+    'accountPage.test.ts and connectPage.test.ts, beside each provider name',
+  'SessionLine.svelte':
+    "connectPage.test.ts, the consent card's «Аккаунт», and accountPage.test.ts, the unread identities",
+  'SignInPanel.svelte': 'accountPage.test.ts and connectPage.test.ts, signed out',
   'Actions.svelte': 'the card actions on every record state above, and record.test.ts',
   'AddToList.svelte': 'the add-to-list menu, in the state above',
   'DialogClose.svelte': 'sheet.test.ts and recordHost.test.ts, both dialogs open',

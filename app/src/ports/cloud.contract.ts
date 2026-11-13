@@ -10,7 +10,8 @@
  * share links, J the live topics, K the purchase
  * requests, L the import of a lists file, M the homebrew rows, N the homebrew cards, O the
  * import of a homebrew file and the bulk move, P the GM-only entries, R the live links
- * across accounts, S the print sets, Q the own pictures of homebrew items. I (the move of a
+ * across accounts, S the print sets, Q the own pictures of homebrew items, T the bulk delete
+ * of own items, U the connected apps. I (the move of a
  * browser list) was retired at R10 and its letter is not reused. */
 
 import { newArtName, thumbOf } from '../lib/art.js';
@@ -2205,6 +2206,40 @@ async function printCases(
   assert(unknown.ok && unknown.set === null, 'prints: an unknown id does not read null');
 }
 
+/* U. Connected apps: signed out, the grants and a request read nothing and answer nothing;
+   signed in, the grants read as a list newest first (or the server off), and a request of
+   the right shape that Auth does not hold opens nothing. */
+async function appCases(
+  member: CloudPort,
+  signedOut: CloudPort,
+  assert: Assert
+): Promise<void> {
+  const UNKNOWN = 'z'.repeat(32);
+  assert(!(await signedOut.apps.list()).ok, 'apps: signed out, list() is not { ok: false }');
+  assert(
+    !(await signedOut.apps.details(UNKNOWN)).ok,
+    'apps: signed out, details() is not { ok: false }'
+  );
+  const read = await member.apps.list();
+  assert(read.ok, 'apps: list() is not ok');
+  if (read.ok && 'apps' in read) {
+    const times = read.apps.map((a) => a.grantedAt);
+    assert(
+      times.every((t, i) => i === 0 || (times[i - 1] ?? '') >= t),
+      'apps: list() is not newest first'
+    );
+    assert(
+      read.apps.every((a) => typeof a.clientId === 'string' && typeof a.name === 'string'),
+      'apps: a grant has no client id or name'
+    );
+  }
+  const unknown = await member.apps.details(UNKNOWN);
+  assert(
+    unknown.ok && 'gone' in unknown,
+    'apps: an unknown request answered ' + JSON.stringify(unknown)
+  );
+}
+
 export async function runCloudContract(
   make: (as?: string) => Promise<CloudPort>,
   users: ContractUsers,
@@ -2397,6 +2432,10 @@ export async function runCloudContract(
   } else {
     log('case Q skipped: no picture probe');
   }
+
+  /* U. connected apps, read by the member; nothing is approved or revoked, so the case
+     leaves no grant behind. */
+  await appCases(await make(member.as), signedOut, assert);
 
   /* E. deleteAccount leaves nothing signed in */
   const doomed = doomedPort.auth;

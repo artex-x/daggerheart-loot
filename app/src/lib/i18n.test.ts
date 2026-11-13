@@ -238,6 +238,47 @@ describe('the interface words', () => {
     expect(dict('ru').hbImportZipLists).toMatch(/^Затем /);
   });
 
+  it('names the same scope facts on the consent page in both languages', () => {
+    const lines = (lang: 'ru' | 'en') => {
+      const t = dict(lang);
+      return [
+        t.connectCanLists,
+        t.connectCanItems,
+        t.connectCanShared,
+        t.connectCanFiles,
+        t.connectCanPersonal
+      ];
+    };
+    /* Four lines of what it may do, each closed by `;`, and the account's email and name. */
+    for (const lang of ['ru', 'en'] as const) {
+      expect(lines(lang).map((l) => l.slice(-1))).toEqual([';', ';', ';', ';', '.']);
+    }
+    expect(dict('en').connectCanPersonal).toBe("see your account's email and name.");
+    expect(dict('ru').connectCanPersonal).toBe('видеть почту и имя вашего аккаунта.');
+    /* The two cascades and the deletion that cannot be undone. */
+    expect(dict('en').connectCascade).toMatch(
+      /share links.*every list.*picture.*cannot be undone/
+    );
+    expect(dict('ru').connectCascade).toMatch(/ссылки.*всех списков.*картинку.*нельзя/);
+    /* What it never does: sign-in (password, email, methods), other apps, the account,
+       the display settings. */
+    expect(dict('en').connectCannotLine).toMatch(
+      /password, email or sign-in methods, connect other apps, delete your account or change your display settings/
+    );
+    expect(dict('ru').connectCannotLine).toMatch(
+      /пароль, почту и способы входа, подключать другие приложения, удалять аккаунт и менять настройки отображения/
+    );
+    for (const k of [
+      'connectBack',
+      'appsSince',
+      'appDisconnectConfirm',
+      'appDisconnected'
+    ] as const) {
+      expect(dict('en')[k]).toContain('%s');
+      expect(dict('ru')[k]).toContain('%s');
+    }
+  });
+
   it('holds no ellipsis character in either language', () => {
     for (const lang of ['ru', 'en'] as const) {
       const hits = Object.entries(dict(lang)).filter(([, v]) => v.includes('\u2026'));

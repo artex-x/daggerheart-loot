@@ -61,6 +61,16 @@ route of `routes.json` is covered and that the worker takes no rewritten path.
   (`docs/decisions/2026-10-08-every-print-is-a-stored-set-long-print.md`)
 - `#/account`, the account page, read in every build (the not-found page,
   address kept, where no sign-in is configured)
+- `#/connect/<id>`, the consent page of a connection request of the Supabase
+  OAuth 2.1 server, read in every build as `#/account` is; the entry form
+  `<site>connect?authorization_id=<id>` (also `//connect` and `en/connect`),
+  which Supabase Auth sends, becomes it before the router reads the bar; the
+  page reads only an id of 32 characters of `a-z0-9` and draws the expired page
+  for any other. `/connect`, `/connect/*`, `/en/connect` and `/en/connect/*`
+  answer `Content-Security-Policy: frame-ancestors 'none'` and
+  `X-Frame-Options: DENY` (`preview/public/_headers`; `tools/check-site.mjs`
+  holds both); the page itself draws the expired page in a frame (`ROUTES.md`,
+  "Connect an app")
 - `#/homebrew`, `#/homebrew/new` and `#/homebrew/<key>`, the author's own
   items and their editor, and the tabs `#/homebrew/sources`,
   `#/homebrew/sets[/<key>]` and `#/homebrew/rules[/<key>]` (a key opens that

@@ -10,7 +10,9 @@
   `89a55f1b`); B3 and B2b done (landing 3, `c4742c53`, live on production;
   step 14's readings are in `context.md`, "Landing 3 readings and owner
   instructions"; the owner's decision on the cold readings is open, B3
-  outcome); B5a implement-ready (next); B5b implement-ready; B5c and B5d
+  outcome); B5a committed on the branch (implementer, 2026-11-13; step 1's
+  stop resolved by the owner: build on supabase/auth#2898, release after
+  P1-P4 pass; batch review next, then the push); B5b implement-ready; B5c and B5d
   implement-ready (files and steps given, plan-B5b-R6); B4 dropped. Order
   and landings: section 6, "Order of the remaining batches" (D8).
 - NEEDS_HUMAN_CONFIRMATION: no. Q1-Q7 settled; Q8, Q10, Q11, the R1, R7
@@ -843,7 +845,20 @@ this list too):
   fall; section 11): a 64 KB page parses about twice what the 32 KB file
   check parses, which landing 3 read at 10-14 ms cold.
 
-#### B5a - The account connection (implement-ready)
+#### B5a - The account connection (committed, review pending)
+
+Outcome (implementer, 2026-11-13): steps 2-10 done; step 1's stop rule fired
+and the owner resolved it (2026-11-13: the design assumes Supabase's fix
+supabase/auth#2898; production's OAuth server is switched on only after
+probes P1-P4 answer PASS-BLOCKED on the hosted project, `.claude/README.md`,
+"OAuth server and the client token", "Release checklist"; the consent strings
+assume the fix). Departures: the grant row's host is `client.uri`'s (a grant
+carries no redirect), the consent card's is the redirect's, so the two show
+different fields; the scope list always carries the email and name line
+(step 1 found them in every client token); `config:diff -- --project test`
+(acceptance 2) and the hosted `user_prefs` probe (acceptance 9) are the
+orchestrator's or the owner's readings; the configured bundle line needs
+`.env.test.local`, absent in this worktree, so CI's `e2e` measures it.
 
 Objective: a reader connects an app or AI assistant through the Supabase
 OAuth 2.1 server on a consent page at `/connect`, sees and disconnects it

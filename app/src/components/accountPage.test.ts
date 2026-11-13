@@ -33,7 +33,9 @@ const press = async (name: string): Promise<void> => {
   await userEvent.click(await screen.findByRole('button', { name }));
 };
 
-const rows = (): HTMLElement[] => within(screen.getByRole('list')).getAllByRole('listitem');
+/* The providers' rows: the first list of the page, before «Подключённые приложения». */
+const rows = (): HTMLElement[] =>
+  within(screen.getAllByRole('list')[0]!).getAllByRole('listitem');
 
 describe('signed out', () => {
   it('offers both providers and the terms it signs you up to', async () => {
@@ -135,6 +137,7 @@ describe('signed in as gm1', () => {
     expect(screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)).toEqual([
       'Отображение на всех устройствах',
       'Способы входа',
+      'Подключённые приложения',
       'Ваши данные',
       'Выход',
       'Удаление аккаунта'
@@ -142,7 +145,7 @@ describe('signed in as gm1', () => {
     const colA = container.querySelector('.acc > .colA') as HTMLElement;
     const colB = container.querySelector('.acc > .colB') as HTMLElement;
     expect(colA.nextElementSibling).toBe(colB);
-    expect(within(colA).getAllByRole('heading', { level: 2 })).toHaveLength(2);
+    expect(within(colA).getAllByRole('heading', { level: 2 })).toHaveLength(3);
     expect(within(colB).getAllByRole('heading', { level: 2 })).toHaveLength(3);
     expect(colA.querySelector('[data-primary]')).not.toBeNull();
     expect(container.querySelector('input[type="checkbox"]')).toBeNull();
@@ -160,7 +163,7 @@ describe('signed in as gm1', () => {
     expect(
       await screen.findByRole('button', { name: 'Подключить Discord' })
     ).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /Отключить/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Отключить (Google|Discord)/ })).toBeNull();
     expect(
       screen.getByText(
         'Google - единственный способ входа, поэтому его нельзя отключить. Подключите второй, чтобы отключить этот.'
@@ -219,7 +222,9 @@ describe('signed in as gm1', () => {
       'Не получилось. Проверьте соединение и попробуйте ещё раз.'
     );
     expect(screen.getByText('через Google')).toBeInTheDocument();
-    expect(screen.queryByRole('list')).not.toBeInTheDocument();
+    /* The one list left is «Подключённые приложения». */
+    expect(screen.getAllByRole('list')).toHaveLength(1);
+    expect(screen.queryByRole('button', { name: /Отключить (Google|Discord)/ })).toBeNull();
     expect(screen.queryByRole('button', { name: /Подключить/ })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Выйти' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Удалить аккаунт...' })).toBeInTheDocument();
@@ -304,7 +309,9 @@ describe('your data', () => {
 
   it('says a failed read, and «Повторить» reads again', async () => {
     const cloud = fakeCloud(SEED, 'gm1', { offline: true });
-    const { container } = open(cloud);
+    /* Only the lists fail here: the connected apps answer. */
+    const apps = fakeCloud(SEED, 'gm1').apps;
+    const { container } = open({ ...cloud, apps });
     expect(await screen.findByText('Не получилось загрузить списки аккаунта.')).toHaveAttribute(
       'role',
       'alert'
@@ -820,5 +827,210 @@ describe('the start-section option of the lists', () => {
   it('reads «Мои списки» and "My lists"', async () => {
     expect(await optionOf()).toBe('Мои списки');
     expect(await optionOf('en')).toBe('My lists');
+  });
+});
+
+describe('connected apps', () => {
+  const section = async (): Promise<HTMLElement> => {
+    const h = await screen.findByRole('heading', { name: 'Подключённые приложения', level: 2 });
+    return h.closest('.panel') as HTMLElement;
+  };
+  const withConfirm = (cloud: CloudPort, answer: boolean) => {
+    const confirm = vi.fn(() => answer);
+    const env = fakeEnv({ cloud, router: memoryRouter('#/account') });
+    env.dialog = { ...env.dialog, confirm };
+    return { confirm, env };
+  };
+
+  it("draws gm1's apps newest first, each with its host, its date and «Отключить <name>»", async () => {
+    const { container } = open(as('gm1'));
+    const panel = await section();
+    await within(panel).findByRole('button', { name: 'Отключить Claude' });
+    const items = within(panel).getAllByRole('listitem');
+    expect(items.map((li) => li.querySelector('b')?.textContent)).toEqual([
+      'Claude',
+      'Charkeeper',
+      'ChatGPT'
+    ]);
+    expect(within(items[0]!).getByText('claude.ai · подключено 12 ноября 2026')).toBeVisible();
+    expect(
+      within(items[2]!).getByText('chatgpt.com · подключено 28 октября 2026')
+    ).toBeVisible();
+    await expectNoA11yViolations(container);
+  });
+
+  it('draws the date in English in English', async () => {
+    open(as('gm1', { lang: 'en' }), 'en');
+    const h = await screen.findByRole('heading', { name: 'Connected apps', level: 2 });
+    const panel = h.closest('.panel') as HTMLElement;
+    expect(
+      await within(panel).findByText('claude.ai · connected 12 November 2026')
+    ).toBeVisible();
+  });
+
+  it('says so when the account has none', async () => {
+    const { container } = open(as('gm2'));
+    const panel = await section();
+    expect(
+      await within(panel).findByText(
+        'Приложений нет. Здесь появятся те, кому вы разрешите доступ.'
+      )
+    ).toBeVisible();
+    await expectNoA11yViolations(container);
+  });
+
+  it('draws the loading line, then a failed read with «Повторить», which reads again', async () => {
+    const cloud = as('gm1');
+    const real = cloud.apps.list.bind(cloud.apps);
+    let calls = 0;
+    cloud.apps.list = () => {
+      calls++;
+      return calls === 1 ? Promise.resolve({ ok: false }) : real();
+    };
+    const { container } = open(cloud);
+    const panel = await section();
+    expect(
+      await within(panel).findByText('Не получилось загрузить подключённые приложения.')
+    ).toHaveAttribute('role', 'alert');
+    await expectNoA11yViolations(container);
+    await userEvent.click(within(panel).getByRole('button', { name: 'Повторить' }));
+    expect(
+      await within(panel).findByRole('button', { name: 'Отключить Claude' })
+    ).toBeVisible();
+    cleanup();
+    const slow = as('gm1');
+    slow.apps.list = () => new Promise(() => undefined);
+    open(slow);
+    expect(within(await section()).getByText('Загружаем...')).toBeVisible();
+  });
+
+  it('draws no section while the OAuth server is off', async () => {
+    open(as('gm1', { apps: 'off' }));
+    await screen.findByRole('button', { name: 'Отключить Discord' });
+    await new Promise((r) => setTimeout(r, 20));
+    expect(screen.queryByRole('heading', { name: 'Подключённые приложения' })).toBeNull();
+  });
+
+  it('asks first, then removes the row, says so and hands the focus to the next row', async () => {
+    const cloud = as('gm1');
+    const { confirm, env } = withConfirm(cloud, true);
+    const { container } = render(App, { env });
+    const panel = await section();
+    await userEvent.click(
+      await within(panel).findByRole('button', { name: 'Отключить Claude' })
+    );
+    expect(confirm).toHaveBeenCalledWith(
+      'Отключить «Claude»? Приложение больше не сможет читать и менять ваши данные на этом сайте. Подключить его снова можно только из самого приложения.'
+    );
+    expect(await screen.findByText('Приложение «Claude» отключено')).toBeInTheDocument();
+    expect(within(panel).queryByText('Claude')).toBeNull();
+    expect(document.activeElement).toBe(
+      within(panel).getByRole('button', { name: 'Отключить Charkeeper' })
+    );
+    const left = await cloud.apps.list();
+    expect(left.ok && 'apps' in left ? left.apps.map((a) => a.name) : null).toEqual([
+      'Charkeeper',
+      'ChatGPT'
+    ]);
+    await expectNoA11yViolations(container);
+  });
+
+  it('hands the focus to the row before after the last, and to #main after the only one', async () => {
+    const cloud = as('gm1');
+    const { env } = withConfirm(cloud, true);
+    render(App, { env });
+    const panel = await section();
+    await userEvent.click(
+      await within(panel).findByRole('button', { name: 'Отключить ChatGPT' })
+    );
+    await screen.findByText('Приложение «ChatGPT» отключено');
+    expect(document.activeElement).toBe(
+      within(panel).getByRole('button', { name: 'Отключить Charkeeper' })
+    );
+    await userEvent.click(within(panel).getByRole('button', { name: 'Отключить Charkeeper' }));
+    await userEvent.click(
+      await within(panel).findByRole('button', { name: 'Отключить Claude' })
+    );
+    await within(panel).findByText(
+      'Приложений нет. Здесь появятся те, кому вы разрешите доступ.'
+    );
+    expect(document.activeElement?.id).toBe('main');
+  });
+
+  it('changes nothing on «Отмена»', async () => {
+    const cloud = as('gm1');
+    const revoke = vi.spyOn(cloud.apps, 'revoke');
+    const { env } = withConfirm(cloud, false);
+    render(App, { env });
+    const panel = await section();
+    await userEvent.click(
+      await within(panel).findByRole('button', { name: 'Отключить Claude' })
+    );
+    expect(revoke).not.toHaveBeenCalled();
+    expect(within(panel).getAllByRole('listitem')).toHaveLength(3);
+  });
+
+  it('keeps the row and toasts a refused disconnect', async () => {
+    const cloud = as('gm1', { apps: 'refuse' });
+    const { env } = withConfirm(cloud, true);
+    const { container } = render(App, { env });
+    const panel = await section();
+    await userEvent.click(
+      await within(panel).findByRole('button', { name: 'Отключить Claude' })
+    );
+    expect(
+      await screen.findByText('Не получилось. Проверьте соединение и попробуйте ещё раз.')
+    ).toBeInTheDocument();
+    expect(within(panel).getAllByRole('listitem')).toHaveLength(3);
+    await expectNoA11yViolations(container);
+  });
+
+  it("disables the page's buttons while a revoke runs", async () => {
+    const cloud = as('gm1');
+    cloud.apps.revoke = () => new Promise(() => undefined);
+    const { env } = withConfirm(cloud, true);
+    render(App, { env });
+    const panel = await section();
+    await userEvent.click(
+      await within(panel).findByRole('button', { name: 'Отключить Claude' })
+    );
+    expect(within(panel).getByRole('button', { name: 'Отключить Charkeeper' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Выйти' })).toBeDisabled();
+  });
+
+  it('draws 30 rows newest first, a long name and a host as given', async () => {
+    const cloud = as('gm1');
+    const day = (n: number) => new Date(Date.UTC(2026, 9, 1 + n)).toISOString();
+    cloud.apps.list = () =>
+      Promise.resolve({
+        ok: true,
+        apps: [
+          { clientId: 'long', name: 'Д'.repeat(200), host: 'example.org', grantedAt: day(40) },
+          {
+            clientId: 'cursor',
+            name: 'Cursor',
+            host: 'cursor://anysphere.cursor-retrieval',
+            grantedAt: day(39)
+          },
+          ...Array.from({ length: 28 }, (_, i) => ({
+            clientId: 'c' + String(i),
+            name: 'App ' + String(i),
+            host: '',
+            grantedAt: day(28 - i)
+          }))
+        ]
+      });
+    const { container } = open(cloud);
+    const panel = await section();
+    await within(panel).findByRole('button', { name: 'Отключить Cursor' });
+    const items = within(panel).getAllByRole('listitem');
+    expect(items).toHaveLength(30);
+    expect(
+      within(items[1]!).getByText(
+        'cursor://anysphere.cursor-retrieval · подключено 9 ноября 2026'
+      )
+    ).toBeVisible();
+    expect(within(items[2]!).getByText('подключено 29 октября 2026')).toBeVisible();
+    await expectNoA11yViolations(container);
   });
 });

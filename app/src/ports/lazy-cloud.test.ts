@@ -268,8 +268,27 @@ describe('lazyCloud', () => {
     expect(read?.ok && (read.set as { entries: unknown[] }).entries).toHaveLength(2);
   });
 
+  it('forwards the connected-app calls to the loaded port', async () => {
+    const { apps } = lazyCloud(() => Promise.resolve(fakeCloud(SEED, 'gm1')));
+    const read = await apps.list();
+    expect(read.ok && 'apps' in read ? read.apps.map((a) => a.name) : null).toEqual([
+      'Claude',
+      'Charkeeper',
+      'ChatGPT'
+    ]);
+    expect(await apps.details('a'.repeat(32))).toMatchObject({
+      ok: true,
+      request: { name: 'Claude' }
+    });
+    expect(await apps.deny('a'.repeat(32))).toMatchObject({ ok: true });
+    expect(await apps.approve('b'.repeat(32))).toMatchObject({ ok: true });
+    expect(
+      await apps.revoke(read.ok && 'apps' in read ? (read.apps[0]?.clientId ?? '') : '')
+    ).toBe(true);
+  });
+
   it('answers signed out and refuses every change when the load fails', async () => {
-    const { auth, prefs, lists, shares, requests, homebrew, prints } = lazyCloud(() =>
+    const { auth, prefs, lists, shares, requests, homebrew, prints, apps } = lazyCloud(() =>
       Promise.reject(new Error('offline'))
     );
     const fn = vi.fn();
@@ -333,6 +352,11 @@ describe('lazyCloud', () => {
     expect(await homebrew.moveItems([{ id: 'x', revision: 1 }], null, null)).toEqual(unsent);
     expect(await prints.create([{ k: 'ci1' }])).toEqual(unsent);
     expect(await prints.read('AbCdEf-_1234')).toEqual({ ok: false });
+    expect(await apps.details('a'.repeat(32))).toEqual({ ok: false });
+    expect(await apps.approve('a'.repeat(32))).toEqual({ ok: false });
+    expect(await apps.deny('a'.repeat(32))).toEqual({ ok: false });
+    expect(await apps.list()).toEqual({ ok: false });
+    expect(await apps.revoke('x')).toBe(false);
     off();
     expect(fn).not.toHaveBeenCalled();
   });

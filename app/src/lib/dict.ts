@@ -525,6 +525,44 @@ const ru = {
   exportData: 'Скачать мои данные (ZIP)',
   zipNoArt: 'Картинок в архиве нет: после переноса добавьте их заново.',
 
+  /* Connected apps: the consent page `#/connect/<id>` and the account section
+     (docs/specs/FEATURES.md, "Connect an app"). The scope lines name the same facts as
+     both privacy pages. */
+  connectTitle: 'Подключение приложения',
+  connectLead: 'Приложение просит доступ к вашему аккаунту на этом сайте.',
+  connectBack: 'После ответа вы вернётесь на %s',
+  connectAccount: 'Аккаунт',
+  connectCan: 'Приложение сможет',
+  connectCanLists:
+    'читать, менять и удалять ваши списки, их позиции и ссылки на них, отвечать на запросы игроков;',
+  connectCanItems:
+    'читать, менять и удалять ваши предметы, источники, комплекты и карты правил, загружать и убирать их картинки;',
+  connectCanShared: 'сохранять себе чужие списки по ссылке и отправлять их владельцам запросы;',
+  connectCanFiles:
+    'импортировать и скачивать ваши файлы списков и предметов, создавать наборы для печати;',
+  connectCanPersonal: 'видеть почту и имя вашего аккаунта.',
+  connectCascade:
+    'Удаление списка закрывает его ссылки и запросы игроков по нему; удаление предмета убирает его из всех списков, где он есть, и удаляет его картинку. Вернуть удалённое нельзя.',
+  connectCannot: 'Не сможет',
+  connectCannotLine:
+    'менять ваш пароль, почту и способы входа, подключать другие приложения, удалять аккаунт и менять настройки отображения.',
+  connectAllow: 'Разрешить',
+  connectAllowing: 'Разрешаем...',
+  connectDeny: 'Отказать',
+  connectWhere:
+    'Отключить приложение можно в любой момент на странице «Аккаунт», в разделе «Подключённые приложения».',
+  connectSignIn: 'Войдите, чтобы ответить на запрос приложения.',
+  connectLoadFailed: 'Не получилось загрузить запрос на подключение.',
+  connectExpired: 'Запрос на подключение устарел',
+  connectExpiredText: 'Начните подключение заново в приложении.',
+  apps: 'Подключённые приложения',
+  appsEmpty: 'Приложений нет. Здесь появятся те, кому вы разрешите доступ.',
+  appsLoadFailed: 'Не получилось загрузить подключённые приложения.',
+  appsSince: 'подключено %s',
+  appDisconnectConfirm:
+    'Отключить «%s»? Приложение больше не сможет читать и менять ваши данные на этом сайте. Подключить его снова можно только из самого приложения.',
+  appDisconnected: 'Приложение «%s» отключено',
+
   /* Account lists: the save status, the sign-in prompts, the delete confirm and the
      limits (docs/specs/FEATURES.md, "Lists"). */
   cloudLoading: 'Загружаем...',
@@ -1577,6 +1615,40 @@ const en: Dict = {
   yourDataHint: 'Your lists and items in one ZIP archive.',
   exportData: 'Download my data (ZIP)',
   zipNoArt: 'The archive holds no pictures: add them again after the move.',
+
+  connectTitle: 'Connect an app',
+  connectLead: 'An app asks for access to your account on this site.',
+  connectBack: 'After your answer you go back to %s',
+  connectAccount: 'Account',
+  connectCan: 'The app can',
+  connectCanLists:
+    "read, change and delete your lists, their entries and share links, and answer players' requests;",
+  connectCanItems:
+    'read, change and delete your items, sources, sets and rule cards, and upload or remove their pictures;',
+  connectCanShared: 'save copies of shared lists and send requests to their owners;',
+  connectCanFiles: 'import and download your list and item files, and make print sets;',
+  connectCanPersonal: "see your account's email and name.",
+  connectCascade:
+    "Deleting a list also ends its share links and the players' requests on it; deleting an item removes it from every list that holds it and deletes its picture. A deletion cannot be undone.",
+  connectCannot: 'It cannot',
+  connectCannotLine:
+    'change your password, email or sign-in methods, connect other apps, delete your account or change your display settings.',
+  connectAllow: 'Allow',
+  connectAllowing: 'Allowing...',
+  connectDeny: 'Deny',
+  connectWhere:
+    'You can disconnect the app at any time on the "Account" page, in "Connected apps".',
+  connectSignIn: "Sign in to answer the app's request.",
+  connectLoadFailed: 'Could not load the connection request.',
+  connectExpired: 'This connection request has expired',
+  connectExpiredText: 'Start the connection again in the app.',
+  apps: 'Connected apps',
+  appsEmpty: 'No apps. The apps you allow show up here.',
+  appsLoadFailed: 'Could not load the connected apps.',
+  appsSince: 'connected %s',
+  appDisconnectConfirm:
+    'Disconnect "%s"? The app can no longer read or change your data on this site. You can connect it again only from the app.',
+  appDisconnected: 'App "%s" disconnected',
 
   cloudLoading: 'Loading...',
   cloudLoadFailed: 'Could not load the lists in your account.',

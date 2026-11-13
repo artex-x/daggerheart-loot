@@ -12,14 +12,19 @@
   import NumRow from './NumRow.svelte';
   import PageTitle from './PageTitle.svelte';
   import Panel from './Panel.svelte';
+  import ProviderLogo from './ProviderLogo.svelte';
+  import { PROVIDER_NAME, PROVIDERS } from './providers.js';
   import Seg from './Seg.svelte';
+  import SessionLine from './SessionLine.svelte';
+  import SignInPanel from './SignInPanel.svelte';
   import TextInput from './TextInput.svelte';
+  import { longDate, type AppGrant } from '../lib/apps.js';
   import { sectionLabel } from '../lib/dict.js';
   import { plural } from '../lib/plural.js';
   import { HOMEBREW_HASH, parseHash, sectionHash, tablesHash } from '../lib/hash.js';
   import type { NotifyGm } from '../lib/prefs.js';
   import { BARE_TABLE, SECTIONS, type Lang, type Section } from '../lib/types.js';
-  import type { AuthResult, Identity, Provider } from '../ports/index.js';
+  import type { AppsRead, AuthResult, Identity, Provider } from '../ports/index.js';
   import type { AppState } from '../state/app.svelte.js';
 
   interface Props {
@@ -28,9 +33,6 @@
 
   const { app }: Props = $props();
 
-  /* Brand names, never translated. */
-  const PROVIDER_NAME: Record<Provider, string> = { google: 'Google', discord: 'Discord' };
-  const PROVIDERS: readonly Provider[] = ['google', 'discord'];
   const PANEL = 'margin-top:16px';
 
   const t = $derived(app.t);
@@ -224,6 +226,54 @@
     });
   }
 
+  /* «Подключённые приложения»: null while the grants are read. */
+  let apps = $state<AppsRead | null>(null);
+  let appsRead = $state(0);
+  let appRows = $state<HTMLUListElement | undefined>(undefined);
+  const grants = $derived<AppGrant[]>(apps?.ok && 'apps' in apps ? apps.apps : []);
+
+  /* A retry, and a user that changed, read the grants again; an answer for an earlier
+     user is dropped. */
+  $effect(() => {
+    void appsRead;
+    const id = userId;
+    apps = null;
+    if (!cloud || !id) return;
+    let live = true;
+    void cloud.apps.list().then((r) => {
+      if (live) apps = r;
+    });
+    return () => {
+      live = false;
+    };
+  });
+
+  /* A revoke cannot be written back, so it asks first (rule 10). A removed row hands the
+     focus to the next row's «Отключить», else the one before, else `#main` (rule 20). */
+  async function revoke(a: AppGrant): Promise<void> {
+    if (busy || !cloud) return;
+    if (!app.env.dialog.confirm(t.appDisconnectConfirm.replace('%s', a.name))) return;
+    busy = true;
+    try {
+      const done = await cloud.apps.revoke(a.clientId);
+      if (!done) {
+        app.say((t) => t.accountFailed, { error: true });
+        return;
+      }
+      if (apps?.ok && 'apps' in apps) {
+        const at = apps.apps.findIndex((x) => x.clientId === a.clientId);
+        apps = { ok: true, apps: apps.apps.filter((x) => x.clientId !== a.clientId) };
+        busy = false;
+        await tick();
+        const buttons = [...(appRows?.querySelectorAll('button') ?? [])];
+        (buttons[at] ?? buttons[at - 1] ?? document.getElementById('main'))?.focus();
+      }
+      app.say((t) => t.appDisconnected.replace('%s', a.name));
+    } finally {
+      busy = false;
+    }
+  }
+
   async function toggleConfirm(): Promise<void> {
     if (confirming) {
       closeConfirm();
@@ -246,36 +296,6 @@
   }
 </script>
 
-<!-- A `{@render}` tag reads as a void expression to this rule wherever it
-     sits among text; the provider logo is rendered beside text three times. -->
-<!-- eslint-disable @typescript-eslint/no-confusing-void-expression -->
-{#snippet logo(p: Provider)}
-  {#if p === 'google'}
-    <svg viewBox="0 0 48 48" aria-hidden="true"
-      ><path
-        fill="#EA4335"
-        d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
-      /><path
-        fill="#4285F4"
-        d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
-      /><path
-        fill="#FBBC05"
-        d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
-      /><path
-        fill="#34A853"
-        d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
-      /></svg
-    >
-  {:else}
-    <svg viewBox="0 0 24 24" aria-hidden="true"
-      ><path
-        fill="#5865F2"
-        d="M19.3 5.3A16.6 16.6 0 0 0 15.2 4l-.5 1a15.3 15.3 0 0 0-5.4 0l-.5-1a16.6 16.6 0 0 0-4.1 1.3C2.1 9.2 1.4 13 1.7 16.7a16.7 16.7 0 0 0 5 2.6l1.1-1.7a10.8 10.8 0 0 1-1.7-.8l.4-.3a11.9 11.9 0 0 0 11 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.7a16.6 16.6 0 0 0 5-2.6c.4-4.3-.7-8-3-11.4zM8.7 14.5c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2zm6.6 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2z"
-      /></svg
-    >
-  {/if}
-{/snippet}
-
 {#if cloud}
   <div class="col">
     {#if app.user === undefined}
@@ -283,29 +303,7 @@
       <LoadState {t} failed={false} text="" onretry={() => undefined} />
     {:else if app.user === null}
       <PageTitle title={t.account} sub={t.signInLead} />
-      <Panel style={PANEL} primary>
-        <Field label={t.signIn} heading>
-          <div class="row-btns">
-            {#each PROVIDERS as p (p)}
-              <Button
-                disabled={busy}
-                onclick={() => {
-                  leave(p, () => app.signIn(p));
-                }}
-                >{@render logo(p)}{(going === p ? t.redirecting : t.signInWith).replace(
-                  '%s',
-                  PROVIDER_NAME[p]
-                )}</Button
-              >
-            {/each}
-          </div>
-          <p class="hint">
-            {t.consentBefore}<a href={app.pagesDir + 'terms.html'}>{t.consentTerms}</a
-            >{t.consentMid}<a href={app.pagesDir + 'privacy.html'}>{t.consentPrivacy}</a
-            >{t.consentAfter}
-          </p>
-        </Field>
-      </Panel>
+      <SignInPanel {app} />
     {:else}
       {@const session = app.user}
       <!-- No sub signed in: the section headings name what the page holds. The empty
@@ -394,17 +392,7 @@
               <!-- The session says who is signed in until a row can: while the identities are
                    unread, and for a sign-in no row names (an email link). -->
               {#if !ids || !ids.some((i) => i.provider === session.provider)}
-                <div class="who">
-                  {#if session.email}<b>{session.email}</b>{/if}
-                  {#if session.provider}
-                    <span class="via"
-                      >{@render logo(session.provider)}{t.via.replace(
-                        '%s',
-                        PROVIDER_NAME[session.provider]
-                      )}</span
-                    >
-                  {/if}
-                </div>
+                <SessionLine {t} {session} />
               {/if}
               {#if ids}
                 <ul class="ids">
@@ -412,7 +400,7 @@
                     {@const identity = ids.find((i) => i.provider === p)}
                     <li>
                       <span class="pv"
-                        >{@render logo(p)}<span
+                        ><ProviderLogo provider={p} /><span
                           ><span class="pvname"
                             ><b>{PROVIDER_NAME[p]}</b
                             >{#if identity && session.provider === p}<Badge cls="tier"
@@ -462,6 +450,50 @@
               {/if}
             </Field>
           </Panel>
+
+          {#if apps === null || !('off' in apps)}
+            <Panel style={PANEL}>
+              <Field label={t.apps} heading>
+                {#if apps === null || !apps.ok}
+                  <LoadState
+                    {t}
+                    failed={apps !== null}
+                    text={t.appsLoadFailed}
+                    onretry={() => {
+                      appsRead++;
+                    }}
+                  />
+                {:else if grants.length === 0}
+                  <p class="hint lead flush">{t.appsEmpty}</p>
+                {:else}
+                  <ul class="ids" bind:this={appRows}>
+                    {#each grants as a (a.clientId)}
+                      <li>
+                        <span class="pv"
+                          ><span
+                            ><b class="appname">{a.name}</b><small
+                              >{(a.host ? a.host + ' · ' : '') +
+                                t.appsSince.replace(
+                                  '%s',
+                                  longDate(a.grantedAt, app.lang)
+                                )}</small
+                            ></span
+                          ></span
+                        >
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={busy}
+                          label={`${t.disconnect} ${a.name}`}
+                          onclick={() => void revoke(a)}>{t.disconnect}</Button
+                        >
+                      </li>
+                    {/each}
+                  </ul>
+                {/if}
+              </Field>
+            </Panel>
+          {/if}
         </div>
 
         <div class="colB">
@@ -557,8 +589,6 @@
   </div>
 {/if}
 
-<!-- eslint-enable @typescript-eslint/no-confusing-void-expression -->
-
 <style>
   /* Signed out the sign-in panel keeps the passage measure and the lead takes the line
      measure (DESIGN.md, "The Measure Rule"); signed in, one column at the passage measure,
@@ -594,38 +624,19 @@
     margin: 0 0 12px;
   }
 
+  .hint.lead.flush {
+    margin: 0;
+  }
+
+  /* A client names itself, up to 200 characters: the name wraps (rule 16). */
+  .appname {
+    overflow-wrap: anywhere;
+  }
+
   .row-btns {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-  }
-
-  .who {
-    margin-bottom: 4px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-    overflow-wrap: anywhere;
-  }
-
-  .who b {
-    font-size: var(--t-body);
-    font-weight: 650;
-  }
-
-  .via {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: var(--t-data);
-    color: var(--muted);
-  }
-
-  .via svg {
-    width: 15px;
-    height: 15px;
-    flex: none;
   }
 
   .ids {
@@ -688,7 +699,7 @@
     flex: 1 1 200px;
   }
 
-  .pv svg {
+  .pv :global(svg) {
     width: 18px;
     height: 18px;
     flex: none;

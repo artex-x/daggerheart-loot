@@ -33,6 +33,7 @@ import {
   type HomebrewRecord,
   type ItemRow
 } from '../lib/homebrew.js';
+import { appHost, newestFirst } from '../lib/apps.js';
 import { isArtName, isOwnArt, newArtName, thumbOf } from '../lib/art.js';
 import type { Prefs } from '../lib/prefs.js';
 import type { Lang } from '../lib/types.js';
@@ -44,11 +45,13 @@ import {
   type Seed,
   type SeedBook,
   type SeedCard,
+  type SeedGrant,
   type SeedItem,
   type SeedList,
   type SeedUser
 } from './fake-cloud-seed.js';
 import type {
+  AppRepository,
   AuthError,
   AuthPort,
   AuthRedirect,
@@ -126,7 +129,15 @@ export interface FakeCloudOptions {
     item?: HoldMode;
     own?: HoldMode;
     print?: HoldMode;
+    /** The connected apps of the account page. */
+    apps?: HoldMode;
+    /** The consent page's read of a connection request. */
+    connect?: HoldMode;
   };
+  /** `off`: the project's OAuth server is off, so the account page draws no section and a
+   *  connection request opens nothing (the test build's `?apps=off`); `refuse`: every
+   *  answer to a request and every disconnect fails. */
+  apps?: 'off' | 'refuse';
 }
 
 /** How `FakeCloudOptions.hold` holds a read. */
@@ -632,6 +643,7 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
       lists.delete(current);
       homebrewHeld.delete(current);
       for (const [id, p] of printSets) if (p.owner === current) printSets.delete(id);
+      grants.delete(current);
       unlink(items);
       releaseArt(held.map((i) => i.art));
       current = null;
@@ -2192,6 +2204,79 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     }
   };
 
+  /* Each user's connected apps, and the requests still to answer; an approve adds a grant
+     of the request's client, as Auth does. */
+  const grants = new Map<string, SeedGrant[]>(
+    Object.entries(seed.grants).map(([k, g]): [string, SeedGrant[]] => [
+      k,
+      g.map((x) => ({ ...x }))
+    ])
+  );
+  const pending = new Map(seed.authorizations.map((a) => [a.id, { ...a }]));
+  const appRepo: AppRepository = {
+    details(id) {
+      if (current === null || offline) return Promise.resolve({ ok: false });
+      const held = heldAnswer(options.hold?.connect);
+      if (held) return held;
+      const a = pending.get(id);
+      if (!a || options.apps === 'off') return Promise.resolve({ ok: true, gone: true });
+      if (a.done) return Promise.resolve({ ok: true, done: a.redirect + '?code=fake' });
+      return Promise.resolve({
+        ok: true,
+        request: { name: a.name, host: appHost(a.redirect) }
+      });
+    },
+    approve(id) {
+      const a = pending.get(id);
+      if (current === null || offline || !a || options.apps === 'refuse') {
+        return Promise.resolve({ ok: false });
+      }
+      pending.delete(id);
+      const mine = grants.get(current) ?? [];
+      grants.set(current, [
+        ...mine.filter((g) => g.clientId !== a.clientId),
+        { clientId: a.clientId, name: a.name, uri: a.uri, grantedAt: iso(Date.now()) }
+      ]);
+      return Promise.resolve({ ok: true, url: a.redirect + '?code=fake' });
+    },
+    deny(id) {
+      const a = pending.get(id);
+      if (current === null || offline || !a || options.apps === 'refuse') {
+        return Promise.resolve({ ok: false });
+      }
+      pending.delete(id);
+      return Promise.resolve({ ok: true, url: a.redirect + '?error=access_denied' });
+    },
+    list() {
+      if (current === null || offline) return Promise.resolve({ ok: false });
+      const held = heldAnswer(options.hold?.apps);
+      if (held) return held;
+      if (options.apps === 'off') return Promise.resolve({ ok: true, off: true });
+      return Promise.resolve({
+        ok: true,
+        apps: newestFirst(
+          (grants.get(current) ?? []).map((g) => ({
+            clientId: g.clientId,
+            name: g.name,
+            host: appHost(g.uri),
+            grantedAt: g.grantedAt
+          }))
+        )
+      });
+    },
+    revoke(clientId) {
+      if (current === null || offline || options.apps === 'refuse') {
+        return Promise.resolve(false);
+      }
+      const mine = grants.get(current) ?? [];
+      grants.set(
+        current,
+        mine.filter((g) => g.clientId !== clientId)
+      );
+      return Promise.resolve(true);
+    }
+  };
+
   return {
     auth,
     prefs,
@@ -2201,6 +2286,7 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     requests: requestRepo,
     homebrew: homebrewRepo,
     prints: printRepo,
+    apps: appRepo,
     setLive(on) {
       live = on;
       if (on) return;
@@ -2306,7 +2392,8 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
         events: view(events),
         requests: view(requestRepo),
         homebrew: view(homebrewRepo),
-        prints: view(printRepo)
+        prints: view(printRepo),
+        apps: view(appRepo)
       };
     }
   };
@@ -2315,8 +2402,9 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
 /** Builds the port from `?as=<user>` (signed out without it), `?items=<n>` (1-1000,
  *  `fillItems`), `?sections=<n>` (1-30, `fillSections`, with `items` only),
  *  `?sources=<n>` (1-20, `fillSources`, with `items` only),
- *  `?lang=<ru|en>` (`lang`) and `?hold=<name>:<mode>,...` (`hold`: `lines`, `items`,
- *  `rows`, `item`, `own` or `print`, `stall` or `fail`) and exposes it
+ *  `?lang=<ru|en>` (`lang`), `?apps=off` (`apps`) and `?hold=<name>:<mode>,...` (`hold`:
+ *  `lines`, `items`, `rows`, `item`, `own`, `print`, `apps` or `connect`, `stall` or
+ *  `fail`) and exposes it
  *  as `window.__dhlootFake` for the browser suites. The query stays in the
  *  address, so a reload keeps the session. */
 export function installFakeCloud(search: string = window.location.search): FakeCloud {
@@ -2335,7 +2423,9 @@ export function installFakeCloud(search: string = window.location.search): FakeC
         name === 'rows' ||
         name === 'item' ||
         name === 'own' ||
-        name === 'print') &&
+        name === 'print' ||
+        name === 'apps' ||
+        name === 'connect') &&
       (mode === 'stall' || mode === 'fail')
     ) {
       hold[name] = mode;
@@ -2351,7 +2441,8 @@ export function installFakeCloud(search: string = window.location.search): FakeC
       ? { fillSources: sources }
       : {}),
     ...(lang === 'ru' || lang === 'en' ? { lang } : {}),
-    ...(Object.keys(hold).length ? { hold } : {})
+    ...(Object.keys(hold).length ? { hold } : {}),
+    ...(query.get('apps') === 'off' ? { apps: 'off' as const } : {})
   });
   window.__dhlootFake = { marker: MARKER, ...port };
   return port;

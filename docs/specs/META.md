@@ -137,7 +137,7 @@ link - and stores no name, account or address of the sender. A request
 expires 1 hour after the list's owner first reads it, applies or declines it,
 or 30 days after it was sent while nobody reads it (`docs/decisions/`,
 2026-10-07, "A list's change log shares the requests' view and the
-database's clean-up"). `anon` executes seven functions: the held-records
+database's clean-up"). `anon` executes eight functions: the held-records
 overload `get_shared_list(text,bigint,jsonb)`, the security definer that
 builds the projection, checks the share and the list's revision before any
 build (`unchanged` for a revision the list has not passed), names each
@@ -145,7 +145,9 @@ linked record by `rev` and builds only the records the caller does not hold;
 `get_shared_list(text)` and its revision overload
 `get_shared_list(text,bigint)`, security invoker forms of it that answer no
 `rev` and every record; that one, `get_homebrew_item(uuid)`, `get_item_preview(uuid,text)`
-and `get_shared_list_preview(text)`, and reads no table (`tests/db/harness.test.mjs`;
+and `get_shared_list_preview(text)`, and reads no table; and the pre-request guard
+`api_client_guard()`, which PostgREST runs for every role and which returns at once for a
+token with no `client_id` (`tests/db/harness.test.mjs`;
 `docs/DECISIONS.md`, 2026-09-26, "Purchase requests are written only by a
 bounded function any link holder calls"). Only the request function has a
 rate limit: a caller who holds a share link or an item id can repeat these
@@ -229,9 +231,37 @@ delete, still answered 200 from the CDN. Uploads ask for a cache age of one
 day (`cacheControl` 86400, against readers' egress; the decision below), so a removed picture is
 expected to stay readable for at most a day: a bound from the cache age,
 not a measurement.
-`anon` still executes the seven functions above and has no storage policy
+`anon` still executes the eight functions above and has no storage policy
 (`docs/decisions/`, 2026-10-14, "Own pictures are random-named files the
 database deletes").
+
+A reader can connect an app or AI assistant to the account through Supabase
+Auth's OAuth 2.1 server (`supabase/config.toml` `[auth.oauth_server]`: on,
+the authorization path `/connect`, dynamic registration on). The consent
+page is the app's `#/connect/<id>` and the list of connected apps is on
+`#/account` (`FEATURES.md`, "Connect an app"). A connected app's access token
+is a normal `authenticated` token with `client_id` and `session_id`, and it
+works at PostgREST directly, so the database bounds it, not the Worker. The
+PostgREST pre-request function `api_client_guard()` (the role setting
+`pgrst.db_pre_request` of `authenticator`) refuses such a token (42501,
+HTTP 403) on every table and function outside the account API's list (the
+"UI action coverage" of the task `ai-mcp`: reads of the lists, their entries,
+shares, requests, notices and homebrew rows; writes of the homebrew rows and
+of list fields; the list, share, request, import, move, delete and print-set
+functions), and refuses one whose session has no `auth.sessions` row any
+more (a revoke deletes it, so «Отключить» stops an unexpired token at once).
+Restrictive policies on `user_prefs` and `print_sets` refuse it on an
+embedded read, and two on `storage.objects` refuse its update and delete; an
+upload stays under `homebrew_art_insert`. It never deletes the account,
+reads the display settings or opens a print set. The app's own session token
+and `anon` are unchanged (`tests/db/api-client-guard.test.mjs`;
+`docs/decisions/2026-11-13-a-connected-app-reaches-only-the-api-s-account-scope.md`).
+Auth itself is bounded by Supabase's fix of 2026-11-03 (supabase/auth#2898),
+which refuses a client token on the password, the factors, another app's
+consent and the grants; production's server is switched on only after the
+probe proves the fix on the hosted project (`.claude/README.md`, "Supabase
+configuration"). The nightly backup leaves out roles, so a restore drops the
+role setting with no error; "Restore production (owner)" sets it again.
 
 An account's lists leave it only as the reader's own file: the lists JSON
 or the data zip of `#/account` (`FEATURES.md`, "Account and browser

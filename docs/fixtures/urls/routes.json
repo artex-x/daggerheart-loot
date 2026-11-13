@@ -882,6 +882,33 @@
     }
   },
   {
+    "hash": "#/connect/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "why": "the consent page of a connection request; signed out it asks for a sign-in that comes back to the same request, address kept",
+    "resolves": {
+      "hash": "#/connect/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "tab": null,
+      "mode": null,
+      "rows": 0,
+      "printCards": 0,
+      "picked": [],
+      "heading": "Подключение приложения",
+      "sub": "Войдите, чтобы ответить на запрос приложения."
+    }
+  },
+  {
+    "hash": "#/connect/short",
+    "why": "an id not in the shape of an authorization id (32 characters of a-z and 0-9): the expired page, no read, address kept",
+    "resolves": {
+      "hash": "#/connect/short",
+      "tab": null,
+      "mode": null,
+      "rows": 0,
+      "printCards": 0,
+      "picked": [],
+      "heading": "Запрос на подключение устарел"
+    }
+  },
+  {
     "hash": "#/homebrew",
     "why": "the signed-in author's own items; signed out the sign-in prompt, with no sign-in configured the not-found page, address kept",
     "resolves": {
