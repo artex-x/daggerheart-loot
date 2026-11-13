@@ -60,6 +60,8 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Установить как приложение" [url=/pages/install.html]
       link "Конфиденциальность" [url=/pages/privacy.html]
       link "Условия использования" [url=/pages/terms.html]
+      link "ИИ-ассистенты" [url=/pages/ai.html]
+      link "API" [url=/pages/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
@@ -95,6 +97,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 8Грибной Кожаный ДоспехУникальноеСпорополисПороги 12/30 · Броня ... [namelen=161 namehash=829f3f85]
 8Латы СилачаУникальноеВоюющие НорыПороги 10/25 · Броня 5Безрукав... [namelen=104 namehash=9ff7c54b]
 ?Об этих данных
+API
 Arazo's Artifacts
 Core
 EN
@@ -125,6 +128,7 @@ daggerheart.com
 Доспех из Драконей ЧешуиУникальноеПороги 11/27 · Броня 5Непробив... [namelen=184 namehash=52c34abd]
 Доспехи из Коры ДереваУникальноеПир зверейПороги 7/15 · Броня 4Т... [namelen=86 namehash=d470d66e]
 Есть улучшение
+ИИ-ассистенты
 К содержимому
 Кираса из Трольей ШкурыУникальноеHope & FearПороги 11/23 · Броня... [namelen=124 namehash=bd0fda6f]
 Кожаный Длинный ПлащТёмное сердце АндалурииПороги 5/12 · Броня 3... [namelen=129 namehash=b13b8e42]
@@ -283,6 +287,8 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_armor]
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
+      link "AI assistants" [url=/pages/en/ai.html]
+      link "API" [url=/pages/en/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
@@ -318,6 +324,8 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_armor]
 8Fungal LeathersUniqueSporopolisThresholds 12/30 · Armor 6The nu... [namelen=153 namehash=daea3979]
 8Gunshow PlateUniqueWarrin' WarrensThresholds 10/25 · Armor 5Arm... [namelen=118 namehash=f4f014bb]
 ?About this data
+AI assistants
+API
 Advanced Banded ArmorHope & FearThresholds 15/34 · Armor 6Bulky:... [namelen=132 namehash=55926a37]
 Advanced Brigandine ArmorHope & FearThresholds 11/26 · Armor 5Li... [namelen=106 namehash=f7b169c5]
 Advanced Chainmail ArmorThresholds 13/31 · Armor 6Heavy: −1 to E... [namelen=70 namehash=8c4a57b1]

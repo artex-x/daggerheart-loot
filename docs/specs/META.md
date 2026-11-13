@@ -253,9 +253,11 @@ the catalog), the files through `env.ASSETS`. The two card reads
 card draws, and nothing beyond what `get_homebrew_item` or `get_shared_list`
 shows to the same caller, so a card answer stays a few KB at any set size or
 entry count; an API read is capped at 65536 bytes, and past the cap the API
-answers 422 with the app link. It keeps `names.json` and four small files of
-`apidata/` (the roll sections, the tables, the rule cards and the record index) in
-memory for 10 minutes and nothing else; it has no edge cache, no cookie and no
+answers 422 with the app link. It keeps `names.json`, the small files of
+`apidata/` (the roll sections, the tables, the rule cards, the record index, the roll
+files, the search index and the file-check data) and the search shards (the folded and
+display names of every record, 200 KB today) in memory for 10 minutes and nothing else;
+it has no edge cache, no cookie and no
 persistent log. A GM link's
 card read carries no GM note at all: a list card shows the list name, the
 count of the entries that the link's audience sees and the start of the
@@ -564,8 +566,8 @@ mirror there: the site's files without `assets/`, `data.js`,
 
 ### Static pages
 
-Pages outside the app - the install guide and the policy pages `privacy`
-and `terms` - are plain static files, so each has a plain URL that works without
+Pages outside the app - the install guide, the policy pages `privacy`
+and `terms`, the user page `ai` and the developer page `developers` - are plain static files, so each has a plain URL that works without
 JavaScript and without a hash route (the route grammar is frozen,
 `CONTRACTS.md` section 1).
 

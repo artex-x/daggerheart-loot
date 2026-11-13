@@ -6,6 +6,7 @@ import {
   buildIndex,
   equipFacets,
   equipOfKind,
+  facetsOf,
   kindOf,
   lineMembers,
   listFacets,
@@ -23,7 +24,7 @@ import {
 } from './data.js';
 import { recordOf, withRecords, type HomebrewRecord } from './homebrew.js';
 import { rollPool } from './roll.js';
-import { CHARACTER_TRAITS, type Record_ } from './types.js';
+import { CHARACTER_TRAITS, TABLE_IDS, type Record_ } from './types.js';
 import { readLoot } from '../test/loot.js';
 
 const LOOT = readLoot();
@@ -388,6 +389,18 @@ describe('facet values', () => {
        burden chips. */
     const gryphon = index.byId.get('dve30') as Record_;
     expect(equipFacets(gryphon)['burden']).toEqual(['1', '2']);
+  });
+});
+
+describe('the facet function of a table', () => {
+  it('maps each table to the function the tables page used', () => {
+    for (const table of TABLE_IDS) {
+      expect(facetsOf(table), table).toBe(
+        table === 'eq_weapon' || table === 'eq_secondary' || table === 'eq_armor'
+          ? equipFacets
+          : plainFacets
+      );
+    }
   });
 });
 

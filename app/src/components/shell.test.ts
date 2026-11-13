@@ -346,11 +346,19 @@ describe('the footer nav', () => {
     );
   });
 
-  it('links the install guide, the privacy page and the terms, in that order', () => {
+  it('links the install guide, the privacy page, the terms, the AI assistants and the API, in that order', () => {
     render(App, { env: at('#/roll/std') });
     const nav = screen.getByRole('navigation', { name: 'Страницы сайта' });
     const hrefs = [...nav.querySelectorAll('a')].map((a) => a.getAttribute('href'));
-    expect(hrefs).toEqual(['/pages/install.html', '/pages/privacy.html', '/pages/terms.html']);
+    expect(hrefs).toEqual([
+      '/pages/install.html',
+      '/pages/privacy.html',
+      '/pages/terms.html',
+      '/pages/ai.html',
+      '/pages/developers.html'
+    ]);
+    expect(screen.getByRole('link', { name: 'ИИ-ассистенты' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'API' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Конфиденциальность' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Условия использования' })).toBeInTheDocument();
   });
@@ -365,6 +373,14 @@ describe('the footer nav', () => {
     expect(screen.getByRole('link', { name: 'Terms of use' })).toHaveAttribute(
       'href',
       '/pages/en/terms.html'
+    );
+    expect(screen.getByRole('link', { name: 'AI assistants' })).toHaveAttribute(
+      'href',
+      '/pages/en/ai.html'
+    );
+    expect(screen.getByRole('link', { name: 'API' })).toHaveAttribute(
+      'href',
+      '/pages/en/developers.html'
     );
   });
 
@@ -402,7 +418,12 @@ describe('the footer nav', () => {
     expect(screen.queryByRole('link', { name: INSTALL })).toBeNull();
     const nav = screen.getByRole('navigation', { name: 'Страницы сайта' });
     const hrefs = [...nav.querySelectorAll('a')].map((a) => a.getAttribute('href'));
-    expect(hrefs).toEqual(['/pages/privacy.html', '/pages/terms.html']);
+    expect(hrefs).toEqual([
+      '/pages/privacy.html',
+      '/pages/terms.html',
+      '/pages/ai.html',
+      '/pages/developers.html'
+    ]);
   });
 });
 

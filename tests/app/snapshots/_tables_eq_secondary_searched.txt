@@ -66,6 +66,8 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Установить как приложение" [url=/pages/install.html]
       link "Конфиденциальность" [url=/pages/privacy.html]
       link "Условия использования" [url=/pages/terms.html]
+      link "ИИ-ассистенты" [url=/pages/ai.html]
+      link "API" [url=/pages/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
@@ -110,6 +112,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 97ИскраУникальноеThe Dragon's VaultМагическое · Проворность · Вп... [namelen=292 namehash=2a3380c0]
 99Ослепляющий ДротикУникальноеThe Dragon's VaultФизическое · Иск... [namelen=217 namehash=ff46a27f]
 ?Об этих данных
+API
 Arazo's Artifacts
 Core
 Dread GM Toolbox
@@ -146,6 +149,7 @@ daggerheart.com
 Есть улучшение
 Жуткий НаручУникальноеHope & FearМагическое · Инстинкт · Вплотну... [namelen=228 namehash=4e457316]
 Знание
+ИИ-ассистенты
 Игла ПустотыУникальноеHope & FearФизическое · Искусность · Вплот... [namelen=170 namehash=8878883c]
 Инстинкт
 Искусность
@@ -340,6 +344,8 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_secondary]
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
+      link "AI assistants" [url=/pages/en/ai.html]
+      link "API" [url=/pages/en/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
@@ -348,6 +354,8 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_secondary]
 3
 4
 ?About this data
+AI assistants
+API
 Advanced Offhand Brass KnucklesHope & FearPhysical · Strength · ... [namelen=158 namehash=8b87b655]
 Agility
 All

@@ -74,6 +74,8 @@ RootWebArea "Whispering Cap - Генератор лута Daggerheart" [url=/hom
       link "Установить как приложение" [url=/pages/install.html]
       link "Конфиденциальность" [url=/pages/privacy.html]
       link "Условия использования" [url=/pages/terms.html]
+      link "ИИ-ассистенты" [url=/pages/ai.html]
+      link "API" [url=/pages/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
@@ -81,6 +83,7 @@ RootWebArea "Whispering Cap - Генератор лута Daggerheart" [url=/hom
 2
 3
 4
+API
 EN
 RU
 RU - пусто
@@ -92,6 +95,7 @@ daggerheart.com
 Выбрать из предметов
 Выбрать файл
 Жирный
+ИИ-ассистенты
 К содержимому
 Карты правил
 Конфиденциальность
@@ -189,6 +193,8 @@ RootWebArea "Whispering Cap - Daggerheart Loot Generator" [url=/en/homebrew/hb_w
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
+      link "AI assistants" [url=/pages/en/ai.html]
+      link "API" [url=/pages/en/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
@@ -196,6 +202,8 @@ RootWebArea "Whispering Cap - Daggerheart Loot Generator" [url=/en/homebrew/hb_w
 2
 3
 4
+AI assistants
+API
 Account: gm1@example.test
 Add to list
 Bold

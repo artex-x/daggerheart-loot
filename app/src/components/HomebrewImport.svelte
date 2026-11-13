@@ -13,7 +13,7 @@
   import Button from './Button.svelte';
   import FoldButton from './FoldButton.svelte';
   import Field from './Field.svelte';
-  import ImportFile from './ImportFile.svelte';
+  import ImportFileRow from './ImportFileRow.svelte';
   import ImportLines from './ImportLines.svelte';
   import Seg from './Seg.svelte';
   import SourcePicker from './SourcePicker.svelte';
@@ -21,30 +21,17 @@
   import { limitText } from '../lib/cloudLists.js';
   import { lineMembers } from '../lib/data.js';
   import { fewNames } from '../lib/i18n.js';
+  import { BOOK_NAME_MAX, HOME_NAMES, nameTaken } from '../lib/homebrew.js';
   import {
-    BOOK_NAME_MAX,
-    CARD_ITEMS_MAX,
-    CARD_NAME_MAX,
-    CARD_SUB_MAX,
-    CARD_TEXT_MAX,
-    CARD_URL_MAX,
-    CRAFT_MAX,
-    DESC_MAX,
-    hasName,
-    HOME_NAMES,
-    NAME_MAX,
-    nameTaken,
-    REFS_MAX,
-    SECTIONS_MAX
-  } from '../lib/homebrew.js';
+    homebrewErrorLines,
+    homebrewNoteLines,
+    homebrewRefusal
+  } from '../lib/homebrewReport.js';
   import {
     bookItemsDropped,
     defaultTarget,
     deriveFile,
     ERRORS_MAX,
-    FILE_BOOKS_MAX,
-    FILE_CARDS_MAX,
-    FILE_ITEMS_MAX,
     heldOf,
     homebrewText,
     newItemCount,
@@ -65,7 +52,6 @@
   } from '../lib/homebrewFile.js';
   import { ROW_FOLD_AT } from '../lib/folds.js';
   import { countOf, plural } from '../lib/plural.js';
-  import type { ReportLine as Line } from '../lib/types.js';
   import type { FileRead, FileRefusal } from '../lib/zip.js';
   import type { AppState } from '../state/app.svelte.js';
   import type { Homebrew } from '../state/homebrew.svelte.js';
@@ -147,16 +133,6 @@
 
   const named = (v: { en?: string; ru?: string }): string =>
     (lang === 'ru' ? v.ru || v.en : v.en || v.ru) ?? '';
-  /* One pass, so a value that holds `%s` is not filled in again. */
-  const fill = (template: string, by: Record<string, string | number | undefined>): string =>
-    template.replace(/%([fnsv])/g, (m, k: string) => {
-      const v = by[k];
-      return v === undefined ? m : String(v);
-    });
-  const cut40 = (s: string): string => {
-    const cps = Array.from(s);
-    return cps.length > 40 ? cps.slice(0, 40).join('') + '...' : s;
-  };
 
   /* The catalog and the account, as the parse reads them. */
   const context = (): FileContext => ({
@@ -225,158 +201,18 @@
         /* The parse refused no JSON before the walk: unreachable, the value stays null. */
       }
       view = { kind: 'errors', errors: p.errors, more: p.more, names: p.names, doc };
-    } else if (p.reason === 'version') {
-      if (p.version === undefined) refuse('hbImportNoVersion');
-      else refuse('hbImportVersion', JSON.stringify(p.version));
     } else {
-      refuse(
-        p.reason === 'notJson'
-          ? 'importNotJson'
-          : p.reason === 'empty'
-            ? 'hbImportEmpty'
-            : 'hbImportNotFile'
-      );
+      const r = homebrewRefusal(p);
+      refuse(r.key, r.version);
     }
   }
 
   /* ---------- the error report ---------- */
 
-  const POS = { books: 'hbImportPosBook', cards: 'hbImportPosCard', items: 'hbImportPosItem' };
-  const MANY = {
-    books: 'hbImportManyBooks',
-    cards: 'hbImportManyCards',
-    items: 'hbImportManyItems'
-  };
-  const FILE_MAX = { books: FILE_BOOKS_MAX, cards: FILE_CARDS_MAX, items: FILE_ITEMS_MAX };
-  const TEXTS = ['en', 'ru', 'ende', 'rud', 'ensub', 'rusub'];
-
-  /* The bound a `long` or `many` rule names, by the object and the field's last step. */
-  function limitOf(array: FileArray, field: string): number | undefined {
-    const last = field.split('.').at(-1) ?? '';
-    const section = field.startsWith('sections');
-    switch (last) {
-      case 'en':
-      case 'ru':
-        return array === 'items' ? NAME_MAX : array === 'cards' ? CARD_NAME_MAX : BOOK_NAME_MAX;
-      case 'ende':
-      case 'rud':
-        return array === 'items' ? DESC_MAX : CARD_TEXT_MAX;
-      case 'ensub':
-      case 'rusub':
-        return CARD_SUB_MAX;
-      case 'url':
-        return CARD_URL_MAX;
-      case 'refs':
-        return REFS_MAX;
-      case 'craft':
-      case 'craft_from':
-        return CRAFT_MAX;
-      case 'items':
-        return array === 'cards' ? CARD_ITEMS_MAX : undefined;
-      case 'sections':
-        return section ? SECTIONS_MAX : undefined;
-      default:
-        return undefined;
-    }
-  }
-
-  /* The value at an error's path in the file, as text cut to 40 characters. */
-  function valueAt(doc: unknown, path: string): string {
-    let v: unknown = doc;
-    for (const step of path.match(/[^.[\]]+/g) ?? []) {
-      if (v === null || typeof v !== 'object') return '';
-      v = (v as Record<string, unknown>)[step];
-    }
-    if (v === undefined) return '';
-    return cut40(typeof v === 'string' ? v : JSON.stringify(v));
-  }
-
-  /* An object's place and its name in the language on screen, when it has one. */
-  function placeOf(
-    array: FileArray,
-    index: number,
-    names: Record<FileArray, FileName[]>
-  ): Pick<Line, 'pos' | 'name'> {
-    const pos = t[POS[array] as 'hbImportPosItem'].replace('%n', String(index + 1));
-    const n = names[array][index];
-    const name = n
-      ? named({ en: n.en && hasName(n.en) ? n.en : '', ru: n.ru && hasName(n.ru) ? n.ru : '' })
-      : '';
-    return name ? { pos, name: t.quoted.replace('%s', cut40(name)) } : { pos };
-  }
-
-  function errorLine(e: FileError, doc: unknown, names: Record<FileArray, FileName[]>): Line {
-    const v = valueAt(doc, e.path);
-    if (e.array === null || e.index === null) {
-      const text =
-        e.rule === 'many' && (e.field === 'books' || e.field === 'cards' || e.field === 'items')
-          ? t[MANY[e.field] as 'hbImportManyItems'].replace('%n', String(FILE_MAX[e.field]))
-          : e.rule === 'extra'
-            ? fill(t.importErrExtra, { f: e.field })
-            : fill(t.hbImportErrType, { f: e.field });
-      return { text, path: e.path };
-    }
-    const base = e.array + '[' + String(e.index) + ']';
-    const f = e.path.length > base.length ? e.path.slice(base.length + 1) : '';
-    const last = f.split('.').at(-1) ?? '';
-    let text: string;
-    if (e.field === 'name') text = t.hbImportErrName;
-    else if (f === '') text = fill(t.importErrNotObject, { v });
-    else {
-      switch (e.rule) {
-        case 'required':
-          text = fill(t.importErrMissing, { f });
-          break;
-        case 'extra':
-          text = fill(t.importErrExtra, { f });
-          break;
-        case 'long':
-          text = fill(t.importErrLong, { f, n: limitOf(e.array, e.field) });
-          break;
-        case 'many':
-          text = fill(t.hbImportErrMany, { f, n: limitOf(e.array, e.field) });
-          break;
-        case 'range':
-          text = fill(t.hbImportErrRange, { f, v });
-          break;
-        case 'enum':
-          text = f === 'eq.line' ? t.hbImportErrLine : fill(t.hbImportErrEnum, { f, v });
-          break;
-        case 'pattern':
-          text =
-            f === 'key'
-              ? fill(t.hbImportErrKey, { v })
-              : last === 'dmg'
-                ? fill(t.hbImportErrDmg, { f, v })
-                : TEXTS.includes(last)
-                  ? fill(t.hbImportErrControl, { f })
-                  : fill(t.hbImportErrPattern, { f, v });
-          break;
-        case 'duplicate':
-          text =
-            f === 'key' ? fill(t.hbImportErrKeyTwice, { v }) : fill(t.hbImportErrTwice, { f });
-          break;
-        case 'self':
-          text = fill(t.hbImportErrSelf, { f });
-          break;
-        case 'order':
-          text = t.hbImportErrOrder;
-          break;
-        case 'unknown':
-          text =
-            f === 'book' ? fill(t.hbImportErrBook, { v }) : fill(t.hbImportErrSection, { v });
-          break;
-        default:
-          text = fill(t.hbImportErrType, { f });
-      }
-    }
-    return { ...placeOf(e.array, e.index, names), text, path: e.path };
-  }
-
   const refused = $derived.by(() => {
     if (view.kind !== 'errors') return null;
     const { errors, doc, names, more } = view;
-    return { lines: errors.map((e) => errorLine(e, doc, names)), more };
+    return { lines: homebrewErrorLines(errors, doc, names, t, lang), more };
   });
 
   /* ---------- the preview ---------- */
@@ -413,12 +249,6 @@
   const overLimit = $derived(
     store.itemLimit !== null && created > 0 && store.items.length + created > store.itemLimit
   );
-  const fileNames = (file: HomebrewFile): Record<FileArray, FileName[]> => ({
-    books: file.books.map((b) => ({ ...b })),
-    cards: file.cards.map((c) => ({ ...c })),
-    items: file.items.map((i) => ({ ...i }))
-  });
-
   const counts = $derived.by(() => {
     if (view.kind !== 'preview') return null;
     const { file } = view;
@@ -431,18 +261,9 @@
     return t.hbImportCounts.split(/(%[bsci])/).map((p) => String(by[p] ?? p));
   });
 
-  const noteLines = $derived.by((): Line[] => {
-    if (view.kind !== 'preview') return [];
-    const names = fileNames(view.file);
-    return view.notes.map((n) =>
-      n.kind === 'relation'
-        ? {
-            ...placeOf(n.array ?? 'items', n.index, names),
-            text: fill(t.hbImportUnknownRef, { f: n.field, v: from.get(n.id) ?? n.id })
-          }
-        : { ...placeOf('cards', n.index, names), text: t.hbImportKindDiffers }
-    );
-  });
+  const noteLines = $derived.by(() =>
+    view.kind === 'preview' ? homebrewNoteLines(view.notes, view.file, t, lang, from) : []
+  );
 
   /* The row's name and size, as its select's label. */
   function rowName(row: PlanRow): string {
@@ -666,20 +487,16 @@
 {/snippet}
 
 <Field label={t.hbImportHead}>
-  <div class="filerow">
-    <ImportFile
-      {t}
-      name="homebrew.json"
-      onpick={() => {
-        view = { kind: 'empty' };
-      }}
-      {onread}
-    />
-    <span class="links">
-      <a href="/schema/homebrew-v2.json" target="_blank" rel="noopener">{t.hbImportFormat}</a>
-      <a href="/llms.txt" target="_blank" rel="noopener">llms.txt</a>
-    </span>
-  </div>
+  <ImportFileRow
+    {t}
+    name="homebrew.json"
+    schema="/schema/homebrew-v2.json"
+    pagesDir={app.pagesDir}
+    onpick={() => {
+      view = { kind: 'empty' };
+    }}
+    {onread}
+  />
   <p class="hint">{t.hbImportFits}</p>
 
   {#if view.kind === 'refused'}
@@ -967,29 +784,5 @@
     margin: 10px 0 0;
     font-size: var(--t-data);
     color: var(--muted);
-  }
-
-  /* The chooser's row: the two links at its right end, under it when it wraps. */
-  .filerow {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px 14px;
-  }
-
-  .links {
-    display: flex;
-    gap: 14px;
-    margin-left: auto;
-    font-size: var(--t-data);
-  }
-
-  /* A text link reaches the thumb target by its padded box (DESIGN.md, "The Phone-First
-     Rule"). */
-  @media screen and (max-width: 600px) {
-    .links a {
-      padding-block: max(0px, calc((var(--thumb) - 1lh) / 2));
-      margin-block: min(0px, calc((1lh - var(--thumb)) / 2));
-    }
   }
 </style>

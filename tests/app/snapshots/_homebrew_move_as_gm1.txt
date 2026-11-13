@@ -21,6 +21,7 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
     button "Переместить"
 
 ## ru :: controls
+API
 EN
 RU
 Whispering Cap
@@ -32,6 +33,7 @@ daggerheart.com
 В список
 Выбрать все
 Закрыть
+ИИ-ассистенты
 Импорт из файла
 Источники 1
 К содержимому
@@ -80,6 +82,8 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm1]
     button "Move"
 
 ## en :: controls
+AI assistants
+API
 Account: gm1@example.test
 Add to list
 Cancel

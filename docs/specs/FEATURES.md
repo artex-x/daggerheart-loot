@@ -621,9 +621,10 @@ across.
 - Signed in, with the account lists read, «Импорт из файла» / "Import from file"
   is a toggle in the count row from 761 px and an item of the head's «Ещё» up to 760 px; it
   opens the panel «Импорт из файла JSON» / "Import from a JSON file" under the head:
-  «Выбрать файл...», the chosen file's name, and a hint that links the published
-  schema (`schema/import-v3.json`, «схеме import-v3» / "import-v3 schema") and
-  `llms.txt`, relative, in a new tab. A refused file and the per-list errors
+  «Выбрать файл...», the chosen file's name, the links «Формат файла» / "File format"
+  (`schema/import-v3.json`) and «ИИ-ассистенты» / "AI assistants" (the user page, through
+  `AppState.pagesDir`) on the file row, in a new tab, and a hint under it. The row is
+  `ImportFileRow`, the same as «Импорт предметов из файла JSON». A refused file and the per-list errors
   draw in the error look (rule 19: the danger border and text, no fill). The
   toggle (or the menu item) and «Отмена» close the panel and forget the file, and
   the focus returns to the toggle, else to «Ещё»; no «Закрыть» is drawn. A file of more than 5 MB is refused before it is read; a file
@@ -2424,10 +2425,10 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   and «Не получилось загрузить импорт.» with a small «Повторить» after a failed
   load. The field takes a `homebrew-v1` or `homebrew-v2` file or the data zip's
   `homebrew.json` (the file field, the 5 MB bound, the zip and the text rules
-  of «Импорт из файла», "Lists"); the file row holds the links «Формат файла»
-  (`schema/homebrew-v2.json`) and `llms.txt`, and one line under it says what
-  fits: «Подходит файл из «Скачать JSON», архив из «Скачать мои данные» или файл
-  по описанию в llms.txt.». The field still takes a `homebrew-v1` file. «Обновить»
+  of «Импорт из файла», "Lists"); the file row (`ImportFileRow`) holds the links «Формат файла»
+  (`schema/homebrew-v2.json`) and «ИИ-ассистенты» (the user page), and one line under it says what
+  fits: «Подходит файл из «Скачать JSON», архив из «Скачать мои данные» или файл,
+  собранный ИИ-ассистентом.». The field still takes a `homebrew-v1` file. «Обновить»
   with a version 1 file keeps a held card's book items; a version 2 file
   states them, so a card without `items` loses the held ones
   (`docs/decisions/2026-10-21-on-a-homebrew-v2-file-states-each-cards.md`). A key the
@@ -3088,12 +3089,13 @@ right, so the tab order and the reading order agree
 - A footer nav row above the license notice links the site's static pages
   (`META.md` section 9, "Static pages"), on every page, in this order:
   «Установить как приложение» / "Install as an app",
-  «Конфиденциальность» / "Privacy" and «Условия использования» / "Terms of
-  use". Every link opens the copy of the page in the language on screen:
+  «Конфиденциальность» / "Privacy", «Условия использования» / "Terms of
+  use", «ИИ-ассистенты» / "AI assistants" (the user page of the MCP endpoint)
+  and "API" (the developer page). Every link opens the copy of the page in the language on screen:
   `pages/<id>.html` in Russian, `pages/en/<id>.html` in English
   (`AppState.pagesDir`). The install link is left out inside the
   installed app (`display-mode: standalone`, or iOS
-  `navigator.standalone`), where the step is done; the two policy links
+  `navigator.standalone`), where the step is done; the other four links
   are always drawn.
 - Each site page links back to the app at its top and its bottom and
   returns to the screen the reader left (`META.md` section 9, "Static

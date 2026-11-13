@@ -48,6 +48,8 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Установить как приложение" [url=/pages/install.html]
       link "Конфиденциальность" [url=/pages/privacy.html]
       link "Условия использования" [url=/pages/terms.html]
+      link "ИИ-ассистенты" [url=/pages/ai.html]
+      link "API" [url=/pages/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
@@ -171,6 +173,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 99Лепестки Цветка ТроицыРасходникЗаварите эти лепестки в чай, ко... [namelen=215 namehash=435d1bf9]
 9Архивная ГнильРасходникНа время сцены вы получаете преимущество... [namelen=147 namehash=1b4e31af]
 ?Об этих данных
+API
 Core
 EN
 Hope & Fear
@@ -182,6 +185,7 @@ daggerheart.com
 Все
 Выбрать
 Дополнения
+ИИ-ассистенты
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
@@ -246,6 +250,8 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/wondrous_envir
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
+      link "AI assistants" [url=/pages/en/ai.html]
+      link "API" [url=/pages/en/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
@@ -369,6 +375,8 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/wondrous_envir
 99Trinity Flower PetalsConsumableBrew these petals into a tea th... [namelen=198 namehash=11ad9142]
 9Archivist's RotConsumableFor the scene, you have advantage on a... [namelen=135 namehash=27fc2357]
 ?About this data
+AI assistants
+API
 All
 Alt. tables
 Consumables

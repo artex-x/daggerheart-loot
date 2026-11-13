@@ -1,0 +1,1 @@
+{"format":"daggerheart-loot/api-error","version":1,"error":{"code":"too_broad","message":"The query q matches too many records to rank. Add a longer word or a filter (kind, source, table, tier or rarity)."}}

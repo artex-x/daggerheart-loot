@@ -16,6 +16,7 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
     button "Показать 39"
 
 ## ru :: controls
+API
 EN
 RU
 daggerheart.com
@@ -25,6 +26,7 @@ daggerheart.com
 Выбрать
 Ещё
 Закрыть
+ИИ-ассистенты
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
@@ -93,6 +95,8 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm3]
     button "Show 39"
 
 ## en :: controls
+AI assistants
+API
 Account: gm3@example.test
 All
 Ash BedrollItemA bedroll for a long road.

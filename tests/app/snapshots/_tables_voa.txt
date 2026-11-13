@@ -57,6 +57,8 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Установить как приложение" [url=/pages/install.html]
       link "Конфиденциальность" [url=/pages/privacy.html]
       link "Условия использования" [url=/pages/terms.html]
+      link "ИИ-ассистенты" [url=/pages/ai.html]
+      link "API" [url=/pages/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
@@ -205,6 +207,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 9Сфера ОбнаруженияПредметСовершите Бросок Заклинания (13). При у... [namelen=253 namehash=961d8828]
 9Часы Хранителя ВремениПредметСтоимость Призыва: 2Если у вас 6 Н... [namelen=301 namehash=e7e3548f]
 ?Об этих данных
+API
 Core
 EN
 Hope & Fear
@@ -217,6 +220,7 @@ daggerheart.com
 Все
 Выбрать
 Дополнения
+ИИ-ассистенты
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
@@ -296,6 +300,8 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/vault_of_ages]
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
+      link "AI assistants" [url=/pages/en/ai.html]
+      link "API" [url=/pages/en/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
@@ -444,6 +450,8 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/vault_of_ages]
 9Undying HeartItemRecall Cost: 2Spend 3 Hope to start the beatin... [namelen=271 namehash=1b751183]
 9Windblessed SaddleItemThis enchanted saddle will adjust its siz... [namelen=171 namehash=c39bd385]
 ?About this data
+AI assistants
+API
 All
 Alt. tables
 Artifacts

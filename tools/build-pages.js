@@ -65,6 +65,22 @@ const PAGES = [
       ru: 'Правила пользования сайтом, отсутствие гарантий и лицензия на игровые материалы.',
       en: 'Rules for using the site, no uptime promise, and the license for the game content.'
     }
+  },
+  {
+    id: 'ai',
+    title: { ru: 'С ИИ-ассистентами', en: 'With AI assistants' },
+    desc: {
+      ru: 'Как подключить ИИ-ассистента к генератору лута, что он может и чего не может.',
+      en: 'How to connect an AI assistant to the loot generator, and what it can and cannot do.'
+    }
+  },
+  {
+    id: 'developers',
+    title: { ru: 'API для разработчиков', en: 'API for developers' },
+    desc: {
+      ru: 'Открытый API чтения: адреса, запросы, формат записи, ошибки и кэширование.',
+      en: 'The public read API: addresses, requests, the record format, errors and caching.'
+    }
   }
 ];
 
@@ -152,6 +168,12 @@ function page({ id, lang, title, desc, body }) {
   p{margin:0 0 12px}
   ol,ul{margin:0 0 12px;padding-left:22px}
   a{color:#d8ab5e}
+  /* A long command scrolls inside its block, not the page. */
+  pre{margin:0 0 12px;padding:10px 12px;overflow-x:auto;background:#17142a;border-radius:6px;font-size:13px}
+  code{font-size:.92em;overflow-wrap:anywhere}
+  table{border-collapse:collapse}
+  .scroll{overflow-x:auto;margin:0 0 12px}
+  th,td{text-align:left;vertical-align:top;padding:4px 10px 4px 0;color:#cfc8e0}
   .lang{font-size:13px;margin:0 0 16px}
   /* A link of its own line is a target: 24 px, and 40 px up to 600 px, by a padded box
      with the growth given back (DESIGN.md, "The Phone-First Rule"). */

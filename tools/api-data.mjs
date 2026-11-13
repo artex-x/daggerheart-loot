@@ -4,7 +4,8 @@
 
     apidata/            internal, changed without notice: rolls.json, tables.json,
                         cards.json, roll/<section>.json, table/<table>.json,
-                        table/<eq table>/<tier>.json, records/index.json, version.json
+                        table/<eq table>/<tier>.json, records/index.json, version.json,
+                        search/index.json and search/<n>.txt, file-check.json
     api/v1/catalog/     public, frozen: index.json and the record chunks <n>.json
 
   Both folders are generated, never committed (.gitignore), and published by
@@ -30,8 +31,15 @@ import { dirname, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { apiRecord, licenseOf } from '../app/src/lib/apiRecord.ts';
-import { buildIndex, otherTableRows, equipOfKind } from '../app/src/lib/data.ts';
+import {
+  buildIndex,
+  equipOfKind,
+  facetsOf,
+  lineMembers,
+  otherTableRows
+} from '../app/src/lib/data.ts';
 import { dict, sectionLabel } from '../app/src/lib/dict.ts';
+import { groupsFor } from '../app/src/lib/filters.ts';
 import { FRAME_ORDER, frameName } from '../app/src/lib/frames.ts';
 import {
   SECTION_SLUG,
@@ -41,6 +49,7 @@ import {
   tablesHash
 } from '../app/src/lib/hash.ts';
 import { rarityKey } from '../app/src/lib/label.ts';
+import { foldQuery } from '../app/src/lib/search.ts';
 import { RARITIES } from '../app/src/lib/alt.ts';
 import { rollPool, isRung } from '../app/src/lib/roll.ts';
 import { PICKER_ROLL, ROLL_MODES, ROLL_TABLE, rowsOf } from '../app/src/lib/rollTables.ts';
@@ -71,7 +80,9 @@ export const BUDGET = {
      members pass 131072 B by 0.4 %, so this one file has more room (parsed in about 2 ms at
      the rate measured on 2026-11-10; the owner's CPU reading decides). */
   cards: 196608,
-  catalogIndex: 262144
+  catalogIndex: 262144,
+  /* A search shard: the worker scans it as one string, never parses it. */
+  search: 262144
 };
 
 /** Where a chunk file stops: a chunk holds records while the file stays within this. */
@@ -79,6 +90,11 @@ const CHUNK_MAX = BUDGET.small;
 /** A stand-in the width of a real `data_version`, so chunk packing never depends on it. */
 const DV_WIDTH = 'x'.repeat(16);
 const CHUNK_PATH = /^api\/v1\/catalog\/\d+\.json$/;
+const SEARCH_PATH = /^apidata\/search\/\d+\.txt$/;
+/** The first code character of a search line; code `i` is `String.fromCharCode(CODE_BASE + i)`. */
+const CODE_BASE = 0x30;
+/** The most values a code list may hold: the characters `0` to `o`. */
+const CODE_LIST_MAX = 64;
 
 /** Returns the first line of a chunk file: everything up to the open `records` array. */
 const chunkHead = (dv) =>
@@ -189,7 +205,16 @@ function tableEntries(index, table) {
   return (index.rows.get(table) ?? []).map((it) => ({ it }));
 }
 
+/** Returns the facet values of a row cut to the groups its table offers, a missing value as ''. */
+function facetsFor(table, it) {
+  const groups = groupsFor(table);
+  if (!groups.length) return null;
+  const facets = facetsOf(table)(it);
+  return Object.fromEntries(groups.map((g) => [g, facets[g] ?? '']));
+}
+
 function rowOf(index, table, { it, n, rarity }) {
+  const f = facetsFor(table, it);
   return {
     id: it.id,
     n: n ?? it.roll ?? null,
@@ -198,7 +223,8 @@ function rowOf(index, table, { it, n, rarity }) {
     tier: it.eq ? it.eq.tier : (it.tier ?? null),
     rarity: index.rarityOf(it.id) ?? null,
     part: partOf(table, it, rarity),
-    rung: isRung(it)
+    rung: isRung(it),
+    ...(f ? { f } : {})
   };
 }
 
@@ -457,7 +483,98 @@ function catalogFiles(index, audit, versions) {
       lineOf.set(ids[i], l);
     })
   );
-  return { ids, records, json, chunks, chunkOf, lineOf };
+  return { ids, records, json, chunks, chunkOf, lineOf, versions };
+}
+
+/* ---------- search and file checks ---------- */
+
+/** Returns the head line of a search shard and the shard's text: the head, then one record per line. */
+const searchHead = (dv) =>
+  `{"format":"daggerheart-loot/api-search-shard","version":1,"data_version":${JSON.stringify(dv)}}`;
+const searchText = (lines, dv) => [searchHead(dv), ...lines].join('\n') + '\n';
+
+/**
+ * Returns the search projection of the catalog: `index` (the code lists) and `shards` (the
+ * lines of each file). A line is five code characters (source, kind, table, tier, rarity),
+ * then the folded Russian and English names, the id, the card version and the display names,
+ * separated by TABs (docs/specs/CONTRACTS.md section 5).
+ */
+function searchFiles(catalog) {
+  const fields = ['source', 'kind', 'table', 'tier', 'rarity'];
+  const seen = Object.fromEntries(fields.map((f) => [f, new Map()]));
+  const codes = Object.fromEntries(fields.map((f) => [f, []]));
+  const codeOf = (field, value) => {
+    const key = JSON.stringify(value);
+    let i = seen[field].get(key);
+    if (i === undefined) {
+      i = codes[field].length;
+      if (i >= CODE_LIST_MAX) {
+        throw new Error(
+          `The search code list ${field} passes ${String(CODE_LIST_MAX)} values. Widen the code in tools/api-data.mjs.`
+        );
+      }
+      seen[field].set(key, i);
+      codes[field].push(value);
+    }
+    return String.fromCharCode(CODE_BASE + i);
+  };
+  const lines = catalog.records.map((r, i) => {
+    const id = catalog.ids[i];
+    if ([r.name.ru, r.name.en, id].some((v) => /[\t\n\r]/.test(v))) {
+      throw new Error(`The record ${id} holds a TAB or a line break in its id or name.`);
+    }
+    const version = Object.hasOwn(catalog.versions, id) ? catalog.versions[id] : '';
+    return (
+      fields.map((f) => codeOf(f, r[f])).join('') +
+      [foldQuery(r.name.ru), foldQuery(r.name.en), id, version, r.name.ru, r.name.en].join('\t')
+    );
+  });
+  /* Packed in order while a file stays within the budget; the stand-in has the width of a
+     real data_version, so the layout never moves with it. */
+  const shards = [];
+  const overhead = Buffer.byteLength(searchHead(DV_WIDTH)) + 1;
+  let size = 0;
+  for (const line of lines) {
+    const bytes = Buffer.byteLength(line) + 1;
+    if (shards.length === 0 || size + bytes > BUDGET.search) {
+      shards.push([]);
+      size = overhead;
+    }
+    shards[shards.length - 1].push(line);
+    size += bytes;
+  }
+  return {
+    index: {
+      format: 'daggerheart-loot/api-search-index',
+      version: 1,
+      shards: shards.length,
+      codes
+    },
+    shards
+  };
+}
+
+/**
+ * Returns the catalog half of the homebrew file check's context: the keys of the sets and of
+ * the rule cards, and the members of each upgrade line (`HomebrewImport.svelte` `context()`).
+ */
+function fileCheckFile(loot, index) {
+  const lines = {};
+  for (const it of index.allEquip) {
+    const line = it.eq?.line;
+    if (line && !Object.hasOwn(lines, line)) {
+      lines[line] = lineMembers(index, line).flatMap((r) =>
+        r.eq ? [{ key: r.id, t: r.eq.t }] : []
+      );
+    }
+  }
+  return {
+    format: 'daggerheart-loot/api-file-check-data',
+    version: 1,
+    sets: Object.keys(loot.sets ?? {}),
+    refs: Object.keys(loot.refs ?? {}),
+    lines
+  };
 }
 
 /* ---------- the whole tree ---------- */
@@ -481,6 +598,10 @@ export function renderApiData(loot, audit, versions = {}) {
   add('apidata/cards.json', cardsFile(loot, index));
   for (const [path, v] of rollFiles(loot, index, catalog.chunkOf, catalog.lineOf)) add(path, v);
   for (const [path, v] of tableFiles(index)) add(path, v);
+  const search = searchFiles(catalog);
+  add('apidata/search/index.json', search.index);
+  search.shards.forEach((lines, n) => add(`apidata/search/${String(n)}.txt`, { lines }));
+  add('apidata/file-check.json', fileCheckFile(loot, index));
   add('apidata/records/index.json', {
     format: 'daggerheart-loot/api-records',
     version: 1,
@@ -507,7 +628,11 @@ export function renderApiData(loot, audit, versions = {}) {
       [...files]
         .map(([path, v]) => [
           path,
-          CHUNK_PATH.test(path) ? chunkText(v.lines, dv) : text({ ...stamp(v, dv) })
+          CHUNK_PATH.test(path)
+            ? chunkText(v.lines, dv)
+            : SEARCH_PATH.test(path)
+              ? searchText(v.lines, dv)
+              : text({ ...stamp(v, dv) })
         ])
         .sort(([a], [b]) => (a < b ? -1 : 1))
     );
@@ -536,6 +661,7 @@ export function budgetOf(path) {
   if (path === 'apidata/cards.json') return BUDGET.cards;
   if (path.startsWith('apidata/roll/')) return BUDGET.large;
   if (path.startsWith('apidata/table/')) return BUDGET.large;
+  if (SEARCH_PATH.test(path)) return BUDGET.search;
   return BUDGET.small;
 }
 
@@ -581,8 +707,10 @@ function main() {
       /^api\/v1\/catalog\/\d+\.json$/.test(p)
     ).length;
     const idxSize = Buffer.byteLength(out.get('apidata/records/index.json'));
+    const shards = [...out.keys()].filter((p) => SEARCH_PATH.test(p)).length;
     console.log(
-      `api-data: ${out.size} files, ${chunks} catalog chunks, records/index.json ${idxSize} B`
+      `api-data: ${out.size} files, ${chunks} catalog chunks, ${shards} search shards, ` +
+        `records/index.json ${idxSize} B`
     );
     for (const line of bad) console.error(line);
     process.exit(bad.length ? 1 : 0);
@@ -595,8 +723,9 @@ function main() {
     writeFileSync(join(ROOT, path), body);
   }
   const chunks = [...out.keys()].filter((p) => /^api\/v1\/catalog\/\d+\.json$/.test(p)).length;
+  const shards = [...out.keys()].filter((p) => SEARCH_PATH.test(p)).length;
   console.log(
-    `apidata/ and api/v1/catalog/ - ${out.size} files, ${chunks} chunks, ` +
+    `apidata/ and api/v1/catalog/ - ${out.size} files, ${chunks} chunks, ${shards} search shards, ` +
       `records/index.json ${Buffer.byteLength(out.get('apidata/records/index.json'))} B`
   );
 }

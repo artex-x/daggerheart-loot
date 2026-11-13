@@ -19,6 +19,7 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search?
     button "Показать 145"
 
 ## ru :: controls
+API
 EN
 RU
 daggerheart.com
@@ -35,6 +36,7 @@ daggerheart.com
 Доспех из Гробового ДереваБроняТёмное сердце АндалурииРанг 1 · П... [namelen=172 namehash=805186ca]
 Ещё
 Закрыть
+ИИ-ассистенты
 К содержимому
 Колдующий МечОсновное оружиеУникальноеРанг 2 · Магическое · Сила... [namelen=203 namehash=456e359f]
 Конфиденциальность
@@ -204,6 +206,8 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search?as=gm1]
     button "Show 145"
 
 ## en :: controls
+AI assistants
+API
 Account: gm1@example.test
 Advanced BrightswordPrimary weaponHope & FearTier 3 · Magic · St... [namelen=103 namehash=229c0dae]
 Advanced Coffinwood ArmorArmorDark Heart of AndaluriaTier 3 · Th... [namelen=174 namehash=c82029b4]

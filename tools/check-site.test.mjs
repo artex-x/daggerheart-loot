@@ -137,6 +137,10 @@ const GOOD = {
   'pages/en/install.html': { type: 'text/html', body: SITE_PAGE },
   'pages/terms.html': { type: 'text/html', body: SITE_PAGE },
   'pages/en/terms.html': { type: 'text/html', body: SITE_PAGE },
+  'pages/ai.html': { type: 'text/html', body: SITE_PAGE },
+  'pages/en/ai.html': { type: 'text/html', body: SITE_PAGE },
+  'pages/developers.html': { type: 'text/html', body: SITE_PAGE },
+  'pages/en/developers.html': { type: 'text/html', body: SITE_PAGE },
   'pages/privacy.html': { type: 'text/html', body: SITE_PAGE + CONTACT },
   'pages/en/privacy.html': { type: 'text/html', body: SITE_PAGE + CONTACT },
   '404.html': { type: 'text/html', body: `<!doctype html><div id="app-404"></div>` }
@@ -433,7 +437,7 @@ describe('checks() shape', () => {
     // a refactor, because a refactor that dropped several checks would
     // still pass it.
     // The exact count and the exact sorted distinct path set close that.
-    assert.equal(list.length, 79);
+    assert.equal(list.length, 87);
     assert.equal(list.length, appChecks().length + fileChecks({ documents: true }).length);
     const paths = [
       ...new Set(list.map((c) => (typeof c.path === 'function' ? '<entry>' : c.path)))
@@ -459,6 +463,10 @@ describe('checks() shape', () => {
       'names.json',
       'og/_share.jpg',
       'og/_share_en.jpg',
+      'pages/ai.html',
+      'pages/developers.html',
+      'pages/en/ai.html',
+      'pages/en/developers.html',
       'pages/en/install.html',
       'pages/en/privacy.html',
       'pages/en/terms.html',
@@ -605,6 +613,16 @@ describe('previewChecks() against the preview host', () => {
       status: 200,
       cors: '*',
       body: JSON.stringify({ format: 'daggerheart-loot/api-roll', results: [{}, {}] })
+    },
+    'api/v1/records?q=sword': {
+      status: 200,
+      cors: '*',
+      body: JSON.stringify({ format: 'daggerheart-loot/api-search', total: 1, rows: [{}] })
+    },
+    'POST api/v1/file-checks': {
+      status: 200,
+      cors: '*',
+      body: JSON.stringify({ format: 'daggerheart-loot/api-file-check', ok: true })
     }
   };
   const TOOLS = [
@@ -612,9 +630,11 @@ describe('previewChecks() against the preview host', () => {
     'roll',
     'list_tables',
     'get_table',
+    'search_catalog',
     'get_record',
     'get_homebrew_item',
-    'get_shared_list'
+    'get_shared_list',
+    'check_file'
   ].map((name) => ({ name }));
   /* A host that answers as the preview host does; `over` replaces one path's answer. */
   const host = (over = {}) => {
@@ -853,6 +873,16 @@ describe('previewChecks() against the preview host', () => {
         body: JSON.stringify({ format: 'daggerheart-loot/api-roll', results: [1, 2, 3, 4, 5] })
       },
       /more than four results/
+    ],
+    [
+      'api/v1/records?q=sword',
+      { status: 200, cors: '*', body: '{"format":"daggerheart-loot/api-rolls"}' },
+      /api\/v1\/records\?q=sword returned 200, not a daggerheart-loot\/api-search answer/
+    ],
+    [
+      'POST api/v1/file-checks',
+      { status: 200, cors: '*', body: '{"ok":false}' },
+      /POST api\/v1\/file-checks of a one-list lists file returned 200, not ok/
     ]
   ]) {
     it(`fails on the API path ${path} answering ${answer.status}`, async () => {
@@ -866,13 +896,15 @@ describe('previewChecks() against the preview host', () => {
 
   it('is the exact set of preview paths', () => {
     const list = previewChecks();
-    assert.equal(list.length, 77);
+    assert.equal(list.length, 79);
     assert.deepEqual(
       [...new Set(list.map((c) => c.path))].sort(),
       [
         'api',
+        'api/v1/file-checks',
         'api/v1/records/ci1',
         'api/v1/records/zzzz',
+        'api/v1/records?q=sword',
         'api/v1/rolls',
         'api/v1/rolls/std',
         'catalog-index.csv',

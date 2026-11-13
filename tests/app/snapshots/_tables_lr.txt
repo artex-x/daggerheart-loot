@@ -48,6 +48,8 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Установить как приложение" [url=/pages/install.html]
       link "Конфиденциальность" [url=/pages/privacy.html]
       link "Условия использования" [url=/pages/terms.html]
+      link "ИИ-ассистенты" [url=/pages/ai.html]
+      link "API" [url=/pages/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
@@ -78,6 +80,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 8Рецепты Последнего КругаПредметВарка: Когда рецепт изучен, перс... [namelen=233 namehash=4b279bda]
 9Омерзительная ЛютняОсновное оружиеУникальноеРанг 2 · Магическое... [namelen=340 namehash=2e44437e]
 ?Об этих данных
+API
 Core
 EN
 Hope & Fear
@@ -89,6 +92,7 @@ daggerheart.com
 Все
 Выбрать
 Дополнения
+ИИ-ассистенты
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
@@ -153,6 +157,8 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/last_round_tab
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
+      link "AI assistants" [url=/pages/en/ai.html]
+      link "API" [url=/pages/en/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
@@ -183,6 +189,8 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/last_round_tab
 8Last Round RecipesItemBrewing: Once a Recipe is learned, PCs ca... [namelen=186 namehash=cfa0e7be]
 9Loathsome LutePrimary weaponUniqueTier 2 · Magic · Presence · F... [namelen=329 namehash=b917d194]
 ?About this data
+AI assistants
+API
 All
 Alt. tables
 Consumables

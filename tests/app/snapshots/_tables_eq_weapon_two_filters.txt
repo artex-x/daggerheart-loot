@@ -65,6 +65,8 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Установить как приложение" [url=/pages/install.html]
       link "Конфиденциальность" [url=/pages/privacy.html]
       link "Условия использования" [url=/pages/terms.html]
+      link "ИИ-ассистенты" [url=/pages/ai.html]
+      link "API" [url=/pages/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
@@ -84,6 +86,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 5Кортик МёртвыхArazo's ArtifactsФизическое · Искусность · Вплотн... [namelen=299 namehash=d9977b45]
 7Табельный СекачУникальноеВоюющие НорыФизическое · Любая · Вплот... [namelen=165 namehash=9421328e]
 ?Об этих данных
+API
 Arazo's Artifacts
 Core
 Dread GM Toolbox
@@ -125,6 +128,7 @@ daggerheart.com
 Зачарованная ШвабраУникальноеПир зверейМагическое · Сила · Вплот... [namelen=91 namehash=e0e17ecc]
 Зачарованный МолотУникальноеПир зверейМагическое · Сила · Вплотн... [namelen=91 namehash=f69ed2c6]
 Знание
+ИИ-ассистенты
 Инстинкт
 Искусность
 К содержимому
@@ -237,6 +241,8 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_ti
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
+      link "AI assistants" [url=/pages/en/ai.html]
+      link "API" [url=/pages/en/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
@@ -256,6 +262,8 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_ti
 5Dirk of the DeadArazo's ArtifactsPhysical · Finesse · Melee · d... [namelen=301 namehash=4cba7bac]
 7Standard Issue SlicerUniqueWarrin' WarrensPhysical · Any · Mele... [namelen=139 namehash=2dbd9f99]
 ?About this data
+AI assistants
+API
 Agility
 All
 Alt. tables

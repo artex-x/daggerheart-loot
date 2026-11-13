@@ -74,6 +74,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 8Рычажная ВинтовкаОсновное оружиеРанг 1 · Физическое · Влияние ·... [namelen=223 namehash=82164ede]
 9Карманный ПистолетОсновное оружиеРанг 1 · Физическое · Влияние ... [namelen=162 namehash=85f4f812]
 ?Об этих данных
+API
 Arazo's Artifacts
 Core
 Dread GM Toolbox
@@ -95,6 +96,7 @@ daggerheart.com
 Выбрать
 Дополнения
 Закрыть
+ИИ-ассистенты
 К содержимому
 Конфиденциальность
 Легендарная Винтовка с ПрицеломОсновное оружиеРанг 4 · Физическо... [namelen=221 namehash=268b3a3f]
@@ -235,6 +237,8 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/pistolheart]
 8Lever-Load RiflePrimary weaponTier 1 · Physical · Presence · Fa... [namelen=196 namehash=b06ea91f]
 9Pocket PistolPrimary weaponTier 1 · Physical · Presence · Very ... [namelen=174 namehash=aed2659a]
 ?About this data
+AI assistants
+API
 Advanced ArcpistolPrimary weaponTier 3 · Magic · Knowledge · Far... [namelen=127 namehash=b03b21b6]
 Advanced Bolt Action RiflePrimary weaponTier 3 · Physical · Fine... [namelen=218 namehash=3c753ccc]
 Advanced Carving KnifeSecondary weaponTier 3 · Physical · Agilit... [namelen=260 namehash=f8370f1b]

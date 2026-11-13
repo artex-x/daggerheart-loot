@@ -52,13 +52,17 @@ describe('the import panel', () => {
     expect(schema).toHaveAttribute('target', '_blank');
     expect(schema).toHaveAttribute('rel', 'noopener');
     expect(container.querySelector('a[href="/schema/homebrew-v1.json"]')).toBeNull();
-    expect(screen.getByRole('link', { name: 'llms.txt' })).toHaveAttribute('href', '/llms.txt');
+    const ai = within(container.querySelector<HTMLElement>('.filerow')!).getByRole('link', {
+      name: 'ИИ-ассистенты'
+    });
+    expect(ai).toHaveAttribute('href', '/pages/ai.html');
+    expect(ai).toHaveAttribute('target', '_blank');
+    expect(ai).toHaveAttribute('rel', 'noopener');
+    expect(container.querySelector('a[href="/llms.txt"]')).toBeNull();
     /* Both links sit on the file row, and one line under it says what fits. */
-    expect(schema.closest('.filerow')).toBe(
-      screen.getByRole('link', { name: 'llms.txt' }).closest('.filerow')
-    );
+    expect(schema.closest('.filerow')).toBe(ai.closest('.filerow'));
     expect(container.querySelector('.hint')?.textContent).toBe(
-      'Подходит файл из «Скачать JSON», архив из «Скачать мои данные» или файл по описанию в llms.txt.'
+      'Подходит файл из «Скачать JSON», архив из «Скачать мои данные» или файл, собранный ИИ-ассистентом.'
     );
     await expectNoA11yViolations(container);
   });
@@ -465,8 +469,13 @@ describe("a card's book items on «Обновить»", () => {
       expect(schema).toHaveAttribute('target', '_blank');
       expect(schema).toHaveAttribute('rel', 'noopener');
       expect(container.querySelector('a[href="/schema/homebrew-v1.json"]')).toBeNull();
+      expect(
+        within(container.querySelector<HTMLElement>('.filerow')!).getByRole('link', {
+          name: 'AI assistants'
+        })
+      ).toHaveAttribute('href', '/pages/en/ai.html');
       expect(container.querySelector('.hint')?.textContent).toBe(
-        'Takes a file from "Download JSON", the archive from "Download my data", or a file written to llms.txt.'
+        'Takes a file from "Download JSON", the archive from "Download my data", or a file an AI assistant built.'
       );
     }
     const [update, go] =

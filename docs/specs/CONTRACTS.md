@@ -420,8 +420,9 @@ keeps polling it; the worker stays registered and caches only pictures and
 hashed build files (`docs/specs/META.md` section 9).
 
 `pages/<name>.html` (Russian) and `pages/en/<name>.html` (English) are the
-site's static pages, one copy per language: `install`, `privacy` and
-`terms`. The `privacy` and `terms` URLs are frozen once submitted to the
+site's static pages, one copy per language: `install`, `privacy`, `terms`,
+`ai` (the user page of the MCP endpoint) and `developers` (the API
+reference). The `privacy` and `terms` URLs are frozen once submitted to the
 Google OAuth console. `tools/build-pages.js` generates them from
 `pages/src/<name>.html` and `pages/src/en/<name>.html` through
 `node tools/build.js`, and the deploy job publishes them from the build, like
@@ -545,10 +546,12 @@ by `preview/api/mcp.test.mjs`.
 | `GET /api/v1/rolls` | `daggerheart-loot/api-rolls` v1 |
 | `POST /api/v1/rolls/{section}` | `daggerheart-loot/api-roll` v1 |
 | `GET /api/v1/tables` | `daggerheart-loot/api-tables` v1 |
-| `GET /api/v1/tables/{table}` | `daggerheart-loot/api-table` v1; `part` is required on `eq_weapon`, `eq_secondary` and `eq_armor` |
+| `GET /api/v1/tables/{table}` | `daggerheart-loot/api-table` v1; `part` is required on `eq_weapon`, `eq_secondary` and `eq_armor`; `filter` narrows the rows |
+| `GET /api/v1/records` | `daggerheart-loot/api-search` v1: a search by name and facets |
 | `GET /api/v1/records/{id}` | `daggerheart-loot/record` v1 |
 | `GET /api/v1/homebrew-items/{uuid}` | `daggerheart-loot/record` v1 |
 | `GET /api/v1/shared-lists/{token}` | `daggerheart-loot/api-shared-list` v1 |
+| `POST /api/v1/file-checks` | `daggerheart-loot/api-file-check` v1: the check of an import file |
 
 The bulk catalog is not an operation: `/api/v1/catalog/index.json`
 (`daggerheart-loot/api-catalog` v1) names the absolute URLs of its chunk files
@@ -593,10 +596,11 @@ shared lists are `no-store`.
 
 | Status | `code` | When |
 |---|---|---|
-| 400 | `bad_request` | a parameter or body field fails its schema; the message names the field |
+| 400 | `bad_request` | a parameter or body field fails its schema, or a parameter is given twice; the message names the field |
+| 400 | `too_broad` | a search `q` that matches too many records to rank: add a longer word or a facet |
 | 404 | `not_found` | an unknown path, section, table, part, record id, homebrew id or share token |
 | 405 | `method_not_allowed` | another method; `Allow` names the allowed ones, `OPTIONS` included |
-| 413 | `too_large` | a request body past 4096 bytes |
+| 413 | `too_large` | a request body past 4096 bytes; a file to check past 32768 bytes |
 | 415 | `unsupported_media_type` | a `POST` body that is not `application/json` |
 | 422 | `answer_too_large` | a Supabase answer past 65536 bytes; the message gives the app link |
 | 503 | `unavailable` | a file or Supabase read failed, timed out or was invalid; a second `data_version` mismatch |
@@ -605,6 +609,51 @@ The check order, pinned by the fixtures: the host guard's 301 (a deployment host
 a branch alias; the one answer without the JSON headers), `OPTIONS` 204, the path
 404, the method 405, the section or table id 404, 415, 413, then the body and
 schema 400. A path run past 2048 characters reads as empty.
+
+**Search.** `GET /api/v1/records` finds catalog records by name, in both languages at
+once, and by facets, in the words and the ranking of the app's `#/search` over names
+(decision "API search scans build-time folded names, and file checks start at 32 KB"):
+words in any order, a word also finds its other forms (a Snowball stem), a phrase in
+quotes matches as typed, a name at a word start ranks above one inside a word. It reads
+names only: a word that only a description or a stat line holds finds nothing, and own
+items and homebrew are not searched. The parameters are `q` (at most 200 characters and
+8 terms), `kind` (`item`, `consumable`, `weapon`, `secondary`, `armor`), `source` (a
+source id), `table` (the records of that table, as `GET /api/v1/tables/{table}` lists
+them), `tier` (`1`, `2`, `3`, `4`, `A`, `C`), `rarity` and `limit` (an integer from 1 to
+50, default 20). At least one of `q` and the five facets is required; a `q` with no
+terms (`q=`, `q=%20`, `q=""`) reads as absent. A parameter given twice is a 400 that
+names it. A query that keeps more than 300 lines to rank, or whose most selective word
+has more than 3000 hits in the search text, is 400 `too_broad`: a longer word or a facet
+answers it. The answer is `{ "format": "daggerheart-loot/api-search", "version": 1,
+"data_version", "total", "rows" }`: `total` counts every match, `rows` holds the first
+`limit` of them in rank order (catalog order without `q`), and a row is `{ id, name,
+kind, source, table, tier, rarity, link }`, each field the record's of the same name
+and `link` equal to the record's (`?v` included). The answer carries the projection's `ETag` and `Cache-Control: public, max-age=300`.
+
+**Filter.** `filter` on `GET /api/v1/tables/{table}` is the tables page's `f_` segment
+(`docs/specs/ROUTES.md`, "Filter grammar"; at most 512 characters, starting with `f_`,
+otherwise 400) and keeps the rows the page keeps for it, on the table and part asked; a
+group the table does not offer is ignored, as the page ignores it.
+
+**File checks.** `POST /api/v1/file-checks` checks the text of a lists file (`import-v1`,
+`import-v2`, `import-v3`) or a homebrew file (`homebrew-v1`, `homebrew-v2`) with the
+app's own parsers and report builders. The body is the file itself, `application/json` (415
+otherwise) and at most 32768 bytes of UTF-8 (413 `too_large` before any parse); bytes that are not UTF-8 answer `not_json`, as the import
+reads them; a cap
+may rise later, never fall. The answer is always 200 once the body is read, `{ "format":
+"daggerheart-loot/api-file-check", "version": 1, "file": { "format", "version" }, "ok",
+"reason", "message", "lines", "more", "counts" }`, `no-store`: `file.format` is
+`daggerheart-loot/lists`, `daggerheart-loot/homebrew` or null and `file.version` the file's
+version when an integer, else null; `reason` is null when `ok`, else `not_json`,
+`unknown_format`, `version`, `empty` or `errors`; `message` is the panel's refusal text as a
+pair for the first four reasons, else null; `lines` are `{ list, text }` with `text` a
+pair: the error lines for `errors`, the skip lines of a good lists file, the note lines of a
+good homebrew file, at most the first 50 (`more` counts the rest), and `list` the 0-based list
+index of a lists file's line, else null; `counts` is null unless `ok`, `{ lists, entries, skipped }`
+or `{ books, sections, cards, items }`. The check reads the catalog only, with no account:
+a homebrew entry without a snapshot is skipped as `unheld`, an error line of a lists file
+names its entry by item id without the record's name, and a skip line of a lists file
+gives its position only. A zip file is not checked.
 
 **CORS.** Every answer under `/api/` carries `Access-Control-Allow-Origin: *`, none
 carries `Access-Control-Allow-Credentials` or `Vary: Origin`, and every worker answer
@@ -638,17 +687,22 @@ status 404 (legacy: status 200). A notification answers 202 with no body.
 | `list_rolls` | `GET /api/v1/rolls` |
 | `roll` | `POST /api/v1/rolls/{section}`; `section` and the roll fields are the arguments |
 | `list_tables` | `GET /api/v1/tables` |
-| `get_table` | `GET /api/v1/tables/{table}`; `part` is an optional argument |
+| `get_table` | `GET /api/v1/tables/{table}`; `part` and `filter` are optional arguments |
+| `search_catalog` | `GET /api/v1/records`; the REST parameters are the arguments, `limit` a JSON integer and the others strings |
 | `get_record` | `GET /api/v1/records/{id}` |
 | `get_homebrew_item` | `GET /api/v1/homebrew-items/{uuid}` |
 | `get_shared_list` | `GET /api/v1/shared-lists/{token}` |
+| `check_file` | `POST /api/v1/file-checks`; the one argument `file` is the file's text as a string |
 
 The tools are the operations of `openapi.json` that carry `x-mcp-tool` and no `security`, in
 document order; the description of a tool is its summary and description, and each argument
 takes its parameter's description. A call returns the REST answer: `content[0].text` is its
 JSON, `structuredContent` its value, and an operation error is a result with `isError` and the
-`api-error` body (REST: the HTTP status). A missing or non-string path or query argument is a
-400 `bad_request` result; an unknown tool or arguments that are not an object are -32602
+`api-error` body (REST: the HTTP status). A missing path or query argument, a
+string argument that is not a string and an integer argument (`limit`) that is not a JSON integer
+are a 400 `bad_request` result, and so is a `file` that is not a string; a `file` past 32768
+bytes is the `too_large` result. The whole `/mcp` request is at most 65536 bytes, so a
+client that escapes non-ASCII text can meet the HTTP 413 first; an unknown tool or arguments that are not an object are -32602
 with status 200. The check order, pinned by the fixtures: the host guard's 301, a path other
 than exactly `/mcp` 404 with no body, any `Origin` header 403 (DNS rebinding; JSON-RPC
 -32000), a method other than `POST` 405 with `Allow: POST`, a body that is not
@@ -666,5 +720,5 @@ third-party translation the value does not cover. A homebrew item is `owner`.
 
 `apidata/` holds the internal projections the worker reads (`rolls.json`,
 `tables.json`, `cards.json`, `roll/`, `table/`, `records/index.json`,
-`version.json`). It is published beside the site and changed without notice, like
+`version.json`, `search/index.json`, `search/<n>.txt` and `file-check.json`). It is published beside the site and changed without notice, like
 `img/thumb/`; nothing outside the worker binds to it, and it is not a contract.

@@ -1790,7 +1790,7 @@ const STATES = [
     id: '#/lists ~ import panel as gm1',
     route: '#/lists',
     as: 'gm1',
-    why: '«Импорт из файла» pressed and expanded: the panel under the head with «Импорт из файла JSON», «Выбрать файл...» and the hint linking the schema and llms.txt',
+    why: '«Импорт из файла» pressed and expanded: the panel under the head with «Импорт из файла JSON», «Выбрать файл...» and the links «Формат файла» and «ИИ-ассистенты» on its row and the hint under it',
     enter: importOpen
   },
   {
@@ -3482,7 +3482,7 @@ const STATES = [
     id: '#/homebrew ~ import panel as gm1',
     route: '#/homebrew',
     as: 'gm1',
-    why: '«Импорт из файла» pressed and expanded: the panel «Импорт предметов из файла JSON» with «Выбрать файл...», the links «Формат файла» and «llms.txt» on its row and the line of what fits under it',
+    why: '«Импорт из файла» pressed and expanded: the panel «Импорт предметов из файла JSON» with «Выбрать файл...», the links «Формат файла» and «ИИ-ассистенты» on its row and the line of what fits under it',
     enter: hbImportOpen
   },
   {

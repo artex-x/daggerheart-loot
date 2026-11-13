@@ -83,6 +83,8 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Установить как приложение" [url=/pages/install.html]
       link "Конфиденциальность" [url=/pages/privacy.html]
       link "Условия использования" [url=/pages/terms.html]
+      link "ИИ-ассистенты" [url=/pages/ai.html]
+      link "API" [url=/pages/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
@@ -234,6 +236,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 9Клятва РавновесияМагическое · Инстинкт · Далеко · d12+12 маг · ... [namelen=73 namehash=8fc135fd]
 9Омерзительная ЛютняМагическое · Влияние · Далеко · d8+6 маг · Д... [namelen=72 namehash=3161aa02]
 ?Об этих данных
+API
 Arazo's Artifacts
 Core
 Dread GM Toolbox
@@ -400,6 +403,7 @@ daggerheart.com
 Защитник Леса Пари
 Звёздное Копьё
 Знание
+ИИ-ассистенты
 Изогнутый Кинжал
 Изогнутый КинжалФизическое · Искусность · Вплотную · d8+9 физ · ... [namelen=74 namehash=4238f74e]
 Инееметатель
@@ -1257,6 +1261,8 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon?as=g
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
+      link "AI assistants" [url=/pages/en/ai.html]
+      link "API" [url=/pages/en/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
@@ -1408,6 +1414,8 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon?as=g
 9Ogre-teeth ClubPhysical · Strength · Very Close · d12+1 phy · T... [namelen=73 namehash=26fdc03b]
 9Pocket PistolPhysical · Presence · Very Close · d4+2 phy · One-... [namelen=70 namehash=ce4e2d51]
 ?About this data
+AI assistants
+API
 Aantari Bow
 Aantari BowPhysical · Finesse · Far · d6+11 phy · Two-Handed
 Account: gm1@example.test

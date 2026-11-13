@@ -1188,7 +1188,7 @@ Kept exceptions, each with its reason (checked 2026-11-06):
 - **`404.html`:** the host's script-free not-found page keeps the system face and draws no die
   mark. A self-hosted face there needs its own `@font-face` path outside the build's hashed
   assets; the page holds a heading, a cause and two links in each language.
-- **Static pages:** `/pages/*.html` (privacy, terms, install, in each language) keep the system
+- **Static pages:** `/pages/*.html` (install, privacy, terms, ai, developers, in each language) keep the system
   face for the same reason: `tools/build-pages.js` writes them outside the Vite build and does
   not know the hashed woff2 name (owner, 2026-11-06). Their links of their own line, and the
   links of `404.html`, take the target size of The Phone-First Rule.

@@ -1,0 +1,8 @@
+# 2026-11-12 - API search scans build-time folded names, and file checks start at 32 KB
+
+- Task: `ai-mcp` (planner and implementer, 2026-11-12).
+- Decision: the build writes each record's folded names, five facet codes, id, card version and display names as one line of text shards (`apidata/search/<n>.txt`, at most 262144 B). A request finds the query's most selective word with `indexOf`, tests the other words on the found lines, refuses a query that keeps more than 300 lines or hits more than 3000 times (`too_broad`), and ranks with `rankHits` of `search.ts` on names only.
+- Decision: `filter` applies the app's `passes` to a build-time `f` field of each table row, which no answer shows. The file check runs `parseBundle` and `parseHomebrew` with the shared report builders over a lean catalog context (ids, sets, rule cards, lines) at a 32768 B cap, and answers at most 50 lines. The cap rises only after a production reading.
+- Departures from `#/search`: names and facets only (no description or stat line), `too_broad` where the page shows everything, no own items. A file check has no account.
+- Rejected: names and stat lines as JSON (past 10 ms at 3x); a haystack with descriptions (past every budget); `names.json` (a 107-330 KB parse a request); folding or splitting every line per request (36-79 ms and 1.9-5.3 ms here); a minimum word length (refuses `яд`); an unranked broad answer (not the order of `#/search`); a 262144 B file-check cap; a Supabase Edge Function now (a deploy channel and a token; the owner's option if a reading fails).
+- Evidence: `docs/specs/CONTRACTS.md` section 6, "Search", "Filter" and "File checks"; `tools/api-data.mjs`; `preview/api/service.mjs`; `.claude/README.md`, "CPU readings to take".

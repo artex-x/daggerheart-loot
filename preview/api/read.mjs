@@ -10,7 +10,7 @@ export const drop = (body) => {
 };
 /** Returns `{ value }`, the text of a response whose body is at most `max` bytes, or
  *  `{ fail: 'big' }`. The stream is cancelled past the cap, before any decode. */
-export async function readText(res, max) {
+export async function readText(res, max, decode = (b) => new TextDecoder().decode(b)) {
   const length = Number(res.headers.get('Content-Length'));
   if (Number.isFinite(length) && length > max) {
     drop(res.body);
@@ -37,7 +37,7 @@ export async function readText(res, max) {
     bytes.set(c, at);
     at += c.byteLength;
   }
-  return { value: new TextDecoder().decode(bytes) };
+  return { value: decode(bytes) };
 }
 
 /** Returns the parsed JSON of a response whose body is at most `max` bytes, or

@@ -1,0 +1,226 @@
+<h1>API для разработчиков</h1>
+<p>
+  Эта страница описывает открытый API чтения генератора лута Daggerheart: как его вызывать, что
+  он возвращает и чего он ждёт от клиента. Полное машинное описание -
+  <a
+    href="https://daggerheart-loot.pages.dev/api/v1/openapi.json"
+    target="_blank"
+    rel="noopener"
+    >openapi.json</a
+  >
+  (OpenAPI 3.1); то же описание в читалке -
+  <a
+    href="https://redocly.github.io/redoc/?url=https://daggerheart-loot.pages.dev/api/v1/openapi.json"
+    target="_blank"
+    rel="noopener"
+    >вид Redoc</a
+  >.
+</p>
+<h2>Базовый адрес, ключи и CORS</h2>
+<ul>
+  <li>
+    Базовый адрес: <code>https://daggerheart-loot.pages.dev/api/v1/</code>. Каждый ответ - JSON.
+  </li>
+  <li>
+    Ни ключа, ни входа. API игнорирует заголовок <code>Authorization</code>, поэтому ответ не
+    зависит от того, кто спрашивает.
+  </li>
+  <li>
+    Каждый ответ несёт <code>Access-Control-Allow-Origin: *</code> и никаких учётных данных, так
+    что инструмент в браузере может вызывать API напрямую. Запрос <code>OPTIONS</code> получает
+    204.
+  </li>
+  <li>API только читает. Списки и свои предметы меняются только в приложении.</li>
+</ul>
+<h2>Честное использование и квота</h2>
+<p>
+  Кэшируйте списки (броски, таблицы, каталог) и отправляйте не больше одного запроса на действие
+  пользователя. API, MCP-адрес и карточки ссылок делят одну суточную квоту в 100 000 запросов
+  Functions. Когда всплеск её исчерпывает, API и карточки ссылок отвечают ошибкой до 00:00 UTC;
+  приложение продолжает работать. Чтобы прочитать весь каталог без запросов к квоте, используйте
+  статическое зеркало ниже.
+</p>
+<h2>Заморозка v1</h2>
+<p>
+  Пути, имена параметров, имена полей и значения <code>format</code> в v1 не меняются. Новый
+  необязательный параметр, новое поле или новый ресурс могут появиться в v1, поэтому клиент
+  игнорирует незнакомые поля. Несовместимое изменение - это <code>/api/v2/</code> рядом с v1.
+  Клиент, который встретил незнакомый <code>code</code> ошибки, ориентируется на HTTP-статус.
+</p>
+<h2>Запись и её права</h2>
+<p>
+  Запись - это <code>daggerheart-loot/record</code> версии 1: <code>id</code>, <code>key</code>,
+  <code>origin</code>, <code>kind</code>, <code>name</code>, <code>text</code> (подмножество
+  Markdown) и <code>plain</code> (простой текст), <code>path</code>, <code>link</code>,
+  <code>source</code>, <code>table</code>, <code>roll</code>, <code>tier</code>,
+  <code>rarity</code>, <code>stats</code>, <code>craft</code>, <code>set</code>,
+  <code>refs</code>, <code>image</code> и <code>rights</code>. Каждый текст для человека - пара
+  <code>{ "ru", "en" }</code>; пустая русская сторона повторяет английский текст. Храните
+  <code>link</code> как есть: его <code>?v</code> непрозрачен.
+</p>
+<p>
+  <code>rights.license</code> равно <code>dpcgl</code>, где английский текст - общедоступное
+  игровое содержимое Daggerheart SRD 2.0, и <code>owner</code>, где им владеют правообладатели;
+  русский текст - перевод, которого <code>dpcgl</code> не покрывает.
+  <code>rights.notice</code> - английское уведомление, которое нужно показывать с текстом. Текст
+  своих предметов и заметки списков пишут пользователи: экранируйте их перед показом.
+</p>
+<h2>Операции</h2>
+<p>Все операции <code>openapi.json</code>, у каждой - пример запроса.</p>
+<h3><code>GET /api/v1/openapi.json</code></h3>
+<p>Читает описание API.</p>
+<pre><code>curl https://daggerheart-loot.pages.dev/api/v1/openapi.json</code></pre>
+<h3><code>GET /api/v1/rolls</code></h3>
+<p>
+  Перечисляет разделы бросков с их режимом, частями и пределами. Меняется только с выкладкой
+  данных.
+</p>
+<pre><code>curl https://daggerheart-loot.pages.dev/api/v1/rolls</code></pre>
+<h3><code>POST /api/v1/rolls/{section}</code></h3>
+<p>
+  Бросает раздел или разбирает введённое число и отвечает не больше чем четырьмя записями в
+  порядке, в котором их достаёт приложение. Тело - JSON; его поля зависят от режима раздела.
+</p>
+<pre><code>curl -X POST -H 'Content-Type: application/json' -d '{"dice":3}' \
+  https://daggerheart-loot.pages.dev/api/v1/rolls/std</code></pre>
+<h3><code>GET /api/v1/tables</code></h3>
+<p>Перечисляет таблицы каталога.</p>
+<pre><code>curl https://daggerheart-loot.pages.dev/api/v1/tables</code></pre>
+<h3><code>GET /api/v1/tables/{table}</code></h3>
+<p>
+  Читает строки одной таблицы. Три таблицы снаряжения читаются по тиру через
+  <code>part</code>. <code>filter</code> принимает сегмент фильтра страницы таблиц, например
+  <code>f_burden-2</code>, и оставляет те строки, что оставляет страница.
+</p>
+<pre><code>curl 'https://daggerheart-loot.pages.dev/api/v1/tables/eq_weapon?part=2&amp;filter=f_burden-2'</code></pre>
+<h3><code>GET /api/v1/records</code></h3>
+<p>
+  Ищет по каталогу по названию, по-русски или по-английски, и по <code>kind</code>,
+  <code>source</code>, <code>table</code>, <code>tier</code> и <code>rarity</code>. Передайте
+  <code>q</code> или фильтр; <code>limit</code> - от 1 до 50. Поиск идёт только по названиям.
+  Слово, под которое попадает слишком много записей, получает 400 <code>too_broad</code>:
+  добавьте слово подлиннее или фильтр.
+</p>
+<pre><code>curl 'https://daggerheart-loot.pages.dev/api/v1/records?q=sword&amp;kind=weapon'</code></pre>
+<h3><code>GET /api/v1/records/{id}</code></h3>
+<p>Читает одну запись каталога.</p>
+<pre><code>curl https://daggerheart-loot.pages.dev/api/v1/records/ci12</code></pre>
+<h3><code>GET /api/v1/homebrew-items/{uuid}</code></h3>
+<p>Читает один свой предмет, ссылкой на который поделился автор.</p>
+<pre><code>curl https://daggerheart-loot.pages.dev/api/v1/homebrew-items/00000000-0000-4000-8000-000000000000</code></pre>
+<h3><code>GET /api/v1/shared-lists/{token}</code></h3>
+<p>
+  Читает список за общей ссылкой так, как его видит аудитория ссылки. Список, чей ответ базы
+  больше 65536 байт, получает 422 со ссылкой на приложение.
+</p>
+<pre><code>curl https://daggerheart-loot.pages.dev/api/v1/shared-lists/SHARE_TOKEN_OF_43_CHARACTERS</code></pre>
+<h3><code>POST /api/v1/file-checks</code></h3>
+<p>
+  Проверяет текст файла списков или файла своих предметов так, как проверил бы импорт
+  приложения, и отвечает его ошибками и пропусками на двух языках. Тело - сам файл, JSON, не
+  больше 32768 байт. Ничего не меняет.
+</p>
+<pre><code>curl -X POST -H 'Content-Type: application/json' --data-binary @lists.json \
+  https://daggerheart-loot.pages.dev/api/v1/file-checks</code></pre>
+<h2>Ошибки</h2>
+<p>
+  Ответ с ошибкой -
+  <code
+    >{ "format": "daggerheart-loot/api-error", "version": 1, "error": { "code", "message" }
+    }</code
+  >. Сообщение английское и не повторяет значений.
+</p>
+<div class="scroll">
+  <table>
+    <thead>
+      <tr>
+        <th>Статус</th>
+        <th>Код</th>
+        <th>Когда</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>400</td>
+        <td><code>bad_request</code></td>
+        <td>Параметр или поле тела не проходит схему, или параметр передан дважды.</td>
+      </tr>
+      <tr>
+        <td>400</td>
+        <td><code>too_broad</code></td>
+        <td>Под поиск попадает слишком много записей для ранжирования.</td>
+      </tr>
+      <tr>
+        <td>404</td>
+        <td><code>not_found</code></td>
+        <td>Неизвестный путь, раздел, таблица, запись, id предмета или токен ссылки.</td>
+      </tr>
+      <tr>
+        <td>405</td>
+        <td><code>method_not_allowed</code></td>
+        <td>Другой метод; заголовок <code>Allow</code> называет разрешённые.</td>
+      </tr>
+      <tr>
+        <td>413</td>
+        <td><code>too_large</code></td>
+        <td>Тело больше 4096 байт или файл для проверки больше 32768 байт.</td>
+      </tr>
+      <tr>
+        <td>415</td>
+        <td><code>unsupported_media_type</code></td>
+        <td>Тело POST не <code>application/json</code>.</td>
+      </tr>
+      <tr>
+        <td>422</td>
+        <td><code>answer_too_large</code></td>
+        <td>Ответ базы больше 65536 байт.</td>
+      </tr>
+      <tr>
+        <td>503</td>
+        <td><code>unavailable</code></td>
+        <td>Чтение не удалось, не уложилось по времени или оказалось неверным.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<h2>Кэширование</h2>
+<p>
+  Списки и проекции несут <code>ETag</code> и <code>Cache-Control: public, max-age=300</code> и
+  отвечают 304 на совпавший <code>If-None-Match</code>. Броски, свои предметы, общие списки и
+  проверки файлов - <code>no-store</code>.
+</p>
+<h2>Статическое зеркало каталога</h2>
+<p>
+  <code>https://daggerheart-loot.pages.dev/api/v1/catalog/index.json</code> перечисляет каждую
+  запись как <code>{ id, rev, chunk }</code> с абсолютными адресами файлов-чанков. Файлы
+  статические и не тратят запросов Functions.
+</p>
+<ol>
+  <li>Прочитайте индекс. Если его <code>data_version</code> равен вашему, остановитесь.</li>
+  <li>
+    Прочитайте чанк каждой записи, чей <code>rev</code> отличается от вашего.
+    <code>rev</code> непрозрачен: сравнивайте его только на равенство.
+  </li>
+  <li>Удалите каждый id, которого в индексе больше нет.</li>
+  <li>
+    Если у чанка другой <code>data_version</code> или чанк отвечает 404, сайт обновился между
+    вашими чтениями: прочитайте индекс заново.
+  </li>
+</ol>
+<p>Имена и число чанков не заморожены: идите за индексом.</p>
+<h2>Ассистенты и MCP</h2>
+<p>
+  <a href="https://daggerheart-loot.pages.dev/llms.txt" target="_blank" rel="noopener"
+    >llms.txt</a
+  >
+  - вход для ассистентов; там же лежат форматы файлов импорта. Операции выше, кроме
+  <code>openapi.json</code>, также являются инструментами MCP-сервера только для чтения по
+  адресу <code>https://daggerheart-loot.pages.dev/mcp</code>; как его подключить, показано на
+  <a href="ai.html">странице для пользователей</a>.
+</p>
+<h2>Чтение аккаунта</h2>
+<p>
+  Чтение собственных списков и предметов вошедшего пользователя запланировано. В v1 сегодня его
+  нет.
+</p>
+<p>Последнее изменение: 13 ноября 2026 года.</p>

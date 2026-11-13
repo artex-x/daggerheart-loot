@@ -1,0 +1,143 @@
+<h1>With AI assistants</h1>
+<p>
+  This page tells you how to let an AI assistant use the Daggerheart Loot Generator: what you
+  can ask it, how to connect it, and what it can and cannot do. If you build software, read
+  <a href="developers.html">the page for developers</a> instead.
+</p>
+<h2>What you can ask</h2>
+<ul>
+  <li>Roll loot on any roll table of the site, with the dice shown.</li>
+  <li>
+    Find an item by a part of its name, in Russian or in English, or by its kind, source, tier
+    or rarity.
+  </li>
+  <li>Read an item's full text, stats and crafting line.</li>
+  <li>
+    Check a list file or a homebrew file before you import it, with the same errors the import
+    shows.
+  </li>
+  <li>Read a shared list or a shared homebrew item by its link.</li>
+  <li>
+    Later: your own lists and items. The assistant will get that access only after you grant it
+    on the <a href="%APP%account">account page</a>, and you will be able to revoke it there.
+  </li>
+</ul>
+<h2>Connect it in three steps</h2>
+<p>Every assistant below takes the same address and needs no sign-in and no key:</p>
+<pre><code>https://daggerheart-loot.pages.dev/mcp</code></pre>
+<p>
+  The steps are as each assistant's own help page gives them on 13 November 2026. If a menu has
+  another name in your version, the help page is the source.
+</p>
+<h3>Claude (claude.ai and Claude Desktop)</h3>
+<ol>
+  <li>Open Customize, then Connectors.</li>
+  <li>
+    Press "+ Add", then "Add custom connector". Enter a name and the address above, and press
+    "Continue".
+  </li>
+  <li>
+    Press "Continue" on the detected settings. Under Authentication choose "No sign in", then
+    press "Add".
+  </li>
+</ol>
+<p>
+  Custom connectors work on the Free (one connector), Pro, Max, Ultra, Team and Enterprise
+  plans; on Team and Enterprise an organization owner adds the connector first. To use the
+  connector, switch it on in a chat with "+", then "Connectors". See the
+  <a
+    href="https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp"
+    target="_blank"
+    rel="noopener"
+    >help page of Claude</a
+  >.
+</p>
+<h3>Cursor</h3>
+<ol>
+  <li>
+    Open Customize in the sidebar, or open the file <code>~/.cursor/mcp.json</code> (all
+    projects) or <code>.cursor/mcp.json</code> (one project).
+  </li>
+  <li>Add the server with its address:</li>
+  <li>Save the file.</li>
+</ol>
+<pre><code>{
+  "mcpServers": {
+    "daggerheart-loot": {
+      "url": "https://daggerheart-loot.pages.dev/mcp"
+    }
+  }
+}</code></pre>
+<p>
+  See the
+  <a href="https://cursor.com/docs/context/mcp" target="_blank" rel="noopener"
+    >MCP page of the Cursor documentation</a
+  >.
+</p>
+<h3>Claude Code</h3>
+<ol>
+  <li>Run this command in a terminal:</li>
+</ol>
+<pre><code>claude mcp add --transport http daggerheart-loot https://daggerheart-loot.pages.dev/mcp</code></pre>
+<ol start="2">
+  <li>Run <code>claude mcp list</code>. The server shows as connected.</li>
+  <li>Inside Claude Code, <code>/mcp</code> shows the same status.</li>
+</ol>
+<p>
+  Add <code>--scope user</code> to use the server in all your projects. See the
+  <a href="https://code.claude.com/docs/en/mcp" target="_blank" rel="noopener"
+    >MCP page of the Claude Code documentation</a
+  >.
+</p>
+<h3>Another assistant</h3>
+<p>
+  An assistant that lets you add a remote MCP server by its address, with no sign-in, takes the
+  address above in the same way. This page has no steps for ChatGPT yet.
+</p>
+<h2>What it can and cannot do</h2>
+<ul>
+  <li>
+    The connection only reads. The assistant changes none of your lists and none of your items.
+  </li>
+  <li>
+    For the public data (the catalog, the tables, the rolls, a shared link) you need no account.
+  </li>
+  <li>
+    Access to your own lists and items is planned. It will need your explicit grant, and you
+    will be able to revoke it.
+  </li>
+  <li>
+    The assistant cannot import a file for you. To create a list or items, ask it for a file,
+    then import that file on the Lists page or on "My items" (the import panel there has a link
+    to this page).
+  </li>
+</ul>
+<h2>Privacy and fair use</h2>
+<p>
+  The assistant's company receives what the assistant asks the site for and what the site
+  answers. The site stores nothing about these calls and sets no cookie; Cloudflare, which hosts
+  the site, receives the usual technical data of each request. Every request shares one daily
+  limit with the API and the link previews of the site, so ask for what you need and not more.
+  The
+  <a href="privacy.html">privacy page</a> has the details.
+</p>
+<h2>Example prompts</h2>
+<ul>
+  <li>"Roll three dice on the loot table and tell me what I found."</li>
+  <li>"Find the weapons of tier 2 that have the word 'axe' in the name."</li>
+  <li>"Read me the full text of the item ci12 and give me its link."</li>
+  <li>"Check this list file before I import it" (and paste the file).</li>
+  <li>
+    "Read https://daggerheart-loot.pages.dev/llms.txt, then build me a list file with five
+    healing consumables from the catalog and tell me how to import it."
+  </li>
+</ul>
+<h2>The file for assistants</h2>
+<p>
+  Assistants read
+  <a href="https://daggerheart-loot.pages.dev/llms.txt" target="_blank" rel="noopener"
+    >llms.txt</a
+  >: it tells them how to use the site, and it also holds the formats of the files that you
+  import.
+</p>
+<p>Last changed: 13 November 2026.</p>

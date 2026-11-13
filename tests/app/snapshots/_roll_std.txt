@@ -65,6 +65,8 @@ RootWebArea "Обычные правила - Генератор лута Daggerh
       link "Установить как приложение" [url=/pages/install.html]
       link "Конфиденциальность" [url=/pages/privacy.html]
       link "Условия использования" [url=/pages/terms.html]
+      link "ИИ-ассистенты" [url=/pages/ai.html]
+      link "API" [url=/pages/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
@@ -74,6 +76,7 @@ RootWebArea "Обычные правила - Генератор лута Daggerh
 4d12 Редкая - Легендарная
 5d12 Легендарная
 ?Где какая редкость
+API
 Core
 EN
 Hope & Fear
@@ -86,6 +89,7 @@ daggerheart.com
 Дополнения
 Ещё
 Зелье Быстрого Шага
+ИИ-ассистенты
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
@@ -170,6 +174,8 @@ RootWebArea "Standard rules - Daggerheart Loot Generator" [url=/en/roll/std]
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
+      link "AI assistants" [url=/pages/en/ai.html]
+      link "API" [url=/pages/en/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
@@ -179,6 +185,8 @@ RootWebArea "Standard rules - Daggerheart Loot Generator" [url=/en/roll/std]
 4d12 Rare - Legendary
 5d12 Legendary
 ?Where each rarity is
+AI assistants
+API
 Add to list
 Alternate tables
 Caltrops

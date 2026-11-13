@@ -1413,9 +1413,15 @@ async function minimalWorker() {
     );
     ok(
       JSON.stringify(footer) ===
-        JSON.stringify(['/pages/install.html', '/pages/privacy.html', '/pages/terms.html']),
+        JSON.stringify([
+          '/pages/install.html',
+          '/pages/privacy.html',
+          '/pages/terms.html',
+          '/pages/ai.html',
+          '/pages/developers.html'
+        ]),
       at +
-        'the footer does not link the install guide and the two policy pages - ' +
+        'the footer does not link the install guide, the policy pages, the AI assistants page and the API page - ' +
         JSON.stringify(footer)
     );
     /* The folded license notice opens from the keyboard, with the focus ring

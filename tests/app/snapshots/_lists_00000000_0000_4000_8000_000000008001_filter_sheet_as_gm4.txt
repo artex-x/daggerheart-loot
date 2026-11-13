@@ -42,6 +42,7 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
 7 Мистический ПлащПредмет Существо с Характеристикой Заклинателя... [namelen=146 namehash=a6b93435]
 8 Плетёная СетьПредмет Вы можете совершить Бросок Искусности, ис... [namelen=185 namehash=ef5e7127]
 9 Зелье Быстрого ШагаРасходник Вы получаете бонус +1 к следующем... [namelen=85 namehash=b17c4179]
+API
 EN
 RU
 daggerheart.com
@@ -56,6 +57,7 @@ daggerheart.com
 Ещё
 Закрыть
 Заметки
+ИИ-ассистенты
 К содержимому
 Кол-во: Длинный Меч
 Кол-во: Заряжающий Колчан
@@ -129,6 +131,8 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
 7 Arcane CloakItem A creature with a Spellcast trait wearing thi... [namelen=120 namehash=76e58e85]
 8 Woven NetItem You can make a Finesse Roll using this net to tr... [namelen=152 namehash=bb720c23]
 9 Stride PotionConsumable You gain a +1 bonus to your next Agili... [namelen=72 namehash=87a125d5]
+AI assistants
+API
 Account: gm4@example.test
 Add your own item
 Agility

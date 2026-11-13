@@ -20,6 +20,7 @@ RootWebArea "Список второго ГМа - Генератор лута Da
     button "Ещё" [expanded=false haspopup=menu]
 
 ## ru :: controls
+API
 EN
 RU
 daggerheart.com
@@ -35,6 +36,7 @@ daggerheart.com
 Закрыть
 Заметка
 Заметки
+ИИ-ассистенты
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
@@ -69,6 +71,8 @@ RootWebArea "Список второго ГМа - Daggerheart Loot Generator" [u
     button "More" [expanded=false haspopup=menu]
 
 ## en :: controls
+AI assistants
+API
 Account: gm2@example.test
 Add to list
 Add your own item

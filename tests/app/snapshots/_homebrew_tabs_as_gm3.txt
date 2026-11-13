@@ -23,6 +23,7 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
     StaticText "39 предметов из 100"
 
 ## ru :: controls
+API
 EN
 RU
 daggerheart.com
@@ -31,6 +32,7 @@ daggerheart.com
 Выбрать
 Ещё
 Закрыть
+ИИ-ассистенты
 Источники 0
 К содержимому
 Карты правил 0
@@ -106,6 +108,8 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm3]
     StaticText "39 items of 100"
 
 ## en :: controls
+AI assistants
+API
 Account: gm3@example.test
 Ash BedrollItemA bedroll for a long road.
 Bedroll of SilenceItemA bedroll for a long road.
