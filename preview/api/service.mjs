@@ -609,14 +609,13 @@ export function createService({
       }
     });
     /* The file's own `version` when it is an integer; the parsers do not return it. */
-    const versionOf = () => {
-      try {
-        const v = JSON.parse(body)?.version;
-        return Number.isInteger(v) ? v : null;
-      } catch {
-        return null;
-      }
-    };
+    let doc = null;
+    try {
+      doc = JSON.parse(body);
+    } catch {
+      /* not JSON: the lists parser says so */
+    }
+    const versionOf = () => (Number.isInteger(doc?.version) ? doc.version : null);
     /* A refusal's text in both languages; `%s` takes the version as JSON. */
     const refusal = (file, reason, { key, version }) =>
       answer(
@@ -711,7 +710,6 @@ export function createService({
       );
     }
     if (hb.reason === 'errors') {
-      const doc = JSON.parse(body);
       const [ru, en] = langs.map((t, i) =>
         homebrewErrorLines(hb.errors, doc, hb.names, t, i === 0 ? 'ru' : 'en')
       );

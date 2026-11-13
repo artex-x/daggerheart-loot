@@ -637,7 +637,8 @@ group the table does not offer is ignored, as the page ignores it.
 **File checks.** `POST /api/v1/file-checks` checks the text of a lists file (`import-v1`,
 `import-v2`, `import-v3`) or a homebrew file (`homebrew-v1`, `homebrew-v2`) with the
 app's own parsers and report builders. The body is the file itself, `application/json` (415
-otherwise) and at most 32768 bytes of UTF-8 (413 `too_large` before any parse); a cap
+otherwise) and at most 32768 bytes of UTF-8 (413 `too_large` before any parse); bytes that are not UTF-8 answer `not_json`, as the import
+reads them; a cap
 may rise later, never fall. The answer is always 200 once the body is read, `{ "format":
 "daggerheart-loot/api-file-check", "version": 1, "file": { "format", "version" }, "ok",
 "reason", "message", "lines", "more", "counts" }`, `no-store`: `file.format` is

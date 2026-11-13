@@ -1064,6 +1064,8 @@ describe('the catalog search', () => {
       const body = await res.json();
       assert.match(body.error.message, new RegExp(`\\b${name}\\b`), path);
     }
+    const missing = await call('/api/v1/tables/nope?part=1&part=2');
+    assert.equal(missing.status, 404);
   });
 
   it('answers 400 too_broad past 300 kept lines and past 3000 anchor positions', async () => {
@@ -1340,6 +1342,29 @@ describe('the file check', () => {
     const edge = await check(' '.repeat(32768));
     assert.equal(edge.status, 200);
     assert.equal((await edge.json()).reason, 'not_json');
+  });
+
+  it('reads bytes that are not UTF-8 as no JSON, as the import panel does, and never as too large', async () => {
+    const bytes = (body) =>
+      call('/api/v1/file-checks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body
+      });
+    const enc = (s) => [...new TextEncoder().encode(s)];
+    const cp1251 = new Uint8Array([
+      ...enc('{"format":"daggerheart-loot/lists","version":2,"lists":[{"name":"'),
+      0xcf,
+      0xf0,
+      ...enc('","entries":[]}]}')
+    ]);
+    for (const body of [cp1251, new Uint8Array(32768).fill(0xff)]) {
+      const res = await bytes(body);
+      assert.equal(res.status, 200);
+      const answer = await res.json();
+      assert.equal(answer.reason, 'not_json');
+      assert.equal(answer.message.en, 'This is not a JSON file.');
+    }
   });
 
   it('answers 415 to another media type, 405 to GET, and reads no file for either', async () => {

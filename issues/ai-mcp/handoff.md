@@ -47,6 +47,14 @@
 - Fallbacks if a reading fails: search - display names as a capitalization delta, then shard skipping by facet codes (`plan.md` B3 "Fallbacks"); file check - the cap stays 32768 B and the Edge Function option goes to the owner.
 - A usable fact for step 14: a cold file check reads `apidata/records/index.json` and `apidata/file-check.json` (one extra file family), a cold search reads the index and the shards; cold file check locally 1.4-2.2 ms today.
 
+## After B3
+- Fix pass (review `reviews/B3.md`): Blocker 1 fixed (the file check decodes strictly like the app: non-UTF-8 text answers `not_json`, and 32768 bytes of 0xFF no longer answer 413); nits N1-N4 done.
+- Step 14, risk R1 (reviewer prediction from step 1's model, cold = 4.902 + 3.01 x (local - 0.310) ms): the file check's cold CPU, REST, today 8.2-11.9 ms (homebrew ok 8.2, lists ok 8.7, lists with 50 errors 10.5, worst case a lists file of 2000 unknown ids 11.9); at 3x the catalog 14.8-15.7 ms; MCP adds about 2.5 ms. Warm burst p50 for the 2000-id case predicts 9.3 ms against the 8 ms line.
+- The plan's claim that the file check's cost does not grow with the catalog is contradicted: the same lists file reads 1.57 ms cold local today and 3.59 ms at 3x.
+- Step 14 case (d) uses the worst lists shape: one lists file of 2000 unknown ids (about 32 KB, 2108 lines before the cap, a 283 KB answer before LINES_MAX). Landing 2 showed p99 up to 17.1 ms with 0 exceeded-CPU counts, so a reading past 10 ms may not be a refusal; only production can tell.
+- A failed file-check reading goes to the owner as the plan says (Edge Function option, cap kept at 32768 B).
+- R3: the app bundle has 0.7 kB left of 276 kB (275.3 of 276). B2b adds footer links to `Shell.svelte` and changes the import hints in the main chunk; read `.claude/README.md` before any budget raise.
+
 ## Blockers
 - None for B2b: B3 is pushed; B2b lands with it at landing 3.
 - B5a and B5b cannot start until the owner has done these (only the owner may; the orchestrator does not change security settings):

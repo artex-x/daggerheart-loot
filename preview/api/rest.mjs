@@ -14,6 +14,7 @@ import { artBaseOf } from '../../app/src/lib/art.ts';
 import { RARITIES } from '../../app/src/lib/alt.ts';
 import { ROLL_MODES } from '../../app/src/lib/rollTables.ts';
 import { parseQuery } from '../../app/src/lib/search.ts';
+import { decodeText } from '../../app/src/lib/bundle.ts';
 import openapi from './openapi.json' with { type: 'json' };
 import { drop, readJson, readText, rpc } from './read.mjs';
 import {
@@ -302,7 +303,8 @@ async function readFile(request) {
       'The body must be application/json: send the file itself.'
     );
   }
-  const got = await readText(request, FILE_CHECK_MAX);
+  /* Bytes that are not UTF-8 read as no JSON, as the import panel reads them (ImportFile.svelte). */
+  const got = await readText(request, FILE_CHECK_MAX, (b) => decodeText(b) ?? '');
   if (got.fail) throw fileTooLarge();
   return got.value;
 }
@@ -471,6 +473,10 @@ async function dispatch(request, env, url) {
         throw new ApiError(404, 'not_found', 'The roll section does not exist.');
       }
       body = await readBody(request);
+    }
+    /* The table id is checked before the query schema (CONTRACTS.md, section 6). */
+    if (hit.op === 'getTable' && tableOf(hit.param) === null) {
+      throw new ApiError(404, 'not_found', 'The table does not exist.');
     }
     result = await runOperation(service, hit.op, {
       param: hit.param,

@@ -3903,10 +3903,9 @@ assembly (`collect`, `guard`, `old-host`); the job's three steps call it.
   and a shared list sized just under 65536 B. A reading above 5 ms reopens the
   budgets of `docs/specs/CONTRACTS.md` section 6. The record files are one
   record per line, so a record read parses one record; the
-  next fallback is an isolate cache of each chunk's split lines, then
-  per-total `apidata/roll/std/<total>.json` files. Write each reading here.
-- B3 cases to read after the landing (the same method, the B2a baseline of a record
-  read first in the same session): ten `GET /api/v1/records?q=<two Russian words>`, each a
+  next fallback is an isolate cache of each chunk's split lines. Write each reading here.
+- Search and file-check cases to read after their deploy (the same method, a record
+  read's baseline first in the same session): ten `GET /api/v1/records?q=<two Russian words>`, each a
   different query; ten `GET /api/v1/records?kind=weapon&tier=2&limit=50`; ten `POST
   /api/v1/file-checks` of a 32768 B homebrew file with the longest texts, and of a 32768 B
   lists file; ten MCP `tools/call` of `check_file` with the homebrew file and of
