@@ -566,8 +566,8 @@ mirror there: the site's files without `assets/`, `data.js`,
 
 ### Static pages
 
-Pages outside the app - the install guide and the policy pages `privacy`
-and `terms` - are plain static files, so each has a plain URL that works without
+Pages outside the app - the install guide, the policy pages `privacy`
+and `terms`, the user page `ai` and the developer page `developers` - are plain static files, so each has a plain URL that works without
 JavaScript and without a hash route (the route grammar is frozen,
 `CONTRACTS.md` section 1).
 

@@ -457,6 +457,8 @@
     {/if}
     <a href={app.pagesDir + 'privacy.html'}>{app.t.privacyLink}</a>
     <a href={app.pagesDir + 'terms.html'}>{app.t.termsLink}</a>
+    <a href={app.pagesDir + 'ai.html'}>{app.t.aiLink}</a>
+    <a href={app.pagesDir + 'developers.html'}>{app.t.apiLink}</a>
   </nav>
   <details class="foot-licence">
     <summary>{app.t.footSummary}</summary>
@@ -734,6 +736,9 @@
       display: inline-block;
       padding-block: max(0px, calc((max(24px, var(--thumb)) - 1lh) / 2));
       margin-block: min(0px, calc((1lh - max(24px, var(--thumb))) / 2));
+      /* The word «API» is narrower than the target: its box grows, not its gap. */
+      min-width: max(24px, var(--thumb));
+      text-align: center;
     }
   }
 

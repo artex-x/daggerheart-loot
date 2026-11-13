@@ -11,7 +11,7 @@
   import Button from './Button.svelte';
   import FoldButton from './FoldButton.svelte';
   import Field from './Field.svelte';
-  import ImportFile from './ImportFile.svelte';
+  import ImportFileRow from './ImportFileRow.svelte';
   import ImportLines from './ImportLines.svelte';
   import {
     parseBundle,
@@ -294,9 +294,11 @@
 {/snippet}
 
 <Field label={t.importHead}>
-  <ImportFile
+  <ImportFileRow
     {t}
     name="lists.json"
+    schema="/schema/import-v3.json"
+    pagesDir={app.pagesDir}
     onpick={() => {
       view = { kind: 'empty' };
       waiting = null;
@@ -388,12 +390,7 @@
     </Actions>
   {/if}
 
-  <p class="hint">
-    {t.importHintBefore}<a href="/schema/import-v3.json" target="_blank" rel="noopener"
-      >{t.importSchema}</a
-    >{t.importHintMid}<a href="/llms.txt" target="_blank" rel="noopener">{t.importLlms}</a
-    >{t.importHintAfter}
-  </p>
+  <p class="hint">{t.importFits}</p>
 </Field>
 
 <!-- eslint-enable @typescript-eslint/no-confusing-void-expression -->

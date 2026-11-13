@@ -21,6 +21,7 @@ RootWebArea "Vault of Ages - Генератор лута Daggerheart" [url=/roll
     link "Escape the Veiled Halls" [url=/roll/escape_the_veiled_halls]
 
 ## ru :: controls
+API
 Arazo's Artifacts
 Dread GM Toolbox
 EN
@@ -41,6 +42,7 @@ daggerheart.com
 Войти
 Ещё
 Закрыть
+ИИ-ассистенты
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
@@ -75,6 +77,8 @@ RootWebArea "Vault of Ages - Daggerheart Loot Generator" [url=/en/roll/vault_of_
     link "Escape the Veiled Halls" [url=/en/roll/escape_the_veiled_halls]
 
 ## en :: controls
+AI assistants
+API
 Add to list
 Alternate tables
 Arazo's Artifacts

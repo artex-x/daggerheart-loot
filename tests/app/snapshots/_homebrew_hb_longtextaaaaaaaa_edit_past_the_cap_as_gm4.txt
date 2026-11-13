@@ -77,6 +77,8 @@ RootWebArea "Свиток долгой ночи - Генератор лута Da
       link "Установить как приложение" [url=/pages/install.html]
       link "Конфиденциальность" [url=/pages/privacy.html]
       link "Условия использования" [url=/pages/terms.html]
+      link "ИИ-ассистенты" [url=/pages/ai.html]
+      link "API" [url=/pages/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
@@ -84,6 +86,7 @@ RootWebArea "Свиток долгой ночи - Генератор лута Da
 2
 3
 4
+API
 EN
 RU
 daggerheart.com
@@ -94,6 +97,7 @@ daggerheart.com
 Выбрать из предметов
 Выбрать файл
 Жирный
+ИИ-ассистенты
 К содержимому
 Карты правил
 Конфиденциальность
@@ -194,6 +198,8 @@ RootWebArea "Scroll of the Long Night - Daggerheart Loot Generator" [url=/en/hom
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
+      link "AI assistants" [url=/pages/en/ai.html]
+      link "API" [url=/pages/en/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
@@ -201,6 +207,8 @@ RootWebArea "Scroll of the Long Night - Daggerheart Loot Generator" [url=/en/hom
 2
 3
 4
+AI assistants
+API
 Account: gm4@example.test
 Add to list
 Bold

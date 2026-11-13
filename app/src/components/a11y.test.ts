@@ -661,6 +661,7 @@ const COVERED: Record<string, string> = {
     'requestsPanel.test.ts pending, short with and without «Принять доступное», and the fold open',
   'ImportFile.svelte':
     'importPanel.test.ts and homebrewImport.test.ts, the field open with and without a file',
+  'ImportFileRow.svelte': 'importFileRow.test.ts, the row with both links',
   'ImportLines.svelte':
     "importPanel.test.ts's grouped report and refusals, and homebrewImport.test.ts's refused file",
   'RollPanel.svelte': 'roll.test.ts, and the pressed states above',

@@ -49,9 +49,12 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search]
       link "Установить как приложение" [url=/pages/install.html]
       link "Конфиденциальность" [url=/pages/privacy.html]
       link "Условия использования" [url=/pages/terms.html]
+      link "ИИ-ассистенты" [url=/pages/ai.html]
+      link "API" [url=/pages/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
+API
 EN
 RU
 daggerheart.com
@@ -88,6 +91,7 @@ daggerheart.com
 Доспех из Гробового ДереваБроняТёмное сердце АндалурииРанг 1 · П... [namelen=172 namehash=805186ca]
 Дочь Зелени
 Зелье Судного Дня
+ИИ-ассистенты
 Инфузия Мудрости
 К содержимому
 Камень Доблести
@@ -411,10 +415,14 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search]
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
+      link "AI assistants" [url=/pages/en/ai.html]
+      link "API" [url=/pages/en/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
 A Thousand Cuts
+AI assistants
+API
 Add to list
 Advanced Brightsword
 Advanced BrightswordPrimary weaponHope & FearTier 3 · Magic · St... [namelen=103 namehash=229c0dae]

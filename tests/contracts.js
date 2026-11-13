@@ -380,6 +380,39 @@ const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
       openapi.info['x-mcp-endpoint'] === PREVIEW_ORIGIN + '/mcp',
       "openapi.json's x-mcp-endpoint is not " + PREVIEW_ORIGIN + '/mcp'
     );
+    /* The two documentation pages (plan B2b): every operation on the developer page, in
+       both languages, and the user page's MCP address is the shipped one and the only one. */
+    {
+      const { PAGES } = require('../tools/build-pages.js');
+      const pageIds = PAGES.map((p) => p.id);
+      ok(
+        pageIds.includes('ai') && pageIds.includes('developers'),
+        'tools/build-pages.js PAGES does not hold ai and developers'
+      );
+      const textOf = (file) =>
+        fs
+          .readFileSync(path.join(__dirname, '..', 'pages', 'src', file), 'utf8')
+          .replace(/<[^>]*>/g, '')
+          .replace(/&amp;/g, '&');
+      for (const file of ['developers.html', 'en/developers.html']) {
+        const text = textOf(file);
+        for (const op of listed) {
+          ok(text.includes(op), 'pages/src/' + file + ' does not list ' + op);
+        }
+      }
+      for (const file of ['ai.html', 'en/ai.html']) {
+        const text = textOf(file);
+        ok(
+          text.includes(openapi.info['x-mcp-endpoint']),
+          'pages/src/' + file + " does not hold openapi.json's x-mcp-endpoint"
+        );
+        const own = text.match(/https:\/\/daggerheart-loot\.pages\.dev\/mcp[^\s"<]*/g) || [];
+        ok(
+          own.length > 0 && own.every((u) => u === openapi.info['x-mcp-endpoint']),
+          'pages/src/' + file + ' names an /mcp address other than the endpoint: ' + own.join()
+        );
+      }
+    }
     ok(
       sec !== null && sec[0].includes('`' + PREVIEW_ORIGIN + '/mcp`'),
       'CONTRACTS.md section 6 does not name the MCP URL ' + PREVIEW_ORIGIN + '/mcp'

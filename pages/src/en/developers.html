@@ -1,0 +1,221 @@
+<h1>API for developers</h1>
+<p>
+  This page describes the public read API of the Daggerheart Loot Generator: how to call it,
+  what it returns and what it expects of a client. The full machine description is
+  <a
+    href="https://daggerheart-loot.pages.dev/api/v1/openapi.json"
+    target="_blank"
+    rel="noopener"
+    >openapi.json</a
+  >
+  (OpenAPI 3.1); the same description in a reader is
+  <a
+    href="https://redocly.github.io/redoc/?url=https://daggerheart-loot.pages.dev/api/v1/openapi.json"
+    target="_blank"
+    rel="noopener"
+    >the Redoc view</a
+  >.
+</p>
+<h2>Base URL, keys and CORS</h2>
+<ul>
+  <li>
+    Base URL: <code>https://daggerheart-loot.pages.dev/api/v1/</code>. Every answer is JSON.
+  </li>
+  <li>
+    No key and no sign-in. The API ignores an <code>Authorization</code> header, so an answer
+    never depends on the caller.
+  </li>
+  <li>
+    Every answer carries <code>Access-Control-Allow-Origin: *</code> and no credentials, so a
+    browser tool can call the API directly. An <code>OPTIONS</code> request answers 204.
+  </li>
+  <li>The API is read-only. Lists and homebrew items change only in the app.</li>
+</ul>
+<h2>Fair use and the quota</h2>
+<p>
+  Cache the lists (rolls, tables, the catalog) and send at most one request for each user
+  action. All the Functions requests of the site, the API and the link cards together, share one
+  daily quota of 100,000. When a burst uses it up, the API and the link cards answer an error
+  until 00:00 UTC; the app keeps working. To read the whole catalog without any request to the
+  quota, use the static mirror below.
+</p>
+<h2>The v1 freeze</h2>
+<p>
+  The paths, the parameter names, the field names and the <code>format</code> values of v1 do
+  not change. A new optional parameter, a new field or a new resource may appear in v1, so a
+  client ignores unknown fields. A break is <code>/api/v2/</code> beside v1. A client that meets
+  an error <code>code</code> it does not know acts on the HTTP status.
+</p>
+<h2>The record and its rights</h2>
+<p>
+  A record is <code>daggerheart-loot/record</code> version 1: <code>id</code>, <code>key</code>,
+  <code>origin</code>, <code>kind</code>, <code>name</code>, <code>text</code> (a Markdown
+  subset) and <code>plain</code> (plain text), <code>path</code>, <code>link</code>,
+  <code>source</code>, <code>table</code>, <code>roll</code>, <code>tier</code>,
+  <code>rarity</code>, <code>stats</code>, <code>craft</code>, <code>set</code>,
+  <code>refs</code>, <code>image</code> and <code>rights</code>. Every text a person reads is a
+  pair <code>{ "ru", "en" }</code>; an empty Russian side repeats the English text. Store
+  <code>link</code> as given: its <code>?v</code> is opaque.
+</p>
+<p>
+  <code>rights.license</code> is <code>dpcgl</code> where the English text is Daggerheart SRD
+  2.0 Public Game Content, and <code>owner</code> where its rights holders keep it; the Russian
+  text is a translation that <code>dpcgl</code> does not cover. <code>rights.notice</code> is
+  the English notice to show with the text. Homebrew text and list notes are written by users:
+  escape them before you show them.
+</p>
+<h2>Operations</h2>
+<p>Every operation of <code>openapi.json</code>, each with a request that you can run.</p>
+<h3><code>GET /api/v1/openapi.json</code></h3>
+<p>Reads the description of the API.</p>
+<pre><code>curl https://daggerheart-loot.pages.dev/api/v1/openapi.json</code></pre>
+<h3><code>GET /api/v1/rolls</code></h3>
+<p>
+  Lists the roll sections with their mode, parts and limits. It changes only with a data deploy.
+</p>
+<pre><code>curl https://daggerheart-loot.pages.dev/api/v1/rolls</code></pre>
+<h3><code>POST /api/v1/rolls/{section}</code></h3>
+<p>
+  Rolls a section, or resolves a number you type, and answers up to four records in the order
+  the app draws them. The body is JSON; its fields depend on the section's mode.
+</p>
+<pre><code>curl -X POST -H 'Content-Type: application/json' -d '{"dice":3}' \
+  https://daggerheart-loot.pages.dev/api/v1/rolls/std</code></pre>
+<h3><code>GET /api/v1/tables</code></h3>
+<p>Lists the catalog tables.</p>
+<pre><code>curl https://daggerheart-loot.pages.dev/api/v1/tables</code></pre>
+<h3><code>GET /api/v1/tables/{table}</code></h3>
+<p>
+  Reads the rows of one table. The three equipment tables are read by tier with
+  <code>part</code>. <code>filter</code> takes a filter segment of the tables page, such as
+  <code>f_burden-2</code>, and keeps the rows the page keeps.
+</p>
+<pre><code>curl 'https://daggerheart-loot.pages.dev/api/v1/tables/eq_weapon?part=2&amp;filter=f_burden-2'</code></pre>
+<h3><code>GET /api/v1/records</code></h3>
+<p>
+  Searches the catalog by name, in Russian or in English, and by <code>kind</code>,
+  <code>source</code>, <code>table</code>, <code>tier</code> and <code>rarity</code>. Send
+  <code>q</code> or a facet; <code>limit</code> is 1 to 50. It reads names only. A word that
+  matches too many records answers 400 <code>too_broad</code>: add a longer word or a facet.
+</p>
+<pre><code>curl 'https://daggerheart-loot.pages.dev/api/v1/records?q=sword&amp;kind=weapon'</code></pre>
+<h3><code>GET /api/v1/records/{id}</code></h3>
+<p>Reads one catalog record.</p>
+<pre><code>curl https://daggerheart-loot.pages.dev/api/v1/records/ci12</code></pre>
+<h3><code>GET /api/v1/homebrew-items/{uuid}</code></h3>
+<p>Reads one homebrew item whose author shared its link.</p>
+<pre><code>curl https://daggerheart-loot.pages.dev/api/v1/homebrew-items/00000000-0000-4000-8000-000000000000</code></pre>
+<h3><code>GET /api/v1/shared-lists/{token}</code></h3>
+<p>
+  Reads the list behind a share link, as the link's audience sees it. A list larger than 65536
+  bytes of database answer answers 422 with the link of the app.
+</p>
+<pre><code>curl https://daggerheart-loot.pages.dev/api/v1/shared-lists/SHARE_TOKEN_OF_43_CHARACTERS</code></pre>
+<h3><code>POST /api/v1/file-checks</code></h3>
+<p>
+  Checks the text of a lists file or a homebrew file as the app's import would, and answers its
+  errors and skips in both languages. The body is the file itself, JSON, at most 32768 bytes. It
+  changes nothing.
+</p>
+<pre><code>curl -X POST -H 'Content-Type: application/json' --data-binary @lists.json \
+  https://daggerheart-loot.pages.dev/api/v1/file-checks</code></pre>
+<h2>Errors</h2>
+<p>
+  An error answer is
+  <code
+    >{ "format": "daggerheart-loot/api-error", "version": 1, "error": { "code", "message" }
+    }</code
+  >. The message is English and never echoes a value.
+</p>
+<table>
+  <thead>
+    <tr>
+      <th>Status</th>
+      <th>Code</th>
+      <th>When</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>400</td>
+      <td><code>bad_request</code></td>
+      <td>A parameter or a body field fails its schema, or a parameter is given twice.</td>
+    </tr>
+    <tr>
+      <td>400</td>
+      <td><code>too_broad</code></td>
+      <td>A search matches too many records to rank.</td>
+    </tr>
+    <tr>
+      <td>404</td>
+      <td><code>not_found</code></td>
+      <td>An unknown path, section, table, record, homebrew id or share token.</td>
+    </tr>
+    <tr>
+      <td>405</td>
+      <td><code>method_not_allowed</code></td>
+      <td>Another method; the <code>Allow</code> header names the allowed ones.</td>
+    </tr>
+    <tr>
+      <td>413</td>
+      <td><code>too_large</code></td>
+      <td>A body past 4096 bytes, or a file to check past 32768 bytes.</td>
+    </tr>
+    <tr>
+      <td>415</td>
+      <td><code>unsupported_media_type</code></td>
+      <td>A POST body that is not <code>application/json</code>.</td>
+    </tr>
+    <tr>
+      <td>422</td>
+      <td><code>answer_too_large</code></td>
+      <td>A database answer past 65536 bytes.</td>
+    </tr>
+    <tr>
+      <td>503</td>
+      <td><code>unavailable</code></td>
+      <td>A read failed, timed out or was invalid.</td>
+    </tr>
+  </tbody>
+</table>
+<h2>Caching</h2>
+<p>
+  The lists and the projections carry an <code>ETag</code> and
+  <code>Cache-Control: public, max-age=300</code>, and answer 304 to a matching
+  <code>If-None-Match</code>. Rolls, homebrew items, shared lists and file checks are
+  <code>no-store</code>.
+</p>
+<h2>The static catalog mirror</h2>
+<p>
+  <code>https://daggerheart-loot.pages.dev/api/v1/catalog/index.json</code> lists every record
+  as <code>{ id, rev, chunk }</code> with the absolute URLs of the chunk files. The files are
+  static and cost no Functions request.
+</p>
+<ol>
+  <li>Read the index. If its <code>data_version</code> equals the one you hold, stop.</li>
+  <li>
+    Read the chunk of each record whose <code>rev</code> differs from yours. The
+    <code>rev</code> is opaque: compare it for equality only.
+  </li>
+  <li>Drop each id that the index no longer lists.</li>
+  <li>
+    If a chunk has another <code>data_version</code>, or a chunk answers 404, the site was
+    updated between your reads: read the index again.
+  </li>
+</ol>
+<p>Chunk names and counts are not frozen: follow the index.</p>
+<h2>Assistants and MCP</h2>
+<p>
+  <a href="https://daggerheart-loot.pages.dev/llms.txt" target="_blank" rel="noopener"
+    >llms.txt</a
+  >
+  is the entry for assistants; it also holds the formats of the import files. The operations
+  above are also tools of a read-only MCP server at
+  <code>https://daggerheart-loot.pages.dev/mcp</code>;
+  <a href="ai.html">the page for users</a> shows how to connect it.
+</p>
+<h2>Account reads</h2>
+<p>
+  Reads of a signed-in person's own lists and items are planned. Nothing of them is in v1 today.
+</p>
+<p>Last changed: 13 November 2026.</p>

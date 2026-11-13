@@ -47,14 +47,18 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
       link "Установить как приложение" [url=/pages/install.html]
       link "Конфиденциальность" [url=/pages/privacy.html]
       link "Условия использования" [url=/pages/terms.html]
+      link "ИИ-ассистенты" [url=/pages/ai.html]
+      link "API" [url=/pages/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
+API
 EN
 RU
 daggerheart.com
 Аккаунт: gm1@example.test
 Бросок
+ИИ-ассистенты
 Изменить
 Импорт из файла
 Источники 1
@@ -118,9 +122,13 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew/sets?as=gm
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
+      link "AI assistants" [url=/pages/en/ai.html]
+      link "API" [url=/pages/en/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
+AI assistants
+API
 Account: gm1@example.test
 Alder Set
 Delete

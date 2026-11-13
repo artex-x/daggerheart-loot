@@ -31,6 +31,7 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/gm-token-1/f_kind-
 ## ru :: controls
 1
 2
+API
 Core
 Dread GM Toolbox
 EN
@@ -53,6 +54,7 @@ daggerheart.com
 Заметка
 Заметка мастера
 Знание
+ИИ-ассистенты
 Инстинкт
 Искусность
 К содержимому
@@ -114,6 +116,8 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/gm-token-1/f_kind-weapon?v=<
 ## en :: controls
 1
 2
+AI assistants
+API
 Agility
 Alder Workshop
 All

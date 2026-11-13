@@ -14,6 +14,11 @@ The site installs as an app on a phone or a desktop; the guide is at
 in the footer beside the privacy policy (`pages/privacy.html`) and the terms
 of use (`pages/terms.html`).
 
+An AI assistant can use the site through an MCP endpoint, and a program can use
+its public read API: the guide for people is `pages/en/ai.html` (Russian:
+`pages/ai.html`), the API reference `pages/en/developers.html` (Russian:
+`pages/developers.html`), and both are linked in the footer.
+
 1593 records in all - 1212 items and consumables plus 381 pieces of equipment -
 each with a name, a description, a stat line where it has one, and an
 illustration. No tracking; signing in is optional, and without it nothing about

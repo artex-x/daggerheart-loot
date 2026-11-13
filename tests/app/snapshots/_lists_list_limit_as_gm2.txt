@@ -133,11 +133,14 @@ RootWebArea "Мои списки - Генератор лута Daggerheart" [url
       link "Установить как приложение" [url=/pages/install.html]
       link "Конфиденциальность" [url=/pages/privacy.html]
       link "Условия использования" [url=/pages/terms.html]
+      link "ИИ-ассистенты" [url=/pages/ai.html]
+      link "API" [url=/pages/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
   alert ""
     StaticText "Достигнут предел списков в аккаунте: 50. Нужно больше - напишите..." [namelen=95 namehash=4944cbd0]
 
 ## ru :: controls
+API
 EN
 RU
 daggerheart.com
@@ -168,6 +171,7 @@ daggerheart.com
 Ещё: Список 48
 Ещё: Список 49
 Ещё: Список 50
+ИИ-ассистенты
 Импорт из файла
 К содержимому
 Конфиденциальность
@@ -335,11 +339,15 @@ RootWebArea "My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm2]
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
+      link "AI assistants" [url=/pages/en/ai.html]
+      link "API" [url=/pages/en/developers.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
   alert ""
     StaticText "You have reached the limit of 50 lists. Need more? Write to dagg..." [namelen=87 namehash=0b401e88]
 
 ## en :: controls
+AI assistants
+API
 Account: gm2@example.test
 EN
 Find a list

@@ -121,6 +121,8 @@ const ru = {
   installLink: 'Установить как приложение',
   privacyLink: 'Конфиденциальность',
   termsLink: 'Условия использования',
+  aiLink: 'ИИ-ассистенты',
+  apiLink: 'API',
 
   /* The heading of each section, and the line under it. The heading and the
      supplements chip of a source both carry its product name, «Предметы
@@ -612,9 +614,6 @@ const ru = {
   hbNoSetsSub: 'Комплект - предметы с общим бонусом: бонус виден на карточке каждого из них.',
   hbNoRefsSub:
     'Карта правил - правило, на которое ссылается предмет: заклинание, черта, противник.',
-  hbImportFits:
-    'Подходит файл из «Скачать JSON», архив из «Скачать мои данные» или файл по описанию в llms.txt.',
-  hbImportFormat: 'Формат файла',
   cropLess: 'Меньше',
   cropMore: 'Больше',
   hbKind: 'Вид',
@@ -953,12 +952,12 @@ const ru = {
   importOpen: 'Импорт из файла',
   importHead: 'Импорт из файла JSON',
   importPick: 'Выбрать файл...',
-  importHintBefore: 'Файл JSON, сохранённый кнопкой «Скачать JSON» или собранный по ',
-  importSchema: 'схеме import-v3',
-  importHintMid: ' (',
-  importLlms: 'описание для ИИ-помощников',
-  importHintAfter:
-    '), или архив ZIP из «Скачать мои данные». Списки добавятся как новые; существующие не изменятся.',
+  importFormat: 'Формат файла',
+  importAi: 'ИИ-ассистенты',
+  hbImportFits:
+    'Подходит файл из «Скачать JSON», архив из «Скачать мои данные» или файл, собранный ИИ-ассистентом.',
+  importFits:
+    'Файл JSON из «Скачать JSON», архив ZIP из «Скачать мои данные» или файл, собранный ИИ-ассистентом. Списки добавятся как новые; существующие не изменятся.',
   importPreview: 'Списков: %l, позиций: %n.',
   importSkippedN: 'Пропущено позиций: %n.',
   importSkippedList: 'Пропущено: %n',
@@ -1243,6 +1242,8 @@ const en: Dict = {
   installLink: 'Install as an app',
   privacyLink: 'Privacy',
   termsLink: 'Terms of use',
+  aiLink: 'AI assistants',
+  apiLink: 'API',
 
   pageWondrous: 'Wondrous Environments',
   pageDread: 'Dread GM Toolbox',
@@ -1662,9 +1663,6 @@ const en: Dict = {
   hbNoSetsSub:
     'A set is items with a shared bonus: the bonus shows on the card of each of them.',
   hbNoRefsSub: 'A rule card is a rule an item points to: a spell, a feature, an adversary.',
-  hbImportFits:
-    'Takes a file from "Download JSON", the archive from "Download my data", or a file written to llms.txt.',
-  hbImportFormat: 'File format',
   cropLess: 'Zoom out',
   cropMore: 'Zoom in',
   hbKind: 'Kind',
@@ -1993,12 +1991,12 @@ const en: Dict = {
   importOpen: 'Import from file',
   importHead: 'Import from a JSON file',
   importPick: 'Choose a file...',
-  importHintBefore: 'A JSON file saved with "Download JSON" or written to the ',
-  importSchema: 'import-v3 schema',
-  importHintMid: ' (',
-  importLlms: 'a description for AI assistants',
-  importHintAfter:
-    '), or the ZIP archive from "Download my data". The lists are added as new ones; the lists you have do not change.',
+  importFormat: 'File format',
+  importAi: 'AI assistants',
+  hbImportFits:
+    'Takes a file from "Download JSON", the archive from "Download my data", or a file an AI assistant built.',
+  importFits:
+    'A JSON file from "Download JSON", the ZIP archive from "Download my data", or a file an AI assistant built. The lists are added as new ones; existing lists stay as they are.',
   importPreview: 'Lists: %l, items: %n.',
   importSkippedN: 'Items skipped: %n.',
   importSkippedList: 'Skipped: %n',

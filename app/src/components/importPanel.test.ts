@@ -6,7 +6,7 @@
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { cleanup, render, screen, waitFor } from '@testing-library/svelte';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
@@ -42,23 +42,36 @@ describe('the import field', () => {
     const { container } = await opened();
     expect(screen.getByText('Импорт из файла JSON')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Выбрать файл...' })).toBeInTheDocument();
-    const schema = screen.getByRole('link', { name: 'схеме import-v3' });
+    const schema = screen.getByRole('link', { name: 'Формат файла' });
     expect(schema).toHaveAttribute('href', '/schema/import-v3.json');
     expect(schema).toHaveAttribute('target', '_blank');
     expect(schema).toHaveAttribute('rel', 'noopener');
-    const llms = screen.getByRole('link', { name: 'описание для ИИ-помощников' });
-    expect(llms).toHaveAttribute('href', '/llms.txt');
-    expect(llms).toHaveAttribute('target', '_blank');
+    const ai = within(container.querySelector<HTMLElement>('.filerow')!).getByRole('link', {
+      name: 'ИИ-ассистенты'
+    });
+    expect(ai).toHaveAttribute('href', '/pages/ai.html');
+    expect(ai).toHaveAttribute('target', '_blank');
+    expect(ai).toHaveAttribute('rel', 'noopener');
+    expect(schema.closest('.filerow')).toBe(ai.closest('.filerow'));
+    expect(container.querySelector('a[href="/llms.txt"]')).toBeNull();
     expect(container.querySelector('.hint')?.textContent.replace(/\s+/g, ' ').trim()).toBe(
-      'Файл JSON, сохранённый кнопкой «Скачать JSON» или собранный по схеме import-v3 (описание для ИИ-помощников), или архив ZIP из «Скачать мои данные». Списки добавятся как новые; существующие не изменятся.'
+      'Файл JSON из «Скачать JSON», архив ZIP из «Скачать мои данные» или файл, собранный ИИ-ассистентом. Списки добавятся как новые; существующие не изменятся.'
     );
     const input = container.querySelector('input[type="file"]');
     expect(input).toHaveAttribute('accept', '.json,.zip,application/json,application/zip');
     await expectNoA11yViolations(container);
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
-    expect(await screen.findByRole('link', { name: 'import-v3 schema' })).toHaveAttribute(
+    expect(await screen.findByRole('link', { name: 'File format' })).toHaveAttribute(
       'href',
       '/schema/import-v3.json'
+    );
+    expect(
+      within(container.querySelector<HTMLElement>('.filerow')!).getByRole('link', {
+        name: 'AI assistants'
+      })
+    ).toHaveAttribute('href', '/pages/en/ai.html');
+    expect(container.querySelector('.hint')?.textContent).toBe(
+      'A JSON file from "Download JSON", the ZIP archive from "Download my data", or a file an AI assistant built. The lists are added as new ones; existing lists stay as they are.'
     );
   });
 
