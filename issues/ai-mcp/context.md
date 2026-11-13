@@ -632,6 +632,13 @@ readings".
 - The three p99 pass lines of B2a failed; the owner accepted the roll as
   it is and dropped fallback 2 (`plan.md` section 7, 2026-11-12).
 
+## Landing 3 readings and owner instructions (orchestrator, 2026-11-13)
+- B3 and B2b are live (squash `c4742c53`, `main` run green through deploy; openapi ETag `1.2.0-1f6036b8`; the live MCP tool list has search_catalog and check_file).
+- Step 14 readings (Cloudflare Pages Metrics, 1-minute ranges, curl-like script; unit read as microseconds). Cold = the case's warm-up request: record read 3.9 ms; search `q=` two Russian words 12.6; `kind=weapon&tier=2&limit=50` 7.9; file check homebrew 30,308 B 13.8; file check lists 32,700 B with about 2,000 unknown ids 10.2; MCP check_file 19.5; MCP search_catalog was warm (6.4). Burst p50 (p99): record 1.6 (5.1); search 2.4 (16.5); filter 1.9 (9.4); homebrew check 2.7 (9.5); lists check 5.9 (20.6); MCP check_file 2.4 (3.9); MCP search_catalog 2.4 (12.5). Every status as expected, 0 errors, 0 exceeded-CPU counts. Full table: `C:\Users\Ignat\.dhloot\notes\57\ai-mcp-live-checks.md`, "Landing 3 readings".
+- Against the step 14 pass line: every burst p50 is under 8 ms; the cold readings of search (12.6), homebrew check (13.8), lists check (10.2) and MCP check_file (19.5) are over 10 ms; the 3x prediction is about 14-15 ms. The plan routes a search failure to its fallback and a file-check failure to the owner (the cap stays 32768 B; the Edge Function option). The owner decides; the orchestrator's recommendation is to accept as for the roll (cold = the first request per isolate after the 10-minute cache; no 1102).
+- Owner instructions of 2026-11-13: proceed with the following batches as planned (the session was restarted, no handoff needed); the weekly 95 % usage stop is ignored; the B5 plan review and the UI-action audit run after B3 and B2b (now); the branch `claude/ai-mcp-b5plan` (temp worktree `ai-mcp-b5plan`, commits `3689701b` and `71c6827c`) is unmerged on purpose because its "Plan review: required before B5b" line blocks every implementer dispatch until the review approves; developer tokens are not built; fallback 2 (per-total roll files) is dropped.
+- Next: the owner's decision on the cold readings; the independent UI-action audit and a second look at the B5 plan; merge `claude/ai-mcp-b5plan` only on approve; B5a-B5d wait on the owner's OAuth steps; the branch and worktree inventory; the 57-debt closeout.
+
 ## Do not re-fetch unless
 - Human provides new info
 - context.md is missing a fact you need
