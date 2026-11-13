@@ -14,11 +14,26 @@
   failure throws an ApiError.
 */
 import { apiRecord } from '../../app/src/lib/apiRecord.ts';
+import { parseBundle } from '../../app/src/lib/bundle.ts';
 import { itemOf, sharedListOf, snapshotRecords } from '../../app/src/lib/cloudLists.ts';
 import { buildIndex } from '../../app/src/lib/data.ts';
 import { dict } from '../../app/src/lib/dict.ts';
-import { SECTION_SLUG, TABLE_SLUG } from '../../app/src/lib/hash.ts';
+import { EQ_TABLE, decodeFilter, groupsFor, passes } from '../../app/src/lib/filters.ts';
+import { SECTION_SLUG, TABLE_SLUG, recordUrl } from '../../app/src/lib/hash.ts';
 import { isHomebrewKey, withRecords } from '../../app/src/lib/homebrew.ts';
+import { parseHomebrew } from '../../app/src/lib/homebrewFile.ts';
+import {
+  homebrewErrorLines,
+  homebrewNoteLines,
+  homebrewRefusal
+} from '../../app/src/lib/homebrewReport.ts';
+import {
+  lineText,
+  listsErrorReport,
+  listsRefusal,
+  skipLine
+} from '../../app/src/lib/importReport.ts';
+import { rankHits } from '../../app/src/lib/search.ts';
 import { altPicks, bumpUp } from '../../app/src/lib/alt.ts';
 import {
   CORE_MAX,
@@ -82,6 +97,10 @@ export const modeOf = (section) => ROLL_MODES[section];
 const SHARED_CACHE = new Map();
 /** The index built from each cached roll file, kept as long as the cache keeps the file. */
 const ROLL_INDEX = new WeakMap();
+/** The set of catalog ids built from each cached records index. */
+const CATALOG_IDS = new WeakMap();
+/** The sets and rule cards of each cached file-check file, as objects the panel's `in` reads. */
+const CATALOG_KEYS = new WeakMap();
 
 /** Empties the isolate's cached files (tests). */
 export function clearCache() {
@@ -110,6 +129,140 @@ function recordAt(chunk, pos, id) {
   } catch {
     return null;
   }
+}
+
+/** Returns a table row without its build-time facet values `f`. */
+function withoutFacets(row) {
+  if (!has(row, 'f')) return row;
+  const copy = { ...row };
+  delete copy.f;
+  return copy;
+}
+
+/* ---------- search ---------- */
+
+/** The most lines a search keeps to rank, and the most anchor hits it scans (D10). */
+export const KEPT_MAX = 300;
+export const POSITIONS_MAX = 3000;
+/** The most bytes of a file the file check reads. */
+export const FILE_CHECK_MAX = 32768;
+/** The most lines a file check answers; `more` counts the rest (the parse's ERRORS_MAX). */
+const LINES_MAX = 50;
+
+const CODE_BASE = 0x30;
+const CODE_FIELDS = ['source', 'kind', 'table', 'tier', 'rarity'];
+const CODES = CODE_FIELDS.length;
+
+/** Returns the 413 of a file past the file check's cap; the REST and the MCP path share it. */
+export const fileTooLarge = () =>
+  new ApiError(
+    413,
+    'too_large',
+    `The file is past ${String(FILE_CHECK_MAX)} bytes. Check a longer file in the app's import, which reads up to 5 MB.`
+  );
+
+const tooBroad = () =>
+  new ApiError(
+    400,
+    'too_broad',
+    'The query q matches too many records to rank. Add a longer word or a filter (kind, source, table, tier or rarity).'
+  );
+
+/**
+ * Returns the strings of which a field must hold one to answer a term (the necessary
+ * condition of `hitsAny` in search.ts): the term's text, or the stem prefix when that is a
+ * substring of the text or another string.
+ */
+function needlesOf(t) {
+  if (t.stemPrefix === null) return [t.text];
+  return t.text.includes(t.stemPrefix) ? [t.stemPrefix] : [t.text, t.stemPrefix];
+}
+
+/**
+ * Prepares the text of a search shard once per cache period: the start offset of each record
+ * line and, filled when a line is read, its folded-names part. Returns null when the text
+ * has no head with a data_version.
+ */
+function prepareShard(body) {
+  const nl = body.indexOf('\n');
+  const dv = /"data_version":"([^"]*)"/.exec(nl < 0 ? '' : body.slice(0, nl))?.[1];
+  if (dv === undefined) return null;
+  const starts = [];
+  for (let at = nl + 1; at < body.length;) {
+    starts.push(at);
+    const end = body.indexOf('\n', at);
+    at = end < 0 ? body.length : end + 1;
+  }
+  return { data_version: dv, text: body, starts, names: new Array(starts.length) };
+}
+
+/** Returns the end offset of record line `li` of a prepared shard, before its newline. */
+const lineEnd = (shard, li) =>
+  li + 1 < shard.starts.length ? shard.starts[li + 1] - 1 : shard.text.length - 1;
+
+/** Returns the folded-names part of record line `li`: the Russian and English names, TAB-joined. */
+function namesPart(shard, li) {
+  let part = shard.names[li];
+  if (part === undefined) {
+    const from = shard.starts[li] + CODES;
+    const first = shard.text.indexOf('\t', from);
+    const second = shard.text.indexOf('\t', first + 1);
+    part = shard.text.slice(from, second);
+    shard.names[li] = part;
+  }
+  return part;
+}
+
+/** Returns whether the code characters of record line `li` are in the sets of `allow`. */
+function passesCodes(shard, li, allow) {
+  const at = shard.starts[li];
+  for (let k = 0; k < CODES; k++) {
+    const set = allow[k];
+    if (set !== null && !set.has(shard.text.charCodeAt(at + k) - CODE_BASE)) return false;
+  }
+  return true;
+}
+
+/**
+ * Returns the lines of the shards that answer every term, as `{ shard, li }` in line order:
+ * the most selective term (the one whose shortest needle is longest) is found with `indexOf`,
+ * and each other term only has to occur in the line's folded names. Throws `too_broad` past
+ * KEPT_MAX kept lines or POSITIONS_MAX hits of the anchor.
+ */
+function scanShards(shards, terms, allow) {
+  const needles = terms.map(needlesOf);
+  let anchor = 0;
+  const shortest = (list) => Math.min(...list.map((n) => n.length));
+  needles.forEach((list, i) => {
+    if (shortest(list) > shortest(needles[anchor])) anchor = i;
+  });
+  const others = needles.filter((_, i) => i !== anchor);
+  const kept = [];
+  let positions = 0;
+  for (const shard of shards) {
+    const found = new Set();
+    for (const needle of needles[anchor]) {
+      let li = 0;
+      for (
+        let at = shard.text.indexOf(needle);
+        at !== -1;
+        at = shard.text.indexOf(needle, at + 1)
+      ) {
+        if (++positions > POSITIONS_MAX) throw tooBroad();
+        if (at < shard.starts[0]) continue;
+        while (li + 1 < shard.starts.length && shard.starts[li + 1] <= at) li++;
+        if (at < shard.starts[li] + CODES || found.has(li)) continue;
+        const part = namesPart(shard, li);
+        if (at >= shard.starts[li] + CODES + part.length) continue;
+        if (!passesCodes(shard, li, allow)) continue;
+        if (!others.every((list) => list.some((n) => part.includes(n)))) continue;
+        found.add(li);
+        if (kept.length + found.size > KEPT_MAX) throw tooBroad();
+      }
+    }
+    for (const li of [...found].sort((a, b) => a - b)) kept.push({ shard, li });
+  }
+  return kept;
 }
 
 /**
@@ -208,7 +361,7 @@ export function createService({
    * Returns one table's rows. `part` filters a table that has parts and is required on an
    * equipment table (the adapter has refused a missing one by then).
    */
-  async function getTable(id, part) {
+  async function getTable(id, part, filter) {
     const table = tableOf(id);
     if (table === null) throw notFound('The table');
     const [, file] = await consistent(async (force) => {
@@ -232,8 +385,16 @@ export function createService({
       );
       return { files: [list, data] };
     });
-    const rows =
+    let rows =
       part !== undefined && !file.part ? file.rows.filter((r) => r.part === part) : file.rows;
+    /* A group the table does not offer is ignored, as the tables page ignores it. */
+    const groups = filter === undefined ? [] : groupsFor(table);
+    if (groups.length) {
+      const state = decodeFilter(filter, groups);
+      rows = rows.filter((r) => passes(state, groups, (g) => r.f?.[g] ?? ''));
+    }
+    /* `f` is the build's facet values for the filter; it never reaches an answer. */
+    rows = rows.map(withoutFacets);
     const body = {
       format: file.format,
       version: file.version,
@@ -258,6 +419,313 @@ export function createService({
       return { files: [idx, { data_version: chunk.dv }], ok: record !== null };
     });
     return { body: record, etag: head.data_version };
+  }
+
+  /* ---------- search ---------- */
+
+  /** Returns the prepared shard `n`, kept for CACHE_MS; `force` reads it again. */
+  async function cachedShard(n, force) {
+    const path = `apidata/search/${String(n)}.txt`;
+    const hit = cache.get(path);
+    if (!force && hit && now() - hit.at < CACHE_MS) return hit.file;
+    let body;
+    try {
+      body = await text(path);
+    } catch {
+      throw unavailable('A data file');
+    }
+    const file = typeof body === 'string' ? prepareShard(body) : null;
+    if (file === null) throw unavailable('A data file');
+    cache.set(path, { file, at: now() });
+    return file;
+  }
+
+  /**
+   * Searches the catalog by name and facets. `input` is the checked REST input: `terms` (the
+   * parsed `q`, possibly none) and the facets `kind`, `source`, `table`, `tier` and `rarity`,
+   * with `limit` rows kept.
+   */
+  async function searchRecords(input) {
+    const { terms, limit } = input;
+    const [head, ...shards] = await consistent(async (force) => {
+      const idx = await cached('apidata/search/index.json', force);
+      if (!Number.isInteger(idx.shards) || idx.shards < 1 || !isObject(idx.codes)) {
+        throw unavailable('A data file');
+      }
+      const list = await Promise.all(
+        Array.from({ length: idx.shards }, (_, n) => cachedShard(n, force))
+      );
+      return { files: [idx, ...list] };
+    });
+    const { codes } = head;
+    if (input.source !== undefined && !codes.source.some((s) => s.id === input.source)) {
+      throw new ApiError(
+        400,
+        'bad_request',
+        'The field source is not a source id of the catalog.'
+      );
+    }
+    const allow = CODE_FIELDS.map(() => null);
+    /* A facet becomes the set of code numbers whose value matches; two facets that name one
+       field (kind and table) intersect. */
+    const narrow = (field, test) => {
+      const k = CODE_FIELDS.indexOf(field);
+      const set = new Set();
+      codes[field].forEach((v, i) => {
+        if (test(v) && (allow[k] === null || allow[k].has(i))) set.add(i);
+      });
+      allow[k] = set;
+    };
+    if (input.kind !== undefined) narrow('kind', (v) => v === input.kind);
+    if (input.source !== undefined) narrow('source', (v) => v.id === input.source);
+    if (input.tier !== undefined) narrow('tier', (v) => String(v) === input.tier);
+    if (input.rarity !== undefined) narrow('rarity', (v) => v === input.rarity);
+    if (input.table !== undefined) {
+      const table = tableOf(input.table);
+      const gear = EQ_TABLE[table];
+      if (gear) {
+        narrow('kind', (v) => v === gear);
+      } else if (table === 'alt_item' || table === 'alt_consumable') {
+        narrow('kind', (v) => v === (table === 'alt_item' ? 'item' : 'consumable'));
+        narrow('rarity', (v) => v !== null);
+      } else {
+        narrow('table', (v) => v === table);
+      }
+    }
+    let total = 0;
+    const picked = [];
+    if (allow.every((set) => set === null || set.size > 0)) {
+      if (terms.length) {
+        /* A term with a TAB or a line break cannot occur in a name; it would only match across
+           the fields of a line. */
+        const kept = terms.some((t) => /[\t\n]/.test(t.text))
+          ? []
+          : scanShards(shards, terms, allow);
+        const hay = ({ shard, li }) => {
+          const part = namesPart(shard, li);
+          const tab = part.indexOf('\t');
+          return { names: [part.slice(0, tab), part.slice(tab + 1)], texts: [] };
+        };
+        const ranked = rankHits(kept, terms, undefined, hay);
+        total = ranked.length;
+        picked.push(...ranked.slice(0, limit));
+      } else {
+        for (const shard of shards) {
+          for (let li = 0; li < shard.starts.length; li++) {
+            if (!passesCodes(shard, li, allow)) continue;
+            total++;
+            if (picked.length < limit) picked.push({ shard, li });
+          }
+        }
+      }
+    }
+    const rows = picked.map(({ shard, li }) => {
+      const at = shard.starts[li];
+      const [, , id, v, ru, en] = shard.text.slice(at, lineEnd(shard, li)).split('\t');
+      const value = (field, k) => codes[field][shard.text.charCodeAt(at + k) - CODE_BASE];
+      const version = v || undefined;
+      return {
+        id,
+        name: { ru, en },
+        kind: value('kind', 1),
+        source: value('source', 0),
+        table: value('table', 2),
+        tier: value('tier', 3),
+        rarity: value('rarity', 4),
+        link: {
+          ru: recordUrl(site, id, 'ru', version),
+          en: recordUrl(site, id, 'en', version)
+        }
+      };
+    });
+    return {
+      body: {
+        format: 'daggerheart-loot/api-search',
+        version: 1,
+        data_version: head.data_version,
+        total,
+        rows
+      },
+      etag: head.data_version
+    };
+  }
+
+  /* ---------- file checks ---------- */
+
+  /** Returns the catalog ids of a cached records index as a set, built once per cached file. */
+  function idsOf(idx) {
+    let ids = CATALOG_IDS.get(idx);
+    if (ids === undefined) {
+      ids = new Set(idx.chunks.flat());
+      CATALOG_IDS.set(idx, ids);
+    }
+    return ids;
+  }
+
+  /**
+   * Checks the text of an import file with the app's own parsers and report builders, over
+   * the catalog alone: no account, so a homebrew entry without a snapshot is `unheld` and a
+   * lists error line names its entry by item id only.
+   */
+  async function checkFile(body) {
+    const [idx, data] = await consistent(async (force) => ({
+      files: [
+        await cached('apidata/records/index.json', force),
+        await cached('apidata/file-check.json', force)
+      ]
+    }));
+    const ids = idsOf(idx);
+    let keys = CATALOG_KEYS.get(data);
+    if (keys === undefined) {
+      keys = {
+        sets: Object.fromEntries(data.sets.map((k) => [k, true])),
+        refs: Object.fromEntries(data.refs.map((k) => [k, true]))
+      };
+      CATALOG_KEYS.set(data, keys);
+    }
+    const { sets, refs } = keys;
+    const ctx = {
+      catalogHas: (id) => ids.has(id),
+      catalogSet: (key) => key in sets,
+      catalogRef: (key) => key in refs,
+      ownItem: () => false,
+      ownCard: () => null,
+      lineMembers: (line) => (has(data.lines, line) ? data.lines[line] : [])
+    };
+    const langs = [dict('ru'), dict('en')];
+    const none = () => undefined;
+    const NO_FILE = { format: null, version: null };
+    const answer = (file, ok, reason, message, lines, more, counts) => ({
+      body: {
+        format: 'daggerheart-loot/api-file-check',
+        version: 1,
+        file,
+        ok,
+        reason,
+        message,
+        lines,
+        more,
+        counts
+      }
+    });
+    /* The file's own `version` when it is an integer; the parsers do not return it. */
+    const versionOf = () => {
+      try {
+        const v = JSON.parse(body)?.version;
+        return Number.isInteger(v) ? v : null;
+      } catch {
+        return null;
+      }
+    };
+    /* A refusal's text in both languages; `%s` takes the version as JSON. */
+    const refusal = (file, reason, { key, version }) =>
+      answer(
+        file,
+        false,
+        reason,
+        {
+          ru: langs[0][key].replace('%s', () => version ?? ''),
+          en: langs[1][key].replace('%s', () => version ?? '')
+        },
+        [],
+        0,
+        null
+      );
+    /* The lines of two reports of one file, one per language, as `{ list, text }`. */
+    const merged = (ru, en, list) =>
+      ru.map((l, i) => ({ list: list(i), text: { ru: lineText(l), en: lineText(en[i]) } }));
+
+    const lists = parseBundle(body, (id) => ids.has(id));
+    if (lists.ok || lists.reason !== 'notBundle') {
+      if (!lists.ok && lists.reason === 'notJson') {
+        return refusal(NO_FILE, 'not_json', { key: 'importNotJson' });
+      }
+      const file = { format: 'daggerheart-loot/lists', version: versionOf() };
+      if (lists.ok) {
+        /* Past LINES_MAX the lines only cost CPU: the count says how many there are. */
+        const shown = lists.skipped.slice(0, LINES_MAX);
+        const [ru, en] = langs.map((t) => shown.map((s) => skipLine(s, t, none)));
+        return answer(
+          file,
+          true,
+          null,
+          null,
+          merged(ru, en, (i) => shown[i].list),
+          lists.skipped.length - shown.length,
+          {
+            lists: lists.lists.length,
+            entries: lists.lists.reduce((n, l) => n + l.entries.length, 0),
+            skipped: lists.skipped.length
+          }
+        );
+      }
+      if (lists.reason === 'errors') {
+        const [ru, en] = langs.map((t) => listsErrorReport(lists.errors, lists.names, t, none));
+        const own = merged(ru.file, en.file, () => null);
+        const blocks = ru.lists.flatMap((block, b) =>
+          merged(block.lines, en.lists[b].lines, () => block.index)
+        );
+        return answer(file, false, 'errors', null, [...own, ...blocks], lists.more, null);
+      }
+      return refusal(
+        file,
+        lists.reason === 'version' ? 'version' : 'empty',
+        listsRefusal(lists)
+      );
+    }
+
+    const hb = parseHomebrew(body, ctx);
+    if (!hb.ok && hb.reason === 'notHomebrew') {
+      return answer(
+        NO_FILE,
+        false,
+        'unknown_format',
+        {
+          ru: `${langs[0].importNotBundle} ${langs[0].hbImportNotFile}`,
+          en: `${langs[1].importNotBundle} ${langs[1].hbImportNotFile}`
+        },
+        [],
+        0,
+        null
+      );
+    }
+    const file = { format: 'daggerheart-loot/homebrew', version: versionOf() };
+    if (hb.ok) {
+      const notes = hb.notes.slice(0, LINES_MAX);
+      const [ru, en] = langs.map((t, i) =>
+        homebrewNoteLines(notes, hb.file, t, i === 0 ? 'ru' : 'en', new Map())
+      );
+      return answer(
+        file,
+        true,
+        null,
+        null,
+        merged(ru, en, () => null),
+        hb.notes.length - notes.length,
+        {
+          books: hb.file.books.length,
+          sections: hb.file.books.reduce((n, b) => n + (b.sections?.length ?? 0), 0),
+          cards: hb.file.cards.length,
+          items: hb.file.items.length
+        }
+      );
+    }
+    if (hb.reason === 'errors') {
+      const doc = JSON.parse(body);
+      const [ru, en] = langs.map((t, i) =>
+        homebrewErrorLines(hb.errors, doc, hb.names, t, i === 0 ? 'ru' : 'en')
+      );
+      return answer(
+        file,
+        false,
+        'errors',
+        null,
+        merged(ru, en, () => null),
+        hb.more,
+        null
+      );
+    }
+    return refusal(file, hb.reason === 'version' ? 'version' : 'empty', homebrewRefusal(hb));
   }
 
   /* ---------- rolls ---------- */
@@ -484,7 +952,9 @@ export function createService({
     roll,
     listTables,
     getTable,
+    searchRecords,
     getRecord,
+    checkFile,
     getHomebrewItem,
     getSharedList
   };

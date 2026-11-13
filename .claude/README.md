@@ -3655,8 +3655,8 @@ runs it with `--check`. The worker bundles the pure modules of `app/src/lib/`
 `tools/check-site.mjs` fails when either lacks it. The worker is the CPU budget
 of `docs/specs/CONTRACTS.md` section 6: a file is read through `env.ASSETS`
 with a 2 s timeout and the read cap of its budget (131072 bytes; 196,608 for
-`apidata/cards.json` and `names.json`), a Supabase answer with a 65536-byte
-cap.
+`apidata/cards.json` and `names.json`; 262,144 for a search shard, `apidata/search/<n>.txt`),
+a Supabase answer with a 65536-byte cap.
 The worker runs in Pages Functions advanced mode: `preview/public/_worker.js` re-exports
 `preview/worker.mjs`, which draws the cards with `tools/share-card.mjs` and
 reads record text as plain text through `app/src/lib/markup.ts` (no imports;
@@ -3827,12 +3827,13 @@ assembly (`collect`, `guard`, `old-host`); the job's three steps call it.
   times the records the site is about 19,700 files against Cloudflare's
   20,000 per deployment. The guard prints the count and does not fail on it.
 - The read API adds files (task `ai-mcp`, measured 2026-11-12): `apidata/`
-  and `api/v1/catalog/` hold 105 files today (54 catalog chunks of at most 65536 B,
-  4.02 MiB in all; `apidata/records/index.json` is 11,561 B and
-  `api/v1/catalog/index.json` 70,117 B), and 209 at three times the records
-  (158 chunks; 40,849 B and 218,810 B). The site is then about 19,900 files
-  against 20,000, so about 96 files are left; `tools/api-data.test.mjs` prints
-  both counts. The guard refuses any published file under `api/` outside
+  and `api/v1/catalog/` hold 108 files today (54 catalog chunks of at most 65536 B,
+  4.02 MiB in all, one search shard of 204,395 B, the search index and
+  `apidata/file-check.json`; `apidata/records/index.json` is 11,561 B and
+  `api/v1/catalog/index.json` 70,117 B), and 214 at three times the records
+  (158 chunks and 3 search shards of at most 262,144 B; 40,849 B and 218,810 B). The site
+  is then about 19,900 files against 20,000, so about 91 files are left;
+  `tools/api-data.test.mjs` prints both counts and the shard sizes. The guard refuses any published file under `api/` outside
   `api/v1/catalog/` and a published `.well-known/oauth-protected-resource`.
   `apidata/cards.json` is 43,900 B (131,600 B at three times; its budget is
   196,608 B). The worker reads each file with the cap of its own budget
@@ -3904,6 +3905,18 @@ assembly (`collect`, `guard`, `old-host`); the job's three steps call it.
   record per line, so a record read parses one record; the
   next fallback is an isolate cache of each chunk's split lines, then
   per-total `apidata/roll/std/<total>.json` files. Write each reading here.
+- B3 cases to read after the landing (the same method, the B2a baseline of a record
+  read first in the same session): ten `GET /api/v1/records?q=<two Russian words>`, each a
+  different query; ten `GET /api/v1/records?kind=weapon&tier=2&limit=50`; ten `POST
+  /api/v1/file-checks` of a 32768 B homebrew file with the longest texts, and of a 32768 B
+  lists file; ten MCP `tools/call` of `check_file` with the homebrew file and of
+  `search_catalog` with the queries of the first case. Only the first case that reads a
+  family of files reads it cold (the search shards: the first; the file-check files: the
+  first file check); space a later case of the same family 11 minutes apart, or record its
+  warm-up as warm. A cold reading above 10 ms or a burst p50 above 8 ms reopens the
+  budgets; a search case that fails sends the search to its next fallback (display names as
+  a capitalization delta, then shard skipping by facet codes), a file-check case that fails
+  keeps the 32768 B cap and sends the Supabase Edge Function option to the owner.
 - B1 production readings (Pages Metrics, 2026-11-12, values read as
   microseconds): baseline 58 requests p50 3,103, p75 6,297, p99 11,294; a
   mixed read load p99 25,846; a burst of 10 `std` rolls p50 up to about 7,500,

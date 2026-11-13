@@ -14,7 +14,6 @@
   import ImportFile from './ImportFile.svelte';
   import ImportLines from './ImportLines.svelte';
   import {
-    ID_PATTERN,
     parseBundle,
     type BundleError,
     type ImportList,
@@ -23,8 +22,8 @@
   } from '../lib/bundle.js';
   import { limitText } from '../lib/cloudLists.js';
   import { fewNames, nameOf } from '../lib/i18n.js';
+  import { listName, listsErrorReport, listsRefusal, skipLine } from '../lib/importReport.js';
   import { plural } from '../lib/plural.js';
-  import type { ReportLine as Line } from '../lib/types.js';
   import type { FileRead, FileRefusal } from '../lib/zip.js';
   import type { AppState } from '../state/app.svelte.js';
 
@@ -94,18 +93,11 @@
     packed: 'importZipPacked'
   };
 
-  const cut = (s: string): string => {
-    const cps = Array.from(s);
-    return cps.length > 40 ? cps.slice(0, 40).join('') + '...' : s;
+  /* A catalog record named in the language on screen, when the data knows it. */
+  const recordName = (id: string): string | undefined => {
+    const it = app.index?.byId.get(id);
+    return it ? nameOf(it, app.lang) : undefined;
   };
-  const listName = (name: string | null | undefined): string =>
-    name ? cut(name) : t.importNoName;
-  /* One pass, so a value that holds `%s` is not filled in again. */
-  const fill = (template: string, by: Record<string, string | number | undefined>): string =>
-    template.replace(/%([flnsv])/g, (m, k: string) => {
-      const v = by[k];
-      return v === undefined ? m : String(v);
-    });
   const moreLines = (n: number): string => t.importErrMoreList.replace('%n', String(n));
 
   function refuse(key: Refusal, version?: string): void {
@@ -159,16 +151,9 @@
       };
     } else if (p.reason === 'errors') {
       view = { kind: 'errors', errors: p.errors, more: p.more, names: p.names };
-    } else if (p.reason === 'version') {
-      if (p.version === undefined) refuse('importNoVersion');
-      else refuse('importVersion', JSON.stringify(p.version));
     } else {
-      const keys = {
-        notJson: 'importNotJson',
-        notBundle: 'importNotBundle',
-        empty: 'importEmpty'
-      } as const;
-      refuse(keys[p.reason]);
+      const r = listsRefusal(p);
+      refuse(r.key, r.version);
     }
   }
 
@@ -199,90 +184,11 @@
     }
   });
 
-  /* The record of an entry, named when the data knows it. */
-  function where(entry: number, item: string | undefined): Pick<Line, 'pos' | 'name' | 'item'> {
-    const pos = t.importPos.replace('%n', String(entry + 1));
-    if (item === undefined) return { pos };
-    const it = app.index?.byId.get(item);
-    return it ? { pos, name: nameOf(it, app.lang), item } : { pos, item };
-  }
-
-  function errorLine(e: BundleError): Line {
-    const f =
-      e.field === 'name' && e.list !== null && e.entry === null ? t.importFieldName : e.field;
-    const by = { f, v: e.value, n: e.limit, s: e.limit };
-    let text: string;
-    switch (e.kind) {
-      case 'missing':
-        text = f === t.importFieldName ? t.importErrName : fill(t.importErrMissing, by);
-        break;
-      case 'type':
-        text =
-          e.limit === ID_PATTERN.source
-            ? fill(t.importErrId, by)
-            : e.field === ''
-              ? fill(t.importErrNotObject, by)
-              : fill(t.importErrType, by);
-        break;
-      case 'long':
-        text = fill(t.importErrLong, by);
-        break;
-      case 'range':
-        text = fill(t.importErrRange, by);
-        break;
-      case 'enum':
-        text = fill(t.importErrEnum, by);
-        break;
-      case 'extra':
-        text = fill(t.importErrExtra, by);
-        break;
-      case 'many':
-        text = fill(e.field === 'lists' ? t.importErrManyLists : t.importErrManyEntries, by);
-        break;
-      case 'hbId':
-        text = fill(t.importErrHbId, by);
-        break;
-      case 'snapshot':
-        text = t.importErrSnapshot;
-        break;
-    }
-    return {
-      ...(e.entry === null ? {} : where(e.entry, e.item)),
-      text,
-      ...(e.path ? { path: e.path } : {})
-    };
-  }
-
-  /* A skip names the position and, where the data knows the record, its name; never the
-     raw id, which an author already has in the file (docs/specs/FEATURES.md, "Lists"). */
-  function skipLine(s: Skipped): Line {
-    const it = app.index?.byId.get(s.id);
-    return {
-      pos: t.importPos.replace('%n', String(s.entry + 1)),
-      ...(it ? { name: nameOf(it, app.lang) } : {}),
-      text:
-        s.why === 'unknown'
-          ? t.importSkipUnknown
-          : s.why === 'unheld'
-            ? t.importSkipUnheld
-            : t.importSkipRepeat.replace('%n', String((s.first ?? 0) + 1))
-    };
-  }
-
   /* The error report: the file's own errors, then one block per list, in file order. */
   const refused = $derived.by(() => {
     if (view.kind !== 'errors') return null;
     const { errors, names } = view;
-    const file = errors.filter((e) => e.list === null).map(errorLine);
-    const indexes = errors
-      .map((e) => e.list)
-      .filter((l, i, all): l is number => l !== null && all.indexOf(l) === i)
-      .sort((a, b) => a - b);
-    const lists = indexes.map((i) => ({
-      head: `${String(i + 1)}. ${listName(names[i])}`,
-      lines: errors.filter((e) => e.list === i).map(errorLine)
-    }));
-    return { file, lists, more: view.more };
+    return { ...listsErrorReport(errors, names, t, recordName), more: view.more };
   });
 
   /* The preview's report: every list, when any list has a skip or a name the account
@@ -298,11 +204,11 @@
       else byList.set(s.list, [s]);
     }
     const lists = view.lists.map((l, i) => ({
-      head: `${String(i + 1)}. ${listName(l.name)}`,
+      head: `${String(i + 1)}. ${listName(t, l.name)}`,
       size: l.entries.length
         ? plural(l.entries.length, t.importWillN, app.lang)
         : t.importListEmpty,
-      skips: (byList.get(i) ?? []).map(skipLine),
+      skips: (byList.get(i) ?? []).map((s) => skipLine(s, t, recordName)),
       taken: held.has(l.name.trim())
     }));
     return lists.some((l) => l.skips.length || l.taken) ? lists : null;

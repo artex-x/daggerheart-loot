@@ -17,6 +17,7 @@ deleted.
 - 2026-11-12 - [ai-mcp lands on main at four named landings](decisions/2026-11-12-ai-mcp-lands-on-main-at-four-named-landings.md)
 - 2026-11-12 - [ai-mcp lands on main in two squashes](decisions/2026-11-12-ai-mcp-lands-on-main-in-two-squashes.md)
 - 2026-11-12 - [API record links carry the card version of the app's links](decisions/2026-11-12-api-record-links-carry-the-card-version-of-the-app-s-links.md)
+- 2026-11-12 - [API search scans build-time folded names, and file checks start at 32 KB](decisions/2026-11-12-api-search-scans-build-time-folded-names-and-file-checks-start-at-32-kb.md)
 - 2026-11-12 - [API v1 is public read, frozen, with a v2 beside it for a break](decisions/2026-11-12-api-v1-is-public-read-frozen-with-a.md)
 - 2026-11-12 - [README screenshots use a showcase seed user and are captured by hand](decisions/2026-11-12-readme-screens-use-a-showcase-seed-user.md)
 - 2026-11-12 - [The app keeps its logic; the API runs the same pure modules](decisions/2026-11-12-the-app-keeps-its-logic-the-api-runs.md)

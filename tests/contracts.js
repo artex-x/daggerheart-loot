@@ -302,6 +302,28 @@ const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
         ok(v.format === 'daggerheart-loot/api-error', name + ' is not an error answer');
       }
     }
+    /* The search and the file check pin their answers (CONTRACTS.md section 6). */
+    for (const [name, format] of [
+      ['records-q.json', 'daggerheart-loot/api-search'],
+      ['records-facets.json', 'daggerheart-loot/api-search'],
+      ['file-check-lists-ok.json', 'daggerheart-loot/api-file-check'],
+      ['file-check-lists-errors.json', 'daggerheart-loot/api-file-check'],
+      ['file-check-homebrew-errors.json', 'daggerheart-loot/api-file-check'],
+      ['file-check-unknown-format.json', 'daggerheart-loot/api-file-check'],
+      ['error-records-q-missing.json', 'daggerheart-loot/api-error'],
+      ['error-records-too-broad.json', 'daggerheart-loot/api-error'],
+      ['error-file-check-too-large.json', 'daggerheart-loot/api-error'],
+      ['table-eq_weapon-2-filter.json', 'daggerheart-loot/api-table']
+    ]) {
+      const file = path.join(apiDir, name);
+      ok(fs.existsSync(file), 'docs/fixtures/api/v1/' + name + ' is missing');
+      if (fs.existsSync(file)) {
+        ok(
+          JSON.parse(fs.readFileSync(file, 'utf8')).format === format,
+          'docs/fixtures/api/v1/' + name + ' is not ' + format
+        );
+      }
+    }
     const openapi = JSON.parse(
       fs.readFileSync(path.join(__dirname, '..', 'preview', 'api', 'openapi.json'), 'utf8')
     );
@@ -353,7 +375,7 @@ const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
       .flatMap((o) => Object.values(o))
       .filter((op) => op['x-mcp-tool'] && !op.security)
       .map((op) => op['x-mcp-tool']);
-    ok(tools.length === 7, 'openapi.json does not hold seven tools: ' + tools.join());
+    ok(tools.length === 9, 'openapi.json does not hold nine tools: ' + tools.join());
     ok(
       openapi.info['x-mcp-endpoint'] === PREVIEW_ORIGIN + '/mcp',
       "openapi.json's x-mcp-endpoint is not " + PREVIEW_ORIGIN + '/mcp'

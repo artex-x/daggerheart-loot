@@ -156,6 +156,12 @@ async function pin(name, body, headers = JSON_HEADERS, init = {}) {
   return { res, body: parsed };
 }
 
+const LISTS_FILE = JSON.stringify({
+  format: 'daggerheart-loot/lists',
+  version: 1,
+  lists: [{ name: 'Loot', entries: [{ id: 'ci1' }, { id: 'nope' }] }]
+});
+
 const toolsOfOpenApi = () =>
   Object.values(OPENAPI.paths)
     .flatMap((ops) => Object.values(ops))
@@ -372,9 +378,11 @@ describe('tools/call', () => {
         'roll',
         'list_tables',
         'get_table',
+        'search_catalog',
         'get_record',
         'get_homebrew_item',
-        'get_shared_list'
+        'get_shared_list',
+        'check_file'
       ]
     );
     for (const t of tools) {
@@ -387,6 +395,23 @@ describe('tools/call', () => {
       assert.equal(t.annotations.idempotentHint, t.name !== 'roll');
       assert.ok(t.description.includes('\n\n'));
     }
+    const search = tools.find((t) => t.name === 'search_catalog');
+    assert.deepEqual(search.inputSchema.required, []);
+    assert.deepEqual(Object.keys(search.inputSchema.properties), [
+      'q',
+      'kind',
+      'source',
+      'table',
+      'tier',
+      'rarity',
+      'limit'
+    ]);
+    assert.equal(search.inputSchema.properties.limit.type, 'integer');
+    const file = tools.find((t) => t.name === 'check_file');
+    assert.deepEqual(file.inputSchema.required, ['file']);
+    assert.deepEqual(Object.keys(file.inputSchema.properties), ['file']);
+    assert.equal(file.inputSchema.properties.file.type, 'string');
+    assert.match(file.description, /65536/);
     const roll = tools.find((t) => t.name === 'roll');
     assert.deepEqual(roll.inputSchema.required, ['section']);
     assert.ok(
@@ -442,6 +467,18 @@ describe('tools/call', () => {
       ['list_tables', {}, '/api/v1/tables'],
       ['get_table', { table: 'wondrous_environments' }, '/api/v1/tables/wondrous_environments'],
       ['get_table', { table: 'eq_weapon', part: '1' }, '/api/v1/tables/eq_weapon?part=1'],
+      [
+        'get_table',
+        { table: 'eq_weapon', part: '2', filter: 'f_burden-2' },
+        '/api/v1/tables/eq_weapon?part=2&filter=f_burden-2'
+      ],
+      ['search_catalog', { q: 'bedroll' }, '/api/v1/records?q=bedroll'],
+      [
+        'search_catalog',
+        { kind: 'weapon', tier: '1', limit: 3 },
+        '/api/v1/records?kind=weapon&tier=1&limit=3'
+      ],
+      ['check_file', { file: LISTS_FILE }, '/api/v1/file-checks', LISTS_FILE],
       ['get_record', { id: 'ci1' }, '/api/v1/records/ci1'],
       ['get_homebrew_item', { uuid: HID }, `/api/v1/homebrew-items/${HID}`],
       ['get_shared_list', { token: TOKEN }, `/api/v1/shared-lists/${TOKEN}`]
@@ -453,7 +490,7 @@ describe('tools/call', () => {
           : new Request(HOST + path, {
               method: 'POST',
               headers: JSON_HEADERS,
-              body: JSON.stringify(body)
+              body: typeof body === 'string' ? body : JSON.stringify(body)
             }),
         ENV
       );
@@ -487,6 +524,77 @@ describe('tools/call', () => {
     const [msg, headers] = calls('get_table', { table: 'core_item', part: 4 })[0];
     const part = (await (await mcp(msg, headers)).json()).result;
     assert.match(part.structuredContent.error.message, /part/);
+  });
+
+  it('searches the catalog and checks a file, and pins both answers', async () => {
+    const search = await pin(
+      'tools-call-search',
+      modernRpc(10, 'tools/call', {
+        name: 'search_catalog',
+        arguments: { q: 'bedroll', limit: 5 }
+      }),
+      modernHeaders('tools/call', 'search_catalog')
+    );
+    assert.equal(search.body.result.isError, undefined);
+    assert.equal(search.body.result.structuredContent.rows[0].id, 'ci1');
+    const checked = await pin(
+      'tools-call-check-file',
+      modernRpc(11, 'tools/call', { name: 'check_file', arguments: { file: LISTS_FILE } }),
+      modernHeaders('tools/call', 'check_file')
+    );
+    assert.equal(checked.body.result.structuredContent.ok, true);
+    assert.equal(checked.body.result.structuredContent.counts.skipped, 1);
+  });
+
+  it('takes limit as a JSON integer only, and a facet as a string', async () => {
+    for (const args of [
+      { q: 'ring', limit: '5' },
+      { q: 'ring', limit: 5.5 }
+    ]) {
+      const [msg, headers] = calls('search_catalog', args)[0];
+      const { result } = await (await mcp(msg, headers)).json();
+      assert.equal(result.isError, true, JSON.stringify(args));
+      assert.equal(result.structuredContent.error.code, 'bad_request');
+      assert.match(result.structuredContent.error.message, /limit/);
+    }
+    const [msg, headers] = calls('search_catalog', { kind: 4 })[0];
+    const { result } = await (await mcp(msg, headers)).json();
+    assert.match(result.structuredContent.error.message, /kind/);
+    const none = calls('search_catalog', {})[0];
+    const refused = (await (await mcp(none[0], none[1])).json()).result;
+    assert.equal(refused.isError, true);
+    assert.match(refused.structuredContent.error.message, /\bq\b/);
+  });
+
+  it('requires file as a string, and answers a file past 32768 bytes as a too_large result', async () => {
+    for (const args of [{}, { file: 5 }, { file: { format: 'x' } }, { file: null }]) {
+      const [msg, headers] = calls('check_file', args)[0];
+      const { result } = await (await mcp(msg, headers)).json();
+      assert.equal(result.isError, true, JSON.stringify(args));
+      assert.equal(result.structuredContent.error.code, 'bad_request');
+      assert.match(result.structuredContent.error.message, /file/);
+    }
+    const [msg, headers] = calls('check_file', { file: ' '.repeat(32769) })[0];
+    const { result } = await (await mcp(msg, headers)).json();
+    assert.equal(result.isError, true);
+    assert.equal(result.structuredContent.error.code, 'too_large');
+    const rest = await worker.fetch(
+      new Request(HOST + '/api/v1/file-checks', {
+        method: 'POST',
+        headers: JSON_HEADERS,
+        body: ' '.repeat(32769)
+      }),
+      ENV
+    );
+    assert.equal(JSON.stringify(result.structuredContent) + '\n', await rest.text());
+    /* The cap is on the UTF-8 bytes: 20000 two-byte characters pass 32768 bytes. */
+    const [wide, wideHeaders] = calls('check_file', { file: 'я'.repeat(20000) })[0];
+    const wideResult = (await (await mcp(wide, wideHeaders)).json()).result;
+    assert.equal(wideResult.structuredContent.error.code, 'too_large');
+    const [edge, edgeHeaders] = calls('check_file', { file: ' '.repeat(32768) })[0];
+    const edgeResult = (await (await mcp(edge, edgeHeaders)).json()).result;
+    assert.equal(edgeResult.isError, undefined);
+    assert.equal(edgeResult.structuredContent.reason, 'not_json');
   });
 
   it('answers an unknown tool and arguments that are not an object as -32602, status 200', async () => {

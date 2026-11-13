@@ -156,6 +156,9 @@ whole: unknown groups fail open, never empty. `room` on `vh` is a retired group
 (2026-11-07): `f_room-laboratory` opens the whole table, with no redirect
 (`docs/fixtures/urls/routes.json`).
 
+The read API's `filter` parameter on `GET /api/v1/tables/{table}` takes this segment and
+keeps the rows the table page keeps for it (`docs/specs/CONTRACTS.md` section 6, "Filter").
+
 Group keys, by table:
 
 | Table | Groups |

@@ -605,6 +605,16 @@ describe('previewChecks() against the preview host', () => {
       status: 200,
       cors: '*',
       body: JSON.stringify({ format: 'daggerheart-loot/api-roll', results: [{}, {}] })
+    },
+    'api/v1/records?q=sword': {
+      status: 200,
+      cors: '*',
+      body: JSON.stringify({ format: 'daggerheart-loot/api-search', total: 1, rows: [{}] })
+    },
+    'POST api/v1/file-checks': {
+      status: 200,
+      cors: '*',
+      body: JSON.stringify({ format: 'daggerheart-loot/api-file-check', ok: true })
     }
   };
   const TOOLS = [
@@ -612,9 +622,11 @@ describe('previewChecks() against the preview host', () => {
     'roll',
     'list_tables',
     'get_table',
+    'search_catalog',
     'get_record',
     'get_homebrew_item',
-    'get_shared_list'
+    'get_shared_list',
+    'check_file'
   ].map((name) => ({ name }));
   /* A host that answers as the preview host does; `over` replaces one path's answer. */
   const host = (over = {}) => {
@@ -853,6 +865,16 @@ describe('previewChecks() against the preview host', () => {
         body: JSON.stringify({ format: 'daggerheart-loot/api-roll', results: [1, 2, 3, 4, 5] })
       },
       /more than four results/
+    ],
+    [
+      'api/v1/records?q=sword',
+      { status: 200, cors: '*', body: '{"format":"daggerheart-loot/api-rolls"}' },
+      /api\/v1\/records\?q=sword returned 200, not a daggerheart-loot\/api-search answer/
+    ],
+    [
+      'POST api/v1/file-checks',
+      { status: 200, cors: '*', body: '{"ok":false}' },
+      /POST api\/v1\/file-checks of a one-list lists file returned 200, not ok/
     ]
   ]) {
     it(`fails on the API path ${path} answering ${answer.status}`, async () => {
@@ -866,13 +888,15 @@ describe('previewChecks() against the preview host', () => {
 
   it('is the exact set of preview paths', () => {
     const list = previewChecks();
-    assert.equal(list.length, 77);
+    assert.equal(list.length, 79);
     assert.deepEqual(
       [...new Set(list.map((c) => c.path))].sort(),
       [
         'api',
+        'api/v1/file-checks',
         'api/v1/records/ci1',
         'api/v1/records/zzzz',
+        'api/v1/records?q=sword',
         'api/v1/rolls',
         'api/v1/rolls/std',
         'catalog-index.csv',

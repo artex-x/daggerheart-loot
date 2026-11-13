@@ -46,13 +46,7 @@
   import TableRows from './TableRows.svelte';
   import type { TableEntry } from './TableRows.svelte';
   import { RARITIES, rarityLabel } from '../lib/alt.js';
-  import {
-    equipFacets,
-    equipOfKind,
-    otherTableRows,
-    plainFacets,
-    type AltKind
-  } from '../lib/data.js';
+  import { equipOfKind, facetsOf, otherTableRows, type AltKind } from '../lib/data.js';
   import { facetRows, narrowRows } from '../lib/facets.js';
   import {
     chosenCount,
@@ -272,11 +266,10 @@
   const facetState = $derived<FilterState>(
     table === 'homebrew' ? { ...filterState, src: [] } : filterState
   );
-  const valueOf = $derived(
-    eqKind
-      ? (it: Record_, g: string) => equipFacets(it)[g] ?? ''
-      : (it: Record_, g: string) => plainFacets(it)[g] ?? ''
-  );
+  const valueOf = $derived.by(() => {
+    const facets = facetsOf(table);
+    return (it: Record_, g: string) => facets(it)[g] ?? '';
+  });
   const facPassed = $derived.by(() => {
     if (!facetGroups.length) return shownRows;
     return shownRows.filter((it) => passes(facetState, facetGroups, (g) => valueOf(it, g)));

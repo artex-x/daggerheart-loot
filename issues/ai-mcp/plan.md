@@ -8,8 +8,8 @@
   outcome; the owner's print idea placed in B5b).
 - Batches: B0 and B1 done (landing 1, `aeb68c0e`); B2a done (landing 2,
   `89a55f1b`, live on production; its readings are taken, `context.md`
-  "Landing 2 readings"); B3 implement-ready (next; its plan review is
-  applied, `reviews/plan-B3.md`; its step 1 reads those readings); B2b
+  "Landing 2 readings"); B3 implemented and pushed on `claude/ai-mcp` (2026-11-12; step 1 held with K 3.01; its
+  batch review and step 14's readings are next, `handoff.md`); B2b
   implement-ready, after B3 (they land together at landing 3); B5a and B5b
   implement-ready outlines, blocked on owner steps (`handoff.md`,
   "Blockers"); B4 dropped. Order and landings: section 6, "Order of the
@@ -840,7 +840,7 @@ Claude connector with "No sign in"; a 403 means the client sends
 the origin, add the constant, a fixture for an allowed and a refused
 origin, record it in D4).
 
-### B3 - Search, table filters and file checks (implement-ready after its plan review)
+### B3 - Search, table filters and file checks (implemented, pushed; review and step 14 pending)
 
 Status: implement-ready (planner pass of 2026-11-12, after landing 2). The
 plan review before B3 is required (Status); `agent-guard.mjs` blocks the

@@ -2,41 +2,53 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (B0 and B1 live since landing 1 `aeb68c0e`; B2a live since landing 2 `89a55f1b`, merged back as `8019493d`; the landing-2 readings are taken (`context.md`, "Landing 2 readings"); the plan review before B3 (`reviews/plan-B3.md`, fix-then-continue) is applied, so B3 is implement-ready; B2b is implement-ready and waits for B3; the two land together at landing 3)
-- Last agent: planner (B3 plan-review pass, 2026-11-12)
-- NEEDS_HUMAN_CONFIRMATION: no (no product-law change; the owner dropped roll fallback 2 in chat, 2026-11-12, `plan.md` section 7; every other new choice is "default taken (owner AFK)", `plan.md` section 7, "Defaults taken (owner AFK), B3 pass")
-- Branch: claude/ai-mcp (this pass on the temporary branch claude/ai-mcp-b3fix, based on 6f2afec6; the orchestrator merges it back)
-- Base / starting commit: 6f2afec6 (the B3 planner commit)
-- Pushed: no (this planner commit is local; the orchestrator pushes)
+- Task status: in_progress (B0 and B1 live since landing 1 `aeb68c0e`; B2a live since landing 2 `89a55f1b`; B3 implemented and pushed on `claude/ai-mcp` (this pass, one commit); B2b is implement-ready and follows B3; the two land together at landing 3; then B3 step 14's readings)
+- Last agent: implementer (B3, 2026-11-12)
+- NEEDS_HUMAN_CONFIRMATION: no (no product-law change; the file-check line cap is a default taken (owner AFK), see Deviations)
+- Branch: claude/ai-mcp
+- Base / starting commit: 646b2c04 (the batch diff base); the unpushed planner and merge commits go out with this push
+- Pushed: yes, after `rtk npm run check:fast` passed (re-run 2026-11-13) (the orchestrator runs no CI credit)
 
 ## Completed
 - B0 - license statement and per-record rights audit: shipped in `aeb68c0e` (review `reviews/B0.md`, nits folded into B1).
 - B1 - API core and REST v1 reads: shipped in `aeb68c0e` after the fix pass `93eac0ae` (review `reviews/B1.md`, fix-then-continue, applied); live checks 1-11 passed on 2026-11-12.
 - B2a - record links with `?v`, one record per line, the roll index cache and the MCP adapter: `22755cc1`, review `reviews/B2a.md` (fix-then-continue), fix pass `5b58edf8`, squash `89a55f1b` (landing 2), merge-back `8019493d`. Local CPU (200 calls, median of 9): `std` roll warm 1.565 to 0.545 ms (35 %), cold 1.645 to 1.170 ms (71 %); record `ci12` warm 0.390 to 0.155 ms, cold 0.625 to 0.310 ms. Deviation: the cold criterion of 50 % was not met locally (71 %); the orchestrator accepted it (owner AFK), and the production readings decide with R1's cold reading. Sizes after B2a: 105 files (54 chunks, 4.02 MiB, `api/v1/catalog/index.json` 70,117 B), 209 at 3x, about 96 files left under 20,000.
-- Planner pass 2026-11-12 (B3, this commit; no production code): `plan.md` Status (the guard line "Plan review: required before B3"), sections 3.2 and 3.6 (collapsed), 3.3, 3.4, 3.5, 4 (D1-D9 as written files, D10 rewritten), 5.1 (`too_broad`), 5.3 (Charkeeper table collapsed), 6 (B2a collapsed; B3 implement-ready; B5b placed line 5), 7 (the B3 defaults), 9, 10, 11; `context.md` ("B3 planner measurements (2026-11-12)"; the open-question line).
-- Files changed: `issues/ai-mcp/plan.md`, `issues/ai-mcp/handoff.md`, `issues/ai-mcp/context.md` (only under `issues/`).
-- Previous sha (batch diff base): 8019493d
-- Deviations and rationale: none in this pass. The B3 brief's file-check line names follow default (a) of plan-B2a-5 (item ids, no names); the search answer format is `daggerheart-loot/api-search`, not the `api-records` of the earlier draft, because `apidata/records/index.json` already uses that id.
-- Review: plan review before B3 required (trigger: a public contract change); report `issues/ai-mcp/reviews/plan-B3.md`. B3's batch review: required (a public contract).
+- B3 - search, table filters and file checks (one commit, subject `feat(api): catalog search, table filters and file checks`): `GET /api/v1/records` (operation `searchRecords`, tool `search_catalog`), `filter` on `GET /api/v1/tables/{table}`, `POST /api/v1/file-checks` (operation `checkFile`, tool `check_file`), `openapi.json` 1.2.0, the projections `apidata/search/index.json`, `apidata/search/<n>.txt`, `apidata/file-check.json` and `f` on the table rows, `facetsOf` in `data.ts` (used by `TablesPage.svelte` and the build), the report builders `lib/importReport.ts` and `lib/homebrewReport.ts` (the components call them; markup unchanged), the specs (`CONTRACTS.md` section 6, `ROUTES.md`, `META.md`, `COVERAGE.md`), `llms.txt`, `.claude/README.md`, decision D10 (`docs/decisions/2026-11-12-api-search-scans-build-time-folded-names-and-file-checks-start-at-32-kb.md`, `docs/DECISIONS.md` rebuilt), the fixtures (10 new REST, 2 new MCP; the others moved in `data_version`, the tool list and `serverInfo.version` only).
+- Step 1 gate (landing 2 readings, `context.md`): (a) met (0 errors and 0 exceeded-CPU in 33 requests); (b) K = max(1.70, 3.01) = 3.01; (c) the predicted cold REST search at 3x = 4.902 + 3.01 x (1.8 - 0.310) = 9.39 ms, at most 10 ms: met. B3 went on.
+- Previous sha (batch diff base): 646b2c04
+- Files changed: see `git show --stat` of the commit.
 
 ## Verification
-- Commands run (exact), read-only measurement scripts in the session scratchpad (not committed), from the worktree root: `node --import ./tools/ts-hooks.mjs <scratchpad>\b3bench.mjs`, `node --import ./tools/ts-hooks.mjs <scratchpad>\b3bench2.mjs`, `node --import ./tools/ts-hooks.mjs <scratchpad>\b3f.mjs`; reads of `.claude/hooks/agent-guard.mjs` and `.claude/hooks/session-stop.mjs`; `git grep "^Verdict:" -- issues/ai-mcp/reviews/`.
-- Results: the numbers of `context.md`, "B3 planner measurements (2026-11-12)"; every required plan-review line but B3's is satisfied (plan-B1-3, plan-B5a and plan-B2a are fix-then-continue with an applied line); `plan.md` 150,877 B, under the 153,600 B warning line of `session-stop.mjs`.
-- Gates: none (a docs-only planner commit under `issues/`; no check, vitest or run-all on the orchestrator's instruction).
+- Local numbers of step 13 (`process.cpuUsage()`, medians of 9 runs of 100-200 calls, this host, scratch scripts in the session scratchpad, not committed; the host is noisy, a single run varies up to 2x). Search at today's size / at 3x: cold `q=sword` (a fresh service: decode, prepare, scan, rank) 0.63 / 1.88 ms; the worst accepted warm query of a 66-query sample (the top 15 one-, two- and three-letter word starts of the names and 21 real words) 0.47 ms (`ко`) / 0.78 ms (`arm`); the refusals of that sample under the rule of search step 3 (every anchor-needle hit in a shard counts toward the 3000, the head included, a hit inside the five code characters counts for no line): 17 of 66 / 36 of 66 (all fragments; the planner's 28 and 45 used another sample of fragments), a refusal costs at most 0.16 / 0.63 ms; every one of the 21 real words answers at both sizes. File check (a 32 KB file of the shape, with the builders and `process.cpuUsage()`), cold / warm: lists ok 1.57 / 0.94 ms (3x: 3.59 / 0.94); lists with 50 errors 2.18 / 1.09 (3x: 3.44 / 1.10); lists of 2000 unknown ids 2.65 / 2.03 (3x: 3.91 / 2.18); homebrew ok 1.41 / 0.63 (3x: 2.50 / 0.62); homebrew errors 1.41 / 0.78 (3x: 2.81 / 0.78). The homebrew file of the script is 34.6 KB (a little over the cap), so it is an upper bound.
+- Worker bundle (`npx esbuild preview/public/_worker.js --bundle --format=esm --minify`, then gzip): before 282,136 B / 65,552 B gzip, after 327,961 B / 80,280 B gzip (+14.7 KB; the Workers free-plan limit is 3 MB compressed).
+- Sizes: `apidata/` and `api/v1/catalog/` 108 files today (one search shard of 204,395 B), 214 at 3x (3 shards of 262,071, 262,062 and 95,796 B); about 91 files left under 20,000 at 3x. `eq_weapon` tier 3 table file with `f` stays within 131072 B at 3x (`tools/api-data.test.mjs`).
+- Commands run (exact, from the worktree root; results):
+  - `node tools/build.js` - ok (108 files, 54 chunks, 1 search shard).
+  - `node --import ./tools/ts-hooks.mjs --test --test-reporter=dot preview/worker.test.mjs preview/api/api.test.mjs preview/api/mcp.test.mjs tools/api-data.test.mjs` - all pass.
+  - `node --test --test-reporter=dot tools/check-site.test.mjs` - all pass.
+  - `VITEST_MAX_WORKERS=2 npx vitest run app/src/lib/data.test.ts app/src/lib/importReport.test.ts app/src/lib/homebrewReport.test.ts app/src/components/importLines.test.ts app/src/components/importPanel.test.ts app/src/components/homebrewImport.test.ts` - 221 pass, 0 fail.
+  - `npm run typecheck` - 0 errors, 0 warnings; `npx eslint` on the touched paths - no issues.
+  - `node tests/derived.js` - everything matches; `node tools/decisions.js` - 340 decisions; `node tests/run-all.js contracts,dataint` - passed.
+  - Re-run by the finishing implementer (2026-11-13), all pass: `node tests/derived.js`, `node tools/decisions.js` (340), `node tools/build.js`, the node test lists above, `VITEST_MAX_WORKERS=2 npx vitest run` on the six files (232 pass, 0 fail), `node tests/run-all.js contracts,dataint`.
+  - `VITEST_MAX_WORKERS=2 rtk npm run check:fast` - PASS in 680 s (output read): 100 files, 4634 tests, coverage 95.91 % statements, bundle 275.3 kB of 276 kB.
+- Gates: CI's green run of the tip is the full gate (the orchestrator).
+
+## Deviations
+- File-check lines are capped at the first 50 for a good file too (skip lines of a lists file, note lines of a homebrew file); `more` counts the rest, and `counts` stay whole. Plan step 8 and `CONTRACTS.md` had no cap on them (only errors were capped by the parse at 50). Reason, measured in step 13: a 32 KB lists file of 2000 unknown ids made 2108 skip lines, a 283 KB answer and 4.4 ms warm locally (about 5 times that in production, past 10 ms); with the cap the same file costs about the parse. Default taken (owner AFK); `CONTRACTS.md` section 6, `openapi.json` (`lines`, `more`) and a test state it. Revert by removing `LINES_MAX` in `preview/api/service.mjs`.
+- The file-check data sets and rule-card objects are built once per cached `apidata/file-check.json` (a `WeakMap`), not per request: a per-request build cost grew with the catalog.
+- Alt tables: `table=alt_item` selects the lines whose `kind` is `item` and `table=alt_consumable` those whose `kind` is `consumable` (both with a rarity), not both kinds for each as plan wording read literally; the test over `apidata/tables.json` proves the set equals the table's rows (120 and 120).
+- The step 12 parity tests live in `tools/api-data.test.mjs` (they need the real catalog and the tripled one), not in `api.test.mjs`, which stays on the pinned 103-record fixture catalog.
+- `parseSearch` (rest.mjs) parses `q` once and hands the terms to the service, so the 8-term bound and the "no terms reads as absent" rule decide in the adapter; the service takes `terms`.
+- A parameter given twice is 400 on every query parameter (`part`, `filter` too), not only on the search ones.
 
 ## Next batch (implement-ready)
-- Name: B3 - Search, table filters and file checks (`plan.md` section 6, B3). Its plan review `reviews/plan-B3.md` (fix-then-continue) is applied (`plan.md` Status); no second look.
-- B3's step 1 is a gate on landing 2's readings (`context.md`, "Landing 2 readings"): (a) every status as expected, no error and no exceeded-CPU count (met: 0 and 0 in 33 requests); (b) K is the larger of (cold `std` roll - cold record read) / (1.170 - 0.310) and (burst p50 `std` roll - burst p50 record read) / (0.545 - 0.155): 1.70 and 3.01, so K = 3.01; (c) the predicted cold REST search at 3x, cold record read + K x (1.8 - 0.310) ms, is at most 10 ms: 9.4 ms, met. If (a) or (c) fails, B3 stops and returns to the planner. Burst p99 is recorded, not gated.
-- Fallback (optional): B3 "Fallbacks" (search: display names as a capitalization delta, then shard skipping by facet codes); B2a outcome (roll: the chunk-line cache only; the owner dropped the per-total `std` files on 2026-11-12, `plan.md` section 7).
-- After B2a (orchestrator, done 2026-11-12): curl from the shell, one warm-up per case as its cold reading, then a burst of 10; the readings are in `context.md`, "Landing 2 readings".
-  - R1 (`reviews/B2a.md`): applied; each warm-up's own 1-minute range is the cold reading of its case (`std` 6.360, record 4.902, MCP 8.913 ms).
-  - R2 (`reviews/B2a.md`): live check 1 expects the OpenAPI `ETag` `1.1.0-...`; after B3 it starts `1.2.0-` (the orchestrator updates the notes file).
-  - Pass (as read): every status as expected, 0 errors and 0 exceeded-CPU; the three p99 lines failed (`std` roll 17.1 ms against 5, record read 8.1 ms against 2, MCP roll 7.4 ms against 6). The owner accepted the roll as it is, and the floor-plus-slope model of B3 step 1 replaces those lines. Writing the readings into `.claude/README.md` ("Quotas, recovery and failure") stays the orchestrator's.
-- Then: B3, then B2b; landing 3 carries both, then B3 step 14's readings (cases (f), (a)-(e), (g); the pass line of step 14).
+- Name: B2b - the two pages, the footer, the import links (`plan.md` section 6). It needs no mock and follows B3 (the developer page lists every operation once, now eleven with `searchRecords` and `checkFile`).
+- After landing 3 (the orchestrator, not a commit): B3 step 14's readings (cases (f), (a)-(e), (g); the pass line of step 14); the OpenAPI `ETag` of live check 1 starts `1.2.0-`. K of step 1 is 3.01.
+- Fallbacks if a reading fails: search - display names as a capitalization delta, then shard skipping by facet codes (`plan.md` B3 "Fallbacks"); file check - the cap stays 32768 B and the Edge Function option goes to the owner.
+- A usable fact for step 14: a cold file check reads `apidata/records/index.json` and `apidata/file-check.json` (one extra file family), a cold search reads the index and the shards; cold file check locally 1.4-2.2 ms today.
 
 ## Blockers
-- None for B3: its plan review is applied (`reviews/plan-B3.md`, fix-then-continue, `plan.md` Status) and the landing-2 readings are in `context.md`.
-- B2b: implement-ready, but it follows B3 (the developer page lists every operation once) and lands with it at landing 3; if B3's plan review answers `replan` or B3 step 1 stops, B2b lands alone (`plan.md` section 6, "Order of the remaining batches").
+- None for B2b: B3 is pushed; B2b lands with it at landing 3.
 - B5a and B5b cannot start until the owner has done these (only the owner may; the orchestrator does not change security settings):
   1. Switch on "OAuth Server" (BETA) in the Supabase test project `daggerheart-loot-test` (Authentication), with the settings B5a step 1 needs: the authorization path to the app's consent route and dynamic client registration (`plan.md` B5a step 1 lists what it measures).
   2. Approve the screen mock of the consent page and of "Connected apps" on `#/account`, which a planner refresh draws under `issues/ai-mcp/mocks/` when B5a is next (owner AFK: the recommended mock is taken and logged as a default). That refresh also decides B5b placed line 5 (print sets in the client scope).

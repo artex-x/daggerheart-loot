@@ -13,9 +13,18 @@
 import { artBaseOf } from '../../app/src/lib/art.ts';
 import { RARITIES } from '../../app/src/lib/alt.ts';
 import { ROLL_MODES } from '../../app/src/lib/rollTables.ts';
+import { parseQuery } from '../../app/src/lib/search.ts';
 import openapi from './openapi.json' with { type: 'json' };
 import { drop, readJson, readText, rpc } from './read.mjs';
-import { ApiError, clearCache, createService, rollSectionOf, tableOf } from './service.mjs';
+import {
+  ApiError,
+  FILE_CHECK_MAX,
+  clearCache,
+  createService,
+  fileTooLarge,
+  rollSectionOf,
+  tableOf
+} from './service.mjs';
 
 export { clearCache };
 
@@ -26,6 +35,14 @@ const NAMES_MAX = 196608;
 const BODY_MAX = 4096;
 const RUN_MAX = 2048;
 const CACHE_PUBLIC = 'public, max-age=300';
+const SEARCH_SHARD = /^apidata\/search\/\d+\.txt$/;
+const SEARCH_SHARD_MAX = 262144;
+const Q_MAX = 200;
+const TERMS_MAX = 8;
+const LIMIT_MAX = 50;
+const FILTER_MAX = 512;
+const KINDS = ['item', 'consumable', 'weapon', 'secondary', 'armor'];
+const TIERS = ['1', '2', '3', '4', 'A', 'C'];
 
 export const SECURITY = {
   'X-Content-Type-Options': 'nosniff',
@@ -85,12 +102,14 @@ function route(pathname) {
   const param = (s) => (s.length > RUN_MAX ? '' : s);
   if (rest.length === 1) {
     const ops = {
-      'openapi.json': 'openapi',
-      rolls: 'listRolls',
-      tables: 'listTables'
+      'openapi.json': ['openapi', READ],
+      rolls: ['listRolls', READ],
+      tables: ['listTables', READ],
+      records: ['searchRecords', READ],
+      'file-checks': ['checkFile', ROLL]
     };
-    const op = Object.hasOwn(ops, rest[0]) ? ops[rest[0]] : null;
-    return op ? { op, param: '', allow: READ } : null;
+    const hit = Object.hasOwn(ops, rest[0]) ? ops[rest[0]] : null;
+    return hit ? { op: hit[0], param: '', allow: hit[1] } : null;
   }
   if (rest.length === 2 && rest[1] !== '') {
     const ops = {
@@ -168,6 +187,79 @@ export function parseRollBody(mode, body) {
   return { value };
 }
 
+/**
+ * Returns the checked input of a catalog search from its query strings (the `query` of
+ * `runOperation`), or throws the 400 that names the field and never echoes its value.
+ */
+export function parseSearch(query) {
+  const text = (name) => {
+    const v = query[name];
+    if (v !== undefined && typeof v !== 'string') {
+      throw bad(`The field ${name} must be a string.`);
+    }
+    return v;
+  };
+  const oneOf = (name, list) => {
+    const v = text(name);
+    if (v !== undefined && !list.includes(v)) {
+      throw bad(`The field ${name} must be one of: ${list.join(', ')}.`);
+    }
+    return v;
+  };
+  const q = text('q');
+  let terms = [];
+  if (q !== undefined) {
+    if (q.length > Q_MAX) {
+      throw bad(`The field q is past ${String(Q_MAX)} characters. Send a shorter query.`);
+    }
+    terms = parseQuery(q);
+    if (terms.length > TERMS_MAX) {
+      throw bad(`The field q holds more than ${String(TERMS_MAX)} words. Send fewer.`);
+    }
+  }
+  const kind = oneOf('kind', KINDS);
+  const tier = oneOf('tier', TIERS);
+  const rarity = oneOf('rarity', RARITIES);
+  const source = text('source');
+  const table = text('table');
+  if (table !== undefined && tableOf(table) === null) {
+    throw bad('The field table must be a table id from /api/v1/tables.');
+  }
+  const given = text('limit');
+  let limit = 20;
+  if (given !== undefined) {
+    limit = /^[0-9]{1,3}$/.test(given) ? Number(given) : 0;
+    if (limit < 1 || limit > LIMIT_MAX) {
+      throw bad(`The field limit must be an integer from 1 to ${String(LIMIT_MAX)}.`);
+    }
+  }
+  if (!terms.length && [kind, source, table, tier, rarity].every((v) => v === undefined)) {
+    throw bad(
+      'The field q is required unless a facet is given. Send q or one of kind, source, table, tier and rarity.'
+    );
+  }
+  return { terms, kind, source, table, tier, rarity, limit };
+}
+
+/** Returns the checked `filter` segment of a table read, or undefined for none. */
+function parseFilter(query) {
+  const v = query.filter;
+  if (v === undefined) return undefined;
+  if (typeof v !== 'string' || v.length > FILTER_MAX || !v.startsWith('f_')) {
+    throw bad(
+      `The field filter must be a filter segment of at most ${String(FILTER_MAX)} characters that starts with f_.`
+    );
+  }
+  return v;
+}
+
+/** Returns whether a file's UTF-8 bytes pass the file check's cap. */
+function overFileCap(file) {
+  if (file.length > FILE_CHECK_MAX) return true;
+  if (file.length * 3 <= FILE_CHECK_MAX) return false;
+  return new TextEncoder().encode(file).length > FILE_CHECK_MAX;
+}
+
 async function readBody(request) {
   const type = (request.headers.get('Content-Type') ?? '').split(';')[0].trim().toLowerCase();
   if (type !== 'application/json') {
@@ -199,12 +291,50 @@ async function readBody(request) {
   return v;
 }
 
+/** Reads the file of a file check from the request body: JSON media type, at most 32768 bytes. */
+async function readFile(request) {
+  const type = (request.headers.get('Content-Type') ?? '').split(';')[0].trim().toLowerCase();
+  if (type !== 'application/json') {
+    drop(request.body);
+    throw new ApiError(
+      415,
+      'unsupported_media_type',
+      'The body must be application/json: send the file itself.'
+    );
+  }
+  const got = await readText(request, FILE_CHECK_MAX);
+  if (got.fail) throw fileTooLarge();
+  return got.value;
+}
+
+/** The query parameter names of each operation, from openapi.json. */
+const QUERY_OF = new Map(
+  Object.values(openapi.paths).flatMap((ops) =>
+    Object.values(ops).map((op) => [
+      op.operationId,
+      (op.parameters ?? []).filter((p) => p.in === 'query').map((p) => p.name)
+    ])
+  )
+);
+
+/** Returns the query parameters an operation reads, as strings; a parameter given twice is a 400. */
+function queryOf(url, op) {
+  const out = {};
+  for (const name of QUERY_OF.get(op) ?? []) {
+    const all = url.searchParams.getAll(name);
+    if (all.length > 1) throw bad(`The field ${name} is given twice. Send it once.`);
+    if (all.length === 1) out[name] = all[0];
+  }
+  return out;
+}
+
 /* ---------- the entry ---------- */
 
 /** Returns the read cap in bytes of a file the service reads: the cap of its own budget. */
 export function readCapOf(path) {
   if (path === 'names.json') return NAMES_MAX;
   if (path === 'apidata/cards.json') return CARDS_MAX;
+  if (SEARCH_SHARD.test(path)) return SEARCH_SHARD_MAX;
   return FILE_MAX;
 }
 
@@ -258,10 +388,11 @@ export function serviceOf(env) {
 
 /**
  * Runs one service operation from parsed input and returns its `{ body, etag? }`; the REST and
- * the MCP adapter share it, so both answer the same bytes. `param` is the path value, `part`
- * the table part (a string or null), `body` the parsed roll body.
+ * the MCP adapter share it, so both answer the same bytes. `param` is the path value,
+ * `query` the query parameters as strings (`part`, `filter`, the search fields), `body` the
+ * parsed roll body and `file` the text of a file to check.
  */
-export async function runOperation(service, op, { param, part = null, body = {} }) {
+export async function runOperation(service, op, { param, query = {}, body = {}, file }) {
   switch (op) {
     case 'listRolls':
       return service.listRolls();
@@ -276,10 +407,18 @@ export async function runOperation(service, op, { param, part = null, body = {} 
     case 'getTable':
       if (tableOf(param) === null)
         throw new ApiError(404, 'not_found', 'The table does not exist.');
-      if (part !== null && (part === '' || part.length > 64)) {
+      if (query.part !== undefined && (query.part === '' || query.part.length > 64)) {
         throw new ApiError(404, 'not_found', 'The part does not exist.');
       }
-      return service.getTable(param, part ?? undefined);
+      return service.getTable(param, query.part, parseFilter(query));
+    case 'searchRecords':
+      return service.searchRecords(parseSearch(query));
+    case 'checkFile':
+      if (typeof file !== 'string') {
+        throw bad("The field file is required. Send the file's text as a string.");
+      }
+      if (overFileCap(file)) throw fileTooLarge();
+      return service.checkFile(file);
     case 'getRecord':
       if (!RECORD_ID.test(param))
         throw new ApiError(404, 'not_found', 'The record does not exist.');
@@ -323,6 +462,8 @@ async function dispatch(request, env, url) {
     result = { body: openapi, etag: OPENAPI_ETAG };
   } else {
     let body = {};
+    let file;
+    if (hit.op === 'checkFile') file = await readFile(request);
     if (hit.op === 'roll') {
       /* The section is checked before the body is read: a 404 never waits for the body. */
       if (rollSectionOf(hit.param) === null) {
@@ -333,8 +474,9 @@ async function dispatch(request, env, url) {
     }
     result = await runOperation(service, hit.op, {
       param: hit.param,
-      part: url.searchParams.get('part'),
-      body
+      query: queryOf(url, hit.op),
+      body,
+      file
     });
   }
   if (result.etag === undefined) {

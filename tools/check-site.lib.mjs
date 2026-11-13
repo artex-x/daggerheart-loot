@@ -664,7 +664,8 @@ function mcpChecks() {
 }
 
 /** The read API's probes on the preview host (docs/specs/CONTRACTS.md section 6): a read, the
- *  CORS preflight, a record, the JSON 404 with its CORS header, bare `/api` and one roll. */
+ *  CORS preflight, a record, the JSON 404 with its CORS header, bare `/api`, one roll, one
+ *  search and one file check. */
 function apiChecks() {
   const errorCode = (body) => jsonOf(body)?.error?.code;
   const ROLL = 'api/v1/rolls/std';
@@ -676,6 +677,17 @@ function apiChecks() {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ total: 1 })
+  };
+  const SEARCH = 'api/v1/records?q=sword';
+  const CHECK = 'api/v1/file-checks';
+  const CHECKED = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      format: 'daggerheart-loot/lists',
+      version: 1,
+      lists: [{ name: 'Loot', entries: [{ id: 'ci1' }] }]
+    })
   };
   return [
     { path: 'api/v1/rolls', ...status200('api/v1/rolls'), init: FROM_OTHER_ORIGIN },
@@ -744,6 +756,20 @@ function apiChecks() {
       init: POST,
       test: (body) => (jsonOf(body)?.results?.length ?? 99) <= 4,
       message: `POST ${ROLL} answered more than four results`
+    },
+    {
+      path: SEARCH,
+      test: (body, meta) =>
+        meta.status === 200 && jsonOf(body)?.format === 'daggerheart-loot/api-search',
+      message: (meta) =>
+        `${SEARCH} returned ${meta.status}, not a daggerheart-loot/api-search answer`
+    },
+    {
+      path: CHECK,
+      init: CHECKED,
+      test: (body, meta) => meta.status === 200 && jsonOf(body)?.ok === true,
+      message: (meta) =>
+        `POST ${CHECK} of a one-list lists file returned ${meta.status}, not ok`
     }
   ];
 }

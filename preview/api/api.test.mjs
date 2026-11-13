@@ -823,9 +823,11 @@ describe('openapi.json and the parsers', () => {
       '/api/v1/rolls/{section}': 'POST',
       '/api/v1/tables': 'GET',
       '/api/v1/tables/{table}': 'GET',
+      '/api/v1/records': 'GET',
       '/api/v1/records/{id}': 'GET',
       '/api/v1/homebrew-items/{uuid}': 'GET',
-      '/api/v1/shared-lists/{token}': 'GET'
+      '/api/v1/shared-lists/{token}': 'GET',
+      '/api/v1/file-checks': 'POST'
     };
     assert.deepEqual(Object.keys(OPENAPI.paths).sort(), Object.keys(samples).sort());
     for (const [path, ops] of Object.entries(OPENAPI.paths)) {
@@ -915,5 +917,459 @@ describe('openapi.json and the parsers', () => {
     assert.ok(
       OPENAPI.components.schemas.CatalogIndex && OPENAPI.components.schemas.CatalogChunk
     );
+  });
+});
+
+/* ---------- search, filter and file checks ---------- */
+
+const DV = JSON.parse(FILES.get('apidata/version.json')).data_version;
+const SHARD_HEAD = (dv) =>
+  `{"format":"daggerheart-loot/api-search-shard","version":1,"data_version":"${dv}"}`;
+
+/** Returns the files with one stub search shard of the given record lines. */
+function withShard(lines, dv = DV) {
+  const files = new Map(FILES);
+  files.set('apidata/search/0.txt', SHARD_HEAD(dv) + '\n' + lines.join('\n') + '\n');
+  const index = JSON.parse(FILES.get('apidata/search/index.json'));
+  index.shards = 1;
+  files.set('apidata/search/index.json', JSON.stringify(index) + '\n');
+  return files;
+}
+const stubLine = (i, name) => `00000${name}\t${name}\tid${String(i)}\t\t${name}\t${name}`;
+
+const get = (query) => call('/api/v1/records?' + query);
+
+describe('the catalog search', () => {
+  it('finds a record by a Russian and an English word form, in rank order', async () => {
+    const res = await get('q=' + encodeURIComponent('зелья potions'));
+    assert.equal(res.status, 200);
+    assertApiHeaders(res);
+    assert.equal(res.headers.get('cache-control'), 'public, max-age=300');
+    assert.equal(res.headers.get('etag'), `"${DV}"`);
+    const body = await fixture('records-q', res);
+    assert.equal(body.format, 'daggerheart-loot/api-search');
+    assert.ok(body.total > 0 && body.rows.length === body.total);
+    for (const row of body.rows) {
+      assert.deepEqual(Object.keys(row), [
+        'id',
+        'name',
+        'kind',
+        'source',
+        'table',
+        'tier',
+        'rarity',
+        'link'
+      ]);
+    }
+    const again = await get('q=' + encodeURIComponent('зелья potions'));
+    const etag = again.headers.get('etag');
+    assert.equal(
+      (await get('q=' + encodeURIComponent('зелья potions') + '&limit=20')).status,
+      200
+    );
+    const cached = await call('/api/v1/records?q=' + encodeURIComponent('зелья potions'), {
+      headers: { 'If-None-Match': etag }
+    });
+    assert.equal(cached.status, 304);
+  });
+
+  it('gives each row the link of the record', async () => {
+    const body = await (await get('q=bedroll')).json();
+    assert.equal(body.rows[0].id, 'ci1');
+    const record = await (await call('/api/v1/records/ci1')).json();
+    assert.deepEqual(body.rows[0].link, record.link);
+    assert.deepEqual(body.rows[0].name, record.name);
+  });
+
+  it('answers a facet alone in catalog order, cut to limit, with the full total', async () => {
+    const res = await get('kind=weapon&tier=1&limit=1');
+    const body = await fixture('records-facets', res);
+    assert.equal(body.rows.length, 1);
+    assert.ok(body.total > 1);
+    const all = await (await get('kind=weapon&tier=1&limit=50')).json();
+    const order = JSON.parse(FILES.get('api/v1/catalog/index.json')).records.map((r) => r.id);
+    const ids = all.rows.map((r) => r.id);
+    assert.deepEqual(
+      ids,
+      order.filter((id) => ids.includes(id))
+    );
+    assert.ok(all.rows.every((r) => r.kind === 'weapon' && r.tier === 1));
+  });
+
+  it('narrows a table facet as the table lists its records', async () => {
+    const body = await (await get('table=eq_weapon&limit=50')).json();
+    const rows = [];
+    for (const part of ['1', '2', '3', '4', 'A']) {
+      rows.push(...(await (await call('/api/v1/tables/eq_weapon?part=' + part)).json()).rows);
+    }
+    assert.equal(body.total, rows.length);
+    assert.deepEqual(body.rows.map((r) => r.id).sort(), rows.map((r) => r.id).sort());
+    assert.ok((await (await get('table=alt_item&limit=50')).json()).total > 0);
+  });
+
+  it('answers 400 naming q when nothing is asked', async () => {
+    const res = await call('/api/v1/records');
+    assert.equal(res.status, 400);
+    const body = await fixture('error-records-q-missing', res);
+    assert.equal(body.error.code, 'bad_request');
+    assert.match(body.error.message, /\bq\b/);
+    for (const q of ['', '%20', '%22%22']) {
+      const r = await get('q=' + q);
+      assert.equal(r.status, 400, q);
+      assert.match((await r.json()).error.message, /\bq\b/, q);
+    }
+    assert.equal((await get('q=&kind=armor')).status, 200);
+  });
+
+  it('refuses each bad parameter with a 400 that names the field and never echoes it', async () => {
+    const cases = [
+      ['q=' + 'a'.repeat(201), 'q'],
+      ['q=' + encodeURIComponent(Array(9).fill('ring').join(' ')), 'q'],
+      ['q=ring&limit=0', 'limit'],
+      ['q=ring&limit=51', 'limit'],
+      ['q=ring&limit=x1y', 'limit'],
+      ['q=ring&limit=1.5', 'limit'],
+      ['kind=ZZZkind', 'kind'],
+      ['tier=ZZZtier', 'tier'],
+      ['rarity=ZZZrarity', 'rarity'],
+      ['source=ZZZsource', 'source'],
+      ['table=ZZZtable', 'table'],
+      ['q=ring&kind=', 'kind']
+    ];
+    for (const [query, field] of cases) {
+      const res = await get(query);
+      assert.equal(res.status, 400, query);
+      const body = await res.json();
+      assert.equal(body.error.code, 'bad_request', query);
+      assert.match(body.error.message, new RegExp(`\\b${field}\\b`), query);
+      assert.ok(!body.error.message.includes('ZZZ'), query);
+    }
+    assert.equal((await get('q=' + 'a'.repeat(200))).status !== 400, true);
+    assert.equal(
+      (await get('q=' + encodeURIComponent(Array(8).fill('ring').join(' ')))).status,
+      200
+    );
+    assert.equal((await get('q=ring&limit=50')).status, 200);
+  });
+
+  it('refuses a parameter given twice, on every operation that reads a query', async () => {
+    for (const [path, name] of [
+      ['/api/v1/records?q=ring&q=sword', 'q'],
+      ['/api/v1/records?kind=armor&kind=weapon', 'kind'],
+      ['/api/v1/tables/eq_weapon?part=1&part=2', 'part'],
+      ['/api/v1/tables/wondrous?filter=f_kind-item&filter=f_kind-consumable', 'filter']
+    ]) {
+      const res = await call(path);
+      assert.equal(res.status, 400, path);
+      const body = await res.json();
+      assert.match(body.error.message, new RegExp(`\\b${name}\\b`), path);
+    }
+  });
+
+  it('answers 400 too_broad past 300 kept lines and past 3000 anchor positions', async () => {
+    const kept = (n) => withShard(Array.from({ length: n }, (_, i) => stubLine(i, 'zzz')));
+    state.files = kept(300);
+    const ok = await get('q=zzz');
+    assert.equal(ok.status, 200);
+    assert.equal((await ok.json()).total, 300);
+    clearCache();
+    state.files = kept(301);
+    const res = await get('q=zzz');
+    assert.equal(res.status, 400);
+    assertApiHeaders(res);
+    const body = await fixture('error-records-too-broad', res);
+    assert.equal(body.error.code, 'too_broad');
+    assert.match(body.error.message, /\bq\b/);
+
+    const head = (SHARD_HEAD(DV).match(/a/g) ?? []).length;
+    const line = (n) => `00000${'a'.repeat(n)}\tb\tid1\t\tb\tb`;
+    clearCache();
+    state.files = withShard([line(3000 - head)]);
+    assert.equal((await get('q=a')).status, 200);
+    clearCache();
+    state.files = withShard([line(3001 - head)]);
+    const broad = await get('q=a');
+    assert.equal(broad.status, 400);
+    assert.equal((await broad.json()).error.code, 'too_broad');
+  });
+
+  it('counts a hit in the five code characters for nothing, and a line once', async () => {
+    state.files = withShard(['0000oabc	abc	id1		abc	abc']);
+    assert.equal((await (await get('q=o')).json()).total, 0);
+    clearCache();
+    state.files = withShard(['00000boo	boo	id2		boo	boo']);
+    const body = await (await get('q=o')).json();
+    assert.deepEqual(
+      body.rows.map((r) => r.id),
+      ['id2']
+    );
+  });
+
+  it('re-reads once when a shard head names another data version, then answers 503', async () => {
+    const other = editedFiles();
+    state.files = (path) =>
+      path === 'apidata/search/0.txt' ? other.get(path) : FILES.get(path);
+    const res = await get('q=ring');
+    assert.equal(res.status, 503);
+    assertApiHeaders(res);
+    assert.equal(state.fetches.filter((p) => p === 'apidata/search/0.txt').length, 2);
+    assert.equal(state.fetches.filter((p) => p === 'apidata/search/index.json').length, 2);
+  });
+
+  it('answers 503 when the index or a shard cannot be read', async () => {
+    state.files = (path) => (path === 'apidata/search/0.txt' ? undefined : FILES.get(path));
+    assert.equal((await get('q=ring')).status, 503);
+    clearCache();
+    state.files = (path) =>
+      path === 'apidata/search/index.json' ? undefined : FILES.get(path);
+    assert.equal((await get('q=ring')).status, 503);
+  });
+
+  it('answers 405 to another method and keeps the route out of the record path', async () => {
+    const res = await call('/api/v1/records', { method: 'POST' });
+    assert.equal(res.status, 405);
+    assert.equal(res.headers.get('allow'), 'GET, HEAD, OPTIONS');
+    assert.equal((await call('/api/v1/records/')).status, 404);
+  });
+
+  it('reads at most the index and the shards of one search', async () => {
+    await get('q=ring');
+    assert.deepEqual(
+      state.fetches.filter((p) => p.startsWith('apidata/')),
+      ['apidata/search/index.json', 'apidata/search/0.txt']
+    );
+  });
+});
+
+describe('the table filter', () => {
+  it('narrows a table as the tables page does for the same segment', async () => {
+    const res = await call('/api/v1/tables/eq_weapon?part=2&filter=f_burden-2');
+    const body = await fixture('table-eq_weapon-2-filter', res);
+    const ids = body.rows.map((r) => r.id);
+    assert.ok(ids.includes('q39') && !ids.includes('q38'));
+    const whole = await (await call('/api/v1/tables/eq_weapon?part=2')).json();
+    assert.ok(whole.rows.length > body.rows.length);
+  });
+
+  it('never answers the facet values f, with or without a filter', async () => {
+    for (const path of [
+      '/api/v1/tables/eq_weapon?part=1',
+      '/api/v1/tables/eq_weapon?part=1&filter=f_cls-phy',
+      '/api/v1/tables/wondrous',
+      '/api/v1/tables/vault_of_ages?filter=f_tier-1'
+    ]) {
+      const body = await (await call(path)).json();
+      assert.ok(body.rows.length > 0, path);
+      assert.ok(
+        body.rows.every((r) => !('f' in r)),
+        path
+      );
+    }
+  });
+
+  it('ignores a group the table does not offer, and a filter on a table with no groups', async () => {
+    const whole = await (await call('/api/v1/tables/wondrous')).json();
+    const same = await (await call('/api/v1/tables/wondrous?filter=f_tier-1')).json();
+    assert.deepEqual(same.rows, whole.rows);
+    const core = await (await call('/api/v1/tables/core_item')).json();
+    const filtered = await (await call('/api/v1/tables/core_item?filter=f_kind-item')).json();
+    assert.deepEqual(filtered.rows, core.rows);
+  });
+
+  it('refuses a filter without f_ or past 512 characters', async () => {
+    for (const filter of ['tier-1', 'x_tier-1', 'f_' + 'a'.repeat(511)]) {
+      const res = await call('/api/v1/tables/eq_weapon?part=1&filter=' + filter);
+      assert.equal(res.status, 400, filter.slice(0, 20));
+      assert.match((await res.json()).error.message, /\bfilter\b/);
+    }
+    assert.equal(
+      (await call('/api/v1/tables/eq_weapon?part=1&filter=f_' + 'a'.repeat(510))).status,
+      200
+    );
+  });
+});
+
+const LISTS = (lists, version = 1) =>
+  JSON.stringify({ format: 'daggerheart-loot/lists', version, lists });
+const HOMEBREW = (items, version = 2) =>
+  JSON.stringify({ format: 'daggerheart-loot/homebrew', version, books: [], cards: [], items });
+const check = (text, headers = {}) => post('/api/v1/file-checks', text, headers);
+
+describe('the file check', () => {
+  it('accepts a lists file and names its skips by position', async () => {
+    const res = await check(
+      LISTS([{ name: 'Loot', entries: [{ id: 'ci1' }, { id: 'nope' }, { id: 'ci1' }] }])
+    );
+    assert.equal(res.status, 200);
+    assertApiHeaders(res);
+    assert.equal(res.headers.get('cache-control'), 'no-store');
+    assert.equal(res.headers.get('etag'), null);
+    const body = await fixture('file-check-lists-ok', res);
+    assert.equal(body.ok, true);
+    assert.deepEqual(body.counts, { lists: 1, entries: 1, skipped: 2 });
+    assert.deepEqual(
+      body.lines.map((l) => l.list),
+      [0, 0]
+    );
+  });
+
+  it('gives the error lines of a lists file in both languages, naming an entry by item id', async () => {
+    const res = await check(
+      LISTS([{ name: '', entries: [{ id: 'ci1', quantity: 0 }, { id: 'bad id' }] }])
+    );
+    const body = await fixture('file-check-lists-errors', res);
+    assert.equal(body.reason, 'errors');
+    assert.equal(body.message, null);
+    assert.equal(body.counts, null);
+    assert.match(body.lines[1].text.en, /ci1/);
+    assert.ok(!body.lines[1].text.en.includes('Premium Bedroll'));
+    assert.match(body.lines[1].text.ru, /Позиция 1/);
+  });
+
+  it('gives the error lines of a homebrew file, and its notes when it is good', async () => {
+    const res = await check(HOMEBREW([{ key: 'x' }]));
+    const body = await fixture('file-check-homebrew-errors', res);
+    assert.equal(body.reason, 'errors');
+    assert.ok(body.lines.every((l) => l.list === null));
+    const good = await (
+      await check(
+        HOMEBREW([
+          { key: 'hb_aaaaaaaaaaaaaaaa', en: 'Lamp', ru: 'Лампа', kind: 'item', craft: ['zzz'] }
+        ])
+      )
+    ).json();
+    assert.equal(good.ok, true);
+    assert.deepEqual(good.counts, { books: 0, sections: 0, cards: 0, items: 1 });
+    assert.equal(good.lines.length, 1);
+    assert.equal(good.file.format, 'daggerheart-loot/homebrew');
+  });
+
+  it('knows a catalog record, set and rule card from the build, as the panel would', async () => {
+    const [set] = Object.keys(CATALOG.loot.sets);
+    const [ref] = Object.keys(CATALOG.loot.refs);
+    const item = (extra) => ({
+      key: 'hb_aaaaaaaaaaaaaaaa',
+      en: 'Lamp',
+      kind: 'item',
+      ...extra
+    });
+    const known = await (
+      await check(HOMEBREW([item({ craft: ['ci1'], set, refs: [ref] })]))
+    ).json();
+    assert.equal(known.ok, true);
+    assert.deepEqual(known.lines, []);
+    const unknown = await (
+      await check(HOMEBREW([item({ craft: ['zzz1'], set: 'zzz2', refs: ['zzz3'] })]))
+    ).json();
+    assert.equal(unknown.lines.length, 3);
+  });
+
+  it('refuses a file that is not JSON, of another format, or of an unknown version', async () => {
+    const empty = await (await check('')).json();
+    assert.equal(empty.reason, 'not_json');
+    assert.deepEqual(empty.message, {
+      ru: 'Это не файл JSON.',
+      en: 'This is not a JSON file.'
+    });
+    assert.equal((await check('{nope')).status, 200);
+    const unknown = await fixture(
+      'file-check-unknown-format',
+      await check(JSON.stringify({ format: 'other' }))
+    );
+    assert.equal(unknown.reason, 'unknown_format');
+    assert.deepEqual(unknown.file, { format: null, version: null });
+    assert.match(unknown.message.en, /lists file/);
+    assert.match(unknown.message.en, /items file/);
+    const version = await (await check(LISTS([{ name: 'a', entries: [] }], 9))).json();
+    assert.equal(version.reason, 'version');
+    assert.deepEqual(version.file, { format: 'daggerheart-loot/lists', version: 9 });
+    assert.match(version.message.en, /9/);
+    const noVersion = await (
+      await check(JSON.stringify({ format: 'daggerheart-loot/lists', lists: [] }))
+    ).json();
+    assert.equal(noVersion.reason, 'version');
+    assert.equal(noVersion.file.version, null);
+    const none = await (await check(LISTS([]))).json();
+    assert.equal(none.reason, 'empty');
+    const hbVersion = await (
+      await check(JSON.stringify({ format: 'daggerheart-loot/homebrew', version: 7 }))
+    ).json();
+    assert.equal(hbVersion.reason, 'version');
+    assert.equal(hbVersion.file.version, 7);
+    const hbEmpty = await (await check(HOMEBREW([]))).json();
+    assert.equal(hbEmpty.reason, 'empty');
+  });
+
+  it('skips a homebrew entry without a snapshot as unheld, because there is no account', async () => {
+    const res = await check(
+      LISTS([{ name: 'Mine', entries: [{ id: 'hb_aaaaaaaaaaaaaaaa', source: 'homebrew' }] }], 2)
+    );
+    const body = await res.json();
+    assert.equal(body.ok, true);
+    assert.equal(body.counts.skipped, 1);
+    assert.equal(body.lines.length, 1);
+    assert.ok(!body.lines[0].text.en.includes('hb_'));
+  });
+
+  it('reports the first 50 errors and counts the rest', async () => {
+    const entries = Array.from({ length: 60 }, () => ({ id: 'ci1', quantity: 0 }));
+    const body = await (await check(LISTS([{ name: 'Many', entries }]))).json();
+    assert.equal(body.lines.length, 50);
+    assert.equal(body.more, 10);
+  });
+
+  it('answers the first 50 skip lines of a good lists file and counts the rest in more', async () => {
+    const entries = Array.from({ length: 60 }, (_, i) => ({ id: 'nope' + String(i) }));
+    const body = await (
+      await check(LISTS([{ name: 'Skips', entries: [{ id: 'ci1' }, ...entries] }]))
+    ).json();
+    assert.equal(body.ok, true);
+    assert.equal(body.counts.skipped, 60);
+    assert.equal(body.lines.length, 50);
+    assert.equal(body.more, 10);
+    assert.equal(body.lines[0].text.en, 'Item 2: skipped - the data has no such record');
+  });
+
+  it('answers 413 past 32768 bytes before any file is read or parsed, and accepts 32768', async () => {
+    const big = await check(' '.repeat(32769));
+    assert.equal(big.status, 413);
+    assertApiHeaders(big);
+    const body = await fixture('error-file-check-too-large', big);
+    assert.equal(body.error.code, 'too_large');
+    assert.deepEqual(state.fetches, []);
+    const edge = await check(' '.repeat(32768));
+    assert.equal(edge.status, 200);
+    assert.equal((await edge.json()).reason, 'not_json');
+  });
+
+  it('answers 415 to another media type, 405 to GET, and reads no file for either', async () => {
+    const res = await call('/api/v1/file-checks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: '{}'
+    });
+    assert.equal(res.status, 415);
+    assert.equal((await res.json()).error.code, 'unsupported_media_type');
+    const get405 = await call('/api/v1/file-checks');
+    assert.equal(get405.status, 405);
+    assert.equal(get405.headers.get('allow'), 'POST, OPTIONS');
+    assert.deepEqual(state.fetches, []);
+  });
+
+  it('reads the records index and the file-check data once while they are cached', async () => {
+    await check(LISTS([{ name: 'a', entries: [{ id: 'ci1' }] }]));
+    await check(LISTS([{ name: 'b', entries: [{ id: 'ci2' }] }]));
+    assert.deepEqual(
+      state.fetches.filter((p) => p.startsWith('apidata/')),
+      ['apidata/records/index.json', 'apidata/file-check.json']
+    );
+  });
+
+  it('re-reads once on a data version mismatch, then answers 503', async () => {
+    const other = editedFiles();
+    state.files = (path) =>
+      path === 'apidata/file-check.json' ? other.get(path) : FILES.get(path);
+    const res = await check(LISTS([{ name: 'a', entries: [{ id: 'ci1' }] }]));
+    assert.equal(res.status, 503);
   });
 });
