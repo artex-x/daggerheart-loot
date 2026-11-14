@@ -270,10 +270,11 @@ max_frequency = "5s"
 # verify_enabled = true
 
 # The OAuth 2.1 server that connects an app or an AI assistant to an account; the consent
-# page is the app's `/connect` route. Owned here so that `config:push` is the switch
-# (.claude/README.md, "Supabase configuration"; docs/specs/META.md section 3).
+# page is the app's `/connect` route. Owned here so that `config:push` is the switch. Off
+# in the base until the release gate passes; on for the test project in [remotes.test]
+# (.claude/README.md, "Supabase configuration", "Release checklist"; docs/specs/META.md section 3).
 [auth.oauth_server]
-enabled = true
+enabled = false
 authorization_url_path = "/connect"
 allow_dynamic_registration = true
 

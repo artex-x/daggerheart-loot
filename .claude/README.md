@@ -2308,11 +2308,13 @@ and `user_limit_overrides`, by design: no Data API role reads them
 review accepts it and adds it here with its reason.
 
 **OAuth server and the client token.** `[auth.oauth_server]` is owned by the
-file since `ai-mcp` B5a (enabled, `authorization_url_path = "/connect"`,
-`allow_dynamic_registration = true`, the same in `[remotes.test.auth]`), so a
-`config:push` is the switch. The test project's server was switched on in the
-dashboard on 2026-11-12 (the same values); production's stays off until the
-release steps below. The CLI's field names come from the 2.117.0 template.
+file since `ai-mcp` B5a (`authorization_url_path = "/connect"`,
+`allow_dynamic_registration = true`), so a `config:push` is the switch. The
+base is `enabled = false` and `[remotes.test.auth.oauth_server]` is `enabled =
+true`: the test project's server was switched on in the dashboard on
+2026-11-12 (the same values); production's stays off until release step 3
+sets the base to `true`. The local stack follows the base, so it serves no
+OAuth server; a local probe sets the base to `true` for its run only. The CLI's field names come from the 2.117.0 template.
 `docs/decisions/2026-11-13-a-connected-app-reaches-only-the-api-s-account-scope.md`.
 
 Measured on the test project, 2026-11-13 (Node, auth-js 2.117.1, throwaway users
@@ -2355,6 +2357,19 @@ pgrst.db_pre_request` runs as the migration's `postgres` on the local stack.
 role, the claims, `request.method` and `request.path` itself and runs the guard,
 with client tokens minted as claims and an `auth.sessions` row the case inserts.
 
+Measured on the local stack, 2026-11-14 (CLI 2.117.0, the base set to `true`
+for the run; a throwaway user and a dynamically registered public client):
+the client's refresh token at the plain `/auth/v1/token?grant_type=refresh_token`
+answers 400 `invalid_client`, and at `/auth/v1/oauth/token` 200 with
+`client_id` kept (P7 holds locally; the hosted reading is the release
+gate's). Before a revoke the token's `auth.sessions` row exists, with
+`oauth_client_id` set; `DELETE /auth/v1/user/oauth/grants?client_id=` answers
+204 and deletes that row, so the guard's session check refuses the unexpired
+token, and the refresh token then answers 400 `refresh_token_not_found`.
+`auth.oauth_consents` has `id`, `user_id`, `client_id`, `scopes`,
+`granted_at` and `revoked_at`; a revoke keeps the row and sets `revoked_at`,
+so the record stays until the account is deleted.
+
 Pending readings (the orchestrator, after `migrate-test` applies
 `20261113120000_api_client_guard` on the test project): a client token from the
 probe gets 403 `api_client_guard` from `GET /rest/v1/user_prefs?limit=1` and an
@@ -2367,15 +2382,24 @@ Release checklist (owner, after the closeout squash; each line is a gate):
 
 1. The migration is applied by CI (`migrate-prod`), and `/connect` is live
    (the closeout deploy).
-2. The orchestrator runs probes P1-P4 against the hosted project (`node
+2. The orchestrator runs probes P1-P8 against the hosted project (`node
    --env-file=E:/dev/daggerheart-loot/.env.test.local
    C:\Users\Ignat\.dhloot\notes\57\b5a-step1\b5a-probe3.mjs --only
-   P1,P2,P3,P4`). Expected: every P1-P4 row of the client column
-   `PASS-BLOCKED` (a password set, a factor enroll, an approve of another
-   client, a grant revoke). The consent strings and both privacy pages claim
-   that the token is bounded: do not switch production on before P1-P4 pass.
-3. `npm run config:diff -- --project prod`. Expected: only `auth.oauth_server`
-   rows.
+   P1,P2,P3,P4,P5,P6,P7,P8`). Expected: every row of the client column
+   `PASS-BLOCKED`: P1 a password set, P2 a factor enroll, P3 an approve of
+   another client, P4 a grant revoke, P5 an email change to a valid
+   throwaway address (a pending change counts as a failure), P6 an identity
+   unlink on an account with two identities (a refusal for one identity
+   proves nothing), P7 the OAuth refresh token at the plain
+   `/auth/v1/token?grant_type=refresh_token` (refused, or the new token keeps
+   `client_id`), P8 the grants list and another client's authorization
+   details. P9 (the global sign-out) is recorded, not a gate. The consent
+   strings and both privacy pages claim that the token is bounded: do not
+   switch production on before P1-P8 pass.
+3. Set the base `[auth.oauth_server] enabled = true` in a commit (the base is
+   `false` until then, so no other production push switches the server on),
+   then `npm run config:diff -- --project prod`. Expected: only
+   `auth.oauth_server` rows.
 4. `npm run config:push -- --project prod`, which switches the server on.
 5. The acceptance probe on production, and the consent URL opened once to see
    that `//connect` reads as `/connect`; then the connector test with a sign-in.

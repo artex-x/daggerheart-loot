@@ -694,8 +694,10 @@ export type AppRequestRead =
   | { ok: true; gone: true }
   | { ok: false };
 
-/** The address an answer goes back to, or a failure that keeps the page. */
-export type AppAnswer = { ok: true; url: string } | { ok: false };
+/** The address an answer goes back to; `gone` a request that no retry can answer (expired,
+ *  answered elsewhere, or an address the page refuses to open); or a failure that keeps
+ *  the page. */
+export type AppAnswer = { ok: true; url: string } | { ok: true; gone: true } | { ok: false };
 
 /** `off`: the project's OAuth server is off, so the account page draws no section. */
 export type AppsRead = { ok: true; apps: AppGrant[] } | { ok: true; off: true } | { ok: false };

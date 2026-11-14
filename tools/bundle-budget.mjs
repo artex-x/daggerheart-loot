@@ -34,7 +34,7 @@ const code = walk(DIST).filter(
    postgrest-js, realtime-js and storage-js) as a chunk loaded after first
    paint - 327.3 kB on 2026-11-06, 330.7 to 330.8 kB on 2026-11-11 (CI run 42954673078
    measured it), about 332.0 kB estimated on 2026-11-11 (the unconfigured total plus the
-   57 kB chunk; no .env.test.local on that host), 336.9 kB on 2026-11-13 (ai-mcp B5a, built
+   57 kB chunk; no .env.test.local on that host), 336.9 kB on 2026-11-13 (built
    with placeholder VITE_SUPABASE_* values; CI's real values measured 0.1 kB more before, so
    the limit is 338) - while the unconfigured one `check:built` measures, 275.0 kB on
    2026-11-11 and 278.9 kB on 2026-11-13 (the consent page and the connected apps), must stay

@@ -935,6 +935,25 @@ describe('connected apps', () => {
     await expectNoA11yViolations(container);
   });
 
+  it('puts a name with replacement patterns into the confirm and the toast as given', async () => {
+    const cloud = as('gm1');
+    const name = "a$`b$&c$'d";
+    cloud.apps.list = () =>
+      Promise.resolve({
+        ok: true,
+        apps: [{ clientId: 'c9', name, host: 'x.example', grantedAt: '2026-11-12T10:00:00Z' }]
+      });
+    cloud.apps.revoke = () => Promise.resolve(true);
+    const { confirm, env } = withConfirm(cloud, true);
+    render(App, { env });
+    const panel = await section();
+    await userEvent.click(
+      await within(panel).findByRole('button', { name: 'Отключить ' + name })
+    );
+    expect(confirm).toHaveBeenCalledWith(expect.stringMatching(/^Отключить «a\$`b\$&c\$'d»\?/));
+    expect(await screen.findByText(`Приложение «${name}» отключено`)).toBeInTheDocument();
+  });
+
   it('hands the focus to the row before after the last, and to #main after the only one', async () => {
     const cloud = as('gm1');
     const { env } = withConfirm(cloud, true);

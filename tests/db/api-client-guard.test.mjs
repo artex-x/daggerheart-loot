@@ -429,6 +429,22 @@ describe('the rows a client token reaches', () => {
     assert.ok(guarded.includes('print_sets'), 'print_sets has no print_sets_no_client policy');
   });
 
+  /* PostgREST runs such a function as a computed field on `GET /<table>?select=fn`, a
+     path the guard lets through. */
+  it('has no executable function that takes the row of a table in the GET list', async () => {
+    const rows = await sql`
+      select p.oid::regprocedure::text as fn from pg_proc p
+      join pg_type t on t.oid = any (p.proargtypes)
+      join pg_class c on c.oid = t.typrelid
+      where c.relnamespace = 'public'::regnamespace and c.relname = any (${ALLOWED.GET}::text[])
+        and has_function_privilege('authenticated', p.oid, 'execute')
+      order by 1`;
+    assert.deepEqual(
+      rows.map((r) => r.fn),
+      []
+    );
+  });
+
   it('embeds nothing from an out-of-scope table for a client token, the full rows for the app', async () => {
     const out = await rolledBack(async (tx) => {
       await seedLists(tx);
@@ -523,14 +539,42 @@ describe('Storage and a client token', () => {
     assert.equal(await insert(appClaims(), 'e'), null);
   });
 
-  it('has one restrictive update and one restrictive delete policy, never one for all', async () => {
+  /* Storage never runs the pre-request guard, so the insert policy ends a revoked grant. */
+  it('refuses the insert of a client token whose session has ended', async () => {
+    const insert = (claims, prepare) =>
+      rolledBack(async (tx) => {
+        await seedUsers(tx);
+        await prepare(tx);
+        return as(tx, claims, () =>
+          tx
+            .savepoint(
+              (sp) => sp`insert into storage.objects (bucket_id, name, owner_id)
+                values ('homebrew-art', ${'p/' + 'f'.repeat(32) + '.webp'}, ${A})`
+            )
+            .then(
+              () => null,
+              (err) => err.code
+            )
+        );
+      });
+    const revoked = (tx) => tx`delete from auth.sessions where id = ${SESSION}`;
+    assert.equal(await insert(clientClaims(), revoked), '42501');
+    assert.equal(await insert(clientClaims({ session_id: 'not-a-uuid' }), () => null), '42501');
+    assert.equal(await insert(appClaims(), revoked), null);
+  });
+
+  it('has one restrictive insert, update and delete policy each, never one for all', async () => {
     const rows = await sql`
       select policyname, cmd from pg_policies
       where schemaname = 'storage' and tablename = 'objects' and permissive = 'RESTRICTIVE'
       order by policyname`;
     assert.deepEqual(
       rows.map((r) => `${r.policyname} ${r.cmd}`),
-      ['objects_no_client_delete DELETE', 'objects_no_client_update UPDATE']
+      [
+        'objects_no_client_delete DELETE',
+        'objects_no_client_insert INSERT',
+        'objects_no_client_update UPDATE'
+      ]
     );
   });
 });
@@ -540,24 +584,22 @@ describe('an account delete and its grants', () => {
     const out = await rolledBack(async (tx) => {
       await seedUsers(tx);
       const [{ consents }] = await tx`select to_regclass('auth.oauth_consents') as consents`;
-      if (consents) {
-        await tx`insert into auth.oauth_clients (id, client_name, client_type,
-            registration_type, redirect_uris, grant_types, token_endpoint_auth_method)
-          values (${CLIENT}, 'case', 'public', 'dynamic', 'http://127.0.0.1/cb',
-            'authorization_code,refresh_token', 'none')`;
-        await tx`insert into auth.oauth_consents (id, user_id, client_id, scopes)
-          values (gen_random_uuid(), ${A}, ${CLIENT}, 'openid')`;
-        await tx`update auth.sessions set oauth_client_id = ${CLIENT} where id = ${SESSION}`;
-      }
+      if (!consents) return { consentsTable: null };
+      await tx`insert into auth.oauth_clients (id, client_name, client_type,
+          registration_type, redirect_uris, grant_types, token_endpoint_auth_method)
+        values (${CLIENT}, 'case', 'public', 'dynamic', 'http://127.0.0.1/cb',
+          'authorization_code,refresh_token', 'none')`;
+      await tx`insert into auth.oauth_consents (id, user_id, client_id, scopes)
+        values (gen_random_uuid(), ${A}, ${CLIENT}, 'openid')`;
+      await tx`update auth.sessions set oauth_client_id = ${CLIENT} where id = ${SESSION}`;
       await as(tx, appClaims(), () => tx`select public.delete_account()`);
       const [{ n }] =
         await tx`select count(*)::int as n from auth.sessions where user_id = ${A}`;
-      const left = consents
-        ? (await tx`select count(*)::int as n from auth.oauth_consents where user_id = ${A}`)[0]
-            .n
-        : 0;
-      return { sessions: n, consents: left };
+      const [{ left }] =
+        await tx`select count(*)::int as left from auth.oauth_consents where user_id = ${A}`;
+      return { consentsTable: 'auth.oauth_consents', sessions: n, consents: left };
     });
-    assert.deepEqual(out, { sessions: 0, consents: 0 });
+    /* The local Auth serves the OAuth server, so its consent table must exist. */
+    assert.deepEqual(out, { consentsTable: 'auth.oauth_consents', sessions: 0, consents: 0 });
   });
 });

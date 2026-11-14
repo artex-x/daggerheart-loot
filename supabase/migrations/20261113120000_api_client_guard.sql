@@ -105,9 +105,16 @@ create policy print_sets_no_client on public.print_sets
   using ((select auth.jwt() ->> 'client_id') is null)
   with check ((select auth.jwt() ->> 'client_id') is null);
 
--- A connected app uploads pictures under homebrew_art_insert, as the app does;
--- an update or a delete is refused although no permissive policy allows one
--- today. Never `for all`: a restrictive `for all` also refuses the insert.
+-- A connected app uploads pictures under homebrew_art_insert, as the app does,
+-- while its session lives: Storage never runs the guard, so a revoked grant's
+-- unexpired token stops here. An update or a delete is refused although no
+-- permissive policy allows one today. Never `for all`: a restrictive `for all`
+-- also refuses the insert.
+create policy objects_no_client_insert on storage.objects
+  as restrictive for insert to authenticated
+  with check ((select auth.jwt() ->> 'client_id') is null
+    or public.api_client_session_live());
+
 create policy objects_no_client_update on storage.objects
   as restrictive for update to authenticated
   using ((select auth.jwt() ->> 'client_id') is null)

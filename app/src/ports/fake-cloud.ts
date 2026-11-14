@@ -2228,9 +2228,10 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     },
     approve(id) {
       const a = pending.get(id);
-      if (current === null || offline || !a || options.apps === 'refuse') {
+      if (current === null || offline || options.apps === 'refuse') {
         return Promise.resolve({ ok: false });
       }
+      if (!a) return Promise.resolve({ ok: true, gone: true });
       pending.delete(id);
       const mine = grants.get(current) ?? [];
       grants.set(current, [
@@ -2241,9 +2242,10 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     },
     deny(id) {
       const a = pending.get(id);
-      if (current === null || offline || !a || options.apps === 'refuse') {
+      if (current === null || offline || options.apps === 'refuse') {
         return Promise.resolve({ ok: false });
       }
+      if (!a) return Promise.resolve({ ok: true, gone: true });
       pending.delete(id);
       return Promise.resolve({ ok: true, url: a.redirect + '?error=access_denied' });
     },

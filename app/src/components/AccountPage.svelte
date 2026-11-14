@@ -252,7 +252,7 @@
      focus to the next row's «Отключить», else the one before, else `#main` (rule 20). */
   async function revoke(a: AppGrant): Promise<void> {
     if (busy || !cloud) return;
-    if (!app.env.dialog.confirm(t.appDisconnectConfirm.replace('%s', a.name))) return;
+    if (!app.env.dialog.confirm(t.appDisconnectConfirm.replace('%s', () => a.name))) return;
     busy = true;
     try {
       const done = await cloud.apps.revoke(a.clientId);
@@ -268,7 +268,7 @@
         const buttons = [...(appRows?.querySelectorAll('button') ?? [])];
         (buttons[at] ?? buttons[at - 1] ?? document.getElementById('main'))?.focus();
       }
-      app.say((t) => t.appDisconnected.replace('%s', a.name));
+      app.say((t) => t.appDisconnected.replace('%s', () => a.name));
     } finally {
       busy = false;
     }

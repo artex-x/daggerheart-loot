@@ -4,6 +4,7 @@
 alter role authenticator reset pgrst.db_pre_request;
 drop policy objects_no_client_delete on storage.objects;
 drop policy objects_no_client_update on storage.objects;
+drop policy objects_no_client_insert on storage.objects;
 drop policy print_sets_no_client on public.print_sets;
 drop policy user_prefs_no_client on public.user_prefs;
 drop function public.api_client_guard();

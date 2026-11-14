@@ -281,6 +281,8 @@ describe('lazyCloud', () => {
       request: { name: 'Claude' }
     });
     expect(await apps.deny('a'.repeat(32))).toMatchObject({ ok: true });
+    expect(await apps.approve('a'.repeat(32))).toEqual({ ok: true, gone: true });
+    expect(await apps.deny('a'.repeat(32))).toEqual({ ok: true, gone: true });
     expect(await apps.approve('b'.repeat(32))).toMatchObject({ ok: true });
     expect(
       await apps.revoke(read.ok && 'apps' in read ? (read.apps[0]?.clientId ?? '') : '')

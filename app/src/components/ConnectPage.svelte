@@ -54,7 +54,9 @@
     if (answering) return;
     answering = how;
     const r = await (how === 'approve' ? cloud.apps.approve(id) : cloud.apps.deny(id));
-    if (!r.ok) {
+    if (r.ok && 'gone' in r) {
+      read = r;
+    } else if (!r.ok) {
       answering = null;
       app.say((t) => t.accountFailed, { error: true });
     }
@@ -104,7 +106,9 @@
       <Panel primary>
         <Field>
           <p class="appname">{req.name}</p>
-          {#if req.host}<p class="apphost">{t.connectBack.replace('%s', req.host)}</p>{/if}
+          {#if req.host}<p class="apphost">
+              {t.connectBack.replace('%s', () => req.host)}
+            </p>{/if}
         </Field>
         <Field label={t.connectAccount} heading>
           {#if app.user}<SessionLine {t} session={app.user} />{/if}

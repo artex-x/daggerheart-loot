@@ -488,6 +488,9 @@ function appGone(error: unknown): boolean {
   return s >= 400 && s < 500 && s !== 401 && s !== 429;
 }
 
+/** The schemes of a client's redirect that the consent page never opens. */
+const REFUSED_SCHEMES = new Set(['javascript:', 'data:', 'vbscript:', 'blob:', 'file:']);
+
 /** The `error_code` of an auth-js error, '' when it has none. */
 function codeOf(error: unknown): string {
   const c: unknown = (error as { code?: unknown } | null)?.code;
@@ -1441,10 +1444,18 @@ export function createCloud(
     }
   };
   /* Every answer leaves the page through the address Auth answers: the client's redirect
-     with a code, or with `access_denied`. */
-  const leaveFor = (url: string): AppAnswer => {
+     with a code, or with `access_denied`. The client registers that address, so a scheme
+     that runs or reads content on this origin is refused, not opened. */
+  const leaveFor = (url: string): boolean => {
+    let protocol: string;
+    try {
+      protocol = new URL(url).protocol;
+    } catch {
+      return false;
+    }
+    if (REFUSED_SCHEMES.has(protocol)) return false;
     win.location.assign?.(url);
-    return { ok: true, url };
+    return true;
   };
   const answer = async (
     id: string,
@@ -1452,7 +1463,10 @@ export function createCloud(
   ): Promise<AppAnswer> => {
     try {
       const { data, error } = await run(id);
-      return error || !data?.redirect_url ? { ok: false } : leaveFor(data.redirect_url);
+      if (error) return appGone(error) ? { ok: true, gone: true } : { ok: false };
+      if (!data?.redirect_url) return { ok: false };
+      const url = data.redirect_url;
+      return leaveFor(url) ? { ok: true, url } : { ok: true, gone: true };
     } catch {
       return { ok: false };
     }
@@ -1469,8 +1483,9 @@ export function createCloud(
             request: { name: data.client.name, host: appHost(data.redirect_uri) }
           };
         }
-        leaveFor(data.redirect_url);
-        return { ok: true, done: data.redirect_url };
+        return leaveFor(data.redirect_url)
+          ? { ok: true, done: data.redirect_url }
+          : { ok: true, gone: true };
       } catch {
         return { ok: false };
       }

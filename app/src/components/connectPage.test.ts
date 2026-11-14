@@ -154,6 +154,29 @@ describe('the answers', () => {
     }
   );
 
+  it.each([
+    ['Разрешить', 'approve'],
+    ['Отказать', 'deny']
+  ] as const)(
+    'draws the expired page when «%s» meets a request that expired meanwhile',
+    async (button, how) => {
+      const cloud = as('gm1');
+      const run = vi.fn(() => Promise.resolve<AppAnswer>({ ok: true, gone: true }));
+      cloud.apps[how] = run;
+      const { container } = open(cloud, CLAUDE);
+      await userEvent.click(await screen.findByRole('button', { name: button }));
+      expect(run).toHaveBeenCalledWith(CLAUDE);
+      expect(
+        await screen.findByRole('heading', { level: 1, name: 'Запрос на подключение устарел' })
+      ).toBeVisible();
+      expect(screen.queryByRole('button', { name: 'Разрешить' })).toBeNull();
+      expect(
+        screen.queryByText('Не получилось. Проверьте соединение и попробуйте ещё раз.')
+      ).toBeNull();
+      await expectNoA11yViolations(container);
+    }
+  );
+
   it('draws no card for a request already answered: the port is leaving', async () => {
     const cloud = as('gm1');
     const details = vi.spyOn(cloud.apps, 'details');
@@ -223,7 +246,7 @@ describe('the other states', () => {
 
   it('draws the not-found page in a build with no sign-in', async () => {
     open(null, CLAUDE);
-    expect((await heading()).textContent).not.toBe('Подключение приложения');
+    expect((await heading()).textContent).toBe('Страницы по этому адресу нет');
   });
 });
 

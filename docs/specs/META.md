@@ -236,8 +236,9 @@ not a measurement.
 database deletes").
 
 A reader can connect an app or AI assistant to the account through Supabase
-Auth's OAuth 2.1 server (`supabase/config.toml` `[auth.oauth_server]`: on,
-the authorization path `/connect`, dynamic registration on). The consent
+Auth's OAuth 2.1 server (`supabase/config.toml` `[auth.oauth_server]`: the
+authorization path `/connect`, dynamic registration on; on for the test
+project, off in the base until the release sets it). The consent
 page is the app's `#/connect/<id>` and the list of connected apps is on
 `#/account` (`FEATURES.md`, "Connect an app"). A connected app's access token
 is a normal `authenticated` token with `client_id` and `session_id`, and it
@@ -251,8 +252,13 @@ of list fields; the list, share, request, import, move, delete and print-set
 functions), and refuses one whose session has no `auth.sessions` row any
 more (a revoke deletes it, so «Отключить» stops an unexpired token at once).
 Restrictive policies on `user_prefs` and `print_sets` refuse it on an
-embedded read, and two on `storage.objects` refuse its update and delete; an
-upload stays under `homebrew_art_insert`. It never deletes the account,
+embedded read, and three on `storage.objects` refuse its update and delete,
+and its upload once its session has ended (Storage never runs the guard); a
+live client uploads under `homebrew_art_insert`. Realtime never runs the guard
+either: a client token receives the `owner:<uid>` and `share:` broadcasts (in
+the scope), and a socket it opened keeps them after a revoke until the token
+expires, at most an hour. A revoke keeps the `auth.oauth_consents` row with
+`revoked_at` set until the account is deleted. It never deletes the account,
 reads the display settings or opens a print set. The app's own session token
 and `anon` are unchanged (`tests/db/api-client-guard.test.mjs`;
 `docs/decisions/2026-11-13-a-connected-app-reaches-only-the-api-s-account-scope.md`).
