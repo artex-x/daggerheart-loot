@@ -256,8 +256,9 @@ embedded read, and three on `storage.objects` refuse its update and delete,
 and its upload once its session has ended (Storage never runs the guard); a
 live client uploads under `homebrew_art_insert`. Realtime never runs the guard
 either: a client token receives the `owner:<uid>` and `share:` broadcasts (in
-the scope), and a socket it opened keeps them after a revoke until the token
-expires, at most an hour. A revoke keeps the `auth.oauth_consents` row with
+the scope), and after a revoke a client token that has not expired can still
+open a new connection and receive them until it expires, at most an hour
+(Realtime checks the signature and expiry, not the session row). A revoke keeps the `auth.oauth_consents` row with
 `revoked_at` set until the account is deleted. It never deletes the account,
 reads the display settings or opens a print set. The app's own session token
 and `anon` are unchanged (`tests/db/api-client-guard.test.mjs`;

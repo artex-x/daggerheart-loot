@@ -3562,6 +3562,17 @@ describe('connected apps', () => {
         error: null
       });
       expect(await make().apps.details(ID)).toEqual({ ok: true, gone: true });
+      oauth.getAuthorizationDetails.mockResolvedValueOnce({
+        data: {
+          authorization_id: ID,
+          redirect_uri: url,
+          client: { id: 'c1', name: 'Claude', uri: 'https://other.example', logo_uri: '' },
+          user: { id: 'u1', email: 'gm1@example.test' },
+          scope: 'openid'
+        },
+        error: null
+      });
+      expect(await make().apps.details(ID)).toEqual({ ok: true, gone: true });
       expect(assign).not.toHaveBeenCalled();
     }
   );

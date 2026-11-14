@@ -2370,6 +2370,13 @@ token, and the refresh token then answers 400 `refresh_token_not_found`.
 `granted_at` and `revoked_at`; a revoke keeps the row and sets `revoked_at`,
 so the record stays until the account is deleted.
 
+The Realtime statement (after a disconnect, an unexpired client token can still
+open a new connection and join `owner:<uid>`, for at most an hour) is reasoned
+from how Realtime authorizes a join (signature and expiry, not the session
+row), not measured. The join probe is a pending reading: a Realtime join to
+`owner:<uid>` with a client token after a revoke, on the local stack with the
+base set to `true` for the run.
+
 Pending readings (the orchestrator, after `migrate-test` applies
 `20261113120000_api_client_guard` on the test project): a client token from the
 probe gets 403 `api_client_guard` from `GET /rest/v1/user_prefs?limit=1` and an
@@ -2389,8 +2396,11 @@ Release checklist (owner, after the closeout squash; each line is a gate):
    `PASS-BLOCKED`: P1 a password set, P2 a factor enroll, P3 an approve of
    another client, P4 a grant revoke, P5 an email change to a valid
    throwaway address (a pending change counts as a failure), P6 an identity
-   unlink on an account with two identities (a refusal for one identity
-   proves nothing), P7 the OAuth refresh token at the plain
+   unlink on an account with one identity (the probe's `p6`): a 401 or 403 for
+   the client token with a different answer for the app token passes, and the
+   same answer for both is `INCONCLUSIVE`, which fails the gate (a refusal
+   proves only that the gate fails closed, not that two identities are
+   covered), P7 the OAuth refresh token at the plain
    `/auth/v1/token?grant_type=refresh_token` (refused, or the new token keeps
    `client_id`), P8 the grants list and another client's authorization
    details. P9 (the global sign-out) is recorded, not a gate. The consent

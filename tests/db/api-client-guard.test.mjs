@@ -599,7 +599,7 @@ describe('an account delete and its grants', () => {
         await tx`select count(*)::int as left from auth.oauth_consents where user_id = ${A}`;
       return { consentsTable: 'auth.oauth_consents', sessions: n, consents: left };
     });
-    /* The local Auth serves the OAuth server, so its consent table must exist. */
+    /* Auth's own migrations create the consent table whether the OAuth server is on or off. */
     assert.deepEqual(out, { consentsTable: 'auth.oauth_consents', sessions: 0, consents: 0 });
   });
 });

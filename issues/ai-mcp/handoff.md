@@ -4,7 +4,7 @@
 ## Status
 - Task status: in_progress (B0-B3 and B2b live: landing 1 `aeb68c0e`, landing 2 `89a55f1b`, landing 3 `c4742c53`; B5a `664e403f` and its fix pass committed on the branch, unpushed; the push and the CI credit are next; B5b-B5d planned)
 - Last agent: implementer (2026-11-14, B5a fix pass of `reviews/B5a-batch.md`)
-- NEEDS_HUMAN_CONFIRMATION: no (the step 1 stop is resolved by the owner's decision of 2026-11-13: build on Supabase's fix supabase/auth#2898 and release only after probes P1-P4 pass)
+- NEEDS_HUMAN_CONFIRMATION: no (the step 1 stop is resolved by the owner's decision of 2026-11-13: build on Supabase's fix supabase/auth#2898 and release only after probes P1-P8 pass)
 - Branch: claude/ai-mcp
 - Base / starting commit: a2b4df21
 - Pushed: no (schema batch: the push waits for the review's approve)
@@ -42,7 +42,7 @@
   20. See Verification (budget).
   21. Done: `_headers` lines and the `check-site` probe (`tools/check-site.test.mjs`); the framed page draws the expired page with no button (component test).
   22. Done: no, a malformed, a numeric, an unknown, another user's and a timed-out session refused with no error.
-- Release checklist lines (owner decisions of 2026-11-13): `.claude/README.md`, "OAuth server and the client token", "Release checklist": P1-P4 PASS-BLOCKED on the hosted project before `config:push -- --project prod`; "the consent strings claim the token is bounded: do not switch production on before P1-P4 pass".
+- Release checklist lines (owner decisions of 2026-11-13): `.claude/README.md`, "OAuth server and the client token", "Release checklist": P1-P8 PASS-BLOCKED on the hosted project before `config:push -- --project prod`; "the consent strings claim the token is bounded: do not switch production on before P1-P8 pass".
 
 ## Verification
 - B5a (2026-11-13, this worktree, Rancher Desktop started for it):
@@ -60,6 +60,7 @@
   - `node tools/build.js`, then `node tests/derived.js`: everything matches; `node tools/decisions.js`: 341 decisions.
   - `npm run check:db` (PowerShell): `check:db: PASS`, tests 605, pass 605, fail 0 (db reset 39 s, 583 s); the new insert-policy, consent-presence and row-type enumeration cases pass on their first run.
   - `rtk npm run check:fast` on the final tree (VITEST_MAX_WORKERS=2): first run FAIL at the format stage (`pages/src/privacy.html`); `npx prettier --write` on it; second run `check:fast: PASS in 724 s`, 3056 tests passed, budget 278.9 kB total.
+- B5a second fix pass (2026-11-14, text, `details` scheme check, no schema change, no check:db): `npx prettier --write` on the changed files; `node tools/build.js`, `node tests/derived.js` (everything matches), `node tools/decisions.js` (341 decisions); `VITEST_MAX_WORKERS=2 npm run check:fast` in the background: `check:fast: PASS in 226 s` (format, eslint, svelte-check 0 errors 0 warnings, vitest 2 files 269 tests as the script ran them, budget 278.9 kB of 279).
 - Commands of the earlier batches: `git show 51f830de:issues/ai-mcp/handoff.md`, "Verification".
 
 ## Deviations
@@ -69,7 +70,7 @@
 - B5a: «Отключить» treats Auth's `oauth_consent_not_found` as done (a grant another tab ended).
 - B5a: `PagePort.framed()` is new (the consent page reads no `window` itself); `ProviderLogo`, `SessionLine`, `SignInPanel` and `components/providers.ts` are extracted from `AccountPage` at their second use.
 - B5a: the configured bundle was measured with placeholder `VITE_SUPABASE_*` values (no `.env.test.local` in this worktree); the limit has 1 kB of room for CI's real values.
-- B5a fix pass: the privacy pages (date 14 November 2026) keep "its access ends at once" and add that an open change-notice connection can receive changes for up to an hour (Realtime never runs the guard); the record of a connection stays until the account is deleted (R6 reading), not until the disconnect.
+- B5a fix pass: the privacy pages (date 14 November 2026) keep "its access ends at once" and add that an unexpired client token can still receive change notices for up to an hour, also on a new connection (Realtime never runs the guard); the record of a connection stays until the account is deleted (R6 reading), not until the disconnect.
 - B5a fix pass: the gate widened to P1-P8 (R1); D7 now names P1-P8, not P1-P4.
 - B3: file-check lines are capped at the first 50 for a good file too (`LINES_MAX`); default taken (owner AFK). Revert by removing `LINES_MAX` in `preview/api/service.mjs`.
 
@@ -78,7 +79,7 @@
 - Then: B5b - the account API core and lists (`plan.md` section 6, "B5b"); B5c and B5d after it.
 
 ## Blockers
-- None for B5b. Release gate (owner decisions 2026-11-13): production's OAuth switch (`config:push -- --project prod`) only after P1-P4 of `b5a-probe3.mjs` answer PASS-BLOCKED on the hosted project; the consent strings claim the token is bounded, so production stays off before P1-P4 pass (`.claude/README.md`, "Release checklist").
+- None for B5b. Release gate (owner decisions 2026-11-13): production's OAuth switch (`config:push -- --project prod`) only after P1-P8 of `b5a-probe3.mjs` answer PASS-BLOCKED on the hosted project; the consent strings claim the token is bounded, so production stays off before P1-P8 pass (`.claude/README.md`, "Release checklist").
 - Open owner decision (not a block): the landing-3 cold readings past 10 ms; B5b's import inherits it.
 - Owner step after landing 2: the Claude connector with "No sign in" and a roll.
 
@@ -89,6 +90,7 @@
   - `plan.md` section 10 (CORS on `/apidata/*`, the account-tier items of Q8-Q11, developer tokens, MCP output schemas and resources, search over descriptions, own items in search, multi-valued facets, names in a lists file check).
   - plan-B5a-N12: nothing shows when the shared quota is near (about 500 users polling every 15 minutes); reopened by B5b's first consumer with background sync.
   - B5a-batch N8: the configured bundle limit 338 rests on a build with placeholder `VITE_SUPABASE_*` values; after the push read CI's configured total, and if it is 337.0 or less set the limit to 337 (`tools/bundle-budget.mjs`).
+  - B5a-fix N5: the `.replace('%s', value)` pattern also writes names that another reader writes (`RequestsPanel.svelte:330-341`, `noticeChanged` and `noticeDeleted`; `ListsPage.svelte:183`); a name such as `` $` `` copies text of the sentence. A project-wide cleanup.
   - plan-B2a-N12: `/mcp/` with a trailing slash answers 404; serving it as `/mcp` is a choice to make before the v1 freeze of that answer matters to a client.
 - Placed (each is an acceptance line of the batch named): every finding of `reviews/plan-B5b.md` and `reviews/audit-ui-actions.md` (B5a-B5d, `plan.md` Status lists each); the export-flow link, the account text on the pages, the file-check cap outcome and the print-set tool: B5d acceptance 12-16; the live `ETag` and the issue 72 follow-up: closeout steps (`plan.md` section 6, "B5").
 
@@ -99,5 +101,5 @@
 - Defaults taken (owner AFK) this pass, `plan.md` section 7, "Defaults taken (owner AFK), plan review and audit, 2026-11-13": the audit findings go to the batch of their own row (R2, R3, R7 to B5b; R4, R5, R6 to B5c; R8 to B5d; cost: B5b gains 3 acceptance clauses and B5c 4, no new batch, gate run or migration); `/mcp/me` lists the public tools; a request to the reader's own list is 409 `conflict`; import ids are UUIDv5 names under `import_id`; the H11 body cap is 413696 B.
 - Not applied as worded: plan-B5b-4 says the cold cost is "in the class the owner accepted for landing 3"; the owner has not decided on the landing-3 cold readings yet (`context.md`), so the plan says the import inherits that decision.
 - Session end partial progress (if any): none; the B5a fix pass is committed (probe3 gained P7 refresh and P8; logout moved to P9).
-- Durable items written to their homes this pass (file, section): none outside `issues/ai-mcp/` (a planner pass); D7 goes to `docs/decisions/` in B5a.
+- Durable items written to their homes this pass (file, section): `.claude/README.md` "OAuth server and the client token" (local readings, the Realtime statement and the join probe as pending, the P1-P8 checklist); `docs/specs/META.md` section 3; `docs/decisions/2026-11-13-a-connected-app-reaches-only-the-api-s-account-scope.md`; `pages/src/privacy.html` and `pages/src/en/privacy.html`.
 - Issue 72 stays open until the account-level read ships (`C:\Users\Ignat\.dhloot\notes\57\ai-mcp-closeout-posts.md`, A2; a closeout step after the owner's production switch).

@@ -1446,14 +1446,15 @@ export function createCloud(
   /* Every answer leaves the page through the address Auth answers: the client's redirect
      with a code, or with `access_denied`. The client registers that address, so a scheme
      that runs or reads content on this origin is refused, not opened. */
-  const leaveFor = (url: string): boolean => {
-    let protocol: string;
+  const schemeAllowed = (url: string): boolean => {
     try {
-      protocol = new URL(url).protocol;
+      return !REFUSED_SCHEMES.has(new URL(url).protocol);
     } catch {
       return false;
     }
-    if (REFUSED_SCHEMES.has(protocol)) return false;
+  };
+  const leaveFor = (url: string): boolean => {
+    if (!schemeAllowed(url)) return false;
     win.location.assign?.(url);
     return true;
   };
@@ -1478,6 +1479,7 @@ export function createCloud(
         const { data, error } = await client.auth.oauth.getAuthorizationDetails(id);
         if (error) return appGone(error) ? { ok: true, gone: true } : { ok: false };
         if ('authorization_id' in data) {
+          if (!schemeAllowed(data.redirect_uri)) return { ok: true, gone: true };
           return {
             ok: true,
             request: { name: data.client.name, host: appHost(data.redirect_uri) }
