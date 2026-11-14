@@ -914,7 +914,7 @@ describe('previewChecks() against the preview host', () => {
 
   it('is the exact set of preview paths', () => {
     const list = previewChecks();
-    assert.equal(list.length, 79);
+    assert.equal(list.length, 81);
     assert.deepEqual(
       [...new Set(list.map((c) => c.path))].sort(),
       [
@@ -926,6 +926,8 @@ describe('previewChecks() against the preview host', () => {
         'api/v1/rolls',
         'api/v1/rolls/std',
         'catalog-index.csv',
+        CONNECT,
+        'en/' + CONNECT,
         ITEM,
         'h/not-a-uuid',
         'i/w1.html',

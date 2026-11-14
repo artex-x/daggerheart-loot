@@ -61,6 +61,7 @@
   - `npm run check:db` (PowerShell): `check:db: PASS`, tests 605, pass 605, fail 0 (db reset 39 s, 583 s); the new insert-policy, consent-presence and row-type enumeration cases pass on their first run.
   - `rtk npm run check:fast` on the final tree (VITEST_MAX_WORKERS=2): first run FAIL at the format stage (`pages/src/privacy.html`); `npx prettier --write` on it; second run `check:fast: PASS in 724 s`, 3056 tests passed, budget 278.9 kB total.
 - B5a second fix pass (2026-11-14, text, `details` scheme check, no schema change, no check:db): `npx prettier --write` on the changed files; `node tools/build.js`, `node tests/derived.js` (everything matches), `node tools/decisions.js` (341 decisions); `VITEST_MAX_WORKERS=2 npm run check:fast` in the background: `check:fast: PASS in 226 s` (format, eslint, svelte-check 0 errors 0 warnings, vitest 2 files 269 tests as the script ran them, budget 278.9 kB of 279).
+- B5a CI fix (2026-11-14): CI run 43578634546 failed `test:check-site` (`81 !== 79`); the two new preview paths are `connect/<32 a>` and `en/connect/<32 a>` (B5a frame-header probe), so the count is 81 and the path list names both. `node --test tools/check-site.test.mjs`: 87 tests, 87 pass. `node tools/check/run.mjs --only=site-syntax,test:check-site,derived,dataint,test:preview,test:sw`: 6 stages run, 0 skipped, exit 0. `node tests/run-all.js contracts`: ok.
 - Commands of the earlier batches: `git show 51f830de:issues/ai-mcp/handoff.md`, "Verification".
 
 ## Deviations
