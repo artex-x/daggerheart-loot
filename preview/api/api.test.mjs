@@ -303,6 +303,24 @@ describe('reads', () => {
     const again = await call('/api/v1/openapi.json', { headers: { 'If-None-Match': etag } });
     assert.equal(again.status, 304);
   });
+
+  it('answers the index at /api/v1/ with the documents, the sign-in rules and the limits', async () => {
+    const res = await call('/api/v1/');
+    assert.equal(res.status, 200);
+    assertApiHeaders(res);
+    assert.equal(res.headers.get('etag'), `"${OPENAPI_ETAG}"`);
+    const body = await fixture('index', res);
+    assert.equal(body.format, 'daggerheart-loot/api-index');
+    assert.equal(body.api_version, OPENAPI.info.version);
+    assert.equal(body.links.openapi, SITE + 'api/v1/openapi.json');
+    assert.equal(body.links.llms_txt, SITE + 'llms.txt');
+    assert.equal(body.links.developers.en, SITE + 'pages/en/developers.html');
+    assert.equal(body.links.mcp, OPENAPI.info['x-mcp-endpoint']);
+    assert.equal(body.links.mcp_me, OPENAPI.info['x-mcp-me-endpoint']);
+    assert.match(body.auth.account, /answer 401 until the sign-in for connected apps opens/);
+    assert.equal(body.limits.search_rows, 50);
+    assert.equal((await call('/api/v1/', { method: 'POST' })).status, 405);
+  });
 });
 
 describe('rolls', () => {
@@ -600,8 +618,7 @@ describe('CORS and routing', () => {
       '/api/v1/rolls/std',
       '/api/v1/nope',
       '/api',
-      '/api/',
-      '/api/v1/me/x'
+      '/api/'
     ]) {
       const res = await call(path, {
         method: 'OPTIONS',
@@ -628,7 +645,6 @@ describe('CORS and routing', () => {
       await call('/api/v1/rolls', { headers: { 'If-None-Match': '*' } }),
       await call('/api/v1/records/zzzz'),
       await call('/api/v1/rolls', { method: 'DELETE' }),
-      await call('/api/v1/me/x'),
       await call('/api'),
       await call('/api/v1/nope'),
       await post('/api/v1/rolls/std', 'nope'),
@@ -637,10 +653,9 @@ describe('CORS and routing', () => {
     for (const res of answers) assertApiHeaders(res);
     assert.deepEqual(
       answers.map((r) => r.status),
-      [200, 304, 404, 405, 404, 404, 404, 400, 200]
+      [200, 304, 404, 405, 404, 404, 400, 200]
     );
     assert.equal(answers[3].headers.get('allow'), 'GET, HEAD, OPTIONS');
-    await fixture('error-reserved-me', answers[4]);
   });
 
   it('answers a thrown error as JSON with the security headers', async () => {
@@ -818,6 +833,7 @@ describe('the catalog files', () => {
 describe('openapi.json and the parsers', () => {
   it('lists the paths the router answers', async () => {
     const samples = {
+      '/api/v1/': 'GET',
       '/api/v1/openapi.json': 'GET',
       '/api/v1/rolls': 'GET',
       '/api/v1/rolls/{section}': 'POST',
@@ -829,12 +845,17 @@ describe('openapi.json and the parsers', () => {
       '/api/v1/shared-lists/{token}': 'GET',
       '/api/v1/file-checks': 'POST'
     };
-    assert.deepEqual(Object.keys(OPENAPI.paths).sort(), Object.keys(samples).sort());
-    for (const [path, ops] of Object.entries(OPENAPI.paths)) {
+    const t0 = Object.entries(OPENAPI.paths).filter(([p]) => !p.startsWith('/api/v1/me/'));
+    assert.deepEqual(t0.map(([p]) => p).sort(), Object.keys(samples).sort());
+    for (const [path, ops] of t0) {
       const method = Object.keys(ops)[0];
       assert.equal(method.toUpperCase(), samples[path], path);
       assert.ok(ops[method].operationId && ops[method].summary.split(' ').length <= 10, path);
-      assert.ok(ops[method]['x-mcp-tool'] || path.endsWith('openapi.json'), path);
+      /* The two documents are no tool: the MCP instructions carry what they say. */
+      assert.ok(
+        ops[method]['x-mcp-tool'] || path.endsWith('openapi.json') || path === '/api/v1/',
+        path
+      );
       const res = await call(path.replace(/\{[a-z]+\}/, 'zzzz'), {
         method: 'OPTIONS'
       });
@@ -844,7 +865,14 @@ describe('openapi.json and the parsers', () => {
       .flatMap((o) => Object.values(o))
       .flatMap((op) => op.parameters ?? []);
     assert.ok(!noFormat.some((p) => p.name === 'format'));
-    assert.ok(!('securitySchemes' in (OPENAPI.components ?? {})));
+    /* A T0 operation declares no security; every account operation declares the OAuth one. */
+    assert.deepEqual(Object.keys(OPENAPI.components.securitySchemes), ['supabaseOAuth']);
+    for (const [path, ops] of Object.entries(OPENAPI.paths)) {
+      for (const op of Object.values(ops)) {
+        const me = path.startsWith('/api/v1/me/');
+        assert.deepEqual(op.security, me ? [{ supabaseOAuth: [] }] : undefined, path);
+      }
+    }
   });
 
   it('holds every body field and enum to the parsers', () => {

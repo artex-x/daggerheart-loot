@@ -3,7 +3,7 @@ import App from './App.svelte';
 import { browserEnv, queryClock, TEST_NOW } from './ports/index.js';
 import type { Env } from './ports/index.js';
 import { lazyCloud } from './ports/lazy-cloud.js';
-import { takeRedirect } from './ports/redirect.js';
+import { takeConnect, takeRedirect } from './ports/redirect.js';
 /* The UI face, upright and italic, served from the build's own `/assets/`
    (DESIGN.md, "The Local Font Rule"). */
 import '@fontsource-variable/source-sans-3/wght.css';
@@ -14,6 +14,9 @@ const target = document.getElementById('app');
 if (!target) throw new Error('no #app element');
 const root = target;
 
+/* Before the router is made: it reads the bar once at its making
+   (docs/specs/ROUTES.md, "Connect an app"). */
+takeConnect();
 const env = browserEnv();
 /* Registration and the storage request are boot concerns beside `mount`, not
    a component's. The registered worker keeps the site installable

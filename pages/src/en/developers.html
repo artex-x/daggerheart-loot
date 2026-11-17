@@ -23,13 +23,18 @@
   </li>
   <li>
     No key and no sign-in. The API ignores an <code>Authorization</code> header, so an answer
-    never depends on the caller.
+    never depends on the caller. The account API under <code>/api/v1/me/</code> is the one
+    exception: see "Account API" below.
   </li>
   <li>
-    Every answer carries <code>Access-Control-Allow-Origin: *</code> and no credentials, so a
-    browser tool can call the API directly. An <code>OPTIONS</code> request answers 204.
+    Every answer outside <code>/api/v1/me/</code> carries
+    <code>Access-Control-Allow-Origin: *</code> and no credentials, so a browser tool can call
+    the API directly. An <code>OPTIONS</code> request answers 204.
   </li>
-  <li>The API is read-only. Lists and homebrew items change only in the app.</li>
+  <li>
+    The public operations are read-only. A connected app changes the reader's own lists through
+    the account API.
+  </li>
 </ul>
 <h2>Fair use and the quota</h2>
 <p>
@@ -66,6 +71,12 @@
 </p>
 <h2>Operations</h2>
 <p>Every operation of <code>openapi.json</code>, each with an example request.</p>
+<h3><code>GET /api/v1/</code></h3>
+<p>
+  Reads the index: the links to <code>openapi.json</code>, <code>llms.txt</code>, these pages
+  and the MCP endpoints, the sign-in rules and the limits.
+</p>
+<pre><code>curl https://daggerheart-loot.pages.dev/api/v1/</code></pre>
 <h3><code>GET /api/v1/openapi.json</code></h3>
 <p>Reads the description of the API.</p>
 <pre><code>curl https://daggerheart-loot.pages.dev/api/v1/openapi.json</code></pre>
@@ -214,10 +225,130 @@
   is the entry for assistants; it also holds the formats of the import files. The operations
   above, except <code>openapi.json</code>, are also tools of a read-only MCP server at
   <code>https://daggerheart-loot.pages.dev/mcp</code>;
-  <a href="ai.html">the page for users</a> shows how to connect it.
+  <a href="ai.html">the page for users</a> shows how to connect it. Its
+  <code>initialize</code> answer carries instructions: which tools to use for creature loot,
+  shop stock and account work, the link rules, the limits and the price guess bands.
 </p>
-<h2>Account reads</h2>
+<h2>Account API</h2>
 <p>
-  Reads of a signed-in person's own lists and items are planned. Nothing of them is in v1 today.
+  A connected app reads and changes the reader's own lists and homebrew under
+  <code>/api/v1/me/</code> and through the MCP server
+  <code>https://daggerheart-loot.pages.dev/mcp/me</code>. It sends the access token of Supabase
+  Auth's OAuth 2.1 server as <code>Authorization: Bearer</code>; a request without one answers
+  401, and its <code>WWW-Authenticate</code> header names
+  <code>/.well-known/oauth-protected-resource/api/v1/me</code>, which names the server. The
+  token of a disconnected app answers 401 <code>invalid_token</code>, and the app's own session
+  token 403. The account endpoints answer 401 until the sign-in for connected apps opens. The
+  answers are <code>private, no-store</code> and carry no
+  <code>Access-Control-Allow-Origin: *</code>. Send your own uuids so that a retry changes
+  nothing twice, and the list's <code>rev</code> in <code>If-Match</code> for a delete and for a
+  change relative to the current values. A delete of more than one row takes
+  <code>confirm</code>, the number of ids. A list delete also deletes its share links, the
+  players' requests and its notices; nothing can be undone. An account answer's
+  <code>link</code> is the page in Russian and <code>link_en</code> the same page in English
+  (under <code>/en/</code>); give the reader the one of their language as it is.
 </p>
-<p>Last changed: 13 November 2026.</p>
+<p>
+  A homebrew item, source or card is saved with <code>PUT</code> at its own id:
+  <code>If-None-Match: *</code> creates it, <code>If-Match: "&lt;rev&gt;"</code> replaces that
+  revision, <code>If-Match: *</code> writes over any revision. Content that the app's editor
+  refuses answers 422 <code>invalid_content</code> with the editor's line in both languages. A
+  picture is two WebP files of 640 and 160 pixels, sent as
+  <code>multipart/form-data</code> (REST only). An item delete also removes the item from every
+  list that links it, the lists of other GMs included, and deletes its picture; a source delete
+  moves its items to the default source. A homebrew import in <code>update</code> mode needs
+  <code>expect_overwrites</code>, the count of the dry run.
+</p>
+<p>
+  Purchase requests are decided as in the requests panel: an accept takes each line's quantity
+  from the list's entry and deletes an entry taken whole; when the list holds less, the answer
+  is 409 <code>short</code> with what is there, and <code>clamp: true</code> takes what is
+  there. A retry of a decision answers that decision. A request to another reader's shared list
+  goes through the link's token with your own <code>id</code>; one to the reader's own list is
+  409. A print set stores the cards as "Печать" (Print) does and answers the link
+  <code>&lt;site&gt;p/&lt;id&gt;</code>: the reader prints on that page.
+</p>
+<p>
+  The reader disconnects an app on the "Account" page, in "Connected apps", with "Disconnect":
+  its token answers 401 <code>invalid_token</code> at once.
+</p>
+<ul>
+  <li><code>GET /api/v1/me/lists</code> - the heads of the lists, in pages.</li>
+  <li><code>POST /api/v1/me/lists</code> - a new list.</li>
+  <li><code>POST /api/v1/me/lists/delete</code> - up to 10 lists deleted.</li>
+  <li><code>GET /api/v1/me/lists/file</code> - the lists as the app's lists file.</li>
+  <li><code>POST /api/v1/me/lists/copies</code> - a copy of a shared list.</li>
+  <li><code>GET /api/v1/me/lists/{list_id}</code> - one list with its entries.</li>
+  <li><code>PATCH /api/v1/me/lists/{list_id}</code> - the name, the money mode, the notes.</li>
+  <li><code>DELETE /api/v1/me/lists/{list_id}</code> - one list deleted.</li>
+  <li><code>POST /api/v1/me/lists/{list_id}/entries</code> - records added.</li>
+  <li>
+    <code>PATCH /api/v1/me/lists/{list_id}/entries</code> - quantity, visibility or price of
+    several entries.
+  </li>
+  <li><code>POST /api/v1/me/lists/{list_id}/entries/delete</code> - entries removed.</li>
+  <li><code>PATCH /api/v1/me/lists/{list_id}/entries/{entry_id}</code> - one entry changed.</li>
+  <li>
+    <code>DELETE /api/v1/me/lists/{list_id}/entries/{entry_id}</code> - one entry removed.
+  </li>
+  <li><code>PUT /api/v1/me/lists/{list_id}/order</code> - the order of the entries.</li>
+  <li><code>GET /api/v1/me/lists/{list_id}/shares</code> - the share links.</li>
+  <li><code>POST /api/v1/me/lists/{list_id}/shares</code> - a share link made or replaced.</li>
+  <li><code>DELETE /api/v1/me/share-links/{share_id}</code> - a share link stopped.</li>
+  <li>
+    <code>POST /api/v1/me/imports</code> - a lists file or a homebrew file imported, or checked
+    first.
+  </li>
+  <li><code>GET /api/v1/me/homebrew-items</code> - the heads of the own items, in pages.</li>
+  <li><code>POST /api/v1/me/homebrew-items/delete</code> - up to 100 items deleted.</li>
+  <li>
+    <code>POST /api/v1/me/homebrew-items/move</code> - items moved to a source and section.
+  </li>
+  <li>
+    <code>POST /api/v1/me/homebrew-items/copies</code> - a copy of a catalog record or of
+    another GM's item.
+  </li>
+  <li><code>GET /api/v1/me/homebrew-items/{item_id}</code> - one item with its record.</li>
+  <li><code>PUT /api/v1/me/homebrew-items/{item_id}</code> - an item created or changed.</li>
+  <li><code>DELETE /api/v1/me/homebrew-items/{item_id}</code> - one item deleted.</li>
+  <li>
+    <code>PUT /api/v1/me/homebrew-items/{item_id}/picture</code> - the item's picture set.
+  </li>
+  <li>
+    <code>DELETE /api/v1/me/homebrew-items/{item_id}/picture</code> - the item's picture
+    removed.
+  </li>
+  <li><code>GET /api/v1/me/homebrew-sources</code> - the own sources and their sections.</li>
+  <li>
+    <code>PUT /api/v1/me/homebrew-sources/{source_id}</code> - a source created or changed.
+  </li>
+  <li><code>DELETE /api/v1/me/homebrew-sources/{source_id}</code> - one source deleted.</li>
+  <li><code>GET /api/v1/me/homebrew-cards</code> - the own set and rule cards.</li>
+  <li><code>PUT /api/v1/me/homebrew-cards/{card_id}</code> - a card created or changed.</li>
+  <li><code>DELETE /api/v1/me/homebrew-cards/{card_id}</code> - one card deleted.</li>
+  <li>
+    <code>POST /api/v1/me/homebrew-cards/{card_id}/members</code> - a record added to a card.
+  </li>
+  <li>
+    <code>POST /api/v1/me/homebrew-cards/{card_id}/members/delete</code> - a record taken off a
+    card.
+  </li>
+  <li>
+    <code>GET /api/v1/me/homebrew/file</code> - the own homebrew as the app's homebrew file.
+  </li>
+  <li>
+    <code>GET /api/v1/me/lists/{list_id}/requests</code> - a list's requests with their lines,
+    and its notices.
+  </li>
+  <li><code>POST /api/v1/me/requests/{request_id}/accept</code> - a request accepted.</li>
+  <li><code>POST /api/v1/me/requests/{request_id}/decline</code> - a request declined.</li>
+  <li><code>POST /api/v1/me/lists/{list_id}/read</code> - requests and notices marked read.</li>
+  <li><code>POST /api/v1/me/notices/delete</code> - notices hidden.</li>
+  <li>
+    <code>POST /api/v1/me/shared-lists/{token}/requests</code> - a request to another reader's
+    shared list.
+  </li>
+  <li><code>GET /api/v1/me/requests</code> - the new requests and notices of every list.</li>
+  <li><code>POST /api/v1/me/print-sets</code> - a print set.</li>
+</ul>
+<p>Last changed: 17 November 2026.</p>

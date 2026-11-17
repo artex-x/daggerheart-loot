@@ -1,0 +1,1 @@
+{"format":"daggerheart-loot/api-error","version":1,"error":{"code":"short","message":"The list holds less than the request asks for. The list did not change; the request is now read and expires within the hour. Show the reader short, then send clamp: true to take what the list holds, or decline.","short":[{"key":"ci1","want":5,"have":3}]}}

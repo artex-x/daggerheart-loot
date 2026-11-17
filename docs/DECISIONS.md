@@ -14,12 +14,15 @@ deleted.
 
 ## Index
 
+- 2026-11-17 - [The root audit allows one picomatch advisory until 2026-12-17](decisions/2026-11-17-the-root-audit-allows-one-picomatch-advisory-until-2026-12-17.md)
+- 2026-11-13 - [A connected app reaches only the API's account scope](decisions/2026-11-13-a-connected-app-reaches-only-the-api-s-account-scope.md)
 - 2026-11-12 - [ai-mcp lands on main at four named landings](decisions/2026-11-12-ai-mcp-lands-on-main-at-four-named-landings.md)
 - 2026-11-12 - [ai-mcp lands on main in two squashes](decisions/2026-11-12-ai-mcp-lands-on-main-in-two-squashes.md)
 - 2026-11-12 - [API record links carry the card version of the app's links](decisions/2026-11-12-api-record-links-carry-the-card-version-of-the-app-s-links.md)
 - 2026-11-12 - [API search scans build-time folded names, and file checks start at 32 KB](decisions/2026-11-12-api-search-scans-build-time-folded-names-and-file-checks-start-at-32-kb.md)
 - 2026-11-12 - [API v1 is public read, frozen, with a v2 beside it for a break](decisions/2026-11-12-api-v1-is-public-read-frozen-with-a.md)
 - 2026-11-12 - [README screenshots use a showcase seed user and are captured by hand](decisions/2026-11-12-readme-screens-use-a-showcase-seed-user.md)
+- 2026-11-12 - [The account API runs the app's own calls under fixed caps and one migration](decisions/2026-11-12-the-account-api-runs-the-app-s-own.md)
 - 2026-11-12 - [The app keeps its logic; the API runs the same pure modules](decisions/2026-11-12-the-app-keeps-its-logic-the-api-runs.md)
 - 2026-11-12 - [The MCP endpoint is a hand-written dispatcher over the OpenAPI document](decisions/2026-11-12-the-mcp-endpoint-is-a-hand-written-dispatcher-over-the-openapi-document.md)
 - 2026-11-12 - [The read API and MCP are one stateless worker over build-time projections](decisions/2026-11-12-the-read-api-and-mcp-are-one-stateless.md)

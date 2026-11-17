@@ -18,8 +18,11 @@
   </li>
   <li>Read a shared list or a shared homebrew item by its link.</li>
   <li>
-    Later: your own lists and items. The assistant will get that access only after you grant it
-    on the <a href="%APP%account">account page</a>, and you will be able to revoke it there.
+    With a connection to your account: read and change your lists, their entries and links, your
+    items, sources and cards, download and import files, accept and decline the players'
+    requests, hide the notices, send a request to another GM's shared list and make a print set.
+    The assistant gets that access only after you grant it, and you can revoke it on the
+    <a href="%APP%account">account page</a>.
   </li>
 </ul>
 <h2>Connect it in three steps</h2>
@@ -94,22 +97,51 @@
   An assistant that lets you add a remote MCP server by its address, with no sign-in, takes the
   address above in the same way. This page has no steps for ChatGPT yet.
 </p>
+<h2>Connect it to your account</h2>
+<p>
+  Your own data has another address, which needs a sign-in. It gives the same tools as the
+  address above and the account tools too, so one connector is enough:
+</p>
+<pre><code>https://daggerheart-loot.pages.dev/mcp/me</code></pre>
+<ol>
+  <li>
+    Add a connector with this address as above, but under Authentication choose the sign-in
+    (OAuth).
+  </li>
+  <li>The assistant opens a page of the site: sign in to your account and press "Allow".</li>
+  <li>
+    To disconnect the assistant, open the <a href="%APP%account">"Account" page</a> and press
+    "Disconnect" in "Connected apps". The assistant's access ends at once: the site answers it
+    401, and it must connect again to continue.
+  </li>
+</ol>
+<p>The account endpoints answer 401 until the sign-in for connected apps opens.</p>
 <h2>What it can and cannot do</h2>
 <ul>
   <li>
-    The connection only reads. The assistant changes none of your lists and none of your items.
+    The connection with no sign-in only reads. The assistant changes none of your lists and none
+    of your items.
   </li>
   <li>
     For the public data (the catalog, the tables, the rolls, a shared link) you need no account.
   </li>
   <li>
-    Access to your own lists and items is planned. It will need your explicit grant, and you
-    will be able to revoke it.
+    The connection to your account reads and changes only your data. It does not change your
+    password, your email or your sign-in methods, connect other apps, delete the account, or
+    change the display settings or the lists of other GMs.
   </li>
   <li>
-    The assistant cannot import a file for you. To create a list or items, ask it for a file,
-    then import that file on the Lists page or on "My items" (the import panel there has a link
-    to this page).
+    A delete cannot be undone. A good assistant asks you before it deletes a list, an item or a
+    link, hides notices or decides a request.
+  </li>
+  <li>
+    The assistant cannot print: it makes a print set and gives you its link, and you print on
+    the page of the set.
+  </li>
+  <li>
+    Without a connection to your account the assistant cannot import a file for you. Then ask it
+    for a file and import that file on the Lists page or on "My items" (the import panel there
+    has a link to this page).
   </li>
 </ul>
 <h2>Privacy and fair use</h2>
@@ -127,6 +159,7 @@
   <li>"Find the weapons of tier 2 that have the word 'axe' in the name."</li>
   <li>"Read me the full text of the item ci12 and give me its link."</li>
   <li>"Check this list file before I import it" (and paste the file).</li>
+  <li>"Show me the players' new requests on my lists" (with a connection to your account).</li>
   <li>
     "Read https://daggerheart-loot.pages.dev/llms.txt, then build me a list file with five
     healing consumables from the catalog and tell me how to import it."
@@ -140,4 +173,4 @@
   >: it tells them how to use the site, and it also holds the formats of the files that you
   import.
 </p>
-<p>Last changed: 13 November 2026.</p>
+<p>Last changed: 17 November 2026.</p>

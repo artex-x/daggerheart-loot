@@ -1732,6 +1732,13 @@ touches the named file to fold in:
 - `gitleaks-action@v2` and the three Pages actions in `ci.yml` target Node
   20 and are forced onto Node 24 by the runner: two standing annotations,
   not errors. File it only if one starts failing.
+- The `audit` job checks the root package with `node tools/audit-gate.mjs`, not
+  a bare `npm audit --audit-level=high`: it fails on every high or critical
+  advisory but the dated entries of its `ALLOWLIST`, and on an entry that is
+  expired, stale or has a new vulnerable range. One entry today,
+  GHSA-fc5q-39xc-vjpf until 2026-12-17 (`docs/decisions/`, 2026-11-17, "The
+  root audit allows one picomatch advisory until 2026-12-17"). The artwork and
+  preview steps stay plain `npm audit`.
 
 Facts settled during measurement (issue 68, 2026-09-23), the Browser pane:
 
@@ -2006,7 +2013,7 @@ reaches a project through `config:push`. Decided 2026-09-24
    configuration is code; the dashboard is read-only; no Branching", stay;
    every hosted property
    the repository does not mean to own is deleted (`[db.pooler]`,
-   `[storage.vector]`, `[storage.analytics]`, `[auth.oauth_server]`,
+   `[storage.vector]`, `[storage.analytics]`,
    `[auth.sms.twilio]`, `[auth.external.apple]`, `[auth.web3.solana]`, the
    four `[auth.third_party.*]`, `auth.password_requirements`, the
    `[experimental]` S3 lines, `[studio]`'s OpenAI key), so a push leaves it
@@ -2269,11 +2276,11 @@ no `statements` (`tools/supabase/db.mjs`), so `supabase migration fetch`
 against the test project writes empty files; never fetch migrations from it.
 
 **Expected Security Advisor warnings.** Derived from `supabase/migrations/`
-at the commit that adds `20261028120000_drop_legacy_move.sql`:
-the Security Advisor reports 0 errors, 24 warnings and 5 info. A
+at the commit that adds `20261113120000_api_client_guard.sql`:
+the Security Advisor reports 0 errors, 25 warnings and 4 info. A
 SECURITY DEFINER function whose latest grant gives `execute` to
 `authenticated` is one warning, and `anon` is a second warning on the same
-function. 18 functions are such definers (18 warnings), and 5 of them are
+function. 19 functions are such definers (19 warnings), and 5 of them are
 also executable by `anon` (5 more); the reasons below:
 
 | Function | `anon` | Reason |
@@ -2290,6 +2297,7 @@ also executable by `anon` (5 more); the reasons below:
 | `get_homebrew_items` | no | Reads up to 1000 items of any owner by id for a signed-in caller, as `get_homebrew_item` reads one; row level security shows the caller only its own items. |
 | `homebrew_art_room` | no | Counts the caller's files in `storage.objects`, which the user cannot read. |
 | `create_print_set`, `get_print_set` | no | `print_sets` has no Data API grant; the functions store and read a sheet and move `opened_at`. |
+| `api_client_session_live` | no | Answers whether the caller's own token session still has its `auth.sessions` row, which the user cannot read; it takes no argument, so it says nothing about another session. |
 | `get_item_preview`, `get_shared_list_preview` | yes | The link-card Worker reads the card of an item or share link by its id or token, signed out, and never the table. |
 
 A definer that is a trigger function,
@@ -2297,13 +2305,224 @@ or that is revoked from `public`, `anon` and `authenticated`, adds no
 warning (the count and limit triggers, the broadcast triggers,
 `effective_limit`, `homebrew_links_touch`), and every `security invoker`
 function adds none (`reorder_list`, the two older `get_shared_list` forms and
-`delete_homebrew_items` among them). The 24th warning is
+`delete_homebrew_items` and the pre-request guard `api_client_guard` among them). The 25th warning is
 leaked password protection, which is off because there is no password
-sign-in (Google and Discord only). The five info are "RLS enabled, no
-policy" for `homebrew_art_released`, `limit_defaults`, `print_sets`,
-`usage_snapshots` and `user_limit_overrides`, by design: no Data API role
-reads them. A warning that is not in this list stops the release until a
+sign-in (Google and Discord only). The four info are "RLS enabled, no
+policy" for `homebrew_art_released`, `limit_defaults`, `usage_snapshots`
+and `user_limit_overrides`, by design: no Data API role reads them
+(`print_sets` has the restrictive `print_sets_no_client` since
+`20261113120000_api_client_guard`). A warning that is not in this list stops the release until a
 review accepts it and adds it here with its reason.
+
+**OAuth server and the client token.** `[auth.oauth_server]` is owned by the
+file since `ai-mcp` B5a (`authorization_url_path = "/connect"`,
+`allow_dynamic_registration = true`), so a `config:push` is the switch. The
+base is `enabled = false` and `[remotes.test.auth.oauth_server]` is `enabled =
+true`: the test project's server was switched on in the dashboard on
+2026-11-12 (the same values); production's stays off until release step 3
+sets the base to `true`. The local stack follows the base, so it serves no
+OAuth server; a local probe sets the base to `true` for its run only. The CLI's field names come from the 2.117.0 template.
+`docs/decisions/2026-11-13-a-connected-app-reaches-only-the-api-s-account-scope.md`.
+
+Measured on the test project, 2026-11-13 (Node, auth-js 2.117.1, throwaway users
+and dynamically registered public clients, deleted after each run; the probe
+scripts are the owner's, `C:\Users\Ignat\.dhloot\notes\57\b5a-step1\`):
+
+- Discovery answers at `<URL>/.well-known/oauth-authorization-server/auth/v1`
+  and `<URL>/auth/v1/.well-known/oauth-authorization-server` (200, no apikey);
+  `grant_types_supported` is `authorization_code` and `refresh_token`; the token
+  endpoint refuses `client_credentials` (`unsupported_grant_type`), and
+  registration refuses that grant type.
+- The authorize redirect is `<site_url>connect?authorization_id=<id>`, the id
+  32 characters of `[a-z0-9]`. An approve needs a details read first (else 404).
+  Details answer `authorization_id`, `redirect_uri`, `client {id, name, uri}`
+  (no `logo_uri` when unset), `user {id, email}` and `scope`; a grant answers
+  `client {id, name, uri}`, `scopes` and `granted_at`, and no redirect address.
+- A client token is a normal `authenticated` JWT of 3600 s with `client_id`,
+  `session_id`, `scope`, `email`, `phone`, `app_metadata` and `user_metadata`,
+  also for `scope=openid` alone; a `resource` parameter is accepted and leaves
+  `aud` `authenticated`.
+- Before Supabase's fix (supabase/auth#2898, merged 2026-11-03, in
+  2.198.0-rc.38 and later, not on the hosted projects on 2026-11-13) a client
+  token sets the password (`PUT /auth/v1/user`; a password sign-in then works,
+  and the app's own session ends), enrolls a TOTP factor, reads and approves
+  another app's pending authorization, lists the grants, revokes another app's
+  grant, changes `user_metadata`, and ends every session (`POST
+  /logout?scope=global`). An email change answered 400 `email_address_invalid`
+  (the project's address check) and identity link and unlink answered for the
+  app token too, so neither is a bound. B5a step 1's stop rule fired; the owner
+  decided to build on the fix and to release only once Supabase deploys it.
+
+Measured on the local stack, 2026-11-13 (CLI 2.117.0, its Auth image serves the
+OAuth server): with the section off, every OAuth route, the grants list and a
+revoke answer 404 `feature_disabled` "OAuth server is disabled" (the app's
+account section then draws nothing); with it on, an unknown authorization
+answers 404 `oauth_authorization_not_found`, a revoke of a grant that is not
+there 404 `oauth_consent_not_found`. `alter role authenticator set
+pgrst.db_pre_request` runs as the migration's `postgres` on the local stack.
+`check:db` runs no PostgREST, so `tests/db/api-client-guard.test.mjs` sets the
+role, the claims, `request.method` and `request.path` itself and runs the guard,
+with client tokens minted as claims and an `auth.sessions` row the case inserts.
+
+Measured on the local stack, 2026-11-14 (CLI 2.117.0, the base set to `true`
+for the run; a throwaway user and a dynamically registered public client):
+the client's refresh token at the plain `/auth/v1/token?grant_type=refresh_token`
+answers 400 `invalid_client`, and at `/auth/v1/oauth/token` 200 with
+`client_id` kept (P7 holds locally; the hosted reading is the release
+gate's). Before a revoke the token's `auth.sessions` row exists, with
+`oauth_client_id` set; `DELETE /auth/v1/user/oauth/grants?client_id=` answers
+204 and deletes that row, so the guard's session check refuses the unexpired
+token, and the refresh token then answers 400 `refresh_token_not_found`.
+`auth.oauth_consents` has `id`, `user_id`, `client_id`, `scopes`,
+`granted_at` and `revoked_at`; a revoke keeps the row and sets `revoked_at`,
+so the record stays until the account is deleted.
+
+Measured on the local stack, 2026-11-14 (the same setup; a client token from the
+local flow, `handleApi` driven in Node against the local `SUPABASE_URL`): the
+role setting is `pgrst.db_pre_request=public.api_client_guard`. A client token
+gets 403 `42501` "api_client_guard: not allowed for a connected app" from `GET
+user_prefs`, `GET print_sets`, `rpc/reorder_list` and `rpc/delete_account_requests`;
+the app token reads `user_prefs` (200). The PostgREST shapes the account API
+reads, each as `preview/api/me-fake.mjs` answers it: `list_entries(count)`
+embeds as `[{"count": n}]`, also 0; a `lists` PATCH with `revision=eq.<rev>`,
+`select=revision` and `Prefer: return=representation` answers 200
+`[{"revision": n}]` when current and 200 `[]` when stale; a DELETE by revision
+with `select=id` answers 200 `[{"id": ...}]` when current and 200 `[]` when gone
+or moved; the `void` RPC `revoke_list_share` answers 204 with an empty body on
+an active and on a stopped link, and 403 `42501` "revoke_list_share: not the
+owner of the share" for an unknown id. Through the worker, L1 counts, L5 reads a
+resend back as done and a stale rev as 412, L7 answers 204, 204 gone and 412
+moved, S3 204 twice. After a grant revoke the unexpired token gets 403 `42501`
+"api_client_guard: the session of this token has ended" from a table and an
+RPC; the worker answers it 401 `invalid_token` on REST and HTTP 401 on
+`/mcp/me` (`CONTRACTS.md` section 6, "Token").
+
+The homebrew shapes (the same method, 2026-11-14, a second user's app session
+for another account's item): a `POST homebrew_items?on_conflict=id` with `Prefer:
+resolution=ignore-duplicates,return=representation` answers 201 with the row, and
+201 `[]` for a held id of any owner; a held key is 409 `23505`
+`homebrew_items_owner_id_key_key`; content the check refuses is 400 `23514`
+`homebrew_items_content_check`. A select with aliases and JSON paths
+(`en:content->>en,eq:content->eq`) answers the aliased fields (`eq` null when
+absent); `or=(key.eq.<k>,content->eq->>line.eq.<k>)`, `art=is.null`, `id=neq.<id>`
+and a direct `GET list_entries` with `or=(hb_item.eq.<id>,item_key.eq.<k>)` all
+answer 200 under the guard. `get_homebrew_item` with the client token answers the
+item. `move_homebrew_items` at a stale revision answers 400 `P0001`
+"move_homebrew_items: conflict <id>"; `delete_homebrew_items` answers the count,
+200 `0` when gone. Storage takes the client token: an upload under a valid name
+answers 200; the same name again 400 `{"statusCode":"409","error":"Duplicate"}`;
+a refused insert policy 400 `{"statusCode":"403","error":"Unauthorized"}`; the
+public read answers 200. A source delete moves its items to the default source and
+an item keeps its `section` key. Through the worker every homebrew operation
+answered as `preview/api/me-fake.mjs` does (create 201, equal 200, other row 412,
+held key and another account's id 409, replace and stale 412, `If-Match: *`, the
+upload, reuse and clear, sources, move, cards and members, the copy of another
+account's item with one relinked list, the catalog copy with its picture, a new
+item into a list, heads with records, the file, a bulk delete, and a homebrew
+import with a custom target whose second apply of the same `import_id` adds
+nothing). No client token passed the guard outside its list.
+
+The narrowed homebrew reads (the same method, 2026-11-14, the B5c fix pass): `GET
+homebrew_cards?select=id,key,kind,book_id,revision,en:content->>en,ru:content->>ru,items:content->items`
+answers each card's names (`ru` null when absent) and its `items` array, and `GET
+homebrew_books?select=id,en:content->>en,ru:content->>ru` the names, both 200 under the
+guard. Through the worker a card and a source of a held name answer 422 `duplicate`, a
+member move with a stale `If-Match` 412, a move 200 with the old card's other fields
+kept, and an H4 save of the read content after an H17 source delete 200 (the kept
+section). `import_homebrew` with an item id of another account answers 409 `23505`
+`homebrew_items_pkey`, so a copy into that id answers 409 `conflict`; a copy into an
+unrelated own item's id 409. A refused Storage insert policy answers 400 with
+`statusCode` 403 and the message "new row violates row-level security policy".
+
+The request and print-set shapes (the same method, 2026-11-17, two users each with a client
+token of one client; the notices inserted as `postgres`): the `void` functions
+`create_purchase_request`, `decline_purchase_request` and `mark_list_read` answer 204 with an
+empty body; `apply_purchase_request` answers 200 `{"short": [{"have", "item", "want"}]}` when
+the list holds less, 400 `22023` "request: decided" for a decided request and 403 `42501`
+"request: not the owner of the request" for an unknown id. `GET
+lists?select=id,list_notices(count)&list_notices.read_at=is.null` answers each list with
+`[{"count": n}]` of its unread notices; the `purchase_request_lines` embed and the
+`list_notices` read answer under the guard, a notice `name` as stored (`{ en }` alone
+included). `list_shares?token=eq.<t>` answers the row for the reader's own link and `[]`
+for another reader's. `create_print_set` with a client token answers 200 with the set id as a
+JSON string (`k` and `q` entries; `q` 1 is 400 `22023` "print set: bad entries"), the same
+sheet the same id, the row owned by the reader: `print_sets_no_client` does not stop the
+`SECURITY DEFINER` function, while a direct `GET print_sets` stays 403 `api_client_guard`.
+Through the worker: R8 counts one unread notice, R1 pages by `cursor` with `notices` on the
+first page only, an accept of 3 from 2 answers 409 `short`, `clamp: true` takes 2 (the entry
+deleted whole), a retry answers `applied`, a decline of it 409 with `status`, a decline retry
+`declined`, R5 204 (an unknown list 404), R6 deletes both notices and a retry answers 200, R7
+201 twice with one row, to the reader's own list 409 `conflict`, an absent key 409; P1 from
+`cards` and from `list_id` 201. Each answered as `preview/api/me-fake.mjs` does.
+
+The Realtime statement (after a disconnect, an unexpired client token can still
+open a new connection and join `owner:<uid>`, for at most an hour) is reasoned
+from how Realtime authorizes a join (signature and expiry, not the session
+row), not measured. The join probe is a pending reading: a Realtime join to
+`owner:<uid>` with a client token after a revoke, on the local stack with the
+base set to `true` for the run.
+
+Pending readings (the orchestrator, after `migrate-test` applies
+`20261113120000_api_client_guard` on the test project): a client token from the
+probe gets 403 `api_client_guard` from `GET /rest/v1/user_prefs?limit=1` and an
+app token 200; `npm run config:diff -- --project test` (the owner's token)
+prints `drift: none` with the owned section. If the hosted project ignores the
+role setting, the named fallback is a guard call at the top of each function
+`authenticated` may execute outside the list. Also pending:
+
+- The Realtime join probe above.
+- CI's configured bundle total (the `e2e` job's budget line) on the first push
+  with the real `VITE_SUPABASE_*` values: the 338 kB limit rests on a build with
+  placeholder values, so a total of 337.0 kB or less sets the limit to 337 in
+  `tools/bundle-budget.mjs`.
+- At the closeout deploy: live check 1 of the owner note
+  `C:\Users\Ignat\.dhloot\notes\57\ai-mcp-live-checks.md` expects the
+  `openapi.json` `ETag` `"1.3.0-<hash>"`.
+- After release step 5: the production cold readings of "Quotas, recovery and
+  failure" (a cold `POST /api/v1/me/lists/{id}/entries`, a cold `POST
+  /api/v1/me/imports` of a 32768 B lists file, a `GET /api/v1/me/homebrew/file`
+  of 100 items, a picture upload, a requests page and a print set); the hosted `list_notices(count)` embed answers as the
+  local stack's; then the orchestrator posts the issue 72 follow-up A2 and
+  closes the issue (`C:\Users\Ignat\.dhloot\notes\57\ai-mcp-closeout-posts.md`).
+- Owner step: the Claude connector with "No sign in" answers a roll on `/mcp`.
+
+Release checklist (owner, after the closeout squash; each line is a gate):
+
+1. The migration is applied by CI (`migrate-prod`), and `/connect` is live
+   (the closeout deploy).
+2. The orchestrator runs probes P1-P8 against the hosted project (`node
+   --env-file=E:/dev/daggerheart-loot/.env.test.local
+   C:\Users\Ignat\.dhloot\notes\57\b5a-step1\b5a-probe3.mjs --only
+   P1,P2,P3,P4,P5,P6,P7,P8`). Expected: every row of the client column
+   `PASS-BLOCKED`: P1 a password set, P2 a factor enroll, P3 an approve of
+   another client, P4 a grant revoke, P5 an email change to a valid
+   throwaway address (a pending change counts as a failure), P6 an identity
+   unlink on an account with one identity (the probe's `p6`): a 401 or 403 for
+   the client token passes; another error that differs from the app token's
+   passes; the same error for both is `INCONCLUSIVE` and fails the gate, P7 the
+   OAuth refresh token at the plain
+   `/auth/v1/token?grant_type=refresh_token` (refused, or the new token keeps
+   `client_id`), P8 the grants list and another client's authorization
+   details. P9 (the global sign-out) is recorded, not a gate. The consent
+   strings and both privacy pages claim that the token is bounded: do not
+   switch production on before P1-P8 pass.
+3. Set the base `[auth.oauth_server] enabled = true` in a commit (the base is
+   `false` until then, so no other production push switches the server on),
+   then `npm run config:diff -- --project prod`. Expected: only
+   `auth.oauth_server` rows.
+4. `npm run config:push -- --project prod`, which switches the server on.
+   The same commit as step 3 removes the sentence "the account endpoints
+   answer 401 until the sign-in for connected apps opens" from `llms.txt` and
+   both developer pages (and B5d's user pages), in both languages.
+5. The acceptance probe on production, and the consent URL opened once to see
+   that `//connect` reads as `/connect`; then the connector test with a sign-in.
+
+Before the closeout squash the orchestrator reads production's
+`/auth/v1/.well-known/oauth-authorization-server`. Expected: 404
+`feature_disabled` (the server is still off). To revert: switch the OAuth server
+off (or revoke every grant) before the down migration, which gives a client
+token the whole account back; a frontend revert alone draws the not-found page
+on `/connect`.
 
 **The local stack lock.** One local Supabase stack serves every checkout on
 this host, and `npm run check:db` and `npm run restore:drill` reset it.
@@ -2413,14 +2632,14 @@ the database's part. `docs/DECISIONS.md`, 2026-09-30, "The list_entries
 touch and limit triggers run once per statement".
 
 **The configured bundle budget.** `tools/bundle-budget.mjs` has two limits:
-276 kB for the unconfigured build and 333 kB for the configured one, which
+280 kB for the unconfigured build and 338 kB for the configured one, which
 carries the account client chunk. A batch whose total passes a budget raises
 it to the measured total rounded up to the next whole kB (a printed 250.3
 gives 251; the tool compares the unrounded total, so a printed whole number
 such as 251.0 can pass 251: add 1 kB), never past 350 kB configured and 300 kB
 unconfigured (owner, 2026-10-22, and 2026-11-04: "we can increase budget up to
 300"). `npm run check:built` builds `dist/`
-unconfigured and so measures only the 276 kB limit. The 333 kB limit runs in
+unconfigured and so measures only the 280 kB limit. The 338 kB limit runs in
 CI's `e2e` job, after `npm run e2e` leaves the configured build in `dist/`,
 and in `deploy`. The lists release passed `check:built` locally and failed
 this step in CI (run 36228323330). A batch that adds code to the app or to
@@ -2432,7 +2651,7 @@ drops every `E2E_*` name, the secret key included, before the build:
 node --env-file=.env.test.local --input-type=module -e "import { buildEnv } from './tests/e2e/lib.mjs'; import { spawnSync } from 'node:child_process'; process.exit(spawnSync('npm run build && npm run budget', { shell: true, stdio: 'inherit', env: buildEnv(process.env) }).status ?? 1);"
 ```
 
-Expected: `within the 333 kB budget (with the account client chunk)`; on 2026-11-11 both limits rose, to 276 (275.0 kB measured) and 333 (about 332.0 kB estimated; no .env.test.local here, CI's e2e measures it); earlier that day both rose to 275 (274.4 kB measured) and 332 (about 331.4 kB estimated), and before them the
+Expected: `within the 338 kB budget (with the account client chunk)`; on 2026-11-17 (`ai-mcp` B5d: the account page's link to the AI page) the unconfigured limit rose to 280 (279.0 kB measured; the configured limit stays 338); on 2026-11-13 (`ai-mcp` B5a: the consent page, the connected apps and `AppRepository`) both limits rose, to 279 (278.9 kB measured) and 338 (336.9 kB measured with placeholder `VITE_SUPABASE_*` values, as no `.env.test.local` was in that worktree; 1 kB more for CI's real values); on 2026-11-11 both limits rose, to 276 (275.0 kB measured) and 333 (about 332.0 kB estimated; no .env.test.local here, CI's e2e measures it); earlier that day both rose to 275 (274.4 kB measured) and 332 (about 331.4 kB estimated), and before them the
 configured limit rose to 331 (330.7 to 330.8 kB measured by CI's e2e); on 2026-11-07 both
 limits rose: 272.3 kB unconfigured, measured, and about 329.4 kB
 configured, estimated (no `.env.test.local` in that worktree; CI's `e2e` job measures it); 327.3 kB
@@ -2925,6 +3144,15 @@ Steps:
    ('homebrew_cards_per_owner', 100), ('homebrew_items_per_owner', 100),
    ('snapshot_bytes_per_list', 1048576) on conflict (key) do nothing;`, and
    run the check again.
+5. Check the guard of connected apps in the same editor. The backup leaves out
+   roles, so a project rebuilt from it has no `pgrst.db_pre_request`, and
+   every connected app's token reaches the whole account with no error. Run
+   `select rolconfig from pg_roles where rolname = 'authenticator';`.
+   Expected: the array holds `pgrst.db_pre_request=public.api_client_guard`.
+   Without it, run `alter role authenticator set pgrst.db_pre_request =
+   'public.api_client_guard'; notify pgrst, 'reload config';`, then the
+   acceptance probe ("OAuth server and the client token": a client token gets
+   403 `api_client_guard` from `user_prefs`).
 
 Before it asks for the ref, the command checks the receipt, reads
 production's migrations, tables, keys, foreign keys and sequences, and
@@ -3334,8 +3562,8 @@ Owner setup, in order, after R11 is on `main`:
    production project. Expected: the dispatch day is not visibly above the
    days around it. If it is more than 1 GB above them, delete the secret
    `SUPABASE_USAGE_TOKEN_PROD`; the report then shows `requests: no token`.
-8. Re-run the Security Advisor on production. Expected: 0 errors, 24
-   warnings, 5 info ("Expected Security Advisor warnings").
+8. Re-run the Security Advisor on production. Expected: 0 errors, 25
+   warnings, 4 info ("Expected Security Advisor warnings").
 9. After seven nights, open the latest summary. Expected: a forecast on the
    Database row.
 
@@ -3847,7 +4075,8 @@ assembly (`collect`, `guard`, `old-host`); the job's three steps call it.
   card read are wrong, and the check names them. Neither proves the ICU
   collation: the read answers null before it sorts. It also asserts the
   site's `robots.txt`, the `X-Robots-Tag` header on `llms.txt` and
-  `catalog-index.csv`, `GET /mcp` 405, a legacy `tools/list`, an `Origin` 403, `/mcp/me` 404, `i/w1?v=x` and a table card's count
+  `catalog-index.csv`, `GET /mcp` 405, a legacy `tools/list`, an `Origin` 403, `POST /mcp/me`
+  and `GET /api/v1/me/lists`, `GET /api/v1/me/homebrew-items` and `GET /api/v1/me/requests` 401 naming the metadata, both metadata documents, the index `GET /api/v1/`, `i/w1?v=x` and a table card's count
   (which proves the `names.json` read). Every card answer must be the app
   document, which proves the worker's read of `index.html`; the route paths
   `roll/std`, `tables`, `lists/x`, `i/hb_<key>`, `en/search`, `en/tables` and
@@ -3916,6 +4145,49 @@ assembly (`collect`, `guard`, `old-host`); the job's three steps call it.
   budgets; a search case that fails sends the search to its next fallback (display names as
   a capitalization delta, then shard skipping by facet codes), a file-check case that fails
   keeps the 32768 B cap and sends the Supabase Edge Function option to the owner.
+- The account API's catalog facts (`catalogFacts` in `preview/api/service.mjs`: the
+  search index and shards read and split into each record's kind, tier, rarity and
+  names) run on the first account call of an isolate that adds entries, guesses a
+  price, writes a lists file or imports one. Measured 2026-11-14 on this host (Node,
+  25 fresh caches each): today (1593 records, 201 KB of search files) the first call
+  3.5 ms, the median 2.2 ms; at 3x (4779 records, 607 KB) the first 8.1 ms, the median
+  5.4 ms; a warm call 0.02-0.03 ms. With the landing-2 host slope (1.70-3.01) a cold
+  call at 3x is about 9-24 ms on production. Live readings to take at the `ai-mcp` closeout,
+  after the owner's switch: a cold `POST /api/v1/me/lists/{id}/entries` and a cold
+  `POST /api/v1/me/imports` of a 32768 B lists file, beside the landing-3 cold readings.
+- The homebrew file page (`GET /api/v1/me/homebrew/file`, `export_homebrew`) and the
+  picture body (`PUT /api/v1/me/homebrew-items/{id}/picture`), measured 2026-11-14 on
+  this host (Node, items with a name only, three fresh processes each; cold is the first
+  call of a process, warm the median of 14 more). The page build without its reads,
+  before (a file built per added item) and after (a running byte count, one build, at
+  most 12 item reads of 8): 100 items 38-43 ms cold and 10-12 ms warm before, 25-31 ms
+  cold and 1.0-1.1 ms warm after (96 items a page); 300 items 121-122 ms cold and
+  85-88 ms warm before (300 items, 41 Supabase calls), 26-27 ms cold and 1.1 ms warm
+  after (96 items, 15 calls). One build of 96 items alone is 23-25 ms cold and 0.5 ms
+  warm, so the cold floor is the first run of `toHomebrewFile`, not the loop. The
+  picture body of 409849 B (`readPictures`, the capped read included): the byte scan
+  7.3-8.9 ms cold and 3.5-4.1 ms warm; `Response.formData()` 6.9-7.9 ms cold and
+  2.1-2.4 ms warm (Node's parser is JavaScript; workerd's is native, so production is
+  expected lower, not measured). Live cold readings after the owner's switch, beside
+  the landing-3 readings: a `GET /api/v1/me/homebrew/file` of 100 items and a picture
+  upload.
+- The requests and the print sets, measured 2026-11-17 on this host (Node, through the
+  worker over `preview/api/me-fake.mjs`, whose own cost is included; three fresh
+  processes each, one list read first, so cold is the operation's first call and warm the
+  median of 14 more): `POST /api/v1/me/print-sets` from a list of 180 entries 6.3-9.8 ms
+  cold and 2.2-3.6 ms warm; `GET /api/v1/me/lists/{id}/requests` of 10 requests of 10
+  lines and 50 notices 7.8-8.3 ms cold and 3.7-4.3 ms warm, of 10 requests of 60 lines
+  (55 kB) 10.2-15.4 ms cold and 5.9-7.4 ms warm; `GET /api/v1/me/requests` of 100 heads
+  3.9-4.1 ms cold and 1.8-2.1 ms warm. The first account call of a process is 28-47 ms
+  (module start and the stub). 100 requests of 10 lines pass 65536 B and answer 422
+  `answer_too_large` "Send a smaller limit."; a list holds at most 10 pending requests by
+  default (`pending_requests_per_list`). These go to the owner's cold-readings decision
+  with the landing-3 readings.
+- `env.ASSETS.fetch` and the subrequest limit: the Cloudflare limits page (read
+  2026-11-14) counts a Fetch API request, KV, R2 and D1 calls, and lists a separate
+  1000 for internal services; it does not say whether an `ASSETS` read counts. The
+  account API therefore counts each `ASSETS` read as one: a lists file page reads 7
+  lists (1 + 7 x 2 Supabase calls), at most 19 with the search files at 3x.
 - B1 production readings (Pages Metrics, 2026-11-12, values read as
   microseconds): baseline 58 requests p50 3,103, p75 6,297, p99 11,294; a
   mixed read load p99 25,846; a burst of 10 `std` rolls p50 up to about 7,500,
@@ -3923,7 +4195,35 @@ assembly (`collect`, `guard`, `old-host`); the job's three steps call it.
   about 2-3 ms and a `std` roll about 7-17 ms; this is why a record read parses one
   record per line. Local before/after (200 calls, this host): `std` roll warm 1.565 to
   0.545 ms, cold 1.645 to 1.170 ms; record `ci12` warm 0.390 to 0.155 ms, cold
-  0.625 to 0.310 ms. The readings of the deploy that carries the per-line files go here.
+  0.625 to 0.310 ms.
+- Production readings of the per-line files (`89a55f1b`, 2026-11-12; Pages Metrics,
+  Production, 1-minute ranges, values read as microseconds, shown here in ms; cold is
+  the case's one warm-up request, then a burst of 10, 1 s apart): `POST
+  /api/v1/rolls/std` `{"dice":3}` cold 6.360 (4 subrequests), burst p50 4.804, p75
+  9.745, p99 17.114; 10 record reads cold 4.902 (2 subrequests), p50 3.630, p75 4.138,
+  p99 8.129; MCP legacy `roll` cold 8.913 (5 subrequests), p50 4.662, p75 5.189, p99
+  7.397; 0 errors and 0 exceeded-CPU in 33 requests. Against the local medians above, a
+  production request costs a fixed floor (about 4.4 ms cold, 3.2 ms warm) plus K times
+  the local CPU, K 1.70 (cold) to 3.01 (burst p50). The owner accepted the roll tail as
+  measured and dropped per-total roll files (2026-11-12).
+- Production readings of search and the file checks (`c4742c53`, 2026-11-13, the same
+  method; full table: the owner note `C:\Users\Ignat\.dhloot\notes\57\ai-mcp-live-checks.md`,
+  "Landing 3 readings"): cold, a record read 3.9 ms, a search of two Russian words 12.6,
+  `kind=weapon&tier=2&limit=50` 7.9, a homebrew file check of 30,308 B 13.8, a lists
+  file check of 32,700 B with about 2,000 unknown ids 10.2, MCP `check_file` 19.5;
+  burst p50 (p99): record 1.6 (5.1), search 2.4 (16.5), filter 1.9 (9.4), homebrew check
+  2.7 (9.5), lists check 5.9 (20.6), MCP `check_file` 2.4 (3.9), MCP `search_catalog`
+  2.4 (12.5); every status as expected, 0 errors, 0 exceeded-CPU. Every burst p50 is
+  under 8 ms; four cold readings are past 10 ms (the 3x prediction is about 14-15 ms).
+  Open owner decision: accept these cold readings as for the roll (cold is the first
+  request of an isolate; no 1102), or take the search fallbacks and the Supabase Edge
+  Function option for the file checks. The file-check and import cap stays 32768 B
+  either way, and the account API's cold readings above join the same decision.
+- `names.json` at three times today's catalog is about 330 KB, past the worker's
+  `NAMES_MAX` of 196608 B (`preview/worker.mjs`, `preview/api/rest.mjs`), so every
+  shared-list read of the API would answer 503, and the shared-list card reads the same
+  file under the same cap (estimated 2026-11-12, not measured). The batch that grows the
+  catalog toward that size takes a lean name map or a larger cap with a CPU reading.
 - A failed read of `index.html` by the worker (a 2 s timeout, a status other
   than 200, more than 65536 bytes, no card markers) draws the card page with
   its redirect to `<site>#/...` and `Referrer-Policy: no-referrer`; the next

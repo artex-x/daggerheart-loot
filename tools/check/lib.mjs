@@ -101,7 +101,7 @@ export const STAGES = [
   {
     name: 'test:preview',
     command:
-      'node --import ./tools/ts-hooks.mjs --test --test-reporter=dot preview/worker.test.mjs preview/api/api.test.mjs preview/api/mcp.test.mjs tools/api-data.test.mjs'
+      'node --import ./tools/ts-hooks.mjs --test --test-reporter=dot preview/worker.test.mjs preview/api/api.test.mjs preview/api/mcp.test.mjs preview/api/me.test.mjs preview/api/me-lists.test.mjs preview/api/me-homebrew.test.mjs preview/api/me-requests.test.mjs preview/api/me-print.test.mjs tools/api-data.test.mjs'
   },
   {
     name: 'test:artwork',
@@ -119,6 +119,10 @@ export const STAGES = [
     name: 'test:supabase',
     command:
       'node --test --test-reporter=dot tools/supabase/lib.test.mjs tools/supabase/usage-lib.test.mjs tools/supabase/backup-art.test.mjs'
+  },
+  {
+    name: 'test:audit-gate',
+    command: 'node --test --test-reporter=dot tools/audit-gate.test.mjs'
   },
   {
     name: 'test:check-site',

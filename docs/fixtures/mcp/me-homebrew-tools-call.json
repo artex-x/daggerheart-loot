@@ -1,0 +1,108 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/mcp/me",
+    "headers": {
+      "Content-Type": "application/json",
+      "MCP-Protocol-Version": "2025-06-18",
+      "Authorization": "Bearer <client token>"
+    },
+    "body": {
+      "jsonrpc": "2.0",
+      "id": 7,
+      "method": "tools/call",
+      "params": {
+        "name": "get_my_homebrew_item",
+        "arguments": {
+          "item_id": "11110000-0000-4000-8000-000000000004"
+        }
+      }
+    }
+  },
+  "answer": {
+    "status": 200,
+    "body": {
+      "jsonrpc": "2.0",
+      "id": 7,
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"format\":\"daggerheart-loot/api-my-item\",\"version\":1,\"id\":\"11110000-0000-4000-8000-000000000004\",\"key\":\"hb_iaaiaaaaaaaaaaae\",\"rev\":\"3\",\"updated_at\":\"2026-11-14T10:00:12.000Z\",\"link\":\"https://daggerheart-loot.pages.dev/h/11110000-0000-4000-8000-000000000004?v=56bezdeh\",\"link_en\":\"https://daggerheart-loot.pages.dev/en/h/11110000-0000-4000-8000-000000000004?v=56bezdeh\",\"book\":null,\"art\":\"ci2.webp\",\"content\":{\"kind\":\"item\",\"en\":\"Lamp 2\"},\"record\":{\"format\":\"daggerheart-loot/record\",\"version\":1,\"id\":\"11110000-0000-4000-8000-000000000004\",\"key\":\"hb_iaaiaaaaaaaaaaae\",\"origin\":\"homebrew\",\"kind\":\"item\",\"name\":{\"ru\":\"Lamp 2\",\"en\":\"Lamp 2\"},\"text\":{\"ru\":\"\",\"en\":\"\"},\"plain\":{\"ru\":\"\",\"en\":\"\"},\"source\":{\"id\":\"homebrew\",\"name\":{\"ru\":\"Хоумбрю\",\"en\":\"Homebrew\"}},\"rights\":{\"license\":\"owner\",\"notice\":\"Written by a daggerheart-loot user, who holds the rights.\"},\"path\":{\"ru\":\"Хоумбрю\",\"en\":\"Homebrew\"},\"table\":\"homebrew\",\"roll\":null,\"tier\":null,\"rarity\":null,\"stats\":null,\"craft\":{\"into\":[],\"from\":[]},\"set\":null,\"refs\":[],\"image\":{\"full\":\"https://daggerheart-loot.pages.dev/img/ci2.webp\",\"thumb\":\"https://daggerheart-loot.pages.dev/img/thumb/ci2.webp\",\"card\":\"https://daggerheart-loot.pages.dev/og/ci2.jpg\"},\"link\":{\"ru\":\"https://daggerheart-loot.pages.dev/h/11110000-0000-4000-8000-000000000004?v=56bezdeh\",\"en\":\"https://daggerheart-loot.pages.dev/en/h/11110000-0000-4000-8000-000000000004?v=56bezdeh\"}}}"
+          }
+        ],
+        "structuredContent": {
+          "format": "daggerheart-loot/api-my-item",
+          "version": 1,
+          "id": "11110000-0000-4000-8000-000000000004",
+          "key": "hb_iaaiaaaaaaaaaaae",
+          "rev": "3",
+          "updated_at": "2026-11-14T10:00:12.000Z",
+          "link": "https://daggerheart-loot.pages.dev/h/11110000-0000-4000-8000-000000000004?v=56bezdeh",
+          "link_en": "https://daggerheart-loot.pages.dev/en/h/11110000-0000-4000-8000-000000000004?v=56bezdeh",
+          "book": null,
+          "art": "ci2.webp",
+          "content": {
+            "kind": "item",
+            "en": "Lamp 2"
+          },
+          "record": {
+            "format": "daggerheart-loot/record",
+            "version": 1,
+            "id": "11110000-0000-4000-8000-000000000004",
+            "key": "hb_iaaiaaaaaaaaaaae",
+            "origin": "homebrew",
+            "kind": "item",
+            "name": {
+              "ru": "Lamp 2",
+              "en": "Lamp 2"
+            },
+            "text": {
+              "ru": "",
+              "en": ""
+            },
+            "plain": {
+              "ru": "",
+              "en": ""
+            },
+            "source": {
+              "id": "homebrew",
+              "name": {
+                "ru": "Хоумбрю",
+                "en": "Homebrew"
+              }
+            },
+            "rights": {
+              "license": "owner",
+              "notice": "Written by a daggerheart-loot user, who holds the rights."
+            },
+            "path": {
+              "ru": "Хоумбрю",
+              "en": "Homebrew"
+            },
+            "table": "homebrew",
+            "roll": null,
+            "tier": null,
+            "rarity": null,
+            "stats": null,
+            "craft": {
+              "into": [],
+              "from": []
+            },
+            "set": null,
+            "refs": [],
+            "image": {
+              "full": "https://daggerheart-loot.pages.dev/img/ci2.webp",
+              "thumb": "https://daggerheart-loot.pages.dev/img/thumb/ci2.webp",
+              "card": "https://daggerheart-loot.pages.dev/og/ci2.jpg"
+            },
+            "link": {
+              "ru": "https://daggerheart-loot.pages.dev/h/11110000-0000-4000-8000-000000000004?v=56bezdeh",
+              "en": "https://daggerheart-loot.pages.dev/en/h/11110000-0000-4000-8000-000000000004?v=56bezdeh"
+            }
+          }
+        }
+      }
+    }
+  }
+}

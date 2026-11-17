@@ -61,6 +61,16 @@ route of `routes.json` is covered and that the worker takes no rewritten path.
   (`docs/decisions/2026-10-08-every-print-is-a-stored-set-long-print.md`)
 - `#/account`, the account page, read in every build (the not-found page,
   address kept, where no sign-in is configured)
+- `#/connect/<id>`, the consent page of a connection request of the Supabase
+  OAuth 2.1 server, read in every build as `#/account` is; the entry form
+  `<site>connect?authorization_id=<id>` (also `//connect` and `en/connect`),
+  which Supabase Auth sends, becomes it before the router reads the bar; the
+  page reads only an id of 32 characters of `a-z0-9` and draws the expired page
+  for any other. `/connect`, `/connect/*`, `/en/connect` and `/en/connect/*`
+  answer `Content-Security-Policy: frame-ancestors 'none'` and
+  `X-Frame-Options: DENY` (`preview/public/_headers`; `tools/check-site.mjs`
+  holds both); the page itself draws the expired page in a frame (`ROUTES.md`,
+  "Connect an app")
 - `#/homebrew`, `#/homebrew/new` and `#/homebrew/<key>`, the author's own
   items and their editor, and the tabs `#/homebrew/sources`,
   `#/homebrew/sets[/<key>]` and `#/homebrew/rules[/<key>]` (a key opens that
@@ -464,12 +474,11 @@ answers every route path with the app document (section 1), and an unknown
 path answers `404.html` with status 404 (an unknown record id `/i/zzzz` too). A `.html` path answers
 308 to the same path without `.html` (`i/<id>.html` to `i/<id>`,
 `en/index.html` to `en/`), so every frozen `.html` URL keeps opening through
-one redirect. The path `/mcp` is the MCP endpoint (section 6); `/mcp/me` and
-every other path under `/mcp/` stay reserved for the account tier of the task
-`ai-mcp` and answer 404, and the deploy refuses a published `mcp`. The path `/api/` is reserved for the read API (section 6), whose
+one redirect. The path `/mcp` is the MCP endpoint and `/mcp/me` its account
+endpoint (section 6); every other path under `/mcp/` answers 404, and the deploy refuses a published `mcp`. The path `/api/` is reserved for the read API (section 6), whose
 static part is `/api/v1/catalog/`; the deploy refuses any other published file under
-`api/`. `/.well-known/oauth-protected-resource/` is reserved for the account tier of
-that task, and the deploy refuses a published file there. `apidata/` is internal:
+`api/`. `/.well-known/oauth-protected-resource/` holds the account tier's metadata
+(section 6), which the worker answers, and the deploy refuses a published file there. `apidata/` is internal:
 the projections of the worker, changed without notice, like `img/thumb/`.
 
 **The record link.** The app and every tool hand out a record as
@@ -533,15 +542,17 @@ A public, read-only API on the site's host, served by the same stateless worker
 as the link cards (`preview/api/`, `preview/api/openapi.json`; decisions "The
 read API and MCP are one stateless worker over build-time projections", "The app
 keeps its logic; the API runs the same pure modules" and "API v1 is public read,
-frozen, with a v2 beside it for a break"). It needs no key. Every operation is
-tier T0: it ignores an `Authorization` header and never forwards it, so every
-Supabase read runs as the anon reader and an answer never depends on the caller.
+frozen, with a v2 beside it for a break"). It needs no key. Every operation outside
+`/api/v1/me/` is tier T0: it ignores an `Authorization` header and never forwards it, so every
+Supabase read runs as the anon reader and an answer never depends on the caller. The
+account tier under `/api/v1/me/` is "Account API" below.
 Fixtures: `docs/fixtures/api/v1/`, checked by `preview/api/api.test.mjs` byte for
 byte and by `tests/contracts.js`; the MCP endpoint's are `docs/fixtures/mcp/`, checked
 by `preview/api/mcp.test.mjs`.
 
 | Operation | Answer |
 |---|---|
+| `GET /api/v1/` | `daggerheart-loot/api-index` v1: `api_version`, `links` (`openapi`, `openapi_view`, `llms_txt`, `developers` and `ai` as `{ ru, en }`, `mcp`, `mcp_me`, `catalog`), `auth` (`public`, `account`, `metadata`) and `limits`; the OpenAPI document's `ETag` |
 | `GET /api/v1/openapi.json` | the OpenAPI 3.1 description |
 | `GET /api/v1/rolls` | `daggerheart-loot/api-rolls` v1 |
 | `POST /api/v1/rolls/{section}` | `daggerheart-loot/api-roll` v1 |
@@ -602,8 +613,18 @@ shared lists are `no-store`.
 | 405 | `method_not_allowed` | another method; `Allow` names the allowed ones, `OPTIONS` included |
 | 413 | `too_large` | a request body past 4096 bytes; a file to check past 32768 bytes |
 | 415 | `unsupported_media_type` | a `POST` body that is not `application/json` |
-| 422 | `answer_too_large` | a Supabase answer past 65536 bytes; the message gives the app link |
+| 422 | `answer_too_large` | a Supabase answer past 65536 bytes; the message gives the app link (a page of list heads: send a smaller `limit`; after a write: the change is saved) |
 | 503 | `unavailable` | a file or Supabase read failed, timed out or was invalid; a second `data_version` mismatch |
+| 401 | `unauthorized` | account tier: no bearer token; `WWW-Authenticate` names the metadata |
+| 401 | `invalid_token` | account tier: not a JWT, another issuer, past `exp`, refused by PostgREST, or an ended connection |
+| 403 | `forbidden` | account tier: the app's own session token, or the database guard's refusal of a path |
+| 409 | `conflict` | account tier: an id of another account, a key the account holds, a refused write, another set of ids for an order (`error.order`), a record another own set holds (`error.set`), a request decided the other way or expired (`error.status`), a request to the reader's own list or for an item the shared list no longer holds |
+| 409 | `short` | account tier: an accept the list cannot fill; `error.short` holds each `{ key, want, have }`; the list did not change, and an unread request is now read and expires within the hour |
+| 409 | `limit_reached` | account tier: a limit of the account (`error.limit`, the key; `homebrew_art` for the picture room) |
+| 409 | `confirm_required` | account tier: a call that can delete more than one row without `confirm`, or an import that rewrites held rows without `expect_overwrites` (`error.confirm`, the number to send) |
+| 412 | `precondition_failed` | account tier: a stale `If-Match`; `ETag` and `error.rev` hold the current rev |
+| 422 | `invalid_content` | account tier: homebrew content the app's checks refuse; `error.problems` holds each `{ path, rule, text }`, `text` the app's line in both languages |
+| 428 | `precondition_required` | account tier: a list delete, a relative change or a homebrew delete without `If-Match`; a homebrew save with neither `If-Match` nor `If-None-Match: *` |
 
 The check order, pinned by the fixtures: the host guard's 301 (a deployment host or
 a branch alias; the one answer without the JSON headers), `OPTIONS` 204, the path
@@ -655,20 +676,203 @@ a homebrew entry without a snapshot is skipped as `unheld`, an error line of a l
 names its entry by item id without the record's name, and a skip line of a lists file
 gives its position only. A zip file is not checked.
 
-**CORS.** Every answer under `/api/` carries `Access-Control-Allow-Origin: *`, none
+**CORS.** Every answer under `/api/` outside `/api/v1/me/` carries `Access-Control-Allow-Origin: *`, none
 carries `Access-Control-Allow-Credentials` or `Vary: Origin`, and every worker answer
 (all of `/api/` outside `/api/v1/catalog/`) also carries `X-Content-Type-Options:
 nosniff` and a CSP with `sandbox`. `OPTIONS` on bare `/api` and on any path under
-`/api/` outside `/api/v1/catalog/` answers 204 with
+`/api/` outside `/api/v1/catalog/` and `/api/v1/me/` answers 204 with
 `Access-Control-Allow-Methods: GET, POST, OPTIONS`,
 `Access-Control-Allow-Headers: Content-Type` and `Access-Control-Max-Age: 86400`,
 and reads no file. Each preflight is one Functions request on the shared quota.
 `_headers` never carries an `Access-Control-Allow-Origin` line.
 
-**Reserved.** `/api/v1/me/` is reserved for the account tier. It holds no data in
-v1, answers the JSON 404, and its 404 and preflight carry `*` only because it is
-reserved; v1 promises no CORS rule for it, and the account tier replaces both
-answers with an explicit `Origin` allowlist. `/mcp/me` stays reserved (section 5).
+**Account API.** `/api/v1/me/` is the reader's own data through a connected app
+(decision "A connected app reaches only the API's account scope"): every operation
+declares `security` `supabaseOAuth` in `openapi.json` and does what a screen of the
+app does, through the call that screen makes (`apply_list_writes` with the ops of
+`lib/cloudLists.ts`, a `lists` update or delete by revision, the share, copy and
+import functions); files are the app's own (`lib/bundle.ts`). The worker relays the
+token to Supabase with the publishable key and stores nothing; the database guard
+bounds what the token reaches. Homebrew writes are the table writes and functions of
+the homebrew screens (a create by a client-made id that ignores a duplicate, an update
+by revision with the read-back rule, `move_homebrew_items`, `delete_homebrew_items`,
+`import_homebrew`, the picture uploads), checked by `lib/homebrew.ts` and the
+editor-level checks of `lib/homebrewForm.ts`; files are `lib/homebrewFile.ts`'s.
+Fixtures: `docs/fixtures/api/v1/me-*.json` and `docs/fixtures/mcp/me-*.json`, checked
+by `preview/api/me.test.mjs`, `preview/api/me-lists.test.mjs`,
+`preview/api/me-homebrew.test.mjs`, `preview/api/me-requests.test.mjs` and
+`preview/api/me-print.test.mjs`. Requests and print sets are the calls of the requests
+panel and of «Печать» (`apply_purchase_request`, `decline_purchase_request`,
+`mark_list_read`, `create_purchase_request`, a `list_notices` delete,
+`create_print_set`).
+
+| Operation | Answer |
+|---|---|
+| `GET /api/v1/me/lists` | `daggerheart-loot/api-my-lists` v1: the heads `{ id, rev, name, entries, updated_at, link }`, `limits` `{ lists, entries }` and `next` |
+| `POST /api/v1/me/lists` | `api-my-list` v1, 201; the same `id` again 200 with the list as it is |
+| `POST /api/v1/me/lists/delete` | `daggerheart-loot/api-my-results` v1: `{ ids (1-10), confirm }`, one result per id |
+| `GET /api/v1/me/lists/file` | `daggerheart-loot/api-my-lists-file` v1: `file` (the app's lists file), `skipped` per list, `next`; `?ids=` (1-10) or every list |
+| `POST /api/v1/me/lists/copies` | `api-my-list` v1, 201: a copy of a shared list `{ token, id? }`; the same `id` again 200 |
+| `GET /api/v1/me/lists/{list_id}` | `daggerheart-loot/api-my-list` v1 with `ETag: "<rev>"` |
+| `PATCH /api/v1/me/lists/{list_id}` | `api-my-list` v1: `name`, `money_mode`, `player_note`, `gm_note`; optional `If-Match` |
+| `DELETE /api/v1/me/lists/{list_id}` | 204; `If-Match` required |
+| `POST /api/v1/me/lists/{list_id}/entries` | `api-my-list` v1 with `results`: 1-100 entries by `record_id` |
+| `PATCH /api/v1/me/lists/{list_id}/entries` | `api-my-list` v1 with `results`: `{ ids (1-100), quantity?, gm_only?, price? }` |
+| `POST /api/v1/me/lists/{list_id}/entries/delete` | `api-my-list` v1 with `results`: `{ entries: [{ id, quantity? }] (1-100), confirm }` |
+| `PATCH /api/v1/me/lists/{list_id}/entries/{entry_id}` | `api-my-list` v1 |
+| `DELETE /api/v1/me/lists/{list_id}/entries/{entry_id}` | 204 |
+| `PUT /api/v1/me/lists/{list_id}/order` | `api-my-list` v1: `{ ids }`, every entry id once |
+| `GET /api/v1/me/lists/{list_id}/shares` | `daggerheart-loot/api-my-share-links` v1: `{ id, audience, created_at, revoked_at, link }`, stopped ones too |
+| `POST /api/v1/me/lists/{list_id}/shares` | `daggerheart-loot/api-my-share-link` v1, 201 for a new link, 200 for the active one: `{ audience, replaces? }`; `replaces` of the other audience's link is 400 |
+| `DELETE /api/v1/me/share-links/{share_id}` | 204 |
+| `POST /api/v1/me/imports` | `daggerheart-loot/api-import` v1: `{ file, import_id?, dry_run?, mode?, targets?, expect_overwrites? }`, a lists file or a homebrew file; a homebrew file answers `targets` and `import_homebrew`'s counts as `created` |
+| `GET /api/v1/me/homebrew-items` | `daggerheart-loot/api-my-homebrew-items` v1: the heads `{ id, key, rev, updated_at, link }` (`link` without a card version), `limits` `{ items }` and `next`; `?ids=` (1-10 own ids) answers those heads and their `records` |
+| `POST /api/v1/me/homebrew-items/delete` | `api-my-results` v1: `{ ids (1-100), confirm }`, every item or none |
+| `POST /api/v1/me/homebrew-items/move` | `api-my-results` v1 with each `rev`: `{ items: [{ id, rev }] (1-100), source, section }`, every item or none; a moved rev 412 |
+| `POST /api/v1/me/homebrew-items/copies` | `daggerheart-loot/api-my-item` v1, 201 (the same `id` again 200): `{ from, id? }`, a catalog id or another account's item; adds `picture` and `relinked` |
+| `GET /api/v1/me/homebrew-items/{item_id}` | `daggerheart-loot/api-my-item` v1: `id`, `key`, `rev`, `updated_at`, `link`, `book`, `art`, `content`, `record` (equal to `GET /api/v1/homebrew-items/{uuid}`), `ETag` |
+| `PUT /api/v1/me/homebrew-items/{item_id}` | `api-my-item` v1: `{ content, book?, key? }`; `If-None-Match: *` creates (201), `If-Match: "<rev>"` replaces, `If-Match: *` writes over any revision |
+| `DELETE /api/v1/me/homebrew-items/{item_id}` | 204; `If-Match` required |
+| `PUT /api/v1/me/homebrew-items/{item_id}/picture` | `api-my-item` v1: JSON `{ from }` (another record's picture), or `multipart/form-data` `full` (640 x 640) and `thumb` (160 x 160) WebP, each at most 204800 bytes, the body at most 413696 |
+| `DELETE /api/v1/me/homebrew-items/{item_id}/picture` | `api-my-item` v1 with `art` null |
+| `GET /api/v1/me/homebrew-sources` | `daggerheart-loot/api-my-sources` v1: `{ id, key, rev, updated_at, content }`, `limits` `{ sources }`, `next` |
+| `PUT /api/v1/me/homebrew-sources/{source_id}` | `daggerheart-loot/api-my-source` v1: `{ content, key? }` (names and sections); the item save's headers |
+| `DELETE /api/v1/me/homebrew-sources/{source_id}` | 204; `If-Match` required; its items and cards move to the default source |
+| `GET /api/v1/me/homebrew-cards` | `daggerheart-loot/api-my-cards` v1: `{ id, key, kind, book, rev, updated_at, content }`, `limits` `{ cards }`, `next` |
+| `PUT /api/v1/me/homebrew-cards/{card_id}` | `daggerheart-loot/api-my-card` v1: `{ kind, book?, content, key? }`; the kind never changes; the item save's headers |
+| `DELETE /api/v1/me/homebrew-cards/{card_id}` | 204; `If-Match` required |
+| `POST /api/v1/me/homebrew-cards/{card_id}/members` | `api-my-card` v1 with `member` `{ record_id, row, rev }`: `{ record_id, move? }` |
+| `POST /api/v1/me/homebrew-cards/{card_id}/members/delete` | `api-my-card` v1 with `member`: `{ record_id }` |
+| `GET /api/v1/me/homebrew/file` | `daggerheart-loot/api-my-homebrew-file` v1: `file` (the app's homebrew file) and `next`; `?items=` (1-100), `?source=` (an id or `home`) or every item |
+| `GET /api/v1/me/lists/{list_id}/requests` | `daggerheart-loot/api-my-requests` v1: the pending requests `{ id, list_id, audience, created_at, read_at, expires_at, expired, lines }` (each line `{ key, quantity, price_coins, applied_quantity }`), paged; the first page's newest 150 `notices` `{ id, key, record_id, kind, name, created_at, read_at }`, newest first, and `notices_more` true when the list holds more (`notices` null when they pass the read cap; the requests still answer); both null on a later page |
+| `POST /api/v1/me/requests/{request_id}/accept` | `daggerheart-loot/api-my-request` v1 (`status` `applied`, `taken`, `lines`): `{ clamp? }`; a list that cannot fill it is 409 `short` |
+| `POST /api/v1/me/requests/{request_id}/decline` | `api-my-request` v1 with `status` `declined` |
+| `POST /api/v1/me/lists/{list_id}/read` | 204 |
+| `POST /api/v1/me/notices/delete` | `api-my-results` v1: `{ ids (1-100), confirm }` |
+| `POST /api/v1/me/shared-lists/{token}/requests` | `daggerheart-loot/api-sent-request` v1, 201: `{ id?, lines: [{ key, quantity }] (1-100) }` |
+| `GET /api/v1/me/requests` | `daggerheart-loot/api-my-pending-requests` v1: the pending heads of every list (as `list_requests` without `lines`), paged; the first page's `unread_notices` `[{ list_id, count }]` (null on a later page) |
+| `POST /api/v1/me/print-sets` | `daggerheart-loot/api-print-set` v1, 201: `{ id, link, link_en, cards, cut, skipped }` from `{ cards: [{ id, count? }] (1-180) }` or `{ list_id }` |
+
+The rules every account operation keeps:
+
+- Token. `Authorization: Bearer <token>`, a Supabase OAuth 2.1 access token of a
+  connected app. The worker reads its claims without the signature (PostgREST checks
+  it) and refuses before any read: none is 401 `unauthorized` with `WWW-Authenticate:
+  Bearer resource_metadata="<site>.well-known/oauth-protected-resource/api/v1/me"`;
+  not a JWT, an `iss` other than `<SUPABASE_URL>/auth/v1`, a past `exp` or no user is
+  401 `invalid_token` with `error="invalid_token"`; a token without `client_id` (the
+  app's own session) is 403 `forbidden`. `aud` is not read. A PostgREST 401, and the
+  guard's refusal of a token whose connection the reader ended (its session is gone),
+  are 401 `invalid_token` with `error="invalid_token"`, so the client signs in again;
+  on `/mcp/me` both are HTTP 401, not an `isError` result. The guard's refusal of a
+  path is 403 `forbidden`. No answer holds the token.
+- Metadata. `GET /.well-known/oauth-protected-resource/api/v1/me` and
+  `/.well-known/oauth-protected-resource/mcp/me` answer RFC 9728: `resource`,
+  `authorization_servers` (`<SUPABASE_URL>/auth/v1`), `bearer_methods_supported`
+  (`header`) and `resource_documentation`, with CORS `*` and `Cache-Control: public,
+  max-age=3600`.
+- CORS. No `*`: `ME_ORIGINS` of `preview/api/rest.mjs` (empty) lists the page
+  origins that may call it; a listed `Origin` is echoed with `Vary: Origin`,
+  `Access-Control-Expose-Headers: ETag, WWW-Authenticate`, and a preflight answers
+  `GET, POST, PUT, PATCH, DELETE, OPTIONS`, the headers `Authorization, Content-Type,
+  If-Match, If-None-Match` and `Max-Age` 86400; any other `Origin` gets no
+  `Access-Control-*` header. A new origin is a reviewed decision and a line here.
+- Answers. `Cache-Control: private, no-store`, `nosniff` and the CSP `sandbox`. A
+  list's `link` is the owner's page `<site>lists/<id>`; an entry's `record_id` is a
+  catalog id or a homebrew item's uuid; a share link's `link` is `<site>s/<token>?v=<v>`
+  with the share panel's own `v`. Each answer with a `link` string (a list and its
+  head, a share link, an item and its head) also has `link_en`, the same page in
+  English (`<site>en/...`, the same `?v`). `rev` is a row's revision as an opaque string,
+  compared for equality only; `ETag` is `"<rev>"`.
+- Check order. `OPTIONS`, the path 404, the method 405 (`Allow`), the token 401 or 403,
+  415, 413 (32768 bytes; 65536 for an import; 413696 for a picture upload, from
+  `Content-Length` and while reading), then the body and schema 400; a request with
+  no body (a decline, a read mark) needs no `Content-Type`. A uuid in a path matches
+  in any case, as an MCP argument does; a share token in a path is case-sensitive.
+- Paging. `limit` (1-100, default 100) and `cursor` (opaque); `next` is null on the
+  last page. A client reads every page before it treats an id as deleted.
+- Sync. The heads of `GET /api/v1/me/lists` are the account's sync heads; a list whose
+  `rev` moved is read again, an id no page lists is deleted. Sync on a user action, a
+  background sync at most once per 15 minutes per user.
+- Retries. A create takes a client-made uuid (a retry is 200, never a second row);
+  an import takes `import_id`, from which every id it makes is a UUIDv5 (`list:<i>`,
+  `entry:<i>:<j>`, `copy:<key>`, `card:<key>`), so a retry adds nothing twice.
+- Preconditions. A list `DELETE` requires `If-Match` (428 without, 412 when moved, 204
+  when gone). A change relative to the current values (a price `raise_percent` or
+  `discount_percent`, an entry delete that takes part of a quantity) requires
+  `If-Match` and writes nothing on 412. A list `PATCH` takes an optional `If-Match`;
+  without it the last writer wins, as in the app.
+- Bulk and confirm. A bulk call takes at most 100 ids or entries (a lists delete 10)
+  and answers one result per id: `ok`, `skipped`, `gone`, `limit` or `refused`. A
+  call that can delete more than one row takes `confirm` equal to the number of ids or
+  entries in the call, else 409 `confirm_required`; a retry with the same body answers
+  each gone id as deleted.
+- Imports. A lists file (`import-v1` to `v3`) of at most 32768 bytes; 413 past it, 400
+  for a ZIP or a file that is not a lists file. `dry_run` writes nothing and answers
+  the file check (`api-file-check`) and `would_create`; an apply makes the snapshots'
+  own items first (`import_homebrew`), then every list (`import_lists`); a lists import
+  never overwrites, and a held list id adds only its missing entries.
+- Exports. A page holds whole lists up to 32768 bytes of file; a single list past it
+  is 422 `answer_too_large` with the app link. A homebrew file page holds whole items
+  up to 32768 bytes with the sources and cards they name; the first page also holds
+  the chosen sources and cards no item names. A homebrew page makes at most 12 item
+  reads, so it can hold fewer bytes and answer `next`. A cursor whose item is gone is
+  400. A cap may rise, never fall.
+- Homebrew saves. `PUT` of an item, a source or a card takes `If-None-Match: *` to
+  create the row of the path's id (201; the same id again 200 when the row equals the
+  sent one, else 412; an id of another account or a held key 409), `If-Match:
+  "<rev>"` to replace that revision (the read-back rule), or `If-Match: *` to write
+  over any revision; on MCP no `rev` creates, and `overwrite: true` or `rev: "*"` is
+  `If-Match: *`. `overwrite: true` with a numeric rev is 400. A new row's key is the last 10 bytes of its id unless the body names one; a key
+  never changes. A save never writes the picture. Content the app's checks refuse is
+  422 `invalid_content` with nothing written: `contentProblems`, then a source or
+  section the account does not hold (a section the row already stores passes: a
+  section or source delete leaves it) and an upgrade line of another equipment type; a
+  source name or section name held already and a section past 30; a card name held
+  already, a card with no text, past 100 records, and a catalog record that would
+  draw more than 3 rule cards (a rule card write adds at most 10).
+- Homebrew imports. A homebrew file (`homebrew-v1`, `v2`) is read with the account's
+  rows, each key the account does not hold becomes its derived key, and each source
+  of the file goes to its target (`targets`: `"home"`, `"new"`, `{ held }`, `{ file }`,
+  `{ custom, lang }`; else the app's default); `mode: "update"` rewrites held items and
+  cards only with `expect_overwrites` equal to the dry run's `would_overwrite`. Every
+  id and new key is a UUIDv5 of `import_id` (`id:<slot>`, `key:<slot>`), so a retry,
+  a custom target's source included, adds nothing twice.
+- Copies. `POST /api/v1/me/homebrew-items/copies` is «Сохранить себе»: one own item
+  (its key from the copy's `id`), the picture copied, and in one `apply_list_writes`
+  call a `relink` of each own list row that links the other account's item. An `id` of
+  an own item that is not this copy (its content differs, the names aside) and an `id`
+  of another account's item are 409 `conflict` with nothing written.
+- Account reads. A save, a member change and an import read the other rows' names and
+  members only; a read past its cap is 422 `answer_too_large` with the app link,
+  never 503.
+- Requests. The owner's reads are the requests panel's (`purchase_requests` pending
+  rows in id order, `list_notices`), read by `lib/requests.ts`; a pending request past
+  `expires_at` is listed with `expired` true. An accept is `apply_purchase_request`: it
+  takes each line from the list's entry of the same key and deletes an entry taken
+  whole; with `clamp` it takes what the list holds unless the list holds none. Before
+  the stock check it marks an unread request read and limits it to one more hour, so a
+  409 `short` leaves the list as it was but not the request. A
+  decision on a decided request answers that decision (200 for the same one, 409
+  `conflict` with `error.status` for the other or for an expired one). A send is
+  `create_purchase_request` through a share token with a client-made `id` (a replay
+  sends nothing); an active token of a list the reader owns is 409 `conflict` before the
+  function, as the app shows no send there (a stopped one is 404, as every stopped link). The read mark is `mark_list_read`; a
+  notice hide deletes the notices for good.
+- Print sets. `create_print_set` with the entries «Печать» stores (`lib/printSet.ts`
+  `printSetEntries` for a list: its entries in list order, each quantity over 1 as the
+  count, an entry with no record counted in `skipped`); a card id is a catalog id (400
+  when the catalog does not hold it) or a homebrew item uuid, stored as given. The same
+  sheet answers the same id. The link is the print page `<site>p/<id>`: the reader
+  prints there, and no operation makes a print file.
+- Loss. A list delete also deletes its share links, the players' requests and its
+  notices; a stopped link stops for everyone who holds it. An item delete also removes
+  it from every list that links it, other accounts' lists included, and deletes its
+  picture; a picture clear or replace deletes the old one when no item names it; a
+  source delete moves its items to the default source; `If-Match: *` and an `update`
+  import overwrite; an accept deletes the entries it takes whole, and a notice hide
+  deletes the notices. Nothing can be undone; a lists or homebrew file saved before is
+  the recovery.
 
 **MCP.** `https://daggerheart-loot.pages.dev/mcp` is a read-only MCP server over the same
 service (`preview/api/mcp.mjs`; decision "The MCP endpoint is a hand-written dispatcher over
@@ -680,7 +884,12 @@ the version in `_meta`, the `MCP-Protocol-Version`, `Mcp-Method` and `Mcp-Name` 
 modern request that names one gets `UnsupportedProtocolVersion` (-32022). A legacy request
 without `MCP-Protocol-Version` is served as `2025-03-26`. A missing or different modern
 header is `HeaderMismatch` (-32020, status 400); an unknown modern method is -32601 with
-status 404 (legacy: status 200). A notification answers 202 with no body.
+status 404 (legacy: status 200). A notification answers 202 with no body. The
+`instructions` of `initialize` and `server/discover` are `openapi.json`'s
+`x-mcp-instructions` (`/mcp/me`: `x-mcp-me-instructions`): the routing (creature loot,
+shop stock, account work), the tier rule, the link rules, where the index,
+`openapi.json`, `llms.txt` and the developer page live, the limits, and the app's price
+bands, which `preview/api/mcp.test.mjs` holds equal to `app/src/lib/money.ts`.
 
 | Tool | Operation |
 |---|---|
@@ -711,6 +920,72 @@ than exactly `/mcp` 404 with no body, any `Origin` header 403 (DNS rebinding; JS
 era. `/mcp` sends no CORS header, never reads `Authorization`, `Mcp-Session-Id` or
 `Last-Event-ID`, and never answers 401. The URL equals `info["x-mcp-endpoint"]` of
 `openapi.json`.
+
+**Account MCP.** `https://daggerheart-loot.pages.dev/mcp/me` is the same server for the
+account tier (`info["x-mcp-me-endpoint"]`). Every request carries a connected app's
+bearer token, checked as the account API checks it before the body is read: none or an
+invalid one is HTTP 401 with `WWW-Authenticate: Bearer
+resource_metadata="<site>.well-known/oauth-protected-resource/mcp/me"` (JSON-RPC
+-32000), the app's own session token 403; a token PostgREST refuses during a call is
+HTTP 401 too. The `Origin` 403, the 405 and the body rules are `/mcp`'s. `tools/list`
+holds the account tools, then every public tool, answered as on `/mcp`. A call returns
+the account operation's answer (a 204 is `{ "status": 204 }`); an operation error is a
+result with `isError` and the `api-error` body with its extra fields. A path argument
+must be a uuid, or the share token of `send_request` (else the `not_found` result);
+`rev` is the `If-Match` value.
+
+| Tool | Operation |
+|---|---|
+| `list_my_lists` | `GET /api/v1/me/lists` |
+| `create_list` | `POST /api/v1/me/lists` |
+| `delete_lists` | `POST /api/v1/me/lists/delete` (`destructiveHint`) |
+| `export_lists` | `GET /api/v1/me/lists/file` |
+| `save_shared_list` | `POST /api/v1/me/lists/copies` |
+| `get_my_list` | `GET /api/v1/me/lists/{list_id}` |
+| `update_list` | `PATCH /api/v1/me/lists/{list_id}` |
+| `delete_list` | `DELETE /api/v1/me/lists/{list_id}` (`destructiveHint`; `rev` required) |
+| `add_to_list` | `POST /api/v1/me/lists/{list_id}/entries` |
+| `add_new_item_to_list` | `POST /api/v1/me/lists/{list_id}/entries` with `new_item` required |
+| `update_list_entries` | `PATCH /api/v1/me/lists/{list_id}/entries` |
+| `remove_from_list` | `POST /api/v1/me/lists/{list_id}/entries/delete` (`destructiveHint`; one entry is the single delete) |
+| `update_list_entry` | `PATCH /api/v1/me/lists/{list_id}/entries/{entry_id}` |
+| `reorder_list` | `PUT /api/v1/me/lists/{list_id}/order` |
+| `list_share_links` | `GET /api/v1/me/lists/{list_id}/shares` |
+| `create_share_link` | `POST /api/v1/me/lists/{list_id}/shares` |
+| `replace_share_link` | `POST /api/v1/me/lists/{list_id}/shares` with `replaces` required (`destructiveHint`) |
+| `revoke_share_link` | `DELETE /api/v1/me/share-links/{share_id}` (`destructiveHint`) |
+| `import_file` | `POST /api/v1/me/imports` |
+| `list_my_homebrew_items` | `GET /api/v1/me/homebrew-items` |
+| `delete_homebrew_items` | `POST /api/v1/me/homebrew-items/delete` (`destructiveHint`) |
+| `move_homebrew_items` | `POST /api/v1/me/homebrew-items/move` |
+| `save_item_copy` | `POST /api/v1/me/homebrew-items/copies` |
+| `get_my_homebrew_item` | `GET /api/v1/me/homebrew-items/{item_id}` |
+| `save_homebrew_item` | `PUT /api/v1/me/homebrew-items/{item_id}` (`overwrite` is `If-Match: *`) |
+| `delete_homebrew_item` | `DELETE /api/v1/me/homebrew-items/{item_id}` (`destructiveHint`; `rev` required) |
+| `set_item_picture` | `PUT /api/v1/me/homebrew-items/{item_id}/picture` with `{ from }` only: no tool uploads a picture |
+| `clear_item_picture` | `DELETE /api/v1/me/homebrew-items/{item_id}/picture` (`destructiveHint`) |
+| `list_my_sources` | `GET /api/v1/me/homebrew-sources` |
+| `save_homebrew_source` | `PUT /api/v1/me/homebrew-sources/{source_id}` |
+| `delete_homebrew_source` | `DELETE /api/v1/me/homebrew-sources/{source_id}` (`destructiveHint`; `rev` required) |
+| `list_my_cards` | `GET /api/v1/me/homebrew-cards` |
+| `save_homebrew_card` | `PUT /api/v1/me/homebrew-cards/{card_id}` |
+| `delete_homebrew_card` | `DELETE /api/v1/me/homebrew-cards/{card_id}` (`destructiveHint`; `rev` required) |
+| `add_card_member` | `POST /api/v1/me/homebrew-cards/{card_id}/members` |
+| `remove_card_member` | `POST /api/v1/me/homebrew-cards/{card_id}/members/delete` |
+| `export_homebrew` | `GET /api/v1/me/homebrew/file` |
+| `list_requests` | `GET /api/v1/me/lists/{list_id}/requests` |
+| `accept_request` | `POST /api/v1/me/requests/{request_id}/accept` (`destructiveHint`: an entry taken whole goes) |
+| `decline_request` | `POST /api/v1/me/requests/{request_id}/decline` (`destructiveHint`: a decision is final) |
+| `mark_list_read` | `POST /api/v1/me/lists/{list_id}/read` |
+| `hide_notices` | `POST /api/v1/me/notices/delete` (`destructiveHint`) |
+| `send_request` | `POST /api/v1/me/shared-lists/{token}/requests` (`token` the share token, case-sensitive) |
+| `list_my_requests` | `GET /api/v1/me/requests` |
+| `create_print_set` | `POST /api/v1/me/print-sets` |
+
+The account tools are the `x-mcp-tool` operations under `/api/v1/me/` and their
+`x-mcp-also` variants, in document order; each description names what a delete takes
+with it and tells the assistant to show the reader and ask first, and marks notes as
+data.
 
 **Rights.** Every record carries `rights.license`, `dpcgl` or `owner`, read at build
 time from `docs/rights/records.json` (decision "Game text rights follow a per-record

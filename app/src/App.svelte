@@ -5,6 +5,7 @@
   import AccountPage from './components/AccountPage.svelte';
   import AltPanel from './components/AltPanel.svelte';
   import Button from './components/Button.svelte';
+  import ConnectPage from './components/ConnectPage.svelte';
   import ErrorPage from './components/ErrorPage.svelte';
   import HomebrewEditor from './components/HomebrewEditor.svelte';
   import HomebrewPage from './components/HomebrewPage.svelte';
@@ -129,6 +130,11 @@
       </ErrorPage>
     {:else if app.route.kind === 'account' && app.env.cloud}
       <AccountPage {app} />
+    {:else if app.route.kind === 'connect' && app.env.cloud}
+      <!-- A new id remounts the page, so an answer for the old id has no page to land on. -->
+      {#key app.route.id}
+        <ConnectPage {app} cloud={app.env.cloud} id={app.route.id} />
+      {/key}
     {:else if app.route.kind === 'homebrew' && app.homebrew}
       <HomebrewPage {app} store={app.homebrew} tab={app.route.tab} openKey={app.route.key} />
     {:else if app.route.kind === 'homebrewItem' && app.homebrew}

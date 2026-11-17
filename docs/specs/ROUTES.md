@@ -290,6 +290,29 @@ back to the page the reader left (`#/account` when none was recorded), under
 `/en/` when the reader left an English address, so
 the router never sees it (`STATE.md`, `dhloot.auth.return`).
 
+### Connect an app
+
+| Hash | Path | Meaning |
+|---|---|---|
+| `#/connect/<id>` | `/connect/<id>`, `/en/connect/<id>` | the consent page of one connection request of the Supabase OAuth 2.1 server (`FEATURES.md`, "Connect an app") |
+
+Supabase Auth sends the reader to the entry form
+`<site>connect?authorization_id=<id>`; production's `site_url` ends in `/`,
+so the path can arrive as `//connect`, and an English reader can arrive at
+`/en/connect`. Before the router reads the bar, the entry becomes the
+route key `#/connect/<id>` and the bar the path form of that key; the other
+query parameters stay. The written path is built from the key, never the
+bar's own path (`replaceState` reads a path that starts with `//` as a
+host). The page opens in the stored language, as every address does
+(`I18N.md`). The sign-in return record and the language rewrite then carry
+the id with no other mechanism.
+
+`<id>` is the rest of the address as written; the page reads it only in the
+shape of an authorization id (32 characters of `a-z` and `0-9`). Another
+shape, no id, an id Auth does not hold, a project whose OAuth server is off,
+and a framed page draw the expired page «Запрос на подключение устарел»,
+address kept. A build with no sign-in configured draws the not-found page.
+
 ## Homebrew
 
 | Hash | Meaning |

@@ -23,14 +23,18 @@
   </li>
   <li>
     Ни ключа, ни входа. API игнорирует заголовок <code>Authorization</code>, поэтому ответ не
-    зависит от того, кто спрашивает.
+    зависит от того, кто спрашивает. Единственное исключение - API аккаунта под
+    <code>/api/v1/me/</code>: см. «API аккаунта» ниже.
   </li>
   <li>
-    Каждый ответ несёт <code>Access-Control-Allow-Origin: *</code> и никаких учётных данных, так
-    что инструмент в браузере может вызывать API напрямую. Запрос <code>OPTIONS</code> получает
-    204.
+    Каждый ответ вне <code>/api/v1/me/</code> несёт
+    <code>Access-Control-Allow-Origin: *</code> и никаких учётных данных, так что инструмент в
+    браузере может вызывать API напрямую. Запрос <code>OPTIONS</code> получает 204.
   </li>
-  <li>API только читает. Списки и свои предметы меняются только в приложении.</li>
+  <li>
+    Публичные операции только читают. Подключённое приложение меняет собственные списки читателя
+    через API аккаунта.
+  </li>
 </ul>
 <h2>Честное использование и квота</h2>
 <p>
@@ -67,6 +71,12 @@
 </p>
 <h2>Операции</h2>
 <p>Все операции <code>openapi.json</code>, у каждой - пример запроса.</p>
+<h3><code>GET /api/v1/</code></h3>
+<p>
+  Читает оглавление: ссылки на <code>openapi.json</code>, <code>llms.txt</code>, эти страницы и
+  адреса MCP, правила входа и пределы.
+</p>
+<pre><code>curl https://daggerheart-loot.pages.dev/api/v1/</code></pre>
 <h3><code>GET /api/v1/openapi.json</code></h3>
 <p>Читает описание API.</p>
 <pre><code>curl https://daggerheart-loot.pages.dev/api/v1/openapi.json</code></pre>
@@ -216,11 +226,128 @@
   - вход для ассистентов; там же лежат форматы файлов импорта. Операции выше, кроме
   <code>openapi.json</code>, также являются инструментами MCP-сервера только для чтения по
   адресу <code>https://daggerheart-loot.pages.dev/mcp</code>; как его подключить, показано на
-  <a href="ai.html">странице для пользователей</a>.
+  <a href="ai.html">странице для пользователей</a>. Его ответ на <code>initialize</code> несёт
+  указания: какие инструменты брать для добычи с существ, товара лавки и работы с аккаунтом,
+  правила ссылок, пределы и полосы цен.
 </p>
-<h2>Чтение аккаунта</h2>
+<h2>API аккаунта</h2>
 <p>
-  Чтение собственных списков и предметов вошедшего пользователя запланировано. В v1 сегодня его
-  нет.
+  Подключённое приложение читает и меняет собственные списки и хоумбрю читателя под
+  <code>/api/v1/me/</code> и через MCP-сервер
+  <code>https://daggerheart-loot.pages.dev/mcp/me</code>. Оно отправляет токен доступа OAuth
+  2.1-сервера Supabase Auth как <code>Authorization: Bearer</code>; запрос без токена получает
+  401, а его заголовок <code>WWW-Authenticate</code> называет
+  <code>/.well-known/oauth-protected-resource/api/v1/me</code>, где назван сервер. Токен
+  отключённого приложения получает 401 <code>invalid_token</code>, а токен собственной сессии
+  приложения - 403. Методы аккаунта отвечают 401, пока вход для подключённых приложений не
+  открыт. Ответы - <code>private, no-store</code> и не несут
+  <code>Access-Control-Allow-Origin: *</code>. Отправляйте свои uuid, чтобы повтор ничего не
+  менял дважды, и <code>rev</code> списка в <code>If-Match</code> для удаления и для изменения
+  относительно текущих значений. Удаление больше одной строки требует <code>confirm</code> -
+  числа идентификаторов. Удаление списка удаляет и его ссылки, запросы игроков и уведомления;
+  ничего нельзя отменить. <code>link</code> в ответе аккаунта - страница на русском, а
+  <code>link_en</code> - та же страница на английском (под <code>/en/</code>); отдавайте
+  читателю ссылку его языка как есть.
 </p>
-<p>Последнее изменение: 13 ноября 2026 года.</p>
+<p>
+  Предмет, источник или карта хоумбрю сохраняются методом <code>PUT</code> по своему
+  идентификатору: <code>If-None-Match: *</code> создаёт,
+  <code>If-Match: "&lt;rev&gt;"</code> заменяет эту ревизию, <code>If-Match: *</code> записывает
+  поверх любой ревизии. Содержимое, которое не принимает редактор приложения, получает 422
+  <code>invalid_content</code> с текстом редактора на обоих языках. Картинка - два файла WebP по
+  640 и 160 пикселей в <code>multipart/form-data</code> (только REST). Удаление предмета убирает
+  его из всех списков, где он есть, и из списков других мастеров, и удаляет его картинку;
+  удаление источника переносит его предметы в источник по умолчанию. Импорт хоумбрю в режиме
+  <code>update</code> требует <code>expect_overwrites</code> - числа из пробного запуска.
+</p>
+<p>
+  Запросы на покупку решаются, как в приложении: принятие забирает количество каждой строки из
+  позиции списка и удаляет позицию, взятую целиком; если в списке меньше, ответ - 409
+  <code>short</code> с тем, что есть, а <code>clamp: true</code> забирает доступное. Повтор
+  решения отвечает этим решением. Запрос в чужой общий список отправляется по токену ссылки со
+  своим <code>id</code>; в собственный список - 409. Набор для печати хранит карты, как
+  «Печать», и отвечает ссылкой <code>&lt;site&gt;p/&lt;id&gt;</code>: печатает читатель на этой
+  странице.
+</p>
+<p>
+  Читатель отключает приложение в разделе «Подключённые приложения» на странице аккаунта кнопкой
+  «Отключить»: его токен сразу получает 401 <code>invalid_token</code>.
+</p>
+<ul>
+  <li><code>GET /api/v1/me/lists</code> - заголовки списков, по страницам.</li>
+  <li><code>POST /api/v1/me/lists</code> - новый список.</li>
+  <li><code>POST /api/v1/me/lists/delete</code> - удаление до 10 списков.</li>
+  <li><code>GET /api/v1/me/lists/file</code> - списки как файл списков приложения.</li>
+  <li><code>POST /api/v1/me/lists/copies</code> - копия общего списка.</li>
+  <li><code>GET /api/v1/me/lists/{list_id}</code> - один список с позициями.</li>
+  <li><code>PATCH /api/v1/me/lists/{list_id}</code> - название, режим цен, заметки.</li>
+  <li><code>DELETE /api/v1/me/lists/{list_id}</code> - удаление одного списка.</li>
+  <li><code>POST /api/v1/me/lists/{list_id}/entries</code> - добавление записей.</li>
+  <li>
+    <code>PATCH /api/v1/me/lists/{list_id}/entries</code> - количество, видимость или цена
+    нескольких позиций.
+  </li>
+  <li><code>POST /api/v1/me/lists/{list_id}/entries/delete</code> - удаление позиций.</li>
+  <li>
+    <code>PATCH /api/v1/me/lists/{list_id}/entries/{entry_id}</code> - изменение одной позиции.
+  </li>
+  <li>
+    <code>DELETE /api/v1/me/lists/{list_id}/entries/{entry_id}</code> - удаление одной позиции.
+  </li>
+  <li><code>PUT /api/v1/me/lists/{list_id}/order</code> - порядок позиций.</li>
+  <li><code>GET /api/v1/me/lists/{list_id}/shares</code> - ссылки списка.</li>
+  <li><code>POST /api/v1/me/lists/{list_id}/shares</code> - новая или заменённая ссылка.</li>
+  <li><code>DELETE /api/v1/me/share-links/{share_id}</code> - остановка ссылки.</li>
+  <li>
+    <code>POST /api/v1/me/imports</code> - импорт файла списков или файла хоумбрю, или его
+    проверка.
+  </li>
+  <li><code>GET /api/v1/me/homebrew-items</code> - заголовки своих предметов, по страницам.</li>
+  <li><code>POST /api/v1/me/homebrew-items/delete</code> - удаление до 100 предметов.</li>
+  <li>
+    <code>POST /api/v1/me/homebrew-items/move</code> - перенос предметов в источник и раздел.
+  </li>
+  <li>
+    <code>POST /api/v1/me/homebrew-items/copies</code> - копия предмета каталога или предмета
+    другого мастера.
+  </li>
+  <li><code>GET /api/v1/me/homebrew-items/{item_id}</code> - один предмет с его записью.</li>
+  <li>
+    <code>PUT /api/v1/me/homebrew-items/{item_id}</code> - создание или изменение предмета.
+  </li>
+  <li><code>DELETE /api/v1/me/homebrew-items/{item_id}</code> - удаление одного предмета.</li>
+  <li><code>PUT /api/v1/me/homebrew-items/{item_id}/picture</code> - картинка предмета.</li>
+  <li>
+    <code>DELETE /api/v1/me/homebrew-items/{item_id}/picture</code> - картинка предмета убрана.
+  </li>
+  <li><code>GET /api/v1/me/homebrew-sources</code> - свои источники и их разделы.</li>
+  <li>
+    <code>PUT /api/v1/me/homebrew-sources/{source_id}</code> - создание или изменение источника.
+  </li>
+  <li><code>DELETE /api/v1/me/homebrew-sources/{source_id}</code> - удаление источника.</li>
+  <li><code>GET /api/v1/me/homebrew-cards</code> - свои карты комплектов и правил.</li>
+  <li><code>PUT /api/v1/me/homebrew-cards/{card_id}</code> - создание или изменение карты.</li>
+  <li><code>DELETE /api/v1/me/homebrew-cards/{card_id}</code> - удаление карты.</li>
+  <li>
+    <code>POST /api/v1/me/homebrew-cards/{card_id}/members</code> - запись добавлена в карту.
+  </li>
+  <li>
+    <code>POST /api/v1/me/homebrew-cards/{card_id}/members/delete</code> - запись убрана из
+    карты.
+  </li>
+  <li><code>GET /api/v1/me/homebrew/file</code> - своё хоумбрю как файл хоумбрю приложения.</li>
+  <li>
+    <code>GET /api/v1/me/lists/{list_id}/requests</code> - запросы списка с их строками и
+    уведомления.
+  </li>
+  <li><code>POST /api/v1/me/requests/{request_id}/accept</code> - принятие запроса.</li>
+  <li><code>POST /api/v1/me/requests/{request_id}/decline</code> - отказ по запросу.</li>
+  <li><code>POST /api/v1/me/lists/{list_id}/read</code> - запросы и уведомления прочитаны.</li>
+  <li><code>POST /api/v1/me/notices/delete</code> - уведомления скрыты.</li>
+  <li>
+    <code>POST /api/v1/me/shared-lists/{token}/requests</code> - запрос в чужой общий список.
+  </li>
+  <li><code>GET /api/v1/me/requests</code> - новые запросы и уведомления всех списков.</li>
+  <li><code>POST /api/v1/me/print-sets</code> - набор для печати.</li>
+</ul>
+<p>Последнее изменение: 17 ноября 2026 года.</p>

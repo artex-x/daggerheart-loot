@@ -5,14 +5,18 @@
   protocol: the legacy one (`initialize`, `2025-03-26` to `2025-11-25`) and the modern one
   (`2026-07-28`: per-request `_meta`, `server/discover`, header checks).
 
-  The tools are the operations of openapi.json that carry `x-mcp-tool` and no `security`; a
-  call runs `runOperation` and returns the REST answer. The endpoint sends no CORS header,
-  answers 403 to any request that carries `Origin`, and never reads `Authorization`,
+  The tools of `/mcp` are the operations of openapi.json that carry `x-mcp-tool` and no
+  `security`; a call runs `runOperation` and returns the REST answer. `POST /mcp/me` is the
+  account tier: every request carries a connected app's bearer token (else HTTP 401 with
+  `WWW-Authenticate`), and it lists the `/api/v1/me/` operations' tools, then the public
+  ones; a call runs `runMe` with the token. Both send no CORS header and answer 403 to any
+  request that carries `Origin`; `/mcp` never reads `Authorization`, and neither reads
   `Mcp-Session-Id` or `Last-Event-ID`. It stores nothing.
 */
 import openapi from './openapi.json' with { type: 'json' };
+import { UUID, tokenOf } from './me.mjs';
 import { drop, readText } from './read.mjs';
-import { SECURITY, runOperation, serviceOf } from './rest.mjs';
+import { SECURITY, STAR_OPS, meContext, runMe, runOperation, serviceOf } from './rest.mjs';
 import { ApiError } from './service.mjs';
 
 const BODY_MAX = 65536;
@@ -26,6 +30,8 @@ const JSON_TYPE = { 'Content-Type': 'application/json; charset=utf-8' };
 
 const SERVER_INFO = { name: 'daggerheart-loot', version: openapi.info.version };
 const INSTRUCTIONS = openapi.info['x-mcp-instructions'];
+const ME_INSTRUCTIONS = openapi.info['x-mcp-me-instructions'];
+const REV = /^[0-9]{1,19}$/;
 
 /* ---------- the tools ---------- */
 
@@ -91,6 +97,95 @@ function buildTools() {
 
 const TOOLS = buildTools();
 const TOOL_OF = new Map(TOOLS.map((t) => [t.tool.name, t]));
+
+/**
+ * Returns the account tools of openapi.json in document order: the operations under
+ * /api/v1/me/ that carry `x-mcp-tool` and `security`, and each `x-mcp-also` variant of one (a
+ * second tool over the same operation that requires more arguments). An argument is a path or
+ * query parameter, the `If-Match` header as `rev` (`x-mcp-argument`), or a body field.
+ */
+function buildMeTools() {
+  const out = [];
+  for (const [p, ops] of Object.entries(openapi.paths)) {
+    for (const [method, op] of Object.entries(ops)) {
+      if (!op['x-mcp-tool'] || !op.security || !p.startsWith('/api/v1/me/')) continue;
+      const properties = {};
+      const required = [];
+      const path = [];
+      const query = [];
+      const types = {};
+      /* A path argument's pattern: a uuid unless its schema names another (a share token). */
+      const shapes = {};
+      let header = null;
+      for (const param of op.parameters ?? []) {
+        /* A header without an argument is REST's alone (If-None-Match). */
+        if (param.in === 'header' && !param['x-mcp-argument']) continue;
+        const name = param.in === 'header' ? param['x-mcp-argument'] : param.name;
+        properties[name] = { ...param.schema, description: param.description };
+        types[name] = param.schema.type;
+        if (param.required) required.push(name);
+        if (param.in === 'path') {
+          path.push(name);
+          shapes[name] = param.schema.pattern ? new RegExp(param.schema.pattern) : null;
+        } else if (param.in === 'query') query.push(name);
+        else header = name;
+      }
+      const schema = op.requestBody?.content?.['application/json']?.schema;
+      const body = schema?.$ref ? resolve(schema.$ref) : schema;
+      for (const [name, prop] of Object.entries(body?.properties ?? {}))
+        properties[name] = prop;
+      for (const name of body?.required ?? []) required.push(name);
+      const variants = [
+        {
+          name: op['x-mcp-tool'],
+          summary: op.summary,
+          description: op.description,
+          more: op['x-mcp-required'] ?? [],
+          omit: op['x-mcp-omit'] ?? []
+        },
+        ...(op['x-mcp-also'] ?? []).map((v) => ({
+          ...v,
+          more: v.required ?? [],
+          omit: v.omit ?? []
+        }))
+      ];
+      for (const v of variants) {
+        const own = Object.fromEntries(
+          Object.entries(properties).filter(([name]) => !v.omit.includes(name))
+        );
+        out.push({
+          tool: {
+            name: v.name,
+            description: `${v.summary}\n\n${v.description}`,
+            inputSchema: {
+              type: 'object',
+              properties: own,
+              required: [...required, ...v.more]
+            },
+            annotations: {
+              readOnlyHint: method === 'get',
+              destructiveHint: v.destructive ?? op['x-mcp-destructive'] === true,
+              idempotentHint:
+                v.idempotent ?? (op['x-mcp-idempotent'] === true || method === 'get'),
+              openWorldHint: false
+            }
+          },
+          op: op.operationId,
+          path,
+          query,
+          header,
+          types,
+          shapes,
+          more: v.more
+        });
+      }
+    }
+  }
+  return out;
+}
+
+const ME_TOOLS = buildMeTools();
+const ME_TOOL_OF = new Map([...ME_TOOLS, ...TOOLS].map((t) => [t.tool.name, t]));
 
 /* ---------- answers ---------- */
 
@@ -194,6 +289,110 @@ async function callTool(params, env, id) {
   }
 }
 
+/** Returns the error result of an ApiError: its envelope holds the error's extra fields. */
+function errorResult(e) {
+  const body = envelope(e.status, e.code, e.message).body;
+  Object.assign(body.error, e.extra ?? {});
+  return toolResult(body, true);
+}
+
+/** Calls an account tool or, on `/mcp/me`, a public one. A token that PostgREST refuses
+ *  during the call answers `{ unauthorized }`, which the endpoint sends as HTTP 401. */
+async function callMeTool(params, env, id, auth) {
+  const entry =
+    isObject(params) && typeof params.name === 'string' && ME_TOOL_OF.get(params.name);
+  if (!entry)
+    return { error: fail(200, -32602, 'The tool does not exist. Use tools/list.', id) };
+  if (!entry.more) return callTool(params, env, id);
+  const args = params.arguments === undefined ? {} : params.arguments;
+  if (!isObject(args)) {
+    return { error: fail(200, -32602, 'The field arguments must be an object.', id) };
+  }
+  const message = checkArguments(entry, args);
+  if (message !== null) {
+    return { result: toolResult(envelope(400, 'bad_request', message).body, true) };
+  }
+  for (const name of entry.more) {
+    if (args[name] === undefined || args[name] === null) {
+      return {
+        result: toolResult(
+          envelope(400, 'bad_request', `The field ${name} is required.`).body,
+          true
+        )
+      };
+    }
+  }
+  /* `*` writes over any revision on the three saves only, as REST's `If-Match: *`. */
+  const star = STAR_OPS.has(entry.op) && args[entry.header] === '*';
+  if (
+    entry.header &&
+    args[entry.header] !== undefined &&
+    !star &&
+    !REV.test(String(args[entry.header]))
+  ) {
+    return {
+      result: toolResult(
+        envelope(
+          400,
+          'bad_request',
+          `The field ${entry.header} must be a rev that an answer gave.`
+        ).body,
+        true
+      )
+    };
+  }
+  /* A uuid matches in any case; a share token is case-sensitive. */
+  const paramsOf = Object.fromEntries(
+    entry.path.map((k) => [
+      k,
+      entry.shapes[k] ? String(args[k]) : String(args[k]).toLowerCase()
+    ])
+  );
+  /* A path argument reaches a PostgREST filter: only its shape passes, as the REST route. */
+  if (!entry.path.every((k) => (entry.shapes[k] ?? UUID).test(paramsOf[k]))) {
+    return {
+      result: toolResult(envelope(404, 'not_found', 'The id does not exist.').body, true)
+    };
+  }
+  const query = Object.fromEntries(
+    entry.query
+      .filter((k) => args[k] !== undefined && args[k] !== null)
+      .map((k) => [k, String(args[k])])
+  );
+  const body = Object.fromEntries(
+    Object.entries(args).filter(
+      ([k]) => !entry.path.includes(k) && !entry.query.includes(k) && k !== entry.header
+    )
+  );
+  const ifMatch =
+    entry.header && args[entry.header] != null ? String(args[entry.header]) : null;
+  try {
+    /* A save without `rev` and without `overwrite` creates, as REST's If-None-Match: *. */
+    const got = await runMe(meContext(env, auth, 'mcp/me'), entry.op, {
+      params: paramsOf,
+      query,
+      body,
+      ifMatch,
+      ifNoneMatch: ifMatch === null && body.overwrite !== true
+    });
+    return { result: toolResult(got.status === 204 ? { status: 204 } : got.body, false) };
+  } catch (e) {
+    if (e instanceof ApiError && e.status === 401) return { unauthorized: e };
+    if (e instanceof ApiError) return { result: errorResult(e) };
+    return {
+      result: toolResult(
+        envelope(503, 'unavailable', 'The API could not answer. Try again later.').body,
+        true
+      )
+    };
+  }
+}
+
+/** Returns the HTTP 401 or 403 of a refused token on `/mcp/me`, as a JSON-RPC error. */
+function refusedToken(e, id) {
+  return fail(e.status, -32000, e.message, id, undefined, e.headers ?? {});
+}
+
 /* ---------- the eras ---------- */
 
 /** Returns the decoded `Mcp-Name` header value, or null when it does not decode. */
@@ -213,8 +412,29 @@ function nameOf(value) {
 const modernMeta = () => ({ [META_SERVER]: SERVER_INFO });
 const modern = (result) => ({ ...result, resultType: 'complete', _meta: modernMeta() });
 
-async function serveModern(request, msg, env) {
+/** The tools an endpoint lists and calls: `/mcp`'s public tools, or `/mcp/me`'s account tools
+ *  then the public ones, with the token of the request. */
+function endpointOf(auth) {
+  return auth === null
+    ? { tools: TOOLS, instructions: INSTRUCTIONS, call: (p, env, id) => callTool(p, env, id) }
+    : {
+        tools: [...ME_TOOLS, ...TOOLS],
+        instructions: ME_INSTRUCTIONS,
+        call: (p, env, id) => callMeTool(p, env, id, auth)
+      };
+}
+
+/** Returns the answer of a call: a JSON-RPC error, the HTTP 401 of a refused token, or `wrap`
+ *  of the result. */
+function called(got, id, wrap) {
+  if (got.error) return got.error;
+  if (got.unauthorized) return refusedToken(got.unauthorized, id);
+  return ok(id, wrap(got.result));
+}
+
+async function serveModern(request, msg, env, auth) {
   const { id, method, params } = msg;
+  const at = endpointOf(auth);
   const requested = params._meta[META_VERSION];
   if (requested !== MODERN) {
     return fail(400, -32022, 'The protocol version is not supported.', id, {
@@ -243,7 +463,7 @@ async function serveModern(request, msg, env) {
       modern({
         supportedVersions: SUPPORTED,
         capabilities: { tools: {} },
-        instructions: INSTRUCTIONS,
+        instructions: at.instructions,
         ttlMs: TTL_MS,
         cacheScope: 'public'
       })
@@ -252,18 +472,18 @@ async function serveModern(request, msg, env) {
   if (method === 'tools/list') {
     return ok(
       id,
-      modern({ tools: TOOLS.map((t) => t.tool), ttlMs: TTL_MS, cacheScope: 'public' })
+      modern({ tools: at.tools.map((t) => t.tool), ttlMs: TTL_MS, cacheScope: 'public' })
     );
   }
   if (method === 'tools/call') {
-    const got = await callTool(params, env, id);
-    return got.error ?? ok(id, modern(got.result));
+    return called(await at.call(params, env, id), id, modern);
   }
   return fail(404, -32601, 'The method does not exist.', id);
 }
 
-async function serveLegacy(request, msg, env) {
+async function serveLegacy(request, msg, env, auth) {
   const { id, method, params } = msg;
+  const at = endpointOf(auth);
   const header = request.headers.get('MCP-Protocol-Version');
   if (header !== null && !LEGACY.includes(header)) {
     return fail(400, -32600, 'The protocol version is not supported.', id, {
@@ -276,14 +496,13 @@ async function serveLegacy(request, msg, env) {
       protocolVersion: LEGACY.includes(asked) ? asked : LEGACY[0],
       capabilities: { tools: { listChanged: false } },
       serverInfo: SERVER_INFO,
-      instructions: INSTRUCTIONS
+      instructions: at.instructions
     });
   }
   if (method === 'ping') return ok(id, {});
-  if (method === 'tools/list') return ok(id, { tools: TOOLS.map((t) => t.tool) });
+  if (method === 'tools/list') return ok(id, { tools: at.tools.map((t) => t.tool) });
   if (method === 'tools/call') {
-    const got = await callTool(params, env, id);
-    return got.error ?? ok(id, got.result);
+    return called(await at.call(params, env, id), id, (r) => r);
   }
   return fail(200, -32601, 'The method does not exist.', id);
 }
@@ -291,7 +510,8 @@ async function serveLegacy(request, msg, env) {
 /* ---------- the entry ---------- */
 
 async function dispatch(request, env, url) {
-  if (url.pathname !== '/mcp') {
+  const me = url.pathname === '/mcp/me';
+  if (url.pathname !== '/mcp' && !me) {
     drop(request.body);
     return reply(404, undefined);
   }
@@ -302,6 +522,18 @@ async function dispatch(request, env, url) {
   if (request.method !== 'POST') {
     drop(request.body);
     return reply(405, undefined, { Allow: 'POST' });
+  }
+  /* The account endpoint refuses a request without a connected app's token before it reads
+     the body, `initialize` included, so a client meets the 401 and its WWW-Authenticate. */
+  let auth = null;
+  if (me) {
+    try {
+      auth = tokenOf(request, env, 'mcp/me');
+    } catch (e) {
+      drop(request.body);
+      if (e instanceof ApiError) return refusedToken(e);
+      throw e;
+    }
   }
   const type = (request.headers.get('Content-Type') ?? '').split(';')[0].trim().toLowerCase();
   if (type !== 'application/json') {
@@ -323,12 +555,12 @@ async function dispatch(request, env, url) {
   const meta = isObject(msg.params) && isObject(msg.params._meta) ? msg.params._meta : null;
   const isModern =
     msg.method !== 'initialize' && meta !== null && Object.hasOwn(meta, META_VERSION);
-  return isModern ? serveModern(request, msg, env) : serveLegacy(request, msg, env);
+  return isModern ? serveModern(request, msg, env, auth) : serveLegacy(request, msg, env, auth);
 }
 
 /**
- * Returns the answer for any request under `/mcp`: `POST /mcp` is the endpoint, every other
- * path (`/mcp/me` included, which the account tier reserves, docs/specs/CONTRACTS.md section 5) answers 404 with no body.
+ * Returns the answer for any request under `/mcp`: `POST /mcp` is the public endpoint and
+ * `POST /mcp/me` the account endpoint; every other path answers 404 with no body.
  */
 export async function handleMcp(request, env, url) {
   try {

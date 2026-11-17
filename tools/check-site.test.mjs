@@ -607,6 +607,11 @@ describe('previewChecks() against the preview host', () => {
       body: ''
     },
     'api/v1/records/ci1': { status: 200, cors: '*', body: '{}' },
+    'api/v1/': {
+      status: 200,
+      cors: '*',
+      body: JSON.stringify({ format: 'daggerheart-loot/api-index' })
+    },
     'api/v1/records/zzzz': { status: 404, cors: '*', body: NOT_FOUND },
     api: { status: 404, cors: '*', body: NOT_FOUND },
     'POST api/v1/rolls/std': {
@@ -636,6 +641,7 @@ describe('previewChecks() against the preview host', () => {
     'get_shared_list',
     'check_file'
   ].map((name) => ({ name }));
+  const CONNECT = 'connect/' + 'a'.repeat(32);
   /* A host that answers as the preview host does; `over` replaces one path's answer. */
   const host = (over = {}) => {
     const files = {
@@ -648,7 +654,36 @@ describe('previewChecks() against the preview host', () => {
       mcp: { status: 405, allow: 'POST', cors: '', body: '' },
       'POST mcp': { status: 200, cors: '', body: JSON.stringify({ result: { tools: TOOLS } }) },
       'POST mcp +Origin': { status: 403, cors: '', body: '{}' },
-      'mcp/me': { status: 404, body: '' },
+      'POST mcp/me': {
+        status: 401,
+        cors: '',
+        auth: 'Bearer resource_metadata="https://daggerheart-loot.pages.dev/.well-known/oauth-protected-resource/mcp/me"',
+        body: '{}'
+      },
+      ...Object.fromEntries(
+        ['api/v1/me/lists', 'api/v1/me/homebrew-items', 'api/v1/me/requests'].map((p) => [
+          p,
+          {
+            status: 401,
+            cors: '',
+            auth: 'Bearer resource_metadata="https://daggerheart-loot.pages.dev/.well-known/oauth-protected-resource/api/v1/me"',
+            body: '{}'
+          }
+        ])
+      ),
+      ...Object.fromEntries(
+        ['api/v1/me', 'mcp/me'].map((r) => [
+          '.well-known/oauth-protected-resource/' + r,
+          {
+            status: 200,
+            cors: '*',
+            body: JSON.stringify({
+              resource: 'https://daggerheart-loot.pages.dev/' + r,
+              authorization_servers: ['https://x.supabase.co/auth/v1']
+            })
+          }
+        ])
+      ),
       'i/w1?v=x': { status: 200, body: app('ru', stub('i/w1')) },
       'manual:i/w1.html': { status: 308, location: '/i/w1', body: '' },
       'h/not-a-uuid': { status: 404, body: app('ru', CARD) },
@@ -667,6 +702,12 @@ describe('previewChecks() against the preview host', () => {
         EN_ROUTES.map((p) => ['manual:' + p, { status: 200, body: app('en') }])
       ),
       'manual:en/i/w1': { status: 301, location: '/i/en/w1', body: '' },
+      ...Object.fromEntries(
+        [CONNECT, 'en/' + CONNECT].map((p) => [
+          'manual:' + p,
+          { status: 200, csp: "frame-ancestors 'none'", frame: 'DENY', body: app('ru') }
+        ])
+      ),
       ...API,
       ...over
     };
@@ -685,10 +726,22 @@ describe('previewChecks() against the preview host', () => {
         allowMethods: f.allowMethods,
         allowHeaders: f.allowHeaders,
         maxAge: f.maxAge,
+        frame: f.frame ?? '',
+        csp: f.csp ?? '',
+        auth: f.auth ?? '',
         body: f.body
       };
     };
   };
+
+  it('names a consent page that a frame may hold', async () => {
+    const bad = await runChecks(
+      host({ ['manual:' + CONNECT]: { status: 200, csp: '', frame: '', body: app('ru') } }),
+      previewChecks()
+    );
+    assert.equal(bad.length, 1);
+    assert.match(bad[0], /not frame-ancestors 'none' and DENY/);
+  });
 
   it('reports nothing for a host that answers every check', async () => {
     assert.deepEqual(await runChecks(host(), previewChecks()), []);
@@ -756,9 +809,44 @@ describe('previewChecks() against the preview host', () => {
       /with an Origin header returned 200, not 403/
     ],
     [
-      'mcp/me',
-      { status: 200, body: '' },
-      /mcp\/me returned 200, not 404 - the path is reserved/
+      'POST mcp/me',
+      { status: 404, cors: '', body: '' },
+      /POST mcp\/me without a token returned 404/
+    ],
+    [
+      'POST mcp/me',
+      { status: 401, cors: '', auth: 'Bearer', body: '' },
+      /not 401 naming the metadata/
+    ],
+    [
+      'api/v1/me/lists',
+      { status: 404, cors: '*', body: '{}' },
+      /api\/v1\/me\/lists without a token returned 404/
+    ],
+    [
+      'api/v1/me/lists',
+      {
+        status: 401,
+        cors: '*',
+        auth: 'Bearer resource_metadata="https://daggerheart-loot.pages.dev/.well-known/oauth-protected-resource/api/v1/me"',
+        body: '{}'
+      },
+      /origin "\*", not 401 naming the metadata and no CORS/
+    ],
+    [
+      'api/v1/me/homebrew-items',
+      { status: 404, cors: '', body: '{}' },
+      /api\/v1\/me\/homebrew-items without a token returned 404/
+    ],
+    [
+      'api/v1/me/requests',
+      { status: 404, cors: '', body: '{}' },
+      /api\/v1\/me\/requests without a token returned 404/
+    ],
+    [
+      '.well-known/oauth-protected-resource/mcp/me',
+      { status: 404, body: '{}' },
+      /oauth-protected-resource\/mcp\/me returned 404, not its metadata/
     ],
     ['i/w1?v=x', { status: 404, body: '' }, /i\/w1\?v=x returned 404/],
     [
@@ -821,6 +909,7 @@ describe('previewChecks() against the preview host', () => {
       { status: 200, cors: '', body: '{"format":"daggerheart-loot/api-rolls"}' },
       /api\/v1\/rolls sends Access-Control-Allow-Origin ""/
     ],
+    ['api/v1/', { status: 404, cors: '*', body: NOT_FOUND }, /api\/v1\/ returned 404/],
     [
       'api/v1/rolls',
       {
@@ -896,11 +985,17 @@ describe('previewChecks() against the preview host', () => {
 
   it('is the exact set of preview paths', () => {
     const list = previewChecks();
-    assert.equal(list.length, 79);
+    assert.equal(list.length, 87);
     assert.deepEqual(
       [...new Set(list.map((c) => c.path))].sort(),
       [
+        '.well-known/oauth-protected-resource/api/v1/me',
+        '.well-known/oauth-protected-resource/mcp/me',
         'api',
+        'api/v1/',
+        'api/v1/me/homebrew-items',
+        'api/v1/me/lists',
+        'api/v1/me/requests',
         'api/v1/file-checks',
         'api/v1/records/ci1',
         'api/v1/records/zzzz',
@@ -908,6 +1003,8 @@ describe('previewChecks() against the preview host', () => {
         'api/v1/rolls',
         'api/v1/rolls/std',
         'catalog-index.csv',
+        CONNECT,
+        'en/' + CONNECT,
         ITEM,
         'h/not-a-uuid',
         'i/w1.html',

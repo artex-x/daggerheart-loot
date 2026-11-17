@@ -371,6 +371,7 @@ describe('the stage table', () => {
         'test:desc-style',
         'test:screens',
         'test:supabase',
+        'test:audit-gate',
         'test:check-site',
         'test:golden',
         'test:sw',

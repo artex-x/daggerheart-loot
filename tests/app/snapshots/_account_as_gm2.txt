@@ -31,7 +31,7 @@ RootWebArea "Аккаунт - Генератор лута Daggerheart" [url=/acc
       ... option x11 of 15 same-shape siblings elided
       option "Поиск" [selected=false]
       option "Мои предметы" [selected=false]
-    ... StaticText x10 of 14 same-shape siblings elided
+    ... StaticText x11 of 15 same-shape siblings elided
     button "Список" [pressed=true]
     button "Сетка" [pressed=false]
     button "Цвет" [pressed=true]
@@ -44,9 +44,10 @@ RootWebArea "Аккаунт - Генератор лута Daggerheart" [url=/acc
       option "Не сообщать" [selected=false]
     heading "СПОСОБЫ ВХОДА" [level=2]
     button "Подключить Discord"
-    heading "ВАШИ ДАННЫЕ" [level=2]
+    ... heading x2 of 6 same-shape siblings elided
     StaticText "Списки и свои предметы одним архивом ZIP."
     button "Скачать мои данные (ZIP)"
+    link "Читать эти данные через ИИ-ассистента или API" [url=/pages/ai.html]
     heading "ВЫХОД" [level=2]
     button "Выйти"
     button "Выйти на всех устройствах"
@@ -90,6 +91,7 @@ daggerheart.com
 Установить как приложение
 Цвет
 Ч/б
+Читать эти данные через ИИ-ассистента или API
 
 ## en :: tree
 RootWebArea "Account - Daggerheart Loot Generator" [url=/en/account?as=gm2]
@@ -119,7 +121,7 @@ RootWebArea "Account - Daggerheart Loot Generator" [url=/en/account?as=gm2]
       ... option x11 of 15 same-shape siblings elided
       option "Search" [selected=false]
       option "My items" [selected=false]
-    ... StaticText x10 of 14 same-shape siblings elided
+    ... StaticText x11 of 15 same-shape siblings elided
     button "List" [pressed=true]
     button "Grid" [pressed=false]
     button "Color" [pressed=true]
@@ -132,9 +134,10 @@ RootWebArea "Account - Daggerheart Loot Generator" [url=/en/account?as=gm2]
       option "Don't notify" [selected=false]
     heading "SIGN-IN METHODS" [level=2]
     button "Connect Discord"
-    heading "YOUR DATA" [level=2]
+    ... heading x2 of 6 same-shape siblings elided
     StaticText "Your lists and items in one ZIP archive."
     button "Download my data (ZIP)"
+    link "Read this data through an AI assistant or the API" [url=/pages/en/ai.html]
     heading "SIGN OUT" [level=2]
     button "Sign out"
     button "Sign out everywhere"
@@ -169,6 +172,7 @@ List
 LootDaggerheart
 Privacy
 RU
+Read this data through an AI assistant or the API
 Roll
 Search
 Sign out

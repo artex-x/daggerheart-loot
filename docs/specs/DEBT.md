@@ -25,3 +25,33 @@ the task that owes them".
   not fit either), so the owner had the previous wording restored.
 - **How to verify the fix**: `tests/app/print.js` on the RU compact color
   sheet reads no `.pc-text` under 3.7cqw and no mark over a tag or the name.
+
+## Account and API leftovers (task `57-debt`, owner first)
+
+### D142 - only the ZIP download has the link to the AI page
+
+- **Where**: `app/src/components/ListsPage.svelte`, `ListPage.svelte`, `HomebrewSources.svelte` and
+  the homebrew selection bar (every «Скачать JSON»); `AccountPage.svelte` has the one link.
+- **What**: the owner asked for one link «Читать эти данные через ИИ-ассистента или API» in each
+  export place (2026-11-12). It is only in «Ваши данные» beside «Скачать мои данные (ZIP)»
+  (`FEATURES.md`, "Exports"); «Скачать JSON» sits in menus and selection bars that have no row
+  for a link.
+- **Why deferred**: a link in a menu or a selection bar is a layout change of four places;
+  the AFK default of 2026-11-17 kept the one link, and the owner confirms or asks for the rest.
+- **How to verify the fix**: a component test of each place that downloads JSON reads the link
+  to `ai.html` of the language on screen, and ends with `expectNoA11yViolations`.
+
+### D143 - a name with a `$` pattern changes the sentence it is put into
+
+- **Where**: every `.replace('%s', value)` with a string value in `app/src/` (for example
+  `RequestsPanel.svelte`, `noticeChanged` and `noticeDeleted`, and `ListsPage.svelte`, the
+  `quoted` names of the gone lists).
+- **What**: `String.prototype.replace` reads `` $` ``, `$'`, `$&` and `$$` in a string value, so a
+  list or item name that holds one copies part of the sentence into it. Another reader writes
+  the names of a notice, so the text is not only the reader's own.
+- **Why deferred**: a project-wide change of about 90 call sites; Svelte escapes the text, so no
+  markup gets through, and about 20 call sites (the connected apps, the cards tab) already use
+  `replace('%s', () => value)`.
+- **How to verify the fix**: a unit test puts the name `` a$`b `` into `noticeChanged` and
+  `quoted` and reads the name unchanged in the sentence; no string-valued `.replace('%s'` is left
+  in `app/src/`.

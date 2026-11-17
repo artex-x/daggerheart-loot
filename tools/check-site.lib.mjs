@@ -468,7 +468,8 @@ export function mirrorChecks() {
  *  document for each malformed run, for a well-formed uuid no item has and for a
  *  well-formed token no list holds - which prove the secrets, both card reads and the
  *  worker's read of the app document - a table card that read names.json, and the
- *  route paths that _redirects answers with the app document. */
+ *  route paths that _redirects answers with the app document, and the consent page's two
+ *  frame headers. */
 export function previewChecks() {
   const isApp = (body) => /<div\s+id="app"/.test(body) && entryOf(body) !== null;
   const card404 = (path, why) => [
@@ -512,6 +513,7 @@ export function previewChecks() {
     })),
     ...mcpChecks(),
     ...apiChecks(),
+    ...accountChecks(),
     /* One 308 for a frozen `.html` stub URL (docs/fixtures/urls/record.json, `serve`). */
     {
       path: 'i/w1.html',
@@ -546,6 +548,17 @@ export function previewChecks() {
       /* Not following a redirect: a 302 home would read as the root's app document. */
       appDocumentChecks(path, en).map((c) => ({ ...c, manual: true }))
     ),
+    /* The consent page answers no frame (docs/specs/CONTRACTS.md section 1). */
+    ...['connect/' + 'a'.repeat(32), 'en/connect/' + 'a'.repeat(32)].map((path) => ({
+      path,
+      manual: true,
+      test: (body, meta) =>
+        meta.status === 200 &&
+        /frame-ancestors 'none'/.test(meta.csp ?? '') &&
+        /^DENY$/i.test(meta.frame ?? ''),
+      message: (meta) =>
+        `${path} answered ${meta.status} with Content-Security-Policy "${meta.csp ?? ''}" and X-Frame-Options "${meta.frame ?? ''}", not frame-ancestors 'none' and DENY`
+    })),
     /* The app never writes /en/i/; one 301 sends it to the record's English path. */
     {
       path: 'en/i/w1',
@@ -605,7 +618,8 @@ function mcpToolNames() {
 
 /** The MCP endpoint's probes on the preview host (docs/specs/CONTRACTS.md section 6): `GET` is
  *  405 with `Allow: POST` and no CORS header, a legacy `tools/list` lists the tools of
- *  openapi.json, the same request with an `Origin` is 403, and `/mcp/me` stays reserved. */
+ *  openapi.json, the same request with an `Origin` is 403, and `/mcp/me` without a token is
+ *  401 naming its metadata. */
 function mcpChecks() {
   const body = JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' });
   const headers = { 'Content-Type': 'application/json', 'MCP-Protocol-Version': '2025-06-18' };
@@ -660,14 +674,45 @@ function mcpChecks() {
     },
     {
       path: 'mcp/me',
-      test: (b, meta) => meta.status === 404,
-      message: (meta) => `mcp/me returned ${meta.status}, not 404 - the path is reserved`
+      init: LIST,
+      test: (b, meta) =>
+        meta.status === 401 &&
+        (meta.auth ?? '').includes('oauth-protected-resource/mcp/me') &&
+        !meta.cors,
+      message: (meta) =>
+        `POST mcp/me without a token returned ${meta.status} with WWW-Authenticate "${meta.auth ?? ''}", not 401 naming the metadata`
     }
   ];
 }
 
+/** The account tier's probes (docs/specs/CONTRACTS.md section 6, "Account API"): a read of
+ *  the lists, the homebrew items and the requests without a token is 401 naming the metadata
+ *  (a route that did not deploy is 404), and both metadata documents answer. */
+function accountChecks() {
+  return [
+    ...['api/v1/me/lists', 'api/v1/me/homebrew-items', 'api/v1/me/requests'].map((path) => ({
+      path,
+      test: (b, meta) =>
+        meta.status === 401 &&
+        (meta.auth ?? '').includes('oauth-protected-resource/api/v1/me') &&
+        !meta.cors,
+      message: (meta) =>
+        `${path} without a token returned ${meta.status} with WWW-Authenticate "${meta.auth ?? ''}" and origin "${meta.cors ?? ''}", not 401 naming the metadata and no CORS`
+    })),
+    ...['api/v1/me', 'mcp/me'].map((resource) => ({
+      path: '.well-known/oauth-protected-resource/' + resource,
+      test: (body, meta) =>
+        meta.status === 200 &&
+        jsonOf(body)?.resource === 'https://daggerheart-loot.pages.dev/' + resource &&
+        /\/auth\/v1$/.test(jsonOf(body)?.authorization_servers?.[0] ?? ''),
+      message: (meta) =>
+        `.well-known/oauth-protected-resource/${resource} returned ${meta.status}, not its metadata`
+    }))
+  ];
+}
+
 /** The read API's probes on the preview host (docs/specs/CONTRACTS.md section 6): a read, the
- *  CORS preflight, a record, the JSON 404 with its CORS header, bare `/api`, one roll, one
+ *  CORS preflight, a record, the index, the JSON 404 with its CORS header, bare `/api`, one roll, one
  *  search and one file check. */
 function apiChecks() {
   const errorCode = (body) => jsonOf(body)?.error?.code;
@@ -727,6 +772,13 @@ function apiChecks() {
         `the preflight of ${ROLL} sends origin "${meta.cors ?? ''}", methods "${meta.allowMethods ?? ''}", headers "${meta.allowHeaders ?? ''}", max-age "${meta.maxAge ?? ''}"`
     },
     { path: 'api/v1/records/ci1', ...status200('api/v1/records/ci1') },
+    {
+      path: 'api/v1/',
+      test: (body, meta) =>
+        meta.status === 200 && jsonOf(body)?.format === 'daggerheart-loot/api-index',
+      message: (meta) =>
+        `api/v1/ returned ${meta.status}, not a daggerheart-loot/api-index answer`
+    },
     {
       path: 'api/v1/records/zzzz',
       init: FROM_OTHER_ORIGIN,
@@ -839,6 +891,9 @@ export function fetchReader(root, timeoutMs = 15_000) {
       allowMethods: res.headers.get('access-control-allow-methods') || '',
       allowHeaders: res.headers.get('access-control-allow-headers') || '',
       maxAge: res.headers.get('access-control-max-age') || '',
+      frame: res.headers.get('x-frame-options') || '',
+      csp: res.headers.get('content-security-policy') || '',
+      auth: res.headers.get('www-authenticate') || '',
       body
     };
   };

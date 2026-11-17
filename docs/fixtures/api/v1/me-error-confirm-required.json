@@ -1,0 +1,1 @@
+{"format":"daggerheart-loot/api-error","version":1,"error":{"code":"confirm_required","message":"The call deletes 2 rows and cannot be undone. Show the reader what goes, then send confirm: 2.","confirm":2}}

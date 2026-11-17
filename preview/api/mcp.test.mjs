@@ -8,6 +8,7 @@ import { afterEach, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 import { renderApiData } from '../../tools/api-data.mjs';
+import { guessBand } from '../../app/src/lib/money.ts';
 import { clearCache } from './rest.mjs';
 
 const { default: worker } = await import('../worker.mjs');
@@ -699,8 +700,8 @@ describe('the transport checks', () => {
     }
   });
 
-  it('answers 404 with no body to every path but /mcp', async () => {
-    for (const path of ['/mcp/', '/mcp/me', '/mcp/me/x', '/mcp/x']) {
+  it('answers 404 with no body to every path but /mcp and /mcp/me', async () => {
+    for (const path of ['/mcp/', '/mcp/me/', '/mcp/me/x', '/mcp/x']) {
       const res = await mcp(rpc(1, 'tools/list'), LEGACY, path);
       assert.equal(res.status, 404, path);
       assert.equal(await res.text(), '', path);
@@ -739,5 +740,98 @@ describe('the transport checks', () => {
     );
     assert.equal(res.status, 301);
     assert.equal(res.headers.get('location'), HOST + '/mcp');
+  });
+});
+
+/* ---------- the published price guess ---------- */
+
+const RARITIES = ['common', 'uncommon', 'rare', 'very_rare', 'legendary'];
+const bandText = (b) => `${String(b[0])}-${String(b[1])}`;
+const noRarity = () => undefined;
+const eqBand = (t, tier) => guessBand({ id: 'x', kind: 'equip', eq: { t, tier } }, noRarity);
+const lootBand = (kind, rarity, tier) =>
+  guessBand(
+    { id: 'x', kind, ...(tier === undefined ? {} : { tier }) },
+    () => rarity ?? undefined
+  );
+/** Returns the rarity whose item band equals `band`. */
+const rarityOfBand = (band) =>
+  RARITIES.find((r) => bandText(lootBand('item', r)) === bandText(band)) ?? 'none';
+
+/** Returns the price sentence the MCP instructions publish, from app/src/lib/money.ts. */
+function priceSentence() {
+  const eq = (t) => [1, 2, 3, 4].map((n) => bandText(eqBand(t, n))).join(', ');
+  const loot = (kind) => RARITIES.map((r) => bandText(lootBand(kind, r))).join(', ');
+  const tiers = ['1', '2', '3', '4', 'A', 'C']
+    .map((t) => `${t} ${rarityOfBand(lootBand('item', undefined, t))}`)
+    .join(', ');
+  return (
+    `weapon or secondary, tier 1-4: ${eq('weapon')}; armor, tier 1-4: ${eq('armor')}; ` +
+    `item, common to legendary: ${loot('item')}; consumable, common to legendary: ${loot('consumable')}. ` +
+    `An artifact weapon (tier A) prices as a ${rarityOfBand(eqBand('weapon', 'A'))} item; ` +
+    `loot with no rarity takes its Vault of Ages tier (${tiers}), else ${rarityOfBand(lootBand('item'))}.`
+  );
+}
+
+/** Returns the price table llms.txt publishes, from app/src/lib/money.ts. */
+function priceTable() {
+  const rows = [
+    ...['weapon or secondary', 'armor'].flatMap((name) =>
+      [1, 2, 3, 4].map(
+        (n) => `| ${name}, tier ${String(n)} | ${bandText(eqBand(name.split(' ')[0], n))} |`
+      )
+    ),
+    ...['item', 'consumable'].flatMap((kind) =>
+      RARITIES.map((r) => `| ${kind}, ${r} | ${bandText(lootBand(kind, r))} |`)
+    )
+  ];
+  return ['| Record | Band (gold) |', '|---|---|', ...rows].join('\n');
+}
+
+describe('the published price guess', () => {
+  it('groups weapon and secondary bands, which money.ts holds equal', () => {
+    for (const n of [1, 2, 3, 4]) {
+      assert.deepEqual(eqBand('weapon', n), eqBand('secondary', n));
+    }
+  });
+
+  it("states money.ts's bands and fallbacks in both MCP instructions", () => {
+    const want = priceSentence();
+    assert.ok(OPENAPI.info['x-mcp-instructions'].includes(want), want);
+    assert.ok(OPENAPI.info['x-mcp-me-instructions'].includes(want), want);
+    assert.match(
+      OPENAPI.info['x-mcp-me-instructions'],
+      /update_list_entries with price \{ guess: true \}/
+    );
+  });
+
+  it("states money.ts's bands and fallbacks in llms.txt", () => {
+    const text = readFileSync(join(ROOT, 'llms.txt'), 'utf8');
+    assert.ok(text.includes(priceTable()), priceTable());
+    assert.ok(
+      text.replace(/\s+/g, ' ').includes(priceSentence().split('. ').slice(1).join('. '))
+    );
+  });
+
+  it('routes, links and documents in the initialize instructions of /mcp and /mcp/me', () => {
+    for (const key of ['x-mcp-instructions', 'x-mcp-me-instructions']) {
+      const text = OPENAPI.info[key];
+      for (const needle of [
+        'list_rolls',
+        'search_catalog with kind and rarity',
+        'get_record',
+        '?v=',
+        '/en/',
+        SITE + 'api/v1/',
+        SITE + 'llms.txt',
+        SITE + 'api/v1/openapi.json',
+        SITE + 'pages/en/developers.html',
+        'never from its stats'
+      ]) {
+        assert.ok(text.includes(needle), key + ': ' + needle);
+      }
+    }
+    assert.match(OPENAPI.info['x-mcp-instructions'], /mcp\/me/);
+    assert.match(OPENAPI.info['x-mcp-me-instructions'], /link_en/);
   });
 });

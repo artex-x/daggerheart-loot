@@ -7,6 +7,8 @@
 import type { PagePort } from './types.js';
 
 type PageWindow = Pick<Window, 'addEventListener' | 'removeEventListener'> & {
+  top?: unknown;
+  self?: unknown;
   document: Pick<Document, 'visibilityState' | 'addEventListener' | 'removeEventListener'>;
 };
 
@@ -41,14 +43,23 @@ export function browserPage(win: PageWindow = window): PagePort {
     },
     visible() {
       return win.document.visibilityState === 'visible';
+    },
+    framed() {
+      /* A cross-origin parent throws on any read but the identity check. */
+      try {
+        return win.top !== win.self;
+      } catch {
+        return true;
+      }
     }
   };
 }
 
-/** A page a test hides with `fireHidden()` and shows again with `fireShown()`;
+/** A page a test hides with `fireHidden()` and shows again with `fireShown()`, framed by
+ *  another page with `framed`;
  *  `unloadAsks()` answers whether a close would ask now. The app's shown-again signal is
  *  the storage port's, so a test fires both. */
-export function fakePage(): PagePort & {
+export function fakePage({ framed = false }: { framed?: boolean } = {}): PagePort & {
   fireHidden(): void;
   fireShown(): void;
   unloadAsks(): boolean;
@@ -57,6 +68,7 @@ export function fakePage(): PagePort & {
   const guards = new Set<() => boolean>();
   let shown = true;
   return {
+    framed: () => framed,
     onHidden(fn) {
       listeners.add(fn);
       return () => {

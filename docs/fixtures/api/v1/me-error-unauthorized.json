@@ -1,0 +1,1 @@
+{"format":"daggerheart-loot/api-error","version":1,"error":{"code":"unauthorized","message":"Send a connected app's access token as Authorization: Bearer <token>. The metadata in WWW-Authenticate names the authorization server."}}

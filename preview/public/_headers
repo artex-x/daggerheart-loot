@@ -19,3 +19,17 @@
 /api/v1/catalog/*
   X-Robots-Tag: noindex
   X-Content-Type-Options: nosniff
+# The consent page of a connected app answers no frame: a click on it could be someone else's
+# (docs/specs/CONTRACTS.md section 1; tools/check-site.mjs holds the two headers).
+/connect
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY
+/connect/*
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY
+/en/connect
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY
+/en/connect/*
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY

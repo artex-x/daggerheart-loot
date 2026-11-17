@@ -1,0 +1,1 @@
+{"format":"daggerheart-loot/api-error","version":1,"error":{"code":"precondition_required","message":"This change is relative to the current values: send If-Match with the list's rev."}}

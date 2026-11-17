@@ -250,8 +250,10 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      # `npm audit --audit-level=high` with one dated allowlist entry:
+      # docs/decisions/2026-11-17-the-root-audit-allows-one-picomatch-advisory-until-2026-12-17.md
       - name: Vulnerabilities we will not wave through
-        run: npm audit --audit-level=high
+        run: node tools/audit-gate.mjs
       # The two tool packages keep their own lockfiles; `npm audit` reads a
       # lockfile alone, so none needs an install here.
       - name: Vulnerabilities in the artwork tooling

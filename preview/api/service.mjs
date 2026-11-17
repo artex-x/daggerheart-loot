@@ -15,7 +15,12 @@
 */
 import { apiRecord } from '../../app/src/lib/apiRecord.ts';
 import { parseBundle } from '../../app/src/lib/bundle.ts';
-import { itemOf, sharedListOf, snapshotRecords } from '../../app/src/lib/cloudLists.ts';
+import {
+  itemOf,
+  linkedRecords,
+  sharedListOf,
+  snapshotRecords
+} from '../../app/src/lib/cloudLists.ts';
 import { buildIndex } from '../../app/src/lib/data.ts';
 import { dict } from '../../app/src/lib/dict.ts';
 import { EQ_TABLE, decodeFilter, groupsFor, passes } from '../../app/src/lib/filters.ts';
@@ -101,6 +106,8 @@ const ROLL_INDEX = new WeakMap();
 const CATALOG_IDS = new WeakMap();
 /** The sets and rule cards of each cached file-check file, as objects the panel's `in` reads. */
 const CATALOG_KEYS = new WeakMap();
+/** The catalog facts built from each cached first search shard (`catalogFacts`). */
+const CATALOG_FACTS = new WeakMap();
 
 /** Empties the isolate's cached files (tests). */
 export function clearCache() {
@@ -550,6 +557,44 @@ export function createService({
     };
   }
 
+  /**
+   * Returns the catalog by id from the search shards, built once per cached shard set: each
+   * record's `kind`, `tier`, `rarity` and display `name` pair. The account API reads it to
+   * check an entry's record id, to name an entry in a lists file and to guess a price.
+   */
+  async function catalogFacts() {
+    const [head, ...shards] = await consistent(async (force) => {
+      const idx = await cached('apidata/search/index.json', force);
+      if (!Number.isInteger(idx.shards) || idx.shards < 1 || !isObject(idx.codes)) {
+        throw unavailable('A data file');
+      }
+      const list = await Promise.all(
+        Array.from({ length: idx.shards }, (_, n) => cachedShard(n, force))
+      );
+      return { files: [idx, ...list] };
+    });
+    let facts = CATALOG_FACTS.get(shards[0]);
+    if (facts === undefined) {
+      facts = new Map();
+      const { codes } = head;
+      for (const shard of shards) {
+        for (let li = 0; li < shard.starts.length; li++) {
+          const at = shard.starts[li];
+          const [, , id, , ru, en] = shard.text.slice(at, lineEnd(shard, li)).split('\t');
+          const value = (field, k) => codes[field][shard.text.charCodeAt(at + k) - CODE_BASE];
+          facts.set(id, {
+            kind: value('kind', 1),
+            tier: value('tier', 3),
+            rarity: value('rarity', 4),
+            name: { ru, en }
+          });
+        }
+      }
+      CATALOG_FACTS.set(shards[0], facts);
+    }
+    return facts;
+  }
+
   /* ---------- file checks ---------- */
 
   /** Returns the catalog ids of a cached records index as a set, built once per cached file. */
@@ -563,11 +608,10 @@ export function createService({
   }
 
   /**
-   * Checks the text of an import file with the app's own parsers and report builders, over
-   * the catalog alone: no account, so a homebrew entry without a snapshot is `unheld` and a
-   * lists error line names its entry by item id only.
+   * Returns the catalog part of a homebrew file's `FileContext`: the catalog ids, sets, rule
+   * cards and upgrade lines, built once per cached file. The account API adds the own rows.
    */
-  async function checkFile(body) {
+  async function catalogContext() {
     const [idx, data] = await consistent(async (force) => ({
       files: [
         await cached('apidata/records/index.json', force),
@@ -584,14 +628,21 @@ export function createService({
       CATALOG_KEYS.set(data, keys);
     }
     const { sets, refs } = keys;
-    const ctx = {
+    return {
       catalogHas: (id) => ids.has(id),
       catalogSet: (key) => key in sets,
       catalogRef: (key) => key in refs,
-      ownItem: () => false,
-      ownCard: () => null,
       lineMembers: (line) => (has(data.lines, line) ? data.lines[line] : [])
     };
+  }
+
+  /**
+   * Checks the text of an import file with the app's own parsers and report builders, over
+   * the catalog alone: no account, so a homebrew entry without a snapshot is `unheld` and a
+   * lists error line names its entry by item id only.
+   */
+  async function checkFile(body) {
+    const ctx = { ...(await catalogContext()), ownItem: () => false, ownCard: () => null };
     const langs = [dict('ru'), dict('en')];
     const none = () => undefined;
     const NO_FILE = { format: null, version: null };
@@ -634,7 +685,7 @@ export function createService({
     const merged = (ru, en, list) =>
       ru.map((l, i) => ({ list: list(i), text: { ru: lineText(l), en: lineText(en[i]) } }));
 
-    const lists = parseBundle(body, (id) => ids.has(id));
+    const lists = parseBundle(body, ctx.catalogHas);
     if (lists.ok || lists.reason !== 'notBundle') {
       if (!lists.ok && lists.reason === 'notJson') {
         return refusal(NO_FILE, 'not_json', { key: 'importNotJson' });
@@ -867,6 +918,25 @@ export function createService({
     return got.value;
   }
 
+  /** Returns the neutral record of a `get_homebrew_item` answer, read through the catalog's
+   *  cards and the item's related items; the account API reads its own items through it. */
+  async function homebrewRecord(value) {
+    const item = itemOf(value);
+    if (!item) throw unavailable('The homebrew item');
+    const { index: base } = await baseIndex(false);
+    const index = withRecords(base, [item.record, ...item.related], []);
+    return apiRecord(index, item.record, site, 'owner');
+  }
+
+  /** Returns the neutral records of a `get_homebrew_items` answer by hid, each read through
+   *  one index over the answer as a linked record: `craft.from` holds only keys in it. */
+  async function linkedApiRecords(rows) {
+    const records = [...linkedRecords(Array.isArray(rows) ? rows : []).values()];
+    const { index: base } = await baseIndex(false);
+    const index = withRecords(base, [], records);
+    return new Map(records.map((r) => [r.hid, apiRecord(index, r, site, 'owner')]));
+  }
+
   async function getHomebrewItem(id) {
     const value = await remote(
       'get_homebrew_item',
@@ -874,11 +944,7 @@ export function createService({
       'The homebrew item',
       `${site.base}h/${id}`
     );
-    const item = itemOf(value);
-    if (!item) throw unavailable('The homebrew item');
-    const { index: base } = await baseIndex(false);
-    const index = withRecords(base, [item.record, ...item.related], []);
-    return { body: apiRecord(index, item.record, site, 'owner') };
+    return { body: await homebrewRecord(value) };
   }
 
   async function getSharedList(token) {
@@ -953,6 +1019,10 @@ export function createService({
     searchRecords,
     getRecord,
     checkFile,
+    catalogFacts,
+    catalogContext,
+    homebrewRecord,
+    linkedApiRecords,
     getHomebrewItem,
     getSharedList
   };

@@ -1,0 +1,50 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/mcp/me",
+    "headers": {
+      "Content-Type": "application/json",
+      "MCP-Protocol-Version": "2025-06-18",
+      "Authorization": "Bearer <client token>"
+    },
+    "body": {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "method": "tools/call",
+      "params": {
+        "name": "get_my_list",
+        "arguments": {
+          "list_id": "aaaaaaaa-0000-4000-8000-000000000001"
+        }
+      }
+    }
+  },
+  "answer": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store"
+    },
+    "body": {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"format\":\"daggerheart-loot/api-error\",\"version\":1,\"error\":{\"code\":\"not_found\",\"message\":\"The list does not exist.\"}}"
+          }
+        ],
+        "structuredContent": {
+          "format": "daggerheart-loot/api-error",
+          "version": 1,
+          "error": {
+            "code": "not_found",
+            "message": "The list does not exist."
+          }
+        },
+        "isError": true
+      }
+    }
+  }
+}

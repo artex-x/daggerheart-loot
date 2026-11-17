@@ -7,6 +7,8 @@
 /lists / 200
 /lists/* / 200
 /account / 200
+/connect / 200
+/connect/* / 200
 /homebrew / 200
 /homebrew/* / 200
 /print/* / 200
@@ -20,6 +22,8 @@
 /en/lists /en/ 200
 /en/lists/* /en/ 200
 /en/account /en/ 200
+/en/connect /en/ 200
+/en/connect/* /en/ 200
 /en/homebrew /en/ 200
 /en/homebrew/* /en/ 200
 /en/print/* /en/ 200

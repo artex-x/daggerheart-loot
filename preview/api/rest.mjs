@@ -5,10 +5,12 @@
   `failed()` of worker.mjs, which send text/html, and it catches every thrown error as the
   JSON 503.
 
-  Every answer under /api/ carries `Access-Control-Allow-Origin: *`, none carries
+  Every T0 answer under /api/ carries `Access-Control-Allow-Origin: *`, none carries
   `Access-Control-Allow-Credentials`, and a T0 answer never reads `Authorization`: every
   Supabase read runs as the anon reader, so the answer never depends on the caller.
-  /api/v1/me/ is reserved for the account tier and answers the 404 below.
+  /api/v1/me/ is the account tier (me.mjs; the operations of me-lists.mjs, me-homebrew.mjs,
+  me-requests.mjs and me-print.mjs): a connected app's token, the
+  `ME_ORIGINS` allowlist in place of `*`, and `private, no-store` answers.
 */
 import { artBaseOf } from '../../app/src/lib/art.ts';
 import { RARITIES } from '../../app/src/lib/alt.ts';
@@ -16,6 +18,24 @@ import { ROLL_MODES } from '../../app/src/lib/rollTables.ts';
 import { parseQuery } from '../../app/src/lib/search.ts';
 import { decodeText } from '../../app/src/lib/bundle.ts';
 import openapi from './openapi.json' with { type: 'json' };
+import { HOMEBREW_OPS } from './me-homebrew.mjs';
+import { LIST_OPS } from './me-lists.mjs';
+import { PRINT_OPS } from './me-print.mjs';
+import { REQUEST_OPS } from './me-requests.mjs';
+import {
+  IMPORT_BODY_MAX,
+  ME_BODY_MAX,
+  ME_READ_MAX,
+  PAGE_MAX,
+  PICTURE_BODY_MAX,
+  UUID as ME_ID,
+  metadataOf,
+  metadataUrl,
+  readMeBody,
+  readPictures,
+  revOf,
+  tokenOf
+} from './me.mjs';
 import { drop, readJson, readText, rpc } from './read.mjs';
 import {
   ApiError,
@@ -103,6 +123,7 @@ function route(pathname) {
   const param = (s) => (s.length > RUN_MAX ? '' : s);
   if (rest.length === 1) {
     const ops = {
+      '': ['index', READ],
       'openapi.json': ['openapi', READ],
       rolls: ['listRolls', READ],
       tables: ['listTables', READ],
@@ -353,6 +374,45 @@ function hashOf(text) {
 /** The ETag of the OpenAPI document: its version and a hash of its bytes. */
 export const OPENAPI_ETAG = `${openapi.info.version}-${hashOf(JSON.stringify(openapi))}`;
 
+/** Returns the `daggerheart-loot/api-index` answer of `GET /api/v1/` on the site `site`: it
+ *  changes only with a deploy, so it takes the OpenAPI document's ETag. */
+function indexOf(site) {
+  const pair = (path) => ({ ru: `${site}pages/${path}`, en: `${site}pages/en/${path}` });
+  return {
+    format: 'daggerheart-loot/api-index',
+    version: 1,
+    api_version: openapi.info.version,
+    links: {
+      openapi: `${site}api/v1/openapi.json`,
+      openapi_view: `https://redocly.github.io/redoc/?url=${site}api/v1/openapi.json`,
+      llms_txt: `${site}llms.txt`,
+      developers: pair('developers.html'),
+      ai: pair('ai.html'),
+      mcp: `${site}mcp`,
+      mcp_me: `${site}mcp/me`,
+      catalog: `${site}api/v1/catalog/index.json`
+    },
+    auth: {
+      public: 'The read operations and /mcp need no key and no sign-in.',
+      account:
+        "/api/v1/me/ and /mcp/me take a connected app's OAuth 2.1 access token as Authorization: Bearer. The account endpoints answer 401 until the sign-in for connected apps opens.",
+      metadata: metadataUrl(site, 'api/v1/me')
+    },
+    limits: {
+      body_bytes: BODY_MAX,
+      file_check_bytes: FILE_CHECK_MAX,
+      search_rows: LIMIT_MAX,
+      account_body_bytes: ME_BODY_MAX,
+      account_import_bytes: IMPORT_BODY_MAX,
+      account_picture_bytes: PICTURE_BODY_MAX,
+      account_answer_bytes: ME_READ_MAX,
+      account_page_rows: PAGE_MAX,
+      daily_quota:
+        'The API, the MCP endpoints and the link cards share one daily quota of 100,000 requests; past it they answer an error until 00:00 UTC.'
+    }
+  };
+}
+
 async function fetchAsset(env, path) {
   const res = await env.ASSETS.fetch(env.SITE + path, {
     signal: AbortSignal.timeout(ASSET_MS)
@@ -462,6 +522,8 @@ async function dispatch(request, env, url) {
   let result;
   if (hit.op === 'openapi') {
     result = { body: openapi, etag: OPENAPI_ETAG };
+  } else if (hit.op === 'index') {
+    result = { body: indexOf(String(env.SITE)), etag: OPENAPI_ETAG };
   } else {
     let body = {};
     let file;
@@ -496,12 +558,307 @@ async function dispatch(request, env, url) {
   return respond(method, 200, result.body, headers);
 }
 
+/* ---------- the account tier: /api/v1/me/ ---------- */
+
+/**
+ * The browser origins whose page may call /api/v1/me/: each is a reviewed decision, one deploy
+ * and a line of docs/specs/CONTRACTS.md section 6. A bearer token is not ambient, so the list
+ * is not a defense against request forgery: it decides which pages hold a token in script.
+ */
+export const ME_ORIGINS = [];
+
+const ME_OPS = { ...LIST_OPS, ...HOMEBREW_OPS, ...REQUEST_OPS, ...PRINT_OPS };
+const SHARE_TOKEN = /^[A-Za-z0-9_-]{43}$/;
+/** The saves whose `If-Match: *` writes over any revision. */
+export const STAR_OPS = new Set(['saveHomebrewItem', 'saveHomebrewSource', 'saveHomebrewCard']);
+const ME_METHODS = ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'];
+
+/** Returns the operations of an account path (the segments after /api/v1/me/) by method, and
+ *  its path parameters, or null. */
+function meRoute(seg) {
+  const [a, b, c, d] = seg;
+  const id = (s) => ME_ID.test(s);
+  const list = a === 'lists' && id(b);
+  const hit = (ops, params = {}) => ({ ops, params });
+  if (seg.length === 1 && a === 'lists') return hit({ GET: 'listMyLists', POST: 'createList' });
+  if (seg.length === 1 && a === 'imports') return hit({ POST: 'importFile' });
+  if (seg.length === 2 && a === 'lists' && b === 'delete') return hit({ POST: 'deleteLists' });
+  if (seg.length === 2 && a === 'lists' && b === 'file') return hit({ GET: 'exportLists' });
+  if (seg.length === 2 && a === 'lists' && b === 'copies')
+    return hit({ POST: 'saveSharedList' });
+  if (seg.length === 2 && list) {
+    return hit({ GET: 'getMyList', PATCH: 'updateList', DELETE: 'deleteList' }, { list_id: b });
+  }
+  if (seg.length === 3 && list && c === 'entries') {
+    return hit({ POST: 'addToList', PATCH: 'updateListEntries' }, { list_id: b });
+  }
+  if (seg.length === 3 && list && c === 'order')
+    return hit({ PUT: 'reorderList' }, { list_id: b });
+  if (seg.length === 3 && list && c === 'shares') {
+    return hit({ GET: 'listShareLinks', POST: 'createShareLink' }, { list_id: b });
+  }
+  if (seg.length === 4 && list && c === 'entries' && d === 'delete') {
+    return hit({ POST: 'removeFromList' }, { list_id: b });
+  }
+  if (seg.length === 4 && list && c === 'entries' && id(d)) {
+    return hit(
+      { PATCH: 'updateListEntry', DELETE: 'removeListEntry' },
+      { list_id: b, entry_id: d }
+    );
+  }
+  if (seg.length === 2 && a === 'share-links' && id(b)) {
+    return hit({ DELETE: 'revokeShareLink' }, { share_id: b });
+  }
+  if (a === 'homebrew-items') {
+    if (seg.length === 1) return hit({ GET: 'listMyHomebrewItems' });
+    if (seg.length === 2 && b === 'delete') return hit({ POST: 'deleteHomebrewItems' });
+    if (seg.length === 2 && b === 'move') return hit({ POST: 'moveHomebrewItems' });
+    if (seg.length === 2 && b === 'copies') return hit({ POST: 'saveItemCopy' });
+    if (seg.length === 2 && id(b)) {
+      return hit(
+        { GET: 'getMyHomebrewItem', PUT: 'saveHomebrewItem', DELETE: 'deleteHomebrewItem' },
+        { item_id: b }
+      );
+    }
+    if (seg.length === 3 && id(b) && c === 'picture') {
+      return hit({ PUT: 'setItemPicture', DELETE: 'clearItemPicture' }, { item_id: b });
+    }
+  }
+  if (a === 'homebrew-sources') {
+    if (seg.length === 1) return hit({ GET: 'listMyHomebrewSources' });
+    if (seg.length === 2 && id(b)) {
+      return hit(
+        { PUT: 'saveHomebrewSource', DELETE: 'deleteHomebrewSource' },
+        { source_id: b }
+      );
+    }
+  }
+  if (a === 'homebrew-cards') {
+    if (seg.length === 1) return hit({ GET: 'listMyHomebrewCards' });
+    if (seg.length === 2 && id(b)) {
+      return hit({ PUT: 'saveHomebrewCard', DELETE: 'deleteHomebrewCard' }, { card_id: b });
+    }
+    if (seg.length === 3 && id(b) && c === 'members') {
+      return hit({ POST: 'addCardMember' }, { card_id: b });
+    }
+    if (seg.length === 4 && id(b) && c === 'members' && d === 'delete') {
+      return hit({ POST: 'removeCardMember' }, { card_id: b });
+    }
+  }
+  if (seg.length === 2 && a === 'homebrew' && b === 'file')
+    return hit({ GET: 'exportHomebrew' });
+  if (seg.length === 3 && list && c === 'requests') {
+    return hit({ GET: 'listRequests' }, { list_id: b });
+  }
+  if (seg.length === 3 && list && c === 'read')
+    return hit({ POST: 'markListRead' }, { list_id: b });
+  if (seg.length === 1 && a === 'requests') return hit({ GET: 'listMyRequests' });
+  if (seg.length === 3 && a === 'requests' && id(b) && (c === 'accept' || c === 'decline')) {
+    return hit(
+      { POST: c === 'accept' ? 'acceptRequest' : 'declineRequest' },
+      { request_id: b }
+    );
+  }
+  if (seg.length === 2 && a === 'notices' && b === 'delete')
+    return hit({ POST: 'hideNotices' });
+  if (seg.length === 3 && a === 'shared-lists' && SHARE_TOKEN.test(b) && c === 'requests') {
+    return hit({ POST: 'sendRequest' }, { token: b });
+  }
+  if (seg.length === 1 && a === 'print-sets') return hit({ POST: 'createPrintSet' });
+  return null;
+}
+
+/** Returns the request context of an account operation: the reader's token and user, the
+ *  site, the resource the token was checked for, the read API's service and the clock. */
+export function meContext(env, auth, resource) {
+  return {
+    env,
+    token: auth.token,
+    user: auth.user,
+    site: String(env.SITE),
+    resource,
+    service: serviceOf(env),
+    now: Date.now
+  };
+}
+
+/** Runs one account operation by operationId; the REST and the MCP adapter share it. */
+export function runMe(ctx, op, input) {
+  return ME_OPS[op](ctx, input);
+}
+
+/** Returns the CORS headers of an account answer: the echo of a listed `Origin`, else none. */
+function meCors(request) {
+  const origin = request.headers.get('Origin');
+  if (origin === null || !ME_ORIGINS.includes(origin)) return {};
+  return {
+    'Access-Control-Allow-Origin': origin,
+    Vary: 'Origin',
+    'Access-Control-Expose-Headers': 'ETag, WWW-Authenticate'
+  };
+}
+
+function meRespond(request, status, value, extra = {}) {
+  const body =
+    value === undefined || request.method === 'HEAD' ? null : JSON.stringify(value) + '\n';
+  return new Response(body, {
+    status,
+    headers: {
+      ...(value === undefined ? {} : JSON_TYPE),
+      ...SECURITY,
+      'Cache-Control': 'private, no-store',
+      ...meCors(request),
+      ...extra
+    }
+  });
+}
+
+/** Returns an account error answer: `error` holds `code`, `message` and the error's extra
+ *  fields (`confirm`, `rev`, `order`, `limit`). */
+export function meFailure(request, e) {
+  return meRespond(
+    request,
+    e.status,
+    {
+      format: 'daggerheart-loot/api-error',
+      version: 1,
+      error: { code: e.code, message: e.message, ...(e.extra ?? {}) }
+    },
+    e.headers ?? {}
+  );
+}
+
+function mePreflight(request) {
+  const cors = meCors(request);
+  return new Response(null, {
+    status: 204,
+    headers: {
+      ...SECURITY,
+      ...(cors['Access-Control-Allow-Origin']
+        ? {
+            ...cors,
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+            'Access-Control-Allow-Headers':
+              'Authorization, Content-Type, If-Match, If-None-Match',
+            'Access-Control-Max-Age': '86400'
+          }
+        : {})
+    }
+  });
+}
+
+async function dispatchMe(request, env, url) {
+  const method = request.method;
+  if (method === 'OPTIONS') return mePreflight(request);
+  /* A uuid matches in any case, as on `/mcp/me`; the other segments are lower-case names. */
+  const seg = url.pathname
+    .split('/')
+    .slice(4)
+    .map((s) => (ME_ID.test(s.toLowerCase()) ? s.toLowerCase() : s));
+  const hit = seg.every((s) => s !== '' && s.length <= RUN_MAX) ? meRoute(seg) : null;
+  if (!hit) {
+    drop(request.body);
+    return meFailure(
+      request,
+      new ApiError(404, 'not_found', 'The path does not exist in this API.')
+    );
+  }
+  const listed = Object.keys(hit.ops);
+  const allow = ME_METHODS.filter(
+    (m) => listed.includes(m) || m === 'OPTIONS' || (m === 'HEAD' && listed.includes('GET'))
+  ).join(', ');
+  const op = hit.ops[method === 'HEAD' ? 'GET' : method];
+  if (!op) {
+    drop(request.body);
+    return meFailure(
+      request,
+      Object.assign(new ApiError(405, 'method_not_allowed', `Use one of: ${allow}.`), {
+        headers: { Allow: allow }
+      })
+    );
+  }
+  const auth = tokenOf(request, env, 'api/v1/me');
+  let body = {};
+  let files;
+  const type = (request.headers.get('Content-Type') ?? '').split(';')[0].trim().toLowerCase();
+  if (op === 'setItemPicture' && type === 'multipart/form-data') {
+    const length = Number(request.headers.get('Content-Length'));
+    if (Number.isFinite(length) && length > PICTURE_BODY_MAX) {
+      drop(request.body);
+      throw new ApiError(
+        413,
+        'too_large',
+        `The body is past ${String(PICTURE_BODY_MAX)} bytes. Send less.`
+      );
+    }
+    files = await readPictures(request);
+  } else if (method === 'POST' || method === 'PUT' || method === 'PATCH') {
+    body = await readMeBody(request, op === 'importFile' ? IMPORT_BODY_MAX : ME_BODY_MAX);
+  } else {
+    drop(request.body);
+  }
+  const ifMatch = revOf(request.headers.get('If-Match'), STAR_OPS.has(op));
+  const result = await runMe(meContext(env, auth, 'api/v1/me'), op, {
+    params: hit.params,
+    query: queryOf(url, op),
+    body,
+    ifMatch,
+    ifNoneMatch: (request.headers.get('If-None-Match') ?? '').trim() === '*',
+    files
+  });
+  return meRespond(
+    request,
+    result.status,
+    result.status === 204 ? undefined : result.body,
+    result.etag === undefined ? {} : { ETag: `"${result.etag}"` }
+  );
+}
+
+async function handleMe(request, env, url) {
+  try {
+    return await dispatchMe(request, env, url);
+  } catch (e) {
+    if (e instanceof ApiError) return meFailure(request, e);
+    return meFailure(
+      request,
+      new ApiError(503, 'unavailable', 'The API could not answer. Try again later.')
+    );
+  }
+}
+
+/**
+ * Returns the answer under /.well-known/oauth-protected-resource/: the metadata (RFC 9728) of
+ * `api/v1/me` and `mcp/me`, public and cached for an hour, with CORS `*`; another path is the
+ * JSON 404.
+ */
+export function handleMetadata(request, env, url) {
+  const method = request.method;
+  if (method === 'OPTIONS') return preflight();
+  const resource = url.pathname.slice('/.well-known/oauth-protected-resource/'.length);
+  if (resource !== 'api/v1/me' && resource !== 'mcp/me') {
+    drop(request.body);
+    return failure(method, 404, 'not_found', 'The path does not exist in this API.');
+  }
+  if (method !== 'GET' && method !== 'HEAD') {
+    drop(request.body);
+    return failure(method, 405, 'method_not_allowed', 'Use one of: GET, HEAD, OPTIONS.', {
+      Allow: 'GET, HEAD, OPTIONS'
+    });
+  }
+  return respond(method, 200, metadataOf(env, resource), {
+    'Cache-Control': 'public, max-age=3600'
+  });
+}
+
 /**
  * Returns the answer for any request under `/api`: bare `/api` and unknown paths answer the
  * JSON 404, `OPTIONS` the 204 preflight, and every failure its row of docs/specs/CONTRACTS.md
- * section 6 as JSON.
+ * section 6 as JSON. /api/v1/me and the paths under it are the account tier.
  */
 export async function handleApi(request, env, url) {
+  if (url.pathname === '/api/v1/me' || url.pathname.startsWith('/api/v1/me/')) {
+    return handleMe(request, env, url);
+  }
   try {
     return await dispatch(request, env, url);
   } catch (e) {

@@ -162,10 +162,12 @@ describe('public schema invariants', () => {
 // to anon, so a migration has to revoke it.
 // The deliberate exceptions: a share link opens signed out, its holder
 // sends a purchase request, an item opens by its id, and the preview host reads
-// the two card reads get_item_preview and get_shared_list_preview. In
+// the two card reads get_item_preview and get_shared_list_preview, and PostgREST
+// runs the pre-request guard api_client_guard for every role. In
 // code-point order ("C"), as JS sorts: the database's own collation puts
 // `(text,bigint)` before `(text)`.
 const EXPECTED_ANON_FUNCTIONS = [
+  'api_client_guard()',
   'create_purchase_request(uuid,text,jsonb)',
   'get_homebrew_item(uuid)',
   'get_item_preview(uuid,text)',

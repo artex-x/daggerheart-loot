@@ -11,7 +11,8 @@
     "/en/p/*",
     "/en/tables/*",
     "/api/*",
-    "/mcp/*"
+    "/mcp/*",
+    "/.well-known/oauth-protected-resource/*"
   ],
   "build": [
     {

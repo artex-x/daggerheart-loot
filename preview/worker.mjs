@@ -44,7 +44,7 @@ import {
    The Pages deploy bundles this import with esbuild, which reads TypeScript. */
 import { markupText } from '../app/src/lib/markup.ts';
 import { handleMcp } from './api/mcp.mjs';
-import { handleApi } from './api/rest.mjs';
+import { handleApi, handleMetadata } from './api/rest.mjs';
 import { drop, readJson, readText, rpc } from './api/read.mjs';
 
 /** A card's caps, in escaped UTF-8 bytes (.claude/README.md, "Preview host", "Cross-host
@@ -569,6 +569,10 @@ async function handle(request, env) {
      language split and the cards' GET and HEAD check (preview/api/rest.mjs). */
   if (url.pathname === '/api' || url.pathname.startsWith('/api/')) {
     return handleApi(request, env, url);
+  }
+  /* The account tier's protected-resource metadata (RFC 9728), JSON as the API answers. */
+  if (url.pathname.startsWith('/.well-known/oauth-protected-resource/')) {
+    return handleMetadata(request, env, url);
   }
   /* The MCP endpoint answers JSON-RPC with no CORS header (preview/api/mcp.mjs). */
   if (url.pathname === '/mcp' || url.pathname.startsWith('/mcp/')) {

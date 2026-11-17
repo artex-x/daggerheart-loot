@@ -333,7 +333,9 @@ const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
     const sec = /^## 6\. [\s\S]*?(?=^## \d|(?![\s\S]))/m.exec(contractsText);
     ok(sec !== null, 'CONTRACTS.md has no section 6, "The read API"');
     const documented = [
-      ...new Set((sec ? sec[0] : '').match(/`(?:GET|POST) \/api\/v1\/[^`]*`/g) || [])
+      ...new Set(
+        (sec ? sec[0] : '').match(/`(?:GET|POST|PUT|PATCH|DELETE) \/api\/v1\/[^`]*`/g) || []
+      )
     ]
       .map((s) => s.slice(1, -1))
       .sort();
@@ -355,10 +357,22 @@ const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
       !params.some((p) => p.name === 'format'),
       'openapi.json has a format parameter; the API serves the neutral record only'
     );
+    /* A T0 operation declares no security; every account operation (/api/v1/me/) declares
+       the OAuth one, the only scheme. */
     ok(
-      !(openapi.components && openapi.components.securitySchemes),
-      'openapi.json declares securitySchemes; a T0 operation never does'
+      JSON.stringify(Object.keys(openapi.components.securitySchemes || {})) ===
+        '["supabaseOAuth"]',
+      'openapi.json does not declare exactly the scheme supabaseOAuth'
     );
+    for (const [p, ops] of Object.entries(openapi.paths)) {
+      for (const [m, op] of Object.entries(ops)) {
+        const me = p.startsWith('/api/v1/me/');
+        ok(
+          me ? JSON.stringify(op.security) === '[{"supabaseOAuth":[]}]' : !op.security,
+          m.toUpperCase() + ' ' + p + (me ? ' lacks security' : ' is T0 but declares security')
+        );
+      }
+    }
     for (const needle of [
       'Access-Control-Allow-Origin',
       '/api/v1/me/',
@@ -406,10 +420,18 @@ const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
           text.includes(openapi.info['x-mcp-endpoint']),
           'pages/src/' + file + " does not hold openapi.json's x-mcp-endpoint"
         );
+        const endpoints = [openapi.info['x-mcp-endpoint'], openapi.info['x-mcp-me-endpoint']];
+        ok(
+          text.includes(openapi.info['x-mcp-me-endpoint']),
+          'pages/src/' + file + " does not hold openapi.json's x-mcp-me-endpoint"
+        );
         const own = text.match(/https:\/\/daggerheart-loot\.pages\.dev\/mcp[^\s"<]*/g) || [];
         ok(
-          own.length > 0 && own.every((u) => u === openapi.info['x-mcp-endpoint']),
-          'pages/src/' + file + ' names an /mcp address other than the endpoint: ' + own.join()
+          own.length > 0 && own.every((u) => endpoints.includes(u)),
+          'pages/src/' +
+            file +
+            ' names an /mcp address other than the two endpoints: ' +
+            own.join()
         );
       }
     }
@@ -417,7 +439,18 @@ const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
       sec !== null && sec[0].includes('`' + PREVIEW_ORIGIN + '/mcp`'),
       'CONTRACTS.md section 6 does not name the MCP URL ' + PREVIEW_ORIGIN + '/mcp'
     );
-    for (const tool of tools) {
+    /* The account tools of /mcp/me: the x-mcp-tool operations under /api/v1/me/ and their
+       x-mcp-also variants, in document order. */
+    const meTools = Object.entries(openapi.paths)
+      .filter(([p]) => p.startsWith('/api/v1/me/'))
+      .flatMap(([, o]) => Object.values(o))
+      .filter((op) => op['x-mcp-tool'])
+      .flatMap((op) => [op['x-mcp-tool'], ...(op['x-mcp-also'] || []).map((v) => v.name)]);
+    ok(
+      openapi.info['x-mcp-me-endpoint'] === PREVIEW_ORIGIN + '/mcp/me',
+      "openapi.json's x-mcp-me-endpoint is not " + PREVIEW_ORIGIN + '/mcp/me'
+    );
+    for (const tool of [...tools, ...meTools]) {
       ok(
         sec !== null && sec[0].includes('`' + tool + '`'),
         'CONTRACTS.md section 6 does not name the MCP tool ' + tool
@@ -447,6 +480,13 @@ const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
         ok(
           JSON.stringify(names) === JSON.stringify(tools),
           'docs/fixtures/mcp/' + file + " does not list openapi.json's tools"
+        );
+      }
+      if (file === 'me-tools-list.json') {
+        const names = (v?.answer?.body?.result?.tools ?? []).map((t) => t.name);
+        ok(
+          JSON.stringify(names) === JSON.stringify([...meTools, ...tools]),
+          'docs/fixtures/mcp/me-tools-list.json does not list the account tools, then the public ones'
         );
       }
     }

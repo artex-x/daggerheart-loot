@@ -75,9 +75,10 @@ The app is served over HTTP only; running from `file://` was retired on
 
 **Durable constraints**
 
-- The Supabase backend is the only server that stores data, and one stateless
-  Worker renders link cards and answers the read API and the MCP endpoint. No other
-  backend is added.
+- The Supabase backend is the only server that stores data; one stateless Worker
+  renders link cards, answers the read API and the MCP endpoint, and relays a
+  connected app's account calls to Supabase with the app's own token for that
+  reader; it stores nothing. No other backend is added.
 - Every page carries `noindex`, and crawling stays allowed so that crawlers can
   read the `noindex`.
 - Equipment tier comes from the source book data. It is never inferred from
