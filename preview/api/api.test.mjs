@@ -317,7 +317,10 @@ describe('reads', () => {
     assert.equal(body.links.developers.en, SITE + 'pages/en/developers.html');
     assert.equal(body.links.mcp, OPENAPI.info['x-mcp-endpoint']);
     assert.equal(body.links.mcp_me, OPENAPI.info['x-mcp-me-endpoint']);
-    assert.match(body.auth.account, /answer 401 until the sign-in for connected apps opens/);
+    assert.match(
+      body.auth.account,
+      /answer 401 without a token and after the user disconnects the app/
+    );
     assert.equal(body.limits.search_rows, 50);
     assert.equal((await call('/api/v1/', { method: 'POST' })).status, 405);
   });

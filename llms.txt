@@ -1216,8 +1216,8 @@ notices, sends a request to another GM's shared list, and stores a print set.
 The REST operations are under `https://daggerheart-loot.pages.dev/api/v1/me/`
 (`openapi.json`, the operations with `security`); the same operations are MCP
 tools at `https://daggerheart-loot.pages.dev/mcp/me`, which also lists every
-public tool, so one connector does both. The account endpoints answer 401
-until the sign-in for connected apps opens.
+public tool, so one connector does both. The account endpoints need the
+access token of a user who connected the app.
 
 - How to connect: add `https://daggerheart-loot.pages.dev/mcp/me` as a
   connector with sign in (OAuth). A request without a token answers 401, and

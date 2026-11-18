@@ -395,7 +395,7 @@ function indexOf(site) {
     auth: {
       public: 'The read operations and /mcp need no key and no sign-in.',
       account:
-        "/api/v1/me/ and /mcp/me take a connected app's OAuth 2.1 access token as Authorization: Bearer. The account endpoints answer 401 until the sign-in for connected apps opens.",
+        "/api/v1/me/ and /mcp/me take a connected app's OAuth 2.1 access token as Authorization: Bearer. The account endpoints answer 401 without a token and after the user disconnects the app.",
       metadata: metadataUrl(site, 'api/v1/me')
     },
     limits: {

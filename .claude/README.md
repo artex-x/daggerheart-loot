@@ -2317,11 +2317,11 @@ review accepts it and adds it here with its reason.
 **OAuth server and the client token.** `[auth.oauth_server]` is owned by the
 file since `ai-mcp` B5a (`authorization_url_path = "/connect"`,
 `allow_dynamic_registration = true`), so a `config:push` is the switch. The
-base is `enabled = false` and `[remotes.test.auth.oauth_server]` is `enabled =
-true`: the test project's server was switched on in the dashboard on
-2026-11-12 (the same values); production's stays off until release step 3
-sets the base to `true`. The local stack follows the base, so it serves no
-OAuth server; a local probe sets the base to `true` for its run only. The CLI's field names come from the 2.117.0 template.
+base is `enabled = true` since the `oauth-switch` commit, and
+`[remotes.test.auth.oauth_server]` repeats the same values (the test project's
+server was switched on in the dashboard on 2026-11-12). Production's server is
+on once the owner runs `config:push` (release step 4). The local stack follows
+the base, so it serves the OAuth server too. The CLI's field names come from the 2.117.0 template.
 `docs/decisions/2026-11-13-a-connected-app-reaches-only-the-api-s-account-scope.md`.
 
 Measured on the test project, 2026-11-13 (Node, auth-js 2.117.1, throwaway users
@@ -2488,8 +2488,13 @@ role setting, the named fallback is a guard call at the top of each function
 
 Release checklist (owner, after the closeout squash; each line is a gate):
 
+Status: steps 1-4 are done in the repository by the `oauth-switch` commit (the
+base is `true`; the sentence is removed in both languages from `llms.txt`, both
+developer pages, both AI pages, the MCP instructions and the API index). The
+owner applies step 4 (`config:push`) and runs step 5.
+
 1. The migration is applied by CI (`migrate-prod`), and `/connect` is live
-   (the closeout deploy).
+   (the closeout deploy). Done.
 2. The orchestrator runs probes P1-P8 against the hosted project (`node
    --env-file=E:/dev/daggerheart-loot/.env.test.local
    C:\Users\Ignat\.dhloot\notes\57\b5a-step1\b5a-probe3.mjs --only
@@ -2505,21 +2510,23 @@ Release checklist (owner, after the closeout squash; each line is a gate):
    `client_id`), P8 the grants list and another client's authorization
    details. P9 (the global sign-out) is recorded, not a gate. The consent
    strings and both privacy pages claim that the token is bounded: do not
-   switch production on before P1-P8 pass.
-3. Set the base `[auth.oauth_server] enabled = true` in a commit (the base is
-   `false` until then, so no other production push switches the server on),
-   then `npm run config:diff -- --project prod`. Expected: only
-   `auth.oauth_server` rows.
-4. `npm run config:push -- --project prod`, which switches the server on.
-   The same commit as step 3 removes the sentence "the account endpoints
-   answer 401 until the sign-in for connected apps opens" from `llms.txt` and
-   both developer pages (and B5d's user pages), in both languages.
+   switch production on before P1-P8 pass. Done for the hosted test project:
+   on 2026-11-17 P1-P8 of `b5a-probe3.mjs` all answered `PASS-BLOCKED` against
+   it, which runs supabase/auth v2.198.0 (the fix supabase/auth#2898).
+   Production was not probed (no production env file); the first run against
+   production is step 5's acceptance probe.
+3. The base `[auth.oauth_server] enabled = true` is set in the commit. Done.
+   Before step 4 the owner runs `npm run config:diff -- --project prod`.
+   Expected: only `auth.oauth_server` rows.
+4. The owner runs `npm run config:push -- --project prod`, which switches the
+   server on. The sentence "the account endpoints answer 401 until the
+   sign-in for connected apps opens" is removed in the commit (done).
 5. The acceptance probe on production, and the consent URL opened once to see
    that `//connect` reads as `/connect`; then the connector test with a sign-in.
 
-Before the closeout squash the orchestrator reads production's
-`/auth/v1/.well-known/oauth-authorization-server`. Expected: 404
-`feature_disabled` (the server is still off). To revert: switch the OAuth server
+Until step 4's `config:push`, production's
+`/auth/v1/.well-known/oauth-authorization-server` answers 404
+`feature_disabled` (the server is still off); after it, 200. To revert: switch the OAuth server
 off (or revoke every grant) before the down migration, which gives a client
 token the whole account back; a frontend revert alone draws the not-found page
 on `/connect`.

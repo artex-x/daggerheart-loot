@@ -238,15 +238,14 @@
   401, and its <code>WWW-Authenticate</code> header names
   <code>/.well-known/oauth-protected-resource/api/v1/me</code>, which names the server. The
   token of a disconnected app answers 401 <code>invalid_token</code>, and the app's own session
-  token 403. The account endpoints answer 401 until the sign-in for connected apps opens. The
-  answers are <code>private, no-store</code> and carry no
-  <code>Access-Control-Allow-Origin: *</code>. Send your own uuids so that a retry changes
-  nothing twice, and the list's <code>rev</code> in <code>If-Match</code> for a delete and for a
-  change relative to the current values. A delete of more than one row takes
-  <code>confirm</code>, the number of ids. A list delete also deletes its share links, the
-  players' requests and its notices; nothing can be undone. An account answer's
-  <code>link</code> is the page in Russian and <code>link_en</code> the same page in English
-  (under <code>/en/</code>); give the reader the one of their language as it is.
+  token 403. The account endpoints need the token of a user who connected the app. The answers
+  are <code>private, no-store</code> and carry no <code>Access-Control-Allow-Origin: *</code>.
+  Send your own uuids so that a retry changes nothing twice, and the list's <code>rev</code> in
+  <code>If-Match</code> for a delete and for a change relative to the current values. A delete
+  of more than one row takes <code>confirm</code>, the number of ids. A list delete also deletes
+  its share links, the players' requests and its notices; nothing can be undone. An account
+  answer's <code>link</code> is the page in Russian and <code>link_en</code> the same page in
+  English (under <code>/en/</code>); give the reader the one of their language as it is.
 </p>
 <p>
   A homebrew item, source or card is saved with <code>PUT</code> at its own id:

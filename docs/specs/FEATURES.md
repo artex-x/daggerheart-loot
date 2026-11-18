@@ -3025,7 +3025,7 @@ allow or refuse its access to the account.
   «Аккаунт», в разделе «Подключённые приложения».». No client logo is drawn
   (a third-party picture on an account page). The «Не сможет» line assumes
   Supabase Auth's fix that refuses a client token on those endpoints; the
-  production server is switched on only after the probe proves it
+  probes proved it on the hosted test project on 2026-11-17
   (`.claude/README.md`, "Supabase configuration").
 - «Разрешить» and «Отказать» disable both buttons («Разрешить» reads
   «Разрешаем...» / "Allowing...") and leave for the address Auth answers

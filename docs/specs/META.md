@@ -237,8 +237,8 @@ database deletes").
 
 A reader can connect an app or AI assistant to the account through Supabase
 Auth's OAuth 2.1 server (`supabase/config.toml` `[auth.oauth_server]`: the
-authorization path `/connect`, dynamic registration on; on for the test
-project, off in the base until the release sets it). The consent
+authorization path `/connect`, dynamic registration on; on in the base, so
+every project that `config:push` reaches has it on). The consent
 page is the app's `#/connect/<id>` and the list of connected apps is on
 `#/account` (`FEATURES.md`, "Connect an app"). A connected app's access token
 is a normal `authenticated` token with `client_id` and `session_id`, and it
@@ -265,9 +265,8 @@ and `anon` are unchanged (`tests/db/api-client-guard.test.mjs`;
 `docs/decisions/2026-11-13-a-connected-app-reaches-only-the-api-s-account-scope.md`).
 Auth itself is bounded by Supabase's fix of 2026-11-03 (supabase/auth#2898),
 which refuses a client token on the password, the factors, another app's
-consent and the grants; production's server is switched on only after the
-probe proves the fix on the hosted project (`.claude/README.md`, "Supabase
-configuration"). The nightly backup leaves out roles, so a restore drops the
+consent and the grants; the probes P1-P8 answered PASS-BLOCKED on the hosted
+test project on 2026-11-17 (`.claude/README.md`, "Supabase configuration"). The nightly backup leaves out roles, so a restore drops the
 role setting with no error; "Restore production (owner)" sets it again.
 
 An account's lists leave it only as the reader's own file: the lists JSON
