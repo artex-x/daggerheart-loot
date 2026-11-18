@@ -640,7 +640,8 @@ describe('previewChecks() against the preview host', () => {
     'get_records',
     'get_homebrew_item',
     'get_shared_list',
-    'check_file'
+    'check_file',
+    'get_file_format'
   ].map((name) => ({ name }));
   const CONNECT = 'connect/' + 'a'.repeat(32);
   /* A host that answers as the preview host does; `over` replaces one path's answer. */

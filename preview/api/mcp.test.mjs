@@ -9,6 +9,8 @@ import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 import { renderApiData } from '../../tools/api-data.mjs';
 import { guessBand } from '../../app/src/lib/money.ts';
+import { NDICE } from '../../app/src/lib/std.ts';
+import { RARITY_TIERS } from '../../app/src/lib/alt.ts';
 import { clearCache } from './rest.mjs';
 
 const { default: worker } = await import('../worker.mjs');
@@ -384,7 +386,8 @@ describe('tools/call', () => {
         'get_records',
         'get_homebrew_item',
         'get_shared_list',
-        'check_file'
+        'check_file',
+        'get_file_format'
       ]
     );
     for (const t of tools) {
@@ -407,20 +410,37 @@ describe('tools/call', () => {
       'tier',
       'rarity',
       'limit',
-      'fields'
+      'fields',
+      'match'
     ]);
     assert.equal(search.inputSchema.properties.limit.type, 'integer');
     assert.deepEqual(search.inputSchema.properties.fields.enum, ['summary']);
+    assert.deepEqual(search.inputSchema.properties.match.enum, ['word']);
     const batch = tools.find((t) => t.name === 'get_records');
     assert.deepEqual(batch.inputSchema.required, ['ids']);
     assert.deepEqual(Object.keys(batch.inputSchema.properties), ['ids']);
     assert.equal(batch.inputSchema.properties.ids.type, 'string');
-    assert.match(batch.description, /20/);
+    assert.match(batch.description, /up to 10 catalog/);
+    assert.doesNotMatch(batch.description, /20/);
     const file = tools.find((t) => t.name === 'check_file');
     assert.deepEqual(file.inputSchema.required, ['file']);
     assert.deepEqual(Object.keys(file.inputSchema.properties), ['file']);
     assert.equal(file.inputSchema.properties.file.type, 'string');
     assert.match(file.description, /65536/);
+    /* A client with no web access writes a file from the tool list alone. */
+    for (const needle of [
+      'get_file_format',
+      SITE + 'schema/import-v3.json',
+      SITE + 'schema/homebrew-v2.json',
+      '"quantity":2',
+      '"player_note"',
+      '"key":"hb_'
+    ]) {
+      assert.ok(file.description.includes(needle), needle);
+    }
+    const format = tools.find((t) => t.name === 'get_file_format');
+    assert.deepEqual(format.inputSchema.required, ['file_kind']);
+    assert.deepEqual(format.inputSchema.properties.file_kind.enum, ['lists', 'homebrew']);
     const roll = tools.find((t) => t.name === 'roll');
     assert.deepEqual(roll.inputSchema.required, ['section']);
     assert.ok(
@@ -487,12 +507,14 @@ describe('tools/call', () => {
         { q: 'ring', limit: 50, fields: 'summary' },
         '/api/v1/records?q=ring&limit=50&fields=summary'
       ],
+      ['search_catalog', { q: 'pet', match: 'word' }, '/api/v1/records?q=pet&match=word'],
       [
         'search_catalog',
         { kind: 'weapon', tier: '1', limit: 3 },
         '/api/v1/records?kind=weapon&tier=1&limit=3'
       ],
       ['check_file', { file: LISTS_FILE }, '/api/v1/file-checks', LISTS_FILE],
+      ['get_file_format', { file_kind: 'homebrew' }, '/api/v1/file-formats/homebrew'],
       ['get_record', { id: 'ci1' }, '/api/v1/records/ci1'],
       ['get_records', { ids: 'ci1,q23,zzzz' }, '/api/v1/records-by-id?ids=ci1,q23,zzzz'],
       ['get_homebrew_item', { uuid: HID }, `/api/v1/homebrew-items/${HID}`],
@@ -576,7 +598,7 @@ describe('tools/call', () => {
     assert.equal(checked.body.result.structuredContent.counts.skipped, 1);
   });
 
-  it('reads many records in one get_records call, names the missing ids, and refuses past 20', async () => {
+  it('reads many records in one get_records call, names the missing ids, and refuses past 10', async () => {
     const batch = await pin(
       'tools-call-get-records',
       modernRpc(12, 'tools/call', {
@@ -592,7 +614,15 @@ describe('tools/call', () => {
       ['q23', 'ci1']
     );
     assert.deepEqual(value.missing, ['zzzz']);
-    const many = Array.from({ length: 21 }, (_, i) => `ci${String(i + 1)}`).join(',');
+    const many = Array.from({ length: 11 }, (_, i) => `ci${String(i + 1)}`).join(',');
+    const ten = Array.from({ length: 10 }, (_, i) => `ci${String(i + 1)}`).join(',');
+    const [okMsg, okHeaders] = calls('get_records', { ids: ten })[0];
+    const full = (await (await mcp(okMsg, okHeaders)).json()).result;
+    assert.equal(full.isError, undefined);
+    assert.equal(
+      full.structuredContent.records.length + full.structuredContent.missing.length,
+      10
+    );
     for (const args of [{}, { ids: ['ci1'] }, { ids: many }, { ids: 'ci1,ZZZ!' }]) {
       const [msg, headers] = calls('get_records', args)[0];
       const { result } = await (await mcp(msg, headers)).json();
@@ -875,6 +905,41 @@ describe('the published price guess', () => {
     assert.ok(
       text.replace(/\s+/g, ' ').includes(priceSentence().split('. ').slice(1).join('. '))
     );
+  });
+
+  it("states std.ts's dice bands and alt.ts's tier advice in the roll tool and both instructions", () => {
+    const dice = (r) =>
+      NDICE.filter((d) => d.rarities.includes(r))
+        .map((d) => String(d.n))
+        .join(' or ');
+    const bands =
+      'On Core rules (std) dice is the rarity band of the Core book: ' +
+      [...new Set(NDICE.flatMap((d) => d.rarities))]
+        .map((r) => `${dice(r)} d12 for ${r}`)
+        .join(', ') +
+      '.';
+    const byTier = new Map();
+    for (const r of RARITIES) {
+      const tier = RARITY_TIERS[r].replace(/–/g, '-');
+      byTier.set(tier, [...(byTier.get(tier) ?? []), r]);
+    }
+    const tiers =
+      'The alternate tables (alt) recommend ' +
+      [...byTier]
+        .map(([t, rs], i) => `${rs.join(' and ')}${i === 0 ? ' loot' : ''} for tier ${t}`)
+        .join(', ') +
+      ': advice, not a limit.';
+    /* The Core text writes "1 or 2 d12 for common, 2 or 3 for uncommon": d12 only once. */
+    const bandsText = bands.replace(/ d12 for (?!common)/g, ' for ');
+    const roll = OPENAPI.paths['/api/v1/rolls/{section}'].post.description;
+    for (const text of [
+      roll,
+      OPENAPI.info['x-mcp-instructions'],
+      OPENAPI.info['x-mcp-me-instructions']
+    ]) {
+      assert.ok(text.includes(bandsText), bandsText);
+      assert.ok(text.includes(tiers), tiers);
+    }
   });
 
   it('routes, links and documents in the initialize instructions of /mcp and /mcp/me', () => {

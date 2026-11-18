@@ -36,7 +36,7 @@ import {
   revOf,
   tokenOf
 } from './me.mjs';
-import { drop, readJson, readText, rpc } from './read.mjs';
+import { drop, readBytes, readJson, readText, rpc } from './read.mjs';
 import {
   ApiError,
   FILE_CHECK_MAX,
@@ -61,9 +61,8 @@ const SEARCH_SHARD_MAX = 262144;
 const Q_MAX = 200;
 const TERMS_MAX = 8;
 const LIMIT_MAX = 50;
-/* The default search page, so one call reads every row of it; it also bounds the chunk reads
-   of one call (docs/specs/CONTRACTS.md section 6, "Batch read"). */
-const RECORD_IDS_MAX = 20;
+/* It bounds the chunk reads of one call (docs/specs/CONTRACTS.md section 6, "Batch read"). */
+const RECORD_IDS_MAX = 10;
 const FILTER_MAX = 512;
 const KINDS = ['item', 'consumable', 'weapon', 'secondary', 'armor'];
 const TIERS = ['1', '2', '3', '4', 'A', 'C'];
@@ -143,7 +142,8 @@ function route(pathname) {
       tables: ['getTable', READ],
       records: ['getRecord', READ],
       'homebrew-items': ['getHomebrewItem', READ],
-      'shared-lists': ['getSharedList', READ]
+      'shared-lists': ['getSharedList', READ],
+      'file-formats': ['getFileFormat', READ]
     };
     const hit = Object.hasOwn(ops, rest[0]) ? ops[rest[0]] : null;
     return hit ? { op: hit[0], param: param(rest[1]), allow: hit[1] } : null;
@@ -206,7 +206,9 @@ export function parseRollBody(mode, body) {
   if (mode === 'part') {
     const part = body['part'];
     if (typeof part !== 'string' || part === '' || part.length > 64) {
-      throw bad('The field part is required and must be a part id from /api/v1/rolls.');
+      throw bad(
+        "The field part is required and must be a part id of the section's parts in list_rolls (GET /api/v1/rolls)."
+      );
     }
     return { part, value };
   }
@@ -249,7 +251,7 @@ export function parseSearch(query) {
   const source = text('source');
   const table = text('table');
   if (table !== undefined && tableOf(table) === null) {
-    throw bad('The field table must be a table id from /api/v1/tables.');
+    throw bad('The field table must be a table id from list_tables (GET /api/v1/tables).');
   }
   const given = text('limit');
   let limit = 20;
@@ -260,12 +262,13 @@ export function parseSearch(query) {
     }
   }
   const summary = oneOf('fields', ['summary']) === 'summary';
+  const word = oneOf('match', ['word']) === 'word';
   if (!terms.length && [kind, source, table, tier, rarity].every((v) => v === undefined)) {
     throw bad(
       'The field q is required unless a facet is given. Send q or one of kind, source, table, tier and rarity.'
     );
   }
-  return { terms, kind, source, table, tier, rarity, limit, summary };
+  return { terms, kind, source, table, tier, rarity, limit, summary, word };
 }
 
 /**
@@ -415,7 +418,11 @@ function indexOf(site) {
       ai: pair('ai.html'),
       mcp: `${site}mcp`,
       mcp_me: `${site}mcp/me`,
-      catalog: `${site}api/v1/catalog/index.json`
+      catalog: `${site}api/v1/catalog/index.json`,
+      file_formats: {
+        lists: `${site}api/v1/file-formats/lists`,
+        homebrew: `${site}api/v1/file-formats/homebrew`
+      }
     },
     auth: {
       public: 'The read operations and /mcp need no key and no sign-in.',
@@ -456,9 +463,17 @@ async function readAsset(env, path) {
   return got.value;
 }
 
-/** Reads a published file as text under its read cap: a catalog chunk is read one line at a time. */
+/** Reads a published file as text under its read cap: a search shard or a summary file. */
 async function readAssetText(env, path) {
   const got = await readText(await fetchAsset(env, path), readCapOf(path));
+  if (got.fail) throw new Error(got.fail);
+  return got.value;
+}
+
+/** Reads a published file as bytes under its read cap: a catalog chunk, which the service
+ *  decodes one record line at a time. */
+async function readAssetBytes(env, path) {
+  const got = await readBytes(await fetchAsset(env, path), readCapOf(path), true);
   if (got.fail) throw new Error(got.fail);
   return got.value;
 }
@@ -468,6 +483,7 @@ export function serviceOf(env) {
   return createService({
     assets: (path) => readAsset(env, path),
     text: (path) => readAssetText(env, path),
+    bytes: (path) => readAssetBytes(env, path),
     rpc: (name, args, max) => rpc(env, name, args, max),
     random: Math.random,
     site: { base: env.SITE, art: artBaseOf(String(env.SUPABASE_URL ?? '')) }
@@ -509,6 +525,8 @@ export async function runOperation(service, op, { param, query = {}, body = {}, 
       }
       if (overFileCap(file)) throw fileTooLarge();
       return service.checkFile(file);
+    case 'getFileFormat':
+      return service.getFileFormat(param);
     case 'getRecord':
       if (!RECORD_ID.test(param))
         throw new ApiError(404, 'not_found', 'The record does not exist.');

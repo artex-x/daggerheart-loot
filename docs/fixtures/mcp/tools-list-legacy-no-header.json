@@ -38,13 +38,13 @@
           },
           {
             "name": "roll",
-            "description": "Roll a section or resolve a typed number.\n\nRolls the section's dice and answers the records the app's panel would draw, or resolves the number you type. The body is JSON only (415 otherwise) and at most 4096 bytes (413); an empty body reads as {}. Modes: std (exactly one of dice 1-5 and total 1-60; sources and kinds subsets), alt (rarity; hope and fear 1-12, both or neither; kinds), table (value) and part (part required; value). Results keep the app's order. The answer is never cached.",
+            "description": "Roll a section or resolve a typed number.\n\nRolls the section's dice and answers the records the app's panel would draw, or resolves the number you type. The body is JSON only (415 otherwise) and at most 4096 bytes (413); an empty body reads as {}. Modes: std (exactly one of dice 1-5 and total 1-60; sources and kinds subsets), alt (rarity; hope and fear 1-12, both or neither; kinds), table (value) and part (part required; value). On Core rules (std) dice is the rarity band of the Core book: 1 or 2 d12 for common, 2 or 3 for uncommon, 3 or 4 for rare, 4 or 5 for legendary. std answers one record per source and kind for the same number (up to four: a Core item and consumable, a Hope & Fear item and consumable): offer them as choices, or send one source and one kind to get one record. The alternate tables (alt) recommend common and uncommon loot for tier 1-2, rare for tier 2-3, very_rare and legendary for tier 3-4: advice, not a limit. alt answers the Hope die's row and the Fear die's row of each kind (col); on a critical success (equal dice) bump names the rarity one step up, none for legendary. dice.kind pick (table and part modes): value is the row number from 1 to max, drawn at random or the value you sent; max is the number of rows, which a die matches only sometimes. To roll at the table yourself, choose a number from 1 to max and send it as value. n is the number that drew the result. Results keep the app's order. The answer is never cached.",
             "inputSchema": {
               "type": "object",
               "properties": {
                 "section": {
                   "type": "string",
-                  "description": "A section id from /api/v1/rolls, or its old id."
+                  "description": "A section id from list_rolls (GET /api/v1/rolls), or its old id."
                 },
                 "dice": {
                   "type": "integer",
@@ -138,17 +138,17 @@
           },
           {
             "name": "get_table",
-            "description": "Read one table's rows.\n\nReturns a table's rows in the tables page's order, without stats (read a record for those). On eq_weapon, eq_secondary and eq_armor the part (the tier: 1, 2, 3, 4 or A) is required; without it the answer is 400 and names the part list. On a table with parts, part limits the rows to that part.",
+            "description": "Read one table's rows.\n\nReturns a table's rows in the tables page's order, without stats (read a record for those). On eq_weapon, eq_secondary and eq_armor the part (the tier: 1, 2, 3, 4 or A) is required; without it the answer is 400 and names the part list. On a table with parts, part limits the rows to that part. A row's n is the record's roll number in the roll table of its book (the die face on an alternate table), null where no roll table holds it; rung is true on a later tier of an upgrade line: it is in the table, but a roll draws the line's head only. A row of an equipment table also carries statline, the stat line of its record, so you can compare weapons and armor without get_records.",
             "inputSchema": {
               "type": "object",
               "properties": {
                 "table": {
                   "type": "string",
-                  "description": "A table id from /api/v1/tables."
+                  "description": "A table id from list_tables (GET /api/v1/tables)."
                 },
                 "part": {
                   "type": "string",
-                  "description": "A part id from the table's parts."
+                  "description": "A part id from the table's parts in list_tables."
                 },
                 "filter": {
                   "type": "string",
@@ -168,7 +168,7 @@
           },
           {
             "name": "search_catalog",
-            "description": "Search the catalog by name and facets.\n\nFinds catalog records by name, in Russian or English, and by facets. Words may come in any order, a word also finds its other forms (a Snowball stem), and a phrase in quotes matches as typed. It reads names only, never a description or a stat line, so a word that only a description holds finds nothing. The answer is ranked as the app's search ranks names, or in catalog order when q is absent. A query that matches too many records to rank (such as a single letter or a short fragment of a word) is 400 too_broad: add a longer word or a facet. Send q, or at least one facet. total counts every match; rows holds the first limit of them. A row has the fields of the record of the same names and the same link. With fields=summary a row also carries a summary: one plain-text line of the record's text, at most 120 characters in each language. Ask for it only when you must see what the items do to choose which records to read; it costs the site more CPU per request. If a search with fields=summary fails, search without fields and read the items with get_records. The summary is a hint, not the text: read the rows' records (GET /api/v1/records-by-id, up to 20 at once) before you choose records by their effect. Own items and homebrew are not searched. Cache it for 5 minutes.",
+            "description": "Search the catalog by name and facets.\n\nFinds catalog records by name, in Russian or English, and by facets. Words may come in any order. A word matches any name that contains it, also inside a longer word (pet finds Petal), and a name that holds another form of it (a Snowball stem: potions finds Potion); a phrase in quotes matches as typed. With match=word a word matches whole words only (pet finds Pets, never Petal). Read a record's text before you pick it by its name. It reads names only, never a description or a stat line, so a word that only a description holds finds nothing. The answer is ranked as the app's search ranks names, or in catalog order when q is absent. A query that matches too many records to rank (such as a single letter or a short fragment of a word) is 400 too_broad: add a longer word or a facet. Send q, or at least one facet. total counts every match; rows holds the first limit of them. A row has the fields of the record of the same names and the same link. With fields=summary a row also carries a summary: one plain-text line of the record's text, at most 120 characters in each language. Ask for it only when you must see what the items do to choose which records to read; it costs the site more CPU per request. If a search with fields=summary fails, search without fields and read the items with get_records. The summary is a hint, not the text: read the rows' records (get_records, GET /api/v1/records-by-id, up to 10 at once) before you choose records by their effect. Own items and homebrew are not searched. A row's table is the record's own table id (hnf_item), and its table_id is the id that list_tables and get_table name (hope_and_fear_item); the table argument takes both. Cache it for 5 minutes.",
             "inputSchema": {
               "type": "object",
               "properties": {
@@ -189,11 +189,11 @@
                 },
                 "source": {
                   "type": "string",
-                  "description": "A source id such as core, hnf or voa (the id of a record's source)."
+                  "description": "A source id: core, hnf, wondrous, community, dread, frame (the campaign frames), voa, dv, arazo, mwt, ph, lr or vh (the id of a record's source)."
                 },
                 "table": {
                   "type": "string",
-                  "description": "A table id from /api/v1/tables: the records of that table, as GET /api/v1/tables/{table} lists them."
+                  "description": "A table id from list_tables (GET /api/v1/tables), or a record's table: the records of that table, as get_table lists them."
                 },
                 "tier": {
                   "type": "string",
@@ -205,7 +205,7 @@
                     "A",
                     "C"
                   ],
-                  "description": "The tier of a record: 1, 2, 3, 4, A or C."
+                  "description": "The tier of a record: 1, 2, 3, 4, A or C. A record answers tier 1-4 as a number and A or C as a string."
                 },
                 "rarity": {
                   "type": "string",
@@ -231,6 +231,13 @@
                     "summary"
                   ],
                   "description": "The extra row fields to answer. summary adds each row's summary; without fields a row has no summary. If a search with fields=summary fails, search without fields and read the items with get_records."
+                },
+                "match": {
+                  "type": "string",
+                  "enum": [
+                    "word"
+                  ],
+                  "description": "How a word of q matches a name. Without match a word matches any name that contains it, also inside a longer word (pet finds Petal). word matches whole words only: the word itself or another form of it (pet finds Pets, never Petal); a phrase in quotes matches as whole words in order. A query that matches too many names as substrings is still 400 too_broad."
                 }
               },
               "required": []
@@ -266,13 +273,13 @@
           },
           {
             "name": "get_records",
-            "description": "Read up to 20 catalog records at once.\n\nReturns the neutral records daggerheart-loot/record v1 of up to 20 catalog ids in one call, in the order of ids; an id given twice answers once. Read the records of a search's rows with it before you choose them by their text. An id the catalog does not hold is named in missing, and the other records still answer. An id that is not a record id, or more than 20 ids, is 400. To read the whole catalog use the bulk catalog instead: it costs no Functions request. Cache it for 5 minutes.",
+            "description": "Read up to 10 catalog records at once.\n\nReturns the neutral records daggerheart-loot/record v1 of up to 10 catalog ids in one call, in the order of ids; an id given twice answers once. Read the records of a search's rows with it before you choose them by their text. An id the catalog does not hold is named in missing, and the other records still answer. An id that is not a record id, or more than 10 ids, is 400. To read the whole catalog use the bulk catalog instead: it costs no Functions request. Cache it for 5 minutes.",
             "inputSchema": {
               "type": "object",
               "properties": {
                 "ids": {
                   "type": "string",
-                  "description": "1 to 20 catalog record ids, comma-separated, such as ci12,q23."
+                  "description": "1 to 10 catalog record ids, comma-separated, such as ci12,q23."
                 }
               },
               "required": [
@@ -335,7 +342,7 @@
           },
           {
             "name": "check_file",
-            "description": "Check an import file as the app would.\n\nChecks the text of a lists file (import-v1, v2 or v3) or a homebrew file (homebrew-v1 or v2) with the app's own parsers and answers its own errors, skips and notes in Russian and English. The body is the file itself (415 unless application/json) and at most 32768 bytes (413). Bytes that are not UTF-8 answer not_json, as the import reads them. The answer is always 200 once the body is read: look at ok. It checks the catalog only, with no account: a homebrew entry without a snapshot is skipped as unheld, an error line of a lists file names its entry by item id without the record's name, and a skip line of a lists file gives its position only. A zip file is not checked: send lists.json or homebrew.json. As an MCP tool the whole request is at most 65536 bytes, so a client that escapes non-ASCII text can meet the HTTP 413 before the too_large result. The answer is never cached.",
+            "description": "Check an import file as the app would.\n\nChecks the text of a lists file (import-v1, v2 or v3) or a homebrew file (homebrew-v1 or v2) with the app's own parsers and answers its own errors, skips and notes in Russian and English. Every key is checked: an unknown key is an error, not ignored. A lists file: {\"format\":\"daggerheart-loot/lists\",\"version\":3,\"lists\":[{\"name\":\"Shop\",\"player_note\":\"Open at dawn.\",\"entries\":[{\"id\":\"ci1\",\"quantity\":2,\"price_coins\":150,\"player_note\":\"The last one.\"}]}]}. A homebrew file: {\"format\":\"daggerheart-loot/homebrew\",\"version\":2,\"items\":[{\"key\":\"hb_ashtonicaaaaaaaa\",\"kind\":\"consumable\",\"en\":\"Ash Tonic\",\"ende\":\"Clear 1 Stress.\"}]}. The field table, the rules and a full example of each kind: get_file_format (GET /api/v1/file-formats/{file_kind}); the JSON Schemas: https://daggerheart-loot.pages.dev/schema/import-v3.json and https://daggerheart-loot.pages.dev/schema/homebrew-v2.json (file.schema of the answer names the one of the file's version). Each line has level (error, skip or note) and id (the record id or homebrew key of its entry or object, or null); an error of a value outside its list names the allowed values. ok true can still hold skip lines: a skipped entry is not imported, so fix or remove it before you hand the file over. The body is the file itself (415 unless application/json) and at most 32768 bytes (413). Bytes that are not UTF-8 answer not_json, as the import reads them. The answer is always 200 once the body is read: look at ok. It checks the catalog only, with no account: a homebrew entry without a snapshot is skipped as unheld, an error line of a lists file names its entry by item id without the record's name, and a skip line of a lists file gives its position only. A zip file is not checked: send lists.json or homebrew.json. As an MCP tool the whole request is at most 65536 bytes, so a client that escapes non-ASCII text can meet the HTTP 413 before the too_large result. The answer is never cached.",
             "inputSchema": {
               "type": "object",
               "properties": {
@@ -346,6 +353,32 @@
               },
               "required": [
                 "file"
+              ]
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            }
+          },
+          {
+            "name": "get_file_format",
+            "description": "Read the format of an import file.\n\nReturns how to write a lists file (file_kind lists) or a homebrew file (file_kind homebrew) that the app's import and check_file accept: the newest version and the versions the import reads, the URL of its JSON Schema, the rules that a field table cannot show, one row a key (path, required, type, the allowed values, the default and the bounds, and a description), and a full example that imports clean. Read it before you write a file; then check the file with check_file (POST /api/v1/file-checks). It changes only with a deploy.",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "file_kind": {
+                  "type": "string",
+                  "enum": [
+                    "lists",
+                    "homebrew"
+                  ],
+                  "description": "lists or homebrew."
+                }
+              },
+              "required": [
+                "file_kind"
               ]
             },
             "annotations": {

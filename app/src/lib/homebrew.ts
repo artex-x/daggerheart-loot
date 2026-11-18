@@ -345,6 +345,25 @@ const TRAITS: readonly unknown[] = [
 const RANGES: readonly unknown[] = ['melee', 'veryclose', 'close', 'far', 'veryfar'];
 const DAMAGE: readonly unknown[] = ['phy', 'mag', 'any'];
 const BURDEN: readonly unknown[] = [1, 2, 'any'];
+/** The values a card's `kind` takes. */
+export const CARD_KINDS: readonly unknown[] = ['set', 'ref'];
+
+/** The values of each field of an item's stored part that `contentProblems` checks as one of
+ *  a list, by the problem's dot path; the import report names them in its `enum` lines. */
+export const ITEM_ENUMS: Readonly<Record<string, readonly unknown[]>> = {
+  kind: KINDS,
+  tier: TIERS,
+  'eq.t': EQ_TYPES,
+  'eq.tier': EQ_TIERS,
+  'eq.cls': CLASSES,
+  'eq.tr': TRAITS,
+  'eq.rg': RANGES,
+  'eq.dt': DAMAGE,
+  'eq.bu': BURDEN,
+  'eq.alt.tr': TRAITS,
+  'eq.alt.rg': RANGES,
+  'eq.alt.dt': DAMAGE
+};
 
 const at = (base: string, key: string): string => (base ? base + '.' + key : key);
 
@@ -549,7 +568,7 @@ export function bookProblems(v: unknown): Problem[] {
  *  `hb_` key in `items` is the rule `pattern`: an own item names the card itself. */
 export function cardProblems(kind: unknown, v: unknown): Problem[] {
   const out: Problem[] = [];
-  if (kind !== 'set' && kind !== 'ref') out.push({ path: 'kind', rule: 'enum' });
+  if (!CARD_KINDS.includes(kind)) out.push({ path: 'kind', rule: 'enum' });
   if (!isObj(v)) return [...out, { path: '', rule: 'type' }];
   const set = kind === 'set';
   namesProblems(v, CARD_NAME_MAX, '', out);

@@ -1,1 +1,1 @@
-{"format":"daggerheart-loot/api-error","version":1,"error":{"code":"bad_request","message":"The field ids holds more than 20 ids. Send fewer."}}
+{"format":"daggerheart-loot/api-error","version":1,"error":{"code":"bad_request","message":"The field ids holds more than 10 ids. Send fewer."}}

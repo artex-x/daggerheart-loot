@@ -13,6 +13,7 @@ import { appDocument, card, cardHead, esc, fit } from '../tools/share-card.mjs';
    (measured 2026-10-15, Node 24.15.0); both give the same module. */
 createRequire(import.meta.url)('../app/src/lib/markup.ts');
 const { default: worker } = await import('./worker.mjs');
+const { readBytes } = await import('./api/read.mjs');
 
 const SITE = 'https://daggerheart-loot.pages.dev/';
 const HOST = 'https://daggerheart-loot.pages.dev';
@@ -1422,12 +1423,13 @@ describe('the byte bounds', () => {
     });
     return res;
   };
-  const stream = (chunk) => {
+  const stream = (chunk, count = Infinity) => {
     const state = { pulled: 0, cancelled: false };
     const body = new ReadableStream({
       pull(c) {
         state.pulled++;
-        c.enqueue(new Uint8Array(chunk).fill(32));
+        if (state.pulled > count) c.close();
+        else c.enqueue(new Uint8Array(chunk).fill(32));
       },
       cancel() {
         state.cancelled = true;
@@ -1461,6 +1463,41 @@ describe('the byte bounds', () => {
     const r = await get('/h/' + ID);
     assert.equal(r.res.status, 200);
     assert.equal(meta(r.body, 'og:title'), 'Генератор лута Daggerheart');
+    assert.ok(state.cancelled);
+    assert.ok(state.pulled <= 5 + 1, String(state.pulled));
+  });
+
+  it('cancels a decoded /h/ body past 65536 bytes whose named length is within the cap', async () => {
+    /* fetch decodes a gzip answer, but Content-Length names the encoded size. */
+    for (const headers of [
+      { 'Content-Length': '4096', 'Content-Encoding': 'gzip' },
+      { 'Content-Length': '4096' }
+    ]) {
+      const { body, state } = stream(16384, 13);
+      serve({ item: () => new Response(body, { status: 200, headers }) });
+      const r = await get('/h/' + ID);
+      assert.equal(r.res.status, 200);
+      assert.equal(meta(r.body, 'og:title'), 'Генератор лута Daggerheart');
+      assert.ok(state.cancelled, JSON.stringify(headers));
+      assert.ok(state.pulled <= 5 + 1, String(state.pulled));
+    }
+  });
+
+  it('reads a whole published file in one call only when it has no content encoding', async () => {
+    const plain = new Response('abc', { headers: { 'Content-Length': '3' } });
+    Object.defineProperty(plain, 'body', {
+      get() {
+        throw new Error('the body was streamed');
+      }
+    });
+    assert.deepEqual(await readBytes(plain, 8, true), {
+      value: new TextEncoder().encode('abc')
+    });
+    const { body, state } = stream(16384, 13);
+    const gzip = new Response(body, {
+      headers: { 'Content-Length': '4096', 'Content-Encoding': 'gzip' }
+    });
+    assert.deepEqual(await readBytes(gzip, 65536, true), { fail: 'big' });
     assert.ok(state.cancelled);
     assert.ok(state.pulled <= 5 + 1, String(state.pulled));
   });

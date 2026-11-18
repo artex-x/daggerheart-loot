@@ -10,6 +10,7 @@ import type { Dict } from './dict.js';
 import {
   BOOK_NAME_MAX,
   CARD_ITEMS_MAX,
+  CARD_KINDS,
   CARD_NAME_MAX,
   CARD_SUB_MAX,
   CARD_TEXT_MAX,
@@ -17,6 +18,7 @@ import {
   CRAFT_MAX,
   DESC_MAX,
   hasName,
+  ITEM_ENUMS,
   NAME_MAX,
   REFS_MAX,
   SECTIONS_MAX
@@ -96,6 +98,12 @@ function limitOf(array: FileArray, field: string): number | undefined {
   }
 }
 
+/* The values an `enum` line names, as JSON so a number and a string read apart (1, "A"). */
+function allowedOf(array: FileArray, f: string): string {
+  const values = array === 'items' ? ITEM_ENUMS[f] : f === 'kind' ? CARD_KINDS : undefined;
+  return (values ?? []).map((v) => JSON.stringify(v)).join(', ');
+}
+
 /* The value at an error's path in the file, as text cut to 40 characters. */
 function valueAt(doc: unknown, path: string): string {
   let v: unknown = doc;
@@ -167,7 +175,10 @@ function errorLine(
         text = fill(t.hbImportErrRange, { f, v });
         break;
       case 'enum':
-        text = f === 'eq.line' ? t.hbImportErrLine : fill(t.hbImportErrEnum, { f, v });
+        text =
+          f === 'eq.line'
+            ? t.hbImportErrLine
+            : fill(t.hbImportErrEnum, { f, v, s: allowedOf(e.array, f) });
         break;
       case 'pattern':
         text =

@@ -317,7 +317,9 @@ const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
       ['error-records-q-missing.json', 'daggerheart-loot/api-error'],
       ['error-records-too-broad.json', 'daggerheart-loot/api-error'],
       ['error-file-check-too-large.json', 'daggerheart-loot/api-error'],
-      ['table-eq_weapon-2-filter.json', 'daggerheart-loot/api-table']
+      ['table-eq_weapon-2-filter.json', 'daggerheart-loot/api-table'],
+      ['file-format-lists.json', 'daggerheart-loot/api-file-format'],
+      ['file-format-homebrew.json', 'daggerheart-loot/api-file-format']
     ]) {
       const file = path.join(apiDir, name);
       ok(fs.existsSync(file), 'docs/fixtures/api/v1/' + name + ' is missing');
@@ -354,6 +356,26 @@ const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
         ),
       'docs/fixtures/api/v1/records-q-summary.json has a row without a summary pair of 120 characters'
     );
+    /* A file check line names its level and its entry's id; the answer names the schema. */
+    for (const [name, level] of [
+      ['file-check-lists-ok.json', 'skip'],
+      ['file-check-lists-errors.json', 'error'],
+      ['file-check-homebrew-errors.json', 'error']
+    ]) {
+      const file = path.join(apiDir, name);
+      const v = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null;
+      ok(
+        v !== null &&
+          v.lines.length > 0 &&
+          v.lines.every((l) => l.level === level && 'id' in l) &&
+          /\/schema\/(import|homebrew)-v\d\.json$/.test(String(v.file.schema)),
+        'docs/fixtures/api/v1/' +
+          name +
+          ' lacks a line level ' +
+          level +
+          ', an id or file.schema'
+      );
+    }
     const openapi = JSON.parse(
       fs.readFileSync(path.join(__dirname, '..', 'preview', 'api', 'openapi.json'), 'utf8')
     );
@@ -419,7 +441,20 @@ const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
       .flatMap((o) => Object.values(o))
       .filter((op) => op['x-mcp-tool'] && !op.security)
       .map((op) => op['x-mcp-tool']);
-    ok(tools.length === 10, 'openapi.json does not hold ten tools: ' + tools.join());
+    ok(tools.length === 11, 'openapi.json does not hold eleven tools: ' + tools.join());
+    /* A client can cut long server instructions, and every sentence is advice it then loses:
+       a text that grows past its bound gets a look at what to cut first. */
+    for (const [key, max] of [
+      ['x-mcp-instructions', 4096],
+      ['x-mcp-me-instructions', 5120]
+    ]) {
+      const size = openapi.info[key].length;
+      ok(
+        size <= max,
+        `openapi.json info.${key} is ${String(size)} characters, past ${String(max)}. ` +
+          'Shorten it, or raise the bound after a check of what MCP clients keep'
+      );
+    }
     ok(
       openapi.info['x-mcp-endpoint'] === PREVIEW_ORIGIN + '/mcp',
       "openapi.json's x-mcp-endpoint is not " + PREVIEW_ORIGIN + '/mcp'
@@ -455,7 +490,24 @@ const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
           text.includes(openapi.info['x-mcp-me-endpoint']),
           'pages/src/' + file + " does not hold openapi.json's x-mcp-me-endpoint"
         );
-        const own = text.match(/https:\/\/daggerheart-loot\.pages\.dev\/mcp[^\s"<]*/g) || [];
+        const own = text.match(/https:\/\/daggerheart-loot\.pages\.dev\/mcp[^\s"<,;)]*/g) || [];
+        /* The first screen tells the reader to connect one of the two addresses, not both. */
+        const raw = fs.readFileSync(path.join(__dirname, '..', 'pages', 'src', file), 'utf8');
+        const pick = raw.match(/<div class="pick">([\s\S]*?)<\/div>/);
+        const notBoth = file.startsWith('en/')
+          ? 'Do not connect both.'
+          : 'Оба сразу подключать не нужно.';
+        ok(
+          pick !== null &&
+            raw.indexOf('<div class="pick">') < raw.indexOf('<h2>') &&
+            endpoints.every((u) => pick[1].includes('<code>' + u + '</code>')) &&
+            pick[1].includes('<p>' + notBoth + '</p>'),
+          'pages/src/' +
+            file +
+            ' has no choice box of the two MCP addresses and "' +
+            notBoth +
+            '" before its first heading'
+        );
         ok(
           own.length > 0 && own.every((u) => endpoints.includes(u)),
           'pages/src/' +

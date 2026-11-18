@@ -14,7 +14,8 @@ import {
   parseQuery,
   rankHits,
   search,
-  statLineFor
+  statLineFor,
+  wordHit
 } from './search.js';
 import type { Record_ } from './types.js';
 import { readLoot } from '../test/loot.js';
@@ -495,6 +496,42 @@ describe('several words', () => {
     expect(
       search([own('hb_twofieldsaaaaaa', 'Синий плащ', 'Даёт тень')], 'тень плащ')
     ).toHaveLength(1);
+  });
+});
+
+describe('wordHit', () => {
+  const hit = (field: string, q: string): boolean[] =>
+    parseQuery(q).map((t) => wordHit(foldQuery(field), t));
+
+  it('matches the word itself and its other forms, never a longer word', () => {
+    expect(hit('Pet Carrier', 'pet')).toEqual([true]);
+    expect(hit('Lost Pets', 'pet')).toEqual([true]);
+    expect(hit('Petal of Dawn', 'pet')).toEqual([false]);
+    expect(hit('Perpetuator', 'pet')).toEqual([false]);
+    expect(hit('Healing Potion', 'potions')).toEqual([true]);
+    expect(hit('Кольцо тишины', 'кольца тишина')).toEqual([true, true]);
+  });
+
+  it('takes a mark or a dot as a word bound, and a digit or a letter of any script as none', () => {
+    expect(hit('pet·box', 'pet')).toEqual([true]);
+    expect(hit('Pet2', 'pet')).toEqual([false]);
+    expect(hit('Petß', 'pet')).toEqual([false]);
+    expect(hit('кот', 'ко')).toEqual([false]);
+  });
+
+  it('matches a phrase as whole words in order', () => {
+    expect(hit('Ring of Silence', '"ring of"')).toEqual([true]);
+    expect(hit('Ring offering', '"ring of"')).toEqual([false]);
+  });
+
+  it('answers the same for a term it has seen', () => {
+    const [t] = parseQuery('pet');
+    if (!t) throw new Error('The query has no term.');
+    expect([wordHit('pet', t), wordHit('petal', t), wordHit('pets', t)]).toEqual([
+      true,
+      false,
+      true
+    ]);
   });
 });
 

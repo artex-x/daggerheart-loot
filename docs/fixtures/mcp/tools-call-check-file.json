@@ -40,7 +40,7 @@
         "content": [
           {
             "type": "text",
-            "text": "{\"format\":\"daggerheart-loot/api-file-check\",\"version\":1,\"file\":{\"format\":\"daggerheart-loot/lists\",\"version\":1},\"ok\":true,\"reason\":null,\"message\":null,\"lines\":[{\"list\":0,\"text\":{\"ru\":\"Позиция 2: пропущена - такой записи нет в данных\",\"en\":\"Item 2: skipped - the data has no such record\"}}],\"more\":0,\"counts\":{\"lists\":1,\"entries\":1,\"skipped\":1}}"
+            "text": "{\"format\":\"daggerheart-loot/api-file-check\",\"version\":1,\"file\":{\"format\":\"daggerheart-loot/lists\",\"version\":1,\"schema\":\"https://daggerheart-loot.pages.dev/schema/import-v1.json\"},\"ok\":true,\"reason\":null,\"message\":null,\"lines\":[{\"list\":0,\"text\":{\"ru\":\"Позиция 2: пропущена - такой записи нет в данных\",\"en\":\"Item 2: skipped - the data has no such record\"},\"level\":\"skip\",\"id\":\"nope\"}],\"more\":0,\"counts\":{\"lists\":1,\"entries\":1,\"skipped\":1}}"
           }
         ],
         "structuredContent": {
@@ -48,7 +48,8 @@
           "version": 1,
           "file": {
             "format": "daggerheart-loot/lists",
-            "version": 1
+            "version": 1,
+            "schema": "https://daggerheart-loot.pages.dev/schema/import-v1.json"
           },
           "ok": true,
           "reason": null,
@@ -59,7 +60,9 @@
               "text": {
                 "ru": "Позиция 2: пропущена - такой записи нет в данных",
                 "en": "Item 2: skipped - the data has no such record"
-              }
+              },
+              "level": "skip",
+              "id": "nope"
             }
           ],
           "more": 0,
@@ -73,7 +76,7 @@
         "_meta": {
           "io.modelcontextprotocol/serverInfo": {
             "name": "daggerheart-loot",
-            "version": "1.4.0"
+            "version": "1.5.0"
           }
         }
       }

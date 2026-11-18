@@ -14,6 +14,8 @@ import { createService } from './service.mjs';
 import { buildIndex } from '../../app/src/lib/data.ts';
 import { parseRollBody, clearCache, OPENAPI_ETAG } from './rest.mjs';
 import { ROLL_MODES } from '../../app/src/lib/rollTables.ts';
+import { CARD_KINDS, ITEM_ENUMS } from '../../app/src/lib/homebrew.ts';
+import { MONEY_MODES } from '../../app/src/lib/money.ts';
 
 const { default: worker } = await import('../worker.mjs');
 
@@ -773,6 +775,7 @@ describe('one record per line', () => {
     const service = createService({
       assets: async (path) => JSON.parse(FILES.get(path)),
       text: async (path) => FILES.get(path),
+      bytes: async (path) => new TextEncoder().encode(FILES.get(path)),
       rpc: async () => ({ value: null }),
       site: { base: SITE, art: SITE },
       cache: new Map(),
@@ -784,6 +787,47 @@ describe('one record per line', () => {
     await service.roll('std', parseRollBody('std', { total: 3 }));
     await service.roll('std', parseRollBody('std', { total: 3 }));
     assert.equal(builds, 1);
+  });
+
+  it('decodes only the head and the answered record line of each chunk a batch read reads', async () => {
+    const whole = wholeFiles();
+    const enc = new TextEncoder();
+    let decoded = 0;
+    const utf8 = new TextDecoder();
+    const service = createService({
+      assets: async (path) => JSON.parse(whole.get(path)),
+      text: async (path) => whole.get(path),
+      bytes: async (path) => enc.encode(whole.get(path)),
+      decode: (b) => ((decoded += b.byteLength), utf8.decode(b)),
+      rpc: async () => ({ value: null }),
+      site: { base: SITE, art: SITE },
+      cache: new Map()
+    });
+    const wide = JSON.parse(whole.get('apidata/records/index.json')).chunks;
+    const ten = wide.slice(0, 10).map((list) => list[0]);
+    const { body } = await service.getRecords(ten);
+    assert.equal(body.records.length, 10);
+    const lineBytes = body.records.reduce(
+      (n, r) => n + enc.encode(JSON.stringify(r)).byteLength + 1,
+      0
+    );
+    const chunkBytes = wide
+      .slice(0, 10)
+      .reduce(
+        (n, _, i) => n + enc.encode(whole.get(`api/v1/catalog/${String(i)}.json`)).byteLength,
+        0
+      );
+    const heads = wide
+      .slice(0, 10)
+      .reduce(
+        (n, _, i) =>
+          n +
+          enc.encode(whole.get(`api/v1/catalog/${String(i)}.json`).split('\n', 1)[0])
+            .byteLength,
+        0
+      );
+    assert.equal(decoded, heads + lineBytes);
+    assert.ok(decoded * 5 < chunkBytes, `${String(decoded)} of ${String(chunkBytes)} bytes`);
   });
 
   it('answers 503 when a roll row names a line that holds another id', async () => {
@@ -848,7 +892,8 @@ describe('openapi.json and the parsers', () => {
       '/api/v1/records-by-id': 'GET',
       '/api/v1/homebrew-items/{uuid}': 'GET',
       '/api/v1/shared-lists/{token}': 'GET',
-      '/api/v1/file-checks': 'POST'
+      '/api/v1/file-checks': 'POST',
+      '/api/v1/file-formats/{file_kind}': 'GET'
     };
     const t0 = Object.entries(OPENAPI.paths).filter(([p]) => !p.startsWith('/api/v1/me/'));
     assert.deepEqual(t0.map(([p]) => p).sort(), Object.keys(samples).sort());
@@ -1009,8 +1054,21 @@ describe('the catalog search', () => {
     const body = await fixture('records-q', res);
     assert.equal(body.format, 'daggerheart-loot/api-search');
     assert.ok(body.total > 0 && body.rows.length === body.total);
-    const keys = ['id', 'name', 'kind', 'source', 'table', 'tier', 'rarity', 'link'];
+    const keys = [
+      'id',
+      'name',
+      'kind',
+      'source',
+      'table',
+      'table_id',
+      'tier',
+      'rarity',
+      'link'
+    ];
     for (const row of body.rows) assert.deepEqual(Object.keys(row), keys);
+    const hnf = body.rows.find((r) => r.table === 'hnf_consumable' || r.table === 'hnf_item');
+    assert.ok(hnf, 'the query finds a Hope & Fear record');
+    assert.equal(hnf.table_id, hnf.table.replace('hnf_', 'hope_and_fear_'));
     const summed = await fixture(
       'records-q-summary',
       await get('q=' + encodeURIComponent('зелья potions') + '&fields=summary')
@@ -1098,7 +1156,9 @@ describe('the catalog search', () => {
       ['q=ring&kind=', 'kind'],
       ['q=ring&fields=ZZZfields', 'fields'],
       ['q=ring&fields=summary,ZZZtext', 'fields'],
-      ['q=ring&fields=', 'fields']
+      ['q=ring&fields=', 'fields'],
+      ['q=ring&match=ZZZmatch', 'match'],
+      ['q=ring&match=', 'match']
     ];
     for (const [query, field] of cases) {
       const res = await get(query);
@@ -1116,11 +1176,41 @@ describe('the catalog search', () => {
     assert.equal((await get('q=ring&limit=50')).status, 200);
   });
 
+  it('matches whole words with match=word: a subset of the substring search, never inside a word', async () => {
+    for (const q of ['pet', 'кольцо тишины', 'potions', 'ring']) {
+      const loose = await (await get('q=' + encodeURIComponent(q) + '&limit=50')).json();
+      const res = await get('q=' + encodeURIComponent(q) + '&limit=50&match=word');
+      assert.equal(res.status, 200, q);
+      const word = await res.json();
+      const ids = new Set(loose.rows.map((r) => r.id));
+      assert.ok(
+        word.rows.every((r) => ids.has(r.id)),
+        q
+      );
+      assert.ok(word.total <= loose.total, q);
+    }
+    const loose = await (await get('q=ring&limit=50')).json();
+    const word = await (await get('q=ring&limit=50&match=word')).json();
+    const inside = (r) => /bearings|anchoring/i.test(r.name.en);
+    assert.ok(loose.rows.some(inside), 'the substring search finds Ball Bearings');
+    assert.ok(!word.rows.some(inside), 'match=word finds no Ball Bearings');
+    assert.ok(
+      word.rows.some((r) => /\bring\b/i.test(r.name.en)),
+      'match=word finds a Ring'
+    );
+    const potions = await (await get('q=potions&match=word')).json();
+    assert.ok(
+      potions.rows.some((r) => /\bpotion\b/i.test(r.name.en)),
+      'a stem form matches'
+    );
+  });
+
   it('refuses a parameter given twice, on every operation that reads a query', async () => {
     for (const [path, name] of [
       ['/api/v1/records?q=ring&q=sword', 'q'],
       ['/api/v1/records?kind=armor&kind=weapon', 'kind'],
       ['/api/v1/records?q=ring&fields=summary&fields=summary', 'fields'],
+      ['/api/v1/records?q=ring&match=word&match=word', 'match'],
       ['/api/v1/tables/eq_weapon?part=1&part=2', 'part'],
       ['/api/v1/tables/wondrous?filter=f_kind-item&filter=f_kind-consumable', 'filter']
     ]) {
@@ -1378,30 +1468,34 @@ describe('the batch read', () => {
     assert.equal(cached.status, 304);
   });
 
-  it('reads each chunk once and answers 20 ids, with every id missing as an empty list', async () => {
-    /* The pinned catalog has 4 chunks; the whole catalog has more than 20. */
+  it('reads each chunk once and answers 10 ids, with every id missing as an empty list', async () => {
+    /* The pinned catalog has 4 chunks; the whole catalog has more than 10. */
     const whole = wholeFiles();
     state.files = whole;
     const wide = JSON.parse(whole.get('apidata/records/index.json')).chunks;
-    assert.ok(wide.length >= 20, 'the catalog has at least 20 chunks');
-    /* The last id of each of 20 chunks, in reverse chunk order, so an order by chunk or a wrong
+    assert.ok(wide.length >= 10, 'the catalog has at least 10 chunks');
+    /* The last id of each of 10 chunks, in reverse chunk order, so an order by chunk or a wrong
        chunk-to-result pairing fails. */
-    const twenty = wide
-      .slice(0, 20)
+    const ten = wide
+      .slice(0, 10)
       .map((list) => list[list.length - 1])
       .reverse();
-    const res = await ids(twenty);
+    const res = await ids(ten);
     assert.equal(res.status, 200);
     const body = await res.json();
     assert.deepEqual(
       body.records.map((r) => r.id),
-      twenty
+      ten
     );
     const read = state.fetches.filter((p) => p.startsWith('api/v1/catalog/'));
+    for (const r of body.records) {
+      const one = await (await call('/api/v1/records/' + r.id)).json();
+      assert.deepEqual(r, one, r.id);
+    }
     assert.equal(read.length, new Set(read).size);
-    const wanted = new Set(twenty.map((id) => wide.findIndex((list) => list.includes(id))));
-    assert.equal(wanted.size, 20);
-    assert.equal(read.length, 20);
+    const wanted = new Set(ten.map((id) => wide.findIndex((list) => list.includes(id))));
+    assert.equal(wanted.size, 10);
+    assert.equal(read.length, 10);
     state.fetches = [];
     const gone = await (await ids(['zzzz', 'yyyy'])).json();
     assert.deepEqual(gone.records, []);
@@ -1410,7 +1504,7 @@ describe('the batch read', () => {
   });
 
   it('refuses each bad ids value with a 400 that names ids and never echoes it', async () => {
-    const many = Array.from({ length: 21 }, (_, i) => `ZZZ${String(i)}`).join(',');
+    const many = Array.from({ length: 11 }, (_, i) => `ZZZ${String(i)}`).join(',');
     const res = await call('/api/v1/records-by-id?ids=' + many);
     assert.equal(res.status, 400);
     assertApiHeaders(res);
@@ -1525,6 +1619,14 @@ describe('the file check', () => {
       body.lines.map((l) => l.list),
       [0, 0]
     );
+    assert.deepEqual(
+      body.lines.map((l) => [l.level, l.id]),
+      [
+        ['skip', 'nope'],
+        ['skip', 'ci1']
+      ]
+    );
+    assert.equal(body.file.schema, SITE + 'schema/import-v1.json');
   });
 
   it('gives the error lines of a lists file in both languages, naming an entry by item id', async () => {
@@ -1538,13 +1640,17 @@ describe('the file check', () => {
     assert.match(body.lines[1].text.en, /ci1/);
     assert.ok(!body.lines[1].text.en.includes('Premium Bedroll'));
     assert.match(body.lines[1].text.ru, /Позиция 1/);
+    assert.ok(body.lines.every((l) => l.level === 'error'));
+    assert.equal(body.lines[0].id, null);
+    assert.equal(body.lines[1].id, 'ci1');
   });
 
   it('gives the error lines of a homebrew file, and its notes when it is good', async () => {
     const res = await check(HOMEBREW([{ key: 'x' }]));
     const body = await fixture('file-check-homebrew-errors', res);
     assert.equal(body.reason, 'errors');
-    assert.ok(body.lines.every((l) => l.list === null));
+    assert.ok(body.lines.every((l) => l.list === null && l.level === 'error' && l.id === 'x'));
+    assert.equal(body.file.schema, SITE + 'schema/homebrew-v2.json');
     const good = await (
       await check(
         HOMEBREW([
@@ -1555,7 +1661,55 @@ describe('the file check', () => {
     assert.equal(good.ok, true);
     assert.deepEqual(good.counts, { books: 0, sections: 0, cards: 0, items: 1 });
     assert.equal(good.lines.length, 1);
+    assert.equal(good.lines[0].level, 'note');
+    assert.equal(good.lines[0].id, 'hb_aaaaaaaaaaaaaaaa');
     assert.equal(good.file.format, 'daggerheart-loot/homebrew');
+  });
+
+  it('names the allowed values of a value outside its list, in both languages', async () => {
+    const body = await (
+      await check(
+        HOMEBREW([
+          {
+            key: 'hb_aaaaaaaaaaaaaaaa',
+            en: 'Axe',
+            kind: 'equip',
+            eq: {
+              t: 'weapon',
+              tier: 1,
+              cls: 'physical',
+              tr: 'agility',
+              rg: 'melee',
+              dmg: 'd8',
+              dt: 'phy',
+              bu: 1
+            }
+          }
+        ])
+      )
+    ).json();
+    assert.deepEqual(body.lines[0].text, {
+      ru: 'Предмет 1, «Axe»: eq.cls «physical»: недопустимое значение - допустимые: "phy", "mag" items[0].eq.cls',
+      en: 'Item 1, "Axe": eq.cls "physical": not an allowed value - allowed: "phy", "mag" items[0].eq.cls'
+    });
+  });
+
+  it("accepts the two example files of check_file's description with no line", async () => {
+    const text = OPENAPI.paths['/api/v1/file-checks'].post.description;
+    const m = /A lists file: (\{.*?\})\. A homebrew file: (\{.*?\})\./.exec(text);
+    assert.ok(m, 'the description holds no example files');
+    for (const [file, format] of [
+      [m[1], 'daggerheart-loot/lists'],
+      [m[2], 'daggerheart-loot/homebrew']
+    ]) {
+      const body = await (await check(file)).json();
+      assert.equal(body.file.format, format);
+      assert.equal(body.ok, true, file);
+      assert.deepEqual(body.lines, [], file);
+    }
+    const lists = JSON.parse(m[1]);
+    assert.equal(lists.lists[0].entries[0].quantity, 2);
+    assert.equal(typeof lists.lists[0].entries[0].player_note, 'string');
   });
 
   it('knows a catalog record, set and rule card from the build, as the panel would', async () => {
@@ -1591,12 +1745,16 @@ describe('the file check', () => {
       await check(JSON.stringify({ format: 'other' }))
     );
     assert.equal(unknown.reason, 'unknown_format');
-    assert.deepEqual(unknown.file, { format: null, version: null });
+    assert.deepEqual(unknown.file, { format: null, version: null, schema: null });
     assert.match(unknown.message.en, /lists file/);
     assert.match(unknown.message.en, /items file/);
     const version = await (await check(LISTS([{ name: 'a', entries: [] }], 9))).json();
     assert.equal(version.reason, 'version');
-    assert.deepEqual(version.file, { format: 'daggerheart-loot/lists', version: 9 });
+    assert.deepEqual(version.file, {
+      format: 'daggerheart-loot/lists',
+      version: 9,
+      schema: SITE + 'schema/import-v3.json'
+    });
     assert.match(version.message.en, /9/);
     const noVersion = await (
       await check(JSON.stringify({ format: 'daggerheart-loot/lists', lists: [] }))
@@ -1708,5 +1866,64 @@ describe('the file check', () => {
       path === 'apidata/file-check.json' ? other.get(path) : FILES.get(path);
     const res = await check(LISTS([{ name: 'a', entries: [{ id: 'ci1' }] }]));
     assert.equal(res.status, 503);
+  });
+});
+
+describe('the file formats', () => {
+  it('answers the format of a lists file and of a homebrew file, with the schema and an example', async () => {
+    for (const kind of ['lists', 'homebrew']) {
+      const res = await call('/api/v1/file-formats/' + kind);
+      assert.equal(res.status, 200);
+      assertApiHeaders(res);
+      assert.equal(res.headers.get('cache-control'), 'public, max-age=300');
+      const body = await fixture('file-format-' + kind, res);
+      assert.equal(res.headers.get('etag'), `"${body.data_version}"`);
+      assert.equal(body.kind, kind);
+      const schema = JSON.parse(
+        readFileSync(join(ROOT, body.file.schema.slice(SITE.length)), 'utf8')
+      );
+      assert.equal(schema.properties.version.const, body.file.version);
+      assert.equal(schema.properties.format.const, body.file.format);
+      assert.equal(body.example.format, body.file.format);
+      assert.equal(body.example.version, body.file.version);
+      assert.ok(body.rules.length > 0);
+      assert.ok(
+        body.fields.every((f) => typeof f.path === 'string' && typeof f.note === 'string')
+      );
+    }
+    assert.equal((await call('/api/v1/file-formats/zip')).status, 404);
+  });
+
+  it("lists the fields of the newest version with the parsers' own values and bounds", async () => {
+    const lists = await (await call('/api/v1/file-formats/lists')).json();
+    const row = (body, path) => body.fields.find((f) => f.path === path);
+    assert.deepEqual(row(lists, 'lists[].money_mode').values, [...MONEY_MODES]);
+    assert.deepEqual(
+      ['id', 'quantity', 'price_coins', 'player_note', 'gm_note', 'gm_only'].map(
+        (k) => row(lists, 'lists[].entries[].' + k)?.path
+      ),
+      ['id', 'quantity', 'price_coins', 'player_note', 'gm_note', 'gm_only'].map(
+        (k) => 'lists[].entries[].' + k
+      )
+    );
+    const quantity = row(lists, 'lists[].entries[].quantity');
+    assert.deepEqual([quantity.min, quantity.max, quantity.default], [1, 99, 1]);
+    assert.equal(row(lists, 'lists[].entries[].id').required, true);
+    assert.ok(!lists.fields.some((f) => f.path.includes('snapshot.')));
+    const homebrew = await (await call('/api/v1/file-formats/homebrew')).json();
+    for (const [path, values] of Object.entries(ITEM_ENUMS)) {
+      assert.deepEqual(row(homebrew, 'items[].' + path)?.values, [...values], path);
+    }
+    assert.deepEqual(row(homebrew, 'cards[].kind').values, [...CARD_KINDS]);
+    assert.equal(row(homebrew, 'items[].key').required, true);
+  });
+
+  it('accepts the example of each format in the file check', async () => {
+    for (const kind of ['lists', 'homebrew']) {
+      const { example } = await (await call('/api/v1/file-formats/' + kind)).json();
+      const body = await (await check(JSON.stringify(example))).json();
+      assert.equal(body.ok, true, kind);
+      assert.deepEqual(body.lines, [], kind);
+    }
   });
 });

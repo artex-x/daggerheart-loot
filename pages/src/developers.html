@@ -57,10 +57,12 @@
   <code>origin</code>, <code>kind</code>, <code>name</code>, <code>text</code> (подмножество
   Markdown) и <code>plain</code> (простой текст), <code>path</code>, <code>link</code>,
   <code>source</code>, <code>table</code>, <code>roll</code>, <code>tier</code>,
-  <code>rarity</code>, <code>stats</code>, <code>craft</code>, <code>set</code>,
-  <code>refs</code>, <code>image</code> и <code>rights</code>. Каждый текст для человека - пара
-  <code>{ "ru", "en" }</code>; пустая русская сторона повторяет английский текст. Храните
-  <code>link</code> как есть: его <code>?v</code> непрозрачен.
+  <code>rarity</code>, <code>price_guess</code>, <code>stats</code>, <code>craft</code>,
+  <code>set</code>, <code>refs</code>, <code>image</code> и <code>rights</code>.
+  <code>price_guess</code> - <code>{ gold, min, max }</code> или <code>null</code>: догадка
+  приложения о цене в золоте, середина полосы, та же, что приложение пишет в запись списка.
+  Каждый текст для человека - пара <code>{ "ru", "en" }</code>; пустая русская сторона повторяет
+  английский текст. Храните <code>link</code> как есть: его <code>?v</code> непрозрачен.
 </p>
 <p>
   <code>rights.license</code> равно <code>dpcgl</code>, где английский текст - общедоступное
@@ -100,7 +102,8 @@
 <p>
   Читает строки одной таблицы. Три таблицы снаряжения читаются по тиру через
   <code>part</code>. <code>filter</code> принимает сегмент фильтра страницы таблиц, например
-  <code>f_burden-2</code>, и оставляет те строки, что оставляет страница.
+  <code>f_burden-2</code>, и оставляет те строки, что оставляет страница. Строка таблицы
+  снаряжения несёт ещё <code>statline</code> - строку характеристик своей записи.
 </p>
 <pre><code>curl 'https://daggerheart-loot.pages.dev/api/v1/tables/eq_weapon?part=2&amp;filter=f_burden-2'</code></pre>
 <h3><code>GET /api/v1/records</code></h3>
@@ -108,8 +111,12 @@
   Ищет по каталогу по названию, по-русски или по-английски, и по <code>kind</code>,
   <code>source</code>, <code>table</code>, <code>tier</code> и <code>rarity</code>. Передайте
   <code>q</code> или фильтр; <code>limit</code> - от 1 до 50. Поиск идёт только по названиям.
-  Слово, под которое попадает слишком много записей, получает 400 <code>too_broad</code>:
-  добавьте слово подлиннее или фильтр. С <code>fields=summary</code> у каждой строки есть ещё
+  Слово находит любое название, где оно есть, даже внутри длинного слова (<code>pet</code>
+  находит Petal); с <code>match=word</code> - только целые слова, само слово или другую его
+  форму. Слово, под которое попадает слишком много записей, получает 400 <code>too_broad</code>:
+  добавьте слово подлиннее или фильтр. <code>table</code> строки - таблица записи, а
+  <code>table_id</code> - её id в <code>GET /api/v1/tables</code> (<code>hnf_item</code> там
+  <code>hope_and_fear_item</code>). С <code>fields=summary</code> у каждой строки есть ещё
   <code>summary</code>: одна строка простого текста из описания записи, не длиннее 120 символов
   на каждом языке. Просите её, только когда нужно увидеть, что делают предметы: она дороже
   обходится сайту. Если поиск с <code>fields=summary</code> завершается ошибкой, ищите без
@@ -122,9 +129,9 @@
 <pre><code>curl https://daggerheart-loot.pages.dev/api/v1/records/ci12</code></pre>
 <h3><code>GET /api/v1/records-by-id</code></h3>
 <p>
-  Читает до 20 записей каталога за один вызов: <code>ids</code> - через запятую. Записи идут в
+  Читает до 10 записей каталога за один вызов: <code>ids</code> - через запятую. Записи идут в
   порядке <code>ids</code>; <code>missing</code> называет id, которых нет в каталоге, а
-  остальные записи всё равно приходят. Больше 20 id или id не той формы получают 400.
+  остальные записи всё равно приходят. Больше 10 id или id не той формы получают 400.
 </p>
 <pre><code>curl 'https://daggerheart-loot.pages.dev/api/v1/records-by-id?ids=ci12,q23'</code></pre>
 <h3><code>GET /api/v1/homebrew-items/{uuid}</code></h3>
@@ -140,10 +147,21 @@
 <p>
   Проверяет текст файла списков или файла своих предметов так, как проверил бы импорт
   приложения, и отвечает его ошибками и пропусками на двух языках. Тело - сам файл, JSON, не
-  больше 32768 байт. Ничего не меняет.
+  больше 32768 байт. Ничего не меняет. У каждой строки есть
+  <code>level</code> (<code>error</code>, <code>skip</code> или <code>note</code>) и
+  <code>id</code> - id записи или ключ <code>hb_</code>, о котором строка;
+  <code>file.schema</code> - адрес JSON Schema файла. Строка о значении не из списка называет
+  допустимые значения.
 </p>
 <pre><code>curl -X POST -H 'Content-Type: application/json' --data-binary @lists.json \
   https://daggerheart-loot.pages.dev/api/v1/file-checks</code></pre>
+<h3><code>GET /api/v1/file-formats/{file_kind}</code></h3>
+<p>
+  Описывает, как написать файл списков (<code>lists</code>) или файл своих предметов
+  (<code>homebrew</code>): новейшую версию, адрес её JSON Schema, правила, строку на каждый ключ
+  с допустимыми значениями и границами и полный пример, который импортируется.
+</p>
+<pre><code>curl https://daggerheart-loot.pages.dev/api/v1/file-formats/homebrew</code></pre>
 <h2>Ошибки</h2>
 <p>
   Ответ с ошибкой -
@@ -240,7 +258,10 @@
   адресу <code>https://daggerheart-loot.pages.dev/mcp</code>; как его подключить, показано на
   <a href="ai.html">странице для пользователей</a>. Его ответ на <code>initialize</code> несёт
   указания: какие инструменты брать для добычи с существ, товара лавки и работы с аккаунтом,
-  правила ссылок, пределы и полосы цен.
+  правила ссылок, пределы и полосы цен. Клиенту нужен один адрес MCP:
+  <code>https://daggerheart-loot.pages.dev/mcp/me</code> со входом (он даёт и все инструменты
+  <code>/mcp</code>) или <code>https://daggerheart-loot.pages.dev/mcp</code> без входа (только
+  чтение). Оба сразу подключать не нужно.
 </p>
 <h2>API аккаунта</h2>
 <p>

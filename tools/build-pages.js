@@ -173,6 +173,8 @@ function page({ id, lang, title, desc, body }) {
   code{font-size:.92em;overflow-wrap:anywhere}
   table{border-collapse:collapse}
   .scroll{overflow-x:auto;margin:0 0 12px}
+  .pick{margin:0 0 12px;padding:10px 12px;border:1px solid #d8ab5e;border-radius:6px}
+  .pick>:last-child{margin-bottom:0}
   th,td{text-align:left;vertical-align:top;padding:4px 10px 4px 0;color:#cfc8e0}
   .lang{font-size:13px;margin:0 0 16px}
   /* A link of its own line is a target: 24 px, and 40 px up to 600 px, by a padded box

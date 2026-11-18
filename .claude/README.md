@@ -4209,7 +4209,7 @@ assembly (`collect`, `guard`, `old-host`); the job's three steps call it.
   default limit), so the owner made the summary opt-in (`fields=summary`; decision "A batch read has its own path, and
   search rows carry a built summary"). Live cases to read after the deploy, beside the
   landing-3 readings: a cold `q=` of two Russian words, a cold `kind=item&limit=50`, the
-  same with `fields=summary`, and a cold batch of 20 ids in 20 chunks.
+  same with `fields=summary`, and a cold batch of 10 ids in 10 chunks (the cap fell from 20; see the batch-read bullet below).
 - The opt-in summary (`fields=summary`), measured 2026-11-18 later on this host, which
   then ran slower than for the bullet above (same method; base `2613aca2`, before the
   summaries, measured in the same hour). Service alone, cold, base / default / opt-in:
@@ -4233,12 +4233,74 @@ assembly (`collect`, `guard`, `old-host`); the job's three steps call it.
   search, are counted against the 50-subrequest limit (an `ASSETS` read may count; see
   the next bullet), because smaller files raise the read count. The batch read of the
   bullet above falls back to a cache of each chunk's split lines, which helps only warm
-  calls; its cold lever is the cap, and `CONTRACTS.md` section 6 never lowers a cap. Open owner decision: the cap
-  of 20 ids stays; take the cold reading of a 20-id batch in 20 chunks on production
-  before the squash onto `main` if a branch deployment exists, else after the landing.
-  None exists: every deploy uses `--branch main` and a branch alias answers 301 to the
-  production host (section "Rules" above), so the reading follows the landing, and a
-  reading past 10 ms then needs a v1 contract change or a new chunk layout.
+  calls; its cold lever is the cap. The production reading came after the landing (every
+  deploy uses `--branch main`, and a branch alias answers 301 to the production host) and
+  was past 10 ms, so the cap fell to 10 once: see the batch-read bullet below.
+- The AI usability fields, measured 2026-11-18 on this host (Node, the
+  service alone over in-memory strings with no file cache, three fresh processes each;
+  cold is the case's first call after one `GET /api/v1/tables`, warm the median of 14
+  more, so warm re-parses every file). Before / after `price_guess`, `table_id` and the
+  equipment rows' `statline`: `q=pet` 3.9-6.2 / 3.6-5.5 ms cold, 0.19-0.43 / 0.20 ms warm;
+  record `ci12` 0.89-0.96 / 0.75-0.86 cold; `GET /api/v1/tables/eq_weapon?part=2` (143
+  rows) 0.83-0.89 / 1.9-2.8 ms cold and 0.34-0.37 / 0.92-1.06 ms warm. The table read pays
+  for writing each row's statline (`statlineOfRow` in `preview/api/service.mjs`); with the
+  worker's file cache a warm read takes the statlines from a `WeakMap` of the cached rows.
+  A whole statline in the files would take `eq_weapon` part 3 to 230119 B at 3x, past its
+  131072 B budget; the build's stat parts `d` took it to 128296 B (2 % headroom). A weapon
+  whose facets hold its damage type (`cls`) and burden now keeps only its damage in `d`
+  (140 of 145 rows of part 3), so part 3 is 41544 B today and 124960 B at 3x (6112 B, 4.7 %
+  headroom, about 287 B a row; part 2 122924 B). A source that adds about 7 tier-3 weapons
+  (21 rows at 3x) can still pass it: the lever is then a split of the part file (a public shape change of `apidata/`),
+  and the budget failure text names it. The cold read of `eq_weapon?part=3` (145 rows,
+  the largest part), same method: before the statline (`f8bb4808`) 1.18-1.35 ms today and
+  2.22-2.68 ms at 3x; with it 2.62-2.71 ms today and 4.71-5.46 ms at 3x, warm 1.17-1.33
+  and 2.94-3.82 ms. At 3x that is under 10 ms Node service CPU, but the production model
+  of the readings below (a cold floor of about 4.4 ms plus 1.7 times the Node CPU) gives
+  about 12.4-13.7 ms, past the 10 ms limit: the production reading decides, and its lever
+  is a statline file per part that the build writes outside the row file. `check_file` (homebrew `errors-v2`) 3.5-4.2 ms cold, the lists
+  `example-v3` 3.9-5.0, `get_file_format` homebrew 0.36-0.56. The opt-in `match=word`,
+  same method: `q=pet` 3.6-4.5 ms default / 4.0-4.7 ms with it, `q=кольцо тишины` 4.6-6.1
+  / 4.7-6.2, warm 0.18-0.34 ms in every case. A first draft with `\p{L}` regexes took the
+  opt-in to 8.8-10.0 and 7.1-10.5 ms cold (a cold isolate's first Unicode-property regex
+  run is about 1 ms), so `wordHit` in `app/src/lib/search.ts` checks the word bounds by
+  character code.
+- The batch read (`GET /api/v1/records-by-id`), 2026-11-18. Production
+  at `f8bb4808` (Pages Metrics): 20 ids in 20 chunks 41.5 ms cold and 24.7 ms burst p50,
+  about 2 ms an id and about 14 times the Node service reading (2.6-3.0 ms cold) of the
+  bullet above. The owner lowered the cap to 10 (decision "A batch read has its own path,
+  and search rows carry a built summary") and the read now decodes only the head and the
+  answered record lines of each chunk, found by byte (`chunkOf` and `recordAt` in
+  `preview/api/service.mjs`; 64 KB a chunk before, about 2 KB an id after), and reads a
+  catalog chunk that names its length and has no content encoding in one `arrayBuffer()`
+  call (`readBytes` in `preview/api/read.mjs`; every other read streams under its cap,
+  because a decoded gzip body is larger than the `Content-Length` it names). Answers are byte-identical (the same answer hash before and
+  after, and the fixtures did not change). Node, three fresh processes each, cold / warm
+  (warm re-reads every chunk). Service alone, before / after: 20 ids in 20 chunks 4.0-5.1
+  / 2.4-3.0 ms cold, 1.5 / 0.9-1.1 ms warm; 20 ids in 1 chunk 1.9-2.1 / 1.8-2.2, 0.35-0.38
+  / 0.35-0.49; 10 ids in 10 chunks 2.6-2.9 / 2.1-2.2, 0.78-0.86 / 0.42-0.58. Through the
+  worker (Node's `Response` streams, an upper bound; with `Content-Length` on the stub
+  `ASSETS` answers, as Pages sends): 20 ids in 20 chunks 22.7-24.3 ms cold before (past
+  the cap after); 10 ids in 10 chunks 12.5-13.7 / 12.6-13.5 cold and 8.0-8.3 / 6.9-8.7
+  warm; 10 ids in 1 chunk 4.4-4.8 / 4.3-4.4. Through the worker the per-chunk cost is
+  Node's `Response` work (about 0.9 ms a chunk), which neither change reaches on Node;
+  workerd pays it in native code. The cap returns to 20 (an additive change) when the
+  production reading of item 1 below allows it.
+- The production readings the owner takes after the deploy of the AI usability fields
+  and the batch read, with the method of the per-line bullet below (the case's one
+  warm-up request is cold, then a burst of 10, 1 s apart; pass: cold at most 10 ms, burst
+  p50 at most 8 ms):
+  1. `GET /api/v1/records-by-id` with 10 ids in 10 chunks, cold and burst p50; compare
+     with 41.5 ms cold and 24.7 ms p50 for 20 ids at `f8bb4808`.
+  2. `GET /api/v1/tables/eq_weapon?part=3`, the largest part (the statline), cold and
+     burst p50.
+  3. `GET /api/v1/records?q=<two Russian words>&match=word` and `q=pet&match=word`, cold
+     and burst p50.
+  4. `POST /api/v1/file-checks` with a 32768 B homebrew file and with a 32768 B lists
+     file, and MCP `check_file`, cold and burst p50; compare with 13.8, 10.2 and 19.5 ms
+     cold on 2026-11-13.
+  5. `GET /api/v1/file-formats/homebrew`, cold.
+  6. The summary readings: a cold `q=` of two Russian words, a cold `kind=item&limit=50`,
+     and the same two with `fields=summary`.
 - `env.ASSETS.fetch` and the subrequest limit: the Cloudflare limits page (read
   2026-11-14) counts a Fetch API request, KV, R2 and D1 calls, and lists a separate
   1000 for internal services; it does not say whether an `ASSETS` read counts. The

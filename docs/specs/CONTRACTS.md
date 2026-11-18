@@ -552,7 +552,7 @@ by `preview/api/mcp.test.mjs`.
 
 | Operation | Answer |
 |---|---|
-| `GET /api/v1/` | `daggerheart-loot/api-index` v1: `api_version`, `links` (`openapi`, `openapi_view`, `llms_txt`, `developers` and `ai` as `{ ru, en }`, `mcp`, `mcp_me`, `catalog`), `auth` (`public`, `account`, `metadata`) and `limits`; the OpenAPI document's `ETag` |
+| `GET /api/v1/` | `daggerheart-loot/api-index` v1: `api_version`, `links` (`openapi`, `openapi_view`, `llms_txt`, `developers` and `ai` as `{ ru, en }`, `mcp`, `mcp_me`, `catalog`, `file_formats` as `{ lists, homebrew }`), `auth` (`public`, `account`, `metadata`) and `limits`; the OpenAPI document's `ETag` |
 | `GET /api/v1/openapi.json` | the OpenAPI 3.1 description |
 | `GET /api/v1/rolls` | `daggerheart-loot/api-rolls` v1 |
 | `POST /api/v1/rolls/{section}` | `daggerheart-loot/api-roll` v1 |
@@ -560,10 +560,11 @@ by `preview/api/mcp.test.mjs`.
 | `GET /api/v1/tables/{table}` | `daggerheart-loot/api-table` v1; `part` is required on `eq_weapon`, `eq_secondary` and `eq_armor`; `filter` narrows the rows |
 | `GET /api/v1/records` | `daggerheart-loot/api-search` v1: a search by name and facets |
 | `GET /api/v1/records/{id}` | `daggerheart-loot/record` v1 |
-| `GET /api/v1/records-by-id` | `daggerheart-loot/api-record-batch` v1: the records of 1-20 `ids` and the `missing` ids |
+| `GET /api/v1/records-by-id` | `daggerheart-loot/api-record-batch` v1: the records of 1-10 `ids` and the `missing` ids |
 | `GET /api/v1/homebrew-items/{uuid}` | `daggerheart-loot/record` v1 |
 | `GET /api/v1/shared-lists/{token}` | `daggerheart-loot/api-shared-list` v1 |
 | `POST /api/v1/file-checks` | `daggerheart-loot/api-file-check` v1: the check of an import file |
+| `GET /api/v1/file-formats/{file_kind}` | `daggerheart-loot/api-file-format` v1: how to write a lists file (`lists`) or a homebrew file (`homebrew`) |
 
 The bulk catalog is not an operation: `/api/v1/catalog/index.json`
 (`daggerheart-loot/api-catalog` v1) names the absolute URLs of its chunk files
@@ -643,15 +644,21 @@ items and homebrew are not searched. The parameters are `q` (at most 200 charact
 source id), `table` (the records of that table, as `GET /api/v1/tables/{table}` lists
 them), `tier` (`1`, `2`, `3`, `4`, `A`, `C`), `rarity`, `limit` (an integer from 1 to
 50, default 20) and `fields` (only `summary`, which adds each row's summary; any other
-value is a 400 that names `fields`; MCP `search_catalog` takes the same string). At least one of `q` and the five facets is required; a `q` with no
+value is a 400 that names `fields`; MCP `search_catalog` takes the same string) and `match`
+(only `word`, validated as `fields`: a word of `q` then matches whole words only, the word
+or a word with its Snowball stem, so `pet` finds no `Petal`, and a phrase matches whole
+words in order; the default stays the substring match, and `too_broad` still counts the
+substring candidates, which `match=word` narrows with `wordHit` in `app/src/lib/search.ts`). At least one of `q` and the five facets is required; a `q` with no
 terms (`q=`, `q=%20`, `q=""`) reads as absent. A parameter given twice is a 400 that
 names it. A query that keeps more than 300 lines to rank, or whose most selective word
 has more than 3000 hits in the search text, is 400 `too_broad`: a longer word or a facet
 answers it. The answer is `{ "format": "daggerheart-loot/api-search", "version": 1,
 "data_version", "total", "rows" }`: `total` counts every match, `rows` holds the first
 `limit` of them in rank order (catalog order without `q`), and a row is `{ id, name,
-kind, source, table, tier, rarity, link }`, with `summary` after `name` only on
-`fields=summary`; each field but `summary` is the record's of the same name and `link` equal to the record's (`?v` included). The answer carries the projection's `ETag` and `Cache-Control: public, max-age=300`.
+kind, source, table, table_id, tier, rarity, link }`, with `summary` after `name` only on
+`fields=summary`; each field but `summary` and `table_id` is the record's of the same name and `link` equal to the record's (`?v` included). `table_id` is the
+record's table by the id `GET /api/v1/tables` names it (`hnf_item` is
+`hope_and_fear_item`), `null` when `table` is `null`. The answer carries the projection's `ETag` and `Cache-Control: public, max-age=300`.
 
 **Summary.** A search row's `summary` is a pair of one plain-text line per language,
 built at build time from the record's own data (`tools/api-data.mjs` `summaryOf`; no
@@ -668,17 +675,32 @@ read, not the text: the search still reads names only. Only a search with
 the default search at the CPU cost it had before the summaries (decision "A batch read
 has its own path, and search rows carry a built summary").
 
+**Price guess and stat lines.** Every record (catalog and homebrew) carries `price_guess`
+`{ gold, min, max }` after `rarity`: the band of `app/src/lib/money.ts` `guessBand` and its
+middle `guessPrice`, the guess the app writes on a list entry, or `null` when the record
+gives no band; a catalog record's is built at build time. A row of an equipment table
+(`eq_weapon`, `eq_secondary`, `eq_armor`) carries `statline` after `rung`, equal to its
+record's `stats.statline`. The worker writes it from the row's kind, tier and facets and
+the build's stat parts `d` (`tools/api-data.mjs` `statPartsOf`), and drops `f` and `d`
+from the answer: a whole statline per row would take `eq_weapon`'s parts past their
+131072-byte budget at three times today's size (with `d`: 124960 B for part 3, measured
+2026-11-18).
+
 **Batch read.** `GET /api/v1/records-by-id` with `ids=<id>,<id>` answers `{ "format":
 "daggerheart-loot/api-record-batch", "version": 1, "data_version", "records", "missing"
 }`: `records` holds the neutral record of each id the catalog holds, equal to `GET
 /api/v1/records/{id}`, in the order of `ids`; `missing` names each id the catalog does
 not hold, in the same order, and the other records still answer (200, also when every id
-is missing). An id given twice answers once. `ids` is required: 1 to 20 ids separated by
+is missing). An id given twice answers once. `ids` is required: 1 to 10 ids separated by
 commas, each of the record id shape (`[A-Za-z0-9_-]`, 1-64 characters); an empty piece,
-another shape, more than 20 ids or a value past 1300 characters is 400 `bad_request` that
-names `ids` and never echoes it. The cap is the search's default page, so one call reads
-every row of it, and it bounds one call's chunk reads to 20; a cap may rise, never fall.
-Each chunk is read once per call. The answer carries the projection's `ETag` and
+another shape, more than 10 ids or a value past 650 characters is 400 `bad_request` that
+names `ids` and never echoes it. The cap bounds one call's chunk reads to 10; a cap may
+rise, never fall. The one exception: the cap shipped at 20 and fell to 10 before any
+known client used it, because a production reading of 20 ids in 20 chunks was 41.5 ms
+cold (decision "A batch read has its own path, and search rows carry a built summary");
+it is expected to return to 20, an additive change, once a production reading after the
+deploy allows. Each chunk is read once per call, and only the bytes of its answered
+record lines are decoded. The answer carries the projection's `ETag` and
 `Cache-Control: public, max-age=300`.
 
 **Filter.** `filter` on `GET /api/v1/tables/{table}` is the tables page's `f_` segment
@@ -692,19 +714,43 @@ app's own parsers and report builders. The body is the file itself, `application
 otherwise) and at most 32768 bytes of UTF-8 (413 `too_large` before any parse); bytes that are not UTF-8 answer `not_json`, as the import
 reads them; a cap
 may rise later, never fall. The answer is always 200 once the body is read, `{ "format":
-"daggerheart-loot/api-file-check", "version": 1, "file": { "format", "version" }, "ok",
-"reason", "message", "lines", "more", "counts" }`, `no-store`: `file.format` is
-`daggerheart-loot/lists`, `daggerheart-loot/homebrew` or null and `file.version` the file's
-version when an integer, else null; `reason` is null when `ok`, else `not_json`,
+"daggerheart-loot/api-file-check", "version": 1, "file": { "format", "version", "schema" },
+"ok", "reason", "message", "lines", "more", "counts" }`, `no-store`: `file.format` is
+`daggerheart-loot/lists`, `daggerheart-loot/homebrew` or null, `file.version` the file's
+version when an integer, else null, and `file.schema` the URL `<site>schema/import-v<n>.json`
+or `<site>schema/homebrew-v<n>.json` of that version (the newest one when the import does not
+read the file's version), null when `file.format` is null; `reason` is null when `ok`, else `not_json`,
 `unknown_format`, `version`, `empty` or `errors`; `message` is the panel's refusal text as a
-pair for the first four reasons, else null; `lines` are `{ list, text }` with `text` a
+pair for the first four reasons, else null; `lines` are `{ list, text, level, id }` with `text` a
 pair: the error lines for `errors`, the skip lines of a good lists file, the note lines of a
-good homebrew file, at most the first 50 (`more` counts the rest), and `list` the 0-based list
-index of a lists file's line, else null; `counts` is null unless `ok`, `{ lists, entries, skipped }`
-or `{ books, sections, cards, items }`. The check reads the catalog only, with no account:
+good homebrew file, at most the first 50 (`more` counts the rest), `list` the 0-based list
+index of a lists file's line, else null, `level` `error`, `skip` or `note`, and `id` the
+record id of a lists file's entry or the `hb_` key of a homebrew file's object the line is
+about, else null; `counts` is null unless `ok`, `{ lists, entries, skipped }`
+or `{ books, sections, cards, items }`. The lines are the import panel's (`lib/importReport.ts`,
+`lib/homebrewReport.ts`): an `enum` line of a homebrew file names the allowed values as JSON
+(`eq.cls "physical": not an allowed value - allowed: "phy", "mag"`), as a lists file's
+does. The check reads the catalog only, with no account:
 a homebrew entry without a snapshot is skipped as `unheld`, an error line of a lists file
 names its entry by item id without the record's name, and a skip line of a lists file
-gives its position only. A zip file is not checked.
+gives its position only. A zip file is not checked. The `check_file` description holds a
+minimal lists file and a minimal homebrew file that the check accepts with no line, and
+the URLs of the two newest schemas; `preview/api/api.test.mjs` checks both examples.
+
+**File formats.** `GET /api/v1/file-formats/{file_kind}` (MCP `get_file_format`) with
+`file_kind` `lists` or `homebrew` answers `{ "format": "daggerheart-loot/api-file-format",
+"version": 1, "data_version", "kind", "file", "rules", "fields", "example" }`: `file` is `{
+format, version, versions, schema }` (the value of the file's `format` key, the newest version,
+every version the import reads, and the URL of the newest version's schema on the site);
+`rules` are the sentences a field table cannot show; `fields` has one row a key of the newest
+schema in schema order, `{ path, required, type, values, default?, min?, max?, max_length?,
+max_items?, note }` (`path` marks an array's items with `[]`, `required` is whether its
+object requires it, `values` the schema's `enum` or `const`, else null, `note` its
+description; a lists file's `snapshot` is one row without its own fields); `example` is
+`docs/fixtures/import/example-v3.json` or `docs/fixtures/homebrew-file/example-v2.json`. The
+build writes each answer but its schema URL to `apidata/file-format/<kind>.json` from
+`schema/` (`tools/api-data.mjs`); another `file_kind` is 404. The answer carries the
+projection's `ETag` and `Cache-Control: public, max-age=300`.
 
 **CORS.** Every answer under `/api/` outside `/api/v1/me/` carries `Access-Control-Allow-Origin: *`, none
 carries `Access-Control-Allow-Credentials` or `Vary: Origin`, and every worker answer
@@ -933,6 +979,7 @@ bands, which `preview/api/mcp.test.mjs` holds equal to `app/src/lib/money.ts`.
 | `get_homebrew_item` | `GET /api/v1/homebrew-items/{uuid}` |
 | `get_shared_list` | `GET /api/v1/shared-lists/{token}` |
 | `check_file` | `POST /api/v1/file-checks`; the one argument `file` is the file's text as a string |
+| `get_file_format` | `GET /api/v1/file-formats/{file_kind}`; `file_kind` is `lists` or `homebrew` |
 
 The tools are the operations of `openapi.json` that carry `x-mcp-tool` and no `security`, in
 document order; the description of a tool is its summary and description, and each argument
@@ -950,7 +997,8 @@ than exactly `/mcp` 404 with no body, any `Origin` header 403 (DNS rebinding; JS
 400 (-32700), not a JSON-RPC 2.0 request 400 (-32600), a message without `id` 202, then the
 era. `/mcp` sends no CORS header, never reads `Authorization`, `Mcp-Session-Id` or
 `Last-Event-ID`, and never answers 401. The URL equals `info["x-mcp-endpoint"]` of
-`openapi.json`.
+`openapi.json`. `/mcp/me` (below) holds every tool of `/mcp`, so a signed-in client needs only
+`/mcp/me`.
 
 **Account MCP.** `https://daggerheart-loot.pages.dev/mcp/me` is the same server for the
 account tier (`info["x-mcp-me-endpoint"]`). Every request carries a connected app's
@@ -959,7 +1007,10 @@ invalid one is HTTP 401 with `WWW-Authenticate: Bearer
 resource_metadata="<site>.well-known/oauth-protected-resource/mcp/me"` (JSON-RPC
 -32000), the app's own session token 403; a token PostgREST refuses during a call is
 HTTP 401 too. The `Origin` 403, the 405 and the body rules are `/mcp`'s. `tools/list`
-holds the account tools, then every public tool, answered as on `/mcp`. A call returns
+holds the account tools, then every public tool, answered as on `/mcp`, so a client
+connects one of the two endpoints, never both: `/mcp/me` with a sign-in, `/mcp` without one
+(read only); both `instructions`, the pages `ai.html` and `developers.html` (RU and EN) and
+`llms.txt` ("Which MCP address") say so. A call returns
 the account operation's answer (a 204 is `{ "status": 204 }`); an operation error is a
 result with `isError` and the `api-error` body with its extra fields. A path argument
 must be a uuid, or the share token of `send_request` (else the `not_found` result);
@@ -1026,5 +1077,5 @@ third-party translation the value does not cover. A homebrew item is `owner`.
 
 `apidata/` holds the internal projections the worker reads (`rolls.json`,
 `tables.json`, `cards.json`, `roll/`, `table/`, `records/index.json`,
-`version.json`, `search/index.json`, `search/<n>.txt`, `summary/<n>.txt` and `file-check.json`). It is published beside the site and changed without notice, like
+`version.json`, `search/index.json`, `search/<n>.txt`, `summary/<n>.txt`, `file-check.json` and `file-format/<kind>.json`). It is published beside the site and changed without notice, like
 `img/thumb/`; nothing outside the worker binds to it, and it is not a contract.

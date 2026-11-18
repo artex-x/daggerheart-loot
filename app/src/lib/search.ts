@@ -243,6 +243,40 @@ function stemHit(field: string, t: Term): boolean {
   return false;
 }
 
+/* A letter or a digit of a folded field. Not a `\p{L}` regex: its first run in an isolate
+   costs about 1 ms (measured 2026-11-18 on this host), and the API runs it cold. */
+function isWordChar(field: string, i: number): boolean {
+  if (i < 0 || i >= field.length) return false;
+  const c = field.charCodeAt(i);
+  if (c < 0x80)
+    return (c >= 0x30 && c <= 0x39) || (c >= 0x61 && c <= 0x7a) || (c >= 0x41 && c <= 0x5a);
+  const ch = field.charAt(i);
+  return ch.toLowerCase() !== ch.toUpperCase();
+}
+
+/**
+ * Returns whether the term matches a whole word of a folded field: its text between word
+ * bounds (a phrase: its words in order), or, for a word that is not a phrase, a word that
+ * starts like it and reduces to the same Snowball stem ("pets" for "pet", never "petal").
+ * Each such hit is also a substring hit, so a caller narrows a substring search with it.
+ */
+export function wordHit(field: string, t: Term): boolean {
+  const n = t.text.length;
+  for (let at = field.indexOf(t.text); at !== -1; at = field.indexOf(t.text, at + 1)) {
+    if (!isWordChar(field, at - 1) && !isWordChar(field, at + n)) return true;
+  }
+  if (t.phrase) return false;
+  const prefix = t.stemPrefix ?? t.text;
+  const stem = t.stem ?? t.text;
+  for (let at = field.indexOf(prefix); at !== -1; at = field.indexOf(prefix, at + 1)) {
+    if (isWordChar(field, at - 1)) continue;
+    let end = at + prefix.length;
+    while (isWordChar(field, end)) end++;
+    if (stemOf(field.slice(at, end)) === stem) return true;
+  }
+  return false;
+}
+
 /** Returns 2 when the term hits the field at a word start, 1 inside a word, 0 on a miss. */
 function hitIn(field: string, t: Term): number {
   if (field.includes(t.text)) return t.start.test(field) || stemHit(field, t) ? 2 : 1;

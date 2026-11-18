@@ -141,6 +141,18 @@ describe('apiRecord of a catalog record', () => {
     expect(rec('q313').kind).toBe('armor');
   });
 
+  it("carries the app's price guess of its band", () => {
+    expect(rec('q23').price_guess).toEqual({ gold: 25, min: 20, max: 30 });
+    expect(rec('q313').price_guess).toEqual({ gold: 30, min: 20, max: 40 });
+    expect(rec('voa2_a1').price_guess).toEqual({ gold: 2000, min: 1500, max: 2500 });
+  });
+
+  it('gives a record with no band a null price guess', () => {
+    const q313 = byId('q313');
+    const odd = { ...q313, eq: { ...q313.eq, t: 'shield' } } as unknown as Record_;
+    expect(apiRecord(index, odd, SITE, 'owner').price_guess).toBeNull();
+  });
+
   it('takes the tier of a Vault of Ages artifact', () => {
     expect(rec('voa2_a1').tier).toBe('A');
   });

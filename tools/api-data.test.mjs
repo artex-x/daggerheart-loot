@@ -5,7 +5,7 @@
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { describe, it } from 'node:test';
@@ -16,6 +16,7 @@ import { buildIndex, equipOfKind, facetsOf, lineMembers } from '../app/src/lib/d
 import { dict } from '../app/src/lib/dict.ts';
 import { groupsFor } from '../app/src/lib/filters.ts';
 import { TABLE_SLUG, recordUrl } from '../app/src/lib/hash.ts';
+import { guessBand, guessPrice } from '../app/src/lib/money.ts';
 import { rollPool } from '../app/src/lib/roll.ts';
 import { PICKER_ROLL, ROLL_MODES, rowsOf } from '../app/src/lib/rollTables.ts';
 import { decodeFilter, passes } from '../app/src/lib/filters.ts';
@@ -28,6 +29,7 @@ import {
   BUDGET,
   SITE,
   SUMMARY_MAX,
+  budgetLever,
   budgetOf,
   readAudit,
   renderApiData,
@@ -373,6 +375,20 @@ describe('the search projection', () => {
     return { codes: line.slice(0, 5), fru, fen, id, v, ru, en };
   });
 
+  it("lists the catalog's source ids in the search tool's source parameter", () => {
+    const openapi = JSON.parse(
+      readFileSync(join(ROOT, 'preview', 'api', 'openapi.json'), 'utf8')
+    );
+    const param = openapi.paths['/api/v1/records'].get.parameters.find(
+      (p) => p.name === 'source'
+    );
+    const listed = param.description
+      .match(/^A source id: (.*) \(the id of a record's source\)\.$/)[1]
+      .replace(/ \([^)]*\)/g, '')
+      .split(/, | or /);
+    assert.deepEqual(listed, [...new Set(index.codes.source.map((s) => s.id))]);
+  });
+
   it('writes every record on exactly one line, in the order of the catalog index', () => {
     assert.deepEqual(
       decoded.map((d) => d.id),
@@ -505,6 +521,11 @@ function serviceOver(files) {
       if (body === undefined) throw new Error(path);
       return body;
     },
+    bytes: async (path) => {
+      const body = files.get(path);
+      if (body === undefined) throw new Error(path);
+      return new TextEncoder().encode(body);
+    },
     rpc: async () => ({ fail: 'status' }),
     site: { base: SITE, art: '' },
     cache: new Map()
@@ -616,6 +637,7 @@ for (const [label, make] of [
           kind: r.kind,
           source: r.source,
           table: r.table,
+          table_id: TABLE_SLUG[r.table] ?? r.table,
           tier: r.tier,
           rarity: r.rarity,
           link: r.link
@@ -646,6 +668,50 @@ for (const [label, make] of [
         );
         assert.equal(body.total, want.length, t.id);
       }
+    });
+
+    it('drops the names that hold a word only inside a longer word with match=word', async () => {
+      const loose = (await service.searchRecords(parseSearch({ q: 'pet', limit: '50' }))).body;
+      const word = (
+        await service.searchRecords(parseSearch({ q: 'pet', limit: '50', match: 'word' }))
+      ).body;
+      assert.ok(loose.rows.some((r) => /petal/i.test(r.name.en)));
+      assert.ok(word.rows.length > 0);
+      assert.ok(word.rows.every((r) => /(^|[^a-zа-я])pets?([^a-zа-я]|$)/i.test(r.name.en)));
+    });
+
+    it("gives an equipment row its record's statline, and no build-time field to any row", async () => {
+      let lines = 0;
+      for (const t of parsed(files, 'apidata/tables.json').tables) {
+        const parts = t.part_required ? t.parts.map((p) => p.id) : [undefined];
+        for (const part of parts) {
+          for (const row of (await service.getTable(t.id, part)).body.rows) {
+            assert.ok(!('f' in row) && !('d' in row), `${t.id} ${row.id}`);
+            if (/^eq_/.test(t.id)) {
+              assert.deepEqual(row.statline, records.get(row.id).stats.statline, row.id);
+              lines++;
+            } else {
+              assert.ok(!('statline' in row), `${t.id} ${row.id}`);
+            }
+          }
+        }
+      }
+      assert.ok(lines > 100, String(lines));
+    });
+
+    it("gives each record the app's price guess of its band", () => {
+      let priced = 0;
+      for (const it of full.byId.values()) {
+        const r = records.get(it.id);
+        const band = guessBand(it, full.rarityOf);
+        assert.deepEqual(
+          r.price_guess,
+          band ? { gold: guessPrice(it, full.rarityOf), min: band[0], max: band[1] } : null,
+          it.id
+        );
+        if (band) priced++;
+      }
+      assert.ok(priced > 1000, String(priced));
     });
 
     it('filters a table as the tables page does, for a value of each group', async () => {
@@ -695,6 +761,7 @@ function decodeFacet(table, full, id, group) {
 const SCHEMAS = {
   'daggerheart-loot/api-search-index': ['shards', 'codes'],
   'daggerheart-loot/api-file-check-data': ['sets', 'refs', 'lines'],
+  'daggerheart-loot/api-file-format': ['kind', 'file', 'rules', 'fields', 'example'],
   'daggerheart-loot/api-rolls': ['sections'],
   'daggerheart-loot/api-tables': ['tables'],
   'daggerheart-loot/api-table': ['table', 'rows'],
@@ -735,7 +802,7 @@ function checkFiles(files) {
     if (limit !== null) {
       assert.ok(
         Buffer.byteLength(body) <= limit,
-        `${path} is ${String(Buffer.byteLength(body))} B, past ${String(limit)}`
+        `${path} is ${String(Buffer.byteLength(body))} B, past ${String(limit)}${budgetLever(path)}`
       );
     }
   }

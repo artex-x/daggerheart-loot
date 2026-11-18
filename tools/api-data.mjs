@@ -6,7 +6,7 @@
                         cards.json, roll/<section>.json, table/<table>.json,
                         table/<eq table>/<tier>.json, records/index.json, version.json,
                         search/index.json, search/<n>.txt, summary/<n>.txt,
-                        file-check.json
+                        file-check.json, file-format/<kind>.json
     api/v1/catalog/     public, frozen: index.json and the record chunks <n>.json
 
   Both folders are generated, never committed (.gitignore), and published by
@@ -220,6 +220,35 @@ function facetsFor(table, it) {
   return Object.fromEntries(groups.map((g) => [g, facets[g] ?? '']));
 }
 
+/** Returns the stats of an equipment row for the statline the worker writes (`statlineOfRow`
+ *  in preview/api/service.mjs): an armor's thresholds and score. A weapon's damage alone when
+ *  its facets `f` hold the rest (damage type as `cls`, burden); else its damage, damage type
+ *  and burden, then its class, trait and range only when a facet value differs from them (a
+ *  Spellcast weapon's trait facet is every trait). A whole statline per row would take an
+ *  equipment part past its budget at three times today's size. */
+function statPartsOf(e, f) {
+  if (e.t === 'armor') return [e.th?.[0] ?? null, e.th?.[1] ?? null, e.as ?? null];
+  const own = [e.dmg ?? null, e.dt ?? null, e.bu ?? null];
+  const same = (v, k) => (v ?? '') === (f?.[k] ?? '');
+  if (!(same(e.cls, 'cls') && same(e.tr, 'trait') && same(e.rg, 'range'))) {
+    return [...own, e.cls ?? null, e.tr ?? null, e.rg ?? null];
+  }
+  const inFacets =
+    typeof e.dt === 'string' &&
+    e.dt === f?.cls &&
+    typeof e.bu === 'number' &&
+    String(e.bu) === f?.burden;
+  return inFacets ? [own[0]] : own;
+}
+
+/** Returns what to change when a published file is past its budget, for the failure text. */
+export function budgetLever(path) {
+  return path.startsWith('apidata/table/')
+    ? ': shrink the stat parts d (statPartsOf in tools/api-data.mjs) or split the part file' +
+        ' under BUDGET.large (.claude/README.md, "Quotas, recovery and failure")'
+    : '';
+}
+
 function rowOf(index, table, { it, n, rarity }) {
   const f = facetsFor(table, it);
   return {
@@ -231,7 +260,8 @@ function rowOf(index, table, { it, n, rarity }) {
     rarity: index.rarityOf(it.id) ?? null,
     part: partOf(table, it, rarity),
     rung: isRung(it),
-    ...(f ? { f } : {})
+    ...(f ? { f } : {}),
+    ...(table in EQ_TABLES ? { d: statPartsOf(it.eq, f) } : {})
   };
 }
 
@@ -627,6 +657,97 @@ function fileCheckFile(loot, index) {
   };
 }
 
+/* ---------- the import file formats ---------- */
+
+/** The newest version of each import file kind: its schema, its example (an imported-clean
+ *  fixture) and the rules a field table cannot show. */
+const FILE_FORMATS = {
+  lists: {
+    format: 'daggerheart-loot/lists',
+    versions: [1, 2, 3],
+    schema: 'schema/import-v3.json',
+    example: 'docs/fixtures/import/example-v3.json',
+    /* A snapshot is a copy of a homebrew item that only an export writes. */
+    stop: ['snapshot'],
+    rules: [
+      'Every key is checked: a key the fields do not name is an error, not ignored.',
+      'Write format daggerheart-loot/lists and version 3; the import also reads versions 1 and 2.',
+      'An entry id is a catalog record id (search_catalog, get_record); an id the catalog does not hold is skipped and named, and the rest of the file imports.',
+      'Leave a key out for its default: quantity 1, an empty note, no price.',
+      'An entry with source homebrew names a homebrew key; its snapshot is a copy that an export writes. Write catalog entries unless you copy them from an export.'
+    ]
+  },
+  homebrew: {
+    format: 'daggerheart-loot/homebrew',
+    versions: [1, 2],
+    schema: 'schema/homebrew-v2.json',
+    example: 'docs/fixtures/homebrew-file/example-v2.json',
+    stop: [],
+    rules: [
+      'Every key is checked: a key the fields do not name is an error, not ignored.',
+      'Write format daggerheart-loot/homebrew and version 2; the import also reads version 1.',
+      'The file holds at least one of books, cards and items.',
+      'Each source, section, card and item has a name in en or ru, or in both.',
+      'Each key is hb_ and 16 characters of a-z and 2-7, unique within its array.',
+      'An item of kind equip has eq and no tier; an item or consumable has no eq.',
+      'eq of a weapon or secondary holds cls, tr, rg, dmg, dt and bu; eq of armor holds as and th.'
+    ]
+  }
+};
+
+/** Returns the field table of a JSON Schema: one row per key, in schema order, with its path
+ *  (`lists[].entries[].id`), whether its object requires it, its type, its allowed values and
+ *  bounds, and its description. `stop` names keys whose own fields are not listed. */
+function fieldTable(schema, stop) {
+  const deref = (n) => (n.$ref ? deref(schema.$defs[n.$ref.split('/').pop()]) : n);
+  const rows = [];
+  const walk = (node, path) => {
+    const n = deref(node);
+    const required = new Set(n.required ?? []);
+    for (const [key, raw] of Object.entries(n.properties ?? {})) {
+      const v = deref(raw);
+      const at = path ? `${path}.${key}` : key;
+      const item = v.items ? deref(v.items) : null;
+      const values = v.enum ?? (v.const !== undefined ? [v.const] : (item?.enum ?? null));
+      rows.push({
+        path: at,
+        required: required.has(key),
+        type: v.type ?? null,
+        values,
+        ...(v.default !== undefined ? { default: v.default } : {}),
+        ...(v.minimum !== undefined ? { min: v.minimum } : {}),
+        ...(v.maximum !== undefined ? { max: v.maximum } : {}),
+        ...(v.maxLength !== undefined ? { max_length: v.maxLength } : {}),
+        ...(v.maxItems !== undefined ? { max_items: v.maxItems } : {}),
+        note: v.description ?? ''
+      });
+      if (stop.includes(key)) continue;
+      if (v.properties) walk(v, at);
+      if (item?.properties) walk(item, `${at}[]`);
+    }
+  };
+  walk(schema, '');
+  return rows;
+}
+
+/** Returns the `apidata/file-format/<kind>.json` files: the answer of `get_file_format` but
+ *  its schema URL, which the worker builds on its own site. */
+function fileFormatFiles() {
+  const read = (path) => JSON.parse(readFileSync(join(ROOT, path), 'utf8'));
+  return Object.entries(FILE_FORMATS).map(([kind, f]) => [
+    `apidata/file-format/${kind}.json`,
+    {
+      format: 'daggerheart-loot/api-file-format',
+      version: 1,
+      kind,
+      file: { format: f.format, version: f.versions.at(-1), versions: f.versions },
+      rules: f.rules,
+      fields: fieldTable(read(f.schema), f.stop),
+      example: read(f.example)
+    }
+  ]);
+}
+
 /* ---------- the whole tree ---------- */
 
 /**
@@ -653,6 +774,7 @@ export function renderApiData(loot, audit, versions = {}) {
   search.shards.forEach((lines, n) => add(`apidata/search/${String(n)}.txt`, { lines }));
   search.summaries.forEach((lines, n) => add(`apidata/summary/${String(n)}.txt`, { lines }));
   add('apidata/file-check.json', fileCheckFile(loot, index));
+  for (const [path, v] of fileFormatFiles()) add(path, v);
   add('apidata/records/index.json', {
     format: 'daggerheart-loot/api-records',
     version: 1,
@@ -750,7 +872,9 @@ function main() {
     for (const [path, body] of out) {
       const limit = budgetOf(path);
       const size = Buffer.byteLength(body);
-      if (limit !== null && size > limit) bad.push(`${path}: ${size} bytes, past its ${limit}`);
+      if (limit !== null && size > limit) {
+        bad.push(`${path}: ${size} bytes, past its ${limit}${budgetLever(path)}`);
+      }
       const disk = existsSync(join(ROOT, path)) ? readFileSync(join(ROOT, path), 'utf8') : null;
       if (disk !== body)
         bad.push(`${path}: ${disk === null ? 'missing' : 'stale'}, run node tools/build.js`);

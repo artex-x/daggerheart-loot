@@ -13,7 +13,7 @@
   answer read, so the adapter can answer 304; an answer without one is `no-store`. A
   failure throws an ApiError.
 */
-import { apiRecord } from '../../app/src/lib/apiRecord.ts';
+import { apiRecord, statlineOf } from '../../app/src/lib/apiRecord.ts';
 import { parseBundle } from '../../app/src/lib/bundle.ts';
 import {
   itemOf,
@@ -38,7 +38,7 @@ import {
   listsRefusal,
   skipLine
 } from '../../app/src/lib/importReport.ts';
-import { rankHits } from '../../app/src/lib/search.ts';
+import { rankHits, wordHit } from '../../app/src/lib/search.ts';
 import { altPicks, bumpUp } from '../../app/src/lib/alt.ts';
 import {
   CORE_MAX,
@@ -116,22 +116,39 @@ export function clearCache() {
   SHARED_CACHE.clear();
 }
 
+const NL = 0x0a;
+const UTF8 = new TextDecoder();
+
 /**
- * Splits the text of a catalog chunk once: line 0 is the head that holds `data_version`,
- * line `l + 1` is record `l` (tools/api-data.mjs `chunkText`). Returns `null` when the text
- * has no such head.
+ * Returns a catalog chunk over its bytes: line 0 is the head that holds `data_version`, line
+ * `l + 1` is record `l` (tools/api-data.mjs `chunkText`). Only the head is decoded here;
+ * `recordAt` decodes one record line, so a batch read decodes the bytes of the records it
+ * answers, not the 64 KB of each chunk (.claude/README.md, "Quotas, recovery and failure").
+ * Returns `null` when the bytes have no such head.
  */
-function splitChunk(text) {
-  const lines = text.split('\n');
-  const dv = /"data_version":"([^"]*)"/.exec(lines[0] ?? '')?.[1];
-  return dv === undefined ? null : { dv, lines };
+function chunkOf(bytes, decode) {
+  const nl = bytes.indexOf(NL);
+  const head = decode(bytes.subarray(0, nl < 0 ? bytes.length : nl));
+  const dv = /"data_version":"([^"]*)"/.exec(head)?.[1];
+  return dv === undefined ? null : { dv, bytes, decode, starts: null };
 }
 
-/** Returns record `pos` of a split chunk when its `id` is `id`, else null. Parses one line. */
+/** Returns record `pos` of a chunk when its `id` is `id`, else null. Decodes and parses one
+ *  line; the line starts are found once per chunk, by byte. */
 function recordAt(chunk, pos, id) {
   if (!Number.isInteger(pos) || pos < 0) return null;
-  const line = chunk.lines[pos + 1];
-  if (typeof line !== 'string' || line === ']}' || line === '') return null;
+  const { bytes } = chunk;
+  if (chunk.starts === null) {
+    chunk.starts = [];
+    for (let at = bytes.indexOf(NL); at !== -1; at = bytes.indexOf(NL, at + 1)) {
+      chunk.starts.push(at + 1);
+    }
+  }
+  const from = chunk.starts[pos];
+  if (from === undefined) return null;
+  const next = chunk.starts[pos + 1];
+  const line = chunk.decode(bytes.subarray(from, next === undefined ? bytes.length : next - 1));
+  if (line === ']}' || line === '') return null;
   try {
     const record = JSON.parse(line.endsWith(',') ? line.slice(0, -1) : line);
     return record.id === id ? record : null;
@@ -140,11 +157,45 @@ function recordAt(chunk, pos, id) {
   }
 }
 
-/** Returns a table row without its build-time facet values `f`. */
-function withoutFacets(row) {
-  if (!has(row, 'f')) return row;
+/** Returns the statline of an equipment row, as its record's `stats.statline`: the row's
+ *  kind, tier and facets `f` with the build's stat parts `d` (`statPartsOf` in
+ *  tools/api-data.mjs). */
+function statlineOfRow(row) {
+  const f = row.d.length > 3 ? { cls: row.d[3], trait: row.d[4], range: row.d[5] } : row.f;
+  /* A weapon's damage alone: its facets hold the damage type (`cls`) and the burden. */
+  const [a, b, c] = row.d.length === 1 ? [row.d[0], row.f.cls, Number(row.f.burden)] : row.d;
+  const or = (v) => (v === '' || v === null || v === undefined ? undefined : v);
+  const eq =
+    row.kind === 'armor'
+      ? { t: 'armor', tier: row.tier, th: a === null ? undefined : [a, b], as: or(c) }
+      : {
+          t: row.kind,
+          tier: row.tier,
+          cls: or(f?.cls),
+          tr: or(f?.trait),
+          rg: or(f?.range),
+          dmg: or(a),
+          dt: or(b),
+          bu: or(c)
+        };
+  return statlineOf({ eq });
+}
+
+const STATLINES = new WeakMap();
+
+/** Returns a table row as the answer holds it: without the build-time facet values `f` and
+ *  stat parts `d`, and with the statline of an equipment row. */
+function answerRow(row) {
+  if (!has(row, 'f') && !has(row, 'd')) return row;
   const copy = { ...row };
+  if (has(row, 'd')) {
+    /* A row object lives as long as its cached file, so a warm read writes no statline. */
+    let line = STATLINES.get(row);
+    if (!line) STATLINES.set(row, (line = statlineOfRow(row)));
+    copy.statline = line;
+  }
   delete copy.f;
+  delete copy.d;
   return copy;
 }
 
@@ -157,6 +208,21 @@ export const POSITIONS_MAX = 3000;
 export const FILE_CHECK_MAX = 32768;
 /** The most lines a file check answers; `more` counts the rest (the parse's ERRORS_MAX). */
 const LINES_MAX = 50;
+
+/** The file versions each import format reads, oldest first, and the name of its JSON
+ *  Schema files (`schema/<name>-v<n>.json`). */
+const FILE_KINDS = {
+  lists: { format: 'daggerheart-loot/lists', versions: [1, 2, 3], schema: 'import' },
+  homebrew: { format: 'daggerheart-loot/homebrew', versions: [1, 2], schema: 'homebrew' }
+};
+
+/** Returns the URL of the JSON Schema of a file kind at `version`, or of its newest version
+ *  when the file names another one. */
+function schemaUrl(base, kind, version) {
+  const { versions, schema } = FILE_KINDS[kind];
+  const v = versions.includes(version) ? version : versions[versions.length - 1];
+  return `${base}schema/${schema}-v${String(v)}.json`;
+}
 
 const CODE_BASE = 0x30;
 const CODE_FIELDS = ['source', 'kind', 'table', 'tier', 'rarity'];
@@ -280,7 +346,10 @@ function scanShards(shards, terms, allow) {
  * @param deps.assets Reads one published file and returns its parsed JSON; throws when it
  *   cannot (a path under apidata/, api/v1/catalog/, or names.json).
  * @param deps.text Reads one published file and returns its text; throws when it cannot
- *   (a catalog chunk, which is read one line at a time).
+ *   (a search shard or a summary file).
+ * @param deps.bytes Reads one published file and returns its bytes as a `Uint8Array`; throws
+ *   when it cannot (a catalog chunk, of which only the answered lines are decoded).
+ * @param deps.decode Decodes UTF-8 bytes (tests count the bytes it decodes).
  * @param deps.rpc Reads a Supabase function as the anon reader: `(name, args, max)`
  *   answers `{ value }` or `{ fail: 'big' | ... }`.
  * @param deps.random The source of randomness of a roll.
@@ -292,6 +361,8 @@ function scanShards(shards, terms, allow) {
 export function createService({
   assets,
   text,
+  bytes,
+  decode = (b) => UTF8.decode(b),
   rpc,
   random = Math.random,
   site,
@@ -317,15 +388,15 @@ export function createService({
     return file;
   }
 
-  /** Returns the split chunk `n`; a failed read or a text without a head is a 503. */
+  /** Returns chunk `n`; a failed read or bytes without a head is a 503. */
   async function readChunk(n) {
     let body;
     try {
-      body = await text(chunkPath(n));
+      body = await bytes(chunkPath(n));
     } catch {
       throw unavailable('A data file');
     }
-    const chunk = typeof body === 'string' ? splitChunk(body) : null;
+    const chunk = body instanceof Uint8Array ? chunkOf(body, decode) : null;
     if (chunk === null) throw unavailable('A data file');
     return chunk;
   }
@@ -402,8 +473,9 @@ export function createService({
       const state = decodeFilter(filter, groups);
       rows = rows.filter((r) => passes(state, groups, (g) => r.f?.[g] ?? ''));
     }
-    /* `f` is the build's facet values for the filter; it never reaches an answer. */
-    rows = rows.map(withoutFacets);
+    /* `f` is the build's facet values for the filter and `d` its stat parts; neither reaches
+       an answer. */
+    rows = rows.map(answerRow);
     const body = {
       format: file.format,
       version: file.version,
@@ -630,9 +702,16 @@ export function createService({
       if (terms.length) {
         /* A term with a TAB or a line break cannot occur in a name; it would only match across
            the fields of a line. */
-        const kept = terms.some((t) => /[\t\n]/.test(t.text))
+        let kept = terms.some((t) => /[\t\n]/.test(t.text))
           ? []
           : scanShards(shards, terms, allow);
+        /* match=word narrows the substring candidates; a whole-word hit is always one. */
+        if (input.word) {
+          kept = kept.filter(({ shard, li }) => {
+            const names = namesPart(shard, li).split('\t');
+            return terms.every((t) => names.some((n) => wordHit(n, t)));
+          });
+        }
         const hay = ({ shard, li }) => {
           const part = namesPart(shard, li);
           const tab = part.indexOf('\t');
@@ -671,13 +750,15 @@ export function createService({
       const [, , id, v, ru, en] = fields[i];
       const value = (field, k) => codes[field][shard.text.charCodeAt(at + k) - CODE_BASE];
       const version = v || undefined;
+      const table = value('table', 2);
       return {
         id,
         name: { ru, en },
         ...(summaries ? { summary: summaries[i] } : {}),
         kind: value('kind', 1),
         source: value('source', 0),
-        table: value('table', 2),
+        table,
+        table_id: table === null ? null : (TABLE_SLUG[table] ?? table),
         tier: value('tier', 3),
         rarity: value('rarity', 4),
         link: {
@@ -777,7 +858,7 @@ export function createService({
     const ctx = { ...(await catalogContext()), ownItem: () => false, ownCard: () => null };
     const langs = [dict('ru'), dict('en')];
     const none = () => undefined;
-    const NO_FILE = { format: null, version: null };
+    const NO_FILE = { format: null, version: null, schema: null };
     const answer = (file, ok, reason, message, lines, more, counts) => ({
       body: {
         format: 'daggerheart-loot/api-file-check',
@@ -813,16 +894,31 @@ export function createService({
         0,
         null
       );
-    /* The lines of two reports of one file, one per language, as `{ list, text }`. */
-    const merged = (ru, en, list) =>
-      ru.map((l, i) => ({ list: list(i), text: { ru: lineText(l), en: lineText(en[i]) } }));
+    /* The lines of two reports of one file, one per language, as `{ list, text, level, id }`:
+       `id` is the record id or homebrew key of the entry or object the line is about. */
+    const merged = (ru, en, list, level, id) =>
+      ru.map((l, i) => ({
+        list: list(i),
+        text: { ru: lineText(l), en: lineText(en[i]) },
+        level,
+        id: id(i)
+      }));
+    const keyAt = (array, index) => {
+      const key = doc?.[array]?.[index]?.key;
+      return typeof key === 'string' ? key : null;
+    };
 
     const lists = parseBundle(body, ctx.catalogHas);
     if (lists.ok || lists.reason !== 'notBundle') {
       if (!lists.ok && lists.reason === 'notJson') {
         return refusal(NO_FILE, 'not_json', { key: 'importNotJson' });
       }
-      const file = { format: 'daggerheart-loot/lists', version: versionOf() };
+      const version = versionOf();
+      const file = {
+        format: 'daggerheart-loot/lists',
+        version,
+        schema: schemaUrl(site.base, 'lists', version)
+      };
       if (lists.ok) {
         /* Past LINES_MAX the lines only cost CPU: the count says how many there are. */
         const shown = lists.skipped.slice(0, LINES_MAX);
@@ -832,7 +928,13 @@ export function createService({
           true,
           null,
           null,
-          merged(ru, en, (i) => shown[i].list),
+          merged(
+            ru,
+            en,
+            (i) => shown[i].list,
+            'skip',
+            (i) => shown[i].id
+          ),
           lists.skipped.length - shown.length,
           {
             lists: lists.lists.length,
@@ -843,9 +945,21 @@ export function createService({
       }
       if (lists.reason === 'errors') {
         const [ru, en] = langs.map((t) => listsErrorReport(lists.errors, lists.names, t, none));
-        const own = merged(ru.file, en.file, () => null);
+        const own = merged(
+          ru.file,
+          en.file,
+          () => null,
+          'error',
+          () => null
+        );
         const blocks = ru.lists.flatMap((block, b) =>
-          merged(block.lines, en.lists[b].lines, () => block.index)
+          merged(
+            block.lines,
+            en.lists[b].lines,
+            () => block.index,
+            'error',
+            (i) => block.lines[i].item ?? null
+          )
         );
         return answer(file, false, 'errors', null, [...own, ...blocks], lists.more, null);
       }
@@ -871,18 +985,31 @@ export function createService({
         null
       );
     }
-    const file = { format: 'daggerheart-loot/homebrew', version: versionOf() };
+    const version = versionOf();
+    const file = {
+      format: 'daggerheart-loot/homebrew',
+      version,
+      schema: schemaUrl(site.base, 'homebrew', version)
+    };
     if (hb.ok) {
       const notes = hb.notes.slice(0, LINES_MAX);
       const [ru, en] = langs.map((t, i) =>
         homebrewNoteLines(notes, hb.file, t, i === 0 ? 'ru' : 'en', new Map())
       );
+      const noteKey = (n) =>
+        n.kind === 'relation' ? keyAt(n.array ?? 'items', n.index) : n.key;
       return answer(
         file,
         true,
         null,
         null,
-        merged(ru, en, () => null),
+        merged(
+          ru,
+          en,
+          () => null,
+          'note',
+          (i) => noteKey(notes[i])
+        ),
         hb.notes.length - notes.length,
         {
           books: hb.file.books.length,
@@ -901,12 +1028,39 @@ export function createService({
         false,
         'errors',
         null,
-        merged(ru, en, () => null),
+        merged(
+          ru,
+          en,
+          () => null,
+          'error',
+          (i) =>
+            hb.errors[i].array === null ? null : keyAt(hb.errors[i].array, hb.errors[i].index)
+        ),
         hb.more,
         null
       );
     }
     return refusal(file, hb.reason === 'version' ? 'version' : 'empty', homebrewRefusal(hb));
+  }
+
+  /** Returns the format of an import file kind (`lists` or `homebrew`): the build's field
+   *  table, rules and example, with the URL of the newest version's JSON Schema. */
+  async function getFileFormat(kind) {
+    if (!Object.hasOwn(FILE_KINDS, kind)) throw notFound('The file kind');
+    const data = await cached(`apidata/file-format/${kind}.json`);
+    return {
+      body: {
+        format: data.format,
+        version: data.version,
+        data_version: data.data_version,
+        kind,
+        file: { ...data.file, schema: schemaUrl(site.base, kind, data.file.version) },
+        rules: data.rules,
+        fields: data.fields,
+        example: data.example
+      },
+      etag: data.data_version
+    };
   }
 
   /* ---------- rolls ---------- */
@@ -1152,6 +1306,7 @@ export function createService({
     getRecord,
     getRecords,
     checkFile,
+    getFileFormat,
     catalogFacts,
     catalogContext,
     homebrewRecord,

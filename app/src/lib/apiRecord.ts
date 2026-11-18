@@ -14,6 +14,7 @@ import { isHomebrewRecord } from './homebrew.js';
 import { descOf, eqLine, nameOf } from './i18n.js';
 import { srcLabel, srcName, tableOf, whereFrom } from './label.js';
 import { markupText } from './markup.js';
+import { guessBand, guessPrice } from './money.js';
 import type { Lang, Record_ } from './types.js';
 
 /** The site the links and picture addresses are built on: `base` is the origin with a
@@ -48,6 +49,13 @@ export interface ApiStats {
   statline: Pair;
 }
 
+/** The app's price guess in gold: `gold` is the middle of the band `min`-`max`. */
+export interface ApiPriceGuess {
+  gold: number;
+  min: number;
+  max: number;
+}
+
 export interface ApiRef {
   key: string;
   name: Pair;
@@ -73,6 +81,7 @@ export interface ApiRecord {
   roll: number | null;
   tier: number | string | null;
   rarity: string | null;
+  price_guess: ApiPriceGuess | null;
   stats: ApiStats | null;
   craft: { into: string[]; from: string[] };
   set: { key: string; name: Pair; bonus: Pair; members: string[] } | null;
@@ -129,18 +138,30 @@ function damageOf(
   return d ? { ...d, type: type ?? null } : null;
 }
 
+const labelsOf = (lang: Lang) => {
+  const t = dict(lang);
+  return {
+    tier: t.tier,
+    thresholds: t.eqTh,
+    armorScore: t.eqScore,
+    artifact: t.voaArtifact1
+  };
+};
+
+/** Returns the stat line of an equipment record in both languages, as the card prints it. */
+export function statlineOf(it: Record_): Pair {
+  return pair((lang) => eqLine(it, lang, labelsOf(lang)));
+}
+
+/** Returns the app's price guess of a record (`guessBand`), or null when it has no band. */
+export function priceGuessOf(index: Index, it: Record_): ApiPriceGuess | null {
+  const band = guessBand(it, index.rarityOf);
+  return band ? { gold: guessPrice(it, index.rarityOf), min: band[0], max: band[1] } : null;
+}
+
 function statsOf(it: Record_): ApiStats | null {
   const e = it.eq;
   if (!e) return null;
-  const labelsOf = (lang: Lang) => {
-    const t = dict(lang);
-    return {
-      tier: t.tier,
-      thresholds: t.eqTh,
-      armorScore: t.eqScore,
-      artifact: t.voaArtifact1
-    };
-  };
   return {
     type: e.t,
     tier: e.tier,
@@ -159,7 +180,7 @@ function statsOf(it: Record_): ApiStats | null {
           damage: damageOf(e.alt.dmg, e.alt.dt)
         }
       : null,
-    statline: pair((lang) => eqLine(it, lang, labelsOf(lang)))
+    statline: statlineOf(it)
   };
 }
 
@@ -258,6 +279,7 @@ export function apiRecord(
     roll: it.roll ?? null,
     tier: e ? e.tier : (it.tier ?? null),
     rarity: index.rarityOf(it.id) ?? null,
+    price_guess: priceGuessOf(index, it),
     stats: statsOf(it),
     craft: {
       into: [...new Set([...(it.craft ?? []), ...craftInto])],

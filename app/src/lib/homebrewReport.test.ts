@@ -2,6 +2,7 @@
    of a good file, and the refusals (docs/specs/FEATURES.md, "Homebrew"). */
 import { describe, expect, it } from 'vitest';
 import { dict } from './dict.js';
+import { cardProblems, contentProblems } from './homebrew.js';
 import { parseHomebrew, type FileContext } from './homebrewFile.js';
 import { homebrewErrorLines, homebrewNoteLines, homebrewRefusal } from './homebrewReport.js';
 import { lineText } from './importReport.js';
@@ -242,6 +243,97 @@ describe('the error lines of a refused homebrew file', () => {
       expect(ru[0]).not.toBe(en[0]);
     });
   }
+
+  it('names the allowed values of every enum field, in both languages', () => {
+    const weapon = { t: 'weapon', tier: 1, cls: 'phy', tr: 'agility', rg: 'melee', dmg: 'd8' };
+    const cases: [string, Record<string, unknown>, string][] = [
+      ['items[0].kind', item({ kind: 'thing' }), '"item", "consumable", "equip"'],
+      ['items[0].tier', item({ tier: '1' }), '1, 2, 3, 4, "A", "C"'],
+      [
+        'items[0].eq.t',
+        item({ kind: 'equip', eq: { t: 'axe', tier: 1 } }),
+        '"weapon", "secondary", "armor"'
+      ],
+      ['items[0].eq.tier', armor({ tier: 5, as: 3, th: [5, 11] }), '1, 2, 3, 4, "A"'],
+      [
+        'items[0].eq.cls',
+        item({ kind: 'equip', eq: { ...weapon, cls: 'physical', dt: 'phy', bu: 1 } }),
+        '"phy", "mag"'
+      ],
+      [
+        'items[0].eq.tr',
+        item({ kind: 'equip', eq: { ...weapon, tr: 'str', dt: 'phy', bu: 1 } }),
+        '"agility", "strength", "finesse", "instinct", "presence", "knowledge", "spellcast", "any"'
+      ],
+      [
+        'items[0].eq.rg',
+        item({ kind: 'equip', eq: { ...weapon, rg: 'near', dt: 'phy', bu: 1 } }),
+        '"melee", "veryclose", "close", "far", "veryfar"'
+      ],
+      [
+        'items[0].eq.dt',
+        item({ kind: 'equip', eq: { ...weapon, dt: 'fire', bu: 1 } }),
+        '"phy", "mag", "any"'
+      ],
+      [
+        'items[0].eq.bu',
+        item({ kind: 'equip', eq: { ...weapon, dt: 'phy', bu: 3 } }),
+        '1, 2, "any"'
+      ],
+      [
+        'items[0].eq.alt.rg',
+        item({
+          kind: 'equip',
+          eq: {
+            ...weapon,
+            dt: 'phy',
+            bu: 1,
+            alt: { tr: 'agility', rg: 'x', dmg: 'd6', dt: 'phy' }
+          }
+        }),
+        '"melee", "veryclose", "close", "far", "veryfar"'
+      ],
+      ['cards[0].kind', { key: K2, en: 'C', kind: 'rule' }, '"set", "ref"']
+    ];
+    for (const [path, obj, values] of cases) {
+      const text = path.startsWith('cards') ? doc({ cards: [obj] }) : doc({ items: [obj] });
+      const en = lines(text, 'en').find((l) => l.endsWith(' ' + path));
+      const ru = lines(text, 'ru').find((l) => l.endsWith(' ' + path));
+      expect(en, path).toContain(`not an allowed value - allowed: ${values}`);
+      expect(ru, path).toContain(`недопустимое значение - допустимые: ${values}`);
+    }
+  });
+
+  it('names a non-empty allowed list for every enum problem of an item and a card', () => {
+    /* A new one-of field without an ITEM_ENUMS entry would read "allowed: " with nothing. */
+    const bad = 'zzz';
+    const stat = { tr: bad, rg: bad, dmg: 'd6', dt: bad };
+    const items = [
+      { kind: bad, en: 'A' },
+      { kind: 'item', en: 'B', tier: bad },
+      { kind: 'equip', en: 'C', eq: { t: bad, tier: bad } },
+      {
+        kind: 'equip',
+        en: 'D',
+        eq: { t: 'weapon', tier: bad, cls: bad, ...stat, bu: bad, alt: stat }
+      }
+    ];
+    const card = { kind: bad, en: 'E' };
+    const want =
+      items.flatMap((it) => contentProblems(it)).filter((p) => p.rule === 'enum').length +
+      cardProblems(card.kind, { en: card.en }).filter((p) => p.rule === 'enum').length;
+    const text = doc({
+      items: items.map((it, i) => ({ key: 'hb_' + String(i).padStart(16, 'a'), ...it })),
+      cards: [{ key: K2, ...card }]
+    });
+    for (const lang of ['en', 'ru'] as const) {
+      const lead = lang === 'en' ? 'allowed: ' : 'допустимые: ';
+      const got = lines(text, lang).filter((l) => l.includes(lead));
+      expect(got, lang).toHaveLength(want);
+      for (const line of got) expect(line, line).toMatch(new RegExp(lead + '("|\\d)'));
+    }
+    expect(want).toBe(14);
+  });
 
   it('places an item by its position and its quoted name in the language on screen', () => {
     const text = doc({ items: [item({ en: 'Lamp', ru: 'Лампа', kind: 'nope' })] });
