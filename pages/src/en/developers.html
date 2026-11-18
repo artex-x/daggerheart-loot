@@ -108,11 +108,24 @@
   <code>source</code>, <code>table</code>, <code>tier</code> and <code>rarity</code>. Send
   <code>q</code> or a facet; <code>limit</code> is 1 to 50. It reads names only. A word that
   matches too many records answers 400 <code>too_broad</code>: add a longer word or a facet.
+  With <code>fields=summary</code> each row also has a <code>summary</code>: one plain-text line
+  of the record's text, at most 120 characters in each language. Ask for it only when you must
+  see what the items do: it costs the site more. If a search with
+  <code>fields=summary</code> fails, search without <code>fields</code> and read the items with
+  <code>GET /api/v1/records-by-id</code>. Read the full text there.
 </p>
 <pre><code>curl 'https://daggerheart-loot.pages.dev/api/v1/records?q=sword&amp;kind=weapon'</code></pre>
 <h3><code>GET /api/v1/records/{id}</code></h3>
 <p>Reads one catalog record.</p>
 <pre><code>curl https://daggerheart-loot.pages.dev/api/v1/records/ci12</code></pre>
+<h3><code>GET /api/v1/records-by-id</code></h3>
+<p>
+  Reads up to 20 catalog records in one call: <code>ids</code> is comma-separated. The records
+  come in the order of <code>ids</code>; <code>missing</code> names the ids the catalog does not
+  hold, and the other records still answer. More than 20 ids, or an id that is not a record id,
+  answers 400.
+</p>
+<pre><code>curl 'https://daggerheart-loot.pages.dev/api/v1/records-by-id?ids=ci12,q23'</code></pre>
 <h3><code>GET /api/v1/homebrew-items/{uuid}</code></h3>
 <p>Reads one homebrew item whose author shared its link.</p>
 <pre><code>curl https://daggerheart-loot.pages.dev/api/v1/homebrew-items/00000000-0000-4000-8000-000000000000</code></pre>

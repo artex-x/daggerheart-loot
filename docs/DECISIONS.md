@@ -14,6 +14,7 @@ deleted.
 
 ## Index
 
+- 2026-11-18 - [A batch read has its own path, and search rows carry a built summary](decisions/2026-11-18-a-batch-read-has-its-own-path-and-search-rows-carry-a-built-summary.md)
 - 2026-11-17 - [The root audit allows one picomatch advisory until 2026-12-17](decisions/2026-11-17-the-root-audit-allows-one-picomatch-advisory-until-2026-12-17.md)
 - 2026-11-13 - [A connected app reaches only the API's account scope](decisions/2026-11-13-a-connected-app-reaches-only-the-api-s-account-scope.md)
 - 2026-11-12 - [ai-mcp lands on main at four named landings](decisions/2026-11-12-ai-mcp-lands-on-main-at-four-named-landings.md)

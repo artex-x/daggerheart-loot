@@ -637,6 +637,7 @@ describe('previewChecks() against the preview host', () => {
     'get_table',
     'search_catalog',
     'get_record',
+    'get_records',
     'get_homebrew_item',
     'get_shared_list',
     'check_file'

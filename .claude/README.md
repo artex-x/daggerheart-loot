@@ -4190,6 +4190,55 @@ assembly (`collect`, `guard`, `old-host`); the job's three steps call it.
   `answer_too_large` "Send a smaller limit."; a list holds at most 10 pending requests by
   default (`pending_requests_per_list`). These go to the owner's cold-readings decision
   with the landing-3 readings.
+- The search summaries and the batch read (`GET /api/v1/records-by-id`), measured
+  2026-11-18 on this host (Node, three fresh processes each; cold is the case's first call
+  after one `GET /api/v1/tables`, warm the median of 14 more). The service alone, over
+  in-memory strings (the CPU floor), before and after the summaries: two Russian words
+  7.5-7.9 to 7.8-10.1 ms cold, 0.20-0.25 to 0.22-0.28 ms warm; `q=кольцо&limit=50` (7
+  summary files) 5.8-7.4 to 6.5-7.7 ms cold; `kind=weapon&tier=2&limit=50` (4 files)
+  1.9-2.2 to 2.7-3.1 ms cold. A batch of 20 ids in 20 different chunks (the worst case)
+  2.6-3.0 ms cold and 1.3 ms warm, of 10 such ids 1.9-2.2 and 0.7 ms. Through the worker
+  with Node's `Response` streams, whose per-byte cost workerd pays in native code (an upper
+  bound): the two words 12.6-14.9 to 17.3-19.2 ms cold, `q=кольцо` 9.3-18.4 to 21.3-21.8,
+  the facets 5.0-10.0 to 12.1-19.4; the 20-chunk batch 26.0-26.8 ms cold and 16.4-17.5
+  warm, 20 ids of one chunk 5.0-6.7 and 2.2-2.8, a record 2.3-2.5 to 2.9-3.5. A search
+  with summaries reads at most 7 more files (each `apidata/summary/` file of its rows,
+  64 KB), a batch read the records index and one file a distinct chunk (at most 21 reads).
+  Those first readings had a summary on every row; at 3x they passed 10 ms (service-only,
+  cold: 11.5-12.1 ms for `q=кольцо&limit=50`, 10.3-10.8 ms for the two words at the
+  default limit), so the owner made the summary opt-in (`fields=summary`; decision "A batch read has its own path, and
+  search rows carry a built summary"). Live cases to read after the deploy, beside the
+  landing-3 readings: a cold `q=` of two Russian words, a cold `kind=item&limit=50`, the
+  same with `fields=summary`, and a cold batch of 20 ids in 20 chunks.
+- The opt-in summary (`fields=summary`), measured 2026-11-18 later on this host, which
+  then ran slower than for the bullet above (same method; base `2613aca2`, before the
+  summaries, measured in the same hour). Service alone, cold, base / default / opt-in:
+  today `q=кольцо тишины` 7.3-8.2 (one 13.3) / 6.0-7.0 / 8.2-9.2 ms, `q=кольцо&limit=50`
+  9.7-10.0 / 8.1-9.3 / 11.1-13.5, `kind=weapon&tier=2&limit=50` 2.8-3.8 / 3.0-3.7 /
+  4.1-4.8; at 3x (`tripledFiles()` in `tools/api-data.test.mjs`: 4779 records, 21 summary
+  files of about 64 KB) 11.4-13.1 / 8.5-10.2 / 9.5-11.3, 11.8-11.9 / 10.9-11.1 /
+  13.6-14.4, 4.3-4.9 / 4.3-4.5 / 5.8-6.3. Warm stays under 1.2 ms in every case. The
+  default search reads what the base reads (2 files today, 4 at 3x: the index and the
+  shards) and equals it within noise. The opt-in reads the summary files of its rows: 1,
+  7 and 4 today (3, 9, 6 reads), 1, 10 and 7 at 3x (5, 14, 11 reads). Through the worker,
+  cold, today default 12.8-13.0, 14.3-16.6, 7.9-9.2 ms and opt-in 13.7-17.1, 25.5-30.6,
+  14.6-23.4; at 3x default 21.1-36.2, 21.7-32.5, 14.3-29.8 and opt-in 21.9-32.1,
+  31.2-40.4, 24.1-30.3 (Node's `Response` stream cost, an upper bound). The known cost
+  of the opt-in: a cold `q=кольцо&limit=50&fields=summary` at 3x is past 10 ms service
+  CPU (11.5-12.1 ms with a summary on every row, in the bullet above; 13.6-14.4 here). The base is past 10 ms too at
+  3x on this host for `q=кольцо&limit=50`, so the 3x search path stays open with the
+  landing-3 readings. A cold opt-in reading past the landing-3 search reading by more
+  than 5 ms sends the summaries to a smaller `SUMMARY_MAX`, which shortens each line and
+  so the files; `BUDGET.summary` falls only after the reads at 3x, 21 files for a 50-row
+  search, are counted against the 50-subrequest limit (an `ASSETS` read may count; see
+  the next bullet), because smaller files raise the read count. The batch read of the
+  bullet above falls back to a cache of each chunk's split lines, which helps only warm
+  calls; its cold lever is the cap, and `CONTRACTS.md` section 6 never lowers a cap. Open owner decision: the cap
+  of 20 ids stays; take the cold reading of a 20-id batch in 20 chunks on production
+  before the squash onto `main` if a branch deployment exists, else after the landing.
+  None exists: every deploy uses `--branch main` and a branch alias answers 301 to the
+  production host (section "Rules" above), so the reading follows the landing, and a
+  reading past 10 ms then needs a v1 contract change or a new chunk layout.
 - `env.ASSETS.fetch` and the subrequest limit: the Cloudflare limits page (read
   2026-11-14) counts a Fetch API request, KV, R2 and D1 calls, and lists a separate
   1000 for internal services; it does not say whether an `ASSETS` read counts. The

@@ -7,8 +7,9 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { afterEach, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
-import { renderApiData } from '../../tools/api-data.mjs';
+import { SUMMARY_MAX, readAudit, renderApiData, summaryOf } from '../../tools/api-data.mjs';
 import { createService } from './service.mjs';
 import { buildIndex } from '../../app/src/lib/data.ts';
 import { parseRollBody, clearCache, OPENAPI_ETAG } from './rest.mjs';
@@ -844,6 +845,7 @@ describe('openapi.json and the parsers', () => {
       '/api/v1/tables/{table}': 'GET',
       '/api/v1/records': 'GET',
       '/api/v1/records/{id}': 'GET',
+      '/api/v1/records-by-id': 'GET',
       '/api/v1/homebrew-items/{uuid}': 'GET',
       '/api/v1/shared-lists/{token}': 'GET',
       '/api/v1/file-checks': 'POST'
@@ -957,16 +959,43 @@ const DV = JSON.parse(FILES.get('apidata/version.json')).data_version;
 const SHARD_HEAD = (dv) =>
   `{"format":"daggerheart-loot/api-search-shard","version":1,"data_version":"${dv}"}`;
 
-/** Returns the files with one stub search shard of the given record lines. */
+const SUMMARY_HEAD = (dv) =>
+  `{"format":"daggerheart-loot/api-search-summary","version":1,"data_version":"${dv}"}`;
+
+/** Returns the files with one stub search shard of the given record lines, and one summary
+ *  file whose line for each record is its id and `s<n>` in both languages. */
 function withShard(lines, dv = DV) {
   const files = new Map(FILES);
   files.set('apidata/search/0.txt', SHARD_HEAD(dv) + '\n' + lines.join('\n') + '\n');
+  const summaries = lines.map((l, n) => `${l.split('\t')[2]}\ts${String(n)}\ts${String(n)}`);
+  files.set('apidata/summary/0.txt', SUMMARY_HEAD(dv) + '\n' + summaries.join('\n') + '\n');
   const index = JSON.parse(FILES.get('apidata/search/index.json'));
   index.shards = 1;
+  index.summaries = [lines.length];
   files.set('apidata/search/index.json', JSON.stringify(index) + '\n');
   return files;
 }
 const stubLine = (i, name) => `00000${name}\t${name}\tid${String(i)}\t\t${name}\t${name}`;
+
+let WHOLE = null;
+/** Returns the files of the whole catalog of data.js, built once: the pinned catalog is too
+ *  small for the read counts of the search summaries and the batch read. */
+function wholeFiles() {
+  if (WHOLE !== null) return WHOLE;
+  globalThis.window = {};
+  createRequire(import.meta.url)(join(ROOT, 'data.js'));
+  const versions = createRequire(import.meta.url)(
+    '../../tools/build-share-pages.js'
+  ).cardVersions();
+  const loot = globalThis.window.LOOT;
+  delete globalThis.window;
+  WHOLE = renderApiData(
+    loot,
+    readAudit(join(ROOT, 'docs', 'rights', 'records.json')),
+    versions
+  );
+  return WHOLE;
+}
 
 const get = (query) => call('/api/v1/records?' + query);
 
@@ -980,17 +1009,18 @@ describe('the catalog search', () => {
     const body = await fixture('records-q', res);
     assert.equal(body.format, 'daggerheart-loot/api-search');
     assert.ok(body.total > 0 && body.rows.length === body.total);
-    for (const row of body.rows) {
-      assert.deepEqual(Object.keys(row), [
-        'id',
-        'name',
-        'kind',
-        'source',
-        'table',
-        'tier',
-        'rarity',
-        'link'
-      ]);
+    const keys = ['id', 'name', 'kind', 'source', 'table', 'tier', 'rarity', 'link'];
+    for (const row of body.rows) assert.deepEqual(Object.keys(row), keys);
+    const summed = await fixture(
+      'records-q-summary',
+      await get('q=' + encodeURIComponent('зелья potions') + '&fields=summary')
+    );
+    assert.deepEqual(
+      summed.rows.map((r) => r.id),
+      body.rows.map((r) => r.id)
+    );
+    for (const row of summed.rows) {
+      assert.deepEqual(Object.keys(row), [...keys.slice(0, 2), 'summary', ...keys.slice(2)]);
     }
     const again = await get('q=' + encodeURIComponent('зелья potions'));
     const etag = again.headers.get('etag');
@@ -1065,7 +1095,10 @@ describe('the catalog search', () => {
       ['rarity=ZZZrarity', 'rarity'],
       ['source=ZZZsource', 'source'],
       ['table=ZZZtable', 'table'],
-      ['q=ring&kind=', 'kind']
+      ['q=ring&kind=', 'kind'],
+      ['q=ring&fields=ZZZfields', 'fields'],
+      ['q=ring&fields=summary,ZZZtext', 'fields'],
+      ['q=ring&fields=', 'fields']
     ];
     for (const [query, field] of cases) {
       const res = await get(query);
@@ -1087,6 +1120,7 @@ describe('the catalog search', () => {
     for (const [path, name] of [
       ['/api/v1/records?q=ring&q=sword', 'q'],
       ['/api/v1/records?kind=armor&kind=weapon', 'kind'],
+      ['/api/v1/records?q=ring&fields=summary&fields=summary', 'fields'],
       ['/api/v1/tables/eq_weapon?part=1&part=2', 'part'],
       ['/api/v1/tables/wondrous?filter=f_kind-item&filter=f_kind-consumable', 'filter']
     ]) {
@@ -1165,12 +1199,259 @@ describe('the catalog search', () => {
     assert.equal((await call('/api/v1/records/')).status, 404);
   });
 
-  it('reads at most the index and the shards of one search', async () => {
-    await get('q=ring');
+  it('reads no summary file without fields=summary, and with it only the files of the rows', async () => {
+    const whole = wholeFiles();
+    state.files = whole;
+    const shards = JSON.parse(whole.get('apidata/search/index.json')).shards;
+    const searchFiles = [
+      'apidata/search/index.json',
+      ...Array.from({ length: shards }, (_, n) => `apidata/search/${String(n)}.txt`)
+    ];
+    /* The file of each id, from the built summary files themselves. */
+    const fileOf = new Map();
+    for (const [path, text] of whole) {
+      if (!path.startsWith('apidata/summary/')) continue;
+      for (const line of text.split('\n').slice(1)) fileOf.set(line.split('\t')[0], path);
+    }
+    const count = new Set(fileOf.values()).size;
+    assert.ok(count > 2, 'the catalog has more than two summary files');
+    const sizes = [];
+    for (const query of ['q=ring&limit=50', 'kind=item&limit=50', 'q=bedroll']) {
+      clearCache();
+      state.fetches = [];
+      const plain = await (await get(query)).json();
+      assert.ok(plain.rows.length > 0, query);
+      assert.ok(
+        plain.rows.every((r) => !('summary' in r)),
+        query
+      );
+      assert.deepEqual(
+        state.fetches.filter((p) => p.startsWith('apidata/')).sort(),
+        [...searchFiles].sort(),
+        query
+      );
+      clearCache();
+      state.fetches = [];
+      const summed = await (await get(query + '&fields=summary')).json();
+      const wanted = new Set(summed.rows.map((r) => fileOf.get(r.id)));
+      sizes.push(wanted.size);
+      assert.deepEqual(
+        state.fetches.filter((p) => p.startsWith('apidata/')).sort(),
+        [...searchFiles, ...wanted].sort(),
+        query
+      );
+      /* A warm search reads nothing, with or without summaries. */
+      state.fetches = [];
+      await get(query + '&fields=summary');
+      await get(query);
+      assert.deepEqual(
+        state.fetches.filter((p) => p.startsWith('apidata/')),
+        [],
+        query
+      );
+    }
+    /* One search reads several files and another fewer than all, so a read of every file fails. */
+    assert.ok(Math.max(...sizes) > 1 && Math.min(...sizes) < count, String(sizes));
+    clearCache();
+    state.fetches = [];
+    const none = await (await get('q=zzzqqq&fields=summary')).json();
+    assert.equal(none.total, 0);
+    assert.ok(!state.fetches.some((p) => p.startsWith('apidata/summary/')));
+  });
+
+  it('gives each row the summary of its record text, from the record of the same id', async () => {
+    const rows = [];
+    for (const query of ['kind=weapon&limit=50', 'kind=item&limit=50', 'q=ring&limit=50']) {
+      rows.push(...(await (await get(query + '&fields=summary')).json()).rows);
+    }
+    assert.ok(rows.length > 20);
+    let cut = 0;
+    for (const row of rows) {
+      const record = await (await call('/api/v1/records/' + row.id)).json();
+      for (const lang of ['ru', 'en']) {
+        const want = summaryOf(record.plain[lang], record.stats?.statline[lang] ?? '');
+        assert.equal(row.summary[lang], want, `${row.id} ${lang}`);
+        assert.ok(row.summary[lang].length <= SUMMARY_MAX, row.id);
+        assert.ok(!/[\t\n\r]/.test(row.summary[lang]), row.id);
+        if (row.summary[lang].endsWith('...')) cut++;
+      }
+      assert.ok(row.summary.en.length > 0, row.id);
+    }
+    assert.ok(cut > 0, 'a long text is cut');
+  });
+
+  it('re-reads once when a summary file names another data version or id, then answers 503', async () => {
+    const other = editedFiles();
+    state.files = (path) =>
+      path === 'apidata/summary/0.txt' ? other.get(path) : FILES.get(path);
+    const res = await get('q=bedroll&fields=summary');
+    assert.equal(res.status, 503);
+    assertApiHeaders(res);
+    assert.equal(state.fetches.filter((p) => p === 'apidata/summary/0.txt').length, 2);
+    /* The default search never reads the bad file, so it still answers. */
+    clearCache();
+    state.fetches = [];
+    assert.equal((await get('q=bedroll')).status, 200);
+    assert.ok(!state.fetches.some((p) => p.startsWith('apidata/summary/')));
+    clearCache();
+    state.fetches = [];
+    const files = withShard([stubLine(0, 'zzz')]);
+    files.set('apidata/summary/0.txt', SUMMARY_HEAD(DV) + '\nother\ts\ts\n');
+    state.files = files;
+    assert.equal((await get('q=zzz&fields=summary')).status, 503);
+    assert.equal(state.fetches.filter((p) => p === 'apidata/summary/0.txt').length, 2);
+    clearCache();
+    state.files = withShard([stubLine(0, 'zzz')]);
+    const body = await (await get('q=zzz&fields=summary')).json();
+    assert.deepEqual(body.rows[0].summary, { ru: 's0', en: 's0' });
+  });
+
+  it('re-reads once when a summary file changes data version between two searches, then answers it', async () => {
+    const old = withShard([stubLine(0, 'zzz')], 'aaaa');
+    const fresh = withShard([stubLine(0, 'zzz')]);
+    let summaryReads = 0;
+    /* The first summary read is of the old deploy; the index and shards are of the new one. */
+    state.files = (path) => {
+      if (path !== 'apidata/summary/0.txt') return fresh.get(path);
+      summaryReads++;
+      return summaryReads === 1 ? old.get(path) : fresh.get(path);
+    };
+    const res = await get('q=zzz&fields=summary');
+    assert.equal(res.status, 200);
+    assert.deepEqual((await res.json()).rows[0].summary, { ru: 's0', en: 's0' });
+    assert.equal(summaryReads, 2);
+  });
+
+  it('re-reads once when the cached search index has no summaries, then answers the fresh index', async () => {
+    const old = new Map(withShard([stubLine(0, 'zzz')]));
+    const index = JSON.parse(old.get('apidata/search/index.json'));
+    delete index.summaries;
+    old.set('apidata/search/index.json', JSON.stringify(index) + '\n');
+    const fresh = withShard([stubLine(0, 'zzz')]);
+    let reads = 0;
+    state.files = (path) => {
+      if (path !== 'apidata/search/index.json') return fresh.get(path);
+      reads++;
+      return reads === 1 ? old.get(path) : fresh.get(path);
+    };
+    const res = await get('q=zzz&fields=summary');
+    assert.equal(res.status, 200);
+    assert.deepEqual((await res.json()).rows[0].summary, { ru: 's0', en: 's0' });
+    assert.equal(reads, 2);
+    /* Without fields=summary the old index answers as it is, on one read. */
+    clearCache();
+    reads = 0;
+    const plain = await get('q=zzz');
+    assert.equal(plain.status, 200);
+    assert.ok(!('summary' in (await plain.json()).rows[0]));
+    assert.equal(reads, 1);
+  });
+});
+
+/* ---------- the batch read ---------- */
+
+const ids = (list) => call('/api/v1/records-by-id?ids=' + list.join(','));
+
+describe('the batch read', () => {
+  const chunks = JSON.parse(FILES.get('apidata/records/index.json')).chunks;
+
+  it('answers the records of the ids in their order, each once, and names the missing ids', async () => {
+    const res = await ids(['q23', 'zzzz', 'ci1', 'q23']);
+    assert.equal(res.status, 200);
+    assertApiHeaders(res);
+    assert.equal(res.headers.get('cache-control'), 'public, max-age=300');
+    assert.equal(res.headers.get('etag'), `"${DV}"`);
+    const body = await fixture('records-by-id', res);
+    assert.equal(body.format, 'daggerheart-loot/api-record-batch');
+    assert.equal(body.data_version, DV);
     assert.deepEqual(
-      state.fetches.filter((p) => p.startsWith('apidata/')),
-      ['apidata/search/index.json', 'apidata/search/0.txt']
+      body.records.map((r) => r.id),
+      ['q23', 'ci1']
     );
+    assert.deepEqual(body.missing, ['zzzz']);
+    for (const record of body.records) {
+      assert.deepEqual(record, await (await call('/api/v1/records/' + record.id)).json());
+    }
+    const cached = await call('/api/v1/records-by-id?ids=q23,zzzz,ci1', {
+      headers: { 'If-None-Match': `"${DV}"` }
+    });
+    assert.equal(cached.status, 304);
+  });
+
+  it('reads each chunk once and answers 20 ids, with every id missing as an empty list', async () => {
+    /* The pinned catalog has 4 chunks; the whole catalog has more than 20. */
+    const whole = wholeFiles();
+    state.files = whole;
+    const wide = JSON.parse(whole.get('apidata/records/index.json')).chunks;
+    assert.ok(wide.length >= 20, 'the catalog has at least 20 chunks');
+    /* The last id of each of 20 chunks, in reverse chunk order, so an order by chunk or a wrong
+       chunk-to-result pairing fails. */
+    const twenty = wide
+      .slice(0, 20)
+      .map((list) => list[list.length - 1])
+      .reverse();
+    const res = await ids(twenty);
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.deepEqual(
+      body.records.map((r) => r.id),
+      twenty
+    );
+    const read = state.fetches.filter((p) => p.startsWith('api/v1/catalog/'));
+    assert.equal(read.length, new Set(read).size);
+    const wanted = new Set(twenty.map((id) => wide.findIndex((list) => list.includes(id))));
+    assert.equal(wanted.size, 20);
+    assert.equal(read.length, 20);
+    state.fetches = [];
+    const gone = await (await ids(['zzzz', 'yyyy'])).json();
+    assert.deepEqual(gone.records, []);
+    assert.deepEqual(gone.missing, ['zzzz', 'yyyy']);
+    assert.ok(!state.fetches.some((p) => p.startsWith('api/v1/catalog/')));
+  });
+
+  it('refuses each bad ids value with a 400 that names ids and never echoes it', async () => {
+    const many = Array.from({ length: 21 }, (_, i) => `ZZZ${String(i)}`).join(',');
+    const res = await call('/api/v1/records-by-id?ids=' + many);
+    assert.equal(res.status, 400);
+    assertApiHeaders(res);
+    const body = await fixture('error-records-by-id-too-many', res);
+    assert.equal(body.error.code, 'bad_request');
+    for (const query of [
+      '',
+      'ids=',
+      'ids=ci1,',
+      'ids=,ci1',
+      'ids=ZZZ%20x',
+      'ids=ZZZ!',
+      'ids=' + 'Z'.repeat(65),
+      'ids=' + 'Z,'.repeat(700) + 'Z',
+      'ids=ci1&ids=q23'
+    ]) {
+      const r = await call('/api/v1/records-by-id?' + query);
+      assert.equal(r.status, 400, query);
+      const e = (await r.json()).error;
+      assert.equal(e.code, 'bad_request', query);
+      assert.match(e.message, /\bids\b/, query);
+      assert.ok(!e.message.includes('ZZZ'), query);
+    }
+    assert.ok(!state.fetches.some((p) => p.startsWith('api/v1/catalog/')));
+  });
+
+  it('answers 405 to another method, and 503 after one re-read when a line holds another id', async () => {
+    const post = await call('/api/v1/records-by-id?ids=ci1', { method: 'POST' });
+    assert.equal(post.status, 405);
+    assert.equal(post.headers.get('allow'), 'GET, HEAD, OPTIONS');
+    const n = chunks.findIndex((list) => list.includes('ci1'));
+    const path = `api/v1/catalog/${String(n)}.json`;
+    const lines = FILES.get(path).split('\n');
+    const pos = chunks[n].indexOf('ci1');
+    [lines[pos + 1], lines[pos + 2]] = [lines[pos + 2], lines[pos + 1]];
+    const broken = new Map(FILES);
+    broken.set(path, lines.join('\n'));
+    state.files = broken;
+    const res = await ids(['ci1']);
+    assert.equal(res.status, 503);
+    assert.equal(state.fetches.filter((p) => p === path).length, 2);
   });
 });
 

@@ -302,10 +302,14 @@ const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
         ok(v.format === 'daggerheart-loot/api-error', name + ' is not an error answer');
       }
     }
-    /* The search and the file check pin their answers (CONTRACTS.md section 6). */
+    /* The search, the batch read and the file check pin their answers (CONTRACTS.md
+       section 6). */
     for (const [name, format] of [
       ['records-q.json', 'daggerheart-loot/api-search'],
+      ['records-q-summary.json', 'daggerheart-loot/api-search'],
       ['records-facets.json', 'daggerheart-loot/api-search'],
+      ['records-by-id.json', 'daggerheart-loot/api-record-batch'],
+      ['error-records-by-id-too-many.json', 'daggerheart-loot/api-error'],
       ['file-check-lists-ok.json', 'daggerheart-loot/api-file-check'],
       ['file-check-lists-errors.json', 'daggerheart-loot/api-file-check'],
       ['file-check-homebrew-errors.json', 'daggerheart-loot/api-file-check'],
@@ -324,6 +328,32 @@ const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
         );
       }
     }
+    /* A row carries a summary only with fields=summary. */
+    const rowsOf = (name) => {
+      const file = path.join(apiDir, name);
+      return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')).rows : [];
+    };
+    for (const name of ['records-q.json', 'records-facets.json']) {
+      const rows = rowsOf(name);
+      ok(
+        rows.length > 0 && rows.every((r) => !('summary' in r)),
+        'docs/fixtures/api/v1/' +
+          name +
+          ' has a row with a summary, which only fields=summary adds'
+      );
+    }
+    const summed = rowsOf('records-q-summary.json');
+    ok(
+      summed.length > 0 &&
+        summed.every(
+          (r) =>
+            typeof r.summary?.ru === 'string' &&
+            typeof r.summary?.en === 'string' &&
+            r.summary.ru.length <= 120 &&
+            r.summary.en.length <= 120
+        ),
+      'docs/fixtures/api/v1/records-q-summary.json has a row without a summary pair of 120 characters'
+    );
     const openapi = JSON.parse(
       fs.readFileSync(path.join(__dirname, '..', 'preview', 'api', 'openapi.json'), 'utf8')
     );
@@ -389,7 +419,7 @@ const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
       .flatMap((o) => Object.values(o))
       .filter((op) => op['x-mcp-tool'] && !op.security)
       .map((op) => op['x-mcp-tool']);
-    ok(tools.length === 9, 'openapi.json does not hold nine tools: ' + tools.join());
+    ok(tools.length === 10, 'openapi.json does not hold ten tools: ' + tools.join());
     ok(
       openapi.info['x-mcp-endpoint'] === PREVIEW_ORIGIN + '/mcp',
       "openapi.json's x-mcp-endpoint is not " + PREVIEW_ORIGIN + '/mcp'

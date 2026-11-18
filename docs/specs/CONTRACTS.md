@@ -560,6 +560,7 @@ by `preview/api/mcp.test.mjs`.
 | `GET /api/v1/tables/{table}` | `daggerheart-loot/api-table` v1; `part` is required on `eq_weapon`, `eq_secondary` and `eq_armor`; `filter` narrows the rows |
 | `GET /api/v1/records` | `daggerheart-loot/api-search` v1: a search by name and facets |
 | `GET /api/v1/records/{id}` | `daggerheart-loot/record` v1 |
+| `GET /api/v1/records-by-id` | `daggerheart-loot/api-record-batch` v1: the records of 1-20 `ids` and the `missing` ids |
 | `GET /api/v1/homebrew-items/{uuid}` | `daggerheart-loot/record` v1 |
 | `GET /api/v1/shared-lists/{token}` | `daggerheart-loot/api-shared-list` v1 |
 | `POST /api/v1/file-checks` | `daggerheart-loot/api-file-check` v1: the check of an import file |
@@ -640,16 +641,45 @@ names only: a word that only a description or a stat line holds finds nothing, a
 items and homebrew are not searched. The parameters are `q` (at most 200 characters and
 8 terms), `kind` (`item`, `consumable`, `weapon`, `secondary`, `armor`), `source` (a
 source id), `table` (the records of that table, as `GET /api/v1/tables/{table}` lists
-them), `tier` (`1`, `2`, `3`, `4`, `A`, `C`), `rarity` and `limit` (an integer from 1 to
-50, default 20). At least one of `q` and the five facets is required; a `q` with no
+them), `tier` (`1`, `2`, `3`, `4`, `A`, `C`), `rarity`, `limit` (an integer from 1 to
+50, default 20) and `fields` (only `summary`, which adds each row's summary; any other
+value is a 400 that names `fields`; MCP `search_catalog` takes the same string). At least one of `q` and the five facets is required; a `q` with no
 terms (`q=`, `q=%20`, `q=""`) reads as absent. A parameter given twice is a 400 that
 names it. A query that keeps more than 300 lines to rank, or whose most selective word
 has more than 3000 hits in the search text, is 400 `too_broad`: a longer word or a facet
 answers it. The answer is `{ "format": "daggerheart-loot/api-search", "version": 1,
 "data_version", "total", "rows" }`: `total` counts every match, `rows` holds the first
 `limit` of them in rank order (catalog order without `q`), and a row is `{ id, name,
-kind, source, table, tier, rarity, link }`, each field the record's of the same name
-and `link` equal to the record's (`?v` included). The answer carries the projection's `ETag` and `Cache-Control: public, max-age=300`.
+kind, source, table, tier, rarity, link }`, with `summary` after `name` only on
+`fields=summary`; each field but `summary` is the record's of the same name and `link` equal to the record's (`?v` included). The answer carries the projection's `ETag` and `Cache-Control: public, max-age=300`.
+
+**Summary.** A search row's `summary` is a pair of one plain-text line per language,
+built at build time from the record's own data (`tools/api-data.mjs` `summaryOf`; no
+other source): the record's `plain` text with every run of white space as one space, or
+its `stats.statline` when the text is empty, else empty. Past 120 characters it keeps its
+first 118 characters up to their last space (the first 117 characters when that space is
+in the first 60 or there is none),
+drops a trailing comma, colon, semicolon, period, dash or space and adds `...`; the result
+is at most 120 characters. The Russian side derives from the Russian `plain`, which takes
+the English text when the record has no translation. It is a hint for which records to
+read, not the text: the search still reads names only. Only a search with
+`fields=summary` reads summary files, and only those of the answered rows
+(`apidata/summary/`), so a search without it or with no rows reads none. The opt-in keeps
+the default search at the CPU cost it had before the summaries (decision "A batch read
+has its own path, and search rows carry a built summary").
+
+**Batch read.** `GET /api/v1/records-by-id` with `ids=<id>,<id>` answers `{ "format":
+"daggerheart-loot/api-record-batch", "version": 1, "data_version", "records", "missing"
+}`: `records` holds the neutral record of each id the catalog holds, equal to `GET
+/api/v1/records/{id}`, in the order of `ids`; `missing` names each id the catalog does
+not hold, in the same order, and the other records still answer (200, also when every id
+is missing). An id given twice answers once. `ids` is required: 1 to 20 ids separated by
+commas, each of the record id shape (`[A-Za-z0-9_-]`, 1-64 characters); an empty piece,
+another shape, more than 20 ids or a value past 1300 characters is 400 `bad_request` that
+names `ids` and never echoes it. The cap is the search's default page, so one call reads
+every row of it, and it bounds one call's chunk reads to 20; a cap may rise, never fall.
+Each chunk is read once per call. The answer carries the projection's `ETag` and
+`Cache-Control: public, max-age=300`.
 
 **Filter.** `filter` on `GET /api/v1/tables/{table}` is the tables page's `f_` segment
 (`docs/specs/ROUTES.md`, "Filter grammar"; at most 512 characters, starting with `f_`,
@@ -887,7 +917,7 @@ header is `HeaderMismatch` (-32020, status 400); an unknown modern method is -32
 status 404 (legacy: status 200). A notification answers 202 with no body. The
 `instructions` of `initialize` and `server/discover` are `openapi.json`'s
 `x-mcp-instructions` (`/mcp/me`: `x-mcp-me-instructions`): the routing (creature loot,
-shop stock, account work), the tier rule, the link rules, where the index,
+shop stock with `get_records` over the search rows before a pick by text, account work), the tier rule, the link rules, where the index,
 `openapi.json`, `llms.txt` and the developer page live, the limits, and the app's price
 bands, which `preview/api/mcp.test.mjs` holds equal to `app/src/lib/money.ts`.
 
@@ -899,6 +929,7 @@ bands, which `preview/api/mcp.test.mjs` holds equal to `app/src/lib/money.ts`.
 | `get_table` | `GET /api/v1/tables/{table}`; `part` and `filter` are optional arguments |
 | `search_catalog` | `GET /api/v1/records`; the REST parameters are the arguments, `limit` a JSON integer and the others strings |
 | `get_record` | `GET /api/v1/records/{id}` |
+| `get_records` | `GET /api/v1/records-by-id`; `ids` is the comma-separated string of the REST parameter |
 | `get_homebrew_item` | `GET /api/v1/homebrew-items/{uuid}` |
 | `get_shared_list` | `GET /api/v1/shared-lists/{token}` |
 | `check_file` | `POST /api/v1/file-checks`; the one argument `file` is the file's text as a string |
@@ -995,5 +1026,5 @@ third-party translation the value does not cover. A homebrew item is `owner`.
 
 `apidata/` holds the internal projections the worker reads (`rolls.json`,
 `tables.json`, `cards.json`, `roll/`, `table/`, `records/index.json`,
-`version.json`, `search/index.json`, `search/<n>.txt` and `file-check.json`). It is published beside the site and changed without notice, like
+`version.json`, `search/index.json`, `search/<n>.txt`, `summary/<n>.txt` and `file-check.json`). It is published beside the site and changed without notice, like
 `img/thumb/`; nothing outside the worker binds to it, and it is not a contract.

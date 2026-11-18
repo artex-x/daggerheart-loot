@@ -24,7 +24,16 @@ import { poolFor } from '../app/src/lib/std.ts';
 import { SECTIONS, TABLE_IDS } from '../app/src/lib/types.ts';
 import { parseSearch, readCapOf } from '../preview/api/rest.mjs';
 import { createService } from '../preview/api/service.mjs';
-import { BUDGET, SITE, budgetOf, readAudit, renderApiData, rollIdOf } from './api-data.mjs';
+import {
+  BUDGET,
+  SITE,
+  SUMMARY_MAX,
+  budgetOf,
+  readAudit,
+  renderApiData,
+  rollIdOf,
+  summaryOf
+} from './api-data.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 globalThis.window = {};
@@ -306,6 +315,44 @@ describe('the catalog chunks', () => {
 });
 
 const SHARD = /^apidata\/search\/\d+\.txt$/;
+const SUMMARY = /^apidata\/summary\/\d+\.txt$/;
+
+describe('the summary of a record text', () => {
+  it('keeps a short text, joins its lines, and takes the stat line when the text is empty', () => {
+    assert.equal(summaryOf('Gain a Hope.'), 'Gain a Hope.');
+    assert.equal(summaryOf('  One.\n- Two\t three  '), 'One. - Two three');
+    assert.equal(summaryOf('', 'Agility Melee d8+1 phy'), 'Agility Melee d8+1 phy');
+    assert.equal(summaryOf(' \n ', ''), '');
+  });
+
+  it('cuts a long text at the last word that leaves room for ..., at most SUMMARY_MAX', () => {
+    const words = Array.from({ length: 40 }, (_, i) => `word${String(i)}`).join(' ');
+    const got = summaryOf(words);
+    assert.ok(got.length <= SUMMARY_MAX, got);
+    assert.ok(got.endsWith('...'));
+    assert.ok(words.startsWith(got.slice(0, -3)));
+    assert.match(got, /word\d+\.\.\.$/, 'the cut is at a word end');
+    assert.equal(summaryOf('a'.repeat(SUMMARY_MAX)), 'a'.repeat(SUMMARY_MAX));
+    assert.equal(summaryOf('a'.repeat(300)), 'a'.repeat(SUMMARY_MAX - 3) + '...');
+    const comma = 'x'.repeat(100) + ', ' + 'y'.repeat(40);
+    assert.equal(summaryOf(comma), 'x'.repeat(100) + '...');
+    const dash = 'я'.repeat(100) + ' — ' + 'б'.repeat(40);
+    assert.equal(summaryOf(dash), 'я'.repeat(100) + '...');
+  });
+
+  it('keeps the word that ends right before the 118th character, and cuts hard when no space is near', () => {
+    const edge = 'a'.repeat(SUMMARY_MAX - 3) + ' ' + 'b'.repeat(40);
+    assert.equal(summaryOf(edge), 'a'.repeat(SUMMARY_MAX - 3) + '...');
+    const late = 'a'.repeat(SUMMARY_MAX - 2) + ' ' + 'b'.repeat(40);
+    assert.equal(summaryOf(late), 'a'.repeat(SUMMARY_MAX - 3) + '...');
+    const early = 'a'.repeat(20) + ' ' + 'b'.repeat(200);
+    assert.equal(summaryOf(early), early.slice(0, SUMMARY_MAX - 3) + '...');
+    const near = 'a'.repeat(60) + ' ' + 'b'.repeat(200);
+    assert.equal(summaryOf(near), 'a'.repeat(60) + '...');
+    const later = 'a'.repeat(60) + ' ' + 'c'.repeat(56) + ' ' + 'b'.repeat(40);
+    assert.equal(summaryOf(later), 'a'.repeat(60) + ' ' + 'c'.repeat(56) + '...');
+  });
+});
 
 describe('the search projection', () => {
   const index = parsed(FILES, 'apidata/search/index.json');
@@ -370,6 +417,33 @@ describe('the search projection', () => {
         data_version: dv
       });
     }
+  });
+
+  it('writes the summary of every record on one line of a summary file, in search order', () => {
+    const dv = parsed(FILES, 'apidata/version.json').data_version;
+    const paths = [...FILES.keys()].filter((p) => SUMMARY.test(p));
+    assert.equal(paths.length, index.summaries.length);
+    const summaries = index.summaries.flatMap((count, k) => {
+      const all = FILES.get(`apidata/summary/${String(k)}.txt`).split('\n');
+      assert.equal(all.pop(), '');
+      assert.deepEqual(JSON.parse(all[0]), {
+        format: 'daggerheart-loot/api-search-summary',
+        version: 1,
+        data_version: dv
+      });
+      assert.equal(all.length - 1, count, `summary file ${String(k)}`);
+      return all.slice(1).map((line) => line.split('\t'));
+    });
+    assert.deepEqual(
+      summaries.map((s) => s[0]),
+      decoded.map((d) => d.id)
+    );
+    summaries.forEach(([id, ru, en], i) => {
+      const r = records[i];
+      assert.equal(id, r.id);
+      assert.equal(ru, summaryOf(r.plain.ru, r.stats?.statline.ru ?? ''), id);
+      assert.equal(en, summaryOf(r.plain.en, r.stats?.statline.en ?? ''), id);
+    });
   });
 });
 
@@ -527,12 +601,16 @@ for (const [label, make] of [
       }
     });
 
-    it('gives each row the fields of the record of the same names', async () => {
-      const { body } = await service.searchRecords(parseSearch({ q: 'зелье', limit: '50' }));
+    it('gives each row the fields of the record of the same names, and its summary on request', async () => {
+      const { body } = await service.searchRecords(
+        parseSearch({ q: 'зелье', limit: '50', fields: 'summary' })
+      );
+      const plain = await service.searchRecords(parseSearch({ q: 'зелье', limit: '50' }));
       assert.ok(body.rows.length > 0);
-      for (const row of body.rows) {
+      const line = (r, lang) => summaryOf(r.plain[lang], r.stats?.statline[lang] ?? '');
+      body.rows.forEach((row, i) => {
         const r = records.get(row.id);
-        assert.deepEqual(row, {
+        const want = {
           id: r.id,
           name: r.name,
           kind: r.kind,
@@ -541,8 +619,10 @@ for (const [label, make] of [
           tier: r.tier,
           rarity: r.rarity,
           link: r.link
-        });
-      }
+        };
+        assert.deepEqual(plain.body.rows[i], want);
+        assert.deepEqual(row, { ...want, summary: { ru: line(r, 'ru'), en: line(r, 'en') } });
+      });
     });
 
     it('lists the records of a table as its rows do, in catalog order', async () => {
@@ -630,9 +710,15 @@ function checkFiles(files) {
   const dv = parsed(files, 'apidata/version.json').data_version;
   assert.match(dv, /^[0-9a-f]{16}$/);
   for (const [path, body] of files) {
-    if (SHARD.test(path)) {
+    if (SHARD.test(path) || SUMMARY.test(path)) {
       const head = JSON.parse(body.split('\n', 1)[0]);
-      assert.equal(head.format, 'daggerheart-loot/api-search-shard', path);
+      assert.equal(
+        head.format,
+        SHARD.test(path)
+          ? 'daggerheart-loot/api-search-shard'
+          : 'daggerheart-loot/api-search-summary',
+        path
+      );
       assert.equal(head.data_version, dv, path);
       assert.ok(body.endsWith('\n'), path);
       const limit = budgetOf(path);

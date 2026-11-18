@@ -61,6 +61,9 @@ const SEARCH_SHARD_MAX = 262144;
 const Q_MAX = 200;
 const TERMS_MAX = 8;
 const LIMIT_MAX = 50;
+/* The default search page, so one call reads every row of it; it also bounds the chunk reads
+   of one call (docs/specs/CONTRACTS.md section 6, "Batch read"). */
+const RECORD_IDS_MAX = 20;
 const FILTER_MAX = 512;
 const KINDS = ['item', 'consumable', 'weapon', 'secondary', 'armor'];
 const TIERS = ['1', '2', '3', '4', 'A', 'C'];
@@ -128,6 +131,7 @@ function route(pathname) {
       rolls: ['listRolls', READ],
       tables: ['listTables', READ],
       records: ['searchRecords', READ],
+      'records-by-id': ['getRecords', READ],
       'file-checks': ['checkFile', ROLL]
     };
     const hit = Object.hasOwn(ops, rest[0]) ? ops[rest[0]] : null;
@@ -255,12 +259,33 @@ export function parseSearch(query) {
       throw bad(`The field limit must be an integer from 1 to ${String(LIMIT_MAX)}.`);
     }
   }
+  const summary = oneOf('fields', ['summary']) === 'summary';
   if (!terms.length && [kind, source, table, tier, rarity].every((v) => v === undefined)) {
     throw bad(
       'The field q is required unless a facet is given. Send q or one of kind, source, table, tier and rarity.'
     );
   }
-  return { terms, kind, source, table, tier, rarity, limit };
+  return { terms, kind, source, table, tier, rarity, limit, summary };
+}
+
+/**
+ * Returns the checked ids of a batch read from its query strings: 1 to RECORD_IDS_MAX record
+ * ids, comma-separated, each once in the order given; else throws the 400 that names `ids`.
+ */
+function parseIds(query) {
+  const v = query.ids;
+  const want = `Send 1 to ${String(RECORD_IDS_MAX)} record ids, comma-separated.`;
+  if (typeof v !== 'string' || v === '') throw bad(`The field ids is required. ${want}`);
+  /* 64 characters an id and a comma: a longer value cannot pass, so it is never split. */
+  if (v.length > RECORD_IDS_MAX * 65) throw bad(`The field ids is too long. ${want}`);
+  const ids = v.split(',');
+  if (ids.length > RECORD_IDS_MAX) {
+    throw bad(`The field ids holds more than ${String(RECORD_IDS_MAX)} ids. Send fewer.`);
+  }
+  if (!ids.every((id) => RECORD_ID.test(id))) {
+    throw bad(`The field ids holds a value that is not a record id. ${want}`);
+  }
+  return [...new Set(ids)];
 }
 
 /** Returns the checked `filter` segment of a table read, or undefined for none. */
@@ -402,6 +427,7 @@ function indexOf(site) {
       body_bytes: BODY_MAX,
       file_check_bytes: FILE_CHECK_MAX,
       search_rows: LIMIT_MAX,
+      record_ids: RECORD_IDS_MAX,
       account_body_bytes: ME_BODY_MAX,
       account_import_bytes: IMPORT_BODY_MAX,
       account_picture_bytes: PICTURE_BODY_MAX,
@@ -475,6 +501,8 @@ export async function runOperation(service, op, { param, query = {}, body = {}, 
       return service.getTable(param, query.part, parseFilter(query));
     case 'searchRecords':
       return service.searchRecords(parseSearch(query));
+    case 'getRecords':
+      return service.getRecords(parseIds(query));
     case 'checkFile':
       if (typeof file !== 'string') {
         throw bad("The field file is required. Send the file's text as a string.");

@@ -381,6 +381,7 @@ describe('tools/call', () => {
         'get_table',
         'search_catalog',
         'get_record',
+        'get_records',
         'get_homebrew_item',
         'get_shared_list',
         'check_file'
@@ -405,9 +406,16 @@ describe('tools/call', () => {
       'table',
       'tier',
       'rarity',
-      'limit'
+      'limit',
+      'fields'
     ]);
     assert.equal(search.inputSchema.properties.limit.type, 'integer');
+    assert.deepEqual(search.inputSchema.properties.fields.enum, ['summary']);
+    const batch = tools.find((t) => t.name === 'get_records');
+    assert.deepEqual(batch.inputSchema.required, ['ids']);
+    assert.deepEqual(Object.keys(batch.inputSchema.properties), ['ids']);
+    assert.equal(batch.inputSchema.properties.ids.type, 'string');
+    assert.match(batch.description, /20/);
     const file = tools.find((t) => t.name === 'check_file');
     assert.deepEqual(file.inputSchema.required, ['file']);
     assert.deepEqual(Object.keys(file.inputSchema.properties), ['file']);
@@ -476,11 +484,17 @@ describe('tools/call', () => {
       ['search_catalog', { q: 'bedroll' }, '/api/v1/records?q=bedroll'],
       [
         'search_catalog',
+        { q: 'ring', limit: 50, fields: 'summary' },
+        '/api/v1/records?q=ring&limit=50&fields=summary'
+      ],
+      [
+        'search_catalog',
         { kind: 'weapon', tier: '1', limit: 3 },
         '/api/v1/records?kind=weapon&tier=1&limit=3'
       ],
       ['check_file', { file: LISTS_FILE }, '/api/v1/file-checks', LISTS_FILE],
       ['get_record', { id: 'ci1' }, '/api/v1/records/ci1'],
+      ['get_records', { ids: 'ci1,q23,zzzz' }, '/api/v1/records-by-id?ids=ci1,q23,zzzz'],
       ['get_homebrew_item', { uuid: HID }, `/api/v1/homebrew-items/${HID}`],
       ['get_shared_list', { token: TOKEN }, `/api/v1/shared-lists/${TOKEN}`]
     ];
@@ -538,6 +552,21 @@ describe('tools/call', () => {
     );
     assert.equal(search.body.result.isError, undefined);
     assert.equal(search.body.result.structuredContent.rows[0].id, 'ci1');
+    assert.ok(search.body.result.structuredContent.rows.every((r) => !('summary' in r)));
+    const summed = await pin(
+      'tools-call-search-summary',
+      modernRpc(13, 'tools/call', {
+        name: 'search_catalog',
+        arguments: { q: 'bedroll', limit: 5, fields: 'summary' }
+      }),
+      modernHeaders('tools/call', 'search_catalog')
+    );
+    const rows = summed.body.result.structuredContent.rows;
+    assert.deepEqual(
+      rows.map((r) => r.id),
+      search.body.result.structuredContent.rows.map((r) => r.id)
+    );
+    assert.ok(rows.every((r) => r.summary.en.length > 0 && typeof r.summary.ru === 'string'));
     const checked = await pin(
       'tools-call-check-file',
       modernRpc(11, 'tools/call', { name: 'check_file', arguments: { file: LISTS_FILE } }),
@@ -545,6 +574,33 @@ describe('tools/call', () => {
     );
     assert.equal(checked.body.result.structuredContent.ok, true);
     assert.equal(checked.body.result.structuredContent.counts.skipped, 1);
+  });
+
+  it('reads many records in one get_records call, names the missing ids, and refuses past 20', async () => {
+    const batch = await pin(
+      'tools-call-get-records',
+      modernRpc(12, 'tools/call', {
+        name: 'get_records',
+        arguments: { ids: 'q23,zzzz,ci1' }
+      }),
+      modernHeaders('tools/call', 'get_records')
+    );
+    const value = batch.body.result.structuredContent;
+    assert.equal(batch.body.result.isError, undefined);
+    assert.deepEqual(
+      value.records.map((r) => r.id),
+      ['q23', 'ci1']
+    );
+    assert.deepEqual(value.missing, ['zzzz']);
+    const many = Array.from({ length: 21 }, (_, i) => `ci${String(i + 1)}`).join(',');
+    for (const args of [{}, { ids: ['ci1'] }, { ids: many }, { ids: 'ci1,ZZZ!' }]) {
+      const [msg, headers] = calls('get_records', args)[0];
+      const { result } = await (await mcp(msg, headers)).json();
+      assert.equal(result.isError, true, JSON.stringify(args));
+      assert.equal(result.structuredContent.error.code, 'bad_request');
+      assert.match(result.structuredContent.error.message, /\bids\b/);
+      assert.ok(!result.structuredContent.error.message.includes('ZZZ'));
+    }
   });
 
   it('takes limit as a JSON integer only, and a facet as a string', async () => {
@@ -561,6 +617,14 @@ describe('tools/call', () => {
     const [msg, headers] = calls('search_catalog', { kind: 4 })[0];
     const { result } = await (await mcp(msg, headers)).json();
     assert.match(result.structuredContent.error.message, /kind/);
+    for (const fields of [true, ['summary'], 'ZZZtext', '']) {
+      const [m, h] = calls('search_catalog', { q: 'ring', fields })[0];
+      const bad = (await (await mcp(m, h)).json()).result;
+      assert.equal(bad.isError, true, JSON.stringify(fields));
+      assert.equal(bad.structuredContent.error.code, 'bad_request');
+      assert.match(bad.structuredContent.error.message, /\bfields\b/);
+      assert.ok(!bad.structuredContent.error.message.includes('ZZZ'));
+    }
     const none = calls('search_catalog', {})[0];
     const refused = (await (await mcp(none[0], none[1])).json()).result;
     assert.equal(refused.isError, true);

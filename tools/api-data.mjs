@@ -5,7 +5,8 @@
     apidata/            internal, changed without notice: rolls.json, tables.json,
                         cards.json, roll/<section>.json, table/<table>.json,
                         table/<eq table>/<tier>.json, records/index.json, version.json,
-                        search/index.json and search/<n>.txt, file-check.json
+                        search/index.json, search/<n>.txt, summary/<n>.txt,
+                        file-check.json
     api/v1/catalog/     public, frozen: index.json and the record chunks <n>.json
 
   Both folders are generated, never committed (.gitignore), and published by
@@ -82,8 +83,13 @@ export const BUDGET = {
   cards: 196608,
   catalogIndex: 262144,
   /* A search shard: the worker scans it as one string, never parses it. */
-  search: 262144
+  search: 262144,
+  /* A summary file: the worker reads only the files that hold an answer's rows. */
+  summary: 65536
 };
+
+/** The most characters of a search row's `summary` in each language, the `...` included. */
+export const SUMMARY_MAX = 120;
 
 /** Where a chunk file stops: a chunk holds records while the file stays within this. */
 const CHUNK_MAX = BUDGET.small;
@@ -91,6 +97,7 @@ const CHUNK_MAX = BUDGET.small;
 const DV_WIDTH = 'x'.repeat(16);
 const CHUNK_PATH = /^api\/v1\/catalog\/\d+\.json$/;
 const SEARCH_PATH = /^apidata\/search\/\d+\.txt$/;
+const SUMMARY_PATH = /^apidata\/summary\/\d+\.txt$/;
 /** The first code character of a search line; code `i` is `String.fromCharCode(CODE_BASE + i)`. */
 const CODE_BASE = 0x30;
 /** The most values a code list may hold: the characters `0` to `o`. */
@@ -492,6 +499,46 @@ function catalogFiles(index, audit, versions) {
 const searchHead = (dv) =>
   `{"format":"daggerheart-loot/api-search-shard","version":1,"data_version":${JSON.stringify(dv)}}`;
 const searchText = (lines, dv) => [searchHead(dv), ...lines].join('\n') + '\n';
+const summaryHead = (dv) =>
+  `{"format":"daggerheart-loot/api-search-summary","version":1,"data_version":${JSON.stringify(dv)}}`;
+const summaryText = (lines, dv) => [summaryHead(dv), ...lines].join('\n') + '\n';
+
+/**
+ * Returns the one-line summary of a record text in one language: the plain text with every
+ * run of white space as one space, else the stat line; past `SUMMARY_MAX` characters it is
+ * cut at the last space that leaves room for `...` (docs/specs/CONTRACTS.md section 6).
+ */
+export function summaryOf(plain, statline = '') {
+  const flat = (s) => s.replace(/\s+/g, ' ').trim();
+  const text = flat(plain) || flat(statline);
+  if (text.length <= SUMMARY_MAX) return text;
+  /* One character past the cut, so a space right after the 117th character keeps its word. */
+  const space = text.slice(0, SUMMARY_MAX - 2).lastIndexOf(' ');
+  const cut = text.slice(0, space >= SUMMARY_MAX / 2 ? space : SUMMARY_MAX - 3);
+  return cut.replace(/[\s,.;:\u2014-]+$/u, '') + '...';
+}
+
+/** Returns the lines of the summary files: one line `<id> TAB <ru> TAB <en>` per record, in
+ *  the order of the search lines, packed while a file stays within `BUDGET.summary`. */
+function summaryFiles(catalog) {
+  const lines = catalog.records.map((r, i) => {
+    const line = (lang) => summaryOf(r.plain[lang], r.stats?.statline[lang] ?? '');
+    return [catalog.ids[i], line('ru'), line('en')].join('\t');
+  });
+  const files = [];
+  const overhead = Buffer.byteLength(summaryHead(DV_WIDTH)) + 1;
+  let size = 0;
+  for (const line of lines) {
+    const bytes = Buffer.byteLength(line) + 1;
+    if (files.length === 0 || size + bytes > BUDGET.summary) {
+      files.push([]);
+      size = overhead;
+    }
+    files[files.length - 1].push(line);
+    size += bytes;
+  }
+  return files;
+}
 
 /**
  * Returns the search projection of the catalog: `index` (the code lists) and `shards` (the
@@ -543,14 +590,17 @@ function searchFiles(catalog) {
     shards[shards.length - 1].push(line);
     size += bytes;
   }
+  const summaries = summaryFiles(catalog);
   return {
     index: {
       format: 'daggerheart-loot/api-search-index',
       version: 1,
       shards: shards.length,
+      summaries: summaries.map((list) => list.length),
       codes
     },
-    shards
+    shards,
+    summaries
   };
 }
 
@@ -601,6 +651,7 @@ export function renderApiData(loot, audit, versions = {}) {
   const search = searchFiles(catalog);
   add('apidata/search/index.json', search.index);
   search.shards.forEach((lines, n) => add(`apidata/search/${String(n)}.txt`, { lines }));
+  search.summaries.forEach((lines, n) => add(`apidata/summary/${String(n)}.txt`, { lines }));
   add('apidata/file-check.json', fileCheckFile(loot, index));
   add('apidata/records/index.json', {
     format: 'daggerheart-loot/api-records',
@@ -632,7 +683,9 @@ export function renderApiData(loot, audit, versions = {}) {
             ? chunkText(v.lines, dv)
             : SEARCH_PATH.test(path)
               ? searchText(v.lines, dv)
-              : text({ ...stamp(v, dv) })
+              : SUMMARY_PATH.test(path)
+                ? summaryText(v.lines, dv)
+                : text({ ...stamp(v, dv) })
         ])
         .sort(([a], [b]) => (a < b ? -1 : 1))
     );
@@ -662,6 +715,7 @@ export function budgetOf(path) {
   if (path.startsWith('apidata/roll/')) return BUDGET.large;
   if (path.startsWith('apidata/table/')) return BUDGET.large;
   if (SEARCH_PATH.test(path)) return BUDGET.search;
+  if (SUMMARY_PATH.test(path)) return BUDGET.summary;
   return BUDGET.small;
 }
 

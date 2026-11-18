@@ -109,12 +109,24 @@
   <code>source</code>, <code>table</code>, <code>tier</code> и <code>rarity</code>. Передайте
   <code>q</code> или фильтр; <code>limit</code> - от 1 до 50. Поиск идёт только по названиям.
   Слово, под которое попадает слишком много записей, получает 400 <code>too_broad</code>:
-  добавьте слово подлиннее или фильтр.
+  добавьте слово подлиннее или фильтр. С <code>fields=summary</code> у каждой строки есть ещё
+  <code>summary</code>: одна строка простого текста из описания записи, не длиннее 120 символов
+  на каждом языке. Просите её, только когда нужно увидеть, что делают предметы: она дороже
+  обходится сайту. Если поиск с <code>fields=summary</code> завершается ошибкой, ищите без
+  <code>fields</code> и читайте предметы через <code>GET /api/v1/records-by-id</code>. Полный
+  текст читайте там же.
 </p>
 <pre><code>curl 'https://daggerheart-loot.pages.dev/api/v1/records?q=sword&amp;kind=weapon'</code></pre>
 <h3><code>GET /api/v1/records/{id}</code></h3>
 <p>Читает одну запись каталога.</p>
 <pre><code>curl https://daggerheart-loot.pages.dev/api/v1/records/ci12</code></pre>
+<h3><code>GET /api/v1/records-by-id</code></h3>
+<p>
+  Читает до 20 записей каталога за один вызов: <code>ids</code> - через запятую. Записи идут в
+  порядке <code>ids</code>; <code>missing</code> называет id, которых нет в каталоге, а
+  остальные записи всё равно приходят. Больше 20 id или id не той формы получают 400.
+</p>
+<pre><code>curl 'https://daggerheart-loot.pages.dev/api/v1/records-by-id?ids=ci12,q23'</code></pre>
 <h3><code>GET /api/v1/homebrew-items/{uuid}</code></h3>
 <p>Читает один свой предмет, ссылкой на который поделился автор.</p>
 <pre><code>curl https://daggerheart-loot.pages.dev/api/v1/homebrew-items/00000000-0000-4000-8000-000000000000</code></pre>

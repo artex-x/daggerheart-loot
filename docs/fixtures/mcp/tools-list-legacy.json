@@ -169,7 +169,7 @@
           },
           {
             "name": "search_catalog",
-            "description": "Search the catalog by name and facets.\n\nFinds catalog records by name, in Russian or English, and by facets. Words may come in any order, a word also finds its other forms (a Snowball stem), and a phrase in quotes matches as typed. It reads names only, never a description or a stat line, so a word that only a description holds finds nothing. The answer is ranked as the app's search ranks names, or in catalog order when q is absent. A query that matches too many records to rank (such as a single letter or a short fragment of a word) is 400 too_broad: add a longer word or a facet. Send q, or at least one facet. total counts every match; rows holds the first limit of them. A row has the fields of the record of the same names, and the same link. Own items and homebrew are not searched. Cache it for 5 minutes.",
+            "description": "Search the catalog by name and facets.\n\nFinds catalog records by name, in Russian or English, and by facets. Words may come in any order, a word also finds its other forms (a Snowball stem), and a phrase in quotes matches as typed. It reads names only, never a description or a stat line, so a word that only a description holds finds nothing. The answer is ranked as the app's search ranks names, or in catalog order when q is absent. A query that matches too many records to rank (such as a single letter or a short fragment of a word) is 400 too_broad: add a longer word or a facet. Send q, or at least one facet. total counts every match; rows holds the first limit of them. A row has the fields of the record of the same names and the same link. With fields=summary a row also carries a summary: one plain-text line of the record's text, at most 120 characters in each language. Ask for it only when you must see what the items do to choose which records to read; it costs the site more CPU per request. If a search with fields=summary fails, search without fields and read the items with get_records. The summary is a hint, not the text: read the rows' records (GET /api/v1/records-by-id, up to 20 at once) before you choose records by their effect. Own items and homebrew are not searched. Cache it for 5 minutes.",
             "inputSchema": {
               "type": "object",
               "properties": {
@@ -225,6 +225,13 @@
                   "maximum": 50,
                   "default": 20,
                   "description": "How many rows to answer, 1 to 50. Default 20."
+                },
+                "fields": {
+                  "type": "string",
+                  "enum": [
+                    "summary"
+                  ],
+                  "description": "The extra row fields to answer. summary adds each row's summary; without fields a row has no summary. If a search with fields=summary fails, search without fields and read the items with get_records."
                 }
               },
               "required": []
@@ -249,6 +256,28 @@
               },
               "required": [
                 "id"
+              ]
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            }
+          },
+          {
+            "name": "get_records",
+            "description": "Read up to 20 catalog records at once.\n\nReturns the neutral records daggerheart-loot/record v1 of up to 20 catalog ids in one call, in the order of ids; an id given twice answers once. Read the records of a search's rows with it before you choose them by their text. An id the catalog does not hold is named in missing, and the other records still answer. An id that is not a record id, or more than 20 ids, is 400. To read the whole catalog use the bulk catalog instead: it costs no Functions request. Cache it for 5 minutes.",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "ids": {
+                  "type": "string",
+                  "description": "1 to 20 catalog record ids, comma-separated, such as ci12,q23."
+                }
+              },
+              "required": [
+                "ids"
               ]
             },
             "annotations": {

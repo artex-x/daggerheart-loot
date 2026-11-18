@@ -108,6 +108,8 @@ const CATALOG_IDS = new WeakMap();
 const CATALOG_KEYS = new WeakMap();
 /** The catalog facts built from each cached first search shard (`catalogFacts`). */
 const CATALOG_FACTS = new WeakMap();
+/** Where each id of a cached records index is (`whereOf`). */
+const RECORD_AT = new WeakMap();
 
 /** Empties the isolate's cached files (tests). */
 export function clearCache() {
@@ -342,8 +344,8 @@ export function createService({
    * file and a fresh one can come from two deployments (an isolate outlives a deploy): the
    * first mismatch reads the cached ones again, a second answers 503.
    */
-  async function consistent(load) {
-    for (let force = false; ; force = true) {
+  async function consistent(load, from = false) {
+    for (let force = from; ; force = true) {
       const { files, ok = true } = await load(force);
       if (ok && new Set(files.map((f) => f.data_version)).size === 1) return files;
       if (force) throw unavailable('The data files');
@@ -428,6 +430,54 @@ export function createService({
     return { body: record, etag: head.data_version };
   }
 
+  /** Returns where each id of a cached records index is, as `id -> [chunk, line]`, built once
+   *  per cached file. */
+  function whereOf(idx) {
+    let where = RECORD_AT.get(idx);
+    if (where === undefined) {
+      where = new Map();
+      idx.chunks.forEach((ids, n) => ids.forEach((id, pos) => where.set(id, [n, pos])));
+      RECORD_AT.set(idx, where);
+    }
+    return where;
+  }
+
+  /**
+   * Returns the records of checked, distinct ids in their order, each chunk read once;
+   * `missing` names the ids the catalog does not hold.
+   */
+  async function getRecords(ids) {
+    let records = [];
+    let missing = [];
+    const [idx] = await consistent(async (force) => {
+      const idx = await cached('apidata/records/index.json', force);
+      const where = whereOf(idx);
+      const held = ids.filter((id) => where.has(id));
+      missing = ids.filter((id) => !where.has(id));
+      const wanted = [...new Set(held.map((id) => where.get(id)[0]))];
+      const chunks = await Promise.all(wanted.map((n) => readChunk(n)));
+      const byChunk = new Map(wanted.map((n, i) => [n, chunks[i]]));
+      records = held.map((id) => {
+        const [n, pos] = where.get(id);
+        return recordAt(byChunk.get(n), pos, id);
+      });
+      return {
+        files: [idx, ...chunks.map((c) => ({ data_version: c.dv }))],
+        ok: records.every(Boolean)
+      };
+    });
+    return {
+      body: {
+        format: 'daggerheart-loot/api-record-batch',
+        version: 1,
+        data_version: idx.data_version,
+        records,
+        missing
+      },
+      etag: idx.data_version
+    };
+  }
+
   /* ---------- search ---------- */
 
   /** Returns the prepared shard `n`, kept for CACHE_MS; `force` reads it again. */
@@ -447,14 +497,9 @@ export function createService({
     return file;
   }
 
-  /**
-   * Searches the catalog by name and facets. `input` is the checked REST input: `terms` (the
-   * parsed `q`, possibly none) and the facets `kind`, `source`, `table`, `tier` and `rarity`,
-   * with `limit` rows kept.
-   */
-  async function searchRecords(input) {
-    const { terms, limit } = input;
-    const [head, ...shards] = await consistent(async (force) => {
+  /** Returns the search index and every shard once they agree on one data_version. */
+  function searchData(from = false) {
+    return consistent(async (force) => {
       const idx = await cached('apidata/search/index.json', force);
       if (!Number.isInteger(idx.shards) || idx.shards < 1 || !isObject(idx.codes)) {
         throw unavailable('A data file');
@@ -463,7 +508,87 @@ export function createService({
         Array.from({ length: idx.shards }, (_, n) => cachedShard(n, force))
       );
       return { files: [idx, ...list] };
+    }, from);
+  }
+
+  /** Returns the summary file `k` as `{ data_version, lines }`, kept for CACHE_MS; a line is
+   *  `<id> TAB <ru> TAB <en>`. */
+  async function cachedSummary(k, force) {
+    const path = `apidata/summary/${String(k)}.txt`;
+    const hit = cache.get(path);
+    if (!force && hit && now() - hit.at < CACHE_MS) return hit.file;
+    let body;
+    try {
+      body = await text(path);
+    } catch {
+      throw unavailable('A data file');
+    }
+    const lines = typeof body === 'string' ? body.split('\n') : [];
+    const dv = /"data_version":"([^"]*)"/.exec(lines[0] ?? '')?.[1];
+    if (dv === undefined) throw unavailable('A data file');
+    const file = { data_version: dv, lines: lines.slice(1) };
+    cache.set(path, { file, at: now() });
+    return file;
+  }
+
+  /**
+   * Returns the summary pair of each picked line (`{ shard, li }`), reading only the summary
+   * files that hold one, or null when a file names another data_version or another id.
+   */
+  async function summariesOf(head, shards, picked, ids, force) {
+    if (!Array.isArray(head.summaries) || !head.summaries.every((n) => Number.isInteger(n))) {
+      return null;
+    }
+    if (picked.length === 0) return [];
+    const base = new Map();
+    let total = 0;
+    for (const shard of shards) {
+      base.set(shard, total);
+      total += shard.starts.length;
+    }
+    const firsts = [];
+    let first = 0;
+    for (const n of head.summaries) {
+      firsts.push(first);
+      first += n;
+    }
+    const spots = picked.map(({ shard, li }) => {
+      const g = base.get(shard) + li;
+      let k = firsts.length - 1;
+      while (k > 0 && firsts[k] > g) k--;
+      return { k, line: g - firsts[k] };
     });
+    const wanted = [...new Set(spots.map((s) => s.k))];
+    const files = await Promise.all(wanted.map((k) => cachedSummary(k, force)));
+    const byFile = new Map(wanted.map((k, i) => [k, files[i]]));
+    const out = [];
+    for (let i = 0; i < spots.length; i++) {
+      const file = byFile.get(spots[i].k);
+      if (file.data_version !== head.data_version) return null;
+      const [id, ru, en] = (file.lines[spots[i].line] ?? '').split('\t');
+      if (id !== ids[i] || en === undefined) return null;
+      out.push({ ru, en });
+    }
+    return out;
+  }
+
+  /**
+   * Searches the catalog by name and facets. `input` is the checked REST input: `terms` (the
+   * parsed `q`, possibly none) and the facets `kind`, `source`, `table`, `tier` and `rarity`,
+   * with `limit` rows kept, and `summary` (each row's summary, read only then). A summary
+   * file of another data_version reads every file again once, then answers 503.
+   */
+  async function searchRecords(input) {
+    for (let force = false; ; force = true) {
+      const answer = await searchOnce(input, force);
+      if (answer !== null) return answer;
+      if (force) throw unavailable('The data files');
+    }
+  }
+
+  async function searchOnce(input, from) {
+    const { terms, limit } = input;
+    const [head, ...shards] = await searchData(from);
     const { codes } = head;
     if (input.source !== undefined && !codes.source.some((s) => s.id === input.source)) {
       throw new ApiError(
@@ -526,14 +651,30 @@ export function createService({
         }
       }
     }
-    const rows = picked.map(({ shard, li }) => {
+    const fields = picked.map(({ shard, li }) =>
+      shard.text.slice(shard.starts[li], lineEnd(shard, li)).split('\t')
+    );
+    /* The summary files are read only on request: they cost a cold search about as much CPU
+       as the shards (.claude/README.md, "Quotas, recovery and failure"). */
+    const summaries = input.summary
+      ? await summariesOf(
+          head,
+          shards,
+          picked,
+          fields.map((f) => f[2]),
+          from
+        )
+      : undefined;
+    if (summaries === null) return null;
+    const rows = picked.map(({ shard, li }, i) => {
       const at = shard.starts[li];
-      const [, , id, v, ru, en] = shard.text.slice(at, lineEnd(shard, li)).split('\t');
+      const [, , id, v, ru, en] = fields[i];
       const value = (field, k) => codes[field][shard.text.charCodeAt(at + k) - CODE_BASE];
       const version = v || undefined;
       return {
         id,
         name: { ru, en },
+        ...(summaries ? { summary: summaries[i] } : {}),
         kind: value('kind', 1),
         source: value('source', 0),
         table: value('table', 2),
@@ -563,16 +704,7 @@ export function createService({
    * check an entry's record id, to name an entry in a lists file and to guess a price.
    */
   async function catalogFacts() {
-    const [head, ...shards] = await consistent(async (force) => {
-      const idx = await cached('apidata/search/index.json', force);
-      if (!Number.isInteger(idx.shards) || idx.shards < 1 || !isObject(idx.codes)) {
-        throw unavailable('A data file');
-      }
-      const list = await Promise.all(
-        Array.from({ length: idx.shards }, (_, n) => cachedShard(n, force))
-      );
-      return { files: [idx, ...list] };
-    });
+    const [head, ...shards] = await searchData();
     let facts = CATALOG_FACTS.get(shards[0]);
     if (facts === undefined) {
       facts = new Map();
@@ -1018,6 +1150,7 @@ export function createService({
     getTable,
     searchRecords,
     getRecord,
+    getRecords,
     checkFile,
     catalogFacts,
     catalogContext,
