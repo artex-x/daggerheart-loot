@@ -508,6 +508,17 @@ const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
             notBoth +
             '" before its first heading'
         );
+        /* Each assistant section is a native details row with a named summary. */
+        const rows = [...raw.matchAll(/<details>\s*<summary>([^<]+)<\/summary>/g)];
+        ok(
+          rows.length === 6 &&
+            rows.every((m) => m[1].trim() !== '') &&
+            (raw.match(/<details>/g) || []).length === 6 &&
+            (raw.match(/<\/details>/g) || []).length === 6,
+          'pages/src/' +
+            file +
+            ' does not hold six assistant sections as details with a summary'
+        );
         ok(
           own.length > 0 && own.every((u) => endpoints.includes(u)),
           'pages/src/' +

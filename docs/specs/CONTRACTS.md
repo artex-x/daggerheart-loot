@@ -698,8 +698,8 @@ names `ids` and never echoes it. The cap bounds one call's chunk reads to 10; a 
 rise, never fall. The one exception: the cap shipped at 20 and fell to 10 before any
 known client used it, because a production reading of 20 ids in 20 chunks was 41.5 ms
 cold (decision "A batch read has its own path, and search rows carry a built summary");
-it is expected to return to 20, an additive change, once a production reading after the
-deploy allows. Each chunk is read once per call, and only the bytes of its answered
+the owner then decided that the cap stays 10 (decision "The batch cap stays 10, and text
+search is not built"). Each chunk is read once per call, and only the bytes of its answered
 record lines are decoded. The answer carries the projection's `ETag` and
 `Cache-Control: public, max-age=300`.
 

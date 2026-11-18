@@ -2471,6 +2471,10 @@ role setting, the named fallback is a guard call at the top of each function
 `authenticated` may execute outside the list. Also pending:
 
 - The Realtime join probe above.
+- The hosted `user_prefs` probe above (the client token 403 and the app token 200).
+- Taken 2026-11-18, not pending: the production cold readings of the batch read, the
+  table part, `match=word`, the file checks and the summary ("Quotas, recovery and
+  failure"). Still not measured there: the MCP `check_file` CPU.
 - CI's configured bundle total (the `e2e` job's budget line) on the first push
   with the real `VITE_SUPABASE_*` values: the 338 kB limit rests on a build with
   placeholder values, so a total of 337.0 kB or less sets the limit to 337 in
@@ -4283,24 +4287,64 @@ assembly (`collect`, `guard`, `old-host`); the job's three steps call it.
   the cap after); 10 ids in 10 chunks 12.5-13.7 / 12.6-13.5 cold and 8.0-8.3 / 6.9-8.7
   warm; 10 ids in 1 chunk 4.4-4.8 / 4.3-4.4. Through the worker the per-chunk cost is
   Node's `Response` work (about 0.9 ms a chunk), which neither change reaches on Node;
-  workerd pays it in native code. The cap returns to 20 (an additive change) when the
-  production reading of item 1 below allows it.
+  workerd pays it in native code. The cap stays 10 (decision "The batch cap stays 10,
+  and text search is not built"): the reading at 10 ids is in the bullets below.
 - The production readings the owner takes after the deploy of the AI usability fields
   and the batch read, with the method of the per-line bullet below (the case's one
   warm-up request is cold, then a burst of 10, 1 s apart; pass: cold at most 10 ms, burst
-  p50 at most 8 ms):
+  p50 at most 8 ms). Taken 2026-11-18 at `06847187` (bullets below); each item names
+  what is still not measured:
   1. `GET /api/v1/records-by-id` with 10 ids in 10 chunks, cold and burst p50; compare
-     with 41.5 ms cold and 24.7 ms p50 for 20 ids at `f8bb4808`.
+     with 41.5 ms cold and 24.7 ms p50 for 20 ids at `f8bb4808`. Taken: 7.9 ms cold,
+     15.6 ms burst p50 (upper bound).
   2. `GET /api/v1/tables/eq_weapon?part=3`, the largest part (the statline), cold and
-     burst p50.
+     burst p50. Taken: 12.7 ms cold (not fully cold), burst p50 3.0 ms; not measured: a
+     burst with row-returning requests only (3 of 10 carried rows) and a fully cold read.
   3. `GET /api/v1/records?q=<two Russian words>&match=word` and `q=pet&match=word`, cold
-     and burst p50.
+     and burst p50. Taken: two words 11.1 ms cold, burst p50 2.5 ms; `q=pet` cold only,
+     at most 9.5 ms. Not measured: the `q=pet` burst.
   4. `POST /api/v1/file-checks` with a 32768 B homebrew file and with a 32768 B lists
      file, and MCP `check_file`, cold and burst p50; compare with 13.8, 10.2 and 19.5 ms
-     cold on 2026-11-13.
-  5. `GET /api/v1/file-formats/homebrew`, cold.
+     cold on 2026-11-13. Taken (files of 31 KB, below the cap): lists 18.1 ms cold,
+     homebrew 16.0 ms (error path) and 13.1 ms (valid, not fully cold). Not measured: a
+     burst, a file at exactly 32768 B, and MCP `check_file` CPU (not visible).
+  5. `GET /api/v1/file-formats/homebrew`, cold. Taken: 2.9 ms (the URL was fetched once
+     25 minutes earlier, so not fully cold).
   6. The summary readings: a cold `q=` of two Russian words, a cold `kind=item&limit=50`,
-     and the same two with `fields=summary`.
+     and the same two with `fields=summary`. Taken: two words 5.4 ms cold with the
+     summary, `q=кольцо&limit=50` 19.7 ms and 22.5 ms with the summary. Not measured: the
+     plain two-word search of the same minute, and a warm burst of `limit=50` with rows.
+- Production readings of the batch read and the earlier summary cases (`f8bb4808`,
+  2026-11-18; Pages Metrics, Production, 1-minute ranges, values read as microseconds,
+  shown here in ms; cold is one request after 65-70 s idle, then a burst of 10, 1 s
+  apart, in the next minute; every request a distinct URL, no `CF-Cache-Status` header,
+  so no cache hit is visible): 20 ids in 20 chunks cold 41.5, burst p50 24.7, p75 32.9,
+  p99 40.6; `q=<two Russian words>` cold 1.1, burst 3.3 / 6.0 / 16.4. The
+  `fields=summary` cases and `limit=50` shared their minutes with foreign requests (5 to
+  9 extra), so those values are upper bounds only (summary two-word cold at most 5.0,
+  burst 4.4 / 9.1 / 24.2 over all requests of the minute; `limit=50` burst p99 at most
+  9.0; with summary cold at most 8.2, burst 4.5 / 8.6 / 10.4); the cold `limit=50`
+  reading was not usable (a foreign p99 of 28.3). The 20-id values are the reason for
+  the cap of 10.
+- Production readings after the batch and file-format deploy (`06847187`, 2026-11-18,
+  the same method; the dashboard needs 2 to 10 minutes to complete a minute, so every
+  value is a re-read; a burst minute that counts fewer requests than sent is not
+  explained). Traffic of the last 12 hours: 406 requests, 0 errors, 0 Exceeded CPU, 0
+  Exceeded Memory, no 1102 or 1027; one foreign spike of 143 requests in 10 minutes
+  (p50 4.4, p99 31.8 ms) caused no error. Cold (burst p50 / p99): 10 ids in 10 chunks
+  7.9 (15.6 / 21.2, upper bound, 2 foreign requests); `eq_weapon?part=3` 12.7 (3.0 /
+  10.0, 41 s idle, only 3 of 10 burst answers carried rows); two-word `match=word` 11.1
+  (2.5 / 8.6, upper bound, 9 foreign); `q=pet&match=word` at most 9.5 (cold only, 46 s
+  idle); lists file check of 31451 B 18.1; homebrew check 16.0 (invalid file) and 13.1
+  (valid, not fully cold); `GET /file-formats/homebrew` 2.9; two-word `fields=summary`
+  5.4 (2.9 / 13.2); `limit=50` 19.7 and with `fields=summary` 22.5 (the summary adds
+  about 2.8 ms, 14 percent), whose bursts used filters that returned no rows, so there
+  is no warm reading of them. The MCP `check_file` CPU is not visible in these metrics
+  (`/mcp` requests do not count in the Pages project view). Cold readings above 10 ms
+  stay inside the envelope the owner accepted (landing 3, 2026-11-13); the batch burst
+  median of 15.6 ms keeps the cap at 10 (decision "The batch cap stays 10, and text
+  search is not built"). The statline file per part waits for a repeat of the cold
+  `eq_weapon?part=3` reading.
 - `env.ASSETS.fetch` and the subrequest limit: the Cloudflare limits page (read
   2026-11-14) counts a Fetch API request, KV, R2 and D1 calls, and lists a separate
   1000 for internal services; it does not say whether an `ASSETS` read counts. The
@@ -4333,10 +4377,12 @@ assembly (`collect`, `guard`, `old-host`); the job's three steps call it.
   2.7 (9.5), lists check 5.9 (20.6), MCP `check_file` 2.4 (3.9), MCP `search_catalog`
   2.4 (12.5); every status as expected, 0 errors, 0 exceeded-CPU. Every burst p50 is
   under 8 ms; four cold readings are past 10 ms (the 3x prediction is about 14-15 ms).
-  Open owner decision: accept these cold readings as for the roll (cold is the first
-  request of an isolate; no 1102), or take the search fallbacks and the Supabase Edge
-  Function option for the file checks. The file-check and import cap stays 32768 B
-  either way, and the account API's cold readings above join the same decision.
+  The owner accepted these cold readings as for the roll (landing 3, 2026-11-13; cold is
+  the first request of an isolate): a cold reading above 10 ms stays inside that
+  envelope, and the trigger stays "any Exceeded CPU or 1102 means a paid Worker plan"
+  (the search fallbacks and the Supabase Edge Function option for the file checks stay
+  unused until it fires). The file-check and import cap stays 32768 B, and the account
+  API's cold readings above join the same envelope.
 - `names.json` at three times today's catalog is about 330 KB, past the worker's
   `NAMES_MAX` of 196608 B (`preview/worker.mjs`, `preview/api/rest.mjs`), so every
   shared-list read of the API would answer 503, and the shared-list card reads the same

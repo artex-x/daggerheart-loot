@@ -175,6 +175,18 @@ function page({ id, lang, title, desc, body }) {
   .scroll{overflow-x:auto;margin:0 0 12px}
   .pick{margin:0 0 12px;padding:10px 12px;border:1px solid #d8ab5e;border-radius:6px}
   .pick>:last-child{margin-bottom:0}
+  /* A connection section expands by the native details element; the row is a target of 24 px,
+     and 40 px up to 600 px. */
+  details{margin:0 0 8px;border:1px solid #d8ab5e;border-radius:6px;background:#17142a;padding:0 12px}
+  details pre{background:#0e0c15}
+  details[open]{padding-bottom:4px}
+  summary{--tg:24px;display:flex;align-items:center;gap:8px;min-height:var(--tg);cursor:pointer;
+       list-style:none;font-weight:600;color:#ece8f6;border-radius:4px}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"+";flex:none;width:1em;text-align:center;color:#d8ab5e}
+  details[open]>summary::before{content:"-"}
+  summary:focus-visible{outline:2px solid #d8ab5e;outline-offset:2px}
+  @media (max-width:600px){summary{--tg:40px}}
   th,td{text-align:left;vertical-align:top;padding:4px 10px 4px 0;color:#cfc8e0}
   .lang{font-size:13px;margin:0 0 16px}
   /* A link of its own line is a target: 24 px, and 40 px up to 600 px, by a padded box
