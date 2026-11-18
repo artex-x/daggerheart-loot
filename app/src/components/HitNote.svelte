@@ -5,8 +5,10 @@
      and the shared page, which draws two above the rows and two more
      inside every entry's row. Renders nothing when `text` is empty. The note is formatted
      text (docs/specs/FEATURES.md, "Lists"), drawn by Markup. */
+  import FoldButton from './FoldButton.svelte';
   import Icon from './Icon.svelte';
   import Markup from './Markup.svelte';
+  import type { Dict } from '../lib/dict.js';
   import type { IconName } from '../lib/icons.js';
   import { parseMarkup } from '../lib/markup.js';
 
@@ -14,12 +16,38 @@
     icon: IconName;
     label: string;
     text: string | undefined;
+    t: Dict;
     /** The «Только для мастера» note: on the darker ground, the style of the owner's GM
      *  note field. */
     gm?: boolean;
+    /** Up to 760 px (the caller's band): a note longer than four lines shows four and a
+     *  button that opens it whole (docs/specs/FEATURES.md, "Lists"). */
+    fold?: boolean;
   }
 
-  const { icon, label, text, gm = false }: Props = $props();
+  const { icon, label, text, t, gm = false, fold = false }: Props = $props();
+
+  let open = $state(false);
+  let over = $state(false);
+  let body = $state<HTMLElement>();
+
+  /* Measures the clamped body while it is folded; an open note keeps its button until
+     pressed. Without a ResizeObserver (jsdom) it measures once on mount. */
+  $effect(() => {
+    const el = body;
+    void text;
+    if (!el || !fold || open) return;
+    const measure = (): void => {
+      over = el.scrollHeight > el.clientHeight + 1;
+    };
+    measure();
+    if (typeof ResizeObserver !== 'function') return;
+    const watch = new ResizeObserver(measure);
+    watch.observe(el);
+    return () => {
+      watch.disconnect();
+    };
+  });
 </script>
 
 {#if text}
@@ -27,7 +55,19 @@
     <Icon name={icon} />
     <div class="htext mdtext">
       <b>{label}</b>
-      <Markup blocks={parseMarkup(text)} />
+      <div class="nbody" class:clamp={fold && !open} bind:this={body}>
+        <Markup blocks={parseMarkup(text)} />
+      </div>
+      {#if fold && (open || over)}
+        <FoldButton
+          {open}
+          more={t.noteMore}
+          {t}
+          ontoggle={() => {
+            open = !open;
+          }}
+        />
+      {/if}
     </div>
   </div>
 {/if}
@@ -75,6 +115,14 @@
     min-width: 0;
     max-width: var(--measure-text);
     overflow-wrap: break-word;
+  }
+
+  /* Four lines of the note's 1.5 line height. A line clamp does not cut a table, and
+     WebKit clamps nested blocks badly (docs/decisions/, 2026-11-18, "A compact row shows
+     each fact once and a long note folds up to 760 px"). */
+  .nbody.clamp {
+    max-height: 6em;
+    overflow: hidden;
   }
 
   /* A scoped `.hitnote + .hitnote` cannot be matched inside one instance's own

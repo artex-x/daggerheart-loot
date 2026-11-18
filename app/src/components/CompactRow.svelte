@@ -1,7 +1,7 @@
 <script lang="ts">
   /* A list's compact row up to 760 px (docs/specs/FEATURES.md, "Lists"; DESIGN.md, "Compact
      row"): the picture with the true position on a plate, the name on up to two lines, the
-     meta line and one clamped line, all one button that unfolds the full row. The quantity
+     meta line and, while folded, one clamped line, all one button that unfolds the full row. The quantity
      is a target of its own beside the button, never inside it: the caller's `field`, or the
      text `qtyText`. `ListPage` and `SharedListPage` draw it. */
   import type { Snippet } from 'svelte';
@@ -96,7 +96,7 @@
       ></span
     >
     <span class="cchev"><Icon name="chevron" /></span>
-    {#if line}<span class="cfx">{line}</span>{/if}
+    {#if line && !open}<span class="cfx">{line}</span>{/if}
   </button>
   {#if field}{@render field()}{:else if qtyText}<span class="cqv">{qtyText}</span>{/if}
   {#if open}<div class="cfull" id="crow-{id}">{@render children?.()}</div>{/if}

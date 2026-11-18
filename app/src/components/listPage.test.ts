@@ -2229,6 +2229,11 @@ describe('the compact row up to 760 px', () => {
       'gm'
     );
     expect(within(open).getByText('Проклят').closest('.hitnote')).toHaveClass('gm');
+    // Each fact once: the head drops its line, and the open part drops the head's kind badge.
+    const kind = potion.querySelector('.cmeta .badge')?.textContent;
+    expect(kind).toBeTruthy();
+    expect(potion.querySelector('.cfx')).toBeNull();
+    expect([...open.querySelectorAll('.badge')].map((b) => b.textContent)).not.toContain(kind);
     await userEvent.click(within(open).getByRole('button', { name: 'Заметка, заполнена' }));
     expect(within(open).getByRole('textbox', { name: 'Для игроков' })).toHaveValue(
       'Светится в темноте'

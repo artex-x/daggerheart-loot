@@ -1735,10 +1735,11 @@ touches the named file to fold in:
 - The `audit` job checks the root package with `node tools/audit-gate.mjs`, not
   a bare `npm audit --audit-level=high`: it fails on every high or critical
   advisory but the dated entries of its `ALLOWLIST`, and on an entry that is
-  expired, stale or has a new vulnerable range. One entry today,
-  GHSA-fc5q-39xc-vjpf until 2026-12-17 (`docs/decisions/`, 2026-11-17, "The
-  root audit allows one picomatch advisory until 2026-12-17"). The artwork and
-  preview steps stay plain `npm audit`.
+  expired, stale or has a new vulnerable range. No entry today: npm stopped
+  reporting GHSA-fc5q-39xc-vjpf on 2026-11-18, and the gate failed on the stale
+  entry (`docs/decisions/`, 2026-11-17, "The root audit allows one picomatch
+  advisory until 2026-12-17"). The artwork and preview steps stay plain
+  `npm audit`.
 
 Facts settled during measurement (issue 68, 2026-09-23), the Browser pane:
 

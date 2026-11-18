@@ -250,7 +250,7 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      # `npm audit --audit-level=high` with one dated allowlist entry:
+      # `npm audit --audit-level=high` with a dated allowlist (empty since 2026-11-18):
       # docs/decisions/2026-11-17-the-root-audit-allows-one-picomatch-advisory-until-2026-12-17.md
       - name: Vulnerabilities we will not wave through
         run: node tools/audit-gate.mjs

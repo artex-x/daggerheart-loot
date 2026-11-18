@@ -422,8 +422,21 @@
       </div>
       {#if (pubOpen && shared.note) || (gmOpen && shared.hnote)}
         <div class="notes">
-          {#if pubOpen}<HitNote icon="eye" label={t.notePub} text={shared.note} />{/if}
-          {#if gmOpen}<HitNote icon="eyeOff" label={t.noteHid} text={shared.hnote} gm />{/if}
+          {#if pubOpen}<HitNote
+              icon="eye"
+              label={t.notePub}
+              text={shared.note}
+              {t}
+              fold={narrow}
+            />{/if}
+          {#if gmOpen}<HitNote
+              icon="eyeOff"
+              label={t.noteHid}
+              text={shared.hnote}
+              gm
+              {t}
+              fold={narrow}
+            />{/if}
         </div>
       {/if}
       <Actions style={narrow ? 'margin-bottom:10px' : 'margin-bottom:18px'}>
@@ -513,9 +526,10 @@
               app.markArtBroken(id);
             }}
             onopen={openRecord}
+            hide={{ kind: true, tier: false, src: !((m.gold ?? 0) > 0) }}
           />
-          <HitNote icon="eye" label={t.notePub} text={m.note} />
-          <HitNote icon="eyeOff" label={t.noteHid} text={m.hnote} gm />
+          <HitNote icon="eye" label={t.notePub} text={m.note} {t} fold={narrow} />
+          <HitNote icon="eyeOff" label={t.noteHid} text={m.hnote} gm {t} fold={narrow} />
           <div class="cacts">
             <Button
               size="sm"
@@ -555,8 +569,8 @@
               <!-- Inside the row's border, as the owner's list page draws them: drawn after
                    the row they read as the next entry's notes. -->
               <div class="rnotes">
-                <HitNote icon="eye" label={t.notePub} text={m.note} />
-                <HitNote icon="eyeOff" label={t.noteHid} text={m.hnote} gm />
+                <HitNote icon="eye" label={t.notePub} text={m.note} {t} />
+                <HitNote icon="eyeOff" label={t.noteHid} text={m.hnote} gm {t} />
               </div>
             {/if}
             {#if app.sel.has(it.id) && (m.qty ?? 0) > 1}

@@ -1,6 +1,6 @@
 # #/lists/00000000-0000-4000-8000-000000008001 ~ compact, row open as gm4
 # route: #/lists
-# why: row 2 unfolded: its tags and whole text, the position, the price, «Заметка, заполнена», «Ещё: Пронзительная Свирель» and both notes read-only
+# why: row 2 unfolded: its head without the one line, its other tags and whole text once, the position, the price, «Заметка, заполнена», «Ещё: Пронзительная Свирель» and both notes read-only
 # as: gm4
 
 ## ru :: tree
@@ -21,14 +21,14 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
     StaticText "Клад дракона"
     textbox "Название списка" [value=Клад дракона multiline=false readonly=false required=false]
     StaticText "7 позиций из 100 · "
-    ... StaticText x8 of 12 same-shape siblings elided
+    ... StaticText x7 of 11 same-shape siblings elided
     button "Заметки" [expanded=false]
     button "Выбрать"
     button "Ещё" [expanded=false haspopup=menu]
     status ""
     button "1 Первоклассный Спальный Мешок ПРЕДМЕТ Во время отдыха вы автома..." [expanded=false namelen=88 namehash=6018a4b1]
     spinbutton "Кол-во: Первоклассный Спальный Мешок" [valuetext= required=false valuemin=1 valuemax=99]
-    button "2 Пронзительная Свирель ПРЕДМЕТ 7 мешков 5 горстей , Заметка Эта..." [expanded=true namelen=194 namehash=601ab98f]
+    button "2 Пронзительная Свирель ПРЕДМЕТ 7 мешков 5 горстей , Заметка" [expanded=true]
     spinbutton "Кол-во: Пронзительная Свирель" [value=2 valuetext=2 required=false valuemin=1 valuemax=99]
     spinbutton "Позиция в списке" [value=2 valuetext=2 required=false valuemin=1 valuemax=7]
     spinbutton "ЦЕНА" [value=750 valuetext=750 required=false valuemin=0 valuemax=99999]
@@ -55,7 +55,7 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
 
 ## ru :: controls
 1 Первоклассный Спальный МешокПредмет Во время отдыха вы автомат... [namelen=87 namehash=d9eb177e]
-2 Пронзительная СвирельПредмет7 мешков 5 горстей, Заметка Эта св... [namelen=191 namehash=be258530]
+2 Пронзительная СвирельПредмет7 мешков 5 горстей, Заметка
 3 Заряжающий КолчанПредмет Когда вы успешно наносите удар стрело... [namelen=144 namehash=19e5c89d]
 4 Факел АлистераПредмет Вы можете зажигать этот магический факел... [namelen=192 namehash=67a9056f]
 5 Разговаривающие СферыПредмет Эта пара сфер позволяет существам... [namelen=128 namehash=c239bef7]
@@ -110,14 +110,14 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
     StaticText "Клад дракона"
     textbox "List name" [value=Клад дракона multiline=false readonly=false required=false]
     StaticText "7 items of 100 · "
-    ... StaticText x8 of 12 same-shape siblings elided
+    ... StaticText x7 of 11 same-shape siblings elided
     button "Notes" [expanded=false]
     button "Select"
     button "More" [expanded=false haspopup=menu]
     status ""
     button "1 Premium Bedroll ITEM During downtime, you automatically clear ..." [expanded=false namelen=73 namehash=8d67c367]
     spinbutton "Qty: Premium Bedroll" [valuetext= required=false valuemin=1 valuemax=99]
-    button "2 Piper Whistle ITEM 7 bags 5 handfuls , Note This handcrafted w..." [expanded=true namelen=178 namehash=9c7d030a]
+    button "2 Piper Whistle ITEM 7 bags 5 handfuls , Note" [expanded=true]
     spinbutton "Qty: Piper Whistle" [value=2 valuetext=2 required=false valuemin=1 valuemax=99]
     spinbutton "Position in the list" [value=2 valuetext=2 required=false valuemin=1 valuemax=7]
     spinbutton "PRICE" [value=750 valuetext=750 required=false valuemin=0 valuemax=99999]
@@ -144,7 +144,7 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
 
 ## en :: controls
 1 Premium BedrollItem During downtime, you automatically clear a... [namelen=72 namehash=728ff125]
-2 Piper WhistleItem7 bags 5 handfuls, Note This handcrafted whis... [namelen=175 namehash=94cc7d86]
+2 Piper WhistleItem7 bags 5 handfuls, Note
 3 Charging QuiverItem When you succeed on an attack with an arro... [namelen=148 namehash=ff4e88f7]
 4 Alistair's TorchItem You can light this magic torch at will. T... [namelen=165 namehash=43d36318]
 5 Speaking OrbsItem This pair of orbs allows any creatures holdi... [namelen=123 namehash=0d3f0b27]

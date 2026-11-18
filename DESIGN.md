@@ -391,7 +391,8 @@ damage dice. A number a person reads as prose takes neither.
 **The Whole Message Rule.** A heading, a control label, an error line, a status line and
 a toast wrap; they are never cut. A name, a description or a list of chosen values may be
 cut to its clamp when one press shows it whole: a roll page's picker shows a long chosen
-part on up to two lines at every width (case 130). Exceptions: the editor's
+part on up to two lines at every width (case 130), and a note up to 760px shows four
+lines. Exceptions: the editor's
 record name, one line with an ellipsis while it has no focus, at every width (owner,
 2026-10-29; the heading above it shows the whole name), and the owner's list name, one line
 with an ellipsis while it has no focus up to 999px; in the side plate from 1000px the field
@@ -926,7 +927,8 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
   on up to two lines, the meta line at 13px (the kind badge, the price or another
   book's tag, the note and GM-only marks), one 13px line cut with an ellipsis, and
   a 20px chevron. The whole body is one `<button aria-expanded>`; a press unfolds
-  the full row under it.
+  the full row under it. Unfolded, the head drops its one line and the full row
+  shows each fact once.
 - The quantity is a target apart from the button: a 42x44px field on the
   owner's page, the text «×2» on `/s/`, laid on the body's reserved last column.
   No remove control on the folded row: removing is in the unfolded row's «Ещё».

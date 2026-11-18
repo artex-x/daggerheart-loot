@@ -1023,8 +1023,8 @@
 
 <!-- A closed note area: each filled note read-only, the GM note in its GM box. -->
 {#snippet readNotes(o: { note?: string | undefined; hnote?: string | undefined })}
-  <HitNote icon="eye" label={t.notePub} text={o.note} />
-  <HitNote icon="eyeOff" label={t.noteHid} text={o.hnote} gm />
+  <HitNote icon="eye" label={t.notePub} text={o.note} {t} fold={narrow} />
+  <HitNote icon="eyeOff" label={t.noteHid} text={o.hnote} gm {t} fold={narrow} />
 {/snippet}
 
 <!-- The owner's selection bar, drawn by `SelBar` through `app.pageBar` (a top-level snippet,
@@ -1767,6 +1767,7 @@
                             app.markArtBroken(bad);
                           }}
                           onopen={openRecord}
+                          hide={{ kind: true, tier: false, src: !((m.gold ?? 0) > 0) }}
                         />
                       {/if}
                       <div class="cfields">

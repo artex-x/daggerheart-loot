@@ -21,7 +21,7 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
     StaticText "Клад дракона"
     textbox "Название списка" [value=Клад дракона multiline=false readonly=false required=false]
     StaticText "7 позиций из 100 · "
-    ... StaticText x11 of 15 same-shape siblings elided
+    ... StaticText x10 of 14 same-shape siblings elided
     button "Заметки" [expanded=true]
     button "Выбрать"
     button "Ещё" [expanded=false haspopup=menu]
@@ -39,7 +39,7 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
     status ""
     button "1 Первоклассный Спальный Мешок ПРЕДМЕТ Во время отдыха вы автома..." [expanded=false namelen=88 namehash=6018a4b1]
     spinbutton "Кол-во: Первоклассный Спальный Мешок" [valuetext= required=false valuemin=1 valuemax=99]
-    button "2 Пронзительная Свирель ПРЕДМЕТ 7 мешков 5 горстей , Заметка , Т..." [expanded=true namelen=215 namehash=96305e8d]
+    button "2 Пронзительная Свирель ПРЕДМЕТ 7 мешков 5 горстей , Заметка , Т..." [expanded=true namelen=81 namehash=5622e234]
     spinbutton "Кол-во: Пронзительная Свирель" [value=2 valuetext=2 required=false valuemin=1 valuemax=99]
     spinbutton "Позиция в списке" [value=2 valuetext=2 required=false valuemin=1 valuemax=7]
     spinbutton "ЦЕНА" [value=750 valuetext=750 required=false valuemin=0 valuemax=99999]
@@ -67,7 +67,7 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
 
 ## ru :: controls
 1 Первоклассный Спальный МешокПредмет Во время отдыха вы автомат... [namelen=87 namehash=d9eb177e]
-2 Пронзительная СвирельПредмет7 мешков 5 горстей, Заметка, Тольк... [namelen=211 namehash=e0cf179c]
+2 Пронзительная СвирельПредмет7 мешков 5 горстей, Заметка, Тольк... [namelen=77 namehash=67524967]
 3 Заряжающий КолчанПредмет Когда вы успешно наносите удар стрело... [namelen=144 namehash=19e5c89d]
 4 Факел АлистераПредмет Вы можете зажигать этот магический факел... [namelen=192 namehash=67a9056f]
 5 Разговаривающие СферыПредмет Эта пара сфер позволяет существам... [namelen=128 namehash=c239bef7]
@@ -131,7 +131,7 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
     StaticText "Клад дракона"
     textbox "List name" [value=Клад дракона multiline=false readonly=false required=false]
     StaticText "7 items of 100 · "
-    ... StaticText x11 of 15 same-shape siblings elided
+    ... StaticText x10 of 14 same-shape siblings elided
     button "Notes" [expanded=true]
     button "Select"
     button "More" [expanded=false haspopup=menu]
@@ -149,7 +149,7 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
     status ""
     button "1 Premium Bedroll ITEM During downtime, you automatically clear ..." [expanded=false namelen=73 namehash=8d67c367]
     spinbutton "Qty: Premium Bedroll" [valuetext= required=false valuemin=1 valuemax=99]
-    button "2 Piper Whistle ITEM 7 bags 5 handfuls , Note , GM only This han..." [expanded=true namelen=188 namehash=ccc665a8]
+    button "2 Piper Whistle ITEM 7 bags 5 handfuls , Note , GM only" [expanded=true]
     spinbutton "Qty: Piper Whistle" [value=2 valuetext=2 required=false valuemin=1 valuemax=99]
     spinbutton "Position in the list" [value=2 valuetext=2 required=false valuemin=1 valuemax=7]
     spinbutton "PRICE" [value=750 valuetext=750 required=false valuemin=0 valuemax=99999]
@@ -177,7 +177,7 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
 
 ## en :: controls
 1 Premium BedrollItem During downtime, you automatically clear a... [namelen=72 namehash=728ff125]
-2 Piper WhistleItem7 bags 5 handfuls, Note, GM only This handcra... [namelen=184 namehash=58fd2dc2]
+2 Piper WhistleItem7 bags 5 handfuls, Note, GM only
 3 Charging QuiverItem When you succeed on an attack with an arro... [namelen=148 namehash=ff4e88f7]
 4 Alistair's TorchItem You can light this magic torch at will. T... [namelen=165 namehash=43d36318]
 5 Speaking OrbsItem This pair of orbs allows any creatures holdi... [namelen=123 namehash=0d3f0b27]

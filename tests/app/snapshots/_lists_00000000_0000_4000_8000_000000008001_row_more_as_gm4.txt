@@ -1,6 +1,6 @@
 # #/lists/00000000-0000-4000-8000-000000008001 ~ row more as gm4
 # route: #/lists
-# why: row 1 unfolded and its «Ещё» open: «Скрыть от игроков», «Открыть карточку», «Убрать из списка»
+# why: row 1 unfolded, its head without the one line, and its «Ещё» open: «Скрыть от игроков», «Открыть карточку», «Убрать из списка»
 # as: gm4
 
 ## ru :: tree
@@ -21,12 +21,12 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
     StaticText "Клад дракона"
     textbox "Название списка" [value=Клад дракона multiline=false readonly=false required=false]
     StaticText "7 позиций из 100 · "
-    ... StaticText x4 of 8 same-shape siblings elided
+    ... StaticText x3 of 7 same-shape siblings elided
     button "Заметки" [expanded=false]
     button "Выбрать"
     button "Ещё" [expanded=false haspopup=menu]
     status ""
-    button "1 Первоклассный Спальный Мешок ПРЕДМЕТ Во время отдыха вы автома..." [expanded=true namelen=88 namehash=6018a4b1]
+    button "1 Первоклассный Спальный Мешок ПРЕДМЕТ" [expanded=true]
     spinbutton "Кол-во: Первоклассный Спальный Мешок" [valuetext= required=false valuemin=1 valuemax=99]
     StaticText "ПОЗИЦИЯ В СПИСКЕ"
     spinbutton "Позиция в списке" [value=1 valuetext=1 required=false valuemin=1 valuemax=7]
@@ -57,7 +57,7 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-1 Первоклассный Спальный МешокПредмет Во время отдыха вы автомат... [namelen=87 namehash=d9eb177e]
+1 Первоклассный Спальный МешокПредмет
 2 Пронзительная СвирельПредмет Эта свирель ручной работы имеет х... [namelen=164 namehash=cd6f8526]
 3 Заряжающий КолчанПредмет Когда вы успешно наносите удар стрело... [namelen=144 namehash=19e5c89d]
 4 Факел АлистераПредмет Вы можете зажигать этот магический факел... [namelen=192 namehash=67a9056f]
@@ -116,12 +116,12 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
     StaticText "Клад дракона"
     textbox "List name" [value=Клад дракона multiline=false readonly=false required=false]
     StaticText "7 items of 100 · "
-    ... StaticText x4 of 8 same-shape siblings elided
+    ... StaticText x3 of 7 same-shape siblings elided
     button "Notes" [expanded=false]
     button "Select"
     button "More" [expanded=false haspopup=menu]
     status ""
-    button "1 Premium Bedroll ITEM During downtime, you automatically clear ..." [expanded=true namelen=73 namehash=8d67c367]
+    button "1 Premium Bedroll ITEM" [expanded=true]
     spinbutton "Qty: Premium Bedroll" [valuetext= required=false valuemin=1 valuemax=99]
     StaticText "POSITION IN THE LIST"
     spinbutton "Position in the list" [value=1 valuetext=1 required=false valuemin=1 valuemax=7]
@@ -152,7 +152,7 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-1 Premium BedrollItem During downtime, you automatically clear a... [namelen=72 namehash=728ff125]
+1 Premium BedrollItem
 2 Piper WhistleItem This handcrafted whistle has a distinctive s... [namelen=152 namehash=8b03b4da]
 3 Charging QuiverItem When you succeed on an attack with an arro... [namelen=148 namehash=ff4e88f7]
 4 Alistair's TorchItem You can light this magic torch at will. T... [namelen=165 namehash=43d36318]

@@ -471,6 +471,15 @@ const MANY_SPECS = [
 const LONG_LIST_NAME = Array.from({ length: 12 }, () => 'Сокровищница')
   .join(' ')
   .slice(0, 120);
+/* A note of about 900 characters: two paragraphs, a list and a table, longer than the four
+   lines that a read-only note shows up to 760 px. */
+const LONG_NOTE = [
+  'Первый абзац заметки достаточно длинный, чтобы занять несколько строк на узком экране телефона.',
+  'Второй абзац: ещё немного текста для проверки обрезки после четвёртой строки.',
+  '- первый пункт списка\n- второй пункт списка\n- третий пункт списка',
+  '| Дверь | Ключ |\n|---|---|\n| Северная | Медный |\n| Южная | Железный |',
+  'Последний абзац с хвостом текста, чтобы заметка заняла около тысячи знаков. '.repeat(8)
+].join('\n\n');
 const LONG_NAME_SPECS = [{ ...KLAD, name: LONG_LIST_NAME, ids: SEVEN_IDS }, LAVKA];
 
 /** Opens the «Ещё» `sel` again after the EN press closed it, from the page's top: up to
@@ -2521,7 +2530,7 @@ const STATES = [
     route: '#/lists',
     as: 'gm4',
     width: 360,
-    why: 'row 2 unfolded: its tags and whole text, the position, the price, «Заметка, заполнена», «Ещё: Пронзительная Свирель» and both notes read-only',
+    why: 'row 2 unfolded: its head without the one line, its other tags and whole text once, the position, the price, «Заметка, заполнена», «Ещё: Пронзительная Свирель» and both notes read-only',
     enter: async (d) => {
       await onAccount(d, NOTED_SPECS);
       await d.unfold(1);
@@ -2558,7 +2567,7 @@ const STATES = [
     route: '#/lists',
     as: 'gm4',
     width: 360,
-    why: 'row 1 unfolded and its «Ещё» open: «Скрыть от игроков», «Открыть карточку», «Убрать из списка»',
+    why: 'row 1 unfolded, its head without the one line, and its «Ещё» open: «Скрыть от игроков», «Открыть карточку», «Убрать из списка»',
     enter: async (d) => {
       await onAccount(d, SEVEN_SPECS);
       await d.unfold(0);
@@ -2679,7 +2688,7 @@ const STATES = [
     id: '#/s/player-token-1 ~ compact, row open',
     route: '#/s/player-token-1',
     width: 360,
-    why: "row 1 unfolded: its tags, text, players' note and «Открыть карточку»",
+    why: "row 1 unfolded: its head without the one line, its other tags, the text once, players' note and «Открыть карточку»",
     enter: async (d) => {
       await d.unfold(0);
     }
@@ -2710,6 +2719,41 @@ const STATES = [
     route: '#/s/gm-token-1',
     width: 360,
     why: 'the GM link up to 760 px: «Заметка» and «Заметка мастера» on the lead line, the note marks on the noted rows'
+  },
+  {
+    id: '#/s/gm-token-1 ~ compact, long notes',
+    route: '#/s/gm-token-1',
+    width: 360,
+    why: 'both lead-line notes open, each of about 900 characters (paragraphs, a list and a table): four lines of each and «Показать полностью» under it',
+    enter: async (d) => {
+      for (let i = 0; i < 40 && !(await d.count('.said[data-live="live"]')); i++)
+        await d.settle();
+      await d.fake('play', '00000000-0000-4000-8000-000000000101', {
+        player_note: LONG_NOTE,
+        gm_note: LONG_NOTE
+      });
+      await d.settle();
+      await d.click('Заметка');
+      await d.click('Заметка мастера');
+    }
+  },
+  {
+    id: '#/s/gm-token-1 ~ compact, long note open',
+    route: '#/s/gm-token-1',
+    width: 360,
+    why: "the same notes with the players' note opened whole: the toggle reads «свернуть» and the GM note stays at four lines",
+    enter: async (d) => {
+      for (let i = 0; i < 40 && !(await d.count('.said[data-live="live"]')); i++)
+        await d.settle();
+      await d.fake('play', '00000000-0000-4000-8000-000000000101', {
+        player_note: LONG_NOTE,
+        gm_note: LONG_NOTE
+      });
+      await d.settle();
+      await d.click('Заметка');
+      await d.click('Заметка мастера');
+      await d.click('Показать полностью');
+    }
   },
   {
     id: '#/lists/nope',

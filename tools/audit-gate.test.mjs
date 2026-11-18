@@ -1,7 +1,18 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { ALLOWLIST, gate, ghsaOf } from './audit-gate.mjs';
+import { ALLOWLIST as SHIPPED_ALLOWLIST, gate, ghsaOf } from './audit-gate.mjs';
+
+// A fixture entry: the gate's rules are tested against it, not against the shipped list.
+const ALLOWLIST = [
+  {
+    id: 'GHSA-fc5q-39xc-vjpf',
+    package: 'picomatch',
+    range: '<=4.0.7',
+    reason: 'a fixture entry for the gate rules',
+    expires: '2026-12-17'
+  }
+];
 
 const TODAY = '2026-11-17';
 
@@ -155,11 +166,7 @@ describe('audit gate', () => {
     assert.equal(ghsaOf({ url: 'https://example.com/x' }), null);
   });
 
-  it('allows exactly the picomatch advisory until 2026-12-17', () => {
-    assert.deepEqual(
-      ALLOWLIST.map((a) => [a.id, a.package, a.range, a.expires]),
-      [['GHSA-fc5q-39xc-vjpf', 'picomatch', '<=4.0.7', '2026-12-17']]
-    );
-    assert.ok(ALLOWLIST.every((a) => a.reason.length > 0));
+  it('allows no advisory while the picomatch entry is gone', () => {
+    assert.deepEqual(SHIPPED_ALLOWLIST, []);
   });
 });

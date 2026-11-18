@@ -1,0 +1,9 @@
+# 2026-11-18 - A compact row shows each fact once and a long note folds up to 760 px
+
+- Task: `shared-row-expand` (owner, 2026-11-18, options A and N1).
+- Decision: up to 760 px an unfolded compact row drops the head's one line, and the full row under it leaves out the first kind badge and, on a row with no price, the source tag, which the head then shows (`CompactRow`, `RowMain hide`); a read-only note longer than four lines shows four with «Показать полностью» (`HitNote fold`, `FEATURES.md` "Lists", rule 12). From 761 px nothing changes.
+- Rejected: B, the head stays and the block adds only what is new (a short text keeps the repetition the owner read as a bug, and it needs a text diff per record); C, the head becomes a title bar (it removes the tag and line from the folded row, the case the 2026-11-05 decision rejected); N2, fold only the row notes (the lead-line notes grow as tall on a phone); N3, leave notes whole (a GM link with both notes open pushes the first entry off the screen).
+- Rejected: dropping the chevron on a row with nothing to add (the 2026-11-05 decision made the chevron the affordance; the unfold still adds «Открыть карточку» or the fields).
+- Reading not confirmed by the owner: "extended descriptions" means the row text's clamp with one press to the whole, applied to notes; the owner's list-notes edit box keeps its own 320 px cap and does not fold.
+- Accepted trade-off: an open head is shorter by its line and the kind badge row (about 46 px at 360 px), and a screen reader hears the head without the line while the row is open.
+- Evidence: Chromium line clamp does not cut a table, and WebKit clamps nested blocks badly, so the fold takes `max-height: 6em` (four lines) with `overflow: hidden`; it can cut the fourth line in half. A list or a table adds a few px of margin, so a note of exactly four lines that holds one can still draw the toggle. Not checked in WebKit on this host; the toggle opens the whole note there too.

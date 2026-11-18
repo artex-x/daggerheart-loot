@@ -114,6 +114,16 @@ describe('the compact row', () => {
     await expectNoA11yViolations(container);
   });
 
+  it('draws its one line only while folded, with the kind and price kept', async () => {
+    const { container, rerender } = row({ open: true, price: '5 зол.', children: unfolded });
+    expect(document.querySelector('.cfx')).toBeNull();
+    expect(document.querySelector('.cmeta .badge')).toHaveTextContent('Предмет');
+    expect(document.querySelector('.cpr')).toHaveTextContent('5 зол.');
+    await rerender({ open: false });
+    expect(document.querySelector('.cfx')).toHaveTextContent(/^Очистите Стресс\.$/);
+    await expectNoA11yViolations(container);
+  });
+
   it('draws the field beside the button, not inside it, and the text where no field is', async () => {
     const { container } = row({ field });
     const input = screen.getByRole('spinbutton', { name: 'Кол-во: Спальный мешок' });

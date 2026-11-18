@@ -780,7 +780,10 @@ across.
   and the players' share link, «Только для мастера» only into the GM's link.
   Each note is formatted text ("Records", "Formatted
   text") in a box of rule 18 (bold, italic, both lists, «Просмотр», no «?»), at most
-  4000 characters with no counter. The two notes of an entry, and the two of the list,
+  4000 characters with no counter. Up to 760 px a read-only note longer than four lines
+  shows four and «Показать полностью» / "Show in full", which opens it whole and then
+  reads «свернуть» / "show less" (rule 12); it folds again when its row or its button
+  closes, and from 761 px it draws whole. The two notes of an entry, and the two of the list,
   are one note area: closed, each filled note draws read-only in a full box, the GM
   note's box on the darker ground; «Заметка» (a filled note adds a dot and the
   hidden «, заполнена»), the side column's «Изменить» or «Заметки ▾» up to 999 px opens
@@ -1154,7 +1157,10 @@ address kept, and no add-to-list control is drawn.
   <name>» with «Скрыть от игроков» / «Показать игрокам», «Открыть карточку» and
   the danger «Убрать из списка»; its notes draw only there. The shared row
   unfolds to its tags, text, both notes the link holds and «Открыть карточку».
-  The drop mark draws on the compact row too. From 761 px the full row stays.
+  Unfolded, the head drops its one line, and the full row under it leaves out the
+  first kind badge and, on a row with no price, the source tag, which the head then
+  shows: each fact draws once (owner, 2026-11-18). The drop mark draws on the
+  compact row too. From 761 px the full row stays.
 - **The compact head** (owner, 2026-11-03, D-head 1; to 999 px, owner 2026-11-06): up to
   999 px the owner's page draws the name, «Выбрать» and «Ещё» on one row and the meta line under
   them, which ends «· Заметки ▾» / "Notes" opening the list notes in place
@@ -3412,7 +3418,8 @@ Each rule keeps its number: a review cites it by number.
   Ольхи»); a fold that shows
   the rest of a cut list reads «и ещё N ...» / "and N more ..." closed and
   «свернуть» / "show less" open, one button both ways, so the focus stays
-  on it (`FoldButton`). The source chips of `#/tables/homebrew` (past 12), a
+  on it (`FoldButton`). Departure: the fold of a cut note reads «Показать полностью» /
+  "Show in full", not «и ещё N», because a note is cut text, not a cut list. The source chips of `#/tables/homebrew` (past 12), a
   source's sections and a card's members (past 20) fold too.
 - **13. Capped text**: a field takes no more than the database keeps
   (`maxlength` from the validator's constant); a form's multi-line box shows

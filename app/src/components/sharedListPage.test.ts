@@ -2101,6 +2101,38 @@ describe('the compact row up to 760 px', () => {
     expect(await screen.findByRole('dialog')).toBeInTheDocument();
   });
 
+  it('draws each fact once in an unfolded row: no line, no head kind, the source only with a price', async () => {
+    const { container } = await openNarrow('#/s/gm-token-1');
+    const open = async (name: string): Promise<{ head: HTMLElement; full: HTMLElement }> => {
+      const head = [...container.querySelectorAll<HTMLElement>('button.cbody')].find(
+        (b) => b.querySelector('.cname')?.textContent === name
+      ) as HTMLElement;
+      await userEvent.click(head);
+      const full = document.getElementById(
+        head.getAttribute('aria-controls') ?? ''
+      ) as HTMLElement;
+      return { head, full };
+    };
+    const tags = (e: HTMLElement): (string | null)[] =>
+      [...e.querySelectorAll('.badge')].map((b) => b.textContent);
+    // No price: the head names the source, so the open part does not.
+    const unpriced = await open('Колода Сумерек');
+    expect(unpriced.head.querySelector('.cfx')).toBeNull();
+    expect(unpriced.head.querySelector('.csrc')).toHaveTextContent('Vault of Ages');
+    expect(tags(unpriced.full)).not.toContain('Предмет');
+    expect(tags(unpriced.full)).not.toContain('Vault of Ages');
+    expect(tags(unpriced.full)).toContain('Артефакт');
+    // A price: the head shows it, so the open part keeps the source tag.
+    const priced = await open('Гарпун Левиафана');
+    expect(priced.head.querySelector('.cpr')).not.toBeNull();
+    expect(tags(priced.full)).not.toContain('Основное оружие');
+    expect(tags(priced.full)).toContain('Wondrous Environments');
+    expect(tags(priced.full)).toContain('Уникальное');
+    await userEvent.click(priced.head);
+    expect(priced.head.querySelector('.cfx')).not.toBeNull();
+    await expectNoA11yViolations(container);
+  });
+
   it('marks a GM-only entry on a GM link with the mark and its GM row', async () => {
     const cloud = fakeCloud(SEED);
     cloud.playEntry(uuid(101), 'q313', { gm_only: true });

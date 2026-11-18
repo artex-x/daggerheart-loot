@@ -7,16 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 /** The advisories the gate lets through. `range` is the vulnerable range at
  * the time of the entry; a new range means a patched version may exist. */
-export const ALLOWLIST = [
-  {
-    id: 'GHSA-fc5q-39xc-vjpf',
-    package: 'picomatch',
-    range: '<=4.0.7',
-    reason:
-      'picomatch ReDoS with no patched version; it reaches only dev dependencies (vite, vitest, svelte-check)',
-    expires: '2026-12-17'
-  }
-];
+export const ALLOWLIST = [];
 
 const SEVERITIES = ['info', 'low', 'moderate', 'high', 'critical'];
 const GATED = new Set(['high', 'critical']);

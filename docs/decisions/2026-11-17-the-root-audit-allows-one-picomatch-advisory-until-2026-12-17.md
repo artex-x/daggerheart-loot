@@ -10,7 +10,7 @@
   force or downgrade vitest and vite (`npm audit fix --force` moves to older majors and
   breaks the build and the test runner); `--audit-level=critical` (it waves through every
   other high advisory).
-- Consequence: the gate fails the day after 2026-12-17, when the advisory is no longer
-  reported, or when its vulnerable range changes (a patched version may exist). Removal:
-  update the dependency, delete the entry from `ALLOWLIST`, and keep the script; or, with
-  no entry left, restore `npm audit --audit-level=high` in `ci.yml` and delete the script.
+- Consequence: the gate fails after 2026-12-17, when the advisory is no longer reported, or
+  when its vulnerable range changes. Removal: delete the entry and keep the script.
+- Outcome, 2026-11-18: npm stopped reporting the advisory and the gate failed on the stale
+  entry. `ALLOWLIST` is now empty; the script and its job step stay for a later exception.

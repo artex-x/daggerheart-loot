@@ -607,7 +607,7 @@ const COVERED: Record<string, string> = {
   'TextArea.svelte': 'the own-item panel above, and the description in homebrewEditor.test.ts',
   'HelpButton.svelte': "PageHead's help panel states above, closed and open",
   'HitNote.svelte':
-    "the list page's priced, noted entry with the roll panel open above, the shared list below, and a formatted note in sharedListPage.test.ts",
+    "the list page's priced, noted entry with the roll panel open above, the shared list below, and a formatted note in sharedListPage.test.ts, and the folded and the open long note in hitNote.test.ts",
   'ListPage.svelte': 'listPage.test.ts, and both list-page states below',
   'ListCard.svelte':
     'listsPage.test.ts, its cards with «Ещё», ticked and with the waiting chip',
