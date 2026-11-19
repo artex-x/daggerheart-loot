@@ -55,3 +55,17 @@ the task that owes them".
 - **How to verify the fix**: a unit test puts the name `` a$`b `` into `noticeChanged` and
   `quoted` and reads the name unchanged in the sentence; no string-valued `.replace('%s'` is left
   in `app/src/`.
+
+## Number field leftovers (task `number-field-focus`, owner first)
+
+### D144 - a number field loses the keyboard focus when a step disables its own button
+
+- **Where**: `app/src/components/NumberField.svelte` (the «-» and «+» buttons at the range ends).
+- **What**: a keyboard reader who presses «-» or «+» to the end of the range disables that button,
+  and a disabled button cannot hold the focus, so the focus falls to the page and the reader
+  loses the place. `PickQty.svelte` moves the focus to the field in that case; `NumberField` does
+  not.
+- **Why deferred**: found while the take count got its own steps; `NumberField` is outside that
+  change, and a fix touches every number field in the app.
+- **How to verify the fix**: a component test presses «+» by keyboard (`click` with `detail === 0`)
+  up to the maximum and reads the focus on the field, and the same for «-» at the minimum.

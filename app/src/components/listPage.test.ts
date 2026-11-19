@@ -729,9 +729,9 @@ describe('the taken count, the total and a partial removal', () => {
     expect(row).toHaveClass('sel');
     expect(container.querySelectorAll('.lrow')[0]).not.toHaveClass('sel');
     const take = row?.querySelector('.lrow-take');
-    expect(take).toHaveTextContent('ВзятьМинМакс из 2 = 1 сундук 5 мешков');
+    expect(take).toHaveTextContent('ВзятьМин−+Макс из 2 = 1 сундук 5 мешков');
     await takeOne();
-    expect(take).toHaveTextContent('ВзятьМинМакс из 2 = 7 мешков 5 горстей');
+    expect(take).toHaveTextContent('ВзятьМин−+Макс из 2 = 7 мешков 5 горстей');
     await expectNoA11yViolations(container);
   });
 
@@ -778,6 +778,19 @@ describe('the taken count, the total and a partial removal', () => {
     const { container, cloud, page } = await openA();
     await tickRow(1);
     await userEvent.click(screen.getByRole('button', { name: 'Мин, взять 1: Зелье' }));
+    expect(container.querySelector('.selsumm')).toHaveTextContent(
+      'Выбрана 1 позицияИтого: 7 мешков 5 горстей'
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Удалить (1)' }));
+    expect((await readList(cloud, page, A_ID))?.meta?.['cc1']?.qty).toBeUndefined();
+    expect((await readList(cloud, page, A_ID))?.ids).toEqual(['ci1', 'cc1', 'q1']);
+    await expectNoA11yViolations(container);
+  });
+
+  it('lowers the taken count by one with «-» and removes that many', async () => {
+    const { container, cloud, page } = await openA();
+    await tickRow(1);
+    await userEvent.click(screen.getByRole('button', { name: 'На единицу меньше: Зелье' }));
     expect(container.querySelector('.selsumm')).toHaveTextContent(
       'Выбрана 1 позицияИтого: 7 мешков 5 горстей'
     );

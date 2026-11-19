@@ -437,11 +437,14 @@ const ru = {
   pickQty: 'Взять',
   pickQtyOf: 'Взять: %s',
   pickOf: 'из %n',
-  /* The ends of the take count; each name starts with the word on the button. */
+  /* The ends of the take count; each name starts with the word on the button.
+     The two step names reuse the stepper words of stepDown and stepUp. */
   pickMin: 'Мин',
   pickMax: 'Макс',
   pickMinOf: 'Мин, взять 1: %s',
   pickMaxOf: 'Макс, взять все: %s',
+  pickDownOf: 'На единицу меньше: %s',
+  pickUpOf: 'На единицу больше: %s',
   pcsN: '%n шт.',
   eachPrice: '%s за штуку',
   money_bag: 'Как в книге',
@@ -1540,6 +1543,8 @@ const en: Dict = {
   pickMax: 'Max',
   pickMinOf: 'Min, take 1: %s',
   pickMaxOf: 'Max, take all: %s',
+  pickDownOf: 'One lower: %s',
+  pickUpOf: 'One higher: %s',
   pcsN: '%n pcs',
   eachPrice: '%s each',
   money_bag: 'As in the book',

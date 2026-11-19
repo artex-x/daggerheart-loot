@@ -57,7 +57,9 @@ daggerheart.com
 Мистический ПлащПредметСущество с Характеристикой Заклинателя, н... [namelen=143 namehash=7854e7c3]
 Монетами
 На единицу больше
+На единицу больше: Пронзительная Свирель
 На единицу меньше
+На единицу меньше: Пронзительная Свирель
 Название списка
 Наручники
 НаручникиПредметЭта пара наручников с замком поставляется с ключ... [namelen=67 namehash=77df6619]
@@ -144,7 +146,9 @@ More: Speaking Orbs
 Note
 Note, filled
 One higher
+One higher: Piper Whistle
 One lower
+One lower: Piper Whistle
 Piper Whistle
 Piper WhistleItemThis handcrafted whistle has a distinctive soun... [namelen=149 namehash=81a85b00]
 Position in the list

@@ -1,6 +1,7 @@
 # 2026-09-23 - A take line inside the ticked row; the summary names entries and pieces; the shared print and copied prices carry the count
 
 - Amended by "The take count sits between Min and Max in one control; no stepper" (2026-09-30): a joined control around the field holds the ends; the ±1 stepper stays rejected.
+- Amended by "The take count steps by one between Min and Max; a tick takes the stock" (2026-11-19): the ±1 stepper joins the control.
 - Task: `67`, round 2, human decision (options 1A, 2A, 3A, 4A).
 - Decision: the taken count is a take line inside the ticked row, under the
   art: "Взять [2] из 5 = 1 мешок"; a ticked own row takes the selected style.

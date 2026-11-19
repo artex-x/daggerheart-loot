@@ -1,5 +1,6 @@
 # 2026-09-30 - The take count sits between Min and Max in one control; no stepper
 
+- Superseded in part by "The take count steps by one between Min and Max; a tick takes the stock" (2026-11-19): the no-stepper rule; Min, Max and the field stay.
 - Task: `persist-4b-requests-polish` (planner, 2026-09-29; revised on the owner's mock review and the owner's «Мин»/«Макс» naming, 2026-09-30).
 - Decision: the take line's count field sits between «Мин» and «Макс» /
   "Min" and "Max" in one joined control, `NumberField`'s `.numbox` shape:

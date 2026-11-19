@@ -1,9 +1,10 @@
 <script lang="ts">
   /* The take line inside a ticked list entry whose stock is over 1 - on the
      shared page and on the own list (docs/specs/FEATURES.md, "Lists"):
-     "Взять [Мин|2|Макс] из 5 = 1 мешок", the sum only for a priced entry. The
-     two ends set the count to one and to the whole stock (docs/DECISIONS.md,
-     2026-09-30, "The take count sits between Min and Max in one control"). */
+     "Взять [Мин|-|2|+|Макс] из 5 = 1 мешок", the sum only for a priced entry. The
+     two ends set the count to one and to the whole stock, the two steps change it
+     by one (docs/DECISIONS.md, 2026-11-19, "The take count steps by one between
+     Min and Max; a tick takes the stock"). */
   import { clamp } from '../lib/numField.js';
 
   interface Props {
@@ -26,6 +27,9 @@
     /** The accessible names of the two ends, which name the record. */
     minName: string;
     maxName: string;
+    /** The accessible names of the two steps, which name the record. */
+    downName: string;
+    upName: string;
     onchange: (n: number) => void;
   }
 
@@ -40,8 +44,19 @@
     maxText,
     minName,
     maxName,
+    downName,
+    upName,
     onchange
   }: Props = $props();
+
+  let field = $state<HTMLInputElement | undefined>(undefined);
+
+  /* A disabled button cannot hold the focus, so a keyboard press that lands on an
+     end gives it to the count; a pointer press keeps it, so no phone keyboard opens. */
+  function set(n: number, e: MouseEvent): void {
+    onchange(n);
+    if (e.detail === 0 && (n <= 1 || n >= max)) field?.focus();
+  }
 
   /* An emptied field mid-edit is left alone until it is committed; a count
      over the stock is written back at once, because the prop does not change
@@ -70,10 +85,19 @@
         type="button"
         aria-label={minName}
         disabled={value <= 1}
-        onclick={() => {
-          onchange(1);
+        onclick={(e) => {
+          set(1, e);
         }}>{minText}</button
+      ><button
+        type="button"
+        class="step"
+        aria-label={downName}
+        disabled={value <= 1}
+        onclick={(e) => {
+          set(clamp(value - 1, 1, max), e);
+        }}>&minus;</button
       ><input
+        bind:this={field}
         type="number"
         min="1"
         {max}
@@ -84,10 +108,18 @@
         onchange={onCommit}
       /><button
         type="button"
+        class="step"
+        aria-label={upName}
+        disabled={value >= max}
+        onclick={(e) => {
+          set(clamp(value + 1, 1, max), e);
+        }}>+</button
+      ><button
+        type="button"
         aria-label={maxName}
         disabled={value >= max}
-        onclick={() => {
-          onchange(max);
+        onclick={(e) => {
+          set(max, e);
         }}>{maxText}</button
       ></span
     ></span
@@ -105,6 +137,7 @@
 
   .pickqty {
     display: flex;
+    flex-wrap: wrap;
     flex-direction: row;
     align-items: center;
     gap: 8px;
@@ -141,6 +174,14 @@
     color: var(--txt);
     font: 600 var(--t-data)/1 var(--mono);
     text-align: center;
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+
+  .qgroup input::-webkit-inner-spin-button,
+  .qgroup input::-webkit-outer-spin-button {
+    appearance: none;
+    margin: 0;
   }
 
   /* The box draws the focus. */
@@ -159,12 +200,15 @@
     transition: 0.14s;
   }
 
-  .qgroup button:first-child {
-    border-right: 1px solid var(--line2);
+  .qgroup > * + * {
+    border-left: 1px solid var(--line2);
   }
 
-  .qgroup button:last-child {
-    border-left: 1px solid var(--line2);
+  .qgroup .step {
+    min-width: 0;
+    width: max(30px, var(--thumb));
+    padding: 0;
+    font-size: var(--t-body);
   }
 
   .qgroup button:hover:not(:disabled) {
@@ -204,12 +248,13 @@
       min-height: max(34px, var(--thumb));
     }
 
-    .qgroup button {
+    .qgroup button:not(.step) {
       min-width: 44px;
     }
 
     /* 16 px: a smaller field makes iOS zoom the page on focus (as `RollSelect.svelte`). */
     .qgroup input {
+      width: 40px;
       font-size: 16px;
     }
   }

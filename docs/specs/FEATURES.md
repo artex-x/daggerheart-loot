@@ -740,12 +740,17 @@ across.
 - A selection on a list page - the own list and the shared page - carries a
   taken count per ticked entry. Ticking takes the whole quantity. A ticked
   entry with a quantity over 1 draws a take line inside its row, under the
-  art: "Взять [Мин|2|Макс] из 5 = 1 мешок" / "Take [Min|2|Max] of 5 = 1 bag",
+  art: "Взять [Мин|-|2|+|Макс] из 5 = 1 мешок" / "Take [Min|-|2|+|Max] of 5 = 1 bag",
   the line sum (price x taken count) only for a priced entry. The count
-  field sits between «Мин» and «Макс» / "Min" and "Max" in one joined
-  control: «Мин» sets the count to 1, «Макс» to the whole quantity, and each
-  is disabled at its end. At 600 px or less each part of the control is 40 px tall and
-  each end at least 44 px wide. The field narrows the count to
+  field sits between «-» and «+» (the minus glyph is U+2212), and those between «Мин» and «Макс» /
+  "Min" and "Max", in one joined control: «-» and «+» change the count by
+  one, «Мин» sets it to 1, «Макс» to the whole quantity, and each is
+  disabled at its end. A keyboard press that disables its own button moves
+  the focus to the field; ArrowUp and ArrowDown in the field step it, and
+  it draws no native spin buttons. At 600 px or less each part of the control
+  is 40 px tall, «-» and «+» 40 px wide, each end at least 44 px wide and the
+  field 40 px wide; «Взять» moves above the control where the row has no
+  room. The field narrows the count to
   1..quantity; an emptied field puts its value back on commit. The count lives in memory only and clears with its
   tick, on "clear selection", and on a navigation. The total is the sum of
   price x taken count over the priced ticked entries, in coins, read once in

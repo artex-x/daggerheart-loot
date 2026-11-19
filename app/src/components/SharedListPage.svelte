@@ -587,6 +587,8 @@
                   maxText={t.pickMax}
                   minName={t.pickMinOf.replace('%s', nameOf(it, app.lang))}
                   maxName={t.pickMaxOf.replace('%s', nameOf(it, app.lang))}
+                  downName={t.pickDownOf.replace('%s', nameOf(it, app.lang))}
+                  upName={t.pickUpOf.replace('%s', nameOf(it, app.lang))}
                   onchange={(n: number) => {
                     app.pick(it.id, n);
                   }}

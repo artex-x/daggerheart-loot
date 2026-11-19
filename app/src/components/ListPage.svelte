@@ -1835,6 +1835,8 @@
                         maxText={t.pickMax}
                         minName={t.pickMinOf.replace('%s', label)}
                         maxName={t.pickMaxOf.replace('%s', label)}
+                        downName={t.pickDownOf.replace('%s', label)}
+                        upName={t.pickUpOf.replace('%s', label)}
                         onchange={(n: number) => {
                           picked.set(id, n);
                         }}

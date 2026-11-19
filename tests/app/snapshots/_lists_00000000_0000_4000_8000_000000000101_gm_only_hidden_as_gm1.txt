@@ -38,11 +38,12 @@ RootWebArea "Лавка кузнеца - Генератор лута Daggerheart
     spinbutton "ЦЕНА" [value=150 valuetext=150 required=false valuemin=0 valuemax=99999]
     button "Ещё: Первоклассный Спальный Мешок" [expanded=false haspopup=menu]
     button "Мин, взять 1: Первоклассный Спальный Мешок"
+    ... button x8 of 12 same-shape siblings elided
     spinbutton "Взять: Первоклассный Спальный Мешок" [value=2 valuetext=2 required=false valuemin=1 valuemax=2]
+    button "На единицу больше: Первоклассный Спальный Мешок" [disabled=true]
     button "Макс, взять все: Первоклассный Спальный Мешок" [disabled=true]
     checkbox "Палаш" [checked=false]
     spinbutton "Позиция в списке" [value=2 valuetext=2 required=false valuemin=1 valuemax=10]
-    ... button x7 of 11 same-shape siblings elided
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
     ... button x7 of 11 same-shape siblings elided
@@ -150,6 +151,8 @@ daggerheart.com
 Макс, взять все: Первоклассный Спальный Мешок
 Мин, взять 1: Первоклассный Спальный Мешок
 Монетами
+На единицу больше: Первоклассный Спальный Мешок
+На единицу меньше: Первоклассный Спальный Мешок
 Название списка
 Палаш
 ПалашОсновное оружиеРанг 1 · Физическое · Проворность · Вплотную... [namelen=114 namehash=e80c7800]
@@ -212,11 +215,12 @@ RootWebArea "Лавка кузнеца - Daggerheart Loot Generator" [url=/en/li
     spinbutton "PRICE" [value=150 valuetext=150 required=false valuemin=0 valuemax=99999]
     button "More: Premium Bedroll" [expanded=false haspopup=menu]
     button "Min, take 1: Premium Bedroll"
+    ... button x8 of 12 same-shape siblings elided
     spinbutton "Take: Premium Bedroll" [value=2 valuetext=2 required=false valuemin=1 valuemax=2]
+    button "One higher: Premium Bedroll" [disabled=true]
     button "Max, take all: Premium Bedroll" [disabled=true]
     checkbox "Broadsword" [checked=false]
     spinbutton "Position in the list" [value=2 valuetext=2 required=false valuemin=1 valuemax=10]
-    ... button x7 of 11 same-shape siblings elided
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]
     ... button x7 of 11 same-shape siblings elided
@@ -323,6 +327,8 @@ More: Stride Potion
 More: Twilight Deck
 Note
 Note, filled
+One higher: Premium Bedroll
+One lower: Premium Bedroll
 Position in the list
 Premium Bedroll
 Premium Bedroll, GM onlyItemDuring downtime, you automatically c... [namelen=78 namehash=44adfc8c]

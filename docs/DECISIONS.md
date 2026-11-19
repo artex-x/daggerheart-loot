@@ -15,6 +15,7 @@ deleted.
 ## Index
 
 - 2026-11-19 - [Notes sit side by side from 761 px and a lone note takes the line measure](decisions/2026-11-19-notes-sit-side-by-side-from-761-px-and-a-lone-note-takes-the-line-measure.md)
+- 2026-11-19 - [The take count steps by one between Min and Max; a tick takes the stock](decisions/2026-11-19-the-take-count-steps-by-one-between-min-and-max.md)
 - 2026-11-18 - [A batch read has its own path, and search rows carry a built summary](decisions/2026-11-18-a-batch-read-has-its-own-path-and-search-rows-carry-a-built-summary.md)
 - 2026-11-18 - [A compact row shows each fact once and a long note folds up to 760 px](decisions/2026-11-18-a-compact-row-shows-each-fact-once-and-a-long-note-folds-up-to-760-px.md)
 - 2026-11-18 - [An AI client writes an import file from the tools alone](decisions/2026-11-18-an-ai-client-writes-an-import-file-from-the-tools-alone.md)
@@ -193,7 +194,7 @@ deleted.
 - 2026-09-30 - [The configured bundle budget is 210 kB; the unconfigured stays 150 kB](decisions/2026-09-30-the-configured-bundle-budget-is-210-kb.md)
 - 2026-09-30 - [The homebrew editor keeps its save button, with a guard and a revision check](decisions/2026-09-30-the-homebrew-editor-keeps-its-save-button-with-a-guard.md) - superseded in part
 - 2026-09-30 - [The list_entries touch and limit triggers run once per statement](decisions/2026-09-30-the-list-entries-triggers-run-once-per-statement.md)
-- 2026-09-30 - [The take count sits between Min and Max in one control; no stepper](decisions/2026-09-30-the-take-count-sits-between-min-and-max-in-one-control.md)
+- 2026-09-30 - [The take count sits between Min and Max in one control; no stepper](decisions/2026-09-30-the-take-count-sits-between-min-and-max-in-one-control.md) - superseded in part
 - 2026-09-29 - [A roll mode starts at its first row on each visit; no number crosses tabs](decisions/2026-09-29-a-roll-mode-starts-at-its-first-row-on-each-visit.md)
 - 2026-09-29 - [A sent purchase request keeps the ticks; the send waits until they change](decisions/2026-09-29-a-sent-purchase-request-keeps-the-ticks.md)
 - 2026-09-29 - [Decided requests list their items and hide until the next page load](decisions/2026-09-29-decided-requests-list-their-items-and-hide-until-reload.md)

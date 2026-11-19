@@ -4606,6 +4606,36 @@ async function sharedRowTickColumn() {
       await waitIn(page, () => !!document.querySelector('[data-row="ci1"] > .pickrow')),
       at + 'the ticked row drew no take line'
     );
+    const takeFit = () =>
+      page.evaluate(() => {
+        const row = document.querySelector('[data-row="ci1"] > .pickrow');
+        const cs = getComputedStyle(row);
+        const box = row.querySelector('.qgroup').getBoundingClientRect();
+        const lbl = row.querySelector('.lbl').getBoundingClientRect();
+        return {
+          over: box.right - (row.getBoundingClientRect().right - parseFloat(cs.paddingRight)),
+          sideways: document.documentElement.scrollWidth - innerWidth,
+          lblAbove: lbl.bottom <= box.top + 1
+        };
+      });
+    const fitAt = async (label, wantAbove) => {
+      const f = await takeFit();
+      ok(
+        f.over <= 1,
+        at + label + ': the take box passes the edge of the row - ' + JSON.stringify(f)
+      );
+      ok(f.sideways <= 0, at + label + ': the page scrolls sideways - ' + JSON.stringify(f));
+      if (wantAbove)
+        ok(f.lblAbove, at + label + ': «Взять» is not above the box - ' + JSON.stringify(f));
+    };
+    await fitAt('as drawn', false);
+    if (width === 360) {
+      await page.setViewport({ width: 320, height: 900 });
+      await d.settle();
+      await fitAt('at 320', true);
+      await page.setViewport({ width, height: 900 });
+      await d.settle();
+    }
     const g = await page.evaluate(() => {
       const row = document.querySelector('[data-row="ci1"]');
       /* `scroll-margin-top` keeps the row under the sticky header and above the bar. */
@@ -9306,7 +9336,7 @@ const TARGET_LAYERS = [
   LIST_A_ID + ' ~ selecting as gm4',
   LIST_A_ID + ' ~ compact, selecting as gm4',
   LIST_A_ID + ' ~ price sheet as gm4',
-  /* «Макс» and the take field; «Мин» is in `~ compact, selecting`. */
+  /* «Макс», «+» and the take field; «Мин» and «-» are in `~ compact, selecting`. */
   LIST_A_ID + ' ~ picked as gm4',
   SHOP + ' ~ requests open as gm1',
   SHOP + ' ~ share as gm1',
@@ -11794,6 +11824,17 @@ async function listFieldsAndInset() {
     try {
       const got = await size(page, '.lrow-take .qgroup input');
       ok(got === 16, where + 'the take field is ' + got + ' px');
+      const appearance = await page.evaluate(
+        () => getComputedStyle(document.querySelector('.lrow-take .qgroup input')).appearance
+      );
+      ok(appearance === 'textfield', where + 'the take field draws native spin buttons');
+      const inside = await page.evaluate(() => {
+        const row = document.querySelector('.lrow-take');
+        const cs = getComputedStyle(row);
+        const box = row.querySelector('.qgroup').getBoundingClientRect();
+        return box.right - (row.getBoundingClientRect().right - parseFloat(cs.paddingRight));
+      });
+      ok(inside <= 1, where + 'the take box passes the edge of the row by ' + inside + ' px');
     } finally {
       await ctx.close();
     }

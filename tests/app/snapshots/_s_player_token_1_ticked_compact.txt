@@ -28,13 +28,17 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/player-token-1?v=<
     checkbox "Первоклассный Спальный Мешок" [checked=true]
     ... button x8 of 12 same-shape siblings elided
     button "Мин, взять 1: Первоклассный Спальный Мешок"
+    button "На единицу меньше: Первоклассный Спальный Мешок"
     spinbutton "Взять: Первоклассный Спальный Мешок" [value=2 valuetext=2 required=false valuemin=1 valuemax=2]
+    button "На единицу больше: Первоклассный Спальный Мешок" [disabled=true]
     button "Макс, взять все: Первоклассный Спальный Мешок" [disabled=true]
     checkbox "Палаш" [checked=false]
     checkbox "Стеганый Доспех" [checked=false]
     checkbox "Зелье Быстрого Шага" [checked=true]
     button "Мин, взять 1: Зелье Быстрого Шага"
+    button "На единицу меньше: Зелье Быстрого Шага"
     spinbutton "Взять: Зелье Быстрого Шага" [value=5 valuetext=5 required=false valuemin=1 valuemax=5]
+    button "На единицу больше: Зелье Быстрого Шага" [disabled=true]
     button "Макс, взять все: Зелье Быстрого Шага" [disabled=true]
     StaticText "из 5"
     StaticText "= 100 зол."
@@ -99,6 +103,10 @@ daggerheart.com
 Макс, взять все: Первоклассный Спальный Мешок
 Мин, взять 1: Зелье Быстрого Шага
 Мин, взять 1: Первоклассный Спальный Мешок
+На единицу больше: Зелье Быстрого Шага
+На единицу больше: Первоклассный Спальный Мешок
+На единицу меньше: Зелье Быстрого Шага
+На единицу меньше: Первоклассный Спальный Мешок
 Палаш
 Первоклассный Спальный Мешок
 Печать
@@ -140,13 +148,17 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-1?v=<v>]
     checkbox "Premium Bedroll" [checked=true]
     ... button x8 of 12 same-shape siblings elided
     button "Min, take 1: Premium Bedroll"
+    button "One lower: Premium Bedroll"
     spinbutton "Take: Premium Bedroll" [value=2 valuetext=2 required=false valuemin=1 valuemax=2]
+    button "One higher: Premium Bedroll" [disabled=true]
     button "Max, take all: Premium Bedroll" [disabled=true]
     checkbox "Broadsword" [checked=false]
     checkbox "Gambeson Armor" [checked=false]
     checkbox "Stride Potion" [checked=true]
     button "Min, take 1: Stride Potion"
+    button "One lower: Stride Potion"
     spinbutton "Take: Stride Potion" [value=5 valuetext=5 required=false valuemin=1 valuemax=5]
+    button "One higher: Stride Potion" [disabled=true]
     button "Max, take all: Stride Potion" [disabled=true]
     StaticText "of 5"
     StaticText "= 100 gp"
@@ -206,6 +218,10 @@ Min, take 1: Premium Bedroll
 Min, take 1: Stride Potion
 More
 Note
+One higher: Premium Bedroll
+One higher: Stride Potion
+One lower: Premium Bedroll
+One lower: Stride Potion
 Premium Bedroll
 Print
 Privacy

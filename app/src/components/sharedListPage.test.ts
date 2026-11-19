@@ -1,7 +1,7 @@
 /* The shared page, `#/s/<token>`: an account list's share link - off `renderSharedList`
  * (`git show 23c00a6^:app.js`). Through `App`, the way `listPage.test.ts` reaches the index. */
 
-import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { flushSync } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -564,23 +564,93 @@ describe('the taken count and the total', () => {
     await tick('cc21');
     await setCount('Эликсир ярости', '2');
     const line = container.querySelector('[data-row="cc21"] .pickrow');
-    /* The label, the two ends and the field sit side by side with no text between them. */
-    expect(line).toHaveTextContent('ВзятьМинМакс из 5 = 1 мешок');
+    /* The label, the ends, the steps and the field sit side by side with no text between them. */
+    expect(line).toHaveTextContent('ВзятьМин−+Макс из 5 = 1 мешок');
     await expectNoA11yViolations(container);
   });
 
-  it('draws «Мин», the count and «Макс» as one control', async () => {
+  it('draws «Мин», «-», the count, «+» and «Макс» as one control', async () => {
     const { container } = await priced();
     await tick('cc21');
     const group = container.querySelector('[data-row="cc21"] .qgroup');
-    expect(group?.children).toHaveLength(3);
+    expect(group?.children).toHaveLength(5);
     expect(group?.children[0]).toBe(
       screen.getByRole('button', { name: 'Мин, взять 1: Эликсир ярости' })
     );
-    expect(group?.children[1]).toBe(countOf('Эликсир ярости'));
-    expect(group?.children[2]).toBe(
+    expect(group?.children[1]).toBe(
+      screen.getByRole('button', { name: 'На единицу меньше: Эликсир ярости' })
+    );
+    expect(group?.children[2]).toBe(countOf('Эликсир ярости'));
+    expect(group?.children[3]).toBe(
+      screen.getByRole('button', { name: 'На единицу больше: Эликсир ярости' })
+    );
+    expect(group?.children[4]).toBe(
       screen.getByRole('button', { name: 'Макс, взять все: Эликсир ярости' })
     );
+    await expectNoA11yViolations(container);
+  });
+
+  it('steps the count by one with «-» and «+», each disabled at its end', async () => {
+    const { container } = await priced();
+    await tick('cc21');
+    const down = screen.getByRole('button', { name: 'На единицу меньше: Эликсир ярости' });
+    const up = screen.getByRole('button', { name: 'На единицу больше: Эликсир ярости' });
+    const min = screen.getByRole('button', { name: 'Мин, взять 1: Эликсир ярости' });
+    expect(up).toBeDisabled();
+    expect(down).toBeEnabled();
+
+    await userEvent.click(down);
+    await userEvent.click(down);
+    expect(countOf('Эликсир ярости')).toHaveValue(3);
+    expect(container.querySelector('.selsumm')).toHaveTextContent(
+      /^Выбрана 1 позиция · 3 шт\./
+    );
+
+    await userEvent.click(min);
+    await userEvent.click(up);
+    expect(countOf('Эликсир ярости')).toHaveValue(2);
+    await userEvent.click(down);
+    expect(countOf('Эликсир ярости')).toHaveValue(1);
+    expect(down).toBeDisabled();
+    await expectNoA11yViolations(container);
+  });
+
+  it('gives the focus to the count when a keyboard press reaches an end', async () => {
+    const { container } = await priced();
+    await tick('cc21');
+    const min = screen.getByRole('button', { name: 'Мин, взять 1: Эликсир ярости' });
+    const up = screen.getByRole('button', { name: 'На единицу больше: Эликсир ярости' });
+    /* A click event with no detail is what Enter or Space sends. */
+    await fireEvent.click(min);
+    expect(countOf('Эликсир ярости')).toHaveValue(1);
+    expect(countOf('Эликсир ярости')).toHaveFocus();
+
+    (document.activeElement as HTMLElement).blur();
+    for (let i = 0; i < 4; i++) {
+      await fireEvent.click(up, { detail: 1 });
+    }
+    expect(countOf('Эликсир ярости')).toHaveValue(5);
+    expect(countOf('Эликсир ярости')).not.toHaveFocus();
+
+    const down = screen.getByRole('button', { name: 'На единицу меньше: Эликсир ярости' });
+    for (let i = 0; i < 3; i++) {
+      await fireEvent.click(down);
+    }
+    expect(countOf('Эликсир ярости')).toHaveValue(2);
+    expect(countOf('Эликсир ярости')).not.toHaveFocus();
+    await fireEvent.click(down);
+    expect(countOf('Эликсир ярости')).toHaveValue(1);
+    expect(countOf('Эликсир ярости')).toHaveFocus();
+
+    (document.activeElement as HTMLElement).blur();
+    for (let i = 0; i < 3; i++) {
+      await fireEvent.click(up);
+    }
+    expect(countOf('Эликсир ярости')).toHaveValue(4);
+    expect(countOf('Эликсир ярости')).not.toHaveFocus();
+    await fireEvent.click(up);
+    expect(countOf('Эликсир ярости')).toHaveValue(5);
+    expect(countOf('Эликсир ярости')).toHaveFocus();
     await expectNoA11yViolations(container);
   });
 

@@ -28,13 +28,15 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/player-token-1?as=
     button "Фильтры" [expanded=false]
     checkbox "Первоклассный Спальный Мешок" [checked=true]
     button "№ 1 Первоклассный Спальный Мешок ×2 · 150 зол. ПРЕДМЕТ Во время ..." [namelen=104 namehash=adcc3bb3]
-    ... button x9 of 13 same-shape siblings elided
+    ... button x11 of 15 same-shape siblings elided
     spinbutton "Взять: Первоклассный Спальный Мешок" [value=2 valuetext=2 required=false valuemin=1 valuemax=2]
+    button "На единицу больше: Первоклассный Спальный Мешок" [disabled=true]
     button "Макс, взять все: Первоклассный Спальный Мешок" [disabled=true]
     checkbox "Палаш" [checked=false]
     checkbox "Стеганый Доспех" [checked=false]
     checkbox "Зелье Быстрого Шага" [checked=true]
     spinbutton "Взять: Зелье Быстрого Шага" [value=5 valuetext=5 required=false valuemin=1 valuemax=5]
+    button "На единицу больше: Зелье Быстрого Шага" [disabled=true]
     button "Макс, взять все: Зелье Быстрого Шага" [disabled=true]
     StaticText "из 5"
     StaticText "= 100 зол."
@@ -91,6 +93,10 @@ daggerheart.com
 Макс, взять все: Первоклассный Спальный Мешок
 Мин, взять 1: Зелье Быстрого Шага
 Мин, взять 1: Первоклассный Спальный Мешок
+На единицу больше: Зелье Быстрого Шага
+На единицу больше: Первоклассный Спальный Мешок
+На единицу меньше: Зелье Быстрого Шага
+На единицу меньше: Первоклассный Спальный Мешок
 Не сообщать
 Палаш
 ПалашОсновное оружиеРанг 1 · Физическое · Проворность · Вплотную... [namelen=114 namehash=e80c7800]
@@ -141,13 +147,15 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-1?as=gm2&v=<v>]
     button "Filters" [expanded=false]
     checkbox "Premium Bedroll" [checked=true]
     button "No. 1 Premium Bedroll ×2 · 150 gp ITEM During downtime, you auto..." [namelen=89 namehash=f2fed1a2]
-    ... button x9 of 13 same-shape siblings elided
+    ... button x11 of 15 same-shape siblings elided
     spinbutton "Take: Premium Bedroll" [value=2 valuetext=2 required=false valuemin=1 valuemax=2]
+    button "One higher: Premium Bedroll" [disabled=true]
     button "Max, take all: Premium Bedroll" [disabled=true]
     checkbox "Broadsword" [checked=false]
     checkbox "Gambeson Armor" [checked=false]
     checkbox "Stride Potion" [checked=true]
     spinbutton "Take: Stride Potion" [value=5 valuetext=5 required=false valuemin=1 valuemax=5]
+    button "One higher: Stride Potion" [disabled=true]
     button "Max, take all: Stride Potion" [disabled=true]
     StaticText "of 5"
     StaticText "= 100 gp"
@@ -210,6 +218,10 @@ No. 3Twilight DeckItemArtifactVault of AgesRecall Cost: 2This de... [namelen=875
 No. 51Leviathan Harpoon99999 gpPrimary weaponUniqueWondrous Envi... [namelen=368 namehash=67ec9120]
 Note
 Notify
+One higher: Premium Bedroll
+One higher: Stride Potion
+One lower: Premium Bedroll
+One lower: Stride Potion
 Premium Bedroll
 Privacy
 RU

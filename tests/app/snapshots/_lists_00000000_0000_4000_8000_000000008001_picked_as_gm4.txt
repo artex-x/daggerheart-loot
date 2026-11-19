@@ -43,8 +43,9 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
     spinbutton "ЦЕНА" [value=750 valuetext=750 required=false valuemin=0 valuemax=99999]
     ... button x4 of 8 same-shape siblings elided
     button "Мин, взять 1: Пронзительная Свирель" [disabled=true]
+    button "На единицу меньше: Пронзительная Свирель" [disabled=true]
     spinbutton "Взять: Пронзительная Свирель" [value=1 valuetext=1 focused=true required=false valuemin=1 valuemax=2]
-    ... button x4 of 8 same-shape siblings elided
+    ... button x5 of 9 same-shape siblings elided
     checkbox "Заряжающий Колчан" [checked=false]
     spinbutton "Позиция в списке" [value=3 valuetext=3 required=false valuemin=1 valuemax=7]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
@@ -126,6 +127,8 @@ daggerheart.com
 Мистический Плащ
 Мистический ПлащПредметСущество с Характеристикой Заклинателя, н... [namelen=143 namehash=7854e7c3]
 Монетами
+На единицу больше: Пронзительная Свирель
+На единицу меньше: Пронзительная Свирель
 Название списка
 Наручники
 НаручникиПредметЭта пара наручников с замком поставляется с ключ... [namelen=67 namehash=77df6619]
@@ -191,8 +194,9 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
     spinbutton "PRICE" [value=750 valuetext=750 required=false valuemin=0 valuemax=99999]
     ... button x4 of 8 same-shape siblings elided
     button "Min, take 1: Piper Whistle" [disabled=true]
+    button "One lower: Piper Whistle" [disabled=true]
     spinbutton "Take: Piper Whistle" [value=1 valuetext=1 focused=true required=false valuemin=1 valuemax=2]
-    ... button x4 of 8 same-shape siblings elided
+    ... button x5 of 9 same-shape siblings elided
     checkbox "Charging Quiver" [checked=false]
     spinbutton "Position in the list" [value=3 valuetext=3 required=false valuemin=1 valuemax=7]
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
@@ -276,6 +280,8 @@ More: Premium Bedroll
 More: Speaking Orbs
 Note
 Note, filled
+One higher: Piper Whistle
+One lower: Piper Whistle
 Piper Whistle
 Piper WhistleItemThis handcrafted whistle has a distinctive soun... [namelen=149 namehash=81a85b00]
 Position in the list

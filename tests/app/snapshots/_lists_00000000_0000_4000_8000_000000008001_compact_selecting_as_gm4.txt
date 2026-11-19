@@ -30,7 +30,9 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
     checkbox "Пронзительная Свирель" [checked=true]
     ... button x5 of 9 same-shape siblings elided
     button "Мин, взять 1: Пронзительная Свирель"
+    button "На единицу меньше: Пронзительная Свирель"
     spinbutton "Взять: Пронзительная Свирель" [value=2 valuetext=2 required=false valuemin=1 valuemax=2]
+    button "На единицу больше: Пронзительная Свирель" [disabled=true]
     button "Макс, взять все: Пронзительная Свирель" [disabled=true]
     StaticText "из 2"
     StaticText "= 1 сундук 5 мешков"
@@ -90,6 +92,8 @@ daggerheart.com
 Макс, взять все: Пронзительная Свирель
 Мин, взять 1: Пронзительная Свирель
 Мистический Плащ
+На единицу больше: Пронзительная Свирель
+На единицу меньше: Пронзительная Свирель
 Название списка
 Наручники
 Первоклассный Спальный Мешок
@@ -130,7 +134,9 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
     checkbox "Piper Whistle" [checked=true]
     ... button x5 of 9 same-shape siblings elided
     button "Min, take 1: Piper Whistle"
+    button "One lower: Piper Whistle"
     spinbutton "Take: Piper Whistle" [value=2 valuetext=2 required=false valuemin=1 valuemax=2]
+    button "One higher: Piper Whistle" [disabled=true]
     button "Max, take all: Piper Whistle" [disabled=true]
     StaticText "of 2"
     StaticText "= 1 chest 5 bags"
@@ -188,6 +194,8 @@ Max, take all: Piper Whistle
 Min, take 1: Piper Whistle
 More
 Notes
+One higher: Piper Whistle
+One lower: Piper Whistle
 Piper Whistle
 Premium Bedroll
 Prices
