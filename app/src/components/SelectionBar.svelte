@@ -201,9 +201,17 @@
   }
 
   @media (max-width: 760px) {
+    /* «Все» and «Снять выделение» share the first row and the summary takes the full width
+       under them: a count like «Выбрана 1 позиция · 2 шт.» does not fit the column between
+       the two at 320-390 px. */
     .selbar {
-      grid-template-columns: auto minmax(0, 1fr) auto;
-      grid-template-areas: 'all summ clear' 'acts acts acts' 'below below below';
+      grid-template-columns: auto minmax(0, 1fr);
+      grid-template-areas: 'all clear' 'summ summ' 'acts acts' 'below below';
+      row-gap: 4px;
+    }
+
+    .selclear {
+      justify-self: end;
     }
 
     .selacts {
