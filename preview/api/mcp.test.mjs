@@ -706,7 +706,7 @@ describe('tools/call', () => {
 
   it('reads absent arguments as an empty object', async () => {
     const res = await mcp(rpc(1, 'tools/call', { name: 'list_rolls' }), LEGACY);
-    assert.equal((await res.json()).result.structuredContent.sections.length, 12);
+    assert.equal((await res.json()).result.structuredContent.sections.length, 13);
   });
 
   it('answers a failed read as an isError result with the 503 envelope', async () => {

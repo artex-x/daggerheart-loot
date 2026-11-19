@@ -6,7 +6,7 @@
 </script>
 
 <script lang="ts">
-  /* The modes of the twelve roll sections: the Core rules, the alternate tables and the ten
+  /* The modes of the thirteen roll sections: the Core rules, the alternate tables and the eleven
      supplements (docs/specs/FEATURES.md, "Chrome"). Up to 760 px one picker that names the
      lit mode, in the picker row of the roll page; from 761 px the three pills of the page
      head, the third one «Дополнения» opening the same sheet. Its own controls, not `Chip`:

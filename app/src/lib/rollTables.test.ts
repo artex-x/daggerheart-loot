@@ -20,8 +20,8 @@ const ROLL_SECTIONS = SECTIONS.filter((s): s is RollSection => s.startsWith('rol
 const index = buildIndex(readLoot());
 
 describe('ROLL_MODES', () => {
-  it('holds the twelve roll sections, each with exactly one mode', () => {
-    expect(ROLL_SECTIONS).toHaveLength(12);
+  it('holds the thirteen roll sections, each with exactly one mode', () => {
+    expect(ROLL_SECTIONS).toHaveLength(13);
     expect(Object.keys(ROLL_MODES).sort()).toEqual([...ROLL_SECTIONS].sort());
     for (const s of ROLL_SECTIONS) {
       const mode = ROLL_MODES[s];

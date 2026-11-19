@@ -19,7 +19,7 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search]
   main ""
     heading "Поиск" [level=1]
     button "Открывать при запуске" [pressed=false]
-    StaticText "Поиск сразу по 1593 позициям - добыча, расходники и снаряжение."
+    StaticText "Поиск сразу по 1629 позициям - добыча, расходники и снаряжение."
     searchbox "Поиск по названию или описанию..." [value="двуручное" focused=true]
     button "Выбрать"
     button "Все" [pressed=true]
@@ -27,7 +27,7 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search]
     button "Расходники" [pressed=false]
     button "Снаряжение" [pressed=false]
     button "№ 51 Гарпун Левиафана ОСНОВНОЕ ОРУЖИЕ УНИКАЛЬНОЕ WONDROUS ENVIRO..." [namelen=382 namehash=32854680]
-    ... button x271 of 275 same-shape siblings elided
+    ... button x272 of 276 same-shape siblings elided
     button "Эфирный Двуручный Меч ОСНОВНОЕ ОРУЖИЕ УНИКАЛЬНОЕ HOPE & FEAR Ран..." [namelen=218 namehash=0b58f4ad]
     button "Арбалет Гравитации ОСНОВНОЕ ОРУЖИЕ УНИКАЛЬНОЕ HOPE & FEAR Ранг 4..." [namelen=367 namehash=ed783e89]
   contentinfo ""
@@ -307,6 +307,7 @@ daggerheart.com
 № 31Посох ПоганкиОсновное оружиеУникальноеVault of AgesРанг 4 · ... [namelen=749 namehash=17bdf995]
 № 33Ярость ЗантакаОсновное оружиеУникальноеVault of AgesРанг 3 ·... [namelen=733 namehash=cc072b8c]
 № 34Дочь ЗелениОсновное оружиеУникальноеVault of AgesРанг 4 · Фи... [namelen=707 namehash=997d7df4]
+№ 35Оберегающий ЗонтикОсновное оружиеУникальноеFitzgibbon's Anti... [namelen=286 namehash=649c943d]
 № 3Длинный Лук ФираОсновное оружиеУникальноеDread GM ToolboxРанг... [namelen=200 namehash=e7d06558]
 № 3Кулаки РазорителяОсновное оружиеУникальноеVault of AgesРанг 4... [namelen=245 namehash=4aa70de9]
 № 3Посох Полого КамняОсновное оружиеУникальноеСпорополисРанг 2 ·... [namelen=198 namehash=23958430]
@@ -353,7 +354,7 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search]
   main ""
     heading "Search" [level=1]
     button "Open on start" [pressed=false]
-    StaticText "Search all 1593 entries at once - loot, consumables and equipmen..." [namelen=66 namehash=b8916354]
+    StaticText "Search all 1629 entries at once - loot, consumables and equipmen..." [namelen=66 namehash=182950d7]
     searchbox "Search by name or description..." [value="двуручное" focused=true]
     button "All" [pressed=true]
     button "Items" [pressed=false]

@@ -18,7 +18,8 @@ const SECTIONS = [
   'mwt',
   'ph',
   'lr',
-  'vh'
+  'vh',
+  'fa'
 ];
 
 /** What one part reads as, so a paragraph can be compared as plain text. */
@@ -112,6 +113,7 @@ describe('the help for a section', () => {
       ph: ['Об этой книге', 'About this book'],
       lr: ['Об этой книге', 'About this book'],
       vh: ['Об этой книге', 'About this book'],
+      fa: ['Об этой книге', 'About this book'],
       community: ['Об этих предметах', 'About these items']
     };
     for (const section of SECTIONS) {
@@ -150,6 +152,19 @@ describe('the help for a section', () => {
     }
     expect(textOf(helpFor('vh', 'ru'), 0)).toContain('В разделе 15 позиций');
     expect(textOf(helpFor('vh', 'en'), 0)).toContain("the adventure's 15 entries");
+  });
+
+  it("links each volume of Fitzgibbon's Antiques & Oddities and counts its 36 entries", () => {
+    for (const lang of LANGS) {
+      expect(linksOf(helpFor('fa', lang)).map((l) => l.href)).toEqual([
+        'https://heartofdaggers.com/products/fitzgibbons-antiques-oddities-vol-1/',
+        'https://heartofdaggers.com/products/fitzgibbons-antiques-oddities-vol-2/'
+      ]);
+    }
+    expect(textOf(helpFor('fa', 'ru'), 0)).toContain('Бросок выбирает из 36 позиций');
+    expect(textOf(helpFor('fa', 'en'), 0)).toContain('A roll picks from 36 entries');
+    expect(textOf(helpFor('fa', 'ru'), 1)).toContain('Трансформацию');
+    expect(textOf(helpFor('fa', 'en'), 1)).toContain('Transformation');
   });
 
   it('counts the roll pool of Arazo and Pistolheart and sends the other tiers to the card', () => {

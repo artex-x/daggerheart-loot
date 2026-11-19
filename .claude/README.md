@@ -3833,9 +3833,9 @@ re-litigates them:
   repeated mistake, and no artwork operation has produced one a path test
   could catch - the `og/`-orphan gap was a test gap, closed as a test.
 
-### Source kits of Pistolheart, The Last Round Table and Escape the Veiled Halls
+### Source kits of the newer supplements
 
-A refresh of the `ph`, `lr` or `vh` text or art starts from the owner's kits,
+A refresh of the `ph`, `lr`, `vh` or `fa` text or art starts from the owner's kits,
 which stay outside the repository (never commit a PDF or a PNG). Text
 extraction: `pdftotext` from `C:\tools\poppler\poppler-26.02.0\Library\bin`.
 
@@ -3844,6 +3844,7 @@ extraction: `pdftotext` from `C:\tools\poppler\poppler-26.02.0\Library\bin`.
 | `ph` | `C:\Users\Ignat\Downloads\Telegram Desktop\Pistolheart` | three volume PDFs; `images/` holds 45 PNGs (1254x1254, `<Name> v<N>.png`; Laudanum and Maverick's Shuffle are v2), `final-art-registry.json`, `references.md/json`, `image-context/` |
 | `lr` | `C:\Users\Ignat\Downloads\Last Round Table` | `LastRoundTable_PDF_v2.pdf`, "Items & Extras", printed pages 38-41 (PDF 41-44) |
 | `vh` | `C:\Users\Ignat\Downloads\Escape the Veiled Halls` | `Escape_The_Veiled_Halls.pdf` (Kate Balding, Fear Fest 2026), loot tables on printed pages 6, 8, 10, 12 |
+| `fa` | `C:\Users\Ignat\Downloads\Fitzgibbons Antiques and Oddities` | `FAO-V1_DH-Pages-2.pdf` and `FAO-V2_DH-Pages-1.pdf` (A.E. Van Fleet), the A-Z list of each volume, then its print-card pages; `images/` holds 36 PNGs (`<Name> v<N>.png`; Warding Parasol is v2), `final-art-registry.json`, `card-text-audit.md` |
 
 Source quirks that a text refresh meets again:
 
@@ -3858,6 +3859,9 @@ Source quirks that a text refresh meets again:
   book's Environments section.
 - `vh`: the PDF text layer loses the Demonic Book's hyphens (1-6, 7-9, 10-12
   on the printed page).
+- `fa`: the A-Z list wins over the print card (Familiar's Collar's card omits "see
+  through its eyes"); book typos "temporaily" and "scene.." are fixed. The four
+  Transformation cards come from daggerheart.su, not from the books.
 - Product names stay Latin in Russian text. Every English text was matched
   word for word against its PDF.
 

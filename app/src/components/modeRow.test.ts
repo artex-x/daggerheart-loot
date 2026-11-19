@@ -1,4 +1,4 @@
-/* The modes of the twelve roll sections: the picker and its sheet up to 760 px, the three
+/* The modes of the thirteen roll sections: the picker and its sheet up to 760 px, the three
  * pills from 761 px (docs/specs/FEATURES.md, "Chrome"). */
 import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
@@ -132,7 +132,7 @@ describe('the mode picker up to 760 px', () => {
     return { ...r, picker, sheet, links: within(sheet).getAllByRole('link') };
   }
 
-  it('opens a sheet titled «Бросок» with the twelve modes in order, the open one current', async () => {
+  it('opens a sheet titled «Бросок» with the thirteen modes in order, the open one current', async () => {
     const { sheet, links } = await open('#/roll/vault_of_ages');
     expect(within(sheet).getByRole('heading', { name: 'Бросок' })).toBeInTheDocument();
     expect(links.map((a) => a.textContent.trim())).toEqual(
@@ -193,12 +193,12 @@ describe('the mode picker up to 760 px', () => {
 });
 
 describe('the sheet from 761 px', () => {
-  it('opens from «Дополнения» with the same twelve modes', async () => {
+  it('opens from «Дополнения» with the same thirteen modes', async () => {
     const { nav } = row('#/roll/std', 'wide');
     const button = within(nav).getByRole('button');
     await userEvent.click(button);
     const sheet = screen.getByRole('dialog', { name: 'Режим броска: Обычные правила' });
-    expect(within(sheet).getAllByRole('link')).toHaveLength(12);
+    expect(within(sheet).getAllByRole('link')).toHaveLength(13);
     await userEvent.click(screen.getByRole('button', { name: 'Закрыть' }));
     await waitFor(() => {
       expect(screen.queryByRole('dialog')).toBeNull();

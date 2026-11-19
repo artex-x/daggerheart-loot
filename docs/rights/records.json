@@ -22,7 +22,8 @@
     "mwt": "owner",
     "ph": "owner",
     "lr": "owner",
-    "vh": "owner"
+    "vh": "owner",
+    "fa": "owner"
   },
   "records": {
     "ci1": { "license": "dpcgl", "page": 75 },

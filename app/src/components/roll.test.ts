@@ -307,6 +307,19 @@ describe('the whole-table supplements over the real data', () => {
     expect(heading('Legendary Foresight Potion')).toBeInTheDocument();
   });
 
+  it("rolls Fitzgibbon's Antiques & Oddities over 36 entries, a weapon at 21 and the last at 36", async () => {
+    open('#/roll/fa');
+    expect(screen.getByRole('button', { name: 'Бросить 1-36' })).toBeInTheDocument();
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+    cleanup();
+    await typed('#/roll/fa', '21');
+    expect(heading('Драконий Кортик')).toBeInTheDocument();
+    cleanup();
+    await typed('#/roll/fa', '40');
+    expect(field().value).toBe('36');
+    expect(heading('Чудесная Бумажная Лента')).toBeInTheDocument();
+  });
+
   it('has no axe violations on Escape the Veiled Halls', async () => {
     const { container } = render(App, {
       env: fakeEnv({ router: memoryRouter('#/roll/vh'), data: fakeData(REAL) })

@@ -19,7 +19,7 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search]
   main ""
     heading "Поиск" [level=1]
     button "Открывать при запуске" [pressed=false]
-    StaticText "Поиск сразу по 1593 позициям - добыча, расходники и снаряжение."
+    StaticText "Поиск сразу по 1629 позициям - добыча, расходники и снаряжение."
     searchbox "Поиск по названию или описанию..." [value=меч]
     button "Все" [pressed=true]
     button "Предметы" [pressed=false]
@@ -30,8 +30,8 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search]
     checkbox "Меч Призрачного Касания" [checked=false]
     button "№ 105 Меч Призрачного Касания ОСНОВНОЕ ОРУЖИЕ УНИКАЛЬНОЕ THE DRA..." [namelen=284 namehash=0429d5e8]
     checkbox "Меч Адского Пламени" [checked=false]
-    ... button x140 of 144 same-shape siblings elided
-    ... checkbox x139 of 143 same-shape siblings elided
+    ... button x141 of 145 same-shape siblings elided
+    ... checkbox x140 of 144 same-shape siblings elided
     checkbox "Божественный Пластинчатый Доспех" [checked=false]
     button "Божественный Пластинчатый Доспех БРОНЯ УНИКАЛЬНОЕ HOPE & FEAR Ра..." [namelen=155 namehash=7bbcaef6]
     checkbox "Латы Ужаса" [checked=false]
@@ -67,6 +67,7 @@ daggerheart.com
 Божественный Пластинчатый Доспех
 Божественный Пластинчатый ДоспехБроняУникальноеHope & FearРанг 4... [namelen=150 namehash=5c3131cb]
 Бросок
+Брошь Лебединой Песни
 Бутыль с Духом
 В список
 Взгляд Ваэт
@@ -326,6 +327,7 @@ daggerheart.com
 № 2Клинок ЖивущихОсновное оружиеУникальноеDread GM ToolboxРанг 3... [namelen=229 namehash=283db90b]
 № 2Проклятая ГоловаПредметVault of AgesСтоимость Призыва: 2Один ... [namelen=350 namehash=668e6021]
 № 2Стекло Разбитой СудьбыПредметПроклятый предметVault of AgesСу... [namelen=722 namehash=4e0a939c]
+№ 31Брошь Лебединой ПесниПредметFitzgibbon's Antiques & Oddities... [namelen=171 namehash=c3332f4f]
 № 32Амулет ГорнилаПредметThe Dragon's VaultКогда вы носите этот ... [namelen=359 namehash=f2ab9971]
 № 32Зелье Судного ДняРасходникWondrous EnvironmentsБросьте d12 з... [namelen=413 namehash=16029ad5]
 № 32Нож ЕдинорогаВторичное оружиеУникальноеVault of AgesРанг 4 ·... [namelen=340 namehash=16c9c42e]
@@ -385,7 +387,7 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search]
   main ""
     heading "Search" [level=1]
     button "Open on start" [pressed=false]
-    StaticText "Search all 1593 entries at once - loot, consumables and equipmen..." [namelen=66 namehash=b8916354]
+    StaticText "Search all 1629 entries at once - loot, consumables and equipmen..." [namelen=66 namehash=182950d7]
     searchbox "Search by name or description..." [value=меч]
     button "All" [pressed=true]
     button "Items" [pressed=false]
@@ -396,8 +398,8 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search]
     checkbox "Ghost Touch Sword" [checked=false]
     button "No. 105 Ghost Touch Sword PRIMARY WEAPON UNIQUE THE DRAGON'S VAU..." [namelen=240 namehash=468f2bf9]
     checkbox "Hellfire Sword" [checked=false]
-    ... button x140 of 144 same-shape siblings elided
-    ... checkbox x139 of 143 same-shape siblings elided
+    ... button x141 of 145 same-shape siblings elided
+    ... checkbox x140 of 144 same-shape siblings elided
     checkbox "Godbound Laminar" [checked=false]
     button "Godbound Laminar ARMOR UNIQUE HOPE & FEAR Tier 4 · Thresholds 13..." [namelen=127 namehash=9ea4610b]
     checkbox "Circle-Forged Dreadplate" [checked=false]
@@ -631,6 +633,7 @@ No. 29Calming PendantItemWhen you would mark your last Stress, r... [namelen=116
 No. 2Blade of the LivingPrimary weaponUniqueDread GM ToolboxTier... [namelen=238 namehash=dfce0e68]
 No. 2Cursed HeadItemVault of AgesRecall Cost: 2Once per long res... [namelen=297 namehash=ebbc58d3]
 No. 2Glass of Shattered FateItemCursed objectVault of AgesA crea... [namelen=697 namehash=f9eaaed7]
+No. 31Swan Song BroochItemFitzgibbon's Antiques & OdditiesWhen y... [namelen=156 namehash=be5849dd]
 No. 32Doomsday PotionConsumableWondrous EnvironmentsRoll a d12 f... [namelen=439 namehash=f1db9fc1]
 No. 32Furnace AmuletItemThe Dragon's VaultWhile wearing this amu... [namelen=350 namehash=ca388bfb]
 No. 32Unicorn KnifeSecondary weaponUniqueVault of AgesTier 4 · M... [namelen=305 namehash=32354209]
@@ -711,6 +714,7 @@ Singing SwordPrimary weaponUniqueHope & FearTier 3 · Physical · ... [namelen=2
 Skip to content
 Sphere of Insanity
 Sprite Bottle
+Swan Song Brooch
 Sword of Angels
 Sword of Undeath
 Tables

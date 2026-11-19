@@ -34,6 +34,7 @@ describe('the sectioned tables', () => {
 
   it('gives the section leaf of a sectioned record only', () => {
     expect(sectionLeaf(rec({ src: 'ph', vol: 2 }), 'ru')).toBe('Том 2');
+    expect(sectionLeaf(rec({ src: 'fa' }), 'en')).toBe('');
     expect(sectionLeaf(rec({ src: 'mwt', realm: 'drome' }), 'en')).toBe('The Drome');
     expect(sectionLeaf(rec({ src: 'vh' }), 'en')).toBe('');
     expect(sectionLeaf(rec({ src: 'lr' }), 'en')).toBe('');

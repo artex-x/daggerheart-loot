@@ -371,9 +371,10 @@ const { ok } = rep;
     ['mwt', 'realm-drome'],
     ['ph', 'vol-2'],
     ['lr', 'kind-equip'],
-    ['vh', 'kind-consumable']
+    ['vh', 'kind-consumable'],
+    ['fa', 'kind-equip']
   ];
-  /* One context reused across all 34 opens (22 probes, 12 whole tables) - same
+  /* One context reused across all 36 opens (23 probes, 13 whole tables) - same
    * reasoning as the address-grammar loop above: no probe here seeds
    * storage, so a full `d.open` navigation already starts each one clean. */
   const { ctx: pCtx, page: pPage, d: pD } = await fresh({ width: 1280, height: 900 });

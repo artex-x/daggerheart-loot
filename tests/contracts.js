@@ -94,12 +94,13 @@ const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
     'mwt',
     'ph',
     'lr',
-    'vh'
+    'vh',
+    'fa'
   ];
   const slugs = Object.values(TABLE_SLUG).concat(
     SECTION_IDS.map((id) => 'roll/' + TABLE_SLUG[id])
   );
-  ok(slugs.length === 22, 'the URL ids are not 12 tables and 10 sections, but ' + slugs.length);
+  ok(slugs.length === 24, 'the URL ids are not 13 tables and 11 sections, but ' + slugs.length);
   [
     ['llms.txt', machine],
     ['CONTRACTS.md', contractsText],

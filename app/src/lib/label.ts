@@ -113,7 +113,7 @@ export function rarityKey(r: string): keyof Dict {
 /**
  * The name a source *key* takes, off `srcName` in app.js - not a record's own
  * source, which `srcLabel` below already names. The equipment facet's `src`
- * row picks a value out of `EQ_SRC` (the eleven books plus the four frames), a
+ * row picks a value out of `EQ_SRC` (the twelve books plus the four frames), a
  * share link's adds `community`, and each needs a name for the key alone, with
  * no record behind it.
  */
@@ -131,9 +131,10 @@ export function srcName(key: string, lang: Lang): string {
     ph: t.srcPh,
     lr: t.srcLr,
     vh: t.srcVh,
+    fa: t.srcFa,
     community: t.srcComm
   };
-  /* Anything not one of the eleven books above or `community` is assumed to be
+  /* Anything not one of the twelve books above or `community` is assumed to be
      a frame id - the same assumption `EQ_SRC` bakes into the facet's own value list. */
   return named[key] ?? frameName(key as FrameId, lang);
 }
@@ -178,6 +179,7 @@ export function srcLabel(it: Record_, lang: Lang): string {
     case 'ph':
     case 'lr':
     case 'vh':
+    case 'fa':
       return srcName(it.src, lang);
     case 'frame':
       /* `it.frame` is checked, and returned on, above - reachable here only
@@ -223,6 +225,7 @@ export function tableOf(it: Record_): TableId | null {
   if (it.src === 'ph') return 'ph';
   if (it.src === 'lr') return 'lr';
   if (it.src === 'vh') return 'vh';
+  if (it.src === 'fa') return 'fa';
   if (it.eq && !it.roll) return EQ_TABLE_OF[it.eq.t];
   if (it.src === 'wondrous') return 'wondrous';
   if (it.src === 'dread') return 'dread';

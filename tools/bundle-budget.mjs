@@ -1,6 +1,6 @@
 /* The bundle size budget.
  *
- * Gzip of the code, data excluded: `data.js` is 1593 records, big by definition
+ * Gzip of the code, data excluded: `data.js` is 1629 records, big by definition
  * and unaffected by how the app is written. The code, on the other hand, grows
  * invisibly - one convenient dependency at a time - and a number is the only way
  * to notice.
@@ -36,7 +36,8 @@ const code = walk(DIST).filter(
    measured it), about 332.0 kB estimated on 2026-11-11 (the unconfigured total plus the
    57 kB chunk; no .env.test.local on that host), 336.9 kB on 2026-11-13 (built
    with placeholder VITE_SUPABASE_* values; CI's real values measured 0.1 kB more before, so
-   the limit is 338) - while the unconfigured one `check:built` measures, 275.0 kB on
+   the limit is 338), 338.2 kB on 2026-11-18 (CI run 44423064126, the Fitzgibbon's help
+   and dictionary; the limit is 339) - while the unconfigured one `check:built` measures, 275.0 kB on
    2026-11-11, 278.9 kB on 2026-11-13 (the consent page and the connected apps) and 279.0 kB
    on 2026-11-17 (the account page's link to the AI page), must stay under 280. A batch whose total passes a
    budget raises it to its measured total rounded up to the next whole kB, never past
@@ -44,7 +45,7 @@ const code = walk(DIST).filter(
    "The configured bundle ceiling rises to 350 kB" and "The unconfigured bundle
    ceiling rises to 300 kB"). */
 const withAccount = code.some((f) => /[\\/]assets[\\/]supabase-[^\\/]*\.js$/.test(f));
-const BUDGET_KB = withAccount ? 338 : 280; // gzip, code only
+const BUDGET_KB = withAccount ? 339 : 280; // gzip, code only
 const WHICH = withAccount ? 'with the account client chunk' : 'no account client chunk';
 
 let total = 0;

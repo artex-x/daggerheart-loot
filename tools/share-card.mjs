@@ -196,6 +196,7 @@ export const PATH_TEXT = {
     ph: 'Pistolheart',
     lr: 'The Last Round Table',
     vh: 'Escape the Veiled Halls',
+    fa: "Fitzgibbon's Antiques & Oddities",
     eq: 'Снаряжение',
     other: 'Прочее',
     alt: 'Альт. таблицы',
@@ -224,6 +225,7 @@ export const PATH_TEXT = {
     ph: 'Pistolheart',
     lr: 'The Last Round Table',
     vh: 'Escape the Veiled Halls',
+    fa: "Fitzgibbon's Antiques & Oddities",
     eq: 'Equipment',
     other: 'Other',
     alt: 'Alt. tables',
@@ -257,6 +259,7 @@ export const TABLE_PATH = {
   ph: ['ph'],
   lr: ['lr'],
   vh: ['vh'],
+  fa: ['fa'],
   eq_weapon: ['eq', 'weapon'],
   eq_secondary: ['eq', 'secondary'],
   eq_armor: ['eq', 'armor'],
@@ -279,7 +282,8 @@ export const TABLE_SLUG = {
   mwt: 'many_worlds_tavern',
   ph: 'pistolheart',
   lr: 'last_round_table',
-  vh: 'escape_the_veiled_halls'
+  vh: 'escape_the_veiled_halls',
+  fa: 'fitzgibbons_antiques_and_oddities'
 };
 const EQ_TABLE_OF = { weapon: 'eq_weapon', secondary: 'eq_secondary', armor: 'eq_armor' };
 
@@ -288,7 +292,7 @@ export function tableOf(it) {
   if (it.starting) return 'other_starting';
   if (it.src === 'voa') return 'voa';
   if (it.src === 'arazo') return 'arazo';
-  if (['mwt', 'ph', 'lr', 'vh'].includes(it.src)) return it.src;
+  if (['mwt', 'ph', 'lr', 'vh', 'fa'].includes(it.src)) return it.src;
   if (it.eq && !it.roll) return EQ_TABLE_OF[it.eq.t];
   if (['wondrous', 'dread', 'dv', 'community'].includes(it.src)) return it.src;
   if (it.src === 'core' || it.src === 'hnf')

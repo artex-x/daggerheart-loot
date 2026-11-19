@@ -186,13 +186,14 @@ Do:
 7. Wire roll mode / table / filters / i18n only if required. A new source key, table or roll section is registered in all of these (grep an existing key such as `voa` or `dv` to confirm the list is still complete):
     - app: `app/src/lib/types.ts` (`TABLE_IDS`, `SECTIONS`), `tables.ts`, `label.ts` (`srcName`, `srcLabel`, `tableOf`), `dict.ts` (tab, page, `src*`, `footBefore`, section labels), `help.ts` (the help box and its product link), `facets.ts`, `filters.ts` (`PLAIN_GROUPS`), `sections.ts`, `desc.ts`; `App.svelte` (`ROLL_TABLE`), `TabBar.svelte`, `TablesPage.svelte`
     - generators: `tools/derived.js` (`SRC`, `CARD_TABLES`, `TRAIT`, `namesJson`), `tools/build-share-pages.js` (the entry page's source list), `tools/share-card.mjs` (`PATH_TEXT`, `TABLE_PATH`, `tableOf`, `where`, `LABEL_GROUPS`, the word maps), `tools/desc-style.mjs` (`isLabelled`, `OVERRIDES`); `preview/worker.mjs` (`tableCard`) when the source has its own sections
-    - tests: `tests/dataint.js`, `tests/derived.js` (per-source pins), the unit tests beside each app file above, `tests/app/sweep.js`, `typo.js`, `hues.js`, `contracts.js`, `inventory.js`
+    - tests: `tests/dataint.js`, `tests/derived.js` (per-source pins), the unit tests beside each app file above, `tests/app/sweep.js`, `typo.js`, `hues.js`, `contracts.js`, `inventory.js`; the read API fixtures: `docs/fixtures/api/v1/catalog.json` (a few records of the new source and its `audit.sources` row), the section counts in `preview/api/api.test.mjs` and `mcp.test.mjs`, then the API and MCP fixtures through `UPDATE_API_FIXTURES=1 UPDATE_MCP_FIXTURES=1`, and the count in `llms.txt`, "The read API"
     - contracts and docs: `docs/fixtures/urls/routes.json`, `docs/specs/CONTRACTS.md`, `ROUTES.md`, `STATE.md`, `FEATURES.md`, `COVERAGE.md`, `README.md`, `README.ru.md`, `llms.txt`, `PRODUCT.md`
 8. Update docs and copy that publish counts or source lists when they change - every file `tests/derived.js`'s `COUNT_BEARING_FILES` names. A new document that publishes a count gets an entry there in the same change, or it goes stale silently
 9. Update tests/fixtures/specs only if behavior or public contracts change. Fixture counts (the `routes.json` row counts) move with every equipment ingest: compute them from the merged data with a script, never by hand
 10. A new word on the print card (a trait, a range) is measured in the built app against the cell at the `2.2cqw` floor before it ships; a word that does not fit gets a print-only short form (`app/src/lib/print.ts`)
 11. Run verification:
     - `node tests/run-all.js dataint` - ids, images, thumbnails, `og/` orphans, stubs
+    - the `test:preview` command of `tools/check/lib.mjs` and `node tests/derived.js` (`check:fast` runs neither)
     - `npm run check` when code/app surface changed
     - `npm run check:built` when screen/dist output may change (per CLAUDE.md)
     - focused tests for new routes/filters/mechanics

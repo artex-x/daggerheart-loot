@@ -47,7 +47,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       ... button x28 of 32 same-shape siblings elided
       StaticText "ИСТОЧНИК"
       button "Все" [pressed=true]
-      button "и ещё 3" [expanded=false]
+      button "и ещё 4" [expanded=false]
       ... StaticText x3 of 7 same-shape siblings elided
       ... button x3 of 7 same-shape siblings elided
       StaticText "ХВАТ"
@@ -59,9 +59,9 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     heading "Ранг 1" [level=2]
     button "Ссылка на раздел"
     checkbox "Палаш" [checked=false]
-    ... button x514 of 518 same-shape siblings elided
+    ... button x518 of 522 same-shape siblings elided
     checkbox "Длинный Меч" [checked=false]
-    ... checkbox x508 of 512 same-shape siblings elided
+    ... checkbox x512 of 516 same-shape siblings elided
     heading "Ранг 2" [level=2]
     heading "Ранг 3" [level=2]
     heading "Ранг 4" [level=2]
@@ -152,10 +152,12 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 1Эфирная ВинтовкаМагическое · Инстинкт · Очень далеко · d8+8 маг... [namelen=76 namehash=10d5613e]
 2
 20Железный КонстебльФизическое · Сила · Вплотную · d8+5 физ · Од... [namelen=72 namehash=e83830d0]
+21Драконий КортикФизическое · Искусность · Вплотную · d8+4 физ ·... [namelen=75 namehash=a2adedf4]
 22Копьё-КамертонФизическое · Искусность · Близко · d10+2 физ · Д... [namelen=72 namehash=c2f57ff6]
 23Алебарда УрзоФизическое · Влияние · Близко · d12+1 физ · Двуру... [namelen=68 namehash=f6d46d37]
 23Всадник ВолнМагическое · Инстинкт · Вплотную · d8+7 маг · Одно... [namelen=70 namehash=802201c8]
 24Боевой Молот БазаФизическое · Сила · Вплотную · d12+2 физ · Дв... [namelen=71 namehash=e62c811d]
+24Магнитный ЖезлМагическое · Знание · Далеко · d8+6 маг · Однору... [namelen=68 namehash=d8a9a264]
 25Когти ИфангаМагическое · Влияние · Далеко · d8+4 маг · Одноруч... [namelen=67 namehash=3345eacd]
 26Губитель из СухостояФизическое · Инстинкт · Вплотную · d8+1 фи... [namelen=78 namehash=1520a4a5]
 26Кнут из Хвоста ВиверныФизическое · Проворность · Близко · d10 ... [namelen=80 namehash=a9ff147e]
@@ -176,8 +178,10 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 31Молот Инфернального КузнецаМагическое · Сила · Вплотную · d6+3... [namelen=81 namehash=a64d67e8]
 31Посох ПоганкиФизическое · Инстинкт · Вплотную · d10+9 физ · Дв... [namelen=71 namehash=558cc015]
 32Вихревой РезакФизическое · Проворность · Близко · d6+8 физ · О... [namelen=73 namehash=87019d02]
+33Дразнящая СабляФизическое · Влияние · Вплотную · d8+3 физ · Од... [namelen=72 namehash=c3a4c680]
 33Ярость ЗантакаФизическое · Сила · Вплотную · d10+9 физ · Двуру... [namelen=68 namehash=57a42a63]
 34Дочь ЗелениФизическое · Проворность · Очень далеко · d8+12 физ... [namelen=76 namehash=3eb06c41]
+35Оберегающий ЗонтикМагическое · Знание · Далеко · d6+3 маг · Дв... [namelen=71 namehash=fa828079]
 3Арк-ПистолетМагическое · Знание · Далеко · d6+1 маг · Одноручно... [namelen=65 namehash=820a975f]
 3Длинный Лук ФираМагическое · Проворность · Далеко · d6+10 маг ·... [namelen=74 namehash=f42b275b]
 3Дырявый КлинокФизическое · Сила · Вплотную · d8+6 физ · Одноруч... [namelen=67 namehash=6a68a570]
@@ -353,7 +357,9 @@ daggerheart.com
 Длинный МечФизическое · Проворность · Вплотную · d10+3 физ · Дву... [namelen=70 namehash=2773aef6]
 Дополнения
 Дочь Зелени
+Дразнящая Сабля
 Драконий Клык
+Драконий Кортик
 Драконий Лук
 Древний Лук
 Древний ЛукМагическое · Инстинкт · Далеко · d6+4 маг · Двуручное
@@ -646,6 +652,7 @@ daggerheart.com
 Магические Наручи
 Магические НаручиМагическое · Сила · Вплотную · d10+3 маг · Двур... [namelen=69 namehash=800a63d1]
 Магическое
+Магнитный Жезл
 Метательное Копье
 Метательное КопьеФизическое · Проворность · Близко · d6+6 физ · ... [namelen=74 namehash=cfb4246a]
 Метеор Хиларада
@@ -688,6 +695,7 @@ daggerheart.com
 Нестареющее Око Зверя
 Неугомонное Возмездие
 Нимойрас
+Оберегающий Зонтик
 Обоюдоострый Меч
 Обоюдоострый МечФизическое · Проворность · Вплотную · d10+9 физ ... [namelen=75 namehash=3ceaf541]
 Обрез
@@ -1179,7 +1187,7 @@ daggerheart.com
 Эфирный Двуручный МечМагическое · Инстинкт · Близко · d10+9 маг ... [namelen=75 namehash=55121bb3]
 Янтарный Молот
 Ярость Зантака
-и ещё 3
+и ещё 4
 
 ## en :: tree
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon?as=gm1]
@@ -1225,7 +1233,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon?as=g
       ... button x28 of 32 same-shape siblings elided
       StaticText "SOURCE"
       button "All" [pressed=true]
-      button "and 3 more" [expanded=false]
+      button "and 4 more" [expanded=false]
       ... StaticText x3 of 7 same-shape siblings elided
       ... button x3 of 7 same-shape siblings elided
       StaticText "BURDEN"
@@ -1237,9 +1245,9 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon?as=g
     heading "Tier 1" [level=2]
     button "Link to this section"
     checkbox "Broadsword" [checked=false]
-    ... button x514 of 518 same-shape siblings elided
+    ... button x518 of 522 same-shape siblings elided
     checkbox "Longsword" [checked=false]
-    ... checkbox x508 of 512 same-shape siblings elided
+    ... checkbox x512 of 516 same-shape siblings elided
     heading "Tier 2" [level=2]
     heading "Tier 3" [level=2]
     heading "Tier 4" [level=2]
@@ -1330,9 +1338,11 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon?as=g
 1Trusty CultivatorMagic · Instinct · Close · d8+2 mag · Two-Hand... [namelen=66 namehash=9fc98146]
 2
 20Iron ConstablePhysical · Strength · Melee · d8+5 phy · One-Han... [namelen=67 namehash=7b16ea34]
+21Drake DirkPhysical · Finesse · Melee · d8+4 phy · One-Handed
 22Tuning SpearPhysical · Finesse · Very Close · d10+2 phy · Two-... [namelen=70 namehash=8e411fbe]
 23Urzo's HalberdPhysical · Presence · Very Close · d12+1 phy · T... [namelen=73 namehash=427dced0]
 23WaveriderMagic · Instinct · Melee · d8+7 mag · One-Handed
+24Lodestone WandMagic · Knowledge · Far · d8+6 mag · One-Handed
 24Warhammer of BazPhysical · Strength · Melee · d12+2 phy · Two-... [namelen=70 namehash=94c6d89c]
 25Claws of YifangMagic · Presence · Far · d8+4 mag · One-Handed
 26Deadwood SlayerPhysical · Instinct · Melee · d8+1 phy · One-Ha... [namelen=68 namehash=20e6a762]
@@ -1354,8 +1364,10 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon?as=g
 31Toadstool StaffPhysical · Instinct · Melee · d10+9 phy · Two-H... [namelen=69 namehash=4d9df0f5]
 31Voynarian CrossbowPhysical · Finesse · Far · d6+8 phy · One-Ha... [namelen=68 namehash=e89ca151]
 32Whirlwind SlasherPhysical · Agility · Very Close · d6+8 phy · ... [namelen=74 namehash=46cad4f1]
+33Taunting SaberPhysical · Presence · Melee · d8+3 phy · One-Han... [namelen=67 namehash=fc4a3b01]
 33Zanthak's RagePhysical · Strength · Melee · d10+9 phy · Two-Ha... [namelen=68 namehash=fb7b490a]
 34Verdant DaughterPhysical · Agility · Very Far · d8+12 phy · Tw... [namelen=72 namehash=9a964031]
+35Warding ParasolMagic · Knowledge · Far · d6+3 mag · Two-Handed
 3ArcpistolMagic · Knowledge · Far · d6+1 mag · One-Handed
 3Fists of the RavagerMagic · Strength · Melee · d10+15 mag · Two... [namelen=71 namehash=87f2e766]
 3Hole-y BladePhysical · Strength · Melee · d8+6 phy · One-Handed
@@ -1676,6 +1688,7 @@ Displacement Razor
 Displacement RazorMagic · Finesse · Melee · d8+3 mag · Two-Hande... [namelen=65 namehash=155ffae0]
 Double Flail
 Double FlailPhysical · Agility · Very Close · d10+8 phy · Two-Ha... [namelen=68 namehash=18b9d58b]
+Drake Dirk
 Drakebow
 Draketooth
 Dread GM Toolbox
@@ -2111,6 +2124,7 @@ Link to this section
 Link to this table
 List
 Loathsome Lute
+Lodestone Wand
 Longbow
 Longbow of Fyr
 LongbowPhysical · Agility · Very Far · d8+3 phy · Two-Handed
@@ -2293,6 +2307,7 @@ Tables
 Talon Blades
 Talon BladesPhysical · Finesse · Close · d10+7 phy · Two-Handed
 Taryan's Morningstar
+Taunting Saber
 Temprus
 Tendon Bow
 Terms of use
@@ -2336,6 +2351,7 @@ War PickPhysical · Strength · Melee · d8+3 phy · One-Handed
 War Scythe
 War ScythePhysical · Finesse · Very Close · d8+5 phy · Two-Hande... [namelen=65 namehash=40ab6a4c]
 Warbringer Revolver
+Warding Parasol
 Warhammer
 Warhammer of Baz
 WarhammerPhysical · Strength · Melee · d12+3 phy · Two-Handed
@@ -2356,5 +2372,5 @@ Yithian Lightning Gun
 Yutari Bloodbow
 Yutari BloodbowMagic · Finesse · Far · d6+4 mag · Two-Handed
 Zanthak's Rage
-and 3 more
+and 4 more
 daggerheart.com

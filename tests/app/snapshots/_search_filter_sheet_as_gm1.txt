@@ -16,7 +16,7 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search?
     button "Расходники" [pressed=false]
     button "Снаряжение" [pressed=false]
     button "Сбросить" [disabled=true]
-    button "Показать 145"
+    button "Показать 146"
 
 ## ru :: controls
 API
@@ -64,7 +64,7 @@ daggerheart.com
 Плетённый Углями ДоспехБроняУникальноеРанг 4 · Пороги 13/36 · Бр... [namelen=140 namehash=6e1a5c7f]
 Поиск
 Поиск по названию или описанию...
-Показать 145
+Показать 146
 Поющий МечОсновное оружиеУникальноеHope & FearРанг 3 · Физическо... [namelen=242 namehash=d74104bb]
 Предметы
 Продвинутая Кольчуга из Змиевой ЧешуиБроняArazo's ArtifactsРанг ... [namelen=241 namehash=3e238855]
@@ -148,6 +148,7 @@ daggerheart.com
 № 2Клинок ЖивущихОсновное оружиеУникальноеDread GM ToolboxРанг 3... [namelen=229 namehash=283db90b]
 № 2Проклятая ГоловаПредметVault of AgesСтоимость Призыва: 2Один ... [namelen=350 namehash=668e6021]
 № 2Стекло Разбитой СудьбыПредметПроклятый предметVault of AgesСу... [namelen=722 namehash=4e0a939c]
+№ 31Брошь Лебединой ПесниПредметFitzgibbon's Antiques & Oddities... [namelen=171 namehash=c3332f4f]
 № 32Амулет ГорнилаПредметThe Dragon's VaultКогда вы носите этот ... [namelen=359 namehash=f2ab9971]
 № 32Зелье Судного ДняРасходникWondrous EnvironmentsБросьте d12 з... [namelen=413 namehash=16029ad5]
 № 32Нож ЕдинорогаВторичное оружиеУникальноеVault of AgesРанг 4 ·... [namelen=340 namehash=16c9c42e]
@@ -203,7 +204,7 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search?as=gm1]
     button "Consumables" [pressed=false]
     button "Equipment" [pressed=false]
     button "Reset" [disabled=true]
-    button "Show 145"
+    button "Show 146"
 
 ## en :: controls
 AI assistants
@@ -316,6 +317,7 @@ No. 29Calming PendantItemWhen you would mark your last Stress, r... [namelen=116
 No. 2Blade of the LivingPrimary weaponUniqueDread GM ToolboxTier... [namelen=238 namehash=dfce0e68]
 No. 2Cursed HeadItemVault of AgesRecall Cost: 2Once per long res... [namelen=297 namehash=ebbc58d3]
 No. 2Glass of Shattered FateItemCursed objectVault of AgesA crea... [namelen=697 namehash=f9eaaed7]
+No. 31Swan Song BroochItemFitzgibbon's Antiques & OdditiesWhen y... [namelen=156 namehash=be5849dd]
 No. 32Doomsday PotionConsumableWondrous EnvironmentsRoll a d12 f... [namelen=439 namehash=f1db9fc1]
 No. 32Furnace AmuletItemThe Dragon's VaultWhile wearing this amu... [namelen=350 namehash=ca388bfb]
 No. 32Unicorn KnifeSecondary weaponUniqueVault of AgesTier 4 · M... [namelen=305 namehash=32354209]
@@ -368,7 +370,7 @@ Search by name or description...
 Select
 ShadowbladePrimary weaponHope & FearTier 1 · Magic · Presence · ... [namelen=171 namehash=fa6df3d2]
 ShortswordSecondary weaponTier 1 · Physical · Agility · Melee · ... [namelen=148 namehash=1bd545e4]
-Show 145
+Show 146
 Singing SwordPrimary weaponUniqueHope & FearTier 3 · Physical · ... [namelen=202 namehash=cf053f4f]
 Skip to content
 Tables

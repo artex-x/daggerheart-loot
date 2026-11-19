@@ -684,6 +684,10 @@ describe('the URL ids of the source products', () => {
       '#/tables/escape_the_veiled_halls/f_kind-consumable'
     );
     expect(tablesHash('ph', { anchor: '2' })).toBe('#/tables/pistolheart/2');
+    expect(sectionHash('roll/fa')).toBe('#/roll/fitzgibbons_antiques_and_oddities');
+    expect(tablesHash('fa', { filter: { kind: ['equip'] } })).toBe(
+      '#/tables/fitzgibbons_antiques_and_oddities/f_kind-equip'
+    );
     expect(tablesHash('hnf_item')).toBe('#/tables/hope_and_fear_item');
     expect(tablesHash('core_item')).toBe('#/tables/core_item');
   });

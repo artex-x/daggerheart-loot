@@ -55,6 +55,7 @@ export const TABLE_IDS = [
   'ph',
   'lr',
   'vh',
+  'fa',
   'other_starting',
   'other_frames',
   'alt_item',
@@ -74,7 +75,7 @@ export function isTableId(v: string): v is TableId {
   return (TABLE_IDS as readonly string[]).includes(v);
 }
 
-/** The fifteen sections: what may be pinned as the start. The tab bar draws five tabs
+/** The sixteen sections: what may be pinned as the start. The tab bar draws five tabs
  *  over them; the supplements share one (`nav.ts`). */
 export const SECTIONS = [
   'roll/std',
@@ -89,6 +90,7 @@ export const SECTIONS = [
   'roll/ph',
   'roll/lr',
   'roll/vh',
+  'roll/fa',
   'tables',
   'lists',
   'search'

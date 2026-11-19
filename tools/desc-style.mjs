@@ -41,8 +41,15 @@ export const LABELS = new Set([
 /** Stat lines of a beastform or transformation card: a stat, not a feature name. */
 export const STAT_HEADS = new Set(['Attack', 'Advantage on', 'Атака']);
 
-/** Rule cards whose `Name:` lines are features: two beastforms and one transformation. */
-export const FEATURE_REFS = new Set(['powerful-beast', 'pack-predator', 'vampire']);
+/** Rule cards whose `Name:` lines are features: two beastforms and four transformations. */
+export const FEATURE_REFS = new Set([
+  'powerful-beast',
+  'pack-predator',
+  'vampire',
+  'werewolf',
+  'reanimated',
+  'ghost'
+]);
 
 /** An adversary stat block names a feature `<Name> - <Passive|Action|Reaction>:`; The Last
  *  Round Table names an item's feature the same way, and adds `Rest Move`. */
@@ -64,7 +71,11 @@ export const FEATURE_CONDITIONS = [
   },
   { en: ['Awed'], ru: ['В Трепете'], src: 'dv10' },
   { en: ['Bleeding'], ru: ['Кровоточить', 'Кровоточащего'], src: 'dve37' },
-  { en: ['Blinded'], ru: ['Ослепить', 'Ослеплено', 'Ослеплённое'], src: 'dv20, dve22' },
+  {
+    en: ['Blinded'],
+    ru: ['Ослепить', 'Ослеплено', 'Ослеплённое', 'Ослеплёнными'],
+    src: 'dv20, dve22, fa25'
+  },
   { en: ['Chilled'], ru: ['Охлаждённой', 'Охлаждена'], src: 'dve11; SRD p. 144' },
   {
     en: ['Corrupt', 'Corrupted'],
@@ -184,6 +195,15 @@ export const OVERRIDES = [
     n: 1,
     as: 'bold',
     why: 'an option: "You can then spend a Hope at any time to cast the spell"'
+  },
+  {
+    id: 'ref reanimated',
+    lang: 'ru',
+    rule: 'cost',
+    text: 'отметить Рану',
+    n: 1,
+    as: 'bold',
+    why: 'the price of success: "you can permanently mark a Hit Point to succeed instead"'
   },
   {
     id: 'w60',

@@ -19,7 +19,7 @@
 `pages/en/ai.html`), справочник по API - `pages/developers.html` (на английском
 `pages/en/developers.html`); обе страницы есть в подвале.
 
-Всего 1593 записи - 1212 предметов и расходников плюс 381 единица снаряжения, - у
+Всего 1629 записей - 1248 предметов и расходников плюс 381 единица снаряжения, - у
 каждой название, описание, строка характеристик, если она есть, и картинка.
 Слежки нет; вход в аккаунт необязателен, и без него ничего о вас не попадает
 на сервер.
@@ -54,6 +54,7 @@
 | Pistolheart | 1-45 | 1 предмет |
 | The Last Round Table | 1-26 | 1 предмет |
 | Escape the Veiled Halls | 1-15 | 1 предмет |
+| Fitzgibbon's Antiques & Oddities | 1-36 | 1 предмет |
 
 Core и Hope & Fear - это один и тот же бросок Nd12 по таблице 1-60, поэтому
 они собраны в один режим с переключателем источника. Редкость там влияет только
@@ -73,7 +74,7 @@ Core и Hope & Fear - это один и тот же бросок Nd12 по та
 
 **Таблицы** - это все таблицы целиком, включая альтернативные и три таблицы
 снаряжения (оружие, вторичное оружие, броня), у каждой свой поиск и переключение
-списком или сеткой. **Поиск** идёт сразу по 1593 записям: названия,
+списком или сеткой. **Поиск** идёт сразу по 1629 записям: названия,
 описания и характеристики, на обоих языках.
 
 Разделы адресуются напрямую, и у каждого заголовка есть кнопка копирования
@@ -232,6 +233,7 @@ https://daggerheart-loot.pages.dev/i/ci15?v=<версия>
 | `ph` | Pistolheart | `ph37` |
 | `lr` | The Last Round Table | `lr12` |
 | `vh` | Escape the Veiled Halls | `vh9` |
+| `fa` | Fitzgibbon's Antiques & Oddities | `fa26` |
 | `cm` | Предметы сообществ | `cm81` |
 | `f` | Снаряжение фреймов | `f7` |
 | `q` | Снаряжение Core и Hope & Fear | `q26` |
@@ -245,7 +247,8 @@ Loreborne `cm11`-`cm20` и так далее. Many Worlds Tavern идёт по �
 порядке книг по трём томам, ранги линейки улучшений - после её головы; бросок
 есть только у головы линейки и у отдельного предмета, 1-45. The Last Round Table
 идёт `lr1`-`lr26`, Escape the Veiled Halls - `vh1`-`vh15`, каждый одним списком,
-номер в id - это бросок.
+номер в id - это бросок. Fitzgibbon's Antiques & Oddities идёт `fa1`-`fa36`: по
+алфавиту в томе 1, затем по алфавиту в томе 2, номер в id - это бросок.
 
 Ссылка на собственный предмет, ссылка для доступа к списку, ссылка на набор
 для печати и ссылка на таблицу - карточки на том же хосте
@@ -281,7 +284,7 @@ Loreborne `cm11`-`cm20` и так далее. Many Worlds Tavern идёт по �
 
 Приложение открывается на «Обычных правилах». Кнопка «Открывать при запуске»
 назначает стартовым текущий раздел, повторное нажатие возвращает
-умолчание. Годится любой из десяти разделов и любая таблица по имени. Карточку
+умолчание. Годится любой из шестнадцати разделов и любая таблица по имени. Карточку
 предмета или список назначить нельзя: это снимок, который со временем разойдётся
 с данными.
 
@@ -329,10 +332,10 @@ app/src/styles/       tokens.css и общие стили
 app/index.html        входной документ, собирается в dist/index.html
 data.js               данные: window.LOOT
 card/*.svg            36 векторов для печатных карточек, экспорт из Figma
-img/*.webp            1278 картинок, 640x640, ~35 МБ
+img/*.webp            1314 картинок, 640x640, ~35 МБ
 img/thumb/*.webp      по одной миниатюре 160x160 на картинку, для строк
 og/*.jpg              те же картинки в JPEG для превью ссылок, ~37 МБ
-i/*.html              1593 страницы-заглушки на каждом языке с Open Graph разметкой:
+i/*.html              1629 страниц-заглушек на каждом языке с Open Graph разметкой:
                       i/ на русском, i/en/ на английском; их публикует зеркало старого
                       хоста, сайт публикует приложение с той же карточкой (dist/i/);
                       генерируются, не в репозитории
@@ -532,10 +535,10 @@ Wondrous Environments (12), два улучшения Фроствирда, дв
 туда.
 
 Снаряжение лежит не только в `eq`. Одиннадцать записей Wondrous Environments, все 68
-единиц оружия и брони The Dragon's Vault, все 68 единиц Arazo's Artifacts, все 35 единиц Many Worlds Tavern, все 68 единиц Pistolheart, три единицы оружия The Last Round Table, всё снаряжение фреймов, часть Vault
+единиц оружия и брони The Dragon's Vault, все 68 единиц Arazo's Artifacts, все 35 единиц Many Worlds Tavern, все 68 единиц Pistolheart, три единицы оружия The Last Round Table, четыре единицы оружия Fitzgibbon's Antiques & Oddities, всё снаряжение фреймов, часть Vault
 of Ages и Dread GM Toolbox несут такой же блок `eq`,
 оставаясь в `items`; фреймы кампаний не образуют таблицу бросков. Три таблицы снаряжения собирают их
-все: основного оружия там 512, вторичного 148, брони 118. До двух книг их сужает
+все: основного оружия там 516, вторичного 148, брони 118. До двух книг их сужает
 фильтр по источнику (239 / 73 / 69).
 
 ## Цвета категорий
@@ -566,6 +569,7 @@ of Ages и Dread GM Toolbox несут такой же блок `eq`,
 | Pistolheart | 93 | [Pistolheart Volume 1](https://www.drivethrurpg.com/en/product/547537/pistolheart-volume-1), [2](https://www.drivethrurpg.com/en/product/564429/pistolheart-volume-2), [3](https://www.drivethrurpg.com/en/product/578612/pistolheart-volume-3) | любительский перевод |
 | The Last Round Table | 26 | [The Last Round Table](https://heartofdaggers.com/products/the-last-round-table/) | любительский перевод |
 | Escape the Veiled Halls | 15 | [Escape the Veiled Halls](https://heartofdaggers.com/products/escape-the-veiled-halls/) | любительский перевод |
+| Fitzgibbon's Antiques & Oddities | 36 | [Fitzgibbon's Antiques & Oddities Volume 1](https://heartofdaggers.com/products/fitzgibbons-antiques-oddities-vol-1/), [2](https://heartofdaggers.com/products/fitzgibbons-antiques-oddities-vol-2/) | любительский перевод; карточки Трансформаций по [daggerheart.su](https://ru.daggerheart.su/transformation) |
 | Предметы сообществ | 90 | [Community Magic Items](https://www.drivethrurpg.com/en/product/558159/community-magic-items-a-daggerheart-compatible-toolkit) | любительский перевод, названия сообществ по [daggerheart.su](https://ru.daggerheart.su/community) |
 | Снаряжение фреймов | 94 | Beast Feast, Colossus, Dark Heart, Motherboard | любительский перевод |
 | Оружие | 239 | Daggerheart SRD, Hope & Fear | Core - [daggerheart.su](https://ru.daggerheart.su/), H&F - таблица сообщества |
@@ -615,6 +619,7 @@ d119 совпадает со степенями свободы, перекос �
 - **Wondrous Environments**, **Dread GM Toolbox**, **Vault of Ages**,
   **The Dragon's Vault**, **The Guide to Arazo's Artifacts**, наборы карточек **Many Worlds Tavern**,
   **Pistolheart**, **The Last Round Table**, **Escape the Veiled Halls**,
+  **Fitzgibbon's Antiques & Oddities**,
   **Community Magic Items**, **Alternate Loot &
   Consumable Tables** и любые записи Core, Hope & Fear и фреймов кампаний,
   которых нет в SRD 2.0, под эту лицензию не подпадают: права на эти тексты

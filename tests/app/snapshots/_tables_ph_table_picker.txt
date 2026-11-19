@@ -1,6 +1,6 @@
 # #/tables/ph ~ table picker
 # route: #/tables/pistolheart
-# why: from 761 px the supplements tab is the picker: its sheet, «Дополнения» pressed, ten books, Pistolheart current
+# why: from 761 px the supplements tab is the picker: its sheet, «Дополнения» pressed, eleven books, Pistolheart current
 
 ## ru :: tree
 RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tables/pistolheart]
@@ -23,6 +23,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     link "Pistolheart" [url=/tables/pistolheart]
     link "The Last Round Table" [url=/tables/last_round_table]
     link "Escape the Veiled Halls" [url=/tables/escape_the_veiled_halls]
+    link "Fitzgibbon's Antiques & Oddities" [url=/tables/fitzgibbons_antiques_and_oddities]
 
 ## ru :: controls
 1
@@ -80,6 +81,7 @@ Core
 Dread GM Toolbox
 EN
 Escape the Veiled Halls
+Fitzgibbon's Antiques & Oddities
 Hope & Fear
 Many Worlds Tavern
 Pistolheart
@@ -186,6 +188,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/pistolheart]
     link "Pistolheart" [url=/en/tables/pistolheart]
     link "The Last Round Table" [url=/en/tables/last_round_table]
     link "Escape the Veiled Halls" [url=/en/tables/escape_the_veiled_halls]
+    link "Fitzgibbon's Antiques & Oddities" [url=/en/tables/fitzgibbons_antiques_and_oddities]
 
 ## en :: controls
 1
@@ -266,6 +269,7 @@ Dread GM Toolbox
 EN
 Equipment
 Escape the Veiled Halls
+Fitzgibbon's Antiques & Oddities
 Grid
 Hope & Fear
 Improved ArcpistolPrimary weaponTier 2 · Magic · Knowledge · Far... [namelen=127 namehash=7335249e]

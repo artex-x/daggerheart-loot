@@ -1434,8 +1434,20 @@ describe('the chip nav', () => {
     });
   });
 
-  it.each(['wondrous', 'dread', 'voa', 'dv', 'arazo', 'community', 'mwt', 'ph', 'lr', 'vh'])(
-    'lights «Дополнения» on %s and names that book on the picker tab, its sheet holding the ten',
+  it.each([
+    'wondrous',
+    'dread',
+    'voa',
+    'dv',
+    'arazo',
+    'community',
+    'mwt',
+    'ph',
+    'lr',
+    'vh',
+    'fa'
+  ])(
+    'lights «Дополнения» on %s and names that book on the picker tab, its sheet holding the eleven',
     async (table) => {
       const { container } = render(App, {
         env: fakeEnv({ router: memoryRouter(`#/tables/${table}`), data: fakeData(LOOT) })
@@ -1444,7 +1456,7 @@ describe('the chip nav', () => {
       const group = within(tablenav).getByRole('link', { name: 'Дополнения' });
       expect(group).toHaveAttribute('aria-current', 'page');
       expect(group).toHaveAttribute('href', '/tables/wondrous_environments');
-      /* Ten tabs would take two lines up to about 1380 px: the row is the picker. */
+      /* Eleven tabs would take two lines up to about 1380 px: the row is the picker. */
       const tabRow = bookRow() as HTMLElement;
       expect(within(tabRow).queryAllByRole('link')).toHaveLength(0);
       const picker = within(tabRow).getByRole('button', { name: /^Таблица: / });
@@ -1463,7 +1475,8 @@ describe('the chip nav', () => {
         'Many Worlds Tavern',
         'Pistolheart',
         'The Last Round Table',
-        'Escape the Veiled Halls'
+        'Escape the Veiled Halls',
+        "Fitzgibbon's Antiques & Oddities"
       ];
       expect(books).toEqual(names.map((name) => within(row).getByRole('link', { name })));
       const current = books.filter((a) => a.getAttribute('aria-current') === 'page');

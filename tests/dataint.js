@@ -22,7 +22,7 @@ ALL.forEach((x) => {
   ok(!byId[x.id], 'duplicate id: ' + x.id);
   byId[x.id] = x;
 });
-ok(ALL.length === 1593, 'records are not 1593, but ' + ALL.length);
+ok(ALL.length === 1629, 'records are not 1629, but ' + ALL.length);
 /* Vault of Ages numbers its cards by book volume and section, not straight
    through: voa2_a1 - volume two, first artifact. Links, filenames and list
    codes all hang on id, so the book's own scheme is different but just as
@@ -58,7 +58,8 @@ ALL.forEach((x) => {
       'mwt',
       'ph',
       'lr',
-      'vh'
+      'vh',
+      'fa'
     ].indexOf(x.src) >= 0,
     x.id + ': unknown src ' + x.src
   );

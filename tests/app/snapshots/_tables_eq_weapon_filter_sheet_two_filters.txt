@@ -15,7 +15,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     ... button x28 of 32 same-shape siblings elided
     StaticText "ИСТОЧНИК"
     button "Все" [pressed=true]
-    button "и ещё 3" [expanded=false]
+    button "и ещё 4" [expanded=false]
     ... StaticText x3 of 7 same-shape siblings elided
     ... button x3 of 7 same-shape siblings elided
     StaticText "ХВАТ"
@@ -129,7 +129,7 @@ daggerheart.com
 Установить как приложение
 Физическое
 Фильтры · 2
-и ещё 3
+и ещё 4
 
 ## en :: tree
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_tier-1.range-melee]
@@ -144,7 +144,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_ti
     ... button x28 of 32 same-shape siblings elided
     StaticText "SOURCE"
     button "All" [pressed=true]
-    button "and 3 more" [expanded=false]
+    button "and 4 more" [expanded=false]
     ... StaticText x3 of 7 same-shape siblings elided
     ... button x3 of 7 same-shape siblings elided
     StaticText "BURDEN"
@@ -256,5 +256,5 @@ Very Far
 Walking StaffUniqueBeast FeastPhysical · Instinct · Melee · d10+... [namelen=82 namehash=94cd20a8]
 WarhammerPhysical · Strength · Melee · d12+3 phy · Two-HandedHea... [namelen=81 namehash=bd7189fa]
 Wondrous Environments
-and 3 more
+and 4 more
 daggerheart.com

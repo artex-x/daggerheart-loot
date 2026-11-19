@@ -215,7 +215,7 @@ describe('reads', () => {
     assert.equal(res.headers.get('cache-control'), 'public, max-age=300');
     const body = await fixture('rolls', res);
     assert.equal(res.headers.get('etag'), `"${body.data_version}"`);
-    assert.equal(body.sections.length, 12);
+    assert.equal(body.sections.length, 13);
     await fixture('tables', await call('/api/v1/tables'));
   });
 

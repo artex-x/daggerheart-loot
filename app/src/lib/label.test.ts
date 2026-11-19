@@ -137,6 +137,7 @@ describe('naming a source key with no record behind it', () => {
     expect(srcName('ph', 'ru')).toBe('Pistolheart');
     expect(srcName('lr', 'en')).toBe('The Last Round Table');
     expect(srcName('vh', 'ru')).toBe('Escape the Veiled Halls');
+    expect(srcName('fa', 'en')).toBe("Fitzgibbon's Antiques & Oddities");
   });
 
   it('names the community loot, which a share link offers as a source', () => {
@@ -205,6 +206,11 @@ describe('which table a record is printed in', () => {
     expect(tableOf(index.byId.get('vh9') as Record_)).toBe('vh');
   });
 
+  it("keeps a Fitzgibbon's Antiques & Oddities weapon in its book's table, as its roll says", () => {
+    expect(tableOf(index.byId.get('fa1') as Record_)).toBe('fa');
+    expect(tableOf(index.byId.get('fa21') as Record_)).toBe('fa');
+  });
+
   it('places every record in the data somewhere', () => {
     for (const it of index.searchable) {
       expect(tableOf(it), it.id).not.toBe(null);
@@ -243,6 +249,12 @@ describe('the line under the heading', () => {
     expect(whereFrom(rec({ src: 'lr' }), 'en')).toBe('The Last Round Table');
     expect(srcLabel(rec({ src: 'ph', vol: 2 }), 'ru')).toBe('Pistolheart');
     expect(printSrc(rec({ src: 'vh' }), 'en')).toBe('Escape the Veiled Halls');
+  });
+
+  it("names a Fitzgibbon's Antiques & Oddities record by its book alone, with no volume", () => {
+    expect(whereFrom(rec({ src: 'fa' }), 'en')).toBe("Fitzgibbon's Antiques & Oddities");
+    expect(srcLabel(rec({ src: 'fa' }), 'ru')).toBe("Fitzgibbon's Antiques & Oddities");
+    expect(printSrc(rec({ src: 'fa' }), 'ru')).toBe("Fitzgibbon's Antiques & Oddities");
   });
 
   it('names the equipment slice, whichever piece (the last un-pinned group)', () => {

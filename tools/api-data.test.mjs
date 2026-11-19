@@ -851,7 +851,7 @@ describe('every file keeps its schema and its budget', () => {
     t.diagnostic(
       `3x: cards.json ${String(Buffer.byteLength(big.get('apidata/cards.json')))} B`
     );
-    assert.equal(parsed(big, 'api/v1/catalog/index.json').records.length, 3 * 1593);
+    assert.equal(parsed(big, 'api/v1/catalog/index.json').records.length, 3 * 1629);
   });
 
   it('is read by the worker with a cap at least as large as the budget of each file', () => {

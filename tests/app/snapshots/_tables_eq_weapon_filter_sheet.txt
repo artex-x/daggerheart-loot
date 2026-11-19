@@ -14,7 +14,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     ... button x28 of 32 same-shape siblings elided
     StaticText "ИСТОЧНИК"
     button "Все" [pressed=true]
-    button "и ещё 3" [expanded=false]
+    button "и ещё 4" [expanded=false]
     ... StaticText x3 of 7 same-shape siblings elided
     ... button x3 of 7 same-shape siblings elided
     StaticText "ХВАТ"
@@ -24,7 +24,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     button "Есть улучшение" [pressed=false]
     button "Уникальные" [pressed=false]
     button "Сбросить" [disabled=true]
-    button "Показать 512"
+    button "Показать 516"
 
 ## ru :: controls
 1
@@ -91,10 +91,12 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 1Эфирная ВинтовкаУникальноеDread GM ToolboxМагическое · Инстинкт... [namelen=288 namehash=461a844d]
 2
 20Железный КонстебльУникальноеVault of AgesФизическое · Сила · В... [namelen=284 namehash=7778f743]
+21Драконий КортикУникальноеFitzgibbon's Antiques & OdditiesФизич... [namelen=253 namehash=f13ff8ee]
 22Копьё-КамертонArazo's ArtifactsФизическое · Искусность · Близк... [namelen=324 namehash=c7314e1c]
 23Алебарда УрзоArazo's ArtifactsФизическое · Влияние · Близко · ... [namelen=183 namehash=06bc92ea]
 23Всадник ВолнУникальноеVault of AgesМагическое · Инстинкт · Впл... [namelen=412 namehash=624fa52d]
 24Боевой Молот БазаArazo's ArtifactsФизическое · Сила · Вплотную... [namelen=223 namehash=1c0c1fd5]
+24Магнитный ЖезлУникальноеFitzgibbon's Antiques & OdditiesМагиче... [namelen=263 namehash=89f47a9a]
 25Когти ИфангаУникальноеWondrous EnvironmentsМагическое · Влияни... [namelen=294 namehash=53eddce7]
 26Губитель из СухостояУникальноеVault of AgesФизическое · Инстин... [namelen=722 namehash=910211e5]
 26Кнут из Хвоста ВиверныArazo's ArtifactsФизическое · Проворност... [namelen=307 namehash=0bbdd68b]
@@ -115,8 +117,10 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 31Молот Инфернального КузнецаУникальноеWondrous EnvironmentsМаги... [namelen=287 namehash=e3d72816]
 31Посох ПоганкиУникальноеVault of AgesФизическое · Инстинкт · Вп... [namelen=723 namehash=d390a6e6]
 32Вихревой РезакУникальноеVault of AgesФизическое · Проворность ... [namelen=554 namehash=3ed8c32c]
+33Дразнящая СабляУникальноеFitzgibbon's Antiques & OdditiesФизич... [namelen=278 namehash=fcc7cb74]
 33Ярость ЗантакаУникальноеVault of AgesФизическое · Сила · Вплот... [namelen=707 namehash=31674733]
 34Дочь ЗелениУникальноеVault of AgesФизическое · Проворность · О... [namelen=681 namehash=17358962]
+35Оберегающий ЗонтикУникальноеFitzgibbon's Antiques & OdditiesМа... [namelen=260 namehash=c0a3f687]
 3Арк-ПистолетPistolheartМагическое · Знание · Далеко · d6+1 маг ... [namelen=127 namehash=bc796ae6]
 3Длинный Лук ФираУникальноеDread GM ToolboxМагическое · Проворно... [namelen=174 namehash=dc4580a7]
 3Дырявый КлинокУникальноеВоюющие НорыФизическое · Сила · Вплотну... [namelen=198 namehash=4638d91f]
@@ -389,7 +393,7 @@ daggerheart.com
 Позолоченный ФальшионУникальноеФизическое · Сила · Вплотную · d1... [namelen=191 namehash=b0060a43]
 Поиск
 Поиск по названию или описанию...
-Показать 512
+Показать 516
 Пороховая СерпантинаУникальноеHope & FearФизическое · Сила · Дал... [namelen=214 namehash=d4344a50]
 Посох АугмыУникальноеHope & FearМагическое · Инстинкт · Далеко ·... [namelen=221 namehash=dd7e15e0]
 Посох БесконечностиУникальноеHope & FearФизическое · Влияние · В... [namelen=336 namehash=ffbee19d]
@@ -597,7 +601,7 @@ daggerheart.com
 ШэнбяоУникальноеФизическое · Влияние · Средне · d8+9 физ · Двуру... [namelen=183 namehash=0467a4ad]
 Шёлковый ЛукУникальноеФизическое · Проворность · Очень далеко · ... [namelen=112 namehash=2c0ff6eb]
 Эфирный Двуручный МечУникальноеHope & FearМагическое · Инстинкт ... [namelen=189 namehash=dfb3de86]
-и ещё 3
+и ещё 4
 
 ## en :: tree
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon]
@@ -611,7 +615,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon]
     ... button x28 of 32 same-shape siblings elided
     StaticText "SOURCE"
     button "All" [pressed=true]
-    button "and 3 more" [expanded=false]
+    button "and 4 more" [expanded=false]
     ... StaticText x3 of 7 same-shape siblings elided
     ... button x3 of 7 same-shape siblings elided
     StaticText "BURDEN"
@@ -621,7 +625,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon]
     button "Upgradable" [pressed=false]
     button "Unique" [pressed=false]
     button "Reset" [disabled=true]
-    button "Show 512"
+    button "Show 516"
 
 ## en :: controls
 1
@@ -688,9 +692,11 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon]
 1Trusty CultivatorUniqueWagerwoodMagic · Instinct · Close · d8+2... [namelen=202 namehash=2c22fb38]
 2
 20Iron ConstableUniqueVault of AgesPhysical · Strength · Melee ·... [namelen=269 namehash=823bfe08]
+21Drake DirkUniqueFitzgibbon's Antiques & OdditiesPhysical · Fin... [namelen=218 namehash=81abe237]
 22Tuning SpearArazo's ArtifactsPhysical · Finesse · Very Close ·... [namelen=301 namehash=c9b07f22]
 23Urzo's HalberdArazo's ArtifactsPhysical · Presence · Very Clos... [namelen=187 namehash=1f17c7e7]
 23WaveriderUniqueVault of AgesMagic · Instinct · Melee · d8+7 ma... [namelen=363 namehash=9d1b1740]
+24Lodestone WandUniqueFitzgibbon's Antiques & OdditiesMagic · Kn... [namelen=225 namehash=d3af2239]
 24Warhammer of BazArazo's ArtifactsPhysical · Strength · Melee ·... [namelen=202 namehash=007d863d]
 25Claws of YifangUniqueWondrous EnvironmentsMagic · Presence · F... [namelen=272 namehash=8f9dfc86]
 26Deadwood SlayerUniqueVault of AgesPhysical · Instinct · Melee ... [namelen=644 namehash=d01069a5]
@@ -712,8 +718,10 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon]
 31Toadstool StaffUniqueVault of AgesPhysical · Instinct · Melee ... [namelen=659 namehash=2002aa93]
 31Voynarian CrossbowUniqueVault of AgesPhysical · Finesse · Far ... [namelen=350 namehash=08c82c0a]
 32Whirlwind SlasherUniqueVault of AgesPhysical · Agility · Very ... [namelen=513 namehash=bdf11be5]
+33Taunting SaberUniqueFitzgibbon's Antiques & OdditiesPhysical ·... [namelen=263 namehash=c2b32119]
 33Zanthak's RageUniqueVault of AgesPhysical · Strength · Melee ·... [namelen=619 namehash=13c56384]
 34Verdant DaughterUniqueVault of AgesPhysical · Agility · Very F... [namelen=635 namehash=3d11b984]
+35Warding ParasolUniqueFitzgibbon's Antiques & OdditiesMagic · K... [namelen=208 namehash=f9c02564]
 3ArcpistolPistolheartMagic · Knowledge · Far · d6+1 mag · One-Ha... [namelen=107 namehash=22a32876]
 3Fists of the RavagerUniqueVault of AgesMagic · Strength · Melee... [namelen=216 namehash=5cddacae]
 3Hole-y BladeUniqueWarrin' WarrensPhysical · Strength · Melee · ... [namelen=194 namehash=4a67b49b]
@@ -1143,7 +1151,7 @@ Sharpened RakeUniqueBeast FeastPhysical · Agility · Melee · d8+3... [namelen=
 ShortbowPhysical · Agility · Far · d6+3 phy · Two-Handed
 ShortstaffMagic · Instinct · Close · d8+1 mag · One-Handed
 ShotgunColossus of the DrylandsPhysical · Strength · Very Close ... [namelen=175 namehash=22dab244]
-Show 512
+Show 516
 SickleUniqueBeast FeastPhysical · Presence · Melee · d8 phy · On... [namelen=166 namehash=741a3f4a]
 Sign in
 Singing SwordUniqueHope & FearPhysical · Presence · Very Close ·... [namelen=179 namehash=6755e9ec]
@@ -1192,5 +1200,5 @@ Whisk WandUniqueBeast FeastMagic · Knowledge · Far · d6+1 mag · ... [namelen
 Widogast PendantUniqueMagic · Knowledge · Close · d10+5 mag · On... [namelen=152 namehash=d4eea95e]
 Wondrous Environments
 Yutari BloodbowUniqueMagic · Finesse · Far · d6+4 mag · Two-Hand... [namelen=153 namehash=0c99f97b]
-and 3 more
+and 4 more
 daggerheart.com

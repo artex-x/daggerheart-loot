@@ -65,7 +65,7 @@
         "operationId": "listRolls",
         "x-mcp-tool": "list_rolls",
         "summary": "List the roll sections.",
-        "description": "Returns the twelve roll sections with their mode, parts and options. Cache it: it changes with a data deploy only.",
+        "description": "Returns the thirteen roll sections with their mode, parts and options. Cache it: it changes with a data deploy only.",
         "responses": {
           "200": {
             "description": "The sections.",
@@ -283,7 +283,7 @@
             "name": "source",
             "in": "query",
             "required": false,
-            "description": "A source id: core, hnf, wondrous, community, dread, frame (the campaign frames), voa, dv, arazo, mwt, ph, lr or vh (the id of a record's source).",
+            "description": "A source id: core, hnf, wondrous, community, dread, frame (the campaign frames), voa, dv, arazo, mwt, ph, lr, vh or fa (the id of a record's source).",
             "schema": {
               "type": "string"
             }

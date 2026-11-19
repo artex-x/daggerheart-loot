@@ -19,18 +19,18 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search]
   main ""
     heading "Поиск" [level=1]
     button "Открывать при запуске" [pressed=false]
-    StaticText "Поиск сразу по 1593 позициям - добыча, расходники и снаряжение."
+    StaticText "Поиск сразу по 1629 позициям - добыча, расходники и снаряжение."
     searchbox "Поиск по названию или описанию..." [value=а focused=true]
     button "Выбрать"
     button "Все" [pressed=true]
     button "Предметы" [pressed=false]
     button "Расходники" [pressed=false]
     button "Снаряжение" [pressed=false]
-    StaticText "Показано 300 из 1593"
+    StaticText "Показано 300 из 1629"
     button "№ 4 Факел Алистера ПРЕДМЕТ Вы можете зажигать этот магический фа..." [namelen=195 namehash=661fc47c]
     ... button x297 of 301 same-shape siblings elided
+    button "№ 48 Мел Заклинателя ПРЕДМЕТ WONDROUS ENVIRONMENTS Вы можете нач..." [namelen=280 namehash=26870943]
     button "№ 50 Фонарь Теней ПРЕДМЕТ WONDROUS ENVIRONMENTS Пока вы использу..." [namelen=285 namehash=e687d456]
-    button "№ 51 Гарпун Левиафана ОСНОВНОЕ ОРУЖИЕ УНИКАЛЬНОЕ WONDROUS ENVIRO..." [namelen=382 namehash=32854680]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -194,6 +194,7 @@ daggerheart.com
 № 29Масло Зелёной СлизиРасходникHope & FearСмажьте этим маслом о... [namelen=248 namehash=c93879ba]
 № 29Успокаивающий КулонПредметКогда вы должны отметить последний... [namelen=129 namehash=efbb6373]
 № 2Альманах ПивоварихиПредметThe Last Round TableВнутри задней о... [namelen=322 namehash=5f462578]
+№ 2Кисть АниматораПредметFitzgibbon's Antiques & OdditiesОдин ра... [namelen=224 namehash=7de44654]
 № 2Крюк-КошкаПредметHope & FearВы получаете преимущество на Брос... [namelen=120 namehash=7f09514d]
 № 2Переносная АстролябияПредметНаучноеВ качестве Хода Отдыха вы ... [namelen=208 namehash=24272c7e]
 № 2Пронзительная СвирельПредметЭта свирель ручной работы имеет х... [namelen=164 namehash=472f015b]
@@ -293,7 +294,6 @@ daggerheart.com
 № 4Факел АлистераПредметВы можете зажигать этот магический факел... [namelen=192 namehash=1303999e]
 № 50Помело БожкаРасходникHope & FearСъешьте этот плод, чтобы очи... [namelen=88 namehash=f4206798]
 № 50Фонарь ТенейПредметWondrous EnvironmentsПока вы используете ... [namelen=281 namehash=04487fd6]
-№ 51Гарпун ЛевиафанаОсновное оружиеУникальноеWondrous Environmen... [namelen=376 namehash=7751a789]
 № 51Настойка Змеиной КожиРасходникHope & FearВыпейте это зелье, ... [namelen=113 namehash=7bf7b6ff]
 № 52Кольца ДружбыПредметHope & FearЭту пару колец в форме сверну... [namelen=185 namehash=cbe16c59]
 № 52Осколок ПамятиПредметОдин раз за продолжительный отдых вы мо... [namelen=186 namehash=880d54d4]
@@ -380,18 +380,18 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search]
   main ""
     heading "Search" [level=1]
     button "Open on start" [pressed=false]
-    StaticText "Search all 1593 entries at once - loot, consumables and equipmen..." [namelen=66 namehash=b8916354]
+    StaticText "Search all 1629 entries at once - loot, consumables and equipmen..." [namelen=66 namehash=182950d7]
     searchbox "Search by name or description..." [value=а focused=true]
     button "Select"
     button "All" [pressed=true]
     button "Items" [pressed=false]
     button "Consumables" [pressed=false]
     button "Equipment" [pressed=false]
-    StaticText "300 of 1557 shown"
+    StaticText "300 of 1593 shown"
     button "No. 4 Alistair's Torch ITEM You can light this magic torch at wi..." [namelen=170 namehash=f4b218f7]
     ... button x297 of 301 same-shape siblings elided
+    button "No. 48 Incantor's Chalk ITEM WONDROUS ENVIRONMENTS You can inscr..." [namelen=262 namehash=ca537331]
     button "No. 50 Lantern of Shadows ITEM WONDROUS ENVIRONMENTS While using..." [namelen=269 namehash=957f42c6]
-    button "No. 51 Leviathan Harpoon PRIMARY WEAPON UNIQUE WONDROUS ENVIRONM..." [namelen=366 namehash=b727a29e]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -541,6 +541,7 @@ No. 29Green Ooze OilConsumableHope & FearYou can coat your weapo... [namelen=274
 No. 29Major Charm PotionConsumableYou gain a +1 bonus to your Pr... [namelen=92 namehash=03310811]
 No. 2Aetherflower TeaConsumableWondrous EnvironmentsUntil your n... [namelen=174 namehash=304bc837]
 No. 2Alewife AlmanacItemThe Last Round TableInside the back cove... [namelen=274 namehash=cef1accc]
+No. 2Animator's BrushItemFitzgibbon's Antiques & OdditiesOnce pe... [namelen=208 namehash=04ef791d]
 No. 2GrapnelItemHope & FearYou gain advantage on action rolls to... [namelen=86 namehash=8de94ad5]
 No. 2Iridian DustConsumableHope & FearThis multicolored powder s... [namelen=142 namehash=98a3c7bb]
 No. 2Piper WhistleItemThis handcrafted whistle has a distinctive... [namelen=154 namehash=896d245a]
@@ -639,7 +640,6 @@ No. 4Cupbearer's BezoarConsumableHope & FearYou can swallow this... [namelen=126
 No. 4Harpoon CrossbowItemRidgeborneThis spring-loaded crossbow f... [namelen=207 namehash=784c8bea]
 No. 50Godling's PomeloConsumableHope & FearYou can eat this citr... [namelen=108 namehash=7bba94a9]
 No. 50Lantern of ShadowsItemWondrous EnvironmentsWhile using thi... [namelen=265 namehash=e484734b]
-No. 51Leviathan HarpoonPrimary weaponUniqueWondrous Environments... [namelen=360 namehash=d7d546d5]
 No. 51Snakeskin SpiritConsumableHope & FearYou can drink this po... [namelen=124 namehash=0b329798]
 No. 52Bonding HoneyConsumableThis honey can be used to glue two ... [namelen=93 namehash=0d2f6824]
 No. 52Magic-User's MalisonConsumableHope & FearWhen you release ... [namelen=225 namehash=929fd2f1]

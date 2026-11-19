@@ -34,7 +34,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     button "Список" [pressed=false]
     button "Сетка" [pressed=true]
     button "Ссылка на таблицу"
-    StaticText "Показано 61 из 512"
+    StaticText "Показано 61 из 516"
     button "Выбрать"
     complementary "Фильтры"
       heading "Фильтры" [level=2]
@@ -45,7 +45,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       ... button x28 of 32 same-shape siblings elided
       StaticText "ИСТОЧНИК"
       button "Все" [pressed=true]
-      button "и ещё 3" [expanded=false]
+      button "и ещё 4" [expanded=false]
       ... StaticText x3 of 7 same-shape siblings elided
       ... button x3 of 7 same-shape siblings elided
       StaticText "ХВАТ"
@@ -195,7 +195,7 @@ daggerheart.com
 Установить как приложение
 Физическое
 Эфирный Двуручный МечМагическое · Инстинкт · Близко · d10+9 маг ... [namelen=75 namehash=55121bb3]
-и ещё 3
+и ещё 4
 
 ## en :: tree
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon]
@@ -229,7 +229,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon]
     button "List" [pressed=false]
     button "Grid" [pressed=true]
     button "Link to this table"
-    StaticText "61 of 512 shown"
+    StaticText "61 of 516 shown"
     button "Select"
     complementary "Filters"
       heading "Filters" [level=2]
@@ -240,7 +240,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon]
       ... button x28 of 32 same-shape siblings elided
       StaticText "SOURCE"
       button "All" [pressed=true]
-      button "and 3 more" [expanded=false]
+      button "and 4 more" [expanded=false]
       ... StaticText x3 of 7 same-shape siblings elided
       ... button x3 of 7 same-shape siblings elided
       StaticText "BURDEN"
@@ -389,5 +389,5 @@ Very Far
 Weapons
 WhipswordPhysical · Finesse · Very Close · d8 phy · One-Handed
 Wondrous Environments
-and 3 more
+and 4 more
 daggerheart.com

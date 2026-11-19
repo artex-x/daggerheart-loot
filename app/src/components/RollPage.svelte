@@ -1,5 +1,5 @@
 <script lang="ts">
-  /* The shell of the twelve roll pages (DESIGN.md, "The Roll Page Rule"). The `h1` names the
+  /* The shell of the thirteen roll pages (DESIGN.md, "The Roll Page Rule"). The `h1` names the
      job, «Бросок»; up to 760 px it is read, not drawn, the picker row (the mode picker and
      «Ещё») comes first, the controls follow and one line holds «Бросок N» and «Настроить».
      From 761 px: the head with the mode pills, the control pane and the results. The DOM

@@ -1,10 +1,11 @@
 # Daggerheart Loot Generator
 
-> A bilingual (Russian/English) loot reference and roller for Daggerheart: 1593
+> A bilingual (Russian/English) loot reference and roller for Daggerheart: 1629
 > records covering items, consumables, weapons and armor from the Core Set,
 > Hope & Fear, Wondrous Environments, the Dread GM Toolbox, Vault of Ages, The
 > Dragon's Vault, Arazo's Artifacts, Many Worlds Tavern, Pistolheart, The Last Round
-> Table, Escape the Veiled Halls and community items. Static site
+> Table, Escape the Veiled Halls, Fitzgibbon's Antiques & Oddities and community
+> items. Static site
 > with an optional account (Google or Discord sign-in), a public read API
 > ("The read API (v1)" below) and an MCP endpoint over it ("The MCP endpoint"
 > below); both write nothing.
@@ -52,7 +53,7 @@ Five things trip agents up here, in order of how often:
    build `/l/` links: that format stopped opening on 2026-10-26.
 
 Start with `catalog-index.csv`: one row per record, every column of
-`catalog.csv` but the two texts and the page link, under 200 KB. It holds 1593
+`catalog.csv` but the two texts and the page link, under 200 KB. It holds 1629
 records, the rows of `catalog.csv`; if your tool returns fewer, it cut the
 file: read the rest in parts or filter its rows by column. Pick the ids there, then read a record's text on its page,
 `i/en/<id>` or `i/<id>` (the page is the app; it holds the record's plain text
@@ -77,7 +78,7 @@ text, not the rules those items refer to.
   order, columns `id, kind, source, name_ru, name_en, tier, rarity, roll,
   class, trait, range, damage, burden, armor_score, thresholds, crafts_into,
   community, realm, volume`.
-- [catalog.csv](https://daggerheart-loot.pages.dev/catalog.csv) — 1593
+- [catalog.csv](https://daggerheart-loot.pages.dev/catalog.csv) — 1629
   rows, one per record. Columns: `id, kind, source, name_ru, name_en, tier,
   rarity, roll, class, trait, range, damage, burden, armor_score, thresholds,
   crafts_into, community, url, text_ru, text_en, realm, volume`. `realm` names a
@@ -93,9 +94,9 @@ text, not the rules those items refer to.
   extension.
 - [data.json](https://daggerheart-loot.pages.dev/data.json) — the same
   records in full (a record's `craft` is a list of the ids it upgrades
-  into), plus the rarity tables (`alt`), the text of the twenty-one
+  into), plus the rarity tables (`alt`), the text of the twenty-four
   rulebook cards some records refer to (`refs`: domain cards, two beastforms,
-  two ancestry features, an adversary feature, a transformation, three
+  two ancestry features, an adversary feature, four transformations, three
   adversary stat blocks, and seven rule cards of Pistolheart and The Last Round
   Table, each linked to its product page), and
   the shared bonus of an item set (`sets`).
@@ -133,10 +134,10 @@ example: `***Grappling:*** On a successful attack, you can **spend a Hope** to
 Stress") or that a sentence only mentions ("when you would spend a Hope") stays
 plain.
 
-## The twelve sources, and when to reach for each
+## The thirteen sources, and when to reach for each
 
 `source` is not decoration on the record — it is the best single predictor of
-whether a thing will fit the table you are furnishing. The twelve sets are not
+whether a thing will fit the table you are furnishing. The thirteen sets are not
 interchangeable, and mixing them without saying so is how a selection goes
 wrong.
 
@@ -154,6 +155,7 @@ wrong.
 | `Pistolheart` | 93 | Three third-party volumes of Wild West gear: 16 firearms and frontier weapons that grow with the bearer (four records each: base, Improved, Advanced, Legendary), 4 armors, 7 consumables, 6 magic saddles, 9 Infusions and 3 items; stats as printed. A record's `vol` names its volume. A line rolls once, at its head, so the roll is 1-45. | A western or frontier campaign, or a gunslinger character. |
 | `The Last Round Table` | 26 | A third-party supplement about a living tavern: 11 items, 12 consumables and 3 Tier 2 weapons, many tied to the tavern itself. | The party visits or owns the tavern, or you want drinks and tavern oddities. |
 | `Escape the Veiled Halls` | 15 | A third-party one-shot adventure's loot as one flat list: 7 items and 8 consumables, mostly potions, rolled 1-15. | You run the adventure, or want small one-session rewards. |
+| `Fitzgibbon's Antiques & Oddities` | 36 | Two third-party volumes of an antique shop's curios: 18 items, 14 consumables and 4 primary weapons, stats as printed, rolled 1-36 as one flat list: `fa1`-`fa18` are Volume 1, `fa19`-`fa36` Volume 2. Four consumables grant a Transformation, whose rule card is in `refs`. Product pages: [Volume 1](https://heartofdaggers.com/products/fitzgibbons-antiques-oddities-vol-1/), [Volume 2](https://heartofdaggers.com/products/fitzgibbons-antiques-oddities-vol-2/). | A shop, an attic or a collector's hoard, or small utility magic. |
 | `Community` | 90 | Community Magic Items, a fan-made set from the community spreadsheet. Unplaytested — treat it as homebrew. | The GM asked for it, or nothing else fits. Say where it came from. |
 
 Three practical consequences:
@@ -162,8 +164,8 @@ Three practical consequences:
   If a request is for "official items", it means those two. The rest were not
   written by Darrington Press.
 - **Equipment lives in `Core`, `Hope & Fear`, `Campaign Frames`,
-  `The Dragon's Vault`, `Arazo's Artifacts`, `Many Worlds Tavern`, `Pistolheart` and
-  `The Last Round Table`.** Wondrous Environments, Dread GM Toolbox and
+  `The Dragon's Vault`, `Arazo's Artifacts`, `Many Worlds Tavern`, `Pistolheart`,
+  `The Last Round Table` and `Fitzgibbon's Antiques & Oddities`.** Wondrous Environments, Dread GM Toolbox and
   Vault of Ages carry a few pieces each. A question about weapons or armor
   has no answer in Community items — do not go looking there.
 - **`Campaign Frames` is the one to filter out by default.** Its entries look
@@ -256,18 +258,19 @@ new links as paths.
   `/roll/vault_of_ages`; `/roll/dragons_vault`; `/roll/arazos_artifacts`;
   `/roll/community_items`; `/roll/many_worlds_tavern` (a realm, then a roll
   inside it); `/roll/pistolheart`; `/roll/last_round_table`;
-  `/roll/escape_the_veiled_halls`
+  `/roll/escape_the_veiled_halls`; `/roll/fitzgibbons_antiques_and_oddities`
 - `/tables/<table>` — `core_item`, `core_consumable`, `hope_and_fear_item`,
   `hope_and_fear_consumable`, `wondrous_environments`, `dread_gm_toolbox`,
   `vault_of_ages`, `dragons_vault`, `arazos_artifacts`, `community_items`,
   `many_worlds_tavern`, `pistolheart`, `last_round_table`,
-  `escape_the_veiled_halls`, `other_starting`, `other_frames`, `eq_weapon`,
+  `escape_the_veiled_halls`, `fitzgibbons_antiques_and_oddities`,
+  `other_starting`, `other_frames`, `eq_weapon`,
   `eq_secondary`, `eq_armor`, and `homebrew`: `/tables/homebrew` is a
   signed-in GM's own items; signed out it asks to sign in
 - Old ids: `/roll/wondrous`, `/roll/dread`, `/roll/voa`, `/roll/dv`,
-  `/roll/arazo`, `/roll/community`, `/roll/mwt`, `/roll/ph`, `/roll/lr`, `/roll/vh`
-  and the tables `hnf_item`, `hnf_consumable`, `wondrous`, `dread`, `voa`, `dv`,
-  `arazo`, `community`, `mwt`, `ph`, `lr`, `vh`. An old id still opens the same page; the address is not rewritten.
+  `/roll/arazo`, `/roll/community`, `/roll/mwt`, `/roll/ph`, `/roll/lr`, `/roll/vh`,
+  `/roll/fa` and the tables `hnf_item`, `hnf_consumable`, `wondrous`, `dread`, `voa`, `dv`,
+  `arazo`, `community`, `mwt`, `ph`, `lr`, `vh`, `fa`. An old id still opens the same page; the address is not rewritten.
   Build new links with the ids above. Filter values keep the old keys
   (`src-dread`, `src-community`), and the filter keys below name a table by
   its old id
@@ -1149,7 +1152,7 @@ curl https://daggerheart-loot.pages.dev/api/v1/file-formats/lists
 - `GET /api/v1/` is the index (`daggerheart-loot/api-index`): the links to
   `openapi.json`, this file, the developer and AI pages and both MCP endpoints,
   the sign-in rules and the limits.
-- `GET /api/v1/rolls` lists the twelve roll sections, their mode (`std`, `alt`,
+- `GET /api/v1/rolls` lists the thirteen roll sections, their mode (`std`, `alt`,
   `table` or `part`), parts and limits.
 - `POST /api/v1/rolls/{section}` rolls a section, or resolves a number you type, and
   answers up to four records in the order the app draws them. The body is JSON.
@@ -1354,7 +1357,8 @@ the SRD 2.0 holds; docs/rights/records.json in the repository names each.
 
 Wondrous Environments, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, The
 Guide to Arazo's Artifacts, the Many Worlds Tavern card sets, Pistolheart, The
-Last Round Table, Escape the Veiled Halls, Community Magic Items, the Alternate
+Last Round Table, Escape the Veiled Halls, Fitzgibbon's Antiques & Oddities,
+Community Magic Items, the Alternate
 Loot & Consumable Tables and any Core, Hope & Fear or campaign frame record that
 the SRD 2.0 does not hold are not covered by that license; their text belongs to
 its rights holders.

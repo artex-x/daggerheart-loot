@@ -24,7 +24,7 @@
         "tools": [
           {
             "name": "list_rolls",
-            "description": "List the roll sections.\n\nReturns the twelve roll sections with their mode, parts and options. Cache it: it changes with a data deploy only.",
+            "description": "List the roll sections.\n\nReturns the thirteen roll sections with their mode, parts and options. Cache it: it changes with a data deploy only.",
             "inputSchema": {
               "type": "object",
               "properties": {},
@@ -190,7 +190,7 @@
                 },
                 "source": {
                   "type": "string",
-                  "description": "A source id: core, hnf, wondrous, community, dread, frame (the campaign frames), voa, dv, arazo, mwt, ph, lr or vh (the id of a record's source)."
+                  "description": "A source id: core, hnf, wondrous, community, dread, frame (the campaign frames), voa, dv, arazo, mwt, ph, lr, vh or fa (the id of a record's source)."
                 },
                 "table": {
                   "type": "string",

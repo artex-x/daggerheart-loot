@@ -92,7 +92,8 @@ const BOOK_SRC: readonly string[] = [
   'mwt',
   'ph',
   'lr',
-  'vh'
+  'vh',
+  'fa'
 ];
 
 /* The equipment `src` row's candidates, off `EQ_SRC` in app.js: the books

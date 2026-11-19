@@ -34,7 +34,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     button "Список" [pressed=true]
     button "Сетка" [pressed=false]
     button "Ссылка на таблицу"
-    StaticText "Показано 54 из 512"
+    StaticText "Показано 54 из 516"
     button "Выбрать"
     complementary "Фильтры"
       heading "Фильтры · 2" [level=2]
@@ -47,7 +47,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       ... button x28 of 32 same-shape siblings elided
       StaticText "ИСТОЧНИК"
       button "Все" [pressed=true]
-      button "и ещё 3" [expanded=false]
+      button "и ещё 4" [expanded=false]
       ... StaticText x3 of 7 same-shape siblings elided
       ... button x3 of 7 same-shape siblings elided
       StaticText "ХВАТ"
@@ -188,7 +188,7 @@ daggerheart.com
 Установить как приложение
 Установка для ФейерверковУникальноеПир зверейФизическое · Провор... [namelen=134 namehash=c9007fda]
 Физическое
-и ещё 3
+и ещё 4
 
 ## en :: tree
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_tier-1.burden-2]
@@ -222,7 +222,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_ti
     button "List" [pressed=true]
     button "Grid" [pressed=false]
     button "Link to this table"
-    StaticText "54 of 512 shown"
+    StaticText "54 of 516 shown"
     button "Select"
     complementary "Filters"
       heading "Filters · 2" [level=2]
@@ -235,7 +235,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_ti
       ... button x28 of 32 same-shape siblings elided
       StaticText "SOURCE"
       button "All" [pressed=true]
-      button "and 3 more" [expanded=false]
+      button "and 4 more" [expanded=false]
       ... StaticText x3 of 7 same-shape siblings elided
       ... button x3 of 7 same-shape siblings elided
       StaticText "BURDEN"
@@ -375,5 +375,5 @@ Walking StaffUniqueBeast FeastPhysical · Instinct · Melee · d10+... [namelen=
 WarhammerPhysical · Strength · Melee · d12+3 phy · Two-HandedHea... [namelen=81 namehash=bd7189fa]
 Weapons
 Wondrous Environments
-and 3 more
+and 4 more
 daggerheart.com

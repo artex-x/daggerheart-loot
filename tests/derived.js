@@ -1041,8 +1041,8 @@ ok(
   'equipment grew a new kind: ' + Object.keys(BY_T).join()
 );
 ok(
-  EVERY_EQ.length === L.eq.length + 397,
-  'equipment outside the two base books is not 397, but ' + (EVERY_EQ.length - L.eq.length)
+  EVERY_EQ.length === L.eq.length + 401,
+  'equipment outside the two base books is not 401, but ' + (EVERY_EQ.length - L.eq.length)
 );
 /* Every piece of equipment must carry a tier. Wondrous's is derived from the
    book: the "Loot items by environment" table ties an item to a location,
@@ -2962,6 +2962,57 @@ ok(
       /^https:\/\/(www\.drivethrurpg\.com|heartofdaggers\.com)\//.test(L.refs[k].url),
     'rule card ' + k + ' does not link to its product page'
   )
+);
+/* Fitzgibbon's Antiques & Oddities: one flat pool of 36, A-Z in Volume 1 then A-Z in Volume 2
+   with no volume field (as Vault of Ages), four weapons with their printed stats, four
+   Transformation cards (docs/decisions, 2026-11-18). */
+const fa = L.items.fa;
+ok(fa.length === 36, 'items.fa is not 36, but ' + fa.length);
+ok(
+  fa.every((x, i) => x.id === 'fa' + (i + 1) && x.roll === i + 1 && !('vol' in x)),
+  'items.fa is not one flat list fa1..fa36 with rolls 1..36, or carries a volume'
+);
+ok(
+  fa.every((x) => !('rarity' in x) && !('rarity_printed' in x)),
+  'items.fa ships a printed rarity'
+);
+ok(
+  JSON.stringify(
+    fa
+      .filter((x) => x.eq)
+      .map((x) => [x.id, x.eq.tier, x.eq.tr, x.eq.rg, x.eq.dmg, x.eq.dt, x.eq.bu])
+  ) ===
+    JSON.stringify([
+      ['fa21', 2, 'finesse', 'melee', 'd8+4', 'phy', 1],
+      ['fa24', 3, 'knowledge', 'far', 'd8+6', 'mag', 1],
+      ['fa33', 2, 'presence', 'melee', 'd8+3', 'phy', 1],
+      ['fa35', 2, 'knowledge', 'far', 'd6+3', 'mag', 2]
+    ]),
+  'items.fa weapons are not the four printed in Volume 2'
+);
+ok(
+  JSON.stringify(fa.filter((x) => x.refs).map((x) => [x.id, x.refs])) ===
+    JSON.stringify([
+      ['fa26', ['werewolf']],
+      ['fa27', ['reanimated']],
+      ['fa29', ['ghost']],
+      ['fa34', ['vampire']]
+    ]),
+  'items.fa does not link Lycaon, Mummification, Stygian and Vampire to their Transformation cards'
+);
+['vampire', 'werewolf', 'reanimated', 'ghost'].forEach((k) =>
+  ok(
+    !!L.refs[k] &&
+      L.refs[k].ensub === 'Transformation' &&
+      L.refs[k].url === 'https://ru.daggerheart.su/transformation/' + k,
+    'Transformation card ' + k + ' is missing or does not link to its daggerheart.su page'
+  )
+);
+ok(
+  L.refs.vampire.rud.includes('Ран, которые отметила цель') &&
+    L.refs.vampire.rud.includes('Вы можете держать до 6 жетонов одновременно') &&
+    L.refs.vampire.ende.includes('You can hold up to 6 tokens at a time'),
+  'the Vampire card does not follow the daggerheart.su wording'
 );
 const phRow = parsed.find((r) => r[idx.id] === 'ph40');
 const vhRow = parsed.find((r) => r[idx.id] === 'vh9');

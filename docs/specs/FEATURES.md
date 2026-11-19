@@ -6,7 +6,7 @@ in `CONTRACTS.md`.
 
 ## Rolling
 
-Twelve modes. Each keeps its own input in memory only. A mode starts at its
+Thirteen modes. Each keeps its own input in memory only. A mode starts at its
 first row on every visit: a switch between two modes carries no number
 across.
 
@@ -24,12 +24,13 @@ across.
 | Pistolheart | 1-45 | 1 | `ph {n}` |
 | The Last Round Table | 1-26 | 1 | `lr {n}` |
 | Escape the Veiled Halls | 1-15 | 1 | `vh {n}` |
+| Fitzgibbon's Antiques & Oddities | 1-36 | 1 | `fa {n}` |
 
 - One roll row per item: an upgrade line is rolled once, at its head, so a line and a
   single item have the same chance. Its other tiers open from the card, whose «Ранг» /
   "Tier" row lists them. A rung has no `roll` (owner, 2026-11-05;
   `docs/decisions/2026-11-07-one-roll-row-per-item-an-upgrade-line-is-rolled-at-its-head.md`).
-- The twelve roll pages share one layout (`RollPage`). Up to 760 px the `h1` and
+- The thirteen roll pages share one layout (`RollPage`). Up to 760 px the `h1` and
   the lead are read, not drawn; the picker row comes first (the mode picker and
   «Ещё»), then the roll controls; one results line holds «Бросок N» / "Roll N" and
   «Настроить» / "Set up".
@@ -40,7 +41,7 @@ across.
   "Roll" at every width. From 761 px the head holds the `h1`, the three mode pills,
   the labeled pin and help (DESIGN.md, "The Head Order Rule"; from 761 to 999 px the
   pills take the row under them), and the lead. Only `/roll/std` and `/roll/alt` draw a
-  lead, a description of the two books they combine; the other ten draw none, since
+  lead, a description of the two books they combine; the other eleven draw none, since
   their pill names the book and the field label and the roll button say what to do
   (DESIGN.md, "The Clarity Rule"; owner, 2026-11-06). A 320 px pane holds the roll
   controls and the settings, and the results line beside it holds «Бросок N» and
@@ -105,12 +106,12 @@ across.
   one and the supplements: the homebrew group's source tabs hold the GM's own
   text, so `/tables/homebrew` alone may draw a taller row, and the supplements
   draw one tab, the picker.
-- The twelve roll sections share the header's roll job «Бросок» / "Roll" and draw
+- The thirteen roll sections share the header's roll job «Бросок» / "Roll" and draw
   the mode picker in the picker row up to 760 px and the three mode pills of the page
   head from 761 px ("Chrome";
   `docs/decisions/2026-11-10-the-roll-modes-are-a-picker-row-up-to-760-px.md`, which
   amends `docs/decisions/2026-10-29-the-header-has-three-jobs-and-a-mode-row.md`). The
-  ten supplement modes (Wondrous Environments to Escape the Veiled Halls) are the
+  eleven supplement modes (Wondrous Environments to Fitzgibbon's Antiques & Oddities) are the
   links of the sheet's «Дополнения» / "Supplements" group, in table order, each a
   link to its section; the open one is current. A mode switch keeps the keyboard
   focus on the lit control (the picker up to 760 px; the pressed pill, or the
@@ -155,6 +156,11 @@ across.
 - Pistolheart is one pool of 45 over its three volumes (93 rows: its 16 lines roll at
   their heads), The Last Round Table one pool of 26 and Escape the Veiled Halls one pool
   of 15, each in book order, rolled at random (as Arazo's Artifacts; owner, 2026-11-05).
+  Fitzgibbon's Antiques & Oddities is one pool of 36 over its two volumes, A-Z in Volume 1,
+  then A-Z in Volume 2, rolled at random; its table is one flat list with no volume
+  sections and no volume filter, as Vault of Ages; its four weapons roll with the book and
+  stand in the equipment tables too, and the printed rarity is not shipped (owner, 2026-11-18;
+  `docs/decisions/2026-11-18-fitzgibbons-antiques-and-oddities-is-source-fa-one-pool-of-36.md`).
   Escape the Veiled Halls is one flat list with no rooms (owner, 2026-11-07;
   `docs/decisions/2026-11-07-escape-the-veiled-halls-is-one-flat-list-with-no-rooms.md`).
   The tables page sections `mwt` by realm and `ph` by volume (`sectionProps.ts`), and a
@@ -187,9 +193,9 @@ across.
   assistive technology. Under them the book or section of the group are
   underlined tabs, a group labeled by the group's name; the current tab is
   gold text on a gold underline (`aria-current="page"`). «Дополнения» opens
-  Wondrous Environments and is lit on each supplement table. Its ten books, by
+  Wondrous Environments and is lit on each supplement table. Its eleven books, by
   their own names in `SUPPLEMENTS` order, are the table picker's at every
-  width: ten tabs need 1331 px for one line, and a second line puts the rows
+  width: ten tabs needed 1331 px for one line (measured 2026-11-07), and a second line puts the rows
   below the First-Screen Rule up to about 1380 px
   (`docs/decisions/2026-11-07-the-supplements-books-are-the-table-picker-at-every-width.md`). From 761 px the supplements' tab row is one lit tab, the picker
   button, that names the open book with a chevron and opens the picker's sheet
@@ -283,7 +289,7 @@ across.
   "Nothing found", one cause sentence that names the query, the chosen values
   or both («Нет совпадений с «%q» среди фильтров: %v.»), and the primary
   «Сбросить фильтры» / "Reset the filters" while a filter is chosen.
-- Search covers all 1593 records: names, descriptions and stat lines, both
+- Search covers all 1629 records: names, descriptions and stat lines, both
   languages at once; `#/search` shows the first 300 matches - the cap is that
   page's alone, a table's own box is not capped. A signed-in author's own items
   rank with the catalog's matches, the catalog's record first on a tie, and the
@@ -320,8 +326,8 @@ across.
   chips («зелье», «меч», «лечения зелья»; "potion", "sword", "healing
   potions"), each of which finds a record. A press fills the box and the box
   keeps the focus. The plate is the one place that states both languages: from 761 px
-  the page lead reads «Поиск сразу по 1593 позициям - добыча, расходники и снаряжение.» /
-  "Search all 1593 entries at once - loot, consumables and equipment." (owner,
+  the page lead reads «Поиск сразу по 1629 позициям - добыча, расходники и снаряжение.» /
+  "Search all 1629 entries at once - loot, consumables and equipment." (owner,
   2026-11-06).
 - **Nothing found** on `#/search`: the plate, «Ничего не найдено», one cause
   naming the query («Нет совпадений с «%q» в названиях и описаниях.»), or the
@@ -2948,7 +2954,7 @@ right, so the tab order and the reading order agree
   are the starting-section select and the pin ("Chrome"). The section has no
   lead line and no hint: five rows with six controls, each saving the account
   row, every segmented control neutral: «Язык» (the RU/EN switch); «Раздел при
-  запуске» / "Section on start" (a select over the fifteen sections and «Мои
+  запуске» / "Section on start" (a select over the sixteen sections and «Мои
   предметы» last, which pins `#/homebrew`; choosing
   «Таблицы» pins `#/tables/core_item`, the table a bare `#/tables` opens
   on, never the bare address (`STATE.md`, "localStorage keys"); a pinned
@@ -3240,7 +3246,7 @@ allow or refuse its access to the account.
   «Поиск» / "Search" (the magnifier). «Бросок» opens the last roll section of
   the tab, else the pinned start section when it is a roll section, else
   `#/roll/std`. The lit job carries `aria-current="page"`, gold text and the
-  gold underline: «Бросок» on the twelve roll sections, «Таблицы» on every table,
+  gold underline: «Бросок» on the thirteen roll sections, «Таблицы» on every table,
   «Поиск» on search. No job is lit on a record, an item, a print sheet, a share
   link, the lists, a list page, the account page or «Мои предметы».
   `#/lists` is reached from the account menu (`ROUTES.md`, "Sections"). The
@@ -3255,7 +3261,7 @@ allow or refuse its access to the account.
   short page, after a navigation and while a menu, a sheet, a dialog, a text field
   or a drag owns the page; a keyboard focus inside it brings it back. A focused control and
   a linked target stop clear of its full height, so a Tab never lands under it.
-- The twelve roll sections draw the picker row up to 760 px: the first row of `main`,
+- The thirteen roll sections draw the picker row up to 760 px: the first row of `main`,
   8 px under the header, 40 px tall (DESIGN.md, "The Head Order Rule"). It holds the
   mode picker, named «Режим броска: <имя>» / "Roll mode: <name>", which reads the page's
   name (one or two lines, no book line, `aria-haspopup="dialog"`, `data-section` the
@@ -3270,7 +3276,7 @@ allow or refuse its access to the account.
   gold fill and `aria-current="page"`; each carries `data-section`.
 - The picker, and from 761 px the «Дополнения» button, opens the mode sheet: a `Sheet`
   titled «Бросок» / "Roll", with «Закрыть» / "Close", the links «Обычные правила» and
-  «Альтернативные таблицы», the caption «Дополнения» / "Supplements" and the ten
+  «Альтернативные таблицы», the caption «Дополнения» / "Supplements" and the eleven
   supplements in table order. A row is 44 px, the open one gold with
   `aria-current="page"`, and the body scrolls at a short window (at 360x640 the list is
   taller than the sheet) with the open row in view. A press opens the mode and closes the
@@ -3345,9 +3351,9 @@ Each rule keeps its number: a review cites it by number.
   the tab title, the start-section option and the buttons to it; `/roll/alt` is
   «Альтернативные таблицы» / "Alternate tables" in the lit mode pill, the tab title
   and the start-section option. The lit pill reads its page's name. Departures: the
-  twelve roll pages and `/tables/*` are headed by their job, «Бросок» / "Roll" and
+  thirteen roll pages and `/tables/*` are headed by their job, «Бросок» / "Roll" and
   «Таблицы» / "Tables", and the lit pill or tab names the page; the menu button
-  «Дополнения» / "Supplements" names the ten supplement pages as one group and
+  «Дополнения» / "Supplements" names the eleven supplement pages as one group and
   shows the open supplement's name from 761 px; up to 760 px the roll picker reads the
   page's name and has no group button.
 - **5. Toasts**: a create says «<Что> «%s» создан(а)» / "<What> "%s"

@@ -41,8 +41,8 @@ rewrite answers. `tests/contracts.js` checks that each
 route of `routes.json` is covered and that the worker takes no rewritten path.
 `routes.json` pins each route's resolved address, its lit job and its lit mode. In particular:
 
-- the fifteen section names, and the three legacy ones that fold into `roll/std`
-- the URL ids of the source products (owner, 2026-10-21): the sections `roll/wondrous_environments`, `roll/dread_gm_toolbox`, `roll/vault_of_ages`, `roll/dragons_vault`, `roll/arazos_artifacts`, `roll/community_items`, `roll/many_worlds_tavern`, `roll/pistolheart`, `roll/last_round_table` and `roll/escape_the_veiled_halls` (2026-11-07), and the tables `hope_and_fear_item`, `hope_and_fear_consumable`, `wondrous_environments`, `dread_gm_toolbox`, `vault_of_ages`, `dragons_vault`, `arazos_artifacts`, `community_items`, `many_worlds_tavern`, `pistolheart`, `last_round_table` and `escape_the_veiled_halls`; the app writes these. An old id still opens the same page (`roll/dread`, `#/tables/dv`, `hnf_item` and the rest, which are the internal ids); the address is not rewritten
+- the sixteen section names, and the three legacy ones that fold into `roll/std`
+- the URL ids of the source products (owner, 2026-10-21): the sections `roll/wondrous_environments`, `roll/dread_gm_toolbox`, `roll/vault_of_ages`, `roll/dragons_vault`, `roll/arazos_artifacts`, `roll/community_items`, `roll/many_worlds_tavern`, `roll/pistolheart`, `roll/last_round_table` and `roll/escape_the_veiled_halls` (2026-11-07) and `roll/fitzgibbons_antiques_and_oddities` (2026-11-18), and the tables `hope_and_fear_item`, `hope_and_fear_consumable`, `wondrous_environments`, `dread_gm_toolbox`, `vault_of_ages`, `dragons_vault`, `arazos_artifacts`, `community_items`, `many_worlds_tavern`, `pistolheart`, `last_round_table`, `escape_the_veiled_halls` and `fitzgibbons_antiques_and_oddities`; the app writes these. An old id still opens the same page (`roll/dread`, `#/tables/dv`, `hnf_item` and the rest, which are the internal ids); the address is not rewritten
 - the table names in `#/tables/<table>`, including `other_starting` and `other_frames`; legacy `frames` resolves to `other_frames` without rewriting the pasted hash; the tables page's three copy buttons (the table, its filter, one block) hand out the preview host's address of the table (section 5), except on `homebrew`, and `<site>#/tables/...` keeps opening
 - the filter grammar `f_group-value[-value][.group-value]`, **including the
   group key spelling**: `range` and `burden`, not `rg` and `bu`
@@ -131,6 +131,7 @@ shared list. Never renumber a record that has shipped.
 | `ph` | Pistolheart, book order over the three volumes, an upgrade line's rungs after its head |
 | `lr` | The Last Round Table, book order; the id number is the roll |
 | `vh` | Escape the Veiled Halls, one flat list in the adventure's order; the id number is the roll |
+| `fa` | Fitzgibbon's Antiques & Oddities, one flat list, A-Z in Volume 1, then A-Z in Volume 2; the id number is the roll; the record carries no volume |
 | `cm` | Community items |
 | `f` | Campaign frame equipment |
 | `q` | Core and Hope & Fear equipment |

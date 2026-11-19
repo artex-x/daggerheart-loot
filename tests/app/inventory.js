@@ -976,8 +976,8 @@ const STATES = [
     }
   },
 
-  /* Pistolheart, The Last Round Table and Escape the Veiled Halls roll one pool each; an
-     upgrade line is one entry, its head. */
+  /* Pistolheart, The Last Round Table, Escape the Veiled Halls and Fitzgibbon's Antiques &
+     Oddities roll one pool each; an upgrade line is one entry, its head. */
   {
     id: '#/roll/ph',
     route: '#/roll/pistolheart',
@@ -999,12 +999,25 @@ const STATES = [
   {
     id: '#/roll/vh',
     route: '#/roll/escape_the_veiled_halls',
-    why: 'Escape the Veiled Halls: one pool of 15, no picker, the button picks 1-15 at random, the ten supplements'
+    why: 'Escape the Veiled Halls: one pool of 15, no picker, the button picks 1-15 at random'
   },
   {
     id: '#/roll/vh ~ help',
     route: '#/roll/escape_the_veiled_halls',
     why: 'the help panel, unfolded: the 15 entries, the two potion upgrades',
+    enter: async (d) => {
+      await d.click('Об этой книге');
+    }
+  },
+  {
+    id: '#/roll/fa',
+    route: '#/roll/fitzgibbons_antiques_and_oddities',
+    why: "Fitzgibbon's Antiques & Oddities: one pool of 36, no picker, the button picks 1-36 at random, the eleven supplements"
+  },
+  {
+    id: '#/roll/fa ~ help',
+    route: '#/roll/fitzgibbons_antiques_and_oddities',
+    why: 'the help panel, unfolded: two volumes, the four Transformations, one link per volume',
     enter: async (d) => {
       await d.click('Об этой книге');
     }
@@ -1418,7 +1431,7 @@ const STATES = [
   {
     id: '#/tables/ph ~ table picker',
     route: '#/tables/pistolheart',
-    why: 'from 761 px the supplements tab is the picker: its sheet, «Дополнения» pressed, ten books, Pistolheart current',
+    why: 'from 761 px the supplements tab is the picker: its sheet, «Дополнения» pressed, eleven books, Pistolheart current',
     enter: async (d) => {
       await d.click('Таблица: Pistolheart');
     }
@@ -1432,6 +1445,11 @@ const STATES = [
     id: '#/tables/vh',
     route: '#/tables/escape_the_veiled_halls',
     why: 'a plain body with a kind row, 15 rows in book order'
+  },
+  {
+    id: '#/tables/fa',
+    route: '#/tables/fitzgibbons_antiques_and_oddities',
+    why: 'one flat body over two volumes, as Vault of Ages: no volume headings, 36 rows, a kind row'
   },
   {
     id: '#/tables/other_starting',
@@ -1603,6 +1621,14 @@ const STATES = [
     why: 'a supplement rule card, unfolded: its link reads the product host, heartofdaggers.com',
     enter: async (d) => {
       await d.click('Купчая на Последний Круглый Стол: Настроение таверны');
+    }
+  },
+  {
+    id: '#/i/fa26 ~ ref open',
+    route: '#/i/fa26',
+    why: 'a Transformation card from daggerheart.su, unfolded: two feature lines, the cost in bold',
+    enter: async (d) => {
+      await d.click('Оборотень');
     }
   },
 

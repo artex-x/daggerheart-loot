@@ -1,6 +1,6 @@
 # #/roll/vh
 # route: #/roll/escape_the_veiled_halls
-# why: Escape the Veiled Halls: one pool of 15, no picker, the button picks 1-15 at random, the ten supplements
+# why: Escape the Veiled Halls: one pool of 15, no picker, the button picks 1-15 at random
 
 ## ru :: tree
 RootWebArea "Escape the Veiled Halls - Генератор лута Daggerheart" [url=/roll/escape_the_veiled_halls]

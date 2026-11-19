@@ -19,6 +19,7 @@ RootWebArea "Vault of Ages - Генератор лута Daggerheart" [url=/roll
     link "Pistolheart" [url=/roll/pistolheart]
     link "The Last Round Table" [url=/roll/last_round_table]
     link "Escape the Veiled Halls" [url=/roll/escape_the_veiled_halls]
+    link "Fitzgibbon's Antiques & Oddities" [url=/roll/fitzgibbons_antiques_and_oddities]
 
 ## ru :: controls
 ?Об этой книге
@@ -27,6 +28,7 @@ Arazo's Artifacts
 Dread GM Toolbox
 EN
 Escape the Veiled Halls
+Fitzgibbon's Antiques & Oddities
 Many Worlds Tavern
 Pistolheart
 RU
@@ -78,6 +80,7 @@ RootWebArea "Vault of Ages - Daggerheart Loot Generator" [url=/en/roll/vault_of_
     link "Pistolheart" [url=/en/roll/pistolheart]
     link "The Last Round Table" [url=/en/roll/last_round_table]
     link "Escape the Veiled Halls" [url=/en/roll/escape_the_veiled_halls]
+    link "Fitzgibbon's Antiques & Oddities" [url=/en/roll/fitzgibbons_antiques_and_oddities]
 
 ## en :: controls
 ?About this book
@@ -92,6 +95,7 @@ Community items
 Dread GM Toolbox
 EN
 Escape the Veiled Halls
+Fitzgibbon's Antiques & Oddities
 Install as an app
 LootDaggerheart
 Many Worlds Tavern

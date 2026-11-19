@@ -58,40 +58,42 @@ and the screen stays right.
 | `#/roll/pistolheart` | Pistolheart, 1-45 |
 | `#/roll/last_round_table` | The Last Round Table, 1-26 |
 | `#/roll/escape_the_veiled_halls` | Escape the Veiled Halls, 1-15 |
+| `#/roll/fitzgibbons_antiques_and_oddities` | Fitzgibbon's Antiques & Oddities, 1-36 |
 | `#/tables` | Tables index |
 | `#/lists` | Lists index |
 | `#/search` | Search |
 
-These fifteen (`SECTIONS`) are what a person may pin as their starting
-section - fourteen pin as their own hash; `#/tables` pins as
+These sixteen (`SECTIONS`) are what a person may pin as their starting
+section - fifteen pin as their own hash; `#/tables` pins as
 whichever table is on screen (`#/tables/<table>`), never as the bare tab
 address itself. See `STATE.md`, `dhloot.home.v1`, for what a pin actually
 stores and reads back.
 
 ## URL ids and old ids
 
-The ten supplement sections and twelve tables have a URL id from the name of
+The eleven supplement sections and thirteen tables have a URL id from the name of
 their source product (owner, 2026-10-21;
 `docs/decisions/2026-10-21-source-names-follow-the-source-product.md`); the
 app writes it (`hash.ts` `SECTION_SLUG`, `TABLE_SLUG`). The internal id is the
 old address: `roll/wondrous`, `roll/dread`, `roll/voa`, `roll/dv`,
-`roll/arazo`, `roll/community`, `roll/mwt`, `roll/ph`, `roll/lr`, `roll/vh`, and the tables `hnf_item` ->
+`roll/arazo`, `roll/community`, `roll/mwt`, `roll/ph`, `roll/lr`, `roll/vh`, `roll/fa`, and the tables `hnf_item` ->
 `hope_and_fear_item`, `hnf_consumable` -> `hope_and_fear_consumable`,
 `wondrous` -> `wondrous_environments`, `dread` -> `dread_gm_toolbox`, `voa` ->
 `vault_of_ages`, `dv` -> `dragons_vault`, `arazo` -> `arazos_artifacts`,
 `community` -> `community_items`, `mwt` -> `many_worlds_tavern`, `ph` -> `pistolheart`,
-`lr` -> `last_round_table`, `vh` -> `escape_the_veiled_halls`.
+`lr` -> `last_round_table`, `vh` -> `escape_the_veiled_halls`, `fa` ->
+`fitzgibbons_antiques_and_oddities`.
 An old id still opens the same page, with its anchor or filter tail; the
 address is not rewritten. Filter values (`f_src-dread`) keep the internal keys.
 
 The header draws three jobs over them in every build: «Бросок» / "Roll" for the
-twelve roll sections, «Таблицы» / "Tables" and «Поиск» / "Search"
+thirteen roll sections, «Таблицы» / "Tables" and «Поиск» / "Search"
 (`app/src/lib/nav.ts`). «Бросок» opens the last roll section of the tab, else the
-pinned start section when it is a roll section, else `#/roll/std`. The twelve roll
+pinned start section when it is a roll section, else `#/roll/std`. The thirteen roll
 sections draw the mode picker in the picker row up to 760 px and the same controls in the page
 head from 761 px: Core rules, the alternate tables and
-one «Дополнения» / "Supplements" group of the ten supplement sections (the picker's sheet)
-(`roll/wondrous_environments` to `roll/escape_the_veiled_halls`); every supplement
+one «Дополнения» / "Supplements" group of the eleven supplement sections (the picker's sheet)
+(`roll/wondrous_environments` to `roll/fitzgibbons_antiques_and_oddities`); every supplement
 address stays its own section (`FEATURES.md`, "Chrome"). `#/lists` has no job: it
 stays a section route, reached from the account menu's «Мои списки», a bookmark or
 a pin. A build
@@ -118,7 +120,7 @@ Table names in an address: `core_item`, `core_consumable`, `hope_and_fear_item`,
 `hope_and_fear_consumable`, `wondrous_environments`, `community_items`,
 `dread_gm_toolbox`, `vault_of_ages`, `dragons_vault`, `arazos_artifacts`,
 `many_worlds_tavern`, `pistolheart`, `last_round_table`, `escape_the_veiled_halls`,
-`other_starting`, `other_frames`, `alt_item`,
+`fitzgibbons_antiques_and_oddities`, `other_starting`, `other_frames`, `alt_item`,
 `alt_consumable`, `eq_weapon`, `eq_secondary`, `eq_armor`, `homebrew`. The
 internal ids (`TABLE_IDS`) still parse ("URL ids and old ids" above). The
 tables below name a table by its internal id.
@@ -175,6 +177,7 @@ Group keys, by table:
 | `ph` | `kind`, `vol` |
 | `lr` | `kind` |
 | `vh` | `kind` |
+| `fa` | `kind` |
 | `homebrew` | `kind`, `src` (one value: the source chip), `sect` |
 | `#/homebrew/f_` (the Items tab) | `kind`, `src` (any number of values, OR'd), `sect` |
 | `core_item` and the other loot tables | `kind` where the table holds more than one kind |

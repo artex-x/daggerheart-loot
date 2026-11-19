@@ -38,7 +38,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     switch "Свои предметы" [checked=true]
     StaticText "Свои предметы"
     button "Ссылка на таблицу"
-    StaticText "Показано 1 из 513"
+    StaticText "Показано 1 из 517"
     button "Выбрать"
     complementary "Фильтры"
       heading "Фильтры · 1" [level=2]
@@ -51,7 +51,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       ... button x29 of 33 same-shape siblings elided
       StaticText "ИСТОЧНИК"
       button "Мастерская Ольхи" [pressed=true]
-      button "и ещё 3" [expanded=false]
+      button "и ещё 4" [expanded=false]
       ... StaticText x3 of 7 same-shape siblings elided
       ... button x3 of 7 same-shape siblings elided
       StaticText "ХВАТ"
@@ -140,7 +140,7 @@ daggerheart.com
 Установить как приложение
 Физическое
 Хоумбрю
-и ещё 3
+и ещё 4
 
 ## en :: tree
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_src-hb_alderworkshopaaa?as=gm1]
@@ -177,7 +177,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_sr
     switch "Own items" [checked=true]
     StaticText "Own items"
     button "Link to this table"
-    StaticText "1 of 513 shown"
+    StaticText "1 of 517 shown"
     button "Select"
     complementary "Filters"
       heading "Filters · 1" [level=2]
@@ -190,7 +190,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_sr
       ... button x29 of 33 same-shape siblings elided
       StaticText "SOURCE"
       button "Alder Workshop" [pressed=true]
-      button "and 3 more" [expanded=false]
+      button "and 4 more" [expanded=false]
       ... StaticText x3 of 7 same-shape siblings elided
       ... button x3 of 7 same-shape siblings elided
       StaticText "BURDEN"
@@ -278,5 +278,5 @@ Very Close
 Very Far
 Weapons
 Wondrous Environments
-and 3 more
+and 4 more
 daggerheart.com

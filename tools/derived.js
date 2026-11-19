@@ -30,7 +30,8 @@ const SRC = {
   mwt: 'Many Worlds Tavern',
   ph: 'Pistolheart',
   lr: 'The Last Round Table',
-  vh: 'Escape the Veiled Halls'
+  vh: 'Escape the Veiled Halls',
+  fa: "Fitzgibbon's Antiques & Oddities"
 };
 const RANGE = {
   melee: 'Melee',
@@ -209,6 +210,7 @@ const CARD_TABLES = [
   'ph',
   'lr',
   'vh',
+  'fa',
   'other_starting',
   'other_frames',
   'alt_item',

@@ -17,6 +17,7 @@ deleted.
 - 2026-11-18 - [A batch read has its own path, and search rows carry a built summary](decisions/2026-11-18-a-batch-read-has-its-own-path-and-search-rows-carry-a-built-summary.md)
 - 2026-11-18 - [A compact row shows each fact once and a long note folds up to 760 px](decisions/2026-11-18-a-compact-row-shows-each-fact-once-and-a-long-note-folds-up-to-760-px.md)
 - 2026-11-18 - [An AI client writes an import file from the tools alone](decisions/2026-11-18-an-ai-client-writes-an-import-file-from-the-tools-alone.md)
+- 2026-11-18 - [Fitzgibbon's Antiques & Oddities is source fa, one pool of 36](decisions/2026-11-18-fitzgibbons-antiques-and-oddities-is-source-fa-one-pool-of-36.md)
 - 2026-11-18 - [The batch cap stays 10, and text search is not built](decisions/2026-11-18-the-batch-cap-stays-10-and-text-search-is-not-built.md)
 - 2026-11-17 - [The root audit allows one picomatch advisory until 2026-12-17](decisions/2026-11-17-the-root-audit-allows-one-picomatch-advisory-until-2026-12-17.md)
 - 2026-11-13 - [A connected app reaches only the API's account scope](decisions/2026-11-13-a-connected-app-reaches-only-the-api-s-account-scope.md)

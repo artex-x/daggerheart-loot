@@ -48,6 +48,7 @@ const TABLES = [
   'pistolheart',
   'last_round_table',
   'escape_the_veiled_halls',
+  'fitzgibbons_antiques_and_oddities',
   'frames',
   'community_items',
   'alt_item',
@@ -108,6 +109,7 @@ const PAGES = [
   ['#/roll/pistolheart', 'pistolheart'],
   ['#/roll/last_round_table', 'the last round table'],
   ['#/roll/escape_the_veiled_halls', 'escape the veiled halls'],
+  ['#/roll/fitzgibbons_antiques_and_oddities', "fitzgibbon's antiques & oddities"],
   ['#/lists', 'списки без входа'],
   ['#/homebrew', 'мои предметы без входа'],
   ['#/homebrew/new', 'новый предмет без входа'],
@@ -152,6 +154,7 @@ const PAGES = [
   ['#/i/cc1', 'карточка сообщества'],
   ['#/i/f1', 'карточка фрейма'],
   ['#/i/mw47', 'карточка с любой характеристикой'],
+  ['#/i/fa26', 'карточка с карточкой Трансформации'],
   ['/#/i/nope', 'предмета нет'],
   /* The four craft-heavy worst cases the legacy craftmob.js swept - the
    * mobile craft block and the dice bar overflow checks below need a page that actually
@@ -638,7 +641,7 @@ function headCap(width) {
               .replace(/^\/en\//, '/')
               .slice(1);
             const known =
-              /^(roll\/(std|alt|wondrous_environments|dread_gm_toolbox|vault_of_ages|dragons_vault|arazos_artifacts|community_items|many_worlds_tavern|pistolheart|last_round_table|escape_the_veiled_halls)|tables|lists|search|print\/|i\/|h\/|l\/|lists\/|account$|homebrew(\/|$))/.test(
+              /^(roll\/(std|alt|wondrous_environments|dread_gm_toolbox|vault_of_ages|dragons_vault|arazos_artifacts|community_items|many_worlds_tavern|pistolheart|last_round_table|escape_the_veiled_halls|fitzgibbons_antiques_and_oddities)|tables|lists|search|print\/|i\/|h\/|l\/|lists\/|account$|homebrew(\/|$))/.test(
                 h
               );
             if (!known) out.badLinks.push(h);

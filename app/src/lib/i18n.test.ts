@@ -172,7 +172,7 @@ describe('the interface words', () => {
         expect(sectionLabel(s, t)).toBe(t[key]);
       }
     }
-    expect(Object.keys(SECTION_LABEL)).toHaveLength(15);
+    expect(Object.keys(SECTION_LABEL)).toHaveLength(16);
     expect(sectionLabel('lists', dict('ru'))).toBe('Мои списки');
     expect(sectionLabel('lists', dict('en'))).toBe('My lists');
     expect(sectionLabel('roll/alt', dict('ru'))).toBe('Альтернативные таблицы');
@@ -604,6 +604,7 @@ describe('the preview card quotes the app', () => {
     expect(share.PATH_TEXT[lang]['ph']).toBe(t.ph);
     expect(share.PATH_TEXT[lang]['lr']).toBe(t.lr);
     expect(share.PATH_TEXT[lang]['vh']).toBe(t.vh);
+    expect(share.PATH_TEXT[lang]['fa']).toBe(t.fa);
     expect(share.PATH_TEXT[lang]['wondrous']).toBe(t.pageWondrous);
     expect(share.PATH_TEXT[lang]['dread']).toBe(t.pageDread);
     expect(share.PATH_TEXT[lang]['dv']).toBe(t.pageDv);
@@ -743,7 +744,7 @@ describe('the preview card quotes the app', () => {
       else if (EQ_TABLE[t]) want[t] = equipOfKind(index, EQ_TABLE[t]).length;
       else want[t] = index.rows.get(t)?.length ?? -1;
     }
-    expect(Object.keys(want)).toHaveLength(21);
+    expect(Object.keys(want)).toHaveLength(22);
     expect(Object.fromEntries(Object.entries(names.tables).map(([k, v]) => [k, v.n]))).toEqual(
       want
     );

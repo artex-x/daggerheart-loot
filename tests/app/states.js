@@ -6455,7 +6455,7 @@ async function showLongestTitle(page, d, parts) {
   return best.name;
 }
 
-/** 89. The twelve roll pages share one layout (docs/specs/FEATURES.md, "Rolling"): at 761 px the
+/** 89. The thirteen roll pages share one layout (docs/specs/FEATURES.md, "Rolling"): at 761 px the
  *  heading, the pin and the help share one line; up to 760 px the heading is read, not drawn,
  *  the picker row (the mode picker, «Ещё») comes first and the results line holds «Бросок N»
  *  and «Настроить»; «Ещё» holds the pin and the help; the dice are
@@ -6613,7 +6613,7 @@ async function rollPageLayout() {
         );
       }
 
-      /* The mode sheet: the picker opens twelve links, Escape returns the focus. */
+      /* The mode sheet: the picker opens thirteen links, Escape returns the focus. */
       if (width === 360) {
         await d.open('#/roll/vault_of_ages', { lang });
         await d.click(
@@ -6629,7 +6629,7 @@ async function rollPageLayout() {
         });
         ok(
           sheet.title === (lang === 'en' ? 'Roll' : 'Бросок') &&
-            sheet.links === 12 &&
+            sheet.links === 13 &&
             sheet.current === (lang === 'en' ? '/en' : '') + '/roll/vault_of_ages',
           at + lang + ': the mode sheet - ' + JSON.stringify(sheet)
         );
@@ -7144,6 +7144,7 @@ const NAV_TABLES = [
   'ph',
   'lr',
   'vh',
+  'fa',
   'eq_weapon',
   'eq_secondary',
   'eq_armor',

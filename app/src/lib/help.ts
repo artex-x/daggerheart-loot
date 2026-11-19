@@ -559,6 +559,42 @@ const VH: Record<Lang, Help> = {
   }
 };
 
+const FA_V1: HelpLink = {
+  href: 'https://heartofdaggers.com/products/fitzgibbons-antiques-oddities-vol-1/',
+  label: "Fitzgibbon's Antiques & Oddities Volume 1"
+};
+const FA_V2: HelpLink = {
+  href: 'https://heartofdaggers.com/products/fitzgibbons-antiques-oddities-vol-2/',
+  label: 'Volume 2'
+};
+
+const FA: Record<Lang, Help> = {
+  ru: {
+    button: 'Об этой книге',
+    paragraphs: [
+      p(
+        'Бросок выбирает из 36 позиций двух томов - 18 предметов, 14 расходников и 4 единицы оружия, в порядке книг. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно.'
+      ),
+      p(
+        'Четыре находки дают Трансформацию - Оборотня, Ожившего, Призрака или Вампира; её карточка правил есть на записи. Оружие есть и в таблицах снаряжения - там его отбирает фильтр «Источник».'
+      ),
+      { parts: ['Источник: два тома А. Э. Ван Флит - ', FA_V1, ', ', FA_V2, '.'] }
+    ]
+  },
+  en: {
+    button: 'About this book',
+    paragraphs: [
+      p(
+        "A roll picks from 36 entries over two volumes - 18 items, 14 consumables and 4 weapons, in the books' own order. No die covers that range, so the button picks an entry at random."
+      ),
+      p(
+        'Four finds grant a Transformation - Werewolf, Reanimated, Ghost or Vampire; its rule card is on the record. The weapons are in the equipment tables too - the "Source" filter picks them out there.'
+      ),
+      { parts: ['Source: two volumes by A.E. Van Fleet - ', FA_V1, ', ', FA_V2, '.'] }
+    ]
+  }
+};
+
 const STD: Record<Lang, Help> = {
   ru: {
     button: 'Где какая редкость',
@@ -720,6 +756,7 @@ const HELP: Record<string, Record<Lang, Help>> = {
   ph: PH,
   lr: LR,
   vh: VH,
+  fa: FA,
   tables: TABLES
 };
 

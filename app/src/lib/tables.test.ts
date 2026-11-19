@@ -11,7 +11,7 @@ import {
 import { dict } from './dict.js';
 import { TABLE_IDS, type TableId } from './types.js';
 
-describe('the sixteen groups', () => {
+describe('the seventeen groups', () => {
   it('together cover every table id exactly once', () => {
     const all = TABLE_GROUPS.flatMap((g) => g.subs);
     expect([...all].sort()).toEqual([...TABLE_IDS].sort());
@@ -36,6 +36,7 @@ describe('the sixteen groups', () => {
       'ph',
       'lr',
       'vh',
+      'fa',
       'hb'
     ]);
   });
@@ -74,7 +75,7 @@ describe('the tables page groups', () => {
     expect([...all].sort()).toEqual([...TABLE_IDS].sort());
   });
 
-  it('put the ten supplement books under one chip, between the alternate tables and equipment', () => {
+  it('put the eleven supplement books under one chip, between the alternate tables and equipment', () => {
     expect(TABLE_NAV.map((g) => g.id)).toEqual([
       'core',
       'hnf',
@@ -97,7 +98,8 @@ describe('the tables page groups', () => {
       'mwt',
       'ph',
       'lr',
-      'vh'
+      'vh',
+      'fa'
     ]);
   });
 
@@ -134,6 +136,7 @@ describe('the second-row caption on the tables page', () => {
     expect(navSubLabel('ph')).toBe('ph');
     expect(navSubLabel('lr')).toBe('lr');
     expect(navSubLabel('vh')).toBe('vh');
+    expect(navSubLabel('fa')).toBe('fa');
   });
 
   it('names the book in the picker where the caption alone names none', () => {

@@ -19,7 +19,7 @@ import {
 import type { Part } from './sections.js';
 import type { Lang, Record_, Section } from './types.js';
 
-/** The twelve sections that roll. */
+/** The thirteen sections that roll. */
 export type RollSection = Extract<Section, `roll/${string}`>;
 
 /** How a roll section rolls: `std` (Nd12 over two books), `alt` (two dice over a rarity),
@@ -39,7 +39,8 @@ export const ROLL_MODES: Record<RollSection, RollMode> = {
   'roll/mwt': 'part',
   'roll/ph': 'table',
   'roll/lr': 'table',
-  'roll/vh': 'table'
+  'roll/vh': 'table',
+  'roll/fa': 'table'
 };
 
 /* The sections that roll a single number over a whole table. Vault of Ages,
@@ -54,7 +55,8 @@ export const ROLL_TABLE: Partial<Record<Section, { table: string }>> = {
   'roll/arazo': { table: 'arazo' },
   'roll/ph': { table: 'ph' },
   'roll/lr': { table: 'lr' },
-  'roll/vh': { table: 'vh' }
+  'roll/vh': { table: 'vh' },
+  'roll/fa': { table: 'fa' }
 };
 
 export interface PickerRoll {

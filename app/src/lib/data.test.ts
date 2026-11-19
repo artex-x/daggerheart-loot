@@ -75,12 +75,12 @@ function expectRollPools(loot: Loot): void {
 
 describe('the index over the real dataset', () => {
   it('holds every record under its id', () => {
-    expect(index.byId.size).toBe(1593);
-    expect(index.searchable).toHaveLength(1593);
+    expect(index.byId.size).toBe(1629);
+    expect(index.searchable).toHaveLength(1629);
   });
 
   it('separates loot from equipment the way the data does', () => {
-    expect(index.all).toHaveLength(1212);
+    expect(index.all).toHaveLength(1248);
     expect(LOOT.eq).toHaveLength(381);
   });
 
@@ -91,8 +91,8 @@ describe('the index over the real dataset', () => {
     expect(frames).toHaveLength(95);
     expect(new Set([...starting, ...frames]).size).toBe(124);
     expect(index.rows.get('frames')).toHaveLength(94);
-    expect(index.all).toHaveLength(1212);
-    expect(index.searchable).toHaveLength(1593);
+    expect(index.all).toHaveLength(1248);
+    expect(index.searchable).toHaveLength(1629);
   });
 
   it('keeps roll numbers only in complete, independent roll pools', () => {
@@ -147,7 +147,7 @@ describe('the index over the real dataset', () => {
   it('finds equipment wherever it lives, not only in eq', () => {
     /* 381 in `eq`, and another 397 keeping their source-table placement. */
     expect(index.allEquip.length).toBeGreaterThan(LOOT.eq?.length ?? 0);
-    expect(equipOfKind(index, 'weapon')).toHaveLength(512);
+    expect(equipOfKind(index, 'weapon')).toHaveLength(516);
     expect(equipOfKind(index, 'secondary')).toHaveLength(148);
     expect(equipOfKind(index, 'armor')).toHaveLength(118);
   });
@@ -534,7 +534,7 @@ describe("a weapon that uses its wielder's Spellcast trait", () => {
 
 describe('referenced cards', () => {
   it('are kept beside the items that point at them', () => {
-    expect(Object.keys(index.refs)).toHaveLength(21);
+    expect(Object.keys(index.refs)).toHaveLength(24);
   });
 
   it('are pointed at by records that exist', () => {
@@ -543,7 +543,7 @@ describe('referenced cards', () => {
        mw9 and mw15 are Many Worlds Tavern loot; Pistolheart has 17 and The Last
        Round Table 4 (lr12 a weapon). */
     const pointing = index.all.filter((it) => it.refs?.length);
-    expect(pointing).toHaveLength(36);
+    expect(pointing).toHaveLength(40);
     for (const it of pointing) {
       for (const key of it.refs ?? []) expect(index.refs).toHaveProperty(key);
     }

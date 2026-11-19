@@ -1710,6 +1710,10 @@ describe('/tables/: a catalog table', () => {
     const vol = await card('/en/tables/pistolheart/2');
     assert.equal(meta(vol.body, 'og:title'), 'Pistolheart · Volume 2');
     assert.equal(meta(vol.body, 'og:description'), 'Volume: 2. 35 items');
+    /* Fitzgibbon's Antiques & Oddities is one flat list, as Vault of Ages: a volume
+       anchor draws the whole table's card. */
+    const fa = await card('/tables/fitzgibbons_antiques_and_oddities/2');
+    assert.equal(meta(fa.body, 'og:title'), 'Fitzgibbon&#39;s Antiques &amp; Oddities');
   });
 
   it('labels a filter with no count', async () => {

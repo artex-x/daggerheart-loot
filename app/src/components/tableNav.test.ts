@@ -147,7 +147,7 @@ describe('the table navigation', () => {
         'aria-pressed',
         'true'
       );
-      expect(sheet.getAllByRole('link')).toHaveLength(10);
+      expect(sheet.getAllByRole('link')).toHaveLength(11);
       expect(sheet.getByRole('link', { name: 'Vault of Ages' })).toHaveAttribute(
         'aria-current',
         'page'

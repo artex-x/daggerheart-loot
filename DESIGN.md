@@ -1,6 +1,6 @@
 ---
 name: Daggerheart Loot Generator
-description: A dark bilingual catalog of 1593 Daggerheart records, with one gold accent that marks only what was chosen.
+description: A dark bilingual catalog of 1629 Daggerheart records, with one gold accent that marks only what was chosen.
 colors:
   seal-gold: "#d8ab5e"
   seal-gold-soft: "#f0d091"
@@ -215,7 +215,7 @@ else.
 
 The mood is quiet, exact and solemn. Nothing here is staged: the type scale is
 small and even, the contrast values were measured rather than guessed, and the
-one accent is rationed. The catalog holds 1593 records in two languages, so
+one accent is rationed. The catalog holds 1629 records in two languages, so
 density is a requirement, not a preference. The design earns its ceremony from
 the numbering and the tagging, which are real information, and never from
 ornament.
@@ -489,7 +489,7 @@ query in the code belongs to one component and its own measured problem. Do
 not add another system breakpoint. `/account` signed in uses the 1000px step too:
 one column below it, two from it, in the DOM order of the one column.
 
-**The Roll Page Rule.** The twelve roll pages share one layout. Up to 760px: a read-only
+**The Roll Page Rule.** The thirteen roll pages share one layout. Up to 760px: a read-only
 `h1`, the picker row (the mode picker, «Ещё»), the controls, one results line («Бросок N»,
 «Настроить»); the pin, the help and the copy of every option are items of «Ещё». From 761px: the head (The Head
 Order Rule) with the `h1` «Бросок», the three mode pills and the labeled pin and help, a
@@ -528,7 +528,7 @@ row is short the pills wrap inside their own box (the catalog's chips in Russian
 about 1139px); from 761px to 999px the pills take the next row, under the heading, the
 pin, the help and the primary, so the DOM order is the reading order in each band. A
 third level (a table group's books, the homebrew sources) is underlined tabs under the
-head; the ten supplements, 1331px of tabs, are one lit tab that opens the table picker's
+head; the eleven supplements (ten took 1331px of tabs, measured 2026-11-07) are one lit tab that opens the table picker's
 sheet, and the roll's «Дополнения ▾» opens the roll picker's sheet: one overflow control,
 one sheet. Up to 760px a page with siblings reads its heading, not draws it, and the
 picker row names the page: the picker, the page's own tools, «Ещё» last (the tables' view
@@ -739,7 +739,7 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
   or section of the group as underlined tabs under the head: Ash Violet text, the current tab
   gold text on a 2px gold underline. Each level is a group named for
   assistive technology («Группа», the group's name, «Источник»). The supplements'
-  ten books are the table picker: one current tab, the open book's name and a chevron,
+  eleven books are the table picker: one current tab, the open book's name and a chevron,
   that opens the picker's sheet.
 
 ### Segmented control
@@ -832,11 +832,11 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
   «Поиск» / "Search", each with its icon before the label (the die, the table,
   the magnifier), at 14px weight 560 in Ash Violet with a 2px transparent bottom
   border. The lit job turns that border gold and the label Seal Gold Soft.
-  «Бросок» stands for the twelve roll pages and opens the last one of the tab.
-- **Picker row:** up to 760px the first row of `main` on the twelve roll pages, the
+  «Бросок» stands for the thirteen roll pages and opens the last one of the tab.
+- **Picker row:** up to 760px the first row of `main` on the thirteen roll pages, the
   tables and «Мои предметы», 8px under the header (the one picker face above). On a roll
   page the picker names the mode («Обычные правила ▾»); it opens a sheet titled «Бросок»
-  with the two own modes, the caption «Дополнения» and the ten supplements, 44px rows,
+  with the two own modes, the caption «Дополнения» and the eleven supplements, 44px rows,
   the open one gold with `aria-current`, the body scrolling at a short window. From 761px
   the same three controls are the page head's pills after «Бросок»: «Обычные правила»,
   «Альтернативные таблицы» and the button «Дополнения ▾», which shows the open
@@ -1146,7 +1146,7 @@ it.
 
 - **Don't** drift toward a neon dark mode: no saturated purple or cyan glow, no
   gradient text, no colored drop shadow. The ground is violet, which makes this
-  a short slide, and the palette's restraint is what keeps 1593 records legible.
+  a short slide, and the palette's restraint is what keeps 1629 records legible.
 - **Don't** drift toward a SaaS dashboard: no generic blue accent, no oversized
   rounded cards, no illustrated empty states (the only picture an empty state
   draws is the kind glyph in its art well), no marketing gradient. The density

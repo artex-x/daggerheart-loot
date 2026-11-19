@@ -42,13 +42,13 @@
         "content": [
           {
             "type": "text",
-            "text": "{\"format\":\"daggerheart-loot/api-search\",\"version\":1,\"data_version\":\"eebfbbaeeaeb8839\",\"total\":1,\"rows\":[{\"id\":\"ci1\",\"name\":{\"ru\":\"Первоклассный Спальный Мешок\",\"en\":\"Premium Bedroll\"},\"summary\":{\"ru\":\"Во время отдыха вы автоматически очищаете Стресс.\",\"en\":\"During downtime, you automatically clear a Stress.\"},\"kind\":\"item\",\"source\":{\"id\":\"core\",\"name\":{\"ru\":\"Core\",\"en\":\"Core\"}},\"table\":\"core_item\",\"table_id\":\"core_item\",\"tier\":null,\"rarity\":\"common\",\"link\":{\"ru\":\"https://daggerheart-loot.pages.dev/i/ci1?v=4024gqpj\",\"en\":\"https://daggerheart-loot.pages.dev/i/en/ci1?v=4024gqpj\"}}]}"
+            "text": "{\"format\":\"daggerheart-loot/api-search\",\"version\":1,\"data_version\":\"507309001d1a8385\",\"total\":1,\"rows\":[{\"id\":\"ci1\",\"name\":{\"ru\":\"Первоклассный Спальный Мешок\",\"en\":\"Premium Bedroll\"},\"summary\":{\"ru\":\"Во время отдыха вы автоматически очищаете Стресс.\",\"en\":\"During downtime, you automatically clear a Stress.\"},\"kind\":\"item\",\"source\":{\"id\":\"core\",\"name\":{\"ru\":\"Core\",\"en\":\"Core\"}},\"table\":\"core_item\",\"table_id\":\"core_item\",\"tier\":null,\"rarity\":\"common\",\"link\":{\"ru\":\"https://daggerheart-loot.pages.dev/i/ci1?v=4024gqpj\",\"en\":\"https://daggerheart-loot.pages.dev/i/en/ci1?v=4024gqpj\"}}]}"
           }
         ],
         "structuredContent": {
           "format": "daggerheart-loot/api-search",
           "version": 1,
-          "data_version": "eebfbbaeeaeb8839",
+          "data_version": "507309001d1a8385",
           "total": 1,
           "rows": [
             {
