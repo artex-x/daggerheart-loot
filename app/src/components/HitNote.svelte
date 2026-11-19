@@ -135,19 +135,30 @@
   }
 
   /* From 761 px the notes of one place (a list's lead line, an entry's row) stand in a
-     wrapping group: side by side when both fit, each at the text measure; a note with no
-     sibling takes the line measure (DESIGN.md, "The Measure Rule"). The gap replaces the
-     stacked margins; up to 760 px the notes stack and fold as before. */
+     wrapping group. A pair is two equal columns, each text at most the text measure: the
+     boxes stand side by side while the group holds two of 5/7 of it, so every row at one
+     width looks the same, and stretch to one height. A note with no sibling takes the line
+     measure (DESIGN.md, "The Measure Rule"). The gap replaces the stacked margins; up to
+     760 px the notes stack and fold as before. */
   @media (min-width: 761px) {
     :global(.hitnotes) {
       display: flex;
       flex-wrap: wrap;
-      align-items: flex-start;
       gap: 8px;
     }
 
     :global(.hitnotes > .hitnote) {
       margin-top: 0;
+    }
+
+    :global(.hitnotes > .hitnote:is(.hitnote ~ .hitnote, :has(~ .hitnote))) {
+      flex: 1 1 calc(var(--measure-text) * 5 / 7);
+      min-width: 0;
+      max-width: max-content;
+    }
+
+    :global(.hitnotes > .hitnote:is(.hitnote ~ .hitnote, :has(~ .hitnote))) .htext {
+      width: var(--measure-text);
     }
 
     :global(.hitnotes > .hitnote:not(.hitnote ~ .hitnote):not(:has(~ .hitnote))) {

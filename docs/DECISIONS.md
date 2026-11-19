@@ -14,7 +14,8 @@ deleted.
 
 ## Index
 
-- 2026-11-19 - [Notes sit side by side from 761 px and a lone note takes the line measure](decisions/2026-11-19-notes-sit-side-by-side-from-761-px-and-a-lone-note-takes-the-line-measure.md)
+- 2026-11-19 - [A note pair takes two equal columns and the owner row's rail runs full height](decisions/2026-11-19-a-note-pair-takes-two-equal-columns-and-the-owner-rows-rail-runs-full-height.md)
+- 2026-11-19 - [Notes sit side by side from 761 px and a lone note takes the line measure](decisions/2026-11-19-notes-sit-side-by-side-from-761-px-and-a-lone-note-takes-the-line-measure.md) - superseded in part
 - 2026-11-19 - [The take count steps by one between Min and Max; a tick takes the stock](decisions/2026-11-19-the-take-count-steps-by-one-between-min-and-max.md)
 - 2026-11-18 - [A batch read has its own path, and search rows carry a built summary](decisions/2026-11-18-a-batch-read-has-its-own-path-and-search-rows-carry-a-built-summary.md)
 - 2026-11-18 - [A compact row shows each fact once and a long note folds up to 760 px](decisions/2026-11-18-a-compact-row-shows-each-fact-once-and-a-long-note-folds-up-to-760-px.md)

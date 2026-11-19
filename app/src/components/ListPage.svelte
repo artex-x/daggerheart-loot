@@ -1565,7 +1565,6 @@
           {:else if rows.length}
             <div
               class="rows lrows"
-              class:picking={app.selecting}
               data-primary
               bind:this={rowsEl}
               use:keepRowFocus={{ row: '.lrow', tick: '.lrow-pick input' }}
@@ -1782,7 +1781,7 @@
                   {:else}
                     {#if !narrowed}{@render grip()}{/if}
                     {#if app.selecting}{@render pick()}{/if}
-                    {@render posField()}
+                    <span class="lrow-ncell">{@render posField()}</span>
                     {#if it}
                       <RowMain
                         {it}
@@ -2414,19 +2413,80 @@
     overflow: visible;
   }
 
-  .lrow > :first-child {
+  .lrow > :first-child,
+  .lrow > .lrow-ncell:first-child > .lrow-n {
     border-top-left-radius: 10px;
     border-bottom-left-radius: 10px;
   }
 
-  /* The text column's left edge in a full row: the grip, the position and the art. The
-     selection mode adds the tick column, so the notes and the controls follow the text. */
-  .lrows {
-    --lrow-text: 146px;
+  /* The full row is a grid, as `TableRows.svelte`'s `.row`. The rail (the grip, the tick and
+     the position cell) spans the row's four lines - main, controls under 760 px of the
+     column, take, notes - so its dividers run the full height; the subgrid keeps the icon,
+     the tick and the input on the main line. */
+  .lrow:not(.compact) {
+    display: grid;
+    grid-template-columns: auto auto auto minmax(0, 1fr) auto;
   }
 
-  .lrows.picking {
-    --lrow-text: calc(146px + max(32px, var(--thumb)));
+  .lrow:not(.compact) > :is(.lrow-grip, .lrow-pick, .lrow-ncell) {
+    grid-row: 1 / span 4;
+    display: grid;
+    grid-template-rows: subgrid;
+  }
+
+  .lrow:not(.compact) > :is(.lrow-grip, .lrow-pick) {
+    place-items: center;
+  }
+
+  .lrow:not(.compact) > .lrow-grip {
+    grid-column: 1;
+  }
+
+  .lrow:not(.compact) > .lrow-pick {
+    grid-column: 2;
+  }
+
+  .lrow:not(.compact) > .lrow-ncell {
+    grid-column: 3;
+  }
+
+  .lrow:not(.compact) > :global(.row-main),
+  .lrow:not(.compact) > .unk {
+    grid-column: 4;
+    grid-row: 1;
+  }
+
+  .lrow:not(.compact) > .lrow-ctl {
+    grid-column: 5;
+    grid-row: 1;
+  }
+
+  .lrow:not(.compact) > .lrow-take {
+    grid-column: 4 / -1;
+    grid-row: 3;
+  }
+
+  .lrow:not(.compact) > .rnote {
+    grid-column: 4 / -1;
+    grid-row: 4;
+  }
+
+  /* The input is no subgrid, so its cell holds the right border and spans the row. */
+  .lrow-ncell {
+    width: 40px;
+    border-right: 1px solid var(--line);
+  }
+
+  .lrow-ncell > .lrow-n {
+    width: 100%;
+    border-right: 0;
+  }
+
+  /* The text's left edge inside the row's main column: `RowMain`'s 8px padding, its 60px
+     art and its 12px gap. The grid column moves with the grip and the tick column, so the
+     notes and the controls follow the text. */
+  .lrows {
+    --lrow-text: 80px;
   }
 
   /* A row's notes under its text: read-only boxes, or the open area. */
@@ -2456,13 +2516,13 @@
   }
 
   /* The take line inside a ticked row (docs/specs/FEATURES.md, "Lists"),
-     starting under the art: 107px, measured 2026-09-23 at 1180. */
+     starting under the art, at `RowMain`'s own 8px padding. */
   .lrow-take {
     flex: 0 0 100%;
     display: flex;
     justify-content: flex-start;
     border-top: 1px solid rgb(216 171 94 / 22%);
-    padding: 8px 11px 8px 107px;
+    padding: 8px 11px 8px 8px;
   }
 
   /* off `.lrow-grip`, `:hover`, `:active`, `.lrow-n` and its three
@@ -2494,8 +2554,14 @@
      The position field beside it reorders on every device
      (docs/specs/FEATURES.md, "Lists"). */
   @media (any-hover: none) and (any-pointer: coarse) {
-    .lrow-grip {
+    .lrow-grip,
+    .lrow:not(.compact) > .lrow-grip {
       display: none;
+    }
+
+    .lrow > .lrow-grip:first-child + .lrow-ncell > .lrow-n {
+      border-top-left-radius: 10px;
+      border-bottom-left-radius: 10px;
     }
   }
 
@@ -2581,10 +2647,14 @@
 
   @container lrows (max-width: 759px) {
     .lrow-ctl {
-      flex: 0 0 100%;
       flex-wrap: wrap;
       align-items: flex-end;
       padding: 0 10px 10px var(--lrow-text);
+    }
+
+    .lrow:not(.compact) > .lrow-ctl {
+      grid-column: 4 / -1;
+      grid-row: 2;
     }
 
     .lrow-acts {

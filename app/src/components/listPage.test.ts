@@ -922,6 +922,25 @@ describe('a row', () => {
     expect((await readList(cloud, page, A_ID))?.ids).toEqual(['q1', 'ci1', 'cc1']);
   });
 
+  it('draws the position field in a rail cell of the full row only, and no picking class', async () => {
+    const viewport = fakeViewport('narrow');
+    const { container } = await openA({ viewport });
+    expect(container.querySelector('.lrow-ncell')).toBeNull();
+    await userEvent.click(container.querySelector('button.cbody') as HTMLElement);
+    expect(container.querySelectorAll('.cf .lrow-n')).toHaveLength(1);
+    expect(container.querySelector('.lrow-ncell')).toBeNull();
+    viewport.set('wide');
+    await waitFor(() => {
+      expect(container.querySelectorAll('.lrow')).toHaveLength(3);
+      expect(container.querySelector('.cf')).toBeNull();
+    });
+    for (const row of container.querySelectorAll('.lrow')) {
+      expect(row.querySelector(':scope > .lrow-ncell > .lrow-n')).not.toBeNull();
+    }
+    expect(container.querySelector('.lrows')).not.toHaveClass('picking');
+    await expectNoA11yViolations(container);
+  });
+
   it('stores qty and gold on input', async () => {
     const { cloud, page } = await openA();
 

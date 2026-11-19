@@ -498,6 +498,25 @@ const LONG_NOTE = [
   'Последний абзац с хвостом текста, чтобы заметка заняла около тысячи знаков. '.repeat(8)
 ].join('\n\n');
 const LONG_NAME_SPECS = [{ ...KLAD, name: LONG_LIST_NAME, ids: SEVEN_IDS }, LAVKA];
+/* A note at `NOTE_MAX`, 4000 code points of plain text. */
+const NOTE_AT_MAX = 'Длинная заметка без разметки, повторённая до предела длины. '
+  .repeat(70)
+  .slice(0, 4000);
+/* Owner rows with every pair shape from 761 px: two long notes, two short ones, a lone note,
+   and a 4000-character note beside a short one. */
+const WIDE_NOTED_SPECS = [
+  {
+    ...KLAD,
+    ids: SEVEN_IDS,
+    meta: {
+      ci1: { note: LONG_NOTE, hnote: LONG_NOTE },
+      ci2: { qty: 2, gold: 750, note: 'Светится в темноте', hnote: 'Проклят' },
+      ci3: { note: LONG_NOTE },
+      ci4: { note: NOTE_AT_MAX, hnote: 'Проклят' }
+    }
+  },
+  LAVKA
+];
 
 /** Opens the «Ещё» `sel` again after the EN press closed it, from the page's top: up to
  *  760 px the header covers a control that sits under it. */
@@ -2340,6 +2359,27 @@ const STATES = [
     why: 'the price switch «Цены:» with «Как в книге» pressed and «Например: 7 мешков 5 горстей», the list notes read-only with «Изменить», row 2 priced and noted: both notes read-only in its row, «Заметка, заполнена», has-note',
     enter: async (d) => {
       await onAccount(d, NOTED_SPECS);
+    }
+  },
+  {
+    id: LIST_A + ' ~ wide, row notes as gm4',
+    route: '#/lists',
+    as: 'gm4',
+    width: 1440,
+    why: "from 761 px each row's pair of notes stands in two equal columns, a lone note at the line measure, a 4000-character note beside a short one; the rail runs each row's full height",
+    enter: async (d) => {
+      await onAccount(d, WIDE_NOTED_SPECS);
+    }
+  },
+  {
+    id: LIST_A + ' ~ wide, row notes, selecting as gm4',
+    route: '#/lists',
+    as: 'gm4',
+    width: 1440,
+    why: 'row 2 ticked: the tick column, the take line under the art and the notes in the text column, the rail past both',
+    enter: async (d) => {
+      await onAccount(d, WIDE_NOTED_SPECS);
+      await d.tick(ROW2_CI2);
     }
   },
   {

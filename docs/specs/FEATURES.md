@@ -508,7 +508,9 @@ across.
   fade. The drag grip is drawn only where an input device can hover - on a
   device whose every pointer is coarse and cannot hover, HTML5 drag never
   starts from a touch, so the position field is the one reorder control left,
-  and it works everywhere.
+  and it works everywhere. From 761 px the owner's row draws the grip, the tick and the
+  position field as a rail down the row's full height, its dividers past the take line and
+  the notes, as the shared row's select box; the take line and the notes start at the text.
 - Add from a table or search selection, or from an item card. The card menu stays
   open so one item can go into several lists, and through the new-list form
   and its cancel. From the eighth list (`LIST_SEARCH_AT`) it draws a search
@@ -796,9 +798,14 @@ across.
   reads «свернуть» / "show less" (rule 12); it folds again when its row or its button
   closes, and from 761 px it draws whole. From 761 px the read-only notes of one place
   (the shared lead line, a shared or owner row, the rolled entry) stand in one wrapping
-  group in DOM order: side by side when both fit, each text at most 70ch, otherwise one
-  under the other; a note with no sibling is one wide box of at most 120ch (owner,
-  2026-11-19, `docs/decisions/2026-11-19-notes-sit-side-by-side-from-761-px-and-a-lone-note-takes-the-line-measure.md`).
+  group in DOM order: a pair is two equal columns, each text at most 70ch, side by side
+  while the group holds two of about 50ch (5/7 of 70ch) and one under the other below that,
+  at one width for every row, the two boxes equally tall; a note with no sibling is one
+  wide box of at most 120ch (owner, 2026-11-19,
+  `docs/decisions/2026-11-19-a-note-pair-takes-two-equal-columns-and-the-owner-rows-rail-runs-full-height.md`).
+  The owner page's note group is the viewport minus the side column, the rail and the
+  padding, so a pair stands side by side from a group of about 652 px: between 1000 and
+  about 1211 px the owner page stacks while the shared page stands side by side.
   The owner's 296 px side plate and the note edit box keep their widths. The two notes of an entry, and the two of the list,
   are one note area: closed, each filled note draws read-only in a full box, the GM
   note's box on the darker ground; «Заметка» (a filled note adds a dot and the

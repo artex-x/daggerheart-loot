@@ -1284,7 +1284,7 @@ async function announceOnTouchAndHideInertGrip() {
     return g && getComputedStyle(g).display;
   });
   ok(
-    gripHover === 'flex',
+    gripHover !== null && gripHover !== 'none',
     '26 (no touch): the drag grip is hidden on a device that can hover - display ' + gripHover
   );
   await ctx2.close();
@@ -9557,10 +9557,10 @@ const MEASURE_SIZES = [
 ];
 
 /** 132. The note group (DESIGN.md, "The Measure Rule"; docs/specs/FEATURES.md, "Lists"): from
- *  761 px the players note and the GM note of the lead line and of a shared row stand side by
- *  side when both fit, each text at most 70ch; a note with no sibling takes up to 120ch; at
- *  1000 px a pair stacks, and at 760 px the lead-line pair stacks; the page never
- *  scrolls sideways. */
+ *  761 px the players note and the GM note of the lead line and of a shared row are two equal
+ *  columns side by side at 1440 and 1000 px, each text at most 70ch, equal in width and
+ *  height; a note with no sibling takes up to 120ch; at 760 px the lead-line pair stacks; the
+ *  page never scrolls sideways. */
 async function noteGroup() {
   const SHOP_UUID = '00000000-0000-4000-8000-000000000101';
   const TEXT = 'Заметка для проверки ширины строки, она достаточно длинная. '.repeat(12);
@@ -9581,6 +9581,8 @@ async function noteGroup() {
           return {
             top: r.top,
             left: r.left,
+            width: r.width,
+            height: r.height,
             text: t.getBoundingClientRect().width,
             ch70: gauge(70),
             ch120: gauge(120),
@@ -9678,14 +9680,260 @@ async function noteGroup() {
             }
             if (n === 2) {
               const [a, c] = boxes;
-              if (width === 1440)
+              if (width !== 760) {
                 ok(Math.abs(a.top - c.top) <= 1, where + 'the pair does not share a top');
-              else ok(c.top > a.top + 1, where + 'the pair does not stack');
+                ok(Math.abs(a.width - c.width) <= 1, where + 'the pair has unequal widths');
+                ok(Math.abs(a.height - c.height) <= 1, where + 'the pair has unequal heights');
+              } else ok(c.top > a.top + 1, where + 'the pair does not stack');
             }
           }
         }
         await d.viewport(1440, 900);
         await d.settle();
+      }
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
+/** Reads every full row of the owner's list page: its inner box, the rail cells, the main
+ *  line, the notes with the gauges of 70ch and 120ch, and where the notes, the take line and
+ *  the text start. Runs in the page. */
+function ownerRowProbe() {
+  const box = (e) => {
+    if (!e) return null;
+    const r = e.getBoundingClientRect();
+    return { top: r.top, bottom: r.bottom, left: r.left, width: r.width, height: r.height };
+  };
+  const pad = (e) =>
+    e.getBoundingClientRect().left + parseFloat(getComputedStyle(e).paddingLeft);
+  const rows = [...document.querySelectorAll('main .lrows > .lrow')].map((row, at) => {
+    const r = row.getBoundingClientRect();
+    const grip = row.querySelector(':scope > .lrow-grip');
+    const note = row.querySelector(':scope > .rnote');
+    const take = row.querySelector(':scope > .lrow-take');
+    const text = row.querySelector(':scope > .row-main .rt');
+    const notes = [...row.querySelectorAll(':scope > .rnote.ro > .hitnote')].map((e) => {
+      const t = e.querySelector('.htext');
+      const gauge = (n) => {
+        const s = document.createElement('span');
+        s.style.cssText = 'display:block;height:0;width:' + n + 'ch';
+        t.appendChild(s);
+        const w = s.getBoundingClientRect().width;
+        s.remove();
+        return w;
+      };
+      return {
+        ...box(e),
+        text: t.getBoundingClientRect().width,
+        ch70: gauge(70),
+        ch120: gauge(120)
+      };
+    });
+    const art = row.querySelector(':scope > .row-main .ra');
+    return {
+      at,
+      inner: { top: r.top + row.clientTop, bottom: r.top + row.clientTop + row.clientHeight },
+      innerLeft: r.left + row.clientLeft,
+      grip: grip ? { display: getComputedStyle(grip).display, ...box(grip) } : null,
+      ncell: box(row.querySelector(':scope > .lrow-ncell')),
+      n: box(row.querySelector(':scope > .lrow-ncell > .lrow-n')),
+      pick: box(row.querySelector(':scope > .lrow-pick')),
+      main: box(row.querySelector(':scope > .row-main')),
+      notes,
+      group: note
+        ? note.clientWidth -
+          parseFloat(getComputedStyle(note).paddingLeft) -
+          parseFloat(getComputedStyle(note).paddingRight)
+        : null,
+      notePad: note ? pad(note) : null,
+      takePad: take ? pad(take) : null,
+      textLeft: text ? text.getBoundingClientRect().left : null,
+      artLeft: art ? art.getBoundingClientRect().left : null
+    };
+  });
+  return {
+    rows,
+    sideways: document.documentElement.scrollWidth > document.documentElement.clientWidth
+  };
+}
+
+/** 133. The owner row's notes and rail (DESIGN.md, "The Measure Rule"; docs/specs/FEATURES.md,
+ *  "Lists"): from 761 px a pair of notes is two equal columns, each text at most 70ch, side by
+ *  side while the group holds two of about 50ch and stacked below that, the same in every
+ *  row at one width, in RU and EN, equal in width and in height; a lone note takes 70ch to
+ *  120ch; the grip and the position cell run the row's full height while the position input
+ *  keeps the main line; the notes and the take line start at the text, on a touch-only device
+ *  too; the page never scrolls sideways. */
+async function ownerRowNotes() {
+  const at = '133 (the owner row notes and rail): ';
+  const NOTED = LIST_A_ID + ' ~ wide, row notes as gm4';
+  const SELECTING = LIST_A_ID + ' ~ wide, row notes, selecting as gm4';
+  const near = (a, b) => a !== null && b !== null && Math.abs(a - b) <= 1;
+  const ready = async (page, where, selecting) => {
+    try {
+      await page.waitForFunction(
+        (tick) =>
+          document.querySelectorAll('main .lrows > .lrow').length === 7 &&
+          document.querySelectorAll('main .lrows > .lrow > .rnote.ro .hitnote').length === 7 &&
+          (!tick || !!document.querySelector('main .lrows > .lrow > .lrow-take')),
+        { timeout: 15000, polling: 50 },
+        selecting
+      );
+      return true;
+    } catch {
+      ok(false, where + 'the seven rows and their notes did not draw');
+      return false;
+    }
+  };
+  const railOf = (where, row, grip) => {
+    const { inner } = row;
+    for (const [name, b] of [
+      ['grip', grip ? row.grip : null],
+      ['position cell', row.ncell],
+      ['tick', row.pick]
+    ]) {
+      if (b === null) continue;
+      ok(
+        near(b.top, inner.top) && near(b.bottom, inner.bottom),
+        where +
+          'the ' +
+          name +
+          ' runs ' +
+          Math.round(b.top - inner.top) +
+          ' to ' +
+          Math.round(b.bottom - inner.bottom) +
+          ' px off the row'
+      );
+    }
+    ok(
+      row.n !== null &&
+        row.main !== null &&
+        near(row.n.top, row.main.top) &&
+        near(row.n.height, row.main.height),
+      where +
+        'the position input is not on the main line - ' +
+        JSON.stringify([row.n, row.main])
+    );
+  };
+  for (const lang of ['ru', 'en']) {
+    const arrangement = new Map();
+    for (const width of [1440, 1240, 1180, 1000, 900, 800]) {
+      const where = at + lang + ' ' + width + ': ';
+      const { ctx, page } = await openState(NOTED, width, 900, lang);
+      try {
+        if (!(await ready(page, where, false))) continue;
+        const m = await page.evaluate(ownerRowProbe);
+        ok(!m.sideways, where + 'the page scrolls sideways');
+        for (const row of m.rows) {
+          const w = where + 'row ' + String(row.at + 1) + ': ';
+          railOf(w, row, true);
+          ok(
+            row.notes.length > 0 ? near(row.notePad, row.textLeft) : true,
+            w + 'the notes start at ' + row.notePad + ', the text at ' + row.textLeft
+          );
+          const [a, c] = row.notes;
+          if (row.notes.length === 1) {
+            ok(
+              a.text <= a.ch120 + 1,
+              w + 'a lone note is ' + Math.round(a.text) + ' px, past 120ch'
+            );
+            if (row.group >= a.ch70 + 100)
+              ok(
+                a.text > a.ch70 + 1,
+                w + 'a lone note is ' + Math.round(a.text) + ' px, not past 70ch'
+              );
+          }
+          if (row.notes.length !== 2) continue;
+          for (const b of row.notes) ok(b.text <= b.ch70 + 1, w + 'a paired text is past 70ch');
+          ok(
+            near(a.width, c.width),
+            w + 'the pair has unequal widths - ' + a.width + ' and ' + c.width
+          );
+          const side = Math.abs(a.top - c.top) <= 1;
+          if (side)
+            ok(
+              near(a.height, c.height),
+              w + 'the pair has unequal heights - ' + a.height + ' and ' + c.height
+            );
+          else
+            ok(
+              c.top > a.top + a.height - 1,
+              w + 'the pair neither stands side by side nor stacks'
+            );
+          const was = arrangement.get(width);
+          if (was === undefined) arrangement.set(width, side);
+          else ok(was === side, w + 'the pair rows of one width differ in arrangement');
+          /* The wrap reads only the group: two of about 50ch and the gap. */
+          const fits = row.group >= (a.ch70 * 5 * 2) / 7 + 8;
+          if (Math.abs(row.group - ((a.ch70 * 5 * 2) / 7 + 8)) > 2)
+            ok(
+              side === fits,
+              w +
+                'a group of ' +
+                Math.round(row.group) +
+                ' px ' +
+                (side ? 'stands side by side' : 'stacks') +
+                ' against 2 x 50ch + 8 px'
+            );
+        }
+        /* From 1000 px the side plate takes 354 px, so at 1180 the group is about 620 px: less
+           than two of 50ch and the gap, and the pairs stack there, in every row alike. */
+        if (width === 1440 || width === 1240 || width === 900)
+          ok(arrangement.get(width) === true, where + 'the pairs do not stand side by side');
+        if (width === 800)
+          ok(arrangement.get(width) === false, where + 'the pairs do not stack');
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+  {
+    const where = at + 'selecting ru 1180: ';
+    const { ctx, page } = await openState(SELECTING, 1180, 900, 'ru');
+    try {
+      if (await ready(page, where, true)) {
+        const m = await page.evaluate(ownerRowProbe);
+        const row = m.rows[1];
+        railOf(where, row, true);
+        ok(
+          near(row.takePad, row.artLeft),
+          where + 'the take line starts at ' + row.takePad + ', the art at ' + row.artLeft
+        );
+        ok(
+          near(row.notePad, row.textLeft),
+          where + 'the notes start at ' + row.notePad + ', the text at ' + row.textLeft
+        );
+      }
+    } finally {
+      await ctx.close();
+    }
+  }
+  {
+    const where = at + 'touch ru 1180: ';
+    const state = STATES.find((s) => s.id === NOTED);
+    const { ctx, page, d } = await fresh({ width: 1180, height: 900, storage: state.storage });
+    try {
+      await page.setViewport({ width: 1180, height: 900, isMobile: true, hasTouch: true });
+      await d.open(state.route, { as: state.as });
+      await state.enter(d);
+      await d.settled(state.id);
+      if (await ready(page, where, false)) {
+        const m = await page.evaluate(ownerRowProbe);
+        for (const row of m.rows) {
+          const w = where + 'row ' + String(row.at + 1) + ': ';
+          ok(row.grip !== null && row.grip.display === 'none', w + 'the grip is drawn');
+          railOf(w, row, false);
+          ok(
+            near(row.ncell.left, row.innerLeft),
+            w + 'the position cell is not the first drawn cell'
+          );
+          ok(
+            row.notes.length === 0 || near(row.notePad, row.textLeft),
+            w + 'the notes start at ' + row.notePad + ', the text at ' + row.textLeft
+          );
+        }
       }
     } finally {
       await ctx.close();
@@ -11874,7 +12122,7 @@ async function listFieldsAndInset() {
         ok(got === want, where + sel + ' is ' + got + ' px');
       }
       const w = await page.evaluate(
-        () => document.querySelector('.lrow-n').getBoundingClientRect().width
+        () => document.querySelector('.lrow-ncell').getBoundingClientRect().width
       );
       ok(Math.abs(w - 40) <= 0.5, where + 'the position column is ' + w + ' px');
     } finally {
@@ -12596,7 +12844,8 @@ const CASES = [
   ['129 (the shared bar on a phone)', sharedBarFolds],
   ['130 (the roll part shows whole)', rollPartShowsWhole],
   ['131 (one sign-in plate)', oneSignInPlate],
-  ['132 (the note group)', noteGroup]
+  ['132 (the note group)', noteGroup],
+  ['133 (the owner row notes and rail)', ownerRowNotes]
 ];
 
 /* `--only=<text>` keeps the cases whose label holds the text, as `golden.js` narrows its states. */

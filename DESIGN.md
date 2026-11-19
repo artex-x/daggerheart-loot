@@ -412,14 +412,16 @@ https://design-system.service.gov.uk/styles/layout/); a passage in a layout colu
 most 80ch, such as the dossier's text and a roll face, takes the column. A box that holds
 only a passage is as wide as its text; a box with actions keeps its slot, and its text does
 not grow past itself. A note is a passage with one rule of its own: from 761px the players
-note and the GM note of one place (a list's lead line, an entry's row) stand in one
-wrapping group, side by side when both fit, each at most `--measure-text`; a note with no
+note and the GM note of one place (a list's lead line, an entry's row, the rolled entry) are
+two equal columns, each at most `--measure-text`, side by side while the group holds two of
+5/7 of it (about 50ch) and stacked below that, so every row at one width looks the same; a
+pair's boxes take their column, not their text, and are equally tall. A note with no
 sibling takes `--measure-line` (about 130 characters a line, past the passage guide, owner
 2026-11-19: the width beside a lone note read as the defect). Up to 760px the notes stack
 and fold. The owner's 296px side plate keeps its column. A row's description has no
 measure (The Row Text Rule). A menu item's second line keeps the 28ch of its 320px menu,
-the one exception. At 360px every class takes the column. `tests/app/states.js` cases 111
-and 132 measure it.
+the one exception. At 360px every class takes the column. `tests/app/states.js` cases 111,
+132 and 133 measure it.
 
 **The Local Font Rule.** One self-hosted family, from the build's own origin:
 the woff2 files of `@fontsource-variable/source-sans-3`, imported in `main.ts`
