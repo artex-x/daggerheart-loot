@@ -69,3 +69,26 @@ the task that owes them".
   change, and a fix touches every number field in the app.
 - **How to verify the fix**: a component test presses «+» by keyboard (`click` with `detail === 0`)
   up to the maximum and reads the focus on the field, and the same for «-» at the minimum.
+
+## Menu placement leftovers (task `57-debt`, owner first)
+
+### D145 - a three-line toast can still sit under a menu that ends above the toast band
+
+- **Where**: `app/src/components/overlay.ts` (`TOAST_BAND`, `--overlay-clear`), `Toast.svelte`.
+- **What**: `openOverlay` lifts the toast only when a menu reaches the bottom 80 px of the window.
+  A three-line toast is 110-130 px tall, so a menu that ends 80 to 130 px above the bottom edge
+  still overlaps it.
+- **Why deferred**: found in the PH1 review; the band is a fixed number and a measured toast
+  height needs a layout read on every toast.
+- **How to verify the fix**: `tests/app/` opens a menu that ends 100 px above the bottom, shows a
+  three-line toast, and reads no overlap of the two boxes.
+
+### D146 - a menu can flip from down to up in the middle of a scroll
+
+- **Where**: `app/src/components/overlay.ts` (`place`).
+- **What**: `place()` chooses the side again on every call, so a menu that fits below the control
+  can jump above it while the page scrolls and the room below shrinks.
+- **Why deferred**: found in the PH1 review; keeping the side needs a rule for when to release it
+  (a resize, a new open), which is a design choice.
+- **How to verify the fix**: a component test scrolls the control toward the bottom edge after the
+  menu opens and reads `data-side` unchanged until the next open or resize.

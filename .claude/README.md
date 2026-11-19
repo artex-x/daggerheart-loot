@@ -3455,7 +3455,11 @@ egress and Realtime stay the owner's monthly dashboard look.
 
 Thresholds (owner, 2026-09-26): `warn` at 50 % of a limit or under 60 days
 left (a `::warning::` annotation); `fail` at 80 % or under 14 days left (a
-`::error::` annotation and exit 1 after the summary). Other answers:
+`::error::` annotation and exit 1 after the summary). The schedule of `usage.yml`,
+like that of `backup.yml`, stops after 60 days without a push to the repository; after
+the programme, restarting it is the owner's calendar item. A release that renames
+`get_shared_list(p_token)` updates `keepAlive` in `tools/supabase/usage-lib.mjs` in the same
+commit. Other answers:
 
 | Answer | Row | Run |
 |---|---|---|
