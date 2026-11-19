@@ -1443,7 +1443,7 @@
                         <RollResult {app} {index} it={h} rollLabel={roll} onopen={openRecord} />
                       {/key}
                     </div>
-                    <div class="lroll-side">
+                    <div class="lroll-side hitnotes">
                       {#if (hm.gold ?? 0) > 0 || (hm.qty ?? 0) > 1}
                         <p class="lroll-line">
                           {[
@@ -1637,7 +1637,7 @@
                   {#if editing.has(id)}
                     <div class="rnote">{@render noteArea(m, id)}</div>
                   {:else if hasNote}
-                    <div class="rnote ro">{@render readNotes(m)}</div>
+                    <div class="rnote ro hitnotes">{@render readNotes(m)}</div>
                   {/if}
                 {/snippet}
                 <!-- One menu for the compact and the full row. -->
@@ -2201,6 +2201,18 @@
 
   .lroll-side > :global(.hitnote:first-child) {
     margin-top: 0;
+  }
+
+  /* The entry's price line and button take a line of the note group. */
+  @media (min-width: 761px) {
+    .lroll-side > :not(:global(.hitnote)) {
+      flex: 0 0 100%;
+    }
+
+    /* The group's flex gap adds to the margin: 4px + 8px keeps the old 12px. */
+    .lroll-show:not(:first-child) {
+      margin-top: 4px;
+    }
   }
 
   .lroll-line {

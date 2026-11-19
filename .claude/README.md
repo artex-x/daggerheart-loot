@@ -2644,14 +2644,14 @@ the database's part. `docs/DECISIONS.md`, 2026-09-30, "The list_entries
 touch and limit triggers run once per statement".
 
 **The configured bundle budget.** `tools/bundle-budget.mjs` has two limits:
-280 kB for the unconfigured build and 338 kB for the configured one, which
+281 kB for the unconfigured build and 339 kB for the configured one, which
 carries the account client chunk. A batch whose total passes a budget raises
 it to the measured total rounded up to the next whole kB (a printed 250.3
 gives 251; the tool compares the unrounded total, so a printed whole number
 such as 251.0 can pass 251: add 1 kB), never past 350 kB configured and 300 kB
 unconfigured (owner, 2026-10-22, and 2026-11-04: "we can increase budget up to
 300"). `npm run check:built` builds `dist/`
-unconfigured and so measures only the 280 kB limit. The 338 kB limit runs in
+unconfigured and so measures only the 281 kB limit. The 339 kB limit runs in
 CI's `e2e` job, after `npm run e2e` leaves the configured build in `dist/`,
 and in `deploy`. The lists release passed `check:built` locally and failed
 this step in CI (run 36228323330). A batch that adds code to the app or to
@@ -2663,7 +2663,7 @@ drops every `E2E_*` name, the secret key included, before the build:
 node --env-file=.env.test.local --input-type=module -e "import { buildEnv } from './tests/e2e/lib.mjs'; import { spawnSync } from 'node:child_process'; process.exit(spawnSync('npm run build && npm run budget', { shell: true, stdio: 'inherit', env: buildEnv(process.env) }).status ?? 1);"
 ```
 
-Expected: `within the 338 kB budget (with the account client chunk)`; on 2026-11-17 (`ai-mcp` B5d: the account page's link to the AI page) the unconfigured limit rose to 280 (279.0 kB measured; the configured limit stays 338); on 2026-11-13 (`ai-mcp` B5a: the consent page, the connected apps and `AppRepository`) both limits rose, to 279 (278.9 kB measured) and 338 (336.9 kB measured with placeholder `VITE_SUPABASE_*` values, as no `.env.test.local` was in that worktree; 1 kB more for CI's real values); on 2026-11-11 both limits rose, to 276 (275.0 kB measured) and 333 (about 332.0 kB estimated; no .env.test.local here, CI's e2e measures it); earlier that day both rose to 275 (274.4 kB measured) and 332 (about 331.4 kB estimated), and before them the
+Expected: `within the 339 kB budget (with the account client chunk)`; on 2026-11-19 (the note group's CSS) the unconfigured limit rose to 281 (280.1 kB measured; the configured limit stays 339); on 2026-11-17 (`ai-mcp` B5d: the account page's link to the AI page) the unconfigured limit rose to 280 (279.0 kB measured; the configured limit stays 338); on 2026-11-13 (`ai-mcp` B5a: the consent page, the connected apps and `AppRepository`) both limits rose, to 279 (278.9 kB measured) and 338 (336.9 kB measured with placeholder `VITE_SUPABASE_*` values, as no `.env.test.local` was in that worktree; 1 kB more for CI's real values); on 2026-11-11 both limits rose, to 276 (275.0 kB measured) and 333 (about 332.0 kB estimated; no .env.test.local here, CI's e2e measures it); earlier that day both rose to 275 (274.4 kB measured) and 332 (about 331.4 kB estimated), and before them the
 configured limit rose to 331 (330.7 to 330.8 kB measured by CI's e2e); on 2026-11-07 both
 limits rose: 272.3 kB unconfigured, measured, and about 329.4 kB
 configured, estimated (no `.env.test.local` in that worktree; CI's `e2e` job measures it); 327.3 kB

@@ -9526,6 +9526,143 @@ const MEASURE_SIZES = [
   [1920, 1080]
 ];
 
+/** 132. The note group (DESIGN.md, "The Measure Rule"; docs/specs/FEATURES.md, "Lists"): from
+ *  761 px the players note and the GM note of the lead line and of a shared row stand side by
+ *  side when both fit, each text at most 70ch; a note with no sibling takes up to 120ch; at
+ *  1000 px a pair stacks, and at 760 px the lead-line pair stacks; the page never
+ *  scrolls sideways. */
+async function noteGroup() {
+  const SHOP_UUID = '00000000-0000-4000-8000-000000000101';
+  const TEXT = 'Заметка для проверки ширины строки, она достаточно длинная. '.repeat(12);
+  const note = (on) => (on ? TEXT : '');
+  const probe = (sel) =>
+    document.querySelector(sel)
+      ? [...document.querySelectorAll(sel + ' .hitnote')].map((e) => {
+          const t = e.querySelector('.htext');
+          const gauge = (n) => {
+            const s = document.createElement('span');
+            s.style.cssText = 'display:block;height:0;width:' + n + 'ch';
+            t.appendChild(s);
+            const w = s.getBoundingClientRect().width;
+            s.remove();
+            return w;
+          };
+          const r = e.getBoundingClientRect();
+          return {
+            top: r.top,
+            left: r.left,
+            text: t.getBoundingClientRect().width,
+            ch70: gauge(70),
+            ch120: gauge(120),
+            sideways:
+              document.documentElement.scrollWidth > document.documentElement.clientWidth
+          };
+        })
+      : null;
+  const COMBOS = [
+    [true, false],
+    [false, true],
+    [true, true]
+  ];
+  for (const lang of ['ru', 'en']) {
+    const { ctx, page, d } = await fresh({ width: 1440, height: 900 });
+    try {
+      await d.open('#/s/gm-token-1');
+      if (lang === 'en') await d.click('EN');
+      for (let i = 0; i < 40 && !(await d.count('.said[data-live="live"]')); i++)
+        await d.settle();
+      for (const [pub, gm] of COMBOS) {
+        /* The list note and the row note of ci1 carry the same pair of notes. */
+        await d.fake('play', SHOP_UUID, { player_note: note(pub), gm_note: note(gm) });
+        await d.fake('playEntry', SHOP_UUID, 'ci1', {
+          player_note: note(pub),
+          gm_note: note(gm)
+        });
+        await d.settle();
+        const n = pub + gm;
+        /* The lead line draws one toggle per note the pushed data holds, and the old toggle of the
+           previous combination stays until the data lands: wait for the exact pair of labels and
+           for the row notes, never for a fixed time. */
+        await page.waitForFunction(
+          ([p, g, k]) => {
+            const label = [...document.querySelectorAll('.page-sub button[aria-expanded]')].map(
+              (e) => (e.textContent || '').trim()
+            );
+            return (
+              label.filter((x) => x === 'Заметка' || x === 'Note').length === p &&
+              label.filter((x) => x === 'Заметка мастера' || x === "GM's note").length === g &&
+              document.querySelectorAll('main [data-row="ci1"] > .rnotes .hitnote').length === k
+            );
+          },
+          { timeout: 15000 },
+          [pub ? 1 : 0, gm ? 1 : 0, n]
+        );
+        await page.evaluate(() => {
+          for (const b of document.querySelectorAll('.page-sub button[aria-expanded="false"]'))
+            b.click();
+        });
+        /* At 760 px the row notes move into the unfolded part: only the list group stays. */
+        const settled = (rows) =>
+          page.waitForFunction(
+            ([k, withRows]) =>
+              document.querySelectorAll('main .notes .hitnote').length === k &&
+              (!withRows ||
+                document.querySelectorAll('main [data-row="ci1"] > .rnotes .hitnote').length ===
+                  k),
+            { timeout: 15000 },
+            [n, rows]
+          );
+        await settled(true);
+        await d.settle();
+        for (const width of [1440, 1000, 760]) {
+          await d.viewport(width, 900);
+          await d.settle();
+          await settled(width !== 760);
+          for (const [level, sel] of [
+            ['list', 'main .notes'],
+            ['row', 'main [data-row="ci1"] > .rnotes']
+          ]) {
+            /* Up to 760 px a row's notes sit in its unfolded part, not in the row. */
+            if (width === 760 && level === 'row') continue;
+            const where =
+              `132 (the note group) ${lang} ${width} ${level} ` +
+              (pub ? 'players ' : '') +
+              (gm ? 'gm ' : '') +
+              ': ';
+            const boxes = await page.evaluate(probe, sel);
+            if (!boxes) {
+              ok(false, where + 'no group drawn');
+              continue;
+            }
+            ok(boxes.length === n, where + boxes.length + ' notes drawn, not ' + n);
+            if (boxes.length !== n) continue;
+            for (const b of boxes) {
+              ok(!b.sideways, where + 'the page scrolls sideways');
+              if (width === 760) continue;
+              if (n === 2) ok(b.text <= b.ch70 + 1, where + 'a paired note is wider than 70ch');
+              if (n === 1)
+                ok(
+                  b.text > b.ch70 + 1 && b.text <= b.ch120 + 1,
+                  where + 'a lone note is ' + Math.round(b.text) + ' px, not 70ch..120ch'
+                );
+            }
+            if (n === 2) {
+              const [a, c] = boxes;
+              if (width === 1440)
+                ok(Math.abs(a.top - c.top) <= 1, where + 'the pair does not share a top');
+              else ok(c.top > a.top + 1, where + 'the pair does not stack');
+            }
+          }
+        }
+        await d.viewport(1440, 900);
+        await d.settle();
+      }
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
 /** 111. The text measure (DESIGN.md, "The Measure Rule"): a line takes one line while its
  *  column allows it and wraps in the column at 360; a passage keeps 70ch, and a box that
  *  holds only a passage is as wide as its text; a box with actions follows its text. */
@@ -12417,7 +12554,8 @@ const CASES = [
   ['128 (the stat columns)', statColumns],
   ['129 (the shared bar on a phone)', sharedBarFolds],
   ['130 (the roll part shows whole)', rollPartShowsWhole],
-  ['131 (one sign-in plate)', oneSignInPlate]
+  ['131 (one sign-in plate)', oneSignInPlate],
+  ['132 (the note group)', noteGroup]
 ];
 
 /* `--only=<text>` keeps the cases whose label holds the text, as `golden.js` narrows its states. */

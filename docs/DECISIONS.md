@@ -14,6 +14,7 @@ deleted.
 
 ## Index
 
+- 2026-11-19 - [Notes sit side by side from 761 px and a lone note takes the line measure](decisions/2026-11-19-notes-sit-side-by-side-from-761-px-and-a-lone-note-takes-the-line-measure.md)
 - 2026-11-18 - [A batch read has its own path, and search rows carry a built summary](decisions/2026-11-18-a-batch-read-has-its-own-path-and-search-rows-carry-a-built-summary.md)
 - 2026-11-18 - [A compact row shows each fact once and a long note folds up to 760 px](decisions/2026-11-18-a-compact-row-shows-each-fact-once-and-a-long-note-folds-up-to-760-px.md)
 - 2026-11-18 - [An AI client writes an import file from the tools alone](decisions/2026-11-18-an-ai-client-writes-an-import-file-from-the-tools-alone.md)

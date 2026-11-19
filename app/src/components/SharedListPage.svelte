@@ -421,7 +421,7 @@
         <PageTitle title={shared.name || t.untitled} {sub} />
       </div>
       {#if (pubOpen && shared.note) || (gmOpen && shared.hnote)}
-        <div class="notes">
+        <div class="notes hitnotes">
           {#if pubOpen}<HitNote
               icon="eye"
               label={t.notePub}
@@ -568,7 +568,7 @@
             {#if !narrow && (m.note || m.hnote)}
               <!-- Inside the row's border, as the owner's list page draws them: drawn after
                    the row they read as the next entry's notes. -->
-              <div class="rnotes">
+              <div class="rnotes hitnotes">
                 <HitNote icon="eye" label={t.notePub} text={m.note} {t} />
                 <HitNote icon="eyeOff" label={t.noteHid} text={m.hnote} gm {t} />
               </div>
@@ -615,6 +615,14 @@
      on this specific block, now passed as `style`. */
   .notes {
     margin: -8px 0 16px;
+  }
+
+  /* The group drops the notes' own top margin (`HitNote.svelte`), so the 12px it cancelled
+     is not there from 761 px. */
+  @media (min-width: 761px) {
+    .notes {
+      margin-top: 4px;
+    }
   }
 
   /* The list's name: one line up to 760 px, three lines from 761 px, cut with an ellipsis. */

@@ -789,7 +789,12 @@ across.
   4000 characters with no counter. Up to 760 px a read-only note longer than four lines
   shows four and «Показать полностью» / "Show in full", which opens it whole and then
   reads «свернуть» / "show less" (rule 12); it folds again when its row or its button
-  closes, and from 761 px it draws whole. The two notes of an entry, and the two of the list,
+  closes, and from 761 px it draws whole. From 761 px the read-only notes of one place
+  (the shared lead line, a shared or owner row, the rolled entry) stand in one wrapping
+  group in DOM order: side by side when both fit, each text at most 70ch, otherwise one
+  under the other; a note with no sibling is one wide box of at most 120ch (owner,
+  2026-11-19, `docs/decisions/2026-11-19-notes-sit-side-by-side-from-761-px-and-a-lone-note-takes-the-line-measure.md`).
+  The owner's 296 px side plate and the note edit box keep their widths. The two notes of an entry, and the two of the list,
   are one note area: closed, each filled note draws read-only in a full box, the GM
   note's box on the darker ground; «Заметка» (a filled note adds a dot and the
   hidden «, заполнена»), the side column's «Изменить» or «Заметки ▾» up to 999 px opens

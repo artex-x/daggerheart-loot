@@ -224,6 +224,23 @@ async function gmOnlyLive(d) {
   await d.fake('playEntry', '00000000-0000-4000-8000-000000000101', 'di11', { gm_only: true });
 }
 
+/** Sets the notes of the shop's GM link as another device would write them, once the share
+ *  topic is joined: `list` and `row` (entry ci1) each say which note has text. The other
+ *  notes are emptied. */
+async function wideNotes(d, { list, row }) {
+  const SHOP_UUID = '00000000-0000-4000-8000-000000000101';
+  for (let i = 0; i < 40 && !(await d.count('.said[data-live="live"]')); i++) await d.settle();
+  await d.fake('play', SHOP_UUID, {
+    player_note: list?.pub ? LONG_NOTE : '',
+    gm_note: list?.gm ? LONG_NOTE : ''
+  });
+  await d.fake('playEntry', SHOP_UUID, 'ci1', {
+    player_note: row?.pub ? LONG_NOTE : '',
+    gm_note: row?.gm ? LONG_NOTE : ''
+  });
+  await d.settle();
+}
+
 /* gm3's «Скатка следопыта», the middle of its own chain and set; gm3's item at the
    120-code-point name; an id no item has. */
 const ITEM_H = '#/h/00000000-0000-4000-8000-000000000662';
@@ -2781,6 +2798,32 @@ const STATES = [
       await d.click('Показать полностью');
     }
   },
+  ...[
+    ['players only', true, false],
+    ['gm only', false, true],
+    ['both', true, true]
+  ].flatMap(([name, pub, gm]) => [
+    {
+      id: '#/s/gm-token-1 ~ wide, list notes: ' + name,
+      route: '#/s/gm-token-1',
+      width: 1440,
+      why: `from 761 px the lead-line notes (${name}) stand in one group: side by side when both exist, a lone one at the line measure`,
+      enter: async (d) => {
+        await wideNotes(d, { list: { pub, gm } });
+        if (pub) await d.click('Заметка');
+        if (gm) await d.click('Заметка мастера');
+      }
+    },
+    {
+      id: '#/s/gm-token-1 ~ wide, row notes: ' + name,
+      route: '#/s/gm-token-1',
+      width: 1440,
+      why: `from 761 px the notes of row ci1 (${name}) stand in one group: side by side when both exist, a lone one at the line measure`,
+      enter: async (d) => {
+        await wideNotes(d, { row: { pub, gm } });
+      }
+    }
+  ]),
   {
     id: '#/lists/nope',
     route: '#/lists/nope',

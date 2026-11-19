@@ -113,7 +113,7 @@
 
   .htext {
     min-width: 0;
-    max-width: var(--measure-text);
+    max-width: var(--note-measure, var(--measure-text));
     overflow-wrap: break-word;
   }
 
@@ -132,5 +132,26 @@
      source order is what makes the 8px win. */
   :global(.hitnote + .hitnote) {
     margin-top: 8px;
+  }
+
+  /* From 761 px the notes of one place (a list's lead line, an entry's row) stand in a
+     wrapping group: side by side when both fit, each at the text measure; a note with no
+     sibling takes the line measure (DESIGN.md, "The Measure Rule"). The gap replaces the
+     stacked margins; up to 760 px the notes stack and fold as before. */
+  @media (min-width: 761px) {
+    :global(.hitnotes) {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    :global(.hitnotes > .hitnote) {
+      margin-top: 0;
+    }
+
+    :global(.hitnotes > .hitnote:not(.hitnote ~ .hitnote):not(:has(~ .hitnote))) {
+      --note-measure: var(--measure-line);
+    }
   }
 </style>
