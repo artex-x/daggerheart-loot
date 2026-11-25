@@ -1,0 +1,152 @@
+# #/s/player-token-1 ~ add sheet chosen as gm2
+# route: #/s/player-token-1
+# why: the same, «Список второго ГМа» chosen (its radio checked): the summary «Добавится: 1 позиция» with the warning line «1 позиция уже в списке и не изменится» (q23 is held), «Что изменится» and «Что копировать» closed, «Добавить» enabled
+# as: gm2
+
+## ru :: tree
+RootWebArea "Генератор лута Daggerheart" [url=/s/player-token-1?as=gm2&v=<v>]
+  dialog "Добавить в список" [modal=true]
+    heading "Добавить в список" [level=2]
+    button "Закрыть" [focused=true]
+    StaticText "Добавится выбранное: 2 позиции · 3 шт."
+    StaticText "СПИСОК"
+    radio "Список второго ГМа" [description=2 позиции checked=true]
+    button "Новый список"
+    StaticText "Добавится: 1 позиция · 2 шт."
+    StaticText "1 позиция уже в списке и не изменится"
+    button "Что изменится" [expanded=false]
+    button "Что копировать" [expanded=false]
+    button "Отмена"
+    button "Добавить"
+
+## ru :: controls
+API
+EN
+RU
+daggerheart.com
+Аккаунт: gm2@example.test
+Бросок
+Брошюра по Истории Искусства
+В список
+Взять: Первоклассный Спальный Мешок
+Выбрать все
+Гарпун Левиафана
+Добавить
+Закрыть
+Заметка
+Зелье Быстрого Шага
+ИИ-ассистенты
+К содержимому
+Колдующий Кинжал
+Колдующий КинжалОсновное оружиеHope & FearРанг 1 · Магическое · ... [namelen=213 namehash=9cd182eb]
+Колода Сумерек
+Конфиденциальность
+ЛутDaggerheart
+Макс, взять все: Первоклассный Спальный Мешок
+Мин, взять 1: Первоклассный Спальный Мешок
+На единицу больше: Первоклассный Спальный Мешок
+На единицу меньше: Первоклассный Спальный Мешок
+Новый список
+Отмена
+Палаш
+ПалашОсновное оружиеРанг 1 · Физическое · Проворность · Вплотную... [namelen=114 namehash=e80c7800]
+Первоклассный Спальный Мешок
+Печать
+Поиск
+Поиск по названию или описанию...
+Скипетр
+СкипетрОсновное оружиеРанг 1 · Магическое · Влияние · Далеко · d... [namelen=186 namehash=9aee2e9c]
+Скопировать текст
+Снять выделение
+Сообщить владельцу
+Сохранить себе
+Список второго ГМа
+Стеганый Доспех
+Стеганый ДоспехБроняРанг 1 · Пороги 5/11 · Броня 3Гибкое: +1 к У... [namelen=72 namehash=ad6956c1]
+Таблицы
+Топор Тлеющих Углей
+Топор Тлеющих Углей800 зол.Основное оружиеУникальноеМастерская О... [namelen=192 namehash=b0fae9a0]
+Условия использования
+Установить как приложение
+Фильтры
+Что изменится
+Что копировать
+№ 11Брошюра по Истории ИскусстваПредметDread GM ToolboxЭто прекр... [namelen=625 namehash=2d80c566]
+№ 1Зелье Быстрого Шага×5 · 20 зол.РасходникВы получаете бонус +1... [namelen=97 namehash=e1581606]
+№ 1Первоклассный Спальный Мешок×2 · 150 зол.ПредметВо время отды... [namelen=100 namehash=3f0a7394]
+№ 3Колода СумерекПредметАртефактVault of AgesСтоимость Призыва: ... [namelen=850 namehash=8a050d11]
+№ 51Гарпун Левиафана99999 зол.Основное оружиеУникальноеWondrous ... [namelen=386 namehash=123c02fd]
+
+## en :: tree
+RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-1?as=gm2&v=<v>]
+  dialog "Add to list" [modal=true]
+    heading "Add to list" [level=2]
+    button "Close" [focused=true]
+    StaticText "Adding the selection: 2 items · 3 pcs"
+    StaticText "LIST"
+    radio "Список второго ГМа" [description=2 items checked=true]
+    button "New list"
+    StaticText "Adding: 1 item · 2 pcs"
+    StaticText "1 item is already in the list and stays as it is"
+    button "What changes" [expanded=false]
+    button "What to copy" [expanded=false]
+    button "Cancel"
+    button "Add"
+
+## en :: controls
+AI assistants
+API
+Account: gm2@example.test
+Add
+Add to list
+Art History Booklet
+Broadsword
+BroadswordPrimary weaponTier 1 · Physical · Agility · Melee · d8... [namelen=109 namehash=926e89b9]
+Cancel
+Casting Dagger
+Casting DaggerPrimary weaponHope & FearTier 1 · Magic · Instinct... [namelen=176 namehash=08dad18c]
+Clear selection
+Close
+Copy text
+EN
+Ember Axe
+Ember Axe800 gpPrimary weaponUniqueAlder Workshop (HB)Tier 2 · M... [namelen=165 namehash=770926f6]
+Filters
+Gambeson Armor
+Gambeson ArmorArmorTier 1 · Thresholds 5/11 · Armor 3Flexible: +... [namelen=76 namehash=55bf2d62]
+Install as an app
+Leviathan Harpoon
+LootDaggerheart
+Max, take all: Premium Bedroll
+Min, take 1: Premium Bedroll
+New list
+No. 11Art History BookletItemDread GM ToolboxThis is a finely il... [namelen=549 namehash=bac00790]
+No. 1Premium Bedroll×2 · 150 gpItemDuring downtime, you automati... [namelen=85 namehash=6dedca5f]
+No. 1Stride Potion×5 · 20 gpConsumableYou gain a +1 bonus to you... [namelen=84 namehash=1f213b8f]
+No. 3Twilight DeckItemArtifactVault of AgesRecall Cost: 2This de... [namelen=875 namehash=f69fdaee]
+No. 51Leviathan Harpoon99999 gpPrimary weaponUniqueWondrous Envi... [namelen=368 namehash=67ec9120]
+Note
+Notify the owner
+One higher: Premium Bedroll
+One lower: Premium Bedroll
+Premium Bedroll
+Print
+Privacy
+RU
+Roll
+Save to my lists
+Scepter
+ScepterPrimary weaponTier 1 · Magic · Presence · Far · d6 mag · ... [namelen=156 namehash=5cf0702e]
+Search
+Search by name or description...
+Select all
+Skip to content
+Stride Potion
+Tables
+Take: Premium Bedroll
+Terms of use
+Twilight Deck
+What changes
+What to copy
+daggerheart.com
+Список второго ГМа

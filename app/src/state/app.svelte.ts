@@ -34,6 +34,7 @@ import {
 } from '../lib/bundle.js';
 import {
   entrySource,
+  type EntrySource,
   isCloudId,
   limitText,
   linkedOf,
@@ -101,7 +102,7 @@ import { CloudLists } from './cloudLists.svelte.js';
 import { Homebrew } from './homebrew.svelte.js';
 import { ItemView } from './itemView.svelte.js';
 import { OwnerRequests } from './ownerRequests.svelte.js';
-import { RequestSender } from './requestSender.svelte.js';
+import { RequestSender, type TakenSource } from './requestSender.svelte.js';
 import { SharedView } from './sharedView.svelte.js';
 
 const LANG_KEY = 'dhloot.lang.v1';
@@ -147,20 +148,27 @@ function readLocalPrefs(env: Env): LocalPrefs {
 }
 
 /** What a toast offers for the 7000ms it lasts (10000ms for a long one): an undo (`run`), a link to
- *  a page opened in a new tab (`href`), or a move to a page of the app (`go`). Only
- *  `run` takes the focus. The label is built in the language on screen each time it
- *  is drawn. */
+ *  a page opened in a new tab (`href`), a move to a page of the app (`go`), or the open of a
+ *  sheet that parks the toast (`open`). Only `run` takes the focus. The label is built in
+ *  the language on screen each time it is drawn. */
 export type ToastAction =
   | { label: Msg; run: () => void }
   | { label: Msg; href: string }
-  | { label: Msg; go: () => void };
+  | { label: Msg; go: () => void }
+  | { label: Msg; open: () => void };
+
+/** What the add sheet adds: the share bar's ticked entries, or the lines of an accepted
+ *  request (docs/specs/FEATURES.md, "Purchase requests: the send"). Memory only. */
+export type AddSheetSource = { kind: 'sel' } | ({ kind: 'taken' } & TakenSource);
 
 /** Off `showToast` in app.js: a plain notice, an error (`role=alert`), or one
  *  with an action - each its own duration, decided by `toastMs` below. */
 export interface Toast {
   msg: string;
   mode: '' | 'err' | 'act';
-  action?: { label: string; run?: () => void; href?: string; go?: () => void } | undefined;
+  action?:
+    | { label: string; run?: () => void; href?: string; go?: () => void; open?: () => void }
+    | undefined;
 }
 
 /* What `say` was given: the toast before it is drawn in a language. `arrival` marks the
@@ -490,9 +498,17 @@ export class AppState {
           ? { label: s.action.label(t, lang), run: s.action.run }
           : 'go' in s.action
             ? { label: s.action.label(t, lang), go: s.action.go }
-            : { label: s.action.label(t, lang), href: s.action.href })
+            : 'open' in s.action
+              ? { label: s.action.label(t, lang), open: s.action.open }
+              : { label: s.action.label(t, lang), href: s.action.href })
     };
   });
+  /** The add sheet that is open, or null: the share bar's «В список» and the accepted
+   *  request's toast open it. One at a time; memory only (docs/specs/STATE.md). */
+  addSheet = $state.raw<AddSheetSource | null>(null);
+  /* The accepted request's toast while its add sheet is open: the toast and the time it had
+     left. It returns when the sheet closes with no add, and is dropped by an add. */
+  #parked: { said: Said; left: number } | null = null;
   /** True while `RecordModal`'s modal dialog is open, set after its
    *  `showModal()`; the toast is drawn inside the dialog then
    *  (`Toast.svelte`). `RecordModal` is the only writer. */
@@ -626,22 +642,21 @@ export class AppState {
             requests: this.ownerRequests ?? undefined,
             homebrew: this.homebrew ?? undefined
           },
-          (key) =>
-            entrySource(
-              key,
-              {
-                ready: this.homebrew?.status === 'ready',
-                has: (k) => this.homebrew?.has(k) ?? false,
-                hidOf: (k) => this.homebrew?.item(k)?.id ?? null
-              },
-              this.linkedRecord(key)
-            )
+          (key) => this.sourceOf(key)
         )
       : null;
     this.requestSender = cloud
       ? new RequestSender(cloud.requests, {
           newId: () => cloud.lists.newId(),
           say,
+          canAdd: () =>
+            this.newListTarget === 'cloud' &&
+            this.cloudLists?.status === 'ready' &&
+            this.addSheet === null,
+          offer: (source) => {
+            this.#offerAdd(source);
+          },
+          recordOf: (key) => this.linkedRecord(key),
           reread: () => {
             void this.sharedView?.refresh();
           },
@@ -749,6 +764,7 @@ export class AppState {
       this.arrival = 'history';
       this.navigations++;
       this.menuFor = '';
+      this.closeAddSheet('left');
       this.#clearTicksOnLeave(from);
       this.#applySource();
     });
@@ -866,6 +882,7 @@ export class AppState {
     void this.#pull();
     const lists = this.cloudLists;
     if (lists) {
+      this.closeAddSheet('left');
       lists.clear();
       this.ownerRequests?.clear();
       this.#dropArrival();
@@ -1055,6 +1072,7 @@ export class AppState {
   }
 
   #listsSignedOut(): void {
+    this.closeAddSheet('left');
     this.cloudLists?.clear();
     this.ownerRequests?.clear();
     this.#dropArrival();
@@ -1123,6 +1141,10 @@ export class AppState {
     if (open?.id === key) return open;
     const shown = snapshotRecords(this.sharedView?.shared).find((r) => r.id === key);
     if (shown) return shown;
+    /* An accepted request's add: the share no longer holds the taken entry. */
+    const sheet = this.addSheet;
+    const kept = sheet?.kind === 'taken' ? sheet.records[key] : undefined;
+    if (kept) return kept;
     for (const l of this.cloudLists?.lists ?? []) {
       const linked = l.linked?.[key];
       if (linked) return linked;
@@ -1383,6 +1405,29 @@ export class AppState {
     return this.recordFor(id) !== undefined;
   }
 
+  /** Returns what the account's store writes for an entry of `key`, or null when it cannot
+   *  write it yet: a homebrew key while the account's items are not read. */
+  sourceOf(key: string): EntrySource | null {
+    return entrySource(
+      key,
+      {
+        ready: this.homebrew?.status === 'ready',
+        has: (k) => this.homebrew?.has(k) ?? false,
+        hidOf: (k) => this.homebrew?.item(k)?.id ?? null
+      },
+      this.linkedRecord(key)
+    );
+  }
+
+  /** Returns why an add wrote nothing for a homebrew key: the list waits for the account's
+   *  items, or they failed to load, or the key is not the reader's to add. */
+  hbRefusal(): Msg {
+    const status = this.homebrew?.status;
+    if (status === 'error') return (t) => t.hbLoadFailed;
+    if (status !== 'ready') return (t) => t.hbNotReady;
+    return (t) => t.hbNotAdded;
+  }
+
   /** How many account lists hold any of `keys`. */
   listsHolding(keys: readonly string[]): number {
     // eslint-disable-next-line svelte/prefer-svelte-reactivity -- a lookup within one call
@@ -1583,12 +1628,20 @@ export class AppState {
     return cloud.auth.signOut(scope);
   }
 
+  /** Runs the action a sign-in left, once the share page it waits for has read its list. */
+  resumePending(): void {
+    this.#runPending();
+  }
+
   /* Waits for a user and the account's lists. */
   #runPending(): void {
     const action = this.#pending;
     const lists = this.cloudLists;
     if (!action || !this.user || lists?.status !== 'ready') return;
     if (action.do === 'addToList') {
+      const sheet = action.key === 'sel' && this.route.kind === 'share';
+      /* The add sheet reads the share's counts: it waits for the page (`resumePending`). */
+      if (sheet && !this.shared) return;
       this.#pending = null;
       /* Only the bar's menu acts on the ticks; a card's acts on its record. */
       if (action.key === 'sel') {
@@ -1596,7 +1649,8 @@ export class AppState {
         for (const id of action.ids) this.sel.add(id);
         for (const [id, n] of Object.entries(action.picked ?? {})) this.picked.set(id, n);
       }
-      this.menuFor = action.key;
+      if (sheet) this.openAddSheet({ kind: 'sel' });
+      else this.menuFor = action.key;
       return;
     }
     if (action.do === 'saveItem') {
@@ -1796,6 +1850,7 @@ export class AppState {
        leak of the same kind `#stopRouter`/`#stopSettings` already guard
        against. */
     this.#waiting = null;
+    this.#parked = null;
     this.#arrival = null;
     this.#arrivalHeld = false;
     this.hideToast();
@@ -1822,6 +1877,8 @@ export class AppState {
   ): void {
     const mode: Toast['mode'] = opts.action ? 'act' : opts.error ? 'err' : '';
     const said: Said = { msg, mode, action: opts.action, arrival: opts.arrival };
+    /* A toast with an action said while the add sheet is open replaces the parked one. */
+    if (opts.action) this.#parked = null;
     const shown = this.#said;
     /* The arrival waits behind any other toast, a plain one too; a plain toast waits
        behind an error or an action toast but never behind the arrival. */
@@ -1887,6 +1944,61 @@ export class AppState {
   async copied(run: () => Promise<boolean>, ok: Msg): Promise<void> {
     const success = await run();
     this.say(success ? ok : (t) => t.copyFailed, { error: !success });
+  }
+
+  /* The accepted request's toast: «Владелец принял ваш запрос.» and the button that opens the
+     add sheet over its lines. */
+  #offerAdd(source: TakenSource): void {
+    this.say((t) => t.requestAppliedToast, {
+      action: {
+        label: (t) => t.toList,
+        open: () => {
+          this.openAddSheet({ kind: 'taken', ...source });
+        }
+      }
+    });
+  }
+
+  /**
+   * Runs the `open` action of the shown toast. The toast leaves the slot and is parked with
+   * the time it had left: it returns when the sheet closes with no add. A press while an add
+   * sheet is open does nothing, so two never stack.
+   */
+  pressOpen(): void {
+    const said = this.#said;
+    if (!said?.action || !('open' in said.action) || this.addSheet) return;
+    const left = this.#toastLeft ?? Math.max(0, this.#toastDue - Date.now());
+    const open = said.action.open;
+    this.hideToast();
+    this.#parked = { said, left };
+    open();
+  }
+
+  /** Opens the add sheet. The bar's sheet ends an offer toast that still shows: the player
+   *  is adding already. One sheet at a time. */
+  openAddSheet(source: AddSheetSource): void {
+    if (this.addSheet) return;
+    const action = this.#said?.action;
+    if (source.kind === 'sel' && action && 'open' in action) this.hideToast();
+    this.addSheet = source;
+  }
+
+  /**
+   * Closes the add sheet. `cancel` brings the parked toast back with the time it had left;
+   * `added` and `left` (a route change, a sign-out, a stopped link) drop it.
+   */
+  closeAddSheet(how: 'cancel' | 'added' | 'left'): void {
+    if (!this.addSheet) return;
+    this.addSheet = null;
+    const parked = this.#parked;
+    this.#parked = null;
+    if (!parked || how !== 'cancel') return;
+    const { said, left } = parked;
+    this.say(said.msg, { action: said.action });
+    if (this.#said?.action !== said.action || this.env.clock.holdsToasts?.()) return;
+    if (this.#toastTimer) clearTimeout(this.#toastTimer);
+    this.#toastTimer = null;
+    this.#runToast(left);
   }
 
   /** Ends a shown error toast and leaves any other one. A press that retries a failed
@@ -2179,6 +2291,7 @@ export class AppState {
     this.arrival = 'go';
     this.navigations++;
     this.menuFor = '';
+    this.closeAddSheet('left');
     this.#clearTicksOnLeave(from);
     this.#applySource();
   }

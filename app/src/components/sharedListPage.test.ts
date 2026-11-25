@@ -172,6 +172,24 @@ async function openNotes(): Promise<void> {
   }
 }
 
+/** Opens the bar's add sheet and returns its dialog. */
+async function openAddSheet(): Promise<HTMLElement> {
+  const bar = document.querySelector('.selbarwrap') as HTMLElement;
+  await userEvent.click(within(bar).getByRole('button', { name: 'В список' }));
+  return screen.findByRole('dialog', { name: 'Добавить в список' });
+}
+
+/** Opens the bar's add sheet, chooses `list` and presses «Добавить». */
+async function addViaSheet(list: string): Promise<void> {
+  const dialog = await openAddSheet();
+  await userEvent.click(within(dialog).getByRole('radio', { name: list }));
+  const add = within(dialog).getByRole('button', { name: 'Добавить' });
+  await waitFor(() => {
+    expect(add).toBeEnabled();
+  });
+  await userEvent.click(add);
+}
+
 /** Opens the selection mode with «Выбрать» where the page draws it: the ticks draw only in
  *  the mode. */
 async function selecting(): Promise<void> {
@@ -424,9 +442,7 @@ describe('adding to an existing list', () => {
       ?.querySelector('input[type="checkbox"]') as HTMLElement;
     await userEvent.click(rowCheckbox);
 
-    const bar = document.querySelector('.selbarwrap') as HTMLElement;
-    await userEvent.click(within(bar).getByRole('button', { name: 'В список' }));
-    await userEvent.click(await within(bar).findByRole('button', { name: 'Клад дракона' }));
+    await addViaSheet('Клад дракона');
 
     const a = await readList(cloud, page, DRAGON);
     const b = await readList(cloud, page, uuid(812));
@@ -440,8 +456,7 @@ describe('adding to an existing list', () => {
     await selecting();
     await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все' }));
     const bar = document.querySelector('.selbarwrap') as HTMLElement;
-    await userEvent.click(within(bar).getByRole('button', { name: 'В список' }));
-    await userEvent.click(await within(bar).findByRole('button', { name: 'Клад дракона' }));
+    await addViaSheet('Клад дракона');
 
     const a = await readList(cloud, page, DRAGON);
     expect(a?.ids).toEqual(['ci1', 'cc21', 'q337']);
@@ -467,9 +482,7 @@ describe('adding to an existing list', () => {
 
     await selecting();
     await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все' }));
-    const bar = document.querySelector('.selbarwrap') as HTMLElement;
-    await userEvent.click(within(bar).getByRole('button', { name: 'В список' }));
-    await userEvent.click(await within(bar).findByRole('button', { name: 'Клад дракона' }));
+    await addViaSheet('Клад дракона');
 
     const a = await readList(cloud, page, DRAGON);
     expect(a?.meta).toEqual({ ci1: { note: 'Видно игрокам' } });
@@ -489,14 +502,13 @@ describe('adding to an existing list', () => {
       ?.querySelector('input[type="checkbox"]') as HTMLElement;
     await userEvent.click(rowCheckbox);
 
-    const bar = document.querySelector('.selbarwrap') as HTMLElement;
-    await userEvent.click(within(bar).getByRole('button', { name: 'В список' }));
-    await userEvent.click(await within(bar).findByRole('button', { name: 'Новый список' }));
+    const dialog = await openAddSheet();
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Новый список' }));
 
     const input = screen.getByPlaceholderText('Клад дракона');
     await userEvent.clear(input);
     await userEvent.type(input, 'Сундук');
-    await userEvent.click(within(bar).getByRole('button', { name: 'Создать' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Добавить' }));
 
     page.fireHidden();
     await waitFor(async () => {
@@ -757,9 +769,7 @@ describe('the taken count and the total', () => {
     await screen.findByRole('button', { name: 'Аккаунт: gm2@example.test' });
     await tickAllAndTakeTwo();
 
-    const bar = document.querySelector('.selbarwrap') as HTMLElement;
-    await userEvent.click(within(bar).getByRole('button', { name: 'В список' }));
-    await userEvent.click(await within(bar).findByRole('button', { name: 'Клад дракона' }));
+    await addViaSheet('Клад дракона');
 
     const a = await readList(cloud, page, DRAGON);
     expect(a?.meta).toEqual({
@@ -1219,9 +1229,9 @@ describe('accessibility', () => {
     await selecting();
     const box = rowCheckboxes()[0] as HTMLElement;
     await userEvent.click(box);
-    const bar = container.querySelector('.selbarwrap') as HTMLElement;
-    await userEvent.click(within(bar).getByRole('button', { name: 'В список' }));
-    await userEvent.click(await within(bar).findByRole('button', { name: 'Новый список' }));
+    const dialog = await openAddSheet();
+    await expectNoA11yViolations(container);
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Новый список' }));
     expect(screen.getByPlaceholderText('Клад дракона')).toBeInTheDocument();
     await expectNoA11yViolations(container);
   });
@@ -1514,8 +1524,7 @@ describe('a purchase request', () => {
     const addButton = (): HTMLElement =>
       within(bar()).getByRole('button', { name: 'В список' });
     const addToOwn = async (): Promise<void> => {
-      await userEvent.click(within(bar()).getByRole('button', { name: 'В список' }));
-      await userEvent.click(within(bar()).getByRole('button', { name: 'Список второго ГМа' }));
+      await addViaSheet('Список второго ГМа');
     };
     const signedIn = async (notifyGm?: 'always' | 'never') => {
       const cloud = fakeCloud(SEED, 'gm2');

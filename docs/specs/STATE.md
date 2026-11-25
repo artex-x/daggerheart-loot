@@ -138,9 +138,17 @@ setting, and so do the pin and the starting-section select.
   send makes lives in memory: before a success so that a second press after
   a send with no answer is a replay, and after it, the newest 20 ids this
   page load sent, with the owner's decision of the one the sent mark holds,
-  so the share topic's decision message toasts in that tab only. No key of
-  `localStorage` or `sessionStorage` holds a request, its id or its status;
-  a reload forgets them (`FEATURES.md`, "Purchase requests: the send").
+  so the share topic's decision message toasts in that tab only. Each sent id
+  also keeps in memory its lines with their counts, the price and note for
+  players the bar showed at the send, the linked homebrew records it named and
+  whether an add (flow b's, or a bar add of the same lines) came before or after
+  the send: a full accept of a request sent by hand offers the add from these
+  and from nothing else. The add sheet (`AppState.addSheet`), its chosen list,
+  its folds and the two copy toggles, and the parked toast are memory and
+  component state, reset at each opening. No key of `localStorage` or
+  `sessionStorage` holds a request, its id, its status, its lines, a toggle or the
+  chosen list; a reload forgets them (`FEATURES.md`, "Purchase requests: the send",
+  "Purchase requests: the add sheet").
 
 - **First paint is local.** The page draws this browser's values, then
   switches once the account answers - a new device may flip its language or

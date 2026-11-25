@@ -2899,7 +2899,7 @@ async function applyARequest() {
 }
 
 /** 57. With «Сообщать владельцу» chosen in the Display row, an add from a share page's
- *  bar sends the request with no question and says so in the add toast. */
+ *  bar sheet sends the request with no question and says so in the add toast. */
 async function notifyAlways() {
   const at = '57 (notify always): ';
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
@@ -2912,11 +2912,76 @@ async function notifyAlways() {
   await d.press('В список');
   await d.press('Список второго ГМа');
   ok(
+    await waitIn(page, () => {
+      const add = document.querySelector('dialog[open] .sheet-foot button.primary');
+      return !!add && !add.disabled;
+    }),
+    at + '«Добавить» did not turn on after the list was chosen'
+  );
+  await d.press('Добавить');
+  ok(
     await waitIn(page, bodyHas, 'Добавлено в «Список второго ГМа». Владелец получил запрос.'),
     at + 'the add toast does not say the owner got the request'
   );
   ok(!(await d.count('.notifyq')), at + 'the question was asked');
   await ctx.close();
+}
+
+/** 134. The add sheet keeps its summary in view (docs/specs/FEATURES.md, "Purchase requests: the
+ *  send"): at 360x640 with 8 lists and with 49 more (the fake's own 50-list limit; 150 is the
+ *  plan's 3x scale and the fake refuses it), a tap on a list draws the summary above the foot, the
+ *  search box is drawn, and the rows box stays within 30dvh. */
+async function addSheetSummaryInView() {
+  const at = '134 (the add sheet keeps its summary in view): ';
+  for (const n of [7, 49]) {
+    const where = at + (n + 1) + ' lists: ';
+    const { ctx, page, d } = await fresh({ width: 360, height: 640 });
+    try {
+      await d.open('#/s/player-token-1', { as: 'gm2' });
+      await waitIn(page, bodyHas, 'Лавка кузнеца');
+      await d.accountLists(manyLists(n));
+      await d.tick('Первоклассный Спальный Мешок');
+      await d.tick('Скипетр');
+      await d.press('В список');
+      await d.settle();
+      await d.press('Список 3');
+      ok(
+        await waitIn(page, () => !!document.querySelector('dialog[open] .sum:is(div)')),
+        where + 'no summary after the tap'
+      );
+      await new Promise((r) => setTimeout(r, 200));
+      const m = await page.evaluate(() => {
+        const box = (sel) =>
+          document.querySelector('dialog[open] ' + sel)?.getBoundingClientRect();
+        const sum = box('.sum');
+        const foot = box('.sheet-foot');
+        const rows = box('.pickchips');
+        return {
+          sumBottom: sum?.bottom ?? null,
+          sumTop: sum?.top ?? null,
+          footTop: foot?.top ?? null,
+          search: !!document.querySelector('dialog[open] .pickq'),
+          rows: rows?.height ?? null,
+          vh: innerHeight
+        };
+      });
+      ok(m.search, where + 'no search box - ' + JSON.stringify(m));
+      ok(
+        m.sumBottom !== null && m.footTop !== null && m.sumBottom <= m.footTop + 0.5,
+        where + 'the summary is not above the foot - ' + JSON.stringify(m)
+      );
+      ok(
+        m.sumTop !== null && m.sumTop >= 0,
+        where + 'the summary starts above the window - ' + JSON.stringify(m)
+      );
+      ok(
+        m.rows !== null && m.rows <= Math.min(0.3 * m.vh, 340) + 12,
+        where + 'the rows box is taller than 30dvh - ' + JSON.stringify(m)
+      );
+    } finally {
+      await ctx.close();
+    }
+  }
 }
 
 /** 49. Account edits wait two seconds, then go once: ten presses of the
@@ -12845,7 +12910,8 @@ const CASES = [
   ['130 (the roll part shows whole)', rollPartShowsWhole],
   ['131 (one sign-in plate)', oneSignInPlate],
   ['132 (the note group)', noteGroup],
-  ['133 (the owner row notes and rail)', ownerRowNotes]
+  ['133 (the owner row notes and rail)', ownerRowNotes],
+  ['134 (the add sheet keeps its summary in view)', addSheetSummaryInView]
 ];
 
 /* `--only=<text>` keeps the cases whose label holds the text, as `golden.js` narrows its states. */

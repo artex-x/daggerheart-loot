@@ -2921,6 +2921,184 @@ describe('purchase requests', () => {
   });
 });
 
+describe('the add sheet', () => {
+  const ONE = [{ item: 'ci1', qty: 1 }];
+  const TOKEN = 'player-token-1';
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  /* gm2 on the share page, the account's lists read; a request of ONE sent by hand. */
+  async function sent(hash = '#/s/' + TOKEN) {
+    const cloud = fakeCloud(SEED, 'gm2');
+    const send = vi.spyOn(cloud.requests, 'send');
+    const app = new AppState(fakeEnv({ router: memoryRouter(hash), cloud }));
+    app.start();
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(app.cloudLists?.status).toBe('ready');
+    await app.sharedView?.open(TOKEN, app.user?.userId);
+    const sender = app.requestSender!;
+    await sender.send(TOKEN, ONE, undefined, { ci1: { qty: 1, gold: 30 } });
+    const id = send.mock.calls[0]?.[0] as string;
+    return { app, cloud, sender, id };
+  }
+
+  const FULL = { status: 'applied', partial: false } as const;
+
+  it('offers the add on a full accept, and a press parks the toast and opens the sheet', async () => {
+    const { app, sender, id } = await sent();
+    app.hideToast();
+    sender.decided({ id, ...FULL });
+    expect(app.toast).toMatchObject({
+      msg: 'Владелец принял ваш запрос.',
+      mode: 'act',
+      action: { label: 'В список' }
+    });
+    expect(app.addSheet).toBeNull();
+    app.pressOpen();
+    expect(app.toast).toBeNull();
+    expect(app.addSheet).toMatchObject({ kind: 'taken', lines: ONE });
+    app.stop();
+  });
+
+  it('brings the parked toast back with the time it had left when the sheet closes with no add', async () => {
+    const { app, sender, id } = await sent();
+    app.hideToast();
+    sender.decided({ id, ...FULL });
+    await vi.advanceTimersByTimeAsync(2000);
+    app.pressOpen();
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(app.toast).toBeNull();
+    app.closeAddSheet('cancel');
+    expect(app.addSheet).toBeNull();
+    expect(app.toast?.msg).toBe('Владелец принял ваш запрос.');
+    await vi.advanceTimersByTimeAsync(TOAST_MS.action - 2000 - 1);
+    expect(app.toast).not.toBeNull();
+    await vi.advanceTimersByTimeAsync(1);
+    expect(app.toast).toBeNull();
+    app.stop();
+  });
+
+  it('drops the parked toast after an add, on a route change and on a toast with an action', async () => {
+    const added = await sent();
+    added.app.hideToast();
+    added.sender.decided({ id: added.id, ...FULL });
+    added.app.pressOpen();
+    added.app.closeAddSheet('added');
+    expect(added.app.toast).toBeNull();
+    added.app.stop();
+
+    const left = await sent();
+    left.app.hideToast();
+    left.sender.decided({ id: left.id, ...FULL });
+    left.app.pressOpen();
+    left.app.go('#/lists');
+    expect(left.app.addSheet).toBeNull();
+    expect(left.app.toast).toBeNull();
+    left.app.stop();
+
+    const replaced = await sent();
+    replaced.app.hideToast();
+    replaced.sender.decided({ id: replaced.id, ...FULL });
+    replaced.app.pressOpen();
+    replaced.app.say(() => 'Отменить', { action: { label: () => 'Вернуть', run: vi.fn() } });
+    replaced.app.closeAddSheet('cancel');
+    expect(replaced.app.toast?.msg).toBe('Отменить');
+    replaced.app.stop();
+  });
+
+  it('keeps any other toast said while the sheet is open from dropping the parked one', async () => {
+    const { app, sender, id } = await sent();
+    app.hideToast();
+    sender.decided({ id, ...FULL });
+    app.pressOpen();
+    app.say(() => 'Сохранено');
+    expect(app.toast?.msg).toBe('Сохранено');
+    await vi.advanceTimersByTimeAsync(TOAST_MS.plain);
+    app.closeAddSheet('cancel');
+    expect(app.toast?.msg).toBe('Владелец принял ваш запрос.');
+    app.stop();
+  });
+
+  it('gives the plain toast to a full accept that arrives while a sheet is open, and keeps its source', async () => {
+    const { app, sender, id } = await sent();
+    app.hideToast();
+    app.openAddSheet({ kind: 'sel' });
+    sender.decided({ id, ...FULL });
+    expect(app.toast).toEqual({
+      msg: 'Владелец принял ваш запрос.',
+      mode: '',
+      action: undefined
+    });
+    expect(app.addSheet).toEqual({ kind: 'sel' });
+    app.openAddSheet({ kind: 'taken', lines: ONE, carry: {}, records: {} });
+    expect(app.addSheet).toEqual({ kind: 'sel' });
+    app.stop();
+  });
+
+  it('opens only one sheet: a press on an offer while the bar sheet is open does nothing', async () => {
+    const { app, sender, id } = await sent();
+    app.hideToast();
+    sender.decided({ id, ...FULL });
+    app.openAddSheet({ kind: 'sel' });
+    expect(app.toast).toBeNull();
+    app.pressOpen();
+    expect(app.addSheet).toEqual({ kind: 'sel' });
+    app.stop();
+  });
+
+  it('closes with no add when the reader signs out', async () => {
+    const { app, cloud } = await sent();
+    app.openAddSheet({ kind: 'sel' });
+    await cloud.auth.signOut();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(app.addSheet).toBeNull();
+    app.stop();
+  });
+
+  it('finds the linked record of an offer after the share dropped its entry', async () => {
+    const { app } = await sent();
+    const axe = { id: 'hb_axeaaaaaaaaaaaaa', src: 'hb', kind: 'item' } as never;
+    expect(app.linkedRecord('hb_axeaaaaaaaaaaaaa')).toBeUndefined();
+    app.openAddSheet({
+      kind: 'taken',
+      lines: [{ item: 'hb_axeaaaaaaaaaaaaa', qty: 1 }],
+      carry: {},
+      records: { hb_axeaaaaaaaaaaaaa: axe }
+    });
+    expect(app.linkedRecord('hb_axeaaaaaaaaaaaaa')).toBe(axe);
+    app.closeAddSheet('left');
+    expect(app.linkedRecord('hb_axeaaaaaaaaaaaaa')).toBeUndefined();
+    app.stop();
+  });
+
+  it('waits for the share page after a sign-in, then opens the sheet with the ticks back', async () => {
+    const cloud = fakeCloud(SEED);
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/account'), cloud }));
+    app.start();
+    await vi.advanceTimersByTimeAsync(10);
+    app.signInFor = {
+      hash: '#/s/' + TOKEN,
+      action: { do: 'addToList', key: 'sel', ids: ['ci1'] }
+    };
+    await app.signIn('google');
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(app.route.kind).toBe('share');
+    expect(app.addSheet).toBeNull();
+    await app.sharedView?.open(TOKEN, app.user?.userId);
+    app.shared = { name: 'Лавка', ids: ['ci1'], dropped: 0 };
+    app.resumePending();
+    expect(app.addSheet).toEqual({ kind: 'sel' });
+    expect([...app.sel]).toEqual(['ci1']);
+    expect(app.menuFor).toBe('');
+    app.stop();
+  });
+});
+
 describe('the new-request toast', () => {
   const SHOP = uuid(101);
   const TROPHIES = uuid(103);

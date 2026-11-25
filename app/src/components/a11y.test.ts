@@ -554,6 +554,10 @@ const COVERED: Record<string, string> = {
   'SignInPanel.svelte': 'accountPage.test.ts and connectPage.test.ts, signed out',
   'Actions.svelte': 'the card actions on every record state above, and record.test.ts',
   'AddToList.svelte': 'the add-to-list menu, in the state above',
+  'AddSheet.svelte':
+    'addSheet.test.ts with no list chosen, and with a chosen list, both folds open and a held row',
+  'ListRows.svelte':
+    'listRows.test.ts in each mode, and the add-to-list menu above and the add sheet in addSheet.test.ts',
   'DialogClose.svelte': 'sheet.test.ts and recordHost.test.ts, both dialogs open',
   'ErrorPage.svelte':
     'itemPage.test.ts and record.test.ts, every error state; printPage.test.ts and shell.test.ts, the print, not-found and boundary pages',

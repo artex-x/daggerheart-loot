@@ -2,6 +2,7 @@
   /* The frame every route sits in: the brand, the three jobs, the language and the
      account control, then the mode row on the roll sections. */
   import AccountMenu from './AccountMenu.svelte';
+  import AddSheet from './AddSheet.svelte';
   import Icon from './Icon.svelte';
   import Seg from './Seg.svelte';
   import SelBar from './SelBar.svelte';
@@ -442,6 +443,11 @@
      forward Tab reaches its buttons before the footer's links. It is fixed to the window's
      bottom, and the footer's bottom padding keeps its height clear under the page. -->
 <SelBar {app} />
+
+<!-- The share page's add sheet: the bar's «В список» and an accepted request's toast open it. -->
+{#if app.addSheet}
+  <AddSheet {app} source={app.addSheet} />
+{/if}
 
 <!-- The license notice is on every page on purpose: the terms ask for it, and
      a page that can be linked to directly has to carry it. It sits folded in

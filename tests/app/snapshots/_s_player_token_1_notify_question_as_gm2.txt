@@ -1,6 +1,6 @@
 # #/s/player-token-1 ~ notify question as gm2
 # route: #/s/player-token-1
-# why: ci1 and cc1 ticked and added to «Список второго ГМа»: the question «Сообщить владельцу списка, что вы взяли эти предметы?» with «Сообщить», «Не сообщать» and «Запомнить ответ» in place of the action row, the ticks kept, the add toast
+# why: ci1 and cc1 ticked and added to «Список второго ГМа» through the add sheet: the question «Сообщить владельцу списка, что вы взяли эти предметы?» with «Сообщить», «Не сообщать» and «Запомнить ответ» in place of the action row, the ticks kept, the add toast
 # as: gm2
 
 ## ru :: tree

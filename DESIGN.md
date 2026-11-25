@@ -896,8 +896,8 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
   controls, «Закрыть» with the close icon) and its foot stay; the body
   scrolls. No grab handle: nothing drags it. Its callers: the filter sheet (the
   catalog below 1000px, both list pages at every width), the table and tab
-  pickers, the bulk move, the list page's «Цены выбранных» and the editor's
-  preview.
+  pickers, the bulk move, the list page's «Цены выбранных», the editor's
+  preview and the share page's add sheet.
 - Every modal draws one scrim, `--scrim` (`rgb(6 4 12 / 78%)`), and no blur: the dark veil
   already parts the modal from the page, depth stays tonal, and a blur of the page costs a
   phone a frame for no meaning (2026-11-06).
@@ -927,6 +927,17 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
   per list with a check where it holds the record and its count in words. A panel a bar action opens is a
   `Sheet`, because the bar is pinned and a panel under it would grow past the
   window.
+- The share page's add is such a panel (`AddSheet`, signed in): «В список» is a primary
+  button with the caret and `aria-haspopup="dialog"`, and it opens a `Sheet` of one layout at
+  every width. The lead says what is added; the field «Список» draws the menu's rows open
+  (`ListRows`, one choice, the check and no fill, C61) in a box that scrolls inside
+  `min(30dvh, 340px)`; before a choice a line says to choose and «Добавить» is off. After
+  a choice the summary and its warning line (the warning color, because a held line blocks
+  nothing) come into view above the foot, then two independent folds, closed at each
+  opening, each panel under its own button: the table (four columns up to 600px with the
+  price under the name, five from 601px) and the two copy toggles (40px targets up to
+  600px). The foot is a ghost «Отмена» and the primary «Добавить», last. The other pages
+  keep the one-press menu.
 
 ### Compact row
 
@@ -1000,6 +1011,11 @@ uploader (https://v10.carbondesignsystem.com/components/file-uploader/usage/).
   window less 16px a side; a long
   name wraps inside it, so it stays a few lines high at 360px.
 - **Time:** The Reading Time Rule.
+- **An action that opens a sheet** (`open`: the accepted request's «В список») never takes
+  the focus when the toast appears. The press parks the toast: it leaves the slot while
+  the sheet is open, keeps the time it had left, and returns with that time and the focus
+  on its button when the sheet closes with no add; an add, or another toast with an action,
+  drops it. Pressed inside the record dialog, it closes the dialog first.
 - It is a `popover="manual"` element so it survives the inertness of a native
   `<dialog>`, and it is `display: none !important` under print. It carries `role` and
   `aria-live` at all times; an idle toast is `display: none` and leaves the accessibility

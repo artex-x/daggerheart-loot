@@ -26,8 +26,9 @@
     label?: string | undefined;
     /** `aria-expanded`, for a button that folds a panel open. */
     expanded?: boolean | undefined;
-    /** `aria-haspopup="menu"`, for a button that opens a `Menu`. */
-    haspopup?: boolean;
+    /** `aria-haspopup="menu"`, for a button that opens a `Menu`; `'dialog'` for one that
+     *  opens a sheet. */
+    haspopup?: boolean | 'dialog';
     /** `aria-controls`: the region a disclosure button shows. */
     controls?: string | undefined;
     /** `aria-describedby`: the id of a note that tells what the button does. */
@@ -105,7 +106,7 @@
     {title}
     aria-label={label}
     aria-expanded={expanded}
-    aria-haspopup={haspopup ? 'menu' : undefined}
+    aria-haspopup={haspopup === 'dialog' ? 'dialog' : haspopup ? 'menu' : undefined}
     aria-controls={controls}
     aria-describedby={describedby}
     bind:this={el}

@@ -261,6 +261,98 @@ export function withIds(
   return next;
 }
 
+/** What an add copies along beyond the count: the price and the note for players. */
+export interface CopyChoice {
+  price: boolean;
+  note: boolean;
+}
+
+/** Returns the carried meta without the fields `copy` switches off; the GM note never travels. */
+export function copyMeta(
+  meta: Readonly<Record<string, ListEntryMeta>>,
+  copy: CopyChoice
+): Record<string, ListEntryMeta> {
+  const out: Record<string, ListEntryMeta> = {};
+  for (const [id, m] of Object.entries(meta)) {
+    const entry: ListEntryMeta = {};
+    if (m.qty !== undefined) entry.qty = m.qty;
+    if (copy.price && m.gold !== undefined) entry.gold = m.gold;
+    if (copy.note && m.note) entry.note = m.note;
+    out[id] = entry;
+  }
+  return out;
+}
+
+/** One line of an add's preview. `was` is the count the list holds now, null for a key it
+ *  does not hold; `held` names what a held entry keeps; `refused` marks a key the store
+ *  cannot write yet, which the add skips. */
+export interface TakenRow {
+  item: string;
+  was: number | null;
+  add: number;
+  becomes: number;
+  /** The price a new row gets, or null for none. */
+  gold: number | null;
+  /** Whether a new row gets a note for players. */
+  note: boolean;
+  held: { qty: number; gold: number | null; note: boolean } | null;
+  refused: boolean;
+}
+
+/**
+ * Returns the preview of adding `lines` to `list` (null: a list not made yet): one row per
+ * line the data knows, in the order given. A held key stays as it is, as `store.add` leaves
+ * it; a key `writable` refuses counts for nothing. `carry` holds each line's count, price and
+ * note for players.
+ */
+export function takenRows(
+  list: StoredList | null,
+  lines: readonly { item: string; qty: number }[],
+  carry: Readonly<Record<string, ListEntryMeta>>,
+  knows: (id: string) => boolean,
+  copy: CopyChoice,
+  writable: (id: string) => boolean
+): TakenRow[] {
+  const rows: TakenRow[] = [];
+  for (const line of lines) {
+    if (!knows(line.item)) continue;
+    const have = list?.ids.includes(line.item) ?? false;
+    if (list && have) {
+      const m = itemMeta(list, line.item);
+      const qty = stockOf(m);
+      rows.push({
+        item: line.item,
+        was: qty,
+        add: 0,
+        becomes: qty,
+        gold: null,
+        note: false,
+        held: {
+          qty,
+          gold: typeof m.gold === 'number' && m.gold > 0 ? m.gold : null,
+          note: !!m.note
+        },
+        refused: false
+      });
+      continue;
+    }
+    const m = carry[line.item] ?? {};
+    const qty = Math.max(1, line.qty);
+    const refused = !writable(line.item);
+    rows.push({
+      item: line.item,
+      was: null,
+      add: refused ? 0 : qty,
+      becomes: refused ? 0 : qty,
+      gold: copy.price && typeof m.gold === 'number' && m.gold > 0 ? m.gold : null,
+      note: copy.note && !!m.note,
+      held: null,
+      refused
+    });
+  }
+  return rows;
+}
+
 /**
  * Move an entry to a new position.
  *

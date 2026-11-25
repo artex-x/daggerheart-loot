@@ -1312,7 +1312,12 @@ address kept, and no add-to-list control is drawn.
   it: «Владелец принял ваш запрос.», «Владелец принял ваш запрос частично:
   взял не всё.» or «Владелец отклонил ваш запрос.» / "The owner applied your
   request.", "The owner applied part of your request.", "The owner declined
-  your request.". If that request is the one «Запрос отправлен» holds, the
+  your request.". A full accept of a request sent by hand (not one flow b sent, and not
+  one whose exact lines the reader added to a list on this page load) signed in, with
+  the account's lists read and no add sheet open, instead toasts «Владелец принял ваш
+  запрос.» with «В список» / "Add to list" (7000 ms, held as any toast); a partial
+  accept, a decline and every other case keep the plain toast (see "Purchase requests:
+  the add sheet"). If that request is the one «Запрос отправлен» holds, the
   line becomes «Владелец принял запрос.», «Владелец принял запрос частично.»
   or «Владелец отклонил запрос.», and the button stays disabled until the
   ticks or counts change. The words are the owner's own: «принять» /
@@ -1325,9 +1330,50 @@ address kept, and no add-to-list control is drawn.
   it (Realtime does not replay), and an expiry says nothing. Another reader's
   request says nothing. An applied request reaches an open page as a lowered
   or removed entry, as any owner edit. Nothing of a request is kept in the
-  browser: the sent ids live in the page's memory, the newest 20.
-- **Purchase requests: flow b**: after an add from a `#/s/` page's selection
-  bar (never a card's own menu), signed in and not the owner, `notifyGm`
+  browser: the sent ids, their lines, the price and note for players the bar showed
+  at the send, the linked homebrew records and whether an add came before or after
+  live in the page's memory, the newest 20 sent ids.
+- **Purchase requests: the add sheet**: on a `#/s/` page, signed in, the bar's «В
+  список» opens a sheet «Добавить в список» in place of the menu (signed out the bar
+  keeps the menu, whose create slot is the sign-in prompt, and the sign-in's return
+  opens the sheet once the page has read its list); the toast's «В список» opens the
+  same sheet. The sheet opens with no list chosen, every time: its lead says what
+  is added («Добавится выбранное: 3 позиции · 8 шт.», or «Владелец принял запрос:
+  ...» for the toast), then the field «Список» (the account's lists as radios, a
+  search box from 8, «Новый список»), then «Выберите список, чтобы увидеть, что
+  изменится.», and «Добавить» is off. A tap on a list only chooses it (the check, no
+  fill) and reads its entries («Загружаем...», or the failure line with
+  «Повторить»); «Добавить» adds, so a usual add is three presses. A chosen list shows the summary «Добавится:
+  2 позиции · 5 шт.» and, when it holds a line already, «1 позиция уже в списке и не
+  изменится» in the warning color; two independent folds, closed at each opening,
+  each panel under its own button: «Что изменится» (the table «Позиция», «Было»,
+  «Добавится», «Станет» and, from 601 px, «Цена»; a new key is «нет в списке»; five
+  lines, then «и ещё N»; up to 600 px a price sits under the name) and «Что
+  копировать» (the checkboxes «Копировать цену» and «Копировать заметку для игроков»,
+  both on at each opening, component state only: never storage). A toggle off adds a new row without
+  that field. «Новый список» draws a name field and counts every line as new.
+  The rows box scrolls inside `min(30dvh, 340px)` and the body scrolls the summary
+  into view after a choice, so the summary and its warning stay above the foot.
+  A key the list already holds keeps its entry as it is (its count, price and
+  notes): the table row says «Уже в списке: 2 шт. по 30 зол., ваша заметка
+  останется» (the price in the money mode of the chosen list) and «Добавить» adds the
+  rest; when every line is held the summary reads «Все позиции уже есть в «%s»:
+  выберите другой список.» and «Добавить» is off. A second accepted request for the same items finds every line
+  held: the reader raises the count on the list page. A homebrew key the store cannot
+  write yet (the account's items are not read) is not counted; its row names why
+  with the bar's refusal. The GM note is never copied. The add toasts «Добавлено в «...»: N»
+  (N the new rows; no count for one line) and the focus goes to «В список», or to
+  `#main` after the toast's sheet. The bar's add then asks flow b's question; the
+  toast's add never does. The sheet closes with no add on «Отмена», «Закрыть», Escape,
+  a route change, a sign-out, a stopped link and an emptied selection. While the
+  toast's sheet is open the decision toast is parked: it leaves the slot, keeps the
+  time it had left and returns with that time, its button focused, when the sheet
+  closes with no add; an add or a toast with an action said meanwhile drops it. A
+  decision that arrives while a sheet is open gets the plain toast. A press on the
+  toast inside the open record dialog closes the dialog first.
+- **Purchase requests: flow b**: (the code's name; the owner's "flow a": add to a
+  list, then notify) after an add made in the add sheet that the
+  selection bar's «В список» opens on a `#/s/` page (never a card's own menu), signed in and not the owner, `notifyGm`
   decides: «Спрашивать» replaces the bar's actions with «Сообщить владельцу
   списка, что вы взяли эти предметы?», «Сообщить», «Не сообщать» and
   «Запомнить ответ», the ticks kept, and the question takes the focus; after an

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  copyMeta,
   gmOnlyCount,
   itemMeta,
   matchLists,
@@ -8,6 +9,7 @@ import {
   pickerOrder,
   stockLeft,
   takenQty,
+  takenRows,
   takenTotal,
   withIds,
   withMeta,
@@ -246,5 +248,89 @@ describe('narrowEntries', () => {
     expect(kept.map((r) => r.at).every((at, i, all) => i === 0 || at > (all[i - 1] ?? 0))).toBe(
       true
     );
+  });
+});
+
+describe('copyMeta', () => {
+  const meta = {
+    a: { qty: 3, gold: 50, note: 'для игроков', hnote: 'для мастера' },
+    b: { qty: 1 }
+  };
+
+  it('keeps the count and drops the fields the toggles switch off, and never the GM note', () => {
+    expect(copyMeta(meta, { price: true, note: true })).toEqual({
+      a: { qty: 3, gold: 50, note: 'для игроков' },
+      b: { qty: 1 }
+    });
+    expect(copyMeta(meta, { price: false, note: true })['a']).toEqual({
+      qty: 3,
+      note: 'для игроков'
+    });
+    expect(copyMeta(meta, { price: true, note: false })['a']).toEqual({ qty: 3, gold: 50 });
+    expect(copyMeta(meta, { price: false, note: false })['a']).toEqual({ qty: 3 });
+  });
+});
+
+describe('takenRows', () => {
+  const held: StoredList = {
+    id: 'l',
+    name: 'Инвентарь',
+    ids: ['a', 'x'],
+    meta: { a: { qty: 2, gold: 30, note: 'моя' } }
+  };
+  const lines = [
+    { item: 'a', qty: 1 },
+    { item: 'b', qty: 4 },
+    { item: 'gone', qty: 1 },
+    { item: 'hb', qty: 2 }
+  ];
+  const carry = {
+    a: { qty: 1, gold: 50, note: 'чужая' },
+    b: { qty: 4, gold: 12, note: 'для игроков' },
+    hb: { qty: 2 }
+  };
+  const knows = (id: string): boolean => id !== 'gone';
+  const on = { price: true, note: true };
+
+  it('leaves a held key as it is, adds a new one, and skips a key the data does not know', () => {
+    const rows = takenRows(held, lines, carry, knows, on, (k) => k !== 'hb');
+    expect(rows.map((r) => r.item)).toEqual(['a', 'b', 'hb']);
+    expect(rows[0]).toMatchObject({
+      was: 2,
+      add: 0,
+      becomes: 2,
+      held: { qty: 2, gold: 30, note: true },
+      refused: false
+    });
+    expect(rows[1]).toMatchObject({
+      was: null,
+      add: 4,
+      becomes: 4,
+      gold: 12,
+      note: true,
+      held: null
+    });
+    expect(rows[2]).toMatchObject({ was: null, add: 0, becomes: 0, refused: true });
+  });
+
+  it('follows the copy toggles for a new row and never for a held one', () => {
+    const off = takenRows(held, lines, carry, knows, { price: false, note: false }, () => true);
+    expect(off[1]).toMatchObject({ gold: null, note: false, add: 4 });
+    expect(off[0]?.held).toEqual({ qty: 2, gold: 30, note: true });
+  });
+
+  it('counts every line as new for a list not made yet, and names a held key with no price or note', () => {
+    expect(
+      takenRows(null, lines, carry, knows, on, () => true).every((r) => r.held === null)
+    ).toBe(true);
+    const bare = takenRows(
+      { id: 'l', name: 'n', ids: ['x'] },
+      [{ item: 'x', qty: 1 }],
+      {},
+      knows,
+      on,
+      () => true
+    );
+    expect(bare[0]?.held).toEqual({ qty: 1, gold: null, note: false });
   });
 });

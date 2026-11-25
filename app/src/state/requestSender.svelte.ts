@@ -15,7 +15,9 @@
 
 import { limitText } from '../lib/cloudLists.js';
 import type { Msg } from '../lib/dict.js';
+import type { HomebrewRecord } from '../lib/homebrew.js';
 import { countPiecesText } from '../lib/i18n.js';
+import type { ListEntryMeta } from '../lib/lists.js';
 import { plural } from '../lib/plural.js';
 import type { NotifyGm } from '../lib/prefs.js';
 import type { RequestRepository } from '../ports/index.js';
@@ -23,9 +25,25 @@ import type { RequestRepository } from '../ports/index.js';
 /** The ticked entries with their taken counts. */
 export type RequestLines = { item: string; qty: number }[];
 
+/** What an accepted request carries to the add sheet: the lines as sent, the price and note
+ *  for players the bar showed at the send, and the linked homebrew records kept then. */
+export interface TakenSource {
+  lines: RequestLines;
+  carry: Readonly<Record<string, ListEntryMeta>>;
+  records: Readonly<Record<string, HomebrewRecord>>;
+}
+
 export interface SenderHooks {
   newId: () => string;
   say: (msg: Msg, error?: boolean) => void;
+  /** Whether an accepted request may offer the add now: signed in, the account's lists read
+   *  and no add sheet open. */
+  canAdd: () => boolean;
+  /** Offers the add of an accepted request: the toast «Владелец принял ваш запрос.» with its
+   *  action. */
+  offer: (source: TakenSource) => void;
+  /** The linked homebrew record the page holds for `key` now. */
+  recordOf: (key: string) => HomebrewRecord | undefined;
   /** Reads the open link again: its list changed, or it is gone. */
   reread: () => void;
   notifyGm: () => NotifyGm;
@@ -57,7 +75,12 @@ export class RequestSender {
   /** A send runs. */
   sending = $state(false);
   /** Flow b's open question: the link, the lines the add carried and the add's toast. */
-  asking = $state.raw<{ token: string; lines: RequestLines; after: Msg } | null>(null);
+  asking = $state.raw<{
+    token: string;
+    lines: RequestLines;
+    after: Msg;
+    carry: Readonly<Record<string, ListEntryMeta>>;
+  } | null>(null);
 
   readonly #repo: RequestRepository;
   readonly #hooks: SenderHooks;
@@ -66,8 +89,13 @@ export class RequestSender {
   #id: string | null = null;
   /* The key of the lines last sent through a link; reactive, so the button redraws. */
   #sent = $state<string | null>(null);
-  /* The ids sent with success on this page load, newest last, with the key of their lines. */
-  #mine: { id: string; key: string }[] = [];
+  /* The ids sent with success on this page load, newest last, with the key of their lines,
+     the lines, what the bar showed for them, the linked records and whether an add came
+     before or after the send. Memory only. */
+  #mine: (TakenSource & { id: string; key: string; added: boolean })[] = [];
+  /* The keys of the line sets this page load added from the bar. */
+  // eslint-disable-next-line svelte/prefer-svelte-reactivity -- a memo, never drawn
+  readonly #addedKeys = new Set<string>();
   /* The decision of the request the sent mark holds; reactive, so the line redraws. */
   #verdict = $state.raw<{ key: string; status: Decision['status']; partial: boolean } | null>(
     null
@@ -84,8 +112,14 @@ export class RequestSender {
   }
 
   /** Sends the lines to the link's owner. A success keeps the selection and marks the
-   *  lines sent; with `after` (flow b) the add's toast gains the owner's line. */
-  async send(token: string, lines: RequestLines, after?: Msg): Promise<void> {
+   *  lines sent; with `after` (flow b) the add's toast gains the owner's line. `carry` is
+   *  the price and note for players of each line, kept for an accepted request's add. */
+  async send(
+    token: string,
+    lines: RequestLines,
+    after?: Msg,
+    carry: Readonly<Record<string, ListEntryMeta>> = {}
+  ): Promise<void> {
     if (this.sending || !lines.length || this.isSent(token, lines)) return;
     const key = keyOf(token, lines);
     if (key !== this.#key || this.#id === null) {
@@ -98,7 +132,16 @@ export class RequestSender {
     this.sending = false;
     const say = this.#hooks.say;
     if (r.ok) {
-      this.#mine = [...this.#mine, { id, key }].slice(-MINE_MAX);
+      const records: Record<string, HomebrewRecord> = {};
+      for (const l of lines) {
+        const rec = this.#hooks.recordOf(l.item);
+        if (rec) records[l.item] = rec;
+      }
+      const kept = { id, key, lines: [...lines], carry, records };
+      this.#mine = [
+        ...this.#mine,
+        { ...kept, added: after !== undefined || this.#addedKeys.has(key) }
+      ].slice(-MINE_MAX);
       this.#drop();
       this.#sent = key;
       this.#verdict = null;
@@ -150,12 +193,21 @@ export class RequestSender {
   }
 
   /** Flow b after an add from the bar: nothing, a send, or the question, by `notifyGm`. */
-  afterAdd(token: string, lines: RequestLines, after: Msg): void {
+  afterAdd(
+    token: string,
+    lines: RequestLines,
+    after: Msg,
+    carry: Readonly<Record<string, ListEntryMeta>> = {}
+  ): void {
+    /* An accepted request for these lines no longer offers the add: they went into a list. */
+    const key = keyOf(token, lines);
+    this.#addedKeys.add(key);
+    for (const m of this.#mine) if (m.key === key) m.added = true;
     if (this.isSent(token, lines)) return;
     const answer = this.#hooks.notifyGm();
     if (answer === 'never') return;
-    if (answer === 'always') void this.send(token, lines, after);
-    else this.asking = { token, lines, after };
+    if (answer === 'always') void this.send(token, lines, after, carry);
+    else this.asking = { token, lines, after, carry };
   }
 
   /** Answers the question; `remember` saves the answer as `notifyGm`. */
@@ -164,7 +216,7 @@ export class RequestSender {
     this.asking = null;
     if (!q) return;
     if (remember) this.#hooks.setNotifyGm(send ? 'always' : 'never');
-    if (send) void this.send(q.token, q.lines, q.after);
+    if (send) void this.send(q.token, q.lines, q.after, q.carry);
   }
 
   /** Drops an unanswered question and the sent mark: the selection was cleared or the page left. */
@@ -180,13 +232,19 @@ export class RequestSender {
     const mine = this.#mine.find((x) => x.id === m.id);
     if (!mine) return;
     this.#mine = this.#mine.filter((x) => x !== mine);
-    this.#hooks.say((t) =>
-      m.status === 'declined'
-        ? t.requestDeclinedToast
-        : m.partial
-          ? t.requestPartialToast
-          : t.requestAppliedToast
-    );
+    /* Only a request sent by hand and applied in full offers the add: a partial accept does
+       not say which lines were applied, and an add the sender made already holds the lines. */
+    if (m.status === 'applied' && !m.partial && !mine.added && this.#hooks.canAdd()) {
+      this.#hooks.offer({ lines: mine.lines, carry: mine.carry, records: mine.records });
+    } else {
+      this.#hooks.say((t) =>
+        m.status === 'declined'
+          ? t.requestDeclinedToast
+          : m.partial
+            ? t.requestPartialToast
+            : t.requestAppliedToast
+      );
+    }
     if (mine.key === this.#sent) {
       this.#verdict = { key: mine.key, status: m.status, partial: m.partial };
     }

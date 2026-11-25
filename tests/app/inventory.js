@@ -112,6 +112,18 @@ async function sheet(d) {
   throw new Error('a #/p/ state never left its loading line');
 }
 
+/** Opens the share bar's add sheet, chooses the list `name` and waits until its entries are read. */
+async function openAddSheet(d, name) {
+  await d.click('В список');
+  await d.click(name);
+  for (
+    let i = 0;
+    i < 40 && (await d.count('dialog.sheet .sheet-foot button.primary:disabled'));
+    i++
+  )
+    await d.settle();
+}
+
 /**
  * The names a spec grips, in each language.
  *
@@ -3095,14 +3107,75 @@ const STATES = [
     id: '#/s/player-token-1 ~ notify question as gm2',
     route: '#/s/player-token-1',
     as: 'gm2',
-    why: 'ci1 and cc1 ticked and added to «Список второго ГМа»: the question «Сообщить владельцу списка, что вы взяли эти предметы?» with «Сообщить», «Не сообщать» and «Запомнить ответ» in place of the action row, the ticks kept, the add toast',
+    why: 'ci1 and cc1 ticked and added to «Список второго ГМа» through the add sheet: the question «Сообщить владельцу списка, что вы взяли эти предметы?» with «Сообщить», «Не сообщать» and «Запомнить ответ» in place of the action row, the ticks kept, the add toast',
     enter: async (d) => {
       await d.tick('Первоклассный Спальный Мешок');
       await d.tick('Зелье Быстрого Шага');
-      await d.click('В список');
-      await d.click('Список второго ГМа');
+      await openAddSheet(d, 'Список второго ГМа');
+      await d.click('Добавить');
     },
     /* a 4000ms toast; arrived at afresh per language - see this file's header */
+    timed: true
+  },
+  {
+    id: '#/s/player-token-1 ~ add sheet as gm2',
+    route: '#/s/player-token-1',
+    as: 'gm2',
+    why: "ci1 and q23 ticked, «В список» pressed: the add sheet «Добавить в список» with the lead «Добавится выбранное: 2 позиции · 3 шт.», the field «Список» with gm2's one list unchosen, «Новый список», the line «Выберите список, чтобы увидеть, что изменится.», no fold, «Добавить» disabled",
+    enter: async (d) => {
+      await d.tick('Первоклассный Спальный Мешок');
+      await d.tick('Скипетр');
+      await d.click('В список');
+    }
+  },
+  {
+    id: '#/s/player-token-1 ~ add sheet chosen as gm2',
+    route: '#/s/player-token-1',
+    as: 'gm2',
+    why: 'the same, «Список второго ГМа» chosen (its radio checked): the summary «Добавится: 1 позиция» with the warning line «1 позиция уже в списке и не изменится» (q23 is held), «Что изменится» and «Что копировать» closed, «Добавить» enabled',
+    enter: async (d) => {
+      await d.tick('Первоклассный Спальный Мешок');
+      await d.tick('Скипетр');
+      await openAddSheet(d, 'Список второго ГМа');
+    }
+  },
+  {
+    id: '#/s/player-token-1 ~ add sheet diff as gm2',
+    route: '#/s/player-token-1',
+    as: 'gm2',
+    why: 'the same with both folds open and «Копировать заметку для игроков» off: the table with ci1 «нет в списке» and q23 held, «Уже в списке: 1 шт.» under its name, then the two toggles, the price one on',
+    enter: async (d) => {
+      await d.tick('Первоклассный Спальный Мешок');
+      await d.tick('Скипетр');
+      await openAddSheet(d, 'Список второго ГМа');
+      await d.click('Что изменится');
+      await d.click('Что копировать');
+      await d.tick('Копировать заметку для игроков');
+    }
+  },
+  {
+    id: '#/s/player-token-1 ~ sent and applied as gm2',
+    route: '#/s/player-token-1',
+    as: 'gm2',
+    why: 'ci1 and q23 sent by hand with «Сообщить владельцу» and applied in full by the owner: the toast «Владелец принял ваш запрос.» with «В список», the line «Владелец принял запрос.» under the actions',
+    enter: async (d) => {
+      /* The decision is heard on the share topic only once it is joined. */
+      for (let i = 0; i < 40 && !(await d.count('.said[data-live="live"]')); i++)
+        await d.settle();
+      await d.tick('Первоклассный Спальный Мешок');
+      await d.tick('Скипетр');
+      await d.click('Сообщить владельцу');
+      for (let i = 0; i < 40 && !(await d.count('.sentline')); i++) await d.settle();
+      await d.fake('decideNewest', 'player-token-1', 'applied');
+      for (
+        let i = 0;
+        i < 40 &&
+        !/Владелец принял запрос.|The owner applied the request./.test(await d.text());
+        i++
+      )
+        await d.settle();
+    },
+    /* a 7000ms toast; arrived at afresh per language - see this file's header */
     timed: true
   },
   {

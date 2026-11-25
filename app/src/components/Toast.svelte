@@ -70,7 +70,9 @@
      object with the same functions and must not take focus again. A link or a move
      toast that a later toast replaces gives the focus back too (rule 20). */
   const run = $derived(toast?.action?.run);
-  const key = $derived(toast?.action?.run ?? toast?.action?.go ?? toast?.action?.href);
+  const key = $derived(
+    toast?.action?.run ?? toast?.action?.go ?? toast?.action?.href ?? toast?.action?.open
+  );
 
   $effect.pre(() => {
     void key;
@@ -123,6 +125,32 @@
       if (now && now !== document.body && now.isConnected) return;
       document.getElementById('main')?.focus();
     });
+  }
+
+  /* An `open` action parks the toast and opens a sheet, which never takes the focus when the
+     toast appears; the sheet owns the focus after the press. Inside the record dialog that
+     dialog closes first, so two modal dialogs never stack. */
+  async function openAction(): Promise<void> {
+    const dialog = inDialog ? el?.closest('dialog') : null;
+    own = true;
+    if (dialog) {
+      /* The dialog's own cleanup clears `app.dialogOpen` when it unmounts: the sheet opens
+         after that, or the flag would drop while the sheet is open. */
+      await new Promise<void>((done) => {
+        const timer = setTimeout(done, 100);
+        dialog.addEventListener(
+          'close',
+          () => {
+            clearTimeout(timer);
+            done();
+          },
+          { once: true }
+        );
+        dialog.close();
+      });
+      await tick();
+    }
+    app.pressOpen();
   }
 
   /* Every toast holds its clock while hovered or touched or while the person moved focus
@@ -185,6 +213,14 @@
         class="toast-act"
         onclick={() => {
           goAction(go);
+        }}>{toast.action.label}</button
+      >
+    {:else if toast.action?.open}
+      <button
+        type="button"
+        class="toast-act"
+        onclick={() => {
+          void openAction();
         }}>{toast.action.label}</button
       >
     {:else if toast.action}

@@ -10,13 +10,16 @@ import type { NotifyGm } from '../lib/prefs.js';
 import { fakeCloud } from '../ports/fake-cloud.js';
 import { SEED } from '../ports/fake-cloud-seed.js';
 import type { RequestRepository, RequestSent } from '../ports/index.js';
-import { RequestSender, sentSummary } from './requestSender.svelte.js';
+import type { HomebrewRecord } from '../lib/homebrew.js';
+import { RequestSender, sentSummary, type TakenSource } from './requestSender.svelte.js';
 
 const ONE = [{ item: 'ci1', qty: 1 }];
 const t = dict('ru');
 const ADDED: Msg = () => 'Добавлено';
 
-function sender(answers: RequestSent[] = [], notify: NotifyGm = 'ask') {
+function sender(answers: RequestSent[] = [], notify: NotifyGm = 'ask', canAdd = false) {
+  const offered: TakenSource[] = [];
+  const records: Record<string, HomebrewRecord> = {};
   const said: [string, boolean | undefined][] = [];
   let n = 0;
   const send = vi.fn<RequestRepository['send']>(() =>
@@ -41,11 +44,16 @@ function sender(answers: RequestSent[] = [], notify: NotifyGm = 'ask') {
     notifyGm: () => notify,
     setNotifyGm: vi.fn((v: NotifyGm) => {
       notify = v;
-    })
+    }),
+    canAdd: () => canAdd,
+    offer: (source: TakenSource) => {
+      offered.push(source);
+    },
+    recordOf: (key: string) => records[key]
   };
   const s = new RequestSender(repo, hooks);
   const ids = (): unknown[] => send.mock.calls.map((c) => c[0]);
-  return { s, repo: { send }, hooks, said, ids };
+  return { s, repo: { send }, hooks, said, ids, offered, records };
 }
 
 describe('RequestSender.send', () => {
@@ -150,7 +158,10 @@ describe('RequestSender.send', () => {
         say: msg,
         reread: vi.fn(),
         notifyGm: () => 'ask',
-        setNotifyGm: vi.fn()
+        setNotifyGm: vi.fn(),
+        canAdd: () => false,
+        offer: () => undefined,
+        recordOf: () => undefined
       }
     );
     await s2.send('tok', lines);
@@ -235,7 +246,7 @@ describe('RequestSender flow b', () => {
 
     const ask = sender([], 'ask');
     ask.s.afterAdd('tok', ONE, ADDED);
-    expect(ask.s.asking).toEqual({ token: 'tok', lines: ONE, after: ADDED });
+    expect(ask.s.asking).toEqual({ token: 'tok', lines: ONE, after: ADDED, carry: {} });
     expect(ask.repo.send).not.toHaveBeenCalled();
   });
 
@@ -278,7 +289,10 @@ describe('RequestSender storage', () => {
       say: () => undefined,
       reread: () => undefined,
       notifyGm: () => 'always',
-      setNotifyGm: () => undefined
+      setNotifyGm: () => undefined,
+      canAdd: () => false,
+      offer: () => undefined,
+      recordOf: () => undefined
     });
     await s.send('player-token-1', ONE);
     s.afterAdd('player-token-1', [{ item: 'cc1', qty: 1 }], ADDED);
@@ -406,5 +420,86 @@ describe('the sent line and the decision', () => {
     s.decided({ id: 'id-1', status: 'declined', partial: false });
     await s.send('tok', ONE);
     expect(lineOf(s, ONE)).toContain('ждёт ответа');
+  });
+});
+
+describe('the add offer of an accepted request', () => {
+  const FULL = { id: 'id-1', status: 'applied', partial: false } as const;
+  const CARRY = { ci1: { qty: 1, gold: 30, note: 'Видно игрокам' } };
+
+  it('offers the add on a full accept of a request sent by hand, and says nothing else', async () => {
+    const { s, said, offered, records } = sender([], 'ask', true);
+    records['hb_axeaaaaaaaaaaaaa'] = { id: 'hb_axeaaaaaaaaaaaaa' } as HomebrewRecord;
+    const lines = [
+      { item: 'ci1', qty: 1 },
+      { item: 'hb_axeaaaaaaaaaaaaa', qty: 2 }
+    ];
+    await s.send('tok', lines, undefined, CARRY);
+    said.length = 0;
+    s.decided(FULL);
+    expect(said).toEqual([]);
+    expect(offered).toEqual([
+      { lines, carry: CARRY, records: { hb_axeaaaaaaaaaaaaa: records['hb_axeaaaaaaaaaaaaa'] } }
+    ]);
+  });
+
+  it('keeps the plain toast for a decline, a partial accept, a busy sheet and unready lists', async () => {
+    const plain = async (
+      decision: { id: string; status: 'applied' | 'declined'; partial: boolean },
+      canAdd: boolean
+    ): Promise<[string[], number]> => {
+      const { s, said, offered } = sender([], 'ask', canAdd);
+      await s.send('tok', ONE);
+      said.length = 0;
+      s.decided(decision);
+      return [said.map((x) => x[0]), offered.length];
+    };
+    expect(await plain({ id: 'id-1', status: 'declined', partial: false }, true)).toEqual([
+      ['Владелец отклонил ваш запрос.'],
+      0
+    ]);
+    expect(await plain({ id: 'id-1', status: 'applied', partial: true }, true)).toEqual([
+      ['Владелец принял ваш запрос частично: взял не всё.'],
+      0
+    ]);
+    expect(await plain(FULL, false)).toEqual([['Владелец принял ваш запрос.'], 0]);
+  });
+
+  it('offers nothing for an owner flow a request, whether the add came before or after the send', async () => {
+    const after = sender([], 'always', true);
+    after.s.afterAdd('tok', ONE, ADDED);
+    await vi.waitFor(() => {
+      expect(after.s.isSent('tok', ONE)).toBe(true);
+    });
+    after.said.length = 0;
+    after.s.decided(FULL);
+    expect(after.offered).toEqual([]);
+    expect(after.said).toEqual([['Владелец принял ваш запрос.', undefined]]);
+
+    const before = sender([], 'ask', true);
+    before.s.afterAdd('tok', ONE, ADDED);
+    before.s.answer(false, false);
+    await before.s.send('tok', ONE);
+    before.s.decided(FULL);
+    expect(before.offered).toEqual([]);
+  });
+
+  it('offers nothing after a by-hand send whose lines an add then took into a list', async () => {
+    const { s, offered, said } = sender([], 'never', true);
+    await s.send('tok', ONE);
+    s.afterAdd('tok', ONE, ADDED);
+    said.length = 0;
+    s.decided(FULL);
+    expect(offered).toEqual([]);
+    expect(said).toHaveLength(1);
+  });
+
+  it('offers for each of two by-hand requests, and forgets the oldest past 20 sends', async () => {
+    const { s, offered } = sender([], 'ask', true);
+    for (let i = 0; i < 21; i++) await s.send('tok', [{ item: 'ci1', qty: i + 1 }]);
+    s.decided({ id: 'id-1', status: 'applied', partial: false });
+    expect(offered).toEqual([]);
+    s.decided({ id: 'id-2', status: 'applied', partial: false });
+    expect(offered).toHaveLength(1);
   });
 });

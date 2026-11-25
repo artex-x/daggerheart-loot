@@ -92,3 +92,16 @@ the task that owes them".
   (a resize, a new open), which is a design choice.
 - **How to verify the fix**: a component test scrolls the control toward the bottom edge after the
   menu opens and reads `data-side` unchanged until the next open or resize.
+
+## Add sheet leftovers (task `57-debt`, owner first)
+
+### D147 - the list rows of the add sheet are radios with no arrow-key navigation
+
+- **Where**: `app/src/components/ListRows.svelte` (the `choose` mode, `role="radio"` rows).
+- **What**: each row is a tab stop and the arrow keys do nothing, so a keyboard reader with 50
+  lists tabs through every row to reach «Новый список» and the folds. The search box from 8
+  lists narrows the rows. The APG radio group wants a roving tabindex.
+- **Why deferred**: found in the B1 review of the add sheet; the change touches the `toggle` and
+  `add` modes of the same component on every page, and no owner rule asks for it yet.
+- **How to verify the fix**: a component test presses the arrow keys in the sheet's rows and
+  reads the checked row and the single tab stop moving with them.

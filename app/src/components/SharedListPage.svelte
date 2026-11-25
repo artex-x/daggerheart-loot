@@ -316,10 +316,12 @@
      `onDestroy`, not in an effect cleanup, which runs before every re-run. */
   $effect(() => {
     app.shared = shared;
-    /* An entry the list no longer holds leaves the selection, so the bar counts only drawn rows. */
     if (shared) {
       const ids = shared.ids;
       untrack(() => {
+        /* A sign-in that returned here waits for this list: its add sheet needs the counts. */
+        app.resumePending();
+        /* An entry the list no longer holds leaves the selection, so the bar counts only drawn rows. */
         app.keepTicksIn(ids);
       });
     }

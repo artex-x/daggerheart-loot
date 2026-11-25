@@ -223,7 +223,25 @@
           />
         </div>
       {:else}
-        <AddToList {app} key="sel" {ids} meta={takenMeta} primary disabled={!n} />
+        {#if shared && app.newListTarget === 'cloud'}
+          <!-- The share page's add is a sheet: the list is chosen each time and the add
+               shows what it does first. Signed out the bar keeps its menu, whose create slot
+               is the sign-in prompt. -->
+          <div class="seldrop">
+            <Button
+              size="sm"
+              variant="primary"
+              caret
+              haspopup="dialog"
+              disabled={!n}
+              onclick={() => {
+                app.openAddSheet({ kind: 'sel' });
+              }}><Icon name="plus" />{t.toList}</Button
+            >
+          </div>
+        {:else}
+          <AddToList {app} key="sel" {ids} meta={takenMeta} primary disabled={!n} />
+        {/if}
         {#if app.printTarget !== 'none'}
           <Button
             size="sm"
@@ -256,7 +274,7 @@
                   disabled={!n || sender.sending || sent}
                   onclick={() => {
                     close();
-                    void sender.send(token, lines);
+                    void sender.send(token, lines, undefined, takenMeta);
                   }}
                   >{sent
                     ? t.requestSentDone
@@ -282,7 +300,7 @@
             ><Button
               size="sm"
               disabled={!n || sender.sending || sent}
-              onclick={() => void sender.send(token, lines)}
+              onclick={() => void sender.send(token, lines, undefined, takenMeta)}
               >{sent
                 ? t.requestSentDone
                 : sender.sending

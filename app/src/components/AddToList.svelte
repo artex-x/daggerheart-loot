@@ -11,21 +11,15 @@
   import { onDestroy, untrack } from 'svelte';
   import Button from './Button.svelte';
   import Icon from './Icon.svelte';
+  import ListRows from './ListRows.svelte';
   import SignInPrompt from './SignInPrompt.svelte';
   import { focusBack, openOverlay } from './overlay.js';
-  import { knownItems, NAME_MAX } from '../lib/cloudLists.js';
+  import { NAME_MAX } from '../lib/cloudLists.js';
   import type { Msg } from '../lib/dict.js';
   import { recordHref } from '../lib/hash.js';
   import { isHomebrewKey } from '../lib/homebrew.js';
   import type { ListEntryMeta } from '../lib/lists.js';
-  import {
-    itemMeta,
-    LIST_SEARCH_AT,
-    matchLists,
-    pickerOrder,
-    type StoredList
-  } from '../lib/lists.js';
-  import { plural } from '../lib/plural.js';
+  import { itemMeta, LIST_SEARCH_AT, pickerOrder, type StoredList } from '../lib/lists.js';
   import type { AppState } from '../state/app.svelte.js';
 
   interface Props {
@@ -91,7 +85,6 @@
   const showSearch = $derived(sorted.length >= LIST_SEARCH_AT);
 
   let pickQ = $state('');
-  const shown = $derived(showSearch ? matchLists(sorted, pickQ) : sorted);
 
   /* The lists holding `one` now: a toggle in the open menu updates it; `held` keeps the
      open-time order only. One pass per change of the lists, not two per chip per draw. */
@@ -143,31 +136,17 @@
      on top of it would race for the same toast and hide the failure. */
   const knows = (id: string): boolean => app.knows(id);
 
-  /* An add that wrote nothing because a homebrew key was refused says why, not
-     «Добавлено»: the list waits for the account's items. */
-  function refusedText(): Msg {
-    const status = app.homebrew?.status;
-    if (status === 'error') return (t) => t.hbLoadFailed;
-    if (status !== 'ready') return (t) => t.hbNotReady;
-    return (t) => t.hbNotAdded;
-  }
-
-  /* After an add from the bar on a share link, signed in and not its owner: flow b
-     asks whether to tell the owner, or sends, or not, by the remembered answer. A
-     card's own menu never asks. */
+  /* The toast of an add. The share page's own add is the add sheet (`AddSheet.svelte`), which
+     also asks whether to tell the owner. */
   function added(name: string, fresh: readonly string[], held: readonly string[]): void {
     if (!fresh.length && ids.some((id) => isHomebrewKey(id) && !held.includes(id))) {
-      app.say(refusedText(), { error: true });
+      app.say(app.hbRefusal(), { error: true });
       return;
     }
     const count = ids.length > 1 ? fresh.length : null;
     const text: Msg = (t) =>
       t.addedTo.replace('%s', name) + (count === null ? '' : ': ' + String(count));
     app.say(text);
-    const token = app.requestToken;
-    if (key !== 'sel' || !fresh.length || !app.user || token === null) return;
-    const lines = ids.map((id) => ({ item: id, qty: carried?.[id]?.qty ?? 1 }));
-    app.requestSender?.afterAdd(token, lines, text);
   }
 
   /* The list whose entries a remove waits for: its chip draws busy. */
@@ -378,91 +357,61 @@
     {#if open}
       <div class="dropmenu" class:long={showSearch}>
         <span class="lbl">{t.listsHead}</span>
-        {#if showSearch}
-          <input
-            type="search"
-            class="pickq"
-            value={pickQ}
-            placeholder={t.findList}
-            aria-label={t.findList}
-            oninput={(e) => {
-              pickQ = e.currentTarget.value;
-            }}
-          />
-        {/if}
-        <!-- Signed out the reader holds no list: the menu is the create slot alone. -->
-        {#if target !== 'prompt'}
-          <div class="pickchips">
-            {#if shown.length}
-              {#each shown as l (l.id)}
-                {@const busy = busyId === l.id}
-                {@const rid = 'lr-' + menuName() + '-' + l.id}
-                <!-- A one-record menu toggles; the selection bar's only adds, so its rows
-                     carry no pressed state. The check, not a fill, says "holds it" (C61).
-                     The name is the list's; the count is its description. -->
-                <button
-                  type="button"
-                  class="lrow"
-                  aria-labelledby={rid + '-n'}
-                  aria-describedby={rid + '-c'}
-                  aria-pressed={one !== undefined ? inList(l) : undefined}
-                  aria-busy={busy ? 'true' : undefined}
-                  aria-disabled={busy ? 'true' : undefined}
-                  onclick={() => {
-                    if (!busy) void pick(l);
-                  }}
-                  >{#if inList(l)}<Icon name="check" />{:else}<span class="sp"></span>{/if}<span
-                    class="ln"
-                    id={rid + '-n'}>{l.name}</span
-                  ><span class="lc" id={rid + '-c'}
-                    >{plural(knownItems(l, app.index?.byId).length, t.itemsN, app.lang)}</span
-                  ></button
-                >
-              {/each}
-            {:else}
-              <span class="picker-none">{t.nothing}</span>
-            {/if}
-          </div>
-        {/if}
-        {#if newListFor && target === 'prompt'}
-          <SignInPrompt
-            {app}
-            lead={t.signInToCreateShort}
-            after={signInAfter}
-            compact
-            oncancel={cancelNew}
-          />
-        {:else if newListFor}
-          <span class="picker-new">
-            <input
-              type="text"
-              bind:this={newInput}
-              value={draft}
-              placeholder={t.listNamePh}
-              maxlength={NAME_MAX}
-              aria-label={t.newList}
-              oninput={(e) => {
-                draft = e.currentTarget.value;
-              }}
-              onkeydown={(e) => {
-                if (e.key !== 'Enter') return;
-                e.preventDefault();
-                createNew();
-              }}
-            />
-            <Button size="sm" variant="primary" onclick={createNew}>{t.create}</Button>
-            <Button size="sm" variant="ghost" onclick={cancelNew}>{t.cancel}</Button>
-          </span>
-        {:else if target !== 'wait'}
-          {#if target !== 'prompt'}<span class="lsep" aria-hidden="true"></span>{/if}
-          <button type="button" class="lnew" onclick={openNew}
-            ><Icon name="plus" />{t.newList}</button
-          >
-        {/if}
+        <ListRows
+          {app}
+          lists={sorted}
+          mode={one !== undefined ? 'toggle' : 'add'}
+          idBase={menuName()}
+          checked={one !== undefined ? inList : undefined}
+          {busyId}
+          query={pickQ}
+          onquery={(q: string) => {
+            pickQ = q;
+          }}
+          onpick={(l: StoredList) => {
+            void pick(l);
+          }}
+          showRows={target !== 'prompt'}
+          onnew={target === 'wait' ? undefined : openNew}
+          creating={newListFor ? creating : undefined}
+        />
       </div>
     {/if}
   </div>
 {/if}
+
+{#snippet creating()}
+  {#if target === 'prompt'}
+    <SignInPrompt
+      {app}
+      lead={t.signInToCreateShort}
+      after={signInAfter}
+      compact
+      oncancel={cancelNew}
+    />
+  {:else}
+    <span class="picker-new">
+      <input
+        type="text"
+        bind:this={newInput}
+        value={draft}
+        placeholder={t.listNamePh}
+        maxlength={NAME_MAX}
+        aria-label={t.newList}
+        oninput={(e) => {
+          draft = e.currentTarget.value;
+        }}
+        onkeydown={(e) => {
+          if (e.key !== 'Enter') return;
+          e.preventDefault();
+          createNew();
+        }}
+      />
+      <Button size="sm" variant="primary" onclick={createNew}>{t.create}</Button>
+      <Button size="sm" variant="ghost" onclick={cancelNew}>{t.cancel}</Button>
+    </span>
+  {/if}
+{/snippet}
 
 <style>
   /* off `.seldrop`/`.dropmenu` in style.css - the add-to-list menu, shared by the card and
@@ -531,74 +480,6 @@
     margin-bottom: 2px;
   }
 
-  /* A list row: the check (or its room), the name on one line, the count in words, never
-     cut. 44 px tall up to 760 px, 36 px from 761 px. Neutral: no gold (C61). */
-  .lrow,
-  .lnew {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    width: 100%;
-    /* A row target up to 600 px (DESIGN.md, "The Phone-First Rule"). */
-    min-height: max(36px, var(--thumb) + 4px);
-    padding: 0 8px;
-    border: 0;
-    border-radius: var(--r-sm);
-    background: transparent;
-    color: var(--txt);
-    font: inherit;
-    font-size: var(--t-data);
-    text-align: left;
-    cursor: pointer;
-  }
-
-  .lrow:hover:not([aria-disabled='true']),
-  .lnew:hover {
-    background: var(--surface2);
-  }
-
-  .lrow[aria-disabled='true'] {
-    opacity: 0.5;
-    cursor: default;
-  }
-
-  .lrow :global(svg),
-  .lnew :global(svg),
-  .sp {
-    flex: none;
-    width: 14px;
-    height: 14px;
-    fill: currentcolor;
-  }
-
-  /* A list name wraps whole (DESIGN.md "Typography", "The Whole Message Rule"); the inset
-     keeps a wrapped name off the row's edges. */
-  .ln {
-    flex: 1 1 auto;
-    min-width: 0;
-    padding-block: 6px;
-    overflow-wrap: anywhere;
-  }
-
-  .lc {
-    flex: none;
-    color: var(--muted2);
-    white-space: nowrap;
-  }
-
-  .lsep {
-    height: 1px;
-    margin: 2px 0;
-    background: var(--line);
-  }
-
-  @media (max-width: 760px) {
-    .lrow,
-    .lnew {
-      min-height: 44px;
-    }
-  }
-
   /* off `.dropmenu.long` - the picker grows a search box once there are more
      lists than fit without one. Only the rows scroll, so the heading, the
      search and «+ Новый список» stay in view (issue 68). */
@@ -610,46 +491,10 @@
     flex-shrink: 0;
   }
 
-  input.pickq {
-    width: 100%;
-    height: max(32px, var(--thumb));
-    padding: 0 10px;
-    margin-bottom: 8px;
-    box-sizing: border-box;
-    background: var(--bg2);
-    border: 1px solid var(--line2);
-    border-radius: 8px;
-    color: var(--txt);
-    font: inherit;
-    font-size: var(--t-data);
-  }
-
-  input.pickq:focus {
-    outline: none;
-    border-color: var(--gold);
-    box-shadow: 0 0 0 3px rgb(216 171 94 / 14%);
-  }
-
-  /* The padding and the equal negative margin keep a row's 2px + 2px focus
-     ring (tokens.css) inside the scroll box, which would clip it. */
-  .pickchips {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    padding: 4px;
-    margin: -4px;
-  }
-
-  .dropmenu.long > .pickchips {
+  .dropmenu.long > :global(.pickchips) {
     overflow: auto;
     min-height: 0;
     flex: 1 1 auto;
-  }
-
-  .picker-none {
-    font-size: var(--t-data);
-    color: var(--muted2);
-    padding: 2px 0;
   }
 
   .picker-new {
@@ -687,8 +532,7 @@
     }
 
     /* 16 px: a smaller field makes iOS zoom the page on focus (as `RollSelect.svelte`). */
-    .picker-new input,
-    input.pickq {
+    .picker-new input {
       font-size: 16px;
     }
   }
